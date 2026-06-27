@@ -23,6 +23,8 @@ const labelMap: Record<ValidSort, string> = {
   noDescending: m.filter_sort_no_descending(),
   serialAsc: m.filter_sort_serial_asc(),
   serialDesc: m.filter_sort_serial_desc(),
+  memberAsc: m.filter_sort_member_asc(),
+  memberDesc: m.filter_sort_member_desc(),
 };
 
 const sublabelMap: Record<ValidSort, string> = {
@@ -32,6 +34,8 @@ const sublabelMap: Record<ValidSort, string> = {
   noDescending: m.filter_sort_no_descending_sub(),
   serialAsc: m.filter_sort_serial_asc_sub(),
   serialDesc: m.filter_sort_serial_desc_sub(),
+  memberAsc: m.filter_sort_member_asc_sub(),
+  memberDesc: m.filter_sort_member_desc_sub(),
 };
 
 export default function SortFilter(props: Props) {

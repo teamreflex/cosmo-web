@@ -12,6 +12,7 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
+import { bunJsonb } from "../custom";
 
 // subsquid metadata
 export const subsquidSchema = pgSchema("squid_processor");
@@ -131,4 +132,18 @@ export const votes = pgTable("vote", {
   logIndex: integer("log_index").notNull(),
   hash: text("hash").notNull(),
   candidateId: integer("candidate_id"),
+});
+
+// reference table synced by apps/schedules (canonical member sort order), read
+// by apps/web. the processor never touches it.
+export const members = pgTable("member", {
+  id: uuid("id").primaryKey(),
+  // joins to collection.member
+  name: varchar("name", { length: 32 }).notNull().unique(),
+  cosmoId: integer("cosmo_id").notNull(),
+  artistId: varchar("artist_id", { length: 32 }).notNull(),
+  alias: text("alias").notNull(),
+  units: bunJsonb("units").$type<string[]>().notNull(),
+  primaryColorHex: text("primary_color_hex").notNull(),
+  sortOrder: integer("sort_order").notNull(),
 });

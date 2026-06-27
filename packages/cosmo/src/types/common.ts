@@ -13,8 +13,18 @@ export const validSorts = [
   // should not be sent to cosmo
   "serialAsc",
   "serialDesc",
+  "memberAsc",
+  "memberDesc",
 ] as const;
 export type ValidSort = (typeof validSorts)[number];
+
+/**
+ * Member sorts order by the canonical COSMO member order, which requires a
+ * join against the indexer member table rather than a plain column.
+ */
+export function isMemberSort(sort: ValidSort) {
+  return sort === "memberAsc" || sort === "memberDesc";
+}
 
 // online types
 export const validOnlineTypes = ["online", "offline"] as const;
