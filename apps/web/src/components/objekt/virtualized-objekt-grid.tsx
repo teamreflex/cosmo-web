@@ -15,6 +15,7 @@ import {
   MouseSensor,
   TouchSensor,
   closestCenter,
+  defaultDropAnimationSideEffects,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
@@ -22,6 +23,7 @@ import type {
   Announcements,
   DragEndEvent,
   DragStartEvent,
+  DropAnimation,
   ScreenReaderInstructions,
 } from "@dnd-kit/core";
 import {
@@ -55,6 +57,36 @@ const ASPECT_RATIO = 8.5 / 5.5;
 // how far outside the pin block its reorder outline sits, and its corner radius
 const OUTLINE_PAD = 8;
 const OUTLINE_RADIUS = 16;
+
+/**
+ * Drop animation for a released pin. Position glide, untilt, and unscale all
+ * ride one keyframe set on the overlay so they land together — a separate tilt
+ * animation drifts out of sync with the move. Start and end always differ (the
+ * rotation), so dnd-kit plays the glide even for a zero-distance drop instead of
+ * snapping. The tilt/scale values mirror the `pin-pickup` keyframe's end.
+ */
+const pinDropAnimation: DropAnimation = {
+  keyframes: ({ transform }) => [
+    {
+      transform: `${CSS.Transform.toString(transform.initial)} rotate(5deg) scale(1.05)`,
+    },
+    {
+      transform: `${CSS.Transform.toString(transform.final)} rotate(0deg) scale(1)`,
+    },
+  ],
+  sideEffects: (params) => {
+    // the inner wrapper holds the drag tilt via CSS; clear it so the
+    // overlay-level keyframes own the untilt rather than compounding with it
+    const tilt = params.dragOverlay.node.querySelector("[data-pin-pickup]");
+    if (tilt instanceof HTMLElement) {
+      tilt.style.animation = "none";
+      tilt.style.transform = "none";
+    }
+    return defaultDropAnimationSideEffects({
+      styles: { active: { opacity: "0" } },
+    })(params);
+  },
+};
 
 export type ObjektRowItem<T> =
   | {
@@ -369,13 +401,25 @@ function ObjektGrid<
             <SortableContext items={pinIds} strategy={rectSortingStrategy}>
               {gridBody}
             </SortableContext>
-            <DragOverlay className="pin-drag-overlay">
+            <DragOverlay
+              className="pin-drag-overlay"
+              dropAnimation={pinDropAnimation}
+            >
               {activePin ? (
-                <PinObjektCard
-                  pin={activePin}
-                  authenticated={authenticated}
-                  eager
-                />
+                /**
+                 * The outer wrapper stays untilted so dnd-kit measures an
+                 * upright box for the drop delta (a rotated box is shifted by
+                 * the tilt); the tilt/scale live on the inner wrapper.
+                 */
+                <div className="drop-shadow-xl">
+                  <div data-pin-pickup className="animate-pin-pickup">
+                    <PinObjektCard
+                      pin={activePin}
+                      authenticated={authenticated}
+                      eager
+                    />
+                  </div>
+                </div>
               ) : null}
             </DragOverlay>
           </DndContext>
