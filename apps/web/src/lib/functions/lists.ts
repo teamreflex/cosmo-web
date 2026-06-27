@@ -689,14 +689,11 @@ export const $addObjektsToWantList = createServerFn({ method: "POST" })
       }
 
       if (parentList.discoverable && isTradeActive) {
-        for (const o of objekts) {
-          await fireWantAddNotifications(tx, {
-            sourceUserId: userId,
-            sourceListId: data.objektListId,
-            slug: o.slug,
-            collectionName: o.collectionName,
-          });
-        }
+        await fireWantAddNotifications(tx, {
+          sourceUserId: userId,
+          sourceListId: data.objektListId,
+          collections: objekts,
+        });
       }
     });
 

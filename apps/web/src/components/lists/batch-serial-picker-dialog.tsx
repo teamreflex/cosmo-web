@@ -22,6 +22,7 @@ import {
 } from "@/lib/functions/objekts/owned-serials";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import {
+  MAX_OBJEKT_SELECTIONS,
   type SaleListFormValues,
   type addObjektsToSaleListSchema,
   saleListFormSchema,
@@ -198,6 +199,8 @@ function HaveBody({ list, sections, onClose }: HaveBodyProps) {
     });
   }
 
+  const overLimit = selected.size > MAX_OBJEKT_SELECTIONS;
+
   return (
     <>
       <ScrollArea className="-mx-6 max-h-96">
@@ -221,10 +224,16 @@ function HaveBody({ list, sections, onClose }: HaveBodyProps) {
         </div>
       </ScrollArea>
 
+      {overLimit && (
+        <p className="text-xs text-destructive">
+          {m.toast_max_selections({ count: MAX_OBJEKT_SELECTIONS.toString() })}
+        </p>
+      )}
+
       <Button
         type="button"
         onClick={() => mutation.mutate()}
-        disabled={selected.size === 0 || mutation.isPending}
+        disabled={selected.size === 0 || overLimit || mutation.isPending}
       >
         <span>
           {m.list_picker_add_count({ count: selected.size.toString() })}
@@ -262,6 +271,7 @@ function SaleBody({
 
   const rows = useWatch({ control: form.control, name: "rows" });
   const selectedCount = rows.filter((row) => row.selected).length;
+  const overLimit = selectedCount > MAX_OBJEKT_SELECTIONS;
 
   const mutation = useBatchAddToList(
     { list, attempted: selectedCount, onDone: onClose },
@@ -313,9 +323,15 @@ function SaleBody({
         </div>
       </ScrollArea>
 
+      {overLimit && (
+        <p className="text-xs text-destructive">
+          {m.toast_max_selections({ count: MAX_OBJEKT_SELECTIONS.toString() })}
+        </p>
+      )}
+
       <Button
         type="submit"
-        disabled={selectedCount === 0 || mutation.isPending}
+        disabled={selectedCount === 0 || overLimit || mutation.isPending}
       >
         <span>
           {m.list_picker_add_count({ count: selectedCount.toString() })}

@@ -6,6 +6,10 @@ import {
 import * as z from "zod";
 import { transferTypes } from "./transfers";
 
+// cap on distinct filter values parsed from a URL; anything longer hits HTTP
+// limits anyway, and this guards against oversized IN clauses
+const MAX_FILTER_VALUES = 12;
+
 /**
  * Array filters serialize to comma-separated values in the URL (e.g.
  * `?season=Atom01,Binary01`, via the router's stringifySearch). Coerces the parsed
@@ -14,11 +18,11 @@ import { transferTypes } from "./transfers";
  */
 export function castToArray<TSchema extends z.Schema>(schema: TSchema) {
   return z.preprocess((val) => {
-    if (Array.isArray(val)) return val;
-
-    const str = String(val);
-    if (str === "") return [];
-    return str.includes(",") ? str.split(",") : [str];
+    const raw = Array.isArray(val) ? val : String(val).split(",");
+    return [...new Set(raw.filter((v) => v !== ""))].slice(
+      0,
+      MAX_FILTER_VALUES,
+    );
   }, z.array(schema));
 }
 

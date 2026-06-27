@@ -1,7 +1,7 @@
 import { validOnlineTypes } from "@apollo/cosmo/types/common";
 import * as z from "zod";
 
-const colorSchema = z.string().max(32);
+const colorSchema = z.string().max(8);
 
 export const collectionLookupSchema = z.object({
   season: z.string().min(1),

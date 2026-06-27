@@ -2,6 +2,7 @@ import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { objekts } from "@/lib/server/db/indexer/schema";
 import { cosmoMiddleware } from "@/lib/server/middlewares";
+import { MAX_OBJEKT_SELECTIONS } from "@/lib/universal/schema/objekt-list";
 import type { NonTransferableReason } from "@apollo/cosmo/types/objekts";
 import { lockedObjekts } from "@apollo/database/web/schema";
 import { createServerFn } from "@tanstack/react-start";
@@ -24,7 +25,11 @@ export type OwnedSerial = {
  * picker UI. Collections the user owns no copies of map to an empty array.
  */
 export const $fetchOwnedSerials = createServerFn({ method: "GET" })
-  .validator(z.object({ collectionIds: z.array(z.uuid()).min(1) }))
+  .validator(
+    z.object({
+      collectionIds: z.array(z.uuid()).min(1).max(MAX_OBJEKT_SELECTIONS),
+    }),
+  )
   .middleware([cosmoMiddleware])
   .handler(
     async ({ data, context }): Promise<Record<string, OwnedSerial[]>> => {

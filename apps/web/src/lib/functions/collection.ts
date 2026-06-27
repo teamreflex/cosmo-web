@@ -2,6 +2,7 @@ import { clearTag } from "@/lib/server/cache.server";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { cosmoMiddleware } from "@/lib/server/middlewares";
+import { MAX_OBJEKT_SELECTIONS } from "@/lib/universal/schema/objekt-list";
 import { lockedObjekts, pins } from "@apollo/database/web/schema";
 import { pinCacheKey } from "@apollo/util-server";
 import { createServerFn } from "@tanstack/react-start";
@@ -120,7 +121,11 @@ export const $unpinObjekt = createServerFn({ method: "POST" })
  * Reorder the user's pins to match the given token id order.
  */
 export const $reorderPins = createServerFn({ method: "POST" })
-  .validator(z.object({ tokenIds: z.array(z.coerce.number()).min(1) }))
+  .validator(
+    z.object({
+      tokenIds: z.array(z.coerce.number()).min(1).max(MAX_OBJEKT_SELECTIONS),
+    }),
+  )
   .middleware([cosmoMiddleware])
   .handler(async ({ data, context }) => {
     // single atomic UPDATE assigning each token its index as the new position;
