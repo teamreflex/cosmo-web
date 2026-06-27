@@ -5,6 +5,7 @@ import { useObjektResponse } from "@/hooks/use-objekt-response";
 import { tokenKey } from "@/hooks/use-objekt-selection";
 import { m } from "@/i18n/messages";
 import { Objekt } from "@/lib/universal/objekt-conversion";
+import { cn } from "@/lib/utils";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import {
   DndContext,
@@ -51,6 +52,9 @@ const GAP = 16;
 // horizontal breathing room so card outlines aren't clipped at the grid edges
 const SIDE = 2;
 const ASPECT_RATIO = 8.5 / 5.5;
+// how far outside the pin block its reorder outline sits, and its corner radius
+const OUTLINE_PAD = 8;
+const OUTLINE_RADIUS = 16;
 
 export type ObjektRowItem<T> =
   | {
@@ -336,6 +340,16 @@ function ObjektGrid<
             </div>
           );
         })}
+
+      {sortable && laneWidth > 0 && (
+        <PinBlockOutline
+          visible={activePin !== null}
+          pinCount={pins.length}
+          gridColumns={gridColumns}
+          laneWidth={laneWidth}
+          itemHeight={itemHeight}
+        />
+      )}
     </div>
   );
 
@@ -483,6 +497,122 @@ function SortablePinCell({
       <PinObjektCard pin={pin} authenticated={authenticated} />
     </div>
   );
+}
+
+type Point = { x: number; y: number };
+
+/**
+ * Single rounded outline hugging the contiguous pin block, drawn while a pin is
+ * being dragged to surface the region pins reorder within. Purely decorative,
+ * so it never intercepts pointer events.
+ */
+function PinBlockOutline({
+  visible,
+  pinCount,
+  gridColumns,
+  laneWidth,
+  itemHeight,
+}: {
+  visible: boolean;
+  pinCount: number;
+  gridColumns: number;
+  laneWidth: number;
+  itemHeight: number;
+}) {
+  const path = pinBlockPath(pinCount, gridColumns, laneWidth, itemHeight);
+
+  return (
+    <svg
+      aria-hidden
+      className={cn(
+        "pointer-events-none absolute inset-0 overflow-visible transition-opacity duration-200",
+        visible ? "opacity-100" : "opacity-0",
+      )}
+    >
+      <path d={path} className="fill-none stroke-foreground" strokeWidth={2} />
+    </svg>
+  );
+}
+
+/**
+ * Build the SVG path for the outline around the first `pinCount` cells laid out
+ * row-major across `gridColumns`. A full last row yields a rectangle; a partial
+ * last row notches the outline in so it only wraps the pinned cells.
+ */
+function pinBlockPath(
+  pinCount: number,
+  gridColumns: number,
+  laneWidth: number,
+  itemHeight: number,
+): string {
+  const cardHeight = laneWidth * ASPECT_RATIO;
+  const rowTop = (r: number) => r * (itemHeight + GAP);
+  const rowBottom = (r: number) => rowTop(r) + cardHeight;
+  const colRight = (c: number) => SIDE + c * (laneWidth + GAP) + laneWidth;
+
+  const fullRows = Math.floor(pinCount / gridColumns);
+  const rem = pinCount % gridColumns;
+
+  const xLeft = SIDE - OUTLINE_PAD;
+  const yTop = -OUTLINE_PAD;
+
+  let points: Point[];
+  if (rem === 0 || fullRows === 0) {
+    // a single rectangle: either exact full rows, or one partially filled row
+    const lastCol = (rem === 0 ? gridColumns : rem) - 1;
+    const lastRow = rem === 0 ? fullRows - 1 : 0;
+    const xRight = colRight(lastCol) + OUTLINE_PAD;
+    const yBottom = rowBottom(lastRow) + OUTLINE_PAD;
+    points = [
+      { x: xLeft, y: yTop },
+      { x: xRight, y: yTop },
+      { x: xRight, y: yBottom },
+      { x: xLeft, y: yBottom },
+    ];
+  } else {
+    // full rows plus a shorter last row: step in at the partial row's width
+    const xRightFull = colRight(gridColumns - 1) + OUTLINE_PAD;
+    const xRightPart = colRight(rem - 1) + OUTLINE_PAD;
+    const yNotch = (rowBottom(fullRows - 1) + rowTop(fullRows)) / 2;
+    const yBottom = rowBottom(fullRows) + OUTLINE_PAD;
+    points = [
+      { x: xLeft, y: yTop },
+      { x: xRightFull, y: yTop },
+      { x: xRightFull, y: yNotch },
+      { x: xRightPart, y: yNotch },
+      { x: xRightPart, y: yBottom },
+      { x: xLeft, y: yBottom },
+    ];
+  }
+
+  return roundedPath(points, OUTLINE_RADIUS);
+}
+
+/**
+ * Trace a closed path through axis-aligned `points`, rounding each corner with
+ * a quadratic curve clamped so neighbouring corners never overlap.
+ */
+function roundedPath(points: Point[], radius: number): string {
+  const total = points.length;
+  const toward = (from: Point, to: Point): Point => {
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const length = Math.hypot(dx, dy);
+    const ratio = length === 0 ? 0 : Math.min(radius, length / 2) / length;
+    return { x: from.x + dx * ratio, y: from.y + dy * ratio };
+  };
+
+  const body = points
+    .map((curr, i) => {
+      // indices wrap within bounds; `?? curr` only discharges the optional index
+      const prev = points[(i - 1 + total) % total] ?? curr;
+      const next = points[(i + 1) % total] ?? curr;
+      const enter = toward(curr, prev);
+      const leave = toward(curr, next);
+      return `${i === 0 ? "M" : "L"} ${enter.x} ${enter.y} Q ${curr.x} ${curr.y} ${leave.x} ${leave.y}`;
+    })
+    .join(" ");
+  return `${body} Z`;
 }
 
 function ObjektGridError(props: { resetErrorBoundary: () => void }) {
