@@ -1,6 +1,7 @@
 import { toPublicUser } from "@/lib/server/auth.server";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
+import { collections, members } from "@/lib/server/db/indexer/schema";
 import type { Collection } from "@/lib/server/db/indexer/schema";
 import {
   authenticatedMiddleware,
@@ -31,10 +32,8 @@ import {
   updateObjektListSchema,
 } from "@/lib/universal/schema/objekt-list";
 import { sanitizeUuid } from "@/lib/utils";
-import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import { objektListEntries, objektLists } from "@apollo/database/web/schema";
 import type { ObjektListEntry } from "@apollo/database/web/types";
-import { memberSortOrder } from "@apollo/util";
 import { redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import {
@@ -49,7 +48,6 @@ import {
 } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import * as z from "zod";
-import { $fetchArtists } from "./artists";
 import {
   assertOwnsTokensMulti,
   fireHaveAddNotifications,
@@ -1195,36 +1193,29 @@ export const $generateDiscordList = createServerFn({ method: "POST" })
       throw new ExpectedError("discord_list_empty");
     }
 
-    const collections = await indexer.query.collections.findMany({
-      where: {
-        slug: {
-          in: Array.from(unique),
-        },
-      },
-      columns: {
-        slug: true,
-        season: true,
-        collectionNo: true,
-        member: true,
-        artist: true,
-      },
-    });
-
-    // get artists for member ordering
-    const { artists } = await $fetchArtists();
-    const artistsArray = Object.values(artists);
+    // join the canonical member sort order onto each collection for grouping
+    const listCollections = await indexer
+      .select({
+        slug: collections.slug,
+        season: collections.season,
+        collectionNo: collections.collectionNo,
+        member: collections.member,
+        artist: collections.artist,
+        memberSortOrder: members.sortOrder,
+      })
+      .from(collections)
+      .leftJoin(members, eq(members.name, collections.member))
+      .where(inArray(collections.slug, Array.from(unique)));
 
     // map into discord format
     const haveCollections = format(
-      collections,
+      listCollections,
       have.entries,
-      artistsArray,
       have.type === "sale" ? have.currency : null,
     );
     const wantCollections = format(
-      collections,
+      listCollections,
       want.entries,
-      artistsArray,
       want.type === "sale" ? want.currency : null,
     );
 
@@ -1242,7 +1233,9 @@ export const $generateDiscordList = createServerFn({ method: "POST" })
 type CollectionSubset = Pick<
   Collection,
   "slug" | "member" | "season" | "collectionNo" | "artist"
->;
+> & {
+  memberSortOrder: number | null;
+};
 
 type CollectionWithEntry = CollectionSubset & {
   quantity?: number;
@@ -1291,21 +1284,12 @@ function formatMemberCollections(
  * Format a list of collections and entries into a string, grouped and sorted by member.
  */
 function format(
-  collections: CollectionSubset[],
+  collectionList: CollectionSubset[],
   entries: ObjektListEntry[],
-  artists: CosmoArtistWithMembersBFF[],
   currency: string | null,
 ): string[] {
   // create a map for quick collection lookup by slug
-  const collectionsMap = new Map(collections.map((c) => [c.slug, c]));
-
-  // create member order map maintaining artist grouping for sorting
-  const memberOrderMap: Record<string, number> = {};
-  artists.forEach((artist, artistIndex) => {
-    artist.artistMembers.forEach((member) => {
-      memberOrderMap[member.name] = memberSortOrder(artistIndex, member.order);
-    });
-  });
+  const collectionsMap = new Map(collectionList.map((c) => [c.slug, c]));
 
   // group collections by member, carrying entry metadata
   const groupedCollectionsByMember = new Map<string, CollectionWithEntry[]>();
@@ -1323,11 +1307,11 @@ function format(
     }
   }
 
-  // sort members based on the order map
+  // sort members by their canonical indexer sort order (carried on each row)
   return Array.from(groupedCollectionsByMember.entries())
-    .sort(([memberA], [memberB]) => {
-      const orderA = memberOrderMap[memberA] ?? Number.MAX_SAFE_INTEGER;
-      const orderB = memberOrderMap[memberB] ?? Number.MAX_SAFE_INTEGER;
+    .sort(([, a], [, b]) => {
+      const orderA = a[0]?.memberSortOrder ?? Number.MAX_SAFE_INTEGER;
+      const orderB = b[0]?.memberSortOrder ?? Number.MAX_SAFE_INTEGER;
       return orderA - orderB;
     })
     .map(([member, memberCollections]) => {
