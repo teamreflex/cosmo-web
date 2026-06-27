@@ -1,9 +1,11 @@
 // oxlint-disable react/react-compiler
 import { useElementSize } from "@/hooks/use-element-size";
+import { useMetadataDialog } from "@/hooks/use-metadata-dialog";
 import type { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 import { useObjektResponse } from "@/hooks/use-objekt-response";
 import { tokenKey } from "@/hooks/use-objekt-selection";
 import { m } from "@/i18n/messages";
+import { objektQuery } from "@/lib/queries/objekt-queries";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
@@ -35,12 +37,19 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { IconHeartBroken, IconRefresh } from "@tabler/icons-react";
-import { QueryErrorResetBoundary } from "@tanstack/react-query";
+import { QueryErrorResetBoundary, useQueryClient } from "@tanstack/react-query";
 import type { DefaultError, QueryKey } from "@tanstack/react-query";
 import type { Virtualizer } from "@tanstack/react-virtual";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
-import { Suspense, useCallback, useMemo, useRef, useState } from "react";
-import type { ComponentType } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import type { ComponentType, TouchEvent as ReactTouchEvent } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { LegacyOverlay } from "../collection/data-sources/common-legacy";
 import { InfiniteQueryNext } from "../infinite-query-pending";
@@ -57,6 +66,10 @@ const ASPECT_RATIO = 8.5 / 5.5;
 // how far outside the pin block its reorder outline sits, and its corner radius
 const OUTLINE_PAD = 8;
 const OUTLINE_RADIUS = 16;
+// a pin drag activates after this hold (ms) within the movement tolerance (px);
+// the tap detector reuses both, so a tap is a release before the drag could start
+const PIN_DRAG_DELAY = 200;
+const PIN_DRAG_TOLERANCE = 8;
 
 /**
  * Drop animation for a released pin. Position glide, untilt, and unscale all
@@ -227,7 +240,10 @@ function ObjektGrid<
   const sensors = useSensors(
     useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
     useSensor(TouchSensor, {
-      activationConstraint: { delay: 200, tolerance: 8 },
+      activationConstraint: {
+        delay: PIN_DRAG_DELAY,
+        tolerance: PIN_DRAG_TOLERANCE,
+      },
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
@@ -241,6 +257,27 @@ function ObjektGrid<
     () => (sortable ? pins.map((pin) => pin.tokenId) : []),
     [pins, sortable],
   );
+
+  /**
+   * iOS fires a force-touch magnifier on a heavy hold even with CSS suppression;
+   * `preventDefault` on the `touchstart` cancels it. It has to run after
+   * dnd-kit's activator (which bails on an already-prevented event), so it lives
+   * on `window` — the last bubble target — and only cancels presses landing on a
+   * pin's drag shield.
+   */
+  useEffect(() => {
+    if (!sortable) return;
+    const onTouchStart = (e: TouchEvent) => {
+      if (
+        e.target instanceof Element &&
+        e.target.closest("[data-pin-shield]")
+      ) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("touchstart", onTouchStart, { passive: false });
+    return () => window.removeEventListener("touchstart", onTouchStart);
+  }, [sortable]);
 
   const handleDragStart = useCallback(
     (event: DragStartEvent) => {
@@ -454,10 +491,12 @@ function PinObjektCard({
   pin,
   authenticated,
   eager = false,
+  shield = false,
 }: {
   pin: CosmoObjekt;
   authenticated: boolean;
   eager?: boolean;
+  shield?: boolean;
 }) {
   const legacyObjekt = Objekt.fromLegacy(pin);
   return (
@@ -467,6 +506,7 @@ function PinObjektCard({
       priority={true}
       eager={eager}
     >
+      {shield && <PinDragShield collection={legacyObjekt.collection} />}
       <LegacyOverlay
         collection={legacyObjekt.collection}
         token={legacyObjekt.objekt}
@@ -474,6 +514,61 @@ function PinObjektCard({
         isPin={true}
       />
     </ExpandableObjekt>
+  );
+}
+
+/**
+ * Full-cover layer over a draggable pin card. iOS fires its native image
+ * peek/magnifier whenever a long-press lands on an `<img>`, which hijacks the
+ * dnd-kit reorder drag. This div sits above the artwork but below the action
+ * overlays, so the press targets a plain div instead. Gated to coarse pointers
+ * so desktop keeps the image's own click/context-menu handling.
+ *
+ * The `data-pin-shield` marker lets ObjektGrid's window-level listener
+ * `preventDefault` the `touchstart`, which beats the iOS force-touch magnifier
+ * that CSS suppression doesn't fully catch. That also eats the synthesized
+ * click, so tap-to-open is recovered on `touchend` (a quick, stationary
+ * release; a longer hold is a drag owned by dnd-kit). `onClick` stays as the
+ * mouse/desktop path, where `touchstart` never fires.
+ */
+function PinDragShield({ collection }: { collection: Objekt.Collection }) {
+  const queryClient = useQueryClient();
+  const { open } = useMetadataDialog();
+  const press = useRef<{ x: number; y: number; t: number } | null>(null);
+
+  function handleOpen() {
+    // mirror FrontImage: seed the cache so the dialog skips its initial fetch
+    queryClient.setQueryData(objektQuery(collection.slug).queryKey, collection);
+    open(collection.slug);
+  }
+
+  function handleTouchStart(e: ReactTouchEvent<HTMLDivElement>) {
+    const touch = e.touches[0];
+    press.current = touch
+      ? { x: touch.clientX, y: touch.clientY, t: e.timeStamp }
+      : null;
+  }
+
+  function handleTouchEnd(e: ReactTouchEvent<HTMLDivElement>) {
+    const start = press.current;
+    press.current = null;
+    const touch = e.changedTouches[0];
+    if (!start || !touch) return;
+    const moved = Math.hypot(touch.clientX - start.x, touch.clientY - start.y);
+    // a quick, stationary release is a tap; a longer hold means a drag began
+    if (moved < PIN_DRAG_TOLERANCE && e.timeStamp - start.t < PIN_DRAG_DELAY)
+      handleOpen();
+  }
+
+  return (
+    <div
+      aria-hidden
+      data-pin-shield=""
+      onClick={handleOpen}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      className="pointer-events-none absolute inset-0 pointer-coarse:pointer-events-auto"
+    />
   );
 }
 
@@ -524,7 +619,6 @@ function SortablePinCell({
     <div
       ref={setRefs}
       data-index={index}
-      data-pin-sortable=""
       style={{
         top: `${top}px`,
         left: `${left}px`,
@@ -534,11 +628,13 @@ function SortablePinCell({
         opacity: isDragging ? 0 : 1,
         touchAction: "manipulation",
       }}
-      className="absolute cursor-pointer"
+      /* suppress the iOS long-press magnifier/callout across the cell (inherits
+         to the drag shield); replaces the former [data-pin-sortable] CSS rule */
+      className="absolute cursor-pointer select-none [-webkit-touch-callout:none]"
       {...attributes}
       {...listeners}
     >
-      <PinObjektCard pin={pin} authenticated={authenticated} />
+      <PinObjektCard pin={pin} authenticated={authenticated} shield />
     </div>
   );
 }

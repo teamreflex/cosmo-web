@@ -19,17 +19,6 @@
     cursor: pointer;
   }
 
-  /* iOS: long-pressing an objekt image fires the native callout/peek menu and
-     image drag, which hijack the touch and interrupt the dnd-kit long-press
-     drag used to reorder pins. Suppress those native gestures on pin cells. */
-  [data-pin-sortable],
-  [data-pin-sortable] img {
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    user-select: none;
-    -webkit-user-drag: none;
-  }
-
   * {
     @apply border-border outline-ring/50;
   }
