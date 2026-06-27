@@ -5,6 +5,6 @@ export default defineConfig({
   ...baseConfig,
   sortTailwindcss: {
     stylesheet: "./src/styles/tailwind.css",
-    functions: ["cn", "clsx"],
+    functions: ["cn"],
   },
 });

@@ -253,14 +253,16 @@
   "list_picker_no_copies": "You don't own any copies of this collection.",
   "list_picker_add_count": "Add {count}",
   "list_already_on_list": "{collectionId} is already on this list",
-  "batch_selected_count": [{
-    "declarations": ["input count", "local countPlural = count: plural"],
-    "selectors": ["countPlural"],
-    "match": {
-      "countPlural=one": "{count} objekt selected",
-      "countPlural=other": "{count} objekts selected"
+  "batch_selected_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} objekt selected",
+        "countPlural=other": "{count} objekts selected"
+      }
     }
-  }],
+  ],
   "batch_add_to_list": "Lists",
   "batch_clear_selection": "Clear",
   "batch_show_selection": "Selections",
@@ -286,14 +288,16 @@
   "list_matches_description": "Matching {listName}",
   "list_matches_empty": "No mutual matches yet.",
   "list_matches_overlap_count": "{count} overlap",
-  "list_matches_count_label": [{
-    "declarations": ["input count", "local countPlural = count: plural"],
-    "selectors": ["countPlural"],
-    "match": {
-      "countPlural=one": "{count} match",
-      "countPlural=other": "{count} matches"
+  "list_matches_count_label": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} match",
+        "countPlural=other": "{count} matches"
+      }
     }
-  }],
+  ],
   "list_matches_they_have_you_want": "They have — you want",
   "list_matches_you_have_they_want": "You have — they want",
   "list_matches_have_label": "have",

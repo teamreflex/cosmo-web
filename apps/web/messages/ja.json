@@ -253,13 +253,15 @@
   "list_picker_no_copies": "このコレクションのオブジェクトを所有していません。",
   "list_picker_add_count": "{count}件追加",
   "list_already_on_list": "{collectionId}は既にこのリストにあります",
-  "batch_selected_count": [{
-    "declarations": ["input count", "local countPlural = count: plural"],
-    "selectors": ["countPlural"],
-    "match": {
-      "countPlural=other": "{count}件選択中"
+  "batch_selected_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}件選択中"
+      }
     }
-  }],
+  ],
   "batch_add_to_list": "リスト",
   "batch_clear_selection": "クリア",
   "batch_show_selection": "選択中",
@@ -285,13 +287,15 @@
   "list_matches_description": "{listName}のマッチ",
   "list_matches_empty": "まだ相互マッチはありません。",
   "list_matches_overlap_count": "{count}件一致",
-  "list_matches_count_label": [{
-    "declarations": ["input count", "local countPlural = count: plural"],
-    "selectors": ["countPlural"],
-    "match": {
-      "countPlural=other": "{count}件のマッチ"
+  "list_matches_count_label": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}件のマッチ"
+      }
     }
-  }],
+  ],
   "list_matches_they_have_you_want": "相手が所有 — あなたが希望",
   "list_matches_you_have_they_want": "あなたが所有 — 相手が希望",
   "list_matches_have_label": "所有",
