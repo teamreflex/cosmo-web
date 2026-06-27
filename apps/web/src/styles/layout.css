@@ -30,15 +30,6 @@
     -webkit-user-drag: none;
   }
 
-  /* the drag overlay mirrors the objekt card, whose image is a role="button"
-     and so picks up the pointer cursor from the rule above. Force the grabbing
-     cursor across the whole overlay while a pin is in hand — !important to beat
-     that more specific base rule. The overlay only exists during a drag. */
-  .pin-drag-overlay,
-  .pin-drag-overlay * {
-    cursor: grabbing !important;
-  }
-
   * {
     @apply border-border outline-ring/50;
   }

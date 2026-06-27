@@ -402,7 +402,7 @@ function ObjektGrid<
               {gridBody}
             </SortableContext>
             <DragOverlay
-              className="pin-drag-overlay"
+              className="cursor-grabbing! **:cursor-grabbing!"
               dropAnimation={pinDropAnimation}
             >
               {activePin ? (
