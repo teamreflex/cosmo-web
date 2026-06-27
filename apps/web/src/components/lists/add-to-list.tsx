@@ -1,14 +1,13 @@
 import { useAddToList } from "@/hooks/use-add-to-list";
 import { m } from "@/i18n/messages";
 import {
-  $addObjektToWantList,
   $addObjektsToHaveList,
   $addObjektsToList,
+  $addObjektsToWantList,
 } from "@/lib/functions/lists";
 import type { ObjektList } from "@apollo/database/web/types";
-import { IconLoader2, IconPlaylistAdd, IconPlus } from "@tabler/icons-react";
+import { IconPlaylistAdd } from "@tabler/icons-react";
 import { useState } from "react";
-import { Badge } from "../ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { ScrollArea } from "../ui/scroll-area";
+import ListItemShell from "./list-item-shell";
 import SaleListDialog from "./sale-list-dialog";
 import SerialPickerDialog from "./serial-picker-dialog";
 
@@ -178,11 +178,10 @@ function RegularListItem(props: ListItemBaseProps) {
 
 function WantListItem(props: ListItemBaseProps) {
   const mutate = useAddToList(props, () =>
-    $addObjektToWantList({
+    $addObjektsToWantList({
       data: {
         objektListId: props.list.id,
-        slug: props.slug,
-        collectionName: props.collectionName,
+        objekts: [{ slug: props.slug, collectionName: props.collectionName }],
       },
     }),
   );
@@ -243,48 +242,5 @@ function SaleListItem(props: ListItemBaseProps) {
       isPending={false}
       onClick={() => props.onClick("sale")}
     />
-  );
-}
-
-type ListItemShellProps = {
-  list: ObjektList;
-  isPending: boolean;
-  onClick: () => void;
-};
-
-function ListItemShell({ list, isPending, onClick }: ListItemShellProps) {
-  return (
-    <DropdownMenuItem className="group truncate">
-      <button
-        type="button"
-        onClick={(event) => {
-          event.preventDefault();
-          onClick();
-        }}
-        disabled={isPending}
-        className="flex w-full items-center justify-between gap-2"
-        aria-label={m.list_add_to_list_named({ listName: list.name })}
-      >
-        <div className="flex items-center gap-1.5 text-sm">
-          <span>{list.name}</span>
-          <span className="text-xs">
-            {list.type === "have" && (
-              <Badge variant="list-have">{m.list_type_have()}</Badge>
-            )}
-            {list.type === "want" && (
-              <Badge variant="list-want">{m.list_type_want()}</Badge>
-            )}
-            {list.type === "sale" && list.currency && (
-              <Badge variant="secondary">{list.currency}</Badge>
-            )}
-          </span>
-        </div>
-        {isPending ? (
-          <IconLoader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <IconPlus className="h-4 w-4 opacity-0 transition-all group-hover:opacity-100" />
-        )}
-      </button>
-    </DropdownMenuItem>
   );
 }

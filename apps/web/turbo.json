@@ -11,7 +11,6 @@
         "DATABASE_URL",
         "DATABASE_URL_UNPOOLED",
         "INDEXER_DATABASE_URL",
-        "AUTH_KEY",
         "ABSTRACT_RPC",
         "BETTER_AUTH_SECRET",
         "DISCORD_CLIENT_ID",

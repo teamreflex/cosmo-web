@@ -8,6 +8,7 @@ import { drainOutboxTask } from "./functions/drain-outbox";
 import { syncCollectionPriceStatsTask } from "./functions/sync-collection-price-stats";
 import { syncFxRatesTask } from "./functions/sync-fx-rates";
 import { syncGravitiesTask } from "./functions/sync-gravities";
+import { syncMembersTask } from "./functions/sync-members";
 import type { ProxiedToken } from "./proxied-token";
 import type { Redis } from "./redis";
 
@@ -33,6 +34,7 @@ export const SCHEDULED_TASKS: ScheduledTask[] = [
   drainOutboxTask,
   syncFxRatesTask,
   syncCollectionPriceStatsTask,
+  syncMembersTask,
 ];
 
 /**

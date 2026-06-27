@@ -47,14 +47,7 @@ export async function assertOwnsTokensMulti(
   }
 }
 
-type FireNotificationArgs = {
-  sourceUserId: string;
-  sourceListId: string;
-  slug: string;
-  collectionName: string;
-};
-
-type FireHaveNotificationArgs = {
+type FireListAddNotificationArgs = {
   sourceUserId: string;
   sourceListId: string;
   collections: { slug: string; collectionName: string }[];
@@ -70,7 +63,7 @@ type FireHaveNotificationArgs = {
  */
 export async function fireHaveAddNotifications(
   tx: DbOrTx,
-  args: FireHaveNotificationArgs,
+  args: FireListAddNotificationArgs,
 ): Promise<void> {
   const collectionNameBySlug = new Map(
     args.collections.map((c) => [c.slug, c.collectionName]),
@@ -175,8 +168,14 @@ export async function fireHaveAddNotifications(
  */
 export async function fireWantAddNotifications(
   tx: DbOrTx,
-  args: FireNotificationArgs,
+  args: FireListAddNotificationArgs,
 ): Promise<void> {
+  const collectionNameBySlug = new Map(
+    args.collections.map((c) => [c.slug, c.collectionName]),
+  );
+  const slugs = [...collectionNameBySlug.keys()];
+  if (slugs.length === 0) return;
+
   const watcherHave = alias(objektLists, "watcher_have");
   const watcherHaveEntry = alias(objektListEntries, "watcher_have_entry");
   const watcherWant = alias(objektLists, "watcher_want");
@@ -185,21 +184,17 @@ export async function fireWantAddNotifications(
   const sourceHave = alias(objektLists, "source_have");
   const sourceHaveEntry = alias(objektListEntries, "source_have_entry");
 
-  const payload = {
-    sourceUserId: args.sourceUserId,
-    sourceListId: args.sourceListId,
-    collectionId: args.collectionName,
-    direction: "they_added_want",
-  } satisfies ListMatchPayload;
-
   const watchers = await tx
-    .selectDistinct({ userId: watcherHave.userId })
+    .selectDistinct({
+      userId: watcherHave.userId,
+      slug: watcherHaveEntry.collectionId,
+    })
     .from(watcherHave)
     .innerJoin(
       watcherHaveEntry,
       and(
         eq(watcherHaveEntry.objektListId, watcherHave.id),
-        eq(watcherHaveEntry.collectionId, args.slug),
+        inArray(watcherHaveEntry.collectionId, slugs),
       ),
     )
     .where(
@@ -245,14 +240,24 @@ export async function fireWantAddNotifications(
 
   if (watchers.length === 0) return;
 
-  await tx
-    .insert(notifications)
-    .values(
-      watchers.map(({ userId }) => ({
+  const values = watchers.flatMap(({ userId, slug }) => {
+    const collectionName = collectionNameBySlug.get(slug);
+    if (collectionName === undefined) return [];
+    return [
+      {
         userId,
         type: "list_match" as const,
-        payload,
-      })),
-    )
-    .onConflictDoNothing();
+        payload: {
+          sourceUserId: args.sourceUserId,
+          sourceListId: args.sourceListId,
+          collectionId: collectionName,
+          direction: "they_added_want",
+        } satisfies ListMatchPayload,
+      },
+    ];
+  });
+
+  if (values.length === 0) return;
+
+  await tx.insert(notifications).values(values).onConflictDoNothing();
 }

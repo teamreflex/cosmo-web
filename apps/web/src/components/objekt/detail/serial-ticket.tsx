@@ -2,7 +2,7 @@ import AddToList from "@/components/lists/add-to-list";
 import LockObjekt from "@/components/objekt/overlay/lock-button";
 import PinObjekt from "@/components/objekt/overlay/pin-button";
 import { useMetadataDialog } from "@/hooks/use-metadata-dialog";
-import { useObjektSelection } from "@/hooks/use-objekt-selection";
+import { tokenKey, useObjektSelection } from "@/hooks/use-objekt-selection";
 import { useLockedObjekt, usePinnedObjekt } from "@/hooks/use-profile";
 import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
@@ -35,7 +35,7 @@ export default function SerialTicket({
   const { open } = useMetadataDialog();
   const queryClient = useQueryClient();
   const isSelected = useObjektSelection(
-    useShallow((state) => state.isSelected(token.tokenId)),
+    useShallow((state) => state.isSelected(tokenKey(token.tokenId))),
   );
   const select = useObjektSelection((state) => state.select);
 
@@ -61,7 +61,7 @@ export default function SerialTicket({
   // (eligibility is enforced when adding to a list); other viewers open detail
   function handleRowClick() {
     if (authenticated) {
-      select({ collection, token });
+      select({ type: "token", collection, token });
     } else {
       openDetail();
     }

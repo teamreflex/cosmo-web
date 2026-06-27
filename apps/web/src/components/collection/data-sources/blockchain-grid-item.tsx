@@ -1,3 +1,4 @@
+import { tokenKey } from "@/hooks/use-objekt-selection";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import { useMemo } from "react";
@@ -24,7 +25,7 @@ export function BlockchainGridItem({
   return (
     <ExpandableObjekt
       collection={objekt.collection}
-      tokenId={id}
+      selectionKey={tokenKey(Number(id))}
       priority={priority}
     >
       <LegacyOverlay

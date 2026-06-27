@@ -114,11 +114,19 @@ export const relations = defineRelations(schema, (r) => ({
   user: {
     sessions: r.many.session(),
     accounts: r.many.account(),
+    apiKeys: r.many.apikey(),
     cosmoAccount: r.one.cosmoAccounts({
       from: r.user.id,
       to: r.cosmoAccounts.userId,
     }),
     objektLists: r.many.objektLists(),
+  },
+  apikey: {
+    user: r.one.user({
+      from: r.apikey.referenceId,
+      to: r.user.id,
+      optional: false,
+    }),
   },
   session: {
     user: r.one.user({

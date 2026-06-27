@@ -1,5 +1,5 @@
 import { indexer } from "@/lib/server/db/indexer";
-import { collections, objekts } from "@/lib/server/db/indexer/schema";
+import { collections, members, objekts } from "@/lib/server/db/indexer/schema";
 import {
   withArtist,
   withClass,
@@ -10,7 +10,7 @@ import {
   withTransferable,
 } from "@/lib/server/objekts/filters.server";
 import { userCollectionBackendSchema } from "@/lib/universal/parsers";
-import type { ValidSort } from "@apollo/cosmo/types/common";
+import { isMemberSort, type ValidSort } from "@apollo/cosmo/types/common";
 import type {
   BFFCollectionGroup,
   BFFCollectionGroupResponse,
@@ -58,7 +58,8 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
     const requiresCollectionJoin =
       collectionFilters.length > 0 ||
       sort === "noAscending" ||
-      sort === "noDescending";
+      sort === "noDescending" ||
+      isMemberSort(sort);
 
     let idsQuery = requiresCollectionJoin
       ? indexer
@@ -81,6 +82,15 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
           .where(and(...objektFilters))
           .groupBy(objekts.collectionId)
           .$dynamic();
+
+    // member sort orders by the joined member table; requiresCollectionJoin is
+    // always set for member sorts, so collections is guaranteed to be joined.
+    if (isMemberSort(sort)) {
+      idsQuery = idsQuery.leftJoin(
+        members,
+        eq(members.name, collections.member),
+      );
+    }
 
     idsQuery = withObjektGroupSort(
       idsQuery,
@@ -259,5 +269,17 @@ function withObjektGroupSort<T extends PgSelect>(
       return qb.orderBy(asc(max(objekts.serial)), asc(tieBreaker));
     case "serialDesc":
       return qb.orderBy(desc(max(objekts.serial)), asc(tieBreaker));
+    // grouped by collection.id, so the joined member order must be aggregated;
+    // each collection has one member, making min() exact.
+    case "memberAsc":
+      return qb.orderBy(
+        sql`min(${members.sortOrder}) asc nulls last`,
+        asc(tieBreaker),
+      );
+    case "memberDesc":
+      return qb.orderBy(
+        sql`min(${members.sortOrder}) desc nulls last`,
+        asc(tieBreaker),
+      );
   }
 }

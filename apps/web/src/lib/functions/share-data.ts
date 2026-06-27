@@ -61,6 +61,7 @@ export const $scrapeCollectionMedia = createServerFn({ method: "POST" })
     type UpdateCandidate = {
       slug: string;
       artistName: string;
+      class: string;
       value: string;
       prop: "frontMedia" | "bandImageUrl";
     };
@@ -92,6 +93,7 @@ export const $scrapeCollectionMedia = createServerFn({ method: "POST" })
           candidates.push({
             slug: slugifyObjekt(item.collection.collectionId),
             artistName: item.collection.artistName.toLowerCase(),
+            class: result.value.query.class,
             value,
             prop: result.value.query.prop,
           });
@@ -113,6 +115,7 @@ export const $scrapeCollectionMedia = createServerFn({ method: "POST" })
           candidate.value,
           candidate.artistName,
           candidate.slug,
+          candidate.class,
         );
       }
 

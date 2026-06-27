@@ -126,10 +126,17 @@ export const addObjektsToHaveListSchema = z.object({
     .max(MAX_OBJEKT_SELECTIONS),
 });
 
-export const addObjektToWantListSchema = z.object({
+export const addObjektsToWantListSchema = z.object({
   objektListId: z.uuid(),
-  slug: z.string(),
-  collectionName: z.string(),
+  objekts: z
+    .array(
+      z.object({
+        slug: z.string(),
+        collectionName: z.string(),
+      }),
+    )
+    .min(1)
+    .max(MAX_OBJEKT_SELECTIONS),
 });
 
 const SALE_PRICE_ERROR = "Price must be greater than 0";

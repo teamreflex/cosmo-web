@@ -3,7 +3,7 @@ FROM oven/bun:1.3.13-slim AS base
 FROM base AS pruner
 WORKDIR /app
 COPY . .
-RUN bun install -g turbo@2.9.16
+RUN bun install -g turbo@2.9.18
 RUN turbo prune typesense-import --docker
 
 FROM base AS builder

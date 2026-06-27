@@ -1,21 +1,8 @@
 import type { ValidArtist } from "@apollo/cosmo/types/common";
-import { clsx } from "clsx";
-import type { ClassValue } from "clsx";
-import { extendTailwindMerge } from "tailwind-merge";
 import * as z from "zod";
 import { env } from "./env/client";
 
-const twMerge = extendTailwindMerge({
-  extend: {
-    classGroups: {
-      "font-size": [{ text: ["xxs"] }],
-    },
-  },
-});
-
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
+export { cn } from "cnfast";
 
 export type PropsWithClassName<T> = T & { className?: string };
 
@@ -223,24 +210,6 @@ export function classSort(a: string, b: string, artist: ValidArtist) {
   const bOrder = classConfigs[artist][b];
   if (aOrder === undefined || bOrder === undefined) return 0;
   return aOrder - bOrder;
-}
-
-/**
- * Parse URLSearchParams into a record.
- */
-export function parseSearchParams(
-  searchParams: URLSearchParams,
-): Record<string, string | string[]> {
-  const obj: Record<string, string | string[]> = {};
-  for (const key of new Set(searchParams.keys())) {
-    const values = searchParams.getAll(key);
-    if (values.length > 1) {
-      obj[key] = values;
-    } else if (values.length === 1) {
-      obj[key] = values[0]!;
-    }
-  }
-  return obj;
 }
 
 const handles = [

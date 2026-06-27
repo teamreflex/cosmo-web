@@ -5,6 +5,8 @@ export const authErrorCodes = [
   "EXPIRED",
   "INVALID",
   "NOT_FOUND",
+  "api_key_not_found",
+  "user_not_found",
 ] as const;
 
 export type AuthErrorCode = (typeof authErrorCodes)[number];

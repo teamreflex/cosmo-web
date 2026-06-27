@@ -95,7 +95,7 @@ function RouteComponent() {
         <ToggleObjektBands />
       </Overlay>
 
-      <BatchSelectionBar />
+      <BatchSelectionBar objektLists={target.objektLists} />
     </ProfileProvider>
   );
 }

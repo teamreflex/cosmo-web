@@ -26,8 +26,10 @@ import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-passw
 import { Route as AdminNoticeRouteImport } from './routes/admin/notice'
 import { Route as AdminEventsRouteImport } from './routes/admin/events'
 import { Route as AdminErasRouteImport } from './routes/admin/eras'
+import { Route as AdminCollectionsRouteImport } from './routes/admin/collections'
 import { Route as AdminCacheRouteImport } from './routes/admin/cache'
 import { Route as AdminBandsRouteImport } from './routes/admin/bands'
+import { Route as AdminApiKeysRouteImport } from './routes/admin/api-keys'
 import { Route as AtChar123usernameChar125TradesRouteImport } from './routes/@{$username}/trades'
 import { Route as AtChar123usernameChar125ProgressRouteImport } from './routes/@{$username}/progress'
 import { Route as AtChar123usernameChar125ComoRouteImport } from './routes/@{$username}/como'
@@ -44,7 +46,6 @@ import { Route as ApiUserByAddressAddressIndexRouteImport } from './routes/api/u
 import { Route as ApiObjektsMetadataSlugIndexRouteImport } from './routes/api/objekts/metadata/$slug/index'
 import { Route as ApiUserByAddressAddressStatsRouteImport } from './routes/api/user/by-address/$address/stats'
 import { Route as ApiUserByAddressAddressComoRouteImport } from './routes/api/user/by-address/$address/como'
-import { Route as ApiObjektsMetadataSlugSerialRouteImport } from './routes/api/objekts/metadata/$slug/$serial'
 import { Route as ApiBffV3UsersSearchRouteImport } from './routes/api/bff/v3/users/search'
 
 const TermsPrivacyRoute = TermsPrivacyRouteImport.update({
@@ -134,6 +135,11 @@ const AdminErasRoute = AdminErasRouteImport.update({
   path: '/eras',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminCollectionsRoute = AdminCollectionsRouteImport.update({
+  id: '/collections',
+  path: '/collections',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminCacheRoute = AdminCacheRouteImport.update({
   id: '/cache',
   path: '/cache',
@@ -142,6 +148,11 @@ const AdminCacheRoute = AdminCacheRouteImport.update({
 const AdminBandsRoute = AdminBandsRouteImport.update({
   id: '/bands',
   path: '/bands',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminApiKeysRoute = AdminApiKeysRouteImport.update({
+  id: '/api-keys',
+  path: '/api-keys',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AtChar123usernameChar125TradesRoute =
@@ -234,12 +245,6 @@ const ApiUserByAddressAddressComoRoute =
     path: '/api/user/by-address/$address/como',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiObjektsMetadataSlugSerialRoute =
-  ApiObjektsMetadataSlugSerialRouteImport.update({
-    id: '/api/objekts/metadata/$slug/$serial',
-    path: '/api/objekts/metadata/$slug/$serial',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiBffV3UsersSearchRoute = ApiBffV3UsersSearchRouteImport.update({
   id: '/api/bff/v3/users/search',
   path: '/api/bff/v3/users/search',
@@ -255,8 +260,10 @@ export interface FileRoutesByFullPath {
   '/@{$username}/como': typeof AtChar123usernameChar125ComoRoute
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
+  '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/bands': typeof AdminBandsRoute
   '/admin/cache': typeof AdminCacheRoute
+  '/admin/collections': typeof AdminCollectionsRoute
   '/admin/eras': typeof AdminErasRoute
   '/admin/events': typeof AdminEventsRoute
   '/admin/notice': typeof AdminNoticeRoute
@@ -279,7 +286,6 @@ export interface FileRoutesByFullPath {
   '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
   '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
   '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchRoute
-  '/api/objekts/metadata/$slug/$serial': typeof ApiObjektsMetadataSlugSerialRoute
   '/api/user/by-address/$address/como': typeof ApiUserByAddressAddressComoRoute
   '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
   '/api/objekts/metadata/$slug/': typeof ApiObjektsMetadataSlugIndexRoute
@@ -292,8 +298,10 @@ export interface FileRoutesByTo {
   '/@{$username}/como': typeof AtChar123usernameChar125ComoRoute
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
+  '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/bands': typeof AdminBandsRoute
   '/admin/cache': typeof AdminCacheRoute
+  '/admin/collections': typeof AdminCollectionsRoute
   '/admin/eras': typeof AdminErasRoute
   '/admin/events': typeof AdminEventsRoute
   '/admin/notice': typeof AdminNoticeRoute
@@ -316,7 +324,6 @@ export interface FileRoutesByTo {
   '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
   '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
   '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchRoute
-  '/api/objekts/metadata/$slug/$serial': typeof ApiObjektsMetadataSlugSerialRoute
   '/api/user/by-address/$address/como': typeof ApiUserByAddressAddressComoRoute
   '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
   '/api/objekts/metadata/$slug': typeof ApiObjektsMetadataSlugIndexRoute
@@ -332,8 +339,10 @@ export interface FileRoutesById {
   '/@{$username}/como': typeof AtChar123usernameChar125ComoRoute
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
+  '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/bands': typeof AdminBandsRoute
   '/admin/cache': typeof AdminCacheRoute
+  '/admin/collections': typeof AdminCollectionsRoute
   '/admin/eras': typeof AdminErasRoute
   '/admin/events': typeof AdminEventsRoute
   '/admin/notice': typeof AdminNoticeRoute
@@ -356,7 +365,6 @@ export interface FileRoutesById {
   '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
   '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
   '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchRoute
-  '/api/objekts/metadata/$slug/$serial': typeof ApiObjektsMetadataSlugSerialRoute
   '/api/user/by-address/$address/como': typeof ApiUserByAddressAddressComoRoute
   '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
   '/api/objekts/metadata/$slug/': typeof ApiObjektsMetadataSlugIndexRoute
@@ -373,8 +381,10 @@ export interface FileRouteTypes {
     | '/@{$username}/como'
     | '/@{$username}/progress'
     | '/@{$username}/trades'
+    | '/admin/api-keys'
     | '/admin/bands'
     | '/admin/cache'
+    | '/admin/collections'
     | '/admin/eras'
     | '/admin/events'
     | '/admin/notice'
@@ -397,7 +407,6 @@ export interface FileRouteTypes {
     | '/api/objekt-list/for-user/$identifier'
     | '/api/objekts/by-slug/$slug'
     | '/api/bff/v3/users/search'
-    | '/api/objekts/metadata/$slug/$serial'
     | '/api/user/by-address/$address/como'
     | '/api/user/by-address/$address/stats'
     | '/api/objekts/metadata/$slug/'
@@ -410,8 +419,10 @@ export interface FileRouteTypes {
     | '/@{$username}/como'
     | '/@{$username}/progress'
     | '/@{$username}/trades'
+    | '/admin/api-keys'
     | '/admin/bands'
     | '/admin/cache'
+    | '/admin/collections'
     | '/admin/eras'
     | '/admin/events'
     | '/admin/notice'
@@ -434,7 +445,6 @@ export interface FileRouteTypes {
     | '/api/objekt-list/for-user/$identifier'
     | '/api/objekts/by-slug/$slug'
     | '/api/bff/v3/users/search'
-    | '/api/objekts/metadata/$slug/$serial'
     | '/api/user/by-address/$address/como'
     | '/api/user/by-address/$address/stats'
     | '/api/objekts/metadata/$slug'
@@ -449,8 +459,10 @@ export interface FileRouteTypes {
     | '/@{$username}/como'
     | '/@{$username}/progress'
     | '/@{$username}/trades'
+    | '/admin/api-keys'
     | '/admin/bands'
     | '/admin/cache'
+    | '/admin/collections'
     | '/admin/eras'
     | '/admin/events'
     | '/admin/notice'
@@ -473,7 +485,6 @@ export interface FileRouteTypes {
     | '/api/objekt-list/for-user/$identifier'
     | '/api/objekts/by-slug/$slug'
     | '/api/bff/v3/users/search'
-    | '/api/objekts/metadata/$slug/$serial'
     | '/api/user/by-address/$address/como'
     | '/api/user/by-address/$address/stats'
     | '/api/objekts/metadata/$slug/'
@@ -502,7 +513,6 @@ export interface RootRouteChildren {
   ApiObjektListForUserIdentifierRoute: typeof ApiObjektListForUserIdentifierRoute
   ApiObjektsBySlugSlugRoute: typeof ApiObjektsBySlugSlugRoute
   ApiBffV3UsersSearchRoute: typeof ApiBffV3UsersSearchRoute
-  ApiObjektsMetadataSlugSerialRoute: typeof ApiObjektsMetadataSlugSerialRoute
   ApiUserByAddressAddressComoRoute: typeof ApiUserByAddressAddressComoRoute
   ApiUserByAddressAddressStatsRoute: typeof ApiUserByAddressAddressStatsRoute
   ApiObjektsMetadataSlugIndexRoute: typeof ApiObjektsMetadataSlugIndexRoute
@@ -630,6 +640,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminErasRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/collections': {
+      id: '/admin/collections'
+      path: '/collections'
+      fullPath: '/admin/collections'
+      preLoaderRoute: typeof AdminCollectionsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/cache': {
       id: '/admin/cache'
       path: '/cache'
@@ -642,6 +659,13 @@ declare module '@tanstack/react-router' {
       path: '/bands'
       fullPath: '/admin/bands'
       preLoaderRoute: typeof AdminBandsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/api-keys': {
+      id: '/admin/api-keys'
+      path: '/api-keys'
+      fullPath: '/admin/api-keys'
+      preLoaderRoute: typeof AdminApiKeysRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/@{$username}/trades': {
@@ -756,13 +780,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiUserByAddressAddressComoRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/objekts/metadata/$slug/$serial': {
-      id: '/api/objekts/metadata/$slug/$serial'
-      path: '/api/objekts/metadata/$slug/$serial'
-      fullPath: '/api/objekts/metadata/$slug/$serial'
-      preLoaderRoute: typeof ApiObjektsMetadataSlugSerialRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/bff/v3/users/search': {
       id: '/api/bff/v3/users/search'
       path: '/api/bff/v3/users/search'
@@ -798,8 +815,10 @@ const AtChar123usernameChar125RouteRouteWithChildren =
   )
 
 interface AdminRouteRouteChildren {
+  AdminApiKeysRoute: typeof AdminApiKeysRoute
   AdminBandsRoute: typeof AdminBandsRoute
   AdminCacheRoute: typeof AdminCacheRoute
+  AdminCollectionsRoute: typeof AdminCollectionsRoute
   AdminErasRoute: typeof AdminErasRoute
   AdminEventsRoute: typeof AdminEventsRoute
   AdminNoticeRoute: typeof AdminNoticeRoute
@@ -807,8 +826,10 @@ interface AdminRouteRouteChildren {
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminApiKeysRoute: AdminApiKeysRoute,
   AdminBandsRoute: AdminBandsRoute,
   AdminCacheRoute: AdminCacheRoute,
+  AdminCollectionsRoute: AdminCollectionsRoute,
   AdminErasRoute: AdminErasRoute,
   AdminEventsRoute: AdminEventsRoute,
   AdminNoticeRoute: AdminNoticeRoute,
@@ -842,7 +863,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiObjektListForUserIdentifierRoute: ApiObjektListForUserIdentifierRoute,
   ApiObjektsBySlugSlugRoute: ApiObjektsBySlugSlugRoute,
   ApiBffV3UsersSearchRoute: ApiBffV3UsersSearchRoute,
-  ApiObjektsMetadataSlugSerialRoute: ApiObjektsMetadataSlugSerialRoute,
   ApiUserByAddressAddressComoRoute: ApiUserByAddressAddressComoRoute,
   ApiUserByAddressAddressStatsRoute: ApiUserByAddressAddressStatsRoute,
   ApiObjektsMetadataSlugIndexRoute: ApiObjektsMetadataSlugIndexRoute,

@@ -5,7 +5,7 @@ import type {
 } from "@apollo/cosmo/types/common";
 import { asc, between, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import type { PgColumn, PgSelect } from "drizzle-orm/pg-core";
-import { collections, objekts } from "../db/indexer/schema";
+import { collections, members, objekts } from "../db/indexer/schema";
 
 /**
  * Sorting for user collections.
@@ -24,6 +24,18 @@ export function withCollectionSort<T extends PgSelect>(qb: T, sort: ValidSort) {
       return qb.orderBy(asc(objekts.serial), asc(objekts.id));
     case "serialDesc":
       return qb.orderBy(desc(objekts.serial), asc(objekts.id));
+    case "memberAsc":
+      return qb.orderBy(
+        sql`${members.sortOrder} asc nulls last`,
+        asc(collections.collectionNo),
+        asc(collections.id),
+      );
+    case "memberDesc":
+      return qb.orderBy(
+        sql`${members.sortOrder} desc nulls last`,
+        asc(collections.collectionNo),
+        asc(collections.id),
+      );
   }
 }
 
@@ -44,6 +56,18 @@ export function withObjektIndexSort<T extends PgSelect>(
       return qb.orderBy(asc(collections.collectionNo), asc(collections.id));
     case "noDescending":
       return qb.orderBy(desc(collections.collectionNo), asc(collections.id));
+    case "memberAsc":
+      return qb.orderBy(
+        sql`${members.sortOrder} asc nulls last`,
+        asc(collections.collectionNo),
+        asc(collections.id),
+      );
+    case "memberDesc":
+      return qb.orderBy(
+        sql`${members.sortOrder} desc nulls last`,
+        asc(collections.collectionNo),
+        asc(collections.id),
+      );
   }
 }
 
@@ -92,8 +116,10 @@ export function withOnlineType(onlineTypes: ValidOnlineType[]) {
 /**
  * Filter by member.
  */
-export function withMember(member: string | null | undefined) {
-  return member ? [eq(collections.member, member)] : [];
+export function withMember(members: string[] | null | undefined) {
+  return members && members.length > 0
+    ? [inArray(collections.member, members)]
+    : [];
 }
 
 /**

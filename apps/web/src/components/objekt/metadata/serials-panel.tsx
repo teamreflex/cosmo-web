@@ -3,7 +3,8 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useObjektSerial } from "@/hooks/use-objekt-serial";
 import { m } from "@/i18n/messages";
-import type { SerialObjekt, SerialTransfer } from "@/lib/universal/objekts";
+import { objektSerialQuery } from "@/lib/queries/objekt-queries";
+import type { SerialTransfer } from "@/lib/universal/objekts";
 import { Addresses, isEqual } from "@apollo/util";
 import {
   IconChevronDown,
@@ -16,7 +17,6 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { ofetch } from "ofetch";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useDebounceValue } from "usehooks-ts";
@@ -113,19 +113,9 @@ type ContentProps = {
 };
 
 function Content(props: ContentProps) {
-  const {
-    data: { result },
-  } = useSuspenseQuery({
-    queryKey: ["objekt-serial", props.slug, props.serial],
-    queryFn: ({ signal }) =>
-      ofetch<{ result: SerialObjekt | null }>(
-        `/api/objekts/metadata/${props.slug}/${props.serial}`,
-        {
-          signal,
-        },
-      ),
-    retry: 1,
-  });
+  const { data: result } = useSuspenseQuery(
+    objektSerialQuery(props.slug, props.serial),
+  );
 
   if (!result) {
     return (

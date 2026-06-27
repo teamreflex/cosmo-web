@@ -1,6 +1,7 @@
 import { toPublicUser } from "@/lib/server/auth.server";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
+import { collections, members } from "@/lib/server/db/indexer/schema";
 import type { Collection } from "@/lib/server/db/indexer/schema";
 import {
   authenticatedMiddleware,
@@ -18,10 +19,10 @@ import type {
 } from "@/lib/universal/lists";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import {
-  addObjektToWantListSchema,
   addObjektsToHaveListSchema,
   addObjektsToListSchema,
   addObjektsToSaleListSchema,
+  addObjektsToWantListSchema,
   createObjektListSchema,
   deleteObjektListSchema,
   findTradePartnersSchema,
@@ -31,15 +32,22 @@ import {
   updateObjektListSchema,
 } from "@/lib/universal/schema/objekt-list";
 import { sanitizeUuid } from "@/lib/utils";
-import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import { objektListEntries, objektLists } from "@apollo/database/web/schema";
 import type { ObjektListEntry } from "@apollo/database/web/types";
 import { redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { and, countDistinct, desc, eq, isNotNull, ne, sql } from "drizzle-orm";
+import {
+  and,
+  countDistinct,
+  desc,
+  eq,
+  inArray,
+  isNotNull,
+  ne,
+  sql,
+} from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import * as z from "zod";
-import { $fetchArtists } from "./artists";
 import {
   assertOwnsTokensMulti,
   fireHaveAddNotifications,
@@ -612,15 +620,19 @@ export const $addObjektsToHaveList = createServerFn({ method: "POST" })
   });
 
 /**
- * Add an objekt to a want list. Skips ownership verification (you can want
- * anything). Fires mutual-viability notifications to other users when the
- * list is trade-active and discoverable.
+ * Add one or more objekts to a want list. Skips ownership verification (you can
+ * want anything). Existing collections stack quantity; new ones insert at one.
+ * Fires mutual-viability notifications when the list is trade-active and
+ * discoverable.
  */
-export const $addObjektToWantList = createServerFn({ method: "POST" })
-  .validator(addObjektToWantListSchema)
+export const $addObjektsToWantList = createServerFn({ method: "POST" })
+  .validator(addObjektsToWantListSchema)
   .middleware([cosmoMiddleware])
   .handler(async ({ data, context }) => {
     const userId = context.session.user.id;
+
+    // selections are keyed by slug client-side, but guard against duplicates
+    const objekts = [...new Map(data.objekts.map((o) => [o.slug, o])).values()];
 
     await db.transaction(async (tx) => {
       // assert ownership of the list and pull the linked list
@@ -644,38 +656,49 @@ export const $addObjektToWantList = createServerFn({ method: "POST" })
 
       const isTradeActive = parentList.linkingHaveList !== null;
 
-      const existing = await tx.query.objektListEntries.findFirst({
+      const existing = await tx.query.objektListEntries.findMany({
         where: {
           objektListId: data.objektListId,
-          collectionId: data.slug,
+          collectionId: { in: objekts.map((o) => o.slug) },
         },
+        columns: { id: true, collectionId: true },
       });
+      const existingSlugs = new Set(existing.map((e) => e.collectionId));
 
-      if (existing) {
+      if (existing.length > 0) {
         await tx
           .update(objektListEntries)
-          .set({ quantity: existing.quantity + 1 })
-          .where(eq(objektListEntries.id, existing.id));
-      } else {
-        await tx.insert(objektListEntries).values({
-          objektListId: data.objektListId,
-          collectionId: data.slug,
-          quantity: 1,
-        });
+          .set({ quantity: sql`${objektListEntries.quantity} + 1` })
+          .where(
+            inArray(
+              objektListEntries.id,
+              existing.map((e) => e.id),
+            ),
+          );
+      }
+
+      const fresh = objekts.filter((o) => !existingSlugs.has(o.slug));
+      if (fresh.length > 0) {
+        await tx.insert(objektListEntries).values(
+          fresh.map((o) => ({
+            objektListId: data.objektListId,
+            collectionId: o.slug,
+            quantity: 1,
+          })),
+        );
       }
 
       if (parentList.discoverable && isTradeActive) {
         await fireWantAddNotifications(tx, {
           sourceUserId: userId,
           sourceListId: data.objektListId,
-          slug: data.slug,
-          collectionName: data.collectionName,
+          collections: objekts,
         });
       }
     });
 
-    // want lists stack quantity, so an add always counts as one inserted
-    return { inserted: 1 };
+    // want lists stack quantity, so every add counts toward the inserted total
+    return { inserted: objekts.length };
   });
 
 /**
@@ -1167,36 +1190,29 @@ export const $generateDiscordList = createServerFn({ method: "POST" })
       throw new ExpectedError("discord_list_empty");
     }
 
-    const collections = await indexer.query.collections.findMany({
-      where: {
-        slug: {
-          in: Array.from(unique),
-        },
-      },
-      columns: {
-        slug: true,
-        season: true,
-        collectionNo: true,
-        member: true,
-        artist: true,
-      },
-    });
-
-    // get artists for member ordering
-    const { artists } = await $fetchArtists();
-    const artistsArray = Object.values(artists);
+    // join the canonical member sort order onto each collection for grouping
+    const listCollections = await indexer
+      .select({
+        slug: collections.slug,
+        season: collections.season,
+        collectionNo: collections.collectionNo,
+        member: collections.member,
+        artist: collections.artist,
+        memberSortOrder: members.sortOrder,
+      })
+      .from(collections)
+      .leftJoin(members, eq(members.name, collections.member))
+      .where(inArray(collections.slug, Array.from(unique)));
 
     // map into discord format
     const haveCollections = format(
-      collections,
+      listCollections,
       have.entries,
-      artistsArray,
       have.type === "sale" ? have.currency : null,
     );
     const wantCollections = format(
-      collections,
+      listCollections,
       want.entries,
-      artistsArray,
       want.type === "sale" ? want.currency : null,
     );
 
@@ -1214,7 +1230,9 @@ export const $generateDiscordList = createServerFn({ method: "POST" })
 type CollectionSubset = Pick<
   Collection,
   "slug" | "member" | "season" | "collectionNo" | "artist"
->;
+> & {
+  memberSortOrder: number | null;
+};
 
 type CollectionWithEntry = CollectionSubset & {
   quantity?: number;
@@ -1263,21 +1281,12 @@ function formatMemberCollections(
  * Format a list of collections and entries into a string, grouped and sorted by member.
  */
 function format(
-  collections: CollectionSubset[],
+  collectionList: CollectionSubset[],
   entries: ObjektListEntry[],
-  artists: CosmoArtistWithMembersBFF[],
   currency: string | null,
 ): string[] {
   // create a map for quick collection lookup by slug
-  const collectionsMap = new Map(collections.map((c) => [c.slug, c]));
-
-  // create member order map maintaining artist grouping for sorting
-  const memberOrderMap: Record<string, number> = {};
-  artists.forEach((artist, artistIndex) => {
-    artist.artistMembers.forEach((member) => {
-      memberOrderMap[member.name] = (artistIndex + 1) * 1000 + member.order;
-    });
-  });
+  const collectionsMap = new Map(collectionList.map((c) => [c.slug, c]));
 
   // group collections by member, carrying entry metadata
   const groupedCollectionsByMember = new Map<string, CollectionWithEntry[]>();
@@ -1295,11 +1304,11 @@ function format(
     }
   }
 
-  // sort members based on the order map
+  // sort members by their canonical indexer sort order (carried on each row)
   return Array.from(groupedCollectionsByMember.entries())
-    .sort(([memberA], [memberB]) => {
-      const orderA = memberOrderMap[memberA] ?? Number.MAX_SAFE_INTEGER;
-      const orderB = memberOrderMap[memberB] ?? Number.MAX_SAFE_INTEGER;
+    .sort(([, a], [, b]) => {
+      const orderA = a[0]?.memberSortOrder ?? Number.MAX_SAFE_INTEGER;
+      const orderB = b[0]?.memberSortOrder ?? Number.MAX_SAFE_INTEGER;
       return orderA - orderB;
     })
     .map(([member, memberCollections]) => {

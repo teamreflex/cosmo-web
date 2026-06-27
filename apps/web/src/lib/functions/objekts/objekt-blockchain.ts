@@ -1,6 +1,6 @@
 import { indexer } from "@/lib/server/db/indexer";
 import type { Collection, Objekt } from "@/lib/server/db/indexer/schema";
-import { collections, objekts } from "@/lib/server/db/indexer/schema";
+import { collections, members, objekts } from "@/lib/server/db/indexer/schema";
 import {
   withArtist,
   withClass,
@@ -14,7 +14,7 @@ import {
   withTransferable,
 } from "@/lib/server/objekts/filters.server";
 import { userCollectionBackendSchema } from "@/lib/universal/parsers";
-import type { ValidSort } from "@apollo/cosmo/types/common";
+import { isMemberSort, type ValidSort } from "@apollo/cosmo/types/common";
 import { Addresses, isEqual } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, sql } from "drizzle-orm";
@@ -92,6 +92,9 @@ async function fetchObjekts(
     .$dynamic();
 
   const sort = isSpin ? clampSpinSort(data.sort) : (data.sort ?? "newest");
+  if (isMemberSort(sort)) {
+    query = query.leftJoin(members, eq(members.name, collections.member));
+  }
   query = withCollectionSort(query, sort);
   query = query.limit(PER_PAGE).offset(data.page * PER_PAGE);
 

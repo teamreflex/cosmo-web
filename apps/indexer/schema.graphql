@@ -75,3 +75,14 @@ type ListEventOutbox @entity {
   timestamp: DateTime!
   createdAt: DateTime! @index
 }
+
+type Member @entity {
+  id: ID! # uuid
+  name: String! @unique
+  cosmoId: Int!
+  artistId: String!
+  alias: String!
+  units: [String!]!
+  primaryColorHex: String!
+  sortOrder: Int!
+}

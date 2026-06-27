@@ -8,7 +8,7 @@ import { cosmoAccounts, pins } from "@apollo/database/web/schema";
 import { isAddress } from "@apollo/util";
 import { pinCacheKey } from "@apollo/util-server";
 import { createServerFn } from "@tanstack/react-start";
-import { desc, eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import * as z from "zod";
 
 interface ObjektWithCollection extends Objekt {
@@ -36,7 +36,7 @@ export const $fetchPins = createServerFn({ method: "GET" })
         .innerJoin(cosmoAccounts, eq(pins.address, cosmoAccounts.address))
         // decoding username from URL
         .where(eq(column, decodeURIComponent(data.username)))
-        .orderBy(desc(pins.id));
+        .orderBy(asc(pins.position));
 
       if (rows.length === 0) return [];
 

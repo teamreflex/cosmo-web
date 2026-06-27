@@ -116,7 +116,9 @@ function SaleListBody({
   const queryClient = useQueryClient();
   const { data: owned } = useSuspenseQuery({
     queryKey: ["owned-serials", collectionId],
-    queryFn: () => $fetchOwnedSerials({ data: { collectionId } }),
+    queryFn: () =>
+      $fetchOwnedSerials({ data: { collectionIds: [collectionId] } }),
+    select: (data) => data[collectionId] ?? [],
   });
 
   const mutation = useMutation({
@@ -293,10 +295,13 @@ function SaleRow({ index, serial, currency, control }: SaleRowProps) {
             disabled={disabled}
             aria-invalid={fieldState.invalid}
             onChange={(e) => {
-              const next = e.target.valueAsNumber;
-              price.onChange(
-                e.target.value === "" || Number.isNaN(next) ? null : next,
-              );
+              const next =
+                e.target.value === "" || Number.isNaN(e.target.valueAsNumber)
+                  ? null
+                  : e.target.valueAsNumber;
+              price.onChange(next);
+              // typing a price implies the serial should be listed
+              if (next !== null) selected.onChange(true);
             }}
             className="[appearance:textfield] pr-11 text-right tabular-nums [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             aria-label={`${m.list_sale_price()} (${currency})`}

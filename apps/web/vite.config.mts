@@ -28,6 +28,9 @@ export default defineConfig({
   ssr: {
     external: ["bun"],
   },
+  optimizeDeps: {
+    exclude: ["bun"],
+  },
   plugins: [
     devtools({
       removeDevtoolsOnBuild: true,
