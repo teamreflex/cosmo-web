@@ -89,6 +89,7 @@ const updates = [
       "Added: Sorting by member debut order",
       "Added: Objekt multi-select / add-to-list to the collections page",
       "Added: Selecting multiple members at once, including cross-group",
+      "Fixed: Sorting now applies when using the search bar",
     ],
   },
   {

@@ -44,7 +44,19 @@ export const setupTypesenseCollection = Effect.gen(function* () {
   });
 
   if (existing) {
-    return void 0;
+    // 260628 - need to recreate the schema if new fields don't exist
+    const upToDate =
+      existing.fields?.some((f) => f.name === "memberSortOrder") &&
+      existing.fields?.some((f) => f.name === "collectionNo" && f.sort);
+
+    if (upToDate) {
+      return void 0;
+    }
+
+    yield* Effect.logInfo(`Schema outdated, recreating: ${COLLECTION_NAME}`);
+    yield* Effect.promise(async () => {
+      await typesense.collections(COLLECTION_NAME).delete();
+    });
   }
 
   yield* Effect.promise(async () => {
@@ -73,6 +85,13 @@ export const setupTypesenseCollection = Effect.gen(function* () {
           facet: true,
         },
         {
+          // numeric COSMO member order, sorted on by the memberAsc/memberDesc
+          // sorts. optional because unsynced members have no order yet.
+          name: "memberSortOrder",
+          type: "int32",
+          optional: true,
+        },
+        {
           name: "season",
           type: "string",
           index: true,
@@ -88,6 +107,7 @@ export const setupTypesenseCollection = Effect.gen(function* () {
           name: "collectionNo",
           type: "string",
           index: true,
+          sort: true,
         },
         {
           name: "description",
