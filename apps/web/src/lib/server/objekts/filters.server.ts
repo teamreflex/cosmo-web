@@ -27,13 +27,13 @@ export function withCollectionSort<T extends PgSelect>(qb: T, sort: ValidSort) {
     case "memberAsc":
       return qb.orderBy(
         sql`${members.sortOrder} asc nulls last`,
-        asc(collections.collectionNo),
+        desc(collections.createdAt),
         asc(collections.id),
       );
     case "memberDesc":
       return qb.orderBy(
         sql`${members.sortOrder} desc nulls last`,
-        asc(collections.collectionNo),
+        desc(collections.createdAt),
         asc(collections.id),
       );
   }
@@ -59,13 +59,13 @@ export function withObjektIndexSort<T extends PgSelect>(
     case "memberAsc":
       return qb.orderBy(
         sql`${members.sortOrder} asc nulls last`,
-        asc(collections.collectionNo),
+        desc(collections.createdAt),
         asc(collections.id),
       );
     case "memberDesc":
       return qb.orderBy(
         sql`${members.sortOrder} desc nulls last`,
-        asc(collections.collectionNo),
+        desc(collections.createdAt),
         asc(collections.id),
       );
   }
