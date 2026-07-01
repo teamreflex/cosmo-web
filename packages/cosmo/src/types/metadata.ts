@@ -70,7 +70,7 @@ export function normalizeV3(
       tokenId: tokenId,
       // not possible to get from v3
       backImage: "",
-      accentColor: "",
+      accentColor: metadata.background_color, // usually the same as bg, so remap here
       textColor: "#ffffff",
       objektNo: 0,
       tokenAddress: "0x0000000000000000000000000000000000000000",
