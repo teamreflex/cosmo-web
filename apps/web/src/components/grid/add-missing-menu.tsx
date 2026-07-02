@@ -24,11 +24,12 @@ type Props = {
   member: string;
   season: string;
   deficits: EditionLedger["deficits"];
+  label: string;
 };
 
 /**
- * Adds the objekts missing for the next grid of an edition to one of the
- * viewer's want lists.
+ * Adds the objekts missing to reach the edition's target grid count to one of
+ * the viewer's want lists.
  */
 export default function AddMissingMenu(props: Props) {
   const [open, setOpen] = useState(false);
@@ -36,20 +37,18 @@ export default function AddMissingMenu(props: Props) {
   const wantLists =
     account?.objektLists.filter((list) => list.type === "want") ?? [];
 
+  const totalNeeded = props.deficits.reduce((acc, d) => acc + d.needed, 0);
+
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="default" size="xs">
           <IconPlaylistAdd className="size-3.5" />
-          {m.grid_add_missing()} ({props.deficits.length})
+          {m.grid_add_missing()} ({totalNeeded})
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-fit">
-        <DropdownMenuLabel>
-          {m.grid_missing_for_next({
-            count: props.deficits.length.toString(),
-          })}
-        </DropdownMenuLabel>
+        <DropdownMenuLabel>{props.label}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           {wantLists.length === 0 && (
@@ -88,6 +87,7 @@ function WantListItem(props: Props & { list: ObjektList; onDone: () => void }) {
           objekts: props.deficits.map((deficit) => ({
             slug: deficit.slug,
             collectionName: `${props.season} ${props.member} ${deficit.collectionNo}${deficit.slug.slice(-1).toUpperCase()}`,
+            quantity: deficit.needed,
           })),
         },
       }),

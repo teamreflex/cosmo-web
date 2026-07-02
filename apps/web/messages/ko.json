@@ -686,6 +686,10 @@
   "grid_completable": "{count}회 완성 가능",
   "grid_rewards": "보유 SCO",
   "grid_missing_for_next": "다음 그리드까지 {count}장 부족",
+  "grid_missing_for_target": "그리드 {target}개까지 {count}장 부족",
+  "grid_target": "목표",
+  "grid_target_increase": "목표 그리드 늘리기",
+  "grid_target_decrease": "목표 그리드 줄이기",
   "grid_add_missing": "부족한 오브젝트를 원트 리스트에 추가",
   "grid_include_nontransferable": "전송 불가 포함",
   "grid_include_dialog_title": "전송 불가 오브젝트 포함",
@@ -703,6 +707,7 @@
   "grid_help_desc_2": "전송 가능한 오브젝트만 그리드에 집계됩니다. 전송 불가 이벤트 보상은 에디션별로 직접 포함할 수 있으며 현재 화면에만 반영됩니다.",
   "grid_help_desc_3": "리워드는 각 그리드 보상 스페셜 클래스 오브젝트의 보유 수를 보여줍니다. 그리드를 완성하면 두 가지 중 하나가 무작위로 지급됩니다.",
   "grid_help_desc_4": "idntt의 경우 서로 다른 두 멤버의 스페셜로 그리드하면 해당 페어의 유닛 오브젝트가 생성됩니다.",
+  "grid_help_desc_5": "에디션의 목표를 높이면 여러 그리드를 계획하고 필요한 총 장수를 확인할 수 있습니다. 그리드 완성 시 스페셜은 무작위로 지급되므로, 두 번 완성해도 두 종류를 모두 받는다는 보장은 없습니다.",
 
   "_comment_transfer": "Transfer strings",
   "transfer_unknown": "알 수 없음",

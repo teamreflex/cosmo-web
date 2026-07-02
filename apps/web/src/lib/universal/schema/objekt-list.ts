@@ -133,6 +133,8 @@ export const addObjektsToWantListSchema = z.object({
       z.object({
         slug: z.string(),
         collectionName: z.string(),
+        // want-list entries stack, so one add can represent multiple copies
+        quantity: z.number().int().min(1).max(100).default(1),
       }),
     )
     .min(1)

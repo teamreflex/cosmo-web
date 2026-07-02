@@ -688,6 +688,10 @@
   "grid_completable": "{count} completable",
   "grid_rewards": "SCO owned",
   "grid_missing_for_next": "{count} missing for next grid",
+  "grid_missing_for_target": "{count} missing for {target} grids",
+  "grid_target": "Target",
+  "grid_target_increase": "Increase target grids",
+  "grid_target_decrease": "Decrease target grids",
   "grid_add_missing": "Add missing to want list",
   "grid_include_nontransferable": "Include non-transferable",
   "grid_include_dialog_title": "Include non-transferable objekts",
@@ -705,6 +709,7 @@
   "grid_help_desc_2": "Only transferable objekts count towards grids. Non-transferable event rewards can be included manually per edition, which only affects your current view.",
   "grid_help_desc_3": "Rewards show how many of each grid reward Special class objekt you own. Completing a grid grants one of the two at random.",
   "grid_help_desc_4": "For idntt, gridding one Special from two different members produces that pairing's Unit objekt.",
+  "grid_help_desc_5": "Raise an edition's target to plan multiple grids and see the total copies needed. Each completion still grants a random Special, so completing two grids does not guarantee both.",
 
   "_comment_transfer": "Transfer strings",
   "transfer_unknown": "Unknown",

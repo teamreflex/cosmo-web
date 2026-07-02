@@ -123,11 +123,17 @@ export type RewardPool = {
   owned: number;
 };
 
+export type GridDeficit = {
+  collectionNo: string;
+  slug: string;
+  needed: number;
+};
+
 export type EditionLedger = {
   edition: 1 | 2 | 3;
   numbers: NumberPool[];
   completable: number;
-  deficits: { collectionNo: string; slug: string }[];
+  deficits: GridDeficit[];
   rewards: [RewardPool, RewardPool];
 };
 
@@ -420,17 +426,28 @@ export function buildGridLedger(input: GridLedgerInput): GridLedger {
 }
 
 /**
+ * The copies still needed per number pool to complete `target` grids in total.
+ */
+export function deficitsFor(
+  numbers: NumberPool[],
+  target: number,
+): GridDeficit[] {
+  return numbers
+    .filter((n) => n.usable < target)
+    .map((n) => ({
+      collectionNo: n.collectionNo,
+      slug: n.slug,
+      needed: target - n.usable,
+    }));
+}
+
+/**
  * Derive the completable count and next-grid deficits for an edition's pools.
  * The deficit for grid #completable+1 is always exactly one copy per number.
  */
 function completion(numbers: NumberPool[]) {
   const completable = Math.min(...numbers.map((n) => n.usable));
-  return {
-    completable,
-    deficits: numbers
-      .filter((n) => n.usable === completable)
-      .map((n) => ({ collectionNo: n.collectionNo, slug: n.slug })),
-  };
+  return { completable, deficits: deficitsFor(numbers, completable + 1) };
 }
 
 function rewardPool(

@@ -686,6 +686,10 @@
   "grid_completable": "{count}回完成可能",
   "grid_rewards": "所有SCO",
   "grid_missing_for_next": "次のグリッドまであと{count}枚",
+  "grid_missing_for_target": "グリッド{target}回まであと{count}枚",
+  "grid_target": "目標",
+  "grid_target_increase": "目標グリッドを増やす",
+  "grid_target_decrease": "目標グリッドを減らす",
   "grid_add_missing": "不足分をウォントリストに追加",
   "grid_include_nontransferable": "転送不可を含める",
   "grid_include_dialog_title": "転送不可のオブジェクトを含める",
@@ -703,6 +707,7 @@
   "grid_help_desc_2": "グリッドには転送可能なオブジェクトのみがカウントされます。転送不可のイベント特典はエディションごとに手動で含めることができ、現在の表示のみに反映されます。",
   "grid_help_desc_3": "リワードは、各グリッド報酬のスペシャルクラスオブジェクトの所有数を表示します。グリッドを完成させると2種類のうち1つがランダムで付与されます。",
   "grid_help_desc_4": "idnttの場合、異なる2人のメンバーのスペシャルでグリッドすると、そのペアのユニットオブジェクトが生成されます。",
+  "grid_help_desc_5": "エディションの目標を上げると、複数のグリッドに必要な合計枚数を確認できます。グリッド完成時のスペシャルはランダムなので、2回完成しても両方が手に入るとは限りません。",
 
   "_comment_transfer": "Transfer strings",
   "transfer_unknown": "不明",

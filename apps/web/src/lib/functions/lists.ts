@@ -621,9 +621,9 @@ export const $addObjektsToHaveList = createServerFn({ method: "POST" })
 
 /**
  * Add one or more objekts to a want list. Skips ownership verification (you can
- * want anything). Existing collections stack quantity; new ones insert at one.
- * Fires mutual-viability notifications when the list is trade-active and
- * discoverable.
+ * want anything). Existing collections stack by the requested quantity (default
+ * one); new ones insert at it. Fires mutual-viability notifications when the
+ * list is trade-active and discoverable.
  */
 export const $addObjektsToWantList = createServerFn({ method: "POST" })
   .validator(addObjektsToWantListSchema)
@@ -665,16 +665,20 @@ export const $addObjektsToWantList = createServerFn({ method: "POST" })
       });
       const existingSlugs = new Set(existing.map((e) => e.collectionId));
 
-      if (existing.length > 0) {
+      // stack existing entries in bulk, grouped by the quantity being added
+      const quantities = new Map(objekts.map((o) => [o.slug, o.quantity]));
+      const byQuantity = new Map<number, string[]>();
+      for (const entry of existing) {
+        const quantity = quantities.get(entry.collectionId) ?? 1;
+        const ids = byQuantity.get(quantity) ?? [];
+        ids.push(entry.id);
+        byQuantity.set(quantity, ids);
+      }
+      for (const [quantity, ids] of byQuantity) {
         await tx
           .update(objektListEntries)
-          .set({ quantity: sql`${objektListEntries.quantity} + 1` })
-          .where(
-            inArray(
-              objektListEntries.id,
-              existing.map((e) => e.id),
-            ),
-          );
+          .set({ quantity: sql`${objektListEntries.quantity} + ${quantity}` })
+          .where(inArray(objektListEntries.id, ids));
       }
 
       const fresh = objekts.filter((o) => !existingSlugs.has(o.slug));
@@ -683,7 +687,7 @@ export const $addObjektsToWantList = createServerFn({ method: "POST" })
           fresh.map((o) => ({
             objektListId: data.objektListId,
             collectionId: o.slug,
-            quantity: 1,
+            quantity: o.quantity,
           })),
         );
       }

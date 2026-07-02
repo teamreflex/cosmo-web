@@ -688,6 +688,10 @@
   "grid_completable": "{count} complétable(s)",
   "grid_rewards": "SCO possédés",
   "grid_missing_for_next": "{count} manquant(s) pour le prochain grid",
+  "grid_missing_for_target": "{count} manquant(s) pour {target} grids",
+  "grid_target": "Objectif",
+  "grid_target_increase": "Augmenter l'objectif de grids",
+  "grid_target_decrease": "Réduire l'objectif de grids",
   "grid_add_missing": "Ajouter les manquants à une liste de souhaits",
   "grid_include_nontransferable": "Inclure les non-transférables",
   "grid_include_dialog_title": "Inclure les objekts non-transférables",
@@ -705,6 +709,7 @@
   "grid_help_desc_2": "Seuls les objekts transférables comptent pour les grids. Les récompenses d'événements non-transférables peuvent être incluses manuellement par édition, ce qui n'affecte que votre affichage actuel.",
   "grid_help_desc_3": "Les récompenses indiquent combien d'objekts Special de récompense de grid vous possédez. Compléter un grid octroie l'un des deux au hasard.",
   "grid_help_desc_4": "Pour idntt, réaliser un grid avec un Special de deux membres différents produit l'objekt Unit de cette paire.",
+  "grid_help_desc_5": "Augmentez l'objectif d'une édition pour planifier plusieurs grids et voir le total de copies nécessaires. Chaque grid complété donne toujours un Special aléatoire, donc compléter deux grids ne garantit pas d'obtenir les deux.",
 
   "_comment_transfer": "Transfer strings",
   "transfer_unknown": "Inconnu",

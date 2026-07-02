@@ -36,6 +36,7 @@ export default function HelpDialog() {
             <p>{m.grid_help_desc_2()}</p>
             <p>{m.grid_help_desc_3()}</p>
             <p>{m.grid_help_desc_4()}</p>
+            <p>{m.grid_help_desc_5()}</p>
           </div>
         </div>
         <AlertDialogFooter>

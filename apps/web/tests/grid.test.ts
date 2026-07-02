@@ -11,6 +11,7 @@ import {
   applyGridOverrides,
   buildGridLedger,
   computeMaxUnits,
+  deficitsFor,
 } from "../src/lib/universal/grid";
 
 function catalogRow(
@@ -245,7 +246,7 @@ describe("buildGridLedger", () => {
     const edition = ledger.members[0]?.seasons[0]?.editions[0];
     expect(edition?.completable).toBe(1);
     expect(edition?.deficits).toEqual([
-      { collectionNo: "105", slug: "atom02-seoyeon-105z" },
+      { collectionNo: "105", slug: "atom02-seoyeon-105z", needed: 1 },
     ]);
   });
 
@@ -261,6 +262,27 @@ describe("buildGridLedger", () => {
     const edition = ledger.members[0]?.seasons[0]?.editions[0];
     expect(edition?.completable).toBe(2);
     expect(edition?.deficits).toHaveLength(8);
+  });
+
+  it("scales deficits to a multi-grid target via deficitsFor", () => {
+    const ledger = build({
+      artist: "tripleS",
+      catalog: fullSeasonCatalog("Atom02", "SeoYeon"),
+      owned: [
+        ownedRow("Atom02", "SeoYeon", "First", "101Z", true, 2),
+        ownedRow("Atom02", "SeoYeon", "First", "102Z", true, 1),
+      ],
+    });
+
+    const numbers = ledger.members[0]?.seasons[0]?.editions[0]?.numbers ?? [];
+    const deficits = deficitsFor(numbers, 2);
+
+    expect(deficits).toHaveLength(7);
+    expect(deficits.find((d) => d.collectionNo === "101")).toBeUndefined();
+    expect(deficits.find((d) => d.collectionNo === "102")?.needed).toBe(1);
+    expect(deficits.find((d) => d.collectionNo === "103")?.needed).toBe(2);
+    expect(deficitsFor(numbers, 1)).toHaveLength(6);
+    expect(deficitsFor(numbers, 0)).toHaveLength(0);
   });
 
   it("counts Z-designation rewards regardless of transferability, ignoring A copies", () => {
@@ -499,7 +521,7 @@ describe("applyGridOverrides", () => {
     const before = ledger.members[0]?.seasons[0]?.editions[0];
     expect(before?.completable).toBe(0);
     expect(before?.deficits).toEqual([
-      { collectionNo: "101", slug: "atom02-seoyeon-101z" },
+      { collectionNo: "101", slug: "atom02-seoyeon-101z", needed: 1 },
     ]);
 
     const adjusted = applyGridOverrides(ledger, new Set(["9001"]));
