@@ -142,6 +142,16 @@ export const progressFrontendSchema = cosmoSchema
   })
   .partial();
 
+// grid ledger frontend - one artist at a time, optional member focus
+export const gridFrontendSchema = cosmoSchema
+  .pick({
+    artist: true,
+  })
+  .extend({
+    member: z.string().nullish(),
+  })
+  .partial();
+
 // progress leaderboard backend
 export const progressLeaderboardBackendSchema = z.object({
   onlineType: z.enum(validOnlineTypes).nullish().default(null),

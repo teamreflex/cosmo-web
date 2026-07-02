@@ -1,373 +1,532 @@
+import type { ValidArtist } from "@apollo/cosmo/types/common";
 import { describe, expect, it } from "bun:test";
-import type { Collection } from "../src/lib/server/db/indexer/schema";
+import type {
+  GridCatalogRow,
+  GridLedgerInput,
+  GridMemberRef,
+  GridOwnedRow,
+  GridOwnedToken,
+} from "../src/lib/universal/grid";
 import {
-  buildCollectionLookupMap,
-  calculateGrids,
+  applyGridOverrides,
+  buildGridLedger,
+  computeMaxUnits,
 } from "../src/lib/universal/grid";
 
-// Helper to create mock collections
-function createCollection(
+function catalogRow(
   season: string,
   member: string,
+  className: string,
   collectionNo: string,
-): Collection {
+): GridCatalogRow {
   return {
-    id: `${season} ${member} ${collectionNo}`,
-    contract: "0x123",
-    createdAt: "1997-06-13T00:00:00.000Z",
-    slug: `${season}-${member}-${collectionNo}`,
-    collectionId: `${season} ${member} ${collectionNo}`,
     season,
     member,
-    artist: "artms",
+    class: className,
     collectionNo,
-    class: "First",
-    thumbnailImage: "thumb.jpg",
-    frontImage: "front.jpg",
-    backImage: "back.jpg",
-    backgroundColor: "#000000",
-    textColor: "#FFFFFF",
-    accentColor: "#FF0000",
-    comoAmount: 10,
-    onOffline: "online",
-    bandImageUrl: null,
-    frontMedia: null,
-    hasAudio: false,
+    slug: `${season}-${member}-${collectionNo}`.toLowerCase(),
   };
 }
 
-// Helper to create owned collection
-function createOwned(
+function ownedRow(
   season: string,
   member: string,
+  className: string,
   collectionNo: string,
   transferable: boolean,
-) {
+  count = 1,
+): GridOwnedRow {
   return {
-    collectionId: `${season} ${member} ${collectionNo}`,
-    transferable,
     season,
     member,
+    class: className,
     collectionNo,
+    transferable,
+    count,
   };
 }
 
-describe("calculateGrids", () => {
-  const allCollections: Collection[] = [
-    // JinSoul 1st edition (101-108)
-    ...["101z", "102z", "103z", "104z", "105z", "106z", "107z", "108z"].map(
-      (no) => createCollection("Atom01", "JinSoul", no),
+function token(
+  season: string,
+  member: string,
+  collectionNo: string,
+  tokenId: string,
+  serial: number,
+): GridOwnedToken {
+  return { season, member, collectionNo, tokenId, serial };
+}
+
+function range(from: number, to: number): string[] {
+  return Array.from({ length: to - from + 1 }, (_, i) => `${from + i}`);
+}
+
+/**
+ * Catalog for a full 3-edition tripleS/artms season: First 101Z-120Z and the
+ * standard Z-designation reward Specials.
+ */
+function fullSeasonCatalog(
+  season: string,
+  member: string,
+  rewards = ["201", "202", "203", "204", "205", "206"],
+): GridCatalogRow[] {
+  return [
+    ...range(101, 120).map((no) =>
+      catalogRow(season, member, "First", `${no}Z`),
     ),
-    // HeeJin 1st edition (101-108)
-    ...["101z", "102z", "103z", "104z", "105z", "106z", "107z", "108z"].map(
-      (no) => createCollection("Atom01", "HeeJin", no),
-    ),
-    // JinSoul 2nd edition (109-116)
-    ...["109z", "110z", "111z", "112z", "113z", "114z", "115z", "116z"].map(
-      (no) => createCollection("Atom01", "JinSoul", no),
-    ),
+    ...rewards.map((no) => catalogRow(season, member, "Special", `${no}Z`)),
   ];
-  const lookup = buildCollectionLookupMap(allCollections);
+}
 
-  it("should return empty array when no transferable objekts", () => {
-    const owned = [
-      createOwned("Atom01", "JinSoul", "101z", false),
-      createOwned("Atom01", "JinSoul", "102z", false),
-    ];
+const memberRefs: GridMemberRef[] = [
+  { name: "SeoYeon", alias: "S1", sortOrder: 1 },
+  { name: "JinSoul", alias: "JinSoul", sortOrder: 3 },
+  { name: "HeeJin", alias: "HeeJin", sortOrder: 1 },
+  { name: "DoHun", alias: "id1", sortOrder: 1 },
+  { name: "HeeJu", alias: "id2", sortOrder: 2 },
+  { name: "TaeIn", alias: "id4", sortOrder: 3 },
+];
 
-    const result = calculateGrids(owned, lookup);
-    expect(result).toHaveLength(0);
+function build(input: Partial<GridLedgerInput> & { artist: ValidArtist }) {
+  return buildGridLedger({
+    catalog: [],
+    owned: [],
+    nonTransferableTokens: [],
+    memberOrder: memberRefs,
+    ...input,
+  });
+}
+
+describe("buildGridLedger", () => {
+  it("derives all three editions for a full season and computes pools", () => {
+    const ledger = build({
+      artist: "tripleS",
+      catalog: fullSeasonCatalog("Atom02", "SeoYeon"),
+      owned: [
+        ...range(101, 108).map((no) =>
+          ownedRow("Atom02", "SeoYeon", "First", `${no}Z`, true),
+        ),
+        ownedRow("Atom02", "SeoYeon", "First", "109Z", true, 2),
+      ],
+    });
+
+    expect(ledger.members).toHaveLength(1);
+    expect(ledger.units).toBeNull();
+
+    const seasons = ledger.members[0]?.seasons;
+    expect(seasons).toHaveLength(1);
+
+    const editions = seasons?.[0]?.editions ?? [];
+    expect(editions.map((e) => e.edition)).toEqual([1, 2, 3]);
+    expect(editions[0]?.numbers).toHaveLength(8);
+    expect(editions[1]?.numbers).toHaveLength(8);
+    expect(editions[2]?.numbers).toHaveLength(4);
+
+    expect(editions[0]?.completable).toBe(1);
+    expect(editions[0]?.rewards.map((r) => r.collectionNo)).toEqual([
+      "201",
+      "202",
+    ]);
+    expect(editions[1]?.completable).toBe(0);
+    expect(
+      editions[1]?.numbers.find((n) => n.collectionNo === "109")?.usable,
+    ).toBe(2);
   });
 
-  it("should detect a complete grid (1 of each)", () => {
-    const owned = [
-      createOwned("Atom01", "JinSoul", "101z", true),
-      createOwned("Atom01", "JinSoul", "102z", true),
-      createOwned("Atom01", "JinSoul", "103z", true),
-      createOwned("Atom01", "JinSoul", "104z", true),
-      createOwned("Atom01", "JinSoul", "105z", true),
-      createOwned("Atom01", "JinSoul", "106z", true),
-      createOwned("Atom01", "JinSoul", "107z", true),
-      createOwned("Atom01", "JinSoul", "108z", true),
-    ];
+  it("emits only the first edition when the catalog has a single edition", () => {
+    const ledger = build({
+      artist: "tripleS",
+      catalog: [
+        ...range(101, 108).map((no) =>
+          catalogRow("Cream02", "SeoYeon", "First", `${no}Z`),
+        ),
+        catalogRow("Cream02", "SeoYeon", "Special", "201Z"),
+        catalogRow("Cream02", "SeoYeon", "Special", "202Z"),
+      ],
+      owned: [ownedRow("Cream02", "SeoYeon", "First", "101Z", true)],
+    });
 
-    const result = calculateGrids(owned, lookup);
-
-    // Should return 8 results (1 grid × 8 collections)
-    expect(result).toHaveLength(8);
-
-    // All should be marked as owned
-    expect(result.every((r) => r.owned)).toBe(true);
-
-    // Check specific collection IDs
-    expect(
-      result.some((r) => r.collectionId === "Atom01 JinSoul 101z" && r.owned),
-    ).toBe(true);
-    expect(
-      result.some((r) => r.collectionId === "Atom01 JinSoul 108z" && r.owned),
-    ).toBe(true);
+    const editions = ledger.members[0]?.seasons[0]?.editions ?? [];
+    expect(editions.map((e) => e.edition)).toEqual([1]);
   });
 
-  it("should detect incomplete grid and show missing objekts", () => {
-    const owned = [
-      createOwned("Atom01", "JinSoul", "101z", true),
-      createOwned("Atom01", "JinSoul", "102z", true),
-      createOwned("Atom01", "JinSoul", "103z", true),
-      // Missing 104z, 105z, 106z
-      createOwned("Atom01", "JinSoul", "107z", true),
-      createOwned("Atom01", "JinSoul", "108z", true),
-    ];
+  it("uses the Atom01 reward exception for tripleS only", () => {
+    const catalog = fullSeasonCatalog("Atom01", "SeoYeon", [
+      "201",
+      "202",
+      "216",
+      "217",
+      "218",
+      "219",
+    ]);
+    const owned = [ownedRow("Atom01", "SeoYeon", "First", "101Z", true)];
 
-    const result = calculateGrids(owned, lookup);
-
-    // Should return 8 results (1 grid × 8 collections)
-    expect(result).toHaveLength(8);
-
-    // Check owned status
-    expect(
-      result.find((r) => r.collectionId === "Atom01 JinSoul 101z")?.owned,
-    ).toBe(true);
-    expect(
-      result.find((r) => r.collectionId === "Atom01 JinSoul 102z")?.owned,
-    ).toBe(true);
-    expect(
-      result.find((r) => r.collectionId === "Atom01 JinSoul 103z")?.owned,
-    ).toBe(true);
-    expect(
-      result.find((r) => r.collectionId === "Atom01 JinSoul 104z")?.owned,
-    ).toBe(false);
-    expect(
-      result.find((r) => r.collectionId === "Atom01 JinSoul 105z")?.owned,
-    ).toBe(false);
-    expect(
-      result.find((r) => r.collectionId === "Atom01 JinSoul 106z")?.owned,
-    ).toBe(false);
-    expect(
-      result.find((r) => r.collectionId === "Atom01 JinSoul 107z")?.owned,
-    ).toBe(true);
-    expect(
-      result.find((r) => r.collectionId === "Atom01 JinSoul 108z")?.owned,
-    ).toBe(true);
-  });
-
-  it("should detect multiple complete grids with duplicates", () => {
-    // 2 copies of each collection
-    const owned = [
-      "101z",
-      "102z",
-      "103z",
-      "104z",
-      "105z",
-      "106z",
-      "107z",
-      "108z",
-    ].flatMap((no) => [
-      createOwned("Atom01", "JinSoul", no, true),
-      createOwned("Atom01", "JinSoul", no, true),
+    const triples = build({ artist: "tripleS", catalog, owned });
+    const editions = triples.members[0]?.seasons[0]?.editions ?? [];
+    expect(editions[1]?.rewards.map((r) => r.collectionNo)).toEqual([
+      "216",
+      "217",
+    ]);
+    expect(editions[2]?.rewards.map((r) => r.collectionNo)).toEqual([
+      "218",
+      "219",
     ]);
 
-    const result = calculateGrids(owned, lookup);
-
-    // Should return 16 results (2 grids × 8 collections)
-    expect(result).toHaveLength(16);
-
-    // All should be marked as owned
-    expect(result.every((r) => r.owned)).toBe(true);
+    // artms Atom01 uses the standard numbering
+    const artmsCatalog = fullSeasonCatalog("Atom01", "HeeJin");
+    const artms = build({
+      artist: "artms",
+      catalog: artmsCatalog,
+      owned: [ownedRow("Atom01", "HeeJin", "First", "101Z", true)],
+    });
+    const artmsEditions = artms.members[0]?.seasons[0]?.editions ?? [];
+    expect(artmsEditions[1]?.rewards.map((r) => r.collectionNo)).toEqual([
+      "203",
+      "204",
+    ]);
   });
 
-  it("should handle mixed complete and incomplete grids", () => {
-    const owned = [
-      // Grid 1: complete
-      createOwned("Atom01", "HeeJin", "101z", true),
-      createOwned("Atom01", "HeeJin", "102z", true),
-      createOwned("Atom01", "HeeJin", "103z", true),
-      createOwned("Atom01", "HeeJin", "104z", true),
-      createOwned("Atom01", "HeeJin", "105z", true),
-      createOwned("Atom01", "HeeJin", "106z", true),
-      createOwned("Atom01", "HeeJin", "107z", true),
-      createOwned("Atom01", "HeeJin", "108z", true),
-      // Grid 2: only 108z (incomplete)
-      createOwned("Atom01", "HeeJin", "108z", true),
-    ];
+  it("pools A and Z variants together and prefers the Z slug", () => {
+    const ledger = build({
+      artist: "tripleS",
+      catalog: [
+        ...range(101, 108).map((no) =>
+          catalogRow("Atom02", "SeoYeon", "First", `${no}Z`),
+        ),
+        catalogRow("Atom02", "SeoYeon", "First", "101A"),
+      ],
+      owned: [
+        ownedRow("Atom02", "SeoYeon", "First", "101Z", true),
+        ownedRow("Atom02", "SeoYeon", "First", "101A", true, 2),
+        ownedRow("Atom02", "SeoYeon", "First", "101A", false),
+      ],
+    });
 
-    const result = calculateGrids(owned, lookup);
-
-    // Should return 16 results (2 grids × 8 collections)
-    expect(result).toHaveLength(16);
-
-    // Grid 1: all owned
-    const grid1Results = result.slice(0, 8);
-    expect(grid1Results.every((r) => r.owned)).toBe(true);
-
-    // Grid 2: only 108z owned
-    const grid2Results = result.slice(8, 16);
-    const owned108 = grid2Results.filter((r) =>
-      r.collectionId.includes("108z"),
+    const pool = ledger.members[0]?.seasons[0]?.editions[0]?.numbers.find(
+      (n) => n.collectionNo === "101",
     );
-    const notOwned = grid2Results.filter(
-      (r) => !r.collectionId.includes("108z"),
-    );
-
-    expect(owned108.every((r) => r.owned)).toBe(true);
-    expect(notOwned.every((r) => !r.owned)).toBe(true);
+    expect(pool?.usable).toBe(3);
+    expect(pool?.total).toBe(4);
+    expect(pool?.slug).toBe("atom02-seoyeon-101z");
   });
 
-  it("should handle multiple members independently", () => {
-    const owned = [
-      // JinSoul: complete grid
-      ...["101z", "102z", "103z", "104z", "105z", "106z", "107z", "108z"].map(
-        (no) => createOwned("Atom01", "JinSoul", no, true),
+  it("counts only transferable copies as usable and everything as total", () => {
+    const ledger = build({
+      artist: "tripleS",
+      catalog: fullSeasonCatalog("Atom02", "SeoYeon"),
+      owned: [
+        ownedRow("Atom02", "SeoYeon", "First", "101Z", true, 2),
+        ownedRow("Atom02", "SeoYeon", "First", "101Z", false, 3),
+      ],
+    });
+
+    const pool = ledger.members[0]?.seasons[0]?.editions[0]?.numbers.find(
+      (n) => n.collectionNo === "101",
+    );
+    expect(pool?.usable).toBe(2);
+    expect(pool?.total).toBe(5);
+  });
+
+  it("computes completable as the minimum usable across the edition", () => {
+    const ledger = build({
+      artist: "tripleS",
+      catalog: fullSeasonCatalog("Atom02", "SeoYeon"),
+      owned: range(101, 108).map((no) =>
+        ownedRow(
+          "Atom02",
+          "SeoYeon",
+          "First",
+          `${no}Z`,
+          true,
+          no === "105" ? 1 : 3,
+        ),
       ),
-      // HeeJin: incomplete grid (missing 108z)
-      ...["101z", "102z", "103z", "104z", "105z", "106z", "107z"].map((no) =>
-        createOwned("Atom01", "HeeJin", no, true),
+    });
+
+    const edition = ledger.members[0]?.seasons[0]?.editions[0];
+    expect(edition?.completable).toBe(1);
+    expect(edition?.deficits).toEqual([
+      { collectionNo: "105", slug: "atom02-seoyeon-105z" },
+    ]);
+  });
+
+  it("lists every number as a deficit when all pools are level", () => {
+    const ledger = build({
+      artist: "tripleS",
+      catalog: fullSeasonCatalog("Atom02", "SeoYeon"),
+      owned: range(101, 108).map((no) =>
+        ownedRow("Atom02", "SeoYeon", "First", `${no}Z`, true, 2),
       ),
-    ];
+    });
 
-    const result = calculateGrids(owned, lookup);
-
-    // Should return 16 results (2 members × 8 collections)
-    expect(result).toHaveLength(16);
-
-    // JinSoul: all owned
-    const jinsoulResults = result.filter((r) =>
-      r.collectionId.includes("JinSoul"),
-    );
-    expect(jinsoulResults).toHaveLength(8);
-    expect(jinsoulResults.every((r) => r.owned)).toBe(true);
-
-    // HeeJin: 7 owned, 1 not owned
-    const heejinResults = result.filter((r) =>
-      r.collectionId.includes("HeeJin"),
-    );
-    expect(heejinResults).toHaveLength(8);
-    expect(heejinResults.filter((r) => r.owned)).toHaveLength(7);
-    expect(heejinResults.filter((r) => !r.owned)).toHaveLength(1);
-    expect(
-      heejinResults.find((r) => r.collectionId === "Atom01 HeeJin 108z")?.owned,
-    ).toBe(false);
+    const edition = ledger.members[0]?.seasons[0]?.editions[0];
+    expect(edition?.completable).toBe(2);
+    expect(edition?.deficits).toHaveLength(8);
   });
 
-  it("should handle different editions independently", () => {
-    const owned = [
-      // 1st edition: complete
-      ...["101z", "102z", "103z", "104z", "105z", "106z", "107z", "108z"].map(
-        (no) => createOwned("Atom01", "JinSoul", no, true),
+  it("counts Z-designation rewards regardless of transferability, ignoring A copies", () => {
+    const ledger = build({
+      artist: "tripleS",
+      catalog: fullSeasonCatalog("Atom02", "SeoYeon"),
+      owned: [
+        ownedRow("Atom02", "SeoYeon", "Special", "201Z", true, 1),
+        ownedRow("Atom02", "SeoYeon", "Special", "201Z", false, 2),
+        ownedRow("Atom02", "SeoYeon", "Special", "201A", true, 5),
+      ],
+    });
+
+    const rewards = ledger.members[0]?.seasons[0]?.editions[0]?.rewards;
+    expect(rewards?.[0]?.owned).toBe(3);
+    expect(rewards?.[1]?.owned).toBe(0);
+    expect(rewards?.[0]?.slug).toBe("atom02-seoyeon-201z");
+  });
+
+  it("never surfaces event Specials as rewards", () => {
+    const ledger = build({
+      artist: "tripleS",
+      catalog: [
+        ...fullSeasonCatalog("Divine01", "SeoYeon"),
+        catalogRow("Divine01", "SeoYeon", "Special", "207Z"),
+      ],
+      owned: [
+        ownedRow("Divine01", "SeoYeon", "First", "101Z", true),
+        ownedRow("Divine01", "SeoYeon", "Special", "207Z", true, 4),
+      ],
+    });
+
+    const editions = ledger.members[0]?.seasons[0]?.editions ?? [];
+    const rewardNos = editions.flatMap((e) =>
+      e.rewards.map((r) => r.collectionNo),
+    );
+    expect(rewardNos).not.toContain("207");
+  });
+
+  it("ignores tripleS Unit collections entirely", () => {
+    const ledger = build({
+      artist: "tripleS",
+      catalog: [
+        ...fullSeasonCatalog("Cream02", "SeoYeon"),
+        catalogRow("Cream02", "S1 X S9", "Unit", "601A"),
+        catalogRow("Cream02", "S1 X S9", "Unit", "602Z"),
+      ],
+      owned: [
+        ownedRow("Cream02", "SeoYeon", "First", "101Z", true),
+        ownedRow("Cream02", "S1 X S9", "Unit", "601A", false),
+      ],
+    });
+
+    expect(ledger.units).toBeNull();
+    expect(ledger.members.map((member) => member.member)).toEqual(["SeoYeon"]);
+  });
+
+  it("does not make a season relevant from event Specials alone", () => {
+    const ledger = build({
+      artist: "tripleS",
+      catalog: [
+        ...fullSeasonCatalog("Divine01", "SeoYeon"),
+        catalogRow("Divine01", "SeoYeon", "Special", "207Z"),
+      ],
+      owned: [ownedRow("Divine01", "SeoYeon", "Special", "207Z", true, 4)],
+    });
+
+    expect(ledger.members).toHaveLength(0);
+  });
+
+  it("drops member/season groups with no relevant owned objekts", () => {
+    const ledger = build({
+      artist: "tripleS",
+      catalog: [
+        ...fullSeasonCatalog("Atom02", "SeoYeon"),
+        ...fullSeasonCatalog("Atom02", "JinSoul"),
+        ...fullSeasonCatalog("Binary02", "SeoYeon"),
+      ],
+      owned: [ownedRow("Atom02", "SeoYeon", "First", "101Z", true)],
+    });
+
+    expect(ledger.members).toHaveLength(1);
+    expect(ledger.members[0]?.member).toBe("SeoYeon");
+    expect(ledger.members[0]?.seasons.map((s) => s.season)).toEqual(["Atom02"]);
+  });
+
+  it("sorts members by canonical order and seasons newest first", () => {
+    const ledger = build({
+      artist: "artms",
+      catalog: [
+        ...fullSeasonCatalog("Atom01", "JinSoul"),
+        ...fullSeasonCatalog("Binary01", "JinSoul"),
+        ...fullSeasonCatalog("Atom01", "HeeJin"),
+      ],
+      owned: [
+        ownedRow("Atom01", "JinSoul", "First", "101Z", true),
+        ownedRow("Binary01", "JinSoul", "First", "101Z", true),
+        ownedRow("Atom01", "HeeJin", "First", "101Z", true),
+      ],
+    });
+
+    expect(ledger.members.map((member) => member.member)).toEqual([
+      "HeeJin",
+      "JinSoul",
+    ]);
+    expect(ledger.members[1]?.seasons.map((s) => s.season)).toEqual([
+      "Binary01",
+      "Atom01",
+    ]);
+  });
+
+  it("attaches non-transferable tokens to their number pool sorted by serial", () => {
+    const ledger = build({
+      artist: "tripleS",
+      catalog: fullSeasonCatalog("Atom02", "SeoYeon"),
+      owned: [ownedRow("Atom02", "SeoYeon", "First", "101Z", false, 2)],
+      nonTransferableTokens: [
+        token("Atom02", "SeoYeon", "101A", "9002", 42),
+        token("Atom02", "SeoYeon", "101Z", "9001", 7),
+      ],
+    });
+
+    const pool = ledger.members[0]?.seasons[0]?.editions[0]?.numbers.find(
+      (n) => n.collectionNo === "101",
+    );
+    expect(pool?.usable).toBe(0);
+    expect(pool?.nonTransferable).toEqual([
+      { tokenId: "9001", serial: 7, collectionNo: "101Z" },
+      { tokenId: "9002", serial: 42, collectionNo: "101A" },
+    ]);
+  });
+});
+
+describe("idntt units", () => {
+  const idnttCatalog = [
+    ...["DoHun", "HeeJu", "TaeIn"].flatMap((member) => [
+      ...range(101, 108).map((no) =>
+        catalogRow("Summer25", member, "Basic", `${no}Z`),
       ),
-      // 2nd edition: only 109z
-      createOwned("Atom01", "JinSoul", "109z", true),
-    ];
+      catalogRow("Summer25", member, "Special", "301Z"),
+      catalogRow("Summer25", member, "Special", "302Z"),
+    ]),
+    catalogRow("Summer25", "id1 X id2", "Unit", "401Z"),
+    catalogRow("Summer25", "id1 X id4", "Unit", "401Z"),
+    catalogRow("Summer25", "id2 X id4", "Unit", "401Z"),
+  ];
 
-    const result = calculateGrids(owned, lookup);
+  it("builds capacities, pairs, and maxUnits from spendable specials", () => {
+    const ledger = build({
+      artist: "idntt",
+      catalog: idnttCatalog,
+      owned: [
+        // DoHun: 2 transferable 301Z + 1 non-transferable 302Z
+        ownedRow("Summer25", "DoHun", "Special", "301Z", true, 2),
+        ownedRow("Summer25", "DoHun", "Special", "302Z", false, 1),
+        // HeeJu: 1 transferable 302Z
+        ownedRow("Summer25", "HeeJu", "Special", "302Z", true, 1),
+        // owned unit for DoHun X HeeJu
+        ownedRow("Summer25", "id1 X id2", "Unit", "401Z", false, 1),
+      ],
+    });
 
-    // Should return 16 results (1st edition: 8, 2nd edition: 8)
-    expect(result).toHaveLength(16);
+    expect(ledger.units).toHaveLength(1);
+    const season = ledger.units?.[0];
+    expect(season?.season).toBe("Summer25");
 
-    // 1st edition: all owned
-    const edition1 = result.filter((r) => r.collectionId.match(/10[1-8]z/));
-    expect(edition1).toHaveLength(8);
-    expect(edition1.every((r) => r.owned)).toBe(true);
+    const doHun = season?.capacities.find((c) => c.member === "DoHun");
+    expect(doHun?.spendable).toBe(2);
+    // one 301Z spendable after keeping a copy; the non-transferable 302Z is its own keeper
+    expect(doHun?.spendableSafe).toBe(1);
+    expect(doHun?.ownedUnits).toBe(1);
 
-    // 2nd edition: only 109z owned
-    const edition2 = result.filter((r) =>
-      r.collectionId.match(/1(09|1[0-6])z/),
+    const heeJu = season?.capacities.find((c) => c.member === "HeeJu");
+    expect(heeJu?.spendable).toBe(1);
+    expect(heeJu?.spendableSafe).toBe(0);
+
+    expect(season?.maxUnits).toBe(1);
+
+    const pairs = new Map(
+      season?.pairs.map((p) => [p.members.join("+"), p]) ?? [],
     );
-    expect(edition2).toHaveLength(8);
-    expect(edition2.filter((r) => r.owned)).toHaveLength(1);
-    expect(
-      edition2.find((r) => r.collectionId === "Atom01 JinSoul 109z")?.owned,
-    ).toBe(true);
+    expect(pairs.get("DoHun+HeeJu")?.owned).toBe(1);
+    expect(pairs.get("DoHun+HeeJu")?.achievable).toBe(true);
+    expect(pairs.get("DoHun+TaeIn")?.achievable).toBe(false);
+    expect(pairs.get("HeeJu+TaeIn")?.achievable).toBe(false);
   });
 
-  it("should ignore non-transferable objekts even if they complete a grid", () => {
-    const owned = [
-      // All non-transferable
-      createOwned("Atom01", "JinSoul", "101z", false),
-      createOwned("Atom01", "JinSoul", "102z", false),
-      createOwned("Atom01", "JinSoul", "103z", false),
-      createOwned("Atom01", "JinSoul", "104z", false),
-      createOwned("Atom01", "JinSoul", "105z", false),
-      createOwned("Atom01", "JinSoul", "106z", false),
-      createOwned("Atom01", "JinSoul", "107z", false),
-      createOwned("Atom01", "JinSoul", "108z", false),
-      // One transferable
-      createOwned("Atom01", "JinSoul", "101z", true),
-    ];
+  it("falls back to the raw alias when a member reference is missing", () => {
+    const ledger = build({
+      artist: "idntt",
+      catalog: [
+        ...idnttCatalog,
+        catalogRow("Summer25", "id1 X id99", "Unit", "401Z"),
+      ],
+      owned: [ownedRow("Summer25", "id1 X id99", "Unit", "401Z", false, 1)],
+    });
 
-    const result = calculateGrids(owned, lookup);
-
-    // Should return 8 results (1 grid started with only 101z)
-    expect(result).toHaveLength(8);
-
-    // Only 101z should be owned
-    expect(result.filter((r) => r.owned)).toHaveLength(1);
-    expect(
-      result.find((r) => r.collectionId === "Atom01 JinSoul 101z")?.owned,
-    ).toBe(true);
+    const pair = ledger.units?.[0]?.pairs.find((p) =>
+      p.members.includes("id99"),
+    );
+    expect(pair?.members).toEqual(["DoHun", "id99"]);
   });
 
-  it("should handle two different members both with incomplete sets", () => {
-    const owned = [
-      // JinSoul: missing 104z, 106z, 108z
-      createOwned("Atom01", "JinSoul", "101z", true),
-      createOwned("Atom01", "JinSoul", "102z", true),
-      createOwned("Atom01", "JinSoul", "103z", true),
-      createOwned("Atom01", "JinSoul", "105z", true),
-      createOwned("Atom01", "JinSoul", "107z", true),
-      // HeeJin: missing 101z, 103z, 105z, 107z
-      createOwned("Atom01", "HeeJin", "102z", true),
-      createOwned("Atom01", "HeeJin", "104z", true),
-      createOwned("Atom01", "HeeJin", "106z", true),
-      createOwned("Atom01", "HeeJin", "108z", true),
-    ];
+  it("uses idntt rewards 301/302 on the Basic edition", () => {
+    const ledger = build({
+      artist: "idntt",
+      catalog: idnttCatalog,
+      owned: [ownedRow("Summer25", "DoHun", "Basic", "101Z", true)],
+    });
 
-    const result = calculateGrids(owned, lookup);
+    const editions = ledger.members[0]?.seasons[0]?.editions ?? [];
+    expect(editions.map((e) => e.edition)).toEqual([1]);
+    expect(editions[0]?.rewards.map((r) => r.collectionNo)).toEqual([
+      "301",
+      "302",
+    ]);
+  });
+});
 
-    // Should return 16 results (2 members × 8 collections)
-    expect(result).toHaveLength(16);
+describe("applyGridOverrides", () => {
+  const input: GridLedgerInput = {
+    artist: "tripleS",
+    catalog: fullSeasonCatalog("Atom02", "SeoYeon"),
+    owned: [
+      ...range(102, 108).map((no) =>
+        ownedRow("Atom02", "SeoYeon", "First", `${no}Z`, true),
+      ),
+      ownedRow("Atom02", "SeoYeon", "First", "101Z", false),
+    ],
+    nonTransferableTokens: [token("Atom02", "SeoYeon", "101Z", "9001", 7)],
+    memberOrder: memberRefs,
+  };
 
-    // JinSoul: 5 owned, 3 not owned
-    const jinsoulResults = result.filter((r) =>
-      r.collectionId.includes("JinSoul"),
+  it("counts included tokens as usable and recomputes completion", () => {
+    const ledger = buildGridLedger(input);
+    const before = ledger.members[0]?.seasons[0]?.editions[0];
+    expect(before?.completable).toBe(0);
+    expect(before?.deficits).toEqual([
+      { collectionNo: "101", slug: "atom02-seoyeon-101z" },
+    ]);
+
+    const adjusted = applyGridOverrides(ledger, new Set(["9001"]));
+    const after = adjusted.members[0]?.seasons[0]?.editions[0];
+    expect(after?.completable).toBe(1);
+    expect(after?.numbers.find((n) => n.collectionNo === "101")?.usable).toBe(
+      1,
     );
-    expect(jinsoulResults).toHaveLength(8);
-    expect(jinsoulResults.filter((r) => r.owned)).toHaveLength(5);
-    expect(jinsoulResults.filter((r) => !r.owned)).toHaveLength(3);
+    expect(after?.deficits).toHaveLength(8);
+  });
 
-    // Check JinSoul missing objekts
-    expect(
-      jinsoulResults.find((r) => r.collectionId === "Atom01 JinSoul 104z")
-        ?.owned,
-    ).toBe(false);
-    expect(
-      jinsoulResults.find((r) => r.collectionId === "Atom01 JinSoul 106z")
-        ?.owned,
-    ).toBe(false);
-    expect(
-      jinsoulResults.find((r) => r.collectionId === "Atom01 JinSoul 108z")
-        ?.owned,
-    ).toBe(false);
+  it("ignores unknown token ids and returns the same ledger when empty", () => {
+    const ledger = buildGridLedger(input);
+    expect(applyGridOverrides(ledger, new Set())).toBe(ledger);
 
-    // HeeJin: 4 owned, 4 not owned
-    const heejinResults = result.filter((r) =>
-      r.collectionId.includes("HeeJin"),
-    );
-    expect(heejinResults).toHaveLength(8);
-    expect(heejinResults.filter((r) => r.owned)).toHaveLength(4);
-    expect(heejinResults.filter((r) => !r.owned)).toHaveLength(4);
+    const adjusted = applyGridOverrides(ledger, new Set(["nope"]));
+    expect(adjusted.members[0]?.seasons[0]?.editions[0]?.completable).toBe(0);
+  });
+});
 
-    // Check HeeJin missing objekts
-    expect(
-      heejinResults.find((r) => r.collectionId === "Atom01 HeeJin 101z")?.owned,
-    ).toBe(false);
-    expect(
-      heejinResults.find((r) => r.collectionId === "Atom01 HeeJin 103z")?.owned,
-    ).toBe(false);
-    expect(
-      heejinResults.find((r) => r.collectionId === "Atom01 HeeJin 105z")?.owned,
-    ).toBe(false);
-    expect(
-      heejinResults.find((r) => r.collectionId === "Atom01 HeeJin 107z")?.owned,
-    ).toBe(false);
+describe("computeMaxUnits", () => {
+  it("bounds units by pairing capacity", () => {
+    expect(computeMaxUnits([])).toBe(0);
+    expect(computeMaxUnits([5])).toBe(0);
+    expect(computeMaxUnits([1, 1])).toBe(1);
+    expect(computeMaxUnits([3, 1])).toBe(1);
+    expect(computeMaxUnits([2, 2, 2])).toBe(3);
+    expect(computeMaxUnits([5, 1, 1])).toBe(2);
   });
 });

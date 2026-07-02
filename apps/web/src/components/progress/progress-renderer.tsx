@@ -1,9 +1,11 @@
 import { useArtists } from "@/hooks/use-artists";
+import { useProfileContext } from "@/hooks/use-profile";
 import { useProgressFilters } from "@/hooks/use-progress-filters";
 import { m } from "@/i18n/messages";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
-import { IconRefresh } from "@tabler/icons-react";
+import { IconLayoutGrid, IconRefresh } from "@tabler/icons-react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { Suspense, useCallback } from "react";
 import type { PropsWithChildren } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -20,6 +22,7 @@ type Props = PropsWithChildren<{
 export default function ProgressRenderer(props: Props) {
   const { filters, setFilters, setFilter } = useProgressFilters();
   const { getArtistForMember } = useArtists();
+  const cosmo = useProfileContext((state) => state.target?.cosmo);
 
   const memberArtist = filters.member
     ? getArtistForMember(filters.member)
@@ -58,6 +61,26 @@ export default function ProgressRenderer(props: Props) {
             />
           </div>
         </div>
+
+        {cosmo && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="shrink-0 md:ml-auto"
+            asChild
+          >
+            <Link
+              to="/@{$username}/grid"
+              params={{
+                username: cosmo.isAddress ? cosmo.address : cosmo.username,
+              }}
+              search={{ artist: filters.artist, member: filters.member }}
+            >
+              <IconLayoutGrid className="size-4" />
+              <span className="hidden sm:inline">{m.grid_title()}</span>
+            </Link>
+          </Button>
+        )}
       </TitleHeader>
 
       <div className="container flex flex-col gap-6 pt-4">
