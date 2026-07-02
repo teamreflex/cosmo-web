@@ -1,7 +1,7 @@
 import { seasonSort } from "@/lib/universal/seasons";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
 
-export type GridEditionDef = {
+type GridEditionDef = {
   edition: 1 | 2 | 3;
   numbers: readonly string[];
   rewards: readonly [string, string];
@@ -13,24 +13,24 @@ const EDITION_NUMBERS: Record<1 | 2 | 3, readonly string[]> = {
   3: ["117", "118", "119", "120"],
 };
 
-export const STANDARD_EDITIONS: readonly GridEditionDef[] = [
+const STANDARD_EDITIONS: readonly GridEditionDef[] = [
   { edition: 1, numbers: EDITION_NUMBERS[1], rewards: ["201", "202"] },
   { edition: 2, numbers: EDITION_NUMBERS[2], rewards: ["203", "204"] },
   { edition: 3, numbers: EDITION_NUMBERS[3], rewards: ["205", "206"] },
 ];
 
 // tripleS Atom01 grids predate the standard reward numbering
-export const ATOM01_EDITIONS: readonly GridEditionDef[] = [
+const ATOM01_EDITIONS: readonly GridEditionDef[] = [
   { edition: 1, numbers: EDITION_NUMBERS[1], rewards: ["201", "202"] },
   { edition: 2, numbers: EDITION_NUMBERS[2], rewards: ["216", "217"] },
   { edition: 3, numbers: EDITION_NUMBERS[3], rewards: ["218", "219"] },
 ];
 
-export const IDNTT_EDITIONS: readonly GridEditionDef[] = [
+const IDNTT_EDITIONS: readonly GridEditionDef[] = [
   { edition: 1, numbers: EDITION_NUMBERS[1], rewards: ["301", "302"] },
 ];
 
-export const IDNTT_UNIT_NO = "401";
+const IDNTT_UNIT_NO = "401";
 
 /**
  * The class of objekt that grids consume for the given artist.
@@ -40,16 +40,41 @@ export function sourceClassFor(artist: ValidArtist): "First" | "Basic" {
 }
 
 /**
+ * The unit-tier collection number for the given artist, or null when the
+ * artist has no unit mechanic.
+ */
+function unitNoFor(artist: ValidArtist): string | null {
+  return artist === "idntt" ? IDNTT_UNIT_NO : null;
+}
+
+/**
  * The edition recipes that can exist for the given artist and season. Which
  * editions actually exist is derived from the catalog in buildGridLedger.
  */
-export function editionDefsFor(
+function editionDefsFor(
   artist: ValidArtist,
   season: string,
 ): readonly GridEditionDef[] {
   if (artist === "idntt") return IDNTT_EDITIONS;
   if (artist === "tripleS" && season === "Atom01") return ATOM01_EDITIONS;
   return STANDARD_EDITIONS;
+}
+
+const rewardNosCache = new Map<
+  readonly GridEditionDef[],
+  ReadonlySet<string>
+>();
+
+/**
+ * The reward collection numbers declared by the artist/season's recipes.
+ */
+function rewardNumbersFor(artist: ValidArtist, season: string) {
+  const defs = editionDefsFor(artist, season);
+  return getOrCreate(
+    rewardNosCache,
+    defs,
+    () => new Set(defs.flatMap((def) => [...def.rewards])),
+  );
 }
 
 export type GridCatalogRow = {
@@ -159,6 +184,25 @@ function designationOf(collectionNo: string) {
   return collectionNo.slice(-1).toUpperCase();
 }
 
+function getOrCreate<K, V>(map: Map<K, V>, key: K, create: () => V): V {
+  let value = map.get(key);
+  if (value === undefined) {
+    value = create();
+    map.set(key, value);
+  }
+  return value;
+}
+
+/**
+ * Comparator ordering members canonically, unknown names last alphabetically.
+ */
+function memberSortFor(memberOrder: GridMemberRef[]) {
+  const sortOrders = new Map(memberOrder.map((m) => [m.name, m.sortOrder]));
+  return (a: string, b: string) =>
+    (sortOrders.get(a) ?? Number.MAX_SAFE_INTEGER) -
+      (sortOrders.get(b) ?? Number.MAX_SAFE_INTEGER) || a.localeCompare(b);
+}
+
 /**
  * Two-level map keyed by member then season, so names with spaces are safe.
  */
@@ -170,17 +214,8 @@ class MemberSeasonMap<T> {
   }
 
   getOrCreate(member: string, season: string, create: () => T): T {
-    let seasons = this.map.get(member);
-    if (!seasons) {
-      seasons = new Map();
-      this.map.set(member, seasons);
-    }
-    let value = seasons.get(season);
-    if (value === undefined) {
-      value = create();
-      seasons.set(season, value);
-    }
-    return value;
+    const seasons = getOrCreate(this.map, member, () => new Map<string, T>());
+    return getOrCreate(seasons, season, create);
   }
 
   *entries(): IterableIterator<[string, string, T]> {
@@ -201,6 +236,7 @@ type RewardCount = { transferable: number; nonTransferable: number };
 export function buildGridLedger(input: GridLedgerInput): GridLedger {
   const { artist, catalog, owned, nonTransferableTokens, memberOrder } = input;
   const sourceClass = sourceClassFor(artist);
+  const unitNo = unitNoFor(artist);
 
   // catalog lookups: source-class slug per stripped number (Z preferred over
   // A), Z-designation Special slugs, and idntt unit pair slugs per season
@@ -223,17 +259,11 @@ export function buildGridLedger(input: GridLedgerInput): GridLedger {
       rewardCatalog
         .getOrCreate(row.member, row.season, () => new Map())
         .set(no, row.slug);
-    } else if (
-      artist === "idntt" &&
-      row.class === "Unit" &&
-      no === IDNTT_UNIT_NO
-    ) {
-      let pairs = unitCatalog.get(row.season);
-      if (!pairs) {
-        pairs = new Map();
-        unitCatalog.set(row.season, pairs);
-      }
-      pairs.set(row.member, row.slug);
+    } else if (row.class === "Unit" && no === unitNo) {
+      getOrCreate(unitCatalog, row.season, () => new Map()).set(
+        row.member,
+        row.slug,
+      );
     }
   }
 
@@ -252,10 +282,12 @@ export function buildGridLedger(input: GridLedgerInput): GridLedger {
         row.season,
         () => new Map(),
       );
-      const pool = pools.get(no) ?? { transferable: 0, total: 0 };
+      const pool = getOrCreate(pools, no, () => ({
+        transferable: 0,
+        total: 0,
+      }));
       pool.total += row.count;
       if (row.transferable) pool.transferable += row.count;
-      pools.set(no, pool);
     } else if (
       row.class === "Special" &&
       designationOf(row.collectionNo) === "Z"
@@ -265,20 +297,14 @@ export function buildGridLedger(input: GridLedgerInput): GridLedger {
         row.season,
         () => new Map(),
       );
-      const pool = rewards.get(no) ?? { transferable: 0, nonTransferable: 0 };
+      const pool = getOrCreate(rewards, no, () => ({
+        transferable: 0,
+        nonTransferable: 0,
+      }));
       if (row.transferable) pool.transferable += row.count;
       else pool.nonTransferable += row.count;
-      rewards.set(no, pool);
-    } else if (
-      artist === "idntt" &&
-      row.class === "Unit" &&
-      no === IDNTT_UNIT_NO
-    ) {
-      let pairs = unitCounts.get(row.season);
-      if (!pairs) {
-        pairs = new Map();
-        unitCounts.set(row.season, pairs);
-      }
+    } else if (row.class === "Unit" && no === unitNo) {
+      const pairs = getOrCreate(unitCounts, row.season, () => new Map());
       pairs.set(row.member, (pairs.get(row.member) ?? 0) + row.count);
     }
   }
@@ -292,14 +318,11 @@ export function buildGridLedger(input: GridLedgerInput): GridLedger {
       token.season,
       () => new Map(),
     );
-    const no = stripNo(token.collectionNo);
-    const tokens = pools.get(no) ?? [];
-    tokens.push({
+    getOrCreate(pools, stripNo(token.collectionNo), () => []).push({
       tokenId: token.tokenId,
       serial: token.serial,
       collectionNo: token.collectionNo,
     });
-    pools.set(no, tokens);
   }
   for (const [, , pools] of tokensByPool.entries()) {
     for (const tokens of pools.values()) {
@@ -309,31 +332,21 @@ export function buildGridLedger(input: GridLedgerInput): GridLedger {
 
   // ledger includes every member+season the target owns relevant objekts in
   const memberSeasons = new Map<string, Set<string>>();
-  const markRelevant = (member: string, season: string) => {
-    let seasons = memberSeasons.get(member);
-    if (!seasons) {
-      seasons = new Set();
-      memberSeasons.set(member, seasons);
-    }
-    seasons.add(season);
-  };
+  const markRelevant = (member: string, season: string) =>
+    getOrCreate(memberSeasons, member, () => new Set<string>()).add(season);
+
   for (const [member, season] of sourceCounts.entries()) {
     markRelevant(member, season);
   }
   for (const [member, season, rewards] of rewardCounts.entries()) {
     // event specials are counted too, but only grid rewards make a season relevant
-    const rewardNos = new Set(
-      editionDefsFor(artist, season).flatMap((def) => [...def.rewards]),
-    );
+    const rewardNos = rewardNumbersFor(artist, season);
     if ([...rewards.keys()].some((no) => rewardNos.has(no))) {
       markRelevant(member, season);
     }
   }
 
-  const sortOrders = new Map(memberOrder.map((m) => [m.name, m.sortOrder]));
-  const memberSort = (a: string, b: string) =>
-    (sortOrders.get(a) ?? Number.MAX_SAFE_INTEGER) -
-      (sortOrders.get(b) ?? Number.MAX_SAFE_INTEGER) || a.localeCompare(b);
+  const memberSort = memberSortFor(memberOrder);
 
   const members: MemberLedger[] = [];
   for (const [member, ownedSeasons] of [...memberSeasons.entries()].sort(
@@ -394,8 +407,9 @@ export function buildGridLedger(input: GridLedgerInput): GridLedger {
     artist,
     members,
     units:
-      artist === "idntt"
+      unitNo !== null
         ? buildUnitLedgers({
+            artist,
             unitCatalog,
             unitCounts,
             rewardCounts,
@@ -433,25 +447,23 @@ function rewardPool(
 }
 
 function buildUnitLedgers(input: {
+  artist: ValidArtist;
   unitCatalog: Map<string, Map<string, string>>;
   unitCounts: Map<string, Map<string, number>>;
   rewardCounts: MemberSeasonMap<Map<string, RewardCount>>;
   memberOrder: GridMemberRef[];
 }): UnitSeasonLedger[] {
-  const { unitCatalog, unitCounts, rewardCounts, memberOrder } = input;
+  const { artist, unitCatalog, unitCounts, rewardCounts, memberOrder } = input;
   const aliasToName = new Map(memberOrder.map((m) => [m.alias, m.name]));
-  const sortOrders = new Map(memberOrder.map((m) => [m.name, m.sortOrder]));
-  const memberSort = (a: string, b: string) =>
-    (sortOrders.get(a) ?? Number.MAX_SAFE_INTEGER) -
-      (sortOrders.get(b) ?? Number.MAX_SAFE_INTEGER) || a.localeCompare(b);
+  const memberSort = memberSortFor(memberOrder);
 
   // per member+season spendable capacity from Z-designation reward specials
   const spendables = new MemberSeasonMap<{
     spendable: number;
     spendableSafe: number;
   }>();
-  const rewardNos = new Set(IDNTT_EDITIONS.flatMap((def) => [...def.rewards]));
   for (const [member, season, rewards] of rewardCounts.entries()) {
+    const rewardNos = rewardNumbersFor(artist, season);
     const capacity = spendables.getOrCreate(member, season, () => ({
       spendable: 0,
       spendableSafe: 0,
@@ -472,20 +484,16 @@ function buildUnitLedgers(input: {
     const ownedPairs = unitCounts.get(season);
 
     const capacities = new Map<string, UnitCapacity>();
-    const capacityFor = (member: string) => {
-      let capacity = capacities.get(member);
-      if (!capacity) {
+    const capacityFor = (member: string) =>
+      getOrCreate(capacities, member, () => {
         const spendable = spendables.get(member, season);
-        capacity = {
+        return {
           member,
           ownedUnits: 0,
           spendable: spendable?.spendable ?? 0,
           spendableSafe: spendable?.spendableSafe ?? 0,
         };
-        capacities.set(member, capacity);
-      }
-      return capacity;
-    };
+      });
 
     const pairs: UnitPair[] = [];
     for (const [pairString, slug] of pairSlugs) {
