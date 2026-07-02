@@ -686,7 +686,6 @@
   "grid_edition_2": "2nd Edition",
   "grid_edition_3": "3rd Edition",
   "grid_completable": "{count} completable",
-  "grid_rewards": "SCO owned",
   "grid_missing_for_next": "{count} missing for next grid",
   "grid_missing_for_target": "{count} missing for {target} grids",
   "grid_target": "Target",

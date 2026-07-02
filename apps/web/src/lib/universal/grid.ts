@@ -83,6 +83,7 @@ export type GridCatalogRow = {
   class: string;
   collectionNo: string;
   slug: string;
+  thumbnailImage: string;
 };
 
 export type GridOwnedRow = {
@@ -111,6 +112,7 @@ export type GridMemberRef = {
 export type NumberPool = {
   collectionNo: string;
   slug: string;
+  thumbnailImage: string;
   usable: number;
   total: number;
   // full collectionNo retains the A/Z designation pooled into this number
@@ -120,6 +122,7 @@ export type NumberPool = {
 export type RewardPool = {
   collectionNo: string;
   slug: string | null;
+  thumbnailImage: string | null;
   owned: number;
 };
 
@@ -235,6 +238,7 @@ class MemberSeasonMap<T> {
 
 type SourcePool = { transferable: number; total: number };
 type RewardCount = { transferable: number; nonTransferable: number };
+type CatalogEntry = { slug: string; thumbnailImage: string };
 
 /**
  * Builds the full grid ledger for one artist from indexer-derived rows.
@@ -244,15 +248,16 @@ export function buildGridLedger(input: GridLedgerInput): GridLedger {
   const sourceClass = sourceClassFor(artist);
   const unitNo = unitNoFor(artist);
 
-  // catalog lookups: source-class slug per stripped number (Z preferred over
-  // A), Z-designation Special slugs, and idntt unit pair slugs per season
-  const sourceCatalog = new MemberSeasonMap<Map<string, string>>();
-  const rewardCatalog = new MemberSeasonMap<Map<string, string>>();
+  // catalog lookups: source-class entry per stripped number (Z preferred over
+  // A), Z-designation Special entries, and idntt unit pair slugs per season
+  const sourceCatalog = new MemberSeasonMap<Map<string, CatalogEntry>>();
+  const rewardCatalog = new MemberSeasonMap<Map<string, CatalogEntry>>();
   const unitCatalog = new Map<string, Map<string, string>>();
 
   for (const row of catalog) {
     const no = stripNo(row.collectionNo);
     const isZ = designationOf(row.collectionNo) === "Z";
+    const entry = { slug: row.slug, thumbnailImage: row.thumbnailImage };
 
     if (row.class === sourceClass) {
       const numbers = sourceCatalog.getOrCreate(
@@ -260,11 +265,11 @@ export function buildGridLedger(input: GridLedgerInput): GridLedger {
         row.season,
         () => new Map(),
       );
-      if (isZ || !numbers.has(no)) numbers.set(no, row.slug);
+      if (isZ || !numbers.has(no)) numbers.set(no, entry);
     } else if (row.class === "Special" && isZ) {
       rewardCatalog
         .getOrCreate(row.member, row.season, () => new Map())
-        .set(no, row.slug);
+        .set(no, entry);
     } else if (row.class === "Unit" && no === unitNo) {
       getOrCreate(unitCatalog, row.season, () => new Map()).set(
         row.member,
@@ -367,20 +372,21 @@ export function buildGridLedger(input: GridLedgerInput): GridLedger {
       const pools = sourceCounts.get(member, season);
       const tokens = tokensByPool.get(member, season);
       const rewards = rewardCounts.get(member, season);
-      const rewardSlugs = rewardCatalog.get(member, season);
+      const rewardEntries = rewardCatalog.get(member, season);
 
       const editions: EditionLedger[] = [];
       for (const def of editionDefsFor(artist, season)) {
         // an edition exists only when its full number set is in the catalog
         const numbers: NumberPool[] = [];
         for (const no of def.numbers) {
-          const slug = catalogNumbers.get(no);
-          if (slug === undefined) break;
+          const entry = catalogNumbers.get(no);
+          if (entry === undefined) break;
 
           const pool = pools?.get(no);
           numbers.push({
             collectionNo: no,
-            slug,
+            slug: entry.slug,
+            thumbnailImage: entry.thumbnailImage,
             usable: pool?.transferable ?? 0,
             total: pool?.total ?? 0,
             nonTransferable: tokens?.get(no) ?? [],
@@ -393,8 +399,8 @@ export function buildGridLedger(input: GridLedgerInput): GridLedger {
           numbers,
           ...completion(numbers),
           rewards: [
-            rewardPool(def.rewards[0], rewardSlugs, rewards),
-            rewardPool(def.rewards[1], rewardSlugs, rewards),
+            rewardPool(def.rewards[0], rewardEntries, rewards),
+            rewardPool(def.rewards[1], rewardEntries, rewards),
           ],
         });
       }
@@ -452,13 +458,15 @@ function completion(numbers: NumberPool[]) {
 
 function rewardPool(
   collectionNo: string,
-  slugs: Map<string, string> | undefined,
+  entries: Map<string, CatalogEntry> | undefined,
   counts: Map<string, RewardCount> | undefined,
 ): RewardPool {
+  const entry = entries?.get(collectionNo);
   const pool = counts?.get(collectionNo);
   return {
     collectionNo,
-    slug: slugs?.get(collectionNo) ?? null,
+    slug: entry?.slug ?? null,
+    thumbnailImage: entry?.thumbnailImage ?? null,
     owned: pool ? pool.transferable + pool.nonTransferable : 0,
   };
 }

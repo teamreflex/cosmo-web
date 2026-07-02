@@ -684,7 +684,6 @@
   "grid_edition_2": "2ndエディション",
   "grid_edition_3": "3rdエディション",
   "grid_completable": "{count}回完成可能",
-  "grid_rewards": "所有SCO",
   "grid_missing_for_next": "次のグリッドまであと{count}枚",
   "grid_missing_for_target": "グリッド{target}回まであと{count}枚",
   "grid_target": "目標",

@@ -50,7 +50,10 @@ export default function IncludeTokensDialog(props: Props) {
           <ScrollArea className="-mx-6 max-h-72">
             <ul className="flex flex-col">
               {pools.map((pool) => (
-                <li key={pool.collectionNo} className="flex flex-col">
+                <li
+                  key={pool.collectionNo}
+                  className="flex flex-col border-b border-border last:border-b-0"
+                >
                   {pool.nonTransferable.map((token) => (
                     <TokenRow
                       key={token.tokenId}
@@ -82,7 +85,7 @@ function TokenRow(props: {
     <button
       type="button"
       onClick={props.onToggle}
-      className="group flex w-full items-center gap-3 border-b border-border px-4 py-3 text-left transition-colors last:border-b-0 hover:bg-accent focus-visible:bg-accent focus-visible:outline-none sm:gap-4 sm:px-5"
+      className="group flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none sm:gap-4 sm:px-5"
     >
       <div className="w-20 shrink-0 font-mono text-sm font-bold tabular-nums sm:w-24 sm:text-lg">
         {props.collectionNo}

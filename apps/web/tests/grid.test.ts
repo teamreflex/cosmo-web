@@ -20,12 +20,14 @@ function catalogRow(
   className: string,
   collectionNo: string,
 ): GridCatalogRow {
+  const slug = `${season}-${member}-${collectionNo}`.toLowerCase();
   return {
     season,
     member,
     class: className,
     collectionNo,
-    slug: `${season}-${member}-${collectionNo}`.toLowerCase(),
+    slug,
+    thumbnailImage: `https://cdn.test/${slug}/thumbnail`,
   };
 }
 

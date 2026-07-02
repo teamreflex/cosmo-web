@@ -686,7 +686,6 @@
   "grid_edition_2": "2ème édition",
   "grid_edition_3": "3ème édition",
   "grid_completable": "{count} complétable(s)",
-  "grid_rewards": "SCO possédés",
   "grid_missing_for_next": "{count} manquant(s) pour le prochain grid",
   "grid_missing_for_target": "{count} manquant(s) pour {target} grids",
   "grid_target": "Objectif",

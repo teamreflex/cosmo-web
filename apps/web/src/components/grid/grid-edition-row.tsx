@@ -3,10 +3,15 @@ import IncludeTokensDialog from "@/components/grid/include-tokens-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { m } from "@/i18n/messages";
-import type { EditionLedger, NumberPool } from "@/lib/universal/grid";
+import type { EditionLedger } from "@/lib/universal/grid";
 import { deficitsFor } from "@/lib/universal/grid";
 import { cn } from "@/lib/utils";
-import { IconLockOpen, IconMinus, IconPlus } from "@tabler/icons-react";
+import {
+  IconArrowRight,
+  IconLockOpen,
+  IconMinus,
+  IconPlus,
+} from "@tabler/icons-react";
 import { useState } from "react";
 
 type Props = {
@@ -42,101 +47,112 @@ export default function GridEditionRow(props: Props) {
 
   return (
     <div className="flex flex-col gap-2 py-3">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <span className="w-24 shrink-0 text-sm font-semibold text-muted-foreground">
-          {editionLabels[edition.edition]()}
-        </span>
+      <span className="text-sm font-semibold text-muted-foreground">
+        {editionLabels[edition.edition]()}
+      </span>
 
-        <div className="flex flex-wrap gap-1.5">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
+        <div className="grid w-full grid-cols-4 gap-1.5 sm:max-w-130 sm:grid-cols-8">
           {edition.numbers.map((pool) => (
-            <NumberChip
+            <GridCard
               key={pool.collectionNo}
-              pool={pool}
+              label={pool.collectionNo}
+              image={pool.thumbnailImage}
+              alt={`${props.season} ${props.member} ${pool.collectionNo}`}
+              count={pool.usable}
+              dim={pool.usable === 0}
               needed={
                 extraGrids > 0 ? (neededByNo.get(pool.collectionNo) ?? 0) : 0
               }
+              title={`${pool.usable}/${pool.total}`}
             />
           ))}
         </div>
 
-        <Badge
-          variant={edition.completable > 0 ? "default" : "secondary"}
-          className="ml-auto tabular-nums"
-        >
-          {m.grid_completable({ count: edition.completable.toString() })}
-        </Badge>
-      </div>
+        <IconArrowRight className="hidden size-4 shrink-0 text-muted-foreground sm:block" />
 
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 sm:pl-27">
-        <span className="text-xs text-muted-foreground">
-          {m.grid_rewards()}:
-        </span>
-        {edition.rewards.map((reward) => (
-          <span
-            key={reward.collectionNo}
-            className={cn(
-              "font-mono text-xs tabular-nums",
-              reward.owned > 0 ? "text-foreground" : "text-muted-foreground",
-            )}
-          >
-            {reward.collectionNo}Z ×{reward.owned}
-          </span>
-        ))}
+        <div className="flex items-center justify-between gap-3 sm:contents">
+          <div className="grid w-26 shrink-0 grid-cols-2 gap-1.5 sm:w-32">
+            {edition.rewards.map((reward) => (
+              <GridCard
+                key={reward.collectionNo}
+                label={`${reward.collectionNo}Z`}
+                image={reward.thumbnailImage}
+                alt={`${props.season} ${props.member} ${reward.collectionNo}Z`}
+                count={reward.owned}
+                dim={reward.owned === 0}
+              />
+            ))}
+          </div>
 
-        {props.isOwner && (
-          <AddMissingMenu
-            member={props.member}
-            season={props.season}
-            deficits={deficits}
-            label={
-              extraGrids === 0
-                ? m.grid_missing_for_next({ count: totalNeeded.toString() })
-                : m.grid_missing_for_target({
-                    count: totalNeeded.toString(),
-                    target: target.toString(),
-                  })
-            }
-          />
-        )}
+          <div className="flex flex-col items-end gap-1.5 sm:ml-auto">
+            <Badge
+              variant={edition.completable > 0 ? "default" : "secondary"}
+              className="tabular-nums"
+            >
+              {m.grid_completable({ count: edition.completable.toString() })}
+            </Badge>
 
-        {candidates > 0 && (
-          <Button
-            variant="default"
-            size="xs"
-            onClick={() => setIncludeOpen(true)}
-          >
-            <IconLockOpen className="size-3.5" />
-            {m.grid_include_nontransferable()} ({candidates})
-          </Button>
-        )}
-
-        <div className="ml-auto flex items-center gap-1">
-          <Button
-            variant="outline"
-            size="icon-xs"
-            aria-label={m.grid_target_decrease()}
-            disabled={extraGrids === 0}
-            onClick={() => setExtraGrids((n) => n - 1)}
-          >
-            <IconMinus />
-          </Button>
-          <span className="text-xs text-muted-foreground">
-            {m.grid_target()}:{" "}
-            <span className="font-semibold text-foreground tabular-nums">
-              {target}
-            </span>
-          </span>
-          <Button
-            variant="outline"
-            size="icon-xs"
-            aria-label={m.grid_target_increase()}
-            disabled={target >= 99}
-            onClick={() => setExtraGrids((n) => n + 1)}
-          >
-            <IconPlus />
-          </Button>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="outline"
+                size="icon-xs"
+                aria-label={m.grid_target_decrease()}
+                disabled={extraGrids === 0}
+                onClick={() => setExtraGrids((n) => n - 1)}
+              >
+                <IconMinus />
+              </Button>
+              <span className="text-xs text-muted-foreground">
+                {m.grid_target()}:{" "}
+                <span className="font-semibold text-foreground tabular-nums">
+                  {target}
+                </span>
+              </span>
+              <Button
+                variant="outline"
+                size="icon-xs"
+                aria-label={m.grid_target_increase()}
+                disabled={target >= 99}
+                onClick={() => setExtraGrids((n) => n + 1)}
+              >
+                <IconPlus />
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
+
+      {(props.isOwner || candidates > 0) && (
+        <div className="flex flex-wrap items-center gap-2">
+          {props.isOwner && (
+            <AddMissingMenu
+              member={props.member}
+              season={props.season}
+              deficits={deficits}
+              label={
+                extraGrids === 0
+                  ? m.grid_missing_for_next({ count: totalNeeded.toString() })
+                  : m.grid_missing_for_target({
+                      count: totalNeeded.toString(),
+                      target: target.toString(),
+                    })
+              }
+            />
+          )}
+
+          {candidates > 0 && (
+            <Button
+              variant="default"
+              size="xs"
+              onClick={() => setIncludeOpen(true)}
+            >
+              <IconLockOpen className="size-3.5" />
+              {m.grid_include_nontransferable()} ({candidates})
+            </Button>
+          )}
+        </div>
+      )}
 
       {candidates > 0 && (
         <IncludeTokensDialog
@@ -153,19 +169,53 @@ export default function GridEditionRow(props: Props) {
   );
 }
 
-function NumberChip({ pool, needed }: { pool: NumberPool; needed: number }) {
+function GridCard(props: {
+  label: string;
+  image: string | null;
+  alt: string;
+  count: number;
+  dim: boolean;
+  needed?: number;
+  title?: string;
+}) {
+  const needed = props.needed ?? 0;
+
   return (
-    <span
-      className={cn(
-        "rounded-md border px-1.5 py-0.5 font-mono text-xs tabular-nums",
-        pool.usable > 0 && needed === 0
-          ? "border-transparent bg-secondary text-secondary-foreground"
-          : "border-dashed border-destructive/60 text-destructive",
-      )}
-      title={`${pool.usable}/${pool.total}`}
-    >
-      {pool.collectionNo} ×{pool.usable}
-      {needed > 0 && <span className="font-semibold"> +{needed}</span>}
-    </span>
+    <div className="@container" title={props.title}>
+      <div
+        className={cn(
+          "relative aspect-photocard overflow-hidden rounded-photocard bg-secondary",
+          props.dim && "border border-dashed border-destructive/60",
+        )}
+      >
+        {props.image !== null && (
+          <img
+            src={props.image}
+            alt={props.alt}
+            loading="lazy"
+            className={cn(
+              "size-full object-cover",
+              props.dim && "opacity-35 grayscale",
+            )}
+          />
+        )}
+
+        <span className="absolute top-1 left-1 rounded-sm bg-black/60 px-1 font-mono text-xxs font-semibold text-white">
+          {props.label}
+        </span>
+
+        {props.count > 0 && (
+          <span className="absolute right-1 bottom-1 rounded-sm bg-black/60 px-1 font-mono text-xxs font-semibold text-white tabular-nums">
+            ×{props.count}
+          </span>
+        )}
+
+        {needed > 0 && (
+          <span className="text-destructive-foreground absolute bottom-1 left-1 rounded-full bg-destructive px-1.5 font-mono text-xxs font-semibold tabular-nums">
+            +{needed}
+          </span>
+        )}
+      </div>
+    </div>
   );
 }

@@ -28,7 +28,7 @@ function gridClasses(artist: ValidArtist) {
 export async function fetchGridCatalog(
   artist: ValidArtist,
 ): Promise<GridCatalogRow[]> {
-  return remember(`grid-catalog:${artist}`, 60 * 60, () =>
+  return remember(`grid-catalog:v2:${artist}`, 60 * 60, () =>
     indexer
       .select({
         season: collections.season,
@@ -36,6 +36,7 @@ export async function fetchGridCatalog(
         class: collections.class,
         collectionNo: collections.collectionNo,
         slug: collections.slug,
+        thumbnailImage: collections.thumbnailImage,
       })
       .from(collections)
       .where(
