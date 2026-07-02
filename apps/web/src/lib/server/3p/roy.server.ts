@@ -1,10 +1,10 @@
-import { $fetchArtists } from "@/lib/functions/artists";
 import { $fetchTokenBalances } from "@/lib/functions/como";
 import { remember } from "@/lib/server/cache.server";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import {
   collections,
+  members,
   objekts,
   transfers,
 } from "@/lib/server/db/indexer/schema";
@@ -219,10 +219,12 @@ export async function getCollectionCopies(
     .select({
       member: collections.member,
       class: collections.class,
+      color: members.primaryColorHex,
       copies: count(),
     })
     .from(objekts)
     .innerJoin(collections, eq(objekts.collectionId, collections.id))
+    .leftJoin(members, eq(members.name, collections.member))
     .where(
       and(
         eq(collections.artist, query.artist),
@@ -231,21 +233,35 @@ export async function getCollectionCopies(
         ne(objekts.owner, Addresses.SPIN),
       ),
     )
-    .groupBy(collections.member, collections.class);
+    .groupBy(collections.member, collections.class, members.primaryColorHex);
 
   const first = rows[0];
   if (!first) {
-    return null;
+    // zero counted copies is still a valid response — 404 only when the
+    // collection number itself doesn't exist
+    const collection = await indexer.query.collections.findFirst({
+      where: {
+        artist: query.artist,
+        season: query.season,
+        collectionNo: query.collectionNo,
+      },
+      columns: { class: true },
+    });
+
+    if (!collection) {
+      return null;
+    }
+
+    return {
+      season: query.season,
+      collectionNo: query.collectionNo,
+      class: collection.class,
+      totalSupply: 0,
+      members: [],
+    };
   }
 
   const total = rows.reduce((sum, row) => sum + row.copies, 0);
-  const { artists } = await $fetchArtists();
-  const colors = new Map(
-    artists[query.artist]?.artistMembers.map((m) => [
-      m.name,
-      m.primaryColorHex,
-    ]) ?? [],
-  );
 
   return {
     season: query.season,
@@ -255,7 +271,7 @@ export async function getCollectionCopies(
     members: rows
       .map((row) => ({
         name: row.member,
-        color: colors.get(row.member) ?? "#000000",
+        color: row.color ?? "#000000",
         copies: row.copies,
         percentage: total > 0 ? round2((row.copies / total) * 100) : 0,
       }))
@@ -271,6 +287,8 @@ type UserObjektsQuery = {
 
 /**
  * Fetch every objekt owned by an address as flat projections, including duplicates.
+ * Intentionally unbounded: compare/duplicates consumers need the complete holdings
+ * list in one response, so there is no pagination or limit.
  */
 export async function fetchUserObjekts(
   address: string,
