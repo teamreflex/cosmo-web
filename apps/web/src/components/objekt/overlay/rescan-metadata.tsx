@@ -1,5 +1,5 @@
 import { m } from "@/i18n/messages";
-import { $rescanObjektMetadata } from "@/lib/functions/objekt";
+import { $rescanObjektMetadataV3 } from "@/lib/functions/objekt";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { IconRefresh } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";
@@ -12,7 +12,7 @@ type Props = {
 
 export default function RescanMetadata({ collection, token }: Props) {
   const mutation = useMutation({
-    mutationFn: $rescanObjektMetadata,
+    mutationFn: $rescanObjektMetadataV3,
     onSuccess() {
       toast.success(m.objekt_rescan_success(), {
         description: m.objekt_rescan_success_desc({

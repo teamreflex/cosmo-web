@@ -1,4 +1,5 @@
 import { useAuthenticated } from "@/hooks/use-authenticated";
+import { tokenKey } from "@/hooks/use-objekt-selection";
 import { useLockedObjekt } from "@/hooks/use-profile";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { ObjektSidebar } from "./common";
@@ -20,7 +21,10 @@ export default function StaticObjekt({ collection, token, isPinned }: Props) {
   const authenticated = useAuthenticated();
 
   return (
-    <ExpandableObjekt tokenId={token.tokenId} collection={collection}>
+    <ExpandableObjekt
+      selectionKey={tokenKey(token.tokenId)}
+      collection={collection}
+    >
       <ObjektSidebar collection={collection} serial={token.serial} />
       <InformationOverlay collection={collection} token={token} />
       <ActionOverlay

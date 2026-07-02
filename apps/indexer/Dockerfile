@@ -5,7 +5,7 @@ FROM node:22-slim AS node
 FROM bun AS pruner
 WORKDIR /app
 COPY . .
-RUN bunx turbo@2.9.16 prune indexer --docker
+RUN bunx turbo@2.9.18 prune indexer --docker
 
 # stage 2: install dependencies with bun
 FROM bun AS installer

@@ -1,5 +1,5 @@
 import { indexer } from "@/lib/server/db/indexer";
-import { collections } from "@/lib/server/db/indexer/schema";
+import { collections, members } from "@/lib/server/db/indexer/schema";
 import {
   withArtist,
   withClass,
@@ -12,8 +12,9 @@ import {
 } from "@/lib/server/objekts/filters.server";
 import type { IndexedObjekt, ObjektResponse } from "@/lib/universal/objekts";
 import { objektIndexBackendSchema } from "@/lib/universal/parsers";
+import { isMemberSort } from "@apollo/cosmo/types/common";
 import { createServerFn } from "@tanstack/react-start";
-import { and } from "drizzle-orm";
+import { and, eq, getColumns } from "drizzle-orm";
 
 const LIMIT = 60;
 
@@ -34,9 +35,17 @@ export const $fetchObjektsIndex = createServerFn({ method: "GET" })
       ...withSelectedArtists(data.artists),
     );
 
-    // build the query
-    let query = indexer.select().from(collections).where(where).$dynamic();
-    query = withObjektIndexSort(query, data.sort ?? "newest");
+    // build the query (explicit columns so the member join can't reshape rows)
+    const sort = data.sort ?? "newest";
+    let query = indexer
+      .select(getColumns(collections))
+      .from(collections)
+      .where(where)
+      .$dynamic();
+    if (isMemberSort(sort)) {
+      query = query.leftJoin(members, eq(members.name, collections.member));
+    }
+    query = withObjektIndexSort(query, sort);
     query = query.limit(LIMIT).offset(data.page * LIMIT);
 
     const [collectionList, total] = await Promise.all([

@@ -6,20 +6,23 @@ import {
 import * as z from "zod";
 import { transferTypes } from "./transfers";
 
+// cap on distinct filter values parsed from a URL; anything longer hits HTTP
+// limits anyway, and this guards against oversized IN clauses
+const MAX_FILTER_VALUES = 12;
+
 /**
- * COSMO expects comma-separated values for array filters like:
- * - `?season=Atom01,Binary01`
- * URLSearchParams.getAll() returns `Atom01,Binary01` as it expects arrays in the format of:
- * - `?season=Atom01&season=Binary01`
- * Provides a helper function to cast the value to an array before running it through validation.
+ * Array filters serialize to comma-separated values in the URL (e.g.
+ * `?season=Atom01,Binary01`, via the router's stringifySearch). Coerces the parsed
+ * value into an array before validation, accepting a real array (legacy JSON-encoded
+ * URLs), a comma-separated string, or a single bare value.
  */
 export function castToArray<TSchema extends z.Schema>(schema: TSchema) {
   return z.preprocess((val) => {
-    if (Array.isArray(val)) return val;
-
-    const str = String(val);
-    if (str === "") return [];
-    return str.includes(",") ? str.split(",") : [str];
+    const raw = Array.isArray(val) ? val : String(val).split(",");
+    return [...new Set(raw.filter((v) => v !== ""))].slice(
+      0,
+      MAX_FILTER_VALUES,
+    );
   }, z.array(schema));
 }
 
@@ -30,8 +33,8 @@ export const cosmoSchema = z.object({
   sort: z.enum(validSorts).nullish().catch(null),
   season: castToArray(z.string()).nullish(),
   class: castToArray(z.string()).nullish(),
-  on_offline: castToArray(z.enum(validOnlineTypes)).nullish().catch(null),
-  member: z.string().nullish(),
+  on_offline: castToArray(z.enum(validOnlineTypes)).catch([]).nullish(),
+  member: castToArray(z.string()).nullish(),
   artist: z
     .string()
     .transform(
@@ -126,13 +129,13 @@ export const transfersBackendSchema = cosmoSchema
     artists: z.string().array().default([]),
   });
 
-// progress frontend
+// progress frontend - progress/leaderboards are single-member by design
 export const progressFrontendSchema = cosmoSchema
   .pick({
-    member: true,
     artist: true,
   })
   .extend({
+    member: z.string().nullish(),
     season: z.string().nullish(),
     filter: z.enum(validOnlineTypes).nullish(),
     leaderboard: z.coerce.boolean().nullish(),

@@ -42,7 +42,7 @@ export async function getTypesenseResults({
         q: query,
         query_by: "member,description,season,shortCode",
         query_by_weights: "3,2,1,1",
-        sort_by: "createdAt:desc",
+        sort_by: buildSortBy(filters.sort),
         page: page,
         per_page: PER_PAGE,
         filter_by: buildFilterBy(filters, artists),
@@ -65,6 +65,27 @@ export async function getTypesenseResults({
 }
 
 /**
+ * Map the selected sort to a Typesense sort_by expression.
+ */
+function buildSortBy(sort: CosmoFilters["sort"]): string {
+  switch (sort) {
+    case "oldest":
+      return "createdAt:asc";
+    case "noAscending":
+      return "collectionNo:asc,createdAt:asc";
+    case "noDescending":
+      return "collectionNo:desc,createdAt:asc";
+    case "memberAsc":
+      return "memberSortOrder(missing_values: last):asc,collectionNo:asc,createdAt:asc";
+    case "memberDesc":
+      return "memberSortOrder(missing_values: last):desc,collectionNo:asc,createdAt:asc";
+    // newest (default), plus serial sorts which don't apply to collection search
+    default:
+      return "createdAt:desc";
+  }
+}
+
+/**
  * Build a filter string for Typesense.
  */
 function buildFilterBy(filters: CosmoFilters, artists: string[]) {
@@ -78,8 +99,8 @@ function buildFilterBy(filters: CosmoFilters, artists: string[]) {
   }
 
   // member filter
-  if (filters.member) {
-    allFilters.push(`member:${filters.member}`);
+  if (filters.member && filters.member.length > 0) {
+    allFilters.push(`member:[${filters.member.join(",")}]`);
   }
 
   // season filter

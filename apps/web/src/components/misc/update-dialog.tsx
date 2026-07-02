@@ -83,6 +83,16 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2026-06-28",
+    changes: [
+      "Added: Pin reordering with support for drag & drop",
+      "Added: Sorting by member debut order",
+      "Added: Objekt multi-select / add-to-list to the collections page",
+      "Added: Selecting multiple members at once, including cross-group",
+      "Fixed: Sorting now applies when using the search bar",
+    ],
+  },
+  {
     date: "2026-06-16",
     changes: [
       "Added multi-select when adding objekts to lists from your profile.",

@@ -167,6 +167,7 @@
   "toast_removed_from_list": "{collectionId}를 {listName}에서 제거했습니다",
   "toast_pinned": "{collectionId}를 고정했습니다",
   "toast_unpinned": "{collectionId} 고정을 해제했습니다",
+  "toast_pin_reorder_error": "고정 순서 변경에 실패했습니다",
   "toast_metadata_updated": "메타데이터가 업데이트되었습니다.",
   "toast_metadata_update_failed": "메타데이터 업데이트 실패",
   "toast_artist_not_found": "아티스트를 찾을 수 없습니다",
@@ -252,13 +253,15 @@
   "list_picker_no_copies": "이 컬렉션의 오브젝트를 보유하고 있지 않습니다.",
   "list_picker_add_count": "{count}개 추가",
   "list_already_on_list": "{collectionId}이(가) 이미 이 리스트에 있습니다",
-  "batch_selected_count": [{
-    "declarations": ["input count", "local countPlural = count: plural"],
-    "selectors": ["countPlural"],
-    "match": {
-      "countPlural=other": "{count}개 선택됨"
+  "batch_selected_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}개 선택됨"
+      }
     }
-  }],
+  ],
   "batch_add_to_list": "리스트",
   "batch_clear_selection": "선택 해제",
   "batch_show_selection": "선택 항목",
@@ -284,13 +287,15 @@
   "list_matches_description": "{listName}의 매칭",
   "list_matches_empty": "아직 상호 매칭이 없습니다.",
   "list_matches_overlap_count": "{count}개 일치",
-  "list_matches_count_label": [{
-    "declarations": ["input count", "local countPlural = count: plural"],
-    "selectors": ["countPlural"],
-    "match": {
-      "countPlural=other": "매칭 {count}개"
+  "list_matches_count_label": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "매칭 {count}개"
+      }
     }
-  }],
+  ],
   "list_matches_they_have_you_want": "상대 보유 — 본인 희망",
   "list_matches_you_have_they_want": "본인 보유 — 상대 희망",
   "list_matches_have_label": "보유",
@@ -487,6 +492,41 @@
   "admin_era_image_invalid_type": "잘못된 파일 형식입니다. JPG, PNG, GIF 또는 WebP 이미지를 선택하세요.",
   "admin_era_image_too_large": "파일이 너무 큽니다. 최대 크기는 1MB입니다.",
   "admin_era_image_upload_failed": "이미지 업로드에 실패했습니다",
+  "admin_collections_title": "컬렉션",
+  "admin_collection_load": "컬렉션 불러오기",
+  "admin_collection_not_found": "\"{slug}\" 슬러그에 해당하는 컬렉션을 찾을 수 없습니다.",
+  "admin_collection_artist": "아티스트",
+  "admin_collection_member": "멤버",
+  "admin_collection_member_placeholder": "멤버 선택",
+  "admin_collection_season": "시즌",
+  "admin_collection_season_placeholder": "시즌 선택",
+  "admin_collection_class": "클래스",
+  "admin_collection_class_placeholder": "클래스 선택",
+  "admin_collection_no": "컬렉션 번호",
+  "admin_collection_no_placeholder": "101Z",
+  "admin_collection_field_collection_id": "컬렉션 ID",
+  "admin_collection_field_slug": "슬러그",
+  "admin_collection_text_color": "텍스트 색상",
+  "admin_collection_background_color": "배경 색상",
+  "admin_collection_accent_color": "강조 색상",
+  "admin_collection_on_offline": "온라인 / 오프라인",
+  "admin_collection_online": "온라인",
+  "admin_collection_offline": "오프라인",
+  "admin_collection_has_audio": "오디오 포함",
+  "admin_collection_front_media": "전면 미디어",
+  "admin_collection_media_select": "영상 선택",
+  "admin_collection_media_none": "미디어 없음",
+  "admin_collection_media_invalid_type": "잘못된 파일 형식입니다. MP4 영상을 선택하세요.",
+  "admin_collection_media_class_hint": "미디어는 Motion 또는 Double 클래스 오브젝트에만 업로드할 수 있습니다.",
+  "admin_collection_media_upload_failed": "미디어 업로드에 실패했습니다",
+  "admin_collection_refetch": "COSMO에서 다시 가져오기",
+  "admin_collection_refetched": "COSMO에서 컬렉션 값을 가져왔습니다. 확인 후 저장하세요.",
+  "admin_collection_updated": "컬렉션이 성공적으로 업데이트되었습니다",
+  "admin_collection_error_not_found": "컬렉션을 찾을 수 없습니다.",
+  "admin_collection_error_no_objekt": "메타데이터를 가져올 오브젝트가 이 컬렉션에 없습니다.",
+  "admin_collection_error_invalid_season": "선택한 시즌이 선택한 아티스트에 속하지 않습니다.",
+  "admin_collection_error_invalid_class": "선택한 클래스가 선택한 아티스트에 속하지 않습니다.",
+  "admin_collection_error_metadata_failed": "COSMO에서 메타데이터를 가져오지 못했습니다.",
   "admin_event_image": "이벤트 이미지",
   "admin_event_image_select": "이미지 선택",
   "admin_event_image_hint": "JPG, PNG, GIF 또는 WebP. 최대 1MB.",
@@ -580,12 +620,16 @@
   "filter_sort_no_descending": "번호 높은순",
   "filter_sort_serial_asc": "시리얼 낮은순",
   "filter_sort_serial_desc": "시리얼 높은순",
+  "filter_sort_member_asc": "첫 멤버",
+  "filter_sort_member_desc": "마지막 멤버",
   "filter_sort_newest_sub": "최근에 받은",
   "filter_sort_oldest_sub": "처음 받은",
   "filter_sort_no_ascending_sub": "컬렉션 101 →",
   "filter_sort_no_descending_sub": "컬렉션 999 →",
   "filter_sort_serial_asc_sub": "시리얼 00001 →",
   "filter_sort_serial_desc_sub": "시리얼 99999 →",
+  "filter_sort_member_asc_sub": "데뷔 순 →",
+  "filter_sort_member_desc_sub": "역순 →",
   "filter_type": "유형",
   "filter_action": "액션",
   "filter_online_any": "전체",
@@ -705,6 +749,11 @@
   "objekt_overlay_unlocked": "잠금 해제됨",
   "objekt_overlay_pin_aria": "{collectionId} 고정",
   "objekt_overlay_unpin_aria": "{collectionId} 고정 해제",
+  "pin_reorder_instructions": "고정된 오브젝트를 집으려면 스페이스바 또는 엔터를 누르세요. 드래그하는 동안 화살표 키로 오브젝트를 이동할 수 있습니다. 스페이스바 또는 엔터를 다시 누르면 놓이고, Esc를 누르면 취소됩니다.",
+  "pin_reorder_picked_up": "고정된 오브젝트를 집었습니다. 현재 {total}개 중 {position}번째 위치입니다.",
+  "pin_reorder_over": "고정된 오브젝트를 {total}개 중 {position}번째 위치로 이동했습니다.",
+  "pin_reorder_dropped": "고정된 오브젝트를 {total}개 중 {position}번째 위치에 놓았습니다.",
+  "pin_reorder_cancelled": "고정 순서 변경을 취소했습니다.",
   "objekt_overlay_lock_aria": "이 오브젝트 잠금",
   "objekt_overlay_unlock_aria": "이 오브젝트 잠금 해제",
 

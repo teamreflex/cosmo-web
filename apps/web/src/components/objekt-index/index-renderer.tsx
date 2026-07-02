@@ -11,6 +11,7 @@ import IndexListDropdown from "../lists/index-list-dropdown";
 import CosmoMemberFilter from "../objekt/cosmo-member-filter";
 import RoutedExpandableObjekt from "../objekt/objekt-routed";
 import VirtualizedObjektGrid from "../objekt/virtualized-objekt-grid";
+import BatchSelectionBar from "../profile/batch-selection-bar";
 import { Button } from "../ui/button";
 import TitleHeader from "../ui/title-header";
 import { IndexGridItem } from "./index-grid-item";
@@ -82,6 +83,8 @@ export default function IndexRenderer(props: Props) {
         {/* if there's a slug in the url, open an expandable objekt dialog */}
         <RoutedExpandableObjekt />
       </div>
+
+      {authenticated && <BatchSelectionBar objektLists={props.objektLists} />}
     </div>
   );
 }

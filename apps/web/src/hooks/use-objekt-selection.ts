@@ -4,43 +4,67 @@ import { MAX_OBJEKT_SELECTIONS } from "@/lib/universal/schema/objekt-list";
 import { toast } from "sonner";
 import { create } from "zustand";
 
-export type SelectedObjekt = {
-  collection: Objekt.Collection;
-  token: Objekt.Token;
-};
+export type SelectedObjekt =
+  | { type: "token"; collection: Objekt.Collection; token: Objekt.Token }
+  | { type: "collection"; collection: Objekt.Collection };
+
+export type TokenSelection = Extract<SelectedObjekt, { type: "token" }>;
+
+/**
+ * Narrow a selection to an owned token instance.
+ */
+export const isTokenSelection = (s: SelectedObjekt): s is TokenSelection =>
+  s.type === "token";
+
+/**
+ * Stable selection key for a token instance (profile, per owned serial).
+ */
+export const tokenKey = (tokenId: number) => `token:${tokenId}`;
+
+/**
+ * Stable selection key for a collection (index, no owned serial).
+ */
+export const collectionKey = (slug: string) => `collection:${slug}`;
+
+/**
+ * Derive the selection key for an item from its discriminant.
+ */
+export const selectionKey = (item: SelectedObjekt) =>
+  item.type === "token"
+    ? tokenKey(item.token.tokenId)
+    : collectionKey(item.collection.slug);
 
 type ObjektSelectionState = {
   selected: SelectedObjekt[];
-  select: (objekt: SelectedObjekt) => void;
-  isSelected: (tokenId: number) => boolean;
-  hasSelected: (tokenIds: number[]) => boolean;
-  remove: (tokenId: number) => void;
+  select: (item: SelectedObjekt) => void;
+  isSelected: (key: string) => boolean;
+  hasSelected: (keys: string[]) => boolean;
+  remove: (key: string) => void;
   reset: () => void;
 };
 
 /**
- * Multi-select store for batch-adding owned objekts to a list from the user's
- * own profile. Holds the full objekt so previews and payloads need no re-fetch.
+ * Multi-select store for batch-adding objekts to a list. Holds either owned
+ * token instances (profile) or collections (index) as a discriminated union,
+ * keyed by a stable selection key so previews and payloads need no re-fetch.
  */
 export const useObjektSelection = create<ObjektSelectionState>()(
   (set, get) => ({
     selected: [],
 
     /**
-     * Toggle an objekt in the selection, keyed by token id. Caps the selection at
-     * MAX_SELECTIONS, surfacing a toast when a new pick would overflow.
+     * Toggle an item in the selection, keyed by its selection key. Caps the
+     * selection at MAX_SELECTIONS, surfacing a toast when a new pick would
+     * overflow.
      */
-    select: (objekt) =>
+    select: (item) =>
       set((state) => {
-        const exists = state.selected.some(
-          (s) => s.token.tokenId === objekt.token.tokenId,
-        );
+        const key = selectionKey(item);
+        const exists = state.selected.some((s) => selectionKey(s) === key);
 
         if (exists) {
           return {
-            selected: state.selected.filter(
-              (s) => s.token.tokenId !== objekt.token.tokenId,
-            ),
+            selected: state.selected.filter((s) => selectionKey(s) !== key),
           };
         }
 
@@ -51,27 +75,26 @@ export const useObjektSelection = create<ObjektSelectionState>()(
           return state;
         }
 
-        return { selected: [...state.selected, objekt] };
+        return { selected: [...state.selected, item] };
       }),
 
     /**
-     * Whether the given token is currently selected.
+     * Whether the given selection key is currently selected.
      */
-    isSelected: (tokenId) =>
-      get().selected.some((s) => s.token.tokenId === tokenId),
+    isSelected: (key) => get().selected.some((s) => selectionKey(s) === key),
 
     /**
-     * Whether any of the given tokens are currently selected.
+     * Whether any of the given selection keys are currently selected.
      */
-    hasSelected: (tokenIds) =>
-      get().selected.some((s) => tokenIds.includes(s.token.tokenId)),
+    hasSelected: (keys) =>
+      get().selected.some((s) => keys.includes(selectionKey(s))),
 
     /**
-     * Remove a single token from the selection.
+     * Remove a single item from the selection by its selection key.
      */
-    remove: (tokenId) =>
+    remove: (key) =>
       set((state) => ({
-        selected: state.selected.filter((s) => s.token.tokenId !== tokenId),
+        selected: state.selected.filter((s) => selectionKey(s) !== key),
       })),
 
     /**

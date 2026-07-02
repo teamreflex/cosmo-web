@@ -2,8 +2,15 @@ import {
   sentryGlobalFunctionMiddleware,
   sentryGlobalRequestMiddleware,
 } from "@sentry/tanstackstart-react";
-import { createStart } from "@tanstack/react-start";
+import { createCsrfMiddleware, createStart } from "@tanstack/react-start";
 import { expectedErrorSerializationAdapter } from "./lib/universal/errors/serialization";
+
+/**
+ * Add CSRF middleware to server functions.
+ */
+const csrfMiddleware = createCsrfMiddleware({
+  filter: (ctx) => ctx.handlerType === "serverFn",
+});
 
 /**
  * Global Start configuration. Sentry's middleware run first so every API route
@@ -13,7 +20,7 @@ import { expectedErrorSerializationAdapter } from "./lib/universal/errors/serial
  * it by marker.
  */
 export const startInstance = createStart(() => ({
-  requestMiddleware: [sentryGlobalRequestMiddleware],
+  requestMiddleware: [sentryGlobalRequestMiddleware, csrfMiddleware],
   functionMiddleware: [sentryGlobalFunctionMiddleware],
   serializationAdapters: [expectedErrorSerializationAdapter],
 }));

@@ -5,6 +5,8 @@
   "exclude": ["node_modules", ".turbo", "lib"],
 
   "compilerOptions": {
+    "lib": ["ES2023"],
+
     // TypeORM decorators
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,

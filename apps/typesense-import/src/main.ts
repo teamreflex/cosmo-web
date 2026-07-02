@@ -73,9 +73,22 @@ const main = Effect.gen(function* () {
       });
     });
 
+    // canonical member sort order, joined onto collection.member for member sorting
+    const memberRows = yield* Effect.promise(async () => {
+      return await indexer.query.members.findMany({
+        columns: {
+          name: true,
+          sortOrder: true,
+        },
+      });
+    });
+
     // build the new objects that will be inserted into typesense
     const descMap = new Map(
       descriptions.map((d) => [d.collectionId, d.description]),
+    );
+    const memberSortMap = new Map(
+      memberRows.map((row) => [row.name, row.sortOrder]),
     );
     const zipped = collections.map((c) => ({
       // collection fields
@@ -83,6 +96,7 @@ const main = Effect.gen(function* () {
       createdAt: new Date(c.createdAt).getTime(),
       // custom fields
       description: descMap.get(c.slug),
+      memberSortOrder: memberSortMap.get(c.member),
       shortCode:
         c.artist !== "idntt"
           ? getShortCode(c.collectionNo, c.season)

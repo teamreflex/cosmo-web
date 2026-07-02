@@ -7,6 +7,7 @@ import {
 } from "@/lib/functions/objekts/objekt-blockchain-groups";
 import { $fetchObjektsIndex } from "@/lib/functions/objekts/objekt-index";
 import { $fetchObjektListEntries } from "@/lib/functions/objekts/objekt-list";
+import { $fetchObjektSerial } from "@/lib/functions/objekts/objekt-serial";
 import { $fetchTransfers } from "@/lib/functions/transfers";
 import type {
   objektIndexFrontendSchema,
@@ -260,6 +261,18 @@ export function objektMetadataQuery(slug: string) {
       }),
     retry: 1,
     staleTime: 1000 * 60 * 10,
+  });
+}
+
+/**
+ * Query options for looking up a single objekt serial in the metadata dialog.
+ */
+export function objektSerialQuery(slug: string, serial: number) {
+  return queryOptions({
+    queryKey: ["objekt-serial", slug, serial],
+    queryFn: ({ signal }) =>
+      $fetchObjektSerial({ signal, data: { slug, serial } }),
+    retry: 1,
   });
 }
 

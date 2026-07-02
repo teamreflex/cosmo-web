@@ -9,7 +9,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useBatchAddToList } from "@/hooks/use-add-to-list";
-import { useObjektSelection } from "@/hooks/use-objekt-selection";
+import {
+  isTokenSelection,
+  useObjektSelection,
+} from "@/hooks/use-objekt-selection";
 import { m } from "@/i18n/messages";
 import { getObjektImageUrls } from "@/lib/client/objekt-util";
 import { $addObjektsToSaleList } from "@/lib/functions/lists";
@@ -65,8 +68,10 @@ type BodyProps = {
 function BatchSaleBody({ list, currency, onClose }: BodyProps) {
   const selected = useObjektSelection((state) => state.selected);
 
-  // only transferable serials can be listed for sale
-  const eligible = selected.filter((s) => s.token.transferable);
+  // only owned, transferable serials can be listed for sale
+  const eligible = selected
+    .filter(isTokenSelection)
+    .filter((s) => s.token.transferable);
 
   const form = useForm({
     resolver: standardSchemaResolver(addObjektsToSaleListSchema),

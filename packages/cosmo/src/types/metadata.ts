@@ -42,7 +42,7 @@ export function normalizeV3(
   metadata: CosmoObjektMetadataV3,
   tokenId: string,
 ): CosmoObjektMetadataV1 {
-  const artist = getTrait(metadata, tokenId, "Artist");
+  const artist = getTrait(metadata, tokenId, "Artist").toLowerCase();
   const className = getTrait(metadata, tokenId, "Class");
   const member = getTrait(metadata, tokenId, "Member");
   const season = getTrait(metadata, tokenId, "Season");
@@ -62,7 +62,7 @@ export function normalizeV3(
       member: member,
       collectionNo: collection,
       class: className,
-      artists: [artist.toLowerCase()],
+      artists: [artist],
       thumbnailImage: thumbnail,
       frontImage: metadata.image,
       backgroundColor: metadata.background_color,
@@ -70,8 +70,8 @@ export function normalizeV3(
       tokenId: tokenId,
       // not possible to get from v3
       backImage: "",
-      accentColor: "",
-      textColor: "#000000",
+      accentColor: metadata.background_color, // usually the same as bg, so remap here
+      textColor: "#ffffff",
       objektNo: 0,
       tokenAddress: "0x0000000000000000000000000000000000000000",
       transferable: true,
@@ -87,7 +87,7 @@ function getTrait(
   tokenId: string,
   trait: string,
 ) {
-  const attr = metadata.attributes.find((attr, _, arr) => {
+  const attr = metadata.attributes.findLast((attr, _, arr) => {
     // special case for unit objekts
     if (
       trait === "Member" &&

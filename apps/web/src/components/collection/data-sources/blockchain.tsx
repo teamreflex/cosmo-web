@@ -6,6 +6,7 @@ import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { filtersAreDirty } from "@/hooks/use-filters";
 import { useGridColumns } from "@/hooks/use-grid-columns";
 import { objektOptions } from "@/hooks/use-objekt-response";
+import { usePinReorder } from "@/hooks/use-pin-reorder";
 import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
 import { userCollectionBlockchainQuery } from "@/lib/queries/objekt-queries";
@@ -28,6 +29,7 @@ export default function Blockchain(props: Props) {
   const { filters } = useCosmoFilters();
   const { selectedIds } = useArtists();
   const gridColumns = useGridColumns();
+  const onReorderPins = usePinReorder();
 
   const usingFilters = filtersAreDirty(filters) || !props.showLocked;
   const isSpin = isEqual(props.targetCosmo.address, Addresses.SPIN);
@@ -86,6 +88,7 @@ export default function Blockchain(props: Props) {
       itemComponentProps={{ authenticated }}
       pins={pins}
       hidePins={usingFilters}
+      onReorderPins={onReorderPins}
       shouldRender={shouldRender}
       showTotal
     />

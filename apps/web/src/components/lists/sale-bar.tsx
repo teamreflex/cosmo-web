@@ -30,18 +30,21 @@ export default function SaleBar(props: Props) {
       onClick={props.onClick}
       disabled={!props.onClick}
       className={cn(
-        "-mt-3 flex w-full items-center justify-between rounded-b-photocard px-2 pt-4 pb-1.5 text-xs font-medium transition-[filter]",
+        "-mt-3 flex w-full min-w-0 items-center justify-between rounded-b-photocard px-2 pt-4 pb-1.5 text-xs font-medium transition-[filter]",
         props.onClick && "cursor-pointer hover:brightness-90",
       )}
       style={{ backgroundColor: props.backgroundColor, color: props.textColor }}
     >
-      {formattedPrice && <span>{formattedPrice}</span>}
+      {/* keep the bar a single line: the grid assumes a fixed cell height */}
+      {formattedPrice && <span className="truncate">{formattedPrice}</span>}
       {market !== null && (
-        <span className="ml-2 opacity-70">
+        <span className="ml-2 truncate opacity-70">
           {m.list_median_price({ price: market })}
         </span>
       )}
-      <span className="ml-auto">x{props.quantity}</span>
+      <span className="ml-auto shrink-0 pl-2 whitespace-nowrap">
+        x{props.quantity}
+      </span>
     </button>
   );
 }
