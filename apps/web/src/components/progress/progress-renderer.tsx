@@ -66,7 +66,7 @@ export default function ProgressRenderer(props: Props) {
           <Button
             variant="outline"
             size="sm"
-            className="shrink-0 md:ml-auto"
+            className="shrink-0 text-xs md:ml-auto"
             asChild
           >
             <Link
