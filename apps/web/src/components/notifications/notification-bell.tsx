@@ -114,7 +114,7 @@ function MarkAllReadButton() {
 
       queryClient.setQueryData<number>(unreadNotificationsQuery.queryKey, 0);
 
-      const now = new Date().toISOString();
+      const now = new Date();
       queryClient.setQueriesData<NotificationListItem[]>(
         { queryKey: ["notifications", "list"] },
         (old) =>

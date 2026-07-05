@@ -53,18 +53,18 @@ async function fetchCollection(slug: string) {
   const result = await indexer
     .select({
       createdAt: collections.createdAt,
-      total: sql<number>`COUNT(*)`,
-      transferable: sql<number>`COUNT(CASE WHEN transferable = true AND ${
+      total: sql`COUNT(*)::int`.mapWith(Number),
+      transferable: sql`COUNT(CASE WHEN transferable = true AND ${
         objekts.owner
-      } != ${addr(Addresses.SPIN)} THEN 1 END)`,
-      percentage: sql<number>`
+      } != ${addr(Addresses.SPIN)} THEN 1 END)::int`.mapWith(Number),
+      percentage: sql`
         ROUND(
           100.0 * COUNT(CASE WHEN transferable = true AND ${
             objekts.owner
-          } != ${addr(Addresses.SPIN)} THEN 1 END) / COUNT(*), 
+          } != ${addr(Addresses.SPIN)} THEN 1 END) / COUNT(*),
           2
         )
-      `,
+      `.mapWith(Number),
     })
     .from(collections)
     .leftJoin(objekts, eq(collections.id, objekts.collectionId))

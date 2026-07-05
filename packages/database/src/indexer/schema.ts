@@ -4,6 +4,7 @@ import {
   boolean,
   index,
   integer,
+  jsonb,
   numeric,
   pgSchema,
   pgTable,
@@ -12,7 +13,6 @@ import {
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
-import { bunJsonb } from "../custom";
 
 // subsquid metadata
 export const subsquidSchema = pgSchema("squid_processor");
@@ -143,7 +143,7 @@ export const members = pgTable("member", {
   cosmoId: integer("cosmo_id").notNull(),
   artistId: varchar("artist_id", { length: 32 }).notNull(),
   alias: text("alias").notNull(),
-  units: bunJsonb("units").$type<string[]>().notNull(),
+  units: jsonb("units").$type<string[]>().notNull(),
   primaryColorHex: text("primary_color_hex").notNull(),
   sortOrder: integer("sort_order").notNull(),
 });

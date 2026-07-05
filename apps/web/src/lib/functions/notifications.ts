@@ -52,7 +52,7 @@ export const $markNotificationsRead = createServerFn({ method: "POST" })
   .middleware([authenticatedMiddleware])
   .handler(async ({ data, context }) => {
     const userId = context.session.session.userId;
-    const now = new Date().toISOString();
+    const now = new Date();
 
     if (data.ids && data.ids.length > 0) {
       await db

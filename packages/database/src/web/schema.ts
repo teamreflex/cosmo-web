@@ -20,7 +20,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 import { user } from "../auth";
-import { bunJsonb, citext, createdAt } from "../custom";
+import { citext, createdAt } from "../custom";
 import type {
   CosmoGravityType,
   CosmoPollType,
@@ -176,8 +176,8 @@ export const notifications = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     type: notificationType("type").notNull(),
-    payload: bunJsonb("payload").$type<NotificationPayload>().notNull(),
-    readAt: timestamp("read_at", { mode: "string" }),
+    payload: jsonb("payload").$type<NotificationPayload>().notNull(),
+    readAt: timestamp("read_at", { mode: "date" }),
   },
   (t) => [
     index("notifications_user_unread_idx").on(t.userId, t.readAt),
@@ -245,11 +245,6 @@ export const events = pgTable(
     endDate: timestamp("end_date", { mode: "date", withTimezone: true }),
     imageUrl: varchar("image_url", { length: 255 }),
     dominantColor: varchar("dominant_color", { length: 16 }),
-    /**
-     * NOTE: uses Drizzle's built-in jsonb, which double-encodes under bun:sql (stored as a JSON string rather than an object).
-     * Existing data is in that format and the read path already copes, so we leave it.
-     * New columns should use `bunJsonb` from ../custom instead.
-     */
     seasons: jsonb("seasons").$type<string[]>().notNull().default([]),
   },
   (t) => [

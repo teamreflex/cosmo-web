@@ -5,6 +5,6 @@ export type NotificationListItem = {
   createdAt: Date;
   type: "list_match";
   payload: NotificationPayload;
-  readAt: string | null;
+  readAt: Date | null;
   sourceUsername: string | null;
 };

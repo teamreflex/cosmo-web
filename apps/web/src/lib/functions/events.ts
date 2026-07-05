@@ -512,7 +512,7 @@ export const $fetchEventObjekts = createServerFn({ method: "GET" })
       .select({
         collectionId: collectionData.collectionId,
         description: collectionData.description,
-        total: sql<number>`count(*) over()`.as("total"),
+        total: sql`count(*) over()::int`.mapWith(Number).as("total"),
       })
       .from(collectionData)
       .innerJoin(events, eq(collectionData.eventId, events.id))
