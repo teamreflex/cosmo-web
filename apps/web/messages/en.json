@@ -696,6 +696,8 @@
   "grid_include_dialog_title": "Include non-transferable objekts",
   "grid_include_dialog_description": "Event rewards can be non-transferable but still usable for grids in COSMO. Included copies only affect this view and reset on reload.",
   "grid_include_empty": "You don't own any non-transferable copies for this edition.",
+  "grid_including_locked": "Including locked",
+  "grid_excluding_locked": "Excluding locked",
   "grid_units_title": "Units",
   "grid_max_units": "{count} achievable",
   "grid_owned_units": "Owned",

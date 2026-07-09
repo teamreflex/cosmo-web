@@ -2,17 +2,23 @@ import AddMissingMenu from "@/components/grid/add-missing-menu";
 import IncludeTokensDialog from "@/components/grid/include-tokens-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
 import type { EditionLedger } from "@/lib/universal/grid";
-import { deficitsFor } from "@/lib/universal/grid";
+import {
+  deficitsFor,
+  excludeLockedTokens,
+  lockedCountFor,
+} from "@/lib/universal/grid";
 import { cn } from "@/lib/utils";
 import {
   IconArrowRight,
+  IconLock,
   IconLockOpen,
   IconMinus,
   IconPlus,
 } from "@tabler/icons-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 type Props = {
   member: string;
@@ -33,7 +39,16 @@ export default function GridEditionRow(props: Props) {
   const [includeOpen, setIncludeOpen] = useState(false);
   // extra grids planned beyond the next one, view-local like overrides
   const [extraGrids, setExtraGrids] = useState(0);
-  const { edition } = props;
+  // hold back locked copies from the count, view-local like overrides
+  const [excludeLocked, setExcludeLocked] = useState(false);
+
+  const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
+  const lockedSet = useMemo(() => new Set(lockedObjekts), [lockedObjekts]);
+  const lockedCandidates = lockedCountFor(props.edition, lockedSet);
+
+  const edition = excludeLocked
+    ? excludeLockedTokens(props.edition, lockedSet)
+    : props.edition;
 
   const target = edition.completable + 1 + extraGrids;
   const deficits = deficitsFor(edition.numbers, target);
@@ -123,7 +138,7 @@ export default function GridEditionRow(props: Props) {
         </div>
       </div>
 
-      {(props.isOwner || candidates > 0) && (
+      {(props.isOwner || candidates > 0 || lockedCandidates > 0) && (
         <div className="flex flex-wrap items-center gap-2">
           {props.isOwner && (
             <AddMissingMenu
@@ -151,6 +166,25 @@ export default function GridEditionRow(props: Props) {
               {m.grid_include_nontransferable()} ({candidates})
             </Button>
           )}
+
+          {lockedCandidates > 0 && (
+            <Button
+              variant={excludeLocked ? "default" : "outline"}
+              size="xs"
+              aria-pressed={excludeLocked}
+              onClick={() => setExcludeLocked((v) => !v)}
+            >
+              {excludeLocked ? (
+                <IconLock className="size-3.5" />
+              ) : (
+                <IconLockOpen className="size-3.5" />
+              )}
+              {excludeLocked
+                ? m.grid_excluding_locked()
+                : m.grid_including_locked()}{" "}
+              ({lockedCandidates})
+            </Button>
+          )}
         </div>
       )}
 
@@ -160,7 +194,7 @@ export default function GridEditionRow(props: Props) {
           onOpenChange={setIncludeOpen}
           member={props.member}
           season={props.season}
-          edition={edition}
+          edition={props.edition}
           includedTokenIds={props.includedTokenIds}
           onToggleToken={props.onToggleToken}
         />
@@ -184,8 +218,9 @@ function GridCard(props: {
     <div className="@container" title={props.title}>
       <div
         className={cn(
-          "relative aspect-photocard overflow-hidden rounded-photocard bg-secondary",
-          props.dim && "border border-dashed border-destructive/60",
+          // border is always present so toggling missing state doesn't shift layout
+          "relative aspect-photocard overflow-hidden rounded-photocard border border-dashed border-transparent bg-secondary",
+          props.dim && "border-destructive/60",
         )}
       >
         {props.image !== null && (

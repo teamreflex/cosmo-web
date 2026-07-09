@@ -101,6 +101,7 @@ export type GridOwnedToken = {
   collectionNo: string;
   tokenId: string;
   serial: number;
+  transferable: boolean;
 };
 
 export type GridMemberRef = {
@@ -117,6 +118,8 @@ export type NumberPool = {
   total: number;
   // full collectionNo retains the A/Z designation pooled into this number
   nonTransferable: { tokenId: string; serial: number; collectionNo: string }[];
+  // transferable token ids in this pool, for matching against the viewer's locked set
+  transferableTokenIds: string[];
 };
 
 export type RewardPool = {
@@ -181,7 +184,7 @@ export type GridLedgerInput = {
   artist: ValidArtist;
   catalog: GridCatalogRow[];
   owned: GridOwnedRow[];
-  nonTransferableTokens: GridOwnedToken[];
+  sourceTokens: GridOwnedToken[];
   memberOrder: GridMemberRef[];
 };
 
@@ -244,7 +247,7 @@ type CatalogEntry = { slug: string; thumbnailImage: string };
  * Builds the full grid ledger for one artist from indexer-derived rows.
  */
 export function buildGridLedger(input: GridLedgerInput): GridLedger {
-  const { artist, catalog, owned, nonTransferableTokens, memberOrder } = input;
+  const { artist, catalog, owned, sourceTokens, memberOrder } = input;
   const sourceClass = sourceClassFor(artist);
   const unitNo = unitNoFor(artist);
 
@@ -320,22 +323,35 @@ export function buildGridLedger(input: GridLedgerInput): GridLedger {
     }
   }
 
-  const tokensByPool = new MemberSeasonMap<
+  // source tokens split per pool: non-transferable copies feed the include
+  // toggle, transferable ids feed locked matching in the viewer's browser
+  const nonTransferableByPool = new MemberSeasonMap<
     Map<string, NumberPool["nonTransferable"]>
   >();
-  for (const token of nonTransferableTokens) {
-    const pools = tokensByPool.getOrCreate(
-      token.member,
-      token.season,
-      () => new Map(),
-    );
-    getOrCreate(pools, stripNo(token.collectionNo), () => []).push({
-      tokenId: token.tokenId,
-      serial: token.serial,
-      collectionNo: token.collectionNo,
-    });
+  const transferableByPool = new MemberSeasonMap<Map<string, string[]>>();
+  for (const token of sourceTokens) {
+    const no = stripNo(token.collectionNo);
+    if (token.transferable) {
+      const pools = transferableByPool.getOrCreate(
+        token.member,
+        token.season,
+        () => new Map(),
+      );
+      getOrCreate(pools, no, () => []).push(token.tokenId);
+    } else {
+      const pools = nonTransferableByPool.getOrCreate(
+        token.member,
+        token.season,
+        () => new Map(),
+      );
+      getOrCreate(pools, no, () => []).push({
+        tokenId: token.tokenId,
+        serial: token.serial,
+        collectionNo: token.collectionNo,
+      });
+    }
   }
-  for (const [, , pools] of tokensByPool.entries()) {
+  for (const [, , pools] of nonTransferableByPool.entries()) {
     for (const tokens of pools.values()) {
       tokens.sort((a, b) => a.serial - b.serial);
     }
@@ -370,7 +386,8 @@ export function buildGridLedger(input: GridLedgerInput): GridLedger {
       if (!catalogNumbers) continue;
 
       const pools = sourceCounts.get(member, season);
-      const tokens = tokensByPool.get(member, season);
+      const nonTransferable = nonTransferableByPool.get(member, season);
+      const transferable = transferableByPool.get(member, season);
       const rewards = rewardCounts.get(member, season);
       const rewardEntries = rewardCatalog.get(member, season);
 
@@ -389,7 +406,8 @@ export function buildGridLedger(input: GridLedgerInput): GridLedger {
             thumbnailImage: entry.thumbnailImage,
             usable: pool?.transferable ?? 0,
             total: pool?.total ?? 0,
-            nonTransferable: tokens?.get(no) ?? [],
+            nonTransferable: nonTransferable?.get(no) ?? [],
+            transferableTokenIds: transferable?.get(no) ?? [],
           });
         }
         if (numbers.length !== def.numbers.length) continue;
@@ -602,4 +620,41 @@ export function applyGridOverrides(
       })),
     })),
   };
+}
+
+/**
+ * Count the viewer's locked (yet transferable) copies across an edition's
+ * pools, used to size and gate the exclude-locked toggle.
+ */
+export function lockedCountFor(
+  edition: EditionLedger,
+  lockedTokenIds: ReadonlySet<number>,
+): number {
+  return edition.numbers.reduce(
+    (acc, pool) =>
+      acc +
+      pool.transferableTokenIds.filter((id) => lockedTokenIds.has(Number(id)))
+        .length,
+    0,
+  );
+}
+
+/**
+ * Recompute an edition with the viewer's locked copies removed from usable.
+ * Locked objekts stay transferable, so they count towards grids unless the
+ * viewer opts to hold them back. View-local, like applyGridOverrides.
+ */
+export function excludeLockedTokens(
+  edition: EditionLedger,
+  lockedTokenIds: ReadonlySet<number>,
+): EditionLedger {
+  const numbers = edition.numbers.map((pool) => {
+    const locked = pool.transferableTokenIds.filter((id) =>
+      lockedTokenIds.has(Number(id)),
+    ).length;
+    return locked > 0
+      ? { ...pool, usable: Math.max(0, pool.usable - locked) }
+      : pool;
+  });
+  return { ...edition, numbers, ...completion(numbers) };
 }

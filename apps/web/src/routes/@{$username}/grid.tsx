@@ -51,7 +51,11 @@ function RouteComponent() {
   return (
     <section className="flex flex-col">
       <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
-        <ProfileProvider target={target}>
+        <ProfileProvider
+          key={target.cosmo.address}
+          target={target}
+          lockedObjekts={target.user ? target.lockedObjekts : []}
+        >
           <GridRenderer address={target.cosmo.address} />
           <Portal to="#help">
             <HelpDialog />

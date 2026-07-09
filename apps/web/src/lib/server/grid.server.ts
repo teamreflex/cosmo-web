@@ -83,10 +83,11 @@ export async function fetchOwnedGridCounts(
 }
 
 /**
- * Fetch the individual non-transferable source-class tokens owned by the
- * address, for the view-local "include non-transferable" toggle.
+ * Fetch the individual source-class tokens owned by the address, split by
+ * transferability. Non-transferable copies feed the "include non-transferable"
+ * toggle; transferable ids feed the "exclude locked" toggle.
  */
-export async function fetchNonTransferableGridTokens(
+export async function fetchGridSourceTokens(
   address: string,
   artist: ValidArtist,
 ): Promise<GridOwnedToken[]> {
@@ -97,13 +98,13 @@ export async function fetchNonTransferableGridTokens(
       collectionNo: collections.collectionNo,
       tokenId: objekts.id,
       serial: objekts.serial,
+      transferable: objekts.transferable,
     })
     .from(objekts)
     .innerJoin(collections, eq(objekts.collectionId, collections.id))
     .where(
       and(
         eq(objekts.owner, address.toLowerCase()),
-        eq(objekts.transferable, false),
         eq(collections.artist, artist.toLowerCase()),
         eq(collections.class, sourceClassFor(artist)),
       ),

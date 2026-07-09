@@ -696,6 +696,8 @@
   "grid_include_dialog_title": "Inclure les objekts non-transférables",
   "grid_include_dialog_description": "Les récompenses d'événements peuvent être non-transférables mais utilisables pour les grids dans COSMO. Les copies incluses n'affectent que cet affichage et sont réinitialisées au rechargement.",
   "grid_include_empty": "Vous ne possédez aucune copie non-transférable pour cette édition.",
+  "grid_including_locked": "Verrouillés inclus",
+  "grid_excluding_locked": "Verrouillés exclus",
   "grid_units_title": "Units",
   "grid_max_units": "{count} réalisable(s)",
   "grid_owned_units": "Possédés",

@@ -12,6 +12,8 @@ import {
   buildGridLedger,
   computeMaxUnits,
   deficitsFor,
+  excludeLockedTokens,
+  lockedCountFor,
 } from "../src/lib/universal/grid";
 
 function catalogRow(
@@ -55,8 +57,9 @@ function token(
   collectionNo: string,
   tokenId: string,
   serial: number,
+  transferable = false,
 ): GridOwnedToken {
-  return { season, member, collectionNo, tokenId, serial };
+  return { season, member, collectionNo, tokenId, serial, transferable };
 }
 
 function range(from: number, to: number): string[] {
@@ -93,7 +96,7 @@ function build(input: Partial<GridLedgerInput> & { artist: ValidArtist }) {
   return buildGridLedger({
     catalog: [],
     owned: [],
-    nonTransferableTokens: [],
+    sourceTokens: [],
     memberOrder: memberRefs,
     ...input,
   });
@@ -401,7 +404,7 @@ describe("buildGridLedger", () => {
       artist: "tripleS",
       catalog: fullSeasonCatalog("Atom02", "SeoYeon"),
       owned: [ownedRow("Atom02", "SeoYeon", "First", "101Z", false, 2)],
-      nonTransferableTokens: [
+      sourceTokens: [
         token("Atom02", "SeoYeon", "101A", "9002", 42),
         token("Atom02", "SeoYeon", "101Z", "9001", 7),
       ],
@@ -514,7 +517,7 @@ describe("applyGridOverrides", () => {
       ),
       ownedRow("Atom02", "SeoYeon", "First", "101Z", false),
     ],
-    nonTransferableTokens: [token("Atom02", "SeoYeon", "101Z", "9001", 7)],
+    sourceTokens: [token("Atom02", "SeoYeon", "101Z", "9001", 7)],
     memberOrder: memberRefs,
   };
 
@@ -541,6 +544,44 @@ describe("applyGridOverrides", () => {
 
     const adjusted = applyGridOverrides(ledger, new Set(["nope"]));
     expect(adjusted.members[0]?.seasons[0]?.editions[0]?.completable).toBe(0);
+  });
+});
+
+describe("excludeLockedTokens", () => {
+  const input: GridLedgerInput = {
+    artist: "tripleS",
+    catalog: fullSeasonCatalog("Atom02", "SeoYeon"),
+    owned: range(101, 108).map((no) =>
+      ownedRow("Atom02", "SeoYeon", "First", `${no}Z`, true),
+    ),
+    sourceTokens: range(101, 108).map((no, i) =>
+      token("Atom02", "SeoYeon", `${no}Z`, `${1000 + i}`, i, true),
+    ),
+    memberOrder: memberRefs,
+  };
+
+  it("holds locked copies back from usable and recomputes completion", () => {
+    const edition = buildGridLedger(input).members[0]?.seasons[0]?.editions[0];
+    if (!edition) throw new Error("expected an edition");
+    expect(edition.completable).toBe(1);
+
+    // lock the transferable copy backing number 101 (token id 1000)
+    const excluded = excludeLockedTokens(edition, new Set([1000]));
+    expect(excluded.completable).toBe(0);
+    expect(excluded.numbers.find((n) => n.collectionNo === "101")?.usable).toBe(
+      0,
+    );
+    // untouched pools keep their usable copy
+    expect(excluded.numbers.find((n) => n.collectionNo === "102")?.usable).toBe(
+      1,
+    );
+  });
+
+  it("counts locked candidates, ignoring unknown ids", () => {
+    const edition = buildGridLedger(input).members[0]?.seasons[0]?.editions[0];
+    if (!edition) throw new Error("expected an edition");
+    expect(lockedCountFor(edition, new Set([1000, 1001]))).toBe(2);
+    expect(lockedCountFor(edition, new Set([9999]))).toBe(0);
   });
 });
 

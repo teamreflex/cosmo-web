@@ -1,7 +1,7 @@
 import {
   fetchGridCatalog,
   fetchGridMembers,
-  fetchNonTransferableGridTokens,
+  fetchGridSourceTokens,
   fetchOwnedGridCounts,
 } from "@/lib/server/grid.server";
 import type { GridLedger } from "@/lib/universal/grid";
@@ -25,19 +25,18 @@ export const $fetchGridLedger = createServerFn({ method: "GET" })
       };
     }
 
-    const [catalog, owned, nonTransferableTokens, memberOrder] =
-      await Promise.all([
-        fetchGridCatalog(data.artist),
-        fetchOwnedGridCounts(data.address, data.artist),
-        fetchNonTransferableGridTokens(data.address, data.artist),
-        fetchGridMembers(data.artist),
-      ]);
+    const [catalog, owned, sourceTokens, memberOrder] = await Promise.all([
+      fetchGridCatalog(data.artist),
+      fetchOwnedGridCounts(data.address, data.artist),
+      fetchGridSourceTokens(data.address, data.artist),
+      fetchGridMembers(data.artist),
+    ]);
 
     return buildGridLedger({
       artist: data.artist,
       catalog,
       owned,
-      nonTransferableTokens,
+      sourceTokens,
       memberOrder,
     });
   });

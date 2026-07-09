@@ -694,6 +694,8 @@
   "grid_include_dialog_title": "전송 불가 오브젝트 포함",
   "grid_include_dialog_description": "이벤트 보상은 전송 불가여도 COSMO 그리드에 사용할 수 있습니다. 포함된 오브젝트는 현재 화면에만 반영되며 새로고침 시 초기화됩니다.",
   "grid_include_empty": "이 에디션의 전송 불가 오브젝트를 보유하고 있지 않습니다.",
+  "grid_including_locked": "잠금 포함",
+  "grid_excluding_locked": "잠금 제외",
   "grid_units_title": "유닛",
   "grid_max_units": "{count}개 달성 가능",
   "grid_owned_units": "보유",

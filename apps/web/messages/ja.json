@@ -694,6 +694,8 @@
   "grid_include_dialog_title": "転送不可のオブジェクトを含める",
   "grid_include_dialog_description": "イベント特典は転送不可でもCOSMOのグリッドに使用できます。含めたコピーはこの表示のみに反映され、再読み込みでリセットされます。",
   "grid_include_empty": "このエディションの転送不可のコピーを所有していません。",
+  "grid_including_locked": "ロック済みを含む",
+  "grid_excluding_locked": "ロック済みを除外",
   "grid_units_title": "ユニット",
   "grid_max_units": "{count}個達成可能",
   "grid_owned_units": "所有",
