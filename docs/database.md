@@ -21,6 +21,14 @@ import { type User, type CosmoAccount } from "@apollo/database";
 
 New **projection / joined / UI** types — anything shaped for the app rather than 1:1 with a table — go in `apps/web/src/lib/universal/`, **not** in the database package (`packages/database/src/web/types.ts`).
 
+### Adding indexer columns that flow to the UI
+
+When a new indexer `collection` column needs to reach the UI's objekt types, declare it on the cosmo types (`ObjektBaseFields` and `BFFCollectionGroupCollection` in `packages/cosmo/src/types/objekts.ts`) rather than defaulting it in converters. `mapLegacyObjekt` synthesizes a `CosmoObjekt` from indexer data via spread, so the field is already structurally present at runtime — declaring it just makes TS reflect that, letting the converters in `objekt-conversion.ts` read it without casts or hardcoded defaults. `IndexedObjekt` (Drizzle infer) picks up new columns automatically. Don't mistake the cosmo types for "upstream API only" — they're the shared shape across all objekt sources.
+
+## Immutable Collection Keys
+
+`collection.slug` and `collection.collectionId` are immutable lookup keys (`collectionId = "<Season> <Member> <CollectionNo>"`, `slug = slugifyObjekt(collectionId)`). Never recompute them when editing a collection — even if the fields they derive from change — as they are the stable join/lookup keys for the web app and the processor's upsert logic. Update handlers persist only the explicitly editable fields; derived media keys reuse the row's existing slug.
+
 ## Timestamp Columns
 
 Use `mode: "date"`, never `mode: "string"`. `bun:sql` returns `Date` objects; `mode: "string"` emits a zoneless, space-separated string that breaks older Safari and throws on `undefined`. `mode` is a JS-only concern — changing it requires no migration.

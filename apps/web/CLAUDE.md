@@ -27,14 +27,7 @@ This is the core TanStack Start web app for Apollo.
 
 ## Documentation
 
-Detailed conventions live in `docs/` at the repo root. Read the relevant file **before** working in that area:
-
-| When you're working on… | Read |
-| --- | --- |
-| Database queries, schema, migrations, derived/projection types | [`docs/database.md`](../../docs/database.md) |
-| Routes, loaders, data fetching, server functions, import protection | [`docs/tanstack.md`](../../docs/tanstack.md) |
-| Components, forms, Tailwind/styling, i18n strings | [`docs/frontend.md`](../../docs/frontend.md) |
-| Throwing/handling errors, `ExpectedError`, Sentry filtering | [`docs/errors.md`](../../docs/errors.md) |
+Detailed conventions live in `docs/` at the repo root — see the doc-map in the root `CLAUDE.md`. Read the relevant file **before** working in that area.
 
 ## Development
 

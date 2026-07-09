@@ -43,6 +43,10 @@ When adding or modifying entities, follow this exact workflow:
 - Test migrations locally before committing
 - Include a short comment detailing what the change is for (ie: what does a new index seek to improve)
 
+### Online DDL
+
+The Subsquid migration runner hard-codes `transaction: 'all'`, so `CONCURRENTLY` DDL cannot run through migrations. Run it out-of-band via `psql` (autocommit, one statement at a time) — the indexer's short batched write transactions mean `CONCURRENTLY` index builds/drops drain in seconds even on the ~25M-row `transfer` table — then ship an idempotent `IF [NOT] EXISTS` migration as the record.
+
 ## Core Patterns & Conventions
 
 ### Address Normalization
@@ -116,98 +120,14 @@ for (let i = 0; i < results.length; i++) {
 }
 ```
 
-## Key Files & Structure
+## Key Files
 
-```
-src/
-├── main.ts           # Entry point with business logic
-├── processor.ts      # Subsquid processor configuration
-├── parser.ts         # Event/transaction parsing
-├── env.ts            # Environment validation (Zod)
-├── model/
-│   └── generated/    # TypeORM entities (manually maintained)
-│       ├── collection.model.ts
-│       ├── objekt.model.ts
-│       ├── transfer.model.ts
-│       ├── comoBalance.model.ts
-│       ├── vote.model.ts
-│       └── marshal.ts    # Type transformers (bigint, etc.)
-└── abi/              # Auto-generated contract interfaces
-    ├── objekt.ts     # ERC-721 NFT contract
-    ├── como.ts       # ERC-1155 token contract
-    └── gravity.ts    # Voting contract
+- `schema.graphql` — source of truth for entity definitions; TypeORM entities in `src/model/generated/` are manually kept in sync with it (do not regenerate)
+- `src/processor.ts` — Subsquid processor configuration; `src/parser.ts` — event parsing; `src/main.ts` — business logic
+- `src/abi/` — auto-generated contract interfaces (objekt = ERC-721 NFT, como = ERC-1155 token, gravity = voting)
+- `db/migrations/` — manual migrations only
 
-db/migrations/        # Manual migrations only
-schema.graphql        # Source of truth for entity definitions
-```
-
-## Entity Relationships
-
-### Collection
-
-Represents an objekt collection type (e.g., "tripleS Atom01 Seoyeon 101Z").
-
-**Key Fields:**
-
-- `slug` - Unique identifier (indexed)
-- `collectionId` - COSMO collection ID
-- `season`, `member`, `artist`, `collectionNo`, `class` - Objekt metadata
-- `onOffline` - Derived from `collectionNo` suffix (Z = online, A = offline)
-- `comoAmount` - COMO tokens earned when collecting
-
-**Relations:** `objekts[]`, `transfers[]`
-
-### Objekt
-
-Represents a single NFT instance.
-
-**Key Fields:**
-
-- `id` - Token ID (primary key)
-- `serial` - Unique serial number within collection
-- `owner` - Current owner address (normalized)
-- `transferable` - Whether NFT can be transferred
-- `mintedAt`, `receivedAt` - Timestamps
-
-**Relations:** `collection`, `transfers[]`
-
-### Transfer
-
-Records every ownership change.
-
-**Key Fields:**
-
-- `id` - UUID
-- `from`, `to` - Addresses (normalized)
-- `tokenId` - Reference to Objekt
-- `hash` - Transaction hash
-- `timestamp` - Transfer time
-
-**Relations:** `objekt`, `collection`
-
-### ComoBalance
-
-Tracks COMO token (ERC-1155) balances.
-
-**Key Fields:**
-
-- `id` - UUID
-- `tokenId` - COMO token ID
-- `owner` - Address (normalized)
-- `amount` - Balance (uses `bigintTransformer`)
-
-### Vote
-
-Records gravity voting events.
-
-**Key Fields:**
-
-- `id` - UUID
-- `from` - Voter address (normalized)
-- `contract` - Gravity contract address
-- `pollId` - Poll identifier
-- `amount` - Vote weight (uses `bigintTransformer`)
-- `hash`, `blockNumber` - Transaction details
+Entity fields and relations are defined in `schema.graphql` and mirrored in `packages/database/src/indexer/schema.ts` — read those directly rather than relying on prose.
 
 ## Important Gotchas
 
@@ -217,6 +137,7 @@ Records gravity voting events.
 4. **GraphQL Server:** Not actively used - schema only defines entity structure
 5. **Keep Drizzle in Sync:** All model changes must be reflected in `/packages/database/src/indexer/schema.ts`
 6. **Bun Compatibility:** Several dependencies manually updated for Bun (`glob`, `lru-cache`, `path-scurry`)
+7. **Autovacuum reloptions are live-only:** `objekt` and `transfer` have per-table autovacuum settings applied directly in production (not in any migration) because the default thresholds let the visibility map go stale under the constant owner-rewrite churn. Re-apply them by hand after any from-scratch database rebuild.
 
 ## Processing Flow
 
