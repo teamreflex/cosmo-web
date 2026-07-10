@@ -83,7 +83,7 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2026-07-10",
+    date: "2026-07-17",
     changes: [
       "Added: New grid counting page to Progress. Counts what FCOs you have and tells you what you need to complete any number of grids.",
     ],

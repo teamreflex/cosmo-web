@@ -22,9 +22,9 @@
   "devDependencies": {
     "@socketsecurity/bun-security-scanner": "^1.1.2",
     "dotenv-cli": "^11.0.0",
-    "oxfmt": "^0.56.0",
-    "oxlint": "^1.71.0",
-    "oxlint-tsgolint": "^0.23.0",
+    "oxfmt": "^0.58.0",
+    "oxlint": "^1.73.0",
+    "oxlint-tsgolint": "^0.24.0",
     "turbo": "catalog:",
     "typescript": "catalog:"
   },
@@ -36,7 +36,7 @@
     "@effect/build-utils": "^0.8.9",
     "@effect/cluster": "^0.59.0",
     "@effect/eslint-plugin": "^0.3.2",
-    "@effect/language-service": "^0.86.2",
+    "@effect/language-service": "^0.86.4",
     "@effect/platform": "^0.96.2",
     "@effect/platform-bun": "^0.90.0",
     "@sentry/bun": "^10.61.0",
@@ -46,12 +46,9 @@
     "effect": "^3.21.4",
     "jose": "^6.2.3",
     "ofetch": "^1.5.1",
-    "turbo": "2.9.18",
+    "turbo": "2.10.4",
     "typesense": "^2.1.0",
     "typescript": "7.0.2",
     "zod": "^4.3.6"
-  },
-  "patchedDependencies": {
-    "@tanstack/react-router@1.170.16": "patches/@tanstack%2Freact-router@1.170.16.patch"
   }
 }

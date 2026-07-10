@@ -19,7 +19,6 @@ import { IconFileUnknown, IconRefresh } from "@tabler/icons-react";
 import type { QueryClient } from "@tanstack/react-query";
 import {
   HeadContent,
-  Outlet,
   Scripts,
   createRootRouteWithContext,
 } from "@tanstack/react-router";
@@ -43,7 +42,6 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     await context.queryClient.ensureQueryData(selectedArtistsQuery);
   },
   shellComponent: ShellComponent,
-  component: RootComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
   head: () =>
@@ -141,15 +139,6 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   },
 });
 
-function RootComponent() {
-  return (
-    <>
-      <Outlet />
-      <Scripts />
-    </>
-  );
-}
-
 function ShellComponent({ children }: { children: React.ReactNode }) {
   return (
     <html lang={getLocale()} suppressHydrationWarning>
@@ -172,6 +161,7 @@ function ShellComponent({ children }: { children: React.ReactNode }) {
         </ThemeProvider>
 
         <Devtools />
+        <Scripts />
       </body>
     </html>
   );
