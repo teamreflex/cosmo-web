@@ -3,6 +3,7 @@ import { addr, chunk, slugifyObjekt } from "@apollo/util";
 import { Addresses } from "@apollo/util";
 import { TypeormDatabase, type Store } from "@subsquid/typeorm-store";
 import { randomUUID } from "crypto";
+import { In } from "typeorm";
 import { env } from "./env";
 import { fetchMetadataWithRetryV3 } from "./metadata";
 import { Collection, ComoBalance, Objekt, type Transfer, Vote } from "./model";
@@ -278,20 +279,24 @@ async function handleTransferabilityUpdates(
   ctx: ProcessorContext<Store>,
   updates: TransferabilityUpdate[],
 ) {
-  const batch = new Map<string, Objekt>();
+  const objekts = await ctx.store.find(Objekt, {
+    where: { id: In(updates.map((u) => u.tokenId)) },
+  });
+  const objektsById = new Map(objekts.map((o) => [o.id, o] as const));
+
   for (const update of updates) {
-    const objekt = await ctx.store.get(Objekt, update.tokenId);
+    const objekt = objektsById.get(update.tokenId);
     if (objekt) {
       objekt.transferable = update.transferable;
-      batch.set(objekt.id, objekt);
     } else {
       ctx.log.error(
         `Unable to find objekt ${update.tokenId} for transferability update`,
       );
     }
   }
-  if (batch.size > 0) {
-    await ctx.store.upsert(Array.from(batch.values()));
+
+  if (objekts.length > 0) {
+    await ctx.store.upsert(objekts);
   }
 }
 

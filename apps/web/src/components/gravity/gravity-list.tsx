@@ -72,6 +72,7 @@ function GravityRow({ gravity, artist }: GravityRowProps) {
         <img
           src={gravity.image}
           alt={gravity.title}
+          loading="lazy"
           className="size-10 shrink-0 rounded object-cover md:size-12"
         />
 

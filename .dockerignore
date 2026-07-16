@@ -40,3 +40,4 @@ docker-compose*
 *.md
 !README.md
 LICENSE
+tmp

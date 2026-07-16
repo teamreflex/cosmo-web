@@ -36,7 +36,7 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/")({
           } satisfies ObjektMetadata,
           {
             headers: cacheHeaders({
-              cdn: 1000 * 60 * 10, // 10 minutes
+              cdn: 60 * 10, // 10 minutes
               tags: ["objekt", `metadata:${params.slug}`],
             }),
           },

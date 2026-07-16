@@ -85,6 +85,7 @@ function EventRow({ event, onPointerEnter }: EventRowProps) {
           <img
             src={imageUrl}
             alt={event.name}
+            loading="lazy"
             className="size-10 shrink-0 rounded md:size-12"
           />
         ) : (
@@ -128,6 +129,7 @@ function EventRow({ event, onPointerEnter }: EventRowProps) {
               <img
                 src={eraImageUrl}
                 alt={event.era.name}
+                loading="lazy"
                 className="size-3.5 rounded-xs"
               />
             )}
