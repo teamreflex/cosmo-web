@@ -4,6 +4,7 @@ import type {
   CosmoSearchResult,
   CosmoUserProfile,
 } from "../types/user";
+import { decrypt, EncryptionError } from "./encryption";
 import { cosmo } from "./http";
 
 /**
@@ -45,6 +46,7 @@ export async function search(
  */
 export async function fetchUserProfile(
   token: string,
+  key: string,
   userId: number,
   artistId: ValidArtist,
   signal: AbortSignal | null = null,
@@ -57,5 +59,14 @@ export async function fetchUserProfile(
       artistId,
     },
     signal,
+    parseResponse: (text) => {
+      try {
+        var plaintext = decrypt(text, key);
+      } catch (err) {
+        throw new EncryptionError("Error decrypting payload", { cause: err });
+      }
+
+      return JSON.parse(plaintext) satisfies CosmoUserProfile;
+    },
   });
 }

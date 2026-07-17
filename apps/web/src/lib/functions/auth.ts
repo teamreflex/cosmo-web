@@ -1,5 +1,6 @@
 import { auth } from "@/lib/server/auth.server";
 import { linkAccount } from "@/lib/server/cosmo-accounts.server";
+import { getCosmoKey } from "@/lib/server/encryption.server";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import { importObjektLists } from "@/lib/server/objekts/lists.server";
 import { getProxiedToken } from "@/lib/server/proxied-token.server";
@@ -72,9 +73,13 @@ export const $verifyCosmoBio = createServerFn({ method: "POST" })
 
     // fetch the user's profile from cosmo
     const signal = getRequestSignal();
-    const { accessToken } = await getProxiedToken(signal);
+    const [{ accessToken }, key] = await Promise.all([
+      getProxiedToken(signal),
+      getCosmoKey(),
+    ]);
     const profile = await fetchUserProfile(
       accessToken,
+      key,
       data.userId,
       data.artistId,
       signal,
