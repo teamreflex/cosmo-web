@@ -7,7 +7,7 @@ import { m } from "@/i18n/messages";
 import { systemStatusQuery } from "@/lib/queries/system";
 import type { SystemStatus as SystemStatusType } from "@/lib/universal/system";
 import { cn } from "@/lib/utils";
-import { IconActivity, IconServer, IconX } from "@tabler/icons-react";
+import { IconActivity, IconServer } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -81,9 +81,15 @@ function ErrorFallback() {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="flex items-center gap-1 text-cosmo-text">
+          <div
+            className={cn(
+              "flex h-7 w-8 items-center justify-center rounded-sm border shadow-sm transition-colors lg:h-8 lg:w-9",
+              bgStatus("degraded"),
+              textStatus("degraded"),
+            )}
+            aria-label={m.system_status_fetch_error()}
+          >
             <IconActivity className="h-5 w-5" />
-            <IconX className="h-4 w-4" />
           </div>
         </TooltipTrigger>
         <TooltipContent>{m.system_status_fetch_error()}</TooltipContent>

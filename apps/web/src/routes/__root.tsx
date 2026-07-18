@@ -13,7 +13,6 @@ import {
   selectedArtistsQuery,
 } from "@/lib/queries/core";
 import { noticeQuery } from "@/lib/queries/notice";
-import { systemStatusQuery } from "@/lib/queries/system";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { IconFileUnknown, IconRefresh } from "@tabler/icons-react";
 import type { QueryClient } from "@tanstack/react-query";
@@ -34,7 +33,6 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   staleTime: Infinity,
   loader: async ({ context }) => {
     void context.queryClient.prefetchQuery(currentAccountQuery);
-    void context.queryClient.prefetchQuery(systemStatusQuery);
     void context.queryClient.prefetchQuery(artistsQuery);
     void context.queryClient.prefetchQuery(filterDataQuery);
     void context.queryClient.prefetchQuery(noticeQuery);
