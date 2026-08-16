@@ -1,11 +1,11 @@
 import { relations } from "@apollo/database/indexer/relations";
 import { SQL } from "bun";
 import { drizzle } from "drizzle-orm/bun-sql";
-import { Effect, Redacted } from "effect";
+import { Context, Effect, Layer, Redacted } from "effect";
 import { Env } from "../config";
 
-export class Indexer extends Effect.Service<Indexer>()("app/Indexer", {
-  scoped: Effect.gen(function* () {
+export class Indexer extends Context.Service<Indexer>()("app/Indexer", {
+  make: Effect.gen(function* () {
     const env = yield* Env;
 
     // set application name for pg_stat_activity visibility
@@ -24,5 +24,8 @@ export class Indexer extends Effect.Service<Indexer>()("app/Indexer", {
     );
     return drizzle({ client, relations });
   }),
-  dependencies: [Env.Default],
-}) {}
+}) {
+  static readonly layer = Layer.effect(this, this.make).pipe(
+    Layer.provide(Env.layer),
+  );
+}

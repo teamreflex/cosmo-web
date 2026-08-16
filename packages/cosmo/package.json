@@ -19,7 +19,6 @@
     "format": "oxfmt ."
   },
   "dependencies": {
-    "@effect/platform": "catalog:",
     "effect": "catalog:",
     "puppeteer-core": "^24.43.1"
   },

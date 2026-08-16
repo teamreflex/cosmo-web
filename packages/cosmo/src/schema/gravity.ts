@@ -1,7 +1,7 @@
 import { Schema } from "effect";
 import { ValidArtistSchema } from "./common";
 
-const AlignSchema = Schema.Literal("left", "center", "right");
+const AlignSchema = Schema.Literals(["left", "center", "right"]);
 
 export const CosmoBodySpacingSchema = Schema.Struct({
   type: Schema.Literal("spacing"),
@@ -38,13 +38,13 @@ export const CosmoBodyVideoSchema = Schema.Struct({
   id: Schema.String,
 });
 
-const BodyItemSchema = Schema.Union(
+const BodyItemSchema = Schema.Union([
   CosmoBodySpacingSchema,
   CosmoBodyHeadingSchema,
   CosmoBodyImageSchema,
   CosmoBodyTextSchema,
   CosmoBodyVideoSchema,
-);
+]);
 
 const pollCommonFields = <T extends "single-poll" | "combination-poll">(
   type: T,
@@ -109,12 +109,12 @@ export const CombinationPollFinalizedSchema = Schema.Struct({
   }),
 });
 
-export const PollFinalizedSchema = Schema.Union(
+export const PollFinalizedSchema = Schema.Union([
   SinglePollFinalizedSchema,
   CombinationPollFinalizedSchema,
-);
+]);
 
-export const PollUpcomingSchema = Schema.Union(
+export const PollUpcomingSchema = Schema.Union([
   Schema.Struct({
     ...pollCommonFields("single-poll"),
     finalized: Schema.Literal(false),
@@ -123,15 +123,15 @@ export const PollUpcomingSchema = Schema.Union(
     ...pollCommonFields("combination-poll"),
     finalized: Schema.Literal(false),
   }),
-);
+]);
 
 export const GravityCommonFieldsSchema = Schema.Struct({
   id: Schema.Number,
   artist: ValidArtistSchema,
   title: Schema.String,
   description: Schema.String,
-  type: Schema.Literal("event-gravity", "grand-gravity"),
-  pollType: Schema.Literal("single-poll", "combination-poll"),
+  type: Schema.Literals(["event-gravity", "grand-gravity"]),
+  pollType: Schema.Literals(["single-poll", "combination-poll"]),
   bannerImageUrl: Schema.String,
   entireStartDate: Schema.String,
   entireEndDate: Schema.String,
@@ -171,10 +171,10 @@ export const UpcomingGravitySchema = Schema.Struct({
 
 // past first: a past gravity also matches the upcoming shape, which would
 // silently drop its result/leaderboard fields
-export const GravitySchema = Schema.Union(
+export const GravitySchema = Schema.Union([
   PastGravitySchema,
   UpcomingGravitySchema,
-);
+]);
 
 export const GravityResponseSchema = Schema.Struct({ gravity: GravitySchema });
 
@@ -224,7 +224,7 @@ const pollChoicesCommonFields = <T extends "single-poll" | "combination-poll">(
     selectedContent: Schema.mutable(
       Schema.Array(PollViewSelectedContentSchema),
     ),
-    choiceViewType: Schema.Literal("vertical", "horizontal"),
+    choiceViewType: Schema.Literals(["vertical", "horizontal"]),
     selectContent: Schema.mutable(Schema.Array(PollViewSelectedContentSchema)),
   }),
 });
@@ -242,7 +242,7 @@ export const CombinationPollChoiceSchema = Schema.Struct({
   txImagePairUrls: Schema.mutable(Schema.Array(Schema.String)),
 });
 
-export const PollChoicesSchema = Schema.Union(
+export const PollChoicesSchema = Schema.Union([
   Schema.Struct({
     ...pollChoicesCommonFields("single-poll"),
     choices: Schema.mutable(Schema.Array(SinglePollChoiceSchema)),
@@ -251,7 +251,7 @@ export const PollChoicesSchema = Schema.Union(
     ...pollChoicesCommonFields("combination-poll"),
     choices: Schema.mutable(Schema.Array(CombinationPollChoiceSchema)),
   }),
-);
+]);
 
 export const PollDetailResponseSchema = Schema.Struct({
   pollDetail: PollChoicesSchema,

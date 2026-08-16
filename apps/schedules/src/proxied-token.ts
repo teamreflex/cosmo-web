@@ -1,14 +1,14 @@
 import { refreshV3 } from "@apollo/cosmo/server/auth";
 import { cosmoTokens } from "@apollo/database/web/schema";
-import { Clock, Data, Effect } from "effect";
+import { Clock, Context, Data, Effect, Layer } from "effect";
 import { decodeJwt } from "jose";
 import { CosmoKey } from "./cosmo-key";
 import { DatabaseWeb } from "./db";
 
-export class ProxiedToken extends Effect.Service<ProxiedToken>()(
+export class ProxiedToken extends Context.Service<ProxiedToken>()(
   "app/ProxiedToken",
   {
-    effect: Effect.gen(function* () {
+    make: Effect.gen(function* () {
       const db = yield* DatabaseWeb;
       const cosmoKey = yield* CosmoKey;
 
@@ -74,9 +74,12 @@ export class ProxiedToken extends Effect.Service<ProxiedToken>()(
 
       return { get };
     }),
-    dependencies: [DatabaseWeb.Default, CosmoKey.Default],
   },
-) {}
+) {
+  static readonly layer = Layer.effect(this, this.make).pipe(
+    Layer.provide([DatabaseWeb.layer, CosmoKey.layer]),
+  );
+}
 
 /**
  * Validate JWT expiry by checking the exp claim.

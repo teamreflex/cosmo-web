@@ -1,5 +1,5 @@
-import { Cookies, HttpBody } from "@effect/platform";
 import { Effect } from "effect";
+import { Cookies, HttpBody } from "effect/unstable/http";
 import puppeteer from "puppeteer-core";
 import { AuthTicketSchema, QueryTicketSchema } from "../schema/qr-auth";
 import { cosmoShopClient, decodeBody } from "./http";
@@ -72,14 +72,14 @@ export const exchangeLoginTicket = Effect.fn("Cosmo.exchangeLoginTicket")(
     const client = yield* cosmoShopClient;
     return yield* client
       .post("/bff/v3/users/login-by-qr/ticket", {
-        body: HttpBody.unsafeJson({
+        body: HttpBody.jsonUnsafe({
           recaptcha: {
             action: "login",
             token: recaptchaToken,
           },
         }),
       })
-      .pipe(Effect.flatMap(decodeBody(AuthTicketSchema)), Effect.scoped);
+      .pipe(Effect.flatMap(decodeBody(AuthTicketSchema)));
   },
 );
 
@@ -92,7 +92,7 @@ export const queryTicket = Effect.fn("Cosmo.queryTicket")(function* (
   const client = yield* cosmoShopClient;
   return yield* client
     .get("/bff/v3/users/login-by-qr/ticket", { urlParams: { ticket } })
-    .pipe(Effect.flatMap(decodeBody(QueryTicketSchema)), Effect.scoped);
+    .pipe(Effect.flatMap(decodeBody(QueryTicketSchema)));
 });
 
 /**
@@ -105,13 +105,12 @@ export const certifyTicket = Effect.fn("Cosmo.certifyTicket")(function* (
   const client = yield* cosmoShopClient;
   return yield* client
     .post("/bff/v3/users/login-by-qr/certify", {
-      body: HttpBody.unsafeJson({ otp, ticket }),
+      body: HttpBody.jsonUnsafe({ otp, ticket }),
     })
     .pipe(
       Effect.map((response): CertifyTicketResult => ({
         status: response.status,
         cookies: Cookies.toRecord(response.cookies),
       })),
-      Effect.scoped,
     );
 });

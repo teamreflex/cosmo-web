@@ -1,10 +1,10 @@
+import { Duration, Effect, Schedule, type Schema } from "effect";
 import {
   HttpClient,
   HttpClientError,
   HttpClientRequest,
   HttpClientResponse,
-} from "@effect/platform";
-import { Duration, Effect, Schedule, type Schema } from "effect";
+} from "effect/unstable/http";
 import { CosmoApiError, CosmoDecodeError } from "../errors.js";
 import { COSMO_ENDPOINT } from "../types/common.js";
 
@@ -23,28 +23,31 @@ const retryStatusCodes = [408, 425, 429, 500, 502, 503, 504];
 const defaultRetryStatusCodes = [408, 409, 425, 429, 500, 502, 503, 504];
 
 const withRetry =
-  (statusCodes: number[], delay: Duration.DurationInput) =>
+  (statusCodes: number[], delay: Duration.Input) =>
   (client: HttpClient.HttpClient) =>
     HttpClient.retry(client, {
       times: 1,
       schedule: Schedule.spaced(delay),
       while: (error) =>
-        (error._tag === "RequestError" && error.reason === "Transport") ||
-        (error._tag === "ResponseError" &&
+        error.reason._tag === "TransportError" ||
+        (error.response !== undefined &&
           statusCodes.includes(error.response.status)),
     });
 
 const withTimeout =
-  (duration: Duration.DurationInput) => (client: HttpClient.HttpClient) =>
+  (duration: Duration.Input) => (client: HttpClient.HttpClient) =>
     HttpClient.transform(client, (effect, request) =>
-      Effect.timeoutFail(effect, {
+      Effect.timeoutOrElse(effect, {
         duration,
-        onTimeout: () =>
-          new HttpClientError.RequestError({
-            request,
-            reason: "Transport",
-            description: "request timed out",
-          }),
+        orElse: () =>
+          Effect.fail(
+            new HttpClientError.HttpClientError({
+              reason: new HttpClientError.TransportError({
+                request,
+                description: "request timed out",
+              }),
+            }),
+          ),
       }),
     );
 
@@ -59,7 +62,7 @@ const setBaseRequest = (baseUrl: string, headers: Record<string, string>) =>
 const toApiError = (error: HttpClientError.HttpClientError) =>
   new CosmoApiError({
     url: error.request.url,
-    status: error._tag === "ResponseError" ? error.response.status : undefined,
+    status: error.response?.status,
     cause: error,
   });
 
@@ -72,14 +75,14 @@ const withCosmoErrors = (client: HttpClient.HttpClient) =>
 
 /**
  * Decode a response body against a schema, failing with the package's tagged
- * errors instead of raw ParseError/ResponseError.
+ * errors instead of raw SchemaError/HttpClientError.
  */
 export const decodeBody =
-  <A, I>(schema: Schema.Schema<A, I, never>) =>
+  <A, I>(schema: Schema.Codec<A, I, never>) =>
   (response: HttpClientResponse.HttpClientResponse) =>
     HttpClientResponse.schemaBodyJson(schema)(response).pipe(
       Effect.mapError((error) =>
-        error._tag === "ParseError"
+        error._tag === "SchemaError"
           ? new CosmoDecodeError({ url: response.request.url, cause: error })
           : toApiError(error),
       ),

@@ -24,7 +24,7 @@ export const fetchByNickname = Effect.fn("Cosmo.fetchByNickname")(function* (
   const client = yield* cosmoNoRetryClient;
   return yield* client
     .get(`/bff/v3/users/by-nickname/${nickname}`)
-    .pipe(Effect.flatMap(decodeBody(CosmoByNicknameSchema)), Effect.scoped);
+    .pipe(Effect.flatMap(decodeBody(CosmoByNicknameSchema)));
 });
 
 /**
@@ -44,7 +44,7 @@ export const search = Effect.fn("Cosmo.search")(function* (
         take: "100",
       },
     })
-    .pipe(Effect.flatMap(decodeBody(CosmoSearchResultSchema)), Effect.scoped);
+    .pipe(Effect.flatMap(decodeBody(CosmoSearchResultSchema)));
 });
 
 /**
@@ -73,9 +73,9 @@ export const fetchUserProfile = Effect.fn("Cosmo.fetchUserProfile")(function* (
             }),
           ),
           Effect.flatMap((plaintext) =>
-            Schema.decodeUnknown(Schema.parseJson(CosmoUserProfileSchema))(
-              plaintext,
-            ).pipe(
+            Schema.decodeUnknownEffect(
+              Schema.fromJsonString(CosmoUserProfileSchema),
+            )(plaintext).pipe(
               Effect.mapError(
                 (cause) =>
                   new CosmoDecodeError({ url: response.request.url, cause }),
@@ -84,6 +84,5 @@ export const fetchUserProfile = Effect.fn("Cosmo.fetchUserProfile")(function* (
           ),
         ),
       ),
-      Effect.scoped,
     );
 });

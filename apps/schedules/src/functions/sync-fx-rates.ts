@@ -1,7 +1,6 @@
 import { DatabaseWeb } from "@/db";
 import { Env } from "@/env";
 import { fxRates } from "@apollo/database/web/schema";
-import { HttpClient, HttpClientResponse } from "@effect/platform";
 import { sql } from "drizzle-orm";
 import {
   Clock,
@@ -12,21 +11,19 @@ import {
   Schedule,
   Schema,
 } from "effect";
+import { HttpClient, HttpClientResponse } from "effect/unstable/http";
 import type { ScheduledTask } from "../task";
 
-const ExchangerateResponse = Schema.Union(
+const ExchangerateResponse = Schema.Union([
   Schema.Struct({
     result: Schema.Literal("success"),
-    conversion_rates: Schema.Record({
-      key: Schema.String,
-      value: Schema.Number,
-    }),
+    conversion_rates: Schema.Record(Schema.String, Schema.Number),
   }),
   Schema.Struct({
     result: Schema.Literal("error"),
     "error-type": Schema.String,
   }),
-);
+]);
 
 /**
  * Fetch USD-base FX rates from exchangerate-api.com and upsert into the
@@ -46,25 +43,23 @@ export const syncFxRatesTask = {
       .pipe(
         Effect.andThen(HttpClientResponse.schemaBodyJson(ExchangerateResponse)),
         Effect.catchTags({
-          ParseError: (cause) => Effect.fail(new FxRatesDecodeError({ cause })),
-          // don't wrap the platform errors: they carry the request URL, which
-          // embeds the API key and would leak into logs
-          RequestError: (error) =>
+          SchemaError: (cause) =>
+            Effect.fail(new FxRatesDecodeError({ cause })),
+          // don't wrap the http client error: it carries the request URL,
+          // which embeds the API key and would leak into logs
+          HttpClientError: (error) =>
             Effect.fail(
-              new FetchFxRatesError({
-                status: undefined,
-                description: error.reason,
-              }),
-            ),
-          ResponseError: (error) =>
-            Effect.fail(
-              new FetchFxRatesError({
-                status: error.response.status,
-                description: "exchangerate-api responded with an error",
-              }),
+              error.response === undefined
+                ? new FetchFxRatesError({
+                    status: undefined,
+                    description: error.reason._tag,
+                  })
+                : new FetchFxRatesError({
+                    status: error.response.status,
+                    description: "exchangerate-api responded with an error",
+                  }),
             ),
         }),
-        Effect.scoped,
         Effect.retry({
           schedule: Schedule.exponential(Duration.seconds(1)),
           times: 2,

@@ -31,7 +31,7 @@ export const syncGravitiesTask = {
     yield* Effect.all(
       artists.map((artist) =>
         processGravities(accessToken, artist).pipe(
-          Effect.catchAll((error) =>
+          Effect.catch((error) =>
             Effect.logError(
               `Failed to process gravities for ${artist.title}: ${error.message}`,
             ),
@@ -138,7 +138,7 @@ const processGravities = Effect.fn("processGravities")(function* (
         catch: (cause) =>
           new StoreGravitiesError({ artist: artist.title, cause }),
       }).pipe(
-        Effect.catchAll((error) =>
+        Effect.catch((error) =>
           Effect.logError(`Error storing gravity ${gravity.id}`, error),
         ),
       );

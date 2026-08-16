@@ -139,7 +139,7 @@ export class DrainError extends Data.TaggedError("DrainError")<{
  * the call site can choose whether to run inside a transaction.
  */
 function upsertCursor(
-  db: Pick<Effect.Effect.Success<typeof DatabaseWeb>, "insert">,
+  db: Pick<typeof DatabaseWeb.Service, "insert">,
   seq: bigint,
 ) {
   return db

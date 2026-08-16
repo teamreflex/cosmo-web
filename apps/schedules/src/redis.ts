@@ -1,9 +1,9 @@
 import { RedisClient } from "bun";
-import { Data, Effect, Redacted } from "effect";
+import { Context, Data, Effect, Layer, Redacted } from "effect";
 import { Env } from "./env";
 
-export class Redis extends Effect.Service<Redis>()("app/Redis", {
-  scoped: Effect.gen(function* () {
+export class Redis extends Context.Service<Redis>()("app/Redis", {
+  make: Effect.gen(function* () {
     const env = yield* Env;
     const client = yield* Effect.acquireRelease(
       Effect.sync(() => new RedisClient(Redacted.value(env.redisUrl))),
@@ -46,8 +46,11 @@ export class Redis extends Effect.Service<Redis>()("app/Redis", {
       set,
     };
   }),
-  dependencies: [Env.Default],
-}) {}
+}) {
+  static readonly layer = Layer.effect(this, this.make).pipe(
+    Layer.provide(Env.layer),
+  );
+}
 
 export class RedisDelError extends Data.TaggedError("RedisDelError")<{
   tags: string[];

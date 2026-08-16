@@ -1,7 +1,7 @@
-import { Config, Effect } from "effect";
+import { Config, Context, Effect, Layer } from "effect";
 
-export class Env extends Effect.Service<Env>()("app/Env", {
-  effect: Effect.gen(function* () {
+export class Env extends Context.Service<Env>()("app/Env", {
+  make: Effect.gen(function* () {
     const webDatabaseUrl = yield* Config.redacted("WEB_DATABASE_URL");
     const indexerDatabaseUrl = yield* Config.redacted("INDEXER_DATABASE_URL");
     const redisUrl = yield* Config.redacted("REDIS_URL");
@@ -16,5 +16,6 @@ export class Env extends Effect.Service<Env>()("app/Env", {
       cosmoKey,
     };
   }),
-  dependencies: [],
-}) {}
+}) {
+  static readonly layer = Layer.effect(this, this.make);
+}

@@ -15,7 +15,7 @@ export const fetchArtists = Effect.fn("Cosmo.fetchArtists")(function* (
   const client = yield* cosmoClient;
   return yield* client
     .get("/bff/v3/artists", { headers: bearer(token) })
-    .pipe(Effect.flatMap(decodeBody(CosmoArtistListSchema)), Effect.scoped);
+    .pipe(Effect.flatMap(decodeBody(CosmoArtistListSchema)));
 });
 
 /**
@@ -28,8 +28,5 @@ export const fetchArtist = Effect.fn("Cosmo.fetchArtist")(function* (
   const client = yield* cosmoClient;
   return yield* client
     .get(`/bff/v3/artists/${artistId}`, { headers: bearer(token) })
-    .pipe(
-      Effect.flatMap(decodeBody(CosmoArtistWithMembersBFFSchema)),
-      Effect.scoped,
-    );
+    .pipe(Effect.flatMap(decodeBody(CosmoArtistWithMembersBFFSchema)));
 });

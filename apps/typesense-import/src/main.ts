@@ -1,4 +1,4 @@
-import { BunContext, BunRuntime } from "@effect/platform-bun";
+import { BunRuntime, BunServices } from "@effect/platform-bun";
 import {
   Array as Arr,
   Clock,
@@ -137,9 +137,7 @@ const main = Effect.gen(function* () {
   }).pipe(
     // a transient tick failure logs and waits for the next tick instead of
     // killing the daemon; setup failures above stay fatal at boot
-    Effect.catchAllCause((cause) =>
-      Effect.logError("Import tick failed", cause),
-    ),
+    Effect.catchCause((cause) => Effect.logError("Import tick failed", cause)),
     Effect.schedule(Schedule.spaced(Duration.millis(env.LOOP_INTERVAL))),
   );
 });
@@ -148,11 +146,11 @@ BunRuntime.runMain(
   main.pipe(
     Effect.provide(
       Layer.mergeAll(
-        BunContext.layer,
-        Env.Default,
-        Typesense.Default,
-        Indexer.Default,
-        Metadata.Default,
+        BunServices.layer,
+        Env.layer,
+        Typesense.layer,
+        Indexer.layer,
+        Metadata.layer,
       ),
     ),
   ),

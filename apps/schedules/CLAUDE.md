@@ -10,7 +10,7 @@ Each task is a `ScheduledTask` (`src/task.ts`): `{ name, cron, timezone?, effect
 
 ## Services
 
-Defined with the `Effect.Service` pattern in `src/`, provided via `Layer.mergeAll` in `src/main.ts`:
+Defined with the v4 `Context.Service` pattern in `src/` — a `make:` effect plus a hand-written `static readonly layer` (`Layer.effect(this, this.make)`, with `Layer.provide([...])` wiring dependencies; v4 generates no `.Default` layer) — and provided via `Layer.mergeAll` in `src/main.ts`:
 
 - `DatabaseWeb` / `DatabaseIndexer` — Drizzle over the two Postgres databases
 - `ProxiedToken` — COSMO access token for the dummy account, read from the web DB `cosmoTokens` table and auto-refreshed (via `refreshV3` + `CosmoKey`) when the JWT is expired
@@ -18,7 +18,7 @@ Defined with the `Effect.Service` pattern in `src/`, provided via `Layer.mergeAl
 
 ## Conventions
 
-- Config comes from env vars via `ConfigProvider.fromEnv()`; env files are loaded by the `dev` script, not the code.
+- Config comes from env vars via v4's default `ConfigProvider` (`fromEnv()`); env files are loaded by the `dev` script, not the code.
 - Errors are per-failure-mode `Data.TaggedError` classes; wrap promise-based calls in `Effect.tryPromise` with a typed `catch`.
 - Cross-package logic lives in `@apollo/cosmo` (API calls), `@apollo/database` (schemas), `@apollo/util` / `@apollo/util-server` (helpers) — don't duplicate it here.
 - Use context7 for Effect API documentation (see `docs/libraries.md`).

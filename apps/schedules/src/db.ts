@@ -1,13 +1,13 @@
 import { relations } from "@apollo/database/web/relations";
 import { SQL } from "bun";
 import { drizzle } from "drizzle-orm/bun-sql";
-import { Effect, Redacted } from "effect";
+import { Context, Effect, Layer, Redacted } from "effect";
 import { Env } from "./env";
 
-export class DatabaseWeb extends Effect.Service<DatabaseWeb>()(
+export class DatabaseWeb extends Context.Service<DatabaseWeb>()(
   "app/Database/Web",
   {
-    scoped: Effect.gen(function* () {
+    make: Effect.gen(function* () {
       const env = yield* Env;
 
       // set application name for pg_stat_activity visibility
@@ -26,6 +26,9 @@ export class DatabaseWeb extends Effect.Service<DatabaseWeb>()(
       );
       return drizzle({ client, relations });
     }),
-    dependencies: [Env.Default],
   },
-) {}
+) {
+  static readonly layer = Layer.effect(this, this.make).pipe(
+    Layer.provide(Env.layer),
+  );
+}

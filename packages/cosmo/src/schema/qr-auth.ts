@@ -25,7 +25,7 @@ const loadedTicketFields = <T extends string>(status: T) => ({
   user: TicketUserSchema,
 });
 
-export const QueryTicketSchema = Schema.Union(
+export const QueryTicketSchema = Schema.Union([
   Schema.Struct({
     status: Schema.Literal("invalid"),
   }),
@@ -35,4 +35,4 @@ export const QueryTicketSchema = Schema.Union(
   }),
   Schema.Struct(loadedTicketFields("wait_for_certify")),
   Schema.Struct(loadedTicketFields("certified")),
-);
+]);

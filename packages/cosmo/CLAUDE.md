@@ -2,10 +2,10 @@
 
 Types and API functions for the COSMO app's private APIs. One Effect-native API surface:
 
-- `src/server/` — Effect functions, imported via `@apollo/cosmo/server/*`. HTTP via `@effect/platform` `HttpClient`, responses validated with `Schema` at the boundary. Effect apps (`apps/schedules`) compose these directly into their own runtimes.
+- `src/server/` — Effect functions, imported via `@apollo/cosmo/server/*`. HTTP via the `HttpClient` from `effect/unstable/http` (Effect v4; the old `@effect/platform` package is folded into `effect`), responses validated with `Schema` at the boundary. Effect apps (`apps/schedules`) compose these directly into their own runtimes.
 - `src/runtime.ts` (`@apollo/cosmo/runtime`) — exports `runCosmo(effect, signal?)`, a module-level `ManagedRuntime` over `FetchHttpClient.layer` for promise-based apps (`apps/web`, `apps/indexer`): `await runCosmo(fetchX(args), signal)`. It uses `runPromiseExit` + `Cause.squash` so the original tagged error instance is thrown rather than a `FiberFailure` wrapper.
 
-Failures are the tagged error classes from `src/errors.ts` (`@apollo/cosmo/errors`): `CosmoApiError` (HTTP, carries `url` and `status`), `CosmoDecodeError` (schema mismatch, carries `url`), plus `EncryptionError` (crypto). Raw `HttpClientError`/`ParseError` never escape the package — mapping happens once in `src/server/http.ts` (`withCosmoErrors` on the clients, applied outside retry so the retry predicate sees raw errors, and the `decodeBody` helper). Consumers should not re-wrap these errors; add context with spans or log messages instead.
+Failures are the tagged error classes from `src/errors.ts` (`@apollo/cosmo/errors`): `CosmoApiError` (HTTP, carries `url` and `status`), `CosmoDecodeError` (schema mismatch, carries `url`), plus `EncryptionError` (crypto). Raw `HttpClientError`/`SchemaError` never escape the package — mapping happens once in `src/server/http.ts` (`withCosmoErrors` on the clients, applied outside retry so the retry predicate sees raw errors, and the `decodeBody` helper). Consumers should not re-wrap these errors; add context with spans or log messages instead.
 
 ## Client policies (`src/server/http.ts`)
 

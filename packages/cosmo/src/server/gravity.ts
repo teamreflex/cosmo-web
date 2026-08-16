@@ -20,7 +20,7 @@ export const fetchGravities = Effect.fn("Cosmo.fetchGravities")(function* (
       headers: bearer(token),
       urlParams: { artistId },
     })
-    .pipe(Effect.flatMap(decodeBody(GravityListSchema)), Effect.scoped);
+    .pipe(Effect.flatMap(decodeBody(GravityListSchema)));
 });
 
 /**
@@ -33,7 +33,7 @@ export const fetchGravity = Effect.fn("Cosmo.fetchGravity")(function* (
   const client = yield* cosmoClient;
   const response = yield* client
     .get(`/bff/v3/gravities/${gravityId}`, { headers: bearer(token) })
-    .pipe(Effect.flatMap(decodeBody(GravityResponseSchema)), Effect.scoped);
+    .pipe(Effect.flatMap(decodeBody(GravityResponseSchema)));
   return response.gravity;
 });
 
@@ -47,6 +47,6 @@ export const fetchPoll = Effect.fn("Cosmo.fetchPoll")(function* (
   const client = yield* cosmoClient;
   const response = yield* client
     .get(`/bff/v3/polls/${pollId}`, { headers: bearer(token) })
-    .pipe(Effect.flatMap(decodeBody(PollDetailResponseSchema)), Effect.scoped);
+    .pipe(Effect.flatMap(decodeBody(PollDetailResponseSchema)));
   return response.pollDetail;
 });

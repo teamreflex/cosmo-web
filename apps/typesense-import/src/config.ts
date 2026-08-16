@@ -1,7 +1,7 @@
-import { Config, Effect } from "effect";
+import { Config, Context, Effect, Layer } from "effect";
 
-export class Env extends Effect.Service<Env>()("app/Env", {
-  effect: Effect.gen(function* () {
+export class Env extends Context.Service<Env>()("app/Env", {
+  make: Effect.gen(function* () {
     const INDEXER_DATABASE_URL = yield* Config.redacted("INDEXER_DATABASE_URL");
     const WEB_DATABASE_URL = yield* Config.redacted("WEB_DATABASE_URL");
     const LOOP_INTERVAL = yield* Config.number("LOOP_INTERVAL").pipe(
@@ -20,5 +20,6 @@ export class Env extends Effect.Service<Env>()("app/Env", {
       TYPESENSE_URL,
     };
   }),
-  dependencies: [],
-}) {}
+}) {
+  static readonly layer = Layer.effect(this, this.make);
+}

@@ -1,6 +1,5 @@
-import type { HttpClientError } from "@effect/platform";
-import { Data } from "effect";
-import type { ParseResult } from "effect";
+import { Data, type Schema } from "effect";
+import type { HttpClientError } from "effect/unstable/http";
 
 /**
  * HTTP failure from the COSMO API. `status` is undefined for network-level
@@ -24,7 +23,7 @@ export class CosmoApiError extends Data.TaggedError("CosmoApiError")<{
  */
 export class CosmoDecodeError extends Data.TaggedError("CosmoDecodeError")<{
   readonly url: string;
-  readonly cause: ParseResult.ParseError;
+  readonly cause: Schema.SchemaError;
 }> {
   override get message() {
     return `Failed to decode COSMO response from ${this.url}: ${this.cause.message}`;

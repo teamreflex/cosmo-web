@@ -26,10 +26,7 @@ export const fetchObjektSummaries = Effect.fn("Cosmo.fetchObjektSummaries")(
           size: "30",
         },
       })
-      .pipe(
-        Effect.flatMap(decodeBody(ObjektSummariesResponseSchema)),
-        Effect.scoped,
-      );
+      .pipe(Effect.flatMap(decodeBody(ObjektSummariesResponseSchema)));
     return response.collections;
   },
 );

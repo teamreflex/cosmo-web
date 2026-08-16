@@ -1,5 +1,5 @@
-import { HttpBody } from "@effect/platform";
 import { Effect } from "effect";
+import { HttpBody } from "effect/unstable/http";
 import { RefreshResponseSchema } from "../schema/auth";
 import { encrypt, EncryptionError } from "./encryption";
 import { cosmoClient, decodeBody } from "./http";
@@ -14,9 +14,9 @@ export const refresh = Effect.fn("Cosmo.refresh")(function* (
   const client = yield* cosmoClient;
   const response = yield* client
     .post("/auth/v1/refresh", {
-      body: HttpBody.unsafeJson({ refreshToken }),
+      body: HttpBody.jsonUnsafe({ refreshToken }),
     })
-    .pipe(Effect.flatMap(decodeBody(RefreshResponseSchema)), Effect.scoped);
+    .pipe(Effect.flatMap(decodeBody(RefreshResponseSchema)));
   return response.credentials;
 });
 
@@ -41,6 +41,6 @@ export const refreshV3 = Effect.fn("Cosmo.refreshV3")(function* (
         "x-cosmo-encrypted": "1",
       },
     })
-    .pipe(Effect.flatMap(decodeBody(RefreshResponseSchema)), Effect.scoped);
+    .pipe(Effect.flatMap(decodeBody(RefreshResponseSchema)));
   return response.credentials;
 });
