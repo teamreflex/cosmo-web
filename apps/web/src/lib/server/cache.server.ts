@@ -38,6 +38,11 @@ type CacheHeaders = {
   tags?: string | string[];
 };
 
+type ResponseCacheHeaders = {
+  "Cache-Control": string;
+  "Cache-Tag"?: string;
+};
+
 /**
  * Default cache headers for API responses, in order of priority.
  */
@@ -48,8 +53,11 @@ export function cacheHeaders(cache: CacheHeaders) {
       : [cache.tags]
     : [];
 
-  return {
+  const headers: ResponseCacheHeaders = {
     "Cache-Control": `public, max-age=30, s-maxage=${cache.cdn}, stale-while-revalidate=30`,
-    ...(tags.length > 0 ? { "Cache-Tag": tags.join(",") } : {}),
   };
+  if (tags.length > 0) {
+    headers["Cache-Tag"] = tags.join(",");
+  }
+  return headers;
 }

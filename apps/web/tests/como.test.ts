@@ -67,7 +67,7 @@ describe("buildCalendar", () => {
     // the 31st and no carryover occurs. Days 1 and 28 read 10/6 here (the
     // indexer mint-day anchoring) vs COSMO's 9/7 — one Special that COSMO
     // anchors a day later; a known 1-COMO quirk we don't replicate.
-    const expectedByDay: Record<number, number> = {
+    const expectedByDay = {
       1: 10,
       2: 15,
       3: 10,
@@ -138,11 +138,10 @@ describe("buildCalendar", () => {
       // read higher than COSMO's April here because the calendar is
       // forward-looking: it projects current holdings across the whole month
       // regardless of when each objekt was received.
-      const aprilExpectedByDay: Record<number, number> = {
+      const { 31: _, ...aprilExpectedByDay } = {
         ...expectedByDay,
         30: 13,
       };
-      delete aprilExpectedByDay[31];
 
       const cal = buildCalendar(
         new Date("2026-04-15T00:00:00Z"),
@@ -218,7 +217,7 @@ describe("buildCalendar", () => {
     // day (PDT -7), so UTC day D drops on local day D-1; UTC day 1 wraps
     // onto the local month's last day via the next UTC month's drop.
     // Days 1-22 are user-verified; days 23-31 are model-predicted.
-    const expectedByDay: Record<number, number> = {
+    const expectedByDay = {
       1: 5,
       2: 6,
       3: 2,

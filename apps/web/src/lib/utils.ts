@@ -61,6 +61,7 @@ export function sanitizeUuid(uuid: string): string | null {
  * Handles when the tracking script isn't loaded.
  */
 export function track(event: string) {
+  // oxlint-disable-next-line anti-slop/no-runtime-typeof -- umami is an optional global; presence check is the contract
   if (typeof umami !== "undefined") {
     umami.track(event)?.catch(() => void 0);
   }
@@ -70,11 +71,11 @@ export function track(event: string) {
  * Objekt border colors for each artist, based on 1st gen fanclub colors.
  * Used for member filter buttons.
  */
-export const artistColors: Record<ValidArtist, string> = {
+export const artistColors = {
   tripleS: "#8ebdd1",
   artms: "#D5B7E2",
   idntt: "#25347C",
-};
+} satisfies Record<ValidArtist, string>;
 
 /**
  * Generate a random hex color.
@@ -91,41 +92,41 @@ export { getSeasonColor, seasonSort } from "./universal/seasons";
  * Sort classes by their collection number, per-artist.
  * Welcome is sorted first and Zero last for the sake of consistency.
  */
-const classConfigs: Record<ValidArtist, Record<string, number>> = {
-  tripleS: {
-    Welcome: 1, // 100
-    First: 2, // 100
-    Special: 3, // 200
-    Double: 4, // 300
-    Premier: 5, // 400
-    Motion: 6, // 500
-    Unit: 7, // 600
-    Zero: 8, // 000
-  },
-  artms: {
-    Welcome: 1, // 100
-    First: 2, // 100
-    Special: 3, // 200
-    Double: 4, // 300
-    Premier: 5, // 400
-    Motion: 6, // 500
-  },
-  idntt: {
-    Welcome: 1, // 200
-    Basic: 2, // 100
-    Event: 3, // 200
-    Special: 3, // 300
-    Unit: 4, // 400
-    Motion: 5, // 500
-  },
-};
+const classConfigs = {
+  tripleS: new Map([
+    ["Welcome", 1], // 100
+    ["First", 2], // 100
+    ["Special", 3], // 200
+    ["Double", 4], // 300
+    ["Premier", 5], // 400
+    ["Motion", 6], // 500
+    ["Unit", 7], // 600
+    ["Zero", 8], // 000
+  ]),
+  artms: new Map([
+    ["Welcome", 1], // 100
+    ["First", 2], // 100
+    ["Special", 3], // 200
+    ["Double", 4], // 300
+    ["Premier", 5], // 400
+    ["Motion", 6], // 500
+  ]),
+  idntt: new Map([
+    ["Welcome", 1], // 200
+    ["Basic", 2], // 100
+    ["Event", 3], // 200
+    ["Special", 3], // 300
+    ["Unit", 4], // 400
+    ["Motion", 5], // 500
+  ]),
+} satisfies Record<ValidArtist, ReadonlyMap<string, number>>;
 
 /**
  * Sort classes by their order in the per-artist class config.
  */
 export function classSort(a: string, b: string, artist: ValidArtist) {
-  const aOrder = classConfigs[artist][a];
-  const bOrder = classConfigs[artist][b];
+  const aOrder = classConfigs[artist].get(a);
+  const bOrder = classConfigs[artist].get(b);
   if (aOrder === undefined || bOrder === undefined) return 0;
   return aOrder - bOrder;
 }

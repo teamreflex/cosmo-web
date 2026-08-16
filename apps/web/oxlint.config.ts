@@ -51,4 +51,27 @@ export default defineConfig({
     "react/react-compiler": "error",
     "@tanstack/query/exhaustive-deps": "error",
   },
+  overrides: [
+    // vendored shadcn/ui components track upstream; don't hold them to anti-slop rules
+    {
+      files: ["src/components/ui/**"],
+      rules: {
+        "anti-slop/no-chained-type-assertions": "off",
+        "anti-slop/no-conditional-empty-object-spread": "off",
+        "anti-slop/no-known-value-widening": "off",
+        "anti-slop/no-module-mocking": "off",
+        "anti-slop/no-object-parameters": "off",
+        "anti-slop/no-reflect-apply": "off",
+        "anti-slop/no-reflect-get": "off",
+        "anti-slop/no-runtime-typeof": "off",
+        "anti-slop/no-shape-in-symbol-names": "off",
+        "anti-slop/no-unknown-parameters": "off",
+        "anti-slop/no-unknown-returns": "off",
+        "anti-slop/no-unknown-type-aliases": "off",
+        "anti-slop/no-unsafe-dictionary-type": "off",
+        "anti-slop/no-widen-then-assert": "off",
+        "anti-slop/require-safety-comment-for-type-assertion": "off",
+      },
+    },
+  ],
 });

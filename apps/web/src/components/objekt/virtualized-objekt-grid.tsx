@@ -111,7 +111,7 @@ type BaseItemComponentProps<TItem> = {
 type Props<
   TResponse,
   TItem,
-  TItemProps extends Record<string, unknown> = Record<string, never>,
+  TItemProps extends object = Record<string, never>,
   TError = DefaultError,
   TQueryKey extends QueryKey = QueryKey,
 > = {
@@ -135,7 +135,7 @@ type Props<
 export default function VirtualizedObjektGrid<
   TResponse,
   TItem,
-  TItemProps extends Record<string, unknown> = Record<string, never>,
+  TItemProps extends object = Record<string, never>,
   TError = DefaultError,
   TQueryKey extends QueryKey = QueryKey,
 >(props: Props<TResponse, TItem, TItemProps, TError, TQueryKey>) {
@@ -161,7 +161,7 @@ export default function VirtualizedObjektGrid<
 function ObjektGrid<
   TResponse,
   TItem,
-  TItemProps extends Record<string, unknown> = Record<string, never>,
+  TItemProps extends object = Record<string, never>,
   TError = DefaultError,
   TQueryKey extends QueryKey = QueryKey,
 >({

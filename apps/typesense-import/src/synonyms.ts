@@ -3,7 +3,7 @@ type SynonymList = {
   members: string[];
 };
 
-export const members: Record<string, string[]> = {
+export const members = {
   // short names
   hj: ["heejin"],
   hs: ["haseul"],
@@ -39,7 +39,7 @@ export const members: Record<string, string[]> = {
   soda: ["dahyun"],
 };
 
-export const units: Record<string, SynonymList> = {
+export const units = {
   "odd-eye-circle": {
     units: ["oec", "oddeyecircle", "odd eye circle"],
     members: ["KimLip", "JinSoul", "Choerry"],
@@ -162,9 +162,9 @@ export const units: Record<string, SynonymList> = {
     units: ["zenith"],
     members: ["JiWoo", "SooMin", "YuBin", "YeonJi", "JooBin", "HaYeon"],
   },
-};
+} satisfies Record<string, SynonymList>;
 
-export const classes: Record<string, string[]> = {
+export const classes = {
   fco: ["First"],
   sco: ["Special"],
   dco: ["Double"],
@@ -175,6 +175,6 @@ export const classes: Record<string, string[]> = {
   eco: ["Event"],
 };
 
-export const misc: Record<string, string[]> = {
+export const misc = {
   oma: ["objekt music album"],
 };

@@ -58,10 +58,10 @@ function resolveContacts(user: PublicUser | undefined): Contact[] {
   return contacts;
 }
 
-const ICONS: Record<Contact["kind"], ReactNode> = {
+const ICONS = {
   discord: <IconBrandDiscord className="size-3.5" />,
   twitter: <IconBrandTwitter className="size-3.5" />,
-};
+} satisfies Record<Contact["kind"], ReactNode>;
 
 function ContactChip({ contact }: { contact: Contact }) {
   const className = cn(

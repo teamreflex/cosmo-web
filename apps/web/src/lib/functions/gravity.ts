@@ -213,7 +213,7 @@ export const $fetchPolygonGravity = createServerFn({ method: "GET" })
         // 4. fetch votes
         const votes = await db.query.polygonVotes.findMany({
           where: {
-            contract: ADDRESSES[data.artist],
+            contract: ADDRESSES.get(data.artist),
             pollId: chainPollId,
           },
           with: {
@@ -380,7 +380,7 @@ export const $fetchRevealedVotes = createServerFn({ method: "GET" })
     };
   });
 
-const ADDRESSES: Record<string, string> = {
-  triples: "0xc3e5ad11ae2f00c740e74b81f134426a3331d950",
-  artms: "0x8466e6e218f0fe438ac8f403f684451d20e59ee3",
-};
+const ADDRESSES = new Map([
+  ["triples", "0xc3e5ad11ae2f00c740e74b81f134426a3331d950"],
+  ["artms", "0x8466e6e218f0fe438ac8f403f684451d20e59ee3"],
+]);

@@ -1,7 +1,7 @@
 import type { ValidArtist } from "@apollo/cosmo/types/common";
 import type { ReactNode } from "react";
 
-const map: Record<ValidArtist, ReactNode> = {
+const map = {
   artms: (
     <svg
       className="size-4 shrink-0"
@@ -71,7 +71,7 @@ const map: Record<ValidArtist, ReactNode> = {
       />
     </svg>
   ),
-};
+} satisfies Record<ValidArtist, ReactNode>;
 
 export default function ArtistIcon({ artist }: { artist: string }) {
   return map[artist as ValidArtist] ?? null;

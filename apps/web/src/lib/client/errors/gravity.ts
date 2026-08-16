@@ -5,6 +5,7 @@ import { isGravityErrorCode } from "@/lib/universal/errors/gravity";
  * Maps a gravity error code to a localized message, or null when the error is
  * not a known gravity error code.
  */
+// oxlint-disable-next-line anti-slop/no-unknown-parameters -- boundary parser; caught errors are genuinely unknown
 export function formatGravityError(error: unknown): string | null {
   if (!(error instanceof Error) || !isGravityErrorCode(error.message)) {
     return null;

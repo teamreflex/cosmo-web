@@ -16,7 +16,7 @@ type Props = {
   setDataSource?: (dataSource: CollectionDataSource) => void;
 };
 
-const labelMap: Record<ValidSort, string> = {
+const labelMap = {
   newest: m.filter_sort_newest(),
   oldest: m.filter_sort_oldest(),
   noAscending: m.filter_sort_no_ascending(),
@@ -25,9 +25,9 @@ const labelMap: Record<ValidSort, string> = {
   serialDesc: m.filter_sort_serial_desc(),
   memberAsc: m.filter_sort_member_asc(),
   memberDesc: m.filter_sort_member_desc(),
-};
+} satisfies Record<ValidSort, string>;
 
-const sublabelMap: Record<ValidSort, string> = {
+const sublabelMap = {
   newest: m.filter_sort_newest_sub(),
   oldest: m.filter_sort_oldest_sub(),
   noAscending: m.filter_sort_no_ascending_sub(),
@@ -36,7 +36,7 @@ const sublabelMap: Record<ValidSort, string> = {
   serialDesc: m.filter_sort_serial_desc_sub(),
   memberAsc: m.filter_sort_member_asc_sub(),
   memberDesc: m.filter_sort_member_desc_sub(),
-};
+} satisfies Record<ValidSort, string>;
 
 export default function SortFilter(props: Props) {
   const value = props.sort ?? "newest";

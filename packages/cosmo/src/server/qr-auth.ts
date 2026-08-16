@@ -23,6 +23,7 @@ export async function getRecaptchaToken(config: QrAuthConfig) {
 
     // wait for grecaptcha to be ready before trying to use it
     // @ts-expect-error - window is available in browser context
+    // oxlint-disable-next-line anti-slop/no-runtime-typeof -- runs inside the browser page; grecaptcha is an injected global
     await page.waitForFunction(() => typeof window.grecaptcha !== "undefined", {
       timeout: 10000,
     });

@@ -437,6 +437,7 @@ initializeServer()
     process.on("SIGTERM", () => void shutdown("SIGTERM"));
     process.on("SIGINT", () => void shutdown("SIGINT"));
   })
+  // oxlint-disable-next-line anti-slop/no-unknown-parameters -- rejection values are genuinely unknown
   .catch((error: unknown) => {
     log.error(`Failed to start: ${String(error)}`);
     process.exit(1);

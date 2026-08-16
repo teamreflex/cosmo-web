@@ -482,15 +482,11 @@ export const $fetchActiveEvents = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     const now = new Date();
 
-    const whereClause: Record<string, unknown> = {
-      OR: [{ endDate: { isNull: true } }, { endDate: { gte: now } }],
-    };
-    if (data.artists?.length) {
-      whereClause.artist = { in: data.artists };
-    }
-
     return db.query.events.findMany({
-      where: whereClause,
+      where: {
+        OR: [{ endDate: { isNull: true } }, { endDate: { gte: now } }],
+        artist: data.artists?.length ? { in: data.artists } : undefined,
+      },
       orderBy: { startDate: "desc" },
       with: { era: true },
     });

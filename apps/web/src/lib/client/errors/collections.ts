@@ -5,6 +5,7 @@ import { isCollectionErrorCode } from "@/lib/universal/errors/collections";
  * Maps a collection error code to a localized message, or null when the error
  * is not a known collection error code.
  */
+// oxlint-disable-next-line anti-slop/no-unknown-parameters -- boundary parser; caught errors are genuinely unknown
 export function formatCollectionError(error: unknown): string | null {
   if (!(error instanceof Error) || !isCollectionErrorCode(error.message)) {
     return null;

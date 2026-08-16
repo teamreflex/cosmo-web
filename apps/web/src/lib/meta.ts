@@ -199,6 +199,7 @@ export function defineHead(meta: Meta) {
     metaTags.push({ name: "referrer", content: referrer });
   }
   if (themeColor) {
+    // oxlint-disable-next-line anti-slop/no-runtime-typeof -- narrowing the themeColor union
     if (typeof themeColor === "string") {
       metaTags.push({ name: "theme-color", content: themeColor });
     } else {
@@ -274,6 +275,7 @@ function renderOpenGraph(
   content: OpenGraphField,
 ): void {
   if (!content) return;
+  // oxlint-disable-next-line anti-slop/no-runtime-typeof -- narrowing the OpenGraphField union
   if (typeof content === "string") {
     tags.push({ name, content });
   }

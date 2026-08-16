@@ -26,11 +26,13 @@ type SetCookie = {
  * Save a new cookie.
  */
 export function putCookie({ key, value, maxAge }: SetCookie) {
+  // oxlint-disable-next-line anti-slop/no-runtime-typeof -- narrowing the SetCookie value union, not unparsed input
   const stringValue = typeof value === "string" ? value : JSON.stringify(value);
-  setCookie(key, stringValue, {
-    ...generateCookiePayload(),
-    ...(maxAge ? { maxAge } : {}),
-  });
+  const payload = generateCookiePayload();
+  if (maxAge) {
+    payload.maxAge = maxAge;
+  }
+  setCookie(key, stringValue, payload);
 }
 
 /**

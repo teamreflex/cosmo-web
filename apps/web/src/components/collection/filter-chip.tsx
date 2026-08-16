@@ -73,6 +73,7 @@ export default function FilterChip({
         className="rounded-sm p-0"
         style={{ width }}
       >
+        {/* oxlint-disable-next-line anti-slop/no-runtime-typeof -- narrowing the render-prop union */}
         {typeof children === "function"
           ? children({ close: () => setOpen(false) })
           : children}

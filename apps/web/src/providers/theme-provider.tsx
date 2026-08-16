@@ -21,6 +21,7 @@ export function ThemeProvider({
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(
     () =>
+      // oxlint-disable-next-line anti-slop/no-runtime-typeof -- SSR environment detection
       (typeof window !== "undefined"
         ? (localStorage.getItem(storageKey) as Theme)
         : null) || defaultTheme,
