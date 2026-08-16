@@ -4,7 +4,7 @@ import { artists } from "./fixtures";
 import { handle, recorder, runTest } from "./test-client";
 
 /**
- * Characterizes the shared `cosmo` client policy: one retry with a 300ms
+ * Pins the shared `cosmo` client policy: one retry with a 300ms
  * delay, but only for statuses in [408, 425, 429, 500, 502, 503, 504].
  */
 describe("cosmo client retry policy", () => {
@@ -37,7 +37,7 @@ describe("cosmo client retry policy", () => {
     expect(rec.requests).toHaveLength(2);
   });
 
-  it("does not retry a 409, unlike ofetch's default status list", async () => {
+  it("does not retry a 409, which only the metadata client retries", async () => {
     const rec = recorder();
     handle.get("https://api.cosmo.fans/bff/v3/artists", (request) => {
       rec.record(request);

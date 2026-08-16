@@ -1,13 +1,10 @@
 import type {
   AuthTicketSchema,
-  ProfileImageSchema,
   QueryTicketSchema,
   TicketUserSchema,
 } from "../schema/qr-auth";
 
 export type AuthTicket = typeof AuthTicketSchema.Type;
-
-export type ProfileImage = typeof ProfileImageSchema.Type;
 
 export type TicketUser = typeof TicketUserSchema.Type;
 

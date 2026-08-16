@@ -3,7 +3,7 @@ import type {
   CosmoPollChoices,
   CosmoPollFinalized,
   CosmoPollUpcoming,
-  PollViewSelectedContent,
+  PollSelectedContentImage,
 } from "@apollo/cosmo/types/gravity";
 
 type PollStatus = "upcoming" | "ongoing" | "finalized" | "counting";
@@ -35,7 +35,7 @@ function getPollStatus(
  */
 export function pollCandidates(
   poll: CosmoPollChoices,
-): PollViewSelectedContent[] {
+): PollSelectedContentImage[] {
   if (poll.type === "single-poll") {
     return poll.pollViewMetadata.selectedContent;
   }

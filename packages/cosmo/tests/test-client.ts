@@ -18,9 +18,9 @@ type Handler = (request: CapturedRequest) => Response | Promise<Response>;
 
 /**
  * Handlers are registered per-test via `handle.get`/`handle.post` and keyed by
- * method + origin + pathname (query params are ignored for matching, like MSW
- * path matching). Requests to unhandled routes die with a defect naming the
- * method and URL, so every outgoing request must be pinned by a handler.
+ * method + origin + pathname; query params are ignored for matching. Requests
+ * to unhandled routes die with a defect naming the method and URL, so every
+ * outgoing request must be pinned by a handler.
  */
 const handlers = new Map<string, Handler>();
 
@@ -52,10 +52,9 @@ function bodyText(body: HttpBody.HttpBody): string {
 }
 
 /**
- * Snapshot an HttpClientRequest the way the old MSW recorder saw the fetch
- * Request: full URL including query params, lowercase header lookup (the
- * body's content-type is already merged into request.headers by setBody),
- * and the body as text.
+ * Snapshot an HttpClientRequest for assertions: full URL including query
+ * params, lowercase header lookup (the body's content-type is already merged
+ * into request.headers by setBody), and the body as text.
  */
 function capture(
   request: HttpClientRequest.HttpClientRequest,
@@ -72,8 +71,8 @@ function capture(
 
 /**
  * Mock HttpClient: dispatches on method + URL to the registered handlers and
- * wraps the returned web Response, so retry/timeout/error policy in
- * src/server/http.ts runs unchanged on top of it.
+ * wraps the returned web Response, so the real retry/timeout/error policy in
+ * src/server/http.ts runs on top of it.
  */
 const client = HttpClient.make((request, url) => {
   const handler = handlers.get(

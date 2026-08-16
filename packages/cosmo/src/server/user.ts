@@ -9,10 +9,10 @@ import type { ValidArtist } from "../types/common";
 import { decrypt, EncryptionError } from "./encryption";
 import {
   bearer,
-  bodyText,
   cosmoClient,
   cosmoNoRetryClient,
   decodeBody,
+  toApiError,
 } from "./http";
 
 /**
@@ -64,7 +64,8 @@ export const fetchUserProfile = Effect.fn("Cosmo.fetchUserProfile")(function* (
     })
     .pipe(
       Effect.flatMap((response) =>
-        bodyText(response).pipe(
+        response.text.pipe(
+          Effect.mapError(toApiError),
           Effect.flatMap((payload) =>
             Effect.try({
               try: () => decrypt(payload, key),

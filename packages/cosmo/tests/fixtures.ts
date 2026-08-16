@@ -1,24 +1,19 @@
+import type { CosmoArtistSchema } from "../src/schema/artists";
+import type { RefreshTokenResultSchema } from "../src/schema/auth";
+import type { UpcomingGravitySchema } from "../src/schema/gravity";
 import type {
-  CosmoArtist,
-  CosmoArtistWithMembersBFF,
-} from "../src/types/artists";
-import type { RefreshTokenResult } from "../src/types/auth";
-import type {
-  CosmoPastGravity,
-  CosmoPollChoices,
-  CosmoUpcomingGravity,
-} from "../src/types/gravity";
+  CosmoByNicknameSchema,
+  CosmoUserProfileSchema,
+} from "../src/schema/user";
+import type { CosmoArtistWithMembersBFF } from "../src/types/artists";
+import type { CosmoPastGravity, CosmoPollChoices } from "../src/types/gravity";
 import type {
   CosmoObjektMetadataV1,
   CosmoObjektMetadataV3,
 } from "../src/types/metadata";
 import type { ObjektSummariesResponse } from "../src/types/objekts";
 import type { AuthTicket, QueryTicket } from "../src/types/qr-auth";
-import type {
-  CosmoByNickname,
-  CosmoSearchResult,
-  CosmoUserProfile,
-} from "../src/types/user";
+import type { CosmoSearchResult } from "../src/types/user";
 
 const contracts = {
   Como: "0x0",
@@ -44,7 +39,7 @@ export const artists = [
     logoImageUrl: "https://static.cosmo.fans/artms.png",
     contracts,
   },
-] satisfies CosmoArtist[];
+] satisfies (typeof CosmoArtistSchema.Type)[];
 
 export const artistBff = {
   name: "tripleS",
@@ -98,7 +93,7 @@ export const upcomingGravity = {
   body: [],
   contractOutlink: "https://polygonscan.com/address/0x0",
   polls: [],
-} satisfies CosmoUpcomingGravity;
+} satisfies typeof UpcomingGravitySchema.Type;
 
 export const pastGravity = {
   id: 99,
@@ -311,7 +306,7 @@ export const combinationPollChoices = {
 export const credentials = {
   accessToken: "new-access-token",
   refreshToken: "new-refresh-token",
-} satisfies RefreshTokenResult;
+} satisfies typeof RefreshTokenResultSchema.Type;
 
 export const searchResult = {
   hasNext: false,
@@ -332,7 +327,7 @@ export const byNickname = {
   address: "0xabc",
   profileImageUrl: "https://static.cosmo.fans/kairu.png",
   guid: "3f6c9f0e-0000-0000-0000-000000000000",
-} satisfies CosmoByNickname;
+} satisfies typeof CosmoByNicknameSchema.Type;
 
 export const userProfile = {
   id: 42,
@@ -344,7 +339,7 @@ export const userProfile = {
   currentStreak: 10,
   statusMessage: null,
   createdAt: "2022-10-28T00:00:00.000Z",
-} satisfies CosmoUserProfile;
+} satisfies typeof CosmoUserProfileSchema.Type;
 
 export const authTicket = {
   expireAt: "2026-01-01T00:00:00.000Z",

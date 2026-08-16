@@ -19,8 +19,8 @@ const apolloHeaders = {
 // exclude 499/aborted so client cancellations don't loop
 const retryStatusCodes = [408, 425, 429, 500, 502, 503, 504];
 
-// plain ofetch's default list, kept for the metadata endpoints
-const defaultRetryStatusCodes = [408, 409, 425, 429, 500, 502, 503, 504];
+// the metadata endpoints additionally treat 409 as retryable
+const metadataRetryStatusCodes = [408, 409, 425, 429, 500, 502, 503, 504];
 
 const withRetry =
   (statusCodes: number[], delay: Duration.Input) =>
@@ -59,7 +59,7 @@ const setBaseRequest = (baseUrl: string, headers: Record<string, string>) =>
     ),
   );
 
-const toApiError = (error: HttpClientError.HttpClientError) =>
+export const toApiError = (error: HttpClientError.HttpClientError) =>
   new CosmoApiError({
     url: error.request.url,
     status: error.response?.status,
@@ -87,12 +87,6 @@ export const decodeBody =
           : toApiError(error),
       ),
     );
-
-/**
- * Read a response body as text, failing with the package's tagged errors.
- */
-export const bodyText = (response: HttpClientResponse.HttpClientResponse) =>
-  response.text.pipe(Effect.mapError(toApiError));
 
 const cosmoApiBase = Effect.map(HttpClient.HttpClient, (client) =>
   client.pipe(
@@ -138,13 +132,15 @@ export const cosmoShopClient = Effect.map(HttpClient.HttpClient, (client) =>
 );
 
 /**
- * Client for the objekt metadata endpoints.
+ * Client for the objekt metadata endpoints: no timeout, one immediate retry,
+ * and 409 is retryable on top of the shared list. `apps/indexer` depends on
+ * this policy.
  */
 export const metadataClient = Effect.map(HttpClient.HttpClient, (client) =>
   client.pipe(
     setBaseRequest(COSMO_ENDPOINT, {}),
     HttpClient.filterStatusOk,
-    withRetry(defaultRetryStatusCodes, Duration.zero),
+    withRetry(metadataRetryStatusCodes, Duration.zero),
     withCosmoErrors,
   ),
 );

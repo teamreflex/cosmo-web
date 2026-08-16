@@ -12,7 +12,7 @@ describe("fetchMetadataV1", () => {
     expect(await runTest(fetchMetadataV1("1234"))).toEqual(metadataV1);
   });
 
-  it("rejects with the response status after the default retry", async () => {
+  it("rejects with the response status after the retry", async () => {
     const rec = recorder();
     handle.get("https://api.cosmo.fans/objekt/v1/token/1234", (request) => {
       rec.record(request);
@@ -22,7 +22,7 @@ describe("fetchMetadataV1", () => {
     expect(runTest(fetchMetadataV1("1234"))).rejects.toMatchObject({
       status: 500,
     });
-    // plain ofetch retries GETs once on 500 by default
+    // 500 is in the metadata retry list, so the request is attempted twice
     expect(rec.requests).toHaveLength(2);
   });
 });

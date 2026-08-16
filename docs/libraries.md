@@ -27,3 +27,5 @@ How to find current documentation for libraries used in this repo. Prefer these 
 ## Everything else
 
 Effect, Tailwind v4, Typesense, Paraglide JS, TypeORM, react-hook-form, Radix UI, and anything not listed above: use the context7 MCP (`resolve-library-id` → `query-docs`). oxlint/oxfmt docs live at https://oxc.rs.
+
+The repo runs Effect v4 (`effect@4.x`, pinned in the root catalog); `@effect/platform`'s HTTP modules live at `effect/unstable/http`. Make sure lookups return v4 APIs.

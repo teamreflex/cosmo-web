@@ -3,8 +3,7 @@ import type { HttpClientError } from "effect/unstable/http";
 
 /**
  * HTTP failure from the COSMO API. `status` is undefined for network-level
- * failures where no response was received. Shared by both the Effect and
- * promise surfaces of this package.
+ * failures where no response was received.
  */
 export class CosmoApiError extends Data.TaggedError("CosmoApiError")<{
   readonly url: string;
