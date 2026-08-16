@@ -63,22 +63,25 @@ export function getSeasonColor(season: string) {
 }
 
 /**
- * Remap seasons to a consistent order.
- * Primary sort by season number descending, secondary by season order descending.
+ * Collapse a season into a single chronological value.
+ * A seasonal cycle runs summer -> autumn -> winter -> spring, where winter
+ * and spring carry the next calendar year's number but belong to the cycle
+ * that started the previous summer, so they're attributed to that cycle.
+ */
+function seasonSortValue(season: Season, number: number) {
+  const cycle =
+    season === "winter" || season === "spring" ? number - 1 : number;
+  return cycle * 10 + seasonConfig[season].order;
+}
+
+/**
+ * Remap seasons to a consistent order, newest first.
+ * Sorts by cycle descending, then by season order within the cycle descending.
  */
 export function seasonSort(a: string, b: string) {
   const aMatch = extractSeason(a);
   const bMatch = extractSeason(b);
   if (!aMatch || !bMatch) return 0;
 
-  const [aSeason, aNumber] = aMatch;
-  const [bSeason, bNumber] = bMatch;
-
-  // First sort by number descending
-  if (aNumber !== bNumber) {
-    return bNumber - aNumber;
-  }
-
-  // Then by season order descending
-  return seasonConfig[bSeason].order - seasonConfig[aSeason].order;
+  return seasonSortValue(...bMatch) - seasonSortValue(...aMatch);
 }
