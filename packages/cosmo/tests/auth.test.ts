@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { http, HttpResponse } from "msw";
+import { runCosmo } from "../src/runtime";
 import { refresh, refreshV3 } from "../src/server/auth";
 import { decrypt, EncryptionError } from "../src/server/encryption";
 import { TEST_KEY } from "./encryption.test";
@@ -19,7 +20,7 @@ describe("refresh", () => {
       ),
     );
 
-    const result = await refresh("old-refresh-token");
+    const result = await runCosmo(refresh("old-refresh-token"));
 
     expect(result).toEqual(credentials);
     expect(JSON.parse(rec.at(0).body)).toEqual({
@@ -41,7 +42,7 @@ describe("refreshV3", () => {
       ),
     );
 
-    const result = await refreshV3("old-refresh-token", TEST_KEY);
+    const result = await runCosmo(refreshV3("old-refresh-token", TEST_KEY));
 
     expect(result).toEqual(credentials);
     const request = rec.at(0);
@@ -65,7 +66,7 @@ describe("refreshV3", () => {
     );
 
     expect(
-      refreshV3("old-refresh-token", "dG9vLXNob3J0"),
+      runCosmo(refreshV3("old-refresh-token", "dG9vLXNob3J0")),
     ).rejects.toBeInstanceOf(EncryptionError);
     expect(rec.requests).toHaveLength(0);
   });

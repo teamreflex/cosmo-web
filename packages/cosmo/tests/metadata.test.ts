@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { http, HttpResponse } from "msw";
+import { runCosmo } from "../src/runtime";
 import { fetchMetadataV1, fetchMetadataV3 } from "../src/server/metadata";
 import { metadataV1, metadataV3 } from "./fixtures";
 import { recorder, server } from "./server";
@@ -12,7 +13,7 @@ describe("fetchMetadataV1", () => {
       ),
     );
 
-    expect(await fetchMetadataV1("1234")).toEqual(metadataV1);
+    expect(await runCosmo(fetchMetadataV1("1234"))).toEqual(metadataV1);
   });
 
   it("rejects with the response status after the default retry", async () => {
@@ -27,7 +28,7 @@ describe("fetchMetadataV1", () => {
       ),
     );
 
-    expect(fetchMetadataV1("1234")).rejects.toMatchObject({
+    expect(runCosmo(fetchMetadataV1("1234"))).rejects.toMatchObject({
       status: 500,
     });
     // plain ofetch retries GETs once on 500 by default
@@ -43,6 +44,6 @@ describe("fetchMetadataV3", () => {
       ),
     );
 
-    expect(await fetchMetadataV3("1234")).toEqual(metadataV3);
+    expect(await runCosmo(fetchMetadataV3("1234"))).toEqual(metadataV3);
   });
 });

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { http, HttpResponse } from "msw";
+import { runCosmo } from "../src/runtime";
 import {
   certifyTicket,
   exchangeLoginTicket,
@@ -21,7 +22,7 @@ describe("exchangeLoginTicket", () => {
       ),
     );
 
-    const result = await exchangeLoginTicket("recaptcha-token");
+    const result = await runCosmo(exchangeLoginTicket("recaptcha-token"));
 
     expect(result).toEqual(authTicket);
     const request = rec.at(0);
@@ -48,7 +49,7 @@ describe("queryTicket", () => {
       ),
     );
 
-    const result = await queryTicket("ticket-value");
+    const result = await runCosmo(queryTicket("ticket-value"));
 
     expect(result).toEqual(waitingTicket);
     expect(rec.at(0).url.searchParams.get("ticket")).toBe("ticket-value");
@@ -71,7 +72,7 @@ describe("certifyTicket", () => {
       ),
     );
 
-    const response = await certifyTicket(123456, "ticket-value");
+    const response = await runCosmo(certifyTicket(123456, "ticket-value"));
 
     expect(response.status).toBe(200);
     expect(response.cookies["user-session"]).toBe("session-abc");
@@ -89,7 +90,9 @@ describe("certifyTicket", () => {
       ),
     );
 
-    expect(certifyTicket(123456, "ticket-value")).rejects.toMatchObject({
+    expect(
+      runCosmo(certifyTicket(123456, "ticket-value")),
+    ).rejects.toMatchObject({
       status: 400,
     });
   });

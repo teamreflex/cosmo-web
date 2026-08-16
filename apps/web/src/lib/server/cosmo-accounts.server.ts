@@ -1,4 +1,5 @@
 import { CosmoApiError } from "@apollo/cosmo/errors";
+import { runCosmo } from "@apollo/cosmo/runtime";
 import { fetchByNickname } from "@apollo/cosmo/server/user";
 import { cosmoAccounts } from "@apollo/database/web/schema";
 import type { CosmoAccount } from "@apollo/database/web/types";
@@ -71,7 +72,7 @@ export async function fetchFullAccount(
 
   // attempt to fetch from cosmo
   try {
-    const user = await fetchByNickname(identifier, signal);
+    const user = await runCosmo(fetchByNickname(identifier), signal);
 
     // cache & upsert profile
     await cacheAccounts([

@@ -1,38 +1,52 @@
-import * as gravity from "../effect/gravity";
+import { Effect } from "effect";
+import {
+  GravityListSchema,
+  GravityResponseSchema,
+  PollDetailResponseSchema,
+} from "../schema/gravity";
 import type { ValidArtist } from "../types/common";
-import { runCosmo } from "./runtime";
+import { bearer, cosmoClient, decodeBody } from "./http";
 
 /**
  * Fetch the list of gravities for the given artist.
  */
-export async function fetchGravities(
+export const fetchGravities = Effect.fn("Cosmo.fetchGravities")(function* (
   token: string,
   artistId: ValidArtist,
-  signal: AbortSignal | null = null,
 ) {
-  return await runCosmo(gravity.fetchGravities(token, artistId), signal);
-}
+  const client = yield* cosmoClient;
+  return yield* client
+    .get("/bff/v3/gravities", {
+      headers: bearer(token),
+      urlParams: { artistId },
+    })
+    .pipe(Effect.flatMap(decodeBody(GravityListSchema)), Effect.scoped);
+});
 
 /**
  * Fetch a single gravity.
  */
-export async function fetchGravity(
+export const fetchGravity = Effect.fn("Cosmo.fetchGravity")(function* (
   token: string,
   gravityId: number,
-  signal: AbortSignal | null = null,
 ) {
-  return await runCosmo(gravity.fetchGravity(token, gravityId), signal).catch(
-    () => null,
-  );
-}
+  const client = yield* cosmoClient;
+  const response = yield* client
+    .get(`/bff/v3/gravities/${gravityId}`, { headers: bearer(token) })
+    .pipe(Effect.flatMap(decodeBody(GravityResponseSchema)), Effect.scoped);
+  return response.gravity;
+});
 
 /**
  * Fetch the poll fields.
  */
-export async function fetchPoll(
+export const fetchPoll = Effect.fn("Cosmo.fetchPoll")(function* (
   token: string,
   pollId: number,
-  signal: AbortSignal | null = null,
 ) {
-  return await runCosmo(gravity.fetchPoll(token, pollId), signal);
-}
+  const client = yield* cosmoClient;
+  const response = yield* client
+    .get(`/bff/v3/polls/${pollId}`, { headers: bearer(token) })
+    .pipe(Effect.flatMap(decodeBody(PollDetailResponseSchema)), Effect.scoped);
+  return response.pollDetail;
+});

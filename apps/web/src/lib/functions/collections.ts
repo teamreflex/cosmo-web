@@ -8,6 +8,7 @@ import {
 import { getRequestSignal } from "@/lib/server/request.server";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import { updateCollectionSchema } from "@/lib/universal/schema/collections";
+import { runCosmo } from "@apollo/cosmo/runtime";
 import { fetchMetadataV3 } from "@apollo/cosmo/server/metadata";
 import { normalizeV3 } from "@apollo/cosmo/types/metadata";
 import { collections } from "@apollo/database/indexer/schema";
@@ -49,7 +50,7 @@ export const $refetchCollectionFromCosmo = createServerFn({ method: "POST" })
     }
 
     try {
-      const v3 = await fetchMetadataV3(objekt.id, getRequestSignal());
+      const v3 = await runCosmo(fetchMetadataV3(objekt.id), getRequestSignal());
       var metadata = normalizeV3(v3, objekt.id);
     } catch (e) {
       console.error("Failed to fetch metadata:", e);

@@ -1,3 +1,4 @@
+import { runCosmo } from "@apollo/cosmo/runtime";
 import { refreshV3 } from "@apollo/cosmo/server/auth";
 import { cosmoTokens } from "@apollo/database/web/schema";
 import type { CosmoToken } from "@apollo/database/web/types";
@@ -30,9 +31,8 @@ export async function getProxiedToken(
       if (validateExpiry(latestToken.refreshToken)) {
         // if valid, refresh the token
         const key = await getCosmoKey();
-        const newTokens = await refreshV3(
-          latestToken.refreshToken,
-          key,
+        const newTokens = await runCosmo(
+          refreshV3(latestToken.refreshToken, key),
           signal,
         );
 

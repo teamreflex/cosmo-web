@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { http, HttpResponse } from "msw";
+import { runCosmo } from "../src/runtime";
 import { fetchArtist, fetchArtists } from "../src/server/artists";
 import { artistBff, artists } from "./fixtures";
 import { recorder, server } from "./server";
@@ -14,7 +15,7 @@ describe("fetchArtists", () => {
       }),
     );
 
-    const result = await fetchArtists("token-123");
+    const result = await runCosmo(fetchArtists("token-123"));
 
     expect(result).toEqual(artists);
     const request = rec.at(0);
@@ -38,7 +39,7 @@ describe("fetchArtist", () => {
       ),
     );
 
-    const result = await fetchArtist("token-123", "tripleS");
+    const result = await runCosmo(fetchArtist("token-123", "tripleS"));
 
     expect(result).toEqual(artistBff);
     expect(rec.at(0).headers.get("authorization")).toBe("Bearer token-123");

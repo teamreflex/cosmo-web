@@ -9,59 +9,49 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TermsPrivacyRouteImport } from './routes/terms-privacy'
-import { Route as ShareDataRouteImport } from './routes/share-data'
-import { Route as AdminRouteRouteImport } from './routes/admin/route'
-import { Route as AtChar123usernameChar125RouteRouteImport } from './routes/@{$username}/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ObjektsIndexRouteImport } from './routes/objekts/index'
-import { Route as GravityIndexRouteImport } from './routes/gravity/index'
-import { Route as EventsIndexRouteImport } from './routes/events/index'
-import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AtChar123usernameChar125RouteRouteImport } from './routes/@{$username}/route'
+import { Route as AdminRouteRouteImport } from './routes/admin/route'
+import { Route as ShareDataRouteImport } from './routes/share-data'
+import { Route as TermsPrivacyRouteImport } from './routes/terms-privacy'
 import { Route as AtChar123usernameChar125IndexRouteImport } from './routes/@{$username}/index'
-import { Route as ObjektsStatsRouteImport } from './routes/objekts/stats'
-import { Route as ListIdRouteImport } from './routes/list/$id'
-import { Route as EventsSlugRouteImport } from './routes/events/$slug'
-import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
-import { Route as AdminNoticeRouteImport } from './routes/admin/notice'
-import { Route as AdminEventsRouteImport } from './routes/admin/events'
-import { Route as AdminErasRouteImport } from './routes/admin/eras'
-import { Route as AdminCollectionsRouteImport } from './routes/admin/collections'
-import { Route as AdminCacheRouteImport } from './routes/admin/cache'
-import { Route as AdminBandsRouteImport } from './routes/admin/bands'
-import { Route as AdminApiKeysRouteImport } from './routes/admin/api-keys'
-import { Route as AtChar123usernameChar125TradesRouteImport } from './routes/@{$username}/trades'
-import { Route as AtChar123usernameChar125ProgressRouteImport } from './routes/@{$username}/progress'
-import { Route as AtChar123usernameChar125GridRouteImport } from './routes/@{$username}/grid'
 import { Route as AtChar123usernameChar125ComoRouteImport } from './routes/@{$username}/como'
-import { Route as GravityArtistIdRouteImport } from './routes/gravity/$artist/$id'
-import { Route as ApiUserByAddressesRouteImport } from './routes/api/user/by-addresses'
-import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as AtChar123usernameChar125GridRouteImport } from './routes/@{$username}/grid'
+import { Route as AtChar123usernameChar125ProgressRouteImport } from './routes/@{$username}/progress'
+import { Route as AtChar123usernameChar125TradesRouteImport } from './routes/@{$username}/trades'
+import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminApiKeysRouteImport } from './routes/admin/api-keys'
+import { Route as AdminBandsRouteImport } from './routes/admin/bands'
+import { Route as AdminCacheRouteImport } from './routes/admin/cache'
+import { Route as AdminCollectionsRouteImport } from './routes/admin/collections'
+import { Route as AdminErasRouteImport } from './routes/admin/eras'
+import { Route as AdminEventsRouteImport } from './routes/admin/events'
+import { Route as AdminNoticeRouteImport } from './routes/admin/notice'
+import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
+import { Route as EventsIndexRouteImport } from './routes/events/index'
+import { Route as EventsSlugRouteImport } from './routes/events/$slug'
+import { Route as GravityIndexRouteImport } from './routes/gravity/index'
+import { Route as ListIdRouteImport } from './routes/list/$id'
+import { Route as ObjektsIndexRouteImport } from './routes/objekts/index'
+import { Route as ObjektsStatsRouteImport } from './routes/objekts/stats'
 import { Route as AtChar123usernameChar125ListSlugRouteImport } from './routes/@{$username}/list.$slug'
-import { Route as ApiObjektsBySlugSlugRouteImport } from './routes/api/objekts/by-slug.$slug'
-import { Route as ApiObjektListForUserIdentifierRouteImport } from './routes/api/objekt-list/for-user.$identifier'
-import { Route as ApiGravityPollIdAggregatedRouteImport } from './routes/api/gravity/$pollId.aggregated'
-import { Route as ApiCosmoQrAuthTicketRouteImport } from './routes/api/cosmo/qr-auth/ticket'
+import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiUserByAddressesRouteImport } from './routes/api/user/by-addresses'
+import { Route as GravityArtistIdRouteImport } from './routes/gravity/$artist/$id'
 import { Route as ApiCosmoQrAuthRecaptchaRouteImport } from './routes/api/cosmo/qr-auth/recaptcha'
-import { Route as ApiUserByAddressAddressIndexRouteImport } from './routes/api/user/by-address/$address/index'
-import { Route as ApiObjektsMetadataSlugIndexRouteImport } from './routes/api/objekts/metadata/$slug/index'
-import { Route as ApiUserByAddressAddressStatsRouteImport } from './routes/api/user/by-address/$address/stats'
-import { Route as ApiUserByAddressAddressComoRouteImport } from './routes/api/user/by-address/$address/como'
+import { Route as ApiCosmoQrAuthTicketRouteImport } from './routes/api/cosmo/qr-auth/ticket'
+import { Route as ApiGravityPollIdAggregatedRouteImport } from './routes/api/gravity/$pollId.aggregated'
+import { Route as ApiObjektListForUserIdentifierRouteImport } from './routes/api/objekt-list/for-user.$identifier'
+import { Route as ApiObjektsBySlugSlugRouteImport } from './routes/api/objekts/by-slug.$slug'
 import { Route as ApiBffV3UsersSearchRouteImport } from './routes/api/bff/v3/users/search'
+import { Route as ApiObjektsMetadataSlugIndexRouteImport } from './routes/api/objekts/metadata/$slug/index'
+import { Route as ApiUserByAddressAddressIndexRouteImport } from './routes/api/user/by-address/$address/index'
+import { Route as ApiUserByAddressAddressComoRouteImport } from './routes/api/user/by-address/$address/como'
+import { Route as ApiUserByAddressAddressStatsRouteImport } from './routes/api/user/by-address/$address/stats'
 
-const TermsPrivacyRoute = TermsPrivacyRouteImport.update({
-  id: '/terms-privacy',
-  path: '/terms-privacy',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ShareDataRoute = ShareDataRouteImport.update({
-  id: '/share-data',
-  path: '/share-data',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminRouteRoute = AdminRouteRouteImport.update({
-  id: '/admin',
-  path: '/admin',
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AtChar123usernameChar125RouteRoute =
@@ -70,108 +60,25 @@ const AtChar123usernameChar125RouteRoute =
     path: '/@{$username}',
     getParentRoute: () => rootRouteImport,
   } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const AdminRouteRoute = AdminRouteRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ObjektsIndexRoute = ObjektsIndexRouteImport.update({
-  id: '/objekts/',
-  path: '/objekts/',
+const ShareDataRoute = ShareDataRouteImport.update({
+  id: '/share-data',
+  path: '/share-data',
   getParentRoute: () => rootRouteImport,
 } as any)
-const GravityIndexRoute = GravityIndexRouteImport.update({
-  id: '/gravity/',
-  path: '/gravity/',
+const TermsPrivacyRoute = TermsPrivacyRouteImport.update({
+  id: '/terms-privacy',
+  path: '/terms-privacy',
   getParentRoute: () => rootRouteImport,
-} as any)
-const EventsIndexRoute = EventsIndexRouteImport.update({
-  id: '/events/',
-  path: '/events/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminIndexRoute = AdminIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AdminRouteRoute,
 } as any)
 const AtChar123usernameChar125IndexRoute =
   AtChar123usernameChar125IndexRouteImport.update({
     id: '/',
     path: '/',
-    getParentRoute: () => AtChar123usernameChar125RouteRoute,
-  } as any)
-const ObjektsStatsRoute = ObjektsStatsRouteImport.update({
-  id: '/objekts/stats',
-  path: '/objekts/stats',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ListIdRoute = ListIdRouteImport.update({
-  id: '/list/$id',
-  path: '/list/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EventsSlugRoute = EventsSlugRouteImport.update({
-  id: '/events/$slug',
-  path: '/events/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
-  id: '/auth/reset-password',
-  path: '/auth/reset-password',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AdminNoticeRoute = AdminNoticeRouteImport.update({
-  id: '/notice',
-  path: '/notice',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminEventsRoute = AdminEventsRouteImport.update({
-  id: '/events',
-  path: '/events',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminErasRoute = AdminErasRouteImport.update({
-  id: '/eras',
-  path: '/eras',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminCollectionsRoute = AdminCollectionsRouteImport.update({
-  id: '/collections',
-  path: '/collections',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminCacheRoute = AdminCacheRouteImport.update({
-  id: '/cache',
-  path: '/cache',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminBandsRoute = AdminBandsRouteImport.update({
-  id: '/bands',
-  path: '/bands',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AdminApiKeysRoute = AdminApiKeysRouteImport.update({
-  id: '/api-keys',
-  path: '/api-keys',
-  getParentRoute: () => AdminRouteRoute,
-} as any)
-const AtChar123usernameChar125TradesRoute =
-  AtChar123usernameChar125TradesRouteImport.update({
-    id: '/trades',
-    path: '/trades',
-    getParentRoute: () => AtChar123usernameChar125RouteRoute,
-  } as any)
-const AtChar123usernameChar125ProgressRoute =
-  AtChar123usernameChar125ProgressRouteImport.update({
-    id: '/progress',
-    path: '/progress',
-    getParentRoute: () => AtChar123usernameChar125RouteRoute,
-  } as any)
-const AtChar123usernameChar125GridRoute =
-  AtChar123usernameChar125GridRouteImport.update({
-    id: '/grid',
-    path: '/grid',
     getParentRoute: () => AtChar123usernameChar125RouteRoute,
   } as any)
 const AtChar123usernameChar125ComoRoute =
@@ -180,19 +87,97 @@ const AtChar123usernameChar125ComoRoute =
     path: '/como',
     getParentRoute: () => AtChar123usernameChar125RouteRoute,
   } as any)
-const GravityArtistIdRoute = GravityArtistIdRouteImport.update({
-  id: '/gravity/$artist/$id',
-  path: '/gravity/$artist/$id',
+const AtChar123usernameChar125GridRoute =
+  AtChar123usernameChar125GridRouteImport.update({
+    id: '/grid',
+    path: '/grid',
+    getParentRoute: () => AtChar123usernameChar125RouteRoute,
+  } as any)
+const AtChar123usernameChar125ProgressRoute =
+  AtChar123usernameChar125ProgressRouteImport.update({
+    id: '/progress',
+    path: '/progress',
+    getParentRoute: () => AtChar123usernameChar125RouteRoute,
+  } as any)
+const AtChar123usernameChar125TradesRoute =
+  AtChar123usernameChar125TradesRouteImport.update({
+    id: '/trades',
+    path: '/trades',
+    getParentRoute: () => AtChar123usernameChar125RouteRoute,
+  } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminApiKeysRoute = AdminApiKeysRouteImport.update({
+  id: '/api-keys',
+  path: '/api-keys',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminBandsRoute = AdminBandsRouteImport.update({
+  id: '/bands',
+  path: '/bands',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminCacheRoute = AdminCacheRouteImport.update({
+  id: '/cache',
+  path: '/cache',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminCollectionsRoute = AdminCollectionsRouteImport.update({
+  id: '/collections',
+  path: '/collections',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminErasRoute = AdminErasRouteImport.update({
+  id: '/eras',
+  path: '/eras',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminEventsRoute = AdminEventsRouteImport.update({
+  id: '/events',
+  path: '/events',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminNoticeRoute = AdminNoticeRouteImport.update({
+  id: '/notice',
+  path: '/notice',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
+  id: '/auth/reset-password',
+  path: '/auth/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiUserByAddressesRoute = ApiUserByAddressesRouteImport.update({
-  id: '/api/user/by-addresses',
-  path: '/api/user/by-addresses',
+const EventsIndexRoute = EventsIndexRouteImport.update({
+  id: '/events/',
+  path: '/events/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
-  id: '/api/auth/$',
-  path: '/api/auth/$',
+const EventsSlugRoute = EventsSlugRouteImport.update({
+  id: '/events/$slug',
+  path: '/events/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GravityIndexRoute = GravityIndexRouteImport.update({
+  id: '/gravity/',
+  path: '/gravity/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ListIdRoute = ListIdRouteImport.update({
+  id: '/list/$id',
+  path: '/list/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ObjektsIndexRoute = ObjektsIndexRouteImport.update({
+  id: '/objekts/',
+  path: '/objekts/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ObjektsStatsRoute = ObjektsStatsRouteImport.update({
+  id: '/objekts/stats',
+  path: '/objekts/stats',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AtChar123usernameChar125ListSlugRoute =
@@ -201,26 +186,19 @@ const AtChar123usernameChar125ListSlugRoute =
     path: '/list/$slug',
     getParentRoute: () => AtChar123usernameChar125RouteRoute,
   } as any)
-const ApiObjektsBySlugSlugRoute = ApiObjektsBySlugSlugRouteImport.update({
-  id: '/api/objekts/by-slug/$slug',
-  path: '/api/objekts/by-slug/$slug',
+const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
+  id: '/api/auth/$',
+  path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiObjektListForUserIdentifierRoute =
-  ApiObjektListForUserIdentifierRouteImport.update({
-    id: '/api/objekt-list/for-user/$identifier',
-    path: '/api/objekt-list/for-user/$identifier',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiGravityPollIdAggregatedRoute =
-  ApiGravityPollIdAggregatedRouteImport.update({
-    id: '/api/gravity/$pollId/aggregated',
-    path: '/api/gravity/$pollId/aggregated',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ApiCosmoQrAuthTicketRoute = ApiCosmoQrAuthTicketRouteImport.update({
-  id: '/api/cosmo/qr-auth/ticket',
-  path: '/api/cosmo/qr-auth/ticket',
+const ApiUserByAddressesRoute = ApiUserByAddressesRouteImport.update({
+  id: '/api/user/by-addresses',
+  path: '/api/user/by-addresses',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GravityArtistIdRoute = GravityArtistIdRouteImport.update({
+  id: '/gravity/$artist/$id',
+  path: '/gravity/$artist/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCosmoQrAuthRecaptchaRoute = ApiCosmoQrAuthRecaptchaRouteImport.update({
@@ -228,22 +206,43 @@ const ApiCosmoQrAuthRecaptchaRoute = ApiCosmoQrAuthRecaptchaRouteImport.update({
   path: '/api/cosmo/qr-auth/recaptcha',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiUserByAddressAddressIndexRoute =
-  ApiUserByAddressAddressIndexRouteImport.update({
-    id: '/api/user/by-address/$address/',
-    path: '/api/user/by-address/$address/',
+const ApiCosmoQrAuthTicketRoute = ApiCosmoQrAuthTicketRouteImport.update({
+  id: '/api/cosmo/qr-auth/ticket',
+  path: '/api/cosmo/qr-auth/ticket',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGravityPollIdAggregatedRoute =
+  ApiGravityPollIdAggregatedRouteImport.update({
+    id: '/api/gravity/$pollId/aggregated',
+    path: '/api/gravity/$pollId/aggregated',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiObjektListForUserIdentifierRoute =
+  ApiObjektListForUserIdentifierRouteImport.update({
+    id: '/api/objekt-list/for-user/$identifier',
+    path: '/api/objekt-list/for-user/$identifier',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiObjektsBySlugSlugRoute = ApiObjektsBySlugSlugRouteImport.update({
+  id: '/api/objekts/by-slug/$slug',
+  path: '/api/objekts/by-slug/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiBffV3UsersSearchRoute = ApiBffV3UsersSearchRouteImport.update({
+  id: '/api/bff/v3/users/search',
+  path: '/api/bff/v3/users/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiObjektsMetadataSlugIndexRoute =
   ApiObjektsMetadataSlugIndexRouteImport.update({
     id: '/api/objekts/metadata/$slug/',
     path: '/api/objekts/metadata/$slug/',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiUserByAddressAddressStatsRoute =
-  ApiUserByAddressAddressStatsRouteImport.update({
-    id: '/api/user/by-address/$address/stats',
-    path: '/api/user/by-address/$address/stats',
+const ApiUserByAddressAddressIndexRoute =
+  ApiUserByAddressAddressIndexRouteImport.update({
+    id: '/api/user/by-address/$address/',
+    path: '/api/user/by-address/$address/',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiUserByAddressAddressComoRoute =
@@ -252,11 +251,12 @@ const ApiUserByAddressAddressComoRoute =
     path: '/api/user/by-address/$address/como',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiBffV3UsersSearchRoute = ApiBffV3UsersSearchRouteImport.update({
-  id: '/api/bff/v3/users/search',
-  path: '/api/bff/v3/users/search',
-  getParentRoute: () => rootRouteImport,
-} as any)
+const ApiUserByAddressAddressStatsRoute =
+  ApiUserByAddressAddressStatsRouteImport.update({
+    id: '/api/user/by-address/$address/stats',
+    path: '/api/user/by-address/$address/stats',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -534,25 +534,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/terms-privacy': {
-      id: '/terms-privacy'
-      path: '/terms-privacy'
-      fullPath: '/terms-privacy'
-      preLoaderRoute: typeof TermsPrivacyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/share-data': {
-      id: '/share-data'
-      path: '/share-data'
-      fullPath: '/share-data'
-      preLoaderRoute: typeof ShareDataRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin': {
-      id: '/admin'
-      path: '/admin'
-      fullPath: '/admin'
-      preLoaderRoute: typeof AdminRouteRouteImport
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/@{$username}': {
@@ -562,144 +548,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AtChar123usernameChar125RouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/objekts/': {
-      id: '/objekts/'
-      path: '/objekts'
-      fullPath: '/objekts/'
-      preLoaderRoute: typeof ObjektsIndexRouteImport
+    '/share-data': {
+      id: '/share-data'
+      path: '/share-data'
+      fullPath: '/share-data'
+      preLoaderRoute: typeof ShareDataRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/gravity/': {
-      id: '/gravity/'
-      path: '/gravity'
-      fullPath: '/gravity/'
-      preLoaderRoute: typeof GravityIndexRouteImport
+    '/terms-privacy': {
+      id: '/terms-privacy'
+      path: '/terms-privacy'
+      fullPath: '/terms-privacy'
+      preLoaderRoute: typeof TermsPrivacyRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/events/': {
-      id: '/events/'
-      path: '/events'
-      fullPath: '/events/'
-      preLoaderRoute: typeof EventsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/': {
-      id: '/admin/'
-      path: '/'
-      fullPath: '/admin/'
-      preLoaderRoute: typeof AdminIndexRouteImport
-      parentRoute: typeof AdminRouteRoute
     }
     '/@{$username}/': {
       id: '/@{$username}/'
       path: '/'
       fullPath: '/@{$username}/'
       preLoaderRoute: typeof AtChar123usernameChar125IndexRouteImport
-      parentRoute: typeof AtChar123usernameChar125RouteRoute
-    }
-    '/objekts/stats': {
-      id: '/objekts/stats'
-      path: '/objekts/stats'
-      fullPath: '/objekts/stats'
-      preLoaderRoute: typeof ObjektsStatsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/list/$id': {
-      id: '/list/$id'
-      path: '/list/$id'
-      fullPath: '/list/$id'
-      preLoaderRoute: typeof ListIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/events/$slug': {
-      id: '/events/$slug'
-      path: '/events/$slug'
-      fullPath: '/events/$slug'
-      preLoaderRoute: typeof EventsSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth/reset-password': {
-      id: '/auth/reset-password'
-      path: '/auth/reset-password'
-      fullPath: '/auth/reset-password'
-      preLoaderRoute: typeof AuthResetPasswordRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/admin/notice': {
-      id: '/admin/notice'
-      path: '/notice'
-      fullPath: '/admin/notice'
-      preLoaderRoute: typeof AdminNoticeRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/events': {
-      id: '/admin/events'
-      path: '/events'
-      fullPath: '/admin/events'
-      preLoaderRoute: typeof AdminEventsRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/eras': {
-      id: '/admin/eras'
-      path: '/eras'
-      fullPath: '/admin/eras'
-      preLoaderRoute: typeof AdminErasRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/collections': {
-      id: '/admin/collections'
-      path: '/collections'
-      fullPath: '/admin/collections'
-      preLoaderRoute: typeof AdminCollectionsRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/cache': {
-      id: '/admin/cache'
-      path: '/cache'
-      fullPath: '/admin/cache'
-      preLoaderRoute: typeof AdminCacheRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/bands': {
-      id: '/admin/bands'
-      path: '/bands'
-      fullPath: '/admin/bands'
-      preLoaderRoute: typeof AdminBandsRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/admin/api-keys': {
-      id: '/admin/api-keys'
-      path: '/api-keys'
-      fullPath: '/admin/api-keys'
-      preLoaderRoute: typeof AdminApiKeysRouteImport
-      parentRoute: typeof AdminRouteRoute
-    }
-    '/@{$username}/trades': {
-      id: '/@{$username}/trades'
-      path: '/trades'
-      fullPath: '/@{$username}/trades'
-      preLoaderRoute: typeof AtChar123usernameChar125TradesRouteImport
-      parentRoute: typeof AtChar123usernameChar125RouteRoute
-    }
-    '/@{$username}/progress': {
-      id: '/@{$username}/progress'
-      path: '/progress'
-      fullPath: '/@{$username}/progress'
-      preLoaderRoute: typeof AtChar123usernameChar125ProgressRouteImport
-      parentRoute: typeof AtChar123usernameChar125RouteRoute
-    }
-    '/@{$username}/grid': {
-      id: '/@{$username}/grid'
-      path: '/grid'
-      fullPath: '/@{$username}/grid'
-      preLoaderRoute: typeof AtChar123usernameChar125GridRouteImport
       parentRoute: typeof AtChar123usernameChar125RouteRoute
     }
     '/@{$username}/como': {
@@ -709,25 +583,130 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AtChar123usernameChar125ComoRouteImport
       parentRoute: typeof AtChar123usernameChar125RouteRoute
     }
-    '/gravity/$artist/$id': {
-      id: '/gravity/$artist/$id'
-      path: '/gravity/$artist/$id'
-      fullPath: '/gravity/$artist/$id'
-      preLoaderRoute: typeof GravityArtistIdRouteImport
+    '/@{$username}/grid': {
+      id: '/@{$username}/grid'
+      path: '/grid'
+      fullPath: '/@{$username}/grid'
+      preLoaderRoute: typeof AtChar123usernameChar125GridRouteImport
+      parentRoute: typeof AtChar123usernameChar125RouteRoute
+    }
+    '/@{$username}/progress': {
+      id: '/@{$username}/progress'
+      path: '/progress'
+      fullPath: '/@{$username}/progress'
+      preLoaderRoute: typeof AtChar123usernameChar125ProgressRouteImport
+      parentRoute: typeof AtChar123usernameChar125RouteRoute
+    }
+    '/@{$username}/trades': {
+      id: '/@{$username}/trades'
+      path: '/trades'
+      fullPath: '/@{$username}/trades'
+      preLoaderRoute: typeof AtChar123usernameChar125TradesRouteImport
+      parentRoute: typeof AtChar123usernameChar125RouteRoute
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/api-keys': {
+      id: '/admin/api-keys'
+      path: '/api-keys'
+      fullPath: '/admin/api-keys'
+      preLoaderRoute: typeof AdminApiKeysRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/bands': {
+      id: '/admin/bands'
+      path: '/bands'
+      fullPath: '/admin/bands'
+      preLoaderRoute: typeof AdminBandsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/cache': {
+      id: '/admin/cache'
+      path: '/cache'
+      fullPath: '/admin/cache'
+      preLoaderRoute: typeof AdminCacheRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/collections': {
+      id: '/admin/collections'
+      path: '/collections'
+      fullPath: '/admin/collections'
+      preLoaderRoute: typeof AdminCollectionsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/eras': {
+      id: '/admin/eras'
+      path: '/eras'
+      fullPath: '/admin/eras'
+      preLoaderRoute: typeof AdminErasRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/events': {
+      id: '/admin/events'
+      path: '/events'
+      fullPath: '/admin/events'
+      preLoaderRoute: typeof AdminEventsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/notice': {
+      id: '/admin/notice'
+      path: '/notice'
+      fullPath: '/admin/notice'
+      preLoaderRoute: typeof AdminNoticeRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/auth/reset-password': {
+      id: '/auth/reset-password'
+      path: '/auth/reset-password'
+      fullPath: '/auth/reset-password'
+      preLoaderRoute: typeof AuthResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/user/by-addresses': {
-      id: '/api/user/by-addresses'
-      path: '/api/user/by-addresses'
-      fullPath: '/api/user/by-addresses'
-      preLoaderRoute: typeof ApiUserByAddressesRouteImport
+    '/events/': {
+      id: '/events/'
+      path: '/events'
+      fullPath: '/events/'
+      preLoaderRoute: typeof EventsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/auth/$': {
-      id: '/api/auth/$'
-      path: '/api/auth/$'
-      fullPath: '/api/auth/$'
-      preLoaderRoute: typeof ApiAuthSplatRouteImport
+    '/events/$slug': {
+      id: '/events/$slug'
+      path: '/events/$slug'
+      fullPath: '/events/$slug'
+      preLoaderRoute: typeof EventsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gravity/': {
+      id: '/gravity/'
+      path: '/gravity'
+      fullPath: '/gravity/'
+      preLoaderRoute: typeof GravityIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/list/$id': {
+      id: '/list/$id'
+      path: '/list/$id'
+      fullPath: '/list/$id'
+      preLoaderRoute: typeof ListIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/objekts/': {
+      id: '/objekts/'
+      path: '/objekts'
+      fullPath: '/objekts/'
+      preLoaderRoute: typeof ObjektsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/objekts/stats': {
+      id: '/objekts/stats'
+      path: '/objekts/stats'
+      fullPath: '/objekts/stats'
+      preLoaderRoute: typeof ObjektsStatsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/@{$username}/list/$slug': {
@@ -737,32 +716,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AtChar123usernameChar125ListSlugRouteImport
       parentRoute: typeof AtChar123usernameChar125RouteRoute
     }
-    '/api/objekts/by-slug/$slug': {
-      id: '/api/objekts/by-slug/$slug'
-      path: '/api/objekts/by-slug/$slug'
-      fullPath: '/api/objekts/by-slug/$slug'
-      preLoaderRoute: typeof ApiObjektsBySlugSlugRouteImport
+    '/api/auth/$': {
+      id: '/api/auth/$'
+      path: '/api/auth/$'
+      fullPath: '/api/auth/$'
+      preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/objekt-list/for-user/$identifier': {
-      id: '/api/objekt-list/for-user/$identifier'
-      path: '/api/objekt-list/for-user/$identifier'
-      fullPath: '/api/objekt-list/for-user/$identifier'
-      preLoaderRoute: typeof ApiObjektListForUserIdentifierRouteImport
+    '/api/user/by-addresses': {
+      id: '/api/user/by-addresses'
+      path: '/api/user/by-addresses'
+      fullPath: '/api/user/by-addresses'
+      preLoaderRoute: typeof ApiUserByAddressesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/gravity/$pollId/aggregated': {
-      id: '/api/gravity/$pollId/aggregated'
-      path: '/api/gravity/$pollId/aggregated'
-      fullPath: '/api/gravity/$pollId/aggregated'
-      preLoaderRoute: typeof ApiGravityPollIdAggregatedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/cosmo/qr-auth/ticket': {
-      id: '/api/cosmo/qr-auth/ticket'
-      path: '/api/cosmo/qr-auth/ticket'
-      fullPath: '/api/cosmo/qr-auth/ticket'
-      preLoaderRoute: typeof ApiCosmoQrAuthTicketRouteImport
+    '/gravity/$artist/$id': {
+      id: '/gravity/$artist/$id'
+      path: '/gravity/$artist/$id'
+      fullPath: '/gravity/$artist/$id'
+      preLoaderRoute: typeof GravityArtistIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/cosmo/qr-auth/recaptcha': {
@@ -772,11 +744,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCosmoQrAuthRecaptchaRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/user/by-address/$address/': {
-      id: '/api/user/by-address/$address/'
-      path: '/api/user/by-address/$address'
-      fullPath: '/api/user/by-address/$address/'
-      preLoaderRoute: typeof ApiUserByAddressAddressIndexRouteImport
+    '/api/cosmo/qr-auth/ticket': {
+      id: '/api/cosmo/qr-auth/ticket'
+      path: '/api/cosmo/qr-auth/ticket'
+      fullPath: '/api/cosmo/qr-auth/ticket'
+      preLoaderRoute: typeof ApiCosmoQrAuthTicketRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/gravity/$pollId/aggregated': {
+      id: '/api/gravity/$pollId/aggregated'
+      path: '/api/gravity/$pollId/aggregated'
+      fullPath: '/api/gravity/$pollId/aggregated'
+      preLoaderRoute: typeof ApiGravityPollIdAggregatedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/objekt-list/for-user/$identifier': {
+      id: '/api/objekt-list/for-user/$identifier'
+      path: '/api/objekt-list/for-user/$identifier'
+      fullPath: '/api/objekt-list/for-user/$identifier'
+      preLoaderRoute: typeof ApiObjektListForUserIdentifierRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/objekts/by-slug/$slug': {
+      id: '/api/objekts/by-slug/$slug'
+      path: '/api/objekts/by-slug/$slug'
+      fullPath: '/api/objekts/by-slug/$slug'
+      preLoaderRoute: typeof ApiObjektsBySlugSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/bff/v3/users/search': {
+      id: '/api/bff/v3/users/search'
+      path: '/api/bff/v3/users/search'
+      fullPath: '/api/bff/v3/users/search'
+      preLoaderRoute: typeof ApiBffV3UsersSearchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/objekts/metadata/$slug/': {
@@ -786,11 +786,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiObjektsMetadataSlugIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/user/by-address/$address/stats': {
-      id: '/api/user/by-address/$address/stats'
-      path: '/api/user/by-address/$address/stats'
-      fullPath: '/api/user/by-address/$address/stats'
-      preLoaderRoute: typeof ApiUserByAddressAddressStatsRouteImport
+    '/api/user/by-address/$address/': {
+      id: '/api/user/by-address/$address/'
+      path: '/api/user/by-address/$address'
+      fullPath: '/api/user/by-address/$address/'
+      preLoaderRoute: typeof ApiUserByAddressAddressIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/user/by-address/$address/como': {
@@ -800,11 +800,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiUserByAddressAddressComoRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/bff/v3/users/search': {
-      id: '/api/bff/v3/users/search'
-      path: '/api/bff/v3/users/search'
-      fullPath: '/api/bff/v3/users/search'
-      preLoaderRoute: typeof ApiBffV3UsersSearchRouteImport
+    '/api/user/by-address/$address/stats': {
+      id: '/api/user/by-address/$address/stats'
+      path: '/api/user/by-address/$address/stats'
+      fullPath: '/api/user/by-address/$address/stats'
+      preLoaderRoute: typeof ApiUserByAddressAddressStatsRouteImport
       parentRoute: typeof rootRouteImport
     }
   }

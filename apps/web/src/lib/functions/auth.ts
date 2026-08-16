@@ -16,6 +16,7 @@ import {
   generateVerificationCodeSchema,
   verifyCosmoBioSchema,
 } from "@/lib/universal/schema/cosmo";
+import { runCosmo } from "@apollo/cosmo/runtime";
 import { fetchUserProfile } from "@apollo/cosmo/server/user";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
@@ -77,11 +78,8 @@ export const $verifyCosmoBio = createServerFn({ method: "POST" })
       getProxiedToken(signal),
       getCosmoKey(),
     ]);
-    const profile = await fetchUserProfile(
-      accessToken,
-      key,
-      data.userId,
-      data.artistId,
+    const profile = await runCosmo(
+      fetchUserProfile(accessToken, key, data.userId, data.artistId),
       signal,
     );
 

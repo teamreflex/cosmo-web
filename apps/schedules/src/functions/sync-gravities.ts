@@ -1,7 +1,7 @@
 import { fetchAllArtists } from "@/cosmo-artists";
 import { DatabaseWeb } from "@/db";
 import { ProxiedToken } from "@/proxied-token";
-import { fetchGravities, fetchPoll } from "@apollo/cosmo/effect/gravity";
+import { fetchGravities, fetchPoll } from "@apollo/cosmo/server/gravity";
 import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import {
   gravities,

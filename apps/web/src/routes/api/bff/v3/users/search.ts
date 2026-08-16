@@ -1,6 +1,7 @@
 import { cacheAccounts } from "@/lib/server/cosmo-accounts.server";
 import { db } from "@/lib/server/db";
 import { getProxiedToken } from "@/lib/server/proxied-token.server";
+import { runCosmo } from "@apollo/cosmo/runtime";
 import { search } from "@apollo/cosmo/server/user";
 import type { CosmoSearchResult } from "@apollo/cosmo/types/user";
 import { cosmoAccounts } from "@apollo/database/web/schema";
@@ -25,7 +26,7 @@ export const Route = createFileRoute("/api/bff/v3/users/search")({
 
         // try cosmo first
         try {
-          results = await search(accessToken, query, request.signal);
+          results = await runCosmo(search(accessToken, query), request.signal);
         } catch {
           // fallback to database
           return Response.json(await queryDatabase(query));

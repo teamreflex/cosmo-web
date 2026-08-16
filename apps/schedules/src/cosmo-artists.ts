@@ -1,4 +1,4 @@
-import { fetchArtist, fetchArtists } from "@apollo/cosmo/effect/artists";
+import { fetchArtist, fetchArtists } from "@apollo/cosmo/server/artists";
 import { Effect } from "effect";
 
 /**

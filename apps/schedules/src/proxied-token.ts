@@ -1,4 +1,4 @@
-import { refreshV3 } from "@apollo/cosmo/effect/auth";
+import { refreshV3 } from "@apollo/cosmo/server/auth";
 import { cosmoTokens } from "@apollo/database/web/schema";
 import { Clock, Data, Effect } from "effect";
 import { decodeJwt } from "jose";

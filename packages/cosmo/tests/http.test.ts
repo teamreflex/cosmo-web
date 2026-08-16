@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { http, HttpResponse } from "msw";
+import { runCosmo } from "../src/runtime";
 import { fetchArtists } from "../src/server/artists";
 import { artists } from "./fixtures";
 import { recorder, server } from "./server";
@@ -23,7 +24,7 @@ describe("cosmo client retry policy", () => {
       }),
     );
 
-    expect(await fetchArtists("token-123")).toEqual(artists);
+    expect(await runCosmo(fetchArtists("token-123"))).toEqual(artists);
     expect(rec.requests).toHaveLength(2);
   });
 
@@ -36,7 +37,7 @@ describe("cosmo client retry policy", () => {
       }),
     );
 
-    expect(fetchArtists("token-123")).rejects.toMatchObject({
+    expect(runCosmo(fetchArtists("token-123"))).rejects.toMatchObject({
       status: 503,
     });
     expect(rec.requests).toHaveLength(2);
@@ -51,7 +52,7 @@ describe("cosmo client retry policy", () => {
       }),
     );
 
-    expect(fetchArtists("token-123")).rejects.toMatchObject({
+    expect(runCosmo(fetchArtists("token-123"))).rejects.toMatchObject({
       status: 409,
     });
     expect(rec.requests).toHaveLength(1);
@@ -66,7 +67,7 @@ describe("cosmo client retry policy", () => {
       }),
     );
 
-    expect(fetchArtists("token-123")).rejects.toMatchObject({
+    expect(runCosmo(fetchArtists("token-123"))).rejects.toMatchObject({
       status: 400,
     });
     expect(rec.requests).toHaveLength(1);

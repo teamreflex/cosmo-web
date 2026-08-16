@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { http, HttpResponse } from "msw";
+import { runCosmo } from "../src/runtime";
 import { encrypt, EncryptionError } from "../src/server/encryption";
 import { fetchByNickname, fetchUserProfile, search } from "../src/server/user";
 import { TEST_KEY } from "./encryption.test";
@@ -19,7 +20,7 @@ describe("fetchByNickname", () => {
       ),
     );
 
-    expect(await fetchByNickname("Kairu")).toEqual(byNickname);
+    expect(await runCosmo(fetchByNickname("Kairu"))).toEqual(byNickname);
     expect(rec.at(0).headers.get("authorization")).toBeNull();
   });
 
@@ -35,7 +36,7 @@ describe("fetchByNickname", () => {
       ),
     );
 
-    expect(fetchByNickname("Kairu")).rejects.toMatchObject({
+    expect(runCosmo(fetchByNickname("Kairu"))).rejects.toMatchObject({
       status: 500,
     });
     // retry is disabled for this endpoint, so a retryable status still gets one attempt
@@ -49,7 +50,7 @@ describe("fetchByNickname", () => {
       ),
     );
 
-    expect(fetchByNickname("Missing")).rejects.toMatchObject({
+    expect(runCosmo(fetchByNickname("Missing"))).rejects.toMatchObject({
       status: 404,
     });
   });
@@ -68,7 +69,7 @@ describe("search", () => {
       ),
     );
 
-    const result = await search("token-123", "kai");
+    const result = await runCosmo(search("token-123", "kai"));
 
     expect(result).toEqual(searchResult);
     const request = rec.at(0);
@@ -94,7 +95,9 @@ describe("fetchUserProfile", () => {
       ),
     );
 
-    const result = await fetchUserProfile("token-123", TEST_KEY, 42, "tripleS");
+    const result = await runCosmo(
+      fetchUserProfile("token-123", TEST_KEY, 42, "tripleS"),
+    );
 
     expect(result).toEqual(userProfile);
     const request = rec.at(0);
@@ -110,7 +113,7 @@ describe("fetchUserProfile", () => {
     );
 
     expect(
-      fetchUserProfile("token-123", TEST_KEY, 42, "tripleS"),
+      runCosmo(fetchUserProfile("token-123", TEST_KEY, 42, "tripleS")),
     ).rejects.toBeInstanceOf(EncryptionError);
   });
 });

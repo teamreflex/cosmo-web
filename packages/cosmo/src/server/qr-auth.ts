@@ -1,6 +1,8 @@
+import { Cookies, HttpBody } from "@effect/platform";
+import { Effect } from "effect";
 import puppeteer from "puppeteer-core";
-import * as qrAuth from "../effect/qr-auth";
-import { runCosmo } from "./runtime";
+import { AuthTicketSchema, QueryTicketSchema } from "../schema/qr-auth";
+import { cosmoShopClient, decodeBody } from "./http";
 
 export interface QrAuthConfig {
   recaptchaKey: string;
@@ -57,33 +59,59 @@ export async function getRecaptchaToken(config: QrAuthConfig) {
   }
 }
 
+export interface CertifyTicketResult {
+  status: number;
+  cookies: Record<string, string>;
+}
+
 /**
  * Exchange a Google reCAPTCHA token for a login ticket.
  */
-export async function exchangeLoginTicket(
-  recaptchaToken: string,
-  signal: AbortSignal | null = null,
-) {
-  return await runCosmo(qrAuth.exchangeLoginTicket(recaptchaToken), signal);
-}
+export const exchangeLoginTicket = Effect.fn("Cosmo.exchangeLoginTicket")(
+  function* (recaptchaToken: string) {
+    const client = yield* cosmoShopClient;
+    return yield* client
+      .post("/bff/v3/users/login-by-qr/ticket", {
+        body: HttpBody.unsafeJson({
+          recaptcha: {
+            action: "login",
+            token: recaptchaToken,
+          },
+        }),
+      })
+      .pipe(Effect.flatMap(decodeBody(AuthTicketSchema)), Effect.scoped);
+  },
+);
 
 /**
  * Query the ticket status.
  */
-export async function queryTicket(
+export const queryTicket = Effect.fn("Cosmo.queryTicket")(function* (
   ticket: string,
-  signal: AbortSignal | null = null,
 ) {
-  return await runCosmo(qrAuth.queryTicket(ticket), signal);
-}
+  const client = yield* cosmoShopClient;
+  return yield* client
+    .get("/bff/v3/users/login-by-qr/ticket", { urlParams: { ticket } })
+    .pipe(Effect.flatMap(decodeBody(QueryTicketSchema)), Effect.scoped);
+});
 
 /**
  * Certify the ticket. Returns the response status and cookies so the caller can extract the granted session.
  */
-export async function certifyTicket(
+export const certifyTicket = Effect.fn("Cosmo.certifyTicket")(function* (
   otp: number,
   ticket: string,
-  signal: AbortSignal | null = null,
 ) {
-  return await runCosmo(qrAuth.certifyTicket(otp, ticket), signal);
-}
+  const client = yield* cosmoShopClient;
+  return yield* client
+    .post("/bff/v3/users/login-by-qr/certify", {
+      body: HttpBody.unsafeJson({ otp, ticket }),
+    })
+    .pipe(
+      Effect.map((response): CertifyTicketResult => ({
+        status: response.status,
+        cookies: Cookies.toRecord(response.cookies),
+      })),
+      Effect.scoped,
+    );
+});

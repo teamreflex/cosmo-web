@@ -6,6 +6,7 @@ import { indexer } from "@/lib/server/db/indexer";
 import { getProxiedToken } from "@/lib/server/proxied-token.server";
 import { getRequestSignal } from "@/lib/server/request.server";
 import { ExpectedError } from "@/lib/universal/errors/expected";
+import { runCosmo } from "@apollo/cosmo/runtime";
 import { fetchGravity, fetchPoll } from "@apollo/cosmo/server/gravity";
 import { gravities, gravityPolls } from "@apollo/database/web/schema";
 import { notFound } from "@tanstack/react-router";
@@ -194,7 +195,10 @@ export const $fetchPolygonGravity = createServerFn({ method: "GET" })
         const { accessToken } = await getProxiedToken(signal);
 
         // 2. fetch gravity from cosmo
-        const gravity = await fetchGravity(accessToken, data.id, signal);
+        const gravity = await runCosmo(
+          fetchGravity(accessToken, data.id),
+          signal,
+        ).catch(() => null);
         if (!gravity) {
           throw notFound();
         }
@@ -205,7 +209,10 @@ export const $fetchPolygonGravity = createServerFn({ method: "GET" })
           throw notFound();
         }
 
-        const poll = await fetchPoll(accessToken, gravityPoll.poll.id, signal);
+        const poll = await runCosmo(
+          fetchPoll(accessToken, gravityPoll.poll.id),
+          signal,
+        );
 
         // prior to gravity 11, they used the cosmo poll ID on-chain instead of a separate ID
         const chainPollId = gravity.id <= 11 ? poll.id : poll.pollIdOnChain;
@@ -273,7 +280,9 @@ async function fetchCachedGravity(
 ) {
   async function fn(id: number) {
     const { accessToken } = await getProxiedToken(signal);
-    return await fetchGravity(accessToken, id, signal);
+    return await runCosmo(fetchGravity(accessToken, id), signal).catch(
+      () => null,
+    );
   }
 
   if (isPast) {
@@ -303,7 +312,7 @@ export const $fetchCachedPoll = createServerFn({ method: "GET" })
     const signal = getRequestSignal();
     const fn = async () => {
       const { accessToken } = await getProxiedToken(signal);
-      return await fetchPoll(accessToken, data.pollId, signal);
+      return await runCosmo(fetchPoll(accessToken, data.pollId), signal);
     };
 
     // check the database for the end date if not provided

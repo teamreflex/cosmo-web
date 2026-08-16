@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { http, HttpResponse } from "msw";
+import { runCosmo } from "../src/runtime";
 import { fetchGravities, fetchGravity, fetchPoll } from "../src/server/gravity";
 import { pollChoices, upcomingGravity } from "./fixtures";
 import { recorder, server } from "./server";
@@ -18,7 +19,7 @@ describe("fetchGravities", () => {
       ),
     );
 
-    const result = await fetchGravities("token-123", "tripleS");
+    const result = await runCosmo(fetchGravities("token-123", "tripleS"));
 
     expect(result).toEqual(list);
     const request = rec.at(0);
@@ -35,10 +36,12 @@ describe("fetchGravity", () => {
       ),
     );
 
-    expect(await fetchGravity("token-123", 100)).toEqual(upcomingGravity);
+    expect(await runCosmo(fetchGravity("token-123", 100))).toEqual(
+      upcomingGravity,
+    );
   });
 
-  it("swallows server errors to null after one retry", async () => {
+  it("rejects with the response status after one retry on server errors", async () => {
     const rec = recorder();
     server.use(
       http.get(
@@ -50,12 +53,14 @@ describe("fetchGravity", () => {
       ),
     );
 
-    expect(await fetchGravity("token-123", 100)).toBeNull();
+    expect(runCosmo(fetchGravity("token-123", 100))).rejects.toMatchObject({
+      status: 500,
+    });
     // 500 is in the retry list, so the request is attempted twice
     expect(rec.requests).toHaveLength(2);
   });
 
-  it("swallows a 404 to null without retrying", async () => {
+  it("rejects with status 404 without retrying", async () => {
     const rec = recorder();
     server.use(
       http.get(
@@ -67,7 +72,9 @@ describe("fetchGravity", () => {
       ),
     );
 
-    expect(await fetchGravity("token-123", 100)).toBeNull();
+    expect(runCosmo(fetchGravity("token-123", 100))).rejects.toMatchObject({
+      status: 404,
+    });
     expect(rec.requests).toHaveLength(1);
   });
 });
@@ -80,7 +87,7 @@ describe("fetchPoll", () => {
       ),
     );
 
-    expect(await fetchPoll("token-123", 7)).toEqual(pollChoices);
+    expect(await runCosmo(fetchPoll("token-123", 7))).toEqual(pollChoices);
   });
 
   it("rejects with the response status after retries", async () => {
@@ -92,7 +99,7 @@ describe("fetchPoll", () => {
       }),
     );
 
-    expect(fetchPoll("token-123", 7)).rejects.toMatchObject({
+    expect(runCosmo(fetchPoll("token-123", 7))).rejects.toMatchObject({
       status: 500,
     });
     expect(rec.requests).toHaveLength(2);

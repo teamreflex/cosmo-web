@@ -1,25 +1,46 @@
-import * as auth from "../effect/auth";
-import type { RefreshTokenResult } from "../types/auth";
-import { runCosmo } from "./runtime";
+import { HttpBody } from "@effect/platform";
+import { Effect } from "effect";
+import { RefreshResponseSchema } from "../schema/auth";
+import { encrypt, EncryptionError } from "./encryption";
+import { cosmoClient, decodeBody } from "./http";
 
 /**
  * Refresh the given token.
  * @deprecated use refreshV3
  */
-export async function refresh(
+export const refresh = Effect.fn("Cosmo.refresh")(function* (
   refreshToken: string,
-  signal: AbortSignal | null = null,
-): Promise<RefreshTokenResult> {
-  return await runCosmo(auth.refresh(refreshToken), signal);
-}
+) {
+  const client = yield* cosmoClient;
+  const response = yield* client
+    .post("/auth/v1/refresh", {
+      body: HttpBody.unsafeJson({ refreshToken }),
+    })
+    .pipe(Effect.flatMap(decodeBody(RefreshResponseSchema)), Effect.scoped);
+  return response.credentials;
+});
 
 /**
- * Refresh the given token.
+ * Refresh the given token, encrypting the payload with the COSMO key.
  */
-export async function refreshV3(
+export const refreshV3 = Effect.fn("Cosmo.refreshV3")(function* (
   refreshToken: string,
   key: string,
-  signal: AbortSignal | null = null,
-): Promise<RefreshTokenResult> {
-  return await runCosmo(auth.refreshV3(refreshToken, key), signal);
-}
+) {
+  const body = yield* Effect.try({
+    try: () => encrypt(JSON.stringify({ refreshToken }), key),
+    catch: (cause) =>
+      new EncryptionError("Error encrypting payload", { cause }),
+  });
+
+  const client = yield* cosmoClient;
+  const response = yield* client
+    .post("/bff/v3/users/refresh-access-token", {
+      body: HttpBody.text(body, "text/plain"),
+      headers: {
+        "x-cosmo-encrypted": "1",
+      },
+    })
+    .pipe(Effect.flatMap(decodeBody(RefreshResponseSchema)), Effect.scoped);
+  return response.credentials;
+});

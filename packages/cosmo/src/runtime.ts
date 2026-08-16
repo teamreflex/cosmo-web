@@ -11,7 +11,7 @@ const runtime = ManagedRuntime.make(FetchHttpClient.layer);
  */
 export async function runCosmo<A, E>(
   effect: Effect.Effect<A, E, HttpClient.HttpClient>,
-  signal: AbortSignal | null,
+  signal: AbortSignal | null = null,
 ): Promise<A> {
   const exit = await runtime.runPromiseExit(effect, {
     signal: signal ?? undefined,

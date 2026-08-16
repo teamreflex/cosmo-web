@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { http, HttpResponse } from "msw";
+import { runCosmo } from "../src/runtime";
 import { fetchObjektSummaries } from "../src/server/collection";
 import { objektSummaries } from "./fixtures";
 import { recorder, server } from "./server";
@@ -17,11 +18,13 @@ describe("fetchObjektSummaries", () => {
       ),
     );
 
-    const result = await fetchObjektSummaries({
-      session: "session-token",
-      artistId: "tripleS",
-      className: "First",
-    });
+    const result = await runCosmo(
+      fetchObjektSummaries({
+        session: "session-token",
+        artistId: "tripleS",
+        className: "First",
+      }),
+    );
 
     expect(result).toEqual(objektSummaries.collections);
     const request = rec.at(0);
