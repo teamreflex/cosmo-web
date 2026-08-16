@@ -216,6 +216,21 @@
         "typescript": "catalog:",
       },
     },
+    "packages/drizzle-bun-effect": {
+      "name": "@apollo/drizzle-bun-effect",
+      "version": "0.0.0",
+      "dependencies": {
+        "drizzle-orm": "catalog:",
+        "effect": "catalog:",
+      },
+      "devDependencies": {
+        "@apollo/lint": "workspace:*",
+        "@apollo/typescript": "workspace:*",
+        "@types/bun": "catalog:",
+        "turbo": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
     "packages/lint": {
       "name": "@apollo/lint",
       "version": "0.0.0",
@@ -279,6 +294,8 @@
     "@apollo/cosmo": ["@apollo/cosmo@workspace:packages/cosmo"],
 
     "@apollo/database": ["@apollo/database@workspace:packages/database"],
+
+    "@apollo/drizzle-bun-effect": ["@apollo/drizzle-bun-effect@workspace:packages/drizzle-bun-effect"],
 
     "@apollo/lint": ["@apollo/lint@workspace:packages/lint"],
 
