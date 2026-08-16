@@ -111,7 +111,10 @@ export const pastGravity = {
   entireStartDate: "2025-01-01T00:00:00.000Z",
   entireEndDate: "2025-01-08T00:00:00.000Z",
   body: [
-    { type: "heading", text: "Results", align: "center", id: "heading-1" },
+    // real past gravities omit `id` on body items, despite COSMO's types,
+    // and pre-2024 ones use align "start"
+    { type: "heading", text: "Results", align: "center" },
+    { type: "text", text: "1. Sparkle", align: "start" },
     {
       type: "image",
       id: "image-1",
@@ -149,6 +152,35 @@ export const pastGravity = {
               choiceName: "Choice 1",
               choiceImageUrl: "https://static.cosmo.fans/choice-1.png",
               comoUsed: 600,
+            },
+          },
+        ],
+      },
+    },
+    // 2022-era poll: no artistId or localized titles, and combination
+    // results use the single-poll votedChoice shape instead of votedSlots
+    {
+      id: 2,
+      artist: "tripleS",
+      pollIdOnChain: 1,
+      gravityId: 99,
+      type: "combination-poll",
+      indexInGravity: 1,
+      title: "Legacy Poll",
+      imageUrl: "https://static.cosmo.fans/poll-legacy.png",
+      startDate: "2022-09-01T00:00:00.000Z",
+      endDate: "2022-09-08T00:00:00.000Z",
+      revealDate: "2022-09-09T00:00:00.000Z",
+      finalized: true,
+      result: {
+        totalComoUsed: 1399,
+        voteResults: [
+          {
+            rank: 1,
+            votedChoice: {
+              choiceName: "AAA:S7 KRE:S1",
+              choiceImageUrl: "https://static.cosmo.fans/choice-legacy.png",
+              comoUsed: 1399,
             },
           },
         ],
@@ -197,7 +229,18 @@ export const pollChoices = {
       title: "Default",
       description: "Default content",
     },
-    selectedContent: [],
+    selectedContent: [
+      {
+        choiceId: "choice-1",
+        // polygon-era polls omit content.id (and selectContent entirely)
+        content: {
+          type: "image",
+          imageUrl: "https://static.cosmo.fans/choice-1-selected.png",
+          title: "Choice 1",
+          description: "First choice",
+        },
+      },
+    ],
     choiceViewType: "vertical",
     selectContent: [],
   },
@@ -211,6 +254,8 @@ export const pollChoices = {
   ],
 } satisfies CosmoPollChoices;
 
+// combination polls use slot-based view metadata and single-style choices
+// (mirrors the 2022-2023 grand gravity polls, the only combination polls)
 export const combinationPollChoices = {
   id: 9,
   artist: "tripleS",
@@ -220,31 +265,45 @@ export const combinationPollChoices = {
   indexInGravity: 0,
   title: "Combination Poll",
   imageUrl: "https://static.cosmo.fans/poll-combo.png",
-  startDate: "2026-01-01T00:00:00.000Z",
-  endDate: "2026-01-08T00:00:00.000Z",
-  revealDate: "2026-01-09T00:00:00.000Z",
-  finalized: false,
+  startDate: "2022-09-01T00:00:00.000Z",
+  endDate: "2022-09-08T00:00:00.000Z",
+  revealDate: "2022-09-09T00:00:00.000Z",
+  finalized: true,
   pollViewMetadata: {
     title: "Combination Poll",
     background: null,
-    defaultContent: {
-      type: "image",
-      imageUrl: "https://static.cosmo.fans/poll-combo-default.png",
-      title: "Default",
-      description: "Default content",
-    },
-    selectedContent: [],
-    choiceViewType: "horizontal",
-    selectContent: [],
+    slots: [
+      {
+        id: "aaa",
+        name: "AAA",
+        title: "Pick an AAA member",
+        description: "Pick from the members below",
+        backgroundImageUrl: "https://static.cosmo.fans/slot-aaa.jpeg",
+      },
+    ],
+    slotChoices: [
+      {
+        id: "seoyeon",
+        name: "SeoYeon",
+        alias: "S1",
+        roundImageUrl: "https://static.cosmo.fans/slot-choice-s1.png",
+        slotCardImageUrl: "https://static.cosmo.fans/slot-card-s1.png",
+      },
+    ],
+    choiceIdToSlotChoicesMapTable: [
+      {
+        choiceId: "S1+S7",
+        slotIds: ["aaa", "kre"],
+        slotChoiceIds: ["seoyeon", "nakyoung"],
+      },
+    ],
   },
   choices: [
     {
       id: "combo-choice-1",
+      title: "S1+S7",
+      description: "SeoYeon and NaKyoung",
       txImageUrl: "https://static.cosmo.fans/combo-choice-1.png",
-      txImagePairUrls: [
-        "https://static.cosmo.fans/combo-choice-1-a.png",
-        "https://static.cosmo.fans/combo-choice-1-b.png",
-      ],
     },
   ],
 } satisfies CosmoPollChoices;

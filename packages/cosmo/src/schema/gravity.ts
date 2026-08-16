@@ -1,7 +1,8 @@
 import { Schema } from "effect";
 import { ValidArtistSchema } from "./common";
 
-const AlignSchema = Schema.Literals(["left", "center", "right"]);
+// "start" appears on pre-2024 gravities
+const AlignSchema = Schema.Literals(["left", "center", "right", "start"]);
 
 export const CosmoBodySpacingSchema = Schema.Struct({
   type: Schema.Literal("spacing"),
@@ -12,12 +13,12 @@ export const CosmoBodyHeadingSchema = Schema.Struct({
   type: Schema.Literal("heading"),
   text: Schema.String,
   align: AlignSchema,
-  id: Schema.String,
+  id: Schema.optional(Schema.String),
 });
 
 export const CosmoBodyImageSchema = Schema.Struct({
   type: Schema.Literal("image"),
-  id: Schema.String,
+  id: Schema.optional(Schema.String),
   imageUrl: Schema.String,
   height: Schema.Number,
 });
@@ -26,7 +27,7 @@ export const CosmoBodyTextSchema = Schema.Struct({
   type: Schema.Literal("text"),
   text: Schema.String,
   align: AlignSchema,
-  id: Schema.String,
+  id: Schema.optional(Schema.String),
 });
 
 export const CosmoBodyVideoSchema = Schema.Struct({
@@ -35,7 +36,7 @@ export const CosmoBodyVideoSchema = Schema.Struct({
   thumbnailImageUrl: Schema.String,
   allowFullScreen: Schema.Boolean,
   useController: Schema.Boolean,
-  id: Schema.String,
+  id: Schema.optional(Schema.String),
 });
 
 const BodyItemSchema = Schema.Union([
@@ -51,7 +52,8 @@ const pollCommonFields = <T extends "single-poll" | "combination-poll">(
 ) => ({
   id: Schema.Number,
   artist: ValidArtistSchema,
-  artistId: ValidArtistSchema,
+  // the oldest polls predate artistId and the localized titles
+  artistId: Schema.optional(ValidArtistSchema),
   pollIdOnChain: Schema.Number,
   gravityId: Schema.Number,
   type: Schema.Literal(type),
@@ -61,11 +63,11 @@ const pollCommonFields = <T extends "single-poll" | "combination-poll">(
   startDate: Schema.String,
   endDate: Schema.String,
   revealDate: Schema.String,
-  titleKo: Schema.String,
-  titleEn: Schema.String,
-  titleJa: Schema.String,
-  titleZhCn: Schema.String,
-  titleZhTw: Schema.String,
+  titleKo: Schema.optional(Schema.String),
+  titleEn: Schema.optional(Schema.String),
+  titleJa: Schema.optional(Schema.String),
+  titleZhCn: Schema.optional(Schema.String),
+  titleZhTw: Schema.optional(Schema.String),
 });
 
 export const SinglePollVoteResultSchema = Schema.Struct({
@@ -77,19 +79,23 @@ export const SinglePollVoteResultSchema = Schema.Struct({
   }),
 });
 
-export const CombinationPollVoteResultSchema = Schema.Struct({
-  rank: Schema.Number,
-  votedSlots: Schema.mutable(
-    Schema.Array(
-      Schema.Struct({
-        slotName: Schema.String,
-        slotChoiceName: Schema.String,
-        slotChoiceCardImageUrl: Schema.String,
-        comoUsed: Schema.Number,
-      }),
+// the 2022 combination polls report per-choice results like single polls
+export const CombinationPollVoteResultSchema = Schema.Union([
+  Schema.Struct({
+    rank: Schema.Number,
+    votedSlots: Schema.mutable(
+      Schema.Array(
+        Schema.Struct({
+          slotName: Schema.String,
+          slotChoiceName: Schema.String,
+          slotChoiceCardImageUrl: Schema.String,
+          comoUsed: Schema.Number,
+        }),
+      ),
     ),
-  ),
-});
+  }),
+  SinglePollVoteResultSchema,
+]);
 
 export const SinglePollFinalizedSchema = Schema.Struct({
   ...pollCommonFields("single-poll"),
@@ -194,12 +200,63 @@ export const PollViewDefaultContentSchema = Schema.Struct({
 export const PollViewSelectedContentSchema = Schema.Struct({
   choiceId: Schema.String,
   content: Schema.Struct({
-    id: Schema.String,
+    // polygon-era polls omit content ids
+    id: Schema.optional(Schema.String),
     type: Schema.Literal("image"),
     imageUrl: Schema.String,
     title: Schema.String,
     description: Schema.String,
   }),
+});
+
+export const SinglePollViewMetadataSchema = Schema.Struct({
+  title: Schema.String,
+  background: Schema.Null,
+  defaultContent: PollViewDefaultContentSchema,
+  selectedContent: Schema.mutable(Schema.Array(PollViewSelectedContentSchema)),
+  choiceViewType: Schema.Literals(["vertical", "horizontal"]),
+  // absent on polygon-era polls
+  selectContent: Schema.optional(
+    Schema.mutable(Schema.Array(PollViewSelectedContentSchema)),
+  ),
+});
+
+// combination polls (the 2022-2023 grand gravities) use a slot-based view
+// where choices map to per-slot member combinations
+export const CombinationPollViewMetadataSchema = Schema.Struct({
+  title: Schema.String,
+  background: Schema.Null,
+  slots: Schema.mutable(
+    Schema.Array(
+      Schema.Struct({
+        id: Schema.String,
+        name: Schema.String,
+        title: Schema.String,
+        description: Schema.String,
+        backgroundImageUrl: Schema.String,
+      }),
+    ),
+  ),
+  slotChoices: Schema.mutable(
+    Schema.Array(
+      Schema.Struct({
+        id: Schema.String,
+        name: Schema.String,
+        alias: Schema.String,
+        roundImageUrl: Schema.String,
+        slotCardImageUrl: Schema.String,
+      }),
+    ),
+  ),
+  choiceIdToSlotChoicesMapTable: Schema.mutable(
+    Schema.Array(
+      Schema.Struct({
+        choiceId: Schema.String,
+        slotIds: Schema.mutable(Schema.Array(Schema.String)),
+        slotChoiceIds: Schema.mutable(Schema.Array(Schema.String)),
+      }),
+    ),
+  ),
 });
 
 const pollChoicesCommonFields = <T extends "single-poll" | "combination-poll">(
@@ -217,39 +274,27 @@ const pollChoicesCommonFields = <T extends "single-poll" | "combination-poll">(
   endDate: Schema.String,
   revealDate: Schema.String,
   finalized: Schema.Boolean,
-  pollViewMetadata: Schema.Struct({
-    title: Schema.String,
-    background: Schema.Null,
-    defaultContent: PollViewDefaultContentSchema,
-    selectedContent: Schema.mutable(
-      Schema.Array(PollViewSelectedContentSchema),
-    ),
-    choiceViewType: Schema.Literals(["vertical", "horizontal"]),
-    selectContent: Schema.mutable(Schema.Array(PollViewSelectedContentSchema)),
-  }),
 });
 
-export const SinglePollChoiceSchema = Schema.Struct({
+// combination polls share this choice shape; the txImagePairUrls variant in
+// COSMO's types never appears in real responses
+export const PollChoiceSchema = Schema.Struct({
   id: Schema.String,
   title: Schema.String,
   description: Schema.String,
   txImageUrl: Schema.String,
 });
 
-export const CombinationPollChoiceSchema = Schema.Struct({
-  id: Schema.String,
-  txImageUrl: Schema.String,
-  txImagePairUrls: Schema.mutable(Schema.Array(Schema.String)),
-});
-
 export const PollChoicesSchema = Schema.Union([
   Schema.Struct({
     ...pollChoicesCommonFields("single-poll"),
-    choices: Schema.mutable(Schema.Array(SinglePollChoiceSchema)),
+    pollViewMetadata: SinglePollViewMetadataSchema,
+    choices: Schema.mutable(Schema.Array(PollChoiceSchema)),
   }),
   Schema.Struct({
     ...pollChoicesCommonFields("combination-poll"),
-    choices: Schema.mutable(Schema.Array(CombinationPollChoiceSchema)),
+    pollViewMetadata: CombinationPollViewMetadataSchema,
+    choices: Schema.mutable(Schema.Array(PollChoiceSchema)),
   }),
 ]);
 

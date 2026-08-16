@@ -1,6 +1,6 @@
 import type {
-  CombinationPollChoiceSchema,
   CombinationPollFinalizedSchema,
+  CombinationPollViewMetadataSchema,
   CombinationPollVoteResultSchema,
   CosmoBodyHeadingSchema,
   CosmoBodyImageSchema,
@@ -13,10 +13,11 @@ import type {
   PollChoicesSchema,
   PollFinalizedSchema,
   PollUpcomingSchema,
+  PollChoiceSchema,
   PollViewDefaultContentSchema,
   PollViewSelectedContentSchema,
-  SinglePollChoiceSchema,
   SinglePollFinalizedSchema,
+  SinglePollViewMetadataSchema,
   SinglePollVoteResultSchema,
   UpcomingGravitySchema,
 } from "../schema/gravity";
@@ -89,9 +90,12 @@ export type PollSelectedContentImageContent =
 
 export type PollViewSelectedContent = PollSelectedContentImage;
 
-export type SinglePollChoice = typeof SinglePollChoiceSchema.Type;
+export type PollChoice = typeof PollChoiceSchema.Type;
 
-export type CombinationPollChoice = typeof CombinationPollChoiceSchema.Type;
+export type SinglePollViewMetadata = typeof SinglePollViewMetadataSchema.Type;
+
+export type CombinationPollViewMetadata =
+  typeof CombinationPollViewMetadataSchema.Type;
 
 export type CosmoPollChoices = typeof PollChoicesSchema.Type;
 

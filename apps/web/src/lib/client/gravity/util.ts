@@ -3,6 +3,7 @@ import type {
   CosmoPollChoices,
   CosmoPollFinalized,
   CosmoPollUpcoming,
+  PollViewSelectedContent,
 } from "@apollo/cosmo/types/gravity";
 
 type PollStatus = "upcoming" | "ongoing" | "finalized" | "counting";
@@ -24,6 +25,30 @@ function getPollStatus(
   }
 
   return "ongoing";
+}
+
+/**
+ * Candidate display content for a poll, in on-chain candidate order.
+ * Single polls provide it directly; combination polls (the 2022-2023 grand
+ * gravities) use slot-based view metadata instead, so their candidate content
+ * is derived from the choices.
+ */
+export function pollCandidates(
+  poll: CosmoPollChoices,
+): PollViewSelectedContent[] {
+  if (poll.type === "single-poll") {
+    return poll.pollViewMetadata.selectedContent;
+  }
+
+  return poll.choices.map((choice) => ({
+    choiceId: choice.id,
+    content: {
+      type: "image",
+      imageUrl: choice.txImageUrl,
+      title: choice.title,
+      description: choice.description,
+    },
+  }));
 }
 
 /**

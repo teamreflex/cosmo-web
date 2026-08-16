@@ -129,8 +129,7 @@ const processGravities = Effect.fn("processGravities")(function* (
                 cosmoGravityPollId: poll.id,
                 candidateId: index,
                 cosmoId: choice.id,
-                // should probably handle combination polls
-                title: "title" in choice ? choice.title : choice.id,
+                title: choice.title,
                 image: choice.txImageUrl,
               })),
             );

@@ -4,6 +4,7 @@ import {
   useGravityData,
   useReveals,
 } from "@/lib/client/gravity/abstract/hooks";
+import { pollCandidates } from "@/lib/client/gravity/util";
 import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
 import type {
   CosmoOngoingGravity,
@@ -34,15 +35,17 @@ export default function AbstractLiveChart(props: Props) {
     aggregated,
   });
 
+  const candidates = pollCandidates(poll);
+
   // get the number of como used for each candidate
   const comoByCandidate = useMemo(() => {
     const comoMap: Record<number, number> = {};
-    for (let i = 0; i < poll.pollViewMetadata.selectedContent.length; i++) {
+    for (let i = 0; i < candidates.length; i++) {
       const chainComo = reveals.comoPerCandidate[i] ?? 0;
       comoMap[i] = chainComo;
     }
     return comoMap;
-  }, [poll.pollViewMetadata.selectedContent, reveals.comoPerCandidate]);
+  }, [candidates, reveals.comoPerCandidate]);
 
   // calculate the percentage of votes counted.
   const percentageCounted = useMemo(() => {
@@ -69,7 +72,7 @@ export default function AbstractLiveChart(props: Props) {
       />
 
       <CandidateBreakdown
-        content={poll.pollViewMetadata.selectedContent}
+        content={candidates}
         comoByCandidate={comoByCandidate}
         liveStatus={reveals.liveStatus}
         isRefreshing={reveals.isRefreshing}
@@ -78,7 +81,7 @@ export default function AbstractLiveChart(props: Props) {
       <VoterBreakdown
         topVotes={reveals.topVotes}
         topUsers={reveals.topUsers}
-        candidates={poll.pollViewMetadata.selectedContent}
+        candidates={candidates}
       />
 
       <Portal to="#gravity-status">
