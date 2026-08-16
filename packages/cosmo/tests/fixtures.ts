@@ -4,6 +4,7 @@ import type {
 } from "../src/types/artists";
 import type { RefreshTokenResult } from "../src/types/auth";
 import type {
+  CosmoPastGravity,
   CosmoPollChoices,
   CosmoUpcomingGravity,
 } from "../src/types/gravity";
@@ -99,6 +100,81 @@ export const upcomingGravity = {
   polls: [],
 } satisfies CosmoUpcomingGravity;
 
+export const pastGravity = {
+  id: 99,
+  artist: "tripleS",
+  title: "Past Gravity",
+  description: "A finalized gravity",
+  type: "event-gravity",
+  pollType: "single-poll",
+  bannerImageUrl: "https://static.cosmo.fans/gravity-past.png",
+  entireStartDate: "2025-01-01T00:00:00.000Z",
+  entireEndDate: "2025-01-08T00:00:00.000Z",
+  body: [
+    { type: "heading", text: "Results", align: "center", id: "heading-1" },
+    {
+      type: "image",
+      id: "image-1",
+      imageUrl: "https://static.cosmo.fans/gravity-past-body.png",
+      height: 320,
+    },
+  ],
+  contractOutlink: "https://polygonscan.com/address/0x0",
+  polls: [
+    {
+      id: 8,
+      artist: "tripleS",
+      artistId: "tripleS",
+      pollIdOnChain: 4,
+      gravityId: 99,
+      type: "single-poll",
+      indexInGravity: 0,
+      title: "Final Poll",
+      imageUrl: "https://static.cosmo.fans/poll-final.png",
+      startDate: "2025-01-01T00:00:00.000Z",
+      endDate: "2025-01-08T00:00:00.000Z",
+      revealDate: "2025-01-09T00:00:00.000Z",
+      titleKo: "최종 투표",
+      titleEn: "Final Poll",
+      titleJa: "最終投票",
+      titleZhCn: "最终投票",
+      titleZhTw: "最終投票",
+      finalized: true,
+      result: {
+        totalComoUsed: 1000,
+        voteResults: [
+          {
+            rank: 1,
+            votedChoice: {
+              choiceName: "Choice 1",
+              choiceImageUrl: "https://static.cosmo.fans/choice-1.png",
+              comoUsed: 600,
+            },
+          },
+        ],
+      },
+    },
+  ],
+  result: {
+    totalComoUsed: 1000,
+    resultImageUrl: "https://static.cosmo.fans/gravity-past-result.png",
+    resultTitle: "Choice 1 wins",
+  },
+  leaderboard: {
+    userRanking: [
+      {
+        rank: 1,
+        totalComoUsed: 600,
+        user: {
+          nickname: "Kairu",
+          address: "0xabc",
+          profileImageUrl: "https://static.cosmo.fans/kairu.png",
+        },
+      },
+    ],
+  },
+} satisfies CosmoPastGravity;
+
 export const pollChoices = {
   id: 7,
   artist: "tripleS",
@@ -131,6 +207,44 @@ export const pollChoices = {
       title: "Choice 1",
       description: "First choice",
       txImageUrl: "https://static.cosmo.fans/choice-1.png",
+    },
+  ],
+} satisfies CosmoPollChoices;
+
+export const combinationPollChoices = {
+  id: 9,
+  artist: "tripleS",
+  pollIdOnChain: 5,
+  gravityId: 99,
+  type: "combination-poll",
+  indexInGravity: 0,
+  title: "Combination Poll",
+  imageUrl: "https://static.cosmo.fans/poll-combo.png",
+  startDate: "2026-01-01T00:00:00.000Z",
+  endDate: "2026-01-08T00:00:00.000Z",
+  revealDate: "2026-01-09T00:00:00.000Z",
+  finalized: false,
+  pollViewMetadata: {
+    title: "Combination Poll",
+    background: null,
+    defaultContent: {
+      type: "image",
+      imageUrl: "https://static.cosmo.fans/poll-combo-default.png",
+      title: "Default",
+      description: "Default content",
+    },
+    selectedContent: [],
+    choiceViewType: "horizontal",
+    selectContent: [],
+  },
+  choices: [
+    {
+      id: "combo-choice-1",
+      txImageUrl: "https://static.cosmo.fans/combo-choice-1.png",
+      txImagePairUrls: [
+        "https://static.cosmo.fans/combo-choice-1-a.png",
+        "https://static.cosmo.fans/combo-choice-1-b.png",
+      ],
     },
   ],
 } satisfies CosmoPollChoices;

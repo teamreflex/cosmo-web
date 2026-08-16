@@ -1,42 +1,36 @@
 import { describe, expect, it } from "bun:test";
-import { http, HttpResponse } from "msw";
-import { runCosmo } from "../src/runtime";
 import { encrypt, EncryptionError } from "../src/server/encryption";
 import { fetchByNickname, fetchUserProfile, search } from "../src/server/user";
 import { TEST_KEY } from "./encryption.test";
 import { byNickname, searchResult, userProfile } from "./fixtures";
-import { recorder, server } from "./server";
+import { handle, recorder, runTest } from "./test-client";
 
 describe("fetchByNickname", () => {
   it("fetches a user by nickname without auth", async () => {
     const rec = recorder();
-    server.use(
-      http.get(
-        "https://api.cosmo.fans/bff/v3/users/by-nickname/Kairu",
-        async ({ request }) => {
-          await rec.record(request);
-          return HttpResponse.json(byNickname);
-        },
-      ),
+    handle.get(
+      "https://api.cosmo.fans/bff/v3/users/by-nickname/Kairu",
+      (request) => {
+        rec.record(request);
+        return Response.json(byNickname);
+      },
     );
 
-    expect(await runCosmo(fetchByNickname("Kairu"))).toEqual(byNickname);
+    expect(await runTest(fetchByNickname("Kairu"))).toEqual(byNickname);
     expect(rec.at(0).headers.get("authorization")).toBeNull();
   });
 
   it("rejects with the response status without retrying", async () => {
     const rec = recorder();
-    server.use(
-      http.get(
-        "https://api.cosmo.fans/bff/v3/users/by-nickname/Kairu",
-        async ({ request }) => {
-          await rec.record(request);
-          return new HttpResponse(null, { status: 500 });
-        },
-      ),
+    handle.get(
+      "https://api.cosmo.fans/bff/v3/users/by-nickname/Kairu",
+      (request) => {
+        rec.record(request);
+        return new Response(null, { status: 500 });
+      },
     );
 
-    expect(runCosmo(fetchByNickname("Kairu"))).rejects.toMatchObject({
+    expect(runTest(fetchByNickname("Kairu"))).rejects.toMatchObject({
       status: 500,
     });
     // retry is disabled for this endpoint, so a retryable status still gets one attempt
@@ -44,13 +38,11 @@ describe("fetchByNickname", () => {
   });
 
   it("rejects with status 404 for a missing user", async () => {
-    server.use(
-      http.get("https://api.cosmo.fans/bff/v3/users/by-nickname/Missing", () =>
-        HttpResponse.json({ message: "not found" }, { status: 404 }),
-      ),
+    handle.get("https://api.cosmo.fans/bff/v3/users/by-nickname/Missing", () =>
+      Response.json({ message: "not found" }, { status: 404 }),
     );
 
-    expect(runCosmo(fetchByNickname("Missing"))).rejects.toMatchObject({
+    expect(runTest(fetchByNickname("Missing"))).rejects.toMatchObject({
       status: 404,
     });
   });
@@ -59,17 +51,12 @@ describe("fetchByNickname", () => {
 describe("search", () => {
   it("sends the term and pagination as query params", async () => {
     const rec = recorder();
-    server.use(
-      http.get(
-        "https://api.cosmo.fans/bff/v3/users/search",
-        async ({ request }) => {
-          await rec.record(request);
-          return HttpResponse.json(searchResult);
-        },
-      ),
-    );
+    handle.get("https://api.cosmo.fans/bff/v3/users/search", (request) => {
+      rec.record(request);
+      return Response.json(searchResult);
+    });
 
-    const result = await runCosmo(search("token-123", "kai"));
+    const result = await runTest(search("token-123", "kai"));
 
     expect(result).toEqual(searchResult);
     const request = rec.at(0);
@@ -83,19 +70,12 @@ describe("search", () => {
 describe("fetchUserProfile", () => {
   it("decrypts the response body", async () => {
     const rec = recorder();
-    server.use(
-      http.get(
-        "https://api.cosmo.fans/bff/v3/users/42",
-        async ({ request }) => {
-          await rec.record(request);
-          return HttpResponse.text(
-            encrypt(JSON.stringify(userProfile), TEST_KEY),
-          );
-        },
-      ),
-    );
+    handle.get("https://api.cosmo.fans/bff/v3/users/42", (request) => {
+      rec.record(request);
+      return new Response(encrypt(JSON.stringify(userProfile), TEST_KEY));
+    });
 
-    const result = await runCosmo(
+    const result = await runTest(
       fetchUserProfile("token-123", TEST_KEY, 42, "tripleS"),
     );
 
@@ -106,14 +86,13 @@ describe("fetchUserProfile", () => {
   });
 
   it("throws EncryptionError when the payload cannot be decrypted", async () => {
-    server.use(
-      http.get("https://api.cosmo.fans/bff/v3/users/42", () =>
-        HttpResponse.text("not-encrypted"),
-      ),
+    handle.get(
+      "https://api.cosmo.fans/bff/v3/users/42",
+      () => new Response("not-encrypted"),
     );
 
     expect(
-      runCosmo(fetchUserProfile("token-123", TEST_KEY, 42, "tripleS")),
+      runTest(fetchUserProfile("token-123", TEST_KEY, 42, "tripleS")),
     ).rejects.toBeInstanceOf(EncryptionError);
   });
 });

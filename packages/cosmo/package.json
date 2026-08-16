@@ -26,7 +26,6 @@
     "@apollo/lint": "workspace:*",
     "@apollo/typescript": "workspace:*",
     "@types/bun": "catalog:",
-    "msw": "^2.15.0",
     "turbo": "catalog:",
     "typescript": "catalog:"
   }
