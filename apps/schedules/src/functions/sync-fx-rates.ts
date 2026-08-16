@@ -3,7 +3,7 @@ import { Env } from "@/env";
 import { fxRates } from "@apollo/database/web/schema";
 import { HttpClient, HttpClientResponse } from "@effect/platform";
 import { sql } from "drizzle-orm";
-import { Data, Effect, Redacted, Schedule, Schema } from "effect";
+import { Data, Duration, Effect, Redacted, Schedule, Schema } from "effect";
 import type { ScheduledTask } from "../task";
 
 const ExchangerateResponse = Schema.Union(
@@ -39,13 +39,28 @@ export const syncFxRatesTask = {
         Effect.andThen(HttpClientResponse.schemaBodyJson(ExchangerateResponse)),
         Effect.catchTags({
           ParseError: (cause) => Effect.fail(new FxRatesDecodeError({ cause })),
-          RequestError: (cause) =>
-            Effect.fail(new FetchFxRatesError({ cause })),
-          ResponseError: (cause) =>
-            Effect.fail(new FetchFxRatesError({ cause })),
+          // don't wrap the platform errors: they carry the request URL, which
+          // embeds the API key and would leak into logs
+          RequestError: (error) =>
+            Effect.fail(
+              new FetchFxRatesError({
+                status: undefined,
+                description: error.reason,
+              }),
+            ),
+          ResponseError: (error) =>
+            Effect.fail(
+              new FetchFxRatesError({
+                status: error.response.status,
+                description: "exchangerate-api responded with an error",
+              }),
+            ),
         }),
         Effect.scoped,
-        Effect.retry(Schedule.recurs(2)),
+        Effect.retry({
+          schedule: Schedule.exponential(Duration.seconds(1)),
+          times: 2,
+        }),
       );
 
     if (json.result !== "success") {
@@ -84,14 +99,17 @@ export const syncFxRatesTask = {
 } satisfies ScheduledTask;
 
 /**
- * Failed to fetch FX rates from exchangerate-api.com.
+ * Failed to fetch FX rates from exchangerate-api.com. Deliberately does not
+ * carry the underlying platform error — its request URL embeds the API key.
  */
 export class FetchFxRatesError extends Data.TaggedError("FetchFxRatesError")<{
-  readonly cause: unknown;
+  readonly status: number | undefined;
+  readonly description: string;
 }> {}
 
 /**
- * Failed to decode the FX rates response.
+ * Failed to decode the FX rates response. ParseError contains no URL, so it
+ * is safe to keep as the cause.
  */
 export class FxRatesDecodeError extends Data.TaggedError("FxRatesDecodeError")<{
   readonly cause: unknown;

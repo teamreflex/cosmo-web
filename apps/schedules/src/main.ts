@@ -22,13 +22,10 @@ const main = Effect.gen(function* () {
   return yield* Effect.never;
 });
 
+// crash logging is handled by runMain's built-in cause reporter, which also
+// covers layer-construction failures and exits non-zero
 BunRuntime.runMain(
   main.pipe(
-    Effect.catchAllCause((cause) => {
-      console.error("FATAL: Main application crashed", cause);
-      // allow the process manager to restart
-      return Effect.die(cause);
-    }),
     Effect.withConfigProvider(ConfigProvider.fromEnv()),
     Effect.provide(
       Layer.mergeAll(
