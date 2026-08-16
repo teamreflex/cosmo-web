@@ -17,7 +17,7 @@ Two databases are involved: collections and member sort order come from the **in
 
 ## Conventions
 
-- Standard Effect (v4) patterns: `Context.Service` classes with a `make:` effect and a hand-written `static readonly layer` (`Layer.effect(this, this.make)` + `Layer.provide` for dependencies — v4 has no auto-generated `.Default`), provided via `Layer.mergeAll`; config through the `Env` service (`Effect.Config`, secrets use `Config.redacted`); promises wrapped in `Effect.tryPromise` with per-failure-mode `Data.TaggedError` classes. Use context7 for Effect API docs.
+- Standard Effect (v4) patterns: `Context.Service` classes with a `make:` effect and a hand-written `static readonly layer` (`Layer.effect(this, this.make)` + `Layer.provide` for dependencies — v4 has no auto-generated `.Default`), provided via `Layer.mergeAll`; config through the `Env` service (`Effect.Config`, secrets use `Config.redacted`); non-Effect promises (Typesense) wrapped in `Effect.tryPromise` with per-failure-mode `Data.TaggedError` classes. The `Indexer`/`Metadata` services are drizzle's native Effect client (`drizzle-orm/effect-postgres` over a scoped `@effect/sql-pg` `PgClient`), so DB queries are yielded directly and fail with drizzle's typed errors. Use context7 for Effect API docs.
 - Failure handling: each import-loop tick is wrapped in `Effect.catchCause` — a transient failure logs its cause, the watermark stays put, and the batch is retried on the next tick. Setup effects have no such wrapper and stay fatal at boot.
 - Typesense schema fields are either indexed (searchable/facetable) or display-only (`index: false`) — image URLs and the like should not be indexed.
 

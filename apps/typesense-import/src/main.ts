@@ -42,19 +42,15 @@ const main = Effect.gen(function* () {
       `Fetching collections from ${current === null ? "the start" : new Date(current).toISOString()}`,
     );
 
-    const collections = yield* Effect.tryPromise({
-      try: () =>
-        indexer.query.collections.findMany({
-          where: {
-            createdAt: {
-              gt: current ? new Date(current).toISOString() : undefined,
-            },
-          },
-          orderBy: {
-            createdAt: "asc",
-          },
+    const collections = yield* indexer.query.collections.findMany({
+      where: {
+        ...(current !== null && {
+          createdAt: { gt: new Date(current).toISOString() },
         }),
-      catch: (cause) => new QueryCollectionsError({ cause }),
+      },
+      orderBy: {
+        createdAt: "asc",
+      },
     });
 
     yield* Effect.logInfo(`Found ${collections.length} collections`);
@@ -66,32 +62,24 @@ const main = Effect.gen(function* () {
 
     // for each collection, fetch the metadata
     const slugs = collections.map((c) => c.slug);
-    const descriptions = yield* Effect.tryPromise({
-      try: () =>
-        metadata.query.collectionData.findMany({
-          where: {
-            collectionId: {
-              in: slugs,
-            },
-          },
-          columns: {
-            collectionId: true,
-            description: true,
-          },
-        }),
-      catch: (cause) => new QueryDescriptionsError({ cause }),
+    const descriptions = yield* metadata.query.collectionData.findMany({
+      where: {
+        collectionId: {
+          in: slugs,
+        },
+      },
+      columns: {
+        collectionId: true,
+        description: true,
+      },
     });
 
     // canonical member sort order, joined onto collection.member for member sorting
-    const memberRows = yield* Effect.tryPromise({
-      try: () =>
-        indexer.query.members.findMany({
-          columns: {
-            name: true,
-            sortOrder: true,
-          },
-        }),
-      catch: (cause) => new QueryMembersError({ cause }),
+    const memberRows = yield* indexer.query.members.findMany({
+      columns: {
+        name: true,
+        sortOrder: true,
+      },
     });
 
     // build the new objects that will be inserted into typesense
@@ -155,31 +143,6 @@ BunRuntime.runMain(
     ),
   ),
 );
-
-/**
- * Failed to query new collections from the indexer database.
- */
-export class QueryCollectionsError extends Data.TaggedError(
-  "QueryCollectionsError",
-)<{
-  readonly cause: unknown;
-}> {}
-
-/**
- * Failed to query collection descriptions from the metadata database.
- */
-export class QueryDescriptionsError extends Data.TaggedError(
-  "QueryDescriptionsError",
-)<{
-  readonly cause: unknown;
-}> {}
-
-/**
- * Failed to query member sort order from the indexer database.
- */
-export class QueryMembersError extends Data.TaggedError("QueryMembersError")<{
-  readonly cause: unknown;
-}> {}
 
 /**
  * Failed to bulk-upsert documents into Typesense.

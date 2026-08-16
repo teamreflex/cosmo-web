@@ -50,36 +50,24 @@ export const syncMembersTask = {
       return yield* new NoMembersError();
     }
 
-    yield* Effect.tryPromise({
-      try: async () => {
-        await db
-          .insert(members)
-          .values(rows)
-          .onConflictDoUpdate({
-            target: members.name,
-            set: {
-              cosmoId: sql`excluded.cosmo_id`,
-              artistId: sql`excluded.artist_id`,
-              alias: sql`excluded.alias`,
-              units: sql`excluded.units`,
-              primaryColorHex: sql`excluded.primary_color_hex`,
-              sortOrder: sql`excluded.sort_order`,
-            },
-          });
-      },
-      catch: (cause) => new StoreMembersError({ cause }),
-    });
+    yield* db
+      .insert(members)
+      .values(rows)
+      .onConflictDoUpdate({
+        target: members.name,
+        set: {
+          cosmoId: sql`excluded.cosmo_id`,
+          artistId: sql`excluded.artist_id`,
+          alias: sql`excluded.alias`,
+          units: sql`excluded.units`,
+          primaryColorHex: sql`excluded.primary_color_hex`,
+          sortOrder: sql`excluded.sort_order`,
+        },
+      });
 
     yield* Effect.logInfo(`Synced ${rows.length} members`);
   }),
 } satisfies ScheduledTask;
-
-/**
- * Failed to upsert members into the indexer database.
- */
-export class StoreMembersError extends Data.TaggedError("StoreMembersError")<{
-  readonly cause: unknown;
-}> {}
 
 /**
  * The COSMO API returned no members to sync.

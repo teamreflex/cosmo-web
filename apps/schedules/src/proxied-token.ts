@@ -16,12 +16,8 @@ export class ProxiedToken extends Context.Service<ProxiedToken>()(
        * Get the latest COSMO token from the database, refresh if necessary.
        */
       const get = Effect.gen(function* () {
-        const latestToken = yield* Effect.tryPromise({
-          try: () =>
-            db.query.cosmoTokens.findFirst({
-              orderBy: { id: "desc" },
-            }),
-          catch: (cause) => new TokenFetchError({ cause }),
+        const latestToken = yield* db.query.cosmoTokens.findFirst({
+          orderBy: { id: "desc" },
         });
 
         if (!latestToken) {
@@ -51,17 +47,13 @@ export class ProxiedToken extends Context.Service<ProxiedToken>()(
         const key = yield* cosmoKey.get;
         const newTokens = yield* refreshV3(latestToken.refreshToken, key);
 
-        const [newToken] = yield* Effect.tryPromise({
-          try: () =>
-            db
-              .insert(cosmoTokens)
-              .values({
-                accessToken: newTokens.accessToken,
-                refreshToken: newTokens.refreshToken,
-              })
-              .returning(),
-          catch: (cause) => new TokenStoreError({ cause }),
-        });
+        const [newToken] = yield* db
+          .insert(cosmoTokens)
+          .values({
+            accessToken: newTokens.accessToken,
+            refreshToken: newTokens.refreshToken,
+          })
+          .returning();
 
         if (!newToken) {
           return yield* new TokenStoreError({
@@ -101,13 +93,6 @@ export class NoTokenFoundError extends Data.TaggedError(
 )<{}> {}
 
 /**
- * Failed to fetch token from database.
- */
-export class TokenFetchError extends Data.TaggedError("TokenFetchError")<{
-  readonly cause: unknown;
-}> {}
-
-/**
  * Failed to refresh the token with the API.
  */
 export class TokenRefreshError extends Data.TaggedError("TokenRefreshError")<{
@@ -115,7 +100,7 @@ export class TokenRefreshError extends Data.TaggedError("TokenRefreshError")<{
 }> {}
 
 /**
- * Failed to store new token in database.
+ * Storing the refreshed token returned no rows.
  */
 export class TokenStoreError extends Data.TaggedError("TokenStoreError")<{
   readonly cause: unknown;

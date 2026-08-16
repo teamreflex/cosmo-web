@@ -15,6 +15,7 @@
   "dependencies": {
     "@apollo/database": "workspace:*",
     "@effect/platform-bun": "catalog:",
+    "@effect/sql-pg": "catalog:",
     "drizzle-orm": "catalog:",
     "effect": "catalog:",
     "typesense": "catalog:"

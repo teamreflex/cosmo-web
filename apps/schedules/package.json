@@ -18,6 +18,7 @@
     "@apollo/util": "workspace:*",
     "@apollo/util-server": "workspace:*",
     "@effect/platform-bun": "catalog:",
+    "@effect/sql-pg": "catalog:",
     "drizzle-orm": "catalog:",
     "effect": "catalog:",
     "jose": "catalog:"

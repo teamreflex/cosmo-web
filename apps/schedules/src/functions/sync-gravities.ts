@@ -68,17 +68,18 @@ const processGravities = Effect.fn("processGravities")(function* (
       new Date(b.entireStartDate).getTime(),
   );
 
-  const storedGravities = yield* Effect.tryPromise({
-    try: () =>
-      db
-        .select({
-          cosmoId: gravities.cosmoId,
-        })
-        .from(gravities)
-        .where(eq(gravities.artist, artist.id)),
-    catch: (cause) =>
-      new QueryStoredGravitiesError({ artist: artist.title, cause }),
-  });
+  const storedGravities = yield* db
+    .select({
+      cosmoId: gravities.cosmoId,
+    })
+    .from(gravities)
+    .where(eq(gravities.artist, artist.id))
+    .pipe(
+      Effect.mapError(
+        (cause) =>
+          new QueryStoredGravitiesError({ artist: artist.title, cause }),
+      ),
+    );
 
   const notStoredGravities = remoteGravities.filter(
     (gravity) => !storedGravities.some((g) => g.cosmoId === gravity.id),
@@ -94,11 +95,11 @@ const processGravities = Effect.fn("processGravities")(function* (
         { concurrency: "unbounded" },
       );
 
-      yield* Effect.tryPromise({
-        try: () =>
-          db.transaction(async (tx) => {
+      yield* db
+        .transaction((tx) =>
+          Effect.gen(function* () {
             // store gravity
-            await tx.insert(gravities).values({
+            yield* tx.insert(gravities).values({
               artist: artist.id,
               cosmoId: gravity.id,
               title: cleanString(gravity.title),
@@ -111,7 +112,7 @@ const processGravities = Effect.fn("processGravities")(function* (
             });
 
             // store polls
-            await tx.insert(gravityPolls).values(
+            yield* tx.insert(gravityPolls).values(
               polls.map((poll) => ({
                 cosmoGravityId: gravity.id,
                 cosmoId: poll.id,
@@ -133,15 +134,17 @@ const processGravities = Effect.fn("processGravities")(function* (
                 image: choice.txImageUrl,
               })),
             );
-            await tx.insert(gravityPollCandidates).values(candidates);
+            yield* tx.insert(gravityPollCandidates).values(candidates);
           }),
-        catch: (cause) =>
-          new StoreGravitiesError({ artist: artist.title, cause }),
-      }).pipe(
-        Effect.catch((error) =>
-          Effect.logError(`Error storing gravity ${gravity.id}`, error),
-        ),
-      );
+        )
+        .pipe(
+          Effect.mapError(
+            (cause) => new StoreGravitiesError({ artist: artist.title, cause }),
+          ),
+          Effect.catch((error) =>
+            Effect.logError(`Error storing gravity ${gravity.id}`, error),
+          ),
+        );
 
       yield* Effect.logInfo(`Stored ${cleanString(gravity.title)}`);
     }),

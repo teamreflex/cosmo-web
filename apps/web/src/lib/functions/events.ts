@@ -482,11 +482,17 @@ export const $fetchActiveEvents = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     const now = new Date();
 
+    // drizzle rc.5 throws on explicit undefined filter values, so the artist
+    // filter is only present when set
     return db.query.events.findMany({
-      where: {
-        OR: [{ endDate: { isNull: true } }, { endDate: { gte: now } }],
-        artist: data.artists?.length ? { in: data.artists } : undefined,
-      },
+      where: data.artists?.length
+        ? {
+            OR: [{ endDate: { isNull: true } }, { endDate: { gte: now } }],
+            artist: { in: data.artists },
+          }
+        : {
+            OR: [{ endDate: { isNull: true } }, { endDate: { gte: now } }],
+          },
       orderBy: { startDate: "desc" },
       with: { era: true },
     });

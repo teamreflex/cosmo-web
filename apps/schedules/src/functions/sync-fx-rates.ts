@@ -83,21 +83,16 @@ export const syncFxRatesTask = {
         rateToUsd: 1 / rate,
       }));
 
-    yield* Effect.tryPromise({
-      try: async () => {
-        await db
-          .insert(fxRates)
-          .values(rows)
-          .onConflictDoUpdate({
-            target: [fxRates.date, fxRates.currency],
-            set: {
-              rateToUsd: sql`excluded.rate_to_usd`,
-              updatedAt: sql`now()`,
-            },
-          });
-      },
-      catch: (cause) => new StoreFxRatesError({ cause }),
-    });
+    yield* db
+      .insert(fxRates)
+      .values(rows)
+      .onConflictDoUpdate({
+        target: [fxRates.date, fxRates.currency],
+        set: {
+          rateToUsd: sql`excluded.rate_to_usd`,
+          updatedAt: sql`now()`,
+        },
+      });
 
     yield* Effect.logInfo(`Synced ${rows.length} FX rates for ${today}`);
   }),
@@ -125,11 +120,4 @@ export class FxRatesDecodeError extends Data.TaggedError("FxRatesDecodeError")<{
  */
 export class FxRatesApiError extends Data.TaggedError("FxRatesApiError")<{
   readonly errorType: string;
-}> {}
-
-/**
- * Failed to upsert FX rates into the database.
- */
-export class StoreFxRatesError extends Data.TaggedError("StoreFxRatesError")<{
-  readonly cause: unknown;
 }> {}
