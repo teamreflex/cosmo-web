@@ -12,7 +12,7 @@ Each task is a `ScheduledTask` (`src/task.ts`): `{ name, cron, timezone?, effect
 
 Defined with the v4 `Context.Service` pattern in `src/` — a `make:` effect plus a hand-written `static readonly layer` (`Layer.effect(this, this.make)`, with `Layer.provide([...])` wiring dependencies; v4 generates no `.Default` layer) — and provided via `Layer.mergeAll` in `src/main.ts`:
 
-- `DatabaseWeb` / `DatabaseIndexer` — Drizzle's native Effect client (`drizzle-orm/effect-postgres`) over the two Postgres databases. Each layer provides its own scoped `PgClient` (`@effect/sql-pg`, `pg`-backed pool) via `Layer.unwrap` from `Env`; queries and `db.transaction` are Effects, failing with `EffectDrizzleQueryError` / `SqlError`
+- `DatabaseWeb` / `DatabaseIndexer` — drizzle's Effect API over the two Postgres databases via `@apollo/drizzle-bun-effect` (Bun SQL-backed, same driver stack as the web app). Each `make` acquires a scoped Bun `SQL` client (application_name via URL, `end({ timeout: 5 })` finalizer); queries and `db.transaction` are Effects, failing with `EffectDrizzleQueryError` / `SqlError`
 - `ProxiedToken` — COSMO access token for the dummy account, read from the web DB `cosmoTokens` table and auto-refreshed (via `refreshV3` + `CosmoKey`) when the JWT is expired
 - `CosmoKey`, `Redis`, `Env` — encryption key, cache, config
 

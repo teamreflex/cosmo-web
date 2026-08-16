@@ -29,7 +29,7 @@ import * as Effect from "effect/Effect";
 import * as Semaphore from "effect/Semaphore";
 import * as Exit from "effect/Exit";
 import { SqlError } from "effect/unstable/sql/SqlError";
-import { classifyPgError } from "./sql-error.ts";
+import { classifyPgError } from "./sql-error";
 
 export interface BunSQLEffectQueryHKT extends QueryEffectHKTBase {
   readonly error: EffectDrizzleQueryError;

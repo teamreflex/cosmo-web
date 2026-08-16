@@ -1,8 +1,8 @@
 # @apollo/drizzle-bun-effect
 
-A vendored drizzle-orm Effect driver backed by Bun's native `SQL` client. It exists because drizzle 1.0 only ships Effect flavors for `@effect/sql-pg` (effect-postgres), mysql2, and sqlite-bun — there is no bun-sql flavor — and Effect declined to ship an `@effect/sql-pg-bun` package (Effect-TS/effect#5230, closed stale). Adopting this driver would let the repo run a single Postgres driver stack (Bun SQL) across the web app and the Effect services instead of carrying `pg`/`@effect/sql-pg` alongside it.
+A vendored drizzle-orm Effect driver backed by Bun's native `SQL` client. It exists because drizzle 1.0 only ships Effect flavors for `@effect/sql-pg` (effect-postgres), mysql2, and sqlite-bun — there is no bun-sql flavor — and Effect declined to ship an `@effect/sql-pg-bun` package (Effect-TS/effect#5230, closed stale). It lets the repo run a single Postgres driver stack (Bun SQL) across the web app and the Effect services instead of carrying `pg`/`@effect/sql-pg` alongside it.
 
-**Status: candidate.** The apps (`apps/schedules`, `apps/typesense-import`) still use `drizzle-orm/effect-postgres` + `@effect/sql-pg`; nothing imports this package yet. Swap only after live testing proves it out.
+**Status: adopted.** The DB services in `apps/schedules` and `apps/typesense-import` run on this driver; `@effect/sql-pg` is out of the workspace entirely.
 
 ## API
 

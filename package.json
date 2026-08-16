@@ -37,7 +37,6 @@
     "@effect/eslint-plugin": "^0.3.2",
     "@effect/language-service": "^0.87.2",
     "@effect/platform-bun": "4.0.0-rc.109",
-    "@effect/sql-pg": "4.0.0-rc.109",
     "@sentry/bun": "^10.70.0",
     "@types/bun": "1.3.13",
     "drizzle-kit": "1.0.0-rc.5-ab785fc",

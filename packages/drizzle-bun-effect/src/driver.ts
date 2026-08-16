@@ -21,7 +21,7 @@ import {
   type BunSQLEffectQueryHKT,
   type BunSQLEffectQueryResultHKT,
   BunSQLEffectSession,
-} from "./session.ts";
+} from "./session";
 
 export class BunSQLEffectDatabase<
   TRelations extends AnyRelations = EmptyRelations,
