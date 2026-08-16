@@ -6,7 +6,9 @@ import { indexer } from "@/lib/server/db/indexer";
 import { getProxiedToken } from "@/lib/server/proxied-token.server";
 import { getRequestSignal } from "@/lib/server/request.server";
 import { ExpectedError } from "@/lib/universal/errors/expected";
+import { CosmoApiError } from "@apollo/cosmo/errors";
 import { runCosmo } from "@apollo/cosmo/runtime";
+import { GravitySchema, PollChoicesSchema } from "@apollo/cosmo/schema/gravity";
 import { fetchGravity, fetchPoll } from "@apollo/cosmo/server/gravity";
 import { gravities, gravityPolls } from "@apollo/database/web/schema";
 import { notFound } from "@tanstack/react-router";
@@ -59,9 +61,6 @@ export const $fetchGravityDetails = createServerFn({ method: "GET" })
 
     // fetch the full gravity from cosmo or cache, depending on timing
     const gravity = await fetchCachedGravity(info.cosmoId, isPast, signal);
-    if (!gravity) {
-      throw notFound();
-    }
 
     // pull the correct poll from the gravity
     const maybePoll = findPoll(gravity);
@@ -280,20 +279,27 @@ async function fetchCachedGravity(
 ) {
   async function fn(id: number) {
     const { accessToken } = await getProxiedToken(signal);
-    return await runCosmo(fetchGravity(accessToken, id), signal).catch(
-      () => null,
-    );
+    try {
+      return await runCosmo(fetchGravity(accessToken, id), signal);
+    } catch (err) {
+      // missing from COSMO is a 404 page; transient failures surface and are never cached
+      if (err instanceof CosmoApiError && err.status === 404) {
+        throw notFound();
+      }
+      throw err;
+    }
   }
 
-  if (isPast) {
-    return await remember(
-      `gravity:${id}`,
-      60 * 60 * 24 * 30, // 30 days
-      () => fn(id),
-    );
+  if (!isPast) {
+    return await fn(id);
   }
 
-  return await fn(id);
+  return await remember(
+    `gravity:${id}`,
+    60 * 60 * 24 * 30, // 30 days
+    () => fn(id),
+    GravitySchema,
+  );
 }
 
 /**
@@ -338,6 +344,7 @@ export const $fetchCachedPoll = createServerFn({ method: "GET" })
         `poll:${data.artist}:${data.gravityId}:${data.pollId}`,
         60 * 60 * 24 * 30, // 30 days
         fn,
+        PollChoicesSchema,
       );
     }
 

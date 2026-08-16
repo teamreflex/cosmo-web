@@ -30,3 +30,17 @@ export const fetchArtist = Effect.fn("Cosmo.fetchArtist")(function* (
     .get(`/bff/v3/artists/${artistId}`, { headers: bearer(token) })
     .pipe(Effect.flatMap(decodeBody(CosmoArtistWithMembersBFFSchema)));
 });
+
+/**
+ * Fetch every artist with full member data. The list endpoint only returns
+ * summaries, so each artist is fetched individually for the .id field.
+ */
+export const fetchAllArtists = Effect.fn("Cosmo.fetchAllArtists")(function* (
+  token: string,
+) {
+  const artistList = yield* fetchArtists(token);
+  return yield* Effect.all(
+    artistList.map((artist) => fetchArtist(token, artist.name)),
+    { concurrency: 5 },
+  );
+});

@@ -1,4 +1,4 @@
-import { CosmoApiError } from "@apollo/cosmo/errors";
+import { CosmoApiError, CosmoDecodeError } from "@apollo/cosmo/errors";
 import { runCosmo } from "@apollo/cosmo/runtime";
 import { fetchByNickname } from "@apollo/cosmo/server/user";
 import { cosmoAccounts } from "@apollo/database/web/schema";
@@ -85,6 +85,9 @@ export async function fetchFullAccount(
 
     return await fetchFullAccount(user.nickname, signal);
   } catch (err) {
+    // a decode failure means COSMO changed their response shape, not a missing user
+    if (err instanceof CosmoDecodeError) throw err;
+
     if (err instanceof CosmoApiError && err.status !== 404) {
       console.error(`[fetchFullAccount] ${err.status} from COSMO`, err);
     }

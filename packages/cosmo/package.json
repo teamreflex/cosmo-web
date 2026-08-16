@@ -6,6 +6,7 @@
   "type": "module",
   "exports": {
     "./types/*": "./src/types/*.ts",
+    "./schema/*": "./src/schema/*.ts",
     "./server/*": "./src/server/*.ts",
     "./runtime": "./src/runtime.ts",
     "./errors": "./src/errors.ts",

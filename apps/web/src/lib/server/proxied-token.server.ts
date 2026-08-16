@@ -2,7 +2,6 @@ import { runCosmo } from "@apollo/cosmo/runtime";
 import { refreshV3 } from "@apollo/cosmo/server/auth";
 import { cosmoTokens } from "@apollo/database/web/schema";
 import type { CosmoToken } from "@apollo/database/web/types";
-import { captureException } from "@sentry/tanstackstart-react";
 import { decodeJwt } from "jose";
 import { db } from "./db";
 import { getCosmoKey } from "./encryption.server";
@@ -24,43 +23,40 @@ export async function getProxiedToken(
     throw new TokenNotFoundError();
   }
 
-  try {
-    // check if the token is expired
-    if (validateExpiry(latestToken.accessToken) === false) {
-      // validate the refresh token
-      if (validateExpiry(latestToken.refreshToken)) {
-        // if valid, refresh the token
-        const key = await getCosmoKey();
-        const newTokens = await runCosmo(
-          refreshV3(latestToken.refreshToken, key),
-          signal,
-        );
-
-        // create new token
-        const [newToken] = await db
-          .insert(cosmoTokens)
-          .values({
-            accessToken: newTokens.accessToken,
-            refreshToken: newTokens.refreshToken,
-          })
-          .returning();
-
-        if (!newToken) {
-          throw new TokenCreateError();
-        }
-
-        // return new token
-        return newToken;
-      } else {
-        throw new RefreshTokenInvalidError();
-      }
-    }
-  } catch (err) {
-    captureException(err);
-    throw new TokenRefreshError();
+  // access token is still valid, use it as-is
+  if (validateExpiry(latestToken.accessToken)) {
+    return latestToken;
   }
 
-  return latestToken;
+  // operator-actionable: the dummy account needs a fresh login
+  if (!validateExpiry(latestToken.refreshToken)) {
+    throw new RefreshTokenInvalidError();
+  }
+
+  const key = await getCosmoKey();
+  try {
+    var newTokens = await runCosmo(
+      refreshV3(latestToken.refreshToken, key),
+      signal,
+    );
+  } catch (err) {
+    throw new TokenRefreshError({ cause: err });
+  }
+
+  // create new token
+  const [newToken] = await db
+    .insert(cosmoTokens)
+    .values({
+      accessToken: newTokens.accessToken,
+      refreshToken: newTokens.refreshToken,
+    })
+    .returning();
+
+  if (!newToken) {
+    throw new TokenCreateError();
+  }
+
+  return newToken;
 }
 
 /**
@@ -78,25 +74,21 @@ function validateExpiry(token: string): boolean {
 /**
  * Base class for all token errors.
  */
-class TokenError extends Error {
-  constructor(message: string) {
-    super(message);
-  }
-}
+export class TokenError extends Error {}
 
 /**
  * Database contains no tokens at all.
  */
-class TokenNotFoundError extends TokenError {
+export class TokenNotFoundError extends TokenError {
   constructor() {
     super("Token not found");
   }
 }
 
 /**
- * Database contains a valid access token, but the refresh token is invalid.
+ * Both the access and refresh tokens are expired; the dummy account needs to be logged in again.
  */
-class RefreshTokenInvalidError extends TokenError {
+export class RefreshTokenInvalidError extends TokenError {
   constructor() {
     super("Refresh token is invalid");
   }
@@ -105,16 +97,16 @@ class RefreshTokenInvalidError extends TokenError {
 /**
  * Database contains a valid refresh token, but the refresh failed.
  */
-class TokenRefreshError extends TokenError {
-  constructor() {
-    super("Error refreshing token");
+export class TokenRefreshError extends TokenError {
+  constructor(options?: ErrorOptions) {
+    super("Error refreshing token", options);
   }
 }
 
 /**
  * Creating a new token failed.
  */
-class TokenCreateError extends TokenError {
+export class TokenCreateError extends TokenError {
   constructor() {
     super("Error creating token");
   }

@@ -1,4 +1,4 @@
-import { fetchAllArtists } from "@/cosmo-artists";
+import { fetchAllArtists } from "@apollo/cosmo/server/artists";
 import { DatabaseIndexer } from "@/db-indexer";
 import { ProxiedToken } from "@/proxied-token";
 import { members } from "@apollo/database/indexer/schema";
