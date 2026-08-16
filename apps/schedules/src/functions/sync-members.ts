@@ -1,6 +1,6 @@
 import { DatabaseIndexer } from "@/db-indexer";
 import { ProxiedToken } from "@/proxied-token";
-import { fetchArtist, fetchArtists } from "@apollo/cosmo/server/artists";
+import { fetchArtist, fetchArtists } from "@apollo/cosmo/effect/artists";
 import { members } from "@apollo/database/indexer/schema";
 import { memberSortOrder } from "@apollo/util";
 import { sql } from "drizzle-orm";
@@ -22,19 +22,10 @@ export const syncMembersTask = {
 
     const { accessToken } = yield* proxiedToken.get;
 
-    const artistList = yield* Effect.tryPromise({
-      try: () => fetchArtists(accessToken),
-      catch: (cause) => new FetchArtistsError({ cause }),
-    });
+    const artistList = yield* fetchArtists(accessToken);
 
     const artists = yield* Effect.all(
-      artistList.map((artist) =>
-        Effect.tryPromise({
-          try: () => fetchArtist(accessToken, artist.name),
-          catch: (cause) =>
-            new FetchArtistError({ artist: artist.name, cause }),
-        }),
-      ),
+      artistList.map((artist) => fetchArtist(accessToken, artist.name)),
       { concurrency: 5 },
     );
 
@@ -87,21 +78,6 @@ export const syncMembersTask = {
     yield* Effect.logInfo(`Synced ${rows.length} members`);
   }),
 } satisfies ScheduledTask;
-
-/**
- * Failed to fetch the artists list from the COSMO API.
- */
-export class FetchArtistsError extends Data.TaggedError("FetchArtistsError")<{
-  readonly cause: unknown;
-}> {}
-
-/**
- * Failed to fetch a specific artist from the COSMO API.
- */
-export class FetchArtistError extends Data.TaggedError("FetchArtistError")<{
-  readonly artist: string;
-  readonly cause: unknown;
-}> {}
 
 /**
  * Failed to upsert members into the indexer database.

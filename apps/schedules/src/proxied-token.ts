@@ -1,4 +1,4 @@
-import { refreshV3 } from "@apollo/cosmo/server/auth";
+import { refreshV3 } from "@apollo/cosmo/effect/auth";
 import { cosmoTokens } from "@apollo/database/web/schema";
 import { Data, Effect } from "effect";
 import { decodeJwt } from "jose";
@@ -41,10 +41,7 @@ export class ProxiedToken extends Effect.Service<ProxiedToken>()(
         }
 
         const key = yield* cosmoKey.get;
-        const newTokens = yield* Effect.tryPromise({
-          try: () => refreshV3(latestToken.refreshToken, key),
-          catch: (cause) => new TokenRefreshError({ cause }),
-        });
+        const newTokens = yield* refreshV3(latestToken.refreshToken, key);
 
         const [newToken] = yield* Effect.tryPromise({
           try: () =>

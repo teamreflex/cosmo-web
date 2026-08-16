@@ -1,11 +1,13 @@
-import { HttpClientResponse } from "@effect/platform";
 import { Effect, Schema } from "effect";
 import { decrypt, EncryptionError } from "../server/encryption";
 import type { ValidArtist } from "../types/common";
+import { CosmoDecodeError } from "../errors";
 import {
   bearer,
+  bodyText,
   cosmoClient,
   cosmoNoRetryClient,
+  decodeBody,
   ValidArtistSchema,
 } from "./http";
 
@@ -64,10 +66,7 @@ export const fetchByNickname = Effect.fn("Cosmo.fetchByNickname")(function* (
   const client = yield* cosmoNoRetryClient;
   return yield* client
     .get(`/bff/v3/users/by-nickname/${nickname}`)
-    .pipe(
-      Effect.flatMap(HttpClientResponse.schemaBodyJson(CosmoByNicknameSchema)),
-      Effect.scoped,
-    );
+    .pipe(Effect.flatMap(decodeBody(CosmoByNicknameSchema)), Effect.scoped);
 });
 
 /**
@@ -87,12 +86,7 @@ export const search = Effect.fn("Cosmo.search")(function* (
         take: "100",
       },
     })
-    .pipe(
-      Effect.flatMap(
-        HttpClientResponse.schemaBodyJson(CosmoSearchResultSchema),
-      ),
-      Effect.scoped,
-    );
+    .pipe(Effect.flatMap(decodeBody(CosmoSearchResultSchema)), Effect.scoped);
 });
 
 /**
@@ -105,23 +99,33 @@ export const fetchUserProfile = Effect.fn("Cosmo.fetchUserProfile")(function* (
   artistId: ValidArtist,
 ) {
   const client = yield* cosmoClient;
-  const payload = yield* client
+  return yield* client
     .get(`/bff/v3/users/${userId}`, {
       headers: bearer(token),
       urlParams: { artistId },
     })
     .pipe(
-      Effect.flatMap((response) => response.text),
+      Effect.flatMap((response) =>
+        bodyText(response).pipe(
+          Effect.flatMap((payload) =>
+            Effect.try({
+              try: () => decrypt(payload, key),
+              catch: (cause) =>
+                new EncryptionError("Error decrypting payload", { cause }),
+            }),
+          ),
+          Effect.flatMap((plaintext) =>
+            Schema.decodeUnknown(Schema.parseJson(CosmoUserProfileSchema))(
+              plaintext,
+            ).pipe(
+              Effect.mapError(
+                (cause) =>
+                  new CosmoDecodeError({ url: response.request.url, cause }),
+              ),
+            ),
+          ),
+        ),
+      ),
       Effect.scoped,
     );
-
-  const plaintext = yield* Effect.try({
-    try: () => decrypt(payload, key),
-    catch: (cause) =>
-      new EncryptionError("Error decrypting payload", { cause }),
-  });
-
-  return yield* Schema.decodeUnknown(Schema.parseJson(CosmoUserProfileSchema))(
-    plaintext,
-  );
 });

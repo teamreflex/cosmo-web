@@ -2,8 +2,10 @@
 
 Types and API functions for the COSMO app's private APIs. Consumed by three apps with different runtimes, so it ships two API surfaces over one core:
 
-- `src/effect/` — Effect-native implementations. HTTP via `@effect/platform` `HttpClient`, responses validated with `Schema` at the boundary, typed errors in the error channel. Import via `@apollo/cosmo/effect/*` (used by Effect apps like `apps/schedules`).
-- `src/server/` — Promise facades with the historical signatures (including trailing `AbortSignal` params), used by `apps/web` and `apps/indexer`. Each facade delegates to the Effect version through `runCosmo` (`src/server/runtime.ts`), which maps failures to the public error types in `src/server/errors.ts`: `CosmoApiError` (HTTP, carries `status`), `CosmoDecodeError` (schema mismatch), `EncryptionError` (crypto).
+- `src/effect/` — Effect-native implementations. HTTP via `@effect/platform` `HttpClient`, responses validated with `Schema` at the boundary. Import via `@apollo/cosmo/effect/*` (used by Effect apps like `apps/schedules`).
+- `src/server/` — Promise facades with the historical signatures (including trailing `AbortSignal` params), used by `apps/web` and `apps/indexer`. Each facade delegates to the Effect version through `runCosmo` (`src/server/runtime.ts`).
+
+Both surfaces fail with the same tagged error classes from `src/errors.ts` (`@apollo/cosmo/errors`): `CosmoApiError` (HTTP, carries `url` and `status`), `CosmoDecodeError` (schema mismatch, carries `url`), plus `EncryptionError` (crypto). Raw `HttpClientError`/`ParseError` never escape the package — mapping happens once in `src/effect/http.ts` (`withCosmoErrors` on the clients, applied outside retry so the retry predicate sees raw errors, and the `decodeBody` helper). Consumers should not re-wrap these errors; add context with spans or log messages instead.
 
 ## Client policies (`src/effect/http.ts`)
 

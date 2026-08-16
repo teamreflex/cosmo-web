@@ -1,7 +1,7 @@
-import { HttpBody, HttpClientResponse } from "@effect/platform";
+import { HttpBody } from "@effect/platform";
 import { Effect, Schema } from "effect";
 import { encrypt, EncryptionError } from "../server/encryption";
-import { cosmoClient } from "./http";
+import { cosmoClient, decodeBody } from "./http";
 
 const RefreshResponseSchema = Schema.Struct({
   credentials: Schema.Struct({
@@ -23,7 +23,7 @@ export const refresh = Effect.fn("Cosmo.refresh")(function* (
       body: HttpBody.unsafeJson({ refreshToken }),
     })
     .pipe(
-      Effect.flatMap(HttpClientResponse.schemaBodyJson(RefreshResponseSchema)),
+      Effect.flatMap(decodeBody(RefreshResponseSchema)),
       Effect.scoped,
     );
   return response.credentials;
@@ -51,7 +51,7 @@ export const refreshV3 = Effect.fn("Cosmo.refreshV3")(function* (
       },
     })
     .pipe(
-      Effect.flatMap(HttpClientResponse.schemaBodyJson(RefreshResponseSchema)),
+      Effect.flatMap(decodeBody(RefreshResponseSchema)),
       Effect.scoped,
     );
   return response.credentials;

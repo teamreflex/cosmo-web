@@ -1,8 +1,7 @@
-import { HttpClientResponse } from "@effect/platform";
 import { Effect, Schema } from "effect";
 import type { ValidArtist } from "../types/common";
 import type { CosmoPollType } from "../types/gravity";
-import { bearer, cosmoClient, ValidArtistSchema } from "./http";
+import { bearer, cosmoClient, decodeBody, ValidArtistSchema } from "./http";
 
 const AlignSchema = Schema.Literal("left", "center", "right");
 
@@ -251,7 +250,7 @@ export const fetchGravities = Effect.fn("Cosmo.fetchGravities")(function* (
       urlParams: { artistId },
     })
     .pipe(
-      Effect.flatMap(HttpClientResponse.schemaBodyJson(GravityListSchema)),
+      Effect.flatMap(decodeBody(GravityListSchema)),
       Effect.scoped,
     );
 });
@@ -268,7 +267,7 @@ export const fetchGravity = Effect.fn("Cosmo.fetchGravity")(function* (
     .get(`/bff/v3/gravities/${gravityId}`, { headers: bearer(token) })
     .pipe(
       Effect.flatMap(
-        HttpClientResponse.schemaBodyJson(
+        decodeBody(
           Schema.Struct({ gravity: GravitySchema }),
         ),
       ),
@@ -289,7 +288,7 @@ export const fetchPoll = Effect.fn("Cosmo.fetchPoll")(function* (
     .get(`/bff/v3/polls/${pollId}`, { headers: bearer(token) })
     .pipe(
       Effect.flatMap(
-        HttpClientResponse.schemaBodyJson(
+        decodeBody(
           Schema.Struct({ pollDetail: PollChoicesSchema }),
         ),
       ),

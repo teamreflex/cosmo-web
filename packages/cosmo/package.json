@@ -8,6 +8,7 @@
     "./types/*": "./src/types/*.ts",
     "./server/*": "./src/server/*.ts",
     "./effect/*": "./src/effect/*.ts",
+    "./errors": "./src/errors.ts",
     "./bands": "./src/bands.ts"
   },
   "scripts": {

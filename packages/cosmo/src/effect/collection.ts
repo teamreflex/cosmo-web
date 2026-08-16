@@ -1,7 +1,6 @@
-import { HttpClientResponse } from "@effect/platform";
 import { Effect, Schema } from "effect";
 import type { ValidArtist } from "../types/common";
-import { cosmoClient } from "./http";
+import { cosmoClient, decodeBody } from "./http";
 
 const ObjektSummariesResponseSchema = Schema.Struct({
   collectionCount: Schema.Number,
@@ -44,7 +43,7 @@ export const fetchObjektSummaries = Effect.fn("Cosmo.fetchObjektSummaries")(
       })
       .pipe(
         Effect.flatMap(
-          HttpClientResponse.schemaBodyJson(ObjektSummariesResponseSchema),
+          decodeBody(ObjektSummariesResponseSchema),
         ),
         Effect.scoped,
       );

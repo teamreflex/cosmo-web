@@ -1,14 +1,13 @@
 import { DatabaseWeb } from "@/db";
 import { ProxiedToken } from "@/proxied-token";
-import { fetchArtist, fetchArtists } from "@apollo/cosmo/server/artists";
-import { fetchGravities, fetchPoll } from "@apollo/cosmo/server/gravity";
+import { fetchArtist, fetchArtists } from "@apollo/cosmo/effect/artists";
+import { fetchGravities, fetchPoll } from "@apollo/cosmo/effect/gravity";
 import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import {
   gravities,
   gravityPollCandidates,
   gravityPolls,
 } from "@apollo/database/web/schema";
-import { chunk } from "@apollo/util";
 import { eq } from "drizzle-orm";
 import { Data, Effect } from "effect";
 import type { ScheduledTask } from "../task";
@@ -25,20 +24,11 @@ export const syncGravitiesTask = {
     const { accessToken } = yield* proxiedToken.get;
 
     yield* Effect.logInfo("Fetching artists...");
-    const artistList = yield* Effect.tryPromise({
-      try: () => fetchArtists(accessToken),
-      catch: (cause) => new FetchArtistsError({ cause }),
-    });
+    const artistList = yield* fetchArtists(accessToken);
 
     // fetching the full artist record to use the .id field for consistency
     const artists = yield* Effect.all(
-      artistList.map((artist) =>
-        Effect.tryPromise({
-          try: () => fetchArtist(accessToken, artist.name),
-          catch: (cause) =>
-            new FetchArtistError({ artist: artist.name, cause }),
-        }),
-      ),
+      artistList.map((artist) => fetchArtist(accessToken, artist.name)),
       { concurrency: 5 },
     );
 
@@ -72,10 +62,7 @@ const processGravities = Effect.fn(function* (
 
   yield* Effect.logInfo(`Loading gravities for ${artist.title}`);
 
-  const list = yield* Effect.tryPromise({
-    try: () => fetchGravities(token, artist.id),
-    catch: (cause) => new FetchGravitiesError({ artist: artist.title, cause }),
-  });
+  const list = yield* fetchGravities(token, artist.id);
 
   const remoteGravities = [
     ...list.ongoing,
@@ -103,63 +90,68 @@ const processGravities = Effect.fn(function* (
     (gravity) => !storedGravities.some((g) => g.cosmoId === gravity.id),
   );
 
-  yield* Effect.tryPromise({
-    try: () =>
-      chunk(notStoredGravities, 5, async (chunked) => {
-        for (const gravity of chunked) {
-          const polls = await Promise.all(
-            gravity.polls.map((poll) => fetchPoll(token, poll.id)),
-          );
+  // gravities are stored sequentially; a failed poll fetch aborts the artist,
+  // while a failed transaction only skips that gravity
+  yield* Effect.forEach(notStoredGravities, (gravity) =>
+    Effect.gen(function* () {
+      const polls = yield* Effect.forEach(
+        gravity.polls,
+        (poll) => fetchPoll(token, poll.id),
+        { concurrency: "unbounded" },
+      );
 
-          await db
-            .transaction(async (tx) => {
-              // store gravity
-              await tx.insert(gravities).values({
-                artist: artist.id,
-                cosmoId: gravity.id,
-                title: cleanString(gravity.title),
-                description: cleanString(gravity.description),
-                image: gravity.bannerImageUrl,
-                gravityType: gravity.type,
-                pollType: gravity.pollType,
-                startDate: new Date(gravity.entireStartDate),
-                endDate: new Date(gravity.entireEndDate),
-              });
-
-              // store polls
-              await tx.insert(gravityPolls).values(
-                polls.map((poll) => ({
-                  cosmoGravityId: gravity.id,
-                  cosmoId: poll.id,
-                  pollIdOnChain: poll.pollIdOnChain,
-                  title: cleanString(poll.title),
-                  startDate: new Date(poll.startDate),
-                  endDate: new Date(poll.endDate),
-                })),
-              );
-
-              // store candidates
-              const candidates = polls.flatMap((poll) =>
-                poll.choices.map((choice, index) => ({
-                  cosmoGravityPollId: poll.id,
-                  candidateId: index,
-                  cosmoId: choice.id,
-                  // should probably handle combination polls
-                  title: "title" in choice ? choice.title : choice.id,
-                  image: choice.txImageUrl,
-                })),
-              );
-              await tx.insert(gravityPollCandidates).values(candidates);
-            })
-            .catch((err) => {
-              console.error(`Error storing gravity ${gravity.id}:`, err);
+      yield* Effect.tryPromise({
+        try: () =>
+          db.transaction(async (tx) => {
+            // store gravity
+            await tx.insert(gravities).values({
+              artist: artist.id,
+              cosmoId: gravity.id,
+              title: cleanString(gravity.title),
+              description: cleanString(gravity.description),
+              image: gravity.bannerImageUrl,
+              gravityType: gravity.type,
+              pollType: gravity.pollType,
+              startDate: new Date(gravity.entireStartDate),
+              endDate: new Date(gravity.entireEndDate),
             });
 
-          console.log(`Stored ${cleanString(gravity.title)}`);
-        }
-      }),
-    catch: (cause) => new StoreGravitiesError({ artist: artist.title, cause }),
-  });
+            // store polls
+            await tx.insert(gravityPolls).values(
+              polls.map((poll) => ({
+                cosmoGravityId: gravity.id,
+                cosmoId: poll.id,
+                pollIdOnChain: poll.pollIdOnChain,
+                title: cleanString(poll.title),
+                startDate: new Date(poll.startDate),
+                endDate: new Date(poll.endDate),
+              })),
+            );
+
+            // store candidates
+            const candidates = polls.flatMap((poll) =>
+              poll.choices.map((choice, index) => ({
+                cosmoGravityPollId: poll.id,
+                candidateId: index,
+                cosmoId: choice.id,
+                // should probably handle combination polls
+                title: "title" in choice ? choice.title : choice.id,
+                image: choice.txImageUrl,
+              })),
+            );
+            await tx.insert(gravityPollCandidates).values(candidates);
+          }),
+        catch: (cause) =>
+          new StoreGravitiesError({ artist: artist.title, cause }),
+      }).pipe(
+        Effect.catchAll((error) =>
+          Effect.logError(`Error storing gravity ${gravity.id}`, error),
+        ),
+      );
+
+      yield* Effect.logInfo(`Stored ${cleanString(gravity.title)}`);
+    }),
+  );
 
   yield* Effect.logInfo(
     `Processed ${notStoredGravities.length} gravities for ${artist.title}`,
@@ -172,31 +164,6 @@ const processGravities = Effect.fn(function* (
 function cleanString(str: string) {
   return str.replaceAll("\n", " ").replaceAll("  ", " ");
 }
-
-/**
- * Failed to fetch artists list from COSMO API.
- */
-export class FetchArtistsError extends Data.TaggedError("FetchArtistsError")<{
-  readonly cause: unknown;
-}> {}
-
-/**
- * Failed to fetch a specific artist from COSMO API.
- */
-export class FetchArtistError extends Data.TaggedError("FetchArtistError")<{
-  readonly artist: string;
-  readonly cause: unknown;
-}> {}
-
-/**
- * Failed to fetch gravities for an artist from COSMO API.
- */
-export class FetchGravitiesError extends Data.TaggedError(
-  "FetchGravitiesError",
-)<{
-  readonly artist: string;
-  readonly cause: unknown;
-}> {}
 
 /**
  * Failed to query stored gravities from database.

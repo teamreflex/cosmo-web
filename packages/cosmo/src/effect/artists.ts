@@ -1,7 +1,6 @@
-import { HttpClientResponse } from "@effect/platform";
 import { Effect, Schema } from "effect";
 import type { ValidArtist } from "../types/common";
-import { bearer, cosmoClient, ValidArtistSchema } from "./http";
+import { bearer, cosmoClient, decodeBody, ValidArtistSchema } from "./http";
 
 const ContractsSchema = Schema.Struct({
   Como: Schema.String,
@@ -72,7 +71,7 @@ export const fetchArtists = Effect.fn("Cosmo.fetchArtists")(function* (
     .get("/bff/v3/artists", { headers: bearer(token) })
     .pipe(
       Effect.flatMap(
-        HttpClientResponse.schemaBodyJson(
+        decodeBody(
           Schema.mutable(Schema.Array(CosmoArtistSchema)),
         ),
       ),
@@ -92,7 +91,7 @@ export const fetchArtist = Effect.fn("Cosmo.fetchArtist")(function* (
     .get(`/bff/v3/artists/${artistId}`, { headers: bearer(token) })
     .pipe(
       Effect.flatMap(
-        HttpClientResponse.schemaBodyJson(CosmoArtistWithMembersBFFSchema),
+        decodeBody(CosmoArtistWithMembersBFFSchema),
       ),
       Effect.scoped,
     );

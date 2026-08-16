@@ -1,4 +1,4 @@
-import { CosmoApiError } from "@apollo/cosmo/server/errors";
+import { CosmoApiError } from "@apollo/cosmo/errors";
 import { fetchByNickname } from "@apollo/cosmo/server/user";
 import { cosmoAccounts } from "@apollo/database/web/schema";
 import type { CosmoAccount } from "@apollo/database/web/types";

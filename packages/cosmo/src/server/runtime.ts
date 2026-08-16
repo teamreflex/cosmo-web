@@ -1,16 +1,11 @@
-import {
-  FetchHttpClient,
-  type HttpClient,
-  HttpClientError,
-} from "@effect/platform";
-import { Cause, type Effect, Exit, ManagedRuntime, ParseResult } from "effect";
-import { CosmoApiError, CosmoDecodeError } from "./errors.js";
+import { FetchHttpClient, type HttpClient } from "@effect/platform";
+import { Cause, type Effect, Exit, ManagedRuntime } from "effect";
 
 const runtime = ManagedRuntime.make(FetchHttpClient.layer);
 
 /**
- * Run a COSMO effect as a promise, converting Effect-level failures into the
- * package's public error types so promise callers never see Effect internals.
+ * Run a COSMO effect as a promise. Failures are already the package's public
+ * tagged error types (CosmoApiError, CosmoDecodeError, EncryptionError);
  * runPromiseExit is used so the original error instance is thrown rather than
  * a FiberFailure wrapper.
  */
@@ -26,17 +21,5 @@ export async function runCosmo<A, E>(
   }
 
   const error = Cause.squash(exit.cause);
-  if (error instanceof HttpClientError.ResponseError) {
-    throw new CosmoApiError(
-      `COSMO responded with status ${error.response.status}`,
-      { status: error.response.status, cause: error },
-    );
-  }
-  if (error instanceof HttpClientError.RequestError) {
-    throw new CosmoApiError(error.message, { cause: error });
-  }
-  if (error instanceof ParseResult.ParseError) {
-    throw new CosmoDecodeError(error.message, { cause: error });
-  }
-  throw error;
+  throw error instanceof Error ? error : new Error(String(error));
 }

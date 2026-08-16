@@ -1,6 +1,6 @@
-import { Cookies, HttpBody, HttpClientResponse } from "@effect/platform";
+import { Cookies, HttpBody } from "@effect/platform";
 import { Effect, Schema } from "effect";
-import { cosmoShopClient } from "./http";
+import { cosmoShopClient, decodeBody } from "./http";
 
 const AuthTicketSchema = Schema.Struct({
   expireAt: Schema.String,
@@ -58,7 +58,7 @@ export const exchangeLoginTicket = Effect.fn("Cosmo.exchangeLoginTicket")(
         }),
       })
       .pipe(
-        Effect.flatMap(HttpClientResponse.schemaBodyJson(AuthTicketSchema)),
+        Effect.flatMap(decodeBody(AuthTicketSchema)),
         Effect.scoped,
       );
   },
@@ -74,7 +74,7 @@ export const queryTicket = Effect.fn("Cosmo.queryTicket")(function* (
   return yield* client
     .get("/bff/v3/users/login-by-qr/ticket", { urlParams: { ticket } })
     .pipe(
-      Effect.flatMap(HttpClientResponse.schemaBodyJson(QueryTicketSchema)),
+      Effect.flatMap(decodeBody(QueryTicketSchema)),
       Effect.scoped,
     );
 });

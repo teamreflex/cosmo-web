@@ -1,6 +1,5 @@
-import { HttpClientResponse } from "@effect/platform";
 import { Effect, Schema } from "effect";
-import { metadataClient } from "./http.js";
+import { decodeBody, metadataClient } from "./http.js";
 
 const MetadataV1Schema = Schema.Struct({
   name: Schema.String,
@@ -53,7 +52,7 @@ export const fetchMetadataV1 = Effect.fn("Cosmo.fetchMetadataV1")(function* (
   return yield* client
     .get(`/objekt/v1/token/${tokenId}`)
     .pipe(
-      Effect.flatMap(HttpClientResponse.schemaBodyJson(MetadataV1Schema)),
+      Effect.flatMap(decodeBody(MetadataV1Schema)),
       Effect.scoped,
     );
 });
@@ -69,7 +68,7 @@ export const fetchMetadataV3 = Effect.fn("Cosmo.fetchMetadataV3")(function* (
   return yield* client
     .get(`/bff/v3/objekts/nft-metadata/${tokenId}`)
     .pipe(
-      Effect.flatMap(HttpClientResponse.schemaBodyJson(MetadataV3Schema)),
+      Effect.flatMap(decodeBody(MetadataV3Schema)),
       Effect.scoped,
     );
 });
