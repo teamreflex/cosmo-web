@@ -1,6 +1,6 @@
+import { fetchAllArtists } from "@/cosmo-artists";
 import { DatabaseIndexer } from "@/db-indexer";
 import { ProxiedToken } from "@/proxied-token";
-import { fetchArtist, fetchArtists } from "@apollo/cosmo/effect/artists";
 import { members } from "@apollo/database/indexer/schema";
 import { memberSortOrder } from "@apollo/util";
 import { sql } from "drizzle-orm";
@@ -22,12 +22,7 @@ export const syncMembersTask = {
 
     const { accessToken } = yield* proxiedToken.get;
 
-    const artistList = yield* fetchArtists(accessToken);
-
-    const artists = yield* Effect.all(
-      artistList.map((artist) => fetchArtist(accessToken, artist.name)),
-      { concurrency: 5 },
-    );
+    const artists = yield* fetchAllArtists(accessToken);
 
     // order artists by comoTokenId so the per-artist grouping in sortOrder is deterministic
     const sortedArtists = [...artists].sort(

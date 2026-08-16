@@ -3,7 +3,15 @@ import { Env } from "@/env";
 import { fxRates } from "@apollo/database/web/schema";
 import { HttpClient, HttpClientResponse } from "@effect/platform";
 import { sql } from "drizzle-orm";
-import { Data, Duration, Effect, Redacted, Schedule, Schema } from "effect";
+import {
+  Clock,
+  Data,
+  Duration,
+  Effect,
+  Redacted,
+  Schedule,
+  Schema,
+} from "effect";
 import type { ScheduledTask } from "../task";
 
 const ExchangerateResponse = Schema.Union(
@@ -69,7 +77,9 @@ export const syncFxRatesTask = {
 
     // API returns USD-base: 1 USD = N <currency>. Store the inverse (USD per
     // unit of currency) so the aggregation can multiply rather than divide.
-    const today = new Date().toISOString().slice(0, 10);
+    const today = new Date(yield* Clock.currentTimeMillis)
+      .toISOString()
+      .slice(0, 10);
     const rows = Object.entries(json.conversion_rates)
       .filter(([, rate]) => rate > 0)
       .map(([currency, rate]) => ({

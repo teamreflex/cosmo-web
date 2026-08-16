@@ -1,6 +1,6 @@
+import { fetchAllArtists } from "@/cosmo-artists";
 import { DatabaseWeb } from "@/db";
 import { ProxiedToken } from "@/proxied-token";
-import { fetchArtist, fetchArtists } from "@apollo/cosmo/effect/artists";
 import { fetchGravities, fetchPoll } from "@apollo/cosmo/effect/gravity";
 import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import {
@@ -24,13 +24,7 @@ export const syncGravitiesTask = {
     const { accessToken } = yield* proxiedToken.get;
 
     yield* Effect.logInfo("Fetching artists...");
-    const artistList = yield* fetchArtists(accessToken);
-
-    // fetching the full artist record to use the .id field for consistency
-    const artists = yield* Effect.all(
-      artistList.map((artist) => fetchArtist(accessToken, artist.name)),
-      { concurrency: 5 },
-    );
+    const artists = yield* fetchAllArtists(accessToken);
 
     yield* Effect.logInfo(`Processing gravities for ${artists.length} artists`);
 
@@ -54,7 +48,7 @@ export const syncGravitiesTask = {
 /**
  * Process the gravities for a given artist.
  */
-const processGravities = Effect.fn(function* (
+const processGravities = Effect.fn("processGravities")(function* (
   token: string,
   artist: CosmoArtistWithMembersBFF,
 ) {

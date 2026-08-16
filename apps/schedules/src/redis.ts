@@ -3,14 +3,17 @@ import { Data, Effect, Redacted } from "effect";
 import { Env } from "./env";
 
 export class Redis extends Effect.Service<Redis>()("app/Redis", {
-  effect: Effect.gen(function* () {
+  scoped: Effect.gen(function* () {
     const env = yield* Env;
-    const client = new RedisClient(Redacted.value(env.redisUrl));
+    const client = yield* Effect.acquireRelease(
+      Effect.sync(() => new RedisClient(Redacted.value(env.redisUrl))),
+      (client) => Effect.sync(() => client.close()),
+    );
 
     /**
      * Delete tags from the cache.
      */
-    const del = Effect.fn(function* (...tags: string[]) {
+    const del = Effect.fn("Redis.del")(function* (...tags: string[]) {
       yield* Effect.tryPromise({
         try: () => client.del(...tags),
         catch: (error) => new RedisDelError({ tags, cause: error }),
@@ -20,7 +23,7 @@ export class Redis extends Effect.Service<Redis>()("app/Redis", {
     /**
      * Get a value by key.
      */
-    const get = Effect.fn(function* (key: string) {
+    const get = Effect.fn("Redis.get")(function* (key: string) {
       return yield* Effect.tryPromise({
         try: () => client.get(key),
         catch: (error) => new RedisGetError({ key, cause: error }),
@@ -30,7 +33,7 @@ export class Redis extends Effect.Service<Redis>()("app/Redis", {
     /**
      * Set a value by key.
      */
-    const set = Effect.fn(function* (key: string, value: string) {
+    const set = Effect.fn("Redis.set")(function* (key: string, value: string) {
       yield* Effect.tryPromise({
         try: () => client.set(key, value),
         catch: (error) => new RedisSetError({ key, cause: error }),

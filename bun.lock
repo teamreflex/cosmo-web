@@ -62,7 +62,6 @@
         "@apollo/database": "workspace:*",
         "@apollo/util": "workspace:*",
         "@apollo/util-server": "workspace:*",
-        "@effect/cluster": "catalog:",
         "@effect/platform": "catalog:",
         "@effect/platform-bun": "catalog:",
         "drizzle-orm": "catalog:",
@@ -84,7 +83,6 @@
       "version": "1.0.0",
       "dependencies": {
         "@apollo/database": "workspace:*",
-        "@effect/cluster": "catalog:",
         "@effect/platform": "catalog:",
         "@effect/platform-bun": "catalog:",
         "drizzle-orm": "catalog:",
@@ -256,7 +254,6 @@
   },
   "catalog": {
     "@effect/build-utils": "^0.8.9",
-    "@effect/cluster": "^0.59.0",
     "@effect/eslint-plugin": "^0.3.2",
     "@effect/language-service": "^0.86.4",
     "@effect/platform": "^0.96.2",

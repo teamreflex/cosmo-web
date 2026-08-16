@@ -45,7 +45,9 @@ export const SCHEDULED_TASKS: ScheduledTask[] = [
  * - Effect.repeat runs the effect once immediately, so every task executes
  *   at boot before settling into its cron cadence
  */
-export const createResilientTask = Effect.fn(function* (task: ScheduledTask) {
+export const createResilientTask = Effect.fn("createResilientTask")(function* (
+  task: ScheduledTask,
+) {
   const cron = Cron.unsafeParse(task.cron, task.timezone ?? "UTC");
   const schedule = Schedule.cron(cron);
 

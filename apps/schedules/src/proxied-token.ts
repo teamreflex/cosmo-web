@@ -1,6 +1,6 @@
 import { refreshV3 } from "@apollo/cosmo/effect/auth";
 import { cosmoTokens } from "@apollo/database/web/schema";
-import { Data, Effect } from "effect";
+import { Clock, Data, Effect } from "effect";
 import { decodeJwt } from "jose";
 import { CosmoKey } from "./cosmo-key";
 import { DatabaseWeb } from "./db";
@@ -28,12 +28,20 @@ export class ProxiedToken extends Effect.Service<ProxiedToken>()(
           return yield* new NoTokenFoundError();
         }
 
-        const isAccessTokenValid = validateExpiry(latestToken.accessToken);
+        const nowMillis = yield* Clock.currentTimeMillis;
+
+        const isAccessTokenValid = validateExpiry(
+          latestToken.accessToken,
+          nowMillis,
+        );
         if (isAccessTokenValid) {
           return { accessToken: latestToken.accessToken };
         }
 
-        const isRefreshTokenValid = validateExpiry(latestToken.refreshToken);
+        const isRefreshTokenValid = validateExpiry(
+          latestToken.refreshToken,
+          nowMillis,
+        );
         if (!isRefreshTokenValid) {
           return yield* new TokenRefreshError({
             cause: "Refresh token expired",
@@ -73,10 +81,10 @@ export class ProxiedToken extends Effect.Service<ProxiedToken>()(
 /**
  * Validate JWT expiry by checking the exp claim.
  */
-function validateExpiry(token: string): boolean {
+function validateExpiry(token: string, nowMillis: number): boolean {
   try {
     const claims = decodeJwt(token);
-    return claims.exp !== undefined && claims.exp > Date.now() / 1000;
+    return claims.exp !== undefined && claims.exp > nowMillis / 1000;
   } catch {
     return false;
   }

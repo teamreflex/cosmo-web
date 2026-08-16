@@ -1,18 +1,19 @@
 import { Effect, Redacted } from "effect";
 import { Client } from "typesense";
-import { getConfig } from "./config";
+import { Env } from "./config";
 
+// not scoped: the typesense Client is fetch-per-request and exposes no close API
 export class Typesense extends Effect.Service<Typesense>()("app/Typesense", {
   effect: Effect.gen(function* () {
-    const config = yield* getConfig;
+    const env = yield* Env;
 
     return new Client({
-      nodes: [{ url: config.TYPESENSE_URL }],
-      apiKey: Redacted.value(config.TYPESENSE_API_KEY),
+      nodes: [{ url: env.TYPESENSE_URL }],
+      apiKey: Redacted.value(env.TYPESENSE_API_KEY),
       numRetries: 1,
       connectionTimeoutSeconds: 10,
       logLevel: "info",
     });
   }),
-  dependencies: [],
+  dependencies: [Env.Default],
 }) {}

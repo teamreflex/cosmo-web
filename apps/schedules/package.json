@@ -17,7 +17,6 @@
     "@apollo/database": "workspace:*",
     "@apollo/util": "workspace:*",
     "@apollo/util-server": "workspace:*",
-    "@effect/cluster": "catalog:",
     "@effect/platform": "catalog:",
     "@effect/platform-bun": "catalog:",
     "drizzle-orm": "catalog:",
