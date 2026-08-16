@@ -183,6 +183,7 @@ export function toPublicCosmo(
     return undefined;
   }
 
+  // SAFETY: PublicCosmo is brand-typed; a cast is the only constructor
   return {
     username: cosmo.username,
     address: cosmo.address,

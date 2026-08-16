@@ -242,6 +242,7 @@ export function transfersQuery(
         },
       });
     },
+    // SAFETY: cursor seed; widened for TanStack Query inference
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage?.cursor,
     staleTime: 1000 * 60 * 5,

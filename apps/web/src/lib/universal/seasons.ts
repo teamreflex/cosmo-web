@@ -47,6 +47,7 @@ type Season = keyof typeof seasonConfig;
 function extractSeason(season: string): [Season, number] | null {
   const match = season.match(/^([a-zA-Z]+)(\d+)?$/);
   if (!match) return null;
+  // SAFETY: membership is validated against seasonConfig on the next line
   const name = match[1]?.toLowerCase() as Season;
   if (!(name in seasonConfig)) return null;
   const num = match[2] ? parseInt(match[2], 10) : 0;

@@ -54,6 +54,7 @@ export default function ProgressTable(props: Props) {
 
         return acc;
       },
+      // SAFETY: empty seed for the reduce accumulator
       {} as Record<string, SeasonProgress[]>,
     );
 
@@ -131,6 +132,7 @@ function FilterSelect({
   update: (value: ValidOnlineType | undefined) => void;
 }) {
   function set(v: string) {
+    // SAFETY: non-"combined" select values are ValidOnlineType
     update(v === "combined" ? undefined : (v as ValidOnlineType));
   }
 

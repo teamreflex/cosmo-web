@@ -247,12 +247,16 @@ export function defineHead(meta: Meta) {
   if (meta.extra) {
     for (const { type, props } of meta.extra) {
       if (type === "meta") {
+        // SAFETY: "meta" entries carry meta descriptor props
         metaTags.push(props as (typeof metaTags)[number]);
       } else if (type === "link") {
+        // SAFETY: "link" entries carry link descriptor props
         links.push(props as (typeof links)[number]);
       } else if (type === "style") {
+        // SAFETY: "style" entries carry style descriptor props
         styles.push(props as (typeof styles)[number]);
       } else if (type === "script") {
+        // SAFETY: "script" entries carry script descriptor props
         scripts.push(props as (typeof scripts)[number]);
       }
     }

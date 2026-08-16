@@ -130,6 +130,7 @@ function ArtistTriggerButton(props: ArtistTriggerButtonProps) {
     props.activeMembers.includes(m.name),
   );
   const isActive = props.isOpen || isArtistActive || isMemberActive;
+  // SAFETY: BFF artist names match the ValidArtist ids
   const artistColor = artistColors[props.artist.name as ValidArtist];
 
   function handlePointerDown(e: React.PointerEvent) {
@@ -165,6 +166,7 @@ type ArtistPopoverContentProps = {
 
 function ArtistPopoverContent(props: ArtistPopoverContentProps) {
   const isArtistActive = props.activeArtist === props.artist.id;
+  // SAFETY: BFF artist names match the ValidArtist ids
   const artistColor = artistColors[props.artist.name as ValidArtist];
 
   function handleArtistSelect(artist: string) {
@@ -181,6 +183,7 @@ function ArtistPopoverContent(props: ArtistPopoverContentProps) {
   }
 
   function handlePointerDownOutside(e: Event) {
+    // SAFETY: pointer event targets are DOM elements
     const target = e.target as HTMLElement;
     const triggerButton = target.closest("[data-artist-trigger]");
 

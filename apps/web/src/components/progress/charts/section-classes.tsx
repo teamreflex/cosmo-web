@@ -13,6 +13,7 @@ export default function SectionClasses(props: Props) {
       acc[curr.name] = randomColor();
       return acc;
     },
+    // SAFETY: empty seed for the reduce accumulator
     {} as Record<string, string>,
   );
 

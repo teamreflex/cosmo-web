@@ -27,6 +27,7 @@ export default function SeasonSelection({ seasons, value, onChange }: Props) {
       {seasons.map((season) => (
         <Badge
           key={`${season.key}-${season.name}`}
+          // SAFETY: every season key has a season-* badge variant
           variant={`season-${season.key}` as "season-atom"}
           className={cn(
             "cursor-pointer",

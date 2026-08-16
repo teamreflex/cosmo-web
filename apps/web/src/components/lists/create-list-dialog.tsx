@@ -101,7 +101,11 @@ export default function CreateListDialog(props: Props) {
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs value={tab} onValueChange={(v) => setTab(v as ListType)}>
+        <Tabs
+          value={tab}
+          // SAFETY: tab values are the ListType variants
+          onValueChange={(v) => setTab(v as ListType)}
+        >
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="regular">{m.list_type_regular()}</TabsTrigger>
             <TabsTrigger value="sale">{m.list_type_sale()}</TabsTrigger>

@@ -1,5 +1,4 @@
 import { defineRule } from "@oxlint/plugins";
-
 import type { ESTree, SourceCode } from "@oxlint/plugins";
 
 type TypeAssertion = ESTree.TSAsExpression | ESTree.TSTypeAssertion;
@@ -20,17 +19,32 @@ function isConstAssertion(node: TypeAssertion): boolean {
   );
 }
 
-function hasSafetyComment(sourceCode: SourceCode, node: TypeAssertion): boolean {
+function hasSafetyComment(
+  sourceCode: SourceCode,
+  node: TypeAssertion,
+): boolean {
+  const isSafetyCommentBefore = (target: ESTree.Node) =>
+    sourceCode
+      .getCommentsBefore(target)
+      .some(
+        (comment) =>
+          comment.end <= node.start && /\bSAFETY\s*:/u.test(comment.value),
+      );
+
   let current: ESTree.Node = node;
   while (true) {
-    if (
-      sourceCode
-        .getCommentsBefore(current)
-        .some((comment) => comment.end <= node.start && /\bSAFETY\s*:/u.test(comment.value))
-    ) {
-      return true;
+    if (isSafetyCommentBefore(current)) return true;
+    if (commentOwnerKinds.has(current.type)) {
+      // `export const x = ...` attaches leading comments to the export
+      // declaration, not the variable declaration inside it; look one level up.
+      const parent = current.parent;
+      return (
+        (parent.type === "ExportNamedDeclaration" ||
+          parent.type === "ExportDefaultDeclaration") &&
+        isSafetyCommentBefore(parent)
+      );
     }
-    if (commentOwnerKinds.has(current.type) || current.parent.type === "Program") return false;
+    if (current.parent.type === "Program") return false;
     current = current.parent;
   }
 }
@@ -50,7 +64,8 @@ export const requireSafetyCommentForTypeAssertionRule = defineRule({
   },
   createOnce(context) {
     const checkAssertion = (node: TypeAssertion) => {
-      if (isConstAssertion(node) || hasSafetyComment(context.sourceCode, node)) return;
+      if (isConstAssertion(node) || hasSafetyComment(context.sourceCode, node))
+        return;
       context.report({ node, messageId: "missingSafetyComment" });
     };
 

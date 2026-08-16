@@ -249,6 +249,7 @@ export const $fetchPolygonGravity = createServerFn({ method: "GET" })
             acc[candidateId] = (acc[candidateId] ?? 0) + vote.comoAmount;
             return acc;
           },
+          // SAFETY: empty seed for the reduce accumulator
           {} as Record<string, number>,
         );
 

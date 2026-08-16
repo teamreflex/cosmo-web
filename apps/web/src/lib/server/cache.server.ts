@@ -16,6 +16,7 @@ export async function remember<T>(
   const cached = await redis.get(key);
 
   if (cached !== null) {
+    // SAFETY: cached values are written below as JSON-serialized T
     return JSON.parse(cached) as T;
   }
 

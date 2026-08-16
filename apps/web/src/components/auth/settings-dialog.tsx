@@ -75,6 +75,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
   }
 
   function handleLanguageChange(value: string) {
+    // SAFETY: select options only contain valid locales
     void setLocale(value as typeof locale);
   }
 
@@ -137,6 +138,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
             <Select
               name="theme"
               defaultValue={theme}
+              // SAFETY: select options only contain Theme values
               onValueChange={(value) => setTheme(value as Theme)}
             >
               <SelectTrigger className="w-36">

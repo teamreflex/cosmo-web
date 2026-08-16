@@ -61,6 +61,7 @@ export namespace Objekt {
   export function fromIndexer(objekt: IndexedObjekt): Objekt.Collection {
     const collection = {
       id: objekt.id,
+      // SAFETY: indexed artists lowercase to ValidArtist ids
       artist: objekt.artist.toLowerCase() as ValidArtist,
       member: objekt.member,
       season: objekt.season,
@@ -139,6 +140,7 @@ export namespace Objekt {
     if (opts.collection) {
       const base = {
         id: opts.collection.id,
+        // SAFETY: COSMO artist names are ValidArtist ids
         artist: opts.collection.artistName as ValidArtist,
         member: opts.collection.member,
         season: opts.collection.season,
@@ -189,6 +191,7 @@ export namespace Objekt {
     const collection = {
       // scan path is currently unused; placeholder id keeps the shape consistent
       id: crypto.randomUUID(),
+      // SAFETY: scanned objekts always carry at least one ValidArtist
       artist: objekt.artists[0] as ValidArtist,
       member: objekt.member,
       season: objekt.season,

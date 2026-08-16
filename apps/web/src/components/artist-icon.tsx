@@ -74,5 +74,6 @@ const map = {
 } satisfies Record<ValidArtist, ReactNode>;
 
 export default function ArtistIcon({ artist }: { artist: string }) {
+  // SAFETY: unknown artist strings miss the map and fall back to null
   return map[artist as ValidArtist] ?? null;
 }

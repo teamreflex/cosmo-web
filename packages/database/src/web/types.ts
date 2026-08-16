@@ -93,6 +93,7 @@ export const eventTypes = {
     label: "Tour",
   },
 } as const;
+// SAFETY: Object.keys of a closed const object yields its literal keys
 export const eventTypeKeys = Object.keys(
   eventTypes,
 ) as (keyof typeof eventTypes)[];

@@ -326,6 +326,7 @@ async function initializeServer() {
   // Load TanStack Start server handler
   let handler: FetchHandler;
   try {
+    // SAFETY: the built server entry default-exports a fetch handler
     const serverModule = (await import(SERVER_ENTRY_POINT)) as {
       default: FetchHandler;
     };

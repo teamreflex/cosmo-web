@@ -45,6 +45,7 @@ export default function Metadata(props: Props) {
       {/* tabs */}
       <Tabs
         value={props.tab}
+        // SAFETY: tab values are the ObjektMetadataTab variants
         onValueChange={(value) => props.setTab(value as ObjektMetadataTab)}
         variant="navbar"
         className="flex flex-col gap-0"

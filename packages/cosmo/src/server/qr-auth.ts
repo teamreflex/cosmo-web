@@ -43,6 +43,7 @@ export async function getRecaptchaToken(config: QrAuthConfig) {
       });
     }, config.recaptchaKey);
 
+    // SAFETY: the page script resolves with the grecaptcha token string
     return value as string;
   } catch (error) {
     console.error("Failed to get reCAPTCHA token", error);

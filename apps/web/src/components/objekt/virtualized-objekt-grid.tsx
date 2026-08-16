@@ -358,6 +358,7 @@ function ObjektGrid<
 
           // render non-pin items
           const id = getObjektId(cell.item);
+          // SAFETY: base props plus itemComponentProps satisfy TItemProps
           const itemProps = {
             item: cell.item,
             id,

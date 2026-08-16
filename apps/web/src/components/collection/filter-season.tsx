@@ -19,6 +19,7 @@ export default function SeasonFilter(props: Props) {
     props.onChange((prev) => {
       if (prev.artist !== artist) {
         return {
+          // SAFETY: artist ids come from the fetched artist list
           artist: artist as ValidArtist,
           season: [season],
         };

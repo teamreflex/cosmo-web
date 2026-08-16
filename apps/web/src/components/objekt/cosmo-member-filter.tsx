@@ -26,6 +26,7 @@ export default function CosmoMemberFilter() {
     (artist: string) => {
       setFilters((prev) => ({
         member: undefined,
+        // SAFETY: callers pass artist ids from the artist list
         artist: prev.artist === artist ? undefined : (artist as ValidArtist),
       }));
     },

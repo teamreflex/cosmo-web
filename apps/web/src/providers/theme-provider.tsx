@@ -19,6 +19,7 @@ export function ThemeProvider({
   storageKey = "theme",
   ...props
 }: ThemeProviderProps) {
+  // SAFETY: the storage key is only ever written with Theme values
   const [theme, setTheme] = useState<Theme>(
     () =>
       // oxlint-disable-next-line anti-slop/no-runtime-typeof -- SSR environment detection

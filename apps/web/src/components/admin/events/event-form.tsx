@@ -363,6 +363,7 @@ function SeasonSelection(props: SeasonSelectionProps) {
             {seasons.map((season) => (
               <Badge
                 key={`${props.artist}-${season.key}-${season.name}`}
+                // SAFETY: every season key has a season-* badge variant
                 variant={`season-${season.key}` as "season-atom"}
                 className={cn(
                   field.value.includes(season.name) &&

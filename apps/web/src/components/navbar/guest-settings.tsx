@@ -39,6 +39,7 @@ function ThemeSubmenu() {
       <DropdownMenuSubContent>
         <DropdownMenuRadioGroup
           value={theme}
+          // SAFETY: radio options only contain Theme values
           onValueChange={(value) => setTheme(value as Theme)}
         >
           <DropdownMenuRadioItem value="dark">
@@ -59,6 +60,7 @@ function LanguageSubmenu() {
   const locale = getLocale();
 
   function handleLanguageChange(value: string) {
+    // SAFETY: radio options only contain valid locales
     void setLocale(value as typeof locale);
   }
 
