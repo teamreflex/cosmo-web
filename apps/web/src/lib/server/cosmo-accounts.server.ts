@@ -1,9 +1,9 @@
+import { CosmoApiError } from "@apollo/cosmo/server/errors";
 import { fetchByNickname } from "@apollo/cosmo/server/user";
 import { cosmoAccounts } from "@apollo/database/web/schema";
 import type { CosmoAccount } from "@apollo/database/web/types";
 import { addr, isAddress } from "@apollo/util";
 import { sql } from "drizzle-orm";
-import { FetchError } from "ofetch";
 import type { FullAccount, PublicCosmo } from "../universal/cosmo-accounts";
 import { toPublicUser } from "./auth.server";
 import { db } from "./db";
@@ -84,7 +84,7 @@ export async function fetchFullAccount(
 
     return await fetchFullAccount(user.nickname, signal);
   } catch (err) {
-    if (err instanceof FetchError && err.status !== 404) {
+    if (err instanceof CosmoApiError && err.status !== 404) {
       console.error(`[fetchFullAccount] ${err.status} from COSMO`, err);
     }
 

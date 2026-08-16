@@ -1,11 +1,13 @@
 import puppeteer from "puppeteer-core";
-import type { AuthTicket, QueryTicket } from "../types/qr-auth";
-import { cosmoShop, cosmoShopHeaders } from "./http";
+import * as qrAuth from "../effect/qr-auth";
+import { runCosmo } from "./runtime";
 
 export interface QrAuthConfig {
   recaptchaKey: string;
   endpoint: string;
 }
+
+const cosmoShopHost = "shop.cosmo.fans";
 
 /**
  * Use a headless browser to get the reCAPTCHA token.
@@ -18,7 +20,7 @@ export async function getRecaptchaToken(config: QrAuthConfig) {
   try {
     const page = await browser.newPage();
     await page.goto("https://shop.cosmo.fans/en/login/landing", {
-      referer: cosmoShopHeaders.Host,
+      referer: cosmoShopHost,
     });
 
     // wait for grecaptcha to be ready before trying to use it
@@ -62,16 +64,7 @@ export async function exchangeLoginTicket(
   recaptchaToken: string,
   signal: AbortSignal | null = null,
 ) {
-  return await cosmoShop<AuthTicket>(`/bff/v3/users/login-by-qr/ticket`, {
-    method: "POST",
-    body: {
-      recaptcha: {
-        action: "login",
-        token: recaptchaToken,
-      },
-    },
-    signal,
-  });
+  return await runCosmo(qrAuth.exchangeLoginTicket(recaptchaToken), signal);
 }
 
 /**
@@ -81,28 +74,16 @@ export async function queryTicket(
   ticket: string,
   signal: AbortSignal | null = null,
 ) {
-  return await cosmoShop<QueryTicket>(`/bff/v3/users/login-by-qr/ticket`, {
-    query: {
-      ticket,
-    },
-    signal,
-  });
+  return await runCosmo(qrAuth.queryTicket(ticket), signal);
 }
 
 /**
- * Certify the ticket.
+ * Certify the ticket. Returns the response status and cookies so the caller can extract the granted session.
  */
 export async function certifyTicket(
   otp: number,
   ticket: string,
   signal: AbortSignal | null = null,
 ) {
-  return await cosmoShop.raw<void>(`/bff/v3/users/login-by-qr/certify`, {
-    method: "POST",
-    body: {
-      otp,
-      ticket,
-    },
-    signal,
-  });
+  return await runCosmo(qrAuth.certifyTicket(otp, ticket), signal);
 }

@@ -1,6 +1,6 @@
-import type { CosmoArtist, CosmoArtistWithMembersBFF } from "../types/artists";
+import * as artists from "../effect/artists";
 import type { ValidArtist } from "../types/common";
-import { cosmo } from "./http";
+import { runCosmo } from "./runtime";
 
 /**
  * Fetch artists within COSMO.
@@ -9,12 +9,7 @@ export async function fetchArtists(
   token: string,
   signal: AbortSignal | null = null,
 ) {
-  return await cosmo<CosmoArtist[]>(`/bff/v3/artists`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    signal,
-  });
+  return await runCosmo(artists.fetchArtists(token), signal);
 }
 
 /**
@@ -25,10 +20,5 @@ export async function fetchArtist(
   artistId: ValidArtist,
   signal: AbortSignal | null = null,
 ) {
-  return await cosmo<CosmoArtistWithMembersBFF>(`/bff/v3/artists/${artistId}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    signal,
-  });
+  return await runCosmo(artists.fetchArtist(token, artistId), signal);
 }

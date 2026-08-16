@@ -1,6 +1,6 @@
+import * as auth from "../effect/auth";
 import type { RefreshTokenResult } from "../types/auth";
-import { encrypt, EncryptionError } from "./encryption";
-import { cosmo } from "./http";
+import { runCosmo } from "./runtime";
 
 /**
  * Refresh the given token.
@@ -10,11 +10,7 @@ export async function refresh(
   refreshToken: string,
   signal: AbortSignal | null = null,
 ): Promise<RefreshTokenResult> {
-  return await cosmo<{ credentials: RefreshTokenResult }>("/auth/v1/refresh", {
-    method: "POST",
-    body: { refreshToken },
-    signal,
-  }).then((res: { credentials: RefreshTokenResult }) => res.credentials);
+  return await runCosmo(auth.refresh(refreshToken), signal);
 }
 
 /**
@@ -25,22 +21,5 @@ export async function refreshV3(
   key: string,
   signal: AbortSignal | null = null,
 ): Promise<RefreshTokenResult> {
-  try {
-    var body = encrypt(JSON.stringify({ refreshToken }), key);
-  } catch (err) {
-    throw new EncryptionError("Error encrypting payload", { cause: err });
-  }
-
-  return await cosmo<{ credentials: RefreshTokenResult }>(
-    "/bff/v3/users/refresh-access-token",
-    {
-      method: "POST",
-      body,
-      headers: {
-        "Content-Type": "text/plain",
-        "x-cosmo-encrypted": "1",
-      },
-      signal,
-    },
-  ).then((res: { credentials: RefreshTokenResult }) => res.credentials);
+  return await runCosmo(auth.refreshV3(refreshToken, key), signal);
 }

@@ -7,16 +7,19 @@
   "exports": {
     "./types/*": "./src/types/*.ts",
     "./server/*": "./src/server/*.ts",
+    "./effect/*": "./src/effect/*.ts",
     "./bands": "./src/bands.ts"
   },
   "scripts": {
     "lint": "bun --bun oxlint --type-aware --type-check",
     "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
+    "test": "bun test",
     "typecheck": "tsc --pretty --noEmit",
     "format": "oxfmt ."
   },
   "dependencies": {
-    "ofetch": "catalog:",
+    "@effect/platform": "catalog:",
+    "effect": "catalog:",
     "puppeteer-core": "^24.43.1",
     "zod": "catalog:"
   },
@@ -24,6 +27,7 @@
     "@apollo/lint": "workspace:*",
     "@apollo/typescript": "workspace:*",
     "@types/bun": "catalog:",
+    "msw": "^2.15.0",
     "turbo": "catalog:",
     "typescript": "catalog:"
   }

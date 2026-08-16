@@ -1,6 +1,6 @@
+import * as collection from "../effect/collection";
 import type { ValidArtist } from "../types/common";
-import type { ObjektSummariesResponse, ObjektSummary } from "../types/objekts";
-import { cosmo } from "./http";
+import { runCosmo } from "./runtime";
 
 type FetchSummariesParams = {
   session: string;
@@ -17,23 +17,9 @@ export async function fetchObjektSummaries({
   artistId,
   className,
   signal = null,
-}: FetchSummariesParams): Promise<ObjektSummary[]> {
-  const response = await cosmo<ObjektSummariesResponse>(
-    "/bff/v3/objekt-summaries",
-    {
-      headers: {
-        Cookie: `user-session=${session}`,
-      },
-      query: {
-        artistId,
-        "class[]": className,
-        order: "newest",
-        page: "1",
-        size: "30",
-      },
-      signal,
-    },
+}: FetchSummariesParams) {
+  return await runCosmo(
+    collection.fetchObjektSummaries({ session, artistId, className }),
+    signal,
   );
-
-  return response.collections;
 }

@@ -10,6 +10,10 @@
       "cache": true,
       "dependsOn": ["^typecheck"]
     },
+    "test": {
+      "cache": true,
+      "inputs": ["src/**/*.ts", "tests/**/*.ts", "bunfig.toml"]
+    },
     "lint": {
       "cache": true,
       "dependsOn": ["^lint"],

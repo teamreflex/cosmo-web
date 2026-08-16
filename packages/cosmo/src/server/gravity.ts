@@ -1,18 +1,6 @@
+import * as gravity from "../effect/gravity";
 import type { ValidArtist } from "../types/common";
-import type {
-  CosmoGravity,
-  CosmoOngoingGravity,
-  CosmoPastGravity,
-  CosmoPollChoices,
-  CosmoUpcomingGravity,
-} from "../types/gravity";
-import { cosmo } from "./http";
-
-type CosmoGravityList = {
-  upcoming: CosmoUpcomingGravity[];
-  ongoing: CosmoOngoingGravity[];
-  past: CosmoPastGravity[];
-};
+import { runCosmo } from "./runtime";
 
 /**
  * Fetch the list of gravities for the given artist.
@@ -22,15 +10,7 @@ export async function fetchGravities(
   artistId: ValidArtist,
   signal: AbortSignal | null = null,
 ) {
-  return await cosmo<CosmoGravityList>(`/bff/v3/gravities`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    query: {
-      artistId,
-    },
-    signal,
-  });
+  return await runCosmo(gravity.fetchGravities(token, artistId), signal);
 }
 
 /**
@@ -41,17 +21,9 @@ export async function fetchGravity(
   gravityId: number,
   signal: AbortSignal | null = null,
 ) {
-  return await cosmo<{ gravity: CosmoGravity }>(
-    `/bff/v3/gravities/${gravityId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      signal,
-    },
-  )
-    .then((res: { gravity: CosmoGravity }) => res.gravity)
-    .catch(() => null);
+  return await runCosmo(gravity.fetchGravity(token, gravityId), signal).catch(
+    () => null,
+  );
 }
 
 /**
@@ -62,13 +34,5 @@ export async function fetchPoll(
   pollId: number,
   signal: AbortSignal | null = null,
 ) {
-  return await cosmo<{ pollDetail: CosmoPollChoices }>(
-    `/bff/v3/polls/${pollId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      signal,
-    },
-  ).then((res: { pollDetail: CosmoPollChoices }) => res.pollDetail);
+  return await runCosmo(gravity.fetchPoll(token, pollId), signal);
 }

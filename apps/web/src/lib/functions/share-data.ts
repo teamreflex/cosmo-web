@@ -29,18 +29,7 @@ export const $scrapeCollectionMedia = createServerFn({ method: "POST" })
     const response = await certifyTicket(data.otp, data.ticket, signal);
 
     // extract user-session cookie
-    const headers = response.headers.getSetCookie();
-    let session: string | null = null;
-    for (const header of headers) {
-      const parts = header.split(";");
-      for (const part of parts) {
-        const [name, value] = part.trim().split("=");
-        if (name === "user-session" && value !== undefined) {
-          session = value;
-          break;
-        }
-      }
-    }
+    const session = response.cookies["user-session"];
 
     if (!session) {
       throw new Error("Error getting session");
