@@ -1,172 +1,63 @@
-import * as z from "zod";
+import type {
+  CombinationPollChoiceSchema,
+  CombinationPollFinalizedSchema,
+  CombinationPollVoteResultSchema,
+  CosmoBodyHeadingSchema,
+  CosmoBodyImageSchema,
+  CosmoBodySpacingSchema,
+  CosmoBodyTextSchema,
+  CosmoBodyVideoSchema,
+  GravityCommonFieldsSchema,
+  GravitySchema,
+  PastGravitySchema,
+  PollChoicesSchema,
+  PollFinalizedSchema,
+  PollUpcomingSchema,
+  PollViewDefaultContentSchema,
+  PollViewSelectedContentSchema,
+  SinglePollChoiceSchema,
+  SinglePollFinalizedSchema,
+  SinglePollVoteResultSchema,
+  UpcomingGravitySchema,
+} from "../schema/gravity";
 import type { ValidArtist } from "./common";
 
 export type CosmoGravityType = "event-gravity" | "grand-gravity";
 export type CosmoPollType = "single-poll" | "combination-poll";
 
-export type CosmoBodySpacing = {
-  type: "spacing";
-  height: number;
-};
+export type CosmoBodySpacing = typeof CosmoBodySpacingSchema.Type;
 
-export type CosmoBodyHeading = {
-  type: "heading";
-  text: string;
-  align: "left" | "center" | "right";
-  id: string;
-};
+export type CosmoBodyHeading = typeof CosmoBodyHeadingSchema.Type;
 
-export type CosmoBodyImage = {
-  type: "image";
-  id: string;
-  imageUrl: string;
-  height: number;
-};
+export type CosmoBodyImage = typeof CosmoBodyImageSchema.Type;
 
-export type CosmoBodyText = {
-  type: "text";
-  text: string;
-  align: "left" | "center" | "right";
-  id: string;
-};
+export type CosmoBodyText = typeof CosmoBodyTextSchema.Type;
 
-export type CosmoBodyVideo = {
-  type: "video";
-  videoUrl: string;
-  thumbnailImageUrl: string;
-  allowFullScreen: boolean;
-  useController: boolean;
-  id: string;
-};
+export type CosmoBodyVideo = typeof CosmoBodyVideoSchema.Type;
 
-type CosmoBodyItem =
-  | CosmoBodySpacing
-  | CosmoBodyHeading
-  | CosmoBodyImage
-  | CosmoBodyText
-  | CosmoBodyVideo;
+export type CosmoSinglePollVoteResult = typeof SinglePollVoteResultSchema.Type;
 
-export type CosmoSinglePollVoteResult = {
-  rank: number;
-  votedChoice: {
-    choiceName: string;
-    choiceImageUrl: string;
-    comoUsed: number;
-  };
-};
+export type CosmoSinglePollFinalized = typeof SinglePollFinalizedSchema.Type;
 
-type CosmoPollCommon<TPollType extends CosmoPollType> = {
-  id: number;
-  artist: ValidArtist;
-  artistId: ValidArtist;
-  pollIdOnChain: number;
-  gravityId: number;
-  type: TPollType;
-  indexInGravity: number;
-  title: string;
-  imageUrl: string;
-  startDate: string;
-  endDate: string;
-  revealDate: string;
-  titleKo: string;
-  titleEn: string;
-  titleJa: string;
-  titleZhCn: string;
-  titleZhTw: string;
-};
+export type CosmoCombinationPollVoteResult =
+  typeof CombinationPollVoteResultSchema.Type;
 
-export interface CosmoSinglePollFinalized extends CosmoPollCommon<"single-poll"> {
-  finalized: true;
-  result: {
-    totalComoUsed: number;
-    voteResults: CosmoSinglePollVoteResult[];
-  };
-}
+export type CosmoCombinationPollFinalized =
+  typeof CombinationPollFinalizedSchema.Type;
 
-interface CosmoSinglePollUpcoming extends CosmoPollCommon<"single-poll"> {
-  finalized: false;
-}
+export type CosmoPollFinalized = typeof PollFinalizedSchema.Type;
+export type CosmoPollUpcoming = typeof PollUpcomingSchema.Type;
 
-type CosmoCombinationPollVoteSlot = {
-  slotName: string;
-  slotChoiceName: string;
-  slotChoiceCardImageUrl: string;
-  comoUsed: number;
-};
+export type CosmoGravityCommonFields = typeof GravityCommonFieldsSchema.Type;
 
-export type CosmoCombinationPollVoteResult = {
-  rank: number;
-  votedSlots: CosmoCombinationPollVoteSlot[];
-};
+export type CosmoPastGravity = typeof PastGravitySchema.Type;
 
-export interface CosmoCombinationPollFinalized extends CosmoPollCommon<"combination-poll"> {
-  finalized: true;
-  result: {
-    totalComoUsed: number;
-    voteResults: CosmoCombinationPollVoteResult[];
-  };
-}
+// upcoming and ongoing gravities share the same shape
+export type CosmoUpcomingGravity = typeof UpcomingGravitySchema.Type;
 
-interface CosmoCombinationPollUpcoming extends CosmoPollCommon<"combination-poll"> {
-  finalized: false;
-}
+export type CosmoOngoingGravity = typeof UpcomingGravitySchema.Type;
 
-export type CosmoPollFinalized =
-  | CosmoSinglePollFinalized
-  | CosmoCombinationPollFinalized;
-export type CosmoPollUpcoming =
-  | CosmoSinglePollUpcoming
-  | CosmoCombinationPollUpcoming;
-
-type CosmoLeaderboardItem = {
-  rank: number;
-  totalComoUsed: number;
-  user: {
-    nickname: string;
-    address: string;
-    profileImageUrl: string;
-  };
-};
-
-export type CosmoGravityCommonFields = {
-  id: number;
-  artist: ValidArtist;
-  title: string;
-  description: string;
-  type: CosmoGravityType;
-  pollType: CosmoPollType;
-  bannerImageUrl: string;
-  entireStartDate: string;
-  entireEndDate: string;
-  body: CosmoBodyItem[];
-  contractOutlink: string;
-};
-
-// TODO: check if past, upcoming and ongoing are the same
-export interface CosmoPastGravity extends CosmoGravityCommonFields {
-  polls: CosmoPollFinalized[];
-  result: {
-    totalComoUsed: number;
-    resultImageUrl: string;
-    resultTitle: string;
-  };
-  leaderboard: {
-    userRanking: CosmoLeaderboardItem[];
-  };
-}
-
-export interface CosmoUpcomingGravity extends CosmoGravityCommonFields {
-  polls: CosmoPollUpcoming[];
-}
-
-export interface CosmoOngoingGravity extends CosmoGravityCommonFields {
-  polls: CosmoPollUpcoming[];
-}
-
-export type CosmoGravity =
-  | CosmoPastGravity
-  | CosmoUpcomingGravity
-  | CosmoOngoingGravity;
+export type CosmoGravity = typeof GravitySchema.Type;
 
 type CosmoMyGravityVote = {
   choiceId: string;
@@ -188,102 +79,21 @@ export type CosmoMyGravityResult = {
   voteStatuses: CosmoMyGravityVoteStatus[];
 };
 
-type PollDefaultContentImage = {
-  type: "image";
-  imageUrl: string;
-  title: string;
-  description: string;
-};
+export type PollViewDefaultContent = typeof PollViewDefaultContentSchema.Type;
 
-export type PollViewDefaultContent = PollDefaultContentImage;
+export type PollSelectedContentImage =
+  typeof PollViewSelectedContentSchema.Type;
 
-export type PollSelectedContentImageContent = {
-  id: string;
-  type: "image";
-  imageUrl: string;
-  title: string;
-  description: string;
-};
-
-export type PollSelectedContentImage = {
-  choiceId: string;
-  content: PollSelectedContentImageContent;
-};
+export type PollSelectedContentImageContent =
+  PollSelectedContentImage["content"];
 
 export type PollViewSelectedContent = PollSelectedContentImage;
 
-export type SinglePollChoice = {
-  id: string;
-  title: string;
-  description: string;
-  txImageUrl: string;
-};
+export type SinglePollChoice = typeof SinglePollChoiceSchema.Type;
 
-export type CombinationPollChoice = {
-  id: string;
-  txImageUrl: string;
-  txImagePairUrls: string[];
-};
+export type CombinationPollChoice = typeof CombinationPollChoiceSchema.Type;
 
-type CosmoSinglePollChoices = {
-  id: number;
-  artist: ValidArtist;
-  pollIdOnChain: number;
-  gravityId: number;
-  type: "single-poll";
-  indexInGravity: number;
-  title: string;
-  imageUrl: string;
-  startDate: string;
-  endDate: string;
-  revealDate: string;
-  finalized: boolean;
-  pollViewMetadata: {
-    title: string;
-    background: null;
-    defaultContent: PollViewDefaultContent;
-    selectedContent: PollViewSelectedContent[];
-    choiceViewType: "vertical" | "horizontal";
-    selectContent: PollViewSelectedContent[];
-  };
-  choices: SinglePollChoice[];
-};
-
-type CosmoCombinationPollChoices = {
-  id: number;
-  artist: ValidArtist;
-  pollIdOnChain: number;
-  gravityId: number;
-  type: "combination-poll";
-  indexInGravity: number;
-  title: string;
-  imageUrl: string;
-  startDate: string;
-  endDate: string;
-  revealDate: string;
-  finalized: false;
-  pollViewMetadata: {
-    title: string;
-    background: null;
-    defaultContent: PollViewDefaultContent;
-    selectedContent: PollViewSelectedContent[];
-    choiceViewType: "vertical" | "horizontal";
-    selectContent: PollViewSelectedContent[];
-  };
-  choices: CombinationPollChoice[];
-};
-
-export type CosmoPollChoices =
-  | CosmoSinglePollChoices
-  | CosmoCombinationPollChoices;
-
-export const fabricateVotePayloadSchema = z.object({
-  pollId: z.number(),
-  choiceId: z.string(),
-  comoAmount: z.number(),
-});
-
-export type FabricateVotePayload = z.infer<typeof fabricateVotePayloadSchema>;
+export type CosmoPollChoices = typeof PollChoicesSchema.Type;
 
 export type CosmoGravityVoteCalldata = {
   callData: {

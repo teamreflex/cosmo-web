@@ -1,61 +1,19 @@
 import { Effect, Schema } from "effect";
+import { CosmoDecodeError } from "../errors";
+import {
+  CosmoByNicknameSchema,
+  CosmoSearchResultSchema,
+  CosmoUserProfileSchema,
+} from "../schema/user";
 import { decrypt, EncryptionError } from "../server/encryption";
 import type { ValidArtist } from "../types/common";
-import { CosmoDecodeError } from "../errors";
 import {
   bearer,
   bodyText,
   cosmoClient,
   cosmoNoRetryClient,
   decodeBody,
-  ValidArtistSchema,
 } from "./http";
-
-const CosmoByNicknameSchema = Schema.Struct({
-  nickname: Schema.String,
-  address: Schema.String,
-  profileImageUrl: Schema.String,
-  guid: Schema.String,
-});
-
-const CosmoSearchResultSchema = Schema.Struct({
-  hasNext: Schema.Boolean,
-  nextStartAfter: Schema.NullOr(Schema.String),
-  results: Schema.mutable(
-    Schema.Array(
-      Schema.Struct({
-        id: Schema.Number,
-        nickname: Schema.String,
-        profileImageUrl: Schema.String,
-        address: Schema.String,
-        userProfiles: Schema.mutable(
-          Schema.Array(
-            Schema.Struct({
-              artistId: ValidArtistSchema,
-              artistName: ValidArtistSchema,
-              image: Schema.Struct({
-                original: Schema.String,
-                thumbnail: Schema.String,
-              }),
-            }),
-          ),
-        ),
-      }),
-    ),
-  ),
-});
-
-const CosmoUserProfileSchema = Schema.Struct({
-  id: Schema.Number,
-  nickname: Schema.String,
-  address: Schema.String,
-  profileImageUrl: Schema.String,
-  fandomName: Schema.String,
-  followDurationDays: Schema.Number,
-  currentStreak: Schema.Number,
-  statusMessage: Schema.NullOr(Schema.String),
-  createdAt: Schema.String,
-});
 
 /**
  * Fetch a user from COSMO by nickname. Not retried, since a failed lookup is meaningful to callers.

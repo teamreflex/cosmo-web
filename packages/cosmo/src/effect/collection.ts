@@ -1,22 +1,7 @@
-import { Effect, Schema } from "effect";
+import { Effect } from "effect";
+import { ObjektSummariesResponseSchema } from "../schema/collection";
 import type { ValidArtist } from "../types/common";
 import { cosmoClient, decodeBody } from "./http";
-
-const ObjektSummariesResponseSchema = Schema.Struct({
-  collectionCount: Schema.Number,
-  collections: Schema.mutable(
-    Schema.Array(
-      Schema.Struct({
-        collection: Schema.Struct({
-          collectionId: Schema.String,
-          artistName: Schema.String,
-          frontMedia: Schema.optional(Schema.NullOr(Schema.String)),
-          bandImageUrl: Schema.optional(Schema.NullOr(Schema.String)),
-        }),
-      }),
-    ),
-  ),
-});
 
 type FetchSummariesParams = {
   session: string;
@@ -42,9 +27,7 @@ export const fetchObjektSummaries = Effect.fn("Cosmo.fetchObjektSummaries")(
         },
       })
       .pipe(
-        Effect.flatMap(
-          decodeBody(ObjektSummariesResponseSchema),
-        ),
+        Effect.flatMap(decodeBody(ObjektSummariesResponseSchema)),
         Effect.scoped,
       );
     return response.collections;

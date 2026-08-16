@@ -1,3 +1,7 @@
+import type {
+  ObjektSummariesResponseSchema,
+  ObjektSummarySchema,
+} from "../schema/collection";
 import type { ValidArtist } from "./common";
 
 export type ObjektBaseFields = {
@@ -125,16 +129,6 @@ export type BFFCollectionGroupObjekt = {
   };
 };
 
-export type ObjektSummariesResponse = {
-  collectionCount: number;
-  collections: ObjektSummary[];
-};
+export type ObjektSummariesResponse = typeof ObjektSummariesResponseSchema.Type;
 
-export type ObjektSummary = {
-  collection: {
-    collectionId: string;
-    artistName: string;
-    frontMedia?: string | null;
-    bandImageUrl?: string | null;
-  };
-};
+export type ObjektSummary = typeof ObjektSummarySchema.Type;

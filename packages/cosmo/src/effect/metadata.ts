@@ -1,46 +1,6 @@
-import { Effect, Schema } from "effect";
+import { Effect } from "effect";
+import { MetadataV1Schema, MetadataV3Schema } from "../schema/metadata.js";
 import { decodeBody, metadataClient } from "./http.js";
-
-const MetadataV1Schema = Schema.Struct({
-  name: Schema.String,
-  description: Schema.String,
-  image: Schema.String,
-  background_color: Schema.String,
-  objekt: Schema.Struct({
-    collectionId: Schema.String,
-    season: Schema.String,
-    member: Schema.String,
-    collectionNo: Schema.String,
-    class: Schema.String,
-    artists: Schema.mutable(Schema.Array(Schema.String)),
-    thumbnailImage: Schema.String,
-    frontImage: Schema.String,
-    backImage: Schema.String,
-    accentColor: Schema.String,
-    backgroundColor: Schema.String,
-    textColor: Schema.String,
-    comoAmount: Schema.Number,
-    tokenId: Schema.String,
-    objektNo: Schema.Number,
-    tokenAddress: Schema.String,
-    transferable: Schema.Boolean,
-  }),
-});
-
-const MetadataV3Schema = Schema.Struct({
-  name: Schema.String,
-  description: Schema.String,
-  image: Schema.String,
-  background_color: Schema.String,
-  attributes: Schema.mutable(
-    Schema.Array(
-      Schema.Struct({
-        trait_type: Schema.String,
-        value: Schema.String,
-      }),
-    ),
-  ),
-});
 
 /**
  * Fetch objekt metadata from the v1 API.
@@ -51,10 +11,7 @@ export const fetchMetadataV1 = Effect.fn("Cosmo.fetchMetadataV1")(function* (
   const client = yield* metadataClient;
   return yield* client
     .get(`/objekt/v1/token/${tokenId}`)
-    .pipe(
-      Effect.flatMap(decodeBody(MetadataV1Schema)),
-      Effect.scoped,
-    );
+    .pipe(Effect.flatMap(decodeBody(MetadataV1Schema)), Effect.scoped);
 });
 
 /**
@@ -67,8 +24,5 @@ export const fetchMetadataV3 = Effect.fn("Cosmo.fetchMetadataV3")(function* (
   const client = yield* metadataClient;
   return yield* client
     .get(`/bff/v3/objekts/nft-metadata/${tokenId}`)
-    .pipe(
-      Effect.flatMap(decodeBody(MetadataV3Schema)),
-      Effect.scoped,
-    );
+    .pipe(Effect.flatMap(decodeBody(MetadataV3Schema)), Effect.scoped);
 });

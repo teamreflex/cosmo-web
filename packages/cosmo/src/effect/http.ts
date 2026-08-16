@@ -4,11 +4,9 @@ import {
   HttpClientRequest,
   HttpClientResponse,
 } from "@effect/platform";
-import { Duration, Effect, Schedule, Schema } from "effect";
-import { COSMO_ENDPOINT, validArtists } from "../types/common.js";
+import { Duration, Effect, Schedule, type Schema } from "effect";
 import { CosmoApiError, CosmoDecodeError } from "../errors.js";
-
-export const ValidArtistSchema = Schema.Literal(...validArtists);
+import { COSMO_ENDPOINT } from "../types/common.js";
 
 export const bearer = (token: string) => ({
   authorization: `Bearer ${token}`,

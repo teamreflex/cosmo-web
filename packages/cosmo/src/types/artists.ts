@@ -1,19 +1,13 @@
+import type {
+  CosmoArtistBFFSchema,
+  CosmoArtistBFFSNSLinkSchema,
+  CosmoArtistSchema,
+  CosmoArtistWithMembersBFFSchema,
+  CosmoMemberBFFSchema,
+} from "../schema/artists";
 import type { ValidArtist } from "./common";
 
-export type CosmoArtist = {
-  name: ValidArtist;
-  title: string;
-  fandomName: string;
-  logoImageUrl: string;
-  contracts: {
-    Como: string;
-    Objekt: string;
-    ObjektMinter: string;
-    Governor: string;
-    CommunityPool: string;
-    ComoMinter: string;
-  };
-};
+export type CosmoArtist = typeof CosmoArtistSchema.Type;
 
 type CosmoMember = {
   id: number;
@@ -30,53 +24,11 @@ export interface CosmoArtistWithMembers extends CosmoArtist {
   members: CosmoMember[];
 }
 
-export type CosmoArtistBFF = {
-  name: string;
-  id: ValidArtist;
-  title: string;
-  fandomName: string;
-  logoImageUrl: string;
-  primaryImageUrl: string;
-  category: string;
-  wasReleased: boolean;
-  comoTokenId: number;
-  contracts: {
-    Como: string;
-    Objekt: string;
-    ObjektMinter: string;
-    Governor: string;
-    CommunityPool: string;
-    ComoMinter: string;
-  };
-};
+export type CosmoArtistBFF = typeof CosmoArtistBFFSchema.Type;
 
-export interface CosmoArtistWithMembersBFF extends CosmoArtistBFF {
-  artistMembers: CosmoMemberBFF[];
-  snsLink: {
-    discord: CosmoArtistBFFSNSLink;
-    instagram: CosmoArtistBFFSNSLink;
-    twitter: CosmoArtistBFFSNSLink;
-    youtube: CosmoArtistBFFSNSLink;
-    tiktok: CosmoArtistBFFSNSLink;
-  };
-}
+export type CosmoArtistWithMembersBFF =
+  typeof CosmoArtistWithMembersBFFSchema.Type;
 
-export type CosmoMemberBFF = {
-  id: number;
-  name: string;
-  units: string;
-  alias: string;
-  profileImageUrl: string;
-  backgroundImageUrl: string;
-  order: number;
-  createdAt: string;
-  updatedAt: string;
-  mainObjektImageUrl: string | null;
-  artistId: string;
-  primaryColorHex: string;
-};
+export type CosmoMemberBFF = typeof CosmoMemberBFFSchema.Type;
 
-export type CosmoArtistBFFSNSLink = {
-  name: string;
-  address: string;
-};
+export type CosmoArtistBFFSNSLink = typeof CosmoArtistBFFSNSLinkSchema.Type;

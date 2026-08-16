@@ -1,14 +1,8 @@
 import { HttpBody } from "@effect/platform";
-import { Effect, Schema } from "effect";
+import { Effect } from "effect";
+import { RefreshResponseSchema } from "../schema/auth";
 import { encrypt, EncryptionError } from "../server/encryption";
 import { cosmoClient, decodeBody } from "./http";
-
-const RefreshResponseSchema = Schema.Struct({
-  credentials: Schema.Struct({
-    refreshToken: Schema.String,
-    accessToken: Schema.String,
-  }),
-});
 
 /**
  * Refresh the given token.
@@ -22,10 +16,7 @@ export const refresh = Effect.fn("Cosmo.refresh")(function* (
     .post("/auth/v1/refresh", {
       body: HttpBody.unsafeJson({ refreshToken }),
     })
-    .pipe(
-      Effect.flatMap(decodeBody(RefreshResponseSchema)),
-      Effect.scoped,
-    );
+    .pipe(Effect.flatMap(decodeBody(RefreshResponseSchema)), Effect.scoped);
   return response.credentials;
 });
 
@@ -50,9 +41,6 @@ export const refreshV3 = Effect.fn("Cosmo.refreshV3")(function* (
         "x-cosmo-encrypted": "1",
       },
     })
-    .pipe(
-      Effect.flatMap(decodeBody(RefreshResponseSchema)),
-      Effect.scoped,
-    );
+    .pipe(Effect.flatMap(decodeBody(RefreshResponseSchema)), Effect.scoped);
   return response.credentials;
 });

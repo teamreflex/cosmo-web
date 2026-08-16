@@ -1,41 +1,7 @@
 import { Cookies, HttpBody } from "@effect/platform";
-import { Effect, Schema } from "effect";
+import { Effect } from "effect";
+import { AuthTicketSchema, QueryTicketSchema } from "../schema/qr-auth";
 import { cosmoShopClient, decodeBody } from "./http";
-
-const AuthTicketSchema = Schema.Struct({
-  expireAt: Schema.String,
-  ticket: Schema.String,
-});
-
-const ProfileImageSchema = Schema.Struct({
-  artistName: Schema.String,
-  profileImageUrl: Schema.String,
-});
-
-const loadedTicketFields = <T extends string>(status: T) => ({
-  status: Schema.Literal(status),
-  ticketRemainingMs: Schema.Number,
-  ticketOtpRemainingMs: Schema.Number,
-  profiles: Schema.mutable(Schema.Array(ProfileImageSchema)),
-  user: Schema.Struct({
-    id: Schema.Number,
-    nickname: Schema.String,
-    profileImageUrl: Schema.String,
-    profileImages: Schema.mutable(Schema.Array(ProfileImageSchema)),
-  }),
-});
-
-const QueryTicketSchema = Schema.Union(
-  Schema.Struct({
-    status: Schema.Literal("invalid"),
-  }),
-  Schema.Struct({
-    status: Schema.Literal("wait_for_user_action"),
-    ticketRemainingMs: Schema.Number,
-  }),
-  Schema.Struct(loadedTicketFields("wait_for_certify")),
-  Schema.Struct(loadedTicketFields("certified")),
-);
 
 export interface CertifyTicketResult {
   status: number;
@@ -57,10 +23,7 @@ export const exchangeLoginTicket = Effect.fn("Cosmo.exchangeLoginTicket")(
           },
         }),
       })
-      .pipe(
-        Effect.flatMap(decodeBody(AuthTicketSchema)),
-        Effect.scoped,
-      );
+      .pipe(Effect.flatMap(decodeBody(AuthTicketSchema)), Effect.scoped);
   },
 );
 
@@ -73,10 +36,7 @@ export const queryTicket = Effect.fn("Cosmo.queryTicket")(function* (
   const client = yield* cosmoShopClient;
   return yield* client
     .get("/bff/v3/users/login-by-qr/ticket", { urlParams: { ticket } })
-    .pipe(
-      Effect.flatMap(decodeBody(QueryTicketSchema)),
-      Effect.scoped,
-    );
+    .pipe(Effect.flatMap(decodeBody(QueryTicketSchema)), Effect.scoped);
 });
 
 /**

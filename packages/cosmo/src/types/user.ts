@@ -1,43 +1,17 @@
-import type { ValidArtist } from "./common";
+import type {
+  CosmoByNicknameSchema,
+  CosmoProfileSchema,
+  CosmoPublicUserSchema,
+  CosmoSearchResultSchema,
+  CosmoUserProfileSchema,
+} from "../schema/user";
 
-export type CosmoProfile = {
-  artistId: ValidArtist;
-  artistName: ValidArtist;
-  image: {
-    original: string;
-    thumbnail: string;
-  };
-};
+export type CosmoProfile = typeof CosmoProfileSchema.Type;
 
-export type CosmoPublicUser = {
-  id: number;
-  nickname: string;
-  profileImageUrl: string;
-  address: string;
-  userProfiles: CosmoProfile[];
-};
+export type CosmoPublicUser = typeof CosmoPublicUserSchema.Type;
 
-export type CosmoSearchResult = {
-  hasNext: boolean;
-  nextStartAfter: string | null;
-  results: CosmoPublicUser[];
-};
+export type CosmoSearchResult = typeof CosmoSearchResultSchema.Type;
 
-export type CosmoUserProfile = {
-  id: number;
-  nickname: string;
-  address: string;
-  profileImageUrl: string;
-  fandomName: string;
-  followDurationDays: number;
-  currentStreak: number;
-  statusMessage: string | null;
-  createdAt: string;
-};
+export type CosmoUserProfile = typeof CosmoUserProfileSchema.Type;
 
-export type CosmoByNickname = {
-  nickname: string;
-  address: string;
-  profileImageUrl: string;
-  guid: string;
-};
+export type CosmoByNickname = typeof CosmoByNicknameSchema.Type;

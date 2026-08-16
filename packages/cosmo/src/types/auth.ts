@@ -1,6 +1,5 @@
+import type { RefreshTokenResultSchema } from "../schema/auth";
+
 export type LoginChannel = "email";
 
-export type RefreshTokenResult = {
-  refreshToken: string;
-  accessToken: string;
-};
+export type RefreshTokenResult = typeof RefreshTokenResultSchema.Type;

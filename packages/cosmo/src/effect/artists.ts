@@ -1,64 +1,10 @@
-import { Effect, Schema } from "effect";
+import { Effect } from "effect";
+import {
+  CosmoArtistListSchema,
+  CosmoArtistWithMembersBFFSchema,
+} from "../schema/artists";
 import type { ValidArtist } from "../types/common";
-import { bearer, cosmoClient, decodeBody, ValidArtistSchema } from "./http";
-
-const ContractsSchema = Schema.Struct({
-  Como: Schema.String,
-  Objekt: Schema.String,
-  ObjektMinter: Schema.String,
-  Governor: Schema.String,
-  CommunityPool: Schema.String,
-  ComoMinter: Schema.String,
-});
-
-const CosmoArtistSchema = Schema.Struct({
-  name: ValidArtistSchema,
-  title: Schema.String,
-  fandomName: Schema.String,
-  logoImageUrl: Schema.String,
-  contracts: ContractsSchema,
-});
-
-const CosmoMemberBFFSchema = Schema.Struct({
-  id: Schema.Number,
-  name: Schema.String,
-  units: Schema.String,
-  alias: Schema.String,
-  profileImageUrl: Schema.String,
-  backgroundImageUrl: Schema.String,
-  order: Schema.Number,
-  createdAt: Schema.String,
-  updatedAt: Schema.String,
-  mainObjektImageUrl: Schema.NullOr(Schema.String),
-  artistId: Schema.String,
-  primaryColorHex: Schema.String,
-});
-
-const SNSLinkSchema = Schema.Struct({
-  name: Schema.String,
-  address: Schema.String,
-});
-
-const CosmoArtistWithMembersBFFSchema = Schema.Struct({
-  name: Schema.String,
-  id: ValidArtistSchema,
-  title: Schema.String,
-  fandomName: Schema.String,
-  logoImageUrl: Schema.String,
-  primaryImageUrl: Schema.String,
-  category: Schema.String,
-  wasReleased: Schema.Boolean,
-  comoTokenId: Schema.Number,
-  contracts: ContractsSchema,
-  artistMembers: Schema.mutable(Schema.Array(CosmoMemberBFFSchema)),
-  snsLink: Schema.Struct({
-    discord: SNSLinkSchema,
-    instagram: SNSLinkSchema,
-    twitter: SNSLinkSchema,
-    youtube: SNSLinkSchema,
-    tiktok: SNSLinkSchema,
-  }),
-});
+import { bearer, cosmoClient, decodeBody } from "./http";
 
 /**
  * Fetch artists within COSMO.
@@ -69,14 +15,7 @@ export const fetchArtists = Effect.fn("Cosmo.fetchArtists")(function* (
   const client = yield* cosmoClient;
   return yield* client
     .get("/bff/v3/artists", { headers: bearer(token) })
-    .pipe(
-      Effect.flatMap(
-        decodeBody(
-          Schema.mutable(Schema.Array(CosmoArtistSchema)),
-        ),
-      ),
-      Effect.scoped,
-    );
+    .pipe(Effect.flatMap(decodeBody(CosmoArtistListSchema)), Effect.scoped);
 });
 
 /**
@@ -90,9 +29,7 @@ export const fetchArtist = Effect.fn("Cosmo.fetchArtist")(function* (
   return yield* client
     .get(`/bff/v3/artists/${artistId}`, { headers: bearer(token) })
     .pipe(
-      Effect.flatMap(
-        decodeBody(CosmoArtistWithMembersBFFSchema),
-      ),
+      Effect.flatMap(decodeBody(CosmoArtistWithMembersBFFSchema)),
       Effect.scoped,
     );
 });
