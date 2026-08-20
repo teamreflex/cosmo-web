@@ -4,14 +4,14 @@ This is a Turborepo monorepo for the Apollo project.
 
 Detailed conventions live in `docs/`. Read the relevant file **before** working in that area:
 
-| When you're working on… | Read |
-| --- | --- |
-| Database queries, schema, migrations, derived/projection types (`apps/web`, `packages/database`) | [`docs/database.md`](docs/database.md) |
-| Routes, loaders, data fetching, server functions, import protection (`apps/web`) | [`docs/tanstack.md`](docs/tanstack.md) |
-| Components, forms, Tailwind/styling, i18n strings (`apps/web`) | [`docs/frontend.md`](docs/frontend.md) |
-| Throwing/handling errors, `ExpectedError`, Sentry filtering (`apps/web`) | [`docs/errors.md`](docs/errors.md) |
-| Better Auth config, API keys, auth schema generation (`apps/web`) | [`docs/auth.md`](docs/auth.md) |
-| Looking up library documentation (TanStack, Drizzle, Effect, …) | [`docs/libraries.md`](docs/libraries.md) |
+| When you're working on…                                                                          | Read                                     |
+| ------------------------------------------------------------------------------------------------ | ---------------------------------------- |
+| Database queries, schema, migrations, derived/projection types (`apps/web`, `packages/database`) | [`docs/database.md`](docs/database.md)   |
+| Routes, loaders, data fetching, server functions, import protection (`apps/web`)                 | [`docs/tanstack.md`](docs/tanstack.md)   |
+| Components, forms, Tailwind/styling, i18n strings (`apps/web`)                                   | [`docs/frontend.md`](docs/frontend.md)   |
+| Throwing/handling errors, `ExpectedError`, Sentry filtering (`apps/web`)                         | [`docs/errors.md`](docs/errors.md)       |
+| Better Auth config, API keys, auth schema generation (`apps/web`)                                | [`docs/auth.md`](docs/auth.md)           |
+| Looking up library documentation (TanStack, Drizzle, Effect, …)                                  | [`docs/libraries.md`](docs/libraries.md) |
 
 ## Development
 
@@ -58,6 +58,7 @@ Detailed conventions live in `docs/`. Read the relevant file **before** working 
 
 - `packages/cosmo`: COSMO related types and API functions
 - `packages/database`: `drizzle-orm` schemas for both databases
+- `packages/drizzle-bun-effect`: Effect service for Bun.SQL, derived from `drizzle-orm/effect-postgres`
 - `packages/lint`: Shared oxlint config
 - `packages/typescript`: Shared tsconfig.json file
 - `packages/util`: Shared utility functions
