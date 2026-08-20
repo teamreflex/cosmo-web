@@ -8,8 +8,9 @@
  *   - Default: false (Cloudflare handles compression)
  *   - Set to "true" to compress dynamic responses at the origin
  *
- * Note: Static assets are streamed from disk with gzip compression.
- * Cloudflare caches responses, Vite hashes filenames.
+ * Note: Static assets are served as Bun file routes (ETag, 304 and Range
+ * handling built in). Cloudflare caches and compresses responses, Vite
+ * hashes filenames.
  */
 
 import * as Sentry from "@sentry/bun";
@@ -168,60 +169,19 @@ function acceptsGzip(acceptEncoding: string): boolean {
 }
 
 /**
- * Create static asset handler that streams from disk with compression
- */
-function createStaticHandler(
-  filepath: string,
-  mimeType: string,
-): (req: Request) => Response {
-  return (req: Request) => {
-    const method = req.method.toUpperCase();
-    if (method !== "GET" && method !== "HEAD") {
-      const headers = new Headers({
-        Allow: "GET, HEAD",
-        "Content-Type": "text/plain",
-      });
-      addSecurityHeaders(headers);
-      return new Response("Method Not Allowed", { status: 405, headers });
-    }
-
-    const headers = new Headers({
-      "Content-Type": mimeType,
-      "Cache-Control": "public, max-age=31536000, immutable",
-      Vary: "Accept-Encoding",
-    });
-    addSecurityHeaders(headers);
-
-    const file = Bun.file(filepath);
-
-    if (method === "HEAD") {
-      return new Response(null, { headers });
-    }
-
-    // Compress with gzip if supported
-    if (isMimeTypeCompressible(mimeType)) {
-      const acceptEncoding = req.headers.get("accept-encoding") || "";
-
-      if (acceptsGzip(acceptEncoding)) {
-        headers.set("Content-Encoding", "gzip");
-        headers.delete("Content-Length");
-
-        const stream = file.stream().pipeThrough(new CompressionStream("gzip"));
-        return new Response(stream, { headers });
-      }
-    }
-
-    return new Response(file, { headers });
-  };
-}
-
-/**
- * Scan client directory and build static routes
+ * Scan client directory and build static routes.
+ * File routes (a Response with a BunFile body) get Content-Type, ETag,
+ * Last-Modified, 304 and Range handling from Bun; compression is left to Cloudflare.
  */
 async function buildStaticRoutes(
   clientDirectory: string,
-): Promise<Record<string, (req: Request) => Response>> {
-  const routes: Record<string, (req: Request) => Response> = {};
+): Promise<Record<string, Response>> {
+  const headers = new Headers({
+    "Cache-Control": "public, max-age=31536000, immutable",
+  });
+  addSecurityHeaders(headers);
+
+  const routes: Record<string, Response> = {};
   const glob = new Bun.Glob("**/*");
 
   let count = 0;
@@ -233,9 +193,7 @@ async function buildStaticRoutes(
     if (!(await file.exists()) || file.size === 0) continue;
 
     const route = `/${relativePath.split(path.sep).join(path.posix.sep)}`;
-    const mimeType = file.type || "application/octet-stream";
-
-    routes[route] = createStaticHandler(filepath, mimeType);
+    routes[route] = new Response(file, { headers });
     count++;
   }
 
