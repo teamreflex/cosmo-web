@@ -8,7 +8,10 @@
     // Effect-TS build requirements
     "noEmit": false,
     "outDir": "dist",
-    "allowImportingTsExtensions": false,
+    // .ts-extension imports in workspace packages (required by the indexer's
+    // Node runtime); legal alongside emit thanks to the rewrite flag
+    "allowImportingTsExtensions": true,
+    "rewriteRelativeImportExtensions": true,
     "composite": true,
     "declaration": true,
     "declarationMap": true,

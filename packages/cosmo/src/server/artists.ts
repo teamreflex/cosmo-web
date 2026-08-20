@@ -2,9 +2,9 @@ import { Effect } from "effect";
 import {
   CosmoArtistListSchema,
   CosmoArtistWithMembersBFFSchema,
-} from "../schema/artists";
-import type { ValidArtist } from "../types/common";
-import { bearer, cosmoClient, decodeBody } from "./http";
+} from "../schema/artists.ts";
+import type { ValidArtist } from "../types/common.ts";
+import { bearer, cosmoClient, decodeBody } from "./http.ts";
 
 /**
  * Fetch artists within COSMO.

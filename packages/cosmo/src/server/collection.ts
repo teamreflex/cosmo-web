@@ -1,7 +1,7 @@
 import { Effect } from "effect";
-import { ObjektSummariesResponseSchema } from "../schema/collection";
-import type { ValidArtist } from "../types/common";
-import { cosmoClient, decodeBody } from "./http";
+import { ObjektSummariesResponseSchema } from "../schema/collection.ts";
+import type { ValidArtist } from "../types/common.ts";
+import { cosmoClient, decodeBody } from "./http.ts";
 
 type FetchSummariesParams = {
   session: string;

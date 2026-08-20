@@ -5,8 +5,8 @@ import {
   HttpClientRequest,
   HttpClientResponse,
 } from "effect/unstable/http";
-import { CosmoApiError, CosmoDecodeError } from "../errors.js";
-import { COSMO_ENDPOINT } from "../types/common.js";
+import { CosmoApiError, CosmoDecodeError } from "../errors.ts";
+import { COSMO_ENDPOINT } from "../types/common.ts";
 
 export const bearer = (token: string) => ({
   authorization: `Bearer ${token}`,

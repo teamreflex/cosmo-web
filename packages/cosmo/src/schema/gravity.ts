@@ -1,5 +1,5 @@
 import { Schema } from "effect";
-import { ValidArtistSchema } from "./common";
+import { ValidArtistSchema } from "./common.ts";
 
 // "start" appears on pre-2024 gravities
 const AlignSchema = Schema.Literals(["left", "center", "right", "start"]);

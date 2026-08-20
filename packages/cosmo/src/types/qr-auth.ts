@@ -2,7 +2,7 @@ import type {
   AuthTicketSchema,
   QueryTicketSchema,
   TicketUserSchema,
-} from "../schema/qr-auth";
+} from "../schema/qr-auth.ts";
 
 export type AuthTicket = typeof AuthTicketSchema.Type;
 

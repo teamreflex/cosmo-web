@@ -132,12 +132,13 @@ Entity fields and relations are defined in `schema.graphql` and mirrored in `pac
 ## Important Gotchas
 
 1. **Runtime:** Use Node (not Bun) for build and production due to Subsquid SDK requirements
-2. **UUID Type:** Uses `varchar(36)` instead of PostgreSQL `uuid` type due to Subsquid casting limitations
-3. **Address Normalization:** Always use `addr()` - never store raw addresses
-4. **GraphQL Server:** Not actively used - schema only defines entity structure
-5. **Keep Drizzle in Sync:** All model changes must be reflected in `/packages/database/src/indexer/schema.ts`
-6. **Bun Compatibility:** Several dependencies manually updated for Bun (`glob`, `lru-cache`, `path-scurry`)
-7. **Autovacuum reloptions are live-only:** `objekt` and `transfer` have per-table autovacuum settings applied directly in production (not in any migration) because the default thresholds let the visibility map go stale under the constant owner-rewrite churn. Re-apply them by hand after any from-scratch database rebuild.
+2. **Workspace package imports:** Node runs workspace packages (`@apollo/cosmo`, `@apollo/util`) as raw `.ts` source via type stripping, so relative imports inside those packages must use explicit `.ts` extensions — extensionless or `.js` specifiers fail at runtime with `ERR_MODULE_NOT_FOUND` (Bun-run apps tolerate both, so only the indexer surfaces it)
+3. **UUID Type:** Uses `varchar(36)` instead of PostgreSQL `uuid` type due to Subsquid casting limitations
+4. **Address Normalization:** Always use `addr()` - never store raw addresses
+5. **GraphQL Server:** Not actively used - schema only defines entity structure
+6. **Keep Drizzle in Sync:** All model changes must be reflected in `/packages/database/src/indexer/schema.ts`
+7. **Bun Compatibility:** Several dependencies manually updated for Bun (`glob`, `lru-cache`, `path-scurry`)
+8. **Autovacuum reloptions are live-only:** `objekt` and `transfer` have per-table autovacuum settings applied directly in production (not in any migration) because the default thresholds let the visibility map go stale under the constant owner-rewrite churn. Re-apply them by hand after any from-scratch database rebuild.
 
 ## Processing Flow
 

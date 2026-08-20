@@ -1,6 +1,6 @@
 import { Effect } from "effect";
-import { MetadataV1Schema, MetadataV3Schema } from "../schema/metadata.js";
-import { decodeBody, metadataClient } from "./http.js";
+import { MetadataV1Schema, MetadataV3Schema } from "../schema/metadata.ts";
+import { decodeBody, metadataClient } from "./http.ts";
 
 /**
  * Fetch objekt metadata from the v1 API.

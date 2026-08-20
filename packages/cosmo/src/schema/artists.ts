@@ -1,5 +1,5 @@
 import { Schema } from "effect";
-import { ValidArtistSchema } from "./common";
+import { ValidArtistSchema } from "./common.ts";
 
 const ContractsSchema = Schema.Struct({
   Como: Schema.String,
