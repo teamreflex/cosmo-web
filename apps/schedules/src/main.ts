@@ -6,7 +6,7 @@ import { DatabaseWeb } from "./db";
 import { DatabaseIndexer } from "./db-indexer";
 import { Env } from "./env";
 import { ProxiedToken } from "./proxied-token";
-import { Redis } from "./redis";
+import { redisLayer } from "./redis";
 import { createResilientTask, SCHEDULED_TASKS } from "./task";
 
 const main = Effect.gen(function* () {
@@ -32,7 +32,7 @@ BunRuntime.runMain(
         DatabaseIndexer.layer,
         ProxiedToken.layer,
         CosmoKey.layer,
-        Redis.layer,
+        redisLayer,
       ),
     ),
   ),

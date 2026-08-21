@@ -1,16 +1,53 @@
 import { indexer } from "@/lib/server/db/indexer";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
+import { createLoginTicket } from "@/lib/server/qr-auth.server";
 import { uploadCollectionMedia } from "@/lib/server/r2.server";
+import { consumeRateLimit } from "@/lib/server/rate-limit.server";
 import { getRequestSignal } from "@/lib/server/request.server";
-import { verifyCosmoSchema } from "@/lib/universal/schema/cosmo";
+import {
+  queryTicketSchema,
+  verifyCosmoSchema,
+} from "@/lib/universal/schema/cosmo";
 import { runCosmo } from "@apollo/cosmo/runtime";
 import { fetchObjektSummaries } from "@apollo/cosmo/server/collection";
-import { certifyTicket } from "@apollo/cosmo/server/qr-auth";
+import { certifyTicket, queryTicket } from "@apollo/cosmo/server/qr-auth";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
 import { collections } from "@apollo/database/indexer/schema";
 import { slugifyObjekt } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, inArray, isNull, or } from "drizzle-orm";
+
+/**
+ * Generate a COSMO QR login ticket via a headless-browser reCAPTCHA solve.
+ * Tightly rate limited per user: every call drives a browserless session.
+ */
+export const $fetchQrTicket = createServerFn({ method: "GET" })
+  .middleware([authenticatedMiddleware])
+  .handler(async ({ context }) => {
+    await consumeRateLimit({
+      key: `qr-recaptcha:${context.session.user.id}`,
+      limit: 5,
+      window: "1 minute",
+    });
+
+    return await createLoginTicket(getRequestSignal());
+  });
+
+/**
+ * Query the status of a QR login ticket. Polled while the QR code is shown.
+ */
+export const $queryQrTicket = createServerFn({ method: "GET" })
+  .middleware([authenticatedMiddleware])
+  .validator(queryTicketSchema)
+  .handler(async ({ data, context }) => {
+    await consumeRateLimit({
+      key: `qr-ticket:${context.session.user.id}`,
+      limit: 60,
+      window: "1 minute",
+    });
+
+    return await runCosmo(queryTicket(data.ticket), getRequestSignal());
+  });
 
 /**
  * Verify COSMO account, fetch collections, and submit media data.

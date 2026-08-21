@@ -6,16 +6,14 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { m } from "@/i18n/messages";
+import { $searchUsers } from "@/lib/functions/user-search";
+import { isRateLimitErrorCode } from "@/lib/universal/errors/rate-limit";
 import { cn } from "@/lib/utils";
 import type { RecentUser } from "@/store";
-import type {
-  CosmoPublicUser,
-  CosmoSearchResult,
-} from "@apollo/cosmo/types/user";
+import type { CosmoPublicUser } from "@apollo/cosmo/types/user";
 import { isAddress } from "@apollo/util";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
-import { ofetch } from "ofetch";
 import { useState } from "react";
 import type { PropsWithChildren } from "react";
 import { useDebounceValue } from "usehooks-ts";
@@ -44,15 +42,11 @@ export function UserSearch({
   const queryIsAddress = isAddress(debouncedQuery);
   const enableQuery = debouncedQuery.length > 0 && queryIsAddress === false;
 
-  const { status, data, dataUpdatedAt } = useQuery({
+  const { status, data, error, dataUpdatedAt } = useQuery({
     queryKey: ["user-search", debouncedQuery],
     queryFn: async () => {
-      return await ofetch<CosmoSearchResult>(`/api/bff/v3/users/search`, {
-        query: {
-          query: debouncedQuery,
-        },
-        retry: 1,
-      }).then((res) => res.results);
+      const res = await $searchUsers({ data: { query: debouncedQuery } });
+      return res.results;
     },
     enabled: enableQuery,
     retry: false,
@@ -112,7 +106,11 @@ export function UserSearch({
             className="bg-destructive/10 text-destructive"
             enabled={status === "error"}
           >
-            <p>{m.user_search_error()}</p>
+            <p>
+              {error !== null && isRateLimitErrorCode(error.message)
+                ? m.error_rate_limited()
+                : m.user_search_error()}
+            </p>
           </Notice>
 
           <CommandInput

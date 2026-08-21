@@ -386,6 +386,7 @@
   "error_loading_objekts": "Erreur lors du chargement des objekts",
   "error_try_again": "Réessayer",
   "error_unknown": "Une erreur inconnue est survenue",
+  "error_rate_limited": "Trop de requêtes, veuillez réessayer dans un instant.",
   "error_not_found_title": "Utilisateur introuvable",
   "error_not_found_description": "Utilisateur introuvable dans {appName} ou COSMO.",
   "error_objekt_not_found": "Objekt introuvable",

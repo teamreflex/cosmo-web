@@ -1,6 +1,5 @@
 import { DatabaseWeb } from "@/db";
 import { DatabaseIndexer } from "@/db-indexer";
-import { Redis } from "@/redis";
 import { listEventOutbox } from "@apollo/database/indexer/schema";
 import {
   listDrainCursor,
@@ -10,6 +9,7 @@ import {
 import { pinCacheKey } from "@apollo/util-server";
 import { and, gt, inArray, lt, lte, sql } from "drizzle-orm";
 import { Effect } from "effect";
+import { Redis } from "effect/unstable/persistence";
 import type { ScheduledTask } from "../task";
 
 const BATCH_SIZE = 1000;
@@ -27,7 +27,7 @@ const CURSOR_NAME = "outbox-drain";
 const processBatch = Effect.gen(function* () {
   const indexerDb = yield* DatabaseIndexer;
   const webDb = yield* DatabaseWeb;
-  const redis = yield* Redis;
+  const redis = yield* Redis.Redis;
 
   const cursor = yield* webDb.query.listDrainCursor.findFirst({
     where: { name: CURSOR_NAME },
@@ -93,7 +93,7 @@ const processBatch = Effect.gen(function* () {
   );
 
   if (cacheKeys.length > 0) {
-    yield* redis.del(...cacheKeys);
+    yield* redis.send("DEL", ...cacheKeys);
   }
 
   yield* purgeOutbox(lastSeq);

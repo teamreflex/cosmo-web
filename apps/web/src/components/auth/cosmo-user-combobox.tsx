@@ -6,15 +6,13 @@ import {
   PopoverContent,
 } from "@/components/ui/popover";
 import { m } from "@/i18n/messages";
+import { $searchUsers } from "@/lib/functions/user-search";
+import { isRateLimitErrorCode } from "@/lib/universal/errors/rate-limit";
 import { cn } from "@/lib/utils";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
-import type {
-  CosmoPublicUser,
-  CosmoSearchResult,
-} from "@apollo/cosmo/types/user";
+import type { CosmoPublicUser } from "@apollo/cosmo/types/user";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
-import { ofetch } from "ofetch";
 import { useState } from "react";
 import { useDebounceValue } from "usehooks-ts";
 
@@ -33,13 +31,11 @@ export default function CosmoUserCombobox({
   const [debouncedQuery] = useDebounceValue(query, 500);
   const [open, setOpen] = useState(false);
 
-  const { status, data } = useQuery({
+  const { status, data, error } = useQuery({
     queryKey: ["cosmo-user-search", debouncedQuery],
     queryFn: async () => {
-      return await ofetch<CosmoSearchResult>("/api/bff/v3/users/search", {
-        query: { query: debouncedQuery },
-        retry: 1,
-      }).then((res) => res.results);
+      const res = await $searchUsers({ data: { query: debouncedQuery } });
+      return res.results;
     },
     enabled: debouncedQuery.length > 0,
     retry: false,
@@ -141,7 +137,9 @@ export default function CosmoUserCombobox({
 
         {status === "error" && (
           <div className="py-4 text-center text-sm text-destructive">
-            {m.user_search_error()}
+            {isRateLimitErrorCode(error.message)
+              ? m.error_rate_limited()
+              : m.user_search_error()}
           </div>
         )}
       </PopoverContent>

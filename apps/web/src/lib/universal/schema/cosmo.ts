@@ -6,6 +6,14 @@ export const verifyCosmoSchema = z.object({
   ticket: z.string(),
 });
 
+export const queryTicketSchema = z.object({
+  ticket: z.string(),
+});
+
+export const userSearchSchema = z.object({
+  query: z.string(),
+});
+
 export const generateVerificationCodeSchema = z.object({
   userId: z.number(),
   address: z.string(),

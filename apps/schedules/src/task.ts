@@ -1,5 +1,6 @@
 import { Cron, Duration, Effect, Schedule } from "effect";
 import type { HttpClient } from "effect/unstable/http";
+import type { Redis } from "effect/unstable/persistence";
 import type { DatabaseWeb } from "./db";
 import type { DatabaseIndexer } from "./db-indexer";
 import type { Env } from "./env";
@@ -10,7 +11,6 @@ import { syncFxRatesTask } from "./functions/sync-fx-rates";
 import { syncGravitiesTask } from "./functions/sync-gravities";
 import { syncMembersTask } from "./functions/sync-members";
 import type { ProxiedToken } from "./proxied-token";
-import type { Redis } from "./redis";
 
 export interface ScheduledTask<TSuccess = void, TFailure = unknown> {
   name: string;
@@ -19,7 +19,7 @@ export interface ScheduledTask<TSuccess = void, TFailure = unknown> {
   effect: Effect.Effect<
     TSuccess,
     TFailure,
-    | Redis
+    | Redis.Redis
     | DatabaseWeb
     | DatabaseIndexer
     | ProxiedToken

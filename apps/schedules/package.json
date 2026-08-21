@@ -16,6 +16,7 @@
     "@apollo/cosmo": "workspace:*",
     "@apollo/database": "workspace:*",
     "@apollo/drizzle-bun-effect": "workspace:*",
+    "@apollo/redis": "workspace:*",
     "@apollo/util": "workspace:*",
     "@apollo/util-server": "workspace:*",
     "@effect/platform-bun": "catalog:",
