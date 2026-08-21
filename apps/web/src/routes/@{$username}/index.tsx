@@ -10,11 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import TitleHeader from "@/components/ui/title-header";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
-import {
-  currentAccountQuery,
-  selectedArtistsQuery,
-  targetAccountQuery,
-} from "@/lib/queries/core";
+import { currentAccountQuery, selectedArtistsQuery } from "@/lib/queries/core";
 import {
   userCollectionBlockchainGroupsQuery,
   userCollectionBlockchainQuery,
@@ -31,16 +27,27 @@ export const Route = createFileRoute("/@{$username}/")({
   component: RouteComponent,
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
-  loader: async ({ context, params, deps }) => {
+  // shared with use-pin-reorder, which writes into the same cache entry
+  context: ({ params }) => ({
+    pinsOptions: pinsQuery(params.username),
+  }),
+  loader: async ({ context, deps }) => {
     const [account, target, pins, selected] = await Promise.all([
       context.queryClient.ensureQueryData(currentAccountQuery),
-      context.queryClient.ensureQueryData(targetAccountQuery(params.username)),
-      context.queryClient.ensureQueryData(pinsQuery(params.username)),
+      context.queryClient.ensureQueryData(context.targetAccountOptions),
+      context.queryClient.ensureQueryData(context.pinsOptions),
       context.queryClient.ensureQueryData(selectedArtistsQuery),
     ]);
 
+    // serial sorts only exist on the blockchain data source, so the component
+    // falls back to it regardless of collection mode (see use-filters.ts)
+    const useBlockchain =
+      deps.searchParams.sort === "serialAsc" ||
+      deps.searchParams.sort === "serialDesc";
+
     // if the user is in collection groups mode, prefetch the collection groups
     if (
+      !useBlockchain &&
       account?.user.collectionMode === "blockchain-groups" &&
       !isEqual(target.cosmo.address, Addresses.SPIN)
     ) {

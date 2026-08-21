@@ -25,7 +25,6 @@ type Props = {
   objektLists: ObjektList[];
   allowCreate: boolean;
   createListUrl: (list: ObjektList) => string;
-  username?: string;
 };
 
 export default function ListDropdown(props: Props) {
@@ -39,7 +38,6 @@ export default function ListDropdown(props: Props) {
         objektLists={props.objektLists}
         open={createOpen}
         onOpenChange={setCreateOpen}
-        username={props.username}
       />
       <DiscordFormatDialog
         open={compareOpen}

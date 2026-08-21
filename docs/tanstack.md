@@ -59,10 +59,20 @@ Load the rows via `db.query.user.findMany(...)` (or `cosmoAccounts` with `with: 
 
 Optional, non-blocking widgets (navbar status, etc.) use `useSuspenseQuery` wrapped in their own `<ErrorBoundary>` + `<Suspense fallback={null}>`, with the query prefetched in the `__root` loader — not a non-suspense `useQuery`. See `system-status` for the canonical shape. An admin/editor page that reads the same value should `ensureQueryData` it in its own route loader and use `useSuspenseQuery` too.
 
+### Loader ↔ Component Sync
+
+A prefetch only helps if the component subscribes with the exact same query key — any argument drift (missing search params, resolved vs. raw identifiers, casing) wastes the prefetch and re-suspends on the client.
+
+- Search params a component's query depends on must be declared in `loaderDeps` and passed to the prefetch. Keep `loaderDeps` narrowed to the params the loader actually uses — the loader re-runs whenever deps change.
+- When a loader and a component share query options, build them once in the route's `context()` option and consume via loader `context` / `useRouteContext()` — never rebuild the arguments in both places. Child routes inherit parent context. See `routes/@{$username}/route.tsx` (`targetAccountOptions`) and its `index.tsx` (`pinsOptions`).
+- `context()` runs only when `params`/`loaderDeps` change and its return value is not serialized (unlike `beforeLoad`), so holding queryOptions with functions there is fine.
+- Key queries by the route param, not a value resolved from fetched data — a profile opened by address resolves to a different username, splitting the cache. When a key must use resolved data (e.g. `objektListQuery(objektList.id, …)`), the component must read that same resolved value from loader data.
+
 ## Invalidation
 
 - `router.invalidate()` (from `useRouter`) after mutations that change SSR loader data — auth/profile changes such as password, email, username, and cosmo link.
 - `queryClient.invalidateQueries(...)` for client-only cache refreshes that don't touch the root loader — most admin data mutations.
+- The same target account can be cached under multiple identifiers (username or address). Mutations touching account data go through `targetAccountQueryFilter` — `invalidateQueries` with it, or `setQueriesData<FullAccount>` with an ownership check (`old.user?.id`) in the updater — never by rebuilding a single `targetAccountQuery(...)` key.
 
 ## Patches & Version Notes
 

@@ -46,6 +46,13 @@ export const targetAccountQuery = (identifier: string) => {
 };
 
 /**
+ * Matches every cached target account. The same account can be cached under
+ * multiple identifiers (username or address), so mutations that touch account
+ * data must go through this filter instead of rebuilding a single key.
+ */
+export const targetAccountQueryFilter = { queryKey: ["target-account"] };
+
+/**
  * Fetch the artists.
  */
 export const artistsQuery = queryOptions({

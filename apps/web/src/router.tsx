@@ -44,6 +44,8 @@ export function getRouter() {
     routeTree,
     context: { queryClient },
     defaultPreload: "intent",
+    // query is the caching authority
+    defaultPreloadStaleTime: 0,
     defaultPendingMs: 250,
     scrollRestoration: true,
     stringifySearch,

@@ -23,6 +23,7 @@ import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/list/$id")({
   staleTime: 1000 * 60 * 15, // 15 minutes
+  preloadStaleTime: 30_000, // loader calls $getObjektListWithUser outside query
   component: RouteComponent,
   pendingComponent: PendingComponent,
   notFoundComponent: NotFoundComponent,

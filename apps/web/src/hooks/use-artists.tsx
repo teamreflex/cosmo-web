@@ -1,6 +1,24 @@
 import { artistsQuery, selectedArtistsQuery } from "@/lib/queries/core";
+import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
 import { useSuspenseQueries } from "@tanstack/react-query";
+
+/**
+ * Get the artist ID for a member name.
+ */
+export function findArtistForMember(
+  artists: Record<string, CosmoArtistWithMembersBFF>,
+  memberName: string,
+): ValidArtist | undefined {
+  const lower = memberName.toLowerCase();
+  for (const artist of Object.values(artists)) {
+    if (artist.artistMembers.some((m) => m.name.toLowerCase() === lower)) {
+      // SAFETY: COSMO artist ids are ValidArtist values
+      return artist.id as ValidArtist;
+    }
+  }
+  return undefined;
+}
 
 /**
  * Provides a way to pull an artist and its contracts/members deep in the component tree.
@@ -34,14 +52,7 @@ export function useArtists() {
    * Get the artist ID for a member name
    */
   function getArtistForMember(memberName: string): ValidArtist | undefined {
-    const lower = memberName.toLowerCase();
-    for (const artist of Object.values(artists)) {
-      if (artist.artistMembers.some((m) => m.name.toLowerCase() === lower)) {
-        // SAFETY: COSMO artist ids are ValidArtist values
-        return artist.id as ValidArtist;
-      }
-    }
-    return undefined;
+    return findArtistForMember(artists, memberName);
   }
 
   /**

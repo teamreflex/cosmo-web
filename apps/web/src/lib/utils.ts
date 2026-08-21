@@ -45,11 +45,12 @@ export function ordinal(input: number) {
  * Sanitize and validate a UUID string.
  * Discord users will accidentally apply formatting to URLs, resulting in an ID of something like `8043b748-011c-4705-a0a1-eb9d261970ff**`
  * This will error when sent to Postgres, so we need to sanitize it.
+ * Lowercases so the result matches ids as Postgres returns them — query cache keys built from both must agree.
  */
 export function sanitizeUuid(uuid: string): string | null {
   const schema = z
     .string()
-    .transform((val) => val.slice(0, 36))
+    .transform((val) => val.slice(0, 36).toLowerCase())
     .pipe(z.uuid());
 
   const result = schema.safeParse(uuid);
