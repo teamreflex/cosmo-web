@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { fetchGravities, fetchGravity, fetchPoll } from "../src/server/gravity";
 import {
   combinationPollChoices,
+  countingGravity,
   pastGravity,
   pollChoices,
   upcomingGravity,
@@ -23,6 +24,15 @@ describe("fetchGravities", () => {
     const request = rec.at(0);
     expect(request.url.searchParams.get("artistId")).toBe("tripleS");
     expect(request.headers.get("authorization")).toBe("Bearer token-123");
+  });
+
+  it("decodes a counting-phase poll (finalized, no result) in the ongoing list", async () => {
+    const list = { upcoming: [], ongoing: [countingGravity], past: [] };
+    handle.get("https://api.cosmo.fans/bff/v3/gravities", () =>
+      Response.json(list),
+    );
+
+    expect(await runTest(fetchGravities("token-123", "tripleS"))).toEqual(list);
   });
 
   it("decodes a finalized gravity in the past list", async () => {
