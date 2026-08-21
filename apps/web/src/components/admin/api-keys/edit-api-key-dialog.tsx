@@ -83,7 +83,6 @@ export default function EditApiKeyDialog({ apiKey }: Props) {
         <DialogHeader>
           <DialogTitle>{m.admin_api_key_edit()}</DialogTitle>
         </DialogHeader>
-        {/* oxlint-disable-next-line react/react-compiler */}
         <form
           onSubmit={form.handleSubmit(handleSubmit)}
           className="flex flex-col gap-4"

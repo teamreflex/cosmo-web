@@ -90,7 +90,7 @@ export default function MemberChart({ artists, data, selectedMembers }: Props) {
           />
         ))}
 
-        <ChartLegend className="flex-wrap" content={<ChartLegendContent />} />
+        <ChartLegend content={<ChartLegendContent className="flex-wrap" />} />
       </AreaChart>
     </ChartContainer>
   );

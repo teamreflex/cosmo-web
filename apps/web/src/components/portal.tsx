@@ -10,7 +10,7 @@ export default function Portal({ children, to }: Props) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // oxlint-disable-next-line react/react-compiler
+    // oxlint-disable-next-line react/set-state-in-effect
     setMounted(true);
   }, []);
 

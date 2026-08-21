@@ -66,7 +66,6 @@ export default function CollectionLookup({ onLookup, isLoading }: Props) {
   }
 
   return (
-    // oxlint-disable-next-line react/react-compiler
     <form
       onSubmit={form.handleSubmit(handleSubmit)}
       className="flex flex-col gap-4 rounded-lg border border-border p-4"

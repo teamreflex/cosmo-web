@@ -137,7 +137,7 @@ export default function EditEventDialog({ event }: Props) {
         <FormProvider {...form}>
           {/* react-hook-form reads refs during render by design; fixed upstream in
               facebook/react#35062, pending in oxlint's react-compiler port */}
-          {/* oxlint-disable-next-line react/react-compiler */}
+          {/* oxlint-disable-next-line react/refs */}
           <form onSubmit={form.handleSubmit(handleSubmit)}>
             <Suspense fallback={<div>Loading...</div>}>
               <EventForm
