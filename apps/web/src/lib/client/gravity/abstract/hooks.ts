@@ -4,8 +4,14 @@ import {
   gravityPollDetailsQuery,
   gravityVoteDataQuery,
 } from "@/lib/queries/gravity";
+import type { CosmoPollChoices } from "@apollo/cosmo/types/gravity";
 import { useInfiniteQuery, useSuspenseQueries } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
+import { findLatestBatch, sumComoPerCandidate } from "../reveals";
+import type { RevealBatch } from "../reveals";
+import { computeChartSeries } from "../series";
+import { buildSlotModel, rankSlots } from "../slots";
+import type { PollSlotModel, SlotRanking } from "../slots";
 import type { RevealedVote } from "../types";
 import type {
   AggregatedTopUser,
@@ -161,20 +167,29 @@ export function useReveals(params: UseRevealsOptions): UseRevealsResult {
   }, [topVotesWithReveals]);
 
   // compute COMO per candidate from reveals
-  const comoPerCandidate = useMemo((): number[] => {
-    if (reveals.length === 0) {
-      return [];
-    }
-    const comoMap = new Map<number, number>();
-    for (const reveal of reveals) {
-      comoMap.set(
-        reveal.candidateId,
-        (comoMap.get(reveal.candidateId) ?? 0) + reveal.amount,
-      );
-    }
-    const maxId = Math.max(0, ...comoMap.keys());
-    return Array.from({ length: maxId + 1 }, (_, i) => comoMap.get(i) ?? 0);
-  }, [reveals]);
+  const comoPerCandidate = useMemo(
+    (): number[] => sumComoPerCandidate(reveals),
+    [reveals],
+  );
+
+  // deltas only exist while counting: a finalized poll arrives fully revealed,
+  // with no batch history to compare against
+  const latestBatch = useMemo(
+    (): RevealBatch | null =>
+      liveStatus === "live" ? findLatestBatch(data?.pages ?? []) : null,
+    [liveStatus, data],
+  );
+
+  const chartSeries = useMemo(
+    () =>
+      computeChartSeries({
+        chartData: aggregated.chartData,
+        reveals,
+        comoPerCandidate,
+        complete: liveStatus === "finalized",
+      }),
+    [aggregated.chartData, reveals, comoPerCandidate, liveStatus],
+  );
 
   return {
     status: "success",
@@ -183,9 +198,32 @@ export function useReveals(params: UseRevealsOptions): UseRevealsResult {
     totalVotesCount: aggregated.totalVoteCount,
     remainingVotesCount,
     comoPerCandidate,
+    latestBatch,
+    chartSeries,
     revealedVotes,
     chartData: aggregated.chartData,
     topVotes: topVotesWithReveals,
     topUsers: topUsersWithReveals,
   } satisfies UseRevealsResult;
+}
+
+/**
+ * Group a poll's candidates into the slots they are raced in.
+ */
+export function usePollSlots(poll: CosmoPollChoices): PollSlotModel {
+  return useMemo(() => buildSlotModel(poll), [poll]);
+}
+
+/**
+ * Rank every slot's candidates by revealed COMO.
+ */
+export function useSlotRankings(
+  model: PollSlotModel,
+  comoPerCandidate: number[],
+  latestBatch: RevealBatch | null,
+): SlotRanking[] {
+  return useMemo(
+    () => rankSlots(model, comoPerCandidate, latestBatch),
+    [model, comoPerCandidate, latestBatch],
+  );
 }

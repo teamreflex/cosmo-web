@@ -1,3 +1,5 @@
+import type { RevealBatch } from "../reveals";
+import type { ChartSeries } from "../series";
 import type { RevealedVote } from "../types";
 
 export type UseRevealsOptions = {
@@ -15,6 +17,9 @@ export type UseRevealsResult = {
   isRefreshing: boolean;
   totalVotesCount: number;
   comoPerCandidate: number[];
+  /** The last reveal batch this session saw; null unless counting is live. */
+  latestBatch: RevealBatch | null;
+  chartSeries: ChartSeries;
   remainingVotesCount: number;
   revealedVotes: RevealedVote[];
   chartData: ChartSegment[];
