@@ -78,7 +78,8 @@ function RouteComponent() {
     <>
       <GravityPollTabs polls={polls} gravity={gravity} pollId={pollId} />
 
-      <main className="container flex flex-col py-2">
+      {/* gap-2 matches the chart component's own wrapper, so the fallbacks space the same way */}
+      <main className="container flex flex-col gap-2 py-2">
         {/* the header carries live state, so it renders with the content it belongs to */}
         <ErrorBoundary
           fallback={
@@ -120,7 +121,7 @@ function RouteComponent() {
 
 function PendingComponent() {
   return (
-    <main className="container flex flex-col py-2">
+    <main className="container flex flex-col gap-2 py-2">
       <GravityHeaderSkeleton />
       <GravitySkeleton />
     </main>
