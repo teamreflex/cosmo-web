@@ -224,20 +224,23 @@ const slotReveals = [
 const slotComo = [10, 6, 0, 4, 0, 3];
 
 describe("computeChartSeries over slots", () => {
-  it("draws one line per slot, each the slot's leader", () => {
+  it("draws each slot's top lines, skipping members nobody voted for", () => {
     const { series } = computeChartSeries({
       chartData,
       reveals: slotReveals,
       comoPerCandidate: slotComo,
       complete: false,
       groups: slotGroups,
-      linesPerSlot: 1,
+      linesPerSlot: 2,
     });
 
-    // SeoYeon takes 16 of EVOLution's COMO, HyeRin 13 of LOVElution's
+    // EVOLution: SeoYeon 16, HyeRin 4; LOVElution: HyeRin 13, JiWoo 10,
+    // SeoYeon 0 and undrawn
     expect(series.map((line) => line.key)).toEqual([
       "EVOLution:SeoYeon",
+      "EVOLution:HyeRin",
       "LOVElution:HyeRin",
+      "LOVElution:JiWoo",
     ]);
   });
 

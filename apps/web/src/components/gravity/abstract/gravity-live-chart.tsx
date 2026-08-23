@@ -148,8 +148,8 @@ function buildTrajectoryLines(
   series: ChartSeries,
 ): TrajectoryLine[] {
   const byKey = new Map(groups.flat().map((group) => [group.key, group]));
-  // a member can lead two slots; hashing the second line's color keeps the two
-  // apart rather than drawing one over the other
+  // a member can race in two slots; hashing the second line's color keeps the
+  // two apart rather than drawing one over the other
   const drawn = new Set<string>();
 
   return series.series.flatMap((entry) => {

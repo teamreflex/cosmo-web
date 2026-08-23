@@ -47,11 +47,11 @@ type ChartSeriesInput = {
 };
 
 /**
- * Lines a slot contributes: a combination poll draws each slot's leader, a
+ * Lines a slot contributes: a combination poll draws each slot's top two, a
  * single poll races everything in one slot and draws its top candidates.
  */
 export function slotLineCount(model: PollSlotModel): number {
-  return model.kind === "single" ? TOP_CANDIDATE_COUNT : 1;
+  return model.kind === "single" ? TOP_CANDIDATE_COUNT : 2;
 }
 
 /**
