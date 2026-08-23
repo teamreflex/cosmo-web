@@ -1,5 +1,4 @@
 import { Error } from "@/components/error-boundary";
-import DynamicLiveChart from "@/components/gravity/dynamic-live-chart";
 import GravitySkeleton from "@/components/gravity/gravity-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
@@ -8,9 +7,14 @@ import { defineHead } from "@/lib/meta";
 import { gravityPollDetailsQuery } from "@/lib/queries/gravity";
 import { IconAlertTriangle, IconHeartBroken } from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
-import { Suspense } from "react";
+import { lazy, Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import * as z from "zod";
+
+// the chart pulls in recharts, so it stays out of the route bundle
+const GravityLiveChart = lazy(
+  () => import("@/components/gravity/abstract/gravity-live-chart"),
+);
 
 const gravitySearchSchema = z.object({
   // COSMO poll id, selecting one day of a multi-poll gravity
@@ -28,7 +32,7 @@ export const Route = createFileRoute("/gravity/$artist/$id")({
   loaderDeps: ({ search }) => ({ poll: search.poll }),
   loader: async ({ context, params, deps }) => {
     // fetch everything in one round trip
-    const { artist, gravity, polls, defaultPollId, isPolygon } =
+    const { artist, gravity, polls, defaultPollId } =
       await $fetchGravityDetails({
         data: {
           artist: params.artist,
@@ -42,26 +46,19 @@ export const Route = createFileRoute("/gravity/$artist/$id")({
       defaultPollId;
 
     /**
-     * abstract: prefetch poll details (candidates etc) for the selected poll only.
+     * prefetch poll details (candidates etc) for the selected poll only.
      * vote data is deliberately not prefetched — the payload can be huge, so the client fetches it.
      */
-    if (isPolygon === false) {
-      void context.queryClient.prefetchQuery(
-        gravityPollDetailsQuery({
-          artistName: params.artist,
-          tokenId: artist.comoTokenId,
-          gravityId: gravity.id,
-          pollId,
-        }),
-      );
-    }
+    void context.queryClient.prefetchQuery(
+      gravityPollDetailsQuery({
+        artistName: params.artist,
+        tokenId: artist.comoTokenId,
+        gravityId: gravity.id,
+        pollId,
+      }),
+    );
 
-    /**
-     * polygon: no prefetching as it's a lot of data,
-     * just let the client fetch from CDN
-     */
-
-    return { artist, gravity, isPolygon, polls, pollId };
+    return { artist, gravity, polls, pollId };
   },
   head: ({ loaderData }) =>
     defineHead({
@@ -71,7 +68,7 @@ export const Route = createFileRoute("/gravity/$artist/$id")({
 });
 
 function RouteComponent() {
-  const { artist, gravity, isPolygon, pollId } = Route.useLoaderData();
+  const { artist, gravity, pollId } = Route.useLoaderData();
 
   return (
     <main className="container flex flex-col py-2">
@@ -98,13 +95,7 @@ function RouteComponent() {
         }
       >
         <Suspense fallback={<GravitySkeleton />}>
-          {/* dynamically load the appropriate component at runtime */}
-          <DynamicLiveChart
-            network={isPolygon ? "polygon" : "abstract"}
-            artist={artist}
-            gravity={gravity}
-            pollId={pollId}
-          />
+          <GravityLiveChart artist={artist} gravity={gravity} pollId={pollId} />
         </Suspense>
       </ErrorBoundary>
     </main>

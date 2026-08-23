@@ -1,9 +1,9 @@
 import type { Reveal } from "@/lib/client/gravity/abstract/types";
-import type { RevealedVote } from "@/lib/client/gravity/types";
 import { findPoll } from "@/lib/client/gravity/util";
-import { cacheHeaders, remember } from "@/lib/server/cache.server";
+import { remember } from "@/lib/server/cache.server";
 import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts.server";
 import { db } from "@/lib/server/db";
+import { toIso } from "@/lib/server/gravity.server";
 import { indexer } from "@/lib/server/db/indexer";
 import { getProxiedToken } from "@/lib/server/proxied-token.server";
 import { consumeRateLimit } from "@/lib/server/rate-limit.server";
@@ -16,7 +16,6 @@ import { gravities, gravityPolls } from "@apollo/database/web/schema";
 import { addr } from "@apollo/util";
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { setResponseHeaders } from "@tanstack/react-start/server";
 import { isBefore } from "date-fns";
 import { and, asc, desc, eq, getColumns, gte, inArray, lt } from "drizzle-orm";
 import * as z from "zod";
@@ -51,7 +50,6 @@ export const $fetchGravityDetails = createServerFn({ method: "GET" })
     }
 
     const isPast = isBefore(info.endDate, Date.now());
-    const isPolygon = isBefore(info.endDate, "2025-04-18");
     const artist = artists[data.artist.toLowerCase()];
     if (!artist) {
       throw notFound();
@@ -86,7 +84,6 @@ export const $fetchGravityDetails = createServerFn({ method: "GET" })
     return {
       artist,
       gravity,
-      isPolygon,
       polls,
       defaultPollId: maybePoll.poll.id,
     };
@@ -178,111 +175,6 @@ export const $fetchPaginatedGravities = createServerFn({ method: "GET" })
       gravities: results,
       nextStartAfter,
     };
-  });
-
-/**
- * Fetch historical data for a Polygon gravity.
- * Cached for 30 days.
- */
-export const $fetchPolygonGravity = createServerFn({ method: "GET" })
-  .validator(
-    z.object({
-      artist: z.string(),
-      id: z.number(),
-    }),
-  )
-  .handler(async ({ data }) => {
-    const cacheKey = `gravity-polygon:${data.artist}:${data.id}`;
-
-    // cache this server function response for 30 days
-    setResponseHeaders(
-      new Headers(
-        cacheHeaders({ cdn: 60 * 60 * 24 * 30, tags: ["gravity", cacheKey] }),
-      ),
-    );
-
-    const signal = getRequestSignal();
-    return await remember(
-      cacheKey,
-      60 * 60 * 24 * 30, // 30 days
-      async () => {
-        // 1. get a cosmo token
-        const { accessToken } = await getProxiedToken(signal);
-
-        // 2. fetch gravity from cosmo
-        const gravity = await runCosmo(
-          fetchGravity(accessToken, data.id),
-          signal,
-        ).catch(() => null);
-        if (!gravity) {
-          throw notFound();
-        }
-
-        // 3. fetch poll details
-        const gravityPoll = findPoll(gravity);
-        if (!gravityPoll) {
-          throw notFound();
-        }
-
-        const poll = await runCosmo(
-          fetchPoll(accessToken, gravityPoll.poll.id),
-          signal,
-        );
-
-        // prior to gravity 11, they used the cosmo poll ID on-chain instead of a separate ID
-        const chainPollId = gravity.id <= 11 ? poll.id : poll.pollIdOnChain;
-
-        // 4. fetch votes
-        const votes = await db.query.polygonVotes.findMany({
-          where: {
-            contract: ADDRESSES.get(data.artist),
-            pollId: chainPollId,
-          },
-          with: {
-            cosmoAccount: {
-              columns: {
-                username: true,
-              },
-            },
-          },
-        });
-
-        // 5. map votes
-        const revealedVotes = votes
-          .filter((vote) => vote.candidateId !== null)
-          .map(
-            (vote) =>
-              ({
-                pollId: Number(vote.pollId),
-                voter: vote.address,
-                comoAmount: vote.amount,
-                candidateId: vote.candidateId!,
-                blockNumber: vote.blockNumber,
-                username: vote.cosmoAccount?.username,
-                hash: vote.hash,
-              }) satisfies RevealedVote,
-          )
-          .sort((a, b) => b.comoAmount - a.comoAmount);
-
-        // 6. aggregate como by candidate
-        const comoByCandidate = revealedVotes.reduce(
-          (acc, vote) => {
-            const candidateId = vote.candidateId.toString();
-            acc[candidateId] = (acc[candidateId] ?? 0) + vote.comoAmount;
-            return acc;
-          },
-          // SAFETY: empty seed for the reduce accumulator
-          {} as Record<string, number>,
-        );
-
-        // 7. calculate total como used
-        const totalComoUsed = revealedVotes.reduce((acc, vote) => {
-          return acc + vote.comoAmount;
-        }, 0);
-
-        return { poll, revealedVotes, comoByCandidate, totalComoUsed };
-      },
-    );
   });
 
 /**
@@ -412,7 +304,7 @@ export const $fetchRevealedVotes = createServerFn({ method: "GET" })
                 id: vote.id,
                 candidateId: vote.candidateId,
                 amount: vote.amount,
-                createdAt: vote.createdAt,
+                createdAt: toIso(vote.createdAt),
               } satisfies Reveal,
             ],
       ),
@@ -461,15 +353,10 @@ export const $fetchRecentVotes = createServerFn({ method: "GET" })
         return votes.map((vote) => ({
           id: vote.id,
           address: vote.from,
-          createdAt: vote.createdAt,
+          createdAt: toIso(vote.createdAt),
           amount: vote.amount,
           username: addressMap.get(addr(vote.from))?.username,
         }));
       },
     );
   });
-
-const ADDRESSES = new Map([
-  ["triples", "0xc3e5ad11ae2f00c740e74b81f134426a3331d950"],
-  ["artms", "0x8466e6e218f0fe438ac8f403f684451d20e59ee3"],
-]);

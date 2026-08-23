@@ -6,7 +6,6 @@ import {
   $fetchActiveGravities,
   $fetchCachedPoll,
   $fetchPaginatedGravities,
-  $fetchPolygonGravity,
   $fetchRecentVotes,
 } from "../functions/gravity";
 
@@ -57,19 +56,6 @@ export const gravityPollDetailsQuery = (params: GravityPollDetailsParams) =>
       }),
     refetchOnWindowFocus: false,
     staleTime: Infinity,
-  });
-
-export const polygonGravityQuery = (artist: string, id: number) =>
-  queryOptions({
-    queryKey: ["gravity", "polygon", artist, id],
-    queryFn: ({ signal }) =>
-      $fetchPolygonGravity({
-        signal,
-        data: {
-          artist,
-          id,
-        },
-      }),
   });
 
 type RecentVotesParams = {
