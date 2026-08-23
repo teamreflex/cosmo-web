@@ -763,6 +763,34 @@
   "gravity_chart_como_interval": "COMO 유입, 30분 단위",
   "gravity_chart_segment_como": "+{amount} COMO",
   "gravity_chart_total_como": "{amount} COMO",
+  "gravity_vote_rankings": "투표 순위",
+  "gravity_candidate_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "후보 {count}명"
+      }
+    }
+  ],
+  "gravity_slot_position": "슬롯 {index}/{total}",
+  "gravity_more_candidates": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "+ 후보 {count}명 더 보기"
+      }
+    }
+  ],
+  "gravity_show_less": "간략히 보기",
+  "gravity_candidate_delta": "최근 공개에서 +{amount} COMO",
+  "gravity_user_rankings": "사용자 순위",
+  "gravity_recent_votes": "최근 투표",
+  "gravity_picks_hidden": "공개 전까지 선택 비공개",
+  "gravity_no_votes_yet": "아직 투표 없음",
+  "gravity_votes_sealed": "투표 중에는 표가 공개되지 않습니다",
+  "gravity_totals_reveal": "집계가 시작되면 후보별 합계가 공개됩니다",
 
   "_comment_blockchain": "Blockchain strings",
   "blockchain_types": "타입",

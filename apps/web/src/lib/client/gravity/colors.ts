@@ -2,6 +2,7 @@ import type {
   CosmoArtistWithMembersBFF,
   CosmoMemberBFF,
 } from "@apollo/cosmo/types/artists";
+import type { PollSlot, PollSlotModel } from "./slots";
 
 /**
  * Candidate colors come from the gravity's artist, of which only the member
@@ -76,6 +77,95 @@ export function resolveCandidateColor(
     indexColor(members, index) ??
     hashedColor(name)
   );
+}
+
+/** Podium colors, in rank order. Every other rank is left muted. */
+const PODIUM_COLORS = ["#f5b83d", "#c0c6d4", "#d08b5b"];
+
+/**
+ * Color for a 1-based position, undefined off the podium.
+ */
+export function rankColor(rank: number): string | undefined {
+  return PODIUM_COLORS[rank - 1];
+}
+
+/**
+ * How one on-chain choice reads: what it picks, and the color it is drawn in.
+ */
+export type ChoiceStyle = {
+  label: string;
+  color: string;
+};
+
+/**
+ * Label and color for every on-chain choice, keyed by candidate id. A
+ * combination choice spans every slot, so it is named after the members it
+ * picks and colored by the member it picks in the first slot.
+ */
+export function resolveChoiceStyles(
+  artist: CandidateColorArtist,
+  model: PollSlotModel,
+): Map<number, ChoiceStyle> {
+  const styles = new Map<number, ChoiceStyle>();
+
+  if (model.kind === "single") {
+    const [slot] = model.slots;
+    const colors = resolveCandidateColors(
+      artist,
+      slot.candidates.map((candidate) => candidate.name),
+    );
+
+    for (const candidate of slot.candidates) {
+      for (const candidateId of candidate.candidateIds) {
+        styles.set(candidateId, {
+          label: candidate.name,
+          color: colors.color(candidateId),
+        });
+      }
+    }
+
+    return styles;
+  }
+
+  for (const slot of model.slots) {
+    for (const [index, candidate] of slot.candidates.entries()) {
+      for (const candidateId of candidate.candidateIds) {
+        const picked = styles.get(candidateId);
+        styles.set(candidateId, {
+          label:
+            picked === undefined
+              ? candidate.name
+              : `${picked.label} + ${candidate.name}`,
+          color:
+            picked?.color ??
+            resolveCandidateColor(artist, candidate.name, index),
+        });
+      }
+    }
+  }
+
+  return styles;
+}
+
+/**
+ * Color for each of a slot's candidates, by name. A single poll colors its
+ * candidates as one set so a member-only poll is detected across all of them;
+ * a combination slot resolves per name, keeping a member's color the same in
+ * every slot it races in.
+ */
+export function resolveSlotColors(
+  artist: CandidateColorArtist,
+  model: PollSlotModel,
+  slot: PollSlot,
+): (name: string) => string {
+  const names = slot.candidates.map((candidate) => candidate.name);
+  const colors =
+    model.kind === "single"
+      ? resolveCandidateColors(artist, names).colors
+      : names.map((name, index) => resolveCandidateColor(artist, name, index));
+  const byName = new Map(names.map((name, index) => [name, colors[index]]));
+
+  return (name) => byName.get(name) ?? resolveCandidateColor(artist, name, 0);
 }
 
 /**

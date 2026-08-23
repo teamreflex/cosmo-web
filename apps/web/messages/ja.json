@@ -763,6 +763,34 @@
   "gravity_chart_como_interval": "COMO流入、30分ごと",
   "gravity_chart_segment_como": "+{amount} COMO",
   "gravity_chart_total_como": "{amount} COMO",
+  "gravity_vote_rankings": "投票ランキング",
+  "gravity_candidate_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "候補{count}人"
+      }
+    }
+  ],
+  "gravity_slot_position": "スロット{index}/{total}",
+  "gravity_more_candidates": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "+ 他{count}人の候補"
+      }
+    }
+  ],
+  "gravity_show_less": "折りたたむ",
+  "gravity_candidate_delta": "直近の公開で+{amount} COMO",
+  "gravity_user_rankings": "ユーザーランキング",
+  "gravity_recent_votes": "最近の投票",
+  "gravity_picks_hidden": "公開まで選択は非公開",
+  "gravity_no_votes_yet": "まだ投票はありません",
+  "gravity_votes_sealed": "投票中は票が非公開です",
+  "gravity_totals_reveal": "集計開始時に候補ごとの合計が公開されます",
 
   "_comment_blockchain": "Blockchain strings",
   "blockchain_types": "種類",

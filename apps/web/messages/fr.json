@@ -767,6 +767,36 @@
   "gravity_chart_como_interval": "COMO reçus, toutes les 30 minutes",
   "gravity_chart_segment_como": "+{amount} COMO",
   "gravity_chart_total_como": "{amount} COMO",
+  "gravity_vote_rankings": "Classement des votes",
+  "gravity_candidate_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} candidat",
+        "countPlural=other": "{count} candidats"
+      }
+    }
+  ],
+  "gravity_slot_position": "emplacement {index} sur {total}",
+  "gravity_more_candidates": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "+ {count} autre candidat",
+        "countPlural=other": "+ {count} autres candidats"
+      }
+    }
+  ],
+  "gravity_show_less": "Réduire",
+  "gravity_candidate_delta": "+{amount} COMO lors de la dernière révélation",
+  "gravity_user_rankings": "Classement des utilisateurs",
+  "gravity_recent_votes": "Votes récents",
+  "gravity_picks_hidden": "choix masqués jusqu'à la révélation",
+  "gravity_no_votes_yet": "Aucun vote pour l'instant",
+  "gravity_votes_sealed": "Les votes sont masqués pendant le scrutin",
+  "gravity_totals_reveal": "Les totaux par candidat seront révélés au début du comptage",
 
   "_comment_blockchain": "Blockchain strings",
   "blockchain_types": "types",
