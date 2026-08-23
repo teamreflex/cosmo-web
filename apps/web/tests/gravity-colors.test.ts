@@ -243,9 +243,9 @@ describe("resolveSlotColors", () => {
 
 describe("rankColor", () => {
   it("colors the podium", () => {
-    expect(rankColor(1)).toBe("#f5b83d");
-    expect(rankColor(2)).toBe("#c0c6d4");
-    expect(rankColor(3)).toBe("#d08b5b");
+    expect(rankColor(1)).toBe("hsl(40 90% 60%)");
+    expect(rankColor(2)).toBe("hsl(222 19% 79%)");
+    expect(rankColor(3)).toBe("hsl(25 55% 59%)");
   });
 
   it("leaves every other rank uncolored", () => {

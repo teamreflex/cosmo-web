@@ -4,8 +4,7 @@ import { indexer } from "./db/indexer";
 
 /**
  * COSMO moved gravity voting from Polygon to Abstract on this date. Votes for
- * everything before it live in the `polygon_votes` archive, everything after
- * in the indexer.
+ * everything before it live in the `polygon_votes` archive, everything after in the indexer.
  */
 const ABSTRACT_MIGRATION_DATE = "2025-04-18";
 
@@ -71,7 +70,7 @@ export async function fetchPollVotes(poll: PollSource): Promise<PollVote[]> {
 
     return votes.map((vote) => ({
       ...vote,
-      createdAt: toIso(vote.createdAt),
+      createdAt: new Date(vote.createdAt).toISOString(),
     }));
   }
 
@@ -109,14 +108,6 @@ export async function fetchPollVotes(poll: PollSource): Promise<PollVote[]> {
       blockNumber: vote.blockNumber,
       candidateId: vote.candidateId,
     }));
-}
-
-/**
- * Indexer timestamps come back as postgres strings, which not every browser
- * parses. Everything crossing to the client is ISO-8601.
- */
-export function toIso(timestamp: string) {
-  return new Date(timestamp).toISOString();
 }
 
 /**

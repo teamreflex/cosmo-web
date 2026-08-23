@@ -14,10 +14,7 @@ import { format } from "date-fns";
 
 const route = getRouteApi("/gravity/$artist/$id");
 
-/**
- * A gravity's poll as stored in the database; startDate is null on rows that
- * predate the column.
- */
+/** A gravity's poll as stored in the database; startDate is null on rows that predate the column. */
 type PollTab = {
   cosmoId: number;
   title: string;

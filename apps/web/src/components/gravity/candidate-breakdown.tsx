@@ -2,7 +2,7 @@ import { m } from "@/i18n/messages";
 import type { CandidateColorArtist } from "@/lib/client/gravity/colors";
 import { resolveSlotColors } from "@/lib/client/gravity/colors";
 import type { PollSlotModel, SlotRanking } from "@/lib/client/gravity/slots";
-import { cn } from "@/lib/utils";
+import { cn, sum } from "@/lib/utils";
 import { motion } from "motion/react";
 import { useMemo, useState } from "react";
 import ComoShare from "./como-share";
@@ -120,8 +120,4 @@ function SlotCard(props: SlotCardProps) {
       )}
     </div>
   );
-}
-
-function sum<T>(rows: T[], value: (row: T) => number) {
-  return rows.reduce((total, row) => total + value(row), 0);
 }

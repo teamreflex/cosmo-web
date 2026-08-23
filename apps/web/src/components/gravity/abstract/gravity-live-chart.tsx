@@ -1,4 +1,5 @@
 import GravityHeader from "@/components/gravity/gravity-header";
+import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
 import {
   useChartSeries,
@@ -21,7 +22,7 @@ import type {
   CosmoPastGravity,
   CosmoPollChoices,
 } from "@apollo/cosmo/types/gravity";
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
 import CandidateBreakdown from "../candidate-breakdown";
 import Countdown from "../countdown";
 import RecentVotes from "../recent-votes";
@@ -124,10 +125,9 @@ export default function AbstractLiveChart(props: Props) {
         )}
 
         {sealed ? (
-          <RecentVotes
-            pollId={poll.id}
-            enabled={reveals.liveStatus === "voting"}
-          />
+          <Suspense fallback={<Skeleton className="min-h-36 rounded-lg" />}>
+            <RecentVotes pollId={poll.id} />
+          </Suspense>
         ) : (
           <UserRankings
             topUsers={reveals.topUsers}

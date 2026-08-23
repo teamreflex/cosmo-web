@@ -84,7 +84,11 @@ export function resolveCandidateColor(
 }
 
 /** Podium colors, in rank order. Every other rank is left muted. */
-const PODIUM_COLORS = ["#f5b83d", "#c0c6d4", "#d08b5b"];
+const PODIUM_COLORS = [
+  "hsl(40 90% 60%)",
+  "hsl(222 19% 79%)",
+  "hsl(25 55% 59%)",
+];
 
 /**
  * Color for a 1-based position, undefined off the podium.
@@ -94,8 +98,7 @@ export function rankColor(rank: number): string | undefined {
 }
 
 /**
- * How one on-chain choice reads: what it picks, the color it is drawn in, and
- * the image COSMO shows for it.
+ * How one on-chain choice reads: what it picks, the color it is drawn in, and the image COSMO shows for it.
  */
 export type ChoiceStyle = {
   label: string;
@@ -165,8 +168,7 @@ export function resolveChoiceStyles(
 }
 
 /**
- * One line the chart can draw: a candidate of a single poll, or a member in one
- * slot of a combination poll.
+ * One line the chart can draw: a candidate of a single poll, or a member in one slot of a combination poll.
  */
 export type ChartLine = {
   key: string;

@@ -1,12 +1,10 @@
 import { m } from "@/i18n/messages";
 import { recentVotesQuery } from "@/lib/queries/gravity";
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
 
 type Props = {
   pollId: number;
-  /** Votes are only worth polling for while the poll is taking them. */
-  enabled: boolean;
 };
 
 /**
@@ -14,10 +12,7 @@ type Props = {
  * keeps those sealed until counting begins.
  */
 export default function RecentVotes(props: Props) {
-  const { data } = useQuery(
-    recentVotesQuery({ pollId: props.pollId, enabled: props.enabled }),
-  );
-  const votes = data ?? [];
+  const { data: votes } = useSuspenseQuery(recentVotesQuery(props.pollId));
 
   return (
     // the sealed panel sits alongside this card, and the two share a height

@@ -2,7 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { m } from "@/i18n/messages";
 import type { SlotCandidateRanking } from "@/lib/client/gravity/slots";
 import { cn } from "@/lib/utils";
-import { IconCaretDownFilled, IconCaretUpFilled } from "@tabler/icons-react";
+import { IconCaretUpFilled } from "@tabler/icons-react";
 import ComoShare from "./como-share";
 import RankNumber from "./rank-number";
 
@@ -79,8 +79,6 @@ function Movement({ change }: { change: number }) {
     );
   }
 
-  const Caret = change > 0 ? IconCaretUpFilled : IconCaretDownFilled;
-
   return (
     <span
       className={cn(
@@ -88,7 +86,9 @@ function Movement({ change }: { change: number }) {
         change > 0 ? "text-green-500" : "text-red-500",
       )}
     >
-      <Caret className="size-2.5" />
+      <IconCaretUpFilled
+        className={cn("size-2.5", change < 0 && "rotate-180")}
+      />
       {Math.abs(change)}
     </span>
   );

@@ -57,19 +57,10 @@ export const gravityPollDetailsQuery = (params: GravityPollDetailsParams) =>
     staleTime: Infinity,
   });
 
-type RecentVotesParams = {
-  pollId: number;
-  /** the rail only shows recent votes while voting is open */
-  enabled: boolean;
-};
-
-export const recentVotesQuery = (params: RecentVotesParams) =>
+export const recentVotesQuery = (pollId: number) =>
   queryOptions({
-    queryKey: ["gravity", "recent-votes", params.pollId],
-    queryFn: ({ signal }) =>
-      $fetchRecentVotes({ signal, data: { pollId: params.pollId } }),
-    enabled: params.enabled,
-    refetchInterval: 60_000,
+    queryKey: ["gravity", "recent-votes", pollId],
+    queryFn: ({ signal }) => $fetchRecentVotes({ signal, data: { pollId } }),
   });
 
 const VOTING_POLL_INTERVAL = 30_000;

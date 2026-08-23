@@ -74,7 +74,7 @@ function TopUsers(props: TopUsersProps) {
       props.users.map((user, index) => ({
         key: user.address,
         rank: index + 1,
-        name: user.nickname ?? truncateAddress(user.address),
+        name: user.nickname ?? user.address.substring(0, 8),
         como: user.total,
         // newest first: ISO timestamps sort as they read
         votes: user.votes.toSorted((a, b) =>
@@ -177,7 +177,7 @@ function TopVotes(props: TopVotesProps) {
       props.votes.map((vote, index) => ({
         key: vote.id,
         rank: index + 1,
-        name: vote.username ?? truncateAddress(vote.voter),
+        name: vote.username ?? vote.voter.substring(0, 8),
         como: vote.comoAmount,
         choice: pickedChoice(props.choices, vote.candidateId),
       })),
@@ -314,11 +314,4 @@ function pickedChoice(
   candidateId: number | null,
 ) {
   return candidateId === null ? undefined : choices.get(candidateId);
-}
-
-/**
- * Address shown in place of a username nobody has claimed.
- */
-function truncateAddress(address: string) {
-  return address.substring(0, 8);
 }

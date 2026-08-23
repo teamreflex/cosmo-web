@@ -12,10 +12,7 @@ type Props = {
   countingStartsAt: string;
 };
 
-/**
- * The main column while voting: totals stay sealed, so the race is shown as an
- * outline of itself, dissolving into the page.
- */
+/** The main column while voting: totals stay sealed, so the race is shown as an outline of itself, dissolving into the page. */
 export default function VotingPanel(props: Props) {
   return (
     <div className="flex flex-col gap-2">

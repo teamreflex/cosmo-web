@@ -4,10 +4,8 @@ import { remember } from "@/lib/server/cache.server";
 import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts.server";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
-import { toIso } from "@/lib/server/gravity.server";
 import { getProxiedToken } from "@/lib/server/proxied-token.server";
-import { consumeRateLimit } from "@/lib/server/rate-limit.server";
-import { getClientIp, getRequestSignal } from "@/lib/server/request.server";
+import { getRequestSignal } from "@/lib/server/request.server";
 import { CosmoApiError } from "@apollo/cosmo/errors";
 import { runCosmo } from "@apollo/cosmo/runtime";
 import { GravitySchema, PollChoicesSchema } from "@apollo/cosmo/schema/gravity";
@@ -64,8 +62,7 @@ export const $fetchGravityDetails = createServerFn({ method: "GET" })
       throw notFound();
     }
 
-    // poll list for the day tabs. candidates are fetched per poll on demand,
-    // as each one costs a COSMO request
+    // poll list for the day tabs. candidates are fetched per poll on demand, as each one costs a COSMO request
     const polls = await db.query.gravityPolls.findMany({
       where: {
         cosmoGravityId: info.cosmoId,
@@ -299,7 +296,7 @@ export const $fetchRevealedVotes = createServerFn({ method: "GET" })
                 id: vote.id,
                 candidateId: vote.candidateId,
                 amount: vote.amount,
-                createdAt: toIso(vote.createdAt),
+                createdAt: new Date(vote.createdAt).toISOString(),
               } satisfies Reveal,
             ],
       ),
@@ -310,17 +307,11 @@ export const $fetchRevealedVotes = createServerFn({ method: "GET" })
 /**
  * Fetch the 50 most recent votes for a poll, with usernames where known.
  * Candidate picks stay hidden until reveals begin, so only timing and amounts
- * are returned. Cached briefly so polling clients share one query.
+ * are returned. Cached briefly so concurrent clients share one query.
  */
 export const $fetchRecentVotes = createServerFn({ method: "GET" })
   .validator(z.object({ pollId: z.number().int().positive() }))
   .handler(async ({ data }) => {
-    await consumeRateLimit({
-      key: `gravity-recent-votes:${getClientIp()}`,
-      limit: 30,
-      window: "1 minute",
-    });
-
     return await remember(
       `gravity-recent-votes:${data.pollId}`,
       30,
@@ -348,7 +339,7 @@ export const $fetchRecentVotes = createServerFn({ method: "GET" })
         return votes.map((vote) => ({
           id: vote.id,
           address: vote.from,
-          createdAt: toIso(vote.createdAt),
+          createdAt: new Date(vote.createdAt).toISOString(),
           amount: vote.amount,
           username: addressMap.get(addr(vote.from))?.username,
         }));
