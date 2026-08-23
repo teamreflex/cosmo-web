@@ -253,7 +253,7 @@ function RankingList({
   }
 
   return (
-    <div className="flex max-h-120 flex-col overflow-y-auto">
+    <div className="flex flex-col">
       <AnimatePresence initial={false}>{children}</AnimatePresence>
     </div>
   );
@@ -295,12 +295,13 @@ function VoteTime({ date }: { date: Date }) {
   const hydrated = useHydrated();
 
   if (!hydrated) {
-    return <Skeleton className="h-3 w-20 shrink-0 rounded-full" />;
+    return <Skeleton className="h-7 w-10 shrink-0 rounded-md" />;
   }
 
   return (
-    <span className="shrink-0 font-mono text-xxs text-muted-foreground">
-      {format(date, "MMM d, HH:mm")}
+    <span className="flex w-10 shrink-0 flex-col font-mono text-xxs leading-tight text-muted-foreground">
+      <span>{format(date, "MMM d")}</span>
+      <span>{format(date, "HH:mm")}</span>
     </span>
   );
 }
