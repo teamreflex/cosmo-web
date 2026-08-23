@@ -81,6 +81,11 @@ export function useReveals(params: UseRevealsOptions): UseRevealsResult {
       initialPageParam: undefined,
       getNextPageParam: (lastPage) => lastPage.nextCursor,
       enabled: () => votingEnded && aggregated.reveals.length === 0,
+      // a focus/remount refetch replays every accumulated page sequentially and
+      // collapses the batch history the deltas derive from; the interval below
+      // is the only refresher
+      staleTime: Infinity,
+      refetchOnWindowFocus: false,
     });
 
   // merge reveal sources: use aggregated.reveals (finalized) or polled data (live)
@@ -153,17 +158,21 @@ export function useReveals(params: UseRevealsOptions): UseRevealsResult {
 
   // derive revealed votes list from top votes (for VoterBreakdown)
   const revealedVotes = useMemo((): RevealedVote[] => {
-    return topVotesWithReveals
-      .filter((v) => v.candidateId !== null)
-      .map((vote) => ({
-        voter: vote.voter,
-        comoAmount: vote.comoAmount,
-        candidateId: vote.candidateId!,
-        blockNumber: vote.blockNumber,
-        username: vote.username,
-        pollId: 0, // we don't query this nor is it used
-        hash: vote.id,
-      }));
+    return topVotesWithReveals.flatMap((vote) =>
+      vote.candidateId === null
+        ? []
+        : [
+            {
+              voter: vote.voter,
+              comoAmount: vote.comoAmount,
+              candidateId: vote.candidateId,
+              blockNumber: vote.blockNumber,
+              username: vote.username,
+              pollId: 0, // we don't query this nor is it used
+              hash: vote.id,
+            },
+          ],
+    );
   }, [topVotesWithReveals]);
 
   // compute COMO per candidate from reveals

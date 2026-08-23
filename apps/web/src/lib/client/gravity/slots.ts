@@ -90,6 +90,10 @@ export function buildSlotModel(poll: CosmoPollChoices): PollSlotModel {
     slots.map((slot) => [slot.id, new Map<string, number[]>()]),
   );
 
+  const knownSlotChoices = new Set(
+    slotChoices.map((slotChoice) => slotChoice.id),
+  );
+
   // a choice's position in the list is its on-chain candidate id
   for (const [candidateId, choice] of poll.choices.entries()) {
     const mapping = required(
@@ -106,6 +110,11 @@ export function buildSlotModel(poll: CosmoPollChoices): PollSlotModel {
         mapping.slotChoiceIds[position],
         `poll ${poll.id} choice ${choice.id} has no slot choice for slot ${slotId}`,
       );
+      if (!knownSlotChoices.has(slotChoiceId)) {
+        throw new Error(
+          `poll ${poll.id} choice ${choice.id} references unknown slot choice ${slotChoiceId}`,
+        );
+      }
 
       const candidateIds = slotMembers.get(slotChoiceId);
       if (candidateIds === undefined) {
