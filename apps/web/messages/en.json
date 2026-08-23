@@ -729,7 +729,7 @@
   "gravity_top_users": "Top Users",
   "gravity_status_upcoming": "UPCOMING",
   "gravity_status_voting": "VOTING",
-  "gravity_status_live": "LIVE",
+  "gravity_status_counting": "Counting votes…",
   "gravity_status_complete": "COMPLETE",
   "gravity_header": "Gravity",
   "gravity_failed_load": "Failed to load live data. Please try again later.",
@@ -764,13 +764,15 @@
       }
     }
   ],
+  "gravity_chart_como_interval": "COMO in, every 30 minutes",
+  "gravity_chart_segment_como": "+{amount} COMO",
+  "gravity_chart_total_como": "{amount} COMO",
 
   "_comment_blockchain": "Blockchain strings",
   "blockchain_types": "types",
   "blockchain_total": "total",
 
   "_comment_chart": "Chart strings",
-  "chart_votes": "Votes",
   "chart_como_used": "COMO Used",
 
   "_comment_navbar": "Navigation bar strings",

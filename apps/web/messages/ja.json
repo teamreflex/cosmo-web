@@ -727,7 +727,7 @@
   "gravity_top_users": "上位ユーザー",
   "gravity_status_upcoming": "予定",
   "gravity_status_voting": "投票中",
-  "gravity_status_live": "ライブ",
+  "gravity_status_counting": "投票を集計中…",
   "gravity_status_complete": "完了",
   "gravity_header": "Gravity",
   "gravity_failed_load": "ライブデータの読み込みに失敗しました。後でもう一度お試しください。",
@@ -760,13 +760,15 @@
       }
     }
   ],
+  "gravity_chart_como_interval": "COMO流入、30分ごと",
+  "gravity_chart_segment_como": "+{amount} COMO",
+  "gravity_chart_total_como": "{amount} COMO",
 
   "_comment_blockchain": "Blockchain strings",
   "blockchain_types": "種類",
   "blockchain_total": "合計",
 
   "_comment_chart": "Chart strings",
-  "chart_votes": "投票数",
   "chart_como_used": "使用COMO",
 
   "_comment_navbar": "Navigation bar strings",

@@ -2,9 +2,17 @@ import GravityHeader from "@/components/gravity/gravity-header";
 import { m } from "@/i18n/messages";
 import {
   useGravityData,
+  usePollSlots,
   useReveals,
 } from "@/lib/client/gravity/abstract/hooks";
 import type { LiveStatus } from "@/lib/client/gravity/abstract/types";
+import type { CandidateColorArtist } from "@/lib/client/gravity/colors";
+import {
+  resolveCandidateColor,
+  resolveCandidateColors,
+} from "@/lib/client/gravity/colors";
+import type { ChartSeries } from "@/lib/client/gravity/series";
+import type { PollSlotModel } from "@/lib/client/gravity/slots";
 import { pollCandidates } from "@/lib/client/gravity/util";
 import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import type {
@@ -16,6 +24,7 @@ import { useMemo } from "react";
 import CandidateBreakdown from "../candidate-breakdown";
 import Countdown from "../countdown";
 import GravityStatus from "./gravity-status";
+import type { TrajectoryLine } from "./timeline-chart";
 import TimelineChart from "./timeline-chart";
 import VoterBreakdown from "./voter-breakdown";
 
@@ -42,6 +51,17 @@ export default function AbstractLiveChart(props: Props) {
   });
 
   const candidates = pollCandidates(poll);
+  const slots = usePollSlots(poll);
+
+  const lines = useMemo(
+    () =>
+      buildTrajectoryLines({
+        model: slots,
+        artist: props.artist,
+        series: reveals.chartSeries,
+      }),
+    [slots, props.artist, reveals.chartSeries],
+  );
 
   // get the number of como used for each candidate
   const comoByCandidate = useMemo(() => {
@@ -81,7 +101,10 @@ export default function AbstractLiveChart(props: Props) {
       <TimelineChart
         chartData={reveals.chartData}
         liveStatus={reveals.liveStatus}
+        isRefreshing={reveals.isRefreshing}
         totalComoUsed={aggregated.totalComoCount}
+        lines={lines}
+        frontierSegmentIndex={reveals.chartSeries.frontierSegmentIndex}
       />
 
       <CandidateBreakdown
@@ -98,6 +121,68 @@ export default function AbstractLiveChart(props: Props) {
       />
     </div>
   );
+}
+
+type TrajectoryLineInput = {
+  model: PollSlotModel;
+  artist: CandidateColorArtist;
+  series: ChartSeries;
+};
+
+/**
+ * Name and color the top candidates' cumulative series. A combination poll's
+ * candidate is one choice spanning every slot, so it is named after the members
+ * it picks and colored by the member it picks in the first slot.
+ */
+function buildTrajectoryLines(input: TrajectoryLineInput): TrajectoryLine[] {
+  const { model, artist, series } = input;
+
+  if (model.kind === "single") {
+    const [slot] = model.slots;
+    const colors = resolveCandidateColors(
+      artist,
+      slot.candidates.map((candidate) => candidate.name),
+    );
+
+    return series.series.flatMap((entry) => {
+      const candidate = slot.candidates.find((slotCandidate) =>
+        slotCandidate.candidateIds.includes(entry.candidateId),
+      );
+
+      return candidate === undefined
+        ? []
+        : [
+            {
+              candidateId: entry.candidateId,
+              label: candidate.name,
+              color: colors.color(entry.candidateId),
+              values: entry.values,
+            },
+          ];
+    });
+  }
+
+  return series.series.flatMap((entry) => {
+    const picks = model.slots.flatMap((slot) => {
+      const index = slot.candidates.findIndex((slotCandidate) =>
+        slotCandidate.candidateIds.includes(entry.candidateId),
+      );
+      const candidate = slot.candidates[index];
+      return candidate === undefined ? [] : [{ name: candidate.name, index }];
+    });
+
+    const [first] = picks;
+    return first === undefined
+      ? []
+      : [
+          {
+            candidateId: entry.candidateId,
+            label: picks.map((pick) => pick.name).join(" + "),
+            color: resolveCandidateColor(artist, first.name, first.index),
+            values: entry.values,
+          },
+        ];
+  });
 }
 
 type HeaderStatusProps = {

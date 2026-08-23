@@ -727,7 +727,7 @@
   "gravity_top_users": "상위 사용자",
   "gravity_status_upcoming": "예정",
   "gravity_status_voting": "투표 중",
-  "gravity_status_live": "진행 중",
+  "gravity_status_counting": "투표 집계 중…",
   "gravity_status_complete": "완료",
   "gravity_header": "그래비티",
   "gravity_failed_load": "실시간 데이터를 불러오지 못했습니다. 나중에 다시 시도해 주세요.",
@@ -760,13 +760,15 @@
       }
     }
   ],
+  "gravity_chart_como_interval": "COMO 유입, 30분 단위",
+  "gravity_chart_segment_como": "+{amount} COMO",
+  "gravity_chart_total_como": "{amount} COMO",
 
   "_comment_blockchain": "Blockchain strings",
   "blockchain_types": "타입",
   "blockchain_total": "총계",
 
   "_comment_chart": "Chart strings",
-  "chart_votes": "투표",
   "chart_como_used": "사용된 코모",
 
   "_comment_navbar": "Navigation bar strings",

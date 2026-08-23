@@ -4,81 +4,272 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { useHydrated } from "@/hooks/use-hydrated";
 import { m } from "@/i18n/messages";
 import type {
   ChartSegment,
   LiveStatus,
 } from "@/lib/client/gravity/abstract/types";
-import { format } from "date-fns";
-import { Bar, BarChart } from "recharts";
+import { addMinutes, format } from "date-fns";
+import { useMemo } from "react";
+import {
+  Bar,
+  Cell,
+  ComposedChart,
+  Line,
+  ReferenceDot,
+  XAxis,
+  YAxis,
+} from "recharts";
 import GravityStatus from "./gravity-status";
+
+/**
+ * One candidate's cumulative COMO across the poll, drawn over the bars.
+ */
+export type TrajectoryLine = {
+  candidateId: number;
+  label: string;
+  color: string;
+  /** One entry per chart segment, null past the reveal frontier. */
+  values: (number | null)[];
+};
 
 type Props = {
   chartData: ChartSegment[];
   liveStatus: LiveStatus;
+  isRefreshing: boolean;
   totalComoUsed: number;
+  lines: TrajectoryLine[];
+  /** Last segment holding a revealed vote; later segments render dim. */
+  frontierSegmentIndex: number;
 };
 
 export default function TimelineChart(props: Props) {
+  // segment times render in the viewer's timezone, so they wait for the client
+  const hydrated = useHydrated();
+
+  const data = useMemo(
+    () =>
+      props.chartData.map((segment, index) => ({
+        ...segment,
+        ...Object.fromEntries(
+          props.lines.map((line) => [
+            lineKey(line.candidateId),
+            line.values[index] ?? null,
+          ]),
+        ),
+      })),
+    [props.chartData, props.lines],
+  );
+
+  /**
+   * The tooltip takes its heading from the config entry matching the hovered
+   * segment's timestamp, which is what the x-axis keys the chart on.
+   */
+  const config = useMemo(
+    (): ChartConfig => ({
+      totalTokenAmount: { label: m.chart_como_used() },
+      ...Object.fromEntries(
+        props.lines.map((line) => [
+          lineKey(line.candidateId),
+          { label: line.label, color: line.color },
+        ]),
+      ),
+      ...Object.fromEntries(
+        props.chartData.map((segment) => [
+          segment.timestamp,
+          { label: <SegmentHeading segment={segment} /> },
+        ]),
+      ),
+    }),
+    [props.chartData, props.lines],
+  );
+
+  const ticks = useMemo(
+    () =>
+      new Map(
+        props.chartData.map((segment) => [
+          segment.timestamp,
+          hydrated ? format(new Date(segment.timestamp), "HH:mm") : "",
+        ]),
+      ),
+    [props.chartData, hydrated],
+  );
+
+  /**
+   * Bars are solid up to the frontier and dim past it. Nothing is revealed
+   * while voting, so the frontier is how far the votes themselves have got.
+   */
+  const frontier =
+    props.liveStatus === "voting"
+      ? lastVotedSegment(props.chartData)
+      : props.frontierSegmentIndex;
+  const pulsing =
+    props.liveStatus === "live" || props.liveStatus === "voting"
+      ? frontier
+      : -1;
+
   return (
     <div className="flex w-full flex-col gap-2 rounded-md bg-secondary p-3 pb-0">
-      <div className="flex items-center justify-between text-sm">
-        <GravityStatus liveStatus={props.liveStatus} />
-        <p className="text-xs">{props.totalComoUsed.toLocaleString()} COMO</p>
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+        {props.liveStatus === "voting" ? (
+          <p className="text-xs text-muted-foreground">
+            {m.gravity_chart_como_interval()}
+          </p>
+        ) : (
+          <GravityStatus
+            liveStatus={props.liveStatus}
+            isRefreshing={props.isRefreshing}
+          />
+        )}
+
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          {props.lines.map((line) => (
+            <span
+              key={line.candidateId}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground"
+            >
+              <span
+                className="h-0.5 w-3 rounded-full"
+                style={{ backgroundColor: line.color }}
+              />
+              {line.label}
+            </span>
+          ))}
+
+          <p className="font-mono text-xs">
+            {m.gravity_chart_total_como({
+              amount: props.totalComoUsed.toLocaleString(),
+            })}
+          </p>
+        </div>
       </div>
 
-      <ChartContainer config={chartConfig} className="aspect-auto h-40">
-        <BarChart
-          accessibilityLayer
-          data={props.chartData}
-          margin={{
-            left: 0,
-            right: 0,
-          }}
-        >
+      <ChartContainer
+        config={config}
+        className="aspect-auto h-48 [&_.recharts-cartesian-axis-tick_text]:font-mono"
+      >
+        <ComposedChart data={data} margin={{ left: 0, right: 0, top: 4 }}>
           <ChartTooltip
-            labelFormatter={(_, payload) => {
-              if (payload[0] && payload[0].payload.timestamp) {
-                return format(
-                  new Date(payload[0].payload.timestamp),
-                  "MMM d, h:mm a",
-                );
-              }
-              return "";
-            }}
-            content={<ChartTooltipContent indicator="dot" className="w-48" />}
             includeHidden
+            content={<ChartTooltipContent indicator="dot" className="w-52" />}
           />
+
+          <XAxis
+            dataKey="timestamp"
+            tickLine={false}
+            axisLine={false}
+            tickMargin={6}
+            minTickGap={48}
+            tickFormatter={(value) => ticks.get(value) ?? ""}
+          />
+
+          <YAxis yAxisId="segment" hide />
+          {/* cumulative totals dwarf the per-segment bars, so lines get their own scale */}
+          <YAxis yAxisId="cumulative" hide />
+
           <Bar
+            yAxisId="segment"
             dataKey="totalTokenAmount"
             radius={[4, 4, 0, 0]}
             fill="var(--color-cosmo)"
-          />
-          <Bar
-            dataKey="voteCount"
-            fill="oklch(from var(--color-cosmo) calc(l/2 + .5) c h)"
-            hide
-          />
-        </BarChart>
+            tooltipType="none"
+            isAnimationActive={false}
+          >
+            {data.map((segment, index) => (
+              <Cell
+                key={segment.timestamp}
+                className={
+                  index === pulsing ? "animate-chart-pulse" : undefined
+                }
+                fillOpacity={index > frontier ? 0.22 : 1}
+              />
+            ))}
+          </Bar>
+
+          {props.lines.map((line) => (
+            <Line
+              key={line.candidateId}
+              yAxisId="cumulative"
+              type="monotone"
+              dataKey={lineKey(line.candidateId)}
+              stroke={line.color}
+              strokeWidth={2}
+              dot={false}
+              activeDot={{ r: 3 }}
+              isAnimationActive={false}
+            />
+          ))}
+
+          {props.lines.flatMap((line) => {
+            const end = lastPoint(props.chartData, line);
+            return end === undefined
+              ? []
+              : [
+                  <ReferenceDot
+                    key={line.candidateId}
+                    yAxisId="cumulative"
+                    x={end.timestamp}
+                    y={end.value}
+                    r={3}
+                    fill={line.color}
+                    stroke="none"
+                  />,
+                ];
+          })}
+        </ComposedChart>
       </ChartContainer>
     </div>
   );
 }
 
-const chartConfig = {
-  tooltip: {
-    get label() {
-      return m.stats_header();
-    },
-  },
-  voteCount: {
-    get label() {
-      return m.chart_votes();
-    },
-  },
-  totalTokenAmount: {
-    get label() {
-      return m.chart_como_used();
-    },
-  },
-} satisfies ChartConfig;
+/**
+ * Tooltip heading: the segment's half-hour window and the COMO it took.
+ */
+function SegmentHeading({ segment }: { segment: ChartSegment }) {
+  const start = new Date(segment.timestamp);
+
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="font-mono text-xxs text-muted-foreground">
+        {format(start, "MMM d, HH:mm")} –{" "}
+        {format(addMinutes(start, 30), "HH:mm")}
+      </span>
+      <span className="font-mono text-cosmo dark:text-cosmo-text">
+        {m.gravity_chart_segment_como({
+          amount: segment.totalTokenAmount.toLocaleString(),
+        })}
+      </span>
+    </div>
+  );
+}
+
+/**
+ * How far the poll has run, taken from the votes rather than the clock.
+ */
+function lastVotedSegment(chartData: ChartSegment[]) {
+  for (let index = chartData.length - 1; index >= 0; index--) {
+    if ((chartData[index]?.voteCount ?? 0) > 0) {
+      return index;
+    }
+  }
+  return -1;
+}
+
+/**
+ * Where a line stops, marked with an end dot.
+ */
+function lastPoint(chartData: ChartSegment[], line: TrajectoryLine) {
+  for (let index = line.values.length - 1; index >= 0; index--) {
+    const value = line.values[index];
+    const segment = chartData[index];
+    if (value !== null && value !== undefined && segment !== undefined) {
+      return { timestamp: segment.timestamp, value };
+    }
+  }
+  return undefined;
+}
+
+function lineKey(candidateId: number) {
+  return `candidate${candidateId}`;
+}
