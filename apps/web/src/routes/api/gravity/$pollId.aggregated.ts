@@ -217,7 +217,12 @@ function computeTopVotes(votes: PollVote[], limit: number) {
 type AggregatedUser = {
   address: string;
   total: number;
-  votes: { id: string; candidateId: number | null; amount: number }[];
+  votes: {
+    id: string;
+    candidateId: number | null;
+    amount: number;
+    createdAt: string;
+  }[];
 };
 
 /**
@@ -245,6 +250,7 @@ function computeTopUsers(votes: PollVote[], limit: number) {
       id: vote.id,
       candidateId: vote.candidateId,
       amount: vote.amount,
+      createdAt: vote.createdAt,
     });
   }
 

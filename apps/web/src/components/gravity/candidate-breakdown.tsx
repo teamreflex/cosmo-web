@@ -45,16 +45,12 @@ export default function CandidateBreakdown(props: Props) {
         columns.length > 1 && "md:grid-cols-2",
       )}
     >
-      {columns.map((column, index) => (
+      {columns.map((column) => (
         <SlotCard
           key={column.ranking.slot.id}
           ranking={column.ranking}
           color={column.color}
-          position={
-            props.model.kind === "single"
-              ? null
-              : { index: index + 1, total: columns.length }
-          }
+          single={props.model.kind === "single"}
         />
       ))}
     </div>
@@ -64,8 +60,8 @@ export default function CandidateBreakdown(props: Props) {
 type SlotCardProps = {
   ranking: SlotRanking;
   color: (name: string) => string;
-  /** Where the slot sits among the poll's slots; null for a single race. */
-  position: { index: number; total: number } | null;
+  /** A single poll races every candidate in one column, titled as the ranking. */
+  single: boolean;
 };
 
 function SlotCard(props: SlotCardProps) {
@@ -73,33 +69,20 @@ function SlotCard(props: SlotCardProps) {
 
   const rows = props.ranking.rows;
   // a single poll races every candidate in one column, so nothing is folded away
-  const limit = props.position === null ? rows.length : VISIBLE_CANDIDATES;
+  const limit = props.single ? rows.length : VISIBLE_CANDIDATES;
   const visible = expanded ? rows : rows.slice(0, limit);
   const tail = rows.slice(limit);
 
   return (
     <div className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3">
-      <div className="flex items-baseline justify-between gap-2">
-        <h2
-          className={cn(
-            "min-w-0 truncate text-sm font-semibold",
-            props.position !== null && "font-cosmo tracking-wide uppercase",
-          )}
-        >
-          {props.position === null
-            ? m.gravity_vote_rankings()
-            : props.ranking.slot.name}
-        </h2>
-
-        <span className="shrink-0 text-xs text-muted-foreground">
-          {props.position === null
-            ? m.gravity_candidate_count({ count: rows.length })
-            : m.gravity_slot_position({
-                index: props.position.index,
-                total: props.position.total,
-              })}
-        </span>
-      </div>
+      <h2
+        className={cn(
+          "min-w-0 truncate text-sm font-semibold",
+          !props.single && "font-cosmo tracking-wide uppercase",
+        )}
+      >
+        {props.single ? m.gravity_ranking() : props.ranking.slot.name}
+      </h2>
 
       <div className="flex flex-col">
         {visible.map((row) => (

@@ -739,15 +739,6 @@
   "gravity_starts_in": "시작까지",
   "gravity_voting_ends": "투표 중",
   "gravity_counting": "결과 집계 중",
-  "gravity_polls_daily": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=other": "일별 투표 {count}개"
-      }
-    }
-  ],
   "gravity_poll_single": "단일 투표",
   "gravity_revealed_progress": "공개 {counted}/{total}",
   "gravity_votes_so_far": [
@@ -762,17 +753,7 @@
   "gravity_chart_como_interval": "COMO 유입, 30분 단위",
   "gravity_chart_segment_como": "+{amount} COMO",
   "gravity_chart_total_como": "{amount} COMO",
-  "gravity_vote_rankings": "투표 순위",
-  "gravity_candidate_count": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=other": "후보 {count}명"
-      }
-    }
-  ],
-  "gravity_slot_position": "슬롯 {index}/{total}",
+  "gravity_ranking": "순위",
   "gravity_more_candidates": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
@@ -784,7 +765,15 @@
   ],
   "gravity_show_less": "간략히 보기",
   "gravity_candidate_delta": "최근 공개에서 +{amount} COMO",
-  "gravity_user_rankings": "사용자 순위",
+  "gravity_vote_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "투표 {count}회"
+      }
+    }
+  ],
   "gravity_recent_votes": "최근 투표",
   "gravity_picks_hidden": "공개 전까지 선택 비공개",
   "gravity_no_votes_yet": "아직 투표 없음",

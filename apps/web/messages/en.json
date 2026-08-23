@@ -741,16 +741,6 @@
   "gravity_starts_in": "Starts in",
   "gravity_voting_ends": "Voting",
   "gravity_counting": "Counting Results",
-  "gravity_polls_daily": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=one": "{count} daily poll",
-        "countPlural=other": "{count} daily polls"
-      }
-    }
-  ],
   "gravity_poll_single": "single poll",
   "gravity_revealed_progress": "revealed {counted}/{total}",
   "gravity_votes_so_far": [
@@ -766,18 +756,7 @@
   "gravity_chart_como_interval": "COMO in, every 30 minutes",
   "gravity_chart_segment_como": "+{amount} COMO",
   "gravity_chart_total_como": "{amount} COMO",
-  "gravity_vote_rankings": "Vote Rankings",
-  "gravity_candidate_count": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=one": "{count} candidate",
-        "countPlural=other": "{count} candidates"
-      }
-    }
-  ],
-  "gravity_slot_position": "slot {index} of {total}",
+  "gravity_ranking": "Ranking",
   "gravity_more_candidates": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
@@ -790,7 +769,16 @@
   ],
   "gravity_show_less": "Show less",
   "gravity_candidate_delta": "+{amount} COMO in the latest reveal",
-  "gravity_user_rankings": "User Rankings",
+  "gravity_vote_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} vote",
+        "countPlural=other": "{count} votes"
+      }
+    }
+  ],
   "gravity_recent_votes": "Recent Votes",
   "gravity_picks_hidden": "picks hidden until reveal",
   "gravity_no_votes_yet": "No votes yet",

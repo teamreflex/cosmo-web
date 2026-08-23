@@ -41,12 +41,13 @@ export default function GravityHeader(props: Props) {
           <span>{formatRange(start, end)}</span>
         </ClientOnly>
 
-        <Separator />
-        <span>
-          {props.pollCount > 1
-            ? m.gravity_polls_daily({ count: props.pollCount })
-            : m.gravity_poll_single()}
-        </span>
+        {/* a multi-poll gravity has its polls listed in the tabs above */}
+        {props.pollCount === 1 && (
+          <>
+            <Separator />
+            <span>{m.gravity_poll_single()}</span>
+          </>
+        )}
 
         {props.meta !== undefined && (
           <>
