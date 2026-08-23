@@ -24,10 +24,10 @@ import {
 import GravityStatus from "./gravity-status";
 
 /**
- * One candidate's cumulative COMO across the poll, drawn over the bars.
+ * One line's cumulative COMO across the poll, drawn over the bars.
  */
 export type TrajectoryLine = {
-  candidateId: number;
+  key: string;
   label: string;
   color: string;
   /** One entry per chart segment, null past the reveal frontier. */
@@ -53,8 +53,8 @@ export default function TimelineChart(props: Props) {
       props.chartData.map((segment, index) => ({
         ...segment,
         ...Object.fromEntries(
-          props.lines.map((line) => [
-            lineKey(line.candidateId),
+          props.lines.map((line, lineIndex) => [
+            lineKey(lineIndex),
             line.values[index] ?? null,
           ]),
         ),
@@ -70,8 +70,8 @@ export default function TimelineChart(props: Props) {
     (): ChartConfig => ({
       totalTokenAmount: { label: m.chart_como_used() },
       ...Object.fromEntries(
-        props.lines.map((line) => [
-          lineKey(line.candidateId),
+        props.lines.map((line, index) => [
+          lineKey(index),
           { label: line.label, color: line.color },
         ]),
       ),
@@ -130,7 +130,7 @@ export default function TimelineChart(props: Props) {
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
           {props.lines.map((line) => (
             <span
-              key={line.candidateId}
+              key={line.key}
               className="flex items-center gap-1.5 text-xs text-muted-foreground"
             >
               <span
@@ -191,12 +191,12 @@ export default function TimelineChart(props: Props) {
             ))}
           </Bar>
 
-          {props.lines.map((line) => (
+          {props.lines.map((line, index) => (
             <Line
-              key={line.candidateId}
+              key={line.key}
               yAxisId="cumulative"
               type="monotone"
-              dataKey={lineKey(line.candidateId)}
+              dataKey={lineKey(index)}
               stroke={line.color}
               strokeWidth={2}
               dot={false}
@@ -211,7 +211,7 @@ export default function TimelineChart(props: Props) {
               ? []
               : [
                   <ReferenceDot
-                    key={line.candidateId}
+                    key={line.key}
                     yAxisId="cumulative"
                     x={end.timestamp}
                     y={end.value}
@@ -274,6 +274,10 @@ function lastPoint(chartData: ChartSegment[], line: TrajectoryLine) {
   return undefined;
 }
 
-function lineKey(candidateId: number) {
-  return `candidate${candidateId}`;
+/**
+ * Data key for a drawn line. Positional rather than the line's own key: a slot
+ * or member name is not a safe recharts accessor.
+ */
+function lineKey(index: number) {
+  return `line${index}`;
 }

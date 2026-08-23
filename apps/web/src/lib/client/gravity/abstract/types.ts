@@ -1,5 +1,4 @@
 import type { RevealBatch } from "../reveals";
-import type { ChartSeries } from "../series";
 
 export type UseRevealsOptions = {
   pollId: number;
@@ -17,7 +16,8 @@ export type UseRevealsResult = {
   comoPerCandidate: number[];
   /** The last reveal batch this session saw; null unless counting is live. */
   latestBatch: RevealBatch | null;
-  chartSeries: ChartSeries;
+  /** Every revealed vote, from the finalized payload or the polled pages. */
+  reveals: Reveal[];
   remainingVotesCount: number;
   chartData: ChartSegment[];
   topVotes: AggregatedTopVote[];
@@ -74,5 +74,7 @@ export interface AggregatedTopUser {
     id: string;
     candidateId: number | null;
     amount: number;
+    /** ISO-8601, when the vote was cast */
+    createdAt: string;
   }[];
 }

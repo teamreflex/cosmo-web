@@ -1,14 +1,19 @@
 import GravityHeader from "@/components/gravity/gravity-header";
 import { m } from "@/i18n/messages";
 import {
+  useChartSeries,
   useGravityData,
   usePollSlots,
   useReveals,
   useSlotRankings,
 } from "@/lib/client/gravity/abstract/hooks";
 import type { LiveStatus } from "@/lib/client/gravity/abstract/types";
-import type { ChoiceStyle } from "@/lib/client/gravity/colors";
-import { resolveChoiceStyles } from "@/lib/client/gravity/colors";
+import type { ChartLine } from "@/lib/client/gravity/colors";
+import {
+  hashedColor,
+  resolveChartLines,
+  resolveChoiceStyles,
+} from "@/lib/client/gravity/colors";
 import type { ChartSeries } from "@/lib/client/gravity/series";
 import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import type {
@@ -22,7 +27,6 @@ import Countdown from "../countdown";
 import RecentVotes from "../recent-votes";
 import UserRankings from "../user-rankings";
 import VotingPanel from "../voting-panel";
-import GravityStatus from "./gravity-status";
 import type { TrajectoryLine } from "./timeline-chart";
 import TimelineChart from "./timeline-chart";
 
@@ -56,13 +60,18 @@ export default function AbstractLiveChart(props: Props) {
   );
 
   const choices = useMemo(
-    () => resolveChoiceStyles(props.artist, slots),
-    [props.artist, slots],
+    () => resolveChoiceStyles(props.artist, slots, poll),
+    [props.artist, slots, poll],
   );
 
+  const groups = useMemo(
+    () => resolveChartLines(props.artist, slots),
+    [props.artist, slots],
+  );
+  const series = useChartSeries(slots, groups, reveals);
   const lines = useMemo(
-    () => buildTrajectoryLines(choices, reveals.chartSeries),
-    [choices, reveals.chartSeries],
+    () => buildTrajectoryLines(groups, series),
+    [groups, series],
   );
 
   // picks stay sealed until the poll closes, so no candidate has data yet
@@ -100,7 +109,7 @@ export default function AbstractLiveChart(props: Props) {
         isRefreshing={reveals.isRefreshing}
         totalComoUsed={aggregated.totalComoCount}
         lines={lines}
-        frontierSegmentIndex={reveals.chartSeries.frontierSegmentIndex}
+        frontierSegmentIndex={series.frontierSegmentIndex}
       />
 
       <div className="grid items-start gap-2 lg:grid-cols-[minmax(0,1fr)_320px]">
@@ -132,31 +141,30 @@ export default function AbstractLiveChart(props: Props) {
 }
 
 /**
- * Name and color the top candidates' cumulative series.
+ * Name and color each drawn series.
  */
 function buildTrajectoryLines(
-  choices: Map<number, ChoiceStyle>,
+  groups: ChartLine[][],
   series: ChartSeries,
 ): TrajectoryLine[] {
-  // two combinations can share a first-slot member; the next slot's color keeps
-  // the drawn lines distinguishable
+  const byKey = new Map(groups.flat().map((group) => [group.key, group]));
+  // a member can lead two slots; hashing the second line's color keeps the two
+  // apart rather than drawing one over the other
   const drawn = new Set<string>();
 
   return series.series.flatMap((entry) => {
-    const choice = choices.get(entry.candidateId);
-    if (choice === undefined) {
+    const group = byKey.get(entry.key);
+    if (group === undefined) {
       return [];
     }
 
-    const color =
-      [choice.color, ...choice.altColors].find((c) => !drawn.has(c)) ??
-      choice.color;
+    const color = drawn.has(group.color) ? hashedColor(group.key) : group.color;
     drawn.add(color);
 
     return [
       {
-        candidateId: entry.candidateId,
-        label: choice.label,
+        key: entry.key,
+        label: group.label,
         color,
         values: entry.values,
       },
@@ -174,7 +182,8 @@ type HeaderStatusProps = {
 
 /**
  * The one piece of state the header carries, per phase: reveal progress while
- * counting, completion once done, and a countdown before then.
+ * counting, and a countdown before then. A finished poll says so on the chart
+ * card, which leaves the title the full width here.
  */
 function HeaderStatus(props: HeaderStatusProps) {
   if (props.liveStatus === "live") {
@@ -189,7 +198,7 @@ function HeaderStatus(props: HeaderStatusProps) {
   }
 
   if (props.liveStatus === "finalized") {
-    return <GravityStatus liveStatus="finalized" />;
+    return null;
   }
 
   return (

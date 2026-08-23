@@ -2,7 +2,9 @@ import type {
   CosmoArtistWithMembersBFF,
   CosmoMemberBFF,
 } from "@apollo/cosmo/types/artists";
+import type { CosmoPollChoices } from "@apollo/cosmo/types/gravity";
 import type { PollSlot, PollSlotModel } from "./slots";
+import { pollCandidates } from "./util";
 
 /**
  * Candidate colors come from the gravity's artist, of which only the member
@@ -48,7 +50,9 @@ export function resolveCandidateColors(
   const colors = candidateTitles.map((title, index) =>
     mode === "member"
       ? (memberColor(resolved[index]) ?? hashedColor(title))
-      : (indexColor(members, index) ?? hashedColor(title)),
+      : // a poll with more candidates than the artist has members runs the
+        // palette out; the tail hashes its title rather than repeating a color
+        (memberColor(members[index]) ?? hashedColor(title)),
   );
 
   return {
@@ -90,26 +94,33 @@ export function rankColor(rank: number): string | undefined {
 }
 
 /**
- * How one on-chain choice reads: what it picks, and the color it is drawn in.
+ * How one on-chain choice reads: what it picks, the color it is drawn in, and
+ * the image COSMO shows for it.
  */
 export type ChoiceStyle = {
   label: string;
   /** the first slot's member color */
   color: string;
-  /** the remaining slots' member colors, for de-duplicating drawn lines */
-  altColors: string[];
+  /** COSMO's card image for the choice; undefined when it ships none */
+  imageUrl: string | undefined;
 };
 
 /**
- * Label and color for every on-chain choice, keyed by candidate id. A
+ * Label, color and image for every on-chain choice, keyed by candidate id. A
  * combination choice spans every slot, so it is named after the members it
  * picks and colored by the member it picks in the first slot.
  */
 export function resolveChoiceStyles(
   artist: CandidateColorArtist,
   model: PollSlotModel,
+  poll: CosmoPollChoices,
 ): Map<number, ChoiceStyle> {
   const styles = new Map<number, ChoiceStyle>();
+  // candidate content is in candidate id order: a choice's card for a
+  // combination poll, the candidate's own image for a single one
+  const images = pollCandidates(poll).map(
+    (candidate) => candidate.content.imageUrl,
+  );
 
   if (model.kind === "single") {
     const [slot] = model.slots;
@@ -123,7 +134,7 @@ export function resolveChoiceStyles(
         styles.set(candidateId, {
           label: candidate.name,
           color: colors.color(candidateId),
-          altColors: [],
+          imageUrl: firstImage(images[candidateId], candidate.imageUrl),
         });
       }
     }
@@ -135,22 +146,57 @@ export function resolveChoiceStyles(
     for (const [index, candidate] of slot.candidates.entries()) {
       for (const candidateId of candidate.candidateIds) {
         const picked = styles.get(candidateId);
-        const color = resolveCandidateColor(artist, candidate.name, index);
         styles.set(
           candidateId,
           picked === undefined
-            ? { label: candidate.name, color, altColors: [] }
-            : {
-                label: `${picked.label} + ${candidate.name}`,
-                color: picked.color,
-                altColors: [...picked.altColors, color],
-              },
+            ? {
+                label: candidate.name,
+                color: resolveCandidateColor(artist, candidate.name, index),
+                // a choice without a card falls back to its first slot member
+                imageUrl: firstImage(images[candidateId], candidate.imageUrl),
+              }
+            : { ...picked, label: `${picked.label} + ${candidate.name}` },
         );
       }
     }
   }
 
   return styles;
+}
+
+/**
+ * One line the chart can draw: a candidate of a single poll, or a member in one
+ * slot of a combination poll.
+ */
+export type ChartLine = {
+  key: string;
+  label: string;
+  color: string;
+  /** On-chain candidate ids the line sums, indexes into `comoPerCandidate`. */
+  candidateIds: number[];
+};
+
+/**
+ * Lines the chart may draw, per slot. A combination poll races a member per
+ * slot, so a line is named after both and colored like the slot's race row.
+ */
+export function resolveChartLines(
+  artist: CandidateColorArtist,
+  model: PollSlotModel,
+): ChartLine[][] {
+  return model.slots.map((slot) => {
+    const color = resolveSlotColors(artist, model, slot);
+
+    return slot.candidates.map((candidate) => ({
+      key: `${slot.id}:${candidate.name}`,
+      label:
+        model.kind === "single"
+          ? candidate.name
+          : `${slot.name} – ${candidate.name}`,
+      color: color(candidate.name),
+      candidateIds: candidate.candidateIds,
+    }));
+  });
 }
 
 /**
@@ -201,11 +247,18 @@ function indexColor(members: CosmoMemberBFF[], index: number) {
 }
 
 /**
+ * COSMO ships an empty string where it has no image.
+ */
+function firstImage(...urls: (string | undefined)[]) {
+  return urls.find((url) => url !== undefined && url.length > 0);
+}
+
+/**
  * Hex color derived from a name. Hashing rather than randomizing keeps a
  * candidate's color identical between renders, and the fixed saturation and
  * lightness keep it legible against both themes.
  */
-function hashedColor(name: string) {
+export function hashedColor(name: string) {
   // FNV-1a
   let hash = 0x811c9dc5;
   for (let i = 0; i < name.length; i++) {

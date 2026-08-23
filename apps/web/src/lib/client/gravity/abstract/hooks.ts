@@ -7,9 +7,11 @@ import {
 import type { CosmoPollChoices } from "@apollo/cosmo/types/gravity";
 import { useInfiniteQuery, useSuspenseQueries } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
+import type { ChartLine } from "../colors";
 import { findLatestBatch, sumComoPerCandidate } from "../reveals";
 import type { RevealBatch } from "../reveals";
-import { computeChartSeries } from "../series";
+import { computeChartSeries, slotLineCount } from "../series";
+import type { ChartSeries } from "../series";
 import { buildSlotModel, rankSlots } from "../slots";
 import type { PollSlotModel, SlotRanking } from "../slots";
 import type {
@@ -169,17 +171,6 @@ export function useReveals(params: UseRevealsOptions): UseRevealsResult {
     [liveStatus, data],
   );
 
-  const chartSeries = useMemo(
-    () =>
-      computeChartSeries({
-        chartData: aggregated.chartData,
-        reveals,
-        comoPerCandidate,
-        complete: liveStatus === "finalized",
-      }),
-    [aggregated.chartData, reveals, comoPerCandidate, liveStatus],
-  );
-
   return {
     liveStatus,
     isRefreshing: isFetchingNextPage,
@@ -187,7 +178,7 @@ export function useReveals(params: UseRevealsOptions): UseRevealsResult {
     remainingVotesCount,
     comoPerCandidate,
     latestBatch,
-    chartSeries,
+    reveals,
     chartData: aggregated.chartData,
     topVotes: topVotesWithReveals,
     topUsers: topUsersWithReveals,
@@ -199,6 +190,35 @@ export function useReveals(params: UseRevealsOptions): UseRevealsResult {
  */
 export function usePollSlots(poll: CosmoPollChoices): PollSlotModel {
   return useMemo(() => buildSlotModel(poll), [poll]);
+}
+
+/**
+ * Cumulative COMO for every line the chart draws.
+ */
+export function useChartSeries(
+  model: PollSlotModel,
+  groups: ChartLine[][],
+  live: UseRevealsResult,
+): ChartSeries {
+  return useMemo(
+    () =>
+      computeChartSeries({
+        chartData: live.chartData,
+        reveals: live.reveals,
+        comoPerCandidate: live.comoPerCandidate,
+        complete: live.liveStatus === "finalized",
+        groups,
+        linesPerSlot: slotLineCount(model),
+      }),
+    [
+      model,
+      groups,
+      live.chartData,
+      live.reveals,
+      live.comoPerCandidate,
+      live.liveStatus,
+    ],
+  );
 }
 
 /**

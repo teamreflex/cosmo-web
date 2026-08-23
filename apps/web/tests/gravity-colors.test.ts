@@ -1,9 +1,11 @@
 import type { CosmoMemberBFF } from "@apollo/cosmo/types/artists";
+import type { CosmoPollChoices } from "@apollo/cosmo/types/gravity";
 import { describe, expect, it } from "bun:test";
 import {
   rankColor,
   resolveCandidateColor,
   resolveCandidateColors,
+  resolveChartLines,
   resolveChoiceStyles,
   resolveSlotColors,
 } from "../src/lib/client/gravity/colors";
@@ -51,10 +53,22 @@ describe("resolveCandidateColors", () => {
     expect(result.colors).toEqual(["#8fcfe7", "#ff5b31"]);
   });
 
-  it("wraps the member list for polls with more candidates than members", () => {
+  it("hashes candidates past the end of the member list", () => {
     const result = resolveCandidateColors(artist, ["a", "b", "c", "d"]);
 
-    expect(result.colors).toEqual(["#8fcfe7", "#ff5b31", "#3d25aa", "#8fcfe7"]);
+    // wrapping would hand candidate "d" HeeJin's color a second time
+    expect(result.colors[3]).toMatch(/^#[0-9a-f]{6}$/);
+    expect(result.colors[3]).not.toBe("#8fcfe7");
+  });
+
+  it("keeps the member colors for the candidates the list does cover", () => {
+    const result = resolveCandidateColors(artist, ["a", "b", "c", "d"]);
+
+    expect(result.colors.slice(0, 3)).toEqual([
+      "#8fcfe7",
+      "#ff5b31",
+      "#3d25aa",
+    ]);
   });
 
   it("falls back to a stable hashed color without an artist", () => {
@@ -99,18 +113,22 @@ const tripleS = {
 
 describe("resolveChoiceStyles", () => {
   it("names and colors a single poll's choices by candidate", () => {
-    const styles = resolveChoiceStyles(artist, buildSlotModel(singlePoll));
+    const styles = resolveChoiceStyles(
+      artist,
+      buildSlotModel(singlePoll),
+      singlePoll,
+    );
 
     expect(styles.get(0)).toEqual({
       label: "Song A",
       color: "#8fcfe7",
-      altColors: [],
+      imageUrl: "https://static.cosmo.fans/song-a.png",
     });
     // no candidate is a member, so the palette follows the member list by position
     expect(styles.get(2)).toEqual({
       label: "Song C",
       color: "#3d25aa",
-      altColors: [],
+      imageUrl: "https://static.cosmo.fans/song-c.png",
     });
   });
 
@@ -118,6 +136,7 @@ describe("resolveChoiceStyles", () => {
     const styles = resolveChoiceStyles(
       tripleS,
       buildSlotModel(combinationPoll),
+      combinationPoll,
     );
 
     expect(styles.get(0)?.label).toBe("SeoYeon + HyeRin");
@@ -128,12 +147,70 @@ describe("resolveChoiceStyles", () => {
     const styles = resolveChoiceStyles(
       tripleS,
       buildSlotModel(combinationPoll),
+      combinationPoll,
     );
 
     // candidate 3 is HyeRin in EVOLution and JiWoo in LOVElution
     expect(styles.get(3)?.color).toBe("#e5cbb6");
-    // the other slots' colors remain available for line de-duplication
-    expect(styles.get(3)?.altColors).toEqual(["#f2e5b7"]);
+  });
+
+  it("images a combination choice with the card COSMO ships for it", () => {
+    const styles = resolveChoiceStyles(
+      tripleS,
+      buildSlotModel(combinationPoll),
+      combinationPoll,
+    );
+
+    expect(styles.get(3)?.imageUrl).toBe("https://static.cosmo.fans/c4.png");
+  });
+
+  it("falls back to the first slot member when a choice has no card", () => {
+    const poll = {
+      ...combinationPoll,
+      choices: combinationPoll.choices.map((choice, index) =>
+        index === 0 ? { ...choice, txImageUrl: "" } : choice,
+      ),
+    } satisfies CosmoPollChoices;
+    const styles = resolveChoiceStyles(tripleS, buildSlotModel(poll), poll);
+
+    expect(styles.get(0)?.imageUrl).toBe(
+      "https://static.cosmo.fans/round-s1.png",
+    );
+  });
+});
+
+describe("resolveChartLines", () => {
+  it("names a single poll's lines after the candidate", () => {
+    const lines = resolveChartLines(artist, buildSlotModel(singlePoll));
+
+    expect(lines[0]?.map((line) => line.label)).toEqual([
+      "Song A",
+      "Song B",
+      "Song C",
+    ]);
+    expect(lines[0]?.[0]?.color).toBe("#8fcfe7");
+    expect(lines[0]?.[0]?.candidateIds).toEqual([0]);
+  });
+
+  it("names a combination poll's lines after the slot and the member", () => {
+    const lines = resolveChartLines(tripleS, buildSlotModel(combinationPoll));
+
+    expect(lines.map((slot) => slot.length)).toEqual([3, 3]);
+    expect(lines[0]?.map((line) => line.label)).toEqual([
+      "EVOLution – SeoYeon",
+      "EVOLution – HyeRin",
+      "EVOLution – JiWoo",
+    ]);
+  });
+
+  it("gives a line every choice placing its member in the slot", () => {
+    const lines = resolveChartLines(tripleS, buildSlotModel(combinationPoll));
+    const hyerin = lines[1]?.[1];
+
+    expect(hyerin?.label).toBe("LOVElution – HyeRin");
+    // a member keeps their color in every slot they race in
+    expect(hyerin?.color).toBe("#e5cbb6");
+    expect(hyerin?.candidateIds).toEqual([0, 5]);
   });
 });
 

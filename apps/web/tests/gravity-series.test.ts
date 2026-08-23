@@ -3,7 +3,11 @@ import type {
   ChartSegment,
   Reveal,
 } from "../src/lib/client/gravity/abstract/types";
-import { computeChartSeries } from "../src/lib/client/gravity/series";
+import type { SeriesGroup } from "../src/lib/client/gravity/series";
+import {
+  computeChartSeries,
+  TOP_CANDIDATE_COUNT,
+} from "../src/lib/client/gravity/series";
 
 const pollStart = Date.parse("2023-04-21T09:00:00.000Z");
 const segmentMs = 30 * 60 * 1000;
@@ -32,6 +36,16 @@ function reveal(
   };
 }
 
+/** A single poll races every candidate in one slot. */
+function candidateGroups(count: number): SeriesGroup[][] {
+  return [
+    Array.from({ length: count }, (_, candidateId) => ({
+      key: String(candidateId),
+      candidateIds: [candidateId],
+    })),
+  ];
+}
+
 const chartData = segments(4);
 const reveals = [
   reveal("1", 0, 10, 5), // segment 0
@@ -42,6 +56,8 @@ const reveals = [
   reveal("6", 3, 1, 75), // segment 2
 ];
 const como = [16, 12, 3, 1];
+const groups = candidateGroups(4);
+const linesPerSlot = TOP_CANDIDATE_COUNT;
 
 describe("computeChartSeries", () => {
   it("accumulates the top candidates across segments", () => {
@@ -50,9 +66,11 @@ describe("computeChartSeries", () => {
       reveals,
       comoPerCandidate: como,
       complete: false,
+      groups,
+      linesPerSlot,
     });
 
-    expect(series.map((line) => line.candidateId)).toEqual([0, 1, 2]);
+    expect(series.map((line) => line.key)).toEqual(["0", "1", "2"]);
     expect(series[0]?.values).toEqual([10, 16, 16, null]);
     expect(series[1]?.values).toEqual([4, 4, 12, null]);
     expect(series[2]?.values).toEqual([0, 3, 3, null]);
@@ -64,6 +82,8 @@ describe("computeChartSeries", () => {
       reveals,
       comoPerCandidate: como,
       complete: false,
+      groups,
+      linesPerSlot,
     });
 
     expect(frontierSegmentIndex).toBe(2);
@@ -75,6 +95,8 @@ describe("computeChartSeries", () => {
       reveals,
       comoPerCandidate: como,
       complete: true,
+      groups,
+      linesPerSlot,
     });
 
     expect(frontierSegmentIndex).toBe(3);
@@ -88,6 +110,8 @@ describe("computeChartSeries", () => {
       reveals: [],
       comoPerCandidate: [],
       complete: false,
+      groups,
+      linesPerSlot,
     });
 
     expect(result.series).toEqual([]);
@@ -105,6 +129,8 @@ describe("computeChartSeries", () => {
       reveals: outside,
       comoPerCandidate: como,
       complete: false,
+      groups,
+      linesPerSlot,
     });
 
     expect(frontierSegmentIndex).toBe(2);
@@ -117,9 +143,11 @@ describe("computeChartSeries", () => {
       reveals: [reveal("1", 2, 5, 5)],
       comoPerCandidate: [0, 0, 5],
       complete: false,
+      groups,
+      linesPerSlot,
     });
 
-    expect(series.map((line) => line.candidateId)).toEqual([2]);
+    expect(series.map((line) => line.key)).toEqual(["2"]);
   });
 
   it("moves the frontier for a candidate outside the top", () => {
@@ -128,6 +156,8 @@ describe("computeChartSeries", () => {
       reveals: [...reveals, reveal("7", 3, 1, 100)],
       comoPerCandidate: como,
       complete: false,
+      groups,
+      linesPerSlot,
     });
 
     // segment 3 belongs to the last-placed candidate, but it is still revealed
@@ -147,6 +177,8 @@ describe("computeChartSeries", () => {
         reveals,
         comoPerCandidate: como,
         complete: false,
+        groups,
+        linesPerSlot,
       });
     }
 
@@ -162,5 +194,66 @@ describe("computeChartSeries", () => {
         process.env.TZ = originalTz;
       }
     }
+  });
+});
+
+/**
+ * Two slots over the same six choices, as the Two Big WAVes days are shaped:
+ * candidate ids 0 SeoYeon+HyeRin, 1 SeoYeon+JiWoo, 2 HyeRin+SeoYeon,
+ * 3 HyeRin+JiWoo, 4 JiWoo+SeoYeon, 5 JiWoo+HyeRin.
+ */
+const slotGroups: SeriesGroup[][] = [
+  [
+    { key: "EVOLution:SeoYeon", candidateIds: [0, 1] },
+    { key: "EVOLution:HyeRin", candidateIds: [2, 3] },
+    { key: "EVOLution:JiWoo", candidateIds: [4, 5] },
+  ],
+  [
+    { key: "LOVElution:SeoYeon", candidateIds: [2, 4] },
+    { key: "LOVElution:HyeRin", candidateIds: [0, 5] },
+    { key: "LOVElution:JiWoo", candidateIds: [1, 3] },
+  ],
+];
+
+const slotReveals = [
+  reveal("1", 0, 10, 5), // segment 0
+  reveal("2", 1, 6, 45), // segment 1
+  reveal("3", 3, 4, 50), // segment 1
+  reveal("4", 5, 3, 70), // segment 2
+];
+const slotComo = [10, 6, 0, 4, 0, 3];
+
+describe("computeChartSeries over slots", () => {
+  it("draws one line per slot, each the slot's leader", () => {
+    const { series } = computeChartSeries({
+      chartData,
+      reveals: slotReveals,
+      comoPerCandidate: slotComo,
+      complete: false,
+      groups: slotGroups,
+      linesPerSlot: 1,
+    });
+
+    // SeoYeon takes 16 of EVOLution's COMO, HyeRin 13 of LOVElution's
+    expect(series.map((line) => line.key)).toEqual([
+      "EVOLution:SeoYeon",
+      "LOVElution:HyeRin",
+    ]);
+  });
+
+  it("sums every choice placing a member in the slot", () => {
+    const { series } = computeChartSeries({
+      chartData,
+      reveals: slotReveals,
+      comoPerCandidate: slotComo,
+      complete: false,
+      groups: slotGroups,
+      linesPerSlot: 1,
+    });
+
+    // candidates 0 and 1 both put SeoYeon in EVOLution
+    expect(series[0]?.values).toEqual([10, 16, 16, null]);
+    // candidate 0 also puts HyeRin in LOVElution: one vote feeds both lines
+    expect(series[1]?.values).toEqual([10, 10, 13, null]);
   });
 });
