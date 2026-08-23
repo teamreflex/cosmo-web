@@ -3,8 +3,8 @@ import { findPoll } from "@/lib/client/gravity/util";
 import { remember } from "@/lib/server/cache.server";
 import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts.server";
 import { db } from "@/lib/server/db";
-import { toIso } from "@/lib/server/gravity.server";
 import { indexer } from "@/lib/server/db/indexer";
+import { toIso } from "@/lib/server/gravity.server";
 import { getProxiedToken } from "@/lib/server/proxied-token.server";
 import { consumeRateLimit } from "@/lib/server/rate-limit.server";
 import { getClientIp, getRequestSignal } from "@/lib/server/request.server";
@@ -219,7 +219,6 @@ export const $fetchCachedPoll = createServerFn({ method: "GET" })
       artist: z.string(),
       gravityId: z.number(),
       pollId: z.number(),
-      isPast: z.boolean().optional(),
     }),
   )
   .handler(async ({ data }) => {
@@ -229,25 +228,21 @@ export const $fetchCachedPoll = createServerFn({ method: "GET" })
       return await runCosmo(fetchPoll(accessToken, data.pollId), signal);
     };
 
-    // check the database for the end date if not provided
-    if (data.isPast === undefined) {
-      const info = await db.query.gravities.findFirst({
-        where: {
-          artist: data.artist,
-          cosmoId: data.gravityId,
-        },
-        columns: {
-          endDate: true,
-        },
-      });
-      if (!info) {
-        throw notFound();
-      }
-      data.isPast = isBefore(info.endDate, Date.now());
+    const info = await db.query.gravities.findFirst({
+      where: {
+        artist: data.artist,
+        cosmoId: data.gravityId,
+      },
+      columns: {
+        endDate: true,
+      },
+    });
+    if (!info) {
+      throw notFound();
     }
 
     // if the poll is in the past, cache it for 30 days
-    if (data.isPast) {
+    if (isBefore(info.endDate, Date.now())) {
       return await remember(
         `poll:${data.artist}:${data.gravityId}:${data.pollId}`,
         60 * 60 * 24 * 30, // 30 days
@@ -318,7 +313,7 @@ export const $fetchRevealedVotes = createServerFn({ method: "GET" })
  * are returned. Cached briefly so polling clients share one query.
  */
 export const $fetchRecentVotes = createServerFn({ method: "GET" })
-  .validator(z.object({ pollId: z.number() }))
+  .validator(z.object({ pollId: z.number().int().positive() }))
   .handler(async ({ data }) => {
     await consumeRateLimit({
       key: `gravity-recent-votes:${getClientIp()}`,

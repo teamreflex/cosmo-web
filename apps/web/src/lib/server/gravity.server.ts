@@ -97,14 +97,18 @@ export async function fetchPollVotes(poll: PollSource): Promise<PollVote[]> {
     },
   });
 
-  return votes.map((vote) => ({
-    id: vote.id.toString(),
-    from: vote.address,
-    createdAt: vote.createdAt.toISOString(),
-    amount: vote.amount,
-    blockNumber: vote.blockNumber,
-    candidateId: vote.candidateId,
-  }));
+  // a handful of archive rows were never revealed on-chain; polygon polls are
+  // immutably finalized, so keeping them would read as a poll still counting
+  return votes
+    .filter((vote) => vote.candidateId !== null)
+    .map((vote) => ({
+      id: vote.id.toString(),
+      from: vote.address,
+      createdAt: vote.createdAt.toISOString(),
+      amount: vote.amount,
+      blockNumber: vote.blockNumber,
+      candidateId: vote.candidateId,
+    }));
 }
 
 /**

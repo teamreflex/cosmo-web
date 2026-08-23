@@ -51,7 +51,6 @@ export const gravityPollDetailsQuery = (params: GravityPollDetailsParams) =>
           artist: params.artistName,
           gravityId: params.gravityId,
           pollId: params.pollId,
-          isPast: false,
         },
       }),
     refetchOnWindowFocus: false,
