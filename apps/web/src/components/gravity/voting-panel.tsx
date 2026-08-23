@@ -24,7 +24,8 @@ export default function VotingPanel(props: Props) {
 
         <p className="text-sm font-medium">{m.gravity_votes_sealed()}</p>
 
-        <p className="flex flex-wrap items-center justify-center gap-x-1.5 text-xs text-muted-foreground">
+        {/* div rather than p: the skeleton fallback is a div, invalid inside p */}
+        <div className="flex flex-wrap items-center justify-center gap-x-1.5 text-xs text-muted-foreground">
           <span>{m.gravity_totals_reveal()}</span>
           <span aria-hidden>·</span>
           {/* the date renders in the viewer's timezone, so it waits for the client */}
@@ -33,7 +34,7 @@ export default function VotingPanel(props: Props) {
               {format(new Date(props.countingStartsAt), "MMM d, HH:mm")}
             </span>
           </ClientOnly>
-        </p>
+        </div>
       </div>
 
       <div className="relative">

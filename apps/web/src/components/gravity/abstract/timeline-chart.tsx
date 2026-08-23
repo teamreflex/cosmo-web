@@ -104,10 +104,14 @@ export default function TimelineChart(props: Props) {
     props.liveStatus === "voting"
       ? lastVotedSegment(props.chartData)
       : props.frontierSegmentIndex;
+  // counting with nothing revealed yet pulses the first segment: that is the
+  // one currently being counted
   const pulsing =
-    props.liveStatus === "live" || props.liveStatus === "voting"
-      ? frontier
-      : -1;
+    props.liveStatus === "live"
+      ? Math.max(frontier, 0)
+      : props.liveStatus === "voting"
+        ? frontier
+        : -1;
 
   return (
     <div className="flex w-full flex-col gap-2 rounded-md bg-secondary p-3 pb-0">

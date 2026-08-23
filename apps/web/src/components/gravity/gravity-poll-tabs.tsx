@@ -40,7 +40,7 @@ export default function GravityPollTabs(props: Props) {
 
   return (
     <div className="sticky top-14 z-20 h-12 border-b border-border bg-background/90 backdrop-blur-lg">
-      <div className="container h-full overflow-x-auto">
+      <div className="container no-scrollbar h-full overflow-x-auto">
         <Tabs
           variant="navbar"
           className="h-full"

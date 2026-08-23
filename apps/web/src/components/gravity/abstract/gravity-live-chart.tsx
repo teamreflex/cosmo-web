@@ -138,19 +138,29 @@ function buildTrajectoryLines(
   choices: Map<number, ChoiceStyle>,
   series: ChartSeries,
 ): TrajectoryLine[] {
+  // two combinations can share a first-slot member; the next slot's color keeps
+  // the drawn lines distinguishable
+  const drawn = new Set<string>();
+
   return series.series.flatMap((entry) => {
     const choice = choices.get(entry.candidateId);
+    if (choice === undefined) {
+      return [];
+    }
 
-    return choice === undefined
-      ? []
-      : [
-          {
-            candidateId: entry.candidateId,
-            label: choice.label,
-            color: choice.color,
-            values: entry.values,
-          },
-        ];
+    const color =
+      [choice.color, ...choice.altColors].find((c) => !drawn.has(c)) ??
+      choice.color;
+    drawn.add(color);
+
+    return [
+      {
+        candidateId: entry.candidateId,
+        label: choice.label,
+        color,
+        values: entry.values,
+      },
+    ];
   });
 }
 

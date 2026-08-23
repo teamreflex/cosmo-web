@@ -94,7 +94,10 @@ export function rankColor(rank: number): string | undefined {
  */
 export type ChoiceStyle = {
   label: string;
+  /** the first slot's member color */
   color: string;
+  /** the remaining slots' member colors, for de-duplicating drawn lines */
+  altColors: string[];
 };
 
 /**
@@ -120,6 +123,7 @@ export function resolveChoiceStyles(
         styles.set(candidateId, {
           label: candidate.name,
           color: colors.color(candidateId),
+          altColors: [],
         });
       }
     }
@@ -131,15 +135,17 @@ export function resolveChoiceStyles(
     for (const [index, candidate] of slot.candidates.entries()) {
       for (const candidateId of candidate.candidateIds) {
         const picked = styles.get(candidateId);
-        styles.set(candidateId, {
-          label:
-            picked === undefined
-              ? candidate.name
-              : `${picked.label} + ${candidate.name}`,
-          color:
-            picked?.color ??
-            resolveCandidateColor(artist, candidate.name, index),
-        });
+        const color = resolveCandidateColor(artist, candidate.name, index);
+        styles.set(
+          candidateId,
+          picked === undefined
+            ? { label: candidate.name, color, altColors: [] }
+            : {
+                label: `${picked.label} + ${candidate.name}`,
+                color: picked.color,
+                altColors: [...picked.altColors, color],
+              },
+        );
       }
     }
   }

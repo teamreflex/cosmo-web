@@ -741,7 +741,6 @@
   "gravity_starts_in": "Starts in",
   "gravity_voting_ends": "Voting",
   "gravity_counting": "Counting Results",
-  "gravity_no_active": "No active gravities",
   "gravity_polls_daily": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

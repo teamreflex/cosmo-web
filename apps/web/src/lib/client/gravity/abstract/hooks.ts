@@ -12,7 +12,6 @@ import type { RevealBatch } from "../reveals";
 import { computeChartSeries } from "../series";
 import { buildSlotModel, rankSlots } from "../slots";
 import type { PollSlotModel, SlotRanking } from "../slots";
-import type { RevealedVote } from "../types";
 import type {
   AggregatedTopUser,
   AggregatedTopVote,
@@ -156,25 +155,6 @@ export function useReveals(params: UseRevealsOptions): UseRevealsResult {
     }));
   }, [aggregated.topUsers, revealMap, reveals.length]);
 
-  // derive revealed votes list from top votes (for VoterBreakdown)
-  const revealedVotes = useMemo((): RevealedVote[] => {
-    return topVotesWithReveals.flatMap((vote) =>
-      vote.candidateId === null
-        ? []
-        : [
-            {
-              voter: vote.voter,
-              comoAmount: vote.comoAmount,
-              candidateId: vote.candidateId,
-              blockNumber: vote.blockNumber,
-              username: vote.username,
-              pollId: 0, // we don't query this nor is it used
-              hash: vote.id,
-            },
-          ],
-    );
-  }, [topVotesWithReveals]);
-
   // compute COMO per candidate from reveals
   const comoPerCandidate = useMemo(
     (): number[] => sumComoPerCandidate(reveals),
@@ -201,7 +181,6 @@ export function useReveals(params: UseRevealsOptions): UseRevealsResult {
   );
 
   return {
-    status: "success",
     liveStatus,
     isRefreshing: isFetchingNextPage,
     totalVotesCount: aggregated.totalVoteCount,
@@ -209,7 +188,6 @@ export function useReveals(params: UseRevealsOptions): UseRevealsResult {
     comoPerCandidate,
     latestBatch,
     chartSeries,
-    revealedVotes,
     chartData: aggregated.chartData,
     topVotes: topVotesWithReveals,
     topUsers: topUsersWithReveals,

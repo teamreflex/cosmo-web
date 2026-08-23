@@ -1,6 +1,5 @@
 import type { RevealBatch } from "../reveals";
 import type { ChartSeries } from "../series";
-import type { RevealedVote } from "../types";
 
 export type UseRevealsOptions = {
   pollId: number;
@@ -12,7 +11,6 @@ export type UseRevealsOptions = {
 export type LiveStatus = "upcoming" | "voting" | "live" | "finalized";
 
 export type UseRevealsResult = {
-  status: "success";
   liveStatus: LiveStatus;
   isRefreshing: boolean;
   totalVotesCount: number;
@@ -21,7 +19,6 @@ export type UseRevealsResult = {
   latestBatch: RevealBatch | null;
   chartSeries: ChartSeries;
   remainingVotesCount: number;
-  revealedVotes: RevealedVote[];
   chartData: ChartSegment[];
   topVotes: AggregatedTopVote[];
   topUsers: AggregatedTopUser[];

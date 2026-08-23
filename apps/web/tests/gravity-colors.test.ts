@@ -101,9 +101,17 @@ describe("resolveChoiceStyles", () => {
   it("names and colors a single poll's choices by candidate", () => {
     const styles = resolveChoiceStyles(artist, buildSlotModel(singlePoll));
 
-    expect(styles.get(0)).toEqual({ label: "Song A", color: "#8fcfe7" });
+    expect(styles.get(0)).toEqual({
+      label: "Song A",
+      color: "#8fcfe7",
+      altColors: [],
+    });
     // no candidate is a member, so the palette follows the member list by position
-    expect(styles.get(2)).toEqual({ label: "Song C", color: "#3d25aa" });
+    expect(styles.get(2)).toEqual({
+      label: "Song C",
+      color: "#3d25aa",
+      altColors: [],
+    });
   });
 
   it("names a combination choice after every member it picks", () => {
@@ -124,6 +132,8 @@ describe("resolveChoiceStyles", () => {
 
     // candidate 3 is HyeRin in EVOLution and JiWoo in LOVElution
     expect(styles.get(3)?.color).toBe("#e5cbb6");
+    // the other slots' colors remain available for line de-duplication
+    expect(styles.get(3)?.altColors).toEqual(["#f2e5b7"]);
   });
 });
 

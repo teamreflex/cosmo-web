@@ -739,7 +739,6 @@
   "gravity_starts_in": "開始まで",
   "gravity_voting_ends": "投票",
   "gravity_counting": "結果集計中",
-  "gravity_no_active": "進行中のGravityはありません",
   "gravity_polls_daily": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
