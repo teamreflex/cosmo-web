@@ -40,12 +40,12 @@ export default function RaceRow(props: Props) {
             {row.candidate.name}
           </span>
 
-          <span className="flex shrink-0 items-baseline gap-1.5 font-mono text-xs">
+          <span className="flex shrink-0 items-baseline gap-1.5 text-xs">
             <ComoShare como={row.como} share={row.share} />
 
             {row.movement !== null && row.movement.como > 0 && (
               <span
-                className="text-cosmo dark:text-cosmo-text"
+                className="font-mono text-cosmo dark:text-cosmo-text"
                 title={m.gravity_candidate_delta({
                   amount: row.movement.como.toLocaleString(),
                 })}

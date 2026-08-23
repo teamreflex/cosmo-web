@@ -20,7 +20,8 @@ export default function RecentVotes(props: Props) {
   const votes = data ?? [];
 
   return (
-    <div className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3">
+    // the sealed panel sits alongside this card, and the two share a height
+    <div className="flex min-h-36 flex-col gap-2 rounded-lg border border-border bg-card p-3">
       <div className="flex flex-col gap-0.5">
         <h2 className="flex items-center gap-2 text-sm font-semibold">
           <span className="size-1.5 shrink-0 animate-pulse rounded-full bg-cosmo" />
@@ -32,7 +33,7 @@ export default function RecentVotes(props: Props) {
       </div>
 
       {votes.length === 0 ? (
-        <p className="py-6 text-center text-xs text-muted-foreground">
+        <p className="flex flex-1 items-center justify-center text-xs text-muted-foreground">
           {m.gravity_no_votes_yet()}
         </p>
       ) : (
