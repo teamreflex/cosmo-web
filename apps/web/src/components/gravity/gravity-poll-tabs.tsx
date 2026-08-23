@@ -1,5 +1,6 @@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useHydrated } from "@/hooks/use-hydrated";
+import type { PollStatus } from "@/lib/client/gravity/util";
 import { getPollStatus } from "@/lib/client/gravity/util";
 import { cn } from "@/lib/utils";
 import type {
@@ -36,7 +37,7 @@ export default function GravityPollTabs(props: Props) {
     return null;
   }
 
-  const live = livePollIds(props.gravity);
+  const statuses = pollStatuses(props.gravity);
 
   return (
     <div className="sticky top-14 z-20 h-12 border-b border-border bg-background/90 backdrop-blur-lg">
@@ -60,7 +61,9 @@ export default function GravityPollTabs(props: Props) {
                 className="min-w-24 flex-col gap-0 px-3"
               >
                 <span className="flex items-center gap-1.5">
-                  <StatusDot live={hydrated && live.has(poll.cosmoId)} />
+                  <StatusDot
+                    status={hydrated ? statuses.get(poll.cosmoId) : undefined}
+                  />
                   {poll.title}
                 </span>
                 {/* a non-breaking space holds the line so titles never shift */}
@@ -78,29 +81,31 @@ export default function GravityPollTabs(props: Props) {
   );
 }
 
-function StatusDot({ live }: { live: boolean }) {
+/** Phase colors, following the countdown badge; the live phases pulse. */
+const STATUS_COLORS = {
+  upcoming: "bg-gravity-starts",
+  ongoing: "animate-pulse bg-red-500",
+  counting: "animate-pulse bg-cosmo",
+  finalized: "bg-green-500",
+} as const satisfies Record<PollStatus, string>;
+
+/** Undefined until hydration settles the status against the current time. */
+function StatusDot({ status }: { status: PollStatus | undefined }) {
   return (
     <span
       className={cn(
         "size-1.5 shrink-0 rounded-full",
-        live ? "animate-pulse bg-red-500" : "bg-muted-foreground/40",
+        status === undefined ? "bg-muted-foreground/40" : STATUS_COLORS[status],
       )}
     />
   );
 }
 
 /**
- * Polls taking votes or being counted right now, by COSMO poll id.
+ * Each poll's phase right now, by COSMO poll id.
  */
-function livePollIds(gravity: CosmoOngoingGravity | CosmoPastGravity) {
+function pollStatuses(gravity: CosmoOngoingGravity | CosmoPastGravity) {
   const polls: (CosmoPollUpcoming | CosmoPollFinalized)[] = gravity.polls;
 
-  return new Set(
-    polls
-      .filter((poll) => {
-        const status = getPollStatus(poll);
-        return status === "ongoing" || status === "counting";
-      })
-      .map((poll) => poll.id),
-  );
+  return new Map(polls.map((poll) => [poll.id, getPollStatus(poll)]));
 }
