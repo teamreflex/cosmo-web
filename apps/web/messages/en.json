@@ -725,7 +725,6 @@
 
   "_comment_gravity": "Gravity strings",
   "gravity_error_loading": "Error loading gravities",
-  "gravity_votes_counted": "Votes Counted",
   "gravity_top_votes": "Top Votes",
   "gravity_top_users": "Top Users",
   "gravity_status_upcoming": "UPCOMING",
@@ -743,6 +742,28 @@
   "gravity_voting_ends": "Voting",
   "gravity_counting": "Counting Results",
   "gravity_no_active": "No active gravities",
+  "gravity_polls_daily": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} daily poll",
+        "countPlural=other": "{count} daily polls"
+      }
+    }
+  ],
+  "gravity_poll_single": "single poll",
+  "gravity_revealed_progress": "revealed {counted}/{total}",
+  "gravity_votes_so_far": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} vote so far",
+        "countPlural=other": "{count} votes so far"
+      }
+    }
+  ],
 
   "_comment_blockchain": "Blockchain strings",
   "blockchain_types": "types",

@@ -5,6 +5,11 @@ export default function GravitySkeleton() {
   return (
     <div className="relative flex w-full flex-col gap-2">
       <SkeletonGradient />
+
+      {/* chart card */}
+      <Skeleton className="h-56 w-full rounded-md" />
+
+      {/* candidate rows */}
       {Array.from({ length: 5 }).map((_, i) => (
         <Skeleton key={i} className="h-16 w-full rounded-lg" />
       ))}

@@ -725,7 +725,6 @@
 
   "_comment_gravity": "Gravity strings",
   "gravity_error_loading": "Erreur de chargement des Gravity",
-  "gravity_votes_counted": "Votes comptabilisés",
   "gravity_top_votes": "Meilleurs votes",
   "gravity_top_users": "Top Utilisateurs",
   "gravity_status_upcoming": "À VENIR",
@@ -743,6 +742,28 @@
   "gravity_voting_ends": "En vote",
   "gravity_counting": "Comptage des résultats",
   "gravity_no_active": "Aucun Gravity actif",
+  "gravity_polls_daily": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} scrutin quotidien",
+        "countPlural=other": "{count} scrutins quotidiens"
+      }
+    }
+  ],
+  "gravity_poll_single": "scrutin unique",
+  "gravity_revealed_progress": "révélés {counted}/{total}",
+  "gravity_votes_so_far": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} vote jusqu'ici",
+        "countPlural=other": "{count} votes jusqu'ici"
+      }
+    }
+  ],
 
   "_comment_blockchain": "Blockchain strings",
   "blockchain_types": "types",

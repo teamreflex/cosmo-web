@@ -723,7 +723,6 @@
 
   "_comment_gravity": "Gravity strings",
   "gravity_error_loading": "그래비티를 불러오는 중 오류 발생",
-  "gravity_votes_counted": "집계된 투표",
   "gravity_top_votes": "상위 투표",
   "gravity_top_users": "상위 사용자",
   "gravity_status_upcoming": "예정",
@@ -741,6 +740,26 @@
   "gravity_voting_ends": "투표 중",
   "gravity_counting": "결과 집계 중",
   "gravity_no_active": "진행 중인 그래비티 없음",
+  "gravity_polls_daily": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "일별 투표 {count}개"
+      }
+    }
+  ],
+  "gravity_poll_single": "단일 투표",
+  "gravity_revealed_progress": "공개 {counted}/{total}",
+  "gravity_votes_so_far": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "현재 {count}표"
+      }
+    }
+  ],
 
   "_comment_blockchain": "Blockchain strings",
   "blockchain_types": "타입",

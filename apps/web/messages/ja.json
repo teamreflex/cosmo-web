@@ -723,7 +723,6 @@
 
   "_comment_gravity": "Gravity strings",
   "gravity_error_loading": "Gravityの読み込み中にエラー",
-  "gravity_votes_counted": "集計済み投票",
   "gravity_top_votes": "最多投票",
   "gravity_top_users": "上位ユーザー",
   "gravity_status_upcoming": "予定",
@@ -741,6 +740,26 @@
   "gravity_voting_ends": "投票",
   "gravity_counting": "結果集計中",
   "gravity_no_active": "進行中のGravityはありません",
+  "gravity_polls_daily": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "デイリー投票{count}件"
+      }
+    }
+  ],
+  "gravity_poll_single": "単一投票",
+  "gravity_revealed_progress": "公開 {counted}/{total}",
+  "gravity_votes_so_far": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "現在{count}票"
+      }
+    }
+  ],
 
   "_comment_blockchain": "Blockchain strings",
   "blockchain_types": "種類",
