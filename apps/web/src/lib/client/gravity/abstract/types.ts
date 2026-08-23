@@ -24,11 +24,13 @@ export type UseRevealsResult = {
 
 /**
  * A revealed vote with its candidate and amount.
+ * `createdAt` is when the vote was cast, not when it was revealed.
  */
 export interface Reveal {
   id: string;
   candidateId: number;
   amount: number;
+  createdAt: string;
 }
 
 /**

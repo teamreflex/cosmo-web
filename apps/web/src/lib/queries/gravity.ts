@@ -7,6 +7,7 @@ import {
   $fetchCachedPoll,
   $fetchPaginatedGravities,
   $fetchPolygonGravity,
+  $fetchRecentVotes,
 } from "../functions/gravity";
 
 export const activeGravitiesQuery = (artists?: string[]) =>
@@ -69,6 +70,21 @@ export const polygonGravityQuery = (artist: string, id: number) =>
           id,
         },
       }),
+  });
+
+type RecentVotesParams = {
+  pollId: number;
+  /** the rail only shows recent votes while voting is open */
+  enabled: boolean;
+};
+
+export const recentVotesQuery = (params: RecentVotesParams) =>
+  queryOptions({
+    queryKey: ["gravity", "recent-votes", params.pollId],
+    queryFn: ({ signal }) =>
+      $fetchRecentVotes({ signal, data: { pollId: params.pollId } }),
+    enabled: params.enabled,
+    refetchInterval: 60_000,
   });
 
 const VOTING_POLL_INTERVAL = 30_000;

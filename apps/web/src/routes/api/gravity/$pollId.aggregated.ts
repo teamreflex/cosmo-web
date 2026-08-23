@@ -1,4 +1,7 @@
-import type { AggregatedGravityData } from "@/lib/client/gravity/abstract/types";
+import type {
+  AggregatedGravityData,
+  Reveal,
+} from "@/lib/client/gravity/abstract/types";
 import { cacheHeaders } from "@/lib/server/cache.server";
 import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts.server";
 import { db } from "@/lib/server/db";
@@ -66,13 +69,18 @@ export const Route = createFileRoute("/api/gravity/$pollId/aggregated")({
         // otherwise client will poll for reveals
         const isFinalized = revealedVoteCount === rawVotes.length;
         const reveals = isFinalized
-          ? rawVotes
-              .filter((v) => v.candidateId !== null)
-              .map((v) => ({
-                id: v.id,
-                candidateId: v.candidateId!,
-                amount: v.amount,
-              }))
+          ? rawVotes.flatMap((vote) =>
+              vote.candidateId === null
+                ? []
+                : [
+                    {
+                      id: vote.id,
+                      candidateId: vote.candidateId,
+                      amount: vote.amount,
+                      createdAt: vote.createdAt,
+                    } satisfies Reveal,
+                  ],
+            )
           : [];
 
         // collect unique addresses from top votes and top users

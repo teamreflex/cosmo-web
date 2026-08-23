@@ -1,15 +1,19 @@
+import type { Reveal } from "@/lib/client/gravity/abstract/types";
 import type { RevealedVote } from "@/lib/client/gravity/types";
 import { findPoll } from "@/lib/client/gravity/util";
 import { cacheHeaders, remember } from "@/lib/server/cache.server";
+import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts.server";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { getProxiedToken } from "@/lib/server/proxied-token.server";
-import { getRequestSignal } from "@/lib/server/request.server";
+import { consumeRateLimit } from "@/lib/server/rate-limit.server";
+import { getClientIp, getRequestSignal } from "@/lib/server/request.server";
 import { CosmoApiError } from "@apollo/cosmo/errors";
 import { runCosmo } from "@apollo/cosmo/runtime";
 import { GravitySchema, PollChoicesSchema } from "@apollo/cosmo/schema/gravity";
 import { fetchGravity, fetchPoll } from "@apollo/cosmo/server/gravity";
 import { gravities, gravityPolls } from "@apollo/database/web/schema";
+import { addr } from "@apollo/util";
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { setResponseHeaders } from "@tanstack/react-start/server";
@@ -380,6 +384,7 @@ export const $fetchRevealedVotes = createServerFn({ method: "GET" })
       columns: {
         id: true,
         candidateId: true,
+        createdAt: true,
         blockNumber: true,
         amount: true,
       },
@@ -396,17 +401,72 @@ export const $fetchRevealedVotes = createServerFn({ method: "GET" })
     });
 
     // if there's new reveals, return the highest block number, otherwise return the current cursor
-    const nextCursor =
-      votes.length > 0 ? votes[votes.length - 1]!.blockNumber : data.cursor;
+    const nextCursor = votes.at(-1)?.blockNumber ?? data.cursor;
 
     return {
-      votes: votes.map((v) => ({
-        id: v.id,
-        candidateId: v.candidateId!,
-        amount: v.amount,
-      })),
+      votes: votes.flatMap((vote) =>
+        vote.candidateId === null
+          ? []
+          : [
+              {
+                id: vote.id,
+                candidateId: vote.candidateId,
+                amount: vote.amount,
+                createdAt: vote.createdAt,
+              } satisfies Reveal,
+            ],
+      ),
       nextCursor,
     };
+  });
+
+/**
+ * Fetch the 50 most recent votes for a poll, with usernames where known.
+ * Candidate picks stay hidden until reveals begin, so only timing and amounts
+ * are returned. Cached briefly so polling clients share one query.
+ */
+export const $fetchRecentVotes = createServerFn({ method: "GET" })
+  .validator(z.object({ pollId: z.number() }))
+  .handler(async ({ data }) => {
+    await consumeRateLimit({
+      key: `gravity-recent-votes:${getClientIp()}`,
+      limit: 30,
+      window: "1 minute",
+    });
+
+    return await remember(
+      `gravity-recent-votes:${data.pollId}`,
+      30,
+      async () => {
+        const votes = await indexer.query.votes.findMany({
+          columns: {
+            id: true,
+            from: true,
+            createdAt: true,
+            amount: true,
+          },
+          where: {
+            pollId: data.pollId,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          limit: 50,
+        });
+
+        const addressMap = await fetchKnownAddresses(
+          votes.map((vote) => addr(vote.from)),
+        );
+
+        return votes.map((vote) => ({
+          id: vote.id,
+          address: vote.from,
+          createdAt: vote.createdAt,
+          amount: vote.amount,
+          username: addressMap.get(addr(vote.from))?.username,
+        }));
+      },
+    );
   });
 
 const ADDRESSES = new Map([

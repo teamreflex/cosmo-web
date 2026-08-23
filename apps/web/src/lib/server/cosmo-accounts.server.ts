@@ -191,7 +191,9 @@ export async function searchCosmoAccounts(
  * Returns a Map with lowercase addresses as keys for O(1) lookups.
  */
 export async function fetchKnownAddresses(addresses: string[]) {
-  if (addresses.length === 0) return new Map();
+  if (addresses.length === 0) {
+    return new Map<string, { address: string; username: string }>();
+  }
 
   // fetch known profiles
   const results = await db.query.cosmoAccounts.findMany({
