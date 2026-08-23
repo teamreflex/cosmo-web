@@ -4,16 +4,12 @@ import {
   useGravityData,
   usePollSlots,
   useReveals,
+  useSlotRankings,
 } from "@/lib/client/gravity/abstract/hooks";
 import type { LiveStatus } from "@/lib/client/gravity/abstract/types";
-import type { CandidateColorArtist } from "@/lib/client/gravity/colors";
-import {
-  resolveCandidateColor,
-  resolveCandidateColors,
-} from "@/lib/client/gravity/colors";
+import type { ChoiceStyle } from "@/lib/client/gravity/colors";
+import { resolveChoiceStyles } from "@/lib/client/gravity/colors";
 import type { ChartSeries } from "@/lib/client/gravity/series";
-import type { PollSlotModel } from "@/lib/client/gravity/slots";
-import { pollCandidates } from "@/lib/client/gravity/util";
 import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import type {
   CosmoOngoingGravity,
@@ -23,10 +19,12 @@ import type {
 import { useMemo } from "react";
 import CandidateBreakdown from "../candidate-breakdown";
 import Countdown from "../countdown";
+import RecentVotes from "../recent-votes";
+import UserRankings from "../user-rankings";
+import VotingPanel from "../voting-panel";
 import GravityStatus from "./gravity-status";
 import type { TrajectoryLine } from "./timeline-chart";
 import TimelineChart from "./timeline-chart";
-import VoterBreakdown from "./voter-breakdown";
 
 export type Props = {
   artist: CosmoArtistWithMembersBFF;
@@ -50,28 +48,26 @@ export default function AbstractLiveChart(props: Props) {
     aggregated,
   });
 
-  const candidates = pollCandidates(poll);
   const slots = usePollSlots(poll);
-
-  const lines = useMemo(
-    () =>
-      buildTrajectoryLines({
-        model: slots,
-        artist: props.artist,
-        series: reveals.chartSeries,
-      }),
-    [slots, props.artist, reveals.chartSeries],
+  const rankings = useSlotRankings(
+    slots,
+    reveals.comoPerCandidate,
+    reveals.latestBatch,
   );
 
-  // get the number of como used for each candidate
-  const comoByCandidate = useMemo(() => {
-    const comoMap: Record<number, number> = {};
-    for (let i = 0; i < candidates.length; i++) {
-      const chainComo = reveals.comoPerCandidate[i] ?? 0;
-      comoMap[i] = chainComo;
-    }
-    return comoMap;
-  }, [candidates, reveals.comoPerCandidate]);
+  const choices = useMemo(
+    () => resolveChoiceStyles(props.artist, slots),
+    [props.artist, slots],
+  );
+
+  const lines = useMemo(
+    () => buildTrajectoryLines(choices, reveals.chartSeries),
+    [choices, reveals.chartSeries],
+  );
+
+  // picks stay sealed until the poll closes, so no candidate has data yet
+  const sealed =
+    reveals.liveStatus === "upcoming" || reveals.liveStatus === "voting";
 
   return (
     <div className="flex w-full flex-col gap-2">
@@ -107,78 +103,51 @@ export default function AbstractLiveChart(props: Props) {
         frontierSegmentIndex={reveals.chartSeries.frontierSegmentIndex}
       />
 
-      <CandidateBreakdown
-        content={candidates}
-        comoByCandidate={comoByCandidate}
-        liveStatus={reveals.liveStatus}
-        isRefreshing={reveals.isRefreshing}
-      />
+      <div className="grid items-start gap-2 lg:grid-cols-[minmax(0,1fr)_320px]">
+        {sealed ? (
+          <VotingPanel countingStartsAt={poll.endDate} />
+        ) : (
+          <CandidateBreakdown
+            model={slots}
+            rankings={rankings}
+            artist={props.artist}
+          />
+        )}
 
-      <VoterBreakdown
-        topVotes={reveals.topVotes}
-        topUsers={reveals.topUsers}
-        candidates={candidates}
-      />
+        {sealed ? (
+          <RecentVotes
+            pollId={poll.id}
+            enabled={reveals.liveStatus === "voting"}
+          />
+        ) : (
+          <UserRankings
+            topUsers={reveals.topUsers}
+            topVotes={reveals.topVotes}
+            choices={choices}
+          />
+        )}
+      </div>
     </div>
   );
 }
 
-type TrajectoryLineInput = {
-  model: PollSlotModel;
-  artist: CandidateColorArtist;
-  series: ChartSeries;
-};
-
 /**
- * Name and color the top candidates' cumulative series. A combination poll's
- * candidate is one choice spanning every slot, so it is named after the members
- * it picks and colored by the member it picks in the first slot.
+ * Name and color the top candidates' cumulative series.
  */
-function buildTrajectoryLines(input: TrajectoryLineInput): TrajectoryLine[] {
-  const { model, artist, series } = input;
-
-  if (model.kind === "single") {
-    const [slot] = model.slots;
-    const colors = resolveCandidateColors(
-      artist,
-      slot.candidates.map((candidate) => candidate.name),
-    );
-
-    return series.series.flatMap((entry) => {
-      const candidate = slot.candidates.find((slotCandidate) =>
-        slotCandidate.candidateIds.includes(entry.candidateId),
-      );
-
-      return candidate === undefined
-        ? []
-        : [
-            {
-              candidateId: entry.candidateId,
-              label: candidate.name,
-              color: colors.color(entry.candidateId),
-              values: entry.values,
-            },
-          ];
-    });
-  }
-
+function buildTrajectoryLines(
+  choices: Map<number, ChoiceStyle>,
+  series: ChartSeries,
+): TrajectoryLine[] {
   return series.series.flatMap((entry) => {
-    const picks = model.slots.flatMap((slot) => {
-      const index = slot.candidates.findIndex((slotCandidate) =>
-        slotCandidate.candidateIds.includes(entry.candidateId),
-      );
-      const candidate = slot.candidates[index];
-      return candidate === undefined ? [] : [{ name: candidate.name, index }];
-    });
+    const choice = choices.get(entry.candidateId);
 
-    const [first] = picks;
-    return first === undefined
+    return choice === undefined
       ? []
       : [
           {
             candidateId: entry.candidateId,
-            label: picks.map((pick) => pick.name).join(" + "),
-            color: resolveCandidateColor(artist, first.name, first.index),
+            label: choice.label,
+            color: choice.color,
             values: entry.values,
           },
         ];

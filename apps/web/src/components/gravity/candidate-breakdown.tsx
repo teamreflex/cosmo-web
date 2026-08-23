@@ -1,94 +1,142 @@
-import type { LiveStatus } from "@/lib/client/gravity/abstract/types";
-import type { PollSelectedContentImage } from "@apollo/cosmo/types/gravity";
+import { m } from "@/i18n/messages";
+import type { CandidateColorArtist } from "@/lib/client/gravity/colors";
+import { resolveSlotColors } from "@/lib/client/gravity/colors";
+import type { PollSlotModel, SlotRanking } from "@/lib/client/gravity/slots";
+import { cn } from "@/lib/utils";
 import { motion } from "motion/react";
+import { useMemo, useState } from "react";
+import ComoShare from "./como-share";
+import RaceRow from "./race-row";
+
+/** Rows a slot column shows before folding the tail into its footer. */
+const VISIBLE_CANDIDATES = 8;
+
+const ROW_TRANSITION = {
+  duration: 0.3,
+  type: "spring",
+  stiffness: 500,
+  damping: 30,
+} as const;
 
 type Props = {
-  content: PollSelectedContentImage[];
-  comoByCandidate: Record<number, number>;
-  liveStatus: LiveStatus;
-  isRefreshing: boolean;
+  model: PollSlotModel;
+  rankings: SlotRanking[];
+  artist: CandidateColorArtist;
 };
 
+/**
+ * The poll's races: one column per slot for a combination poll, one full-width
+ * race for a single poll.
+ */
 export default function CandidateBreakdown(props: Props) {
-  const candidates = props.content
-    .map((content, i) => ({
-      content,
-      comoUsed: props.comoByCandidate[i] ?? 0,
-    }))
-    .sort((a, b) => b.comoUsed - a.comoUsed);
-
-  const totalComoUsed = candidates.reduce(
-    (acc, candidate) => acc + candidate.comoUsed,
-    0,
+  const columns = useMemo(
+    () =>
+      props.rankings.map((ranking) => ({
+        ranking,
+        color: resolveSlotColors(props.artist, props.model, ranking.slot),
+      })),
+    [props.rankings, props.artist, props.model],
   );
 
   return (
-    <div className="flex w-full flex-col gap-2">
-      {candidates.map((candidate) => (
-        <motion.div
-          key={candidate.content.choiceId}
-          layout
-          transition={{
-            duration: 0.3,
-            type: "spring",
-            stiffness: 500,
-            damping: 30,
-          }}
-        >
-          <CandidateRow
-            content={candidate.content}
-            totalComoUsed={totalComoUsed}
-            candidateComoUsed={candidate.comoUsed}
-            liveStatus={props.liveStatus}
-          />
-        </motion.div>
+    <div
+      className={cn(
+        "grid items-start gap-2",
+        columns.length > 1 && "md:grid-cols-2",
+      )}
+    >
+      {columns.map((column, index) => (
+        <SlotCard
+          key={column.ranking.slot.id}
+          ranking={column.ranking}
+          color={column.color}
+          position={
+            props.model.kind === "single"
+              ? null
+              : { index: index + 1, total: columns.length }
+          }
+        />
       ))}
     </div>
   );
 }
 
-type CandidateRowProps = {
-  content: PollSelectedContentImage;
-  totalComoUsed: number;
-  candidateComoUsed: number;
-  liveStatus: LiveStatus;
+type SlotCardProps = {
+  ranking: SlotRanking;
+  color: (name: string) => string;
+  /** Where the slot sits among the poll's slots; null for a single race. */
+  position: { index: number; total: number } | null;
 };
 
-function CandidateRow(props: CandidateRowProps) {
-  const percentage =
-    props.candidateComoUsed > 0
-      ? (props.candidateComoUsed / props.totalComoUsed) * 100
-      : 0;
+function SlotCard(props: SlotCardProps) {
+  const [expanded, setExpanded] = useState(false);
+
+  const rows = props.ranking.rows;
+  // a single poll races every candidate in one column, so nothing is folded away
+  const limit = props.position === null ? rows.length : VISIBLE_CANDIDATES;
+  const visible = expanded ? rows : rows.slice(0, limit);
+  const tail = rows.slice(limit);
 
   return (
-    <div className="relative flex h-16 w-full items-center gap-4 overflow-clip rounded-lg bg-secondary/70 px-4 transition-all hover:bg-secondary">
-      <div
-        className="absolute inset-0 bg-cosmo transition-all"
-        style={{ width: `${percentage}%` }}
-      />
+    <div className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3">
+      <div className="flex items-baseline justify-between gap-2">
+        <h2
+          className={cn(
+            "min-w-0 truncate text-sm font-semibold",
+            props.position !== null && "font-cosmo tracking-wide uppercase",
+          )}
+        >
+          {props.position === null
+            ? m.gravity_vote_rankings()
+            : props.ranking.slot.name}
+        </h2>
 
-      <div className="relative aspect-square h-2/3 rounded">
-        <img
-          src={props.content.content.imageUrl}
-          alt={props.content.content.title}
-          className="absolute rounded object-cover"
-        />
-      </div>
-
-      <div className="relative flex w-full flex-col justify-center sm:flex-row sm:items-center">
-        <span className="text-lg font-semibold">
-          {props.content.content.title}
+        <span className="shrink-0 text-xs text-muted-foreground">
+          {props.position === null
+            ? m.gravity_candidate_count({ count: rows.length })
+            : m.gravity_slot_position({
+                index: props.position.index,
+                total: props.position.total,
+              })}
         </span>
-        {props.liveStatus !== "voting" ? (
-          <span className="text-xs sm:ml-auto md:text-sm">
-            {props.candidateComoUsed.toLocaleString()} COMO (
-            {percentage.toFixed(2)}
-            %)
-          </span>
-        ) : (
-          <div className="sm:ml-auto"></div>
-        )}
       </div>
+
+      <div className="flex flex-col">
+        {visible.map((row) => (
+          <motion.div
+            key={row.candidate.name}
+            layout
+            transition={ROW_TRANSITION}
+          >
+            <RaceRow row={row} color={props.color(row.candidate.name)} />
+          </motion.div>
+        ))}
+      </div>
+
+      {tail.length > 0 && (
+        <button
+          type="button"
+          onClick={() => setExpanded((value) => !value)}
+          className="flex w-full items-center justify-center gap-1.5 rounded-md border border-dashed border-border px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:border-muted-foreground hover:text-foreground"
+        >
+          {expanded ? (
+            m.gravity_show_less()
+          ) : (
+            <>
+              <span>{m.gravity_more_candidates({ count: tail.length })}</span>
+              <span aria-hidden>·</span>
+              <ComoShare
+                como={sum(tail, (row) => row.como)}
+                share={sum(tail, (row) => row.share)}
+              />
+            </>
+          )}
+        </button>
+      )}
     </div>
   );
+}
+
+function sum<T>(rows: T[], value: (row: T) => number) {
+  return rows.reduce((total, row) => total + value(row), 0);
 }
