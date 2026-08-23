@@ -157,7 +157,6 @@ export function useReveals(params: UseRevealsOptions): UseRevealsResult {
     }));
   }, [aggregated.topUsers, revealMap, reveals.length]);
 
-  // compute COMO per candidate from reveals
   const comoPerCandidate = useMemo(
     (): number[] => sumComoPerCandidate(reveals),
     [reveals],

@@ -16,9 +16,9 @@ export type CandidateColorArtist =
   | undefined;
 
 /**
- * How a poll's candidates were colored: `member` when every candidate is a
- * member of the artist, `index` when candidates are instead mapped onto the
- * member list by position.
+ * How a poll's candidates are colored: `member` when every candidate is a
+ * member of the artist, `index` when candidates are mapped onto the member
+ * list by position.
  */
 export type CandidateColorMode = "member" | "index";
 
@@ -99,9 +99,9 @@ export function rankColor(rank: number): string | undefined {
  */
 export type ChoiceStyle = {
   label: string;
-  /** the first slot's member color */
+  /** The first slot's member color. */
   color: string;
-  /** COSMO's card image for the choice; undefined when it ships none */
+  /** COSMO's card image for the choice; undefined when it ships none. */
   imageUrl: string | undefined;
 };
 

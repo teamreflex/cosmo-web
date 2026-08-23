@@ -60,7 +60,10 @@ export default function CandidateBreakdown(props: Props) {
 type SlotCardProps = {
   ranking: SlotRanking;
   color: (name: string) => string;
-  /** A single poll races every candidate in one column, titled as the ranking. */
+  /**
+   * A single poll races every candidate in one column: titled as the ranking,
+   * nothing folded away.
+   */
   single: boolean;
 };
 
@@ -68,7 +71,6 @@ function SlotCard(props: SlotCardProps) {
   const [expanded, setExpanded] = useState(false);
 
   const rows = props.ranking.rows;
-  // a single poll races every candidate in one column, so nothing is folded away
   const limit = props.single ? rows.length : VISIBLE_CANDIDATES;
   const visible = expanded ? rows : rows.slice(0, limit);
   const tail = rows.slice(limit);
