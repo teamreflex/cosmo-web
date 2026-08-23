@@ -734,7 +734,6 @@
   "gravity_status_complete": "FINALISÉ",
   "gravity_header": "Gravity",
   "gravity_failed_load": "Échec de chargement des votes en direct. Réessayez plus tard.",
-  "gravity_combination_not_supported": "Les sondages combinatoires sont indisponibles.",
   "gravity_not_found": "Gravity introuvable",
   "gravity_badge_event": "Événement",
   "gravity_badge_grand": "Grand",

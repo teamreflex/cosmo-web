@@ -732,7 +732,6 @@
   "gravity_status_complete": "完了",
   "gravity_header": "Gravity",
   "gravity_failed_load": "ライブデータの読み込みに失敗しました。後でもう一度お試しください。",
-  "gravity_combination_not_supported": "組み合わせ投票にはまだ対応していません。",
   "gravity_not_found": "Gravityが見つかりません",
   "gravity_badge_event": "イベント",
   "gravity_badge_grand": "グランド",

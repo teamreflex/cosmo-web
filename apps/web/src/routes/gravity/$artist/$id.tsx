@@ -3,15 +3,19 @@ import DynamicLiveChart from "@/components/gravity/dynamic-live-chart";
 import GravitySkeleton from "@/components/gravity/gravity-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
-import { formatGravityError } from "@/lib/client/errors/gravity";
 import { $fetchGravityDetails } from "@/lib/functions/gravity";
 import { defineHead } from "@/lib/meta";
 import { gravityPollDetailsQuery } from "@/lib/queries/gravity";
 import { IconAlertTriangle, IconHeartBroken } from "@tabler/icons-react";
 import { createFileRoute } from "@tanstack/react-router";
-import type { ErrorComponentProps } from "@tanstack/react-router";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import * as z from "zod";
+
+const gravitySearchSchema = z.object({
+  // COSMO poll id, selecting one day of a multi-poll gravity
+  poll: z.coerce.number().int().positive().optional().catch(undefined),
+});
 
 export const Route = createFileRoute("/gravity/$artist/$id")({
   staleTime: Infinity,
@@ -20,17 +24,25 @@ export const Route = createFileRoute("/gravity/$artist/$id")({
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
   notFoundComponent: NotFoundComponent,
-  loader: async ({ context, params }) => {
+  validateSearch: gravitySearchSchema,
+  loaderDeps: ({ search }) => ({ poll: search.poll }),
+  loader: async ({ context, params, deps }) => {
     // fetch everything in one round trip
-    const { artist, gravity, poll, isPolygon } = await $fetchGravityDetails({
-      data: {
-        artist: params.artist,
-        id: Number(params.id),
-      },
-    });
+    const { artist, gravity, polls, defaultPollId, isPolygon } =
+      await $fetchGravityDetails({
+        data: {
+          artist: params.artist,
+          id: Number(params.id),
+        },
+      });
+
+    // a poll param that doesn't belong to this gravity falls back to the default
+    const pollId =
+      polls.find((poll) => poll.cosmoId === deps.poll)?.cosmoId ??
+      defaultPollId;
 
     /**
-     * abstract: prefetch poll details (candidates etc).
+     * abstract: prefetch poll details (candidates etc) for the selected poll only.
      * vote data is deliberately not prefetched — the payload can be huge, so the client fetches it.
      */
     if (isPolygon === false) {
@@ -39,7 +51,7 @@ export const Route = createFileRoute("/gravity/$artist/$id")({
           artistName: params.artist,
           tokenId: artist.comoTokenId,
           gravityId: gravity.id,
-          pollId: poll.id,
+          pollId,
         }),
       );
     }
@@ -49,7 +61,7 @@ export const Route = createFileRoute("/gravity/$artist/$id")({
      * just let the client fetch from CDN
      */
 
-    return { artist, gravity, isPolygon, pollId: poll.id };
+    return { artist, gravity, isPolygon, polls, pollId };
   },
   head: ({ loaderData }) =>
     defineHead({
@@ -114,11 +126,7 @@ function PendingComponent() {
   );
 }
 
-function ErrorComponent({ error }: ErrorComponentProps) {
-  const gravityMessage = formatGravityError(error);
-  if (gravityMessage !== null) {
-    return <Error message={gravityMessage} />;
-  }
+function ErrorComponent() {
   return <Error message={m.gravity_error_loading_details()} />;
 }
 

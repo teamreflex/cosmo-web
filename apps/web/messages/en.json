@@ -734,7 +734,6 @@
   "gravity_status_complete": "COMPLETE",
   "gravity_header": "Gravity",
   "gravity_failed_load": "Failed to load live data. Please try again later.",
-  "gravity_combination_not_supported": "Combination poll support is not available yet.",
   "gravity_not_found": "Gravity not found",
   "gravity_badge_event": "Event",
   "gravity_badge_grand": "Grand",

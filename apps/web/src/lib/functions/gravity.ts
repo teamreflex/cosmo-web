@@ -5,7 +5,6 @@ import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { getProxiedToken } from "@/lib/server/proxied-token.server";
 import { getRequestSignal } from "@/lib/server/request.server";
-import { ExpectedError } from "@/lib/universal/errors/expected";
 import { CosmoApiError } from "@apollo/cosmo/errors";
 import { runCosmo } from "@apollo/cosmo/runtime";
 import { GravitySchema, PollChoicesSchema } from "@apollo/cosmo/schema/gravity";
@@ -47,11 +46,6 @@ export const $fetchGravityDetails = createServerFn({ method: "GET" })
       throw notFound();
     }
 
-    // we don't support combination polls yet
-    if (info.pollType !== "single-poll") {
-      throw new ExpectedError("combination_poll_unsupported");
-    }
-
     const isPast = isBefore(info.endDate, Date.now());
     const isPolygon = isBefore(info.endDate, "2025-04-18");
     const artist = artists[data.artist.toLowerCase()];
@@ -68,11 +62,29 @@ export const $fetchGravityDetails = createServerFn({ method: "GET" })
       throw notFound();
     }
 
+    // poll list for the day tabs. candidates are fetched per poll on demand,
+    // as each one costs a COSMO request
+    const polls = await db.query.gravityPolls.findMany({
+      where: {
+        cosmoGravityId: info.cosmoId,
+      },
+      columns: {
+        cosmoId: true,
+        title: true,
+        startDate: true,
+        endDate: true,
+      },
+      orderBy: {
+        cosmoId: "asc",
+      },
+    });
+
     return {
       artist,
       gravity,
       isPolygon,
-      poll: maybePoll.poll,
+      polls,
+      defaultPollId: maybePoll.poll.id,
     };
   });
 
