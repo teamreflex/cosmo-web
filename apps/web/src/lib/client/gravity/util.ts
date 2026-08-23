@@ -6,12 +6,12 @@ import type {
   PollSelectedContentImage,
 } from "@apollo/cosmo/types/gravity";
 
-type PollStatus = "upcoming" | "ongoing" | "finalized" | "counting";
+export type PollStatus = "upcoming" | "ongoing" | "finalized" | "counting";
 
 /**
  * Determines the status of a gravity poll.
  */
-function getPollStatus(
+export function getPollStatus(
   poll: CosmoPollChoices | CosmoPollUpcoming | CosmoPollFinalized,
 ): PollStatus {
   const now = new Date();

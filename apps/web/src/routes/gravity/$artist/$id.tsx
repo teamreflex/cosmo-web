@@ -2,6 +2,7 @@ import { Error } from "@/components/error-boundary";
 import GravityHeader, {
   GravityHeaderSkeleton,
 } from "@/components/gravity/gravity-header";
+import GravityPollTabs from "@/components/gravity/gravity-poll-tabs";
 import GravitySkeleton from "@/components/gravity/gravity-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
@@ -74,40 +75,46 @@ function RouteComponent() {
   const { artist, gravity, polls, pollId } = Route.useLoaderData();
 
   return (
-    <main className="container flex flex-col py-2">
-      {/* the header carries live state, so it renders with the content it belongs to */}
-      <ErrorBoundary
-        fallback={
-          <>
-            <GravityHeader gravity={gravity} pollCount={polls.length} />
-            <div className="flex flex-col items-center justify-center gap-2 py-4">
-              <IconAlertTriangle className="size-12" />
-              <p className="text-sm font-semibold">{m.gravity_failed_load()}</p>
-            </div>
-          </>
-        }
-      >
-        <Suspense
+    <>
+      <GravityPollTabs polls={polls} gravity={gravity} pollId={pollId} />
+
+      <main className="container flex flex-col py-2">
+        {/* the header carries live state, so it renders with the content it belongs to */}
+        <ErrorBoundary
           fallback={
             <>
-              <GravityHeader
-                gravity={gravity}
-                pollCount={polls.length}
-                status={<Skeleton className="h-5 w-32 rounded-full" />}
-              />
-              <GravitySkeleton />
+              <GravityHeader gravity={gravity} pollCount={polls.length} />
+              <div className="flex flex-col items-center justify-center gap-2 py-4">
+                <IconAlertTriangle className="size-12" />
+                <p className="text-sm font-semibold">
+                  {m.gravity_failed_load()}
+                </p>
+              </div>
             </>
           }
         >
-          <GravityLiveChart
-            artist={artist}
-            gravity={gravity}
-            pollCount={polls.length}
-            pollId={pollId}
-          />
-        </Suspense>
-      </ErrorBoundary>
-    </main>
+          <Suspense
+            fallback={
+              <>
+                <GravityHeader
+                  gravity={gravity}
+                  pollCount={polls.length}
+                  status={<Skeleton className="h-5 w-32 rounded-full" />}
+                />
+                <GravitySkeleton />
+              </>
+            }
+          >
+            <GravityLiveChart
+              artist={artist}
+              gravity={gravity}
+              pollCount={polls.length}
+              pollId={pollId}
+            />
+          </Suspense>
+        </ErrorBoundary>
+      </main>
+    </>
   );
 }
 
