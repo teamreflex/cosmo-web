@@ -96,14 +96,14 @@ function RouteComponent() {
         >
           <Suspense
             fallback={
-              <>
+              <div className="flex flex-col gap-2">
                 <GravityHeader
                   gravity={gravity}
                   pollCount={polls.length}
                   status={<Skeleton className="h-5 w-32 rounded-full" />}
                 />
                 <GravitySkeleton />
-              </>
+              </div>
             }
           >
             <GravityLiveChart
