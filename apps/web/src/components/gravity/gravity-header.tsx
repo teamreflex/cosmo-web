@@ -1,4 +1,3 @@
-import { m } from "@/i18n/messages";
 import type {
   CosmoOngoingGravity,
   CosmoPastGravity,
@@ -11,7 +10,6 @@ import GravityTypeBadge from "./gravity-type-badge";
 
 type Props = {
   gravity: CosmoOngoingGravity | CosmoPastGravity;
-  pollCount: number;
   /** Live detail appended to the meta line, such as votes cast while voting. */
   meta?: ReactNode;
   /** Per-state detail on the right: countdown, reveal progress or completion. */
@@ -37,17 +35,9 @@ export default function GravityHeader(props: Props) {
 
       <div className="flex flex-wrap items-center gap-x-1.5 text-sm text-muted-foreground">
         {/* dates render in the viewer's timezone, so they wait for the client */}
-        <ClientOnly fallback={<Skeleton className="h-4 w-40 rounded-full" />}>
+        <ClientOnly fallback={<Skeleton className="h-4 w-72 rounded-full" />}>
           <span>{formatRange(start, end)}</span>
         </ClientOnly>
-
-        {/* a multi-poll gravity has its polls listed in the tabs above */}
-        {props.pollCount === 1 && (
-          <>
-            <Separator />
-            <span>{m.gravity_poll_single()}</span>
-          </>
-        )}
 
         {props.meta !== undefined && (
           <>
@@ -67,7 +57,7 @@ export function GravityHeaderSkeleton() {
   return (
     <div className="flex flex-col gap-2 pb-4">
       <Skeleton className="h-7 w-64 rounded-md" />
-      <Skeleton className="h-4 w-56 rounded-full" />
+      <Skeleton className="h-4 w-72 rounded-full" />
     </div>
   );
 }
@@ -81,7 +71,7 @@ function Separator() {
  */
 function formatRange(start: Date, end: Date) {
   const from = isSameYear(start, end)
-    ? format(start, "MMM d")
-    : format(start, "MMM d, yyyy");
-  return `${from} – ${format(end, "MMM d, yyyy")}`;
+    ? format(start, "MMM d, h:mm a")
+    : format(start, "MMM d, yyyy, h:mm a");
+  return `${from} – ${format(end, "MMM d, yyyy, h:mm a")}`;
 }

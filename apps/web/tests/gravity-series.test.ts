@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import type {
   ChartSegment,
   Reveal,
-} from "../src/lib/client/gravity/abstract/types";
+} from "../src/lib/client/gravity/types";
 import type { SeriesGroup } from "../src/lib/client/gravity/series";
 import {
   computeChartSeries,

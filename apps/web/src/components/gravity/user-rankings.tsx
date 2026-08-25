@@ -7,7 +7,7 @@ import { m } from "@/i18n/messages";
 import type {
   AggregatedTopUser,
   AggregatedTopVote,
-} from "@/lib/client/gravity/abstract/types";
+} from "@/lib/client/gravity/types";
 import type { ChoiceStyle } from "@/lib/client/gravity/colors";
 import { cn, type PropsWithClassName } from "@/lib/utils";
 import { IconChevronDown, IconQuestionMark } from "@tabler/icons-react";
@@ -295,13 +295,13 @@ function VoteTime({ date }: { date: Date }) {
   const hydrated = useHydrated();
 
   if (!hydrated) {
-    return <Skeleton className="h-7 w-10 shrink-0 rounded-md" />;
+    return <Skeleton className="h-7 w-12 shrink-0 rounded-md" />;
   }
 
   return (
-    <span className="flex w-10 shrink-0 flex-col font-mono text-xxs leading-tight text-muted-foreground">
+    <span className="flex w-12 shrink-0 flex-col font-mono text-xxs leading-tight text-muted-foreground">
       <span>{format(date, "MMM d")}</span>
-      <span>{format(date, "HH:mm")}</span>
+      <span>{format(date, "h:mmaaa")}</span>
     </span>
   );
 }

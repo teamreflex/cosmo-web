@@ -7,8 +7,8 @@ import {
   usePollSlots,
   useReveals,
   useSlotRankings,
-} from "@/lib/client/gravity/abstract/hooks";
-import type { LiveStatus } from "@/lib/client/gravity/abstract/types";
+} from "@/lib/client/gravity/hooks";
+import type { LiveStatus } from "@/lib/client/gravity/types";
 import type { ChartLine } from "@/lib/client/gravity/colors";
 import {
   hashedColor,
@@ -23,19 +23,17 @@ import type {
   CosmoPollChoices,
 } from "@apollo/cosmo/types/gravity";
 import { Suspense, useMemo } from "react";
-import CandidateBreakdown from "../candidate-breakdown";
-import Countdown from "../countdown";
-import RecentVotes from "../recent-votes";
-import UserRankings from "../user-rankings";
-import VotingPanel from "../voting-panel";
+import CandidateBreakdown from "./candidate-breakdown";
+import Countdown from "./countdown";
+import RecentVotes from "./recent-votes";
+import UserRankings from "./user-rankings";
+import VotingPanel from "./voting-panel";
 import type { TrajectoryLine } from "./timeline-chart";
 import TimelineChart from "./timeline-chart";
 
 export type Props = {
   artist: CosmoArtistWithMembersBFF;
   gravity: CosmoOngoingGravity | CosmoPastGravity;
-  /** Number of polls in the gravity, for the header's meta line. */
-  pollCount: number;
   pollId: number;
 };
 
@@ -83,7 +81,6 @@ export default function AbstractLiveChart(props: Props) {
     <div className="flex w-full flex-col gap-2">
       <GravityHeader
         gravity={props.gravity}
-        pollCount={props.pollCount}
         meta={
           reveals.liveStatus === "voting" ? (
             <span>

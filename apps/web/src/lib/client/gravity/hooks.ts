@@ -7,13 +7,13 @@ import {
 import type { CosmoPollChoices } from "@apollo/cosmo/types/gravity";
 import { useInfiniteQuery, useSuspenseQueries } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import type { ChartLine } from "../colors";
-import { findLatestBatch, sumComoPerCandidate } from "../reveals";
-import type { RevealBatch } from "../reveals";
-import { computeChartSeries, slotLineCount } from "../series";
-import type { ChartSeries } from "../series";
-import { buildSlotModel, rankSlots } from "../slots";
-import type { PollSlotModel, SlotRanking } from "../slots";
+import type { ChartLine } from "./colors";
+import { findLatestBatch, sumComoPerCandidate } from "./reveals";
+import type { RevealBatch } from "./reveals";
+import { computeChartSeries, slotLineCount } from "./series";
+import type { ChartSeries } from "./series";
+import { buildSlotModel, rankSlots } from "./slots";
+import type { PollSlotModel, SlotRanking } from "./slots";
 import type {
   AggregatedTopUser,
   AggregatedTopVote,

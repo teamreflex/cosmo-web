@@ -17,7 +17,7 @@ import * as z from "zod";
 
 // the chart pulls in recharts, so it stays out of the route bundle
 const GravityLiveChart = lazy(
-  () => import("@/components/gravity/abstract/gravity-live-chart"),
+  () => import("@/components/gravity/gravity-live-chart"),
 );
 
 const gravitySearchSchema = z.object({
@@ -84,7 +84,7 @@ function RouteComponent() {
         <ErrorBoundary
           fallback={
             <>
-              <GravityHeader gravity={gravity} pollCount={polls.length} />
+              <GravityHeader gravity={gravity} />
               <div className="flex flex-col items-center justify-center gap-2 py-4">
                 <IconAlertTriangle className="size-12" />
                 <p className="text-sm font-semibold">
@@ -99,7 +99,6 @@ function RouteComponent() {
               <div className="flex flex-col gap-2">
                 <GravityHeader
                   gravity={gravity}
-                  pollCount={polls.length}
                   status={<Skeleton className="h-5 w-32 rounded-full" />}
                 />
                 <GravitySkeleton />
@@ -109,7 +108,6 @@ function RouteComponent() {
             <GravityLiveChart
               artist={artist}
               gravity={gravity}
-              pollCount={polls.length}
               pollId={pollId}
             />
           </Suspense>

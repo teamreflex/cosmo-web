@@ -1,4 +1,4 @@
-import type { Reveal } from "./abstract/types";
+import type { Reveal } from "./types";
 
 /**
  * One page of the reveal-polling query. The first page is the snapshot taken

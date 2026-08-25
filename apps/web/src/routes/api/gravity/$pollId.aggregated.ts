@@ -1,7 +1,7 @@
 import type {
   AggregatedGravityData,
   Reveal,
-} from "@/lib/client/gravity/abstract/types";
+} from "@/lib/client/gravity/types";
 import { cacheHeaders } from "@/lib/server/cache.server";
 import {
   fetchKnownAddresses,

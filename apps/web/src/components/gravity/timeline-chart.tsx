@@ -6,10 +6,7 @@ import {
 } from "@/components/ui/chart";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { m } from "@/i18n/messages";
-import type {
-  ChartSegment,
-  LiveStatus,
-} from "@/lib/client/gravity/abstract/types";
+import type { ChartSegment, LiveStatus } from "@/lib/client/gravity/types";
 import { addMinutes, format } from "date-fns";
 import { useMemo } from "react";
 import {
@@ -21,6 +18,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { ComoAmount } from "./como-share";
 import GravityStatus from "./gravity-status";
 
 /**
@@ -90,7 +88,8 @@ export default function TimelineChart(props: Props) {
       new Map(
         props.chartData.map((segment) => [
           segment.timestamp,
-          hydrated ? format(new Date(segment.timestamp), "HH:mm") : "",
+          // compact meridiem: the ticks sit on a 30-minute spacing
+          hydrated ? format(new Date(segment.timestamp), "h:mmaaa") : "",
         ]),
       ),
     [props.chartData, hydrated],
@@ -114,7 +113,7 @@ export default function TimelineChart(props: Props) {
         : -1;
 
   return (
-    <div className="flex w-full flex-col gap-2 rounded-md bg-secondary p-3 pb-0">
+    <div className="flex w-full flex-col gap-2 rounded-md bg-card p-3 pb-0">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         {props.liveStatus === "voting" ? (
           <p className="text-xs text-muted-foreground">
@@ -141,11 +140,7 @@ export default function TimelineChart(props: Props) {
             </span>
           ))}
 
-          <p className="font-mono text-xs">
-            {m.gravity_chart_total_como({
-              amount: props.totalComoUsed.toLocaleString(),
-            })}
-          </p>
+          <ComoAmount como={props.totalComoUsed} className="text-xs" />
         </div>
       </div>
 
@@ -184,7 +179,10 @@ export default function TimelineChart(props: Props) {
               <Cell
                 key={segment.timestamp}
                 className={
-                  index === pulsing ? "animate-chart-pulse" : undefined
+                  // faster than the default, so the counted segment reads live
+                  index === pulsing
+                    ? "animate-pulse [animation-duration:1.4s]"
+                    : undefined
                 }
                 fillOpacity={index > frontier ? 0.22 : 1}
               />
@@ -236,8 +234,8 @@ function SegmentHeading({ segment }: { segment: ChartSegment }) {
   return (
     <div className="flex flex-col gap-0.5">
       <span className="font-mono text-xxs text-muted-foreground">
-        {format(start, "MMM d, HH:mm")} –{" "}
-        {format(addMinutes(start, 30), "HH:mm")}
+        {format(start, "MMM d, h:mm a")} –{" "}
+        {format(addMinutes(start, 30), "h:mm a")}
       </span>
       <span className="font-mono text-cosmo dark:text-cosmo-text">
         {m.gravity_chart_segment_como({

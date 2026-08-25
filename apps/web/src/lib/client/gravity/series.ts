@@ -1,4 +1,4 @@
-import type { ChartSegment, Reveal } from "./abstract/types";
+import type { ChartSegment, Reveal } from "./types";
 import type { PollSlotModel } from "./slots";
 
 /** Trajectory lines a single poll draws, for its leading candidates. */

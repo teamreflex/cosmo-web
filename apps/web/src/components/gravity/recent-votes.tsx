@@ -36,7 +36,7 @@ export default function RecentVotes(props: Props) {
           {votes.map((vote) => (
             <div key={vote.id} className="flex h-8 items-center gap-2">
               <span className="shrink-0 font-mono text-xs text-muted-foreground">
-                {format(new Date(vote.createdAt), "HH:mm:ss")}
+                {format(new Date(vote.createdAt), "h:mm:ssaaa")}
               </span>
               <span className="min-w-0 flex-1 truncate text-sm">
                 {vote.username ?? vote.address.substring(0, 8)}

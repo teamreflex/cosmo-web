@@ -29,7 +29,7 @@ export default function VotingPanel(props: Props) {
           {/* the date renders in the viewer's timezone, so it waits for the client */}
           <ClientOnly fallback={<Skeleton className="h-3 w-28 rounded-full" />}>
             <span className="font-mono">
-              {format(new Date(props.countingStartsAt), "MMM d, HH:mm")}
+              {format(new Date(props.countingStartsAt), "MMM d, h:mm a")}
             </span>
           </ClientOnly>
         </div>

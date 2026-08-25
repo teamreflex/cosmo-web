@@ -739,7 +739,6 @@
   "gravity_starts_in": "시작까지",
   "gravity_voting_ends": "투표 중",
   "gravity_counting": "결과 집계 중",
-  "gravity_poll_single": "단일 투표",
   "gravity_revealed_progress": "공개 {counted}/{total}",
   "gravity_votes_so_far": [
     {
@@ -752,7 +751,6 @@
   ],
   "gravity_chart_como_interval": "COMO 유입, 30분 단위",
   "gravity_chart_segment_como": "+{amount} COMO",
-  "gravity_chart_total_como": "{amount} COMO",
   "gravity_ranking": "순위",
   "gravity_more_candidates": [
     {

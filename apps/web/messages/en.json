@@ -741,7 +741,6 @@
   "gravity_starts_in": "Starts in",
   "gravity_voting_ends": "Voting",
   "gravity_counting": "Counting Results",
-  "gravity_poll_single": "single poll",
   "gravity_revealed_progress": "revealed {counted}/{total}",
   "gravity_votes_so_far": [
     {
@@ -755,7 +754,6 @@
   ],
   "gravity_chart_como_interval": "COMO in, every 30 minutes",
   "gravity_chart_segment_como": "+{amount} COMO",
-  "gravity_chart_total_como": "{amount} COMO",
   "gravity_ranking": "Ranking",
   "gravity_more_candidates": [
     {

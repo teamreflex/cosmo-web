@@ -1,4 +1,4 @@
-import type { AggregatedGravityData } from "@/lib/client/gravity/abstract/types";
+import type { AggregatedGravityData } from "@/lib/client/gravity/types";
 import { baseUrl } from "@/lib/utils";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import { ofetch } from "ofetch";

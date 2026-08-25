@@ -1,4 +1,4 @@
-import type { Reveal } from "@/lib/client/gravity/abstract/types";
+import type { Reveal } from "@/lib/client/gravity/types";
 import { findPoll } from "@/lib/client/gravity/util";
 import { remember } from "@/lib/server/cache.server";
 import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts.server";

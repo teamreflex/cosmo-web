@@ -1,4 +1,4 @@
-import type { RevealBatch } from "../reveals";
+import type { RevealBatch } from "./reveals";
 
 export type UseRevealsOptions = {
   pollId: number;

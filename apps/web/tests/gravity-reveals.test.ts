@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import type { Reveal } from "../src/lib/client/gravity/abstract/types";
+import type { Reveal } from "../src/lib/client/gravity/types";
 import {
   findLatestBatch,
   sumComoPerCandidate,

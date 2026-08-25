@@ -1,5 +1,5 @@
 import { m } from "@/i18n/messages";
-import type { LiveStatus } from "@/lib/client/gravity/abstract/types";
+import type { LiveStatus } from "@/lib/client/gravity/types";
 import {
   IconActivity,
   IconCircleCheck,
