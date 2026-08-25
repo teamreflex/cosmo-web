@@ -82,7 +82,7 @@ function Movement({ change }: { change: number }) {
   return (
     <span
       className={cn(
-        "flex items-center font-mono text-xxs leading-none",
+        "flex items-center font-mono text-xs leading-none",
         change > 0 ? "text-green-500" : "text-red-500",
       )}
     >
