@@ -11,6 +11,7 @@ Detailed conventions live in `docs/`. Read the relevant file **before** working 
 | Components, forms, Tailwind/styling, i18n strings (`apps/web`)                                   | [`docs/frontend.md`](docs/frontend.md)   |
 | Throwing/handling errors, `ExpectedError`, Sentry filtering (`apps/web`)                         | [`docs/errors.md`](docs/errors.md)       |
 | Better Auth config, API keys, auth schema generation (`apps/web`)                                | [`docs/auth.md`](docs/auth.md)           |
+| Writing or running tests (`bun test`, mocking cosmo endpoints)                                   | [`docs/testing.md`](docs/testing.md)     |
 | Looking up library documentation (TanStack, Drizzle, Effect, …)                                  | [`docs/libraries.md`](docs/libraries.md) |
 
 ## Development
@@ -106,3 +107,9 @@ A `grid` is when a user collects all 8 (or 4) First class objekts for a member, 
 `COMO` is the currency used for voting in `gravity` events. Every objekt purchase grants some value of this, and objekts of `Special` class generate 1 COMO per month. We track COMO balances of every account via blockchain events.
 
 Gravity events are polls where users can place their COMO on specific candidates. Usually these range from things such as voting for a song to release, or which members will participate in a specific group sub-unit. We provide live voting data by tracking `Voted` events on-chain, and merge in which candidate was selected per vote by tracking `Reveal` events.
+
+- A gravity contains one or more polls. Multi-day "grand" gravities (e.g. Two Big WAVes) have one poll per day under a single gravity.
+- A combination poll is a single poll where each vote makes two picks (one per slot) instead of a single choice. The vote's COMO counts once in every slot, so each slot's column sums to the poll total.
+- Combination polls only ever ran on Polygon. Polygon-era votes (pre-2025-04-18) live in the web database's `polygon_votes` table and are all permanently finalized; Abstract-era votes live in the indexer database's `vote` table. The aggregated vote endpoint branches per era rather than merging the two sources — fully revealed polygon polls short-circuit every live codepath, so the shared frontend components work for both.
+- On-chain poll ids don't always match COSMO poll ids: gravity 2 uses cosmoId−1 (0–3), gravities 3/9/10/11 are identity, and gravities after 11 use `pollIdOnChain`.
+- Gravities are always posted within a day or two of their start date — far-future poll start/end dates never occur.
