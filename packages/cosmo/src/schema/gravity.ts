@@ -280,13 +280,21 @@ const pollChoicesCommonFields = <T extends "single-poll" | "combination-poll">(
   finalized: Schema.Boolean,
 });
 
-// combination polls share this choice shape; the txImagePairUrls variant in
-// COSMO's types never appears in real responses
 export const PollChoiceSchema = Schema.Struct({
   id: Schema.String,
   title: Schema.String,
   description: Schema.String,
   txImageUrl: Schema.String,
+});
+
+/**
+ * days 2-4 of the 2022 grand gravity predate choice titles: the id doubles as
+ * the label (e.g. "S2+S6") and the tx image is split into per-member pairs
+ */
+export const PollChoicePairSchema = Schema.Struct({
+  id: Schema.String,
+  txImageUrl: Schema.String,
+  txImagePairUrls: Schema.mutable(Schema.Array(Schema.String)),
 });
 
 export const PollChoicesSchema = Schema.Union([
@@ -298,7 +306,9 @@ export const PollChoicesSchema = Schema.Union([
   Schema.Struct({
     ...pollChoicesCommonFields("combination-poll"),
     pollViewMetadata: CombinationPollViewMetadataSchema,
-    choices: Schema.mutable(Schema.Array(PollChoiceSchema)),
+    choices: Schema.mutable(
+      Schema.Array(Schema.Union([PollChoiceSchema, PollChoicePairSchema])),
+    ),
   }),
 ]);
 

@@ -35,7 +35,7 @@ export default function GravityHeader(props: Props) {
 
       <div className="flex flex-wrap items-center gap-x-1.5 text-sm text-muted-foreground">
         {/* dates render in the viewer's timezone, so they wait for the client */}
-        <ClientOnly fallback={<Skeleton className="h-4 w-72 rounded-full" />}>
+        <ClientOnly fallback={<Skeleton className="h-5 w-72 rounded-full" />}>
           <span>{formatRange(start, end)}</span>
         </ClientOnly>
 

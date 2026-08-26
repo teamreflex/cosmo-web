@@ -41,13 +41,14 @@ export function pollCandidates(
     return poll.pollViewMetadata.selectedContent;
   }
 
+  // untitled 2022 choices label themselves by id (e.g. "S2+S6")
   return poll.choices.map((choice) => ({
     choiceId: choice.id,
     content: {
       type: "image",
       imageUrl: choice.txImageUrl,
-      title: choice.title,
-      description: choice.description,
+      title: "title" in choice ? choice.title : choice.id,
+      description: "description" in choice ? choice.description : "",
     },
   }));
 }

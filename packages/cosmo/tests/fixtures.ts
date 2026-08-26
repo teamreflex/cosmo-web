@@ -281,7 +281,8 @@ export const pollChoices = {
   ],
 } satisfies CosmoPollChoices;
 
-// combination polls use slot-based view metadata and single-style choices
+// combination polls use slot-based view metadata; choices are either
+// single-style or the untitled 2022 pair variant
 // (mirrors the 2022-2023 grand gravity polls, the only combination polls)
 export const combinationPollChoices = {
   id: 9,
@@ -331,6 +332,14 @@ export const combinationPollChoices = {
       title: "S1+S7",
       description: "SeoYeon and NaKyoung",
       txImageUrl: "https://static.cosmo.fans/combo-choice-1.png",
+    },
+    {
+      id: "S2+S6",
+      txImageUrl: "https://static.cosmo.fans/S2%2BS6.png",
+      txImagePairUrls: [
+        "https://static.cosmo.fans/AAA_S2.png",
+        "https://static.cosmo.fans/KRE_S6.png",
+      ],
     },
   ],
 } satisfies CosmoPollChoices;
