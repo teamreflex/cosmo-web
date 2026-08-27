@@ -2,7 +2,11 @@ import { useUserState } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { $createLiveList, $createObjektList } from "@/lib/functions/lists";
-import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
+import {
+  currentAccountQuery,
+  targetAccountQueryFilter,
+} from "@/lib/queries/core";
+import type { FullAccount } from "@/lib/universal/cosmo-accounts";
 import { track } from "@/lib/utils";
 import type { ObjektList } from "@apollo/database/web/types";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
@@ -53,7 +57,6 @@ type Props = {
   open: boolean;
   onOpenChange: (state: boolean) => void;
   objektLists: ObjektList[];
-  username?: string;
 };
 
 export default function CreateListDialog(props: Props) {
@@ -71,21 +74,15 @@ export default function CreateListDialog(props: Props) {
       return { ...old, objektLists: [...old.objektLists, result] };
     });
 
-    if (props.username) {
-      queryClient.setQueryData(
-        targetAccountQuery(props.username).queryKey,
-        (old) => {
-          if (!old) return old;
-          return { ...old, objektLists: [...old.objektLists, result] };
-        },
-      );
-    }
+    queryClient.setQueriesData<FullAccount>(targetAccountQueryFilter, (old) => {
+      if (!old || old.user?.id !== result.userId) return old;
+      return { ...old, objektLists: [...old.objektLists, result] };
+    });
 
+    // matching by routeId covers profiles opened by address, where the pathname doesn't contain the username
     void router.invalidate({
       filter: (route) =>
-        route.routeId === "/" ||
-        (props.username !== undefined &&
-          route.pathname === `/@${props.username}`),
+        route.routeId === "/" || route.routeId.startsWith("/@{$username}"),
     });
 
     props.onOpenChange(false);

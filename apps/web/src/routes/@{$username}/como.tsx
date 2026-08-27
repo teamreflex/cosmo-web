@@ -8,16 +8,15 @@ import { useArtists } from "@/hooks/use-artists";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { fetchObjektsWithComoQuery } from "@/lib/queries/como";
-import { targetAccountQuery } from "@/lib/queries/core";
 import { ClientOnly, createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/@{$username}/como")({
   component: RouteComponent,
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
-  loader: async ({ context, params }) => {
+  loader: async ({ context }) => {
     const target = await context.queryClient.ensureQueryData(
-      targetAccountQuery(params.username),
+      context.targetAccountOptions,
     );
 
     const data = await context.queryClient.ensureQueryData(

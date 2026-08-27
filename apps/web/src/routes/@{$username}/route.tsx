@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
+import { tokenBalancesQuery } from "@/lib/queries/como";
 import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
 import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
@@ -30,11 +31,19 @@ export const Route = createFileRoute("/@{$username}")({
   component: RouteComponent,
   notFoundComponent: NotFoundComponent,
   pendingComponent: PendingComponent,
-  loader: async ({ context, params }) => {
+  // built once here so the loader and every consumer share the same cache key
+  context: ({ params }) => ({
+    targetAccountOptions: targetAccountQuery(params.username),
+  }),
+  loader: async ({ context }) => {
     const [account, target] = await Promise.all([
       context.queryClient.ensureQueryData(currentAccountQuery),
-      context.queryClient.ensureQueryData(targetAccountQuery(params.username)),
+      context.queryClient.ensureQueryData(context.targetAccountOptions),
     ]);
+
+    void context.queryClient.prefetchQuery(
+      tokenBalancesQuery(target.cosmo.address),
+    );
 
     return { account, target };
   },
@@ -128,10 +137,7 @@ function RouteComponent() {
                     </Button>
                   }
                 >
-                  <ProfileListDropdown
-                    username={target.cosmo.username}
-                    isAuthenticated={isAuthenticated}
-                  />
+                  <ProfileListDropdown isAuthenticated={isAuthenticated} />
                 </Suspense>
 
                 {/* content gets portaled in */}

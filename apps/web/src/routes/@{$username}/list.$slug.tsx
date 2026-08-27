@@ -13,11 +13,7 @@ import TitleHeader from "@/components/ui/title-header";
 import { m } from "@/i18n/messages";
 import { $fetchObjektList } from "@/lib/functions/lists";
 import { defineHead } from "@/lib/meta";
-import {
-  currentAccountQuery,
-  selectedArtistsQuery,
-  targetAccountQuery,
-} from "@/lib/queries/core";
+import { currentAccountQuery, selectedArtistsQuery } from "@/lib/queries/core";
 import { objektListQuery } from "@/lib/queries/objekt-queries";
 import { objektListFrontendSchema } from "@/lib/universal/parsers";
 import { ProfileProvider } from "@/providers/profile-provider";
@@ -32,6 +28,7 @@ import {
 
 export const Route = createFileRoute("/@{$username}/list/$slug")({
   staleTime: 1000 * 60 * 15, // 15 minutes
+  preloadStaleTime: 30_000, // loader calls $fetchObjektList outside query
   component: RouteComponent,
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
@@ -41,7 +38,7 @@ export const Route = createFileRoute("/@{$username}/list/$slug")({
   loader: async ({ context, params, deps }) => {
     const [account, target, selected] = await Promise.all([
       context.queryClient.ensureQueryData(currentAccountQuery),
-      context.queryClient.ensureQueryData(targetAccountQuery(params.username)),
+      context.queryClient.ensureQueryData(context.targetAccountOptions),
       context.queryClient.ensureQueryData(selectedArtistsQuery),
     ]);
 

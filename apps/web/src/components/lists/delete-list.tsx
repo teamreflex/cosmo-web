@@ -13,7 +13,11 @@ import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { $deleteObjektList } from "@/lib/functions/lists";
-import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
+import {
+  currentAccountQuery,
+  targetAccountQueryFilter,
+} from "@/lib/queries/core";
+import type { FullAccount } from "@/lib/universal/cosmo-accounts";
 import type { ObjektList } from "@apollo/database/web/types";
 import { IconLoader2, IconTrash } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -47,21 +51,22 @@ export default function DeleteList({ objektList }: Props) {
           : old,
       );
 
-      if (target?.cosmo?.username) {
+      if (target) {
         removeObjektList(objektList.id);
-        queryClient.setQueryData(
-          targetAccountQuery(target.cosmo.username).queryKey,
-          (old) =>
-            old
-              ? {
-                  ...old,
-                  objektLists: old.objektLists.filter(
-                    (list) => list.id !== objektList.id,
-                  ),
-                }
-              : old,
-        );
       }
+      // removing by id is a no-op on accounts that don't own the list
+      queryClient.setQueriesData<FullAccount>(
+        targetAccountQueryFilter,
+        (old) =>
+          old
+            ? {
+                ...old,
+                objektLists: old.objektLists.filter(
+                  (list) => list.id !== objektList.id,
+                ),
+              }
+            : old,
+      );
     },
     onError: (error) => {
       toast.error(formatError(error));
@@ -72,16 +77,18 @@ export default function DeleteList({ objektList }: Props) {
           : old,
       );
 
-      if (target?.cosmo?.username) {
+      if (target) {
         addObjektList(objektList);
-        queryClient.setQueryData(
-          targetAccountQuery(target.cosmo.username).queryKey,
-          (old) =>
-            old && !old.objektLists.some((list) => list.id === objektList.id)
-              ? { ...old, objektLists: [...old.objektLists, objektList] }
-              : old,
-        );
       }
+      queryClient.setQueriesData<FullAccount>(
+        targetAccountQueryFilter,
+        (old) =>
+          old &&
+          old.user?.id === objektList.userId &&
+          !old.objektLists.some((list) => list.id === objektList.id)
+            ? { ...old, objektLists: [...old.objektLists, objektList] }
+            : old,
+      );
     },
   });
 

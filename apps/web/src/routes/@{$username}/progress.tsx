@@ -10,8 +10,12 @@ import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import TitleHeader from "@/components/ui/title-header";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
-import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
-import { artistStatsQuery } from "@/lib/queries/progress";
+import { currentAccountQuery } from "@/lib/queries/core";
+import {
+  artistStatsQuery,
+  progressBreakdownQuery,
+  progressLeaderboardQuery,
+} from "@/lib/queries/progress";
 import { progressFrontendSchema } from "@/lib/universal/parsers";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
@@ -23,16 +27,39 @@ export const Route = createFileRoute("/@{$username}/progress")({
   component: RouteComponent,
   pendingComponent: PendingComponent,
   validateSearch: progressFrontendSchema,
-  loaderDeps: ({ search }) => ({ searchParams: search }),
-  loader: async ({ context, params }) => {
+  loaderDeps: ({ search }) => ({
+    member: search.member,
+    filter: search.filter,
+    season: search.season,
+    leaderboard: search.leaderboard,
+  }),
+  loader: async ({ context, deps }) => {
     const [target, account] = await Promise.all([
-      context.queryClient.ensureQueryData(targetAccountQuery(params.username)),
+      context.queryClient.ensureQueryData(context.targetAccountOptions),
       context.queryClient.ensureQueryData(currentAccountQuery),
     ]);
 
     void context.queryClient.prefetchQuery(
       artistStatsQuery(target.cosmo.address),
     );
+
+    // a member filter swaps the charts out for the breakdown table
+    if (deps.member) {
+      void context.queryClient.prefetchQuery(
+        progressBreakdownQuery(target.cosmo.address, deps.member),
+      );
+
+      // the leaderboard sheet opens via search param
+      if (deps.leaderboard) {
+        void context.queryClient.prefetchQuery(
+          progressLeaderboardQuery(
+            deps.member,
+            deps.filter ?? undefined,
+            deps.season ?? undefined,
+          ),
+        );
+      }
+    }
 
     return { target, account };
   },

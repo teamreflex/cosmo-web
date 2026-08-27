@@ -9,7 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import TitleHeader from "@/components/ui/title-header";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
-import { selectedArtistsQuery, targetAccountQuery } from "@/lib/queries/core";
+import { selectedArtistsQuery } from "@/lib/queries/core";
 import { transfersQuery } from "@/lib/queries/objekt-queries";
 import { transfersFrontendSchema } from "@/lib/universal/parsers";
 import { createFileRoute } from "@tanstack/react-router";
@@ -19,9 +19,9 @@ export const Route = createFileRoute("/@{$username}/trades")({
   pendingComponent: PendingComponent,
   validateSearch: transfersFrontendSchema,
   loaderDeps: ({ search }) => ({ searchParams: search }),
-  loader: async ({ context, params, deps }) => {
+  loader: async ({ context, deps }) => {
     const [target, selected] = await Promise.all([
-      context.queryClient.ensureQueryData(targetAccountQuery(params.username)),
+      context.queryClient.ensureQueryData(context.targetAccountOptions),
       context.queryClient.ensureQueryData(selectedArtistsQuery),
     ]);
 

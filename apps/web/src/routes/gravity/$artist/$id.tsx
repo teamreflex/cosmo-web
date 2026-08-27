@@ -15,6 +15,7 @@ import { ErrorBoundary } from "react-error-boundary";
 
 export const Route = createFileRoute("/gravity/$artist/$id")({
   staleTime: Infinity,
+  preloadStaleTime: 30_000, // loader calls $fetchGravityDetails outside query
   component: RouteComponent,
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
@@ -29,7 +30,8 @@ export const Route = createFileRoute("/gravity/$artist/$id")({
     });
 
     /**
-     * abstract: prefetch poll details (candidates etc)
+     * abstract: prefetch poll details (candidates etc).
+     * vote data is deliberately not prefetched — the payload can be huge, so the client fetches it.
      */
     if (isPolygon === false) {
       void context.queryClient.prefetchQuery(

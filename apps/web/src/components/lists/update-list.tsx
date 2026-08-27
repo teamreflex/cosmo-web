@@ -1,8 +1,10 @@
-import { useUserState } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { $updateLiveList, $updateObjektList } from "@/lib/functions/lists";
-import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
+import {
+  currentAccountQuery,
+  targetAccountQueryFilter,
+} from "@/lib/queries/core";
 import type { ObjektList } from "@apollo/database/web/types";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconEdit, IconLoader2 } from "@tabler/icons-react";
@@ -57,7 +59,6 @@ export default function UpdateList({ objektList }: Props) {
   const [open, setOpen] = useState(false);
   const account = useSuspenseQuery(currentAccountQuery);
   const queryClient = useQueryClient();
-  const { cosmo } = useUserState();
 
   const allLists = account.data?.objektLists ?? [];
 
@@ -65,11 +66,7 @@ export default function UpdateList({ objektList }: Props) {
     void queryClient.invalidateQueries({
       queryKey: currentAccountQuery.queryKey,
     });
-    if (cosmo?.username) {
-      void queryClient.invalidateQueries({
-        queryKey: targetAccountQuery(cosmo.username).queryKey,
-      });
-    }
+    void queryClient.invalidateQueries(targetAccountQueryFilter);
     setOpen(false);
   }
 

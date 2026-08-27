@@ -123,7 +123,6 @@ export default function CollectionEditor({ collection }: Props) {
             <CollectionRefetchButton id={collection.id} form={form} />
           </div>
 
-          {/* oxlint-disable-next-line react/react-compiler */}
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
             className="flex flex-col gap-4"

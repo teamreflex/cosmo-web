@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "effect": "catalog:",
-    "puppeteer-core": "^24.43.1"
+    "puppeteer-core": "^25.8.0"
   },
   "devDependencies": {
     "@apollo/lint": "workspace:*",

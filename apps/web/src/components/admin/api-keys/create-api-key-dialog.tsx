@@ -139,7 +139,6 @@ export default function CreateApiKeyDialog() {
                 {m.admin_api_key_create_description()}
               </DialogDescription>
             </DialogHeader>
-            {/* oxlint-disable-next-line react/react-compiler */}
             <form
               onSubmit={form.handleSubmit(handleSubmit)}
               className="flex flex-col gap-4"

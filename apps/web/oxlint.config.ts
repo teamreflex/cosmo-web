@@ -48,7 +48,6 @@ export default defineConfig({
         ],
       },
     ],
-    "react/react-compiler": "error",
     "@tanstack/query/exhaustive-deps": "error",
   },
   overrides: [
@@ -71,6 +70,7 @@ export default defineConfig({
         "anti-slop/no-unsafe-dictionary-type": "off",
         "anti-slop/no-widen-then-assert": "off",
         "anti-slop/require-safety-comment-for-type-assertion": "off",
+        "typescript/restrict-template-expressions": "off",
       },
     },
   ],

@@ -1,4 +1,4 @@
-// oxlint-disable react/react-compiler
+// oxlint-disable react/refs
 import { useElementSize } from "@/hooks/use-element-size";
 import type { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 import { useObjektResponse } from "@/hooks/use-objekt-response";
