@@ -1,4 +1,3 @@
-import { m } from "@/i18n/messages";
 import {
   objektIndexBlockchainQuery,
   objektIndexTypesenseQuery,
