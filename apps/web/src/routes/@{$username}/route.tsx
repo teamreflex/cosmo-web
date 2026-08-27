@@ -19,6 +19,7 @@ import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
 import { tokenBalancesQuery } from "@/lib/queries/como";
 import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
+import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
 import { Addresses, isEqual } from "@apollo/util";
@@ -77,7 +78,7 @@ function RouteComponent() {
                 <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                   <Link
                     to="/@{$username}"
-                    params={{ username: target.cosmo.username }}
+                    params={{ username: profileIdentifier(target.cosmo) }}
                     className="font-cosmo text-2xl leading-none font-black uppercase underline decoration-transparent underline-offset-4 transition-colors hover:decoration-cosmo md:text-3xl"
                   >
                     {target.cosmo.username}

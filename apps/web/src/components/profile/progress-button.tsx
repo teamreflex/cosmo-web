@@ -1,6 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { m } from "@/i18n/messages";
-import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import {
+  type PublicCosmo,
+  profileIdentifier,
+} from "@/lib/universal/cosmo-accounts";
 import { IconChartPie } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 
@@ -13,7 +16,7 @@ export default function ProgressButton({ cosmo }: Props) {
     <Button variant="outline" size="profile" data-profile asChild>
       <Link
         to="/@{$username}/progress"
-        params={{ username: cosmo.isAddress ? cosmo.address : cosmo.username }}
+        params={{ username: profileIdentifier(cosmo) }}
       >
         <IconChartPie className="h-5 w-5" />
         <span>{m.progress_title()}</span>

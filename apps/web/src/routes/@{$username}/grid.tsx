@@ -9,6 +9,7 @@ import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { artistsQuery, currentAccountQuery } from "@/lib/queries/core";
 import { gridLedgerQuery } from "@/lib/queries/grid";
+import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { gridFrontendSchema } from "@/lib/universal/parsers";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
@@ -49,7 +50,8 @@ export const Route = createFileRoute("/@{$username}/grid")({
             username: loaderData.target.cosmo.username,
           })
         : m.grid_title(),
-      canonical: `/@${loaderData?.target.cosmo.username}/grid`,
+      canonical:
+        loaderData && `/@${profileIdentifier(loaderData.target.cosmo)}/grid`,
     }),
 });
 

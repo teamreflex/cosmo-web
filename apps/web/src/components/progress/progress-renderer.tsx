@@ -2,6 +2,7 @@ import { useArtists } from "@/hooks/use-artists";
 import { useProfileContext } from "@/hooks/use-profile";
 import { useProgressFilters } from "@/hooks/use-progress-filters";
 import { m } from "@/i18n/messages";
+import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
 import { IconLayoutGrid, IconRefresh } from "@tabler/icons-react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
@@ -72,9 +73,7 @@ export default function ProgressRenderer(props: Props) {
           >
             <Link
               to="/@{$username}/grid"
-              params={{
-                username: cosmo.isAddress ? cosmo.address : cosmo.username,
-              }}
+              params={{ username: profileIdentifier(cosmo) }}
               search={{ artist: filters.artist, member: filters.member }}
             >
               <IconLayoutGrid className="size-4" />

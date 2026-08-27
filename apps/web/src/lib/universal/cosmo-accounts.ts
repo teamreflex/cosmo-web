@@ -20,3 +20,12 @@ export type FullAccount = {
   objektLists: ObjektList[];
   verified: boolean;
 };
+
+/**
+ * The identifier a profile routes under. Address-only profiles carry a
+ * truncated address as their display name, so only real accounts can be
+ * routed by username.
+ */
+export function profileIdentifier(cosmo: PublicCosmo) {
+  return cosmo.isAddress ? cosmo.address : cosmo.username;
+}
