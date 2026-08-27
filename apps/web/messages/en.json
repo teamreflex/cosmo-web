@@ -784,7 +784,7 @@
   "gravity_totals_reveal": "Candidate totals reveal when counting begins",
 
   "_comment_blockchain": "Blockchain strings",
-  "blockchain_types": "types",
+  "blockchain_types": "Types",
   "blockchain_total": "total",
 
   "_comment_chart": "Chart strings",

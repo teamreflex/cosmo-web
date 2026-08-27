@@ -4,6 +4,7 @@ import {
   objektIndexTypesenseQuery,
 } from "@/lib/queries/objekt-queries";
 import { track } from "@/lib/utils";
+import { IconCards } from "@tabler/icons-react";
 import { getRouteApi } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useArtists } from "./use-artists";
@@ -44,9 +45,12 @@ export function useObjektIndex() {
       calculateTotal: (data) => {
         const total = data.pages[0]?.total ?? 0;
         return (
-          <p className="font-mono text-xxs tracking-[0.14em] text-muted-foreground uppercase sm:text-xs">
-            {total.toLocaleString("en")} {m.common_total()}
-          </p>
+          <div className="flex items-center gap-2">
+            <IconCards className="size-4" />
+            <p className="text-xxs tracking-[0.14em] text-muted-foreground sm:text-xs">
+              {total.toLocaleString("en")}
+            </p>
+          </div>
         );
       },
       getItems: (data) => data.pages.flatMap((page) => page.objekts),
@@ -61,9 +65,12 @@ export function useObjektIndex() {
     calculateTotal: (data) => {
       const total = data.pages[0]?.total ?? 0;
       return (
-        <p className="font-mono text-xs tracking-[0.14em] text-muted-foreground uppercase">
-          {total.toLocaleString("en")} {m.common_total()}
-        </p>
+        <div className="flex items-center gap-2">
+          <IconCards className="size-4" />
+          <p className="text-xxs tracking-[0.14em] text-muted-foreground sm:text-xs">
+            {total.toLocaleString("en")}
+          </p>
+        </div>
       );
     },
     getItems: (data) => data.pages.flatMap((page) => page.objekts),

@@ -43,7 +43,7 @@ export default function ArtistGroupedMultiSelect({
                 alt={group.artist.title}
                 className="size-4 shrink-0 rounded-full"
               />
-              <span className="font-mono text-xxs tracking-[0.14em] text-muted-foreground uppercase">
+              <span className="text-xs font-semibold text-muted-foreground">
                 {group.artist.title}
               </span>
             </div>
