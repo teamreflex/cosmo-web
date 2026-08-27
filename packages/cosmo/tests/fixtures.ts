@@ -344,6 +344,110 @@ export const combinationPollChoices = {
   ],
 } satisfies CosmoPollChoices;
 
+// unit polls lay out like a single poll — one choice per member pairing —
+// plus the member alias -> card image map COSMO joins with the artist roster
+export const unitPollChoices = {
+  id: 11,
+  artist: "artms",
+  pollIdOnChain: 247,
+  gravityId: 101,
+  type: "unit-poll",
+  indexInGravity: 0,
+  title: "Unit Poll",
+  imageUrl: "https://static.cosmo.fans/poll-unit.png",
+  startDate: "2026-09-01T00:00:00.000Z",
+  endDate: "2026-09-08T00:00:00.000Z",
+  revealDate: "2026-09-09T00:00:00.000Z",
+  finalized: false,
+  pollViewMetadata: {
+    title: "Unit Poll",
+    background: null,
+    defaultContent: {
+      type: "image",
+      imageUrl: "https://static.cosmo.fans/poll-unit-default.png",
+      title: "Default",
+      description: "Default content",
+    },
+    selectedContent: [
+      {
+        // the pairing doubles as the choice id, and unit polls omit content.id
+        choiceId: "HeeJin·HaSeul",
+        content: {
+          type: "image",
+          imageUrl: "https://static.cosmo.fans/unit-1-selected.png",
+          title: "HeeJin·HaSeul",
+          description: "HeeJin·HaSeul",
+        },
+      },
+    ],
+    choiceViewType: "vertical",
+    memberImages: {
+      HeeJin: "https://static.cosmo.fans/member-heejin.png",
+      HaSeul: "https://static.cosmo.fans/member-haseul.png",
+    },
+  },
+  choices: [
+    {
+      id: "HeeJin·HaSeul",
+      title: "HeeJin·HaSeul",
+      description: "HeeJin·HaSeul",
+      txImageUrl: "https://static.cosmo.fans/unit-1.png",
+    },
+  ],
+} satisfies CosmoPollChoices;
+
+// a finalized unit gravity: the gravity itself is an ordinary event-gravity,
+// and its results read like a single poll's (votedChoice, not votedSlots)
+export const unitGravity = {
+  id: 206,
+  artist: "artms",
+  title: "Unit Gravity",
+  description: "A finalized unit gravity",
+  type: "event-gravity",
+  pollType: "unit-poll",
+  bannerImageUrl: "https://static.cosmo.fans/gravity-unit.png",
+  entireStartDate: "2026-09-01T00:00:00.000Z",
+  entireEndDate: "2026-09-02T00:00:00.000Z",
+  body: [{ type: "heading", text: "Results", align: "center" }],
+  contractOutlink: "https://abscan.org/address/0x0",
+  polls: [
+    {
+      id: 11,
+      artist: "artms",
+      artistId: "artms",
+      pollIdOnChain: 247,
+      gravityId: 206,
+      type: "unit-poll",
+      indexInGravity: 0,
+      title: "Unit Poll",
+      imageUrl: "https://static.cosmo.fans/poll-unit.png",
+      startDate: "2026-09-01T00:00:00.000Z",
+      endDate: "2026-09-08T00:00:00.000Z",
+      revealDate: "2026-09-09T00:00:00.000Z",
+      finalized: true,
+      result: {
+        totalComoUsed: 100,
+        voteResults: [
+          {
+            rank: 1,
+            votedChoice: {
+              choiceName: "HeeJin·HaSeul",
+              choiceImageUrl: "",
+              comoUsed: 60,
+            },
+          },
+        ],
+      },
+    },
+  ],
+  result: {
+    totalComoUsed: 100,
+    resultImageUrl: "https://static.cosmo.fans/gravity-unit-result.png",
+    resultTitle: "HeeJin·HaSeul wins",
+  },
+  leaderboard: { userRanking: [] },
+} satisfies CosmoPastGravity;
+
 export const credentials = {
   accessToken: "new-access-token",
   refreshToken: "new-refresh-token",

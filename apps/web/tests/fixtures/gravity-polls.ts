@@ -215,3 +215,91 @@ export const singlePoll = {
     },
   ],
 } satisfies CosmoPollChoices;
+
+/**
+ * A unit poll shaped like the ARTMS unit gravity: every member pairing is one
+ * choice, so the on-chain candidate list is flat and a choice's position in
+ * `choices` is its candidate id. `memberImages` maps a member name onto the
+ * card COSMO draws for it; the pairing doubles as the choice id.
+ *
+ * Candidate ids: 0 HeeJin·HaSeul, 1 HeeJin·KimLip, 2 HaSeul·KimLip.
+ */
+export const unitPoll = {
+  id: 247,
+  artist: "artms",
+  pollIdOnChain: 247,
+  gravityId: 40,
+  type: "unit-poll",
+  indexInGravity: 0,
+  title: "Unit Gravity",
+  imageUrl: "https://static.cosmo.fans/poll-247.png",
+  startDate: "2026-09-01T09:00:00.000Z",
+  endDate: "2026-09-02T09:00:00.000Z",
+  revealDate: "2026-09-02T11:00:00.000Z",
+  finalized: false,
+  pollViewMetadata: {
+    title: "Unit Gravity",
+    background: null,
+    defaultContent: {
+      type: "image",
+      imageUrl: "https://static.cosmo.fans/default.png",
+      title: "Pick a unit",
+      description: "",
+    },
+    selectedContent: [
+      {
+        choiceId: "HeeJin·HaSeul",
+        content: {
+          type: "image",
+          imageUrl: "https://static.cosmo.fans/heejin-haseul.png",
+          title: "HeeJin·HaSeul",
+          description: "",
+        },
+      },
+      {
+        choiceId: "HeeJin·KimLip",
+        content: {
+          type: "image",
+          imageUrl: "https://static.cosmo.fans/heejin-kimlip.png",
+          title: "HeeJin·KimLip",
+          description: "",
+        },
+      },
+      {
+        choiceId: "HaSeul·KimLip",
+        content: {
+          type: "image",
+          imageUrl: "https://static.cosmo.fans/haseul-kimlip.png",
+          title: "HaSeul·KimLip",
+          description: "",
+        },
+      },
+    ],
+    choiceViewType: "vertical",
+    memberImages: {
+      HeeJin: "https://static.cosmo.fans/member-heejin.png",
+      HaSeul: "https://static.cosmo.fans/member-haseul.png",
+      KimLip: "https://static.cosmo.fans/member-kimlip.png",
+    },
+  },
+  choices: [
+    {
+      id: "HeeJin·HaSeul",
+      title: "HeeJin·HaSeul",
+      description: "",
+      txImageUrl: "https://static.cosmo.fans/heejin-haseul.png",
+    },
+    {
+      id: "HeeJin·KimLip",
+      title: "HeeJin·KimLip",
+      description: "",
+      txImageUrl: "https://static.cosmo.fans/heejin-kimlip.png",
+    },
+    {
+      id: "HaSeul·KimLip",
+      title: "HaSeul·KimLip",
+      description: "",
+      txImageUrl: "https://static.cosmo.fans/haseul-kimlip.png",
+    },
+  ],
+} satisfies CosmoPollChoices;

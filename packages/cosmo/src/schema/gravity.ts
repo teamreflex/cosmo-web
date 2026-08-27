@@ -47,7 +47,9 @@ const BodyItemSchema = Schema.Union([
   CosmoBodyVideoSchema,
 ]);
 
-const pollCommonFields = <T extends "single-poll" | "combination-poll">(
+const pollCommonFields = <
+  T extends "single-poll" | "combination-poll" | "unit-poll",
+>(
   type: T,
 ) => ({
   id: Schema.Number,
@@ -115,9 +117,21 @@ export const CombinationPollFinalizedSchema = Schema.Struct({
   }),
 });
 
+// unit polls pick two members per vote, but each pairing is one choice, so
+// results read like a single poll's
+export const UnitPollFinalizedSchema = Schema.Struct({
+  ...pollCommonFields("unit-poll"),
+  finalized: Schema.Literal(true),
+  result: Schema.Struct({
+    totalComoUsed: Schema.Number,
+    voteResults: Schema.mutable(Schema.Array(SinglePollVoteResultSchema)),
+  }),
+});
+
 export const PollFinalizedSchema = Schema.Union([
   SinglePollFinalizedSchema,
   CombinationPollFinalizedSchema,
+  UnitPollFinalizedSchema,
 ]);
 
 /**
@@ -133,6 +147,10 @@ export const PollUpcomingSchema = Schema.Union([
     ...pollCommonFields("combination-poll"),
     finalized: Schema.Boolean,
   }),
+  Schema.Struct({
+    ...pollCommonFields("unit-poll"),
+    finalized: Schema.Boolean,
+  }),
 ]);
 
 export const GravityCommonFieldsSchema = Schema.Struct({
@@ -141,7 +159,7 @@ export const GravityCommonFieldsSchema = Schema.Struct({
   title: Schema.String,
   description: Schema.String,
   type: Schema.Literals(["event-gravity", "grand-gravity"]),
-  pollType: Schema.Literals(["single-poll", "combination-poll"]),
+  pollType: Schema.Literals(["single-poll", "combination-poll", "unit-poll"]),
   bannerImageUrl: Schema.String,
   entireStartDate: Schema.String,
   entireEndDate: Schema.String,
@@ -263,7 +281,21 @@ export const CombinationPollViewMetadataSchema = Schema.Struct({
   ),
 });
 
-const pollChoicesCommonFields = <T extends "single-poll" | "combination-poll">(
+// unit polls lay out like a single poll, adding a member name -> card image
+// map; the member roster itself is a separate request COSMO joins client-side.
+// unlike single polls they ship no `selectContent`
+export const UnitPollViewMetadataSchema = Schema.Struct({
+  title: Schema.String,
+  background: Schema.Null,
+  defaultContent: PollViewDefaultContentSchema,
+  selectedContent: Schema.mutable(Schema.Array(PollViewSelectedContentSchema)),
+  choiceViewType: Schema.Literals(["vertical", "horizontal"]),
+  memberImages: Schema.Record(Schema.String, Schema.String),
+});
+
+const pollChoicesCommonFields = <
+  T extends "single-poll" | "combination-poll" | "unit-poll",
+>(
   type: T,
 ) => ({
   id: Schema.Number,
@@ -309,6 +341,11 @@ export const PollChoicesSchema = Schema.Union([
     choices: Schema.mutable(
       Schema.Array(Schema.Union([PollChoiceSchema, PollChoicePairSchema])),
     ),
+  }),
+  Schema.Struct({
+    ...pollChoicesCommonFields("unit-poll"),
+    pollViewMetadata: UnitPollViewMetadataSchema,
+    choices: Schema.mutable(Schema.Array(PollChoiceSchema)),
   }),
 ]);
 

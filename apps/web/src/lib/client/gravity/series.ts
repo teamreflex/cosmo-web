@@ -1,5 +1,5 @@
-import type { ChartSegment, Reveal } from "./types";
 import type { PollSlotModel } from "./slots";
+import type { ChartSegment, Reveal } from "./types";
 
 /** Trajectory lines a single poll draws, for its leading candidates. */
 export const TOP_CANDIDATE_COUNT = 3;
@@ -48,10 +48,11 @@ type ChartSeriesInput = {
 
 /**
  * Lines a slot contributes: a combination poll draws each slot's top two, a
- * single poll races everything in one slot and draws its top candidates.
+ * single or unit poll races everything in one slot and draws its top
+ * candidates.
  */
 export function slotLineCount(model: PollSlotModel): number {
-  return model.kind === "single" ? TOP_CANDIDATE_COUNT : 2;
+  return model.kind === "combination" ? 2 : TOP_CANDIDATE_COUNT;
 }
 
 /**

@@ -5,6 +5,8 @@ import {
   countingGravity,
   pastGravity,
   pollChoices,
+  unitGravity,
+  unitPollChoices,
   upcomingGravity,
 } from "./fixtures";
 import { handle, recorder, runTest } from "./test-client";
@@ -90,6 +92,14 @@ describe("fetchGravity", () => {
     });
     expect(rec.requests).toHaveLength(1);
   });
+
+  it("unwraps a finalized unit gravity", async () => {
+    handle.get("https://api.cosmo.fans/bff/v3/gravities/206", () =>
+      Response.json({ gravity: unitGravity }),
+    );
+
+    expect(await runTest(fetchGravity("token-123", 206))).toEqual(unitGravity);
+  });
 });
 
 describe("fetchPoll", () => {
@@ -109,6 +119,14 @@ describe("fetchPoll", () => {
     expect(await runTest(fetchPoll("token-123", 9))).toEqual(
       combinationPollChoices,
     );
+  });
+
+  it("decodes the unit poll choices variant", async () => {
+    handle.get("https://api.cosmo.fans/bff/v3/polls/11", () =>
+      Response.json({ pollDetail: unitPollChoices }),
+    );
+
+    expect(await runTest(fetchPoll("token-123", 11))).toEqual(unitPollChoices);
   });
 
   it("rejects with the response status after retries", async () => {

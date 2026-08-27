@@ -1,7 +1,15 @@
 import { describe, expect, it } from "bun:test";
 import type { RevealBatch } from "../src/lib/client/gravity/reveals";
-import { buildSlotModel, rankSlots } from "../src/lib/client/gravity/slots";
-import { combinationPoll, singlePoll } from "./fixtures/gravity-polls";
+import {
+  buildSlotModel,
+  candidateLabel,
+  rankSlots,
+} from "../src/lib/client/gravity/slots";
+import {
+  combinationPoll,
+  singlePoll,
+  unitPoll,
+} from "./fixtures/gravity-polls";
 
 // candidate ids 0..5, see the fixture for the combination they encode
 const como = [10, 20, 5, 1, 7, 3];
@@ -73,6 +81,63 @@ describe("buildSlotModel", () => {
     expect(slot?.candidates.map((candidate) => candidate.candidateIds)).toEqual(
       [[0], [1], [2]],
     );
+  });
+
+  it("races a unit poll's pairings in one implicit slot", () => {
+    const model = buildSlotModel(unitPoll);
+    const [slot] = model.slots;
+
+    expect(model.kind).toBe("unit");
+    expect(model.slots).toHaveLength(1);
+    expect(names(slot?.candidates ?? [])).toEqual([
+      "HeeJin·HaSeul",
+      "HeeJin·KimLip",
+      "HaSeul·KimLip",
+    ]);
+    expect(slot?.candidates.map((candidate) => candidate.candidateIds)).toEqual(
+      [[0], [1], [2]],
+    );
+  });
+
+  it("splits a unit poll's pairing into its members", () => {
+    const [slot] = buildSlotModel(unitPoll).slots;
+
+    expect(slot?.candidates[0]?.members).toEqual([
+      {
+        name: "HeeJin",
+        imageUrl: "https://static.cosmo.fans/member-heejin.png",
+      },
+      {
+        name: "HaSeul",
+        imageUrl: "https://static.cosmo.fans/member-haseul.png",
+      },
+    ]);
+  });
+
+  it("reads a pairing as its members and everything else as its title", () => {
+    const [unit] = buildSlotModel(unitPoll).slots;
+    const [single] = buildSlotModel(singlePoll).slots;
+
+    expect(unit?.candidates.map(candidateLabel)).toEqual([
+      "HeeJin + HaSeul",
+      "HeeJin + KimLip",
+      "HaSeul + KimLip",
+    ]);
+    expect(single?.candidates.map(candidateLabel)).toEqual([
+      "Song A",
+      "Song B",
+      "Song C",
+    ]);
+  });
+
+  it("leaves a single poll's candidates without pairing members", () => {
+    const [slot] = buildSlotModel(singlePoll).slots;
+
+    expect(slot?.candidates.map((candidate) => candidate.members)).toEqual([
+      [],
+      [],
+      [],
+    ]);
   });
 
   it("refuses a combination poll whose metadata skips a choice", () => {

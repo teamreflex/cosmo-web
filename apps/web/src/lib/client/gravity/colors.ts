@@ -3,6 +3,7 @@ import type {
   CosmoMemberBFF,
 } from "@apollo/cosmo/types/artists";
 import type { CosmoPollChoices } from "@apollo/cosmo/types/gravity";
+import { candidateLabel } from "./slots";
 import type { PollSlot, PollSlotModel } from "./slots";
 import { pollCandidates } from "./util";
 
@@ -125,7 +126,7 @@ export function resolveChoiceStyles(
     (candidate) => candidate.content.imageUrl,
   );
 
-  if (model.kind === "single") {
+  if (model.kind !== "combination") {
     const [slot] = model.slots;
     const colors = resolveCandidateColors(
       artist,
@@ -135,7 +136,7 @@ export function resolveChoiceStyles(
     for (const candidate of slot.candidates) {
       for (const candidateId of candidate.candidateIds) {
         styles.set(candidateId, {
-          label: candidate.name,
+          label: candidateLabel(candidate),
           color: colors.color(candidateId),
           imageUrl: firstImage(images[candidateId], candidate.imageUrl),
         });
@@ -192,9 +193,9 @@ export function resolveChartLines(
     return slot.candidates.map((candidate) => ({
       key: `${slot.id}:${candidate.name}`,
       label:
-        model.kind === "single"
-          ? candidate.name
-          : `${slot.name} – ${candidate.name}`,
+        model.kind === "combination"
+          ? `${slot.name} – ${candidate.name}`
+          : candidateLabel(candidate),
       color: color(candidate.name),
       candidateIds: candidate.candidateIds,
     }));
@@ -214,9 +215,9 @@ export function resolveSlotColors(
 ): (name: string) => string {
   const names = slot.candidates.map((candidate) => candidate.name);
   const colors =
-    model.kind === "single"
-      ? resolveCandidateColors(artist, names).colors
-      : names.map((name, index) => resolveCandidateColor(artist, name, index));
+    model.kind === "combination"
+      ? names.map((name, index) => resolveCandidateColor(artist, name, index))
+      : resolveCandidateColors(artist, names).colors;
   const byName = new Map(names.map((name, index) => [name, colors[index]]));
 
   return (name) => byName.get(name) ?? resolveCandidateColor(artist, name, 0);
@@ -224,10 +225,15 @@ export function resolveSlotColors(
 
 /**
  * Case-insensitive name match, mirroring how `useArtists` keys its member map.
+ * Falls back to the member's alias, which is how COSMO labels a tripleS member
+ * (S1, S2, …) where it doesn't spell the name out.
  */
 function findMember(members: CosmoMemberBFF[], name: string) {
   const lower = name.toLowerCase();
-  return members.find((member) => member.name.toLowerCase() === lower);
+  return (
+    members.find((member) => member.name.toLowerCase() === lower) ??
+    members.find((member) => member.alias.toLowerCase() === lower)
+  );
 }
 
 /**

@@ -30,14 +30,14 @@ export function getPollStatus(
 
 /**
  * Candidate display content for a poll, in on-chain candidate order.
- * Single polls provide it directly; combination polls (the 2022-2023 grand
- * gravities) use slot-based view metadata instead, so their candidate content
- * is derived from the choices.
+ * Single and unit polls provide it directly; combination polls (the 2022-2023
+ * grand gravities) use slot-based view metadata instead, so their candidate
+ * content is derived from the choices.
  */
 export function pollCandidates(
   poll: CosmoPollChoices,
 ): PollSelectedContentImage[] {
-  if (poll.type === "single-poll") {
+  if (poll.type !== "combination-poll") {
     return poll.pollViewMetadata.selectedContent;
   }
 

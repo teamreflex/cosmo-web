@@ -50,7 +50,7 @@ export default function CandidateBreakdown(props: Props) {
           key={column.ranking.slot.id}
           ranking={column.ranking}
           color={column.color}
-          single={props.model.kind === "single"}
+          kind={props.model.kind}
         />
       ))}
     </div>
@@ -60,18 +60,20 @@ export default function CandidateBreakdown(props: Props) {
 type SlotCardProps = {
   ranking: SlotRanking;
   color: (name: string) => string;
-  /**
-   * A single poll races every candidate in one column: titled as the ranking,
-   * nothing folded away.
-   */
-  single: boolean;
+  kind: PollSlotModel["kind"];
 };
 
 function SlotCard(props: SlotCardProps) {
   const [expanded, setExpanded] = useState(false);
+  const isCombination = props.kind === "combination";
 
   const rows = props.ranking.rows;
-  const limit = props.single ? rows.length : VISIBLE_CANDIDATES;
+  /**
+   * A single poll races a handful of candidates, so it shows them all. Unit
+   * polls race every pairing of the artist's members, which squares the field,
+   * so they fold their tail like a combination slot does.
+   */
+  const limit = props.kind === "single" ? rows.length : VISIBLE_CANDIDATES;
   const visible = expanded ? rows : rows.slice(0, limit);
   const tail = rows.slice(limit);
 
@@ -80,10 +82,10 @@ function SlotCard(props: SlotCardProps) {
       <h2
         className={cn(
           "min-w-0 truncate text-sm font-semibold",
-          !props.single && "font-cosmo tracking-wide uppercase",
+          isCombination && "font-cosmo tracking-wide uppercase",
         )}
       >
-        {props.single ? m.gravity_ranking() : props.ranking.slot.name}
+        {isCombination ? props.ranking.slot.name : m.gravity_ranking()}
       </h2>
 
       <div className="flex flex-col">
@@ -93,7 +95,11 @@ function SlotCard(props: SlotCardProps) {
             layout
             transition={ROW_TRANSITION}
           >
-            <RaceRow row={row} color={props.color(row.candidate.name)} />
+            <RaceRow
+              row={row}
+              color={props.color(row.candidate.name)}
+              memberColor={props.color}
+            />
           </motion.div>
         ))}
       </div>

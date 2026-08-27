@@ -3,6 +3,14 @@ import type { RevealBatch } from "./reveals";
 import { pollCandidates } from "./util";
 
 /**
+ * A member a unit poll's pairing picks, with the card COSMO ships for it.
+ */
+export type SlotCandidateMember = {
+  name: string;
+  imageUrl: string | undefined;
+};
+
+/**
  * One entry in a slot's race. Combination polls repeat a member across many
  * on-chain choices, so a slot candidate owns every candidate id whose choice
  * places it in that slot; single polls own exactly one.
@@ -12,6 +20,8 @@ export type SlotCandidate = {
   imageUrl: string;
   /** On-chain candidate ids, indexes into `comoPerCandidate`. */
   candidateIds: number[];
+  /** The members a unit poll's pairing picks; empty for every other poll. */
+  members: SlotCandidateMember[];
 };
 
 export type PollSlot = {
@@ -21,12 +31,15 @@ export type PollSlot = {
 };
 
 /**
- * A poll's candidates grouped into the columns they are raced in. Single polls
- * carry one implicit slot so both kinds render through the same rows; the kind
- * only decides the surrounding layout.
+ * A poll's candidates grouped into the columns they are raced in. Single and
+ * unit polls carry one implicit slot so every kind renders through the same
+ * rows; the kind only decides the surrounding layout. Unit polls are their own
+ * kind because pairing every member squares the field, so their column folds
+ * its tail the way a combination slot does.
  */
 export type PollSlotModel =
   | { kind: "single"; slots: [PollSlot] }
+  | { kind: "unit"; slots: [PollSlot] }
   | { kind: "combination"; slots: PollSlot[] };
 
 /**
@@ -59,12 +72,18 @@ export type SlotRanking = {
 };
 
 /**
- * Group a poll's candidates into slots.
+ * Group a poll's candidates into slots. A unit poll races member pairings, but
+ * each pairing is one on-chain choice, so it slots like a single poll.
  */
 export function buildSlotModel(poll: CosmoPollChoices): PollSlotModel {
-  if (poll.type === "single-poll") {
+  if (poll.type !== "combination-poll") {
+    const memberImages =
+      poll.type === "unit-poll"
+        ? poll.pollViewMetadata.memberImages
+        : undefined;
+
     return {
-      kind: "single",
+      kind: poll.type === "unit-poll" ? "unit" : "single",
       slots: [
         {
           id: String(poll.id),
@@ -73,6 +92,7 @@ export function buildSlotModel(poll: CosmoPollChoices): PollSlotModel {
             name: candidate.content.title,
             imageUrl: candidate.content.imageUrl,
             candidateIds: [candidateId],
+            members: pairingMembers(candidate.content.title, memberImages),
           })),
         },
       ],
@@ -146,12 +166,24 @@ export function buildSlotModel(poll: CosmoPollChoices): PollSlotModel {
                   name: slotChoice.name,
                   imageUrl: slotChoice.roundImageUrl,
                   candidateIds,
+                  members: [],
                 },
               ];
         }),
       };
     }),
   };
+}
+
+/**
+ * How a candidate reads: a unit pairing joins the members it picks, everything
+ * else is titled as COSMO titles it. The candidate's own `name` stays COSMO's
+ * string, so it remains the identity the colors and reveals key off.
+ */
+export function candidateLabel(candidate: SlotCandidate): string {
+  return candidate.members.length > 0
+    ? candidate.members.map((member) => member.name).join(" + ")
+    : candidate.name;
 }
 
 /**
@@ -236,6 +268,33 @@ function rankValues(entries: { name: string; value: number }[]): number[] {
     ranks[entry.index] = position + 1;
   }
   return ranks;
+}
+
+/** COSMO joins the members of a unit poll's pairing with a middle dot. */
+const PAIRING_SEPARATOR = "·";
+
+/**
+ * Split a unit poll's pairing into the members it picks. Every other poll
+ * races whole candidates, so it has none to split out.
+ */
+function pairingMembers(
+  title: string,
+  memberImages: Record<string, string> | undefined,
+): SlotCandidateMember[] {
+  if (memberImages === undefined || !title.includes(PAIRING_SEPARATOR)) {
+    return [];
+  }
+
+  return title.split(PAIRING_SEPARATOR).map((part) => {
+    const name = part.trim();
+    const imageUrl = memberImages[name];
+    // COSMO ships an empty string where it has no image
+    return {
+      name,
+      imageUrl:
+        imageUrl !== undefined && imageUrl.length > 0 ? imageUrl : undefined,
+    };
+  });
 }
 
 /**
