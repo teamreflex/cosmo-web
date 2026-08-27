@@ -10,7 +10,11 @@ import {
   resolveSlotColors,
 } from "../src/lib/client/gravity/colors";
 import { buildSlotModel } from "../src/lib/client/gravity/slots";
-import { combinationPoll, singlePoll } from "./fixtures/gravity-polls";
+import {
+  combinationPoll,
+  singlePoll,
+  unitPoll,
+} from "./fixtures/gravity-polls";
 
 function member(name: string, primaryColorHex: string): CosmoMemberBFF {
   return {
@@ -179,7 +183,46 @@ describe("resolveChoiceStyles", () => {
   });
 });
 
+describe("member aliases", () => {
+  it("colors a candidate named by a member's alias", () => {
+    const seoyeon = { ...member("SeoYeon", "#ff9ecd"), alias: "S1" };
+    const withAliases = {
+      artistMembers: [member("HeeJin", "#8fcfe7"), seoyeon],
+    };
+
+    // index 0 would give HeeJin's color, so the alias is what resolves this
+    expect(resolveCandidateColor(withAliases, "S1", 0)).toBe("#ff9ecd");
+  });
+});
+
 describe("resolveChartLines", () => {
+  // the unit fixture pairs HeeJin, HaSeul and KimLip
+  const unitArtist = {
+    artistMembers: [
+      member("HeeJin", "#8fcfe7"),
+      member("HaSeul", "#b1e3ff"),
+      member("KimLip", "#ff5b31"),
+    ],
+  };
+
+  it("runs a unit pairing's line between its two members' colors", () => {
+    const [lines] = resolveChartLines(unitArtist, buildSlotModel(unitPoll));
+
+    expect(lines?.map((line) => line.gradient)).toEqual([
+      ["#8fcfe7", "#b1e3ff"],
+      ["#8fcfe7", "#ff5b31"],
+      ["#b1e3ff", "#ff5b31"],
+    ]);
+    // the solid color is the pairing's first member, not its palette position
+    expect(lines?.[1]?.color).toBe("#8fcfe7");
+  });
+
+  it("leaves a single poll's lines without a gradient", () => {
+    const [lines] = resolveChartLines(artist, buildSlotModel(singlePoll));
+
+    expect(lines?.map((line) => line.gradient)).toEqual([null, null, null]);
+  });
+
   it("names a single poll's lines after the candidate", () => {
     const lines = resolveChartLines(artist, buildSlotModel(singlePoll));
 

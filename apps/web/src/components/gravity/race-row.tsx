@@ -113,7 +113,11 @@ function Pairing(props: {
           style={{ "--member-color": props.color(member.name) }}
         >
           <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
-          <AvatarImage src={member.imageUrl} alt={member.name} />
+          <AvatarImage
+            src={member.imageUrl}
+            alt={member.name}
+            className="object-cover"
+          />
         </Avatar>
       ))}
     </div>

@@ -1,6 +1,12 @@
 import GravityHeader from "@/components/gravity/gravity-header";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
+import type { ChartLine } from "@/lib/client/gravity/colors";
+import {
+  hashedColor,
+  resolveChartLines,
+  resolveChoiceStyles,
+} from "@/lib/client/gravity/colors";
 import {
   useChartSeries,
   useGravityData,
@@ -8,14 +14,8 @@ import {
   useReveals,
   useSlotRankings,
 } from "@/lib/client/gravity/hooks";
-import type { LiveStatus } from "@/lib/client/gravity/types";
-import type { ChartLine } from "@/lib/client/gravity/colors";
-import {
-  hashedColor,
-  resolveChartLines,
-  resolveChoiceStyles,
-} from "@/lib/client/gravity/colors";
 import type { ChartSeries } from "@/lib/client/gravity/series";
+import type { LiveStatus } from "@/lib/client/gravity/types";
 import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import type {
   CosmoOngoingGravity,
@@ -26,10 +26,10 @@ import { Suspense, useMemo } from "react";
 import CandidateBreakdown from "./candidate-breakdown";
 import Countdown from "./countdown";
 import RecentVotes from "./recent-votes";
-import UserRankings from "./user-rankings";
-import VotingPanel from "./voting-panel";
 import type { TrajectoryLine } from "./timeline-chart";
 import TimelineChart from "./timeline-chart";
+import UserRankings from "./user-rankings";
+import VotingPanel from "./voting-panel";
 
 export type Props = {
   artist: CosmoArtistWithMembersBFF;
@@ -155,14 +155,19 @@ function buildTrajectoryLines(
       return [];
     }
 
-    const color = drawn.has(group.color) ? hashedColor(group.key) : group.color;
-    drawn.add(color);
+    // a pairing is unique in its two members, so it dedupes on the pair
+    const identity = group.gradient?.join("→") ?? group.color;
+    const collides = drawn.has(identity);
+    const color = collides ? hashedColor(group.key) : group.color;
+    drawn.add(collides ? color : identity);
 
     return [
       {
         key: entry.key,
         label: group.label,
         color,
+        // a re-hashed line has left its members behind, so it draws solid
+        gradient: collides ? null : group.gradient,
         values: entry.values,
       },
     ];

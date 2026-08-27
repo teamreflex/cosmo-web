@@ -7,8 +7,9 @@ import {
 import { useHydrated } from "@/hooks/use-hydrated";
 import { m } from "@/i18n/messages";
 import type { ChartSegment, LiveStatus } from "@/lib/client/gravity/types";
+import { cn } from "@/lib/utils";
 import { addMinutes, format } from "date-fns";
-import { useMemo } from "react";
+import { useId, useMemo, useState } from "react";
 import {
   Bar,
   Cell,
@@ -28,6 +29,8 @@ export type TrajectoryLine = {
   key: string;
   label: string;
   color: string;
+  /** Runs the line and its swatch between two colors; null draws solid. */
+  gradient: readonly [string, string] | null;
   /** One entry per chart segment, null past the reveal frontier. */
   values: (number | null)[];
 };
@@ -45,6 +48,11 @@ type Props = {
 export default function TimelineChart(props: Props) {
   // segment times render in the viewer's timezone, so they wait for the client
   const hydrated = useHydrated();
+  // colons in a generated id break the url(#id) the stroke references
+  const gradientPrefix = useId().replaceAll(":", "");
+  const gradientId = (index: number) => `${gradientPrefix}-line-${index}`;
+  // pointing anywhere at the chart pulls the bars back so the lines read clearly
+  const [hovered, setHovered] = useState(false);
 
   const data = useMemo(
     () =>
@@ -134,7 +142,12 @@ export default function TimelineChart(props: Props) {
             >
               <span
                 className="h-0.5 w-3 rounded-full"
-                style={{ backgroundColor: line.color }}
+                style={{
+                  background:
+                    line.gradient === null
+                      ? line.color
+                      : `linear-gradient(90deg, ${line.gradient[0]}, ${line.gradient[1]})`,
+                }}
               />
               {line.label}
             </span>
@@ -148,7 +161,32 @@ export default function TimelineChart(props: Props) {
         config={config}
         className="aspect-auto h-48 [&_.recharts-cartesian-axis-tick_text]:font-mono"
       >
-        <ComposedChart data={data} margin={{ left: 0, right: 0, top: 4 }}>
+        <ComposedChart
+          data={data}
+          margin={{ left: 0, right: 0, top: 4 }}
+          onMouseEnter={() => setHovered(true)}
+          onMouseLeave={() => setHovered(false)}
+        >
+          <defs>
+            {props.lines.flatMap((line, index) =>
+              line.gradient === null
+                ? []
+                : [
+                    <linearGradient
+                      key={line.key}
+                      id={gradientId(index)}
+                      x1="0"
+                      y1="0"
+                      x2="1"
+                      y2="0"
+                    >
+                      <stop offset="0%" stopColor={line.gradient[0]} />
+                      <stop offset="100%" stopColor={line.gradient[1]} />
+                    </linearGradient>,
+                  ],
+            )}
+          </defs>
+
           <ChartTooltip
             includeHidden
             content={<ChartTooltipContent indicator="dot" className="w-52" />}
@@ -174,6 +212,10 @@ export default function TimelineChart(props: Props) {
             fill="var(--color-cosmo)"
             tooltipType="none"
             isAnimationActive={false}
+            className={cn(
+              "transition-opacity duration-300",
+              hovered && "opacity-25",
+            )}
           >
             {data.map((segment, index) => (
               <Cell
@@ -195,7 +237,11 @@ export default function TimelineChart(props: Props) {
               yAxisId="cumulative"
               type="monotone"
               dataKey={lineKey(index)}
-              stroke={line.color}
+              stroke={
+                line.gradient === null
+                  ? line.color
+                  : `url(#${gradientId(index)})`
+              }
               strokeWidth={2}
               dot={false}
               activeDot={{ r: 3 }}
@@ -214,7 +260,8 @@ export default function TimelineChart(props: Props) {
                     x={end.timestamp}
                     y={end.value}
                     r={3}
-                    fill={line.color}
+                    // the dot caps the line, so it takes the gradient's end
+                    fill={line.gradient?.[1] ?? line.color}
                     stroke="none"
                   />,
                 ];

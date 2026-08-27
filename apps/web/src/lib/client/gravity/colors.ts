@@ -175,6 +175,11 @@ export type ChartLine = {
   key: string;
   label: string;
   color: string;
+  /**
+   * A unit pairing reads as both of its members, so its line and swatch run
+   * between their colors. Null for a line drawn in one color.
+   */
+  gradient: readonly [string, string] | null;
   /** On-chain candidate ids the line sums, indexes into `comoPerCandidate`. */
   candidateIds: number[];
 };
@@ -190,15 +195,26 @@ export function resolveChartLines(
   return model.slots.map((slot) => {
     const color = resolveSlotColors(artist, model, slot);
 
-    return slot.candidates.map((candidate) => ({
-      key: `${slot.id}:${candidate.name}`,
-      label:
-        model.kind === "combination"
-          ? `${slot.name} – ${candidate.name}`
-          : candidateLabel(candidate),
-      color: color(candidate.name),
-      candidateIds: candidate.candidateIds,
-    }));
+    return slot.candidates.map((candidate) => {
+      const [first, second] = candidate.members;
+      const gradient =
+        first !== undefined && second !== undefined
+          ? ([color(first.name), color(second.name)] as const)
+          : null;
+
+      return {
+        key: `${slot.id}:${candidate.name}`,
+        label:
+          model.kind === "combination"
+            ? `${slot.name} – ${candidate.name}`
+            : candidateLabel(candidate),
+        // a pairing takes its members' colors rather than the palette position
+        // its label happens to land on
+        color: gradient?.[0] ?? color(candidate.name),
+        gradient,
+        candidateIds: candidate.candidateIds,
+      };
+    });
   });
 }
 
