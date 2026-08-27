@@ -5,6 +5,7 @@ import { isAuthErrorCode } from "@/lib/universal/errors/auth";
  * Maps an auth/session error code to a localized message, or null when the
  * error is not a known auth error code.
  */
+// oxlint-disable-next-line anti-slop/no-unknown-parameters -- boundary parser; caught errors are genuinely unknown
 export function formatAuthError(error: unknown): string | null {
   if (!(error instanceof Error) || !isAuthErrorCode(error.message)) {
     return null;

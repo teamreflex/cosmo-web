@@ -117,6 +117,7 @@ function FilterSelect(props: {
   update: (value: ValidOnlineType | undefined) => void;
 }) {
   function set(value: string) {
+    // SAFETY: non-"combined" select values are ValidOnlineType
     props.update(value === "combined" ? undefined : (value as ValidOnlineType));
   }
 

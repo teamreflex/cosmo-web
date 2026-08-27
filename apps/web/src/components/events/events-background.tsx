@@ -30,6 +30,7 @@ export default function EventsBackground({ event }: EventsBackgroundProps) {
           {/* Dominant color gradient base */}
           <div
             className="absolute inset-0 bg-linear-to-b from-(--album-color) via-(--album-color)/70 to-(--album-color)/20"
+            // SAFETY: CSSProperties doesn't model custom --var properties
             style={{ "--album-color": dominantColor } as React.CSSProperties}
           />
 

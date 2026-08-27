@@ -1,46 +1,14 @@
-export type AuthTicket = {
-  expireAt: string;
-  ticket: string;
-};
+import type {
+  AuthTicketSchema,
+  QueryTicketSchema,
+  TicketUserSchema,
+} from "../schema/qr-auth.ts";
 
-type TicketWaitingForAction = {
-  status: "wait_for_user_action";
-  ticketRemainingMs: number;
-};
+export type AuthTicket = typeof AuthTicketSchema.Type;
 
-// not an actual status but this just makes the invalid state easier to handle
-type TicketInvalid = {
-  status: "invalid";
-};
+export type TicketUser = typeof TicketUserSchema.Type;
 
-export type ProfileImage = {
-  artistName: string;
-  profileImageUrl: string;
-};
-
-export type TicketUser = {
-  id: number;
-  nickname: string;
-  profileImageUrl: string;
-  profileImages: ProfileImage[];
-};
-
-type LoadedTicket<TStatus extends string> = {
-  status: TStatus;
-  ticketRemainingMs: number;
-  ticketOtpRemainingMs: number;
-  profiles: ProfileImage[];
-  user: TicketUser;
-};
-
-type TicketWaitingForCertify = LoadedTicket<"wait_for_certify">;
-type TicketCertified = LoadedTicket<"certified">;
-
-export type QueryTicket =
-  | TicketInvalid
-  | TicketWaitingForAction
-  | TicketWaitingForCertify
-  | TicketCertified;
+export type QueryTicket = typeof QueryTicketSchema.Type;
 
 /**
  * Build the QR code value for the ticket.

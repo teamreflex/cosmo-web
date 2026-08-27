@@ -37,6 +37,7 @@ export function useArtists() {
     const lower = memberName.toLowerCase();
     for (const artist of Object.values(artists)) {
       if (artist.artistMembers.some((m) => m.name.toLowerCase() === lower)) {
+        // SAFETY: COSMO artist ids are ValidArtist values
         return artist.id as ValidArtist;
       }
     }

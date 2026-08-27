@@ -86,6 +86,7 @@ export function paginatedEventsQuery({
           eventType: filters?.type,
         },
       }),
+    // SAFETY: cursor seed; widened for TanStack Query inference
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextStartAfter,
   });

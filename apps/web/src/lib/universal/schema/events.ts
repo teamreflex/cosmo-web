@@ -77,16 +77,18 @@ export type RemoveCollectionInput = z.infer<
 >;
 
 // Bulk import schema (paste slugs)
-export const bulkCollectionImportSchema = z.preprocess((value) => {
-  if (typeof value !== "string") return [];
-  return value
-    .split("\n")
-    .filter(Boolean)
-    .map((line) => {
-      const parts = line.split(" :: ");
-      return {
-        collectionId: parts[0]?.trim() || "",
-        description: parts[1]?.trim() || undefined,
-      };
-    });
-}, z.array(eventCollectionSchema));
+export const bulkCollectionImportSchema = z
+  .string()
+  .catch("")
+  .transform((value) =>
+    value
+      .split("\n")
+      .filter(Boolean)
+      .map((line) => {
+        const parts = line.split(" :: ");
+        const collectionId = parts[0]?.trim() || "";
+        const description = parts[1]?.trim();
+        return description ? { collectionId, description } : { collectionId };
+      }),
+  )
+  .pipe(z.array(eventCollectionSchema));

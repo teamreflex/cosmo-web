@@ -1,5 +1,5 @@
-import type { HttpClient } from "@effect/platform";
 import { Cron, Duration, Effect, Schedule } from "effect";
+import type { HttpClient } from "effect/unstable/http";
 import type { DatabaseWeb } from "./db";
 import type { DatabaseIndexer } from "./db-indexer";
 import type { Env } from "./env";
@@ -39,39 +39,30 @@ export const SCHEDULED_TASKS: ScheduledTask[] = [
 
 /**
  * Wraps a scheduled task with resilient error handling:
- * - Retries individual executions with exponential backoff
- * - Logs errors after retry exhaustion
- * - Ensures the task never dies (Effect.forever)
- * - Handles both errors and defects (catchAllCause)
+ * - Retries individual executions with exponential backoff (max 3 retries)
+ * - Failures (errors and defects) are logged with their cause, then the task
+ *   waits for the next cron tick — the repeat schedule never ends
+ * - Effect.repeat runs the effect once immediately, so every task executes
+ *   at boot before settling into its cron cadence
  */
-export const createResilientTask = Effect.fn(function* (task: ScheduledTask) {
-  const cron = Cron.unsafeParse(task.cron, task.timezone ?? "UTC");
+export const createResilientTask = Effect.fn("createResilientTask")(function* (
+  task: ScheduledTask,
+) {
+  const cron = Cron.parseUnsafe(task.cron, task.timezone ?? "UTC");
   const schedule = Schedule.cron(cron);
 
   yield* Effect.logInfo(`Starting task: ${task.name}`);
 
-  return yield* Effect.fork(
-    Effect.gen(function* () {
-      yield* task.effect.pipe(
-        // retry individual execution with exponential backoff (max 3 retries)
-        Effect.retry(
-          Schedule.exponential(Duration.seconds(1)).pipe(
-            Schedule.compose(Schedule.recurs(3)),
-          ),
-        ),
-        Effect.tapError((error) =>
-          Effect.logError(`Task ${task.name} iteration failed`),
-        ),
-      );
-    }).pipe(
-      // repeat on cron schedule
-      Effect.repeat(schedule),
-      // catch any errors to prevent task death
-      Effect.catchAllCause((cause) =>
-        Effect.logFatal(`Task ${task.name} died`, cause),
+  return yield* Effect.forkChild(
+    task.effect.pipe(
+      Effect.retry({
+        schedule: Schedule.exponential(Duration.seconds(1)),
+        times: 3,
+      }),
+      Effect.catchCause((cause) =>
+        Effect.logError(`Task ${task.name} failed`, cause),
       ),
-      // keep trying forever - immediately restart if repeat stops
-      Effect.forever,
+      Effect.repeat(schedule),
     ),
   );
 });

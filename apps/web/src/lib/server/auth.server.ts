@@ -390,12 +390,14 @@ export function toPublicUser(
     return undefined;
   }
 
+  // SAFETY: PublicUser is brand-typed; a cast is the only constructor
   return {
     id: user.id,
     username: user.displayUsername ?? undefined,
     image: user.image ?? undefined,
     isAdmin: user.isAdmin ?? false,
     gridColumns: user.gridColumns ?? GRID_COLUMNS,
+    // SAFETY: the column only stores CollectionDataSource values
     collectionMode: (user.collectionMode ??
       "blockchain") as CollectionDataSource,
     social: {
@@ -403,6 +405,5 @@ export function toPublicUser(
       twitter: user.showSocials ? (user.twitter ?? undefined) : undefined,
     },
     showSocials: user.showSocials ?? false,
-    // PublicUser is brand-typed — the cast is the only way to produce one without going through the branded constructor.
   } as PublicUser;
 }

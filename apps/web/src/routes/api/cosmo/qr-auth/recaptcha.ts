@@ -1,6 +1,7 @@
 import { env } from "@/lib/env/server";
 import { $fetchCurrentUser } from "@/lib/functions/core";
 import { getCorsHeaders } from "@/lib/server/cors";
+import { runCosmo } from "@apollo/cosmo/runtime";
 import {
   exchangeLoginTicket,
   getRecaptchaToken,
@@ -49,7 +50,10 @@ export const Route = createFileRoute("/api/cosmo/qr-auth/recaptcha")({
 
         // exchange recaptcha token for a cosmo qr ticket
         try {
-          var ticket = await exchangeLoginTicket(recaptcha, request.signal);
+          var ticket = await runCosmo(
+            exchangeLoginTicket(recaptcha),
+            request.signal,
+          );
         } catch (err) {
           console.error("[exchangeLoginTicket] error:", err);
           return Response.json(

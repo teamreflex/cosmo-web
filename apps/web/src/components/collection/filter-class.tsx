@@ -20,6 +20,7 @@ export default function ClassFilter(props: Props) {
     props.onChange((prev) => {
       if (prev.artist !== artistId) {
         return {
+          // SAFETY: artist ids come from the fetched artist list
           artist: artistId as ValidArtist,
           class: [className],
         };

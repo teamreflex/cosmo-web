@@ -6,6 +6,9 @@ import { indexer } from "@/lib/server/db/indexer";
 import { getProxiedToken } from "@/lib/server/proxied-token.server";
 import { getRequestSignal } from "@/lib/server/request.server";
 import { ExpectedError } from "@/lib/universal/errors/expected";
+import { CosmoApiError } from "@apollo/cosmo/errors";
+import { runCosmo } from "@apollo/cosmo/runtime";
+import { GravitySchema, PollChoicesSchema } from "@apollo/cosmo/schema/gravity";
 import { fetchGravity, fetchPoll } from "@apollo/cosmo/server/gravity";
 import { gravities, gravityPolls } from "@apollo/database/web/schema";
 import { notFound } from "@tanstack/react-router";
@@ -58,9 +61,6 @@ export const $fetchGravityDetails = createServerFn({ method: "GET" })
 
     // fetch the full gravity from cosmo or cache, depending on timing
     const gravity = await fetchCachedGravity(info.cosmoId, isPast, signal);
-    if (!gravity) {
-      throw notFound();
-    }
 
     // pull the correct poll from the gravity
     const maybePoll = findPoll(gravity);
@@ -194,7 +194,10 @@ export const $fetchPolygonGravity = createServerFn({ method: "GET" })
         const { accessToken } = await getProxiedToken(signal);
 
         // 2. fetch gravity from cosmo
-        const gravity = await fetchGravity(accessToken, data.id, signal);
+        const gravity = await runCosmo(
+          fetchGravity(accessToken, data.id),
+          signal,
+        ).catch(() => null);
         if (!gravity) {
           throw notFound();
         }
@@ -205,7 +208,10 @@ export const $fetchPolygonGravity = createServerFn({ method: "GET" })
           throw notFound();
         }
 
-        const poll = await fetchPoll(accessToken, gravityPoll.poll.id, signal);
+        const poll = await runCosmo(
+          fetchPoll(accessToken, gravityPoll.poll.id),
+          signal,
+        );
 
         // prior to gravity 11, they used the cosmo poll ID on-chain instead of a separate ID
         const chainPollId = gravity.id <= 11 ? poll.id : poll.pollIdOnChain;
@@ -213,7 +219,7 @@ export const $fetchPolygonGravity = createServerFn({ method: "GET" })
         // 4. fetch votes
         const votes = await db.query.polygonVotes.findMany({
           where: {
-            contract: ADDRESSES[data.artist],
+            contract: ADDRESSES.get(data.artist),
             pollId: chainPollId,
           },
           with: {
@@ -249,6 +255,7 @@ export const $fetchPolygonGravity = createServerFn({ method: "GET" })
             acc[candidateId] = (acc[candidateId] ?? 0) + vote.comoAmount;
             return acc;
           },
+          // SAFETY: empty seed for the reduce accumulator
           {} as Record<string, number>,
         );
 
@@ -272,18 +279,27 @@ async function fetchCachedGravity(
 ) {
   async function fn(id: number) {
     const { accessToken } = await getProxiedToken(signal);
-    return await fetchGravity(accessToken, id, signal);
+    try {
+      return await runCosmo(fetchGravity(accessToken, id), signal);
+    } catch (err) {
+      // missing from COSMO is a 404 page; transient failures surface and are never cached
+      if (err instanceof CosmoApiError && err.status === 404) {
+        throw notFound();
+      }
+      throw err;
+    }
   }
 
-  if (isPast) {
-    return await remember(
-      `gravity:${id}`,
-      60 * 60 * 24 * 30, // 30 days
-      () => fn(id),
-    );
+  if (!isPast) {
+    return await fn(id);
   }
 
-  return await fn(id);
+  return await remember(
+    `gravity:${id}`,
+    60 * 60 * 24 * 30, // 30 days
+    () => fn(id),
+    GravitySchema,
+  );
 }
 
 /**
@@ -302,7 +318,7 @@ export const $fetchCachedPoll = createServerFn({ method: "GET" })
     const signal = getRequestSignal();
     const fn = async () => {
       const { accessToken } = await getProxiedToken(signal);
-      return await fetchPoll(accessToken, data.pollId, signal);
+      return await runCosmo(fetchPoll(accessToken, data.pollId), signal);
     };
 
     // check the database for the end date if not provided
@@ -328,6 +344,7 @@ export const $fetchCachedPoll = createServerFn({ method: "GET" })
         `poll:${data.artist}:${data.gravityId}:${data.pollId}`,
         60 * 60 * 24 * 30, // 30 days
         fn,
+        PollChoicesSchema,
       );
     }
 
@@ -380,7 +397,7 @@ export const $fetchRevealedVotes = createServerFn({ method: "GET" })
     };
   });
 
-const ADDRESSES: Record<string, string> = {
-  triples: "0xc3e5ad11ae2f00c740e74b81f134426a3331d950",
-  artms: "0x8466e6e218f0fe438ac8f403f684451d20e59ee3",
-};
+const ADDRESSES = new Map([
+  ["triples", "0xc3e5ad11ae2f00c740e74b81f134426a3331d950"],
+  ["artms", "0x8466e6e218f0fe438ac8f403f684451d20e59ee3"],
+]);

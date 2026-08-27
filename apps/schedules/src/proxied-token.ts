@@ -1,14 +1,14 @@
 import { refreshV3 } from "@apollo/cosmo/server/auth";
 import { cosmoTokens } from "@apollo/database/web/schema";
-import { Data, Effect } from "effect";
+import { Clock, Context, Data, Effect, Layer } from "effect";
 import { decodeJwt } from "jose";
 import { CosmoKey } from "./cosmo-key";
 import { DatabaseWeb } from "./db";
 
-export class ProxiedToken extends Effect.Service<ProxiedToken>()(
+export class ProxiedToken extends Context.Service<ProxiedToken>()(
   "app/ProxiedToken",
   {
-    effect: Effect.gen(function* () {
+    make: Effect.gen(function* () {
       const db = yield* DatabaseWeb;
       const cosmoKey = yield* CosmoKey;
 
@@ -16,24 +16,28 @@ export class ProxiedToken extends Effect.Service<ProxiedToken>()(
        * Get the latest COSMO token from the database, refresh if necessary.
        */
       const get = Effect.gen(function* () {
-        const latestToken = yield* Effect.tryPromise({
-          try: () =>
-            db.query.cosmoTokens.findFirst({
-              orderBy: { id: "desc" },
-            }),
-          catch: (cause) => new TokenFetchError({ cause }),
+        const latestToken = yield* db.query.cosmoTokens.findFirst({
+          orderBy: { id: "desc" },
         });
 
         if (!latestToken) {
           return yield* new NoTokenFoundError();
         }
 
-        const isAccessTokenValid = validateExpiry(latestToken.accessToken);
+        const nowMillis = yield* Clock.currentTimeMillis;
+
+        const isAccessTokenValid = validateExpiry(
+          latestToken.accessToken,
+          nowMillis,
+        );
         if (isAccessTokenValid) {
           return { accessToken: latestToken.accessToken };
         }
 
-        const isRefreshTokenValid = validateExpiry(latestToken.refreshToken);
+        const isRefreshTokenValid = validateExpiry(
+          latestToken.refreshToken,
+          nowMillis,
+        );
         if (!isRefreshTokenValid) {
           return yield* new TokenRefreshError({
             cause: "Refresh token expired",
@@ -41,22 +45,15 @@ export class ProxiedToken extends Effect.Service<ProxiedToken>()(
         }
 
         const key = yield* cosmoKey.get;
-        const newTokens = yield* Effect.tryPromise({
-          try: () => refreshV3(latestToken.refreshToken, key),
-          catch: (cause) => new TokenRefreshError({ cause }),
-        });
+        const newTokens = yield* refreshV3(latestToken.refreshToken, key);
 
-        const [newToken] = yield* Effect.tryPromise({
-          try: () =>
-            db
-              .insert(cosmoTokens)
-              .values({
-                accessToken: newTokens.accessToken,
-                refreshToken: newTokens.refreshToken,
-              })
-              .returning(),
-          catch: (cause) => new TokenStoreError({ cause }),
-        });
+        const [newToken] = yield* db
+          .insert(cosmoTokens)
+          .values({
+            accessToken: newTokens.accessToken,
+            refreshToken: newTokens.refreshToken,
+          })
+          .returning();
 
         if (!newToken) {
           return yield* new TokenStoreError({
@@ -69,17 +66,20 @@ export class ProxiedToken extends Effect.Service<ProxiedToken>()(
 
       return { get };
     }),
-    dependencies: [DatabaseWeb.Default, CosmoKey.Default],
   },
-) {}
+) {
+  static readonly layer = Layer.effect(this, this.make).pipe(
+    Layer.provide([DatabaseWeb.layer, CosmoKey.layer]),
+  );
+}
 
 /**
  * Validate JWT expiry by checking the exp claim.
  */
-function validateExpiry(token: string): boolean {
+function validateExpiry(token: string, nowMillis: number): boolean {
   try {
     const claims = decodeJwt(token);
-    return claims.exp !== undefined && claims.exp > Date.now() / 1000;
+    return claims.exp !== undefined && claims.exp > nowMillis / 1000;
   } catch {
     return false;
   }
@@ -93,13 +93,6 @@ export class NoTokenFoundError extends Data.TaggedError(
 )<{}> {}
 
 /**
- * Failed to fetch token from database.
- */
-export class TokenFetchError extends Data.TaggedError("TokenFetchError")<{
-  readonly cause: unknown;
-}> {}
-
-/**
  * Failed to refresh the token with the API.
  */
 export class TokenRefreshError extends Data.TaggedError("TokenRefreshError")<{
@@ -107,7 +100,7 @@ export class TokenRefreshError extends Data.TaggedError("TokenRefreshError")<{
 }> {}
 
 /**
- * Failed to store new token in database.
+ * Storing the refreshed token returned no rows.
  */
 export class TokenStoreError extends Data.TaggedError("TokenStoreError")<{
   readonly cause: unknown;

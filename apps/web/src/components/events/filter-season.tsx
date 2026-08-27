@@ -26,6 +26,7 @@ export default function EventsSeasonFilter({
     onChange((prev) => {
       if (prev.artist !== artistId) {
         return {
+          // SAFETY: artist ids come from the fetched artist list
           artist: artistId as ValidArtist,
           season: [season],
           era: undefined,

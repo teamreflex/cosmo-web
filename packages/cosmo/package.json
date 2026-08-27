@@ -6,19 +6,22 @@
   "type": "module",
   "exports": {
     "./types/*": "./src/types/*.ts",
+    "./schema/*": "./src/schema/*.ts",
     "./server/*": "./src/server/*.ts",
+    "./runtime": "./src/runtime.ts",
+    "./errors": "./src/errors.ts",
     "./bands": "./src/bands.ts"
   },
   "scripts": {
     "lint": "bun --bun oxlint --type-aware --type-check",
     "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
+    "test": "bun test",
     "typecheck": "tsc --pretty --noEmit",
     "format": "oxfmt ."
   },
   "dependencies": {
-    "ofetch": "catalog:",
-    "puppeteer-core": "^24.43.1",
-    "zod": "catalog:"
+    "effect": "catalog:",
+    "puppeteer-core": "^24.43.1"
   },
   "devDependencies": {
     "@apollo/lint": "workspace:*",

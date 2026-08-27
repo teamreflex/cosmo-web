@@ -19,11 +19,11 @@ export default function ArtistLogo({ artist }: Props) {
   );
 }
 
-const logo: Record<ValidArtist, ComponentType | null> = {
+const logo = {
   idntt: idntt,
   artms: null,
   tripleS: null,
-} as const;
+} satisfies Record<ValidArtist, ComponentType | null>;
 
 function idntt() {
   return (

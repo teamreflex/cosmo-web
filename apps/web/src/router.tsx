@@ -27,7 +27,7 @@ const stringifyArrays = stringifySearchWith(
 /**
  * URLSearchParams percent-encodes commas; restore literal commas (valid per RFC 3986).
  */
-function stringifySearch(search: Record<string, unknown>) {
+function stringifySearch(search: Parameters<typeof stringifyArrays>[0]) {
   return stringifyArrays(search).replaceAll("%2C", ",");
 }
 

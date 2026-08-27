@@ -7,11 +7,11 @@ type GridEditionDef = {
   rewards: readonly [string, string];
 };
 
-const EDITION_NUMBERS: Record<1 | 2 | 3, readonly string[]> = {
+const EDITION_NUMBERS = {
   1: ["101", "102", "103", "104", "105", "106", "107", "108"],
   2: ["109", "110", "111", "112", "113", "114", "115", "116"],
   3: ["117", "118", "119", "120"],
-};
+} satisfies Record<1 | 2 | 3, readonly string[]>;
 
 const STANDARD_EDITIONS: readonly GridEditionDef[] = [
   { edition: 1, numbers: EDITION_NUMBERS[1], rewards: ["201", "202"] },

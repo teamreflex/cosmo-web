@@ -20,6 +20,7 @@ export const paginatedGravitiesQuery = (artists?: string[]) =>
     queryKey: ["gravities", "paginated", { artists }],
     queryFn: ({ pageParam }) =>
       $fetchPaginatedGravities({ data: { artists, cursor: pageParam } }),
+    // SAFETY: cursor seed; widened for TanStack Query inference
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.nextStartAfter,
   });

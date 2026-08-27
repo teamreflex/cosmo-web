@@ -1,4 +1,8 @@
-import type { ValidArtist } from "./common";
+import type {
+  ObjektSummariesResponseSchema,
+  ObjektSummarySchema,
+} from "../schema/collection.ts";
+import type { ValidArtist } from "./common.ts";
 
 export type ObjektBaseFields = {
   /** diverges from cosmo api */
@@ -125,16 +129,6 @@ export type BFFCollectionGroupObjekt = {
   };
 };
 
-export type ObjektSummariesResponse = {
-  collectionCount: number;
-  collections: ObjektSummary[];
-};
+export type ObjektSummariesResponse = typeof ObjektSummariesResponseSchema.Type;
 
-export type ObjektSummary = {
-  collection: {
-    collectionId: string;
-    artistName: string;
-    frontMedia?: string | null;
-    bandImageUrl?: string | null;
-  };
-};
+export type ObjektSummary = typeof ObjektSummarySchema.Type;

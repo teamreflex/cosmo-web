@@ -326,6 +326,7 @@ async function initializeServer() {
   // Load TanStack Start server handler
   let handler: FetchHandler;
   try {
+    // SAFETY: the built server entry default-exports a fetch handler
     const serverModule = (await import(SERVER_ENTRY_POINT)) as {
       default: FetchHandler;
     };
@@ -437,6 +438,7 @@ initializeServer()
     process.on("SIGTERM", () => void shutdown("SIGTERM"));
     process.on("SIGINT", () => void shutdown("SIGINT"));
   })
+  // oxlint-disable-next-line anti-slop/no-unknown-parameters -- rejection values are genuinely unknown
   .catch((error: unknown) => {
     log.error(`Failed to start: ${String(error)}`);
     process.exit(1);

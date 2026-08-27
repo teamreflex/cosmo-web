@@ -61,6 +61,7 @@ export namespace Objekt {
   export function fromIndexer(objekt: IndexedObjekt): Objekt.Collection {
     const collection = {
       id: objekt.id,
+      // SAFETY: indexed artists lowercase to ValidArtist ids
       artist: objekt.artist.toLowerCase() as ValidArtist,
       member: objekt.member,
       season: objekt.season,
@@ -139,6 +140,7 @@ export namespace Objekt {
     if (opts.collection) {
       const base = {
         id: opts.collection.id,
+        // SAFETY: COSMO artist names are ValidArtist ids
         artist: opts.collection.artistName as ValidArtist,
         member: opts.collection.member,
         season: opts.collection.season,
@@ -189,6 +191,7 @@ export namespace Objekt {
     const collection = {
       // scan path is currently unused; placeholder id keeps the shape consistent
       id: crypto.randomUUID(),
+      // SAFETY: scanned objekts always carry at least one ValidArtist
       artist: objekt.artists[0] as ValidArtist,
       member: objekt.member,
       season: objekt.season,
@@ -227,29 +230,29 @@ function deriveExtras(
       return slug;
     },
     get artistName() {
-      return artistMap[objekt.artist.toLowerCase()] ?? "";
+      return artistMap.get(objekt.artist.toLowerCase()) ?? "";
     },
     get onOffline() {
       const suffix = objekt.collectionNo.at(-1);
       if (!suffix) {
         throw new Error("Invalid collectionNo");
       }
-      return onOfflineMap[suffix] ?? "online";
+      return onOfflineMap.get(suffix) ?? "online";
     },
-    ...colorFixes[slug],
+    ...colorFixes.get(slug),
   };
 }
 
-const artistMap: Record<string, string> = {
-  artms: "ARTMS",
-  triples: "tripleS",
-  idntt: "idntt",
-};
+const artistMap = new Map([
+  ["artms", "ARTMS"],
+  ["triples", "tripleS"],
+  ["idntt", "idntt"],
+]);
 
-const onOfflineMap: Record<string, "online" | "offline"> = {
-  Z: "online",
-  A: "offline",
-};
+const onOfflineMap = new Map<string, "online" | "offline">([
+  ["Z", "online"],
+  ["A", "offline"],
+]);
 
 type ColorFixes = Partial<
   Pick<Objekt.Collection, "backgroundColor" | "textColor">
@@ -259,53 +262,25 @@ type ColorFixes = Partial<
  * COSMO doesn't use the objekt background color,
  * so sometimes they're incorrect and need manually fixing.
  */
-const colorFixes: Record<string, ColorFixes> = {
+const colorFixes = new Map<string, ColorFixes>([
   // Heejin <K> MMT POBs: fix text color
-  "atom01-heejin-322z": {
-    textColor: "#FFFFFF",
-  },
-  "atom01-heejin-323z": {
-    textColor: "#FFFFFF",
-  },
-  "atom01-heejin-324z": {
-    textColor: "#FFFFFF",
-  },
-  "atom01-heejin-325z": {
-    textColor: "#FFFFFF",
-  },
+  ["atom01-heejin-322z", { textColor: "#FFFFFF" }],
+  ["atom01-heejin-323z", { textColor: "#FFFFFF" }],
+  ["atom01-heejin-324z", { textColor: "#FFFFFF" }],
+  ["atom01-heejin-325z", { textColor: "#FFFFFF" }],
   // Choerry Binary01 grids: fix background color
-  "binary01-choerry-201z": {
-    backgroundColor: "#FFFFFF",
-  },
-  "binary01-choerry-202z": {
-    backgroundColor: "#FFFFFF",
-  },
+  ["binary01-choerry-201z", { backgroundColor: "#FFFFFF" }],
+  ["binary01-choerry-202z", { backgroundColor: "#FFFFFF" }],
   // Dahyun Cream grids: fix background color
-  "cream01-dahyun-203z": {
-    backgroundColor: "#FFFFFF",
-  },
-  "cream01-dahyun-204z": {
-    backgroundColor: "#FFFFFF",
-  },
+  ["cream01-dahyun-203z", { backgroundColor: "#FFFFFF" }],
+  ["cream01-dahyun-204z", { backgroundColor: "#FFFFFF" }],
   // Seoyeon Divine01 3rd edition: fix background color
-  "divine01-seoyeon-117z": {
-    backgroundColor: "#B400FF",
-  },
-  "divine01-seoyeon-118z": {
-    backgroundColor: "#B400FF",
-  },
-  "divine01-seoyeon-119z": {
-    backgroundColor: "#B400FF",
-  },
-  "divine01-seoyeon-120z": {
-    backgroundColor: "#B400FF",
-  },
+  ["divine01-seoyeon-117z", { backgroundColor: "#B400FF" }],
+  ["divine01-seoyeon-118z", { backgroundColor: "#B400FF" }],
+  ["divine01-seoyeon-119z", { backgroundColor: "#B400FF" }],
+  ["divine01-seoyeon-120z", { backgroundColor: "#B400FF" }],
   // Seoyeon Everline A24 POB: fix background color
-  "divine01-seoyeon-317z": {
-    backgroundColor: "#df2e37",
-  },
+  ["divine01-seoyeon-317z", { backgroundColor: "#df2e37" }],
   // Seoyeon Assemble 2nd anniversary: fix text color
-  "ever01-seoyeon-338z": {
-    textColor: "#07328D",
-  },
-};
+  ["ever01-seoyeon-338z", { textColor: "#07328D" }],
+]);

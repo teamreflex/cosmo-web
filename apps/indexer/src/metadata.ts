@@ -1,3 +1,4 @@
+import { runCosmo } from "@apollo/cosmo/runtime";
 import {
   fetchMetadataV1,
   fetchMetadataV3,
@@ -17,7 +18,7 @@ export async function fetchMetadataWithRetry(
   let delay = 1_000;
   while (true) {
     try {
-      return await fetchMetadataV1(tokenId);
+      return await runCosmo(fetchMetadataV1(tokenId));
     } catch (error) {
       if (Date.now() >= deadline) throw error;
       await new Promise((resolve) => setTimeout(resolve, delay));
@@ -39,7 +40,7 @@ export async function fetchMetadataWithRetryV3(
   let delay = 1_000;
   while (true) {
     try {
-      const metadata = await fetchMetadataV3(tokenId);
+      const metadata = await runCosmo(fetchMetadataV3(tokenId));
       return normalizeV3(metadata, tokenId);
     } catch (error) {
       if (Date.now() >= deadline) throw error;

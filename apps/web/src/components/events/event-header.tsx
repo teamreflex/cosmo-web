@@ -177,7 +177,11 @@ function Seasons(props: { seasons: string[] }) {
   return (
     <>
       {seasons.map(({ key, name }) => (
-        <Badge key={name} variant={`season-${key}` as "season-atom"}>
+        <Badge
+          key={name}
+          // SAFETY: every season key has a season-* badge variant
+          variant={`season-${key}` as "season-atom"}
+        >
           {name}
         </Badge>
       ))}

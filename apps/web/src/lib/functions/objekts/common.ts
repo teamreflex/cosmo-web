@@ -16,6 +16,7 @@ export function mapLegacyObjekt(
     ...collection,
     thumbnailImage: collection.frontImage,
     accentColor: collection.textColor,
+    // SAFETY: the artist column only stores ValidArtist ids
     artists: [collection.artist as ValidArtist],
     tokenId: String(objekt.id),
     tokenAddress: collection.contract,

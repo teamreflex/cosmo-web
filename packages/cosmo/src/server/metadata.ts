@@ -1,32 +1,28 @@
-import { ofetch } from "ofetch";
-import type {
-  CosmoObjektMetadataV1,
-  CosmoObjektMetadataV3,
-} from "../types/metadata.js";
+import { Effect } from "effect";
+import { MetadataV1Schema, MetadataV3Schema } from "../schema/metadata.ts";
+import { decodeBody, metadataClient } from "./http.ts";
 
 /**
  * Fetch objekt metadata from the v1 API.
  */
-export async function fetchMetadataV1(
+export const fetchMetadataV1 = Effect.fn("Cosmo.fetchMetadataV1")(function* (
   tokenId: string,
-  signal: AbortSignal | null = null,
 ) {
-  return await ofetch<CosmoObjektMetadataV1>(
-    `https://api.cosmo.fans/objekt/v1/token/${tokenId}`,
-    { signal },
-  );
-}
+  const client = yield* metadataClient;
+  return yield* client
+    .get(`/objekt/v1/token/${tokenId}`)
+    .pipe(Effect.flatMap(decodeBody(MetadataV1Schema)));
+});
 
 /**
  * Fetch objekt metadata from the v3 API.
  * Shouldn't be used as it doesn't contain full collection data.
  */
-export async function fetchMetadataV3(
+export const fetchMetadataV3 = Effect.fn("Cosmo.fetchMetadataV3")(function* (
   tokenId: string,
-  signal: AbortSignal | null = null,
 ) {
-  return await ofetch<CosmoObjektMetadataV3>(
-    `https://api.cosmo.fans/bff/v3/objekts/nft-metadata/${tokenId}`,
-    { signal },
-  );
-}
+  const client = yield* metadataClient;
+  return yield* client
+    .get(`/bff/v3/objekts/nft-metadata/${tokenId}`)
+    .pipe(Effect.flatMap(decodeBody(MetadataV3Schema)));
+});

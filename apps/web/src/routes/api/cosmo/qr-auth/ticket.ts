@@ -1,4 +1,5 @@
 import { $fetchCurrentUser } from "@/lib/functions/core";
+import { runCosmo } from "@apollo/cosmo/runtime";
 import { queryTicket } from "@apollo/cosmo/server/qr-auth";
 import { createFileRoute } from "@tanstack/react-router";
 
@@ -24,7 +25,7 @@ export const Route = createFileRoute("/api/cosmo/qr-auth/ticket")({
         }
 
         try {
-          var ticket = await queryTicket(param, request.signal);
+          var ticket = await runCosmo(queryTicket(param), request.signal);
         } catch (err) {
           console.error("[queryTicket] error:", err);
           return Response.json(

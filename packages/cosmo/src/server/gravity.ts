@@ -1,74 +1,52 @@
-import type { ValidArtist } from "../types/common";
-import type {
-  CosmoGravity,
-  CosmoOngoingGravity,
-  CosmoPastGravity,
-  CosmoPollChoices,
-  CosmoUpcomingGravity,
-} from "../types/gravity";
-import { cosmo } from "./http";
-
-type CosmoGravityList = {
-  upcoming: CosmoUpcomingGravity[];
-  ongoing: CosmoOngoingGravity[];
-  past: CosmoPastGravity[];
-};
+import { Effect } from "effect";
+import {
+  GravityListSchema,
+  GravityResponseSchema,
+  PollDetailResponseSchema,
+} from "../schema/gravity.ts";
+import type { ValidArtist } from "../types/common.ts";
+import { bearer, cosmoClient, decodeBody } from "./http.ts";
 
 /**
  * Fetch the list of gravities for the given artist.
  */
-export async function fetchGravities(
+export const fetchGravities = Effect.fn("Cosmo.fetchGravities")(function* (
   token: string,
   artistId: ValidArtist,
-  signal: AbortSignal | null = null,
 ) {
-  return await cosmo<CosmoGravityList>(`/bff/v3/gravities`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    query: {
-      artistId,
-    },
-    signal,
-  });
-}
+  const client = yield* cosmoClient;
+  return yield* client
+    .get("/bff/v3/gravities", {
+      headers: bearer(token),
+      urlParams: { artistId },
+    })
+    .pipe(Effect.flatMap(decodeBody(GravityListSchema)));
+});
 
 /**
  * Fetch a single gravity.
  */
-export async function fetchGravity(
+export const fetchGravity = Effect.fn("Cosmo.fetchGravity")(function* (
   token: string,
   gravityId: number,
-  signal: AbortSignal | null = null,
 ) {
-  return await cosmo<{ gravity: CosmoGravity }>(
-    `/bff/v3/gravities/${gravityId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      signal,
-    },
-  )
-    .then((res: { gravity: CosmoGravity }) => res.gravity)
-    .catch(() => null);
-}
+  const client = yield* cosmoClient;
+  const response = yield* client
+    .get(`/bff/v3/gravities/${gravityId}`, { headers: bearer(token) })
+    .pipe(Effect.flatMap(decodeBody(GravityResponseSchema)));
+  return response.gravity;
+});
 
 /**
  * Fetch the poll fields.
  */
-export async function fetchPoll(
+export const fetchPoll = Effect.fn("Cosmo.fetchPoll")(function* (
   token: string,
   pollId: number,
-  signal: AbortSignal | null = null,
 ) {
-  return await cosmo<{ pollDetail: CosmoPollChoices }>(
-    `/bff/v3/polls/${pollId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      signal,
-    },
-  ).then((res: { pollDetail: CosmoPollChoices }) => res.pollDetail);
-}
+  const client = yield* cosmoClient;
+  const response = yield* client
+    .get(`/bff/v3/polls/${pollId}`, { headers: bearer(token) })
+    .pipe(Effect.flatMap(decodeBody(PollDetailResponseSchema)));
+  return response.pollDetail;
+});

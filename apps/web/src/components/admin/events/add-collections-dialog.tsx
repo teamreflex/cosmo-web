@@ -51,7 +51,7 @@ export default function AddCollectionsDialog({
   const mutation = useMutation({
     mutationFn: $addCollectionsToEvent,
     onSuccess: async (data) => {
-      toast.success(m.admin_collections_added({ count: data as number }));
+      toast.success(m.admin_collections_added({ count: data }));
       resetForm();
       await queryClient.invalidateQueries({
         queryKey: adminEventsQuery().queryKey,

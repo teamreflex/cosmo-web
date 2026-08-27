@@ -1,9 +1,10 @@
+import { CosmoApiError, CosmoDecodeError } from "@apollo/cosmo/errors";
+import { runCosmo } from "@apollo/cosmo/runtime";
 import { fetchByNickname } from "@apollo/cosmo/server/user";
 import { cosmoAccounts } from "@apollo/database/web/schema";
 import type { CosmoAccount } from "@apollo/database/web/types";
 import { addr, isAddress } from "@apollo/util";
 import { sql } from "drizzle-orm";
-import { FetchError } from "ofetch";
 import type { FullAccount, PublicCosmo } from "../universal/cosmo-accounts";
 import { toPublicUser } from "./auth.server";
 import { db } from "./db";
@@ -71,7 +72,7 @@ export async function fetchFullAccount(
 
   // attempt to fetch from cosmo
   try {
-    const user = await fetchByNickname(identifier, signal);
+    const user = await runCosmo(fetchByNickname(identifier), signal);
 
     // cache & upsert profile
     await cacheAccounts([
@@ -84,7 +85,10 @@ export async function fetchFullAccount(
 
     return await fetchFullAccount(user.nickname, signal);
   } catch (err) {
-    if (err instanceof FetchError && err.status !== 404) {
+    // a decode failure means COSMO changed their response shape, not a missing user
+    if (err instanceof CosmoDecodeError) throw err;
+
+    if (err instanceof CosmoApiError && err.status !== 404) {
       console.error(`[fetchFullAccount] ${err.status} from COSMO`, err);
     }
 
@@ -183,6 +187,7 @@ export function toPublicCosmo(
     return undefined;
   }
 
+  // SAFETY: PublicCosmo is brand-typed; a cast is the only constructor
   return {
     username: cosmo.username,
     address: cosmo.address,

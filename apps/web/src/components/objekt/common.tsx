@@ -5,7 +5,7 @@ import type { PropsWithClassName } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { bands } from "@apollo/cosmo/bands";
 import { Fragment, useState } from "react";
-import type { ComponentProps, CSSProperties, PropsWithChildren } from "react";
+import type { ComponentProps, PropsWithChildren } from "react";
 import ArtistLogo from "./artist-logo";
 import { getVariantGradient, getVariantRibbon } from "./variant-gradients";
 
@@ -28,12 +28,10 @@ function SidebarText(props: SidebarTextProps) {
   return (
     <span
       className={props.className}
-      style={
-        {
-          fontSize: `${fontSizeConfig[props.type] * 100}cqw`,
-          lineHeight: "100cqw",
-        } as CSSProperties
-      }
+      style={{
+        fontSize: `${fontSizeConfig[props.type] * 100}cqw`,
+        lineHeight: "100cqw",
+      }}
     >
       {props.children}
     </span>
@@ -49,7 +47,7 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
 
   const useCustomBand = collection.artist === "idntt";
   const bandImageUrl =
-    collection.bandImageUrl ?? bands[collection.artist]?.[collection.class];
+    collection.bandImageUrl ?? bands[collection.artist]?.get(collection.class);
   const useBackground = useCustomBand && (!bandImageUrl || !bandLoaded);
   const showBand =
     // handle tripleS/ARTMS

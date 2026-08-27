@@ -2,6 +2,8 @@ import { indexer } from "@/lib/server/db/indexer";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import { getRequestSignal } from "@/lib/server/request.server";
 import { ExpectedError } from "@/lib/universal/errors/expected";
+import { CosmoDecodeError } from "@apollo/cosmo/errors";
+import { runCosmo } from "@apollo/cosmo/runtime";
 import {
   fetchMetadataV1,
   fetchMetadataV3,
@@ -21,8 +23,13 @@ export const $rescanObjektMetadataV1 = createServerFn({ method: "POST" })
   .validator(z.object({ tokenId: z.string() }))
   .handler(async ({ data }) => {
     try {
-      var metadata = await fetchMetadataV1(data.tokenId, getRequestSignal());
+      var metadata = await runCosmo(
+        fetchMetadataV1(data.tokenId),
+        getRequestSignal(),
+      );
     } catch (e) {
+      // a decode failure means COSMO changed their response shape; let it reach Sentry
+      if (e instanceof CosmoDecodeError) throw e;
       console.error("Failed to fetch metadata:", e);
       throw new ExpectedError("metadata_fetch_failed");
     }
@@ -66,9 +73,14 @@ export const $rescanObjektMetadataV3 = createServerFn({ method: "POST" })
   .validator(z.object({ tokenId: z.string() }))
   .handler(async ({ data }) => {
     try {
-      const v3 = await fetchMetadataV3(data.tokenId, getRequestSignal());
+      const v3 = await runCosmo(
+        fetchMetadataV3(data.tokenId),
+        getRequestSignal(),
+      );
       var metadata = normalizeV3(v3, data.tokenId);
     } catch (e) {
+      // a decode failure means COSMO changed their response shape; let it reach Sentry
+      if (e instanceof CosmoDecodeError) throw e;
       console.error("Failed to fetch metadata:", e);
       throw new ExpectedError("metadata_fetch_failed");
     }

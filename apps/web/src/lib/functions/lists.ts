@@ -735,10 +735,11 @@ export const $updateObjektListEntry = createServerFn({ method: "POST" })
 
     await db
       .update(objektListEntries)
-      .set({
-        price: data.price,
-        ...(data.kind === "collection" ? { quantity: data.quantity } : {}),
-      })
+      .set(
+        data.kind === "collection"
+          ? { price: data.price, quantity: data.quantity }
+          : { price: data.price },
+      )
       .where(
         and(
           eq(objektListEntries.id, data.objektListEntryId),

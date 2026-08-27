@@ -10,6 +10,7 @@ export type Context = {
  * a known list error code.
  */
 export function formatListError(
+  // oxlint-disable-next-line anti-slop/no-unknown-parameters -- boundary parser; caught errors are genuinely unknown
   error: unknown,
   context: Context = {},
 ): string | null {

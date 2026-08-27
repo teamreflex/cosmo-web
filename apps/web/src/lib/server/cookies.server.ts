@@ -10,8 +10,10 @@ export function fetchCookie<T = string>(key: CookieKey) {
   if (!value) return undefined;
 
   try {
+    // SAFETY: putCookie writes non-string values as JSON-serialized T
     return JSON.parse(value) as T;
   } catch {
+    // SAFETY: non-JSON cookies are raw strings; T defaults to string
     return value as T;
   }
 }
@@ -26,11 +28,13 @@ type SetCookie = {
  * Save a new cookie.
  */
 export function putCookie({ key, value, maxAge }: SetCookie) {
+  // oxlint-disable-next-line anti-slop/no-runtime-typeof -- narrowing the SetCookie value union, not unparsed input
   const stringValue = typeof value === "string" ? value : JSON.stringify(value);
-  setCookie(key, stringValue, {
-    ...generateCookiePayload(),
-    ...(maxAge ? { maxAge } : {}),
-  });
+  const payload = generateCookiePayload();
+  if (maxAge) {
+    payload.maxAge = maxAge;
+  }
+  setCookie(key, stringValue, payload);
 }
 
 /**

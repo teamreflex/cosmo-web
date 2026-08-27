@@ -1,34 +1,46 @@
-import type { CosmoArtist, CosmoArtistWithMembersBFF } from "../types/artists";
-import type { ValidArtist } from "../types/common";
-import { cosmo } from "./http";
+import { Effect } from "effect";
+import {
+  CosmoArtistListSchema,
+  CosmoArtistWithMembersBFFSchema,
+} from "../schema/artists.ts";
+import type { ValidArtist } from "../types/common.ts";
+import { bearer, cosmoClient, decodeBody } from "./http.ts";
 
 /**
  * Fetch artists within COSMO.
  */
-export async function fetchArtists(
+export const fetchArtists = Effect.fn("Cosmo.fetchArtists")(function* (
   token: string,
-  signal: AbortSignal | null = null,
 ) {
-  return await cosmo<CosmoArtist[]>(`/bff/v3/artists`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    signal,
-  });
-}
+  const client = yield* cosmoClient;
+  return yield* client
+    .get("/bff/v3/artists", { headers: bearer(token) })
+    .pipe(Effect.flatMap(decodeBody(CosmoArtistListSchema)));
+});
 
 /**
  * Fetch a single artist and its members.
  */
-export async function fetchArtist(
+export const fetchArtist = Effect.fn("Cosmo.fetchArtist")(function* (
   token: string,
   artistId: ValidArtist,
-  signal: AbortSignal | null = null,
 ) {
-  return await cosmo<CosmoArtistWithMembersBFF>(`/bff/v3/artists/${artistId}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    signal,
-  });
-}
+  const client = yield* cosmoClient;
+  return yield* client
+    .get(`/bff/v3/artists/${artistId}`, { headers: bearer(token) })
+    .pipe(Effect.flatMap(decodeBody(CosmoArtistWithMembersBFFSchema)));
+});
+
+/**
+ * Fetch every artist with full member data. The list endpoint only returns
+ * summaries, so each artist is fetched individually for the .id field.
+ */
+export const fetchAllArtists = Effect.fn("Cosmo.fetchAllArtists")(function* (
+  token: string,
+) {
+  const artistList = yield* fetchArtists(token);
+  return yield* Effect.all(
+    artistList.map((artist) => fetchArtist(token, artist.name)),
+    { concurrency: 5 },
+  );
+});

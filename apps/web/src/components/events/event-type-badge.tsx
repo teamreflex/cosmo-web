@@ -18,7 +18,7 @@ type EventTypeBadgeProps = {
   className?: string;
 };
 
-const eventTypeIcons: Record<EventTypeKey, React.ElementType> = {
+const eventTypeIcons = {
   seasonal: IconCalendar,
   album: IconDisc,
   merch: IconPackage,
@@ -27,7 +27,7 @@ const eventTypeIcons: Record<EventTypeKey, React.ElementType> = {
   collaboration: IconHeartHandshake,
   promotional: IconSparkles,
   tour: IconPlane,
-} as const;
+} satisfies Record<EventTypeKey, React.ElementType>;
 
 export default function EventTypeBadge({
   eventType,

@@ -26,6 +26,7 @@ export function useCosmoFilters() {
       | Partial<CosmoFilters>
       | ((prev: CosmoFilters) => Partial<CosmoFilters>),
   ) => {
+    // oxlint-disable-next-line anti-slop/no-runtime-typeof -- narrowing the updater-function union, standard setState pattern
     if (typeof input === "function") {
       input = input(filters);
     }

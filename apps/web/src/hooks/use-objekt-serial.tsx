@@ -16,6 +16,7 @@ export function useObjektSerial() {
       | undefined
       | ((prev: number | undefined) => number | undefined),
   ) => {
+    // oxlint-disable-next-line anti-slop/no-runtime-typeof -- narrowing the updater-function union, standard setState pattern
     if (typeof serial === "function") {
       serial = serial(searchSerial);
     }

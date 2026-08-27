@@ -1,10 +1,10 @@
 import { cosmoKeyCacheKey } from "@apollo/util-server";
-import { Effect, Redacted } from "effect";
+import { Context, Effect, Layer, Redacted } from "effect";
 import { Env } from "./env";
 import { Redis } from "./redis";
 
-export class CosmoKey extends Effect.Service<CosmoKey>()("app/CosmoKey", {
-  effect: Effect.gen(function* () {
+export class CosmoKey extends Context.Service<CosmoKey>()("app/CosmoKey", {
+  make: Effect.gen(function* () {
     const env = yield* Env;
     const redis = yield* Redis;
 
@@ -18,5 +18,8 @@ export class CosmoKey extends Effect.Service<CosmoKey>()("app/CosmoKey", {
 
     return { get };
   }),
-  dependencies: [Env.Default, Redis.Default],
-}) {}
+}) {
+  static readonly layer = Layer.effect(this, this.make).pipe(
+    Layer.provide([Env.layer, Redis.layer]),
+  );
+}

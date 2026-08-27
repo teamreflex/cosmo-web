@@ -1,72 +1,89 @@
-import type { ValidArtist } from "../types/common";
-import type {
-  CosmoByNickname,
-  CosmoSearchResult,
-  CosmoUserProfile,
-} from "../types/user";
-import { decrypt, EncryptionError } from "./encryption";
-import { cosmo } from "./http";
+import { Effect, Schema } from "effect";
+import { CosmoDecodeError } from "../errors.ts";
+import {
+  CosmoByNicknameSchema,
+  CosmoSearchResultSchema,
+  CosmoUserProfileSchema,
+} from "../schema/user.ts";
+import type { ValidArtist } from "../types/common.ts";
+import { decrypt, EncryptionError } from "./encryption.ts";
+import {
+  bearer,
+  cosmoClient,
+  cosmoNoRetryClient,
+  decodeBody,
+  toApiError,
+} from "./http.ts";
 
 /**
- * Fetch a user from COSMO by nickname.
+ * Fetch a user from COSMO by nickname. Not retried, since a failed lookup is meaningful to callers.
  */
-export async function fetchByNickname(
+export const fetchByNickname = Effect.fn("Cosmo.fetchByNickname")(function* (
   nickname: string,
-  signal: AbortSignal | null = null,
 ) {
-  return await cosmo<CosmoByNickname>(`/bff/v3/users/by-nickname/${nickname}`, {
-    retry: false,
-    signal,
-  });
-}
+  const client = yield* cosmoNoRetryClient;
+  return yield* client
+    .get(`/bff/v3/users/by-nickname/${nickname}`)
+    .pipe(Effect.flatMap(decodeBody(CosmoByNicknameSchema)));
+});
 
 /**
  * Search for the given user.
  */
-export async function search(
+export const search = Effect.fn("Cosmo.search")(function* (
   token: string,
   term: string,
-  signal: AbortSignal | null = null,
 ) {
-  return await cosmo<CosmoSearchResult>("/bff/v3/users/search", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    query: {
-      nickname: term,
-      skip: 0,
-      take: 100,
-    },
-    signal,
-  });
-}
+  const client = yield* cosmoClient;
+  return yield* client
+    .get("/bff/v3/users/search", {
+      headers: bearer(token),
+      urlParams: {
+        nickname: term,
+        skip: "0",
+        take: "100",
+      },
+    })
+    .pipe(Effect.flatMap(decodeBody(CosmoSearchResultSchema)));
+});
 
 /**
- * Fetch a user's public profile.
+ * Fetch a user's public profile. The response body is encrypted with the COSMO key.
  */
-export async function fetchUserProfile(
+export const fetchUserProfile = Effect.fn("Cosmo.fetchUserProfile")(function* (
   token: string,
   key: string,
   userId: number,
   artistId: ValidArtist,
-  signal: AbortSignal | null = null,
 ) {
-  return await cosmo<CosmoUserProfile>(`/bff/v3/users/${userId}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-    query: {
-      artistId,
-    },
-    signal,
-    parseResponse: (text) => {
-      try {
-        var plaintext = decrypt(text, key);
-      } catch (err) {
-        throw new EncryptionError("Error decrypting payload", { cause: err });
-      }
-
-      return JSON.parse(plaintext) satisfies CosmoUserProfile;
-    },
-  });
-}
+  const client = yield* cosmoClient;
+  return yield* client
+    .get(`/bff/v3/users/${userId}`, {
+      headers: bearer(token),
+      urlParams: { artistId },
+    })
+    .pipe(
+      Effect.flatMap((response) =>
+        response.text.pipe(
+          Effect.mapError(toApiError),
+          Effect.flatMap((payload) =>
+            Effect.try({
+              try: () => decrypt(payload, key),
+              catch: (cause) =>
+                new EncryptionError("Error decrypting payload", { cause }),
+            }),
+          ),
+          Effect.flatMap((plaintext) =>
+            Schema.decodeUnknownEffect(
+              Schema.fromJsonString(CosmoUserProfileSchema),
+            )(plaintext).pipe(
+              Effect.mapError(
+                (cause) =>
+                  new CosmoDecodeError({ url: response.request.url, cause }),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+});

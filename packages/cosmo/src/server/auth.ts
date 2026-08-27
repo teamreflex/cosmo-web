@@ -1,46 +1,46 @@
-import type { RefreshTokenResult } from "../types/auth";
-import { encrypt, EncryptionError } from "./encryption";
-import { cosmo } from "./http";
+import { Effect } from "effect";
+import { HttpBody } from "effect/unstable/http";
+import { RefreshResponseSchema } from "../schema/auth.ts";
+import { encrypt, EncryptionError } from "./encryption.ts";
+import { cosmoClient, decodeBody } from "./http.ts";
 
 /**
  * Refresh the given token.
  * @deprecated use refreshV3
  */
-export async function refresh(
+export const refresh = Effect.fn("Cosmo.refresh")(function* (
   refreshToken: string,
-  signal: AbortSignal | null = null,
-): Promise<RefreshTokenResult> {
-  return await cosmo<{ credentials: RefreshTokenResult }>("/auth/v1/refresh", {
-    method: "POST",
-    body: { refreshToken },
-    signal,
-  }).then((res: { credentials: RefreshTokenResult }) => res.credentials);
-}
+) {
+  const client = yield* cosmoClient;
+  const response = yield* client
+    .post("/auth/v1/refresh", {
+      body: HttpBody.jsonUnsafe({ refreshToken }),
+    })
+    .pipe(Effect.flatMap(decodeBody(RefreshResponseSchema)));
+  return response.credentials;
+});
 
 /**
- * Refresh the given token.
+ * Refresh the given token, encrypting the payload with the COSMO key.
  */
-export async function refreshV3(
+export const refreshV3 = Effect.fn("Cosmo.refreshV3")(function* (
   refreshToken: string,
   key: string,
-  signal: AbortSignal | null = null,
-): Promise<RefreshTokenResult> {
-  try {
-    var body = encrypt(JSON.stringify({ refreshToken }), key);
-  } catch (err) {
-    throw new EncryptionError("Error encrypting payload", { cause: err });
-  }
+) {
+  const body = yield* Effect.try({
+    try: () => encrypt(JSON.stringify({ refreshToken }), key),
+    catch: (cause) =>
+      new EncryptionError("Error encrypting payload", { cause }),
+  });
 
-  return await cosmo<{ credentials: RefreshTokenResult }>(
-    "/bff/v3/users/refresh-access-token",
-    {
-      method: "POST",
-      body,
+  const client = yield* cosmoClient;
+  const response = yield* client
+    .post("/bff/v3/users/refresh-access-token", {
+      body: HttpBody.text(body, "text/plain"),
       headers: {
-        "Content-Type": "text/plain",
         "x-cosmo-encrypted": "1",
       },
-      signal,
-    },
-  ).then((res: { credentials: RefreshTokenResult }) => res.credentials);
-}
+    })
+    .pipe(Effect.flatMap(decodeBody(RefreshResponseSchema)));
+  return response.credentials;
+});

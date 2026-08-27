@@ -4,8 +4,10 @@ import { isExpectedError } from "./src/lib/universal/errors/expected";
 /**
  * Skip Start notFound() "errors".
  */
+// oxlint-disable-next-line anti-slop/no-unknown-parameters -- boundary predicate; thrown values are genuinely unknown
 function isNotFoundSignal(value: unknown): boolean {
   return (
+    // oxlint-disable-next-line anti-slop/no-runtime-typeof -- duck-typing the notFound() marker is the contract
     typeof value === "object" &&
     value !== null &&
     "isNotFound" in value &&
@@ -16,6 +18,7 @@ function isNotFoundSignal(value: unknown): boolean {
 /**
  * Skip Start redirect() "errors", thrown as a 3xx Response.
  */
+// oxlint-disable-next-line anti-slop/no-unknown-parameters -- boundary predicate; thrown values are genuinely unknown
 function isRedirectSignal(value: unknown): boolean {
   return value instanceof Response && value.status >= 300 && value.status < 400;
 }

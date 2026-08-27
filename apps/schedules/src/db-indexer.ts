@@ -1,25 +1,31 @@
 import { relations } from "@apollo/database/indexer/relations";
+import { make } from "@apollo/drizzle-bun-effect";
 import { SQL } from "bun";
-import { drizzle } from "drizzle-orm/bun-sql";
-import { Effect, Redacted } from "effect";
+import { Context, Effect, Layer, Redacted } from "effect";
 import { Env } from "./env";
 
-export class DatabaseIndexer extends Effect.Service<DatabaseIndexer>()(
+export class DatabaseIndexer extends Context.Service<DatabaseIndexer>()(
   "app/Database/Indexer",
   {
-    effect: Effect.gen(function* () {
+    make: Effect.gen(function* () {
       const env = yield* Env;
 
       // set application name for pg_stat_activity visibility
       const url = new URL(Redacted.value(env.indexerDatabaseUrl));
       url.searchParams.set("application_name", "Schedules");
 
-      const client = new SQL({
-        url: url.toString(),
-        max: 1, // only need 1 connection for single-threaded app
-      });
-      return drizzle({ client, relations });
+      // scoped client: the layer finalizer closes the connection on shutdown
+      const client = yield* Effect.acquireRelease(
+        Effect.sync(
+          () => new SQL({ url: url.toString(), max: 1 }), // only need 1 connection for single-threaded app
+        ),
+        (client) => Effect.promise(() => client.end({ timeout: 5 })),
+      );
+      return yield* make({ client, relations });
     }),
-    dependencies: [Env.Default],
   },
-) {}
+) {
+  static readonly layer = Layer.effect(this, this.make).pipe(
+    Layer.provide(Env.layer),
+  );
+}

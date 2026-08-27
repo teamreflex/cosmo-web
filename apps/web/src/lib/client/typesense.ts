@@ -58,6 +58,7 @@ export async function getTypesenseResults({
 
   return {
     total: result.found,
+    // SAFETY: the typesense collection stores IndexedObjekt documents
     objekts: hits.map((hit) => hit.document as IndexedObjekt),
     hasNext,
     nextStartAfter,

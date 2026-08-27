@@ -13,6 +13,7 @@ export default function SectionSeasons(props: Props) {
       acc[curr.name] = getSeasonColor(curr.name) || randomColor();
       return acc;
     },
+    // SAFETY: empty seed for the reduce accumulator
     {} as Record<string, string>,
   );
 

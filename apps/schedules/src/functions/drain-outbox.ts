@@ -9,7 +9,7 @@ import {
 } from "@apollo/database/web/schema";
 import { pinCacheKey } from "@apollo/util-server";
 import { and, gt, inArray, lt, lte, sql } from "drizzle-orm";
-import { Data, Effect } from "effect";
+import { Effect } from "effect";
 import type { ScheduledTask } from "../task";
 
 const BATCH_SIZE = 1000;
@@ -29,30 +29,22 @@ const processBatch = Effect.gen(function* () {
   const webDb = yield* DatabaseWeb;
   const redis = yield* Redis;
 
-  const cursor = yield* Effect.tryPromise({
-    try: () =>
-      webDb.query.listDrainCursor.findFirst({
-        where: { name: CURSOR_NAME },
-        columns: { seq: true },
-      }),
-    catch: (cause) => new DrainError({ cause }),
+  const cursor = yield* webDb.query.listDrainCursor.findFirst({
+    where: { name: CURSOR_NAME },
+    columns: { seq: true },
   });
   const fromSeq = cursor?.seq ?? 0n;
 
-  const outboxRows = yield* Effect.tryPromise({
-    try: () =>
-      indexerDb
-        .select({
-          id: listEventOutbox.id,
-          tokenId: listEventOutbox.tokenId,
-          fromAddress: listEventOutbox.fromAddress,
-        })
-        .from(listEventOutbox)
-        .where(gt(listEventOutbox.id, fromSeq))
-        .orderBy(listEventOutbox.id)
-        .limit(BATCH_SIZE),
-    catch: (cause) => new DrainError({ cause }),
-  });
+  const outboxRows = yield* indexerDb
+    .select({
+      id: listEventOutbox.id,
+      tokenId: listEventOutbox.tokenId,
+      fromAddress: listEventOutbox.fromAddress,
+    })
+    .from(listEventOutbox)
+    .where(gt(listEventOutbox.id, fromSeq))
+    .orderBy(listEventOutbox.id)
+    .limit(BATCH_SIZE);
 
   if (outboxRows.length === 0) {
     return yield* Effect.as(purgeOutbox(fromSeq), 0);
@@ -63,44 +55,42 @@ const processBatch = Effect.gen(function* () {
   const lastSeq = outboxRows[outboxRows.length - 1]!.id;
   const tokenIds = [...new Set(outboxRows.map((r) => r.tokenId))];
 
-  const cacheKeys = yield* Effect.tryPromise({
-    try: () =>
-      webDb.transaction(async (tx) => {
-        // every entry keyed by one of these tokenIds is stale — the chain
-        // event proves the token left the sender's address. partial unique
-        // index on (tokenId, objektListId) makes this an index lookup.
-        await tx
-          .delete(objektListEntries)
-          .where(inArray(objektListEntries.tokenId, tokenIds));
+  const cacheKeys = yield* webDb.transaction((tx) =>
+    Effect.gen(function* () {
+      // every entry keyed by one of these tokenIds is stale — the chain
+      // event proves the token left the sender's address. partial unique
+      // index on (tokenId, objektListId) makes this an index lookup.
+      yield* tx
+        .delete(objektListEntries)
+        .where(inArray(objektListEntries.tokenId, tokenIds));
 
-        const deletedPins = await tx
-          .delete(pins)
-          .where(inArray(pins.tokenId, tokenIds.map(Number)))
-          .returning({ address: pins.address });
+      const deletedPins = yield* tx
+        .delete(pins)
+        .where(inArray(pins.tokenId, tokenIds.map(Number)))
+        .returning({ address: pins.address });
 
-        // advance the cursor in the same transaction. any crash before
-        // commit rolls back the deletes and the cursor together; after
-        // commit, the next tick reads the advanced cursor and skips these
-        // rows — exactly-once, no replay window.
-        await upsertCursor(tx, lastSeq);
+      // advance the cursor in the same transaction. any crash before
+      // commit rolls back the deletes and the cursor together; after
+      // commit, the next tick reads the advanced cursor and skips these
+      // rows — exactly-once, no replay window.
+      yield* upsertCursor(tx, lastSeq);
 
-        if (deletedPins.length === 0) return [];
+      if (deletedPins.length === 0) return [];
 
-        const addresses = [...new Set(deletedPins.map((p) => p.address))];
-        const accounts = await tx.query.cosmoAccounts.findMany({
-          where: { address: { in: addresses } },
-          columns: { address: true, username: true },
-        });
+      const addresses = [...new Set(deletedPins.map((p) => p.address))];
+      const accounts = yield* tx.query.cosmoAccounts.findMany({
+        where: { address: { in: addresses } },
+        columns: { address: true, username: true },
+      });
 
-        // bust both address-keyed and username-keyed cache entries since
-        // either can be requested by the web app.
-        return accounts.flatMap((a) => [
-          pinCacheKey(a.address),
-          pinCacheKey(a.username),
-        ]);
-      }),
-    catch: (cause) => new DrainError({ cause }),
-  });
+      // bust both address-keyed and username-keyed cache entries since
+      // either can be requested by the web app.
+      return accounts.flatMap((a) => [
+        pinCacheKey(a.address),
+        pinCacheKey(a.username),
+      ]);
+    }),
+  );
 
   if (cacheKeys.length > 0) {
     yield* redis.del(...cacheKeys);
@@ -130,16 +120,12 @@ export const drainOutboxTask = {
   }),
 } satisfies ScheduledTask;
 
-export class DrainError extends Data.TaggedError("DrainError")<{
-  readonly cause: unknown;
-}> {}
-
 /**
  * Upsert the single-row drain cursor. Accepts either `webDb` or a `tx` so
  * the call site can choose whether to run inside a transaction.
  */
 function upsertCursor(
-  db: Pick<Effect.Effect.Success<typeof DatabaseWeb>, "insert">,
+  db: Pick<typeof DatabaseWeb.Service, "insert">,
   seq: bigint,
 ) {
   return db
@@ -160,19 +146,12 @@ function upsertCursor(
 const purgeOutbox = (appliedSeq: bigint) =>
   Effect.gen(function* () {
     const indexer = yield* DatabaseIndexer;
-    return yield* Effect.tryPromise({
-      try: () =>
-        indexer
-          .delete(listEventOutbox)
-          .where(
-            and(
-              lt(
-                listEventOutbox.createdAt,
-                sql<string>`now() - interval '7 days'`,
-              ),
-              lte(listEventOutbox.id, appliedSeq),
-            ),
-          ),
-      catch: (cause) => new DrainError({ cause }),
-    });
+    return yield* indexer
+      .delete(listEventOutbox)
+      .where(
+        and(
+          lt(listEventOutbox.createdAt, sql<string>`now() - interval '7 days'`),
+          lte(listEventOutbox.id, appliedSeq),
+        ),
+      );
   });

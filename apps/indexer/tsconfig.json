@@ -11,6 +11,10 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
 
+    // Workspace packages are consumed as .ts source with explicit .ts
+    // extensions (required by Node type stripping at runtime)
+    "rewriteRelativeImportExtensions": true,
+
     // Build output
     "declaration": false,
     "sourceMap": true,

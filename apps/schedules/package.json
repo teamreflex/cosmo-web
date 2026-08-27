@@ -15,10 +15,9 @@
   "dependencies": {
     "@apollo/cosmo": "workspace:*",
     "@apollo/database": "workspace:*",
+    "@apollo/drizzle-bun-effect": "workspace:*",
     "@apollo/util": "workspace:*",
     "@apollo/util-server": "workspace:*",
-    "@effect/cluster": "catalog:",
-    "@effect/platform": "catalog:",
     "@effect/platform-bun": "catalog:",
     "drizzle-orm": "catalog:",
     "effect": "catalog:",

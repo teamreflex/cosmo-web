@@ -40,6 +40,7 @@ export default function LinkedAccounts() {
           key={account.id}
           account={{
             id: account.id,
+            // SAFETY: only the known OAuth providers can be linked
             providerId: account.providerId as LinkedAccount["providerId"],
             accountId: account.accountId,
           }}
@@ -48,7 +49,11 @@ export default function LinkedAccounts() {
       ))}
 
       {linkableProviders.map((providerId) => (
-        <LinkNewAccount key={providerId} providerId={providerId as Provider} />
+        <LinkNewAccount
+          key={providerId}
+          // SAFETY: linkableProviders only lists the known OAuth providers
+          providerId={providerId as Provider}
+        />
       ))}
     </div>
   );

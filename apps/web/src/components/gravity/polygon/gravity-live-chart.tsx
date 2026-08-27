@@ -1,3 +1,4 @@
+import { pollCandidates } from "@/lib/client/gravity/util";
 import { polygonGravityQuery } from "@/lib/queries/gravity";
 import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
 import type {
@@ -16,6 +17,7 @@ export type Props = {
 
 export default function PolygonLiveChart({ artist, gravity }: Props) {
   const { data } = useSuspenseQuery(polygonGravityQuery(artist.id, gravity.id));
+  const candidates = pollCandidates(data.poll);
 
   return (
     <div className="flex w-full flex-col gap-2">
@@ -27,14 +29,14 @@ export default function PolygonLiveChart({ artist, gravity }: Props) {
       />
 
       <CandidateBreakdown
-        content={data.poll.pollViewMetadata.selectedContent}
+        content={candidates}
         comoByCandidate={data.comoByCandidate}
         liveStatus="finalized"
         isRefreshing={false}
       />
 
       <VoterBreakdown
-        candidates={data.poll.pollViewMetadata.selectedContent}
+        candidates={candidates}
         tokenId={artist.comoTokenId}
         pollId={data.poll.pollIdOnChain}
         revealedVotes={data.revealedVotes}

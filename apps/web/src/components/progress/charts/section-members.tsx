@@ -17,6 +17,7 @@ export default function SectionMembers(props: Props) {
         acc[stat.name] = getMember(stat.name)?.primaryColorHex ?? randomColor();
         return acc;
       },
+      // SAFETY: empty seed for the reduce accumulator
       {} as Record<string, string>,
     );
   }, [props.data, getMember]);

@@ -3,6 +3,7 @@ import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import { uploadCollectionMedia } from "@/lib/server/r2.server";
 import { getRequestSignal } from "@/lib/server/request.server";
 import { verifyCosmoSchema } from "@/lib/universal/schema/cosmo";
+import { runCosmo } from "@apollo/cosmo/runtime";
 import { fetchObjektSummaries } from "@apollo/cosmo/server/collection";
 import { certifyTicket } from "@apollo/cosmo/server/qr-auth";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
@@ -26,21 +27,13 @@ export const $scrapeCollectionMedia = createServerFn({ method: "POST" })
     }
 
     const signal = getRequestSignal();
-    const response = await certifyTicket(data.otp, data.ticket, signal);
+    const response = await runCosmo(
+      certifyTicket(data.otp, data.ticket),
+      signal,
+    );
 
     // extract user-session cookie
-    const headers = response.headers.getSetCookie();
-    let session: string | null = null;
-    for (const header of headers) {
-      const parts = header.split(";");
-      for (const part of parts) {
-        const [name, value] = part.trim().split("=");
-        if (name === "user-session" && value !== undefined) {
-          session = value;
-          break;
-        }
-      }
-    }
+    const session = response.cookies["user-session"];
 
     if (!session) {
       throw new Error("Error getting session");
@@ -71,12 +64,14 @@ export const $scrapeCollectionMedia = createServerFn({ method: "POST" })
     // fetch objekt summaries in parallel
     const summaries = await Promise.allSettled(
       queries.map(async (query) => {
-        const result = await fetchObjektSummaries({
-          session,
-          artistId: query.artistId,
-          className: query.class,
+        const result = await runCosmo(
+          fetchObjektSummaries({
+            session,
+            artistId: query.artistId,
+            className: query.class,
+          }),
           signal,
-        });
+        );
 
         return { query, summaries: result };
       }),
