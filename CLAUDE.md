@@ -60,6 +60,7 @@ Detailed conventions live in `docs/`. Read the relevant file **before** working 
 - `packages/database`: `drizzle-orm` schemas for both databases
 - `packages/drizzle-bun-effect`: Effect service for Bun.SQL, derived from `drizzle-orm/effect-postgres`
 - `packages/lint`: Shared oxlint config
+- `packages/redis`: Layer factory for Effect's persistence `Redis` service, backed by Bun's RedisClient
 - `packages/typescript`: Shared tsconfig.json file
 - `packages/util`: Shared utility functions
 - `packages/util-server`: Shared server-only utilities (Redis cache keys, crypto)

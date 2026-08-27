@@ -35,8 +35,13 @@ const log = {
  * Build the Content-Security-Policy header value from known origins.
  */
 function buildContentSecurityPolicy(): string {
-  const scriptSrc = ["'self'", "'unsafe-inline'"];
-  const connectSrc = ["'self'"];
+  const scriptSrc = [
+    "'self'",
+    "'unsafe-inline'",
+    // cloudflare web analytics beacon, injected by the proxy
+    "https://static.cloudflareinsights.com",
+  ];
+  const connectSrc = ["'self'", "https://cloudflareinsights.com"];
   const imgSrc = [
     "'self'",
     "data:",

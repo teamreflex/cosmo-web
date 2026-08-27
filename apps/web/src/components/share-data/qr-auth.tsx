@@ -7,13 +7,14 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { m } from "@/i18n/messages";
-import { $scrapeCollectionMedia } from "@/lib/functions/share-data";
+import {
+  $fetchQrTicket,
+  $queryQrTicket,
+  $scrapeCollectionMedia,
+} from "@/lib/functions/share-data";
+import { isRateLimitErrorCode } from "@/lib/universal/errors/rate-limit";
 import { verifyCosmoSchema } from "@/lib/universal/schema/cosmo";
-import type {
-  AuthTicket,
-  QueryTicket,
-  TicketUser,
-} from "@apollo/cosmo/types/qr-auth";
+import type { AuthTicket, TicketUser } from "@apollo/cosmo/types/qr-auth";
 import { generateQrCode } from "@apollo/cosmo/types/qr-auth";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import {
@@ -23,7 +24,6 @@ import {
 } from "@tabler/icons-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
-import { FetchError, ofetch } from "ofetch";
 import { QRCodeSVG } from "qrcode.react";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -38,16 +38,13 @@ type GetRecaptchaProps = {
 export default function GetRecaptcha({ onSuccess }: GetRecaptchaProps) {
   const { data, error, status, refetch } = useQuery({
     queryKey: ["qr-auth", "code"],
-    queryFn: () =>
-      ofetch<AuthTicket>("/api/cosmo/qr-auth/recaptcha", {
-        retry: false,
-      }),
+    queryFn: () => $fetchQrTicket(),
     staleTime: Infinity,
     retry: false,
     refetchOnWindowFocus: false,
   });
 
-  const isRateLimited = error instanceof FetchError && error.statusCode === 429;
+  const isRateLimited = error !== null && isRateLimitErrorCode(error.message);
 
   return (
     <div className="flex flex-col items-center justify-center">
@@ -86,12 +83,7 @@ type RenderTicketProps = {
 function RenderTicket({ ticket, retry, onSuccess }: RenderTicketProps) {
   const { data, status, refetch } = useQuery({
     queryKey: ["qr-auth", "ticket", ticket.ticket],
-    queryFn: () =>
-      ofetch<QueryTicket>("/api/cosmo/qr-auth/ticket", {
-        query: {
-          ticket: ticket.ticket,
-        },
-      }),
+    queryFn: () => $queryQrTicket({ data: { ticket: ticket.ticket } }),
     refetchInterval: 2500,
     enabled: (query) => {
       return query.state.data?.status !== "wait_for_certify";

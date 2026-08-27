@@ -1,10 +1,11 @@
 import { CosmoApiError, CosmoDecodeError } from "@apollo/cosmo/errors";
 import { runCosmo } from "@apollo/cosmo/runtime";
 import { fetchByNickname } from "@apollo/cosmo/server/user";
+import type { CosmoSearchResult } from "@apollo/cosmo/types/user";
 import { cosmoAccounts } from "@apollo/database/web/schema";
 import type { CosmoAccount } from "@apollo/database/web/types";
 import { addr, isAddress } from "@apollo/util";
-import { sql } from "drizzle-orm";
+import { like, sql } from "drizzle-orm";
 import type { FullAccount, PublicCosmo } from "../universal/cosmo-accounts";
 import { toPublicUser } from "./auth.server";
 import { db } from "./db";
@@ -149,6 +150,40 @@ export async function cacheAccounts(accounts: PartialAccount[]) {
       },
     })
     .returning();
+}
+
+/**
+ * Search the database for accounts with a username starting with the query.
+ * Fallback for when the COSMO user search API is unavailable.
+ */
+export async function searchCosmoAccounts(
+  query: string,
+): Promise<CosmoSearchResult> {
+  if (query.length < 2) {
+    return { hasNext: false, nextStartAfter: null, results: [] };
+  }
+
+  const users = await db
+    .select({
+      cosmoId: cosmoAccounts.cosmoId,
+      username: cosmoAccounts.username,
+      address: cosmoAccounts.address,
+    })
+    .from(cosmoAccounts)
+    .where(like(cosmoAccounts.username, `${query}%`))
+    .limit(100);
+
+  return {
+    hasNext: false,
+    nextStartAfter: null,
+    results: users.map((result) => ({
+      id: result.cosmoId ?? 0,
+      nickname: result.username,
+      address: result.address,
+      profileImageUrl: "",
+      userProfiles: [],
+    })),
+  };
 }
 
 /**

@@ -38,12 +38,9 @@ import { Route as AtChar123usernameChar125ListSlugRouteImport } from './routes/@
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiUserByAddressesRouteImport } from './routes/api/user/by-addresses'
 import { Route as GravityArtistIdRouteImport } from './routes/gravity/$artist/$id'
-import { Route as ApiCosmoQrAuthRecaptchaRouteImport } from './routes/api/cosmo/qr-auth/recaptcha'
-import { Route as ApiCosmoQrAuthTicketRouteImport } from './routes/api/cosmo/qr-auth/ticket'
 import { Route as ApiGravityPollIdAggregatedRouteImport } from './routes/api/gravity/$pollId.aggregated'
 import { Route as ApiObjektListForUserIdentifierRouteImport } from './routes/api/objekt-list/for-user.$identifier'
 import { Route as ApiObjektsBySlugSlugRouteImport } from './routes/api/objekts/by-slug.$slug'
-import { Route as ApiBffV3UsersSearchRouteImport } from './routes/api/bff/v3/users/search'
 import { Route as ApiObjektsMetadataSlugIndexRouteImport } from './routes/api/objekts/metadata/$slug/index'
 import { Route as ApiUserByAddressAddressIndexRouteImport } from './routes/api/user/by-address/$address/index'
 import { Route as ApiUserByAddressAddressComoRouteImport } from './routes/api/user/by-address/$address/como'
@@ -201,16 +198,6 @@ const GravityArtistIdRoute = GravityArtistIdRouteImport.update({
   path: '/gravity/$artist/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiCosmoQrAuthRecaptchaRoute = ApiCosmoQrAuthRecaptchaRouteImport.update({
-  id: '/api/cosmo/qr-auth/recaptcha',
-  path: '/api/cosmo/qr-auth/recaptcha',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiCosmoQrAuthTicketRoute = ApiCosmoQrAuthTicketRouteImport.update({
-  id: '/api/cosmo/qr-auth/ticket',
-  path: '/api/cosmo/qr-auth/ticket',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const ApiGravityPollIdAggregatedRoute =
   ApiGravityPollIdAggregatedRouteImport.update({
     id: '/api/gravity/$pollId/aggregated',
@@ -226,11 +213,6 @@ const ApiObjektListForUserIdentifierRoute =
 const ApiObjektsBySlugSlugRoute = ApiObjektsBySlugSlugRouteImport.update({
   id: '/api/objekts/by-slug/$slug',
   path: '/api/objekts/by-slug/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ApiBffV3UsersSearchRoute = ApiBffV3UsersSearchRouteImport.update({
-  id: '/api/bff/v3/users/search',
-  path: '/api/bff/v3/users/search',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiObjektsMetadataSlugIndexRoute =
@@ -288,12 +270,9 @@ export interface FileRoutesByFullPath {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
-  '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
-  '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketRoute
   '/api/gravity/$pollId/aggregated': typeof ApiGravityPollIdAggregatedRoute
   '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
   '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
-  '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchRoute
   '/api/user/by-address/$address/como': typeof ApiUserByAddressAddressComoRoute
   '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
   '/api/objekts/metadata/$slug/': typeof ApiObjektsMetadataSlugIndexRoute
@@ -327,12 +306,9 @@ export interface FileRoutesByTo {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
-  '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
-  '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketRoute
   '/api/gravity/$pollId/aggregated': typeof ApiGravityPollIdAggregatedRoute
   '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
   '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
-  '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchRoute
   '/api/user/by-address/$address/como': typeof ApiUserByAddressAddressComoRoute
   '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
   '/api/objekts/metadata/$slug': typeof ApiObjektsMetadataSlugIndexRoute
@@ -369,12 +345,9 @@ export interface FileRoutesById {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
-  '/api/cosmo/qr-auth/recaptcha': typeof ApiCosmoQrAuthRecaptchaRoute
-  '/api/cosmo/qr-auth/ticket': typeof ApiCosmoQrAuthTicketRoute
   '/api/gravity/$pollId/aggregated': typeof ApiGravityPollIdAggregatedRoute
   '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
   '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
-  '/api/bff/v3/users/search': typeof ApiBffV3UsersSearchRoute
   '/api/user/by-address/$address/como': typeof ApiUserByAddressAddressComoRoute
   '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
   '/api/objekts/metadata/$slug/': typeof ApiObjektsMetadataSlugIndexRoute
@@ -412,12 +385,9 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
-    | '/api/cosmo/qr-auth/recaptcha'
-    | '/api/cosmo/qr-auth/ticket'
     | '/api/gravity/$pollId/aggregated'
     | '/api/objekt-list/for-user/$identifier'
     | '/api/objekts/by-slug/$slug'
-    | '/api/bff/v3/users/search'
     | '/api/user/by-address/$address/como'
     | '/api/user/by-address/$address/stats'
     | '/api/objekts/metadata/$slug/'
@@ -451,12 +421,9 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
-    | '/api/cosmo/qr-auth/recaptcha'
-    | '/api/cosmo/qr-auth/ticket'
     | '/api/gravity/$pollId/aggregated'
     | '/api/objekt-list/for-user/$identifier'
     | '/api/objekts/by-slug/$slug'
-    | '/api/bff/v3/users/search'
     | '/api/user/by-address/$address/como'
     | '/api/user/by-address/$address/stats'
     | '/api/objekts/metadata/$slug'
@@ -492,12 +459,9 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
-    | '/api/cosmo/qr-auth/recaptcha'
-    | '/api/cosmo/qr-auth/ticket'
     | '/api/gravity/$pollId/aggregated'
     | '/api/objekt-list/for-user/$identifier'
     | '/api/objekts/by-slug/$slug'
-    | '/api/bff/v3/users/search'
     | '/api/user/by-address/$address/como'
     | '/api/user/by-address/$address/stats'
     | '/api/objekts/metadata/$slug/'
@@ -520,12 +484,9 @@ export interface RootRouteChildren {
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiUserByAddressesRoute: typeof ApiUserByAddressesRoute
   GravityArtistIdRoute: typeof GravityArtistIdRoute
-  ApiCosmoQrAuthRecaptchaRoute: typeof ApiCosmoQrAuthRecaptchaRoute
-  ApiCosmoQrAuthTicketRoute: typeof ApiCosmoQrAuthTicketRoute
   ApiGravityPollIdAggregatedRoute: typeof ApiGravityPollIdAggregatedRoute
   ApiObjektListForUserIdentifierRoute: typeof ApiObjektListForUserIdentifierRoute
   ApiObjektsBySlugSlugRoute: typeof ApiObjektsBySlugSlugRoute
-  ApiBffV3UsersSearchRoute: typeof ApiBffV3UsersSearchRoute
   ApiUserByAddressAddressComoRoute: typeof ApiUserByAddressAddressComoRoute
   ApiUserByAddressAddressStatsRoute: typeof ApiUserByAddressAddressStatsRoute
   ApiObjektsMetadataSlugIndexRoute: typeof ApiObjektsMetadataSlugIndexRoute
@@ -737,20 +698,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GravityArtistIdRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/cosmo/qr-auth/recaptcha': {
-      id: '/api/cosmo/qr-auth/recaptcha'
-      path: '/api/cosmo/qr-auth/recaptcha'
-      fullPath: '/api/cosmo/qr-auth/recaptcha'
-      preLoaderRoute: typeof ApiCosmoQrAuthRecaptchaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/cosmo/qr-auth/ticket': {
-      id: '/api/cosmo/qr-auth/ticket'
-      path: '/api/cosmo/qr-auth/ticket'
-      fullPath: '/api/cosmo/qr-auth/ticket'
-      preLoaderRoute: typeof ApiCosmoQrAuthTicketRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/gravity/$pollId/aggregated': {
       id: '/api/gravity/$pollId/aggregated'
       path: '/api/gravity/$pollId/aggregated'
@@ -770,13 +717,6 @@ declare module '@tanstack/react-router' {
       path: '/api/objekts/by-slug/$slug'
       fullPath: '/api/objekts/by-slug/$slug'
       preLoaderRoute: typeof ApiObjektsBySlugSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/api/bff/v3/users/search': {
-      id: '/api/bff/v3/users/search'
-      path: '/api/bff/v3/users/search'
-      fullPath: '/api/bff/v3/users/search'
-      preLoaderRoute: typeof ApiBffV3UsersSearchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/objekts/metadata/$slug/': {
@@ -879,12 +819,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiUserByAddressesRoute: ApiUserByAddressesRoute,
   GravityArtistIdRoute: GravityArtistIdRoute,
-  ApiCosmoQrAuthRecaptchaRoute: ApiCosmoQrAuthRecaptchaRoute,
-  ApiCosmoQrAuthTicketRoute: ApiCosmoQrAuthTicketRoute,
   ApiGravityPollIdAggregatedRoute: ApiGravityPollIdAggregatedRoute,
   ApiObjektListForUserIdentifierRoute: ApiObjektListForUserIdentifierRoute,
   ApiObjektsBySlugSlugRoute: ApiObjektsBySlugSlugRoute,
-  ApiBffV3UsersSearchRoute: ApiBffV3UsersSearchRoute,
   ApiUserByAddressAddressComoRoute: ApiUserByAddressAddressComoRoute,
   ApiUserByAddressAddressStatsRoute: ApiUserByAddressAddressStatsRoute,
   ApiObjektsMetadataSlugIndexRoute: ApiObjektsMetadataSlugIndexRoute,

@@ -95,6 +95,38 @@ export const upcomingGravity = {
   polls: [],
 } satisfies typeof UpcomingGravitySchema.Type;
 
+// during the counting window (endDate → revealDate) COSMO reports the poll as
+// finalized without a result, while the gravity stays in the ongoing list
+export const countingGravity = {
+  id: 201,
+  artist: "tripleS",
+  title: "Counting Gravity",
+  description: "A gravity in the counting phase",
+  type: "grand-gravity",
+  pollType: "single-poll",
+  bannerImageUrl: "https://static.cosmo.fans/gravity-counting.png",
+  entireStartDate: "2026-08-21T02:00:00.000Z",
+  entireEndDate: "2026-08-22T01:00:00.000Z",
+  body: [],
+  contractOutlink: "https://abscan.org/address/0x0",
+  polls: [
+    {
+      id: 242,
+      artist: "tripleS",
+      pollIdOnChain: 0,
+      gravityId: 201,
+      type: "single-poll",
+      indexInGravity: 1,
+      title: "Counting Gravity",
+      imageUrl: "https://static.cosmo.fans/poll-counting.png",
+      startDate: "2026-08-21T02:00:00.000Z",
+      endDate: "2026-08-21T23:00:00.000Z",
+      revealDate: "2026-08-22T01:00:00.000Z",
+      finalized: true,
+    },
+  ],
+} satisfies typeof UpcomingGravitySchema.Type;
+
 export const pastGravity = {
   id: 99,
   artist: "tripleS",

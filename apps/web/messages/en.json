@@ -386,6 +386,7 @@
   "error_loading_objekts": "Error loading objekts",
   "error_try_again": "Try Again",
   "error_unknown": "An unknown error occurred",
+  "error_rate_limited": "Too many requests, please try again in a moment.",
   "error_not_found_title": "User not found",
   "error_not_found_description": "User could not be found in {appName} or COSMO.",
   "error_objekt_not_found": "Objekt not found",

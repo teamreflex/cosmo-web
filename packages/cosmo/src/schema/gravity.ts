@@ -120,14 +120,18 @@ export const PollFinalizedSchema = Schema.Union([
   CombinationPollFinalizedSchema,
 ]);
 
+/**
+ * finalized flips to true during the counting window (endDate → revealDate)
+ * while the poll still has no result, so it can't be a false literal here
+ * */
 export const PollUpcomingSchema = Schema.Union([
   Schema.Struct({
     ...pollCommonFields("single-poll"),
-    finalized: Schema.Literal(false),
+    finalized: Schema.Boolean,
   }),
   Schema.Struct({
     ...pollCommonFields("combination-poll"),
-    finalized: Schema.Literal(false),
+    finalized: Schema.Boolean,
   }),
 ]);
 

@@ -16,8 +16,9 @@ function getPollStatus(
 ): PollStatus {
   const now = new Date();
 
+  // COSMO flips finalized to true as soon as voting ends, so the reveal date is what separates counting from finalized
   if (new Date(poll.endDate) <= now) {
-    return poll.finalized ? "finalized" : "counting";
+    return new Date(poll.revealDate) <= now ? "finalized" : "counting";
   }
 
   if (new Date(poll.startDate) >= now) {

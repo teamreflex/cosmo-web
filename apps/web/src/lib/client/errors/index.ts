@@ -3,6 +3,7 @@ import { formatCollectionError } from "./collections";
 import { formatGravityError } from "./gravity";
 import { type Context, formatListError } from "./lists";
 import { formatObjektError } from "./objekt";
+import { formatRateLimitError } from "./rate-limit";
 
 export {
   formatAuthError,
@@ -10,6 +11,7 @@ export {
   formatGravityError,
   formatListError,
   formatObjektError,
+  formatRateLimitError,
 };
 
 /**
@@ -23,7 +25,8 @@ export function formatError(error: unknown, context: Context = {}): string {
     formatAuthError(error) ??
     formatGravityError(error) ??
     formatObjektError(error) ??
-    formatCollectionError(error);
+    formatCollectionError(error) ??
+    formatRateLimitError(error);
 
   if (message !== null) {
     return message;
