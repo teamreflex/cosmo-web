@@ -3,13 +3,9 @@
  *   - Server port number
  *   - Default: 3000
  *
- * ENABLE_DYNAMIC_COMPRESSION (boolean)
- *   - Enable compression for dynamic responses (TanStack SSR, API routes)
- *   - Default: false (Cloudflare handles compression)
- *   - Set to "true" to compress dynamic responses at the origin
- *
- * Note: Static assets are streamed from disk with gzip compression.
- * Cloudflare caches responses, Vite hashes filenames.
+ * Note: Static assets are served as Bun file routes (ETag, 304 and Range
+ * handling built in). Cloudflare caches and compresses all responses, Vite
+ * hashes filenames.
  */
 
 import * as Sentry from "@sentry/bun";
@@ -27,10 +23,13 @@ const SERVER_ENTRY_POINT = path.join(
   "./dist/server/server.js",
 );
 
-// Optional compression for dynamic responses (TanStack SSR, API routes)
-// When disabled, Cloudflare handles compression
-const ENABLE_DYNAMIC_COMPRESSION =
-  process.env.ENABLE_DYNAMIC_COMPRESSION === "true";
+// Logging utilities
+const log = {
+  info: (message: string) => console.info(`[INFO] ${message}`),
+  success: (message: string) => console.log(`[SUCCESS] ${message}`),
+  warning: (message: string) => console.warn(`[WARNING] ${message}`),
+  error: (message: string) => console.error(`[ERROR] ${message}`),
+};
 
 /**
  * Build the Content-Security-Policy header value from known origins.
@@ -61,21 +60,27 @@ function buildContentSecurityPolicy(): string {
       const origin = new URL(umamiUrl).origin;
       scriptSrc.push(origin);
       connectSrc.push(origin);
-    } catch {}
+    } catch {
+      log.warning("VITE_UMAMI_SCRIPT_URL is not a valid URL, omitted from CSP");
+    }
   }
 
   const sentryDsn = process.env.VITE_SENTRY_DSN;
   if (sentryDsn) {
     try {
       connectSrc.push(new URL(sentryDsn).origin);
-    } catch {}
+    } catch {
+      log.warning("VITE_SENTRY_DSN is not a valid URL, omitted from CSP");
+    }
   }
 
   const typesenseUrl = process.env.VITE_TYPESENSE_URL;
   if (typesenseUrl) {
     try {
       connectSrc.push(new URL(typesenseUrl).origin);
-    } catch {}
+    } catch {
+      log.warning("VITE_TYPESENSE_URL is not a valid URL, omitted from CSP");
+    }
   }
 
   const r2AccountId = process.env.R2_ACCOUNT_ID;
@@ -105,23 +110,6 @@ function buildContentSecurityPolicy(): string {
 
 const CONTENT_SECURITY_POLICY = buildContentSecurityPolicy();
 
-// MIME types eligible for compression
-const COMPRESSIBLE_TYPES = [
-  "text/",
-  "application/javascript",
-  "application/json",
-  "application/xml",
-  "image/svg+xml",
-];
-
-// Logging utilities
-const log = {
-  info: (message: string) => console.info(`[INFO] ${message}`),
-  success: (message: string) => console.log(`[SUCCESS] ${message}`),
-  warning: (message: string) => console.warn(`[WARNING] ${message}`),
-  error: (message: string) => console.error(`[ERROR] ${message}`),
-};
-
 /**
  * Add basic security headers to response
  */
@@ -138,90 +126,26 @@ function addSecurityHeaders(headers: Headers): void {
 }
 
 /**
- * Check if a MIME type is compressible
- */
-function isMimeTypeCompressible(mimeType: string): boolean {
-  const [baseType] = mimeType.split(";");
-  const normalized = (baseType ?? mimeType).trim().toLowerCase();
-
-  return COMPRESSIBLE_TYPES.some((type) =>
-    type.endsWith("/") ? normalized.startsWith(type) : normalized === type,
-  );
-}
-
-/**
- * Check if gzip is accepted in Accept-Encoding header
- */
-function acceptsGzip(acceptEncoding: string): boolean {
-  const encodings = acceptEncoding.split(",").map((e) => {
-    const [name, ...params] = e.trim().split(";");
-    const qParam = params.find((p) => p.trim().startsWith("q="));
-    const q = qParam ? parseFloat(qParam.trim().slice(2)) : 1;
-    return { name: name?.trim().toLowerCase(), q };
-  });
-
-  for (const { name, q } of encodings) {
-    if (q <= 0) continue;
-    if (name === "gzip" || name === "*") return true;
-  }
-  return false;
-}
-
-/**
- * Create static asset handler that streams from disk with compression
- */
-function createStaticHandler(
-  filepath: string,
-  mimeType: string,
-): (req: Request) => Response {
-  return (req: Request) => {
-    const method = req.method.toUpperCase();
-    if (method !== "GET" && method !== "HEAD") {
-      const headers = new Headers({
-        Allow: "GET, HEAD",
-        "Content-Type": "text/plain",
-      });
-      addSecurityHeaders(headers);
-      return new Response("Method Not Allowed", { status: 405, headers });
-    }
-
-    const headers = new Headers({
-      "Content-Type": mimeType,
-      "Cache-Control": "public, max-age=31536000, immutable",
-      Vary: "Accept-Encoding",
-    });
-    addSecurityHeaders(headers);
-
-    const file = Bun.file(filepath);
-
-    if (method === "HEAD") {
-      return new Response(null, { headers });
-    }
-
-    // Compress with gzip if supported
-    if (isMimeTypeCompressible(mimeType)) {
-      const acceptEncoding = req.headers.get("accept-encoding") || "";
-
-      if (acceptsGzip(acceptEncoding)) {
-        headers.set("Content-Encoding", "gzip");
-        headers.delete("Content-Length");
-
-        const stream = file.stream().pipeThrough(new CompressionStream("gzip"));
-        return new Response(stream, { headers });
-      }
-    }
-
-    return new Response(file, { headers });
-  };
-}
-
-/**
- * Scan client directory and build static routes
+ * Scan client directory and build static routes.
+ * File routes (a Response with a BunFile body) get Content-Type, ETag,
+ * Last-Modified, 304 and Range handling from Bun; compression is left to Cloudflare.
  */
 async function buildStaticRoutes(
   clientDirectory: string,
-): Promise<Record<string, (req: Request) => Response>> {
-  const routes: Record<string, (req: Request) => Response> = {};
+): Promise<Record<string, Response>> {
+  // Vite's hashed output lives under assets/; everything else (copied from
+  // public/) keeps its filename across deploys, so revalidate via ETag/304.
+  const immutableHeaders = new Headers({
+    "Cache-Control": "public, max-age=31536000, immutable",
+  });
+  addSecurityHeaders(immutableHeaders);
+
+  const publicHeaders = new Headers({
+    "Cache-Control": "public, max-age=3600",
+  });
+  addSecurityHeaders(publicHeaders);
+
+  const routes: Record<string, Response> = {};
   const glob = new Bun.Glob("**/*");
 
   let count = 0;
@@ -232,10 +156,11 @@ async function buildStaticRoutes(
     // Skip directories and empty files
     if (!(await file.exists()) || file.size === 0) continue;
 
-    const route = `/${relativePath.split(path.sep).join(path.posix.sep)}`;
-    const mimeType = file.type || "application/octet-stream";
-
-    routes[route] = createStaticHandler(filepath, mimeType);
+    const posixPath = relativePath.split(path.sep).join(path.posix.sep);
+    const headers = posixPath.startsWith("assets/")
+      ? immutableHeaders
+      : publicHeaders;
+    routes[`/${posixPath}`] = new Response(file, { headers });
     count++;
   }
 
@@ -252,67 +177,6 @@ function ensureCacheControl(headers: Headers): void {
   if (!headers.has("Cache-Control")) {
     headers.set("Cache-Control", "no-cache");
   }
-}
-
-/**
- * Add no-transform to Cache-Control header
- */
-function ensureNoTransform(headers: Headers): void {
-  const cacheControl = headers.get("Cache-Control");
-  if (cacheControl && !/no-transform/i.test(cacheControl)) {
-    headers.set("Cache-Control", `${cacheControl}, no-transform`);
-  } else if (!cacheControl) {
-    headers.set("Cache-Control", "no-transform");
-  }
-}
-
-/**
- * Optionally compress dynamic responses with gzip.
- * Note: Only gzip is used because Bun's brotli/zstd CompressionStream
- * implementations buffer the entire response, breaking SSR streaming.
- */
-function compressResponse(response: Response, req: Request): Response {
-  const headers = new Headers(response.headers);
-  headers.append("Vary", "Accept-Encoding");
-  addSecurityHeaders(headers);
-  ensureCacheControl(headers);
-
-  const respond = (body: RequestInit["body"] | null) =>
-    new Response(body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers,
-    });
-
-  // Skip for non-success status codes
-  if (response.status < 200 || response.status >= 300) {
-    return respond(response.body);
-  }
-
-  // Skip if already compressed
-  if (response.headers.get("content-encoding")) {
-    ensureNoTransform(headers);
-    return respond(response.body);
-  }
-
-  // Check content type
-  const contentType = response.headers.get("content-type") || "";
-  if (!isMimeTypeCompressible(contentType)) {
-    return respond(response.body);
-  }
-
-  // Skip if no body or gzip not accepted
-  const acceptEncoding = req.headers.get("accept-encoding") || "";
-  if (!response.body || !acceptsGzip(acceptEncoding)) {
-    return respond(response.body);
-  }
-
-  // Compress with gzip (the only encoding that streams properly in Bun)
-  ensureNoTransform(headers);
-  headers.set("Content-Encoding", "gzip");
-  headers.delete("Content-Length");
-
-  return respond(response.body.pipeThrough(new CompressionStream("gzip")));
 }
 
 type FetchHandler = {
@@ -369,21 +233,8 @@ async function initializeServer() {
         try {
           const start = performance.now();
           const response = await handler.fetch(req);
-
-          if (ENABLE_DYNAMIC_COMPRESSION) {
-            const compressed = compressResponse(response, req);
-            const end = performance.now() - start;
-
-            const headers = new Headers(compressed.headers);
-            headers.set("Server-Timing", `handler;dur=${end.toFixed(1)}`);
-            return new Response(compressed.body, {
-              status: compressed.status,
-              statusText: compressed.statusText,
-              headers,
-            });
-          }
-
           const end = performance.now() - start;
+
           const headers = new Headers(response.headers);
           headers.set("Server-Timing", `handler;dur=${end.toFixed(1)}`);
           addSecurityHeaders(headers);
@@ -398,6 +249,7 @@ async function initializeServer() {
           log.error(`Handler error: ${String(error)}`);
           const headers = new Headers({
             "Content-Type": "text/plain",
+            "Cache-Control": "no-store",
           });
           addSecurityHeaders(headers);
           return new Response("Internal Server Error", {
@@ -413,15 +265,13 @@ async function initializeServer() {
       log.error(`Server error: ${error.message}`);
       const headers = new Headers({
         "Content-Type": "text/plain",
+        "Cache-Control": "no-store",
       });
       addSecurityHeaders(headers);
       return new Response("Internal Server Error", { status: 500, headers });
     },
   });
 
-  if (ENABLE_DYNAMIC_COMPRESSION) {
-    log.info("Compression enabled for dynamic responses");
-  }
   log.success(`Server listening on http://localhost:${server.port}`);
   return server;
 }

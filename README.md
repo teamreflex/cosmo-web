@@ -26,6 +26,7 @@ A platform for exploring objekts & gravities from [MODHAUS](https://www.mod-haus
 - `apps/proxy`: mitmproxy addons for intercepting COSMO app traffic
 - `packages/cosmo`: COSMO related types and API functions
 - `packages/database`: `drizzle-orm` schemas for both databases
+- `packages/drizzle-bun-effect`: Effect service for Bun.SQL, derived from `drizzle-orm/effect-postgres`
 - `packages/lint`: Shared oxlint config
 - `packages/typescript`: Shared tsconfig.json file
 - `packages/util`: Shared utility functions

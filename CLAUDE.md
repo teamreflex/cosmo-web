@@ -4,14 +4,14 @@ This is a Turborepo monorepo for the Apollo project.
 
 Detailed conventions live in `docs/`. Read the relevant file **before** working in that area:
 
-| When you're working on… | Read |
-| --- | --- |
-| Database queries, schema, migrations, derived/projection types (`apps/web`, `packages/database`) | [`docs/database.md`](docs/database.md) |
-| Routes, loaders, data fetching, server functions, import protection (`apps/web`) | [`docs/tanstack.md`](docs/tanstack.md) |
-| Components, forms, Tailwind/styling, i18n strings (`apps/web`) | [`docs/frontend.md`](docs/frontend.md) |
-| Throwing/handling errors, `ExpectedError`, Sentry filtering (`apps/web`) | [`docs/errors.md`](docs/errors.md) |
-| Better Auth config, API keys, auth schema generation (`apps/web`) | [`docs/auth.md`](docs/auth.md) |
-| Looking up library documentation (TanStack, Drizzle, Effect, …) | [`docs/libraries.md`](docs/libraries.md) |
+| When you're working on…                                                                          | Read                                     |
+| ------------------------------------------------------------------------------------------------ | ---------------------------------------- |
+| Database queries, schema, migrations, derived/projection types (`apps/web`, `packages/database`) | [`docs/database.md`](docs/database.md)   |
+| Routes, loaders, data fetching, server functions, import protection (`apps/web`)                 | [`docs/tanstack.md`](docs/tanstack.md)   |
+| Components, forms, Tailwind/styling, i18n strings (`apps/web`)                                   | [`docs/frontend.md`](docs/frontend.md)   |
+| Throwing/handling errors, `ExpectedError`, Sentry filtering (`apps/web`)                         | [`docs/errors.md`](docs/errors.md)       |
+| Better Auth config, API keys, auth schema generation (`apps/web`)                                | [`docs/auth.md`](docs/auth.md)           |
+| Looking up library documentation (TanStack, Drizzle, Effect, …)                                  | [`docs/libraries.md`](docs/libraries.md) |
 
 ## Development
 
@@ -38,10 +38,10 @@ Detailed conventions live in `docs/`. Read the relevant file **before** working 
 
 - Linting and type checking is sufficient, you do not need to run the build or dev commands to test your work.
 - When dealing with new packages, always check `package.json` to see if it has already been installed.
-- When installing packages with `bun add`, you must run the command from the specific workspace directory (e.g., `cd apps/web && bun add package-name`). Bun does not support a `--filter` flag like other package managers. Running `bun add` from the root will add the package to the root `package.json` instead of the workspace.
+- When installing packages with `bun add` from the root, pass `--filter <workspace>` to target a workspace (e.g., `bun add package-name --filter web`). Running `bun add` from the root without `--filter` adds the package to the root `package.json`. Use `bun add package-name --catalog` to add a package to the root catalog instead.
 - The project uses [oxlint](https://oxc.rs/docs/guide/usage/linter.html) instead of eslint, and [oxfmt](https://oxc.rs/docs/guide/usage/formatter.html) instead of Prettier. Do not manually use eslint or Prettier.
 - oxlint `extends` **overwrites** the `plugins` array (no merge). The shared base config (`packages/lint`) intentionally omits `react`; `apps/web` enables it and must therefore repeat the full plugin set `["typescript", "react", "import", "unicorn"]` — trimming it to `["react"]` silently drops the rest.
-- Typecheck scripts run plain `tsc` everywhere, but two compilers are in play: the root catalog ships native TypeScript 7, while `apps/indexer` pins its own TypeScript 6 for TypeORM decorator support (`experimentalDecorators` + metadata emit). Don't move the indexer to the catalog or touch its pin.
+- Typecheck scripts run plain `tsc` everywhere using the native TypeScript 7 from the root catalog. TS7 supports the TypeORM decorator emit (`experimentalDecorators` + metadata) that `apps/indexer` relies on, but has no compiler API — don't introduce tooling that imports `typescript` and calls `createProgram()`/`emit()`.
 
 ### Project Structure
 
@@ -58,6 +58,7 @@ Detailed conventions live in `docs/`. Read the relevant file **before** working 
 
 - `packages/cosmo`: COSMO related types and API functions
 - `packages/database`: `drizzle-orm` schemas for both databases
+- `packages/drizzle-bun-effect`: Effect service for Bun.SQL, derived from `drizzle-orm/effect-postgres`
 - `packages/lint`: Shared oxlint config
 - `packages/typescript`: Shared tsconfig.json file
 - `packages/util`: Shared utility functions
