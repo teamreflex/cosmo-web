@@ -723,16 +723,14 @@
 
   "_comment_gravity": "Gravity strings",
   "gravity_error_loading": "Gravityの読み込み中にエラー",
-  "gravity_votes_counted": "集計済み投票",
   "gravity_top_votes": "最多投票",
   "gravity_top_users": "上位ユーザー",
   "gravity_status_upcoming": "予定",
   "gravity_status_voting": "投票中",
-  "gravity_status_live": "ライブ",
+  "gravity_status_counting": "投票を集計中…",
   "gravity_status_complete": "完了",
   "gravity_header": "Gravity",
   "gravity_failed_load": "ライブデータの読み込みに失敗しました。後でもう一度お試しください。",
-  "gravity_combination_not_supported": "組み合わせ投票にはまだ対応していません。",
   "gravity_not_found": "Gravityが見つかりません",
   "gravity_badge_event": "イベント",
   "gravity_badge_grand": "グランド",
@@ -741,14 +739,50 @@
   "gravity_starts_in": "開始まで",
   "gravity_voting_ends": "投票",
   "gravity_counting": "結果集計中",
-  "gravity_no_active": "進行中のGravityはありません",
+  "gravity_revealed_progress": "公開 {counted}/{total}",
+  "gravity_votes_so_far": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "現在{count}票"
+      }
+    }
+  ],
+  "gravity_chart_como_interval": "COMO流入、30分ごと",
+  "gravity_chart_segment_como": "+{amount} COMO",
+  "gravity_ranking": "ランキング",
+  "gravity_more_candidates": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "+ 他{count}人の候補"
+      }
+    }
+  ],
+  "gravity_show_less": "折りたたむ",
+  "gravity_candidate_delta": "直近の公開で+{amount} COMO",
+  "gravity_vote_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}票"
+      }
+    }
+  ],
+  "gravity_recent_votes": "最近の投票",
+  "gravity_picks_hidden": "公開まで選択は非公開",
+  "gravity_no_votes_yet": "まだ投票はありません",
+  "gravity_votes_sealed": "投票中は票が非公開です",
+  "gravity_totals_reveal": "集計開始時に候補ごとの合計が公開されます",
 
   "_comment_blockchain": "Blockchain strings",
   "blockchain_types": "種類",
   "blockchain_total": "合計",
 
   "_comment_chart": "Chart strings",
-  "chart_votes": "投票数",
   "chart_como_used": "使用COMO",
 
   "_comment_navbar": "Navigation bar strings",

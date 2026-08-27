@@ -1,6 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { m } from "@/i18n/messages";
-import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import {
+  type PublicCosmo,
+  profileIdentifier,
+} from "@/lib/universal/cosmo-accounts";
 import { IconCalendarStats } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 
@@ -13,7 +16,7 @@ export default function ComoButton({ cosmo }: Props) {
     <Button variant="outline" size="profile" data-profile asChild>
       <Link
         to="/@{$username}/como"
-        params={{ username: cosmo.isAddress ? cosmo.address : cosmo.username }}
+        params={{ username: profileIdentifier(cosmo) }}
       >
         <IconCalendarStats className="h-5 w-5" />
         <span>{m.common_como()}</span>

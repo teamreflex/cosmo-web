@@ -9,7 +9,7 @@ import type {
 } from "../schema/gravity.ts";
 
 export type CosmoGravityType = "event-gravity" | "grand-gravity";
-export type CosmoPollType = "single-poll" | "combination-poll";
+export type CosmoPollType = "single-poll" | "combination-poll" | "unit-poll";
 
 export type CosmoPollFinalized = typeof PollFinalizedSchema.Type;
 export type CosmoPollUpcoming = typeof PollUpcomingSchema.Type;

@@ -1,19 +1,19 @@
-import type { RevealedVote } from "@/lib/client/gravity/types";
+import type { Reveal } from "@/lib/client/gravity/types";
 import { findPoll } from "@/lib/client/gravity/util";
-import { cacheHeaders, remember } from "@/lib/server/cache.server";
+import { remember } from "@/lib/server/cache.server";
+import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts.server";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { getProxiedToken } from "@/lib/server/proxied-token.server";
 import { getRequestSignal } from "@/lib/server/request.server";
-import { ExpectedError } from "@/lib/universal/errors/expected";
 import { CosmoApiError } from "@apollo/cosmo/errors";
 import { runCosmo } from "@apollo/cosmo/runtime";
 import { GravitySchema, PollChoicesSchema } from "@apollo/cosmo/schema/gravity";
 import { fetchGravity, fetchPoll } from "@apollo/cosmo/server/gravity";
 import { gravities, gravityPolls } from "@apollo/database/web/schema";
+import { addr } from "@apollo/util";
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { setResponseHeaders } from "@tanstack/react-start/server";
 import { isBefore } from "date-fns";
 import { and, asc, desc, eq, getColumns, gte, inArray, lt } from "drizzle-orm";
 import * as z from "zod";
@@ -47,13 +47,7 @@ export const $fetchGravityDetails = createServerFn({ method: "GET" })
       throw notFound();
     }
 
-    // we don't support combination polls yet
-    if (info.pollType !== "single-poll") {
-      throw new ExpectedError("combination_poll_unsupported");
-    }
-
     const isPast = isBefore(info.endDate, Date.now());
-    const isPolygon = isBefore(info.endDate, "2025-04-18");
     const artist = artists[data.artist.toLowerCase()];
     if (!artist) {
       throw notFound();
@@ -68,11 +62,27 @@ export const $fetchGravityDetails = createServerFn({ method: "GET" })
       throw notFound();
     }
 
+    // poll list for the day tabs. candidates are fetched per poll on demand, as each one costs a COSMO request
+    const polls = await db.query.gravityPolls.findMany({
+      where: {
+        cosmoGravityId: info.cosmoId,
+      },
+      columns: {
+        cosmoId: true,
+        title: true,
+        startDate: true,
+        endDate: true,
+      },
+      orderBy: {
+        cosmoId: "asc",
+      },
+    });
+
     return {
       artist,
       gravity,
-      isPolygon,
-      poll: maybePoll.poll,
+      polls,
+      defaultPollId: maybePoll.poll.id,
     };
   });
 
@@ -165,111 +175,6 @@ export const $fetchPaginatedGravities = createServerFn({ method: "GET" })
   });
 
 /**
- * Fetch historical data for a Polygon gravity.
- * Cached for 30 days.
- */
-export const $fetchPolygonGravity = createServerFn({ method: "GET" })
-  .validator(
-    z.object({
-      artist: z.string(),
-      id: z.number(),
-    }),
-  )
-  .handler(async ({ data }) => {
-    const cacheKey = `gravity-polygon:${data.artist}:${data.id}`;
-
-    // cache this server function response for 30 days
-    setResponseHeaders(
-      new Headers(
-        cacheHeaders({ cdn: 60 * 60 * 24 * 30, tags: ["gravity", cacheKey] }),
-      ),
-    );
-
-    const signal = getRequestSignal();
-    return await remember(
-      cacheKey,
-      60 * 60 * 24 * 30, // 30 days
-      async () => {
-        // 1. get a cosmo token
-        const { accessToken } = await getProxiedToken(signal);
-
-        // 2. fetch gravity from cosmo
-        const gravity = await runCosmo(
-          fetchGravity(accessToken, data.id),
-          signal,
-        ).catch(() => null);
-        if (!gravity) {
-          throw notFound();
-        }
-
-        // 3. fetch poll details
-        const gravityPoll = findPoll(gravity);
-        if (!gravityPoll) {
-          throw notFound();
-        }
-
-        const poll = await runCosmo(
-          fetchPoll(accessToken, gravityPoll.poll.id),
-          signal,
-        );
-
-        // prior to gravity 11, they used the cosmo poll ID on-chain instead of a separate ID
-        const chainPollId = gravity.id <= 11 ? poll.id : poll.pollIdOnChain;
-
-        // 4. fetch votes
-        const votes = await db.query.polygonVotes.findMany({
-          where: {
-            contract: ADDRESSES.get(data.artist),
-            pollId: chainPollId,
-          },
-          with: {
-            cosmoAccount: {
-              columns: {
-                username: true,
-              },
-            },
-          },
-        });
-
-        // 5. map votes
-        const revealedVotes = votes
-          .filter((vote) => vote.candidateId !== null)
-          .map(
-            (vote) =>
-              ({
-                pollId: Number(vote.pollId),
-                voter: vote.address,
-                comoAmount: vote.amount,
-                candidateId: vote.candidateId!,
-                blockNumber: vote.blockNumber,
-                username: vote.cosmoAccount?.username,
-                hash: vote.hash,
-              }) satisfies RevealedVote,
-          )
-          .sort((a, b) => b.comoAmount - a.comoAmount);
-
-        // 6. aggregate como by candidate
-        const comoByCandidate = revealedVotes.reduce(
-          (acc, vote) => {
-            const candidateId = vote.candidateId.toString();
-            acc[candidateId] = (acc[candidateId] ?? 0) + vote.comoAmount;
-            return acc;
-          },
-          // SAFETY: empty seed for the reduce accumulator
-          {} as Record<string, number>,
-        );
-
-        // 7. calculate total como used
-        const totalComoUsed = revealedVotes.reduce((acc, vote) => {
-          return acc + vote.comoAmount;
-        }, 0);
-
-        return { poll, revealedVotes, comoByCandidate, totalComoUsed };
-      },
-    );
-  });
-
-/**
  * Fetch a gravity, and if it's in the past, cache it for 30 days.
  */
 async function fetchCachedGravity(
@@ -311,7 +216,6 @@ export const $fetchCachedPoll = createServerFn({ method: "GET" })
       artist: z.string(),
       gravityId: z.number(),
       pollId: z.number(),
-      isPast: z.boolean().optional(),
     }),
   )
   .handler(async ({ data }) => {
@@ -321,25 +225,21 @@ export const $fetchCachedPoll = createServerFn({ method: "GET" })
       return await runCosmo(fetchPoll(accessToken, data.pollId), signal);
     };
 
-    // check the database for the end date if not provided
-    if (data.isPast === undefined) {
-      const info = await db.query.gravities.findFirst({
-        where: {
-          artist: data.artist,
-          cosmoId: data.gravityId,
-        },
-        columns: {
-          endDate: true,
-        },
-      });
-      if (!info) {
-        throw notFound();
-      }
-      data.isPast = isBefore(info.endDate, Date.now());
+    const info = await db.query.gravities.findFirst({
+      where: {
+        artist: data.artist,
+        cosmoId: data.gravityId,
+      },
+      columns: {
+        endDate: true,
+      },
+    });
+    if (!info) {
+      throw notFound();
     }
 
     // if the poll is in the past, cache it for 30 days
-    if (data.isPast) {
+    if (isBefore(info.endDate, Date.now())) {
       return await remember(
         `poll:${data.artist}:${data.gravityId}:${data.pollId}`,
         60 * 60 * 24 * 30, // 30 days
@@ -368,6 +268,7 @@ export const $fetchRevealedVotes = createServerFn({ method: "GET" })
       columns: {
         id: true,
         candidateId: true,
+        createdAt: true,
         blockNumber: true,
         amount: true,
       },
@@ -384,20 +285,64 @@ export const $fetchRevealedVotes = createServerFn({ method: "GET" })
     });
 
     // if there's new reveals, return the highest block number, otherwise return the current cursor
-    const nextCursor =
-      votes.length > 0 ? votes[votes.length - 1]!.blockNumber : data.cursor;
+    const nextCursor = votes.at(-1)?.blockNumber ?? data.cursor;
 
     return {
-      votes: votes.map((v) => ({
-        id: v.id,
-        candidateId: v.candidateId!,
-        amount: v.amount,
-      })),
+      votes: votes.flatMap((vote) =>
+        vote.candidateId === null
+          ? []
+          : [
+              {
+                id: vote.id,
+                candidateId: vote.candidateId,
+                amount: vote.amount,
+                createdAt: new Date(vote.createdAt).toISOString(),
+              } satisfies Reveal,
+            ],
+      ),
       nextCursor,
     };
   });
 
-const ADDRESSES = new Map([
-  ["triples", "0xc3e5ad11ae2f00c740e74b81f134426a3331d950"],
-  ["artms", "0x8466e6e218f0fe438ac8f403f684451d20e59ee3"],
-]);
+/**
+ * Fetch the 50 most recent votes for a poll, with usernames where known.
+ * Candidate picks stay hidden until reveals begin, so only timing and amounts
+ * are returned. Cached briefly so concurrent clients share one query.
+ */
+export const $fetchRecentVotes = createServerFn({ method: "GET" })
+  .validator(z.object({ pollId: z.number().int().positive() }))
+  .handler(async ({ data }) => {
+    return await remember(
+      `gravity-recent-votes:${data.pollId}`,
+      30,
+      async () => {
+        const votes = await indexer.query.votes.findMany({
+          columns: {
+            id: true,
+            from: true,
+            createdAt: true,
+            amount: true,
+          },
+          where: {
+            pollId: data.pollId,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          limit: 50,
+        });
+
+        const addressMap = await fetchKnownAddresses(
+          votes.map((vote) => addr(vote.from)),
+        );
+
+        return votes.map((vote) => ({
+          id: vote.id,
+          address: vote.from,
+          createdAt: new Date(vote.createdAt).toISOString(),
+          amount: vote.amount,
+          username: addressMap.get(addr(vote.from))?.username,
+        }));
+      },
+    );
+  });

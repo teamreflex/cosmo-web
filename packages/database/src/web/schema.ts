@@ -379,7 +379,7 @@ export const polygonVotes = pgTable(
   {
     id: serial("id").primaryKey(),
     address: citext("address", { length: 42 }).notNull(),
-    createdAt: timestamp("created_at", { mode: "string" }).notNull(),
+    createdAt: timestamp("created_at", { mode: "date" }).notNull(),
     contract: citext("contract", { length: 42 }).notNull(),
     pollId: integer("poll_id").notNull(),
     candidateId: integer("candidate_id"),

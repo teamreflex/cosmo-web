@@ -8,6 +8,7 @@ import { useArtists } from "@/hooks/use-artists";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { fetchObjektsWithComoQuery } from "@/lib/queries/como";
+import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { ClientOnly, createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/@{$username}/como")({
@@ -23,16 +24,16 @@ export const Route = createFileRoute("/@{$username}/como")({
       fetchObjektsWithComoQuery(target.cosmo.address),
     );
 
-    return { username: target.cosmo.username, data };
+    return { cosmo: target.cosmo, data };
   },
   head: ({ loaderData }) =>
     defineHead({
-      title: loaderData?.username
+      title: loaderData?.cosmo
         ? m.como_title_with_username({
-            username: loaderData.username,
+            username: loaderData.cosmo.username,
           })
         : m.common_como(),
-      canonical: `/@${loaderData?.username}/como`,
+      canonical: loaderData && `/@${profileIdentifier(loaderData.cosmo)}/como`,
     }),
 });
 

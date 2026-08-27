@@ -16,6 +16,7 @@ import {
   userCollectionBlockchainQuery,
 } from "@/lib/queries/objekt-queries";
 import { pinsQuery } from "@/lib/queries/profile";
+import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { userCollectionFrontendSchema } from "@/lib/universal/parsers";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { Addresses, isEqual } from "@apollo/util";
@@ -78,7 +79,8 @@ export const Route = createFileRoute("/@{$username}/")({
             username: loaderData.target.cosmo.username,
           })
         : m.collection_title(),
-      canonical: `/@${loaderData?.target.cosmo.username}`,
+      canonical:
+        loaderData && `/@${profileIdentifier(loaderData.target.cosmo)}`,
     }),
 });
 

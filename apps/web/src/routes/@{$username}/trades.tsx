@@ -11,6 +11,7 @@ import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { selectedArtistsQuery } from "@/lib/queries/core";
 import { transfersQuery } from "@/lib/queries/objekt-queries";
+import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { transfersFrontendSchema } from "@/lib/universal/parsers";
 import { createFileRoute } from "@tanstack/react-router";
 
@@ -36,7 +37,8 @@ export const Route = createFileRoute("/@{$username}/trades")({
       title: loaderData?.cosmo
         ? m.trades_title_with_username({ username: loaderData.cosmo.username })
         : m.trades_title(),
-      canonical: `/@${loaderData?.cosmo.username}/trades`,
+      canonical:
+        loaderData && `/@${profileIdentifier(loaderData.cosmo)}/trades`,
     }),
 });
 

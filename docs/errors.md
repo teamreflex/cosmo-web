@@ -64,9 +64,9 @@ import { ExpectedError } from "@/lib/universal/errors/expected";
 throw new ExpectedError("list_name_taken");
 ```
 
-**Codes are typed per domain** in `lib/universal/errors/{lists,auth,gravity}.ts` — a `const` code array, a `ListErrorCode`-style union, and an `isXErrorCode()` guard. Never throw a raw human sentence; add a code.
+**Codes are typed per domain** in `lib/universal/errors/{lists,auth}.ts` — a `const` code array, a `ListErrorCode`-style union, and an `isXErrorCode()` guard. Never throw a raw human sentence; add a code.
 
-**Display:** never render `error.message` directly. Each domain has a client formatter in `lib/client/errors/{lists,auth,gravity}.ts` mapping codes → `m.*()` strings; `formatError(error, ctx?)` in `lib/client/errors/index.ts` dispatches across all domains and falls back to the raw message for genuine errors. Mutation `onError` uses `toast.error(formatError(error))`. Every domain gets its own formatter for consistency, even single-code ones like gravity.
+**Display:** never render `error.message` directly. Each domain has a client formatter in `lib/client/errors/{lists,auth}.ts` mapping codes → `m.*()` strings; `formatError(error, ctx?)` in `lib/client/errors/index.ts` dispatches across all domains and falls back to the raw message for genuine errors. Mutation `onError` uses `toast.error(formatError(error))`. Every domain gets its own formatter for consistency, even single-code ones.
 
 **Sentry filtering is two-pronged** — there are two separate SDKs, split by runtime, so each needs its own filter:
 

@@ -1,4 +1,4 @@
-import type { AggregatedGravityData } from "@/lib/client/gravity/abstract/types";
+import type { AggregatedGravityData } from "@/lib/client/gravity/types";
 import { baseUrl } from "@/lib/utils";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import { ofetch } from "ofetch";
@@ -6,7 +6,7 @@ import {
   $fetchActiveGravities,
   $fetchCachedPoll,
   $fetchPaginatedGravities,
-  $fetchPolygonGravity,
+  $fetchRecentVotes,
 } from "../functions/gravity";
 
 export const activeGravitiesQuery = (artists?: string[]) =>
@@ -51,24 +51,16 @@ export const gravityPollDetailsQuery = (params: GravityPollDetailsParams) =>
           artist: params.artistName,
           gravityId: params.gravityId,
           pollId: params.pollId,
-          isPast: false,
         },
       }),
     refetchOnWindowFocus: false,
     staleTime: Infinity,
   });
 
-export const polygonGravityQuery = (artist: string, id: number) =>
+export const recentVotesQuery = (pollId: number) =>
   queryOptions({
-    queryKey: ["gravity", "polygon", artist, id],
-    queryFn: ({ signal }) =>
-      $fetchPolygonGravity({
-        signal,
-        data: {
-          artist,
-          id,
-        },
-      }),
+    queryKey: ["gravity", "recent-votes", pollId],
+    queryFn: ({ signal }) => $fetchRecentVotes({ signal, data: { pollId } }),
   });
 
 const VOTING_POLL_INTERVAL = 30_000;

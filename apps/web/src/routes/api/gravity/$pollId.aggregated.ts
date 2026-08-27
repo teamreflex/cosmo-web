@@ -1,8 +1,18 @@
-import type { AggregatedGravityData } from "@/lib/client/gravity/abstract/types";
+import type {
+  AggregatedGravityData,
+  Reveal,
+} from "@/lib/client/gravity/types";
 import { cacheHeaders } from "@/lib/server/cache.server";
-import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts.server";
+import {
+  fetchKnownAddresses,
+  fetchKnownPolygonAddresses,
+} from "@/lib/server/cosmo-accounts.server";
 import { db } from "@/lib/server/db";
-import { indexer } from "@/lib/server/db/indexer";
+import {
+  fetchPollVotes,
+  isPolygonGravity,
+  type PollVote,
+} from "@/lib/server/gravity.server";
 import { addr } from "@apollo/util";
 import { createFileRoute } from "@tanstack/react-router";
 import { addMinutes, isPast, startOfHour } from "date-fns";
@@ -24,10 +34,17 @@ export const Route = createFileRoute("/api/gravity/$pollId/aggregated")({
         // fetch poll dates from database
         const poll = await db.query.gravityPolls.findFirst({
           where: { cosmoId: pollId },
-          columns: { startDate: true, endDate: true },
+          columns: {
+            cosmoId: true,
+            pollIdOnChain: true,
+            startDate: true,
+            endDate: true,
+          },
           with: {
             gravity: {
               columns: {
+                cosmoId: true,
+                artist: true,
                 endDate: true,
               },
             },
@@ -39,16 +56,9 @@ export const Route = createFileRoute("/api/gravity/$pollId/aggregated")({
         const startDate = poll.startDate.toISOString();
         const endDate = poll.endDate.toISOString();
 
-        // fetch all votes from indexer
-        const rawVotes = await indexer.query.votes.findMany({
-          columns: {
-            tokenId: false,
-            pollId: false,
-            logIndex: false,
-            hash: false,
-          },
-          where: { pollId },
-        });
+        // votes come from the indexer or the polygon archive depending on era
+        const isPolygon = isPolygonGravity(poll.gravity.endDate);
+        const rawVotes = await fetchPollVotes(poll);
 
         const chartData = computeChartData(rawVotes, startDate, endDate);
         const topVotes = computeTopVotes(rawVotes, 50);
@@ -66,13 +76,18 @@ export const Route = createFileRoute("/api/gravity/$pollId/aggregated")({
         // otherwise client will poll for reveals
         const isFinalized = revealedVoteCount === rawVotes.length;
         const reveals = isFinalized
-          ? rawVotes
-              .filter((v) => v.candidateId !== null)
-              .map((v) => ({
-                id: v.id,
-                candidateId: v.candidateId!,
-                amount: v.amount,
-              }))
+          ? rawVotes.flatMap((vote) =>
+              vote.candidateId === null
+                ? []
+                : [
+                    {
+                      id: vote.id,
+                      candidateId: vote.candidateId,
+                      amount: vote.amount,
+                      createdAt: vote.createdAt,
+                    } satisfies Reveal,
+                  ],
+            )
           : [];
 
         // collect unique addresses from top votes and top users
@@ -85,7 +100,9 @@ export const Route = createFileRoute("/api/gravity/$pollId/aggregated")({
         }
 
         // fetch usernames for those addresses only
-        const addressMap = await fetchKnownAddresses(Array.from(addresses));
+        const addressMap = isPolygon
+          ? await fetchKnownPolygonAddresses(Array.from(addresses))
+          : await fetchKnownAddresses(Array.from(addresses));
 
         // map usernames onto results
         const topVotesWithUsernames = topVotes.map((vote) => ({
@@ -112,11 +129,12 @@ export const Route = createFileRoute("/api/gravity/$pollId/aggregated")({
 
         /**
          * using the poll end doesn't work for caching because it's when reveals start,
-         * so we use the gravity end date instead, which is usually +1h from the poll end
+         * so we use the gravity end date instead, which is usually +1h from the poll end.
+         * polygon data can never change again, so it caches for longer.
          */
         const headers = isPast(poll.gravity.endDate)
           ? cacheHeaders({
-              cdn: 60 * 60 * 24 * 7,
+              cdn: isPolygon ? 60 * 60 * 24 * 30 : 60 * 60 * 24 * 7,
               tags: ["gravity", `gravity:${pollId}`],
             })
           : undefined;
@@ -129,20 +147,11 @@ export const Route = createFileRoute("/api/gravity/$pollId/aggregated")({
   },
 });
 
-type RawVote = {
-  id: string;
-  from: string;
-  createdAt: string;
-  amount: number;
-  blockNumber: number;
-  candidateId: number | null;
-};
-
 /**
  * Compute chart data by grouping votes into 30-minute segments.
  */
 function computeChartData(
-  votes: RawVote[],
+  votes: PollVote[],
   startDate: string,
   endDate: string,
 ) {
@@ -192,7 +201,7 @@ function computeChartData(
 /**
  * Get top N votes sorted by amount descending.
  */
-function computeTopVotes(votes: RawVote[], limit: number) {
+function computeTopVotes(votes: PollVote[], limit: number) {
   // sort by amount descending and take top N
   const sorted = [...votes].sort((a, b) => b.amount - a.amount);
 
@@ -208,13 +217,18 @@ function computeTopVotes(votes: RawVote[], limit: number) {
 type AggregatedUser = {
   address: string;
   total: number;
-  votes: { id: string; candidateId: number | null; amount: number }[];
+  votes: {
+    id: string;
+    candidateId: number | null;
+    amount: number;
+    createdAt: string;
+  }[];
 };
 
 /**
  * Aggregate votes by user and return top N users by total COMO.
  */
-function computeTopUsers(votes: RawVote[], limit: number) {
+function computeTopUsers(votes: PollVote[], limit: number) {
   // aggregate votes by user address
   const userMap = new Map<string, AggregatedUser>();
 
@@ -236,6 +250,7 @@ function computeTopUsers(votes: RawVote[], limit: number) {
       id: vote.id,
       candidateId: vote.candidateId,
       amount: vote.amount,
+      createdAt: vote.createdAt,
     });
   }
 

@@ -6,8 +6,8 @@ import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import react, { reactCompilerPreset } from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
-import "./src/lib/env/client";
-import "./src/lib/env/server";
+import "./src/lib/env/client.ts";
+import "./src/lib/env/server.ts";
 
 export default defineConfig({
   server: {

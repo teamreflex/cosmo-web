@@ -15,6 +15,15 @@ This is a [Subsquid SDK](https://docs.sqd.ai/sdk/overview/) application for inde
 - **Bun** - Package manager (Node for build/runtime due to Subsquid requirements)
 - **PostgreSQL** - Primary database
 
+## Runtime: Node, not Bun
+
+Bun is only the package manager for this app. The build (`tsc`) and the production process run on Node because the Subsquid SDK does not work under Bun — the Dockerfile installs with Bun but builds and runs on `node:22-slim`.
+
+Consequences:
+
+- `@types/node` is pinned to the 22.x line (`^22.7.5`) to match the `node:22-slim` runtime image. Node types must track the Docker runtime version, not float with whatever bun-types pulls in.
+- TypeScript 7 (native tsgo) does not reliably auto-include packages from `node_modules/@types`, so the tsconfig declares `"types": ["node"]` explicitly. Without it, an install reshuffling the isolated-linker layout can silently drop Node globals (`process`, `Buffer`, `setTimeout`), surfacing as TS2591 "Cannot find name" — check the tsconfig `types` field before diagnosing a missing dependency. The same applies to every workspace: Bun-runtime packages declare `"types": ["bun"]` via the shared tsconfig.bun.json.
+
 ## Development Workflow
 
 ### Making Schema Changes

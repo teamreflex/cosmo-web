@@ -32,6 +32,13 @@ export function formatPrice(price: number, currency: string) {
 }
 
 /**
+ * Sum the rows of a list by a numeric field.
+ */
+export function sum<T>(rows: T[], value: (row: T) => number) {
+  return rows.reduce((total, row) => total + value(row), 0);
+}
+
+/**
  * Get the ordinal suffix for a number.
  */
 export function ordinal(input: number) {

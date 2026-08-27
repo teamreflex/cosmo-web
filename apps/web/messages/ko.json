@@ -723,16 +723,14 @@
 
   "_comment_gravity": "Gravity strings",
   "gravity_error_loading": "그래비티를 불러오는 중 오류 발생",
-  "gravity_votes_counted": "집계된 투표",
   "gravity_top_votes": "상위 투표",
   "gravity_top_users": "상위 사용자",
   "gravity_status_upcoming": "예정",
   "gravity_status_voting": "투표 중",
-  "gravity_status_live": "진행 중",
+  "gravity_status_counting": "투표 집계 중…",
   "gravity_status_complete": "완료",
   "gravity_header": "그래비티",
   "gravity_failed_load": "실시간 데이터를 불러오지 못했습니다. 나중에 다시 시도해 주세요.",
-  "gravity_combination_not_supported": "조합 투표 지원은 아직 제공되지 않습니다.",
   "gravity_not_found": "그래비티를 찾을 수 없습니다",
   "gravity_badge_event": "이벤트",
   "gravity_badge_grand": "그랜드",
@@ -741,14 +739,50 @@
   "gravity_starts_in": "시작까지",
   "gravity_voting_ends": "투표 중",
   "gravity_counting": "결과 집계 중",
-  "gravity_no_active": "진행 중인 그래비티 없음",
+  "gravity_revealed_progress": "공개 {counted}/{total}",
+  "gravity_votes_so_far": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "현재 {count}표"
+      }
+    }
+  ],
+  "gravity_chart_como_interval": "COMO 유입, 30분 단위",
+  "gravity_chart_segment_como": "+{amount} COMO",
+  "gravity_ranking": "순위",
+  "gravity_more_candidates": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "+ 후보 {count}명 더 보기"
+      }
+    }
+  ],
+  "gravity_show_less": "간략히 보기",
+  "gravity_candidate_delta": "최근 공개에서 +{amount} COMO",
+  "gravity_vote_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "투표 {count}회"
+      }
+    }
+  ],
+  "gravity_recent_votes": "최근 투표",
+  "gravity_picks_hidden": "공개 전까지 선택 비공개",
+  "gravity_no_votes_yet": "아직 투표 없음",
+  "gravity_votes_sealed": "투표 중에는 표가 공개되지 않습니다",
+  "gravity_totals_reveal": "집계가 시작되면 후보별 합계가 공개됩니다",
 
   "_comment_blockchain": "Blockchain strings",
   "blockchain_types": "타입",
   "blockchain_total": "총계",
 
   "_comment_chart": "Chart strings",
-  "chart_votes": "투표",
   "chart_como_used": "사용된 코모",
 
   "_comment_navbar": "Navigation bar strings",

@@ -6,12 +6,12 @@ import type {
   PollSelectedContentImage,
 } from "@apollo/cosmo/types/gravity";
 
-type PollStatus = "upcoming" | "ongoing" | "finalized" | "counting";
+export type PollStatus = "upcoming" | "ongoing" | "finalized" | "counting";
 
 /**
  * Determines the status of a gravity poll.
  */
-function getPollStatus(
+export function getPollStatus(
   poll: CosmoPollChoices | CosmoPollUpcoming | CosmoPollFinalized,
 ): PollStatus {
   const now = new Date();
@@ -30,24 +30,25 @@ function getPollStatus(
 
 /**
  * Candidate display content for a poll, in on-chain candidate order.
- * Single polls provide it directly; combination polls (the 2022-2023 grand
- * gravities) use slot-based view metadata instead, so their candidate content
- * is derived from the choices.
+ * Single and unit polls provide it directly; combination polls (the 2022-2023
+ * grand gravities) use slot-based view metadata instead, so their candidate
+ * content is derived from the choices.
  */
 export function pollCandidates(
   poll: CosmoPollChoices,
 ): PollSelectedContentImage[] {
-  if (poll.type === "single-poll") {
+  if (poll.type !== "combination-poll") {
     return poll.pollViewMetadata.selectedContent;
   }
 
+  // untitled 2022 choices label themselves by id (e.g. "S2+S6")
   return poll.choices.map((choice) => ({
     choiceId: choice.id,
     content: {
       type: "image",
       imageUrl: choice.txImageUrl,
-      title: choice.title,
-      description: choice.description,
+      title: "title" in choice ? choice.title : choice.id,
+      description: "description" in choice ? choice.description : "",
     },
   }));
 }

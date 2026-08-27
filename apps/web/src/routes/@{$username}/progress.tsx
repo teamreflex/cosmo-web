@@ -16,6 +16,7 @@ import {
   progressBreakdownQuery,
   progressLeaderboardQuery,
 } from "@/lib/queries/progress";
+import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { progressFrontendSchema } from "@/lib/universal/parsers";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
@@ -70,7 +71,9 @@ export const Route = createFileRoute("/@{$username}/progress")({
             username: loaderData.target.cosmo.username,
           })
         : m.progress_title(),
-      canonical: `/@${loaderData?.target.cosmo.username}/progress`,
+      canonical:
+        loaderData &&
+        `/@${profileIdentifier(loaderData.target.cosmo)}/progress`,
     }),
 });
 

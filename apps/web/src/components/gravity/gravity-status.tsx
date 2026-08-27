@@ -1,5 +1,5 @@
 import { m } from "@/i18n/messages";
-import type { LiveStatus } from "@/lib/client/gravity/abstract/types";
+import type { LiveStatus } from "@/lib/client/gravity/types";
 import {
   IconActivity,
   IconCircleCheck,
@@ -44,10 +44,8 @@ function getStatusConfig() {
       text: m.gravity_status_voting(),
     },
     live: {
-      icon: (
-        <div className="aspect-square size-3 animate-pulse rounded-full bg-red-500" />
-      ),
-      text: m.gravity_status_live(),
+      icon: <IconLoader2 className="size-4 animate-spin text-cosmo" />,
+      text: m.gravity_status_counting(),
     },
     finalized: {
       icon: <IconCircleCheck className="size-4 text-green-500" />,

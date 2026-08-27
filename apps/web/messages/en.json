@@ -725,16 +725,14 @@
 
   "_comment_gravity": "Gravity strings",
   "gravity_error_loading": "Error loading gravities",
-  "gravity_votes_counted": "Votes Counted",
   "gravity_top_votes": "Top Votes",
   "gravity_top_users": "Top Users",
   "gravity_status_upcoming": "UPCOMING",
   "gravity_status_voting": "VOTING",
-  "gravity_status_live": "LIVE",
+  "gravity_status_counting": "Counting votes…",
   "gravity_status_complete": "COMPLETE",
   "gravity_header": "Gravity",
   "gravity_failed_load": "Failed to load live data. Please try again later.",
-  "gravity_combination_not_supported": "Combination poll support is not available yet.",
   "gravity_not_found": "Gravity not found",
   "gravity_badge_event": "Event",
   "gravity_badge_grand": "Grand",
@@ -743,14 +741,53 @@
   "gravity_starts_in": "Starts in",
   "gravity_voting_ends": "Voting",
   "gravity_counting": "Counting Results",
-  "gravity_no_active": "No active gravities",
+  "gravity_revealed_progress": "revealed {counted}/{total}",
+  "gravity_votes_so_far": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} vote so far",
+        "countPlural=other": "{count} votes so far"
+      }
+    }
+  ],
+  "gravity_chart_como_interval": "COMO in, every 30 minutes",
+  "gravity_chart_segment_como": "+{amount} COMO",
+  "gravity_ranking": "Ranking",
+  "gravity_more_candidates": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "+ {count} more candidate",
+        "countPlural=other": "+ {count} more candidates"
+      }
+    }
+  ],
+  "gravity_show_less": "Show less",
+  "gravity_candidate_delta": "+{amount} COMO in the latest reveal",
+  "gravity_vote_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} vote",
+        "countPlural=other": "{count} votes"
+      }
+    }
+  ],
+  "gravity_recent_votes": "Recent Votes",
+  "gravity_picks_hidden": "picks hidden until reveal",
+  "gravity_no_votes_yet": "No votes yet",
+  "gravity_votes_sealed": "Votes are hidden while voting is open",
+  "gravity_totals_reveal": "Candidate totals reveal when counting begins",
 
   "_comment_blockchain": "Blockchain strings",
-  "blockchain_types": "types",
+  "blockchain_types": "Types",
   "blockchain_total": "total",
 
   "_comment_chart": "Chart strings",
-  "chart_votes": "Votes",
   "chart_como_used": "COMO Used",
 
   "_comment_navbar": "Navigation bar strings",
