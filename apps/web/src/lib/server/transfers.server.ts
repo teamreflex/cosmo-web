@@ -167,7 +167,8 @@ function buildBaseQuery(
       ),
     )
     .orderBy(desc(transfers.timestamp), desc(transfers.id))
-    .limit(PER_PAGE);
+    .limit(PER_PAGE)
+    .comment({ fn: "fetchSplitAll" });
 }
 
 /**
@@ -242,5 +243,6 @@ async function fetchTransferFirst(
     .leftJoin(objekts, eq(transfers.objektId, objekts.id))
     .leftJoin(collections, eq(transfers.collectionId, collections.id))
     .orderBy(desc(transfers.timestamp), desc(transfers.id))
-    .limit(PER_PAGE);
+    .limit(PER_PAGE)
+    .comment({ fn: "fetchTransferFirst" });
 }

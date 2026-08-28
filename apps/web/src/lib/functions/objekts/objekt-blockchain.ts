@@ -99,7 +99,7 @@ async function fetchObjekts(
   query = withCollectionSort(query, sort);
   query = query.limit(PER_PAGE).offset(data.page * PER_PAGE);
 
-  return await query;
+  return await query.comment({ fn: "fetchObjektsBlockchain" });
 }
 
 /**
@@ -122,13 +122,15 @@ async function fetchCount(owner: string, filters: InputData): Promise<number> {
     );
   }
 
-  const [results] = await query.where(
-    and(
-      eq(objekts.owner, owner),
-      ...collectionConditions,
-      ...withTransferable(filters.transferable),
-    ),
-  );
+  const [results] = await query
+    .where(
+      and(
+        eq(objekts.owner, owner),
+        ...collectionConditions,
+        ...withTransferable(filters.transferable),
+      ),
+    )
+    .comment({ fn: "fetchObjektsCount" });
 
   return Number(results?.count ?? 0);
 }

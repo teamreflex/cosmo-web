@@ -79,7 +79,8 @@ export async function fetchOwnedGridCounts(
       collections.class,
       collections.collectionNo,
       objekts.transferable,
-    );
+    )
+    .comment({ fn: "fetchOwnedGridCounts" });
 }
 
 /**
@@ -108,7 +109,8 @@ export async function fetchGridSourceTokens(
         eq(collections.artist, artist.toLowerCase()),
         eq(collections.class, sourceClassFor(artist)),
       ),
-    );
+    )
+    .comment({ fn: "fetchGridSourceTokens" });
 }
 
 /**

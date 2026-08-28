@@ -142,7 +142,8 @@ export const $fetchArtistStatsByAddress = createServerFn({ method: "GET" })
         collections.member,
         collections.artist,
         collections.class,
-      );
+      )
+      .comment({ fn: "fetchArtistStatsByAddress" });
 
     // transform stats into ArtistStats format
     const artistsMap = new Map<string, ProcessingArtistStats>();

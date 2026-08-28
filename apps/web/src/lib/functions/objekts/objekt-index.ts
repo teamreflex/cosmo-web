@@ -47,7 +47,10 @@ export const $fetchObjektsIndex = createServerFn({ method: "GET" })
       query = query.leftJoin(members, eq(members.name, collections.member));
     }
     query = withObjektIndexSort(query, sort);
-    query = query.limit(LIMIT).offset(data.page * LIMIT);
+    query = query
+      .limit(LIMIT)
+      .offset(data.page * LIMIT)
+      .comment({ fn: "fetchObjektsIndex" });
 
     // the client only reads `total` from page 0, so skip the count elsewhere.
     // the unfiltered total is the bulk of count traffic and only changes when
