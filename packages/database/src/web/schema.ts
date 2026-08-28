@@ -68,11 +68,6 @@ export const cosmoAccountChanges = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (t) => [
-    index("cosmo_account_changes_address_idx").on(t.address),
-    index("cosmo_account_changes_username_idx").on(t.username),
-    index("cosmo_account_changes_created_at_idx").on(t.createdAt),
-  ],
 );
 
 export const lockedObjekts = pgTable(
@@ -84,8 +79,6 @@ export const lockedObjekts = pgTable(
     locked: boolean("locked").notNull(),
   },
   (t) => [
-    index("locked_objekts_locked_idx").on(t.locked),
-    index("address_locked_idx").on(t.address, t.locked),
     index("address_token_idx").on(t.address, t.tokenId),
   ],
 );
@@ -99,7 +92,6 @@ export const pins = pgTable(
     position: integer("position").notNull().default(0),
   },
   (t) => [
-    index("pins_address_idx").on(t.address),
     index("pins_token_id_idx").on(t.tokenId),
     index("pins_address_position_idx").on(t.address, t.position),
   ],
@@ -127,7 +119,6 @@ export const objektLists = pgTable(
     ),
   },
   (t) => [
-    index("objekt_lists_slug_idx").on(t.slug),
     uniqueIndex("objekt_lists_user_slug_idx").on(t.userId, t.slug),
     index("objekt_lists_trade_active_idx")
       .on(t.type, t.userId)
@@ -297,7 +288,6 @@ export const collectionPriceStats = pgTable(
     maxPriceUsd: real("max_price_usd").notNull(),
     updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
   },
-  (t) => [index("collection_price_stats_median_idx").on(t.medianPriceUsd)],
 );
 
 export const cosmoTokens = pgTable(

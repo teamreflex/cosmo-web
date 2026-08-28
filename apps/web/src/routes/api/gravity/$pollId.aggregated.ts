@@ -1,7 +1,4 @@
-import type {
-  AggregatedGravityData,
-  Reveal,
-} from "@/lib/client/gravity/types";
+import type { AggregatedGravityData, Reveal } from "@/lib/client/gravity/types";
 import { cacheHeaders } from "@/lib/server/cache.server";
 import {
   fetchKnownAddresses,
@@ -131,13 +128,21 @@ export const Route = createFileRoute("/api/gravity/$pollId/aggregated")({
          * using the poll end doesn't work for caching because it's when reveals start,
          * so we use the gravity end date instead, which is usually +1h from the poll end.
          * polygon data can never change again, so it caches for longer.
+         *
+         * live polls get a short CDN cache so concurrent viewers (each polling
+         * every 30s) collapse into one vote aggregation per interval. browser
+         * cache is disabled so a client's own 30s poll never hits its disk.
          */
         const headers = isPast(poll.gravity.endDate)
           ? cacheHeaders({
               cdn: isPolygon ? 60 * 60 * 24 * 30 : 60 * 60 * 24 * 7,
               tags: ["gravity", `gravity:${pollId}`],
             })
-          : undefined;
+          : cacheHeaders({
+              cdn: 15,
+              browser: 0,
+              tags: ["gravity", `gravity:${pollId}`],
+            });
 
         return Response.json(result, {
           headers,

@@ -45,9 +45,10 @@ export const $fetchObjektsBlockchain = createServerFn({ method: "GET" })
     const isSpin = isEqual(data.address, Addresses.SPIN);
     const owner = data.address.toLowerCase();
 
-    // fetch both objekts and total count in parallel
+    // fetch both objekts and total count in parallel.
+    // the client only reads `total` from page 0, so skip the count elsewhere.
     const [total, results] = await Promise.all([
-      isSpin ? Promise.resolve(0) : fetchCount(owner, data),
+      isSpin || data.page > 0 ? 0 : fetchCount(owner, data),
       fetchObjekts(data, owner, isSpin),
     ]);
 
