@@ -29,7 +29,18 @@ import { collectionData, eras, events } from "@apollo/database/web/schema";
 import { eventTypeKeys } from "@apollo/database/web/types";
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { and, asc, desc, eq, gt, inArray, lt, sql } from "drizzle-orm";
+import {
+  and,
+  arrayContains,
+  asc,
+  desc,
+  eq,
+  gt,
+  inArray,
+  lt,
+  or,
+  sql,
+} from "drizzle-orm";
 import * as z from "zod";
 
 /**
@@ -420,15 +431,8 @@ export const $fetchPaginatedEvents = createServerFn({ method: "GET" })
       conditions.push(eq(events.eraId, data.era));
     }
     if (data.season?.length) {
-      // Check if JSONB array contains any of the specified seasons
-      // @> requires both sides to be arrays: '["a","b"]' @> '["a"]'
       conditions.push(
-        sql`(${sql.join(
-          data.season.map(
-            (s) => sql`${events.seasons} @> ${JSON.stringify([s])}::jsonb`,
-          ),
-          sql` OR `,
-        )})`,
+        or(...data.season.map((s) => arrayContains(events.seasons, [s]))),
       );
     }
     if (data.eventType) {
