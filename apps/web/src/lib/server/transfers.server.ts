@@ -17,10 +17,11 @@ import { indexer } from "./db/indexer";
 import { collections, objekts, transfers } from "./db/indexer/schema";
 import {
   withArtist,
-  withClass,
+  // temporarily disabled: season/class/on-offline filtering
+  // withClass,
   withMember,
-  withOnlineType,
-  withSeason,
+  // withOnlineType,
+  // withSeason,
   withSelectedArtists,
   withSpinMonth,
 } from "./objekts/filters.server";
@@ -112,9 +113,10 @@ function encodeCursor(timestamp: string, id: string) {
 function collectionFilters(params: Payload) {
   return [
     ...withArtist(params.artist),
-    ...withClass(params.class ?? []),
-    ...withSeason(params.season ?? []),
-    ...withOnlineType(params.on_offline ?? []),
+    // temporarily disabled: season/class/on-offline filtering
+    // ...withClass(params.class ?? []),
+    // ...withSeason(params.season ?? []),
+    // ...withOnlineType(params.on_offline ?? []),
     ...withMember(params.member),
     ...withSelectedArtists(params.artists),
   ];

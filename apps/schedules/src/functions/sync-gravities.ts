@@ -1,6 +1,6 @@
-import { fetchAllArtists } from "@apollo/cosmo/server/artists";
 import { DatabaseWeb } from "@/db";
 import { ProxiedToken } from "@/proxied-token";
+import { fetchAllArtists } from "@apollo/cosmo/server/artists";
 import { fetchGravities, fetchPoll } from "@apollo/cosmo/server/gravity";
 import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import {
@@ -129,7 +129,8 @@ const processGravities = Effect.fn("processGravities")(function* (
                 cosmoGravityPollId: poll.id,
                 candidateId: index,
                 cosmoId: choice.id,
-                title: choice.title,
+                // pair choices predate titles, the id doubles as the label
+                title: "title" in choice ? choice.title : choice.id,
                 image: choice.txImageUrl,
               })),
             );

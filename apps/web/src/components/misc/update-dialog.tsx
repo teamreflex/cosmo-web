@@ -83,26 +83,12 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2026-07-17",
+    date: "2026-08-28",
     changes: [
-      "Added: New grid counting page to Progress. Counts what FCOs you have and tells you what you need to complete any number of grids.",
-    ],
-  },
-  {
-    date: "2026-06-28",
-    changes: [
-      "Added: Pin reordering with support for drag & drop",
-      "Added: Sorting by member debut order",
-      "Added: Objekt multi-select / add-to-list to the collections page",
-      "Added: Selecting multiple members at once, including cross-group",
-      "Fixed: Sorting now applies when using the search bar",
-    ],
-  },
-  {
-    date: "2026-06-16",
-    changes: [
-      "Added multi-select when adding objekts to lists from your profile.",
-      "When viewing in grouped mode, clicking a row in the Your Objekts popup will add it to your selection.",
+      "Refreshed live gravity designs.",
+      "Added: Support for combination polls (First Grand Gravity, Two Big WAVes).",
+      "Added: Support for the upcoming unit gravity type.",
+      "Disabled trade filtering temporarily while it gets optimized.",
     ],
   },
 ];
