@@ -24,15 +24,79 @@ import { nonTransferableReason } from "./common";
 
 export const PER_PAGE = 30;
 
+const inputSchema = userCollectionBackendSchema.extend({
+  address: z.string().min(1),
+});
+
+/**
+ * Builds the paged collection-id query: joins the collections table only when
+ * a filter or sort needs it, so the fast path stays on the objekts table.
+ */
+function buildIdsQuery(
+  data: z.infer<typeof inputSchema>,
+  address: string,
+  sort: ValidSort,
+) {
+  const objektFilters = [
+    eq(objekts.owner, address),
+    ...withTransferable(data.transferable),
+  ];
+  const collectionFilters = [
+    ...withArtist(data.artist),
+    ...withClass(data.class ?? []),
+    ...withSeason(data.season ?? []),
+    ...withOnlineType(data.on_offline ?? []),
+    ...withMember(data.member),
+    ...withSelectedArtists(data.artists),
+  ];
+  const requiresCollectionJoin =
+    collectionFilters.length > 0 ||
+    sort === "noAscending" ||
+    sort === "noDescending" ||
+    isMemberSort(sort);
+
+  let idsQuery = requiresCollectionJoin
+    ? indexer
+        .select({
+          collectionId: collections.id,
+          collectionNo: collections.collectionNo,
+          totalCount: sql<number>`count(*) over ()::int`.mapWith(Number),
+        })
+        .from(objekts)
+        .innerJoin(collections, eq(objekts.collectionId, collections.id))
+        .where(and(...objektFilters, ...collectionFilters))
+        .groupBy(collections.id, collections.collectionNo)
+        .$dynamic()
+    : indexer
+        .select({
+          collectionId: objekts.collectionId,
+          totalCount: sql<number>`count(*) over ()::int`.mapWith(Number),
+        })
+        .from(objekts)
+        .where(and(...objektFilters))
+        .groupBy(objekts.collectionId)
+        .$dynamic();
+
+  // member sort orders by the joined member table; requiresCollectionJoin is
+  // always set for member sorts, so collections is guaranteed to be joined.
+  if (isMemberSort(sort)) {
+    idsQuery = idsQuery.leftJoin(members, eq(members.name, collections.member));
+  }
+
+  idsQuery = withObjektGroupSort(
+    idsQuery,
+    sort,
+    requiresCollectionJoin ? collections.id : objekts.collectionId,
+  );
+
+  return { idsQuery, requiresCollectionJoin };
+}
+
 /**
  * Fetch a user's collection groups from the indexer with given filters.
  */
 export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
-  .validator(
-    userCollectionBackendSchema.extend({
-      address: z.string().min(1),
-    }),
-  )
+  .validator(inputSchema)
   .handler(async ({ data }) => {
     // query is too slow for the spin account
     if (isEqual(data.address, Addresses.SPIN)) {
@@ -43,63 +107,16 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
     const sort = data.sort ?? "newest";
     const address = data.address.toLowerCase();
 
-    const objektFilters = [
-      eq(objekts.owner, address),
-      ...withTransferable(data.transferable),
-    ];
-    const collectionFilters = [
-      ...withArtist(data.artist),
-      ...withClass(data.class ?? []),
-      ...withSeason(data.season ?? []),
-      ...withOnlineType(data.on_offline ?? []),
-      ...withMember(data.member),
-      ...withSelectedArtists(data.artists),
-    ];
-    const requiresCollectionJoin =
-      collectionFilters.length > 0 ||
-      sort === "noAscending" ||
-      sort === "noDescending" ||
-      isMemberSort(sort);
-
-    let idsQuery = requiresCollectionJoin
-      ? indexer
-          .select({
-            collectionId: collections.id,
-            collectionNo: collections.collectionNo,
-            totalCount: sql<number>`count(*) over ()::int`.mapWith(Number),
-          })
-          .from(objekts)
-          .innerJoin(collections, eq(objekts.collectionId, collections.id))
-          .where(and(...objektFilters, ...collectionFilters))
-          .groupBy(collections.id, collections.collectionNo)
-          .$dynamic()
-      : indexer
-          .select({
-            collectionId: objekts.collectionId,
-            totalCount: sql<number>`count(*) over ()::int`.mapWith(Number),
-          })
-          .from(objekts)
-          .where(and(...objektFilters))
-          .groupBy(objekts.collectionId)
-          .$dynamic();
-
-    // member sort orders by the joined member table; requiresCollectionJoin is
-    // always set for member sorts, so collections is guaranteed to be joined.
-    if (isMemberSort(sort)) {
-      idsQuery = idsQuery.leftJoin(
-        members,
-        eq(members.name, collections.member),
-      );
-    }
-
-    idsQuery = withObjektGroupSort(
-      idsQuery,
+    const { idsQuery, requiresCollectionJoin } = buildIdsQuery(
+      data,
+      address,
       sort,
-      requiresCollectionJoin ? collections.id : objekts.collectionId,
     );
-    idsQuery = idsQuery.limit(PER_PAGE).offset(offset);
 
-    const idsResult = await idsQuery.comment({ fn: "fetchBlockchainGroups" });
+    const idsResult = await idsQuery
+      .limit(PER_PAGE)
+      .offset(offset)
+      .comment({ fn: "fetchBlockchainGroups" });
     const totalCount = idsResult[0]?.totalCount ?? 0;
 
     if (idsResult.length === 0) {

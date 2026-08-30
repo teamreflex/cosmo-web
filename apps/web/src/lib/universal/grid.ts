@@ -251,8 +251,95 @@ export function buildGridLedger(input: GridLedgerInput): GridLedger {
   const sourceClass = sourceClassFor(artist);
   const unitNo = unitNoFor(artist);
 
-  // catalog lookups: source-class entry per stripped number (Z preferred over
-  // A), Z-designation Special entries, and idntt unit pair slugs per season
+  const { sourceCatalog, rewardCatalog, unitCatalog } = indexCatalog(
+    catalog,
+    sourceClass,
+    unitNo,
+  );
+  const { sourceCounts, rewardCounts, unitCounts } = indexOwned(
+    owned,
+    sourceClass,
+    unitNo,
+  );
+  const { nonTransferableByPool, transferableByPool } =
+    indexSourceTokens(sourceTokens);
+
+  const memberSeasons = relevantMemberSeasons(
+    artist,
+    sourceCounts,
+    rewardCounts,
+  );
+  const memberSort = memberSortFor(memberOrder);
+
+  const members: MemberLedger[] = [];
+  for (const [member, ownedSeasons] of [...memberSeasons.entries()].sort(
+    (a, b) => memberSort(a[0], b[0]),
+  )) {
+    const seasons: SeasonLedger[] = [];
+
+    for (const season of [...ownedSeasons].sort(seasonSort)) {
+      const catalogNumbers = sourceCatalog.get(member, season);
+      if (!catalogNumbers) continue;
+
+      const seasonPools = {
+        pools: sourceCounts.get(member, season),
+        nonTransferable: nonTransferableByPool.get(member, season),
+        transferable: transferableByPool.get(member, season),
+      };
+      const rewards = rewardCounts.get(member, season);
+      const rewardEntries = rewardCatalog.get(member, season);
+
+      const editions: EditionLedger[] = [];
+      for (const def of editionDefsFor(artist, season)) {
+        const numbers = editionPools(def, catalogNumbers, seasonPools);
+        if (numbers === null) continue;
+
+        editions.push({
+          edition: def.edition,
+          numbers,
+          ...completion(numbers),
+          rewards: [
+            rewardPool(def.rewards[0], rewardEntries, rewards),
+            rewardPool(def.rewards[1], rewardEntries, rewards),
+          ],
+        });
+      }
+
+      if (editions.length > 0) {
+        seasons.push({ season, editions });
+      }
+    }
+
+    if (seasons.length > 0) {
+      members.push({ member, seasons });
+    }
+  }
+
+  return {
+    artist,
+    members,
+    units:
+      unitNo !== null
+        ? buildUnitLedgers({
+            artist,
+            unitCatalog,
+            unitCounts,
+            rewardCounts,
+            memberOrder,
+          })
+        : null,
+  };
+}
+
+/**
+ * Catalog lookups: source-class entry per stripped number (Z preferred over
+ * A), Z-designation Special entries, and idntt unit pair slugs per season.
+ */
+function indexCatalog(
+  catalog: GridCatalogRow[],
+  sourceClass: "First" | "Basic",
+  unitNo: string | null,
+) {
   const sourceCatalog = new MemberSeasonMap<Map<string, CatalogEntry>>();
   const rewardCatalog = new MemberSeasonMap<Map<string, CatalogEntry>>();
   const unitCatalog = new Map<string, Map<string, string>>();
@@ -281,8 +368,18 @@ export function buildGridLedger(input: GridLedgerInput): GridLedger {
     }
   }
 
-  // owned counts: source pools split transferable/total, Z-designation reward
-  // specials split transferable/non-transferable, unit counts per pair string
+  return { sourceCatalog, rewardCatalog, unitCatalog };
+}
+
+/**
+ * Owned counts: source pools split transferable/total, Z-designation reward
+ * specials split transferable/non-transferable, unit counts per pair string.
+ */
+function indexOwned(
+  owned: GridOwnedRow[],
+  sourceClass: "First" | "Basic",
+  unitNo: string | null,
+) {
   const sourceCounts = new MemberSeasonMap<Map<string, SourcePool>>();
   const rewardCounts = new MemberSeasonMap<Map<string, RewardCount>>();
   const unitCounts = new Map<string, Map<string, number>>();
@@ -323,12 +420,19 @@ export function buildGridLedger(input: GridLedgerInput): GridLedger {
     }
   }
 
-  // source tokens split per pool: non-transferable copies feed the include
-  // toggle, transferable ids feed locked matching in the viewer's browser
+  return { sourceCounts, rewardCounts, unitCounts };
+}
+
+/**
+ * Source tokens split per pool: non-transferable copies feed the include
+ * toggle, transferable ids feed locked matching in the viewer's browser.
+ */
+function indexSourceTokens(sourceTokens: GridOwnedToken[]) {
   const nonTransferableByPool = new MemberSeasonMap<
     Map<string, NumberPool["nonTransferable"]>
   >();
   const transferableByPool = new MemberSeasonMap<Map<string, string[]>>();
+
   for (const token of sourceTokens) {
     const no = stripNo(token.collectionNo);
     if (token.transferable) {
@@ -357,7 +461,17 @@ export function buildGridLedger(input: GridLedgerInput): GridLedger {
     }
   }
 
-  // ledger includes every member+season the target owns relevant objekts in
+  return { nonTransferableByPool, transferableByPool };
+}
+
+/**
+ * The ledger includes every member+season the target owns relevant objekts in.
+ */
+function relevantMemberSeasons(
+  artist: ValidArtist,
+  sourceCounts: MemberSeasonMap<Map<string, SourcePool>>,
+  rewardCounts: MemberSeasonMap<Map<string, RewardCount>>,
+): Map<string, Set<string>> {
   const memberSeasons = new Map<string, Set<string>>();
   const markRelevant = (member: string, season: string) =>
     getOrCreate(memberSeasons, member, () => new Set<string>()).add(season);
@@ -373,80 +487,39 @@ export function buildGridLedger(input: GridLedgerInput): GridLedger {
     }
   }
 
-  const memberSort = memberSortFor(memberOrder);
+  return memberSeasons;
+}
 
-  const members: MemberLedger[] = [];
-  for (const [member, ownedSeasons] of [...memberSeasons.entries()].sort(
-    (a, b) => memberSort(a[0], b[0]),
-  )) {
-    const seasons: SeasonLedger[] = [];
+/**
+ * Assembles an edition's number pools, or null when the edition doesn't exist
+ * for this member+season (its full number set must be in the catalog).
+ */
+function editionPools(
+  def: GridEditionDef,
+  catalogNumbers: Map<string, CatalogEntry>,
+  season: {
+    pools: Map<string, SourcePool> | undefined;
+    nonTransferable: Map<string, NumberPool["nonTransferable"]> | undefined;
+    transferable: Map<string, string[]> | undefined;
+  },
+): NumberPool[] | null {
+  const numbers: NumberPool[] = [];
+  for (const no of def.numbers) {
+    const entry = catalogNumbers.get(no);
+    if (entry === undefined) return null;
 
-    for (const season of [...ownedSeasons].sort(seasonSort)) {
-      const catalogNumbers = sourceCatalog.get(member, season);
-      if (!catalogNumbers) continue;
-
-      const pools = sourceCounts.get(member, season);
-      const nonTransferable = nonTransferableByPool.get(member, season);
-      const transferable = transferableByPool.get(member, season);
-      const rewards = rewardCounts.get(member, season);
-      const rewardEntries = rewardCatalog.get(member, season);
-
-      const editions: EditionLedger[] = [];
-      for (const def of editionDefsFor(artist, season)) {
-        // an edition exists only when its full number set is in the catalog
-        const numbers: NumberPool[] = [];
-        for (const no of def.numbers) {
-          const entry = catalogNumbers.get(no);
-          if (entry === undefined) break;
-
-          const pool = pools?.get(no);
-          numbers.push({
-            collectionNo: no,
-            slug: entry.slug,
-            thumbnailImage: entry.thumbnailImage,
-            usable: pool?.transferable ?? 0,
-            total: pool?.total ?? 0,
-            nonTransferable: nonTransferable?.get(no) ?? [],
-            transferableTokenIds: transferable?.get(no) ?? [],
-          });
-        }
-        if (numbers.length !== def.numbers.length) continue;
-
-        editions.push({
-          edition: def.edition,
-          numbers,
-          ...completion(numbers),
-          rewards: [
-            rewardPool(def.rewards[0], rewardEntries, rewards),
-            rewardPool(def.rewards[1], rewardEntries, rewards),
-          ],
-        });
-      }
-
-      if (editions.length > 0) {
-        seasons.push({ season, editions });
-      }
-    }
-
-    if (seasons.length > 0) {
-      members.push({ member, seasons });
-    }
+    const pool = season.pools?.get(no);
+    numbers.push({
+      collectionNo: no,
+      slug: entry.slug,
+      thumbnailImage: entry.thumbnailImage,
+      usable: pool?.transferable ?? 0,
+      total: pool?.total ?? 0,
+      nonTransferable: season.nonTransferable?.get(no) ?? [],
+      transferableTokenIds: season.transferable?.get(no) ?? [],
+    });
   }
-
-  return {
-    artist,
-    members,
-    units:
-      unitNo !== null
-        ? buildUnitLedgers({
-            artist,
-            unitCatalog,
-            unitCounts,
-            rewardCounts,
-            memberOrder,
-          })
-        : null,
-  };
+  return numbers;
 }
 
 /**

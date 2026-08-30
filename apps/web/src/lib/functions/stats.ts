@@ -108,8 +108,8 @@ function processRawStats(
 
   // Build a map for O(1) hour index lookups
   const hourIndexMap = new Map<string, number>();
-  for (let i = 0; i < referenceHours.length; i++) {
-    const d = new Date(referenceHours[i]!);
+  for (const [i, hour] of referenceHours.entries()) {
+    const d = new Date(hour);
     const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}-${d.getHours()}`;
     hourIndexMap.set(key, i);
   }
@@ -117,8 +117,10 @@ function processRawStats(
   // Initialize breakdowns and compute stats in a single pass
   for (const stat of rawStats) {
     // Initialize breakdown arrays if needed
-    memberBreakdown[stat.member] ??= initializeBreakdown(referenceHours);
-    artistBreakdown[stat.artist] ??= initializeBreakdown(referenceHours);
+    const memberHours = (memberBreakdown[stat.member] ??=
+      initializeBreakdown(referenceHours));
+    const artistHours = (artistBreakdown[stat.artist] ??=
+      initializeBreakdown(referenceHours));
 
     // Accumulate counts
     totalCount += stat.count;
@@ -130,10 +132,12 @@ function processRawStats(
     const hourKey = `${statDate.getFullYear()}-${statDate.getMonth()}-${statDate.getDate()}-${statDate.getHours()}`;
     const hourIndex = hourIndexMap.get(hourKey);
 
-    if (hourIndex !== undefined) {
-      memberBreakdown[stat.member]![hourIndex]!.count += stat.count;
-      artistBreakdown[stat.artist]![hourIndex]!.count += stat.count;
-    }
+    const memberHour =
+      hourIndex !== undefined ? memberHours[hourIndex] : undefined;
+    const artistHour =
+      hourIndex !== undefined ? artistHours[hourIndex] : undefined;
+    if (memberHour) memberHour.count += stat.count;
+    if (artistHour) artistHour.count += stat.count;
   }
 
   return {

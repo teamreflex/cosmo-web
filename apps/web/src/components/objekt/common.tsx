@@ -38,12 +38,13 @@ function SidebarText(props: SidebarTextProps) {
   );
 }
 
-export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
+/**
+ * Band display state: whether to render the band at all, whether this artist
+ * uses a custom band image, and the background fallback while it loads.
+ */
+function useBandDisplay(collection: Objekt.Collection) {
   const { hidden } = useObjektBands();
   const [bandLoaded, setBandLoaded] = useState(false);
-
-  const paddedSerial =
-    serial === 0 ? "00000" : serial?.toString().padStart(5, "0");
 
   const useCustomBand = collection.artist === "idntt";
   const bandImageUrl =
@@ -54,6 +55,29 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
     useCustomBand === false ||
     // handle idntt
     (!hidden && (useBackground || useCustomBand));
+
+  return {
+    bandImageUrl,
+    bandLoaded,
+    setBandLoaded,
+    showBand,
+    useBackground,
+    useCustomBand,
+  };
+}
+
+export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
+  const {
+    bandImageUrl,
+    bandLoaded,
+    setBandLoaded,
+    showBand,
+    useBackground,
+    useCustomBand,
+  } = useBandDisplay(collection);
+
+  const paddedSerial =
+    serial === 0 ? "00000" : serial?.toString().padStart(5, "0");
 
   /**
    * sometimes the first element in the grid is a couple pixels smaller on the width, resulting in an offset number, not sure why.

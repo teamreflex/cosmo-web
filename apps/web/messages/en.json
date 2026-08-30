@@ -808,6 +808,7 @@
   "objekt_overlay_pinned": "Pinned",
   "objekt_overlay_send": "Send",
   "objekt_overlay_add_to_list": "Add to List",
+  "objekt_overlay_remove_from_list": "Remove from List",
   "objekt_overlay_select": "Select",
   "objekt_overlay_deselect": "Deselect",
   "objekt_overlay_unlock": "Unlock",

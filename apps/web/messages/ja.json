@@ -803,6 +803,7 @@
   "objekt_overlay_pinned": "ピン留め済み",
   "objekt_overlay_send": "送信",
   "objekt_overlay_add_to_list": "リストに追加",
+  "objekt_overlay_remove_from_list": "リストから削除",
   "objekt_overlay_select": "選択",
   "objekt_overlay_deselect": "選択解除",
   "objekt_overlay_unlock": "ロック解除",

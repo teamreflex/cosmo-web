@@ -1,3 +1,7 @@
+import {
+  OverlayIcon,
+  OverlayIconButton,
+} from "@/components/objekt/overlay/corner-overlay";
 import { m } from "@/i18n/messages";
 import { $removeObjektFromList } from "@/lib/functions/lists";
 import { objektListQueryFilter } from "@/lib/queries/objekt-queries";
@@ -38,20 +42,20 @@ export default function RemoveFromList({ id, collection, objektList }: Props) {
   }
 
   return (
-    <button
+    <OverlayIconButton
       onClick={handleClick}
       disabled={mutation.isPending}
-      className="flex items-center outline-hidden transition-all hover:scale-110"
+      className="outline-hidden"
       aria-label={m.list_remove_from_list({
         collectionId: collection.collectionId,
         listName: objektList.name,
       })}
     >
       {mutation.isPending ? (
-        <IconLoader2 className="h-3 w-3 animate-spin sm:h-5 sm:w-5" />
+        <OverlayIcon icon={IconLoader2} className="animate-spin" />
       ) : (
-        <IconPlaylistX className="h-3 w-3 sm:h-5 sm:w-5" />
+        <OverlayIcon icon={IconPlaylistX} />
       )}
-    </button>
+    </OverlayIconButton>
   );
 }

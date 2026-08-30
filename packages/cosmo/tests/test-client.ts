@@ -79,7 +79,9 @@ const client = HttpClient.make((request, url) => {
     `${request.method} ${url.origin}${url.pathname}`,
   );
   if (handler === undefined) {
-    return Effect.die(new Error(`unhandled request: ${request.method} ${url}`));
+    return Effect.die(
+      new Error(`unhandled request: ${request.method} ${url.href}`),
+    );
   }
   const captured = capture(request, url);
   return Effect.map(

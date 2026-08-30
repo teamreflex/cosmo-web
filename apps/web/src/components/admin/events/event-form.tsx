@@ -343,13 +343,14 @@ type SeasonSelectionProps = {
 function SeasonSelection(props: SeasonSelectionProps) {
   const form = useFormContext<CreateEventInput>();
 
-  if (!props.artist) {
+  const { artist } = props;
+  if (!artist) {
     return null;
   }
 
   const seasons = getSeasonKeys(
-    props.seasons.find((s) => s.artistId === props.artist!.toLowerCase())
-      ?.seasons ?? [],
+    props.seasons.find((s) => s.artistId === artist.toLowerCase())?.seasons ??
+      [],
   );
 
   return (

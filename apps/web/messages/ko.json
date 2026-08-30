@@ -803,6 +803,7 @@
   "objekt_overlay_pinned": "고정됨",
   "objekt_overlay_send": "전송",
   "objekt_overlay_add_to_list": "리스트에 추가",
+  "objekt_overlay_remove_from_list": "리스트에서 제거",
   "objekt_overlay_select": "선택",
   "objekt_overlay_deselect": "선택 해제",
   "objekt_overlay_unlock": "잠금 해제",

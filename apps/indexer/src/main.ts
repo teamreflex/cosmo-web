@@ -216,10 +216,17 @@ async function handleCollection(
     });
   }
 
+  const [artist] = metadata.objekt.artists;
+  if (artist === undefined) {
+    throw new Error(
+      `collection ${metadata.objekt.collectionId} has no artists`,
+    );
+  }
+
   // set and/or update metadata
   collection.season = metadata.objekt.season;
   collection.member = metadata.objekt.member;
-  collection.artist = metadata.objekt.artists[0]!.toLowerCase();
+  collection.artist = artist.toLowerCase();
   collection.collectionNo = metadata.objekt.collectionNo;
   collection.class = metadata.objekt.class;
   collection.comoAmount = metadata.objekt.comoAmount;

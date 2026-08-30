@@ -14,5 +14,6 @@ export default function Portal({ children, to }: Props) {
     setMounted(true);
   }, []);
 
-  return mounted ? createPortal(children, document.querySelector(to)!) : null;
+  const target = mounted ? document.querySelector(to) : null;
+  return target ? createPortal(children, target) : null;
 }

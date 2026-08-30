@@ -1,3 +1,7 @@
+import {
+  OverlayIcon,
+  OverlayIconButton,
+} from "@/components/objekt/overlay/corner-overlay";
 import { useAddToList } from "@/hooks/use-add-to-list";
 import { m } from "@/i18n/messages";
 import {
@@ -62,13 +66,13 @@ export default function AddToList({
     <>
       <DropdownMenu open={open} onOpenChange={setOpen}>
         <DropdownMenuTrigger asChild>
-          <button
+          <OverlayIconButton
             onClick={() => setOpen((state) => !state)}
-            className="flex items-center outline-hidden transition-all hover:scale-110"
+            className="outline-hidden"
             aria-label={m.list_select_to_add({ collectionId: collectionName })}
           >
-            <IconPlaylistAdd className="h-3 w-3 sm:h-5 sm:w-5" />
-          </button>
+            <OverlayIcon icon={IconPlaylistAdd} />
+          </OverlayIconButton>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-fit">
           <DropdownMenuLabel>{collectionName}</DropdownMenuLabel>

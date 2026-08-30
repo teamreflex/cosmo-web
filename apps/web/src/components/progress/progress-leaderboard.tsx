@@ -150,12 +150,9 @@ function SeasonSelect(props: SeasonSelectProps) {
   }
 
   const data = props.seasons
-    .map(({ artistId, seasons }) => {
-      const artist = getArtist(artistId)!;
-      return {
-        artist,
-        seasons,
-      };
+    .flatMap(({ artistId, seasons }) => {
+      const artist = getArtist(artistId);
+      return artist ? [{ artist, seasons }] : [];
     })
     .filter(({ artist }) =>
       artist.artistMembers
