@@ -1,6 +1,6 @@
 import CollectionNumberInput from "@/components/admin/events/collection-number-input";
 import MemberSelection from "@/components/admin/events/member-selection";
-import SeasonSelection from "@/components/admin/events/season-selection";
+import SeasonSelection from "@/components/season-selection";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

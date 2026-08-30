@@ -1,11 +1,13 @@
 import DoneStep from "@/components/share-data/done-step";
 import InfoStep from "@/components/share-data/info-step";
 import GetRecaptcha from "@/components/share-data/qr-auth";
+import SelectStep from "@/components/share-data/select-step";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
-import { currentAccountQuery } from "@/lib/queries/core";
+import { artistsQuery, currentAccountQuery } from "@/lib/queries/core";
 import { scrapeCandidatesQuery } from "@/lib/queries/share-data";
+import type { ScrapeSelection } from "@/lib/universal/schema/share-data";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useState } from "react";
 
@@ -17,9 +19,10 @@ export const Route = createFileRoute("/share-data")({
     }
   },
   loader: async ({ context }) => {
-    const collections = await context.queryClient.ensureQueryData(
-      scrapeCandidatesQuery,
-    );
+    const [collections] = await Promise.all([
+      context.queryClient.ensureQueryData(scrapeCandidatesQuery),
+      context.queryClient.ensureQueryData(artistsQuery),
+    ]);
 
     return { collections };
   },
@@ -30,14 +33,15 @@ export const Route = createFileRoute("/share-data")({
 
 type State =
   | { step: "info" }
-  | { step: "auth" }
+  | { step: "select" }
+  | { step: "auth"; selection: ScrapeSelection[] }
   | { step: "done"; updated: number };
 
 function RouteComponent() {
   const { collections } = Route.useLoaderData();
   const [state, setState] = useState<State>({ step: "info" });
 
-  if (collections.size === 0) {
+  if (collections.length === 0) {
     return (
       <div className="container flex max-w-sm flex-col gap-2 py-2">
         <Card>
@@ -57,11 +61,19 @@ function RouteComponent() {
         </CardHeader>
         <CardContent>
           {state.step === "info" && (
-            <InfoStep onContinue={() => setState({ step: "auth" })} />
+            <InfoStep onContinue={() => setState({ step: "select" })} />
+          )}
+
+          {state.step === "select" && (
+            <SelectStep
+              candidates={collections}
+              onContinue={(selection) => setState({ step: "auth", selection })}
+            />
           )}
 
           {state.step === "auth" && (
             <GetRecaptcha
+              selection={state.selection}
               onSuccess={(updated) => setState({ step: "done", updated })}
             />
           )}

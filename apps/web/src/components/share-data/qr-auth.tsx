@@ -14,6 +14,7 @@ import {
 } from "@/lib/functions/share-data";
 import { isRateLimitErrorCode } from "@/lib/universal/errors/rate-limit";
 import { verifyCosmoSchema } from "@/lib/universal/schema/cosmo";
+import type { ScrapeSelection } from "@/lib/universal/schema/share-data";
 import type { AuthTicket, TicketUser } from "@apollo/cosmo/types/qr-auth";
 import { generateQrCode } from "@apollo/cosmo/types/qr-auth";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
@@ -32,10 +33,14 @@ import { useInterval } from "usehooks-ts";
 import type { z } from "zod";
 
 type GetRecaptchaProps = {
+  selection: ScrapeSelection[];
   onSuccess: (updated: number) => void;
 };
 
-export default function GetRecaptcha({ onSuccess }: GetRecaptchaProps) {
+export default function GetRecaptcha({
+  selection,
+  onSuccess,
+}: GetRecaptchaProps) {
   const { data, error, status, refetch } = useQuery({
     queryKey: ["qr-auth", "code"],
     queryFn: () => $fetchQrTicket(),
@@ -66,6 +71,7 @@ export default function GetRecaptcha({ onSuccess }: GetRecaptchaProps) {
       {status === "success" && (
         <RenderTicket
           ticket={data}
+          selection={selection}
           retry={() => refetch()}
           onSuccess={onSuccess}
         />
@@ -76,11 +82,17 @@ export default function GetRecaptcha({ onSuccess }: GetRecaptchaProps) {
 
 type RenderTicketProps = {
   ticket: AuthTicket;
+  selection: ScrapeSelection[];
   retry: () => void;
   onSuccess: (updated: number) => void;
 };
 
-function RenderTicket({ ticket, retry, onSuccess }: RenderTicketProps) {
+function RenderTicket({
+  ticket,
+  selection,
+  retry,
+  onSuccess,
+}: RenderTicketProps) {
   const { data, status, refetch } = useQuery({
     queryKey: ["qr-auth", "ticket", ticket.ticket],
     queryFn: () => $queryQrTicket({ data: { ticket: ticket.ticket } }),
@@ -119,7 +131,14 @@ function RenderTicket({ ticket, retry, onSuccess }: RenderTicketProps) {
   }
 
   if (data.status === "wait_for_certify") {
-    return <OTP ticket={ticket} user={data.user} onSuccess={onSuccess} />;
+    return (
+      <OTP
+        ticket={ticket}
+        user={data.user}
+        selection={selection}
+        onSuccess={onSuccess}
+      />
+    );
   }
 
   return (
@@ -194,10 +213,11 @@ function RenderQRCode({ ticket, retry }: RenderQRCodeProps) {
 type OTPProps = {
   ticket: AuthTicket;
   user: TicketUser;
+  selection: ScrapeSelection[];
   onSuccess: (updated: number) => void;
 };
 
-function OTP({ ticket, user, onSuccess }: OTPProps) {
+function OTP({ ticket, user, selection, onSuccess }: OTPProps) {
   const mutation = useMutation({
     mutationFn: $scrapeCollectionMedia,
   });
@@ -219,7 +239,7 @@ function OTP({ ticket, user, onSuccess }: OTPProps) {
 
   async function handleSubmit(data: z.infer<typeof verifyCosmoSchema>) {
     const result = await mutation.mutateAsync(
-      { data },
+      { data: { ...data, selection } },
       {
         onError() {
           toast.error(m.link_cosmo_error_linking());

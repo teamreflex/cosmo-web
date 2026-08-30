@@ -4,10 +4,11 @@ import { createLoginTicket } from "@/lib/server/qr-auth.server";
 import { uploadCollectionMedia } from "@/lib/server/r2.server";
 import { consumeRateLimit } from "@/lib/server/rate-limit.server";
 import { getRequestSignal } from "@/lib/server/request.server";
+import { queryTicketSchema } from "@/lib/universal/schema/cosmo";
 import {
-  queryTicketSchema,
-  verifyCosmoSchema,
-} from "@/lib/universal/schema/cosmo";
+  scrapeCollectionMediaSchema,
+  type ScrapeCandidate,
+} from "@/lib/universal/schema/share-data";
 import { runCosmo } from "@apollo/cosmo/runtime";
 import { fetchObjektSummaries } from "@apollo/cosmo/server/collection";
 import { certifyTicket, queryTicket } from "@apollo/cosmo/server/qr-auth";
@@ -50,16 +51,61 @@ export const $queryQrTicket = createServerFn({ method: "GET" })
   });
 
 /**
- * Verify COSMO account, fetch collections, and submit media data.
+ * Verify COSMO account, fetch the selected collections, and submit media data.
  * Does everything in one server call to avoid CORS issues.
  */
 export const $scrapeCollectionMedia = createServerFn({ method: "POST" })
   .middleware([authenticatedMiddleware])
-  .validator(verifyCosmoSchema)
+  .validator(scrapeCollectionMediaSchema)
   .handler(async ({ data }) => {
     // safety check: if no collections need to be updated, return early
-    const missing = await $fetchScrapeCandidates();
-    if (missing.size === 0) {
+    const scrapeCandidates = await $fetchScrapeCandidates();
+    if (scrapeCandidates.length === 0) {
+      return { updated: 0 };
+    }
+    const missing = new Set(scrapeCandidates.map((c) => c.collectionId));
+
+    // build search queries from the selection, dropping anything that no
+    // longer has missing candidates so we don't hit COSMO for nothing
+    const queries = data.selection.flatMap<{
+      artistId: ValidArtist;
+      class: string;
+      prop: "frontMedia" | "bandImageUrl";
+      seasons?: string[];
+    }>((item) => {
+      const artist = item.artistId.toLowerCase();
+      const available = scrapeCandidates.filter(
+        (c) => c.type === item.type && c.artist === artist,
+      );
+
+      switch (item.type) {
+        case "motion":
+          return available.length > 0
+            ? [{ artistId: item.artistId, class: "Motion", prop: "frontMedia" }]
+            : [];
+        case "band":
+          return available.length > 0
+            ? [{ artistId: item.artistId, class: "Unit", prop: "bandImageUrl" }]
+            : [];
+        case "audio": {
+          const seasons = item.seasons.filter((season) =>
+            available.some((c) => c.season === season),
+          );
+          return seasons.length > 0
+            ? [
+                {
+                  artistId: item.artistId,
+                  class: "Double",
+                  prop: "frontMedia",
+                  seasons,
+                },
+              ]
+            : [];
+        }
+      }
+    });
+
+    if (queries.length === 0) {
       return { updated: 0 };
     }
 
@@ -75,18 +121,6 @@ export const $scrapeCollectionMedia = createServerFn({ method: "POST" })
     if (!session) {
       throw new Error("Error getting session");
     }
-
-    // create search queries
-    const queries: {
-      artistId: ValidArtist;
-      class: string;
-      prop: "frontMedia" | "bandImageUrl";
-    }[] = [
-      { artistId: "tripleS", class: "Motion", prop: "frontMedia" },
-      { artistId: "artms", class: "Motion", prop: "frontMedia" },
-      { artistId: "idntt", class: "Motion", prop: "frontMedia" },
-      { artistId: "idntt", class: "Unit", prop: "bandImageUrl" },
-    ];
 
     type UpdateCandidate = {
       slug: string;
@@ -106,6 +140,7 @@ export const $scrapeCollectionMedia = createServerFn({ method: "POST" })
             session,
             artistId: query.artistId,
             className: query.class,
+            seasons: query.seasons,
           }),
           signal,
         );
@@ -170,10 +205,13 @@ export const $scrapeCollectionMedia = createServerFn({ method: "POST" })
  */
 export const $fetchScrapeCandidates = createServerFn({
   method: "GET",
-}).handler(async () => {
+}).handler(async (): Promise<ScrapeCandidate[]> => {
   const result = await indexer
     .select({
       collectionId: collections.collectionId,
+      artist: collections.artist,
+      class: collections.class,
+      season: collections.season,
     })
     .from(collections)
     .where(
@@ -186,8 +224,20 @@ export const $fetchScrapeCandidates = createServerFn({
         ),
         // motion videos
         and(eq(collections.class, "Motion"), isNull(collections.frontMedia)),
+        // audio doubles
+        and(
+          eq(collections.class, "Double"),
+          eq(collections.hasAudio, true),
+          isNull(collections.frontMedia),
+        ),
       ),
     );
 
-  return new Set(result.map((c) => c.collectionId));
+  return result.map((c) => ({
+    collectionId: c.collectionId,
+    type:
+      c.class === "Motion" ? "motion" : c.class === "Double" ? "audio" : "band",
+    artist: c.artist,
+    season: c.season,
+  }));
 });
