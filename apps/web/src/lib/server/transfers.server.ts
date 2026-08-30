@@ -1,27 +1,16 @@
 import type { transfersBackendSchema } from "@/lib/universal/parsers";
 import { Addresses, isEqual } from "@apollo/util";
-import {
-  and,
-  desc,
-  eq,
-  inArray,
-  lt,
-  not,
-  or,
-  type SQL,
-  sql,
-} from "drizzle-orm";
+import { and, desc, eq, inArray, not, or, type SQL, sql } from "drizzle-orm";
 import type { z } from "zod";
 import type { TransferResult, TransferType } from "../universal/transfers";
 import { indexer } from "./db/indexer";
 import { collections, objekts, transfers } from "./db/indexer/schema";
 import {
   withArtist,
-  // temporarily disabled: season/class/on-offline filtering
-  // withClass,
+  withClass,
   withMember,
-  // withOnlineType,
-  // withSeason,
+  withOnlineType,
+  withSeason,
   withSelectedArtists,
   withSpinMonth,
 } from "./objekts/filters.server";
@@ -113,10 +102,9 @@ function encodeCursor(timestamp: string, id: string) {
 function collectionFilters(params: Payload) {
   return [
     ...withArtist(params.artist),
-    // temporarily disabled: season/class/on-offline filtering
-    // ...withClass(params.class ?? []),
-    // ...withSeason(params.season ?? []),
-    // ...withOnlineType(params.on_offline ?? []),
+    ...withClass(params.class ?? []),
+    ...withSeason(params.season ?? []),
+    ...withOnlineType(params.on_offline ?? []),
     ...withMember(params.member),
     ...withSelectedArtists(params.artists),
   ];
@@ -128,35 +116,24 @@ function collectionFilters(params: Payload) {
 function cursorFilters(cursor: ReturnType<typeof decodeCursor>) {
   return cursor
     ? [
-        or(
-          lt(transfers.timestamp, cursor.timestamp),
-          and(
-            eq(transfers.timestamp, cursor.timestamp),
-            lt(transfers.id, cursor.id),
-          ),
-        ),
+        sql`(${transfers.timestamp}, ${transfers.id}) < (${cursor.timestamp}::timestamptz, ${cursor.id})`,
       ]
     : [];
 }
 
 /**
- * Build the base query for fetching transfers.
+ * Fetch a page of transfers for a single direction filter.
  */
-function buildBaseQuery(
+function buildIdFirstQuery(
   baseFilter: SQL | undefined,
   params: Payload,
   cursor: ReturnType<typeof decodeCursor>,
   extraFilters: SQL[],
+  tag: string,
 ) {
-  return indexer
-    .select({
-      transfer: transfers,
-      serial: objekts.serial,
-      collection: collections,
-      isSpin: sql<boolean>`${transfers.to} = ${Addresses.SPIN}`,
-    })
+  const filteredTransfers = indexer
+    .select({ id: transfers.id })
     .from(transfers)
-    .leftJoin(objekts, eq(transfers.objektId, objekts.id))
     .leftJoin(collections, eq(transfers.collectionId, collections.id))
     .where(
       and(
@@ -168,7 +145,22 @@ function buildBaseQuery(
     )
     .orderBy(desc(transfers.timestamp), desc(transfers.id))
     .limit(PER_PAGE)
-    .comment({ fn: "fetchSplitAll" });
+    .as("ft");
+
+  return indexer
+    .select({
+      transfer: transfers,
+      serial: objekts.serial,
+      collection: collections,
+      isSpin: sql<boolean>`${transfers.to} = ${Addresses.SPIN}`,
+    })
+    .from(filteredTransfers)
+    .innerJoin(transfers, eq(transfers.id, filteredTransfers.id))
+    .leftJoin(objekts, eq(transfers.objektId, objekts.id))
+    .leftJoin(collections, eq(transfers.collectionId, collections.id))
+    .orderBy(desc(transfers.timestamp), desc(transfers.id))
+    .limit(PER_PAGE)
+    .comment({ fn: tag });
 }
 
 /**
@@ -183,8 +175,20 @@ async function fetchSplitAll(
   extraFilters: SQL[],
 ) {
   const [fromRows, toRows] = await Promise.all([
-    buildBaseQuery(eq(transfers.from, address), params, cursor, extraFilters),
-    buildBaseQuery(eq(transfers.to, address), params, cursor, extraFilters),
+    buildIdFirstQuery(
+      eq(transfers.from, address),
+      params,
+      cursor,
+      extraFilters,
+      "fetchSplitAll",
+    ),
+    buildIdFirstQuery(
+      eq(transfers.to, address),
+      params,
+      cursor,
+      extraFilters,
+      "fetchSplitAll",
+    ),
   ]);
 
   const seen = new Set<string>();
@@ -215,34 +219,11 @@ async function fetchTransferFirst(
   cursor: ReturnType<typeof decodeCursor>,
   extraFilters: SQL[],
 ) {
-  const filteredTransfers = indexer
-    .select({ id: transfers.id })
-    .from(transfers)
-    .leftJoin(collections, eq(transfers.collectionId, collections.id))
-    .where(
-      and(
-        withType(address, params.type ?? "all"),
-        ...cursorFilters(cursor),
-        ...collectionFilters(params),
-        ...extraFilters,
-      ),
-    )
-    .orderBy(desc(transfers.timestamp), desc(transfers.id))
-    .limit(PER_PAGE)
-    .as("ft");
-
-  return await indexer
-    .select({
-      transfer: transfers,
-      serial: objekts.serial,
-      collection: collections,
-      isSpin: sql<boolean>`${transfers.to} = ${Addresses.SPIN}`,
-    })
-    .from(filteredTransfers)
-    .innerJoin(transfers, eq(transfers.id, filteredTransfers.id))
-    .leftJoin(objekts, eq(transfers.objektId, objekts.id))
-    .leftJoin(collections, eq(transfers.collectionId, collections.id))
-    .orderBy(desc(transfers.timestamp), desc(transfers.id))
-    .limit(PER_PAGE)
-    .comment({ fn: "fetchTransferFirst" });
+  return await buildIdFirstQuery(
+    withType(address, params.type ?? "all"),
+    params,
+    cursor,
+    extraFilters,
+    "fetchTransferFirst",
+  );
 }
