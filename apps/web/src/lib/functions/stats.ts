@@ -89,7 +89,8 @@ async function getHourlyStats(since: Date, until: Date): Promise<RawStats[]> {
       sql`date_trunc('hour', ${objekts.mintedAt})`,
       collections.member,
       collections.artist,
-    );
+    )
+    .comment({ fn: "getHourlyStats" });
 }
 
 /**

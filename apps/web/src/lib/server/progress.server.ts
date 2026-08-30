@@ -31,7 +31,8 @@ export async function fetchTotal({
         ...(onlineType !== null ? [eq(collections.onOffline, onlineType)] : []),
         ...(season !== null ? [eq(collections.season, season)] : []),
       ),
-    );
+    )
+    .comment({ fn: "fetchTotal" });
 
   return result;
 }
@@ -64,7 +65,8 @@ export async function fetchProgress(address: string, member: string) {
         ...withSpinMonth(isSpin, objekts.receivedAt),
       ),
     )
-    .orderBy(objekts.collectionId);
+    .orderBy(objekts.collectionId)
+    .comment({ fn: "fetchProgress" });
 }
 
 type FetchLeaderboard = {
@@ -99,6 +101,7 @@ export async function fetchLeaderboard({
           ...(season !== null ? [eq(collections.season, season)] : []),
         ),
       )
+      .comment({ fn: "fetchLeaderboardCollections" })
   ).map((c) => c.id);
 
   if (collectionIds.length === 0) return [];
@@ -126,5 +129,6 @@ export async function fetchLeaderboard({
     .from(distinctPairs)
     .groupBy(distinctPairs.owner)
     .orderBy(sql`count desc`)
-    .limit(LEADERBOARD_COUNT);
+    .limit(LEADERBOARD_COUNT)
+    .comment({ fn: "fetchLeaderboard" });
 }

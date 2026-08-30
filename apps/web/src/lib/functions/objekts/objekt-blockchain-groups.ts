@@ -99,7 +99,7 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
     );
     idsQuery = idsQuery.limit(PER_PAGE).offset(offset);
 
-    const idsResult = await idsQuery;
+    const idsResult = await idsQuery.comment({ fn: "fetchBlockchainGroups" });
     const totalCount = idsResult[0]?.totalCount ?? 0;
 
     if (idsResult.length === 0) {
@@ -158,16 +158,19 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
           createdAt: collections.createdAt,
         })
         .from(collections)
-        .where(inArray(collections.id, collectionIds)),
+        .where(inArray(collections.id, collectionIds))
+        .comment({ fn: "fetchBlockchainGroupCollections" }),
 
       // 2b. fetch objekts
-      objektsQuery.where(
-        and(
-          eq(objekts.owner, address),
-          inArray(objekts.collectionId, collectionIds),
-          ...withTransferable(data.transferable),
-        ),
-      ),
+      objektsQuery
+        .where(
+          and(
+            eq(objekts.owner, address),
+            inArray(objekts.collectionId, collectionIds),
+            ...withTransferable(data.transferable),
+          ),
+        )
+        .comment({ fn: "fetchBlockchainGroupObjekts" }),
     ]);
 
     // 3. build the response in JS

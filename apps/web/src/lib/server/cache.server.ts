@@ -62,6 +62,7 @@ export async function clearTag(...tags: string[]) {
 
 type CacheHeaders = {
   cdn: number;
+  browser?: number;
   tags?: string | string[];
 };
 
@@ -81,7 +82,7 @@ export function cacheHeaders(cache: CacheHeaders) {
     : [];
 
   const headers: ResponseCacheHeaders = {
-    "Cache-Control": `public, max-age=30, s-maxage=${cache.cdn}, stale-while-revalidate=30`,
+    "Cache-Control": `public, max-age=${cache.browser ?? 30}, s-maxage=${cache.cdn}, stale-while-revalidate=30`,
   };
   if (tags.length > 0) {
     headers["Cache-Tag"] = tags.join(",");

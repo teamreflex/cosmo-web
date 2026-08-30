@@ -1,3 +1,4 @@
+import { remember } from "@/lib/server/cache.server";
 import { indexer } from "@/lib/server/db/indexer";
 import { collections, members } from "@/lib/server/db/indexer/schema";
 import {
@@ -46,11 +47,23 @@ export const $fetchObjektsIndex = createServerFn({ method: "GET" })
       query = query.leftJoin(members, eq(members.name, collections.member));
     }
     query = withObjektIndexSort(query, sort);
-    query = query.limit(LIMIT).offset(data.page * LIMIT);
+    query = query
+      .limit(LIMIT)
+      .offset(data.page * LIMIT)
+      .comment({ fn: "fetchObjektsIndex" });
 
+    // the client only reads `total` from page 0, so skip the count elsewhere.
+    // the unfiltered total is the bulk of count traffic and only changes when
+    // collections drop, so it's cached; filtered counts are too varied to cache.
     const [collectionList, total] = await Promise.all([
       query,
-      indexer.$count(collections, where),
+      data.page > 0
+        ? 0
+        : where === undefined
+          ? remember("objekt-index-total", 60 * 15, () =>
+              indexer.$count(collections),
+            )
+          : indexer.$count(collections, where),
     ]);
 
     const hasNext = collectionList.length === LIMIT;

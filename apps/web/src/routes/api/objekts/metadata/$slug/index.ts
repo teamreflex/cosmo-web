@@ -69,7 +69,8 @@ async function fetchCollection(slug: string) {
     .from(collections)
     .leftJoin(objekts, eq(collections.id, objekts.collectionId))
     .where(eq(collections.slug, slug))
-    .groupBy(collections.id, collections.createdAt);
+    .groupBy(collections.id, collections.createdAt)
+    .comment({ fn: "fetchCollectionMetadata" });
 
   const collection = result[0];
   if (!collection) {

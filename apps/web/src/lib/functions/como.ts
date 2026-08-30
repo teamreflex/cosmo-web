@@ -35,7 +35,8 @@ export const $fetchObjektsWithComo = createServerFn({ method: "GET" })
           inArray(collections.class, ["Special", "Premier"]),
           not(eq(collections.artist, "idntt")),
         ),
-      );
+      )
+      .comment({ fn: "fetchObjektsWithComo" });
   });
 
 /**

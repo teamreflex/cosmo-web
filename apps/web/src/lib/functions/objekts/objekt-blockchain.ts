@@ -45,9 +45,10 @@ export const $fetchObjektsBlockchain = createServerFn({ method: "GET" })
     const isSpin = isEqual(data.address, Addresses.SPIN);
     const owner = data.address.toLowerCase();
 
-    // fetch both objekts and total count in parallel
+    // fetch both objekts and total count in parallel.
+    // the client only reads `total` from page 0, so skip the count elsewhere.
     const [total, results] = await Promise.all([
-      isSpin ? Promise.resolve(0) : fetchCount(owner, data),
+      isSpin || data.page > 0 ? 0 : fetchCount(owner, data),
       fetchObjekts(data, owner, isSpin),
     ]);
 
@@ -98,7 +99,7 @@ async function fetchObjekts(
   query = withCollectionSort(query, sort);
   query = query.limit(PER_PAGE).offset(data.page * PER_PAGE);
 
-  return await query;
+  return await query.comment({ fn: "fetchObjektsBlockchain" });
 }
 
 /**
@@ -121,13 +122,15 @@ async function fetchCount(owner: string, filters: InputData): Promise<number> {
     );
   }
 
-  const [results] = await query.where(
-    and(
-      eq(objekts.owner, owner),
-      ...collectionConditions,
-      ...withTransferable(filters.transferable),
-    ),
-  );
+  const [results] = await query
+    .where(
+      and(
+        eq(objekts.owner, owner),
+        ...collectionConditions,
+        ...withTransferable(filters.transferable),
+      ),
+    )
+    .comment({ fn: "fetchObjektsCount" });
 
   return Number(results?.count ?? 0);
 }
