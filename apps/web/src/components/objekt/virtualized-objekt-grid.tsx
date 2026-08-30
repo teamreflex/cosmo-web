@@ -39,7 +39,14 @@ import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import type { DefaultError, QueryKey } from "@tanstack/react-query";
 import type { Virtualizer } from "@tanstack/react-virtual";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
-import { Suspense, useCallback, useMemo, useRef, useState } from "react";
+import {
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import type { ComponentType } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { LegacyOverlay } from "../collection/data-sources/common-legacy";
@@ -205,7 +212,8 @@ function ObjektGrid<
     0,
     (width - SIDE * 2 - GAP * (gridColumns - 1)) / gridColumns,
   );
-  const itemHeight = laneWidth * ASPECT_RATIO + extraRowHeight;
+  // rounded so it stays exact as the virtualizer accumulates it down the list
+  const itemHeight = Math.round(laneWidth * ASPECT_RATIO) + extraRowHeight;
 
   const virtualizer = useWindowVirtualizer({
     count: cells.length,
@@ -214,12 +222,18 @@ function ObjektGrid<
     // overscan is counted in items, so scale it to keep ~3 rows buffered
     overscan: gridColumns * 3,
     estimateSize: () => itemHeight,
+    measureElement: () => itemHeight,
     scrollMargin: containerRef.current?.offsetTop ?? 0,
   });
 
   // fixes react compiler issue: https://github.com/TanStack/virtual/issues/743
   const virtualizerRef = useRef(virtualizer);
   const virtualList = virtualizerRef.current.getVirtualItems();
+
+  // re-measure cell sizes upon viewport size change
+  useEffect(() => {
+    virtualizerRef.current.measure();
+  }, [itemHeight]);
 
   /**
    * Drag-and-drop pin reordering. `reorderable` is stable for a mounted grid
