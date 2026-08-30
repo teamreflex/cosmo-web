@@ -13,7 +13,7 @@ import { betterAuth } from "better-auth/minimal";
 import { username } from "better-auth/plugins/username";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { eq } from "drizzle-orm";
-import { createCipheriv, createDecipheriv, randomBytes } from "node:crypto";
+import { createCipheriv, randomBytes } from "node:crypto";
 import type { PublicUser } from "../universal/auth";
 import { db } from "./db";
 import {
@@ -119,48 +119,40 @@ export const auth = betterAuth({
         },
       },
       update: {
+        /**
+         * Hooks only receive the update payload: most codepaths (repeat
+         * OAuth sign-in, password changes) omit `id` and carry fresh
+         * plaintext tokens from the provider. The token-refresh route
+         * spreads the full row, where an unrotated token is the stored
+         * ciphertext — leave those as-is and encrypt everything else.
+         */
         async before(account) {
-          // query the user to get the current access and refresh tokens
-          const existing = await db.query.account.findFirst({
-            where: {
-              id: account.id,
-            },
-          });
-
-          // ???
-          if (!existing) {
-            return {
-              data: account,
-            };
-          }
+          const existing = account.id
+            ? await db.query.account.findFirst({
+                where: { id: account.id },
+              })
+            : undefined;
 
           const withEncryptedTokens = { ...account };
 
-          // only encrypt the tokens if they have changed
-          if (account.accessToken && existing.accessToken) {
-            const decrypted = decryptToken(
-              existing.accessToken,
+          if (
+            account.accessToken &&
+            account.accessToken !== existing?.accessToken
+          ) {
+            withEncryptedTokens.accessToken = encryptToken(
+              account.accessToken,
               serverEnv.env.BETTER_AUTH_SECRET,
             );
-            if (decrypted !== account.accessToken) {
-              withEncryptedTokens.accessToken = encryptToken(
-                account.accessToken,
-                serverEnv.env.BETTER_AUTH_SECRET,
-              );
-            }
           }
 
-          if (account.refreshToken && existing.refreshToken) {
-            const decrypted = decryptToken(
-              existing.refreshToken,
+          if (
+            account.refreshToken &&
+            account.refreshToken !== existing?.refreshToken
+          ) {
+            withEncryptedTokens.refreshToken = encryptToken(
+              account.refreshToken,
               serverEnv.env.BETTER_AUTH_SECRET,
             );
-            if (decrypted !== account.refreshToken) {
-              withEncryptedTokens.refreshToken = encryptToken(
-                account.refreshToken,
-                serverEnv.env.BETTER_AUTH_SECRET,
-              );
-            }
           }
 
           return {
@@ -352,28 +344,6 @@ function encryptToken(token: string, key: string) {
   // concatenate the iv, encrypted text and auth tag
   return Buffer.concat([iv, encryptedToken, cipher.getAuthTag()]).toString(
     "base64",
-  );
-}
-
-/**
- * Decrypt a token.
- */
-function decryptToken(encrypted: string, key: string) {
-  // convert the encrypted token to a buffer
-  const encryptedBuffer = Buffer.from(encrypted, "base64");
-
-  // pull out individual parts (iv, auth tag, encrypted text)
-  const authTag = encryptedBuffer.subarray(-AUTH_TAG_LENGTH);
-  const iv = encryptedBuffer.subarray(0, IV_LENGTH);
-  const text = encryptedBuffer.subarray(IV_LENGTH, -AUTH_TAG_LENGTH);
-
-  const decipher = createDecipheriv(ALGORITHM, Buffer.from(key, "hex"), iv, {
-    authTagLength: AUTH_TAG_LENGTH,
-  });
-  decipher.setAuthTag(authTag);
-
-  return Buffer.concat([decipher.update(text), decipher.final()]).toString(
-    "utf8",
   );
 }
 
