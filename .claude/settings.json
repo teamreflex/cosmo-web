@@ -34,7 +34,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "f=$(jq -r '.tool_input.file_path'); case \"$f\" in *.ts|*.tsx) bunx oxfmt \"$f\" >/dev/null && bunx oxlint --type-aware --fix \"$f\" 1>&2 || exit 2;; esac"
+            "command": "f=$(jq -r '.tool_input.file_path'); case \"$f\" in *.ts|*.tsx) bunx oxfmt \"$f\" >/dev/null && bunx oxlint --format=agent --type-aware --fix \"$f\" 1>&2 || exit 2;; esac"
           }
         ]
       }

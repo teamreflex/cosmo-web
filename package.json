@@ -21,8 +21,8 @@
   "devDependencies": {
     "@socketsecurity/bun-security-scanner": "^1.1.2",
     "dotenv-cli": "^11.0.0",
-    "oxfmt": "^0.64.0",
-    "oxlint": "^1.79.0",
+    "oxfmt": "^0.65.0",
+    "oxlint": "^1.80.0",
     "oxlint-tsgolint": "^7.0.2001",
     "turbo": "catalog:",
     "typescript": "catalog:"
@@ -36,17 +36,17 @@
     "@effect/eslint-plugin": "^0.3.2",
     "@effect/language-service": "^0.87.2",
     "@effect/platform-bun": "4.0.0-rc.109",
-    "@sentry/bun": "^10.70.0",
+    "@sentry/bun": "^10.72.0",
     "@types/bun": "1.4.0",
     "drizzle-kit": "1.0.0-rc.5-ab785fc",
     "drizzle-orm": "1.0.0-rc.5-169397b",
     "effect": "4.0.0-rc.109",
     "jose": "^6.2.9",
     "ofetch": "^1.5.1",
-    "turbo": "2.10.10",
+    "turbo": "2.10.12",
     "typesense": "^2.1.0",
     "typescript": "7.0.2",
-    "zod": "^4.4.3"
+    "zod": "^4.5.2"
   },
   "overrides": {
     "@types/node": "22.7.5"
