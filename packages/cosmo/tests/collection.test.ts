@@ -27,5 +27,29 @@ describe("fetchObjektSummaries", () => {
     expect(request.url.searchParams.get("order")).toBe("newest");
     expect(request.url.searchParams.get("page")).toBe("1");
     expect(request.url.searchParams.get("size")).toBe("30");
+    expect(request.url.searchParams.has("season[]")).toBe(false);
+  });
+
+  it("repeats the season filter for each given season", async () => {
+    const rec = recorder();
+    handle.get("https://api.cosmo.fans/bff/v3/objekt-summaries", (request) => {
+      rec.record(request);
+      return Response.json(objektSummaries);
+    });
+
+    await runTest(
+      fetchObjektSummaries({
+        session: "session-token",
+        artistId: "tripleS",
+        className: "Double",
+        seasons: ["Cream02", "Binary02"],
+      }),
+    );
+
+    const request = rec.at(0);
+    expect(request.url.searchParams.getAll("season[]")).toEqual([
+      "Cream02",
+      "Binary02",
+    ]);
   });
 });
