@@ -234,6 +234,18 @@ export const pastGravity = {
   },
 } satisfies CosmoPastGravity;
 
+// a gravity that only just ended: COSMO hasn't generated its summary card yet
+export const freshlyEndedGravity = {
+  ...pastGravity,
+  id: 98,
+  title: "Freshly Ended Gravity",
+  result: {
+    totalComoUsed: 1000,
+    resultImageUrl: null,
+    resultTitle: null,
+  },
+} satisfies CosmoPastGravity;
+
 export const pollChoices = {
   id: 7,
   artist: "tripleS",

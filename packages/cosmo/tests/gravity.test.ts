@@ -3,6 +3,7 @@ import { fetchGravities, fetchGravity, fetchPoll } from "../src/server/gravity";
 import {
   combinationPollChoices,
   countingGravity,
+  freshlyEndedGravity,
   pastGravity,
   pollChoices,
   unitGravity,
@@ -39,6 +40,15 @@ describe("fetchGravities", () => {
 
   it("decodes a finalized gravity in the past list", async () => {
     const list = { upcoming: [], ongoing: [], past: [pastGravity] };
+    handle.get("https://api.cosmo.fans/bff/v3/gravities", () =>
+      Response.json(list),
+    );
+
+    expect(await runTest(fetchGravities("token-123", "tripleS"))).toEqual(list);
+  });
+
+  it("decodes a past gravity with no summary card yet", async () => {
+    const list = { upcoming: [], ongoing: [], past: [freshlyEndedGravity] };
     handle.get("https://api.cosmo.fans/bff/v3/gravities", () =>
       Response.json(list),
     );

@@ -172,8 +172,8 @@ export const PastGravitySchema = Schema.Struct({
   polls: Schema.mutable(Schema.Array(PollFinalizedSchema)),
   result: Schema.Struct({
     totalComoUsed: Schema.Number,
-    resultImageUrl: Schema.String,
-    resultTitle: Schema.String,
+    resultImageUrl: Schema.NullOr(Schema.String),
+    resultTitle: Schema.NullOr(Schema.String),
   }),
   leaderboard: Schema.Struct({
     userRanking: Schema.mutable(
