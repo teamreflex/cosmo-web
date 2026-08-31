@@ -7,12 +7,9 @@ export function useFilterData() {
   const { getArtist, selectedIds } = useArtists();
 
   const seasonsData = data.seasons
-    .map(({ artistId, seasons }) => {
-      const artist = getArtist(artistId)!;
-      return {
-        artist,
-        seasons,
-      };
+    .flatMap(({ artistId, seasons }) => {
+      const artist = getArtist(artistId);
+      return artist ? [{ artist, seasons }] : [];
     })
     .filter(({ artist }) => {
       if (selectedIds.length === 0) return true;
@@ -21,12 +18,9 @@ export function useFilterData() {
     .sort((a, b) => a.artist.comoTokenId - b.artist.comoTokenId);
 
   const classesData = data.classes
-    .map(({ artistId, classes }) => {
-      const artist = getArtist(artistId)!;
-      return {
-        artist,
-        classes,
-      };
+    .flatMap(({ artistId, classes }) => {
+      const artist = getArtist(artistId);
+      return artist ? [{ artist, classes }] : [];
     })
     .filter(({ artist }) => {
       if (selectedIds.length === 0) return true;

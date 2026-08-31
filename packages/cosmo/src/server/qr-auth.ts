@@ -51,7 +51,7 @@ export async function getRecaptchaToken(config: QrAuthConfig) {
     return value as string;
   } catch (error) {
     console.error("Failed to get reCAPTCHA token", error);
-    throw new Error("Failed to get reCAPTCHA token");
+    throw new Error("Failed to get reCAPTCHA token", { cause: error });
   } finally {
     if (browser) {
       await browser.close();

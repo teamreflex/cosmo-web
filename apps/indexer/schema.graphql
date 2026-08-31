@@ -40,7 +40,7 @@ type Objekt @entity {
   id: ID! @index # tokenId
   owner: String! @index
   mintedAt: DateTime!
-  receivedAt: DateTime! @index
+  receivedAt: DateTime!
   serial: Int! @index
   transferable: Boolean!
   transfers: [Transfer!] @derivedFrom(field: "objekt")

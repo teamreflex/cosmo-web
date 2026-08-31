@@ -4,6 +4,7 @@ import { $toggleObjektLock } from "@/lib/functions/collection";
 import { track } from "@/lib/utils";
 import { IconLoader2, IconLock, IconLockOpen } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";
+import { OverlayIcon, OverlayIconButton } from "./corner-overlay";
 
 type Props = {
   tokenId: number;
@@ -25,8 +26,7 @@ export default function LockObjekt({ tokenId, isLocked }: Props) {
   }
 
   return (
-    <button
-      className="flex items-center transition-all hover:scale-110"
+    <OverlayIconButton
       disabled={mutation.isPending}
       aria-label={
         isLocked ? m.objekt_overlay_unlock_aria() : m.objekt_overlay_lock_aria()
@@ -34,12 +34,10 @@ export default function LockObjekt({ tokenId, isLocked }: Props) {
       onClick={toggle}
     >
       {mutation.isPending ? (
-        <IconLoader2 className="h-3 w-3 animate-spin sm:h-5 sm:w-5" />
-      ) : isLocked ? (
-        <IconLock className="h-3 w-3 sm:h-5 sm:w-5" />
+        <OverlayIcon icon={IconLoader2} className="animate-spin" />
       ) : (
-        <IconLockOpen className="h-3 w-3 sm:h-5 sm:w-5" />
+        <OverlayIcon icon={isLocked ? IconLock : IconLockOpen} />
       )}
-    </button>
+    </OverlayIconButton>
   );
 }

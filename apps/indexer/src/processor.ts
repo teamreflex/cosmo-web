@@ -14,6 +14,7 @@ import { env } from "./env";
 
 const COSMO_START_BLOCK = 6363806;
 
+// oxlint-disable-next-line no-console -- startup banner logs before the squid logger exists
 console.log(
   `[processor] Starting processor with objekts ${env.ENABLE_OBJEKTS} and gravity ${env.ENABLE_GRAVITY}`,
 );

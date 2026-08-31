@@ -31,29 +31,40 @@ export const classifyPgError = (
 ): SqlErrorReason => {
   const props = { cause, message, operation };
   if (!(cause instanceof SQL.PostgresError)) return new UnknownError(props);
-  const state =
-    cause.errno !== undefined && SQLSTATE.test(cause.errno)
-      ? cause.errno
-      : undefined;
-  if (state !== undefined) {
-    if (state.startsWith("08")) return new ConnectionError(props);
-    if (state.startsWith("28")) return new AuthenticationError(props);
-    if (state === "42501") return new AuthorizationError(props);
-    if (state.startsWith("42")) return new SqlSyntaxError(props);
-    if (state === "23505") {
-      return new UniqueViolation({
-        ...props,
-        constraint: cause.constraint?.trim() || "unknown",
-      });
-    }
-    if (state.startsWith("23")) return new ConstraintError(props);
-    if (state === "40P01") return new DeadlockError(props);
-    if (state === "40001") return new SerializationError(props);
-    if (state === "55P03") return new LockTimeoutError(props);
-    if (state === "57014") return new StatementTimeoutError(props);
-    return new UnknownError(props);
+  return cause.errno !== undefined && SQLSTATE.test(cause.errno)
+    ? classifySqlState(cause.errno, cause, props)
+    : classifyClientCode(cause.code, props);
+};
+
+type ReasonProps = { cause: unknown; message: string; operation: string };
+
+const classifySqlState = (
+  state: string,
+  cause: SQL.PostgresError,
+  props: ReasonProps,
+): SqlErrorReason => {
+  if (state.startsWith("08")) return new ConnectionError(props);
+  if (state.startsWith("28")) return new AuthenticationError(props);
+  if (state === "42501") return new AuthorizationError(props);
+  if (state.startsWith("42")) return new SqlSyntaxError(props);
+  if (state === "23505") {
+    return new UniqueViolation({
+      ...props,
+      constraint: cause.constraint?.trim() || "unknown",
+    });
   }
-  const { code } = cause;
+  if (state.startsWith("23")) return new ConstraintError(props);
+  if (state === "40P01") return new DeadlockError(props);
+  if (state === "40001") return new SerializationError(props);
+  if (state === "55P03") return new LockTimeoutError(props);
+  if (state === "57014") return new StatementTimeoutError(props);
+  return new UnknownError(props);
+};
+
+const classifyClientCode = (
+  code: string,
+  props: ReasonProps,
+): SqlErrorReason => {
   if (
     code.startsWith("ERR_POSTGRES_CONNECTION") ||
     code.startsWith("ERR_POSTGRES_TLS") ||

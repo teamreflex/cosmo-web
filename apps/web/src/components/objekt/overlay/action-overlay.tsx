@@ -4,9 +4,9 @@ import { tokenKey, useObjektSelection } from "@/hooks/use-objekt-selection";
 import useOverlayHover from "@/hooks/use-overlay-hover";
 import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
+import { type Hoverable, reasonLabel } from "@/lib/client/objekt-util";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
-import { useObjektOverlay } from "@/store";
 import {
   IconCloudDownload,
   IconConfetti,
@@ -15,12 +15,20 @@ import {
   IconLock,
   IconMailOff,
   IconPin,
-  IconSquare,
-  IconSquareCheckFilled,
+  type Icon as TablerIcon,
 } from "@tabler/icons-react";
+import { Fragment } from "react";
 import { useShallow } from "zustand/react/shallow";
+import {
+  CornerOverlay,
+  OverlayActionRow,
+  OverlayHoverTarget,
+  OverlayIcon,
+  OverlayStatusRail,
+} from "./corner-overlay";
 import LockObjekt from "./lock-button";
 import OverlayStatus from "./overlay-status";
+import SelectToggleButton from "./select-toggle-button";
 
 type Props = {
   collection: Objekt.Collection;
@@ -31,34 +39,30 @@ type Props = {
   isPin: boolean;
 };
 
-export default function ActionOverlay({
-  collection,
+type CreateHoverProps = ReturnType<typeof useOverlayHover>[1];
+
+type TokenTraits = {
+  usedForGrid: boolean;
+  isSendable: boolean;
+  showActions: boolean;
+};
+
+function deriveTraits({
   token,
   authenticated,
   isLocked,
   isPinned,
   isPin,
-}: Props) {
-  const objektLists = useProfileContext((ctx) => ctx.objektLists);
-  const [hoverState, createHoverProps] = useOverlayHover();
-  const isHidden = useObjektOverlay((state) => state.isHidden);
-  const isSelected = useObjektSelection(
-    useShallow((state) => state.isSelected(tokenKey(token.tokenId))),
-  );
-  const select = useObjektSelection((state) => state.select);
-
+}: Props): TokenTraits {
   // grouping uses nonTransferableReason = "challenge-reward" for gridded objekts
   const usedForGrid =
     token.usedForGrid || token.nonTransferableReason === "used-for-grid";
 
-  // some welcome objekts are sendable
-  const isSendableWelcome =
-    token.transferable && token.nonTransferableReason === "welcome-objekt";
-
-  // all other objekts, check if they are sendable
+  // some welcome objekts are sendable; all other objekts must carry no reason
   const isSendable =
-    isSendableWelcome ||
-    (token.transferable && token.nonTransferableReason === undefined);
+    token.transferable &&
+    (token.nonTransferableReason === "welcome-objekt" ||
+      token.nonTransferableReason === undefined);
 
   const showActions =
     !token.transferable ||
@@ -67,207 +71,255 @@ export default function ActionOverlay({
     (isPinned && isPin) ||
     authenticated;
 
+  return { usedForGrid, isSendable, showActions };
+}
+
+type TokenStatus = {
+  key: Hoverable;
+  icon: TablerIcon;
+  label: () => string;
+};
+
+/**
+ * Statuses shown for the token, in render order. Multiple can apply at once
+ * (e.g. used-for-grid + lenticular). "effect-objekt" and "bookmark-objekt"
+ * never occur in API data, so they intentionally have no entries.
+ */
+function tokenStatuses(
+  token: Objekt.Token,
+  { usedForGrid, isSendable }: TokenTraits,
+): TokenStatus[] {
+  const reason = token.nonTransferableReason;
+  const statuses: TokenStatus[] = [];
+  if (reason === "not-transferable") {
+    statuses.push({
+      key: reason,
+      icon: IconMailOff,
+      label: () => reasonLabel(reason),
+    });
+  }
+  if (reason === "mint-pending") {
+    statuses.push({
+      key: reason,
+      icon: IconCloudDownload,
+      label: () => reasonLabel(reason),
+    });
+  }
+  if (!usedForGrid && reason === "challenge-reward") {
+    statuses.push({
+      key: reason,
+      icon: IconConfetti,
+      label: () => reasonLabel(reason),
+    });
+  }
+  if (!isSendable && reason === "welcome-objekt") {
+    statuses.push({
+      key: reason,
+      icon: IconMailOff,
+      label: () => reasonLabel(reason),
+    });
+  }
+  if (usedForGrid) {
+    statuses.push({
+      key: "used-for-grid",
+      icon: IconGrid4x4,
+      label: () => reasonLabel("used-for-grid"),
+    });
+  }
+  // used in lenticular, for some reason the nonTransferableReason isn't used here
+  if (token.lenticularPairTokenId !== 0) {
+    statuses.push({
+      key: "lenticular-objekt",
+      icon: IconDevices,
+      label: m.objekt_overlay_lenticular_pair,
+    });
+  }
+  return statuses;
+}
+
+export default function ActionOverlay(props: Props) {
+  const { collection, token, authenticated, isLocked, isPinned, isPin } = props;
+  const [hoverState, createHoverProps, hoverContainerProps] = useOverlayHover();
+  const isSelected = useObjektSelection(
+    useShallow((state) => state.isSelected(tokenKey(token.tokenId))),
+  );
+  const select = useObjektSelection((state) => state.select);
+
+  const traits = deriveTraits(props);
+  const statuses = tokenStatuses(token, traits);
+
   return (
-    <div
-      data-hovering={hoverState !== undefined}
-      className={cn(
-        "group absolute top-0 left-0 h-5 items-center overflow-hidden rounded-br-photocard p-1 transition-all sm:h-9 sm:p-2",
-        "bg-(--objekt-background-color) text-(--objekt-text-color)",
-        "grid grid-flow-col grid-cols-[1fr_min-content]",
-        (showActions === false || isHidden) && "hidden",
-      )}
+    <CornerOverlay
+      corner="top-left"
+      {...hoverContainerProps}
+      className={cn(!traits.showActions && "hidden")}
     >
-      <div className="flex items-center gap-2">
-        {/* buttons */}
-
-        {/* pinned (viewing other user) */}
-        {isPin && isPinned && !authenticated && (
-          <IconPin className="h-3 w-3 shrink-0 sm:h-5 sm:w-5" />
+      <OverlayActionRow>
+        {authenticated ? (
+          <OwnerActions
+            collection={collection}
+            token={token}
+            isLocked={isLocked}
+            isPinned={isPinned}
+            isPin={isPin}
+            isSendable={traits.isSendable}
+            createHoverProps={createHoverProps}
+          />
+        ) : (
+          <SpectatorIcons
+            isLocked={isLocked}
+            isPinned={isPinned}
+            isPin={isPin}
+            usedForGrid={traits.usedForGrid}
+          />
         )}
-
-        {/* locked (viewing other user) */}
-        {!usedForGrid && !isPin && isLocked && !authenticated && (
-          <IconLock className="h-3 w-3 shrink-0 sm:h-5 sm:w-5" />
-        )}
-
-        {authenticated && (
-          <div {...createHoverProps("pin")}>
-            <PinObjekt
-              collectionId={collection.collectionId}
-              tokenId={token.tokenId}
-              isPinned={isPinned}
-            />
-          </div>
-        )}
-
-        {/* add to list (authenticated) */}
-        {authenticated && !isPin && (
-          <div {...createHoverProps("list")}>
-            <AddToList
-              collectionName={collection.collectionId}
-              slug={collection.slug}
-              collectionId={collection.id}
-              lists={objektLists}
-              tokenId={token.tokenId}
-            />
-          </div>
-        )}
-
-        {/* lock/unlock (authenticated) */}
-        {isSendable && authenticated && !isPin && (
-          <div {...createHoverProps("lock")}>
-            <LockObjekt tokenId={token.tokenId} isLocked={isLocked} />
-          </div>
-        )}
-
-        {/* send (authenticated) */}
-        {/* {isSendable && authenticated && !isPin && !isLocked && (
-          <div {...createHoverProps("send")}>
-            <SendObjekt collection={collection} token={token} />
-          </div>
-        )} */}
-
-        {/* statuses */}
 
         {!isPin && (
           <div className="contents">
-            {/* generic non-transferable */}
-            {token.nonTransferableReason === "not-transferable" && (
-              <IconMailOff
-                {...createHoverProps("not-transferable")}
-                className="h-3 w-3 shrink-0 sm:h-5 sm:w-5"
-              />
-            )}
-
-            {/* mint pending */}
-            {token.nonTransferableReason === "mint-pending" && (
-              <IconCloudDownload
-                {...createHoverProps("mint-pending")}
-                className="h-3 w-3 shrink-0 sm:h-5 sm:w-5"
-              />
-            )}
-
-            {/* event reward */}
-            {!usedForGrid &&
-              token.nonTransferableReason === "challenge-reward" && (
-                <IconConfetti
-                  {...createHoverProps("challenge-reward")}
-                  className="h-3 w-3 shrink-0 sm:h-5 sm:w-5"
-                />
-              )}
-
-            {/* welcome reward */}
-            {!isSendable &&
-              token.nonTransferableReason === "welcome-objekt" && (
-                <IconMailOff
-                  {...createHoverProps("welcome-objekt")}
-                  className="h-3 w-3 shrink-0 sm:h-5 sm:w-5"
-                />
-              )}
-
-            {/* used for grid */}
-            {usedForGrid && (
-              <IconGrid4x4
-                {...createHoverProps("used-for-grid")}
-                className="h-3 w-3 shrink-0 sm:h-5 sm:w-5"
-              />
-            )}
-
-            {/* used in lenticular, for some reason the nonTransferableReason isn't used here */}
-            {token.lenticularPairTokenId !== 0 && (
-              <IconDevices
-                {...createHoverProps("lenticular-objekt")}
-                className="h-3 w-3 shrink-0 sm:h-5 sm:w-5"
-              />
-            )}
+            {statuses.map((status) => (
+              <OverlayHoverTarget
+                key={status.key}
+                {...createHoverProps(status.key)}
+              >
+                <OverlayIcon icon={status.icon} />
+              </OverlayHoverTarget>
+            ))}
           </div>
         )}
 
-        {/* batch select (authenticated, own profile) — any objekt may be
-            selected; eligibility is enforced when adding to a list */}
         {authenticated && !isPin && (
-          <button
-            {...createHoverProps("select")}
-            onClick={() => select({ type: "token", collection, token })}
-            className="flex items-center transition-all hover:scale-110"
-            aria-label={
-              isSelected
-                ? m.objekt_overlay_deselect()
-                : m.objekt_overlay_select()
-            }
-          >
-            {isSelected ? (
-              <IconSquareCheckFilled className="h-3 w-3 shrink-0 sm:h-5 sm:w-5" />
-            ) : (
-              <IconSquare className="h-3 w-3 shrink-0 sm:h-5 sm:w-5" />
-            )}
-          </button>
+          <OverlayHoverTarget {...createHoverProps("select")}>
+            <SelectToggleButton
+              isSelected={isSelected}
+              onClick={() => select({ type: "token", collection, token })}
+            />
+          </OverlayHoverTarget>
         )}
-      </div>
+      </OverlayActionRow>
 
-      {/* status text */}
-      <div className="max-w-0 overflow-hidden text-xs whitespace-nowrap transition-all group-hover:max-w-48">
-        {isPin ? (
-          <OverlayStatus>{m.objekt_overlay_pinned()}</OverlayStatus>
-        ) : (
-          <div className="contents">
-            {hoverState === "send" && authenticated && (
-              <OverlayStatus>{m.objekt_overlay_send()}</OverlayStatus>
-            )}
-            {hoverState === "list" && authenticated && (
-              <OverlayStatus>{m.objekt_overlay_add_to_list()}</OverlayStatus>
-            )}
-            {hoverState === "select" && authenticated && (
-              <OverlayStatus>
-                {isSelected
-                  ? m.objekt_overlay_deselect()
-                  : m.objekt_overlay_select()}
-              </OverlayStatus>
-            )}
-            {hoverState === "lock" && (
-              <OverlayStatus>
-                {isLocked ? m.objekt_overlay_unlock() : m.objekt_overlay_lock()}
-              </OverlayStatus>
-            )}
-            {hoverState === "pin" && (
-              <OverlayStatus>
-                {isPinned ? m.objekt_overlay_unpin() : m.objekt_overlay_pin()}
-              </OverlayStatus>
-            )}
-            {token.nonTransferableReason === "not-transferable" && (
-              <OverlayStatus>
-                {m.objekt_overlay_not_transferable()}
-              </OverlayStatus>
-            )}
-            {token.nonTransferableReason === "mint-pending" && (
-              <OverlayStatus>{m.objekt_overlay_mint_pending()}</OverlayStatus>
-            )}
-            {!usedForGrid &&
-              token.nonTransferableReason === "challenge-reward" && (
-                <OverlayStatus>{m.objekt_overlay_event_reward()}</OverlayStatus>
-              )}
-            {!isSendable &&
-              token.nonTransferableReason === "welcome-objekt" && (
-                <OverlayStatus>
-                  {m.objekt_overlay_welcome_reward()}
-                </OverlayStatus>
-              )}
-            {usedForGrid && (
-              <OverlayStatus>{m.objekt_overlay_used_for_grid()}</OverlayStatus>
-            )}
-            {token.lenticularPairTokenId !== 0 && (
-              <OverlayStatus>
-                {m.objekt_overlay_lenticular_pair()}
-              </OverlayStatus>
-            )}
-            {hoverState === undefined && !token.nonTransferableReason && (
-              <OverlayStatus>
-                {isLocked ? m.common_locked() : m.objekt_overlay_unlocked()}
-              </OverlayStatus>
-            )}
-          </div>
-        )}
-      </div>
+      <OverlayStatusRail>
+        <StatusText
+          hoverState={hoverState}
+          statuses={statuses}
+          hasReason={token.nonTransferableReason !== undefined}
+          isLocked={isLocked}
+          isPinned={isPinned}
+          isPin={isPin}
+          isSelected={isSelected}
+        />
+      </OverlayStatusRail>
+    </CornerOverlay>
+  );
+}
+
+function OwnerActions(props: {
+  collection: Objekt.Collection;
+  token: Objekt.Token;
+  isLocked: boolean;
+  isPinned: boolean;
+  isPin: boolean;
+  isSendable: boolean;
+  createHoverProps: CreateHoverProps;
+}) {
+  const { collection, token, createHoverProps } = props;
+  const objektLists = useProfileContext((ctx) => ctx.objektLists);
+
+  return (
+    <Fragment>
+      <OverlayHoverTarget {...createHoverProps("pin")}>
+        <PinObjekt
+          collectionId={collection.collectionId}
+          tokenId={token.tokenId}
+          isPinned={props.isPinned}
+        />
+      </OverlayHoverTarget>
+
+      {!props.isPin && (
+        <OverlayHoverTarget {...createHoverProps("list")}>
+          <AddToList
+            collectionName={collection.collectionId}
+            slug={collection.slug}
+            collectionId={collection.id}
+            lists={objektLists}
+            tokenId={token.tokenId}
+          />
+        </OverlayHoverTarget>
+      )}
+
+      {props.isSendable && !props.isPin && (
+        <OverlayHoverTarget {...createHoverProps("lock")}>
+          <LockObjekt tokenId={token.tokenId} isLocked={props.isLocked} />
+        </OverlayHoverTarget>
+      )}
+    </Fragment>
+  );
+}
+
+/** Read-only pin/lock indicators shown when viewing another user's profile. */
+function SpectatorIcons(props: {
+  isLocked: boolean;
+  isPinned: boolean;
+  isPin: boolean;
+  usedForGrid: boolean;
+}) {
+  return (
+    <Fragment>
+      {props.isPin && props.isPinned && <OverlayIcon icon={IconPin} />}
+      {!props.usedForGrid && !props.isPin && props.isLocked && (
+        <OverlayIcon icon={IconLock} />
+      )}
+    </Fragment>
+  );
+}
+
+type StatusTextProps = {
+  hoverState: Hoverable | undefined;
+  statuses: TokenStatus[];
+  hasReason: boolean;
+  isLocked: boolean;
+  isPinned: boolean;
+  isPin: boolean;
+  isSelected: boolean;
+};
+
+/** The label for the hovered action button, or null for status-icon hovers. */
+function actionHoverLabel(props: StatusTextProps): string | null {
+  switch (props.hoverState) {
+    case "list":
+      return m.objekt_overlay_add_to_list();
+    case "lock":
+      return props.isLocked
+        ? m.objekt_overlay_unlock()
+        : m.objekt_overlay_lock();
+    case "pin":
+      return props.isPinned ? m.objekt_overlay_unpin() : m.objekt_overlay_pin();
+    case "select":
+      return props.isSelected
+        ? m.objekt_overlay_deselect()
+        : m.objekt_overlay_select();
+    default:
+      return null;
+  }
+}
+
+function StatusText(props: StatusTextProps) {
+  if (props.isPin) {
+    return <OverlayStatus>{m.objekt_overlay_pinned()}</OverlayStatus>;
+  }
+
+  const hoverLabel = actionHoverLabel(props);
+
+  return (
+    <div className="contents">
+      {hoverLabel && <OverlayStatus>{hoverLabel}</OverlayStatus>}
+      {props.statuses.map((status) => (
+        <OverlayStatus key={status.key}>{status.label()}</OverlayStatus>
+      ))}
+      {props.hoverState === undefined && !props.hasReason && (
+        <OverlayStatus>
+          {props.isLocked ? m.common_locked() : m.objekt_overlay_unlocked()}
+        </OverlayStatus>
+      )}
     </div>
   );
 }

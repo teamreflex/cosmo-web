@@ -1,12 +1,11 @@
-// temporarily disabled: season/class/on-offline filtering
-// import { Skeleton } from "@/components/ui/skeleton";
-// import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import type { TransferType } from "@/lib/universal/transfers";
-// import { Suspense } from "react";
-// import { ErrorBoundary } from "react-error-boundary";
-// import ClassFilter from "../filter-class";
-// import OnlineFilter from "../filter-online";
-// import SeasonFilter from "../filter-season";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
+import ClassFilter from "../filter-class";
+import OnlineFilter from "../filter-online";
+import SeasonFilter from "../filter-season";
 import TransferTypeFilter from "../filter-transfer-type";
 
 type Props = {
@@ -19,12 +18,11 @@ type Props = {
  * - @/nickname/trades
  */
 export function TransfersFilters(props: Props) {
-  // temporarily disabled: season/class/on-offline filtering
-  // const { filters, setFilters } = useCosmoFilters();
+  const { filters, setFilters } = useCosmoFilters();
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {/* <ErrorBoundary
+      <ErrorBoundary
         fallback={<Skeleton className="h-8 w-[119px] bg-destructive" />}
       >
         <Suspense
@@ -55,7 +53,7 @@ export function TransfersFilters(props: Props) {
             onChange={setFilters}
           />
         </Suspense>
-      </ErrorBoundary> */}
+      </ErrorBoundary>
       <TransferTypeFilter type={props.type} setType={props.setType} />
     </div>
   );

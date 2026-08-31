@@ -5,7 +5,6 @@ import { getObjektImageUrls } from "@/lib/client/objekt-util";
 import { objektQuery } from "@/lib/queries/objekt-queries";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
-import { useObjektOverlay } from "@/store";
 import type { BFFCollectionGroup } from "@apollo/cosmo/types/objekts";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -13,6 +12,11 @@ import { useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { ObjektNewIndicator, ObjektSidebar } from "./common";
 import DetailDialog from "./detail/detail-dialog";
+import {
+  CornerOverlay,
+  OverlayIcon,
+  OverlayIconButton,
+} from "./overlay/corner-overlay";
 
 interface Props {
   group: BFFCollectionGroup;
@@ -181,7 +185,6 @@ function RootObjektOverlay({
   count,
   hasNew,
 }: RootObjektOverlayProps) {
-  const isHidden = useObjektOverlay((state) => state.isHidden);
   const { open } = useMetadataDialog();
   const queryClient = useQueryClient();
 
@@ -192,21 +195,20 @@ function RootObjektOverlay({
 
   return (
     <div className="contents">
-      <div
-        className={cn(
-          "group absolute bottom-0 left-0 isolate flex h-5 w-5 gap-2 rounded-tr-photocard p-1 transition-all sm:h-9 sm:w-9 sm:p-2",
-          "bg-(--objekt-background-color) text-(--objekt-text-color)",
-          isHidden && "hidden",
-        )}
+      <CornerOverlay
+        corner="bottom-left"
+        variant="panel"
+        className="isolate flex h-5 w-5 gap-2 sm:h-9 sm:w-9"
       >
-        <button
-          className="z-50 flex items-center place-self-end transition-all hover:scale-110"
+        {/* hit area matches the container padding so the whole chip is clickable */}
+        <OverlayIconButton
+          className="z-50 place-self-end sm:-m-2 sm:p-2"
           onClick={handleClick}
           aria-label={m.aria_collection_info()}
         >
-          <IconInfoCircle className="h-3 w-3 sm:h-5 sm:w-5" />
-        </button>
-      </div>
+          <OverlayIcon icon={IconInfoCircle} />
+        </OverlayIconButton>
+      </CornerOverlay>
 
       <div className="absolute top-1 left-1 flex flex-row items-center gap-1 sm:top-2 sm:left-2">
         {count > 1 && (

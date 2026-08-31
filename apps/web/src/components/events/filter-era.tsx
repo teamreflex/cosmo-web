@@ -35,10 +35,12 @@ export default function EventsEraFilter({ era, artist, onChange }: Props) {
       const artistData = artistList.find((a) => a.id === e.artist);
       if (!artistData) continue;
 
-      if (!groups.has(e.artist)) {
-        groups.set(e.artist, { artist: artistData, eras: [] });
+      let group = groups.get(e.artist);
+      if (!group) {
+        group = { artist: artistData, eras: [] };
+        groups.set(e.artist, group);
       }
-      groups.get(e.artist)!.eras.push(e);
+      group.eras.push(e);
     }
 
     return Array.from(groups.values()).sort(

@@ -3,7 +3,7 @@ import ErasGrid from "@/components/admin/eras/eras-grid";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { artistsQuery, currentAccountQuery } from "@/lib/queries/core";
-import { adminErasQuery } from "@/lib/queries/events";
+import { adminErasInfiniteQuery } from "@/lib/queries/events";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Suspense } from "react";
 
@@ -16,10 +16,9 @@ export const Route = createFileRoute("/admin/eras")({
     }
   },
   loader: async ({ context }) => {
-    const [{ artists }] = await Promise.all([
-      context.queryClient.ensureQueryData(artistsQuery),
-      context.queryClient.ensureQueryData(adminErasQuery()),
-    ]);
+    void context.queryClient.prefetchInfiniteQuery(adminErasInfiniteQuery());
+
+    const { artists } = await context.queryClient.ensureQueryData(artistsQuery);
 
     return { artists: Object.values(artists) };
   },

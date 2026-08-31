@@ -1,10 +1,9 @@
 import { paraglideVitePlugin } from "@inlang/paraglide-js";
-import babel from "@rolldown/plugin-babel";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
-import react, { reactCompilerPreset } from "@vitejs/plugin-react";
+import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import "./src/lib/env/client.ts";
 import "./src/lib/env/server.ts";
@@ -37,8 +36,9 @@ export default defineConfig({
     }),
     tanstackStart(),
     tailwindcss(),
-    react(),
-    babel({ presets: [reactCompilerPreset()] }),
+    react({
+      compiler: true,
+    }),
     paraglideVitePlugin({
       project: "./project.inlang",
       outdir: "./src/i18n",

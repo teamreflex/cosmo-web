@@ -49,12 +49,22 @@ export default defineConfig({
       },
     ],
     "@tanstack/query/exhaustive-deps": "error",
+    "react/static-components": "error",
   },
   overrides: [
+    // deliberate stdout logging in the server entries and one-off scripts
+    {
+      files: ["main.ts", "instrument.ts", "scripts/**"],
+      rules: {
+        "no-console": "off",
+      },
+    },
     // vendored shadcn/ui components track upstream; don't hold them to anti-slop rules
     {
       files: ["src/components/ui/**"],
       rules: {
+        complexity: "off",
+        eqeqeq: "off",
         "anti-slop/no-chained-type-assertions": "off",
         "anti-slop/no-conditional-empty-object-spread": "off",
         "anti-slop/no-known-value-widening": "off",

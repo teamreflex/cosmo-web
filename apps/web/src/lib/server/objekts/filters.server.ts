@@ -75,42 +75,30 @@ export function withObjektIndexSort<T extends PgSelect>(
  * Filter by class.
  */
 export function withClass(classes: string[]) {
-  switch (classes.length) {
-    case 0:
-      return [];
-    case 1:
-      return [eq(collections.class, classes[0]!)];
-    default:
-      return [inArray(collections.class, classes)];
-  }
+  const [first] = classes;
+  if (first === undefined) return [];
+  if (classes.length === 1) return [eq(collections.class, first)];
+  return [inArray(collections.class, classes)];
 }
 
 /**
  * Filter by season.
  */
 export function withSeason(seasons: string[]) {
-  switch (seasons.length) {
-    case 0:
-      return [];
-    case 1:
-      return [eq(collections.season, seasons[0]!)];
-    default:
-      return [inArray(collections.season, seasons)];
-  }
+  const [first] = seasons;
+  if (first === undefined) return [];
+  if (seasons.length === 1) return [eq(collections.season, first)];
+  return [inArray(collections.season, seasons)];
 }
 
 /**
  * Filter by online type.
  */
 export function withOnlineType(onlineTypes: ValidOnlineType[]) {
-  switch (onlineTypes.length) {
-    case 0:
-      return [];
-    case 1:
-      return [eq(collections.onOffline, onlineTypes[0]!)];
-    default:
-      return [inArray(collections.onOffline, onlineTypes)];
-  }
+  const [first] = onlineTypes;
+  if (first === undefined) return [];
+  if (onlineTypes.length === 1) return [eq(collections.onOffline, first)];
+  return [inArray(collections.onOffline, onlineTypes)];
 }
 
 /**

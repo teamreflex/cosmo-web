@@ -1,7 +1,12 @@
+import {
+  CornerOverlay,
+  OverlayActionRow,
+  OverlayStatusRail,
+} from "@/components/objekt/overlay/corner-overlay";
+import OverlayStatus from "@/components/objekt/overlay/overlay-status";
+import { m } from "@/i18n/messages";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import { cn } from "@/lib/utils";
 import type { ObjektList } from "@apollo/database/web/types";
-import OverlayStatus from "../objekt/overlay/overlay-status";
 import RemoveFromList from "./remove-from-list";
 
 type Props = {
@@ -12,27 +17,18 @@ type Props = {
 
 export default function ListOverlay({ id, collection, objektList }: Props) {
   return (
-    <div
-      className={cn(
-        "group absolute top-0 left-0 h-5 items-center overflow-hidden rounded-br-photocard p-1 transition-all sm:h-9 sm:p-2",
-        "bg-(--objekt-background-color) text-(--objekt-text-color)",
-        "grid grid-flow-col grid-cols-[1fr_min-content]",
-      )}
-    >
-      {/* buttons */}
-      <div className="flex items-center gap-2">
-        {/* remove from list */}
+    <CornerOverlay corner="top-left">
+      <OverlayActionRow>
         <RemoveFromList
           id={id}
           collection={collection}
           objektList={objektList}
         />
-      </div>
+      </OverlayActionRow>
 
-      {/* status text */}
-      <div className="max-w-0 overflow-hidden text-xs whitespace-nowrap transition-all group-hover:max-w-[12rem]">
-        <OverlayStatus>Remove from List</OverlayStatus>
-      </div>
-    </div>
+      <OverlayStatusRail>
+        <OverlayStatus>{m.objekt_overlay_remove_from_list()}</OverlayStatus>
+      </OverlayStatusRail>
+    </CornerOverlay>
   );
 }

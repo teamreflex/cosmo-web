@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
@@ -132,7 +133,12 @@ export default function CollectionEditor({ collection }: Props) {
               stagedFile={stagedFile}
               onFileSelect={setStagedFile}
             />
-            <SubmitButton />
+            <SaveBar
+              onReset={() => {
+                form.reset();
+                setStagedFile(null);
+              }}
+            />
           </form>
         </div>
       </div>
@@ -140,13 +146,47 @@ export default function CollectionEditor({ collection }: Props) {
   );
 }
 
-function SubmitButton() {
-  const { isSubmitting } = useFormState();
+function SaveBar({ onReset }: { onReset: () => void }) {
+  const { isSubmitting, isDirty, dirtyFields } = useFormState();
 
   return (
-    <Button type="submit" className="w-fit" disabled={isSubmitting}>
-      <span>{m.common_save()}</span>
-      {isSubmitting && <IconLoader2 className="size-4 animate-spin" />}
-    </Button>
+    <div className="flex flex-wrap items-center gap-2.5 rounded-lg border border-border bg-card p-2.5">
+      {isDirty ? (
+        <>
+          <span className="size-2 shrink-0 rounded-full bg-cosmo" />
+          <span className="text-sm">
+            {m.admin_collection_unsaved_changes({
+              count: Object.keys(dirtyFields).length,
+            })}
+          </span>
+          <div className="flex flex-wrap gap-1.5">
+            {Object.keys(dirtyFields).map((field) => (
+              <Badge key={field} variant="pill">
+                {field}
+              </Badge>
+            ))}
+          </div>
+        </>
+      ) : (
+        <span className="text-sm text-muted-foreground">
+          {m.admin_collection_no_changes()}
+        </span>
+      )}
+
+      <div className="ml-auto flex gap-2">
+        <Button
+          type="button"
+          variant="ghost"
+          disabled={!isDirty || isSubmitting}
+          onClick={onReset}
+        >
+          {m.common_reset()}
+        </Button>
+        <Button type="submit" disabled={isSubmitting}>
+          <span>{m.common_save()}</span>
+          {isSubmitting && <IconLoader2 className="size-4 animate-spin" />}
+        </Button>
+      </div>
+    </div>
   );
 }

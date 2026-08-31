@@ -72,16 +72,22 @@ type QueryResult = {
 
 /**
  * Fetch the objekts from the database.
+ * The inner subquery resolves the page of objekt IDs against the covering
+ * owner indexes — sort keys, transferable and collection_id all live in the
+ * index, so offset-skipped and filter-rejected rows never touch the heap.
+ * The outer query then joins the full rows for just one page of IDs.
  */
 async function fetchObjekts(
   data: InputData,
   owner: string,
   isSpin: boolean,
 ): Promise<QueryResult[]> {
-  let query = indexer
-    .select({ objekts, collections })
+  const sort = isSpin ? clampSpinSort(data.sort) : (data.sort ?? "newest");
+
+  let idsQuery = indexer
+    .select({ id: objekts.id })
     .from(objekts)
-    .innerJoin(collections, eq(collections.id, objekts.collectionId))
+    .leftJoin(collections, eq(collections.id, objekts.collectionId))
     .where(
       and(
         eq(objekts.owner, owner),
@@ -91,13 +97,25 @@ async function fetchObjekts(
       ),
     )
     .$dynamic();
+  if (isMemberSort(sort)) {
+    idsQuery = idsQuery.leftJoin(members, eq(members.name, collections.member));
+  }
+  idsQuery = withCollectionSort(idsQuery, sort);
+  const page = idsQuery
+    .limit(PER_PAGE)
+    .offset(data.page * PER_PAGE)
+    .as("page");
 
-  const sort = isSpin ? clampSpinSort(data.sort) : (data.sort ?? "newest");
+  let query = indexer
+    .select({ objekts, collections })
+    .from(page)
+    .innerJoin(objekts, eq(objekts.id, page.id))
+    .innerJoin(collections, eq(collections.id, objekts.collectionId))
+    .$dynamic();
   if (isMemberSort(sort)) {
     query = query.leftJoin(members, eq(members.name, collections.member));
   }
   query = withCollectionSort(query, sort);
-  query = query.limit(PER_PAGE).offset(data.page * PER_PAGE);
 
   return await query.comment({ fn: "fetchObjektsBlockchain" });
 }

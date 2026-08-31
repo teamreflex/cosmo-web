@@ -1,11 +1,14 @@
 import { useUserState } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import { cn } from "@/lib/utils";
-import { useObjektOverlay } from "@/store";
 import { IconMaximize } from "@tabler/icons-react";
 import { format } from "date-fns";
 import { useMemo, useState } from "react";
+import {
+  CornerOverlay,
+  OverlayIcon,
+  OverlayIconButton,
+} from "./corner-overlay";
 import RescanMetadata from "./rescan-metadata";
 
 type Props = {
@@ -16,7 +19,6 @@ type Props = {
 export default function InformationOverlay(props: Props) {
   const [open, setOpen] = useState(false);
   const { user } = useUserState();
-  const isHidden = useObjektOverlay((state) => state.isHidden);
 
   // safari 15 doesn't like to parse the date string for some reason
   const formatted = useMemo(() => {
@@ -28,24 +30,23 @@ export default function InformationOverlay(props: Props) {
   }, [props.token.acquiredAt]);
 
   return (
-    <div
+    <CornerOverlay
+      corner="bottom-left"
+      variant="panel"
       data-open={open}
-      className={cn(
-        "group absolute bottom-0 left-0 isolate flex h-5 w-5 gap-2 overflow-hidden rounded-tr-photocard p-1 transition-all sm:h-9 sm:w-9 sm:p-2",
-        "bg-(--objekt-background-color) text-(--objekt-text-color)",
-        "data-[open=true]:h-32 data-[open=true]:w-20 sm:data-[open=true]:h-32 sm:data-[open=true]:w-32",
-        isHidden && "hidden",
-      )}
+      className="isolate flex h-5 w-5 gap-2 data-[open=true]:h-32 data-[open=true]:w-20 sm:h-9 sm:w-9 sm:data-[open=true]:h-32 sm:data-[open=true]:w-32"
     >
-      <button
-        className="z-50 flex items-center place-self-end transition-all hover:scale-110"
+      {/* hit area matches the container padding so the whole collapsed chip is clickable */}
+      <OverlayIconButton
+        className="z-50 place-self-end sm:-m-2 sm:p-2"
         onClick={() => setOpen((prev) => !prev)}
         aria-label={m.aria_expand_info()}
       >
-        <IconMaximize className="h-3 w-3 sm:h-5 sm:w-5" />
-      </button>
+        <OverlayIcon icon={IconMaximize} />
+      </OverlayIconButton>
 
-      <div className="absolute z-40 flex flex-col gap-1 transition-all group-data-[open=false]:opacity-0 group-data-[open=true]:opacity-100">
+      {/* pointer-events gate: the faded-out panel must not swallow clicks while closed or mid-transition */}
+      <div className="absolute z-40 flex flex-col gap-1 transition-all group-data-[open=false]:pointer-events-none group-data-[open=false]:opacity-0 group-data-[open=true]:opacity-100">
         {user !== undefined && (
           <RescanMetadata collection={props.collection} token={props.token} />
         )}
@@ -60,6 +61,6 @@ export default function InformationOverlay(props: Props) {
           <span>{formatted}</span>
         </div>
       </div>
-    </div>
+    </CornerOverlay>
   );
 }

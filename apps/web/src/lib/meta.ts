@@ -143,81 +143,33 @@ export type Referrer =
 
 export function defineHead(meta: Meta) {
   const title = titleTemplate(meta.title);
-  const description = meta.description ?? null;
   const canonical = meta.canonical ? new URL(meta.canonical, base).href : null;
-  const denyRobots = Boolean(meta.denyRobots);
-  const authors = meta.authors ?? null;
-  const keywords = meta.keywords ?? null;
-  const manifest = meta.manifest ?? null;
-  const publisher = meta.publisher ?? null;
-  const referrer = meta.referrer ?? null;
-  const themeColor = meta.themeColor ?? null;
 
-  const embed = meta.embed ?? null;
-  let openGraph = meta.openGraph ?? null;
-  let twitter = meta.twitter ?? null;
-  if (embed) {
-    const { thumbnail, thumbnailSize, siteTitle } = embed;
-    openGraph = {
-      type: "website",
-      title: embed.title ?? title,
-      description: embed.description ?? description,
-      ...openGraph,
-    };
-    twitter = {
-      card:
-        (thumbnailSize ?? (thumbnail ? "banner" : "icon")) === "banner"
-          ? "summary_large_image"
-          : "summary",
-      ...twitter,
-    };
-    if (thumbnail) {
-      openGraph.image = embed.thumbnail;
-    }
-    if (siteTitle) {
-      openGraph.site_name = siteTitle;
-    }
-    if (canonical) {
-      openGraph.url = canonical;
-    }
-  }
+  const { openGraph, twitter } = meta.embed
+    ? applyEmbed(meta.embed, meta, title, canonical)
+    : { openGraph: meta.openGraph, twitter: meta.twitter };
 
   const metaTags: MetaDescriptor[] = [{ title }];
-  if (description) {
-    metaTags.push({ name: "description", content: description });
-  }
-  for (const author of authors ?? []) {
-    metaTags.push({ name: "author", content: author });
-  }
-  if (keywords) {
-    metaTags.push({ name: "keywords", content: keywords.join(", ") });
-  }
-  if (publisher) {
-    metaTags.push({ name: "publisher", content: publisher });
-  }
-  if (referrer) {
-    metaTags.push({ name: "referrer", content: referrer });
-  }
-  if (themeColor) {
-    // oxlint-disable-next-line anti-slop/no-runtime-typeof -- narrowing the themeColor union
-    if (typeof themeColor === "string") {
-      metaTags.push({ name: "theme-color", content: themeColor });
-    } else {
-      metaTags.push(
-        {
-          name: "theme-color",
-          media: "(prefers-color-scheme:light)",
-          content: themeColor.light,
-        },
-        {
-          name: "theme-color",
-          media: "(prefers-color-scheme:dark)",
-          content: themeColor.dark,
-        },
-      );
+  const simpleTags: Array<[name: string, content: string | null | undefined]> =
+    [
+      ["description", meta.description],
+      ...(meta.authors ?? []).map((author): [string, string] => [
+        "author",
+        author,
+      ]),
+      ["keywords", meta.keywords?.join(", ")],
+      ["publisher", meta.publisher],
+      ["referrer", meta.referrer],
+    ];
+  for (const [name, content] of simpleTags) {
+    if (content) {
+      metaTags.push({ name, content });
     }
   }
-  if (denyRobots) {
+  if (meta.themeColor) {
+    metaTags.push(...themeColorTags(meta.themeColor));
+  }
+  if (meta.denyRobots) {
     metaTags.push({ name: "robots", content: "noindex,nofollow" });
   }
   if (meta.viewport) {
@@ -228,39 +180,16 @@ export function defineHead(meta: Meta) {
   if (canonical) {
     links.push({ rel: "canonical", href: canonical });
   }
-  if (manifest) {
-    links.push({ rel: "manifest", href: manifest });
+  if (meta.manifest) {
+    links.push({ rel: "manifest", href: meta.manifest });
   }
 
   if (openGraph) renderOpenGraph(metaTags, "og:", openGraph);
   if (twitter) renderOpenGraph(metaTags, "twitter:", twitter);
 
-  const styles: DetailedHTMLProps<
-    StyleHTMLAttributes<HTMLStyleElement>,
-    HTMLStyleElement
-  >[] = [];
-  const scripts: DetailedHTMLProps<
-    ScriptHTMLAttributes<HTMLScriptElement>,
-    HTMLScriptElement
-  >[] = [];
-
-  if (meta.extra) {
-    for (const { type, props } of meta.extra) {
-      if (type === "meta") {
-        // SAFETY: "meta" entries carry meta descriptor props
-        metaTags.push(props as (typeof metaTags)[number]);
-      } else if (type === "link") {
-        // SAFETY: "link" entries carry link descriptor props
-        links.push(props as (typeof links)[number]);
-      } else if (type === "style") {
-        // SAFETY: "style" entries carry style descriptor props
-        styles.push(props as (typeof styles)[number]);
-      } else if (type === "script") {
-        // SAFETY: "script" entries carry script descriptor props
-        scripts.push(props as (typeof scripts)[number]);
-      }
-    }
-  }
+  const styles: StyleDescriptor[] = [];
+  const scripts: ScriptDescriptor[] = [];
+  collectExtras(meta.extra ?? [], { links, meta: metaTags, scripts, styles });
 
   return {
     meta: metaTags,
@@ -269,9 +198,107 @@ export function defineHead(meta: Meta) {
     styles,
   };
 }
+
+/**
+ * Merges the AutoEmbed shorthand into OpenGraph/Twitter tag sets. Explicit
+ * `meta.openGraph`/`meta.twitter` fields win over embed-derived defaults,
+ * except image/site_name/url which the embed always controls.
+ */
+function applyEmbed(
+  embed: AutoEmbed,
+  meta: Meta,
+  title: string,
+  canonical: string | null,
+) {
+  const openGraph: OpenGraph = {
+    type: "website",
+    title: embed.title ?? title,
+    description: embed.description ?? meta.description ?? null,
+    ...meta.openGraph,
+  };
+  const twitter: Twitter = {
+    card:
+      (embed.thumbnailSize ?? (embed.thumbnail ? "banner" : "icon")) ===
+      "banner"
+        ? "summary_large_image"
+        : "summary",
+    ...meta.twitter,
+  };
+  if (embed.thumbnail) {
+    openGraph.image = embed.thumbnail;
+  }
+  if (embed.siteTitle) {
+    openGraph.site_name = embed.siteTitle;
+  }
+  if (canonical) {
+    openGraph.url = canonical;
+  }
+  return { openGraph, twitter };
+}
+
+function themeColorTags(
+  themeColor: NonNullable<Meta["themeColor"]>,
+): MetaDescriptor[] {
+  // oxlint-disable-next-line anti-slop/no-runtime-typeof -- narrowing the themeColor union
+  if (typeof themeColor === "string") {
+    return [{ name: "theme-color", content: themeColor }];
+  }
+  return [
+    {
+      name: "theme-color",
+      media: "(prefers-color-scheme:light)",
+      content: themeColor.light,
+    },
+    {
+      name: "theme-color",
+      media: "(prefers-color-scheme:dark)",
+      content: themeColor.dark,
+    },
+  ];
+}
+
+/** Sorts `meta.extra` JSX elements into the tag bucket matching their type. */
+function collectExtras(
+  extra: React.ReactElement[],
+  buckets: {
+    meta: MetaDescriptor[];
+    links: NonNullable<Meta["links"]>;
+    styles: StyleDescriptor[];
+    scripts: ScriptDescriptor[];
+  },
+) {
+  for (const { type, props } of extra) {
+    switch (type) {
+      case "meta":
+        // SAFETY: "meta" entries carry meta descriptor props
+        buckets.meta.push(props as MetaDescriptor);
+        break;
+      case "link":
+        // SAFETY: "link" entries carry link descriptor props
+        buckets.links.push(props as (typeof buckets.links)[number]);
+        break;
+      case "style":
+        // SAFETY: "style" entries carry style descriptor props
+        buckets.styles.push(props as StyleDescriptor);
+        break;
+      case "script":
+        // SAFETY: "script" entries carry script descriptor props
+        buckets.scripts.push(props as ScriptDescriptor);
+        break;
+    }
+  }
+}
 type MetaDescriptor = DetailedHTMLProps<
   MetaHTMLAttributes<HTMLMetaElement>,
   HTMLMetaElement
+>;
+type StyleDescriptor = DetailedHTMLProps<
+  StyleHTMLAttributes<HTMLStyleElement>,
+  HTMLStyleElement
+>;
+type ScriptDescriptor = DetailedHTMLProps<
+  ScriptHTMLAttributes<HTMLScriptElement>,
+  HTMLScriptElement
 >;
 function renderOpenGraph(
   tags: MetaDescriptor[],

@@ -46,13 +46,14 @@ const processBatch = Effect.gen(function* () {
     .orderBy(listEventOutbox.id)
     .limit(BATCH_SIZE);
 
-  if (outboxRows.length === 0) {
+  const lastRow = outboxRows.at(-1);
+  if (lastRow === undefined) {
     return yield* Effect.as(purgeOutbox(fromSeq), 0);
   }
 
   yield* Effect.logInfo(`Draining ${outboxRows.length} outbox rows`);
 
-  const lastSeq = outboxRows[outboxRows.length - 1]!.id;
+  const lastSeq = lastRow.id;
   const tokenIds = [...new Set(outboxRows.map((r) => r.tokenId))];
 
   const cacheKeys = yield* webDb.transaction((tx) =>

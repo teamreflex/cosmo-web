@@ -5,6 +5,7 @@ import { track } from "@/lib/utils";
 import { IconLoader2, IconPin, IconPinnedOff } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { OverlayIcon, OverlayIconButton } from "./corner-overlay";
 
 type Props = {
   collectionId: string;
@@ -41,8 +42,7 @@ function PinButton(props: ButtonProps) {
   }
 
   return (
-    <button
-      className="flex items-center transition-all hover:scale-110"
+    <OverlayIconButton
       disabled={mutation.isPending}
       aria-label={m.objekt_overlay_pin_aria({
         collectionId: props.collectionId,
@@ -50,11 +50,11 @@ function PinButton(props: ButtonProps) {
       onClick={handleClick}
     >
       {mutation.isPending ? (
-        <IconLoader2 className="h-3 w-3 animate-spin sm:h-5 sm:w-5" />
+        <OverlayIcon icon={IconLoader2} className="animate-spin" />
       ) : (
-        <IconPin className="h-3 w-3 sm:h-5 sm:w-5" />
+        <OverlayIcon icon={IconPin} />
       )}
-    </button>
+    </OverlayIconButton>
   );
 }
 
@@ -74,8 +74,7 @@ function UnpinButton(props: ButtonProps) {
   }
 
   return (
-    <button
-      className="flex items-center transition-all hover:scale-110"
+    <OverlayIconButton
       disabled={mutation.isPending}
       aria-label={m.objekt_overlay_unpin_aria({
         collectionId: props.collectionId,
@@ -83,10 +82,10 @@ function UnpinButton(props: ButtonProps) {
       onClick={handleClick}
     >
       {mutation.isPending ? (
-        <IconLoader2 className="h-3 w-3 animate-spin sm:h-5 sm:w-5" />
+        <OverlayIcon icon={IconLoader2} className="animate-spin" />
       ) : (
-        <IconPinnedOff className="h-3 w-3 sm:h-5 sm:w-5" />
+        <OverlayIcon icon={IconPinnedOff} />
       )}
-    </button>
+    </OverlayIconButton>
   );
 }

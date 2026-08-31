@@ -1,12 +1,13 @@
 import type { EventsFilters } from "@/hooks/use-events-filters";
 import {
   $fetchActiveEvents,
+  $fetchAdminEras,
+  $fetchAdminEvents,
   $fetchCollectionsForEvent,
   $fetchEras,
   $fetchErasForFilter,
   $fetchEventBySlug,
   $fetchEventObjekts,
-  $fetchEvents,
   $fetchPaginatedEvents,
   $getSpotifyAlbum,
 } from "@/lib/functions/events";
@@ -19,10 +20,26 @@ export function adminErasQuery() {
   });
 }
 
+export function adminErasInfiniteQuery() {
+  return infiniteQueryOptions({
+    // shares the ["admin", "eras"] prefix so era mutations invalidate both
+    queryKey: ["admin", "eras", "paginated"],
+    queryFn: ({ pageParam }) =>
+      $fetchAdminEras({ data: { cursor: pageParam } }),
+    // SAFETY: cursor seed; widened for TanStack Query inference
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+  });
+}
+
 export function adminEventsQuery() {
-  return queryOptions({
+  return infiniteQueryOptions({
     queryKey: ["admin", "events"],
-    queryFn: () => $fetchEvents(),
+    queryFn: ({ pageParam }) =>
+      $fetchAdminEvents({ data: { cursor: pageParam } }),
+    // SAFETY: cursor seed; widened for TanStack Query inference
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
   });
 }
 

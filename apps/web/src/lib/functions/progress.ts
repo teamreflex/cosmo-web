@@ -153,16 +153,16 @@ export const $fetchArtistStatsByAddress = createServerFn({ method: "GET" })
       const artistName = record.artist;
 
       // initialize artist record if it doesn't exist
-      if (!artistsMap.has(artistName)) {
-        artistsMap.set(artistName, {
+      let artistStats = artistsMap.get(artistName);
+      if (!artistStats) {
+        artistStats = {
           artistName,
           seasons: new Map<string, number>(),
           members: new Map<string, number>(),
           classes: new Map<string, number>(),
-        });
+        };
+        artistsMap.set(artistName, artistStats);
       }
-
-      const artistStats = artistsMap.get(artistName)!;
 
       // update season count
       const currentSeasonCount = artistStats.seasons.get(record.season) ?? 0;

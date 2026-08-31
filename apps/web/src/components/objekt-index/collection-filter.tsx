@@ -34,11 +34,12 @@ export default function CollectionFilter(props: Props) {
     });
   }
 
+  const first = value[0];
   const valueLabel =
-    value.length === 0
+    first === undefined
       ? m.filter_value_all()
       : value.length === 1
-        ? value[0]!
+        ? first
         : m.filter_value_multiple();
 
   return (

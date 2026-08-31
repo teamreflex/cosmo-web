@@ -20,10 +20,11 @@ export const Route = createFileRoute("/admin/events")({
     }
   },
   loader: async ({ context }) => {
+    void context.queryClient.prefetchInfiniteQuery(adminEventsQuery());
+
     const [{ artists }, filterData] = await Promise.all([
       context.queryClient.ensureQueryData(artistsQuery),
       context.queryClient.ensureQueryData(filterDataQuery),
-      context.queryClient.ensureQueryData(adminEventsQuery()),
       context.queryClient.ensureQueryData(adminErasQuery()),
     ]);
 

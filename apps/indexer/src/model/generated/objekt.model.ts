@@ -25,7 +25,6 @@ export class Objekt {
   @Column("timestamp with time zone", { nullable: false })
   mintedAt!: Date;
 
-  @Index()
   @Column("timestamp with time zone", { nullable: false })
   receivedAt!: Date;
 

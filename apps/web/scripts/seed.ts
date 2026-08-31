@@ -354,9 +354,14 @@ const SEED_COLLECTIONS = [
 async function seed() {
   console.log("🌱 Seeding database...\n");
 
+  const { DATABASE_URL, INDEXER_DATABASE_URL } = process.env;
+  if (!DATABASE_URL || !INDEXER_DATABASE_URL) {
+    throw new Error("DATABASE_URL and INDEXER_DATABASE_URL are required");
+  }
+
   // Create database connections
-  const webClient = new SQL({ url: process.env.DATABASE_URL! });
-  const indexerClient = new SQL({ url: process.env.INDEXER_DATABASE_URL! });
+  const webClient = new SQL({ url: DATABASE_URL });
+  const indexerClient = new SQL({ url: INDEXER_DATABASE_URL });
 
   const db = drizzle({ client: webClient });
   const indexer = drizzle({ client: indexerClient });

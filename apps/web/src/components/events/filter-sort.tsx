@@ -18,9 +18,13 @@ type Props = {
 export default function EventsSortFilter({ sort, onChange }: Props) {
   const value: SortValue = sort ?? "newest";
 
+  const labels = {
+    newest: m.filter_sort_newest(),
+    oldest: m.filter_sort_oldest(),
+  } satisfies Record<SortValue, string>;
   const options: SingleSelectOption<SortValue>[] = [
-    { value: "newest", label: m.filter_sort_newest() },
-    { value: "oldest", label: m.filter_sort_oldest() },
+    { value: "newest", label: labels.newest },
+    { value: "oldest", label: labels.oldest },
   ];
 
   function handleChange(newValue: SortValue) {
@@ -29,9 +33,7 @@ export default function EventsSortFilter({ sort, onChange }: Props) {
     });
   }
 
-  const valueLabel = options
-    .find((o) => o.value === value)!
-    .label.toLowerCase();
+  const valueLabel = labels[value].toLowerCase();
 
   return (
     <FilterChip

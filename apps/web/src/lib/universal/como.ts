@@ -69,25 +69,23 @@ export function buildCalendar(
 
       const day = dropInZone.getDate();
 
-      if (!calendar[day]) {
-        calendar[day] = {};
-      }
-      if (!calendar[day][objekt.artistId]) {
-        calendar[day][objekt.artistId] = { count: 0, carried: 0 };
-      }
-      calendar[day][objekt.artistId]!.count += objekt.amount;
+      const dayCell = (calendar[day] ??= {});
+      const artistCell = (dayCell[objekt.artistId] ??= {
+        count: 0,
+        carried: 0,
+      });
+      artistCell.count += objekt.amount;
 
       // the carried-over badge marks the month's last local day, not the cell
       // the capped drop's count landed on — in negative-GMT zones the 00:00
       // UTC drop event shifts a day earlier, so they aren't the same day
       if (wasCarried) {
-        if (!calendar[lastDayOfMonth]) {
-          calendar[lastDayOfMonth] = {};
-        }
-        if (!calendar[lastDayOfMonth][objekt.artistId]) {
-          calendar[lastDayOfMonth][objekt.artistId] = { count: 0, carried: 0 };
-        }
-        calendar[lastDayOfMonth][objekt.artistId]!.carried += objekt.amount;
+        const lastDayCell = (calendar[lastDayOfMonth] ??= {});
+        const carriedCell = (lastDayCell[objekt.artistId] ??= {
+          count: 0,
+          carried: 0,
+        });
+        carriedCell.carried += objekt.amount;
       }
     }
   }

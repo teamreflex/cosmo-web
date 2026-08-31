@@ -84,9 +84,14 @@ export namespace Objekt {
    * Converts an objekt from the Cosmo legacy endpoint to the common fields.
    */
   export function fromLegacy(objekt: CosmoObjekt): Objekt.Objekt {
+    const [artist] = objekt.artists;
+    if (artist === undefined) {
+      throw new Error(`objekt ${objekt.collectionId} has no artists`);
+    }
+
     const collection = {
       id: objekt.id,
-      artist: objekt.artists[0]!,
+      artist,
       member: objekt.member,
       season: objekt.season,
       class: objekt.class,
