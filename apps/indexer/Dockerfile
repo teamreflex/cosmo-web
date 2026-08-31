@@ -1,13 +1,12 @@
 FROM oven/bun:1.4.0-slim AS bun
-FROM node:22-slim AS node
 
-# stage 1: prune workspace with bun
+# stage 1: prune workspace
 FROM bun AS pruner
 WORKDIR /app
 COPY . .
 RUN bunx turbo@2.10.12 prune indexer --docker
 
-# stage 2: install dependencies with bun
+# stage 2: install dependencies
 FROM bun AS installer
 WORKDIR /app
 COPY --from=pruner /app/out/bun.lock ./bun.lock
@@ -15,23 +14,20 @@ COPY --from=pruner /app/out/json/ .
 RUN bun install --frozen-lockfile
 COPY --from=pruner /app/out/full/ .
 
-# stage 3: build with node
-FROM node AS builder
+# stage 3: build
+FROM bun AS builder
 WORKDIR /app
 COPY --from=installer /app .
-# this should be kept in sync with the build script in package.json
-RUN cd apps/indexer && rm -rf lib/ && npx tsc -p tsconfig.build.json
+RUN cd apps/indexer && bun run build
 
-# stage 4: run slim node due to the subsquid SDK not working in bun
-FROM node AS runner
+# stage 4: run
+FROM bun AS runner
 WORKDIR /app/apps/indexer
 ENV NODE_ENV=production
 COPY --from=builder /app/apps/indexer/lib ./lib
 COPY --from=builder /app/apps/indexer/db ./db
 COPY --from=builder /app/apps/indexer/package.json ./package.json
-COPY --from=builder /app/apps/indexer/commands.json ./commands.json
 COPY --from=builder /app/apps/indexer/node_modules ./node_modules
 COPY --from=builder /app/node_modules/.bun /app/node_modules/.bun
 COPY --from=builder /app/packages /app/packages
-RUN npm install -g @subsquid/commands && mv $(which squid-commands) /usr/local/bin/sqd
-CMD ["sqd", "process:prod"]
+CMD ["bun", "lib/main.js"]

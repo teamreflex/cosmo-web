@@ -1,0 +1,15 @@
+diff --git a/lib/client.js b/lib/client.js
+index 84c2e7a48fb7d0697e4f4d4659d17b2e8f9901ea..001e7c87c93cf2e5feb9b0cdca35690a8eb444a1 100644
+--- a/lib/client.js
++++ b/lib/client.js
+@@ -119,7 +119,9 @@ class HttpClient {
+             headers: new request_1.nodeFetch.Headers(options.headers),
+             url: this.getAbsUrl(url),
+             signal: options.abort,
+-            compress: true,
++            // `compress: true` removed: node-fetch defaults it to true anyway, and under
++            // Bun (which replaces node-fetch with native fetch) the option means
++            // "gzip the request body", producing requests JSON-RPC servers reject
+             timeout: options.httpTimeout ?? this.httpTimeout,
+             stream: options.stream
+         };

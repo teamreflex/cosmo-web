@@ -6,9 +6,7 @@
 
   "compilerOptions": {
     "lib": ["ES2023"],
-
-    // Runs on Node in Docker rather than Bun
-    "types": ["node"],
+    "types": ["bun"],
 
     // TypeORM decorators
     "experimentalDecorators": true,

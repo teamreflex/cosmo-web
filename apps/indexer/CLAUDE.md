@@ -12,17 +12,22 @@ This is a [Subsquid SDK](https://docs.sqd.ai/sdk/overview/) application for inde
 
 - **Subsquid SDK** - EVM blockchain indexing framework
 - **TypeORM** - Database ORM with manual model management
-- **Bun** - Package manager (Node for build/runtime due to Subsquid requirements)
+- **Bun** - Package manager and runtime (>= 1.4)
 - **PostgreSQL** - Primary database
 
-## Runtime: Node, not Bun
+## Runtime: Bun
 
-Bun is only the package manager for this app. The build (`tsc`) and the production process run on Node because the Subsquid SDK does not work under Bun — the Dockerfile installs with Bun but builds and runs on `node:22-slim`.
+Install, build, and the production process all run on Bun. The Dockerfile is a single-runtime image: it builds with `bun run build` (tsc) and boots straight into `bun lib/main.js` — the processor applies pending migrations itself on startup, and there is no `sqd` CLI in the image.
 
-Consequences:
+Two things make the Subsquid SDK work under Bun:
 
-- `@types/node` is pinned to the 22.x line (`^22.7.5`) to match the `node:22-slim` runtime image. Node types must track the Docker runtime version, not float with whatever bun-types pulls in.
-- TypeScript 7 (native tsgo) does not reliably auto-include packages from `node_modules/@types`, so the tsconfig declares `"types": ["node"]` explicitly. Without it, an install reshuffling the isolated-linker layout can silently drop Node globals (`process`, `Buffer`, `setTimeout`), surfacing as TS2591 "Cannot find name" — check the tsconfig `types` field before diagnosing a missing dependency. The same applies to every workspace: Bun-runtime packages declare `"types": ["bun"]` via the shared tsconfig.bun.json.
+- Bun 1.4 runs TypeORM's legacy decorator/metadata emit correctly (older Bun versions could not, which is why this app previously ran on Node).
+- `patches/@subsquid%2Fhttp-client@1.8.1.patch` removes the hard-coded `compress: true` fetch option. Bun replaces `node-fetch` with its native fetch, which interprets `compress` as "gzip the request body" — JSON-RPC endpoints then reject every request with `-32700 parse error`. node-fetch defaults `compress` to true, so the removal is a no-op under Node. When bumping `@subsquid/http-client`, the patch is version-pinned and must be re-created against the new version.
+
+Type-checking consequences:
+
+- The tsconfig declares `"types": ["bun"]` like every other Bun-runtime workspace (`@types/bun` via the root catalog), while still extending `tsconfig.node.json` for its NodeNext emit settings — the build output in `lib/` is what runs in production.
+- TypeScript 7 (native tsgo) does not reliably auto-include packages from `node_modules/@types`, so the tsconfig declares its `types` explicitly. Without it, an install reshuffling the isolated-linker layout can silently drop globals (`process`, `Buffer`, `setTimeout`), surfacing as TS2591 "Cannot find name" — check the tsconfig `types` field before diagnosing a missing dependency. The same applies to every workspace: Bun-runtime packages declare `"types": ["bun"]` via the shared tsconfig.bun.json.
 
 ## Development Workflow
 
@@ -140,8 +145,8 @@ Entity fields and relations are defined in `schema.graphql` and mirrored in `pac
 
 ## Important Gotchas
 
-1. **Runtime:** Use Node (not Bun) for build and production due to Subsquid SDK requirements
-2. **Workspace package imports:** Node runs workspace packages (`@apollo/cosmo`, `@apollo/util`) as raw `.ts` source via type stripping, so relative imports inside those packages must use explicit `.ts` extensions — extensionless or `.js` specifiers fail at runtime with `ERR_MODULE_NOT_FOUND` (Bun-run apps tolerate both, so only the indexer surfaces it)
+1. **Runtime:** Bun (>= 1.4) for build and production — see the Runtime section above for why, and the `@subsquid/http-client` patch that makes it possible
+2. **Workspace package imports:** relative imports inside workspace packages (`@apollo/cosmo`, `@apollo/util`) use explicit `.ts` extensions; Bun tolerates extensionless specifiers, but the convention keeps the packages runnable under Node's type stripping too
 3. **UUID Type:** Uses `varchar(36)` instead of PostgreSQL `uuid` type due to Subsquid casting limitations
 4. **Address Normalization:** Always use `addr()` - never store raw addresses
 5. **GraphQL Server:** Not actively used - schema only defines entity structure
