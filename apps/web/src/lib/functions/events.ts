@@ -359,18 +359,61 @@ export const $fetchErasForFilter = createServerFn({ method: "GET" }).handler(
   },
 );
 
+const PER_PAGE_ADMIN = 24;
+
 /**
- * Fetches all events.
+ * Fetches paginated eras for the admin grid, newest first.
  */
-export const $fetchEvents = createServerFn({ method: "GET" })
+export const $fetchAdminEras = createServerFn({ method: "GET" })
   .middleware([adminMiddleware])
-  .handler(async () => {
-    return db.query.events.findMany({
+  .validator(z.object({ cursor: z.iso.datetime().optional() }))
+  .handler(async ({ data }) => {
+    // drizzle rc.5 throws on explicit undefined filter values, so the cursor
+    // filter is only present when set
+    const rows = await db.query.eras.findMany({
+      ...(data.cursor && {
+        where: { createdAt: { lt: new Date(data.cursor) } },
+      }),
       orderBy: { createdAt: "desc" },
+      limit: PER_PAGE_ADMIN,
+    });
+
+    const lastEra = rows[rows.length - 1];
+    return {
+      eras: rows,
+      nextCursor:
+        rows.length === PER_PAGE_ADMIN
+          ? lastEra?.createdAt.toISOString()
+          : undefined,
+    };
+  });
+
+/**
+ * Fetches paginated events for the admin grid, newest first.
+ */
+export const $fetchAdminEvents = createServerFn({ method: "GET" })
+  .middleware([adminMiddleware])
+  .validator(z.object({ cursor: z.iso.datetime().optional() }))
+  .handler(async ({ data }) => {
+    const rows = await db.query.events.findMany({
+      ...(data.cursor && {
+        where: { createdAt: { lt: new Date(data.cursor) } },
+      }),
+      orderBy: { createdAt: "desc" },
+      limit: PER_PAGE_ADMIN,
       with: {
         era: true,
       },
     });
+
+    const lastEvent = rows[rows.length - 1];
+    return {
+      events: rows,
+      nextCursor:
+        rows.length === PER_PAGE_ADMIN
+          ? lastEvent?.createdAt.toISOString()
+          : undefined,
+    };
   });
 
 /**
