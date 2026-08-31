@@ -1,8 +1,23 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+} from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useArtists } from "@/hooks/use-artists";
+import { getSeasonKeys } from "@/hooks/use-filter-data";
 import { m } from "@/i18n/messages";
+import { filterDataQuery } from "@/lib/queries/core";
 import {
   type CollectionLookupInput,
   collectionLookupSchema,
@@ -10,6 +25,8 @@ import {
 import { slugifyObjekt } from "@apollo/util";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconLoader2, IconSearch } from "@tabler/icons-react";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 type Props = {
@@ -35,7 +52,17 @@ function parseIdentifier(text: string) {
 
 export default function CollectionLookup({ onLookup, isLoading }: Props) {
   const { artistList } = useArtists();
-  const memberOptions = artistList.flatMap((artist) => artist.artistMembers);
+  const { data: filterData } = useSuspenseQuery(filterDataQuery);
+  const [memberOpen, setMemberOpen] = useState(false);
+  const memberNames = [
+    ...new Set(
+      artistList.flatMap((artist) => artist.artistMembers.map((am) => am.name)),
+    ),
+  ];
+  // artist is unknown at lookup time, so offer every artist's seasons
+  const seasonOptions = getSeasonKeys([
+    ...new Set(filterData.seasons.flatMap((s) => s.seasons)),
+  ]);
   const form = useForm({
     resolver: standardSchemaResolver(collectionLookupSchema),
     defaultValues: { season: "", member: "", collectionNo: "" },
@@ -57,7 +84,12 @@ export default function CollectionLookup({ onLookup, isLoading }: Props) {
     }
 
     e.preventDefault();
-    form.setValue("season", parsed.season);
+    // map the pasted season onto its canonical casing so the select shows it
+    const season =
+      seasonOptions.find(
+        (s) => s.name.toLowerCase() === parsed.season.toLowerCase(),
+      )?.name ?? parsed.season;
+    form.setValue("season", season);
     form.setValue("member", parsed.member);
     form.setValue("collectionNo", parsed.collectionNo);
     onLookup(
@@ -79,12 +111,25 @@ export default function CollectionLookup({ onLookup, isLoading }: Props) {
               <FieldLabel htmlFor="lookup-season">
                 {m.admin_collection_season()}
               </FieldLabel>
-              <Input
-                id="lookup-season"
-                placeholder={m.admin_collection_season_placeholder()}
-                {...field}
-                onPaste={handlePaste}
-              />
+              <Select value={field.value} onValueChange={field.onChange}>
+                <SelectTrigger id="lookup-season" className="w-full">
+                  <SelectValue
+                    placeholder={m.admin_collection_season_placeholder()}
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {seasonOptions.map(({ key, name }) => (
+                    <SelectItem key={name} value={name}>
+                      <Badge
+                        // SAFETY: every season key has a season-* badge variant
+                        variant={`season-${key}` as "season-atom"}
+                      >
+                        {name}
+                      </Badge>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FieldError errors={[fieldState.error]} />
             </Field>
           )}
@@ -93,26 +138,64 @@ export default function CollectionLookup({ onLookup, isLoading }: Props) {
         <Controller
           control={form.control}
           name="member"
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="lookup-member">
-                {m.admin_collection_member()}
-              </FieldLabel>
-              <Input
-                id="lookup-member"
-                list="lookup-member-options"
-                placeholder={m.admin_collection_member_placeholder()}
-                {...field}
-                onPaste={handlePaste}
-              />
-              <datalist id="lookup-member-options">
-                {memberOptions.map((member) => (
-                  <option key={member.id} value={member.name} />
-                ))}
-              </datalist>
-              <FieldError errors={[fieldState.error]} />
-            </Field>
-          )}
+          render={({ field, fieldState }) => {
+            const matches = memberNames.filter((name) =>
+              name.toLowerCase().includes(field.value.toLowerCase()),
+            );
+
+            return (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="lookup-member">
+                  {m.admin_collection_member()}
+                </FieldLabel>
+                <Popover
+                  open={memberOpen && matches.length > 0}
+                  onOpenChange={setMemberOpen}
+                >
+                  <PopoverAnchor asChild>
+                    <Input
+                      id="lookup-member"
+                      autoComplete="off"
+                      placeholder={m.admin_collection_member_placeholder()}
+                      {...field}
+                      onChange={(e) => {
+                        field.onChange(e);
+                        setMemberOpen(true);
+                      }}
+                      onFocus={() => setMemberOpen(true)}
+                      onBlur={() => {
+                        field.onBlur();
+                        setMemberOpen(false);
+                      }}
+                      onPaste={handlePaste}
+                    />
+                  </PopoverAnchor>
+                  <PopoverContent
+                    align="start"
+                    className="max-h-60 w-(--radix-popover-trigger-width) overflow-y-auto p-1"
+                    onOpenAutoFocus={(e) => e.preventDefault()}
+                  >
+                    {matches.map((name) => (
+                      <button
+                        key={name}
+                        type="button"
+                        className="w-full rounded-sm px-2 py-1.5 text-left text-sm hover:bg-accent"
+                        // keep focus in the input so blur doesn't eat the click
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={() => {
+                          field.onChange(name);
+                          setMemberOpen(false);
+                        }}
+                      >
+                        {name}
+                      </button>
+                    ))}
+                  </PopoverContent>
+                </Popover>
+                <FieldError errors={[fieldState.error]} />
+              </Field>
+            );
+          }}
         />
 
         <Controller
