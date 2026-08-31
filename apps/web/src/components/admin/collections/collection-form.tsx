@@ -13,6 +13,7 @@ import { m } from "@/i18n/messages";
 import { filterDataQuery } from "@/lib/queries/core";
 import type { UpdateCollectionInput } from "@/lib/universal/schema/collections";
 import { cn } from "@/lib/utils";
+import { validOnlineTypes } from "@apollo/cosmo/types/common";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
 import CollectionMediaUpload from "./collection-media-upload";
@@ -31,7 +32,11 @@ export default function CollectionForm(props: Props) {
   const selectedArtist = useWatch({ control: form.control, name: "artist" });
   const selectedClass = useWatch({ control: form.control, name: "class" });
 
-  const artist = artistList.find((a) => a.id === selectedArtist);
+  // the indexer stores artist ids lowercased (e.g. "triples"), while COSMO
+  // artist ids are mixed-case (e.g. "tripleS"), so compare case-insensitively
+  const artist = artistList.find(
+    (a) => a.id.toLowerCase() === selectedArtist.toLowerCase(),
+  );
   const memberOptions =
     artist?.artistMembers ?? artistList.flatMap((a) => a.artistMembers);
   const seasonOptions =
@@ -42,221 +47,269 @@ export default function CollectionForm(props: Props) {
     [];
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* Artist */}
-      <Controller
-        control={form.control}
-        name="artist"
-        render={({ field, fieldState }) => (
-          <Field data-invalid={fieldState.invalid}>
-            <FieldLabel htmlFor="artist">
-              {m.admin_collection_artist()}
-            </FieldLabel>
-            <Select value={field.value} onValueChange={field.onChange}>
-              <SelectTrigger
-                className={cn("w-full", fieldState.isDirty && "border-cosmo")}
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {artistList.map((a) => (
-                  <SelectItem key={a.id} value={a.id}>
-                    <img
-                      src={a.logoImageUrl}
-                      alt={a.title}
-                      className="aspect-square size-4 rounded-full"
+    <div className="grid items-start gap-4 xl:grid-cols-2">
+      <div className="flex flex-col gap-4">
+        <Section title={m.admin_collection_section_identity()}>
+          {/* Artist */}
+          <Controller
+            control={form.control}
+            name="artist"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="artist">
+                  {m.admin_collection_artist()}
+                </FieldLabel>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger
+                    className={cn(
+                      "w-full",
+                      fieldState.isDirty && "border-cosmo",
+                    )}
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {artistList.map((a) => (
+                      <SelectItem key={a.id} value={a.id.toLowerCase()}>
+                        <img
+                          src={a.logoImageUrl}
+                          alt={a.title}
+                          className="aspect-square size-4 rounded-full"
+                        />
+                        <span>{a.title}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FieldError errors={[fieldState.error]} />
+              </Field>
+            )}
+          />
+
+          {/* Member */}
+          <Controller
+            control={form.control}
+            name="member"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="member">
+                  {m.admin_collection_member()}
+                </FieldLabel>
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger
+                    className={cn(
+                      "w-full",
+                      fieldState.isDirty && "border-cosmo",
+                    )}
+                  >
+                    <SelectValue
+                      placeholder={m.admin_collection_member_placeholder()}
                     />
-                    <span>{a.title}</span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FieldError errors={[fieldState.error]} />
-          </Field>
-        )}
-      />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {memberOptions.map((member) => (
+                      <SelectItem key={member.id} value={member.name}>
+                        {member.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FieldError errors={[fieldState.error]} />
+              </Field>
+            )}
+          />
 
-      {/* Member */}
-      <Controller
-        control={form.control}
-        name="member"
-        render={({ field, fieldState }) => (
-          <Field data-invalid={fieldState.invalid}>
-            <FieldLabel htmlFor="member">
-              {m.admin_collection_member()}
-            </FieldLabel>
-            <Select value={field.value} onValueChange={field.onChange}>
-              <SelectTrigger
-                className={cn("w-full", fieldState.isDirty && "border-cosmo")}
-              >
-                <SelectValue
-                  placeholder={m.admin_collection_member_placeholder()}
+          {/* Season + Class */}
+          <div className="grid grid-cols-2 gap-4">
+            <Controller
+              control={form.control}
+              name="season"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="season">
+                    {m.admin_collection_season()}
+                  </FieldLabel>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger
+                      className={cn(
+                        "w-full",
+                        fieldState.isDirty && "border-cosmo",
+                      )}
+                    >
+                      <SelectValue
+                        placeholder={m.admin_collection_season_placeholder()}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {seasonOptions.map((season) => (
+                        <SelectItem key={season} value={season}>
+                          {season}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FieldError errors={[fieldState.error]} />
+                </Field>
+              )}
+            />
+
+            <Controller
+              control={form.control}
+              name="class"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel htmlFor="class">
+                    {m.admin_collection_class()}
+                  </FieldLabel>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger
+                      className={cn(
+                        "w-full",
+                        fieldState.isDirty && "border-cosmo",
+                      )}
+                    >
+                      <SelectValue
+                        placeholder={m.admin_collection_class_placeholder()}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {classOptions.map((cls) => (
+                        <SelectItem key={cls} value={cls}>
+                          {cls}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FieldError errors={[fieldState.error]} />
+                </Field>
+              )}
+            />
+          </div>
+
+          {/* Collection No */}
+          <Controller
+            control={form.control}
+            name="collectionNo"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <FieldLabel htmlFor="collectionNo">
+                  {m.admin_collection_no()}
+                </FieldLabel>
+                <Input
+                  id="collectionNo"
+                  className={cn(fieldState.isDirty && "border-cosmo")}
+                  {...field}
                 />
-              </SelectTrigger>
-              <SelectContent>
-                {memberOptions.map((member) => (
-                  <SelectItem key={member.id} value={member.name}>
-                    {member.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FieldError errors={[fieldState.error]} />
-          </Field>
-        )}
-      />
+                <FieldError errors={[fieldState.error]} />
+              </Field>
+            )}
+          />
+        </Section>
 
-      {/* Season + Class */}
-      <div className="grid grid-cols-2 gap-4">
-        <Controller
-          control={form.control}
-          name="season"
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="season">
-                {m.admin_collection_season()}
-              </FieldLabel>
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger
-                  className={cn("w-full", fieldState.isDirty && "border-cosmo")}
-                >
-                  <SelectValue
-                    placeholder={m.admin_collection_season_placeholder()}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {seasonOptions.map((season) => (
-                    <SelectItem key={season} value={season}>
-                      {season}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FieldError errors={[fieldState.error]} />
-            </Field>
-          )}
-        />
-
-        <Controller
-          control={form.control}
-          name="class"
-          render={({ field, fieldState }) => (
-            <Field data-invalid={fieldState.invalid}>
-              <FieldLabel htmlFor="class">
-                {m.admin_collection_class()}
-              </FieldLabel>
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger
-                  className={cn("w-full", fieldState.isDirty && "border-cosmo")}
-                >
-                  <SelectValue
-                    placeholder={m.admin_collection_class_placeholder()}
-                  />
-                </SelectTrigger>
-                <SelectContent>
-                  {classOptions.map((cls) => (
-                    <SelectItem key={cls} value={cls}>
-                      {cls}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FieldError errors={[fieldState.error]} />
-            </Field>
-          )}
-        />
-      </div>
-
-      {/* Collection No */}
-      <Controller
-        control={form.control}
-        name="collectionNo"
-        render={({ field, fieldState }) => (
-          <Field data-invalid={fieldState.invalid}>
-            <FieldLabel htmlFor="collectionNo">
-              {m.admin_collection_no()}
-            </FieldLabel>
-            <Input
-              id="collectionNo"
-              className={cn(fieldState.isDirty && "border-cosmo")}
-              {...field}
-            />
-            <FieldError errors={[fieldState.error]} />
-          </Field>
-        )}
-      />
-
-      {/* Colors */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <ColorField name="textColor" label={m.admin_collection_text_color()} />
-        <ColorField
-          name="backgroundColor"
-          label={m.admin_collection_background_color()}
-        />
-        <ColorField
-          name="accentColor"
-          label={m.admin_collection_accent_color()}
-        />
-      </div>
-
-      {/* Online / Offline */}
-      <Controller
-        control={form.control}
-        name="onOffline"
-        render={({ field, fieldState }) => (
-          <Field data-invalid={fieldState.invalid}>
-            <FieldLabel htmlFor="onOffline">
-              {m.admin_collection_on_offline()}
-            </FieldLabel>
-            <Select value={field.value} onValueChange={field.onChange}>
-              <SelectTrigger
-                className={cn("w-full", fieldState.isDirty && "border-cosmo")}
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="online">
-                  {m.admin_collection_online()}
-                </SelectItem>
-                <SelectItem value="offline">
-                  {m.admin_collection_offline()}
-                </SelectItem>
-              </SelectContent>
-            </Select>
-            <FieldError errors={[fieldState.error]} />
-          </Field>
-        )}
-      />
-
-      {/* Has Audio */}
-      <Controller
-        control={form.control}
-        name="hasAudio"
-        render={({ field, fieldState }) => (
-          <Field orientation="horizontal">
-            <FieldLabel htmlFor="hasAudio">
-              {m.admin_collection_has_audio()}
-            </FieldLabel>
-            <Switch
-              id="hasAudio"
-              checked={field.value}
-              onCheckedChange={field.onChange}
-              className={cn(fieldState.isDirty && "border-cosmo")}
+        <Section title={m.admin_collection_section_media()}>
+          <Field>
+            <FieldLabel>{m.admin_collection_front_media()}</FieldLabel>
+            <CollectionMediaUpload
+              currentMedia={props.currentMedia}
+              stagedFile={props.stagedFile}
+              onFileSelect={props.onFileSelect}
+              objektClass={selectedClass}
             />
           </Field>
-        )}
-      />
+        </Section>
+      </div>
 
-      {/* Front Media */}
-      <Field>
-        <FieldLabel>{m.admin_collection_front_media()}</FieldLabel>
-        <CollectionMediaUpload
-          currentMedia={props.currentMedia}
-          stagedFile={props.stagedFile}
-          onFileSelect={props.onFileSelect}
-          objektClass={selectedClass}
-        />
-      </Field>
+      <div className="flex flex-col gap-4">
+        <Section title={m.admin_collection_section_appearance()}>
+          <ColorField
+            name="textColor"
+            label={m.admin_collection_text_color()}
+          />
+          <ColorField
+            name="backgroundColor"
+            label={m.admin_collection_background_color()}
+          />
+          <ColorField
+            name="accentColor"
+            label={m.admin_collection_accent_color()}
+          />
+        </Section>
+
+        <Section title={m.admin_collection_section_attributes()}>
+          {/* Online / Offline */}
+          <Controller
+            control={form.control}
+            name="onOffline"
+            render={({ field, fieldState }) => (
+              <Field orientation="horizontal">
+                <FieldLabel htmlFor="onOffline">
+                  {m.admin_collection_on_offline()}
+                </FieldLabel>
+                <div
+                  className={cn(
+                    "flex gap-0.5 rounded-lg bg-secondary p-0.5",
+                    fieldState.isDirty && "ring-1 ring-cosmo",
+                  )}
+                >
+                  {validOnlineTypes.map((type) => (
+                    <button
+                      key={type}
+                      type="button"
+                      onClick={() => field.onChange(type)}
+                      className={cn(
+                        "h-7 rounded-md px-3 text-xs transition-colors",
+                        field.value === type
+                          ? "bg-background font-semibold"
+                          : "text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      {type === "online"
+                        ? m.admin_collection_online()
+                        : m.admin_collection_offline()}
+                    </button>
+                  ))}
+                </div>
+              </Field>
+            )}
+          />
+
+          {/* Has Audio */}
+          <Controller
+            control={form.control}
+            name="hasAudio"
+            render={({ field, fieldState }) => (
+              <Field orientation="horizontal">
+                <FieldLabel htmlFor="hasAudio">
+                  {m.admin_collection_has_audio()}
+                </FieldLabel>
+                <Switch
+                  id="hasAudio"
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  className={cn(fieldState.isDirty && "border-cosmo")}
+                />
+              </Field>
+            )}
+          />
+        </Section>
+      </div>
+    </div>
+  );
+}
+
+function Section({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-4 rounded-lg border border-border bg-card p-4">
+      <h3 className="text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+        {title}
+      </h3>
+      {children}
     </div>
   );
 }

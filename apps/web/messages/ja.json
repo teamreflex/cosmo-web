@@ -30,7 +30,6 @@
   "common_done": "完了",
   "auth_error_api_key_not_found": "APIキーが見つかりません。",
   "auth_error_user_not_found": "ユーザーが見つかりません。",
-
   "_comment_common": "Common reusable strings",
   "common_continue": "続行",
   "common_back": "戻る",
@@ -87,7 +86,6 @@
   "list_header_paired": "ペアリスト",
   "list_header_contacts_heading": "{user}に連絡",
   "common_unknown": "不明",
-
   "_comment_auth": "Authentication related strings",
   "auth_sign_in": "ログイン",
   "auth_sign_in_description": "{appName}アカウントにログイン",
@@ -101,12 +99,10 @@
   "auth_new_password": "新しいパスワード",
   "auth_current_password": "現在のパスワード",
   "auth_signing_in": "ログイン中...",
-
   "_comment_auth_forms": "Auth form fields",
   "form_email": "メール",
   "form_email_placeholder": "me@example.com",
   "form_password_placeholder": "********",
-
   "_comment_auth_messages": "Auth success/error messages",
   "auth_verification_email_sent": "アカウント確認用のメールを送信しました。",
   "auth_password_reset_email_sent": "パスワード再設定用のメールを送信しました。",
@@ -122,7 +118,6 @@
   "auth_error_cosmo_required": "続行するにはCOSMOアカウントを連携してください。",
   "auth_error_not_admin": "この操作を実行する権限がありません。",
   "auth_error_verification_not_found": "COSMOのbio内に認証コードが見つかりません。",
-
   "_comment_link_cosmo": "Link COSMO account strings",
   "link_cosmo_title": "COSMO連携",
   "link_cosmo_description": "COSMOアカウントを{appName}アカウントに連携します。",
@@ -156,7 +151,6 @@
   "link_cosmo_error_not_found": "bio内に認証コードが見つかりません。",
   "link_cosmo_how_it_works": "アカウントを認証するには、一時的なコードをCOSMOのbioに追加します。",
   "link_cosmo_remove_code": "認証が完了しました。bioからコードを削除できます。",
-
   "_comment_toast": "Toast notification messages",
   "toast_copied_clipboard": "クリップボードにコピーしました！",
   "toast_wallet_address_copied": "ウォレットアドレスをコピーしました",
@@ -174,7 +168,6 @@
   "toast_select_both_lists": "両方のリストを選択してください。",
   "toast_max_selections": "選択できるObjektは{count}個までです",
   "toast_objekt_url_copied": "ObjektのURLをコピーしました",
-
   "_comment_settings": "Settings dialog strings",
   "settings_title": "一般設定",
   "settings_description": "サイト全体の設定をここで変更できます。",
@@ -197,14 +190,11 @@
   "settings_language_korean": "韓国語",
   "settings_language_french": "フランス語",
   "settings_language_japanese": "日本語",
-
   "_comment_nav": "Navigation strings",
   "nav_objekt_stats": "統計",
-
   "_comment_objekts": "Objekt related strings",
   "objekts_header": "Objekts",
   "objekt_list": "Objektリスト",
-
   "_comment_list": "List management strings",
   "list_lists": "リスト",
   "list_title": "リスト",
@@ -255,8 +245,13 @@
   "list_already_on_list": "{collectionId}は既にこのリストにあります",
   "batch_selected_count": [
     {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
       "match": {
         "countPlural=other": "{count}件選択中"
       }
@@ -289,8 +284,13 @@
   "list_matches_overlap_count": "{count}件一致",
   "list_matches_count_label": [
     {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
       "match": {
         "countPlural=other": "{count}件のマッチ"
       }
@@ -322,20 +322,16 @@
   "notification_list_match_have": "{username}が{collection}をhaveリストに追加しました",
   "notification_list_match_want": "{username}が{collection}を探しています",
   "notification_unknown_user": "あるユーザー",
-
   "_comment_help": "Help dialog content",
   "help_como_title": "COMOカレンダー",
   "help_como_description": "COMOカレンダーに関するヘルプ",
   "help_como_timezone": "毎日のCOMO配布日時は、タイムゾーンやバッチ処理の影響でCOSMOと完全には一致しない場合があります。",
   "help_como_sparkles": "きらめきアイコンは、今月に存在しない日に予定された配布が月末へ繰り越されることを示します。",
   "help_como_example": "例えば、29日・30日・31日に予定されている場合、2月は28日（うるう年は29日）に追加されます。",
-
   "help_progress_title": "ヘルプ：進捗",
   "help_progress_description": "進捗ページに関するヘルプ",
-
   "help_profile_title": "ヘルプ：プロフィール",
   "help_profile_description": "プロフィールに関するヘルプ",
-
   "_comment_data_source": "Data source selector strings",
   "data_source_title": "表示",
   "data_source_blockchain_groups_subtitle": "COSMOを再現",
@@ -344,7 +340,6 @@
   "data_source_blockchain_subtitle": "個々のObjektをすべて表示",
   "data_source_blockchain_label": "個別のObjekts",
   "data_source_blockchain_short": "個別",
-
   "_comment_profile": "Profile page strings",
   "profile_address": "アドレス",
   "profile_help_grid_title": "グリッド／列サイズ",
@@ -364,17 +359,14 @@
   "profile_badge_verified": "認証済み",
   "profile_badge_modhaus": "公式Modhausアカウント",
   "profile_badge_modhaus_alt": "Modhaus",
-
   "_comment_system": "System status strings",
   "system_database": "データベース",
   "system_status_normal": "データベースは最新です",
   "system_status_degraded": "データベースは約1時間遅れています",
   "system_status_down": "データベースは1時間以上遅れています",
   "system_status_fetch_error": "システム状態を取得できませんでした",
-
   "_comment_updates": "Update dialog strings",
   "updates_title": "{appName}アップデート",
-
   "_comment_error": "Error messages",
   "error_page_not_found": "ページが見つかりません",
   "error_something_wrong": "問題が発生しました！",
@@ -390,7 +382,6 @@
   "error_objekt_not_found": "Objektが見つかりません",
   "error_loading_objekt": "Objektの読み込み中にエラー",
   "error_loading_user": "ユーザーを読み込めませんでした",
-
   "_comment_terms": "Terms & Privacy page",
   "terms_title": "利用規約とプライバシー",
   "terms_email_usage": "メールアドレスはログイン、アカウント復旧、ソーシャル連携のためにのみ使用されます。",
@@ -398,7 +389,6 @@
   "terms_delete_account": "アカウントはいつでも削除できます。",
   "terms_cosmo_linking": "COSMO連携時のログインは、ユーザー名とウォレットアドレスを読み取るためだけに使用され、プロフィール表示のために保存されます。",
   "terms_source_code": "このアプリケーションのソースコードはこちら：",
-
   "_comment_account": "Account page strings",
   "account_description": "ここでアカウントを管理できます。",
   "account_profile_email": "メールアドレス",
@@ -406,7 +396,6 @@
   "account_profile_no_password": "現在パスワードが設定されていません。",
   "account_profile_forgot_password": "パスワードを忘れた場合",
   "account_profile_set_password": "の機能を使って設定してください。",
-
   "_comment_delete_account": "Delete account strings",
   "delete_account_title": "アカウント削除",
   "delete_account_confirm_title": "本当に実行しますか？",
@@ -414,13 +403,11 @@
   "delete_account_send_email": "メールを送信",
   "delete_account_success_title": "メール内のリンクをクリックして削除を確定してください。",
   "delete_account_success_description": "確認メールのリンクが押されるまで、アカウントは削除されません。",
-
   "_comment_linked_accounts": "Linked accounts strings",
   "linked_accounts_unlink": "{provider}の連携を解除",
   "linked_accounts_link": "{provider}を連携",
   "linked_accounts_twitter": "Twitter",
   "linked_accounts_resign_in_notice": "連携したアカウントは、再度そのアカウントでサインインするまでプロフィールに表示されません。",
-
   "_comment_admin": "Admin panel strings",
   "admin_title": "{appName} Admin",
   "admin_home": "Home",
@@ -523,6 +510,16 @@
   "admin_collection_refetch": "Refetch from COSMO",
   "admin_collection_refetched": "Collection values updated from COSMO. Review and save.",
   "admin_collection_updated": "Collection updated successfully",
+  "admin_latest_collections": "最新コレクション",
+  "admin_latest_prev": "前のページ",
+  "admin_latest_next": "次のページ",
+  "admin_collection_section_identity": "基本情報",
+  "admin_collection_section_appearance": "外観",
+  "admin_collection_section_attributes": "属性",
+  "admin_collection_section_media": "メディア",
+  "admin_collection_unsaved_changes": "未保存の変更が{count}件",
+  "admin_collection_no_changes": "未保存の変更はありません",
+  "common_reset": "リセット",
   "admin_collection_error_not_found": "Collection not found.",
   "admin_collection_error_no_objekt": "No objekts exist for this collection to fetch metadata from.",
   "admin_collection_error_invalid_season": "The selected season does not belong to the selected artist.",
@@ -582,7 +579,6 @@
   "admin_matrix_custom_member_placeholder": "Custom member...",
   "admin_matrix_invalid_number": "Invalid format. Use 101z, 301a, etc.",
   "admin_matrix_preview_empty": "Select members, seasons, and collection numbers to preview",
-
   "_comment_events": "Event display strings",
   "events_header": "イベント",
   "events_filter_era": "時代",
@@ -591,7 +587,6 @@
   "events_error_loading": "イベントを読み込めませんでした",
   "events_error_not_found": "イベントが見つかりません",
   "events_error_not_found_description": "お探しのイベントは存在しないか、削除された可能性があります。",
-
   "_comment_filter": "Filter strings",
   "filter_reset": "フィルターをリセット",
   "filter_type_all": "すべて",
@@ -641,7 +636,6 @@
   "filter_value_multiple": "複数",
   "filter_label_total": "合計",
   "filter_label_types": "種類",
-
   "_comment_como_calendar": "COMO calendar strings",
   "como_calendar_mon": "月",
   "como_calendar_tue": "火",
@@ -653,10 +647,8 @@
   "como_carried_over": "繰り越し",
   "como_error_loading": "COMOカレンダーを読み込めませんでした",
   "como_title_with_username": "{username}のCOMO",
-
   "_comment_objekt_stats": "Objekt stats strings",
   "objekt_stats_no_members": "メンバーが選択されていません",
-
   "_comment_progress": "Progress page strings",
   "progress_class": "{class}クラス",
   "progress_complete": "完了",
@@ -676,7 +668,6 @@
   "progress_chart_seasons": "シーズン",
   "progress_leaderboard": "リーダーボード",
   "progress_filter_combined": "統合",
-
   "_comment_grid": "Grid ledger strings",
   "grid_title": "グリッド",
   "grid_title_with_username": "{username}のグリッド",
@@ -710,7 +701,6 @@
   "grid_help_desc_3": "リワードは、各グリッド報酬のスペシャルクラスオブジェクトの所有数を表示します。グリッドを完成させると2種類のうち1つがランダムで付与されます。",
   "grid_help_desc_4": "idnttの場合、異なる2人のメンバーのスペシャルでグリッドすると、そのペアのユニットオブジェクトが生成されます。",
   "grid_help_desc_5": "エディションの目標を上げると、複数のグリッドに必要な合計枚数を確認できます。グリッド完成時のスペシャルはランダムなので、2回完成しても両方が手に入るとは限りません。",
-
   "_comment_transfer": "Transfer strings",
   "transfer_unknown": "不明",
   "transfer_cosmo_spin": "COSMOスピン",
@@ -720,7 +710,6 @@
   "transfer_user_header": "ユーザー",
   "transfer_date_header": "日付",
   "transfer_error_loading": "取引履歴の読み込み中にエラーが発生しました",
-
   "_comment_gravity": "Gravity strings",
   "gravity_error_loading": "Gravityの読み込み中にエラー",
   "gravity_top_votes": "最多投票",
@@ -742,8 +731,13 @@
   "gravity_revealed_progress": "公開 {counted}/{total}",
   "gravity_votes_so_far": [
     {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
       "match": {
         "countPlural=other": "現在{count}票"
       }
@@ -754,8 +748,13 @@
   "gravity_ranking": "ランキング",
   "gravity_more_candidates": [
     {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
       "match": {
         "countPlural=other": "+ 他{count}人の候補"
       }
@@ -765,8 +764,13 @@
   "gravity_candidate_delta": "直近の公開で+{amount} COMO",
   "gravity_vote_count": [
     {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
       "match": {
         "countPlural=other": "{count}票"
       }
@@ -777,19 +781,15 @@
   "gravity_no_votes_yet": "まだ投票はありません",
   "gravity_votes_sealed": "投票中は票が非公開です",
   "gravity_totals_reveal": "集計開始時に候補ごとの合計が公開されます",
-
   "_comment_blockchain": "Blockchain strings",
   "blockchain_types": "種類",
   "blockchain_total": "合計",
-
   "_comment_chart": "Chart strings",
   "chart_como_used": "使用COMO",
-
   "_comment_navbar": "Navigation bar strings",
   "navbar_search_user": "ユーザーを検索",
   "navbar_breadcrumb": "パンくず",
   "navbar_toggle_sidebar": "サイドバー切替",
-
   "_comment_objekt_group": "Objekt group strings",
   "objekt_group_objekt": "オブジェクト",
   "objekt_group_objekts": "オブジェクト",
@@ -798,7 +798,6 @@
   "objekt_edition_1st": "1st",
   "objekt_edition_2nd": "2nd",
   "objekt_edition_3rd": "3rd",
-
   "_comment_objekt_overlay": "Objekt overlay strings",
   "objekt_overlay_pinned": "ピン留め済み",
   "objekt_overlay_send": "送信",
@@ -826,23 +825,19 @@
   "pin_reorder_cancelled": "ピンの並べ替えをキャンセルしました。",
   "objekt_overlay_lock_aria": "このObjektをロック",
   "objekt_overlay_unlock_aria": "このObjektのロックを解除",
-
   "_comment_objekt_info": "Objekt info strings",
   "objekt_info_token_id": "トークンID",
   "objekt_info_rescan": "再スキャン",
-
   "_comment_objekt_rescan": "Objekt rescan strings",
   "objekt_rescan_success": "Objektを更新しました！",
   "objekt_rescan_success_desc": "{collectionId}#{serial}をCOSMOから更新しました。",
   "objekt_rescan_error": "エラー",
   "objekt_rescan_error_desc": "{collectionId}#{serial}をCOSMOから更新中にエラーが発生しました。後でもう一度お試しください。",
-
   "_comment_objekt_attribute": "Objekt attribute strings",
   "objekt_attribute_artist": "アーティスト",
   "objekt_attribute_member": "メンバー",
   "objekt_attribute_season": "シーズン",
   "objekt_attribute_edition": "エディション",
-
   "_comment_objekt_metadata": "Objekt metadata strings",
   "objekt_metadata_information": "情報",
   "objekt_metadata_serials": "シリアル",
@@ -867,24 +862,20 @@
   "objekt_metadata_pricing_updated": "{when}に更新",
   "objekt_metadata_pricing_source": "他のユーザーがオブジェクトリストで設定した価格に基づいています。",
   "objekt_error_metadata_fetch_failed": "オブジェクトのメタデータを取得できませんでした。もう一度お試しください。",
-
   "_comment_objekt_serials": "Objekt serials strings",
   "objekt_serials_placeholder": "シリアルを選択...",
   "objekt_serials_owner": "所有者",
   "objekt_serials_not_exist": "シリアル #{serial}は存在しません",
   "objekt_serials_profile_alt": "プロフィール",
-
   "_comment_user_search": "User search strings",
   "user_search_placeholder": "ユーザーを検索...",
   "user_search_error": "検索エラー。しばらくしてから再度お試しください",
   "user_search_no_results": "ユーザーが見つかりません",
   "user_search_results": "結果",
   "user_search_recent": "最近",
-
   "_comment_user_dropdown": "User dropdown strings",
   "user_dropdown_settings": "設定",
   "user_dropdown_sign_out": "ログアウト",
-
   "_comment_stats": "Stats page strings",
   "stats_header": "統計",
   "stats_update_frequency": "毎時更新",
@@ -897,23 +888,18 @@
   "stats_artist_breakdown": "アーティスト内訳",
   "stats_member_breakdown": "メンバー内訳",
   "stats_error_loading": "統計の読み込み中にエラー",
-
   "_comment_trades": "Trades page strings",
   "trades_title": "取引",
   "trades_title_with_username": "{username}の取引",
-
   "_comment_collection": "Collection page strings",
   "collection_title": "コレクション",
   "collection_title_with_username": "{username}のコレクション",
-
   "_comment_routes": "Route titles",
   "route_title_page_not_found": "ページが見つかりません",
-
   "_comment_logo": "Logo strings",
   "logo_about": "概要",
   "logo_description": "{appName}はCosmo: the GateのObjektとGravityを探索するためのプラットフォームです。",
   "logo_source_code": "ソースコードは以下で確認できます。",
-
   "_comment_share_data": "Share data page strings",
   "share_data_title": "データ共有",
   "share_data_description": "この機能では、COSMOアカウントのコレクションメディアデータを共有し、{appName}のデータベース充実に協力できます。",
@@ -936,7 +922,6 @@
   "share_data_uploading": "メディアをデータベースへアップロード中...",
   "share_data_success": "{count}件のコレクションを更新しました。",
   "share_data_thanks": "{appName}へのご協力ありがとうございます！",
-
   "_comment_aria": "aria labels for icon-only buttons",
   "aria_scroll_to_top": "ページ上部へスクロール",
   "aria_toggle_objekt_bands": "Objekt詳細を切替",

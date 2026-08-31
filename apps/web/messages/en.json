@@ -30,7 +30,6 @@
   "common_done": "Done",
   "auth_error_api_key_not_found": "API key not found.",
   "auth_error_user_not_found": "User not found.",
-
   "_comment_common": "Common reusable strings",
   "common_continue": "Continue",
   "common_back": "Back",
@@ -87,7 +86,6 @@
   "list_header_paired": "Paired list",
   "list_header_contacts_heading": "Reach {user}",
   "common_unknown": "Unknown",
-
   "_comment_auth": "Authentication related strings",
   "auth_sign_in": "Sign In",
   "auth_sign_in_description": "Sign in to your {appName} account",
@@ -101,12 +99,10 @@
   "auth_new_password": "New Password",
   "auth_current_password": "Current Password",
   "auth_signing_in": "Signing in...",
-
   "_comment_auth_forms": "Auth form fields",
   "form_email": "Email",
   "form_email_placeholder": "me@example.com",
   "form_password_placeholder": "********",
-
   "_comment_auth_messages": "Auth success/error messages",
   "auth_verification_email_sent": "We've sent you an email to verify your account.",
   "auth_password_reset_email_sent": "We've sent you an email to reset your password.",
@@ -122,7 +118,6 @@
   "auth_error_cosmo_required": "Please link your COSMO account to continue.",
   "auth_error_not_admin": "You are not authorized to perform this action.",
   "auth_error_verification_not_found": "Verification code not found in your COSMO bio.",
-
   "_comment_link_cosmo": "Link COSMO account strings",
   "link_cosmo_title": "Link COSMO",
   "link_cosmo_description": "Link your COSMO account to your {appName} account.",
@@ -156,7 +151,6 @@
   "link_cosmo_error_not_found": "Verification code not found in bio.",
   "link_cosmo_how_it_works": "To verify your account, you'll add a temporary code to your COSMO bio.",
   "link_cosmo_remove_code": "You can now remove the code from your bio.",
-
   "_comment_toast": "Toast notification messages",
   "toast_copied_clipboard": "Copied to clipboard!",
   "toast_wallet_address_copied": "Wallet address copied to clipboard",
@@ -174,7 +168,6 @@
   "toast_select_both_lists": "Please select both lists.",
   "toast_max_selections": "Only {count} objekts can be selected",
   "toast_objekt_url_copied": "Objekt URL copied to clipboard",
-
   "_comment_settings": "Settings dialog strings",
   "settings_title": "General Settings",
   "settings_description": "Adjust any site-wide settings here.",
@@ -197,14 +190,11 @@
   "settings_language_korean": "Korean",
   "settings_language_french": "French",
   "settings_language_japanese": "Japanese",
-
   "_comment_nav": "Navigation strings",
   "nav_objekt_stats": "Stats",
-
   "_comment_objekts": "Objekt related strings",
   "objekts_header": "Objekts",
   "objekt_list": "Objekt List",
-
   "_comment_list": "List management strings",
   "list_lists": "Lists",
   "list_title": "List",
@@ -255,8 +245,13 @@
   "list_already_on_list": "{collectionId} is already on this list",
   "batch_selected_count": [
     {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
       "match": {
         "countPlural=one": "{count} objekt selected",
         "countPlural=other": "{count} objekts selected"
@@ -290,8 +285,13 @@
   "list_matches_overlap_count": "{count} overlap",
   "list_matches_count_label": [
     {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
       "match": {
         "countPlural=one": "{count} match",
         "countPlural=other": "{count} matches"
@@ -324,20 +324,16 @@
   "notification_list_match_have": "{username} just added {collection} to their have list",
   "notification_list_match_want": "{username} is now looking for {collection}",
   "notification_unknown_user": "Someone",
-
   "_comment_help": "Help dialog content",
   "help_como_title": "COMO Calendar",
   "help_como_description": "Help information for COMO calendar",
   "help_como_timezone": "Dates and times of your daily COMO drops may not perfectly align with COSMO due to timezones and batches.",
   "help_como_sparkles": "A sparkles icon denotes that a drop is scheduled to happen on a day that does not exist in the current month, and will instead be carried over to the last day of the month.",
   "help_como_example": "For example, COMO additions scheduled for the 29th, 30th, and 31st will be added on the 28th in February (29th in leap years).",
-
   "help_progress_title": "Help: Progress",
   "help_progress_description": "Help information for progress pages",
-
   "help_profile_title": "Help: Profile",
   "help_profile_description": "Help information for profiles",
-
   "_comment_data_source": "Data source selector strings",
   "data_source_title": "View",
   "data_source_blockchain_groups_subtitle": "Replicates COSMO",
@@ -346,7 +342,6 @@
   "data_source_blockchain_subtitle": "View all individual objekts",
   "data_source_blockchain_label": "Individual Objekts",
   "data_source_blockchain_short": "Individual",
-
   "_comment_profile": "Profile page strings",
   "profile_address": "Address",
   "profile_help_grid_title": "Grid/Column Size",
@@ -366,17 +361,14 @@
   "profile_badge_verified": "Verified",
   "profile_badge_modhaus": "Official Modhaus account",
   "profile_badge_modhaus_alt": "Modhaus",
-
   "_comment_system": "System status strings",
   "system_database": "Database",
   "system_status_normal": "Database is up to date",
   "system_status_degraded": "Database is ~1 hour behind",
   "system_status_down": "Database is over 1 hour behind",
   "system_status_fetch_error": "Could not fetch system status",
-
   "_comment_updates": "Update dialog strings",
   "updates_title": "{appName} Updates",
-
   "_comment_error": "Error messages",
   "error_page_not_found": "Page not found",
   "error_something_wrong": "Something went wrong!",
@@ -392,7 +384,6 @@
   "error_objekt_not_found": "Objekt not found",
   "error_loading_objekt": "Error loading objekt",
   "error_loading_user": "Could not load user",
-
   "_comment_terms": "Terms & Privacy page",
   "terms_title": "Terms & Privacy",
   "terms_email_usage": "Email addresses are only used for sign in, account recovery, and social sign-in linking purposes.",
@@ -400,7 +391,6 @@
   "terms_delete_account": "You can delete your account at any time.",
   "terms_cosmo_linking": "When linking a COSMO account, the sign-in is only used to read the account's username and wallet address, which are then stored to display profiles.",
   "terms_source_code": "Source code for this application is available on",
-
   "_comment_account": "Account page strings",
   "account_description": "Manage your account here.",
   "account_profile_email": "Email Address",
@@ -408,7 +398,6 @@
   "account_profile_no_password": "You do not have a password currently set. Please use the",
   "account_profile_forgot_password": "forgot password",
   "account_profile_set_password": "functionality to set one.",
-
   "_comment_delete_account": "Delete account strings",
   "delete_account_title": "Delete Account",
   "delete_account_confirm_title": "Are you absolutely sure?",
@@ -416,13 +405,11 @@
   "delete_account_send_email": "Send Email",
   "delete_account_success_title": "Click the link in the email to confirm the deletion of your account.",
   "delete_account_success_description": "Your account will not be deleted until the link in the verification email is clicked.",
-
   "_comment_linked_accounts": "Linked accounts strings",
   "linked_accounts_unlink": "Unlink {provider}",
   "linked_accounts_link": "Link {provider}",
   "linked_accounts_twitter": "Twitter",
   "linked_accounts_resign_in_notice": "Linked accounts won't show on your profile until you sign in with them again.",
-
   "_comment_admin": "Admin panel strings",
   "admin_title": "{appName} Admin",
   "admin_home": "Home",
@@ -525,6 +512,16 @@
   "admin_collection_refetch": "Refetch from COSMO",
   "admin_collection_refetched": "Collection values updated from COSMO. Review and save.",
   "admin_collection_updated": "Collection updated successfully",
+  "admin_latest_collections": "Latest Collections",
+  "admin_latest_prev": "Previous page",
+  "admin_latest_next": "Next page",
+  "admin_collection_section_identity": "Identity",
+  "admin_collection_section_appearance": "Appearance",
+  "admin_collection_section_attributes": "Attributes",
+  "admin_collection_section_media": "Media",
+  "admin_collection_unsaved_changes": "{count} unsaved changes",
+  "admin_collection_no_changes": "No unsaved changes",
+  "common_reset": "Reset",
   "admin_collection_error_not_found": "Collection not found.",
   "admin_collection_error_no_objekt": "No objekts exist for this collection to fetch metadata from.",
   "admin_collection_error_invalid_season": "The selected season does not belong to the selected artist.",
@@ -584,7 +581,6 @@
   "admin_matrix_custom_member_placeholder": "Custom member...",
   "admin_matrix_invalid_number": "Invalid format. Use 101z, 301a, etc.",
   "admin_matrix_preview_empty": "Select members, seasons, and collection numbers to preview",
-
   "_comment_events": "Event display strings",
   "events_header": "Events",
   "events_filter_era": "Era",
@@ -593,7 +589,6 @@
   "events_error_loading": "Could not load events",
   "events_error_not_found": "Event not found",
   "events_error_not_found_description": "The event you're looking for doesn't exist or may have been removed.",
-
   "_comment_filter": "Filter strings",
   "filter_reset": "Reset Filters",
   "filter_type_all": "All",
@@ -643,7 +638,6 @@
   "filter_value_multiple": "multiple",
   "filter_label_total": "total",
   "filter_label_types": "types",
-
   "_comment_como_calendar": "COMO calendar strings",
   "como_calendar_mon": "Mon",
   "como_calendar_tue": "Tue",
@@ -655,10 +649,8 @@
   "como_carried_over": "Carried over",
   "como_error_loading": "Could not load COMO calendar",
   "como_title_with_username": "{username}'s COMO",
-
   "_comment_objekt_stats": "Objekt stats strings",
   "objekt_stats_no_members": "No members selected",
-
   "_comment_progress": "Progress page strings",
   "progress_class": "{class} Class",
   "progress_complete": "Complete",
@@ -678,7 +670,6 @@
   "progress_chart_seasons": "Seasons",
   "progress_leaderboard": "Leaderboard",
   "progress_filter_combined": "Combined",
-
   "_comment_grid": "Grid ledger strings",
   "grid_title": "Grid",
   "grid_title_with_username": "{username}'s Grids",
@@ -712,7 +703,6 @@
   "grid_help_desc_3": "Rewards show how many of each grid reward Special class objekt you own. Completing a grid grants one of the two at random.",
   "grid_help_desc_4": "For idntt, gridding one Special from two different members produces that pairing's Unit objekt.",
   "grid_help_desc_5": "Raise an edition's target to plan multiple grids and see the total copies needed. Each completion still grants a random Special, so completing two grids does not guarantee both.",
-
   "_comment_transfer": "Transfer strings",
   "transfer_unknown": "Unknown",
   "transfer_cosmo_spin": "COSMO Spin",
@@ -722,7 +712,6 @@
   "transfer_user_header": "User",
   "transfer_date_header": "Date",
   "transfer_error_loading": "There was an error loading transfers",
-
   "_comment_gravity": "Gravity strings",
   "gravity_error_loading": "Error loading gravities",
   "gravity_top_votes": "Top Votes",
@@ -744,8 +733,13 @@
   "gravity_revealed_progress": "revealed {counted}/{total}",
   "gravity_votes_so_far": [
     {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
       "match": {
         "countPlural=one": "{count} vote so far",
         "countPlural=other": "{count} votes so far"
@@ -757,8 +751,13 @@
   "gravity_ranking": "Ranking",
   "gravity_more_candidates": [
     {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
       "match": {
         "countPlural=one": "+ {count} more candidate",
         "countPlural=other": "+ {count} more candidates"
@@ -769,8 +768,13 @@
   "gravity_candidate_delta": "+{amount} COMO in the latest reveal",
   "gravity_vote_count": [
     {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
       "match": {
         "countPlural=one": "{count} vote",
         "countPlural=other": "{count} votes"
@@ -782,19 +786,15 @@
   "gravity_no_votes_yet": "No votes yet",
   "gravity_votes_sealed": "Votes are hidden while voting is open",
   "gravity_totals_reveal": "Candidate totals reveal when counting begins",
-
   "_comment_blockchain": "Blockchain strings",
   "blockchain_types": "Types",
   "blockchain_total": "total",
-
   "_comment_chart": "Chart strings",
   "chart_como_used": "COMO Used",
-
   "_comment_navbar": "Navigation bar strings",
   "navbar_search_user": "Search for user",
   "navbar_breadcrumb": "breadcrumb",
   "navbar_toggle_sidebar": "Toggle Sidebar",
-
   "_comment_objekt_group": "Objekt group strings",
   "objekt_group_objekt": "objekt",
   "objekt_group_objekts": "objekts",
@@ -803,7 +803,6 @@
   "objekt_edition_1st": "1st",
   "objekt_edition_2nd": "2nd",
   "objekt_edition_3rd": "3rd",
-
   "_comment_objekt_overlay": "Objekt overlay strings",
   "objekt_overlay_pinned": "Pinned",
   "objekt_overlay_send": "Send",
@@ -831,23 +830,19 @@
   "pin_reorder_cancelled": "Pin reordering cancelled.",
   "objekt_overlay_lock_aria": "Lock this objekt",
   "objekt_overlay_unlock_aria": "Unlock this objekt",
-
   "_comment_objekt_info": "Objekt info strings",
   "objekt_info_token_id": "Token ID",
   "objekt_info_rescan": "Rescan",
-
   "_comment_objekt_rescan": "Objekt rescan strings",
   "objekt_rescan_success": "Objekt updated!",
   "objekt_rescan_success_desc": "{collectionId} #{serial} has been updated from COSMO.",
   "objekt_rescan_error": "Error",
   "objekt_rescan_error_desc": "There was an error updating {collectionId} #{serial} from COSMO, please try again later.",
-
   "_comment_objekt_attribute": "Objekt attribute strings",
   "objekt_attribute_artist": "Artist",
   "objekt_attribute_member": "Member",
   "objekt_attribute_season": "Season",
   "objekt_attribute_edition": "Edition",
-
   "_comment_objekt_metadata": "Objekt metadata strings",
   "objekt_metadata_information": "Information",
   "objekt_metadata_serials": "Serials",
@@ -872,24 +867,20 @@
   "objekt_metadata_pricing_updated": "Updated {when}",
   "objekt_metadata_pricing_source": "Based on prices set by other users in their objekt lists.",
   "objekt_error_metadata_fetch_failed": "Failed to fetch objekt metadata. Please try again.",
-
   "_comment_objekt_serials": "Objekt serials strings",
   "objekt_serials_placeholder": "Select a serial...",
   "objekt_serials_owner": "Owner",
   "objekt_serials_not_exist": "Serial #{serial} does not exist",
   "objekt_serials_profile_alt": "Profile",
-
   "_comment_user_search": "User search strings",
   "user_search_placeholder": "Search for a user...",
   "user_search_error": "Search error, try again soon",
   "user_search_no_results": "No users found",
   "user_search_results": "Results",
   "user_search_recent": "Recent",
-
   "_comment_user_dropdown": "User dropdown strings",
   "user_dropdown_settings": "Settings",
   "user_dropdown_sign_out": "Sign Out",
-
   "_comment_stats": "Stats page strings",
   "stats_header": "Stats",
   "stats_update_frequency": "Updates every hour",
@@ -902,23 +893,18 @@
   "stats_artist_breakdown": "Artist Breakdown",
   "stats_member_breakdown": "Member Breakdown",
   "stats_error_loading": "Error loading stats",
-
   "_comment_trades": "Trades page strings",
   "trades_title": "Trades",
   "trades_title_with_username": "{username}'s Trades",
-
   "_comment_collection": "Collection page strings",
   "collection_title": "Collection",
   "collection_title_with_username": "{username}'s Collection",
-
   "_comment_routes": "Route titles",
   "route_title_page_not_found": "Page Not Found",
-
   "_comment_logo": "Logo strings",
   "logo_about": "About",
   "logo_description": "{appName} is a platform for exploring objekts & gravities from Cosmo: the Gate.",
   "logo_source_code": "Source code can be found below.",
-
   "_comment_share_data": "Share data page strings",
   "share_data_title": "Share Data",
   "share_data_description": "This feature allows you to share collection media data from your COSMO account to help populate the {appName} database.",
@@ -941,7 +927,6 @@
   "share_data_uploading": "Uploading media to database...",
   "share_data_success": "Successfully updated {count} collections.",
   "share_data_thanks": "Thank you for contributing to {appName}!",
-
   "_comment_aria": "aria labels for icon-only buttons",
   "aria_scroll_to_top": "Scroll to top",
   "aria_toggle_objekt_bands": "Toggle objekt details",

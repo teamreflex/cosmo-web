@@ -24,14 +24,13 @@ import {
 } from "@/lib/universal/schema/collections";
 import { slugifyObjekt } from "@apollo/util";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { IconLoader2, IconSearch } from "@tabler/icons-react";
+import { IconSearch } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 type Props = {
   onLookup: (slug: string) => void;
-  isLoading: boolean;
 };
 
 // Split a pasted collectionId ("Atom01 JinSoul 101Z") or slug
@@ -50,7 +49,7 @@ function parseIdentifier(text: string) {
   return { season, member, collectionNo };
 }
 
-export default function CollectionLookup({ onLookup, isLoading }: Props) {
+export default function CollectionLookup({ onLookup }: Props) {
   const { artistList } = useArtists();
   const { data: filterData } = useSuspenseQuery(filterDataQuery);
   const [memberOpen, setMemberOpen] = useState(false);
@@ -218,12 +217,8 @@ export default function CollectionLookup({ onLookup, isLoading }: Props) {
         />
       </div>
 
-      <Button type="submit" className="w-fit" disabled={isLoading}>
-        {isLoading ? (
-          <IconLoader2 className="size-4 animate-spin" />
-        ) : (
-          <IconSearch className="size-4" />
-        )}
+      <Button type="submit" className="w-fit">
+        <IconSearch className="size-4" />
         <span>{m.admin_collection_load()}</span>
       </Button>
     </form>

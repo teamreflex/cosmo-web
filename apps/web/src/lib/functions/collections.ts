@@ -18,6 +18,28 @@ import { eq } from "drizzle-orm";
 import * as z from "zod";
 
 const MAX_MEDIA_SIZE = 50 * 1024 * 1024; // 50MB
+const LATEST_PER_PAGE = 24;
+
+/**
+ * Fetch the most recently minted collections for the admin editor. Page-based
+ * rather than cursored since admins flip back and forth between pages.
+ */
+export const $fetchLatestCollections = createServerFn({ method: "GET" })
+  .middleware([adminMiddleware])
+  .validator(z.object({ page: z.number().int().min(0) }))
+  .handler(async ({ data }) => {
+    const rows = await indexer.query.collections.findMany({
+      orderBy: { createdAt: "desc" },
+      limit: LATEST_PER_PAGE,
+      offset: data.page * LATEST_PER_PAGE,
+    });
+
+    return {
+      collections: rows,
+      hasNext: rows.length === LATEST_PER_PAGE,
+      perPage: LATEST_PER_PAGE,
+    };
+  });
 
 /**
  * Fetch a single collection by its slug for the admin editor.
