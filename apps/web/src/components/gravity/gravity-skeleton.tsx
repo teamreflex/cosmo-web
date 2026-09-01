@@ -9,7 +9,7 @@ export default function GravitySkeleton() {
       {/* chart card */}
       <Skeleton className="h-56 w-full rounded-md" />
 
-      <div className="grid items-start gap-2 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="grid items-start gap-2 lg:grid-cols-[minmax(0,1fr)_384px]">
         {/* races */}
         <Skeleton className="h-96 w-full rounded-lg" />
         {/* rail */}

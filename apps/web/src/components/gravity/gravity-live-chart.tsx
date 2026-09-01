@@ -1,5 +1,4 @@
 import GravityHeader from "@/components/gravity/gravity-header";
-import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
 import type { ChartLine } from "@/lib/client/gravity/colors";
 import {
@@ -22,10 +21,9 @@ import type {
   CosmoPastGravity,
   CosmoPollChoices,
 } from "@apollo/cosmo/types/gravity";
-import { Suspense, useMemo } from "react";
+import { useMemo } from "react";
 import CandidateBreakdown from "./candidate-breakdown";
 import Countdown from "./countdown";
-import RecentVotes from "./recent-votes";
 import type { TrajectoryLine } from "./timeline-chart";
 import TimelineChart from "./timeline-chart";
 import UserRankings from "./user-rankings";
@@ -110,7 +108,8 @@ export default function AbstractLiveChart(props: Props) {
         frontierSegmentIndex={series.frontierSegmentIndex}
       />
 
-      <div className="grid items-start gap-2 lg:grid-cols-[minmax(0,1fr)_320px]">
+      {/* the rail is wide enough for its three tabs in every locale */}
+      <div className="grid items-start gap-2 lg:grid-cols-[minmax(0,1fr)_384px]">
         {sealed ? (
           <VotingPanel countingStartsAt={poll.endDate} />
         ) : (
@@ -121,17 +120,12 @@ export default function AbstractLiveChart(props: Props) {
           />
         )}
 
-        {sealed ? (
-          <Suspense fallback={<Skeleton className="min-h-36 rounded-lg" />}>
-            <RecentVotes pollId={poll.id} />
-          </Suspense>
-        ) : (
-          <UserRankings
-            topUsers={reveals.topUsers}
-            topVotes={reveals.topVotes}
-            choices={choices}
-          />
-        )}
+        <UserRankings
+          topUsers={reveals.topUsers}
+          topVotes={reveals.topVotes}
+          choices={choices}
+          recentVotesPollId={sealed ? poll.id : undefined}
+        />
       </div>
     </div>
   );

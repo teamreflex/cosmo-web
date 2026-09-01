@@ -16,7 +16,7 @@ type Props = {
 export default function VotingPanel(props: Props) {
   return (
     <div className="flex flex-col gap-2">
-      {/* the recent votes card sits alongside this one, and the two share a height */}
+      {/* the rankings panel sits alongside this one, and the two share a height */}
       <div className="flex min-h-36 flex-col items-center justify-center gap-1.5 rounded-lg border border-border bg-card p-6 text-center">
         <IconLock className="size-6 text-muted-foreground" />
 

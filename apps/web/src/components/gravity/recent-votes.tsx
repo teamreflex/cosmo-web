@@ -8,24 +8,19 @@ type Props = {
 };
 
 /**
- * The rail while voting: the latest votes cast, without their picks — COSMO
- * keeps those sealed until counting begins.
+ * The rail's default tab while voting: the latest votes cast, without their
+ * picks — COSMO keeps those sealed until counting begins.
  */
 export default function RecentVotes(props: Props) {
   const { data: votes } = useSuspenseQuery(recentVotesQuery(props.pollId));
 
   return (
-    // the sealed panel sits alongside this card, and the two share a height
-    <div className="flex min-h-36 flex-col gap-2 rounded-lg border border-border bg-card p-3">
-      <div className="flex flex-col gap-0.5">
-        <h2 className="flex items-center gap-2 text-sm font-semibold">
-          <span className="size-1.5 shrink-0 animate-pulse rounded-full bg-cosmo" />
-          {m.gravity_recent_votes()}
-        </h2>
-        <p className="text-xs text-muted-foreground">
-          {m.gravity_picks_hidden()}
-        </p>
-      </div>
+    // the sealed panel sits opposite the rail, and the two share a height
+    <div className="flex min-h-36 flex-col gap-2">
+      <p className="flex items-center gap-2 text-xs text-muted-foreground">
+        <span className="size-1.5 shrink-0 animate-pulse rounded-full bg-cosmo" />
+        {m.gravity_picks_hidden()}
+      </p>
 
       {votes.length === 0 ? (
         <p className="flex flex-1 items-center justify-center text-xs text-muted-foreground">

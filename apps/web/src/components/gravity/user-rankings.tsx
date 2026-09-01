@@ -4,19 +4,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { m } from "@/i18n/messages";
+import type { ChoiceStyle } from "@/lib/client/gravity/colors";
 import type {
   AggregatedTopUser,
   AggregatedTopVote,
 } from "@/lib/client/gravity/types";
-import type { ChoiceStyle } from "@/lib/client/gravity/colors";
 import { cn, type PropsWithClassName } from "@/lib/utils";
 import { IconChevronDown, IconQuestionMark } from "@tabler/icons-react";
 import { format } from "date-fns";
 import { AnimatePresence } from "motion/react";
 import * as motion from "motion/react-client";
-import { useMemo, useState, type ReactNode } from "react";
+import { Suspense, useMemo, useState, type ReactNode } from "react";
 import { ComoAmount } from "./como-share";
 import RankNumber from "./rank-number";
+import RecentVotes from "./recent-votes";
 
 const ROW_TRANSITION = {
   duration: 0.3,
@@ -33,20 +34,42 @@ type Props = {
   topVotes: AggregatedTopVote[];
   /** Label, color and image per on-chain choice, for the picks each row shows. */
   choices: Map<number, ChoiceStyle>;
+  /** While voting: streams this poll's latest votes as the leading default tab. */
+  recentVotesPollId?: number;
 };
 
 /**
- * The rail's leaderboard: who spent the most COMO, and the biggest single votes.
+ * The rail's leaderboard: who spent the most COMO, and the biggest single
+ * votes. While voting it leads with the latest votes cast, and every pick
+ * shows sealed until counting begins.
  */
 export default function UserRankings(props: Props) {
+  const voting = props.recentVotesPollId !== undefined;
+
   return (
     <div className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3">
-      <Tabs defaultValue="top-users">
+      {/* keyed so losing the recent tab when voting ends re-applies the default */}
+      <Tabs
+        key={voting ? "voting" : "revealed"}
+        defaultValue={voting ? "recent-votes" : "top-users"}
+      >
         <TabsList className="w-full">
+          {voting && (
+            <TabsTrigger value="recent-votes">
+              {m.gravity_recent_votes()}
+            </TabsTrigger>
+          )}
           <TabsTrigger value="top-users">{m.gravity_top_users()}</TabsTrigger>
           <TabsTrigger value="top-votes">{m.gravity_top_votes()}</TabsTrigger>
         </TabsList>
 
+        {props.recentVotesPollId !== undefined && (
+          <TabsContent value="recent-votes">
+            <Suspense fallback={<Skeleton className="min-h-36 rounded-lg" />}>
+              <RecentVotes pollId={props.recentVotesPollId} />
+            </Suspense>
+          </TabsContent>
+        )}
         <TabsContent value="top-users">
           <TopUsers users={props.topUsers} choices={props.choices} />
         </TabsContent>
