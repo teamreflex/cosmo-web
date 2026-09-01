@@ -46,12 +46,12 @@ export const $fetchObjektsWithComo = createServerFn({ method: "GET" })
 export const $fetchTokenBalances = createServerFn({ method: "GET" })
   .validator(z.object({ address: z.string() }))
   .handler(async ({ data }): Promise<ComoBalance[]> => {
-    return remember(`como-balances:${data.address}`, 60 * 15, async () => {
+    const owner = addr(data.address);
+
+    return remember(`como-balances:${owner}`, 60 * 15, async () => {
       const { artists } = await $fetchArtists();
       const balances = await indexer.query.comoBalances.findMany({
-        where: {
-          owner: addr(data.address),
-        },
+        where: { owner },
       });
 
       return Object.values(artists).map((artist) => {

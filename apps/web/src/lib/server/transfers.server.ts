@@ -121,18 +121,20 @@ function cursorFilters(cursor: ReturnType<typeof decodeCursor>) {
     : [];
 }
 
+type IdsQuery = ReturnType<typeof buildIdsQuery>;
+
 /**
- * Fetch a page of transfers for a single direction filter.
+ * Newest transfer ids matching a direction filter. The timestamp rides along
+ * so two directions can be unioned and ordered without joining anything.
  */
-function buildIdFirstQuery(
+function buildIdsQuery(
   baseFilter: SQL | undefined,
   params: Payload,
   cursor: ReturnType<typeof decodeCursor>,
   extraFilters: SQL[],
-  tag: string,
 ) {
-  const filteredTransfers = indexer
-    .select({ id: transfers.id })
+  return indexer
+    .select({ id: transfers.id, timestamp: transfers.timestamp })
     .from(transfers)
     .leftJoin(collections, eq(transfers.collectionId, collections.id))
     .where(
@@ -144,9 +146,13 @@ function buildIdFirstQuery(
       ),
     )
     .orderBy(desc(transfers.timestamp), desc(transfers.id))
-    .limit(PER_PAGE)
-    .as("ft");
+    .limit(PER_PAGE);
+}
 
+/**
+ * Join a page of transfer ids back to their transfer, objekt and collection rows.
+ */
+function fetchPage(ft: ReturnType<IdsQuery["as"]>, tag: string) {
   return indexer
     .select({
       transfer: transfers,
@@ -154,8 +160,8 @@ function buildIdFirstQuery(
       collection: collections,
       isSpin: sql<boolean>`${transfers.to} = ${Addresses.SPIN}`,
     })
-    .from(filteredTransfers)
-    .innerJoin(transfers, eq(transfers.id, filteredTransfers.id))
+    .from(ft)
+    .innerJoin(transfers, eq(transfers.id, ft.id))
     .leftJoin(objekts, eq(transfers.objektId, objekts.id))
     .leftJoin(collections, eq(transfers.collectionId, collections.id))
     .orderBy(desc(transfers.timestamp), desc(transfers.id))
@@ -164,9 +170,10 @@ function buildIdFirstQuery(
 }
 
 /**
- * Fetch transfers for `type=all` by splitting into two indexed queries.
- * Avoids an OR on (from/to) by running one query per column, then merges,
- * de-dupes, and sorts the combined rows in memory before applying the page limit.
+ * Fetch transfers for `type=all`. An OR across from/to can't walk either
+ * address index, so each direction walks its own index for a page of ids and
+ * the union is ordered and cut to one page before the row joins run once.
+ * `union` (not `union all`) drops the duplicate a self-transfer would produce.
  */
 async function fetchSplitAll(
   address: string,
@@ -174,44 +181,24 @@ async function fetchSplitAll(
   cursor: ReturnType<typeof decodeCursor>,
   extraFilters: SQL[],
 ) {
-  const [fromRows, toRows] = await Promise.all([
-    buildIdFirstQuery(
-      eq(transfers.from, address),
-      params,
-      cursor,
-      extraFilters,
-      "fetchSplitAll",
-    ),
-    buildIdFirstQuery(
-      eq(transfers.to, address),
-      params,
-      cursor,
-      extraFilters,
-      "fetchSplitAll",
-    ),
-  ]);
+  const ids = buildIdsQuery(
+    eq(transfers.from, address),
+    params,
+    cursor,
+    extraFilters,
+  )
+    .union(
+      buildIdsQuery(eq(transfers.to, address), params, cursor, extraFilters),
+    )
+    .orderBy(desc(transfers.timestamp), desc(transfers.id))
+    .limit(PER_PAGE)
+    .as("ft");
 
-  const seen = new Set<string>();
-  const combined = [...fromRows, ...toRows].filter((row) => {
-    if (seen.has(row.transfer.id)) return false;
-    seen.add(row.transfer.id);
-    return true;
-  });
-
-  combined.sort((a, b) => {
-    if (a.transfer.timestamp === b.transfer.timestamp) {
-      return a.transfer.id > b.transfer.id ? -1 : 1;
-    }
-    return a.transfer.timestamp > b.transfer.timestamp ? -1 : 1;
-  });
-
-  return combined.slice(0, PER_PAGE);
+  return await fetchPage(ids, "fetchSplitAll");
 }
 
 /**
- * Fetch transfers for non-`all` types using a transfer-first subquery.
- * Limits to the newest transfer IDs first, then joins to objekts/collections,
- * reducing work on heavy joins when only a single transfer direction applies.
+ * Fetch transfers for non-`all` types, where a single direction filter applies.
  */
 async function fetchTransferFirst(
   address: string,
@@ -219,11 +206,12 @@ async function fetchTransferFirst(
   cursor: ReturnType<typeof decodeCursor>,
   extraFilters: SQL[],
 ) {
-  return await buildIdFirstQuery(
+  const ids = buildIdsQuery(
     withType(address, params.type ?? "all"),
     params,
     cursor,
     extraFilters,
-    "fetchTransferFirst",
-  );
+  ).as("ft");
+
+  return await fetchPage(ids, "fetchTransferFirst");
 }
