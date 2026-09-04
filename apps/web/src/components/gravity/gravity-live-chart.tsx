@@ -49,7 +49,7 @@ export default function AbstractLiveChart(props: Props) {
     aggregated,
   });
 
-  const slots = usePollSlots(poll);
+  const slots = usePollSlots(poll, props.artist.artistMembers);
   const rankings = useSlotRankings(
     slots,
     reveals.comoPerCandidate,

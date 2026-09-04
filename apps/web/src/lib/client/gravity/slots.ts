@@ -1,11 +1,13 @@
+import type { CosmoMemberBFF } from "@apollo/cosmo/types/artists";
 import type { CosmoPollChoices } from "@apollo/cosmo/types/gravity";
 import type { RevealBatch } from "./reveals";
-import { pollCandidates } from "./util";
+import { findMember, pollCandidates } from "./util";
 
 /**
  * A member a unit poll's pairing picks, with the card COSMO ships for it.
  */
 export type SlotCandidateMember = {
+  /** The member's name, resolved from the alias COSMO may title the pairing with. */
   name: string;
   imageUrl: string | undefined;
 };
@@ -73,9 +75,13 @@ export type SlotRanking = {
 
 /**
  * Group a poll's candidates into slots. A unit poll races member pairings, but
- * each pairing is one on-chain choice, so it slots like a single poll.
+ * each pairing is one on-chain choice, so it slots like a single poll. The
+ * artist's members name the pairings, since COSMO titles them by alias.
  */
-export function buildSlotModel(poll: CosmoPollChoices): PollSlotModel {
+export function buildSlotModel(
+  poll: CosmoPollChoices,
+  artistMembers: CosmoMemberBFF[],
+): PollSlotModel {
   if (poll.type !== "combination-poll") {
     const memberImages =
       poll.type === "unit-poll"
@@ -92,7 +98,11 @@ export function buildSlotModel(poll: CosmoPollChoices): PollSlotModel {
             name: candidate.content.title,
             imageUrl: candidate.content.imageUrl,
             candidateIds: [candidateId],
-            members: pairingMembers(candidate.content.title, memberImages),
+            members: pairingMembers(
+              candidate.content.title,
+              memberImages,
+              artistMembers,
+            ),
           })),
         },
       ],
@@ -275,22 +285,24 @@ const PAIRING_SEPARATOR = "·";
 
 /**
  * Split a unit poll's pairing into the members it picks. Every other poll
- * races whole candidates, so it has none to split out.
+ * races whole candidates, so it has none to split out. COSMO keys the images
+ * by the same alias it titles with, so only the name is resolved.
  */
 function pairingMembers(
   title: string,
   memberImages: Record<string, string> | undefined,
+  artistMembers: CosmoMemberBFF[],
 ): SlotCandidateMember[] {
   if (memberImages === undefined || !title.includes(PAIRING_SEPARATOR)) {
     return [];
   }
 
   return title.split(PAIRING_SEPARATOR).map((part) => {
-    const name = part.trim();
-    const imageUrl = memberImages[name];
+    const alias = part.trim();
+    const imageUrl = memberImages[alias];
     // COSMO ships an empty string where it has no image
     return {
-      name,
+      name: findMember(artistMembers, alias)?.name ?? alias,
       imageUrl:
         imageUrl !== undefined && imageUrl.length > 0 ? imageUrl : undefined,
     };

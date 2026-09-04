@@ -119,7 +119,7 @@ describe("resolveChoiceStyles", () => {
   it("names and colors a single poll's choices by candidate", () => {
     const styles = resolveChoiceStyles(
       artist,
-      buildSlotModel(singlePoll),
+      buildSlotModel(singlePoll, []),
       singlePoll,
     );
 
@@ -139,7 +139,7 @@ describe("resolveChoiceStyles", () => {
   it("names a combination choice after every member it picks", () => {
     const styles = resolveChoiceStyles(
       tripleS,
-      buildSlotModel(combinationPoll),
+      buildSlotModel(combinationPoll, []),
       combinationPoll,
     );
 
@@ -150,7 +150,7 @@ describe("resolveChoiceStyles", () => {
   it("colors a combination choice by the member it picks in the first slot", () => {
     const styles = resolveChoiceStyles(
       tripleS,
-      buildSlotModel(combinationPoll),
+      buildSlotModel(combinationPoll, []),
       combinationPoll,
     );
 
@@ -161,7 +161,7 @@ describe("resolveChoiceStyles", () => {
   it("images a combination choice with the card COSMO ships for it", () => {
     const styles = resolveChoiceStyles(
       tripleS,
-      buildSlotModel(combinationPoll),
+      buildSlotModel(combinationPoll, []),
       combinationPoll,
     );
 
@@ -175,7 +175,7 @@ describe("resolveChoiceStyles", () => {
         index === 0 ? { ...choice, txImageUrl: "" } : choice,
       ),
     } satisfies CosmoPollChoices;
-    const styles = resolveChoiceStyles(tripleS, buildSlotModel(poll), poll);
+    const styles = resolveChoiceStyles(tripleS, buildSlotModel(poll, []), poll);
 
     expect(styles.get(0)?.imageUrl).toBe(
       "https://static.cosmo.fans/round-s1.png",
@@ -206,7 +206,10 @@ describe("resolveChartLines", () => {
   };
 
   it("runs a unit pairing's line between its two members' colors", () => {
-    const [lines] = resolveChartLines(unitArtist, buildSlotModel(unitPoll));
+    const [lines] = resolveChartLines(
+      unitArtist,
+      buildSlotModel(unitPoll, unitArtist.artistMembers),
+    );
 
     expect(lines?.map((line) => line.gradient)).toEqual([
       ["#8fcfe7", "#b1e3ff"],
@@ -218,13 +221,13 @@ describe("resolveChartLines", () => {
   });
 
   it("leaves a single poll's lines without a gradient", () => {
-    const [lines] = resolveChartLines(artist, buildSlotModel(singlePoll));
+    const [lines] = resolveChartLines(artist, buildSlotModel(singlePoll, []));
 
     expect(lines?.map((line) => line.gradient)).toEqual([null, null, null]);
   });
 
   it("names a single poll's lines after the candidate", () => {
-    const lines = resolveChartLines(artist, buildSlotModel(singlePoll));
+    const lines = resolveChartLines(artist, buildSlotModel(singlePoll, []));
 
     expect(lines[0]?.map((line) => line.label)).toEqual([
       "Song A",
@@ -236,7 +239,10 @@ describe("resolveChartLines", () => {
   });
 
   it("names a combination poll's lines after the slot and the member", () => {
-    const lines = resolveChartLines(tripleS, buildSlotModel(combinationPoll));
+    const lines = resolveChartLines(
+      tripleS,
+      buildSlotModel(combinationPoll, []),
+    );
 
     expect(lines.map((slot) => slot.length)).toEqual([3, 3]);
     expect(lines[0]?.map((line) => line.label)).toEqual([
@@ -247,7 +253,10 @@ describe("resolveChartLines", () => {
   });
 
   it("gives a line every choice placing its member in the slot", () => {
-    const lines = resolveChartLines(tripleS, buildSlotModel(combinationPoll));
+    const lines = resolveChartLines(
+      tripleS,
+      buildSlotModel(combinationPoll, []),
+    );
     const hyerin = lines[1]?.[1];
 
     expect(hyerin?.label).toBe("LOVElution – HyeRin");
@@ -259,7 +268,7 @@ describe("resolveChartLines", () => {
 
 describe("resolveSlotColors", () => {
   it("keeps a member's color across the slots they race in", () => {
-    const model = buildSlotModel(combinationPoll);
+    const model = buildSlotModel(combinationPoll, []);
     const colors = model.slots.map((slot) =>
       resolveSlotColors(tripleS, model, slot)("HyeRin"),
     );
@@ -268,7 +277,7 @@ describe("resolveSlotColors", () => {
   });
 
   it("colors a single poll's candidates as one set", () => {
-    const model = buildSlotModel(singlePoll);
+    const model = buildSlotModel(singlePoll, []);
     const [slot] = model.slots;
     const color = resolveSlotColors(artist, model, slot);
 
@@ -277,7 +286,7 @@ describe("resolveSlotColors", () => {
   });
 
   it("falls back for a name the slot doesn't hold", () => {
-    const model = buildSlotModel(singlePoll);
+    const model = buildSlotModel(singlePoll, []);
     const [slot] = model.slots;
 
     expect(resolveSlotColors(artist, model, slot)("Song Z")).toBe("#8fcfe7");

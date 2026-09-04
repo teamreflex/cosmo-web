@@ -1,3 +1,4 @@
+import type { CosmoMemberBFF } from "@apollo/cosmo/types/artists";
 import type {
   CosmoGravity,
   CosmoPollChoices,
@@ -51,6 +52,19 @@ export function pollCandidates(
       description: "description" in choice ? choice.description : "",
     },
   }));
+}
+
+/**
+ * Case-insensitive name match, mirroring how `useArtists` keys its member map.
+ * Falls back to the member's alias, which is how COSMO labels a member where
+ * it doesn't spell the name out: tripleS as S1, S2, … and idntt as id1, id2, ….
+ */
+export function findMember(members: CosmoMemberBFF[], name: string) {
+  const lower = name.toLowerCase();
+  return (
+    members.find((member) => member.name.toLowerCase() === lower) ??
+    members.find((member) => member.alias.toLowerCase() === lower)
+  );
 }
 
 /**

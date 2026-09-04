@@ -4,6 +4,7 @@ import {
   gravityPollDetailsQuery,
   gravityVoteDataQuery,
 } from "@/lib/queries/gravity";
+import type { CosmoMemberBFF } from "@apollo/cosmo/types/artists";
 import type { CosmoPollChoices } from "@apollo/cosmo/types/gravity";
 import { useInfiniteQuery, useSuspenseQueries } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
@@ -187,8 +188,11 @@ export function useReveals(params: UseRevealsOptions): UseRevealsResult {
 /**
  * Group a poll's candidates into the slots they are raced in.
  */
-export function usePollSlots(poll: CosmoPollChoices): PollSlotModel {
-  return useMemo(() => buildSlotModel(poll), [poll]);
+export function usePollSlots(
+  poll: CosmoPollChoices,
+  members: CosmoMemberBFF[],
+): PollSlotModel {
+  return useMemo(() => buildSlotModel(poll, members), [poll, members]);
 }
 
 /**

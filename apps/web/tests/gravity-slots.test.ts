@@ -1,3 +1,5 @@
+import type { CosmoMemberBFF } from "@apollo/cosmo/types/artists";
+import type { CosmoPollChoices } from "@apollo/cosmo/types/gravity";
 import { describe, expect, it } from "bun:test";
 import type { RevealBatch } from "../src/lib/client/gravity/reveals";
 import {
@@ -19,9 +21,26 @@ function names(candidates: { name: string }[]) {
   return candidates.map((candidate) => candidate.name);
 }
 
+function member(name: string, alias: string): CosmoMemberBFF {
+  return {
+    id: 1,
+    name,
+    units: "",
+    alias,
+    profileImageUrl: "",
+    backgroundImageUrl: "",
+    order: 1,
+    createdAt: "",
+    updatedAt: "",
+    mainObjektImageUrl: null,
+    artistId: "idntt",
+    primaryColorHex: "",
+  };
+}
+
 describe("buildSlotModel", () => {
   it("splits a combination poll into its slots", () => {
-    const model = buildSlotModel(combinationPoll);
+    const model = buildSlotModel(combinationPoll, []);
 
     expect(model.kind).toBe("combination");
     expect(model.slots.map((slot) => slot.name)).toEqual([
@@ -31,7 +50,7 @@ describe("buildSlotModel", () => {
   });
 
   it("collects the candidate ids that place a member in a slot", () => {
-    const model = buildSlotModel(combinationPoll);
+    const model = buildSlotModel(combinationPoll, []);
     const [evolution, lovelution] = model.slots;
 
     // members are listed in COSMO's slot choice order, not order of first mention
@@ -57,7 +76,7 @@ describe("buildSlotModel", () => {
   });
 
   it("covers every candidate id exactly once per slot", () => {
-    const model = buildSlotModel(combinationPoll);
+    const model = buildSlotModel(combinationPoll, []);
 
     for (const slot of model.slots) {
       const ids = slot.candidates
@@ -68,7 +87,7 @@ describe("buildSlotModel", () => {
   });
 
   it("gives a single poll one implicit slot of its candidates", () => {
-    const model = buildSlotModel(singlePoll);
+    const model = buildSlotModel(singlePoll, []);
     const [slot] = model.slots;
 
     expect(model.kind).toBe("single");
@@ -84,7 +103,7 @@ describe("buildSlotModel", () => {
   });
 
   it("races a unit poll's pairings in one implicit slot", () => {
-    const model = buildSlotModel(unitPoll);
+    const model = buildSlotModel(unitPoll, []);
     const [slot] = model.slots;
 
     expect(model.kind).toBe("unit");
@@ -100,7 +119,7 @@ describe("buildSlotModel", () => {
   });
 
   it("splits a unit poll's pairing into its members", () => {
-    const [slot] = buildSlotModel(unitPoll).slots;
+    const [slot] = buildSlotModel(unitPoll, []).slots;
 
     expect(slot?.candidates[0]?.members).toEqual([
       {
@@ -114,9 +133,44 @@ describe("buildSlotModel", () => {
     ]);
   });
 
+  it("names a pairing's members from the alias COSMO titles them by", () => {
+    // idntt titles pairings by alias, and keys the member images the same way
+    const aliased = {
+      ...unitPoll,
+      pollViewMetadata: {
+        ...unitPoll.pollViewMetadata,
+        selectedContent: [
+          {
+            choiceId: "id1·id2",
+            content: {
+              type: "image",
+              imageUrl: "https://static.cosmo.fans/id1-id2.png",
+              title: "id1·id2",
+              description: "",
+            },
+          },
+        ],
+        memberImages: {
+          id1: "https://static.cosmo.fans/member-id1.png",
+          id2: "https://static.cosmo.fans/member-id2.png",
+        },
+      },
+    } satisfies CosmoPollChoices;
+    const [slot] = buildSlotModel(aliased, [
+      member("DoHun", "id1"),
+      member("HeeJu", "id2"),
+    ]).slots;
+
+    expect(slot?.candidates[0]?.members).toEqual([
+      { name: "DoHun", imageUrl: "https://static.cosmo.fans/member-id1.png" },
+      { name: "HeeJu", imageUrl: "https://static.cosmo.fans/member-id2.png" },
+    ]);
+    expect(slot?.candidates.map(candidateLabel)).toEqual(["DoHun + HeeJu"]);
+  });
+
   it("reads a pairing as its members and everything else as its title", () => {
-    const [unit] = buildSlotModel(unitPoll).slots;
-    const [single] = buildSlotModel(singlePoll).slots;
+    const [unit] = buildSlotModel(unitPoll, []).slots;
+    const [single] = buildSlotModel(singlePoll, []).slots;
 
     expect(unit?.candidates.map(candidateLabel)).toEqual([
       "HeeJin + HaSeul",
@@ -131,7 +185,7 @@ describe("buildSlotModel", () => {
   });
 
   it("leaves a single poll's candidates without pairing members", () => {
-    const [slot] = buildSlotModel(singlePoll).slots;
+    const [slot] = buildSlotModel(singlePoll, []).slots;
 
     expect(slot?.candidates.map((candidate) => candidate.members)).toEqual([
       [],
@@ -153,12 +207,12 @@ describe("buildSlotModel", () => {
       },
     };
 
-    expect(() => buildSlotModel(broken)).toThrow("no slot mapping");
+    expect(() => buildSlotModel(broken, [])).toThrow("no slot mapping");
   });
 });
 
 describe("rankSlots", () => {
-  const model = buildSlotModel(combinationPoll);
+  const model = buildSlotModel(combinationPoll, []);
 
   it("sums each slot to the poll total", () => {
     const rankings = rankSlots(model, como, null);
@@ -233,7 +287,11 @@ describe("rankSlots", () => {
       comoPerCandidate: [1, 1, 1, 1, 1, 1],
       revealCount: 6,
     };
-    const [evolution] = rankSlots(buildSlotModel(combinationPoll), tied, batch);
+    const [evolution] = rankSlots(
+      buildSlotModel(combinationPoll, []),
+      tied,
+      batch,
+    );
 
     expect(evolution?.rows.map((row) => row.movement?.rankChange)).toEqual([
       0, 0, 0,

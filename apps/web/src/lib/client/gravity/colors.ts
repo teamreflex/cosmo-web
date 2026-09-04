@@ -5,7 +5,7 @@ import type {
 import type { CosmoPollChoices } from "@apollo/cosmo/types/gravity";
 import { candidateLabel } from "./slots";
 import type { PollSlot, PollSlotModel } from "./slots";
-import { pollCandidates } from "./util";
+import { findMember, pollCandidates } from "./util";
 
 /**
  * Candidate colors come from the gravity's artist, of which only the member
@@ -237,19 +237,6 @@ export function resolveSlotColors(
   const byName = new Map(names.map((name, index) => [name, colors[index]]));
 
   return (name) => byName.get(name) ?? resolveCandidateColor(artist, name, 0);
-}
-
-/**
- * Case-insensitive name match, mirroring how `useArtists` keys its member map.
- * Falls back to the member's alias, which is how COSMO labels a tripleS member
- * (S1, S2, …) where it doesn't spell the name out.
- */
-function findMember(members: CosmoMemberBFF[], name: string) {
-  const lower = name.toLowerCase();
-  return (
-    members.find((member) => member.name.toLowerCase() === lower) ??
-    members.find((member) => member.alias.toLowerCase() === lower)
-  );
 }
 
 /**
