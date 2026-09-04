@@ -11,6 +11,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { ObjektNewIndicator, ObjektSidebar } from "./common";
+import DetailContent from "./detail/detail-content";
 import DetailDialog from "./detail/detail-dialog";
 import {
   CornerOverlay,
@@ -98,11 +99,13 @@ function Detail({
       />
 
       <DetailDialog
-        collection={collection}
-        tokens={tokens}
+        title={collection.collectionId}
+        description={m.objekt_group_select()}
         open={open}
         onOpenChange={setOpen}
-      />
+      >
+        <DetailContent collection={collection} tokens={tokens} />
+      </DetailDialog>
     </>
   );
 }

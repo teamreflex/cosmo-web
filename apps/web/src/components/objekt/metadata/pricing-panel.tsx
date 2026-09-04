@@ -1,5 +1,5 @@
 import { m } from "@/i18n/messages";
-import { getLocale } from "@/i18n/runtime";
+import { formatRelative } from "@/lib/client/time";
 import type { PriceStats } from "@/lib/universal/objekts";
 import { formatPrice } from "@/lib/utils";
 import { StatCell } from "./common";
@@ -58,20 +58,4 @@ export default function PricingPanel({ data }: Props) {
       </div>
     </div>
   );
-}
-
-function formatRelative(iso: string) {
-  const formatter = new Intl.RelativeTimeFormat(getLocale(), {
-    numeric: "auto",
-  });
-  const updated = new Date(iso).getTime();
-  const diffSeconds = Math.round((updated - Date.now()) / 1000);
-  const abs = Math.abs(diffSeconds);
-
-  if (abs < 60) return formatter.format(diffSeconds, "second");
-  if (abs < 3600)
-    return formatter.format(Math.round(diffSeconds / 60), "minute");
-  if (abs < 86400)
-    return formatter.format(Math.round(diffSeconds / 3600), "hour");
-  return formatter.format(Math.round(diffSeconds / 86400), "day");
 }

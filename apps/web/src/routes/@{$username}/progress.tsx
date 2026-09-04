@@ -83,7 +83,7 @@ function RouteComponent() {
   return (
     <section className="flex flex-col">
       <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
-        <ProfileProvider target={target}>
+        <ProfileProvider key={target.cosmo.address} target={target}>
           <ProgressRenderer address={target.cosmo.address}>
             <ErrorBoundary fallback={<ProgressChartsError />}>
               <Suspense fallback={<ProgressChartsSkeleton />}>

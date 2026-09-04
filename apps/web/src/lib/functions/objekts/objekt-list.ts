@@ -1,6 +1,6 @@
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
-import { collections, members, objekts } from "@/lib/server/db/indexer/schema";
+import { collections, members } from "@/lib/server/db/indexer/schema";
 import type { Collection } from "@/lib/server/db/indexer/schema";
 import {
   withArtist,
@@ -10,10 +10,11 @@ import {
   withOnlineType,
   withSeason,
 } from "@/lib/server/objekts/filters.server";
+import { fetchSerials } from "@/lib/server/objekts/serials.server";
 import { objektListBackendSchema } from "@/lib/universal/parsers";
 import { isMemberSort } from "@apollo/cosmo/types/common";
 import { createServerFn } from "@tanstack/react-start";
-import { and, inArray } from "drizzle-orm";
+import { and } from "drizzle-orm";
 import * as z from "zod";
 
 const LIMIT = 60;
@@ -131,22 +132,6 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
       objekts: page,
     };
   });
-
-/**
- * Fetch serials from the indexer for the given token IDs.
- */
-async function fetchSerials(tokenIds: string[]) {
-  if (tokenIds.length === 0) {
-    return new Map<string, number>();
-  }
-
-  const result = await indexer
-    .select({ id: objekts.id, serial: objekts.serial })
-    .from(objekts)
-    .where(inArray(objekts.id, tokenIds));
-
-  return new Map(result.map((o) => [o.id, o.serial]));
-}
 
 /**
  * Sort list items by the selected sort, applied after entry projection so

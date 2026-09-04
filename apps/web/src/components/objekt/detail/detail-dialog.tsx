@@ -11,22 +11,25 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer-radix";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { m } from "@/i18n/messages";
-import type { Objekt } from "@/lib/universal/objekt-conversion";
-import DetailContent from "./detail-content";
+import type { PropsWithChildren } from "react";
 
-type Props = {
-  collection: Objekt.Collection;
-  tokens: Objekt.Token[];
+type Props = PropsWithChildren<{
+  title: string;
+  description: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-};
+}>;
 
+/**
+ * Two-column objekt dialog shell: a Dialog on desktop, a Drawer on mobile.
+ * The title and description are for screen readers only.
+ */
 export default function DetailDialog({
-  collection,
-  tokens,
+  title,
+  description,
   open,
   onOpenChange,
+  children,
 }: Props) {
   const isDesktop = useMediaQuery();
 
@@ -38,10 +41,10 @@ export default function DetailDialog({
           className="grid max-h-135 w-[calc(100%-2rem)] grid-rows-[1fr] gap-0 overflow-hidden rounded-md p-0 sm:max-w-[min(1400px,calc(100%-4rem))]"
         >
           <div className="sr-only">
-            <DialogTitle>{collection.collectionId}</DialogTitle>
-            <DialogDescription>{m.objekt_group_select()}</DialogDescription>
+            <DialogTitle>{title}</DialogTitle>
+            <DialogDescription>{description}</DialogDescription>
           </div>
-          <DetailContent collection={collection} tokens={tokens} />
+          {children}
         </DialogContent>
       </Dialog>
     );
@@ -51,10 +54,10 @@ export default function DetailDialog({
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="h-[92dvh] gap-0 rounded-t-md p-0">
         <div className="sr-only">
-          <DrawerTitle>{collection.collectionId}</DrawerTitle>
-          <DrawerDescription>{m.objekt_group_select()}</DrawerDescription>
+          <DrawerTitle>{title}</DrawerTitle>
+          <DrawerDescription>{description}</DrawerDescription>
         </div>
-        <DetailContent collection={collection} tokens={tokens} />
+        {children}
       </DrawerContent>
     </Drawer>
   );

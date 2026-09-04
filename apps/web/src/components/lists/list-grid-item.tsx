@@ -2,6 +2,7 @@ import type { ObjektListItem } from "@/lib/functions/objekts/objekt-list";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import type { ObjektList } from "@apollo/database/web/types";
 import { useMemo, useState } from "react";
+import ListingsDialog from "../market/listings-dialog";
 import { ObjektSidebar } from "../objekt/common";
 import ExpandableObjekt from "../objekt/objekt-expandable";
 import EditEntryDialog from "./edit-entry-dialog";
@@ -25,7 +26,9 @@ export function ListGridItem({
   const collection = useMemo(() => Objekt.fromIndexer(item), [item]);
   const currency = objektList.type === "sale" ? objektList.currency : null;
   const [editOpen, setEditOpen] = useState(false);
-  // the owner's sale list card edits its entry instead of opening metadata
+  const [listingsOpen, setListingsOpen] = useState(false);
+  // a sale list card edits its entry for the owner and shows every seller's
+  // listing of the collection to anyone else, instead of opening metadata
   const editable = currency !== null && authenticated;
 
   return (
@@ -33,7 +36,13 @@ export function ListGridItem({
       <ExpandableObjekt
         collection={collection}
         priority={priority}
-        onClick={editable ? () => setEditOpen(true) : undefined}
+        onClick={
+          editable
+            ? () => setEditOpen(true)
+            : currency
+              ? () => setListingsOpen(true)
+              : undefined
+        }
       >
         <ObjektSidebar
           collection={collection}
@@ -54,6 +63,15 @@ export function ListGridItem({
           />
         )}
       </ExpandableObjekt>
+
+      {currency && !editable && (
+        <ListingsDialog
+          collection={collection}
+          open={listingsOpen}
+          onOpenChange={setListingsOpen}
+          pinnedEntryId={item.id}
+        />
+      )}
 
       {currency && editable && (
         <EditEntryDialog

@@ -137,7 +137,11 @@ function RouteComponent() {
 
   return (
     <UserStateProvider {...account}>
-      <ProfileProvider target={target} objektLists={targetObjektLists}>
+      <ProfileProvider
+        key={target.cosmo.address}
+        target={target}
+        objektLists={targetObjektLists}
+      >
         <div className="border-b border-border">
           <div className="container">
             <ListHeader

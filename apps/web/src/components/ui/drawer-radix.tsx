@@ -132,7 +132,7 @@ function DrawerContent({
             <motion.div
               data-slot="drawer-content"
               className={cn(
-                "fixed z-50 flex touch-none flex-col overflow-hidden bg-background",
+                "fixed z-50 flex touch-none flex-col overflow-hidden bg-background outline-none",
                 side === "bottom" &&
                   "inset-x-0 bottom-0 max-h-[90vh] rounded-t-2xl border-t",
                 side === "top" &&
