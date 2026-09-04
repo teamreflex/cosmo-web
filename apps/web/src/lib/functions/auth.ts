@@ -46,8 +46,6 @@ export const $generateVerificationCode = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const code = await storeVerification(context.session.user.id, {
       userId: data.userId,
-      address: data.address,
-      nickname: data.nickname,
       artistId: data.artistId,
     });
 
@@ -79,7 +77,7 @@ export const $verifyCosmoBio = createServerFn({ method: "POST" })
       getCosmoKey(),
     ]);
     const profile = await runCosmo(
-      fetchUserProfile(accessToken, key, data.userId, data.artistId),
+      fetchUserProfile(accessToken, key, stored.userId, stored.artistId),
       signal,
     );
 
@@ -92,9 +90,9 @@ export const $verifyCosmoBio = createServerFn({ method: "POST" })
 
     // link the account
     const account = await linkAccount({
-      address: data.address,
-      username: data.nickname,
-      cosmoId: data.userId,
+      address: profile.address,
+      username: profile.nickname,
+      cosmoId: profile.id,
       userId: context.session.user.id,
       polygonAddress: null,
     });

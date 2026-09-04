@@ -16,11 +16,9 @@ export const userSearchSchema = z.object({
 
 export const generateVerificationCodeSchema = z.object({
   userId: z.number(),
-  address: z.string(),
-  nickname: z.string(),
   artistId: z.enum(validArtists),
 });
 
-export const verifyCosmoBioSchema = generateVerificationCodeSchema.extend({
+export const verifyCosmoBioSchema = z.object({
   code: z.string().length(6),
 });

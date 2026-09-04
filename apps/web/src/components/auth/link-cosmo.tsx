@@ -134,8 +134,6 @@ function LinkCosmoWizard({ onClose }: LinkCosmoWizardProps) {
 
       {state.step === "code" && (
         <CodeStep
-          user={state.user}
-          artistId={state.artistId}
           code={state.code}
           onSuccess={() => {
             track("cosmo-link");
@@ -247,8 +245,6 @@ function SearchStep({ artistId, onContinue }: SearchStepProps) {
       {
         data: {
           userId: selected.id,
-          address: selected.address,
-          nickname: selected.nickname,
           artistId,
         },
       },
@@ -285,14 +281,12 @@ function SearchStep({ artistId, onContinue }: SearchStepProps) {
 }
 
 type CodeStepProps = {
-  user: CosmoPublicUser;
-  artistId: ValidArtist;
   code: string;
   onSuccess: () => void;
   onBack: () => void;
 };
 
-function CodeStep({ user, artistId, code, onSuccess, onBack }: CodeStepProps) {
+function CodeStep({ code, onSuccess, onBack }: CodeStepProps) {
   const [copied, setCopied] = useState(false);
   const { mutate, isPending, error } = useMutation({
     mutationFn: $verifyCosmoBio,
@@ -315,13 +309,7 @@ function CodeStep({ user, artistId, code, onSuccess, onBack }: CodeStepProps) {
   function handleVerify() {
     mutate(
       {
-        data: {
-          userId: user.id,
-          address: user.address,
-          nickname: user.nickname,
-          artistId,
-          code,
-        },
+        data: { code },
       },
       { onSuccess },
     );

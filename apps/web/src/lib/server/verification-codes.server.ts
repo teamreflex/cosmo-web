@@ -1,13 +1,14 @@
-import type { ValidArtist } from "@apollo/cosmo/types/common";
+import { validArtists } from "@apollo/cosmo/types/common";
+import * as z from "zod";
 import { redis } from "./cache.server";
 
-export type VerificationData = {
-  code: string;
-  userId: number;
-  address: string;
-  nickname: string;
-  artistId: ValidArtist;
-};
+const verificationDataSchema = z.object({
+  code: z.string().length(6),
+  userId: z.number(),
+  artistId: z.enum(validArtists),
+});
+
+export type VerificationData = z.infer<typeof verificationDataSchema>;
 
 const VERIFICATION_TTL = 5 * 60; // 5 minutes in seconds
 
@@ -53,7 +54,10 @@ export async function getVerification(
   userId: string,
 ): Promise<VerificationData | null> {
   const cached = await redis.get(createKey(userId));
-  return cached ? JSON.parse(cached) : null;
+  if (!cached) return null;
+
+  const result = verificationDataSchema.safeParse(JSON.parse(cached));
+  return result.success ? result.data : null;
 }
 
 /**
