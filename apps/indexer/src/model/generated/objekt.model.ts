@@ -5,6 +5,7 @@ import {
   Index,
   OneToMany,
   ManyToOne,
+  type Relation,
 } from "typeorm";
 import { Collection } from "./collection.model";
 import { Transfer } from "./transfer.model";
@@ -36,9 +37,9 @@ export class Objekt {
   transferable!: boolean;
 
   @OneToMany(() => Transfer, (e) => e.objekt)
-  transfers!: Transfer[];
+  transfers!: Relation<Transfer[]>;
 
   @Index()
   @ManyToOne(() => Collection, { nullable: true })
-  collection!: Collection;
+  collection!: Relation<Collection>;
 }

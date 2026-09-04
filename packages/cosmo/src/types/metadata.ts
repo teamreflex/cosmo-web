@@ -1,4 +1,4 @@
-import type { MetadataV1Schema, MetadataV3Schema } from "../schema/metadata.ts";
+import type { MetadataV1Schema, MetadataV3Schema } from "../schema/metadata";
 
 export type CosmoObjektMetadataV1 = typeof MetadataV1Schema.Type;
 

@@ -1,7 +1,7 @@
 import type {
   CosmoPublicUserSchema,
   CosmoSearchResultSchema,
-} from "../schema/user.ts";
+} from "../schema/user";
 
 export type CosmoPublicUser = typeof CosmoPublicUserSchema.Type;
 

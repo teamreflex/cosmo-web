@@ -4,8 +4,6 @@
   "private": true,
   "license": "MIT",
   "exports": {
-    "./tsconfig.base.json": "./tsconfig.base.json",
-    "./tsconfig.bun.json": "./tsconfig.bun.json",
-    "./tsconfig.node.json": "./tsconfig.node.json"
+    "./tsconfig.bun.json": "./tsconfig.bun.json"
   }
 }

@@ -2,7 +2,7 @@ import type {
   CosmoArtistBFFSchema,
   CosmoArtistWithMembersBFFSchema,
   CosmoMemberBFFSchema,
-} from "../schema/artists.ts";
+} from "../schema/artists";
 
 export type CosmoArtistBFF = typeof CosmoArtistBFFSchema.Type;
 

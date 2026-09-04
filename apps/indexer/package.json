@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build": "rm -rf lib/ && tsc -p tsconfig.build.json",
-    "start": "squid-commands process:prod",
+    "start": "squid-typeorm-migration apply && bun lib/main.js",
     "lint": "bun --bun oxlint --type-aware --type-check",
     "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
     "typecheck": "tsc --pretty --noEmit",

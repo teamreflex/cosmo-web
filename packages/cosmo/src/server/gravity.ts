@@ -3,9 +3,9 @@ import {
   GravityListSchema,
   GravityResponseSchema,
   PollDetailResponseSchema,
-} from "../schema/gravity.ts";
-import type { ValidArtist } from "../types/common.ts";
-import { bearer, cosmoClient, decodeBody } from "./http.ts";
+} from "../schema/gravity";
+import type { ValidArtist } from "../types/common";
+import { bearer, cosmoClient, decodeBody } from "./http";
 
 /**
  * Fetch the list of gravities for the given artist.

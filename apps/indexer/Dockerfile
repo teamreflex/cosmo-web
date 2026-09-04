@@ -30,4 +30,4 @@ COPY --from=builder /app/apps/indexer/package.json ./package.json
 COPY --from=builder /app/apps/indexer/node_modules ./node_modules
 COPY --from=builder /app/node_modules/.bun /app/node_modules/.bun
 COPY --from=builder /app/packages /app/packages
-CMD ["bun", "lib/main.js"]
+CMD ["bun", "run", "start"]
