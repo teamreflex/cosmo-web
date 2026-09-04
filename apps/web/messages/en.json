@@ -266,8 +266,13 @@
   "list_already_on_list": "{collectionId} is already on this list",
   "batch_selected_count": [
     {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
       "match": {
         "countPlural=one": "{count} objekt selected",
         "countPlural=other": "{count} objekts selected"
@@ -301,8 +306,13 @@
   "list_matches_overlap_count": "{count} overlap",
   "list_matches_count_label": [
     {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
       "match": {
         "countPlural=one": "{count} match",
         "countPlural=other": "{count} matches"
@@ -745,8 +755,13 @@
   "gravity_revealed_progress": "revealed {counted}/{total}",
   "gravity_votes_so_far": [
     {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
       "match": {
         "countPlural=one": "{count} vote so far",
         "countPlural=other": "{count} votes so far"
@@ -758,8 +773,13 @@
   "gravity_ranking": "Ranking",
   "gravity_more_candidates": [
     {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
       "match": {
         "countPlural=one": "+ {count} more candidate",
         "countPlural=other": "+ {count} more candidates"
@@ -770,8 +790,13 @@
   "gravity_candidate_delta": "+{amount} COMO in the latest reveal",
   "gravity_vote_count": [
     {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
       "match": {
         "countPlural=one": "{count} vote",
         "countPlural=other": "{count} votes"
@@ -860,9 +885,15 @@
   "objekt_metadata_min_price": "Lowest",
   "objekt_metadata_max_price": "Highest",
   "objekt_metadata_listing_count": "Listings",
-  "objekt_metadata_pricing_empty": "Not enough listings to compute a market price yet.",
   "objekt_metadata_pricing_updated": "Updated {when}",
   "objekt_metadata_pricing_source": "Based on prices set by other users in their objekt lists.",
+  "objekt_metadata_history_floor": "Floor",
+  "objekt_metadata_history_vs": "vs {date}",
+  "objekt_metadata_history_range_7d": "7d",
+  "objekt_metadata_history_range_30d": "30d",
+  "objekt_metadata_history_range_90d": "90d",
+  "objekt_metadata_history_range_all": "All",
+  "objekt_metadata_history_empty": "Price history starts with the next snapshot.",
   "objekt_error_metadata_fetch_failed": "Failed to fetch objekt metadata. Please try again.",
   "_comment_objekt_serials": "Objekt serials strings",
   "objekt_serials_placeholder": "Select a serial...",

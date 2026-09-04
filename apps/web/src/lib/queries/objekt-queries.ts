@@ -8,6 +8,7 @@ import {
 import { $fetchObjektsIndex } from "@/lib/functions/objekts/objekt-index";
 import { $fetchObjektListEntries } from "@/lib/functions/objekts/objekt-list";
 import { $fetchObjektSerial } from "@/lib/functions/objekts/objekt-serial";
+import { $fetchPriceHistory } from "@/lib/functions/objekts/price-history";
 import { $fetchTransfers } from "@/lib/functions/transfers";
 import type {
   objektIndexFrontendSchema,
@@ -20,7 +21,7 @@ import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import { type FetchError, ofetch } from "ofetch";
 import type { z } from "zod";
 import type { Objekt } from "../universal/objekt-conversion";
-import type { ObjektMetadata } from "../universal/objekts";
+import type { ObjektMetadata, PriceHistoryRange } from "../universal/objekts";
 import { baseUrl } from "../utils";
 
 /**
@@ -262,6 +263,21 @@ export function objektMetadataQuery(slug: string) {
       }),
     retry: 1,
     staleTime: 1000 * 60 * 10,
+  });
+}
+
+/**
+ * Query options for the price history chart on the metadata dialog.
+ */
+export function objektPriceHistoryQuery(
+  slug: string,
+  range: PriceHistoryRange,
+) {
+  return queryOptions({
+    queryKey: ["collection-metadata", "price-history", slug, range],
+    queryFn: () => $fetchPriceHistory({ data: { slug, range } }),
+    retry: 1,
+    staleTime: 1000 * 60 * 60,
   });
 }
 

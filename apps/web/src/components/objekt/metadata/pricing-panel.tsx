@@ -3,20 +3,20 @@ import { formatRelative } from "@/lib/client/time";
 import type { PriceStats } from "@/lib/universal/objekts";
 import { formatPrice } from "@/lib/utils";
 import { StatCell } from "./common";
+import PriceHistory from "./price-history";
 
 type Props = {
+  slug: string;
   data: PriceStats | null;
 };
 
-export default function PricingPanel({ data }: Props) {
+export default function PricingPanel({ slug, data }: Props) {
   if (data === null) {
     return (
-      <div className="flex flex-col gap-2 px-4 py-3">
-        <p className="text-xs text-muted-foreground">
+      <div className="flex flex-col">
+        <PriceHistory slug={slug} />
+        <p className="px-4 py-2 text-xs text-muted-foreground">
           {m.objekt_metadata_pricing_source()}
-        </p>
-        <p className="text-sm text-muted-foreground">
-          {m.objekt_metadata_pricing_empty()}
         </p>
       </div>
     );
@@ -48,6 +48,7 @@ export default function PricingPanel({ data }: Props) {
           mono
         />
       </div>
+      <PriceHistory slug={slug} />
       <div className="flex flex-col gap-0.5 px-4 py-2 text-xs text-muted-foreground">
         <span>{m.objekt_metadata_pricing_source()}</span>
         <span>

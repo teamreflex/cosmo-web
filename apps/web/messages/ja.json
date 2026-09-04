@@ -266,8 +266,13 @@
   "list_already_on_list": "{collectionId}は既にこのリストにあります",
   "batch_selected_count": [
     {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
       "match": {
         "countPlural=other": "{count}件選択中"
       }
@@ -300,8 +305,13 @@
   "list_matches_overlap_count": "{count}件一致",
   "list_matches_count_label": [
     {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
       "match": {
         "countPlural=other": "{count}件のマッチ"
       }
@@ -743,8 +753,13 @@
   "gravity_revealed_progress": "公開 {counted}/{total}",
   "gravity_votes_so_far": [
     {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
       "match": {
         "countPlural=other": "現在{count}票"
       }
@@ -755,8 +770,13 @@
   "gravity_ranking": "ランキング",
   "gravity_more_candidates": [
     {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
       "match": {
         "countPlural=other": "+ 他{count}人の候補"
       }
@@ -766,8 +786,13 @@
   "gravity_candidate_delta": "直近の公開で+{amount} COMO",
   "gravity_vote_count": [
     {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
       "match": {
         "countPlural=other": "{count}票"
       }
@@ -855,9 +880,15 @@
   "objekt_metadata_min_price": "最安値",
   "objekt_metadata_max_price": "最高値",
   "objekt_metadata_listing_count": "出品数",
-  "objekt_metadata_pricing_empty": "市場価格を算出するための出品数が不足しています。",
   "objekt_metadata_pricing_updated": "{when}に更新",
   "objekt_metadata_pricing_source": "他のユーザーがオブジェクトリストで設定した価格に基づいています。",
+  "objekt_metadata_history_floor": "最低価格",
+  "objekt_metadata_history_vs": "{date}比",
+  "objekt_metadata_history_range_7d": "7日",
+  "objekt_metadata_history_range_30d": "30日",
+  "objekt_metadata_history_range_90d": "90日",
+  "objekt_metadata_history_range_all": "全期間",
+  "objekt_metadata_history_empty": "価格履歴は次のスナップショットから始まります。",
   "objekt_error_metadata_fetch_failed": "オブジェクトのメタデータを取得できませんでした。もう一度お試しください。",
   "_comment_objekt_serials": "Objekt serials strings",
   "objekt_serials_placeholder": "シリアルを選択...",

@@ -76,7 +76,7 @@ export default function Metadata(props: Props) {
 
         {!isUnobtainable && (
           <TabsContent value="pricing">
-            <PricingPanel data={data.priceStats} />
+            <PricingPanel slug={props.objekt.slug} data={data.priceStats} />
           </TabsContent>
         )}
       </Tabs>

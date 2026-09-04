@@ -1,5 +1,6 @@
 import { DatabaseWeb } from "@/db";
 import {
+  collectionPriceHistory,
   collectionPriceStats,
   fxRates,
   objektListEntries,
@@ -12,7 +13,9 @@ import type { ScheduledTask } from "../task";
 /**
  * Recompute per-collection USD median prices from priced entries across every
  * objekt list, upserting into `collection_price_stats` and evicting rows for
- * collections that no longer have any priced listings.
+ * collections that no longer have any priced listings. The surviving rows are
+ * then copied into `collection_price_history` under today's UTC date, so the
+ * last run of the day is the day's snapshot.
  */
 export const syncCollectionPriceStatsTask = {
   name: "sync-collection-price-stats",
@@ -143,6 +146,31 @@ export const syncCollectionPriceStatsTask = {
                 ),
             ),
           );
+
+        yield* tx
+          .insert(collectionPriceHistory)
+          .select(
+            tx
+              .select({
+                collectionId: collectionPriceStats.collectionId,
+                date: sql<string>`(now() at time zone 'utc')::date`.as("date"),
+                floorUsd: collectionPriceStats.minPriceUsd,
+                medianUsd: collectionPriceStats.medianPriceUsd,
+                listingCount: collectionPriceStats.listingCount,
+              })
+              .from(collectionPriceStats),
+          )
+          .onConflictDoUpdate({
+            target: [
+              collectionPriceHistory.collectionId,
+              collectionPriceHistory.date,
+            ],
+            set: {
+              floorUsd: sql`excluded.floor_usd`,
+              medianUsd: sql`excluded.median_usd`,
+              listingCount: sql`excluded.listing_count`,
+            },
+          });
       }),
     );
 

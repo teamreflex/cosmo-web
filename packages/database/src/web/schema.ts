@@ -59,16 +59,11 @@ export const cosmoAccounts = pgTable(
   ],
 );
 
-export const cosmoAccountChanges = pgTable(
-  "cosmo_account_changes",
-  {
-    address: citext("address", { length: 42 }).notNull(),
-    username: citext("username", { length: 24 }).notNull(),
-    createdAt: timestamp("created_at", { mode: "string" })
-      .notNull()
-      .defaultNow(),
-  },
-);
+export const cosmoAccountChanges = pgTable("cosmo_account_changes", {
+  address: citext("address", { length: 42 }).notNull(),
+  username: citext("username", { length: 24 }).notNull(),
+  createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
+});
 
 export const lockedObjekts = pgTable(
   "locked_objekts",
@@ -78,9 +73,7 @@ export const lockedObjekts = pgTable(
     tokenId: integer("tokenId").notNull(),
     locked: boolean("locked").notNull(),
   },
-  (t) => [
-    index("address_token_idx").on(t.address, t.tokenId),
-  ],
+  (t) => [index("address_token_idx").on(t.address, t.tokenId)],
 );
 
 export const pins = pgTable(
@@ -278,16 +271,29 @@ export const fxRates = pgTable(
   ],
 );
 
-export const collectionPriceStats = pgTable(
-  "collection_price_stats",
+export const collectionPriceStats = pgTable("collection_price_stats", {
+  collectionId: varchar("collection_id", { length: 36 }).primaryKey(),
+  medianPriceUsd: real("median_price_usd").notNull(),
+  listingCount: integer("listing_count").notNull(),
+  minPriceUsd: real("min_price_usd").notNull(),
+  maxPriceUsd: real("max_price_usd").notNull(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+});
+
+/**
+ * Daily snapshot of `collection_price_stats`, written by the same job. The last
+ * run of each UTC day wins, so a collection has at most one row per day.
+ */
+export const collectionPriceHistory = pgTable(
+  "collection_price_history",
   {
-    collectionId: varchar("collection_id", { length: 36 }).primaryKey(),
-    medianPriceUsd: real("median_price_usd").notNull(),
+    collectionId: varchar("collection_id", { length: 36 }).notNull(),
+    date: date("date", { mode: "string" }).notNull(),
+    floorUsd: real("floor_usd").notNull(),
+    medianUsd: real("median_usd").notNull(),
     listingCount: integer("listing_count").notNull(),
-    minPriceUsd: real("min_price_usd").notNull(),
-    maxPriceUsd: real("max_price_usd").notNull(),
-    updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
   },
+  (t) => [primaryKey({ columns: [t.collectionId, t.date] })],
 );
 
 export const cosmoTokens = pgTable(

@@ -81,6 +81,7 @@ export const relations = defineRelations(schema, (r) => ({
   },
   listDrainCursor: {},
   collectionPriceStats: {},
+  collectionPriceHistory: {},
   fxRates: {},
   cosmoTokens: {},
   gravities: {
