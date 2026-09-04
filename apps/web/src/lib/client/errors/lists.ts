@@ -26,6 +26,8 @@ export function formatListError(
       return m.list_error_not_want_list();
     case "not_sale_list":
       return m.list_error_not_sale_list();
+    case "not_regular_list":
+      return m.list_error_not_regular_list();
     case "not_owned":
       return m.list_error_not_owned({ collectionId });
     case "not_live_list":

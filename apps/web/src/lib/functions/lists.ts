@@ -468,7 +468,17 @@ export const $addObjektsToList = createServerFn({ method: "POST" })
   .validator(addObjektsToListSchema)
   .middleware([authenticatedMiddleware])
   .handler(async ({ data, context }) => {
-    await assertUserOwnsList(data.objektListId, context.session.session.userId);
+    const list = await db.query.objektLists.findFirst({
+      where: { id: data.objektListId, userId: context.session.session.userId },
+      columns: { type: true },
+    });
+
+    if (!list) {
+      throw new ExpectedError("list_no_access");
+    }
+    if (list.type !== "regular") {
+      throw new ExpectedError("not_regular_list");
+    }
 
     const slugs = [...new Set(data.slugs)];
 

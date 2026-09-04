@@ -15,6 +15,7 @@ import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { eq } from "drizzle-orm";
 import { createCipheriv, randomBytes } from "node:crypto";
 import type { PublicUser } from "../universal/auth";
+import { settingsSchema } from "../universal/schema/auth";
 import { db } from "./db";
 import {
   sendAccountDeletionEmail,
@@ -284,6 +285,8 @@ export const auth = betterAuth({
         defaultValue: GRID_COLUMNS,
         input: true,
         returned: true,
+        // oxlint-disable-next-line anti-slop/no-shape-in-symbol-names -- zod's field accessor
+        validator: { input: settingsSchema.shape.gridColumns },
       },
       collectionMode: {
         type: "string",
@@ -291,6 +294,8 @@ export const auth = betterAuth({
         defaultValue: "blockchain",
         input: true,
         returned: true,
+        // oxlint-disable-next-line anti-slop/no-shape-in-symbol-names -- zod's field accessor
+        validator: { input: settingsSchema.shape.collectionMode },
       },
       discord: {
         type: "string",

@@ -13,6 +13,9 @@ import {
 import { addr } from "@apollo/util";
 import { createFileRoute } from "@tanstack/react-router";
 import { addMinutes, isPast, startOfHour } from "date-fns";
+import * as z from "zod";
+
+const pollIdSchema = z.string().regex(/^\d+$/).transform(Number);
 
 export const Route = createFileRoute("/api/gravity/$pollId/aggregated")({
   server: {
@@ -22,11 +25,11 @@ export const Route = createFileRoute("/api/gravity/$pollId/aggregated")({
        * Returns chart data, top 50 votes, top 25 users, and reveals.
        */
       GET: async ({ params }) => {
-        // validate pollId
-        const pollId = Number(params.pollId);
-        if (isNaN(pollId)) {
+        const parsed = pollIdSchema.safeParse(params.pollId);
+        if (!parsed.success) {
           return Response.json({ error: "Invalid poll ID" }, { status: 422 });
         }
+        const pollId = parsed.data;
 
         // fetch poll dates from database
         const poll = await db.query.gravityPolls.findFirst({

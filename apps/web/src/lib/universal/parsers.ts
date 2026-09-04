@@ -62,7 +62,7 @@ export const objektIndexFrontendSchema = cosmoSchema
 export const objektIndexBackendSchema = cosmoSchema
   .omit({ transferable: true, gridable: true })
   .extend({
-    page: z.coerce.number().default(0),
+    page: z.coerce.number().int().nonnegative().default(0),
     artists: z.string().array().default([]),
   });
 
@@ -79,7 +79,7 @@ export const userCollectionFrontendSchema = cosmoSchema
 export const userCollectionBackendSchema = cosmoSchema
   .omit({ gridable: true })
   .extend({
-    page: z.coerce.number().default(0),
+    page: z.coerce.number().int().nonnegative().default(0),
     artists: z.string().array().default([]),
   });
 
@@ -95,7 +95,7 @@ export const objektListFrontendSchema = cosmoSchema
 export const objektListBackendSchema = cosmoSchema
   .omit({ transferable: true, gridable: true })
   .extend({
-    page: z.coerce.number().default(0),
+    page: z.coerce.number().int().nonnegative().default(0),
     artists: z.string().array().default([]),
   });
 
