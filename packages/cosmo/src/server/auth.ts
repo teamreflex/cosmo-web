@@ -1,8 +1,8 @@
 import { Effect } from "effect";
 import { HttpBody } from "effect/unstable/http";
-import { RefreshResponseSchema } from "../schema/auth.ts";
-import { encrypt, EncryptionError } from "./encryption.ts";
-import { cosmoClient, decodeBody } from "./http.ts";
+import { RefreshResponseSchema } from "../schema/auth";
+import { encrypt, EncryptionError } from "./encryption";
+import { cosmoClient, decodeBody } from "./http";
 
 /**
  * Refresh the given token.

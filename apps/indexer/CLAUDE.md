@@ -15,20 +15,6 @@ This is a [Subsquid SDK](https://docs.sqd.ai/sdk/overview/) application for inde
 - **Bun** - Package manager and runtime (>= 1.4)
 - **PostgreSQL** - Primary database
 
-## Runtime: Bun
-
-Install, build, and the production process all run on Bun. The Dockerfile is a single-runtime image: it builds with `bun run build` (tsc) and boots straight into `bun lib/main.js` — the processor applies pending migrations itself on startup, and there is no `sqd` CLI in the image.
-
-Two things make the Subsquid SDK work under Bun:
-
-- Bun 1.4 runs TypeORM's legacy decorator/metadata emit correctly (older Bun versions could not, which is why this app previously ran on Node).
-- `patches/@subsquid%2Fhttp-client@1.8.1.patch` removes the hard-coded `compress: true` fetch option. Bun replaces `node-fetch` with its native fetch, which interprets `compress` as "gzip the request body" — JSON-RPC endpoints then reject every request with `-32700 parse error`. node-fetch defaults `compress` to true, so the removal is a no-op under Node. When bumping `@subsquid/http-client`, the patch is version-pinned and must be re-created against the new version.
-
-Type-checking consequences:
-
-- The tsconfig declares `"types": ["bun"]` like every other Bun-runtime workspace (`@types/bun` via the root catalog), while still extending `tsconfig.node.json` for its NodeNext emit settings — the build output in `lib/` is what runs in production.
-- TypeScript 7 (native tsgo) does not reliably auto-include packages from `node_modules/@types`, so the tsconfig declares its `types` explicitly. Without it, an install reshuffling the isolated-linker layout can silently drop globals (`process`, `Buffer`, `setTimeout`), surfacing as TS2591 "Cannot find name" — check the tsconfig `types` field before diagnosing a missing dependency. The same applies to every workspace: Bun-runtime packages declare `"types": ["bun"]` via the shared tsconfig.bun.json.
-
 ## Development Workflow
 
 ### Making Schema Changes
@@ -59,7 +45,7 @@ When adding or modifying entities, follow this exact workflow:
 
 ### Online DDL
 
-The Subsquid migration runner hard-codes `transaction: 'all'`, so `CONCURRENTLY` DDL cannot run through migrations. Run it out-of-band via `psql` (autocommit, one statement at a time) — the indexer's short batched write transactions mean `CONCURRENTLY` index builds/drops drain in seconds even on the ~25M-row `transfer` table — then ship an idempotent `IF [NOT] EXISTS` migration as the record.
+The Subsquid migration runner hard-codes `transaction: 'all'`, so `CONCURRENTLY` DDL cannot run through migrations. Run any DDL manually, then ship an idempotent `IF [NOT] EXISTS` migration as the record.
 
 ## Core Patterns & Conventions
 
@@ -145,14 +131,15 @@ Entity fields and relations are defined in `schema.graphql` and mirrored in `pac
 
 ## Important Gotchas
 
-1. **Runtime:** Bun (>= 1.4) for build and production — see the Runtime section above for why, and the `@subsquid/http-client` patch that makes it possible
-2. **Workspace package imports:** relative imports inside workspace packages (`@apollo/cosmo`, `@apollo/util`) use explicit `.ts` extensions; Bun tolerates extensionless specifiers, but the convention keeps the packages runnable under Node's type stripping too
+1. **Runtime:** Bun (>= 1.4) for build and production. `bun run start` applies `db/migrations` before starting the processor
+2. **`@subsquid/http-client` patch:** `patches/@subsquid%2Fhttp-client@1.8.1.patch` removes the hard-coded `compress: true` fetch option, which Bun's native fetch treats as "gzip the request body" and JSON-RPC endpoints reject with `-32700 parse error`. The patch is version-pinned and must be re-created when bumping the package
 3. **UUID Type:** Uses `varchar(36)` instead of PostgreSQL `uuid` type due to Subsquid casting limitations
 4. **Address Normalization:** Always use `addr()` - never store raw addresses
 5. **GraphQL Server:** Not actively used - schema only defines entity structure
 6. **Keep Drizzle in Sync:** All model changes must be reflected in `/packages/database/src/indexer/schema.ts`
 7. **Bun Compatibility:** Several dependencies manually updated for Bun (`glob`, `lru-cache`, `path-scurry`)
-8. **Autovacuum reloptions are live-only:** `objekt` and `transfer` have per-table autovacuum settings applied directly in production (not in any migration) because the default thresholds let the visibility map go stale under the constant owner-rewrite churn. Re-apply them by hand after any from-scratch database rebuild.
+8. **Relation properties use `Relation<T>`:** the model files import each other circularly and the build emits ESM, so a bare class type in `emitDecoratorMetadata` output throws a TDZ `ReferenceError` at startup
+9. **Autovacuum reloptions are live-only:** `objekt` and `transfer` have per-table autovacuum settings applied directly in production (not in any migration) because the default thresholds let the visibility map go stale under the constant owner-rewrite churn. Re-apply them by hand after any from-scratch database rebuild.
 
 ## Processing Flow
 

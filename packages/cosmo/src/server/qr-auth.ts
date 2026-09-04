@@ -1,8 +1,8 @@
 import { Effect } from "effect";
 import { Cookies, HttpBody } from "effect/unstable/http";
 import puppeteer from "puppeteer-core";
-import { AuthTicketSchema, QueryTicketSchema } from "../schema/qr-auth.ts";
-import { cosmoShopClient, decodeBody } from "./http.ts";
+import { AuthTicketSchema, QueryTicketSchema } from "../schema/qr-auth";
+import { cosmoShopClient, decodeBody } from "./http";
 
 export interface QrAuthConfig {
   recaptchaKey: string;

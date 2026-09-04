@@ -1,8 +1,8 @@
 import type {
   ObjektSummariesResponseSchema,
   ObjektSummarySchema,
-} from "../schema/collection.ts";
-import type { ValidArtist } from "./common.ts";
+} from "../schema/collection";
+import type { ValidArtist } from "./common";
 
 export type ObjektBaseFields = {
   /** diverges from cosmo api */

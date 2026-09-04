@@ -1,19 +1,19 @@
 import { Effect, Schema } from "effect";
-import { CosmoDecodeError } from "../errors.ts";
+import { CosmoDecodeError } from "../errors";
 import {
   CosmoByNicknameSchema,
   CosmoSearchResultSchema,
   CosmoUserProfileSchema,
-} from "../schema/user.ts";
-import type { ValidArtist } from "../types/common.ts";
-import { decrypt, EncryptionError } from "./encryption.ts";
+} from "../schema/user";
+import type { ValidArtist } from "../types/common";
+import { decrypt, EncryptionError } from "./encryption";
 import {
   bearer,
   cosmoClient,
   cosmoNoRetryClient,
   decodeBody,
   toApiError,
-} from "./http.ts";
+} from "./http";
 
 /**
  * Fetch a user from COSMO by nickname. Not retried, since a failed lookup is meaningful to callers.

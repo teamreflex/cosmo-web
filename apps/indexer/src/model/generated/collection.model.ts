@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryColumn, Index, OneToMany } from "typeorm";
+import {
+  Entity,
+  Column,
+  PrimaryColumn,
+  Index,
+  OneToMany,
+  type Relation,
+} from "typeorm";
 import { Objekt } from "./objekt.model";
 import { Transfer } from "./transfer.model";
 
@@ -84,8 +91,8 @@ export class Collection {
   hasAudio!: boolean;
 
   @OneToMany(() => Transfer, (e) => e.collection)
-  transfers!: Transfer[];
+  transfers!: Relation<Transfer[]>;
 
   @OneToMany(() => Objekt, (e) => e.collection)
-  objekts!: Objekt[];
+  objekts!: Relation<Objekt[]>;
 }

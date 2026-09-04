@@ -6,7 +6,7 @@ import type {
   PollUpcomingSchema,
   PollViewSelectedContentSchema,
   UpcomingGravitySchema,
-} from "../schema/gravity.ts";
+} from "../schema/gravity";
 
 export type CosmoGravityType = "event-gravity" | "grand-gravity";
 export type CosmoPollType = "single-poll" | "combination-poll" | "unit-poll";
