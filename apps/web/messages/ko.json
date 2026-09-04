@@ -227,7 +227,6 @@
   "list_sale_quantity": "수량",
   "list_sale_price": "가격",
   "list_edit_sale_entry": "항목 수정",
-  "list_median_price": "중간값 {price}",
   "toast_entry_updated": "항목이 업데이트되었습니다",
   "list_type": "리스트 유형",
   "list_type_regular": "일반",
@@ -245,13 +244,8 @@
   "list_already_on_list": "{collectionId}이(가) 이미 이 리스트에 있습니다",
   "batch_selected_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "{count}개 선택됨"
       }
@@ -284,13 +278,8 @@
   "list_matches_overlap_count": "{count}개 일치",
   "list_matches_count_label": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "매칭 {count}개"
       }
@@ -732,13 +721,8 @@
   "gravity_revealed_progress": "공개 {counted}/{total}",
   "gravity_votes_so_far": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "현재 {count}표"
       }
@@ -749,13 +733,8 @@
   "gravity_ranking": "순위",
   "gravity_more_candidates": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "+ 후보 {count}명 더 보기"
       }
@@ -765,13 +744,8 @@
   "gravity_candidate_delta": "최근 공개에서 +{amount} COMO",
   "gravity_vote_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "투표 {count}회"
       }

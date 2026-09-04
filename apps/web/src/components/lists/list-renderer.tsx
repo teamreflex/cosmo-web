@@ -13,7 +13,7 @@ import TitleHeader from "../ui/title-header";
 import { ListGridItem } from "./list-grid-item";
 
 type Props = {
-  objektList: ObjektList & { fxRateToUsd: number | null };
+  objektList: ObjektList;
   authenticated: boolean;
 };
 
@@ -70,7 +70,6 @@ export default function ListRenderer(props: Props) {
             authenticated: props.authenticated,
             objektList: props.objektList,
           }}
-          extraRowHeight={props.objektList.type === "sale" ? 28 : 0}
           showTotal
         />
       </div>

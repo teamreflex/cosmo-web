@@ -136,7 +136,6 @@ type Props<
   gridColumns: number;
   getObjektId: (objekt: TItem) => string;
   authenticated: boolean;
-  extraRowHeight?: number;
 };
 
 export default function VirtualizedObjektGrid<
@@ -186,7 +185,6 @@ function ObjektGrid<
   gridColumns,
   getObjektId,
   authenticated,
-  extraRowHeight = 0,
 }: Props<TResponse, TItem, TItemProps, TError, TQueryKey>) {
   const { query, total, items } = useObjektResponse(options);
   const cells = useMemo<ObjektRowItem<TItem>[]>(() => {
@@ -213,7 +211,7 @@ function ObjektGrid<
     (width - SIDE * 2 - GAP * (gridColumns - 1)) / gridColumns,
   );
   // rounded so it stays exact as the virtualizer accumulates it down the list
-  const itemHeight = Math.round(laneWidth * ASPECT_RATIO) + extraRowHeight;
+  const itemHeight = Math.round(laneWidth * ASPECT_RATIO);
 
   const virtualizer = useWindowVirtualizer({
     count: cells.length,

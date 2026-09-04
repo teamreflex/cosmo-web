@@ -227,7 +227,6 @@
   "list_sale_quantity": "Quantité",
   "list_sale_price": "Prix",
   "list_edit_sale_entry": "Modifier l'entrée",
-  "list_median_price": "{price} médiane",
   "toast_entry_updated": "Entrée actualisée",
   "list_type": "Type de liste",
   "list_type_regular": "Normale",
@@ -245,13 +244,8 @@
   "list_already_on_list": "{collectionId} est déjà sur cette liste",
   "batch_selected_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} objekt sélectionné",
         "countPlural=other": "{count} objekts sélectionnés"
@@ -285,13 +279,8 @@
   "list_matches_overlap_count": "{count} en commun",
   "list_matches_count_label": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} correspondance",
         "countPlural=other": "{count} correspondances"
@@ -734,13 +723,8 @@
   "gravity_revealed_progress": "révélés {counted}/{total}",
   "gravity_votes_so_far": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} vote jusqu'ici",
         "countPlural=other": "{count} votes jusqu'ici"
@@ -752,13 +736,8 @@
   "gravity_ranking": "Classement",
   "gravity_more_candidates": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "+ {count} autre candidat",
         "countPlural=other": "+ {count} autres candidats"
@@ -769,13 +748,8 @@
   "gravity_candidate_delta": "+{amount} COMO lors de la dernière révélation",
   "gravity_vote_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} vote",
         "countPlural=other": "{count} votes"

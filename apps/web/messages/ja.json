@@ -227,7 +227,6 @@
   "list_sale_quantity": "数量",
   "list_sale_price": "価格",
   "list_edit_sale_entry": "エントリーを編集",
-  "list_median_price": "中央値 {price}",
   "toast_entry_updated": "エントリーを更新しました",
   "list_type": "リストの種類",
   "list_type_regular": "通常",
@@ -245,13 +244,8 @@
   "list_already_on_list": "{collectionId}は既にこのリストにあります",
   "batch_selected_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "{count}件選択中"
       }
@@ -284,13 +278,8 @@
   "list_matches_overlap_count": "{count}件一致",
   "list_matches_count_label": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "{count}件のマッチ"
       }
@@ -732,13 +721,8 @@
   "gravity_revealed_progress": "公開 {counted}/{total}",
   "gravity_votes_so_far": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "現在{count}票"
       }
@@ -749,13 +733,8 @@
   "gravity_ranking": "ランキング",
   "gravity_more_candidates": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "+ 他{count}人の候補"
       }
@@ -765,13 +744,8 @@
   "gravity_candidate_delta": "直近の公開で+{amount} COMO",
   "gravity_vote_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "{count}票"
       }

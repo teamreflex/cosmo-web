@@ -71,10 +71,6 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.objektListEntries.objektListId,
       to: r.objektLists.id,
     }),
-    priceStats: r.one.collectionPriceStats({
-      from: r.objektListEntries.collectionId,
-      to: r.collectionPriceStats.collectionId,
-    }),
   },
   notifications: {
     user: r.one.user({

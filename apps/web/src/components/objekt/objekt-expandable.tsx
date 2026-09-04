@@ -14,19 +14,22 @@ type Props = PropsWithChildren<{
   collection: Objekt.Collection;
   selectionKey?: string;
   setActive?: (slug: string | undefined) => void;
+  onClick?: () => void;
   priority?: boolean;
   eager?: boolean;
   className?: string;
 }>;
 
 /**
- * Displays the front of an objekt and opens the shared MetadataDialog on click.
+ * Displays the front of an objekt and opens the shared MetadataDialog on
+ * click, unless the caller supplies its own click handler.
  */
 export default function ExpandableObjekt({
   children,
   selectionKey,
   collection,
   setActive,
+  onClick,
   priority = false,
   eager = false,
   className,
@@ -53,6 +56,7 @@ export default function ExpandableObjekt({
         <FrontImage
           collection={collection}
           setActive={setActive}
+          onClick={onClick}
           priority={priority}
           eager={eager}
         />
@@ -66,6 +70,7 @@ export default function ExpandableObjekt({
 type FrontImageProps = {
   collection: Objekt.Collection;
   setActive?: (slug: string | undefined) => void;
+  onClick?: () => void;
   priority?: boolean;
   eager?: boolean;
 };
@@ -93,6 +98,11 @@ function FrontImage(props: FrontImageProps) {
   }
 
   function handleClick() {
+    if (props.onClick) {
+      props.onClick();
+      return;
+    }
+
     // populate the query cache so the dialog skips its initial fetch
     queryClient.setQueryData(
       objektQuery(props.collection.slug).queryKey,

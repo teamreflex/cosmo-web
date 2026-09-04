@@ -7,7 +7,6 @@ import {
   authenticatedMiddleware,
   cosmoMiddleware,
 } from "@/lib/server/middlewares";
-import { fetchLatestFxRate } from "@/lib/server/objekts/fx.server";
 import { assertUserOwnsList } from "@/lib/server/objekts/lists.server";
 import type { PublicUser } from "@/lib/universal/auth";
 import { ExpectedError } from "@/lib/universal/errors/expected";
@@ -55,9 +54,7 @@ import {
 } from "./lists.server";
 
 /**
- * Fetch a single objekt list along with the latest USD FX rate for its
- * currency, so the client can convert the global market price into the list's
- * own currency for display.
+ * Fetch a single objekt list by id or by owner + slug.
  */
 export const $fetchObjektList = createServerFn({ method: "GET" })
   .validator(
@@ -67,19 +64,11 @@ export const $fetchObjektList = createServerFn({ method: "GET" })
     ]),
   )
   .handler(async ({ data }) => {
-    const list = await db.query.objektLists.findFirst({ where: data });
-    if (!list) return undefined;
-
-    const fxRateToUsd = list.currency
-      ? await fetchLatestFxRate(list.currency)
-      : null;
-
-    return { ...list, fxRateToUsd };
+    return await db.query.objektLists.findFirst({ where: data });
   });
 
 /**
- * Fetch a single objekt list with the user, plus the latest USD FX rate for
- * the list's currency.
+ * Fetch a single objekt list with its owner.
  */
 export const $getObjektListWithUser = createServerFn({ method: "GET" })
   .validator(z.object({ id: z.string() }))
@@ -109,16 +98,11 @@ export const $getObjektListWithUser = createServerFn({ method: "GET" })
     });
     if (!list) return undefined;
 
-    const fxRateToUsd = list.currency
-      ? await fetchLatestFxRate(list.currency)
-      : null;
-
     const { user, ...listData } = list;
     const { cosmoAccount, ...userRow } = user;
 
     return {
       ...listData,
-      fxRateToUsd,
       user: toPublicUser(userRow),
       userDisplay: userRow.displayUsername ?? userRow.name,
       cosmoUsername: cosmoAccount?.username,
