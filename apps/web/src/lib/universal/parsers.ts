@@ -4,6 +4,7 @@ import {
   validSorts,
 } from "@apollo/cosmo/types/common";
 import * as z from "zod";
+import { marketSorts } from "./market";
 import { transferTypes } from "./transfers";
 
 // cap on distinct filter values parsed from a URL; anything longer hits HTTP
@@ -62,6 +63,23 @@ export const objektIndexFrontendSchema = cosmoSchema
 export const objektIndexBackendSchema = cosmoSchema
   .omit({ transferable: true, gridable: true })
   .extend({
+    page: z.coerce.number().int().nonnegative().default(0),
+    artists: z.string().array().default([]),
+  });
+
+// market page frontend - the sort is market-specific
+export const marketFrontendSchema = cosmoSchema
+  .omit({ sort: true, transferable: true, gridable: true })
+  .extend({
+    sort: z.enum(marketSorts).nullish().catch(null),
+  })
+  .partial();
+
+// market page backend
+export const marketBackendSchema = cosmoSchema
+  .omit({ sort: true, transferable: true, gridable: true })
+  .extend({
+    sort: z.enum(marketSorts).nullish().catch(null),
     page: z.coerce.number().int().nonnegative().default(0),
     artists: z.string().array().default([]),
   });
@@ -157,6 +175,24 @@ export const progressLeaderboardBackendSchema = z.object({
   onlineType: z.enum(validOnlineTypes).nullish().default(null),
   season: z.string().nullish().default(null),
 });
+
+/**
+ * Market page equivalent of normalizeFilters: the market sort replaces the
+ * cosmo sort and the ownership flags never apply.
+ */
+export function normalizeMarketFilters(
+  data: z.infer<typeof marketFrontendSchema>,
+) {
+  return {
+    sort: data.sort,
+    season: data.season,
+    class: data.class,
+    on_offline: data.on_offline,
+    member: data.member,
+    artist: data.artist,
+    collectionNo: data.collectionNo,
+  };
+}
 
 /**
  * Ensures extra query params are removed and don't trigger queryKey changes.

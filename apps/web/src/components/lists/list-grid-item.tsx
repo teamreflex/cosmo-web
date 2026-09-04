@@ -1,13 +1,14 @@
 import type { ObjektListItem } from "@/lib/functions/objekts/objekt-list";
 import { Objekt } from "@/lib/universal/objekt-conversion";
+import { formatPrice } from "@/lib/utils";
 import type { ObjektList } from "@apollo/database/web/types";
 import { useMemo, useState } from "react";
 import ListingsDialog from "../market/listings-dialog";
 import { ObjektSidebar } from "../objekt/common";
 import ExpandableObjekt from "../objekt/objekt-expandable";
+import PriceOverlay from "../objekt/price-overlay";
 import EditEntryDialog from "./edit-entry-dialog";
 import ListOverlay from "./list-overlay";
-import SaleOverlay from "./sale-overlay";
 
 type Props = {
   item: ObjektListItem;
@@ -56,10 +57,9 @@ export function ListGridItem({
           />
         )}
         {currency && (
-          <SaleOverlay
+          <PriceOverlay
             collection={collection}
-            price={item.entryPrice}
-            currency={currency}
+            price={formatPrice(item.entryPrice ?? 0, currency)}
           />
         )}
       </ExpandableObjekt>

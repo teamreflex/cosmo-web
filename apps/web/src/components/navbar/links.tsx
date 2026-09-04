@@ -9,6 +9,7 @@ import {
   IconFolderOpen,
   IconMenu2,
   IconPackage,
+  IconTag,
 } from "@tabler/icons-react";
 import { Link, useLocation } from "@tanstack/react-router";
 import { Button } from "../ui/button";
@@ -40,6 +41,11 @@ export function DesktopPublicLinks() {
         href="/objekts/stats"
         active={location.pathname === "/objekts/stats"}
         name={m.nav_objekt_stats()}
+      />
+      <LinkButton
+        href="/market"
+        active={location.pathname.startsWith("/market")}
+        name={m.market_header()}
       />
       <LinkButton
         href="/events"
@@ -135,6 +141,19 @@ function MobileMenuItems(props: MobileMenuProps) {
             )}
           />
           <span>{m.nav_objekt_stats()}</span>
+        </Link>
+      </DropdownMenuItem>
+
+      {/* market */}
+      <DropdownMenuItem asChild>
+        <Link to="/market" aria-label={m.market_header()}>
+          <IconTag
+            className={cn(
+              "h-4 w-4 shrink-0 fill-transparent transition-all",
+              location.pathname.startsWith("/market") && "fill-white/50",
+            )}
+          />
+          <span>{m.market_header()}</span>
         </Link>
       </DropdownMenuItem>
 
