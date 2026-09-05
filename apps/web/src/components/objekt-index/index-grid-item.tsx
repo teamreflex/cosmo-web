@@ -1,4 +1,3 @@
-import { useActiveObjekt } from "@/hooks/use-active-objekt";
 import { collectionKey } from "@/hooks/use-objekt-selection";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import type { IndexedObjekt } from "@/lib/universal/objekts";
@@ -14,6 +13,7 @@ type Props = {
   priority: boolean;
   authenticated: boolean;
   objektLists: ObjektList[];
+  setActiveObjekt: (slug: string | undefined) => void;
 };
 
 export const IndexGridItem = memo(function IndexGridItem({
@@ -21,9 +21,9 @@ export const IndexGridItem = memo(function IndexGridItem({
   priority,
   authenticated,
   objektLists,
+  setActiveObjekt,
 }: Props) {
   const collection = useMemo(() => Objekt.fromIndexer(item), [item]);
-  const { setActiveObjekt } = useActiveObjekt();
 
   return (
     <ExpandableObjekt

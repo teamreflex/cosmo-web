@@ -1,18 +1,17 @@
 import { m } from "@/i18n/messages";
 import { cn } from "@/lib/utils";
 import { IconSearch, IconX } from "@tabler/icons-react";
-import { getRouteApi } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useState } from "react";
 import { useDebounceCallback } from "usehooks-ts";
 
-const route = getRouteApi("/");
-
 export default function FilterSearch() {
-  const search = route.useSearch({
+  const search = useSearch({
+    from: "/",
     select: (params) => params.search,
   });
   const [query, setQuery] = useState(() => search ?? undefined);
-  const navigate = route.useNavigate();
+  const navigate = useNavigate({ from: "/" });
 
   const setDebounced = useDebounceCallback((term: string | undefined) => {
     void navigate({

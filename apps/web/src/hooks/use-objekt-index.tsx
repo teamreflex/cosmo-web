@@ -13,8 +13,10 @@ import { objektOptions } from "./use-objekt-response";
  * Handles switching between the blockchain and Typesense APIs.
  */
 export function useObjektIndex() {
+  // structural sharing keeps the params stable across unrelated search changes (e.g. `id`)
   const searchParams = useSearch({
     from: "/",
+    structuralSharing: true,
     select: (search) => ({
       sort: search.sort,
       season: search.season,
