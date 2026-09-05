@@ -4,18 +4,17 @@ import {
 } from "@/lib/queries/objekt-queries";
 import { track } from "@/lib/utils";
 import { IconCards } from "@tabler/icons-react";
-import { getRouteApi } from "@tanstack/react-router";
+import { useSearch } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useArtists } from "./use-artists";
 import { objektOptions } from "./use-objekt-response";
-
-const route = getRouteApi("/");
 
 /**
  * Handles switching between the blockchain and Typesense APIs.
  */
 export function useObjektIndex() {
-  const searchParams = route.useSearch({
+  const searchParams = useSearch({
+    from: "/",
     select: (search) => ({
       sort: search.sort,
       season: search.season,
