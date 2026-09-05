@@ -27,28 +27,28 @@ import { ArtistItem } from "./artist-selectbox";
  * Public desktop link buttons — rendered regardless of auth state.
  */
 export function DesktopPublicLinks() {
-  const location = useLocation();
+  const pathname = useLocation({ select: (location) => location.pathname });
 
   return (
     <div className="hidden items-center gap-1 lg:flex">
       <LinkButton
         href="/"
-        active={location.pathname === "/" || location.pathname === "/objekts"}
+        active={pathname === "/" || pathname === "/objekts"}
         name={m.objekts_header()}
       />
       <LinkButton
         href="/objekts/stats"
-        active={location.pathname === "/objekts/stats"}
+        active={pathname === "/objekts/stats"}
         name={m.nav_objekt_stats()}
       />
       <LinkButton
         href="/events"
-        active={location.pathname.startsWith("/events")}
+        active={pathname.startsWith("/events")}
         name={m.events_header()}
       />
       <LinkButton
         href="/gravity"
-        active={location.pathname.startsWith("/gravity")}
+        active={pathname.startsWith("/gravity")}
         name={m.gravity_header()}
       />
     </div>
@@ -63,7 +63,7 @@ type AuthLinksProps = {
  * Auth-gated desktop links — currently the user's Collection page.
  */
 export function DesktopAuthLinks({ cosmo }: AuthLinksProps) {
-  const location = useLocation();
+  const pathname = useLocation({ select: (location) => location.pathname });
 
   if (!cosmo) return null;
 
@@ -71,7 +71,7 @@ export function DesktopAuthLinks({ cosmo }: AuthLinksProps) {
     <div className="hidden items-center gap-1 lg:flex">
       <LinkButton
         href={`/@${cosmo.username}`}
-        active={location.pathname.startsWith(`/@${cosmo.username}`)}
+        active={pathname.startsWith(`/@${cosmo.username}`)}
         name={m.collection_title()}
       />
     </div>
@@ -106,7 +106,7 @@ export function MobileMenu(props: MobileMenuProps) {
 }
 
 function MobileMenuItems(props: MobileMenuProps) {
-  const location = useLocation();
+  const pathname = useLocation({ select: (location) => location.pathname });
   const { artistList, selectedIds } = useArtists();
 
   return (
@@ -117,8 +117,7 @@ function MobileMenuItems(props: MobileMenuProps) {
           <IconCards
             className={cn(
               "h-4 w-4 shrink-0 fill-transparent transition-all",
-              (location.pathname === "/" || location.pathname === "/objekts") &&
-                "fill-white/50",
+              (pathname === "/" || pathname === "/objekts") && "fill-white/50",
             )}
           />
           <span>{m.objekts_header()}</span>
@@ -131,7 +130,7 @@ function MobileMenuItems(props: MobileMenuProps) {
           <IconChartBar
             className={cn(
               "h-4 w-4 shrink-0 fill-transparent transition-all",
-              location.pathname === "/objekts/stats" && "fill-white/50",
+              pathname === "/objekts/stats" && "fill-white/50",
             )}
           />
           <span>{m.nav_objekt_stats()}</span>
@@ -143,7 +142,7 @@ function MobileMenuItems(props: MobileMenuProps) {
           <IconFolderOpen
             className={cn(
               "h-4 w-4 shrink-0 fill-transparent transition-all",
-              location.pathname === "/events" && "fill-white/50",
+              pathname === "/events" && "fill-white/50",
             )}
           />
           <span>{m.events_header()}</span>
@@ -156,7 +155,7 @@ function MobileMenuItems(props: MobileMenuProps) {
           <IconArchive
             className={cn(
               "h-4 w-4 shrink-0 fill-transparent transition-all",
-              location.pathname.startsWith("/gravity") && "fill-white/50",
+              pathname.startsWith("/gravity") && "fill-white/50",
             )}
           />
           <span>{m.gravity_header()}</span>
@@ -173,8 +172,7 @@ function MobileMenuItems(props: MobileMenuProps) {
             <IconPackage
               className={cn(
                 "h-4 w-4 shrink-0 fill-transparent transition-all",
-                location.pathname === `/@${props.cosmo.username}` &&
-                  "fill-white/50",
+                pathname === `/@${props.cosmo.username}` && "fill-white/50",
               )}
             />
             <span>{m.collection_title()}</span>
