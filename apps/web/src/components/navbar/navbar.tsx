@@ -1,6 +1,5 @@
 import { currentAccountQuery } from "@/lib/queries/core";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useLocation } from "@tanstack/react-router";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import AuthFallback from "../auth/auth-fallback";
@@ -58,11 +57,10 @@ function DesktopAuthLink() {
 
 function RightCluster() {
   const { data } = useSuspenseQuery(currentAccountQuery);
-  const location = useLocation();
 
   return (
     <>
-      {data && <NotificationBell key={location.pathname} />}
+      {data && <NotificationBell />}
       <MobileMenu signedIn={data !== null} cosmo={data?.cosmo} />
       {!data ? (
         <StateGuest />
