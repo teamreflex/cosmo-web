@@ -1,13 +1,12 @@
-import { getRouteApi } from "@tanstack/react-router";
-
-const route = getRouteApi("/");
+import { useNavigate, useSearch } from "@tanstack/react-router";
 
 /**
  * Manages the objekt slug when opening the metadata dialog.
  */
 export function useActiveObjekt() {
-  const navigate = route.useNavigate();
-  const id = route.useSearch({
+  const navigate = useNavigate({ from: "/" });
+  const id = useSearch({
+    from: "/",
     select: (search) => search.id ?? undefined,
   });
 
