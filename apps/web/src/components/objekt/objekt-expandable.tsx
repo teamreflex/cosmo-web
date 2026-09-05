@@ -2,7 +2,7 @@ import { useMetadataDialog } from "@/hooks/use-metadata-dialog";
 import { useObjektSelection } from "@/hooks/use-objekt-selection";
 import { m } from "@/i18n/messages";
 import { getObjektImageUrls } from "@/lib/client/objekt-util";
-import { objektQuery } from "@/lib/queries/objekt-queries";
+import { objektMetadataQuery, objektQuery } from "@/lib/queries/objekt-queries";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
@@ -93,11 +93,13 @@ function FrontImage(props: FrontImageProps) {
   }
 
   function handleClick() {
-    // populate the query cache so the dialog skips its initial fetch
+    // populate the query cache so the dialog skips its initial fetch, and
+    // start the metadata request now rather than after the dialog mounts
     queryClient.setQueryData(
       objektQuery(props.collection.slug).queryKey,
       props.collection,
     );
+    void queryClient.prefetchQuery(objektMetadataQuery(props.collection.slug));
 
     if (props.setActive) {
       // URL routing mode: update URL, let RoutedExpandableObjekt sync the dialog

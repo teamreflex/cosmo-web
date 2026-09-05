@@ -1,3 +1,4 @@
+import { useActiveObjekt } from "@/hooks/use-active-objekt";
 import { useGridColumns } from "@/hooks/use-grid-columns";
 import { useObjektIndex } from "@/hooks/use-objekt-index";
 import { useUserState } from "@/hooks/use-user-state";
@@ -24,6 +25,8 @@ export default function IndexRenderer(props: Props) {
   const { user } = useUserState();
   const gridColumns = useGridColumns();
   const options = useObjektIndex();
+  // passed down as a prop so cells don't subscribe to the active objekt themselves
+  const { setActiveObjekt } = useActiveObjekt();
 
   const authenticated = user !== undefined;
 
@@ -76,6 +79,7 @@ export default function IndexRenderer(props: Props) {
           itemComponentProps={{
             authenticated,
             objektLists: props.objektLists,
+            setActiveObjekt,
           }}
           showTotal
         />

@@ -7,8 +7,14 @@ import type { z } from "zod";
  */
 export function useCosmoFilters() {
   const navigate = useNavigate();
+  /**
+   * Parsing produces fresh arrays on every router update, so structural sharing
+   * keeps the result referentially stable and consumers only re-render when a
+   * filter actually changes.
+   */
   const filters = useSearch({
     strict: false,
+    structuralSharing: true,
     select: (search) => {
       const parsed = cosmoSchema.safeParse(search);
       if (!parsed.success) {

@@ -53,10 +53,8 @@ export function MetadataDialogProvider({ children }: Props) {
     reset();
   }, [reset]);
 
-  const value = useMemo(
-    () => ({ open, close, currentSlug: state?.slug ?? null }),
-    [open, close, state],
-  );
+  // only stable callbacks, so opening the sheet doesn't re-render every consumer
+  const value = useMemo(() => ({ open, close }), [open, close]);
 
   function onOpenChange(next: boolean) {
     if (next === false) {

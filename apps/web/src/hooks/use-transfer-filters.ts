@@ -1,13 +1,11 @@
 import type { transfersFrontendSchema } from "@/lib/universal/parsers";
-import { getRouteApi } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useCallback } from "react";
 import type { z } from "zod";
 
-const route = getRouteApi("/@{$username}/trades");
-
 export function useTransferFilters() {
-  const navigate = route.useNavigate();
-  const searchParams = route.useSearch();
+  const navigate = useNavigate({ from: "/@{$username}/trades" });
+  const searchParams = useSearch({ from: "/@{$username}/trades" });
 
   /**
    * Sets multiple filters at once and commits to the URL.

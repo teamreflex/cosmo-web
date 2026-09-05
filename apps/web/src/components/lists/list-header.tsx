@@ -1,3 +1,4 @@
+import { useHydrated } from "@/hooks/use-hydrated";
 import { m } from "@/i18n/messages";
 import type { PublicUser } from "@/lib/universal/auth";
 import { cn } from "@/lib/utils";
@@ -26,6 +27,8 @@ export default function ListHeader({
   extras,
 }: Props) {
   const intent = intentCopy(list.type);
+  // the date is timezone-dependent, so it only renders once hydrated
+  const hydrated = useHydrated();
 
   return (
     <div className="flex min-h-40 flex-col py-4">
@@ -50,11 +53,15 @@ export default function ListHeader({
               {list.createdAt && (
                 <>
                   <span className="text-muted-foreground">·</span>
-                  <span className="text-muted-foreground">
-                    {m.list_header_updated({
-                      date: format(list.createdAt, "d MMM yy"),
-                    })}
-                  </span>
+                  {hydrated ? (
+                    <span className="text-muted-foreground">
+                      {m.list_header_updated({
+                        date: format(list.createdAt, "d MMM yy"),
+                      })}
+                    </span>
+                  ) : (
+                    <Skeleton className="h-3 w-24 rounded-full" />
+                  )}
                 </>
               )}
               <span className="text-muted-foreground">·</span>

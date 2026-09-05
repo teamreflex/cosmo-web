@@ -34,7 +34,7 @@ export const Route = createFileRoute("/@{$username}/list/$slug")({
   errorComponent: ErrorComponent,
   notFoundComponent: NotFoundComponent,
   validateSearch: objektListFrontendSchema,
-  loaderDeps: ({ search }) => ({ searchParams: search }),
+  loaderDeps: ({ search: { serial, ...searchParams } }) => ({ searchParams }),
   loader: async ({ context, params, deps }) => {
     const [account, target, selected] = await Promise.all([
       context.queryClient.ensureQueryData(currentAccountQuery),

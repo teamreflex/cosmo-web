@@ -6,7 +6,7 @@ The project uses Drizzle ORM and the Bun SQL Postgres driver, with two connectio
   - Postgres connection for general user data
 - `import { indexer } from "@/lib/server/db/indexer"`
   - Postgres connection for querying the blockchain indexer for objekt data.
-  - entities are: collections, objekts, transfers, comoBalances, votes
+  - tables are defined in `packages/database/src/indexer/schema.ts` — read it rather than relying on prose
 
 `turbo db:generate` generates migration files.
 
@@ -35,7 +35,7 @@ Use `mode: "date"`, never `mode: "string"`. `bun:sql` returns `Date` objects; `m
 
 ## Relational Query Builder (v2)
 
-The project uses Drizzle ORM 1.0.0 with the new relational query builder. For most queries, use the relational API:
+The project uses Drizzle ORM 1.0's relational query builder. For most queries, use the relational API:
 
 ```ts
 const profile = await db.query.cosmoAccounts.findFirst({
@@ -48,7 +48,7 @@ const profile = await db.query.cosmoAccounts.findFirst({
 });
 ```
 
-**IMPORTANT:** The relational query builder uses an **object-based filter syntax**. The old builder function syntax with `and()`, `eq()`, `or()`, etc. **DOES NOT WORK** in the relational query builder. Do not use it.
+The relational query builder's `where` takes the object-based filter syntax below. The `eq()` / `and()` / `or()` builder functions and the `(table, { eq }) => ...` callback form belong to the select query builder and are rejected by the relational API.
 
 ### Available Filters
 
@@ -204,7 +204,7 @@ const cosmo = await db
   .where(eq(cosmoAccounts.username, "username"));
 ```
 
-**Note:** In the query builder (not relational), you **DO** use the builder functions like `eq()`, `and()`, `or()`, etc.
+The query builder is where `eq()`, `and()`, `or()` and the other builder functions are used.
 
 Do not write raw SQL in `sql` template tags unless absolutely necessary due to the lack of Drizzle function. Things like `array_agg()`, `CASE ... WHEN` statements etc.
 

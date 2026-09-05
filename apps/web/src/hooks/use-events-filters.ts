@@ -1,13 +1,11 @@
 import type { ValidArtist } from "@apollo/cosmo/types/common";
 import type { EventTypeKey } from "@apollo/database/web/types";
-import { getRouteApi } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useCallback } from "react";
 
-const route = getRouteApi("/events/");
-
 export function useEventsFilters() {
-  const navigate = route.useNavigate();
-  const searchParams = route.useSearch();
+  const navigate = useNavigate({ from: "/events/" });
+  const searchParams = useSearch({ from: "/events/" });
 
   const setFilters = useCallback(
     (
