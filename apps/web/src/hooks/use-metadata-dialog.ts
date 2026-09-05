@@ -7,7 +7,6 @@ export type OpenMetadataDialogOptions = {
 export type MetadataDialogContextValue = {
   open: (slug: string, options?: OpenMetadataDialogOptions) => void;
   close: () => void;
-  currentSlug: string | null;
 };
 
 export const MetadataDialogContext =
