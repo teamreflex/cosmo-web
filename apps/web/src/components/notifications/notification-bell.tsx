@@ -13,7 +13,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -21,7 +21,10 @@ import { ScrollArea } from "../ui/scroll-area";
 import { Skeleton } from "../ui/skeleton";
 
 export default function NotificationBell() {
-  const [open, setOpen] = useState(false);
+  // remembering where the popover was opened closes it on any navigation
+  const pathname = useLocation({ select: (location) => location.pathname });
+  const [openedOn, setOpenedOn] = useState<string | null>(null);
+  const open = openedOn === pathname;
   const unread = useQuery(unreadNotificationsQuery);
   const list = useQuery({
     ...notificationsListQuery({ limit: 20, offset: 0 }),
@@ -31,7 +34,10 @@ export default function NotificationBell() {
   const count = unread.data ?? 0;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={(open) => setOpenedOn(open ? pathname : null)}
+    >
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
