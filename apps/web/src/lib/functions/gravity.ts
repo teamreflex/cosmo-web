@@ -238,18 +238,13 @@ export const $fetchCachedPoll = createServerFn({ method: "GET" })
       throw notFound();
     }
 
-    // if the poll is in the past, cache it for 30 days
-    if (isBefore(info.endDate, Date.now())) {
-      return await remember(
-        `poll:${data.artist}:${data.gravityId}:${data.pollId}`,
-        60 * 60 * 24 * 30, // 30 days
-        fn,
-        PollChoicesSchema,
-      );
-    }
-
-    // otherwise fetch the poll from cosmo
-    return await fn();
+    // candidates are fixed once posted, so a live poll can be served from cache for an hour
+    return await remember(
+      `poll:${data.artist}:${data.gravityId}:${data.pollId}`,
+      isBefore(info.endDate, Date.now()) ? 60 * 60 * 24 * 30 : 60 * 60,
+      fn,
+      PollChoicesSchema,
+    );
   });
 
 /**
