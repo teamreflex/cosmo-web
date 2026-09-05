@@ -23,7 +23,9 @@ export const Route = createFileRoute("/")({
   component: RouteComponent,
   errorComponent: ErrorComponent,
   pendingComponent: PendingComponent,
-  loaderDeps: ({ search }) => ({ searchParams: search }),
+  loaderDeps: ({ search: { id, serial, ...searchParams } }) => ({
+    searchParams,
+  }),
   loader: async ({ context, deps }) => {
     const [account, selected] = await Promise.all([
       context.queryClient.ensureQueryData(currentAccountQuery),
