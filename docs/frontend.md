@@ -33,7 +33,7 @@ function SubComponent() {}
 
 ### Hydration Gates & Portals
 
-`useHydrated()` defers only during the initial hydration pass — after a client-side navigation it returns `true` on a component's very first render. Use it for hydration-mismatch guards (timestamps, locale/timezone-dependent output). Components that read a sibling DOM node on first render (e.g. `Portal`'s `document.querySelector(to)`) must keep the `useEffect` + `setState` mount gate instead — it flips after the component's own commit, when the target exists. Suppress the `react/react-compiler` warning on that line rather than converting to `useHydrated`.
+`useHydrated()` defers only during the initial hydration pass — after a client-side navigation it returns `true` on a component's very first render. Use it for hydration-mismatch guards (timestamps, locale/timezone-dependent output). Components that read a sibling DOM node on first render (e.g. `Portal`'s `document.querySelector(to)`) must keep the `useEffect` + `setState` mount gate instead — it flips after the component's own commit, when the target exists. Suppress the `react/set-state-in-effect` warning on that line rather than converting to `useHydrated`.
 
 ## Forms
 

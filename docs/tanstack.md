@@ -74,9 +74,8 @@ A prefetch only helps if the component subscribes with the exact same query key 
 - `queryClient.invalidateQueries(...)` for client-only cache refreshes that don't touch the root loader — most admin data mutations.
 - The same target account can be cached under multiple identifiers (username or address). Mutations touching account data go through `targetAccountQueryFilter` — `invalidateQueries` with it, or `setQueriesData<FullAccount>` with an ownership check (`old.user?.id`) in the updater — never by rebuilding a single `targetAccountQuery(...)` key.
 
-## Patches & Version Notes
+## Version Notes
 
-- `@tanstack/react-router` is bun-patched (`patches/` + root `package.json` `patchedDependencies`) to fix a `Script` hoist asymmetry in 1.170.15 that caused prod hydration mismatches (React #418) and `$RS` streaming crashes. When upgrading past 1.170.15, check whether upstream fixed it and drop the patch (symptom when broken: dev-console hydration error + the src script hoisted into `<head>`).
-- Keep the TanStack package pins in lockstep — mismatched peer resolution has produced two `router-core` copies before.
+- Keep the TanStack package pins in lockstep — mismatched peer resolution yields two `router-core` copies.
 - `@tanstack/devtools-vite` must be the **first** vite plugin (before `tanstackStart()`), or `data-tsd-source` line numbers differ between SSR and client transforms, causing dev-only hydration mismatches.
 - Sentry's built-in "filter hydration errors" inbound filter drops React #418 events — hydration failures only surface as breadcrumbs on downstream errors, not as their own issues.

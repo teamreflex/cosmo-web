@@ -38,15 +38,8 @@ When adding or modifying entities, follow this exact workflow:
 
 ### Migration Guidelines
 
-**CRITICAL - DO NOT:**
+Do not run `sqd`, `subsquid-commands`, or `squid-*` commands — they wipe the migrations directory and generate broken models. Migrations are written by hand, never generated:
 
-- Run `sqd`, `subsquid-commands`, or `squid-*` commands (they wipe migrations and generate bad models)
-- Use auto-generated migrations
-- Delete the migrations directory
-
-**DO:**
-
-- Write all migrations manually
 - Follow naming convention: `{timestamp}-Data.js`
 - Include both `up()` and `down()` methods
 - Test migrations locally before committing
@@ -146,8 +139,8 @@ Entity fields and relations are defined in `schema.graphql` and mirrored in `pac
 4. **Address Normalization:** Always use `addr()` - never store raw addresses
 5. **GraphQL Server:** Not actively used - schema only defines entity structure
 6. **Keep Drizzle in Sync:** All model changes must be reflected in `/packages/database/src/indexer/schema.ts`
-7. **Bun Compatibility:** Several dependencies manually updated for Bun (`glob`, `lru-cache`, `path-scurry`)
-8. **Autovacuum reloptions are live-only:** `objekt` and `transfer` have per-table autovacuum settings applied directly in production (not in any migration) because the default thresholds let the visibility map go stale under the constant owner-rewrite churn. Re-apply them by hand after any from-scratch database rebuild.
+7. **Bun Compatibility:** `glob`, `lru-cache`, and `path-scurry` are direct dependencies only to pin Bun-compatible versions over the transitive ones — nothing imports them, so keep them when pruning unused dependencies
+8. **Autovacuum reloptions are live-only:** several indexer tables have per-table autovacuum settings applied directly in production (not in any migration) because the default thresholds let the visibility map go stale under the constant owner-rewrite churn. The tables and their settings are recorded under "Current VACUUM settings" in `docs/database.md` — re-apply them by hand after any from-scratch database rebuild.
 
 ## Processing Flow
 
