@@ -1,5 +1,5 @@
-// oxlint-disable react/refs
 import { useElementSize } from "@/hooks/use-element-size";
+import { useGridVirtualizer } from "@/hooks/use-grid-virtualizer";
 import type { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 import { useObjektResponse } from "@/hooks/use-objekt-response";
 import { tokenKey } from "@/hooks/use-objekt-selection";
@@ -38,15 +38,7 @@ import { IconHeartBroken, IconRefresh } from "@tabler/icons-react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import type { DefaultError, QueryKey } from "@tanstack/react-query";
 import type { Virtualizer } from "@tanstack/react-virtual";
-import { useWindowVirtualizer } from "@tanstack/react-virtual";
-import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import type { ComponentType } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { LegacyOverlay } from "../collection/data-sources/common-legacy";
@@ -215,25 +207,24 @@ function ObjektGrid<
   // rounded so it stays exact as the virtualizer accumulates it down the list
   const itemHeight = Math.round(laneWidth * ASPECT_RATIO) + extraRowHeight;
 
-  const virtualizer = useWindowVirtualizer({
+  const {
+    items: virtualList,
+    totalSize,
+    scrollMargin,
+    measureElement,
+    measure,
+  } = useGridVirtualizer({
     count: cells.length,
     lanes: gridColumns,
     gap: GAP,
-    // overscan is counted in items, so scale it to keep ~3 rows buffered
-    overscan: gridColumns * 3,
-    estimateSize: () => itemHeight,
-    measureElement: () => itemHeight,
-    scrollMargin: containerRef.current?.offsetTop ?? 0,
+    itemHeight,
+    container: containerRef,
   });
-
-  // fixes react compiler issue: https://github.com/TanStack/virtual/issues/743
-  const virtualizerRef = useRef(virtualizer);
-  const virtualList = virtualizerRef.current.getVirtualItems();
 
   // re-measure cell sizes upon viewport size change
   useEffect(() => {
-    virtualizerRef.current.measure();
-  }, [itemHeight]);
+    measure();
+  }, [itemHeight, measure]);
 
   /**
    * Drag-and-drop pin reordering. `reorderable` is stable for a mounted grid
@@ -319,7 +310,7 @@ function ObjektGrid<
     <div
       className="relative w-full will-change-transform"
       style={{
-        height: `${virtualizerRef.current.getTotalSize()}px`,
+        height: `${totalSize}px`,
       }}
     >
       {/* wait for measurement: until the cell size is known the estimated
@@ -330,8 +321,7 @@ function ObjektGrid<
           const cell = cells[virtualItem.index];
           if (!cell) return null;
 
-          const baseY =
-            virtualItem.start - virtualizerRef.current.options.scrollMargin;
+          const baseY = virtualItem.start - scrollMargin;
           const left = SIDE + virtualItem.lane * (laneWidth + GAP);
           const style = {
             transform: `translateY(${baseY}px)`,
@@ -352,7 +342,7 @@ function ObjektGrid<
                   left={left}
                   width={laneWidth}
                   authenticated={authenticated}
-                  measureElement={virtualizerRef.current.measureElement}
+                  measureElement={measureElement}
                 />
               );
             }
@@ -361,7 +351,7 @@ function ObjektGrid<
               <div
                 key={cell.item.tokenId}
                 data-index={virtualItem.index}
-                ref={virtualizerRef.current.measureElement}
+                ref={measureElement}
                 style={style}
                 className="absolute top-0"
               >
@@ -385,7 +375,7 @@ function ObjektGrid<
             <div
               key={id}
               data-index={virtualItem.index}
-              ref={virtualizerRef.current.measureElement}
+              ref={measureElement}
               style={style}
               className="absolute top-0"
             >
