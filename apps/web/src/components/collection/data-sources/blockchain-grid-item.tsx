@@ -1,7 +1,7 @@
 import { tokenKey } from "@/hooks/use-objekt-selection";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import ExpandableObjekt from "../../objekt/objekt-expandable";
 import { LegacyOverlay } from "./common-legacy";
 
@@ -13,7 +13,7 @@ type Props = {
   authenticated: boolean;
 };
 
-export function BlockchainGridItem({
+export const BlockchainGridItem = memo(function BlockchainGridItem({
   item,
   id,
   isPin,
@@ -36,4 +36,4 @@ export function BlockchainGridItem({
       />
     </ExpandableObjekt>
   );
-}
+});

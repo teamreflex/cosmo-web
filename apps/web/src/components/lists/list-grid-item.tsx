@@ -1,7 +1,7 @@
 import type { ObjektListItem } from "@/lib/functions/objekts/objekt-list";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import type { ObjektList } from "@apollo/database/web/types";
-import { useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import { ObjektSidebar } from "../objekt/common";
 import ExpandableObjekt from "../objekt/objekt-expandable";
 import EditEntryDialog from "./edit-entry-dialog";
@@ -16,7 +16,7 @@ type Props = {
   objektList: ObjektList & { fxRateToUsd: number | null };
 };
 
-export function ListGridItem({
+export const ListGridItem = memo(function ListGridItem({
   item,
   priority,
   authenticated,
@@ -73,4 +73,4 @@ export function ListGridItem({
       )}
     </div>
   );
-}
+});

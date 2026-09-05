@@ -1,4 +1,5 @@
 import type { BFFCollectionGroup } from "@apollo/cosmo/types/objekts";
+import { memo } from "react";
 import GroupedObjekt from "../../objekt/objekt-collection-group";
 
 type Props = {
@@ -9,7 +10,7 @@ type Props = {
   showLocked: boolean;
 };
 
-export function BlockchainGroupsGridItem({
+export const BlockchainGroupsGridItem = memo(function BlockchainGroupsGridItem({
   item,
   priority,
   gridColumns,
@@ -23,4 +24,4 @@ export function BlockchainGroupsGridItem({
       priority={priority}
     />
   );
-}
+});
