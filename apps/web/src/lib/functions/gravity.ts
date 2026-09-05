@@ -53,7 +53,7 @@ export const $fetchGravityDetails = createServerFn({ method: "GET" })
       throw notFound();
     }
 
-    // fetch the full gravity from cosmo or cache, depending on timing
+    // fetch the full gravity, cached briefly while live and long-term once ended
     const gravity = await fetchCachedGravity(info.cosmoId, isPast, signal);
 
     // pull the correct poll from the gravity
@@ -195,13 +195,13 @@ async function fetchCachedGravity(
     }
   }
 
-  if (!isPast) {
-    return await fn(id);
-  }
-
+  /**
+   * status is derived from the poll dates, which never change, so a live gravity
+   * can be served from cache for an hour. once ended the payload is final.
+   */
   return await remember(
     `gravity:${id}`,
-    60 * 60 * 24 * 30, // 30 days
+    isPast ? 60 * 60 * 24 * 30 : 60 * 60,
     () => fn(id),
     GravitySchema,
   );
