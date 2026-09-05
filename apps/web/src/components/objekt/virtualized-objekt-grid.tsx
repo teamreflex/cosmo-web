@@ -11,7 +11,6 @@ import {
   DndContext,
   DragOverlay,
   KeyboardSensor,
-  MeasuringStrategy,
   MouseSensor,
   TouchSensor,
   closestCenter,
@@ -406,7 +405,6 @@ function ObjektGrid<
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
             onDragCancel={handleDragCancel}
-            measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
             accessibility={{ announcements, screenReaderInstructions }}
           >
             <SortableContext items={pinIds} strategy={rectSortingStrategy}>
