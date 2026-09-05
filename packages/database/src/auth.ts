@@ -6,6 +6,7 @@ import {
   boolean,
   integer,
   index,
+  varchar,
 } from "drizzle-orm/pg-core";
 import { citext } from "./custom";
 
@@ -33,6 +34,8 @@ export const user = pgTable(
     discord: text("discord"),
     twitter: text("twitter"),
     showSocials: boolean("show_socials").notNull().default(false),
+    // ISO 4217 code prices are displayed in, must have an fx_rates row
+    currency: varchar("currency", { length: 3 }).notNull().default("USD"),
   },
   (t) => [
     index("user_username_idx").on(t.username),

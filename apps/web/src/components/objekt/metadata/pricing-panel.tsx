@@ -1,7 +1,7 @@
 import { m } from "@/i18n/messages";
 import { formatRelative } from "@/lib/client/time";
 import type { PriceStats } from "@/lib/universal/objekts";
-import { formatPrice } from "@/lib/utils";
+import PriceDisplay from "../price-display";
 import { StatCell } from "./common";
 import PriceHistory from "./price-history";
 
@@ -27,7 +27,7 @@ export default function PricingPanel({ slug, data }: Props) {
       <div className="flex items-stretch border-b border-border">
         <StatCell
           label={m.objekt_metadata_market_price()}
-          value={formatPrice(data.medianPriceUsd, "USD")}
+          value={<PriceDisplay usd={data.medianPriceUsd} />}
           mono
         />
         <StatCell
@@ -39,12 +39,12 @@ export default function PricingPanel({ slug, data }: Props) {
       <div className="flex items-stretch border-b border-border">
         <StatCell
           label={m.objekt_metadata_min_price()}
-          value={formatPrice(data.minPriceUsd, "USD")}
+          value={<PriceDisplay usd={data.minPriceUsd} />}
           mono
         />
         <StatCell
           label={m.objekt_metadata_max_price()}
-          value={formatPrice(data.maxPriceUsd, "USD")}
+          value={<PriceDisplay usd={data.maxPriceUsd} />}
           mono
         />
       </div>

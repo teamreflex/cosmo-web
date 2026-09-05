@@ -2,13 +2,13 @@ import ObjektPanel from "@/components/objekt/detail/objekt-panel";
 import SortButton, {
   type SortDir,
 } from "@/components/objekt/detail/sort-button";
+import { useDisplayCurrency } from "@/hooks/use-display-currency";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useUserState } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
 import { collectionListingsQuery } from "@/lib/queries/listings";
 import type { CollectionListing } from "@/lib/universal/listings";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import { formatPrice } from "@/lib/utils";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
@@ -50,6 +50,7 @@ export default function ListingsContent({ collection, pinnedEntryId }: Props) {
 
 function Listings({ collection, pinnedEntryId }: Props) {
   const { user } = useUserState();
+  const { formatUsd } = useDisplayCurrency();
   const { data: listings } = useSuspenseQuery(
     collectionListingsQuery(collection.slug),
   );
@@ -93,7 +94,7 @@ function Listings({ collection, pinnedEntryId }: Props) {
             {floor !== null && (
               <>
                 {" · "}
-                {m.listings_floor({ price: formatPrice(floor, "USD") })}
+                {m.listings_floor({ price: formatUsd(floor) })}
               </>
             )}
           </span>

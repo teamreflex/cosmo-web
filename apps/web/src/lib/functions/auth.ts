@@ -2,6 +2,7 @@ import { auth } from "@/lib/server/auth.server";
 import { linkAccount } from "@/lib/server/cosmo-accounts.server";
 import { getCosmoKey } from "@/lib/server/encryption.server";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
+import { assertSupportedCurrency } from "@/lib/server/objekts/fx.server";
 import { importObjektLists } from "@/lib/server/objekts/lists.server";
 import { getProxiedToken } from "@/lib/server/proxied-token.server";
 import { getRequestSignal } from "@/lib/server/request.server";
@@ -28,11 +29,13 @@ export const $updateSettings = createServerFn({ method: "POST" })
   .middleware([authenticatedMiddleware])
   .validator(settingsSchema)
   .handler(async ({ data }) => {
+    await assertSupportedCurrency(data.currency);
     await auth.api.updateUser({
       headers: getRequestHeaders(),
       body: {
         gridColumns: data.gridColumns,
         collectionMode: data.collectionMode,
+        currency: data.currency,
       },
     });
   });

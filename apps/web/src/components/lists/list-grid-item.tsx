@@ -1,3 +1,4 @@
+import { useDisplayCurrency } from "@/hooks/use-display-currency";
 import type { ObjektListItem } from "@/lib/functions/objekts/objekt-list";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import { formatPrice } from "@/lib/utils";
@@ -16,6 +17,7 @@ type Props = {
   priority: boolean;
   authenticated: boolean;
   objektList: ObjektList;
+  fxRateToUsd: number | null;
 };
 
 export function ListGridItem({
@@ -23,6 +25,7 @@ export function ListGridItem({
   priority,
   authenticated,
   objektList,
+  fxRateToUsd,
 }: Props) {
   const collection = useMemo(() => Objekt.fromIndexer(item), [item]);
   const currency = objektList.type === "sale" ? objektList.currency : null;
@@ -54,17 +57,20 @@ export function ListGridItem({
             id={item.id}
             collection={collection}
             objektList={objektList}
+            onViewListings={currency ? () => setListingsOpen(true) : undefined}
           />
         )}
         {currency && (
-          <PriceOverlay
+          <SalePriceOverlay
             collection={collection}
-            price={formatPrice(item.entryPrice ?? 0, currency)}
+            price={item.entryPrice ?? 0}
+            currency={currency}
+            rateToUsd={fxRateToUsd}
           />
         )}
       </ExpandableObjekt>
 
-      {currency && !editable && (
+      {currency && (
         <ListingsDialog
           collection={collection}
           open={listingsOpen}
@@ -87,5 +93,38 @@ export function ListGridItem({
         />
       )}
     </>
+  );
+}
+
+type SalePriceOverlayProps = {
+  collection: Objekt.Collection;
+  price: number;
+  currency: string;
+  rateToUsd: number | null;
+};
+
+/**
+ * The entry price in the viewer's currency, with the seller's original price
+ * above it when the two differ.
+ */
+function SalePriceOverlay({
+  collection,
+  price,
+  currency,
+  rateToUsd,
+}: SalePriceOverlayProps) {
+  const viewer = useDisplayCurrency();
+  const original = formatPrice(price, currency);
+
+  if (currency === viewer.currency || rateToUsd === null) {
+    return <PriceOverlay collection={collection} price={original} />;
+  }
+
+  return (
+    <PriceOverlay
+      collection={collection}
+      label={original}
+      price={viewer.formatUsd(price * rateToUsd)}
+    />
   );
 }

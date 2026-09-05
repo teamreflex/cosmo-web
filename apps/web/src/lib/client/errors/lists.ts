@@ -54,6 +54,8 @@ export function formatListError(
       return m.list_error_want_list_already_linked();
     case "have_list_already_linked":
       return m.list_error_have_list_already_linked();
+    case "unsupported_currency":
+      return m.list_error_unsupported_currency();
     default:
       error.message satisfies never;
       return null;

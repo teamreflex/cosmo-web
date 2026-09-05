@@ -15,16 +15,15 @@ export function baseUrl() {
 }
 
 /**
- * Format a price in the given currency. Falls back to a manual format string
- * when the currency code is not recognized by `Intl.NumberFormat` (we allow
- * freeform currency input on objekt lists).
+ * Format a price in the given currency, rounded to that currency's own minor
+ * unit so converted amounts never show fractional won or yen. Falls back to a
+ * manual format string when `Intl.NumberFormat` rejects the code.
  */
 export function formatPrice(price: number, currency: string) {
   try {
     return new Intl.NumberFormat("en", {
       style: "currency",
       currency,
-      maximumFractionDigits: 2,
     }).format(price);
   } catch {
     return `${price.toLocaleString("en", { maximumFractionDigits: 2 })} ${currency}`;

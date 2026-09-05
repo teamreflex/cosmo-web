@@ -48,19 +48,20 @@ export const Route = createFileRoute("/@{$username}/list/$slug")({
     }
 
     // find objekt list
-    const objektList = await $fetchObjektList({
+    const objektListWithRate = await $fetchObjektList({
       data: {
         userId: target.user.id,
         slug: params.slug,
       },
     });
 
-    if (!objektList) {
+    if (!objektListWithRate) {
       throw redirect({
         to: "/@{$username}",
         params: { username: params.username },
       });
     }
+    const { fxRateToUsd, ...objektList } = objektListWithRate;
 
     // fetch entries
     void context.queryClient.prefetchInfiniteQuery(
@@ -76,6 +77,7 @@ export const Route = createFileRoute("/@{$username}/list/$slug")({
       targetObjektLists: objektLists,
       isAuthenticated,
       objektList,
+      fxRateToUsd,
     };
   },
   head: ({ loaderData }) =>
@@ -86,8 +88,14 @@ export const Route = createFileRoute("/@{$username}/list/$slug")({
 });
 
 function RouteComponent() {
-  const { account, target, targetObjektLists, isAuthenticated, objektList } =
-    Route.useLoaderData();
+  const {
+    account,
+    target,
+    targetObjektLists,
+    isAuthenticated,
+    objektList,
+    fxRateToUsd,
+  } = Route.useLoaderData();
 
   // a list is trade-active if it's a have list with a linked want, OR a want
   // list that some have list of the same user links to
@@ -154,7 +162,11 @@ function RouteComponent() {
           </div>
         </div>
 
-        <ListRenderer objektList={objektList} authenticated={isAuthenticated} />
+        <ListRenderer
+          objektList={objektList}
+          fxRateToUsd={fxRateToUsd}
+          authenticated={isAuthenticated}
+        />
 
         <Overlay>
           <ScrollToTop />

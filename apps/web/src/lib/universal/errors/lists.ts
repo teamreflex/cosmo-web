@@ -16,6 +16,7 @@ export const listErrorCodes = [
   "list_no_access",
   "want_list_already_linked",
   "have_list_already_linked",
+  "unsupported_currency",
 ] as const;
 
 export type ListErrorCode = (typeof listErrorCodes)[number];

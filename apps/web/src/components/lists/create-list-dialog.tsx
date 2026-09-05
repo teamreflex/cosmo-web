@@ -7,6 +7,7 @@ import {
   targetAccountQueryFilter,
 } from "@/lib/queries/core";
 import type { FullAccount } from "@/lib/universal/cosmo-accounts";
+import { commonCurrencies } from "@/lib/universal/schema/currency";
 import { track } from "@/lib/utils";
 import type { ObjektList } from "@apollo/database/web/types";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
@@ -27,9 +28,9 @@ import {
   createRegularListSchema,
   createSaleListSchema,
   createWantListSchema,
-  defaultCurrencies,
   type ListType,
 } from "../../lib/universal/schema/objekt-list";
+import CurrencySelect from "../misc/currency-select";
 import Portal from "../portal";
 import { Button } from "../ui/button";
 import {
@@ -402,24 +403,20 @@ function CurrencyField() {
       render={({ field, fieldState }) => (
         <Field data-invalid={fieldState.invalid}>
           <FieldLabel>{m.list_currency()}</FieldLabel>
-          <Input
-            placeholder="USD"
-            maxLength={3}
+          <CurrencySelect
+            name="currency"
             value={field.value ?? ""}
-            onChange={(e) =>
-              field.onChange(e.target.value === "" ? undefined : e.target.value)
-            }
+            onValueChange={field.onChange}
           />
           <div className="flex flex-wrap gap-1">
-            {defaultCurrencies.map((c) => (
+            {commonCurrencies.map((c) => (
               <button
                 key={c}
                 type="button"
-                onClick={() =>
-                  field.onChange(field.value === c ? undefined : c)
-                }
+                onClick={() => field.onChange(c)}
                 className="rounded-md border px-2 py-0.5 text-xs data-[active=true]:bg-accent"
-                data-active={field.value?.toUpperCase() === c}
+                data-active={field.value === c}
+                aria-pressed={field.value === c}
               >
                 {c}
               </button>

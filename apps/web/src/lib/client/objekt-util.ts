@@ -5,7 +5,9 @@ export type Hoverable =
   | "select"
   | "lock"
   | "list"
+  | "listings"
   | "pin"
+  | "remove"
   | NonTransferableReason;
 
 /**

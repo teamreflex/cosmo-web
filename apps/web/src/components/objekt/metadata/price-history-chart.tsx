@@ -6,10 +6,10 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
+import { useDisplayCurrency } from "@/hooks/use-display-currency";
 import { m } from "@/i18n/messages";
 import { formatDay } from "@/lib/client/time";
 import type { PriceHistoryPoint } from "@/lib/universal/objekts";
-import { formatPrice } from "@/lib/utils";
 import { useId } from "react";
 import {
   Area,
@@ -35,6 +35,7 @@ const SPARSE_POINTS = 8;
 export default function PriceHistoryChart({ points }: Props) {
   // colons in a generated id break the url(#id) the fill references
   const gradientId = `floor-${useId().replace(/:/g, "")}`;
+  const { formatUsd } = useDisplayCurrency();
 
   const config = {
     floorUsd: {
@@ -102,7 +103,7 @@ export default function PriceHistoryChart({ points }: Props) {
                     <span className="font-mono font-medium text-foreground tabular-nums">
                       {name === "listingCount"
                         ? Number(value)
-                        : formatPrice(Number(value), "USD")}
+                        : formatUsd(Number(value))}
                     </span>
                   </div>
                 </>
@@ -127,7 +128,7 @@ export default function PriceHistoryChart({ points }: Props) {
           domain={["auto", "auto"]}
           // keeps the lines clear of the listing bars along the bottom
           padding={{ top: 4, bottom: 40 }}
-          tickFormatter={(value: number) => formatPrice(value, "USD")}
+          tickFormatter={formatUsd}
         />
         {/* hidden, but still on the right so it doesn't reserve left gutter */}
         <YAxis

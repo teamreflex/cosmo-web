@@ -5,6 +5,7 @@ import {
   currentAccountQuery,
   targetAccountQueryFilter,
 } from "@/lib/queries/core";
+import { commonCurrencies } from "@/lib/universal/schema/currency";
 import type { ObjektList } from "@apollo/database/web/types";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconEdit, IconLoader2 } from "@tabler/icons-react";
@@ -25,12 +26,12 @@ import {
 import { toast } from "sonner";
 import type { z } from "zod";
 import {
-  defaultCurrencies,
   updateHaveListSchema,
   updateRegularListSchema,
   updateSaleListSchema,
   updateWantListSchema,
 } from "../../lib/universal/schema/objekt-list";
+import CurrencySelect from "../misc/currency-select";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -39,7 +40,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
-import { Field, FieldError, FieldLabel } from "../ui/field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "../ui/field";
 import { Input } from "../ui/input";
 import {
   Select,
@@ -353,33 +354,26 @@ function CurrencyField() {
       render={({ field, fieldState }) => (
         <Field data-invalid={fieldState.invalid}>
           <FieldLabel>{m.list_currency()}</FieldLabel>
-          <Input
-            placeholder="USD"
-            maxLength={3}
+          <CurrencySelect
+            name="currency"
             value={field.value ?? ""}
-            onChange={(e) =>
-              field.onChange(e.target.value === "" ? undefined : e.target.value)
-            }
+            onValueChange={field.onChange}
           />
-          <div className="flex gap-1">
-            {defaultCurrencies.map((c) => (
+          <div className="flex flex-wrap gap-1">
+            {commonCurrencies.map((c) => (
               <button
                 key={c}
                 type="button"
-                onClick={() =>
-                  field.onChange(field.value === c ? undefined : c)
-                }
+                onClick={() => field.onChange(c)}
                 className="rounded-md border px-2 py-0.5 text-xs data-[active=true]:bg-accent"
-                data-active={field.value?.toUpperCase() === c}
-                aria-pressed={field.value?.toUpperCase() === c}
+                data-active={field.value === c}
+                aria-pressed={field.value === c}
               >
                 {c}
               </button>
             ))}
           </div>
-          <p className="text-xs text-muted-foreground">
-            {m.list_currency_description()}
-          </p>
+          <FieldDescription>{m.list_currency_description()}</FieldDescription>
           <FieldError errors={[fieldState.error]} />
         </Field>
       )}

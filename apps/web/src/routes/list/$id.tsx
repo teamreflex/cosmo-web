@@ -54,7 +54,7 @@ export const Route = createFileRoute("/list/$id")({
       throw notFound();
     }
 
-    const { user, userDisplay, cosmoUsername, ...objektList } =
+    const { user, userDisplay, cosmoUsername, fxRateToUsd, ...objektList } =
       objektListWithUser;
     // if the user has a cosmo linked, redirect to the profile page
     if (cosmoUsername !== undefined) {
@@ -68,6 +68,7 @@ export const Route = createFileRoute("/list/$id")({
 
     return {
       objektList,
+      fxRateToUsd,
       owner: {
         display: userDisplay,
         user,
@@ -84,7 +85,8 @@ export const Route = createFileRoute("/list/$id")({
 });
 
 function RouteComponent() {
-  const { account, isAuthenticated, objektList, owner } = Route.useLoaderData();
+  const { account, isAuthenticated, objektList, fxRateToUsd, owner } =
+    Route.useLoaderData();
 
   return (
     <main className="flex flex-col">
@@ -105,6 +107,7 @@ function RouteComponent() {
             <ListRenderer
               authenticated={isAuthenticated}
               objektList={objektList}
+              fxRateToUsd={fxRateToUsd}
             />
 
             <Overlay>

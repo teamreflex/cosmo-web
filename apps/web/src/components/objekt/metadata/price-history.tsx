@@ -6,11 +6,12 @@ import {
   type PriceHistoryRange,
   priceHistoryRanges,
 } from "@/lib/universal/objekts";
-import { cn, formatPrice } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import PriceDisplay from "../price-display";
 import PriceHistoryChart from "./price-history-chart";
 
 type Props = {
@@ -72,7 +73,7 @@ function History({
           </span>
           <div className="flex items-baseline gap-2">
             <span className="font-mono text-lg font-bold tabular-nums">
-              {formatPrice(last.floorUsd, "USD")}
+              <PriceDisplay usd={last.floorUsd} />
             </span>
             {points.length > 1 && (
               <>

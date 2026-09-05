@@ -1,10 +1,10 @@
 import { m } from "@/i18n/messages";
 import type { MarketItem } from "@/lib/universal/market";
 import { Objekt } from "@/lib/universal/objekt-conversion";
-import { formatPrice } from "@/lib/utils";
 import { useMemo, useState } from "react";
 import { ObjektSidebar } from "../objekt/common";
 import ExpandableObjekt from "../objekt/objekt-expandable";
+import PriceDisplay from "../objekt/price-display";
 import PriceOverlay from "../objekt/price-overlay";
 import ListingsDialog from "./listings-dialog";
 
@@ -29,7 +29,7 @@ export function MarketGridItem({ item, priority }: Props) {
         <PriceOverlay
           collection={collection}
           label={m.market_from()}
-          price={formatPrice(item.floorUsd, "USD")}
+          price={<PriceDisplay usd={item.floorUsd} />}
           trailing={m.market_listed_count({
             count: item.listingCount.toString(),
           })}

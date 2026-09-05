@@ -1,11 +1,12 @@
 import { getVariantRibbon } from "@/components/objekt/variant-gradients";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
+import type { ReactNode } from "react";
 
 type Props = {
   collection: Pick<Objekt.Collection, "class" | "artist">;
   label?: string;
-  price: string;
+  price: ReactNode;
   trailing?: string;
 };
 

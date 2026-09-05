@@ -7,6 +7,7 @@ import {
   authenticatedMiddleware,
   cosmoMiddleware,
 } from "@/lib/server/middlewares";
+import { assertSupportedCurrency } from "@/lib/server/objekts/fx.server";
 import { assertUserOwnsList } from "@/lib/server/objekts/lists.server";
 import type { PublicUser } from "@/lib/universal/auth";
 import { ExpectedError } from "@/lib/universal/errors/expected";
@@ -26,6 +27,7 @@ import {
   deleteObjektListSchema,
   findTradePartnersSchema,
   generateDiscordListSchema,
+  generateSaleListTextSchema,
   removeObjektFromListSchema,
   updateObjektListEntrySchema,
   updateObjektListSchema,
@@ -64,7 +66,21 @@ export const $fetchObjektList = createServerFn({ method: "GET" })
     ]),
   )
   .handler(async ({ data }) => {
-    return await db.query.objektLists.findFirst({ where: data });
+    const list = await db.query.objektLists.findFirst({
+      where: data,
+      with: {
+        // latest rate for a sale list's currency
+        fxRates: {
+          columns: { rateToUsd: true },
+          orderBy: { date: "desc" },
+          limit: 1,
+        },
+      },
+    });
+    if (!list) return undefined;
+
+    const { fxRates, ...objektList } = list;
+    return { ...objektList, fxRateToUsd: fxRates[0]?.rateToUsd ?? null };
   });
 
 /**
@@ -94,15 +110,22 @@ export const $getObjektListWithUser = createServerFn({ method: "GET" })
             },
           },
         },
+        // latest rate for a sale list's currency
+        fxRates: {
+          columns: { rateToUsd: true },
+          orderBy: { date: "desc" },
+          limit: 1,
+        },
       },
     });
     if (!list) return undefined;
 
-    const { user, ...listData } = list;
+    const { user, fxRates, ...listData } = list;
     const { cosmoAccount, ...userRow } = user;
 
     return {
       ...listData,
+      fxRateToUsd: fxRates[0]?.rateToUsd ?? null,
       user: toPublicUser(userRow),
       userDisplay: userRow.displayUsername ?? userRow.name,
       cosmoUsername: cosmoAccount?.username,
@@ -122,6 +145,9 @@ export const $createObjektList = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     if (data.type !== "regular" && data.type !== "sale") {
       throw new Error("Use $createLiveList for have/want lists.");
+    }
+    if (data.type === "sale") {
+      await assertSupportedCurrency(data.currency);
     }
 
     const slug = createSlug(data.name);
@@ -254,6 +280,9 @@ export const $updateObjektList = createServerFn({ method: "POST" })
     }
     if (existingRow.type !== data.type) {
       throw new ExpectedError("list_type_locked");
+    }
+    if (data.type === "sale") {
+      await assertSupportedCurrency(data.currency);
     }
 
     const slug = createSlug(data.name);
@@ -1224,6 +1253,63 @@ export const $generateDiscordList = createServerFn({ method: "POST" })
     ].join("\n");
 
     return result;
+  });
+
+/**
+ * Render a sale list as text, one member per line. Serials on the same
+ * collection at the same price collapse into one `xN` entry.
+ */
+export const $generateSaleListText = createServerFn({ method: "POST" })
+  .validator(generateSaleListTextSchema)
+  .middleware([authenticatedMiddleware])
+  .handler(async ({ data, context }) => {
+    const list = await db.query.objektLists.findFirst({
+      where: {
+        id: data.id,
+        userId: context.session.session.userId,
+        type: "sale",
+      },
+      with: { entries: true },
+    });
+    if (!list) {
+      throw new ExpectedError("list_not_found");
+    }
+    if (list.entries.length === 0) {
+      throw new ExpectedError("discord_list_empty");
+    }
+
+    const grouped = new Map<string, ObjektListEntry>();
+    for (const entry of list.entries) {
+      const key = `${entry.collectionId}:${entry.price}`;
+      const existing = grouped.get(key);
+      grouped.set(
+        key,
+        existing
+          ? { ...existing, quantity: existing.quantity + entry.quantity }
+          : entry,
+      );
+    }
+    const entries = [...grouped.values()];
+
+    const listCollections = await indexer
+      .select({
+        slug: collections.slug,
+        season: collections.season,
+        collectionNo: collections.collectionNo,
+        member: collections.member,
+        artist: collections.artist,
+        memberSortOrder: members.sortOrder,
+      })
+      .from(collections)
+      .leftJoin(members, eq(members.name, collections.member))
+      .where(
+        inArray(
+          collections.slug,
+          entries.map((e) => e.collectionId),
+        ),
+      );
+
+    return format(listCollections, entries, list.currency).join("\n");
   });
 
 type CollectionSubset = Pick<

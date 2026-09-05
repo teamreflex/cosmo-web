@@ -63,10 +63,12 @@ export const $fetchFilterData = createServerFn({ method: "GET" }).handler(() =>
   }),
 );
 
-type GetAccount = {
+export type GetAccount = {
   user: PublicUser;
   cosmo: PublicCosmo | undefined;
   objektLists: ObjektList[];
+  // USD-per-unit rate of the user's display currency, null when unrecorded
+  fxRateToUsd: number | null;
 };
 
 /**
@@ -95,6 +97,11 @@ export const $fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
       with: {
         cosmoAccount: true,
         objektLists: true,
+        fxRates: {
+          columns: { rateToUsd: true },
+          orderBy: { date: "desc" },
+          limit: 1,
+        },
       },
     });
 
@@ -103,21 +110,13 @@ export const $fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
       return null;
     }
 
-    // no cosmo account, just return the user
-    const { cosmoAccount, objektLists, ...user } = result;
-    if (!cosmoAccount) {
-      return {
-        user: toPublicUser(user),
-        cosmo: undefined,
-        objektLists,
-      };
-    }
+    const { cosmoAccount, objektLists, fxRates, ...user } = result;
 
-    // return the user and cosmo account
     return {
-      cosmo: toPublicCosmo(cosmoAccount),
       user: toPublicUser(user),
+      cosmo: cosmoAccount ? toPublicCosmo(cosmoAccount) : undefined,
       objektLists,
+      fxRateToUsd: fxRates[0]?.rateToUsd ?? null,
     };
   },
 );

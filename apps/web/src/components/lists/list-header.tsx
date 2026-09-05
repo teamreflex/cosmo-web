@@ -8,6 +8,7 @@ import type { ReactNode } from "react";
 import { Skeleton } from "../ui/skeleton";
 import DeleteList from "./delete-list";
 import ListContacts from "./list-contacts";
+import SaleListTextDialog from "./sale-list-text-dialog";
 import UpdateList from "./update-list";
 
 type Props = {
@@ -76,6 +77,7 @@ export default function ListHeader({
           {extras}
           {isOwner && (
             <>
+              {list.type === "sale" && <SaleListTextDialog objektList={list} />}
               <UpdateList objektList={list} />
               <DeleteList objektList={list} />
             </>

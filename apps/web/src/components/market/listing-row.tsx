@@ -1,4 +1,5 @@
 import { ObjektRibbon } from "@/components/objekt/common";
+import { useDisplayCurrency } from "@/hooks/use-display-currency";
 import { useMetadataDialog } from "@/hooks/use-metadata-dialog";
 import { m } from "@/i18n/messages";
 import {
@@ -23,7 +24,8 @@ type Props = {
 };
 
 /**
- * One sale listing: price in USD with the seller's currency beside it, serial,
+ * One sale listing: price in the viewer's currency with the seller's beside
+ * it when they differ (or the seller's alone when it has no rate), serial,
  * seller and list, age, and contact chips. The row opens the seller's sale
  * list; the arrow opens the objekt's metadata at that serial. The viewer's own
  * listing is faded and shows no contacts.
@@ -37,6 +39,7 @@ export default function ListingRow({
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { open } = useMetadataDialog();
+  const { currency, formatUsd } = useDisplayCurrency();
   const own = listing.seller.id === viewerId;
   const contacts = own ? [] : resolveContacts(listing.seller);
 
@@ -74,14 +77,13 @@ export default function ListingRow({
         </div>
         <div className="flex items-baseline gap-1.5">
           <span className="font-mono text-sm font-bold tabular-nums sm:text-lg">
-            {formatPrice(
-              listing.priceUsd ?? listing.price,
-              listing.priceUsd === null ? listing.currency : "USD",
-            )}
+            {listing.priceUsd === null
+              ? formatPrice(listing.price, listing.currency)
+              : formatUsd(listing.priceUsd)}
           </span>
           {listing.priceUsd !== null && (
             <span className="truncate font-mono text-[11px] text-muted-foreground tabular-nums">
-              {listing.currency === "USD"
+              {listing.currency === currency
                 ? listing.currency
                 : formatPrice(listing.price, listing.currency)}
             </span>
