@@ -55,16 +55,22 @@ export function pollCandidates(
 }
 
 /**
- * Case-insensitive name match, mirroring how `useArtists` keys its member map.
- * Falls back to the member's alias, which is how COSMO labels a member where
- * it doesn't spell the name out: tripleS as S1, S2, … and idntt as id1, id2, ….
+ * Match a candidate title to a member by name, then by alias. COSMO titles a
+ * candidate inconsistently with its own roster in case and spacing ("Kim Lip"
+ * for the member "KimLip"), so both are ignored. The alias is how COSMO labels
+ * a member where it doesn't spell the name out: tripleS as S1, S2, … and idntt
+ * as id1, id2, ….
  */
 export function findMember(members: CosmoMemberBFF[], name: string) {
-  const lower = name.toLowerCase();
+  const key = memberKey(name);
   return (
-    members.find((member) => member.name.toLowerCase() === lower) ??
-    members.find((member) => member.alias.toLowerCase() === lower)
+    members.find((member) => memberKey(member.name) === key) ??
+    members.find((member) => memberKey(member.alias) === key)
   );
+}
+
+function memberKey(name: string) {
+  return name.toLowerCase().replaceAll(" ", "");
 }
 
 /**

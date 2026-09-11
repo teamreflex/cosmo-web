@@ -16,15 +16,7 @@ export type CandidateColorArtist =
   | Pick<CosmoArtistWithMembersBFF, "artistMembers">
   | undefined;
 
-/**
- * How a poll's candidates are colored: `member` when every candidate is a
- * member of the artist, `index` when candidates are mapped onto the member
- * list by position.
- */
-export type CandidateColorMode = "member" | "index";
-
 export type CandidateColors = {
-  mode: CandidateColorMode;
   /** Colors in candidate order, indexed by on-chain candidate id. */
   colors: string[];
   /** Color for a candidate id, defined for any index. */
@@ -32,44 +24,33 @@ export type CandidateColors = {
 };
 
 /**
- * Resolve a color for every candidate of a poll.
- * A poll is member-based only when *every* candidate title resolves to a member
- * of the artist; a mixed or non-member poll maps each candidate onto the member
- * list by position, keeping the palette within the artist's colors either way.
+ * Resolve a color for every candidate of a poll, each by name, then by the
+ * member at its position, so a poll stays on the artist's palette whether or
+ * not every candidate is a member.
  */
 export function resolveCandidateColors(
   artist: CandidateColorArtist,
   candidateTitles: string[],
 ): CandidateColors {
-  const members = artist?.artistMembers ?? [];
-  const resolved = candidateTitles.map((title) => findMember(members, title));
-  const mode: CandidateColorMode =
-    resolved.length > 0 && resolved.every((member) => member !== undefined)
-      ? "member"
-      : "index";
-
   const colors = candidateTitles.map((title, index) =>
-    mode === "member"
-      ? (memberColor(resolved[index]) ?? hashedColor(title))
-      : // a poll with more candidates than the artist has members runs the
-        // palette out; the tail hashes its title rather than repeating a color
-        (memberColor(members[index]) ?? hashedColor(title)),
+    resolveCandidateColor(artist, title, index),
   );
 
   return {
-    mode,
     colors,
     color: (candidateId) =>
       colors[candidateId] ??
-      indexColor(members, candidateId) ??
-      hashedColor(String(candidateId)),
+      resolveCandidateColor(artist, String(candidateId), candidateId),
   };
 }
 
 /**
- * Resolve a color for a single candidate by name, falling back to the member at
- * the given position. Combination poll slots resolve per slot candidate so a
- * member appearing in multiple slots keeps one color across the columns.
+ * Resolve a color for a single candidate: the member it names (by name or
+ * alias), else the member at its position, else a hash of its title. A poll
+ * with more candidates than the artist has members runs the palette out, so
+ * the tail hashes rather than repeating a color. Combination poll slots
+ * resolve per slot candidate so a member appearing in multiple slots keeps one
+ * color across the columns.
  */
 export function resolveCandidateColor(
   artist: CandidateColorArtist,
@@ -79,7 +60,7 @@ export function resolveCandidateColor(
   const members = artist?.artistMembers ?? [];
   return (
     memberColor(findMember(members, name)) ??
-    indexColor(members, index) ??
+    memberColor(members[index]) ??
     hashedColor(name)
   );
 }
@@ -245,15 +226,6 @@ export function resolveSlotColors(
 function memberColor(member: CosmoMemberBFF | undefined) {
   return member !== undefined && member.primaryColorHex.length > 0
     ? member.primaryColorHex
-    : undefined;
-}
-
-/**
- * Candidate position mapped onto the artist's members, in member order.
- */
-function indexColor(members: CosmoMemberBFF[], index: number) {
-  return members.length > 0
-    ? memberColor(members[index % members.length])
     : undefined;
 }
 

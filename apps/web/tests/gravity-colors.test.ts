@@ -45,16 +45,44 @@ describe("resolveCandidateColors", () => {
   it("colors a member poll from the members themselves", () => {
     const result = resolveCandidateColors(artist, ["JinSoul", "heejin"]);
 
-    expect(result.mode).toBe("member");
     expect(result.colors).toEqual(["#3d25aa", "#8fcfe7"]);
   });
 
-  it("maps candidates onto the member list when any candidate isn't a member", () => {
-    // KimLip at index 0 must get HeeJin's color: one non-member drops the whole poll to index mode
-    const result = resolveCandidateColors(artist, ["KimLip", "Sooooo Bad"]);
+  it("keeps a member's color when another candidate isn't a member", () => {
+    // JinSoul at index 0 must keep their own color, not HeeJin's, even though
+    // "Sooooo Bad" has to fall back to the member at its position
+    const result = resolveCandidateColors(artist, ["JinSoul", "Sooooo Bad"]);
 
-    expect(result.mode).toBe("index");
-    expect(result.colors).toEqual(["#8fcfe7", "#ff5b31"]);
+    expect(result.colors).toEqual(["#3d25aa", "#ff5b31"]);
+  });
+
+  it("colors a member poll by name when a member is absent", () => {
+    // the member list holds KimLip between HeeJin and JinSoul; a poll without
+    // KimLip must not shift JinSoul onto their color
+    const result = resolveCandidateColors(artist, ["HeeJin", "JinSoul"]);
+
+    expect(result.colors).toEqual(["#8fcfe7", "#3d25aa"]);
+  });
+
+  it("matches a member regardless of spacing", () => {
+    // COSMO's roster spells the member "KimLip" but titles the candidate "Kim Lip"
+    const artms = {
+      artistMembers: [
+        member("HeeJin", "#8fcfe7"),
+        member("HaSeul", "#b1e3ff"),
+        member("KimLip", "#ff5b31"),
+        member("JinSoul", "#3d25aa"),
+        member("Choerry", "#7a3ce0"),
+      ],
+    };
+    const result = resolveCandidateColors(artms, [
+      "HeeJin",
+      "JinSoul",
+      "Choerry",
+      "Kim Lip",
+    ]);
+
+    expect(result.colors).toEqual(["#8fcfe7", "#3d25aa", "#7a3ce0", "#ff5b31"]);
   });
 
   it("hashes candidates past the end of the member list", () => {
