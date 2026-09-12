@@ -3,6 +3,7 @@ import { useGridVirtualizer } from "@/hooks/use-grid-virtualizer";
 import type { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 import { useObjektResponse } from "@/hooks/use-objekt-response";
 import { tokenKey } from "@/hooks/use-objekt-selection";
+import type { PinMove } from "@/hooks/use-pin-reorder";
 import { m } from "@/i18n/messages";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
@@ -27,7 +28,6 @@ import type {
 } from "@dnd-kit/core";
 import {
   SortableContext,
-  arrayMove,
   rectSortingStrategy,
   sortableKeyboardCoordinates,
   useSortable,
@@ -117,7 +117,7 @@ type Props<
   options: ObjektResponseOptions<TResponse, TItem, TError, TQueryKey>;
   pins?: CosmoObjekt[];
   hidePins?: boolean;
-  onReorderPins?: (orderedTokenIds: number[]) => void;
+  onReorderPins?: (move: PinMove) => void;
   shouldRender?: (objekt: TItem) => boolean;
   showTotal?: boolean;
 
@@ -264,10 +264,17 @@ function ObjektGrid<
       setActivePin(null);
       const { active, over } = event;
       if (!over || active.id === over.id) return;
-      const oldIndex = pinIds.indexOf(String(active.id));
-      const newIndex = pinIds.indexOf(String(over.id));
-      if (oldIndex === -1 || newIndex === -1) return;
-      onReorderPins?.(arrayMove(pinIds, oldIndex, newIndex).map(Number));
+      // both ids must be pins; items from the main grid aren't sortable
+      if (
+        !pinIds.includes(String(active.id)) ||
+        !pinIds.includes(String(over.id))
+      ) {
+        return;
+      }
+      onReorderPins?.({
+        tokenId: Number(active.id),
+        overTokenId: Number(over.id),
+      });
     },
     [pinIds, onReorderPins],
   );
