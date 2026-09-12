@@ -2,13 +2,15 @@ import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
 import { $reorderPins } from "@/lib/functions/collection";
 import { track } from "@/lib/utils";
-import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
+import { arrayMove } from "@dnd-kit/sortable";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { useCallback } from "react";
 import { toast } from "sonner";
 
 const routeApi = getRouteApi("/@{$username}/");
+
+export type PinMove = { tokenId: number; overTokenId: number };
 
 /**
  * Optimistically reorder the viewer's own pins and persist the new order.
@@ -22,13 +24,19 @@ export function usePinReorder() {
   const { pinsOptions } = routeApi.useRouteContext();
 
   const mutation = useMutation({
-    mutationFn: (tokenIds: number[]) => $reorderPins({ data: { tokenIds } }),
-    onMutate: (tokenIds) => {
+    mutationFn: async (move: PinMove) => {
+      // false means neither pin matched server state, so roll back
+      if (!(await $reorderPins({ data: move }))) {
+        throw new Error("pin_not_found");
+      }
+    },
+    onMutate: ({ tokenId, overTokenId }) => {
       const previous = pins;
-      const byId = new Map(previous.map((p) => [Number(p.tokenId), p]));
-      const reordered = tokenIds
-        .map((id) => byId.get(id))
-        .filter((p): p is CosmoObjekt => !!p);
+      const reordered = arrayMove(
+        previous,
+        previous.findIndex((p) => Number(p.tokenId) === tokenId),
+        previous.findIndex((p) => Number(p.tokenId) === overTokenId),
+      );
       reorderPins(reordered);
       queryClient.setQueryData(pinsOptions.queryKey, reordered);
       return { previous };
@@ -43,5 +51,5 @@ export function usePinReorder() {
     onSuccess: () => track("reorder-pins"),
   });
 
-  return useCallback((ids: number[]) => mutation.mutate(ids), [mutation]);
+  return useCallback((move: PinMove) => mutation.mutate(move), [mutation]);
 }
