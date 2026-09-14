@@ -2,11 +2,10 @@ import { clearTag } from "@/lib/server/cache.server";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { cosmoMiddleware } from "@/lib/server/middlewares";
-import { MAX_OBJEKT_SELECTIONS } from "@/lib/universal/schema/objekt-list";
 import { lockedObjekts, pins } from "@apollo/database/web/schema";
 import { pinCacheKey } from "@apollo/util-server";
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, isNotNull, ne, sql } from "drizzle-orm";
 import * as z from "zod";
 import { normalizePin } from "./pins";
 
@@ -118,38 +117,99 @@ export const $unpinObjekt = createServerFn({ method: "POST" })
   });
 
 /**
- * Reorder the user's pins to match the given token id order.
+ * Move one pin next to another, mirroring dnd-kit's active/over drop. The
+ * client sends only the two token ids; the server owns the ordered list.
  */
 export const $reorderPins = createServerFn({ method: "POST" })
   .validator(
     z.object({
-      tokenIds: z.array(z.coerce.number()).min(1).max(MAX_OBJEKT_SELECTIONS),
+      tokenId: z.coerce.number(),
+      overTokenId: z.coerce.number(),
     }),
   )
   .middleware([cosmoMiddleware])
   .handler(async ({ data, context }) => {
-    // single atomic UPDATE assigning each token its index as the new position;
-    // address scoping + inArray make foreign token ids no-ops (they match no rows)
-    const cases = sql.join(
-      [
-        sql`CASE`,
-        ...data.tokenIds.map(
-          (id, i) => sql`WHEN ${pins.tokenId} = ${id} THEN ${i}`,
-        ),
-        sql`ELSE ${pins.position} END`,
-      ],
-      sql` `,
+    // the user's pins numbered 1..n by current display order
+    const ordered = db.$with("ordered").as(
+      db
+        .select({
+          id: pins.id,
+          tokenId: pins.tokenId,
+          idx: sql<number>`row_number() over (order by ${pins.position}, ${pins.id})`.as(
+            "idx",
+          ),
+        })
+        .from(pins)
+        .where(eq(pins.address, context.cosmo.address)),
     );
 
-    await db
+    /**
+     * Where the dragged pin and its drop target currently sit; null if either token isn't one of the user's pins.
+     */
+    const anchors = db.$with("anchors").as(
+      db
+        .select({
+          fromIdx:
+            sql<number>`max(${ordered.idx}) filter (where ${ordered.tokenId} = ${data.tokenId})`.as(
+              "from_idx",
+            ),
+          toIdx:
+            sql<number>`max(${ordered.idx}) filter (where ${ordered.tokenId} = ${data.overTokenId})`.as(
+              "to_idx",
+            ),
+        })
+        .from(ordered),
+    );
+
+    /**
+     * Sort key for the new order: the dragged pin lands half a step past the
+     * anchor (after it when moving down, before it when moving up, matching
+     * arrayMove), everything else keeps its index. Empty when an anchor is
+     * missing so the update below touches nothing.
+     */
+    const keyed = db.$with("keyed").as(
+      db
+        .select({
+          id: ordered.id,
+          sortKey: sql<number>`case
+            when ${ordered.tokenId} = ${data.tokenId}
+            then ${anchors.toIdx} + (case when ${anchors.toIdx} > ${anchors.fromIdx} then 0.5 else -0.5 end)
+            else ${ordered.idx}
+          end`.as("sort_key"),
+        })
+        .from(ordered)
+        .crossJoin(anchors)
+        .where(and(isNotNull(anchors.fromIdx), isNotNull(anchors.toIdx))),
+    );
+
+    /**
+     * Contiguous 0-based positions, which also heals the gaps and negative
+     * values that pinning (prepend) and unpinning leave behind.
+     */
+    const renumbered = db.$with("renumbered").as(
+      db
+        .select({
+          id: keyed.id,
+          position:
+            sql<number>`(row_number() over (order by ${keyed.sortKey}) - 1)::int`.as(
+              "position",
+            ),
+        })
+        .from(keyed),
+    );
+
+    // only rows whose position actually changes are written
+    const updated = await db
+      .with(ordered, anchors, keyed, renumbered)
       .update(pins)
-      .set({ position: cases })
+      .set({ position: sql`${renumbered.position}` })
+      .from(renumbered)
       .where(
-        and(
-          eq(pins.address, context.cosmo.address),
-          inArray(pins.tokenId, data.tokenIds),
-        ),
-      );
+        and(eq(pins.id, renumbered.id), ne(pins.position, renumbered.position)),
+      )
+      .returning({ id: pins.id });
+
+    if (updated.length === 0) return false;
 
     await clearTag(
       pinCacheKey(context.cosmo.username),

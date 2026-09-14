@@ -1,13 +1,11 @@
 import type { gridFrontendSchema } from "@/lib/universal/parsers";
-import { getRouteApi } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useCallback } from "react";
 import type { z } from "zod";
 
-const route = getRouteApi("/@{$username}/grid");
-
 export function useGridFilters() {
-  const navigate = route.useNavigate();
-  const searchParams = route.useSearch();
+  const navigate = useNavigate({ from: "/@{$username}/grid" });
+  const searchParams = useSearch({ from: "/@{$username}/grid" });
 
   /**
    * Sets multiple filters at once and commits to the URL.

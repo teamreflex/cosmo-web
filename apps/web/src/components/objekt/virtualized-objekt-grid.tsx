@@ -1,8 +1,9 @@
-// oxlint-disable react/refs
 import { useElementSize } from "@/hooks/use-element-size";
+import { useGridVirtualizer } from "@/hooks/use-grid-virtualizer";
 import type { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 import { useObjektResponse } from "@/hooks/use-objekt-response";
 import { tokenKey } from "@/hooks/use-objekt-selection";
+import type { PinMove } from "@/hooks/use-pin-reorder";
 import { m } from "@/i18n/messages";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
@@ -11,7 +12,6 @@ import {
   DndContext,
   DragOverlay,
   KeyboardSensor,
-  MeasuringStrategy,
   MouseSensor,
   TouchSensor,
   closestCenter,
@@ -28,7 +28,6 @@ import type {
 } from "@dnd-kit/core";
 import {
   SortableContext,
-  arrayMove,
   rectSortingStrategy,
   sortableKeyboardCoordinates,
   useSortable,
@@ -38,15 +37,7 @@ import { IconHeartBroken, IconRefresh } from "@tabler/icons-react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import type { DefaultError, QueryKey } from "@tanstack/react-query";
 import type { Virtualizer } from "@tanstack/react-virtual";
-import { useWindowVirtualizer } from "@tanstack/react-virtual";
-import {
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import type { ComponentType } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { LegacyOverlay } from "../collection/data-sources/common-legacy";
@@ -126,7 +117,7 @@ type Props<
   options: ObjektResponseOptions<TResponse, TItem, TError, TQueryKey>;
   pins?: CosmoObjekt[];
   hidePins?: boolean;
-  onReorderPins?: (orderedTokenIds: number[]) => void;
+  onReorderPins?: (move: PinMove) => void;
   shouldRender?: (objekt: TItem) => boolean;
   showTotal?: boolean;
 
@@ -215,25 +206,24 @@ function ObjektGrid<
   // rounded so it stays exact as the virtualizer accumulates it down the list
   const itemHeight = Math.round(laneWidth * ASPECT_RATIO) + extraRowHeight;
 
-  const virtualizer = useWindowVirtualizer({
+  const {
+    items: virtualList,
+    totalSize,
+    scrollMargin,
+    measureElement,
+    measure,
+  } = useGridVirtualizer({
     count: cells.length,
     lanes: gridColumns,
     gap: GAP,
-    // overscan is counted in items, so scale it to keep ~3 rows buffered
-    overscan: gridColumns * 3,
-    estimateSize: () => itemHeight,
-    measureElement: () => itemHeight,
-    scrollMargin: containerRef.current?.offsetTop ?? 0,
+    itemHeight,
+    container: containerRef,
   });
-
-  // fixes react compiler issue: https://github.com/TanStack/virtual/issues/743
-  const virtualizerRef = useRef(virtualizer);
-  const virtualList = virtualizerRef.current.getVirtualItems();
 
   // re-measure cell sizes upon viewport size change
   useEffect(() => {
-    virtualizerRef.current.measure();
-  }, [itemHeight]);
+    measure();
+  }, [itemHeight, measure]);
 
   /**
    * Drag-and-drop pin reordering. `reorderable` is stable for a mounted grid
@@ -274,10 +264,17 @@ function ObjektGrid<
       setActivePin(null);
       const { active, over } = event;
       if (!over || active.id === over.id) return;
-      const oldIndex = pinIds.indexOf(String(active.id));
-      const newIndex = pinIds.indexOf(String(over.id));
-      if (oldIndex === -1 || newIndex === -1) return;
-      onReorderPins?.(arrayMove(pinIds, oldIndex, newIndex).map(Number));
+      // both ids must be pins; items from the main grid aren't sortable
+      if (
+        !pinIds.includes(String(active.id)) ||
+        !pinIds.includes(String(over.id))
+      ) {
+        return;
+      }
+      onReorderPins?.({
+        tokenId: Number(active.id),
+        overTokenId: Number(over.id),
+      });
     },
     [pinIds, onReorderPins],
   );
@@ -319,7 +316,7 @@ function ObjektGrid<
     <div
       className="relative w-full will-change-transform"
       style={{
-        height: `${virtualizerRef.current.getTotalSize()}px`,
+        height: `${totalSize}px`,
       }}
     >
       {/* wait for measurement: until the cell size is known the estimated
@@ -330,8 +327,7 @@ function ObjektGrid<
           const cell = cells[virtualItem.index];
           if (!cell) return null;
 
-          const baseY =
-            virtualItem.start - virtualizerRef.current.options.scrollMargin;
+          const baseY = virtualItem.start - scrollMargin;
           const left = SIDE + virtualItem.lane * (laneWidth + GAP);
           const style = {
             transform: `translateY(${baseY}px)`,
@@ -352,7 +348,7 @@ function ObjektGrid<
                   left={left}
                   width={laneWidth}
                   authenticated={authenticated}
-                  measureElement={virtualizerRef.current.measureElement}
+                  measureElement={measureElement}
                 />
               );
             }
@@ -361,7 +357,7 @@ function ObjektGrid<
               <div
                 key={cell.item.tokenId}
                 data-index={virtualItem.index}
-                ref={virtualizerRef.current.measureElement}
+                ref={measureElement}
                 style={style}
                 className="absolute top-0"
               >
@@ -385,7 +381,7 @@ function ObjektGrid<
             <div
               key={id}
               data-index={virtualItem.index}
-              ref={virtualizerRef.current.measureElement}
+              ref={measureElement}
               style={style}
               className="absolute top-0"
             >
@@ -416,7 +412,6 @@ function ObjektGrid<
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
             onDragCancel={handleDragCancel}
-            measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
             accessibility={{ announcements, screenReaderInstructions }}
           >
             <SortableContext items={pinIds} strategy={rectSortingStrategy}>

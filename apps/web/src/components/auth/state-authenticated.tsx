@@ -4,7 +4,7 @@ import type { PublicUser } from "@/lib/universal/auth";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useLocation, useRouter } from "@tanstack/react-router";
+import { useRouter } from "@tanstack/react-router";
 import UserDropdown from "./user-dropdown";
 
 type Props = {
@@ -13,7 +13,6 @@ type Props = {
 };
 
 export default function StateAuthenticated({ user, cosmo }: Props) {
-  const location = useLocation();
   const router = useRouter();
   const queryClient = useQueryClient();
   const mutation = useMutation({
@@ -29,12 +28,5 @@ export default function StateAuthenticated({ user, cosmo }: Props) {
     return <IconLoader2 className="animate-spin" />;
   }
 
-  return (
-    <UserDropdown
-      key={location.pathname}
-      onSignOut={mutation.mutate}
-      user={user}
-      cosmo={cosmo}
-    />
-  );
+  return <UserDropdown onSignOut={mutation.mutate} user={user} cosmo={cosmo} />;
 }

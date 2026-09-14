@@ -29,7 +29,7 @@ export const Route = createFileRoute("/list/$id")({
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
   validateSearch: objektListFrontendSchema,
-  loaderDeps: ({ search }) => ({ searchParams: search }),
+  loaderDeps: ({ search: { serial, ...searchParams } }) => ({ searchParams }),
   loader: async ({ context, params, deps }) => {
     // sanitize the id due to discord users accidentally appending formatting to the URL
     const sanitizedId = sanitizeUuid(params.id);

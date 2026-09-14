@@ -3,15 +3,23 @@ import { cn } from "@/lib/utils";
 import { cva, type VariantProps } from "class-variance-authority";
 import { Slot } from "radix-ui";
 
+/**
+ * First/last children are matched with `:nth-child(1 of :not(template))`
+ * rather than `:first-child`/`:last-child` because a streamed Suspense
+ * boundary is rendered as `<template id="B:n">` followed by its fallback
+ * until it resolves. Plain `:first-child` would square off a fallback
+ * skeleton, and a trailing null-fallback boundary would square off the
+ * real last button.
+ */
 const buttonGroupVariants = cva(
   "group/button-group flex w-fit items-stretch *:focus-visible:relative *:focus-visible:z-10 has-[>[data-slot=button-group]]:gap-2 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-r-lg [&>[data-slot=select-trigger]:not([class*='w-'])]:w-fit [&>input]:flex-1",
   {
     variants: {
       orientation: {
         horizontal:
-          "[&>*:not(:first-child)]:rounded-l-none [&>*:not(:first-child)]:border-l-0 [&>*:not(:last-child)]:rounded-r-none",
+          "[&>*:not(:nth-child(1_of_:not(template)))]:rounded-l-none [&>*:not(:nth-child(1_of_:not(template)))]:border-l-0 [&>*:not(:nth-last-child(1_of_:not(template)))]:rounded-r-none",
         vertical:
-          "flex-col [&>*:not(:first-child)]:rounded-t-none [&>*:not(:first-child)]:border-t-0 [&>*:not(:last-child)]:rounded-b-none",
+          "flex-col [&>*:not(:nth-child(1_of_:not(template)))]:rounded-t-none [&>*:not(:nth-child(1_of_:not(template)))]:border-t-0 [&>*:not(:nth-last-child(1_of_:not(template)))]:rounded-b-none",
       },
     },
     defaultVariants: {
