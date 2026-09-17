@@ -103,7 +103,7 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
           className={cn(
             "flex items-center justify-center gap-2 font-semibold text-(--objekt-text-color) select-none [writing-mode:vertical-lr]",
             useCustomBand &&
-              "my-auto h-[89%] w-full justify-between rounded-l-[35cqw] px-[50cqw]",
+              "my-auto h-[88.4%] w-full justify-between rounded-l-[31cqw] px-[50cqw]",
             showBand && useBackground && "bg-(--objekt-background-color)",
           )}
         >
