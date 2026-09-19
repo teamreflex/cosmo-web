@@ -2,7 +2,7 @@ import type { ValidArtist } from "@apollo/cosmo/types/common";
 import * as z from "zod";
 import { env } from "./env/client";
 
-export { cn } from "cnfast";
+export { cn } from "cn";
 
 export type PropsWithClassName<T> = T & { className?: string };
 
