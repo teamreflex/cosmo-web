@@ -34,25 +34,39 @@ processor.run(db, async (ctx) => {
       const collectionBatch = new Map<string, Collection>();
       const objektBatch = new Map<string, Objekt>();
 
-      const metadataBatch = await Promise.allSettled(
-        chunk.map((e) => fetchMetadataWithRetryV3(e.tokenId)),
+      const results = await Promise.allSettled(
+        chunk.map((transfer) => fetchMetadataWithRetryV3(transfer.tokenId)),
       );
 
-      // iterate over each objekt metadata request
-      for (let j = 0; j < metadataBatch.length; j++) {
-        const request = metadataBatch[j];
-        const transfer = chunk[j];
-        if (!transfer || !request || request.status === "rejected") {
-          ctx.log.error(
-            `Unable to fetch metadata for token ${transfer?.tokenId ?? "unknown"}`,
-          );
-          continue;
-        }
+      const metadataBatch = [];
+      const failedTokenIds: string[] = [];
+      let failure: Error | undefined;
 
+      // pull valid metadata and failed tokens out
+      for (const [index, transfer] of chunk.entries()) {
+        const result = results[index];
+        if (result?.status === "fulfilled") {
+          metadataBatch.push({ transfer, metadata: result.value });
+        } else {
+          failedTokenIds.push(transfer.tokenId);
+          failure ??= result?.reason;
+        }
+      }
+
+      // fail hard on any metadata fetch failure so nothing is lost
+      if (failedTokenIds.length > 0) {
+        ctx.log.error(
+          `Unable to fetch metadata for ${failedTokenIds.length}/${chunk.length} tokens: ${failedTokenIds.join(", ")}`,
+        );
+        throw failure ?? new Error("metadata fetch failed");
+      }
+
+      // iterate over each objekt metadata request
+      for (const { transfer, metadata } of metadataBatch) {
         // handle collection
         const collection = await handleCollection(
           ctx,
-          request.value,
+          metadata,
           collectionBatch,
           transfer,
         );
@@ -61,7 +75,7 @@ processor.run(db, async (ctx) => {
         // handle objekt
         const objekt = await handleObjekt(
           ctx,
-          request.value,
+          metadata,
           objektBatch,
           transfer,
         );

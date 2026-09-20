@@ -11,7 +11,7 @@ Failures are the tagged error classes from `src/errors.ts` (`@apollo/cosmo/error
 
 - `cosmoClient` / `cosmoShopClient`: 10s timeout, one retry after 300ms on transport errors and [408, 425, 429, 500, 502, 503, 504]. 499 is excluded deliberately so client cancellations don't loop.
 - `cosmoNoRetryClient`: for endpoints where failure is meaningful (`fetchByNickname`, where a 404 means "no such user").
-- `metadataClient`: no timeout, one immediate retry, and its retry list adds 409 to the shared statuses. `apps/indexer` depends on this policy.
+- `metadataClient`: no timeout, one immediate retry, and its retry list adds 409 to the shared statuses.
 
 ## Quirks
 

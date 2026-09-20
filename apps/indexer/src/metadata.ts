@@ -6,46 +6,16 @@ import {
 import { normalizeV3 } from "@apollo/cosmo/types/metadata";
 
 /**
- * Fetch objekt metadata with exponential backoff.
- * The COSMO API can be temporarily unavailable for newly minted tokens,
- * so retry until the deadline rather than silently skipping.
+ * Fetch objekt metadata (v1).
  */
-export async function fetchMetadataWithRetry(
-  tokenId: string,
-  deadlineMs = 30_000,
-) {
-  const deadline = Date.now() + deadlineMs;
-  let delay = 1_000;
-  while (true) {
-    try {
-      return await runCosmo(fetchMetadataV1(tokenId));
-    } catch (error) {
-      if (Date.now() >= deadline) throw error;
-      await new Promise((resolve) => setTimeout(resolve, delay));
-      delay *= 2;
-    }
-  }
+export async function fetchMetadataWithRetry(tokenId: string) {
+  return runCosmo(fetchMetadataV1(tokenId));
 }
 
 /**
- * Fetch objekt metadata (v3) with exponential backoff.
- * The COSMO API can be temporarily unavailable for newly minted tokens,
- * so retry until the deadline rather than silently skipping.
+ * Fetch objekt metadata (v3).
  */
-export async function fetchMetadataWithRetryV3(
-  tokenId: string,
-  deadlineMs = 30_000,
-) {
-  const deadline = Date.now() + deadlineMs;
-  let delay = 1_000;
-  while (true) {
-    try {
-      const metadata = await runCosmo(fetchMetadataV3(tokenId));
-      return normalizeV3(metadata, tokenId);
-    } catch (error) {
-      if (Date.now() >= deadline) throw error;
-      await new Promise((resolve) => setTimeout(resolve, delay));
-      delay *= 2;
-    }
-  }
+export async function fetchMetadataWithRetryV3(tokenId: string) {
+  const metadata = await runCosmo(fetchMetadataV3(tokenId));
+  return normalizeV3(metadata, tokenId);
 }

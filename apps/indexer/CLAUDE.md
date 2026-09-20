@@ -109,18 +109,39 @@ await ctx.store.upsert(Array.from(buffer.values()));
 
 ### Error Handling
 
-Gracefully degrade with logging:
+A batch commits and the processor advances past its blocks, so anything skipped
+inside one is lost permanently — a skipped transfer is never written, and its
+objekt keeps the owner from its previous transfer with nothing to correct it
+later. Let the failure escape instead: Subsquid rolls the batch back, exits, and
+reprocesses the same blocks on restart, so nothing is lost but time. Settle every
+call before throwing so the log can name what failed and how many — one bad item
+and the API being down look identical in a crash loop otherwise.
 
 ```typescript
-const results = await Promise.allSettled(promises);
-for (let i = 0; i < results.length; i++) {
-  if (results[i].status === "rejected") {
-    ctx.log.error(`Operation failed for item ${i}`);
-    continue;
+const results = await Promise.allSettled(
+  items.map((item) => fetchWithRetry(item.id)),
+);
+
+const failed: string[] = [];
+for (const [index, item] of items.entries()) {
+  const result = results[index];
+  if (result?.status === "fulfilled") {
+    // use result.value
+  } else {
+    failed.push(item.id);
   }
-  // process successful result
+}
+
+if (failed.length > 0) {
+  ctx.log.error(`failed for ${failed.length}/${items.length}: ${failed.join(", ")}`);
+  throw new Error("fetch failed");
 }
 ```
+
+Retry generously before giving up (`fetchMetadataV3` in `@apollo/cosmo` allows
+5 minutes), because throwing costs a re-fetch of every item in the batch.
+Log-and-continue is only for work whose absence leaves no wrong row behind, such
+as a transferability update whose objekt does not exist.
 
 ## Key Files
 
