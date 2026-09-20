@@ -8,7 +8,12 @@ import {
   cosmoMiddleware,
 } from "@/lib/server/middlewares";
 import { fetchLatestFxRate } from "@/lib/server/objekts/fx.server";
-import { assertUserOwnsList } from "@/lib/server/objekts/lists.server";
+import {
+  assertOwnsTokensMulti,
+  assertUserOwnsList,
+  fireHaveAddNotifications,
+  fireWantAddNotifications,
+} from "@/lib/server/objekts/lists.server";
 import type { PublicUser } from "@/lib/universal/auth";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import type {
@@ -48,11 +53,6 @@ import {
 } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import * as z from "zod";
-import {
-  assertOwnsTokensMulti,
-  fireHaveAddNotifications,
-  fireWantAddNotifications,
-} from "./lists.server";
 
 /**
  * Fetch a single objekt list along with the latest USD FX rate for its
