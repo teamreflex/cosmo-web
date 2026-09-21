@@ -787,6 +787,7 @@
   "gravity_no_votes_yet": "No votes yet",
   "gravity_votes_sealed": "Votes are hidden while voting is open",
   "gravity_totals_reveal": "Candidate totals reveal when counting begins",
+  "gravity_details": "Details",
   "_comment_blockchain": "Blockchain strings",
   "blockchain_types": "Types",
   "blockchain_total": "total",

@@ -2,6 +2,13 @@ import UserAvatar from "@/components/profile/user-avatar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Toggle } from "@/components/ui/toggle";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useGravityDetails } from "@/hooks/use-gravity-details";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { m } from "@/i18n/messages";
 import type { ChoiceStyle } from "@/lib/client/gravity/colors";
@@ -10,12 +17,22 @@ import type {
   AggregatedTopVote,
 } from "@/lib/client/gravity/types";
 import { cn, type PropsWithClassName } from "@/lib/utils";
-import { IconChevronDown, IconQuestionMark } from "@tabler/icons-react";
+import type {
+  CosmoOngoingGravity,
+  CosmoPastGravity,
+} from "@apollo/cosmo/types/gravity";
+import {
+  IconChevronDown,
+  IconInfoCircle,
+  IconQuestionMark,
+} from "@tabler/icons-react";
 import { format } from "date-fns";
 import { AnimatePresence } from "motion/react";
 import * as motion from "motion/react-client";
-import { Suspense, useMemo, useState, type ReactNode } from "react";
+import { Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
+import * as z from "zod";
 import { ComoAmount } from "./como-share";
+import GravityDetails from "./gravity-details";
 import RankNumber from "./rank-number";
 import RecentVotes from "./recent-votes";
 
@@ -29,7 +46,11 @@ const ROW_TRANSITION = {
 /** A user's vote, once its pick is known. */
 type UserVote = AggregatedTopUser["votes"][number];
 
+const railTabSchema = z.enum(["recent-votes", "top-users", "top-votes"]);
+type RailTab = z.infer<typeof railTabSchema>;
+
 type Props = {
+  gravity: CosmoOngoingGravity | CosmoPastGravity;
   topUsers: AggregatedTopUser[];
   topVotes: AggregatedTopVote[];
   /** Label, color and image per on-chain choice, for the picks each row shows. */
@@ -39,29 +60,63 @@ type Props = {
 };
 
 /**
- * The rail's leaderboard: who spent the most COMO, and the biggest single
- * votes. While voting it leads with the latest votes cast, and every pick
- * shows sealed until counting begins.
+ * The rail beside the race. Its leaderboard shows who spent the most COMO and
+ * the biggest single votes; while voting it leads with the latest votes cast,
+ * and every pick shows sealed until counting begins. The button beside the
+ * tabs swaps the leaderboard for the gravity's own details.
  */
-export default function UserRankings(props: Props) {
+export default function GravityRail(props: Props) {
   const voting = props.recentVotesPollId !== undefined;
+  const [tab, setTab] = useState<RailTab>(
+    voting ? "recent-votes" : "top-users",
+  );
+  const details = useGravityDetails((state) => state.open);
+  const setDetails = useGravityDetails((state) => state.setOpen);
+
+  // the stored choice applies after mount, so it never disagrees with the server render
+  useEffect(() => {
+    void useGravityDetails.persist.rehydrate();
+  }, []);
+
+  // the recent tab leaves with voting, so a stale selection falls back to the leaderboard
+  const activeTab = tab === "recent-votes" && !voting ? "top-users" : tab;
 
   return (
     <div className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3">
-      {/* keyed so losing the recent tab when voting ends re-applies the default */}
+      {/* details has no trigger of its own, so every tab reads inactive while it shows */}
       <Tabs
-        key={voting ? "voting" : "revealed"}
-        defaultValue={voting ? "recent-votes" : "top-users"}
+        value={details ? "details" : activeTab}
+        onValueChange={(value) => {
+          setTab(railTabSchema.parse(value));
+          setDetails(false);
+        }}
       >
-        <TabsList className="w-full">
-          {voting && (
-            <TabsTrigger value="recent-votes">
-              {m.gravity_recent_votes()}
-            </TabsTrigger>
-          )}
-          <TabsTrigger value="top-users">{m.gravity_top_users()}</TabsTrigger>
-          <TabsTrigger value="top-votes">{m.gravity_top_votes()}</TabsTrigger>
-        </TabsList>
+        <div className="flex items-center gap-2">
+          <TabsList className="flex-1">
+            {voting && (
+              <TabsTrigger value="recent-votes">
+                {m.gravity_recent_votes()}
+              </TabsTrigger>
+            )}
+            <TabsTrigger value="top-users">{m.gravity_top_users()}</TabsTrigger>
+            <TabsTrigger value="top-votes">{m.gravity_top_votes()}</TabsTrigger>
+          </TabsList>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Toggle
+                pressed={details}
+                onPressedChange={setDetails}
+                aria-label={m.gravity_details()}
+                // idle it shares the tab list's tone; pressed it lifts like an active tab, outlined in cosmo
+                className="border border-transparent bg-muted text-muted-foreground aria-pressed:border-cosmo aria-pressed:bg-background aria-pressed:text-foreground aria-pressed:shadow-sm dark:aria-pressed:bg-input/30"
+              >
+                <IconInfoCircle />
+              </Toggle>
+            </TooltipTrigger>
+            <TooltipContent>{m.gravity_details()}</TooltipContent>
+          </Tooltip>
+        </div>
 
         {props.recentVotesPollId !== undefined && (
           <TabsContent value="recent-votes">
@@ -75,6 +130,9 @@ export default function UserRankings(props: Props) {
         </TabsContent>
         <TabsContent value="top-votes">
           <TopVotes votes={props.topVotes} choices={props.choices} />
+        </TabsContent>
+        <TabsContent value="details">
+          <GravityDetails gravity={props.gravity} />
         </TabsContent>
       </Tabs>
     </div>

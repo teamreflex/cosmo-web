@@ -782,6 +782,7 @@
   "gravity_no_votes_yet": "아직 투표 없음",
   "gravity_votes_sealed": "투표 중에는 표가 공개되지 않습니다",
   "gravity_totals_reveal": "집계가 시작되면 후보별 합계가 공개됩니다",
+  "gravity_details": "상세 정보",
   "_comment_blockchain": "Blockchain strings",
   "blockchain_types": "타입",
   "blockchain_total": "총계",

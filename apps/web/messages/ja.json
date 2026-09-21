@@ -782,6 +782,7 @@
   "gravity_no_votes_yet": "まだ投票はありません",
   "gravity_votes_sealed": "投票中は票が非公開です",
   "gravity_totals_reveal": "集計開始時に候補ごとの合計が公開されます",
+  "gravity_details": "詳細",
   "_comment_blockchain": "Blockchain strings",
   "blockchain_types": "種類",
   "blockchain_total": "合計",

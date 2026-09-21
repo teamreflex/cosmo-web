@@ -787,6 +787,7 @@
   "gravity_no_votes_yet": "Aucun vote pour l'instant",
   "gravity_votes_sealed": "Les votes sont masqués pendant le scrutin",
   "gravity_totals_reveal": "Les totaux par candidat seront révélés au début du comptage",
+  "gravity_details": "Détails",
   "_comment_blockchain": "Blockchain strings",
   "blockchain_types": "Types",
   "blockchain_total": "total",
