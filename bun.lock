@@ -23,6 +23,7 @@
       "dependencies": {
         "@apollo/cosmo": "workspace:*",
         "@apollo/util": "workspace:*",
+        "@sentry/bun": "catalog:",
         "@subsquid/evm-abi": "^1.0.0",
         "@subsquid/evm-codec": "^1.0.0",
         "@subsquid/evm-processor": "^1.30.1",

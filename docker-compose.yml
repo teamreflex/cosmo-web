@@ -147,6 +147,7 @@ services:
       - RPC_FINALITY=${INDEXER_RPC_FINALITY}
       - SQD_ENDPOINT=${INDEXER_SQD_ENDPOINT}
       - SQD_KEY=${INDEXER_SQD_KEY}
+      - SQD_LOG_LABELS=${INDEXER_SQD_LOG_LABELS}
       - DB_URL=postgresql://postgres:postgres@postgres-indexer:5432/indexer
       - DB_NAME=indexer
       - DB_READ_USER=postgres
@@ -154,6 +155,7 @@ services:
       - ENABLE_OBJEKTS=${INDEXER_ENABLE_OBJEKTS}
       - ENABLE_GRAVITY=${INDEXER_ENABLE_GRAVITY}
       - COSMO_PARALLEL_COUNT=${INDEXER_COSMO_PARALLEL_COUNT}
+      - SENTRY_DSN=${INDEXER_SENTRY_DSN}
     depends_on:
       # indexer shouldn't go through pgbouncer
       postgres-indexer:

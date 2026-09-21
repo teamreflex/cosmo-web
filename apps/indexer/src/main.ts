@@ -1,6 +1,7 @@
 import type { CosmoObjektMetadataV1 } from "@apollo/cosmo/types/metadata";
 import { addr, chunk, slugifyObjekt } from "@apollo/util";
 import { Addresses } from "@apollo/util";
+import * as Sentry from "@sentry/bun";
 import { TypeormDatabase, type Store } from "@subsquid/typeorm-store";
 import { randomUUID } from "crypto";
 import { In } from "typeorm";
@@ -58,7 +59,17 @@ processor.run(db, async (ctx) => {
         ctx.log.error(
           `Unable to fetch metadata for ${failedTokenIds.length}/${chunk.length} tokens: ${failedTokenIds.join(", ")}`,
         );
-        throw failure ?? new Error("metadata fetch failed");
+
+        // flush before throwing to avoid dropping queued events
+        const error = new Error("metadata fetch failed", { cause: failure });
+        Sentry.captureException(error, {
+          level: "fatal",
+          fingerprint: ["indexer-metadata-fetch-failed"],
+          tags: { failure: "metadata" },
+          extra: { failedTokenIds, chunkSize: chunk.length },
+        });
+        await Sentry.flush(2000);
+        throw error;
       }
 
       // iterate over each objekt metadata request
@@ -73,12 +84,7 @@ processor.run(db, async (ctx) => {
         collectionBatch.set(collection.slug, collection);
 
         // handle objekt
-        const objekt = await handleObjekt(
-          ctx,
-          metadata,
-          objektBatch,
-          transfer,
-        );
+        const objekt = await handleObjekt(ctx, metadata, objektBatch, transfer);
         objekt.collection = collection;
         objektBatch.set(objekt.id, objekt);
 

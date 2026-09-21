@@ -100,13 +100,7 @@ await ctx.store.upsert(Array.from(buffer.values()));
 
 ### Error Handling
 
-A batch commits and the processor advances past its blocks, so anything skipped
-inside one is lost permanently — a skipped transfer is never written, and its
-objekt keeps the owner from its previous transfer with nothing to correct it
-later. Let the failure escape instead: Subsquid rolls the batch back, exits, and
-reprocesses the same blocks on restart, so nothing is lost but time. Settle every
-call before throwing so the log can name what failed and how many — one bad item
-and the API being down look identical in a crash loop otherwise.
+A batch commits and the processor advances past its blocks, so anything skipped inside one is lost permanently — a skipped transfer is never written, and its objekt keeps the owner from its previous transfer with nothing to correct it later. Let the failure escape instead: Subsquid rolls the batch back, exits, and reprocesses the same blocks on restart, so nothing is lost but time. Settle every call before throwing so the log can name what failed and how many — one bad item and the API being down look identical in a crash loop otherwise.
 
 ```typescript
 const results = await Promise.allSettled(
@@ -125,14 +119,22 @@ for (const [index, item] of items.entries()) {
 
 if (failed.length > 0) {
   ctx.log.error(`failed for ${failed.length}/${items.length}: ${failed.join(", ")}`);
-  throw new Error("fetch failed");
+
+  const error = new Error("fetch failed", { cause: firstRejection });
+  Sentry.captureException(error, {
+    level: "fatal",
+    fingerprint: ["indexer-metadata-fetch-failed"],
+    tags: { failure: "metadata" },
+    extra: { failed, chunkSize: items.length },
+  });
+  await Sentry.flush(2000);
+  throw error;
 }
 ```
 
-Retry generously before giving up (`fetchMetadataV3` in `@apollo/cosmo` allows
-5 minutes), because throwing costs a re-fetch of every item in the batch.
-Log-and-continue is only for work whose absence leaves no wrong row behind, such
-as a transferability update whose objekt does not exist.
+Retry generously before giving up (`fetchMetadataV3` in `@apollo/cosmo` allows 5 minutes), because throwing costs a re-fetch of every item in the batch. Log-and-continue is only for work whose absence leaves no wrong row behind, such as a transferability update whose objekt does not exist.
+
+Pin a fixed `fingerprint` and carry the real rejection as `cause`: one issue accumulates every failed batch whatever COSMO returned, so an event-frequency alert counts batches instead of splitting across error shapes. Flush before throwing — Subsquid exits on the way out and drops queued events. Sentry only initializes when `SENTRY_DSN` is set, so local runs report nothing.
 
 ## Key Files
 
