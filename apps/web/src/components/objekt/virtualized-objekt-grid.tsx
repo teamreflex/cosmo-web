@@ -314,7 +314,7 @@ function ObjektGrid<
 
   const gridBody = (
     <div
-      className="relative w-full will-change-transform"
+      className="relative w-full"
       style={{
         height: `${totalSize}px`,
       }}
