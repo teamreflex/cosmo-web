@@ -1,15 +1,14 @@
 import { relations } from "@apollo/database/web/relations";
 import { make } from "@apollo/drizzle-bun-effect";
 import { SQL } from "bun";
-import { Context, Effect, Layer, Redacted } from "effect";
-import { Env } from "../config";
+import { Config, Context, Effect, Layer, Redacted } from "effect";
 
 export class Metadata extends Context.Service<Metadata>()("app/Metadata", {
   make: Effect.gen(function* () {
-    const env = yield* Env;
+    const databaseUrl = yield* Config.Redacted("WEB_DATABASE_URL");
 
     // set application name for pg_stat_activity visibility
-    const url = new URL(Redacted.value(env.WEB_DATABASE_URL));
+    const url = new URL(Redacted.value(databaseUrl));
     url.searchParams.set("application_name", "Importer");
 
     // scoped client: the layer finalizer closes the connection on shutdown
@@ -22,7 +21,5 @@ export class Metadata extends Context.Service<Metadata>()("app/Metadata", {
     return yield* make({ client, relations });
   }),
 }) {
-  static readonly layer = Layer.effect(this, this.make).pipe(
-    Layer.provide(Env.layer),
-  );
+  static readonly layer = Layer.effect(this, this.make);
 }

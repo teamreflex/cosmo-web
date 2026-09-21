@@ -4,7 +4,7 @@ import { FetchHttpClient } from "effect/unstable/http";
 import { CosmoKey } from "./cosmo-key";
 import { DatabaseWeb } from "./db";
 import { DatabaseIndexer } from "./db-indexer";
-import { Env } from "./env";
+import { Exchangerate } from "./exchangerate";
 import { ProxiedToken } from "./proxied-token";
 import { redisLayer } from "./redis";
 import { createResilientTask, SCHEDULED_TASKS } from "./task";
@@ -27,11 +27,11 @@ BunRuntime.runMain(
       Layer.mergeAll(
         BunServices.layer,
         FetchHttpClient.layer,
-        Env.layer,
         DatabaseWeb.layer,
         DatabaseIndexer.layer,
         ProxiedToken.layer,
         CosmoKey.layer,
+        Exchangerate.layer,
         redisLayer,
       ),
     ),
