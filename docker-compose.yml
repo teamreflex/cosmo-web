@@ -66,10 +66,10 @@ services:
       - "5434:5432"
     deploy:
       resources:
-        # intentionally lower than production
         limits:
-          cpus: "0.125"
-          memory: 1g
+          cpus: "0.5"
+          memory: 4g
+    command: postgres -c shared_buffers=644MB -c effective_cache_size=1GB -c work_mem=22MB -c maintenance_work_mem=161MB
     environment:
       - POSTGRES_DB=indexer
       - POSTGRES_USER=postgres
