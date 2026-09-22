@@ -1,5 +1,4 @@
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,10 +13,9 @@ import {
   IconChevronRight,
   IconCirclePlus,
   IconLetterCase,
-  IconList,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import CreateListDialog from "./create-list-dialog";
 import DiscordFormatDialog from "./discord-format-dialog";
 
@@ -25,6 +23,7 @@ type Props = {
   objektLists: ObjektList[];
   allowCreate: boolean;
   createListUrl: (list: ObjektList) => string;
+  trigger: ReactNode;
 };
 
 export default function ListDropdown(props: Props) {
@@ -45,12 +44,7 @@ export default function ListDropdown(props: Props) {
         objektLists={props.objektLists}
       />
 
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="profile" data-profile>
-          <IconList className="h-5 w-5" />
-          <span className="hidden sm:block">{m.list_lists()}</span>
-        </Button>
-      </DropdownMenuTrigger>
+      <DropdownMenuTrigger asChild>{props.trigger}</DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-fit">
         <DropdownMenuGroup>
           {props.objektLists.map((list) => (
