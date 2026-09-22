@@ -332,6 +332,21 @@
   "binder_error_cover_not_in_binder": "That objekt is no longer in this binder",
   "binder_error_pocket_out_of_range": "That pocket doesn't exist in this binder",
   "binder_error_objekt_not_owned": "We couldn't confirm you own this objekt yet. If you just received it, try again shortly",
+  "binder_page_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{count} page",
+        "countPlural=other": "{count} pages"
+      }
+    }
+  ],
   "notification_bell_label": "Notifications",
   "notification_mark_all_read": "Mark all read",
   "notification_empty": "No notifications yet.",

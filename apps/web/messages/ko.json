@@ -330,6 +330,20 @@
   "binder_error_cover_not_in_binder": "해당 objekt는 더 이상 이 바인더에 없습니다",
   "binder_error_pocket_out_of_range": "해당 포켓은 이 바인더에 없습니다",
   "binder_error_objekt_not_owned": "이 objekt의 소유를 아직 확인할 수 없습니다. 방금 받았다면 잠시 후 다시 시도해 주세요",
+  "binder_page_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=other": "{count}페이지"
+      }
+    }
+  ],
   "notification_bell_label": "알림",
   "notification_mark_all_read": "모두 읽음 표시",
   "notification_empty": "아직 알림이 없습니다.",
