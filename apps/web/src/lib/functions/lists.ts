@@ -37,7 +37,7 @@ import {
   updateObjektListEntrySchema,
   updateObjektListSchema,
 } from "@/lib/universal/schema/objekt-list";
-import { sanitizeUuid } from "@/lib/utils";
+import { createSlug, sanitizeUuid } from "@/lib/utils";
 import { objektListEntries, objektLists } from "@apollo/database/web/schema";
 import type { ObjektListEntry } from "@apollo/database/web/types";
 import { redirect } from "@tanstack/react-router";
@@ -184,10 +184,6 @@ export const $getObjektListWithUser = createServerFn({ method: "GET" })
       cosmoUsername: cosmoAccount?.username,
     };
   });
-
-function createSlug(name: string) {
-  return name.trim().toLowerCase().replace(/ /g, "-");
-}
 
 /**
  * Create a new regular or sale objekt list. Have/want lists go through $createLiveList instead.

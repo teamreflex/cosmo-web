@@ -15,7 +15,7 @@ export const defaultCurrencies = [
 export const listTypes = ["regular", "have", "want", "sale"] as const;
 export type ListType = (typeof listTypes)[number];
 
-const nameSchema = z
+export const listNameSchema = z
   .string()
   .min(3, "Name must be at least 3 characters long")
   .max(24, "Name cannot be longer than 24 characters")
@@ -34,7 +34,7 @@ const descriptionSchema = z
   .max(500, "Description cannot be longer than 500 characters");
 
 const baseCreate = z.object({
-  name: nameSchema,
+  name: listNameSchema,
   description: descriptionSchema.nullish(),
 });
 
@@ -68,7 +68,7 @@ export const createObjektListSchema = z.discriminatedUnion("type", [
 
 const baseUpdate = z.object({
   id: z.uuid(),
-  name: nameSchema,
+  name: listNameSchema,
   description: descriptionSchema.nullish(),
 });
 
