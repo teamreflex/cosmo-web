@@ -21,11 +21,10 @@ export function CosmoVerifiedBadge() {
       <Tooltip>
         <TooltipTrigger asChild>
           <button
-            className="inline-flex h-5 items-center gap-1 rounded border border-border bg-background/40 px-1.5 font-mono text-xxs font-semibold tracking-[0.14em] text-muted-foreground uppercase"
+            className="inline-flex h-5 items-center gap-1 rounded border border-border bg-background/40 px-1.5 text-muted-foreground uppercase"
             aria-label={m.profile_badge_cosmo_verified()}
           >
             <IconCheck className="size-3" />
-            {m.profile_badge_verified()}
           </button>
         </TooltipTrigger>
         <TooltipContent side="bottom" align="start">
