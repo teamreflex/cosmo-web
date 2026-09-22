@@ -1,10 +1,8 @@
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { $updateLiveList, $updateObjektList } from "@/lib/functions/lists";
-import {
-  currentAccountQuery,
-  targetAccountQueryFilter,
-} from "@/lib/queries/core";
+import { currentAccountQuery } from "@/lib/queries/core";
+import { listShelfQuery } from "@/lib/queries/lists";
 import type { ObjektList } from "@apollo/database/web/types";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconEdit, IconLoader2 } from "@tabler/icons-react";
@@ -66,7 +64,9 @@ export default function UpdateList({ objektList }: Props) {
     void queryClient.invalidateQueries({
       queryKey: currentAccountQuery.queryKey,
     });
-    void queryClient.invalidateQueries(targetAccountQueryFilter);
+    void queryClient.invalidateQueries({
+      queryKey: listShelfQuery(objektList.userId).queryKey,
+    });
     setOpen(false);
   }
 

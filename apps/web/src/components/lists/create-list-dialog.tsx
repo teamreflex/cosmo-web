@@ -2,11 +2,8 @@ import { useUserState } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { $createLiveList, $createObjektList } from "@/lib/functions/lists";
-import {
-  currentAccountQuery,
-  targetAccountQueryFilter,
-} from "@/lib/queries/core";
-import type { FullAccount } from "@/lib/universal/cosmo-accounts";
+import { currentAccountQuery } from "@/lib/queries/core";
+import { listShelfQuery } from "@/lib/queries/lists";
 import { track } from "@/lib/utils";
 import type { ObjektList } from "@apollo/database/web/types";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
@@ -74,9 +71,8 @@ export default function CreateListDialog(props: Props) {
       return { ...old, objektLists: [...old.objektLists, result] };
     });
 
-    queryClient.setQueriesData<FullAccount>(targetAccountQueryFilter, (old) => {
-      if (!old || old.user?.id !== result.userId) return old;
-      return { ...old, objektLists: [...old.objektLists, result] };
+    void queryClient.invalidateQueries({
+      queryKey: listShelfQuery(result.userId).queryKey,
     });
 
     // matching by routeId covers profiles opened by address, where the pathname doesn't contain the username

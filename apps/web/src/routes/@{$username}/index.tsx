@@ -20,6 +20,7 @@ import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { userCollectionFrontendSchema } from "@/lib/universal/parsers";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { Addresses, isEqual } from "@apollo/util";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/@{$username}/")({
@@ -88,6 +89,9 @@ export const Route = createFileRoute("/@{$username}/")({
 
 function RouteComponent() {
   const { target, pins } = Route.useLoaderData();
+  // list actions only ever run on the viewer's own profile, so they read the viewer's lists
+  const { data: account } = useSuspenseQuery(currentAccountQuery);
+  const objektLists = account?.objektLists ?? [];
 
   return (
     <ProfileProvider
@@ -95,7 +99,7 @@ function RouteComponent() {
       target={target}
       pins={target.user ? pins : []}
       lockedObjekts={target.user ? target.lockedObjekts : []}
-      objektLists={target.objektLists}
+      objektLists={objektLists}
     >
       <section className="flex flex-col">
         <ProfileRenderer targetCosmo={target.cosmo} />
@@ -106,7 +110,7 @@ function RouteComponent() {
         <ToggleObjektBands />
       </Overlay>
 
-      <BatchSelectionBar objektLists={target.objektLists} />
+      <BatchSelectionBar objektLists={objektLists} />
     </ProfileProvider>
   );
 }
