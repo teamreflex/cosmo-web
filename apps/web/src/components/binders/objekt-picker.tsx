@@ -53,6 +53,8 @@ type Props = {
   inBinderTokenIds: ReadonlySet<number>;
   /** filters proposed from the selected pocket's neighbours */
   suggestion: NeighbourSuggestion | null;
+  /** cards can be dragged onto a pocket; needs a surrounding DndContext */
+  draggable?: boolean;
   onPick: (objekt: CosmoObjekt) => void;
   className?: string;
 };
@@ -68,6 +70,7 @@ export default function ObjektPicker({
   lockedTokenIds,
   inBinderTokenIds,
   suggestion,
+  draggable = false,
   onPick,
   className,
 }: Props) {
@@ -193,6 +196,7 @@ export default function ObjektPicker({
             scrollElement={scrollRef}
             inBinderTokenIds={inBinderTokenIds}
             lockedTokenIds={lockedTokenIds}
+            draggable={draggable}
             onPick={onPick}
           />
         </div>
@@ -315,6 +319,7 @@ type PickerResultsProps = {
   scrollElement: RefObject<HTMLDivElement | null>;
   inBinderTokenIds: ReadonlySet<number>;
   lockedTokenIds: ReadonlySet<number>;
+  draggable: boolean;
   onPick: (objekt: CosmoObjekt) => void;
 };
 

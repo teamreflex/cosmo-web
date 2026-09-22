@@ -76,11 +76,12 @@ export const $fetchBinderShelf = createServerFn({ method: "GET" })
   });
 
 /**
- * Fetch one binder with every page's entries, hydrated from the indexer.
+ * Fetch one binder with every page's entries, hydrated from the indexer. A
+ * missing binder is null rather than undefined, which query data can't be.
  */
 export const $fetchBinder = createServerFn({ method: "GET" })
   .validator(z.object({ userId: z.string(), slug: z.string() }))
-  .handler(async ({ data }): Promise<BinderDetail | undefined> => {
+  .handler(async ({ data }): Promise<BinderDetail | null> => {
     const binder = await db.query.binders.findFirst({
       where: { userId: data.userId, slug: data.slug },
       with: {
@@ -90,7 +91,7 @@ export const $fetchBinder = createServerFn({ method: "GET" })
         },
       },
     });
-    if (!binder) return undefined;
+    if (!binder) return null;
 
     const objekts =
       binder.entries.length > 0

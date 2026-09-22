@@ -224,3 +224,184 @@ export function suggestFromNeighbours(
         : [first.slot + 1, second.slot + 1],
   };
 }
+
+/**
+ * The next empty pocket on a page after the given slot, wrapping round to the
+ * top of the page. Pass -1 for the first empty pocket. Null when the page is
+ * full.
+ */
+export function nextEmptySlot(
+  layout: BinderLayout,
+  filled: readonly PocketPosition[],
+  page: number,
+  after: number,
+): number | null {
+  const { pocketsPerPage } = binderGrid(layout);
+  const taken = new Set(
+    filled.filter((p) => p.page === page).map((p) => p.slot),
+  );
+
+  for (let step = 1; step <= pocketsPerPage; step++) {
+    const slot = (after + step) % pocketsPerPage;
+    if (!taken.has(slot)) return slot;
+  }
+  return null;
+}
+
+const samePocket = (a: PocketPosition, b: PocketPosition) =>
+  a.page === b.page && a.slot === b.slot;
+
+const byPocket = (a: PocketPosition, b: PocketPosition) =>
+  a.page - b.page || a.slot - b.slot;
+
+/**
+ * A binder with an objekt placed into a pocket, mirroring $placeObjekt: the
+ * objekt leaves any other pocket, and an objekt it replaces stops being the
+ * cover.
+ */
+export function withPlacedObjekt(
+  binder: BinderDetail,
+  pocket: PocketPosition,
+  objekt: CosmoObjekt,
+): BinderDetail {
+  const replaced = binder.entries.find(
+    (entry) =>
+      samePocket(entry, pocket) && entry.objekt.tokenId !== objekt.tokenId,
+  );
+
+  return {
+    ...binder,
+    coverTokenId:
+      replaced !== undefined &&
+      Number(replaced.objekt.tokenId) === binder.coverTokenId
+        ? null
+        : binder.coverTokenId,
+    entries: [
+      ...binder.entries.filter(
+        (entry) =>
+          !samePocket(entry, pocket) && entry.objekt.tokenId !== objekt.tokenId,
+      ),
+      { page: pocket.page, slot: pocket.slot, objekt },
+    ].toSorted(byPocket),
+  };
+}
+
+/**
+ * A binder with one pocket emptied, mirroring $clearPocket.
+ */
+export function withClearedPocket(
+  binder: BinderDetail,
+  pocket: PocketPosition,
+): BinderDetail {
+  const cleared = binder.entries.find((entry) => samePocket(entry, pocket));
+
+  return {
+    ...binder,
+    coverTokenId:
+      cleared !== undefined &&
+      Number(cleared.objekt.tokenId) === binder.coverTokenId
+        ? null
+        : binder.coverTokenId,
+    entries: binder.entries.filter((entry) => !samePocket(entry, pocket)),
+  };
+}
+
+/**
+ * A binder with two pockets swapped, or an objekt moved into an empty pocket,
+ * mirroring $swapPockets.
+ */
+export function withSwappedPockets(
+  binder: BinderDetail,
+  from: PocketPosition,
+  to: PocketPosition,
+): BinderDetail {
+  return {
+    ...binder,
+    entries: binder.entries
+      .map((entry) => {
+        if (samePocket(entry, from)) return { ...entry, ...to };
+        if (samePocket(entry, to)) return { ...entry, ...from };
+        return entry;
+      })
+      .toSorted(byPocket),
+  };
+}
+
+/**
+ * A binder without its last page and that page's entries, mirroring
+ * $removeLastBinderPage.
+ */
+export function withoutLastPage(binder: BinderDetail): BinderDetail {
+  if (binder.pageCount === 1) return binder;
+
+  const pageCount = binder.pageCount - 1;
+  const entries = binder.entries.filter((entry) => entry.page < pageCount);
+
+  return {
+    ...binder,
+    pageCount,
+    entries,
+    coverTokenId: entries.some(
+      (entry) => Number(entry.objekt.tokenId) === binder.coverTokenId,
+    )
+      ? binder.coverTokenId
+      : null,
+  };
+}
+
+/**
+ * How many presets of each kind the colour picker offers.
+ */
+const COLOUR_PRESETS_PER_KIND = 4;
+
+/**
+ * Colours too close to white to read against a cover's white paper label.
+ */
+function isNearWhite(hex: string) {
+  const channel = (offset: number) => {
+    const value = Number.parseInt(hex.slice(offset, offset + 2), 16) / 255;
+    return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  };
+  return 0.2126 * channel(1) + 0.7152 * channel(3) + 0.0722 * channel(5) > 0.8;
+}
+
+function mostCommon(values: string[]) {
+  const counts = new Map<string, number>();
+  for (const value of values) counts.set(value, (counts.get(value) ?? 0) + 1);
+  return [...counts]
+    .toSorted((a, b) => b[1] - a[1])
+    .slice(0, COLOUR_PRESETS_PER_KIND)
+    .map(([value]) => value);
+}
+
+/**
+ * Spine colour presets drawn from a binder's own objekts: the most common
+ * collection background colours, then the colours of the most common members.
+ * Duplicates, invalid hexes and near-white colours are dropped.
+ */
+export function binderColourPresets(
+  entries: readonly {
+    objekt: Pick<CosmoObjekt, "backgroundColor" | "member">;
+  }[],
+  memberColour: (member: string) => string | undefined,
+): string[] {
+  const backgrounds = mostCommon(
+    entries.map((entry) => entry.objekt.backgroundColor.toLowerCase()),
+  );
+  const members = mostCommon(entries.map((entry) => entry.objekt.member))
+    .flatMap((member) => memberColour(member) ?? [])
+    .map((colour) => colour.toLowerCase());
+
+  return [...new Set([...backgrounds, ...members])].filter(
+    (colour) => /^#[0-9a-f]{6}$/.test(colour) && !isNearWhite(colour),
+  );
+}
+
+/**
+ * How an objekt is named in pocket labels and announcements: "Choerry 112Z".
+ */
+export function pocketObjektName(
+  objekt: Pick<CosmoObjekt, "member" | "collectionNo">,
+) {
+  return `${objekt.member} ${objekt.collectionNo}`;
+}
