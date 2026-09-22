@@ -332,6 +332,21 @@
   "binder_error_cover_not_in_binder": "Cet objekt n'est plus dans ce classeur",
   "binder_error_pocket_out_of_range": "Cette pochette n'existe pas dans ce classeur",
   "binder_error_objekt_not_owned": "Nous n'avons pas encore pu confirmer que vous possédez cet objekt. Si vous venez de le recevoir, réessayez dans un instant",
+  "binder_page_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{count} page",
+        "countPlural=other": "{count} pages"
+      }
+    }
+  ],
   "notification_bell_label": "Notifications",
   "notification_mark_all_read": "Tout marquer comme lu",
   "notification_empty": "Aucune notification pour le moment.",

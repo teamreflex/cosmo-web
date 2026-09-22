@@ -330,6 +330,20 @@
   "binder_error_cover_not_in_binder": "そのobjektはこのバインダーにもうありません",
   "binder_error_pocket_out_of_range": "そのポケットはこのバインダーにありません",
   "binder_error_objekt_not_owned": "このobjektの所有をまだ確認できません。受け取ったばかりの場合は、しばらくしてからもう一度お試しください",
+  "binder_page_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=other": "{count}ページ"
+      }
+    }
+  ],
   "notification_bell_label": "通知",
   "notification_mark_all_read": "すべて既読にする",
   "notification_empty": "まだ通知はありません。",

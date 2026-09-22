@@ -45,6 +45,14 @@ export function binderGrid(layout: BinderLayout) {
 }
 
 /**
+ * A layout as users read it, columns by rows: "4×3".
+ */
+export function binderLayoutLabel(layout: BinderLayout) {
+  const { columns, rows } = layoutGrids[layout];
+  return `${columns}×${rows}`;
+}
+
+/**
  * Whether a pocket exists in a binder with the given layout and page count.
  */
 export function isPocketInRange(
