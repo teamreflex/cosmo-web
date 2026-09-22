@@ -49,6 +49,13 @@ export function ordinal(input: number) {
 }
 
 /**
+ * Derive a URL slug from a list or binder name.
+ */
+export function createSlug(name: string) {
+  return name.trim().toLowerCase().replace(/ /g, "-");
+}
+
+/**
  * Sanitize and validate a UUID string.
  * Discord users will accidentally apply formatting to URLs, resulting in an ID of something like `8043b748-011c-4705-a0a1-eb9d261970ff**`
  * This will error when sent to Postgres, so we need to sanitize it.
