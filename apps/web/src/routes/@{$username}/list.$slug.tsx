@@ -68,15 +68,8 @@ export const Route = createFileRoute("/@{$username}/list/$slug")({
     );
 
     const isAuthenticated = account?.user.id === objektList.userId;
-    const { objektLists, ...targetAccount } = target;
 
-    return {
-      account,
-      target: targetAccount,
-      targetObjektLists: objektLists,
-      isAuthenticated,
-      objektList,
-    };
+    return { account, target, isAuthenticated, objektList };
   },
   head: ({ loaderData }) =>
     defineHead({
@@ -86,26 +79,11 @@ export const Route = createFileRoute("/@{$username}/list/$slug")({
 });
 
 function RouteComponent() {
-  const { account, target, targetObjektLists, isAuthenticated, objektList } =
+  const { account, target, isAuthenticated, objektList } =
     Route.useLoaderData();
 
-  // a list is trade-active if it's a have list with a linked want, OR a want
-  // list that some have list of the same user links to
-  const linkingHave =
-    objektList.type === "want"
-      ? targetObjektLists.find(
-          (l) => l.type === "have" && l.linkedWantListId === objektList.id,
-        )
-      : undefined;
-  const isTradeActive =
-    objektList.type === "have"
-      ? objektList.linkedWantListId !== null
-      : linkingHave !== undefined;
-
-  const pairedList =
-    objektList.type === "have" && objektList.linkedWantListId
-      ? targetObjektLists.find((l) => l.id === objektList.linkedWantListId)
-      : linkingHave;
+  // a have or want list is trade-active once it's paired with the other kind
+  const { pairedList } = objektList;
 
   const extras = (
     <>
@@ -128,7 +106,7 @@ function RouteComponent() {
         </Button>
       )}
       {isAuthenticated &&
-        isTradeActive &&
+        pairedList !== null &&
         (objektList.type === "have" || objektList.type === "want") && (
           <ListMatches list={objektList} />
         )}
@@ -137,7 +115,7 @@ function RouteComponent() {
 
   return (
     <UserStateProvider {...account}>
-      <ProfileProvider target={target} objektLists={targetObjektLists}>
+      <ProfileProvider target={target} objektLists={account?.objektLists ?? []}>
         <div className="border-b border-border">
           <div className="container">
             <ListHeader
