@@ -3,6 +3,8 @@ import type {
   cosmoAccounts,
   cosmoAccountChanges,
   pins,
+  binders,
+  binderEntries,
   cosmoTokens,
   gravities,
   gravityPolls,
@@ -24,6 +26,8 @@ export type CosmoAccountChange = typeof cosmoAccountChanges.$inferSelect;
 export type Pin = typeof pins.$inferSelect;
 export type ObjektList = typeof objektLists.$inferSelect;
 export type ObjektListEntry = typeof objektListEntries.$inferSelect;
+export type Binder = typeof binders.$inferSelect;
+export type BinderEntry = typeof binderEntries.$inferSelect;
 export type Notification = typeof notifications.$inferSelect;
 
 export type ListMatchPayload = {
