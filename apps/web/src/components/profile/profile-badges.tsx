@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
@@ -20,12 +21,14 @@ export function CosmoVerifiedBadge() {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <button
-            className="inline-flex h-5 items-center gap-1 rounded border border-border bg-background/40 px-1.5 text-muted-foreground uppercase"
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            className="text-muted-foreground"
             aria-label={m.profile_badge_cosmo_verified()}
           >
-            <IconCheck className="size-3" />
-          </button>
+            <IconCheck className="size-4" />
+          </Button>
         </TooltipTrigger>
         <TooltipContent side="bottom" align="start">
           <span>{m.profile_badge_cosmo_verified()}</span>

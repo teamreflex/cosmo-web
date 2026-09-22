@@ -17,8 +17,13 @@ export default function HelpDialog() {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="outline" size="profile">
-          <IconHelp className="h-5 w-5" />
+        <Button
+          variant="ghost"
+          size="icon-xs"
+          className="text-muted-foreground"
+          aria-label={m.common_help()}
+        >
+          <IconHelp className="size-4" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
