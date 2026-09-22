@@ -42,7 +42,7 @@ export async function fetchFullAccount(
       lockedObjekts: lockedObjekts
         .filter((o) => o.locked)
         .map((o) => o.tokenId),
-      pins: pins.map((p) => p.tokenId),
+      pins: pins.map((p) => p.tokenId).filter((id) => id !== null),
       verified: cosmo.userId !== null,
     };
   }

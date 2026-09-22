@@ -40,7 +40,9 @@ export const $fetchPins = createServerFn({ method: "GET" })
 
       if (rows.length === 0) return [];
 
-      const tokenIds = rows.map((row) => row.tokenId.toString());
+      const tokenIds = rows.flatMap((row) =>
+        row.tokenId === null ? [] : [row.tokenId.toString()],
+      );
       try {
         var results = await indexer.query.objekts.findMany({
           where: {
