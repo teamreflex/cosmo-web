@@ -1,17 +1,25 @@
+import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import { describe, expect, it } from "bun:test";
 import type {
+  BinderDetail,
   BinderPreviewImage,
   PlacedToken,
   PocketPosition,
   SuggestionObjekt,
 } from "../src/lib/universal/binders";
 import {
+  binderColourPresets,
   binderGrid,
   findEmptyPocket,
   isPocketInRange,
   MAX_BINDER_PAGES,
+  nextEmptySlot,
   resolveBinderArtwork,
   suggestFromNeighbours,
+  withClearedPocket,
+  withoutLastPage,
+  withPlacedObjekt,
+  withSwappedPockets,
 } from "../src/lib/universal/binders";
 
 function fullPages(pages: number, pocketsPerPage: number): PocketPosition[] {
@@ -321,4 +329,235 @@ function traits(
 
 function pocket(page: number, slot: number, objekt: SuggestionObjekt) {
   return { page, slot, objekt };
+}
+
+describe("nextEmptySlot", () => {
+  const filled = [
+    { page: 0, slot: 0 },
+    { page: 0, slot: 1 },
+    { page: 0, slot: 3 },
+    { page: 1, slot: 2 },
+  ];
+
+  it("finds the first empty pocket of a page from -1", () => {
+    expect(nextEmptySlot("3x3", filled, 0, -1)).toBe(2);
+    expect(nextEmptySlot("3x3", filled, 1, -1)).toBe(0);
+  });
+
+  it("skips filled pockets after the given slot", () => {
+    expect(nextEmptySlot("3x3", filled, 0, 2)).toBe(4);
+  });
+
+  it("wraps round to the top of the page", () => {
+    expect(nextEmptySlot("2x2", filled, 0, 3)).toBe(2);
+  });
+
+  it("returns null when the page is full", () => {
+    expect(nextEmptySlot("2x2", fullPages(1, 4), 0, 1)).toBeNull();
+  });
+});
+
+describe("binder edits", () => {
+  const binder = detail([entry(0, 0, 1), entry(0, 1, 2), entry(1, 0, 3)], {
+    coverTokenId: 2,
+    pageCount: 2,
+  });
+  const tokens = (b: BinderDetail) =>
+    b.entries.map((e) => [e.page, e.slot, Number(e.objekt.tokenId)]);
+
+  it("places an objekt into an empty pocket", () => {
+    expect(
+      tokens(withPlacedObjekt(binder, { page: 0, slot: 2 }, objekt(4))),
+    ).toEqual([
+      [0, 0, 1],
+      [0, 1, 2],
+      [0, 2, 4],
+      [1, 0, 3],
+    ]);
+  });
+
+  it("moves an objekt that is already in the binder", () => {
+    const moved = withPlacedObjekt(binder, { page: 1, slot: 1 }, objekt(1));
+    expect(tokens(moved)).toEqual([
+      [0, 1, 2],
+      [1, 0, 3],
+      [1, 1, 1],
+    ]);
+    expect(moved.coverTokenId).toBe(2);
+  });
+
+  it("drops the cover when its objekt is replaced", () => {
+    const replaced = withPlacedObjekt(binder, { page: 0, slot: 1 }, objekt(5));
+    expect(tokens(replaced)).toEqual([
+      [0, 0, 1],
+      [0, 1, 5],
+      [1, 0, 3],
+    ]);
+    expect(replaced.coverTokenId).toBeNull();
+  });
+
+  it("keeps the cover when it is placed where it already is", () => {
+    expect(
+      withPlacedObjekt(binder, { page: 0, slot: 1 }, objekt(2)).coverTokenId,
+    ).toBe(2);
+  });
+
+  it("clears a pocket, and the cover with it", () => {
+    const cleared = withClearedPocket(binder, { page: 0, slot: 1 });
+    expect(tokens(cleared)).toEqual([
+      [0, 0, 1],
+      [1, 0, 3],
+    ]);
+    expect(cleared.coverTokenId).toBeNull();
+    expect(withClearedPocket(binder, { page: 0, slot: 0 }).coverTokenId).toBe(
+      2,
+    );
+  });
+
+  it("swaps two filled pockets", () => {
+    expect(
+      tokens(
+        withSwappedPockets(binder, { page: 0, slot: 0 }, { page: 1, slot: 0 }),
+      ),
+    ).toEqual([
+      [0, 0, 3],
+      [0, 1, 2],
+      [1, 0, 1],
+    ]);
+  });
+
+  it("moves into an empty pocket", () => {
+    expect(
+      tokens(
+        withSwappedPockets(binder, { page: 0, slot: 1 }, { page: 0, slot: 8 }),
+      ),
+    ).toEqual([
+      [0, 0, 1],
+      [0, 8, 2],
+      [1, 0, 3],
+    ]);
+  });
+
+  it("removes the last page with its entries", () => {
+    const removed = withoutLastPage(
+      detail([entry(0, 0, 1), entry(1, 0, 3)], {
+        coverTokenId: 3,
+        pageCount: 2,
+      }),
+    );
+    expect(removed.pageCount).toBe(1);
+    expect(tokens(removed)).toEqual([[0, 0, 1]]);
+    expect(removed.coverTokenId).toBeNull();
+    expect(withoutLastPage(binder).coverTokenId).toBe(2);
+  });
+
+  it("keeps a one-page binder's only page", () => {
+    const single = detail([entry(0, 0, 1)], { pageCount: 1 });
+    expect(withoutLastPage(single)).toBe(single);
+  });
+});
+
+describe("binderColourPresets", () => {
+  const colours = new Map([
+    ["Choerry", "#7F2BE2"],
+    ["HeeJin", "#F2F2F2"],
+    ["KimLip", "#E7141F"],
+  ]);
+  const memberColour = (member: string) => colours.get(member);
+
+  it("offers background colours, then member colours, most common first", () => {
+    const entries = [
+      presetEntry("#FFDD00", "Choerry"),
+      presetEntry("#1a1a8c", "KimLip"),
+      presetEntry("#1a1a8c", "KimLip"),
+    ];
+    expect(binderColourPresets(entries, memberColour)).toEqual([
+      "#1a1a8c",
+      "#ffdd00",
+      "#e7141f",
+      "#7f2be2",
+    ]);
+  });
+
+  it("drops duplicates, near-white colours and unknown members", () => {
+    const entries = [
+      presetEntry("#ffffff", "HeeJin"),
+      presetEntry("#E7141F", "KimLip"),
+      presetEntry("#e7141f", "Nobody"),
+    ];
+    expect(binderColourPresets(entries, memberColour)).toEqual(["#e7141f"]);
+  });
+
+  it("keeps only the top four of each kind", () => {
+    const entries = ["#111111", "#222222", "#333333", "#444444", "#555555"].map(
+      (colour) => presetEntry(colour, "Nobody"),
+    );
+    expect(binderColourPresets(entries, memberColour)).toHaveLength(4);
+  });
+
+  it("offers nothing for an empty binder", () => {
+    expect(binderColourPresets([], memberColour)).toEqual([]);
+  });
+});
+
+function presetEntry(backgroundColor: string, member: string) {
+  return { objekt: { backgroundColor, member } };
+}
+
+function objekt(tokenId: number): CosmoObjekt {
+  return {
+    id: `collection-${tokenId}`,
+    collectionId: `Atom02 Choerry ${100 + tokenId}Z`,
+    season: "Atom02",
+    member: "Choerry",
+    collectionNo: `${100 + tokenId}Z`,
+    class: "First",
+    artists: ["artms"],
+    thumbnailImage: "",
+    frontImage: "",
+    backImage: "",
+    frontImageVersion: null,
+    backImageVersion: null,
+    accentColor: "#ffdd00",
+    backgroundColor: "#ffdd00",
+    textColor: "#000000",
+    comoAmount: 1,
+    transferablebyDefault: true,
+    tokenId: String(tokenId),
+    tokenAddress: "0x0",
+    objektNo: tokenId,
+    transferable: true,
+    bandImageUrl: null,
+    frontMedia: null,
+    hasAudio: false,
+    usedForGrid: false,
+    lenticularPairTokenId: null,
+    mintedAt: "2024-01-01T00:00:00Z",
+    receivedAt: "2024-01-01T00:00:00Z",
+    status: "minted",
+  };
+}
+
+function entry(page: number, slot: number, tokenId: number) {
+  return { page, slot, objekt: objekt(tokenId) };
+}
+
+function detail(
+  entries: BinderDetail["entries"],
+  overrides: Partial<BinderDetail> = {},
+): BinderDetail {
+  return {
+    id: "00000000-0000-0000-0000-000000000000",
+    createdAt: new Date(0),
+    updatedAt: new Date(0),
+    userId: "user",
+    name: "Test",
+    slug: "test",
+    layout: "3x3",
+    colour: "#3b2a6b",
+    pageCount: 1,
+    coverTokenId: null,
+    ...overrides,
+    entries,
+  };
 }

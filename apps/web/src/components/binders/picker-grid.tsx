@@ -5,7 +5,13 @@ import { useGridElementVirtualizer } from "@/hooks/use-grid-virtualizer";
 import { m } from "@/i18n/messages";
 import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import { Objekt } from "@/lib/universal/objekt-conversion";
+import { cn } from "@/lib/utils";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
+import { useDraggable } from "@dnd-kit/core";
+import type {
+  DraggableAttributes,
+  DraggableSyntheticListeners,
+} from "@dnd-kit/core";
 import { IconLock } from "@tabler/icons-react";
 import { useEffect } from "react";
 import type { RefObject } from "react";
@@ -20,6 +26,8 @@ type Props = {
   scrollElement: RefObject<HTMLDivElement | null>;
   inBinderTokenIds: ReadonlySet<number>;
   lockedTokenIds: ReadonlySet<number>;
+  /** cards can be dragged onto a pocket; needs a surrounding DndContext */
+  draggable: boolean;
   onPick: (objekt: CosmoObjekt) => void;
 };
 
@@ -32,8 +40,10 @@ export default function PickerGrid({
   scrollElement,
   inBinderTokenIds,
   lockedTokenIds,
+  draggable,
   onPick,
 }: Props) {
+  const Card = draggable ? DraggablePickerCard : PickerCard;
   const [containerRef, { width }] = useElementSize({ axis: "width" });
   const laneWidth = Math.max(
     0,
@@ -82,7 +92,7 @@ export default function PickerGrid({
                 width: `${laneWidth}px`,
               }}
             >
-              <PickerCard
+              <Card
                 objekt={objekt}
                 inBinder={inBinderTokenIds.has(tokenId)}
                 locked={lockedTokenIds.has(tokenId)}
@@ -105,6 +115,31 @@ type PickerCardProps = {
 };
 
 /**
+ * What an objekt dragged out of the picker carries to the pocket it's dropped
+ * on, under the `drag` key of its dnd-kit data.
+ */
+export type PickerDragData = { kind: "objekt"; objekt: CosmoObjekt };
+
+/**
+ * A picker card that can also be dragged onto a pocket. Clicking still picks.
+ */
+function DraggablePickerCard(props: PickerCardProps) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: `objekt-${props.objekt.tokenId}`,
+    data: {
+      drag: { kind: "objekt", objekt: props.objekt } satisfies PickerDragData,
+    },
+  });
+
+  return (
+    <PickerCard
+      {...props}
+      drag={{ attributes, listeners, setNodeRef, isDragging }}
+    />
+  );
+}
+
+/**
  * One pickable objekt: the plain front image, dimmed with an "in binder" label
  * when it's already placed. Placed objekts stay pickable, because picking one
  * moves it to the selected pocket.
@@ -115,13 +150,24 @@ function PickerCard({
   locked,
   priority,
   onPick,
-}: PickerCardProps) {
+  drag,
+}: PickerCardProps & {
+  drag?: {
+    attributes: DraggableAttributes;
+    listeners: DraggableSyntheticListeners;
+    setNodeRef: (element: HTMLElement | null) => void;
+    isDragging: boolean;
+  };
+}) {
   const { collection, objekt: token } = Objekt.fromLegacy(objekt);
 
   return (
     <div className="@container">
       <button
+        ref={drag?.setNodeRef}
         type="button"
+        {...drag?.attributes}
+        {...drag?.listeners}
         onClick={() => onPick(objekt)}
         aria-label={[
           `${collection.member} ${collection.season} ${collection.collectionNo}${token.serial > 0 ? ` #${token.serial}` : ""}`,
@@ -134,7 +180,10 @@ function PickerCard({
           "--objekt-background-color": collection.backgroundColor,
           "--objekt-text-color": collection.textColor,
         }}
-        className="relative block aspect-photocard w-full cursor-pointer touch-manipulation overflow-hidden rounded-photocard bg-secondary outline-2 outline-transparent transition-[outline-color] duration-150 hover:outline-(--objekt-background-color) focus-visible:outline-cosmo"
+        className={cn(
+          "relative block aspect-photocard w-full cursor-pointer touch-manipulation overflow-hidden rounded-photocard bg-secondary outline-2 outline-transparent transition-[outline-color,opacity] duration-150 hover:outline-(--objekt-background-color) focus-visible:outline-cosmo",
+          drag?.isDragging && "opacity-40",
+        )}
       >
         <img
           src={getObjektFrontImageUrl(collection, "xs")}
@@ -169,10 +218,10 @@ export function PickerGridSkeleton() {
   return (
     <div className="grid grid-cols-3 gap-2">
       {Array.from({ length: PICKER_COLUMNS * 4 }, (_, i) => (
-        <Skeleton
-          key={i}
-          className="aspect-photocard w-full rounded-photocard"
-        />
+        // the photocard radius is sized against a container
+        <div key={i} className="@container">
+          <Skeleton className="aspect-photocard w-full rounded-photocard" />
+        </div>
       ))}
     </div>
   );

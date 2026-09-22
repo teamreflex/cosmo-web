@@ -34,6 +34,7 @@ import { Route as GravityIndexRouteImport } from './routes/gravity/index'
 import { Route as ListIdRouteImport } from './routes/list/$id'
 import { Route as ObjektsIndexRouteImport } from './routes/objekts/index'
 import { Route as ObjektsStatsRouteImport } from './routes/objekts/stats'
+import { Route as AtChar123usernameChar125BinderSlugRouteImport } from './routes/@{$username}/binder.$slug'
 import { Route as AtChar123usernameChar125ListSlugRouteImport } from './routes/@{$username}/list.$slug'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiUserByAddressesRouteImport } from './routes/api/user/by-addresses'
@@ -178,6 +179,12 @@ const ObjektsStatsRoute = ObjektsStatsRouteImport.update({
   path: '/objekts/stats',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AtChar123usernameChar125BinderSlugRoute =
+  AtChar123usernameChar125BinderSlugRouteImport.update({
+    id: '/binder/$slug',
+    path: '/binder/$slug',
+    getParentRoute: () => AtChar123usernameChar125RouteRoute,
+  } as any)
 const AtChar123usernameChar125ListSlugRoute =
   AtChar123usernameChar125ListSlugRouteImport.update({
     id: '/list/$slug',
@@ -272,6 +279,7 @@ export interface FileRoutesByFullPath {
   '/events/': typeof EventsIndexRoute
   '/gravity/': typeof GravityIndexRoute
   '/objekts/': typeof ObjektsIndexRoute
+  '/@{$username}/binder/$slug': typeof AtChar123usernameChar125BinderSlugRoute
   '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
@@ -309,6 +317,7 @@ export interface FileRoutesByTo {
   '/events': typeof EventsIndexRoute
   '/gravity': typeof GravityIndexRoute
   '/objekts': typeof ObjektsIndexRoute
+  '/@{$username}/binder/$slug': typeof AtChar123usernameChar125BinderSlugRoute
   '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
@@ -349,6 +358,7 @@ export interface FileRoutesById {
   '/events/': typeof EventsIndexRoute
   '/gravity/': typeof GravityIndexRoute
   '/objekts/': typeof ObjektsIndexRoute
+  '/@{$username}/binder/$slug': typeof AtChar123usernameChar125BinderSlugRoute
   '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
@@ -390,6 +400,7 @@ export interface FileRouteTypes {
     | '/events/'
     | '/gravity/'
     | '/objekts/'
+    | '/@{$username}/binder/$slug'
     | '/@{$username}/list/$slug'
     | '/api/auth/$'
     | '/api/user/by-addresses'
@@ -427,6 +438,7 @@ export interface FileRouteTypes {
     | '/events'
     | '/gravity'
     | '/objekts'
+    | '/@{$username}/binder/$slug'
     | '/@{$username}/list/$slug'
     | '/api/auth/$'
     | '/api/user/by-addresses'
@@ -466,6 +478,7 @@ export interface FileRouteTypes {
     | '/events/'
     | '/gravity/'
     | '/objekts/'
+    | '/@{$username}/binder/$slug'
     | '/@{$username}/list/$slug'
     | '/api/auth/$'
     | '/api/user/by-addresses'
@@ -683,6 +696,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ObjektsStatsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/@{$username}/binder/$slug': {
+      id: '/@{$username}/binder/$slug'
+      path: '/binder/$slug'
+      fullPath: '/@{$username}/binder/$slug'
+      preLoaderRoute: typeof AtChar123usernameChar125BinderSlugRouteImport
+      parentRoute: typeof AtChar123usernameChar125RouteRoute
+    }
     '/@{$username}/list/$slug': {
       id: '/@{$username}/list/$slug'
       path: '/list/$slug'
@@ -776,6 +796,7 @@ interface AtChar123usernameChar125RouteRouteChildren {
   AtChar123usernameChar125ProgressRoute: typeof AtChar123usernameChar125ProgressRoute
   AtChar123usernameChar125TradesRoute: typeof AtChar123usernameChar125TradesRoute
   AtChar123usernameChar125IndexRoute: typeof AtChar123usernameChar125IndexRoute
+  AtChar123usernameChar125BinderSlugRoute: typeof AtChar123usernameChar125BinderSlugRoute
   AtChar123usernameChar125ListSlugRoute: typeof AtChar123usernameChar125ListSlugRoute
 }
 
@@ -787,6 +808,8 @@ const AtChar123usernameChar125RouteRouteChildren: AtChar123usernameChar125RouteR
       AtChar123usernameChar125ProgressRoute,
     AtChar123usernameChar125TradesRoute: AtChar123usernameChar125TradesRoute,
     AtChar123usernameChar125IndexRoute: AtChar123usernameChar125IndexRoute,
+    AtChar123usernameChar125BinderSlugRoute:
+      AtChar123usernameChar125BinderSlugRoute,
     AtChar123usernameChar125ListSlugRoute:
       AtChar123usernameChar125ListSlugRoute,
   }
