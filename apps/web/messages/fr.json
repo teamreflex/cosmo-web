@@ -347,6 +347,52 @@
       }
     }
   ],
+  "binder_picker_all_artists": "Tous",
+  "binder_picker_suggestion_one": "Comme la pochette {pocket} :",
+  "binder_picker_suggestion_two": "Comme les pochettes {first} et {second} :",
+  "binder_picker_suggested": "Suggestion",
+  "binder_picker_matches_one": "Correspond à la pochette {pocket}",
+  "binder_picker_matches_two": "Correspond aux pochettes {first} et {second}",
+  "binder_picker_count": [
+    {
+      "declarations": [
+        "input shown",
+        "input total",
+        "local totalPlural = total: plural"
+      ],
+      "selectors": [
+        "totalPlural"
+      ],
+      "match": {
+        "totalPlural=one": "{shown} sur {total} objekt",
+        "totalPlural=other": "{shown} sur {total} objekts"
+      }
+    }
+  ],
+  "binder_picker_sort": "tri · {sort}",
+  "binder_picker_pick_artist": "Choisissez un artiste",
+  "binder_picker_ownership": "Possession",
+  "binder_picker_binder": "Classeur",
+  "binder_picker_not_in_binder": "Pas dans ce classeur",
+  "binder_picker_show": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "Afficher {count} objekt",
+        "countPlural=other": "Afficher {count} objekts"
+      }
+    }
+  ],
+  "binder_picker_in_binder": "dans le classeur",
+  "binder_picker_empty_filtered": "Aucun objekt ne correspond. Retirez un filtre pour en voir plus.",
+  "binder_picker_empty": "Aucun objekt dans cette collection pour le moment.",
+  "binder_picker_remove_filter": "Retirer {filter}",
   "notification_bell_label": "Notifications",
   "notification_mark_all_read": "Tout marquer comme lu",
   "notification_empty": "Aucune notification pour le moment.",

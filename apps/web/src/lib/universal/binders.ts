@@ -1,3 +1,4 @@
+import type { ValidArtist } from "@apollo/cosmo/types/common";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import type { Binder } from "@apollo/database/web/types";
 
@@ -162,3 +163,64 @@ export type BinderPocketEntry = PocketPosition & {
 export type BinderDetail = Binder & {
   entries: BinderPocketEntry[];
 };
+
+/**
+ * The collection fields a neighbour suggestion compares.
+ */
+export type SuggestionObjekt = Pick<
+  CosmoObjekt,
+  "artists" | "member" | "season" | "class"
+>;
+
+/**
+ * Picker filters proposed from the neighbouring pockets. `null` fields are
+ * left open because the neighbours disagree on them. `pockets` holds the
+ * 1-based numbers of the one or two pockets it's drawn from, for display.
+ */
+export type NeighbourSuggestion = {
+  artist: ValidArtist;
+  member: string | null;
+  season: string | null;
+  class: string | null;
+  pockets: [number] | [number, number];
+};
+
+/**
+ * Suggest picker filters for a pocket from the filled pockets either side of
+ * it on the same page. Nothing is suggested when both are empty or they
+ * belong to different artists; otherwise member, season and class are kept
+ * wherever every filled neighbour agrees.
+ */
+export function suggestFromNeighbours(
+  entries: readonly (PocketPosition & { objekt: SuggestionObjekt })[],
+  pocket: PocketPosition,
+): NeighbourSuggestion | null {
+  const [first, second] = entries
+    .filter(
+      (entry) =>
+        entry.page === pocket.page && Math.abs(entry.slot - pocket.slot) === 1,
+    )
+    .toSorted((a, b) => a.slot - b.slot);
+
+  const [artist] = first?.objekt.artists ?? [];
+  if (first === undefined || artist === undefined) return null;
+  if (second !== undefined && second.objekt.artists[0] !== artist) {
+    return null;
+  }
+
+  const agreed = (key: "member" | "season" | "class") =>
+    second === undefined || second.objekt[key] === first.objekt[key]
+      ? first.objekt[key]
+      : null;
+
+  return {
+    artist,
+    member: agreed("member"),
+    season: agreed("season"),
+    class: agreed("class"),
+    pockets:
+      second === undefined
+        ? [first.slot + 1]
+        : [first.slot + 1, second.slot + 1],
+  };
+}

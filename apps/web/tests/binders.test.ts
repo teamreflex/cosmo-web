@@ -3,6 +3,7 @@ import type {
   BinderPreviewImage,
   PlacedToken,
   PocketPosition,
+  SuggestionObjekt,
 } from "../src/lib/universal/binders";
 import {
   binderGrid,
@@ -10,6 +11,7 @@ import {
   isPocketInRange,
   MAX_BINDER_PAGES,
   resolveBinderArtwork,
+  suggestFromNeighbours,
 } from "../src/lib/universal/binders";
 
 function fullPages(pages: number, pocketsPerPage: number): PocketPosition[] {
@@ -206,3 +208,117 @@ describe("resolveBinderArtwork", () => {
     });
   });
 });
+
+describe("suggestFromNeighbours", () => {
+  const choerry110 = traits("artms", "Choerry", "Atom02", "First");
+  const choerry112 = traits("artms", "Choerry", "Atom02", "First");
+  const choerryDouble = traits("artms", "Choerry", "Atom02", "Double");
+  const jinsoul = traits("artms", "JinSoul", "Atom02", "First");
+  const heejin = traits("artms", "HeeJin", "Binary01", "Special");
+  const seoyeon = traits("tripleS", "SeoYeon", "Atom02", "First");
+
+  it("suggests nothing when both neighbours are empty", () => {
+    const entries = [pocket(0, 0, choerry110), pocket(0, 8, jinsoul)];
+    expect(suggestFromNeighbours(entries, { page: 0, slot: 4 })).toBeNull();
+  });
+
+  it("suggests every attribute from a single neighbour", () => {
+    const entries = [pocket(0, 3, choerry110)];
+    expect(suggestFromNeighbours(entries, { page: 0, slot: 4 })).toEqual({
+      artist: "artms",
+      member: "Choerry",
+      season: "Atom02",
+      class: "First",
+      pockets: [4],
+    });
+  });
+
+  it("keeps attributes both neighbours agree on", () => {
+    const entries = [pocket(0, 1, choerry110), pocket(0, 3, choerry112)];
+    expect(suggestFromNeighbours(entries, { page: 0, slot: 2 })).toEqual({
+      artist: "artms",
+      member: "Choerry",
+      season: "Atom02",
+      class: "First",
+      pockets: [2, 4],
+    });
+  });
+
+  it("drops the member when the neighbours disagree on it", () => {
+    const entries = [pocket(0, 6, jinsoul), pocket(0, 4, choerry110)];
+    expect(suggestFromNeighbours(entries, { page: 0, slot: 5 })).toEqual({
+      artist: "artms",
+      member: null,
+      season: "Atom02",
+      class: "First",
+      pockets: [5, 7],
+    });
+  });
+
+  it("drops the season and class when the neighbours disagree on them", () => {
+    const entries = [pocket(0, 6, jinsoul), pocket(0, 8, heejin)];
+    expect(suggestFromNeighbours(entries, { page: 0, slot: 7 })).toEqual({
+      artist: "artms",
+      member: null,
+      season: null,
+      class: null,
+      pockets: [7, 9],
+    });
+  });
+
+  it("drops only the class when the neighbours differ in class alone", () => {
+    const entries = [pocket(0, 0, choerry110), pocket(0, 2, choerryDouble)];
+    expect(suggestFromNeighbours(entries, { page: 0, slot: 1 })).toEqual({
+      artist: "artms",
+      member: "Choerry",
+      season: "Atom02",
+      class: null,
+      pockets: [1, 3],
+    });
+  });
+
+  it("suggests nothing when the neighbours belong to different artists", () => {
+    const entries = [pocket(0, 0, choerry110), pocket(0, 2, seoyeon)];
+    expect(suggestFromNeighbours(entries, { page: 0, slot: 1 })).toBeNull();
+  });
+
+  it("reads only the next pocket for the first pocket of a page", () => {
+    const entries = [pocket(0, 8, seoyeon), pocket(1, 1, choerry110)];
+    expect(suggestFromNeighbours(entries, { page: 1, slot: 0 })).toEqual({
+      artist: "artms",
+      member: "Choerry",
+      season: "Atom02",
+      class: "First",
+      pockets: [2],
+    });
+  });
+
+  it("reads only the previous pocket for the last pocket of a page", () => {
+    const entries = [pocket(0, 7, seoyeon), pocket(1, 0, choerry110)];
+    expect(suggestFromNeighbours(entries, { page: 0, slot: 8 })).toEqual({
+      artist: "tripleS",
+      member: "SeoYeon",
+      season: "Atom02",
+      class: "First",
+      pockets: [8],
+    });
+  });
+
+  it("ignores neighbouring slots on other pages", () => {
+    const entries = [pocket(1, 3, choerry110), pocket(1, 5, jinsoul)];
+    expect(suggestFromNeighbours(entries, { page: 0, slot: 4 })).toBeNull();
+  });
+});
+
+function traits(
+  artist: SuggestionObjekt["artists"][number],
+  member: string,
+  season: string,
+  className: string,
+): SuggestionObjekt {
+  return { artists: [artist], member, season, class: className };
+}
+
+function pocket(page: number, slot: number, objekt: SuggestionObjekt) {
+  return { page, slot, objekt };
+}

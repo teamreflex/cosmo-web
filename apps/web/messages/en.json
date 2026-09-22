@@ -347,6 +347,52 @@
       }
     }
   ],
+  "binder_picker_all_artists": "All",
+  "binder_picker_suggestion_one": "Like pocket {pocket}:",
+  "binder_picker_suggestion_two": "Like pockets {first} and {second}:",
+  "binder_picker_suggested": "Suggested",
+  "binder_picker_matches_one": "Matches pocket {pocket}",
+  "binder_picker_matches_two": "Matches pockets {first} and {second}",
+  "binder_picker_count": [
+    {
+      "declarations": [
+        "input shown",
+        "input total",
+        "local totalPlural = total: plural"
+      ],
+      "selectors": [
+        "totalPlural"
+      ],
+      "match": {
+        "totalPlural=one": "{shown} of {total} objekt",
+        "totalPlural=other": "{shown} of {total} objekts"
+      }
+    }
+  ],
+  "binder_picker_sort": "sort · {sort}",
+  "binder_picker_pick_artist": "Pick an artist",
+  "binder_picker_ownership": "Ownership",
+  "binder_picker_binder": "Binder",
+  "binder_picker_not_in_binder": "Not in this binder",
+  "binder_picker_show": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "Show {count} objekt",
+        "countPlural=other": "Show {count} objekts"
+      }
+    }
+  ],
+  "binder_picker_in_binder": "in binder",
+  "binder_picker_empty_filtered": "No objekts match. Remove a filter to see more.",
+  "binder_picker_empty": "No objekts in this collection yet.",
+  "binder_picker_remove_filter": "Remove {filter}",
   "notification_bell_label": "Notifications",
   "notification_mark_all_read": "Mark all read",
   "notification_empty": "No notifications yet.",
