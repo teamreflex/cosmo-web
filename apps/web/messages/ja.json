@@ -344,6 +344,50 @@
       }
     }
   ],
+  "binder_picker_all_artists": "すべて",
+  "binder_picker_suggestion_one": "ポケット{pocket}と同じ:",
+  "binder_picker_suggestion_two": "ポケット{first}と{second}と同じ:",
+  "binder_picker_suggested": "おすすめ",
+  "binder_picker_matches_one": "ポケット{pocket}に一致",
+  "binder_picker_matches_two": "ポケット{first}と{second}に一致",
+  "binder_picker_count": [
+    {
+      "declarations": [
+        "input shown",
+        "input total",
+        "local totalPlural = total: plural"
+      ],
+      "selectors": [
+        "totalPlural"
+      ],
+      "match": {
+        "totalPlural=other": "{total}個中{shown}個のオブジェクト"
+      }
+    }
+  ],
+  "binder_picker_sort": "並び替え · {sort}",
+  "binder_picker_pick_artist": "アーティストを選択してください",
+  "binder_picker_ownership": "所有",
+  "binder_picker_binder": "バインダー",
+  "binder_picker_not_in_binder": "このバインダーにないもの",
+  "binder_picker_show": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=other": "{count}個のオブジェクトを表示"
+      }
+    }
+  ],
+  "binder_picker_in_binder": "バインダー内",
+  "binder_picker_empty_filtered": "一致するオブジェクトがありません。フィルターを外すと表示されます。",
+  "binder_picker_empty": "このコレクションにはまだオブジェクトがありません。",
+  "binder_picker_remove_filter": "{filter}を解除",
   "notification_bell_label": "通知",
   "notification_mark_all_read": "すべて既読にする",
   "notification_empty": "まだ通知はありません。",

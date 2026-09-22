@@ -1,4 +1,5 @@
-import { useWindowVirtualizer } from "@tanstack/react-virtual";
+import { useVirtualizer, useWindowVirtualizer } from "@tanstack/react-virtual";
+import type { Virtualizer } from "@tanstack/react-virtual";
 import type { RefObject } from "react";
 
 type Options = {
@@ -25,6 +26,54 @@ export function useGridVirtualizer({
 }: Options) {
   "use no memo";
   const virtualizer = useWindowVirtualizer({
+    ...gridOptions({ count, lanes, gap, itemHeight }),
+    scrollMargin: container.current?.offsetTop ?? 0,
+  });
+
+  return snapshot(virtualizer);
+}
+
+type ElementOptions = Options & {
+  scrollElement: RefObject<HTMLElement | null>;
+};
+
+/**
+ * The same grid virtualizer against a scrolling element instead of the window,
+ * for grids inside a scrolling panel such as the binder picker. The scroll
+ * element must be positioned, so the grid's `offsetTop` is its offset inside
+ * that element (0 when the grid is its first child). Opts out of the React
+ * Compiler for the same reasons as `useGridVirtualizer`.
+ */
+export function useGridElementVirtualizer({
+  count,
+  lanes,
+  gap,
+  itemHeight,
+  container,
+  scrollElement,
+}: ElementOptions) {
+  "use no memo";
+  // oxlint-disable-next-line react/incompatible-library -- this hook already opts out of the compiler
+  const virtualizer = useVirtualizer({
+    ...gridOptions({ count, lanes, gap, itemHeight }),
+    getScrollElement: () => scrollElement.current,
+    scrollMargin: container.current?.offsetTop ?? 0,
+  });
+
+  return snapshot(virtualizer);
+}
+
+/**
+ * Options shared by both grid virtualizers: one lane per column and a fixed
+ * row height, measured up front rather than from the DOM.
+ */
+function gridOptions({
+  count,
+  lanes,
+  gap,
+  itemHeight,
+}: Omit<Options, "container">) {
+  return {
     count,
     lanes,
     gap,
@@ -32,9 +81,12 @@ export function useGridVirtualizer({
     overscan: lanes * 3,
     estimateSize: () => itemHeight,
     measureElement: () => itemHeight,
-    scrollMargin: container.current?.offsetTop ?? 0,
-  });
+  };
+}
 
+function snapshot<TScrollElement extends Element | Window>(
+  virtualizer: Virtualizer<TScrollElement, Element>,
+) {
   return {
     items: virtualizer.getVirtualItems(),
     totalSize: virtualizer.getTotalSize(),
