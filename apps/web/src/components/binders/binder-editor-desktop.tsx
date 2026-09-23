@@ -24,7 +24,8 @@ import type {
   KeyboardCoordinateGetter,
 } from "@dnd-kit/core";
 import { IconPencil, IconTrash } from "@tabler/icons-react";
-import { useState } from "react";
+import { memo, useState } from "react";
+import { useEventCallback } from "usehooks-ts";
 import { BinderPage, PocketSleeve } from "./binder-page";
 import {
   DesktopPageControls,
@@ -72,6 +73,11 @@ export default function BinderEditorDesktop({
   const { binder } = editor;
   const { columns, rows, pocketsPerPage } = binderGrid(binder.layout);
   const [dragging, setDragging] = useState<DragData | null>(null);
+  // stable, so a pocket only re-renders when its own contents or state change
+  const clearPocket = useEventCallback((slot: number) => editor.clear(slot));
+  const setCover = useEventCallback((tokenId: number | null) =>
+    editor.setCover(tokenId),
+  );
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -196,14 +202,24 @@ export default function BinderEditorDesktop({
               maxWidth: `calc(max(30rem, 100dvh - 19rem) * ${(columns * 5.5) / (rows * 8.5)})`,
             }}
           >
-            {Array.from({ length: pocketsPerPage }, (_, slot) => (
-              <DesktopPocket
-                key={slot}
-                slot={slot}
-                entry={editor.pockets.get(slot)}
-                editor={editor}
-              />
-            ))}
+            {Array.from({ length: pocketsPerPage }, (_, slot) => {
+              const entry = editor.pockets.get(slot);
+              return (
+                <DesktopPocket
+                  key={slot}
+                  slot={slot}
+                  entry={entry}
+                  selected={editor.selected === slot}
+                  isCover={
+                    entry !== undefined &&
+                    Number(entry.objekt.tokenId) === binder.coverTokenId
+                  }
+                  onSelect={editor.select}
+                  onClear={clearPocket}
+                  onSetCover={setCover}
+                />
+              );
+            })}
           </BinderPage>
 
           <DesktopPageControls
@@ -242,14 +258,26 @@ export default function BinderEditorDesktop({
 type DesktopPocketProps = {
   slot: number;
   entry: BinderPocketEntry | undefined;
-  editor: BinderEditor;
+  selected: boolean;
+  isCover: boolean;
+  onSelect: (slot: number) => void;
+  onClear: (slot: number) => void;
+  onSetCover: (tokenId: number | null) => void;
 };
 
 /**
  * A pocket that takes drops from the picker and other pockets, and can be
  * dragged itself once it holds an objekt.
  */
-function DesktopPocket({ slot, entry, editor }: DesktopPocketProps) {
+const DesktopPocket = memo(function DesktopPocket({
+  slot,
+  entry,
+  selected,
+  isCover,
+  onSelect,
+  onClear,
+  onSetCover,
+}: DesktopPocketProps) {
   const id = `pocket-${slot}`;
   const { setNodeRef: setDropRef, isOver } = useDroppable({
     id,
@@ -270,21 +298,23 @@ function DesktopPocket({ slot, entry, editor }: DesktopPocketProps) {
           : ({ kind: "pocket", slot, objekt: entry.objekt } satisfies DragData),
     },
   });
-  const tokenId = entry === undefined ? null : Number(entry.objekt.tokenId);
-  const isCover = tokenId !== null && tokenId === editor.binder.coverTokenId;
 
   return (
     <EditorPocket
       slot={slot}
       entry={entry}
-      selected={editor.selected === slot}
+      selected={selected}
       isCover={isCover}
       numbered
       actions="hover"
       priority
-      onSelect={() => editor.select(slot)}
-      onClear={() => editor.clear(slot)}
-      onToggleCover={() => editor.setCover(isCover ? null : tokenId)}
+      onSelect={() => onSelect(slot)}
+      onClear={() => onClear(slot)}
+      onToggleCover={() =>
+        onSetCover(
+          isCover || entry === undefined ? null : Number(entry.objekt.tokenId),
+        )
+      }
       drag={{
         setDropRef,
         setDragRef,
@@ -296,7 +326,7 @@ function DesktopPocket({ slot, entry, editor }: DesktopPocketProps) {
       }}
     />
   );
-}
+});
 
 /**
  * dnd-kit types drag data loosely, so read back the one shape the editor's

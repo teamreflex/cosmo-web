@@ -7,7 +7,7 @@ import type { BinderDetail } from "@/lib/universal/binders";
 import type { Binder } from "@apollo/database/web/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import BinderEditorDesktop from "./binder-editor-desktop";
 import BinderEditorPhone from "./binder-editor-phone";
 import BinderSettingsDialog from "./binder-settings-dialog";
@@ -43,13 +43,6 @@ export default function BinderEditor({ binder, initialPage, owner }: Props) {
   const [dialog, setDialog] = useState<
     "settings" | "delete" | "remove-page" | null
   >(null);
-
-  const rootRef = useRef<HTMLDivElement>(null);
-
-  // the editor owns the screen, so it opens scrolled to the tab strip
-  useEffect(() => {
-    rootRef.current?.scrollIntoView({ block: "start" });
-  }, [binder.id]);
 
   const lastPageCount = binder.entries.filter(
     (entry) => entry.page === binder.pageCount - 1,
@@ -101,7 +94,7 @@ export default function BinderEditor({ binder, initialPage, owner }: Props) {
   const Layout = isDesktop ? BinderEditorDesktop : BinderEditorPhone;
 
   return (
-    <div ref={rootRef} className="scroll-mt-14 md:scroll-mt-30">
+    <div>
       <Layout
         editor={editor}
         username={owner.username}

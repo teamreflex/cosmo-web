@@ -13,7 +13,7 @@ import type {
   DraggableSyntheticListeners,
 } from "@dnd-kit/core";
 import { IconLock } from "@tabler/icons-react";
-import { useEffect } from "react";
+import { memo, useEffect } from "react";
 import type { RefObject } from "react";
 
 /** The picker is three columns wide everywhere, in a column or a drawer. */
@@ -33,7 +33,8 @@ type Props = {
 
 /**
  * The picker's objekts, virtualized against the picker's own scroll container
- * instead of the window.
+ * instead of the window. Cards are memoized, so selecting a pocket or saving a
+ * change only re-renders the cards it affects.
  */
 export default function PickerGrid({
   objekts,
@@ -123,7 +124,9 @@ export type PickerDragData = { kind: "objekt"; objekt: CosmoObjekt };
 /**
  * A picker card that can also be dragged onto a pocket. Clicking still picks.
  */
-function DraggablePickerCard(props: PickerCardProps) {
+const DraggablePickerCard = memo(function DraggablePickerCard(
+  props: PickerCardProps,
+) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
     id: `objekt-${props.objekt.tokenId}`,
     data: {
@@ -137,14 +140,14 @@ function DraggablePickerCard(props: PickerCardProps) {
       drag={{ attributes, listeners, setNodeRef, isDragging }}
     />
   );
-}
+});
 
 /**
  * One pickable objekt: the plain front image, dimmed with an "in binder" label
  * when it's already placed. Placed objekts stay pickable, because picking one
  * moves it to the selected pocket.
  */
-function PickerCard({
+const PickerCard = memo(function PickerCard({
   objekt,
   inBinder,
   locked,
@@ -212,7 +215,7 @@ function PickerCard({
       </button>
     </div>
   );
-}
+});
 
 export function PickerGridSkeleton() {
   return (

@@ -53,12 +53,12 @@ export default function PickerFilterPanel({
         if (event.key === "Escape") onClose();
       }}
       className={cn(
-        "absolute inset-0 z-10 flex flex-col border-l border-border bg-popover transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)]",
+        "absolute inset-0 z-10 flex flex-col border-l border-border bg-popover transition-[translate,opacity] duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)]",
         !open &&
           "pointer-events-none translate-x-[102%] motion-reduce:translate-x-0 motion-reduce:opacity-0",
       )}
     >
-      <div className="grid flex-1 [scrollbar-width:thin] content-start gap-4 overflow-y-auto overscroll-contain px-3 py-3.5">
+      <div className="grid flex-1 panel-scrollbar content-start gap-4 overflow-y-auto overscroll-contain px-3 py-3.5">
         {suggestion !== null && (
           <Group title={m.binder_picker_suggested()}>
             <div className="flex">

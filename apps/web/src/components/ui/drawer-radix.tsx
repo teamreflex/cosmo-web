@@ -70,10 +70,13 @@ interface DrawerContentProps extends Omit<
   "onAnimationEnd" | "onDragEnd" | "onDrag" | "onDragStart"
 > {
   notch?: boolean;
+  /** the drawer has finished sliding away */
+  onExitComplete?: () => void;
 }
 
 function DrawerContent({
   notch = true,
+  onExitComplete,
   children,
   className,
   ...props
@@ -115,7 +118,7 @@ function DrawerContent({
   };
 
   return (
-    <AnimatePresence>
+    <AnimatePresence onExitComplete={onExitComplete}>
       {open && (
         <DialogPrimitive.Portal forceMount>
           <DialogPrimitive.Overlay forceMount asChild>

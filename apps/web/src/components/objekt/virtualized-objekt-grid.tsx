@@ -7,7 +7,7 @@ import { tokenKey } from "@/hooks/use-objekt-selection";
 import { useOpenBinder } from "@/hooks/use-open-binder";
 import type { PinMove } from "@/hooks/use-pin-reorder";
 import { m } from "@/i18n/messages";
-import type { ProfilePin } from "@/lib/universal/binders";
+import type { BinderPreview, ProfilePin } from "@/lib/universal/binders";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
@@ -611,6 +611,12 @@ function SortablePinCell({
 
   const binder = pin.kind === "binder" ? pin.binder : undefined;
 
+  function openBinder(target: BinderPreview, cell: HTMLDivElement) {
+    // the cover lifts inside the cell on hover, so the flight starts from it
+    const cover = cell.firstElementChild;
+    open(target, cell, cover instanceof HTMLElement ? cover : cell);
+  }
+
   return (
     <div
       ref={setRefs}
@@ -630,11 +636,11 @@ function SortablePinCell({
       {...(binder && {
         "aria-label": m.binder_viewer_open({ name: binder.name }),
         onClick: (event: MouseEvent<HTMLDivElement>) =>
-          open(binder, event.currentTarget),
+          openBinder(binder, event.currentTarget),
         onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => {
           if (event.key === "Enter") {
             event.preventDefault();
-            open(binder, event.currentTarget);
+            openBinder(binder, event.currentTarget);
           } else {
             listeners?.onKeyDown?.(event);
           }

@@ -14,15 +14,16 @@ import {
   DrawerTitle,
 } from "@/components/ui/drawer-radix";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { takeBinderOpen } from "@/hooks/use-open-binder";
 import type { BinderViewerOrigin } from "@/hooks/use-open-binder";
 import { m } from "@/i18n/messages";
 import {
-  boxTransform,
   fadeIn,
   fadeOut,
+  flightFrames,
   leafMotion,
   placeLeaf,
+  playFlight,
+  prefersReducedMotion,
   runSequence,
   visibleBox,
 } from "@/lib/client/binder-leaf";
@@ -39,6 +40,7 @@ import type {
   BinderPreview,
 } from "@/lib/universal/binders";
 import { cn } from "@/lib/utils";
+import type { BinderViewerState } from "@/providers/binder-viewer-provider";
 import {
   IconChevronLeft,
   IconChevronRight,
@@ -46,13 +48,7 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Link,
-  getRouteApi,
-  useNavigate,
-  useRouter,
-} from "@tanstack/react-router";
-import { useReducedMotion } from "motion/react";
+import { Link, getRouteApi } from "@tanstack/react-router";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import {
   useEffect,
@@ -61,7 +57,7 @@ import {
   useRef,
   useState,
 } from "react";
-import type { RefObject } from "react";
+import type { KeyboardEvent, RefObject } from "react";
 import { toast } from "sonner";
 import BinderCover from "./binder-cover";
 import { BinderPage } from "./binder-page";
@@ -82,53 +78,10 @@ type Props = {
   /** the identifier the profile routes under */
   username: string;
   isOwner: boolean;
-};
-
-type Session = {
-  id: number;
-  slug: string;
-  closing: boolean;
-};
-
-/**
- * The read-only binder viewer, mounted once on the profile and driven by the
- * `?binder=` search parameter, so it opens over every tab, back closes it and
- * the URL shares it.
- */
-export default function BinderViewer({ userId, username, isOwner }: Props) {
-  const slug = route.useSearch({ select: (search) => search.binder });
-  const [session, setSession] = useState<Session | null>(() =>
-    slug === undefined ? null : { id: 0, slug, closing: false },
-  );
-
-  // a new binder in the URL starts a fresh session; losing it plays the close
-  if (
-    slug !== undefined &&
-    (session === null || session.slug !== slug || session.closing)
-  ) {
-    setSession({ id: (session?.id ?? 0) + 1, slug, closing: false });
-  } else if (slug === undefined && session !== null && !session.closing) {
-    setSession({ ...session, closing: true });
-  }
-
-  if (session === null) return null;
-
-  return (
-    <ViewerSession
-      key={session.id}
-      userId={userId}
-      username={username}
-      isOwner={isOwner}
-      slug={session.slug}
-      closing={session.closing}
-      onClosed={() => setSession(null)}
-    />
-  );
-}
-
-type SessionProps = Props & {
-  slug: string;
-  closing: boolean;
+  viewer: BinderViewerState;
+  /** ask the viewer to close, which plays its closing animation */
+  onClose: () => void;
+  /** the closing animation has finished, or there was nothing to animate */
   onClosed: () => void;
 };
 
@@ -141,45 +94,27 @@ type ViewerProps = {
   isOwner: boolean;
   closing: boolean;
   onClosed: () => void;
-  requestClose: () => void;
+  onClose: () => void;
 };
 
-function ViewerSession({
+/**
+ * The read-only viewer for one open binder, mounted by `BinderViewerProvider`
+ * over every profile tab.
+ */
+export default function BinderViewer({
   userId,
   username,
   isOwner,
-  slug,
-  closing,
+  viewer: { slug, origin, closing },
+  onClose,
   onClosed,
-}: SessionProps) {
+}: Props) {
   const isDesktop = useMediaQuery();
-  const navigate = useNavigate();
-  const router = useRouter();
-  const [opened] = useState(() => takeBinderOpen(slug));
   const { data: binder, isError } = useQuery(binderQuery(userId, slug));
-  const closeRequested = useRef(false);
 
   // the clicked cover draws the flight until the pages load, and a shared link waits for them
   const cover =
-    opened?.origin?.preview ??
-    (binder ? binderPreviewFromDetail(binder) : undefined);
-
-  function requestClose() {
-    if (closeRequested.current) return;
-    closeRequested.current = true;
-
-    // an in-app open pushed its own history entry, so closing pops it
-    if (opened !== null) {
-      router.history.back();
-    } else {
-      void navigate({
-        to: ".",
-        search: (prev) => ({ ...prev, binder: undefined }),
-        replace: true,
-        resetScroll: false,
-      });
-    }
-  }
+    origin?.preview ?? (binder ? binderPreviewFromDetail(binder) : undefined);
 
   const closeMissing = useEffectEvent(() => {
     toast.error(
@@ -187,7 +122,7 @@ function ViewerSession({
         ? m.binder_editor_error_loading()
         : m.binder_error_binder_not_found(),
     );
-    requestClose();
+    onClose();
   });
   useEffect(() => {
     if (binder === null || isError) closeMissing();
@@ -204,12 +139,12 @@ function ViewerSession({
   const props = {
     cover,
     binder: binder ?? undefined,
-    origin: opened?.origin ?? null,
+    origin,
     username,
     isOwner,
     closing,
     onClosed,
-    requestClose,
+    onClose,
   } satisfies ViewerProps;
 
   return isDesktop ? <DesktopViewer {...props} /> : <PhoneViewer {...props} />;
@@ -241,15 +176,8 @@ const leftPageClass =
 const rightPageClass =
   "rounded-l-[2px] shadow-[inset_14px_0_24px_-20px_rgb(0_0_0/0.9)]";
 
-type View = {
-  /** the first page in view */
-  index: number;
-  /** which way the last turn went, for its slide */
-  direction: -1 | 0 | 1;
-};
-
 function DesktopViewer(props: ViewerProps) {
-  const { cover, origin, closing, requestClose } = props;
+  const { cover, origin, closing, onClose } = props;
   const overlayRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const single = cover.layout === "2x2";
@@ -258,7 +186,7 @@ function DesktopViewer(props: ViewerProps) {
     <Dialog
       open
       onOpenChange={(open) => {
-        if (!open && !closing) requestClose();
+        if (!open && !closing) onClose();
       }}
     >
       <DialogPortal>
@@ -312,14 +240,14 @@ function DesktopBook({
   overlayRef,
   closeRef,
 }: DesktopBookProps) {
-  const reducedMotion = useReducedMotion() === true;
   const single = cover.layout === "2x2";
   const step = single ? 1 : 2;
   const pageCount = binder?.pageCount ?? cover.pageCount;
   const pages =
     binder === undefined ? undefined : pocketsByPage(binder.entries);
-  const [view, setView] = useState<View>({ index: 0, direction: 0 });
-  const shown = [view.index, view.index + 1]
+  // the first page in view
+  const [index, setIndex] = useState(0);
+  const shown = [index, index + 1]
     .slice(0, step)
     .filter((page) => page < pageCount);
 
@@ -331,48 +259,41 @@ function DesktopBook({
   const leafRef = useRef<HTMLDivElement>(null);
   const sequence = useRef<{ cancel: () => void } | null>(null);
   const opened = useRef(false);
-  const leaving = useRef(false);
+
+  /**
+   * Show the spread from `to`, sliding it in from the side it came from. The
+   * slide starts before the new pages render, so they never show unanimated.
+   */
+  function showSpread(to: number) {
+    if (closing || to === index || to < 0 || to >= pageCount) return;
+    setIndex(to);
+    if (!prefersReducedMotion()) {
+      const direction = to > index ? 1 : -1;
+      bookRef.current?.animate(
+        [
+          { opacity: 0, transform: `translateX(${direction * 14}px)` },
+          { opacity: 1, transform: "none" },
+        ],
+        leafMotion.pageTurn,
+      );
+    }
+  }
 
   function turn(direction: -1 | 1) {
-    const index = view.index + direction * step;
-    if (closing || index < 0 || index >= pageCount) return;
-    setView({ index, direction });
+    showSpread(index + direction * step);
   }
 
-  function jump(page: number) {
-    const index = page - (page % step);
-    if (closing || index === view.index) return;
-    setView({ index, direction: index > view.index ? 1 : -1 });
-  }
-
-  const onKeyDown = useEffectEvent((event: KeyboardEvent) => {
+  function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key === "ArrowLeft") turn(-1);
     else if (event.key === "ArrowRight") turn(1);
-  });
-  useEffect(() => {
-    const stage = stageRef.current;
-    stage?.addEventListener("keydown", onKeyDown);
-    return () => stage?.removeEventListener("keydown", onKeyDown);
-  }, [stageRef]);
-
-  // prev and next slide the spread in from the side it came from
-  useEffect(() => {
-    if (view.direction === 0 || reducedMotion) return;
-    bookRef.current?.animate(
-      [
-        { opacity: 0, transform: `translateX(${view.direction * 14}px)` },
-        { opacity: 1, transform: "none" },
-      ],
-      leafMotion.pageTurn,
-    );
-  }, [view, reducedMotion]);
+  }
 
   /**
    * Open: the cover flies from where it was clicked onto the right-hand page,
    * then swings open on its spine, its back face landing on the left page.
    * Without a cover on screen to start from, the dialog fades in shut first.
    */
-  const open = useEffectEvent(() => {
+  useLayoutEffect(() => {
     const stage = stageRef.current;
     const book = bookRef.current;
     const page = coverPageRef.current;
@@ -380,11 +301,11 @@ function DesktopBook({
     const leaf = leafRef.current;
     if (!stage || !book || !page || !fly || !leaf) return;
     const left = leftRef.current;
-    const from = visibleBox(origin?.element);
-    origin?.element.style.setProperty("visibility", "hidden");
+    const from = visibleBox(origin?.cover);
+    origin?.cover.style.setProperty("visibility", "hidden");
 
     sequence.current = runSequence(async ({ play }) => {
-      if (reducedMotion) {
+      if (prefersReducedMotion()) {
         await play(stage, fadeIn, leafMotion.fade);
         opened.current = true;
         return;
@@ -408,12 +329,10 @@ function DesktopBook({
         );
       } else {
         book.setAttribute("data-hold", "");
-        await play(
+        await playFlight(
+          play,
           fly,
-          [
-            { transform: boxTransform(from, fly.getBoundingClientRect()) },
-            { transform: "none" },
-          ],
+          flightFrames(from, fly.getBoundingClientRect(), "in"),
           leafMotion.flight,
         );
         book.removeAttribute("data-hold");
@@ -422,42 +341,45 @@ function DesktopBook({
       await play(
         leaf,
         [{ transform: "rotateY(0deg)" }, { transform: "rotateY(-180deg)" }],
-        leafMotion.swingOpen,
+        { ...leafMotion.swingOpen, fill: "forwards" },
       );
       left?.removeAttribute("data-hold");
-      delete fly.dataset.flying;
+      fly.dataset.leaf = "resting";
       opened.current = true;
     });
 
+    // also stops a close, so a viewer replaced mid-close never reports closed
     return () => {
       sequence.current?.cancel();
       book.removeAttribute("data-hold");
       left?.removeAttribute("data-hold");
-      delete fly.dataset.flying;
-      origin?.element.style.removeProperty("visibility");
+      delete fly.dataset.leaf;
+      origin?.cover.style.removeProperty("visibility");
     };
-  });
-  useLayoutEffect(() => open(), []);
+  }, [origin]);
+
+  // the latest callback, without restarting the close when it changes
+  const finish = useEffectEvent(onClosed);
 
   /**
    * Close: on the first spread the cover swings shut and flies back into the
    * cover it came from, or fades if that's gone. Anywhere else, or mid-open,
    * the dialog just fades.
    */
-  const close = useEffectEvent(() => {
+  useLayoutEffect(() => {
+    if (!closing) return;
     const stage = stageRef.current;
     const book = bookRef.current;
     const page = coverPageRef.current;
     const fly = flyRef.current;
     const leaf = leafRef.current;
     const overlay = overlayRef.current;
-    // the editor link leaves the profile, so there's nothing to animate back to
-    if (leaving.current || !stage || !book || !page || !fly || !leaf) {
-      onClosed();
+    if (!stage || !book || !page || !fly || !leaf) {
+      finish();
       return;
     }
     const left = leftRef.current;
-    const swing = opened.current && !reducedMotion && view.index === 0;
+    const swing = opened.current && !prefersReducedMotion() && index === 0;
     sequence.current?.cancel();
     stage.style.pointerEvents = "none";
 
@@ -474,7 +396,7 @@ function DesktopBook({
       if (!swing) {
         fadeScrim();
         await play(stage, fadeOut, { ...leafMotion.fade, fill: "forwards" });
-        onClosed();
+        finish();
         return;
       }
 
@@ -491,33 +413,32 @@ function DesktopBook({
       for (const chrome of stage.querySelectorAll("[data-viewer-chrome]")) {
         void play(chrome, fadeOut, { ...leafMotion.fade, fill: "forwards" });
       }
-      const to = visibleBox(origin?.element);
+      const to = visibleBox(origin?.cover);
       await (to === null
         ? play(fly, fadeOut, { ...leafMotion.fade, fill: "forwards" })
-        : play(
+        : playFlight(
+            play,
             fly,
-            [
-              { transform: "none" },
-              { transform: boxTransform(to, fly.getBoundingClientRect()) },
-            ],
+            flightFrames(to, fly.getBoundingClientRect(), "out"),
             { ...leafMotion.flightBack, fill: "forwards" },
           ));
-      onClosed();
+      finish();
     });
-  });
-  useLayoutEffect(() => {
-    if (closing) close();
-  }, [closing]);
+  }, [closing, origin, index, overlayRef]);
 
+  // a layer of its own from the start, so fading it out doesn't first rasterise every page image into a new one
   return (
-    <div ref={stageRef} className="relative flex flex-col gap-3">
+    <div
+      ref={stageRef}
+      onKeyDown={handleKeyDown}
+      className="relative flex flex-col gap-3 will-change-[opacity]"
+    >
       <DesktopHeader
         cover={cover}
         binder={binder}
         username={username}
         isOwner={isOwner}
         closeRef={closeRef}
-        onEdit={() => (leaving.current = true)}
       />
 
       <div
@@ -532,15 +453,15 @@ function DesktopBook({
           <ViewerPage
             ref={coverPageRef}
             layout={cover.layout}
-            page={view.index}
-            pockets={pagePockets(pages, view.index)}
-            priority={view.index === 0}
+            page={index}
+            pockets={pagePockets(pages, index)}
+            priority={index === 0}
             className="bg-background"
           />
         ) : (
           <Spread
             layout={cover.layout}
-            index={view.index}
+            index={index}
             pageCount={pageCount}
             pages={pages}
             leftRef={leftRef}
@@ -553,17 +474,17 @@ function DesktopBook({
         label={
           shown.length === 2
             ? m.binder_viewer_pages_of({
-                first: view.index + 1,
-                last: view.index + 2,
+                first: index + 1,
+                last: index + 2,
                 total: pageCount,
               })
             : m.binder_editor_page_of({
-                page: view.index + 1,
+                page: index + 1,
                 total: pageCount,
               })
         }
-        canTurnBack={view.index > 0}
-        canTurnOn={view.index + step < pageCount}
+        canTurnBack={index > 0}
+        canTurnOn={index + step < pageCount}
         onTurn={turn}
       />
 
@@ -574,7 +495,7 @@ function DesktopBook({
             pageCount={pageCount}
             pages={pages ?? new Map()}
             current={shown}
-            onSelect={jump}
+            onSelect={(page) => showSpread(page - (page % step))}
             className="justify-center"
           />
         </div>
@@ -614,7 +535,6 @@ type DesktopHeaderProps = {
   username: string;
   isOwner: boolean;
   closeRef: RefObject<HTMLButtonElement | null>;
-  onEdit: () => void;
 };
 
 function DesktopHeader({
@@ -623,7 +543,6 @@ function DesktopHeader({
   username,
   isOwner,
   closeRef,
-  onEdit,
 }: DesktopHeaderProps) {
   const params = route.useParams();
 
@@ -643,9 +562,7 @@ function DesktopHeader({
           <BinderPinButton username={params.username} binder={cover} />
         )}
         <ShareButton username={username} slug={cover.slug} />
-        {isOwner && (
-          <EditLink username={username} slug={cover.slug} onClick={onEdit} />
-        )}
+        {isOwner && <EditLink username={username} slug={cover.slug} />}
         <DialogClose asChild>
           <Button
             ref={closeRef}
@@ -762,17 +679,16 @@ function PageControls({
 }
 
 /**
- * The owner's way into the editor.
+ * The owner's way into the editor. Arriving there unmounts the viewer without
+ * a closing animation, as leaving for any other page does.
  */
 function EditLink({
   username,
   slug,
-  onClick,
   className,
 }: {
   username: string;
   slug: string;
-  onClick: () => void;
   className?: string;
 }) {
   return (
@@ -785,11 +701,7 @@ function EditLink({
         className,
       )}
     >
-      <Link
-        to="/@{$username}/binder/$slug"
-        params={{ username, slug }}
-        onClick={onClick}
-      >
+      <Link to="/@{$username}/binder/$slug" params={{ username, slug }}>
         <IconPencil />
         {m.binder_viewer_edit()}
       </Link>
@@ -797,18 +709,18 @@ function EditLink({
   );
 }
 
-/** how long the drawer takes to slide in or out */
+/** how long the drawer takes to slide in */
 const DRAWER_MS = 500;
 
 function PhoneViewer(props: ViewerProps) {
-  const { closing, requestClose } = props;
+  const { closing, onClose, onClosed } = props;
   const [dismissed, setDismissed] = useState(false);
 
   return (
     <Drawer
       open={!dismissed}
       onOpenChange={(open) => {
-        if (!open && !closing) requestClose();
+        if (!open && !closing) onClose();
       }}
     >
       <DrawerContent
@@ -818,6 +730,7 @@ function PhoneViewer(props: ViewerProps) {
             props.origin.element.focus({ preventScroll: true });
           }
         }}
+        onExitComplete={onClosed}
         className="h-[92dvh] rounded-t-2xl outline-none"
       >
         <PhoneBook {...props} onDismiss={() => setDismissed(true)} />
@@ -842,10 +755,8 @@ function PhoneBook({
   username,
   isOwner,
   closing,
-  onClosed,
   onDismiss,
 }: PhoneBookProps) {
-  const reducedMotion = useReducedMotion() === true;
   const pageCount = binder?.pageCount ?? cover.pageCount;
   const pages =
     binder === undefined ? undefined : pocketsByPage(binder.entries);
@@ -860,41 +771,36 @@ function PhoneBook({
   const leafRef = useRef<HTMLDivElement>(null);
   const sequence = useRef<{ cancel: () => void } | null>(null);
   const opened = useRef(false);
-  const leaving = useRef(false);
 
   function scrollToPage(page: number) {
     const track = trackRef.current;
     if (!track || closing || page < 0 || page >= pageCount) return;
     track.scrollTo({
       left: page * track.clientWidth,
-      behavior: reducedMotion ? "instant" : "smooth",
+      behavior: prefersReducedMotion() ? "instant" : "smooth",
     });
   }
 
-  const onKeyDown = useEffectEvent((event: KeyboardEvent) => {
+  function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
       event.preventDefault();
       scrollToPage(index + (event.key === "ArrowLeft" ? -1 : 1));
     }
-  });
-  useEffect(() => {
-    const stage = stageRef.current;
-    stage?.addEventListener("keydown", onKeyDown);
-    return () => stage?.removeEventListener("keydown", onKeyDown);
-  }, [stageRef]);
+  }
 
-  const open = useEffectEvent(() => {
+  useLayoutEffect(() => {
     const stage = stageRef.current;
     const page = firstPageRef.current;
     const fly = flyRef.current;
     const leaf = leafRef.current;
-    origin?.element.style.setProperty("visibility", "hidden");
+    origin?.cover.style.setProperty("visibility", "hidden");
+    // also stops a close, so a viewer replaced mid-close never dismisses
     const cleanup = () => {
       sequence.current?.cancel();
-      if (fly) delete fly.dataset.flying;
-      origin?.element.style.removeProperty("visibility");
+      if (fly) delete fly.dataset.leaf;
+      origin?.cover.style.removeProperty("visibility");
     };
-    if (reducedMotion || !stage || !page || !fly || !leaf) {
+    if (prefersReducedMotion() || !stage || !page || !fly || !leaf) {
       opened.current = true;
       return cleanup;
     }
@@ -907,26 +813,26 @@ function PhoneBook({
         [{ transform: "rotateY(0deg)" }, { transform: "rotateY(-180deg)" }],
         { ...leafMotion.swingOpen, delay: DRAWER_MS - 100 },
       );
-      delete fly.dataset.flying;
+      delete fly.dataset.leaf;
       opened.current = true;
     });
     return cleanup;
-  });
-  useLayoutEffect(() => open(), []);
+  }, [origin]);
 
-  const close = useEffectEvent(() => {
+  // read as the close starts, without restarting it when a swipe moves the track
+  const dismiss = useEffectEvent(onDismiss);
+  const onFirstPage = useEffectEvent(() => index === 0);
+
+  useLayoutEffect(() => {
+    if (!closing) return;
     const stage = stageRef.current;
     const page = firstPageRef.current;
     const fly = flyRef.current;
     const leaf = leafRef.current;
-    if (leaving.current) {
-      onClosed();
-      return;
-    }
-    const swing = opened.current && !reducedMotion && index === 0;
+    const swing = opened.current && !prefersReducedMotion() && onFirstPage();
     sequence.current?.cancel();
 
-    sequence.current = runSequence(async ({ play, wait }) => {
+    sequence.current = runSequence(async ({ play }) => {
       if (swing && stage && page && fly && leaf) {
         placeLeaf(fly, page, stage);
         await play(
@@ -936,15 +842,10 @@ function PhoneBook({
         );
       }
       // the drawer slides away over the cover rather than flying back into it
-      origin?.element.style.removeProperty("visibility");
-      onDismiss();
-      await wait(DRAWER_MS);
-      onClosed();
+      origin?.cover.style.removeProperty("visibility");
+      dismiss();
     });
-  });
-  useLayoutEffect(() => {
-    if (closing) close();
-  }, [closing]);
+  }, [closing, origin]);
 
   // a page's width follows the height left over, so tall layouts still fit
   const pageMaxWidth = `calc((92dvh - 13rem) * ${(columns * 5.5) / (rows * 8.5)})`;
@@ -952,6 +853,7 @@ function PhoneBook({
   return (
     <div
       ref={stageRef}
+      onKeyDown={handleKeyDown}
       className="relative flex min-h-0 flex-1 flex-col gap-3 pt-3"
     >
       <div className="flex items-center gap-3 px-3">
@@ -968,7 +870,6 @@ function PhoneBook({
           <EditLink
             username={username}
             slug={cover.slug}
-            onClick={() => (leaving.current = true)}
             className="shrink-0"
           />
         )}

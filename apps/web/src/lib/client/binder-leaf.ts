@@ -13,6 +13,14 @@ export const leafMotion = {
   pageTurn: { duration: 220, easing: "ease-out" },
 } satisfies Record<string, KeyframeAnimationOptions>;
 
+/**
+ * Whether the system asks for reduced motion, checked as each animation
+ * starts rather than when the viewer renders.
+ */
+export function prefersReducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
 export const fadeIn: Keyframe[] = [{ opacity: 0 }, { opacity: 1 }];
 export const fadeOut: Keyframe[] = [{ opacity: 1 }, { opacity: 0 }];
 
@@ -31,15 +39,50 @@ export function placeLeaf(
   fly.style.top = `${box.top - stageBox.top - stage.clientTop}px`;
   fly.style.width = `${box.width}px`;
   fly.style.height = `${box.height}px`;
-  fly.dataset.flying = "";
+  fly.dataset.leaf = "flying";
 }
 
 /**
  * The transform that draws an element laid out at `to` over the `from` box,
  * with a top-left transform origin.
  */
-export function boxTransform(from: DOMRect, to: DOMRect) {
+function boxTransform(from: DOMRect, to: DOMRect) {
   return `translate(${from.left - to.left}px, ${from.top - to.top}px) scale(${from.width / to.width}, ${from.height / to.height})`;
+}
+
+/**
+ * Keyframes for the cover flying between its own box `at` and a cover on
+ * screen at `from`, `in` from that cover or `out` back to it. The box changes
+ * aspect on the way, so the artwork and label are counter-scaled to keep their
+ * shape, and land exactly where that cover draws them.
+ */
+export function flightFrames(
+  from: DOMRect,
+  at: DOMRect,
+  direction: "in" | "out",
+) {
+  const scaleX = from.width / at.width;
+  const scaleY = from.height / at.height;
+  // the counter-scale isn't linear in the flight's progress, so it's sampled
+  const steps = 8;
+  const progress = (step: number) =>
+    direction === "out" ? step / steps : 1 - step / steps;
+
+  const ends: Keyframe[] = [
+    { transform: boxTransform(from, at) },
+    { transform: "none" },
+  ];
+
+  return {
+    fly: direction === "in" ? ends : ends.toReversed(),
+    content: Array.from({ length: steps + 1 }, (_, step): Keyframe => {
+      const p = progress(step);
+      return {
+        offset: step / steps,
+        transform: `scaleY(${(1 + (scaleX - 1) * p) / (1 + (scaleY - 1) * p)})`,
+      };
+    }),
+  };
 }
 
 /**
@@ -60,19 +103,31 @@ type Play = (
   options: KeyframeAnimationOptions,
 ) => Promise<void>;
 
-type Steps = {
-  play: Play;
-  wait: (ms: number) => Promise<void>;
-};
+/**
+ * Play a flight from `flightFrames` on the flying cover and its contents,
+ * resolving when it lands.
+ */
+export function playFlight(
+  play: Play,
+  fly: HTMLElement,
+  frames: ReturnType<typeof flightFrames>,
+  options: KeyframeAnimationOptions,
+) {
+  for (const part of fly.querySelectorAll(
+    "[data-cover-art], [data-cover-label]",
+  )) {
+    void play(part, frames.content, options);
+  }
+  return play(fly, frames.fly, options);
+}
 
 /**
  * Run an animation sequence that can be cut short. Cancelling stops every
- * animation and wait it started, and a cancelled step never resolves, so the
- * rest of the sequence never runs.
+ * animation it started, and a cancelled step never resolves, so the rest of
+ * the sequence never runs.
  */
-export function runSequence(steps: (run: Steps) => Promise<void>) {
+export function runSequence(steps: (run: { play: Play }) => Promise<void>) {
   const running = new Set<Animation>();
-  const timers = new Set<ReturnType<typeof setTimeout>>();
   let cancelled = false;
 
   const play: Play = (element, keyframes, options) =>
@@ -84,18 +139,12 @@ export function runSequence(steps: (run: Steps) => Promise<void>) {
       });
     });
 
-  const wait = (ms: number) =>
-    new Promise<void>((resolve) => {
-      timers.add(setTimeout(resolve, ms));
-    });
-
-  void steps({ play, wait });
+  void steps({ play });
 
   return {
     cancel() {
       cancelled = true;
       for (const animation of running) animation.cancel();
-      for (const timer of timers) clearTimeout(timer);
     },
   };
 }
