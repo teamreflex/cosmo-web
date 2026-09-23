@@ -118,7 +118,9 @@ for (const [index, item] of items.entries()) {
 }
 
 if (failed.length > 0) {
-  ctx.log.error(`failed for ${failed.length}/${items.length}: ${failed.join(", ")}`);
+  ctx.log.error(
+    `failed for ${failed.length}/${items.length}: ${failed.join(", ")}`,
+  );
 
   const error = new Error("fetch failed", { cause: firstRejection });
   Sentry.captureException(error, {
@@ -135,6 +137,10 @@ if (failed.length > 0) {
 Retry generously before giving up (`fetchMetadataV3` in `@apollo/cosmo` allows 5 minutes), because throwing costs a re-fetch of every item in the batch. Log-and-continue is only for work whose absence leaves no wrong row behind, such as a transferability update whose objekt does not exist.
 
 Pin a fixed `fingerprint` and carry the real rejection as `cause`: one issue accumulates every failed batch whatever COSMO returned, so an event-frequency alert counts batches instead of splitting across error shapes. Flush before throwing — Subsquid exits on the way out and drops queued events. Sentry only initializes when `SENTRY_DSN` is set, so local runs report nothing.
+
+### Image Mirroring
+
+Before each chunk's collection upsert, `mirrorImages` (`src/images.ts`) mirrors the front and back image of every collection whose `frontImageVersion`/`backImageVersion` doesn't match a hash of its source URL into R2 via `@apollo/image` (see its README), four at a time, and sets the version on the batch's own instances.
 
 ## Key Files
 

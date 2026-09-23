@@ -43,3 +43,21 @@ export class ImageStoreError extends Data.TaggedError("ImageStoreError")<{
       : `R2 request for ${this.key} failed with status ${this.status}`;
   }
 }
+
+/**
+ * Whether a mirror failure is down to the source image itself (a 4xx from
+ * COSMO, or bytes Bun.Image can't process) rather than to infrastructure
+ * (timeouts, network errors, 5xx, R2). Retrying a source failure soon won't
+ * help; retrying an infrastructure failure might.
+ */
+export function isSourceFailure(error: Error) {
+  if (error instanceof ImageProcessError) {
+    return true;
+  }
+  return (
+    error instanceof ImageFetchError &&
+    error.status !== undefined &&
+    error.status >= 400 &&
+    error.status < 500
+  );
+}

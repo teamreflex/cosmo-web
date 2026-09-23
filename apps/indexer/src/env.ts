@@ -10,6 +10,10 @@ const envSchema = z.object({
   ENABLE_GRAVITY: z.preprocess((x) => x === "true", z.coerce.boolean()),
   COSMO_PARALLEL_COUNT: z.coerce.number().positive().default(500),
   DB_URL: z.url(),
+  R2_ACCOUNT_ID: z.string().min(1),
+  R2_BUCKET: z.string().min(1),
+  R2_ACCESS_KEY: z.string().min(1),
+  R2_SECRET_KEY: z.string().min(1),
   // legacy variables for backwards compatibility
   DB_NAME: z.string(),
   DB_READ_USER: z.string(),

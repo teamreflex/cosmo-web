@@ -22,6 +22,7 @@
       "version": "1.0.0",
       "dependencies": {
         "@apollo/cosmo": "workspace:*",
+        "@apollo/image": "workspace:*",
         "@apollo/util": "workspace:*",
         "@sentry/bun": "catalog:",
         "@subsquid/evm-abi": "^1.0.0",
