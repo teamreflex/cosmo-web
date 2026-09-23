@@ -90,6 +90,12 @@ export class Collection {
   @Column("bool", { nullable: false, default: false })
   hasAudio!: boolean;
 
+  @Column({ type: "varchar", length: 12, nullable: true })
+  frontImageVersion!: string | null;
+
+  @Column({ type: "varchar", length: 12, nullable: true })
+  backImageVersion!: string | null;
+
   @OneToMany(() => Transfer, (e) => e.collection)
   transfers!: Relation<Transfer[]>;
 

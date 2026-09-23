@@ -21,6 +21,9 @@ type Collection @entity {
   onOffline: String! @index
   bandImageUrl: String
   hasAudio: Boolean!
+  # hash of the mirrored source URL, null until mirrored into R2
+  frontImageVersion: String
+  backImageVersion: String
   transfers: [Transfer!] @derivedFrom(field: "collection")
   objekts: [Objekt!] @derivedFrom(field: "collection")
 }
