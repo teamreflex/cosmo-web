@@ -1,3 +1,4 @@
+import AddToBinder from "@/components/binders/add-to-binder";
 import AddToList from "@/components/lists/add-to-list";
 import PinObjekt from "@/components/objekt/overlay/pin-button";
 import { tokenKey, useObjektSelection } from "@/hooks/use-objekt-selection";
@@ -246,6 +247,15 @@ function OwnerActions(props: {
         </OverlayHoverTarget>
       )}
 
+      {!props.isPin && (
+        <OverlayHoverTarget {...createHoverProps("binder")}>
+          <AddToBinder
+            collectionName={collection.collectionId}
+            tokenId={token.tokenId}
+          />
+        </OverlayHoverTarget>
+      )}
+
       {props.isSendable && !props.isPin && (
         <OverlayHoverTarget {...createHoverProps("lock")}>
           <LockObjekt tokenId={token.tokenId} isLocked={props.isLocked} />
@@ -287,6 +297,8 @@ function actionHoverLabel(props: StatusTextProps): string | null {
   switch (props.hoverState) {
     case "list":
       return m.objekt_overlay_add_to_list();
+    case "binder":
+      return m.objekt_overlay_add_to_binder();
     case "lock":
       return props.isLocked
         ? m.objekt_overlay_unlock()

@@ -15,6 +15,8 @@ import { DeleteBinderDialog, RemovePageDialog } from "./editor-dialogs";
 
 type Props = {
   binder: BinderDetail;
+  /** the zero-based page to open on */
+  initialPage: number;
   owner: {
     userId: string;
     /** the identifier the profile routes under */
@@ -28,9 +30,13 @@ type Props = {
  * The owner's binder editor: a split view on desktop and a page with a picker
  * sheet on a phone, sharing one editing model and the header dialogs.
  */
-export default function BinderEditor({ binder, owner }: Props) {
+export default function BinderEditor({ binder, initialPage, owner }: Props) {
   const isDesktop = useMediaQuery();
-  const editor = useBinderEditor({ binder, userId: owner.userId });
+  const editor = useBinderEditor({
+    binder,
+    userId: owner.userId,
+    initialPage,
+  });
   const queryClient = useQueryClient();
   const pins = usePinsCache();
   const navigate = useNavigate();

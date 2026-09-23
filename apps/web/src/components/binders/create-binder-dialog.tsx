@@ -47,6 +47,8 @@ type Props = {
   username: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** replaces the toast and the editor landing, such as to add an objekt to it */
+  onCreated?: (binder: Binder) => void;
 };
 
 /**
@@ -57,13 +59,13 @@ export default function CreateBinderDialog({
   username,
   open,
   onOpenChange,
+  onCreated,
 }: Props) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
   function handleCreated(binder: Binder) {
     track("create-binder");
-    toast.success(m.binder_created());
 
     // seeded so the editor opens without fetching a binder known to be empty
     queryClient.setQueryData(
@@ -75,6 +77,12 @@ export default function CreateBinderDialog({
     });
 
     onOpenChange(false);
+    if (onCreated !== undefined) {
+      onCreated(binder);
+      return;
+    }
+
+    toast.success(m.binder_created());
     void navigate({
       to: "/@{$username}/binder/$slug",
       params: { username, slug: binder.slug },

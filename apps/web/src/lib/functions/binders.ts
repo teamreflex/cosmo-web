@@ -5,7 +5,10 @@ import {
 } from "@/lib/server/binders.server";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
-import { cosmoMiddleware } from "@/lib/server/middlewares";
+import {
+  authenticatedMiddleware,
+  cosmoMiddleware,
+} from "@/lib/server/middlewares";
 import { frontPinPosition } from "@/lib/server/pins.server";
 import {
   COLLAGE_SIZE,
@@ -13,12 +16,20 @@ import {
   MAX_BINDER_PAGES,
   MAX_BINDERS,
   binderPreviewTokenIds,
+  placeInBinder,
   toBinderPreview,
 } from "@/lib/universal/binders";
-import type { BinderDetail, BinderPreview } from "@/lib/universal/binders";
+import type {
+  BinderDetail,
+  BinderMenuItem,
+  BinderPlacement,
+  BinderPreview,
+} from "@/lib/universal/binders";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import {
+  addToBinderSchema,
   binderIdSchema,
+  binderMenuSchema,
   clearPocketSchema,
   createBinderSchema,
   placeObjektSchema,
@@ -109,6 +120,34 @@ export const $fetchBinder = createServerFn({ method: "GET" })
         return objekt === undefined ? [] : [{ ...pocket, objekt }];
       }),
     };
+  });
+
+/**
+ * The signed-in user's binders for the "Add to binder" menu, each with the
+ * pocket already holding the objekt, if any.
+ */
+export const $fetchBinderMenu = createServerFn({ method: "GET" })
+  .validator(binderMenuSchema)
+  .middleware([authenticatedMiddleware])
+  .handler(async ({ data, context }): Promise<BinderMenuItem[]> => {
+    const rows = await db.query.binders.findMany({
+      where: { userId: context.session.user.id },
+      // the same order as the shelf
+      orderBy: { createdAt: "asc", id: "asc" },
+      columns: { id: true, userId: true, slug: true, name: true, colour: true },
+      with: {
+        entries: {
+          columns: { page: true, slot: true },
+          where: { tokenId: data.tokenId },
+          limit: 1,
+        },
+      },
+    });
+
+    return rows.map(({ entries: [holding], ...binder }) => ({
+      ...binder,
+      holding: holding ?? null,
+    }));
   });
 
 /**
@@ -315,6 +354,87 @@ export const $placeObjekt = createServerFn({ method: "POST" })
       await clearBinderPinCache(context.cosmo);
     }
   });
+
+/**
+ * Add an owned objekt to the first empty pocket of a binder, starting a new
+ * page when every page is full. An objekt already in the binder stays put.
+ * Returns where it is, for the toast.
+ */
+export const $addToBinder = createServerFn({ method: "POST" })
+  .validator(addToBinderSchema)
+  .middleware([cosmoMiddleware])
+  .handler(
+    async ({
+      data,
+      context,
+    }): Promise<Exclude<BinderPlacement, { kind: "full" }>> => {
+      // the indexer can lag a transfer, so a just-received objekt may fail here
+      const owned = await indexer.query.objekts.findFirst({
+        where: {
+          id: String(data.tokenId),
+          owner: context.cosmo.address.toLowerCase(),
+        },
+        columns: { id: true },
+      });
+      if (owned === undefined) {
+        throw new ExpectedError("objekt_not_owned");
+      }
+
+      const placement = await db.transaction(async (tx) => {
+        const binder = await lockOwnedBinder(
+          tx,
+          data.binderId,
+          context.session.user.id,
+        );
+        const entries = await tx
+          .select({
+            page: binderEntries.page,
+            slot: binderEntries.slot,
+            tokenId: binderEntries.tokenId,
+          })
+          .from(binderEntries)
+          .where(eq(binderEntries.binderId, binder.id));
+
+        const result = placeInBinder(
+          binder.layout,
+          binder.pageCount,
+          entries,
+          data.tokenId,
+        );
+        if (result.kind === "already") return result;
+        if (result.kind === "full") {
+          throw new ExpectedError("binder_page_limit_reached");
+        }
+
+        await tx.insert(binderEntries).values({
+          binderId: binder.id,
+          page: result.page,
+          slot: result.slot,
+          tokenId: data.tokenId,
+        });
+
+        await tx
+          .update(binders)
+          .set({
+            updatedAt: new Date(),
+            pageCount:
+              result.kind === "new-page" ? binder.pageCount + 1 : undefined,
+          })
+          .where(eq(binders.id, binder.id));
+
+        return result;
+      });
+
+      // page 1 draws the collage, and the cover label shows the page count
+      if (
+        placement.kind === "new-page" ||
+        (placement.kind === "existing" && placement.page === 0)
+      ) {
+        await clearBinderPinCache(context.cosmo);
+      }
+      return placement;
+    },
+  );
 
 /**
  * Empty one pocket. Clearing the cover objekt falls back to the collage.
