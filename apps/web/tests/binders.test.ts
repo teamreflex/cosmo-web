@@ -3,20 +3,25 @@ import { describe, expect, it } from "bun:test";
 import type {
   BinderDetail,
   BinderPreviewImage,
+  BinderPreviewRow,
+  PinRow,
   PlacedToken,
   PocketPosition,
   SuggestionObjekt,
 } from "../src/lib/universal/binders";
 import {
   binderColourPresets,
+  binderTextColour,
   binderGrid,
   binderPreviewFromDetail,
   findEmptyPocket,
   isPocketInRange,
   MAX_BINDER_PAGES,
   nextEmptySlot,
+  pinTokenIds,
   resolveBinderArtwork,
   suggestFromNeighbours,
+  toProfilePins,
   withClearedPocket,
   withoutLastPage,
   withPlacedObjekt,
@@ -245,6 +250,172 @@ describe("binderPreviewFromDetail", () => {
         detail([entry(0, 4, 3), entry(0, 1, 1), entry(1, 0, 2)]),
       ).artwork,
     ).toEqual({ kind: "collage", images: [thumbnail(1), thumbnail(3)] });
+  });
+});
+
+describe("toProfilePins", () => {
+  const binderRow = (
+    overrides: Partial<BinderPreviewRow> = {},
+  ): BinderPreviewRow => ({
+    id: "00000000-0000-0000-0000-000000000001",
+    userId: "user",
+    slug: "faves",
+    name: "Faves",
+    colour: "#3b2a6b",
+    layout: "3x3",
+    pageCount: 2,
+    entryCount: 5,
+    coverTokenId: null,
+    entries: [],
+    ...overrides,
+  });
+  const objektPin = (id: number, tokenId: number): PinRow => ({
+    id,
+    tokenId,
+    binder: null,
+  });
+  const binderPin = (id: number, binder: BinderPreviewRow): PinRow => ({
+    id,
+    tokenId: null,
+    binder,
+  });
+  const objekts = (tokenIds: number[]) =>
+    new Map(tokenIds.map((tokenId) => [tokenId, objekt(tokenId)]));
+  const thumbnail = (tokenId: number) => ({
+    tokenId,
+    slug: `atom02-choerry-${100 + tokenId}z`,
+    collectionId: `Atom02 Choerry ${100 + tokenId}Z`,
+    frontImage: "",
+    frontImageVersion: null,
+  });
+
+  it("keeps objekt and binder pins in pin order", () => {
+    const pins = toProfilePins(
+      [objektPin(7, 1), binderPin(3, binderRow()), objektPin(5, 2)],
+      objekts([1, 2]),
+    );
+    expect(pins.map((pin) => [pin.kind, pin.pinId])).toEqual([
+      ["objekt", 7],
+      ["binder", 3],
+      ["objekt", 5],
+    ]);
+  });
+
+  it("carries the objekt for an objekt pin", () => {
+    expect(toProfilePins([objektPin(1, 4)], objekts([4]))).toEqual([
+      { kind: "objekt", pinId: 1, objekt: objekt(4) },
+    ]);
+  });
+
+  it("drops objekt pins the indexer couldn't resolve", () => {
+    const pins = toProfilePins(
+      [objektPin(1, 4), objektPin(2, 9), binderPin(3, binderRow())],
+      objekts([4]),
+    );
+    expect(pins.map((pin) => pin.pinId)).toEqual([1, 3]);
+  });
+
+  it("draws a binder pin's cover objekt first", () => {
+    const [pin] = toProfilePins(
+      [
+        binderPin(
+          1,
+          binderRow({
+            coverTokenId: 3,
+            entries: [
+              { page: 0, slot: 0, tokenId: 1 },
+              { page: 0, slot: 1, tokenId: 2 },
+            ],
+          }),
+        ),
+      ],
+      objekts([1, 2, 3]),
+    );
+    expect(pin).toEqual({
+      kind: "binder",
+      pinId: 1,
+      binder: {
+        id: "00000000-0000-0000-0000-000000000001",
+        userId: "user",
+        slug: "faves",
+        name: "Faves",
+        colour: "#3b2a6b",
+        layout: "3x3",
+        pageCount: 2,
+        entryCount: 5,
+        artwork: { kind: "cover", image: thumbnail(3) },
+      },
+    });
+  });
+
+  it("collages a binder pin without a cover from its page 1 entries", () => {
+    const [pin] = toProfilePins(
+      [
+        binderPin(
+          1,
+          binderRow({
+            entries: [
+              { page: 0, slot: 4, tokenId: 2 },
+              { page: 0, slot: 0, tokenId: 1 },
+              { page: 0, slot: 6, tokenId: 9 },
+            ],
+          }),
+        ),
+      ],
+      objekts([1, 2]),
+    );
+    expect(pin?.kind === "binder" && pin.binder.artwork).toEqual({
+      kind: "collage",
+      images: [thumbnail(1), thumbnail(2)],
+    });
+  });
+
+  it("keeps a binder pin whose artwork can't be resolved", () => {
+    const [pin] = toProfilePins(
+      [
+        binderPin(
+          1,
+          binderRow({
+            coverTokenId: 3,
+            entries: [{ page: 0, slot: 0, tokenId: 3 }],
+          }),
+        ),
+      ],
+      new Map(),
+    );
+    expect(pin?.kind === "binder" && pin.binder.artwork).toEqual({
+      kind: "collage",
+      images: [],
+    });
+  });
+});
+
+describe("pinTokenIds", () => {
+  it("collects pinned objekts and binder artwork once each", () => {
+    expect(
+      pinTokenIds([
+        { id: 1, tokenId: 5, binder: null },
+        {
+          id: 2,
+          tokenId: null,
+          binder: {
+            id: "00000000-0000-0000-0000-000000000001",
+            userId: "user",
+            slug: "faves",
+            name: "Faves",
+            colour: "#3b2a6b",
+            layout: "3x3",
+            pageCount: 1,
+            entryCount: 2,
+            coverTokenId: 7,
+            entries: [
+              { page: 0, slot: 0, tokenId: 7 },
+              { page: 0, slot: 1, tokenId: 5 },
+            ],
+          },
+        },
+      ]),
+    ).toEqual([5, 7]);
   });
 });
 
@@ -592,3 +763,15 @@ function detail(
     entries,
   };
 }
+
+describe("binderTextColour", () => {
+  it("puts white on dark spines", () => {
+    expect(binderTextColour("#3b2a6b")).toBe("#ffffff");
+    expect(binderTextColour("#8b1e3f")).toBe("#ffffff");
+  });
+
+  it("puts black on light spines", () => {
+    expect(binderTextColour("#f5f0e6")).toBe("#000000");
+    expect(binderTextColour("#9ae6c8")).toBe("#000000");
+  });
+});

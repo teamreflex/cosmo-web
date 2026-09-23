@@ -65,6 +65,7 @@ import type { RefObject } from "react";
 import { toast } from "sonner";
 import BinderCover from "./binder-cover";
 import { BinderPage } from "./binder-page";
+import { BinderPinButton } from "./binder-pin-toggle";
 import {
   PageRail,
   ShareButton,
@@ -624,6 +625,8 @@ function DesktopHeader({
   closeRef,
   onEdit,
 }: DesktopHeaderProps) {
+  const params = route.useParams();
+
   return (
     <div data-viewer-chrome className="flex items-center gap-3">
       <BinderCover binder={cover} label={false} className="w-10 shrink-0" />
@@ -635,8 +638,10 @@ function DesktopHeader({
           {cover.name}
         </DialogTitle>
       </div>
-      {/* owner actions such as pinning sit with Share and Edit */}
       <div className="ml-auto flex shrink-0 items-center gap-2">
+        {isOwner && (
+          <BinderPinButton username={params.username} binder={cover} />
+        )}
         <ShareButton username={username} slug={cover.slug} />
         {isOwner && (
           <EditLink username={username} slug={cover.slug} onClick={onEdit} />
@@ -846,6 +851,7 @@ function PhoneBook({
     binder === undefined ? undefined : pocketsByPage(binder.entries);
   const { columns, rows } = binderGrid(cover.layout);
   const [index, setIndex] = useState(0);
+  const params = route.useParams();
 
   const stageRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -1019,6 +1025,13 @@ function PhoneBook({
       </div>
 
       <div className="flex gap-2 border-t border-border p-3">
+        {isOwner && (
+          <BinderPinButton
+            username={params.username}
+            binder={cover}
+            className="h-10"
+          />
+        )}
         <ShareButton
           username={username}
           slug={cover.slug}

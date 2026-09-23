@@ -2,6 +2,8 @@ import { clearTag } from "@/lib/server/cache.server";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { cosmoMiddleware } from "@/lib/server/middlewares";
+import { frontPinPosition } from "@/lib/server/pins.server";
+import type { ProfilePin } from "@/lib/universal/binders";
 import { lockedObjekts, pins } from "@apollo/database/web/schema";
 import { pinCacheKey } from "@apollo/util-server";
 import { createServerFn } from "@tanstack/react-start";
@@ -58,15 +60,18 @@ export const $pinObjekt = createServerFn({ method: "POST" })
     }),
   )
   .middleware([cosmoMiddleware])
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }): Promise<ProfilePin> => {
     // perform both operations in parallel
-    const [, objekt] = await Promise.all([
+    const [[pin], objekt] = await Promise.all([
       // insert pin, placing it first to match the prepend behavior
-      db.insert(pins).values({
-        tokenId: data.tokenId,
-        address: context.cosmo.address,
-        position: sql`COALESCE((SELECT MIN(${pins.position}) FROM ${pins} WHERE ${pins.address} = ${context.cosmo.address}), 0) - 1`,
-      }),
+      db
+        .insert(pins)
+        .values({
+          tokenId: data.tokenId,
+          address: context.cosmo.address,
+          position: frontPinPosition(context.cosmo.address),
+        })
+        .returning({ id: pins.id }),
       // fetch objekt
       indexer.query.objekts.findFirst({
         where: {
@@ -78,7 +83,7 @@ export const $pinObjekt = createServerFn({ method: "POST" })
       }),
     ]);
 
-    if (objekt === undefined) {
+    if (pin === undefined || objekt === undefined) {
       throw new Error("Error pinning objekt");
     }
 
@@ -86,7 +91,7 @@ export const $pinObjekt = createServerFn({ method: "POST" })
       pinCacheKey(context.cosmo.username),
       pinCacheKey(context.cosmo.address),
     );
-    return normalizePin(objekt);
+    return { kind: "objekt", pinId: pin.id, objekt: normalizePin(objekt) };
   });
 
 /**
@@ -118,13 +123,14 @@ export const $unpinObjekt = createServerFn({ method: "POST" })
 
 /**
  * Move one pin next to another, mirroring dnd-kit's active/over drop. The
- * client sends only the two token ids; the server owns the ordered list.
+ * client sends only the two pin ids, so objekt and binder pins reorder
+ * together; the server owns the ordered list.
  */
 export const $reorderPins = createServerFn({ method: "POST" })
   .validator(
     z.object({
-      tokenId: z.coerce.number(),
-      overTokenId: z.coerce.number(),
+      pinId: z.number().int(),
+      overPinId: z.number().int(),
     }),
   )
   .middleware([cosmoMiddleware])
@@ -134,7 +140,6 @@ export const $reorderPins = createServerFn({ method: "POST" })
       db
         .select({
           id: pins.id,
-          tokenId: pins.tokenId,
           idx: sql<number>`row_number() over (order by ${pins.position}, ${pins.id})`.as(
             "idx",
           ),
@@ -144,17 +149,17 @@ export const $reorderPins = createServerFn({ method: "POST" })
     );
 
     /**
-     * Where the dragged pin and its drop target currently sit; null if either token isn't one of the user's pins.
+     * Where the dragged pin and its drop target currently sit; null if either isn't one of the user's pins.
      */
     const anchors = db.$with("anchors").as(
       db
         .select({
           fromIdx:
-            sql<number>`max(${ordered.idx}) filter (where ${ordered.tokenId} = ${data.tokenId})`.as(
+            sql<number>`max(${ordered.idx}) filter (where ${ordered.id} = ${data.pinId})`.as(
               "from_idx",
             ),
           toIdx:
-            sql<number>`max(${ordered.idx}) filter (where ${ordered.tokenId} = ${data.overTokenId})`.as(
+            sql<number>`max(${ordered.idx}) filter (where ${ordered.id} = ${data.overPinId})`.as(
               "to_idx",
             ),
         })
@@ -172,7 +177,7 @@ export const $reorderPins = createServerFn({ method: "POST" })
         .select({
           id: ordered.id,
           sortKey: sql<number>`case
-            when ${ordered.tokenId} = ${data.tokenId}
+            when ${ordered.id} = ${data.pinId}
             then ${anchors.toIdx} + (case when ${anchors.toIdx} > ${anchors.fromIdx} then 0.5 else -0.5 end)
             else ${ordered.idx}
           end`.as("sort_key"),

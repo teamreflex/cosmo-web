@@ -14,6 +14,7 @@ import {
   userCollectionBlockchainQuery,
 } from "@/lib/queries/objekt-queries";
 import { pinsQuery } from "@/lib/queries/profile";
+import type { ProfilePin } from "@/lib/universal/binders";
 import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { userCollectionFrontendSchema } from "@/lib/universal/parsers";
 import { ProfileProvider } from "@/providers/profile-provider";
@@ -29,12 +30,12 @@ export const Route = createFileRoute("/@{$username}/")({
   component: RouteComponent,
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
-  // shared with use-pin-reorder, which writes into the same cache entry
+  // pin changes anywhere on the profile write into this entry (use-profile-pins)
   context: ({ params }) => ({
     pinsOptions: pinsQuery(params.username),
   }),
   loader: async ({ context, deps }) => {
-    const [account, target, pins, selected] = await Promise.all([
+    const [account, target, , selected] = await Promise.all([
       context.queryClient.ensureQueryData(currentAccountQuery),
       context.queryClient.ensureQueryData(context.targetAccountOptions),
       context.queryClient.ensureQueryData(context.pinsOptions),
@@ -71,7 +72,7 @@ export const Route = createFileRoute("/@{$username}/")({
       );
     }
 
-    return { target, pins };
+    return { target };
   },
   head: ({ loaderData }) =>
     defineHead({
@@ -85,8 +86,13 @@ export const Route = createFileRoute("/@{$username}/")({
     }),
 });
 
+const noPins: ProfilePin[] = [];
+
 function RouteComponent() {
-  const { target, pins } = Route.useLoaderData();
+  const { target } = Route.useLoaderData();
+  const { pinsOptions } = Route.useRouteContext();
+  // followed rather than read once, since pins change from outside the grid
+  const { data: pins } = useSuspenseQuery(pinsOptions);
   // list actions only ever run on the viewer's own profile, so they read the viewer's lists
   const { data: account } = useSuspenseQuery(currentAccountQuery);
   const objektLists = account?.objektLists ?? [];
@@ -95,7 +101,7 @@ function RouteComponent() {
     <ProfileProvider
       key={target.cosmo.address}
       target={target}
-      pins={target.user ? pins : []}
+      pins={target.user ? pins : noPins}
       lockedObjekts={target.user ? target.lockedObjekts : []}
       objektLists={objektLists}
     >

@@ -19,7 +19,12 @@ export default function DetailContent({ collection, tokens }: Props) {
   const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
 
   const pinSet = useMemo(
-    () => new Set(pins.map((p) => Number(p.tokenId))),
+    () =>
+      new Set(
+        pins.flatMap((pin) =>
+          pin.kind === "objekt" ? [Number(pin.objekt.tokenId)] : [],
+        ),
+      ),
     [pins],
   );
   const lockedSet = useMemo(() => new Set(lockedObjekts), [lockedObjekts]);

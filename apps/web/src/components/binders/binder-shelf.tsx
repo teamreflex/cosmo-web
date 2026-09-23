@@ -82,19 +82,12 @@ function BinderShelfContent({
           data-active={binder.slug === activeSlug}
           className={tileClassName}
         >
-          {/* the pin badge and the owner's pin toggle sit over the cover's top-left corner */}
-          <div className="relative">
-            <BinderViewerLink
-              userId={userId}
-              binder={binder}
-              className="transition-transform duration-250 hover:-translate-y-0.75 hover:-rotate-[0.6deg] in-data-[active=true]:ring-2 in-data-[active=true]:ring-cosmo in-data-[active=true]:ring-offset-2 in-data-[active=true]:ring-offset-background motion-reduce:transition-none"
-            >
-              <BinderCover binder={binder} />
-            </BinderViewerLink>
-          </div>
-          <span className="text-[11px] text-muted-foreground">
-            {m.binder_viewer_objekt_count({ count: binder.entryCount })}
-          </span>
+          <BinderViewerLink
+            binder={binder}
+            className="transition-transform duration-250 hover:-translate-y-0.75 hover:-rotate-[0.6deg] in-data-[active=true]:ring-2 in-data-[active=true]:ring-cosmo in-data-[active=true]:ring-offset-2 in-data-[active=true]:ring-offset-background motion-reduce:transition-none"
+          >
+            <BinderCover binder={binder} />
+          </BinderViewerLink>
         </div>
       ))}
 
