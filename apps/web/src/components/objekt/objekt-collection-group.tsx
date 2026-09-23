@@ -1,7 +1,8 @@
 import { useMetadataDialog } from "@/hooks/use-metadata-dialog";
+import { useObjektImage } from "@/hooks/use-objekt-image";
 import { tokenKey, useObjektSelection } from "@/hooks/use-objekt-selection";
 import { m } from "@/i18n/messages";
-import { getObjektImageUrls } from "@/lib/client/objekt-util";
+import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import { objektQuery } from "@/lib/queries/objekt-queries";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
@@ -126,11 +127,12 @@ function RootObjekt({
 }: RootObjektProps) {
   const [isLoaded, setIsLoaded] = useState(false);
 
-  const { front } = getObjektImageUrls(collection);
+  const imageProps = useObjektImage(collection);
 
   function prefetch() {
+    // warm the image the detail sheet shows
     const img = new Image();
-    img.src = front.download;
+    img.src = getObjektFrontImageUrl(collection, "grid");
   }
 
   return (
@@ -155,7 +157,7 @@ function RootObjekt({
             "w-full transition-opacity",
             isLoaded === false && "opacity-0",
           )}
-          src={front.display}
+          {...imageProps}
           width={291}
           height={450}
           alt={collection.collectionId}

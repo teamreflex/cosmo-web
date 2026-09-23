@@ -1,5 +1,6 @@
 import { useElementSize } from "@/hooks/use-element-size";
 import { useGridVirtualizer } from "@/hooks/use-grid-virtualizer";
+import { ObjektCellWidthContext } from "@/hooks/use-objekt-image";
 import type { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 import { useObjektResponse } from "@/hooks/use-objekt-response";
 import { tokenKey } from "@/hooks/use-objekt-selection";
@@ -405,43 +406,47 @@ function ObjektGrid<
   return (
     <>
       <div className="w-full py-2" ref={containerRef}>
-        {reorderable ? (
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragStart={handleDragStart}
-            onDragEnd={handleDragEnd}
-            onDragCancel={handleDragCancel}
-            accessibility={{ announcements, screenReaderInstructions }}
-          >
-            <SortableContext items={pinIds} strategy={rectSortingStrategy}>
-              {gridBody}
-            </SortableContext>
-            <DragOverlay
-              className="cursor-grabbing! **:cursor-grabbing!"
-              dropAnimation={pinDropAnimation}
+        <ObjektCellWidthContext
+          value={laneWidth > 0 ? Math.ceil(laneWidth) : null}
+        >
+          {reorderable ? (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+              onDragCancel={handleDragCancel}
+              accessibility={{ announcements, screenReaderInstructions }}
             >
-              {activePin ? (
-                /**
-                 * The outer wrapper stays untilted so dnd-kit measures an
-                 * upright box for the drop delta (a rotated box is shifted by
-                 * the tilt); the tilt/scale live on the inner wrapper.
-                 */
-                <div className="drop-shadow-xl">
-                  <div data-pin-pickup className="animate-pin-pickup">
-                    <PinObjektCard
-                      pin={activePin}
-                      authenticated={authenticated}
-                      eager
-                    />
+              <SortableContext items={pinIds} strategy={rectSortingStrategy}>
+                {gridBody}
+              </SortableContext>
+              <DragOverlay
+                className="cursor-grabbing! **:cursor-grabbing!"
+                dropAnimation={pinDropAnimation}
+              >
+                {activePin ? (
+                  /**
+                   * The outer wrapper stays untilted so dnd-kit measures an
+                   * upright box for the drop delta (a rotated box is shifted by
+                   * the tilt); the tilt/scale live on the inner wrapper.
+                   */
+                  <div className="drop-shadow-xl">
+                    <div data-pin-pickup className="animate-pin-pickup">
+                      <PinObjektCard
+                        pin={activePin}
+                        authenticated={authenticated}
+                        eager
+                      />
+                    </div>
                   </div>
-                </div>
-              ) : null}
-            </DragOverlay>
-          </DndContext>
-        ) : (
-          gridBody
-        )}
+                ) : null}
+              </DragOverlay>
+            </DndContext>
+          ) : (
+            gridBody
+          )}
+        </ObjektCellWidthContext>
       </div>
 
       {showTotal && (

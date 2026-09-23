@@ -3,6 +3,16 @@ import { env } from "@/lib/env/client";
 import { SearchClient } from "typesense";
 import type { IndexedObjekt, ObjektResponse } from "../universal/objekts";
 
+/**
+ * Typesense leaves out optional fields whose value is null, so an unmirrored
+ * collection comes back without its image versions.
+ */
+type IndexedDocument = Omit<
+  IndexedObjekt,
+  "frontImageVersion" | "backImageVersion"
+> &
+  Partial<Pick<IndexedObjekt, "frontImageVersion" | "backImageVersion">>;
+
 const PER_PAGE = 30;
 
 const typesense = new SearchClient({
@@ -58,8 +68,15 @@ export async function getTypesenseResults({
 
   return {
     total: result.found,
-    // SAFETY: the typesense collection stores IndexedObjekt documents
-    objekts: hits.map((hit) => hit.document as IndexedObjekt),
+    objekts: hits.map((hit) => {
+      // SAFETY: the typesense collection stores IndexedObjekt documents
+      const document = hit.document as IndexedDocument;
+      return {
+        ...document,
+        frontImageVersion: document.frontImageVersion ?? null,
+        backImageVersion: document.backImageVersion ?? null,
+      };
+    }),
     hasNext,
     nextStartAfter,
   } satisfies ObjektResponse<IndexedObjekt>;

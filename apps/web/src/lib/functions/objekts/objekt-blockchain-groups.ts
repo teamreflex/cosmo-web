@@ -172,6 +172,8 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
           bandImageUrl: collections.bandImageUrl,
           frontMedia: collections.frontMedia,
           hasAudio: collections.hasAudio,
+          frontImageVersion: collections.frontImageVersion,
+          backImageVersion: collections.backImageVersion,
           createdAt: collections.createdAt,
         })
         .from(collections)
@@ -252,6 +254,8 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
           bandImageUrl: col.bandImageUrl,
           frontMedia: col.frontMedia,
           hasAudio: col.hasAudio,
+          frontImageVersion: col.frontImageVersion,
+          backImageVersion: col.backImageVersion,
           transferableByDefault: true,
           gridableByDefault: false,
           createdAt: col.createdAt,

@@ -8,7 +8,7 @@ export function pinCacheKey(value: string) {
   const hash = createHash("md5")
     .update(decodeURIComponent(value.toLowerCase()))
     .digest("hex");
-  return `pins:${hash}`;
+  return `pins:v2:${hash}`;
 }
 
 /**

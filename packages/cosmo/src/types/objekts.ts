@@ -29,6 +29,10 @@ export type ObjektBaseFields = {
   bandImageUrl: string | null;
   frontMedia: string | null;
   hasAudio: boolean;
+  /** diverges from cosmo api: version of the image mirrored into apollo's CDN */
+  frontImageVersion: string | null;
+  /** diverges from cosmo api: version of the image mirrored into apollo's CDN */
+  backImageVersion: string | null;
 };
 
 interface OwnedObjektCommonFields extends ObjektBaseFields {
@@ -107,6 +111,10 @@ export type BFFCollectionGroupCollection = {
   bandImageUrl: string | null;
   frontMedia: string | null;
   hasAudio: boolean;
+  /** diverges from cosmo api: version of the image mirrored into apollo's CDN */
+  frontImageVersion: string | null;
+  /** diverges from cosmo api: version of the image mirrored into apollo's CDN */
+  backImageVersion: string | null;
 };
 
 export type BFFCollectionGroupObjekt = {

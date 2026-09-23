@@ -4,6 +4,7 @@ import { adminMiddleware } from "@/lib/server/middlewares";
 import {
   generateCollectionMediaKey,
   getPresignedUploadUrl,
+  r2,
 } from "@/lib/server/r2.server";
 import { getRequestSignal } from "@/lib/server/request.server";
 import { ExpectedError } from "@/lib/universal/errors/expected";
@@ -13,6 +14,9 @@ import { runCosmo } from "@apollo/cosmo/runtime";
 import { fetchMetadataV3 } from "@apollo/cosmo/server/metadata";
 import { normalizeV3 } from "@apollo/cosmo/types/metadata";
 import { collections } from "@apollo/database/indexer/schema";
+import { isSourceFailure } from "@apollo/image/errors";
+import { runImage } from "@apollo/image/runtime";
+import { mirrorObjektImage } from "@apollo/image/server";
 import { createServerFn } from "@tanstack/react-start";
 import { eq } from "drizzle-orm";
 import * as z from "zod";
@@ -132,6 +136,69 @@ export const $updateCollection = createServerFn({ method: "POST" })
         hasAudio: data.hasAudio,
         frontMedia: data.frontMedia,
       })
+      .where(eq(collections.id, data.id))
+      .returning();
+
+    if (!updated) {
+      throw new Error("Failed to update collection");
+    }
+
+    return updated;
+  });
+
+/**
+ * Re-mirror a collection's images from COSMO into R2 and store the resulting versions.
+ * Rewrites every file, so it also repairs a partial mirror.
+ */
+export const $recacheCollectionImages = createServerFn({ method: "POST" })
+  .middleware([adminMiddleware])
+  .validator(z.object({ id: z.uuid() }))
+  .handler(async ({ data }) => {
+    const collection = await indexer.query.collections.findFirst({
+      where: { id: data.id },
+      columns: { slug: true, frontImage: true, backImage: true },
+    });
+
+    if (!collection) {
+      throw new ExpectedError("collection_not_found");
+    }
+
+    const signal = getRequestSignal() ?? null;
+    try {
+      var [frontImageVersion, backImageVersion] = await Promise.all([
+        runImage(
+          mirrorObjektImage(r2, {
+            side: "front",
+            slug: collection.slug,
+            sourceUrl: collection.frontImage,
+            force: true,
+          }),
+          signal,
+        ),
+        // v3-era collections have no back image
+        collection.backImage === ""
+          ? null
+          : runImage(
+              mirrorObjektImage(r2, {
+                side: "back",
+                slug: collection.slug,
+                sourceUrl: collection.backImage,
+                force: true,
+              }),
+              signal,
+            ),
+      ]);
+    } catch (e) {
+      // R2 or network failures are genuine and should reach Sentry
+      if (e instanceof Error && isSourceFailure(e)) {
+        throw new ExpectedError("image_recache_failed");
+      }
+      throw e;
+    }
+
+    const [updated] = await indexer
+      .update(collections)
+      .set({ frontImageVersion, backImageVersion })
       .where(eq(collections.id, data.id))
       .returning();
 

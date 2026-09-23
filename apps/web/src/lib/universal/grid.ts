@@ -83,7 +83,8 @@ export type GridCatalogRow = {
   class: string;
   collectionNo: string;
   slug: string;
-  thumbnailImage: string;
+  frontImage: string;
+  frontImageVersion: string | null;
 };
 
 export type GridOwnedRow = {
@@ -113,7 +114,8 @@ export type GridMemberRef = {
 export type NumberPool = {
   collectionNo: string;
   slug: string;
-  thumbnailImage: string;
+  frontImage: string;
+  frontImageVersion: string | null;
   usable: number;
   total: number;
   // full collectionNo retains the A/Z designation pooled into this number
@@ -124,8 +126,8 @@ export type NumberPool = {
 
 export type RewardPool = {
   collectionNo: string;
-  slug: string | null;
-  thumbnailImage: string | null;
+  // null when the reward collection hasn't been minted yet
+  collection: CatalogEntry | null;
   owned: number;
 };
 
@@ -241,7 +243,10 @@ class MemberSeasonMap<T> {
 
 type SourcePool = { transferable: number; total: number };
 type RewardCount = { transferable: number; nonTransferable: number };
-type CatalogEntry = { slug: string; thumbnailImage: string };
+type CatalogEntry = Pick<
+  GridCatalogRow,
+  "slug" | "frontImage" | "frontImageVersion"
+>;
 
 /**
  * Builds the full grid ledger for one artist from indexer-derived rows.
@@ -347,7 +352,11 @@ function indexCatalog(
   for (const row of catalog) {
     const no = stripNo(row.collectionNo);
     const isZ = designationOf(row.collectionNo) === "Z";
-    const entry = { slug: row.slug, thumbnailImage: row.thumbnailImage };
+    const entry = {
+      slug: row.slug,
+      frontImage: row.frontImage,
+      frontImageVersion: row.frontImageVersion,
+    };
 
     if (row.class === sourceClass) {
       const numbers = sourceCatalog.getOrCreate(
@@ -512,7 +521,8 @@ function editionPools(
     numbers.push({
       collectionNo: no,
       slug: entry.slug,
-      thumbnailImage: entry.thumbnailImage,
+      frontImage: entry.frontImage,
+      frontImageVersion: entry.frontImageVersion,
       usable: pool?.transferable ?? 0,
       total: pool?.total ?? 0,
       nonTransferable: season.nonTransferable?.get(no) ?? [],
@@ -556,8 +566,7 @@ function rewardPool(
   const pool = counts?.get(collectionNo);
   return {
     collectionNo,
-    slug: entry?.slug ?? null,
-    thumbnailImage: entry?.thumbnailImage ?? null,
+    collection: entry ?? null,
     owned: pool ? pool.transferable + pool.nonTransferable : 0,
   };
 }
