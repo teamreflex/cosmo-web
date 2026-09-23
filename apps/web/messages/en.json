@@ -347,6 +347,16 @@
       }
     }
   ],
+  "binder_binders": "Binders",
+  "binder_shelf_empty": "{username} hasn't made any binders yet.",
+  "binder_shelf_error": "Couldn't load binders",
+  "binder_new": "New binder",
+  "binder_shelf_limit": "Up to {max} binders",
+  "binder_create_description": "Pick a name, a pocket layout and a spine colour. You'll fill it next.",
+  "binder_create_name_placeholder": "My binder",
+  "binder_create_layout_pockets": "{count} per page",
+  "binder_create_layout_locked": "The layout can't be changed once the binder has objekts.",
+  "binder_created": "Binder created",
   "binder_picker_all_artists": "All",
   "binder_picker_suggestion_one": "Like pocket {pocket}:",
   "binder_picker_suggestion_two": "Like pockets {first} and {second}:",

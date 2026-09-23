@@ -347,6 +347,16 @@
       }
     }
   ],
+  "binder_binders": "Classeurs",
+  "binder_shelf_empty": "{username} n'a pas encore créé de classeur.",
+  "binder_shelf_error": "Impossible de charger les classeurs",
+  "binder_new": "Nouveau classeur",
+  "binder_shelf_limit": "{max} classeurs maximum",
+  "binder_create_description": "Choisissez un nom, une disposition et une couleur de dos. Vous le remplirez ensuite.",
+  "binder_create_name_placeholder": "Mon classeur",
+  "binder_create_layout_pockets": "{count} par page",
+  "binder_create_layout_locked": "La disposition ne peut plus être modifiée une fois que le classeur contient des objekts.",
+  "binder_created": "Classeur créé",
   "binder_picker_all_artists": "Tous",
   "binder_picker_suggestion_one": "Comme la pochette {pocket} :",
   "binder_picker_suggestion_two": "Comme les pochettes {first} et {second} :",

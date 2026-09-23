@@ -1,3 +1,4 @@
+import ShelfRow from "@/components/profile/shelf-row";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
@@ -116,18 +117,6 @@ function ListShelfContent({
         </>
       )}
     </ShelfRow>
-  );
-}
-
-/**
- * Wraps onto new rows from md up, and scrolls sideways on a phone like the
- * member filter.
- */
-function ShelfRow({ children }: { children: ReactNode }) {
-  return (
-    <div className="container no-scrollbar flex gap-x-3 gap-y-3.5 overflow-x-auto py-3.5 md:flex-wrap md:overflow-visible">
-      {children}
-    </div>
   );
 }
 

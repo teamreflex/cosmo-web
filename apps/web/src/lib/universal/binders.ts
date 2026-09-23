@@ -15,6 +15,12 @@ export const MAX_BINDERS = 10;
 export const MAX_BINDER_PAGES = 20;
 
 /**
+ * A new binder's spine colour. An empty binder has no objekts to draw colour
+ * presets from, so the create dialog starts here.
+ */
+export const DEFAULT_BINDER_COLOUR = "#3b2a6b";
+
+/**
  * How many filled page 1 pockets make up a cover collage.
  */
 export const COLLAGE_SIZE = 4;
