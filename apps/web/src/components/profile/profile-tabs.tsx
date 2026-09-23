@@ -1,5 +1,7 @@
+import BinderShelf from "@/components/binders/binder-shelf";
 import ListShelf from "@/components/lists/list-shelf";
 import { m } from "@/i18n/messages";
+import { binderShelfQuery } from "@/lib/queries/binders";
 import { listShelfQuery } from "@/lib/queries/lists";
 import { cn } from "@/lib/utils";
 import {
@@ -7,6 +9,7 @@ import {
   IconChartPie,
   IconChevronDown,
   IconList,
+  IconNotebook,
   IconPackage,
   IconSend,
 } from "@tabler/icons-react";
@@ -29,7 +32,7 @@ const route = getRouteApi("/@{$username}");
 const tabClassName =
   "-mb-px flex flex-1 items-center justify-center gap-1 border-b-2 border-transparent px-3 py-3 text-sm font-semibold text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:text-foreground data-[state=open]:text-foreground data-[status=active]:border-cosmo data-[status=active]:text-foreground md:flex-none";
 
-type Shelf = "lists";
+type Shelf = "binders" | "lists";
 
 type Props = {
   isAuthenticated: boolean;
@@ -45,6 +48,11 @@ export default function ProfileTabs({ isAuthenticated }: Props) {
   // grid is reached from the progress page, so it keeps Progress highlighted
   const onGrid =
     useMatch({ from: "/@{$username}/grid", shouldThrow: false }) !== undefined;
+  const binderSlug = useMatch({
+    from: "/@{$username}/binder/$slug",
+    shouldThrow: false,
+    select: (match) => match.params.slug,
+  });
   const listSlug = useMatch({
     from: "/@{$username}/list/$slug",
     shouldThrow: false,
@@ -57,6 +65,12 @@ export default function ProfileTabs({ isAuthenticated }: Props) {
 
   function toggleShelf(shelf: Shelf) {
     setOpened(openShelf === shelf ? undefined : { shelf, pathname });
+  }
+
+  function prefetchBinders() {
+    if (target.user) {
+      void queryClient.prefetchQuery(binderShelfQuery(target.user.id));
+    }
   }
 
   function prefetchLists() {
@@ -79,14 +93,14 @@ export default function ProfileTabs({ isAuthenticated }: Props) {
 
   /**
    * One grid places each piece per breakpoint without rendering anything
-   * twice: on mobile the page toolbar gets its own row under the shelf, and
+   * twice: on mobile the page toolbar gets its own row under the shelves, and
    * from md it overlays the free end of the tab row.
    */
   return (
     <div className="grid grid-cols-1" onKeyDown={handleKeyDown}>
       <nav
         aria-label={m.profile_tabs()}
-        className="col-start-1 row-start-1 container flex md:h-12 md:gap-2"
+        className="col-start-1 row-start-1 container flex md:h-12 lg:gap-2"
       >
         <Link
           to="/@{$username}"
@@ -129,6 +143,21 @@ export default function ProfileTabs({ isAuthenticated }: Props) {
         </Link>
         <button
           type="button"
+          aria-expanded={openShelf === "binders"}
+          aria-controls="profile-shelf-binders"
+          data-state={openShelf === "binders" ? "open" : "closed"}
+          data-status={binderSlug !== undefined ? "active" : undefined}
+          onClick={() => toggleShelf("binders")}
+          onPointerEnter={prefetchBinders}
+          onFocus={prefetchBinders}
+          className={tabClassName}
+        >
+          <IconNotebook className="size-5 md:hidden" />
+          <span className="sr-only md:not-sr-only">{m.binder_binders()}</span>
+          <IconChevronDown className="size-3.5 transition-transform in-data-[state=open]:rotate-180" />
+        </button>
+        <button
+          type="button"
           aria-expanded={openShelf === "lists"}
           aria-controls="profile-shelf-lists"
           data-state={openShelf === "lists" ? "open" : "closed"}
@@ -145,9 +174,22 @@ export default function ProfileTabs({ isAuthenticated }: Props) {
       </nav>
 
       <ShelfPanel
+        id="profile-shelf-binders"
+        open={openShelf === "binders"}
+        className="col-start-1 row-start-2"
+      >
+        <BinderShelf
+          username={username}
+          displayName={target.cosmo.username}
+          userId={target.user?.id}
+          isOwner={isAuthenticated}
+          activeSlug={binderSlug}
+        />
+      </ShelfPanel>
+      <ShelfPanel
         id="profile-shelf-lists"
         open={openShelf === "lists"}
-        className="col-start-1 row-start-2"
+        className="col-start-1 row-start-3"
       >
         <ListShelf
           username={username}
@@ -159,7 +201,7 @@ export default function ProfileTabs({ isAuthenticated }: Props) {
       </ShelfPanel>
 
       {/* hidden on routes without a toolbar, so they don't get an empty mobile bar */}
-      <div className="col-start-1 row-start-3 border-t border-border has-[>div:empty]:hidden md:pointer-events-none md:row-start-1 md:border-t-0">
+      <div className="col-start-1 row-start-4 border-t border-border has-[>div:empty]:hidden md:pointer-events-none md:row-start-1 md:border-t-0">
         <div className="container flex h-14 items-center gap-2 md:h-full md:justify-end">
           <ProfileToolbar address={target.cosmo.address} />
         </div>

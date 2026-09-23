@@ -155,6 +155,7 @@ function PendingComponent() {
           <Skeleton className="h-5 flex-1 md:w-16 md:flex-none" />
           <Skeleton className="h-5 flex-1 md:w-16 md:flex-none" />
           <Skeleton className="h-5 flex-1 md:w-18 md:flex-none" />
+          <Skeleton className="h-5 flex-1 md:w-20 md:flex-none" />
           <Skeleton className="h-5 flex-1 md:w-14 md:flex-none" />
         </div>
         <div className="border-t border-border md:hidden">

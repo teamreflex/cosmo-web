@@ -344,6 +344,16 @@
       }
     }
   ],
+  "binder_binders": "바인더",
+  "binder_shelf_empty": "{username}님은 아직 바인더를 만들지 않았습니다.",
+  "binder_shelf_error": "바인더를 불러올 수 없습니다",
+  "binder_new": "새 바인더",
+  "binder_shelf_limit": "최대 {max}개까지",
+  "binder_create_description": "이름, 포켓 레이아웃, 책등 색상을 고르세요. 다음 화면에서 채울 수 있어요.",
+  "binder_create_name_placeholder": "내 바인더",
+  "binder_create_layout_pockets": "페이지당 {count}장",
+  "binder_create_layout_locked": "오브젝트를 넣은 뒤에는 레이아웃을 바꿀 수 없습니다.",
+  "binder_created": "바인더가 생성되었습니다",
   "binder_picker_all_artists": "전체",
   "binder_picker_suggestion_one": "{pocket}번 포켓처럼:",
   "binder_picker_suggestion_two": "{first}번, {second}번 포켓처럼:",

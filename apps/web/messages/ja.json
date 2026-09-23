@@ -344,6 +344,16 @@
       }
     }
   ],
+  "binder_binders": "バインダー",
+  "binder_shelf_empty": "{username}さんはまだバインダーを作成していません。",
+  "binder_shelf_error": "バインダーを読み込めませんでした",
+  "binder_new": "新しいバインダー",
+  "binder_shelf_limit": "最大{max}冊まで",
+  "binder_create_description": "名前、ポケットのレイアウト、背表紙の色を選んでください。このあと中身を入れられます。",
+  "binder_create_name_placeholder": "マイバインダー",
+  "binder_create_layout_pockets": "1ページ{count}枚",
+  "binder_create_layout_locked": "Objektを入れた後はレイアウトを変更できません。",
+  "binder_created": "バインダーを作成しました",
   "binder_picker_all_artists": "すべて",
   "binder_picker_suggestion_one": "ポケット{pocket}と同じ:",
   "binder_picker_suggestion_two": "ポケット{first}と{second}と同じ:",

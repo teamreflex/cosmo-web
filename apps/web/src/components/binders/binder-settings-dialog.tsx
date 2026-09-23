@@ -16,13 +16,13 @@ import { binderColourPresets } from "@/lib/universal/binders";
 import type { BinderDetail } from "@/lib/universal/binders";
 import { updateBinderSchema } from "@/lib/universal/schema/binder";
 import type { UpdateBinder } from "@/lib/universal/schema/binder";
-import { cn } from "@/lib/utils";
 import type { Binder } from "@apollo/database/web/types";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { IconCheck, IconLoader2 } from "@tabler/icons-react";
+import { IconLoader2 } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
+import BinderColourInput from "./binder-colour-input";
 
 type Props = {
   binder: BinderDetail;
@@ -92,9 +92,8 @@ function SettingsForm({ binder, onSaved }: SettingsFormProps) {
 
   return (
     <form
-      onSubmit={form.handleSubmit(async (data) => {
-        await mutation.mutateAsync(data);
-      })}
+      // mutate rather than mutateAsync, since a rejection would escape handleSubmit unhandled
+      onSubmit={form.handleSubmit((data) => mutation.mutate(data))}
       className="flex flex-col gap-4"
     >
       <Controller
@@ -123,81 +122,23 @@ function SettingsForm({ binder, onSaved }: SettingsFormProps) {
             <FieldLabel htmlFor="binder-colour">
               {m.binder_editor_colour()}
             </FieldLabel>
-            {presets.length > 0 && (
-              <div
-                role="group"
-                aria-label={m.binder_editor_colour_presets()}
-                className="flex flex-wrap gap-2"
-              >
-                {presets.map((colour) => (
-                  <Swatch
-                    key={colour}
-                    colour={colour}
-                    selected={field.value?.toLowerCase() === colour}
-                    onSelect={() => field.onChange(colour)}
-                  />
-                ))}
-              </div>
-            )}
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                aria-label={m.binder_editor_colour_custom()}
-                value={
-                  /^#[0-9a-f]{6}$/i.test(field.value ?? "")
-                    ? field.value
-                    : "#000000"
-                }
-                onChange={(event) => field.onChange(event.target.value)}
-                className="size-9 shrink-0 cursor-pointer rounded-sm border border-border bg-transparent p-0.5"
-              />
-              <Input
-                id="binder-colour"
-                aria-label={m.binder_editor_colour_hex()}
-                aria-invalid={fieldState.invalid}
-                maxLength={7}
-                spellCheck={false}
-                className="font-mono"
-                {...field}
-              />
-            </div>
+            <BinderColourInput
+              id="binder-colour"
+              aria-invalid={fieldState.invalid}
+              presets={presets}
+              {...field}
+            />
             <FieldError errors={[fieldState.error]} />
           </Field>
         )}
       />
 
-      <Button type="submit" disabled={form.formState.isSubmitting}>
+      <Button type="submit" disabled={mutation.isPending}>
         {m.common_save()}
-        {form.formState.isSubmitting && (
+        {mutation.isPending && (
           <IconLoader2 className="animate-spin" />
         )}
       </Button>
     </form>
-  );
-}
-
-type SwatchProps = {
-  colour: string;
-  selected: boolean;
-  onSelect: () => void;
-};
-
-function Swatch({ colour, selected, onSelect }: SwatchProps) {
-  return (
-    <button
-      type="button"
-      aria-label={colour}
-      aria-pressed={selected}
-      title={colour}
-      onClick={onSelect}
-      style={{ backgroundColor: colour }}
-      className={cn(
-        "grid size-8 place-items-center rounded-full ring-1 ring-white/15 transition-shadow focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cosmo-text",
-        selected &&
-          "ring-2 ring-foreground ring-offset-2 ring-offset-background",
-      )}
-    >
-      {selected && <IconCheck className="size-4 text-white drop-shadow" />}
-    </button>
   );
 }
