@@ -6,8 +6,6 @@ import { Link } from "@tanstack/react-router";
 import type { MouseEvent, ReactNode } from "react";
 
 type Props = {
-  /** the binder owner's user id, which keys the binder query */
-  userId: string;
   binder: BinderPreview;
   className?: string;
   children: ReactNode;
@@ -19,12 +17,11 @@ type Props = {
  * it also opens in a new tab. Hovering or focusing it prefetches the pages.
  */
 export default function BinderViewerLink({
-  userId,
   binder,
   className,
   children,
 }: Props) {
-  const { prefetch } = useOpenBinder(userId);
+  const { prefetch } = useOpenBinder();
 
   function handleClick(event: MouseEvent<HTMLAnchorElement>) {
     // modified clicks open a new tab, which has nothing to fly from
@@ -50,8 +47,8 @@ export default function BinderViewerLink({
       resetScroll={false}
       aria-label={m.binder_viewer_open({ name: binder.name })}
       onClick={handleClick}
-      onMouseEnter={() => prefetch(binder.slug)}
-      onFocus={() => prefetch(binder.slug)}
+      onMouseEnter={() => prefetch(binder)}
+      onFocus={() => prefetch(binder)}
       className={cn(
         "block rounded-photocard outline-none focus-visible:ring-2 focus-visible:ring-cosmo-text focus-visible:ring-offset-2 focus-visible:ring-offset-background",
         className,

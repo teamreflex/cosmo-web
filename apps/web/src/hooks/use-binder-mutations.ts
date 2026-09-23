@@ -1,3 +1,4 @@
+import { usePinsCache } from "@/hooks/use-profile-pins";
 import { formatError } from "@/lib/client/errors";
 import {
   $addBinderPage,
@@ -115,6 +116,7 @@ function useBinderMutation<TData, TVariables>(
   optimistic: (binder: BinderDetail, variables: TVariables) => BinderDetail,
 ) {
   const queryClient = useQueryClient();
+  const pins = usePinsCache();
   const binderKey = binderQuery(userId, slug).queryKey;
 
   return useMutation({
@@ -138,9 +140,11 @@ function useBinderMutation<TData, TVariables>(
       toast.error(formatError(error));
       void queryClient.invalidateQueries({ queryKey: binderKey });
     },
-    onSuccess: () =>
-      queryClient.invalidateQueries({
+    onSuccess: () => {
+      pins.refreshBinder(binderId);
+      return queryClient.invalidateQueries({
         queryKey: binderShelfQuery(userId).queryKey,
-      }),
+      });
+    },
   });
 }

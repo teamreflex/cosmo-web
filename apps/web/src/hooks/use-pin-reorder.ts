@@ -1,27 +1,23 @@
 import { useProfileContext } from "@/hooks/use-profile";
+import { useUpdatePins } from "@/hooks/use-profile-pins";
 import { m } from "@/i18n/messages";
 import { $reorderPins } from "@/lib/functions/collection";
 import { track } from "@/lib/utils";
 import { arrayMove } from "@dnd-kit/sortable";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { getRouteApi } from "@tanstack/react-router";
+import { useMutation } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { toast } from "sonner";
 
-const routeApi = getRouteApi("/@{$username}/");
-
-export type PinMove = { tokenId: number; overTokenId: number };
+export type PinMove = { pinId: number; overPinId: number };
 
 /**
  * Optimistically reorder the viewer's own pins and persist the new order.
  * Writes the store (the inline grid renders from it) and the pins query cache
- * shared with the loader via route context, rolling both back on failure.
+ * the store follows, rolling both back on failure.
  */
 export function usePinReorder() {
-  const reorderPins = useProfileContext((c) => c.reorderPins);
   const pins = useProfileContext((c) => c.pins);
-  const queryClient = useQueryClient();
-  const { pinsOptions } = routeApi.useRouteContext();
+  const updatePins = useUpdatePins();
 
   const mutation = useMutation({
     mutationFn: async (move: PinMove) => {
@@ -30,22 +26,18 @@ export function usePinReorder() {
         throw new Error("pin_not_found");
       }
     },
-    onMutate: ({ tokenId, overTokenId }) => {
+    onMutate: ({ pinId, overPinId }) => {
       const previous = pins;
       const reordered = arrayMove(
         previous,
-        previous.findIndex((p) => Number(p.tokenId) === tokenId),
-        previous.findIndex((p) => Number(p.tokenId) === overTokenId),
+        previous.findIndex((p) => p.pinId === pinId),
+        previous.findIndex((p) => p.pinId === overPinId),
       );
-      reorderPins(reordered);
-      queryClient.setQueryData(pinsOptions.queryKey, reordered);
+      updatePins(() => reordered);
       return { previous };
     },
     onError: (_e, _v, ctx) => {
-      if (ctx?.previous) {
-        reorderPins(ctx.previous);
-        queryClient.setQueryData(pinsOptions.queryKey, ctx.previous);
-      }
+      if (ctx) updatePins(() => ctx.previous);
       toast.error(m.toast_pin_reorder_error());
     },
     onSuccess: () => track("reorder-pins"),

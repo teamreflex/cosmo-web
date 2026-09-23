@@ -1,5 +1,5 @@
+import type { ProfilePin } from "@/lib/universal/binders";
 import type { PublicAccount } from "@/lib/universal/cosmo-accounts";
-import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import type { ObjektList } from "@apollo/database/web/types";
 import { createContext, useContext } from "react";
 import type { StoreApi } from "zustand";
@@ -10,14 +10,12 @@ interface ProfileProps {
   target: Partial<PublicAccount> | undefined;
   objektLists: ObjektList[];
   lockedObjekts: number[];
-  pins: CosmoObjekt[];
+  pins: ProfilePin[];
 }
 
 export interface ProfileState extends ProfileProps {
   toggleLock: (tokenId: number) => void;
-  addPin: (objekt: CosmoObjekt) => void;
-  removePin: (tokenId: number) => void;
-  reorderPins: (pins: CosmoObjekt[]) => void;
+  updatePins: (update: (pins: ProfilePin[]) => ProfilePin[]) => void;
   addObjektList: (list: ObjektList) => void;
   removeObjektList: (listId: string) => void;
 }
@@ -45,7 +43,10 @@ export function usePinnedObjekt(tokenId: number) {
   return useProfileContext(
     useShallow(
       (state) =>
-        state.pins.findIndex((p) => Number(p.tokenId) === tokenId) !== -1,
+        state.pins.some(
+          (pin) =>
+            pin.kind === "objekt" && Number(pin.objekt.tokenId) === tokenId,
+        ),
     ),
   );
 }

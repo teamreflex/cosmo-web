@@ -1,6 +1,8 @@
 import { useBinderEditor } from "@/hooks/use-binder-editor";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import { usePinsCache } from "@/hooks/use-profile-pins";
 import { binderQuery, binderShelfQuery } from "@/lib/queries/binders";
+import { isBinderPin } from "@/lib/universal/binders";
 import type { BinderDetail } from "@/lib/universal/binders";
 import type { Binder } from "@apollo/database/web/types";
 import { useQueryClient } from "@tanstack/react-query";
@@ -30,6 +32,7 @@ export default function BinderEditor({ binder, owner }: Props) {
   const isDesktop = useMediaQuery();
   const editor = useBinderEditor({ binder, userId: owner.userId });
   const queryClient = useQueryClient();
+  const pins = usePinsCache();
   const navigate = useNavigate();
   const [dialog, setDialog] = useState<
     "settings" | "delete" | "remove-page" | null
@@ -62,6 +65,7 @@ export default function BinderEditor({ binder, owner }: Props) {
     void queryClient.invalidateQueries({
       queryKey: binderShelfQuery(owner.userId).queryKey,
     });
+    pins.refreshBinder(row.id);
     if (row.slug !== binder.slug) {
       void navigate({
         to: "/@{$username}/binder/$slug",
@@ -75,6 +79,9 @@ export default function BinderEditor({ binder, owner }: Props) {
     void queryClient.invalidateQueries({
       queryKey: binderShelfQuery(owner.userId).queryKey,
     });
+    pins.update((current) =>
+      current.filter((pin) => !isBinderPin(binder.id)(pin)),
+    );
     await navigate({
       to: "/@{$username}",
       params: { username: owner.username },

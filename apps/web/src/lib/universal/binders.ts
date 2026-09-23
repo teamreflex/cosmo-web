@@ -153,11 +153,136 @@ export function resolveBinderArtwork(
  */
 export type BinderPreview = Pick<
   Binder,
-  "id" | "slug" | "name" | "colour" | "layout" | "pageCount"
+  "id" | "userId" | "slug" | "name" | "colour" | "layout" | "pageCount"
 > & {
   entryCount: number;
   artwork: BinderArtwork;
 };
+
+/**
+ * A binder as the shelf and pins queries load it: the preview's columns plus
+ * the cover and the first page 1 entries its artwork is drawn from.
+ */
+export type BinderPreviewRow = Omit<BinderPreview, "artwork"> & {
+  coverTokenId: number | null;
+  entries: PlacedToken[];
+};
+
+/**
+ * The token ids a binder's artwork may be drawn from, to resolve through the
+ * indexer.
+ */
+export function binderPreviewTokenIds(
+  row: Pick<BinderPreviewRow, "coverTokenId" | "entries">,
+): number[] {
+  return [
+    ...(row.coverTokenId === null ? [] : [row.coverTokenId]),
+    ...row.entries.map((entry) => entry.tokenId),
+  ];
+}
+
+/**
+ * A binder's cover from its row and the images resolved for its tokens.
+ */
+export function toBinderPreview(
+  { coverTokenId, entries, ...binder }: BinderPreviewRow,
+  images: Map<number, BinderPreviewImage>,
+): BinderPreview {
+  return {
+    ...binder,
+    artwork: resolveBinderArtwork(coverTokenId, entries, images),
+  };
+}
+
+/**
+ * The image a binder cover draws for an objekt.
+ */
+export function previewImage(
+  objekt: Pick<
+    CosmoObjekt,
+    "tokenId" | "collectionId" | "frontImage" | "frontImageVersion"
+  >,
+): BinderPreviewImage {
+  return {
+    tokenId: Number(objekt.tokenId),
+    slug: slugifyObjekt(objekt.collectionId),
+    collectionId: objekt.collectionId,
+    frontImage: objekt.frontImage,
+    frontImageVersion: objekt.frontImageVersion,
+  };
+}
+
+/**
+ * One of a profile's pins: a pinned objekt, or a pinned binder drawn as its
+ * cover. Both carry the pin's own id, which orders and reorders them together.
+ */
+export type ProfilePin =
+  | { kind: "objekt"; pinId: number; objekt: CosmoObjekt }
+  | { kind: "binder"; pinId: number; binder: BinderPreview };
+
+/**
+ * A pin row as the pins query loads it. Exactly one of the token and the
+ * binder is set.
+ */
+export type PinRow = {
+  id: number;
+  tokenId: number | null;
+  binder: BinderPreviewRow | null;
+};
+
+/**
+ * Every token id pin rows need from the indexer: pinned objekts and the
+ * artwork of pinned binders, for one lookup.
+ */
+export function pinTokenIds(rows: readonly PinRow[]): number[] {
+  return [
+    ...new Set(
+      rows.flatMap((row) => {
+        if (row.binder !== null) return binderPreviewTokenIds(row.binder);
+        return row.tokenId === null ? [] : [row.tokenId];
+      }),
+    ),
+  ];
+}
+
+/**
+ * Map pin rows, already in pin order, into profile pins, with the objekts the
+ * indexer resolved by token id. A pinned objekt the indexer doesn't have is
+ * dropped; a pinned binder always stays and draws what it can.
+ */
+export function toProfilePins(
+  rows: readonly PinRow[],
+  objekts: Map<number, CosmoObjekt>,
+): ProfilePin[] {
+  const images = new Map(
+    [...objekts].map(([tokenId, objekt]) => [tokenId, previewImage(objekt)]),
+  );
+
+  return rows.flatMap((row): ProfilePin[] => {
+    if (row.binder !== null) {
+      return [
+        {
+          kind: "binder",
+          pinId: row.id,
+          binder: toBinderPreview(row.binder, images),
+        },
+      ];
+    }
+
+    const objekt = row.tokenId === null ? undefined : objekts.get(row.tokenId);
+    return objekt === undefined
+      ? []
+      : [{ kind: "objekt", pinId: row.id, objekt }];
+  });
+}
+
+/**
+ * Matches the pin of one binder.
+ */
+export function isBinderPin(binderId: string) {
+  return (pin: ProfilePin) =>
+    pin.kind === "binder" && pin.binder.id === binderId;
+}
 
 export type BinderPocketEntry = PocketPosition & {
   objekt: CosmoObjekt;
@@ -192,23 +317,15 @@ export function pocketsByPage(entries: readonly BinderPocketEntry[]) {
  */
 export function binderPreviewFromDetail(binder: BinderDetail): BinderPreview {
   const images = new Map(
-    binder.entries.map(({ objekt }) => {
-      const tokenId = Number(objekt.tokenId);
-      return [
-        tokenId,
-        {
-          tokenId,
-          slug: slugifyObjekt(objekt.collectionId),
-          collectionId: objekt.collectionId,
-          frontImage: objekt.frontImage,
-          frontImageVersion: objekt.frontImageVersion,
-        },
-      ];
-    }),
+    binder.entries.map(({ objekt }) => [
+      Number(objekt.tokenId),
+      previewImage(objekt),
+    ]),
   );
 
   return {
     id: binder.id,
+    userId: binder.userId,
     slug: binder.slug,
     name: binder.name,
     colour: binder.colour,
@@ -418,14 +535,31 @@ export function withoutLastPage(binder: BinderDetail): BinderDetail {
 const COLOUR_PRESETS_PER_KIND = 4;
 
 /**
- * Colours too close to white to read against a cover's white paper label.
+ * WCAG relative luminance of a `#rrggbb` colour, from 0 (black) to 1 (white).
  */
-function isNearWhite(hex: string) {
+function luminance(hex: string) {
   const channel = (offset: number) => {
     const value = Number.parseInt(hex.slice(offset, offset + 2), 16) / 255;
     return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
   };
-  return 0.2126 * channel(1) + 0.7152 * channel(3) + 0.0722 * channel(5) > 0.8;
+  return 0.2126 * channel(1) + 0.7152 * channel(3) + 0.0722 * channel(5);
+}
+
+/**
+ * Colours too close to white to read against a cover's white paper label.
+ */
+function isNearWhite(hex: string) {
+  return luminance(hex) > 0.8;
+}
+
+/**
+ * Black or white, whichever reads better on the binder's spine colour. Plays
+ * the part of a collection's text colour wherever a binder takes an objekt's
+ * overlay.
+ */
+export function binderTextColour(colour: string) {
+  // the luminance where black and white text have equal contrast
+  return luminance(colour) > 0.179 ? "#000000" : "#ffffff";
 }
 
 function mostCommon(values: string[]) {

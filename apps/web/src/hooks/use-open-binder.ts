@@ -47,7 +47,7 @@ export function takeBinderOpen(slug: string) {
  * closes it. Passing the clicked cover element makes the cover fly out of it.
  * `prefetch` starts loading the pages early, on hover or focus.
  */
-export function useOpenBinder(userId: string) {
+export function useOpenBinder() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -63,8 +63,8 @@ export function useOpenBinder(userId: string) {
     });
   }
 
-  function prefetch(slug: string) {
-    void queryClient.prefetchQuery(binderQuery(userId, slug));
+  function prefetch(preview: BinderPreview) {
+    void queryClient.prefetchQuery(binderQuery(preview.userId, preview.slug));
   }
 
   return { open, prefetch };

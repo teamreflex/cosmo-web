@@ -6,12 +6,14 @@ import {
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { cosmoMiddleware } from "@/lib/server/middlewares";
+import { frontPinPosition } from "@/lib/server/pins.server";
 import {
   COLLAGE_SIZE,
   isPocketInRange,
   MAX_BINDER_PAGES,
   MAX_BINDERS,
-  resolveBinderArtwork,
+  binderPreviewTokenIds,
+  toBinderPreview,
 } from "@/lib/universal/binders";
 import type { BinderDetail, BinderPreview } from "@/lib/universal/binders";
 import { ExpectedError } from "@/lib/universal/errors/expected";
@@ -24,7 +26,7 @@ import {
   updateBinderSchema,
 } from "@/lib/universal/schema/binder";
 import { createSlug } from "@/lib/utils";
-import { binderEntries, binders } from "@apollo/database/web/schema";
+import { binderEntries, binders, pins } from "@apollo/database/web/schema";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, gte, lt, or, sql } from "drizzle-orm";
 import * as z from "zod";
@@ -38,9 +40,11 @@ export const $fetchBinderShelf = createServerFn({ method: "GET" })
   .handler(async ({ data }): Promise<BinderPreview[]> => {
     const rows = await db.query.binders.findMany({
       where: { userId: data.userId },
-      orderBy: { createdAt: "asc" },
+      // binders made in the same instant still keep one order
+      orderBy: { createdAt: "asc", id: "asc" },
       columns: {
         id: true,
+        userId: true,
         slug: true,
         name: true,
         colour: true,
@@ -63,16 +67,10 @@ export const $fetchBinderShelf = createServerFn({ method: "GET" })
     });
 
     const images = await fetchBinderPreviewImages(
-      rows.flatMap((row) => [
-        ...(row.coverTokenId === null ? [] : [row.coverTokenId]),
-        ...row.entries.map((entry) => entry.tokenId),
-      ]),
+      rows.flatMap(binderPreviewTokenIds),
     );
 
-    return rows.map(({ coverTokenId, entries, ...binder }) => ({
-      ...binder,
-      artwork: resolveBinderArtwork(coverTokenId, entries, images),
-    }));
+    return rows.map((row) => toBinderPreview(row, images));
   });
 
 /**
@@ -511,4 +509,64 @@ export const $removeLastBinderPage = createServerFn({ method: "POST" })
       await clearBinderPinCache(context.cosmo);
     }
     return result;
+  });
+
+/**
+ * Pin a binder to the owner's profile, in front of their other pins like a
+ * newly pinned objekt. Pinning it again moves it back to the front. Returns
+ * the pin's id.
+ */
+export const $pinBinder = createServerFn({ method: "POST" })
+  .validator(binderIdSchema)
+  .middleware([cosmoMiddleware])
+  .handler(async ({ data, context }) => {
+    const binder = await db.query.binders.findFirst({
+      where: { id: data.binderId, userId: context.session.user.id },
+      columns: { id: true },
+    });
+    if (binder === undefined) {
+      throw new ExpectedError("binder_not_found");
+    }
+
+    const [pin] = await db
+      .insert(pins)
+      .values({
+        address: context.cosmo.address,
+        binderId: binder.id,
+        position: frontPinPosition(context.cosmo.address),
+      })
+      .onConflictDoUpdate({
+        target: [pins.address, pins.binderId],
+        set: { position: sql`excluded.position` },
+      })
+      .returning({ id: pins.id });
+
+    if (!pin) {
+      throw new Error("Failed to pin binder");
+    }
+
+    await clearBinderPinCache(context.cosmo);
+    return pin.id;
+  });
+
+/**
+ * Unpin a binder from the owner's profile.
+ */
+export const $unpinBinder = createServerFn({ method: "POST" })
+  .validator(binderIdSchema)
+  .middleware([cosmoMiddleware])
+  .handler(async ({ data, context }) => {
+    const deleted = await db
+      .delete(pins)
+      .where(
+        and(
+          eq(pins.binderId, data.binderId),
+          eq(pins.address, context.cosmo.address),
+        ),
+      )
+      .returning({ id: pins.id });
+
+    if (deleted.length > 0) {
+      await clearBinderPinCache(context.cosmo);
+    }
   });
