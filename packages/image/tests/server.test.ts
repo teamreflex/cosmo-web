@@ -1,6 +1,12 @@
 import { S3Client } from "bun";
 import { describe, expect, test } from "bun:test";
 import {
+  ImageFetchError,
+  ImageProcessError,
+  ImageStoreError,
+  isSourceFailure,
+} from "../src/errors";
+import {
   mirrorObjektImage,
   normaliseSourceUrl,
   objektImageRef,
@@ -164,5 +170,31 @@ describe("mirrorObjektImage", () => {
         }),
       ),
     ).rejects.toMatchObject({ _tag: "ImageFetchError", status: 403 });
+  });
+});
+
+describe("isSourceFailure", () => {
+  test("splits source failures from infrastructure failures", () => {
+    expect(
+      isSourceFailure(
+        new ImageFetchError({ url: "", status: 404, cause: null }),
+      ),
+    ).toBe(true);
+    expect(
+      isSourceFailure(new ImageProcessError({ url: "", cause: null })),
+    ).toBe(true);
+    expect(
+      isSourceFailure(
+        new ImageFetchError({ url: "", status: 503, cause: null }),
+      ),
+    ).toBe(false);
+    expect(isSourceFailure(new ImageFetchError({ url: "", cause: null }))).toBe(
+      false,
+    );
+    expect(
+      isSourceFailure(
+        new ImageStoreError({ key: "", status: 404, cause: null }),
+      ),
+    ).toBe(false);
   });
 });

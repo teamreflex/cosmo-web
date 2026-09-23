@@ -2,12 +2,12 @@
 
 Mirrors COSMO objekt images into our R2 bucket: the untouched source bytes for archival, a full-size WebP, and resized WebP renditions for small surfaces. Served from `cdn.apollo.cafe`.
 
-| Entry                   | Contents                                                                    |
-| ----------------------- | --------------------------------------------------------------------------- |
-| `@apollo/image`         | Size table, `ObjektImageRef`, key builders. No Bun APIs; safe in the client. |
-| `@apollo/image/server`  | URL normalisation, version hashing, download, render, upload, mirror.       |
-| `@apollo/image/runtime` | `runImage(effect, signal?)` for callers without an Effect runtime.          |
-| `@apollo/image/errors`  | `ImageFetchError`, `ImageProcessError`, `ImageStoreError`.                  |
+| Entry                   | Contents                                                                      |
+| ----------------------- | ----------------------------------------------------------------------------- |
+| `@apollo/image`         | Size table, `ObjektImageRef`, key builders. No Bun APIs; safe in the client.  |
+| `@apollo/image/server`  | URL normalisation, version hashing, download, render, upload, mirror.         |
+| `@apollo/image/runtime` | `runImage(effect, signal?)` for callers without an Effect runtime.            |
+| `@apollo/image/errors`  | `ImageFetchError`, `ImageProcessError`, `ImageStoreError`, `isSourceFailure`. |
 
 ## Layout
 
@@ -58,11 +58,13 @@ A failure partway through leaves the marker missing, so the next call redoes eve
 
 ## Failures
 
-| Error               | When                                                   | Meaning for callers                          |
-| ------------------- | ------------------------------------------------------ | -------------------------------------------- |
+| Error               | When                                                                   | Meaning for callers                       |
+| ------------------- | ---------------------------------------------------------------------- | ----------------------------------------- |
 | `ImageFetchError`   | Download failed. `status` is undefined for network errors or timeouts. | 4xx: broken source. Otherwise: transient. |
-| `ImageProcessError` | Bun.Image couldn't decode or encode the source          | Broken source                                |
-| `ImageStoreError`   | R2 request failed                                      | Transient                                    |
+| `ImageProcessError` | Bun.Image couldn't decode or encode the source                         | Broken source                             |
+| `ImageStoreError`   | R2 request failed                                                      | Transient                                 |
+
+`isSourceFailure(error)` implements the split in the last column.
 
 ## Usage
 

@@ -6,6 +6,7 @@ import { TypeormDatabase, type Store } from "@subsquid/typeorm-store";
 import { randomUUID } from "crypto";
 import { In } from "typeorm";
 import { env } from "./env";
+import { mirrorImages } from "./images";
 import { fetchMetadataWithRetryV3 } from "./metadata";
 import { Collection, ComoBalance, Objekt, type Transfer, Vote } from "./model";
 import { ListEventOutbox } from "./model";
@@ -93,6 +94,9 @@ processor.run(db, async (ctx) => {
         transfer.collection = collection;
         transferBatch.push(transfer);
       }
+
+      // mirror new or replaced images so the upsert carries their versions
+      await mirrorImages(ctx, collectionBatch.values());
 
       // upsert collections
       if (collectionBatch.size > 0) {
@@ -234,6 +238,8 @@ async function handleCollection(
       backImage: metadata.objekt.backImage,
       backgroundColor: metadata.objekt.backgroundColor,
       accentColor: metadata.objekt.accentColor,
+      frontImageVersion: null,
+      backImageVersion: null,
     });
   }
 
@@ -256,6 +262,10 @@ async function handleCollection(
     : "offline";
   collection.thumbnailImage = metadata.objekt.thumbnailImage;
   collection.frontImage = metadata.objekt.frontImage;
+  // v3 metadata has no back image, so only overwrite when COSMO sends one.
+  if (metadata.objekt.backImage !== "") {
+    collection.backImage = metadata.objekt.backImage;
+  }
 
   return collection;
 }
