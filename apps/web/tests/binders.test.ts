@@ -19,6 +19,7 @@ import {
   MAX_BINDER_PAGES,
   nextEmptySlot,
   pinTokenIds,
+  placeInBinder,
   resolveBinderArtwork,
   suggestFromNeighbours,
   toProfilePins,
@@ -157,6 +158,66 @@ describe("findEmptyPocket", () => {
       kind: "existing",
       page: 7,
       slot: 3,
+    });
+  });
+});
+
+describe("placeInBinder", () => {
+  it("leaves an objekt already in the binder where it is", () => {
+    const entries = [
+      { page: 0, slot: 0, tokenId: 10 },
+      { page: 1, slot: 3, tokenId: 20 },
+    ];
+    expect(placeInBinder("3x3", 2, entries, 20)).toEqual({
+      kind: "already",
+      page: 1,
+      slot: 3,
+    });
+  });
+
+  it("finds an objekt already in a full binder", () => {
+    const entries = fullPages(MAX_BINDER_PAGES, 4).map((pocket, i) => ({
+      ...pocket,
+      tokenId: i,
+    }));
+    expect(placeInBinder("2x2", MAX_BINDER_PAGES, entries, 5)).toEqual({
+      kind: "already",
+      page: 1,
+      slot: 1,
+    });
+  });
+
+  it("uses the first empty pocket for a new objekt", () => {
+    const entries = [
+      { page: 0, slot: 0, tokenId: 10 },
+      { page: 0, slot: 2, tokenId: 30 },
+    ];
+    expect(placeInBinder("3x3", 1, entries, 20)).toEqual({
+      kind: "existing",
+      page: 0,
+      slot: 1,
+    });
+  });
+
+  it("starts a new page when every page is full", () => {
+    const entries = fullPages(2, 12).map((pocket, i) => ({
+      ...pocket,
+      tokenId: i,
+    }));
+    expect(placeInBinder("4x3", 2, entries, 99)).toEqual({
+      kind: "new-page",
+      page: 2,
+      slot: 0,
+    });
+  });
+
+  it("is full at the page cap", () => {
+    const entries = fullPages(MAX_BINDER_PAGES, 9).map((pocket, i) => ({
+      ...pocket,
+      tokenId: i,
+    }));
+    expect(placeInBinder("3x3", MAX_BINDER_PAGES, entries, 999)).toEqual({
+      kind: "full",
     });
   });
 });

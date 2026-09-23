@@ -88,7 +88,7 @@ export type EmptyPocket =
 export function findEmptyPocket(
   layout: BinderLayout,
   pageCount: number,
-  filled: PocketPosition[],
+  filled: readonly PocketPosition[],
 ): EmptyPocket {
   const { pocketsPerPage } = binderGrid(layout);
   const taken = new Set(filled.map((p) => `${p.page}:${p.slot}`));
@@ -105,6 +105,41 @@ export function findEmptyPocket(
     ? { kind: "new-page", page: pageCount, slot: 0 }
     : { kind: "full" };
 }
+
+/**
+ * Where adding an objekt to a binder puts it: the pocket already holding it,
+ * or the first empty pocket.
+ */
+export type BinderPlacement =
+  | { kind: "already"; page: number; slot: number }
+  | EmptyPocket;
+
+/**
+ * Place an objekt into a binder the way "Add to binder" does. An objekt sits
+ * in one pocket per binder, so one already there stays where it is.
+ */
+export function placeInBinder(
+  layout: BinderLayout,
+  pageCount: number,
+  entries: readonly PlacedToken[],
+  tokenId: number,
+): BinderPlacement {
+  const existing = entries.find((entry) => entry.tokenId === tokenId);
+  return existing === undefined
+    ? findEmptyPocket(layout, pageCount, entries)
+    : { kind: "already", page: existing.page, slot: existing.slot };
+}
+
+/**
+ * One of the viewer's binders in the "Add to binder" menu, with the pocket
+ * already holding the objekt, if any.
+ */
+export type BinderMenuItem = Pick<
+  Binder,
+  "id" | "userId" | "slug" | "name" | "colour"
+> & {
+  holding: PocketPosition | null;
+};
 
 export type BinderPreviewImage = Pick<
   CosmoObjekt,

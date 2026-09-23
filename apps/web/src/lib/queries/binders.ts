@@ -1,5 +1,9 @@
 import { queryOptions } from "@tanstack/react-query";
-import { $fetchBinder, $fetchBinderShelf } from "../functions/binders";
+import {
+  $fetchBinder,
+  $fetchBinderMenu,
+  $fetchBinderShelf,
+} from "../functions/binders";
 
 /**
  * Fetch a user's binders for the profile shelf. Keyed by user id so binder
@@ -18,4 +22,14 @@ export const binderQuery = (userId: string, slug: string) =>
   queryOptions({
     queryKey: ["binder", userId, slug],
     queryFn: ({ signal }) => $fetchBinder({ signal, data: { userId, slug } }),
+  });
+
+/**
+ * Fetch the signed-in user's binders for the "Add to binder" menu, marking
+ * the ones already holding the objekt. Loaded when the menu opens.
+ */
+export const binderMenuQuery = (tokenId: number) =>
+  queryOptions({
+    queryKey: ["binder-menu", tokenId],
+    queryFn: ({ signal }) => $fetchBinderMenu({ signal, data: { tokenId } }),
   });

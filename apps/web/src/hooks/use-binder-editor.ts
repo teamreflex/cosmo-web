@@ -15,6 +15,7 @@ import { toast } from "sonner";
 type Options = {
   binder: BinderDetail;
   userId: string;
+  initialPage: number;
 };
 
 /**
@@ -22,19 +23,19 @@ type Options = {
  * the selected pocket, and every edit expressed against that page. Picking
  * fills the selected pocket, then selects the next empty pocket on the page.
  */
-export function useBinderEditor({ binder, userId }: Options) {
+export function useBinderEditor({ binder, userId, initialPage }: Options) {
   const mutations = useBinderMutations({
     binderId: binder.id,
     userId,
     slug: binder.slug,
   });
-  const [pageIndex, setPageIndex] = useState(0);
-  const [selected, setSelected] = useState(() =>
-    nextEmptySlot(binder.layout, binder.entries, 0, -1),
-  );
+  const [pageIndex, setPageIndex] = useState(initialPage);
 
   // the page count can shrink under the editor, from here or another tab
   const page = Math.min(pageIndex, binder.pageCount - 1);
+  const [selected, setSelected] = useState(() =>
+    nextEmptySlot(binder.layout, binder.entries, page, -1),
+  );
   const pockets = new Map(
     binder.entries
       .filter((entry) => entry.page === page)

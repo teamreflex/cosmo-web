@@ -83,3 +83,16 @@ export const swapPocketsSchema = z.object({
 });
 
 export type SwapPockets = z.infer<typeof swapPocketsSchema>;
+
+export const addToBinderSchema = z.object({
+  binderId: z.uuid(),
+  tokenId: tokenIdSchema,
+});
+
+export type AddToBinder = z.infer<typeof addToBinderSchema>;
+
+export const binderMenuSchema = z.object({
+  tokenId: tokenIdSchema,
+});
+
+export type BinderMenu = z.infer<typeof binderMenuSchema>;

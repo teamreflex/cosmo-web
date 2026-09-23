@@ -8,8 +8,13 @@ import { currentAccountQuery } from "@/lib/queries/core";
 import { IconHeartBroken } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
+import * as z from "zod";
 
 export const Route = createFileRoute("/@{$username}/binder/$slug")({
+  // the 1-based page to open on, such as where "Add to binder" placed an objekt
+  validateSearch: z.object({
+    page: z.number().int().positive().optional().catch(undefined),
+  }),
   component: RouteComponent,
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
@@ -58,6 +63,7 @@ export const Route = createFileRoute("/@{$username}/binder/$slug")({
 function RouteComponent() {
   const { userId, address, lockedObjekts } = Route.useLoaderData();
   const { username, slug } = Route.useParams();
+  const { page } = Route.useSearch();
   const { data: binder } = useSuspenseQuery(binderQuery(userId, slug));
 
   // deleted from another tab since the editor loaded
@@ -69,6 +75,7 @@ function RouteComponent() {
     <div className="container py-4">
       <BinderEditor
         binder={binder}
+        initialPage={page === undefined ? 0 : page - 1}
         owner={{
           userId,
           username,
