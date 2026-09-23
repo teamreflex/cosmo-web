@@ -54,7 +54,8 @@ export default function FlippableObjekt({ children, collection }: Props) {
         }}
         data-flipped={flipped}
         {...handlers}
-        className="relative aspect-photocard w-full touch-none object-contain select-none focus:outline-none"
+        // vertical swipes still scroll the page on touch, which cancels the drag and settles the card
+        className="relative aspect-photocard w-full touch-pan-y object-contain select-none focus:outline-none"
       >
         {/* the card's own thickness, swept between the two faces */}
         <svg

@@ -359,7 +359,6 @@
   "profile_help_locking_desc_2": "This is a {appName} feature and",
   "profile_help_locking_desc_emphasis": "does not prevent trading within the COSMO app",
   "profile_badge_cosmo_verified": "COSMO is verified",
-  "profile_badge_verified": "Verified",
   "profile_badge_modhaus": "Official Modhaus account",
   "profile_badge_modhaus_alt": "Modhaus",
   "_comment_system": "System status strings",

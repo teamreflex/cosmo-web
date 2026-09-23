@@ -357,7 +357,6 @@
   "profile_help_locking_desc_2": "이것은 {appName} 기능이며",
   "profile_help_locking_desc_emphasis": "코스모 앱 내 거래를 방지하지 않습니다",
   "profile_badge_cosmo_verified": "코스모 인증됨",
-  "profile_badge_verified": "인증됨",
   "profile_badge_modhaus": "공식 모드하우스 계정",
   "profile_badge_modhaus_alt": "모드하우스",
   "_comment_system": "System status strings",

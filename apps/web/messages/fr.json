@@ -359,7 +359,6 @@
   "profile_help_locking_desc_2": "Cette fonctionnalité de {appName}",
   "profile_help_locking_desc_emphasis": "n'empêche pas l'envoi depuis COSMO",
   "profile_badge_cosmo_verified": "COSMO vérifié",
-  "profile_badge_verified": "Vérifié",
   "profile_badge_modhaus": "Compte officiel de Modhaus",
   "profile_badge_modhaus_alt": "Modhaus",
   "_comment_system": "System status strings",

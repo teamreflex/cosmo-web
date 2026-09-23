@@ -286,6 +286,9 @@ export function useCardFlip(): CardFlip {
   // #region keyboard
   const onKeyDown = useCallback(
     (event: KeyboardEvent<HTMLDivElement>) => {
+      // keys pressed on overlaid controls (the audio toggle) belong to them
+      if (event.target !== event.currentTarget) return;
+
       const face = Math.round(rotation.get() / 180);
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();

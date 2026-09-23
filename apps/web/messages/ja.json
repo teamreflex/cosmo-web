@@ -357,7 +357,6 @@
   "profile_help_locking_desc_2": "これは{appName}の機能であり、",
   "profile_help_locking_desc_emphasis": "COSMOアプリ内での取引を防ぐものではありません",
   "profile_badge_cosmo_verified": "COSMO認証済み",
-  "profile_badge_verified": "認証済み",
   "profile_badge_modhaus": "公式Modhausアカウント",
   "profile_badge_modhaus_alt": "Modhaus",
   "_comment_system": "System status strings",
