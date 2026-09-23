@@ -15,6 +15,7 @@ import { $fetchObjektList } from "@/lib/functions/lists";
 import { defineHead } from "@/lib/meta";
 import { currentAccountQuery, selectedArtistsQuery } from "@/lib/queries/core";
 import { objektListQuery } from "@/lib/queries/objekt-queries";
+import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { objektListFrontendSchema } from "@/lib/universal/parsers";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
@@ -74,7 +75,9 @@ export const Route = createFileRoute("/@{$username}/list/$slug")({
   head: ({ loaderData }) =>
     defineHead({
       title: loaderData?.objektList.name ?? m.objekt_list(),
-      canonical: `/@${loaderData?.target.cosmo.username}/list/${loaderData?.objektList.id}`,
+      canonical:
+        loaderData &&
+        `/@${profileIdentifier(loaderData.target.cosmo)}/list/${loaderData.objektList.slug}`,
     }),
 });
 
@@ -92,7 +95,7 @@ function RouteComponent() {
           <Link
             to="/@{$username}/list/$slug"
             params={{
-              username: target.cosmo.username,
+              username: profileIdentifier(target.cosmo),
               slug: pairedList.slug,
             }}
           >
