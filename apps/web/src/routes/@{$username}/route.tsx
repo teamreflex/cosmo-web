@@ -1,3 +1,4 @@
+import BinderViewer from "@/components/binders/binder-viewer";
 import UserBalances, {
   ComoBalanceErrorFallback,
 } from "@/components/navbar/como-balances";
@@ -16,6 +17,7 @@ import { env } from "@/lib/env/client";
 import { tokenBalancesQuery } from "@/lib/queries/como";
 import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
 import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
+import { profileFrontendSchema } from "@/lib/universal/parsers";
 import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
 import { Addresses, isEqual } from "@apollo/util";
@@ -28,6 +30,7 @@ export const Route = createFileRoute("/@{$username}")({
   component: RouteComponent,
   notFoundComponent: NotFoundComponent,
   pendingComponent: PendingComponent,
+  validateSearch: profileFrontendSchema,
   // built once here so the loader and every consumer share the same cache key
   context: ({ params }) => ({
     targetAccountOptions: targetAccountQuery(params.username),
@@ -122,6 +125,14 @@ function RouteComponent() {
           </div>
 
           <Outlet />
+
+          {target.user && (
+            <BinderViewer
+              userId={target.user.id}
+              username={profileIdentifier(target.cosmo)}
+              isOwner={account?.user.id === target.user.id}
+            />
+          )}
         </main>
       </MetadataDialogProvider>
     </UserStateProvider>

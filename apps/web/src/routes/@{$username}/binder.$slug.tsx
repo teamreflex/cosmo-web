@@ -24,11 +24,12 @@ export const Route = createFileRoute("/@{$username}/binder/$slug")({
       throw notFound();
     }
 
-    // this route is the owner's editor; everyone else goes to the profile
+    // this route is the owner's editor; everyone else gets the viewer
     if (account?.user.id !== target.user.id) {
       throw redirect({
         to: "/@{$username}",
         params: { username: params.username },
+        search: { binder: params.slug },
       });
     }
 

@@ -66,6 +66,11 @@ export const objektIndexBackendSchema = cosmoSchema
     artists: z.string().array().default([]),
   });
 
+// profile layout - user facing, validated by the router, shared by every profile tab
+export const profileFrontendSchema = z.object({
+  binder: z.string().optional(),
+});
+
 // user collection frontend - user facing, validated by the router
 export const userCollectionFrontendSchema = cosmoSchema
   .omit({ gridable: true })

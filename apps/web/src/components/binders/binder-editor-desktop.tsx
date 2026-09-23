@@ -185,7 +185,7 @@ export default function BinderEditorDesktop({
             </Button>
             <span className="flex-1" />
             <EditorStatus saving={editor.saving} />
-            <DoneButton username={username} />
+            <DoneButton username={username} slug={binder.slug} />
           </div>
 
           <BinderPage

@@ -447,6 +447,28 @@
   "binder_editor_drag_over": "포켓 {pocket} 위입니다.",
   "binder_editor_drag_dropped": "{objekt}를 포켓 {pocket}에 놓았습니다.",
   "binder_editor_drag_cancelled": "이동이 취소되었습니다.",
+  "binder_viewer_open": "{name} 열기",
+  "binder_viewer_objekt_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=other": "오브젝트 {count}개"
+      }
+    }
+  ],
+  "binder_viewer_updated": "{date} 업데이트",
+  "binder_viewer_edit": "편집",
+  "binder_viewer_share": "공유",
+  "binder_viewer_link_copied": "바인더 링크가 클립보드에 복사되었습니다",
+  "binder_viewer_pages_of": "{first}–{last} / {total} 페이지",
+  "binder_viewer_pages": "페이지",
+  "binder_viewer_go_to_page": "{page}페이지",
   "notification_bell_label": "알림",
   "notification_mark_all_read": "모두 읽음 표시",
   "notification_empty": "아직 알림이 없습니다.",

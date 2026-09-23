@@ -122,7 +122,7 @@ export default function BinderEditorPhone({
   return (
     <div className="-mx-4 flex flex-col">
       <div className="flex items-center gap-2 border-b border-border px-3 py-2">
-        <DoneButton username={username} />
+        <DoneButton username={username} slug={binder.slug} />
         <h1 className="min-w-0 flex-1 truncate text-center font-cosmo text-sm font-black uppercase">
           {binder.name}
         </h1>

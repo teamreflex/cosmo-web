@@ -46,12 +46,18 @@ export function EditorStatus({ saving }: { saving: boolean }) {
 }
 
 /**
- * Leaves the editor for the owner's profile.
+ * Leaves the editor for the owner's profile, with the binder open in the viewer.
  */
-export function DoneButton({ username }: { username: string }) {
+export function DoneButton({
+  username,
+  slug,
+}: {
+  username: string;
+  slug: string;
+}) {
   return (
     <Button variant="outline" size="sm" asChild>
-      <Link to="/@{$username}" params={{ username }}>
+      <Link to="/@{$username}" params={{ username }} search={{ binder: slug }}>
         {m.common_done()}
       </Link>
     </Button>

@@ -447,6 +447,28 @@
   "binder_editor_drag_over": "ポケット{pocket}の上です。",
   "binder_editor_drag_dropped": "{objekt}をポケット{pocket}に置きました。",
   "binder_editor_drag_cancelled": "移動をキャンセルしました。",
+  "binder_viewer_open": "{name}を開く",
+  "binder_viewer_objekt_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=other": "{count}個のObjekt"
+      }
+    }
+  ],
+  "binder_viewer_updated": "{date} 更新",
+  "binder_viewer_edit": "編集",
+  "binder_viewer_share": "共有",
+  "binder_viewer_link_copied": "バインダーのリンクをコピーしました",
+  "binder_viewer_pages_of": "{total}ページ中{first}–{last}ページ",
+  "binder_viewer_pages": "ページ",
+  "binder_viewer_go_to_page": "{page}ページ",
   "notification_bell_label": "通知",
   "notification_mark_all_read": "すべて既読にする",
   "notification_empty": "まだ通知はありません。",

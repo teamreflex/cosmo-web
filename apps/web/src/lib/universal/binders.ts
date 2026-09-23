@@ -1,6 +1,7 @@
 import type { ValidArtist } from "@apollo/cosmo/types/common";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import type { Binder } from "@apollo/database/web/types";
+import { slugifyObjekt } from "@apollo/util";
 
 export type BinderLayout = Binder["layout"];
 
@@ -163,6 +164,62 @@ export type BinderPocketEntry = PocketPosition & {
 export type BinderDetail = Binder & {
   entries: BinderPocketEntry[];
 };
+
+/**
+ * A binder's pockets by slot for each page.
+ */
+export type BinderPages = Map<number, Map<number, BinderPocketEntry>>;
+
+export function pocketsByPage(entries: readonly BinderPocketEntry[]) {
+  const pages: BinderPages = new Map();
+  for (const entry of entries) {
+    const page = pages.get(entry.page) ?? new Map();
+    page.set(entry.slot, entry);
+    pages.set(entry.page, page);
+  }
+  return pages;
+}
+
+/**
+ * A binder's cover built from its full detail, for a viewer opened without a
+ * cover on screen to start from, such as a shared link.
+ */
+export function binderPreviewFromDetail(binder: BinderDetail): BinderPreview {
+  const images = new Map(
+    binder.entries.map(({ objekt }) => {
+      const tokenId = Number(objekt.tokenId);
+      return [
+        tokenId,
+        {
+          tokenId,
+          slug: slugifyObjekt(objekt.collectionId),
+          collectionId: objekt.collectionId,
+          frontImage: objekt.frontImage,
+          frontImageVersion: objekt.frontImageVersion,
+        },
+      ];
+    }),
+  );
+
+  return {
+    id: binder.id,
+    slug: binder.slug,
+    name: binder.name,
+    colour: binder.colour,
+    layout: binder.layout,
+    pageCount: binder.pageCount,
+    entryCount: binder.entries.length,
+    artwork: resolveBinderArtwork(
+      binder.coverTokenId,
+      binder.entries.map(({ page, slot, objekt }) => ({
+        page,
+        slot,
+        tokenId: Number(objekt.tokenId),
+      })),
+      images,
+    ),
+  };
+}
 
 /**
  * The collection fields a neighbour suggestion compares.
