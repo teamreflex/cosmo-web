@@ -22,7 +22,6 @@ Failures are the tagged error classes from `src/errors.ts` (`@apollo/cosmo/error
 
 ## Constraints
 
-- `apps/indexer` typechecks these sources under `moduleResolution: nodenext`: any relative import reachable from `server/metadata.ts` or `runtime.ts` needs an explicit `.js` extension.
 - The response schemas in `src/schema/*` are the single source of truth for response shapes. The public types in `src/types/*` derive from them via `typeof XSchema.Type` (type-only imports, so they erase at emit and add no runtime `effect` dependency for consumers) — never hand-sync a schema and a type. `Schema.mutable(Schema.Array(...))` is required because the public types use mutable arrays. Note that derived types have readonly properties — decoded COSMO data is not meant to be mutated in place; build new objects instead.
 
 ## Tests
