@@ -12,7 +12,7 @@ import {
 import { useObjektSerial } from "@/hooks/use-objekt-serial";
 import { IconLoader2 } from "@tabler/icons-react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
-import { Suspense, lazy, useCallback, useMemo, useState } from "react";
+import { Suspense, lazy, useCallback, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -37,9 +37,16 @@ type Props = {
 export function MetadataDialogProvider({ children }: Props) {
   const [state, setState] = useState<DialogState | null>(null);
   const { setSerial, reset } = useObjektSerial();
+  // the sheet has no trigger for Radix to refocus, so remember what opened it
+  const opener = useRef<HTMLElement | null>(null);
 
   const open = useCallback(
     (slug: string, options?: OpenMetadataDialogOptions) => {
+      opener.current =
+        document.activeElement instanceof HTMLElement &&
+        document.activeElement !== document.body
+          ? document.activeElement
+          : null;
       if (options?.serial !== undefined) {
         setSerial(options.serial);
       }
@@ -68,6 +75,12 @@ export function MetadataDialogProvider({ children }: Props) {
 
       <Sheet open={state !== null} onOpenChange={onOpenChange}>
         <SheetContent
+          onCloseAutoFocus={(event) => {
+            if (opener.current?.isConnected === true) {
+              event.preventDefault();
+              opener.current.focus({ preventScroll: true });
+            }
+          }}
           side="right"
           className="w-full gap-0 p-0 outline-hidden data-[side=right]:sm:max-w-xl"
         >

@@ -10,6 +10,7 @@ import type {
 import {
   binderColourPresets,
   binderGrid,
+  binderPreviewFromDetail,
   findEmptyPocket,
   isPocketInRange,
   MAX_BINDER_PAGES,
@@ -214,6 +215,36 @@ describe("resolveBinderArtwork", () => {
       kind: "collage",
       images: [image(10), image(30)],
     });
+  });
+});
+
+describe("binderPreviewFromDetail", () => {
+  const thumbnail = (tokenId: number) => ({
+    tokenId,
+    slug: `atom02-choerry-${100 + tokenId}z`,
+    collectionId: `Atom02 Choerry ${100 + tokenId}Z`,
+    frontImage: "",
+    frontImageVersion: null,
+  });
+
+  it("draws the cover objekt when one is set", () => {
+    const preview = binderPreviewFromDetail(
+      detail([entry(0, 0, 1), entry(1, 3, 2)], {
+        coverTokenId: 2,
+        pageCount: 2,
+      }),
+    );
+    expect(preview.artwork).toEqual({ kind: "cover", image: thumbnail(2) });
+    expect(preview.entryCount).toBe(2);
+    expect(preview.pageCount).toBe(2);
+  });
+
+  it("collages page 1 by slot without a cover", () => {
+    expect(
+      binderPreviewFromDetail(
+        detail([entry(0, 4, 3), entry(0, 1, 1), entry(1, 0, 2)]),
+      ).artwork,
+    ).toEqual({ kind: "collage", images: [thumbnail(1), thumbnail(3)] });
   });
 });
 

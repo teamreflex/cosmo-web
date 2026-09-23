@@ -23,7 +23,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/@{$username}/")({
   validateSearch: userCollectionFrontendSchema,
-  loaderDeps: ({ search: { serial, locked, ...searchParams } }) => ({
+  loaderDeps: ({ search: { serial, locked, binder, ...searchParams } }) => ({
     searchParams,
   }),
   component: RouteComponent,

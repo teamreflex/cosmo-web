@@ -453,6 +453,29 @@
   "binder_editor_drag_over": "Over pocket {pocket}.",
   "binder_editor_drag_dropped": "Dropped {objekt} in pocket {pocket}.",
   "binder_editor_drag_cancelled": "Move cancelled.",
+  "binder_viewer_open": "Open {name}",
+  "binder_viewer_objekt_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{count} objekt",
+        "countPlural=other": "{count} objekts"
+      }
+    }
+  ],
+  "binder_viewer_updated": "Updated {date}",
+  "binder_viewer_edit": "Edit",
+  "binder_viewer_share": "Share",
+  "binder_viewer_link_copied": "Binder link copied to clipboard",
+  "binder_viewer_pages_of": "pages {first}–{last} of {total}",
+  "binder_viewer_pages": "Pages",
+  "binder_viewer_go_to_page": "Page {page}",
   "notification_bell_label": "Notifications",
   "notification_mark_all_read": "Mark all read",
   "notification_empty": "No notifications yet.",

@@ -453,6 +453,29 @@
   "binder_editor_drag_over": "Au-dessus de la poche {pocket}.",
   "binder_editor_drag_dropped": "{objekt} déposé dans la poche {pocket}.",
   "binder_editor_drag_cancelled": "Déplacement annulé.",
+  "binder_viewer_open": "Ouvrir {name}",
+  "binder_viewer_objekt_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{count} objekt",
+        "countPlural=other": "{count} objekts"
+      }
+    }
+  ],
+  "binder_viewer_updated": "Mis à jour le {date}",
+  "binder_viewer_edit": "Modifier",
+  "binder_viewer_share": "Partager",
+  "binder_viewer_link_copied": "Lien du classeur copié dans le presse-papier",
+  "binder_viewer_pages_of": "pages {first}–{last} sur {total}",
+  "binder_viewer_pages": "Pages",
+  "binder_viewer_go_to_page": "Page {page}",
   "notification_bell_label": "Notifications",
   "notification_mark_all_read": "Tout marquer comme lu",
   "notification_empty": "Aucune notification pour le moment.",
