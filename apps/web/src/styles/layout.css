@@ -67,6 +67,25 @@
   scrollbar-width: none; /* Firefox */
 }
 
+/*
+ * the global scrollbar on a transparent track, for scroll areas inside tinted panels.
+ * scrollbar-width is left unset in Chrome, since setting it drops the ::-webkit-scrollbar styles
+ */
+@utility panel-scrollbar {
+  &::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  @supports not selector(::-webkit-scrollbar) {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-muted-foreground) transparent;
+
+    @variant dark {
+      scrollbar-color: var(--color-secondary) transparent;
+    }
+  }
+}
+
 /* hide scrollbar on mobile, show on desktop when overflowing */
 @utility member-filter-scrollbar {
   @media (pointer: coarse) {

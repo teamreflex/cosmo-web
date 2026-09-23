@@ -1,4 +1,4 @@
-import { markBinderOpen, useOpenBinder } from "@/hooks/use-open-binder";
+import { useOpenBinder } from "@/hooks/use-open-binder";
 import { m } from "@/i18n/messages";
 import type { BinderPreview } from "@/lib/universal/binders";
 import { cn } from "@/lib/utils";
@@ -21,7 +21,7 @@ export default function BinderViewerLink({
   className,
   children,
 }: Props) {
-  const { prefetch } = useOpenBinder();
+  const { open, prefetch } = useOpenBinder();
 
   function handleClick(event: MouseEvent<HTMLAnchorElement>) {
     // modified clicks open a new tab, which has nothing to fly from
@@ -34,17 +34,15 @@ export default function BinderViewerLink({
     ) {
       return;
     }
-    markBinderOpen({
-      slug: binder.slug,
-      origin: { element: event.currentTarget, preview: binder },
-    });
+    // the viewer opens straight away, rather than waiting on the router
+    event.preventDefault();
+    open(binder, event.currentTarget);
   }
 
   return (
     <Link
       to="."
       search={(prev) => ({ ...prev, binder: binder.slug })}
-      resetScroll={false}
       aria-label={m.binder_viewer_open({ name: binder.name })}
       onClick={handleClick}
       onMouseEnter={() => prefetch(binder)}

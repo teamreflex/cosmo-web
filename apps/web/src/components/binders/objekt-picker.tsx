@@ -24,6 +24,7 @@ import type {
 import { RadioGroup } from "radix-ui";
 import { useId, useReducer, useRef, useState } from "react";
 import type { RefObject } from "react";
+import { useEventCallback } from "usehooks-ts";
 import PickerFilterPanel from "./picker-filter-panel";
 import type {
   FlagKey,
@@ -83,6 +84,8 @@ export default function ObjektPicker({
   const scrollRef = useRef<HTMLDivElement>(null);
   const filtersButtonRef = useRef<HTMLButtonElement>(null);
   const panelId = useId();
+  // stable, so a new handler from the editor doesn't re-render every card
+  const pick = useEventCallback(onPick);
 
   const query = useInfiniteQuery({
     ...userCollectionBlockchainQuery(
@@ -183,7 +186,7 @@ export default function ObjektPicker({
         <div
           ref={scrollRef}
           inert={panelOpen}
-          className="absolute inset-0 [scrollbar-width:thin] overflow-y-auto overscroll-contain px-3 pt-2.5 pb-3.5"
+          className="absolute inset-0 panel-scrollbar overflow-y-auto overscroll-contain px-3 pt-2.5 pb-3.5"
         >
           <PickerResults
             query={query}
@@ -197,7 +200,7 @@ export default function ObjektPicker({
             inBinderTokenIds={inBinderTokenIds}
             lockedTokenIds={lockedTokenIds}
             draggable={draggable}
-            onPick={onPick}
+            onPick={pick}
           />
         </div>
 

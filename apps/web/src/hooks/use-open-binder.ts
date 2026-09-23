@@ -1,71 +1,39 @@
-import { binderQuery } from "@/lib/queries/binders";
 import type { BinderPreview } from "@/lib/universal/binders";
-import { useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "@tanstack/react-router";
+import { createContext, useContext } from "react";
 
 /**
- * The cover a binder was opened from, which the viewer's cover flies out of
- * and back into, and the preview it was drawn from.
+ * Where a binder was opened from: the control that gets focus back, the cover
+ * on screen the viewer's cover flies out of and back into, and the preview it
+ * was drawn from.
  */
 export type BinderViewerOrigin = {
   element: HTMLElement;
+  cover: HTMLElement;
   preview: BinderPreview;
 };
 
-/**
- * An open made from inside the app, which pushed a history entry, so closing
- * can go back rather than push another.
- */
-export type BinderViewerOpen = {
-  slug: string;
-  origin: BinderViewerOrigin | null;
+export type BinderViewerContextValue = {
+  open: (
+    preview: BinderPreview,
+    element?: HTMLElement,
+    cover?: HTMLElement,
+  ) => void;
+  prefetch: (preview: BinderPreview) => void;
 };
 
-let pendingOpen: BinderViewerOpen | null = null;
+export const BinderViewerContext =
+  createContext<BinderViewerContextValue | null>(null);
 
 /**
- * Note that a binder is being opened from inside the app, for the viewer to
- * pick up as it mounts.
- */
-export function markBinderOpen(open: BinderViewerOpen) {
-  pendingOpen = open;
-}
-
-/**
- * Claim the in-app open for this binder, if there was one. It's handed out
- * once, so a later open from a shared link or the forward button is treated
- * as a fresh load.
- */
-export function takeBinderOpen(slug: string) {
-  const open = pendingOpen?.slug === slug ? pendingOpen : null;
-  pendingOpen = null;
-  return open;
-}
-
-/**
- * Open a binder in the profile's viewer by adding it to the URL, so back
- * closes it. Passing the clicked cover element makes the cover fly out of it.
- * `prefetch` starts loading the pages early, on hover or focus.
+ * Open a binder in the profile's viewer. Passing the clicked element makes the
+ * cover fly out of it, or out of `cover` when the cover drawn inside it moves
+ * on its own, such as lifting on hover. `prefetch` starts loading the pages
+ * early, on hover or focus.
  */
 export function useOpenBinder() {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
-
-  function open(preview: BinderPreview, element?: HTMLElement) {
-    markBinderOpen({
-      slug: preview.slug,
-      origin: element === undefined ? null : { element, preview },
-    });
-    void navigate({
-      to: ".",
-      search: (prev) => ({ ...prev, binder: preview.slug }),
-      resetScroll: false,
-    });
+  const ctx = useContext(BinderViewerContext);
+  if (!ctx) {
+    throw new Error("useOpenBinder must be used within BinderViewerProvider");
   }
-
-  function prefetch(preview: BinderPreview) {
-    void queryClient.prefetchQuery(binderQuery(preview.userId, preview.slug));
-  }
-
-  return { open, prefetch };
+  return ctx;
 }

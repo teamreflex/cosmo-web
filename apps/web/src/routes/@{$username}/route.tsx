@@ -1,4 +1,3 @@
-import BinderViewer from "@/components/binders/binder-viewer";
 import UserBalances, {
   ComoBalanceErrorFallback,
 } from "@/components/navbar/como-balances";
@@ -18,6 +17,7 @@ import { tokenBalancesQuery } from "@/lib/queries/como";
 import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
 import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { profileFrontendSchema } from "@/lib/universal/parsers";
+import { BinderViewerProvider } from "@/providers/binder-viewer-provider";
 import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
 import { Addresses, isEqual } from "@apollo/util";
@@ -58,81 +58,84 @@ function RouteComponent() {
     <UserStateProvider {...account}>
       <MetadataDialogProvider>
         <main className="relative flex flex-col">
-          {/* the accent glow is the header's own background so it also tints the translucent border, and follows the container so it stays under the identity block on wide screens */}
-          <div className="border-b border-border [background:radial-gradient(900px_280px_at_max(20%,calc(50%_-_460px))_0%,color-mix(in_oklch,var(--color-cosmo)_12.6%,transparent),transparent_60%)]">
-            <div className="container flex flex-col gap-4 pt-6 pb-3 md:flex-row md:items-center md:gap-6">
-              {/* avatar */}
-              <UserAvatar
-                variant="square"
-                className="size-16 md:size-22"
-                username={target.cosmo.username}
-              />
+          <BinderViewerProvider
+            userId={target.user?.id}
+            username={profileIdentifier(target.cosmo)}
+            isOwner={
+              target.user !== undefined && account?.user.id === target.user.id
+            }
+          >
+            {/* the accent glow is the header's own background so it also tints the translucent border, and follows the container so it stays under the identity block on wide screens */}
+            <div className="border-b border-border [background:radial-gradient(900px_280px_at_max(20%,calc(50%_-_460px))_0%,color-mix(in_oklch,var(--color-cosmo)_12.6%,transparent),transparent_60%)]">
+              <div className="container flex flex-col gap-4 pt-6 pb-3 md:flex-row md:items-center md:gap-6">
+                {/* avatar */}
+                <UserAvatar
+                  variant="square"
+                  className="size-16 md:size-22"
+                  username={target.cosmo.username}
+                />
 
-              {/* identity */}
-              <div className="flex min-w-0 flex-1 flex-col gap-3">
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                  <Link
-                    to="/@{$username}"
-                    params={{ username: profileIdentifier(target.cosmo) }}
-                    className="font-cosmo text-2xl leading-none font-black uppercase underline decoration-transparent underline-offset-4 transition-colors hover:decoration-cosmo md:text-3xl"
-                  >
-                    {target.cosmo.username}
-                  </Link>
-
-                  <div className="flex flex-row items-center gap-1.5">
-                    {target.verified && <CosmoVerifiedBadge />}
-                    {isEqual(target.cosmo.address, Addresses.SPIN) && (
-                      <ModhausBadge />
-                    )}
-                    {target.user?.showSocials === true &&
-                      target.user.social.discord !== undefined && (
-                        <DiscordBadge handle={target.user.social.discord} />
-                      )}
-                    {target.user?.showSocials === true &&
-                      target.user.social.twitter !== undefined && (
-                        <TwitterBadge handle={target.user.social.twitter} />
-                      )}
-                  </div>
-
-                  <div className="flex items-center gap-0.5">
-                    <CopyAddressButton address={target.cosmo.address} />
-                    {/* content gets portaled in */}
-                    <div className="flex items-center empty:hidden" id="help" />
-                  </div>
-                </div>
-
-                <div className="flex h-10 items-stretch divide-x divide-border [&>*:has(+:empty:last-child)]:border-e-0">
-                  <ErrorBoundary fallback={<ComoBalanceErrorFallback />}>
-                    <Suspense
-                      fallback={
-                        <div className="flex items-center pr-4 first:pl-0 last:pr-0">
-                          <Skeleton className="h-10 w-24" />
-                        </div>
-                      }
+                {/* identity */}
+                <div className="flex min-w-0 flex-1 flex-col gap-3">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <Link
+                      to="/@{$username}"
+                      params={{ username: profileIdentifier(target.cosmo) }}
+                      className="font-cosmo text-2xl leading-none font-black uppercase underline decoration-transparent underline-offset-4 transition-colors hover:decoration-cosmo md:text-3xl"
                     >
-                      <UserBalances address={target.cosmo.address} />
-                    </Suspense>
-                  </ErrorBoundary>
-                  <div
-                    id="profile-total-stat"
-                    className="flex min-w-0 flex-col gap-0.5 pl-4 first:pl-0 empty:hidden"
-                  />
+                      {target.cosmo.username}
+                    </Link>
+
+                    <div className="flex flex-row items-center gap-1.5">
+                      {target.verified && <CosmoVerifiedBadge />}
+                      {isEqual(target.cosmo.address, Addresses.SPIN) && (
+                        <ModhausBadge />
+                      )}
+                      {target.user?.showSocials === true &&
+                        target.user.social.discord !== undefined && (
+                          <DiscordBadge handle={target.user.social.discord} />
+                        )}
+                      {target.user?.showSocials === true &&
+                        target.user.social.twitter !== undefined && (
+                          <TwitterBadge handle={target.user.social.twitter} />
+                        )}
+                    </div>
+
+                    <div className="flex items-center gap-0.5">
+                      <CopyAddressButton address={target.cosmo.address} />
+                      {/* content gets portaled in */}
+                      <div
+                        className="flex items-center empty:hidden"
+                        id="help"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex h-10 items-stretch divide-x divide-border [&>*:has(+:empty:last-child)]:border-e-0">
+                    <ErrorBoundary fallback={<ComoBalanceErrorFallback />}>
+                      <Suspense
+                        fallback={
+                          <div className="flex items-center pr-4 first:pl-0 last:pr-0">
+                            <Skeleton className="h-10 w-24" />
+                          </div>
+                        }
+                      >
+                        <UserBalances address={target.cosmo.address} />
+                      </Suspense>
+                    </ErrorBoundary>
+                    <div
+                      id="profile-total-stat"
+                      className="flex min-w-0 flex-col gap-0.5 pl-4 first:pl-0 empty:hidden"
+                    />
+                  </div>
                 </div>
               </div>
+
+              <ProfileTabs isAuthenticated={isAuthenticated} />
             </div>
 
-            <ProfileTabs isAuthenticated={isAuthenticated} />
-          </div>
-
-          <Outlet />
-
-          {target.user && (
-            <BinderViewer
-              userId={target.user.id}
-              username={profileIdentifier(target.cosmo)}
-              isOwner={account?.user.id === target.user.id}
-            />
-          )}
+            <Outlet />
+          </BinderViewerProvider>
         </main>
       </MetadataDialogProvider>
     </UserStateProvider>

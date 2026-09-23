@@ -156,6 +156,7 @@ function ViewerPocket({ slot, objekt, priority, tabIndex }: ViewerPocketProps) {
 
   return (
     <div className="@container">
+      {/* a layer of its own from the start, so the hover lift doesn't make the page re-raster and re-decode its full-size images */}
       <button
         type="button"
         tabIndex={tabIndex}
@@ -164,7 +165,7 @@ function ViewerPocket({ slot, objekt, priority, tabIndex }: ViewerPocketProps) {
           objekt: pocketObjektName(objekt),
         })}
         onClick={handleClick}
-        className="block w-full rounded-photocard transition-transform duration-200 ease-out outline-none hover:-translate-y-0.5 focus-visible:shadow-[0_0_0_2px_var(--color-foreground)]"
+        className="block w-full rounded-photocard transition-transform duration-200 ease-out will-change-transform outline-none hover:-translate-y-0.5 focus-visible:shadow-[0_0_0_2px_var(--color-foreground)]"
       >
         <PocketSleeve objekt={objekt} priority={priority} />
       </button>
@@ -265,20 +266,26 @@ type LeafProps = {
  * The binder's front cover as a leaf that swings open on its spine: the front
  * face is the cover, and the back face is the left page, so the leaf lands
  * exactly on it. It stays hidden until an animation places and shows it.
+ *
+ * Once open, it can rest where it landed at an opacity too low to change a
+ * pixel. It's still drawn, so its copy of the page stays rasterised with the
+ * images uploaded, and closing swings it shut on the next frame instead of
+ * waiting ~200 ms for the full-size images to upload again.
  */
 export function ViewerLeaf({ flyRef, leafRef, cover, back }: LeafProps) {
   return (
     <div
       ref={flyRef}
       aria-hidden
-      className="pointer-events-none absolute z-20 origin-top-left perspective-[2000px] not-data-flying:hidden"
+      className="pointer-events-none absolute z-20 origin-top-left perspective-[2000px] not-data-leaf:hidden data-[leaf=resting]:opacity-[0.001]"
     >
       <div ref={leafRef} className="absolute inset-0 origin-left transform-3d">
         <div className="absolute inset-0 backface-hidden">
           <BinderCover binder={cover} fill className="size-full" />
         </div>
+        {/* a pixel behind the cover rather than a hidden back face, so it's painted before the swing turns it over */}
         {back !== undefined && (
-          <div className="absolute inset-0 rotate-y-180 backface-hidden">
+          <div className="absolute inset-0 -translate-z-px rotate-y-180">
             {back}
           </div>
         )}
