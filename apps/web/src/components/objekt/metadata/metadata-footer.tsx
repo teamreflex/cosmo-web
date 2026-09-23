@@ -6,7 +6,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useUserState } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
-import { getObjektImageUrls } from "@/lib/client/objekt-util";
 import { env } from "@/lib/env/client";
 import { objektMetadataQuery } from "@/lib/queries/objekt-queries";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
@@ -92,7 +91,6 @@ function FooterInner(props: Props) {
     toast.success(m.toast_objekt_url_copied());
   }
 
-  const { front, back } = getObjektImageUrls(props.objekt);
   const event = data.data?.event ?? null;
 
   return (
@@ -119,7 +117,7 @@ function FooterInner(props: Props) {
           <DropdownMenuContent side="top" align="end" className="w-fit">
             <DropdownMenuItem asChild>
               <a
-                href={front.download}
+                href={props.objekt.frontImage}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -128,7 +126,11 @@ function FooterInner(props: Props) {
               </a>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>
-              <a href={back.download} target="_blank" rel="noopener noreferrer">
+              <a
+                href={props.objekt.backImage}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
                 <IconPhoto />
                 <span>{m.objekt_metadata_save_back_image()}</span>
               </a>

@@ -41,3 +41,32 @@ export function objektImagePrefix(ref: ObjektImageRef) {
 export function objektImageKey(ref: ObjektImageRef, name: ObjektImageName) {
   return `${objektImagePrefix(ref)}/${name}.webp`;
 }
+
+/**
+ * Public URL of a WebP rendition, served by the CDN in front of the bucket.
+ */
+export function objektImageUrl(
+  cdnUrl: string,
+  ref: ObjektImageRef,
+  name: ObjektImageName,
+) {
+  return `${cdnUrl}/${objektImageKey(ref, name)}`;
+}
+
+/**
+ * `srcset` offering resized renditions at their target widths. `grid` is
+ * declared at 1200w even when the source was narrower and never upscaled,
+ * which only nudges the browser towards it slightly early.
+ */
+export function objektImageSrcSet(
+  cdnUrl: string,
+  ref: ObjektImageRef,
+  sizes: readonly ObjektImageSize[],
+) {
+  return sizes
+    .map(
+      (size) =>
+        `${objektImageUrl(cdnUrl, ref, size)} ${OBJEKT_IMAGE_WIDTHS[size]}w`,
+    )
+    .join(", ");
+}

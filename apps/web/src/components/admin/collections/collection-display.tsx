@@ -1,5 +1,6 @@
 import { ObjektSidebar } from "@/components/objekt/common";
 import { m } from "@/i18n/messages";
+import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import type { UpdateCollectionInput } from "@/lib/universal/schema/collections";
 import type { Collection } from "@apollo/database/indexer/types";
@@ -51,7 +52,7 @@ export default function CollectionDisplay({ collection }: Props) {
             />
           ) : (
             <img
-              src={live.frontImage}
+              src={getObjektFrontImageUrl(live, "grid")}
               alt={live.collectionId}
               width={291}
               height={450}

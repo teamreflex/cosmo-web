@@ -1,7 +1,8 @@
 import { useMetadataDialog } from "@/hooks/use-metadata-dialog";
+import { useObjektImage } from "@/hooks/use-objekt-image";
 import { useObjektSelection } from "@/hooks/use-objekt-selection";
 import { m } from "@/i18n/messages";
-import { getObjektImageUrls } from "@/lib/client/objekt-util";
+import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import { objektMetadataQuery, objektQuery } from "@/lib/queries/objekt-queries";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
@@ -75,7 +76,7 @@ function FrontImage(props: FrontImageProps) {
   const queryClient = useQueryClient();
   const { open } = useMetadataDialog();
 
-  const { front } = getObjektImageUrls(props.collection);
+  const imageProps = useObjektImage(props.collection);
 
   /**
    * Mark already-decoded images as loaded on mount so cached re-mounts,
@@ -88,8 +89,9 @@ function FrontImage(props: FrontImageProps) {
   }, []);
 
   function prefetch() {
+    // warm the image the detail sheet shows
     const img = new Image();
-    img.src = front.download;
+    img.src = getObjektFrontImageUrl(props.collection, "grid");
   }
 
   function handleClick() {
@@ -121,7 +123,7 @@ function FrontImage(props: FrontImageProps) {
         "w-full transition-opacity",
         isLoaded === false && "opacity-0",
       )}
-      src={front.display}
+      {...imageProps}
       width={291}
       height={450}
       alt={props.collection.collectionId}

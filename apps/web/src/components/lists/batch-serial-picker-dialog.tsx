@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useBatchAddToList } from "@/hooks/use-add-to-list";
 import { m } from "@/i18n/messages";
-import { getObjektImageUrls, reasonLabel } from "@/lib/client/objekt-util";
+import { getObjektFrontImageUrl, reasonLabel } from "@/lib/client/objekt-util";
 import {
   $addObjektsToHaveList,
   $addObjektsToSaleList,
@@ -353,13 +353,11 @@ function CollectionSection({
   isEmpty,
   children,
 }: CollectionSectionProps) {
-  const { front } = getObjektImageUrls(collection);
-
   return (
     <div className="border-b border-border last:border-b-0">
       <div className="flex items-center gap-3 bg-muted/40 px-4 py-2 sm:px-5">
         <img
-          src={front.display}
+          src={getObjektFrontImageUrl(collection, "xs")}
           alt={collection.collectionId}
           className="h-8 w-auto shrink-0 rounded-xs"
           decoding="async"

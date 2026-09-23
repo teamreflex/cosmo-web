@@ -22,6 +22,8 @@ export function formatCollectionError(error: unknown): string | null {
       return m.admin_collection_error_invalid_class();
     case "metadata_fetch_failed":
       return m.admin_collection_error_metadata_failed();
+    case "image_recache_failed":
+      return m.admin_collection_error_image_recache_failed();
     default:
       error.message satisfies never;
       return null;

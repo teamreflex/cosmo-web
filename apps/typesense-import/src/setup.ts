@@ -54,7 +54,8 @@ export const setupTypesenseCollection = Effect.gen(function* () {
     // 260628 - need to recreate the schema if new fields don't exist
     const upToDate =
       existing.fields?.some((f) => f.name === "memberSortOrder") &&
-      existing.fields?.some((f) => f.name === "collectionNo" && f.sort);
+      existing.fields?.some((f) => f.name === "collectionNo" && f.sort) &&
+      existing.fields?.some((f) => f.name === "frontImageVersion");
 
     if (upToDate) {
       return void 0;
@@ -147,6 +148,18 @@ export const setupTypesenseCollection = Effect.gen(function* () {
           { name: "thumbnailImage", type: "string", index: false },
           { name: "frontImage", type: "string", index: false },
           { name: "backImage", type: "string", index: false },
+          {
+            name: "frontImageVersion",
+            type: "string",
+            index: false,
+            optional: true,
+          },
+          {
+            name: "backImageVersion",
+            type: "string",
+            index: false,
+            optional: true,
+          },
           { name: "backgroundColor", type: "string", index: false },
           { name: "textColor", type: "string", index: false },
           { name: "accentColor", type: "string", index: false },

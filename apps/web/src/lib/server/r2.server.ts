@@ -3,7 +3,7 @@ import { S3Client } from "bun";
 
 const MAX_FILE_SIZE = 1024 * 1024; // 1MB
 
-const r2 = new S3Client({
+export const r2 = new S3Client({
   endpoint: `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
   bucket: env.R2_BUCKET,
   accessKeyId: env.R2_ACCESS_KEY,

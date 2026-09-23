@@ -7,7 +7,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { selectionKey, useObjektSelection } from "@/hooks/use-objekt-selection";
 import { m } from "@/i18n/messages";
-import { getObjektImageUrls } from "@/lib/client/objekt-util";
+import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import { IconX } from "@tabler/icons-react";
 
 /**
@@ -29,7 +29,6 @@ export default function BatchSelectionPopover() {
         <ScrollArea className="h-56">
           <ul className="flex flex-col">
             {selected.map((s) => {
-              const { front } = getObjektImageUrls(s.collection);
               const key = selectionKey(s);
               return (
                 <li
@@ -37,7 +36,7 @@ export default function BatchSelectionPopover() {
                   className="flex items-center gap-3 border-b border-border px-3 py-2 last:border-b-0"
                 >
                   <img
-                    src={front.display}
+                    src={getObjektFrontImageUrl(s.collection, "xs")}
                     alt={s.collection.collectionId}
                     className="h-10 w-auto shrink-0 rounded-xs"
                     decoding="async"

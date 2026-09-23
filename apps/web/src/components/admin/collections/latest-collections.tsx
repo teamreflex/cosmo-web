@@ -5,12 +5,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
+import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import { latestCollectionsQuery } from "@/lib/queries/collections";
 import { cn } from "@/lib/utils";
 import type { Collection } from "@apollo/database/indexer/types";
 import { IconChevronLeft, IconChevronRight } from "@tabler/icons-react";
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
-import { startTransition, useEffect, useRef, useState } from "react";
+import { startTransition, useState } from "react";
 
 type Props = {
   selectedSlug: string;
@@ -136,9 +137,13 @@ function CollectionChip({
         isSelected && "border-cosmo ring-2 ring-cosmo/25",
       )}
     >
-      <ChipThumbnail
-        src={collection.thumbnailImage}
+      <img
+        src={getObjektFrontImageUrl(collection, "xs")}
         alt={collection.collectionId}
+        width={48}
+        height={72}
+        decoding="async"
+        className="h-full w-12 shrink-0 object-cover object-top"
       />
       <div
         className="relative flex min-w-0 flex-1 flex-col items-start justify-between px-2 py-1.5 dark:[&>*]:[text-shadow:_0_1px_2px_rgba(0,0,0,0.9)]"
@@ -156,63 +161,5 @@ function CollectionChip({
       </div>
       <div className="w-3 shrink-0" style={{ background: ribbonBackground }} />
     </button>
-  );
-}
-
-/**
- * Draws the card face into a chip-sized canvas once. Recent collections have
- * no real thumbnail (resources.cosmo.fans only serves the 2000px front image),
- * and an <img> that big at chip size makes Chrome re-decode ~23MB of pixels
- * per chip on every repaint, saturating the raster threads. Decoding once
- * into a 96x144 bitmap eliminates the churn.
- */
-function ChipThumbnail({ src, alt }: { src: string; alt: string }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    let cancelled = false;
-    const img = new Image();
-    img.src = src;
-    img
-      .decode()
-      .then(() => {
-        if (cancelled) return;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
-
-        // object-cover anchored to the top of the card face
-        const scale = Math.max(
-          canvas.width / img.naturalWidth,
-          canvas.height / img.naturalHeight,
-        );
-        ctx.drawImage(
-          img,
-          (canvas.width - img.naturalWidth * scale) / 2,
-          0,
-          img.naturalWidth * scale,
-          img.naturalHeight * scale,
-        );
-      })
-      .catch(() => {
-        // failed to load; leave the canvas blank
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [src]);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      width={96}
-      height={144}
-      role="img"
-      aria-label={alt}
-      className="h-full w-12 shrink-0"
-    />
   );
 }

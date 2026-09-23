@@ -1,5 +1,9 @@
 import { CARD_EDGE_COLOR, useCardFlip } from "@/hooks/use-card-flip";
 import { m } from "@/i18n/messages";
+import {
+  getObjektBackImageUrl,
+  getObjektFrontImageUrl,
+} from "@/lib/client/objekt-util";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { IconPhotoX } from "@tabler/icons-react";
 import { Fragment, useState, lazy, Suspense } from "react";
@@ -26,9 +30,10 @@ export default function FlippableObjekt({ children, collection }: Props) {
     useCardFlip();
 
   const hasBackImage = collection.backImage !== "";
+  const frontImage = getObjektFrontImageUrl(collection, "grid");
 
   const Image = (
-    <ObjektImage src={collection.frontImage} alt={collection.collectionId}>
+    <ObjektImage src={frontImage} alt={collection.collectionId}>
       {children}
     </ObjektImage>
   );
@@ -75,7 +80,7 @@ export default function FlippableObjekt({ children, collection }: Props) {
             <ErrorBoundary fallback={Image}>
               <Suspense fallback={Image}>
                 <ObjektVideo
-                  imageSrc={collection.frontImage}
+                  imageSrc={frontImage}
                   videoSrc={collection.frontMedia}
                   alt={collection.collectionId}
                 >
@@ -87,7 +92,7 @@ export default function FlippableObjekt({ children, collection }: Props) {
             <ErrorBoundary fallback={Image}>
               <Suspense fallback={Image}>
                 <ObjektVideo
-                  imageSrc={collection.frontImage}
+                  imageSrc={frontImage}
                   videoSrc={collection.frontMedia}
                   alt={collection.collectionId}
                   muted={false}
@@ -98,10 +103,7 @@ export default function FlippableObjekt({ children, collection }: Props) {
               </Suspense>
             </ErrorBoundary>
           ) : (
-            <ObjektImage
-              src={collection.frontImage}
-              alt={collection.collectionId}
-            >
+            <ObjektImage src={frontImage} alt={collection.collectionId}>
               {audioButton}
               {children}
             </ObjektImage>
@@ -116,7 +118,7 @@ export default function FlippableObjekt({ children, collection }: Props) {
           {hasBackImage ? (
             <img
               className="absolute"
-              src={collection.backImage}
+              src={getObjektBackImageUrl(collection)}
               alt={collection.collectionId}
             />
           ) : (
