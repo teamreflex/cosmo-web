@@ -20,10 +20,10 @@ export default function BatchSelectionPopover() {
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button type="button" variant="outline" size="sm">
-          {m.batch_show_selection()}
-        </Button>
+      <PopoverTrigger
+        render={<Button type="button" variant="outline" size="sm" />}
+      >
+        {m.batch_show_selection()}
       </PopoverTrigger>
       <PopoverContent align="center" className="w-72 p-0">
         <ScrollArea className="h-56">

@@ -1,13 +1,13 @@
 import {
   AlertDialog,
   AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { buttonVariants } from "@/components/ui/button";
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
 import { IconBrandGithub, IconCheck } from "@tabler/icons-react";
@@ -28,24 +28,24 @@ export default function AboutDialog({ open, onOpenChange }: Props) {
             {env.VITE_APP_NAME} <span className="text-xs">ver.</span>{" "}
             <span className="text-xs text-muted-foreground">{commitHash}</span>
           </AlertDialogTitle>
-          <AlertDialogDescription asChild>
-            <div className="flex flex-col gap-2">
-              <p>{m.logo_description({ appName: env.VITE_APP_NAME })}</p>
-              <p>{m.logo_source_code()}</p>
-            </div>
+          <AlertDialogDescription
+            render={<div className="flex flex-col gap-2" />}
+          >
+            <p>{m.logo_description({ appName: env.VITE_APP_NAME })}</p>
+            <p>{m.logo_source_code()}</p>
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter className="sm:justify-between">
-          <AlertDialogCancel asChild>
-            <a
-              href="https://github.com/teamreflex/cosmo-web"
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={m.aria_github()}
-            >
-              <IconBrandGithub />
-            </a>
-          </AlertDialogCancel>
+          <a
+            href="https://github.com/teamreflex/cosmo-web"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={m.aria_github()}
+            className={buttonVariants({ variant: "outline" })}
+            onClick={() => onOpenChange(false)}
+          >
+            <IconBrandGithub />
+          </a>
           <AlertDialogAction aria-label={m.aria_close_dialog()}>
             <IconCheck />
           </AlertDialogAction>

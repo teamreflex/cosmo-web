@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -56,11 +56,14 @@ export function DoneButton({
   slug: string;
 }) {
   return (
-    <Button variant="outline" size="sm" asChild>
-      <Link to="/@{$username}" params={{ username }} search={{ binder: slug }}>
-        {m.common_done()}
-      </Link>
-    </Button>
+    <Link
+      to="/@{$username}"
+      params={{ username }}
+      search={{ binder: slug }}
+      className={buttonVariants({ variant: "outline", size: "sm" })}
+    >
+      {m.common_done()}
+    </Link>
   );
 }
 
@@ -108,22 +111,20 @@ export function LayoutChip({ editor }: { editor: BinderEditor }) {
  */
 export function LayoutOptions({ editor }: { editor: BinderEditor }) {
   return (
-    <>
+    <DropdownMenuRadioGroup
+      value={editor.binder.layout}
+      onValueChange={(value) => {
+        const layout = binderLayouts.find((option) => option === value);
+        if (layout !== undefined) editor.setLayout(layout);
+      }}
+    >
       <DropdownMenuLabel>{m.binder_editor_layout()}</DropdownMenuLabel>
-      <DropdownMenuRadioGroup
-        value={editor.binder.layout}
-        onValueChange={(value) => {
-          const layout = binderLayouts.find((option) => option === value);
-          if (layout !== undefined) editor.setLayout(layout);
-        }}
-      >
-        {binderLayouts.map((layout) => (
-          <DropdownMenuRadioItem key={layout} value={layout}>
-            {binderLayoutLabel(layout)}
-          </DropdownMenuRadioItem>
-        ))}
-      </DropdownMenuRadioGroup>
-    </>
+      {binderLayouts.map((layout) => (
+        <DropdownMenuRadioItem key={layout} value={layout} closeOnClick>
+          {binderLayoutLabel(layout)}
+        </DropdownMenuRadioItem>
+      ))}
+    </DropdownMenuRadioGroup>
   );
 }
 

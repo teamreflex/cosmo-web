@@ -19,7 +19,6 @@ import type { ObjektList } from "@apollo/database/web/types";
 import { IconLoader2, IconTrash } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import type { MouseEvent } from "react";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 
@@ -73,25 +72,18 @@ export default function DeleteList({ objektList }: Props) {
     },
   });
 
-  function handleClick(event: MouseEvent<HTMLButtonElement>) {
-    event.preventDefault();
-    mutation.mutate({
-      data: {
-        id: objektList.id,
-      },
-    });
-  }
-
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button
-          variant="destructive"
-          size="icon-sm"
-          aria-label={m.aria_delete_list()}
-        >
-          <IconTrash />
-        </Button>
+      <AlertDialogTrigger
+        render={
+          <Button
+            variant="destructive"
+            size="icon-sm"
+            aria-label={m.aria_delete_list()}
+          />
+        }
+      >
+        <IconTrash />
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -104,7 +96,14 @@ export default function DeleteList({ objektList }: Props) {
           <AlertDialogCancel>{m.common_cancel()}</AlertDialogCancel>
           <AlertDialogAction
             type="button"
-            onClick={handleClick}
+            onClick={(event) => {
+              event.preventBaseUIHandler();
+              mutation.mutate({
+                data: {
+                  id: objektList.id,
+                },
+              });
+            }}
             disabled={mutation.isPending}
           >
             <span>{m.common_delete()}</span>

@@ -41,16 +41,14 @@ export default function AddMissingMenu(props: Props) {
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button variant="default" size="xs">
-          <IconPlaylistAdd className="size-3.5" />
-          {m.grid_add_missing()} ({totalNeeded})
-        </Button>
+      <DropdownMenuTrigger render={<Button variant="default" size="xs" />}>
+        <IconPlaylistAdd className="size-3.5" />
+        {m.grid_add_missing()} ({totalNeeded})
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-fit">
-        <DropdownMenuLabel>{props.label}</DropdownMenuLabel>
-        <DropdownMenuSeparator />
         <DropdownMenuGroup>
+          <DropdownMenuLabel>{props.label}</DropdownMenuLabel>
+          <DropdownMenuSeparator />
           {wantLists.length === 0 && (
             <DropdownMenuItem className="group truncate text-sm">
               {m.list_zero_lists_available()}

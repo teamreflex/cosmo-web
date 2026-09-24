@@ -37,17 +37,19 @@ export default function SignIn() {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger asChild>
-        <Button
-          onClick={() => setOpen(true)}
-          variant="ghost"
-          size="icon"
-          className="md:w-auto md:px-3"
-          aria-label={m.auth_sign_in()}
-        >
-          <IconLogin className="size-6 md:hidden" />
-          <span className="hidden md:inline">{m.auth_sign_in()}</span>
-        </Button>
+      <DialogTrigger
+        render={
+          <Button
+            onClick={() => setOpen(true)}
+            variant="ghost"
+            size="icon"
+            className="md:w-auto md:px-3"
+            aria-label={m.auth_sign_in()}
+          />
+        }
+      >
+        <IconLogin className="size-6 md:hidden" />
+        <span className="hidden md:inline">{m.auth_sign_in()}</span>
       </DialogTrigger>
       <DialogContent className="w-full">
         <DialogHeader>

@@ -46,6 +46,22 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
   });
 
   const locale = getLocale();
+  const languageItems = [
+    { value: "en", label: m.settings_language_english() },
+    { value: "ko", label: m.settings_language_korean() },
+    { value: "ja", label: m.settings_language_japanese() },
+    { value: "fr", label: m.settings_language_french() },
+  ] satisfies { value: typeof locale; label: string }[];
+
+  const themeItems = [
+    { value: "dark", label: m.settings_theme_dark() },
+    { value: "light", label: m.settings_theme_light() },
+  ] satisfies { value: Theme; label: string }[];
+
+  const columnItems = ["4", "5", "6", "7", "8"].map((count) => ({
+    value: count,
+    label: m.settings_columns_count({ count }),
+  }));
 
   const form = useForm<z.infer<typeof settingsSchema>>({
     resolver: standardSchemaResolver(settingsSchema),
@@ -74,11 +90,6 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
     );
   }
 
-  function handleLanguageChange(value: string) {
-    // SAFETY: select options only contain valid locales
-    void setLocale(value as typeof locale);
-  }
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl">
@@ -103,25 +114,22 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
 
             <Select
               name="language"
+              items={languageItems}
               defaultValue={locale}
-              onValueChange={handleLanguageChange}
+              // re-picking the current language would reload the page for nothing
+              onValueChange={(value) => {
+                if (value !== null && value !== locale) void setLocale(value);
+              }}
             >
               <SelectTrigger className="w-36">
                 <SelectValue placeholder={m.settings_language()} />
               </SelectTrigger>
               <SelectContent align="end">
-                <SelectItem value="en">
-                  {m.settings_language_english()}
-                </SelectItem>
-                <SelectItem value="ko">
-                  {m.settings_language_korean()}
-                </SelectItem>
-                <SelectItem value="ja">
-                  {m.settings_language_japanese()}
-                </SelectItem>
-                <SelectItem value="fr">
-                  {m.settings_language_french()}
-                </SelectItem>
+                {languageItems.map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </Field>
@@ -137,18 +145,21 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
 
             <Select
               name="theme"
+              items={themeItems}
               defaultValue={theme}
-              // SAFETY: select options only contain Theme values
-              onValueChange={(value) => setTheme(value as Theme)}
+              onValueChange={(value) => {
+                if (value !== null) setTheme(value);
+              }}
             >
               <SelectTrigger className="w-36">
                 <SelectValue placeholder={m.settings_theme()} />
               </SelectTrigger>
               <SelectContent align="end">
-                <SelectItem value="dark">{m.settings_theme_dark()}</SelectItem>
-                <SelectItem value="light">
-                  {m.settings_theme_light()}
-                </SelectItem>
+                {themeItems.map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </Field>
@@ -168,28 +179,21 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
 
                 <Select
                   name="gridColumns"
-                  onValueChange={field.onChange}
+                  items={columnItems}
+                  onValueChange={(value) => {
+                    if (value !== null) field.onChange(value);
+                  }}
                   defaultValue={field.value.toString()}
                 >
                   <SelectTrigger className="w-36">
                     <SelectValue placeholder={m.settings_objekt_columns()} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="4">
-                      {m.settings_columns_count({ count: "4" })}
-                    </SelectItem>
-                    <SelectItem value="5">
-                      {m.settings_columns_count({ count: "5" })}
-                    </SelectItem>
-                    <SelectItem value="6">
-                      {m.settings_columns_count({ count: "6" })}
-                    </SelectItem>
-                    <SelectItem value="7">
-                      {m.settings_columns_count({ count: "7" })}
-                    </SelectItem>
-                    <SelectItem value="8">
-                      {m.settings_columns_count({ count: "8" })}
-                    </SelectItem>
+                    {columnItems.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FieldError errors={[fieldState.error]} />

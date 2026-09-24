@@ -154,12 +154,10 @@ function LiveTypeTrigger({
   }
   return (
     <Tooltip>
-      <TooltipTrigger asChild>
-        <span className="contents">
-          <TabsTrigger value={value} disabled>
-            {children}
-          </TabsTrigger>
-        </span>
+      <TooltipTrigger render={<span className="contents" />}>
+        <TabsTrigger value={value} disabled>
+          {children}
+        </TabsTrigger>
       </TooltipTrigger>
       <TooltipContent>{m.list_link_cosmo_required()}</TooltipContent>
     </Tooltip>
@@ -458,6 +456,10 @@ function DiscoverableField() {
 
 function PairField({ availableLists }: { availableLists: ObjektList[] }) {
   const form = useFormContext<{ pairListId: string | null }>();
+  const items = [
+    { value: "__unpaired__", label: m.list_pair_unpair() },
+    ...availableLists.map((l) => ({ value: l.id, label: l.name })),
+  ];
   return (
     <Controller
       control={form.control}
@@ -466,6 +468,7 @@ function PairField({ availableLists }: { availableLists: ObjektList[] }) {
         <Field>
           <FieldLabel>{m.list_pair_with()}</FieldLabel>
           <Select
+            items={items}
             value={field.value ?? "__unpaired__"}
             onValueChange={(value) =>
               field.onChange(value === "__unpaired__" ? null : value)
@@ -475,12 +478,9 @@ function PairField({ availableLists }: { availableLists: ObjektList[] }) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="__unpaired__">
-                {m.list_pair_unpair()}
-              </SelectItem>
-              {availableLists.map((l) => (
-                <SelectItem key={l.id} value={l.id}>
-                  {l.name}
+              {items.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
                 </SelectItem>
               ))}
             </SelectContent>

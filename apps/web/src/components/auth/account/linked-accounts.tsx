@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { LinkedAccount, Provider } from "@/hooks/use-account";
@@ -79,28 +78,28 @@ function LinkedAccountItem(props: LinkedAccountItemProps) {
           {props.account.accountId}
         </span>
       </div>
-      <TooltipProvider delayDuration={0}>
-        <Tooltip>
-          <TooltipTrigger asChild>
+      <Tooltip>
+        <TooltipTrigger
+          render={
             <Button
               variant="destructive"
               size="icon"
               onClick={() => mutate()}
               disabled={status === "pending" || props.disabled}
               aria-label={m.aria_unlink_account()}
-            >
-              {status === "pending" ? (
-                <IconLoader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <IconUnlink />
-              )}
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            {m.linked_accounts_unlink({ provider: provider.label })}
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+            />
+          }
+        >
+          {status === "pending" ? (
+            <IconLoader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <IconUnlink />
+          )}
+        </TooltipTrigger>
+        <TooltipContent>
+          {m.linked_accounts_unlink({ provider: provider.label })}
+        </TooltipContent>
+      </Tooltip>
     </div>
   );
 }

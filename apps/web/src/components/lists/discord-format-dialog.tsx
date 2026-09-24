@@ -139,15 +139,25 @@ type SelectListProps = {
 };
 
 function SelectList({ objektLists, value, onSelect }: SelectListProps) {
+  const items = objektLists.map((list) => ({
+    value: list.id,
+    label: list.name,
+  }));
   return (
-    <Select value={value} onValueChange={onSelect}>
+    <Select
+      items={items}
+      value={value ?? null}
+      onValueChange={(next) => {
+        if (next !== null) onSelect(next);
+      }}
+    >
       <SelectTrigger className="w-full">
         <SelectValue placeholder={m.objekt_list()} />
       </SelectTrigger>
       <SelectContent>
-        {objektLists.map((list) => (
-          <SelectItem key={list.id} value={list.id}>
-            {list.name}
+        {items.map((item) => (
+          <SelectItem key={item.value} value={item.value}>
+            {item.label}
           </SelectItem>
         ))}
       </SelectContent>

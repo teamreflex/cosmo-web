@@ -119,11 +119,9 @@ export default function MemberSelection({
           </Button>
 
           <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
-            <PopoverTrigger asChild>
-              <Button size="xs">
-                <IconPlus className="size-3" />
-                <span>Custom</span>
-              </Button>
+            <PopoverTrigger render={<Button size="xs" />}>
+              <IconPlus className="size-3" />
+              <span>Custom</span>
             </PopoverTrigger>
             <PopoverContent className="w-48 p-2" align="end">
               <Input
@@ -148,15 +146,15 @@ export default function MemberSelection({
               value.includes(member) &&
                 "border-foreground bg-foreground text-background",
             )}
-            asChild
+            render={
+              <button
+                type="button"
+                onClick={() => toggleMember(member)}
+                aria-pressed={value.includes(member)}
+              />
+            }
           >
-            <button
-              type="button"
-              onClick={() => toggleMember(member)}
-              aria-pressed={value.includes(member)}
-            >
-              {member}
-            </button>
+            {member}
           </Badge>
         ))}
         {customMembers.map((member) => (

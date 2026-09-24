@@ -10,7 +10,7 @@
 
 ### UI Library
 
-The project uses [shadcn/ui](https://ui.shadcn.com/) components built on [Radix UI](https://www.radix-ui.com/) primitives with [Tabler Icons](https://tabler.io/icons).
+The project uses [shadcn/ui](https://ui.shadcn.com/) components (the `base-vega` style) built on [Base UI](https://base-ui.com/) primitives with [Tabler Icons](https://tabler.io/icons). Compose a part with another element through its `render` prop (`<DialogTrigger render={<Button variant="outline" />}>`), not `asChild`; a `Button` rendering a link also needs `nativeButton={false}`.
 
 If you need a component that doesn't exist in the codebase, you can likely add it from the shadcn library. Use the shadcn CLI or copy the component code from their documentation.
 
@@ -122,7 +122,7 @@ const variants = cva({
 ### Common Patterns
 
 - Combine classes with `cn()` utility from `lib/utils.ts`
-- Use data attributes for state: `data-[state=active]:bg-muted`
+- Use data attributes for state: `data-active:bg-muted`, `data-open:`, `data-checked:` (Base UI sets `data-open`/`data-closed`, `data-checked`, `data-active`, `data-popup-open` rather than Radix's `data-state`)
 - Photocard aspect ratio: `aspect-photocard`
 
 ## i18n

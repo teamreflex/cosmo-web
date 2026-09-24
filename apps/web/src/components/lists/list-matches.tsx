@@ -9,7 +9,6 @@ import { ErrorBoundary } from "react-error-boundary";
 import { Button } from "../ui/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogTitle,
@@ -21,7 +20,7 @@ import {
   DrawerDescription,
   DrawerTitle,
   DrawerTrigger,
-} from "../ui/drawer-radix";
+} from "../ui/drawer";
 import ListMatchesContent, {
   ListMatchesSkeleton,
 } from "./list-matches-content";
@@ -56,12 +55,10 @@ export default function ListMatches({ list }: Props) {
             )}
           />
 
-          <DialogClose asChild>
-            <Button variant="ghost" size="icon-sm">
-              <IconX />
-              <span className="sr-only">Close</span>
-            </Button>
-          </DialogClose>
+          <Button variant="ghost" size="icon-sm" onClick={() => setOpen(false)}>
+            <IconX />
+            <span className="sr-only">Close</span>
+          </Button>
         </div>
       </div>
       <div className="min-h-0 flex-1 overflow-auto p-4">
@@ -88,7 +85,7 @@ export default function ListMatches({ list }: Props) {
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger asChild>{trigger}</DialogTrigger>
+        <DialogTrigger render={trigger} />
         <DialogContent
           showCloseButton={false}
           className="grid h-[50dvh] w-[calc(100%-2rem)] grid-rows-[1fr] gap-0 overflow-hidden rounded-md p-0 sm:max-w-[min(900px,calc(100%-4rem))]"
@@ -107,7 +104,7 @@ export default function ListMatches({ list }: Props) {
 
   return (
     <Drawer open={open} onOpenChange={setOpen}>
-      <DrawerTrigger asChild>{trigger}</DrawerTrigger>
+      <DrawerTrigger render={trigger} />
       <DrawerContent className="h-[92dvh] gap-0 rounded-t-md p-0">
         <div className="sr-only">
           <DrawerTitle>{m.list_matches_title()}</DrawerTitle>

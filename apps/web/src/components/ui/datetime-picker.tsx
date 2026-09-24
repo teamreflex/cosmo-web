@@ -3,7 +3,6 @@ import { Calendar } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import {
   Popover,
-  PopoverAnchor,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
@@ -12,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { IconCalendar, IconClock, IconX } from "@tabler/icons-react";
 import { format, isValid, parse, setHours, setMinutes } from "date-fns";
 import { fromZonedTime, toZonedTime } from "date-fns-tz";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 type DateTimePickerProps = {
   value?: Date;
@@ -32,6 +31,7 @@ export function DateTimePicker({
   side,
 }: DateTimePickerProps) {
   const [open, setOpen] = useState(false);
+  const anchorRef = useRef<HTMLDivElement>(null);
 
   // Convert UTC value to zoned time for display/editing
   const zonedValue = value ? toZonedTime(value, timezone) : undefined;
@@ -88,29 +88,29 @@ export function DateTimePicker({
   return (
     <div className={cn("flex items-center gap-2", className)}>
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverAnchor asChild>
-          <div className="relative flex-2">
-            <Input
-              type="date"
-              value={dateValue}
-              onChange={handleDateInputChange}
-              disabled={disabled}
-              className="pr-9 [&::-webkit-calendar-picker-indicator]:hidden"
-            />
-            <PopoverTrigger asChild>
+        <div ref={anchorRef} className="relative flex-2">
+          <Input
+            type="date"
+            value={dateValue}
+            onChange={handleDateInputChange}
+            disabled={disabled}
+            className="pr-9 [&::-webkit-calendar-picker-indicator]:hidden"
+          />
+          <PopoverTrigger
+            render={
               <Button
                 variant="ghost"
                 size="icon-sm"
                 disabled={disabled}
                 className="absolute top-1/2 right-1 -translate-y-1/2"
                 aria-label={m.aria_open_calendar()}
-              >
-                <IconCalendar className="size-4" />
-              </Button>
-            </PopoverTrigger>
-          </div>
-        </PopoverAnchor>
-        <PopoverContent className="w-auto p-0" side={side}>
+              />
+            }
+          >
+            <IconCalendar className="size-4" />
+          </PopoverTrigger>
+        </div>
+        <PopoverContent anchor={anchorRef} className="w-auto p-0" side={side}>
           <Calendar
             mode="single"
             selected={zonedValue}

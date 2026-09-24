@@ -25,7 +25,7 @@ export default function Profile() {
     accounts.findIndex((account) => account.providerId === "credential") !== -1;
 
   return (
-    <Accordion type="single" collapsible>
+    <Accordion>
       {/* username */}
       <AccordionItem value="username">
         <AccordionTrigger>{m.common_username()}</AccordionTrigger>

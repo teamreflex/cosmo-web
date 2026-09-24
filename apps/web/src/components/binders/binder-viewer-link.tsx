@@ -47,10 +47,7 @@ export default function BinderViewerLink({
       onClick={handleClick}
       onMouseEnter={() => prefetch(binder)}
       onFocus={() => prefetch(binder)}
-      className={cn(
-        "block rounded-photocard outline-none focus-visible:ring-2 focus-visible:ring-cosmo-text focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-        className,
-      )}
+      className={cn("block rounded-photocard outline-none", className)}
     >
       {children}
     </Link>

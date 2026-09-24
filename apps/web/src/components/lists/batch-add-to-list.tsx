@@ -61,16 +61,16 @@ export default function BatchAddToList({ lists }: Props) {
   return (
     <>
       <DropdownMenu open={open} onOpenChange={setOpen}>
-        <DropdownMenuTrigger asChild>
-          <Button type="button" variant="cosmo" size="sm">
-            <IconPlaylistAdd />
-            <span>{m.batch_add_to_list()}</span>
-          </Button>
+        <DropdownMenuTrigger
+          render={<Button type="button" variant="cosmo" size="sm" />}
+        >
+          <IconPlaylistAdd />
+          <span>{m.batch_add_to_list()}</span>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="center" className="w-fit">
-          <DropdownMenuLabel>{m.batch_add_to_list()}</DropdownMenuLabel>
-          <DropdownMenuSeparator />
           <DropdownMenuGroup>
+            <DropdownMenuLabel>{m.batch_add_to_list()}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
             {filtered.length === 0 && (
               <DropdownMenuItem className="group truncate text-sm">
                 {m.list_zero_lists_available()}
