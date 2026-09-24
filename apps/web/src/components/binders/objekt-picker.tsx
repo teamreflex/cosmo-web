@@ -8,7 +8,7 @@ import type { NeighbourSuggestion } from "@/lib/universal/binders";
 import { getSeasonColor } from "@/lib/universal/seasons";
 import { cn } from "@/lib/utils";
 import { validArtists } from "@apollo/cosmo/types/common";
-import type { ValidArtist } from "@apollo/cosmo/types/common";
+import type { ValidArtist, ValidSort } from "@apollo/cosmo/types/common";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import {
   IconAdjustmentsHorizontal,
@@ -16,14 +16,21 @@ import {
   IconRefresh,
   IconX,
 } from "@tabler/icons-react";
-import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
-import type {
-  InfiniteData,
-  UseInfiniteQueryResult,
+import {
+  QueryErrorResetBoundary,
+  useSuspenseInfiniteQuery,
 } from "@tanstack/react-query";
 import { RadioGroup } from "radix-ui";
-import { useId, useReducer, useRef, useState } from "react";
-import type { RefObject } from "react";
+import {
+  Suspense,
+  useDeferredValue,
+  useId,
+  useReducer,
+  useRef,
+  useState,
+} from "react";
+import type { ReactNode, RefObject } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import { useEventCallback } from "usehooks-ts";
 import PickerFilterPanel from "./picker-filter-panel";
 import type {
@@ -75,48 +82,18 @@ export default function ObjektPicker({
   onPick,
   className,
 }: Props) {
-  const { selectedIds } = useArtists();
   const [filters, dispatch] = useReducer(
     pickerFiltersReducer,
     initialPickerFilters,
   );
+  // results follow a render behind, so the last ones stay up while the next load
+  const loadedFilters = useDeferredValue(filters);
   const [panelOpen, setPanelOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const filtersButtonRef = useRef<HTMLButtonElement>(null);
   const panelId = useId();
   // stable, so a new handler from the editor doesn't re-render every card
   const pick = useEventCallback(onPick);
-
-  const query = useInfiniteQuery({
-    ...userCollectionBlockchainQuery(
-      address,
-      toCollectionFilters(filters),
-      selectedIds,
-    ),
-    placeholderData: keepPreviousData,
-  });
-  // the unfiltered count is the picker's first page, so this reads the cache
-  const { data: collectionTotal } = useInfiniteQuery({
-    ...userCollectionBlockchainQuery(address, {}, selectedIds),
-    select: (data) => data.pages[0]?.total ?? 0,
-  });
-
-  const loaded = query.data?.pages.flatMap((page) => page.objekts) ?? [];
-  const objekts = hasClientFilters(filters)
-    ? loaded.filter((objekt) => {
-        const tokenId = Number(objekt.tokenId);
-        return (
-          !(filters.hideLocked && lockedTokenIds.has(tokenId)) &&
-          !(filters.notInBinder && inBinderTokenIds.has(tokenId))
-        );
-      })
-    : loaded;
-  /**
-   * Locked and placed objekts are filtered here rather than by the query, so
-   * the count drops as their pages load.
-   */
-  const shown =
-    (query.data?.pages[0]?.total ?? 0) - (loaded.length - objekts.length);
 
   const pendingSuggestion =
     suggestion !== null && !isSuggestionApplied(filters, suggestion)
@@ -166,59 +143,206 @@ export default function ObjektPicker({
         onChange={update}
       />
 
+      <QueryErrorResetBoundary>
+        {({ reset }) => (
+          <ErrorBoundary
+            onReset={reset}
+            fallbackRender={({ resetErrorBoundary }) => (
+              <PickerSection sort={filters.sort} scrollRef={scrollRef}>
+                <div className="flex flex-col items-center gap-2 py-12">
+                  <p className="flex items-center gap-2 text-sm font-semibold">
+                    <IconHeartBroken className="size-5" />
+                    {m.error_loading_objekts()}
+                  </p>
+                  <Button variant="outline" onClick={resetErrorBoundary}>
+                    <IconRefresh /> {m.common_retry()}
+                  </Button>
+                </div>
+              </PickerSection>
+            )}
+          >
+            <Suspense
+              fallback={
+                <PickerSection
+                  status={m.common_loading()}
+                  sort={filters.sort}
+                  scrollRef={scrollRef}
+                >
+                  <PickerGridSkeleton />
+                </PickerSection>
+              }
+            >
+              <PickerCollection
+                address={address}
+                filters={loadedFilters}
+                stale={loadedFilters !== filters}
+                scrollRef={scrollRef}
+                inBinderTokenIds={inBinderTokenIds}
+                lockedTokenIds={lockedTokenIds}
+                draggable={draggable}
+                onPick={pick}
+                panelOpen={panelOpen}
+                panel={(shown) => (
+                  <PickerFilterPanel
+                    id={panelId}
+                    open={panelOpen}
+                    filters={filters}
+                    suggestion={pendingSuggestion}
+                    shown={shown}
+                    onChange={update}
+                    onClose={() => {
+                      setPanelOpen(false);
+                      // the panel goes inert, so focus would otherwise fall to the page
+                      filtersButtonRef.current?.focus();
+                    }}
+                  />
+                )}
+              />
+            </Suspense>
+          </ErrorBoundary>
+        )}
+      </QueryErrorResetBoundary>
+    </div>
+  );
+}
+
+type PickerSectionProps = {
+  /** the count line, when there is one */
+  status?: string;
+  sort: ValidSort;
+  scrollRef: RefObject<HTMLDivElement | null>;
+  /** the filter panel, over the results */
+  panel?: ReactNode;
+  /** the filter panel is open, so the results can't be reached */
+  inert?: boolean;
+  children: ReactNode;
+};
+
+/**
+ * The count and sort line over the scrolling results, which the filter panel
+ * slides over.
+ */
+function PickerSection({
+  status,
+  sort,
+  scrollRef,
+  panel,
+  inert = false,
+  children,
+}: PickerSectionProps) {
+  return (
+    <>
       <div className="flex items-center gap-2 px-3 pb-2 font-mono text-[11px] text-muted-foreground">
-        <span>
-          {query.data === undefined
-            ? m.common_loading()
-            : m.binder_picker_count({
-                shown,
-                total: collectionTotal ?? shown,
-              })}
-        </span>
+        <span>{status}</span>
         <span className="ml-auto">
-          {m.binder_picker_sort({
-            sort: sortLabel(filters.sort).toLowerCase(),
-          })}
+          {m.binder_picker_sort({ sort: sortLabel(sort).toLowerCase() })}
         </span>
       </div>
 
       <div className="relative min-h-0 flex-1 overflow-hidden border-t border-border">
         <div
           ref={scrollRef}
-          inert={panelOpen}
+          inert={inert}
           className="absolute inset-0 panel-scrollbar overflow-y-auto overscroll-contain px-3 pt-2.5 pb-3.5"
         >
-          <PickerResults
-            query={query}
+          {children}
+        </div>
+        {panel}
+      </div>
+    </>
+  );
+}
+
+type PickerCollectionProps = {
+  address: string;
+  /** the filters the results are loaded for */
+  filters: PickerFilters;
+  /** newer filters are loading, so these results are on their way out */
+  stale: boolean;
+  scrollRef: RefObject<HTMLDivElement | null>;
+  inBinderTokenIds: ReadonlySet<number>;
+  lockedTokenIds: ReadonlySet<number>;
+  draggable: boolean;
+  onPick: (objekt: CosmoObjekt) => void;
+  panelOpen: boolean;
+  /** the filter panel, given how many objekts the results hold */
+  panel: (shown: number) => ReactNode;
+};
+
+/**
+ * The owner's collection under the loaded filters: the count, then an empty
+ * state or the grid with its next-page trigger. Results stay up, faded, while
+ * newer filters load.
+ */
+function PickerCollection({
+  address,
+  filters,
+  stale,
+  scrollRef,
+  inBinderTokenIds,
+  lockedTokenIds,
+  panelOpen,
+  panel,
+  ...grid
+}: PickerCollectionProps) {
+  const { selectedIds } = useArtists();
+  const query = useSuspenseInfiniteQuery(
+    userCollectionBlockchainQuery(
+      address,
+      toCollectionFilters(filters),
+      selectedIds,
+    ),
+  );
+
+  const loaded = query.data.pages.flatMap((page) => page.objekts);
+  const objekts = hasClientFilters(filters)
+    ? loaded.filter((objekt) => {
+        const tokenId = Number(objekt.tokenId);
+        return (
+          !(filters.hideLocked && lockedTokenIds.has(tokenId)) &&
+          !(filters.notInBinder && inBinderTokenIds.has(tokenId))
+        );
+      })
+    : loaded;
+  /**
+   * Locked and placed objekts are filtered here rather than by the query, so
+   * the count drops as their pages load.
+   */
+  const shown =
+    (query.data.pages[0]?.total ?? 0) - (loaded.length - objekts.length);
+
+  return (
+    <PickerSection
+      status={m.binder_picker_count({ count: shown })}
+      sort={filters.sort}
+      scrollRef={scrollRef}
+      panel={panel(shown)}
+      inert={panelOpen}
+    >
+      {objekts.length === 0 && !query.hasNextPage ? (
+        <p className="px-3 py-10 text-center text-sm text-muted-foreground">
+          {activeFilterCount(filters) > 0 || filters.artist !== null
+            ? m.binder_picker_empty_filtered()
+            : m.binder_picker_empty()}
+        </p>
+      ) : (
+        <div className={cn("transition-opacity", stale && "opacity-60")}>
+          <PickerGrid
             objekts={objekts}
-            emptyMessage={
-              count > 0 || filters.artist !== null
-                ? m.binder_picker_empty_filtered()
-                : m.binder_picker_empty()
-            }
             scrollElement={scrollRef}
             inBinderTokenIds={inBinderTokenIds}
             lockedTokenIds={lockedTokenIds}
-            draggable={draggable}
-            onPick={pick}
+            {...grid}
+          />
+          <InfiniteQueryNext
+            status={query.status}
+            hasNextPage={query.hasNextPage}
+            isFetchingNextPage={query.isFetchingNextPage}
+            fetchNextPage={() => void query.fetchNextPage()}
           />
         </div>
-
-        <PickerFilterPanel
-          id={panelId}
-          open={panelOpen}
-          filters={filters}
-          suggestion={pendingSuggestion}
-          shown={shown}
-          onChange={update}
-          onClose={() => {
-            setPanelOpen(false);
-            // the panel goes inert, so focus would otherwise fall to the page
-            filtersButtonRef.current?.focus();
-          }}
-        />
-      </div>
-    </div>
+      )}
+    </PickerSection>
   );
 }
 
@@ -311,70 +435,6 @@ function ChipRow({ suggestion, chips, onChange }: ChipRowProps) {
           <IconX className="size-3 opacity-70" />
         </button>
       ))}
-    </div>
-  );
-}
-
-type PickerResultsProps = {
-  query: UseInfiniteQueryResult<InfiniteData<{ objekts: CosmoObjekt[] }>>;
-  objekts: CosmoObjekt[];
-  emptyMessage: string;
-  scrollElement: RefObject<HTMLDivElement | null>;
-  inBinderTokenIds: ReadonlySet<number>;
-  lockedTokenIds: ReadonlySet<number>;
-  draggable: boolean;
-  onPick: (objekt: CosmoObjekt) => void;
-};
-
-/**
- * The scrolling part of the picker: a skeleton, an error, an empty state or
- * the grid with its next-page trigger. Results from the previous filters stay
- * up, faded, while new ones load.
- */
-function PickerResults({
-  query,
-  objekts,
-  emptyMessage,
-  ...grid
-}: PickerResultsProps) {
-  if (query.status === "pending") return <PickerGridSkeleton />;
-
-  if (query.status === "error") {
-    return (
-      <div className="flex flex-col items-center gap-2 py-12">
-        <p className="flex items-center gap-2 text-sm font-semibold">
-          <IconHeartBroken className="size-5" />
-          {m.error_loading_objekts()}
-        </p>
-        <Button variant="outline" onClick={() => void query.refetch()}>
-          <IconRefresh /> {m.common_retry()}
-        </Button>
-      </div>
-    );
-  }
-
-  if (objekts.length === 0 && !query.hasNextPage) {
-    return (
-      <p className="px-3 py-10 text-center text-sm text-muted-foreground">
-        {emptyMessage}
-      </p>
-    );
-  }
-
-  return (
-    <div
-      className={cn(
-        "transition-opacity",
-        query.isPlaceholderData && "opacity-60",
-      )}
-    >
-      <PickerGrid objekts={objekts} {...grid} />
-      <InfiniteQueryNext
-        status={query.status}
-        hasNextPage={query.hasNextPage}
-        isFetchingNextPage={query.isFetchingNextPage}
-        fetchNextPage={() => void query.fetchNextPage()}
-      />
     </div>
   );
 }

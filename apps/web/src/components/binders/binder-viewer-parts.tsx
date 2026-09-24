@@ -1,5 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useBinderDetail } from "@/hooks/use-binder-detail";
+import type { BinderOptions } from "@/hooks/use-binder-detail";
 import { useMetadataDialog } from "@/hooks/use-metadata-dialog";
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
@@ -8,12 +10,12 @@ import {
   binderGrid,
   binderLayoutLabel,
   pocketObjektName,
+  pocketsByPage,
 } from "@/lib/universal/binders";
 import type {
   BinderDetail,
   BinderLayout,
   BinderPages,
-  BinderPocketEntry,
   BinderPreview,
 } from "@/lib/universal/binders";
 import { Objekt } from "@/lib/universal/objekt-conversion";
@@ -22,11 +24,19 @@ import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import { IconShare3 } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { Suspense, useDeferredValue } from "react";
 import type { ComponentProps, ReactNode, RefObject } from "react";
 import { toast } from "sonner";
 import { useCopyToClipboard } from "usehooks-ts";
 import BinderCover from "./binder-cover";
 import { BinderPage, PocketSleeve } from "./binder-page";
+
+type ViewerMetaProps = ComponentProps<"span"> & {
+  cover: BinderPreview;
+  binderOptions: BinderOptions;
+  /** layout and pages only, for a phone */
+  short?: boolean;
+};
 
 /**
  * The line under the name: layout, pages, objekts and when it last changed.
@@ -34,16 +44,43 @@ import { BinderPage, PocketSleeve } from "./binder-page";
  */
 export function ViewerMeta({
   cover,
-  binder,
+  binderOptions,
   short = false,
   className,
+  ...props
+}: ViewerMetaProps) {
+  return (
+    <span
+      {...props}
+      className={cn(
+        "truncate font-mono text-[10.5px] tracking-[0.12em] text-muted-foreground uppercase",
+        className,
+      )}
+    >
+      <Suspense fallback={metaLine(cover, null, short)}>
+        <LoadedMeta cover={cover} binderOptions={binderOptions} short={short} />
+      </Suspense>
+    </span>
+  );
+}
+
+function LoadedMeta({
+  cover,
+  binderOptions,
+  short,
 }: {
   cover: BinderPreview;
-  binder: BinderDetail | undefined;
-  /** layout and pages only, for a phone */
-  short?: boolean;
-  className?: string;
+  binderOptions: BinderOptions;
+  short: boolean;
 }) {
+  return metaLine(cover, useBinderDetail(binderOptions), short);
+}
+
+function metaLine(
+  cover: BinderPreview,
+  binder: BinderDetail | null,
+  short: boolean,
+) {
   const parts = [
     binderLayoutLabel(cover.layout),
     m.binder_page_count({ count: binder?.pageCount ?? cover.pageCount }),
@@ -54,7 +91,7 @@ export function ViewerMeta({
         count: binder?.entries.length ?? cover.entryCount,
       }),
     );
-    if (binder !== undefined) {
+    if (binder !== null) {
       parts.push(
         m.binder_viewer_updated({
           date: format(binder.updatedAt, "d MMM yy"),
@@ -62,23 +99,11 @@ export function ViewerMeta({
       );
     }
   }
-
-  return (
-    <span
-      className={cn(
-        "truncate font-mono text-[10.5px] tracking-[0.12em] text-muted-foreground uppercase",
-        className,
-      )}
-    >
-      {parts.join(" · ")}
-    </span>
-  );
+  return parts.join(" · ");
 }
 
-type ViewerPageProps = Omit<ComponentProps<"div">, "children"> & {
-  layout: BinderLayout;
-  /** the page's pockets, or undefined while the pages load */
-  pockets: Map<number, BinderPocketEntry> | undefined;
+type PocketsProps = {
+  binderOptions: BinderOptions;
   page: number;
   /** load images eagerly, for the pages on screen when the viewer opens */
   priority?: boolean;
@@ -86,53 +111,85 @@ type ViewerPageProps = Omit<ComponentProps<"div">, "children"> & {
   tabIndex?: number;
 };
 
+type ViewerPageProps = Omit<ComponentProps<"div">, "children"> &
+  PocketsProps & {
+    layout: BinderLayout;
+    /** skeleton pockets only, for a page too far from view to be swiped to next */
+    placeholder?: boolean;
+  };
+
 /**
- * One page of the viewer: skeleton pockets while it loads, then a button per
- * filled pocket that opens the objekt dialog, and empty sleeves.
+ * One page of the viewer: skeleton pockets while the binder loads, then a
+ * button per filled pocket that opens the objekt dialog, and empty sleeves.
+ * The page itself is drawn straight away, for the cover to land on, and its
+ * pockets a render later, so a viewer opening with the binder already loaded
+ * starts its animation as soon as one opening without it.
  */
 export function ViewerPage({
   layout,
-  pockets,
+  binderOptions,
   page,
-  priority = false,
+  priority,
   tabIndex,
+  placeholder = false,
   ...props
 }: ViewerPageProps) {
   const { pocketsPerPage } = binderGrid(layout);
+  const mounted = useDeferredValue(true, false);
+  const skeletons = Array.from({ length: pocketsPerPage }, (_, slot) => (
+    <Skeleton key={`${page}-${slot}`} className="aspect-photocard rounded-md" />
+  ));
 
   return (
     <BinderPage layout={layout} {...props}>
-      {Array.from({ length: pocketsPerPage }, (_, slot) => {
-        if (pockets === undefined) {
-          return (
-            <Skeleton
-              key={`${page}-${slot}`}
-              className="aspect-photocard rounded-md"
-            />
-          );
-        }
-
-        const entry = pockets.get(slot);
-        return entry === undefined ? (
-          <div
-            key={`${page}-${slot}`}
-            role="img"
-            aria-label={m.binder_editor_pocket_empty({ pocket: slot + 1 })}
-          >
-            <PocketSleeve objekt={undefined} />
-          </div>
-        ) : (
-          <ViewerPocket
-            key={`${page}-${slot}-${entry.objekt.tokenId}`}
-            slot={slot}
-            objekt={entry.objekt}
+      {mounted && !placeholder ? (
+        <Suspense fallback={skeletons}>
+          <PagePockets
+            binderOptions={binderOptions}
+            page={page}
+            pocketsPerPage={pocketsPerPage}
             priority={priority}
             tabIndex={tabIndex}
           />
-        );
-      })}
+        </Suspense>
+      ) : (
+        skeletons
+      )}
     </BinderPage>
   );
+}
+
+function PagePockets({
+  binderOptions,
+  page,
+  pocketsPerPage,
+  priority = false,
+  tabIndex,
+}: PocketsProps & { pocketsPerPage: number }) {
+  const pockets = pocketsByPage(useBinderDetail(binderOptions).entries).get(
+    page,
+  );
+
+  return Array.from({ length: pocketsPerPage }, (_, slot) => {
+    const entry = pockets?.get(slot);
+    return entry === undefined ? (
+      <div
+        key={`${page}-${slot}`}
+        role="img"
+        aria-label={m.binder_editor_pocket_empty({ pocket: slot + 1 })}
+      >
+        <PocketSleeve objekt={undefined} />
+      </div>
+    ) : (
+      <ViewerPocket
+        key={`${page}-${slot}-${entry.objekt.tokenId}`}
+        slot={slot}
+        objekt={entry.objekt}
+        priority={priority}
+        tabIndex={tabIndex}
+      />
+    );
+  });
 }
 
 type ViewerPocketProps = {
@@ -194,10 +251,9 @@ export function SpreadRings() {
   );
 }
 
-type PageRailProps = {
+type RailProps = {
   layout: BinderLayout;
   pageCount: number;
-  pages: BinderPages;
   /** pages in the current view */
   current: number[];
   onSelect: (page: number) => void;
@@ -206,16 +262,36 @@ type PageRailProps = {
 
 /**
  * Every page as a dot map with its filled pockets lit, to jump anywhere
- * without flipping. The pages in view are outlined.
+ * without flipping. The pages in view are outlined, and the pockets light up
+ * once the binder loads.
  */
 export function PageRail({
+  binderOptions,
+  ...rail
+}: RailProps & { binderOptions: BinderOptions }) {
+  return (
+    <Suspense fallback={<Rail {...rail} pages={new Map()} />}>
+      <LoadedRail binderOptions={binderOptions} {...rail} />
+    </Suspense>
+  );
+}
+
+function LoadedRail({
+  binderOptions,
+  ...rail
+}: RailProps & { binderOptions: BinderOptions }) {
+  const { entries } = useBinderDetail(binderOptions);
+  return <Rail {...rail} pages={pocketsByPage(entries)} />;
+}
+
+function Rail({
   layout,
   pageCount,
   pages,
   current,
   onSelect,
   className,
-}: PageRailProps) {
+}: RailProps & { pages: BinderPages }) {
   const { columns, pocketsPerPage } = binderGrid(layout);
 
   return (

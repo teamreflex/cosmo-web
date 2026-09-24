@@ -15,6 +15,7 @@ import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
 import { tokenBalancesQuery } from "@/lib/queries/como";
 import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
+import { pinsQuery } from "@/lib/queries/profile";
 import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { profileFrontendSchema } from "@/lib/universal/parsers";
 import { BinderViewerProvider } from "@/providers/binder-viewer-provider";
@@ -34,12 +35,18 @@ export const Route = createFileRoute("/@{$username}")({
   // built once here so the loader and every consumer share the same cache key
   context: ({ params }) => ({
     targetAccountOptions: targetAccountQuery(params.username),
+    pinsOptions: pinsQuery(params.username),
   }),
   loader: async ({ context }) => {
     const [account, target] = await Promise.all([
       context.queryClient.ensureQueryData(currentAccountQuery),
       context.queryClient.ensureQueryData(context.targetAccountOptions),
     ]);
+
+    // the owner's binder viewer reads the pins on every tab
+    if (target.user !== undefined && account?.user.id === target.user.id) {
+      void context.queryClient.prefetchQuery(context.pinsOptions);
+    }
 
     void context.queryClient.prefetchQuery(
       tokenBalancesQuery(target.cosmo.address),

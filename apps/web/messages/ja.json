@@ -363,15 +363,14 @@
   "binder_picker_count": [
     {
       "declarations": [
-        "input shown",
-        "input total",
-        "local totalPlural = total: plural"
+        "input count",
+        "local countPlural = count: plural"
       ],
       "selectors": [
-        "totalPlural"
+        "countPlural"
       ],
       "match": {
-        "totalPlural=other": "{total}個中{shown}個のオブジェクト"
+        "countPlural=other": "{count}個のオブジェクト"
       }
     }
   ],

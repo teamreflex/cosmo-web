@@ -2,20 +2,23 @@ import { usePinsCache } from "@/hooks/use-profile-pins";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { $pinBinder, $unpinBinder } from "@/lib/functions/binders";
-import { pinsQuery } from "@/lib/queries/profile";
 import { isBinderPin } from "@/lib/universal/binders";
 import type { BinderPreview } from "@/lib/universal/binders";
 import { track } from "@/lib/utils";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
+import { getRouteApi } from "@tanstack/react-router";
 import { toast } from "sonner";
 
+const route = getRouteApi("/@{$username}");
+
 /**
- * Whether a binder is pinned to the profile, read from the profile's pins.
- * Undefined until they load.
+ * Whether a binder is pinned to the profile, read from the profile's pins,
+ * which the profile loads up front for its owner.
  */
-export function usePinnedBinder(username: string, binderId: string) {
-  const { data } = useQuery({
-    ...pinsQuery(username),
+export function usePinnedBinder(binderId: string) {
+  const { pinsOptions } = route.useRouteContext();
+  const { data } = useSuspenseQuery({
+    ...pinsOptions,
     select: (pins) => pins.some(isBinderPin(binderId)),
   });
   return data;
