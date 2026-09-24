@@ -15,15 +15,17 @@ import { Button } from "../ui/button";
 export default function HelpDialog() {
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon-xs"
-          className="text-muted-foreground"
-          aria-label={m.common_help()}
-        >
-          <IconHelp className="size-4" />
-        </Button>
+      <AlertDialogTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            className="text-muted-foreground"
+            aria-label={m.common_help()}
+          />
+        }
+      >
+        <IconHelp className="size-4" />
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

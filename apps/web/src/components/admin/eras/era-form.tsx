@@ -39,6 +39,19 @@ export default function EraForm(props: Props) {
   });
 
   const hasAlbum = props.selectedAlbum || spotifyAlbumId;
+  const artistItems = artists.map((artist) => ({
+    value: artist.id,
+    label: (
+      <>
+        <img
+          src={artist.logoImageUrl}
+          alt={artist.title}
+          className="aspect-square size-4 rounded-full"
+        />
+        <span>{artist.title}</span>
+      </>
+    ),
+  }));
 
   return (
     <div className="flex flex-col gap-4">
@@ -78,23 +91,24 @@ export default function EraForm(props: Props) {
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
             <FieldLabel htmlFor="artist">{m.admin_era_artist()}</FieldLabel>
-            <Select value={field.value} onValueChange={field.onChange}>
+            <Select
+              items={artistItems}
+              value={field.value}
+              onValueChange={(value) => {
+                if (value !== null) field.onChange(value);
+              }}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={m.admin_era_artist_placeholder()} />
               </SelectTrigger>
               <SelectContent>
-                {artists.map((artist) => (
+                {artistItems.map((item) => (
                   <SelectItem
-                    key={artist.id}
-                    value={artist.id}
+                    key={item.value}
+                    value={item.value}
                     className="flex items-center gap-2"
                   >
-                    <img
-                      src={artist.logoImageUrl}
-                      alt={artist.title}
-                      className="aspect-square size-4 rounded-full"
-                    />
-                    <span>{artist.title}</span>
+                    {item.label}
                   </SelectItem>
                 ))}
               </SelectContent>

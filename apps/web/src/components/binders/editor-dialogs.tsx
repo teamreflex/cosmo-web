@@ -13,7 +13,6 @@ import { formatError } from "@/lib/client/errors";
 import { $deleteBinder } from "@/lib/functions/binders";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";
-import type { MouseEvent } from "react";
 import { toast } from "sonner";
 
 type DeleteProps = {
@@ -44,11 +43,6 @@ export function DeleteBinderDialog({
     onError: (error) => toast.error(formatError(error)),
   });
 
-  function handleDelete(event: MouseEvent<HTMLButtonElement>) {
-    event.preventDefault();
-    mutation.mutate();
-  }
-
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -65,7 +59,10 @@ export function DeleteBinderDialog({
           <AlertDialogAction
             type="button"
             variant="destructive"
-            onClick={handleDelete}
+            onClick={(event) => {
+              event.preventBaseUIHandler();
+              mutation.mutate();
+            }}
             disabled={mutation.isPending}
           >
             {m.common_delete()}

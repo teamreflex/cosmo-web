@@ -2,8 +2,9 @@ import { useArtists } from "@/hooks/use-artists";
 import { artistColors, cn } from "@/lib/utils";
 import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
-import { useState } from "react";
-import { Popover, PopoverAnchor, PopoverContent } from "../ui/popover";
+import type { Popover as PopoverPrimitive } from "@base-ui/react/popover";
+import { useRef, useState } from "react";
+import { Popover, PopoverContent } from "../ui/popover";
 
 type Props = {
   showArtists?: boolean;
@@ -28,16 +29,33 @@ export default function MemberFilter({
   const [openArtistId, setOpenArtistId] = useState<string | null>(null);
   const [lastOpenArtistId, setLastOpenArtistId] = useState<string | null>(null);
   const [lastCloseTime, setLastCloseTime] = useState<number>(0);
+  const anchorRef = useRef<HTMLDivElement>(null);
 
   // keep track of the last opened artist for exit animation
   const displayArtistId = openArtistId ?? lastOpenArtistId;
   const displayArtist = selected.find((a) => a.id === displayArtistId);
 
-  function handleOpenChange(open: boolean) {
-    if (!open) {
-      setOpenArtistId(null);
-      setLastCloseTime(Date.now());
+  function handleOpenChange(
+    open: boolean,
+    details: PopoverPrimitive.Root.ChangeEventDetails,
+  ) {
+    if (open) return;
+    /**
+     * A press on the open artist's own logo toggles it closed in handleOpen,
+     * so letting it close here as well would flicker it back open.
+     */
+    if (
+      details.reason === "outside-press" &&
+      details.event.target instanceof Element &&
+      details.event.target
+        .closest("[data-artist-trigger]")
+        ?.getAttribute("data-artist-id") === openArtistId
+    ) {
+      details.cancel();
+      return;
     }
+    setOpenArtistId(null);
+    setLastCloseTime(Date.now());
   }
 
   function handleOpen(artistId: string) {
@@ -82,14 +100,13 @@ export default function MemberFilter({
   return (
     <Popover open={openArtistId !== null} onOpenChange={handleOpenChange}>
       <div className="relative flex h-fit w-full items-center justify-center gap-2 py-1">
-        <PopoverAnchor asChild>
-          <div
-            className={cn(
-              "pointer-events-none absolute top-[44px] h-px w-px",
-              align === "center" ? "left-1/2 -translate-x-1/2" : "right-0",
-            )}
-          />
-        </PopoverAnchor>
+        <div
+          ref={anchorRef}
+          className={cn(
+            "pointer-events-none absolute top-[44px] h-px w-px",
+            align === "center" ? "left-1/2 -translate-x-1/2" : "right-0",
+          )}
+        />
 
         {selected
           .sort((a, b) => a.comoTokenId - b.comoTokenId)
@@ -107,9 +124,9 @@ export default function MemberFilter({
 
       {displayArtist && (
         <ArtistPopoverContent
+          anchor={anchorRef}
           artist={displayArtist}
           align={align}
-          openArtistId={openArtistId}
           activeArtist={activeArtist ?? null}
           activeMembers={activeMembers}
           multiple={multiple}
@@ -160,9 +177,9 @@ function ArtistTriggerButton(props: ArtistTriggerButtonProps) {
 }
 
 type ArtistPopoverContentProps = {
+  anchor: React.RefObject<HTMLDivElement | null>;
   artist: CosmoArtistWithMembersBFF;
   align: "center" | "end";
-  openArtistId: string | null;
   activeArtist: string | null;
   activeMembers: string[];
   multiple: boolean;
@@ -190,33 +207,16 @@ function ArtistPopoverContent(props: ArtistPopoverContentProps) {
     }
   }
 
-  function handlePointerDownOutside(e: Event) {
-    // SAFETY: pointer event targets are DOM elements
-    const target = e.target as HTMLElement;
-    const triggerButton = target.closest("[data-artist-trigger]");
-
-    if (triggerButton) {
-      // get the artist id from the trigger button
-      const clickedArtistId = triggerButton.getAttribute("data-artist-id");
-
-      // only prevent close if clicking the same artist that's currently open
-      // this prevents the flicker on same-artist clicks
-      // but allows close/reopen animation when switching artists
-      if (clickedArtistId === props.openArtistId) {
-        e.preventDefault();
-      }
-    }
-  }
-
   return (
     <PopoverContent
       style={{
         "--artist-color": artistColor,
       }}
+      anchor={props.anchor}
       align={props.align}
       side="bottom"
-      onPointerDownOutside={handlePointerDownOutside}
-      className="z-20 member-filter-scrollbar flex w-fit max-w-[95vw] flex-row items-center justify-items-start gap-2 overflow-x-auto rounded-lg border-transparent bg-(--artist-color/0.15) px-2 py-1 backdrop-blur-[30px] backdrop-brightness-[1.3] backdrop-saturate-160 xl:justify-center"
+      positionerClassName="z-20"
+      className="member-filter-scrollbar flex w-fit max-w-[95vw] flex-row items-center justify-items-start gap-2 overflow-x-auto rounded-lg border-transparent bg-(--artist-color/0.15) px-2 py-1 backdrop-blur-[30px] backdrop-brightness-[1.3] backdrop-saturate-160 xl:justify-center"
     >
       {props.showArtists === true && (
         <MemberFilterButton

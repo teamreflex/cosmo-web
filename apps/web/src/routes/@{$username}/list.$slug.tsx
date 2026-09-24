@@ -6,7 +6,7 @@ import ListRenderer from "@/components/lists/list-renderer";
 import Overlay from "@/components/misc/overlay";
 import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
 import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
 import { $fetchObjektList } from "@/lib/functions/lists";
@@ -91,22 +91,21 @@ function RouteComponent() {
   const extras = (
     <>
       {pairedList && (
-        <Button variant="outline" size="sm" asChild>
-          <Link
-            to="/@{$username}/list/$slug"
-            params={{
-              username: profileIdentifier(target.cosmo),
-              slug: pairedList.slug,
-            }}
-          >
-            <IconArrowsExchange />
-            <span>
-              {pairedList.type === "have"
-                ? m.list_type_have()
-                : m.list_type_want()}
-            </span>
-          </Link>
-        </Button>
+        <Link
+          to="/@{$username}/list/$slug"
+          params={{
+            username: profileIdentifier(target.cosmo),
+            slug: pairedList.slug,
+          }}
+          className={buttonVariants({ variant: "outline", size: "sm" })}
+        >
+          <IconArrowsExchange />
+          <span>
+            {pairedList.type === "have"
+              ? m.list_type_have()
+              : m.list_type_want()}
+          </span>
+        </Link>
       )}
       {isAuthenticated &&
         pairedList !== null &&

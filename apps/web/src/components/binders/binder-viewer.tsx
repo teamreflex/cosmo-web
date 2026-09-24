@@ -1,4 +1,4 @@
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -12,7 +12,7 @@ import {
   DrawerContent,
   DrawerDescription,
   DrawerTitle,
-} from "@/components/ui/drawer-radix";
+} from "@/components/ui/drawer";
 import { useBinderDetail } from "@/hooks/use-binder-detail";
 import type { BinderOptions } from "@/hooks/use-binder-detail";
 import { useMediaQuery } from "@/hooks/use-media-query";
@@ -36,6 +36,7 @@ import type { BinderLayout, BinderPreview } from "@/lib/universal/binders";
 import { isExpectedError } from "@/lib/universal/errors/expected";
 import { cn } from "@/lib/utils";
 import type { BinderViewerState } from "@/providers/binder-viewer-provider";
+import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import {
   IconChevronLeft,
   IconChevronRight,
@@ -43,9 +44,9 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import { Dialog as DialogPrimitive } from "radix-ui";
 import {
   Suspense,
+  useDeferredValue,
   useEffect,
   useEffectEvent,
   useLayoutEffect,
@@ -227,18 +228,12 @@ function DesktopViewer(props: ViewerProps) {
           ref={overlayRef}
           className="bg-black/60 duration-300 supports-backdrop-filter:backdrop-blur-sm"
         />
-        <DialogPrimitive.Content
-          onOpenAutoFocus={(event) => {
-            event.preventDefault();
-            closeRef.current?.focus({ preventScroll: true });
-          }}
-          onCloseAutoFocus={(event) => {
-            // hand focus back to the cover it was opened from
-            if (origin?.element.isConnected === true) {
-              event.preventDefault();
-              origin.element.focus({ preventScroll: true });
-            }
-          }}
+        <DialogPrimitive.Popup
+          initialFocus={closeRef}
+          // hand focus back to the cover it was opened from
+          finalFocus={() =>
+            origin?.element.isConnected === true ? origin.element : true
+          }
           // a single page can be narrower than the header needs
           style={{
             width: `min(100vw - 2.5rem, max(44rem, ${bookWidth(cover.layout, single ? 1 : 2)}))`,
@@ -246,7 +241,7 @@ function DesktopViewer(props: ViewerProps) {
           className="fixed top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2 outline-none"
         >
           <DesktopBook {...props} overlayRef={overlayRef} closeRef={closeRef} />
-        </DialogPrimitive.Content>
+        </DialogPrimitive.Popup>
       </DialogPortal>
     </Dialog>
   );
@@ -570,9 +565,9 @@ function DesktopHeader({
     <div data-viewer-chrome className="flex items-center gap-3">
       <BinderCover binder={cover} label={false} className="w-10 shrink-0" />
       <div className="grid min-w-0 gap-1">
-        <DialogDescription asChild>
-          <ViewerMeta cover={cover} binderOptions={binderOptions} />
-        </DialogDescription>
+        <DialogDescription
+          render={<ViewerMeta cover={cover} binderOptions={binderOptions} />}
+        />
         <DialogTitle className="truncate font-cosmo text-xl leading-tight font-black uppercase">
           {cover.name}
         </DialogTitle>
@@ -581,16 +576,18 @@ function DesktopHeader({
         {isOwner && <BinderPinButton binder={cover} />}
         <ShareButton username={username} slug={cover.slug} />
         {isOwner && <EditLink username={username} slug={cover.slug} />}
-        <DialogClose asChild>
-          <Button
-            ref={closeRef}
-            variant="outline"
-            size="icon-sm"
-            aria-label={m.common_close()}
-            className="rounded-full"
-          >
-            <IconX />
-          </Button>
+        <DialogClose
+          render={
+            <Button
+              ref={closeRef}
+              variant="outline"
+              size="icon-sm"
+              aria-label={m.common_close()}
+              className="rounded-full"
+            />
+          }
+        >
+          <IconX />
         </DialogClose>
       </div>
     </div>
@@ -710,20 +707,18 @@ function EditLink({
   className?: string;
 }) {
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      asChild
+    <Link
+      to="/@{$username}/binder/$slug"
+      params={{ username, slug }}
       className={cn(
+        buttonVariants({ variant: "outline", size: "sm" }),
         "border-cosmo-text/50 bg-cosmo/15 text-cosmo-text hover:bg-cosmo/25 hover:text-cosmo-text dark:border-cosmo-text/50 dark:bg-cosmo/15 dark:hover:bg-cosmo/25",
         className,
       )}
     >
-      <Link to="/@{$username}/binder/$slug" params={{ username, slug }}>
-        <IconPencil />
-        {m.binder_viewer_edit()}
-      </Link>
-    </Button>
+      <IconPencil />
+      {m.binder_viewer_edit()}
+    </Link>
   );
 }
 
@@ -733,31 +728,43 @@ const DRAWER_MS = 500;
 function PhoneViewer(props: ViewerProps) {
   const { closing, onClose, onClosed } = props;
   const [dismissed, setDismissed] = useState(false);
+  // opens a render after mounting, since a drawer mounted open doesn't slide in
+  const shown = useDeferredValue(true, false);
 
   return (
     <Drawer
-      open={!dismissed}
-      onOpenChange={(open) => {
-        if (!open && !closing) onClose();
+      open={shown && !dismissed}
+      onOpenChange={(open, details) => {
+        if (open || closing) return;
+        // a swipe has already carried the drawer away, so it goes without shutting the book
+        if (details.reason === "swipe") setDismissed(true);
+        onClose();
+      }}
+      onOpenChangeComplete={(open) => {
+        if (!open) onClosed();
       }}
     >
       <DrawerContent
-        onCloseAutoFocus={(event) => {
-          if (props.origin?.element.isConnected === true) {
-            event.preventDefault();
-            props.origin.element.focus({ preventScroll: true });
-          }
-        }}
-        onExitComplete={onClosed}
+        finalFocus={() =>
+          props.origin?.element.isConnected === true
+            ? props.origin.element
+            : true
+        }
         className="h-[92dvh] rounded-t-2xl outline-none"
       >
-        <PhoneBook {...props} onDismiss={() => setDismissed(true)} />
+        <PhoneBook
+          {...props}
+          dismissed={dismissed}
+          onDismiss={() => setDismissed(true)}
+        />
       </DrawerContent>
     </Drawer>
   );
 }
 
 type PhoneBookProps = ViewerProps & {
+  /** the drawer is already leaving, so a close skips the book's swing */
+  dismissed: boolean;
   onDismiss: () => void;
 };
 
@@ -773,6 +780,7 @@ function PhoneBook({
   username,
   isOwner,
   closing,
+  dismissed,
   onDismiss,
 }: PhoneBookProps) {
   const { pageCount } = cover;
@@ -837,6 +845,7 @@ function PhoneBook({
   // read as the close starts, without restarting it when a swipe moves the track
   const dismiss = useEffectEvent(onDismiss);
   const onFirstPage = useEffectEvent(() => index === 0);
+  const leaving = useEffectEvent(() => dismissed);
 
   useLayoutEffect(() => {
     if (!closing) return;
@@ -844,7 +853,8 @@ function PhoneBook({
     const page = firstPageRef.current;
     const fly = flyRef.current;
     const leaf = leafRef.current;
-    const swing = opened.current && !prefersReducedMotion() && onFirstPage();
+    const swing =
+      !leaving() && opened.current && !prefersReducedMotion() && onFirstPage();
     sequence.current?.cancel();
 
     sequence.current = runSequence(async ({ play }) => {
@@ -874,9 +884,11 @@ function PhoneBook({
       <div className="flex items-center gap-3 px-3">
         <BinderCover binder={cover} label={false} className="w-8 shrink-0" />
         <div className="grid min-w-0 flex-1 gap-0.5">
-          <DrawerDescription asChild>
-            <ViewerMeta cover={cover} binderOptions={binderOptions} short />
-          </DrawerDescription>
+          <DrawerDescription
+            render={
+              <ViewerMeta cover={cover} binderOptions={binderOptions} short />
+            }
+          />
           <DrawerTitle className="line-clamp-2 font-cosmo text-base leading-tight font-black uppercase">
             {cover.name}
           </DrawerTitle>

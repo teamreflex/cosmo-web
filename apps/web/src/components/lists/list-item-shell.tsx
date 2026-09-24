@@ -16,13 +16,11 @@ type Props = {
  */
 export default function ListItemShell({ list, isPending, onClick }: Props) {
   return (
-    <DropdownMenuItem className="group truncate">
+    // rows close the menu themselves once they're done
+    <DropdownMenuItem className="group truncate" closeOnClick={false}>
       <button
         type="button"
-        onClick={(event) => {
-          event.preventDefault();
-          onClick();
-        }}
+        onClick={onClick}
         disabled={isPending}
         className="flex w-full items-center justify-between gap-2"
         aria-label={m.list_add_to_list_named({ listName: list.name })}

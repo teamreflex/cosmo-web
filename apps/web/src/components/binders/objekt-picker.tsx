@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
 import { validArtists } from "@apollo/cosmo/types/common";
 import type { ValidArtist, ValidSort } from "@apollo/cosmo/types/common";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
+import { Radio } from "@base-ui/react/radio";
+import { RadioGroup } from "@base-ui/react/radio-group";
 import {
   IconAdjustmentsHorizontal,
   IconHeartBroken,
@@ -20,7 +22,6 @@ import {
   QueryErrorResetBoundary,
   useSuspenseInfiniteQuery,
 } from "@tanstack/react-query";
-import { RadioGroup } from "radix-ui";
 import {
   Suspense,
   useDeferredValue,
@@ -358,9 +359,8 @@ function ArtistSwitch({ value, onChange }: ArtistSwitchProps) {
   const { selected } = useArtists();
 
   return (
-    <RadioGroup.Root
+    <RadioGroup
       aria-label={m.objekt_attribute_artist()}
-      orientation="horizontal"
       value={value ?? ALL_ARTISTS}
       onValueChange={(next) =>
         onChange(
@@ -381,18 +381,20 @@ function ArtistSwitch({ value, onChange }: ArtistSwitchProps) {
             label={artist.title}
           />
         ))}
-    </RadioGroup.Root>
+    </RadioGroup>
   );
 }
 
 function ArtistOption({ value, label }: { value: string; label: string }) {
   return (
-    <RadioGroup.Item
+    <Radio.Root
       value={value}
-      className="min-w-0 flex-1 truncate rounded-[5px] px-1.5 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-cosmo data-[state=checked]:bg-cosmo data-[state=checked]:text-white"
+      nativeButton
+      render={<button type="button" />}
+      className="min-w-0 flex-1 truncate rounded-[5px] px-1.5 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-cosmo data-checked:bg-cosmo data-checked:text-white"
     >
       {label}
-    </RadioGroup.Item>
+    </Radio.Root>
   );
 }
 

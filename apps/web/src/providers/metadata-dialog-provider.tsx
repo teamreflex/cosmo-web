@@ -75,12 +75,9 @@ export function MetadataDialogProvider({ children }: Props) {
 
       <Sheet open={state !== null} onOpenChange={onOpenChange}>
         <SheetContent
-          onCloseAutoFocus={(event) => {
-            if (opener.current?.isConnected === true) {
-              event.preventDefault();
-              opener.current.focus({ preventScroll: true });
-            }
-          }}
+          finalFocus={() =>
+            opener.current?.isConnected === true ? opener.current : true
+          }
           side="right"
           className="w-full gap-0 p-0 outline-hidden data-[side=right]:sm:max-w-xl"
         >

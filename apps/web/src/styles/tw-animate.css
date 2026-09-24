@@ -7,6 +7,10 @@
  * animate-in/out on the compositor instead of the main thread
  * (https://github.com/Wombosvideo/tw-animate-css/issues/78). The blur-in and
  * blur-out utilities go with it.
+ *
+ * The accordion and collapsible keyframes read Base UI's panel height
+ * variables (`--accordion-panel-height`, `--collapsible-panel-height`) in
+ * place of Radix's.
  */
 
 :root {
@@ -224,7 +228,7 @@
     }
     to {
       height: var(
-        --radix-accordion-content-height,
+        --accordion-panel-height,
         var(
           --bits-accordion-content-height,
           var(
@@ -242,7 +246,7 @@
   @keyframes accordion-up {
     from {
       height: var(
-        --radix-accordion-content-height,
+        --accordion-panel-height,
         var(
           --bits-accordion-content-height,
           var(
@@ -266,7 +270,7 @@
     }
     to {
       height: var(
-        --radix-collapsible-content-height,
+        --collapsible-panel-height,
         var(
           --bits-collapsible-content-height,
           var(
@@ -281,7 +285,7 @@
   @keyframes collapsible-up {
     from {
       height: var(
-        --radix-collapsible-content-height,
+        --collapsible-panel-height,
         var(
           --bits-collapsible-content-height,
           var(

@@ -2,11 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent } from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -26,7 +22,7 @@ import { slugifyObjekt } from "@apollo/util";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconSearch } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 
 type Props = {
@@ -53,6 +49,7 @@ export default function CollectionLookup({ onLookup }: Props) {
   const { artistList } = useArtists();
   const { data: filterData } = useSuspenseQuery(filterDataQuery);
   const [memberOpen, setMemberOpen] = useState(false);
+  const memberInputRef = useRef<HTMLInputElement>(null);
   const memberNames = [
     ...new Set(
       artistList.flatMap((artist) => artist.artistMembers.map((am) => am.name)),
@@ -62,6 +59,17 @@ export default function CollectionLookup({ onLookup }: Props) {
   const seasonOptions = getSeasonKeys([
     ...new Set(filterData.seasons.flatMap((s) => s.seasons)),
   ]);
+  const seasonItems = seasonOptions.map(({ key, name }) => ({
+    value: name,
+    label: (
+      <Badge
+        // SAFETY: every season key has a season-* badge variant
+        variant={`season-${key}` as "season-atom"}
+      >
+        {name}
+      </Badge>
+    ),
+  }));
   const form = useForm({
     resolver: standardSchemaResolver(collectionLookupSchema),
     defaultValues: { season: "", member: "", collectionNo: "" },
@@ -110,21 +118,22 @@ export default function CollectionLookup({ onLookup }: Props) {
               <FieldLabel htmlFor="lookup-season">
                 {m.admin_collection_season()}
               </FieldLabel>
-              <Select value={field.value} onValueChange={field.onChange}>
+              <Select
+                items={seasonItems}
+                value={field.value}
+                onValueChange={(value) => {
+                  if (value !== null) field.onChange(value);
+                }}
+              >
                 <SelectTrigger id="lookup-season" className="w-full">
                   <SelectValue
                     placeholder={m.admin_collection_season_placeholder()}
                   />
                 </SelectTrigger>
                 <SelectContent>
-                  {seasonOptions.map(({ key, name }) => (
-                    <SelectItem key={name} value={name}>
-                      <Badge
-                        // SAFETY: every season key has a season-* badge variant
-                        variant={`season-${key}` as "season-atom"}
-                      >
-                        {name}
-                      </Badge>
+                  {seasonItems.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -151,28 +160,31 @@ export default function CollectionLookup({ onLookup }: Props) {
                   open={memberOpen && matches.length > 0}
                   onOpenChange={setMemberOpen}
                 >
-                  <PopoverAnchor asChild>
-                    <Input
-                      id="lookup-member"
-                      autoComplete="off"
-                      placeholder={m.admin_collection_member_placeholder()}
-                      {...field}
-                      onChange={(e) => {
-                        field.onChange(e);
-                        setMemberOpen(true);
-                      }}
-                      onFocus={() => setMemberOpen(true)}
-                      onBlur={() => {
-                        field.onBlur();
-                        setMemberOpen(false);
-                      }}
-                      onPaste={handlePaste}
-                    />
-                  </PopoverAnchor>
+                  <Input
+                    id="lookup-member"
+                    autoComplete="off"
+                    placeholder={m.admin_collection_member_placeholder()}
+                    {...field}
+                    ref={(element) => {
+                      field.ref(element);
+                      memberInputRef.current = element;
+                    }}
+                    onChange={(e) => {
+                      field.onChange(e);
+                      setMemberOpen(true);
+                    }}
+                    onFocus={() => setMemberOpen(true)}
+                    onBlur={() => {
+                      field.onBlur();
+                      setMemberOpen(false);
+                    }}
+                    onPaste={handlePaste}
+                  />
                   <PopoverContent
+                    anchor={memberInputRef}
+                    initialFocus={false}
                     align="start"
-                    className="max-h-60 w-(--radix-popover-trigger-width) overflow-y-auto p-1"
-                    onOpenAutoFocus={(e) => e.preventDefault()}
+                    className="max-h-60 w-(--anchor-width) overflow-y-auto p-1"
                   >
                     {matches.map((name) => (
                       <button

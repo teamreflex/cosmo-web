@@ -58,6 +58,8 @@ export default function FlippableObjekt({ children, collection }: Props) {
           "--objekt-text-color": collection.textColor,
         }}
         data-flipped={flipped}
+        // dragging the card turns it rather than swiping away a drawer it sits in
+        data-base-ui-swipe-ignore
         {...handlers}
         // vertical swipes still scroll the page on touch, which cancels the drag and settles the card
         className="relative aspect-photocard w-full touch-pan-y object-contain select-none focus:outline-none"

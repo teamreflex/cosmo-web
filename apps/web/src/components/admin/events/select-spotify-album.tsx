@@ -17,14 +17,14 @@ import { cn } from "@/lib/utils";
 import { IconCheck, IconLoader2, IconSelector } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import type { ReactNode } from "react";
+import type { ReactElement } from "react";
 import { useDebounceValue } from "usehooks-ts";
 
 type Props = {
   onSelect: (album: SpotifyAlbum) => void;
   selectedAlbum?: SpotifyAlbum | null;
   placeholder?: string;
-  children?: ReactNode;
+  children?: ReactElement;
 };
 
 export default function SelectSpotifyAlbum({
@@ -52,29 +52,28 @@ export default function SelectSpotifyAlbum({
 
   return (
     <Popover open={open} onOpenChange={setOpen} modal>
-      <PopoverTrigger asChild>
-        {children ?? (
-          <Button
-            data-placeholder={!selectedAlbum ? placeholder : undefined}
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className="group w-full justify-between"
-            onClick={() => setOpen(true)}
-          >
-            <span className="truncate group-data-placeholder:text-muted-foreground">
-              {selectedAlbum
-                ? `${selectedAlbum.name} - ${selectedAlbum.artists[0]?.name}`
-                : placeholder}
-            </span>
-            <IconSelector className="ml-2 size-4 shrink-0 opacity-50" />
-          </Button>
-        )}
-      </PopoverTrigger>
-      <PopoverContent
-        className="w-(--radix-popover-trigger-width) p-0"
-        align="start"
-      >
+      <PopoverTrigger
+        render={
+          children ?? (
+            <Button
+              data-placeholder={!selectedAlbum ? placeholder : undefined}
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              className="group w-full justify-between"
+              onClick={() => setOpen(true)}
+            >
+              <span className="truncate group-data-placeholder:text-muted-foreground">
+                {selectedAlbum
+                  ? `${selectedAlbum.name} - ${selectedAlbum.artists[0]?.name}`
+                  : placeholder}
+              </span>
+              <IconSelector className="ml-2 size-4 shrink-0 opacity-50" />
+            </Button>
+          )
+        }
+      />
+      <PopoverContent className="w-(--anchor-width) p-0" align="start">
         <Command shouldFilter={false}>
           <CommandInput
             value={search}

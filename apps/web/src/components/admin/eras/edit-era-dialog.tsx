@@ -32,7 +32,7 @@ const route = getRouteApi("/admin/eras");
 
 type Props = {
   era: Era;
-  children: React.ReactNode;
+  children: React.ReactElement;
 };
 
 export default function EditEraDialog({ era, children }: Props) {
@@ -162,7 +162,7 @@ export default function EditEraDialog({ era, children }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger nativeButton={false} render={children} />
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{m.admin_era_edit()}</DialogTitle>
@@ -188,10 +188,8 @@ export default function EditEraDialog({ era, children }: Props) {
                 <DeleteEra eraId={era.id} onSuccess={() => setOpen(false)} />
               </div>
 
-              <DialogClose asChild>
-                <Button type="button" variant="outline">
-                  {m.common_cancel()}
-                </Button>
+              <DialogClose render={<Button type="button" variant="outline" />}>
+                {m.common_cancel()}
               </DialogClose>
               <SubmitButton />
             </DialogFooter>

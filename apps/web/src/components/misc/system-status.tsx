@@ -11,12 +11,7 @@ import { IconActivity, IconServer } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 export default function SystemStatus() {
   return (
@@ -39,18 +34,15 @@ function SystemStatusPopover() {
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          className={cn(
-            "flex h-7 w-8 items-center justify-center rounded-sm border shadow-sm transition-colors lg:h-8 lg:w-9",
-            textStatus(processor.status),
-            bgStatus(processor.status),
-          )}
-          aria-label={m.aria_system_status()}
-        >
-          <IconActivity className="h-5 w-5" />
-        </button>
+      <PopoverTrigger
+        className={cn(
+          "flex h-7 w-8 items-center justify-center rounded-sm border shadow-sm transition-colors lg:h-8 lg:w-9",
+          textStatus(processor.status),
+          bgStatus(processor.status),
+        )}
+        aria-label={m.aria_system_status()}
+      >
+        <IconActivity className="h-5 w-5" />
       </PopoverTrigger>
       <PopoverContent align="start" className="p-2">
         {/* processor */}
@@ -78,9 +70,9 @@ function SystemStatusPopover() {
 
 function ErrorFallback() {
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
+    <Tooltip>
+      <TooltipTrigger
+        render={
           <div
             className={cn(
               "flex h-7 w-8 items-center justify-center rounded-sm border shadow-sm transition-colors lg:h-8 lg:w-9",
@@ -88,13 +80,13 @@ function ErrorFallback() {
               textStatus("degraded"),
             )}
             aria-label={m.system_status_fetch_error()}
-          >
-            <IconActivity className="h-5 w-5" />
-          </div>
-        </TooltipTrigger>
-        <TooltipContent>{m.system_status_fetch_error()}</TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+          />
+        }
+      >
+        <IconActivity className="h-5 w-5" />
+      </TooltipTrigger>
+      <TooltipContent>{m.system_status_fetch_error()}</TooltipContent>
+    </Tooltip>
   );
 }
 

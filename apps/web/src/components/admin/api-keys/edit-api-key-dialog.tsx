@@ -69,15 +69,17 @@ export default function EditApiKeyDialog({ apiKey }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          aria-label={m.admin_api_key_edit()}
-        >
-          <IconPencil className="size-4" />
-        </Button>
+      <DialogTrigger
+        render={
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label={m.admin_api_key_edit()}
+          />
+        }
+      >
+        <IconPencil className="size-4" />
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
@@ -117,10 +119,8 @@ export default function EditApiKeyDialog({ apiKey }: Props) {
             )}
           />
           <DialogFooter className="mt-2">
-            <DialogClose asChild>
-              <Button type="button" variant="outline">
-                {m.common_cancel()}
-              </Button>
+            <DialogClose render={<Button type="button" variant="outline" />}>
+              {m.common_cancel()}
             </DialogClose>
             <Button type="submit" disabled={mutation.isPending}>
               <span>{m.common_save()}</span>

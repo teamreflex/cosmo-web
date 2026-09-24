@@ -86,20 +86,24 @@ type MobileMenuProps = AuthLinksProps & { signedIn: boolean };
 export function MobileMenu(props: MobileMenuProps) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={m.common_menu()}
-          className="lg:hidden"
-        >
-          <IconMenu2 className="size-6" />
-        </Button>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={m.common_menu()}
+            className="lg:hidden"
+          />
+        }
+      >
+        <IconMenu2 className="size-6" />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-fit" align="end">
-        <DropdownMenuLabel>{m.common_menu()}</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <MobileMenuItems {...props} />
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>{m.common_menu()}</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <MobileMenuItems {...props} />
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );
@@ -112,71 +116,73 @@ function MobileMenuItems(props: MobileMenuProps) {
   return (
     <div className="contents">
       {/* objekt index */}
-      <DropdownMenuItem asChild>
-        <Link to="/" aria-label={m.objekts_header()}>
-          <IconCards
-            className={cn(
-              "h-4 w-4 shrink-0 fill-transparent transition-all",
-              (pathname === "/" || pathname === "/objekts") && "fill-white/50",
-            )}
-          />
-          <span>{m.objekts_header()}</span>
-        </Link>
+      <DropdownMenuItem
+        render={<Link to="/" aria-label={m.objekts_header()} />}
+      >
+        <IconCards
+          className={cn(
+            "h-4 w-4 shrink-0 fill-transparent transition-all",
+            (pathname === "/" || pathname === "/objekts") && "fill-white/50",
+          )}
+        />
+        <span>{m.objekts_header()}</span>
       </DropdownMenuItem>
 
       {/* objekt stats */}
-      <DropdownMenuItem asChild>
-        <Link to="/objekts/stats" aria-label={m.nav_objekt_stats()}>
-          <IconChartBar
-            className={cn(
-              "h-4 w-4 shrink-0 fill-transparent transition-all",
-              pathname === "/objekts/stats" && "fill-white/50",
-            )}
-          />
-          <span>{m.nav_objekt_stats()}</span>
-        </Link>
+      <DropdownMenuItem
+        render={<Link to="/objekts/stats" aria-label={m.nav_objekt_stats()} />}
+      >
+        <IconChartBar
+          className={cn(
+            "h-4 w-4 shrink-0 fill-transparent transition-all",
+            pathname === "/objekts/stats" && "fill-white/50",
+          )}
+        />
+        <span>{m.nav_objekt_stats()}</span>
       </DropdownMenuItem>
 
-      <DropdownMenuItem asChild>
-        <Link to="/events" aria-label={m.events_header()}>
-          <IconFolderOpen
-            className={cn(
-              "h-4 w-4 shrink-0 fill-transparent transition-all",
-              pathname === "/events" && "fill-white/50",
-            )}
-          />
-          <span>{m.events_header()}</span>
-        </Link>
+      <DropdownMenuItem
+        render={<Link to="/events" aria-label={m.events_header()} />}
+      >
+        <IconFolderOpen
+          className={cn(
+            "h-4 w-4 shrink-0 fill-transparent transition-all",
+            pathname === "/events" && "fill-white/50",
+          )}
+        />
+        <span>{m.events_header()}</span>
       </DropdownMenuItem>
 
       {/* gravity */}
-      <DropdownMenuItem asChild>
-        <Link to="/gravity" aria-label={m.gravity_header()}>
-          <IconArchive
-            className={cn(
-              "h-4 w-4 shrink-0 fill-transparent transition-all",
-              pathname.startsWith("/gravity") && "fill-white/50",
-            )}
-          />
-          <span>{m.gravity_header()}</span>
-        </Link>
+      <DropdownMenuItem
+        render={<Link to="/gravity" aria-label={m.gravity_header()} />}
+      >
+        <IconArchive
+          className={cn(
+            "h-4 w-4 shrink-0 fill-transparent transition-all",
+            pathname.startsWith("/gravity") && "fill-white/50",
+          )}
+        />
+        <span>{m.gravity_header()}</span>
       </DropdownMenuItem>
 
       {props.cosmo && (
-        <DropdownMenuItem asChild>
-          <Link
-            to="/@{$username}"
-            params={{ username: props.cosmo.username }}
-            aria-label={m.nav_profile()}
-          >
-            <IconPackage
-              className={cn(
-                "h-4 w-4 shrink-0 fill-transparent transition-all",
-                pathname === `/@${props.cosmo.username}` && "fill-white/50",
-              )}
+        <DropdownMenuItem
+          render={
+            <Link
+              to="/@{$username}"
+              params={{ username: props.cosmo.username }}
+              aria-label={m.nav_profile()}
             />
-            <span>{m.nav_profile()}</span>
-          </Link>
+          }
+        >
+          <IconPackage
+            className={cn(
+              "h-4 w-4 shrink-0 fill-transparent transition-all",
+              pathname === `/@${props.cosmo.username}` && "fill-white/50",
+            )}
+          />
+          <span>{m.nav_profile()}</span>
         </DropdownMenuItem>
       )}
 

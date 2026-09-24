@@ -103,16 +103,18 @@ export default function GravityRail(props: Props) {
           </TabsList>
 
           <Tooltip>
-            <TooltipTrigger asChild>
-              <Toggle
-                pressed={details}
-                onPressedChange={setDetails}
-                aria-label={m.gravity_details()}
-                // idle it shares the tab list's tone; pressed it lifts like an active tab, outlined in cosmo
-                className="border border-transparent bg-muted text-muted-foreground aria-pressed:border-cosmo aria-pressed:bg-background aria-pressed:text-foreground aria-pressed:shadow-sm dark:aria-pressed:bg-input/30"
-              >
-                <IconInfoCircle />
-              </Toggle>
+            <TooltipTrigger
+              render={
+                <Toggle
+                  pressed={details}
+                  onPressedChange={setDetails}
+                  aria-label={m.gravity_details()}
+                  // idle it shares the tab list's tone; pressed it lifts like an active tab, outlined in cosmo
+                  className="border border-transparent bg-muted text-muted-foreground aria-pressed:border-cosmo aria-pressed:bg-background aria-pressed:text-foreground aria-pressed:shadow-sm dark:aria-pressed:bg-input/30"
+                />
+              }
+            >
+              <IconInfoCircle />
             </TooltipTrigger>
             <TooltipContent>{m.gravity_details()}</TooltipContent>
           </Tooltip>

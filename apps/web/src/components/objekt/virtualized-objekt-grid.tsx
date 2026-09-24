@@ -630,7 +630,7 @@ function SortablePinCell({
         opacity: isDragging ? 0 : 1,
         touchAction: "manipulation",
       }}
-      className="absolute cursor-pointer rounded-photocard outline-none focus-visible:ring-2 focus-visible:ring-cosmo-text focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      className="absolute cursor-pointer rounded-photocard outline-none"
       {...attributes}
       {...listeners}
       {...(binder && {
