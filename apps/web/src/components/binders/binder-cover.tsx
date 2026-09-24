@@ -16,7 +16,7 @@ type Props = {
   >;
   /** hide the paper label where the name is already shown beside the cover */
   label?: boolean;
-  /** stretch to the container instead of photocard shape, to cover a whole page */
+  /** cover a whole page: stretch to the container and take its corners, instead of photocard shape */
   fill?: boolean;
   className?: string;
 };
@@ -24,8 +24,10 @@ type Props = {
 /**
  * A binder drawn at photocard shape: spine colour, spine shading, sleeve sheen,
  * the cover artwork near the top and a paper label overlapping it from the
- * bottom. Everything inside is sized in container units, so the same cover
- * reads right from a header thumbnail up to a shelf tile.
+ * bottom. The artwork and label sit on a photocard-shaped face sized in
+ * container units, so the same cover reads right from a header thumbnail up
+ * to a shelf tile, and a cover stretched over a page of another shape keeps
+ * the face at photocard shape, centred.
  */
 export default function BinderCover({
   binder,
@@ -34,28 +36,36 @@ export default function BinderCover({
   className,
 }: Props) {
   return (
-    <div className={cn("@container", className)}>
+    <div className={cn(fill ? "@container-size" : "@container", className)}>
       <div
+        data-cover-board
         style={{ backgroundColor: binder.colour }}
         className={cn(
-          "relative overflow-hidden rounded-l-[2.4cqw] rounded-r-photocard border border-white/8 shadow-[inset_2.5cqw_0_0_-1.25cqw_rgb(0_0_0/0.35),0_6cqw_12.5cqw_-6cqw_rgb(0_0_0/0.9)] before:absolute before:inset-y-0 before:left-0 before:w-[9cqw] before:bg-linear-to-r before:from-black/45 before:to-transparent after:pointer-events-none after:absolute after:inset-0 after:bg-[linear-gradient(120deg,rgb(255_255_255/0.14),transparent_40%,transparent_70%,rgb(255_255_255/0.05))]",
-          fill ? "h-full" : "aspect-photocard",
+          "relative flex items-center justify-center overflow-hidden border border-white/8 shadow-[inset_2.5cqw_0_0_-1.25cqw_rgb(0_0_0/0.35),0_6cqw_12.5cqw_-6cqw_rgb(0_0_0/0.9)] before:absolute before:inset-y-0 before:left-0 before:w-[9cqw] before:bg-linear-to-r before:from-black/45 before:to-transparent after:pointer-events-none after:absolute after:inset-0 after:bg-[linear-gradient(120deg,rgb(255_255_255/0.14),transparent_40%,transparent_70%,rgb(255_255_255/0.05))]",
+          fill
+            ? "h-full rounded-[inherit]"
+            : "aspect-photocard rounded-l-[2.4cqw] rounded-r-photocard",
         )}
       >
-        <Artwork artwork={binder.artwork} fill={fill} />
+        <div
+          data-cover-face
+          className={cn(
+            "@container relative aspect-photocard shrink-0 origin-top-left",
+            fill ? "w-[min(100%,100cqh*var(--aspect-photocard))]" : "w-full",
+          )}
+        >
+          <Artwork artwork={binder.artwork} fill={fill} />
 
-        {label && (
-          <span
-            data-cover-label
-            className="absolute right-[7%] bottom-[5%] left-[15%] z-1 block origin-bottom rounded-[2.5cqw] bg-white/93 px-[5cqw] py-[4cqw] font-mono text-[6.4cqw] leading-[1.3] tracking-[0.03em] text-neutral-900 shadow-[0_-1.7cqw_6cqw_rgb(0_0_0/0.3)]"
-          >
-            <span className="mb-[1.5cqw] line-clamp-3 font-cosmo text-[8.2cqw] leading-[1.1] font-black wrap-break-word uppercase">
-              {binder.name}
+          {label && (
+            <span className="absolute right-[9.5%] bottom-[5%] left-[12.5%] z-1 block rounded-[2.5cqw] bg-white/93 px-[5cqw] py-[4cqw] font-mono text-[6.4cqw] leading-[1.3] tracking-[0.03em] text-neutral-900 shadow-[0_-1.7cqw_6cqw_rgb(0_0_0/0.3)]">
+              <span className="mb-[1.5cqw] line-clamp-3 font-cosmo text-[8.2cqw] leading-[1.1] font-black wrap-break-word uppercase">
+                {binder.name}
+              </span>
+              {m.binder_page_count({ count: binder.pageCount })} ·{" "}
+              {binderLayoutLabel(binder.layout)}
             </span>
-            {m.binder_page_count({ count: binder.pageCount })} ·{" "}
-            {binderLayoutLabel(binder.layout)}
-          </span>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
@@ -94,20 +104,14 @@ function CoverObjekt({
 function Artwork({ artwork, fill }: { artwork: BinderArtwork; fill: boolean }) {
   if (artwork.kind === "cover") {
     return (
-      <div
-        data-cover-art
-        className="absolute top-[6%] right-[13%] left-[21%] origin-top"
-      >
+      <div className="absolute top-[6%] right-[15.5%] left-[18.5%]">
         <CoverObjekt image={artwork.image} fill={fill} className="-rotate-2" />
       </div>
     );
   }
 
   return (
-    <div
-      data-cover-art
-      className="absolute top-[7%] right-[9%] left-[18%] origin-top"
-    >
+    <div className="absolute top-[7%] right-[12%] left-[15%]">
       <div className="grid -rotate-2 grid-cols-2 gap-[3cqw]">
         {Array.from({ length: COLLAGE_SIZE }, (_, i) => {
           const image = artwork.images[i];
