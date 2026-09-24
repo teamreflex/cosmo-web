@@ -1,6 +1,6 @@
 import { m } from "@/i18n/messages";
 import type { Stat } from "@/lib/universal/progress";
-import { randomColor } from "@/lib/utils";
+import { colorFromName } from "@/lib/utils";
 import ProgressSection from "./progress-section";
 
 type Props = {
@@ -10,7 +10,7 @@ type Props = {
 export default function SectionClasses(props: Props) {
   const colors = props.data.reduce(
     (acc, curr) => {
-      acc[curr.name] = randomColor();
+      acc[curr.name] = colorFromName(curr.name);
       return acc;
     },
     // SAFETY: empty seed for the reduce accumulator

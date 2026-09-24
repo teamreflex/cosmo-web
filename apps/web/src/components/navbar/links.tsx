@@ -60,7 +60,7 @@ type AuthLinksProps = {
 };
 
 /**
- * Auth-gated desktop links — currently the user's Collection page.
+ * Auth-gated desktop links — currently the user's own profile.
  */
 export function DesktopAuthLinks({ cosmo }: AuthLinksProps) {
   const pathname = useLocation({ select: (location) => location.pathname });
@@ -72,7 +72,7 @@ export function DesktopAuthLinks({ cosmo }: AuthLinksProps) {
       <LinkButton
         href={`/@${cosmo.username}`}
         active={pathname.startsWith(`/@${cosmo.username}`)}
-        name={m.collection_title()}
+        name={m.nav_profile()}
       />
     </div>
   );
@@ -167,7 +167,7 @@ function MobileMenuItems(props: MobileMenuProps) {
           <Link
             to="/@{$username}"
             params={{ username: props.cosmo.username }}
-            aria-label={m.collection_title()}
+            aria-label={m.nav_profile()}
           >
             <IconPackage
               className={cn(
@@ -175,7 +175,7 @@ function MobileMenuItems(props: MobileMenuProps) {
                 pathname === `/@${props.cosmo.username}` && "fill-white/50",
               )}
             />
-            <span>{m.collection_title()}</span>
+            <span>{m.nav_profile()}</span>
           </Link>
         </DropdownMenuItem>
       )}

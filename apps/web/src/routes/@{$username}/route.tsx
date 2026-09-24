@@ -55,9 +55,9 @@ function RouteComponent() {
     <UserStateProvider {...account}>
       <MetadataDialogProvider>
         <main className="relative flex flex-col">
-          {/* the accent glow is the header's own background so it also tints the translucent border */}
-          <div className="border-b border-border [background:radial-gradient(900px_220px_at_10%_0%,color-mix(in_oklch,var(--color-cosmo)_12.6%,transparent),transparent_60%)]">
-            <div className="container flex flex-col gap-4 py-6 pb-4 md:flex-row md:items-center md:gap-6">
+          {/* the accent glow is the header's own background so it also tints the translucent border, and follows the container so it stays under the identity block on wide screens */}
+          <div className="border-b border-border [background:radial-gradient(900px_280px_at_max(20%,calc(50%_-_460px))_0%,color-mix(in_oklch,var(--color-cosmo)_12.6%,transparent),transparent_60%)]">
+            <div className="container flex flex-col gap-4 pt-6 pb-3 md:flex-row md:items-center md:gap-6">
               {/* avatar */}
               <UserAvatar
                 variant="square"
@@ -117,9 +117,9 @@ function RouteComponent() {
                 </div>
               </div>
             </div>
-          </div>
 
-          <ProfileTabs isAuthenticated={isAuthenticated} />
+            <ProfileTabs isAuthenticated={isAuthenticated} />
+          </div>
 
           <Outlet />
         </main>
@@ -132,21 +132,24 @@ function PendingComponent() {
   return (
     <main className="relative flex flex-col">
       <div className="border-b border-border">
-        <div className="container flex flex-col gap-3 py-6 pb-4 md:flex-row md:items-center md:gap-6">
+        <div className="container flex flex-col gap-3 pt-6 pb-3 md:flex-row md:items-center md:gap-6">
           <Skeleton className="size-16 rounded-sm md:size-22" />
           <div className="flex min-w-0 flex-1 flex-col gap-3">
             <Skeleton className="h-8 w-40" />
             <Skeleton className="h-10.5 w-36 rounded-sm" />
           </div>
         </div>
-      </div>
-      <div className="border-b border-border bg-muted/40">
         <div className="container flex gap-2 py-3.5">
           <Skeleton className="h-5 flex-1 md:w-20 md:flex-none" />
           <Skeleton className="h-5 flex-1 md:w-16 md:flex-none" />
           <Skeleton className="h-5 flex-1 md:w-16 md:flex-none" />
           <Skeleton className="h-5 flex-1 md:w-18 md:flex-none" />
           <Skeleton className="h-5 flex-1 md:w-14 md:flex-none" />
+        </div>
+        <div className="border-t border-border md:hidden">
+          <div className="container flex h-14 items-center">
+            <Skeleton className="h-5 w-32" />
+          </div>
         </div>
       </div>
     </main>

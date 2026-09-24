@@ -5,9 +5,7 @@ import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
 import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
 import BatchSelectionBar from "@/components/profile/batch-selection-bar";
 import ProfileRenderer from "@/components/profile/profile-renderer";
-import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
-import TitleHeader from "@/components/ui/title-header";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { currentAccountQuery, selectedArtistsQuery } from "@/lib/queries/core";
@@ -118,14 +116,6 @@ function RouteComponent() {
 function PendingComponent() {
   return (
     <div className="relative flex flex-col">
-      <TitleHeader title={m.collection_title()}>
-        <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
-          <div className="md:pointer-events-auto">
-            <MemberFilterSkeleton />
-          </div>
-        </div>
-      </TitleHeader>
-
       <FiltersContainer>
         <div className="flex flex-wrap items-center gap-2">
           {Array.from({ length: 7 }).map((_, i) => (
