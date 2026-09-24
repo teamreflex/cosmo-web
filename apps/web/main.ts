@@ -53,11 +53,10 @@ function buildContentSecurityPolicy(): string {
     "https://static.cosmo.fans",
     // band images
     "https://resources.cosmo.fans",
-    // apollo assets - MCO videos, era/event images
-    "https://cdn.apollo.cafe",
     // spotify images
     "https://i.scdn.co",
   ];
+  const mediaSrc = ["'self'", "blob:"];
 
   const umamiUrl = process.env.VITE_UMAMI_SCRIPT_URL;
   if (umamiUrl) {
@@ -88,14 +87,29 @@ function buildContentSecurityPolicy(): string {
     }
   }
 
-  const r2AccountId = process.env.R2_ACCOUNT_ID;
-  if (r2AccountId) {
-    connectSrc.push(`${r2AccountId}.r2.cloudflarestorage.com`);
+  // presigned uploads go straight from the browser to the bucket
+  const r2Endpoint = process.env.R2_ENDPOINT;
+  if (r2Endpoint) {
+    try {
+      connectSrc.push(new URL(r2Endpoint).origin);
+    } catch {
+      log.warning("R2_ENDPOINT is not a valid URL, omitted from CSP");
+    }
   }
 
-  const r2Domain = process.env.R2_DOMAIN;
-  if (r2Domain) {
-    imgSrc.push(r2Domain);
+  /**
+   * Apollo assets: objekt images, MCO videos, era/event images.
+   * Origin only, as a source with a path matches nothing beneath it.
+   */
+  const cdnUrl = process.env.VITE_CDN_URL;
+  if (cdnUrl) {
+    try {
+      const origin = new URL(cdnUrl).origin;
+      imgSrc.push(origin);
+      mediaSrc.push(origin);
+    } catch {
+      log.warning("VITE_CDN_URL is not a valid URL, omitted from CSP");
+    }
   }
 
   return [
@@ -103,7 +117,7 @@ function buildContentSecurityPolicy(): string {
     `script-src ${scriptSrc.join(" ")}`,
     "style-src 'self' 'unsafe-inline'",
     `img-src ${imgSrc.join(" ")}`,
-    "media-src 'self' https://cdn.apollo.cafe blob:",
+    `media-src ${mediaSrc.join(" ")}`,
     "font-src 'self'",
     `connect-src ${connectSrc.join(" ")}`,
     "object-src 'none'",

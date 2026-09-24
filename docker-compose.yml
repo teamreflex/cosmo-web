@@ -134,6 +134,28 @@ services:
     networks:
       - apollo-network
 
+  # s3-compatible stand-in for cloudflare r2, serving the bucket publicly at localhost:9000/apollo
+  s3proxy:
+    image: andrewgaul/s3proxy:4.1.1
+    restart: on-failure
+    ports:
+      - "9000:80"
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+    # buckets are directories under /data
+    command: sh -c "mkdir -p /data/apollo && exec /opt/s3proxy/run-docker-container.sh"
+    environment:
+      # objects need to be publicly readable like the r2 custom domain, which s3proxy only allows without auth
+      - S3PROXY_AUTHORIZATION=none
+      # presigned uploads come straight from the browser
+      - S3PROXY_CORS_ALLOW_ALL=true
+    volumes:
+      - s3proxy-data:/data
+    networks:
+      - apollo-network
+
   # indexer processor
   processor:
     build:
@@ -156,14 +178,15 @@ services:
       - ENABLE_GRAVITY=${INDEXER_ENABLE_GRAVITY}
       - COSMO_PARALLEL_COUNT=${INDEXER_COSMO_PARALLEL_COUNT}
       - SENTRY_DSN=${INDEXER_SENTRY_DSN}
-      - R2_ACCOUNT_ID=${INDEXER_R2_ACCOUNT_ID}
-      - R2_BUCKET=${INDEXER_R2_BUCKET}
-      - R2_ACCESS_KEY=${INDEXER_R2_ACCESS_KEY}
-      - R2_SECRET_KEY=${INDEXER_R2_SECRET_KEY}
-      - R2_TOKEN=${INDEXER_R2_TOKEN}
+      - R2_ENDPOINT=http://s3proxy
+      - R2_BUCKET=apollo
+      - R2_ACCESS_KEY=local
+      - R2_SECRET_KEY=local
     depends_on:
       # indexer shouldn't go through pgbouncer
       postgres-indexer:
+        condition: service_healthy
+      s3proxy:
         condition: service_healthy
     networks:
       - apollo-network
@@ -258,3 +281,4 @@ volumes:
   postgres-indexer-data:
   typesense-data:
   valkey-data:
+  s3proxy-data:

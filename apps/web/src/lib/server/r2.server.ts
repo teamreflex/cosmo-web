@@ -1,10 +1,11 @@
+import { env as clientEnv } from "@/lib/env/client";
 import { env } from "@/lib/env/server";
 import { S3Client } from "bun";
 
 const MAX_FILE_SIZE = 1024 * 1024; // 1MB
 
 export const r2 = new S3Client({
-  endpoint: `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  endpoint: env.R2_ENDPOINT,
   bucket: env.R2_BUCKET,
   accessKeyId: env.R2_ACCESS_KEY,
   secretAccessKey: env.R2_SECRET_KEY,
@@ -33,7 +34,7 @@ export function getPresignedUploadUrl(options: PresignedUrlOptions) {
     type: contentType,
   });
 
-  const publicUrl = `${env.R2_DOMAIN}/${key}`;
+  const publicUrl = `${clientEnv.VITE_CDN_URL}/${key}`;
 
   return { uploadUrl, publicUrl };
 }
@@ -100,5 +101,5 @@ export async function uploadCollectionMedia(
     type: "video/mp4",
   });
 
-  return `${env.R2_DOMAIN}/${key}`;
+  return `${clientEnv.VITE_CDN_URL}/${key}`;
 }

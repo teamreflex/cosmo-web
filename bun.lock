@@ -240,11 +240,14 @@
         "effect": "catalog:",
       },
       "devDependencies": {
+        "@apollo/database": "workspace:*",
         "@apollo/lint": "workspace:*",
         "@apollo/typescript": "workspace:*",
         "@types/bun": "catalog:",
+        "drizzle-orm": "catalog:",
         "turbo": "catalog:",
         "typescript": "catalog:",
+        "zod": "catalog:",
       },
     },
     "packages/lint": {

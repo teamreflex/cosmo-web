@@ -29,7 +29,7 @@ const SOURCE_COOLDOWN_MS = 60 * 60 * 1000;
 const BREAKER_MS = 5 * 60 * 1000;
 
 const bucket = new S3Client({
-  endpoint: `https://${env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  endpoint: env.R2_ENDPOINT,
   bucket: env.R2_BUCKET,
   accessKeyId: env.R2_ACCESS_KEY,
   secretAccessKey: env.R2_SECRET_KEY,

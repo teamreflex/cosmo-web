@@ -1,6 +1,6 @@
 # @apollo/image
 
-Mirrors COSMO objekt images into our R2 bucket: the untouched source bytes for archival, a full-size WebP, and resized WebP renditions for small surfaces. Served from `cdn.apollo.cafe`.
+Mirrors COSMO objekt images into our R2 bucket: the untouched source bytes for archival, a full-size WebP, and resized WebP renditions for small surfaces. Served from `cdn.apollo.cafe`, and locally from the `s3proxy` service in `docker-compose.yml`.
 
 | Entry                   | Contents                                                                      |
 | ----------------------- | ----------------------------------------------------------------------------- |
@@ -78,3 +78,11 @@ const version = await runImage(
 ```
 
 `bucket` is a Bun `S3Client` configured by the caller; it's only used to sign URLs.
+
+## Mirroring a whole environment
+
+`turbo image:mirror` fills the bucket for a new environment. It mirrors the front and back image of every collection in the indexer database into the bucket at `R2_ENDPOINT` (the `s3proxy` service in `.env.example`), then saves each version to `front_image_version`/`back_image_version` where it changed. It reads the root `.env`, so check it points at s3proxy rather than R2 before running it.
+
+Images whose marker is already in the bucket are skipped, so a re-run resumes and retries failures, and a run over a complete bucket takes seconds. Options go after `--`, e.g. `turbo image:mirror -- --concurrency 16 --limit 20`; concurrency defaults to 8.
+
+Typesense documents keep the versions they were imported with, and the importer only picks up new collections. Run the mirror before the importer's first import, or search results show COSMO's images for anything it mirrored.

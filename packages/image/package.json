@@ -14,6 +14,7 @@
     "lint": "bun --bun oxlint --type-aware --type-check",
     "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
     "test": "bun test",
+    "image:mirror": "bun --env-file=../../.env --env-file=../../.env.local scripts/mirror.ts",
     "typecheck": "tsc --pretty --noEmit",
     "format": "oxfmt ."
   },
@@ -21,10 +22,13 @@
     "effect": "catalog:"
   },
   "devDependencies": {
+    "@apollo/database": "workspace:*",
     "@apollo/lint": "workspace:*",
     "@apollo/typescript": "workspace:*",
     "@types/bun": "catalog:",
+    "drizzle-orm": "catalog:",
     "turbo": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "zod": "catalog:"
   }
 }
