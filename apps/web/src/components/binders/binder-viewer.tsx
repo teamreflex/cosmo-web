@@ -13,6 +13,8 @@ import {
   DrawerDescription,
   DrawerTitle,
 } from "@/components/ui/drawer-radix";
+import { useBinderDetail } from "@/hooks/use-binder-detail";
+import type { BinderOptions } from "@/hooks/use-binder-detail";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import type { BinderViewerOrigin } from "@/hooks/use-open-binder";
 import { m } from "@/i18n/messages";
@@ -27,18 +29,11 @@ import {
   runSequence,
   visibleCover,
 } from "@/lib/client/binder-leaf";
+import { formatError } from "@/lib/client/errors";
 import { binderQuery } from "@/lib/queries/binders";
-import {
-  binderGrid,
-  binderPreviewFromDetail,
-  pocketsByPage,
-} from "@/lib/universal/binders";
-import type {
-  BinderDetail,
-  BinderLayout,
-  BinderPages,
-  BinderPreview,
-} from "@/lib/universal/binders";
+import { binderGrid, binderPreviewFromDetail } from "@/lib/universal/binders";
+import type { BinderLayout, BinderPreview } from "@/lib/universal/binders";
+import { isExpectedError } from "@/lib/universal/errors/expected";
 import { cn } from "@/lib/utils";
 import type { BinderViewerState } from "@/providers/binder-viewer-provider";
 import {
@@ -47,17 +42,18 @@ import {
   IconPencil,
   IconX,
 } from "@tabler/icons-react";
-import { useQuery } from "@tanstack/react-query";
-import { Link, getRouteApi } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { Dialog as DialogPrimitive } from "radix-ui";
 import {
+  Suspense,
   useEffect,
   useEffectEvent,
   useLayoutEffect,
   useRef,
   useState,
 } from "react";
-import type { KeyboardEvent, RefObject } from "react";
+import type { KeyboardEvent, ReactNode, RefObject } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import { toast } from "sonner";
 import BinderCover from "./binder-cover";
 import { BinderPage } from "./binder-page";
@@ -70,8 +66,6 @@ import {
   ViewerMeta,
   ViewerPage,
 } from "./binder-viewer-parts";
-
-const route = getRouteApi("/@{$username}");
 
 type Props = {
   userId: string;
@@ -87,8 +81,7 @@ type Props = {
 
 type ViewerProps = {
   cover: BinderPreview;
-  /** undefined until the pages load */
-  binder: BinderDetail | undefined;
+  binderOptions: BinderOptions;
   origin: BinderViewerOrigin | null;
   username: string;
   isOwner: boolean;
@@ -99,6 +92,8 @@ type ViewerProps = {
 
 /**
  * The read-only viewer for one open binder, mounted by `BinderViewerProvider` over every profile tab.
+ * A clicked cover opens it straight away, with the pages loading behind it,
+ * while a shared link waits for the binder to draw its cover.
  */
 export default function BinderViewer({
   userId,
@@ -109,44 +104,83 @@ export default function BinderViewer({
   onClosed,
 }: Props) {
   const isDesktop = useMediaQuery();
-  const { data: binder, isError } = useQuery(binderQuery(userId, slug));
+  const binderOptions = binderQuery(userId, slug);
 
-  // the clicked cover draws the flight until the pages load, and a shared link waits for them
-  const cover =
-    origin?.preview ?? (binder ? binderPreviewFromDetail(binder) : undefined);
+  const nothingShown = <NothingShown closing={closing} onClosed={onClosed} />;
 
-  const closeMissing = useEffectEvent(() => {
-    toast.error(
-      isError
-        ? m.binder_editor_error_loading()
-        : m.binder_error_binder_not_found(),
+  function show(cover: BinderPreview) {
+    const props = {
+      cover,
+      binderOptions,
+      origin,
+      username,
+      isOwner,
+      closing,
+      onClosed,
+      onClose,
+    } satisfies ViewerProps;
+    return isDesktop ? (
+      <DesktopViewer {...props} />
+    ) : (
+      <PhoneViewer {...props} />
     );
-    onClose();
-  });
+  }
+
+  return (
+    <ErrorBoundary
+      onError={(error) => {
+        toast.error(
+          isExpectedError(error)
+            ? formatError(error)
+            : m.binder_editor_error_loading(),
+        );
+        onClose();
+      }}
+      fallback={nothingShown}
+    >
+      {origin === null ? (
+        <Suspense fallback={nothingShown}>
+          <LinkedViewer binderOptions={binderOptions} show={show} />
+        </Suspense>
+      ) : (
+        show(origin.preview)
+      )}
+    </ErrorBoundary>
+  );
+}
+
+/**
+ * A viewer opened from a link, with no cover on screen: it waits for the
+ * binder, then draws the cover from it.
+ */
+function LinkedViewer({
+  binderOptions,
+  show,
+}: {
+  binderOptions: BinderOptions;
+  show: (cover: BinderPreview) => ReactNode;
+}) {
+  return show(binderPreviewFromDetail(useBinderDetail(binderOptions)));
+}
+
+/**
+ * Stands in for a viewer with nothing drawn, while a shared link loads or
+ * once the binder couldn't be shown. Closing then finishes straight away,
+ * with nothing to animate away.
+ */
+function NothingShown({
+  closing,
+  onClosed,
+}: {
+  closing: boolean;
+  onClosed: () => void;
+}) {
+  const finish = useEffectEvent(onClosed);
   useEffect(() => {
-    if (binder === null || isError) closeMissing();
-  }, [binder, isError]);
+    if (closing) finish();
+  }, [closing]);
 
-  // nothing was drawn yet, so there's nothing to animate away
-  const closeUnshown = useEffectEvent(onClosed);
-  useEffect(() => {
-    if (closing && cover === undefined) closeUnshown();
-  }, [closing, cover]);
-
-  if (cover === undefined) return null;
-
-  const props = {
-    cover,
-    binder: binder ?? undefined,
-    origin,
-    username,
-    isOwner,
-    closing,
-    onClosed,
-    onClose,
-  } satisfies ViewerProps;
-
-  return isDesktop ? <DesktopViewer {...props} /> : <PhoneViewer {...props} />;
+  return null;
 }
 
 /**
@@ -230,7 +264,7 @@ type DesktopBookProps = ViewerProps & {
  */
 function DesktopBook({
   cover,
-  binder,
+  binderOptions,
   origin,
   username,
   isOwner,
@@ -241,9 +275,7 @@ function DesktopBook({
 }: DesktopBookProps) {
   const single = cover.layout === "2x2";
   const step = single ? 1 : 2;
-  const pageCount = binder?.pageCount ?? cover.pageCount;
-  const pages =
-    binder === undefined ? undefined : pocketsByPage(binder.entries);
+  const { pageCount } = cover;
   // the first page in view
   const [index, setIndex] = useState(0);
   const shown = [index, index + 1]
@@ -433,7 +465,7 @@ function DesktopBook({
     >
       <DesktopHeader
         cover={cover}
-        binder={binder}
+        binderOptions={binderOptions}
         username={username}
         isOwner={isOwner}
         closeRef={closeRef}
@@ -451,8 +483,8 @@ function DesktopBook({
           <ViewerPage
             ref={coverPageRef}
             layout={cover.layout}
+            binderOptions={binderOptions}
             page={index}
-            pockets={pagePockets(pages, index)}
             priority={index === 0}
             className="bg-background"
           />
@@ -461,7 +493,7 @@ function DesktopBook({
             layout={cover.layout}
             index={index}
             pageCount={pageCount}
-            pages={pages}
+            binderOptions={binderOptions}
             leftRef={leftRef}
             rightRef={coverPageRef}
           />
@@ -491,7 +523,7 @@ function DesktopBook({
           <PageRail
             layout={cover.layout}
             pageCount={pageCount}
-            pages={pages ?? new Map()}
+            binderOptions={binderOptions}
             current={shown}
             onSelect={(page) => showSpread(page - (page % step))}
             className="justify-center"
@@ -507,8 +539,8 @@ function DesktopBook({
           single ? undefined : (
             <ViewerPage
               layout={cover.layout}
+              binderOptions={binderOptions}
               page={0}
-              pockets={pagePockets(pages, 0)}
               tabIndex={-1}
               className={cn("h-full bg-background", leftPageClass)}
             />
@@ -519,17 +551,9 @@ function DesktopBook({
   );
 }
 
-/**
- * A page's pockets, empty once the binder has loaded, or undefined while the
- * pages are still loading.
- */
-function pagePockets(pages: BinderPages | undefined, page: number) {
-  return pages === undefined ? undefined : (pages.get(page) ?? new Map());
-}
-
 type DesktopHeaderProps = {
   cover: BinderPreview;
-  binder: BinderDetail | undefined;
+  binderOptions: BinderOptions;
   username: string;
   isOwner: boolean;
   closeRef: RefObject<HTMLButtonElement | null>;
@@ -537,28 +561,24 @@ type DesktopHeaderProps = {
 
 function DesktopHeader({
   cover,
-  binder,
+  binderOptions,
   username,
   isOwner,
   closeRef,
 }: DesktopHeaderProps) {
-  const params = route.useParams();
-
   return (
     <div data-viewer-chrome className="flex items-center gap-3">
       <BinderCover binder={cover} label={false} className="w-10 shrink-0" />
       <div className="grid min-w-0 gap-1">
         <DialogDescription asChild>
-          <ViewerMeta cover={cover} binder={binder} />
+          <ViewerMeta cover={cover} binderOptions={binderOptions} />
         </DialogDescription>
         <DialogTitle className="truncate font-cosmo text-xl leading-tight font-black uppercase">
           {cover.name}
         </DialogTitle>
       </div>
       <div className="ml-auto flex shrink-0 items-center gap-2">
-        {isOwner && (
-          <BinderPinButton username={params.username} binder={cover} />
-        )}
+        {isOwner && <BinderPinButton binder={cover} />}
         <ShareButton username={username} slug={cover.slug} />
         {isOwner && <EditLink username={username} slug={cover.slug} />}
         <DialogClose asChild>
@@ -582,7 +602,7 @@ type SpreadProps = {
   /** the left-hand page */
   index: number;
   pageCount: number;
-  pages: BinderPages | undefined;
+  binderOptions: BinderOptions;
   leftRef: RefObject<HTMLDivElement | null>;
   rightRef: RefObject<HTMLDivElement | null>;
 };
@@ -595,7 +615,7 @@ function Spread({
   layout,
   index,
   pageCount,
-  pages,
+  binderOptions,
   leftRef,
   rightRef,
 }: SpreadProps) {
@@ -604,8 +624,8 @@ function Spread({
       <ViewerPage
         ref={leftRef}
         layout={layout}
+        binderOptions={binderOptions}
         page={index}
-        pockets={pagePockets(pages, index)}
         priority={index === 0}
         className={cn("bg-background data-hold:invisible", leftPageClass)}
       />
@@ -613,8 +633,8 @@ function Spread({
         <ViewerPage
           ref={rightRef}
           layout={layout}
+          binderOptions={binderOptions}
           page={index + 1}
-          pockets={pagePockets(pages, index + 1)}
           priority={index === 0}
           className={cn("bg-background", rightPageClass)}
         />
@@ -748,19 +768,16 @@ type PhoneBookProps = ViewerProps & {
  */
 function PhoneBook({
   cover,
-  binder,
+  binderOptions,
   origin,
   username,
   isOwner,
   closing,
   onDismiss,
 }: PhoneBookProps) {
-  const pageCount = binder?.pageCount ?? cover.pageCount;
-  const pages =
-    binder === undefined ? undefined : pocketsByPage(binder.entries);
+  const { pageCount } = cover;
   const { columns, rows } = binderGrid(cover.layout);
   const [index, setIndex] = useState(0);
-  const params = route.useParams();
 
   const stageRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
@@ -858,7 +875,7 @@ function PhoneBook({
         <BinderCover binder={cover} label={false} className="w-8 shrink-0" />
         <div className="grid min-w-0 flex-1 gap-0.5">
           <DrawerDescription asChild>
-            <ViewerMeta cover={cover} binder={binder} short />
+            <ViewerMeta cover={cover} binderOptions={binderOptions} short />
           </DrawerDescription>
           <DrawerTitle className="line-clamp-2 font-cosmo text-base leading-tight font-black uppercase">
             {cover.name}
@@ -890,9 +907,10 @@ function PhoneBook({
               <ViewerPage
                 ref={page === 0 ? firstPageRef : undefined}
                 layout={cover.layout}
+                binderOptions={binderOptions}
                 page={page}
-                pockets={pagePockets(pages, page)}
                 priority={page === 0}
+                placeholder={Math.abs(page - index) > 1}
                 style={{ maxWidth: pageMaxWidth }}
                 className="mx-auto bg-background"
               />
@@ -924,13 +942,7 @@ function PhoneBook({
       </div>
 
       <div className="flex gap-2 border-t border-border p-3">
-        {isOwner && (
-          <BinderPinButton
-            username={params.username}
-            binder={cover}
-            className="h-10"
-          />
-        )}
+        {isOwner && <BinderPinButton binder={cover} className="h-10" />}
         <ShareButton
           username={username}
           slug={cover.slug}

@@ -13,7 +13,6 @@ import {
   userCollectionBlockchainGroupsQuery,
   userCollectionBlockchainQuery,
 } from "@/lib/queries/objekt-queries";
-import { pinsQuery } from "@/lib/queries/profile";
 import type { ProfilePin } from "@/lib/universal/binders";
 import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { userCollectionFrontendSchema } from "@/lib/universal/parsers";
@@ -30,10 +29,6 @@ export const Route = createFileRoute("/@{$username}/")({
   component: RouteComponent,
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
-  // pin changes anywhere on the profile write into this entry (use-profile-pins)
-  context: ({ params }) => ({
-    pinsOptions: pinsQuery(params.username),
-  }),
   loader: async ({ context, deps }) => {
     const [account, target, , selected] = await Promise.all([
       context.queryClient.ensureQueryData(currentAccountQuery),

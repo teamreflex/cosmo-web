@@ -6,6 +6,7 @@ export const pinsQuery = (username: string) =>
     queryKey: ["pins", username],
     queryFn: () => $fetchPins({ data: { username } }),
     staleTime: Infinity,
+    gcTime: Infinity,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
   });

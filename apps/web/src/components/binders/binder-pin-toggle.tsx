@@ -17,7 +17,9 @@ import {
   IconPinFilled,
   IconPinnedOff,
 } from "@tabler/icons-react";
+import { Suspense } from "react";
 import type { SyntheticEvent } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 
 type OverlayProps = {
   binder: BinderPreview;
@@ -82,41 +84,49 @@ function UnpinButton({ binder }: { binder: BinderPreview }) {
 }
 
 type ButtonProps = {
-  /** the route param, which keys the profile's pins */
-  username: string;
   binder: BinderPreview;
   className?: string;
 };
 
 /**
- * The owner's pin toggle in the binder viewer, beside Share. It waits for the
- * profile's pins to know which way it points.
+ * The owner's pin toggle in the binder viewer, beside Share.
+ * The profile loads its pins up front for the owner, so it never waits on them.
  */
-export function BinderPinButton({ username, binder, className }: ButtonProps) {
-  const pinned = usePinnedBinder(username, binder.id);
+export function BinderPinButton(props: ButtonProps) {
+  return (
+    <ErrorBoundary fallback={null}>
+      <Suspense fallback={null}>
+        <PinToggle {...props} />
+      </Suspense>
+    </ErrorBoundary>
+  );
+}
+
+function PinToggle({ binder, className }: ButtonProps) {
+  const pinned = usePinnedBinder(binder.id);
   const mutation = useToggleBinderPin(binder);
 
   return (
     <Button
       variant="outline"
       size="sm"
-      aria-pressed={pinned === true}
-      disabled={pinned === undefined || mutation.isPending}
-      onClick={() => mutation.mutate(pinned !== true)}
+      aria-pressed={pinned}
+      disabled={mutation.isPending}
+      onClick={() => mutation.mutate(!pinned)}
       className={cn(
-        pinned === true &&
+        pinned &&
           "border-cosmo bg-cosmo/12 text-cosmo-text hover:bg-cosmo/20 hover:text-cosmo-text dark:border-cosmo dark:bg-cosmo/12 dark:hover:bg-cosmo/20",
         className,
       )}
     >
       {mutation.isPending ? (
         <IconLoader2 className="animate-spin" />
-      ) : pinned === true ? (
+      ) : pinned ? (
         <IconPinFilled />
       ) : (
         <IconPin />
       )}
-      {pinned === true ? m.binder_pinned() : m.binder_pin()}
+      {pinned ? m.binder_pinned() : m.binder_pin()}
     </Button>
   );
 }
