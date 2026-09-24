@@ -36,6 +36,9 @@
       "cache": false,
       "dependsOn": ["//#services"]
     },
+    "image:mirror": {
+      "cache": false
+    },
     "proxy:audio": {
       "persistent": true,
       "cache": false
