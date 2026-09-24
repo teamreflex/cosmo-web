@@ -19,13 +19,13 @@ import { m } from "@/i18n/messages";
 import {
   fadeIn,
   fadeOut,
-  flightFrames,
   leafMotion,
   placeLeaf,
   playFlight,
   prefersReducedMotion,
+  ringFrames,
   runSequence,
-  visibleBox,
+  visibleCover,
 } from "@/lib/client/binder-leaf";
 import { binderQuery } from "@/lib/queries/binders";
 import {
@@ -98,8 +98,7 @@ type ViewerProps = {
 };
 
 /**
- * The read-only viewer for one open binder, mounted by `BinderViewerProvider`
- * over every profile tab.
+ * The read-only viewer for one open binder, mounted by `BinderViewerProvider` over every profile tab.
  */
 export default function BinderViewer({
   userId,
@@ -301,7 +300,7 @@ function DesktopBook({
     const leaf = leafRef.current;
     if (!stage || !book || !page || !fly || !leaf) return;
     const left = leftRef.current;
-    const from = visibleBox(origin?.cover);
+    const from = visibleCover(origin?.cover);
     origin?.cover.style.setProperty("visibility", "hidden");
 
     sequence.current = runSequence(async ({ play }) => {
@@ -329,15 +328,13 @@ function DesktopBook({
         );
       } else {
         book.setAttribute("data-hold", "");
-        await playFlight(
-          play,
-          fly,
-          flightFrames(from, fly.getBoundingClientRect(), "in"),
-          leafMotion.flight,
-        );
+        await playFlight(play, fly, from, "in", leafMotion.flight);
         book.removeAttribute("data-hold");
       }
 
+      for (const rings of book.querySelectorAll("[data-spread-rings]")) {
+        void play(rings, ringFrames("open"), leafMotion.swingOpen);
+      }
       await play(
         leaf,
         [{ transform: "rotateY(0deg)" }, { transform: "rotateY(-180deg)" }],
@@ -402,6 +399,9 @@ function DesktopBook({
 
       placeLeaf(fly, page, stage);
       left?.setAttribute("data-hold", "");
+      for (const rings of book.querySelectorAll("[data-spread-rings]")) {
+        void play(rings, ringFrames("shut"), leafMotion.swingShut);
+      }
       await play(
         leaf,
         [{ transform: "rotateY(-180deg)" }, { transform: "rotateY(0deg)" }],
@@ -413,15 +413,13 @@ function DesktopBook({
       for (const chrome of stage.querySelectorAll("[data-viewer-chrome]")) {
         void play(chrome, fadeOut, { ...leafMotion.fade, fill: "forwards" });
       }
-      const to = visibleBox(origin?.cover);
+      const to = visibleCover(origin?.cover);
       await (to === null
         ? play(fly, fadeOut, { ...leafMotion.fade, fill: "forwards" })
-        : playFlight(
-            play,
-            fly,
-            flightFrames(to, fly.getBoundingClientRect(), "out"),
-            { ...leafMotion.flightBack, fill: "forwards" },
-          ));
+        : playFlight(play, fly, to, "out", {
+            ...leafMotion.flightBack,
+            fill: "forwards",
+          }));
       finish();
     });
   }, [closing, origin, index, overlayRef]);

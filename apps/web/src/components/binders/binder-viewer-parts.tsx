@@ -179,6 +179,7 @@ function ViewerPocket({ slot, objekt, priority, tabIndex }: ViewerPocketProps) {
 export function SpreadRings() {
   return (
     <div
+      data-spread-rings
       aria-hidden
       className="pointer-events-none absolute inset-y-0 left-1/2 z-2 w-0"
     >
@@ -279,9 +280,16 @@ export function ViewerLeaf({ flyRef, leafRef, cover, back }: LeafProps) {
       aria-hidden
       className="pointer-events-none absolute z-20 origin-top-left perspective-[2000px] not-data-leaf:hidden data-[leaf=resting]:opacity-[0.001]"
     >
-      <div ref={leafRef} className="absolute inset-0 origin-left transform-3d">
-        <div className="absolute inset-0 backface-hidden">
-          <BinderCover binder={cover} fill className="size-full" />
+      <div
+        ref={leafRef}
+        className="absolute inset-0 origin-left rounded-[inherit] transform-3d"
+      >
+        <div className="absolute inset-0 rounded-[inherit] backface-hidden">
+          <BinderCover
+            binder={cover}
+            fill
+            className="size-full rounded-[inherit]"
+          />
         </div>
         {/* a pixel behind the cover rather than a hidden back face, so it's painted before the swing turns it over */}
         {back !== undefined && (
