@@ -1,12 +1,13 @@
 import ListShelf from "@/components/lists/list-shelf";
 import { m } from "@/i18n/messages";
 import { listShelfQuery } from "@/lib/queries/lists";
+import { cn } from "@/lib/utils";
 import {
   IconCalendarStats,
   IconChartPie,
   IconChevronDown,
-  IconLayoutGrid,
   IconList,
+  IconPackage,
   IconSend,
 } from "@tabler/icons-react";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
@@ -17,6 +18,7 @@ import {
   useMatch,
 } from "@tanstack/react-router";
 import { type KeyboardEvent, type ReactNode, useState } from "react";
+import ProfileToolbar from "./profile-toolbar";
 
 const route = getRouteApi("/@{$username}");
 
@@ -75,19 +77,24 @@ export default function ProfileTabs({ isAuthenticated }: Props) {
     }
   }
 
+  /**
+   * One grid places each piece per breakpoint without rendering anything
+   * twice: on mobile the page toolbar gets its own row under the shelf, and
+   * from md it overlays the free end of the tab row.
+   */
   return (
-    <div
-      className="border-b border-border bg-muted/40"
-      onKeyDown={handleKeyDown}
-    >
-      <nav aria-label={m.profile_tabs()} className="container flex md:gap-2">
+    <div className="grid grid-cols-1" onKeyDown={handleKeyDown}>
+      <nav
+        aria-label={m.profile_tabs()}
+        className="col-start-1 row-start-1 container flex md:h-12 md:gap-2"
+      >
         <Link
           to="/@{$username}"
           params={{ username }}
           activeOptions={{ exact: true, includeSearch: false }}
           className={tabClassName}
         >
-          <IconLayoutGrid className="size-5 md:hidden" />
+          <IconPackage className="size-5 md:hidden" />
           <span className="sr-only md:not-sr-only">{m.collection_title()}</span>
         </Link>
         <Link
@@ -137,7 +144,11 @@ export default function ProfileTabs({ isAuthenticated }: Props) {
         </button>
       </nav>
 
-      <ShelfPanel id="profile-shelf-lists" open={openShelf === "lists"}>
+      <ShelfPanel
+        id="profile-shelf-lists"
+        open={openShelf === "lists"}
+        className="col-start-1 row-start-2"
+      >
         <ListShelf
           username={username}
           displayName={target.cosmo.username}
@@ -146,6 +157,13 @@ export default function ProfileTabs({ isAuthenticated }: Props) {
           activeSlug={listSlug}
         />
       </ShelfPanel>
+
+      {/* hidden on routes without a toolbar, so they don't get an empty mobile bar */}
+      <div className="col-start-1 row-start-3 border-t border-border has-[>div:empty]:hidden md:pointer-events-none md:row-start-1 md:border-t-0">
+        <div className="container flex h-14 items-center gap-2 md:h-full md:justify-end">
+          <ProfileToolbar address={target.cosmo.address} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -157,10 +175,12 @@ export default function ProfileTabs({ isAuthenticated }: Props) {
 function ShelfPanel({
   id,
   open,
+  className,
   children,
 }: {
   id: string;
   open: boolean;
+  className: string;
   children: ReactNode;
 }) {
   const [hasOpened, setHasOpened] = useState(open);
@@ -173,7 +193,10 @@ function ShelfPanel({
       id={id}
       data-open={open}
       inert={!open}
-      className="grid grid-rows-[0fr] border-t border-transparent transition-[grid-template-rows,border-color] duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] data-[open=true]:grid-rows-[1fr] data-[open=true]:border-border motion-reduce:transition-none"
+      className={cn(
+        "grid grid-rows-[0fr] border-t border-transparent transition-[grid-template-rows,border-color] duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] data-[open=true]:grid-rows-[1fr] data-[open=true]:border-border motion-reduce:transition-none",
+        className,
+      )}
     >
       <div className="min-h-0 overflow-hidden">{hasOpened && children}</div>
     </div>

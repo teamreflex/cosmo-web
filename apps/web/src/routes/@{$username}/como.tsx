@@ -1,9 +1,7 @@
-import ArtistIcon from "@/components/artist-icon";
 import ComoCalendar from "@/components/como/calendar";
 import HelpDialog from "@/components/como/help-dialog";
 import { Error } from "@/components/error-boundary";
 import Portal from "@/components/portal";
-import TitleHeader from "@/components/ui/title-header";
 import { useArtists } from "@/hooks/use-artists";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
@@ -41,31 +39,8 @@ function RouteComponent() {
   const { data } = Route.useLoaderData();
   const { artistList } = useArtists();
 
-  const totals = artistList.map((artist) => {
-    const total = data
-      .filter((t) => t.artistId === artist.id.toLowerCase())
-      .reduce((sum, objekt) => {
-        return sum + objekt.amount;
-      }, 0);
-
-    return { artist, total };
-  });
-
   return (
     <main className="flex flex-col">
-      <TitleHeader title={m.common_como()}>
-        <div className="ml-auto flex items-center gap-3">
-          {totals.map((total) => (
-            <div className="flex items-center gap-1" key={total.artist.name}>
-              <ArtistIcon artist={total.artist.name} />
-              <span className="font-semibold tabular-nums">
-                +{total.total.toLocaleString()}
-              </span>
-            </div>
-          ))}
-        </div>
-      </TitleHeader>
-
       <div className="container flex flex-col pt-4">
         <ClientOnly>
           <ComoCalendar artists={artistList} transfers={data} />
@@ -87,8 +62,6 @@ function PendingComponent() {
 
   return (
     <main className="flex flex-col">
-      <TitleHeader title={m.common_como()} />
-
       <div className="container pt-4">
         <div className="flex h-fit flex-col overflow-hidden rounded-lg border border-secondary bg-secondary text-clip">
           {/* days of the week */}

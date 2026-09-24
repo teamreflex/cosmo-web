@@ -5,23 +5,20 @@ import { m } from "@/i18n/messages";
 import { transfersQuery } from "@/lib/queries/objekt-queries";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import type { TransferType } from "@/lib/universal/transfers";
-import type { ValidArtist } from "@apollo/cosmo/types/common";
 import { IconHeartBroken, IconRefresh } from "@tabler/icons-react";
 import {
   QueryErrorResetBoundary,
   useSuspenseInfiniteQuery,
 } from "@tanstack/react-query";
-import { Suspense, useCallback } from "react";
+import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { TransfersFilters } from "../collection/filter-contexts/transfers-filters";
 import FiltersContainer from "../collection/filters-container";
-import MemberFilter from "../collection/member-filter";
 import { InfiniteQueryNext } from "../infinite-query-pending";
 import Portal from "../portal";
 import SkeletonGradient from "../skeleton/skeleton-overlay";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
-import TitleHeader from "../ui/title-header";
 import TransferRow from "./transfer-row";
 
 type Props = {
@@ -39,49 +36,8 @@ export default function TransfersRenderer({ cosmo }: Props) {
     }));
   }
 
-  const setActiveMember = useCallback(
-    (member: string) => {
-      setFilters((prev) => {
-        const current = prev.member ?? [];
-        const next = current.includes(member)
-          ? current.filter((m) => m !== member)
-          : [...current, member];
-        return {
-          artist: undefined,
-          member: next.length > 0 ? next : undefined,
-        };
-      });
-    },
-    [setFilters],
-  );
-
-  const setActiveArtist = useCallback(
-    (artist: string) => {
-      setFilters((prev) => ({
-        member: undefined,
-        // SAFETY: callers pass artist ids from the artist list
-        artist: prev.artist === artist ? undefined : (artist as ValidArtist),
-      }));
-    },
-    [setFilters],
-  );
-
   return (
     <div className="flex flex-col">
-      <TitleHeader title={m.trades_title()}>
-        <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
-          <div className="md:pointer-events-auto">
-            <MemberFilter
-              activeArtist={filters.artist ?? null}
-              activeMembers={filters.member ?? []}
-              multiple
-              updateArtist={setActiveArtist}
-              updateMember={setActiveMember}
-            />
-          </div>
-        </div>
-      </TitleHeader>
-
       <FiltersContainer>
         <TransfersFilters type={type} setType={setType} />
       </FiltersContainer>

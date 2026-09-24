@@ -6,10 +6,8 @@ import ListRenderer from "@/components/lists/list-renderer";
 import Overlay from "@/components/misc/overlay";
 import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
 import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
-import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import TitleHeader from "@/components/ui/title-header";
 import { m } from "@/i18n/messages";
 import { $fetchObjektList } from "@/lib/functions/lists";
 import { defineHead } from "@/lib/meta";
@@ -152,14 +150,6 @@ function PendingComponent() {
       </div>
 
       <div className="flex flex-col">
-        <TitleHeader title={m.list_title()}>
-          <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
-            <div className="md:pointer-events-auto">
-              <MemberFilterSkeleton />
-            </div>
-          </div>
-        </TitleHeader>
-
         <FiltersContainer>
           <div className="flex flex-wrap items-center gap-2">
             {Array.from({ length: 5 }).map((_, i) => (

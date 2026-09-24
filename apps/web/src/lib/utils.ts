@@ -86,12 +86,15 @@ export const artistColors = {
 } satisfies Record<ValidArtist, string>;
 
 /**
- * Generate a random hex color.
+ * Derive a color from a name via an FNV-1a hash, so the server and client
+ * render the same color and a name keeps it everywhere it appears.
  */
-export function randomColor(): string {
-  return `#${Math.floor(Math.random() * 0xffffff)
-    .toString(16)
-    .padStart(6, "0")}`;
+export function colorFromName(name: string): string {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < name.length; i++) {
+    hash = Math.imul(hash ^ name.charCodeAt(i), 0x01000193);
+  }
+  return `hsl(${(hash >>> 0) % 360} 70% 60%)`;
 }
 
 export { getSeasonColor, seasonSort } from "./universal/seasons";

@@ -5,6 +5,7 @@ import ListRenderer from "@/components/lists/list-renderer";
 import Overlay from "@/components/misc/overlay";
 import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
 import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
+import CosmoMemberFilter from "@/components/objekt/cosmo-member-filter";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import TitleHeader from "@/components/ui/title-header";
@@ -101,6 +102,14 @@ function RouteComponent() {
                 />
               </div>
             </div>
+
+            <TitleHeader title={m.list_title()}>
+              <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
+                <div className="md:pointer-events-auto">
+                  <CosmoMemberFilter />
+                </div>
+              </div>
+            </TitleHeader>
 
             <ListRenderer
               authenticated={isAuthenticated}
