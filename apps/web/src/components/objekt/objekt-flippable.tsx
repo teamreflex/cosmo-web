@@ -62,11 +62,15 @@ export default function FlippableObjekt({ children, collection }: Props) {
         // vertical swipes still scroll the page on touch, which cancels the drag and settles the card
         className="relative aspect-photocard w-full touch-pan-y object-contain select-none focus:outline-none"
       >
-        {/* the card's own thickness, swept between the two faces */}
+        {/*
+         * the card's own thickness, swept between the two faces. The edge
+         * spills past the card as it turns, drawn by overflow-visible so it
+         * never widens a scroll container the way a larger box would
+         */}
         <svg
           ref={svgRef}
           aria-hidden="true"
-          className="pointer-events-none absolute -top-1/2 -left-1/2 h-[200%] w-[200%] overflow-visible"
+          className="pointer-events-none absolute inset-0 overflow-visible"
         >
           <path ref={edgeRef} d="" fill={CARD_EDGE_COLOR} />
         </svg>
