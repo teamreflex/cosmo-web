@@ -172,7 +172,11 @@ function boardFrames(
 export function visibleCover(element: HTMLElement | undefined) {
   if (element === undefined || !element.isConnected) return null;
   const box = element.getBoundingClientRect();
-  return box.width > 0 && box.bottom > 0 && box.top < window.innerHeight
+  return box.width > 0 &&
+    box.bottom > 0 &&
+    box.top < window.innerHeight &&
+    box.right > 0 &&
+    box.left < window.innerWidth
     ? element
     : null;
 }

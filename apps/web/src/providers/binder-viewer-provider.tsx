@@ -5,7 +5,7 @@ import { binderQuery } from "@/lib/queries/binders";
 import type { BinderPreview } from "@/lib/universal/binders";
 import { useQueryClient } from "@tanstack/react-query";
 import { getRouteApi, useMatches, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { startTransition, useState } from "react";
 import type { ReactNode } from "react";
 
 const route = getRouteApi("/@{$username}");
@@ -87,15 +87,18 @@ export function BinderViewerProvider({
     element?: HTMLElement,
     cover = element,
   ) {
-    setViewer((current) => ({
-      key: (current?.key ?? 0) + 1,
-      slug: preview.slug,
-      origin:
-        element === undefined || cover === undefined
-          ? null
-          : { element, cover, preview },
-      closing: false,
-    }));
+    // render the viewer after the tap paints, rather than inside it
+    startTransition(() => {
+      setViewer((current) => ({
+        key: (current?.key ?? 0) + 1,
+        slug: preview.slug,
+        origin:
+          element === undefined || cover === undefined
+            ? null
+            : { element, cover, preview },
+        closing: false,
+      }));
+    });
     mirror(preview.slug);
   }
 
