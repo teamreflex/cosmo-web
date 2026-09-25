@@ -7,6 +7,7 @@ import { Popover, PopoverAnchor, PopoverContent } from "../ui/popover";
 
 type Props = {
   showArtists?: boolean;
+  align?: "center" | "end";
   activeArtist?: string | null;
   activeMembers: string[];
   multiple?: boolean;
@@ -16,6 +17,7 @@ type Props = {
 
 export default function MemberFilter({
   showArtists = true,
+  align = "center",
   activeArtist,
   activeMembers,
   multiple = false,
@@ -80,9 +82,13 @@ export default function MemberFilter({
   return (
     <Popover open={openArtistId !== null} onOpenChange={handleOpenChange}>
       <div className="relative flex h-fit w-full items-center justify-center gap-2 py-1">
-        {/* anchor at the center */}
         <PopoverAnchor asChild>
-          <div className="pointer-events-none absolute top-[44px] left-1/2 h-px w-px -translate-x-1/2" />
+          <div
+            className={cn(
+              "pointer-events-none absolute top-[44px] h-px w-px",
+              align === "center" ? "left-1/2 -translate-x-1/2" : "right-0",
+            )}
+          />
         </PopoverAnchor>
 
         {selected
@@ -102,6 +108,7 @@ export default function MemberFilter({
       {displayArtist && (
         <ArtistPopoverContent
           artist={displayArtist}
+          align={align}
           openArtistId={openArtistId}
           activeArtist={activeArtist ?? null}
           activeMembers={activeMembers}
@@ -154,6 +161,7 @@ function ArtistTriggerButton(props: ArtistTriggerButtonProps) {
 
 type ArtistPopoverContentProps = {
   artist: CosmoArtistWithMembersBFF;
+  align: "center" | "end";
   openArtistId: string | null;
   activeArtist: string | null;
   activeMembers: string[];
@@ -205,7 +213,7 @@ function ArtistPopoverContent(props: ArtistPopoverContentProps) {
       style={{
         "--artist-color": artistColor,
       }}
-      align="center"
+      align={props.align}
       side="bottom"
       onPointerDownOutside={handlePointerDownOutside}
       className="z-20 member-filter-scrollbar flex w-fit max-w-[95vw] flex-row items-center justify-items-start gap-2 overflow-x-auto rounded-lg border-transparent bg-(--artist-color/0.15) px-2 py-1 backdrop-blur-[30px] backdrop-brightness-[1.3] backdrop-saturate-160 xl:justify-center"

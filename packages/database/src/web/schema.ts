@@ -150,7 +150,11 @@ export const objektListEntries = pgTable(
     verifiedAt: timestamp("verified_at", { mode: "string" }),
   },
   (t) => [
-    index("objekt_list_entries_list_idx").on(t.objektListId),
+    // leading column serves entry lookups, created_at serves first-n shelf previews
+    index("objekt_list_entries_list_created_idx").on(
+      t.objektListId,
+      t.createdAt,
+    ),
     index("objekt_list_entries_collection_id_idx").on(t.collectionId),
     uniqueIndex("objekt_list_entries_token_list_unique_idx")
       .on(t.tokenId, t.objektListId)

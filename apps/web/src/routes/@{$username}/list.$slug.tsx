@@ -6,15 +6,14 @@ import ListRenderer from "@/components/lists/list-renderer";
 import Overlay from "@/components/misc/overlay";
 import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
 import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
-import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import TitleHeader from "@/components/ui/title-header";
 import { m } from "@/i18n/messages";
 import { $fetchObjektList } from "@/lib/functions/lists";
 import { defineHead } from "@/lib/meta";
 import { currentAccountQuery, selectedArtistsQuery } from "@/lib/queries/core";
 import { objektListQuery } from "@/lib/queries/objekt-queries";
+import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { objektListFrontendSchema } from "@/lib/universal/parsers";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
@@ -68,44 +67,24 @@ export const Route = createFileRoute("/@{$username}/list/$slug")({
     );
 
     const isAuthenticated = account?.user.id === objektList.userId;
-    const { objektLists, ...targetAccount } = target;
 
-    return {
-      account,
-      target: targetAccount,
-      targetObjektLists: objektLists,
-      isAuthenticated,
-      objektList,
-    };
+    return { account, target, isAuthenticated, objektList };
   },
   head: ({ loaderData }) =>
     defineHead({
       title: loaderData?.objektList.name ?? m.objekt_list(),
-      canonical: `/@${loaderData?.target.cosmo.username}/list/${loaderData?.objektList.id}`,
+      canonical:
+        loaderData &&
+        `/@${profileIdentifier(loaderData.target.cosmo)}/list/${loaderData.objektList.slug}`,
     }),
 });
 
 function RouteComponent() {
-  const { account, target, targetObjektLists, isAuthenticated, objektList } =
+  const { account, target, isAuthenticated, objektList } =
     Route.useLoaderData();
 
-  // a list is trade-active if it's a have list with a linked want, OR a want
-  // list that some have list of the same user links to
-  const linkingHave =
-    objektList.type === "want"
-      ? targetObjektLists.find(
-          (l) => l.type === "have" && l.linkedWantListId === objektList.id,
-        )
-      : undefined;
-  const isTradeActive =
-    objektList.type === "have"
-      ? objektList.linkedWantListId !== null
-      : linkingHave !== undefined;
-
-  const pairedList =
-    objektList.type === "have" && objektList.linkedWantListId
-      ? targetObjektLists.find((l) => l.id === objektList.linkedWantListId)
-      : linkingHave;
+  // a have or want list is trade-active once it's paired with the other kind
+  const { pairedList } = objektList;
 
   const extras = (
     <>
@@ -114,7 +93,7 @@ function RouteComponent() {
           <Link
             to="/@{$username}/list/$slug"
             params={{
-              username: target.cosmo.username,
+              username: profileIdentifier(target.cosmo),
               slug: pairedList.slug,
             }}
           >
@@ -128,7 +107,7 @@ function RouteComponent() {
         </Button>
       )}
       {isAuthenticated &&
-        isTradeActive &&
+        pairedList !== null &&
         (objektList.type === "have" || objektList.type === "want") && (
           <ListMatches list={objektList} />
         )}
@@ -137,7 +116,7 @@ function RouteComponent() {
 
   return (
     <UserStateProvider {...account}>
-      <ProfileProvider target={target} objektLists={targetObjektLists}>
+      <ProfileProvider target={target} objektLists={account?.objektLists ?? []}>
         <div className="border-b border-border">
           <div className="container">
             <ListHeader
@@ -171,14 +150,6 @@ function PendingComponent() {
       </div>
 
       <div className="flex flex-col">
-        <TitleHeader title={m.list_title()}>
-          <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
-            <div className="md:pointer-events-auto">
-              <MemberFilterSkeleton />
-            </div>
-          </div>
-        </TitleHeader>
-
         <FiltersContainer>
           <div className="flex flex-wrap items-center gap-2">
             {Array.from({ length: 5 }).map((_, i) => (

@@ -1,8 +1,6 @@
-import ProfileListDropdown from "@/components/lists/profile-list-dropdown";
 import UserBalances, {
   ComoBalanceErrorFallback,
 } from "@/components/navbar/como-balances";
-import ComoButton from "@/components/profile/como-button";
 import CopyAddressButton from "@/components/profile/copy-address-button";
 import {
   CosmoVerifiedBadge,
@@ -10,10 +8,8 @@ import {
   ModhausBadge,
   TwitterBadge,
 } from "@/components/profile/profile-badges";
-import ProgressButton from "@/components/profile/progress-button";
-import TradesButton from "@/components/profile/trades-button";
+import ProfileTabs from "@/components/profile/profile-tabs";
 import UserAvatar from "@/components/profile/user-avatar";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
@@ -23,7 +19,7 @@ import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
 import { Addresses, isEqual } from "@apollo/util";
-import { IconAlertCircle, IconList } from "@tabler/icons-react";
+import { IconAlertCircle } from "@tabler/icons-react";
 import { Link, Outlet, createFileRoute } from "@tanstack/react-router";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -59,13 +55,9 @@ function RouteComponent() {
     <UserStateProvider {...account}>
       <MetadataDialogProvider>
         <main className="relative flex flex-col">
-          {/* profile header with accent background */}
-          <div className="relative border-b border-border">
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 opacity-70 [background:radial-gradient(900px_220px_at_10%_0%,color-mix(in_oklch,var(--color-cosmo)_18%,transparent),transparent_60%)]"
-            />
-            <div className="relative container flex flex-col gap-4 py-6 pb-4 md:flex-row md:items-center md:gap-6">
+          {/* the accent glow is the header's own background so it also tints the translucent border, and follows the container so it stays under the identity block on wide screens */}
+          <div className="border-b border-border [background:radial-gradient(900px_280px_at_max(20%,calc(50%_-_460px))_0%,color-mix(in_oklch,var(--color-cosmo)_12.6%,transparent),transparent_60%)]">
+            <div className="container flex flex-col gap-4 pt-6 pb-3 md:flex-row md:items-center md:gap-6">
               {/* avatar */}
               <UserAvatar
                 variant="square"
@@ -98,6 +90,12 @@ function RouteComponent() {
                         <TwitterBadge handle={target.user.social.twitter} />
                       )}
                   </div>
+
+                  <div className="flex items-center gap-0.5">
+                    <CopyAddressButton address={target.cosmo.address} />
+                    {/* content gets portaled in */}
+                    <div className="flex items-center empty:hidden" id="help" />
+                  </div>
                 </div>
 
                 <div className="flex h-10 items-stretch divide-x divide-border [&>*:has(+:empty:last-child)]:border-e-0">
@@ -118,36 +116,9 @@ function RouteComponent() {
                   />
                 </div>
               </div>
-
-              {/* action cluster */}
-              <div className="-mx-4 flex flex-nowrap items-center justify-center gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:self-end md:overflow-visible md:p-0">
-                <CopyAddressButton address={target.cosmo.address} />
-                <TradesButton cosmo={target.cosmo} />
-                <ComoButton cosmo={target.cosmo} />
-                <ProgressButton cosmo={target.cosmo} />
-                <Suspense
-                  fallback={
-                    <Button
-                      className="animate-pulse"
-                      variant="outline"
-                      size="profile"
-                      data-profile
-                    >
-                      <IconList className="h-5 w-5" />
-                      <span className="hidden sm:block">{m.list_lists()}</span>
-                    </Button>
-                  }
-                >
-                  <ProfileListDropdown isAuthenticated={isAuthenticated} />
-                </Suspense>
-
-                {/* content gets portaled in */}
-                <div
-                  className="flex h-10 items-center empty:hidden lg:h-8"
-                  id="help"
-                />
-              </div>
             </div>
+
+            <ProfileTabs isAuthenticated={isAuthenticated} />
           </div>
 
           <Outlet />
@@ -161,19 +132,23 @@ function PendingComponent() {
   return (
     <main className="relative flex flex-col">
       <div className="border-b border-border">
-        <div className="container flex flex-col gap-3 py-6 md:flex-row md:items-center md:gap-6">
+        <div className="container flex flex-col gap-3 pt-6 pb-3 md:flex-row md:items-center md:gap-6">
           <Skeleton className="size-16 rounded-sm md:size-22" />
           <div className="flex min-w-0 flex-1 flex-col gap-3">
             <Skeleton className="h-8 w-40" />
             <Skeleton className="h-10.5 w-36 rounded-sm" />
           </div>
-          <div className="-mx-4 flex flex-nowrap items-center justify-center gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:flex-wrap md:self-end md:overflow-visible md:p-0">
-            <Skeleton className="size-10 sm:h-8 sm:w-24" />
-            <Skeleton className="size-10 sm:h-8 sm:w-24" />
-            <Skeleton className="size-10 sm:h-8 sm:w-24" />
-            <Skeleton className="size-10 sm:h-8 sm:w-24" />
-            <Skeleton className="size-10 sm:h-8 sm:w-24" />
-            <Skeleton className="size-10 sm:h-8 sm:w-24" />
+        </div>
+        <div className="container flex gap-2 py-3.5">
+          <Skeleton className="h-5 flex-1 md:w-20 md:flex-none" />
+          <Skeleton className="h-5 flex-1 md:w-16 md:flex-none" />
+          <Skeleton className="h-5 flex-1 md:w-16 md:flex-none" />
+          <Skeleton className="h-5 flex-1 md:w-18 md:flex-none" />
+          <Skeleton className="h-5 flex-1 md:w-14 md:flex-none" />
+        </div>
+        <div className="border-t border-border md:hidden">
+          <div className="container flex h-14 items-center">
+            <Skeleton className="h-5 w-32" />
           </div>
         </div>
       </div>

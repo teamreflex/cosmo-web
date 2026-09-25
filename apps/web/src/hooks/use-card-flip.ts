@@ -151,9 +151,10 @@ export function useCardFlip(): CardFlip {
         height,
         outline: getCardOutline(width, height, radius),
       };
+      // one unit per pixel, with the origin at the card's centre
       svg.setAttribute(
         "viewBox",
-        `${-width} ${-height} ${width * 2} ${height * 2}`,
+        `${-width / 2} ${-height / 2} ${width} ${height}`,
       );
       render();
     };

@@ -17,6 +17,7 @@ import {
 import type { PublicUser } from "@/lib/universal/auth";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import type {
+  ListShelfItem,
   PartnerListMatch,
   PartnerMatchRow,
   TradePartner,
@@ -57,7 +58,8 @@ import * as z from "zod";
 /**
  * Fetch a single objekt list along with the latest USD FX rate for its
  * currency, so the client can convert the global market price into the list's
- * own currency for display.
+ * own currency for display. Have and want lists also carry the list they're
+ * paired with for trading.
  */
 export const $fetchObjektList = createServerFn({ method: "GET" })
   .validator(
@@ -67,14 +69,72 @@ export const $fetchObjektList = createServerFn({ method: "GET" })
     ]),
   )
   .handler(async ({ data }) => {
-    const list = await db.query.objektLists.findFirst({ where: data });
-    if (!list) return undefined;
+    const result = await db.query.objektLists.findFirst({
+      where: data,
+      with: {
+        linkedWantList: { columns: { slug: true, type: true } },
+        linkingHaveList: { columns: { slug: true, type: true } },
+      },
+    });
+    if (!result) return undefined;
+
+    // a have list points at its want list, a want list is pointed at by a have list
+    const { linkedWantList, linkingHaveList, ...list } = result;
 
     const fxRateToUsd = list.currency
       ? await fetchLatestFxRate(list.currency)
       : null;
 
-    return { ...list, fxRateToUsd };
+    return {
+      ...list,
+      fxRateToUsd,
+      pairedList: linkedWantList ?? linkingHaveList,
+    };
+  });
+
+/**
+ * Fetch a user's lists for the profile shelf, each with images of its first
+ * three entries.
+ */
+export const $fetchListShelf = createServerFn({ method: "GET" })
+  .validator(z.object({ userId: z.string() }))
+  .handler(async ({ data }): Promise<ListShelfItem[]> => {
+    const lists = await db.query.objektLists.findMany({
+      where: { userId: data.userId },
+      orderBy: { createdAt: "asc" },
+      with: {
+        entries: {
+          columns: { collectionId: true },
+          orderBy: { createdAt: "asc" },
+          limit: 3,
+        },
+      },
+    });
+
+    const slugs = [
+      ...new Set(lists.flatMap((l) => l.entries.map((e) => e.collectionId))),
+    ];
+    const collectionRows =
+      slugs.length > 0
+        ? await indexer.query.collections.findMany({
+            where: { slug: { in: slugs } },
+            columns: {
+              slug: true,
+              collectionId: true,
+              frontImage: true,
+              frontImageVersion: true,
+            },
+          })
+        : [];
+    const bySlug = new Map(collectionRows.map((c) => [c.slug, c]));
+
+    return lists.map(({ entries, ...list }) => ({
+      ...list,
+      previews: entries.flatMap((entry) => {
+        const collection = bySlug.get(entry.collectionId);
+        return collection ? [collection] : [];
+      }),
+    }));
   });
 
 /**

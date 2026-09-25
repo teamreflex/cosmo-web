@@ -1,7 +1,7 @@
 import { useArtists } from "@/hooks/use-artists";
 import { m } from "@/i18n/messages";
 import type { Stat } from "@/lib/universal/progress";
-import { randomColor } from "@/lib/utils";
+import { colorFromName } from "@/lib/utils";
 import { useMemo } from "react";
 import ProgressSection from "./progress-section";
 
@@ -14,7 +14,8 @@ export default function SectionMembers(props: Props) {
   const colorMap = useMemo(() => {
     return props.data.reduce(
       (acc, stat) => {
-        acc[stat.name] = getMember(stat.name)?.primaryColorHex ?? randomColor();
+        acc[stat.name] =
+          getMember(stat.name)?.primaryColorHex ?? colorFromName(stat.name);
         return acc;
       },
       // SAFETY: empty seed for the reduce accumulator
