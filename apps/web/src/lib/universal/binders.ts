@@ -581,7 +581,7 @@ function luminance(hex: string) {
 }
 
 /**
- * Colours too close to white to read against a cover's white paper label.
+ * Colours too close to white for a cover to stand out from a light page.
  */
 function isNearWhite(hex: string) {
   return luminance(hex) > 0.8;

@@ -179,7 +179,7 @@ const PickerCard = memo(function PickerCard({
 
         {inBinder && (
           <span className="absolute inset-0 flex flex-col justify-end bg-black/60">
-            <span className="bg-black/70 py-[3px] text-center font-mono text-[9px] text-neutral-200">
+            <span className="bg-black/70 py-[3px] text-center text-[9px] text-neutral-200">
               {m.binder_picker_in_binder()}
             </span>
           </span>

@@ -29,7 +29,7 @@ import type { ComponentProps } from "react";
  * A small dashed chip, as used for the layout and the narrow page counter.
  */
 const ghostChip =
-  "inline-flex h-[26px] shrink-0 items-center gap-1.5 rounded-md border border-dashed border-border px-2.5 font-mono text-xs text-muted-foreground";
+  "inline-flex h-[26px] shrink-0 items-center gap-1.5 rounded-md border border-dashed border-border px-2.5 text-xs text-muted-foreground";
 
 const ghostChipButton =
   "transition-colors hover:border-foreground/40 hover:text-foreground focus-visible:outline-2 focus-visible:outline-cosmo-text";
@@ -118,7 +118,7 @@ export function EditorStatus({ saving }: { saving: boolean }) {
     <span
       role="status"
       className={cn(
-        "shrink-0 font-mono text-[11px] transition-colors",
+        "shrink-0 text-[11px] transition-colors",
         saving
           ? "text-amber-600 dark:text-amber-400"
           : "text-emerald-600 dark:text-emerald-400",
@@ -156,7 +156,7 @@ function LayoutChip({ editor }: { editor: BinderEditor }) {
   if (binder.entries.length > 0) {
     return (
       <span
-        className={ghostChip}
+        className={cn(ghostChip, "font-mono")}
         title={m.binder_error_binder_layout_locked()}
         aria-label={`${m.binder_editor_layout()}: ${label}`}
       >
@@ -169,7 +169,7 @@ function LayoutChip({ editor }: { editor: BinderEditor }) {
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label={`${m.binder_editor_layout()}: ${label}`}
-        className={cn(ghostChip, ghostChipButton)}
+        className={cn(ghostChip, "font-mono", ghostChipButton)}
       >
         {label}
         <IconChevronDown className="size-3" />
@@ -267,7 +267,7 @@ function EditorMenu({
 function PageChip({ editor }: { editor: BinderEditor }) {
   return (
     <span
-      className={cn(ghostChip, "tabular-nums")}
+      className={cn(ghostChip, "font-mono tabular-nums")}
       aria-label={m.binder_editor_page_of({
         page: editor.page + 1,
         total: editor.binder.pageCount,
@@ -332,7 +332,7 @@ export function PageControls({
         </Button>
       </div>
 
-      <div className="hidden flex-wrap items-center justify-center gap-3.5 p-1 font-mono text-xs text-muted-foreground lg:flex">
+      <div className="hidden flex-wrap items-center justify-center gap-3.5 p-1 text-xs text-muted-foreground lg:flex">
         <RoundButton {...previous}>
           <IconChevronLeft className="size-4" />
         </RoundButton>
@@ -399,7 +399,7 @@ function RoundButton({ className, ...props }: ComponentProps<"button">) {
  */
 export function EditorHints() {
   return (
-    <p className="hidden flex-wrap items-center gap-x-3 gap-y-1.5 font-mono text-[11px] text-muted-foreground lg:flex">
+    <p className="hidden flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-muted-foreground lg:flex">
       <span>
         <Key>{m.binder_editor_hint_click()}</Key> {m.binder_editor_hint_fill()}
       </span>

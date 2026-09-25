@@ -107,7 +107,7 @@ const EditorPocket = memo(function EditorPocket({
       </button>
 
       {isCover && (
-        <span className="pointer-events-none absolute bottom-[4cqw] left-[4cqw] z-1 inline-flex items-center gap-1 rounded-md bg-black/70 px-1.5 py-0.5 font-mono text-[10px] text-white">
+        <span className="pointer-events-none absolute bottom-[4cqw] left-[4cqw] z-1 inline-flex items-center gap-1 rounded-md bg-black/70 px-1.5 py-0.5 text-[10px] text-white">
           <IconPhotoStar className="size-3" />
           {m.binder_editor_cover()}
         </span>

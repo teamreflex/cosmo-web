@@ -51,13 +51,7 @@ export function ViewerMeta({
   ...props
 }: ViewerMetaProps) {
   return (
-    <span
-      {...props}
-      className={cn(
-        "truncate font-mono tracking-[0.12em] uppercase",
-        className,
-      )}
-    >
+    <span {...props} className={cn("truncate", className)}>
       <Suspense fallback={metaLine(cover, null, short)}>
         <LoadedMeta cover={cover} binderOptions={binderOptions} short={short} />
       </Suspense>
@@ -77,13 +71,15 @@ function LoadedMeta({
   return metaLine(cover, useBinderDetail(binderOptions), short);
 }
 
+/**
+ * The layout in mono, then the rest in lowercase.
+ */
 function metaLine(
   cover: BinderPreview,
   binder: BinderDetail | null,
   short: boolean,
 ) {
   const parts = [
-    binderLayoutLabel(cover.layout),
     m.binder_page_count({ count: binder?.pageCount ?? cover.pageCount }),
   ];
   if (!short) {
@@ -100,7 +96,13 @@ function metaLine(
       );
     }
   }
-  return parts.join(" · ");
+  return (
+    <>
+      <span className="font-mono">{binderLayoutLabel(cover.layout)}</span>
+      {" · "}
+      <span className="lowercase">{parts.join(" · ")}</span>
+    </>
+  );
 }
 
 type PocketsProps = {
