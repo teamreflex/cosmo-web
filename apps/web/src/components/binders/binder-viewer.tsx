@@ -346,6 +346,10 @@ function Book({
    */
   function showSpread(to: number) {
     if (closing || to === index || to < 0 || to >= pageCount) return;
+    // shift focus to the binder when attempting to change page
+    if (bookRef.current?.contains(document.activeElement) === true) {
+      stageRef.current?.focus({ preventScroll: true });
+    }
     setPageInView(to);
     if (!prefersReducedMotion()) {
       const direction = to > index ? 1 : -1;
