@@ -37,6 +37,19 @@ export default function CollectionForm(props: Props) {
   const artist = artistList.find(
     (a) => a.id.toLowerCase() === selectedArtist.toLowerCase(),
   );
+  const artistItems = artistList.map((a) => ({
+    value: a.id.toLowerCase(),
+    label: (
+      <>
+        <img
+          src={a.logoImageUrl}
+          alt={a.title}
+          className="aspect-square size-4 rounded-full"
+        />
+        <span>{a.title}</span>
+      </>
+    ),
+  }));
   const memberOptions =
     artist?.artistMembers ?? artistList.flatMap((a) => a.artistMembers);
   const seasonOptions =
@@ -59,7 +72,13 @@ export default function CollectionForm(props: Props) {
                 <FieldLabel htmlFor="artist">
                   {m.admin_collection_artist()}
                 </FieldLabel>
-                <Select value={field.value} onValueChange={field.onChange}>
+                <Select
+                  items={artistItems}
+                  value={field.value}
+                  onValueChange={(value) => {
+                    if (value !== null) field.onChange(value);
+                  }}
+                >
                   <SelectTrigger
                     className={cn(
                       "w-full",
@@ -69,14 +88,9 @@ export default function CollectionForm(props: Props) {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {artistList.map((a) => (
-                      <SelectItem key={a.id} value={a.id.toLowerCase()}>
-                        <img
-                          src={a.logoImageUrl}
-                          alt={a.title}
-                          className="aspect-square size-4 rounded-full"
-                        />
-                        <span>{a.title}</span>
+                    {artistItems.map((item) => (
+                      <SelectItem key={item.value} value={item.value}>
+                        {item.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -95,7 +109,12 @@ export default function CollectionForm(props: Props) {
                 <FieldLabel htmlFor="member">
                   {m.admin_collection_member()}
                 </FieldLabel>
-                <Select value={field.value} onValueChange={field.onChange}>
+                <Select
+                  value={field.value}
+                  onValueChange={(value) => {
+                    if (value !== null) field.onChange(value);
+                  }}
+                >
                   <SelectTrigger
                     className={cn(
                       "w-full",
@@ -129,7 +148,12 @@ export default function CollectionForm(props: Props) {
                   <FieldLabel htmlFor="season">
                     {m.admin_collection_season()}
                   </FieldLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
+                  <Select
+                    value={field.value}
+                    onValueChange={(value) => {
+                      if (value !== null) field.onChange(value);
+                    }}
+                  >
                     <SelectTrigger
                       className={cn(
                         "w-full",
@@ -161,7 +185,12 @@ export default function CollectionForm(props: Props) {
                   <FieldLabel htmlFor="class">
                     {m.admin_collection_class()}
                   </FieldLabel>
-                  <Select value={field.value} onValueChange={field.onChange}>
+                  <Select
+                    value={field.value}
+                    onValueChange={(value) => {
+                      if (value !== null) field.onChange(value);
+                    }}
+                  >
                     <SelectTrigger
                       className={cn(
                         "w-full",

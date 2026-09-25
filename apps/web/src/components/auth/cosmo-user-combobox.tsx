@@ -1,10 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent } from "@/components/ui/popover";
 import { m } from "@/i18n/messages";
 import { $searchUsers } from "@/lib/functions/user-search";
 import { isRateLimitErrorCode } from "@/lib/universal/errors/rate-limit";
@@ -13,7 +9,7 @@ import type { ValidArtist } from "@apollo/cosmo/types/common";
 import type { CosmoPublicUser } from "@apollo/cosmo/types/user";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useDebounceValue } from "usehooks-ts";
 
 type Props = {
@@ -30,6 +26,7 @@ export default function CosmoUserCombobox({
   const [query, setQuery] = useState("");
   const [debouncedQuery] = useDebounceValue(query, 500);
   const [open, setOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const { status, data, error } = useQuery({
     queryKey: ["cosmo-user-search", debouncedQuery],
@@ -80,21 +77,21 @@ export default function CosmoUserCombobox({
 
   return (
     <Popover open={open && debouncedQuery.length > 0} onOpenChange={setOpen}>
-      <PopoverAnchor asChild>
-        <Input
-          placeholder={m.user_search_placeholder()}
-          value={query}
-          onChange={(e) => {
-            setQuery(e.currentTarget.value);
-            setOpen(true);
-          }}
-          onFocus={() => setOpen(true)}
-        />
-      </PopoverAnchor>
+      <Input
+        ref={inputRef}
+        placeholder={m.user_search_placeholder()}
+        value={query}
+        onChange={(e) => {
+          setQuery(e.currentTarget.value);
+          setOpen(true);
+        }}
+        onFocus={() => setOpen(true)}
+      />
 
       <PopoverContent
-        className="w-(--radix-popover-trigger-width) overflow-hidden p-0"
-        onOpenAutoFocus={(e) => e.preventDefault()}
+        anchor={inputRef}
+        className="w-(--anchor-width) overflow-hidden p-0"
+        initialFocus={false}
       >
         {status === "pending" && debouncedQuery.length > 0 && (
           <div className="flex items-center justify-center py-4">

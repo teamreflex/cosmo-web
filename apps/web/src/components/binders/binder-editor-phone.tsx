@@ -5,7 +5,7 @@ import {
   DrawerContent,
   DrawerDescription,
   DrawerTitle,
-} from "@/components/ui/drawer-radix";
+} from "@/components/ui/drawer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -223,20 +223,26 @@ export default function BinderEditorPhone({
         </Button>
       </div>
 
-      <Drawer open={sheetOpen} onOpenChange={setSheetOpen} modal={false}>
+      <Drawer
+        open={sheetOpen}
+        onOpenChange={(open, details) => {
+          // pockets stay tappable under the sheet, to pick a different one
+          if (
+            details.reason === "outside-press" &&
+            details.event.target instanceof Node &&
+            pageRef.current?.contains(details.event.target) === true
+          ) {
+            details.cancel();
+            return;
+          }
+          setSheetOpen(open);
+        }}
+        modal={false}
+      >
         <DrawerContent
           style={{ height: `${SHEET_HEIGHT * 100}dvh` }}
           className="max-h-none gap-0 rounded-t-2xl shadow-[0_-20px_40px_rgb(0_0_0/0.5)]"
-          // pockets stay tappable under the sheet, to pick a different one
-          onInteractOutside={(event) => {
-            if (
-              event.target instanceof Node &&
-              pageRef.current?.contains(event.target)
-            ) {
-              event.preventDefault();
-            }
-          }}
-          onOpenAutoFocus={(event) => event.preventDefault()}
+          initialFocus={false}
         >
           <div className="flex items-center gap-2 px-3 pt-1.5 pb-2">
             <DrawerTitle className="min-w-0 flex-1 truncate text-sm">
@@ -269,14 +275,16 @@ export default function BinderEditorPhone({
                 </Button>
               </>
             )}
-            <DrawerClose asChild>
-              <Button
-                variant="outline"
-                size="icon-sm"
-                aria-label={m.common_close()}
-              >
-                <IconX />
-              </Button>
+            <DrawerClose
+              render={
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  aria-label={m.common_close()}
+                />
+              }
+            >
+              <IconX />
             </DrawerClose>
           </div>
           <ObjektPicker
@@ -312,17 +320,19 @@ function PhoneMenu({
 }: PhoneMenuProps) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-label={m.binder_editor_more()}
-        >
-          <IconDots />
-        </Button>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={m.binder_editor_more()}
+          />
+        }
+      >
+        <IconDots />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuItem onSelect={onEdit}>
+        <DropdownMenuItem onClick={onEdit}>
           <IconPencil />
           {m.binder_editor_edit()}
         </DropdownMenuItem>
@@ -334,12 +344,12 @@ function PhoneMenu({
         )}
         <DropdownMenuSeparator />
         {editor.binder.pageCount > 1 && (
-          <DropdownMenuItem onSelect={onRemoveLastPage}>
+          <DropdownMenuItem onClick={onRemoveLastPage}>
             <IconTrash />
             {m.binder_editor_remove_page()}
           </DropdownMenuItem>
         )}
-        <DropdownMenuItem variant="destructive" onSelect={onDelete}>
+        <DropdownMenuItem variant="destructive" onClick={onDelete}>
           <IconTrash />
           {m.binder_editor_delete()}
         </DropdownMenuItem>

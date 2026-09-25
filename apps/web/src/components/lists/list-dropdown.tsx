@@ -45,40 +45,36 @@ export default function ListDropdown(props: Props) {
         objektLists={props.objektLists}
       />
 
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="profile" data-profile>
-          <IconList className="h-5 w-5" />
-          <span className="hidden sm:block">{m.list_lists()}</span>
-        </Button>
+      <DropdownMenuTrigger
+        render={<Button variant="outline" size="profile" data-profile />}
+      >
+        <IconList className="h-5 w-5" />
+        <span className="hidden sm:block">{m.list_lists()}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-fit">
         <DropdownMenuGroup>
           {props.objektLists.map((list) => (
             <DropdownMenuItem
               key={list.id}
-              onClick={() => setDropdownOpen(false)}
+              render={<Link to={props.createListUrl(list)} />}
+              className="cursor-pointer justify-between"
             >
-              <Link
-                to={props.createListUrl(list)}
-                className="flex w-full items-center justify-between gap-2"
-              >
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm">{list.name}</span>
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm">{list.name}</span>
 
-                  <span className="text-xs">
-                    {list.type === "have" && (
-                      <Badge variant="list-have">{m.list_type_have()}</Badge>
-                    )}
-                    {list.type === "want" && (
-                      <Badge variant="list-want">{m.list_type_want()}</Badge>
-                    )}
-                    {list.type === "sale" && list.currency && (
-                      <Badge variant="secondary">{list.currency}</Badge>
-                    )}
-                  </span>
-                </div>
-                <IconChevronRight className="h-4 w-4" />
-              </Link>
+                <span className="text-xs">
+                  {list.type === "have" && (
+                    <Badge variant="list-have">{m.list_type_have()}</Badge>
+                  )}
+                  {list.type === "want" && (
+                    <Badge variant="list-want">{m.list_type_want()}</Badge>
+                  )}
+                  {list.type === "sale" && list.currency && (
+                    <Badge variant="secondary">{list.currency}</Badge>
+                  )}
+                </span>
+              </div>
+              <IconChevronRight className="h-4 w-4" />
             </DropdownMenuItem>
           ))}
           {props.objektLists.length === 0 && (

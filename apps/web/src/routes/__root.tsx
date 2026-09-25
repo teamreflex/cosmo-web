@@ -2,6 +2,7 @@ import Devtools from "@/components/devtools";
 import Navbar from "@/components/navbar/navbar";
 import TailwindIndicator from "@/components/tailwind-indicator";
 import { Button } from "@/components/ui/button";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { m } from "@/i18n/messages";
 import { getLocale } from "@/i18n/runtime";
 import { env } from "@/lib/env/client";
@@ -145,17 +146,18 @@ function ShellComponent({ children }: { children: React.ReactNode }) {
       </head>
       <body className="relative overflow-y-scroll bg-background text-foreground antialiased">
         <ThemeProvider defaultTheme="dark">
-          <div className="relative flex flex-col">
-            <Navbar />
+          <TooltipProvider>
+            <div className="relative flex flex-col">
+              <Navbar />
 
-            {/* content */}
-            <div className="flex min-w-full flex-col text-foreground">
-              {children}
+              {/* content */}
+              <div className="flex min-w-full flex-col text-foreground">
+                {children}
+              </div>
             </div>
-          </div>
+          </TooltipProvider>
 
-          {/* modal dialogs disable pointer events on the body, and toast actions stay clickable over them */}
-          <Toaster className="pointer-events-auto" />
+          <Toaster />
           <TailwindIndicator />
         </ThemeProvider>
 

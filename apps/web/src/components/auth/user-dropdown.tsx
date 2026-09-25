@@ -95,11 +95,12 @@ export default function UserDropdown({
         {user.isAdmin && (
           <div className="contents">
             <DropdownMenuSeparator />
-            <DropdownMenuItem className="cursor-pointer" asChild>
-              <Link to="/admin">
-                <IconShieldExclamation className="h-4 w-4" />
-                <span>{m.common_admin()}</span>
-              </Link>
+            <DropdownMenuItem
+              className="cursor-pointer"
+              render={<Link to="/admin" />}
+            >
+              <IconShieldExclamation className="h-4 w-4" />
+              <span>{m.common_admin()}</span>
             </DropdownMenuItem>
           </div>
         )}
@@ -114,15 +115,18 @@ export default function UserDropdown({
           <span>{m.logo_about()}</span>
         </DropdownMenuItem>
 
-        <DropdownMenuItem className="cursor-pointer" asChild>
-          <a
-            href="https://discord.gg/A72VRX8FgK"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <IconBrandDiscord className="h-4 w-4" />
-            <span>{m.common_discord()}</span>
-          </a>
+        <DropdownMenuItem
+          className="cursor-pointer"
+          render={
+            <a
+              href="https://discord.gg/A72VRX8FgK"
+              target="_blank"
+              rel="noopener noreferrer"
+            />
+          }
+        >
+          <IconBrandDiscord className="h-4 w-4" />
+          <span>{m.common_discord()}</span>
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />

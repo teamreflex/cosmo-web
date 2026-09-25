@@ -49,19 +49,20 @@ export default function AddToBinder({ collectionName, tokenId }: Props) {
   return (
     <>
       <DropdownMenu open={open} onOpenChange={setOpen}>
-        <DropdownMenuTrigger asChild>
-          <OverlayIconButton
-            onClick={() => setOpen((state) => !state)}
-            className="outline-hidden"
-            aria-label={m.binder_add_select({ collectionId: collectionName })}
-          >
-            <OverlayIcon icon={IconNotebook} />
-          </OverlayIconButton>
+        <DropdownMenuTrigger
+          render={
+            <OverlayIconButton
+              className="outline-hidden"
+              aria-label={m.binder_add_select({ collectionId: collectionName })}
+            />
+          }
+        >
+          <OverlayIcon icon={IconNotebook} />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-fit">
-          <DropdownMenuLabel>{collectionName}</DropdownMenuLabel>
-          <DropdownMenuSeparator />
           <DropdownMenuGroup>
+            <DropdownMenuLabel>{collectionName}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
             <ErrorBoundary
               fallback={
                 <DropdownMenuItem disabled>
@@ -129,7 +130,7 @@ function BinderMenuItems({
       <>
         <DropdownMenuItem disabled>{m.binder_add_none()}</DropdownMenuItem>
         {onCreate !== undefined && (
-          <DropdownMenuItem onSelect={onCreate}>
+          <DropdownMenuItem onClick={onCreate}>
             <IconPlus />
             {m.binder_new()}
           </DropdownMenuItem>
@@ -172,9 +173,9 @@ function BinderItem({ binder, isPending, onSelect }: BinderItemProps) {
       aria-label={
         holding ? undefined : m.binder_add_named({ name: binder.name })
       }
-      onSelect={(event) => {
-        // stays open until the objekt lands, like the list rows
-        event.preventDefault();
+      // stays open until the objekt lands, like the list rows
+      closeOnClick={false}
+      onClick={() => {
         if (!isPending) onSelect();
       }}
     >

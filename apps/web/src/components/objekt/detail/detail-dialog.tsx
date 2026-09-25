@@ -9,7 +9,7 @@ import {
   DrawerContent,
   DrawerDescription,
   DrawerTitle,
-} from "@/components/ui/drawer-radix";
+} from "@/components/ui/drawer";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { m } from "@/i18n/messages";
 import type { Objekt } from "@/lib/universal/objekt-conversion";

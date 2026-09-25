@@ -56,14 +56,16 @@ export default function EditMetadata(props: Props) {
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          size="icon-sm"
-          aria-label={m.aria_edit_metadata()}
-        >
-          <IconEdit />
-        </Button>
+      <PopoverTrigger
+        render={
+          <Button
+            variant="outline"
+            size="icon-sm"
+            aria-label={m.aria_edit_metadata()}
+          />
+        }
+      >
+        <IconEdit />
       </PopoverTrigger>
       <PopoverContent className="w-80" align="end" side="top">
         <form

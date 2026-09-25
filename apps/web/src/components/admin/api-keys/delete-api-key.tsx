@@ -41,17 +41,19 @@ export default function DeleteApiKey({ id }: Props) {
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon-sm"
-          disabled={mutation.isPending}
-          aria-label={m.admin_api_key_delete()}
-          className="text-destructive hover:text-destructive"
-        >
-          <IconTrash className="size-4" />
-        </Button>
+      <AlertDialogTrigger
+        render={
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            disabled={mutation.isPending}
+            aria-label={m.admin_api_key_delete()}
+            className="text-destructive hover:text-destructive"
+          />
+        }
+      >
+        <IconTrash className="size-4" />
       </AlertDialogTrigger>
       <AlertDialogContent size="sm">
         <AlertDialogHeader>

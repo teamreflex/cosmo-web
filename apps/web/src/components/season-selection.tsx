@@ -34,15 +34,15 @@ export default function SeasonSelection({ seasons, value, onChange }: Props) {
             value.includes(season.name) &&
               "border-foreground bg-foreground text-background",
           )}
-          asChild
+          render={
+            <button
+              type="button"
+              onClick={() => toggle(season.name)}
+              aria-pressed={value.includes(season.name)}
+            />
+          }
         >
-          <button
-            type="button"
-            onClick={() => toggle(season.name)}
-            aria-pressed={value.includes(season.name)}
-          >
-            {season.name}
-          </button>
+          {season.name}
         </Badge>
       ))}
     </div>

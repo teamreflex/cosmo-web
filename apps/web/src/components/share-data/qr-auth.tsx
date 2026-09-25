@@ -1,5 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Field, FieldError } from "@/components/ui/field";
 import {
   InputOTP,
@@ -15,6 +15,7 @@ import {
 import { isRateLimitErrorCode } from "@/lib/universal/errors/rate-limit";
 import { verifyCosmoSchema } from "@/lib/universal/schema/cosmo";
 import type { ScrapeSelection } from "@/lib/universal/schema/share-data";
+import { cn } from "@/lib/utils";
 import type { AuthTicket, TicketUser } from "@apollo/cosmo/types/qr-auth";
 import { generateQrCode } from "@apollo/cosmo/types/qr-auth";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
@@ -178,11 +179,17 @@ function RenderQRCode({ ticket, retry }: RenderQRCodeProps) {
     <div className="flex flex-col items-center justify-center gap-2">
       <p className="text-sm">{m.link_cosmo_scan_qr()}</p>
 
-      <Button className="inline-flex lg:hidden" variant="link" asChild>
-        <a href={qr} target="_blank" rel="noreferrer">
-          <span>{m.link_cosmo_mobile_open()}</span>
-        </a>
-      </Button>
+      <a
+        href={qr}
+        target="_blank"
+        rel="noreferrer"
+        className={cn(
+          buttonVariants({ variant: "link" }),
+          "inline-flex lg:hidden",
+        )}
+      >
+        <span>{m.link_cosmo_mobile_open()}</span>
+      </a>
 
       {isExpired ? (
         <div className="flex flex-col items-center gap-2">

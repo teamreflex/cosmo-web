@@ -122,10 +122,16 @@ export default function EditEventDialog({ event }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button size="icon-xs" variant="ghost" aria-label={m.aria_edit_event()}>
-          <IconPencil className="size-4" />
-        </Button>
+      <DialogTrigger
+        render={
+          <Button
+            size="icon-xs"
+            variant="ghost"
+            aria-label={m.aria_edit_event()}
+          />
+        }
+      >
+        <IconPencil className="size-4" />
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl">
         <DialogHeader>
@@ -146,10 +152,8 @@ export default function EditEventDialog({ event }: Props) {
               />
             </Suspense>
             <DialogFooter className="mt-6">
-              <DialogClose asChild>
-                <Button type="button" variant="outline">
-                  {m.common_cancel()}
-                </Button>
+              <DialogClose render={<Button type="button" variant="outline" />}>
+                {m.common_cancel()}
               </DialogClose>
               <SubmitButton />
             </DialogFooter>

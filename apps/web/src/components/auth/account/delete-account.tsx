@@ -19,11 +19,11 @@ export default function DeleteAccount() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="destructive" className="w-fit">
-          <IconTrash className="h-4 w-4" />
-          <span>{m.delete_account_title()}</span>
-        </Button>
+      <DialogTrigger
+        render={<Button variant="destructive" className="w-fit" />}
+      >
+        <IconTrash className="h-4 w-4" />
+        <span>{m.delete_account_title()}</span>
       </DialogTrigger>
       <DialogContent>
         {status === "success" ? (

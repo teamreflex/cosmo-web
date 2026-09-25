@@ -23,12 +23,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import { Separator } from "../ui/separator";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import ProgressLeaderboardContent, {
   LeaderboardSkeleton,
 } from "./progress-leaderboard-content";
@@ -53,24 +48,22 @@ export default function ProgressLeaderboard({ member, seasons }: Props) {
 
   return (
     <Sheet open={isOpen} onOpenChange={() => toggle()}>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
+      <Tooltip>
+        <TooltipTrigger
+          render={
             <Button
               className="rounded-full"
               variant="secondary"
               size="icon"
               onClick={() => toggle()}
               aria-label={m.aria_open_leaderboard()}
-            >
-              <IconTrophy className="h-5 w-5" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="left">
-            {m.progress_leaderboard()}
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+            />
+          }
+        >
+          <IconTrophy className="h-5 w-5" />
+        </TooltipTrigger>
+        <TooltipContent side="left">{m.progress_leaderboard()}</TooltipContent>
+      </Tooltip>
 
       <SheetContent className="gap-0 overflow-y-scroll outline-hidden">
         <SheetHeader className="pb-0">
@@ -116,20 +109,33 @@ function FilterSelect(props: {
   value: ValidOnlineType | undefined;
   update: (value: ValidOnlineType | undefined) => void;
 }) {
-  function set(value: string) {
-    // SAFETY: non-"combined" select values are ValidOnlineType
-    props.update(value === "combined" ? undefined : (value as ValidOnlineType));
-  }
+  const items = [
+    { value: "combined", label: m.progress_filter_combined() },
+    { value: "offline", label: m.filter_online_physical() },
+    { value: "online", label: m.filter_online_digital() },
+  ] satisfies { value: ValidOnlineType | "combined"; label: string }[];
+  // no filter is the combined view
+  const selected: ValidOnlineType | "combined" = props.value ?? "combined";
 
   return (
-    <Select value={props.value} onValueChange={set}>
+    <Select
+      items={items}
+      value={selected}
+      onValueChange={(value: ValidOnlineType | "combined" | null) => {
+        if (value !== null) {
+          props.update(value === "combined" ? undefined : value);
+        }
+      }}
+    >
       <SelectTrigger>
-        <SelectValue placeholder={m.filter_sort()} />
+        <SelectValue />
       </SelectTrigger>
       <SelectContent className="outline-hidden">
-        <SelectItem value="combined">{m.progress_filter_combined()}</SelectItem>
-        <SelectItem value="offline">{m.filter_online_physical()}</SelectItem>
-        <SelectItem value="online">{m.filter_online_digital()}</SelectItem>
+        {items.map((item) => (
+          <SelectItem key={item.value} value={item.value}>
+            {item.label}
+          </SelectItem>
+        ))}
       </SelectContent>
     </Select>
   );
@@ -145,10 +151,6 @@ type SeasonSelectProps = {
 function SeasonSelect(props: SeasonSelectProps) {
   const { getArtist } = useArtists();
 
-  function set(value: string) {
-    props.update(value === "all" ? undefined : value);
-  }
-
   const data = props.seasons
     .flatMap(({ artistId, seasons }) => {
       const artist = getArtist(artistId);
@@ -159,9 +161,21 @@ function SeasonSelect(props: SeasonSelectProps) {
         .map((member) => member.name.toLowerCase())
         .includes(props.member.toLowerCase()),
     );
+  const items = [
+    { value: "all", label: m.filter_type_all() },
+    ...data.flatMap(({ seasons }) =>
+      seasons.map((season) => ({ value: season, label: season })),
+    ),
+  ];
 
   return (
-    <Select value={props.value} onValueChange={set}>
+    <Select
+      items={items}
+      value={props.value}
+      onValueChange={(value) => {
+        if (value !== null) props.update(value === "all" ? undefined : value);
+      }}
+    >
       <SelectTrigger>
         <SelectValue placeholder={m.filter_sort()} />
       </SelectTrigger>

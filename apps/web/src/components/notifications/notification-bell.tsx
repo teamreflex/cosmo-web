@@ -38,20 +38,22 @@ export default function NotificationBell() {
       open={open}
       onOpenChange={(open) => setOpenedOn(open ? pathname : null)}
     >
-      <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={m.notification_bell_label()}
-          className="relative"
-        >
-          <IconBell className="size-6" />
-          {count > 0 && (
-            <div className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600/25 px-1 text-xxs text-red-600">
-              {count > 99 ? "99+" : count}
-            </div>
-          )}
-        </Button>
+      <PopoverTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={m.notification_bell_label()}
+            className="relative"
+          />
+        }
+      >
+        <IconBell className="size-6" />
+        {count > 0 && (
+          <div className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600/25 px-1 text-xxs text-red-600">
+            {count > 99 ? "99+" : count}
+          </div>
+        )}
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 gap-0 p-0">
         <header className="flex h-12 items-center justify-between border-b px-2">

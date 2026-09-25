@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
+import { Tabs as TabsPrimitive } from "@base-ui/react/tabs";
 import { cva } from "class-variance-authority";
 import type { VariantProps } from "class-variance-authority";
-import { Tabs as TabsPrimitive } from "radix-ui";
 import * as React from "react";
 
 type TabsVariant = NonNullable<
@@ -15,14 +15,14 @@ function Tabs({
   orientation = "horizontal",
   variant = "default",
   ...props
-}: React.ComponentProps<typeof TabsPrimitive.Root> & {
+}: TabsPrimitive.Root.Props & {
   variant?: TabsVariant;
 }) {
   return (
     <TabsVariantContext.Provider value={variant}>
       <TabsPrimitive.Root
         data-slot="tabs"
-        data-orientation={orientation}
+        orientation={orientation}
         className={cn(
           "group/tabs flex gap-2 data-[orientation=horizontal]:flex-col",
           className,
@@ -51,14 +51,19 @@ const tabsListVariants = cva(
   },
 );
 
+/**
+ * Arrow keys select the tab they move focus to, rather than only moving focus.
+ */
 function TabsList({
   className,
+  activateOnFocus = true,
   ...props
-}: React.ComponentProps<typeof TabsPrimitive.List>) {
+}: TabsPrimitive.List.Props) {
   const variant = React.useContext(TabsVariantContext);
   return (
     <TabsPrimitive.List
       data-slot="tabs-list"
+      activateOnFocus={activateOnFocus}
       className={cn(tabsListVariants({ variant }), className)}
       {...props}
     />
@@ -69,7 +74,7 @@ const tabsTriggerVariants = cva(
   [
     "relative inline-flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap text-sm font-medium transition-all",
     "group-data-[orientation=vertical]/tabs:w-full group-data-[orientation=vertical]/tabs:justify-start",
-    "hover:text-foreground focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50",
+    "hover:text-foreground focus-visible:outline-none aria-disabled:pointer-events-none aria-disabled:opacity-50",
     "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
     "after:absolute after:opacity-0 after:transition-opacity",
     "group-data-[orientation=vertical]/tabs:after:inset-y-0 group-data-[orientation=vertical]/tabs:after:-right-1 group-data-[orientation=vertical]/tabs:after:w-0.5",
@@ -107,13 +112,10 @@ const tabsTriggerVariants = cva(
   },
 );
 
-function TabsTrigger({
-  className,
-  ...props
-}: React.ComponentProps<typeof TabsPrimitive.Trigger>) {
+function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
   const variant = React.useContext(TabsVariantContext);
   return (
-    <TabsPrimitive.Trigger
+    <TabsPrimitive.Tab
       data-slot="tabs-trigger"
       className={cn(tabsTriggerVariants({ variant }), className)}
       {...props}
@@ -121,12 +123,9 @@ function TabsTrigger({
   );
 }
 
-function TabsContent({
-  className,
-  ...props
-}: React.ComponentProps<typeof TabsPrimitive.Content>) {
+function TabsContent({ className, ...props }: TabsPrimitive.Panel.Props) {
   return (
-    <TabsPrimitive.Content
+    <TabsPrimitive.Panel
       data-slot="tabs-content"
       className={cn("flex-1 text-sm outline-none", className)}
       {...props}

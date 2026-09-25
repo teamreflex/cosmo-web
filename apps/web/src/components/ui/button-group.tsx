@@ -1,15 +1,15 @@
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { mergeProps } from "@base-ui/react/merge-props";
+import { useRender } from "@base-ui/react/use-render";
 import { cva, type VariantProps } from "class-variance-authority";
-import { Slot } from "radix-ui";
 
 /**
- * First/last children are matched with `:nth-child(1 of :not(template))`
- * rather than `:first-child`/`:last-child` because a streamed Suspense
- * boundary is rendered as `<template id="B:n">` followed by its fallback
- * until it resolves. Plain `:first-child` would square off a fallback
- * skeleton, and a trailing null-fallback boundary would square off the
- * real last button.
+ * First/last children are matched with `:nth-child(1 of :not(…))` rather
+ * than `:first-child`/`:last-child`, skipping nodes that aren't group items:
+ * a streamed Suspense boundary's `<template id="B:n">` (rendered ahead of its
+ * fallback until it resolves), and the hidden focus guards and `aria-owns`
+ * span Base UI places around the trigger of an open popover.
  */
 const buttonGroupVariants = cva(
   "group/button-group flex w-fit items-stretch *:focus-visible:relative *:focus-visible:z-10 has-[>[data-slot=button-group]]:gap-2 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-r-lg [&>[data-slot=select-trigger]:not([class*='w-'])]:w-fit [&>input]:flex-1",
@@ -17,9 +17,9 @@ const buttonGroupVariants = cva(
     variants: {
       orientation: {
         horizontal:
-          "[&>*:not(:nth-child(1_of_:not(template)))]:rounded-l-none [&>*:not(:nth-child(1_of_:not(template)))]:border-l-0 [&>*:not(:nth-last-child(1_of_:not(template)))]:rounded-r-none",
+          "[&>*:not(:nth-child(1_of_:not(template,[data-base-ui-focus-guard],[aria-owns])))]:rounded-l-none [&>*:not(:nth-child(1_of_:not(template,[data-base-ui-focus-guard],[aria-owns])))]:border-l-0 [&>*:not(:nth-last-child(1_of_:not(template,[data-base-ui-focus-guard],[aria-owns])))]:rounded-r-none",
         vertical:
-          "flex-col [&>*:not(:nth-child(1_of_:not(template)))]:rounded-t-none [&>*:not(:nth-child(1_of_:not(template)))]:border-t-0 [&>*:not(:nth-last-child(1_of_:not(template)))]:rounded-b-none",
+          "flex-col [&>*:not(:nth-child(1_of_:not(template,[data-base-ui-focus-guard],[aria-owns])))]:rounded-t-none [&>*:not(:nth-child(1_of_:not(template,[data-base-ui-focus-guard],[aria-owns])))]:border-t-0 [&>*:not(:nth-last-child(1_of_:not(template,[data-base-ui-focus-guard],[aria-owns])))]:rounded-b-none",
       },
     },
     defaultVariants: {
@@ -46,22 +46,22 @@ function ButtonGroup({
 
 function ButtonGroupText({
   className,
-  asChild = false,
+  render,
   ...props
-}: React.ComponentProps<"div"> & {
-  asChild?: boolean;
-}) {
-  const Comp = asChild ? Slot.Root : "div";
-
-  return (
-    <Comp
-      className={cn(
-        "flex items-center gap-2 rounded-lg border bg-muted px-2.5 text-sm font-medium [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4",
-        className,
-      )}
-      {...props}
-    />
-  );
+}: useRender.ComponentProps<"div">) {
+  return useRender({
+    defaultTagName: "div",
+    props: mergeProps<"div">(
+      {
+        className: cn(
+          "flex items-center gap-2 rounded-lg border bg-muted px-2.5 text-sm font-medium [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4",
+          className,
+        ),
+      },
+      props,
+    ),
+    render,
+  });
 }
 
 function ButtonGroupSeparator({

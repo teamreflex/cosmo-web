@@ -22,14 +22,16 @@ export default function ViewCollectionsDialog({ eventId, eventName }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button
-          size="icon-xs"
-          variant="ghost"
-          aria-label={m.aria_view_collections()}
-        >
-          <IconList className="size-4" />
-        </Button>
+      <DialogTrigger
+        render={
+          <Button
+            size="icon-xs"
+            variant="ghost"
+            aria-label={m.aria_view_collections()}
+          />
+        }
+      >
+        <IconList className="size-4" />
       </DialogTrigger>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
