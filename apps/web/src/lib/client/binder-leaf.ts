@@ -22,7 +22,8 @@ export function prefersReducedMotion() {
 }
 
 export const fadeIn: Keyframe[] = [{ opacity: 0 }, { opacity: 1 }];
-export const fadeOut: Keyframe[] = [{ opacity: 1 }, { opacity: 0 }];
+// from wherever it is, so a fade that cuts another short doesn't jump
+export const fadeOut: Keyframe[] = [{ opacity: 0 }];
 
 /**
  * Played on the spread's rings alongside the cover's swing. They stand up from
@@ -227,8 +228,8 @@ export function playFlight(
 
 /**
  * Run an animation sequence that can be cut short. Cancelling stops every
- * animation it started, and a cancelled step never resolves, so the rest of
- * the sequence never runs.
+ * animation it started, and pausing holds each one where it is. Either way
+ * the step in progress never resolves, so the rest of the sequence never runs.
  */
 export function runSequence(steps: (run: { play: Play }) => Promise<void>) {
   const running = new Set<Animation>();
@@ -249,6 +250,10 @@ export function runSequence(steps: (run: { play: Play }) => Promise<void>) {
     cancel() {
       cancelled = true;
       for (const animation of running) animation.cancel();
+    },
+    pause() {
+      cancelled = true;
+      for (const animation of running) animation.pause();
     },
   };
 }

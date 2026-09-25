@@ -17,11 +17,12 @@ export type ListType = (typeof listTypes)[number];
 
 export const listNameSchema = z
   .string()
+  .trim()
   .min(3, "Name must be at least 3 characters long")
   .max(24, "Name cannot be longer than 24 characters")
   .refine(
     (value) => /^[a-zA-Z0-9 ]+$/.test(value),
-    "Name should only use alphanumeric characters",
+    "Name can only use letters, numbers and spaces",
   );
 
 const currencySchema = z

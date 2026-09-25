@@ -28,9 +28,10 @@ const route = getRouteApi("/@{$username}");
 /**
  * Shared by route links and shelf buttons. Links get `data-status=active`
  * from the router, shelf buttons set `data-state=open` while their shelf is.
+ * Tighter between md and lg, where the page toolbar shares the row.
  */
 const tabClassName =
-  "-mb-px flex flex-1 items-center justify-center gap-1 border-b-2 border-transparent px-3 py-3 text-sm font-semibold text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:text-foreground data-[state=open]:text-foreground data-[status=active]:border-cosmo data-[status=active]:text-foreground md:flex-none";
+  "-mb-px flex flex-1 items-center justify-center gap-1 border-b-2 border-transparent px-3 py-3 text-sm font-semibold text-muted-foreground transition-colors outline-none hover:text-foreground focus-visible:text-foreground focus-visible:ring-2 focus-visible:ring-cosmo/50 focus-visible:ring-inset data-[state=open]:text-foreground data-[status=active]:border-cosmo data-[status=active]:text-foreground md:flex-none md:px-2 lg:px-3";
 
 type Shelf = "binders" | "lists";
 
@@ -48,23 +49,28 @@ export default function ProfileTabs({ isAuthenticated }: Props) {
   // grid is reached from the progress page, so it keeps Progress highlighted
   const onGrid =
     useMatch({ from: "/@{$username}/grid", shouldThrow: false }) !== undefined;
+  // lowercase like the stored slugs, since urls match them case-insensitively
   const binderSlug = useMatch({
     from: "/@{$username}/binder/$slug",
     shouldThrow: false,
-    select: (match) => match.params.slug,
+    select: (match) => match.params.slug.toLowerCase(),
   });
   const listSlug = useMatch({
     from: "/@{$username}/list/$slug",
     shouldThrow: false,
-    select: (match) => match.params.slug,
+    select: (match) => match.params.slug.toLowerCase(),
   });
 
-  // remembering where a shelf opened closes it on navigation, including links inside it
-  const [opened, setOpened] = useState<{ shelf: Shelf; pathname: string }>();
-  const openShelf = opened?.pathname === pathname ? opened.shelf : undefined;
+  const [openShelf, setOpenShelf] = useState<Shelf>();
+  // navigating anywhere closes the shelf, including through links inside it
+  const [shelfPathname, setShelfPathname] = useState(pathname);
+  if (pathname !== shelfPathname) {
+    setShelfPathname(pathname);
+    setOpenShelf(undefined);
+  }
 
   function toggleShelf(shelf: Shelf) {
-    setOpened(openShelf === shelf ? undefined : { shelf, pathname });
+    setOpenShelf(openShelf === shelf ? undefined : shelf);
   }
 
   function prefetchBinders() {
@@ -87,7 +93,7 @@ export default function ProfileTabs({ isAuthenticated }: Props) {
       event.target instanceof Node &&
       event.currentTarget.contains(event.target)
     ) {
-      setOpened(undefined);
+      setOpenShelf(undefined);
     }
   }
 

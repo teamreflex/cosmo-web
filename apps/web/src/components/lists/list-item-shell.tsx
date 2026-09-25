@@ -16,35 +16,34 @@ type Props = {
  */
 export default function ListItemShell({ list, isPending, onClick }: Props) {
   return (
-    // rows close the menu themselves once they're done
-    <DropdownMenuItem className="group truncate" closeOnClick={false}>
-      <button
-        type="button"
-        onClick={onClick}
-        disabled={isPending}
-        className="flex w-full items-center justify-between gap-2"
-        aria-label={m.list_add_to_list_named({ listName: list.name })}
-      >
-        <div className="flex items-center gap-1.5 text-sm">
-          <span>{list.name}</span>
-          <span className="text-xs">
-            {list.type === "have" && (
-              <Badge variant="list-have">{m.list_type_have()}</Badge>
-            )}
-            {list.type === "want" && (
-              <Badge variant="list-want">{m.list_type_want()}</Badge>
-            )}
-            {list.type === "sale" && list.currency && (
-              <Badge variant="secondary">{list.currency}</Badge>
-            )}
-          </span>
-        </div>
-        {isPending ? (
-          <IconLoader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <IconPlus className="h-4 w-4 opacity-0 transition-all group-hover:opacity-100" />
-        )}
-      </button>
+    <DropdownMenuItem
+      className="group justify-between gap-2 truncate"
+      aria-label={m.list_add_to_list_named({ listName: list.name })}
+      // rows close the menu themselves once they're done
+      closeOnClick={false}
+      onClick={() => {
+        if (!isPending) onClick();
+      }}
+    >
+      <div className="flex items-center gap-1.5 text-sm">
+        <span>{list.name}</span>
+        <span className="text-xs">
+          {list.type === "have" && (
+            <Badge variant="list-have">{m.list_type_have()}</Badge>
+          )}
+          {list.type === "want" && (
+            <Badge variant="list-want">{m.list_type_want()}</Badge>
+          )}
+          {list.type === "sale" && list.currency && (
+            <Badge variant="secondary">{list.currency}</Badge>
+          )}
+        </span>
+      </div>
+      {isPending ? (
+        <IconLoader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        <IconPlus className="h-4 w-4 opacity-0 transition-all group-hover:opacity-100 group-focus:opacity-100" />
+      )}
     </DropdownMenuItem>
   );
 }

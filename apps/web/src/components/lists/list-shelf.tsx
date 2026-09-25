@@ -185,7 +185,8 @@ function CardFan({ list }: { list: ListShelfItem }) {
     <img
       key={preview.slug}
       src={getObjektFrontImageUrl(preview, "xs")}
-      alt={preview.collectionId}
+      // decoration, so the tile reads as the list's name
+      alt=""
       width={36}
       height={56}
       decoding="async"

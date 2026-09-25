@@ -407,6 +407,7 @@
   "binder_editor_add_page": "ページを追加",
   "binder_editor_remove_page": "ページを削除",
   "binder_editor_remove_page_confirm": "{page}ページを削除しますか？",
+  "binder_editor_remove_page_n": "{page}ページを削除",
   "binder_editor_remove_page_description": [
     {
       "declarations": [
@@ -426,11 +427,9 @@
   "binder_editor_hint_drag_key": "ドラッグ",
   "binder_editor_hint_drag": "objektをポケットへ、またはポケット同士で入れ替え",
   "binder_editor_hint_clear": "ポケットを空にする",
-  "binder_editor_hint_tap": "ポケットをタップして配置",
-  "binder_editor_hint_arrange": "ポケットを2つ順にタップして入れ替え",
-  "binder_editor_arrange": "並べ替え",
-  "binder_editor_pick_title": "ポケット{pocket} · objektを選択",
-  "binder_editor_clear_pocket": "ポケットを空にする",
+  "binder_editor_hint_tap": "タップで配置、長押しで移動",
+  "binder_editor_pick_title": "ポケット{pocket}",
+  "binder_editor_clear_pocket": "空にする",
   "binder_editor_clear_pocket_n": "ポケット{pocket}を空にする",
   "binder_editor_use_as_cover": "表紙にする",
   "binder_editor_cover": "表紙",
@@ -439,7 +438,6 @@
   "binder_editor_pocket_cover": "ポケット{pocket}、{objekt}、表紙",
   "binder_editor_select_pocket": "先にポケットを選択してください",
   "binder_editor_page_full": "ページがいっぱいです",
-  "binder_editor_arrange_pick_filled": "先にobjektが入ったポケットを選んでください",
   "binder_editor_layout": "レイアウト",
   "binder_editor_edit": "名前と色を編集",
   "binder_editor_colour": "色",

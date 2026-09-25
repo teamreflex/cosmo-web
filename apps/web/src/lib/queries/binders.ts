@@ -17,12 +17,20 @@ export const binderShelfQuery = (userId: string) =>
 
 /**
  * Fetch one binder with every page's entries, for the viewer and the editor.
+ * Slugs are stored lowercase and match case-insensitively, so the key is
+ * lowercase too, and a mixed-case URL shares the entry that edits write to.
  */
 export const binderQuery = (userId: string, slug: string) =>
   queryOptions({
-    queryKey: ["binder", userId, slug],
+    queryKey: ["binder", userId, slug.toLowerCase()],
     queryFn: ({ signal }) => $fetchBinder({ signal, data: { userId, slug } }),
   });
+
+/**
+ * Every objekt's "Add to binder" menu. Creating, renaming or deleting a
+ * binder, or changing its pockets, resets them all.
+ */
+export const binderMenuKey = ["binder-menu"];
 
 /**
  * Fetch the signed-in user's binders for the "Add to binder" menu, marking
@@ -30,6 +38,6 @@ export const binderQuery = (userId: string, slug: string) =>
  */
 export const binderMenuQuery = (tokenId: number) =>
   queryOptions({
-    queryKey: ["binder-menu", tokenId],
+    queryKey: [...binderMenuKey, tokenId],
     queryFn: ({ signal }) => $fetchBinderMenu({ signal, data: { tokenId } }),
   });

@@ -588,6 +588,17 @@ function isNearWhite(hex: string) {
 }
 
 /**
+ * A hex colour as a lowercase #rrggbb, expanding the #rgb shorthand. Null for
+ * anything else, such as a half-typed colour.
+ */
+export function fullHexColour(value: string) {
+  const hex = value.trim().toLowerCase();
+  if (/^#[0-9a-f]{6}$/.test(hex)) return hex;
+  if (!/^#[0-9a-f]{3}$/.test(hex)) return null;
+  return hex.replace(/[0-9a-f]/g, (digit) => digit + digit);
+}
+
+/**
  * Black or white, whichever reads better on the binder's spine colour. Plays
  * the part of a collection's text colour wherever a binder takes an objekt's
  * overlay.

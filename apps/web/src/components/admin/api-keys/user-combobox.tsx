@@ -22,7 +22,10 @@ export default function UserCombobox({ value, onChange }: Props) {
   const [debouncedQuery] = useDebounceValue(query, 500);
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  // a picked result swaps the search for the user, whose Cancel takes focus
+  const picked = useRef(false);
   const enabled = debouncedQuery.length >= 3;
+  const resultsOpen = open && enabled;
 
   const { status, data } = useQuery({
     ...searchUsersQuery(debouncedQuery),
@@ -30,6 +33,7 @@ export default function UserCombobox({ value, onChange }: Props) {
   });
 
   function handleSelect(user: UserSearchResult) {
+    picked.current = true;
     onChange(user);
     setQuery("");
     setOpen(false);
@@ -57,6 +61,11 @@ export default function UserCombobox({ value, onChange }: Props) {
           )}
         </div>
         <button
+          ref={(button) => {
+            if (button === null || !picked.current) return;
+            picked.current = false;
+            button.focus();
+          }}
           type="button"
           onClick={handleClear}
           className="text-xs text-muted-foreground hover:text-foreground"
@@ -68,7 +77,7 @@ export default function UserCombobox({ value, onChange }: Props) {
   }
 
   return (
-    <Popover open={open && enabled} onOpenChange={setOpen}>
+    <Popover open={resultsOpen} onOpenChange={setOpen}>
       <Input
         ref={inputRef}
         placeholder={m.user_search_placeholder()}
@@ -78,11 +87,20 @@ export default function UserCombobox({ value, onChange }: Props) {
           setOpen(true);
         }}
         onFocus={() => setOpen(true)}
+        onKeyDown={(event) => {
+          // closes the results rather than a dialog around them
+          if (event.key === "Escape" && resultsOpen) {
+            event.stopPropagation();
+            setOpen(false);
+          }
+        }}
       />
 
       <PopoverContent
         anchor={inputRef}
         initialFocus={false}
+        // the chosen user takes focus from the search it replaces
+        finalFocus={false}
         className="w-(--anchor-width) overflow-hidden p-0"
       >
         {status === "pending" && enabled && (

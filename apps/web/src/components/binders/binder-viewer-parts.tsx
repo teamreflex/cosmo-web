@@ -54,7 +54,7 @@ export function ViewerMeta({
     <span
       {...props}
       className={cn(
-        "truncate font-mono text-[10.5px] tracking-[0.12em] text-muted-foreground uppercase",
+        "truncate font-mono tracking-[0.12em] uppercase",
         className,
       )}
     >

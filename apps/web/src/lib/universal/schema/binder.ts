@@ -2,14 +2,15 @@ import {
   binderLayouts,
   MAX_BINDER_PAGES,
   binderGrid,
+  fullHexColour,
 } from "@/lib/universal/binders";
 import * as z from "zod";
 import { listNameSchema } from "./objekt-list";
 
+// the #rgb shorthand is stored as #rrggbb
 const colourSchema = z
   .string()
-  .trim()
-  .toLowerCase()
+  .overwrite((value) => fullHexColour(value) ?? value)
   .regex(/^#[0-9a-f]{6}$/, "Colour must be a hex colour like #1a2b3c");
 
 const tokenIdSchema = z.number().int().nonnegative();
