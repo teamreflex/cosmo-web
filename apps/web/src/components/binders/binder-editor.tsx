@@ -253,7 +253,7 @@ export default function BinderEditor({ binder, initialPage, owner }: Props) {
                 })}
               </BinderPage>
               {/* the status wraps under a long hint, keeping its dot */}
-              <div className="mt-2.5 flex flex-wrap items-center justify-center gap-x-2 text-center font-mono text-[11px] text-muted-foreground lg:hidden">
+              <div className="mt-2.5 flex flex-wrap items-center justify-center gap-x-2 text-center text-[11px] text-muted-foreground lg:hidden">
                 <span>{m.binder_editor_hint_tap()}</span>
                 <span className="flex gap-2">
                   <span aria-hidden>·</span>

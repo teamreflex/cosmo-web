@@ -509,7 +509,7 @@ function PinCard({
     );
   }
 
-  const cover = <BinderCover binder={pin.binder} />;
+  const cover = <BinderCover binder={pin.binder} pinned />;
 
   // the cover and its overlay lift together, as an objekt card does
   return (

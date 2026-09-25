@@ -50,12 +50,14 @@ const corners = [
 /**
  * Position the leaf exactly over a page, in the coordinates of the dialog it's
  * absolutely placed in, and show it. It takes the page's corners too, so the
- * cover on it hides the page's.
+ * cover on it hides the page's, and the scale it's drawn at over `origin`,
+ * the cover it opened from, so its cover is drawn as a blow-up of that one.
  */
 export function placeLeaf(
   fly: HTMLElement,
   page: HTMLElement,
   stage: HTMLElement,
+  origin: HTMLElement | undefined,
 ) {
   const box = page.getBoundingClientRect();
   const stageBox = stage.getBoundingClientRect();
@@ -66,6 +68,23 @@ export function placeLeaf(
   fly.style.height = `${box.height}px`;
   for (const corner of corners) fly.style[corner] = style[corner];
   fly.dataset.leaf = "flying";
+
+  const from = origin === undefined ? 0 : faceWidth(origin);
+  if (from > 0) {
+    fly.style.setProperty("--cover-zoom", String(faceWidth(fly) / from));
+  } else {
+    fly.style.removeProperty("--cover-zoom");
+  }
+}
+
+/**
+ * The laid-out width of the cover face inside an element, ignoring any
+ * transform on the way, such as a shelf tile's hover tilt or the open leaf.
+ */
+function faceWidth(element: HTMLElement) {
+  return (
+    element.querySelector<HTMLElement>("[data-cover-face]")?.offsetWidth ?? 0
+  );
 }
 
 /**
@@ -120,26 +139,29 @@ function sampleFlight(
 }
 
 /**
- * Keyframes for the cover's face as it flies. The cover changes aspect on the
- * way, but the face is photocard-shaped in every cover, so it's counter-scaled
- * to only move and grow, from filling the cover at `from` to its own box
- * `face`, centred on the stretched cover.
+ * Keyframes for a part of the cover that keeps its shape as it flies. The
+ * cover changes aspect on the way, so the part is counter-scaled to only move
+ * and grow, from its box `source` on the cover at `from` to its own box
+ * `part` on the stretched cover. The face is photocard-shaped in every cover,
+ * filling the one at `from` and centred on the stretched one, and the spine's
+ * strip keeps to the left edge.
  */
-function faceFrames(
+function partFrames(
   from: DOMRect,
   at: DOMRect,
-  face: DOMRect,
+  source: DOMRect,
+  part: DOMRect,
   direction: "in" | "out",
 ) {
   return sampleFlight(from, at, direction, (lerp, scaleX, scaleY) => {
     const x =
-      (lerp(face.left, from.left) - lerp(at.left, from.left)) / scaleX -
-      (face.left - at.left);
+      (lerp(part.left, source.left) - lerp(at.left, from.left)) / scaleX -
+      (part.left - at.left);
     const y =
-      (lerp(face.top, from.top) - lerp(at.top, from.top)) / scaleY -
-      (face.top - at.top);
+      (lerp(part.top, source.top) - lerp(at.top, from.top)) / scaleY -
+      (part.top - at.top);
     return {
-      transform: `translate(${x}px, ${y}px) scale(${lerp(face.width, from.width) / (face.width * scaleX)}, ${lerp(face.height, from.height) / (face.height * scaleY)})`,
+      transform: `translate(${x}px, ${y}px) scale(${lerp(part.width, source.width) / (part.width * scaleX)}, ${lerp(part.height, source.height) / (part.height * scaleY)})`,
     };
   });
 }
@@ -204,7 +226,22 @@ export function playFlight(
   for (const face of fly.querySelectorAll("[data-cover-face]")) {
     void play(
       face,
-      faceFrames(from, at, face.getBoundingClientRect(), direction),
+      partFrames(from, at, from, face.getBoundingClientRect(), direction),
+      options,
+    );
+  }
+  const spine = fly.querySelector("[data-cover-spine]");
+  const sourceSpine = cover.querySelector("[data-cover-spine]");
+  if (spine !== null && sourceSpine !== null) {
+    void play(
+      spine,
+      partFrames(
+        from,
+        at,
+        sourceSpine.getBoundingClientRect(),
+        spine.getBoundingClientRect(),
+        direction,
+      ),
       options,
     );
   }

@@ -417,7 +417,7 @@ function Book({
         return;
       }
 
-      placeLeaf(fly, page, stage);
+      placeLeaf(fly, page, stage, origin?.cover);
       left?.setAttribute("data-hold", "");
       for (const chrome of stage.querySelectorAll("[data-viewer-chrome]")) {
         void play(chrome, fadeIn, {
@@ -506,7 +506,7 @@ function Book({
         return;
       }
 
-      placeLeaf(fly, page, stage);
+      placeLeaf(fly, page, stage, origin?.cover);
       left?.setAttribute("data-hold", "");
       for (const rings of book.querySelectorAll("[data-spread-rings]")) {
         void play(rings, ringFrames("shut"), leafMotion.swingShut);
@@ -794,7 +794,7 @@ function PageControls({
   return (
     <div
       data-viewer-chrome
-      className="flex items-center justify-center gap-3.5 font-mono text-xs"
+      className="flex items-center justify-center gap-3.5 text-xs"
     >
       <Button
         variant="outline"

@@ -217,7 +217,7 @@ export default function ObjektPicker({
 
 type PickerSectionProps = {
   /** the count line, when there is one */
-  status?: string;
+  status?: ReactNode;
   sort: ValidSort;
   scrollRef: RefObject<HTMLDivElement | null>;
   /** the filter panel, over the results */
@@ -241,7 +241,7 @@ function PickerSection({
 }: PickerSectionProps) {
   return (
     <>
-      <div className="flex items-center gap-2 px-3 pb-2 font-mono text-[11px] text-muted-foreground">
+      <div className="flex items-center gap-2 px-3 pb-2 text-[11px] text-muted-foreground">
         <span>{status}</span>
         <span className="ml-auto">
           {m.binder_picker_sort({ sort: sortLabel(sort).toLowerCase() })}
@@ -321,7 +321,7 @@ function PickerCollection({
 
   return (
     <PickerSection
-      status={m.binder_picker_count({ count: shown })}
+      status={<PickerCount count={shown} />}
       sort={filters.sort}
       scrollRef={scrollRef}
       panel={panel(shown)}
@@ -351,6 +351,21 @@ function PickerCollection({
         </div>
       )}
     </PickerSection>
+  );
+}
+
+/**
+ * The number of objekts shown, with the number itself in mono wherever each
+ * language puts it.
+ */
+function PickerCount({ count }: { count: number }) {
+  const [before, after] = m.binder_picker_count({ count }).split(String(count));
+  return (
+    <>
+      {before}
+      <span className="font-mono tabular-nums">{count}</span>
+      {after}
+    </>
   );
 }
 

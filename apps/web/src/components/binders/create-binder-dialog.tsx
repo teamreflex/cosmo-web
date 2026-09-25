@@ -215,18 +215,16 @@ function CreateBinderForm({
  * filled in. Hidden on a phone, where the dialog has no room beside the form.
  */
 function CoverPreview({ control }: { control: Control<CreateBinder> }) {
-  const [name, layout, colour] = useWatch({
+  const [name, colour] = useWatch({
     control,
-    name: ["name", "layout", "colour"],
+    name: ["name", "colour"],
   });
 
   return (
     <BinderCover
       binder={{
         name: name.trim() === "" ? m.binder_create_name_placeholder() : name,
-        layout,
         colour: fullHexColour(colour) ?? DEFAULT_BINDER_COLOUR,
-        pageCount: 1,
         artwork: { kind: "collage", images: [] },
       }}
       className="hidden sm:block"
