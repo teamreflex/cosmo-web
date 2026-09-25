@@ -50,7 +50,10 @@ export default function PickerFilterPanel({
       aria-label={m.common_filters()}
       inert={!open}
       onKeyDown={(event) => {
-        if (event.key === "Escape") onClose();
+        if (event.key !== "Escape") return;
+        // closes the panel only, not the picker sheet around it
+        event.stopPropagation();
+        onClose();
       }}
       className={cn(
         "absolute inset-0 z-10 flex flex-col border-l border-border bg-popover transition-[translate,opacity] duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)]",

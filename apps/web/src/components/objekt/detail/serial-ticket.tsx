@@ -97,8 +97,8 @@ export default function SerialTicket({
         </div>
       </div>
 
-      {/* received date — desktop only */}
-      <div className="hidden w-28 shrink-0 md:block">
+      {/* received date — only once the dialog is wide enough for it beside the actions */}
+      <div className="hidden w-28 shrink-0 lg:block">
         <div className="font-mono text-xxs tracking-[0.14em] text-muted-foreground uppercase">
           {m.detail_sort_received()}
         </div>

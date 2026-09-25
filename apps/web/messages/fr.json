@@ -412,6 +412,7 @@
   "binder_editor_add_page": "Ajouter une page",
   "binder_editor_remove_page": "Retirer la page",
   "binder_editor_remove_page_confirm": "Retirer la page {page} ?",
+  "binder_editor_remove_page_n": "Retirer la page {page}",
   "binder_editor_remove_page_description": [
     {
       "declarations": [
@@ -432,11 +433,9 @@
   "binder_editor_hint_drag_key": "glisser",
   "binder_editor_hint_drag": "un objekt dans une poche, ou une poche sur une autre pour les échanger",
   "binder_editor_hint_clear": "vide une poche",
-  "binder_editor_hint_tap": "Touchez une poche pour la remplir",
-  "binder_editor_hint_arrange": "Touchez une poche, puis une autre, pour les échanger",
-  "binder_editor_arrange": "Ranger",
-  "binder_editor_pick_title": "Poche {pocket} · choisissez un objekt",
-  "binder_editor_clear_pocket": "Vider la poche",
+  "binder_editor_hint_tap": "Touchez pour remplir, maintenez pour déplacer",
+  "binder_editor_pick_title": "Poche {pocket}",
+  "binder_editor_clear_pocket": "Vider",
   "binder_editor_clear_pocket_n": "Vider la poche {pocket}",
   "binder_editor_use_as_cover": "Utiliser comme couverture",
   "binder_editor_cover": "Couverture",
@@ -445,7 +444,6 @@
   "binder_editor_pocket_cover": "Poche {pocket}, {objekt}, couverture",
   "binder_editor_select_pocket": "Sélectionnez d'abord une poche",
   "binder_editor_page_full": "Page complète",
-  "binder_editor_arrange_pick_filled": "Choisissez d'abord une poche remplie",
   "binder_editor_layout": "Disposition",
   "binder_editor_edit": "Modifier le nom et la couleur",
   "binder_editor_colour": "Couleur",

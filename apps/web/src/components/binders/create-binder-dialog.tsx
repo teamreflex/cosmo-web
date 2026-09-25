@@ -18,7 +18,11 @@ import { Input } from "@/components/ui/input";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { $createBinder } from "@/lib/functions/binders";
-import { binderQuery, binderShelfQuery } from "@/lib/queries/binders";
+import {
+  binderMenuKey,
+  binderQuery,
+  binderShelfQuery,
+} from "@/lib/queries/binders";
 import {
   type BinderDetail,
   type BinderLayout,
@@ -26,6 +30,7 @@ import {
   binderGrid,
   binderLayoutLabel,
   binderLayouts,
+  fullHexColour,
 } from "@/lib/universal/binders";
 import {
   type CreateBinder,
@@ -75,6 +80,7 @@ export default function CreateBinderDialog({
     void queryClient.invalidateQueries({
       queryKey: binderShelfQuery(binder.userId).queryKey,
     });
+    void queryClient.resetQueries({ queryKey: binderMenuKey });
 
     onOpenChange(false);
     if (onCreated !== undefined) {
@@ -197,9 +203,7 @@ function CreateBinderForm({
 
         <Button type="submit" disabled={mutation.isPending}>
           {m.common_create()}
-          {mutation.isPending && (
-            <IconLoader2 className="animate-spin" />
-          )}
+          {mutation.isPending && <IconLoader2 className="animate-spin" />}
         </Button>
       </div>
     </form>
@@ -221,7 +225,7 @@ function CoverPreview({ control }: { control: Control<CreateBinder> }) {
       binder={{
         name: name.trim() === "" ? m.binder_create_name_placeholder() : name,
         layout,
-        colour: /^#[0-9a-f]{6}$/i.test(colour) ? colour : DEFAULT_BINDER_COLOUR,
+        colour: fullHexColour(colour) ?? DEFAULT_BINDER_COLOUR,
         pageCount: 1,
         artwork: { kind: "collage", images: [] },
       }}

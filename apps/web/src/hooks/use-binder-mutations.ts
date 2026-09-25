@@ -8,7 +8,11 @@ import {
   $swapPockets,
   $updateBinder,
 } from "@/lib/functions/binders";
-import { binderQuery, binderShelfQuery } from "@/lib/queries/binders";
+import {
+  binderMenuKey,
+  binderQuery,
+  binderShelfQuery,
+} from "@/lib/queries/binders";
 import {
   withClearedPocket,
   withoutLastPage,
@@ -140,11 +144,13 @@ function useBinderMutation<TData, TVariables>(
       toast.error(formatError(error));
       void queryClient.invalidateQueries({ queryKey: binderKey });
     },
+    // not awaited, or the next change in the scope would wait on the refetch
     onSuccess: () => {
       pins.refreshBinder(binderId);
-      return queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: binderShelfQuery(userId).queryKey,
       });
+      void queryClient.resetQueries({ queryKey: binderMenuKey });
     },
   });
 }

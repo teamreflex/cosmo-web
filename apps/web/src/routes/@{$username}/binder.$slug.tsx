@@ -74,6 +74,8 @@ function RouteComponent() {
   return (
     <div className="container py-4">
       <BinderEditor
+        // the page and selection belong to one binder, and survive a rename
+        key={binder.id}
         binder={binder}
         initialPage={page === undefined ? 0 : page - 1}
         owner={{
@@ -90,12 +92,12 @@ function RouteComponent() {
 function PendingComponent() {
   return (
     <div className="container py-4">
-      <div className="grid overflow-hidden rounded-xl border border-border md:grid-cols-[minmax(0,1fr)_minmax(260px,340px)] xl:grid-cols-[minmax(0,1fr)_minmax(300px,440px)]">
-        <div className="flex flex-col gap-2.5 p-3 md:border-r md:border-border md:p-4.5">
+      <div className="grid overflow-hidden rounded-xl border border-border lg:grid-cols-[minmax(0,1fr)_minmax(260px,340px)] xl:grid-cols-[minmax(0,1fr)_minmax(300px,440px)]">
+        <div className="flex flex-col gap-2.5 p-3 lg:border-r lg:border-border lg:p-4.5">
           <Skeleton className="h-8 w-56" />
           <Skeleton className="mx-auto aspect-[0.66] w-full max-w-[calc((100dvh-16rem)*0.647)] rounded-xl" />
         </div>
-        <div className="hidden bg-muted/30 p-3 md:block">
+        <div className="hidden bg-muted/30 p-3 lg:block">
           <Skeleton className="h-8.5 w-full" />
         </div>
       </div>

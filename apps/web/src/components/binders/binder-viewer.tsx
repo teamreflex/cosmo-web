@@ -7,7 +7,6 @@ import {
   DialogPortal,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useBinderDetail } from "@/hooks/use-binder-detail";
 import type { BinderOptions } from "@/hooks/use-binder-detail";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import type { BinderViewerOrigin } from "@/hooks/use-open-binder";
@@ -37,7 +36,8 @@ import {
   IconPencil,
   IconX,
 } from "@tabler/icons-react";
-import { Link } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { Link, useMatch } from "@tanstack/react-router";
 import {
   Suspense,
   useEffect,
@@ -130,7 +130,17 @@ export default function BinderViewer({
     >
       {origin === null ? (
         <Suspense fallback={nothingShown}>
-          <LinkedViewer binderOptions={binderOptions} show={show} />
+          <LinkedViewer
+            binderOptions={binderOptions}
+            show={show}
+            missing={
+              <MissingBinder
+                closing={closing}
+                onClose={onClose}
+                onClosed={onClosed}
+              />
+            }
+          />
         </Suspense>
       ) : (
         show(origin.preview)
@@ -141,16 +151,44 @@ export default function BinderViewer({
 
 /**
  * A viewer opened from a link, with no cover on screen: it waits for the
- * binder, then draws the cover from it.
+ * binder, then draws the cover from it. A link to a binder that doesn't exist
+ * is an expected state rather than an error, since the server renders it too.
  */
 function LinkedViewer({
   binderOptions,
   show,
+  missing,
 }: {
   binderOptions: BinderOptions;
   show: (cover: BinderPreview) => ReactNode;
+  missing: ReactNode;
 }) {
-  return show(binderPreviewFromDetail(useBinderDetail(binderOptions)));
+  const { data: binder } = useSuspenseQuery(binderOptions);
+  return binder === null ? missing : show(binderPreviewFromDetail(binder));
+}
+
+/**
+ * A link to a missing binder: says so once the page is interactive, then
+ * closes with nothing to animate.
+ */
+function MissingBinder({
+  closing,
+  onClose,
+  onClosed,
+}: {
+  closing: boolean;
+  onClose: () => void;
+  onClosed: () => void;
+}) {
+  const report = useEffectEvent(() => {
+    toast.error(m.binder_error_binder_not_found());
+    onClose();
+  });
+  useEffect(() => {
+    report();
+  }, []);
+
+  return <NothingShown closing={closing} onClosed={onClosed} />;
 }
 
 /**
@@ -274,6 +312,7 @@ function Book({
   isOwner,
   closing,
   onClosed,
+  onClose,
   isDesktop,
   overlayRef,
   closeRef,
@@ -281,8 +320,12 @@ function Book({
   const step = pagesAcross(cover.layout, isDesktop);
   const single = step === 1;
   const { pageCount } = cover;
-  // the first page in view
-  const [index, setIndex] = useState(0);
+  const [pageInView, setPageInView] = useState(0);
+  /**
+   * The first page in view. A spread starts on an odd page, so crossing into
+   * spreads from a single page shows the spread that page is in.
+   */
+  const index = pageInView - (pageInView % step);
   const shown = [index, index + 1]
     .slice(0, step)
     .filter((page) => page < pageCount);
@@ -293,7 +336,7 @@ function Book({
   const coverPageRef = useRef<HTMLDivElement>(null);
   const flyRef = useRef<HTMLDivElement>(null);
   const leafRef = useRef<HTMLDivElement>(null);
-  const sequence = useRef<{ cancel: () => void } | null>(null);
+  const sequence = useRef<ReturnType<typeof runSequence> | null>(null);
   const opened = useRef(false);
   const swipeStart = useRef<{ x: number; y: number } | null>(null);
 
@@ -303,7 +346,7 @@ function Book({
    */
   function showSpread(to: number) {
     if (closing || to === index || to < 0 || to >= pageCount) return;
-    setIndex(to);
+    setPageInView(to);
     if (!prefersReducedMotion()) {
       const direction = to > index ? 1 : -1;
       bookRef.current?.animate(
@@ -345,6 +388,7 @@ function Book({
     }
   }
 
+  // on the stage, which takes focus when the pages are clicked
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key === "ArrowLeft") turn(-1);
     else if (event.key === "ArrowRight") turn(1);
@@ -440,7 +484,9 @@ function Book({
     }
     const left = leftRef.current;
     const swing = opened.current && !prefersReducedMotion() && index === 0;
-    sequence.current?.cancel();
+    // mid-open, the cover and chrome stop where they are and fade from there
+    if (opened.current) sequence.current?.cancel();
+    else sequence.current?.pause();
     stage.style.pointerEvents = "none";
 
     sequence.current = runSequence(async ({ play }) => {
@@ -491,8 +537,9 @@ function Book({
   return (
     <div
       ref={stageRef}
+      tabIndex={-1}
       onKeyDown={handleKeyDown}
-      className="relative flex flex-col gap-3 will-change-[opacity]"
+      className="relative flex flex-col gap-3 will-change-[opacity] outline-none"
     >
       <ViewerHeader
         cover={cover}
@@ -501,6 +548,7 @@ function Book({
         isOwner={isOwner}
         isDesktop={isDesktop}
         closeRef={closeRef}
+        onClose={onClose}
       />
 
       <div
@@ -566,8 +614,13 @@ function Book({
       )}
 
       {!isDesktop && (
-        <div data-viewer-chrome className="flex justify-center gap-2">
-          <ViewerActions cover={cover} username={username} isOwner={isOwner} />
+        <div data-viewer-chrome className="flex flex-wrap justify-center gap-2">
+          <ViewerActions
+            cover={cover}
+            username={username}
+            isOwner={isOwner}
+            onClose={onClose}
+          />
         </div>
       )}
 
@@ -598,6 +651,7 @@ type ViewerHeaderProps = {
   isOwner: boolean;
   isDesktop: boolean;
   closeRef: RefObject<HTMLButtonElement | null>;
+  onClose: () => void;
 };
 
 /**
@@ -612,6 +666,7 @@ function ViewerHeader({
   isOwner,
   isDesktop,
   closeRef,
+  onClose,
 }: ViewerHeaderProps) {
   return (
     <div data-viewer-chrome className="flex items-center gap-3">
@@ -622,6 +677,8 @@ function ViewerHeader({
       />
       <div className="grid min-w-0 gap-0.5 md:gap-1">
         <DialogDescription
+          // on the scrim, which stays dark in the light theme
+          className="text-[10.5px] text-white/60"
           render={
             <ViewerMeta
               cover={cover}
@@ -630,13 +687,18 @@ function ViewerHeader({
             />
           }
         />
-        <DialogTitle className="line-clamp-2 font-cosmo text-base leading-tight font-black uppercase md:line-clamp-1 md:text-xl">
+        <DialogTitle className="line-clamp-2 font-cosmo text-base leading-tight font-black text-white uppercase md:line-clamp-1 md:text-xl">
           {cover.name}
         </DialogTitle>
       </div>
       <div className="ml-auto flex shrink-0 items-center gap-2">
         {isDesktop && (
-          <ViewerActions cover={cover} username={username} isOwner={isOwner} />
+          <ViewerActions
+            cover={cover}
+            username={username}
+            isOwner={isOwner}
+            onClose={onClose}
+          />
         )}
         <DialogClose
           render={
@@ -712,6 +774,10 @@ function Spread({
   );
 }
 
+// focusable while disabled, so `:disabled` never matches
+const turnButtonClass =
+  "rounded-full data-disabled:pointer-events-none data-disabled:opacity-50";
+
 type PageControlsProps = {
   label: string;
   canTurnBack: boolean;
@@ -728,26 +794,32 @@ function PageControls({
   return (
     <div
       data-viewer-chrome
-      className="flex items-center justify-center gap-3.5 font-mono text-xs text-muted-foreground"
+      className="flex items-center justify-center gap-3.5 font-mono text-xs"
     >
       <Button
         variant="outline"
         size="icon-sm"
         aria-label={m.binder_editor_previous_page()}
         disabled={!canTurnBack}
+        // turning onto the first or last page keeps focus here
+        focusableWhenDisabled
         onClick={() => onTurn(-1)}
-        className="rounded-full"
+        className={turnButtonClass}
       >
         <IconChevronLeft />
       </Button>
-      <span aria-live="polite">{label}</span>
+      {/* on the scrim, which stays dark in the light theme */}
+      <span aria-live="polite" className="text-white/70">
+        {label}
+      </span>
       <Button
         variant="outline"
         size="icon-sm"
         aria-label={m.binder_editor_next_page()}
         disabled={!canTurnOn}
+        focusableWhenDisabled
         onClick={() => onTurn(1)}
-        className="rounded-full"
+        className={turnButtonClass}
       >
         <IconChevronRight />
       </Button>
@@ -759,37 +831,72 @@ type ViewerActionsProps = {
   cover: BinderPreview;
   username: string;
   isOwner: boolean;
+  onClose: () => void;
 };
 
 /**
  * Share, and for the owner, pinning and editing.
  */
-function ViewerActions({ cover, username, isOwner }: ViewerActionsProps) {
+function ViewerActions({
+  cover,
+  username,
+  isOwner,
+  onClose,
+}: ViewerActionsProps) {
   return (
     <>
       {isOwner && <BinderPinButton binder={cover} />}
       <ShareButton username={username} slug={cover.slug} />
-      {isOwner && <EditLink username={username} slug={cover.slug} />}
+      {isOwner && (
+        <EditLink username={username} slug={cover.slug} onClose={onClose} />
+      )}
     </>
   );
 }
 
+const editClass = cn(
+  buttonVariants({ variant: "outline", size: "sm" }),
+  "border-cosmo-text/50 bg-cosmo/15 text-cosmo-text hover:bg-cosmo/25 hover:text-cosmo-text dark:border-cosmo-text/50 dark:bg-cosmo/15 dark:hover:bg-cosmo/25",
+);
+
 /**
  * The owner's way into the editor. Arriving there unmounts the viewer without
- * a closing animation, as leaving for any other page does.
+ * a closing animation, as leaving for any other page does. Over the binder's
+ * own editor, it just closes the viewer.
  */
-function EditLink({ username, slug }: { username: string; slug: string }) {
-  return (
+function EditLink({
+  username,
+  slug,
+  onClose,
+}: {
+  username: string;
+  slug: string;
+  onClose: () => void;
+}) {
+  const editing = useMatch({
+    from: "/@{$username}/binder/$slug",
+    shouldThrow: false,
+    select: (match) => match.params.slug.toLowerCase() === slug,
+  });
+
+  const content = (
+    <>
+      <IconPencil />
+      {m.binder_viewer_edit()}
+    </>
+  );
+
+  return editing === true ? (
+    <button type="button" onClick={onClose} className={editClass}>
+      {content}
+    </button>
+  ) : (
     <Link
       to="/@{$username}/binder/$slug"
       params={{ username, slug }}
-      className={cn(
-        buttonVariants({ variant: "outline", size: "sm" }),
-        "border-cosmo-text/50 bg-cosmo/15 text-cosmo-text hover:bg-cosmo/25 hover:text-cosmo-text dark:border-cosmo-text/50 dark:bg-cosmo/15 dark:hover:bg-cosmo/25",
-      )}
+      className={editClass}
     >
-      <IconPencil />
-      {m.binder_viewer_edit()}
+      {content}
     </Link>
   );
 }

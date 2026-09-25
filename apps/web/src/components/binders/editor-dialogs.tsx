@@ -13,6 +13,7 @@ import { formatError } from "@/lib/client/errors";
 import { $deleteBinder } from "@/lib/functions/binders";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";
+import { useRef } from "react";
 import { toast } from "sonner";
 
 type DeleteProps = {
@@ -80,6 +81,8 @@ type RemovePageProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: () => void;
+  /** where focus goes after removing, since the button that opened it may go too */
+  focusAfterRemove: () => HTMLElement | null;
 };
 
 /**
@@ -91,10 +94,19 @@ export function RemovePageDialog({
   open,
   onOpenChange,
   onConfirm,
+  focusAfterRemove,
 }: RemovePageProps) {
+  const removed = useRef(false);
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
+      <AlertDialogContent
+        finalFocus={() => {
+          const target = removed.current ? focusAfterRemove() : true;
+          removed.current = false;
+          return target;
+        }}
+      >
         <AlertDialogHeader>
           <AlertDialogTitle>
             {m.binder_editor_remove_page_confirm({ page })}
@@ -105,7 +117,13 @@ export function RemovePageDialog({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>{m.common_cancel()}</AlertDialogCancel>
-          <AlertDialogAction variant="destructive" onClick={onConfirm}>
+          <AlertDialogAction
+            variant="destructive"
+            onClick={() => {
+              removed.current = true;
+              onConfirm();
+            }}
+          >
             {m.binder_editor_remove_page()}
           </AlertDialogAction>
         </AlertDialogFooter>

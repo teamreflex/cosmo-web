@@ -412,6 +412,7 @@
   "binder_editor_add_page": "Add a page",
   "binder_editor_remove_page": "Remove page",
   "binder_editor_remove_page_confirm": "Remove page {page}?",
+  "binder_editor_remove_page_n": "Remove page {page}",
   "binder_editor_remove_page_description": [
     {
       "declarations": [
@@ -432,11 +433,9 @@
   "binder_editor_hint_drag_key": "drag",
   "binder_editor_hint_drag": "an objekt into a pocket, or a pocket onto another to swap",
   "binder_editor_hint_clear": "clears a pocket",
-  "binder_editor_hint_tap": "Tap a pocket to fill it",
-  "binder_editor_hint_arrange": "Tap a pocket, then another, to swap them",
-  "binder_editor_arrange": "Arrange",
-  "binder_editor_pick_title": "Pocket {pocket} · pick an objekt",
-  "binder_editor_clear_pocket": "Clear pocket",
+  "binder_editor_hint_tap": "Tap to fill, hold to move",
+  "binder_editor_pick_title": "Pocket {pocket}",
+  "binder_editor_clear_pocket": "Clear",
   "binder_editor_clear_pocket_n": "Clear pocket {pocket}",
   "binder_editor_use_as_cover": "Use as cover",
   "binder_editor_cover": "Cover",
@@ -445,7 +444,6 @@
   "binder_editor_pocket_cover": "Pocket {pocket}, {objekt}, cover",
   "binder_editor_select_pocket": "Select a pocket first",
   "binder_editor_page_full": "Page full",
-  "binder_editor_arrange_pick_filled": "Pick a filled pocket first",
   "binder_editor_layout": "Layout",
   "binder_editor_edit": "Edit name and colour",
   "binder_editor_colour": "Colour",

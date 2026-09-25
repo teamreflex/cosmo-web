@@ -23,6 +23,7 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconSearch } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { Controller, useForm } from "react-hook-form";
 
 type Props = {
@@ -174,6 +175,11 @@ export default function CollectionLookup({ onLookup }: Props) {
                       setMemberOpen(true);
                     }}
                     onFocus={() => setMemberOpen(true)}
+                    onKeyDown={(e) => {
+                      // closed before Tab moves on, so it skips the suggestions
+                      if (e.key === "Tab")
+                        flushSync(() => setMemberOpen(false));
+                    }}
                     onBlur={() => {
                       field.onBlur();
                       setMemberOpen(false);
