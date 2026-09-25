@@ -1,6 +1,7 @@
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
+import type { ValidSort } from "@apollo/cosmo/types/common";
 import type { NonTransferableReason } from "@apollo/cosmo/types/objekts";
 import {
   type ObjektImageName,
@@ -12,6 +13,7 @@ export type Hoverable =
   | "select"
   | "lock"
   | "list"
+  | "binder"
   | "pin"
   | NonTransferableReason;
 
@@ -133,4 +135,22 @@ export function reasonLabel(reason: NonTransferableReason): string {
     default:
       return m.objekt_overlay_not_transferable();
   }
+}
+
+const sortLabels = {
+  newest: m.filter_sort_newest,
+  oldest: m.filter_sort_oldest,
+  noAscending: m.filter_sort_no_ascending,
+  noDescending: m.filter_sort_no_descending,
+  serialAsc: m.filter_sort_serial_asc,
+  serialDesc: m.filter_sort_serial_desc,
+  memberAsc: m.filter_sort_member_asc,
+  memberDesc: m.filter_sort_member_desc,
+} satisfies Record<ValidSort, () => string>;
+
+/**
+ * Maps a collection sort to its localized, user-facing label.
+ */
+export function sortLabel(sort: ValidSort): string {
+  return sortLabels[sort]();
 }

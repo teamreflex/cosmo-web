@@ -154,7 +154,8 @@ function ShellComponent({ children }: { children: React.ReactNode }) {
             </div>
           </div>
 
-          <Toaster />
+          {/* modal dialogs disable pointer events on the body, and toast actions stay clickable over them */}
+          <Toaster className="pointer-events-auto" />
           <TailwindIndicator />
         </ThemeProvider>
 

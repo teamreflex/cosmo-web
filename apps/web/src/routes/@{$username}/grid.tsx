@@ -20,7 +20,7 @@ export const Route = createFileRoute("/@{$username}/grid")({
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
   validateSearch: gridFrontendSchema,
-  loaderDeps: ({ search }) => ({ searchParams: search }),
+  loaderDeps: ({ search: { binder, ...searchParams } }) => ({ searchParams }),
   loader: async ({ context, deps }) => {
     const [target, account] = await Promise.all([
       context.queryClient.ensureQueryData(context.targetAccountOptions),

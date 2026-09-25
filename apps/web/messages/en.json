@@ -324,6 +324,179 @@
   "list_error_have_list_already_linked": "That have list is already linked to another want list",
   "list_error_entry_not_found": "List entry not found",
   "list_error_entry_kind_mismatch": "List entry type mismatch",
+  "binder_error_binder_not_found": "Binder not found",
+  "binder_error_binder_name_taken": "You already have a binder with this name",
+  "binder_error_binder_limit_reached": "You can have up to 10 binders",
+  "binder_error_binder_page_limit_reached": "This binder is full, binders can have up to 20 pages",
+  "binder_error_binder_layout_locked": "Cannot change a binder's layout once it has objekts",
+  "binder_error_cover_not_in_binder": "That objekt is no longer in this binder",
+  "binder_error_pocket_out_of_range": "That pocket doesn't exist in this binder",
+  "binder_error_objekt_not_owned": "We couldn't confirm you own this objekt yet. If you just received it, try again shortly",
+  "binder_page_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{count} page",
+        "countPlural=other": "{count} pages"
+      }
+    }
+  ],
+  "binder_binders": "Binders",
+  "binder_shelf_empty": "{username} hasn't made any binders yet.",
+  "binder_shelf_error": "Couldn't load binders",
+  "binder_new": "New binder",
+  "binder_shelf_limit": "Up to {max} binders",
+  "binder_create_description": "Pick a name, a pocket layout and a spine colour. You'll fill it next.",
+  "binder_create_name_placeholder": "My binder",
+  "binder_create_layout_pockets": "{count} per page",
+  "binder_create_layout_locked": "The layout can't be changed once the binder has objekts.",
+  "binder_created": "Binder created",
+  "binder_picker_all_artists": "All",
+  "binder_picker_suggestion_one": "Like pocket {pocket}:",
+  "binder_picker_suggestion_two": "Like pockets {first} and {second}:",
+  "binder_picker_suggested": "Suggested",
+  "binder_picker_matches_one": "Matches pocket {pocket}",
+  "binder_picker_matches_two": "Matches pockets {first} and {second}",
+  "binder_picker_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{count} objekt",
+        "countPlural=other": "{count} objekts"
+      }
+    }
+  ],
+  "binder_picker_sort": "sort · {sort}",
+  "binder_picker_pick_artist": "Pick an artist",
+  "binder_picker_ownership": "Ownership",
+  "binder_picker_binder": "Binder",
+  "binder_picker_not_in_binder": "Not in this binder",
+  "binder_picker_show": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "Show {count} objekt",
+        "countPlural=other": "Show {count} objekts"
+      }
+    }
+  ],
+  "binder_picker_in_binder": "in binder",
+  "binder_picker_empty_filtered": "No objekts match. Remove a filter to see more.",
+  "binder_picker_empty": "No objekts in this collection yet.",
+  "binder_picker_remove_filter": "Remove {filter}",
+  "binder_editor_title": "Edit {name}",
+  "binder_editor_error_loading": "Could not load this binder",
+  "binder_editor_saved": "Saved",
+  "binder_editor_page_of": "page {page} of {total}",
+  "binder_editor_previous_page": "Previous page",
+  "binder_editor_next_page": "Next page",
+  "binder_editor_page": "page",
+  "binder_editor_add_page": "Add a page",
+  "binder_editor_remove_page": "Remove page",
+  "binder_editor_remove_page_confirm": "Remove page {page}?",
+  "binder_editor_remove_page_description": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "Its objekt will be taken out of this binder. It stays in your collection.",
+        "countPlural=other": "Its {count} objekts will be taken out of this binder. They stay in your collection."
+      }
+    }
+  ],
+  "binder_editor_hint_click": "click",
+  "binder_editor_hint_fill": "a pocket, then an objekt, to fill it",
+  "binder_editor_hint_drag_key": "drag",
+  "binder_editor_hint_drag": "an objekt into a pocket, or a pocket onto another to swap",
+  "binder_editor_hint_clear": "clears a pocket",
+  "binder_editor_hint_tap": "Tap a pocket to fill it",
+  "binder_editor_hint_arrange": "Tap a pocket, then another, to swap them",
+  "binder_editor_arrange": "Arrange",
+  "binder_editor_pick_title": "Pocket {pocket} · pick an objekt",
+  "binder_editor_clear_pocket": "Clear pocket",
+  "binder_editor_clear_pocket_n": "Clear pocket {pocket}",
+  "binder_editor_use_as_cover": "Use as cover",
+  "binder_editor_cover": "Cover",
+  "binder_editor_pocket_empty": "Pocket {pocket}, empty",
+  "binder_editor_pocket_filled": "Pocket {pocket}, {objekt}",
+  "binder_editor_pocket_cover": "Pocket {pocket}, {objekt}, cover",
+  "binder_editor_select_pocket": "Select a pocket first",
+  "binder_editor_page_full": "Page full",
+  "binder_editor_arrange_pick_filled": "Pick a filled pocket first",
+  "binder_editor_layout": "Layout",
+  "binder_editor_edit": "Edit name and colour",
+  "binder_editor_colour": "Colour",
+  "binder_editor_colour_presets": "Colours from this binder",
+  "binder_editor_colour_custom": "Custom colour",
+  "binder_editor_colour_hex": "Hex colour",
+  "binder_editor_delete": "Delete binder",
+  "binder_editor_delete_confirm": "Delete this binder?",
+  "binder_editor_delete_description": "{name} and all of its pages will be deleted. The objekts stay in your collection.",
+  "binder_editor_deleted": "Binder deleted",
+  "binder_editor_more": "More binder actions",
+  "binder_editor_drag_instructions": "Press Enter to choose it. To move it into a pocket, press Space, use the arrow keys to pick a pocket, then press Space to drop it or Escape to cancel.",
+  "binder_editor_drag_picked_up": "Picked up {objekt}.",
+  "binder_editor_drag_over": "Over pocket {pocket}.",
+  "binder_editor_drag_dropped": "Dropped {objekt} in pocket {pocket}.",
+  "binder_editor_drag_cancelled": "Move cancelled.",
+  "binder_viewer_open": "Open {name}",
+  "binder_viewer_objekt_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{count} objekt",
+        "countPlural=other": "{count} objekts"
+      }
+    }
+  ],
+  "binder_viewer_updated": "Updated {date}",
+  "binder_viewer_edit": "Edit",
+  "binder_viewer_share": "Share",
+  "binder_viewer_link_copied": "Binder link copied to clipboard",
+  "binder_viewer_pages_of": "pages {first}–{last} of {total}",
+  "binder_viewer_pages": "Pages",
+  "binder_viewer_go_to_page": "Page {page}",
+  "binder_pin": "Pin",
+  "binder_pinned": "Pinned",
+  "binder_unpin_named": "Unpin {name}",
+  "binder_toast_pinned": "Pinned {name}",
+  "binder_toast_unpinned": "Unpinned {name}",
+  "binder_add_select": "Select binder to add {collectionId} to",
+  "binder_add_named": "Add to {name}",
+  "binder_add_already_in": "Already in",
+  "binder_add_none": "No binders yet",
+  "binder_add_added": "Added to {name}, page {page}",
+  "binder_add_already": "{collectionId} is already in {name}, page {page}",
+  "binder_add_open": "Open",
   "notification_bell_label": "Notifications",
   "notification_mark_all_read": "Mark all read",
   "notification_empty": "No notifications yet.",
@@ -818,6 +991,7 @@
   "objekt_overlay_pinned": "Pinned",
   "objekt_overlay_send": "Send",
   "objekt_overlay_add_to_list": "Add to List",
+  "objekt_overlay_add_to_binder": "Add to Binder",
   "objekt_overlay_remove_from_list": "Remove from List",
   "objekt_overlay_select": "Select",
   "objekt_overlay_deselect": "Deselect",
@@ -834,10 +1008,11 @@
   "objekt_overlay_unlocked": "Unlocked",
   "objekt_overlay_pin_aria": "Pin {collectionId}",
   "objekt_overlay_unpin_aria": "Unpin {collectionId}",
-  "pin_reorder_instructions": "To pick up a pinned objekt, press space or enter. While dragging, use the arrow keys to move the objekt. Press space or enter again to drop, or escape to cancel.",
-  "pin_reorder_picked_up": "Picked up pinned objekt. It is in position {position} of {total}.",
-  "pin_reorder_over": "Pinned objekt moved to position {position} of {total}.",
-  "pin_reorder_dropped": "Pinned objekt dropped at position {position} of {total}.",
+  "pin_reorder_instructions": "To pick up a pin, press space or enter. On a pinned binder, enter opens it instead. While dragging, use the arrow keys to move the pin. Press space or enter again to drop, or escape to cancel.",
+  "pin_reorder_binder": "binder {name}",
+  "pin_reorder_picked_up": "Picked up {name}. It is in position {position} of {total}.",
+  "pin_reorder_over": "Moved {name} to position {position} of {total}.",
+  "pin_reorder_dropped": "Dropped {name} at position {position} of {total}.",
   "pin_reorder_cancelled": "Pin reordering cancelled.",
   "objekt_overlay_lock_aria": "Lock this objekt",
   "objekt_overlay_unlock_aria": "Unlock this objekt",

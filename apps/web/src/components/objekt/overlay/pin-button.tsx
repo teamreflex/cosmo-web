@@ -1,4 +1,4 @@
-import { useProfileContext } from "@/hooks/use-profile";
+import { useUpdatePins } from "@/hooks/use-profile-pins";
 import { m } from "@/i18n/messages";
 import { $pinObjekt, $unpinObjekt } from "@/lib/functions/collection";
 import { track } from "@/lib/utils";
@@ -27,12 +27,12 @@ type ButtonProps = {
 };
 
 function PinButton(props: ButtonProps) {
-  const addPin = useProfileContext((ctx) => ctx.addPin);
+  const updatePins = useUpdatePins();
   const mutation = useMutation({
     mutationFn: $pinObjekt,
-    onSuccess: (data) => {
+    onSuccess: (pin) => {
       track("pin-objekt");
-      addPin(data);
+      updatePins((pins) => [pin, ...pins]);
       toast.success(m.toast_pinned({ collectionId: props.collectionId }));
     },
   });
@@ -59,12 +59,18 @@ function PinButton(props: ButtonProps) {
 }
 
 function UnpinButton(props: ButtonProps) {
-  const removePin = useProfileContext((ctx) => ctx.removePin);
+  const updatePins = useUpdatePins();
   const mutation = useMutation({
     mutationFn: $unpinObjekt,
     onSuccess: () => {
       track("unpin-objekt");
-      removePin(props.tokenId);
+      updatePins((pins) =>
+        pins.filter(
+          (pin) =>
+            pin.kind !== "objekt" ||
+            Number(pin.objekt.tokenId) !== props.tokenId,
+        ),
+      );
       toast.success(m.toast_unpinned({ collectionId: props.collectionId }));
     },
   });

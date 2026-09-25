@@ -1,3 +1,4 @@
+import AddToBinder from "@/components/binders/add-to-binder";
 import AddToList from "@/components/lists/add-to-list";
 import LockObjekt from "@/components/objekt/overlay/lock-button";
 import PinObjekt from "@/components/objekt/overlay/pin-button";
@@ -138,6 +139,10 @@ export default function SerialTicket({
             slug={collection.slug}
             collectionId={collection.id}
             lists={objektLists}
+            tokenId={token.tokenId}
+          />
+          <AddToBinder
+            collectionName={collection.collectionId}
             tokenId={token.tokenId}
           />
           <LockObjekt tokenId={token.tokenId} isLocked={isLocked} />

@@ -40,8 +40,9 @@ export default function Blockchain(props: Props) {
   const shouldRender = useCallback(
     (objekt: CosmoObjekt) => {
       const isLocked = lockedObjekts.includes(parseInt(objekt.tokenId));
-      const isPinned =
-        pins.findIndex((pin) => pin.tokenId === objekt.tokenId) !== -1;
+      const isPinned = pins.some(
+        (pin) => pin.kind === "objekt" && pin.objekt.tokenId === objekt.tokenId,
+      );
 
       // hide objekt from list when it's pinned
       const shouldDisplayPinned = !usingFilters && !isPinned;

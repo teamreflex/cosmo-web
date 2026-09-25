@@ -4,8 +4,10 @@ import { ObjektCellWidthContext } from "@/hooks/use-objekt-image";
 import type { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 import { useObjektResponse } from "@/hooks/use-objekt-response";
 import { tokenKey } from "@/hooks/use-objekt-selection";
+import { useOpenBinder } from "@/hooks/use-open-binder";
 import type { PinMove } from "@/hooks/use-pin-reorder";
 import { m } from "@/i18n/messages";
+import type { BinderPreview, ProfilePin } from "@/lib/universal/binders";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
@@ -26,6 +28,7 @@ import type {
   DragStartEvent,
   DropAnimation,
   ScreenReaderInstructions,
+  UniqueIdentifier,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -39,8 +42,11 @@ import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import type { DefaultError, QueryKey } from "@tanstack/react-query";
 import type { Virtualizer } from "@tanstack/react-virtual";
 import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import type { ComponentType } from "react";
+import type { ComponentType, KeyboardEvent, MouseEvent } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import BinderCover from "../binders/binder-cover";
+import BinderPinOverlay from "../binders/binder-pin-toggle";
+import BinderViewerLink from "../binders/binder-viewer-link";
 import { LegacyOverlay } from "../collection/data-sources/common-legacy";
 import { InfiniteQueryNext } from "../infinite-query-pending";
 import Portal from "../portal";
@@ -93,7 +99,7 @@ const pinDropAnimation: DropAnimation = {
 export type ObjektRowItem<T> =
   | {
       type: "pin";
-      item: CosmoObjekt;
+      item: ProfilePin;
     }
   | {
       type: "item";
@@ -116,7 +122,7 @@ type Props<
 > = {
   // data
   options: ObjektResponseOptions<TResponse, TItem, TError, TQueryKey>;
-  pins?: CosmoObjekt[];
+  pins?: ProfilePin[];
   hidePins?: boolean;
   onReorderPins?: (move: PinMove) => void;
   shouldRender?: (objekt: TItem) => boolean;
@@ -244,18 +250,18 @@ function ObjektGrid<
       coordinateGetter: sortableKeyboardCoordinates,
     }),
   );
-  const [activePin, setActivePin] = useState<CosmoObjekt | null>(null);
+  const [activePin, setActivePin] = useState<ProfilePin | null>(null);
 
   const reorderable = onReorderPins !== undefined && authenticated;
   const sortable = reorderable && !hidePins && pins.length > 1;
   const pinIds = useMemo(
-    () => (sortable ? pins.map((pin) => pin.tokenId) : []),
+    () => (sortable ? pins.map((pin) => pin.pinId) : []),
     [pins, sortable],
   );
 
   const handleDragStart = useCallback(
     (event: DragStartEvent) => {
-      setActivePin(pins.find((pin) => pin.tokenId === event.active.id) ?? null);
+      setActivePin(pins.find((pin) => pin.pinId === event.active.id) ?? null);
     },
     [pins],
   );
@@ -267,14 +273,14 @@ function ObjektGrid<
       if (!over || active.id === over.id) return;
       // both ids must be pins; items from the main grid aren't sortable
       if (
-        !pinIds.includes(String(active.id)) ||
-        !pinIds.includes(String(over.id))
+        !pinIds.includes(Number(active.id)) ||
+        !pinIds.includes(Number(over.id))
       ) {
         return;
       }
       onReorderPins?.({
-        tokenId: Number(active.id),
-        overTokenId: Number(over.id),
+        pinId: Number(active.id),
+        overPinId: Number(over.id),
       });
     },
     [pinIds, onReorderPins],
@@ -282,31 +288,39 @@ function ObjektGrid<
 
   const handleDragCancel = useCallback(() => setActivePin(null), []);
 
-  const announcements = useMemo<Announcements>(
-    () => ({
+  const announcements = useMemo<Announcements>(() => {
+    const name = (id: UniqueIdentifier) => {
+      const pin = pins.find((p) => p.pinId === id);
+      if (pin === undefined) return "";
+      return pin.kind === "objekt"
+        ? pin.objekt.collectionId
+        : m.pin_reorder_binder({ name: pin.binder.name });
+    };
+    const position = (id: UniqueIdentifier) => ({
+      position: pinIds.indexOf(Number(id)) + 1,
+      total: pinIds.length,
+    });
+
+    return {
       onDragStart: ({ active }) =>
         m.pin_reorder_picked_up({
-          position: pinIds.indexOf(String(active.id)) + 1,
-          total: pinIds.length,
+          name: name(active.id),
+          ...position(active.id),
         }),
-      onDragOver: ({ over }) =>
+      onDragOver: ({ active, over }) =>
         over
-          ? m.pin_reorder_over({
-              position: pinIds.indexOf(String(over.id)) + 1,
-              total: pinIds.length,
-            })
+          ? m.pin_reorder_over({ name: name(active.id), ...position(over.id) })
           : undefined,
-      onDragEnd: ({ over }) =>
+      onDragEnd: ({ active, over }) =>
         over
           ? m.pin_reorder_dropped({
-              position: pinIds.indexOf(String(over.id)) + 1,
-              total: pinIds.length,
+              name: name(active.id),
+              ...position(over.id),
             })
           : undefined,
       onDragCancel: () => m.pin_reorder_cancelled(),
-    }),
-    [pinIds],
-  );
+    };
+  }, [pins, pinIds]);
 
   const screenReaderInstructions = useMemo<ScreenReaderInstructions>(
     () => ({ draggable: m.pin_reorder_instructions() }),
@@ -342,7 +356,7 @@ function ObjektGrid<
             if (sortable) {
               return (
                 <SortablePinCell
-                  key={cell.item.tokenId}
+                  key={`pin-${cell.item.pinId}`}
                   pin={cell.item}
                   index={virtualItem.index}
                   top={baseY}
@@ -356,13 +370,13 @@ function ObjektGrid<
 
             return (
               <div
-                key={cell.item.tokenId}
+                key={`pin-${cell.item.pinId}`}
                 data-index={virtualItem.index}
                 ref={measureElement}
                 style={style}
                 className="absolute top-0"
               >
-                <PinObjektCard pin={cell.item} authenticated={authenticated} />
+                <PinCard pin={cell.item} authenticated={authenticated} link />
               </div>
             );
           }
@@ -433,7 +447,7 @@ function ObjektGrid<
                    */
                   <div className="drop-shadow-xl">
                     <div data-pin-pickup className="animate-pin-pickup">
-                      <PinObjektCard
+                      <PinCard
                         pin={activePin}
                         authenticated={authenticated}
                         eager
@@ -467,24 +481,66 @@ function ObjektGrid<
   );
 }
 
+type PinCardProps = {
+  pin: ProfilePin;
+  authenticated: boolean;
+  eager?: boolean;
+  /** open a binder through a link of its own, where the cell itself doesn't */
+  link?: boolean;
+};
+
 /**
- * Front image + legacy overlay for a pinned objekt. Shared by the static pin
- * cell, the sortable pin cell, and the drag overlay preview.
+ * What a pin cell shows. Shared by the static pin cell, the sortable pin cell,
+ * and the drag overlay preview.
  */
-function PinObjektCard({
+function PinCard({
   pin,
   authenticated,
   eager = false,
+  link = false,
+}: PinCardProps) {
+  if (pin.kind === "objekt") {
+    return (
+      <PinObjektCard
+        objekt={pin.objekt}
+        authenticated={authenticated}
+        eager={eager}
+      />
+    );
+  }
+
+  const cover = <BinderCover binder={pin.binder} />;
+
+  // the cover and its overlay lift together, as an objekt card does
+  return (
+    <div className="@container relative transition-transform duration-200 ease-out select-none [-webkit-touch-callout:none] hover:-translate-y-0.5">
+      {link ? (
+        <BinderViewerLink binder={pin.binder}>{cover}</BinderViewerLink>
+      ) : (
+        cover
+      )}
+      <BinderPinOverlay binder={pin.binder} isOwner={authenticated} />
+    </div>
+  );
+}
+
+/**
+ * Front image + legacy overlay for a pinned objekt.
+ */
+function PinObjektCard({
+  objekt,
+  authenticated,
+  eager,
 }: {
-  pin: CosmoObjekt;
+  objekt: CosmoObjekt;
   authenticated: boolean;
-  eager?: boolean;
+  eager: boolean;
 }) {
-  const legacyObjekt = Objekt.fromLegacy(pin);
+  const legacyObjekt = Objekt.fromLegacy(objekt);
   return (
     <ExpandableObjekt
       collection={legacyObjekt.collection}
-      selectionKey={tokenKey(parseInt(pin.tokenId))}
+      selectionKey={tokenKey(parseInt(objekt.tokenId))}
       priority={true}
       eager={eager}
       /**
@@ -505,7 +561,7 @@ function PinObjektCard({
 }
 
 type SortablePinCellProps = {
-  pin: CosmoObjekt;
+  pin: ProfilePin;
   index: number;
   top: number;
   left: number;
@@ -519,7 +575,9 @@ type SortablePinCellProps = {
  * offset via `top`/`left` so `transform` stays free for the drag/sort
  * animation, and merges the sortable node ref with the virtualizer's
  * measurement ref. `touch-action: manipulation` keeps page scroll working
- * since the touch sensor long-presses rather than claiming the gesture.
+ * since the touch sensor long-presses rather than claiming the gesture. A
+ * binder pin opens the viewer from the cell itself, on click or Enter, since
+ * a link inside would fight the drag.
  */
 function SortablePinCell({
   pin,
@@ -534,18 +592,30 @@ function SortablePinCell({
     attributes,
     listeners,
     setNodeRef,
+    setActivatorNodeRef,
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: pin.tokenId });
+  } = useSortable({ id: pin.pinId });
+  const { open, prefetch } = useOpenBinder();
 
+  // only keys pressed on the cell itself pick it up, not on buttons inside it
   const setRefs = useCallback(
     (node: HTMLDivElement | null) => {
       setNodeRef(node);
+      setActivatorNodeRef(node);
       measureElement(node);
     },
-    [setNodeRef, measureElement],
+    [setNodeRef, setActivatorNodeRef, measureElement],
   );
+
+  const binder = pin.kind === "binder" ? pin.binder : undefined;
+
+  function openBinder(target: BinderPreview, cell: HTMLDivElement) {
+    // the cover lifts inside the cell on hover, so the flight starts from it
+    const cover = cell.firstElementChild;
+    open(target, cell, cover instanceof HTMLElement ? cover : cell);
+  }
 
   return (
     <div
@@ -560,11 +630,26 @@ function SortablePinCell({
         opacity: isDragging ? 0 : 1,
         touchAction: "manipulation",
       }}
-      className="absolute cursor-pointer"
+      className="absolute cursor-pointer rounded-photocard outline-none focus-visible:ring-2 focus-visible:ring-cosmo-text focus-visible:ring-offset-2 focus-visible:ring-offset-background"
       {...attributes}
       {...listeners}
+      {...(binder && {
+        "aria-label": m.binder_viewer_open({ name: binder.name }),
+        onClick: (event: MouseEvent<HTMLDivElement>) =>
+          openBinder(binder, event.currentTarget),
+        onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            openBinder(binder, event.currentTarget);
+          } else {
+            listeners?.onKeyDown?.(event);
+          }
+        },
+        onPointerEnter: () => prefetch(binder),
+        onFocus: () => prefetch(binder),
+      })}
     >
-      <PinObjektCard pin={pin} authenticated={authenticated} />
+      <PinCard pin={pin} authenticated={authenticated} />
     </div>
   );
 }

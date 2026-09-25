@@ -322,6 +322,174 @@
   "list_error_have_list_already_linked": "その have リストは既に別の want リストと連携されています",
   "list_error_entry_not_found": "リストのエントリーが見つかりません",
   "list_error_entry_kind_mismatch": "リストのエントリーの種類が一致しません",
+  "binder_error_binder_not_found": "バインダーが見つかりません",
+  "binder_error_binder_name_taken": "同じ名前のバインダーが既に存在します",
+  "binder_error_binder_limit_reached": "バインダーは最大10冊までです",
+  "binder_error_binder_page_limit_reached": "このバインダーは満杯です。バインダーは最大20ページまでです",
+  "binder_error_binder_layout_locked": "objektが入っているバインダーのレイアウトは変更できません",
+  "binder_error_cover_not_in_binder": "そのobjektはこのバインダーにもうありません",
+  "binder_error_pocket_out_of_range": "そのポケットはこのバインダーにありません",
+  "binder_error_objekt_not_owned": "このobjektの所有をまだ確認できません。受け取ったばかりの場合は、しばらくしてからもう一度お試しください",
+  "binder_page_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=other": "{count}ページ"
+      }
+    }
+  ],
+  "binder_binders": "バインダー",
+  "binder_shelf_empty": "{username}さんはまだバインダーを作成していません。",
+  "binder_shelf_error": "バインダーを読み込めませんでした",
+  "binder_new": "新しいバインダー",
+  "binder_shelf_limit": "最大{max}冊まで",
+  "binder_create_description": "名前、ポケットのレイアウト、背表紙の色を選んでください。このあと中身を入れられます。",
+  "binder_create_name_placeholder": "マイバインダー",
+  "binder_create_layout_pockets": "1ページ{count}枚",
+  "binder_create_layout_locked": "Objektを入れた後はレイアウトを変更できません。",
+  "binder_created": "バインダーを作成しました",
+  "binder_picker_all_artists": "すべて",
+  "binder_picker_suggestion_one": "ポケット{pocket}と同じ:",
+  "binder_picker_suggestion_two": "ポケット{first}と{second}と同じ:",
+  "binder_picker_suggested": "おすすめ",
+  "binder_picker_matches_one": "ポケット{pocket}に一致",
+  "binder_picker_matches_two": "ポケット{first}と{second}に一致",
+  "binder_picker_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=other": "{count}個のオブジェクト"
+      }
+    }
+  ],
+  "binder_picker_sort": "並び替え · {sort}",
+  "binder_picker_pick_artist": "アーティストを選択してください",
+  "binder_picker_ownership": "所有",
+  "binder_picker_binder": "バインダー",
+  "binder_picker_not_in_binder": "このバインダーにないもの",
+  "binder_picker_show": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=other": "{count}個のオブジェクトを表示"
+      }
+    }
+  ],
+  "binder_picker_in_binder": "バインダー内",
+  "binder_picker_empty_filtered": "一致するオブジェクトがありません。フィルターを外すと表示されます。",
+  "binder_picker_empty": "このコレクションにはまだオブジェクトがありません。",
+  "binder_picker_remove_filter": "{filter}を解除",
+  "binder_editor_title": "{name}を編集",
+  "binder_editor_error_loading": "このバインダーを読み込めませんでした",
+  "binder_editor_saved": "保存済み",
+  "binder_editor_page_of": "{total}ページ中{page}ページ",
+  "binder_editor_previous_page": "前のページ",
+  "binder_editor_next_page": "次のページ",
+  "binder_editor_page": "ページ",
+  "binder_editor_add_page": "ページを追加",
+  "binder_editor_remove_page": "ページを削除",
+  "binder_editor_remove_page_confirm": "{page}ページを削除しますか？",
+  "binder_editor_remove_page_description": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=other": "このページの{count}個のobjektはバインダーから外されます。コレクションには残ります。"
+      }
+    }
+  ],
+  "binder_editor_hint_click": "クリック",
+  "binder_editor_hint_fill": "ポケット、次にobjektで配置",
+  "binder_editor_hint_drag_key": "ドラッグ",
+  "binder_editor_hint_drag": "objektをポケットへ、またはポケット同士で入れ替え",
+  "binder_editor_hint_clear": "ポケットを空にする",
+  "binder_editor_hint_tap": "ポケットをタップして配置",
+  "binder_editor_hint_arrange": "ポケットを2つ順にタップして入れ替え",
+  "binder_editor_arrange": "並べ替え",
+  "binder_editor_pick_title": "ポケット{pocket} · objektを選択",
+  "binder_editor_clear_pocket": "ポケットを空にする",
+  "binder_editor_clear_pocket_n": "ポケット{pocket}を空にする",
+  "binder_editor_use_as_cover": "表紙にする",
+  "binder_editor_cover": "表紙",
+  "binder_editor_pocket_empty": "ポケット{pocket}、空",
+  "binder_editor_pocket_filled": "ポケット{pocket}、{objekt}",
+  "binder_editor_pocket_cover": "ポケット{pocket}、{objekt}、表紙",
+  "binder_editor_select_pocket": "先にポケットを選択してください",
+  "binder_editor_page_full": "ページがいっぱいです",
+  "binder_editor_arrange_pick_filled": "先にobjektが入ったポケットを選んでください",
+  "binder_editor_layout": "レイアウト",
+  "binder_editor_edit": "名前と色を編集",
+  "binder_editor_colour": "色",
+  "binder_editor_colour_presets": "このバインダーの色",
+  "binder_editor_colour_custom": "カスタムカラー",
+  "binder_editor_colour_hex": "16進カラー",
+  "binder_editor_delete": "バインダーを削除",
+  "binder_editor_delete_confirm": "このバインダーを削除しますか？",
+  "binder_editor_delete_description": "{name}とすべてのページが削除されます。objektはコレクションに残ります。",
+  "binder_editor_deleted": "バインダーを削除しました",
+  "binder_editor_more": "その他の操作",
+  "binder_editor_drag_instructions": "Enterで選択します。ポケットへ移動するにはSpaceを押し、矢印キーでポケットを選んでSpaceで配置、Escでキャンセルします。",
+  "binder_editor_drag_picked_up": "{objekt}を持ち上げました。",
+  "binder_editor_drag_over": "ポケット{pocket}の上です。",
+  "binder_editor_drag_dropped": "{objekt}をポケット{pocket}に置きました。",
+  "binder_editor_drag_cancelled": "移動をキャンセルしました。",
+  "binder_viewer_open": "{name}を開く",
+  "binder_viewer_objekt_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=other": "{count}個のObjekt"
+      }
+    }
+  ],
+  "binder_viewer_updated": "{date} 更新",
+  "binder_viewer_edit": "編集",
+  "binder_viewer_share": "共有",
+  "binder_viewer_link_copied": "バインダーのリンクをコピーしました",
+  "binder_viewer_pages_of": "{total}ページ中{first}–{last}ページ",
+  "binder_viewer_pages": "ページ",
+  "binder_viewer_go_to_page": "{page}ページ",
+  "binder_pin": "ピン留め",
+  "binder_pinned": "ピン留め済み",
+  "binder_unpin_named": "{name}のピン留めを解除",
+  "binder_toast_pinned": "{name}をピン留めしました",
+  "binder_toast_unpinned": "{name}のピン留めを解除しました",
+  "binder_add_select": "{collectionId}を追加するバインダーを選択",
+  "binder_add_named": "{name} に追加",
+  "binder_add_already_in": "追加済み",
+  "binder_add_none": "バインダーはまだありません",
+  "binder_add_added": "{name}の{page}ページに追加しました",
+  "binder_add_already": "{collectionId}は既に{name}の{page}ページにあります",
+  "binder_add_open": "開く",
   "notification_bell_label": "通知",
   "notification_mark_all_read": "すべて既読にする",
   "notification_empty": "まだ通知はありません。",
@@ -813,6 +981,7 @@
   "objekt_overlay_pinned": "ピン留め済み",
   "objekt_overlay_send": "送信",
   "objekt_overlay_add_to_list": "リストに追加",
+  "objekt_overlay_add_to_binder": "バインダーに追加",
   "objekt_overlay_remove_from_list": "リストから削除",
   "objekt_overlay_select": "選択",
   "objekt_overlay_deselect": "選択解除",
@@ -829,10 +998,11 @@
   "objekt_overlay_unlocked": "ロック解除済み",
   "objekt_overlay_pin_aria": "{collectionId}をピン留め",
   "objekt_overlay_unpin_aria": "{collectionId}のピン留めを解除",
-  "pin_reorder_instructions": "ピン留めしたオブジェクトを持ち上げるには、スペースキーまたはEnterキーを押してください。ドラッグ中は矢印キーでオブジェクトを移動できます。もう一度スペースキーまたはEnterキーを押すと配置され、Escキーでキャンセルします。",
-  "pin_reorder_picked_up": "ピン留めしたオブジェクトを持ち上げました。現在{total}件中{position}番目です。",
-  "pin_reorder_over": "ピン留めしたオブジェクトを{total}件中{position}番目に移動しました。",
-  "pin_reorder_dropped": "ピン留めしたオブジェクトを{total}件中{position}番目に配置しました。",
+  "pin_reorder_instructions": "ピンを持ち上げるには、スペースキーまたはEnterキーを押してください。ピン留めしたバインダーではEnterキーで開きます。ドラッグ中は矢印キーでピンを移動できます。もう一度スペースキーまたはEnterキーを押すと配置され、Escキーでキャンセルします。",
+  "pin_reorder_binder": "バインダー「{name}」",
+  "pin_reorder_picked_up": "{name}を持ち上げました。現在{total}件中{position}番目です。",
+  "pin_reorder_over": "{name}を{total}件中{position}番目に移動しました。",
+  "pin_reorder_dropped": "{name}を{total}件中{position}番目に配置しました。",
   "pin_reorder_cancelled": "ピンの並べ替えをキャンセルしました。",
   "objekt_overlay_lock_aria": "このObjektをロック",
   "objekt_overlay_unlock_aria": "このObjektのロックを解除",

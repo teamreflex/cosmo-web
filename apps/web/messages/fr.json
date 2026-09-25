@@ -324,6 +324,179 @@
   "list_error_have_list_already_linked": "Cette liste have est déjà associée à une autre liste want",
   "list_error_entry_not_found": "Entrée de liste introuvable",
   "list_error_entry_kind_mismatch": "Type d'entrée de liste incompatible",
+  "binder_error_binder_not_found": "Classeur introuvable",
+  "binder_error_binder_name_taken": "Vous avez déjà un classeur portant ce nom",
+  "binder_error_binder_limit_reached": "Vous pouvez avoir jusqu'à 10 classeurs",
+  "binder_error_binder_page_limit_reached": "Ce classeur est plein, un classeur peut contenir jusqu'à 20 pages",
+  "binder_error_binder_layout_locked": "Impossible de changer la disposition d'un classeur qui contient des objekts",
+  "binder_error_cover_not_in_binder": "Cet objekt n'est plus dans ce classeur",
+  "binder_error_pocket_out_of_range": "Cette pochette n'existe pas dans ce classeur",
+  "binder_error_objekt_not_owned": "Nous n'avons pas encore pu confirmer que vous possédez cet objekt. Si vous venez de le recevoir, réessayez dans un instant",
+  "binder_page_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{count} page",
+        "countPlural=other": "{count} pages"
+      }
+    }
+  ],
+  "binder_binders": "Classeurs",
+  "binder_shelf_empty": "{username} n'a pas encore créé de classeur.",
+  "binder_shelf_error": "Impossible de charger les classeurs",
+  "binder_new": "Nouveau classeur",
+  "binder_shelf_limit": "{max} classeurs maximum",
+  "binder_create_description": "Choisissez un nom, une disposition et une couleur de dos. Vous le remplirez ensuite.",
+  "binder_create_name_placeholder": "Mon classeur",
+  "binder_create_layout_pockets": "{count} par page",
+  "binder_create_layout_locked": "La disposition ne peut plus être modifiée une fois que le classeur contient des objekts.",
+  "binder_created": "Classeur créé",
+  "binder_picker_all_artists": "Tous",
+  "binder_picker_suggestion_one": "Comme la pochette {pocket} :",
+  "binder_picker_suggestion_two": "Comme les pochettes {first} et {second} :",
+  "binder_picker_suggested": "Suggestion",
+  "binder_picker_matches_one": "Correspond à la pochette {pocket}",
+  "binder_picker_matches_two": "Correspond aux pochettes {first} et {second}",
+  "binder_picker_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{count} objekt",
+        "countPlural=other": "{count} objekts"
+      }
+    }
+  ],
+  "binder_picker_sort": "tri · {sort}",
+  "binder_picker_pick_artist": "Choisissez un artiste",
+  "binder_picker_ownership": "Possession",
+  "binder_picker_binder": "Classeur",
+  "binder_picker_not_in_binder": "Pas dans ce classeur",
+  "binder_picker_show": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "Afficher {count} objekt",
+        "countPlural=other": "Afficher {count} objekts"
+      }
+    }
+  ],
+  "binder_picker_in_binder": "dans le classeur",
+  "binder_picker_empty_filtered": "Aucun objekt ne correspond. Retirez un filtre pour en voir plus.",
+  "binder_picker_empty": "Aucun objekt dans cette collection pour le moment.",
+  "binder_picker_remove_filter": "Retirer {filter}",
+  "binder_editor_title": "Modifier {name}",
+  "binder_editor_error_loading": "Impossible de charger ce classeur",
+  "binder_editor_saved": "Enregistré",
+  "binder_editor_page_of": "page {page} sur {total}",
+  "binder_editor_previous_page": "Page précédente",
+  "binder_editor_next_page": "Page suivante",
+  "binder_editor_page": "page",
+  "binder_editor_add_page": "Ajouter une page",
+  "binder_editor_remove_page": "Retirer la page",
+  "binder_editor_remove_page_confirm": "Retirer la page {page} ?",
+  "binder_editor_remove_page_description": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "Son objekt sera retiré de ce classeur. Il reste dans votre collection.",
+        "countPlural=other": "Ses {count} objekts seront retirés de ce classeur. Ils restent dans votre collection."
+      }
+    }
+  ],
+  "binder_editor_hint_click": "clic",
+  "binder_editor_hint_fill": "une poche, puis un objekt, pour la remplir",
+  "binder_editor_hint_drag_key": "glisser",
+  "binder_editor_hint_drag": "un objekt dans une poche, ou une poche sur une autre pour les échanger",
+  "binder_editor_hint_clear": "vide une poche",
+  "binder_editor_hint_tap": "Touchez une poche pour la remplir",
+  "binder_editor_hint_arrange": "Touchez une poche, puis une autre, pour les échanger",
+  "binder_editor_arrange": "Ranger",
+  "binder_editor_pick_title": "Poche {pocket} · choisissez un objekt",
+  "binder_editor_clear_pocket": "Vider la poche",
+  "binder_editor_clear_pocket_n": "Vider la poche {pocket}",
+  "binder_editor_use_as_cover": "Utiliser comme couverture",
+  "binder_editor_cover": "Couverture",
+  "binder_editor_pocket_empty": "Poche {pocket}, vide",
+  "binder_editor_pocket_filled": "Poche {pocket}, {objekt}",
+  "binder_editor_pocket_cover": "Poche {pocket}, {objekt}, couverture",
+  "binder_editor_select_pocket": "Sélectionnez d'abord une poche",
+  "binder_editor_page_full": "Page complète",
+  "binder_editor_arrange_pick_filled": "Choisissez d'abord une poche remplie",
+  "binder_editor_layout": "Disposition",
+  "binder_editor_edit": "Modifier le nom et la couleur",
+  "binder_editor_colour": "Couleur",
+  "binder_editor_colour_presets": "Couleurs de ce classeur",
+  "binder_editor_colour_custom": "Couleur personnalisée",
+  "binder_editor_colour_hex": "Couleur hexadécimale",
+  "binder_editor_delete": "Supprimer le classeur",
+  "binder_editor_delete_confirm": "Supprimer ce classeur ?",
+  "binder_editor_delete_description": "{name} et toutes ses pages seront supprimés. Les objekts restent dans votre collection.",
+  "binder_editor_deleted": "Classeur supprimé",
+  "binder_editor_more": "Plus d'actions",
+  "binder_editor_drag_instructions": "Appuyez sur Entrée pour le choisir. Pour le déplacer dans une poche, appuyez sur Espace, choisissez une poche avec les flèches, puis appuyez sur Espace pour le déposer ou Échap pour annuler.",
+  "binder_editor_drag_picked_up": "{objekt} saisi.",
+  "binder_editor_drag_over": "Au-dessus de la poche {pocket}.",
+  "binder_editor_drag_dropped": "{objekt} déposé dans la poche {pocket}.",
+  "binder_editor_drag_cancelled": "Déplacement annulé.",
+  "binder_viewer_open": "Ouvrir {name}",
+  "binder_viewer_objekt_count": [
+    {
+      "declarations": [
+        "input count",
+        "local countPlural = count: plural"
+      ],
+      "selectors": [
+        "countPlural"
+      ],
+      "match": {
+        "countPlural=one": "{count} objekt",
+        "countPlural=other": "{count} objekts"
+      }
+    }
+  ],
+  "binder_viewer_updated": "Mis à jour le {date}",
+  "binder_viewer_edit": "Modifier",
+  "binder_viewer_share": "Partager",
+  "binder_viewer_link_copied": "Lien du classeur copié dans le presse-papier",
+  "binder_viewer_pages_of": "pages {first}–{last} sur {total}",
+  "binder_viewer_pages": "Pages",
+  "binder_viewer_go_to_page": "Page {page}",
+  "binder_pin": "Épingler",
+  "binder_pinned": "Épinglé",
+  "binder_unpin_named": "Désépingler {name}",
+  "binder_toast_pinned": "{name} épinglé",
+  "binder_toast_unpinned": "{name} désépinglé",
+  "binder_add_select": "Choisir le classeur où ajouter {collectionId}",
+  "binder_add_named": "Ajouter à {name}",
+  "binder_add_already_in": "Déjà ajouté",
+  "binder_add_none": "Aucun classeur pour l'instant",
+  "binder_add_added": "Ajouté à {name}, page {page}",
+  "binder_add_already": "{collectionId} est déjà dans {name}, page {page}",
+  "binder_add_open": "Ouvrir",
   "notification_bell_label": "Notifications",
   "notification_mark_all_read": "Tout marquer comme lu",
   "notification_empty": "Aucune notification pour le moment.",
@@ -818,6 +991,7 @@
   "objekt_overlay_pinned": "Épinglé",
   "objekt_overlay_send": "Envoyer",
   "objekt_overlay_add_to_list": "Ajouter à la liste",
+  "objekt_overlay_add_to_binder": "Ajouter au classeur",
   "objekt_overlay_remove_from_list": "Supprimer de la liste",
   "objekt_overlay_select": "Sélectionner",
   "objekt_overlay_deselect": "Désélectionner",
@@ -834,10 +1008,11 @@
   "objekt_overlay_unlocked": "Déverrouillé",
   "objekt_overlay_pin_aria": "Épingler {collectionId}",
   "objekt_overlay_unpin_aria": "Désépingler {collectionId}",
-  "pin_reorder_instructions": "Pour saisir un objekt épinglé, appuyez sur espace ou entrée. Pendant le déplacement, utilisez les touches fléchées pour déplacer l'objekt. Appuyez de nouveau sur espace ou entrée pour le déposer, ou sur échap pour annuler.",
-  "pin_reorder_picked_up": "Objekt épinglé saisi. Il est en position {position} sur {total}.",
-  "pin_reorder_over": "Objekt épinglé déplacé en position {position} sur {total}.",
-  "pin_reorder_dropped": "Objekt épinglé déposé en position {position} sur {total}.",
+  "pin_reorder_instructions": "Pour saisir une épingle, appuyez sur espace ou entrée. Sur un classeur épinglé, entrée l'ouvre à la place. Pendant le déplacement, utilisez les touches fléchées pour déplacer l'épingle. Appuyez de nouveau sur espace ou entrée pour la déposer, ou sur échap pour annuler.",
+  "pin_reorder_binder": "classeur {name}",
+  "pin_reorder_picked_up": "Vous avez saisi {name}. Il est en position {position} sur {total}.",
+  "pin_reorder_over": "Vous avez déplacé {name} en position {position} sur {total}.",
+  "pin_reorder_dropped": "Vous avez déposé {name} en position {position} sur {total}.",
   "pin_reorder_cancelled": "Réorganisation des épingles annulée.",
   "objekt_overlay_lock_aria": "Verrouiller l'objekt",
   "objekt_overlay_unlock_aria": "Déverrouiller l'objekt",

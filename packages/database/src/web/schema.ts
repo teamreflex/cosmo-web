@@ -20,7 +20,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 import { user } from "../auth";
-import { citext, createdAt } from "../custom";
+import { citext, createdAt, createdTimestamp } from "../custom";
 import type {
   CosmoGravityType,
   CosmoPollType,
@@ -37,6 +37,7 @@ export const listType = pgEnum("list_type", [
   "sale",
 ]);
 export const notificationType = pgEnum("notification_type", ["list_match"]);
+export const binderLayout = pgEnum("binder_layout", ["3x3", "2x2", "4x3"]);
 
 export const cosmoAccounts = pgTable(
   "cosmo_account",
@@ -59,16 +60,11 @@ export const cosmoAccounts = pgTable(
   ],
 );
 
-export const cosmoAccountChanges = pgTable(
-  "cosmo_account_changes",
-  {
-    address: citext("address", { length: 42 }).notNull(),
-    username: citext("username", { length: 24 }).notNull(),
-    createdAt: timestamp("created_at", { mode: "string" })
-      .notNull()
-      .defaultNow(),
-  },
-);
+export const cosmoAccountChanges = pgTable("cosmo_account_changes", {
+  address: citext("address", { length: 42 }).notNull(),
+  username: citext("username", { length: 24 }).notNull(),
+  createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
+});
 
 export const lockedObjekts = pgTable(
   "locked_objekts",
@@ -78,9 +74,7 @@ export const lockedObjekts = pgTable(
     tokenId: integer("tokenId").notNull(),
     locked: boolean("locked").notNull(),
   },
-  (t) => [
-    index("address_token_idx").on(t.address, t.tokenId),
-  ],
+  (t) => [index("address_token_idx").on(t.address, t.tokenId)],
 );
 
 export const pins = pgTable(
@@ -88,12 +82,20 @@ export const pins = pgTable(
   {
     id: serial("id").primaryKey(),
     address: citext("address", { length: 42 }).notNull(),
-    tokenId: integer("token_id").notNull(),
+    tokenId: integer("token_id"),
+    binderId: uuid("binder_id").references(() => binders.id, {
+      onDelete: "cascade",
+    }),
     position: integer("position").notNull().default(0),
   },
   (t) => [
     index("pins_token_id_idx").on(t.tokenId),
     index("pins_address_position_idx").on(t.address, t.position),
+    uniqueIndex("pins_address_binder_idx").on(t.address, t.binderId),
+    check(
+      "pins_target_chk",
+      sql`num_nonnulls(${t.tokenId}, ${t.binderId}) = 1`,
+    ),
   ],
 );
 
@@ -159,6 +161,56 @@ export const objektListEntries = pgTable(
     uniqueIndex("objekt_list_entries_token_list_unique_idx")
       .on(t.tokenId, t.objektListId)
       .where(sql`${t.tokenId} IS NOT NULL`),
+  ],
+);
+
+export const binders = pgTable(
+  "binders",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    createdAt,
+    updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, {
+        onDelete: "cascade",
+      }),
+    name: varchar("name", { length: 24 }).notNull(),
+    slug: citext("slug", { length: 24 }).notNull(),
+    layout: binderLayout("layout").notNull(),
+    colour: varchar("colour", { length: 7 }).notNull(),
+    pageCount: integer("page_count").notNull().default(1),
+    // null falls back to the page 1 collage
+    coverTokenId: integer("cover_token_id"),
+  },
+  (t) => [
+    uniqueIndex("binders_user_slug_idx").on(t.userId, t.slug),
+    check("binders_colour_chk", sql`${t.colour} ~ '^#[0-9a-fA-F]{6}$'`),
+    check("binders_page_count_chk", sql`${t.pageCount} BETWEEN 1 AND 20`),
+  ],
+);
+
+export const binderEntries = pgTable(
+  "binder_entries",
+  {
+    binderId: uuid("binder_id")
+      .notNull()
+      .references(() => binders.id, {
+        onDelete: "cascade",
+      }),
+    // zero-based page and slot, slot counts row by row within the layout
+    page: integer("page").notNull(),
+    slot: integer("slot").notNull(),
+    tokenId: integer("token_id").notNull(),
+    placedAt: createdTimestamp("placed_at"),
+  },
+  (t) => [
+    primaryKey({ columns: [t.binderId, t.page, t.slot] }),
+    uniqueIndex("binder_entries_binder_token_idx").on(t.binderId, t.tokenId),
+    // serves the outbox drain
+    index("binder_entries_token_id_idx").on(t.tokenId),
+    check("binder_entries_page_chk", sql`${t.page} >= 0`),
+    check("binder_entries_slot_chk", sql`${t.slot} >= 0`),
   ],
 );
 
@@ -282,17 +334,14 @@ export const fxRates = pgTable(
   ],
 );
 
-export const collectionPriceStats = pgTable(
-  "collection_price_stats",
-  {
-    collectionId: varchar("collection_id", { length: 36 }).primaryKey(),
-    medianPriceUsd: real("median_price_usd").notNull(),
-    listingCount: integer("listing_count").notNull(),
-    minPriceUsd: real("min_price_usd").notNull(),
-    maxPriceUsd: real("max_price_usd").notNull(),
-    updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
-  },
-);
+export const collectionPriceStats = pgTable("collection_price_stats", {
+  collectionId: varchar("collection_id", { length: 36 }).primaryKey(),
+  medianPriceUsd: real("median_price_usd").notNull(),
+  listingCount: integer("listing_count").notNull(),
+  minPriceUsd: real("min_price_usd").notNull(),
+  maxPriceUsd: real("max_price_usd").notNull(),
+  updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
+});
 
 export const cosmoTokens = pgTable(
   "cosmo_tokens",

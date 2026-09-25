@@ -17,7 +17,7 @@ export const Route = createFileRoute("/@{$username}/trades")({
   component: RouteComponent,
   pendingComponent: PendingComponent,
   validateSearch: transfersFrontendSchema,
-  loaderDeps: ({ search }) => ({ searchParams: search }),
+  loaderDeps: ({ search: { binder, ...searchParams } }) => ({ searchParams }),
   loader: async ({ context, deps }) => {
     const [target, selected] = await Promise.all([
       context.queryClient.ensureQueryData(context.targetAccountOptions),
