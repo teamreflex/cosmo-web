@@ -12,7 +12,10 @@ type DefaultOptions = {
  * Combined objekt-related filters with profile-related filters.
  */
 export function useFilters(opts?: DefaultOptions) {
-  const searchParams = useSearch({ from: "/@{$username}/" });
+  const locked = useSearch({
+    from: "/@{$username}/",
+    select: (search) => search.locked,
+  });
   const navigate = useNavigate({ from: "/@{$username}/" });
 
   // setup cosmo filters
@@ -50,7 +53,7 @@ export function useFilters(opts?: DefaultOptions) {
 
   return {
     // masks the fact that undefined means show locked
-    showLocked: searchParams.locked ?? true,
+    showLocked: locked ?? true,
     setShowLocked,
     dataSource,
     setDataSource,

@@ -166,9 +166,8 @@ function PagePockets({
   priority = false,
   tabIndex,
 }: PocketsProps & { pocketsPerPage: number }) {
-  const pockets = pocketsByPage(useBinderDetail(binderOptions).entries).get(
-    page,
-  );
+  const { entries } = useBinderDetail(binderOptions);
+  const pockets = pocketsByPage(entries).get(page);
 
   return Array.from({ length: pocketsPerPage }, (_, slot) => {
     const entry = pockets?.get(slot);
