@@ -94,8 +94,10 @@ export function useCardFlip(): CardFlip {
     back.style.transform = `matrix3d(${backMatrix.join(",")})`;
 
     const frontVisible = isFaceVisible(currentRotation, 0);
-    front.style.opacity = frontVisible ? "1" : "0";
-    back.style.opacity = isFaceVisible(currentRotation, 180) ? "1" : "0";
+    front.style.visibility = frontVisible ? "visible" : "hidden";
+    back.style.visibility = isFaceVisible(currentRotation, 180)
+      ? "visible"
+      : "hidden";
 
     const body = getSilhouette(
       frontMatrix,

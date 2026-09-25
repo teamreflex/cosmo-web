@@ -74,7 +74,7 @@ export default function FlippableObjekt({ children, collection }: Props) {
         {/* front */}
         <div
           ref={frontRef}
-          className="absolute inset-0 overflow-hidden rounded-photocard will-change-transform"
+          className="absolute inset-0 rounded-photocard will-change-transform [clip-path:inset(0_round_--theme(--radius-photocard))]"
         >
           {collection.frontMedia && !collection.hasAudio ? (
             <ErrorBoundary fallback={Image}>
@@ -113,7 +113,7 @@ export default function FlippableObjekt({ children, collection }: Props) {
         {/* back — hidden until the card turns past edge-on */}
         <div
           ref={backRef}
-          className="absolute inset-0 overflow-hidden rounded-photocard opacity-0 will-change-transform"
+          className="invisible absolute inset-0 overflow-hidden rounded-photocard will-change-transform"
         >
           {hasBackImage ? (
             <img
