@@ -7,12 +7,6 @@ import {
   DialogPortal,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerTitle,
-} from "@/components/ui/drawer";
 import { useBinderDetail } from "@/hooks/use-binder-detail";
 import type { BinderOptions } from "@/hooks/use-binder-detail";
 import { useMediaQuery } from "@/hooks/use-media-query";
@@ -46,14 +40,13 @@ import {
 import { Link } from "@tanstack/react-router";
 import {
   Suspense,
-  useDeferredValue,
   useEffect,
   useEffectEvent,
   useLayoutEffect,
   useRef,
   useState,
 } from "react";
-import type { KeyboardEvent, ReactNode, RefObject } from "react";
+import type { KeyboardEvent, PointerEvent, ReactNode, RefObject } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { toast } from "sonner";
 import BinderCover from "./binder-cover";
@@ -104,26 +97,22 @@ export default function BinderViewer({
   onClose,
   onClosed,
 }: Props) {
-  const isDesktop = useMediaQuery();
   const binderOptions = binderQuery(userId, slug);
 
   const nothingShown = <NothingShown closing={closing} onClosed={onClosed} />;
 
   function show(cover: BinderPreview) {
-    const props = {
-      cover,
-      binderOptions,
-      origin,
-      username,
-      isOwner,
-      closing,
-      onClosed,
-      onClose,
-    } satisfies ViewerProps;
-    return isDesktop ? (
-      <DesktopViewer {...props} />
-    ) : (
-      <PhoneViewer {...props} />
+    return (
+      <Viewer
+        cover={cover}
+        binderOptions={binderOptions}
+        origin={origin}
+        username={username}
+        isOwner={isOwner}
+        closing={closing}
+        onClosed={onClosed}
+        onClose={onClose}
+      />
     );
   }
 
@@ -185,24 +174,34 @@ function NothingShown({
 }
 
 /**
- * Chrome that sits outside the pages: height the desktop dialog reserves for
- * the header, page controls, thumbnail rail and margins.
+ * Sizes the viewer fits its pages around, in px. `chrome` is the height kept
+ * for the header, page controls, thumbnail rail, the phone's action row and
+ * margins. `frame` is a page's padding and border either side of its pockets,
+ * and `gap` the space between pockets, both narrower below `md`.
  */
-const DESKTOP_CHROME_PX = 250;
-/** a page's padding and border either side of its pockets */
-const PAGE_FRAME_PX = 38;
-const POCKET_GAP_PX = 10;
+const bookSizes = {
+  desktop: { chrome: 250, frame: 38, gap: 10 },
+  phone: { chrome: 290, frame: 22, gap: 8 },
+};
 const POCKET_RATIO = 8.5 / 5.5;
 
 /**
- * Width that fits a spread, or one page, into the viewport height.
+ * Pages side by side: a spread on desktop, apart from 2×2 binders, and one
+ * page at a time on a phone.
  */
-function bookWidth(layout: BinderLayout, across: number) {
+function pagesAcross(layout: BinderLayout, isDesktop: boolean) {
+  return isDesktop && layout !== "2x2" ? 2 : 1;
+}
+
+/**
+ * Width that fits the pages in view into the viewport height.
+ */
+function bookWidth(layout: BinderLayout, isDesktop: boolean) {
   const { columns, rows } = binderGrid(layout);
-  const reserved =
-    DESKTOP_CHROME_PX + PAGE_FRAME_PX + (rows - 1) * POCKET_GAP_PX;
-  const page = `(${columns} * (100dvh - ${reserved}px) / ${rows * POCKET_RATIO} + ${(columns - 1) * POCKET_GAP_PX + PAGE_FRAME_PX}px)`;
-  return `min(100vw - 2.5rem, 1100px, ${across} * ${page})`;
+  const { chrome, frame, gap } = bookSizes[isDesktop ? "desktop" : "phone"];
+  const reserved = chrome + frame + (rows - 1) * gap;
+  const page = `(${columns} * (100dvh - ${reserved}px) / ${rows * POCKET_RATIO} + ${(columns - 1) * gap + frame}px)`;
+  return `min(100vw - 2.5rem, 1100px, ${pagesAcross(layout, isDesktop)} * ${page})`;
 }
 
 const leftPageClass =
@@ -210,11 +209,11 @@ const leftPageClass =
 const rightPageClass =
   "rounded-l-[2px] shadow-[inset_14px_0_24px_-20px_rgb(0_0_0/0.9)]";
 
-function DesktopViewer(props: ViewerProps) {
+function Viewer(props: ViewerProps) {
   const { cover, origin, closing, onClose } = props;
+  const isDesktop = useMediaQuery();
   const overlayRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
-  const single = cover.layout === "2x2";
 
   return (
     <Dialog
@@ -236,28 +235,38 @@ function DesktopViewer(props: ViewerProps) {
           }
           // a single page can be narrower than the header needs
           style={{
-            width: `min(100vw - 2.5rem, max(44rem, ${bookWidth(cover.layout, single ? 1 : 2)}))`,
+            width: `min(100vw - 2.5rem, max(44rem, ${bookWidth(cover.layout, isDesktop)}))`,
           }}
           className="fixed top-1/2 left-1/2 z-50 -translate-x-1/2 -translate-y-1/2 outline-none"
         >
-          <DesktopBook {...props} overlayRef={overlayRef} closeRef={closeRef} />
+          <Book
+            {...props}
+            isDesktop={isDesktop}
+            overlayRef={overlayRef}
+            closeRef={closeRef}
+          />
         </DialogPrimitive.Popup>
       </DialogPortal>
     </Dialog>
   );
 }
 
-type DesktopBookProps = ViewerProps & {
+type BookProps = ViewerProps & {
+  isDesktop: boolean;
   overlayRef: RefObject<HTMLDivElement | null>;
   closeRef: RefObject<HTMLButtonElement | null>;
 };
 
+/** how far a finger travels across the pages to turn them */
+const SWIPE_PX = 40;
+
 /**
- * The desktop viewer's contents: a two-page spread on a ring spine, or one
- * page for 2×2 binders, with page controls and a thumbnail rail. Mounted
- * inside the dialog so its refs are ready when the opening animation starts.
+ * The viewer's contents: a two-page spread on a ring spine, or one page at a
+ * time on a phone and for 2×2 binders, with page controls and a thumbnail
+ * rail. Mounted inside the dialog so its refs are ready when the opening
+ * animation starts.
  */
-function DesktopBook({
+function Book({
   cover,
   binderOptions,
   origin,
@@ -265,11 +274,12 @@ function DesktopBook({
   isOwner,
   closing,
   onClosed,
+  isDesktop,
   overlayRef,
   closeRef,
-}: DesktopBookProps) {
-  const single = cover.layout === "2x2";
-  const step = single ? 1 : 2;
+}: BookProps) {
+  const step = pagesAcross(cover.layout, isDesktop);
+  const single = step === 1;
   const { pageCount } = cover;
   // the first page in view
   const [index, setIndex] = useState(0);
@@ -285,6 +295,7 @@ function DesktopBook({
   const leafRef = useRef<HTMLDivElement>(null);
   const sequence = useRef<{ cancel: () => void } | null>(null);
   const opened = useRef(false);
+  const swipeStart = useRef<{ x: number; y: number } | null>(null);
 
   /**
    * Show the spread from `to`, sliding it in from the side it came from. The
@@ -307,6 +318,31 @@ function DesktopBook({
 
   function turn(direction: -1 | 1) {
     showSpread(index + direction * step);
+  }
+
+  function handlePointerDown(event: PointerEvent<HTMLDivElement>) {
+    // a second finger makes it a pinch rather than a swipe
+    swipeStart.current =
+      event.pointerType === "touch" && event.isPrimary
+        ? { x: event.clientX, y: event.clientY }
+        : null;
+  }
+
+  /**
+   * A finger swiped mostly sideways across the pages turns them, forward when
+   * it moves left.
+   */
+  function handlePointerUp(event: PointerEvent<HTMLDivElement>) {
+    const start = swipeStart.current;
+    swipeStart.current = null;
+    if (start === null) return;
+    const dx = event.clientX - start.x;
+    if (
+      Math.abs(dx) >= SWIPE_PX &&
+      Math.abs(dx) > Math.abs(event.clientY - start.y)
+    ) {
+      turn(dx < 0 ? 1 : -1);
+    }
   }
 
   function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
@@ -458,19 +494,22 @@ function DesktopBook({
       onKeyDown={handleKeyDown}
       className="relative flex flex-col gap-3 will-change-[opacity]"
     >
-      <DesktopHeader
+      <ViewerHeader
         cover={cover}
         binderOptions={binderOptions}
         username={username}
         isOwner={isOwner}
+        isDesktop={isDesktop}
         closeRef={closeRef}
       />
 
       <div
         ref={bookRef}
-        style={{ width: bookWidth(cover.layout, step) }}
+        onPointerDown={handlePointerDown}
+        onPointerUp={handlePointerUp}
+        style={{ width: bookWidth(cover.layout, isDesktop) }}
         className={cn(
-          "relative mx-auto data-hold:invisible",
+          "relative mx-auto touch-pan-y touch-pinch-zoom data-hold:invisible",
           !single && "grid grid-cols-2",
         )}
       >
@@ -521,8 +560,14 @@ function DesktopBook({
             binderOptions={binderOptions}
             current={shown}
             onSelect={(page) => showSpread(page - (page % step))}
-            className="justify-center"
+            className="justify-center-safe"
           />
+        </div>
+      )}
+
+      {!isDesktop && (
+        <div data-viewer-chrome className="flex justify-center gap-2">
+          <ViewerActions cover={cover} username={username} isOwner={isOwner} />
         </div>
       )}
 
@@ -546,36 +591,53 @@ function DesktopBook({
   );
 }
 
-type DesktopHeaderProps = {
+type ViewerHeaderProps = {
   cover: BinderPreview;
   binderOptions: BinderOptions;
   username: string;
   isOwner: boolean;
+  isDesktop: boolean;
   closeRef: RefObject<HTMLButtonElement | null>;
 };
 
-function DesktopHeader({
+/**
+ * The binder's cover, name and details, and the close button. The actions sit
+ * beside them on desktop, and under the pages on a phone, leaving the name
+ * room for two lines.
+ */
+function ViewerHeader({
   cover,
   binderOptions,
   username,
   isOwner,
+  isDesktop,
   closeRef,
-}: DesktopHeaderProps) {
+}: ViewerHeaderProps) {
   return (
     <div data-viewer-chrome className="flex items-center gap-3">
-      <BinderCover binder={cover} label={false} className="w-10 shrink-0" />
-      <div className="grid min-w-0 gap-1">
+      <BinderCover
+        binder={cover}
+        label={false}
+        className="w-8 shrink-0 md:w-10"
+      />
+      <div className="grid min-w-0 gap-0.5 md:gap-1">
         <DialogDescription
-          render={<ViewerMeta cover={cover} binderOptions={binderOptions} />}
+          render={
+            <ViewerMeta
+              cover={cover}
+              binderOptions={binderOptions}
+              short={!isDesktop}
+            />
+          }
         />
-        <DialogTitle className="truncate font-cosmo text-xl leading-tight font-black uppercase">
+        <DialogTitle className="line-clamp-2 font-cosmo text-base leading-tight font-black uppercase md:line-clamp-1 md:text-xl">
           {cover.name}
         </DialogTitle>
       </div>
       <div className="ml-auto flex shrink-0 items-center gap-2">
-        {isOwner && <BinderPinButton binder={cover} />}
-        <ShareButton username={username} slug={cover.slug} />
-        {isOwner && <EditLink username={username} slug={cover.slug} />}
+        {isDesktop && (
+          <ViewerActions cover={cover} username={username} isOwner={isOwner} />
+        )}
         <DialogClose
           render={
             <Button
@@ -693,19 +755,30 @@ function PageControls({
   );
 }
 
+type ViewerActionsProps = {
+  cover: BinderPreview;
+  username: string;
+  isOwner: boolean;
+};
+
+/**
+ * Share, and for the owner, pinning and editing.
+ */
+function ViewerActions({ cover, username, isOwner }: ViewerActionsProps) {
+  return (
+    <>
+      {isOwner && <BinderPinButton binder={cover} />}
+      <ShareButton username={username} slug={cover.slug} />
+      {isOwner && <EditLink username={username} slug={cover.slug} />}
+    </>
+  );
+}
+
 /**
  * The owner's way into the editor. Arriving there unmounts the viewer without
  * a closing animation, as leaving for any other page does.
  */
-function EditLink({
-  username,
-  slug,
-  className,
-}: {
-  username: string;
-  slug: string;
-  className?: string;
-}) {
+function EditLink({ username, slug }: { username: string; slug: string }) {
   return (
     <Link
       to="/@{$username}/binder/$slug"
@@ -713,256 +786,10 @@ function EditLink({
       className={cn(
         buttonVariants({ variant: "outline", size: "sm" }),
         "border-cosmo-text/50 bg-cosmo/15 text-cosmo-text hover:bg-cosmo/25 hover:text-cosmo-text dark:border-cosmo-text/50 dark:bg-cosmo/15 dark:hover:bg-cosmo/25",
-        className,
       )}
     >
       <IconPencil />
       {m.binder_viewer_edit()}
     </Link>
-  );
-}
-
-/** how long the drawer takes to slide in */
-const DRAWER_MS = 500;
-
-function PhoneViewer(props: ViewerProps) {
-  const { closing, onClose, onClosed } = props;
-  const [dismissed, setDismissed] = useState(false);
-  // opens a render after mounting, since a drawer mounted open doesn't slide in
-  const shown = useDeferredValue(true, false);
-
-  return (
-    <Drawer
-      open={shown && !dismissed}
-      onOpenChange={(open, details) => {
-        if (open || closing) return;
-        // a swipe has already carried the drawer away, so it goes without shutting the book
-        if (details.reason === "swipe") setDismissed(true);
-        onClose();
-      }}
-      onOpenChangeComplete={(open) => {
-        if (!open) onClosed();
-      }}
-    >
-      <DrawerContent
-        finalFocus={() =>
-          props.origin?.element.isConnected === true
-            ? props.origin.element
-            : true
-        }
-        className="h-[92dvh] rounded-t-2xl outline-none"
-      >
-        <PhoneBook
-          {...props}
-          dismissed={dismissed}
-          onDismiss={() => setDismissed(true)}
-        />
-      </DrawerContent>
-    </Drawer>
-  );
-}
-
-type PhoneBookProps = ViewerProps & {
-  /** the drawer is already leaving, so a close skips the book's swing */
-  dismissed: boolean;
-  onDismiss: () => void;
-};
-
-/**
- * The phone viewer: one page at a time on a scroll-snap track, so swiping
- * turns pages, with dots underneath. The drawer slides up with the cover
- * already in place, then the cover swings open.
- */
-function PhoneBook({
-  cover,
-  binderOptions,
-  origin,
-  username,
-  isOwner,
-  closing,
-  dismissed,
-  onDismiss,
-}: PhoneBookProps) {
-  const { pageCount } = cover;
-  const { columns, rows } = binderGrid(cover.layout);
-  const [index, setIndex] = useState(0);
-
-  const stageRef = useRef<HTMLDivElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
-  const firstPageRef = useRef<HTMLDivElement>(null);
-  const flyRef = useRef<HTMLDivElement>(null);
-  const leafRef = useRef<HTMLDivElement>(null);
-  const sequence = useRef<{ cancel: () => void } | null>(null);
-  const opened = useRef(false);
-
-  function scrollToPage(page: number) {
-    const track = trackRef.current;
-    if (!track || closing || page < 0 || page >= pageCount) return;
-    track.scrollTo({
-      left: page * track.clientWidth,
-      behavior: prefersReducedMotion() ? "instant" : "smooth",
-    });
-  }
-
-  function handleKeyDown(event: KeyboardEvent<HTMLDivElement>) {
-    if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-      event.preventDefault();
-      scrollToPage(index + (event.key === "ArrowLeft" ? -1 : 1));
-    }
-  }
-
-  useLayoutEffect(() => {
-    const stage = stageRef.current;
-    const page = firstPageRef.current;
-    const fly = flyRef.current;
-    const leaf = leafRef.current;
-    origin?.cover.style.setProperty("visibility", "hidden");
-    // also stops a close, so a viewer replaced mid-close never dismisses
-    const cleanup = () => {
-      sequence.current?.cancel();
-      if (fly) delete fly.dataset.leaf;
-      origin?.cover.style.removeProperty("visibility");
-    };
-    if (prefersReducedMotion() || !stage || !page || !fly || !leaf) {
-      opened.current = true;
-      return cleanup;
-    }
-
-    placeLeaf(fly, page, stage);
-    sequence.current = runSequence(async ({ play }) => {
-      // swing once the drawer has settled
-      await play(
-        leaf,
-        [{ transform: "rotateY(0deg)" }, { transform: "rotateY(-180deg)" }],
-        { ...leafMotion.swingOpen, delay: DRAWER_MS - 100 },
-      );
-      delete fly.dataset.leaf;
-      opened.current = true;
-    });
-    return cleanup;
-  }, [origin]);
-
-  // read as the close starts, without restarting it when a swipe moves the track
-  const dismiss = useEffectEvent(onDismiss);
-  const onFirstPage = useEffectEvent(() => index === 0);
-  const leaving = useEffectEvent(() => dismissed);
-
-  useLayoutEffect(() => {
-    if (!closing) return;
-    const stage = stageRef.current;
-    const page = firstPageRef.current;
-    const fly = flyRef.current;
-    const leaf = leafRef.current;
-    const swing =
-      !leaving() && opened.current && !prefersReducedMotion() && onFirstPage();
-    sequence.current?.cancel();
-
-    sequence.current = runSequence(async ({ play }) => {
-      if (swing && stage && page && fly && leaf) {
-        placeLeaf(fly, page, stage);
-        await play(
-          leaf,
-          [{ transform: "rotateY(-180deg)" }, { transform: "rotateY(0deg)" }],
-          { ...leafMotion.swingShut, fill: "forwards" },
-        );
-      }
-      // the drawer slides away over the cover rather than flying back into it
-      origin?.cover.style.removeProperty("visibility");
-      dismiss();
-    });
-  }, [closing, origin]);
-
-  // a page's width follows the height left over, so tall layouts still fit
-  const pageMaxWidth = `calc((92dvh - 13rem) * ${(columns * 5.5) / (rows * 8.5)})`;
-
-  return (
-    <div
-      ref={stageRef}
-      onKeyDown={handleKeyDown}
-      className="relative flex min-h-0 flex-1 flex-col gap-3 pt-3"
-    >
-      <div className="flex items-center gap-3 px-3">
-        <BinderCover binder={cover} label={false} className="w-8 shrink-0" />
-        <div className="grid min-w-0 flex-1 gap-0.5">
-          <DrawerDescription
-            render={
-              <ViewerMeta cover={cover} binderOptions={binderOptions} short />
-            }
-          />
-          <DrawerTitle className="line-clamp-2 font-cosmo text-base leading-tight font-black uppercase">
-            {cover.name}
-          </DrawerTitle>
-        </div>
-        {isOwner && (
-          <EditLink
-            username={username}
-            slug={cover.slug}
-            className="shrink-0"
-          />
-        )}
-      </div>
-
-      <div className="relative flex min-h-0 flex-1 flex-col">
-        <span className="self-end px-4 pb-1 font-mono text-[11px] text-muted-foreground">
-          {index + 1} / {pageCount}
-        </span>
-        <div
-          ref={trackRef}
-          onScroll={(event) => {
-            const track = event.currentTarget;
-            setIndex(Math.round(track.scrollLeft / track.clientWidth));
-          }}
-          className="no-scrollbar flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain"
-        >
-          {Array.from({ length: pageCount }, (_, page) => (
-            <div key={page} className="w-full shrink-0 snap-center px-3">
-              <ViewerPage
-                ref={page === 0 ? firstPageRef : undefined}
-                layout={cover.layout}
-                binderOptions={binderOptions}
-                page={page}
-                priority={page === 0}
-                placeholder={Math.abs(page - index) > 1}
-                style={{ maxWidth: pageMaxWidth }}
-                className="mx-auto bg-background"
-              />
-            </div>
-          ))}
-        </div>
-
-        {pageCount > 1 && (
-          <div className="flex justify-center gap-1 pt-3">
-            {Array.from({ length: pageCount }, (_, page) => (
-              <button
-                key={page}
-                type="button"
-                aria-label={m.binder_viewer_go_to_page({ page: page + 1 })}
-                aria-current={page === index ? "page" : undefined}
-                onClick={() => scrollToPage(page)}
-                className="grid h-4 place-items-center outline-none"
-              >
-                <span
-                  className={cn(
-                    "block h-1.5 w-1.5 rounded-full bg-foreground/25 transition-[width,background-color] duration-200",
-                    page === index && "w-4 bg-cosmo-text",
-                  )}
-                />
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div className="flex gap-2 border-t border-border p-3">
-        {isOwner && <BinderPinButton binder={cover} className="h-10" />}
-        <ShareButton
-          username={username}
-          slug={cover.slug}
-          className="h-10 flex-1"
-        />
-      </div>
-
-      <ViewerLeaf flyRef={flyRef} leafRef={leafRef} cover={cover} />
-    </div>
   );
 }
