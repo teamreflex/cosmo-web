@@ -96,6 +96,9 @@ export class Collection {
   @Column({ type: "varchar", length: 12, nullable: true })
   backImageVersion!: string | null;
 
+  @Column("bool", { nullable: false, default: false })
+  unobtainable!: boolean;
+
   @OneToMany(() => Transfer, (e) => e.collection)
   transfers!: Relation<Transfer[]>;
 

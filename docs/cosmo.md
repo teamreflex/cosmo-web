@@ -15,6 +15,28 @@ A `collection` represents a type of objekt. Properties on a collection:
   - the first digit can inform the class: 1 is either Welcome or First class, 2 is Special class, 3 is Double class, 4 is Premier class
   - Welcome class objekts are always 100Z
 
+### Unobtainable collections
+
+Some collections can no longer be obtained: event rewards that were only handed out once, test collections and minting errors. `collection.unobtainable` marks them, and they are left out of progress totals and the progress leaderboard. The flag is set by hand once a collection is known to be unobtainable; new collections are always inserted as obtainable. Flag one with `UPDATE collection SET unobtainable = true WHERE slug = '...'` on the indexer database: triggers move its owners' leaderboard counts, and the Typesense importer picks it up on its next tick.
+
+The database column is the source of truth. This copy of the 81 collections flagged so far is for reference:
+
+- Test collection: `atom01-artmstest-100u`
+- Minting errors: `atom01-jinsoul-109a`, `binary01-mayu-101a`, `binary01-mayu-104a`, `binary01-mayu-105a`, `binary01-mayu-106a`, `binary01-mayu-107a`, `binary01-mayu-108a`
+- ARTMS 1st anniversary events: `atom01-heejin-346z`, `atom01-haseul-346z`, `atom01-kimlip-346z`, `atom01-jinsoul-346z`, `atom01-choerry-346z`
+- Chilsung event: `atom01-heejin-351z`, `atom01-haseul-351z`, `atom01-kimlip-351z`, `atom01-jinsoul-351z`, `atom01-choerry-351z`
+- Virtual Angel events: `binary01-heejin-310z`, `binary01-haseul-310z`, `binary01-kimlip-310z`, `binary01-jinsoul-310z`, `binary01-choerry-310z`
+- Lunar Theory events: `cream01-haseul-330z`, `cream01-heejin-330z`, `cream01-kimlip-330z`, `cream01-jinsoul-330z`, `cream01-choerry-330z`
+- Burn event: `cream01-heejin-333z`, `cream01-haseul-333z`, `cream01-kimlip-333z`, `cream01-jinsoul-333z`, `cream01-choerry-333z`
+- Zero class: `atom01-triples-000z`, `atom01-aaa-000z`, `atom01-kre-000z`
+- Self-made events: `divine01-seoyeon-312z`, `divine01-hyerin-312z`, `divine01-jiwoo-312z`, `divine01-chaeyeon-312z`, `divine01-yooyeon-312z`, `divine01-soomin-312z`, `divine01-nakyoung-312z`, `divine01-yubin-312z`, `divine01-kaede-312z`, `divine01-dahyun-312z`, `divine01-kotone-312z`, `divine01-yeonji-312z`, `divine01-nien-312z`, `divine01-sohyun-312z`, `divine01-xinyu-312z`, `divine01-mayu-312z`, `divine01-lynn-312z`, `divine01-joobin-312z`, `divine01-hayeon-312z`, `divine01-shion-312z`, `divine01-chaewon-312z`, `divine01-sullin-312z`, `divine01-seoah-312z`, `divine01-jiyeon-312z`
+- Love Poison streaming event: `divine01-haseul-331z`
+- Can You Entertain streaming event: `divine01-kimlip-337z`
+- Ring of Chaos streaming event: `divine01-jinsoul-338z`
+- Pressure streaming event: `divine01-choerry-339z`
+- Savior streaming event: `divine01-heejin-340z`
+- 22/05/26 minting error: `binary01-hyerin-118a`, `binary01-seoyeon-119a`, `binary01-dahyun-117a`, `binary01-chaeyeon-120a`, `binary01-yubin-118a`, `binary01-nakyoung-118a`, `binary01-kaede-120a`, `binary01-nien-120a`, `binary01-sohyun-103a`, `binary01-hyerin-120a`, `binary01-nien-118a`, `binary01-mayu-119a`, `binary01-yooyeon-118a`, `binary01-kotone-117a`, `binary01-xinyu-120a`, `atom01-heejin-111a`
+
 ## Objekts
 
 An `objekt` is a single NFT on the Abstract blockchain. Every objekt within a collection has a unique serial number.

@@ -24,6 +24,7 @@ type Collection @entity {
   # hash of the mirrored source URL, null until mirrored into R2
   frontImageVersion: String
   backImageVersion: String
+  unobtainable: Boolean!
   transfers: [Transfer!] @derivedFrom(field: "collection")
   objekts: [Objekt!] @derivedFrom(field: "collection")
 }

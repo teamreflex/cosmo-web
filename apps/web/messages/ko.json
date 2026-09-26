@@ -673,6 +673,7 @@
   "admin_collection_online": "온라인",
   "admin_collection_offline": "오프라인",
   "admin_collection_has_audio": "오디오 포함",
+  "admin_collection_unobtainable": "획득 불가",
   "admin_collection_front_media": "전면 미디어",
   "admin_collection_media_select": "영상 선택",
   "admin_collection_media_none": "미디어 없음",

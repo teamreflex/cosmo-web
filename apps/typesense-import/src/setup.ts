@@ -55,7 +55,8 @@ export const setupTypesenseCollection = Effect.gen(function* () {
     const upToDate =
       existing.fields?.some((f) => f.name === "memberSortOrder") &&
       existing.fields?.some((f) => f.name === "collectionNo" && f.sort) &&
-      existing.fields?.some((f) => f.name === "frontImageVersion");
+      existing.fields?.some((f) => f.name === "frontImageVersion") &&
+      existing.fields?.some((f) => f.name === "unobtainable");
 
     if (upToDate) {
       return void 0;
@@ -141,6 +142,12 @@ export const setupTypesenseCollection = Effect.gen(function* () {
             type: "string",
             index: true,
             optional: true,
+          },
+          {
+            // indexed so search can filter unobtainable collections out
+            name: "unobtainable",
+            type: "bool",
+            index: true,
           },
           // #endregion
 

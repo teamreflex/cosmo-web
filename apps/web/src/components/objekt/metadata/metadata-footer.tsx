@@ -10,7 +10,6 @@ import { env } from "@/lib/env/client";
 import { objektMetadataQuery } from "@/lib/queries/objekt-queries";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type { CollectionDataEvent } from "@/lib/universal/objekts";
-import { unobtainables } from "@/lib/unobtainables";
 import { cn } from "@/lib/utils";
 import {
   IconAlertSquareRounded,
@@ -37,7 +36,6 @@ export default function MetadataFooter(props: Props) {
   const missingVideo =
     props.objekt.class === "Motion" && !props.objekt.frontMedia;
   const missingAudio = props.objekt.hasAudio && !props.objekt.frontMedia;
-  const isUnobtainable = unobtainables.includes(props.objekt.slug);
 
   return (
     <div className="shrink-0 border-t border-border bg-card">
@@ -53,12 +51,9 @@ export default function MetadataFooter(props: Props) {
           className="text-orange-500"
         />
       )}
-      {isUnobtainable && (
-        <NoticeRow
-          text={m.objekt_metadata_unobtainable()}
-          className="text-red-500"
-        />
-      )}
+      <Suspense fallback={null}>
+        <UnobtainableNotice slug={props.objekt.slug} />
+      </Suspense>
       <Suspense fallback={<FooterFallback />}>
         <FooterInner objekt={props.objekt} />
       </Suspense>
@@ -77,6 +72,18 @@ function NoticeRow({ text, className }: { text: string; className?: string }) {
       <IconAlertSquareRounded className="size-4" />
       <span>{text}</span>
     </div>
+  );
+}
+
+function UnobtainableNotice(props: { slug: string }) {
+  const { data } = useSuspenseQuery(objektMetadataQuery(props.slug));
+  if (!data.unobtainable) return null;
+
+  return (
+    <NoticeRow
+      text={m.objekt_metadata_unobtainable()}
+      className="text-red-500"
+    />
   );
 }
 
