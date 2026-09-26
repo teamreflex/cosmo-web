@@ -16,8 +16,8 @@ export type UseRevealsResult = {
   comoPerCandidate: number[];
   /** The last reveal batch this session saw; null unless counting is live. */
   latestBatch: RevealBatch | null;
-  /** Every revealed vote, from the finalized payload or the polled pages. */
-  reveals: Reveal[];
+  /** Revealed COMO per chart segment, from the finalized payload or the polled pages. */
+  revealed: RevealedSegments;
   remainingVotesCount: number;
   chartData: ChartSegment[];
   topVotes: AggregatedTopVote[];
@@ -45,10 +45,41 @@ export interface AggregatedGravityData {
   totalVoteCount: number;
   totalComoCount: number;
   revealedVoteCount: number;
-  /** Populated only for finalized polls (all votes revealed). Empty otherwise. */
-  reveals: Reveal[];
+  /** Populated only for finalized polls (all votes revealed). Null otherwise. */
+  finalized: FinalizedReveals | null;
   startDate: string;
   endDate: string;
+}
+
+/**
+ * A finalized poll's reveals, summed server-side so the payload doesn't
+ * carry every vote.
+ */
+export interface FinalizedReveals {
+  /** COMO per candidate id, indexed by candidate id. Ids with no reveals hold 0. */
+  comoPerCandidate: number[];
+  /** Every candidate with a revealed vote inside the chart, by candidate id. */
+  segments: CandidateSegments[];
+}
+
+/**
+ * One candidate's revealed COMO per chart segment, aligned with `chartData`.
+ */
+export interface CandidateSegments {
+  candidateId: number;
+  amounts: number[];
+}
+
+/**
+ * Revealed COMO bucketed into chart segments, per candidate id.
+ */
+export interface RevealedSegments {
+  /** Votes revealed so far; zero means there is nothing to draw. */
+  revealCount: number;
+  /** Candidate id to COMO per segment, for candidates with a vote inside the chart. */
+  amounts: Map<number, number[]>;
+  /** Index of the last segment holding a revealed vote, or -1 when none do. */
+  frontierSegmentIndex: number;
 }
 
 export interface ChartSegment {
