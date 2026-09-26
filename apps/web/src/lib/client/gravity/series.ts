@@ -1,5 +1,10 @@
 import type { PollSlotModel } from "./slots";
-import type { ChartSegment, Reveal } from "./types";
+import type {
+  ChartSegment,
+  FinalizedReveals,
+  Reveal,
+  RevealedSegments,
+} from "./types";
 
 /** Trajectory lines a single poll draws, for its leading candidates. */
 export const TOP_CANDIDATE_COUNT = 3;
@@ -37,7 +42,7 @@ export type ChartSeries = {
 
 type ChartSeriesInput = {
   chartData: ChartSegment[];
-  reveals: Reveal[];
+  revealed: RevealedSegments;
   comoPerCandidate: number[];
   /** Every vote is revealed, so the frontier is the whole poll. */
   complete: boolean;
@@ -56,67 +61,94 @@ export function slotLineCount(model: PollSlotModel): number {
 }
 
 /**
- * Cumulative COMO across the chart's segments for each drawn line.
+ * Bucket polled reveals into the chart's segments per candidate.
  *
  * Reveals are bucketed by their vote's timestamp, mirroring the aggregated
- * endpoint's `computeChartData`. Segments are a uniform 30 minutes, so offsets
+ * endpoint's chart buckets. Segments are a uniform 30 minutes, so offsets
  * from the first one reproduce the endpoint's buckets without depending on the
  * client and the server sharing a timezone. Votes falling outside the segments
  * are dropped, as they are server-side.
  */
-export function computeChartSeries(input: ChartSeriesInput): ChartSeries {
-  const { chartData, reveals, comoPerCandidate, complete } = input;
+export function bucketReveals(
+  chartData: ChartSegment[],
+  reveals: Reveal[],
+): RevealedSegments {
   const segmentCount = chartData.length;
   const firstSegment = chartData[0];
+  const amounts = new Map<number, number[]>();
 
-  if (firstSegment === undefined || reveals.length === 0) {
+  let frontier = -1;
+  if (firstSegment !== undefined) {
+    const origin = Date.parse(firstSegment.timestamp);
+
+    for (const reveal of reveals) {
+      const index = Math.floor(
+        (Date.parse(reveal.createdAt) - origin) / SEGMENT_MS,
+      );
+      if (index < 0 || index >= segmentCount) continue;
+      if (index > frontier) frontier = index;
+
+      let segments = amounts.get(reveal.candidateId);
+      if (segments === undefined) {
+        segments = Array.from({ length: segmentCount }, () => 0);
+        amounts.set(reveal.candidateId, segments);
+      }
+      segments[index] = (segments[index] ?? 0) + reveal.amount;
+    }
+  }
+
+  return {
+    revealCount: reveals.length,
+    amounts,
+    frontierSegmentIndex: frontier,
+  };
+}
+
+/**
+ * The finalized payload's per-candidate segments, keyed for `computeChartSeries`.
+ */
+export function finalizedSegments(
+  finalized: FinalizedReveals,
+  revealCount: number,
+): RevealedSegments {
+  let frontier = -1;
+  for (const { amounts } of finalized.segments) {
+    frontier = Math.max(
+      frontier,
+      amounts.findLastIndex((amount) => amount > 0),
+    );
+  }
+
+  return {
+    revealCount,
+    amounts: new Map(
+      finalized.segments.map((segment) => [
+        segment.candidateId,
+        segment.amounts,
+      ]),
+    ),
+    frontierSegmentIndex: frontier,
+  };
+}
+
+/**
+ * Cumulative COMO across the chart's segments for each drawn line.
+ */
+export function computeChartSeries(input: ChartSeriesInput): ChartSeries {
+  const { chartData, revealed, comoPerCandidate, complete } = input;
+  const segmentCount = chartData.length;
+
+  if (segmentCount === 0 || revealed.revealCount === 0) {
     return {
       series: [],
       frontierSegmentIndex: complete ? segmentCount - 1 : -1,
     };
   }
 
+  const frontier = complete ? segmentCount - 1 : revealed.frontierSegmentIndex;
   const lines = input.groups.flatMap((slot) =>
-    leadingGroups(slot, comoPerCandidate, input.linesPerSlot).map((group) => ({
-      key: group.key,
-      segments: Array.from({ length: segmentCount }, () => 0),
-      candidateIds: group.candidateIds,
-    })),
+    leadingGroups(slot, comoPerCandidate, input.linesPerSlot),
   );
-
-  // a combination vote picks one member per slot, so a reveal can feed a line
-  // in every slot at once
-  const targets = new Map<number, number[][]>();
-  for (const line of lines) {
-    for (const candidateId of line.candidateIds) {
-      const existing = targets.get(candidateId);
-      if (existing === undefined) {
-        targets.set(candidateId, [line.segments]);
-      } else {
-        existing.push(line.segments);
-      }
-    }
-  }
-
-  const origin = Date.parse(firstSegment.timestamp);
-
-  let frontier = -1;
-  for (const reveal of reveals) {
-    const index = Math.floor(
-      (Date.parse(reveal.createdAt) - origin) / SEGMENT_MS,
-    );
-    if (index < 0 || index >= segmentCount) continue;
-    if (index > frontier) frontier = index;
-
-    // empty for candidates no drawn line covers
-    for (const segments of targets.get(reveal.candidateId) ?? []) {
-      segments[index] = (segments[index] ?? 0) + reveal.amount;
-    }
-  }
-
-  if (complete) {
-    frontier = segmentCount - 1;
-  }
 
   return {
     series: lines.map((line) => {
@@ -126,7 +158,12 @@ export function computeChartSeries(input: ChartSeriesInput): ChartSeries {
         key: line.key,
         values: Array.from({ length: segmentCount }, (_, index) => {
           if (index > frontier) return null;
-          cumulative += line.segments[index] ?? 0;
+
+          // a combination vote picks one member per slot, so a candidate can
+          // feed a line in every slot at once
+          for (const candidateId of line.candidateIds) {
+            cumulative += revealed.amounts.get(candidateId)?.[index] ?? 0;
+          }
           return cumulative;
         }),
       };

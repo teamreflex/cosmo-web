@@ -18,8 +18,9 @@ export default function SpotifyAlbumDisplay({
   spotifyAlbumId,
   onClear,
 }: Props) {
+  // just picked, so it takes focus from the search it replaces
   if (selectedAlbum) {
-    return <AlbumCard album={selectedAlbum} onClear={onClear} />;
+    return <AlbumCard album={selectedAlbum} onClear={onClear} autoFocus />;
   }
 
   if (spotifyAlbumId) {
@@ -51,9 +52,10 @@ function SpotifyAlbumLoader({ albumId, onClear }: LoaderProps) {
 type AlbumCardProps = {
   album: SpotifyAlbum;
   onClear: () => void;
+  autoFocus?: boolean;
 };
 
-function AlbumCard({ album, onClear }: AlbumCardProps) {
+function AlbumCard({ album, onClear, autoFocus = false }: AlbumCardProps) {
   const imageUrl = album.images[2]?.url;
 
   return (
@@ -73,6 +75,7 @@ function AlbumCard({ album, onClear }: AlbumCardProps) {
         size="icon"
         onClick={onClear}
         aria-label={m.aria_clear_album()}
+        autoFocus={autoFocus}
       >
         <IconX className="size-4" />
       </Button>

@@ -50,7 +50,10 @@ export default function PickerFilterPanel({
       aria-label={m.common_filters()}
       inert={!open}
       onKeyDown={(event) => {
-        if (event.key === "Escape") onClose();
+        if (event.key !== "Escape") return;
+        // closes the panel only, not the picker sheet around it
+        event.stopPropagation();
+        onClose();
       }}
       className={cn(
         "absolute inset-0 z-10 flex flex-col border-l border-border bg-popover transition-[translate,opacity] duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)]",
@@ -67,7 +70,7 @@ export default function PickerFilterPanel({
                 onApply={() => onChange({ type: "suggestion", suggestion })}
               />
             </div>
-            <span className="font-mono text-[10.5px] text-muted-foreground">
+            <span className="text-[10.5px] text-muted-foreground">
               {suggestionSource(suggestion, "matches")}
             </span>
           </Group>
@@ -253,7 +256,7 @@ function ArtistFilters({ artist, filters, onChange }: ArtistFiltersProps) {
 function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="grid gap-2">
-      <h3 className="font-mono text-[10.5px] font-medium tracking-[0.12em] text-muted-foreground uppercase">
+      <h3 className="text-[10.5px] font-medium tracking-[0.12em] text-muted-foreground uppercase">
         {title}
       </h3>
       {children}

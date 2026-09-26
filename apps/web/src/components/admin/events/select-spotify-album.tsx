@@ -16,7 +16,7 @@ import type { SpotifyAlbum } from "@/lib/universal/events";
 import { cn } from "@/lib/utils";
 import { IconCheck, IconLoader2, IconSelector } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { ReactElement } from "react";
 import { useDebounceValue } from "usehooks-ts";
 
@@ -34,6 +34,7 @@ export default function SelectSpotifyAlbum({
   children,
 }: Props) {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const [search, setSearch] = useState("");
   const [debouncedSearch] = useDebounceValue(search, 500);
   const { data, status } = useQuery({
@@ -53,6 +54,7 @@ export default function SelectSpotifyAlbum({
   return (
     <Popover open={open} onOpenChange={setOpen} modal>
       <PopoverTrigger
+        ref={triggerRef}
         render={
           children ?? (
             <Button
@@ -73,7 +75,12 @@ export default function SelectSpotifyAlbum({
           )
         }
       />
-      <PopoverContent className="w-(--anchor-width) p-0" align="start">
+      <PopoverContent
+        className="w-(--anchor-width) p-0"
+        align="start"
+        // a pick can swap the trigger for the album, which then takes focus
+        finalFocus={() => triggerRef.current?.isConnected === true}
+      >
         <Command shouldFilter={false}>
           <CommandInput
             value={search}

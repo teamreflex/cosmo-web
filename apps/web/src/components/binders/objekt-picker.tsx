@@ -62,8 +62,6 @@ type Props = {
   inBinderTokenIds: ReadonlySet<number>;
   /** filters proposed from the selected pocket's neighbours */
   suggestion: NeighbourSuggestion | null;
-  /** cards can be dragged onto a pocket; needs a surrounding DndContext */
-  draggable?: boolean;
   onPick: (objekt: CosmoObjekt) => void;
   className?: string;
 };
@@ -79,14 +77,23 @@ export default function ObjektPicker({
   lockedTokenIds,
   inBinderTokenIds,
   suggestion,
-  draggable = false,
   onPick,
   className,
 }: Props) {
+  const { selected: selectedArtists } = useArtists();
   const [filters, dispatch] = useReducer(
     pickerFiltersReducer,
     initialPickerFilters,
   );
+  const isListed = (artist: ValidArtist) =>
+    selectedArtists.some(
+      (listed) => listed.id.toLowerCase() === artist.toLowerCase(),
+    );
+
+  // only the navbar's artists are listed, so one deselected there falls back to All
+  if (filters.artist !== null && !isListed(filters.artist)) {
+    dispatch({ type: "artist", artist: null });
+  }
   // results follow a render behind, so the last ones stay up while the next load
   const loadedFilters = useDeferredValue(filters);
   const [panelOpen, setPanelOpen] = useState(false);
@@ -97,7 +104,9 @@ export default function ObjektPicker({
   const pick = useEventCallback(onPick);
 
   const pendingSuggestion =
-    suggestion !== null && !isSuggestionApplied(filters, suggestion)
+    suggestion !== null &&
+    isListed(suggestion.artist) &&
+    !isSuggestionApplied(filters, suggestion)
       ? suggestion
       : null;
 
@@ -180,7 +189,6 @@ export default function ObjektPicker({
                 scrollRef={scrollRef}
                 inBinderTokenIds={inBinderTokenIds}
                 lockedTokenIds={lockedTokenIds}
-                draggable={draggable}
                 onPick={pick}
                 panelOpen={panelOpen}
                 panel={(shown) => (
@@ -209,7 +217,7 @@ export default function ObjektPicker({
 
 type PickerSectionProps = {
   /** the count line, when there is one */
-  status?: string;
+  status?: ReactNode;
   sort: ValidSort;
   scrollRef: RefObject<HTMLDivElement | null>;
   /** the filter panel, over the results */
@@ -233,7 +241,7 @@ function PickerSection({
 }: PickerSectionProps) {
   return (
     <>
-      <div className="flex items-center gap-2 px-3 pb-2 font-mono text-[11px] text-muted-foreground">
+      <div className="flex items-center gap-2 px-3 pb-2 text-[11px] text-muted-foreground">
         <span>{status}</span>
         <span className="ml-auto">
           {m.binder_picker_sort({ sort: sortLabel(sort).toLowerCase() })}
@@ -263,7 +271,6 @@ type PickerCollectionProps = {
   scrollRef: RefObject<HTMLDivElement | null>;
   inBinderTokenIds: ReadonlySet<number>;
   lockedTokenIds: ReadonlySet<number>;
-  draggable: boolean;
   onPick: (objekt: CosmoObjekt) => void;
   panelOpen: boolean;
   /** the filter panel, given how many objekts the results hold */
@@ -314,7 +321,7 @@ function PickerCollection({
 
   return (
     <PickerSection
-      status={m.binder_picker_count({ count: shown })}
+      status={<PickerCount count={shown} />}
       sort={filters.sort}
       scrollRef={scrollRef}
       panel={panel(shown)}
@@ -344,6 +351,21 @@ function PickerCollection({
         </div>
       )}
     </PickerSection>
+  );
+}
+
+/**
+ * The number of objekts shown, with the number itself in mono wherever each
+ * language puts it.
+ */
+function PickerCount({ count }: { count: number }) {
+  const [before, after] = m.binder_picker_count({ count }).split(String(count));
+  return (
+    <>
+      {before}
+      <span className="font-mono tabular-nums">{count}</span>
+      {after}
+    </>
   );
 }
 
@@ -391,7 +413,7 @@ function ArtistOption({ value, label }: { value: string; label: string }) {
       value={value}
       nativeButton
       render={<button type="button" />}
-      className="min-w-0 flex-1 truncate rounded-[5px] px-1.5 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-cosmo data-checked:bg-cosmo data-checked:text-white"
+      className="min-w-0 flex-auto truncate rounded-[5px] px-1.5 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-cosmo data-checked:bg-cosmo data-checked:text-white"
     >
       {label}
     </Radio.Root>

@@ -4,6 +4,7 @@ import { useBinderDetail } from "@/hooks/use-binder-detail";
 import type { BinderOptions } from "@/hooks/use-binder-detail";
 import { useMetadataDialog } from "@/hooks/use-metadata-dialog";
 import { m } from "@/i18n/messages";
+import { prefersReducedMotion } from "@/lib/client/binder-leaf";
 import { env } from "@/lib/env/client";
 import { objektMetadataQuery, objektQuery } from "@/lib/queries/objekt-queries";
 import {
@@ -24,7 +25,7 @@ import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import { IconShare3 } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { Suspense, useDeferredValue } from "react";
+import { Suspense, useDeferredValue, useEffect, useRef } from "react";
 import type { ComponentProps, ReactNode, RefObject } from "react";
 import { toast } from "sonner";
 import { useCopyToClipboard } from "usehooks-ts";
@@ -50,13 +51,7 @@ export function ViewerMeta({
   ...props
 }: ViewerMetaProps) {
   return (
-    <span
-      {...props}
-      className={cn(
-        "truncate font-mono text-[10.5px] tracking-[0.12em] text-muted-foreground uppercase",
-        className,
-      )}
-    >
+    <span {...props} className={cn("truncate", className)}>
       <Suspense fallback={metaLine(cover, null, short)}>
         <LoadedMeta cover={cover} binderOptions={binderOptions} short={short} />
       </Suspense>
@@ -76,13 +71,15 @@ function LoadedMeta({
   return metaLine(cover, useBinderDetail(binderOptions), short);
 }
 
+/**
+ * The layout in mono, then the rest in lowercase.
+ */
 function metaLine(
   cover: BinderPreview,
   binder: BinderDetail | null,
   short: boolean,
 ) {
   const parts = [
-    binderLayoutLabel(cover.layout),
     m.binder_page_count({ count: binder?.pageCount ?? cover.pageCount }),
   ];
   if (!short) {
@@ -99,7 +96,13 @@ function metaLine(
       );
     }
   }
-  return parts.join(" · ");
+  return (
+    <>
+      <span className="font-mono">{binderLayoutLabel(cover.layout)}</span>
+      {" · "}
+      <span className="lowercase">{parts.join(" · ")}</span>
+    </>
+  );
 }
 
 type PocketsProps = {
@@ -114,8 +117,6 @@ type PocketsProps = {
 type ViewerPageProps = Omit<ComponentProps<"div">, "children"> &
   PocketsProps & {
     layout: BinderLayout;
-    /** skeleton pockets only, for a page too far from view to be swiped to next */
-    placeholder?: boolean;
   };
 
 /**
@@ -131,7 +132,6 @@ export function ViewerPage({
   page,
   priority,
   tabIndex,
-  placeholder = false,
   ...props
 }: ViewerPageProps) {
   const { pocketsPerPage } = binderGrid(layout);
@@ -142,7 +142,7 @@ export function ViewerPage({
 
   return (
     <BinderPage layout={layout} {...props}>
-      {mounted && !placeholder ? (
+      {mounted ? (
         <Suspense fallback={skeletons}>
           <PagePockets
             binderOptions={binderOptions}
@@ -166,9 +166,8 @@ function PagePockets({
   priority = false,
   tabIndex,
 }: PocketsProps & { pocketsPerPage: number }) {
-  const pockets = pocketsByPage(useBinderDetail(binderOptions).entries).get(
-    page,
-  );
+  const { entries } = useBinderDetail(binderOptions);
+  const pockets = pocketsByPage(entries).get(page);
 
   return Array.from({ length: pocketsPerPage }, (_, slot) => {
     const entry = pockets?.get(slot);
@@ -293,6 +292,17 @@ function Rail({
   className,
 }: RailProps & { pages: BinderPages }) {
   const { columns, pocketsPerPage } = binderGrid(layout);
+  const firstRef = useRef<HTMLButtonElement>(null);
+  const first = current[0];
+
+  // a long binder's rail outgrows a phone, so scroll the pages in view onto it
+  useEffect(() => {
+    firstRef.current?.scrollIntoView({
+      block: "nearest",
+      inline: "nearest",
+      behavior: prefersReducedMotion() ? "instant" : "smooth",
+    });
+  }, [first]);
 
   return (
     <nav
@@ -304,6 +314,7 @@ function Rail({
         return (
           <button
             key={page}
+            ref={page === first ? firstRef : undefined}
             type="button"
             aria-label={m.binder_viewer_go_to_page({ page: page + 1 })}
             aria-current={on ? "page" : undefined}

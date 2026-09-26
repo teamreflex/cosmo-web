@@ -581,10 +581,21 @@ function luminance(hex: string) {
 }
 
 /**
- * Colours too close to white to read against a cover's white paper label.
+ * Colours too close to white for a cover to stand out from a light page.
  */
 function isNearWhite(hex: string) {
   return luminance(hex) > 0.8;
+}
+
+/**
+ * A hex colour as a lowercase #rrggbb, expanding the #rgb shorthand. Null for
+ * anything else, such as a half-typed colour.
+ */
+export function fullHexColour(value: string) {
+  const hex = value.trim().toLowerCase();
+  if (/^#[0-9a-f]{6}$/.test(hex)) return hex;
+  if (!/^#[0-9a-f]{3}$/.test(hex)) return null;
+  return hex.replace(/[0-9a-f]/g, (digit) => digit + digit);
 }
 
 /**

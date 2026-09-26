@@ -509,7 +509,7 @@ function PinCard({
     );
   }
 
-  const cover = <BinderCover binder={pin.binder} />;
+  const cover = <BinderCover binder={pin.binder} pinned />;
 
   // the cover and its overlay lift together, as an objekt card does
   return (
@@ -638,7 +638,8 @@ function SortablePinCell({
         onClick: (event: MouseEvent<HTMLDivElement>) =>
           openBinder(binder, event.currentTarget),
         onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => {
-          if (event.key === "Enter") {
+          // mid keyboard drag, Enter drops the pin rather than opening it
+          if (event.key === "Enter" && !isDragging) {
             event.preventDefault();
             openBinder(binder, event.currentTarget);
           } else {

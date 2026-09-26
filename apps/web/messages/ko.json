@@ -407,6 +407,7 @@
   "binder_editor_add_page": "페이지 추가",
   "binder_editor_remove_page": "페이지 삭제",
   "binder_editor_remove_page_confirm": "{page}페이지를 삭제할까요?",
+  "binder_editor_remove_page_n": "{page}페이지 삭제",
   "binder_editor_remove_page_description": [
     {
       "declarations": [
@@ -426,11 +427,9 @@
   "binder_editor_hint_drag_key": "드래그",
   "binder_editor_hint_drag": "objekt를 포켓으로, 또는 포켓끼리 바꾸기",
   "binder_editor_hint_clear": "포켓 비우기",
-  "binder_editor_hint_tap": "포켓을 눌러 채우기",
-  "binder_editor_hint_arrange": "포켓 두 개를 차례로 눌러 바꾸기",
-  "binder_editor_arrange": "정렬",
-  "binder_editor_pick_title": "포켓 {pocket} · objekt 선택",
-  "binder_editor_clear_pocket": "포켓 비우기",
+  "binder_editor_hint_tap": "눌러서 채우기, 길게 눌러 옮기기",
+  "binder_editor_pick_title": "포켓 {pocket}",
+  "binder_editor_clear_pocket": "비우기",
   "binder_editor_clear_pocket_n": "포켓 {pocket} 비우기",
   "binder_editor_use_as_cover": "표지로 사용",
   "binder_editor_cover": "표지",
@@ -439,7 +438,6 @@
   "binder_editor_pocket_cover": "포켓 {pocket}, {objekt}, 표지",
   "binder_editor_select_pocket": "먼저 포켓을 선택하세요",
   "binder_editor_page_full": "페이지가 가득 찼습니다",
-  "binder_editor_arrange_pick_filled": "먼저 채워진 포켓을 선택하세요",
   "binder_editor_layout": "레이아웃",
   "binder_editor_edit": "이름과 색상 편집",
   "binder_editor_colour": "색상",

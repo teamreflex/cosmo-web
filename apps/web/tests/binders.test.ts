@@ -15,6 +15,7 @@ import {
   binderGrid,
   binderPreviewFromDetail,
   findEmptyPocket,
+  fullHexColour,
   isPocketInRange,
   MAX_BINDER_PAGES,
   nextEmptySlot,
@@ -28,6 +29,7 @@ import {
   withPlacedObjekt,
   withSwappedPockets,
 } from "../src/lib/universal/binders";
+import { createBinderSchema } from "../src/lib/universal/schema/binder";
 
 function fullPages(pages: number, pocketsPerPage: number): PocketPosition[] {
   return Array.from({ length: pages * pocketsPerPage }, (_, index) => ({
@@ -834,5 +836,37 @@ describe("binderTextColour", () => {
   it("puts black on light spines", () => {
     expect(binderTextColour("#f5f0e6")).toBe("#000000");
     expect(binderTextColour("#9ae6c8")).toBe("#000000");
+  });
+});
+
+describe("fullHexColour", () => {
+  it("lowercases a full hex", () => {
+    expect(fullHexColour(" #3B2A6B ")).toBe("#3b2a6b");
+  });
+
+  it("expands the #rgb shorthand", () => {
+    expect(fullHexColour("#aBc")).toBe("#aabbcc");
+  });
+
+  it("rejects anything else", () => {
+    expect(fullHexColour("#3b2a")).toBeNull();
+    expect(fullHexColour("3b2a6b")).toBeNull();
+    expect(fullHexColour("#ggg")).toBeNull();
+  });
+});
+
+describe("createBinderSchema", () => {
+  const parse = (name: string, colour = "#3b2a6b") =>
+    createBinderSchema.safeParse({ name, layout: "3x3", colour });
+
+  it("trims the name before checking its length", () => {
+    expect(parse("   ").success).toBe(false);
+    expect(parse(" ab").success).toBe(false);
+    expect(parse("  Faves  ").data?.name).toBe("Faves");
+  });
+
+  it("stores the #rgb shorthand as #rrggbb", () => {
+    expect(parse("Faves", "#ABC").data?.colour).toBe("#aabbcc");
+    expect(parse("Faves", "#abcd").success).toBe(false);
   });
 });

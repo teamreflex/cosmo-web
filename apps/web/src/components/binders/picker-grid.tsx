@@ -8,16 +8,17 @@ import { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import { useDraggable } from "@dnd-kit/core";
-import type {
-  DraggableAttributes,
-  DraggableSyntheticListeners,
-} from "@dnd-kit/core";
 import { IconLock } from "@tabler/icons-react";
-import { memo, useEffect } from "react";
+import { memo, useLayoutEffect } from "react";
 import type { RefObject } from "react";
 
-/** The picker is three columns wide everywhere, in a column or a drawer. */
-const PICKER_COLUMNS = 3;
+/**
+ * The picker is at least three columns wide, as in the column beside the page
+ * or a phone's sheet, and adds columns in a wider sheet to keep cards around
+ * this width.
+ */
+const MIN_COLUMNS = 3;
+const CARD_WIDTH = 120;
 const GAP = 8;
 const ASPECT_RATIO = 8.5 / 5.5;
 
@@ -26,8 +27,6 @@ type Props = {
   scrollElement: RefObject<HTMLDivElement | null>;
   inBinderTokenIds: ReadonlySet<number>;
   lockedTokenIds: ReadonlySet<number>;
-  /** cards can be dragged onto a pocket; needs a surrounding DndContext */
-  draggable: boolean;
   onPick: (objekt: CosmoObjekt) => void;
 };
 
@@ -41,30 +40,34 @@ export default function PickerGrid({
   scrollElement,
   inBinderTokenIds,
   lockedTokenIds,
-  draggable,
   onPick,
 }: Props) {
-  const Card = draggable ? DraggablePickerCard : PickerCard;
   const [containerRef, { width }] = useElementSize({ axis: "width" });
-  const laneWidth = Math.max(
-    0,
-    (width - GAP * (PICKER_COLUMNS - 1)) / PICKER_COLUMNS,
+  const columns = Math.max(
+    MIN_COLUMNS,
+    Math.floor((width + GAP) / (CARD_WIDTH + GAP)),
   );
+  const laneWidth = Math.max(0, (width - GAP * (columns - 1)) / columns);
   // rounded so it stays exact as the virtualizer accumulates it down the list
   const itemHeight = Math.round(laneWidth * ASPECT_RATIO);
 
-  const { items, totalSize, scrollMargin, measureElement, measure } =
-    useGridElementVirtualizer({
+  const { items, totalSize, scrollMargin, measure } = useGridElementVirtualizer(
+    {
       count: objekts.length,
-      lanes: PICKER_COLUMNS,
+      lanes: columns,
       gap: GAP,
       itemHeight,
       container: containerRef,
       scrollElement,
-    });
+    },
+  );
 
-  // re-measure cells when the picker is resized
-  useEffect(() => {
+  /**
+   * Every card is the same known height, so cells aren't measured from the
+   * DOM. A resize re-lays out every row before paint, since the virtualizer
+   * caches positions and lanes that stale cell sizes could otherwise scramble.
+   */
+  useLayoutEffect(() => {
     measure();
   }, [itemHeight, measure]);
 
@@ -84,8 +87,6 @@ export default function PickerGrid({
           return (
             <div
               key={objekt.tokenId}
-              data-index={item.index}
-              ref={measureElement}
               className="absolute top-0"
               style={{
                 transform: `translateY(${item.start - scrollMargin}px)`,
@@ -93,11 +94,11 @@ export default function PickerGrid({
                 width: `${laneWidth}px`,
               }}
             >
-              <Card
+              <PickerCard
                 objekt={objekt}
                 inBinder={inBinderTokenIds.has(tokenId)}
                 locked={lockedTokenIds.has(tokenId)}
-                priority={item.index < PICKER_COLUMNS * 4}
+                priority={item.index < columns * 4}
                 onPick={onPick}
               />
             </div>
@@ -122,30 +123,9 @@ type PickerCardProps = {
 export type PickerDragData = { kind: "objekt"; objekt: CosmoObjekt };
 
 /**
- * A picker card that can also be dragged onto a pocket. Clicking still picks.
- */
-const DraggablePickerCard = memo(function DraggablePickerCard(
-  props: PickerCardProps,
-) {
-  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: `objekt-${props.objekt.tokenId}`,
-    data: {
-      drag: { kind: "objekt", objekt: props.objekt } satisfies PickerDragData,
-    },
-  });
-
-  return (
-    <PickerCard
-      {...props}
-      drag={{ attributes, listeners, setNodeRef, isDragging }}
-    />
-  );
-});
-
-/**
  * One pickable objekt: the plain front image, dimmed with an "in binder" label
  * when it's already placed. Placed objekts stay pickable, because picking one
- * moves it to the selected pocket.
+ * moves it to the selected pocket. Cards can also be dragged onto a pocket.
  */
 const PickerCard = memo(function PickerCard({
   objekt,
@@ -153,24 +133,22 @@ const PickerCard = memo(function PickerCard({
   locked,
   priority,
   onPick,
-  drag,
-}: PickerCardProps & {
-  drag?: {
-    attributes: DraggableAttributes;
-    listeners: DraggableSyntheticListeners;
-    setNodeRef: (element: HTMLElement | null) => void;
-    isDragging: boolean;
-  };
-}) {
+}: PickerCardProps) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: `objekt-${objekt.tokenId}`,
+    data: {
+      drag: { kind: "objekt", objekt } satisfies PickerDragData,
+    },
+  });
   const { collection, objekt: token } = Objekt.fromLegacy(objekt);
 
   return (
     <div className="@container">
       <button
-        ref={drag?.setNodeRef}
+        ref={setNodeRef}
         type="button"
-        {...drag?.attributes}
-        {...drag?.listeners}
+        {...attributes}
+        {...listeners}
         onClick={() => onPick(objekt)}
         aria-label={[
           `${collection.member} ${collection.season} ${collection.collectionNo}${token.serial > 0 ? ` #${token.serial}` : ""}`,
@@ -185,7 +163,7 @@ const PickerCard = memo(function PickerCard({
         }}
         className={cn(
           "relative block aspect-photocard w-full cursor-pointer touch-manipulation overflow-hidden rounded-photocard bg-secondary outline-2 outline-transparent transition-[outline-color,opacity] duration-150 hover:outline-(--objekt-background-color) focus-visible:outline-cosmo",
-          drag?.isDragging && "opacity-40",
+          isDragging && "opacity-40",
         )}
       >
         <img
@@ -201,7 +179,7 @@ const PickerCard = memo(function PickerCard({
 
         {inBinder && (
           <span className="absolute inset-0 flex flex-col justify-end bg-black/60">
-            <span className="bg-black/70 py-[3px] text-center font-mono text-[9px] text-neutral-200">
+            <span className="bg-black/70 py-[3px] text-center text-[9px] text-neutral-200">
               {m.binder_picker_in_binder()}
             </span>
           </span>
@@ -220,7 +198,7 @@ const PickerCard = memo(function PickerCard({
 export function PickerGridSkeleton() {
   return (
     <div className="grid grid-cols-3 gap-2">
-      {Array.from({ length: PICKER_COLUMNS * 4 }, (_, i) => (
+      {Array.from({ length: MIN_COLUMNS * 4 }, (_, i) => (
         // the photocard radius is sized against a container
         <div key={i} className="@container">
           <Skeleton className="aspect-photocard w-full rounded-photocard" />

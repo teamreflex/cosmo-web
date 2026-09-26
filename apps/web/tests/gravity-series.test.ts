@@ -1,13 +1,12 @@
 import { describe, expect, it } from "bun:test";
-import type {
-  ChartSegment,
-  Reveal,
-} from "../src/lib/client/gravity/types";
 import type { SeriesGroup } from "../src/lib/client/gravity/series";
 import {
+  bucketReveals,
   computeChartSeries,
+  finalizedSegments,
   TOP_CANDIDATE_COUNT,
 } from "../src/lib/client/gravity/series";
+import type { ChartSegment, Reveal } from "../src/lib/client/gravity/types";
 
 const pollStart = Date.parse("2023-04-21T09:00:00.000Z");
 const segmentMs = 30 * 60 * 1000;
@@ -63,7 +62,7 @@ describe("computeChartSeries", () => {
   it("accumulates the top candidates across segments", () => {
     const { series } = computeChartSeries({
       chartData,
-      reveals,
+      revealed: bucketReveals(chartData, reveals),
       comoPerCandidate: como,
       complete: false,
       groups,
@@ -79,7 +78,7 @@ describe("computeChartSeries", () => {
   it("stops the lines at the reveal frontier", () => {
     const { frontierSegmentIndex } = computeChartSeries({
       chartData,
-      reveals,
+      revealed: bucketReveals(chartData, reveals),
       comoPerCandidate: como,
       complete: false,
       groups,
@@ -92,7 +91,7 @@ describe("computeChartSeries", () => {
   it("spans the whole poll once every vote is revealed", () => {
     const { series, frontierSegmentIndex } = computeChartSeries({
       chartData,
-      reveals,
+      revealed: bucketReveals(chartData, reveals),
       comoPerCandidate: como,
       complete: true,
       groups,
@@ -107,7 +106,7 @@ describe("computeChartSeries", () => {
   it("has no series or frontier while voting", () => {
     const result = computeChartSeries({
       chartData,
-      reveals: [],
+      revealed: bucketReveals(chartData, []),
       comoPerCandidate: [],
       complete: false,
       groups,
@@ -126,7 +125,7 @@ describe("computeChartSeries", () => {
     ];
     const { series, frontierSegmentIndex } = computeChartSeries({
       chartData,
-      reveals: outside,
+      revealed: bucketReveals(chartData, outside),
       comoPerCandidate: como,
       complete: false,
       groups,
@@ -140,7 +139,7 @@ describe("computeChartSeries", () => {
   it("draws fewer lines than there are candidates when only one voted", () => {
     const { series } = computeChartSeries({
       chartData,
-      reveals: [reveal("1", 2, 5, 5)],
+      revealed: bucketReveals(chartData, [reveal("1", 2, 5, 5)]),
       comoPerCandidate: [0, 0, 5],
       complete: false,
       groups,
@@ -153,7 +152,7 @@ describe("computeChartSeries", () => {
   it("moves the frontier for a candidate outside the top", () => {
     const { series, frontierSegmentIndex } = computeChartSeries({
       chartData,
-      reveals: [...reveals, reveal("7", 3, 1, 100)],
+      revealed: bucketReveals(chartData, [...reveals, reveal("7", 3, 1, 100)]),
       comoPerCandidate: como,
       complete: false,
       groups,
@@ -174,7 +173,7 @@ describe("computeChartSeries", () => {
       process.env.TZ = tz;
       return computeChartSeries({
         chartData,
-        reveals,
+        revealed: bucketReveals(chartData, reveals),
         comoPerCandidate: como,
         complete: false,
         groups,
@@ -193,6 +192,35 @@ describe("computeChartSeries", () => {
       } else {
         process.env.TZ = originalTz;
       }
+    }
+  });
+
+  it("draws a finalized payload the same as the reveals it sums", () => {
+    // the endpoint's per-candidate segments for the same six reveals
+    const finalized = finalizedSegments(
+      {
+        comoPerCandidate: como,
+        segments: [
+          { candidateId: 0, amounts: [10, 6, 0, 0] },
+          { candidateId: 1, amounts: [4, 0, 8, 0] },
+          { candidateId: 2, amounts: [0, 3, 0, 0] },
+          { candidateId: 3, amounts: [0, 0, 1, 0] },
+        ],
+      },
+      reveals.length,
+    );
+    const input = { chartData, comoPerCandidate: como, groups, linesPerSlot };
+
+    for (const complete of [false, true]) {
+      expect(
+        computeChartSeries({ ...input, complete, revealed: finalized }),
+      ).toEqual(
+        computeChartSeries({
+          ...input,
+          complete,
+          revealed: bucketReveals(chartData, reveals),
+        }),
+      );
     }
   });
 });
@@ -227,7 +255,7 @@ describe("computeChartSeries over slots", () => {
   it("draws each slot's top lines, skipping members nobody voted for", () => {
     const { series } = computeChartSeries({
       chartData,
-      reveals: slotReveals,
+      revealed: bucketReveals(chartData, slotReveals),
       comoPerCandidate: slotComo,
       complete: false,
       groups: slotGroups,
@@ -247,7 +275,7 @@ describe("computeChartSeries over slots", () => {
   it("sums every choice placing a member in the slot", () => {
     const { series } = computeChartSeries({
       chartData,
-      reveals: slotReveals,
+      revealed: bucketReveals(chartData, slotReveals),
       comoPerCandidate: slotComo,
       complete: false,
       groups: slotGroups,

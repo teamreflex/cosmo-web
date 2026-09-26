@@ -21,7 +21,9 @@ export type RevealBatch = {
 /**
  * COMO per candidate id, indexed by candidate id. Ids with no reveals hold 0.
  */
-export function sumComoPerCandidate(reveals: Reveal[]): number[] {
+export function sumComoPerCandidate(
+  reveals: Pick<Reveal, "candidateId" | "amount">[],
+): number[] {
   if (reveals.length === 0) {
     return [];
   }

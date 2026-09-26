@@ -27,6 +27,9 @@ export default function CosmoUserCombobox({
   const [debouncedQuery] = useDebounceValue(query, 500);
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  // a picked result swaps the search for the user, whose Cancel takes focus
+  const picked = useRef(false);
+  const resultsOpen = open && debouncedQuery.length > 0;
 
   const { status, data, error } = useQuery({
     queryKey: ["cosmo-user-search", debouncedQuery],
@@ -39,6 +42,7 @@ export default function CosmoUserCombobox({
   });
 
   function handleSelect(user: CosmoPublicUser) {
+    picked.current = true;
     onChange(user);
     setQuery("");
     setOpen(false);
@@ -65,6 +69,11 @@ export default function CosmoUserCombobox({
         </Avatar>
         <span className="flex-1 text-sm font-medium">{value.nickname}</span>
         <button
+          ref={(button) => {
+            if (button === null || !picked.current) return;
+            picked.current = false;
+            button.focus();
+          }}
           type="button"
           onClick={handleClear}
           className="text-xs text-muted-foreground hover:text-foreground"
@@ -76,7 +85,7 @@ export default function CosmoUserCombobox({
   }
 
   return (
-    <Popover open={open && debouncedQuery.length > 0} onOpenChange={setOpen}>
+    <Popover open={resultsOpen} onOpenChange={setOpen}>
       <Input
         ref={inputRef}
         placeholder={m.user_search_placeholder()}
@@ -86,12 +95,21 @@ export default function CosmoUserCombobox({
           setOpen(true);
         }}
         onFocus={() => setOpen(true)}
+        onKeyDown={(event) => {
+          // closes the results rather than a dialog around them
+          if (event.key === "Escape" && resultsOpen) {
+            event.stopPropagation();
+            setOpen(false);
+          }
+        }}
       />
 
       <PopoverContent
         anchor={inputRef}
         className="w-(--anchor-width) overflow-hidden p-0"
         initialFocus={false}
+        // the chosen user takes focus from the search it replaces
+        finalFocus={false}
       >
         {status === "pending" && debouncedQuery.length > 0 && (
           <div className="flex items-center justify-center py-4">
