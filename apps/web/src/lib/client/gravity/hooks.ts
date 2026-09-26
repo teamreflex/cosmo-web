@@ -11,7 +11,12 @@ import { useEffect, useMemo, useState } from "react";
 import type { ChartLine } from "./colors";
 import { findLatestBatch, sumComoPerCandidate } from "./reveals";
 import type { RevealBatch } from "./reveals";
-import { computeChartSeries, slotLineCount } from "./series";
+import {
+  bucketReveals,
+  computeChartSeries,
+  finalizedSegments,
+  slotLineCount,
+} from "./series";
 import type { ChartSeries } from "./series";
 import { buildSlotModel, rankSlots } from "./slots";
 import type { PollSlotModel, SlotRanking } from "./slots";
@@ -20,6 +25,7 @@ import type {
   AggregatedTopVote,
   LiveStatus,
   Reveal,
+  RevealedSegments,
   UseRevealsOptions,
   UseRevealsResult,
 } from "./types";
@@ -68,11 +74,12 @@ function useDatePassed(date: string) {
  */
 export function useReveals(params: UseRevealsOptions): UseRevealsResult {
   const { pollId, startDate, endDate, aggregated } = params;
+  const { finalized } = aggregated;
   const votingStarted = useDatePassed(startDate);
   const votingEnded = useDatePassed(endDate);
 
   // poll for reveals during "live" phase using infinite query for accumulation
-  // only poll if: voting ended AND aggregated has no reveals (not finalized)
+  // only poll if: voting ended AND the poll isn't finalized
   const { data, fetchNextPage, refetch, isFetchingNextPage, hasNextPage } =
     useInfiniteQuery({
       queryKey: ["gravity", "reveals", pollId],
@@ -82,7 +89,7 @@ export function useReveals(params: UseRevealsOptions): UseRevealsResult {
         }),
       initialPageParam: undefined,
       getNextPageParam: (lastPage) => lastPage.nextCursor,
-      enabled: () => votingEnded && aggregated.reveals.length === 0,
+      enabled: () => votingEnded && finalized === null,
       // a focus/remount refetch replays every accumulated page sequentially and
       // collapses the batch history the deltas derive from; the interval below
       // is the only refresher
@@ -90,15 +97,14 @@ export function useReveals(params: UseRevealsOptions): UseRevealsResult {
       refetchOnWindowFocus: false,
     });
 
-  // merge reveal sources: use aggregated.reveals (finalized) or polled data (live)
-  const reveals = useMemo((): Reveal[] => {
-    if (aggregated.reveals.length > 0) {
-      return aggregated.reveals;
-    }
-    return data?.pages.flatMap((page) => page.votes) ?? [];
-  }, [aggregated.reveals, data]);
+  // reveals polled while counting is live; a finalized poll ships its totals instead
+  const reveals = useMemo(
+    (): Reveal[] => data?.pages.flatMap((page) => page.votes) ?? [],
+    [data],
+  );
 
-  const remainingVotesCount = aggregated.totalVoteCount - reveals.length;
+  const remainingVotesCount =
+    finalized === null ? aggregated.totalVoteCount - reveals.length : 0;
 
   const liveStatus = useMemo((): LiveStatus => {
     if (!votingStarted) {
@@ -159,8 +165,19 @@ export function useReveals(params: UseRevealsOptions): UseRevealsResult {
   }, [aggregated.topUsers, revealMap, reveals.length]);
 
   const comoPerCandidate = useMemo(
-    (): number[] => sumComoPerCandidate(reveals),
-    [reveals],
+    (): number[] =>
+      finalized === null
+        ? sumComoPerCandidate(reveals)
+        : finalized.comoPerCandidate,
+    [finalized, reveals],
+  );
+
+  const revealed = useMemo(
+    (): RevealedSegments =>
+      finalized === null
+        ? bucketReveals(aggregated.chartData, reveals)
+        : finalizedSegments(finalized, aggregated.revealedVoteCount),
+    [finalized, aggregated.chartData, aggregated.revealedVoteCount, reveals],
   );
 
   // deltas only exist while counting: a finalized poll arrives fully revealed,
@@ -178,7 +195,7 @@ export function useReveals(params: UseRevealsOptions): UseRevealsResult {
     remainingVotesCount,
     comoPerCandidate,
     latestBatch,
-    reveals,
+    revealed,
     chartData: aggregated.chartData,
     topVotes: topVotesWithReveals,
     topUsers: topUsersWithReveals,
@@ -207,7 +224,7 @@ export function useChartSeries(
     () =>
       computeChartSeries({
         chartData: live.chartData,
-        reveals: live.reveals,
+        revealed: live.revealed,
         comoPerCandidate: live.comoPerCandidate,
         complete: live.liveStatus === "finalized",
         groups,
@@ -217,7 +234,7 @@ export function useChartSeries(
       model,
       groups,
       live.chartData,
-      live.reveals,
+      live.revealed,
       live.comoPerCandidate,
       live.liveStatus,
     ],
