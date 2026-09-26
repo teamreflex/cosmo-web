@@ -10,7 +10,19 @@
 
 ### UI Library
 
-The project uses [shadcn/ui](https://ui.shadcn.com/) components (the `base-vega` style) built on [Base UI](https://base-ui.com/) primitives with [Tabler Icons](https://tabler.io/icons). Compose a part with another element through its `render` prop (`<DialogTrigger render={<Button variant="outline" />}>`), not `asChild`; a `Button` rendering a link also needs `nativeButton={false}`.
+The project uses [shadcn/ui](https://ui.shadcn.com/) components (the `base-vega` style) built on [Base UI](https://base-ui.com/) primitives with [Tabler Icons](https://tabler.io/icons). Compose a part with another element through its `render` prop (`<DialogTrigger render={<Button variant="outline" />}>`), not `asChild`. A part rendering a non-button element needs `nativeButton={false}`, which also adds `role="button"` — so links styled as buttons apply `buttonVariants()` to the `<Link>` itself instead of `<Button render={<Link />}>`.
+
+Base UI behaviours the components rely on:
+
+- CSS enter transitions only run when `open` changes after mount. A Root mounted already open skips its enter animation, so keep overlays mounted and drive `open` rather than mounting them open.
+- Select `onValueChange` fires even when the current value is re-picked; guard handlers with side effects (the settings dialog's language Select skips the current locale, since Paraglide's `setLocale` reloads the page).
+- `AlertDialogAction` is a Close part. Call `event.preventBaseUIHandler()` in `onClick` to keep the dialog open (e.g. while a mutation runs).
+- `Radio.Root` renders a `<span>` unless given `nativeButton` + `render={<button />}`.
+- An open popover inserts hidden focus-guard spans (`data-base-ui-focus-guard`) and an `aria-owns` span beside its trigger, so `:first-child`-style selectors on the trigger's parent (button-group rounding) must skip them.
+- Drawers dismiss on a hard-coded swipe rule (past half the height, or ≥0.5 px/ms). A swipe-dismissed drawer must close in the same `onOpenChange` call (reason `"swipe"`) or it springs back. `data-base-ui-swipe-ignore` stops a swipe starting on an element (the 3D flippable card).
+- A Drawer's first open per page load calls `CSS.registerProperty`, forcing a full-document style recalc inside the tap.
+- With classic (inset) scrollbars, the scroll lock sets `scrollbar-gutter: stable` and leaves an empty strip where the page scrollbar was; fixed layers can't paint into it, so backdrops stop short of the edge ([mui/base-ui#4615](https://github.com/mui/base-ui/issues/4615)). Right-side Sheets use `right-window-edge` to tuck their own scrollbar under that strip. Headless Chrome only has overlay scrollbars, so check this in a desktop browser.
+- Don't add Radix primitives alongside Base UI overlays — mixing them breaks Esc layering and focus traps.
 
 If you need a component that doesn't exist in the codebase, you can likely add it from the shadcn library. Use the shadcn CLI or copy the component code from their documentation.
 
