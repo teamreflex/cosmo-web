@@ -1,4 +1,3 @@
-import { remember } from "@/lib/server/cache.server";
 import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts.server";
 import { indexer } from "@/lib/server/db/indexer";
 import type { Collection } from "@/lib/server/db/indexer/schema";
@@ -16,7 +15,6 @@ import type {
   SeasonMatrix,
   SeasonProgress,
 } from "@/lib/universal/progress";
-import { unobtainables } from "@/lib/unobtainables";
 import { validOnlineTypes } from "@apollo/cosmo/types/common";
 import { Addresses, isEqual } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
@@ -59,7 +57,6 @@ export const $fetchProgressBreakdown = createServerFn({ method: "GET" })
 
 /**
  * Fetch the progress leaderboard for a given member and filters.
- * Cached for 24 hours, resets 9am KST (UTC+9).
  */
 export const $fetchProgressLeaderboard = createServerFn({ method: "GET" })
   .validator(
@@ -73,44 +70,32 @@ export const $fetchProgressLeaderboard = createServerFn({ method: "GET" })
     }),
   )
   .handler(async ({ data }) => {
-    const key = [data.member, data.onlineType, data.season]
-      .filter(Boolean)
-      .join("-");
+    const [totals, leaderboard] = await Promise.all([
+      fetchTotal(data),
+      fetchLeaderboard(data),
+    ]);
 
-    // cache until next 9am KST (UTC+9), i.e. midnight UTC
-    const now = Date.now();
-    const msInDay = 86_400_000;
-    const nextMidnightUTC = Math.ceil(now / msInDay) * msInDay;
-    const ttl = Math.floor((nextMidnightUTC - now) / 1000) || 86_400;
+    // fetch profiles for each address
+    const addressMap = await fetchKnownAddresses(
+      leaderboard.map((a) => a.owner),
+    );
 
-    return await remember(`leaderboard:${key}`, ttl, async () => {
-      const [totals, leaderboard] = await Promise.all([
-        fetchTotal(data),
-        fetchLeaderboard(data),
-      ]);
-
-      // fetch profiles for each address
-      const addressMap = await fetchKnownAddresses(
-        leaderboard.map((a) => a.owner),
-      );
-
-      // map the nickname onto the results
-      const results = leaderboard.map((row) => {
-        const known = addressMap.get(row.owner.toLowerCase());
-
-        return {
-          count: row.count,
-          nickname: known?.username ?? row.owner.substring(0, 8),
-          address: row.owner,
-          isAddress: known === undefined,
-        };
-      }) satisfies LeaderboardItem[];
+    // map the nickname onto the results
+    const results = leaderboard.map((row) => {
+      const known = addressMap.get(row.owner.toLowerCase());
 
       return {
-        total: totals.filter((c) => !unobtainables.includes(c.slug)).length,
-        leaderboard: results,
+        count: row.count,
+        nickname: known?.username ?? row.owner.substring(0, 8),
+        address: row.owner,
+        isAddress: known === undefined,
       };
-    });
+    }) satisfies LeaderboardItem[];
+
+    return {
+      total: totals.filter((c) => !c.unobtainable).length,
+      leaderboard: results,
+    };
   });
 
 /**
@@ -232,15 +217,14 @@ function zipResults(
 
     // exclude unobtainable collections from total count
     const totalCollections = collectionsInScope.filter(
-      (c) => !unobtainables.includes(c.slug),
+      (c) => !c.unobtainable,
     ).length;
 
     // get unobtainable collections separately to be added in later
     const { progressTotal, unobtainableTotal } = ownedInScope.reduce(
       (acc, c) => {
-        const isUnobtainable = unobtainables.includes(c.slug);
-        acc.progressTotal += isUnobtainable ? 0 : 1;
-        acc.unobtainableTotal += isUnobtainable ? 1 : 0;
+        acc.progressTotal += c.unobtainable ? 0 : 1;
+        acc.unobtainableTotal += c.unobtainable ? 1 : 0;
         return acc;
       },
       { progressTotal: 0, unobtainableTotal: 0 },
@@ -254,7 +238,7 @@ function zipResults(
       collections: collectionsInScope.map((c) => ({
         collection: c,
         obtained: ownedInScope.some((p) => p.collectionId === c.id),
-        unobtainable: unobtainables.includes(c.slug),
+        unobtainable: c.unobtainable,
       })),
     };
   });

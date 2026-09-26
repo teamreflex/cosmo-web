@@ -8,6 +8,7 @@ import {
   numeric,
   pgSchema,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uuid,
@@ -52,6 +53,7 @@ export const collections = pgTable("collection", {
   hasAudio: boolean("has_audio").notNull().default(false),
   frontImageVersion: varchar("front_image_version", { length: 12 }),
   backImageVersion: varchar("back_image_version", { length: 12 }),
+  unobtainable: boolean("unobtainable").notNull().default(false),
 });
 
 export const objekts = pgTable("objekt", {
@@ -149,3 +151,38 @@ export const members = pgTable("member", {
   primaryColorHex: text("primary_color_hex").notNull(),
   sortOrder: integer("sort_order").notNull(),
 });
+
+// copies each owner holds of each collection (SPIN excluded), maintained by triggers on objekt
+export const collectionOwners = pgTable(
+  "collection_owner",
+  {
+    collectionId: varchar("collection_id", { length: 36 }).notNull(),
+    owner: text("owner").notNull(),
+    copies: integer("copies").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.collectionId, t.owner] })],
+);
+
+/**
+ * Distinct obtainable collections each owner holds, maintained by triggers on objekt and
+ * collection. An empty season or onOffline is the total across all seasons or online types.
+ */
+export const progressLeaderboard = pgTable(
+  "progress_leaderboard",
+  {
+    owner: text("owner").notNull(),
+    member: text("member").notNull(),
+    season: text("season").notNull(),
+    onOffline: text("on_offline").notNull(),
+    count: integer("count").notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.owner, t.member, t.season, t.onOffline] }),
+    index("idx_progress_leaderboard_top").on(
+      t.member,
+      t.season,
+      t.onOffline,
+      t.count.desc(),
+    ),
+  ],
+);

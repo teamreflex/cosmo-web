@@ -673,6 +673,7 @@
   "admin_collection_online": "Online",
   "admin_collection_offline": "Offline",
   "admin_collection_has_audio": "Has Audio",
+  "admin_collection_unobtainable": "Unobtainable",
   "admin_collection_front_media": "Front Media",
   "admin_collection_media_select": "Select Video",
   "admin_collection_media_none": "No media",
