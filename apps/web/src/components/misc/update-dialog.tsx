@@ -80,12 +80,13 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2026-08-28",
+    date: "2026-09-29",
     changes: [
-      "Refreshed live gravity designs.",
-      "Added: Support for combination polls (First Grand Gravity, Two Big WAVes).",
-      "Added: Support for the upcoming unit gravity type.",
-      "Disabled trade filtering temporarily while it gets optimized.",
+      "Added: 3D objekt interaction from COSMO",
+      "Added: Details/descriptions from gravities",
+      "Added: Image optimization to help responsiveness and loading speed",
+      "Added: Pinnable objekt collectbook/binder system",
+      "Small rework of profile pages to better suit mobile devices",
     ],
   },
 ];
