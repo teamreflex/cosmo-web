@@ -46,7 +46,7 @@ export default function ListHeader({
           </div>
 
           <div className="min-w-0">
-            <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-xxs tracking-[0.18em] uppercase">
+            <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs lowercase">
               <span className={cn("font-semibold", intent.labelColor)}>
                 {intent.label}
               </span>
@@ -55,7 +55,7 @@ export default function ListHeader({
                   <span className="text-muted-foreground">·</span>
                   {hydrated ? (
                     <span className="text-muted-foreground">
-                      {m.list_header_updated({
+                      {m.list_header_created({
                         date: format(list.createdAt, "d MMM yy"),
                       })}
                     </span>
@@ -92,9 +92,6 @@ export default function ListHeader({
 
       <div className="mt-4 grid flex-1 gap-4 md:grid-cols-[1fr_auto]">
         <div className={cn("border-l-2 pl-4", intent.borderColor)}>
-          <div className="mb-1 font-mono text-xxs font-semibold tracking-[0.18em] text-muted-foreground uppercase">
-            {m.list_header_description()}
-          </div>
           {list.description ? (
             <p className="max-w-[62ch] text-sm leading-relaxed whitespace-pre-wrap text-foreground">
               {list.description}
