@@ -24,4 +24,4 @@ Two databases are involved: collections and member sort order come from the **in
 ## Common changes
 
 - **New Typesense field:** add it to the schema in `src/setup.ts` and to the enrichment mapping in `src/main.ts`; computed fields get a helper in `src/collections.ts`. Schema changes only apply to newly created collections — an existing Typesense collection must be dropped or altered manually.
-- **New synonym:** add to the right dictionary in `src/synonyms.ts`; only a new *category* needs setup logic in `src/setup.ts`.
+- **New synonym:** add to the right dictionary in `src/synonyms.ts`; only a new _category_ needs setup logic in `src/setup.ts`.

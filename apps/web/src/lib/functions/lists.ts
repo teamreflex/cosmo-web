@@ -114,20 +114,25 @@ export const $fetchListShelf = createServerFn({ method: "GET" })
     const slugs = [
       ...new Set(lists.flatMap((l) => l.entries.map((e) => e.collectionId))),
     ];
-    const collectionRows =
-      slugs.length > 0
-        ? await indexer.query.collections.findMany({
-            where: { slug: { in: slugs } },
-            columns: {
-              slug: true,
-              collectionId: true,
-              frontImage: true,
-              frontImageVersion: true,
-            },
-          })
-        : [];
-    const bySlug = new Map(collectionRows.map((c) => [c.slug, c]));
 
+    if (slugs.length === 0) {
+      return lists.map(({ entries: _, ...list }) => ({
+        ...list,
+        previews: [],
+      }));
+    }
+
+    const collections = await indexer.query.collections.findMany({
+      where: { slug: { in: slugs } },
+      columns: {
+        slug: true,
+        collectionId: true,
+        frontImage: true,
+        frontImageVersion: true,
+      },
+    });
+
+    const bySlug = new Map(collections.map((c) => [c.slug, c]));
     return lists.map(({ entries, ...list }) => ({
       ...list,
       previews: entries.flatMap((entry) => {

@@ -249,13 +249,8 @@
   "list_already_on_list": "{collectionId} is already on this list",
   "batch_selected_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} objekt selected",
         "countPlural=other": "{count} objekts selected"
@@ -289,13 +284,8 @@
   "list_matches_overlap_count": "{count} overlap",
   "list_matches_count_label": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} match",
         "countPlural=other": "{count} matches"
@@ -333,13 +323,8 @@
   "binder_error_objekt_not_owned": "We couldn't confirm you own this objekt yet. If you just received it, try again shortly",
   "binder_page_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} page",
         "countPlural=other": "{count} pages"
@@ -364,13 +349,8 @@
   "binder_picker_matches_two": "Matches pockets {first} and {second}",
   "binder_picker_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} objekt",
         "countPlural=other": "{count} objekts"
@@ -384,13 +364,8 @@
   "binder_picker_not_in_binder": "Not in this binder",
   "binder_picker_show": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Show {count} objekt",
         "countPlural=other": "Show {count} objekts"
@@ -414,13 +389,8 @@
   "binder_editor_remove_page_n": "Remove page {page}",
   "binder_editor_remove_page_description": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "Its objekt will be taken out of this binder. It stays in your collection.",
         "countPlural=other": "Its {count} objekts will be taken out of this binder. They stay in your collection."
@@ -462,13 +432,8 @@
   "binder_viewer_open": "Open {name}",
   "binder_viewer_objekt_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} objekt",
         "countPlural=other": "{count} objekts"
@@ -913,13 +878,8 @@
   "gravity_revealed_progress": "revealed {counted}/{total}",
   "gravity_votes_so_far": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} vote so far",
         "countPlural=other": "{count} votes so far"
@@ -931,13 +891,8 @@
   "gravity_ranking": "Ranking",
   "gravity_more_candidates": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "+ {count} more candidate",
         "countPlural=other": "+ {count} more candidates"
@@ -948,13 +903,8 @@
   "gravity_candidate_delta": "+{amount} COMO in the latest reveal",
   "gravity_vote_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} vote",
         "countPlural=other": "{count} votes"

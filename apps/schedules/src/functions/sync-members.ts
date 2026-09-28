@@ -1,6 +1,6 @@
-import { fetchAllArtists } from "@apollo/cosmo/server/artists";
 import { DatabaseIndexer } from "@/db-indexer";
 import { ProxiedToken } from "@/proxied-token";
+import { fetchAllArtists } from "@apollo/cosmo/server/artists";
 import { members } from "@apollo/database/indexer/schema";
 import { memberSortOrder } from "@apollo/util";
 import { sql } from "drizzle-orm";
