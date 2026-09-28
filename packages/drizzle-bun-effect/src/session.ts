@@ -26,8 +26,8 @@ import {
   PgEffectTransaction,
 } from "drizzle-orm/pg-core/effect";
 import * as Effect from "effect/Effect";
-import * as Semaphore from "effect/Semaphore";
 import * as Exit from "effect/Exit";
+import * as Semaphore from "effect/Semaphore";
 import { SqlError } from "effect/unstable/sql/SqlError";
 import { classifyPgError } from "./sql-error";
 
@@ -212,79 +212,79 @@ export class BunSQLEffectSession<
       Effect.flatMap(Semaphore.make(1), (semaphore) =>
         Effect.flatMap(
           Effect.tryPromise({
-          try: () => pool.reserve(),
-          catch: (cause) =>
-            new SqlError({
-              reason: classifyPgError(
-                cause,
-                "Failed to acquire connection for transaction",
-                "acquireConnection",
-              ),
-            }),
-        }),
-        (reserved) => {
-          let tainted = false;
-          const session = new BunSQLEffectSession<TQueryResult, TRelations>(
-            reserved,
-            dialect,
-            relations,
-            options,
-            0,
-            semaphore,
-          );
-          const tx = new BunSQLEffectTransaction<TQueryResult, TRelations>(
-            dialect,
-            session,
-            relations,
-            0,
-          );
-          const body = Effect.flatMap(
-            session.executeStatement("begin", "begin"),
-            () =>
-              Effect.onExit(
-                Effect.gen(function* () {
-                  if (config !== undefined) {
-                    for (const statement of transactionConfigStatements(
-                      dialect,
-                      config,
-                    )) {
-                      yield* session.executeStatement(
-                        statement,
-                        "setTransaction",
-                      );
+            try: () => pool.reserve(),
+            catch: (cause) =>
+              new SqlError({
+                reason: classifyPgError(
+                  cause,
+                  "Failed to acquire connection for transaction",
+                  "acquireConnection",
+                ),
+              }),
+          }),
+          (reserved) => {
+            let tainted = false;
+            const session = new BunSQLEffectSession<TQueryResult, TRelations>(
+              reserved,
+              dialect,
+              relations,
+              options,
+              0,
+              semaphore,
+            );
+            const tx = new BunSQLEffectTransaction<TQueryResult, TRelations>(
+              dialect,
+              session,
+              relations,
+              0,
+            );
+            const body = Effect.flatMap(
+              session.executeStatement("begin", "begin"),
+              () =>
+                Effect.onExit(
+                  Effect.gen(function* () {
+                    if (config !== undefined) {
+                      for (const statement of transactionConfigStatements(
+                        dialect,
+                        config,
+                      )) {
+                        yield* session.executeStatement(
+                          statement,
+                          "setTransaction",
+                        );
+                      }
                     }
-                  }
-                  const result = yield* restore(transaction(tx));
-                  yield* session.executeStatement("commit", "commit");
-                  return result;
-                }),
-                // rollback on failure and interruption; commit already ran on success
-                (exit) =>
-                  Exit.isSuccess(exit)
-                    ? Effect.void
-                    : Effect.catch(
-                        session.executeStatement("rollback", "rollback"),
-                        () =>
-                          // a failed rollback may leave the connection inside an
-                          // aborted transaction; pooling it would poison later
-                          // queries, so it gets destroyed instead of released
-                          Effect.sync(() => {
-                            tainted = true;
-                          }),
-                      ),
-              ),
-          );
-          return Effect.ensuring(
-            body,
-            Effect.suspend(() =>
-              tainted
-                ? Effect.promise(() => reserved.close({ timeout: 1 }))
-                : Effect.sync(() => {
-                    reserved.release();
+                    const result = yield* restore(transaction(tx));
+                    yield* session.executeStatement("commit", "commit");
+                    return result;
                   }),
-            ),
-          );
-        },
+                  // rollback on failure and interruption; commit already ran on success
+                  (exit) =>
+                    Exit.isSuccess(exit)
+                      ? Effect.void
+                      : Effect.catch(
+                          session.executeStatement("rollback", "rollback"),
+                          () =>
+                            // a failed rollback may leave the connection inside an
+                            // aborted transaction; pooling it would poison later
+                            // queries, so it gets destroyed instead of released
+                            Effect.sync(() => {
+                              tainted = true;
+                            }),
+                        ),
+                ),
+            );
+            return Effect.ensuring(
+              body,
+              Effect.suspend(() =>
+                tainted
+                  ? Effect.promise(() => reserved.close({ timeout: 1 }))
+                  : Effect.sync(() => {
+                      reserved.release();
+                    }),
+              ),
+            );
+          },
         ),
       ),
     );

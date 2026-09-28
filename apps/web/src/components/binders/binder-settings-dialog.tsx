@@ -135,9 +135,7 @@ function SettingsForm({ binder, onSaved }: SettingsFormProps) {
 
       <Button type="submit" disabled={mutation.isPending}>
         {m.common_save()}
-        {mutation.isPending && (
-          <IconLoader2 className="animate-spin" />
-        )}
+        {mutation.isPending && <IconLoader2 className="animate-spin" />}
       </Button>
     </form>
   );

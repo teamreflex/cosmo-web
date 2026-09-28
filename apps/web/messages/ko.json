@@ -249,13 +249,8 @@
   "list_already_on_list": "{collectionId}이(가) 이미 이 리스트에 있습니다",
   "batch_selected_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "{count}개 선택됨"
       }
@@ -288,13 +283,8 @@
   "list_matches_overlap_count": "{count}개 일치",
   "list_matches_count_label": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "매칭 {count}개"
       }
@@ -331,13 +321,8 @@
   "binder_error_objekt_not_owned": "이 objekt의 소유를 아직 확인할 수 없습니다. 방금 받았다면 잠시 후 다시 시도해 주세요",
   "binder_page_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "{count}페이지"
       }
@@ -361,13 +346,8 @@
   "binder_picker_matches_two": "{first}번, {second}번 포켓과 일치",
   "binder_picker_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "오브젝트 {count}개"
       }
@@ -380,13 +360,8 @@
   "binder_picker_not_in_binder": "이 바인더에 없는 것",
   "binder_picker_show": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "오브젝트 {count}개 보기"
       }
@@ -409,13 +384,8 @@
   "binder_editor_remove_page_n": "{page}페이지 삭제",
   "binder_editor_remove_page_description": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "이 페이지의 objekt {count}개가 바인더에서 빠집니다. 컬렉션에는 그대로 남아 있습니다."
       }
@@ -456,13 +426,8 @@
   "binder_viewer_open": "{name} 열기",
   "binder_viewer_objekt_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "오브젝트 {count}개"
       }
@@ -906,13 +871,8 @@
   "gravity_revealed_progress": "공개 {counted}/{total}",
   "gravity_votes_so_far": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "현재 {count}표"
       }
@@ -923,13 +883,8 @@
   "gravity_ranking": "순위",
   "gravity_more_candidates": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "+ 후보 {count}명 더 보기"
       }
@@ -939,13 +894,8 @@
   "gravity_candidate_delta": "최근 공개에서 +{amount} COMO",
   "gravity_vote_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "투표 {count}회"
       }

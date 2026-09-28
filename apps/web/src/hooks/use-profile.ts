@@ -41,12 +41,11 @@ export function useLockedObjekt(tokenId: number) {
 
 export function usePinnedObjekt(tokenId: number) {
   return useProfileContext(
-    useShallow(
-      (state) =>
-        state.pins.some(
-          (pin) =>
-            pin.kind === "objekt" && Number(pin.objekt.tokenId) === tokenId,
-        ),
+    useShallow((state) =>
+      state.pins.some(
+        (pin) =>
+          pin.kind === "objekt" && Number(pin.objekt.tokenId) === tokenId,
+      ),
     ),
   );
 }
