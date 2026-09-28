@@ -39,8 +39,7 @@ type FetchObjektListEntries = {
  * Fetch list entries joined with their indexer collection (and serial, when
  * the entry is keyed to a specific token). Each entry produces its own card,
  * so a have list with multiple serials of the same collection renders one
- * card per serial. Have lists sort by entry creation; other types defer to
- * the indexer sort.
+ * card per serial.
  */
 export const $fetchObjektListEntries = createServerFn({ method: "GET" })
   .validator(
@@ -49,11 +48,6 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
     }),
   )
   .handler(async ({ data }): Promise<FetchObjektListEntries> => {
-    const list = await db.query.objektLists.findFirst({
-      where: { id: data.objektListId },
-      columns: { type: true },
-    });
-
     const entries = await db.query.objektListEntries.findMany({
       where: { objektListId: data.objektListId },
       columns: {
@@ -129,7 +123,7 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
     const memberOrder = isMemberSort(sort)
       ? await fetchMemberOrder()
       : undefined;
-    sortObjektListItems(items, sort, memberOrder, list?.type === "have");
+    sortObjektListItems(items, sort, memberOrder);
 
     const total = items.length;
     const start = data.page * LIMIT;
@@ -162,36 +156,34 @@ async function fetchSerials(tokenIds: string[]) {
 
 /**
  * Sort list items by the selected sort, applied after entry projection so
- * per-entry rendering stays consistent across types. Have lists order
- * newest/oldest by when the serial was added to the list (not minted) and
- * break ties between serials of the same collection the same way.
+ * per-entry rendering stays consistent across types. Newest/oldest order by
+ * when the entry was added to the list (not when the collection released),
+ * and other sorts break ties between entries of the same collection the
+ * same way.
  */
 function sortObjektListItems(
   items: ObjektListItem[],
   sort: string,
   memberOrder: Map<string, number> | undefined,
-  byEntryDate: boolean,
 ) {
-  const recency = (i: ObjektListItem) =>
-    byEntryDate ? i.entryCreatedAt : i.createdAt;
-  // newest-added serial first when breaking ties within a collection
-  const tiebreak = (a: ObjektListItem, b: ObjektListItem) =>
-    byEntryDate ? b.entryCreatedAt.localeCompare(a.entryCreatedAt) : 0;
+  // newest-added entry first, also breaks ties within a collection
+  const newestAdded = (a: ObjektListItem, b: ObjektListItem) =>
+    b.entryCreatedAt.localeCompare(a.entryCreatedAt);
 
   switch (sort) {
     case "oldest":
-      items.sort((a, b) => recency(a).localeCompare(recency(b)));
+      items.sort((a, b) => a.entryCreatedAt.localeCompare(b.entryCreatedAt));
       return;
     case "noAscending":
       items.sort(
         (a, b) =>
-          a.collectionNo.localeCompare(b.collectionNo) || tiebreak(a, b),
+          a.collectionNo.localeCompare(b.collectionNo) || newestAdded(a, b),
       );
       return;
     case "noDescending":
       items.sort(
         (a, b) =>
-          b.collectionNo.localeCompare(a.collectionNo) || tiebreak(a, b),
+          b.collectionNo.localeCompare(a.collectionNo) || newestAdded(a, b),
       );
       return;
     case "memberAsc":
@@ -199,7 +191,7 @@ function sortObjektListItems(
         (a, b) =>
           memberRank(a, memberOrder) - memberRank(b, memberOrder) ||
           a.collectionNo.localeCompare(b.collectionNo) ||
-          tiebreak(a, b),
+          newestAdded(a, b),
       );
       return;
     case "memberDesc":
@@ -207,12 +199,12 @@ function sortObjektListItems(
         (a, b) =>
           memberRank(b, memberOrder) - memberRank(a, memberOrder) ||
           a.collectionNo.localeCompare(b.collectionNo) ||
-          tiebreak(a, b),
+          newestAdded(a, b),
       );
       return;
     case "newest":
     default:
-      items.sort((a, b) => recency(b).localeCompare(recency(a)));
+      items.sort(newestAdded);
   }
 }
 
