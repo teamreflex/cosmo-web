@@ -152,7 +152,7 @@ export const objektListEntries = pgTable(
     verifiedAt: timestamp("verified_at", { mode: "string" }),
   },
   (t) => [
-    // leading column serves entry lookups, created_at serves first-n shelf previews
+    // leading column serves entry lookups, created_at serves newest-n shelf previews
     index("objekt_list_entries_list_created_idx").on(
       t.objektListId,
       t.createdAt,

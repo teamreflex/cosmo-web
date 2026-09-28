@@ -93,8 +93,8 @@ export const $fetchObjektList = createServerFn({ method: "GET" })
   });
 
 /**
- * Fetch a user's lists for the profile shelf, each with images of its first
- * three entries.
+ * Fetch a user's lists for the profile shelf, each with images of its three
+ * most recently added entries.
  */
 export const $fetchListShelf = createServerFn({ method: "GET" })
   .validator(z.object({ userId: z.string() }))
@@ -105,7 +105,7 @@ export const $fetchListShelf = createServerFn({ method: "GET" })
       with: {
         entries: {
           columns: { collectionId: true },
-          orderBy: { createdAt: "asc" },
+          orderBy: { createdAt: "desc" },
           limit: 3,
         },
       },
