@@ -23,6 +23,7 @@ export const updateCollectionSchema = z.object({
   accentColor: colorSchema,
   onOffline: z.enum(validOnlineTypes),
   hasAudio: z.boolean(),
+  unobtainable: z.boolean(),
   frontMedia: z.string().max(255).nullable(),
 });
 

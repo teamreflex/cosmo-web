@@ -134,6 +134,7 @@ export const $updateCollection = createServerFn({ method: "POST" })
         accentColor: data.accentColor,
         onOffline: data.onOffline,
         hasAudio: data.hasAudio,
+        unobtainable: data.unobtainable,
         frontMedia: data.frontMedia,
       })
       .where(eq(collections.id, data.id))
