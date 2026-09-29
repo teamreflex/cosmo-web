@@ -80,7 +80,7 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2026-09-29",
+    date: "2026-09-30",
     changes: [
       "Added: 3D objekt interaction from COSMO",
       "Added: Details/descriptions from gravities",
