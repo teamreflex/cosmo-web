@@ -1,5 +1,9 @@
 import { ObjektNotFoundError } from "@/lib/client/objekt-util";
-import { $findTradePartnersForList } from "@/lib/functions/lists";
+import {
+  $fetchSaleListSummary,
+  $findTradePartnersForList,
+  $generateSaleListText,
+} from "@/lib/functions/lists";
 import { $fetchObjektsBlockchain } from "@/lib/functions/objekts/objekt-blockchain";
 import {
   $fetchObjektsBlockchainGroups,
@@ -17,6 +21,7 @@ import type {
   userCollectionFrontendSchema,
 } from "@/lib/universal/parsers";
 import { normalizeFilters } from "@/lib/universal/parsers";
+import type { generateSaleListTextSchema } from "@/lib/universal/schema/objekt-list";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import { type FetchError, ofetch } from "ofetch";
 import type { z } from "zod";
@@ -211,6 +216,32 @@ export function objektListQuery(
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage?.nextStartAfter,
     staleTime: 1000 * 60 * 5,
+  });
+}
+
+/**
+ * Objekt list: the owner's sale list pricing summary
+ */
+export function saleListSummaryQuery(objektListId: string) {
+  return queryOptions({
+    queryKey: ["objekt-list", objektListId, "summary"],
+    queryFn: () => $fetchSaleListSummary({ data: { id: objektListId } }),
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
+/**
+ * Objekt list: the owner's sale list as plain text, regenerated whenever it's
+ * requested again.
+ */
+export function saleListTextQuery(
+  data: z.infer<typeof generateSaleListTextSchema>,
+) {
+  return queryOptions({
+    queryKey: ["objekt-list", data.id, "text", data],
+    queryFn: () => $generateSaleListText({ data }),
+    staleTime: 0,
+    retry: false,
   });
 }
 

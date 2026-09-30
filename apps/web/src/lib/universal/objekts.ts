@@ -50,11 +50,32 @@ export type ObjektMetadata = {
 export const priceHistoryRanges = ["7d", "30d", "90d", "all"] as const;
 export type PriceHistoryRange = (typeof priceHistoryRanges)[number];
 
+export const priceHistoryRangeDays = {
+  "7d": 7,
+  "30d": 30,
+  "90d": 90,
+} satisfies Record<Exclude<PriceHistoryRange, "all">, number>;
+
 export type PriceHistoryPoint = {
   date: string;
   floorUsd: number;
   medianUsd: number;
   listingCount: number;
+};
+
+/**
+ * With fewer snapshots than this the range toggle is locked to all, and the
+ * chart marks each point, since the lines are too short to read on their own.
+ */
+export const SPARSE_PRICE_HISTORY = 8;
+
+export type PriceHistory = {
+  points: PriceHistoryPoint[];
+  /**
+   * The first snapshot and how many there are across every range, or null
+   * when the collection has never been snapshotted.
+   */
+  tracking: { since: string; snapshots: number } | null;
 };
 
 export type SerialTransfer = Transfer & {

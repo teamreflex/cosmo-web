@@ -1,4 +1,5 @@
 import { m } from "@/i18n/messages";
+import { formatError } from "@/lib/client/errors";
 import { $generateDiscordList } from "@/lib/functions/lists";
 import type { ObjektList } from "@apollo/database/web/types";
 import { IconCloudDownload, IconCopy, IconLoader2 } from "@tabler/icons-react";
@@ -40,6 +41,9 @@ export default function DiscordFormatDialog({
     onSuccess: (data) => {
       setResult(data);
     },
+    onError: () => {
+      setResult(undefined);
+    },
   });
   const [result, setResult] = useState<string>();
   const [haveId, setHaveId] = useState<string>();
@@ -77,7 +81,7 @@ export default function DiscordFormatDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex w-full flex-col gap-2">
+        <div className="flex w-full min-w-0 flex-col gap-2">
           <div className="grid grid-cols-2 gap-2">
             <div className="grid gap-1.5">
               <Label>{m.list_discord_have()}</Label>
@@ -118,6 +122,12 @@ export default function DiscordFormatDialog({
               </Button>
             )}
           </div>
+
+          {mutation.isError && (
+            <p className="rounded-lg border border-border px-3 py-6 text-center text-sm text-muted-foreground">
+              {formatError(mutation.error)}
+            </p>
+          )}
 
           {result !== undefined && (
             <ScrollArea className="max-h-60 rounded-lg border border-border">

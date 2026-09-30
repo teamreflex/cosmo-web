@@ -196,4 +196,7 @@ export const generateDiscordListSchema = z.object({
 
 export const generateSaleListTextSchema = z.object({
   id: z.uuid(),
+  // list unpriced serials on a separate offers line, or leave them out
+  unpricedAsOffers: z.boolean(),
+  includeLink: z.boolean(),
 });

@@ -1,23 +1,20 @@
 import { remember } from "@/lib/server/cache.server";
 import { db } from "@/lib/server/db";
 import {
-  type PriceHistoryPoint,
-  type PriceHistoryRange,
+  type PriceHistory,
+  priceHistoryRangeDays,
   priceHistoryRanges,
 } from "@/lib/universal/objekts";
+import { collectionPriceHistory } from "@apollo/database/web/schema";
 import { createServerFn } from "@tanstack/react-start";
 import { subDays } from "date-fns";
+import { count, eq, min } from "drizzle-orm";
 import * as z from "zod";
 
-const RANGE_DAYS = {
-  "7d": 7,
-  "30d": 30,
-  "90d": 90,
-} satisfies Record<Exclude<PriceHistoryRange, "all">, number>;
-
 /**
- * Daily floor/median/listing-count snapshots for the pricing tab chart,
- * cached for the 4 hours between runs of the job that writes them.
+ * Daily floor/median/listing-count snapshots for the pricing tab chart, plus
+ * when tracking started regardless of range, cached for the 4 hours between
+ * runs of the job that writes them.
  */
 export const $fetchPriceHistory = createServerFn({ method: "GET" })
   .validator(
@@ -30,23 +27,44 @@ export const $fetchPriceHistory = createServerFn({ method: "GET" })
       range: z.enum(priceHistoryRanges),
     }),
   )
-  .handler(async ({ data }): Promise<PriceHistoryPoint[]> =>
-    remember(`price-history:${data.slug}:${data.range}`, 60 * 60 * 4, () =>
-      db.query.collectionPriceHistory.findMany({
-        where: {
-          collectionId: data.slug,
-          ...(data.range !== "all" && {
-            date: { gte: rangeStart(RANGE_DAYS[data.range]) },
+  .handler(async ({ data }) =>
+    remember(
+      `price-history:${data.slug}:${data.range}`,
+      60 * 60 * 4,
+      async (): Promise<PriceHistory> => {
+        const [points, [tracking]] = await Promise.all([
+          db.query.collectionPriceHistory.findMany({
+            where: {
+              collectionId: data.slug,
+              ...(data.range !== "all" && {
+                date: { gte: rangeStart(priceHistoryRangeDays[data.range]) },
+              }),
+            },
+            columns: {
+              date: true,
+              floorUsd: true,
+              medianUsd: true,
+              listingCount: true,
+            },
+            orderBy: { date: "asc" },
           }),
-        },
-        columns: {
-          date: true,
-          floorUsd: true,
-          medianUsd: true,
-          listingCount: true,
-        },
-        orderBy: { date: "asc" },
-      }),
+          db
+            .select({
+              since: min(collectionPriceHistory.date),
+              snapshots: count(),
+            })
+            .from(collectionPriceHistory)
+            .where(eq(collectionPriceHistory.collectionId, data.slug)),
+        ]);
+
+        return {
+          points,
+          tracking:
+            tracking === undefined || tracking.since === null
+              ? null
+              : { since: tracking.since, snapshots: tracking.snapshots },
+        };
+      },
     ),
   );
 

@@ -20,7 +20,7 @@ import {
 } from "@/lib/universal/market";
 import { marketBackendSchema } from "@/lib/universal/parsers";
 import { createServerFn } from "@tanstack/react-start";
-import { and, getColumns } from "drizzle-orm";
+import { and } from "drizzle-orm";
 
 const LIMIT = 60;
 
@@ -40,7 +40,7 @@ export const $fetchMarket = createServerFn({ method: "GET" })
       slugs.length === 0
         ? []
         : await indexer
-            .select(getColumns(collections))
+            .select()
             .from(collections)
             .where(
               and(

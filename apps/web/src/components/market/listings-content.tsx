@@ -6,71 +6,98 @@ import { useDisplayCurrency } from "@/hooks/use-display-currency";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useUserState } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
+import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import { collectionListingsQuery } from "@/lib/queries/listings";
-import type { CollectionListing } from "@/lib/universal/listings";
+import { objektPriceHistoryQuery } from "@/lib/queries/objekt-queries";
+import {
+  type CollectionListing,
+  type ListingStats,
+  listingStats,
+} from "@/lib/universal/listings";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { IconLoader2 } from "@tabler/icons-react";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { usePrefetchQuery, useSuspenseQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { Suspense, useMemo, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import ListingRow from "./listing-row";
+import { FloorChange, FloorTrend, ListingsStatsStrip } from "./listings-stats";
 
-type SortKey = "price" | "serial" | "listed";
+const sortKeys = ["price", "serial", "listed"] as const;
+type SortKey = (typeof sortKeys)[number];
+
+const sortLabels = {
+  price: m.list_sale_price,
+  serial: m.detail_sort_serial,
+  listed: m.listings_listed,
+} satisfies Record<SortKey, () => string>;
 
 type Props = {
   collection: Objekt.Collection;
   pinnedEntryId?: string;
 };
 
+/**
+ * Desktop puts the full objekt beside the listings; phones get a thumbnail
+ * header above them instead.
+ */
 export default function ListingsContent({ collection, pinnedEntryId }: Props) {
   const isDesktop = useMediaQuery();
+  usePrefetchQuery(objektPriceHistoryQuery(collection.slug, "30d"));
 
-  return (
-    <div
-      className="grid min-h-0 flex-1 data-[desktop=false]:grid-cols-1 data-[desktop=false]:grid-rows-[auto_1fr] data-[desktop=true]:grid-cols-[minmax(280px,380px)_1fr] data-[desktop=true]:overflow-hidden"
-      data-desktop={isDesktop}
-    >
-      <ObjektPanel collection={collection} isDesktop={isDesktop} />
-
-      <ErrorBoundary fallback={<Message>{m.error_loading_objekt()}</Message>}>
-        <Suspense
-          fallback={
+  const listings = (
+    <ErrorBoundary fallback={<Message>{m.error_loading_objekt()}</Message>}>
+      <Suspense
+        fallback={
+          <div className="flex flex-col">
+            {!isDesktop && <PhoneHeader collection={collection} />}
             <div className="flex justify-center py-8">
               <IconLoader2 className="size-5 animate-spin text-muted-foreground" />
             </div>
-          }
-        >
-          <Listings collection={collection} pinnedEntryId={pinnedEntryId} />
-        </Suspense>
-      </ErrorBoundary>
+          </div>
+        }
+      >
+        <Listings
+          collection={collection}
+          pinnedEntryId={pinnedEntryId}
+          isDesktop={isDesktop}
+        />
+      </Suspense>
+    </ErrorBoundary>
+  );
+
+  if (!isDesktop) {
+    return <div className="flex min-h-0 flex-1 flex-col">{listings}</div>;
+  }
+
+  return (
+    <div className="grid min-h-0 flex-1 grid-cols-[minmax(280px,380px)_1fr] overflow-hidden">
+      <ObjektPanel collection={collection} isDesktop />
+      {listings}
     </div>
   );
 }
 
-function Listings({ collection, pinnedEntryId }: Props) {
+function Listings({
+  collection,
+  pinnedEntryId,
+  isDesktop,
+}: Props & { isDesktop: boolean }) {
   const { user } = useUserState();
-  const { formatUsd } = useDisplayCurrency();
   const { data: listings } = useSuspenseQuery(
     collectionListingsQuery(collection.slug),
   );
   const [sortKey, setSortKey] = useState<SortKey>("price");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
 
+  const stats = listingStats(listings);
   const pinned = listings.find((l) => l.entryId === pinnedEntryId);
-  const others = useMemo(() => {
-    const copy = listings.filter((l) => l.entryId !== pinnedEntryId);
-    copy.sort((a, b) => compare(a, b, sortKey));
-    if (sortDir === "desc") copy.reverse();
-    return copy;
-  }, [listings, pinnedEntryId, sortKey, sortDir]);
-
-  const floor = listings.reduce<number | null>(
-    (min, l) =>
-      l.priceUsd !== null && (min === null || l.priceUsd < min)
-        ? l.priceUsd
-        : min,
-    null,
+  const others = useMemo(
+    () =>
+      listings
+        .filter((l) => l.entryId !== pinnedEntryId)
+        .sort((a, b) => compare(a, b, sortKey, sortDir)),
+    [listings, pinnedEntryId, sortKey, sortDir],
   );
 
   function toggleSort(key: SortKey) {
@@ -82,83 +109,163 @@ function Listings({ collection, pinnedEntryId }: Props) {
     }
   }
 
+  const sortButtons = sortKeys.map((key) => (
+    <SortButton
+      key={key}
+      active={sortKey === key}
+      dir={sortDir}
+      onClick={() => toggleSort(key)}
+      className={
+        isDesktop ? undefined : "h-8 flex-1 justify-center border-transparent"
+      }
+    >
+      {sortLabels[key]()}
+    </SortButton>
+  ));
+
+  const rows =
+    listings.length === 0 ? (
+      <Message>{m.listings_empty()}</Message>
+    ) : (
+      <>
+        {pinned && (
+          <>
+            <SectionLabel isDesktop={isDesktop}>
+              {m.listings_this_listing()}
+            </SectionLabel>
+            <ListingRow
+              collection={collection}
+              listing={pinned}
+              viewerId={user?.id}
+              isDesktop={isDesktop}
+              pinned
+            />
+            {others.length > 0 && (
+              <SectionLabel isDesktop={isDesktop}>
+                {m.listings_other_listings({
+                  count: others.length.toString(),
+                })}
+              </SectionLabel>
+            )}
+          </>
+        )}
+        {others.map((listing) => (
+          <ListingRow
+            key={listing.entryId}
+            collection={collection}
+            listing={listing}
+            viewerId={user?.id}
+            isDesktop={isDesktop}
+          />
+        ))}
+      </>
+    );
+
+  if (!isDesktop) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col">
+        <PhoneHeader collection={collection}>
+          {stats !== null && (
+            <div className="mt-0.5 flex items-center gap-1.5">
+              <CountFrom stats={stats} />
+              <FloorChange slug={collection.slug} />
+            </div>
+          )}
+        </PhoneHeader>
+        <div className="shrink-0 border-b border-border px-4 py-2.5">
+          <div className="flex gap-1 rounded-md bg-secondary p-0.75 font-mono text-xxs tracking-[0.14em] uppercase">
+            {sortButtons}
+          </div>
+        </div>
+        <div className="flex min-h-0 flex-1 flex-col overflow-auto">
+          {rows}
+          {stats !== null && (
+            <FloorTrend
+              collection={collection}
+              className="mt-auto border-t border-border px-4 pt-3.5 pb-7"
+              chartClassName="h-12"
+            />
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-0 flex-col">
-      <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3 sm:px-5">
+      <div className="flex shrink-0 items-center justify-between border-b border-border px-5 py-3">
         <div className="flex items-baseline gap-2">
-          <span className="hidden font-cosmo text-sm font-black tracking-[0.14em] uppercase sm:block">
+          <span className="font-cosmo text-sm font-black tracking-[0.14em] uppercase">
             {m.listings_title()}
           </span>
           <span className="font-mono text-xs text-muted-foreground">
-            {m.listings_available({ count: listings.length.toString() })}
-            {floor !== null && (
-              <>
-                {" · "}
-                {m.listings_floor({ price: formatUsd(floor) })}
-              </>
-            )}
+            {m.listings_available({
+              count: (stats?.count ?? 0).toString(),
+            })}
           </span>
         </div>
         <div className="flex items-center gap-1 font-mono text-xxs tracking-[0.14em] uppercase">
-          <SortButton
-            active={sortKey === "price"}
-            dir={sortDir}
-            onClick={() => toggleSort("price")}
-          >
-            {m.list_sale_price()}
-          </SortButton>
-          <SortButton
-            active={sortKey === "serial"}
-            dir={sortDir}
-            onClick={() => toggleSort("serial")}
-          >
-            {m.detail_sort_serial()}
-          </SortButton>
-          <SortButton
-            active={sortKey === "listed"}
-            dir={sortDir}
-            onClick={() => toggleSort("listed")}
-          >
-            {m.listings_listed()}
-          </SortButton>
+          {sortButtons}
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-auto">
-        {listings.length === 0 ? (
-          <Message>{m.listings_empty()}</Message>
-        ) : (
-          <>
-            {pinned && (
-              <>
-                <SectionLabel>{m.listings_this_listing()}</SectionLabel>
-                <ListingRow
-                  collection={collection}
-                  listing={pinned}
-                  viewerId={user?.id}
-                  pinned
-                />
-                {others.length > 0 && (
-                  <SectionLabel>
-                    {m.listings_other_listings({
-                      count: others.length.toString(),
-                    })}
-                  </SectionLabel>
-                )}
-              </>
-            )}
-            {others.map((listing) => (
-              <ListingRow
-                key={listing.entryId}
-                collection={collection}
-                listing={listing}
-                viewerId={user?.id}
-              />
-            ))}
-          </>
-        )}
+      {stats !== null && (
+        <ListingsStatsStrip collection={collection} stats={stats} />
+      )}
+
+      <div className="min-h-0 flex-1 overflow-auto">{rows}</div>
+    </div>
+  );
+}
+
+/**
+ * Phone header: a thumbnail with the member and collection line, plus
+ * whatever summary the listings have loaded.
+ */
+function PhoneHeader({
+  collection,
+  children,
+}: {
+  collection: Objekt.Collection;
+  children?: ReactNode;
+}) {
+  return (
+    <div className="flex shrink-0 items-center gap-3 border-b border-border px-4 pt-1 pb-3.5">
+      <img
+        src={getObjektFrontImageUrl(collection, "xs")}
+        alt={collection.collectionId}
+        decoding="async"
+        className="aspect-photocard w-14 shrink-0 rounded-[3px] bg-secondary object-cover"
+      />
+      <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <span className="font-cosmo text-lg leading-none font-black uppercase">
+          {collection.member}
+        </span>
+        <span className="truncate font-mono text-xxs tracking-[0.12em] text-muted-foreground uppercase">
+          {collection.season} · {collection.collectionNo} · {collection.class}
+        </span>
+        {children}
       </div>
     </div>
+  );
+}
+
+/**
+ * "3 from NZ$3.54", with the price bold wherever each language puts it.
+ */
+function CountFrom({ stats }: { stats: ListingStats }) {
+  const { formatUsd } = useDisplayCurrency();
+  const price = formatUsd(stats.floorUsd);
+  const [before, after] = m
+    .listings_from({ count: stats.count.toString(), price })
+    .split(price);
+
+  return (
+    <span className="font-mono text-xs">
+      {before}
+      <b>{price}</b>
+      {after}
+    </span>
   );
 }
 
@@ -170,9 +277,18 @@ function Message({ children }: { children: ReactNode }) {
   );
 }
 
-function SectionLabel({ children }: { children: ReactNode }) {
+function SectionLabel({
+  isDesktop,
+  children,
+}: {
+  isDesktop: boolean;
+  children: ReactNode;
+}) {
   return (
-    <div className="flex items-center gap-3 border-b border-border px-4 pt-2.5 pb-1.5 sm:px-5">
+    <div
+      className="flex items-center gap-3 border-b border-border px-4 pt-2.5 pb-1.5 data-[desktop=true]:px-5"
+      data-desktop={isDesktop}
+    >
       <span className="font-mono text-xxs tracking-[0.14em] uppercase">
         {children}
       </span>
@@ -181,16 +297,31 @@ function SectionLabel({ children }: { children: ReactNode }) {
   );
 }
 
-function compare(a: CollectionListing, b: CollectionListing, key: SortKey) {
+/**
+ * Listings without a value for the key (no FX rate, unknown serial) sort last
+ * in either direction. "Listed" ascending is newest first.
+ */
+function compare(
+  a: CollectionListing,
+  b: CollectionListing,
+  key: SortKey,
+  dir: SortDir,
+) {
+  const x = sortValue(a, key);
+  const y = sortValue(b, key);
+  if (x === null || y === null) {
+    return Number(x === null) - Number(y === null);
+  }
+  return dir === "asc" ? x - y : y - x;
+}
+
+function sortValue(listing: CollectionListing, key: SortKey) {
   switch (key) {
     case "price":
-      return (a.priceUsd ?? a.price) - (b.priceUsd ?? b.price);
+      return listing.priceUsd;
     case "serial":
-      return (
-        (a.serial ?? Number.MAX_SAFE_INTEGER) -
-        (b.serial ?? Number.MAX_SAFE_INTEGER)
-      );
+      return listing.serial;
     case "listed":
-      return new Date(b.listedAt).getTime() - new Date(a.listedAt).getTime();
+      return -new Date(listing.listedAt).getTime();
   }
 }

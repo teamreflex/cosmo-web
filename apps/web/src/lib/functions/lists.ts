@@ -14,6 +14,12 @@ import {
   fireHaveAddNotifications,
   fireWantAddNotifications,
 } from "@/lib/server/objekts/lists.server";
+import {
+  fetchMarketStats,
+  fetchMedianPrices,
+  isAboveMedian,
+  isFloorPrice,
+} from "@/lib/server/objekts/market.server";
 import type { PublicUser } from "@/lib/universal/auth";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import type {
@@ -38,7 +44,7 @@ import {
   updateObjektListEntrySchema,
   updateObjektListSchema,
 } from "@/lib/universal/schema/objekt-list";
-import { createSlug, sanitizeUuid } from "@/lib/utils";
+import { baseUrl, createSlug, sanitizeUuid } from "@/lib/utils";
 import { objektListEntries, objektLists } from "@apollo/database/web/schema";
 import type { ObjektListEntry } from "@apollo/database/web/types";
 import { redirect } from "@tanstack/react-router";
@@ -91,6 +97,99 @@ export const $fetchObjektList = createServerFn({ method: "GET" })
       ...list,
       fxRateToUsd: fxRates[0]?.rateToUsd ?? null,
       pairedList: linkedWantList ?? linkingHaveList,
+    };
+  });
+
+/**
+ * Pricing overview of the owner's sale list: how many serials are priced, the
+ * asking total, how many sit at the market floor or above the median, and the
+ * newest unpriced entry for the header's "price the unpriced" action.
+ */
+export const $fetchSaleListSummary = createServerFn({ method: "GET" })
+  .validator(z.object({ id: z.uuid() }))
+  .middleware([authenticatedMiddleware])
+  .handler(async ({ data, context }) => {
+    const list = await db.query.objektLists.findFirst({
+      where: {
+        id: data.id,
+        userId: context.session.session.userId,
+        type: "sale",
+      },
+      columns: { id: true },
+      with: {
+        entries: {
+          columns: {
+            id: true,
+            collectionId: true,
+            tokenId: true,
+            quantity: true,
+            price: true,
+          },
+          orderBy: { createdAt: "desc" },
+        },
+        fxRates: {
+          columns: { rateToUsd: true },
+          orderBy: { date: "desc" },
+          limit: 1,
+        },
+      },
+    });
+    if (!list) {
+      throw new ExpectedError("list_not_found");
+    }
+
+    const rateToUsd = list.fxRates[0]?.rateToUsd ?? null;
+    const priced = list.entries.flatMap((entry) =>
+      entry.price === null ? [] : [{ ...entry, price: entry.price }],
+    );
+    const firstUnpriced = list.entries.find((entry) => entry.price === null);
+    const [marketStats, medians, firstUnpricedCollection] = await Promise.all([
+      fetchMarketStats(),
+      fetchMedianPrices([...new Set(priced.map((e) => e.collectionId))]),
+      firstUnpriced &&
+        indexer.query.collections.findFirst({
+          where: { slug: firstUnpriced.collectionId },
+          columns: { collectionId: true },
+        }),
+    ]);
+
+    const askingTotal = priced.reduce(
+      (sum, entry) => sum + entry.price * entry.quantity,
+      0,
+    );
+    const pricedUsd =
+      rateToUsd === null
+        ? []
+        : priced.map((entry) => ({
+            ...entry,
+            priceUsd: entry.price * rateToUsd,
+          }));
+
+    return {
+      total: list.entries.length,
+      priced: priced.length,
+      askingTotal,
+      askingTotalUsd: rateToUsd === null ? null : askingTotal * rateToUsd,
+      // the edit dialog's price check converts other listings with it
+      rateToUsd,
+      atFloor: pricedUsd.filter(
+        (entry) =>
+          entry.tokenId !== null &&
+          isFloorPrice(entry.priceUsd, marketStats.get(entry.collectionId)),
+      ).length,
+      aboveMedian: pricedUsd.filter((entry) =>
+        isAboveMedian(entry.priceUsd, medians.get(entry.collectionId)),
+      ).length,
+      // named for the edit dialog's title
+      firstUnpriced:
+        firstUnpriced === undefined
+          ? null
+          : {
+              ...firstUnpriced,
+              name:
+                firstUnpricedCollection?.collectionId ??
+                firstUnpriced.collectionId,
+            },
     };
   });
 
@@ -1314,7 +1413,8 @@ export const $generateDiscordList = createServerFn({ method: "POST" })
 
 /**
  * Render a sale list as text, one member per line. Serials on the same
- * collection at the same price collapse into one `xN` entry.
+ * collection at the same price collapse into one `xN` entry. Unpriced serials
+ * go on a separate offers line under their member, or are left out.
  */
 export const $generateSaleListText = createServerFn({ method: "POST" })
   .validator(generateSaleListTextSchema)
@@ -1326,17 +1426,21 @@ export const $generateSaleListText = createServerFn({ method: "POST" })
         userId: context.session.session.userId,
         type: "sale",
       },
-      with: { entries: true },
+      with: {
+        entries: true,
+        user: { with: { cosmoAccount: { columns: { username: true } } } },
+      },
     });
     if (!list) {
       throw new ExpectedError("list_not_found");
     }
     if (list.entries.length === 0) {
-      throw new ExpectedError("discord_list_empty");
+      throw new ExpectedError("sale_list_empty");
     }
 
     const grouped = new Map<string, ObjektListEntry>();
     for (const entry of list.entries) {
+      if (entry.price === null && !data.unpricedAsOffers) continue;
       const key = `${entry.collectionId}:${entry.price}`;
       const existing = grouped.get(key);
       grouped.set(
@@ -1347,6 +1451,9 @@ export const $generateSaleListText = createServerFn({ method: "POST" })
       );
     }
     const entries = [...grouped.values()];
+    if (entries.length === 0) {
+      return "";
+    }
 
     const listCollections = await indexer
       .select({
@@ -1366,7 +1473,34 @@ export const $generateSaleListText = createServerFn({ method: "POST" })
         ),
       );
 
-    return format(listCollections, entries, list.currency).join("\n");
+    const lines = groupByMember(listCollections, entries).flatMap(
+      ([member, memberCollections]) => {
+        const priced = memberCollections.filter((c) => c.price != null);
+        const offers = memberCollections.filter((c) => c.price == null);
+        return [
+          ...(priced.length > 0
+            ? [`${member} ${formatMemberCollections(priced, list.currency)}`]
+            : []),
+          ...(offers.length > 0
+            ? [
+                `${member} offers: ${formatMemberCollections(offers, list.currency)}`,
+              ]
+            : []),
+        ];
+      },
+    );
+
+    if (data.includeLink) {
+      const username = list.user.cosmoAccount?.username;
+      lines.push(
+        "",
+        username === undefined
+          ? `${baseUrl()}/list/${list.id}`
+          : `${baseUrl()}/@${username}/list/${list.slug}`,
+      );
+    }
+
+    return lines.join("\n");
   });
 
 type CollectionSubset = Pick<
@@ -1427,6 +1561,20 @@ function format(
   entries: ObjektListEntry[],
   currency: string | null,
 ): string[] {
+  return groupByMember(collectionList, entries).map(
+    ([member, memberCollections]) =>
+      `${member} ${formatMemberCollections(memberCollections, currency)}`,
+  );
+}
+
+/**
+ * Pair each entry with its collection, grouped by member and sorted by the
+ * canonical member order.
+ */
+function groupByMember(
+  collectionList: CollectionSubset[],
+  entries: ObjektListEntry[],
+) {
   // create a map for quick collection lookup by slug
   const collectionsMap = new Map(collectionList.map((c) => [c.slug, c]));
 
@@ -1447,17 +1595,11 @@ function format(
   }
 
   // sort members by their canonical indexer sort order (carried on each row)
-  return Array.from(groupedCollectionsByMember.entries())
-    .sort(([, a], [, b]) => {
+  return Array.from(groupedCollectionsByMember.entries()).sort(
+    ([, a], [, b]) => {
       const orderA = a[0]?.memberSortOrder ?? Number.MAX_SAFE_INTEGER;
       const orderB = b[0]?.memberSortOrder ?? Number.MAX_SAFE_INTEGER;
       return orderA - orderB;
-    })
-    .map(([member, memberCollections]) => {
-      const formattedCollections = formatMemberCollections(
-        memberCollections,
-        currency,
-      );
-      return `${member} ${formattedCollections}`;
-    });
+    },
+  );
 }

@@ -55,7 +55,7 @@ export default function SerialTicket({
 
   function openDetail() {
     queryClient.setQueryData(objektQuery(collection.slug).queryKey, collection);
-    open(collection.slug, { serial: token.serial });
+    open(collection.slug, { type: "serial", serial: token.serial });
   }
 
   // on the owner's profile any serial toggles into the batch selection

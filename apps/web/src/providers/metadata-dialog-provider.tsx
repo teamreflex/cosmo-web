@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/sheet";
 import {
   MetadataDialogContext,
-  type OpenMetadataDialogOptions,
+  type MetadataDialogTarget,
 } from "@/hooks/use-metadata-dialog";
 import { useObjektSerial } from "@/hooks/use-objekt-serial";
 import { IconLoader2 } from "@tabler/icons-react";
@@ -22,7 +22,7 @@ const MetadataContent = lazy(
 
 type DialogState = {
   slug: string;
-  serial?: number;
+  target?: MetadataDialogTarget;
 };
 
 type Props = {
@@ -41,16 +41,16 @@ export function MetadataDialogProvider({ children }: Props) {
   const opener = useRef<HTMLElement | null>(null);
 
   const open = useCallback(
-    (slug: string, options?: OpenMetadataDialogOptions) => {
+    (slug: string, target?: MetadataDialogTarget) => {
       opener.current =
         document.activeElement instanceof HTMLElement &&
         document.activeElement !== document.body
           ? document.activeElement
           : null;
-      if (options?.serial !== undefined) {
-        setSerial(options.serial);
+      if (target?.type === "serial") {
+        setSerial(target.serial);
       }
-      setState({ slug, serial: options?.serial });
+      setState({ slug, target });
     },
     [setSerial],
   );
@@ -103,7 +103,7 @@ export function MetadataDialogProvider({ children }: Props) {
                     >
                       <MetadataContent
                         slug={state.slug}
-                        initialSerial={state.serial}
+                        target={state.target}
                       />
                     </Suspense>
                   </ErrorBoundary>

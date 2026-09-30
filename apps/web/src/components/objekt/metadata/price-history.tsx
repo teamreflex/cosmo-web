@@ -1,21 +1,29 @@
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useHydrated } from "@/hooks/use-hydrated";
 import { m } from "@/i18n/messages";
 import { formatDay } from "@/lib/client/time";
-import { objektPriceHistoryQuery } from "@/lib/queries/objekt-queries";
 import {
+  type PriceHistory as PriceHistoryData,
   type PriceHistoryRange,
+  type PriceStats,
+  priceHistoryRangeDays,
   priceHistoryRanges,
 } from "@/lib/universal/objekts";
-import { cn } from "@/lib/utils";
-import { IconLoader2 } from "@tabler/icons-react";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { Suspense, useState } from "react";
-import { ErrorBoundary } from "react-error-boundary";
+import type { ReactNode } from "react";
+import PriceDelta from "../price-delta";
 import PriceDisplay from "../price-display";
 import PriceHistoryChart from "./price-history-chart";
 
 type Props = {
-  slug: string;
+  history: PriceHistoryData;
+  stats: PriceStats | null;
+  range: PriceHistoryRange;
+  onRangeChange: (range: PriceHistoryRange) => void;
+  /**
+   * Too few snapshots to split into ranges, so the toggle stays on all.
+   */
+  locked: boolean;
 };
 
 const RANGE_LABELS = {
@@ -26,112 +34,118 @@ const RANGE_LABELS = {
 } satisfies Record<PriceHistoryRange, () => string>;
 
 /**
- * Floor price history block on the pricing tab: current floor with its change
- * over the selected range, a range toggle, and the daily snapshot chart.
+ * Floor price history block on the pricing tab: the latest floor with its
+ * change over the selected range, a range toggle, the current listing stats,
+ * and the daily snapshot chart.
  */
-export default function PriceHistory({ slug }: Props) {
-  const [range, setRange] = useState<PriceHistoryRange>("30d");
-
-  return (
-    <ErrorBoundary fallback={null}>
-      <Suspense
-        fallback={
-          <div className="flex h-56 items-center justify-center border-b border-border">
-            <IconLoader2 className="size-6 animate-spin text-muted-foreground" />
-          </div>
-        }
-      >
-        <History slug={slug} range={range} setRange={setRange} />
-      </Suspense>
-    </ErrorBoundary>
-  );
-}
-
-function History({
-  slug,
+export default function PriceHistory({
+  history,
+  stats,
   range,
-  setRange,
-}: Props & {
-  range: PriceHistoryRange;
-  setRange: (range: PriceHistoryRange) => void;
-}) {
-  const { data: points } = useSuspenseQuery(
-    objektPriceHistoryQuery(slug, range),
-  );
+  onRangeChange,
+  locked,
+}: Props) {
+  // Intl date output can differ between the server runtime and the browser
+  const hydrated = useHydrated();
+  const { points } = history;
   const first = points[0];
   const last = points[points.length - 1];
-
-  // nothing has ever been recorded: the stat cells above already say so
-  if (first === undefined || last === undefined) return null;
+  const floor = last?.floorUsd ?? stats?.minPriceUsd;
 
   return (
-    <div className="flex flex-col gap-2.5 border-b border-border px-4 py-3">
-      <div className="flex items-start justify-between gap-3">
+    <div className="@container flex flex-col gap-2.5 border-b border-border px-4 py-3">
+      {/* the toggle drops below the floor in a narrow sheet */}
+      <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
         <div className="flex flex-col gap-0.5">
           <span className="text-xxs font-medium tracking-[0.14em] text-muted-foreground uppercase">
-            {m.objekt_metadata_history_floor()}
+            {range === "all"
+              ? m.objekt_metadata_history_floor_all()
+              : m.objekt_metadata_history_floor_days({
+                  days: priceHistoryRangeDays[range].toString(),
+                })}
           </span>
           <div className="flex items-baseline gap-2">
             <span className="font-mono text-lg font-bold tabular-nums">
-              <PriceDisplay usd={last.floorUsd} />
+              {floor === undefined ? "—" : <PriceDisplay usd={floor} />}
             </span>
-            {points.length > 1 && (
+            {first !== undefined && last !== undefined && points.length > 1 && (
               <>
-                <Delta from={first.floorUsd} to={last.floorUsd} />
-                <span className="text-xxs text-muted-foreground">
-                  {m.objekt_metadata_history_vs({
-                    date: formatDay(first.date),
-                  })}
-                </span>
+                <PriceDelta from={first.floorUsd} to={last.floorUsd} />
+                {hydrated ? (
+                  <span className="text-xxs whitespace-nowrap text-muted-foreground">
+                    {m.objekt_metadata_history_vs({
+                      date: formatDay(first.date),
+                    })}
+                  </span>
+                ) : (
+                  <Skeleton className="h-3 w-16 rounded-full" />
+                )}
               </>
             )}
           </div>
         </div>
 
-        <Tabs
-          value={range}
-          // SAFETY: tab values are the PriceHistoryRange variants
-          onValueChange={(value) => setRange(value as PriceHistoryRange)}
-        >
-          <TabsList className="h-7">
-            {priceHistoryRanges.map((value) => (
-              <TabsTrigger
-                key={value}
-                value={value}
-                className="px-2 font-mono text-xxs"
-              >
-                {RANGE_LABELS[value]()}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+        {history.tracking !== null && (
+          <Tabs
+            value={range}
+            // SAFETY: tab values are the PriceHistoryRange variants
+            onValueChange={(value) => onRangeChange(value as PriceHistoryRange)}
+          >
+            <TabsList className="h-7">
+              {priceHistoryRanges.map((value) => (
+                <TabsTrigger
+                  key={value}
+                  value={value}
+                  disabled={locked && value !== "all"}
+                  className="px-2 font-mono text-xxs"
+                >
+                  {RANGE_LABELS[value]()}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        )}
       </div>
 
-      {points.length > 1 ? (
+      {stats !== null && (
+        <div className="grid grid-cols-3 gap-2">
+          <StatBox
+            label={m.objekt_metadata_market_price()}
+            value={<PriceDisplay usd={stats.medianPriceUsd} />}
+          />
+          <StatBox
+            label={m.objekt_metadata_max_price()}
+            value={<PriceDisplay usd={stats.maxPriceUsd} />}
+          />
+          <StatBox
+            label={m.objekt_metadata_listing_count()}
+            value={stats.listingCount.toString()}
+          />
+        </div>
+      )}
+
+      {points.length > 0 ? (
         <PriceHistoryChart points={points} />
       ) : (
         <p className="flex h-40 items-center justify-center rounded-md border border-dashed border-border px-4 text-center text-xs text-muted-foreground">
-          {m.objekt_metadata_history_empty()}
+          {history.tracking === null
+            ? m.objekt_metadata_history_empty()
+            : m.objekt_metadata_history_range_empty()}
         </p>
       )}
     </div>
   );
 }
 
-function Delta({ from, to }: { from: number; to: number }) {
-  const percent = ((to - from) / from) * 100;
-  const up = percent >= 0;
-
+function StatBox({ label, value }: { label: string; value: ReactNode }) {
   return (
-    <span
-      className={cn(
-        "rounded-sm px-1.5 font-mono text-xxs font-semibold tabular-nums",
-        up
-          ? "bg-emerald-500/10 text-emerald-500"
-          : "bg-red-500/10 text-red-500",
-      )}
-    >
-      {up ? "▲" : "▼"} {Math.abs(percent).toFixed(1)}%
-    </span>
+    <div className="flex min-w-0 flex-col gap-0.5 rounded-md border border-border px-2 py-2 @sm:px-2.5">
+      <span className="truncate text-xxs font-medium tracking-[0.14em] text-muted-foreground uppercase">
+        {label}
+      </span>
+      <span className="truncate font-mono text-xs font-bold tabular-nums @sm:text-sm">
+        {value}
+      </span>
+    </div>
   );
 }

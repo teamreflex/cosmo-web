@@ -5,6 +5,8 @@ import type { ReactNode } from "react";
 
 type Props = {
   collection: Pick<Objekt.Collection, "class" | "artist">;
+  // pill shown above the label
+  badge?: ReactNode;
   label?: string;
   price: ReactNode;
 };
@@ -17,7 +19,12 @@ const BAND_MASK = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 /**
  * Price band along the bottom of an objekt card.
  */
-export default function PriceOverlay({ collection, label, price }: Props) {
+export default function PriceOverlay({
+  collection,
+  badge,
+  label,
+  price,
+}: Props) {
   const ribbon = getVariantRibbon(collection);
   const tint =
     ribbon ??
@@ -41,6 +48,7 @@ export default function PriceOverlay({ collection, label, price }: Props) {
         style={{ background: tint }}
       />
       <span className="flex min-w-0 flex-col">
+        {badge}
         {label && (
           <span className="text-[9px] leading-3 font-medium tracking-[0.08em] uppercase opacity-70 @[180px]:text-xxs">
             {label}

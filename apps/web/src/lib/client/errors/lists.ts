@@ -38,6 +38,8 @@ export function formatListError(
       return m.list_error_discord_lists_required();
     case "discord_list_empty":
       return m.list_error_discord_list_empty();
+    case "sale_list_empty":
+      return m.list_error_sale_list_empty();
     case "entry_not_found":
       return m.list_error_entry_not_found();
     case "entry_kind_mismatch":

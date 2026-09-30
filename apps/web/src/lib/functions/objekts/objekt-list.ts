@@ -10,6 +10,10 @@ import {
   withOnlineType,
   withSeason,
 } from "@/lib/server/objekts/filters.server";
+import {
+  fetchMarketStats,
+  isFloorPrice,
+} from "@/lib/server/objekts/market.server";
 import { fetchSerials } from "@/lib/server/objekts/serials.server";
 import { objektListBackendSchema } from "@/lib/universal/parsers";
 import { isMemberSort } from "@apollo/cosmo/types/common";
@@ -25,6 +29,8 @@ export type ObjektListItem = Collection & {
   entryTokenId: string | null;
   entrySerial: number | null;
   entryCreatedAt: string;
+  // a priced sale serial at its collection's market floor
+  entryAtFloor: boolean;
 };
 
 type FetchObjektListEntries = {
@@ -38,7 +44,8 @@ type FetchObjektListEntries = {
  * Fetch list entries joined with their indexer collection (and serial, when
  * the entry is keyed to a specific token). Each entry produces its own card,
  * so a have list with multiple serials of the same collection renders one
- * card per serial.
+ * card per serial. Sale list serials are flagged when they're at the market
+ * floor of their collection.
  */
 export const $fetchObjektListEntries = createServerFn({ method: "GET" })
   .validator(
@@ -47,19 +54,30 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
     }),
   )
   .handler(async ({ data }): Promise<FetchObjektListEntries> => {
-    const entries = await db.query.objektListEntries.findMany({
-      where: { objektListId: data.objektListId },
-      columns: {
-        id: true,
-        collectionId: true,
-        tokenId: true,
-        quantity: true,
-        price: true,
-        createdAt: true,
+    const list = await db.query.objektLists.findFirst({
+      where: { id: data.objektListId },
+      columns: { type: true },
+      with: {
+        entries: {
+          columns: {
+            id: true,
+            collectionId: true,
+            tokenId: true,
+            quantity: true,
+            price: true,
+            createdAt: true,
+          },
+        },
+        // latest rate for a sale list's currency
+        fxRates: {
+          columns: { rateToUsd: true },
+          orderBy: { date: "desc" },
+          limit: 1,
+        },
       },
     });
 
-    if (entries.length === 0) {
+    if (list === undefined || list.entries.length === 0) {
       return {
         total: 0,
         hasNext: false,
@@ -68,19 +86,26 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
       };
     }
 
-    const matchingCollections = await indexer
-      .select()
-      .from(collections)
-      .where(
-        and(
-          ...withObjektListEntries(entries.map((e) => e.collectionId)),
-          ...withArtist(data.artist),
-          ...withClass(data.class ?? []),
-          ...withSeason(data.season ?? []),
-          ...withOnlineType(data.on_offline ?? []),
-          ...withMember(data.member),
+    const { entries } = list;
+    const rateToUsd = list.fxRates[0]?.rateToUsd;
+    const [matchingCollections, marketStats] = await Promise.all([
+      indexer
+        .select()
+        .from(collections)
+        .where(
+          and(
+            ...withObjektListEntries(entries.map((e) => e.collectionId)),
+            ...withArtist(data.artist),
+            ...withClass(data.class ?? []),
+            ...withSeason(data.season ?? []),
+            ...withOnlineType(data.on_offline ?? []),
+            ...withMember(data.member),
+          ),
         ),
-      );
+      list.type === "sale" && rateToUsd !== undefined
+        ? fetchMarketStats()
+        : undefined,
+    ]);
 
     const collectionsBySlug = new Map(
       matchingCollections.map((c) => [c.slug, c]),
@@ -105,6 +130,15 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
             ? (serialByTokenId.get(entry.tokenId) ?? null)
             : null,
         entryCreatedAt: entry.createdAt.toISOString(),
+        entryAtFloor:
+          marketStats !== undefined &&
+          rateToUsd !== undefined &&
+          entry.tokenId !== null &&
+          entry.price !== null &&
+          isFloorPrice(
+            entry.price * rateToUsd,
+            marketStats.get(entry.collectionId),
+          ),
       });
     }
 

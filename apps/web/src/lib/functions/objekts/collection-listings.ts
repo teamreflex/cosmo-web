@@ -24,8 +24,12 @@ export const $fetchCollectionListings = createServerFn({ method: "GET" })
       columns: { id: true, tokenId: true, price: true, createdAt: true },
       with: {
         objektList: {
-          columns: { id: true, name: true, currency: true },
-          with: { user: true },
+          columns: { id: true, name: true, slug: true, currency: true },
+          with: {
+            user: {
+              with: { cosmoAccount: { columns: { username: true } } },
+            },
+          },
         },
       },
     });
@@ -59,7 +63,7 @@ export const $fetchCollectionListings = createServerFn({ method: "GET" })
 
     return priced.map((entry) => {
       const rate = rates.get(entry.currency);
-      const { user } = entry.list;
+      const { cosmoAccount, ...user } = entry.list.user;
       return {
         entryId: entry.id,
         tokenId: entry.tokenId,
@@ -68,9 +72,14 @@ export const $fetchCollectionListings = createServerFn({ method: "GET" })
         currency: entry.currency,
         priceUsd: rate === undefined ? null : entry.price * rate,
         listedAt: entry.createdAt.toISOString(),
-        list: { id: entry.list.id, name: entry.list.name },
+        list: {
+          id: entry.list.id,
+          name: entry.list.name,
+          slug: entry.list.slug,
+        },
         seller: toPublicUser(user),
         sellerDisplay: user.displayUsername ?? user.name,
+        sellerCosmo: cosmoAccount?.username ?? null,
       };
     });
   });

@@ -12,7 +12,10 @@ import { m } from "@/i18n/messages";
 import { $fetchObjektList } from "@/lib/functions/lists";
 import { defineHead } from "@/lib/meta";
 import { currentAccountQuery, selectedArtistsQuery } from "@/lib/queries/core";
-import { objektListQuery } from "@/lib/queries/objekt-queries";
+import {
+  objektListQuery,
+  saleListSummaryQuery,
+} from "@/lib/queries/objekt-queries";
 import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { objektListFrontendSchema } from "@/lib/universal/parsers";
 import { ProfileProvider } from "@/providers/profile-provider";
@@ -70,6 +73,11 @@ export const Route = createFileRoute("/@{$username}/list/$slug")({
     );
 
     const isAuthenticated = account?.user.id === objektList.userId;
+    if (isAuthenticated && objektList.type === "sale") {
+      void context.queryClient.prefetchQuery(
+        saleListSummaryQuery(objektList.id),
+      );
+    }
 
     return { account, target, isAuthenticated, objektList, fxRateToUsd };
   },
