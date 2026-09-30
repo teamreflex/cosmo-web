@@ -7,7 +7,6 @@ type Props = {
   collection: Pick<Objekt.Collection, "class" | "artist">;
   label?: string;
   price: ReactNode;
-  trailing?: string;
 };
 
 /**
@@ -18,12 +17,7 @@ const BAND_MASK = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 /**
  * Price band along the bottom of an objekt card.
  */
-export default function PriceOverlay({
-  collection,
-  label,
-  price,
-  trailing,
-}: Props) {
+export default function PriceOverlay({ collection, label, price }: Props) {
   const ribbon = getVariantRibbon(collection);
   const tint =
     ribbon ??
@@ -31,7 +25,7 @@ export default function PriceOverlay({
 
   return (
     <div
-      className="pointer-events-none absolute inset-x-0 bottom-0 isolate flex items-end justify-between gap-2 mask-size-[100%_auto] mask-bottom mask-no-repeat pt-8 pr-[14%] pb-1.5 pl-2 text-white transition-colors group-hover/objekt:text-(--objekt-text-color) @[180px]:pb-2.5 @[180px]:pl-3"
+      className="pointer-events-none absolute inset-x-0 bottom-0 isolate flex items-end mask-size-[100%_auto] mask-bottom mask-no-repeat pt-8 pr-[14%] pb-1.5 pl-2 text-white transition-colors group-hover/objekt:text-(--objekt-text-color) @[180px]:pb-2.5 @[180px]:pl-3"
       style={{ maskImage: BAND_MASK }}
     >
       <span
@@ -56,11 +50,6 @@ export default function PriceOverlay({
           {price}
         </span>
       </span>
-      {trailing && (
-        <span className="shrink-0 text-[10px] leading-4 font-medium opacity-80 @[180px]:text-[11px]">
-          {trailing}
-        </span>
-      )}
     </div>
   );
 }

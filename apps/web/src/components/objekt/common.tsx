@@ -134,6 +134,27 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
   );
 }
 
+type ObjektCountProps = PropsWithChildren<{
+  count: number;
+}>;
+
+/**
+ * Top-left corner of a card: the copy count when there is more than one,
+ * followed by any other badges.
+ */
+export function ObjektCount({ count, children }: ObjektCountProps) {
+  return (
+    <div className="absolute top-1 left-1 flex flex-row items-center gap-1 sm:top-2 sm:left-2">
+      {count > 1 && (
+        <span className="rounded-full bg-black px-2 py-px text-sm font-semibold text-white">
+          {count}
+        </span>
+      )}
+      {children}
+    </div>
+  );
+}
+
 export function ObjektNewIndicator(props: PropsWithClassName<{}>) {
   return (
     <span

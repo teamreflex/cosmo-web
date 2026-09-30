@@ -30,7 +30,11 @@ const sublabelMap = {
  * Sort chip for the market page. The market sorts live outside the shared
  * cosmo sort enum, so this reads and writes the route's own search param.
  */
-export default function MarketSortFilter() {
+type Props = {
+  className?: string;
+};
+
+export default function MarketSortFilter({ className }: Props) {
   const sort = route.useSearch({ select: (search) => search.sort });
   const navigate = useNavigate();
   const value = sort ?? DEFAULT_MARKET_SORT;
@@ -58,6 +62,7 @@ export default function MarketSortFilter() {
       valueLabel={labelMap[value].toLowerCase()}
       active={value !== DEFAULT_MARKET_SORT}
       width={240}
+      className={className}
     >
       {({ close }) => (
         <SingleSelectList

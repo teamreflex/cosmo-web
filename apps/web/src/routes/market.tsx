@@ -7,6 +7,7 @@ import ObjektGridSkeleton from "@/components/objekt/objekt-grid-skeleton";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import TitleHeader from "@/components/ui/title-header";
+import { displayCurrency } from "@/hooks/use-display-currency";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { currentAccountQuery, selectedArtistsQuery } from "@/lib/queries/core";
@@ -31,7 +32,7 @@ export const Route = createFileRoute("/market")({
     ]);
 
     void context.queryClient.prefetchInfiniteQuery(
-      marketQuery(deps.searchParams, selected),
+      marketQuery(deps.searchParams, selected, displayCurrency(account)),
     );
 
     return { account };

@@ -11,10 +11,12 @@ import {
   withSelectedArtists,
 } from "@/lib/server/objekts/filters.server";
 import { fetchMarketStats } from "@/lib/server/objekts/market.server";
-import type {
-  MarketItem,
-  MarketResponse,
-  MarketSort,
+import {
+  inFloorBounds,
+  type MarketItem,
+  marketListedWindowMs,
+  type MarketResponse,
+  type MarketSort,
 } from "@/lib/universal/market";
 import { marketBackendSchema } from "@/lib/universal/parsers";
 import { createServerFn } from "@tanstack/react-start";
@@ -24,8 +26,9 @@ const LIMIT = 60;
 
 /**
  * Collections with at least one sale listing, filtered like the objekt index
- * and sorted by the market aggregate (floor, count, recency). The aggregate
- * is small enough to sort and page in memory.
+ * plus the listing window and floor range, and sorted by the market aggregate
+ * (floor, count, recency). The aggregate is small enough to sort and page in
+ * memory.
  */
 export const $fetchMarket = createServerFn({ method: "GET" })
   .validator(marketBackendSchema)
@@ -52,9 +55,11 @@ export const $fetchMarket = createServerFn({ method: "GET" })
               ),
             );
 
-    const items = rows.flatMap((collection): MarketItem[] => {
+    const listedAfter =
+      data.listed == null ? 0 : Date.now() - marketListedWindowMs[data.listed];
+    const matching = rows.flatMap((collection): MarketItem[] => {
       const stat = stats.get(collection.slug);
-      return stat === undefined
+      return stat === undefined || stat.lastListed < listedAfter
         ? []
         : [
             {
@@ -65,7 +70,9 @@ export const $fetchMarket = createServerFn({ method: "GET" })
             },
           ];
     });
-    items.sort(comparator(data.sort ?? "floorAsc"));
+    const items = matching
+      .filter((item) => inFloorBounds(item.floorUsd, data))
+      .sort(comparator(data.sort ?? "floorAsc"));
 
     const start = data.page * LIMIT;
     const page = items.slice(start, start + LIMIT);
@@ -77,21 +84,25 @@ export const $fetchMarket = createServerFn({ method: "GET" })
       hasNext,
       nextStartAfter: hasNext ? data.page + 1 : undefined,
       objekts: page,
+      floors: data.page === 0 ? matching.map((i) => i.floorUsd) : undefined,
     };
   });
 
+/**
+ * Every sort ends on the slug, so ties keep one order across page requests.
+ */
 function comparator(sort: MarketSort) {
-  switch (sort) {
-    case "floorDesc":
-      return (a: MarketItem, b: MarketItem) =>
-        b.floorUsd - a.floorUsd || b.listingCount - a.listingCount;
-    case "mostListed":
-      return (a: MarketItem, b: MarketItem) =>
-        b.listingCount - a.listingCount || a.floorUsd - b.floorUsd;
-    case "recentlyListed":
-      return (a: MarketItem, b: MarketItem) => b.lastListed - a.lastListed;
-    case "floorAsc":
-      return (a: MarketItem, b: MarketItem) =>
-        a.floorUsd - b.floorUsd || b.listingCount - a.listingCount;
-  }
+  const primary = sortKeys[sort];
+  return (a: MarketItem, b: MarketItem) =>
+    primary(a, b) || a.slug.localeCompare(b.slug);
 }
+
+const sortKeys = {
+  floorAsc: (a, b) =>
+    a.floorUsd - b.floorUsd || b.listingCount - a.listingCount,
+  floorDesc: (a, b) =>
+    b.floorUsd - a.floorUsd || b.listingCount - a.listingCount,
+  mostListed: (a, b) =>
+    b.listingCount - a.listingCount || a.floorUsd - b.floorUsd,
+  recentlyListed: (a, b) => b.lastListed - a.lastListed,
+} satisfies Record<MarketSort, (a: MarketItem, b: MarketItem) => number>;

@@ -2,40 +2,44 @@ import CollectionFilter from "@/components/objekt-index/collection-filter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { type CosmoFilters, useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { DEFAULT_MARKET_SORT } from "@/lib/universal/market";
-import { getRouteApi } from "@tanstack/react-router";
+import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import ClassFilter from "../collection/filter-class";
 import OnlineFilter from "../collection/filter-online";
 import SeasonFilter from "../collection/filter-season";
 import ResetFilters from "../collection/reset-filters";
+import MarketListedFilter from "./market-listed-filter";
+import MarketPriceFilter from "./market-price-filter";
 import MarketSortFilter from "./market-sort-filter";
 
 const route = getRouteApi("/market");
 
 /**
- * The objekt index filter set with the market sort in place of the cosmo sort.
+ * The objekt index filter set with the market sort in place of the cosmo sort,
+ * plus the floor price and listing window. On phones the chips scroll in one
+ * row with the sort first.
  */
 export default function MarketFilters() {
   const { filters, setFilters } = useCosmoFilters();
-  const sort = route.useSearch({ select: (search) => search.sort });
+  const search = route.useSearch();
+  const navigate = useNavigate();
   const count =
-    countActive(filters) + (sort && sort !== DEFAULT_MARKET_SORT ? 1 : 0);
+    countActive(filters) +
+    (search.sort && search.sort !== DEFAULT_MARKET_SORT ? 1 : 0) +
+    (search.listed ? 1 : 0) +
+    (search.price_min != null || search.price_max != null ? 1 : 0);
 
   function handleReset() {
-    setFilters({
-      member: undefined,
-      artist: undefined,
-      sort: undefined,
-      class: undefined,
-      season: undefined,
-      on_offline: undefined,
-      collectionNo: undefined,
+    void navigate({
+      to: "/market",
+      search: {},
+      replace: true,
     });
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2 max-sm:-mx-4 max-sm:no-scrollbar max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:mask-r-from-[calc(100%-1rem)] max-sm:px-4 max-sm:*:shrink-0">
       <ErrorBoundary
         fallback={<Skeleton className="h-8 w-[119px] bg-destructive" />}
       >
@@ -85,7 +89,11 @@ export default function MarketFilters() {
         </Suspense>
       </ErrorBoundary>
 
-      <MarketSortFilter />
+      <MarketPriceFilter />
+
+      <MarketListedFilter />
+
+      <MarketSortFilter className="max-sm:order-first" />
 
       <ResetFilters count={count} onReset={handleReset} />
     </div>
