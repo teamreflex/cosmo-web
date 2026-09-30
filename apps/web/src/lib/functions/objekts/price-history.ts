@@ -22,7 +22,11 @@ const RANGE_DAYS = {
 export const $fetchPriceHistory = createServerFn({ method: "GET" })
   .validator(
     z.object({
-      slug: z.string(),
+      /**
+       * Lowercased to match the stored slugs, since `remember` lowercases the
+       * cache key and a mixed-case request would otherwise cache an empty chart.
+       */
+      slug: z.string().max(36).toLowerCase(),
       range: z.enum(priceHistoryRanges),
     }),
   )
