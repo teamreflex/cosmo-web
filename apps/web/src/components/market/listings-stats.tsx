@@ -1,6 +1,6 @@
-import { StatCell } from "@/components/objekt/metadata/common";
 import PriceDelta from "@/components/objekt/price-delta";
 import PriceSparkline from "@/components/objekt/price-sparkline";
+import { StatCell } from "@/components/ui/stat-cell";
 import { useDisplayCurrency } from "@/hooks/use-display-currency";
 import { useMetadataDialog } from "@/hooks/use-metadata-dialog";
 import { m } from "@/i18n/messages";
@@ -39,13 +39,11 @@ export function ListingsStatsStrip({ collection, stats }: StripProps) {
           </span>
         }
         mono
-        className="h-16 gap-1 px-5 text-lg"
       />
       <StatCell
         label={m.listings_stat_median()}
         value={display.formatUsd(stats.medianUsd)}
         mono
-        className="h-16 gap-1 px-5 text-lg"
       />
       <StatCell
         label={m.listings_stat_range()}
@@ -55,11 +53,11 @@ export function ListingsStatsStrip({ collection, stats }: StripProps) {
             : `${formatAmount(stats.floorUsd, display)} – ${formatAmount(stats.maxUsd, display)}`
         }
         mono
-        className="h-16 gap-1 px-5 text-lg"
       />
       <FloorTrend
         collection={collection}
-        className="w-60 shrink-0 px-4 py-2.5"
+        className="h-14 w-60 shrink-0 justify-center px-4"
+        chartClassName="h-7"
       />
     </div>
   );
@@ -124,7 +122,7 @@ function FloorTrendChart({
   return (
     <div className={cn("flex flex-col gap-1", className)}>
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xxs font-medium tracking-[0.14em] text-muted-foreground uppercase">
+        <span className="text-xxs font-medium tracking-widest text-muted-foreground uppercase">
           {m.listings_floor_30d()}
         </span>
         <button

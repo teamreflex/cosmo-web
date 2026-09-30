@@ -99,10 +99,10 @@ function PricePanel({ min, max, close }: PricePanelProps) {
     >
       <div className="flex flex-col gap-3 p-3.5">
         <div className="flex items-baseline justify-between gap-2">
-          <span className="text-xxs font-medium tracking-[0.14em] text-muted-foreground uppercase">
+          <span className="text-xxs font-medium tracking-widest text-muted-foreground uppercase">
             {m.filter_price_heading({ currency: display.currency })}
           </span>
-          <span className="font-mono text-[11px] text-muted-foreground tabular-nums">
+          <span className="font-mono text-xs text-muted-foreground tabular-nums">
             {m.filter_price_matching({
               count: count.toLocaleString("en"),
               total: floors.length.toLocaleString("en"),
@@ -178,9 +178,7 @@ type PriceInputProps = {
 function PriceInput({ label, ariaLabel, value, onChange }: PriceInputProps) {
   return (
     <label className="flex flex-col gap-1">
-      <span className="text-[11px] font-medium text-muted-foreground">
-        {label}
-      </span>
+      <span className="text-xs font-medium text-muted-foreground">{label}</span>
       <Input
         type="number"
         inputMode="decimal"

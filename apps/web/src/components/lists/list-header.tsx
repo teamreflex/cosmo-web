@@ -71,7 +71,7 @@ export default function ListHeader({
               <div id="list-total-stat" />
             </div>
 
-            <h1 className="font-cosmo text-2xl leading-none font-black tracking-[0.02em] wrap-break-word uppercase md:text-3xl">
+            <h1 className="font-cosmo text-2xl leading-none font-black tracking-wide wrap-break-word uppercase md:text-3xl">
               {list.name}
               {list.type === "sale" && list.currency && (
                 <span className="ml-2 text-sm text-muted-foreground">

@@ -398,7 +398,7 @@ function HaveRow({ serial, isChecked, onToggle }: HaveRowProps) {
       className="group flex w-full items-center gap-3 border-t border-border px-4 py-3 text-left transition-colors first:border-t-0 hover:bg-accent focus-visible:bg-accent focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent sm:gap-4 sm:px-5"
     >
       <div className="w-20 shrink-0 sm:w-24">
-        <div className="font-mono text-xxs tracking-[0.14em] text-muted-foreground uppercase">
+        <div className="font-mono text-xxs tracking-widest text-muted-foreground uppercase">
           {m.detail_sort_serial()}
         </div>
         <div className="font-mono text-sm font-bold tabular-nums sm:text-lg">
@@ -481,7 +481,7 @@ function SaleRow({ index, serial, currency, control }: SaleRowProps) {
       )}
     >
       <div className="w-16 shrink-0 sm:w-20">
-        <div className="font-mono text-xxs tracking-[0.14em] text-muted-foreground uppercase">
+        <div className="font-mono text-xxs tracking-widest text-muted-foreground uppercase">
           {m.detail_sort_serial()}
         </div>
         <div className="font-mono text-sm font-bold tabular-nums sm:text-lg">

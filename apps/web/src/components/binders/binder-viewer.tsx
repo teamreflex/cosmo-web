@@ -682,7 +682,7 @@ function ViewerHeader({
       <div className="grid min-w-0 gap-0.5 md:gap-1">
         <DialogDescription
           // on the scrim, which stays dark in the light theme
-          className="text-[10.5px] text-white/60"
+          className="text-xxs text-white/60"
           render={
             <ViewerMeta
               cover={cover}

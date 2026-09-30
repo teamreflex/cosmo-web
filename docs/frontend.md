@@ -104,6 +104,14 @@ The project uses Tailwind v4, so always use v4 conventions rather than v3. This 
 
 `@theme inline` collapses `var()` chains at build time. For tokens you want to override at runtime via JS or `:root`, declare them in a **non-inline** `@theme` block so utilities keep emitting `var(--your-token)`. Verify by checking the built CSS — the utility must reference your token, not the underlying one.
 
+### Typography
+
+- Font size and letter spacing come from the theme scale, never arbitrary values such as `text-[11px]` or `tracking-[0.14em]`. Sizes are `text-xxs` (10px, a custom step defined in `styles/tailwind.css`), `text-xs`, `text-sm`, `text-base` and up; tracking is `tracking-wide`, `tracking-wider` or `tracking-widest`. Round an in-between design value to the nearest step.
+- A new custom size needs a `--text-*` token in `styles/tailwind.css` and an entry in the `font-size` class group of `createCn` in `lib/utils.ts`. Without the latter, `cn()` reads the class as a text colour and drops it whenever a colour class follows.
+- The only arbitrary sizes allowed are computed ones with no scale equivalent: container-relative `text-[clamp(...)]` or `text-[length:...]`, and `text-[0px]`.
+- Small uppercase labels above a value use `text-xxs font-medium tracking-widest text-muted-foreground uppercase`.
+- `font-mono` is for numbers and codes: prices, serials, counts, ranks such as "#2 of 3". Labels, headings, links and buttons stay in the sans font, even when uppercase.
+
 ### Component Variants
 
 Use [Class Variance Authority (CVA)](https://cva.style/docs) for variant-based components:

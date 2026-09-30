@@ -47,7 +47,7 @@ export default function FilterChip({
         {valueLabel && (
           <span
             className={cn(
-              "-my-1 flex items-center gap-1.5 border-l pl-2 font-mono text-[11px]",
+              "-my-1 flex items-center gap-1.5 border-l pl-2 font-mono text-xs",
               active
                 ? "border-cosmo/40 text-foreground"
                 : "border-border text-muted-foreground",

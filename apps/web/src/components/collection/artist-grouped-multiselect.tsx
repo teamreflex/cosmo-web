@@ -68,9 +68,7 @@ export default function ArtistGroupedMultiSelect({
                       )}
                     >
                       {on && (
-                        <span className="text-[9px] font-bold text-white">
-                          ✓
-                        </span>
+                        <span className="text-xxs font-bold text-white">✓</span>
                       )}
                     </span>
                     <span
@@ -98,7 +96,7 @@ export default function ArtistGroupedMultiSelect({
           <button
             type="button"
             onClick={onClear}
-            className="text-[11px] tracking-[0.14em] text-muted-foreground uppercase transition-colors hover:text-foreground"
+            className="text-xxs tracking-widest text-muted-foreground uppercase transition-colors hover:text-foreground"
           >
             {m.filter_clear()}
           </button>

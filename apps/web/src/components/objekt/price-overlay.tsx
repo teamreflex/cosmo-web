@@ -50,7 +50,7 @@ export default function PriceOverlay({
       <span className="flex min-w-0 flex-col">
         {badge}
         {label && (
-          <span className="text-[9px] leading-3 font-medium tracking-[0.08em] uppercase opacity-70 @[180px]:text-xxs">
+          <span className="text-xxs leading-3 font-medium tracking-wider uppercase opacity-70">
             {label}
           </span>
         )}

@@ -48,14 +48,14 @@ export default function SerialTicketList({
     <div className="flex min-h-0 flex-col">
       <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3 sm:px-5">
         <div className="flex items-baseline gap-2">
-          <span className="hidden font-cosmo text-sm font-black tracking-[0.14em] uppercase sm:block">
+          <span className="hidden font-cosmo text-sm font-black tracking-widest uppercase sm:block">
             {title}
           </span>
           <span className="font-mono text-xs text-muted-foreground">
             {m.detail_copies_count({ count: tokens.length.toString() })}
           </span>
         </div>
-        <div className="flex items-center gap-1 font-mono text-xxs tracking-[0.14em] uppercase">
+        <div className="flex items-center gap-1 font-mono text-xxs tracking-widest uppercase">
           <SortButton
             active={sortKey === "serial"}
             dir={sortDir}

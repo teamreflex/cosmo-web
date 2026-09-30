@@ -173,7 +173,7 @@ function Listings({
           )}
         </PhoneHeader>
         <div className="shrink-0 border-b border-border px-4 py-2.5">
-          <div className="flex gap-1 rounded-md bg-secondary p-0.75 font-mono text-xxs tracking-[0.14em] uppercase">
+          <div className="flex gap-1 rounded-md bg-secondary p-0.75 font-mono text-xxs tracking-widest uppercase">
             {sortButtons}
           </div>
         </div>
@@ -195,7 +195,7 @@ function Listings({
     <div className="flex min-h-0 flex-col">
       <div className="flex shrink-0 items-center justify-between border-b border-border px-5 py-3">
         <div className="flex items-baseline gap-2">
-          <span className="font-cosmo text-sm font-black tracking-[0.14em] uppercase">
+          <span className="font-cosmo text-sm font-black tracking-widest uppercase">
             {m.listings_title()}
           </span>
           <span className="font-mono text-xs text-muted-foreground">
@@ -204,7 +204,7 @@ function Listings({
             })}
           </span>
         </div>
-        <div className="flex items-center gap-1 font-mono text-xxs tracking-[0.14em] uppercase">
+        <div className="flex items-center gap-1 font-mono text-xxs tracking-widest uppercase">
           {sortButtons}
         </div>
       </div>
@@ -241,7 +241,7 @@ function PhoneHeader({
         <span className="font-cosmo text-lg leading-none font-black uppercase">
           {collection.member}
         </span>
-        <span className="truncate font-mono text-xxs tracking-[0.12em] text-muted-foreground uppercase">
+        <span className="truncate font-mono text-xxs tracking-widest text-muted-foreground uppercase">
           {collection.season} · {collection.collectionNo} · {collection.class}
         </span>
         {children}
@@ -289,7 +289,7 @@ function SectionLabel({
       className="flex items-center gap-3 border-b border-border px-4 pt-2.5 pb-1.5 data-[desktop=true]:px-5"
       data-desktop={isDesktop}
     >
-      <span className="font-mono text-xxs tracking-[0.14em] uppercase">
+      <span className="text-xxs font-medium tracking-widest uppercase">
         {children}
       </span>
       <span className="h-px flex-1 bg-border" />

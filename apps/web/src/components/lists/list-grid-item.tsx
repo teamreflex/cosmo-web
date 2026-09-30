@@ -152,7 +152,7 @@ function SalePriceOverlay({
 
   const original = formatPrice(price, currency);
   const badge = atFloor && (
-    <span className="mb-1 self-start rounded-sm bg-emerald-300 px-1.5 py-0.5 text-[9px] leading-none font-semibold tracking-[0.06em] text-black uppercase @[180px]:text-xxs">
+    <span className="mb-1 self-start rounded-sm bg-emerald-300 px-1.5 py-0.5 text-xxs leading-none font-semibold tracking-wider text-black uppercase">
       {m.listings_stat_floor()}
     </span>
   );

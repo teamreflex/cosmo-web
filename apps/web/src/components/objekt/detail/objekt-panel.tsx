@@ -24,10 +24,10 @@ export default function ObjektPanel({ collection, isDesktop }: Props) {
         </FlippableObjekt>
       </div>
       <div className="text-center">
-        <div className="font-cosmo text-xl leading-none font-black tracking-[0.02em] uppercase">
+        <div className="font-cosmo text-xl leading-none font-black tracking-wide uppercase">
           {collection.member}
         </div>
-        <div className="mt-1 font-mono text-[11px] tracking-[0.14em] text-muted-foreground uppercase">
+        <div className="mt-1 font-mono text-xxs tracking-widest text-muted-foreground uppercase">
           {collection.artist} · {collection.season} · {collection.collectionNo}{" "}
           · {collection.class}
         </div>

@@ -33,7 +33,7 @@ export default function SaleListSummary({ objektListId, currency }: Props) {
   if (summary.total === 0) return null;
 
   return (
-    <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 rounded-lg border border-border bg-card px-4 py-3 sm:flex sm:flex-wrap sm:items-center">
+    <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-3 rounded-lg border border-border bg-muted/40 px-4 py-3 sm:flex sm:flex-wrap sm:items-center">
       <Stat label={m.list_sale_summary_priced()}>
         {m.list_sale_summary_priced_value({
           priced: summary.priced.toLocaleString(),
@@ -92,7 +92,7 @@ export default function SaleListSummary({ objektListId, currency }: Props) {
 function Stat({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-xxs font-medium tracking-[0.14em] text-muted-foreground uppercase">
+      <span className="text-xxs font-medium tracking-widest text-muted-foreground uppercase">
         {label}
       </span>
       <span className="font-mono text-base font-bold tabular-nums">

@@ -140,7 +140,7 @@ export default function ListingRow({
           own={own}
           className="max-w-full truncate text-sm font-semibold"
         />
-        <div className="flex min-w-0 items-center gap-1 text-[11px] text-muted-foreground">
+        <div className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
           <IconList className="size-3 shrink-0" />
           <ListName listing={listing} />
         </div>
@@ -156,7 +156,7 @@ export default function ListingRow({
 
       <div className="flex w-44 shrink-0 flex-col items-end gap-1">
         {own ? null : contacts.length === 0 ? (
-          <span className="text-xxs font-medium tracking-[0.14em] whitespace-nowrap text-muted-foreground uppercase">
+          <span className="text-xxs font-medium tracking-widest whitespace-nowrap text-muted-foreground uppercase">
             {m.listings_contact_hidden()}
           </span>
         ) : (
@@ -191,7 +191,7 @@ function Cell({
     <div
       className={cn("flex shrink-0 flex-col items-start gap-0.5", className)}
     >
-      <span className="text-xxs font-medium tracking-[0.14em] text-muted-foreground uppercase">
+      <span className="text-xxs font-medium tracking-widest text-muted-foreground uppercase">
         {label}
       </span>
       {children}
@@ -210,7 +210,7 @@ function Price({ listing }: { listing: CollectionListing }) {
           : formatUsd(listing.priceUsd)}
       </span>
       {listing.priceUsd !== null && (
-        <span className="truncate font-mono text-[11px] text-muted-foreground tabular-nums">
+        <span className="truncate font-mono text-xs text-muted-foreground tabular-nums">
           {listing.currency === currency
             ? listing.currency
             : formatPrice(listing.price, listing.currency)}

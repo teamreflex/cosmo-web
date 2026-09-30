@@ -57,7 +57,7 @@ export default function PriceHistory({
       {/* the toggle drops below the floor in a narrow sheet */}
       <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
         <div className="flex flex-col gap-0.5">
-          <span className="text-xxs font-medium tracking-[0.14em] text-muted-foreground uppercase">
+          <span className="text-xxs font-medium tracking-widest text-muted-foreground uppercase">
             {range === "all"
               ? m.objekt_metadata_history_floor_all()
               : m.objekt_metadata_history_floor_days({
@@ -140,7 +140,7 @@ export default function PriceHistory({
 function StatBox({ label, value }: { label: string; value: ReactNode }) {
   return (
     <div className="flex min-w-0 flex-col gap-0.5 rounded-md border border-border px-2 py-2 @sm:px-2.5">
-      <span className="truncate text-xxs font-medium tracking-[0.14em] text-muted-foreground uppercase">
+      <span className="truncate text-xxs font-medium tracking-widest text-muted-foreground uppercase">
         {label}
       </span>
       <span className="truncate font-mono text-xs font-bold tabular-nums @sm:text-sm">

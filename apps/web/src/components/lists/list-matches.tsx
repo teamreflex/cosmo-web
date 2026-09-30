@@ -43,7 +43,7 @@ export default function ListMatches({ list }: Props) {
   const body = (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <div className="flex shrink-0 items-center gap-2 border-b border-border px-4 py-3 sm:px-5">
-        <span className="font-cosmo text-sm font-black tracking-[0.14em] uppercase">
+        <span className="font-cosmo text-sm font-black tracking-widest uppercase">
           {m.list_matches_title()}
         </span>
         <div className="ml-auto flex items-center gap-2">

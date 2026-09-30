@@ -70,7 +70,7 @@ export default function PickerFilterPanel({
                 onApply={() => onChange({ type: "suggestion", suggestion })}
               />
             </div>
-            <span className="text-[10.5px] text-muted-foreground">
+            <span className="text-xxs text-muted-foreground">
               {suggestionSource(suggestion, "matches")}
             </span>
           </Group>
@@ -256,7 +256,7 @@ function ArtistFilters({ artist, filters, onChange }: ArtistFiltersProps) {
 function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="grid gap-2">
-      <h3 className="text-[10.5px] font-medium tracking-[0.12em] text-muted-foreground uppercase">
+      <h3 className="text-xxs font-medium tracking-widest text-muted-foreground uppercase">
         {title}
       </h3>
       {children}
@@ -292,7 +292,7 @@ function Option({
       aria-pressed={pressed}
       style={seasonal ? { ...style, "--season-color": seasonColor } : style}
       className={cn(
-        "inline-flex h-[30px] items-center gap-1.5 rounded-md border border-border bg-card px-2.5 text-[12.5px] text-foreground/80 transition-colors hover:bg-muted",
+        "inline-flex h-[30px] items-center gap-1.5 rounded-md border border-border bg-card px-2.5 text-xs text-foreground/80 transition-colors hover:bg-muted",
         pressed && "border-cosmo bg-cosmo/20 text-foreground hover:bg-cosmo/25",
         seasonal &&
           "border-(--season-color)/45 bg-(--season-color)/8 hover:bg-(--season-color)/15 dark:text-(--season-color)",
@@ -318,7 +318,7 @@ function Toggle({ flag, label, filters, onChange }: ToggleProps) {
 
   return (
     <div className="flex items-center justify-between gap-2.5 py-1">
-      <label htmlFor={id} className="text-[13px] text-foreground/80">
+      <label htmlFor={id} className="text-sm text-foreground/80">
         {label}
       </label>
       <Switch

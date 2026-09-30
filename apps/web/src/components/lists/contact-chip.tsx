@@ -13,7 +13,7 @@ export default function ContactChip({ contact }: { contact: Contact }) {
   const content = (
     <>
       <span className="text-cosmo">{CONTACT_ICONS[contact.kind]}</span>
-      <span className="text-xxs tracking-[0.14em] text-muted-foreground uppercase">
+      <span className="text-xxs tracking-widest text-muted-foreground uppercase">
         {contact.label}
       </span>
       <span className="tabular-nums">{contact.handle}</span>
