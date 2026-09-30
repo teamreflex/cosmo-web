@@ -1,108 +1,241 @@
+import { remember } from "@/lib/server/cache.server";
 import { indexer } from "@/lib/server/db/indexer";
-import { collections } from "@/lib/server/db/indexer/schema";
+import {
+  collectionMarketStats,
+  collections,
+} from "@/lib/server/db/indexer/schema";
 import {
   withArtist,
   withClass,
   withCollections,
   withMember,
-  withObjektListEntries,
   withOnlineType,
   withSeason,
   withSelectedArtists,
 } from "@/lib/server/objekts/filters.server";
-import { fetchMarketStats } from "@/lib/server/objekts/market.server";
 import {
-  inFloorBounds,
-  type MarketItem,
+  type FloorBounds,
+  type MarketCursor,
+  type MarketListedWindow,
   marketListedWindowMs,
   type MarketResponse,
   type MarketSort,
 } from "@/lib/universal/market";
 import { marketBackendSchema } from "@/lib/universal/parsers";
 import { createServerFn } from "@tanstack/react-start";
-import { and } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  getColumns,
+  gt,
+  gte,
+  lt,
+  lte,
+  or,
+  type SQL,
+  type SQLWrapper,
+  sql,
+} from "drizzle-orm";
 
 const LIMIT = 60;
 
 /**
- * Collections with at least one sale listing, filtered like the objekt index
- * plus the listing window and floor range, and sorted by the market aggregate
- * (floor, count, recency). The aggregate is small enough to sort and page in
- * memory.
+ * Collections with at least one priced sale listing, filtered like the objekt
+ * index plus the listing window and floor range, and sorted by their market stats.
  */
 export const $fetchMarket = createServerFn({ method: "GET" })
   .validator(marketBackendSchema)
   .handler(async ({ data }): Promise<MarketResponse> => {
-    const stats = await fetchMarketStats();
-    const slugs = [...stats.keys()];
+    const sort = marketSorting[data.sort ?? "floorAsc"];
+    const where = and(
+      ...withArtist(data.artist),
+      ...withClass(data.class ?? []),
+      ...withSeason(data.season ?? []),
+      ...withOnlineType(data.on_offline ?? []),
+      ...withMember(data.member),
+      ...withCollections(data.collectionNo),
+      ...withSelectedArtists(data.artists),
+      ...withListedWithin(data.listed),
+      ...withFloorBounds(data),
+    );
 
-    const rows =
-      slugs.length === 0
-        ? []
-        : await indexer
-            .select()
-            .from(collections)
-            .where(
-              and(
-                ...withObjektListEntries(slugs),
-                ...withArtist(data.artist),
-                ...withClass(data.class ?? []),
-                ...withSeason(data.season ?? []),
-                ...withOnlineType(data.on_offline ?? []),
-                ...withMember(data.member),
-                ...withCollections(data.collectionNo),
-                ...withSelectedArtists(data.artists),
-              ),
-            );
+    // pick the page on the narrow stats columns and join back only its rows
+    // for the full collection. one row past the page says whether there's more
+    const page = indexer.$with("page").as(
+      indexer
+        .select(getColumns(collectionMarketStats))
+        .from(collectionMarketStats)
+        .innerJoin(
+          collections,
+          eq(collections.slug, collectionMarketStats.slug),
+        )
+        .where(
+          data.cursor === undefined
+            ? where
+            : and(where, after(sort, data.cursor)),
+        )
+        .orderBy(...orderBy(sort, collectionMarketStats))
+        .limit(LIMIT + 1),
+    );
 
-    const listedAfter =
-      data.listed == null ? 0 : Date.now() - marketListedWindowMs[data.listed];
-    const matching = rows.flatMap((collection): MarketItem[] => {
-      const stat = stats.get(collection.slug);
-      return stat === undefined || stat.lastListed < listedAfter
-        ? []
-        : [
-            {
-              ...collection,
-              floorUsd: stat.floorUsd,
-              listingCount: stat.listingCount,
-              lastListed: stat.lastListed,
-            },
-          ];
-    });
-    const items = matching
-      .filter((item) => inFloorBounds(item.floorUsd, data))
-      .sort(comparator(data.sort ?? "floorAsc"));
+    const [rows, totals] = await Promise.all([
+      indexer
+        .with(page)
+        .select({
+          ...getColumns(collections),
+          floorUsd: page.floorUsd,
+          listingCount: page.listingCount,
+          lastListedAt: page.lastListedAt,
+        })
+        .from(page)
+        .innerJoin(collections, eq(collections.slug, page.slug))
+        .orderBy(...orderBy(sort, page)),
+      // the header only reads the first page's totals
+      data.cursor === undefined ? fetchTotals(where) : null,
+    ]);
 
-    const start = data.page * LIMIT;
-    const page = items.slice(start, start + LIMIT);
-    const hasNext = start + LIMIT < items.length;
+    const items = rows.slice(0, LIMIT);
+    const last = items.at(-1);
 
     return {
-      total: items.length,
-      listingTotal: items.reduce((sum, i) => sum + i.listingCount, 0),
-      hasNext,
-      nextStartAfter: hasNext ? data.page + 1 : undefined,
-      objekts: page,
-      floors: data.page === 0 ? matching.map((i) => i.floorUsd) : undefined,
+      objekts: items.map(({ lastListedAt: _, ...item }) => item),
+      nextCursor:
+        rows.length > LIMIT && last !== undefined
+          ? {
+              slug: last.slug,
+              floorUsd: last.floorUsd,
+              listingCount: last.listingCount,
+              lastListedAt: last.lastListedAt.toISOString(),
+            }
+          : undefined,
+      totals,
     };
   });
 
 /**
- * Every sort ends on the slug, so ties keep one order across page requests.
+ * Matching collections and the sum of their listings. The unfiltered totals
+ * are cached for as long as the stats sync takes to change them; filtered
+ * totals are too varied to cache.
  */
-function comparator(sort: MarketSort) {
-  const primary = sortKeys[sort];
-  return (a: MarketItem, b: MarketItem) =>
-    primary(a, b) || a.slug.localeCompare(b.slug);
+function fetchTotals(where: SQL | undefined) {
+  const query = async () => {
+    const [totals] = await indexer
+      .select({
+        collections: count(),
+        listings:
+          sql<number>`coalesce(sum(${collectionMarketStats.listingCount}), 0)::int`.mapWith(
+            Number,
+          ),
+      })
+      .from(collectionMarketStats)
+      .innerJoin(collections, eq(collections.slug, collectionMarketStats.slug))
+      .where(where);
+    return totals ?? { collections: 0, listings: 0 };
+  };
+
+  return where === undefined ? remember("market-total", 60, query) : query();
 }
 
-const sortKeys = {
-  floorAsc: (a, b) =>
-    a.floorUsd - b.floorUsd || b.listingCount - a.listingCount,
-  floorDesc: (a, b) =>
-    b.floorUsd - a.floorUsd || b.listingCount - a.listingCount,
-  mostListed: (a, b) =>
-    b.listingCount - a.listingCount || a.floorUsd - b.floorUsd,
-  recentlyListed: (a, b) => b.lastListed - a.lastListed,
-} satisfies Record<MarketSort, (a: MarketItem, b: MarketItem) => number>;
+type SortKey = keyof MarketCursor;
+type Sorting = { key: SortKey; dir: "asc" | "desc" }[];
+
+/**
+ * Each sort's keys in order. Every sort ends on the slug so the order is
+ * total, which the keyset cursor relies on. Each has a matching index on
+ * `collection_market_stats`.
+ */
+const marketSorting = {
+  floorAsc: [
+    { key: "floorUsd", dir: "asc" },
+    { key: "listingCount", dir: "desc" },
+    { key: "slug", dir: "asc" },
+  ],
+  floorDesc: [
+    { key: "floorUsd", dir: "desc" },
+    { key: "listingCount", dir: "desc" },
+    { key: "slug", dir: "asc" },
+  ],
+  mostListed: [
+    { key: "listingCount", dir: "desc" },
+    { key: "floorUsd", dir: "asc" },
+    { key: "slug", dir: "asc" },
+  ],
+  recentlyListed: [
+    { key: "lastListedAt", dir: "desc" },
+    { key: "slug", dir: "asc" },
+  ],
+} satisfies Record<MarketSort, Sorting>;
+
+function orderBy(sorting: Sorting, columns: Record<SortKey, SQLWrapper>) {
+  return sorting.map(({ key, dir }) =>
+    dir === "asc" ? asc(columns[key]) : desc(columns[key]),
+  );
+}
+
+/**
+ * Rows after the cursor in the sort's order: past it on some key while tied
+ * on every key before that one. The leading bound is redundant but lets the
+ * sort's index start at the cursor. The floor compares as `real`, how it's
+ * stored and read into the cursor.
+ */
+function after(sorting: Sorting, cursor: MarketCursor) {
+  const values = {
+    slug: sql`${cursor.slug}`,
+    floorUsd: sql`${cursor.floorUsd}::real`,
+    listingCount: sql`${cursor.listingCount}::int`,
+    lastListedAt: sql`${cursor.lastListedAt}::timestamptz`,
+  } satisfies Record<SortKey, SQL>;
+  const columns = collectionMarketStats;
+  const [lead] = sorting;
+  if (lead === undefined) return undefined;
+
+  return and(
+    lead.dir === "asc"
+      ? gte(columns[lead.key], values[lead.key])
+      : lte(columns[lead.key], values[lead.key]),
+    or(
+      ...sorting.map(({ key, dir }, i) =>
+        and(
+          ...sorting
+            .slice(0, i)
+            .map((tied) => eq(columns[tied.key], values[tied.key])),
+          dir === "asc"
+            ? gt(columns[key], values[key])
+            : lt(columns[key], values[key]),
+        ),
+      ),
+    ),
+  );
+}
+
+/**
+ * Filter by the collection's most recent listing.
+ */
+function withListedWithin(listed: MarketListedWindow | null | undefined) {
+  return listed == null
+    ? []
+    : [
+        gte(
+          collectionMarketStats.lastListedAt,
+          new Date(Date.now() - marketListedWindowMs[listed]),
+        ),
+      ];
+}
+
+/**
+ * Filter by floor: the minimum is inclusive and the maximum exclusive, since
+ * both are already widened to cover floors that display as the bound.
+ */
+function withFloorBounds({ minFloorUsd, maxFloorUsd }: FloorBounds) {
+  return [
+    ...(minFloorUsd === undefined
+      ? []
+      : [gte(collectionMarketStats.floorUsd, minFloorUsd)]),
+    ...(maxFloorUsd === undefined
+      ? []
+      : [lt(collectionMarketStats.floorUsd, maxFloorUsd)]),
+  ];
+}

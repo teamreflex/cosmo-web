@@ -1,23 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useDisplayCurrency } from "@/hooks/use-display-currency";
-import { useMarketQuery } from "@/hooks/use-market";
 import { m } from "@/i18n/messages";
-import {
-  type FloorBounds,
-  inFloorBounds,
-  toFloorBounds,
-} from "@/lib/universal/market";
-import { cn } from "@/lib/utils";
-import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
-import { Suspense, useState } from "react";
+import { useState } from "react";
 import FilterChip from "../collection/filter-chip";
 
 const route = getRouteApi("/market");
-
-const BUCKETS = 24;
 
 /**
  * Quick range breakpoints in USD, rounded to tidy amounts in the viewer's
@@ -44,11 +33,7 @@ export default function MarketPriceFilter() {
       active={min !== null || max !== null}
       width={300}
     >
-      {({ close }) => (
-        <Suspense fallback={<Skeleton className="m-3.5 h-64" />}>
-          <PricePanel min={min} max={max} close={close} />
-        </Suspense>
-      )}
+      {({ close }) => <PricePanel min={min} max={max} close={close} />}
     </FilterChip>
   );
 }
@@ -62,10 +47,6 @@ type PricePanelProps = {
 function PricePanel({ min, max, close }: PricePanelProps) {
   const navigate = route.useNavigate();
   const display = useDisplayCurrency();
-  const { data: floors } = useSuspenseInfiniteQuery({
-    ...useMarketQuery(),
-    select: (data) => data.pages[0]?.floors ?? [],
-  });
   const [draftMin, setDraftMin] = useState(min);
   const [draftMax, setDraftMax] = useState(max);
 
@@ -73,8 +54,6 @@ function PricePanel({ min, max, close }: PricePanelProps) {
     draftMin !== null && draftMax !== null && draftMin > draftMax
       ? [draftMax, draftMin]
       : [draftMin, draftMax];
-  const bounds = toFloorBounds(low, high, display);
-  const count = floors.filter((floor) => inFloorBounds(floor, bounds)).length;
   const plain = new Intl.NumberFormat("en", { maximumFractionDigits: 2 });
 
   function apply() {
@@ -98,19 +77,9 @@ function PricePanel({ min, max, close }: PricePanelProps) {
       }}
     >
       <div className="flex flex-col gap-3 p-3.5">
-        <div className="flex items-baseline justify-between gap-2">
-          <span className="text-xxs font-medium tracking-widest text-muted-foreground uppercase">
-            {m.filter_price_heading({ currency: display.currency })}
-          </span>
-          <span className="font-mono text-xs text-muted-foreground tabular-nums">
-            {m.filter_price_matching({
-              count: count.toLocaleString("en"),
-              total: floors.length.toLocaleString("en"),
-            })}
-          </span>
-        </div>
-
-        <Histogram floors={floors} bounds={bounds} />
+        <span className="text-xxs font-medium tracking-widest text-muted-foreground uppercase">
+          {m.filter_price_heading({ currency: display.currency })}
+        </span>
 
         <div className="grid grid-cols-2 gap-2">
           <PriceInput
@@ -161,7 +130,7 @@ function PricePanel({ min, max, close }: PricePanelProps) {
           {m.filter_price_clear()}
         </Button>
         <Button type="submit" size="sm">
-          {m.filter_price_show({ count: count.toLocaleString("en") })}
+          {m.filter_price_apply()}
         </Button>
       </div>
     </form>
@@ -194,60 +163,6 @@ function PriceInput({ label, ariaLabel, value, onChange }: PriceInputProps) {
         }
       />
     </label>
-  );
-}
-
-type HistogramProps = {
-  floors: number[];
-  bounds: FloorBounds;
-};
-
-/**
- * Floor distribution on a log scale, since floors span a few orders of
- * magnitude. Bars holding a floor inside the draft range are highlighted.
- */
-function Histogram({ floors, bounds }: HistogramProps) {
-  const low = Math.log(Math.min(...floors));
-  const span = Math.log(Math.max(...floors)) - low;
-  const buckets = Array.from({ length: BUCKETS }, () => ({
-    count: 0,
-    inRange: false,
-  }));
-  for (const floor of floors) {
-    const bucket =
-      buckets[
-        span === 0
-          ? 0
-          : Math.min(
-              BUCKETS - 1,
-              Math.floor(((Math.log(floor) - low) / span) * BUCKETS),
-            )
-      ];
-    if (bucket) {
-      bucket.count++;
-      bucket.inRange ||= inFloorBounds(floor, bounds);
-    }
-  }
-  const tallest = Math.max(1, ...buckets.map((bucket) => bucket.count));
-
-  return (
-    <div aria-hidden className="flex h-14 items-end gap-[3px]">
-      {buckets.map((bucket, i) => (
-        <span
-          key={i}
-          className={cn(
-            "flex-1 rounded-t-[2px]",
-            bucket.inRange ? "bg-cosmo" : "bg-foreground/15",
-          )}
-          style={{
-            height:
-              bucket.count === 0
-                ? 0
-                : `${Math.max(4, (bucket.count / tallest) * 100)}%`,
-          }}
-        />
-      ))}
-    </div>
   );
 }
 

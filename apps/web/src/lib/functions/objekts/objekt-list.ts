@@ -103,7 +103,13 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
           ),
         ),
       list.type === "sale" && rateToUsd !== undefined
-        ? fetchMarketStats()
+        ? fetchMarketStats([
+            ...new Set(
+              entries.flatMap((e) =>
+                e.tokenId !== null && e.price !== null ? [e.collectionId] : [],
+              ),
+            ),
+          ])
         : undefined,
     ]);
 

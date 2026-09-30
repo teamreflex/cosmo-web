@@ -8,6 +8,7 @@ import {
   numeric,
   pgSchema,
   pgTable,
+  real,
   text,
   timestamp,
   uuid,
@@ -136,8 +137,10 @@ export const votes = pgTable("vote", {
   candidateId: integer("candidate_id"),
 });
 
-// reference table synced by apps/schedules (canonical member sort order), read
-// by apps/web. the processor never touches it.
+/**
+ * reference table synced by apps/schedules (canonical member sort order), read by apps/web
+ * processor never touches it.
+ */
 export const members = pgTable("member", {
   id: uuid("id").primaryKey(),
   // joins to collection.member
@@ -148,4 +151,19 @@ export const members = pgTable("member", {
   units: jsonb("units").$type<string[]>().notNull(),
   primaryColorHex: text("primary_color_hex").notNull(),
   sortOrder: integer("sort_order").notNull(),
+});
+
+/**
+ * reference table synced by apps/schedules (sale listing stats per collection), read by apps/web's market.
+ * processor never touches it.
+ */
+export const collectionMarketStats = pgTable("collection_market_stats", {
+  // joins to collection.slug
+  slug: varchar("slug", { length: 255 }).primaryKey(),
+  floorUsd: real("floor_usd").notNull(),
+  listingCount: integer("listing_count").notNull(),
+  lastListedAt: timestamp("last_listed_at", {
+    mode: "date",
+    withTimezone: true,
+  }).notNull(),
 });

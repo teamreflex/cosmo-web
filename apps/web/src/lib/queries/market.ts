@@ -1,5 +1,5 @@
 import { $fetchMarket } from "@/lib/functions/objekts/market";
-import { toFloorBounds } from "@/lib/universal/market";
+import { type MarketCursor, toFloorBounds } from "@/lib/universal/market";
 import {
   type marketFrontendSchema,
   normalizeMarketFilters,
@@ -21,9 +21,10 @@ export function marketQuery(
   return infiniteQueryOptions({
     queryKey: ["market", filters],
     queryFn: ({ signal, pageParam }) =>
-      $fetchMarket({ signal, data: { ...filters, page: pageParam } }),
-    initialPageParam: 0,
-    getNextPageParam: (lastPage) => lastPage.nextStartAfter,
+      $fetchMarket({ signal, data: { ...filters, cursor: pageParam } }),
+    // SAFETY: cursor seed; widened for TanStack Query inference
+    initialPageParam: undefined as MarketCursor | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
     staleTime: 1000 * 60,
     refetchOnMount: false,
   });

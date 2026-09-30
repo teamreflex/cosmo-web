@@ -143,9 +143,10 @@ export const $fetchSaleListSummary = createServerFn({ method: "GET" })
       entry.price === null ? [] : [{ ...entry, price: entry.price }],
     );
     const firstUnpriced = list.entries.find((entry) => entry.price === null);
+    const pricedSlugs = [...new Set(priced.map((e) => e.collectionId))];
     const [marketStats, medians, firstUnpricedCollection] = await Promise.all([
-      fetchMarketStats(),
-      fetchMedianPrices([...new Set(priced.map((e) => e.collectionId))]),
+      fetchMarketStats(pricedSlugs),
+      fetchMedianPrices(pricedSlugs),
       firstUnpriced &&
         indexer.query.collections.findFirst({
           where: { slug: firstUnpriced.collectionId },

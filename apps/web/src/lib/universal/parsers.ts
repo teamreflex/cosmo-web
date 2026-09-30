@@ -78,6 +78,14 @@ export const marketFrontendSchema = cosmoSchema
   })
   .partial();
 
+// market keyset cursor - the sort values of the previous page's last row
+export const marketCursorSchema = z.object({
+  slug: z.string(),
+  floorUsd: z.number(),
+  listingCount: z.number().int(),
+  lastListedAt: z.iso.datetime(),
+});
+
 // market page backend - the price range arrives as USD floor bounds
 export const marketBackendSchema = cosmoSchema
   .omit({ sort: true, transferable: true, gridable: true })
@@ -86,7 +94,7 @@ export const marketBackendSchema = cosmoSchema
     listed: z.enum(marketListedWindows).nullish().catch(null),
     minFloorUsd: z.number().optional(),
     maxFloorUsd: z.number().optional(),
-    page: z.coerce.number().int().nonnegative().default(0),
+    cursor: marketCursorSchema.optional(),
     artists: z.string().array().default([]),
   });
 

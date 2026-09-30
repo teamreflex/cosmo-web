@@ -13,6 +13,7 @@ export type ObjektResponseOptions<
   TItem,
   TError = DefaultError,
   TQueryKey extends QueryKey = QueryKey,
+  TPageParam = number,
 > = {
   filtering: FilterType;
   query: UnusedSkipTokenInfiniteOptions<
@@ -20,7 +21,7 @@ export type ObjektResponseOptions<
     TError,
     InfiniteData<TResponse>,
     TQueryKey,
-    number
+    TPageParam
   >;
   calculateTotal: (data: InfiniteData<TResponse>) => ReactNode;
   totalPortalTarget?: string;
@@ -35,7 +36,10 @@ export function objektOptions<
   TItem,
   TError = DefaultError,
   TQueryKey extends QueryKey = QueryKey,
->(opts: ObjektResponseOptions<TResponse, TItem, TError, TQueryKey>) {
+  TPageParam = number,
+>(
+  opts: ObjektResponseOptions<TResponse, TItem, TError, TQueryKey, TPageParam>,
+) {
   return opts;
 }
 
@@ -47,7 +51,10 @@ export function useObjektResponse<
   TItem,
   TError = DefaultError,
   TQueryKey extends QueryKey = QueryKey,
->(opts: ObjektResponseOptions<TResponse, TItem, TError, TQueryKey>) {
+  TPageParam = number,
+>(
+  opts: ObjektResponseOptions<TResponse, TItem, TError, TQueryKey, TPageParam>,
+) {
   const query = useSuspenseInfiniteQuery(opts.query);
 
   const items = opts.getItems(query.data);

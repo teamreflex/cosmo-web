@@ -1,4 +1,3 @@
-import { remember } from "@/lib/server/cache.server";
 import { db } from "@/lib/server/db";
 import type { MarketStats } from "@/lib/universal/market";
 import {
@@ -7,55 +6,48 @@ import {
   objektListEntries,
   objektLists,
 } from "@apollo/database/web/schema";
-import { and, desc, eq, inArray, isNotNull, sql } from "drizzle-orm";
+import { and, count, desc, eq, inArray, isNotNull, sql } from "drizzle-orm";
 
 /**
- * Floor price (USD), listing count and most recent listing time for every
- * collection with at least one priced serial on a sale list. Cached briefly:
- * the market page pages through this in memory, so every page shares one
- * aggregate instead of re-scanning the entries table.
+ * Floor price (USD, at the latest FX rate) and listing count of each given
+ * collection's priced sale listings, across every seller. Collections without
+ * any are absent. Computed live rather than read from the market's synced
+ * copy in the indexer, so a sale list reflects its own edits immediately.
  */
-export async function fetchMarketStats() {
-  const rows = await remember("market-stats", 60, () => {
-    const latestRates = db.$with("latest_rates").as(
-      db
-        .selectDistinctOn([fxRates.currency], {
-          currency: fxRates.currency,
-          rateToUsd: fxRates.rateToUsd,
-        })
-        .from(fxRates)
-        .orderBy(fxRates.currency, desc(fxRates.date)),
-    );
+export async function fetchMarketStats(slugs: string[]) {
+  if (slugs.length === 0) {
+    return new Map<string, MarketStats>();
+  }
 
-    return db
-      .with(latestRates)
-      .select({
-        collectionId: objektListEntries.collectionId,
-        floorUsd:
-          sql<number>`min(${objektListEntries.price} * ${latestRates.rateToUsd})::real`.as(
-            "floor_usd",
-          ),
-        listingCount: sql<number>`count(*)::int`.as("listing_count"),
-        lastListed:
-          sql<number>`(extract(epoch from max(${objektListEntries.createdAt})) * 1000)::float8`.as(
-            "last_listed",
-          ),
+  const latestRates = db.$with("latest_rates").as(
+    db
+      .selectDistinctOn([fxRates.currency], {
+        currency: fxRates.currency,
+        rateToUsd: fxRates.rateToUsd,
       })
-      .from(objektListEntries)
-      .innerJoin(
-        objektLists,
-        eq(objektLists.id, objektListEntries.objektListId),
-      )
-      .innerJoin(latestRates, eq(latestRates.currency, objektLists.currency))
-      .where(
-        and(
-          eq(objektLists.type, "sale"),
-          isNotNull(objektListEntries.tokenId),
-          isNotNull(objektListEntries.price),
-        ),
-      )
-      .groupBy(objektListEntries.collectionId);
-  });
+      .from(fxRates)
+      .orderBy(fxRates.currency, desc(fxRates.date)),
+  );
+
+  const rows = await db
+    .with(latestRates)
+    .select({
+      collectionId: objektListEntries.collectionId,
+      floorUsd: sql<number>`min(${objektListEntries.price} * ${latestRates.rateToUsd})::real`,
+      listingCount: count(),
+    })
+    .from(objektListEntries)
+    .innerJoin(objektLists, eq(objektLists.id, objektListEntries.objektListId))
+    .innerJoin(latestRates, eq(latestRates.currency, objektLists.currency))
+    .where(
+      and(
+        inArray(objektListEntries.collectionId, slugs),
+        eq(objektLists.type, "sale"),
+        isNotNull(objektListEntries.tokenId),
+        isNotNull(objektListEntries.price),
+      ),
+    )
+    .groupBy(objektListEntries.collectionId);
 
   return new Map<string, MarketStats>(rows.map((r) => [r.collectionId, r]));
 }

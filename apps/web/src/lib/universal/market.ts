@@ -1,5 +1,6 @@
 import type { Collection } from "@/lib/server/db/indexer/schema";
-import type { ObjektResponse } from "./objekts";
+import type { z } from "zod";
+import type { marketCursorSchema } from "./parsers";
 
 export const marketSorts = [
   "floorAsc",
@@ -24,25 +25,27 @@ export const marketListedWindowMs = {
 } satisfies Record<MarketListedWindow, number>;
 
 /**
- * Aggregate of every sale listing of one collection, keyed by slug.
- * `lastListed` is epoch milliseconds so it survives the Redis cache as JSON.
+ * Floor (USD) and listing count across every sale listing of one collection.
  */
 export type MarketStats = {
-  collectionId: string;
   floorUsd: number;
   listingCount: number;
-  lastListed: number;
 };
 
-export type MarketItem = Collection & Omit<MarketStats, "collectionId">;
+export type MarketItem = Collection & MarketStats;
 
-export type MarketResponse = ObjektResponse<MarketItem> & {
-  listingTotal: number;
+export type MarketCursor = z.infer<typeof marketCursorSchema>;
+
+export type MarketResponse = {
+  objekts: MarketItem[];
   /**
-   * USD floor of every collection matching all filters but the price range,
-   * for the price filter's histogram. Only the first page carries it.
+   * Where the next page starts, unset on the last page.
    */
-  floors?: number[];
+  nextCursor: MarketCursor | undefined;
+  /**
+   * Matching collections and their listings. Only the first page counts them.
+   */
+  totals: { collections: number; listings: number } | null;
 };
 
 export type FloorBounds = {
@@ -70,11 +73,4 @@ export function toFloorBounds(
     minFloorUsd: min == null ? undefined : (min - half) * display.rateToUsd,
     maxFloorUsd: max == null ? undefined : (max + half) * display.rateToUsd,
   };
-}
-
-export function inFloorBounds(floorUsd: number, bounds: FloorBounds) {
-  return (
-    (bounds.minFloorUsd === undefined || floorUsd >= bounds.minFloorUsd) &&
-    (bounds.maxFloorUsd === undefined || floorUsd < bounds.maxFloorUsd)
-  );
 }

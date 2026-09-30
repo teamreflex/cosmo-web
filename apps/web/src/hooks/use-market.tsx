@@ -25,12 +25,12 @@ export function useMarket() {
     filtering: "remote",
     query: useMarketQuery(),
     calculateTotal: (data) => {
-      const first = data.pages[0];
+      const totals = data.pages[0]?.totals;
       return (
         <p className="text-xxs text-muted-foreground sm:text-xs">
           {m.market_total({
-            collections: (first?.total ?? 0).toLocaleString("en"),
-            listings: (first?.listingTotal ?? 0).toLocaleString("en"),
+            collections: (totals?.collections ?? 0).toLocaleString("en"),
+            listings: (totals?.listings ?? 0).toLocaleString("en"),
           })}
         </p>
       );
