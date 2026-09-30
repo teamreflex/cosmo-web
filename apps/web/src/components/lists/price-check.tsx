@@ -139,7 +139,7 @@ function PriceCheckContent({
             <button
               type="button"
               onClick={onViewListings}
-              className="font-mono text-xxs text-cosmo-text hover:underline"
+              className="text-xxs text-cosmo-text hover:underline"
             >
               {m.price_check_see_listings()}
             </button>
@@ -210,7 +210,7 @@ function Panel({ heading, action, children }: PanelProps) {
   return (
     <div className="flex flex-col gap-2.5 rounded-lg border border-border bg-background/50 p-3">
       <div className="flex items-baseline justify-between gap-2">
-        <span className="font-mono text-xxs tracking-[0.14em] text-muted-foreground uppercase">
+        <span className="text-xxs font-medium tracking-[0.14em] text-muted-foreground uppercase">
           {heading}
         </span>
         {action}
@@ -235,7 +235,7 @@ function QuickFill({ label, value, format, onFill }: QuickFillProps) {
       onClick={() => value !== null && onFill(value)}
       className="flex min-w-0 flex-col items-start gap-1.5 rounded-md border border-border px-2 py-2 text-left transition-colors hover:border-cosmo/80 hover:bg-cosmo/10 disabled:pointer-events-none disabled:opacity-50 sm:px-2.5"
     >
-      <span className="max-w-full truncate font-mono text-xxs leading-none font-medium tracking-[0.04em] text-muted-foreground uppercase sm:tracking-[0.12em]">
+      <span className="max-w-full truncate text-xxs leading-none font-medium tracking-[0.04em] text-muted-foreground uppercase sm:tracking-[0.12em]">
         {label}
       </span>
       <span className="max-w-full truncate font-mono text-sm leading-none font-bold tabular-nums">

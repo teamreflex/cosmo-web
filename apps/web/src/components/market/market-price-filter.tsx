@@ -99,7 +99,7 @@ function PricePanel({ min, max, close }: PricePanelProps) {
     >
       <div className="flex flex-col gap-3 p-3.5">
         <div className="flex items-baseline justify-between gap-2">
-          <span className="font-mono text-xxs tracking-[0.14em] text-muted-foreground uppercase">
+          <span className="text-xxs font-medium tracking-[0.14em] text-muted-foreground uppercase">
             {m.filter_price_heading({ currency: display.currency })}
           </span>
           <span className="font-mono text-[11px] text-muted-foreground tabular-nums">

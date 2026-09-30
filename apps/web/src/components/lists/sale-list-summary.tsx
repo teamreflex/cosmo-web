@@ -92,7 +92,7 @@ export default function SaleListSummary({ objektListId, currency }: Props) {
 function Stat({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="font-mono text-xxs tracking-[0.14em] text-muted-foreground uppercase">
+      <span className="text-xxs font-medium tracking-[0.14em] text-muted-foreground uppercase">
         {label}
       </span>
       <span className="font-mono text-base font-bold tabular-nums">

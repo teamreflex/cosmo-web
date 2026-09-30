@@ -156,7 +156,7 @@ export default function ListingRow({
 
       <div className="flex w-44 shrink-0 flex-col items-end gap-1">
         {own ? null : contacts.length === 0 ? (
-          <span className="font-mono text-xxs tracking-[0.14em] whitespace-nowrap text-muted-foreground uppercase">
+          <span className="text-xxs font-medium tracking-[0.14em] whitespace-nowrap text-muted-foreground uppercase">
             {m.listings_contact_hidden()}
           </span>
         ) : (
@@ -191,7 +191,7 @@ function Cell({
     <div
       className={cn("flex shrink-0 flex-col items-start gap-0.5", className)}
     >
-      <span className="font-mono text-xxs tracking-[0.14em] text-muted-foreground uppercase">
+      <span className="text-xxs font-medium tracking-[0.14em] text-muted-foreground uppercase">
         {label}
       </span>
       {children}

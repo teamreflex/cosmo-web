@@ -124,13 +124,13 @@ function FloorTrendChart({
   return (
     <div className={cn("flex flex-col gap-1", className)}>
       <div className="flex items-center justify-between gap-2">
-        <span className="font-mono text-xxs tracking-[0.14em] text-muted-foreground uppercase">
+        <span className="text-xxs font-medium tracking-[0.14em] text-muted-foreground uppercase">
           {m.listings_floor_30d()}
         </span>
         <button
           type="button"
           onClick={openHistory}
-          className="font-mono text-xxs text-cosmo-text hover:underline"
+          className="text-xxs text-cosmo-text hover:underline"
         >
           {m.listings_history()}
         </button>
