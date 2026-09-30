@@ -14,7 +14,7 @@ import {
   useObjektSelection,
 } from "@/hooks/use-objekt-selection";
 import { m } from "@/i18n/messages";
-import { getObjektImageUrls } from "@/lib/client/objekt-util";
+import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import { $addObjektsToSaleList } from "@/lib/functions/lists";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { addObjektsToSaleListSchema } from "@/lib/universal/schema/objekt-list";
@@ -156,13 +156,12 @@ function BatchSaleRow({
     control,
     name: `entries.${index}.price`,
   });
-  const { front } = getObjektImageUrls(collection);
   const paddedSerial = token.serial.toString().padStart(5, "0");
 
   return (
     <div className="flex w-full items-center gap-3 border-b border-border px-4 py-3 last:border-b-0 sm:gap-4 sm:px-5">
       <img
-        src={front.display}
+        src={getObjektFrontImageUrl(collection, "xs")}
         alt={collection.collectionId}
         className="h-12 w-auto shrink-0 rounded-xs"
         decoding="async"

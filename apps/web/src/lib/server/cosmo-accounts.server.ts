@@ -12,7 +12,7 @@ import { db } from "./db";
 
 /**
  * Fetch a full account from the database.
- * This includes the user, locked objekts, pins, and lists.
+ * This includes the user, locked objekts and pins.
  */
 export async function fetchFullAccount(
   identifier: string,
@@ -28,14 +28,13 @@ export async function fetchFullAccount(
       user: true,
       lockedObjekts: true,
       pins: true,
-      objektLists: true,
     },
   });
 
   // found a cosmo account
   if (result) {
     const { user, ...cosmoResult } = result;
-    const { objektLists, lockedObjekts, pins, ...cosmo } = cosmoResult;
+    const { lockedObjekts, pins, ...cosmo } = cosmoResult;
 
     return {
       cosmo: toPublicCosmo(cosmo),
@@ -43,8 +42,7 @@ export async function fetchFullAccount(
       lockedObjekts: lockedObjekts
         .filter((o) => o.locked)
         .map((o) => o.tokenId),
-      pins: pins.map((p) => p.tokenId),
-      objektLists: objektLists,
+      pins: pins.map((p) => p.tokenId).filter((id) => id !== null),
       verified: cosmo.userId !== null,
     };
   }
@@ -66,7 +64,6 @@ export async function fetchFullAccount(
       user: undefined,
       lockedObjekts: [],
       pins: [],
-      objektLists: [],
       verified: false,
     };
   }

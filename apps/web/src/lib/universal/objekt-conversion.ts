@@ -25,6 +25,9 @@ export namespace Objekt {
     collectionId: string;
     frontImage: string;
     backImage: string;
+    /** version of the image mirrored into apollo's CDN, null until mirrored */
+    frontImageVersion: string | null;
+    backImageVersion: string | null;
     backgroundColor: string;
     textColor: string;
     bandImageUrl: string | null;
@@ -70,6 +73,8 @@ export namespace Objekt {
       collectionId: objekt.collectionId,
       frontImage: objekt.frontImage,
       backImage: objekt.backImage,
+      frontImageVersion: objekt.frontImageVersion,
+      backImageVersion: objekt.backImageVersion,
       backgroundColor: objekt.backgroundColor,
       textColor: objekt.textColor,
       bandImageUrl: objekt.bandImageUrl,
@@ -99,6 +104,8 @@ export namespace Objekt {
       collectionId: objekt.collectionId,
       frontImage: objekt.frontImage,
       backImage: objekt.backImage,
+      frontImageVersion: objekt.frontImageVersion,
+      backImageVersion: objekt.backImageVersion,
       backgroundColor: objekt.backgroundColor,
       textColor: objekt.textColor,
       bandImageUrl: objekt.bandImageUrl,
@@ -154,6 +161,8 @@ export namespace Objekt {
         collectionId: opts.collection.collectionId,
         frontImage: opts.collection.frontImage,
         backImage: opts.collection.backImage,
+        frontImageVersion: opts.collection.frontImageVersion,
+        backImageVersion: opts.collection.backImageVersion,
         backgroundColor: opts.collection.backgroundColor,
         textColor: opts.collection.textColor,
         bandImageUrl: opts.collection.bandImageUrl,
@@ -205,6 +214,9 @@ export namespace Objekt {
       collectionId: objekt.collectionId,
       frontImage: objekt.frontImage,
       backImage: objekt.backImage,
+      // scans come straight from COSMO, so nothing has been mirrored
+      frontImageVersion: null,
+      backImageVersion: null,
       backgroundColor: objekt.backgroundColor,
       textColor: objekt.textColor,
       bandImageUrl: null,

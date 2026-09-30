@@ -5,12 +5,7 @@ import { cn } from "@/lib/utils";
 import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
 import { IconSparkles } from "@tabler/icons-react";
 import ArtistIcon from "../artist-icon";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 type Props = {
   artists: CosmoArtistBFF[];
@@ -83,26 +78,24 @@ export default function ComoCalendar({ artists, transfers }: Props) {
                   <div className="absolute top-1 right-1">
                     {(calendar[day]?.[a.id.toLowerCase()]?.carried ?? 0) >
                       0 && (
-                      <TooltipProvider>
-                        <Tooltip>
-                          <TooltipTrigger>
-                            <IconSparkles className="h-5 w-5 text-yellow-600" />
-                          </TooltipTrigger>
-                          <TooltipContent className="flex flex-col gap-1">
-                            <p className="font-semibold">
-                              {m.como_carried_over()}
-                            </p>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <IconSparkles className="h-5 w-5 text-yellow-600" />
+                        </TooltipTrigger>
+                        <TooltipContent className="flex flex-col gap-1">
+                          <p className="font-semibold">
+                            {m.como_carried_over()}
+                          </p>
 
-                            <div className="flex items-center justify-center gap-2">
-                              <ArtistIcon artist={a.name} />
-                              <span>
-                                {calendar[day]?.[a.id.toLowerCase()]?.carried ??
-                                  0}
-                              </span>
-                            </div>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
+                          <div className="flex items-center justify-center gap-2">
+                            <ArtistIcon artist={a.name} />
+                            <span>
+                              {calendar[day]?.[a.id.toLowerCase()]?.carried ??
+                                0}
+                            </span>
+                          </div>
+                        </TooltipContent>
+                      </Tooltip>
                     )}
                   </div>
 

@@ -36,11 +36,13 @@ export default function MemberSelect({ artists, value = [], onChange }: Props) {
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild>
-        <Button variant="outline" className="flex items-center gap-2">
-          <span>Members</span>
-          <IconChevronDown className="h-4 w-4 opacity-50" />
-        </Button>
+      <DropdownMenuTrigger
+        render={
+          <Button variant="outline" className="flex items-center gap-2" />
+        }
+      >
+        <span>Members</span>
+        <IconChevronDown className="h-4 w-4 opacity-50" />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-40" align="end">
         <ScrollArea className="h-62">
@@ -48,10 +50,8 @@ export default function MemberSelect({ artists, value = [], onChange }: Props) {
             <DropdownMenuItem
               key={artist.name}
               className="gap-2"
-              onSelect={(e) => {
-                e.preventDefault();
-                selectArtist(artist);
-              }}
+              closeOnClick={false}
+              onClick={() => selectArtist(artist)}
             >
               <img
                 src={artist.logoImageUrl}
@@ -78,7 +78,6 @@ export default function MemberSelect({ artists, value = [], onChange }: Props) {
                 checked={value.includes(member.name)}
                 onCheckedChange={(checked) => onSelect(member.name, checked)}
                 className="gap-2"
-                onSelect={(e) => e.preventDefault()}
               >
                 <span
                   style={{

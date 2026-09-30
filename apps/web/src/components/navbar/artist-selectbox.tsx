@@ -20,22 +20,20 @@ export default function ArtistSelectbox() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <button
-          id={id}
-          className="flex items-center -space-x-3 focus:outline-none"
-          aria-label={m.aria_select_artist()}
-        >
-          {selected.map((artist) => (
-            <Avatar
-              key={artist.id}
-              className="size-8 rounded-full ring ring-accent"
-            >
-              <AvatarFallback className="rounded-full">A</AvatarFallback>
-              <AvatarImage src={artist.logoImageUrl} alt={artist.title} />
-            </Avatar>
-          ))}
-        </button>
+      <DropdownMenuTrigger
+        id={id}
+        className="flex items-center -space-x-3 focus:outline-none"
+        aria-label={m.aria_select_artist()}
+      >
+        {selected.map((artist) => (
+          <Avatar
+            key={artist.id}
+            className="size-8 rounded-full ring ring-accent"
+          >
+            <AvatarFallback className="rounded-full">A</AvatarFallback>
+            <AvatarImage src={artist.logoImageUrl} alt={artist.title} />
+          </Avatar>
+        ))}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-fit">
         {artistList
@@ -78,10 +76,8 @@ export function ArtistItem({ artist, isSelected }: ArtistItemProps) {
   return (
     <DropdownMenuItem
       key={artist.id}
-      onClick={(e) => {
-        e.preventDefault();
-        handleSelect(artist.id);
-      }}
+      closeOnClick={false}
+      onClick={() => handleSelect(artist.id)}
       disabled={mutation.isPending}
       className="min-w-40"
     >

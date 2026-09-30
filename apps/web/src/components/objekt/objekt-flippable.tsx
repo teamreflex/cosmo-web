@@ -1,6 +1,10 @@
+import { CARD_EDGE_COLOR, useCardFlip } from "@/hooks/use-card-flip";
 import { m } from "@/i18n/messages";
+import {
+  getObjektBackImageUrl,
+  getObjektFrontImageUrl,
+} from "@/lib/client/objekt-util";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import { cn } from "@/lib/utils";
 import { IconPhotoX } from "@tabler/icons-react";
 import { Fragment, useState, lazy, Suspense } from "react";
 import type { PropsWithChildren } from "react";
@@ -14,20 +18,22 @@ type Props = PropsWithChildren<{
 }>;
 
 /**
- * Flips on click.
+ * Drag to turn and tilt, flick to flip, tap to turn over.
  * Used for:
  * - Inside a MetadataDialog
  * - Upon grid reward
  * - When scanning an objekt
  */
 export default function FlippableObjekt({ children, collection }: Props) {
-  const [flipped, setFlipped] = useState(false);
   const [audioPlaying, setAudioPlaying] = useState(false);
+  const { sceneRef, frontRef, backRef, svgRef, edgeRef, flipped, handlers } =
+    useCardFlip();
 
   const hasBackImage = collection.backImage !== "";
+  const frontImage = getObjektFrontImageUrl(collection, "grid");
 
   const Image = (
-    <ObjektImage src={collection.frontImage} alt={collection.collectionId}>
+    <ObjektImage src={frontImage} alt={collection.collectionId}>
       {children}
     </ObjektImage>
   );
@@ -43,26 +49,44 @@ export default function FlippableObjekt({ children, collection }: Props) {
   return (
     <div className="@container">
       <div
+        ref={sceneRef}
         role="button"
+        tabIndex={0}
         aria-label={m.aria_flip_objekt()}
         style={{
           "--objekt-background-color": collection.backgroundColor,
           "--objekt-text-color": collection.textColor,
         }}
         data-flipped={flipped}
-        onClick={() => setFlipped((prev) => !prev)}
-        className={cn(
-          "relative aspect-photocard w-full transform-gpu touch-manipulation rounded-photocard object-contain transition-transform duration-500 transform-3d focus:outline-none data-[flipped=true]:rotate-y-180",
-          !flipped && "will-change-transform",
-        )}
+        // dragging the card turns it rather than swiping away a drawer it sits in
+        data-base-ui-swipe-ignore
+        {...handlers}
+        // vertical swipes still scroll the page on touch, which cancels the drag and settles the card
+        className="relative aspect-photocard w-full touch-pan-y object-contain select-none focus:outline-none"
       >
+        {/*
+         * the card's own thickness, swept between the two faces. The edge
+         * spills past the card as it turns, drawn by overflow-visible so it
+         * never widens a scroll container the way a larger box would
+         */}
+        <svg
+          ref={svgRef}
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0 overflow-visible"
+        >
+          <path ref={edgeRef} d="" fill={CARD_EDGE_COLOR} />
+        </svg>
+
         {/* front */}
-        <div className="absolute inset-0 overflow-hidden rounded-photocard backface-hidden">
+        <div
+          ref={frontRef}
+          className="absolute inset-0 rounded-photocard will-change-transform [clip-path:inset(0_round_--theme(--radius-photocard))]"
+        >
           {collection.frontMedia && !collection.hasAudio ? (
             <ErrorBoundary fallback={Image}>
               <Suspense fallback={Image}>
                 <ObjektVideo
-                  imageSrc={collection.frontImage}
+                  imageSrc={frontImage}
                   videoSrc={collection.frontMedia}
                   alt={collection.collectionId}
                 >
@@ -74,7 +98,7 @@ export default function FlippableObjekt({ children, collection }: Props) {
             <ErrorBoundary fallback={Image}>
               <Suspense fallback={Image}>
                 <ObjektVideo
-                  imageSrc={collection.frontImage}
+                  imageSrc={frontImage}
                   videoSrc={collection.frontMedia}
                   alt={collection.collectionId}
                   muted={false}
@@ -85,30 +109,30 @@ export default function FlippableObjekt({ children, collection }: Props) {
               </Suspense>
             </ErrorBoundary>
           ) : (
-            <ObjektImage
-              src={collection.frontImage}
-              alt={collection.collectionId}
-            >
+            <ObjektImage src={frontImage} alt={collection.collectionId}>
               {audioButton}
               {children}
             </ObjektImage>
           )}
         </div>
 
-        {/* back */}
-        {hasBackImage ? (
-          <div className="absolute inset-0 rotate-y-180 rounded-photocard backface-hidden">
+        {/* back — hidden until the card turns past edge-on */}
+        <div
+          ref={backRef}
+          className="invisible absolute inset-0 overflow-hidden rounded-photocard will-change-transform"
+        >
+          {hasBackImage ? (
             <img
               className="absolute"
-              src={collection.backImage}
+              src={getObjektBackImageUrl(collection)}
               alt={collection.collectionId}
             />
-          </div>
-        ) : (
-          <div className="flex h-full w-full rotate-y-180 items-center justify-center rounded-photocard bg-accent backface-hidden">
-            <IconPhotoX className="aspect-square h-auto w-1/3 opacity-60" />
-          </div>
-        )}
+          ) : (
+            <div className="flex h-full w-full items-center justify-center bg-accent">
+              <IconPhotoX className="aspect-square h-auto w-1/3 opacity-60" />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

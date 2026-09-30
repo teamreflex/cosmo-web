@@ -1,3 +1,4 @@
+import AddToBinder from "@/components/binders/add-to-binder";
 import AddToList from "@/components/lists/add-to-list";
 import LockObjekt from "@/components/objekt/overlay/lock-button";
 import PinObjekt from "@/components/objekt/overlay/pin-button";
@@ -96,8 +97,8 @@ export default function SerialTicket({
         </div>
       </div>
 
-      {/* received date — desktop only */}
-      <div className="hidden w-28 shrink-0 md:block">
+      {/* received date — only once the dialog is wide enough for it beside the actions */}
+      <div className="hidden w-28 shrink-0 lg:block">
         <div className="font-mono text-xxs tracking-[0.14em] text-muted-foreground uppercase">
           {m.detail_sort_received()}
         </div>
@@ -138,6 +139,10 @@ export default function SerialTicket({
             slug={collection.slug}
             collectionId={collection.id}
             lists={objektLists}
+            tokenId={token.tokenId}
+          />
+          <AddToBinder
+            collectionName={collection.collectionId}
             tokenId={token.tokenId}
           />
           <LockObjekt tokenId={token.tokenId} isLocked={isLocked} />

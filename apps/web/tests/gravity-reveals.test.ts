@@ -1,10 +1,10 @@
 import { describe, expect, it } from "bun:test";
-import type { Reveal } from "../src/lib/client/gravity/types";
 import {
   findLatestBatch,
   sumComoPerCandidate,
   type RevealPage,
 } from "../src/lib/client/gravity/reveals";
+import type { Reveal } from "../src/lib/client/gravity/types";
 
 function reveal(candidateId: number, amount: number): Reveal {
   return {

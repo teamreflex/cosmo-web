@@ -1,8 +1,8 @@
 import { ProfileContext, type ProfileState } from "@/hooks/use-profile";
+import type { ProfilePin } from "@/lib/universal/binders";
 import type { PublicAccount } from "@/lib/universal/cosmo-accounts";
-import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import type { ObjektList } from "@apollo/database/web/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { PropsWithChildren } from "react";
 import { createStore } from "zustand";
 
@@ -10,7 +10,7 @@ interface ProfileProps {
   target: Partial<PublicAccount> | undefined;
   objektLists: ObjektList[];
   lockedObjekts: number[];
-  pins: CosmoObjekt[];
+  pins: ProfilePin[];
 }
 
 type ProfileProviderProps = PropsWithChildren<Partial<ProfileProps>>;
@@ -35,19 +35,8 @@ const createProfileStore = (initProps?: Partial<ProfileProps>) => {
           : [...state.lockedObjekts, tokenId],
       })),
 
-    addPin: (objekt: CosmoObjekt) =>
-      set((state) => ({
-        ...state,
-        pins: [objekt, ...state.pins],
-      })),
-
-    removePin: (tokenId: number) =>
-      set((state) => ({
-        ...state,
-        pins: state.pins.filter((p) => p.tokenId !== tokenId.toString()),
-      })),
-
-    reorderPins: (pins: CosmoObjekt[]) => set((state) => ({ ...state, pins })),
+    updatePins: (update: (pins: ProfilePin[]) => ProfilePin[]) =>
+      set((state) => ({ ...state, pins: update(state.pins) })),
 
     addObjektList: (list: ObjektList) =>
       set((state) => ({
@@ -65,6 +54,12 @@ const createProfileStore = (initProps?: Partial<ProfileProps>) => {
 
 export function ProfileProvider({ children, ...props }: ProfileProviderProps) {
   const [store] = useState(() => createProfileStore(props));
+
+  // pins follow their query, which pin toggles outside the profile write to
+  useEffect(() => {
+    if (props.pins !== undefined) store.setState({ pins: props.pins });
+  }, [store, props.pins]);
+
   return (
     <ProfileContext.Provider value={store}>{children}</ProfileContext.Provider>
   );

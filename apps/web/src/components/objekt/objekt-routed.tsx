@@ -1,24 +1,23 @@
 import { useActiveObjekt } from "@/hooks/use-active-objekt";
+import { useState } from "react";
 import MetadataDialog from "./metadata-dialog";
 
 /**
- * Provides a pre-opened MetadataDialog for the index when routing to an objekt slug.
+ * The index's objekt sheet, opened by the `?id` search param. It stays mounted
+ * so opening animates, and keeps showing the last objekt while it slides away.
  */
 export default function RoutedExpandableObjekt() {
   const { activeObjekt, setActiveObjekt } = useActiveObjekt();
-
-  // wait for the dialog to close before resetting the active objekt
-  function onClose() {
-    setTimeout(() => {
-      setActiveObjekt(undefined);
-    }, 200);
-  }
-
-  if (activeObjekt === undefined) {
-    return null;
+  const [slug, setSlug] = useState(activeObjekt);
+  if (activeObjekt !== undefined && activeObjekt !== slug) {
+    setSlug(activeObjekt);
   }
 
   return (
-    <MetadataDialog slug={activeObjekt} defaultOpen={true} onClose={onClose} />
+    <MetadataDialog
+      slug={slug}
+      open={activeObjekt !== undefined}
+      onClose={() => setActiveObjekt(undefined)}
+    />
   );
 }

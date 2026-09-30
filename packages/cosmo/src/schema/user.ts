@@ -1,5 +1,5 @@
 import { Schema } from "effect";
-import { ValidArtistSchema } from "./common.ts";
+import { ValidArtistSchema } from "./common";
 
 export const CosmoByNicknameSchema = Schema.Struct({
   nickname: Schema.String,

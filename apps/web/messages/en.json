@@ -50,6 +50,7 @@
   "common_saving": "Saving...",
   "common_close": "Close",
   "common_como": "COMO",
+  "common_help": "Help",
   "common_cosmo": "COSMO",
   "common_retry": "Retry",
   "common_username": "Username",
@@ -80,8 +81,7 @@
   "list_header_intent_regular": "LIST",
   "list_header_curated_by": "Curated by",
   "list_header_objekts_label": "objekts",
-  "list_header_updated": "Updated {date}",
-  "list_header_description": "Description",
+  "list_header_created": "Created {date}",
   "list_header_description_empty": "No description",
   "list_header_paired": "Paired list",
   "list_header_contacts_heading": "Reach {user}",
@@ -194,6 +194,7 @@
   "settings_language_japanese": "Japanese",
   "_comment_nav": "Navigation strings",
   "nav_objekt_stats": "Stats",
+  "nav_profile": "Profile",
   "_comment_objekts": "Objekt related strings",
   "objekts_header": "Objekts",
   "objekt_list": "Objekt List",
@@ -212,6 +213,9 @@
   "list_zero_lists": "0 lists",
   "list_zero_lists_available": "0 lists available",
   "list_create_new": "Create New",
+  "list_new": "New list",
+  "list_shelf_empty": "{username} hasn't made any lists yet.",
+  "list_shelf_error": "Couldn't load lists",
   "list_discord_format": "Discord Format",
   "list_discord_format_title": "Format Lists for Discord",
   "list_discord_format_description": "Select one list as your have, and another as your want, for easy copying into #objekt-trade.",
@@ -272,13 +276,8 @@
   "list_already_on_list": "{collectionId} is already on this list",
   "batch_selected_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} objekt selected",
         "countPlural=other": "{count} objekts selected"
@@ -312,13 +311,8 @@
   "list_matches_overlap_count": "{count} overlap",
   "list_matches_count_label": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} match",
         "countPlural=other": "{count} matches"
@@ -347,6 +341,152 @@
   "list_error_unsupported_currency": "That currency isn't supported.",
   "list_error_entry_not_found": "List entry not found",
   "list_error_entry_kind_mismatch": "List entry type mismatch",
+  "binder_error_binder_not_found": "Binder not found",
+  "binder_error_binder_name_taken": "You already have a binder with this name",
+  "binder_error_binder_limit_reached": "You can have up to 10 binders",
+  "binder_error_binder_page_limit_reached": "This binder is full, binders can have up to 20 pages",
+  "binder_error_binder_layout_locked": "Cannot change a binder's layout once it has objekts",
+  "binder_error_cover_not_in_binder": "That objekt is no longer in this binder",
+  "binder_error_pocket_out_of_range": "That pocket doesn't exist in this binder",
+  "binder_error_objekt_not_owned": "We couldn't confirm you own this objekt yet. If you just received it, try again shortly",
+  "binder_page_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} page",
+        "countPlural=other": "{count} pages"
+      }
+    }
+  ],
+  "binder_binders": "Binders",
+  "binder_shelf_empty": "{username} hasn't made any binders yet.",
+  "binder_shelf_error": "Couldn't load binders",
+  "binder_new": "New binder",
+  "binder_shelf_limit": "Up to {max} binders",
+  "binder_create_description": "Pick a name, a pocket layout and a spine colour. You'll fill it next.",
+  "binder_create_name_placeholder": "My binder",
+  "binder_create_layout_pockets": "{count} per page",
+  "binder_create_layout_locked": "The layout can't be changed once the binder has objekts.",
+  "binder_created": "Binder created",
+  "binder_picker_all_artists": "All",
+  "binder_picker_suggestion_one": "Like pocket {pocket}:",
+  "binder_picker_suggestion_two": "Like pockets {first} and {second}:",
+  "binder_picker_suggested": "Suggested",
+  "binder_picker_matches_one": "Matches pocket {pocket}",
+  "binder_picker_matches_two": "Matches pockets {first} and {second}",
+  "binder_picker_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} objekt",
+        "countPlural=other": "{count} objekts"
+      }
+    }
+  ],
+  "binder_picker_sort": "sort · {sort}",
+  "binder_picker_pick_artist": "Pick an artist",
+  "binder_picker_ownership": "Ownership",
+  "binder_picker_binder": "Binder",
+  "binder_picker_not_in_binder": "Not in this binder",
+  "binder_picker_show": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Show {count} objekt",
+        "countPlural=other": "Show {count} objekts"
+      }
+    }
+  ],
+  "binder_picker_in_binder": "in binder",
+  "binder_picker_empty_filtered": "No objekts match. Remove a filter to see more.",
+  "binder_picker_empty": "No objekts in this collection yet.",
+  "binder_picker_remove_filter": "Remove {filter}",
+  "binder_editor_title": "Edit {name}",
+  "binder_editor_error_loading": "Could not load this binder",
+  "binder_editor_saved": "Saved",
+  "binder_editor_page_of": "page {page} of {total}",
+  "binder_editor_previous_page": "Previous page",
+  "binder_editor_next_page": "Next page",
+  "binder_editor_page": "page",
+  "binder_editor_add_page": "Add a page",
+  "binder_editor_remove_page": "Remove page",
+  "binder_editor_remove_page_confirm": "Remove page {page}?",
+  "binder_editor_remove_page_n": "Remove page {page}",
+  "binder_editor_remove_page_description": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Its objekt will be taken out of this binder. It stays in your collection.",
+        "countPlural=other": "Its {count} objekts will be taken out of this binder. They stay in your collection."
+      }
+    }
+  ],
+  "binder_editor_hint_click": "click",
+  "binder_editor_hint_fill": "a pocket, then an objekt, to fill it",
+  "binder_editor_hint_drag_key": "drag",
+  "binder_editor_hint_drag": "an objekt into a pocket, or a pocket onto another to swap",
+  "binder_editor_hint_clear": "clears a pocket",
+  "binder_editor_hint_tap": "Tap to fill, hold to move",
+  "binder_editor_pick_title": "Pocket {pocket}",
+  "binder_editor_clear_pocket": "Clear",
+  "binder_editor_clear_pocket_n": "Clear pocket {pocket}",
+  "binder_editor_use_as_cover": "Use as cover",
+  "binder_editor_cover": "Cover",
+  "binder_editor_pocket_empty": "Pocket {pocket}, empty",
+  "binder_editor_pocket_filled": "Pocket {pocket}, {objekt}",
+  "binder_editor_pocket_cover": "Pocket {pocket}, {objekt}, cover",
+  "binder_editor_select_pocket": "Select a pocket first",
+  "binder_editor_page_full": "Page full",
+  "binder_editor_layout": "Layout",
+  "binder_editor_edit": "Edit name and colour",
+  "binder_editor_colour": "Colour",
+  "binder_editor_colour_presets": "Colours from this binder",
+  "binder_editor_colour_custom": "Custom colour",
+  "binder_editor_colour_hex": "Hex colour",
+  "binder_editor_delete": "Delete binder",
+  "binder_editor_delete_confirm": "Delete this binder?",
+  "binder_editor_delete_description": "{name} and all of its pages will be deleted. The objekts stay in your collection.",
+  "binder_editor_deleted": "Binder deleted",
+  "binder_editor_more": "More binder actions",
+  "binder_editor_drag_instructions": "Press Enter to choose it. To move it into a pocket, press Space, use the arrow keys to pick a pocket, then press Space to drop it or Escape to cancel.",
+  "binder_editor_drag_picked_up": "Picked up {objekt}.",
+  "binder_editor_drag_over": "Over pocket {pocket}.",
+  "binder_editor_drag_dropped": "Dropped {objekt} in pocket {pocket}.",
+  "binder_editor_drag_cancelled": "Move cancelled.",
+  "binder_viewer_open": "Open {name}",
+  "binder_viewer_objekt_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} objekt",
+        "countPlural=other": "{count} objekts"
+      }
+    }
+  ],
+  "binder_viewer_updated": "Updated {date}",
+  "binder_viewer_edit": "Edit",
+  "binder_viewer_share": "Share",
+  "binder_viewer_link_copied": "Binder link copied to clipboard",
+  "binder_viewer_pages_of": "pages {first}–{last} of {total}",
+  "binder_viewer_pages": "Pages",
+  "binder_viewer_go_to_page": "Page {page}",
+  "binder_pin": "Pin",
+  "binder_pinned": "Pinned",
+  "binder_unpin_named": "Unpin {name}",
+  "binder_toast_pinned": "Pinned {name}",
+  "binder_toast_unpinned": "Unpinned {name}",
+  "binder_add_select": "Select binder to add {collectionId} to",
+  "binder_add_named": "Add to {name}",
+  "binder_add_already_in": "Already in",
+  "binder_add_none": "No binders yet",
+  "binder_add_added": "Added to {name}, page {page}",
+  "binder_add_already": "{collectionId} is already in {name}, page {page}",
+  "binder_add_open": "Open",
   "notification_bell_label": "Notifications",
   "notification_mark_all_read": "Mark all read",
   "notification_empty": "No notifications yet.",
@@ -372,7 +512,8 @@
   "data_source_blockchain_label": "Individual Objekts",
   "data_source_blockchain_short": "Individual",
   "_comment_profile": "Profile page strings",
-  "profile_address": "Address",
+  "profile_copy_address": "Copy address",
+  "profile_tabs": "Profile sections",
   "profile_help_grid_title": "Grid/Column Size",
   "profile_help_grid_description": "You can change the grid/column size of objekts using the settings accessible by clicking on your profile picture in the top right.",
   "profile_help_grid_size_title": "Grid Size",
@@ -387,7 +528,6 @@
   "profile_help_locking_desc_2": "This is a {appName} feature and",
   "profile_help_locking_desc_emphasis": "does not prevent trading within the COSMO app",
   "profile_badge_cosmo_verified": "COSMO is verified",
-  "profile_badge_verified": "Verified",
   "profile_badge_modhaus": "Official Modhaus account",
   "profile_badge_modhaus_alt": "Modhaus",
   "_comment_system": "System status strings",
@@ -540,6 +680,8 @@
   "admin_collection_media_upload_failed": "Failed to upload media",
   "admin_collection_refetch": "Refetch from COSMO",
   "admin_collection_refetched": "Collection values updated from COSMO. Review and save.",
+  "admin_collection_recache_images": "Re-cache images",
+  "admin_collection_images_recached": "Images re-cached from COSMO.",
   "admin_collection_updated": "Collection updated successfully",
   "admin_latest_collections": "Latest Collections",
   "admin_latest_prev": "Previous page",
@@ -556,6 +698,7 @@
   "admin_collection_error_invalid_season": "The selected season does not belong to the selected artist.",
   "admin_collection_error_invalid_class": "The selected class does not belong to the selected artist.",
   "admin_collection_error_metadata_failed": "Failed to fetch metadata from COSMO.",
+  "admin_collection_error_image_recache_failed": "COSMO's image couldn't be downloaded or processed.",
   "admin_event_image": "Event Image",
   "admin_event_image_select": "Select Image",
   "admin_event_image_hint": "JPG, PNG, GIF or WebP. Max 1MB.",
@@ -684,6 +827,7 @@
   "progress_class": "{class} Class",
   "progress_complete": "Complete",
   "progress_title": "Progress",
+  "progress_overview": "Overview",
   "progress_title_with_username": "{username}'s Progress",
   "progress_help_progress_desc_1": "View a seasonal breakdown of collection progress to 100% completion.",
   "progress_help_progress_desc_2": "Each member can be further broken down into just physical (A) or digital (Z) collections, instead of combined.",
@@ -762,13 +906,8 @@
   "gravity_revealed_progress": "revealed {counted}/{total}",
   "gravity_votes_so_far": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} vote so far",
         "countPlural=other": "{count} votes so far"
@@ -780,13 +919,8 @@
   "gravity_ranking": "Ranking",
   "gravity_more_candidates": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "+ {count} more candidate",
         "countPlural=other": "+ {count} more candidates"
@@ -797,13 +931,8 @@
   "gravity_candidate_delta": "+{amount} COMO in the latest reveal",
   "gravity_vote_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} vote",
         "countPlural=other": "{count} votes"
@@ -815,6 +944,7 @@
   "gravity_no_votes_yet": "No votes yet",
   "gravity_votes_sealed": "Votes are hidden while voting is open",
   "gravity_totals_reveal": "Candidate totals reveal when counting begins",
+  "gravity_details": "Details",
   "_comment_blockchain": "Blockchain strings",
   "blockchain_types": "Types",
   "blockchain_total": "total",
@@ -836,6 +966,7 @@
   "objekt_overlay_pinned": "Pinned",
   "objekt_overlay_send": "Send",
   "objekt_overlay_add_to_list": "Add to List",
+  "objekt_overlay_add_to_binder": "Add to Binder",
   "objekt_overlay_remove_from_list": "Remove from List",
   "objekt_overlay_view_listings": "View listings",
   "objekt_overlay_select": "Select",
@@ -853,21 +984,16 @@
   "objekt_overlay_unlocked": "Unlocked",
   "objekt_overlay_pin_aria": "Pin {collectionId}",
   "objekt_overlay_unpin_aria": "Unpin {collectionId}",
-  "pin_reorder_instructions": "To pick up a pinned objekt, press space or enter. While dragging, use the arrow keys to move the objekt. Press space or enter again to drop, or escape to cancel.",
-  "pin_reorder_picked_up": "Picked up pinned objekt. It is in position {position} of {total}.",
-  "pin_reorder_over": "Pinned objekt moved to position {position} of {total}.",
-  "pin_reorder_dropped": "Pinned objekt dropped at position {position} of {total}.",
+  "pin_reorder_instructions": "To pick up a pin, press space or enter. On a pinned binder, enter opens it instead. While dragging, use the arrow keys to move the pin. Press space or enter again to drop, or escape to cancel.",
+  "pin_reorder_binder": "binder {name}",
+  "pin_reorder_picked_up": "Picked up {name}. It is in position {position} of {total}.",
+  "pin_reorder_over": "Moved {name} to position {position} of {total}.",
+  "pin_reorder_dropped": "Dropped {name} at position {position} of {total}.",
   "pin_reorder_cancelled": "Pin reordering cancelled.",
   "objekt_overlay_lock_aria": "Lock this objekt",
   "objekt_overlay_unlock_aria": "Unlock this objekt",
   "_comment_objekt_info": "Objekt info strings",
   "objekt_info_token_id": "Token ID",
-  "objekt_info_rescan": "Rescan",
-  "_comment_objekt_rescan": "Objekt rescan strings",
-  "objekt_rescan_success": "Objekt updated!",
-  "objekt_rescan_success_desc": "{collectionId} #{serial} has been updated from COSMO.",
-  "objekt_rescan_error": "Error",
-  "objekt_rescan_error_desc": "There was an error updating {collectionId} #{serial} from COSMO, please try again later.",
   "_comment_objekt_attribute": "Objekt attribute strings",
   "objekt_attribute_artist": "Artist",
   "objekt_attribute_member": "Member",
@@ -902,7 +1028,6 @@
   "objekt_metadata_history_range_90d": "90d",
   "objekt_metadata_history_range_all": "All",
   "objekt_metadata_history_empty": "Price history starts with the next snapshot.",
-  "objekt_error_metadata_fetch_failed": "Failed to fetch objekt metadata. Please try again.",
   "_comment_objekt_serials": "Objekt serials strings",
   "objekt_serials_placeholder": "Select a serial...",
   "objekt_serials_owner": "Owner",

@@ -11,7 +11,7 @@ Failures are the tagged error classes from `src/errors.ts` (`@apollo/cosmo/error
 
 - `cosmoClient` / `cosmoShopClient`: 10s timeout, one retry after 300ms on transport errors and [408, 425, 429, 500, 502, 503, 504]. 499 is excluded deliberately so client cancellations don't loop.
 - `cosmoNoRetryClient`: for endpoints where failure is meaningful (`fetchByNickname`, where a 404 means "no such user").
-- `metadataClient`: no timeout, one immediate retry, and its retry list adds 409 to the shared statuses. `apps/indexer` depends on this policy.
+- `metadataClient`: no timeout, one immediate retry, and its retry list adds 409 to the shared statuses.
 
 ## Quirks
 
@@ -22,7 +22,6 @@ Failures are the tagged error classes from `src/errors.ts` (`@apollo/cosmo/error
 
 ## Constraints
 
-- `apps/indexer` typechecks these sources under `moduleResolution: nodenext`: any relative import reachable from `server/metadata.ts` or `runtime.ts` needs an explicit `.js` extension.
 - The response schemas in `src/schema/*` are the single source of truth for response shapes. The public types in `src/types/*` derive from them via `typeof XSchema.Type` (type-only imports, so they erase at emit and add no runtime `effect` dependency for consumers) — never hand-sync a schema and a type. `Schema.mutable(Schema.Array(...))` is required because the public types use mutable arrays. Note that derived types have readonly properties — decoded COSMO data is not meant to be mutated in place; build new objects instead.
 
 ## Tests

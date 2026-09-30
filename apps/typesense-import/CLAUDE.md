@@ -17,11 +17,11 @@ Two databases are involved: collections and member sort order come from the **in
 
 ## Conventions
 
-- Standard Effect patterns: `Context.Service` classes with a `make:` effect and a hand-written `static readonly layer` (`Layer.effect(this, this.make)` + `Layer.provide` for dependencies), provided via `Layer.mergeAll`; config through the `Env` service (`Effect.Config`, secrets use `Config.redacted`); non-Effect promises (Typesense) wrapped in `Effect.tryPromise` with per-failure-mode `Data.TaggedError` classes. The `Indexer`/`Metadata` services are drizzle's Effect API via `@apollo/drizzle-bun-effect` (a scoped Bun `SQL` client), so DB queries are yielded directly and fail with drizzle's typed errors. Use context7 for Effect API docs.
+- Standard Effect patterns: `Context.Service` classes with a `make:` effect and a hand-written `static readonly layer` (`Layer.effect(this, this.make)` + `Layer.provide` for dependencies), provided via `Layer.mergeAll`; config read where it is consumed via `Config` inside each service's `make` (secrets use `Config.Redacted`); non-Effect promises (Typesense) wrapped in `Effect.tryPromise` with per-failure-mode `Data.TaggedError` classes. The `Indexer`/`Metadata` services are drizzle's Effect API via `@apollo/drizzle-bun-effect` (a scoped Bun `SQL` client), so DB queries are yielded directly and fail with drizzle's typed errors. Use context7 for Effect API docs.
 - Failure handling: each import-loop tick is wrapped in `Effect.catchCause` — a transient failure logs its cause, the watermark stays put, and the batch is retried on the next tick. Setup effects have no such wrapper and stay fatal at boot.
 - Typesense schema fields are either indexed (searchable/facetable) or display-only (`index: false`) — image URLs and the like should not be indexed.
 
 ## Common changes
 
 - **New Typesense field:** add it to the schema in `src/setup.ts` and to the enrichment mapping in `src/main.ts`; computed fields get a helper in `src/collections.ts`. Schema changes only apply to newly created collections — an existing Typesense collection must be dropped or altered manually.
-- **New synonym:** add to the right dictionary in `src/synonyms.ts`; only a new *category* needs setup logic in `src/setup.ts`.
+- **New synonym:** add to the right dictionary in `src/synonyms.ts`; only a new _category_ needs setup logic in `src/setup.ts`.

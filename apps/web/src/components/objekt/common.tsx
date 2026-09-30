@@ -110,7 +110,9 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
           {showBand && (
             <Fragment>
               {useCustomBand && (
-                <SidebarText type="name">{collection.member}</SidebarText>
+                <SidebarText type="name" className="font-bold">
+                  {collection.member}
+                </SidebarText>
               )}
               <SidebarText
                 type="collection"

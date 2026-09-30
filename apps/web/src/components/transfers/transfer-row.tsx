@@ -3,6 +3,7 @@ import type { AggregatedTransfer } from "@/lib/universal/transfers";
 import { Addresses } from "@apollo/util";
 import { IconRotate360 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
+import { Timestamp } from "../ui/timestamp";
 
 type Props = {
   row: AggregatedTransfer;
@@ -13,15 +14,6 @@ export default function TransferRow({ row, address }: Props) {
   const isReceiver = row.transfer.to.toLowerCase() === address.toLowerCase();
   const serial = row.serial?.toString().padStart(5, "0");
 
-  const timestamp = new Date(row.transfer.timestamp).toLocaleString([], {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    hour: "numeric",
-    minute: "numeric",
-    hour12: true,
-  });
-
   return (
     <div className="grid h-14 grid-cols-[3fr_2fr_2fr] items-center gap-2 border-t border-accent px-4 text-xs transition-colors [contain-intrinsic-size:auto_56px] [content-visibility:auto] hover:bg-secondary/40 sm:text-sm">
       <div className="flex flex-col">
@@ -29,7 +21,12 @@ export default function TransferRow({ row, address }: Props) {
         <span className="text-xs">#{serial}</span>
       </div>
       <User row={row} isReceiver={isReceiver} />
-      <span className="text-right">{timestamp}</span>
+      <Timestamp
+        date={new Date(row.transfer.timestamp)}
+        format="MMM d, yyyy"
+        showTime
+        className="text-right"
+      />
     </div>
   );
 }

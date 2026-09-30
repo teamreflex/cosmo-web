@@ -29,7 +29,8 @@ function catalogRow(
     class: className,
     collectionNo,
     slug,
-    thumbnailImage: `https://cdn.test/${slug}/thumbnail`,
+    frontImage: `https://cdn.test/${slug}/front`,
+    frontImageVersion: null,
   };
 }
 
@@ -304,7 +305,7 @@ describe("buildGridLedger", () => {
     const rewards = ledger.members[0]?.seasons[0]?.editions[0]?.rewards;
     expect(rewards?.[0]?.owned).toBe(3);
     expect(rewards?.[1]?.owned).toBe(0);
-    expect(rewards?.[0]?.slug).toBe("atom02-seoyeon-201z");
+    expect(rewards?.[0]?.collection?.slug).toBe("atom02-seoyeon-201z");
   });
 
   it("never surfaces event Specials as rewards", () => {

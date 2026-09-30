@@ -1,22 +1,15 @@
 {
-  "extends": "@apollo/typescript/tsconfig.node.json",
+  "extends": "@apollo/typescript/tsconfig.bun.json",
 
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", ".turbo", "lib"],
 
   "compilerOptions": {
-    "lib": ["ES2023"],
-
-    // Runs on Node in Docker rather than Bun
-    "types": ["node"],
+    "types": ["bun"],
 
     // TypeORM decorators
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-
-    // Workspace packages are consumed as .ts source with explicit .ts
-    // extensions (required by Node type stripping at runtime)
-    "rewriteRelativeImportExtensions": true,
 
     // Build output
     "declaration": false,

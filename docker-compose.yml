@@ -66,10 +66,10 @@ services:
       - "5434:5432"
     deploy:
       resources:
-        # intentionally lower than production
         limits:
-          cpus: "0.125"
-          memory: 1g
+          cpus: "0.5"
+          memory: 4g
+    command: postgres -c shared_buffers=644MB -c effective_cache_size=1GB -c work_mem=22MB -c maintenance_work_mem=161MB
     environment:
       - POSTGRES_DB=indexer
       - POSTGRES_USER=postgres
@@ -134,6 +134,28 @@ services:
     networks:
       - apollo-network
 
+  # s3-compatible stand-in for cloudflare r2, serving the bucket publicly at localhost:9000/apollo
+  s3proxy:
+    image: andrewgaul/s3proxy:4.1.1
+    restart: on-failure
+    ports:
+      - "9000:80"
+    deploy:
+      resources:
+        limits:
+          memory: 512m
+    # buckets are directories under /data
+    command: sh -c "mkdir -p /data/apollo && exec /opt/s3proxy/run-docker-container.sh"
+    environment:
+      # objects need to be publicly readable like the r2 custom domain, which s3proxy only allows without auth
+      - S3PROXY_AUTHORIZATION=none
+      # presigned uploads come straight from the browser
+      - S3PROXY_CORS_ALLOW_ALL=true
+    volumes:
+      - s3proxy-data:/data
+    networks:
+      - apollo-network
+
   # indexer processor
   processor:
     build:
@@ -147,6 +169,7 @@ services:
       - RPC_FINALITY=${INDEXER_RPC_FINALITY}
       - SQD_ENDPOINT=${INDEXER_SQD_ENDPOINT}
       - SQD_KEY=${INDEXER_SQD_KEY}
+      - SQD_LOG_LABELS=${INDEXER_SQD_LOG_LABELS}
       - DB_URL=postgresql://postgres:postgres@postgres-indexer:5432/indexer
       - DB_NAME=indexer
       - DB_READ_USER=postgres
@@ -154,9 +177,16 @@ services:
       - ENABLE_OBJEKTS=${INDEXER_ENABLE_OBJEKTS}
       - ENABLE_GRAVITY=${INDEXER_ENABLE_GRAVITY}
       - COSMO_PARALLEL_COUNT=${INDEXER_COSMO_PARALLEL_COUNT}
+      - SENTRY_DSN=${INDEXER_SENTRY_DSN}
+      - R2_ENDPOINT=http://s3proxy
+      - R2_BUCKET=apollo
+      - R2_ACCESS_KEY=local
+      - R2_SECRET_KEY=local
     depends_on:
       # indexer shouldn't go through pgbouncer
       postgres-indexer:
+        condition: service_healthy
+      s3proxy:
         condition: service_healthy
     networks:
       - apollo-network
@@ -251,3 +281,4 @@ volumes:
   postgres-indexer-data:
   typesense-data:
   valkey-data:
+  s3proxy-data:

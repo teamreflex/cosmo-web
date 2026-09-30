@@ -13,6 +13,10 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.cosmoAccounts.userId,
       to: r.objektLists.userId,
     }),
+    binders: r.many.binders({
+      from: r.cosmoAccounts.userId,
+      to: r.binders.userId,
+    }),
     polygonVotes: r.many.polygonVotes({
       from: r.cosmoAccounts.polygonAddress,
       to: r.polygonVotes.address,
@@ -32,6 +36,10 @@ export const relations = defineRelations(schema, (r) => ({
     profile: r.one.cosmoAccounts({
       from: r.pins.address,
       to: r.cosmoAccounts.address,
+    }),
+    binder: r.one.binders({
+      from: r.pins.binderId,
+      to: r.binders.id,
     }),
   },
   collectionData: {
@@ -74,6 +82,22 @@ export const relations = defineRelations(schema, (r) => ({
     objektList: r.one.objektLists({
       from: r.objektListEntries.objektListId,
       to: r.objektLists.id,
+    }),
+  },
+  binders: {
+    user: r.one.user({
+      from: r.binders.userId,
+      to: r.user.id,
+      optional: false,
+    }),
+    entries: r.many.binderEntries(),
+    pins: r.many.pins(),
+  },
+  binderEntries: {
+    binder: r.one.binders({
+      from: r.binderEntries.binderId,
+      to: r.binders.id,
+      optional: false,
     }),
   },
   notifications: {
@@ -125,6 +149,7 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.user.currency,
       to: r.fxRates.currency,
     }),
+    binders: r.many.binders(),
   },
   apikey: {
     user: r.one.user({

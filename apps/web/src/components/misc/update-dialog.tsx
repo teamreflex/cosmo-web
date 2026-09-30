@@ -33,17 +33,14 @@ export default function UpdateDialog() {
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <button
-          type="button"
-          className="relative flex h-7 w-8 items-center justify-center rounded-sm border border-cosmo/40 bg-cosmo/25 shadow-sm transition-colors hover:bg-cosmo/40 lg:h-8 lg:w-9"
-          aria-label={m.aria_updates()}
-        >
-          <IconSpeakerphone className="h-5 w-5 text-cosmo-text/75" />
-          {isNew && (
-            <span className="absolute top-0 right-0 h-2 w-2 animate-pulse rounded-full bg-red-500" />
-          )}
-        </button>
+      <AlertDialogTrigger
+        className="relative flex h-7 w-8 items-center justify-center rounded-sm border border-cosmo/40 bg-cosmo/25 shadow-sm transition-colors hover:bg-cosmo/40 lg:h-8 lg:w-9"
+        aria-label={m.aria_updates()}
+      >
+        <IconSpeakerphone className="h-5 w-5 text-cosmo-text/75" />
+        {isNew && (
+          <span className="absolute top-0 right-0 h-2 w-2 animate-pulse rounded-full bg-red-500" />
+        )}
       </AlertDialogTrigger>
       <AlertDialogContent size="lg">
         <AlertDialogHeader>
@@ -56,7 +53,7 @@ export default function UpdateDialog() {
         </AlertDialogHeader>
 
         <div className="flex flex-col gap-2 text-sm">
-          <Accordion type="single" collapsible>
+          <Accordion>
             {updates.map((update) => (
               <AccordionItem key={update.date} value={update.date}>
                 <AccordionTrigger>
@@ -83,12 +80,13 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2026-08-28",
+    date: "2026-09-30",
     changes: [
-      "Refreshed live gravity designs.",
-      "Added: Support for combination polls (First Grand Gravity, Two Big WAVes).",
-      "Added: Support for the upcoming unit gravity type.",
-      "Disabled trade filtering temporarily while it gets optimized.",
+      "Added: 3D objekt interaction from COSMO",
+      "Added: Details/descriptions from gravities",
+      "Added: Image optimization to help responsiveness and loading speed",
+      "Added: Pinnable objekt collectbook/binder system",
+      "Small rework of profile pages to better suit mobile devices",
     ],
   },
 ];

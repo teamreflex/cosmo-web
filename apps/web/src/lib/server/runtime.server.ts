@@ -1,5 +1,5 @@
 import { env } from "@/lib/env/server";
-import * as Redis from "@apollo/redis";
+import { BunRedis } from "@effect/platform-bun";
 import { Layer, ManagedRuntime } from "effect";
 import { RateLimiter } from "effect/unstable/persistence";
 
@@ -9,6 +9,6 @@ import { RateLimiter } from "effect/unstable/persistence";
 export const Runtime = ManagedRuntime.make(
   RateLimiter.layer.pipe(
     Layer.provide(RateLimiter.layerStoreRedis()),
-    Layer.provide(Redis.make({ url: env.REDIS_URL })),
+    Layer.provide(BunRedis.layer({ url: env.REDIS_URL })),
   ),
 );

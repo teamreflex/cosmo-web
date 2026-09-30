@@ -28,33 +28,33 @@ import { ArtistItem } from "./artist-selectbox";
  * Public desktop link buttons — rendered regardless of auth state.
  */
 export function DesktopPublicLinks() {
-  const location = useLocation();
+  const pathname = useLocation({ select: (location) => location.pathname });
 
   return (
     <div className="hidden items-center gap-1 lg:flex">
       <LinkButton
         href="/"
-        active={location.pathname === "/" || location.pathname === "/objekts"}
+        active={pathname === "/" || pathname === "/objekts"}
         name={m.objekts_header()}
       />
       <LinkButton
         href="/objekts/stats"
-        active={location.pathname === "/objekts/stats"}
+        active={pathname === "/objekts/stats"}
         name={m.nav_objekt_stats()}
       />
       <LinkButton
         href="/market"
-        active={location.pathname.startsWith("/market")}
+        active={pathname.startsWith("/market")}
         name={m.market_header()}
       />
       <LinkButton
         href="/events"
-        active={location.pathname.startsWith("/events")}
+        active={pathname.startsWith("/events")}
         name={m.events_header()}
       />
       <LinkButton
         href="/gravity"
-        active={location.pathname.startsWith("/gravity")}
+        active={pathname.startsWith("/gravity")}
         name={m.gravity_header()}
       />
     </div>
@@ -66,10 +66,10 @@ type AuthLinksProps = {
 };
 
 /**
- * Auth-gated desktop links — currently the user's Collection page.
+ * Auth-gated desktop links — currently the user's own profile.
  */
 export function DesktopAuthLinks({ cosmo }: AuthLinksProps) {
-  const location = useLocation();
+  const pathname = useLocation({ select: (location) => location.pathname });
 
   if (!cosmo) return null;
 
@@ -77,8 +77,8 @@ export function DesktopAuthLinks({ cosmo }: AuthLinksProps) {
     <div className="hidden items-center gap-1 lg:flex">
       <LinkButton
         href={`/@${cosmo.username}`}
-        active={location.pathname.startsWith(`/@${cosmo.username}`)}
-        name={m.collection_title()}
+        active={pathname.startsWith(`/@${cosmo.username}`)}
+        name={m.nav_profile()}
       />
     </div>
   );
@@ -92,112 +92,116 @@ type MobileMenuProps = AuthLinksProps & { signedIn: boolean };
 export function MobileMenu(props: MobileMenuProps) {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={m.common_menu()}
-          className="lg:hidden"
-        >
-          <IconMenu2 className="size-6" />
-        </Button>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={m.common_menu()}
+            className="lg:hidden"
+          />
+        }
+      >
+        <IconMenu2 className="size-6" />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-fit" align="end">
-        <DropdownMenuLabel>{m.common_menu()}</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <MobileMenuItems {...props} />
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>{m.common_menu()}</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <MobileMenuItems {...props} />
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );
 }
 
 function MobileMenuItems(props: MobileMenuProps) {
-  const location = useLocation();
+  const pathname = useLocation({ select: (location) => location.pathname });
   const { artistList, selectedIds } = useArtists();
 
   return (
     <div className="contents">
       {/* objekt index */}
-      <DropdownMenuItem asChild>
-        <Link to="/" aria-label={m.objekts_header()}>
-          <IconCards
-            className={cn(
-              "h-4 w-4 shrink-0 fill-transparent transition-all",
-              (location.pathname === "/" || location.pathname === "/objekts") &&
-                "fill-white/50",
-            )}
-          />
-          <span>{m.objekts_header()}</span>
-        </Link>
+      <DropdownMenuItem
+        render={<Link to="/" aria-label={m.objekts_header()} />}
+      >
+        <IconCards
+          className={cn(
+            "h-4 w-4 shrink-0 fill-transparent transition-all",
+            (pathname === "/" || pathname === "/objekts") && "fill-white/50",
+          )}
+        />
+        <span>{m.objekts_header()}</span>
       </DropdownMenuItem>
 
       {/* objekt stats */}
-      <DropdownMenuItem asChild>
-        <Link to="/objekts/stats" aria-label={m.nav_objekt_stats()}>
-          <IconChartBar
-            className={cn(
-              "h-4 w-4 shrink-0 fill-transparent transition-all",
-              location.pathname === "/objekts/stats" && "fill-white/50",
-            )}
-          />
-          <span>{m.nav_objekt_stats()}</span>
-        </Link>
+      <DropdownMenuItem
+        render={<Link to="/objekts/stats" aria-label={m.nav_objekt_stats()} />}
+      >
+        <IconChartBar
+          className={cn(
+            "h-4 w-4 shrink-0 fill-transparent transition-all",
+            pathname === "/objekts/stats" && "fill-white/50",
+          )}
+        />
+        <span>{m.nav_objekt_stats()}</span>
       </DropdownMenuItem>
 
       {/* market */}
-      <DropdownMenuItem asChild>
-        <Link to="/market" aria-label={m.market_header()}>
-          <IconTag
-            className={cn(
-              "h-4 w-4 shrink-0 fill-transparent transition-all",
-              location.pathname.startsWith("/market") && "fill-white/50",
-            )}
-          />
-          <span>{m.market_header()}</span>
-        </Link>
+      <DropdownMenuItem
+        render={<Link to="/market" aria-label={m.market_header()} />}
+      >
+        <IconTag
+          className={cn(
+            "h-4 w-4 shrink-0 fill-transparent transition-all",
+            pathname.startsWith("/market") && "fill-white/50",
+          )}
+        />
+        <span>{m.market_header()}</span>
       </DropdownMenuItem>
 
-      <DropdownMenuItem asChild>
-        <Link to="/events" aria-label={m.events_header()}>
-          <IconFolderOpen
-            className={cn(
-              "h-4 w-4 shrink-0 fill-transparent transition-all",
-              location.pathname === "/events" && "fill-white/50",
-            )}
-          />
-          <span>{m.events_header()}</span>
-        </Link>
+      <DropdownMenuItem
+        render={<Link to="/events" aria-label={m.events_header()} />}
+      >
+        <IconFolderOpen
+          className={cn(
+            "h-4 w-4 shrink-0 fill-transparent transition-all",
+            pathname === "/events" && "fill-white/50",
+          )}
+        />
+        <span>{m.events_header()}</span>
       </DropdownMenuItem>
 
       {/* gravity */}
-      <DropdownMenuItem asChild>
-        <Link to="/gravity" aria-label={m.gravity_header()}>
-          <IconArchive
-            className={cn(
-              "h-4 w-4 shrink-0 fill-transparent transition-all",
-              location.pathname.startsWith("/gravity") && "fill-white/50",
-            )}
-          />
-          <span>{m.gravity_header()}</span>
-        </Link>
+      <DropdownMenuItem
+        render={<Link to="/gravity" aria-label={m.gravity_header()} />}
+      >
+        <IconArchive
+          className={cn(
+            "h-4 w-4 shrink-0 fill-transparent transition-all",
+            pathname.startsWith("/gravity") && "fill-white/50",
+          )}
+        />
+        <span>{m.gravity_header()}</span>
       </DropdownMenuItem>
 
       {props.cosmo && (
-        <DropdownMenuItem asChild>
-          <Link
-            to="/@{$username}"
-            params={{ username: props.cosmo.username }}
-            aria-label={m.collection_title()}
-          >
-            <IconPackage
-              className={cn(
-                "h-4 w-4 shrink-0 fill-transparent transition-all",
-                location.pathname === `/@${props.cosmo.username}` &&
-                  "fill-white/50",
-              )}
+        <DropdownMenuItem
+          render={
+            <Link
+              to="/@{$username}"
+              params={{ username: props.cosmo.username }}
+              aria-label={m.nav_profile()}
             />
-            <span>{m.collection_title()}</span>
-          </Link>
+          }
+        >
+          <IconPackage
+            className={cn(
+              "h-4 w-4 shrink-0 fill-transparent transition-all",
+              pathname === `/@${props.cosmo.username}` && "fill-white/50",
+            )}
+          />
+          <span>{m.nav_profile()}</span>
         </DropdownMenuItem>
       )}
 

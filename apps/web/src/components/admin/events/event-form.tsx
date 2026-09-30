@@ -47,7 +47,23 @@ export default function EventForm({
     ? eras.filter((era) => era.artist === selectedArtist)
     : eras;
 
-  const artistList = Object.values(artists);
+  const artistItems = Object.values(artists).map((artist) => ({
+    value: artist.id,
+    label: (
+      <>
+        <img
+          src={artist.logoImageUrl}
+          alt={artist.title}
+          className="aspect-square size-4 rounded-full"
+        />
+        <span>{artist.title}</span>
+      </>
+    ),
+  }));
+  const eraItems = filteredEras.map((era) => ({
+    value: era.id,
+    label: <EraLabel era={era} artist={artists[era.artist]} />,
+  }));
   const eventTypesList = Object.values(eventTypes);
 
   return (
@@ -61,8 +77,11 @@ export default function EventForm({
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="artist">{m.admin_event_artist()}</FieldLabel>
               <Select
+                items={artistItems}
                 value={field.value}
                 onValueChange={(v) => {
+                  // re-picking the current artist must keep the chosen era
+                  if (v === null || v === field.value) return;
                   field.onChange(v);
                   form.setValue("eraId", "");
                 }}
@@ -73,18 +92,13 @@ export default function EventForm({
                   />
                 </SelectTrigger>
                 <SelectContent>
-                  {artistList.map((artist) => (
+                  {artistItems.map((item) => (
                     <SelectItem
-                      key={artist.id}
-                      value={artist.id}
+                      key={item.value}
+                      value={item.value}
                       className="flex items-center gap-2"
                     >
-                      <img
-                        src={artist.logoImageUrl}
-                        alt={artist.title}
-                        className="aspect-square size-4 rounded-full"
-                      />
-                      <span>{artist.title}</span>
+                      {item.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -102,20 +116,25 @@ export default function EventForm({
             <Field data-invalid={fieldState.invalid}>
               <FieldLabel htmlFor="eraId">{m.admin_event_era()}</FieldLabel>
               <Select
+                items={eraItems}
                 value={field.value}
-                onValueChange={field.onChange}
+                onValueChange={(value) => {
+                  if (value !== null) field.onChange(value);
+                }}
                 disabled={!selectedArtist && filteredEras.length === 0}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder={m.admin_event_era_placeholder()} />
                 </SelectTrigger>
                 <SelectContent>
-                  {filteredEras.map((era) => (
-                    <EraSelectItem
-                      key={era.id}
-                      era={era}
-                      artist={artists[era.artist]}
-                    />
+                  {eraItems.map((item) => (
+                    <SelectItem
+                      key={item.value}
+                      value={item.value}
+                      className="flex items-center gap-2"
+                    >
+                      {item.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -132,7 +151,13 @@ export default function EventForm({
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
             <FieldLabel htmlFor="eventType">{m.admin_event_type()}</FieldLabel>
-            <Select value={field.value} onValueChange={field.onChange}>
+            <Select
+              items={eventTypesList}
+              value={field.value}
+              onValueChange={(value) => {
+                if (value !== null) field.onChange(value);
+              }}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={m.admin_event_type_placeholder()} />
               </SelectTrigger>
@@ -310,17 +335,17 @@ export default function EventForm({
   );
 }
 
-type EraSelectItemProps = {
+type EraLabelProps = {
   era: Era;
   artist: CosmoArtistWithMembersBFF | undefined;
 };
 
-function EraSelectItem(props: EraSelectItemProps) {
+function EraLabel(props: EraLabelProps) {
   const artistName = props.artist?.title ?? props.era.artist;
   const imageUrl = props.era.spotifyAlbumArt || props.era.imageUrl;
 
   return (
-    <SelectItem value={props.era.id} className="flex items-center gap-2">
+    <>
       {imageUrl ? (
         <img
           src={imageUrl}
@@ -331,7 +356,7 @@ function EraSelectItem(props: EraSelectItemProps) {
         <div className="size-4 rounded bg-muted" />
       )}
       <span>{`${props.era.name} • ${artistName}`}</span>
-    </SelectItem>
+    </>
   );
 }
 
@@ -370,21 +395,21 @@ function SeasonSelection(props: SeasonSelectionProps) {
                   field.value.includes(season.name) &&
                     "border-foreground bg-foreground text-background",
                 )}
-                asChild
+                render={
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const isSelected = field.value.includes(season.name);
+                      field.onChange(
+                        isSelected
+                          ? field.value.filter((s) => s !== season.name)
+                          : [...field.value, season.name],
+                      );
+                    }}
+                  />
+                }
               >
-                <button
-                  type="button"
-                  onClick={() => {
-                    const isSelected = field.value.includes(season.name);
-                    field.onChange(
-                      isSelected
-                        ? field.value.filter((s) => s !== season.name)
-                        : [...field.value, season.name],
-                    );
-                  }}
-                >
-                  {season.name}
-                </button>
+                {season.name}
               </Badge>
             ))}
           </div>

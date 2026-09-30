@@ -3,7 +3,7 @@ import type { ObjektListItem } from "@/lib/functions/objekts/objekt-list";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import { formatPrice } from "@/lib/utils";
 import type { ObjektList } from "@apollo/database/web/types";
-import { useMemo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 import ListingsDialog from "../market/listings-dialog";
 import { ObjektSidebar } from "../objekt/common";
 import ExpandableObjekt from "../objekt/objekt-expandable";
@@ -20,7 +20,7 @@ type Props = {
   fxRateToUsd: number | null;
 };
 
-export function ListGridItem({
+export const ListGridItem = memo(function ListGridItem({
   item,
   priority,
   authenticated,
@@ -94,7 +94,7 @@ export function ListGridItem({
       )}
     </>
   );
-}
+});
 
 type SalePriceOverlayProps = {
   collection: Objekt.Collection;

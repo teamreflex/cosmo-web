@@ -50,6 +50,7 @@
   "common_saving": "저장 중...",
   "common_close": "닫기",
   "common_como": "코모",
+  "common_help": "도움말",
   "common_cosmo": "코스모",
   "common_retry": "재시도",
   "common_username": "사용자명",
@@ -80,8 +81,7 @@
   "list_header_intent_regular": "LIST",
   "list_header_curated_by": "Curated by",
   "list_header_objekts_label": "오브젝트",
-  "list_header_updated": "{date} 업데이트",
-  "list_header_description": "설명",
+  "list_header_created": "{date} 생성",
   "list_header_description_empty": "설명 없음",
   "list_header_paired": "연결된 리스트",
   "list_header_contacts_heading": "{user}에게 연락",
@@ -194,6 +194,7 @@
   "settings_language_japanese": "일본어",
   "_comment_nav": "Navigation strings",
   "nav_objekt_stats": "통계",
+  "nav_profile": "프로필",
   "_comment_objekts": "Objekt related strings",
   "objekts_header": "오브젝트",
   "objekt_list": "오브젝트 리스트",
@@ -212,6 +213,9 @@
   "list_zero_lists": "0개 리스트",
   "list_zero_lists_available": "사용 가능한 리스트 없음",
   "list_create_new": "새로 만들기",
+  "list_new": "새 리스트",
+  "list_shelf_empty": "{username}님은 아직 리스트를 만들지 않았습니다.",
+  "list_shelf_error": "리스트를 불러올 수 없습니다",
   "list_discord_format": "디스코드 형식",
   "list_discord_format_title": "디스코드용 리스트 형식화",
   "list_discord_format_description": "#objekt-trade에 쉽게 복사할 수 있도록 보유 리스트와 원하는 리스트를 각각 선택하세요.",
@@ -272,13 +276,8 @@
   "list_already_on_list": "{collectionId}이(가) 이미 이 리스트에 있습니다",
   "batch_selected_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "{count}개 선택됨"
       }
@@ -311,13 +310,8 @@
   "list_matches_overlap_count": "{count}개 일치",
   "list_matches_count_label": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "매칭 {count}개"
       }
@@ -345,6 +339,147 @@
   "list_error_unsupported_currency": "지원하지 않는 통화입니다.",
   "list_error_entry_not_found": "리스트 항목을 찾을 수 없습니다",
   "list_error_entry_kind_mismatch": "리스트 항목 유형이 일치하지 않습니다",
+  "binder_error_binder_not_found": "바인더를 찾을 수 없습니다",
+  "binder_error_binder_name_taken": "이미 같은 이름의 바인더가 있습니다",
+  "binder_error_binder_limit_reached": "바인더는 최대 10개까지 만들 수 있습니다",
+  "binder_error_binder_page_limit_reached": "이 바인더가 가득 찼습니다. 바인더는 최대 20페이지까지 가능합니다",
+  "binder_error_binder_layout_locked": "objekt가 들어 있는 바인더의 레이아웃은 변경할 수 없습니다",
+  "binder_error_cover_not_in_binder": "해당 objekt는 더 이상 이 바인더에 없습니다",
+  "binder_error_pocket_out_of_range": "해당 포켓은 이 바인더에 없습니다",
+  "binder_error_objekt_not_owned": "이 objekt의 소유를 아직 확인할 수 없습니다. 방금 받았다면 잠시 후 다시 시도해 주세요",
+  "binder_page_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}페이지"
+      }
+    }
+  ],
+  "binder_binders": "바인더",
+  "binder_shelf_empty": "{username}님은 아직 바인더를 만들지 않았습니다.",
+  "binder_shelf_error": "바인더를 불러올 수 없습니다",
+  "binder_new": "새 바인더",
+  "binder_shelf_limit": "최대 {max}개까지",
+  "binder_create_description": "이름, 포켓 레이아웃, 책등 색상을 고르세요. 다음 화면에서 채울 수 있어요.",
+  "binder_create_name_placeholder": "내 바인더",
+  "binder_create_layout_pockets": "페이지당 {count}장",
+  "binder_create_layout_locked": "오브젝트를 넣은 뒤에는 레이아웃을 바꿀 수 없습니다.",
+  "binder_created": "바인더가 생성되었습니다",
+  "binder_picker_all_artists": "전체",
+  "binder_picker_suggestion_one": "{pocket}번 포켓처럼:",
+  "binder_picker_suggestion_two": "{first}번, {second}번 포켓처럼:",
+  "binder_picker_suggested": "추천",
+  "binder_picker_matches_one": "{pocket}번 포켓과 일치",
+  "binder_picker_matches_two": "{first}번, {second}번 포켓과 일치",
+  "binder_picker_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "오브젝트 {count}개"
+      }
+    }
+  ],
+  "binder_picker_sort": "정렬 · {sort}",
+  "binder_picker_pick_artist": "아티스트를 선택하세요",
+  "binder_picker_ownership": "소유",
+  "binder_picker_binder": "바인더",
+  "binder_picker_not_in_binder": "이 바인더에 없는 것",
+  "binder_picker_show": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "오브젝트 {count}개 보기"
+      }
+    }
+  ],
+  "binder_picker_in_binder": "바인더에 있음",
+  "binder_picker_empty_filtered": "일치하는 오브젝트가 없습니다. 필터를 제거하면 더 볼 수 있습니다.",
+  "binder_picker_empty": "이 컬렉션에는 아직 오브젝트가 없습니다.",
+  "binder_picker_remove_filter": "{filter} 제거",
+  "binder_editor_title": "{name} 편집",
+  "binder_editor_error_loading": "이 바인더를 불러올 수 없습니다",
+  "binder_editor_saved": "저장됨",
+  "binder_editor_page_of": "{page} / {total} 페이지",
+  "binder_editor_previous_page": "이전 페이지",
+  "binder_editor_next_page": "다음 페이지",
+  "binder_editor_page": "페이지",
+  "binder_editor_add_page": "페이지 추가",
+  "binder_editor_remove_page": "페이지 삭제",
+  "binder_editor_remove_page_confirm": "{page}페이지를 삭제할까요?",
+  "binder_editor_remove_page_n": "{page}페이지 삭제",
+  "binder_editor_remove_page_description": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "이 페이지의 objekt {count}개가 바인더에서 빠집니다. 컬렉션에는 그대로 남아 있습니다."
+      }
+    }
+  ],
+  "binder_editor_hint_click": "클릭",
+  "binder_editor_hint_fill": "포켓을 누른 뒤 objekt를 눌러 채우기",
+  "binder_editor_hint_drag_key": "드래그",
+  "binder_editor_hint_drag": "objekt를 포켓으로, 또는 포켓끼리 바꾸기",
+  "binder_editor_hint_clear": "포켓 비우기",
+  "binder_editor_hint_tap": "눌러서 채우기, 길게 눌러 옮기기",
+  "binder_editor_pick_title": "포켓 {pocket}",
+  "binder_editor_clear_pocket": "비우기",
+  "binder_editor_clear_pocket_n": "포켓 {pocket} 비우기",
+  "binder_editor_use_as_cover": "표지로 사용",
+  "binder_editor_cover": "표지",
+  "binder_editor_pocket_empty": "포켓 {pocket}, 비어 있음",
+  "binder_editor_pocket_filled": "포켓 {pocket}, {objekt}",
+  "binder_editor_pocket_cover": "포켓 {pocket}, {objekt}, 표지",
+  "binder_editor_select_pocket": "먼저 포켓을 선택하세요",
+  "binder_editor_page_full": "페이지가 가득 찼습니다",
+  "binder_editor_layout": "레이아웃",
+  "binder_editor_edit": "이름과 색상 편집",
+  "binder_editor_colour": "색상",
+  "binder_editor_colour_presets": "이 바인더의 색상",
+  "binder_editor_colour_custom": "사용자 지정 색상",
+  "binder_editor_colour_hex": "16진수 색상",
+  "binder_editor_delete": "바인더 삭제",
+  "binder_editor_delete_confirm": "이 바인더를 삭제할까요?",
+  "binder_editor_delete_description": "{name}와 모든 페이지가 삭제됩니다. objekt는 컬렉션에 그대로 남습니다.",
+  "binder_editor_deleted": "바인더가 삭제되었습니다",
+  "binder_editor_more": "더 보기",
+  "binder_editor_drag_instructions": "Enter로 선택합니다. 포켓으로 옮기려면 Space를 누르고 방향키로 포켓을 고른 뒤 Space로 놓거나 Esc로 취소하세요.",
+  "binder_editor_drag_picked_up": "{objekt}를 집었습니다.",
+  "binder_editor_drag_over": "포켓 {pocket} 위입니다.",
+  "binder_editor_drag_dropped": "{objekt}를 포켓 {pocket}에 놓았습니다.",
+  "binder_editor_drag_cancelled": "이동이 취소되었습니다.",
+  "binder_viewer_open": "{name} 열기",
+  "binder_viewer_objekt_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "오브젝트 {count}개"
+      }
+    }
+  ],
+  "binder_viewer_updated": "{date} 업데이트",
+  "binder_viewer_edit": "편집",
+  "binder_viewer_share": "공유",
+  "binder_viewer_link_copied": "바인더 링크가 클립보드에 복사되었습니다",
+  "binder_viewer_pages_of": "{first}–{last} / {total} 페이지",
+  "binder_viewer_pages": "페이지",
+  "binder_viewer_go_to_page": "{page}페이지",
+  "binder_pin": "고정",
+  "binder_pinned": "고정됨",
+  "binder_unpin_named": "{name} 고정 해제",
+  "binder_toast_pinned": "{name}를 고정했습니다",
+  "binder_toast_unpinned": "{name} 고정을 해제했습니다",
+  "binder_add_select": "{collectionId}를 추가할 바인더 선택",
+  "binder_add_named": "{name}에 추가",
+  "binder_add_already_in": "추가됨",
+  "binder_add_none": "아직 바인더가 없습니다",
+  "binder_add_added": "{name} {page}페이지에 추가했습니다",
+  "binder_add_already": "{collectionId}는 이미 {name} {page}페이지에 있습니다",
+  "binder_add_open": "열기",
   "notification_bell_label": "알림",
   "notification_mark_all_read": "모두 읽음 표시",
   "notification_empty": "아직 알림이 없습니다.",
@@ -370,7 +505,8 @@
   "data_source_blockchain_label": "개별 오브젝트",
   "data_source_blockchain_short": "개별",
   "_comment_profile": "Profile page strings",
-  "profile_address": "주소",
+  "profile_copy_address": "주소 복사",
+  "profile_tabs": "프로필 섹션",
   "profile_help_grid_title": "그리드/열 크기",
   "profile_help_grid_description": "오른쪽 상단의 프로필 사진을 클릭하여 액세스할 수 있는 설정에서 오브젝트의 그리드/열 크기를 변경할 수 있습니다.",
   "profile_help_grid_size_title": "그리드 크기",
@@ -385,7 +521,6 @@
   "profile_help_locking_desc_2": "이것은 {appName} 기능이며",
   "profile_help_locking_desc_emphasis": "코스모 앱 내 거래를 방지하지 않습니다",
   "profile_badge_cosmo_verified": "코스모 인증됨",
-  "profile_badge_verified": "인증됨",
   "profile_badge_modhaus": "공식 모드하우스 계정",
   "profile_badge_modhaus_alt": "모드하우스",
   "_comment_system": "System status strings",
@@ -538,6 +673,8 @@
   "admin_collection_media_upload_failed": "미디어 업로드에 실패했습니다",
   "admin_collection_refetch": "COSMO에서 다시 가져오기",
   "admin_collection_refetched": "COSMO에서 컬렉션 값을 가져왔습니다. 확인 후 저장하세요.",
+  "admin_collection_recache_images": "이미지 다시 캐시하기",
+  "admin_collection_images_recached": "COSMO에서 이미지를 다시 캐시했습니다.",
   "admin_collection_updated": "컬렉션이 성공적으로 업데이트되었습니다",
   "admin_latest_collections": "최신 컬렉션",
   "admin_latest_prev": "이전 페이지",
@@ -554,6 +691,7 @@
   "admin_collection_error_invalid_season": "선택한 시즌이 선택한 아티스트에 속하지 않습니다.",
   "admin_collection_error_invalid_class": "선택한 클래스가 선택한 아티스트에 속하지 않습니다.",
   "admin_collection_error_metadata_failed": "COSMO에서 메타데이터를 가져오지 못했습니다.",
+  "admin_collection_error_image_recache_failed": "COSMO 이미지를 다운로드하거나 처리하지 못했습니다.",
   "admin_event_image": "이벤트 이미지",
   "admin_event_image_select": "이미지 선택",
   "admin_event_image_hint": "JPG, PNG, GIF 또는 WebP. 최대 1MB.",
@@ -682,6 +820,7 @@
   "progress_class": "{class} 클래스",
   "progress_complete": "완료",
   "progress_title": "진행도",
+  "progress_overview": "개요",
   "progress_title_with_username": "{username}의 진행도",
   "progress_help_progress_desc_1": "시즌별 컬렉션 진행도를 100% 완료까지 확인합니다.",
   "progress_help_progress_desc_2": "각 멤버는 결합된 것이 아닌 피지컬(A) 또는 디지털(Z) 컬렉션만으로 세분화할 수 있습니다.",
@@ -760,13 +899,8 @@
   "gravity_revealed_progress": "공개 {counted}/{total}",
   "gravity_votes_so_far": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "현재 {count}표"
       }
@@ -777,13 +911,8 @@
   "gravity_ranking": "순위",
   "gravity_more_candidates": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "+ 후보 {count}명 더 보기"
       }
@@ -793,13 +922,8 @@
   "gravity_candidate_delta": "최근 공개에서 +{amount} COMO",
   "gravity_vote_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "투표 {count}회"
       }
@@ -810,6 +934,7 @@
   "gravity_no_votes_yet": "아직 투표 없음",
   "gravity_votes_sealed": "투표 중에는 표가 공개되지 않습니다",
   "gravity_totals_reveal": "집계가 시작되면 후보별 합계가 공개됩니다",
+  "gravity_details": "상세 정보",
   "_comment_blockchain": "Blockchain strings",
   "blockchain_types": "타입",
   "blockchain_total": "총계",
@@ -831,6 +956,7 @@
   "objekt_overlay_pinned": "고정됨",
   "objekt_overlay_send": "전송",
   "objekt_overlay_add_to_list": "리스트에 추가",
+  "objekt_overlay_add_to_binder": "바인더에 추가",
   "objekt_overlay_remove_from_list": "리스트에서 제거",
   "objekt_overlay_view_listings": "다른 판매 보기",
   "objekt_overlay_select": "선택",
@@ -848,21 +974,16 @@
   "objekt_overlay_unlocked": "잠금 해제됨",
   "objekt_overlay_pin_aria": "{collectionId} 고정",
   "objekt_overlay_unpin_aria": "{collectionId} 고정 해제",
-  "pin_reorder_instructions": "고정된 오브젝트를 집으려면 스페이스바 또는 엔터를 누르세요. 드래그하는 동안 화살표 키로 오브젝트를 이동할 수 있습니다. 스페이스바 또는 엔터를 다시 누르면 놓이고, Esc를 누르면 취소됩니다.",
-  "pin_reorder_picked_up": "고정된 오브젝트를 집었습니다. 현재 {total}개 중 {position}번째 위치입니다.",
-  "pin_reorder_over": "고정된 오브젝트를 {total}개 중 {position}번째 위치로 이동했습니다.",
-  "pin_reorder_dropped": "고정된 오브젝트를 {total}개 중 {position}번째 위치에 놓았습니다.",
+  "pin_reorder_instructions": "고정 항목을 집으려면 스페이스바 또는 엔터를 누르세요. 고정된 바인더에서는 엔터를 누르면 바인더가 열립니다. 드래그하는 동안 화살표 키로 항목을 이동할 수 있습니다. 스페이스바 또는 엔터를 다시 누르면 놓이고, Esc를 누르면 취소됩니다.",
+  "pin_reorder_binder": "바인더 {name}",
+  "pin_reorder_picked_up": "{name}을(를) 집었습니다. 현재 {total}개 중 {position}번째 위치입니다.",
+  "pin_reorder_over": "{name}을(를) {total}개 중 {position}번째 위치로 이동했습니다.",
+  "pin_reorder_dropped": "{name}을(를) {total}개 중 {position}번째 위치에 놓았습니다.",
   "pin_reorder_cancelled": "고정 순서 변경을 취소했습니다.",
   "objekt_overlay_lock_aria": "이 오브젝트 잠금",
   "objekt_overlay_unlock_aria": "이 오브젝트 잠금 해제",
   "_comment_objekt_info": "Objekt info strings",
   "objekt_info_token_id": "토큰 ID",
-  "objekt_info_rescan": "재스캔",
-  "_comment_objekt_rescan": "Objekt rescan strings",
-  "objekt_rescan_success": "오브젝트가 업데이트되었습니다!",
-  "objekt_rescan_success_desc": "{collectionId} #{serial}이(가) 코스모에서 업데이트되었습니다.",
-  "objekt_rescan_error": "오류",
-  "objekt_rescan_error_desc": "{collectionId} #{serial}을(를) 코스모에서 업데이트하는 중 오류가 발생했습니다. 나중에 다시 시도해 주세요.",
   "_comment_objekt_attribute": "Objekt attribute strings",
   "objekt_attribute_artist": "아티스트",
   "objekt_attribute_member": "멤버",
@@ -897,7 +1018,6 @@
   "objekt_metadata_history_range_90d": "90일",
   "objekt_metadata_history_range_all": "전체",
   "objekt_metadata_history_empty": "가격 기록은 다음 스냅샷부터 시작됩니다.",
-  "objekt_error_metadata_fetch_failed": "오브젝트 메타데이터를 가져오지 못했습니다. 다시 시도해 주세요.",
   "_comment_objekt_serials": "Objekt serials strings",
   "objekt_serials_placeholder": "시리얼 선택...",
   "objekt_serials_owner": "소유자",

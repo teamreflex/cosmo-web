@@ -9,6 +9,7 @@ How to find current documentation for libraries used in this repo. Prefer these 
 | TanStack Start / Router / Query / Virtual | `bunx @tanstack/cli search-docs "<query>" --json` (narrow with `--library <id>`, `--limit <n>`) |
 | Bun | bun docs MCP (`mcp__bun__*` tools) |
 | shadcn/ui | From `apps/web`: `bun run shadcn search <query>`, `bun run shadcn view <item>`, `bun run shadcn docs <component>` |
+| Base UI | Markdown docs matching the installed version ship with the package: `apps/web/node_modules/@base-ui/react/docs/react/components/<name>.md` (composition, animation and styling guides in `docs/react/handbook/`) |
 | Postgres | planetscale plugin skills (`planetscale:postgres`) |
 | Sentry | sentry MCP |
 
@@ -26,6 +27,6 @@ How to find current documentation for libraries used in this repo. Prefer these 
 
 ## Everything else
 
-Effect, Tailwind v4, Typesense, Paraglide JS, TypeORM, react-hook-form, Radix UI, and anything not listed above: use the context7 MCP (`resolve-library-id` → `query-docs`). oxlint/oxfmt docs live at https://oxc.rs.
+Effect, Tailwind v4, Typesense, Paraglide JS, TypeORM, react-hook-form, and anything not listed above: use the context7 MCP (`resolve-library-id` → `query-docs`). oxlint/oxfmt docs live at https://oxc.rs.
 
 The repo runs Effect v4 (`effect@4.x`, pinned in the root catalog); `@effect/platform`'s HTTP modules live at `effect/unstable/http`. Make sure lookups return v4 APIs.

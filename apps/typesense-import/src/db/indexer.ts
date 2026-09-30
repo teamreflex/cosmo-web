@@ -1,15 +1,14 @@
 import { relations } from "@apollo/database/indexer/relations";
 import { make } from "@apollo/drizzle-bun-effect";
 import { SQL } from "bun";
-import { Context, Effect, Layer, Redacted } from "effect";
-import { Env } from "../config";
+import { Config, Context, Effect, Layer, Redacted } from "effect";
 
 export class Indexer extends Context.Service<Indexer>()("app/Indexer", {
   make: Effect.gen(function* () {
-    const env = yield* Env;
+    const databaseUrl = yield* Config.Redacted("INDEXER_DATABASE_URL");
 
     // set application name for pg_stat_activity visibility
-    const url = new URL(Redacted.value(env.INDEXER_DATABASE_URL));
+    const url = new URL(Redacted.value(databaseUrl));
     url.searchParams.set("application_name", "Importer");
 
     // scoped client: the layer finalizer closes the connection on shutdown
@@ -22,7 +21,5 @@ export class Indexer extends Context.Service<Indexer>()("app/Indexer", {
     return yield* make({ client, relations });
   }),
 }) {
-  static readonly layer = Layer.effect(this, this.make).pipe(
-    Layer.provide(Env.layer),
-  );
+  static readonly layer = Layer.effect(this, this.make);
 }

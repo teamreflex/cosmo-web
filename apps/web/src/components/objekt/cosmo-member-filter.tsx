@@ -1,9 +1,11 @@
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
-import { useCallback } from "react";
+import { type ComponentProps, useCallback } from "react";
 import MemberFilter from "../collection/member-filter";
 
-export default function CosmoMemberFilter() {
+type Props = Pick<ComponentProps<typeof MemberFilter>, "align">;
+
+export default function CosmoMemberFilter({ align }: Props) {
   const { filters, setFilters } = useCosmoFilters();
 
   const setActiveMember = useCallback(
@@ -35,6 +37,7 @@ export default function CosmoMemberFilter() {
 
   return (
     <MemberFilter
+      align={align}
       activeArtist={filters.artist ?? null}
       activeMembers={filters.member ?? []}
       multiple

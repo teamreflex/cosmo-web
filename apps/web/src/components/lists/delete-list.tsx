@@ -13,16 +13,12 @@ import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { $deleteObjektList } from "@/lib/functions/lists";
-import {
-  currentAccountQuery,
-  targetAccountQueryFilter,
-} from "@/lib/queries/core";
-import type { FullAccount } from "@/lib/universal/cosmo-accounts";
+import { currentAccountQuery } from "@/lib/queries/core";
+import { listShelfQuery } from "@/lib/queries/lists";
 import type { ObjektList } from "@apollo/database/web/types";
 import { IconLoader2, IconTrash } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import type { MouseEvent } from "react";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 
@@ -35,6 +31,7 @@ export default function DeleteList({ objektList }: Props) {
   const removeObjektList = useProfileContext((state) => state.removeObjektList);
   const addObjektList = useProfileContext((state) => state.addObjektList);
   const queryClient = useQueryClient();
+  const shelfKey = listShelfQuery(objektList.userId).queryKey;
   const mutation = useMutation({
     mutationFn: useServerFn($deleteObjektList),
     onMutate: () => {
@@ -54,18 +51,8 @@ export default function DeleteList({ objektList }: Props) {
       if (target) {
         removeObjektList(objektList.id);
       }
-      // removing by id is a no-op on accounts that don't own the list
-      queryClient.setQueriesData<FullAccount>(
-        targetAccountQueryFilter,
-        (old) =>
-          old
-            ? {
-                ...old,
-                objektLists: old.objektLists.filter(
-                  (list) => list.id !== objektList.id,
-                ),
-              }
-            : old,
+      queryClient.setQueryData(shelfKey, (old) =>
+        old?.filter((list) => list.id !== objektList.id),
       );
     },
     onError: (error) => {
@@ -80,37 +67,23 @@ export default function DeleteList({ objektList }: Props) {
       if (target) {
         addObjektList(objektList);
       }
-      queryClient.setQueriesData<FullAccount>(
-        targetAccountQueryFilter,
-        (old) =>
-          old &&
-          old.user?.id === objektList.userId &&
-          !old.objektLists.some((list) => list.id === objektList.id)
-            ? { ...old, objektLists: [...old.objektLists, objektList] }
-            : old,
-      );
+      // the shelf's previews weren't kept, so refetch rather than restore
+      void queryClient.invalidateQueries({ queryKey: shelfKey });
     },
   });
 
-  function handleClick(event: MouseEvent<HTMLButtonElement>) {
-    event.preventDefault();
-    mutation.mutate({
-      data: {
-        id: objektList.id,
-      },
-    });
-  }
-
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button
-          variant="destructive"
-          size="icon-sm"
-          aria-label={m.aria_delete_list()}
-        >
-          <IconTrash />
-        </Button>
+      <AlertDialogTrigger
+        render={
+          <Button
+            variant="destructive"
+            size="icon-sm"
+            aria-label={m.aria_delete_list()}
+          />
+        }
+      >
+        <IconTrash />
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
@@ -123,7 +96,14 @@ export default function DeleteList({ objektList }: Props) {
           <AlertDialogCancel>{m.common_cancel()}</AlertDialogCancel>
           <AlertDialogAction
             type="button"
-            onClick={handleClick}
+            onClick={(event) => {
+              event.preventBaseUIHandler();
+              mutation.mutate({
+                data: {
+                  id: objektList.id,
+                },
+              });
+            }}
             disabled={mutation.isPending}
           >
             <span>{m.common_delete()}</span>

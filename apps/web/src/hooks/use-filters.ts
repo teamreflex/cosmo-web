@@ -1,10 +1,8 @@
 import type { CollectionDataSource } from "@apollo/util";
-import { getRouteApi } from "@tanstack/react-router";
+import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useCallback, useState } from "react";
 import { defaultFilters, useCosmoFilters } from "./use-cosmo-filters";
 import type { CosmoFilters } from "./use-cosmo-filters";
-
-const route = getRouteApi("/@{$username}/");
 
 type DefaultOptions = {
   dataSource?: CollectionDataSource;
@@ -14,8 +12,11 @@ type DefaultOptions = {
  * Combined objekt-related filters with profile-related filters.
  */
 export function useFilters(opts?: DefaultOptions) {
-  const searchParams = route.useSearch();
-  const navigate = route.useNavigate();
+  const locked = useSearch({
+    from: "/@{$username}/",
+    select: (search) => search.locked,
+  });
+  const navigate = useNavigate({ from: "/@{$username}/" });
 
   // setup cosmo filters
   const { filters, setFilters } = useCosmoFilters();
@@ -52,7 +53,7 @@ export function useFilters(opts?: DefaultOptions) {
 
   return {
     // masks the fact that undefined means show locked
-    showLocked: searchParams.locked ?? true,
+    showLocked: locked ?? true,
     setShowLocked,
     dataSource,
     setDataSource,

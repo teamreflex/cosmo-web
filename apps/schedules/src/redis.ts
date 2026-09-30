@@ -1,13 +1,10 @@
-import * as Redis from "@apollo/redis";
-import { Effect, Layer, Redacted } from "effect";
-import { Env } from "./env";
+import { BunRedis } from "@effect/platform-bun";
+import { Config } from "effect";
 
 /**
- * Effect's persistence `Redis` service, connected via the Env-configured URL.
+ * Effect's persistence `Redis` service. Defined once so CosmoKey and the
+ * scheduled tasks share a single client via layer memoization.
  */
-export const redisLayer = Layer.unwrap(
-  Effect.gen(function* () {
-    const env = yield* Env;
-    return Redis.make({ url: Redacted.value(env.redisUrl) });
-  }),
-).pipe(Layer.provide(Env.layer));
+export const redisLayer = BunRedis.layerConfig({
+  url: Config.String("REDIS_URL"),
+});

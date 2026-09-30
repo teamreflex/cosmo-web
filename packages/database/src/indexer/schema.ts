@@ -50,6 +50,8 @@ export const collections = pgTable("collection", {
   bandImageUrl: varchar("band_image_url", { length: 255 }),
   frontMedia: varchar("front_media", { length: 255 }),
   hasAudio: boolean("has_audio").notNull().default(false),
+  frontImageVersion: varchar("front_image_version", { length: 12 }),
+  backImageVersion: varchar("back_image_version", { length: 12 }),
 });
 
 export const objekts = pgTable("objekt", {

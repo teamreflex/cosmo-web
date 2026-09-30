@@ -24,9 +24,9 @@ import type {
 import { useMemo } from "react";
 import CandidateBreakdown from "./candidate-breakdown";
 import Countdown from "./countdown";
+import GravityRail from "./gravity-rail";
 import type { TrajectoryLine } from "./timeline-chart";
 import TimelineChart from "./timeline-chart";
-import UserRankings from "./user-rankings";
 import VotingPanel from "./voting-panel";
 
 export type Props = {
@@ -120,7 +120,8 @@ export default function AbstractLiveChart(props: Props) {
           />
         )}
 
-        <UserRankings
+        <GravityRail
+          gravity={props.gravity}
           topUsers={reveals.topUsers}
           topVotes={reveals.topVotes}
           choices={choices}

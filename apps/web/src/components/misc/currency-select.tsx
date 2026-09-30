@@ -33,7 +33,13 @@ export default function CurrencySelect({
   className,
 }: Props) {
   return (
-    <Select name={name} value={value} onValueChange={onValueChange}>
+    <Select
+      name={name}
+      value={value}
+      onValueChange={(next) => {
+        if (next !== null) onValueChange(next);
+      }}
+    >
       <SelectTrigger className={className}>
         <SelectValue placeholder={m.list_currency()}>
           {value || undefined}

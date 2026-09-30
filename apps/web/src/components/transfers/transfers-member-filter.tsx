@@ -1,0 +1,46 @@
+import { useTransferFilters } from "@/hooks/use-transfer-filters";
+import type { ValidArtist } from "@apollo/cosmo/types/common";
+import { useCallback } from "react";
+import MemberFilter from "../collection/member-filter";
+
+export default function TransfersMemberFilter() {
+  const { filters, setFilters } = useTransferFilters();
+
+  const setActiveMember = useCallback(
+    (member: string) => {
+      setFilters((prev) => {
+        const current = prev.member ?? [];
+        const next = current.includes(member)
+          ? current.filter((m) => m !== member)
+          : [...current, member];
+        return {
+          artist: undefined,
+          member: next.length > 0 ? next : undefined,
+        };
+      });
+    },
+    [setFilters],
+  );
+
+  const setActiveArtist = useCallback(
+    (artist: string) => {
+      setFilters((prev) => ({
+        member: undefined,
+        // SAFETY: callers pass artist ids from the artist list
+        artist: prev.artist === artist ? undefined : (artist as ValidArtist),
+      }));
+    },
+    [setFilters],
+  );
+
+  return (
+    <MemberFilter
+      align="end"
+      activeArtist={filters.artist ?? null}
+      activeMembers={filters.member ?? []}
+      multiple
+      updateArtist={setActiveArtist}
+      updateMember={setActiveMember}
+    />
+  );
+}

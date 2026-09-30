@@ -65,19 +65,22 @@ export default function AddToList({
   return (
     <>
       <DropdownMenu open={open} onOpenChange={setOpen}>
-        <DropdownMenuTrigger asChild>
-          <OverlayIconButton
-            onClick={() => setOpen((state) => !state)}
-            className="outline-hidden"
-            aria-label={m.list_select_to_add({ collectionId: collectionName })}
-          >
-            <OverlayIcon icon={IconPlaylistAdd} />
-          </OverlayIconButton>
+        <DropdownMenuTrigger
+          render={
+            <OverlayIconButton
+              className="outline-hidden"
+              aria-label={m.list_select_to_add({
+                collectionId: collectionName,
+              })}
+            />
+          }
+        >
+          <OverlayIcon icon={IconPlaylistAdd} />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-fit">
-          <DropdownMenuLabel>{collectionName}</DropdownMenuLabel>
-          <DropdownMenuSeparator />
           <DropdownMenuGroup>
+            <DropdownMenuLabel>{collectionName}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
             {lists.length === 0 && (
               <DropdownMenuItem className="group truncate text-sm">
                 {m.list_zero_lists_available()}

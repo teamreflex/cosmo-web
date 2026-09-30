@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
+import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import type { EditionLedger } from "@/lib/universal/grid";
 import {
   deficitsFor,
@@ -72,7 +73,7 @@ export default function GridEditionRow(props: Props) {
             <GridCard
               key={pool.collectionNo}
               label={pool.collectionNo}
-              image={pool.thumbnailImage}
+              image={getObjektFrontImageUrl(pool, "xs")}
               alt={`${props.season} ${props.member} ${pool.collectionNo}`}
               count={pool.usable}
               dim={pool.usable === 0}
@@ -92,7 +93,11 @@ export default function GridEditionRow(props: Props) {
               <GridCard
                 key={reward.collectionNo}
                 label={`${reward.collectionNo}Z`}
-                image={reward.thumbnailImage}
+                image={
+                  reward.collection === null
+                    ? null
+                    : getObjektFrontImageUrl(reward.collection, "xs")
+                }
                 alt={`${props.season} ${props.member} ${reward.collectionNo}Z`}
                 count={reward.owned}
                 dim={reward.owned === 0}

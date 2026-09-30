@@ -1,10 +1,8 @@
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { $updateLiveList, $updateObjektList } from "@/lib/functions/lists";
-import {
-  currentAccountQuery,
-  targetAccountQueryFilter,
-} from "@/lib/queries/core";
+import { currentAccountQuery } from "@/lib/queries/core";
+import { listShelfQuery } from "@/lib/queries/lists";
 import { commonCurrencies } from "@/lib/universal/schema/currency";
 import type { ObjektList } from "@apollo/database/web/types";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
@@ -67,20 +65,24 @@ export default function UpdateList({ objektList }: Props) {
     void queryClient.invalidateQueries({
       queryKey: currentAccountQuery.queryKey,
     });
-    void queryClient.invalidateQueries(targetAccountQueryFilter);
+    void queryClient.invalidateQueries({
+      queryKey: listShelfQuery(objektList.userId).queryKey,
+    });
     setOpen(false);
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          size="icon-sm"
-          aria-label={m.aria_edit_list()}
-        >
-          <IconEdit />
-        </Button>
+      <DialogTrigger
+        render={
+          <Button
+            variant="outline"
+            size="icon-sm"
+            aria-label={m.aria_edit_list()}
+          />
+        }
+      >
+        <IconEdit />
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
@@ -410,6 +412,10 @@ function DiscoverableField() {
 
 function PairField({ availableLists }: { availableLists: ObjektList[] }) {
   const form = useFormContext<{ pairListId: string | null }>();
+  const items = [
+    { value: "__unpaired__", label: m.list_pair_unpair() },
+    ...availableLists.map((l) => ({ value: l.id, label: l.name })),
+  ];
   return (
     <Controller
       control={form.control}
@@ -418,6 +424,7 @@ function PairField({ availableLists }: { availableLists: ObjektList[] }) {
         <Field>
           <FieldLabel>{m.list_pair_with()}</FieldLabel>
           <Select
+            items={items}
             value={field.value ?? "__unpaired__"}
             onValueChange={(value) =>
               field.onChange(value === "__unpaired__" ? null : value)
@@ -427,12 +434,9 @@ function PairField({ availableLists }: { availableLists: ObjektList[] }) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="__unpaired__">
-                {m.list_pair_unpair()}
-              </SelectItem>
-              {availableLists.map((l) => (
-                <SelectItem key={l.id} value={l.id}>
-                  {l.name}
+              {items.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
                 </SelectItem>
               ))}
             </SelectContent>

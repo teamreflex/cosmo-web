@@ -8,10 +8,16 @@ import {
   cosmoMiddleware,
 } from "@/lib/server/middlewares";
 import { assertSupportedCurrency } from "@/lib/server/objekts/fx.server";
-import { assertUserOwnsList } from "@/lib/server/objekts/lists.server";
+import {
+  assertOwnsTokensMulti,
+  assertUserOwnsList,
+  fireHaveAddNotifications,
+  fireWantAddNotifications,
+} from "@/lib/server/objekts/lists.server";
 import type { PublicUser } from "@/lib/universal/auth";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import type {
+  ListShelfItem,
   PartnerListMatch,
   PartnerMatchRow,
   TradePartner,
@@ -32,7 +38,7 @@ import {
   updateObjektListEntrySchema,
   updateObjektListSchema,
 } from "@/lib/universal/schema/objekt-list";
-import { sanitizeUuid } from "@/lib/utils";
+import { createSlug, sanitizeUuid } from "@/lib/utils";
 import { objektListEntries, objektLists } from "@apollo/database/web/schema";
 import type { ObjektListEntry } from "@apollo/database/web/types";
 import { redirect } from "@tanstack/react-router";
@@ -49,14 +55,11 @@ import {
 } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import * as z from "zod";
-import {
-  assertOwnsTokensMulti,
-  fireHaveAddNotifications,
-  fireWantAddNotifications,
-} from "./lists.server";
 
 /**
- * Fetch a single objekt list by id or by owner + slug.
+ * Fetch a single objekt list by id or by owner + slug, along with the latest
+ * USD FX rate for a sale list's currency. Have and want lists also carry the
+ * list they're paired with for trading.
  */
 export const $fetchObjektList = createServerFn({ method: "GET" })
   .validator(
@@ -66,7 +69,7 @@ export const $fetchObjektList = createServerFn({ method: "GET" })
     ]),
   )
   .handler(async ({ data }) => {
-    const list = await db.query.objektLists.findFirst({
+    const result = await db.query.objektLists.findFirst({
       where: data,
       with: {
         // latest rate for a sale list's currency
@@ -75,12 +78,70 @@ export const $fetchObjektList = createServerFn({ method: "GET" })
           orderBy: { date: "desc" },
           limit: 1,
         },
+        linkedWantList: { columns: { slug: true, type: true } },
+        linkingHaveList: { columns: { slug: true, type: true } },
       },
     });
-    if (!list) return undefined;
+    if (!result) return undefined;
 
-    const { fxRates, ...objektList } = list;
-    return { ...objektList, fxRateToUsd: fxRates[0]?.rateToUsd ?? null };
+    // a have list points at its want list, a want list is pointed at by a have list
+    const { fxRates, linkedWantList, linkingHaveList, ...list } = result;
+
+    return {
+      ...list,
+      fxRateToUsd: fxRates[0]?.rateToUsd ?? null,
+      pairedList: linkedWantList ?? linkingHaveList,
+    };
+  });
+
+/**
+ * Fetch a user's lists for the profile shelf, each with images of its three
+ * most recently added entries.
+ */
+export const $fetchListShelf = createServerFn({ method: "GET" })
+  .validator(z.object({ userId: z.string() }))
+  .handler(async ({ data }): Promise<ListShelfItem[]> => {
+    const lists = await db.query.objektLists.findMany({
+      where: { userId: data.userId },
+      orderBy: { createdAt: "asc" },
+      with: {
+        entries: {
+          columns: { collectionId: true },
+          orderBy: { createdAt: "desc" },
+          limit: 3,
+        },
+      },
+    });
+
+    const slugs = [
+      ...new Set(lists.flatMap((l) => l.entries.map((e) => e.collectionId))),
+    ];
+
+    if (slugs.length === 0) {
+      return lists.map(({ entries: _, ...list }) => ({
+        ...list,
+        previews: [],
+      }));
+    }
+
+    const collections = await indexer.query.collections.findMany({
+      where: { slug: { in: slugs } },
+      columns: {
+        slug: true,
+        collectionId: true,
+        frontImage: true,
+        frontImageVersion: true,
+      },
+    });
+
+    const bySlug = new Map(collections.map((c) => [c.slug, c]));
+    return lists.map(({ entries, ...list }) => ({
+      ...list,
+      previews: entries.flatMap((entry) => {
+        const collection = bySlug.get(entry.collectionId);
+        return collection ? [collection] : [];
+      }),
+    }));
   });
 
 /**
@@ -131,10 +192,6 @@ export const $getObjektListWithUser = createServerFn({ method: "GET" })
       cosmoUsername: cosmoAccount?.username,
     };
   });
-
-function createSlug(name: string) {
-  return name.trim().toLowerCase().replace(/ /g, "-");
-}
 
 /**
  * Create a new regular or sale objekt list. Have/want lists go through $createLiveList instead.

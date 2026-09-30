@@ -144,11 +144,9 @@ export default function CreateEra() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button size="sm">
-          <IconPlus className="size-4" />
-          <span>{m.admin_eras_new()}</span>
-        </Button>
+      <DialogTrigger render={<Button size="sm" />}>
+        <IconPlus className="size-4" />
+        <span>{m.admin_eras_new()}</span>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
@@ -170,10 +168,8 @@ export default function CreateEra() {
               onImageClear={handleImageClear}
             />
             <DialogFooter className="mt-6">
-              <DialogClose asChild>
-                <Button type="button" variant="outline">
-                  {m.common_cancel()}
-                </Button>
+              <DialogClose render={<Button type="button" variant="outline" />}>
+                {m.common_cancel()}
               </DialogClose>
               <SubmitButton />
             </DialogFooter>

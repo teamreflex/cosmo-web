@@ -4,6 +4,7 @@ export const collectionErrorCodes = [
   "invalid_season_for_artist",
   "invalid_class_for_artist",
   "metadata_fetch_failed",
+  "image_recache_failed",
 ] as const;
 
 export type CollectionErrorCode = (typeof collectionErrorCodes)[number];

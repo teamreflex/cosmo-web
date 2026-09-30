@@ -17,6 +17,15 @@ type Props = {
   onContinue: (selection: ScrapeSelection[]) => void;
 };
 
+function withoutArtist(
+  audio: Partial<Record<ValidArtist, string[]>>,
+  artistId: ValidArtist,
+) {
+  const next = { ...audio };
+  delete next[artistId];
+  return next;
+}
+
 export default function SelectStep({ candidates, onContinue }: Props) {
   const { getArtist } = useArtists();
 
@@ -57,19 +66,19 @@ export default function SelectStep({ candidates, onContinue }: Props) {
   }
 
   function toggleAudio(artistId: ValidArtist) {
-    setAudio((prev) => {
-      const { [artistId]: current, ...rest } = prev;
-      return current !== undefined
-        ? rest
-        : { ...rest, [artistId]: audioSeasons(artistId) };
-    });
+    setAudio((prev) =>
+      prev[artistId] !== undefined
+        ? withoutArtist(prev, artistId)
+        : { ...prev, [artistId]: audioSeasons(artistId) },
+    );
   }
 
   function setAudioSeasons(artistId: ValidArtist, seasons: string[]) {
-    setAudio((prev) => {
-      const { [artistId]: _, ...rest } = prev;
-      return seasons.length > 0 ? { ...rest, [artistId]: seasons } : rest;
-    });
+    setAudio((prev) =>
+      seasons.length > 0
+        ? { ...prev, [artistId]: seasons }
+        : withoutArtist(prev, artistId),
+    );
   }
 
   const selection: ScrapeSelection[] = [

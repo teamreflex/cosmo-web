@@ -2,7 +2,7 @@ import type { ValidArtist } from "@apollo/cosmo/types/common";
 import * as z from "zod";
 import { env } from "./env/client";
 
-export { cn } from "cnfast";
+export { cn } from "cn";
 
 export type PropsWithClassName<T> = T & { className?: string };
 
@@ -48,6 +48,13 @@ export function ordinal(input: number) {
 }
 
 /**
+ * Derive a URL slug from a list or binder name.
+ */
+export function createSlug(name: string) {
+  return name.trim().toLowerCase().replace(/ /g, "-");
+}
+
+/**
  * Sanitize and validate a UUID string.
  * Discord users will accidentally apply formatting to URLs, resulting in an ID of something like `8043b748-011c-4705-a0a1-eb9d261970ff**`
  * This will error when sent to Postgres, so we need to sanitize it.
@@ -85,12 +92,15 @@ export const artistColors = {
 } satisfies Record<ValidArtist, string>;
 
 /**
- * Generate a random hex color.
+ * Derive a color from a name via an FNV-1a hash, so the server and client
+ * render the same color and a name keeps it everywhere it appears.
  */
-export function randomColor(): string {
-  return `#${Math.floor(Math.random() * 0xffffff)
-    .toString(16)
-    .padStart(6, "0")}`;
+export function colorFromName(name: string): string {
+  let hash = 0x811c9dc5;
+  for (let i = 0; i < name.length; i++) {
+    hash = Math.imul(hash ^ name.charCodeAt(i), 0x01000193);
+  }
+  return `hsl(${(hash >>> 0) % 360} 70% 60%)`;
 }
 
 export { getSeasonColor, seasonSort } from "./universal/seasons";

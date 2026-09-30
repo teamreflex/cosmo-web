@@ -12,17 +12,8 @@ This is a [Subsquid SDK](https://docs.sqd.ai/sdk/overview/) application for inde
 
 - **Subsquid SDK** - EVM blockchain indexing framework
 - **TypeORM** - Database ORM with manual model management
-- **Bun** - Package manager (Node for build/runtime due to Subsquid requirements)
+- **Bun** - Package manager and runtime (>= 1.4)
 - **PostgreSQL** - Primary database
-
-## Runtime: Node, not Bun
-
-Bun is only the package manager for this app. The build (`tsc`) and the production process run on Node because the Subsquid SDK does not work under Bun — the Dockerfile installs with Bun but builds and runs on `node:22-slim`.
-
-Consequences:
-
-- `@types/node` is pinned to the 22.x line (`^22.7.5`) to match the `node:22-slim` runtime image. Node types must track the Docker runtime version, not float with whatever bun-types pulls in.
-- TypeScript 7 (native tsgo) does not reliably auto-include packages from `node_modules/@types`, so the tsconfig declares `"types": ["node"]` explicitly. Without it, an install reshuffling the isolated-linker layout can silently drop Node globals (`process`, `Buffer`, `setTimeout`), surfacing as TS2591 "Cannot find name" — check the tsconfig `types` field before diagnosing a missing dependency. The same applies to every workspace: Bun-runtime packages declare `"types": ["bun"]` via the shared tsconfig.bun.json.
 
 ## Development Workflow
 
@@ -47,7 +38,7 @@ Do not run `sqd`, `subsquid-commands`, or `squid-*` commands — they wipe the m
 
 ### Online DDL
 
-The Subsquid migration runner hard-codes `transaction: 'all'`, so `CONCURRENTLY` DDL cannot run through migrations. Run it out-of-band via `psql` (autocommit, one statement at a time) — the indexer's short batched write transactions mean `CONCURRENTLY` index builds/drops drain in seconds even on the ~25M-row `transfer` table — then ship an idempotent `IF [NOT] EXISTS` migration as the record.
+The Subsquid migration runner hard-codes `transaction: 'all'`, so `CONCURRENTLY` DDL cannot run through migrations. Run any DDL manually, then ship an idempotent `IF [NOT] EXISTS` migration as the record.
 
 ## Core Patterns & Conventions
 
@@ -109,18 +100,47 @@ await ctx.store.upsert(Array.from(buffer.values()));
 
 ### Error Handling
 
-Gracefully degrade with logging:
+A batch commits and the processor advances past its blocks, so anything skipped inside one is lost permanently — a skipped transfer is never written, and its objekt keeps the owner from its previous transfer with nothing to correct it later. Let the failure escape instead: Subsquid rolls the batch back, exits, and reprocesses the same blocks on restart, so nothing is lost but time. Settle every call before throwing so the log can name what failed and how many — one bad item and the API being down look identical in a crash loop otherwise.
 
 ```typescript
-const results = await Promise.allSettled(promises);
-for (let i = 0; i < results.length; i++) {
-  if (results[i].status === "rejected") {
-    ctx.log.error(`Operation failed for item ${i}`);
-    continue;
+const results = await Promise.allSettled(
+  items.map((item) => fetchWithRetry(item.id)),
+);
+
+const failed: string[] = [];
+for (const [index, item] of items.entries()) {
+  const result = results[index];
+  if (result?.status === "fulfilled") {
+    // use result.value
+  } else {
+    failed.push(item.id);
   }
-  // process successful result
+}
+
+if (failed.length > 0) {
+  ctx.log.error(
+    `failed for ${failed.length}/${items.length}: ${failed.join(", ")}`,
+  );
+
+  const error = new Error("fetch failed", { cause: firstRejection });
+  Sentry.captureException(error, {
+    level: "fatal",
+    fingerprint: ["indexer-metadata-fetch-failed"],
+    tags: { failure: "metadata" },
+    extra: { failed, chunkSize: items.length },
+  });
+  await Sentry.flush(2000);
+  throw error;
 }
 ```
+
+Retry generously before giving up (`fetchMetadataV3` in `@apollo/cosmo` allows 5 minutes), because throwing costs a re-fetch of every item in the batch. Log-and-continue is only for work whose absence leaves no wrong row behind, such as a transferability update whose objekt does not exist.
+
+Pin a fixed `fingerprint` and carry the real rejection as `cause`: one issue accumulates every failed batch whatever COSMO returned, so an event-frequency alert counts batches instead of splitting across error shapes. Flush before throwing — Subsquid exits on the way out and drops queued events. Sentry only initializes when `SENTRY_DSN` is set, so local runs report nothing.
+
+### Image Mirroring
+
+Before each chunk's collection upsert, `mirrorImages` (`src/images.ts`) mirrors the front and back image of every collection whose `frontImageVersion`/`backImageVersion` doesn't match a hash of its source URL into R2 via `@apollo/image` (see its README), four at a time, and sets the version on the batch's own instances.
 
 ## Key Files
 
@@ -133,14 +153,15 @@ Entity fields and relations are defined in `schema.graphql` and mirrored in `pac
 
 ## Important Gotchas
 
-1. **Runtime:** Use Node (not Bun) for build and production due to Subsquid SDK requirements
-2. **Workspace package imports:** Node runs workspace packages (`@apollo/cosmo`, `@apollo/util`) as raw `.ts` source via type stripping, so relative imports inside those packages must use explicit `.ts` extensions — extensionless or `.js` specifiers fail at runtime with `ERR_MODULE_NOT_FOUND` (Bun-run apps tolerate both, so only the indexer surfaces it)
+1. **Runtime:** Bun (>= 1.4) for build and production. `bun run start` applies `db/migrations` before starting the processor
+2. **`@subsquid/http-client` patch:** `patches/@subsquid%2Fhttp-client@1.8.1.patch` removes the hard-coded `compress: true` fetch option, which Bun's native fetch treats as "gzip the request body" and JSON-RPC endpoints reject with `-32700 parse error`. The patch is version-pinned and must be re-created when bumping the package
 3. **UUID Type:** Uses `varchar(36)` instead of PostgreSQL `uuid` type due to Subsquid casting limitations
 4. **Address Normalization:** Always use `addr()` - never store raw addresses
 5. **GraphQL Server:** Not actively used - schema only defines entity structure
 6. **Keep Drizzle in Sync:** All model changes must be reflected in `/packages/database/src/indexer/schema.ts`
 7. **Bun Compatibility:** `glob`, `lru-cache`, and `path-scurry` are direct dependencies only to pin Bun-compatible versions over the transitive ones — nothing imports them, so keep them when pruning unused dependencies
-8. **Autovacuum reloptions are live-only:** several indexer tables have per-table autovacuum settings applied directly in production (not in any migration) because the default thresholds let the visibility map go stale under the constant owner-rewrite churn. The tables and their settings are recorded under "Current VACUUM settings" in `docs/database.md` — re-apply them by hand after any from-scratch database rebuild.
+8. **Relation properties use `Relation<T>`:** the model files import each other circularly and the build emits ESM, so a bare class type in `emitDecoratorMetadata` output throws a TDZ `ReferenceError` at startup
+9. **Autovacuum reloptions are live-only:** several indexer tables have per-table autovacuum settings applied directly in production (not in any migration) because the default thresholds let the visibility map go stale under the constant owner-rewrite churn. The tables and their settings are recorded under "Current VACUUM settings" in `docs/database.md` — re-apply them by hand after any from-scratch database rebuild.
 
 ## Processing Flow
 

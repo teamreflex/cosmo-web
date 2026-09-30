@@ -15,10 +15,17 @@ import { IconHelp } from "@tabler/icons-react";
 export default function HelpDialog() {
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="outline" size="icon-sm">
-          <IconHelp className="h-4 w-4" />
-        </Button>
+      <AlertDialogTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            className="text-muted-foreground"
+            aria-label={m.common_help()}
+          />
+        }
+      >
+        <IconHelp className="size-4" />
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader className="sr-only">

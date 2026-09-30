@@ -6,7 +6,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useUserState } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
-import { getObjektImageUrls } from "@/lib/client/objekt-util";
 import { env } from "@/lib/env/client";
 import { objektMetadataQuery } from "@/lib/queries/objekt-queries";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
@@ -92,7 +91,6 @@ function FooterInner(props: Props) {
     toast.success(m.toast_objekt_url_copied());
   }
 
-  const { front, back } = getObjektImageUrls(props.objekt);
   const event = data.data?.event ?? null;
 
   return (
@@ -107,42 +105,54 @@ function FooterInner(props: Props) {
           />
         )}
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              size="icon-sm"
-              aria-label={m.aria_download()}
-            >
-              <IconCloudDownload />
-            </Button>
+          <DropdownMenuTrigger
+            render={
+              <Button
+                variant="outline"
+                size="icon-sm"
+                aria-label={m.aria_download()}
+              />
+            }
+          >
+            <IconCloudDownload />
           </DropdownMenuTrigger>
           <DropdownMenuContent side="top" align="end" className="w-fit">
-            <DropdownMenuItem asChild>
-              <a
-                href={front.download}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <IconPhoto />
-                <span>{m.objekt_metadata_save_front_image()}</span>
-              </a>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <a href={back.download} target="_blank" rel="noopener noreferrer">
-                <IconPhoto />
-                <span>{m.objekt_metadata_save_back_image()}</span>
-              </a>
-            </DropdownMenuItem>
-            {props.objekt.frontMedia && (
-              <DropdownMenuItem asChild>
+            <DropdownMenuItem
+              render={
                 <a
-                  href={props.objekt.frontMedia}
+                  href={props.objekt.frontImage}
                   target="_blank"
                   rel="noopener noreferrer"
-                >
-                  <IconMovie />
-                  <span>{m.objekt_metadata_save_video()}</span>
-                </a>
+                />
+              }
+            >
+              <IconPhoto />
+              <span>{m.objekt_metadata_save_front_image()}</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              render={
+                <a
+                  href={props.objekt.backImage}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                />
+              }
+            >
+              <IconPhoto />
+              <span>{m.objekt_metadata_save_back_image()}</span>
+            </DropdownMenuItem>
+            {props.objekt.frontMedia && (
+              <DropdownMenuItem
+                render={
+                  <a
+                    href={props.objekt.frontMedia}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  />
+                }
+              >
+                <IconMovie />
+                <span>{m.objekt_metadata_save_video()}</span>
               </DropdownMenuItem>
             )}
           </DropdownMenuContent>

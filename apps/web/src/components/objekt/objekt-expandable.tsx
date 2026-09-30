@@ -1,8 +1,9 @@
 import { useMetadataDialog } from "@/hooks/use-metadata-dialog";
+import { useObjektImage } from "@/hooks/use-objekt-image";
 import { useObjektSelection } from "@/hooks/use-objekt-selection";
 import { m } from "@/i18n/messages";
-import { getObjektImageUrls } from "@/lib/client/objekt-util";
-import { objektQuery } from "@/lib/queries/objekt-queries";
+import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
+import { objektMetadataQuery, objektQuery } from "@/lib/queries/objekt-queries";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
@@ -48,7 +49,7 @@ export default function ExpandableObjekt({
           "--objekt-text-color": collection.textColor,
         }}
         className={cn(
-          "group/objekt relative aspect-photocard touch-manipulation overflow-hidden rounded-photocard bg-secondary outline outline-transparent transition-[transform,box-shadow,outline-color] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg hover:outline-cosmo",
+          "group/objekt relative aspect-photocard touch-manipulation overflow-hidden rounded-photocard bg-secondary outline outline-transparent transition-[transform,translate,box-shadow,outline-color] duration-200 ease-out hover:-translate-y-0.5 hover:shadow-lg hover:outline-(--objekt-background-color)",
           isSelected && "outline-2 outline-foreground hover:outline-foreground",
           className,
         )}
@@ -80,7 +81,7 @@ function FrontImage(props: FrontImageProps) {
   const queryClient = useQueryClient();
   const { open } = useMetadataDialog();
 
-  const { front } = getObjektImageUrls(props.collection);
+  const imageProps = useObjektImage(props.collection);
 
   /**
    * Mark already-decoded images as loaded on mount so cached re-mounts,
@@ -93,8 +94,9 @@ function FrontImage(props: FrontImageProps) {
   }, []);
 
   function prefetch() {
+    // warm the image the detail sheet shows
     const img = new Image();
-    img.src = front.download;
+    img.src = getObjektFrontImageUrl(props.collection, "grid");
   }
 
   function handleClick() {
@@ -103,11 +105,13 @@ function FrontImage(props: FrontImageProps) {
       return;
     }
 
-    // populate the query cache so the dialog skips its initial fetch
+    // populate the query cache so the dialog skips its initial fetch, and
+    // start the metadata request now rather than after the dialog mounts
     queryClient.setQueryData(
       objektQuery(props.collection.slug).queryKey,
       props.collection,
     );
+    void queryClient.prefetchQuery(objektMetadataQuery(props.collection.slug));
 
     if (props.setActive) {
       // URL routing mode: update URL, let RoutedExpandableObjekt sync the dialog
@@ -129,7 +133,7 @@ function FrontImage(props: FrontImageProps) {
         "w-full transition-opacity",
         isLoaded === false && "opacity-0",
       )}
-      src={front.display}
+      {...imageProps}
       width={291}
       height={450}
       alt={props.collection.collectionId}

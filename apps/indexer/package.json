@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build": "rm -rf lib/ && tsc -p tsconfig.build.json",
-    "start": "squid-commands process:prod",
+    "start": "squid-typeorm-migration apply && bun run --preload ./lib/instrument.js lib/main.js",
     "lint": "bun --bun oxlint --type-aware --type-check",
     "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
     "typecheck": "tsc --pretty --noEmit",
@@ -13,7 +13,9 @@
   },
   "dependencies": {
     "@apollo/cosmo": "workspace:*",
+    "@apollo/image": "workspace:*",
     "@apollo/util": "workspace:*",
+    "@sentry/bun": "catalog:",
     "@subsquid/evm-abi": "^1.0.0",
     "@subsquid/evm-codec": "^1.0.0",
     "@subsquid/evm-processor": "^1.30.1",
@@ -36,7 +38,7 @@
     "@subsquid/commands": "^2.3.1",
     "@subsquid/evm-typegen": "^5.0.0",
     "@subsquid/typeorm-codegen": "^2.4.0",
-    "@types/node": "^22.7.5",
+    "@types/bun": "catalog:",
     "turbo": "catalog:",
     "typescript": "catalog:"
   }

@@ -1,4 +1,3 @@
-import { useUserState } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { IconMaximize } from "@tabler/icons-react";
@@ -9,7 +8,6 @@ import {
   OverlayIcon,
   OverlayIconButton,
 } from "./corner-overlay";
-import RescanMetadata from "./rescan-metadata";
 
 type Props = {
   collection: Objekt.Collection;
@@ -18,7 +16,6 @@ type Props = {
 
 export default function InformationOverlay(props: Props) {
   const [open, setOpen] = useState(false);
-  const { user } = useUserState();
 
   // safari 15 doesn't like to parse the date string for some reason
   const formatted = useMemo(() => {
@@ -47,10 +44,6 @@ export default function InformationOverlay(props: Props) {
 
       {/* pointer-events gate: the faded-out panel must not swallow clicks while closed or mid-transition */}
       <div className="absolute z-40 flex flex-col gap-1 transition-all group-data-[open=false]:pointer-events-none group-data-[open=false]:opacity-0 group-data-[open=true]:opacity-100">
-        {user !== undefined && (
-          <RescanMetadata collection={props.collection} token={props.token} />
-        )}
-
         <div className="flex flex-col text-xs">
           <span className="font-semibold">{m.objekt_info_token_id()}</span>
           <span>{props.token.tokenId}</span>

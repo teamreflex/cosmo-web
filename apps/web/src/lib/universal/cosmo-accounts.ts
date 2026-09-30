@@ -1,4 +1,3 @@
-import type { ObjektList } from "@apollo/database/web/types";
 import type { PublicUser } from "./auth";
 
 export type PublicCosmo = {
@@ -17,7 +16,6 @@ export type FullAccount = {
   user: PublicUser | undefined;
   lockedObjekts: number[];
   pins: number[];
-  objektLists: ObjektList[];
   verified: boolean;
 };
 

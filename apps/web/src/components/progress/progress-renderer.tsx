@@ -1,19 +1,13 @@
 import { useArtists } from "@/hooks/use-artists";
-import { useProfileContext } from "@/hooks/use-profile";
 import { useProgressFilters } from "@/hooks/use-progress-filters";
 import { m } from "@/i18n/messages";
-import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
-import type { ValidArtist } from "@apollo/cosmo/types/common";
-import { IconLayoutGrid, IconRefresh } from "@tabler/icons-react";
+import { IconRefresh } from "@tabler/icons-react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
-import { Suspense, useCallback } from "react";
+import { Suspense } from "react";
 import type { PropsWithChildren } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import MemberFilter from "../collection/member-filter";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
-import TitleHeader from "../ui/title-header";
 import ProgressTable from "./progress-table";
 
 type Props = PropsWithChildren<{
@@ -21,68 +15,15 @@ type Props = PropsWithChildren<{
 }>;
 
 export default function ProgressRenderer(props: Props) {
-  const { filters, setFilters, setFilter } = useProgressFilters();
+  const { filters, setFilter } = useProgressFilters();
   const { getArtistForMember } = useArtists();
-  const cosmo = useProfileContext((state) => state.target?.cosmo);
 
   const memberArtist = filters.member
     ? getArtistForMember(filters.member)
     : undefined;
 
-  const setActiveMember = useCallback(
-    (member: string) => {
-      setFilters((prev) => ({
-        artist: undefined,
-        member: prev.member === member ? undefined : member,
-      }));
-    },
-    [setFilters],
-  );
-
-  const setActiveArtist = useCallback(
-    (artist: string) => {
-      setFilters((prev) => ({
-        member: undefined,
-        // SAFETY: callers pass artist ids from the artist list
-        artist: prev.artist === artist ? undefined : (artist as ValidArtist),
-      }));
-    },
-    [setFilters],
-  );
-
   return (
     <div className="flex flex-col">
-      <TitleHeader title={m.progress_title()}>
-        <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
-          <div className="md:pointer-events-auto">
-            <MemberFilter
-              activeArtist={filters.artist ?? null}
-              activeMembers={filters.member ? [filters.member] : []}
-              updateArtist={setActiveArtist}
-              updateMember={setActiveMember}
-            />
-          </div>
-        </div>
-
-        {cosmo && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="shrink-0 text-xs md:ml-auto"
-            asChild
-          >
-            <Link
-              to="/@{$username}/grid"
-              params={{ username: profileIdentifier(cosmo) }}
-              search={{ artist: filters.artist, member: filters.member }}
-            >
-              <IconLayoutGrid className="size-4" />
-              <span className="hidden sm:inline">{m.grid_title()}</span>
-            </Link>
-          </Button>
-        )}
-      </TitleHeader>
-
       <div className="container flex flex-col gap-6 pt-4">
         <QueryErrorResetBoundary>
           {({ reset }) => (

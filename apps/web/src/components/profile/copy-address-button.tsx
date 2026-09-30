@@ -13,9 +13,15 @@ export default function CopyAddressButton({ address }: { address: string }) {
   }
 
   return (
-    <Button onClick={copyAddress} variant="outline" size="profile" data-profile>
-      <IconCopy className="h-5 w-5" />
-      <span>{m.profile_address()}</span>
+    <Button
+      onClick={copyAddress}
+      variant="ghost"
+      size="icon-xs"
+      className="text-muted-foreground"
+      aria-label={m.profile_copy_address()}
+      title={m.profile_copy_address()}
+    >
+      <IconCopy className="size-4" />
     </Button>
   );
 }

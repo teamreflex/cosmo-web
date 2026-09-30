@@ -1,17 +1,13 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverAnchor,
-  PopoverContent,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent } from "@/components/ui/popover";
 import { m } from "@/i18n/messages";
 import { searchUsersQuery } from "@/lib/queries/api-keys";
 import type { UserSearchResult } from "@/lib/universal/api-keys";
 import { cn } from "@/lib/utils";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useDebounceValue } from "usehooks-ts";
 
 type Props = {
@@ -25,7 +21,11 @@ export default function UserCombobox({ value, onChange }: Props) {
   const [query, setQuery] = useState("");
   const [debouncedQuery] = useDebounceValue(query, 500);
   const [open, setOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  // a picked result swaps the search for the user, whose Cancel takes focus
+  const picked = useRef(false);
   const enabled = debouncedQuery.length >= 3;
+  const resultsOpen = open && enabled;
 
   const { status, data } = useQuery({
     ...searchUsersQuery(debouncedQuery),
@@ -33,6 +33,7 @@ export default function UserCombobox({ value, onChange }: Props) {
   });
 
   function handleSelect(user: UserSearchResult) {
+    picked.current = true;
     onChange(user);
     setQuery("");
     setOpen(false);
@@ -60,6 +61,11 @@ export default function UserCombobox({ value, onChange }: Props) {
           )}
         </div>
         <button
+          ref={(button) => {
+            if (button === null || !picked.current) return;
+            picked.current = false;
+            button.focus();
+          }}
           type="button"
           onClick={handleClear}
           className="text-xs text-muted-foreground hover:text-foreground"
@@ -71,22 +77,31 @@ export default function UserCombobox({ value, onChange }: Props) {
   }
 
   return (
-    <Popover open={open && enabled} onOpenChange={setOpen}>
-      <PopoverAnchor asChild>
-        <Input
-          placeholder={m.user_search_placeholder()}
-          value={query}
-          onChange={(e) => {
-            setQuery(e.currentTarget.value);
-            setOpen(true);
-          }}
-          onFocus={() => setOpen(true)}
-        />
-      </PopoverAnchor>
+    <Popover open={resultsOpen} onOpenChange={setOpen}>
+      <Input
+        ref={inputRef}
+        placeholder={m.user_search_placeholder()}
+        value={query}
+        onChange={(e) => {
+          setQuery(e.currentTarget.value);
+          setOpen(true);
+        }}
+        onFocus={() => setOpen(true)}
+        onKeyDown={(event) => {
+          // closes the results rather than a dialog around them
+          if (event.key === "Escape" && resultsOpen) {
+            event.stopPropagation();
+            setOpen(false);
+          }
+        }}
+      />
 
       <PopoverContent
-        className="w-(--radix-popover-trigger-width) overflow-hidden p-0"
-        onOpenAutoFocus={(e) => e.preventDefault()}
+        anchor={inputRef}
+        initialFocus={false}
+        // the chosen user takes focus from the search it replaces
+        finalFocus={false}
+        className="w-(--anchor-width) overflow-hidden p-0"
       >
         {status === "pending" && enabled && (
           <div className="flex items-center justify-center py-4">

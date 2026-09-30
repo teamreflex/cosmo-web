@@ -1,4 +1,4 @@
-import type { ValidArtist } from "./types/common.ts";
+import type { ValidArtist } from "./types/common";
 
 /**
  * idntt band image URLs don't appear to change by season so far, so they can be hardcoded.

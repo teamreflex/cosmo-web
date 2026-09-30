@@ -123,28 +123,34 @@ export default function EventHeader({ event }: EventHeaderProps) {
               </Badge>
 
               {event.twitterUrl !== null && (
-                <Badge variant="twitter" asChild>
-                  <a
-                    href={event.twitterUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={m.aria_twitter()}
-                  >
-                    <IconBrandTwitter className="size-4 fill-white" />
-                  </a>
+                <Badge
+                  variant="twitter"
+                  render={
+                    <a
+                      href={event.twitterUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={m.aria_twitter()}
+                    />
+                  }
+                >
+                  <IconBrandTwitter className="size-4 fill-white" />
                 </Badge>
               )}
 
               {event.discordUrl !== null && (
-                <Badge variant="discord" asChild>
-                  <a
-                    href={event.discordUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={m.aria_discord()}
-                  >
-                    <IconBrandDiscord className="size-4 fill-white" />
-                  </a>
+                <Badge
+                  variant="discord"
+                  render={
+                    <a
+                      href={event.discordUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={m.aria_discord()}
+                    />
+                  }
+                >
+                  <IconBrandDiscord className="size-4 fill-white" />
                 </Badge>
               )}
 

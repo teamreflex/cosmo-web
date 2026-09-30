@@ -5,9 +5,7 @@ import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
 import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
 import BatchSelectionBar from "@/components/profile/batch-selection-bar";
 import ProfileRenderer from "@/components/profile/profile-renderer";
-import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
-import TitleHeader from "@/components/ui/title-header";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { currentAccountQuery, selectedArtistsQuery } from "@/lib/queries/core";
@@ -15,25 +13,24 @@ import {
   userCollectionBlockchainGroupsQuery,
   userCollectionBlockchainQuery,
 } from "@/lib/queries/objekt-queries";
-import { pinsQuery } from "@/lib/queries/profile";
+import type { ProfilePin } from "@/lib/universal/binders";
 import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { userCollectionFrontendSchema } from "@/lib/universal/parsers";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { Addresses, isEqual } from "@apollo/util";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/@{$username}/")({
   validateSearch: userCollectionFrontendSchema,
-  loaderDeps: ({ search }) => ({ searchParams: search }),
+  loaderDeps: ({ search: { serial, locked, binder, ...searchParams } }) => ({
+    searchParams,
+  }),
   component: RouteComponent,
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
-  // shared with use-pin-reorder, which writes into the same cache entry
-  context: ({ params }) => ({
-    pinsOptions: pinsQuery(params.username),
-  }),
   loader: async ({ context, deps }) => {
-    const [account, target, pins, selected] = await Promise.all([
+    const [account, target, , selected] = await Promise.all([
       context.queryClient.ensureQueryData(currentAccountQuery),
       context.queryClient.ensureQueryData(context.targetAccountOptions),
       context.queryClient.ensureQueryData(context.pinsOptions),
@@ -70,7 +67,7 @@ export const Route = createFileRoute("/@{$username}/")({
       );
     }
 
-    return { target, pins };
+    return { target };
   },
   head: ({ loaderData }) =>
     defineHead({
@@ -84,16 +81,24 @@ export const Route = createFileRoute("/@{$username}/")({
     }),
 });
 
+const noPins: ProfilePin[] = [];
+
 function RouteComponent() {
-  const { target, pins } = Route.useLoaderData();
+  const { target } = Route.useLoaderData();
+  const { pinsOptions } = Route.useRouteContext();
+  // followed rather than read once, since pins change from outside the grid
+  const { data: pins } = useSuspenseQuery(pinsOptions);
+  // list actions only ever run on the viewer's own profile, so they read the viewer's lists
+  const { data: account } = useSuspenseQuery(currentAccountQuery);
+  const objektLists = account?.objektLists ?? [];
 
   return (
     <ProfileProvider
       key={target.cosmo.address}
       target={target}
-      pins={target.user ? pins : []}
+      pins={target.user ? pins : noPins}
       lockedObjekts={target.user ? target.lockedObjekts : []}
-      objektLists={target.objektLists}
+      objektLists={objektLists}
     >
       <section className="flex flex-col">
         <ProfileRenderer targetCosmo={target.cosmo} />
@@ -104,7 +109,7 @@ function RouteComponent() {
         <ToggleObjektBands />
       </Overlay>
 
-      <BatchSelectionBar objektLists={target.objektLists} />
+      <BatchSelectionBar objektLists={objektLists} />
     </ProfileProvider>
   );
 }
@@ -112,14 +117,6 @@ function RouteComponent() {
 function PendingComponent() {
   return (
     <div className="relative flex flex-col">
-      <TitleHeader title={m.collection_title()}>
-        <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
-          <div className="md:pointer-events-auto">
-            <MemberFilterSkeleton />
-          </div>
-        </div>
-      </TitleHeader>
-
       <FiltersContainer>
         <div className="flex flex-wrap items-center gap-2">
           {Array.from({ length: 7 }).map((_, i) => (

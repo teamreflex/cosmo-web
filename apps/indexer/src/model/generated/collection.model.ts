@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryColumn, Index, OneToMany } from "typeorm";
+import {
+  Entity,
+  Column,
+  PrimaryColumn,
+  Index,
+  OneToMany,
+  type Relation,
+} from "typeorm";
 import { Objekt } from "./objekt.model";
 import { Transfer } from "./transfer.model";
 
@@ -83,9 +90,15 @@ export class Collection {
   @Column("bool", { nullable: false, default: false })
   hasAudio!: boolean;
 
+  @Column({ type: "varchar", length: 12, nullable: true })
+  frontImageVersion!: string | null;
+
+  @Column({ type: "varchar", length: 12, nullable: true })
+  backImageVersion!: string | null;
+
   @OneToMany(() => Transfer, (e) => e.collection)
-  transfers!: Transfer[];
+  transfers!: Relation<Transfer[]>;
 
   @OneToMany(() => Objekt, (e) => e.collection)
-  objekts!: Objekt[];
+  objekts!: Relation<Objekt[]>;
 }

@@ -1,43 +1,52 @@
+# Patterns match the full path from the context root, so a bare name only
+# matches at the top level — every nested match needs the **/ prefix.
+
 # Dependencies
-node_modules
+**/node_modules
 
 # Build outputs
-dist
-lib
-.next
-.turbo
-build
-out
+**/dist
+**/lib
+!**/src/lib
+**/.next
+**/.turbo
+**/build
+**/out
+**/*.tsbuildinfo
+
+# Scratch data
+**/tmp
+apps/proxy/output
 
 # Git
 .git
 .gitignore
 
 # Environment
-.env
-.env.local
-.env.*
+**/.env
+**/.env.local
+**/.env.*
 
 # IDE
 .vscode
+.zed
 
 # OS
-.DS_Store
-Thumbs.db
+**/.DS_Store
+**/Thumbs.db
 
 # Logs
-*.log
-npm-debug.log*
-pnpm-debug.log*
-bun-debug.log*
+**/*.log
+**/npm-debug.log*
+**/pnpm-debug.log*
+**/bun-debug.log*
 
 # Docker
-Dockerfile*
-docker-compose*
+**/Dockerfile*
+**/docker-compose*
 .dockerignore
 
 # Misc
-*.md
+**/*.md
 !README.md
 LICENSE
-tmp

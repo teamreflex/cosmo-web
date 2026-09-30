@@ -1,10 +1,12 @@
 import type { CosmoObjektMetadataV1 } from "@apollo/cosmo/types/metadata";
 import { addr, chunk, slugifyObjekt } from "@apollo/util";
 import { Addresses } from "@apollo/util";
+import * as Sentry from "@sentry/bun";
 import { TypeormDatabase, type Store } from "@subsquid/typeorm-store";
 import { randomUUID } from "crypto";
 import { In } from "typeorm";
 import { env } from "./env";
+import { mirrorImages } from "./images";
 import { fetchMetadataWithRetryV3 } from "./metadata";
 import { Collection, ComoBalance, Objekt, type Transfer, Vote } from "./model";
 import { ListEventOutbox } from "./model";
@@ -34,37 +36,56 @@ processor.run(db, async (ctx) => {
       const collectionBatch = new Map<string, Collection>();
       const objektBatch = new Map<string, Objekt>();
 
-      const metadataBatch = await Promise.allSettled(
-        chunk.map((e) => fetchMetadataWithRetryV3(e.tokenId)),
+      const results = await Promise.allSettled(
+        chunk.map((transfer) => fetchMetadataWithRetryV3(transfer.tokenId)),
       );
 
-      // iterate over each objekt metadata request
-      for (let j = 0; j < metadataBatch.length; j++) {
-        const request = metadataBatch[j];
-        const transfer = chunk[j];
-        if (!transfer || !request || request.status === "rejected") {
-          ctx.log.error(
-            `Unable to fetch metadata for token ${transfer?.tokenId ?? "unknown"}`,
-          );
-          continue;
-        }
+      const metadataBatch = [];
+      const failedTokenIds: string[] = [];
+      let failure: Error | undefined;
 
+      // pull valid metadata and failed tokens out
+      for (const [index, transfer] of chunk.entries()) {
+        const result = results[index];
+        if (result?.status === "fulfilled") {
+          metadataBatch.push({ transfer, metadata: result.value });
+        } else {
+          failedTokenIds.push(transfer.tokenId);
+          failure ??= result?.reason;
+        }
+      }
+
+      // fail hard on any metadata fetch failure so nothing is lost
+      if (failedTokenIds.length > 0) {
+        ctx.log.error(
+          `Unable to fetch metadata for ${failedTokenIds.length}/${chunk.length} tokens: ${failedTokenIds.join(", ")}`,
+        );
+
+        // flush before throwing to avoid dropping queued events
+        const error = new Error("metadata fetch failed", { cause: failure });
+        Sentry.captureException(error, {
+          level: "fatal",
+          fingerprint: ["indexer-metadata-fetch-failed"],
+          tags: { failure: "metadata" },
+          extra: { failedTokenIds, chunkSize: chunk.length },
+        });
+        await Sentry.flush(2000);
+        throw error;
+      }
+
+      // iterate over each objekt metadata request
+      for (const { transfer, metadata } of metadataBatch) {
         // handle collection
         const collection = await handleCollection(
           ctx,
-          request.value,
+          metadata,
           collectionBatch,
           transfer,
         );
         collectionBatch.set(collection.slug, collection);
 
         // handle objekt
-        const objekt = await handleObjekt(
-          ctx,
-          request.value,
-          objektBatch,
-          transfer,
-        );
+        const objekt = await handleObjekt(ctx, metadata, objektBatch, transfer);
         objekt.collection = collection;
         objektBatch.set(objekt.id, objekt);
 
@@ -73,6 +94,9 @@ processor.run(db, async (ctx) => {
         transfer.collection = collection;
         transferBatch.push(transfer);
       }
+
+      // mirror new or replaced images so the upsert carries their versions
+      await mirrorImages(ctx, collectionBatch.values());
 
       // upsert collections
       if (collectionBatch.size > 0) {
@@ -214,6 +238,8 @@ async function handleCollection(
       backImage: metadata.objekt.backImage,
       backgroundColor: metadata.objekt.backgroundColor,
       accentColor: metadata.objekt.accentColor,
+      frontImageVersion: null,
+      backImageVersion: null,
     });
   }
 
@@ -236,6 +262,10 @@ async function handleCollection(
     : "offline";
   collection.thumbnailImage = metadata.objekt.thumbnailImage;
   collection.frontImage = metadata.objekt.frontImage;
+  // v3 metadata has no back image, so only overwrite when COSMO sends one.
+  if (metadata.objekt.backImage !== "") {
+    collection.backImage = metadata.objekt.backImage;
+  }
 
   return collection;
 }

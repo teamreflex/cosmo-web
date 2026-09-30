@@ -131,20 +131,31 @@ function FilterSelect({
   value: ValidOnlineType | undefined;
   update: (value: ValidOnlineType | undefined) => void;
 }) {
-  function set(v: string) {
-    // SAFETY: non-"combined" select values are ValidOnlineType
-    update(v === "combined" ? undefined : (v as ValidOnlineType));
-  }
+  const items = [
+    { value: "combined", label: m.progress_filter_combined() },
+    { value: "offline", label: m.filter_online_physical() },
+    { value: "online", label: m.filter_online_digital() },
+  ] satisfies { value: ValidOnlineType | "combined"; label: string }[];
+  // no filter is the combined view
+  const selected: ValidOnlineType | "combined" = value ?? "combined";
 
   return (
-    <Select value={value} onValueChange={set}>
+    <Select
+      items={items}
+      value={selected}
+      onValueChange={(v: ValidOnlineType | "combined" | null) => {
+        if (v !== null) update(v === "combined" ? undefined : v);
+      }}
+    >
       <SelectTrigger className="w-32">
-        <SelectValue placeholder={m.filter_sort()} />
+        <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="combined">{m.progress_filter_combined()}</SelectItem>
-        <SelectItem value="offline">{m.filter_online_physical()}</SelectItem>
-        <SelectItem value="online">{m.filter_online_digital()}</SelectItem>
+        {items.map((item) => (
+          <SelectItem key={item.value} value={item.value}>
+            {item.label}
+          </SelectItem>
+        ))}
       </SelectContent>
     </Select>
   );

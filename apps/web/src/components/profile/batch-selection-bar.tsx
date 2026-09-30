@@ -28,7 +28,7 @@ export default function BatchSelectionBar({ objektLists }: Props) {
   }
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center pr-[calc(1rem+var(--removed-body-scroll-bar-size,0px))] pl-4">
+    <div className="pointer-events-none fixed inset-x-0 bottom-4 z-50 flex justify-center px-4">
       <div className="pointer-events-auto flex items-center gap-2 rounded-full border bg-background/95 px-3 py-2 shadow-lg backdrop-blur">
         <span className="px-1 text-sm font-medium tabular-nums">
           {m.batch_selected_count({ count: selected.length })}

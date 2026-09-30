@@ -15,7 +15,7 @@ import { objektIndexFrontendSchema } from "@/lib/universal/parsers";
 import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useLoaderData } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
   staleTime: 1000 * 60 * 15, // 15 minutes
@@ -23,7 +23,9 @@ export const Route = createFileRoute("/")({
   component: RouteComponent,
   errorComponent: ErrorComponent,
   pendingComponent: PendingComponent,
-  loaderDeps: ({ search }) => ({ searchParams: search }),
+  loaderDeps: ({ search: { id, serial, ...searchParams } }) => ({
+    searchParams,
+  }),
   loader: async ({ context, deps }) => {
     const [account, selected] = await Promise.all([
       context.queryClient.ensureQueryData(currentAccountQuery),
@@ -44,7 +46,7 @@ export const Route = createFileRoute("/")({
 });
 
 function RouteComponent() {
-  const { account } = Route.useLoaderData();
+  const { account } = useLoaderData({ from: "/" });
 
   return (
     <main className="relative flex w-full flex-col">

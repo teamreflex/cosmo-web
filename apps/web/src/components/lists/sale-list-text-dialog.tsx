@@ -50,14 +50,16 @@ export default function SaleListTextDialog({ objektList }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          size="icon-sm"
-          aria-label={m.aria_format_list_text()}
-        >
-          <IconLetterCase />
-        </Button>
+      <DialogTrigger
+        render={
+          <Button
+            variant="outline"
+            size="icon-sm"
+            aria-label={m.aria_format_list_text()}
+          />
+        }
+      >
+        <IconLetterCase />
       </DialogTrigger>
       <DialogContent className="sm:min-w-xl">
         <DialogHeader>

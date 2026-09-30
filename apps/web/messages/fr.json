@@ -50,6 +50,7 @@
   "common_saving": "Sauvegarde...",
   "common_close": "Fermer",
   "common_como": "COMO",
+  "common_help": "Aide",
   "common_cosmo": "COSMO",
   "common_retry": "Réessayer",
   "common_username": "Nom d'utilisateur",
@@ -80,8 +81,7 @@
   "list_header_intent_regular": "LIST",
   "list_header_curated_by": "Curated by",
   "list_header_objekts_label": "objekts",
-  "list_header_updated": "Mis à jour le {date}",
-  "list_header_description": "Description",
+  "list_header_created": "Créée le {date}",
   "list_header_description_empty": "Aucune description",
   "list_header_paired": "Liste appariée",
   "list_header_contacts_heading": "Contacter {user}",
@@ -194,6 +194,7 @@
   "settings_language_japanese": "Japonais",
   "_comment_nav": "Navigation strings",
   "nav_objekt_stats": "Stats",
+  "nav_profile": "Profil",
   "_comment_objekts": "Objekt related strings",
   "objekts_header": "Objekts",
   "objekt_list": "Liste d'objekts",
@@ -212,6 +213,9 @@
   "list_zero_lists": "0 listes",
   "list_zero_lists_available": "0 listes disponibles",
   "list_create_new": "Créer nouvelle",
+  "list_new": "Nouvelle liste",
+  "list_shelf_empty": "{username} n'a pas encore créé de liste.",
+  "list_shelf_error": "Impossible de charger les listes",
   "list_discord_format": "Format Discord",
   "list_discord_format_title": "Mettre en forme les listes pour Discord",
   "list_discord_format_description": "Sélectionner une liste en tant que \"Have\", et une autre en tant que \"Want\", pour les copier-coller simplement dans #objekt-trade.",
@@ -272,13 +276,8 @@
   "list_already_on_list": "{collectionId} est déjà sur cette liste",
   "batch_selected_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} objekt sélectionné",
         "countPlural=other": "{count} objekts sélectionnés"
@@ -312,13 +311,8 @@
   "list_matches_overlap_count": "{count} en commun",
   "list_matches_count_label": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} correspondance",
         "countPlural=other": "{count} correspondances"
@@ -347,6 +341,152 @@
   "list_error_unsupported_currency": "Cette devise n'est pas prise en charge.",
   "list_error_entry_not_found": "Entrée de liste introuvable",
   "list_error_entry_kind_mismatch": "Type d'entrée de liste incompatible",
+  "binder_error_binder_not_found": "Classeur introuvable",
+  "binder_error_binder_name_taken": "Vous avez déjà un classeur portant ce nom",
+  "binder_error_binder_limit_reached": "Vous pouvez avoir jusqu'à 10 classeurs",
+  "binder_error_binder_page_limit_reached": "Ce classeur est plein, un classeur peut contenir jusqu'à 20 pages",
+  "binder_error_binder_layout_locked": "Impossible de changer la disposition d'un classeur qui contient des objekts",
+  "binder_error_cover_not_in_binder": "Cet objekt n'est plus dans ce classeur",
+  "binder_error_pocket_out_of_range": "Cette pochette n'existe pas dans ce classeur",
+  "binder_error_objekt_not_owned": "Nous n'avons pas encore pu confirmer que vous possédez cet objekt. Si vous venez de le recevoir, réessayez dans un instant",
+  "binder_page_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} page",
+        "countPlural=other": "{count} pages"
+      }
+    }
+  ],
+  "binder_binders": "Classeurs",
+  "binder_shelf_empty": "{username} n'a pas encore créé de classeur.",
+  "binder_shelf_error": "Impossible de charger les classeurs",
+  "binder_new": "Nouveau classeur",
+  "binder_shelf_limit": "{max} classeurs maximum",
+  "binder_create_description": "Choisissez un nom, une disposition et une couleur de dos. Vous le remplirez ensuite.",
+  "binder_create_name_placeholder": "Mon classeur",
+  "binder_create_layout_pockets": "{count} par page",
+  "binder_create_layout_locked": "La disposition ne peut plus être modifiée une fois que le classeur contient des objekts.",
+  "binder_created": "Classeur créé",
+  "binder_picker_all_artists": "Tous",
+  "binder_picker_suggestion_one": "Comme la pochette {pocket} :",
+  "binder_picker_suggestion_two": "Comme les pochettes {first} et {second} :",
+  "binder_picker_suggested": "Suggestion",
+  "binder_picker_matches_one": "Correspond à la pochette {pocket}",
+  "binder_picker_matches_two": "Correspond aux pochettes {first} et {second}",
+  "binder_picker_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} objekt",
+        "countPlural=other": "{count} objekts"
+      }
+    }
+  ],
+  "binder_picker_sort": "tri · {sort}",
+  "binder_picker_pick_artist": "Choisissez un artiste",
+  "binder_picker_ownership": "Possession",
+  "binder_picker_binder": "Classeur",
+  "binder_picker_not_in_binder": "Pas dans ce classeur",
+  "binder_picker_show": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Afficher {count} objekt",
+        "countPlural=other": "Afficher {count} objekts"
+      }
+    }
+  ],
+  "binder_picker_in_binder": "dans le classeur",
+  "binder_picker_empty_filtered": "Aucun objekt ne correspond. Retirez un filtre pour en voir plus.",
+  "binder_picker_empty": "Aucun objekt dans cette collection pour le moment.",
+  "binder_picker_remove_filter": "Retirer {filter}",
+  "binder_editor_title": "Modifier {name}",
+  "binder_editor_error_loading": "Impossible de charger ce classeur",
+  "binder_editor_saved": "Enregistré",
+  "binder_editor_page_of": "page {page} sur {total}",
+  "binder_editor_previous_page": "Page précédente",
+  "binder_editor_next_page": "Page suivante",
+  "binder_editor_page": "page",
+  "binder_editor_add_page": "Ajouter une page",
+  "binder_editor_remove_page": "Retirer la page",
+  "binder_editor_remove_page_confirm": "Retirer la page {page} ?",
+  "binder_editor_remove_page_n": "Retirer la page {page}",
+  "binder_editor_remove_page_description": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Son objekt sera retiré de ce classeur. Il reste dans votre collection.",
+        "countPlural=other": "Ses {count} objekts seront retirés de ce classeur. Ils restent dans votre collection."
+      }
+    }
+  ],
+  "binder_editor_hint_click": "clic",
+  "binder_editor_hint_fill": "une poche, puis un objekt, pour la remplir",
+  "binder_editor_hint_drag_key": "glisser",
+  "binder_editor_hint_drag": "un objekt dans une poche, ou une poche sur une autre pour les échanger",
+  "binder_editor_hint_clear": "vide une poche",
+  "binder_editor_hint_tap": "Touchez pour remplir, maintenez pour déplacer",
+  "binder_editor_pick_title": "Poche {pocket}",
+  "binder_editor_clear_pocket": "Vider",
+  "binder_editor_clear_pocket_n": "Vider la poche {pocket}",
+  "binder_editor_use_as_cover": "Utiliser comme couverture",
+  "binder_editor_cover": "Couverture",
+  "binder_editor_pocket_empty": "Poche {pocket}, vide",
+  "binder_editor_pocket_filled": "Poche {pocket}, {objekt}",
+  "binder_editor_pocket_cover": "Poche {pocket}, {objekt}, couverture",
+  "binder_editor_select_pocket": "Sélectionnez d'abord une poche",
+  "binder_editor_page_full": "Page complète",
+  "binder_editor_layout": "Disposition",
+  "binder_editor_edit": "Modifier le nom et la couleur",
+  "binder_editor_colour": "Couleur",
+  "binder_editor_colour_presets": "Couleurs de ce classeur",
+  "binder_editor_colour_custom": "Couleur personnalisée",
+  "binder_editor_colour_hex": "Couleur hexadécimale",
+  "binder_editor_delete": "Supprimer le classeur",
+  "binder_editor_delete_confirm": "Supprimer ce classeur ?",
+  "binder_editor_delete_description": "{name} et toutes ses pages seront supprimés. Les objekts restent dans votre collection.",
+  "binder_editor_deleted": "Classeur supprimé",
+  "binder_editor_more": "Plus d'actions",
+  "binder_editor_drag_instructions": "Appuyez sur Entrée pour le choisir. Pour le déplacer dans une poche, appuyez sur Espace, choisissez une poche avec les flèches, puis appuyez sur Espace pour le déposer ou Échap pour annuler.",
+  "binder_editor_drag_picked_up": "{objekt} saisi.",
+  "binder_editor_drag_over": "Au-dessus de la poche {pocket}.",
+  "binder_editor_drag_dropped": "{objekt} déposé dans la poche {pocket}.",
+  "binder_editor_drag_cancelled": "Déplacement annulé.",
+  "binder_viewer_open": "Ouvrir {name}",
+  "binder_viewer_objekt_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} objekt",
+        "countPlural=other": "{count} objekts"
+      }
+    }
+  ],
+  "binder_viewer_updated": "Mis à jour le {date}",
+  "binder_viewer_edit": "Modifier",
+  "binder_viewer_share": "Partager",
+  "binder_viewer_link_copied": "Lien du classeur copié dans le presse-papier",
+  "binder_viewer_pages_of": "pages {first}–{last} sur {total}",
+  "binder_viewer_pages": "Pages",
+  "binder_viewer_go_to_page": "Page {page}",
+  "binder_pin": "Épingler",
+  "binder_pinned": "Épinglé",
+  "binder_unpin_named": "Désépingler {name}",
+  "binder_toast_pinned": "{name} épinglé",
+  "binder_toast_unpinned": "{name} désépinglé",
+  "binder_add_select": "Choisir le classeur où ajouter {collectionId}",
+  "binder_add_named": "Ajouter à {name}",
+  "binder_add_already_in": "Déjà ajouté",
+  "binder_add_none": "Aucun classeur pour l'instant",
+  "binder_add_added": "Ajouté à {name}, page {page}",
+  "binder_add_already": "{collectionId} est déjà dans {name}, page {page}",
+  "binder_add_open": "Ouvrir",
   "notification_bell_label": "Notifications",
   "notification_mark_all_read": "Tout marquer comme lu",
   "notification_empty": "Aucune notification pour le moment.",
@@ -372,7 +512,8 @@
   "data_source_blockchain_label": "Objekts Individuels",
   "data_source_blockchain_short": "Individuels",
   "_comment_profile": "Profile page strings",
-  "profile_address": "Adresse",
+  "profile_copy_address": "Copier l'adresse",
+  "profile_tabs": "Sections du profil",
   "profile_help_grid_title": "Taille de grille/colonnes",
   "profile_help_grid_description": "Vous pouvez changer la taille de la grille/des colonnes d'objekts en utilisant les réglages accessibles en cliquant sur votre photo de profil en haut à droite.",
   "profile_help_grid_size_title": "Taille de la grille",
@@ -387,7 +528,6 @@
   "profile_help_locking_desc_2": "Cette fonctionnalité de {appName}",
   "profile_help_locking_desc_emphasis": "n'empêche pas l'envoi depuis COSMO",
   "profile_badge_cosmo_verified": "COSMO vérifié",
-  "profile_badge_verified": "Vérifié",
   "profile_badge_modhaus": "Compte officiel de Modhaus",
   "profile_badge_modhaus_alt": "Modhaus",
   "_comment_system": "System status strings",
@@ -540,6 +680,8 @@
   "admin_collection_media_upload_failed": "Failed to upload media",
   "admin_collection_refetch": "Refetch from COSMO",
   "admin_collection_refetched": "Collection values updated from COSMO. Review and save.",
+  "admin_collection_recache_images": "Re-cache images",
+  "admin_collection_images_recached": "Images re-cached from COSMO.",
   "admin_collection_updated": "Collection updated successfully",
   "admin_latest_collections": "Dernières collections",
   "admin_latest_prev": "Page précédente",
@@ -556,6 +698,7 @@
   "admin_collection_error_invalid_season": "The selected season does not belong to the selected artist.",
   "admin_collection_error_invalid_class": "The selected class does not belong to the selected artist.",
   "admin_collection_error_metadata_failed": "Failed to fetch metadata from COSMO.",
+  "admin_collection_error_image_recache_failed": "COSMO's image couldn't be downloaded or processed.",
   "admin_event_image": "Event Image",
   "admin_event_image_select": "Select Image",
   "admin_event_image_hint": "JPG, PNG, GIF or WebP. Max 1MB.",
@@ -684,6 +827,7 @@
   "progress_class": "Classe {class}",
   "progress_complete": "Complet",
   "progress_title": "Progrès",
+  "progress_overview": "Aperçu",
   "progress_title_with_username": "{username} - Progrès",
   "progress_help_progress_desc_1": "Voir le détail de la progression des collections par saisons jusqu'au 100%.",
   "progress_help_progress_desc_2": "Chaque membre peut être subdivisée en collections physiques (A) ou digitales (Z) uniquement, plutôt que combinées.",
@@ -762,13 +906,8 @@
   "gravity_revealed_progress": "révélés {counted}/{total}",
   "gravity_votes_so_far": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} vote jusqu'ici",
         "countPlural=other": "{count} votes jusqu'ici"
@@ -780,13 +919,8 @@
   "gravity_ranking": "Classement",
   "gravity_more_candidates": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "+ {count} autre candidat",
         "countPlural=other": "+ {count} autres candidats"
@@ -797,13 +931,8 @@
   "gravity_candidate_delta": "+{amount} COMO lors de la dernière révélation",
   "gravity_vote_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=one": "{count} vote",
         "countPlural=other": "{count} votes"
@@ -815,6 +944,7 @@
   "gravity_no_votes_yet": "Aucun vote pour l'instant",
   "gravity_votes_sealed": "Les votes sont masqués pendant le scrutin",
   "gravity_totals_reveal": "Les totaux par candidat seront révélés au début du comptage",
+  "gravity_details": "Détails",
   "_comment_blockchain": "Blockchain strings",
   "blockchain_types": "Types",
   "blockchain_total": "total",
@@ -836,6 +966,7 @@
   "objekt_overlay_pinned": "Épinglé",
   "objekt_overlay_send": "Envoyer",
   "objekt_overlay_add_to_list": "Ajouter à la liste",
+  "objekt_overlay_add_to_binder": "Ajouter au classeur",
   "objekt_overlay_remove_from_list": "Supprimer de la liste",
   "objekt_overlay_view_listings": "Voir les annonces",
   "objekt_overlay_select": "Sélectionner",
@@ -853,21 +984,16 @@
   "objekt_overlay_unlocked": "Déverrouillé",
   "objekt_overlay_pin_aria": "Épingler {collectionId}",
   "objekt_overlay_unpin_aria": "Désépingler {collectionId}",
-  "pin_reorder_instructions": "Pour saisir un objekt épinglé, appuyez sur espace ou entrée. Pendant le déplacement, utilisez les touches fléchées pour déplacer l'objekt. Appuyez de nouveau sur espace ou entrée pour le déposer, ou sur échap pour annuler.",
-  "pin_reorder_picked_up": "Objekt épinglé saisi. Il est en position {position} sur {total}.",
-  "pin_reorder_over": "Objekt épinglé déplacé en position {position} sur {total}.",
-  "pin_reorder_dropped": "Objekt épinglé déposé en position {position} sur {total}.",
+  "pin_reorder_instructions": "Pour saisir une épingle, appuyez sur espace ou entrée. Sur un classeur épinglé, entrée l'ouvre à la place. Pendant le déplacement, utilisez les touches fléchées pour déplacer l'épingle. Appuyez de nouveau sur espace ou entrée pour la déposer, ou sur échap pour annuler.",
+  "pin_reorder_binder": "classeur {name}",
+  "pin_reorder_picked_up": "Vous avez saisi {name}. Il est en position {position} sur {total}.",
+  "pin_reorder_over": "Vous avez déplacé {name} en position {position} sur {total}.",
+  "pin_reorder_dropped": "Vous avez déposé {name} en position {position} sur {total}.",
   "pin_reorder_cancelled": "Réorganisation des épingles annulée.",
   "objekt_overlay_lock_aria": "Verrouiller l'objekt",
   "objekt_overlay_unlock_aria": "Déverrouiller l'objekt",
   "_comment_objekt_info": "Objekt info strings",
   "objekt_info_token_id": "ID du token",
-  "objekt_info_rescan": "Re-scan",
-  "_comment_objekt_rescan": "Objekt rescan strings",
-  "objekt_rescan_success": "Objekt actualisé!",
-  "objekt_rescan_success_desc": "{collectionId} #{serial} actualisé depuis COSMO.",
-  "objekt_rescan_error": "Erreur",
-  "objekt_rescan_error_desc": "Erreur lors de l'actualisation de {collectionId} #{serial} depuis COSMO. Veuillez réessayer plus tard.",
   "_comment_objekt_attribute": "Objekt attribute strings",
   "objekt_attribute_artist": "Artiste",
   "objekt_attribute_member": "Membre",
@@ -902,7 +1028,6 @@
   "objekt_metadata_history_range_90d": "90j",
   "objekt_metadata_history_range_all": "Tout",
   "objekt_metadata_history_empty": "L'historique des prix commence au prochain relevé.",
-  "objekt_error_metadata_fetch_failed": "Échec de la récupération des métadonnées de l'objekt. Veuillez réessayer.",
   "_comment_objekt_serials": "Objekt serials strings",
   "objekt_serials_placeholder": "Sélectionnez un serial...",
   "objekt_serials_owner": "Détenteur",

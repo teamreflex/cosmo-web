@@ -43,15 +43,17 @@ export default function DeleteEra({ eraId, onSuccess }: Props) {
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button
-          type="button"
-          variant="destructive"
-          disabled={mutation.isPending}
-          aria-label={m.aria_delete_era()}
-        >
-          <IconTrash className="size-4" />
-        </Button>
+      <AlertDialogTrigger
+        render={
+          <Button
+            type="button"
+            variant="destructive"
+            disabled={mutation.isPending}
+            aria-label={m.aria_delete_era()}
+          />
+        }
+      >
+        <IconTrash className="size-4" />
       </AlertDialogTrigger>
       <AlertDialogContent size="sm">
         <AlertDialogHeader>

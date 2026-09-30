@@ -3,7 +3,7 @@ import type { HttpClient } from "effect/unstable/http";
 import type { Redis } from "effect/unstable/persistence";
 import type { DatabaseWeb } from "./db";
 import type { DatabaseIndexer } from "./db-indexer";
-import type { Env } from "./env";
+import type { Exchangerate } from "./exchangerate";
 import { clearObjektStatsTask } from "./functions/clear-objekt-stats";
 import { drainOutboxTask } from "./functions/drain-outbox";
 import { syncCollectionPriceStatsTask } from "./functions/sync-collection-price-stats";
@@ -23,7 +23,7 @@ export interface ScheduledTask<TSuccess = void, TFailure = unknown> {
     | DatabaseWeb
     | DatabaseIndexer
     | ProxiedToken
-    | Env
+    | Exchangerate
     | HttpClient.HttpClient
   >;
 }

@@ -1,9 +1,9 @@
 import { Error } from "@/components/error-boundary";
-import GridRenderer from "@/components/grid/grid-renderer";
+import GridRenderer, {
+  GridLedgerSkeleton,
+} from "@/components/grid/grid-renderer";
 import HelpDialog from "@/components/grid/help-dialog";
 import Portal from "@/components/portal";
-import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
-import TitleHeader from "@/components/ui/title-header";
 import { findArtistForMember } from "@/hooks/use-artists";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
@@ -20,7 +20,7 @@ export const Route = createFileRoute("/@{$username}/grid")({
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
   validateSearch: gridFrontendSchema,
-  loaderDeps: ({ search }) => ({ searchParams: search }),
+  loaderDeps: ({ search: { binder, ...searchParams } }) => ({ searchParams }),
   loader: async ({ context, deps }) => {
     const [target, account] = await Promise.all([
       context.queryClient.ensureQueryData(context.targetAccountOptions),
@@ -78,14 +78,8 @@ function RouteComponent() {
 
 function PendingComponent() {
   return (
-    <div className="flex flex-col">
-      <TitleHeader title={m.grid_title()}>
-        <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
-          <div className="md:pointer-events-auto">
-            <MemberFilterSkeleton />
-          </div>
-        </div>
-      </TitleHeader>
+    <div className="container flex flex-col gap-6 pt-4 pb-8">
+      <GridLedgerSkeleton detail={false} />
     </div>
   );
 }

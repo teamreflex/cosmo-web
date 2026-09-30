@@ -85,6 +85,14 @@ export default function CreateApiKeyDialog() {
     }
   }
 
+  const expiryItems = EXPIRY_OPTIONS.map((option) => ({
+    value: option.value,
+    label:
+      option.days === null
+        ? m.admin_api_key_expiry_never()
+        : m.admin_api_key_expiry_days({ days: option.days }),
+  }));
+
   function copyKey() {
     if (createdKey) {
       void navigator.clipboard.writeText(createdKey);
@@ -94,11 +102,9 @@ export default function CreateApiKeyDialog() {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button size="sm">
-          <IconPlus className="size-4" />
-          <span>{m.admin_api_keys_new()}</span>
-        </Button>
+      <DialogTrigger render={<Button size="sm" />}>
+        <IconPlus className="size-4" />
+        <span>{m.admin_api_keys_new()}</span>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         {createdKey ? (
@@ -177,6 +183,7 @@ export default function CreateApiKeyDialog() {
                   <Field>
                     <FieldLabel>{m.admin_api_key_expiry()}</FieldLabel>
                     <Select
+                      items={expiryItems}
                       value={
                         EXPIRY_OPTIONS.find((o) => o.days === field.value)
                           ?.value ?? "none"
@@ -192,28 +199,21 @@ export default function CreateApiKeyDialog() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="none">
-                          {m.admin_api_key_expiry_never()}
-                        </SelectItem>
-                        <SelectItem value="30">
-                          {m.admin_api_key_expiry_days({ days: 30 })}
-                        </SelectItem>
-                        <SelectItem value="90">
-                          {m.admin_api_key_expiry_days({ days: 90 })}
-                        </SelectItem>
-                        <SelectItem value="365">
-                          {m.admin_api_key_expiry_days({ days: 365 })}
-                        </SelectItem>
+                        {expiryItems.map((item) => (
+                          <SelectItem key={item.value} value={item.value}>
+                            {item.label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </Field>
                 )}
               />
               <DialogFooter className="mt-2">
-                <DialogClose asChild>
-                  <Button type="button" variant="outline">
-                    {m.common_cancel()}
-                  </Button>
+                <DialogClose
+                  render={<Button type="button" variant="outline" />}
+                >
+                  {m.common_cancel()}
                 </DialogClose>
                 <Button type="submit" disabled={mutation.isPending}>
                   <span>{m.common_create()}</span>

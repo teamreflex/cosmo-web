@@ -20,6 +20,7 @@ import { FormProvider, useForm, useFormState } from "react-hook-form";
 import { toast } from "sonner";
 import CollectionDisplay from "./collection-display";
 import CollectionForm from "./collection-form";
+import CollectionRecacheButton from "./collection-recache-button";
 import CollectionRefetchButton from "./collection-refetch-button";
 
 type Props = {
@@ -121,7 +122,13 @@ export default function CollectionEditor({ collection }: Props) {
             <h2 className="font-mono text-sm font-semibold">
               {collection.collectionId}
             </h2>
-            <CollectionRefetchButton id={collection.id} form={form} />
+            <div className="flex gap-2">
+              <CollectionRecacheButton
+                id={collection.id}
+                slug={collection.slug}
+              />
+              <CollectionRefetchButton id={collection.id} form={form} />
+            </div>
           </div>
 
           <form

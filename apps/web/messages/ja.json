@@ -50,6 +50,7 @@
   "common_saving": "保存中...",
   "common_close": "閉じる",
   "common_como": "COMO",
+  "common_help": "ヘルプ",
   "common_cosmo": "COSMO",
   "common_retry": "リトライ",
   "common_username": "ユーザー名",
@@ -80,8 +81,7 @@
   "list_header_intent_regular": "LIST",
   "list_header_curated_by": "Curated by",
   "list_header_objekts_label": "オブジェクト",
-  "list_header_updated": "{date} 更新",
-  "list_header_description": "説明",
+  "list_header_created": "{date} 作成",
   "list_header_description_empty": "説明なし",
   "list_header_paired": "ペアリスト",
   "list_header_contacts_heading": "{user}に連絡",
@@ -194,6 +194,7 @@
   "settings_language_japanese": "日本語",
   "_comment_nav": "Navigation strings",
   "nav_objekt_stats": "統計",
+  "nav_profile": "プロフィール",
   "_comment_objekts": "Objekt related strings",
   "objekts_header": "Objekts",
   "objekt_list": "Objektリスト",
@@ -212,6 +213,9 @@
   "list_zero_lists": "リストは0件です",
   "list_zero_lists_available": "利用可能なリストは0件です",
   "list_create_new": "新規作成",
+  "list_new": "新しいリスト",
+  "list_shelf_empty": "{username}さんはまだリストを作成していません。",
+  "list_shelf_error": "リストを読み込めませんでした",
   "list_discord_format": "Discord形式",
   "list_discord_format_title": "Discord向けに整形",
   "list_discord_format_description": "所持リストと希望リストを選択すると、#objekt-tradeへ簡単にコピーできます。",
@@ -272,13 +276,8 @@
   "list_already_on_list": "{collectionId}は既にこのリストにあります",
   "batch_selected_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "{count}件選択中"
       }
@@ -311,13 +310,8 @@
   "list_matches_overlap_count": "{count}件一致",
   "list_matches_count_label": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "{count}件のマッチ"
       }
@@ -345,6 +339,147 @@
   "list_error_unsupported_currency": "その通貨には対応していません。",
   "list_error_entry_not_found": "リストのエントリーが見つかりません",
   "list_error_entry_kind_mismatch": "リストのエントリーの種類が一致しません",
+  "binder_error_binder_not_found": "バインダーが見つかりません",
+  "binder_error_binder_name_taken": "同じ名前のバインダーが既に存在します",
+  "binder_error_binder_limit_reached": "バインダーは最大10冊までです",
+  "binder_error_binder_page_limit_reached": "このバインダーは満杯です。バインダーは最大20ページまでです",
+  "binder_error_binder_layout_locked": "objektが入っているバインダーのレイアウトは変更できません",
+  "binder_error_cover_not_in_binder": "そのobjektはこのバインダーにもうありません",
+  "binder_error_pocket_out_of_range": "そのポケットはこのバインダーにありません",
+  "binder_error_objekt_not_owned": "このobjektの所有をまだ確認できません。受け取ったばかりの場合は、しばらくしてからもう一度お試しください",
+  "binder_page_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}ページ"
+      }
+    }
+  ],
+  "binder_binders": "バインダー",
+  "binder_shelf_empty": "{username}さんはまだバインダーを作成していません。",
+  "binder_shelf_error": "バインダーを読み込めませんでした",
+  "binder_new": "新しいバインダー",
+  "binder_shelf_limit": "最大{max}冊まで",
+  "binder_create_description": "名前、ポケットのレイアウト、背表紙の色を選んでください。このあと中身を入れられます。",
+  "binder_create_name_placeholder": "マイバインダー",
+  "binder_create_layout_pockets": "1ページ{count}枚",
+  "binder_create_layout_locked": "Objektを入れた後はレイアウトを変更できません。",
+  "binder_created": "バインダーを作成しました",
+  "binder_picker_all_artists": "すべて",
+  "binder_picker_suggestion_one": "ポケット{pocket}と同じ:",
+  "binder_picker_suggestion_two": "ポケット{first}と{second}と同じ:",
+  "binder_picker_suggested": "おすすめ",
+  "binder_picker_matches_one": "ポケット{pocket}に一致",
+  "binder_picker_matches_two": "ポケット{first}と{second}に一致",
+  "binder_picker_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}個のオブジェクト"
+      }
+    }
+  ],
+  "binder_picker_sort": "並び替え · {sort}",
+  "binder_picker_pick_artist": "アーティストを選択してください",
+  "binder_picker_ownership": "所有",
+  "binder_picker_binder": "バインダー",
+  "binder_picker_not_in_binder": "このバインダーにないもの",
+  "binder_picker_show": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}個のオブジェクトを表示"
+      }
+    }
+  ],
+  "binder_picker_in_binder": "バインダー内",
+  "binder_picker_empty_filtered": "一致するオブジェクトがありません。フィルターを外すと表示されます。",
+  "binder_picker_empty": "このコレクションにはまだオブジェクトがありません。",
+  "binder_picker_remove_filter": "{filter}を解除",
+  "binder_editor_title": "{name}を編集",
+  "binder_editor_error_loading": "このバインダーを読み込めませんでした",
+  "binder_editor_saved": "保存済み",
+  "binder_editor_page_of": "{total}ページ中{page}ページ",
+  "binder_editor_previous_page": "前のページ",
+  "binder_editor_next_page": "次のページ",
+  "binder_editor_page": "ページ",
+  "binder_editor_add_page": "ページを追加",
+  "binder_editor_remove_page": "ページを削除",
+  "binder_editor_remove_page_confirm": "{page}ページを削除しますか？",
+  "binder_editor_remove_page_n": "{page}ページを削除",
+  "binder_editor_remove_page_description": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "このページの{count}個のobjektはバインダーから外されます。コレクションには残ります。"
+      }
+    }
+  ],
+  "binder_editor_hint_click": "クリック",
+  "binder_editor_hint_fill": "ポケット、次にobjektで配置",
+  "binder_editor_hint_drag_key": "ドラッグ",
+  "binder_editor_hint_drag": "objektをポケットへ、またはポケット同士で入れ替え",
+  "binder_editor_hint_clear": "ポケットを空にする",
+  "binder_editor_hint_tap": "タップで配置、長押しで移動",
+  "binder_editor_pick_title": "ポケット{pocket}",
+  "binder_editor_clear_pocket": "空にする",
+  "binder_editor_clear_pocket_n": "ポケット{pocket}を空にする",
+  "binder_editor_use_as_cover": "表紙にする",
+  "binder_editor_cover": "表紙",
+  "binder_editor_pocket_empty": "ポケット{pocket}、空",
+  "binder_editor_pocket_filled": "ポケット{pocket}、{objekt}",
+  "binder_editor_pocket_cover": "ポケット{pocket}、{objekt}、表紙",
+  "binder_editor_select_pocket": "先にポケットを選択してください",
+  "binder_editor_page_full": "ページがいっぱいです",
+  "binder_editor_layout": "レイアウト",
+  "binder_editor_edit": "名前と色を編集",
+  "binder_editor_colour": "色",
+  "binder_editor_colour_presets": "このバインダーの色",
+  "binder_editor_colour_custom": "カスタムカラー",
+  "binder_editor_colour_hex": "16進カラー",
+  "binder_editor_delete": "バインダーを削除",
+  "binder_editor_delete_confirm": "このバインダーを削除しますか？",
+  "binder_editor_delete_description": "{name}とすべてのページが削除されます。objektはコレクションに残ります。",
+  "binder_editor_deleted": "バインダーを削除しました",
+  "binder_editor_more": "その他の操作",
+  "binder_editor_drag_instructions": "Enterで選択します。ポケットへ移動するにはSpaceを押し、矢印キーでポケットを選んでSpaceで配置、Escでキャンセルします。",
+  "binder_editor_drag_picked_up": "{objekt}を持ち上げました。",
+  "binder_editor_drag_over": "ポケット{pocket}の上です。",
+  "binder_editor_drag_dropped": "{objekt}をポケット{pocket}に置きました。",
+  "binder_editor_drag_cancelled": "移動をキャンセルしました。",
+  "binder_viewer_open": "{name}を開く",
+  "binder_viewer_objekt_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}個のObjekt"
+      }
+    }
+  ],
+  "binder_viewer_updated": "{date} 更新",
+  "binder_viewer_edit": "編集",
+  "binder_viewer_share": "共有",
+  "binder_viewer_link_copied": "バインダーのリンクをコピーしました",
+  "binder_viewer_pages_of": "{total}ページ中{first}–{last}ページ",
+  "binder_viewer_pages": "ページ",
+  "binder_viewer_go_to_page": "{page}ページ",
+  "binder_pin": "ピン留め",
+  "binder_pinned": "ピン留め済み",
+  "binder_unpin_named": "{name}のピン留めを解除",
+  "binder_toast_pinned": "{name}をピン留めしました",
+  "binder_toast_unpinned": "{name}のピン留めを解除しました",
+  "binder_add_select": "{collectionId}を追加するバインダーを選択",
+  "binder_add_named": "{name} に追加",
+  "binder_add_already_in": "追加済み",
+  "binder_add_none": "バインダーはまだありません",
+  "binder_add_added": "{name}の{page}ページに追加しました",
+  "binder_add_already": "{collectionId}は既に{name}の{page}ページにあります",
+  "binder_add_open": "開く",
   "notification_bell_label": "通知",
   "notification_mark_all_read": "すべて既読にする",
   "notification_empty": "まだ通知はありません。",
@@ -370,7 +505,8 @@
   "data_source_blockchain_label": "個別のObjekts",
   "data_source_blockchain_short": "個別",
   "_comment_profile": "Profile page strings",
-  "profile_address": "アドレス",
+  "profile_copy_address": "アドレスをコピー",
+  "profile_tabs": "プロフィールのセクション",
   "profile_help_grid_title": "グリッド／列サイズ",
   "profile_help_grid_description": "右上のプロフィール画像から設定を開き、Objektのグリッド／列サイズを変更できます。",
   "profile_help_grid_size_title": "グリッドサイズ",
@@ -385,7 +521,6 @@
   "profile_help_locking_desc_2": "これは{appName}の機能であり、",
   "profile_help_locking_desc_emphasis": "COSMOアプリ内での取引を防ぐものではありません",
   "profile_badge_cosmo_verified": "COSMO認証済み",
-  "profile_badge_verified": "認証済み",
   "profile_badge_modhaus": "公式Modhausアカウント",
   "profile_badge_modhaus_alt": "Modhaus",
   "_comment_system": "System status strings",
@@ -538,6 +673,8 @@
   "admin_collection_media_upload_failed": "Failed to upload media",
   "admin_collection_refetch": "Refetch from COSMO",
   "admin_collection_refetched": "Collection values updated from COSMO. Review and save.",
+  "admin_collection_recache_images": "Re-cache images",
+  "admin_collection_images_recached": "Images re-cached from COSMO.",
   "admin_collection_updated": "Collection updated successfully",
   "admin_latest_collections": "最新コレクション",
   "admin_latest_prev": "前のページ",
@@ -554,6 +691,7 @@
   "admin_collection_error_invalid_season": "The selected season does not belong to the selected artist.",
   "admin_collection_error_invalid_class": "The selected class does not belong to the selected artist.",
   "admin_collection_error_metadata_failed": "Failed to fetch metadata from COSMO.",
+  "admin_collection_error_image_recache_failed": "COSMO's image couldn't be downloaded or processed.",
   "admin_event_image": "Event Image",
   "admin_event_image_select": "Select Image",
   "admin_event_image_hint": "JPG, PNG, GIF or WebP. Max 1MB.",
@@ -682,6 +820,7 @@
   "progress_class": "{class}クラス",
   "progress_complete": "完了",
   "progress_title": "進捗",
+  "progress_overview": "概要",
   "progress_title_with_username": "{username}の進捗",
   "progress_help_progress_desc_1": "シーズンごとのコレクション達成率を100％まで確認できます。",
   "progress_help_progress_desc_2": "各メンバーは、フィジカル（A）またはデジタル（Z）単体に分けて表示することも可能です。",
@@ -760,13 +899,8 @@
   "gravity_revealed_progress": "公開 {counted}/{total}",
   "gravity_votes_so_far": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "現在{count}票"
       }
@@ -777,13 +911,8 @@
   "gravity_ranking": "ランキング",
   "gravity_more_candidates": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "+ 他{count}人の候補"
       }
@@ -793,13 +922,8 @@
   "gravity_candidate_delta": "直近の公開で+{amount} COMO",
   "gravity_vote_count": [
     {
-      "declarations": [
-        "input count",
-        "local countPlural = count: plural"
-      ],
-      "selectors": [
-        "countPlural"
-      ],
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "{count}票"
       }
@@ -810,6 +934,7 @@
   "gravity_no_votes_yet": "まだ投票はありません",
   "gravity_votes_sealed": "投票中は票が非公開です",
   "gravity_totals_reveal": "集計開始時に候補ごとの合計が公開されます",
+  "gravity_details": "詳細",
   "_comment_blockchain": "Blockchain strings",
   "blockchain_types": "種類",
   "blockchain_total": "合計",
@@ -831,6 +956,7 @@
   "objekt_overlay_pinned": "ピン留め済み",
   "objekt_overlay_send": "送信",
   "objekt_overlay_add_to_list": "リストに追加",
+  "objekt_overlay_add_to_binder": "バインダーに追加",
   "objekt_overlay_remove_from_list": "リストから削除",
   "objekt_overlay_view_listings": "出品を見る",
   "objekt_overlay_select": "選択",
@@ -848,21 +974,16 @@
   "objekt_overlay_unlocked": "ロック解除済み",
   "objekt_overlay_pin_aria": "{collectionId}をピン留め",
   "objekt_overlay_unpin_aria": "{collectionId}のピン留めを解除",
-  "pin_reorder_instructions": "ピン留めしたオブジェクトを持ち上げるには、スペースキーまたはEnterキーを押してください。ドラッグ中は矢印キーでオブジェクトを移動できます。もう一度スペースキーまたはEnterキーを押すと配置され、Escキーでキャンセルします。",
-  "pin_reorder_picked_up": "ピン留めしたオブジェクトを持ち上げました。現在{total}件中{position}番目です。",
-  "pin_reorder_over": "ピン留めしたオブジェクトを{total}件中{position}番目に移動しました。",
-  "pin_reorder_dropped": "ピン留めしたオブジェクトを{total}件中{position}番目に配置しました。",
+  "pin_reorder_instructions": "ピンを持ち上げるには、スペースキーまたはEnterキーを押してください。ピン留めしたバインダーではEnterキーで開きます。ドラッグ中は矢印キーでピンを移動できます。もう一度スペースキーまたはEnterキーを押すと配置され、Escキーでキャンセルします。",
+  "pin_reorder_binder": "バインダー「{name}」",
+  "pin_reorder_picked_up": "{name}を持ち上げました。現在{total}件中{position}番目です。",
+  "pin_reorder_over": "{name}を{total}件中{position}番目に移動しました。",
+  "pin_reorder_dropped": "{name}を{total}件中{position}番目に配置しました。",
   "pin_reorder_cancelled": "ピンの並べ替えをキャンセルしました。",
   "objekt_overlay_lock_aria": "このObjektをロック",
   "objekt_overlay_unlock_aria": "このObjektのロックを解除",
   "_comment_objekt_info": "Objekt info strings",
   "objekt_info_token_id": "トークンID",
-  "objekt_info_rescan": "再スキャン",
-  "_comment_objekt_rescan": "Objekt rescan strings",
-  "objekt_rescan_success": "Objektを更新しました！",
-  "objekt_rescan_success_desc": "{collectionId}#{serial}をCOSMOから更新しました。",
-  "objekt_rescan_error": "エラー",
-  "objekt_rescan_error_desc": "{collectionId}#{serial}をCOSMOから更新中にエラーが発生しました。後でもう一度お試しください。",
   "_comment_objekt_attribute": "Objekt attribute strings",
   "objekt_attribute_artist": "アーティスト",
   "objekt_attribute_member": "メンバー",
@@ -897,7 +1018,6 @@
   "objekt_metadata_history_range_90d": "90日",
   "objekt_metadata_history_range_all": "全期間",
   "objekt_metadata_history_empty": "価格履歴は次のスナップショットから始まります。",
-  "objekt_error_metadata_fetch_failed": "オブジェクトのメタデータを取得できませんでした。もう一度お試しください。",
   "_comment_objekt_serials": "Objekt serials strings",
   "objekt_serials_placeholder": "シリアルを選択...",
   "objekt_serials_owner": "所有者",

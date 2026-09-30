@@ -17,10 +17,16 @@ import { IconLanguage, IconMoon, IconSun } from "@tabler/icons-react";
 export default function GuestSettings() {
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={m.settings_language()}>
-          <IconLanguage className="size-6" />
-        </Button>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={m.settings_language()}
+          />
+        }
+      >
+        <IconLanguage className="size-6" />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-fit">
         <ThemeSubmenu />
@@ -42,11 +48,11 @@ function ThemeSubmenu() {
           // SAFETY: radio options only contain Theme values
           onValueChange={(value) => setTheme(value as Theme)}
         >
-          <DropdownMenuRadioItem value="dark">
+          <DropdownMenuRadioItem value="dark" closeOnClick>
             <IconMoon className="size-4 shrink-0" />
             <span>{m.settings_theme_dark()}</span>
           </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="light">
+          <DropdownMenuRadioItem value="light" closeOnClick>
             <IconSun className="size-4 shrink-0" />
             <span>{m.settings_theme_light()}</span>
           </DropdownMenuRadioItem>
@@ -72,16 +78,16 @@ function LanguageSubmenu() {
           value={locale}
           onValueChange={handleLanguageChange}
         >
-          <DropdownMenuRadioItem value="en">
+          <DropdownMenuRadioItem value="en" closeOnClick>
             {m.settings_language_english()}
           </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="ko">
+          <DropdownMenuRadioItem value="ko" closeOnClick>
             {m.settings_language_korean()}
           </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="ja">
+          <DropdownMenuRadioItem value="ja" closeOnClick>
             {m.settings_language_japanese()}
           </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="fr">
+          <DropdownMenuRadioItem value="fr" closeOnClick>
             {m.settings_language_french()}
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>

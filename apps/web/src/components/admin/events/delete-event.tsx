@@ -41,16 +41,18 @@ export default function DeleteEvent({ eventId }: Props) {
 
   return (
     <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button
-          type="button"
-          size="icon-xs"
-          variant="destructive"
-          disabled={mutation.isPending}
-          aria-label={m.aria_delete_event()}
-        >
-          <IconTrash className="size-4" />
-        </Button>
+      <AlertDialogTrigger
+        render={
+          <Button
+            type="button"
+            size="icon-xs"
+            variant="destructive"
+            disabled={mutation.isPending}
+            aria-label={m.aria_delete_event()}
+          />
+        }
+      >
+        <IconTrash className="size-4" />
       </AlertDialogTrigger>
       <AlertDialogContent size="sm">
         <AlertDialogHeader>

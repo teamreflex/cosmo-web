@@ -20,6 +20,8 @@ export const env = createEnv({
     // typesense
     VITE_TYPESENSE_URL: z.string().min(1),
     VITE_TYPESENSE_KEY: z.string().min(1),
+    // cdn serving mirrored objekt images
+    VITE_CDN_URL: z.url(),
   },
   runtimeEnv: import.meta.env,
   emptyStringAsUndefined: true,

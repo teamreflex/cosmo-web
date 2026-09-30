@@ -46,15 +46,13 @@ export default function LinkCosmo() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="cosmo">
-          <img
-            src="/cosmo.webp"
-            alt={m.common_cosmo()}
-            className="aspect-square size-5 rounded-full"
-          />
-          <span>{m.link_cosmo_title()}</span>
-        </Button>
+      <DialogTrigger render={<Button variant="cosmo" />}>
+        <img
+          src="/cosmo.webp"
+          alt={m.common_cosmo()}
+          className="aspect-square size-5 rounded-full"
+        />
+        <span>{m.link_cosmo_title()}</span>
       </DialogTrigger>
 
       <DialogContent className="focus-visible:outline-none">

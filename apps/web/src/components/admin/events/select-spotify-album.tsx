@@ -16,15 +16,15 @@ import type { SpotifyAlbum } from "@/lib/universal/events";
 import { cn } from "@/lib/utils";
 import { IconCheck, IconLoader2, IconSelector } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
-import type { ReactNode } from "react";
+import { useRef, useState } from "react";
+import type { ReactElement } from "react";
 import { useDebounceValue } from "usehooks-ts";
 
 type Props = {
   onSelect: (album: SpotifyAlbum) => void;
   selectedAlbum?: SpotifyAlbum | null;
   placeholder?: string;
-  children?: ReactNode;
+  children?: ReactElement;
 };
 
 export default function SelectSpotifyAlbum({
@@ -34,6 +34,7 @@ export default function SelectSpotifyAlbum({
   children,
 }: Props) {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const [search, setSearch] = useState("");
   const [debouncedSearch] = useDebounceValue(search, 500);
   const { data, status } = useQuery({
@@ -52,28 +53,33 @@ export default function SelectSpotifyAlbum({
 
   return (
     <Popover open={open} onOpenChange={setOpen} modal>
-      <PopoverTrigger asChild>
-        {children ?? (
-          <Button
-            data-placeholder={!selectedAlbum ? placeholder : undefined}
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            className="group w-full justify-between"
-            onClick={() => setOpen(true)}
-          >
-            <span className="truncate group-data-placeholder:text-muted-foreground">
-              {selectedAlbum
-                ? `${selectedAlbum.name} - ${selectedAlbum.artists[0]?.name}`
-                : placeholder}
-            </span>
-            <IconSelector className="ml-2 size-4 shrink-0 opacity-50" />
-          </Button>
-        )}
-      </PopoverTrigger>
+      <PopoverTrigger
+        ref={triggerRef}
+        render={
+          children ?? (
+            <Button
+              data-placeholder={!selectedAlbum ? placeholder : undefined}
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              className="group w-full justify-between"
+              onClick={() => setOpen(true)}
+            >
+              <span className="truncate group-data-placeholder:text-muted-foreground">
+                {selectedAlbum
+                  ? `${selectedAlbum.name} - ${selectedAlbum.artists[0]?.name}`
+                  : placeholder}
+              </span>
+              <IconSelector className="ml-2 size-4 shrink-0 opacity-50" />
+            </Button>
+          )
+        }
+      />
       <PopoverContent
-        className="w-(--radix-popover-trigger-width) p-0"
+        className="w-(--anchor-width) p-0"
         align="start"
+        // a pick can swap the trigger for the album, which then takes focus
+        finalFocus={() => triggerRef.current?.isConnected === true}
       >
         <Command shouldFilter={false}>
           <CommandInput

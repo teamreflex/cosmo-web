@@ -19,7 +19,7 @@ The app uses [TanStack Router](https://tanstack.com/router/latest/docs/framework
 - **`.server.ts`** — the file has **no** `createServerFn`/`createMiddleware` exports and contains helpers that touch `db`, `indexer`, `node:crypto`, or other server-only APIs; or it's pure infrastructure (Redis, auth, HTTP helpers).
 - **`.ts`** — the file exports `createServerFn` (clients need RPC stubs) or `createMiddleware` (clients need chain resolution), or it's only types / pure functions / constants.
 
-**Companion pattern:** when a `createServerFn` file needs server-only helpers, put them in a `foo.server.ts` next to `foo.ts` and import them from `foo.ts` (TanStack mocks the import on the client). Do not re-export them from `foo.ts` — consumers import directly from `foo.server.ts`.
+**Companion pattern:** when a `createServerFn` file needs server-only helpers, put them in a `foo.server.ts` under `lib/server/` and import them from `foo.ts` (TanStack mocks the import on the client). Do not re-export them from `foo.ts` — consumers import directly from `foo.server.ts`.
 
 ### Validators
 

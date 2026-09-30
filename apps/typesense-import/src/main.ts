@@ -2,6 +2,7 @@ import { BunRuntime, BunServices } from "@effect/platform-bun";
 import {
   Array as Arr,
   Clock,
+  Config,
   Data,
   Duration,
   Effect,
@@ -10,7 +11,6 @@ import {
   Schedule,
 } from "effect";
 import { getEdition, getShortCode } from "./collections";
-import { Env } from "./config";
 import { Indexer } from "./db/indexer";
 import { Metadata } from "./db/metadata";
 import {
@@ -22,7 +22,9 @@ import {
 import { Typesense } from "./typesense";
 
 const main = Effect.gen(function* () {
-  const env = yield* Env;
+  const loopInterval = yield* Config.Number("LOOP_INTERVAL").pipe(
+    Config.withDefault(1000 * 60 * 10),
+  );
   const indexer = yield* Indexer;
   const metadata = yield* Metadata;
   const typesense = yield* Typesense;
@@ -126,7 +128,7 @@ const main = Effect.gen(function* () {
     // a transient tick failure logs and waits for the next tick instead of
     // killing the daemon; setup failures above stay fatal at boot
     Effect.catchCause((cause) => Effect.logError("Import tick failed", cause)),
-    Effect.schedule(Schedule.spaced(Duration.millis(env.LOOP_INTERVAL))),
+    Effect.schedule(Schedule.spaced(Duration.millis(loopInterval))),
   );
 });
 
@@ -135,7 +137,6 @@ BunRuntime.runMain(
     Effect.provide(
       Layer.mergeAll(
         BunServices.layer,
-        Env.layer,
         Typesense.layer,
         Indexer.layer,
         Metadata.layer,

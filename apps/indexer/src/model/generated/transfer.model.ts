@@ -1,4 +1,11 @@
-import { Entity, Column, PrimaryColumn, Index, ManyToOne } from "typeorm";
+import {
+  Entity,
+  Column,
+  PrimaryColumn,
+  Index,
+  ManyToOne,
+  type Relation,
+} from "typeorm";
 import { Collection } from "./collection.model";
 import { Objekt } from "./objekt.model";
 
@@ -34,8 +41,8 @@ export class Transfer {
 
   @Index()
   @ManyToOne(() => Objekt, { nullable: true })
-  objekt!: Objekt;
+  objekt!: Relation<Objekt>;
 
   @ManyToOne(() => Collection, { nullable: true })
-  collection!: Collection;
+  collection!: Relation<Collection>;
 }
