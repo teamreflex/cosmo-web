@@ -10,7 +10,7 @@ import SingleSelectList, {
   type SingleSelectOption,
 } from "../collection/single-select-list";
 
-const route = getRouteApi("/market");
+const route = getRouteApi("/market/");
 
 const labelMap = {
   floorAsc: m.filter_sort_floor_asc(),

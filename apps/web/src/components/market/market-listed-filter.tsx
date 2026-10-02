@@ -9,7 +9,7 @@ import SingleSelectList, {
   type SingleSelectOption,
 } from "../collection/single-select-list";
 
-const route = getRouteApi("/market");
+const route = getRouteApi("/market/");
 
 type ListedValue = "any" | MarketListedWindow;
 

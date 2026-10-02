@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { type CosmoFilters, useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { DEFAULT_MARKET_SORT } from "@/lib/universal/market";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
-import { Suspense } from "react";
+import { type ReactNode, Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import ClassFilter from "../collection/filter-class";
 import OnlineFilter from "../collection/filter-online";
@@ -13,14 +13,19 @@ import MarketListedFilter from "./market-listed-filter";
 import MarketPriceFilter from "./market-price-filter";
 import MarketSortFilter from "./market-sort-filter";
 
-const route = getRouteApi("/market");
+const route = getRouteApi("/market/");
 
 /**
  * The objekt index filter set with the market sort in place of the cosmo sort,
  * plus the floor price and listing window. On phones the chips scroll in one
  * row with the sort first.
  */
-export default function MarketFilters() {
+type Props = {
+  // trailing content, scrolling with the chips on phones
+  after?: ReactNode;
+};
+
+export default function MarketFilters({ after }: Props) {
   const { filters, setFilters } = useCosmoFilters();
   const search = route.useSearch();
   const navigate = useNavigate();
@@ -96,6 +101,8 @@ export default function MarketFilters() {
       <MarketSortFilter className="max-sm:order-first" />
 
       <ResetFilters count={count} onReset={handleReset} />
+
+      {after}
     </div>
   );
 }

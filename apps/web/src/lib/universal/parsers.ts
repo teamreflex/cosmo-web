@@ -4,7 +4,12 @@ import {
   validSorts,
 } from "@apollo/cosmo/types/common";
 import * as z from "zod";
-import { marketListedWindows, marketSorts } from "./market";
+import {
+  marketListedWindows,
+  marketSorts,
+  myListingSorts,
+  myListingStatuses,
+} from "./market";
 import { transferTypes } from "./transfers";
 
 // cap on distinct filter values parsed from a URL; anything longer hits HTTP
@@ -97,6 +102,22 @@ export const marketBackendSchema = cosmoSchema
     cursor: marketCursorSchema.optional(),
     artists: z.string().array().default([]),
   });
+
+// my listings frontend - the viewer's sale serials, filtered by market status and sale list.
+// the season and class filters are scoped to one artist, so the artist rides along
+export const myListingsFrontendSchema = cosmoSchema
+  .pick({ artist: true, season: true, class: true })
+  .extend({
+    sort: z.enum(myListingSorts).nullish().catch(null),
+    status: z.enum(myListingStatuses).nullish().catch(null),
+    list: z.uuid().nullish().catch(null),
+  })
+  .partial();
+
+// my listings backend
+export const myListingsBackendSchema = myListingsFrontendSchema.extend({
+  page: z.coerce.number().int().nonnegative().default(0),
+});
 
 // profile layout - user facing, validated by the router, shared by every profile tab
 export const profileFrontendSchema = z.object({

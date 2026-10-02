@@ -8,6 +8,7 @@ import VirtualizedObjektGrid from "../objekt/virtualized-objekt-grid";
 import TitleHeader from "../ui/title-header";
 import MarketFilters from "./market-filters";
 import { MarketGridItem } from "./market-grid-item";
+import MyListingsLink from "./my-listings-link";
 
 export default function MarketRenderer() {
   const { user } = useUserState();
@@ -27,10 +28,17 @@ export default function MarketRenderer() {
             <CosmoMemberFilter />
           </div>
         </div>
+
+        {/* on phones it sits in the filter row instead, which has room */}
+        {user !== undefined && (
+          <MyListingsLink className="ml-auto max-md:hidden" />
+        )}
       </TitleHeader>
 
       <FiltersContainer>
-        <MarketFilters />
+        <MarketFilters
+          after={user !== undefined && <MyListingsLink className="md:hidden" />}
+        />
       </FiltersContainer>
 
       <div className="container flex flex-col">

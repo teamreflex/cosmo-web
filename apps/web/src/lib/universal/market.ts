@@ -74,3 +74,64 @@ export function toFloorBounds(
     maxFloorUsd: max == null ? undefined : (max + half) * display.rateToUsd,
   };
 }
+
+/**
+ * Where one of the viewer's sale serials stands against the market. A priced
+ * entry is off the market when it has no serial or its list's currency has no
+ * rate, since the market only counts rated serials.
+ */
+export const myListingStatuses = [
+  "floor",
+  "undercut",
+  "onlySeller",
+  "offMarket",
+  "unpriced",
+] as const;
+export type MyListingStatusKind = (typeof myListingStatuses)[number];
+
+export type MyListingStatus =
+  | { kind: "floor" | "onlySeller" | "offMarket" | "unpriced" }
+  // someone else lists the collection cheaper
+  | { kind: "undercut"; floorUsd: number };
+
+export const myListingSorts = [
+  "gap",
+  "newest",
+  "priceAsc",
+  "priceDesc",
+] as const;
+export type MyListingSort = (typeof myListingSorts)[number];
+export const DEFAULT_MY_LISTING_SORT: MyListingSort = "gap";
+
+// `id` is the entry's, as each serial is its own card
+export type MyListingItem = Collection & {
+  entrySerial: number | null;
+  entryTokenId: string | null;
+  entryQuantity: number;
+  entryPrice: number | null;
+  entryPriceUsd: number | null;
+  listId: string;
+  listCurrency: string;
+  listRateToUsd: number | null;
+  status: MyListingStatus;
+};
+
+export type MyListingsSummary = {
+  serials: number;
+  lists: number;
+  priced: number;
+  // priced serials with a rate, in USD
+  askingTotalUsd: number;
+  atFloor: number;
+  undercut: number;
+  onlySeller: number;
+};
+
+export type MyListingsResponse = {
+  objekts: MyListingItem[];
+  nextStartAfter: number | undefined;
+  /**
+   * Across every sale list, ignoring filters. Only the first page carries it.
+   */
+  summary: MyListingsSummary | null;
+};

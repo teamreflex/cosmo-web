@@ -12,7 +12,6 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AtChar123usernameChar125RouteRouteImport } from './routes/@{$username}/route'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
-import { Route as MarketRouteImport } from './routes/market'
 import { Route as ShareDataRouteImport } from './routes/share-data'
 import { Route as TermsPrivacyRouteImport } from './routes/terms-privacy'
 import { Route as AtChar123usernameChar125IndexRouteImport } from './routes/@{$username}/index'
@@ -33,6 +32,8 @@ import { Route as EventsIndexRouteImport } from './routes/events/index'
 import { Route as EventsSlugRouteImport } from './routes/events/$slug'
 import { Route as GravityIndexRouteImport } from './routes/gravity/index'
 import { Route as ListIdRouteImport } from './routes/list/$id'
+import { Route as MarketIndexRouteImport } from './routes/market/index'
+import { Route as MarketMyRouteImport } from './routes/market/my'
 import { Route as ObjektsIndexRouteImport } from './routes/objekts/index'
 import { Route as ObjektsStatsRouteImport } from './routes/objekts/stats'
 import { Route as AtChar123usernameChar125BinderSlugRouteImport } from './routes/@{$username}/binder.$slug'
@@ -63,11 +64,6 @@ const AtChar123usernameChar125RouteRoute =
 const AdminRouteRoute = AdminRouteRouteImport.update({
   id: '/admin',
   path: '/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MarketRoute = MarketRouteImport.update({
-  id: '/market',
-  path: '/market',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ShareDataRoute = ShareDataRouteImport.update({
@@ -175,6 +171,16 @@ const ListIdRoute = ListIdRouteImport.update({
   path: '/list/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MarketIndexRoute = MarketIndexRouteImport.update({
+  id: '/market/',
+  path: '/market/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketMyRoute = MarketMyRouteImport.update({
+  id: '/market/my',
+  path: '/market/my',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ObjektsIndexRoute = ObjektsIndexRouteImport.update({
   id: '/objekts/',
   path: '/objekts/',
@@ -263,7 +269,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/@{$username}': typeof AtChar123usernameChar125RouteRouteWithChildren
   '/admin': typeof AdminRouteRouteWithChildren
-  '/market': typeof MarketRoute
   '/share-data': typeof ShareDataRoute
   '/terms-privacy': typeof TermsPrivacyRoute
   '/@{$username}/como': typeof AtChar123usernameChar125ComoRoute
@@ -280,11 +285,13 @@ export interface FileRoutesByFullPath {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
+  '/market/my': typeof MarketMyRoute
   '/objekts/stats': typeof ObjektsStatsRoute
   '/@{$username}/': typeof AtChar123usernameChar125IndexRoute
   '/admin/': typeof AdminIndexRoute
   '/events/': typeof EventsIndexRoute
   '/gravity/': typeof GravityIndexRoute
+  '/market/': typeof MarketIndexRoute
   '/objekts/': typeof ObjektsIndexRoute
   '/@{$username}/binder/$slug': typeof AtChar123usernameChar125BinderSlugRoute
   '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
@@ -302,7 +309,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/market': typeof MarketRoute
   '/share-data': typeof ShareDataRoute
   '/terms-privacy': typeof TermsPrivacyRoute
   '/@{$username}/como': typeof AtChar123usernameChar125ComoRoute
@@ -319,11 +325,13 @@ export interface FileRoutesByTo {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
+  '/market/my': typeof MarketMyRoute
   '/objekts/stats': typeof ObjektsStatsRoute
   '/@{$username}': typeof AtChar123usernameChar125IndexRoute
   '/admin': typeof AdminIndexRoute
   '/events': typeof EventsIndexRoute
   '/gravity': typeof GravityIndexRoute
+  '/market': typeof MarketIndexRoute
   '/objekts': typeof ObjektsIndexRoute
   '/@{$username}/binder/$slug': typeof AtChar123usernameChar125BinderSlugRoute
   '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
@@ -344,7 +352,6 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/@{$username}': typeof AtChar123usernameChar125RouteRouteWithChildren
   '/admin': typeof AdminRouteRouteWithChildren
-  '/market': typeof MarketRoute
   '/share-data': typeof ShareDataRoute
   '/terms-privacy': typeof TermsPrivacyRoute
   '/@{$username}/como': typeof AtChar123usernameChar125ComoRoute
@@ -361,11 +368,13 @@ export interface FileRoutesById {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
+  '/market/my': typeof MarketMyRoute
   '/objekts/stats': typeof ObjektsStatsRoute
   '/@{$username}/': typeof AtChar123usernameChar125IndexRoute
   '/admin/': typeof AdminIndexRoute
   '/events/': typeof EventsIndexRoute
   '/gravity/': typeof GravityIndexRoute
+  '/market/': typeof MarketIndexRoute
   '/objekts/': typeof ObjektsIndexRoute
   '/@{$username}/binder/$slug': typeof AtChar123usernameChar125BinderSlugRoute
   '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
@@ -387,7 +396,6 @@ export interface FileRouteTypes {
     | '/'
     | '/@{$username}'
     | '/admin'
-    | '/market'
     | '/share-data'
     | '/terms-privacy'
     | '/@{$username}/como'
@@ -404,11 +412,13 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/events/$slug'
     | '/list/$id'
+    | '/market/my'
     | '/objekts/stats'
     | '/@{$username}/'
     | '/admin/'
     | '/events/'
     | '/gravity/'
+    | '/market/'
     | '/objekts/'
     | '/@{$username}/binder/$slug'
     | '/@{$username}/list/$slug'
@@ -426,7 +436,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/market'
     | '/share-data'
     | '/terms-privacy'
     | '/@{$username}/como'
@@ -443,11 +452,13 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/events/$slug'
     | '/list/$id'
+    | '/market/my'
     | '/objekts/stats'
     | '/@{$username}'
     | '/admin'
     | '/events'
     | '/gravity'
+    | '/market'
     | '/objekts'
     | '/@{$username}/binder/$slug'
     | '/@{$username}/list/$slug'
@@ -467,7 +478,6 @@ export interface FileRouteTypes {
     | '/'
     | '/@{$username}'
     | '/admin'
-    | '/market'
     | '/share-data'
     | '/terms-privacy'
     | '/@{$username}/como'
@@ -484,11 +494,13 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/events/$slug'
     | '/list/$id'
+    | '/market/my'
     | '/objekts/stats'
     | '/@{$username}/'
     | '/admin/'
     | '/events/'
     | '/gravity/'
+    | '/market/'
     | '/objekts/'
     | '/@{$username}/binder/$slug'
     | '/@{$username}/list/$slug'
@@ -509,15 +521,16 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AtChar123usernameChar125RouteRoute: typeof AtChar123usernameChar125RouteRouteWithChildren
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
-  MarketRoute: typeof MarketRoute
   ShareDataRoute: typeof ShareDataRoute
   TermsPrivacyRoute: typeof TermsPrivacyRoute
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   EventsSlugRoute: typeof EventsSlugRoute
   ListIdRoute: typeof ListIdRoute
+  MarketMyRoute: typeof MarketMyRoute
   ObjektsStatsRoute: typeof ObjektsStatsRoute
   EventsIndexRoute: typeof EventsIndexRoute
   GravityIndexRoute: typeof GravityIndexRoute
+  MarketIndexRoute: typeof MarketIndexRoute
   ObjektsIndexRoute: typeof ObjektsIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiUserByAddressesRoute: typeof ApiUserByAddressesRoute
@@ -553,13 +566,6 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/market': {
-      id: '/market'
-      path: '/market'
-      fullPath: '/market'
-      preLoaderRoute: typeof MarketRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/share-data': {
@@ -700,6 +706,20 @@ declare module '@tanstack/react-router' {
       path: '/list/$id'
       fullPath: '/list/$id'
       preLoaderRoute: typeof ListIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/market/': {
+      id: '/market/'
+      path: '/market'
+      fullPath: '/market/'
+      preLoaderRoute: typeof MarketIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/market/my': {
+      id: '/market/my'
+      path: '/market/my'
+      fullPath: '/market/my'
+      preLoaderRoute: typeof MarketMyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/objekts/': {
@@ -870,15 +890,16 @@ const rootRouteChildren: RootRouteChildren = {
   AtChar123usernameChar125RouteRoute:
     AtChar123usernameChar125RouteRouteWithChildren,
   AdminRouteRoute: AdminRouteRouteWithChildren,
-  MarketRoute: MarketRoute,
   ShareDataRoute: ShareDataRoute,
   TermsPrivacyRoute: TermsPrivacyRoute,
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   EventsSlugRoute: EventsSlugRoute,
   ListIdRoute: ListIdRoute,
+  MarketMyRoute: MarketMyRoute,
   ObjektsStatsRoute: ObjektsStatsRoute,
   EventsIndexRoute: EventsIndexRoute,
   GravityIndexRoute: GravityIndexRoute,
+  MarketIndexRoute: MarketIndexRoute,
   ObjektsIndexRoute: ObjektsIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiUserByAddressesRoute: ApiUserByAddressesRoute,

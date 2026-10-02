@@ -1,7 +1,7 @@
 import { useDisplayCurrency } from "@/hooks/use-display-currency";
 import { m } from "@/i18n/messages";
 import { saleListSummaryQuery } from "@/lib/queries/objekt-queries";
-import { formatPrice } from "@/lib/utils";
+import { cn, formatPrice } from "@/lib/utils";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { type ReactNode, useState } from "react";
 import { Button } from "../ui/button";
@@ -89,13 +89,21 @@ export default function SaleListSummary({ objektListId, currency }: Props) {
   );
 }
 
-function Stat({ label, children }: { label: string; children: ReactNode }) {
+type StatProps = {
+  label: string;
+  className?: string;
+  children: ReactNode;
+};
+
+export function Stat({ label, className, children }: StatProps) {
   return (
     <div className="flex flex-col gap-0.5">
       <span className="text-xxs font-medium tracking-widest text-muted-foreground uppercase">
         {label}
       </span>
-      <span className="font-mono text-base font-bold tabular-nums">
+      <span
+        className={cn("font-mono text-base font-bold tabular-nums", className)}
+      >
         {children}
       </span>
     </div>

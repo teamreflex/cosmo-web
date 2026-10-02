@@ -6,7 +6,7 @@ import { getRouteApi } from "@tanstack/react-router";
 import { useState } from "react";
 import FilterChip from "../collection/filter-chip";
 
-const route = getRouteApi("/market");
+const route = getRouteApi("/market/");
 
 /**
  * Quick range breakpoints in USD, rounded to tidy amounts in the viewer's

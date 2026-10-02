@@ -330,7 +330,11 @@ export const fxRates = pgTable(
   },
   (t) => [
     primaryKey({ columns: [t.date, t.currency] }),
-    index("fx_rates_currency_idx").on(t.currency),
+    // serves the latest rate per currency; plain `order by date desc` sorts nulls first
+    index("fx_rates_currency_date_idx").on(
+      t.currency,
+      t.date.desc().nullsFirst(),
+    ),
   ],
 );
 

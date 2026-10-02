@@ -1,17 +1,14 @@
-import { useDisplayCurrency } from "@/hooks/use-display-currency";
 import { m } from "@/i18n/messages";
 import type { ObjektListItem } from "@/lib/functions/objekts/objekt-list";
 import { Objekt } from "@/lib/universal/objekt-conversion";
-import { formatPrice } from "@/lib/utils";
 import type { ObjektList } from "@apollo/database/web/types";
-import { IconPlus } from "@tabler/icons-react";
 import { memo, useMemo, useState } from "react";
 import ListingsDialog from "../market/listings-dialog";
 import { ObjektSidebar } from "../objekt/common";
 import ExpandableObjekt from "../objekt/objekt-expandable";
-import PriceOverlay from "../objekt/price-overlay";
 import EditEntryDialog from "./edit-entry-dialog";
 import ListOverlay from "./list-overlay";
+import SalePriceOverlay, { PriceBadge } from "./sale-price-overlay";
 
 type Props = {
   item: ObjektListItem;
@@ -68,7 +65,11 @@ export const ListGridItem = memo(function ListGridItem({
             price={item.entryPrice}
             currency={currency}
             rateToUsd={fxRateToUsd}
-            atFloor={item.entryAtFloor}
+            badge={
+              item.entryAtFloor && (
+                <PriceBadge tone="floor">{m.listings_stat_floor()}</PriceBadge>
+              )
+            }
             editable={editable}
           />
         )}
@@ -105,70 +106,3 @@ export const ListGridItem = memo(function ListGridItem({
     </>
   );
 });
-
-type SalePriceOverlayProps = {
-  collection: Objekt.Collection;
-  price: number | null;
-  currency: string;
-  rateToUsd: number | null;
-  atFloor: boolean;
-  editable: boolean;
-};
-
-/**
- * The entry price in the viewer's currency, with the seller's original price
- * above it when the two differ. An unpriced entry prompts the owner to add a
- * price and tells anyone else to ask the seller.
- */
-function SalePriceOverlay({
-  collection,
-  price,
-  currency,
-  rateToUsd,
-  atFloor,
-  editable,
-}: SalePriceOverlayProps) {
-  const viewer = useDisplayCurrency();
-
-  if (price === null) {
-    return editable ? (
-      <PriceOverlay
-        collection={collection}
-        price={
-          <span className="inline-flex h-6 items-center gap-1 rounded-md border border-dashed border-current/55 bg-black/25 px-2 font-sans text-xxs font-semibold @[180px]:h-7 @[180px]:gap-1.5 @[180px]:px-2.5 @[180px]:text-xs">
-            <IconPlus className="size-3" />
-            {m.list_sale_add_price()}
-          </span>
-        }
-      />
-    ) : (
-      <PriceOverlay
-        collection={collection}
-        label={m.list_sale_no_price()}
-        price={<span className="font-sans">{m.list_sale_ask_seller()}</span>}
-      />
-    );
-  }
-
-  const original = formatPrice(price, currency);
-  const badge = atFloor && (
-    <span className="mb-1 self-start rounded-sm bg-emerald-300 px-1.5 py-0.5 text-xxs leading-none font-semibold tracking-wider text-black uppercase">
-      {m.listings_stat_floor()}
-    </span>
-  );
-
-  if (currency === viewer.currency || rateToUsd === null) {
-    return (
-      <PriceOverlay collection={collection} badge={badge} price={original} />
-    );
-  }
-
-  return (
-    <PriceOverlay
-      collection={collection}
-      badge={badge}
-      label={original}
-      price={viewer.formatUsd(price * rateToUsd)}
-    />
-  );
-}

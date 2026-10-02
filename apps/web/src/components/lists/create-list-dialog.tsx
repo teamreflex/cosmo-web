@@ -55,13 +55,15 @@ type Props = {
   open: boolean;
   onOpenChange: (state: boolean) => void;
   objektLists: ObjektList[];
+  // the tab it opens on
+  defaultType?: ListType;
 };
 
 export default function CreateListDialog(props: Props) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { cosmo } = useUserState();
-  const [tab, setTab] = useState<ListType>("regular");
+  const [tab, setTab] = useState<ListType>(props.defaultType ?? "regular");
 
   function handleCreated(result: ObjektList) {
     track("create-list");

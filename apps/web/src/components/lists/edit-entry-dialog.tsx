@@ -1,6 +1,7 @@
 import { m } from "@/i18n/messages";
 import { $updateObjektListEntry } from "@/lib/functions/lists";
 import { collectionListingsQuery } from "@/lib/queries/listings";
+import { myListingsQueryFilter } from "@/lib/queries/market";
 import { objektListQueryFilter } from "@/lib/queries/objekt-queries";
 import { updateObjektListEntrySchema } from "@/lib/universal/schema/objekt-list";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
@@ -64,6 +65,7 @@ export default function EditEntryDialog({
         queryClient.invalidateQueries({
           queryKey: collectionListingsQuery(slug).queryKey,
         }),
+        queryClient.invalidateQueries(myListingsQueryFilter),
       ]);
       onOpenChange(false);
     },
