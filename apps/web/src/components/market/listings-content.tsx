@@ -73,7 +73,8 @@ export default function ListingsContent({ collection, pinnedEntryId }: Props) {
   return (
     <div className="grid min-h-0 flex-1 grid-cols-[minmax(280px,380px)_1fr] overflow-hidden">
       <ObjektPanel collection={collection} isDesktop />
-      {listings}
+      {/* the panel alone sets the height, so long lists scroll instead of growing the dialog */}
+      <div className="flex min-h-0 flex-col contain-size">{listings}</div>
     </div>
   );
 }
@@ -192,7 +193,7 @@ function Listings({
   }
 
   return (
-    <div className="flex min-h-0 flex-col">
+    <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex shrink-0 items-center justify-between border-b border-border px-5 py-3">
         <div className="flex items-baseline gap-2">
           <span className="font-cosmo text-sm font-black tracking-widest uppercase">

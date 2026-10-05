@@ -124,7 +124,7 @@ export default function ListingRow({
     <div className={cn(className, "gap-4 px-5 py-3")}>
       <ObjektRibbon collection={collection} />
 
-      <Cell label={m.list_sale_price()} className="w-36">
+      <Cell label={m.list_sale_price()} className="min-w-36 flex-1">
         <Price listing={listing} />
       </Cell>
 
@@ -134,7 +134,7 @@ export default function ListingRow({
         </span>
       </Cell>
 
-      <Cell label={m.listings_seller()} className="min-w-0 flex-1">
+      <Cell label={m.listings_seller()} className="w-45 min-w-0 shrink">
         <Seller
           listing={listing}
           own={own}
