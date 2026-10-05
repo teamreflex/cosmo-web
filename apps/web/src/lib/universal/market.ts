@@ -9,7 +9,7 @@ export const marketSorts = [
   "recentlyListed",
 ] as const;
 export type MarketSort = (typeof marketSorts)[number];
-export const DEFAULT_MARKET_SORT: MarketSort = "floorAsc";
+export const DEFAULT_MARKET_SORT: MarketSort = "recentlyListed";
 
 /**
  * "Listed within" windows, matched against a collection's most recent listing.
@@ -96,12 +96,12 @@ export type MyListingStatus =
 
 export const myListingSorts = [
   "gap",
-  "newest",
+  "recentlyListed",
   "priceAsc",
   "priceDesc",
 ] as const;
 export type MyListingSort = (typeof myListingSorts)[number];
-export const DEFAULT_MY_LISTING_SORT: MyListingSort = "gap";
+export const DEFAULT_MY_LISTING_SORT: MyListingSort = "recentlyListed";
 
 // `id` is the entry's, as each serial is its own card
 export type MyListingItem = Collection & {

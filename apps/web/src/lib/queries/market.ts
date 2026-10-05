@@ -45,8 +45,11 @@ export function myListingsQuery(
     status: searchParams.status,
     list: searchParams.list,
     artist: searchParams.artist,
+    member: searchParams.member,
     season: searchParams.season,
     class: searchParams.class,
+    on_offline: searchParams.on_offline,
+    collectionNo: searchParams.collectionNo,
   };
 
   return infiniteQueryOptions({

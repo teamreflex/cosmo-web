@@ -14,6 +14,7 @@ import {
   withSelectedArtists,
 } from "@/lib/server/objekts/filters.server";
 import {
+  DEFAULT_MARKET_SORT,
   type FloorBounds,
   type MarketCursor,
   type MarketListedWindow,
@@ -48,7 +49,7 @@ const LIMIT = 60;
 export const $fetchMarket = createServerFn({ method: "GET" })
   .validator(marketBackendSchema)
   .handler(async ({ data }): Promise<MarketResponse> => {
-    const sort = marketSorting[data.sort ?? "floorAsc"];
+    const sort = marketSorting[data.sort ?? DEFAULT_MARKET_SORT];
     const where = and(
       ...withArtist(data.artist),
       ...withClass(data.class ?? []),

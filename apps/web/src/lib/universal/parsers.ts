@@ -103,10 +103,17 @@ export const marketBackendSchema = cosmoSchema
     artists: z.string().array().default([]),
   });
 
-// my listings frontend - the viewer's sale serials, filtered by market status and sale list.
-// the season and class filters are scoped to one artist, so the artist rides along
+// my listings frontend - the viewer's sale serials, filtered by market status, sale list
+// and the objekt index's collection filters
 export const myListingsFrontendSchema = cosmoSchema
-  .pick({ artist: true, season: true, class: true })
+  .pick({
+    artist: true,
+    member: true,
+    season: true,
+    class: true,
+    on_offline: true,
+    collectionNo: true,
+  })
   .extend({
     sort: z.enum(myListingSorts).nullish().catch(null),
     status: z.enum(myListingStatuses).nullish().catch(null),

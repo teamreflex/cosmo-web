@@ -43,11 +43,6 @@ export function DesktopPublicLinks() {
         name={m.nav_objekt_stats()}
       />
       <LinkButton
-        href="/market"
-        active={pathname.startsWith("/market")}
-        name={m.market_header()}
-      />
-      <LinkButton
         href="/events"
         active={pathname.startsWith("/events")}
         name={m.events_header()}
@@ -56,6 +51,11 @@ export function DesktopPublicLinks() {
         href="/gravity"
         active={pathname.startsWith("/gravity")}
         name={m.gravity_header()}
+      />
+      <LinkButton
+        href="/market"
+        active={pathname.startsWith("/market")}
+        name={m.market_header()}
       />
     </div>
   );
@@ -147,19 +147,6 @@ function MobileMenuItems(props: MobileMenuProps) {
         <span>{m.nav_objekt_stats()}</span>
       </DropdownMenuItem>
 
-      {/* market */}
-      <DropdownMenuItem
-        render={<Link to="/market" aria-label={m.market_header()} />}
-      >
-        <IconTag
-          className={cn(
-            "h-4 w-4 shrink-0 fill-transparent transition-all",
-            pathname.startsWith("/market") && "fill-white/50",
-          )}
-        />
-        <span>{m.market_header()}</span>
-      </DropdownMenuItem>
-
       <DropdownMenuItem
         render={<Link to="/events" aria-label={m.events_header()} />}
       >
@@ -183,6 +170,19 @@ function MobileMenuItems(props: MobileMenuProps) {
           )}
         />
         <span>{m.gravity_header()}</span>
+      </DropdownMenuItem>
+
+      {/* market */}
+      <DropdownMenuItem
+        render={<Link to="/market" aria-label={m.market_header()} />}
+      >
+        <IconTag
+          className={cn(
+            "h-4 w-4 shrink-0 fill-transparent transition-all",
+            pathname.startsWith("/market") && "fill-white/50",
+          )}
+        />
+        <span>{m.market_header()}</span>
       </DropdownMenuItem>
 
       {props.cosmo && (

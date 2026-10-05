@@ -6,6 +6,7 @@ import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
 import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
 import ObjektGridSkeleton from "@/components/objekt/objekt-grid-skeleton";
 import ObjektTotalSlot from "@/components/objekt/objekt-total-slot";
+import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import TitleHeader from "@/components/ui/title-header";
 import { m } from "@/i18n/messages";
@@ -70,7 +71,13 @@ function ErrorComponent() {
 function PendingComponent() {
   return (
     <div className="flex flex-col">
-      <TitleHeader title={m.my_listings_header()} total={<ObjektTotalSlot />} />
+      <TitleHeader title={m.my_listings_header()} total={<ObjektTotalSlot />}>
+        <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
+          <div className="md:pointer-events-auto">
+            <MemberFilterSkeleton />
+          </div>
+        </div>
+      </TitleHeader>
 
       <MyListingsSummarySkeleton />
 

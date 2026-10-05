@@ -5,7 +5,10 @@ import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import {
   withArtist,
   withClass,
+  withCollections,
+  withMember,
   withObjektListEntries,
+  withOnlineType,
   withSeason,
 } from "@/lib/server/objekts/filters.server";
 import {
@@ -13,13 +16,14 @@ import {
   isFloorPrice,
 } from "@/lib/server/objekts/market.server";
 import { fetchSerials } from "@/lib/server/objekts/serials.server";
-import type {
-  MarketStats,
-  MyListingSort,
-  MyListingStatus,
-  MyListingStatusKind,
-  MyListingsResponse,
-  MyListingsSummary,
+import {
+  DEFAULT_MY_LISTING_SORT,
+  type MarketStats,
+  type MyListingSort,
+  type MyListingStatus,
+  type MyListingStatusKind,
+  type MyListingsResponse,
+  type MyListingsSummary,
 } from "@/lib/universal/market";
 import { myListingsBackendSchema } from "@/lib/universal/parsers";
 import { createServerFn } from "@tanstack/react-start";
@@ -100,8 +104,11 @@ export const $fetchMyListings = createServerFn({ method: "GET" })
 
     const collectionFilters = [
       ...withArtist(data.artist),
+      ...withMember(data.member),
       ...withSeason(data.season ?? []),
       ...withClass(data.class ?? []),
+      ...withOnlineType(data.on_offline ?? []),
+      ...withCollections(data.collectionNo),
     ];
     const matchingSlugs =
       collectionFilters.length === 0 || withStatus.length === 0
@@ -128,7 +135,7 @@ export const $fetchMyListings = createServerFn({ method: "GET" })
         (data.list == null || entry.listId === data.list) &&
         (matchingSlugs === undefined || matchingSlugs.has(entry.collectionId)),
     );
-    sortListings(filtered, data.sort ?? "gap");
+    sortListings(filtered, data.sort ?? DEFAULT_MY_LISTING_SORT);
 
     const start = data.page * LIMIT;
     const page = filtered.slice(start, start + LIMIT);
@@ -275,7 +282,7 @@ function sortListings(listings: Listing[], sort: MyListingSort) {
     case "priceDesc":
       listings.sort((a, b) => byPrice(-1)(a, b) || newest(a, b));
       return;
-    case "newest":
+    case "recentlyListed":
       listings.sort(newest);
   }
 }

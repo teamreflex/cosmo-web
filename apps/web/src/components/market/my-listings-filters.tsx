@@ -1,3 +1,4 @@
+import CollectionFilter from "@/components/objekt-index/collection-filter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { m } from "@/i18n/messages";
@@ -9,12 +10,15 @@ import {
   myListingSorts,
   myListingStatuses,
 } from "@/lib/universal/market";
+import type { myListingsFrontendSchema } from "@/lib/universal/parsers";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { getRouteApi } from "@tanstack/react-router";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import type { z } from "zod";
 import FilterChip from "../collection/filter-chip";
 import ClassFilter from "../collection/filter-class";
+import OnlineFilter from "../collection/filter-online";
 import SeasonFilter from "../collection/filter-season";
 import ResetFilters from "../collection/reset-filters";
 import SingleSelectList, {
@@ -33,20 +37,21 @@ const statusLabels = {
 
 const sortLabels = {
   gap: m.my_listings_sort_gap(),
-  newest: m.filter_sort_newest(),
+  recentlyListed: m.filter_sort_recently_listed(),
   priceAsc: m.my_listings_sort_price_asc(),
   priceDesc: m.my_listings_sort_price_desc(),
 } satisfies Record<MyListingSort, string>;
 
 const sortSublabels = {
   gap: m.my_listings_sort_gap_sub(),
-  newest: m.my_listings_sort_newest_sub(),
+  recentlyListed: m.filter_sort_recently_listed_sub(),
   priceAsc: m.my_listings_sort_price_asc_sub(),
   priceDesc: m.my_listings_sort_price_desc_sub(),
 } satisfies Record<MyListingSort, string>;
 
 /**
- * Market status, sale list, season, class and sort.
+ * Market status and sale list, then the objekt index's collection filters and
+ * the sort. The member filter sits in the page header.
  */
 export default function MyListingsFilters() {
   const search = route.useSearch();
@@ -57,12 +62,7 @@ export default function MyListingsFilters() {
     (list) => list.type === "sale",
   );
 
-  const count =
-    (search.status ? 1 : 0) +
-    (search.list ? 1 : 0) +
-    (search.season?.length ?? 0) +
-    (search.class?.length ?? 0) +
-    (search.sort && search.sort !== DEFAULT_MY_LISTING_SORT ? 1 : 0);
+  const count = countActive(search);
 
   const statusOptions: SingleSelectOption<MyListingStatusKind | "all">[] = [
     { value: "all", label: m.my_listings_status_all() },
@@ -158,6 +158,23 @@ export default function MyListingsFilters() {
       </ErrorBoundary>
 
       <ErrorBoundary
+        fallback={<Skeleton className="h-8 w-[141px] bg-destructive" />}
+      >
+        <Suspense
+          fallback={
+            <Skeleton className="h-8 w-[141px] border border-transparent dark:border-input" />
+          }
+        >
+          <CollectionFilter
+            collections={filters.collectionNo}
+            onChange={setFilters}
+          />
+        </Suspense>
+      </ErrorBoundary>
+
+      <OnlineFilter onOffline={filters.on_offline} onChange={setFilters} />
+
+      <ErrorBoundary
         fallback={<Skeleton className="h-8 w-[108px] bg-destructive" />}
       >
         <Suspense
@@ -202,5 +219,19 @@ export default function MyListingsFilters() {
         onReset={() => void navigate({ search: {}, replace: true })}
       />
     </div>
+  );
+}
+
+function countActive(search: z.infer<typeof myListingsFrontendSchema>) {
+  return (
+    (search.status ? 1 : 0) +
+    (search.list ? 1 : 0) +
+    (search.artist ? 1 : 0) +
+    (search.member?.length ?? 0) +
+    (search.season?.length ?? 0) +
+    (search.class?.length ?? 0) +
+    (search.on_offline?.length ?? 0) +
+    (search.collectionNo?.length ?? 0) +
+    (search.sort && search.sort !== DEFAULT_MY_LISTING_SORT ? 1 : 0)
   );
 }

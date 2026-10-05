@@ -11,6 +11,7 @@ import {
 import { Suspense, useState } from "react";
 import FiltersContainer from "../collection/filters-container";
 import CreateListDialog from "../lists/create-list-dialog";
+import CosmoMemberFilter from "../objekt/cosmo-member-filter";
 import ObjektTotalSlot from "../objekt/objekt-total-slot";
 import VirtualizedObjektGrid from "../objekt/virtualized-objekt-grid";
 import { Button } from "../ui/button";
@@ -28,7 +29,13 @@ export default function MyListingsRenderer() {
 
   return (
     <div className="flex flex-col">
-      <TitleHeader title={m.my_listings_header()} total={<ObjektTotalSlot />} />
+      <TitleHeader title={m.my_listings_header()} total={<ObjektTotalSlot />}>
+        <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
+          <div className="md:pointer-events-auto">
+            <CosmoMemberFilter />
+          </div>
+        </div>
+      </TitleHeader>
 
       {hasSaleList ? <Listings /> : <NoSaleLists objektLists={objektLists} />}
     </div>
