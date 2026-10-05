@@ -29,6 +29,7 @@
     "@apollo/cosmo": "workspace:*",
     "@apollo/database": "workspace:*",
     "@apollo/image": "workspace:*",
+    "@apollo/queue": "workspace:*",
     "@apollo/util": "workspace:*",
     "@apollo/util-server": "workspace:*",
     "@aws-sdk/client-ses": "^3.1113.0",

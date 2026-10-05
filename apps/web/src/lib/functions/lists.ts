@@ -11,9 +11,6 @@ import { assertSupportedCurrency } from "@/lib/server/objekts/fx.server";
 import {
   assertOwnsTokensMulti,
   assertUserOwnsList,
-  fireHaveAddNotifications,
-  fireSaleNotifications,
-  fireWantAddNotifications,
 } from "@/lib/server/objekts/lists.server";
 import {
   fetchMarketStats,
@@ -21,6 +18,7 @@ import {
   isAboveMedian,
   isFloorPrice,
 } from "@/lib/server/objekts/market.server";
+import { Runtime } from "@/lib/server/runtime.server";
 import type { PublicUser } from "@/lib/universal/auth";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import type {
@@ -48,6 +46,7 @@ import {
 import { baseUrl, createSlug, sanitizeUuid } from "@/lib/utils";
 import { objektListEntries, objektLists } from "@apollo/database/web/schema";
 import type { ObjektListEntry } from "@apollo/database/web/types";
+import { SaleNotificationsQueue, TradeNotificationsQueue } from "@apollo/queue";
 import { redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, inArray, ne, type SQLWrapper, sql } from "drizzle-orm";
@@ -709,11 +708,22 @@ export const $addObjektsToSaleList = createServerFn({ method: "POST" })
         .returning();
     });
 
-    await fireSaleNotifications({
-      sellerId: userId,
-      listId: data.objektListId,
-      entries: inserted.filter((entry) => entry.price !== null),
-    });
+    const listed = inserted.flatMap((entry) =>
+      entry.price === null
+        ? []
+        : [{ id: entry.id, collectionId: entry.collectionId }],
+    );
+    if (listed.length > 0) {
+      await Runtime.runPromise(
+        SaleNotificationsQueue.use((queue) =>
+          queue.offer({
+            sellerId: userId,
+            listId: data.objektListId,
+            entries: listed,
+          }),
+        ),
+      );
+    }
 
     return { inserted: inserted.length };
   });
@@ -722,8 +732,8 @@ export const $addObjektsToSaleList = createServerFn({ method: "POST" })
  * Add one or more owned serials to a have list. Each serial becomes its own
  * entry row keyed by tokenId, so the drain can delete on transfer with a single
  * index lookup. Serials already on the list are silently skipped via the
- * partial unique index. If the list is trade-active and discoverable, fires a
- * notification fan-out per distinct collection that gained at least one serial.
+ * partial unique index. If the list is trade-active and discoverable, queues a
+ * notification fan-out for each distinct collection that gained a serial.
  */
 export const $addObjektsToHaveList = createServerFn({ method: "POST" })
   .validator(addObjektsToHaveListSchema)
@@ -780,11 +790,18 @@ export const $addObjektsToHaveList = createServerFn({ method: "POST" })
       return { inserted: inserted.length, slugs };
     });
 
-    await fireHaveAddNotifications({
-      sourceUserId: userId,
-      sourceListId: data.objektListId,
-      slugs: [...slugs],
-    });
+    if (slugs.size > 0) {
+      await Runtime.runPromise(
+        TradeNotificationsQueue.use((queue) =>
+          queue.offer({
+            side: "have",
+            sourceUserId: userId,
+            sourceListId: data.objektListId,
+            slugs: [...slugs],
+          }),
+        ),
+      );
+    }
 
     return { inserted };
   });
@@ -792,7 +809,7 @@ export const $addObjektsToHaveList = createServerFn({ method: "POST" })
 /**
  * Add one or more objekts to a want list. Skips ownership verification (you can
  * want anything). Existing collections stack by the requested quantity (default
- * one); new ones insert at it. Fires mutual-viability notifications when the
+ * one); new ones insert at it. Queues mutual-viability notifications when the
  * list is trade-active and discoverable.
  */
 export const $addObjektsToWantList = createServerFn({ method: "POST" })
@@ -866,11 +883,16 @@ export const $addObjektsToWantList = createServerFn({ method: "POST" })
     });
 
     if (notify) {
-      await fireWantAddNotifications({
-        sourceUserId: userId,
-        sourceListId: data.objektListId,
-        slugs: objekts.map((o) => o.slug),
-      });
+      await Runtime.runPromise(
+        TradeNotificationsQueue.use((queue) =>
+          queue.offer({
+            side: "want",
+            sourceUserId: userId,
+            sourceListId: data.objektListId,
+            slugs: objekts.map((o) => o.slug),
+          }),
+        ),
+      );
     }
 
     // want lists stack quantity, so every add counts toward the inserted total

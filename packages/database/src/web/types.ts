@@ -30,6 +30,20 @@ export type ObjektListEntry = typeof objektListEntries.$inferSelect;
 export type Binder = typeof binders.$inferSelect;
 export type BinderEntry = typeof binderEntries.$inferSelect;
 export type Notification = typeof notifications.$inferSelect;
+
+/**
+ * A notification to insert. Every type names an actor, a list and a
+ * collection (notifications_subject_chk); a sale also names the listed entry.
+ */
+export type NewNotification = {
+  userId: string;
+  actorId: string;
+  listId: string;
+  collectionId: string;
+} & (
+  | { type: "trade_have" | "trade_want" }
+  | { type: "sale_listed"; entryId: string }
+);
 export type CollectionWatch = typeof collectionWatches.$inferSelect;
 
 export type CosmoToken = typeof cosmoTokens.$inferSelect;

@@ -62,6 +62,7 @@
         "@apollo/cosmo": "workspace:*",
         "@apollo/database": "workspace:*",
         "@apollo/drizzle-bun-effect": "workspace:*",
+        "@apollo/queue": "workspace:*",
         "@apollo/util": "workspace:*",
         "@apollo/util-server": "workspace:*",
         "@effect/platform-bun": "catalog:",
@@ -107,6 +108,7 @@
         "@apollo/cosmo": "workspace:*",
         "@apollo/database": "workspace:*",
         "@apollo/image": "workspace:*",
+        "@apollo/queue": "workspace:*",
         "@apollo/util": "workspace:*",
         "@apollo/util-server": "workspace:*",
         "@aws-sdk/client-ses": "^3.1113.0",
@@ -256,6 +258,20 @@
         "@oxlint/plugins": "^1.85.0",
       },
     },
+    "packages/queue": {
+      "name": "@apollo/queue",
+      "version": "0.0.0",
+      "dependencies": {
+        "effect": "catalog:",
+      },
+      "devDependencies": {
+        "@apollo/lint": "workspace:*",
+        "@apollo/typescript": "workspace:*",
+        "@types/bun": "catalog:",
+        "turbo": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
     "packages/typescript": {
       "name": "@apollo/typescript",
       "version": "0.0.0",
@@ -320,6 +336,8 @@
     "@apollo/lint": ["@apollo/lint@workspace:packages/lint"],
 
     "@apollo/protobufjs": ["@apollo/protobufjs@1.2.6", "", { "dependencies": { "@protobufjs/aspromise": "^1.1.2", "@protobufjs/base64": "^1.1.2", "@protobufjs/codegen": "^2.0.4", "@protobufjs/eventemitter": "^1.1.0", "@protobufjs/fetch": "^1.1.0", "@protobufjs/float": "^1.0.2", "@protobufjs/inquire": "^1.1.0", "@protobufjs/path": "^1.1.2", "@protobufjs/pool": "^1.1.0", "@protobufjs/utf8": "^1.1.0", "@types/long": "^4.0.0", "@types/node": "^10.1.0", "long": "^4.0.0" }, "bin": { "apollo-pbjs": "bin/pbjs", "apollo-pbts": "bin/pbts" } }, "sha512-Wqo1oSHNUj/jxmsVp4iR3I480p6qdqHikn38lKrFhfzcDJ7lwd7Ck7cHRl4JE81tWNArl77xhnG/OkZhxKBYOw=="],
+
+    "@apollo/queue": ["@apollo/queue@workspace:packages/queue"],
 
     "@apollo/typescript": ["@apollo/typescript@workspace:packages/typescript"],
 

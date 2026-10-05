@@ -110,11 +110,14 @@ export const $listNotifications = createServerFn({ method: "GET" })
         bursts.flatMap((b) => (b.actorId === null ? [] : [b.actorId])),
       ),
     ];
+    const listIds = [
+      ...new Set(bursts.flatMap((b) => (b.listId === null ? [] : [b.listId]))),
+    ];
     const slugs = [...new Set(bursts.flatMap((b) => b.slugs))];
     const entryIds = bursts.flatMap((b) =>
       b.type === "sale_listed" && b.entryId !== null ? [b.entryId] : [],
     );
-    const [actors, pageCollections, listings] = await Promise.all([
+    const [actors, lists, pageCollections, listings] = await Promise.all([
       actorIds.length === 0
         ? []
         : db
@@ -125,6 +128,12 @@ export const $listNotifications = createServerFn({ method: "GET" })
             .from(cosmoAccounts)
             .where(inArray(cosmoAccounts.userId, actorIds))
             .orderBy(cosmoAccounts.userId),
+      listIds.length === 0
+        ? []
+        : db
+            .select({ id: objektLists.id, slug: objektLists.slug })
+            .from(objektLists)
+            .where(inArray(objektLists.id, listIds)),
       slugs.length === 0
         ? []
         : indexer
@@ -139,15 +148,19 @@ export const $listNotifications = createServerFn({ method: "GET" })
       fetchListings(entryIds),
     ]);
     const usernames = new Map(actors.map((a) => [a.userId, a.username]));
+    const listSlugs = new Map(lists.map((l) => [l.id, l.slug]));
     const collectionsBySlug = new Map<string, NotificationCollection>(
       pageCollections.map((c) => [c.slug, c]),
     );
 
     // every type has an actor, a list and a collection (notifications_subject_chk)
     return bursts.flatMap((burst): NotificationListItem[] => {
+      const listSlug =
+        burst.listId === null ? undefined : listSlugs.get(burst.listId);
       if (
         burst.actorId === null ||
         burst.listId === null ||
+        listSlug === undefined ||
         burst.lastAt === null
       ) {
         return [];
@@ -161,7 +174,7 @@ export const $listNotifications = createServerFn({ method: "GET" })
           userId: burst.actorId,
           username: usernames.get(burst.actorId) ?? null,
         },
-        listId: burst.listId,
+        list: { id: burst.listId, slug: listSlug },
         collections: burst.slugs.flatMap((slug) => {
           const collection = collectionsBySlug.get(slug);
           return collection === undefined ? [] : [collection];

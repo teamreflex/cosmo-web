@@ -25,7 +25,7 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link, linkOptions, useLocation } from "@tanstack/react-router";
 import { type ReactNode, useRef, useState } from "react";
 import UserAvatar from "../profile/user-avatar";
 import { Button } from "../ui/button";
@@ -76,7 +76,7 @@ export default function NotificationBell() {
       >
         <IconBell className="size-6" />
         {count > 0 && (
-          <div className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600/25 px-1 text-xxs text-red-600">
+          <div className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-cosmo px-1 text-xs font-semibold text-white tabular-nums ring-2 ring-background">
             {count > 99 ? "99+" : count}
           </div>
         )}
@@ -119,7 +119,8 @@ export default function NotificationBell() {
           ))}
         </div>
 
-        <ScrollArea className="max-h-[28rem]">
+        {/* a flex column lets the viewport shrink to the max height and scroll */}
+        <ScrollArea className="flex max-h-[28rem] flex-col">
           {list.isPending && (
             <div className="flex flex-col gap-2 px-3.5 pb-3">
               {Array.from({ length: 3 }).map((_, i) => (
@@ -184,6 +185,19 @@ function NotificationSection({
   );
 }
 
+/**
+ * The actor's list, linked under their profile when they have one, the same
+ * place `/list/$id` would redirect to.
+ */
+function listLink({ actor, list }: NotificationListItem) {
+  return actor.username === null
+    ? linkOptions({ to: "/list/$id", params: { id: list.id } })
+    : linkOptions({
+        to: "/@{$username}/list/$slug",
+        params: { username: actor.username, slug: list.slug },
+      });
+}
+
 function NotificationRow({
   notification,
   onOpen,
@@ -203,8 +217,7 @@ function NotificationRow({
 
   return (
     <Link
-      to="/list/$id"
-      params={{ id: notification.listId }}
+      {...listLink(notification)}
       onClick={onOpen}
       data-unread={notification.unread}
       className="relative flex gap-3 py-3 pr-8 pl-3.5 transition-colors hover:bg-accent data-[unread=true]:bg-accent/40 data-[unread=true]:hover:bg-accent"

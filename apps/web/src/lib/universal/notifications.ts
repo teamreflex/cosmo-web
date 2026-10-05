@@ -22,7 +22,7 @@ export type NotificationListing = {
  */
 type ListBurst = {
   actor: { userId: string; username: string | null };
-  listId: string;
+  list: { id: string; slug: string };
   // the newest few, for the row's names and thumbnails
   collections: NotificationCollection[];
 };
