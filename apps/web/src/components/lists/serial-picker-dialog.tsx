@@ -102,7 +102,6 @@ function SerialPickerBody({
         objekts: Array.from(selected).map((tokenId) => ({
           slug,
           collectionId,
-          collectionName,
           tokenId,
         })),
       },

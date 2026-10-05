@@ -2,6 +2,7 @@ import {
   $listNotifications,
   $unreadNotificationCount,
 } from "@/lib/functions/notifications";
+import type { NotificationKind } from "@/lib/universal/notifications";
 import { queryOptions } from "@tanstack/react-query";
 
 /**
@@ -19,6 +20,7 @@ export const unreadNotificationsQuery = queryOptions({
 export const notificationsListQuery = (params: {
   limit: number;
   offset: number;
+  kind: NotificationKind;
 }) =>
   queryOptions({
     queryKey: ["notifications", "list", params],

@@ -9,6 +9,7 @@ import type {
   gravities,
   gravityPolls,
   gravityPollCandidates,
+  collectionWatches,
   notifications,
   objektListEntries,
   objektLists,
@@ -29,15 +30,8 @@ export type ObjektListEntry = typeof objektListEntries.$inferSelect;
 export type Binder = typeof binders.$inferSelect;
 export type BinderEntry = typeof binderEntries.$inferSelect;
 export type Notification = typeof notifications.$inferSelect;
+export type CollectionWatch = typeof collectionWatches.$inferSelect;
 
-export type ListMatchPayload = {
-  sourceUserId: string;
-  sourceListId: string;
-  collectionId: string;
-  direction: "they_added_have" | "they_added_want";
-};
-
-export type NotificationPayload = ListMatchPayload;
 export type CosmoToken = typeof cosmoTokens.$inferSelect;
 export type Gravity = typeof gravities.$inferSelect;
 export type GravityPoll = typeof gravityPolls.$inferSelect;

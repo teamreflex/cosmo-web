@@ -1,7 +1,6 @@
-import { useUserState } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
-import type { MarketItem } from "@/lib/universal/market";
 import { Objekt } from "@/lib/universal/objekt-conversion";
+import type { WatchlistItem } from "@/lib/universal/watchlist";
 import { useMemo, useState } from "react";
 import { ObjektCount, ObjektSidebar } from "../objekt/common";
 import ExpandableObjekt from "../objekt/objekt-expandable";
@@ -11,13 +10,12 @@ import ListingsDialog from "./listings-dialog";
 import { WatchOverlay } from "./watch-button";
 
 type Props = {
-  item: MarketItem;
+  item: WatchlistItem;
   id: string;
   priority: boolean;
 };
 
-export function MarketGridItem({ item, priority }: Props) {
-  const { user } = useUserState();
+export function WatchlistGridItem({ item, priority }: Props) {
   const collection = useMemo(() => Objekt.fromIndexer(item), [item]);
   const [open, setOpen] = useState(false);
 
@@ -29,22 +27,19 @@ export function MarketGridItem({ item, priority }: Props) {
         onClick={() => setOpen(true)}
       >
         <ObjektSidebar collection={collection} />
-        {user === undefined ? (
-          <ObjektCount count={item.listingCount} />
-        ) : (
-          <>
-            <WatchOverlay collection={collection} />
-            {/* below the watch chip, which is h-5 / sm:h-9 */}
-            <ObjektCount
-              count={item.listingCount}
-              className="top-6 sm:top-11"
-            />
-          </>
-        )}
+        <WatchOverlay collection={collection} />
+        {/* below the watch chip, which is h-5 / sm:h-9 */}
+        <ObjektCount count={item.listingCount} className="top-6 sm:top-11" />
         <PriceOverlay
           collection={collection}
-          label={m.market_from()}
-          price={<PriceDisplay usd={item.floorUsd} />}
+          label={item.floorUsd === null ? undefined : m.market_from()}
+          price={
+            item.floorUsd === null ? (
+              m.watchlist_no_listings()
+            ) : (
+              <PriceDisplay usd={item.floorUsd} />
+            )
+          }
         />
       </ExpandableObjekt>
 
