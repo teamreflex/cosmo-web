@@ -743,7 +743,7 @@ export const $addObjektsToHaveList = createServerFn({ method: "POST" })
 
     const verifiedAt = new Date().toISOString();
 
-    return await db.transaction(async (tx) => {
+    const { inserted, collections } = await db.transaction(async (tx) => {
       const list = await tx.query.objektLists.findFirst({
         where: { id: data.objektListId, userId },
         columns: { type: true, discoverable: true, linkedWantListId: true },
@@ -770,33 +770,30 @@ export const $addObjektsToHaveList = createServerFn({ method: "POST" })
         .onConflictDoNothing()
         .returning();
 
-      if (
-        list.discoverable &&
-        list.linkedWantListId !== null &&
-        inserted.length > 0
-      ) {
-        // notify once per distinct collection that actually gained a serial,
-        // matched in a single query inside fireHaveAddNotifications
+      // a trade-active list notifies once per distinct collection that actually gained a serial
+      const collectionNames = new Map<string, string>();
+      if (list.discoverable && list.linkedWantListId !== null) {
         const insertedTokenIds = new Set(inserted.map((r) => r.tokenId));
-        const collectionNames = new Map<string, string>();
         for (const o of data.objekts) {
           if (insertedTokenIds.has(o.tokenId)) {
             collectionNames.set(o.slug, o.collectionName);
           }
         }
-
-        await fireHaveAddNotifications(tx, {
-          sourceUserId: userId,
-          sourceListId: data.objektListId,
-          collections: [...collectionNames].map(([slug, collectionName]) => ({
-            slug,
-            collectionName,
-          })),
-        });
       }
 
-      return { inserted: inserted.length };
+      return { inserted: inserted.length, collections: collectionNames };
     });
+
+    await fireHaveAddNotifications({
+      sourceUserId: userId,
+      sourceListId: data.objektListId,
+      collections: [...collections].map(([slug, collectionName]) => ({
+        slug,
+        collectionName,
+      })),
+    });
+
+    return { inserted };
   });
 
 /**
@@ -814,7 +811,7 @@ export const $addObjektsToWantList = createServerFn({ method: "POST" })
     // selections are keyed by slug client-side, but guard against duplicates
     const objekts = [...new Map(data.objekts.map((o) => [o.slug, o])).values()];
 
-    await db.transaction(async (tx) => {
+    const notify = await db.transaction(async (tx) => {
       // assert ownership of the list and pull the linked list
       const parentList = await tx.query.objektLists.findFirst({
         where: { id: data.objektListId, userId },
@@ -872,14 +869,16 @@ export const $addObjektsToWantList = createServerFn({ method: "POST" })
         );
       }
 
-      if (parentList.discoverable && isTradeActive) {
-        await fireWantAddNotifications(tx, {
-          sourceUserId: userId,
-          sourceListId: data.objektListId,
-          collections: objekts,
-        });
-      }
+      return parentList.discoverable && isTradeActive;
     });
+
+    if (notify) {
+      await fireWantAddNotifications({
+        sourceUserId: userId,
+        sourceListId: data.objektListId,
+        collections: objekts,
+      });
+    }
 
     // want lists stack quantity, so every add counts toward the inserted total
     return { inserted: objekts.length };
