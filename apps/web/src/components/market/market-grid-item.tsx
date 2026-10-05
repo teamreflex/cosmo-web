@@ -2,7 +2,7 @@ import { useUserState } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
 import type { MarketItem } from "@/lib/universal/market";
 import { Objekt } from "@/lib/universal/objekt-conversion";
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { ObjektCount, ObjektSidebar } from "../objekt/common";
 import ExpandableObjekt from "../objekt/objekt-expandable";
 import PriceDisplay from "../objekt/price-display";
@@ -33,7 +33,10 @@ export function MarketGridItem({ item, priority }: Props) {
           <ObjektCount count={item.listingCount} />
         ) : (
           <>
-            <WatchOverlay collection={collection} />
+            {/* suspends on the watched slugs; pops in once they load */}
+            <Suspense fallback={null}>
+              <WatchOverlay collection={collection} />
+            </Suspense>
             {/* below the watch chip, which is h-5 / sm:h-9 */}
             <ObjektCount
               count={item.listingCount}

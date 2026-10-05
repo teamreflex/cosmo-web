@@ -2,7 +2,7 @@ import { collectionKey } from "@/hooks/use-objekt-selection";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import type { IndexedObjekt } from "@/lib/universal/objekts";
 import type { ObjektList } from "@apollo/database/web/types";
-import { memo, useMemo } from "react";
+import { memo, Suspense, useMemo } from "react";
 import { ObjektSidebar } from "../objekt/common";
 import ExpandableObjekt from "../objekt/objekt-expandable";
 import { TopOverlay } from "./index-overlay";
@@ -34,7 +34,10 @@ export const IndexGridItem = memo(function IndexGridItem({
     >
       <ObjektSidebar collection={collection} />
       {authenticated && (
-        <TopOverlay collection={collection} objektLists={objektLists} />
+        // the watch toggle suspends on the watched slugs; pop in once they load
+        <Suspense fallback={null}>
+          <TopOverlay collection={collection} objektLists={objektLists} />
+        </Suspense>
       )}
     </ExpandableObjekt>
   );

@@ -1,11 +1,25 @@
 import { db } from "@/lib/server/db";
-import type { MarketStats } from "@/lib/universal/market";
+import type {
+  MarketCursor,
+  MarketSort,
+  MarketStats,
+} from "@/lib/universal/market";
 import {
   collectionPriceStats,
   objektListEntries,
   objektLists,
 } from "@apollo/database/web/schema";
-import { and, count, eq, inArray, isNotNull, min } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  inArray,
+  isNotNull,
+  min,
+  type SQLWrapper,
+} from "drizzle-orm";
 import { fetchLatestFxRates } from "./fx.server";
 
 /**
@@ -98,4 +112,43 @@ export async function fetchMedianPrices(slugs: string[]) {
     .where(inArray(collectionPriceStats.collectionId, slugs));
 
   return new Map(rows.map((r) => [r.collectionId, r.medianPriceUsd]));
+}
+
+type SortKey = keyof MarketCursor;
+export type Sorting = { key: SortKey; dir: "asc" | "desc" }[];
+
+/**
+ * Each sort's keys in order. Every sort ends on the slug so the order is
+ * total, which the keyset cursor relies on. Each has a matching index on
+ * `collection_market_stats`.
+ */
+export const marketSorting = {
+  floorAsc: [
+    { key: "floorUsd", dir: "asc" },
+    { key: "listingCount", dir: "desc" },
+    { key: "slug", dir: "asc" },
+  ],
+  floorDesc: [
+    { key: "floorUsd", dir: "desc" },
+    { key: "listingCount", dir: "desc" },
+    { key: "slug", dir: "asc" },
+  ],
+  mostListed: [
+    { key: "listingCount", dir: "desc" },
+    { key: "floorUsd", dir: "asc" },
+    { key: "slug", dir: "asc" },
+  ],
+  recentlyListed: [
+    { key: "lastListedAt", dir: "desc" },
+    { key: "slug", dir: "asc" },
+  ],
+} satisfies Record<MarketSort, Sorting>;
+
+export function orderBy(
+  sorting: Sorting,
+  columns: Record<SortKey, SQLWrapper>,
+) {
+  return sorting.map(({ key, dir }) =>
+    dir === "asc" ? asc(columns[key]) : desc(columns[key]),
+  );
 }

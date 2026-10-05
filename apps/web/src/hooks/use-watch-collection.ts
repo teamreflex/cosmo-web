@@ -9,8 +9,18 @@ import {
   watchlistQueryFilter,
 } from "@/lib/queries/watchlist";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import { toast } from "sonner";
+
+export type WatchCollection = {
+  watching: boolean;
+  toggle: () => void;
+  isPending: boolean;
+};
 
 /**
  * Whether the viewer watches a collection, and a toggle that updates every
@@ -18,9 +28,9 @@ import { toast } from "sonner";
  */
 export function useWatchCollection(
   collection: Pick<Objekt.Collection, "slug" | "collectionId">,
-) {
+): WatchCollection {
   const queryClient = useQueryClient();
-  const { data: watching = false } = useQuery({
+  const { data: watching } = useSuspenseQuery({
     ...watchedSlugsQuery,
     select: (slugs) => slugs.includes(collection.slug),
   });
@@ -49,7 +59,9 @@ export function useWatchCollection(
     },
     onError: (error, _, context) => {
       queryClient.setQueryData(watchedSlugsQuery.queryKey, context?.previous);
-      toast.error(formatError(error, { collectionId: collection.collectionId }));
+      toast.error(
+        formatError(error, { collectionId: collection.collectionId }),
+      );
     },
     onSettled: async () => {
       await Promise.all([

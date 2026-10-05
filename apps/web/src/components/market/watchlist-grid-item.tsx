@@ -1,7 +1,7 @@
 import { m } from "@/i18n/messages";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import type { WatchlistItem } from "@/lib/universal/watchlist";
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { ObjektCount, ObjektSidebar } from "../objekt/common";
 import ExpandableObjekt from "../objekt/objekt-expandable";
 import PriceDisplay from "../objekt/price-display";
@@ -27,7 +27,10 @@ export function WatchlistGridItem({ item, priority }: Props) {
         onClick={() => setOpen(true)}
       >
         <ObjektSidebar collection={collection} />
-        <WatchOverlay collection={collection} />
+        {/* suspends on the watched slugs; pops in once they load */}
+        <Suspense fallback={null}>
+          <WatchOverlay collection={collection} />
+        </Suspense>
         {/* below the watch chip, which is h-5 / sm:h-9 */}
         <ObjektCount count={item.listingCount} className="top-6 sm:top-11" />
         <PriceOverlay

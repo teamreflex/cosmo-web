@@ -12,6 +12,7 @@ import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { currentAccountQuery, selectedArtistsQuery } from "@/lib/queries/core";
 import { objektIndexBlockchainQuery } from "@/lib/queries/objekt-queries";
+import { watchedSlugsQuery } from "@/lib/queries/watchlist";
 import { objektIndexFrontendSchema } from "@/lib/universal/parsers";
 import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
 import { ProfileProvider } from "@/providers/profile-provider";
@@ -32,6 +33,11 @@ export const Route = createFileRoute("/")({
       context.queryClient.ensureQueryData(currentAccountQuery),
       context.queryClient.ensureQueryData(selectedArtistsQuery),
     ]);
+
+    // every card's watch toggle reads it
+    if (account) {
+      void context.queryClient.prefetchQuery(watchedSlugsQuery);
+    }
 
     // prefetch objekts
     if (!deps.searchParams.search) {
