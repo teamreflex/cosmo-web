@@ -1,5 +1,5 @@
-import { m } from "@/i18n/messages";
 import { myListingsQuery } from "@/lib/queries/market";
+import { IconCards } from "@tabler/icons-react";
 import { getRouteApi } from "@tanstack/react-router";
 import { objektOptions } from "./use-objekt-response";
 
@@ -20,14 +20,14 @@ export function useMyListings() {
     filtering: "remote",
     query: useMyListingsQuery(),
     calculateTotal: (data) => {
-      const summary = data.pages[0]?.summary;
+      const serials = data.pages[0]?.summary?.serials ?? 0;
       return (
-        <p className="text-xxs text-muted-foreground sm:text-xs">
-          {m.my_listings_total({
-            serials: (summary?.serials ?? 0).toLocaleString("en"),
-            lists: (summary?.lists ?? 0).toLocaleString("en"),
-          })}
-        </p>
+        <div className="flex items-center gap-2">
+          <IconCards className="size-4" />
+          <p className="text-xxs tracking-widest text-muted-foreground sm:text-xs">
+            {serials.toLocaleString("en")}
+          </p>
+        </div>
       );
     },
     getItems: (data) => data.pages.flatMap((page) => page.objekts),

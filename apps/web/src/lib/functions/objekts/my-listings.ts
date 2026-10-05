@@ -177,7 +177,7 @@ export const $fetchMyListings = createServerFn({ method: "GET" })
       }),
       nextStartAfter:
         start + LIMIT < filtered.length ? data.page + 1 : undefined,
-      summary: data.page === 0 ? summarize(withStatus, lists.length) : null,
+      summary: data.page === 0 ? summarize(withStatus) : null,
     };
   });
 
@@ -211,13 +211,12 @@ function listingStatus(
   return { kind: "undercut", floorUsd: stats.floorUsd };
 }
 
-function summarize(listings: Listing[], lists: number): MyListingsSummary {
+function summarize(listings: Listing[]): MyListingsSummary {
   const byStatus = (kind: MyListingStatusKind) =>
     listings.filter((listing) => listing.status.kind === kind).length;
 
   return {
     serials: listings.length,
-    lists,
     priced: listings.filter((listing) => listing.price !== null).length,
     askingTotalUsd: listings.reduce(
       (sum, listing) => sum + (listing.priceUsd ?? 0) * listing.quantity,

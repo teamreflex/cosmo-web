@@ -46,8 +46,7 @@ const sortSublabels = {
 } satisfies Record<MyListingSort, string>;
 
 /**
- * Market status, sale list, season, class and sort. On phones the chips
- * scroll in one row.
+ * Market status, sale list, season, class and sort.
  */
 export default function MyListingsFilters() {
   const search = route.useSearch();
@@ -87,7 +86,7 @@ export default function MyListingsFilters() {
   const sort = search.sort ?? DEFAULT_MY_LISTING_SORT;
 
   return (
-    <div className="flex flex-wrap items-center gap-2 max-sm:-mx-4 max-sm:no-scrollbar max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:mask-r-from-[calc(100%-1rem)] max-sm:px-4 max-sm:*:shrink-0">
+    <div className="flex flex-wrap items-center gap-2">
       <FilterChip
         label={m.my_listings_filter_status()}
         valueLabel={
@@ -179,7 +178,6 @@ export default function MyListingsFilters() {
         valueLabel={sortLabels[sort].toLowerCase()}
         active={sort !== DEFAULT_MY_LISTING_SORT}
         width={240}
-        className="max-sm:order-first"
       >
         {({ close }) => (
           <SingleSelectList

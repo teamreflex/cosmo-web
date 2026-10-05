@@ -11,6 +11,7 @@ import {
 import { Suspense, useState } from "react";
 import FiltersContainer from "../collection/filters-container";
 import CreateListDialog from "../lists/create-list-dialog";
+import ObjektTotalSlot from "../objekt/objekt-total-slot";
 import VirtualizedObjektGrid from "../objekt/virtualized-objekt-grid";
 import { Button } from "../ui/button";
 import TitleHeader from "../ui/title-header";
@@ -27,12 +28,7 @@ export default function MyListingsRenderer() {
 
   return (
     <div className="flex flex-col">
-      <TitleHeader title={m.my_listings_header()}>
-        <div
-          id="objekt-total"
-          className="font-mono text-xs text-muted-foreground tabular-nums"
-        />
-      </TitleHeader>
+      <TitleHeader title={m.my_listings_header()} total={<ObjektTotalSlot />} />
 
       {hasSaleList ? <Listings /> : <NoSaleLists objektLists={objektLists} />}
     </div>

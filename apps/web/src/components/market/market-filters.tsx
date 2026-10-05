@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { type CosmoFilters, useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { DEFAULT_MARKET_SORT } from "@/lib/universal/market";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
-import { type ReactNode, Suspense } from "react";
+import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import ClassFilter from "../collection/filter-class";
 import OnlineFilter from "../collection/filter-online";
@@ -17,15 +17,10 @@ const route = getRouteApi("/market/");
 
 /**
  * The objekt index filter set with the market sort in place of the cosmo sort,
- * plus the floor price and listing window. On phones the chips scroll in one
- * row with the sort first.
+ * plus the floor price and listing window.
  */
-type Props = {
-  // trailing content, scrolling with the chips on phones
-  after?: ReactNode;
-};
 
-export default function MarketFilters({ after }: Props) {
+export default function MarketFilters() {
   const { filters, setFilters } = useCosmoFilters();
   const search = route.useSearch();
   const navigate = useNavigate();
@@ -44,7 +39,7 @@ export default function MarketFilters({ after }: Props) {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-2 max-sm:-mx-4 max-sm:no-scrollbar max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:mask-r-from-[calc(100%-1rem)] max-sm:px-4 max-sm:*:shrink-0">
+    <div className="flex flex-wrap items-center gap-2">
       <ErrorBoundary
         fallback={<Skeleton className="h-8 w-[119px] bg-destructive" />}
       >
@@ -98,11 +93,9 @@ export default function MarketFilters({ after }: Props) {
 
       <MarketListedFilter />
 
-      <MarketSortFilter className="max-sm:order-first" />
+      <MarketSortFilter />
 
       <ResetFilters count={count} onReset={handleReset} />
-
-      {after}
     </div>
   );
 }

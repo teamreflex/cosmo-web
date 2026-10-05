@@ -26,7 +26,6 @@ import { createServerFn } from "@tanstack/react-start";
 import {
   and,
   asc,
-  count,
   desc,
   eq,
   getColumns,
@@ -116,7 +115,7 @@ export const $fetchMarket = createServerFn({ method: "GET" })
   });
 
 /**
- * Matching collections and the sum of their listings. The unfiltered totals
+ * The sum of listings across matching collections. The unfiltered totals
  * are cached for as long as the stats sync takes to change them; filtered
  * totals are too varied to cache.
  */
@@ -124,7 +123,6 @@ function fetchTotals(where: SQL | undefined) {
   const query = async () => {
     const [totals] = await indexer
       .select({
-        collections: count(),
         listings:
           sql<number>`coalesce(sum(${collectionMarketStats.listingCount}), 0)::int`.mapWith(
             Number,
@@ -133,7 +131,7 @@ function fetchTotals(where: SQL | undefined) {
       .from(collectionMarketStats)
       .innerJoin(collections, eq(collections.slug, collectionMarketStats.slug))
       .where(where);
-    return totals ?? { collections: 0, listings: 0 };
+    return totals ?? { listings: 0 };
   };
 
   return where === undefined ? remember("market-total", 60, query) : query();

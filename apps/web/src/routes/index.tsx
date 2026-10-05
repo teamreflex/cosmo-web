@@ -4,6 +4,7 @@ import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
 import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
 import IndexRenderer from "@/components/objekt-index/index-renderer";
 import ObjektGridSkeleton from "@/components/objekt/objekt-grid-skeleton";
+import ObjektTotalSlot from "@/components/objekt/objekt-total-slot";
 import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import TitleHeader from "@/components/ui/title-header";
@@ -74,7 +75,7 @@ function PendingComponent() {
   return (
     <div className="flex flex-col">
       {/* Title */}
-      <TitleHeader title={m.objekts_header()}>
+      <TitleHeader title={m.objekts_header()} total={<ObjektTotalSlot />}>
         <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
           <div className="md:pointer-events-auto">
             <MemberFilterSkeleton />

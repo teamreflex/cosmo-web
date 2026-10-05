@@ -1,5 +1,5 @@
-import { m } from "@/i18n/messages";
 import { marketQuery } from "@/lib/queries/market";
+import { IconCards } from "@tabler/icons-react";
 import { getRouteApi } from "@tanstack/react-router";
 import { useArtists } from "./use-artists";
 import { useDisplayCurrency } from "./use-display-currency";
@@ -25,14 +25,14 @@ export function useMarket() {
     filtering: "remote",
     query: useMarketQuery(),
     calculateTotal: (data) => {
-      const totals = data.pages[0]?.totals;
+      const listings = data.pages[0]?.totals?.listings ?? 0;
       return (
-        <p className="text-xxs text-muted-foreground sm:text-xs">
-          {m.market_total({
-            collections: (totals?.collections ?? 0).toLocaleString("en"),
-            listings: (totals?.listings ?? 0).toLocaleString("en"),
-          })}
-        </p>
+        <div className="flex items-center gap-2">
+          <IconCards className="size-4" />
+          <p className="text-xxs tracking-widest text-muted-foreground sm:text-xs">
+            {listings.toLocaleString("en")}
+          </p>
+        </div>
       );
     },
     getItems: (data) => data.pages.flatMap((page) => page.objekts),

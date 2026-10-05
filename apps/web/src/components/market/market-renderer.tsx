@@ -4,6 +4,7 @@ import { useUserState } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
 import FiltersContainer from "../collection/filters-container";
 import CosmoMemberFilter from "../objekt/cosmo-member-filter";
+import ObjektTotalSlot from "../objekt/objekt-total-slot";
 import VirtualizedObjektGrid from "../objekt/virtualized-objekt-grid";
 import TitleHeader from "../ui/title-header";
 import MarketFilters from "./market-filters";
@@ -17,28 +18,22 @@ export default function MarketRenderer() {
 
   return (
     <div className="flex flex-col">
-      <TitleHeader title={m.market_header()}>
-        <div
-          id="objekt-total"
-          className="font-mono text-xs text-muted-foreground tabular-nums"
-        />
-
+      <TitleHeader title={m.market_header()} total={<ObjektTotalSlot />}>
         <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
           <div className="md:pointer-events-auto">
             <CosmoMemberFilter />
           </div>
         </div>
 
-        {/* on phones it sits in the filter row instead, which has room */}
         {user !== undefined && (
-          <MyListingsLink className="ml-auto max-md:hidden" />
+          <div className="ml-auto flex items-center gap-2">
+            <MyListingsLink />
+          </div>
         )}
       </TitleHeader>
 
       <FiltersContainer>
-        <MarketFilters
-          after={user !== undefined && <MyListingsLink className="md:hidden" />}
-        />
+        <MarketFilters />
       </FiltersContainer>
 
       <div className="container flex flex-col">

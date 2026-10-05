@@ -43,9 +43,9 @@ export type MarketResponse = {
    */
   nextCursor: MarketCursor | undefined;
   /**
-   * Matching collections and their listings. Only the first page counts them.
+   * Listings across the matching collections. Only the first page counts them.
    */
-  totals: { collections: number; listings: number } | null;
+  totals: { listings: number } | null;
 };
 
 export type FloorBounds = {
@@ -118,7 +118,6 @@ export type MyListingItem = Collection & {
 
 export type MyListingsSummary = {
   serials: number;
-  lists: number;
   priced: number;
   // priced serials with a rate, in USD
   askingTotalUsd: number;

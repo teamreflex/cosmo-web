@@ -5,6 +5,7 @@ import Overlay from "@/components/misc/overlay";
 import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
 import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
 import ObjektGridSkeleton from "@/components/objekt/objekt-grid-skeleton";
+import ObjektTotalSlot from "@/components/objekt/objekt-total-slot";
 import { Skeleton } from "@/components/ui/skeleton";
 import TitleHeader from "@/components/ui/title-header";
 import { m } from "@/i18n/messages";
@@ -69,7 +70,7 @@ function ErrorComponent() {
 function PendingComponent() {
   return (
     <div className="flex flex-col">
-      <TitleHeader title={m.my_listings_header()} />
+      <TitleHeader title={m.my_listings_header()} total={<ObjektTotalSlot />} />
 
       <MyListingsSummarySkeleton />
 

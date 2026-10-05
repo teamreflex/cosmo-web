@@ -11,6 +11,7 @@ import FiltersContainer from "../collection/filters-container";
 import IndexListDropdown from "../lists/index-list-dropdown";
 import CosmoMemberFilter from "../objekt/cosmo-member-filter";
 import RoutedExpandableObjekt from "../objekt/objekt-routed";
+import ObjektTotalSlot from "../objekt/objekt-total-slot";
 import VirtualizedObjektGrid from "../objekt/virtualized-objekt-grid";
 import BatchSelectionBar from "../profile/batch-selection-bar";
 import { Button } from "../ui/button";
@@ -32,12 +33,7 @@ export default function IndexRenderer(props: Props) {
 
   return (
     <div className="flex flex-col">
-      <TitleHeader title={m.objekts_header()}>
-        <div
-          id="objekt-total"
-          className="font-mono text-xs text-muted-foreground tabular-nums"
-        />
-
+      <TitleHeader title={m.objekts_header()} total={<ObjektTotalSlot />}>
         <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
           <div className="md:pointer-events-auto">
             <CosmoMemberFilter />
