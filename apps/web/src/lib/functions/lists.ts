@@ -49,16 +49,7 @@ import { objektListEntries, objektLists } from "@apollo/database/web/schema";
 import type { ObjektListEntry } from "@apollo/database/web/types";
 import { redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import {
-  and,
-  countDistinct,
-  desc,
-  eq,
-  inArray,
-  isNotNull,
-  ne,
-  sql,
-} from "drizzle-orm";
+import { and, eq, inArray, ne, type SQLWrapper, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import * as z from "zod";
 
@@ -978,272 +969,56 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
       throw new ExpectedError("not_live_list");
     }
 
-    // The opposite-side list paired to the anchor via the trade link.
-    // Used to scope my-side matching to a single trade pair, mirroring how
-    // partner pairs are treated.
-    const myLinkedListId =
-      myList.type === "have"
-        ? myList.linkedWantListId
-        : (myList.linkingHaveList?.id ?? null);
-    if (myLinkedListId === null) {
+    // my side of the trade pair: the anchor and the list it's paired with,
+    // so partner matches are pair against pair
+    const [myWantListId, myHaveListId] =
+      myList.type === "want"
+        ? [myList.id, myList.linkingHaveList?.id ?? null]
+        : [myList.linkedWantListId, myList.id];
+    if (myWantListId === null || myHaveListId === null) {
       throw new ExpectedError("anchor_not_trade_active");
     }
 
-    // CTEs materialise the trade-active partner list sets; the body swaps
-    // roles based on anchor type. Both my anchor and my linked counterpart
-    // are scoped to specific lists, so partner matches are pair-against-pair.
-    const w = alias(objektLists, "w");
+    // every other user's trade pair: a discoverable have list and the
+    // discoverable want list it's paired with
     const h = alias(objektLists, "h");
+    const w = alias(objektLists, "w");
+    const theyHaveIWant = sharedCollections(h.id, myWantListId);
+    const iHaveTheyWant = sharedCollections(w.id, myHaveListId);
+    // the anchor's side ranks the pairs and names the partner list shown
+    const ranking = {
+      want: { list: h, first: theyHaveIWant, second: iHaveTheyWant },
+      have: { list: w, first: iHaveTheyWant, second: theyHaveIWant },
+    }[myList.type];
 
-    const tradeActiveHaves = db.$with("trade_active_haves").as(
-      db
-        .select({
-          id: objektLists.id,
-          userId: objektLists.userId,
-          slug: objektLists.slug,
-          name: objektLists.name,
-          linkedWantListId: objektLists.linkedWantListId,
-        })
-        .from(objektLists)
-        .where(
-          and(
-            eq(objektLists.type, "have"),
-            eq(objektLists.discoverable, true),
-            isNotNull(objektLists.linkedWantListId),
-          ),
+    const matches: PartnerMatchRow[] = await db
+      .select({
+        userId: h.userId,
+        listId: ranking.list.id,
+        listSlug: ranking.list.slug,
+        listName: ranking.list.name,
+        theyHaveIWant,
+        iHaveTheyWant,
+      })
+      .from(h)
+      .innerJoin(w, eq(w.id, h.linkedWantListId))
+      .where(
+        and(
+          eq(h.type, "have"),
+          eq(h.discoverable, true),
+          eq(w.type, "want"),
+          eq(w.discoverable, true),
+          eq(w.userId, h.userId),
+          ne(h.userId, userId),
+          sql`cardinality(${theyHaveIWant}) > 0`,
+          sql`cardinality(${iHaveTheyWant}) > 0`,
         ),
-    );
-
-    const tradeActiveWants = db.$with("trade_active_wants").as(
-      db
-        .select({
-          id: w.id,
-          userId: w.userId,
-          slug: w.slug,
-          name: w.name,
-        })
-        .from(w)
-        .innerJoin(h, eq(h.linkedWantListId, w.id))
-        .where(and(eq(w.type, "want"), eq(w.discoverable, true))),
-    );
-
-    const myAnchorCollections = db
-      .$with("my_anchor_collections")
-      .as(
-        db
-          .select({ collectionId: objektListEntries.collectionId })
-          .from(objektListEntries)
-          .where(eq(objektListEntries.objektListId, data.listId)),
+      )
+      .orderBy(
+        sql`cardinality(${ranking.first}) desc`,
+        sql`cardinality(${ranking.second}) desc`,
+        h.userId,
       );
-
-    let matches: PartnerMatchRow[] = [];
-
-    switch (myList.type) {
-      case "want": {
-        const myHaves = db.$with("my_haves").as(
-          db
-            .selectDistinct({
-              collectionId: objektListEntries.collectionId,
-            })
-            .from(objektListEntries)
-            .where(eq(objektListEntries.objektListId, myLinkedListId)),
-        );
-
-        const theirHaves = db.$with("their_haves").as(
-          db
-            .select({
-              userId: tradeActiveHaves.userId,
-              listId: tradeActiveHaves.id,
-              listSlug: tradeActiveHaves.slug,
-              listName: tradeActiveHaves.name,
-              linkedWantListId: tradeActiveHaves.linkedWantListId,
-              collectionId: objektListEntries.collectionId,
-            })
-            .from(objektListEntries)
-            .innerJoin(
-              tradeActiveHaves,
-              eq(tradeActiveHaves.id, objektListEntries.objektListId),
-            )
-            .innerJoin(
-              myAnchorCollections,
-              eq(
-                myAnchorCollections.collectionId,
-                objektListEntries.collectionId,
-              ),
-            )
-            .where(ne(tradeActiveHaves.userId, userId)),
-        );
-
-        const theirWants = db.$with("their_wants").as(
-          db
-            .select({
-              userId: tradeActiveWants.userId,
-              wantListId: tradeActiveWants.id,
-              collectionId: objektListEntries.collectionId,
-            })
-            .from(objektListEntries)
-            .innerJoin(
-              tradeActiveWants,
-              eq(tradeActiveWants.id, objektListEntries.objektListId),
-            )
-            .innerJoin(
-              myHaves,
-              eq(myHaves.collectionId, objektListEntries.collectionId),
-            )
-            .where(ne(tradeActiveWants.userId, userId)),
-        );
-
-        const result = await db
-          .with(
-            tradeActiveHaves,
-            tradeActiveWants,
-            myAnchorCollections,
-            myHaves,
-            theirHaves,
-            theirWants,
-          )
-          .select({
-            theirUserId: theirHaves.userId,
-            listId: theirHaves.listId,
-            listSlug: theirHaves.listSlug,
-            listName: theirHaves.listName,
-            theyHaveIWant: sql<
-              string[] | null
-            >`array_agg(DISTINCT ${theirHaves.collectionId})`,
-            iHaveTheyWant: sql<
-              string[] | null
-            >`array_agg(DISTINCT ${theirWants.collectionId})`,
-          })
-          .from(theirHaves)
-          .innerJoin(
-            theirWants,
-            and(
-              eq(theirWants.userId, theirHaves.userId),
-              eq(theirWants.wantListId, theirHaves.linkedWantListId),
-            ),
-          )
-          .groupBy(
-            theirHaves.userId,
-            theirHaves.listId,
-            theirHaves.listSlug,
-            theirHaves.listName,
-          )
-          .orderBy(desc(countDistinct(theirHaves.collectionId)))
-          .limit(50);
-
-        matches = result.map((r) => ({
-          userId: r.theirUserId,
-          listId: r.listId,
-          listSlug: r.listSlug,
-          listName: r.listName,
-          theyHaveIWant: r.theyHaveIWant ?? [],
-          iHaveTheyWant: r.iHaveTheyWant ?? [],
-        }));
-        break;
-      }
-
-      case "have": {
-        const myWants = db.$with("my_wants").as(
-          db
-            .selectDistinct({
-              collectionId: objektListEntries.collectionId,
-            })
-            .from(objektListEntries)
-            .where(eq(objektListEntries.objektListId, myLinkedListId)),
-        );
-
-        const theirWants = db.$with("their_wants").as(
-          db
-            .select({
-              userId: tradeActiveWants.userId,
-              listId: tradeActiveWants.id,
-              listSlug: tradeActiveWants.slug,
-              listName: tradeActiveWants.name,
-              collectionId: objektListEntries.collectionId,
-            })
-            .from(objektListEntries)
-            .innerJoin(
-              tradeActiveWants,
-              eq(tradeActiveWants.id, objektListEntries.objektListId),
-            )
-            .innerJoin(
-              myAnchorCollections,
-              eq(
-                myAnchorCollections.collectionId,
-                objektListEntries.collectionId,
-              ),
-            )
-            .where(ne(tradeActiveWants.userId, userId)),
-        );
-
-        const theirHaves = db.$with("their_haves").as(
-          db
-            .select({
-              userId: tradeActiveHaves.userId,
-              linkedWantListId: tradeActiveHaves.linkedWantListId,
-              collectionId: objektListEntries.collectionId,
-            })
-            .from(objektListEntries)
-            .innerJoin(
-              tradeActiveHaves,
-              eq(tradeActiveHaves.id, objektListEntries.objektListId),
-            )
-            .innerJoin(
-              myWants,
-              eq(myWants.collectionId, objektListEntries.collectionId),
-            )
-            .where(ne(tradeActiveHaves.userId, userId)),
-        );
-
-        const result = await db
-          .with(
-            tradeActiveHaves,
-            tradeActiveWants,
-            myAnchorCollections,
-            myWants,
-            theirWants,
-            theirHaves,
-          )
-          .select({
-            theirUserId: theirWants.userId,
-            listId: theirWants.listId,
-            listSlug: theirWants.listSlug,
-            listName: theirWants.listName,
-            theyHaveIWant: sql<
-              string[] | null
-            >`array_agg(DISTINCT ${theirHaves.collectionId})`,
-            iHaveTheyWant: sql<
-              string[] | null
-            >`array_agg(DISTINCT ${theirWants.collectionId})`,
-          })
-          .from(theirWants)
-          .innerJoin(
-            theirHaves,
-            and(
-              eq(theirHaves.userId, theirWants.userId),
-              eq(theirHaves.linkedWantListId, theirWants.listId),
-            ),
-          )
-          .groupBy(
-            theirWants.userId,
-            theirWants.listId,
-            theirWants.listSlug,
-            theirWants.listName,
-          )
-          .orderBy(desc(countDistinct(theirWants.collectionId)))
-          .limit(50);
-
-        matches = result.map((r) => ({
-          userId: r.theirUserId,
-          listId: r.listId,
-          listSlug: r.listSlug,
-          listName: r.listName,
-          theyHaveIWant: r.theyHaveIWant ?? [],
-          iHaveTheyWant: r.iHaveTheyWant ?? [],
-        }));
-        break;
-      }
-    }
 
     if (matches.length === 0) {
       return { partners: [], collections: {} };
@@ -1336,6 +1111,24 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
 
     return { partners, collections };
   });
+
+/**
+ * Collections on a partner's list that are also on one of mine, matched as an
+ * intersection per partner list. Every read is by list id, so the plan never
+ * looks a collection up across every list. Mine is read once into an array
+ * rather than once per partner list.
+ */
+function sharedCollections(partnerListId: SQLWrapper, myListId: string) {
+  return sql<string[]>`array(
+    select ${objektListEntries.collectionId} from ${objektListEntries}
+    where ${objektListEntries.objektListId} = ${partnerListId}
+    intersect
+    select unnest(array(
+      select ${objektListEntries.collectionId} from ${objektListEntries}
+      where ${objektListEntries.objektListId} = ${myListId}
+    ))
+  )`;
+}
 
 /**
  * Generate a Discord have/want list.
