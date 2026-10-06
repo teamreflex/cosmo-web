@@ -16,12 +16,14 @@ import {
   MAX_BINDER_PAGES,
   MAX_BINDERS,
   binderPreviewTokenIds,
+  movedPage,
   placeInBinder,
   toBinderPreview,
 } from "@/lib/universal/binders";
 import type {
   BinderDetail,
   BinderMenuItem,
+  BinderObjekt,
   BinderPlacement,
   BinderPreview,
 } from "@/lib/universal/binders";
@@ -32,16 +34,17 @@ import {
   binderMenuSchema,
   clearPocketSchema,
   createBinderSchema,
+  movePageSchema,
   placeObjektSchema,
   swapPocketsSchema,
   updateBinderSchema,
 } from "@/lib/universal/schema/binder";
 import { createSlug } from "@/lib/utils";
+import { validArtists } from "@apollo/cosmo/types/common";
 import { binderEntries, binders, pins } from "@apollo/database/web/schema";
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, gte, lt, or, sql } from "drizzle-orm";
+import { and, between, eq, gte, lt, or, sql } from "drizzle-orm";
 import * as z from "zod";
-import { normalizePin } from "./pins";
 
 /**
  * Fetch a user's binders for the profile shelf, each with its cover artwork.
@@ -85,8 +88,9 @@ export const $fetchBinderShelf = createServerFn({ method: "GET" })
   });
 
 /**
- * Fetch one binder with every page's entries, hydrated from the indexer. A
- * missing binder is null rather than undefined, which query data can't be.
+ * Fetch one binder with every page's entries, each with only the objekt fields
+ * a pocket needs, from the indexer. A missing binder is null rather than
+ * undefined, which query data can't be.
  */
 export const $fetchBinder = createServerFn({ method: "GET" })
   .validator(z.object({ userId: z.string(), slug: z.string() }))
@@ -100,18 +104,52 @@ export const $fetchBinder = createServerFn({ method: "GET" })
         },
       },
     });
-    if (!binder) return null;
 
-    const objekts =
-      binder.entries.length > 0
-        ? await indexer.query.objekts.findMany({
-            where: {
-              id: { in: binder.entries.map((entry) => String(entry.tokenId)) },
-            },
-            with: { collection: true },
-          })
-        : [];
-    const byTokenId = new Map(objekts.map((o) => [o.id, normalizePin(o)]));
+    if (!binder) return null;
+    if (binder.entries.length === 0) {
+      return {
+        ...binder,
+        entries: [],
+      };
+    }
+
+    const objekts = await indexer.query.objekts.findMany({
+      where: {
+        id: { in: binder.entries.map((entry) => String(entry.tokenId)) },
+      },
+      columns: { id: true, serial: true },
+      with: {
+        collection: {
+          columns: {
+            collectionId: true,
+            collectionNo: true,
+            member: true,
+            artist: true,
+            season: true,
+            class: true,
+            frontImageVersion: true,
+            backgroundColor: true,
+            textColor: true,
+            bandImageUrl: true,
+          },
+        },
+      },
+    });
+
+    const byTokenId = new Map<string, BinderObjekt>(
+      objekts.map(({ id, serial, collection: { artist, ...collection } }) => {
+        const valid = validArtists.find((option) => option === artist);
+        return [
+          id,
+          {
+            ...collection,
+            tokenId: id,
+            objektNo: serial,
+            artists: valid === undefined ? [] : [valid],
+          },
+        ];
+      }),
+    );
 
     return {
       ...binder,
@@ -537,6 +575,60 @@ export const $swapPockets = createServerFn({ method: "POST" })
         .where(eq(binders.id, binder.id));
 
       return from.page === 0 || to.page === 0;
+    });
+
+    if (changesPreview) {
+      await clearBinderPinCache(context.cosmo);
+    }
+  });
+
+/**
+ * Move a page to a new position, shifting the pages between to close the gap.
+ * The entries on the pages in between are deleted and inserted back
+ * renumbered, so the primary key never collides.
+ */
+export const $movePage = createServerFn({ method: "POST" })
+  .validator(movePageSchema)
+  .middleware([cosmoMiddleware])
+  .handler(async ({ data, context }) => {
+    const { from, to } = data;
+    if (from === to) return;
+
+    const changesPreview = await db.transaction(async (tx) => {
+      const binder = await lockOwnedBinder(
+        tx,
+        data.binderId,
+        context.session.user.id,
+      );
+      if (from >= binder.pageCount || to >= binder.pageCount) {
+        throw new ExpectedError("page_out_of_range");
+      }
+
+      const removed = await tx
+        .delete(binderEntries)
+        .where(
+          and(
+            eq(binderEntries.binderId, binder.id),
+            between(binderEntries.page, Math.min(from, to), Math.max(from, to)),
+          ),
+        )
+        .returning();
+      if (removed.length === 0) return false;
+
+      await tx.insert(binderEntries).values(
+        removed.map((entry) => ({
+          ...entry,
+          page: movedPage(entry.page, from, to),
+        })),
+      );
+
+      await tx
+        .update(binders)
+        .set({ updatedAt: new Date() })
+        .where(eq(binders.id, binder.id));
+
+      // page 1 draws the collage
+      return Math.min(from, to) === 0;
     });
 
     if (changesPreview) {

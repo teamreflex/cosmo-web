@@ -54,7 +54,6 @@ export async function fetchBinderPreviewImages(
         columns: {
           slug: true,
           collectionId: true,
-          frontImage: true,
           frontImageVersion: true,
         },
       },

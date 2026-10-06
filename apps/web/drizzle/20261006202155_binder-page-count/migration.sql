@@ -1,0 +1,1 @@
+ALTER TABLE "binders" DROP CONSTRAINT "binders_page_count_chk", ADD CONSTRAINT "binders_page_count_chk" CHECK ("page_count" >= 1);

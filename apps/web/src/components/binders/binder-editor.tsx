@@ -1,6 +1,7 @@
 import { useBinderEditor } from "@/hooks/use-binder-editor";
 import { usePinsCache } from "@/hooks/use-profile-pins";
 import { m } from "@/i18n/messages";
+import { isSideBySide, SIDE_BY_SIDE } from "@/lib/client/binder-editor";
 import {
   binderMenuKey,
   binderQuery,
@@ -18,6 +19,7 @@ import type { KeyboardEvent, MouseEvent } from "react";
 import { flushSync } from "react-dom";
 import { toast } from "sonner";
 import { useEventCallback } from "usehooks-ts";
+import ArrangePagesDialog from "./arrange-pages-dialog";
 import { BinderPage } from "./binder-page";
 import BinderSettingsDialog from "./binder-settings-dialog";
 import {
@@ -28,14 +30,9 @@ import {
 } from "./editor-controls";
 import { DeleteBinderDialog, RemovePageDialog } from "./editor-dialogs";
 import EditorDndContext from "./editor-dnd";
+import EditorPageStrip from "./editor-page-strip";
 import EditorPickerPanel from "./editor-picker-panel";
 import EditorPocket from "./editor-pocket";
-
-/**
- * Where the page and the picker sit side by side, matching Tailwind's `lg`.
- * Below it the picker is a sheet.
- */
-const SIDE_BY_SIDE = "(width >= 64rem)";
 
 // the sticky navbar's height
 const NAVBAR_HEIGHT = 56;
@@ -66,11 +63,12 @@ export default function BinderEditor({ binder, initialPage, owner }: Props) {
   const pins = usePinsCache();
   const navigate = useNavigate();
   const [dialog, setDialog] = useState<
-    "settings" | "delete" | "remove-page" | null
+    "settings" | "delete" | "remove-page" | "arrange" | null
   >(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const pageRef = useRef<HTMLDivElement>(null);
   const sheetRef = useRef<HTMLElement>(null);
+  const stripRef = useRef<HTMLElement>(null);
 
   const { selected } = editor;
   const { columns, rows, pocketsPerPage } = binderGrid(binder.layout);
@@ -206,7 +204,11 @@ export default function BinderEditor({ binder, initialPage, owner }: Props) {
   return (
     // the narrow layout sits flush with the screen edges, the navbar and the bottom
     <div className="-mx-4 -my-4 lg:mx-0 lg:my-0">
-      <EditorDndContext editor={editor} pickerRef={sheetRef}>
+      <EditorDndContext
+        editor={editor}
+        pickerRef={sheetRef}
+        stripRef={stripRef}
+      >
         <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(260px,340px)] lg:overflow-hidden lg:rounded-xl lg:border lg:border-border xl:grid-cols-[minmax(0,1fr)_minmax(300px,440px)]">
           <div className="flex min-w-0 flex-col lg:gap-2.5 lg:border-r lg:border-border lg:p-4.5">
             <EditorHeader
@@ -215,6 +217,7 @@ export default function BinderEditor({ binder, initialPage, owner }: Props) {
               onEdit={() => setDialog("settings")}
               onDelete={() => setDialog("delete")}
               onRemoveLastPage={removeLastPage}
+              onArrangePages={() => setDialog("arrange")}
             />
 
             <div
@@ -228,9 +231,9 @@ export default function BinderEditor({ binder, initialPage, owner }: Props) {
               <BinderPage
                 ref={pageRef}
                 layout={binder.layout}
-                // sized so the whole page fits under the navbar with its controls
+                // sized so the whole page fits under the navbar with its page strip and controls
                 style={{ "--page-ratio": (columns * 5.5) / (rows * 8.5) }}
-                className="mx-auto w-full max-w-[calc(max(30rem,100dvh-14rem)*var(--page-ratio))] lg:max-w-[calc(max(30rem,100dvh-19rem)*var(--page-ratio))]"
+                className="mx-auto w-full max-w-[calc(max(30rem,100dvh-18.5rem)*var(--page-ratio))] lg:max-w-[calc(max(30rem,100dvh-23.5rem)*var(--page-ratio))]"
               >
                 {Array.from({ length: pocketsPerPage }, (_, slot) => {
                   const entry = editor.pockets.get(slot);
@@ -262,6 +265,11 @@ export default function BinderEditor({ binder, initialPage, owner }: Props) {
               </div>
             </div>
 
+            <EditorPageStrip
+              editor={editor}
+              stripRef={stripRef}
+              className="justify-center-safe max-lg:px-3"
+            />
             <PageControls
               editor={editor}
               sheetOpen={sheetOpen}
@@ -304,16 +312,13 @@ export default function BinderEditor({ binder, initialPage, owner }: Props) {
         onConfirm={() => editor.removeLastPage()}
         focusAfterRemove={() => pocketButton(0)}
       />
+      <ArrangePagesDialog
+        editor={editor}
+        open={dialog === "arrange"}
+        onOpenChange={closeDialog}
+      />
     </div>
   );
-}
-
-/**
- * Checked in effects and handlers only, so the server and the first client
- * render stay the same for every screen.
- */
-function isSideBySide() {
-  return window.matchMedia(SIDE_BY_SIDE).matches;
 }
 
 /**

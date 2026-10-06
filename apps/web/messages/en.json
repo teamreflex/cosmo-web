@@ -316,10 +316,11 @@
   "binder_error_binder_not_found": "Binder not found",
   "binder_error_binder_name_taken": "You already have a binder with this name",
   "binder_error_binder_limit_reached": "You can have up to 10 binders",
-  "binder_error_binder_page_limit_reached": "This binder is full, binders can have up to 20 pages",
+  "binder_error_binder_page_limit_reached": "This binder is full, binders can have up to {max} pages",
   "binder_error_binder_layout_locked": "Cannot change a binder's layout once it has objekts",
   "binder_error_cover_not_in_binder": "That objekt is no longer in this binder",
   "binder_error_pocket_out_of_range": "That pocket doesn't exist in this binder",
+  "binder_error_page_out_of_range": "That page doesn't exist in this binder",
   "binder_error_objekt_not_owned": "We couldn't confirm you own this objekt yet. If you just received it, try again shortly",
   "binder_page_count": [
     {
@@ -387,6 +388,8 @@
   "binder_editor_remove_page": "Remove page",
   "binder_editor_remove_page_confirm": "Remove page {page}?",
   "binder_editor_remove_page_n": "Remove page {page}",
+  "binder_editor_arrange_pages": "Arrange pages",
+  "binder_editor_arrange_pages_description": "Hold a page, then drag it to where it should go.",
   "binder_editor_remove_page_description": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
@@ -413,6 +416,7 @@
   "binder_editor_pocket_cover": "Pocket {pocket}, {objekt}, cover",
   "binder_editor_select_pocket": "Select a pocket first",
   "binder_editor_page_full": "Page full",
+  "binder_editor_page_n_full": "Page {page} is full",
   "binder_editor_layout": "Layout",
   "binder_editor_edit": "Edit name and colour",
   "binder_editor_colour": "Colour",
@@ -424,11 +428,16 @@
   "binder_editor_delete_description": "{name} and all of its pages will be deleted. The objekts stay in your collection.",
   "binder_editor_deleted": "Binder deleted",
   "binder_editor_more": "More binder actions",
-  "binder_editor_drag_instructions": "Press Enter to choose it. To move it into a pocket, press Space, use the arrow keys to pick a pocket, then press Space to drop it or Escape to cancel.",
+  "binder_editor_drag_instructions": "Press Enter to choose it. To move it, press Space, use the arrow keys to pick a pocket or page, then press Space to drop it or Escape to cancel.",
   "binder_editor_drag_picked_up": "Picked up {objekt}.",
   "binder_editor_drag_over": "Over pocket {pocket}.",
   "binder_editor_drag_dropped": "Dropped {objekt} in pocket {pocket}.",
   "binder_editor_drag_cancelled": "Move cancelled.",
+  "binder_editor_drag_picked_up_page": "Picked up page {page}.",
+  "binder_editor_drag_over_page": "Over page {page}.",
+  "binder_editor_drag_moved_page": "Page {from} is now page {to}.",
+  "binder_editor_drag_dropped_on_page": "Dropped {objekt} on page {page}.",
+  "binder_editor_arrange_instructions": "To move a page, press Space, use the arrow keys to pick where it goes, then press Space to drop it or Escape to cancel.",
   "binder_viewer_open": "Open {name}",
   "binder_viewer_objekt_count": [
     {

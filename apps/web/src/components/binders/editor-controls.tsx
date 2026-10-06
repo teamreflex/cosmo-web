@@ -11,9 +11,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { BinderEditor } from "@/hooks/use-binder-editor";
 import { m } from "@/i18n/messages";
-import { binderLayoutLabel, binderLayouts } from "@/lib/universal/binders";
+import {
+  binderLayoutLabel,
+  binderLayouts,
+  MAX_BINDER_PAGES,
+} from "@/lib/universal/binders";
 import { cn } from "@/lib/utils";
 import {
+  IconArrowsSort,
   IconChevronDown,
   IconChevronLeft,
   IconChevronRight,
@@ -40,6 +45,7 @@ type HeaderProps = {
   onEdit: () => void;
   onDelete: () => void;
   onRemoveLastPage: () => void;
+  onArrangePages: () => void;
 };
 
 /**
@@ -53,6 +59,7 @@ export function EditorHeader({
   onEdit,
   onDelete,
   onRemoveLastPage,
+  onArrangePages,
 }: HeaderProps) {
   const { binder } = editor;
 
@@ -69,6 +76,7 @@ export function EditorHeader({
           onEdit={onEdit}
           onDelete={onDelete}
           onRemoveLastPage={onRemoveLastPage}
+          onArrangePages={onArrangePages}
         />
       </div>
 
@@ -208,17 +216,19 @@ type EditorMenuProps = {
   onEdit: () => void;
   onDelete: () => void;
   onRemoveLastPage: () => void;
+  onArrangePages: () => void;
 };
 
 /**
  * The narrow header's overflow menu: name and colour, layout while empty,
- * removing the last page, and delete.
+ * arranging pages, removing the last page, and delete.
  */
 function EditorMenu({
   editor,
   onEdit,
   onDelete,
   onRemoveLastPage,
+  onArrangePages,
 }: EditorMenuProps) {
   return (
     <DropdownMenu>
@@ -245,6 +255,12 @@ function EditorMenu({
           </>
         )}
         <DropdownMenuSeparator />
+        {editor.binder.pageCount > 1 && (
+          <DropdownMenuItem onClick={onArrangePages}>
+            <IconArrowsSort />
+            {m.binder_editor_arrange_pages()}
+          </DropdownMenuItem>
+        )}
         {editor.binder.pageCount > 1 && (
           <DropdownMenuItem onClick={onRemoveLastPage}>
             <IconTrash />
@@ -349,7 +365,9 @@ export function PageControls({
           title={
             editor.canAddPage
               ? m.binder_editor_add_page()
-              : m.binder_error_binder_page_limit_reached()
+              : m.binder_error_binder_page_limit_reached({
+                  max: MAX_BINDER_PAGES,
+                })
           }
           disabled={!editor.canAddPage}
           onClick={() => editor.addPage()}

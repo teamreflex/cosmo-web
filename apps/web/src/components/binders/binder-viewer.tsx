@@ -218,8 +218,8 @@ function NothingShown({
  * and `gap` the space between pockets, both narrower below `md`.
  */
 const bookSizes = {
-  desktop: { chrome: 250, frame: 38, gap: 10 },
-  phone: { chrome: 290, frame: 22, gap: 8 },
+  desktop: { chrome: 260, frame: 38, gap: 10 },
+  phone: { chrome: 300, frame: 22, gap: 8 },
 };
 const POCKET_RATIO = 8.5 / 5.5;
 

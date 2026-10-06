@@ -314,10 +314,11 @@
   "binder_error_binder_not_found": "バインダーが見つかりません",
   "binder_error_binder_name_taken": "同じ名前のバインダーが既に存在します",
   "binder_error_binder_limit_reached": "バインダーは最大10冊までです",
-  "binder_error_binder_page_limit_reached": "このバインダーは満杯です。バインダーは最大20ページまでです",
+  "binder_error_binder_page_limit_reached": "このバインダーは満杯です。バインダーは最大{max}ページまでです",
   "binder_error_binder_layout_locked": "objektが入っているバインダーのレイアウトは変更できません",
   "binder_error_cover_not_in_binder": "そのobjektはこのバインダーにもうありません",
   "binder_error_pocket_out_of_range": "そのポケットはこのバインダーにありません",
+  "binder_error_page_out_of_range": "そのページはこのバインダーにありません",
   "binder_error_objekt_not_owned": "このobjektの所有をまだ確認できません。受け取ったばかりの場合は、しばらくしてからもう一度お試しください",
   "binder_page_count": [
     {
@@ -382,6 +383,8 @@
   "binder_editor_remove_page": "ページを削除",
   "binder_editor_remove_page_confirm": "{page}ページを削除しますか？",
   "binder_editor_remove_page_n": "{page}ページを削除",
+  "binder_editor_arrange_pages": "ページを並べ替え",
+  "binder_editor_arrange_pages_description": "ページを長押しして、移動したい場所までドラッグします。",
   "binder_editor_remove_page_description": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
@@ -407,6 +410,7 @@
   "binder_editor_pocket_cover": "ポケット{pocket}、{objekt}、表紙",
   "binder_editor_select_pocket": "先にポケットを選択してください",
   "binder_editor_page_full": "ページがいっぱいです",
+  "binder_editor_page_n_full": "{page}ページがいっぱいです",
   "binder_editor_layout": "レイアウト",
   "binder_editor_edit": "名前と色を編集",
   "binder_editor_colour": "色",
@@ -418,11 +422,16 @@
   "binder_editor_delete_description": "{name}とすべてのページが削除されます。objektはコレクションに残ります。",
   "binder_editor_deleted": "バインダーを削除しました",
   "binder_editor_more": "その他の操作",
-  "binder_editor_drag_instructions": "Enterで選択します。ポケットへ移動するにはSpaceを押し、矢印キーでポケットを選んでSpaceで配置、Escでキャンセルします。",
+  "binder_editor_drag_instructions": "Enterで選択します。移動するにはSpaceを押し、矢印キーでポケットかページを選んでSpaceで配置、Escでキャンセルします。",
   "binder_editor_drag_picked_up": "{objekt}を持ち上げました。",
   "binder_editor_drag_over": "ポケット{pocket}の上です。",
   "binder_editor_drag_dropped": "{objekt}をポケット{pocket}に置きました。",
   "binder_editor_drag_cancelled": "移動をキャンセルしました。",
+  "binder_editor_drag_picked_up_page": "{page}ページを持ち上げました。",
+  "binder_editor_drag_over_page": "{page}ページの上です。",
+  "binder_editor_drag_moved_page": "{from}ページを{to}ページに移動しました。",
+  "binder_editor_drag_dropped_on_page": "{objekt}を{page}ページに置きました。",
+  "binder_editor_arrange_instructions": "ページを移動するにはSpaceを押し、矢印キーで移動先を選んでSpaceで配置、Escでキャンセルします。",
   "binder_viewer_open": "{name}を開く",
   "binder_viewer_objekt_count": [
     {

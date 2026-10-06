@@ -1,4 +1,5 @@
 import { m } from "@/i18n/messages";
+import { MAX_BINDER_PAGES } from "@/lib/universal/binders";
 import { isBinderErrorCode } from "@/lib/universal/errors/binders";
 
 /**
@@ -19,13 +20,17 @@ export function formatBinderError(error: unknown): string | null {
     case "binder_limit_reached":
       return m.binder_error_binder_limit_reached();
     case "binder_page_limit_reached":
-      return m.binder_error_binder_page_limit_reached();
+      return m.binder_error_binder_page_limit_reached({
+        max: MAX_BINDER_PAGES,
+      });
     case "binder_layout_locked":
       return m.binder_error_binder_layout_locked();
     case "cover_not_in_binder":
       return m.binder_error_cover_not_in_binder();
     case "pocket_out_of_range":
       return m.binder_error_pocket_out_of_range();
+    case "page_out_of_range":
+      return m.binder_error_page_out_of_range();
     case "objekt_not_owned":
       return m.binder_error_objekt_not_owned();
     default:

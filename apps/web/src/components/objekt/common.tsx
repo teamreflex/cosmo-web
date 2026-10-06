@@ -10,7 +10,10 @@ import ArtistLogo from "./artist-logo";
 import { getVariantGradient, getVariantRibbon } from "./variant-gradients";
 
 type ObjektSidebarProps = {
-  collection: Objekt.Collection;
+  collection: Pick<
+    Objekt.Collection,
+    "artist" | "bandImageUrl" | "class" | "collectionNo" | "member"
+  >;
   serial?: number;
 };
 
@@ -42,7 +45,9 @@ function SidebarText(props: SidebarTextProps) {
  * Band display state: whether to render the band at all, whether this artist
  * uses a custom band image, and the background fallback while it loads.
  */
-function useBandDisplay(collection: Objekt.Collection) {
+function useBandDisplay(
+  collection: Pick<Objekt.Collection, "artist" | "bandImageUrl" | "class">,
+) {
   const { hidden } = useObjektBands();
   const [bandLoaded, setBandLoaded] = useState(false);
 

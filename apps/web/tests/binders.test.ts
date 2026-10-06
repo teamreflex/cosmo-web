@@ -18,13 +18,16 @@ import {
   fullHexColour,
   isPocketInRange,
   MAX_BINDER_PAGES,
+  movedPage,
   nextEmptySlot,
+  pageDrop,
   pinTokenIds,
   placeInBinder,
   resolveBinderArtwork,
   suggestFromNeighbours,
   toProfilePins,
   withClearedPocket,
+  withMovedPage,
   withoutLastPage,
   withPlacedObjekt,
   withSwappedPockets,
@@ -43,7 +46,6 @@ function image(tokenId: number): BinderPreviewImage {
     tokenId,
     slug: `atom01-seoyeon-${tokenId}z`,
     collectionId: `Atom01 SeoYeon ${tokenId}Z`,
-    frontImage: `https://example.com/${tokenId}.png`,
     frontImageVersion: null,
   };
 }
@@ -291,7 +293,6 @@ describe("binderPreviewFromDetail", () => {
     tokenId,
     slug: `atom02-choerry-${100 + tokenId}z`,
     collectionId: `Atom02 Choerry ${100 + tokenId}Z`,
-    frontImage: "",
     frontImageVersion: null,
   });
 
@@ -348,7 +349,6 @@ describe("toProfilePins", () => {
     tokenId,
     slug: `atom02-choerry-${100 + tokenId}z`,
     collectionId: `Atom02 Choerry ${100 + tokenId}Z`,
-    frontImage: "",
     frontImageVersion: null,
   });
 
@@ -719,6 +719,79 @@ describe("binder edits", () => {
   it("keeps a one-page binder's only page", () => {
     const single = detail([entry(0, 0, 1)], { pageCount: 1 });
     expect(withoutLastPage(single)).toBe(single);
+  });
+
+  const pages = detail(
+    [
+      entry(0, 0, 1),
+      entry(1, 0, 2),
+      entry(1, 4, 5),
+      entry(2, 0, 3),
+      entry(3, 0, 4),
+    ],
+    { coverTokenId: 2, pageCount: 4 },
+  );
+
+  it("moves a page forwards, shifting the pages between back", () => {
+    const moved = withMovedPage(pages, 0, 2);
+    expect(tokens(moved)).toEqual([
+      [0, 0, 2],
+      [0, 4, 5],
+      [1, 0, 3],
+      [2, 0, 1],
+      [3, 0, 4],
+    ]);
+    expect(moved.pageCount).toBe(4);
+    expect(moved.coverTokenId).toBe(2);
+  });
+
+  it("moves the last page to the front, shifting every other page on", () => {
+    expect(tokens(withMovedPage(pages, 3, 0))).toEqual([
+      [0, 0, 4],
+      [1, 0, 1],
+      [2, 0, 2],
+      [2, 4, 5],
+      [3, 0, 3],
+    ]);
+  });
+});
+
+describe("pageDrop", () => {
+  const binder = detail(
+    [
+      ...Array.from({ length: 9 }, (_, slot) => entry(0, slot, slot + 10)),
+      entry(1, 0, 1),
+      entry(1, 2, 2),
+    ],
+    { pageCount: 2 },
+  );
+
+  it("goes into the page's first empty pocket", () => {
+    expect(pageDrop(binder, 1, "9")).toEqual({ kind: "pocket", slot: 1 });
+  });
+
+  it("leaves an objekt already on the page where it is", () => {
+    expect(pageDrop(binder, 1, "2")).toEqual({ kind: "stays" });
+  });
+
+  it("refuses a full page", () => {
+    expect(pageDrop(binder, 0, "1")).toEqual({ kind: "full" });
+  });
+});
+
+describe("movedPage", () => {
+  const all = [0, 1, 2, 3, 4];
+
+  it("shifts the pages between back when a page moves forwards", () => {
+    expect(all.map((page) => movedPage(page, 1, 3))).toEqual([0, 3, 1, 2, 4]);
+  });
+
+  it("shifts the pages between on when a page moves backwards", () => {
+    expect(all.map((page) => movedPage(page, 3, 1))).toEqual([0, 2, 3, 1, 4]);
+  });
+
+  it("leaves every page where it is when a page stays put", () => {
+    expect(all.map((page) => movedPage(page, 2, 2))).toEqual(all);
   });
 });
 

@@ -314,10 +314,11 @@
   "binder_error_binder_not_found": "바인더를 찾을 수 없습니다",
   "binder_error_binder_name_taken": "이미 같은 이름의 바인더가 있습니다",
   "binder_error_binder_limit_reached": "바인더는 최대 10개까지 만들 수 있습니다",
-  "binder_error_binder_page_limit_reached": "이 바인더가 가득 찼습니다. 바인더는 최대 20페이지까지 가능합니다",
+  "binder_error_binder_page_limit_reached": "이 바인더가 가득 찼습니다. 바인더는 최대 {max}페이지까지 가능합니다",
   "binder_error_binder_layout_locked": "objekt가 들어 있는 바인더의 레이아웃은 변경할 수 없습니다",
   "binder_error_cover_not_in_binder": "해당 objekt는 더 이상 이 바인더에 없습니다",
   "binder_error_pocket_out_of_range": "해당 포켓은 이 바인더에 없습니다",
+  "binder_error_page_out_of_range": "해당 페이지는 이 바인더에 없습니다",
   "binder_error_objekt_not_owned": "이 objekt의 소유를 아직 확인할 수 없습니다. 방금 받았다면 잠시 후 다시 시도해 주세요",
   "binder_page_count": [
     {
@@ -382,6 +383,8 @@
   "binder_editor_remove_page": "페이지 삭제",
   "binder_editor_remove_page_confirm": "{page}페이지를 삭제할까요?",
   "binder_editor_remove_page_n": "{page}페이지 삭제",
+  "binder_editor_arrange_pages": "페이지 순서 변경",
+  "binder_editor_arrange_pages_description": "페이지를 길게 누른 뒤 원하는 위치로 드래그하세요.",
   "binder_editor_remove_page_description": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
@@ -407,6 +410,7 @@
   "binder_editor_pocket_cover": "포켓 {pocket}, {objekt}, 표지",
   "binder_editor_select_pocket": "먼저 포켓을 선택하세요",
   "binder_editor_page_full": "페이지가 가득 찼습니다",
+  "binder_editor_page_n_full": "{page}페이지가 가득 찼습니다",
   "binder_editor_layout": "레이아웃",
   "binder_editor_edit": "이름과 색상 편집",
   "binder_editor_colour": "색상",
@@ -418,11 +422,16 @@
   "binder_editor_delete_description": "{name}와 모든 페이지가 삭제됩니다. objekt는 컬렉션에 그대로 남습니다.",
   "binder_editor_deleted": "바인더가 삭제되었습니다",
   "binder_editor_more": "더 보기",
-  "binder_editor_drag_instructions": "Enter로 선택합니다. 포켓으로 옮기려면 Space를 누르고 방향키로 포켓을 고른 뒤 Space로 놓거나 Esc로 취소하세요.",
+  "binder_editor_drag_instructions": "Enter로 선택합니다. 옮기려면 Space를 누르고 방향키로 포켓이나 페이지를 고른 뒤 Space로 놓거나 Esc로 취소하세요.",
   "binder_editor_drag_picked_up": "{objekt}를 집었습니다.",
   "binder_editor_drag_over": "포켓 {pocket} 위입니다.",
   "binder_editor_drag_dropped": "{objekt}를 포켓 {pocket}에 놓았습니다.",
   "binder_editor_drag_cancelled": "이동이 취소되었습니다.",
+  "binder_editor_drag_picked_up_page": "{page}페이지를 집었습니다.",
+  "binder_editor_drag_over_page": "{page}페이지 위입니다.",
+  "binder_editor_drag_moved_page": "{from}페이지를 {to}페이지로 옮겼습니다.",
+  "binder_editor_drag_dropped_on_page": "{objekt}를 {page}페이지에 놓았습니다.",
+  "binder_editor_arrange_instructions": "페이지를 옮기려면 Space를 누르고 방향키로 위치를 고른 뒤 Space로 놓거나 Esc로 취소하세요.",
   "binder_viewer_open": "{name} 열기",
   "binder_viewer_objekt_count": [
     {

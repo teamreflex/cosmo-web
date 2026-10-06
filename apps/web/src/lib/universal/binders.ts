@@ -12,7 +12,7 @@ export const binderLayouts = [
 ] as const satisfies readonly BinderLayout[];
 
 export const MAX_BINDERS = 10;
-export const MAX_BINDER_PAGES = 20;
+export const MAX_BINDER_PAGES = 50;
 
 /**
  * A new binder's spine colour. An empty binder has no objekts to draw colour
@@ -143,7 +143,7 @@ export type BinderMenuItem = Pick<
 
 export type BinderPreviewImage = Pick<
   CosmoObjekt,
-  "collectionId" | "frontImage" | "frontImageVersion"
+  "collectionId" | "frontImageVersion"
 > & {
   tokenId: number;
   slug: string;
@@ -233,16 +233,12 @@ export function toBinderPreview(
  * The image a binder cover draws for an objekt.
  */
 export function previewImage(
-  objekt: Pick<
-    CosmoObjekt,
-    "tokenId" | "collectionId" | "frontImage" | "frontImageVersion"
-  >,
+  objekt: Pick<CosmoObjekt, "tokenId" | "collectionId" | "frontImageVersion">,
 ): BinderPreviewImage {
   return {
     tokenId: Number(objekt.tokenId),
     slug: slugifyObjekt(objekt.collectionId),
     collectionId: objekt.collectionId,
-    frontImage: objekt.frontImage,
     frontImageVersion: objekt.frontImageVersion,
   };
 }
@@ -319,13 +315,33 @@ export function isBinderPin(binderId: string) {
     pin.kind === "binder" && pin.binder.id === binderId;
 }
 
+/**
+ * The objekt fields a pocket draws, labels and suggests filters from. A full
+ * objekt fits it, so a picker card goes into a pocket as it is. Images come
+ * from the CDN only, so `frontImage` is left out.
+ */
+export type BinderObjekt = Pick<
+  CosmoObjekt,
+  | "tokenId"
+  | "objektNo"
+  | "collectionId"
+  | "collectionNo"
+  | "member"
+  | "artists"
+  | "season"
+  | "class"
+  | "frontImageVersion"
+  | "backgroundColor"
+  | "textColor"
+  | "bandImageUrl"
+>;
+
 export type BinderPocketEntry = PocketPosition & {
-  objekt: CosmoObjekt;
+  objekt: BinderObjekt;
 };
 
 /**
- * A binder with every page's entries, hydrated with the same objekt shape as
- * pinned objekts, for the viewer and the editor.
+ * A binder with every page's entries, for the viewer and the editor.
  */
 export type BinderDetail = Binder & {
   entries: BinderPocketEntry[];
@@ -463,6 +479,31 @@ export function nextEmptySlot(
   return null;
 }
 
+/**
+ * Where an objekt dropped on a page's thumbnail goes: that page's first empty
+ * pocket. One already on that page stays where it is.
+ */
+export type PageDrop =
+  | { kind: "pocket"; slot: number }
+  | { kind: "stays" }
+  | { kind: "full" };
+
+export function pageDrop(
+  binder: Pick<BinderDetail, "layout" | "entries">,
+  page: number,
+  tokenId: string,
+): PageDrop {
+  if (
+    binder.entries.some(
+      (entry) => entry.page === page && entry.objekt.tokenId === tokenId,
+    )
+  ) {
+    return { kind: "stays" };
+  }
+  const slot = nextEmptySlot(binder.layout, binder.entries, page, -1);
+  return slot === null ? { kind: "full" } : { kind: "pocket", slot };
+}
+
 const samePocket = (a: PocketPosition, b: PocketPosition) =>
   a.page === b.page && a.slot === b.slot;
 
@@ -477,7 +518,7 @@ const byPocket = (a: PocketPosition, b: PocketPosition) =>
 export function withPlacedObjekt(
   binder: BinderDetail,
   pocket: PocketPosition,
-  objekt: CosmoObjekt,
+  objekt: BinderObjekt,
 ): BinderDetail {
   const replaced = binder.entries.find(
     (entry) =>
@@ -561,6 +602,33 @@ export function withoutLastPage(binder: BinderDetail): BinderDetail {
     )
       ? binder.coverTokenId
       : null,
+  };
+}
+
+/**
+ * Where a page ends up when the page at `from` moves to `to`: the moved page
+ * lands on `to`, and the pages between shift one place to close the gap.
+ */
+export function movedPage(page: number, from: number, to: number) {
+  if (page === from) return to;
+  if (from < to && page > from && page <= to) return page - 1;
+  if (to < from && page >= to && page < from) return page + 1;
+  return page;
+}
+
+/**
+ * A binder with one page moved, mirroring $movePage.
+ */
+export function withMovedPage(
+  binder: BinderDetail,
+  from: number,
+  to: number,
+): BinderDetail {
+  return {
+    ...binder,
+    entries: binder.entries
+      .map((entry) => ({ ...entry, page: movedPage(entry.page, from, to) }))
+      .toSorted(byPocket),
   };
 }
 

@@ -6,6 +6,7 @@ export const binderErrorCodes = [
   "binder_layout_locked",
   "cover_not_in_binder",
   "pocket_out_of_range",
+  "page_out_of_range",
   "objekt_not_owned",
 ] as const;
 

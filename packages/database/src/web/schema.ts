@@ -186,7 +186,7 @@ export const binders = pgTable(
   (t) => [
     uniqueIndex("binders_user_slug_idx").on(t.userId, t.slug),
     check("binders_colour_chk", sql`${t.colour} ~ '^#[0-9a-fA-F]{6}$'`),
-    check("binders_page_count_chk", sql`${t.pageCount} BETWEEN 1 AND 20`),
+    check("binders_page_count_chk", sql`${t.pageCount} >= 1`),
   ],
 );
 

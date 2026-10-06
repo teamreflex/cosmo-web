@@ -316,10 +316,11 @@
   "binder_error_binder_not_found": "Classeur introuvable",
   "binder_error_binder_name_taken": "Vous avez déjà un classeur portant ce nom",
   "binder_error_binder_limit_reached": "Vous pouvez avoir jusqu'à 10 classeurs",
-  "binder_error_binder_page_limit_reached": "Ce classeur est plein, un classeur peut contenir jusqu'à 20 pages",
+  "binder_error_binder_page_limit_reached": "Ce classeur est plein, un classeur peut contenir jusqu'à {max} pages",
   "binder_error_binder_layout_locked": "Impossible de changer la disposition d'un classeur qui contient des objekts",
   "binder_error_cover_not_in_binder": "Cet objekt n'est plus dans ce classeur",
   "binder_error_pocket_out_of_range": "Cette pochette n'existe pas dans ce classeur",
+  "binder_error_page_out_of_range": "Cette page n'existe pas dans ce classeur",
   "binder_error_objekt_not_owned": "Nous n'avons pas encore pu confirmer que vous possédez cet objekt. Si vous venez de le recevoir, réessayez dans un instant",
   "binder_page_count": [
     {
@@ -387,6 +388,8 @@
   "binder_editor_remove_page": "Retirer la page",
   "binder_editor_remove_page_confirm": "Retirer la page {page} ?",
   "binder_editor_remove_page_n": "Retirer la page {page}",
+  "binder_editor_arrange_pages": "Réorganiser les pages",
+  "binder_editor_arrange_pages_description": "Maintenez une page appuyée, puis faites-la glisser à sa place.",
   "binder_editor_remove_page_description": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
@@ -413,6 +416,7 @@
   "binder_editor_pocket_cover": "Poche {pocket}, {objekt}, couverture",
   "binder_editor_select_pocket": "Sélectionnez d'abord une poche",
   "binder_editor_page_full": "Page complète",
+  "binder_editor_page_n_full": "La page {page} est complète",
   "binder_editor_layout": "Disposition",
   "binder_editor_edit": "Modifier le nom et la couleur",
   "binder_editor_colour": "Couleur",
@@ -424,11 +428,16 @@
   "binder_editor_delete_description": "{name} et toutes ses pages seront supprimés. Les objekts restent dans votre collection.",
   "binder_editor_deleted": "Classeur supprimé",
   "binder_editor_more": "Plus d'actions",
-  "binder_editor_drag_instructions": "Appuyez sur Entrée pour le choisir. Pour le déplacer dans une poche, appuyez sur Espace, choisissez une poche avec les flèches, puis appuyez sur Espace pour le déposer ou Échap pour annuler.",
+  "binder_editor_drag_instructions": "Appuyez sur Entrée pour le choisir. Pour le déplacer, appuyez sur Espace, choisissez une poche ou une page avec les flèches, puis appuyez sur Espace pour le déposer ou Échap pour annuler.",
   "binder_editor_drag_picked_up": "{objekt} saisi.",
   "binder_editor_drag_over": "Au-dessus de la poche {pocket}.",
   "binder_editor_drag_dropped": "{objekt} déposé dans la poche {pocket}.",
   "binder_editor_drag_cancelled": "Déplacement annulé.",
+  "binder_editor_drag_picked_up_page": "Page {page} saisie.",
+  "binder_editor_drag_over_page": "Au-dessus de la page {page}.",
+  "binder_editor_drag_moved_page": "La page {from} devient la page {to}.",
+  "binder_editor_drag_dropped_on_page": "{objekt} déposé sur la page {page}.",
+  "binder_editor_arrange_instructions": "Pour déplacer une page, appuyez sur Espace, choisissez sa place avec les flèches, puis appuyez sur Espace pour la déposer ou Échap pour annuler.",
   "binder_viewer_open": "Ouvrir {name}",
   "binder_viewer_objekt_count": [
     {

@@ -50,7 +50,7 @@ const COSMO_FALLBACKS = {
  * Mirror location of a collection's front image, or null until it's mirrored.
  */
 export function getObjektFrontImageRef(
-  collection: FrontImageSource,
+  collection: Pick<Objekt.Collection, "slug" | "frontImageVersion">,
 ): ObjektImageRef | null {
   return collection.frontImageVersion === null
     ? null
