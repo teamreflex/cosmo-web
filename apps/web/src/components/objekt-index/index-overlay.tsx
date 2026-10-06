@@ -11,11 +11,13 @@ import {
   useObjektSelection,
 } from "@/hooks/use-objekt-selection";
 import useOverlayHover from "@/hooks/use-overlay-hover";
+import { useWatchCollection } from "@/hooks/use-watch-collection";
 import { m } from "@/i18n/messages";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type { ObjektList } from "@apollo/database/web/types";
 import { useShallow } from "zustand/react/shallow";
 import AddToList from "../lists/add-to-list";
+import { WatchIconButton } from "../market/watch-button";
 
 type TopOverlayProps = {
   collection: Objekt.Collection;
@@ -28,6 +30,7 @@ export function TopOverlay({ collection, objektLists }: TopOverlayProps) {
     useShallow((state) => state.isSelected(collectionKey(collection.slug))),
   );
   const select = useObjektSelection((state) => state.select);
+  const watch = useWatchCollection(collection);
 
   return (
     <CornerOverlay corner="top-left" {...hoverContainerProps}>
@@ -39,6 +42,10 @@ export function TopOverlay({ collection, objektLists }: TopOverlayProps) {
             collectionId={collection.id}
             lists={objektLists}
           />
+        </OverlayHoverTarget>
+
+        <OverlayHoverTarget {...createHoverProps("watch")}>
+          <WatchIconButton collection={collection} watch={watch} />
         </OverlayHoverTarget>
 
         <OverlayHoverTarget {...createHoverProps("select")}>
@@ -53,9 +60,13 @@ export function TopOverlay({ collection, objektLists }: TopOverlayProps) {
         <OverlayStatus>
           {hoverState === "list"
             ? m.objekt_overlay_add_to_list()
-            : isSelected
-              ? m.objekt_overlay_deselect()
-              : m.objekt_overlay_select()}
+            : hoverState === "watch"
+              ? watch.watching
+                ? m.watch_stop()
+                : m.watch_watch()
+              : isSelected
+                ? m.objekt_overlay_deselect()
+                : m.objekt_overlay_select()}
         </OverlayStatus>
       </OverlayStatusRail>
     </CornerOverlay>

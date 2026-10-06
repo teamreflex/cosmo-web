@@ -22,6 +22,7 @@ import { Suspense, useMemo, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import ListingRow from "./listing-row";
 import { FloorChange, FloorTrend, ListingsStatsStrip } from "./listings-stats";
+import { WatchButton } from "./watch-button";
 
 const sortKeys = ["price", "serial", "listed"] as const;
 type SortKey = (typeof sortKeys)[number];
@@ -165,7 +166,10 @@ function Listings({
   if (!isDesktop) {
     return (
       <div className="flex min-h-0 flex-1 flex-col">
-        <PhoneHeader collection={collection}>
+        <PhoneHeader
+          collection={collection}
+          action={user && <WatchButton collection={collection} />}
+        >
           {stats !== null && (
             <div className="mt-0.5 flex items-center gap-1.5">
               <CountFrom stats={stats} />
@@ -205,8 +209,11 @@ function Listings({
             })}
           </span>
         </div>
-        <div className="flex items-center gap-1 font-mono text-xxs tracking-widest uppercase">
-          {sortButtons}
+        <div className="flex items-center gap-3">
+          {user && <WatchButton collection={collection} />}
+          <div className="flex items-center gap-1 font-mono text-xxs tracking-widest uppercase">
+            {sortButtons}
+          </div>
         </div>
       </div>
 
@@ -225,9 +232,11 @@ function Listings({
  */
 function PhoneHeader({
   collection,
+  action,
   children,
 }: {
   collection: Objekt.Collection;
+  action?: ReactNode;
   children?: ReactNode;
 }) {
   return (
@@ -247,6 +256,7 @@ function PhoneHeader({
         </span>
         {children}
       </div>
+      {action}
     </div>
   );
 }

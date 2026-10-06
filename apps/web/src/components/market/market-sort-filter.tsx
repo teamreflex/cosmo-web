@@ -9,22 +9,9 @@ import FilterChip from "../collection/filter-chip";
 import SingleSelectList, {
   type SingleSelectOption,
 } from "../collection/single-select-list";
+import { marketSortLabels, marketSortSublabels } from "./market-sort-labels";
 
 const route = getRouteApi("/market/");
-
-const labelMap = {
-  floorAsc: m.filter_sort_floor_asc(),
-  floorDesc: m.filter_sort_floor_desc(),
-  mostListed: m.filter_sort_most_listed(),
-  recentlyListed: m.filter_sort_recently_listed(),
-} satisfies Record<MarketSort, string>;
-
-const sublabelMap = {
-  floorAsc: m.filter_sort_floor_asc_sub(),
-  floorDesc: m.filter_sort_floor_desc_sub(),
-  mostListed: m.filter_sort_most_listed_sub(),
-  recentlyListed: m.filter_sort_recently_listed_sub(),
-} satisfies Record<MarketSort, string>;
 
 /**
  * Sort chip for the market page. The market sorts live outside the shared
@@ -37,8 +24,8 @@ export default function MarketSortFilter() {
 
   const options: SingleSelectOption<MarketSort>[] = marketSorts.map((s) => ({
     value: s,
-    label: labelMap[s],
-    sublabel: sublabelMap[s],
+    label: marketSortLabels[s],
+    sublabel: marketSortSublabels[s],
   }));
 
   function handleChange(next: MarketSort) {
@@ -55,7 +42,7 @@ export default function MarketSortFilter() {
   return (
     <FilterChip
       label={m.filter_sort()}
-      valueLabel={labelMap[value].toLowerCase()}
+      valueLabel={marketSortLabels[value].toLowerCase()}
       active={value !== DEFAULT_MARKET_SORT}
       width={240}
     >

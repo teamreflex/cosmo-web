@@ -24,6 +24,7 @@ import { Link } from "@tanstack/react-router";
 import { Suspense } from "react";
 import { toast } from "sonner";
 import { useCopyToClipboard } from "usehooks-ts";
+import { WatchButton } from "../../market/watch-button";
 import { Badge } from "../../ui/badge";
 import { Button } from "../../ui/button";
 import { Skeleton } from "../../ui/skeleton";
@@ -98,6 +99,7 @@ function FooterInner(props: Props) {
       {event !== null && <EventBadge event={event} />}
 
       <div className="ml-auto flex shrink-0 items-center gap-1">
+        {user && <WatchButton collection={props.objekt} />}
         {user?.isAdmin && (
           <EditMetadata
             slug={props.objekt.slug}
@@ -171,6 +173,8 @@ function FooterInner(props: Props) {
 }
 
 function FooterFallback() {
+  const { user } = useUserState();
+
   return (
     <div className="flex items-center gap-2 px-4 py-2">
       {/* event */}
@@ -181,6 +185,7 @@ function FooterFallback() {
 
       {/* buttons */}
       <div className="ml-auto flex shrink-0 items-center gap-1">
+        {user && <Skeleton className="size-8 rounded-sm sm:w-20" />}
         <Skeleton className="size-8 rounded-sm" />
         <Skeleton className="size-8 rounded-sm" />
       </div>

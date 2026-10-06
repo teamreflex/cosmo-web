@@ -10,6 +10,7 @@ import TitleHeader from "../ui/title-header";
 import MarketFilters from "./market-filters";
 import { MarketGridItem } from "./market-grid-item";
 import MyListingsLink from "./my-listings-link";
+import WatchlistLink from "./watchlist-link";
 
 export default function MarketRenderer() {
   const { user } = useUserState();
@@ -27,6 +28,7 @@ export default function MarketRenderer() {
 
         {user !== undefined && (
           <div className="ml-auto flex items-center gap-2">
+            <WatchlistLink />
             <MyListingsLink />
           </div>
         )}

@@ -17,6 +17,7 @@ export type Hoverable =
   | "binder"
   | "pin"
   | "remove"
+  | "watch"
   | NonTransferableReason;
 
 /**

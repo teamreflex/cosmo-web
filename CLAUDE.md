@@ -55,7 +55,7 @@ Detailed conventions live in `docs/`. Read the relevant file **before** working 
 
 - `apps/web`: Core TanStack Start web app
 - `apps/indexer`: Subsquid blockchain indexer for cataloging Modhaus objekt collections
-- `apps/schedules`: Functions for executing scheduled tasks
+- `apps/schedules`: Scheduled tasks and queue workers
 - `apps/typesense`: Dockerfile for building Typesense with `curl` available
 - `apps/typesense-import`: Sync new objekt collections to the Typesense database
 - `apps/proxy`: mitmproxy addons for intercepting COSMO app traffic
@@ -66,6 +66,7 @@ Detailed conventions live in `docs/`. Read the relevant file **before** working 
 - `packages/database`: `drizzle-orm` schemas for both databases
 - `packages/drizzle-bun-effect`: Effect service for Bun.SQL, derived from `drizzle-orm/effect-postgres`
 - `packages/lint`: Shared oxlint config
+- `packages/queue`: Redis-backed job queues (Effect `PersistedQueue`) the web app offers to and the schedules app takes from
 - `packages/typescript`: Shared tsconfig.json file
 - `packages/util`: Shared utility functions
 - `packages/util-server`: Shared server-only utilities (Redis cache keys, crypto)

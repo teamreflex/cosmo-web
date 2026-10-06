@@ -126,6 +126,26 @@ export const myListingsBackendSchema = myListingsFrontendSchema.extend({
   page: z.coerce.number().int().nonnegative().default(0),
 });
 
+// watchlist frontend - the viewer's watched collections, filtered like the market
+export const watchlistFrontendSchema = cosmoSchema
+  .pick({
+    artist: true,
+    member: true,
+    season: true,
+    class: true,
+    on_offline: true,
+    collectionNo: true,
+  })
+  .extend({
+    sort: z.enum(marketSorts).nullish().catch(null),
+  })
+  .partial();
+
+// watchlist backend
+export const watchlistBackendSchema = watchlistFrontendSchema.extend({
+  page: z.coerce.number().int().nonnegative().default(0),
+});
+
 // profile layout - user facing, validated by the router, shared by every profile tab
 export const profileFrontendSchema = z.object({
   binder: z.string().optional(),

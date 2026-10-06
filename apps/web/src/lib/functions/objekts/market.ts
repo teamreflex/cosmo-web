@@ -14,20 +14,22 @@ import {
   withSelectedArtists,
 } from "@/lib/server/objekts/filters.server";
 import {
+  marketSorting,
+  orderBy,
+  type Sorting,
+} from "@/lib/server/objekts/market.server";
+import {
   DEFAULT_MARKET_SORT,
   type FloorBounds,
   type MarketCursor,
   type MarketListedWindow,
   marketListedWindowMs,
   type MarketResponse,
-  type MarketSort,
 } from "@/lib/universal/market";
 import { marketBackendSchema } from "@/lib/universal/parsers";
 import { createServerFn } from "@tanstack/react-start";
 import {
   and,
-  asc,
-  desc,
   eq,
   getColumns,
   gt,
@@ -36,7 +38,6 @@ import {
   lte,
   or,
   type SQL,
-  type SQLWrapper,
   sql,
 } from "drizzle-orm";
 
@@ -138,42 +139,6 @@ function fetchTotals(where: SQL | undefined) {
   return where === undefined ? remember("market-total", 60, query) : query();
 }
 
-type SortKey = keyof MarketCursor;
-type Sorting = { key: SortKey; dir: "asc" | "desc" }[];
-
-/**
- * Each sort's keys in order. Every sort ends on the slug so the order is
- * total, which the keyset cursor relies on. Each has a matching index on
- * `collection_market_stats`.
- */
-const marketSorting = {
-  floorAsc: [
-    { key: "floorUsd", dir: "asc" },
-    { key: "listingCount", dir: "desc" },
-    { key: "slug", dir: "asc" },
-  ],
-  floorDesc: [
-    { key: "floorUsd", dir: "desc" },
-    { key: "listingCount", dir: "desc" },
-    { key: "slug", dir: "asc" },
-  ],
-  mostListed: [
-    { key: "listingCount", dir: "desc" },
-    { key: "floorUsd", dir: "asc" },
-    { key: "slug", dir: "asc" },
-  ],
-  recentlyListed: [
-    { key: "lastListedAt", dir: "desc" },
-    { key: "slug", dir: "asc" },
-  ],
-} satisfies Record<MarketSort, Sorting>;
-
-function orderBy(sorting: Sorting, columns: Record<SortKey, SQLWrapper>) {
-  return sorting.map(({ key, dir }) =>
-    dir === "asc" ? asc(columns[key]) : desc(columns[key]),
-  );
-}
-
 /**
  * Rows after the cursor in the sort's order: past it on some key while tied
  * on every key before that one. The leading bound is redundant but lets the
@@ -186,7 +151,7 @@ function after(sorting: Sorting, cursor: MarketCursor) {
     floorUsd: sql`${cursor.floorUsd}::real`,
     listingCount: sql`${cursor.listingCount}::int`,
     lastListedAt: sql`${cursor.lastListedAt}::timestamptz`,
-  } satisfies Record<SortKey, SQL>;
+  } satisfies Record<keyof MarketCursor, SQL>;
   const columns = collectionMarketStats;
   const [lead] = sorting;
   if (lead === undefined) return undefined;

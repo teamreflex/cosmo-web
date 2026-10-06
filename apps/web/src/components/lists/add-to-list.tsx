@@ -188,7 +188,7 @@ function WantListItem(props: ListItemBaseProps) {
     $addObjektsToWantList({
       data: {
         objektListId: props.list.id,
-        objekts: [{ slug: props.slug, collectionName: props.collectionName }],
+        objekts: [{ slug: props.slug }],
       },
     }),
   );
@@ -219,7 +219,6 @@ function HaveListItem(props: HaveListItemProps) {
           {
             slug: props.slug,
             collectionId: props.collectionId,
-            collectionName: props.collectionName,
             tokenId: String(props.tokenId),
           },
         ],

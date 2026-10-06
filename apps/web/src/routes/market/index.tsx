@@ -13,6 +13,7 @@ import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { currentAccountQuery, selectedArtistsQuery } from "@/lib/queries/core";
 import { marketQuery } from "@/lib/queries/market";
+import { watchedSlugsQuery } from "@/lib/queries/watchlist";
 import { marketFrontendSchema } from "@/lib/universal/parsers";
 import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
 import { ProfileProvider } from "@/providers/profile-provider";
@@ -35,6 +36,10 @@ export const Route = createFileRoute("/market/")({
     void context.queryClient.prefetchInfiniteQuery(
       marketQuery(deps.searchParams, selected, displayCurrency(account)),
     );
+    // every card's watch toggle reads it
+    if (account) {
+      void context.queryClient.prefetchQuery(watchedSlugsQuery);
+    }
 
     return { account };
   },
@@ -75,7 +80,10 @@ function PendingComponent() {
             <MemberFilterSkeleton />
           </div>
         </div>
-        <Skeleton className="ml-auto h-8 w-[85px] sm:w-[98px]" />
+        <div className="ml-auto flex items-center gap-2">
+          <Skeleton className="h-8 w-[104px] max-sm:hidden" />
+          <Skeleton className="h-8 w-[85px] sm:w-[98px]" />
+        </div>
       </TitleHeader>
 
       <div className="border-b border-border bg-muted/40">

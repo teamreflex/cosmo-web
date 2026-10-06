@@ -34,6 +34,7 @@ import { Route as GravityIndexRouteImport } from './routes/gravity/index'
 import { Route as ListIdRouteImport } from './routes/list/$id'
 import { Route as MarketIndexRouteImport } from './routes/market/index'
 import { Route as MarketMyRouteImport } from './routes/market/my'
+import { Route as MarketWatchlistRouteImport } from './routes/market/watchlist'
 import { Route as ObjektsIndexRouteImport } from './routes/objekts/index'
 import { Route as ObjektsStatsRouteImport } from './routes/objekts/stats'
 import { Route as AtChar123usernameChar125BinderSlugRouteImport } from './routes/@{$username}/binder.$slug'
@@ -181,6 +182,11 @@ const MarketMyRoute = MarketMyRouteImport.update({
   path: '/market/my',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MarketWatchlistRoute = MarketWatchlistRouteImport.update({
+  id: '/market/watchlist',
+  path: '/market/watchlist',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ObjektsIndexRoute = ObjektsIndexRouteImport.update({
   id: '/objekts/',
   path: '/objekts/',
@@ -286,6 +292,7 @@ export interface FileRoutesByFullPath {
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
   '/market/my': typeof MarketMyRoute
+  '/market/watchlist': typeof MarketWatchlistRoute
   '/objekts/stats': typeof ObjektsStatsRoute
   '/@{$username}/': typeof AtChar123usernameChar125IndexRoute
   '/admin/': typeof AdminIndexRoute
@@ -326,6 +333,7 @@ export interface FileRoutesByTo {
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
   '/market/my': typeof MarketMyRoute
+  '/market/watchlist': typeof MarketWatchlistRoute
   '/objekts/stats': typeof ObjektsStatsRoute
   '/@{$username}': typeof AtChar123usernameChar125IndexRoute
   '/admin': typeof AdminIndexRoute
@@ -369,6 +377,7 @@ export interface FileRoutesById {
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
   '/market/my': typeof MarketMyRoute
+  '/market/watchlist': typeof MarketWatchlistRoute
   '/objekts/stats': typeof ObjektsStatsRoute
   '/@{$username}/': typeof AtChar123usernameChar125IndexRoute
   '/admin/': typeof AdminIndexRoute
@@ -413,6 +422,7 @@ export interface FileRouteTypes {
     | '/events/$slug'
     | '/list/$id'
     | '/market/my'
+    | '/market/watchlist'
     | '/objekts/stats'
     | '/@{$username}/'
     | '/admin/'
@@ -453,6 +463,7 @@ export interface FileRouteTypes {
     | '/events/$slug'
     | '/list/$id'
     | '/market/my'
+    | '/market/watchlist'
     | '/objekts/stats'
     | '/@{$username}'
     | '/admin'
@@ -495,6 +506,7 @@ export interface FileRouteTypes {
     | '/events/$slug'
     | '/list/$id'
     | '/market/my'
+    | '/market/watchlist'
     | '/objekts/stats'
     | '/@{$username}/'
     | '/admin/'
@@ -527,6 +539,7 @@ export interface RootRouteChildren {
   EventsSlugRoute: typeof EventsSlugRoute
   ListIdRoute: typeof ListIdRoute
   MarketMyRoute: typeof MarketMyRoute
+  MarketWatchlistRoute: typeof MarketWatchlistRoute
   ObjektsStatsRoute: typeof ObjektsStatsRoute
   EventsIndexRoute: typeof EventsIndexRoute
   GravityIndexRoute: typeof GravityIndexRoute
@@ -722,6 +735,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MarketMyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/market/watchlist': {
+      id: '/market/watchlist'
+      path: '/market/watchlist'
+      fullPath: '/market/watchlist'
+      preLoaderRoute: typeof MarketWatchlistRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/objekts/': {
       id: '/objekts/'
       path: '/objekts'
@@ -896,6 +916,7 @@ const rootRouteChildren: RootRouteChildren = {
   EventsSlugRoute: EventsSlugRoute,
   ListIdRoute: ListIdRoute,
   MarketMyRoute: MarketMyRoute,
+  MarketWatchlistRoute: MarketWatchlistRoute,
   ObjektsStatsRoute: ObjektsStatsRoute,
   EventsIndexRoute: EventsIndexRoute,
   GravityIndexRoute: GravityIndexRoute,
