@@ -11,7 +11,9 @@ import VirtualizedObjektGrid from "../objekt/virtualized-objekt-grid";
 import { ListGridItem } from "./list-grid-item";
 
 type Props = {
-  objektList: ObjektList & { fxRateToUsd: number | null };
+  objektList: ObjektList;
+  // latest USD rate of a sale list's currency, null for other lists
+  fxRateToUsd: number | null;
   authenticated: boolean;
 };
 
@@ -59,8 +61,8 @@ export default function ListRenderer(props: Props) {
           itemComponentProps={{
             authenticated: props.authenticated,
             objektList: props.objektList,
+            fxRateToUsd: props.fxRateToUsd,
           }}
-          extraRowHeight={props.objektList.type === "sale" ? 28 : 0}
           showTotal
         />
       </div>

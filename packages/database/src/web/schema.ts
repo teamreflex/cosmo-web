@@ -330,7 +330,11 @@ export const fxRates = pgTable(
   },
   (t) => [
     primaryKey({ columns: [t.date, t.currency] }),
-    index("fx_rates_currency_idx").on(t.currency),
+    // serves the latest rate per currency; plain `order by date desc` sorts nulls first
+    index("fx_rates_currency_date_idx").on(
+      t.currency,
+      t.date.desc().nullsFirst(),
+    ),
   ],
 );
 
@@ -342,6 +346,22 @@ export const collectionPriceStats = pgTable("collection_price_stats", {
   maxPriceUsd: real("max_price_usd").notNull(),
   updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
 });
+
+/**
+ * Daily snapshot of `collection_price_stats`, written by the same job. The last
+ * run of each UTC day wins, so a collection has at most one row per day.
+ */
+export const collectionPriceHistory = pgTable(
+  "collection_price_history",
+  {
+    collectionId: varchar("collection_id", { length: 36 }).notNull(),
+    date: date("date", { mode: "string" }).notNull(),
+    floorUsd: real("floor_usd").notNull(),
+    medianUsd: real("median_usd").notNull(),
+    listingCount: integer("listing_count").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.collectionId, t.date] })],
+);
 
 export const cosmoTokens = pgTable(
   "cosmo_tokens",

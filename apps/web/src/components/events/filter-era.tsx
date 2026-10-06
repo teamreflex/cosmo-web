@@ -62,7 +62,7 @@ export default function EventsEraFilter({ era, artist, onChange }: Props) {
         <div className="flex max-h-80 flex-col overflow-y-auto py-1">
           {groupedEras.map(({ artist: artistData, eras: artistEras }) => (
             <div key={artistData.id} className="flex flex-col">
-              <div className="flex items-center gap-1.5 px-3 pt-2 pb-1 font-mono text-xxs tracking-[0.14em] text-muted-foreground uppercase">
+              <div className="flex items-center gap-1.5 px-3 pt-2 pb-1 font-mono text-xxs tracking-widest text-muted-foreground uppercase">
                 <img
                   className="size-4 shrink-0 rounded-full"
                   src={artistData.logoImageUrl}
@@ -92,9 +92,7 @@ export default function EventsEraFilter({ era, artist, onChange }: Props) {
                     )}
                     <span className="min-w-0 flex-1 truncate">{e.name}</span>
                     {selected && (
-                      <span className="font-mono text-[11px] text-cosmo">
-                        ●
-                      </span>
+                      <span className="font-mono text-xs text-cosmo">●</span>
                     )}
                   </button>
                 );

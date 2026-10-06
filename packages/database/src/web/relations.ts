@@ -63,6 +63,10 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.objektLists.userId,
       to: r.cosmoAccounts.userId,
     }),
+    fxRates: r.many.fxRates({
+      from: r.objektLists.currency,
+      to: r.fxRates.currency,
+    }),
     linkedWantList: r.one.objektLists({
       from: r.objektLists.linkedWantListId,
       to: r.objektLists.id,
@@ -78,10 +82,6 @@ export const relations = defineRelations(schema, (r) => ({
     objektList: r.one.objektLists({
       from: r.objektListEntries.objektListId,
       to: r.objektLists.id,
-    }),
-    priceStats: r.one.collectionPriceStats({
-      from: r.objektListEntries.collectionId,
-      to: r.collectionPriceStats.collectionId,
     }),
   },
   binders: {
@@ -109,6 +109,7 @@ export const relations = defineRelations(schema, (r) => ({
   },
   listDrainCursor: {},
   collectionPriceStats: {},
+  collectionPriceHistory: {},
   fxRates: {},
   cosmoTokens: {},
   gravities: {
@@ -144,6 +145,10 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.cosmoAccounts.userId,
     }),
     objektLists: r.many.objektLists(),
+    fxRates: r.many.fxRates({
+      from: r.user.currency,
+      to: r.fxRates.currency,
+    }),
     binders: r.many.binders(),
   },
   apikey: {

@@ -1,16 +1,5 @@
 import * as z from "zod";
-
-export const defaultCurrencies = [
-  "USD",
-  "KRW",
-  "EUR",
-  "GBP",
-  "JPY",
-  "RMB",
-  "NTD",
-  "HKD",
-  "SGD",
-] as const;
+import { currencySchema } from "./currency";
 
 export const listTypes = ["regular", "have", "want", "sale"] as const;
 export type ListType = (typeof listTypes)[number];
@@ -24,11 +13,6 @@ export const listNameSchema = z
     (value) => /^[a-zA-Z0-9 ]+$/.test(value),
     "Name can only use letters, numbers and spaces",
   );
-
-const currencySchema = z
-  .string()
-  .length(3, "Currency must be 3 characters")
-  .transform((v) => v.toUpperCase());
 
 const descriptionSchema = z
   .string()
@@ -208,4 +192,11 @@ export const findTradePartnersSchema = z.object({
 export const generateDiscordListSchema = z.object({
   haveId: z.uuid(),
   wantId: z.uuid(),
+});
+
+export const generateSaleListTextSchema = z.object({
+  id: z.uuid(),
+  // list unpriced serials on a separate offers line, or leave them out
+  unpricedAsOffers: z.boolean(),
+  includeLink: z.boolean(),
 });

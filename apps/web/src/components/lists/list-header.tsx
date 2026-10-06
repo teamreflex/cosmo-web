@@ -5,10 +5,13 @@ import { cn } from "@/lib/utils";
 import type { ObjektList } from "@apollo/database/web/types";
 import { IconList } from "@tabler/icons-react";
 import { format } from "date-fns";
-import type { ReactNode } from "react";
+import { type ReactNode, Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import { Skeleton } from "../ui/skeleton";
 import DeleteList from "./delete-list";
 import ListContacts from "./list-contacts";
+import SaleListSummary from "./sale-list-summary";
+import SaleListTextDialog from "./sale-list-text-dialog";
 import UpdateList from "./update-list";
 
 type Props = {
@@ -68,7 +71,7 @@ export default function ListHeader({
               <div id="list-total-stat" />
             </div>
 
-            <h1 className="font-cosmo text-2xl leading-none font-black tracking-[0.02em] wrap-break-word uppercase md:text-3xl">
+            <h1 className="font-cosmo text-2xl leading-none font-black tracking-wide wrap-break-word uppercase md:text-3xl">
               {list.name}
               {list.type === "sale" && list.currency && (
                 <span className="ml-2 text-sm text-muted-foreground">
@@ -83,6 +86,7 @@ export default function ListHeader({
           {extras}
           {isOwner && (
             <>
+              {list.type === "sale" && <SaleListTextDialog objektList={list} />}
               <UpdateList objektList={list} />
               <DeleteList objektList={list} />
             </>
@@ -107,6 +111,16 @@ export default function ListHeader({
           <ListContacts ownerName={ownerName} user={owner} />
         </div>
       </div>
+
+      {isOwner && list.type === "sale" && list.currency && (
+        <ErrorBoundary fallback={null}>
+          <Suspense
+            fallback={<Skeleton className="mt-4 h-[66px] rounded-lg" />}
+          >
+            <SaleListSummary objektListId={list.id} currency={list.currency} />
+          </Suspense>
+        </ErrorBoundary>
+      )}
     </div>
   );
 }

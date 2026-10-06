@@ -7,13 +7,19 @@ import {
   authenticatedMiddleware,
   cosmoMiddleware,
 } from "@/lib/server/middlewares";
-import { fetchLatestFxRate } from "@/lib/server/objekts/fx.server";
+import { assertSupportedCurrency } from "@/lib/server/objekts/fx.server";
 import {
   assertOwnsTokensMulti,
   assertUserOwnsList,
   fireHaveAddNotifications,
   fireWantAddNotifications,
 } from "@/lib/server/objekts/lists.server";
+import {
+  fetchMarketStats,
+  fetchMedianPrices,
+  isAboveMedian,
+  isFloorPrice,
+} from "@/lib/server/objekts/market.server";
 import type { PublicUser } from "@/lib/universal/auth";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import type {
@@ -33,33 +39,24 @@ import {
   deleteObjektListSchema,
   findTradePartnersSchema,
   generateDiscordListSchema,
+  generateSaleListTextSchema,
   removeObjektFromListSchema,
   updateObjektListEntrySchema,
   updateObjektListSchema,
 } from "@/lib/universal/schema/objekt-list";
-import { createSlug, sanitizeUuid } from "@/lib/utils";
+import { baseUrl, createSlug, sanitizeUuid } from "@/lib/utils";
 import { objektListEntries, objektLists } from "@apollo/database/web/schema";
 import type { ObjektListEntry } from "@apollo/database/web/types";
 import { redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import {
-  and,
-  countDistinct,
-  desc,
-  eq,
-  inArray,
-  isNotNull,
-  ne,
-  sql,
-} from "drizzle-orm";
+import { and, eq, inArray, ne, type SQLWrapper, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import * as z from "zod";
 
 /**
- * Fetch a single objekt list along with the latest USD FX rate for its
- * currency, so the client can convert the global market price into the list's
- * own currency for display. Have and want lists also carry the list they're
- * paired with for trading.
+ * Fetch a single objekt list by id or by owner + slug, along with the latest
+ * USD FX rate for a sale list's currency. Have and want lists also carry the
+ * list they're paired with for trading.
  */
 export const $fetchObjektList = createServerFn({ method: "GET" })
   .validator(
@@ -72,6 +69,12 @@ export const $fetchObjektList = createServerFn({ method: "GET" })
     const result = await db.query.objektLists.findFirst({
       where: data,
       with: {
+        // latest rate for a sale list's currency
+        fxRates: {
+          columns: { rateToUsd: true },
+          orderBy: { date: "desc" },
+          limit: 1,
+        },
         linkedWantList: { columns: { slug: true, type: true } },
         linkingHaveList: { columns: { slug: true, type: true } },
       },
@@ -79,16 +82,106 @@ export const $fetchObjektList = createServerFn({ method: "GET" })
     if (!result) return undefined;
 
     // a have list points at its want list, a want list is pointed at by a have list
-    const { linkedWantList, linkingHaveList, ...list } = result;
-
-    const fxRateToUsd = list.currency
-      ? await fetchLatestFxRate(list.currency)
-      : null;
+    const { fxRates, linkedWantList, linkingHaveList, ...list } = result;
 
     return {
       ...list,
-      fxRateToUsd,
+      fxRateToUsd: fxRates[0]?.rateToUsd ?? null,
       pairedList: linkedWantList ?? linkingHaveList,
+    };
+  });
+
+/**
+ * Pricing overview of the owner's sale list: how many serials are priced, the
+ * asking total, how many sit at the market floor or above the median, and the
+ * newest unpriced entry for the header's "price the unpriced" action.
+ */
+export const $fetchSaleListSummary = createServerFn({ method: "GET" })
+  .validator(z.object({ id: z.uuid() }))
+  .middleware([authenticatedMiddleware])
+  .handler(async ({ data, context }) => {
+    const list = await db.query.objektLists.findFirst({
+      where: {
+        id: data.id,
+        userId: context.session.session.userId,
+        type: "sale",
+      },
+      columns: { id: true },
+      with: {
+        entries: {
+          columns: {
+            id: true,
+            collectionId: true,
+            tokenId: true,
+            quantity: true,
+            price: true,
+          },
+          orderBy: { createdAt: "desc" },
+        },
+        fxRates: {
+          columns: { rateToUsd: true },
+          orderBy: { date: "desc" },
+          limit: 1,
+        },
+      },
+    });
+    if (!list) {
+      throw new ExpectedError("list_not_found");
+    }
+
+    const rateToUsd = list.fxRates[0]?.rateToUsd ?? null;
+    const priced = list.entries.flatMap((entry) =>
+      entry.price === null ? [] : [{ ...entry, price: entry.price }],
+    );
+    const firstUnpriced = list.entries.find((entry) => entry.price === null);
+    const pricedSlugs = [...new Set(priced.map((e) => e.collectionId))];
+    const [marketStats, medians, firstUnpricedCollection] = await Promise.all([
+      fetchMarketStats(pricedSlugs),
+      fetchMedianPrices(pricedSlugs),
+      firstUnpriced &&
+        indexer.query.collections.findFirst({
+          where: { slug: firstUnpriced.collectionId },
+          columns: { collectionId: true },
+        }),
+    ]);
+
+    const askingTotal = priced.reduce(
+      (sum, entry) => sum + entry.price * entry.quantity,
+      0,
+    );
+    const pricedUsd =
+      rateToUsd === null
+        ? []
+        : priced.map((entry) => ({
+            ...entry,
+            priceUsd: entry.price * rateToUsd,
+          }));
+
+    return {
+      total: list.entries.length,
+      priced: priced.length,
+      askingTotal,
+      askingTotalUsd: rateToUsd === null ? null : askingTotal * rateToUsd,
+      // the edit dialog's price check converts other listings with it
+      rateToUsd,
+      atFloor: pricedUsd.filter(
+        (entry) =>
+          entry.tokenId !== null &&
+          isFloorPrice(entry.priceUsd, marketStats.get(entry.collectionId)),
+      ).length,
+      aboveMedian: pricedUsd.filter((entry) =>
+        isAboveMedian(entry.priceUsd, medians.get(entry.collectionId)),
+      ).length,
+      // named for the edit dialog's title
+      firstUnpriced:
+        firstUnpriced === undefined
+          ? null
+          : {
+              ...firstUnpriced,
+              name:
+                firstUnpricedCollection?.collectionId ??
+                firstUnpriced.collectionId,
+            },
     };
   });
 
@@ -143,8 +236,7 @@ export const $fetchListShelf = createServerFn({ method: "GET" })
   });
 
 /**
- * Fetch a single objekt list with the user, plus the latest USD FX rate for
- * the list's currency.
+ * Fetch a single objekt list with its owner.
  */
 export const $getObjektListWithUser = createServerFn({ method: "GET" })
   .validator(z.object({ id: z.string() }))
@@ -170,20 +262,22 @@ export const $getObjektListWithUser = createServerFn({ method: "GET" })
             },
           },
         },
+        // latest rate for a sale list's currency
+        fxRates: {
+          columns: { rateToUsd: true },
+          orderBy: { date: "desc" },
+          limit: 1,
+        },
       },
     });
     if (!list) return undefined;
 
-    const fxRateToUsd = list.currency
-      ? await fetchLatestFxRate(list.currency)
-      : null;
-
-    const { user, ...listData } = list;
+    const { user, fxRates, ...listData } = list;
     const { cosmoAccount, ...userRow } = user;
 
     return {
       ...listData,
-      fxRateToUsd,
+      fxRateToUsd: fxRates[0]?.rateToUsd ?? null,
       user: toPublicUser(userRow),
       userDisplay: userRow.displayUsername ?? userRow.name,
       cosmoUsername: cosmoAccount?.username,
@@ -199,6 +293,9 @@ export const $createObjektList = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     if (data.type !== "regular" && data.type !== "sale") {
       throw new Error("Use $createLiveList for have/want lists.");
+    }
+    if (data.type === "sale") {
+      await assertSupportedCurrency(data.currency);
     }
 
     const slug = createSlug(data.name);
@@ -331,6 +428,9 @@ export const $updateObjektList = createServerFn({ method: "POST" })
     }
     if (existingRow.type !== data.type) {
       throw new ExpectedError("list_type_locked");
+    }
+    if (data.type === "sale") {
+      await assertSupportedCurrency(data.currency);
     }
 
     const slug = createSlug(data.name);
@@ -634,7 +734,7 @@ export const $addObjektsToHaveList = createServerFn({ method: "POST" })
 
     const verifiedAt = new Date().toISOString();
 
-    return await db.transaction(async (tx) => {
+    const { inserted, collections } = await db.transaction(async (tx) => {
       const list = await tx.query.objektLists.findFirst({
         where: { id: data.objektListId, userId },
         columns: { type: true, discoverable: true, linkedWantListId: true },
@@ -661,33 +761,30 @@ export const $addObjektsToHaveList = createServerFn({ method: "POST" })
         .onConflictDoNothing()
         .returning();
 
-      if (
-        list.discoverable &&
-        list.linkedWantListId !== null &&
-        inserted.length > 0
-      ) {
-        // notify once per distinct collection that actually gained a serial,
-        // matched in a single query inside fireHaveAddNotifications
+      // a trade-active list notifies once per distinct collection that actually gained a serial
+      const collectionNames = new Map<string, string>();
+      if (list.discoverable && list.linkedWantListId !== null) {
         const insertedTokenIds = new Set(inserted.map((r) => r.tokenId));
-        const collectionNames = new Map<string, string>();
         for (const o of data.objekts) {
           if (insertedTokenIds.has(o.tokenId)) {
             collectionNames.set(o.slug, o.collectionName);
           }
         }
-
-        await fireHaveAddNotifications(tx, {
-          sourceUserId: userId,
-          sourceListId: data.objektListId,
-          collections: [...collectionNames].map(([slug, collectionName]) => ({
-            slug,
-            collectionName,
-          })),
-        });
       }
 
-      return { inserted: inserted.length };
+      return { inserted: inserted.length, collections: collectionNames };
     });
+
+    await fireHaveAddNotifications({
+      sourceUserId: userId,
+      sourceListId: data.objektListId,
+      collections: [...collections].map(([slug, collectionName]) => ({
+        slug,
+        collectionName,
+      })),
+    });
+
+    return { inserted };
   });
 
 /**
@@ -705,7 +802,7 @@ export const $addObjektsToWantList = createServerFn({ method: "POST" })
     // selections are keyed by slug client-side, but guard against duplicates
     const objekts = [...new Map(data.objekts.map((o) => [o.slug, o])).values()];
 
-    await db.transaction(async (tx) => {
+    const notify = await db.transaction(async (tx) => {
       // assert ownership of the list and pull the linked list
       const parentList = await tx.query.objektLists.findFirst({
         where: { id: data.objektListId, userId },
@@ -763,14 +860,16 @@ export const $addObjektsToWantList = createServerFn({ method: "POST" })
         );
       }
 
-      if (parentList.discoverable && isTradeActive) {
-        await fireWantAddNotifications(tx, {
-          sourceUserId: userId,
-          sourceListId: data.objektListId,
-          collections: objekts,
-        });
-      }
+      return parentList.discoverable && isTradeActive;
     });
+
+    if (notify) {
+      await fireWantAddNotifications({
+        sourceUserId: userId,
+        sourceListId: data.objektListId,
+        collections: objekts,
+      });
+    }
 
     // want lists stack quantity, so every add counts toward the inserted total
     return { inserted: objekts.length };
@@ -870,272 +969,56 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
       throw new ExpectedError("not_live_list");
     }
 
-    // The opposite-side list paired to the anchor via the trade link.
-    // Used to scope my-side matching to a single trade pair, mirroring how
-    // partner pairs are treated.
-    const myLinkedListId =
-      myList.type === "have"
-        ? myList.linkedWantListId
-        : (myList.linkingHaveList?.id ?? null);
-    if (myLinkedListId === null) {
+    // my side of the trade pair: the anchor and the list it's paired with,
+    // so partner matches are pair against pair
+    const [myWantListId, myHaveListId] =
+      myList.type === "want"
+        ? [myList.id, myList.linkingHaveList?.id ?? null]
+        : [myList.linkedWantListId, myList.id];
+    if (myWantListId === null || myHaveListId === null) {
       throw new ExpectedError("anchor_not_trade_active");
     }
 
-    // CTEs materialise the trade-active partner list sets; the body swaps
-    // roles based on anchor type. Both my anchor and my linked counterpart
-    // are scoped to specific lists, so partner matches are pair-against-pair.
-    const w = alias(objektLists, "w");
+    // every other user's trade pair: a discoverable have list and the
+    // discoverable want list it's paired with
     const h = alias(objektLists, "h");
+    const w = alias(objektLists, "w");
+    const theyHaveIWant = sharedCollections(h.id, myWantListId);
+    const iHaveTheyWant = sharedCollections(w.id, myHaveListId);
+    // the anchor's side ranks the pairs and names the partner list shown
+    const ranking = {
+      want: { list: h, first: theyHaveIWant, second: iHaveTheyWant },
+      have: { list: w, first: iHaveTheyWant, second: theyHaveIWant },
+    }[myList.type];
 
-    const tradeActiveHaves = db.$with("trade_active_haves").as(
-      db
-        .select({
-          id: objektLists.id,
-          userId: objektLists.userId,
-          slug: objektLists.slug,
-          name: objektLists.name,
-          linkedWantListId: objektLists.linkedWantListId,
-        })
-        .from(objektLists)
-        .where(
-          and(
-            eq(objektLists.type, "have"),
-            eq(objektLists.discoverable, true),
-            isNotNull(objektLists.linkedWantListId),
-          ),
+    const matches: PartnerMatchRow[] = await db
+      .select({
+        userId: h.userId,
+        listId: ranking.list.id,
+        listSlug: ranking.list.slug,
+        listName: ranking.list.name,
+        theyHaveIWant,
+        iHaveTheyWant,
+      })
+      .from(h)
+      .innerJoin(w, eq(w.id, h.linkedWantListId))
+      .where(
+        and(
+          eq(h.type, "have"),
+          eq(h.discoverable, true),
+          eq(w.type, "want"),
+          eq(w.discoverable, true),
+          eq(w.userId, h.userId),
+          ne(h.userId, userId),
+          sql`cardinality(${theyHaveIWant}) > 0`,
+          sql`cardinality(${iHaveTheyWant}) > 0`,
         ),
-    );
-
-    const tradeActiveWants = db.$with("trade_active_wants").as(
-      db
-        .select({
-          id: w.id,
-          userId: w.userId,
-          slug: w.slug,
-          name: w.name,
-        })
-        .from(w)
-        .innerJoin(h, eq(h.linkedWantListId, w.id))
-        .where(and(eq(w.type, "want"), eq(w.discoverable, true))),
-    );
-
-    const myAnchorCollections = db
-      .$with("my_anchor_collections")
-      .as(
-        db
-          .select({ collectionId: objektListEntries.collectionId })
-          .from(objektListEntries)
-          .where(eq(objektListEntries.objektListId, data.listId)),
+      )
+      .orderBy(
+        sql`cardinality(${ranking.first}) desc`,
+        sql`cardinality(${ranking.second}) desc`,
+        h.userId,
       );
-
-    let matches: PartnerMatchRow[] = [];
-
-    switch (myList.type) {
-      case "want": {
-        const myHaves = db.$with("my_haves").as(
-          db
-            .selectDistinct({
-              collectionId: objektListEntries.collectionId,
-            })
-            .from(objektListEntries)
-            .where(eq(objektListEntries.objektListId, myLinkedListId)),
-        );
-
-        const theirHaves = db.$with("their_haves").as(
-          db
-            .select({
-              userId: tradeActiveHaves.userId,
-              listId: tradeActiveHaves.id,
-              listSlug: tradeActiveHaves.slug,
-              listName: tradeActiveHaves.name,
-              linkedWantListId: tradeActiveHaves.linkedWantListId,
-              collectionId: objektListEntries.collectionId,
-            })
-            .from(objektListEntries)
-            .innerJoin(
-              tradeActiveHaves,
-              eq(tradeActiveHaves.id, objektListEntries.objektListId),
-            )
-            .innerJoin(
-              myAnchorCollections,
-              eq(
-                myAnchorCollections.collectionId,
-                objektListEntries.collectionId,
-              ),
-            )
-            .where(ne(tradeActiveHaves.userId, userId)),
-        );
-
-        const theirWants = db.$with("their_wants").as(
-          db
-            .select({
-              userId: tradeActiveWants.userId,
-              wantListId: tradeActiveWants.id,
-              collectionId: objektListEntries.collectionId,
-            })
-            .from(objektListEntries)
-            .innerJoin(
-              tradeActiveWants,
-              eq(tradeActiveWants.id, objektListEntries.objektListId),
-            )
-            .innerJoin(
-              myHaves,
-              eq(myHaves.collectionId, objektListEntries.collectionId),
-            )
-            .where(ne(tradeActiveWants.userId, userId)),
-        );
-
-        const result = await db
-          .with(
-            tradeActiveHaves,
-            tradeActiveWants,
-            myAnchorCollections,
-            myHaves,
-            theirHaves,
-            theirWants,
-          )
-          .select({
-            theirUserId: theirHaves.userId,
-            listId: theirHaves.listId,
-            listSlug: theirHaves.listSlug,
-            listName: theirHaves.listName,
-            theyHaveIWant: sql<
-              string[] | null
-            >`array_agg(DISTINCT ${theirHaves.collectionId})`,
-            iHaveTheyWant: sql<
-              string[] | null
-            >`array_agg(DISTINCT ${theirWants.collectionId})`,
-          })
-          .from(theirHaves)
-          .innerJoin(
-            theirWants,
-            and(
-              eq(theirWants.userId, theirHaves.userId),
-              eq(theirWants.wantListId, theirHaves.linkedWantListId),
-            ),
-          )
-          .groupBy(
-            theirHaves.userId,
-            theirHaves.listId,
-            theirHaves.listSlug,
-            theirHaves.listName,
-          )
-          .orderBy(desc(countDistinct(theirHaves.collectionId)))
-          .limit(50);
-
-        matches = result.map((r) => ({
-          userId: r.theirUserId,
-          listId: r.listId,
-          listSlug: r.listSlug,
-          listName: r.listName,
-          theyHaveIWant: r.theyHaveIWant ?? [],
-          iHaveTheyWant: r.iHaveTheyWant ?? [],
-        }));
-        break;
-      }
-
-      case "have": {
-        const myWants = db.$with("my_wants").as(
-          db
-            .selectDistinct({
-              collectionId: objektListEntries.collectionId,
-            })
-            .from(objektListEntries)
-            .where(eq(objektListEntries.objektListId, myLinkedListId)),
-        );
-
-        const theirWants = db.$with("their_wants").as(
-          db
-            .select({
-              userId: tradeActiveWants.userId,
-              listId: tradeActiveWants.id,
-              listSlug: tradeActiveWants.slug,
-              listName: tradeActiveWants.name,
-              collectionId: objektListEntries.collectionId,
-            })
-            .from(objektListEntries)
-            .innerJoin(
-              tradeActiveWants,
-              eq(tradeActiveWants.id, objektListEntries.objektListId),
-            )
-            .innerJoin(
-              myAnchorCollections,
-              eq(
-                myAnchorCollections.collectionId,
-                objektListEntries.collectionId,
-              ),
-            )
-            .where(ne(tradeActiveWants.userId, userId)),
-        );
-
-        const theirHaves = db.$with("their_haves").as(
-          db
-            .select({
-              userId: tradeActiveHaves.userId,
-              linkedWantListId: tradeActiveHaves.linkedWantListId,
-              collectionId: objektListEntries.collectionId,
-            })
-            .from(objektListEntries)
-            .innerJoin(
-              tradeActiveHaves,
-              eq(tradeActiveHaves.id, objektListEntries.objektListId),
-            )
-            .innerJoin(
-              myWants,
-              eq(myWants.collectionId, objektListEntries.collectionId),
-            )
-            .where(ne(tradeActiveHaves.userId, userId)),
-        );
-
-        const result = await db
-          .with(
-            tradeActiveHaves,
-            tradeActiveWants,
-            myAnchorCollections,
-            myWants,
-            theirWants,
-            theirHaves,
-          )
-          .select({
-            theirUserId: theirWants.userId,
-            listId: theirWants.listId,
-            listSlug: theirWants.listSlug,
-            listName: theirWants.listName,
-            theyHaveIWant: sql<
-              string[] | null
-            >`array_agg(DISTINCT ${theirHaves.collectionId})`,
-            iHaveTheyWant: sql<
-              string[] | null
-            >`array_agg(DISTINCT ${theirWants.collectionId})`,
-          })
-          .from(theirWants)
-          .innerJoin(
-            theirHaves,
-            and(
-              eq(theirHaves.userId, theirWants.userId),
-              eq(theirHaves.linkedWantListId, theirWants.listId),
-            ),
-          )
-          .groupBy(
-            theirWants.userId,
-            theirWants.listId,
-            theirWants.listSlug,
-            theirWants.listName,
-          )
-          .orderBy(desc(countDistinct(theirWants.collectionId)))
-          .limit(50);
-
-        matches = result.map((r) => ({
-          userId: r.theirUserId,
-          listId: r.listId,
-          listSlug: r.listSlug,
-          listName: r.listName,
-          theyHaveIWant: r.theyHaveIWant ?? [],
-          iHaveTheyWant: r.iHaveTheyWant ?? [],
-        }));
-        break;
-      }
-    }
 
     if (matches.length === 0) {
       return { partners: [], collections: {} };
@@ -1230,6 +1113,24 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
   });
 
 /**
+ * Collections on a partner's list that are also on one of mine, matched as an
+ * intersection per partner list. Every read is by list id, so the plan never
+ * looks a collection up across every list. Mine is read once into an array
+ * rather than once per partner list.
+ */
+function sharedCollections(partnerListId: SQLWrapper, myListId: string) {
+  return sql<string[]>`array(
+    select ${objektListEntries.collectionId} from ${objektListEntries}
+    where ${objektListEntries.objektListId} = ${partnerListId}
+    intersect
+    select unnest(array(
+      select ${objektListEntries.collectionId} from ${objektListEntries}
+      where ${objektListEntries.objektListId} = ${myListId}
+    ))
+  )`;
+}
+
+/**
  * Generate a Discord have/want list.
  */
 export const $generateDiscordList = createServerFn({ method: "POST" })
@@ -1303,6 +1204,98 @@ export const $generateDiscordList = createServerFn({ method: "POST" })
     return result;
   });
 
+/**
+ * Render a sale list as text, one member per line. Serials on the same
+ * collection at the same price collapse into one `xN` entry. Unpriced serials
+ * go on a separate offers line under their member, or are left out.
+ */
+export const $generateSaleListText = createServerFn({ method: "POST" })
+  .validator(generateSaleListTextSchema)
+  .middleware([authenticatedMiddleware])
+  .handler(async ({ data, context }) => {
+    const list = await db.query.objektLists.findFirst({
+      where: {
+        id: data.id,
+        userId: context.session.session.userId,
+        type: "sale",
+      },
+      with: {
+        entries: true,
+        user: { with: { cosmoAccount: { columns: { username: true } } } },
+      },
+    });
+    if (!list) {
+      throw new ExpectedError("list_not_found");
+    }
+    if (list.entries.length === 0) {
+      throw new ExpectedError("sale_list_empty");
+    }
+
+    const grouped = new Map<string, ObjektListEntry>();
+    for (const entry of list.entries) {
+      if (entry.price === null && !data.unpricedAsOffers) continue;
+      const key = `${entry.collectionId}:${entry.price}`;
+      const existing = grouped.get(key);
+      grouped.set(
+        key,
+        existing
+          ? { ...existing, quantity: existing.quantity + entry.quantity }
+          : entry,
+      );
+    }
+    const entries = [...grouped.values()];
+    if (entries.length === 0) {
+      return "";
+    }
+
+    const listCollections = await indexer
+      .select({
+        slug: collections.slug,
+        season: collections.season,
+        collectionNo: collections.collectionNo,
+        member: collections.member,
+        artist: collections.artist,
+        memberSortOrder: members.sortOrder,
+      })
+      .from(collections)
+      .leftJoin(members, eq(members.name, collections.member))
+      .where(
+        inArray(
+          collections.slug,
+          entries.map((e) => e.collectionId),
+        ),
+      );
+
+    const lines = groupByMember(listCollections, entries).flatMap(
+      ([member, memberCollections]) => {
+        const priced = memberCollections.filter((c) => c.price != null);
+        const offers = memberCollections.filter((c) => c.price == null);
+        return [
+          ...(priced.length > 0
+            ? [`${member} ${formatMemberCollections(priced, list.currency)}`]
+            : []),
+          ...(offers.length > 0
+            ? [
+                `${member} offers: ${formatMemberCollections(offers, list.currency)}`,
+              ]
+            : []),
+        ];
+      },
+    );
+
+    if (data.includeLink) {
+      const username = list.user.cosmoAccount?.username;
+      lines.push(
+        "",
+        username === undefined
+          ? `${baseUrl()}/list/${list.id}`
+          : `${baseUrl()}/@${username}/list/${list.slug}`,
+      );
+    }
+
+    return lines.join("\n");
+  });
+
 type CollectionSubset = Pick<
   Collection,
   "slug" | "member" | "season" | "collectionNo" | "artist"
@@ -1361,6 +1354,20 @@ function format(
   entries: ObjektListEntry[],
   currency: string | null,
 ): string[] {
+  return groupByMember(collectionList, entries).map(
+    ([member, memberCollections]) =>
+      `${member} ${formatMemberCollections(memberCollections, currency)}`,
+  );
+}
+
+/**
+ * Pair each entry with its collection, grouped by member and sorted by the
+ * canonical member order.
+ */
+function groupByMember(
+  collectionList: CollectionSubset[],
+  entries: ObjektListEntry[],
+) {
   // create a map for quick collection lookup by slug
   const collectionsMap = new Map(collectionList.map((c) => [c.slug, c]));
 
@@ -1381,17 +1388,11 @@ function format(
   }
 
   // sort members by their canonical indexer sort order (carried on each row)
-  return Array.from(groupedCollectionsByMember.entries())
-    .sort(([, a], [, b]) => {
+  return Array.from(groupedCollectionsByMember.entries()).sort(
+    ([, a], [, b]) => {
       const orderA = a[0]?.memberSortOrder ?? Number.MAX_SAFE_INTEGER;
       const orderB = b[0]?.memberSortOrder ?? Number.MAX_SAFE_INTEGER;
       return orderA - orderB;
-    })
-    .map(([member, memberCollections]) => {
-      const formattedCollections = formatMemberCollections(
-        memberCollections,
-        currency,
-      );
-      return `${member} ${formattedCollections}`;
-    });
+    },
+  );
 }

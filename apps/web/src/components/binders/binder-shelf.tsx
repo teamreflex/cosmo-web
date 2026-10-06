@@ -139,7 +139,7 @@ function NewBinderTile({
         {m.binder_new()}
       </button>
       {full && (
-        <span className="text-[11px] text-muted-foreground">
+        <span className="text-xs text-muted-foreground">
           {m.binder_shelf_limit({ max: MAX_BINDERS })}
         </span>
       )}

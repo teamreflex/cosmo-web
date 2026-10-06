@@ -4,6 +4,7 @@ import { formatError } from "@/lib/client/errors";
 import { $createLiveList, $createObjektList } from "@/lib/functions/lists";
 import { currentAccountQuery } from "@/lib/queries/core";
 import { listShelfQuery } from "@/lib/queries/lists";
+import { commonCurrencies } from "@/lib/universal/schema/currency";
 import { track } from "@/lib/utils";
 import type { ObjektList } from "@apollo/database/web/types";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
@@ -24,9 +25,9 @@ import {
   createRegularListSchema,
   createSaleListSchema,
   createWantListSchema,
-  defaultCurrencies,
   type ListType,
 } from "../../lib/universal/schema/objekt-list";
+import CurrencySelect from "../misc/currency-select";
 import Portal from "../portal";
 import { Button } from "../ui/button";
 import {
@@ -54,13 +55,15 @@ type Props = {
   open: boolean;
   onOpenChange: (state: boolean) => void;
   objektLists: ObjektList[];
+  // the tab it opens on
+  defaultType?: ListType;
 };
 
 export default function CreateListDialog(props: Props) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { cosmo } = useUserState();
-  const [tab, setTab] = useState<ListType>("regular");
+  const [tab, setTab] = useState<ListType>(props.defaultType ?? "regular");
 
   function handleCreated(result: ObjektList) {
     track("create-list");
@@ -396,24 +399,20 @@ function CurrencyField() {
       render={({ field, fieldState }) => (
         <Field data-invalid={fieldState.invalid}>
           <FieldLabel>{m.list_currency()}</FieldLabel>
-          <Input
-            placeholder="USD"
-            maxLength={3}
+          <CurrencySelect
+            name="currency"
             value={field.value ?? ""}
-            onChange={(e) =>
-              field.onChange(e.target.value === "" ? undefined : e.target.value)
-            }
+            onValueChange={field.onChange}
           />
           <div className="flex flex-wrap gap-1">
-            {defaultCurrencies.map((c) => (
+            {commonCurrencies.map((c) => (
               <button
                 key={c}
                 type="button"
-                onClick={() =>
-                  field.onChange(field.value === c ? undefined : c)
-                }
+                onClick={() => field.onChange(c)}
                 className="rounded-md border px-2 py-0.5 text-xs data-[active=true]:bg-accent"
-                data-active={field.value?.toUpperCase() === c}
+                data-active={field.value === c}
+                aria-pressed={field.value === c}
               >
                 {c}
               </button>

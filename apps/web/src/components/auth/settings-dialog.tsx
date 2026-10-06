@@ -1,4 +1,5 @@
 import { DataSourceSelector } from "@/components/collection/data-source-selector";
+import CurrencySelect from "@/components/misc/currency-select";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,6 +19,7 @@ import {
 import { useTheme, type Theme } from "@/hooks/use-theme";
 import { m } from "@/i18n/messages";
 import { getLocale, setLocale } from "@/i18n/runtime";
+import { formatError } from "@/lib/client/errors";
 import { $updateSettings } from "@/lib/functions/auth";
 import { currentAccountQuery } from "@/lib/queries/core";
 import type { PublicUser } from "@/lib/universal/auth";
@@ -68,6 +70,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
     defaultValues: {
       gridColumns: user.gridColumns,
       collectionMode: user.collectionMode,
+      currency: user.currency,
     },
   });
 
@@ -83,8 +86,8 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
           });
           await router.invalidate();
         },
-        onError() {
-          toast.error(m.toast_metadata_update_failed());
+        onError(error) {
+          toast.error(formatError(error));
         },
       },
     );
@@ -196,6 +199,30 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
                     ))}
                   </SelectContent>
                 </Select>
+                <FieldError errors={[fieldState.error]} />
+              </Field>
+            )}
+          />
+
+          {/* display currency */}
+          <Controller
+            control={form.control}
+            name="currency"
+            render={({ field, fieldState }) => (
+              <Field orientation="horizontal" data-invalid={fieldState.invalid}>
+                <FieldContent>
+                  <FieldLabel>{m.settings_currency()}</FieldLabel>
+                  <p className="text-xs opacity-80">
+                    {m.settings_currency_description()}
+                  </p>
+                </FieldContent>
+
+                <CurrencySelect
+                  name="currency"
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  className="w-36"
+                />
                 <FieldError errors={[fieldState.error]} />
               </Field>
             )}

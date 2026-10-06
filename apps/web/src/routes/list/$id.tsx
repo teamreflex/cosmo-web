@@ -13,7 +13,10 @@ import { m } from "@/i18n/messages";
 import { $getObjektListWithUser } from "@/lib/functions/lists";
 import { defineHead } from "@/lib/meta";
 import { currentAccountQuery, selectedArtistsQuery } from "@/lib/queries/core";
-import { objektListQuery } from "@/lib/queries/objekt-queries";
+import {
+  objektListQuery,
+  saleListSummaryQuery,
+} from "@/lib/queries/objekt-queries";
 import { objektListFrontendSchema } from "@/lib/universal/parsers";
 import { sanitizeUuid } from "@/lib/utils";
 import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
@@ -55,7 +58,7 @@ export const Route = createFileRoute("/list/$id")({
       throw notFound();
     }
 
-    const { user, userDisplay, cosmoUsername, ...objektList } =
+    const { user, userDisplay, cosmoUsername, fxRateToUsd, ...objektList } =
       objektListWithUser;
     // if the user has a cosmo linked, redirect to the profile page
     if (cosmoUsername !== undefined) {
@@ -66,9 +69,15 @@ export const Route = createFileRoute("/list/$id")({
     }
 
     const isAuthenticated = account?.user.id === objektList.userId;
+    if (isAuthenticated && objektList.type === "sale") {
+      void context.queryClient.prefetchQuery(
+        saleListSummaryQuery(objektList.id),
+      );
+    }
 
     return {
       objektList,
+      fxRateToUsd,
       owner: {
         display: userDisplay,
         user,
@@ -85,7 +94,8 @@ export const Route = createFileRoute("/list/$id")({
 });
 
 function RouteComponent() {
-  const { account, isAuthenticated, objektList, owner } = Route.useLoaderData();
+  const { account, isAuthenticated, objektList, fxRateToUsd, owner } =
+    Route.useLoaderData();
 
   return (
     <main className="flex flex-col">
@@ -114,6 +124,7 @@ function RouteComponent() {
             <ListRenderer
               authenticated={isAuthenticated}
               objektList={objektList}
+              fxRateToUsd={fxRateToUsd}
             />
 
             <Overlay>

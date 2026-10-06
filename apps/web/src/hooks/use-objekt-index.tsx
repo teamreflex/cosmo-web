@@ -47,7 +47,7 @@ export function useObjektIndex() {
         return (
           <div className="flex items-center gap-2">
             <IconCards className="size-4" />
-            <p className="text-xxs tracking-[0.14em] text-muted-foreground sm:text-xs">
+            <p className="text-xxs tracking-widest text-muted-foreground sm:text-xs">
               {total.toLocaleString("en")}
             </p>
           </div>
@@ -67,7 +67,7 @@ export function useObjektIndex() {
       return (
         <div className="flex items-center gap-2">
           <IconCards className="size-4" />
-          <p className="text-xxs tracking-[0.14em] text-muted-foreground sm:text-xs">
+          <p className="text-xxs tracking-widest text-muted-foreground sm:text-xs">
             {total.toLocaleString("en")}
           </p>
         </div>

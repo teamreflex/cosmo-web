@@ -8,6 +8,7 @@ export const listErrorCodes = [
   "anchor_not_trade_active",
   "discord_lists_required",
   "discord_list_empty",
+  "sale_list_empty",
   "entry_not_found",
   "entry_kind_mismatch",
   "list_name_taken",
@@ -16,6 +17,7 @@ export const listErrorCodes = [
   "list_no_access",
   "want_list_already_linked",
   "have_list_already_linked",
+  "unsupported_currency",
 ] as const;
 
 export type ListErrorCode = (typeof listErrorCodes)[number];

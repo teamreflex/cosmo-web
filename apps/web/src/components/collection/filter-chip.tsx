@@ -15,6 +15,7 @@ type Props = {
   active?: boolean;
   width?: number;
   align?: "start" | "center" | "end";
+  className?: string;
   children: ReactNode | ((state: { close: () => void }) => ReactNode);
 };
 
@@ -25,6 +26,7 @@ export default function FilterChip({
   active,
   width = 240,
   align = "start",
+  className,
   children,
 }: Props) {
   const [open, setOpen] = useState(false);
@@ -37,6 +39,7 @@ export default function FilterChip({
           active
             ? "border-cosmo/80 bg-cosmo/10 text-foreground"
             : "border-border text-foreground",
+          className,
         )}
         data-active={active || undefined}
       >
@@ -44,7 +47,7 @@ export default function FilterChip({
         {valueLabel && (
           <span
             className={cn(
-              "-my-1 flex items-center gap-1.5 border-l pl-2 font-mono text-[11px]",
+              "-my-1 flex items-center gap-1.5 border-l pl-2 font-mono text-xs",
               active
                 ? "border-cosmo/40 text-foreground"
                 : "border-border text-muted-foreground",

@@ -89,3 +89,10 @@ type Member @entity {
   primaryColorHex: String!
   sortOrder: Int!
 }
+
+type CollectionMarketStats @entity {
+  slug: ID! # joins to collection.slug
+  floorUsd: Float!
+  listingCount: Int!
+  lastListedAt: DateTime!
+}

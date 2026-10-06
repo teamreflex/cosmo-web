@@ -55,7 +55,7 @@ export default function SerialTicket({
 
   function openDetail() {
     queryClient.setQueryData(objektQuery(collection.slug).queryKey, collection);
-    open(collection.slug, { serial: token.serial });
+    open(collection.slug, { type: "serial", serial: token.serial });
   }
 
   // on the owner's profile any serial toggles into the batch selection
@@ -89,7 +89,7 @@ export default function SerialTicket({
 
       {/* serial */}
       <div className="w-20 shrink-0 sm:w-24">
-        <div className="font-mono text-xxs tracking-[0.14em] text-muted-foreground uppercase">
+        <div className="font-mono text-xxs tracking-widest text-muted-foreground uppercase">
           {m.detail_sort_serial()}
         </div>
         <div className="font-mono text-sm font-bold tabular-nums sm:text-lg">
@@ -99,7 +99,7 @@ export default function SerialTicket({
 
       {/* received date — only once the dialog is wide enough for it beside the actions */}
       <div className="hidden w-28 shrink-0 lg:block">
-        <div className="font-mono text-xxs tracking-[0.14em] text-muted-foreground uppercase">
+        <div className="font-mono text-xxs tracking-widest text-muted-foreground uppercase">
           {m.detail_sort_received()}
         </div>
         <div className="text-xs">{receivedAt}</div>

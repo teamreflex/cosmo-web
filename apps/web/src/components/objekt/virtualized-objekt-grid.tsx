@@ -119,9 +119,16 @@ type Props<
   TItemProps extends object = Record<string, never>,
   TError = DefaultError,
   TQueryKey extends QueryKey = QueryKey,
+  TPageParam = number,
 > = {
   // data
-  options: ObjektResponseOptions<TResponse, TItem, TError, TQueryKey>;
+  options: ObjektResponseOptions<
+    TResponse,
+    TItem,
+    TError,
+    TQueryKey,
+    TPageParam
+  >;
   pins?: ProfilePin[];
   hidePins?: boolean;
   onReorderPins?: (move: PinMove) => void;
@@ -134,7 +141,6 @@ type Props<
   gridColumns: number;
   getObjektId: (objekt: TItem) => string;
   authenticated: boolean;
-  extraRowHeight?: number;
 };
 
 export default function VirtualizedObjektGrid<
@@ -143,7 +149,8 @@ export default function VirtualizedObjektGrid<
   TItemProps extends object = Record<string, never>,
   TError = DefaultError,
   TQueryKey extends QueryKey = QueryKey,
->(props: Props<TResponse, TItem, TItemProps, TError, TQueryKey>) {
+  TPageParam = number,
+>(props: Props<TResponse, TItem, TItemProps, TError, TQueryKey, TPageParam>) {
   return (
     <div className="flex w-full flex-col items-center">
       <QueryErrorResetBoundary>
@@ -169,6 +176,7 @@ function ObjektGrid<
   TItemProps extends object = Record<string, never>,
   TError = DefaultError,
   TQueryKey extends QueryKey = QueryKey,
+  TPageParam = number,
 >({
   // data
   options,
@@ -184,8 +192,7 @@ function ObjektGrid<
   gridColumns,
   getObjektId,
   authenticated,
-  extraRowHeight = 0,
-}: Props<TResponse, TItem, TItemProps, TError, TQueryKey>) {
+}: Props<TResponse, TItem, TItemProps, TError, TQueryKey, TPageParam>) {
   const { query, total, items } = useObjektResponse(options);
   const cells = useMemo<ObjektRowItem<TItem>[]>(() => {
     return [
@@ -211,7 +218,7 @@ function ObjektGrid<
     (width - SIDE * 2 - GAP * (gridColumns - 1)) / gridColumns,
   );
   // rounded so it stays exact as the virtualizer accumulates it down the list
-  const itemHeight = Math.round(laneWidth * ASPECT_RATIO) + extraRowHeight;
+  const itemHeight = Math.round(laneWidth * ASPECT_RATIO);
 
   const {
     items: virtualList,

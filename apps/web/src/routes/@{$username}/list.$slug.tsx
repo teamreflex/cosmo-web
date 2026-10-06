@@ -12,7 +12,10 @@ import { m } from "@/i18n/messages";
 import { $fetchObjektList } from "@/lib/functions/lists";
 import { defineHead } from "@/lib/meta";
 import { currentAccountQuery, selectedArtistsQuery } from "@/lib/queries/core";
-import { objektListQuery } from "@/lib/queries/objekt-queries";
+import {
+  objektListQuery,
+  saleListSummaryQuery,
+} from "@/lib/queries/objekt-queries";
 import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { objektListFrontendSchema } from "@/lib/universal/parsers";
 import { ProfileProvider } from "@/providers/profile-provider";
@@ -49,19 +52,20 @@ export const Route = createFileRoute("/@{$username}/list/$slug")({
     }
 
     // find objekt list
-    const objektList = await $fetchObjektList({
+    const objektListWithRate = await $fetchObjektList({
       data: {
         userId: target.user.id,
         slug: params.slug,
       },
     });
 
-    if (!objektList) {
+    if (!objektListWithRate) {
       throw redirect({
         to: "/@{$username}",
         params: { username: params.username },
       });
     }
+    const { fxRateToUsd, ...objektList } = objektListWithRate;
 
     // fetch entries
     void context.queryClient.prefetchInfiniteQuery(
@@ -69,8 +73,13 @@ export const Route = createFileRoute("/@{$username}/list/$slug")({
     );
 
     const isAuthenticated = account?.user.id === objektList.userId;
+    if (isAuthenticated && objektList.type === "sale") {
+      void context.queryClient.prefetchQuery(
+        saleListSummaryQuery(objektList.id),
+      );
+    }
 
-    return { account, target, isAuthenticated, objektList };
+    return { account, target, isAuthenticated, objektList, fxRateToUsd };
   },
   head: ({ loaderData }) =>
     defineHead({
@@ -82,7 +91,7 @@ export const Route = createFileRoute("/@{$username}/list/$slug")({
 });
 
 function RouteComponent() {
-  const { account, target, isAuthenticated, objektList } =
+  const { account, target, isAuthenticated, objektList, fxRateToUsd } =
     Route.useLoaderData();
 
   // a have or want list is trade-active once it's paired with the other kind
@@ -117,7 +126,11 @@ function RouteComponent() {
 
   return (
     <UserStateProvider {...account}>
-      <ProfileProvider target={target} objektLists={account?.objektLists ?? []}>
+      <ProfileProvider
+        key={target.cosmo.address}
+        target={target}
+        objektLists={account?.objektLists ?? []}
+      >
         <div className="border-b border-border">
           <div className="container">
             <ListHeader
@@ -130,7 +143,11 @@ function RouteComponent() {
           </div>
         </div>
 
-        <ListRenderer objektList={objektList} authenticated={isAuthenticated} />
+        <ListRenderer
+          objektList={objektList}
+          fxRateToUsd={fxRateToUsd}
+          authenticated={isAuthenticated}
+        />
 
         <Overlay>
           <ScrollToTop />

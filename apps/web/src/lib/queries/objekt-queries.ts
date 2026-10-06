@@ -1,5 +1,9 @@
 import { ObjektNotFoundError } from "@/lib/client/objekt-util";
-import { $findTradePartnersForList } from "@/lib/functions/lists";
+import {
+  $fetchSaleListSummary,
+  $findTradePartnersForList,
+  $generateSaleListText,
+} from "@/lib/functions/lists";
 import { $fetchObjektsBlockchain } from "@/lib/functions/objekts/objekt-blockchain";
 import {
   $fetchObjektsBlockchainGroups,
@@ -8,6 +12,7 @@ import {
 import { $fetchObjektsIndex } from "@/lib/functions/objekts/objekt-index";
 import { $fetchObjektListEntries } from "@/lib/functions/objekts/objekt-list";
 import { $fetchObjektSerial } from "@/lib/functions/objekts/objekt-serial";
+import { $fetchPriceHistory } from "@/lib/functions/objekts/price-history";
 import { $fetchTransfers } from "@/lib/functions/transfers";
 import type {
   objektIndexFrontendSchema,
@@ -16,11 +21,12 @@ import type {
   userCollectionFrontendSchema,
 } from "@/lib/universal/parsers";
 import { normalizeFilters } from "@/lib/universal/parsers";
+import type { generateSaleListTextSchema } from "@/lib/universal/schema/objekt-list";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import { type FetchError, ofetch } from "ofetch";
 import type { z } from "zod";
 import type { Objekt } from "../universal/objekt-conversion";
-import type { ObjektMetadata } from "../universal/objekts";
+import type { ObjektMetadata, PriceHistoryRange } from "../universal/objekts";
 import { baseUrl } from "../utils";
 
 /**
@@ -214,6 +220,32 @@ export function objektListQuery(
 }
 
 /**
+ * Objekt list: the owner's sale list pricing summary
+ */
+export function saleListSummaryQuery(objektListId: string) {
+  return queryOptions({
+    queryKey: ["objekt-list", objektListId, "summary"],
+    queryFn: () => $fetchSaleListSummary({ data: { id: objektListId } }),
+    staleTime: 1000 * 60 * 5,
+  });
+}
+
+/**
+ * Objekt list: the owner's sale list as plain text, regenerated whenever it's
+ * requested again.
+ */
+export function saleListTextQuery(
+  data: z.infer<typeof generateSaleListTextSchema>,
+) {
+  return queryOptions({
+    queryKey: ["objekt-list", data.id, "text", data],
+    queryFn: () => $generateSaleListText({ data }),
+    staleTime: 0,
+    retry: false,
+  });
+}
+
+/**
  * Transfers: Listing entries with cursor-based pagination
  */
 export function transfersQuery(
@@ -262,6 +294,21 @@ export function objektMetadataQuery(slug: string) {
       }),
     retry: 1,
     staleTime: 1000 * 60 * 10,
+  });
+}
+
+/**
+ * Query options for the price history chart on the metadata dialog.
+ */
+export function objektPriceHistoryQuery(
+  slug: string,
+  range: PriceHistoryRange,
+) {
+  return queryOptions({
+    queryKey: ["collection-metadata", "price-history", slug, range],
+    queryFn: () => $fetchPriceHistory({ data: { slug, range } }),
+    retry: 1,
+    staleTime: 1000 * 60 * 60,
   });
 }
 

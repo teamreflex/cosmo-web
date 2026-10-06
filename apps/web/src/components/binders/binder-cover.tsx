@@ -74,7 +74,7 @@ export default function BinderCover({
           {label && (
             <span
               style={{ color: binderTextColour(binder.colour) }}
-              className="max-h-full rotate-180 truncate font-cosmo text-[length:max(var(--face)*0.068,10px*var(--cover-zoom,1))] leading-none font-black tracking-[0.05em] uppercase opacity-90 [writing-mode:vertical-rl]"
+              className="max-h-full rotate-180 truncate font-cosmo text-[length:max(var(--face)*0.068,10px*var(--cover-zoom,1))] leading-none font-black tracking-wider uppercase opacity-90 [writing-mode:vertical-rl]"
             >
               {binder.name}
             </span>

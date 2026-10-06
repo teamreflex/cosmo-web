@@ -32,6 +32,8 @@ import { Route as EventsIndexRouteImport } from './routes/events/index'
 import { Route as EventsSlugRouteImport } from './routes/events/$slug'
 import { Route as GravityIndexRouteImport } from './routes/gravity/index'
 import { Route as ListIdRouteImport } from './routes/list/$id'
+import { Route as MarketIndexRouteImport } from './routes/market/index'
+import { Route as MarketMyRouteImport } from './routes/market/my'
 import { Route as ObjektsIndexRouteImport } from './routes/objekts/index'
 import { Route as ObjektsStatsRouteImport } from './routes/objekts/stats'
 import { Route as AtChar123usernameChar125BinderSlugRouteImport } from './routes/@{$username}/binder.$slug'
@@ -169,6 +171,16 @@ const ListIdRoute = ListIdRouteImport.update({
   path: '/list/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MarketIndexRoute = MarketIndexRouteImport.update({
+  id: '/market/',
+  path: '/market/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MarketMyRoute = MarketMyRouteImport.update({
+  id: '/market/my',
+  path: '/market/my',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ObjektsIndexRoute = ObjektsIndexRouteImport.update({
   id: '/objekts/',
   path: '/objekts/',
@@ -273,11 +285,13 @@ export interface FileRoutesByFullPath {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
+  '/market/my': typeof MarketMyRoute
   '/objekts/stats': typeof ObjektsStatsRoute
   '/@{$username}/': typeof AtChar123usernameChar125IndexRoute
   '/admin/': typeof AdminIndexRoute
   '/events/': typeof EventsIndexRoute
   '/gravity/': typeof GravityIndexRoute
+  '/market/': typeof MarketIndexRoute
   '/objekts/': typeof ObjektsIndexRoute
   '/@{$username}/binder/$slug': typeof AtChar123usernameChar125BinderSlugRoute
   '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
@@ -311,11 +325,13 @@ export interface FileRoutesByTo {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
+  '/market/my': typeof MarketMyRoute
   '/objekts/stats': typeof ObjektsStatsRoute
   '/@{$username}': typeof AtChar123usernameChar125IndexRoute
   '/admin': typeof AdminIndexRoute
   '/events': typeof EventsIndexRoute
   '/gravity': typeof GravityIndexRoute
+  '/market': typeof MarketIndexRoute
   '/objekts': typeof ObjektsIndexRoute
   '/@{$username}/binder/$slug': typeof AtChar123usernameChar125BinderSlugRoute
   '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
@@ -352,11 +368,13 @@ export interface FileRoutesById {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
+  '/market/my': typeof MarketMyRoute
   '/objekts/stats': typeof ObjektsStatsRoute
   '/@{$username}/': typeof AtChar123usernameChar125IndexRoute
   '/admin/': typeof AdminIndexRoute
   '/events/': typeof EventsIndexRoute
   '/gravity/': typeof GravityIndexRoute
+  '/market/': typeof MarketIndexRoute
   '/objekts/': typeof ObjektsIndexRoute
   '/@{$username}/binder/$slug': typeof AtChar123usernameChar125BinderSlugRoute
   '/@{$username}/list/$slug': typeof AtChar123usernameChar125ListSlugRoute
@@ -394,11 +412,13 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/events/$slug'
     | '/list/$id'
+    | '/market/my'
     | '/objekts/stats'
     | '/@{$username}/'
     | '/admin/'
     | '/events/'
     | '/gravity/'
+    | '/market/'
     | '/objekts/'
     | '/@{$username}/binder/$slug'
     | '/@{$username}/list/$slug'
@@ -432,11 +452,13 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/events/$slug'
     | '/list/$id'
+    | '/market/my'
     | '/objekts/stats'
     | '/@{$username}'
     | '/admin'
     | '/events'
     | '/gravity'
+    | '/market'
     | '/objekts'
     | '/@{$username}/binder/$slug'
     | '/@{$username}/list/$slug'
@@ -472,11 +494,13 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/events/$slug'
     | '/list/$id'
+    | '/market/my'
     | '/objekts/stats'
     | '/@{$username}/'
     | '/admin/'
     | '/events/'
     | '/gravity/'
+    | '/market/'
     | '/objekts/'
     | '/@{$username}/binder/$slug'
     | '/@{$username}/list/$slug'
@@ -502,9 +526,11 @@ export interface RootRouteChildren {
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   EventsSlugRoute: typeof EventsSlugRoute
   ListIdRoute: typeof ListIdRoute
+  MarketMyRoute: typeof MarketMyRoute
   ObjektsStatsRoute: typeof ObjektsStatsRoute
   EventsIndexRoute: typeof EventsIndexRoute
   GravityIndexRoute: typeof GravityIndexRoute
+  MarketIndexRoute: typeof MarketIndexRoute
   ObjektsIndexRoute: typeof ObjektsIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiUserByAddressesRoute: typeof ApiUserByAddressesRoute
@@ -682,6 +708,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ListIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/market/': {
+      id: '/market/'
+      path: '/market'
+      fullPath: '/market/'
+      preLoaderRoute: typeof MarketIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/market/my': {
+      id: '/market/my'
+      path: '/market/my'
+      fullPath: '/market/my'
+      preLoaderRoute: typeof MarketMyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/objekts/': {
       id: '/objekts/'
       path: '/objekts'
@@ -855,9 +895,11 @@ const rootRouteChildren: RootRouteChildren = {
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   EventsSlugRoute: EventsSlugRoute,
   ListIdRoute: ListIdRoute,
+  MarketMyRoute: MarketMyRoute,
   ObjektsStatsRoute: ObjektsStatsRoute,
   EventsIndexRoute: EventsIndexRoute,
   GravityIndexRoute: GravityIndexRoute,
+  MarketIndexRoute: MarketIndexRoute,
   ObjektsIndexRoute: ObjektsIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiUserByAddressesRoute: ApiUserByAddressesRoute,

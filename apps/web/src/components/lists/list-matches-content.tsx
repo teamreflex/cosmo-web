@@ -210,7 +210,7 @@ function MatchChip({
       )}
     >
       <span className="font-semibold">{value}</span>
-      <span className="text-[10px] tracking-wider uppercase">{label}</span>
+      <span className="text-xxs tracking-wider uppercase">{label}</span>
     </span>
   );
 }
@@ -238,7 +238,7 @@ function DirectionColumn({
     <div className={cn("flex flex-col gap-1.5 border-l-2 pl-3", c.border)}>
       <div
         className={cn(
-          "flex items-center gap-1.5 text-[10px] font-semibold tracking-wider uppercase",
+          "flex items-center gap-1.5 text-xxs font-semibold tracking-wider uppercase",
           c.text,
         )}
       >
@@ -256,7 +256,7 @@ function DirectionColumn({
           ) : (
             <span
               key={slug}
-              className="rounded-sm bg-muted px-1.5 py-0.5 font-mono text-[10px]"
+              className="rounded-sm bg-muted px-1.5 py-0.5 font-mono text-xxs"
             >
               {slug}
             </span>
@@ -299,10 +299,10 @@ function MiniObjektTile({ collection }: { collection: Objekt.Collection }) {
         className="relative flex flex-1 flex-col items-start justify-between px-1.5 py-1 dark:[&>*]:[text-shadow:_0_1px_2px_rgba(0,0,0,0.9)]"
         style={{ background: tileBackground }}
       >
-        <div className="font-mono text-[8px] font-bold tracking-widest text-foreground uppercase">
+        <div className="font-mono text-xxs font-bold tracking-widest text-foreground uppercase">
           {collection.season}
         </div>
-        <div className="font-cosmo text-[10px] leading-none font-black text-foreground uppercase">
+        <div className="font-cosmo text-xxs leading-none font-black text-foreground uppercase">
           {collection.member}
         </div>
         <div className="font-mono text-xxs text-foreground tabular-nums">

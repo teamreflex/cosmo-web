@@ -41,7 +41,7 @@ export default function SingleSelectList<T extends string>({
               )}
             </div>
             {selected && (
-              <span className="font-mono text-[11px] text-cosmo">●</span>
+              <span className="font-mono text-xs text-cosmo">●</span>
             )}
           </button>
         );

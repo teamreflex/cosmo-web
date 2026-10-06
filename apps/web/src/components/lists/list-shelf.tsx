@@ -133,7 +133,7 @@ function EmptyMessage({ displayName }: { displayName: string }) {
  */
 function ListPill({ list }: { list: ListShelfItem }) {
   const className =
-    "absolute top-1.5 left-1.5 z-10 h-4 px-1.5 text-[10px] shadow-md";
+    "absolute top-1.5 left-1.5 z-10 h-4 px-1.5 text-xxs shadow-md";
 
   switch (list.type) {
     case "have":

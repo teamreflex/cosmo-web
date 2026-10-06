@@ -7,6 +7,7 @@ import { GRID_COLUMNS } from "@apollo/util";
 import type { CollectionDataSource } from "@apollo/util";
 import { apiKey } from "@better-auth/api-key";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
+import type { BetterAuthPlugin } from "better-auth";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { parseSessionOutput, parseUserOutput } from "better-auth/db";
 import { betterAuth } from "better-auth/minimal";
@@ -16,12 +17,36 @@ import { eq } from "drizzle-orm";
 import { createCipheriv, randomBytes } from "node:crypto";
 import type { PublicUser } from "../universal/auth";
 import { settingsSchema } from "../universal/schema/auth";
+import { DEFAULT_CURRENCY } from "../universal/schema/currency";
 import { db } from "./db";
 import {
   sendAccountDeletionEmail,
   sendPasswordResetEmail,
   sendVerificationEmail,
 } from "./mail.server";
+
+/**
+ * Drops `currency` from client sign-up and update-user requests, since it needs
+ * an FX rate check that a synchronous field validator can't run. $updateSettings
+ * checks it and calls `auth.api.updateUser` directly, which has no `request`.
+ */
+function serverOnlyCurrency() {
+  return {
+    id: "server-only-currency",
+    hooks: {
+      before: [
+        {
+          matcher: (ctx) =>
+            ctx.request !== undefined &&
+            (ctx.path === "/update-user" || ctx.path === "/sign-up/email"),
+          handler: createAuthMiddleware(async (ctx) => {
+            delete ctx.body?.currency;
+          }),
+        },
+      ],
+    },
+  } satisfies BetterAuthPlugin;
+}
 
 /**
  * Better Auth server instance.
@@ -53,6 +78,7 @@ export const auth = betterAuth({
       startingCharactersConfig: { charactersLength: 13 },
     }),
     tanstackStartCookies(),
+    serverOnlyCurrency(),
   ],
 
   session: {
@@ -297,6 +323,15 @@ export const auth = betterAuth({
         // oxlint-disable-next-line anti-slop/no-shape-in-symbol-names -- zod's field accessor
         validator: { input: settingsSchema.shape.collectionMode },
       },
+      currency: {
+        type: "string",
+        required: false,
+        defaultValue: DEFAULT_CURRENCY,
+        input: true,
+        returned: true,
+        // oxlint-disable-next-line anti-slop/no-shape-in-symbol-names -- zod's field accessor
+        validator: { input: settingsSchema.shape.currency },
+      },
       discord: {
         type: "string",
         required: false,
@@ -375,6 +410,7 @@ export function toPublicUser(
     // SAFETY: the column only stores CollectionDataSource values
     collectionMode: (user.collectionMode ??
       "blockchain") as CollectionDataSource,
+    currency: user.currency ?? DEFAULT_CURRENCY,
     social: {
       discord: user.showSocials ? (user.discord ?? undefined) : undefined,
       twitter: user.showSocials ? (user.twitter ?? undefined) : undefined,

@@ -1,12 +1,10 @@
 import { m } from "@/i18n/messages";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import { cn } from "@/lib/utils";
-import { IconArrowDown } from "@tabler/icons-react";
 import { useMemo, useState } from "react";
 import SerialTicket from "./serial-ticket";
+import SortButton, { type SortDir } from "./sort-button";
 
 type SortKey = "serial" | "received" | "status";
-type SortDir = "asc" | "desc";
 
 type Props = {
   collection: Objekt.Collection;
@@ -50,14 +48,14 @@ export default function SerialTicketList({
     <div className="flex min-h-0 flex-col">
       <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-3 sm:px-5">
         <div className="flex items-baseline gap-2">
-          <span className="hidden font-cosmo text-sm font-black tracking-[0.14em] uppercase sm:block">
+          <span className="hidden font-cosmo text-sm font-black tracking-widest uppercase sm:block">
             {title}
           </span>
           <span className="font-mono text-xs text-muted-foreground">
             {m.detail_copies_count({ count: tokens.length.toString() })}
           </span>
         </div>
-        <div className="flex items-center gap-1 font-mono text-xxs tracking-[0.14em] uppercase">
+        <div className="flex items-center gap-1 font-mono text-xxs tracking-widest uppercase">
           <SortButton
             active={sortKey === "serial"}
             dir={sortDir}
@@ -93,38 +91,6 @@ export default function SerialTicketList({
         ))}
       </div>
     </div>
-  );
-}
-
-type SortButtonProps = {
-  active: boolean;
-  dir: SortDir;
-  onClick: () => void;
-  children: React.ReactNode;
-};
-
-function SortButton({ active, dir, onClick, children }: SortButtonProps) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={cn(
-        "inline-flex items-center gap-1 rounded-sm border px-2 py-1 transition-colors",
-        active
-          ? "border-border bg-muted text-foreground"
-          : "border-transparent text-muted-foreground hover:text-foreground",
-      )}
-    >
-      <span>{children}</span>
-      {active && (
-        <IconArrowDown
-          className={cn(
-            "size-3 transition-transform",
-            dir === "asc" && "rotate-180",
-          )}
-        />
-      )}
-    </button>
   );
 }
 
