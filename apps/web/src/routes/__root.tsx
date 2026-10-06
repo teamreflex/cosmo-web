@@ -6,7 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { m } from "@/i18n/messages";
 import { getLocale } from "@/i18n/runtime";
 import { env } from "@/lib/env/client";
-import { defineHead } from "@/lib/meta";
+import { defineHead, siteDescription } from "@/lib/meta";
 import {
   artistsQuery,
   currentAccountQuery,
@@ -48,7 +48,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       extra: [<meta key="charset" charSet="utf-8" />],
       viewport: "width=device-width, initial-scale=1",
       title: env.VITE_APP_NAME,
-      description: `${env.VITE_APP_NAME} - Objekt & gravity explorer for Cosmo`,
+      description: siteDescription,
       keywords: [
         "kpop",
         "korea",

@@ -16,6 +16,11 @@ import {
 import type { ProfilePin } from "@/lib/universal/binders";
 import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { userCollectionFrontendSchema } from "@/lib/universal/parsers";
+import {
+  PROFILE_CARD_HEIGHT,
+  PROFILE_CARD_WIDTH,
+  profileCardPath,
+} from "@/lib/universal/profile-card";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { Addresses, isEqual } from "@apollo/util";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -78,6 +83,14 @@ export const Route = createFileRoute("/@{$username}/")({
         : m.collection_title(),
       canonical:
         loaderData && `/@${profileIdentifier(loaderData.target.cosmo)}`,
+      // only the collection page gets the card, so shared lists and binders stay compact
+      embed: loaderData && {
+        thumbnail: profileCardPath(profileIdentifier(loaderData.target.cosmo)),
+        thumbnailDimensions: {
+          width: PROFILE_CARD_WIDTH,
+          height: PROFILE_CARD_HEIGHT,
+        },
+      },
     }),
 });
 
