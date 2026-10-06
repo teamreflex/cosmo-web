@@ -868,10 +868,86 @@
   "transfer_cosmo_spin": "COSMO Spin",
   "transfer_from": "De",
   "transfer_to": "À",
-  "transfer_objekt_header": "Objekt",
-  "transfer_user_header": "Utilisateur",
   "transfer_date_header": "Date",
   "transfer_error_loading": "Il y a eu une erreur en chargeant les transferts",
+  "filter_type_trade": "Échanges",
+  "filter_outcome": "Résultat",
+  "transfer_outcome_success": "Réussi",
+  "transfer_outcome_fail": "Échec",
+  "transfer_outcome_pending": "En attente",
+  "transfer_kind_trade": "Échange",
+  "transfer_kind_sent": "Envoyé",
+  "transfer_kind_received": "Reçu",
+  "transfer_kind_mint": "Mint",
+  "transfer_kind_scanned": "Scanné",
+  "transfer_trade_detected": "Échange détecté : les deux parties ont envoyé des objekts à moins de 15 minutes d'intervalle.",
+  "transfer_objekt_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} objekt",
+        "countPlural=other": "{count} objekts"
+      }
+    }
+  ],
+  "transfer_show_details": "Afficher les transferts",
+  "transfer_hide_details": "Masquer les transferts",
+  "transfer_no_reward": "Aucune récompense",
+  "transfer_awaiting_reward": "Récompense en attente",
+  "transfer_when_header": "Quand",
+  "transfer_out_header": "Sortie",
+  "transfer_in_header": "Entrée",
+  "transfer_outcome_header": "Résultat",
+  "transfer_with_header": "Avec",
+  "transfer_day_today": "Aujourd'hui",
+  "transfer_day_yesterday": "Hier",
+  "transfer_tally_spins": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} spin",
+        "countPlural=other": "{count} spins"
+      }
+    }
+  ],
+  "transfer_tally_success": "{count} réussi",
+  "transfer_tally_fail": "{count} échec",
+  "transfer_tally_pending": "{count} en attente",
+  "transfer_tally_trades": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} échange",
+        "countPlural=other": "{count} échanges"
+      }
+    }
+  ],
+  "transfer_tally_sent": "{count} envoyé",
+  "transfer_tally_received": "{count} reçu",
+  "transfer_tally_mints": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} mint",
+        "countPlural=other": "{count} mints"
+      }
+    }
+  ],
+  "transfer_tally_scanned": "{count} scanné",
+  "transfer_group_meta": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} transfert · {minutes} min",
+        "countPlural=other": "{count} transferts · {minutes} min"
+      }
+    }
+  ],
   "_comment_gravity": "Gravity strings",
   "gravity_error_loading": "Erreur de chargement des Gravity",
   "gravity_top_votes": "Meilleurs votes",

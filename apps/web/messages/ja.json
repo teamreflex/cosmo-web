@@ -861,10 +861,81 @@
   "transfer_cosmo_spin": "COSMOスピン",
   "transfer_from": "送信元",
   "transfer_to": "送信先",
-  "transfer_objekt_header": "Objekt",
-  "transfer_user_header": "ユーザー",
   "transfer_date_header": "日付",
   "transfer_error_loading": "取引履歴の読み込み中にエラーが発生しました",
+  "filter_type_trade": "トレード",
+  "filter_outcome": "結果",
+  "transfer_outcome_success": "成功",
+  "transfer_outcome_fail": "失敗",
+  "transfer_outcome_pending": "保留中",
+  "transfer_kind_trade": "トレード",
+  "transfer_kind_sent": "送信",
+  "transfer_kind_received": "受信",
+  "transfer_kind_mint": "ミント",
+  "transfer_kind_scanned": "スキャン",
+  "transfer_trade_detected": "トレードを検出：双方が15分以内にオブジェクトを送信しました。",
+  "transfer_objekt_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}枚のオブジェクト"
+      }
+    }
+  ],
+  "transfer_show_details": "転送を表示",
+  "transfer_hide_details": "転送を隠す",
+  "transfer_no_reward": "報酬なし",
+  "transfer_awaiting_reward": "報酬を待っています",
+  "transfer_when_header": "日時",
+  "transfer_out_header": "送信",
+  "transfer_in_header": "受信",
+  "transfer_outcome_header": "結果",
+  "transfer_with_header": "相手",
+  "transfer_day_today": "今日",
+  "transfer_day_yesterday": "昨日",
+  "transfer_tally_spins": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "スピン{count}回"
+      }
+    }
+  ],
+  "transfer_tally_success": "成功{count}",
+  "transfer_tally_fail": "失敗{count}",
+  "transfer_tally_pending": "保留中{count}",
+  "transfer_tally_trades": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "トレード{count}件"
+      }
+    }
+  ],
+  "transfer_tally_sent": "送信{count}",
+  "transfer_tally_received": "受信{count}",
+  "transfer_tally_mints": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "ミント{count}"
+      }
+    }
+  ],
+  "transfer_tally_scanned": "スキャン{count}",
+  "transfer_group_meta": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "転送{count}件 · {minutes}分"
+      }
+    }
+  ],
   "_comment_gravity": "Gravity strings",
   "gravity_error_loading": "Gravityの読み込み中にエラー",
   "gravity_top_votes": "最多投票",

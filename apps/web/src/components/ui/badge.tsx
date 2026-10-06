@@ -34,6 +34,13 @@ const badgeVariants = cva(
         "gravity-voting": "border-transparent bg-cosmo text-white",
         "gravity-counting":
           "border-transparent bg-amber-200 text-gravity-counting",
+        // spin outcomes
+        "spin-success": "border-transparent bg-sky-200 text-sky-800",
+        "spin-special": "border-transparent text-neutral-800",
+        "spin-premier": "border-transparent bg-amber-200 text-amber-900",
+        "spin-fail":
+          "border-dashed border-orange-500/70 bg-transparent text-orange-700 dark:border-orange-400/70 dark:text-orange-300",
+        "spin-pending": "border-cosmo/40 bg-cosmo/15 text-foreground",
         // event system
         "event-era":
           "shadow-xs border-foreground/30 text-foreground backdrop-blur-sm transform-gpu bg-foreground/10 firefox:backdrop-blur-none",

@@ -20,7 +20,8 @@ import {
   useLocation,
   useMatch,
 } from "@tanstack/react-router";
-import { type KeyboardEvent, type ReactNode, useState } from "react";
+import { type ComponentProps, type KeyboardEvent, useState } from "react";
+import { Collapse } from "../ui/collapse";
 import ProfileToolbar from "./profile-toolbar";
 
 const route = getRouteApi("/@{$username}");
@@ -217,36 +218,16 @@ export default function ProfileTabs({ isAuthenticated }: Props) {
 }
 
 /**
- * Accordion that pushes the page down. Content mounts on first open and
- * stays mounted afterwards, so closing can animate.
+ * Accordion that pushes the page down, with a top border while open.
  */
-function ShelfPanel({
-  id,
-  open,
-  className,
-  children,
-}: {
-  id: string;
-  open: boolean;
-  className: string;
-  children: ReactNode;
-}) {
-  const [hasOpened, setHasOpened] = useState(open);
-  if (open && !hasOpened) {
-    setHasOpened(true);
-  }
-
+function ShelfPanel({ className, ...props }: ComponentProps<typeof Collapse>) {
   return (
-    <div
-      id={id}
-      data-open={open}
-      inert={!open}
+    <Collapse
+      {...props}
       className={cn(
-        "grid grid-rows-[0fr] border-t border-transparent transition-[grid-template-rows,border-color] duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)] data-[open=true]:grid-rows-[1fr] data-[open=true]:border-border motion-reduce:transition-none",
+        "border-t border-transparent transition-[grid-template-rows,border-color] data-[open=true]:border-border",
         className,
       )}
-    >
-      <div className="min-h-0 overflow-hidden">{hasOpened && children}</div>
-    </div>
+    />
   );
 }
