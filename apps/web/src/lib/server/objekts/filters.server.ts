@@ -178,17 +178,6 @@ export function withCollections(selected: string[] | null | undefined) {
 }
 
 /**
- * Filter by objekt list entries.
- */
-export function withObjektListEntries(entries: string[]) {
-  if (entries.length === 0) {
-    return [];
-  }
-
-  return [inArray(collections.slug, entries)];
-}
-
-/**
  * Filter by timeframe.
  */
 export function withTimeframe(timeframe?: [string, string]) {
