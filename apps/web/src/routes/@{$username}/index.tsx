@@ -83,14 +83,23 @@ export const Route = createFileRoute("/@{$username}/")({
         : m.collection_title(),
       canonical:
         loaderData && `/@${profileIdentifier(loaderData.target.cosmo)}`,
-      // only the collection page gets the card, so shared lists and binders stay compact
-      embed: loaderData && {
-        thumbnail: profileCardPath(profileIdentifier(loaderData.target.cosmo)),
-        thumbnailDimensions: {
-          width: PROFILE_CARD_WIDTH,
-          height: PROFILE_CARD_HEIGHT,
-        },
-      },
+      /**
+       * Only the collection page gets the card, so shared lists and binders stay compact.
+       * Spin has none, as it holds millions of objekts.
+       */
+      embed:
+        loaderData === undefined ||
+        isEqual(loaderData.target.cosmo.address, Addresses.SPIN)
+          ? undefined
+          : {
+              thumbnail: profileCardPath(
+                profileIdentifier(loaderData.target.cosmo),
+              ),
+              thumbnailDimensions: {
+                width: PROFILE_CARD_WIDTH,
+                height: PROFILE_CARD_HEIGHT,
+              },
+            },
     }),
 });
 

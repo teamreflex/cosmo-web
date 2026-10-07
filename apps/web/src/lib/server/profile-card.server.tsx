@@ -4,7 +4,11 @@ import { $fetchPins } from "@/lib/functions/pins";
 import { remember } from "@/lib/server/cache.server";
 import { fetchFullAccount } from "@/lib/server/cosmo-accounts.server";
 import { indexer } from "@/lib/server/db/indexer";
-import { objekts, transfers } from "@/lib/server/db/indexer/schema";
+import {
+  collections,
+  objekts,
+  transfers,
+} from "@/lib/server/db/indexer/schema";
 import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import {
@@ -19,10 +23,10 @@ import type {
   ProfileCard,
   ProfileCardObjekt,
 } from "@/lib/universal/profile-card";
-import { addr, isAddress } from "@apollo/util";
+import { Addresses, addr, isAddress, isEqual } from "@apollo/util";
 import dmSans from "@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2?inline";
 import jetbrainsMono from "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2?inline";
-import { eq, min } from "drizzle-orm";
+import { desc, eq, min } from "drizzle-orm";
 import { render } from "takumi-js";
 import { Renderer } from "takumi-js/node";
 import halvar from "../../../public/HalvarBreit-Bd.woff2?inline";
@@ -30,6 +34,7 @@ import halvar from "../../../public/HalvarBreit-Bd.woff2?inline";
 /**
  * Gather everything a profile card shows: pinned objekts, or the most
  * recently received ones when nothing is pinned, plus the account's stats.
+ * Undefined for the spin account, which holds millions of objekts.
  * Count: cached for 24 hours
  * Join date: cached for 7 days
  */
@@ -41,6 +46,8 @@ export async function fetchProfileCard(
   if (account === undefined) return undefined;
 
   const address = addr(account.cosmo.address);
+  if (isEqual(address, Addresses.SPIN)) return undefined;
+
   const [cardObjekts, objektCount, since] = await Promise.all([
     fetchCardObjekts(identifier, address),
     remember(`objekt-count:v1:${address}`, 60 * 60 * 24, () =>
@@ -89,29 +96,31 @@ async function fetchCardObjekts(
   if (pinned.length > 0) return pinned.slice(0, PROFILE_CARD_MAX_OBJEKTS);
 
   // no pins, falling back to latest objekts
-  const recent = await indexer.query.objekts.findMany({
-    where: { owner: address },
-    orderBy: { receivedAt: "desc" },
-    limit: PROFILE_CARD_MAX_OBJEKTS,
-    columns: { id: true },
-    with: {
-      collection: {
-        columns: { slug: true, frontImage: true, frontImageVersion: true },
-      },
-    },
-  });
+  const rows = await indexer
+    .select({
+      tokenId: objekts.id,
+      slug: collections.slug,
+      frontImage: collections.frontImage,
+      frontImageVersion: collections.frontImageVersion,
+    })
+    .from(objekts)
+    .innerJoin(collections, eq(collections.id, objekts.collectionId))
+    .where(eq(objekts.owner, address))
+    .orderBy(desc(objekts.receivedAt))
+    .limit(PROFILE_CARD_MAX_OBJEKTS)
+    .comment({ fn: "fetchProfileCardObjekts" });
 
-  return recent.map((objekt) => ({
-    tokenId: objekt.id,
-    image: getObjektFrontImageUrl(objekt.collection, "thumbnail"),
+  return rows.map((row) => ({
+    tokenId: row.tokenId,
+    image: getObjektFrontImageUrl(row, "thumbnail"),
   }));
 }
 
 let renderer: Promise<Renderer> | undefined;
 
 /**
- * One renderer for the process, so fonts are parsed once and decoded images
- * are cached between renders.
+ * One renderer for the process, so fonts are parsed once and decoded images are cached between renders.
+ * A failed setup is dropped so the next render retries it.
  */
 function getRenderer() {
   renderer ??= (async () => {
@@ -127,23 +136,29 @@ function getRenderer() {
     }
     return instance;
   })();
+
+  renderer.catch(() => {
+    renderer = undefined;
+  });
+
   return renderer;
 }
 
 /**
- * Download each objekt image, dropping any that fail so one broken image
- * doesn't take the whole card down.
+ * Download each distinct objekt image once, dropping any that fail so one
+ * broken image doesn't take the whole card down.
  */
 async function fetchImages(cardObjekts: ProfileCardObjekt[]) {
   const results = await Promise.allSettled(
-    cardObjekts.map(async (objekt) => {
-      const response = await fetch(objekt.image, {
+    [...new Set(cardObjekts.map((objekt) => objekt.image))].map(async (src) => {
+      const response = await fetch(src, {
         signal: AbortSignal.timeout(5000),
       });
-      if (!response.ok) throw new Error(`${response.status} ${objekt.image}`);
-      return { src: objekt.image, data: await response.arrayBuffer() };
+      if (!response.ok) throw new Error(`${response.status} ${src}`);
+      return { src, data: await response.arrayBuffer() };
     }),
   );
+
   return results.flatMap((result) =>
     result.status === "fulfilled" ? [result.value] : [],
   );
@@ -154,13 +169,15 @@ async function fetchImages(cardObjekts: ProfileCardObjekt[]) {
  */
 export async function renderProfileCard(card: ProfileCard) {
   const images = await fetchImages(card.objekts);
+  const loaded = new Set(images.map((image) => image.src));
+  const shown = card.objekts.filter((objekt) => loaded.has(objekt.image));
 
   return await render(
     <ProfileCardImage
       card={card}
-      images={images.map((image) => image.src)}
+      images={shown.map((objekt) => objekt.image)}
       placements={placeCards(
-        images.length,
+        shown.length,
         cardSeed(card.objekts.map((objekt) => objekt.tokenId)),
       )}
     />,
