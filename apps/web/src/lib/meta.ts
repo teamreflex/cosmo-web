@@ -12,6 +12,12 @@ const base = `https://${env.VITE_BASE_URL}`;
 const titleTemplate = (title: string) =>
   [title, env.VITE_APP_NAME].filter(Boolean).join(" · ");
 
+/**
+ * Site-wide description. Also the embed description for pages without their
+ * own, since unfurlers that find og: tags ignore the plain description tag.
+ */
+export const siteDescription = `${env.VITE_APP_NAME} - Objekt & gravity explorer for Cosmo`;
+
 export interface Meta {
   /** Required for all pages. `<title>{content}</title>` */
   title: string;
@@ -75,6 +81,8 @@ export interface AutoEmbed {
   thumbnail?: string | null;
   /** @default "banner", which applies twitter:card = "summary_large_image" */
   thumbnailSize?: "banner" | "icon";
+  /** Pixel size of the thumbnail, so unfurlers can lay out the embed before it loads. */
+  thumbnailDimensions?: { width: number; height: number } | null;
   /* Ignored if not passed */
   siteTitle?: string | null;
 }
@@ -184,8 +192,8 @@ export function defineHead(meta: Meta) {
     links.push({ rel: "manifest", href: meta.manifest });
   }
 
-  if (openGraph) renderOpenGraph(metaTags, "og:", openGraph);
-  if (twitter) renderOpenGraph(metaTags, "twitter:", twitter);
+  if (openGraph) renderOpenGraph(metaTags, "property", "og", openGraph);
+  if (twitter) renderOpenGraph(metaTags, "name", "twitter", twitter);
 
   const styles: StyleDescriptor[] = [];
   const scripts: ScriptDescriptor[] = [];
@@ -213,7 +221,7 @@ function applyEmbed(
   const openGraph: OpenGraph = {
     type: "website",
     title: embed.title ?? title,
-    description: embed.description ?? meta.description ?? null,
+    description: embed.description ?? meta.description ?? siteDescription,
     ...meta.openGraph,
   };
   const twitter: Twitter = {
@@ -224,8 +232,13 @@ function applyEmbed(
         : "summary",
     ...meta.twitter,
   };
+  // crawlers ignore a relative og:image
   if (embed.thumbnail) {
-    openGraph.image = embed.thumbnail;
+    openGraph.image = new URL(embed.thumbnail, base).href;
+    if (embed.thumbnailDimensions) {
+      openGraph["image:width"] = String(embed.thumbnailDimensions.width);
+      openGraph["image:height"] = String(embed.thumbnailDimensions.height);
+    }
   }
   if (embed.siteTitle) {
     openGraph.site_name = embed.siteTitle;
@@ -300,22 +313,29 @@ type ScriptDescriptor = DetailedHTMLProps<
   ScriptHTMLAttributes<HTMLScriptElement>,
   HTMLScriptElement
 >;
+/**
+ * Open Graph tags are keyed by `property` (what the spec and unfurlers read),
+ * Twitter's by `name`.
+ */
 function renderOpenGraph(
   tags: MetaDescriptor[],
-  name: string,
+  attribute: "property" | "name",
+  key: string,
   content: OpenGraphField,
 ): void {
   if (!content) return;
   // oxlint-disable-next-line anti-slop/no-runtime-typeof -- narrowing the OpenGraphField union
   if (typeof content === "string") {
-    tags.push({ name, content });
+    tags.push({ [attribute]: key, content });
+    return;
   }
   if (Array.isArray(content)) {
     for (const item of content) {
-      renderOpenGraph(tags, name, item);
+      renderOpenGraph(tags, attribute, key, item);
     }
+    return;
   }
-  for (const [key, item] of Object.entries(content)) {
-    renderOpenGraph(tags, `${name}:${key}`, item);
+  for (const [field, item] of Object.entries(content)) {
+    renderOpenGraph(tags, attribute, `${key}:${field}`, item);
   }
 }
