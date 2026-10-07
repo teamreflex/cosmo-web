@@ -868,10 +868,86 @@
   "transfer_cosmo_spin": "COSMO Spin",
   "transfer_from": "From",
   "transfer_to": "To",
-  "transfer_objekt_header": "Objekt",
-  "transfer_user_header": "User",
   "transfer_date_header": "Date",
   "transfer_error_loading": "There was an error loading transfers",
+  "filter_type_trade": "Trades",
+  "filter_outcome": "Outcome",
+  "transfer_outcome_success": "Success",
+  "transfer_outcome_fail": "Fail",
+  "transfer_outcome_pending": "Pending",
+  "transfer_kind_trade": "Trade",
+  "transfer_kind_sent": "Sent",
+  "transfer_kind_received": "Received",
+  "transfer_kind_mint": "Mint",
+  "transfer_kind_scanned": "Scanned",
+  "transfer_trade_detected": "Detected trade: both sides sent objekts within 15 minutes of each other.",
+  "transfer_objekt_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} objekt",
+        "countPlural=other": "{count} objekts"
+      }
+    }
+  ],
+  "transfer_show_details": "Show transfers",
+  "transfer_hide_details": "Hide transfers",
+  "transfer_no_reward": "No reward",
+  "transfer_awaiting_reward": "Awaiting reward",
+  "transfer_when_header": "When",
+  "transfer_out_header": "Out",
+  "transfer_in_header": "In",
+  "transfer_outcome_header": "Outcome",
+  "transfer_with_header": "With",
+  "transfer_day_today": "Today",
+  "transfer_day_yesterday": "Yesterday",
+  "transfer_tally_spins": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} spin",
+        "countPlural=other": "{count} spins"
+      }
+    }
+  ],
+  "transfer_tally_success": "{count} success",
+  "transfer_tally_fail": "{count} fail",
+  "transfer_tally_pending": "{count} pending",
+  "transfer_tally_trades": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} trade",
+        "countPlural=other": "{count} trades"
+      }
+    }
+  ],
+  "transfer_tally_sent": "{count} sent",
+  "transfer_tally_received": "{count} received",
+  "transfer_tally_mints": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} mint",
+        "countPlural=other": "{count} mints"
+      }
+    }
+  ],
+  "transfer_tally_scanned": "{count} scanned",
+  "transfer_group_meta": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} transfer · {minutes}m",
+        "countPlural=other": "{count} transfers · {minutes}m"
+      }
+    }
+  ],
   "_comment_gravity": "Gravity strings",
   "gravity_error_loading": "Error loading gravities",
   "gravity_top_votes": "Top Votes",

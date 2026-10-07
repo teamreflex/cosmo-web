@@ -861,10 +861,81 @@
   "transfer_cosmo_spin": "코스모 스핀",
   "transfer_from": "보낸 사람",
   "transfer_to": "받는 사람",
-  "transfer_objekt_header": "오브젝트",
-  "transfer_user_header": "사용자",
   "transfer_date_header": "날짜",
   "transfer_error_loading": "전송 내역을 불러오는 중 오류가 발생했습니다",
+  "filter_type_trade": "교환",
+  "filter_outcome": "결과",
+  "transfer_outcome_success": "성공",
+  "transfer_outcome_fail": "실패",
+  "transfer_outcome_pending": "대기 중",
+  "transfer_kind_trade": "교환",
+  "transfer_kind_sent": "보냄",
+  "transfer_kind_received": "받음",
+  "transfer_kind_mint": "민트",
+  "transfer_kind_scanned": "스캔",
+  "transfer_trade_detected": "교환 감지: 양쪽이 15분 이내에 오브젝트를 보냈습니다.",
+  "transfer_objekt_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "오브젝트 {count}개"
+      }
+    }
+  ],
+  "transfer_show_details": "전송 내역 보기",
+  "transfer_hide_details": "전송 내역 숨기기",
+  "transfer_no_reward": "보상 없음",
+  "transfer_awaiting_reward": "보상 대기 중",
+  "transfer_when_header": "시간",
+  "transfer_out_header": "보냄",
+  "transfer_in_header": "받음",
+  "transfer_outcome_header": "결과",
+  "transfer_with_header": "상대",
+  "transfer_day_today": "오늘",
+  "transfer_day_yesterday": "어제",
+  "transfer_tally_spins": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "스핀 {count}회"
+      }
+    }
+  ],
+  "transfer_tally_success": "성공 {count}",
+  "transfer_tally_fail": "실패 {count}",
+  "transfer_tally_pending": "대기 {count}",
+  "transfer_tally_trades": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "교환 {count}건"
+      }
+    }
+  ],
+  "transfer_tally_sent": "보냄 {count}",
+  "transfer_tally_received": "받음 {count}",
+  "transfer_tally_mints": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "민트 {count}"
+      }
+    }
+  ],
+  "transfer_tally_scanned": "스캔 {count}",
+  "transfer_group_meta": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "전송 {count}건 · {minutes}분"
+      }
+    }
+  ],
   "_comment_gravity": "Gravity strings",
   "gravity_error_loading": "그래비티를 불러오는 중 오류 발생",
   "gravity_top_votes": "상위 투표",

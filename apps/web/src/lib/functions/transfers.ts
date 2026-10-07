@@ -6,7 +6,7 @@ import { Addresses, isEqual } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
 
 /**
- * Fetches transfers and zips known nicknames into the results.
+ * Fetches transfers and zips known nicknames into the counterparties.
  */
 export const $fetchTransfers = createServerFn({ method: "GET" })
   .validator(transfersBackendSchema)
@@ -20,25 +20,25 @@ export const $fetchTransfers = createServerFn({ method: "GET" })
     }
 
     const aggregate = await fetchTransferRows(data.address, data);
-    const addresses = aggregate.results
-      .flatMap((r) => [r.transfer.from, r.transfer.to])
-      // can't send to yourself, so filter out the current address
-      .filter((a) => a !== data.address.toLowerCase());
-
-    const addressMap = await fetchKnownAddresses(addresses);
+    const addressMap = await fetchKnownAddresses(
+      aggregate.results.flatMap((row) =>
+        "counterparty" in row ? [row.counterparty.address] : [],
+      ),
+    );
 
     return {
       ...aggregate,
-      // map the nickname onto the results and apply spin flags
-      results: aggregate.results.map((row) => {
-        const fromAddress = row.transfer.from.toLowerCase();
-        const toAddress = row.transfer.to.toLowerCase();
-        return {
-          ...row,
-          username:
-            addressMap.get(fromAddress)?.username ??
-            addressMap.get(toAddress)?.username,
-        };
-      }),
+      results: aggregate.results.map((row) =>
+        "counterparty" in row
+          ? {
+              ...row,
+              counterparty: {
+                ...row.counterparty,
+                username:
+                  addressMap.get(row.counterparty.address)?.username ?? null,
+              },
+            }
+          : row,
+      ),
     };
   });
