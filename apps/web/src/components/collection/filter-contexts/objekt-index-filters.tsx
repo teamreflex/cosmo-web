@@ -1,6 +1,8 @@
 import CollectionFilter from "@/components/objekt-index/collection-filter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { type CosmoFilters, useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { collectionSorts, indexSorts } from "@/lib/universal/sorts";
+import { useSearch } from "@tanstack/react-router";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import ClassFilter from "../filter-class";
@@ -22,6 +24,11 @@ type Props = {
 export default function ObjektIndexFilters({ search = false }: Props) {
   const { filters, setFilters } = useCosmoFilters();
   const count = countActive(filters);
+  // search goes through Typesense, which has no mint counts
+  const searching = useSearch({
+    strict: false,
+    select: (params) => Boolean(params.search),
+  });
 
   function handleReset() {
     setFilters({
@@ -88,7 +95,11 @@ export default function ObjektIndexFilters({ search = false }: Props) {
         </Suspense>
       </ErrorBoundary>
 
-      <SortFilter sort={filters.sort} onChange={setFilters} serials={false} />
+      <SortFilter
+        sort={filters.sort}
+        onChange={setFilters}
+        sorts={searching ? collectionSorts : indexSorts}
+      />
 
       {search && <FilterSearch />}
 

@@ -1,7 +1,15 @@
 import { indexer } from "@/lib/server/db/indexer";
 import type { Collection, Objekt } from "@/lib/server/db/indexer/schema";
-import { collections, members, objekts } from "@/lib/server/db/indexer/schema";
 import {
+  collections,
+  collectionStats,
+  members,
+  objekts,
+} from "@/lib/server/db/indexer/schema";
+import {
+  isRankedSort,
+  mintCount,
+  type RankedSort,
   withArtist,
   withClass,
   withCollectionSort,
@@ -14,10 +22,11 @@ import {
   withTransferable,
 } from "@/lib/server/objekts/filters.server";
 import { userCollectionBackendSchema } from "@/lib/universal/parsers";
-import { isMemberSort, type ValidSort } from "@apollo/cosmo/types/common";
+import { collectionSorts, supportedSort } from "@/lib/universal/sorts";
+import { isMemberSort, isMintSort } from "@apollo/cosmo/types/common";
 import { Addresses, isEqual } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, gt, lt, lte, sql } from "drizzle-orm";
 import * as z from "zod";
 import { mapLegacyObjekt } from "./common";
 
@@ -82,7 +91,18 @@ async function fetchObjekts(
   owner: string,
   isSpin: boolean,
 ): Promise<QueryResult[]> {
-  const sort = isSpin ? clampSpinSort(data.sort) : (data.sort ?? "newest");
+  /**
+   * Serial sorts on the spin account cause catastrophic query plans (the
+   * planner walks the serial index and filters millions of rows by
+   * received_at), and duplicate and mint sorts would rank every collection it
+   * holds. Only collection sorts apply; anything else falls back to newest.
+   */
+  const sort = isSpin
+    ? supportedSort(data.sort, collectionSorts)
+    : (data.sort ?? "newest");
+  if (isRankedSort(sort)) {
+    return await fetchRankedObjekts(data, owner, sort);
+  }
 
   let idsQuery = indexer
     .select({ id: objekts.id })
@@ -121,6 +141,111 @@ async function fetchObjekts(
 }
 
 /**
+ * Fetch a page of objekts for sorts that order collections by a count. The
+ * owner's collections are ranked first, each with the position its first copy
+ * lands at, and only the collections overlapping the page have their copies
+ * fetched, so a large account never sorts every objekt it owns.
+ */
+async function fetchRankedObjekts(
+  data: InputData,
+  owner: string,
+  sort: RankedSort,
+): Promise<QueryResult[]> {
+  const conditions = collectionFilters(data);
+  const start = data.page * PER_PAGE;
+  const end = start + PER_PAGE;
+
+  let ownedQuery = indexer
+    .select({
+      collectionId: objekts.collectionId,
+      copies: sql<number>`count(*)::int`.as("copies"),
+    })
+    .from(objekts)
+    .$dynamic();
+  if (conditions.length > 0) {
+    ownedQuery = ownedQuery.innerJoin(
+      collections,
+      eq(collections.id, objekts.collectionId),
+    );
+  }
+  const owned = indexer
+    .$with("owned")
+    .as(
+      ownedQuery
+        .where(
+          and(
+            eq(objekts.owner, owner),
+            ...conditions,
+            ...withTransferable(data.transferable),
+          ),
+        )
+        .groupBy(objekts.collectionId),
+    );
+
+  // grouping before the stats join keeps it to one lookup per collection
+  const rankKey = {
+    duplicatesDesc: sql`${owned.copies} desc`,
+    mintsAsc: sql`${mintCount} asc`,
+    mintsDesc: sql`${mintCount} desc`,
+  }[sort];
+  let rankedQuery = indexer
+    .select({
+      collectionId: owned.collectionId,
+      copies: owned.copies,
+      offset:
+        sql<number>`(sum(${owned.copies}) over (order by ${rankKey}, ${owned.collectionId} rows unbounded preceding) - ${owned.copies})::int`.as(
+          "offset",
+        ),
+    })
+    .from(owned)
+    .$dynamic();
+  if (isMintSort(sort)) {
+    rankedQuery = rankedQuery.innerJoin(
+      collectionStats,
+      eq(collectionStats.collectionId, owned.collectionId),
+    );
+  }
+  const ranked = indexer.$with("ranked").as(rankedQuery);
+
+  // lateral so each overlapping collection probes the owner index on its own
+  const copies = indexer
+    .select({
+      id: objekts.id,
+      position:
+        sql<number>`(${ranked.offset} + row_number() over (order by ${objekts.serial}, ${objekts.id}))::int`.as(
+          "position",
+        ),
+    })
+    .from(objekts)
+    .where(
+      and(
+        eq(objekts.owner, owner),
+        eq(objekts.collectionId, ranked.collectionId),
+        ...withTransferable(data.transferable),
+      ),
+    )
+    .as("copies");
+
+  return await indexer
+    .with(owned, ranked)
+    .select({ objekts, collections })
+    .from(ranked)
+    .crossJoinLateral(copies)
+    .innerJoin(objekts, eq(objekts.id, copies.id))
+    .innerJoin(collections, eq(collections.id, objekts.collectionId))
+    .where(
+      and(
+        lt(ranked.offset, end),
+        gt(sql`${ranked.offset} + ${ranked.copies}`, start),
+        gt(copies.position, start),
+        lte(copies.position, end),
+      ),
+    )
+    .orderBy(copies.position)
+    .comment({ fn: "fetchObjektsBlockchainRanked" });
+}
+
+/**
  * Fetch the count of objekts from the database.
  */
 async function fetchCount(owner: string, filters: InputData): Promise<number> {
@@ -151,16 +276,6 @@ async function fetchCount(owner: string, filters: InputData): Promise<number> {
     .comment({ fn: "fetchObjektsCount" });
 
   return Number(results?.count ?? 0);
-}
-
-/**
- * Serial sorts on the spin account cause catastrophic query plans — the
- * planner walks the serial index and filters millions of rows by received_at.
- * Fall back to newest which uses the received_at index instead.
- */
-function clampSpinSort(sort: ValidSort | null | undefined): ValidSort {
-  if (sort === "serialAsc" || sort === "serialDesc") return "newest";
-  return sort ?? "newest";
 }
 
 /**

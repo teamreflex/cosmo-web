@@ -149,3 +149,12 @@ export const members = pgTable("member", {
   primaryColorHex: text("primary_color_hex").notNull(),
   sortOrder: integer("sort_order").notNull(),
 });
+
+// objekt and spun counts per collection, read by apps/web's mint-count sorts.
+// maintained by triggers on objekt; the processor never touches it.
+export const collectionStats = pgTable("collection_stats", {
+  // joins to objekt.collection_id and collection.id
+  collectionId: varchar("collection_id", { length: 36 }).primaryKey(),
+  objektCount: integer("objekt_count").notNull(),
+  spunCount: integer("spun_count").notNull(),
+});

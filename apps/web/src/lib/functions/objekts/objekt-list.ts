@@ -1,8 +1,14 @@
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
-import { collections, members, objekts } from "@/lib/server/db/indexer/schema";
+import {
+  collections,
+  collectionStats,
+  members,
+  objekts,
+} from "@/lib/server/db/indexer/schema";
 import type { Collection } from "@/lib/server/db/indexer/schema";
 import {
+  mintCount,
   withArtist,
   withClass,
   withMember,
@@ -10,10 +16,11 @@ import {
   withOnlineType,
   withSeason,
 } from "@/lib/server/objekts/filters.server";
+import { sortObjektListItems } from "@/lib/universal/objekt-list-sort";
 import { objektListBackendSchema } from "@/lib/universal/parsers";
-import { isMemberSort } from "@apollo/cosmo/types/common";
+import { isMemberSort, isMintSort } from "@apollo/cosmo/types/common";
 import { createServerFn } from "@tanstack/react-start";
-import { and, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import * as z from "zod";
 
 const LIMIT = 60;
@@ -120,10 +127,13 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
     }
 
     const sort = data.sort ?? "newest";
-    const memberOrder = isMemberSort(sort)
-      ? await fetchMemberOrder()
-      : undefined;
-    sortObjektListItems(items, sort, memberOrder);
+    const [memberOrder, mintCounts] = await Promise.all([
+      isMemberSort(sort) ? fetchMemberOrder() : undefined,
+      isMintSort(sort)
+        ? fetchMintCounts(matchingCollections.map((c) => c.id))
+        : undefined,
+    ]);
+    sortObjektListItems(items, sort, { memberOrder, mintCounts });
 
     const total = items.length;
     const start = data.page * LIMIT;
@@ -155,68 +165,6 @@ async function fetchSerials(tokenIds: string[]) {
 }
 
 /**
- * Sort list items by the selected sort, applied after entry projection so
- * per-entry rendering stays consistent across types. Newest/oldest order by
- * when the entry was added to the list (not when the collection released),
- * and other sorts break ties between entries of the same collection the
- * same way.
- */
-function sortObjektListItems(
-  items: ObjektListItem[],
-  sort: string,
-  memberOrder: Map<string, number> | undefined,
-) {
-  // newest-added entry first, also breaks ties within a collection
-  const newestAdded = (a: ObjektListItem, b: ObjektListItem) =>
-    b.entryCreatedAt.localeCompare(a.entryCreatedAt);
-
-  switch (sort) {
-    case "oldest":
-      items.sort((a, b) => a.entryCreatedAt.localeCompare(b.entryCreatedAt));
-      return;
-    case "noAscending":
-      items.sort(
-        (a, b) =>
-          a.collectionNo.localeCompare(b.collectionNo) || newestAdded(a, b),
-      );
-      return;
-    case "noDescending":
-      items.sort(
-        (a, b) =>
-          b.collectionNo.localeCompare(a.collectionNo) || newestAdded(a, b),
-      );
-      return;
-    case "memberAsc":
-      items.sort(
-        (a, b) =>
-          memberRank(a, memberOrder) - memberRank(b, memberOrder) ||
-          a.collectionNo.localeCompare(b.collectionNo) ||
-          newestAdded(a, b),
-      );
-      return;
-    case "memberDesc":
-      items.sort(
-        (a, b) =>
-          memberRank(b, memberOrder) - memberRank(a, memberOrder) ||
-          a.collectionNo.localeCompare(b.collectionNo) ||
-          newestAdded(a, b),
-      );
-      return;
-    case "newest":
-    default:
-      items.sort(newestAdded);
-  }
-}
-
-/**
- * Resolve a member's canonical sort position, falling back to last for any
- * member missing from the synced member table.
- */
-function memberRank(item: ObjektListItem, memberOrder?: Map<string, number>) {
-  return memberOrder?.get(item.member) ?? Number.MAX_SAFE_INTEGER;
-}
-
-/**
  * Load the member name → canonical sort order map from the indexer.
  */
 async function fetchMemberOrder() {
@@ -224,4 +172,20 @@ async function fetchMemberOrder() {
     .select({ name: members.name, sortOrder: members.sortOrder })
     .from(members);
   return new Map(rows.map((r) => [r.name, r.sortOrder]));
+}
+
+/**
+ * Load the collection slug → mint count map for the given collections.
+ */
+async function fetchMintCounts(collectionIds: string[]) {
+  if (collectionIds.length === 0) {
+    return new Map<string, number>();
+  }
+
+  const rows = await indexer
+    .select({ slug: collections.slug, mintCount })
+    .from(collectionStats)
+    .innerJoin(collections, eq(collections.id, collectionStats.collectionId))
+    .where(inArray(collectionStats.collectionId, collectionIds));
+  return new Map(rows.map((r) => [r.slug, r.mintCount]));
 }

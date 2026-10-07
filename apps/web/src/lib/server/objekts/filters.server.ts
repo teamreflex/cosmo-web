@@ -1,16 +1,48 @@
-import type {
-  ValidArtist,
-  ValidOnlineType,
-  ValidSort,
+import {
+  isMintSort,
+  type ValidArtist,
+  type ValidOnlineType,
+  type ValidSort,
 } from "@apollo/cosmo/types/common";
 import { asc, between, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import type { PgColumn, PgSelect } from "drizzle-orm/pg-core";
-import { collections, members, objekts } from "../db/indexer/schema";
+import {
+  collections,
+  collectionStats,
+  members,
+  objekts,
+} from "../db/indexer/schema";
+
+/**
+ * Whether mint-count sorts count objekts that have since been spun.
+ */
+const MINT_COUNT_INCLUDES_SPUN = true;
+
+/**
+ * A collection's mint count for mint sorts. Requires a join on collection_stats.
+ */
+export const mintCount = MINT_COUNT_INCLUDES_SPUN
+  ? collectionStats.objektCount
+  : sql<number>`(${collectionStats.objektCount} - ${collectionStats.spunCount})`;
+
+/**
+ * Sorts the ungrouped user collection pages by ranking collections first,
+ * since their order comes from a per-collection count rather than an objekt
+ * column.
+ */
+export type RankedSort = "duplicatesDesc" | "mintsAsc" | "mintsDesc";
+
+export function isRankedSort(sort: ValidSort): sort is RankedSort {
+  return sort === "duplicatesDesc" || isMintSort(sort);
+}
 
 /**
  * Sorting for user collections.
  */
-export function withCollectionSort<T extends PgSelect>(qb: T, sort: ValidSort) {
+export function withCollectionSort<T extends PgSelect>(
+  qb: T,
+  sort: Exclude<ValidSort, RankedSort>,
+) {
   switch (sort) {
     case "newest":
       return qb.orderBy(desc(objekts.receivedAt), asc(objekts.id));
@@ -68,6 +100,10 @@ export function withObjektIndexSort<T extends PgSelect>(
         desc(collections.createdAt),
         asc(collections.id),
       );
+    case "mintsAsc":
+      return qb.orderBy(sql`${mintCount} asc nulls last`, asc(collections.id));
+    case "mintsDesc":
+      return qb.orderBy(sql`${mintCount} desc nulls last`, asc(collections.id));
   }
 }
 

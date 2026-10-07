@@ -1,5 +1,6 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { type CosmoFilters, useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { collectionSorts, profileSorts } from "@/lib/universal/sorts";
 import type { CollectionDataSource } from "@apollo/util";
 import { Suspense } from "react";
 import type { Dispatch, SetStateAction } from "react";
@@ -97,7 +98,7 @@ export default function CollectionFilters({
         onChange={setFilters}
         dataSource={dataSource}
         setDataSource={setDataSource}
-        serials={!isSpin}
+        sorts={isSpin ? collectionSorts : profileSorts}
       />
 
       <FilterDataSource

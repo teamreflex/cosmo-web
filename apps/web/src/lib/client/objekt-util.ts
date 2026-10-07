@@ -146,6 +146,9 @@ const sortLabels = {
   serialDesc: m.filter_sort_serial_desc,
   memberAsc: m.filter_sort_member_asc,
   memberDesc: m.filter_sort_member_desc,
+  duplicatesDesc: m.filter_sort_duplicates_desc,
+  mintsAsc: m.filter_sort_mints_asc,
+  mintsDesc: m.filter_sort_mints_desc,
 } satisfies Record<ValidSort, () => string>;
 
 /**

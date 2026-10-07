@@ -97,7 +97,8 @@ function buildSortBy(sort: CosmoFilters["sort"]): string {
       return "memberSortOrder(missing_values: last):asc,collectionNo:asc,createdAt:asc";
     case "memberDesc":
       return "memberSortOrder(missing_values: last):desc,collectionNo:asc,createdAt:asc";
-    // newest (default), plus serial sorts which don't apply to collection search
+    // newest (default), plus serial and duplicate sorts which don't apply to
+    // collection search, and mint sorts since Typesense has no mint counts
     default:
       return "createdAt:desc";
   }
