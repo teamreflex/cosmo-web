@@ -34,11 +34,11 @@ import { Timestamp } from "../ui/timestamp";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 /**
- * Desktop columns: when, out, arrow, in, outcome, with, chevron. Phones put
- * out → in on the first line and everything else on the second.
+ * Desktop columns: when, out, arrow, in, outcome, with, chevron. Narrower
+ * screens put out → in on the first line and everything else on the second.
  */
 const grid =
-  "grid grid-cols-[minmax(0,1fr)_18px_minmax(0,1fr)] gap-x-2 sm:grid-cols-[136px_minmax(0,1fr)_28px_minmax(0,1fr)_168px_176px_20px] sm:gap-x-4";
+  "grid grid-cols-[minmax(0,1fr)_18px_minmax(0,1fr)] gap-x-2 lg:grid-cols-[136px_minmax(0,1fr)_28px_minmax(0,1fr)_168px_176px_20px] lg:gap-x-4";
 
 export function TransferHeader() {
   return (
@@ -46,7 +46,7 @@ export function TransferHeader() {
       aria-hidden
       className={cn(
         grid,
-        "sticky top-14 z-20 hidden border-b bg-card/90 px-4 py-2 text-xs font-medium tracking-wide text-muted-foreground backdrop-blur-lg sm:grid",
+        "sticky top-14 z-20 hidden border-b bg-card/90 px-4 py-2 text-xs font-medium tracking-wide text-muted-foreground backdrop-blur-lg lg:grid",
       )}
     >
       <span>{m.transfer_when_header()}</span>
@@ -86,14 +86,14 @@ export default function TransferRow({ row }: Props) {
       <div
         className={cn(
           grid,
-          "relative items-center gap-y-2.5 px-3.5 py-3 text-sm sm:px-4 sm:py-2.5",
+          "relative items-center gap-y-2.5 px-3.5 py-3 text-sm sm:px-4 lg:py-2.5",
         )}
       >
         <div
           className={cn(
-            "col-start-1 row-start-1 flex min-w-0 items-center gap-2 sm:col-start-2",
-            out.length === 0 && "max-sm:hidden",
-            oneSided && "max-sm:col-span-full",
+            "col-start-1 row-start-1 flex min-w-0 items-center gap-2 lg:col-start-2",
+            out.length === 0 && "max-lg:hidden",
+            oneSided && "max-lg:col-span-full",
           )}
         >
           {out.length > 0 && <Side objekts={out} />}
@@ -102,8 +102,8 @@ export default function TransferRow({ row }: Props) {
         <div
           aria-hidden
           className={cn(
-            "col-start-2 row-start-1 flex items-center justify-center text-muted-foreground sm:col-start-3",
-            (out.length === 0 || oneSided) && "max-sm:hidden",
+            "col-start-2 row-start-1 flex items-center justify-center text-muted-foreground lg:col-start-3",
+            (out.length === 0 || oneSided) && "max-lg:hidden",
           )}
         >
           <Connector row={row} />
@@ -111,9 +111,9 @@ export default function TransferRow({ row }: Props) {
 
         <div
           className={cn(
-            "col-start-3 row-start-1 flex min-w-0 items-center gap-2 sm:col-start-4",
-            out.length === 0 && "max-sm:col-span-full max-sm:col-start-1",
-            oneSided && "max-sm:hidden",
+            "col-start-3 row-start-1 flex min-w-0 items-center gap-2 lg:col-start-4",
+            out.length === 0 && "max-lg:col-span-full max-lg:col-start-1",
+            oneSided && "max-lg:hidden",
           )}
         >
           {row.kind === "spin" && !row.reward ? (
@@ -123,17 +123,17 @@ export default function TransferRow({ row }: Props) {
           )}
         </div>
 
-        <div className="col-span-full row-start-2 flex flex-wrap items-center gap-x-3 gap-y-2 sm:contents">
+        <div className="col-span-full row-start-2 flex flex-wrap items-center gap-x-3 gap-y-2 lg:contents">
           <When row={row} details={details} />
-          <div className="flex min-w-0 items-center sm:col-start-5 sm:row-start-1">
+          <div className="flex min-w-0 items-center lg:col-start-5 lg:row-start-1">
             <Outcome row={row} />
           </div>
-          <div className="flex min-w-0 items-center gap-1.5 sm:col-start-6 sm:row-start-1">
+          <div className="flex min-w-0 items-center gap-1.5 lg:col-start-6 lg:row-start-1">
             <With row={row} />
           </div>
           <div
             aria-hidden
-            className="order-4 flex items-center justify-center text-muted-foreground sm:order-none sm:col-start-7 sm:row-start-1"
+            className="order-4 flex items-center justify-center text-muted-foreground lg:order-none lg:col-start-7 lg:row-start-1"
           >
             {expandable && (
               <IconChevronDown
@@ -378,7 +378,7 @@ function When({ row, details }: { row: Row; details: DetailTransfer[] }) {
   const last = details.at(-1);
 
   return (
-    <div className="order-3 ml-auto flex items-baseline gap-1.5 font-mono text-xs text-muted-foreground sm:order-none sm:col-start-1 sm:row-start-1 sm:ml-0 sm:flex-col sm:items-start sm:justify-center sm:gap-0.5">
+    <div className="order-3 ml-auto flex items-baseline gap-1.5 font-mono text-xs text-muted-foreground lg:order-none lg:col-start-1 lg:row-start-1 lg:ml-0 lg:flex-col lg:items-start lg:justify-center lg:gap-0.5">
       {first && last && details.length > 1 ? (
         <>
           <time dateTime={row.timestamp} className="whitespace-nowrap">
@@ -655,7 +655,7 @@ function Details({ transfers }: { transfers: DetailTransfer[] }) {
             key={objekt.transfer.id}
             className={cn(
               grid,
-              "items-center border-b border-border/40 px-2 py-1.5 last:border-b-0 max-sm:grid-cols-[88px_minmax(0,1fr)]",
+              "items-center border-b border-border/40 px-2 py-1.5 last:border-b-0 max-lg:grid-cols-[88px_minmax(0,1fr)]",
             )}
           >
             <Timestamp
@@ -666,12 +666,12 @@ function Details({ transfers }: { transfers: DetailTransfer[] }) {
             <div
               className={cn(
                 "min-w-0",
-                sent ? "sm:col-start-2" : "sm:col-start-4",
+                sent ? "lg:col-start-2" : "lg:col-start-4",
               )}
             >
               <DetailCard objekt={objekt} label={label} />
             </div>
-            <div className="max-sm:hidden sm:col-span-3 sm:col-start-5">
+            <div className="max-lg:hidden lg:col-span-3 lg:col-start-5">
               {label}
             </div>
           </li>
@@ -682,8 +682,8 @@ function Details({ transfers }: { transfers: DetailTransfer[] }) {
 }
 
 /**
- * A card in an expanded row. Phones show its direction under the name, since
- * they have no outcome column.
+ * A card in an expanded row. Narrower screens show its direction under the
+ * name, since they have no outcome column.
  */
 function DetailCard({
   objekt,
@@ -707,7 +707,7 @@ function DetailCard({
             </span>
           )}
         </span>
-        <span className="sm:hidden">{label}</span>
+        <span className="lg:hidden">{label}</span>
       </span>
     </span>
   );
