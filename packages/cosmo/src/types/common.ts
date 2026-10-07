@@ -33,7 +33,9 @@ export function isMemberSort(sort: ValidSort) {
  * Mint sorts order by how many objekts a collection has minted, which requires
  * a join against the indexer collection_stats table.
  */
-export function isMintSort(sort: ValidSort): sort is "mintsAsc" | "mintsDesc" {
+export type MintSort = "mintsAsc" | "mintsDesc";
+
+export function isMintSort(sort: ValidSort): sort is MintSort {
   return sort === "mintsAsc" || sort === "mintsDesc";
 }
 

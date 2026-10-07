@@ -1,5 +1,7 @@
+import type { IndexSort } from "@/lib/universal/sorts";
 import {
   isMintSort,
+  type MintSort,
   type ValidArtist,
   type ValidOnlineType,
   type ValidSort,
@@ -26,11 +28,20 @@ export const mintCount = MINT_COUNT_INCLUDES_SPUN
   : sql<number>`(${collectionStats.objektCount} - ${collectionStats.spunCount})`;
 
 /**
+ * Orders by mint count. Collections without stats sort last.
+ */
+export function mintOrder(sort: MintSort) {
+  return sort === "mintsAsc"
+    ? sql`${mintCount} asc nulls last`
+    : sql`${mintCount} desc nulls last`;
+}
+
+/**
  * Sorts the ungrouped user collection pages by ranking collections first,
  * since their order comes from a per-collection count rather than an objekt
  * column.
  */
-export type RankedSort = "duplicatesDesc" | "mintsAsc" | "mintsDesc";
+export type RankedSort = "duplicatesDesc" | MintSort;
 
 export function isRankedSort(sort: ValidSort): sort is RankedSort {
   return sort === "duplicatesDesc" || isMintSort(sort);
@@ -76,11 +87,10 @@ export function withCollectionSort<T extends PgSelect>(
  */
 export function withObjektIndexSort<T extends PgSelect>(
   qb: T,
-  sort: ValidSort,
+  sort: IndexSort,
 ) {
   switch (sort) {
     case "newest":
-    default:
       return qb.orderBy(desc(collections.createdAt), asc(collections.id));
     case "oldest":
       return qb.orderBy(asc(collections.createdAt), asc(collections.id));
@@ -101,9 +111,8 @@ export function withObjektIndexSort<T extends PgSelect>(
         asc(collections.id),
       );
     case "mintsAsc":
-      return qb.orderBy(sql`${mintCount} asc nulls last`, asc(collections.id));
     case "mintsDesc":
-      return qb.orderBy(sql`${mintCount} desc nulls last`, asc(collections.id));
+      return qb.orderBy(mintOrder(sort), asc(collections.id));
   }
 }
 

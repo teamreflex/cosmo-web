@@ -1,5 +1,10 @@
 import type { CosmoFilters } from "@/hooks/use-cosmo-filters";
 import { env } from "@/lib/env/client";
+import {
+  type CollectionSort,
+  collectionSorts,
+  supportedSort,
+} from "@/lib/universal/sorts";
 import { SearchClient } from "typesense";
 import type { IndexedObjekt, ObjektResponse } from "../universal/objekts";
 
@@ -52,7 +57,7 @@ export async function getTypesenseResults({
         q: query,
         query_by: "member,description,season,shortCode",
         query_by_weights: "3,2,1,1",
-        sort_by: buildSortBy(filters.sort),
+        sort_by: buildSortBy(supportedSort(filters.sort, collectionSorts)),
         page: page,
         per_page: PER_PAGE,
         filter_by: buildFilterBy(filters, artists),
@@ -83,10 +88,13 @@ export async function getTypesenseResults({
 }
 
 /**
- * Map the selected sort to a Typesense sort_by expression.
+ * Map the selected sort to a Typesense sort_by expression. Typesense has no
+ * serials or mint counts, so only collection sorts apply.
  */
-function buildSortBy(sort: CosmoFilters["sort"]): string {
+function buildSortBy(sort: CollectionSort): string {
   switch (sort) {
+    case "newest":
+      return "createdAt:desc";
     case "oldest":
       return "createdAt:asc";
     case "noAscending":
@@ -97,10 +105,6 @@ function buildSortBy(sort: CosmoFilters["sort"]): string {
       return "memberSortOrder(missing_values: last):asc,collectionNo:asc,createdAt:asc";
     case "memberDesc":
       return "memberSortOrder(missing_values: last):desc,collectionNo:asc,createdAt:asc";
-    // newest (default), plus serial and duplicate sorts which don't apply to
-    // collection search, and mint sorts since Typesense has no mint counts
-    default:
-      return "createdAt:desc";
   }
 }
 

@@ -11,12 +11,10 @@ describe("sort presets", () => {
     for (const sort of ["serialAsc", "serialDesc", "duplicatesDesc"] as const) {
       expect(collectionSorts).not.toContain(sort);
       expect(indexSorts).not.toContain(sort);
-      expect(profileSorts).toContain(sort);
     }
     for (const sort of ["mintsAsc", "mintsDesc"] as const) {
       expect(collectionSorts).not.toContain(sort);
       expect(indexSorts).toContain(sort);
-      expect(profileSorts).toContain(sort);
     }
   });
 

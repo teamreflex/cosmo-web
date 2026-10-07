@@ -8,7 +8,7 @@ import {
 } from "@/lib/server/db/indexer/schema";
 import type { Collection } from "@/lib/server/db/indexer/schema";
 import {
-  mintCount,
+  mintOrder,
   withArtist,
   withClass,
   withMember,
@@ -17,10 +17,12 @@ import {
 } from "@/lib/server/objekts/filters.server";
 import { objektListBackendSchema } from "@/lib/universal/parsers";
 import {
-  isMemberSort,
-  isMintSort,
-  type ValidSort,
-} from "@apollo/cosmo/types/common";
+  type IndexSort,
+  indexSorts,
+  supportedSort,
+} from "@/lib/universal/sorts";
+import { isMemberSort, isMintSort } from "@apollo/cosmo/types/common";
+import type { ObjektListEntry } from "@apollo/database/web/types";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, type SQL, sql } from "drizzle-orm";
 import * as z from "zod";
@@ -86,9 +88,8 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
       };
     }
 
-    const sort = data.sort ?? "newest";
     const start = data.page * LIMIT;
-    const rows = await fetchListPage(entries, data, sort, start);
+    const rows = await fetchListPage(entries, data, start);
 
     const entriesById = new Map(entries.map((e) => [e.id, e]));
     const items: ObjektListItem[] = [];
@@ -119,13 +120,6 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
     };
   });
 
-type ListEntry = {
-  id: string;
-  collectionId: string;
-  tokenId: string | null;
-  createdAt: Date;
-};
-
 /**
  * Fetch one page of list entries from the indexer. Entries live in the web
  * database, so they're passed in as a JSON recordset; the indexer then applies
@@ -133,11 +127,14 @@ type ListEntry = {
  * serial for just the page's rows.
  */
 async function fetchListPage(
-  entries: ListEntry[],
+  entries: Pick<
+    ObjektListEntry,
+    "id" | "collectionId" | "tokenId" | "createdAt"
+  >[],
   data: z.infer<typeof objektListBackendSchema>,
-  sort: ValidSort,
   start: number,
 ) {
+  const sort = supportedSort(data.sort, indexSorts);
   const recordset = JSON.stringify(
     entries.map((e) => ({
       entry_id: e.id,
@@ -159,7 +156,6 @@ async function fetchListPage(
       ),
   );
 
-  const order = listSortOrder(sort, listEntries.createdAt);
   let pageQuery = indexer
     .with(listEntries)
     .select({
@@ -167,7 +163,7 @@ async function fetchListPage(
       tokenId: listEntries.tokenId,
       collectionId: collections.id,
       position:
-        sql<number>`row_number() over (order by ${sql.join([...order, sql`${listEntries.entryId}`], sql`, `)})`.as(
+        sql<number>`row_number() over (order by ${sql.join([...listSortOrder(sort, listEntries.createdAt), sql`${listEntries.entryId}`], sql`, `)})`.as(
           "position",
         ),
       total: sql<number>`count(*) over ()::int`.as("total"),
@@ -219,12 +215,13 @@ async function fetchListPage(
 /**
  * Sort keys for list entries. Newest/oldest order by when the entry was added
  * to the list (not when the collection released), and other sorts break ties
- * between entries of the same collection the same way. Sorts that don't apply
- * to lists fall back to newest.
+ * between entries of the same collection the same way.
  */
-function listSortOrder(sort: ValidSort, addedAt: SQL.Aliased<string>): SQL[] {
+function listSortOrder(sort: IndexSort, addedAt: SQL.Aliased<string>): SQL[] {
   const newestAdded = sql`${addedAt} desc`;
   switch (sort) {
+    case "newest":
+      return [newestAdded];
     case "oldest":
       return [sql`${addedAt} asc`];
     case "noAscending":
@@ -244,10 +241,7 @@ function listSortOrder(sort: ValidSort, addedAt: SQL.Aliased<string>): SQL[] {
         newestAdded,
       ];
     case "mintsAsc":
-      return [sql`${mintCount} asc nulls last`, newestAdded];
     case "mintsDesc":
-      return [sql`${mintCount} desc nulls last`, newestAdded];
-    default:
-      return [newestAdded];
+      return [mintOrder(sort), newestAdded];
   }
 }

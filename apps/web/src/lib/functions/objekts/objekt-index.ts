@@ -17,6 +17,7 @@ import {
 } from "@/lib/server/objekts/filters.server";
 import type { IndexedObjekt, ObjektResponse } from "@/lib/universal/objekts";
 import { objektIndexBackendSchema } from "@/lib/universal/parsers";
+import { indexSorts, supportedSort } from "@/lib/universal/sorts";
 import { isMemberSort, isMintSort } from "@apollo/cosmo/types/common";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, getColumns } from "drizzle-orm";
@@ -41,7 +42,7 @@ export const $fetchObjektsIndex = createServerFn({ method: "GET" })
     );
 
     // build the query (explicit columns so the member join can't reshape rows)
-    const sort = data.sort ?? "newest";
+    const sort = supportedSort(data.sort, indexSorts);
     let query = indexer
       .select(getColumns(collections))
       .from(collections)

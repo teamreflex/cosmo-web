@@ -8,7 +8,7 @@ import {
 } from "@/lib/server/db/indexer/schema";
 import {
   isRankedSort,
-  mintCount,
+  mintOrder,
   type RankedSort,
   withArtist,
   withClass,
@@ -22,7 +22,11 @@ import {
   withTransferable,
 } from "@/lib/server/objekts/filters.server";
 import { userCollectionBackendSchema } from "@/lib/universal/parsers";
-import { collectionSorts, supportedSort } from "@/lib/universal/sorts";
+import {
+  collectionSorts,
+  profileSorts,
+  supportedSort,
+} from "@/lib/universal/sorts";
 import { isMemberSort, isMintSort } from "@apollo/cosmo/types/common";
 import { Addresses, isEqual } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
@@ -97,9 +101,10 @@ async function fetchObjekts(
    * received_at), and duplicate and mint sorts would rank every collection it
    * holds. Only collection sorts apply; anything else falls back to newest.
    */
-  const sort = isSpin
-    ? supportedSort(data.sort, collectionSorts)
-    : (data.sort ?? "newest");
+  const sort = supportedSort(
+    data.sort,
+    isSpin ? collectionSorts : profileSorts,
+  );
   if (isRankedSort(sort)) {
     return await fetchRankedObjekts(data, owner, sort);
   }
@@ -183,11 +188,8 @@ async function fetchRankedObjekts(
     );
 
   // grouping before the stats join keeps it to one lookup per collection
-  const rankKey = {
-    duplicatesDesc: sql`${owned.copies} desc`,
-    mintsAsc: sql`${mintCount} asc`,
-    mintsDesc: sql`${mintCount} desc`,
-  }[sort];
+  const rankKey =
+    sort === "duplicatesDesc" ? sql`${owned.copies} desc` : mintOrder(sort);
   let rankedQuery = indexer
     .select({
       collectionId: owned.collectionId,
