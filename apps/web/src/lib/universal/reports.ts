@@ -1,0 +1,78 @@
+import type { Role } from "@apollo/auth";
+import type { ReportReason, ReportStatus } from "@apollo/database/web/types";
+
+/**
+ * Escalated reports still wait on staff, so they count as open for the
+ * one-report-per-target rule and the queue's open work.
+ */
+export const openReportStatuses = [
+  "open",
+  "escalated",
+] as const satisfies readonly ReportStatus[];
+export type OpenReportStatus = (typeof openReportStatuses)[number];
+
+/**
+ * The caller's own open report on a target, if any.
+ */
+export type MyReport = { status: OpenReportStatus } | null;
+
+type ReportUser = {
+  id: string;
+  username: string;
+};
+
+/**
+ * What a queue row shows of the reported thing; null when it no longer
+ * exists. Later phases add messages, listings, feedback and trades.
+ */
+export type AdminReportRowTarget = {
+  type: "user";
+  user: ReportUser | null;
+};
+
+export type AdminReportRow = {
+  id: string;
+  reason: ReportReason;
+  status: ReportStatus;
+  createdAt: Date;
+  reporter: { username: string };
+  target: AdminReportRowTarget;
+};
+
+/**
+ * A reported user as staff see them. `ban` is null unless a ban is in force;
+ * a null `until` is permanent. `profile` is the COSMO username to link to.
+ */
+export type ReportTargetUser = ReportUser & {
+  image: string | null;
+  role: Role;
+  ban: { until: Date | null } | null;
+  profile: string | null;
+};
+
+export type AdminReportDetailTarget = {
+  type: "user";
+  user: ReportTargetUser | null;
+};
+
+/**
+ * Closed reports carry who closed them and when; the resolver is null once
+ * their account is deleted.
+ */
+export type ReportOutcome =
+  | { status: OpenReportStatus }
+  | {
+      status: "resolved" | "dismissed";
+      resolvedAt: Date;
+      resolver: { username: string } | null;
+    };
+
+export type AdminReportDetail = ReportOutcome & {
+  id: string;
+  reason: ReportReason;
+  note: string | null;
+  createdAt: Date;
+  reporter: { username: string };
+  otherOpenCount: number;
+  target: AdminReportDetailTarget;
+};

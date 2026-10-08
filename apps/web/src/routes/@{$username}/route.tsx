@@ -9,6 +9,7 @@ import {
   TwitterBadge,
 } from "@/components/profile/profile-badges";
 import ProfileTabs from "@/components/profile/profile-tabs";
+import ReportButton from "@/components/profile/report-button";
 import UserAvatar from "@/components/profile/user-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
@@ -16,6 +17,7 @@ import { env } from "@/lib/env/client";
 import { tokenBalancesQuery } from "@/lib/queries/como";
 import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
 import { pinsQuery } from "@/lib/queries/profile";
+import { myReportQuery } from "@/lib/queries/reports";
 import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { profileFrontendSchema } from "@/lib/universal/parsers";
 import { BinderViewerProvider } from "@/providers/binder-viewer-provider";
@@ -51,6 +53,13 @@ export const Route = createFileRoute("/@{$username}")({
     void context.queryClient.prefetchQuery(
       tokenBalancesQuery(target.cosmo.address),
     );
+
+    // signed-in visitors can report a linked account other than their own
+    if (account && target.user && account.user.id !== target.user.id) {
+      void context.queryClient.prefetchQuery(
+        myReportQuery({ targetType: "user", targetId: target.user.id }),
+      );
+    }
 
     return { account, target };
   },
@@ -110,6 +119,18 @@ function RouteComponent() {
 
                     <div className="flex items-center gap-0.5">
                       <CopyAddressButton address={target.cosmo.address} />
+                      {account &&
+                        target.user &&
+                        account.user.id !== target.user.id && (
+                          <ErrorBoundary fallback={null}>
+                            <Suspense fallback={null}>
+                              <ReportButton
+                                userId={target.user.id}
+                                username={target.cosmo.username}
+                              />
+                            </Suspense>
+                          </ErrorBoundary>
+                        )}
                       {/* content gets portaled in */}
                       <div
                         className="flex items-center empty:hidden"
