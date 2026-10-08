@@ -1,7 +1,7 @@
 export const authErrorCodes = [
   "not_signed_in",
   "cosmo_not_linked",
-  "not_admin",
+  "forbidden",
   "EXPIRED",
   "INVALID",
   "NOT_FOUND",

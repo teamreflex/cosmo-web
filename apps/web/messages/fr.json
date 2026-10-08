@@ -116,7 +116,7 @@
   "auth_error_unknown": "Une erreur inattendue est survenue.",
   "auth_error_not_signed_in": "Veuillez vous connecter pour continuer.",
   "auth_error_cosmo_required": "Veuillez associer votre compte COSMO pour continuer.",
-  "auth_error_not_admin": "Vous n'êtes pas autorisé à effectuer cette action.",
+  "auth_error_forbidden": "Vous n'êtes pas autorisé à effectuer cette action.",
   "auth_error_verification_not_found": "Code de vérification introuvable dans votre bio COSMO.",
   "_comment_link_cosmo": "Link COSMO account strings",
   "link_cosmo_title": "Associer COSMO",

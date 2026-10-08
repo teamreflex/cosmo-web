@@ -16,8 +16,8 @@ export function formatAuthError(error: unknown): string | null {
       return m.auth_error_not_signed_in();
     case "cosmo_not_linked":
       return m.auth_error_cosmo_required();
-    case "not_admin":
-      return m.auth_error_not_admin();
+    case "forbidden":
+      return m.auth_error_forbidden();
     case "EXPIRED":
       return m.link_cosmo_error_expired();
     case "INVALID":

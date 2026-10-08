@@ -2,21 +2,17 @@ import CreateEvent from "@/components/admin/events/create-event-dialog";
 import EventsGrid from "@/components/admin/events/events-grid";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
-import {
-  artistsQuery,
-  currentAccountQuery,
-  filterDataQuery,
-} from "@/lib/queries/core";
+import { artistsQuery, filterDataQuery } from "@/lib/queries/core";
 import { adminErasQuery, adminEventsQuery } from "@/lib/queries/events";
+import { can } from "@apollo/auth";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Suspense } from "react";
 
 export const Route = createFileRoute("/admin/events")({
   staleTime: Infinity,
-  beforeLoad: async ({ context }) => {
-    const user = await context.queryClient.ensureQueryData(currentAccountQuery);
-    if (!user?.user.isAdmin) {
-      throw redirect({ to: "/" });
+  beforeLoad: ({ context }) => {
+    if (!can(context.role, { site: ["manage"] })) {
+      throw redirect({ to: "/admin" });
     }
   },
   loader: async ({ context }) => {

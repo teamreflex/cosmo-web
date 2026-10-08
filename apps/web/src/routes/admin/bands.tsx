@@ -1,15 +1,14 @@
 import InsertBands from "@/components/admin/bands/insert-bands";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
-import { currentAccountQuery } from "@/lib/queries/core";
+import { can } from "@apollo/auth";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/admin/bands")({
   staleTime: Infinity,
-  beforeLoad: async ({ context }) => {
-    const user = await context.queryClient.ensureQueryData(currentAccountQuery);
-    if (!user?.user.isAdmin) {
-      throw redirect({ to: "/" });
+  beforeLoad: ({ context }) => {
+    if (!can(context.role, { site: ["manage"] })) {
+      throw redirect({ to: "/admin" });
     }
   },
   head: () =>

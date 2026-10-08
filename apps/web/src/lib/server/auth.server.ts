@@ -1,6 +1,7 @@
 import * as clientEnv from "@/lib/env/client";
 import * as serverEnv from "@/lib/env/server";
 import { baseUrl } from "@/lib/utils";
+import { adminPluginOptions } from "@apollo/auth";
 import * as authSchema from "@apollo/database/auth";
 import { cosmoAccounts } from "@apollo/database/web/schema";
 import { GRID_COLUMNS } from "@apollo/util";
@@ -10,6 +11,7 @@ import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { parseSessionOutput, parseUserOutput } from "better-auth/db";
 import { betterAuth } from "better-auth/minimal";
+import { admin } from "better-auth/plugins/admin";
 import { username } from "better-auth/plugins/username";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { eq } from "drizzle-orm";
@@ -52,6 +54,7 @@ export const auth = betterAuth({
       // `start` (shown in the admin table) keeps the prefix + a few key chars
       startingCharactersConfig: { charactersLength: 13 },
     }),
+    admin(adminPluginOptions),
     tanstackStartCookies(),
   ],
 
@@ -272,13 +275,6 @@ export const auth = betterAuth({
       },
     },
     additionalFields: {
-      isAdmin: {
-        type: "boolean",
-        required: false,
-        defaultValue: false,
-        input: false,
-        returned: true,
-      },
       gridColumns: {
         type: "number",
         required: false,
@@ -370,7 +366,6 @@ export function toPublicUser(
     id: user.id,
     username: user.displayUsername ?? undefined,
     image: user.image ?? undefined,
-    isAdmin: user.isAdmin ?? false,
     gridColumns: user.gridColumns ?? GRID_COLUMNS,
     // SAFETY: the column only stores CollectionDataSource values
     collectionMode: (user.collectionMode ??

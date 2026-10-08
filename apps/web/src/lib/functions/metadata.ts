@@ -1,5 +1,5 @@
 import { db } from "@/lib/server/db";
-import { adminMiddleware } from "@/lib/server/middlewares";
+import { cosmoMiddleware, staffMiddleware } from "@/lib/server/middlewares";
 import { collectionData } from "@apollo/database/web/schema";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
@@ -10,7 +10,7 @@ const updateCollectionMetadataSchema = z.object({
 });
 
 export const $updateCollectionMetadata = createServerFn({ method: "POST" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] }), cosmoMiddleware])
   .validator(updateCollectionMetadataSchema)
   .handler(async ({ data, context }) => {
     await db

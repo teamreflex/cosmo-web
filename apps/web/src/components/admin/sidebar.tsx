@@ -8,6 +8,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useCan } from "@/hooks/use-can";
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
 import type { PropsWithClassName } from "@/lib/utils";
@@ -18,7 +19,8 @@ type Props = PropsWithClassName<{}>;
 
 export function AdminSidebar({ className }: Props) {
   const location = useLocation();
-  const items = getAdminItems();
+  const can = useCan();
+  const items = getAdminItems().filter((item) => can(item.permissions));
 
   return (
     <Sidebar variant="inset" className={className}>

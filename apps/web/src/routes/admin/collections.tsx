@@ -10,21 +10,17 @@ import {
   adminCollectionQuery,
   latestCollectionsQuery,
 } from "@/lib/queries/collections";
-import {
-  artistsQuery,
-  currentAccountQuery,
-  filterDataQuery,
-} from "@/lib/queries/core";
+import { artistsQuery, filterDataQuery } from "@/lib/queries/core";
+import { can } from "@apollo/auth";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Suspense, useState } from "react";
 
 export const Route = createFileRoute("/admin/collections")({
   staleTime: Infinity,
-  beforeLoad: async ({ context }) => {
-    const user = await context.queryClient.ensureQueryData(currentAccountQuery);
-    if (!user?.user.isAdmin) {
-      throw redirect({ to: "/" });
+  beforeLoad: ({ context }) => {
+    if (!can(context.role, { site: ["manage"] })) {
+      throw redirect({ to: "/admin" });
     }
   },
   loader: async ({ context }) => {

@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useArtists } from "@/hooks/use-artists";
+import { useCan } from "@/hooks/use-can";
 import { m } from "@/i18n/messages";
 import type { PublicUser } from "@/lib/universal/auth";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
@@ -20,6 +21,7 @@ import {
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { ADMIN_SHELL_PERMISSIONS } from "../admin/common";
 import AboutDialog from "../navbar/about";
 import { ArtistItem } from "../navbar/artist-selectbox";
 import UserAvatar from "../profile/user-avatar";
@@ -38,6 +40,7 @@ export default function UserDropdown({
   onSignOut,
 }: UserDropdownProps) {
   const { artistList, selectedIds } = useArtists();
+  const can = useCan();
   const [openSettings, setOpenSettings] = useState(false);
   const [openAccount, setOpenAccount] = useState(false);
   const [openAbout, setOpenAbout] = useState(false);
@@ -92,7 +95,7 @@ export default function UserDropdown({
           <span>{m.user_dropdown_settings()}</span>
         </DropdownMenuItem>
 
-        {user.isAdmin && (
+        {can(ADMIN_SHELL_PERMISSIONS) && (
           <div className="contents">
             <DropdownMenuSeparator />
             <DropdownMenuItem

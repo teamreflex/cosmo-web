@@ -1,16 +1,15 @@
 import UpdateNoticeCard from "@/components/admin/notice/update-notice-card";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
-import { currentAccountQuery } from "@/lib/queries/core";
 import { noticeQuery } from "@/lib/queries/notice";
+import { can } from "@apollo/auth";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/admin/notice")({
   staleTime: Infinity,
-  beforeLoad: async ({ context }) => {
-    const user = await context.queryClient.ensureQueryData(currentAccountQuery);
-    if (!user?.user.isAdmin) {
-      throw redirect({ to: "/" });
+  beforeLoad: ({ context }) => {
+    if (!can(context.role, { site: ["manage"] })) {
+      throw redirect({ to: "/admin" });
     }
   },
   loader: async ({ context }) => {

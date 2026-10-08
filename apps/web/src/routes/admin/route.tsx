@@ -1,4 +1,5 @@
 import AdminBreadcrumbs from "@/components/admin/breadcrumbs";
+import { ADMIN_SHELL_PERMISSIONS } from "@/components/admin/common";
 import { AdminSidebar } from "@/components/admin/sidebar";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -7,14 +8,18 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { currentAccountQuery } from "@/lib/queries/core";
+import { can } from "@apollo/auth";
 import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: async ({ context }) => {
-    const user = await context.queryClient.ensureQueryData(currentAccountQuery);
-    if (!user?.user.isAdmin) {
+    const account =
+      await context.queryClient.ensureQueryData(currentAccountQuery);
+    if (!account || !can(account.role, ADMIN_SHELL_PERMISSIONS)) {
       throw redirect({ to: "/" });
     }
+
+    return { role: account.role };
   },
   component: RouteComponent,
 });

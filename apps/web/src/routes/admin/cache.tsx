@@ -4,15 +4,14 @@ import ClearPinsCard from "@/components/admin/cache/clear-pins-card";
 import UpdateCosmoKeyCard from "@/components/admin/cache/update-cosmo-key-card";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
-import { currentAccountQuery } from "@/lib/queries/core";
+import { can } from "@apollo/auth";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/admin/cache")({
   staleTime: Infinity,
-  beforeLoad: async ({ context }) => {
-    const user = await context.queryClient.ensureQueryData(currentAccountQuery);
-    if (!user?.user.isAdmin) {
-      throw redirect({ to: "/" });
+  beforeLoad: ({ context }) => {
+    if (!can(context.role, { site: ["manage"] })) {
+      throw redirect({ to: "/admin" });
     }
   },
   head: () =>

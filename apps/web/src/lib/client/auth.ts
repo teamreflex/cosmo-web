@@ -1,6 +1,8 @@
 import { m } from "@/i18n/messages";
 import { baseUrl } from "@/lib/utils";
+import { ac, roles } from "@apollo/auth";
 import {
+  adminClient,
   inferAdditionalFields,
   usernameClient,
 } from "better-auth/client/plugins";
@@ -12,7 +14,11 @@ import type { auth } from "../server/auth.server";
  */
 export const authClient = createAuthClient({
   baseURL: baseUrl(),
-  plugins: [usernameClient(), inferAdditionalFields<typeof auth>()],
+  plugins: [
+    usernameClient(),
+    adminClient({ ac, roles }),
+    inferAdditionalFields<typeof auth>(),
+  ],
 });
 
 type ErrorInput = {

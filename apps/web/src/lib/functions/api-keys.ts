@@ -1,6 +1,6 @@
 import { auth } from "@/lib/server/auth.server";
 import { db } from "@/lib/server/db";
-import { adminMiddleware } from "@/lib/server/middlewares";
+import { staffMiddleware } from "@/lib/server/middlewares";
 import type { AdminApiKey, UserSearchResult } from "@/lib/universal/api-keys";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import {
@@ -17,7 +17,7 @@ import { eq } from "drizzle-orm";
  * Search linked COSMO accounts by username to pick an API key owner.
  */
 export const $searchUsers = createServerFn({ method: "GET" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(searchUsersSchema)
   .handler(async ({ data }) => {
     // escape LIKE wildcards so they match literally
@@ -51,7 +51,7 @@ export const $searchUsers = createServerFn({ method: "GET" })
  * List every API key with its owner, newest first.
  */
 export const $listApiKeys = createServerFn({ method: "GET" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .handler(async () => {
     const rows = await db.query.apikey.findMany({
       with: {
@@ -82,7 +82,7 @@ export const $listApiKeys = createServerFn({ method: "GET" })
  * key is returned once for the admin to copy.
  */
 export const $createApiKey = createServerFn({ method: "POST" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(createApiKeySchema)
   .handler(async ({ data }) => {
     const owner = await db.query.user.findFirst({
@@ -109,7 +109,7 @@ export const $createApiKey = createServerFn({ method: "POST" })
  * session-scoped to the caller, so admin edits go directly through Drizzle.
  */
 export const $updateApiKey = createServerFn({ method: "POST" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(updateApiKeySchema)
   .handler(async ({ data }) => {
     const [updated] = await db
@@ -126,7 +126,7 @@ export const $updateApiKey = createServerFn({ method: "POST" })
  * Delete an API key.
  */
 export const $deleteApiKey = createServerFn({ method: "POST" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(deleteApiKeySchema)
   .handler(async ({ data }) => {
     const [deleted] = await db

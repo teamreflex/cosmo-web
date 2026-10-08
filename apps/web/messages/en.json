@@ -116,7 +116,7 @@
   "auth_error_unknown": "An unknown error occurred.",
   "auth_error_not_signed_in": "Please sign in to continue.",
   "auth_error_cosmo_required": "Please link your COSMO account to continue.",
-  "auth_error_not_admin": "You are not authorized to perform this action.",
+  "auth_error_forbidden": "You are not authorized to perform this action.",
   "auth_error_verification_not_found": "Verification code not found in your COSMO bio.",
   "_comment_link_cosmo": "Link COSMO account strings",
   "link_cosmo_title": "Link COSMO",
