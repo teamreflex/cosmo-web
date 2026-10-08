@@ -26,6 +26,7 @@ import { m } from "@/i18n/messages";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { formatError } from "@/lib/client/errors";
 import { banLengthLabel, reportReasonLabel } from "@/lib/client/reports";
+import { adminReportsQueryFilter } from "@/lib/queries/reports";
 import { banLengthOptions } from "@/lib/universal/reports";
 import type {
   AdminReportDetail,
@@ -84,7 +85,7 @@ export default function BanUserDialog({
     onSuccess: async () => {
       toast.success(m.admin_ban_banned({ username: user.username }));
       handleOpenChange(false);
-      await queryClient.invalidateQueries({ queryKey: ["admin", "reports"] });
+      await queryClient.invalidateQueries(adminReportsQueryFilter);
     },
     onError: (error) => {
       toast.error(formatError(error));

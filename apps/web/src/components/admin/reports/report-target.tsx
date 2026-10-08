@@ -7,6 +7,7 @@ import { m } from "@/i18n/messages";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { formatError } from "@/lib/client/errors";
 import { roleLabel } from "@/lib/client/roles";
+import { adminReportsQueryFilter } from "@/lib/queries/reports";
 import type {
   AdminReportDetail,
   ReportTargetUser,
@@ -111,7 +112,7 @@ function UnbanButton({ user }: { user: ReportTargetUser }) {
     },
     onSuccess: async () => {
       toast.success(m.admin_reports_unbanned({ username: user.username }));
-      await queryClient.invalidateQueries({ queryKey: ["admin", "reports"] });
+      await queryClient.invalidateQueries(adminReportsQueryFilter);
     },
     onError: (error) => {
       toast.error(formatError(error));

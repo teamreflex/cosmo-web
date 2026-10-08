@@ -9,6 +9,7 @@ import {
   $resolveReport,
 } from "@/lib/functions/reports";
 import { currentAccountQuery } from "@/lib/queries/core";
+import { adminReportsQueryFilter } from "@/lib/queries/reports";
 import type { AdminReportDetail } from "@/lib/universal/reports";
 import { cn } from "@/lib/utils";
 import { IconLoader2 } from "@tabler/icons-react";
@@ -98,8 +99,7 @@ function OpenActions({ report }: Props) {
       toast.error(formatError(error));
     },
     // a lost race also needs the latest status
-    onSettled: () =>
-      queryClient.invalidateQueries({ queryKey: ["admin", "reports"] }),
+    onSettled: () => queryClient.invalidateQueries(adminReportsQueryFilter),
   });
 
   const target = report.target.user;

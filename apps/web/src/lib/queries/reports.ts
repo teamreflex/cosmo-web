@@ -23,14 +23,20 @@ export function myReportQuery(target: ReportTarget) {
   });
 }
 
+/**
+ * Matches every staff report query (counts, queue pages and details), which
+ * report actions and bans all invalidate together.
+ */
+export const adminReportsQueryFilter = { queryKey: ["admin", "reports"] };
+
 export const reportCountsQuery = queryOptions({
-  queryKey: ["admin", "reports", "counts"],
+  queryKey: [...adminReportsQueryFilter.queryKey, "counts"],
   queryFn: () => $fetchReportCounts(),
 });
 
 export function reportQueueQuery(filters: ReportQueueFilters) {
   return infiniteQueryOptions({
-    queryKey: ["admin", "reports", "queue", filters],
+    queryKey: [...adminReportsQueryFilter.queryKey, "queue", filters],
     queryFn: ({ pageParam }) =>
       $fetchReportQueue({ data: { ...filters, cursor: pageParam } }),
     // SAFETY: cursor seed; widened for TanStack Query inference
@@ -45,7 +51,7 @@ export function reportQueueQuery(filters: ReportQueueFilters) {
  */
 export function reportDetailQuery(id: string) {
   return queryOptions({
-    queryKey: ["admin", "reports", "detail", id],
+    queryKey: [...adminReportsQueryFilter.queryKey, "detail", id],
     queryFn: () => $fetchReport({ data: { id } }),
     staleTime: Infinity,
     refetchOnWindowFocus: false,
