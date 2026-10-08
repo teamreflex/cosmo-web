@@ -62,6 +62,7 @@ Detailed conventions live in `docs/`. Read the relevant file **before** working 
 
 #### Packages
 
+- `packages/auth`: Shared staff roles (Better Auth access control) and the user-events contract
 - `packages/cosmo`: COSMO related types and API functions
 - `packages/database`: `drizzle-orm` schemas for both databases
 - `packages/drizzle-bun-effect`: Effect service for Bun.SQL, derived from `drizzle-orm/effect-postgres`
