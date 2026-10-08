@@ -178,9 +178,12 @@ module.exports = class Data1790444346394 {
       ORDER BY co.owner, c.member, s.season, s.on_offline;
     `);
 
-    // top 25 for a member, season and online type
+    /**
+     * top 25 for a member, season and online type, plus an owner's rank. owner breaks
+     * ties in the same order as the top 25, so both read only the index.
+     */
     await db.query(
-      `CREATE INDEX IF NOT EXISTS "idx_progress_leaderboard_top" ON "progress_leaderboard" ("member", "season", "on_offline", "count" DESC);`,
+      `CREATE INDEX IF NOT EXISTS "idx_progress_leaderboard_top" ON "progress_leaderboard" ("member", "season", "on_offline", "count" DESC, "owner");`,
     );
 
     /**

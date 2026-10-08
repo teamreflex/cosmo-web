@@ -28,6 +28,25 @@ export type LeaderboardItem = {
   isAddress: boolean;
 };
 
+/**
+ * An address's place on a member leaderboard. collectors is everyone holding at least one
+ * of the member's obtainable collections for the same filters.
+ */
+export type ProgressRank = {
+  rank: number;
+  collectors: number;
+  count: number;
+};
+
+/**
+ * Distinct obtainable collections an address holds of a member, out of the member's total.
+ */
+export type MemberCompletion = {
+  member: string;
+  count: number;
+  total: number;
+};
+
 export type Leaderboard = {
   total: number;
   leaderboard: LeaderboardItem[];

@@ -1,93 +1,172 @@
-import { progressLeaderboardQuery } from "@/lib/queries/progress";
+import { useProfileContext } from "@/hooks/use-profile";
+import { m } from "@/i18n/messages";
+import {
+  progressLeaderboardQuery,
+  progressRankQuery,
+} from "@/lib/queries/progress";
 import type { LeaderboardItem } from "@/lib/universal/progress";
-import { ordinal } from "@/lib/utils";
+import { cn, ordinal } from "@/lib/utils";
 import type { ValidOnlineType } from "@apollo/cosmo/types/common";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { isEqual } from "@apollo/util";
+import { useSuspenseQueries } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Skeleton } from "../ui/skeleton";
 
+const PODIUM = 3;
+
 type Props = {
+  address: string;
   member: string;
   onlineType: ValidOnlineType | undefined;
   season: string | undefined;
 };
 
-export default function ProgressLeaderboardContent({
-  member,
-  onlineType,
-  season,
-}: Props) {
-  const { data } = useSuspenseQuery(
-    progressLeaderboardQuery(member, onlineType, season),
-  );
+export default function ProgressLeaderboardContent(props: Props) {
+  const username = useProfileContext((state) => state.target?.cosmo?.username);
+  const [{ data }, { data: rank }] = useSuspenseQueries({
+    queries: [
+      progressLeaderboardQuery(props.member, props.onlineType, props.season),
+      progressRankQuery(
+        props.address,
+        props.member,
+        props.onlineType,
+        props.season,
+      ),
+    ],
+  });
+
+  const percentage = (count: number) =>
+    data.total === 0 ? 0 : Math.floor((count / data.total) * 100);
 
   return (
-    <div className="flex flex-col gap-4 py-2">
-      {data.leaderboard.map((item, i) => (
-        <LeaderboardRow
-          key={item.address}
-          member={member}
-          total={data.total}
-          item={item}
-          rank={i + 1}
-        />
-      ))}
+    <div className="flex flex-col gap-5 p-5">
+      <div className="flex items-center gap-4 rounded-xl border border-cosmo/45 bg-cosmo/14 px-4 py-3.5">
+        {rank === null ? (
+          <p className="text-sm text-muted-foreground">
+            {m.progress_unranked()}
+          </p>
+        ) : (
+          <>
+            <span className="text-3xl leading-none font-bold tabular-nums">
+              #{rank.rank.toLocaleString()}
+            </span>
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <span className="truncate font-bold">
+                {username} · {percentage(rank.count)}%
+              </span>
+              <span className="text-sm text-muted-foreground">
+                {m.progress_rank_collectors({
+                  count: rank.collectors.toLocaleString(),
+                  member: props.member,
+                })}
+              </span>
+            </div>
+          </>
+        )}
+      </div>
+
+      <ol className="grid grid-cols-3 items-end gap-2">
+        {data.leaderboard.slice(0, PODIUM).map((item, i) => (
+          <li
+            key={item.address}
+            className={cn(
+              "flex min-w-0 flex-col justify-end gap-1.5 rounded-xl border p-3",
+              // second place sits left of first, third on the right
+              i === 0 && "order-2 h-36 border-cosmo/50 bg-cosmo/15",
+              i === 1 && "order-1 h-30 bg-card",
+              i === 2 && "order-3 h-27 bg-card",
+            )}
+          >
+            <span className="text-xs font-bold text-muted-foreground">
+              {ordinal(i + 1)}
+            </span>
+            <ProfileLink
+              item={item}
+              member={props.member}
+              className="truncate font-cosmo text-sm uppercase"
+            />
+            <span className="text-xl font-bold tabular-nums">
+              {percentage(item.count)}%
+            </span>
+          </li>
+        ))}
+      </ol>
+
+      <ol start={PODIUM + 1} className="flex flex-col gap-1">
+        {data.leaderboard.slice(PODIUM).map((item, i) => {
+          const isTarget = isEqual(item.address, props.address);
+          const value = percentage(item.count);
+          return (
+            <li
+              key={item.address}
+              className={cn(
+                "grid min-h-11 grid-cols-[1.25rem_minmax(0,1fr)_6rem_2.75rem] items-center gap-3 rounded-lg px-3 text-sm transition-colors",
+                isTarget
+                  ? "bg-cosmo/14 ring-1 ring-cosmo/45 ring-inset"
+                  : "hover:bg-accent/40",
+              )}
+            >
+              <span className="text-right font-semibold text-muted-foreground tabular-nums">
+                {i + PODIUM + 1}
+              </span>
+              <ProfileLink
+                item={item}
+                member={props.member}
+                className="truncate font-semibold"
+              />
+              <span className="h-1.5 overflow-hidden rounded-full bg-muted">
+                <span
+                  className={cn(
+                    "block h-full rounded-full",
+                    isTarget ? "bg-cosmo" : "bg-muted-foreground/60",
+                  )}
+                  style={{ width: `${value}%` }}
+                />
+              </span>
+              <span className="text-right font-bold tabular-nums">
+                {value}%
+              </span>
+            </li>
+          );
+        })}
+      </ol>
     </div>
   );
 }
 
-type LeaderboardRowProps = {
-  member: string;
-  total: number;
+type ProfileLinkProps = {
   item: LeaderboardItem;
-  rank: number;
+  member: string;
+  className?: string;
 };
 
-function LeaderboardRow({ member, total, item, rank }: LeaderboardRowProps) {
-  const progress = Math.floor((item.count / total) * 100);
-
+function ProfileLink({ item, member, className }: ProfileLinkProps) {
   return (
-    <div className="flex flex-col">
-      <div className="flex flex-row items-center justify-between">
-        <span className="font-semibold">{ordinal(rank)}</span>
-        <Link
-          className="font-cosmo underline"
-          to="/@{$username}/progress"
-          params={{ username: item.isAddress ? item.address : item.nickname }}
-          search={{ member }}
-        >
-          {item.nickname}
-        </Link>
-      </div>
-
-      <div className="relative h-4 w-full overflow-hidden rounded-full border border-primary bg-primary dark:border-transparent dark:bg-secondary">
-        <div className="absolute z-20 flex h-full w-full items-center justify-center">
-          <p className="text-sm font-semibold text-cosmo mix-blend-overlay">
-            {progress}%
-          </p>
-        </div>
-        <div
-          className="z-10 h-full w-full flex-1 bg-secondary transition-all dark:bg-primary"
-          style={{ transform: `translateX(-${100 - (progress || 0)}%)` }}
-        />
-      </div>
-    </div>
+    <Link
+      className={cn("hover:underline", className)}
+      to="/@{$username}/progress"
+      params={{ username: item.isAddress ? item.address : item.nickname }}
+      search={{ member }}
+    >
+      {item.nickname}
+    </Link>
   );
 }
 
 export function LeaderboardSkeleton() {
   return (
-    <div className="flex flex-col gap-4 py-2">
-      {Array.from({ length: 25 }).map((_, i) => (
-        <div className="flex flex-col" key={i}>
-          <div className="flex h-6 flex-row items-center justify-between">
-            <Skeleton className="h-4 w-8" />
-            <Skeleton className="h-4 w-16" />
-          </div>
-
-          <Skeleton className="h-4 w-full rounded-full" />
-        </div>
-      ))}
+    <div className="flex flex-col gap-5 p-5">
+      <Skeleton className="h-17 rounded-xl" />
+      <div className="grid grid-cols-3 items-end gap-2">
+        <Skeleton className="h-30 rounded-xl" />
+        <Skeleton className="h-36 rounded-xl" />
+        <Skeleton className="h-27 rounded-xl" />
+      </div>
+      <div className="flex flex-col gap-2">
+        {Array.from({ length: 22 }).map((_, i) => (
+          <Skeleton key={i} className="h-9 rounded-lg" />
+        ))}
+      </div>
     </div>
   );
 }

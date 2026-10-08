@@ -1,7 +1,11 @@
 import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts.server";
 import { indexer } from "@/lib/server/db/indexer";
 import type { Collection } from "@/lib/server/db/indexer/schema";
-import { collections, objekts } from "@/lib/server/db/indexer/schema";
+import {
+  collections,
+  objekts,
+  progressLeaderboard,
+} from "@/lib/server/db/indexer/schema";
 import { withSpinMonth } from "@/lib/server/objekts/filters.server";
 import {
   fetchLeaderboard,
@@ -11,14 +15,16 @@ import {
 import type {
   ArtistStats,
   LeaderboardItem,
+  MemberCompletion,
   ProcessingArtistStats,
+  ProgressRank,
   SeasonMatrix,
   SeasonProgress,
 } from "@/lib/universal/progress";
 import { validOnlineTypes } from "@apollo/cosmo/types/common";
 import { Addresses, isEqual } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
-import { and, count, eq } from "drizzle-orm";
+import { and, count, eq, inArray, notInArray, sql } from "drizzle-orm";
 import * as z from "zod";
 
 type PartialObjekt = Awaited<ReturnType<typeof fetchProgress>>;
@@ -96,6 +102,107 @@ export const $fetchProgressLeaderboard = createServerFn({ method: "GET" })
       total: totals.filter((c) => !c.unobtainable).length,
       leaderboard: results,
     };
+  });
+
+/**
+ * Fetch where an address places on a member's leaderboard for the given filters.
+ */
+export const $fetchProgressRank = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      address: z.string(),
+      member: z.string(),
+      onlineType: z.enum(validOnlineTypes).nullish().default(null),
+      season: z.string().nullish().default(null),
+    }),
+  )
+  .handler(async ({ data }): Promise<ProgressRank | null> => {
+    const address = data.address.toLowerCase();
+    const variant = and(
+      eq(progressLeaderboard.member, data.member),
+      eq(progressLeaderboard.season, data.season ?? ""),
+      eq(progressLeaderboard.onOffline, data.onlineType ?? ""),
+    );
+
+    const [own] = await indexer
+      .select({ count: progressLeaderboard.count })
+      .from(progressLeaderboard)
+      .where(and(variant, eq(progressLeaderboard.owner, address)))
+      .comment({ fn: "fetchProgressRank" });
+
+    // no collections of the member for the filters, or SPIN
+    if (own === undefined) {
+      return null;
+    }
+
+    // ties with a lower address place above, matching the top 25's order
+    const [standing] = await indexer
+      .select({
+        collectors: count(),
+        above: count(
+          sql`case when ${progressLeaderboard.count} > ${own.count} or (${progressLeaderboard.count} = ${own.count} and ${progressLeaderboard.owner} < ${address}) then 1 end`,
+        ),
+      })
+      .from(progressLeaderboard)
+      .where(variant)
+      .comment({ fn: "fetchProgressRank" });
+
+    return {
+      rank: (standing?.above ?? 0) + 1,
+      collectors: standing?.collectors ?? 0,
+      count: own.count,
+    };
+  });
+
+/**
+ * Fetch an address's completion of every member it holds collections of.
+ */
+export const $fetchMemberCompletion = createServerFn({ method: "GET" })
+  .validator(z.object({ address: z.string() }))
+  .handler(async ({ data }): Promise<MemberCompletion[]> => {
+    const owned = await indexer
+      .select({
+        member: progressLeaderboard.member,
+        count: progressLeaderboard.count,
+      })
+      .from(progressLeaderboard)
+      .where(
+        and(
+          eq(progressLeaderboard.owner, data.address.toLowerCase()),
+          eq(progressLeaderboard.season, ""),
+          eq(progressLeaderboard.onOffline, ""),
+        ),
+      )
+      .comment({ fn: "fetchMemberCompletion" });
+
+    // SPIN has no leaderboard rows
+    if (owned.length === 0) {
+      return [];
+    }
+
+    // the same collections progress_leaderboard counts
+    const totals = await indexer
+      .select({ member: collections.member, total: count() })
+      .from(collections)
+      .where(
+        and(
+          inArray(
+            collections.member,
+            owned.map((row) => row.member),
+          ),
+          notInArray(collections.class, ["Welcome", "Zero"]),
+          eq(collections.unobtainable, false),
+        ),
+      )
+      .groupBy(collections.member)
+      .comment({ fn: "fetchMemberCompletion" });
+
+    const totalMap = new Map(totals.map((row) => [row.member, row.total]));
+    return owned.map((row) => ({
+      member: row.member,
+      count: row.count,
+      total: totalMap.get(row.member) ?? row.count,
+    }));
   });
 
 /**

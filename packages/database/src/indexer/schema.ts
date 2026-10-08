@@ -192,6 +192,7 @@ export const progressLeaderboard = pgTable(
       t.season,
       t.onOffline,
       t.count.desc(),
+      t.owner,
     ),
   ],
 );
