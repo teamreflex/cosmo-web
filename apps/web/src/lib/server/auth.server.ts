@@ -439,6 +439,17 @@ type BanRecord = {
  */
 async function recordBan({ staffId, userId, reportId, detail }: BanRecord) {
   const banExpires = await db.transaction(async (tx) => {
+    /**
+     * Without a length the plugin leaves `ban_expires` as it was, so a lapsed
+     * earlier ban would lift this permanent one at the next sign-in.
+     */
+    if (detail.expiresIn === null) {
+      await tx
+        .update(authSchema.user)
+        .set({ banExpires: null })
+        .where(eq(authSchema.user.id, userId));
+    }
+
     const target = await tx.query.user.findFirst({
       where: { id: userId },
       columns: { banExpires: true },
