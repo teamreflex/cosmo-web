@@ -1,10 +1,15 @@
 import { ObjektSidebar } from "@/components/objekt/common";
-import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
+import { getObjektFrontImageRef } from "@/lib/client/objekt-util";
+import { env } from "@/lib/env/client";
 import { binderGrid } from "@/lib/universal/binders";
-import type { BinderLayout } from "@/lib/universal/binders";
-import { Objekt } from "@/lib/universal/objekt-conversion";
+import type {
+  BinderLayout,
+  BinderObjekt,
+  BinderPocketEntry,
+} from "@/lib/universal/binders";
 import { cn } from "@/lib/utils";
-import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
+import { objektImageUrl } from "@apollo/image";
+import { slugifyObjekt } from "@apollo/util";
 import type { ComponentProps } from "react";
 
 type BinderPageProps = ComponentProps<"div"> & {
@@ -41,8 +46,66 @@ export function BinderPage({
   );
 }
 
+type PageThumbnailProps = {
+  layout: BinderLayout;
+  /** the page's filled pockets by slot */
+  pockets: ReadonlyMap<number, BinderPocketEntry> | undefined;
+  /** outline it as a page on screen */
+  current?: boolean;
+  className?: string;
+};
+
+/**
+ * A page in miniature for the viewer's rail and the editor's strip: a tiny card
+ * per pocket, each filled one tinted with its objekt's background colour, so
+ * pages tell apart at a glance. Its border follows the hover and keyboard
+ * focus of the `group` button it sits in.
+ */
+export function PageThumbnail({
+  layout,
+  pockets,
+  current = false,
+  className,
+}: PageThumbnailProps) {
+  const { columns, pocketsPerPage } = binderGrid(layout);
+
+  return (
+    <span
+      aria-hidden
+      style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}
+      className={cn(
+        "grid w-11 gap-0.5 rounded-md border border-border bg-muted/60 p-1 transition-colors group-hover:border-foreground/30 group-focus-visible:border-foreground",
+        current &&
+          "border-cosmo-text shadow-[0_0_0_2px_color-mix(in_oklch,var(--color-cosmo)_30%,transparent)] group-hover:border-cosmo-text",
+        className,
+      )}
+    >
+      {Array.from({ length: pocketsPerPage }, (_, slot) => {
+        const entry = pockets?.get(slot);
+        return (
+          // its own container, so the corners scale with it like a photocard's
+          <span key={slot} className="@container">
+            <i
+              style={
+                entry === undefined
+                  ? undefined
+                  : { backgroundColor: entry.objekt.backgroundColor }
+              }
+              // ringed, so a dark objekt still reads as filled on a dark page
+              className={cn(
+                "block aspect-photocard rounded-photocard bg-foreground/8",
+                entry !== undefined && "ring-1 ring-foreground/25 ring-inset",
+              )}
+            />
+          </span>
+        );
+      })}
+    </span>
+  );
+}
+
 type PocketSleeveProps = {
-  objekt: CosmoObjekt | undefined;
+  objekt: BinderObjekt | undefined;
   /** load the image eagerly, for the first page on screen */
   priority?: boolean;
   className?: string;
@@ -78,29 +141,40 @@ function PocketObjekt({
   objekt,
   priority,
 }: {
-  objekt: CosmoObjekt;
+  objekt: BinderObjekt;
   priority: boolean;
 }) {
-  const { collection, objekt: token } = Objekt.fromLegacy(objekt);
+  const [artist] = objekt.artists;
+  const ref = getObjektFrontImageRef({
+    slug: slugifyObjekt(objekt.collectionId),
+    frontImageVersion: objekt.frontImageVersion,
+  });
 
   return (
     <div
       style={{
-        "--objekt-background-color": collection.backgroundColor,
-        "--objekt-text-color": collection.textColor,
+        "--objekt-background-color": objekt.backgroundColor,
+        "--objekt-text-color": objekt.textColor,
       }}
       className="absolute inset-0"
     >
       <img
-        src={getObjektFrontImageUrl(collection, "xs")}
-        alt={collection.collectionId}
+        src={
+          ref === null ? undefined : objektImageUrl(env.VITE_CDN_URL, ref, "xs")
+        }
+        alt={objekt.collectionId}
         width={291}
         height={450}
         decoding="async"
         fetchPriority={priority ? "high" : "auto"}
         className="size-full object-cover"
       />
-      <ObjektSidebar collection={collection} serial={token.serial} />
+      {artist !== undefined && (
+        <ObjektSidebar
+          collection={{ ...objekt, artist }}
+          serial={objekt.objektNo}
+        />
+      )}
     </div>
   );
 }

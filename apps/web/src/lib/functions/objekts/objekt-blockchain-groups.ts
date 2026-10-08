@@ -1,6 +1,12 @@
 import { indexer } from "@/lib/server/db/indexer";
-import { collections, members, objekts } from "@/lib/server/db/indexer/schema";
 import {
+  collections,
+  collectionStats,
+  members,
+  objekts,
+} from "@/lib/server/db/indexer/schema";
+import {
+  mintOrder,
   withArtist,
   withClass,
   withMember,
@@ -10,14 +16,19 @@ import {
   withTransferable,
 } from "@/lib/server/objekts/filters.server";
 import { userCollectionBackendSchema } from "@/lib/universal/parsers";
-import { isMemberSort, type ValidSort } from "@apollo/cosmo/types/common";
+import {
+  isMemberSort,
+  isMintSort,
+  type MintSort,
+  type ValidSort,
+} from "@apollo/cosmo/types/common";
 import type {
   BFFCollectionGroup,
   BFFCollectionGroupResponse,
 } from "@apollo/cosmo/types/objekts";
 import { Addresses, isEqual } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
-import { and, asc, desc, eq, inArray, max, sql } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, max, sql } from "drizzle-orm";
 import type { PgSelect } from "drizzle-orm/pg-core";
 import * as z from "zod";
 import { nonTransferableReason } from "./common";
@@ -29,13 +40,15 @@ const inputSchema = userCollectionBackendSchema.extend({
 });
 
 /**
- * Builds the paged collection-id query: joins the collections table only when
- * a filter or sort needs it, so the fast path stays on the objekts table.
+ * Fetches one page of collection ids in sort order. Joins the collections
+ * table only when a filter or sort needs it, so the fast path stays on the
+ * objekts table.
  */
-function buildIdsQuery(
+async function fetchCollectionPage(
   data: z.infer<typeof inputSchema>,
   address: string,
   sort: ValidSort,
+  offset: number,
 ) {
   const objektFilters = [
     eq(objekts.owner, address),
@@ -60,7 +73,9 @@ function buildIdsQuery(
         .select({
           collectionId: collections.id,
           collectionNo: collections.collectionNo,
-          totalCount: sql<number>`count(*) over ()::int`.mapWith(Number),
+          totalCount: sql<number>`count(*) over ()::int`
+            .mapWith(Number)
+            .as("total_count"),
         })
         .from(objekts)
         .innerJoin(collections, eq(objekts.collectionId, collections.id))
@@ -70,12 +85,34 @@ function buildIdsQuery(
     : indexer
         .select({
           collectionId: objekts.collectionId,
-          totalCount: sql<number>`count(*) over ()::int`.mapWith(Number),
+          totalCount: sql<number>`count(*) over ()::int`
+            .mapWith(Number)
+            .as("total_count"),
         })
         .from(objekts)
         .where(and(...objektFilters))
         .groupBy(objekts.collectionId)
         .$dynamic();
+
+  // group before joining collection_stats, so the join is one lookup per
+  // collection rather than per objekt
+  if (isMintSort(sort)) {
+    const groups = idsQuery.as("groups");
+    return await indexer
+      .select({
+        collectionId: groups.collectionId,
+        totalCount: groups.totalCount,
+      })
+      .from(groups)
+      .innerJoin(
+        collectionStats,
+        eq(collectionStats.collectionId, groups.collectionId),
+      )
+      .orderBy(mintOrder(sort), asc(groups.collectionId))
+      .limit(PER_PAGE)
+      .offset(offset)
+      .comment({ fn: "fetchBlockchainGroupsByMints" });
+  }
 
   // member sort orders by the joined member table; requiresCollectionJoin is
   // always set for member sorts, so collections is guaranteed to be joined.
@@ -89,7 +126,10 @@ function buildIdsQuery(
     requiresCollectionJoin ? collections.id : objekts.collectionId,
   );
 
-  return { idsQuery, requiresCollectionJoin };
+  return await idsQuery
+    .limit(PER_PAGE)
+    .offset(offset)
+    .comment({ fn: "fetchBlockchainGroups" });
 }
 
 /**
@@ -107,16 +147,7 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
     const sort = data.sort ?? "newest";
     const address = data.address.toLowerCase();
 
-    const { idsQuery, requiresCollectionJoin } = buildIdsQuery(
-      data,
-      address,
-      sort,
-    );
-
-    const idsResult = await idsQuery
-      .limit(PER_PAGE)
-      .offset(offset)
-      .comment({ fn: "fetchBlockchainGroups" });
+    const idsResult = await fetchCollectionPage(data, address, sort, offset);
     const totalCount = idsResult[0]?.totalCount ?? 0;
 
     if (idsResult.length === 0) {
@@ -126,31 +157,6 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
     const collectionIds = idsResult.map((r) => r.collectionId);
 
     // 2. fetch collections and objekts separately in parallel
-    const objektsQuery = requiresCollectionJoin
-      ? indexer
-          .select({
-            collectionId: objekts.collectionId,
-            id: objekts.id,
-            serial: objekts.serial,
-            transferable: objekts.transferable,
-            owner: objekts.owner,
-            mintedAt: objekts.mintedAt,
-            receivedAt: objekts.receivedAt,
-          })
-          .from(objekts)
-          .innerJoin(collections, eq(objekts.collectionId, collections.id))
-      : indexer
-          .select({
-            collectionId: objekts.collectionId,
-            id: objekts.id,
-            serial: objekts.serial,
-            transferable: objekts.transferable,
-            owner: objekts.owner,
-            mintedAt: objekts.mintedAt,
-            receivedAt: objekts.receivedAt,
-          })
-          .from(objekts);
-
     const [collectionsResult, objektsResult] = await Promise.all([
       // 2a. fetch collections
       indexer
@@ -181,7 +187,17 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
         .comment({ fn: "fetchBlockchainGroupCollections" }),
 
       // 2b. fetch objekts
-      objektsQuery
+      indexer
+        .select({
+          collectionId: objekts.collectionId,
+          id: objekts.id,
+          serial: objekts.serial,
+          transferable: objekts.transferable,
+          owner: objekts.owner,
+          mintedAt: objekts.mintedAt,
+          receivedAt: objekts.receivedAt,
+        })
+        .from(objekts)
         .where(
           and(
             eq(objekts.owner, address),
@@ -277,7 +293,7 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
  */
 function withObjektGroupSort<T extends PgSelect>(
   qb: T,
-  sort: ValidSort,
+  sort: Exclude<ValidSort, MintSort>,
   tieBreaker: typeof collections.id | typeof objekts.collectionId,
 ) {
   switch (sort) {
@@ -305,5 +321,7 @@ function withObjektGroupSort<T extends PgSelect>(
         sql`min(${members.sortOrder}) desc nulls last`,
         asc(tieBreaker),
       );
+    case "duplicatesDesc":
+      return qb.orderBy(desc(count()), asc(tieBreaker));
   }
 }

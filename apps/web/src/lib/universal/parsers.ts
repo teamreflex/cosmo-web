@@ -4,7 +4,7 @@ import {
   validSorts,
 } from "@apollo/cosmo/types/common";
 import * as z from "zod";
-import { transferTypes } from "./transfers";
+import { spinOutcomes, transferTypes } from "./transfers";
 
 // cap on distinct filter values parsed from a URL; anything longer hits HTTP
 // limits anyway, and this guards against oversized IN clauses
@@ -115,6 +115,7 @@ export const transfersFrontendSchema = cosmoSchema
   })
   .extend({
     type: z.enum(transferTypes).nullish(),
+    outcome: z.enum(spinOutcomes).nullish(),
   })
   .partial();
 
@@ -131,6 +132,7 @@ export const transfersBackendSchema = cosmoSchema
     address: z.string(),
     cursor: z.string().nullish(),
     type: z.enum(transferTypes).nullish().default("all"),
+    outcome: z.enum(spinOutcomes).nullish(),
     artists: z.string().array().default([]),
   });
 

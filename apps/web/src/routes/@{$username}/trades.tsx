@@ -14,6 +14,8 @@ import { transfersFrontendSchema } from "@/lib/universal/parsers";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/@{$username}/trades")({
+  // need to group by date on the client
+  ssr: "data-only",
   component: RouteComponent,
   pendingComponent: PendingComponent,
   validateSearch: transfersFrontendSchema,

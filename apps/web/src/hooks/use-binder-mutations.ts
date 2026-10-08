@@ -3,6 +3,7 @@ import { formatError } from "@/lib/client/errors";
 import {
   $addBinderPage,
   $clearPocket,
+  $movePage,
   $placeObjekt,
   $removeLastBinderPage,
   $swapPockets,
@@ -15,6 +16,7 @@ import {
 } from "@/lib/queries/binders";
 import {
   withClearedPocket,
+  withMovedPage,
   withoutLastPage,
   withPlacedObjekt,
   withSwappedPockets,
@@ -22,9 +24,9 @@ import {
 import type {
   BinderDetail,
   BinderLayout,
+  BinderObjekt,
   PocketPosition,
 } from "@/lib/universal/binders";
-import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import {
   useIsMutating,
   useMutation,
@@ -47,7 +49,7 @@ export function useBinderMutations(options: Options) {
 
   const place = useBinderMutation(
     options,
-    ({ objekt, ...pocket }: PocketPosition & { objekt: CosmoObjekt }) =>
+    ({ objekt, ...pocket }: PocketPosition & { objekt: BinderObjekt }) =>
       $placeObjekt({
         data: { binderId, ...pocket, tokenId: Number(objekt.tokenId) },
       }),
@@ -65,6 +67,13 @@ export function useBinderMutations(options: Options) {
     ({ from, to }: { from: PocketPosition; to: PocketPosition }) =>
       $swapPockets({ data: { binderId, from, to } }),
     (binder, { from, to }) => withSwappedPockets(binder, from, to),
+  );
+
+  const move = useBinderMutation(
+    options,
+    ({ from, to }: { from: number; to: number }) =>
+      $movePage({ data: { binderId, from, to } }),
+    (binder, { from, to }) => withMovedPage(binder, from, to),
   );
 
   const addPage = useBinderMutation(
@@ -99,6 +108,7 @@ export function useBinderMutations(options: Options) {
     place: place.mutate,
     clear: clear.mutate,
     swap: swap.mutate,
+    move: move.mutate,
     addPage: () => addPage.mutate(undefined),
     removeLastPage: () => removeLastPage.mutate(undefined),
     setCover: setCover.mutate,

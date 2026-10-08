@@ -316,10 +316,11 @@
   "binder_error_binder_not_found": "Classeur introuvable",
   "binder_error_binder_name_taken": "Vous avez déjà un classeur portant ce nom",
   "binder_error_binder_limit_reached": "Vous pouvez avoir jusqu'à 10 classeurs",
-  "binder_error_binder_page_limit_reached": "Ce classeur est plein, un classeur peut contenir jusqu'à 20 pages",
+  "binder_error_binder_page_limit_reached": "Ce classeur est plein, un classeur peut contenir jusqu'à {max} pages",
   "binder_error_binder_layout_locked": "Impossible de changer la disposition d'un classeur qui contient des objekts",
   "binder_error_cover_not_in_binder": "Cet objekt n'est plus dans ce classeur",
   "binder_error_pocket_out_of_range": "Cette pochette n'existe pas dans ce classeur",
+  "binder_error_page_out_of_range": "Cette page n'existe pas dans ce classeur",
   "binder_error_objekt_not_owned": "Nous n'avons pas encore pu confirmer que vous possédez cet objekt. Si vous venez de le recevoir, réessayez dans un instant",
   "binder_page_count": [
     {
@@ -387,6 +388,8 @@
   "binder_editor_remove_page": "Retirer la page",
   "binder_editor_remove_page_confirm": "Retirer la page {page} ?",
   "binder_editor_remove_page_n": "Retirer la page {page}",
+  "binder_editor_arrange_pages": "Réorganiser les pages",
+  "binder_editor_arrange_pages_description": "Maintenez une page appuyée, puis faites-la glisser à sa place.",
   "binder_editor_remove_page_description": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
@@ -413,6 +416,7 @@
   "binder_editor_pocket_cover": "Poche {pocket}, {objekt}, couverture",
   "binder_editor_select_pocket": "Sélectionnez d'abord une poche",
   "binder_editor_page_full": "Page complète",
+  "binder_editor_page_n_full": "La page {page} est complète",
   "binder_editor_layout": "Disposition",
   "binder_editor_edit": "Modifier le nom et la couleur",
   "binder_editor_colour": "Couleur",
@@ -424,11 +428,16 @@
   "binder_editor_delete_description": "{name} et toutes ses pages seront supprimés. Les objekts restent dans votre collection.",
   "binder_editor_deleted": "Classeur supprimé",
   "binder_editor_more": "Plus d'actions",
-  "binder_editor_drag_instructions": "Appuyez sur Entrée pour le choisir. Pour le déplacer dans une poche, appuyez sur Espace, choisissez une poche avec les flèches, puis appuyez sur Espace pour le déposer ou Échap pour annuler.",
+  "binder_editor_drag_instructions": "Appuyez sur Entrée pour le choisir. Pour le déplacer, appuyez sur Espace, choisissez une poche ou une page avec les flèches, puis appuyez sur Espace pour le déposer ou Échap pour annuler.",
   "binder_editor_drag_picked_up": "{objekt} saisi.",
   "binder_editor_drag_over": "Au-dessus de la poche {pocket}.",
   "binder_editor_drag_dropped": "{objekt} déposé dans la poche {pocket}.",
   "binder_editor_drag_cancelled": "Déplacement annulé.",
+  "binder_editor_drag_picked_up_page": "Page {page} saisie.",
+  "binder_editor_drag_over_page": "Au-dessus de la page {page}.",
+  "binder_editor_drag_moved_page": "La page {from} devient la page {to}.",
+  "binder_editor_drag_dropped_on_page": "{objekt} déposé sur la page {page}.",
+  "binder_editor_arrange_instructions": "Pour déplacer une page, appuyez sur Espace, choisissez sa place avec les flèches, puis appuyez sur Espace pour la déposer ou Échap pour annuler.",
   "binder_viewer_open": "Ouvrir {name}",
   "binder_viewer_objekt_count": [
     {
@@ -765,6 +774,9 @@
   "filter_sort_serial_desc": "Serial décroissant",
   "filter_sort_member_asc": "Premier membre",
   "filter_sort_member_desc": "Dernier membre",
+  "filter_sort_duplicates_desc": "Plus de doublons",
+  "filter_sort_mints_asc": "Moins mintés",
+  "filter_sort_mints_desc": "Plus mintés",
   "filter_sort_newest_sub": "reçus récemment",
   "filter_sort_oldest_sub": "reçus en premier",
   "filter_sort_no_ascending_sub": "collection 101 →",
@@ -773,6 +785,9 @@
   "filter_sort_serial_desc_sub": "série 99999 →",
   "filter_sort_member_asc_sub": "ordre de débuts →",
   "filter_sort_member_desc_sub": "ordre inverse →",
+  "filter_sort_duplicates_desc_sub": "plus d'exemplaires →",
+  "filter_sort_mints_asc_sub": "plus rares d'abord →",
+  "filter_sort_mints_desc_sub": "plus mintés d'abord →",
   "filter_type": "Type",
   "filter_action": "Action",
   "filter_online_any": "Tout",
@@ -854,10 +869,86 @@
   "transfer_cosmo_spin": "COSMO Spin",
   "transfer_from": "De",
   "transfer_to": "À",
-  "transfer_objekt_header": "Objekt",
-  "transfer_user_header": "Utilisateur",
   "transfer_date_header": "Date",
   "transfer_error_loading": "Il y a eu une erreur en chargeant les transferts",
+  "filter_type_trade": "Échanges",
+  "filter_outcome": "Résultat",
+  "transfer_outcome_success": "Réussi",
+  "transfer_outcome_fail": "Échec",
+  "transfer_outcome_pending": "En attente",
+  "transfer_kind_trade": "Échange",
+  "transfer_kind_sent": "Envoyé",
+  "transfer_kind_received": "Reçu",
+  "transfer_kind_mint": "Mint",
+  "transfer_kind_scanned": "Scanné",
+  "transfer_trade_detected": "Échange détecté : les deux parties ont envoyé des objekts à moins de 15 minutes d'intervalle.",
+  "transfer_objekt_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} objekt",
+        "countPlural=other": "{count} objekts"
+      }
+    }
+  ],
+  "transfer_show_details": "Afficher les transferts",
+  "transfer_hide_details": "Masquer les transferts",
+  "transfer_no_reward": "Aucune récompense",
+  "transfer_awaiting_reward": "Récompense en attente",
+  "transfer_when_header": "Quand",
+  "transfer_out_header": "Sortie",
+  "transfer_in_header": "Entrée",
+  "transfer_outcome_header": "Résultat",
+  "transfer_with_header": "Avec",
+  "transfer_day_today": "Aujourd'hui",
+  "transfer_day_yesterday": "Hier",
+  "transfer_tally_spins": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} spin",
+        "countPlural=other": "{count} spins"
+      }
+    }
+  ],
+  "transfer_tally_success": "{count} réussi",
+  "transfer_tally_fail": "{count} échec",
+  "transfer_tally_pending": "{count} en attente",
+  "transfer_tally_trades": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} échange",
+        "countPlural=other": "{count} échanges"
+      }
+    }
+  ],
+  "transfer_tally_sent": "{count} envoyé",
+  "transfer_tally_received": "{count} reçu",
+  "transfer_tally_mints": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} mint",
+        "countPlural=other": "{count} mints"
+      }
+    }
+  ],
+  "transfer_tally_scanned": "{count} scanné",
+  "transfer_group_meta": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} transfert · {minutes} min",
+        "countPlural=other": "{count} transferts · {minutes} min"
+      }
+    }
+  ],
   "_comment_gravity": "Gravity strings",
   "gravity_error_loading": "Erreur de chargement des Gravity",
   "gravity_top_votes": "Meilleurs votes",

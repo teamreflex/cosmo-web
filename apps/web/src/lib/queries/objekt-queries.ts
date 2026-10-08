@@ -228,6 +228,7 @@ export function transfersQuery(
       {
         ...normalizeFilters(searchParams),
         type: searchParams.type,
+        outcome: searchParams.outcome,
         artists: selectedArtists,
       },
     ],

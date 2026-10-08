@@ -314,10 +314,11 @@
   "binder_error_binder_not_found": "바인더를 찾을 수 없습니다",
   "binder_error_binder_name_taken": "이미 같은 이름의 바인더가 있습니다",
   "binder_error_binder_limit_reached": "바인더는 최대 10개까지 만들 수 있습니다",
-  "binder_error_binder_page_limit_reached": "이 바인더가 가득 찼습니다. 바인더는 최대 20페이지까지 가능합니다",
+  "binder_error_binder_page_limit_reached": "이 바인더가 가득 찼습니다. 바인더는 최대 {max}페이지까지 가능합니다",
   "binder_error_binder_layout_locked": "objekt가 들어 있는 바인더의 레이아웃은 변경할 수 없습니다",
   "binder_error_cover_not_in_binder": "해당 objekt는 더 이상 이 바인더에 없습니다",
   "binder_error_pocket_out_of_range": "해당 포켓은 이 바인더에 없습니다",
+  "binder_error_page_out_of_range": "해당 페이지는 이 바인더에 없습니다",
   "binder_error_objekt_not_owned": "이 objekt의 소유를 아직 확인할 수 없습니다. 방금 받았다면 잠시 후 다시 시도해 주세요",
   "binder_page_count": [
     {
@@ -382,6 +383,8 @@
   "binder_editor_remove_page": "페이지 삭제",
   "binder_editor_remove_page_confirm": "{page}페이지를 삭제할까요?",
   "binder_editor_remove_page_n": "{page}페이지 삭제",
+  "binder_editor_arrange_pages": "페이지 순서 변경",
+  "binder_editor_arrange_pages_description": "페이지를 길게 누른 뒤 원하는 위치로 드래그하세요.",
   "binder_editor_remove_page_description": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
@@ -407,6 +410,7 @@
   "binder_editor_pocket_cover": "포켓 {pocket}, {objekt}, 표지",
   "binder_editor_select_pocket": "먼저 포켓을 선택하세요",
   "binder_editor_page_full": "페이지가 가득 찼습니다",
+  "binder_editor_page_n_full": "{page}페이지가 가득 찼습니다",
   "binder_editor_layout": "레이아웃",
   "binder_editor_edit": "이름과 색상 편집",
   "binder_editor_colour": "색상",
@@ -418,11 +422,16 @@
   "binder_editor_delete_description": "{name}와 모든 페이지가 삭제됩니다. objekt는 컬렉션에 그대로 남습니다.",
   "binder_editor_deleted": "바인더가 삭제되었습니다",
   "binder_editor_more": "더 보기",
-  "binder_editor_drag_instructions": "Enter로 선택합니다. 포켓으로 옮기려면 Space를 누르고 방향키로 포켓을 고른 뒤 Space로 놓거나 Esc로 취소하세요.",
+  "binder_editor_drag_instructions": "Enter로 선택합니다. 옮기려면 Space를 누르고 방향키로 포켓이나 페이지를 고른 뒤 Space로 놓거나 Esc로 취소하세요.",
   "binder_editor_drag_picked_up": "{objekt}를 집었습니다.",
   "binder_editor_drag_over": "포켓 {pocket} 위입니다.",
   "binder_editor_drag_dropped": "{objekt}를 포켓 {pocket}에 놓았습니다.",
   "binder_editor_drag_cancelled": "이동이 취소되었습니다.",
+  "binder_editor_drag_picked_up_page": "{page}페이지를 집었습니다.",
+  "binder_editor_drag_over_page": "{page}페이지 위입니다.",
+  "binder_editor_drag_moved_page": "{from}페이지를 {to}페이지로 옮겼습니다.",
+  "binder_editor_drag_dropped_on_page": "{objekt}를 {page}페이지에 놓았습니다.",
+  "binder_editor_arrange_instructions": "페이지를 옮기려면 Space를 누르고 방향키로 위치를 고른 뒤 Space로 놓거나 Esc로 취소하세요.",
   "binder_viewer_open": "{name} 열기",
   "binder_viewer_objekt_count": [
     {
@@ -758,6 +767,9 @@
   "filter_sort_serial_desc": "시리얼 높은순",
   "filter_sort_member_asc": "첫 멤버",
   "filter_sort_member_desc": "마지막 멤버",
+  "filter_sort_duplicates_desc": "중복 많은순",
+  "filter_sort_mints_asc": "민팅 적은순",
+  "filter_sort_mints_desc": "민팅 많은순",
   "filter_sort_newest_sub": "최근에 받은",
   "filter_sort_oldest_sub": "처음 받은",
   "filter_sort_no_ascending_sub": "컬렉션 101 →",
@@ -766,6 +778,9 @@
   "filter_sort_serial_desc_sub": "시리얼 99999 →",
   "filter_sort_member_asc_sub": "데뷔 순 →",
   "filter_sort_member_desc_sub": "역순 →",
+  "filter_sort_duplicates_desc_sub": "보유 수 많은 →",
+  "filter_sort_mints_asc_sub": "희귀한 순 →",
+  "filter_sort_mints_desc_sub": "많이 민팅된 순 →",
   "filter_type": "유형",
   "filter_action": "액션",
   "filter_online_any": "전체",
@@ -847,10 +862,81 @@
   "transfer_cosmo_spin": "코스모 스핀",
   "transfer_from": "보낸 사람",
   "transfer_to": "받는 사람",
-  "transfer_objekt_header": "오브젝트",
-  "transfer_user_header": "사용자",
   "transfer_date_header": "날짜",
   "transfer_error_loading": "전송 내역을 불러오는 중 오류가 발생했습니다",
+  "filter_type_trade": "교환",
+  "filter_outcome": "결과",
+  "transfer_outcome_success": "성공",
+  "transfer_outcome_fail": "실패",
+  "transfer_outcome_pending": "대기 중",
+  "transfer_kind_trade": "교환",
+  "transfer_kind_sent": "보냄",
+  "transfer_kind_received": "받음",
+  "transfer_kind_mint": "민트",
+  "transfer_kind_scanned": "스캔",
+  "transfer_trade_detected": "교환 감지: 양쪽이 15분 이내에 오브젝트를 보냈습니다.",
+  "transfer_objekt_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "오브젝트 {count}개"
+      }
+    }
+  ],
+  "transfer_show_details": "전송 내역 보기",
+  "transfer_hide_details": "전송 내역 숨기기",
+  "transfer_no_reward": "보상 없음",
+  "transfer_awaiting_reward": "보상 대기 중",
+  "transfer_when_header": "시간",
+  "transfer_out_header": "보냄",
+  "transfer_in_header": "받음",
+  "transfer_outcome_header": "결과",
+  "transfer_with_header": "상대",
+  "transfer_day_today": "오늘",
+  "transfer_day_yesterday": "어제",
+  "transfer_tally_spins": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "스핀 {count}회"
+      }
+    }
+  ],
+  "transfer_tally_success": "성공 {count}",
+  "transfer_tally_fail": "실패 {count}",
+  "transfer_tally_pending": "대기 {count}",
+  "transfer_tally_trades": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "교환 {count}건"
+      }
+    }
+  ],
+  "transfer_tally_sent": "보냄 {count}",
+  "transfer_tally_received": "받음 {count}",
+  "transfer_tally_mints": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "민트 {count}"
+      }
+    }
+  ],
+  "transfer_tally_scanned": "스캔 {count}",
+  "transfer_group_meta": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "전송 {count}건 · {minutes}분"
+      }
+    }
+  ],
   "_comment_gravity": "Gravity strings",
   "gravity_error_loading": "그래비티를 불러오는 중 오류 발생",
   "gravity_top_votes": "상위 투표",

@@ -13,9 +13,10 @@ type Props = {
 export default function TransferTypeFilter({ type, setType }: Props) {
   const options: SingleSelectOption<TransferType>[] = [
     { value: "all", label: m.filter_type_all() },
-    { value: "mint", label: m.filter_type_mints() },
-    { value: "received", label: m.common_received() },
+    { value: "trade", label: m.filter_type_trade() },
     { value: "sent", label: m.filter_type_sent() },
+    { value: "received", label: m.common_received() },
+    { value: "mint", label: m.filter_type_mints() },
     { value: "spin", label: m.filter_type_spin() },
   ];
 

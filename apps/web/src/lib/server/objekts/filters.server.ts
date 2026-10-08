@@ -1,16 +1,59 @@
-import type {
-  ValidArtist,
-  ValidOnlineType,
-  ValidSort,
+import type { IndexSort } from "@/lib/universal/sorts";
+import {
+  isMintSort,
+  type MintSort,
+  type ValidArtist,
+  type ValidOnlineType,
+  type ValidSort,
 } from "@apollo/cosmo/types/common";
 import { asc, between, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import type { PgColumn, PgSelect } from "drizzle-orm/pg-core";
-import { collections, members, objekts } from "../db/indexer/schema";
+import {
+  collections,
+  collectionStats,
+  members,
+  objekts,
+} from "../db/indexer/schema";
+
+/**
+ * Whether mint-count sorts count objekts that have since been spun.
+ */
+const MINT_COUNT_INCLUDES_SPUN = true;
+
+/**
+ * A collection's mint count for mint sorts. Requires a join on collection_stats.
+ */
+export const mintCount = MINT_COUNT_INCLUDES_SPUN
+  ? collectionStats.objektCount
+  : sql<number>`(${collectionStats.objektCount} - ${collectionStats.spunCount})`;
+
+/**
+ * Orders by mint count. Collections without stats sort last.
+ */
+export function mintOrder(sort: MintSort) {
+  return sort === "mintsAsc"
+    ? sql`${mintCount} asc nulls last`
+    : sql`${mintCount} desc nulls last`;
+}
+
+/**
+ * Sorts the ungrouped user collection pages by ranking collections first,
+ * since their order comes from a per-collection count rather than an objekt
+ * column.
+ */
+export type RankedSort = "duplicatesDesc" | MintSort;
+
+export function isRankedSort(sort: ValidSort): sort is RankedSort {
+  return sort === "duplicatesDesc" || isMintSort(sort);
+}
 
 /**
  * Sorting for user collections.
  */
-export function withCollectionSort<T extends PgSelect>(qb: T, sort: ValidSort) {
+export function withCollectionSort<T extends PgSelect>(
+  qb: T,
+  sort: Exclude<ValidSort, RankedSort>,
+) {
   switch (sort) {
     case "newest":
       return qb.orderBy(desc(objekts.receivedAt), asc(objekts.id));
@@ -44,11 +87,10 @@ export function withCollectionSort<T extends PgSelect>(qb: T, sort: ValidSort) {
  */
 export function withObjektIndexSort<T extends PgSelect>(
   qb: T,
-  sort: ValidSort,
+  sort: IndexSort,
 ) {
   switch (sort) {
     case "newest":
-    default:
       return qb.orderBy(desc(collections.createdAt), asc(collections.id));
     case "oldest":
       return qb.orderBy(asc(collections.createdAt), asc(collections.id));
@@ -68,6 +110,9 @@ export function withObjektIndexSort<T extends PgSelect>(
         desc(collections.createdAt),
         asc(collections.id),
       );
+    case "mintsAsc":
+    case "mintsDesc":
+      return qb.orderBy(mintOrder(sort), asc(collections.id));
   }
 }
 
@@ -139,17 +184,6 @@ export function withCollections(selected: string[] | null | undefined) {
   return selected && selected.length > 0
     ? [inArray(collections.collectionNo, selected)]
     : [];
-}
-
-/**
- * Filter by objekt list entries.
- */
-export function withObjektListEntries(entries: string[]) {
-  if (entries.length === 0) {
-    return [];
-  }
-
-  return [inArray(collections.slug, entries)];
 }
 
 /**

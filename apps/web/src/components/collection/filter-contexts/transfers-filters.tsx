@@ -1,16 +1,19 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
-import type { TransferType } from "@/lib/universal/transfers";
+import type { SpinOutcome, TransferType } from "@/lib/universal/transfers";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import ClassFilter from "../filter-class";
 import OnlineFilter from "../filter-online";
 import SeasonFilter from "../filter-season";
+import SpinOutcomeFilter from "../filter-spin-outcome";
 import TransferTypeFilter from "../filter-transfer-type";
 
 type Props = {
   type: TransferType;
   setType: (type: TransferType) => void;
+  outcome: SpinOutcome | undefined;
+  setOutcome: (outcome: SpinOutcome | undefined) => void;
 };
 
 /**
@@ -55,6 +58,12 @@ export function TransfersFilters(props: Props) {
         </Suspense>
       </ErrorBoundary>
       <TransferTypeFilter type={props.type} setType={props.setType} />
+      {props.type === "spin" && (
+        <SpinOutcomeFilter
+          outcome={props.outcome}
+          setOutcome={props.setOutcome}
+        />
+      )}
     </div>
   );
 }

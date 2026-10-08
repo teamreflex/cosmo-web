@@ -2,15 +2,16 @@ import { useArtists } from "@/hooks/use-artists";
 import type { TransferFilters } from "@/hooks/use-transfer-filters";
 import { useTransferFilters } from "@/hooks/use-transfer-filters";
 import { m } from "@/i18n/messages";
+import { groupByDay } from "@/lib/client/transfer-days";
 import { transfersQuery } from "@/lib/queries/objekt-queries";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
-import type { TransferType } from "@/lib/universal/transfers";
+import type { SpinOutcome, TransferType } from "@/lib/universal/transfers";
 import { IconHeartBroken, IconRefresh } from "@tabler/icons-react";
 import {
   QueryErrorResetBoundary,
   useSuspenseInfiniteQuery,
 } from "@tanstack/react-query";
-import { Suspense } from "react";
+import { Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { TransfersFilters } from "../collection/filter-contexts/transfers-filters";
 import FiltersContainer from "../collection/filters-container";
@@ -19,7 +20,7 @@ import Portal from "../portal";
 import SkeletonGradient from "../skeleton/skeleton-overlay";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
-import TransferRow from "./transfer-row";
+import TransferRow, { TransferHeader } from "./transfer-row";
 
 type Props = {
   cosmo: PublicCosmo;
@@ -33,13 +34,24 @@ export default function TransfersRenderer({ cosmo }: Props) {
     setFilters((prev) => ({
       ...prev,
       type: value,
+      // outcomes only apply to spins
+      outcome: value === "spin" ? prev.outcome : undefined,
     }));
+  }
+
+  function setOutcome(value: SpinOutcome | undefined) {
+    setFilters((prev) => ({ ...prev, outcome: value }));
   }
 
   return (
     <div className="flex flex-col">
       <FiltersContainer>
-        <TransfersFilters type={type} setType={setType} />
+        <TransfersFilters
+          type={type}
+          setType={setType}
+          outcome={filters.outcome ?? undefined}
+          setOutcome={setOutcome}
+        />
       </FiltersContainer>
 
       <div className="container flex flex-col">
@@ -77,32 +89,56 @@ type TransfersProps = {
   filters: TransferFilters;
 };
 
+/**
+ * Offscreen days skip layout and paint, so expanding a row stays smooth with
+ * many pages loaded. Their size is estimated until first rendered.
+ */
+const DAY_HEADER_PX = 37;
+const ROW_PX = 77;
+
 function Transfers({ address, filters }: TransfersProps) {
   const { selectedIds } = useArtists();
+  const [now] = useState(() => Date.now());
   const query = useSuspenseInfiniteQuery(
     transfersQuery(address, filters, selectedIds),
   );
 
-  const rows = query.data.pages
-    .flatMap((p) => p.results)
-    .filter(
-      (row, index, self) =>
-        index === self.findIndex((r) => r.transfer.id === row.transfer.id),
-    );
+  const rows = [
+    ...new Map(
+      query.data.pages.flatMap((p) => p.results).map((row) => [row.id, row]),
+    ).values(),
+  ];
+  const days = groupByDay(rows, now);
 
   return (
-    <div className="flex flex-col rounded-lg border border-accent text-sm">
-      <div className="grid h-12 grid-cols-[3fr_2fr_2fr] items-center gap-2 px-4 text-left align-middle font-medium text-muted-foreground">
-        <span>{m.transfer_objekt_header()}</span>
-        <span>{m.transfer_user_header()}</span>
-        <span className="text-right">{m.transfer_date_header()}</span>
-      </div>
+    <div className="flex flex-col overflow-clip rounded-lg border bg-card text-sm">
+      <TransferHeader />
 
-      <div className="flex flex-col">
-        {rows.map((row) => (
-          <TransferRow key={row.transfer.id} row={row} address={address} />
-        ))}
-      </div>
+      {days.map((day) => (
+        <section
+          key={day.key}
+          aria-label={day.label}
+          className="group/day [content-visibility:auto]"
+          style={{
+            containIntrinsicSize: `auto ${DAY_HEADER_PX + day.rows.length * ROW_PX}px`,
+          }}
+        >
+          <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-1 bg-muted/40 px-3.5 py-2 group-not-first-of-type/day:border-t sm:px-4">
+            <h3 className="text-sm font-semibold">{day.label}</h3>
+            <span className="text-xs text-muted-foreground max-sm:hidden">
+              {day.sub}
+            </span>
+            <span className="ml-auto text-xs text-muted-foreground">
+              {day.tally}
+            </span>
+          </div>
+          <ol>
+            {day.rows.map((row) => (
+              <TransferRow key={row.id} row={row} />
+            ))}
+          </ol>
+        </section>
+      ))}
 
       <Portal to="#pagination">
         <InfiniteQueryNext
@@ -121,18 +157,11 @@ export function TransfersSkeleton() {
     <div className="relative">
       <SkeletonGradient />
 
-      <div className="realtive flex w-full flex-col overflow-hidden rounded-lg border border-accent text-sm">
-        <div className="grid h-12 grid-cols-[3fr_2fr_2fr] items-center gap-2 px-4 text-left align-middle font-medium text-muted-foreground">
-          <span>{m.transfer_objekt_header()}</span>
-          <span>{m.transfer_user_header()}</span>
-          <span className="text-right">{m.transfer_date_header()}</span>
-        </div>
+      <div className="relative flex w-full flex-col overflow-clip rounded-lg border bg-card text-sm">
+        <TransferHeader />
 
         {Array.from({ length: 10 }).map((_, i) => (
-          <Skeleton
-            key={i}
-            className="h-14 w-full rounded-none border-t border-accent"
-          />
+          <Skeleton key={i} className="h-19 w-full rounded-none border-t" />
         ))}
       </div>
     </div>

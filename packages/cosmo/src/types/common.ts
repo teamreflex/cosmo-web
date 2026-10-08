@@ -15,6 +15,9 @@ export const validSorts = [
   "serialDesc",
   "memberAsc",
   "memberDesc",
+  "duplicatesDesc",
+  "mintsAsc",
+  "mintsDesc",
 ] as const;
 export type ValidSort = (typeof validSorts)[number];
 
@@ -24,6 +27,16 @@ export type ValidSort = (typeof validSorts)[number];
  */
 export function isMemberSort(sort: ValidSort) {
   return sort === "memberAsc" || sort === "memberDesc";
+}
+
+/**
+ * Mint sorts order by how many objekts a collection has minted, which requires
+ * a join against the indexer collection_stats table.
+ */
+export type MintSort = "mintsAsc" | "mintsDesc";
+
+export function isMintSort(sort: ValidSort): sort is MintSort {
+  return sort === "mintsAsc" || sort === "mintsDesc";
 }
 
 // online types

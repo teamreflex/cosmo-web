@@ -1,6 +1,10 @@
 import { remember } from "@/lib/server/cache.server";
 import { indexer } from "@/lib/server/db/indexer";
-import { collections, members } from "@/lib/server/db/indexer/schema";
+import {
+  collections,
+  collectionStats,
+  members,
+} from "@/lib/server/db/indexer/schema";
 import {
   withArtist,
   withClass,
@@ -13,7 +17,8 @@ import {
 } from "@/lib/server/objekts/filters.server";
 import type { IndexedObjekt, ObjektResponse } from "@/lib/universal/objekts";
 import { objektIndexBackendSchema } from "@/lib/universal/parsers";
-import { isMemberSort } from "@apollo/cosmo/types/common";
+import { indexSorts, supportedSort } from "@/lib/universal/sorts";
+import { isMemberSort, isMintSort } from "@apollo/cosmo/types/common";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, getColumns } from "drizzle-orm";
 
@@ -37,7 +42,7 @@ export const $fetchObjektsIndex = createServerFn({ method: "GET" })
     );
 
     // build the query (explicit columns so the member join can't reshape rows)
-    const sort = data.sort ?? "newest";
+    const sort = supportedSort(data.sort, indexSorts);
     let query = indexer
       .select(getColumns(collections))
       .from(collections)
@@ -45,6 +50,12 @@ export const $fetchObjektsIndex = createServerFn({ method: "GET" })
       .$dynamic();
     if (isMemberSort(sort)) {
       query = query.leftJoin(members, eq(members.name, collections.member));
+    }
+    if (isMintSort(sort)) {
+      query = query.leftJoin(
+        collectionStats,
+        eq(collectionStats.collectionId, collections.id),
+      );
     }
     query = withObjektIndexSort(query, sort);
     query = query

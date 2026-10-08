@@ -20,15 +20,20 @@ const MAX_POCKETS_PER_PAGE = Math.max(
 );
 
 /**
+ * Loose page bounds; the binder's own page count is checked on the server.
+ */
+const pageSchema = z
+  .number()
+  .int()
+  .min(0)
+  .max(MAX_BINDER_PAGES - 1);
+
+/**
  * Loose pocket bounds; the exact slot bound depends on the binder's layout and
  * is checked on the server.
  */
 const pocketSchema = z.object({
-  page: z
-    .number()
-    .int()
-    .min(0)
-    .max(MAX_BINDER_PAGES - 1),
+  page: pageSchema,
   slot: z
     .number()
     .int()
@@ -84,6 +89,14 @@ export const swapPocketsSchema = z.object({
 });
 
 export type SwapPockets = z.infer<typeof swapPocketsSchema>;
+
+export const movePageSchema = z.object({
+  binderId: z.uuid(),
+  from: pageSchema,
+  to: pageSchema,
+});
+
+export type MovePage = z.infer<typeof movePageSchema>;
 
 export const addToBinderSchema = z.object({
   binderId: z.uuid(),

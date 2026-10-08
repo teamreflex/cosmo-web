@@ -42,6 +42,7 @@ import { Route as GravityArtistIdRouteImport } from './routes/gravity/$artist/$i
 import { Route as ApiGravityPollIdAggregatedRouteImport } from './routes/api/gravity/$pollId.aggregated'
 import { Route as ApiObjektListForUserIdentifierRouteImport } from './routes/api/objekt-list/for-user.$identifier'
 import { Route as ApiObjektsBySlugSlugRouteImport } from './routes/api/objekts/by-slug.$slug'
+import { Route as ApiOgProfileIdentifierRouteImport } from './routes/api/og/profile.$identifier'
 import { Route as ApiV1UserSearchRouteImport } from './routes/api/v1/user/search'
 import { Route as ApiObjektsMetadataSlugIndexRouteImport } from './routes/api/objekts/metadata/$slug/index'
 import { Route as ApiUserByAddressAddressIndexRouteImport } from './routes/api/user/by-address/$address/index'
@@ -223,6 +224,11 @@ const ApiObjektsBySlugSlugRoute = ApiObjektsBySlugSlugRouteImport.update({
   path: '/api/objekts/by-slug/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiOgProfileIdentifierRoute = ApiOgProfileIdentifierRouteImport.update({
+  id: '/api/og/profile/$identifier',
+  path: '/api/og/profile/$identifier',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiV1UserSearchRoute = ApiV1UserSearchRouteImport.update({
   id: '/api/v1/user/search',
   path: '/api/v1/user/search',
@@ -287,6 +293,7 @@ export interface FileRoutesByFullPath {
   '/api/gravity/$pollId/aggregated': typeof ApiGravityPollIdAggregatedRoute
   '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
   '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
+  '/api/og/profile/$identifier': typeof ApiOgProfileIdentifierRoute
   '/api/v1/user/search': typeof ApiV1UserSearchRoute
   '/api/user/by-address/$address/como': typeof ApiUserByAddressAddressComoRoute
   '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
@@ -325,6 +332,7 @@ export interface FileRoutesByTo {
   '/api/gravity/$pollId/aggregated': typeof ApiGravityPollIdAggregatedRoute
   '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
   '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
+  '/api/og/profile/$identifier': typeof ApiOgProfileIdentifierRoute
   '/api/v1/user/search': typeof ApiV1UserSearchRoute
   '/api/user/by-address/$address/como': typeof ApiUserByAddressAddressComoRoute
   '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
@@ -366,6 +374,7 @@ export interface FileRoutesById {
   '/api/gravity/$pollId/aggregated': typeof ApiGravityPollIdAggregatedRoute
   '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
   '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
+  '/api/og/profile/$identifier': typeof ApiOgProfileIdentifierRoute
   '/api/v1/user/search': typeof ApiV1UserSearchRoute
   '/api/user/by-address/$address/como': typeof ApiUserByAddressAddressComoRoute
   '/api/user/by-address/$address/stats': typeof ApiUserByAddressAddressStatsRoute
@@ -408,6 +417,7 @@ export interface FileRouteTypes {
     | '/api/gravity/$pollId/aggregated'
     | '/api/objekt-list/for-user/$identifier'
     | '/api/objekts/by-slug/$slug'
+    | '/api/og/profile/$identifier'
     | '/api/v1/user/search'
     | '/api/user/by-address/$address/como'
     | '/api/user/by-address/$address/stats'
@@ -446,6 +456,7 @@ export interface FileRouteTypes {
     | '/api/gravity/$pollId/aggregated'
     | '/api/objekt-list/for-user/$identifier'
     | '/api/objekts/by-slug/$slug'
+    | '/api/og/profile/$identifier'
     | '/api/v1/user/search'
     | '/api/user/by-address/$address/como'
     | '/api/user/by-address/$address/stats'
@@ -486,6 +497,7 @@ export interface FileRouteTypes {
     | '/api/gravity/$pollId/aggregated'
     | '/api/objekt-list/for-user/$identifier'
     | '/api/objekts/by-slug/$slug'
+    | '/api/og/profile/$identifier'
     | '/api/v1/user/search'
     | '/api/user/by-address/$address/como'
     | '/api/user/by-address/$address/stats'
@@ -512,6 +524,7 @@ export interface RootRouteChildren {
   ApiGravityPollIdAggregatedRoute: typeof ApiGravityPollIdAggregatedRoute
   ApiObjektListForUserIdentifierRoute: typeof ApiObjektListForUserIdentifierRoute
   ApiObjektsBySlugSlugRoute: typeof ApiObjektsBySlugSlugRoute
+  ApiOgProfileIdentifierRoute: typeof ApiOgProfileIdentifierRoute
   ApiV1UserSearchRoute: typeof ApiV1UserSearchRoute
   ApiUserByAddressAddressComoRoute: typeof ApiUserByAddressAddressComoRoute
   ApiUserByAddressAddressStatsRoute: typeof ApiUserByAddressAddressStatsRoute
@@ -752,6 +765,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiObjektsBySlugSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/og/profile/$identifier': {
+      id: '/api/og/profile/$identifier'
+      path: '/api/og/profile/$identifier'
+      fullPath: '/api/og/profile/$identifier'
+      preLoaderRoute: typeof ApiOgProfileIdentifierRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/v1/user/search': {
       id: '/api/v1/user/search'
       path: '/api/v1/user/search'
@@ -865,6 +885,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiGravityPollIdAggregatedRoute: ApiGravityPollIdAggregatedRoute,
   ApiObjektListForUserIdentifierRoute: ApiObjektListForUserIdentifierRoute,
   ApiObjektsBySlugSlugRoute: ApiObjektsBySlugSlugRoute,
+  ApiOgProfileIdentifierRoute: ApiOgProfileIdentifierRoute,
   ApiV1UserSearchRoute: ApiV1UserSearchRoute,
   ApiUserByAddressAddressComoRoute: ApiUserByAddressAddressComoRoute,
   ApiUserByAddressAddressStatsRoute: ApiUserByAddressAddressStatsRoute,

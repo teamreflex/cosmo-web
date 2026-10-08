@@ -90,3 +90,9 @@ type Member @entity {
   primaryColorHex: String!
   sortOrder: Int!
 }
+
+type CollectionStats @entity {
+  collectionId: ID! # joins to objekt.collection_id and collection.id
+  objektCount: Int!
+  spunCount: Int!
+}

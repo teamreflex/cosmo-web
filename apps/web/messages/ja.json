@@ -314,10 +314,11 @@
   "binder_error_binder_not_found": "バインダーが見つかりません",
   "binder_error_binder_name_taken": "同じ名前のバインダーが既に存在します",
   "binder_error_binder_limit_reached": "バインダーは最大10冊までです",
-  "binder_error_binder_page_limit_reached": "このバインダーは満杯です。バインダーは最大20ページまでです",
+  "binder_error_binder_page_limit_reached": "このバインダーは満杯です。バインダーは最大{max}ページまでです",
   "binder_error_binder_layout_locked": "objektが入っているバインダーのレイアウトは変更できません",
   "binder_error_cover_not_in_binder": "そのobjektはこのバインダーにもうありません",
   "binder_error_pocket_out_of_range": "そのポケットはこのバインダーにありません",
+  "binder_error_page_out_of_range": "そのページはこのバインダーにありません",
   "binder_error_objekt_not_owned": "このobjektの所有をまだ確認できません。受け取ったばかりの場合は、しばらくしてからもう一度お試しください",
   "binder_page_count": [
     {
@@ -382,6 +383,8 @@
   "binder_editor_remove_page": "ページを削除",
   "binder_editor_remove_page_confirm": "{page}ページを削除しますか？",
   "binder_editor_remove_page_n": "{page}ページを削除",
+  "binder_editor_arrange_pages": "ページを並べ替え",
+  "binder_editor_arrange_pages_description": "ページを長押しして、移動したい場所までドラッグします。",
   "binder_editor_remove_page_description": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
@@ -407,6 +410,7 @@
   "binder_editor_pocket_cover": "ポケット{pocket}、{objekt}、表紙",
   "binder_editor_select_pocket": "先にポケットを選択してください",
   "binder_editor_page_full": "ページがいっぱいです",
+  "binder_editor_page_n_full": "{page}ページがいっぱいです",
   "binder_editor_layout": "レイアウト",
   "binder_editor_edit": "名前と色を編集",
   "binder_editor_colour": "色",
@@ -418,11 +422,16 @@
   "binder_editor_delete_description": "{name}とすべてのページが削除されます。objektはコレクションに残ります。",
   "binder_editor_deleted": "バインダーを削除しました",
   "binder_editor_more": "その他の操作",
-  "binder_editor_drag_instructions": "Enterで選択します。ポケットへ移動するにはSpaceを押し、矢印キーでポケットを選んでSpaceで配置、Escでキャンセルします。",
+  "binder_editor_drag_instructions": "Enterで選択します。移動するにはSpaceを押し、矢印キーでポケットかページを選んでSpaceで配置、Escでキャンセルします。",
   "binder_editor_drag_picked_up": "{objekt}を持ち上げました。",
   "binder_editor_drag_over": "ポケット{pocket}の上です。",
   "binder_editor_drag_dropped": "{objekt}をポケット{pocket}に置きました。",
   "binder_editor_drag_cancelled": "移動をキャンセルしました。",
+  "binder_editor_drag_picked_up_page": "{page}ページを持ち上げました。",
+  "binder_editor_drag_over_page": "{page}ページの上です。",
+  "binder_editor_drag_moved_page": "{from}ページを{to}ページに移動しました。",
+  "binder_editor_drag_dropped_on_page": "{objekt}を{page}ページに置きました。",
+  "binder_editor_arrange_instructions": "ページを移動するにはSpaceを押し、矢印キーで移動先を選んでSpaceで配置、Escでキャンセルします。",
   "binder_viewer_open": "{name}を開く",
   "binder_viewer_objekt_count": [
     {
@@ -758,6 +767,9 @@
   "filter_sort_serial_desc": "シリアル降順",
   "filter_sort_member_asc": "最初のメンバー",
   "filter_sort_member_desc": "最後のメンバー",
+  "filter_sort_duplicates_desc": "重複が多い順",
+  "filter_sort_mints_asc": "ミント数が少ない順",
+  "filter_sort_mints_desc": "ミント数が多い順",
   "filter_sort_newest_sub": "最近受取",
   "filter_sort_oldest_sub": "最初に受取",
   "filter_sort_no_ascending_sub": "コレクション 101 →",
@@ -766,6 +778,9 @@
   "filter_sort_serial_desc_sub": "シリアル 99999 →",
   "filter_sort_member_asc_sub": "デビュー順 →",
   "filter_sort_member_desc_sub": "逆順 →",
+  "filter_sort_duplicates_desc_sub": "所持枚数が多い →",
+  "filter_sort_mints_asc_sub": "レアな順 →",
+  "filter_sort_mints_desc_sub": "ミント数が多い →",
   "filter_type": "タイプ",
   "filter_action": "アクション",
   "filter_online_any": "すべて",
@@ -847,10 +862,81 @@
   "transfer_cosmo_spin": "COSMOスピン",
   "transfer_from": "送信元",
   "transfer_to": "送信先",
-  "transfer_objekt_header": "Objekt",
-  "transfer_user_header": "ユーザー",
   "transfer_date_header": "日付",
   "transfer_error_loading": "取引履歴の読み込み中にエラーが発生しました",
+  "filter_type_trade": "トレード",
+  "filter_outcome": "結果",
+  "transfer_outcome_success": "成功",
+  "transfer_outcome_fail": "失敗",
+  "transfer_outcome_pending": "保留中",
+  "transfer_kind_trade": "トレード",
+  "transfer_kind_sent": "送信",
+  "transfer_kind_received": "受信",
+  "transfer_kind_mint": "ミント",
+  "transfer_kind_scanned": "スキャン",
+  "transfer_trade_detected": "トレードを検出：双方が15分以内にオブジェクトを送信しました。",
+  "transfer_objekt_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}枚のオブジェクト"
+      }
+    }
+  ],
+  "transfer_show_details": "転送を表示",
+  "transfer_hide_details": "転送を隠す",
+  "transfer_no_reward": "報酬なし",
+  "transfer_awaiting_reward": "報酬を待っています",
+  "transfer_when_header": "日時",
+  "transfer_out_header": "送信",
+  "transfer_in_header": "受信",
+  "transfer_outcome_header": "結果",
+  "transfer_with_header": "相手",
+  "transfer_day_today": "今日",
+  "transfer_day_yesterday": "昨日",
+  "transfer_tally_spins": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "スピン{count}回"
+      }
+    }
+  ],
+  "transfer_tally_success": "成功{count}",
+  "transfer_tally_fail": "失敗{count}",
+  "transfer_tally_pending": "保留中{count}",
+  "transfer_tally_trades": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "トレード{count}件"
+      }
+    }
+  ],
+  "transfer_tally_sent": "送信{count}",
+  "transfer_tally_received": "受信{count}",
+  "transfer_tally_mints": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "ミント{count}"
+      }
+    }
+  ],
+  "transfer_tally_scanned": "スキャン{count}",
+  "transfer_group_meta": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "転送{count}件 · {minutes}分"
+      }
+    }
+  ],
   "_comment_gravity": "Gravity strings",
   "gravity_error_loading": "Gravityの読み込み中にエラー",
   "gravity_top_votes": "最多投票",

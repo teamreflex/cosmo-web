@@ -6,7 +6,7 @@ import { useMetadataDialog } from "@/hooks/use-metadata-dialog";
 import { m } from "@/i18n/messages";
 import { prefersReducedMotion } from "@/lib/client/binder-leaf";
 import { env } from "@/lib/env/client";
-import { objektMetadataQuery, objektQuery } from "@/lib/queries/objekt-queries";
+import { objektMetadataQuery } from "@/lib/queries/objekt-queries";
 import {
   binderGrid,
   binderLayoutLabel,
@@ -16,12 +16,12 @@ import {
 import type {
   BinderDetail,
   BinderLayout,
+  BinderObjekt,
   BinderPages,
   BinderPreview,
 } from "@/lib/universal/binders";
-import { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
-import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
+import { slugifyObjekt } from "@apollo/util";
 import { IconShare3 } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -30,7 +30,7 @@ import type { ComponentProps, ReactNode, RefObject } from "react";
 import { toast } from "sonner";
 import { useCopyToClipboard } from "usehooks-ts";
 import BinderCover from "./binder-cover";
-import { BinderPage, PocketSleeve } from "./binder-page";
+import { BinderPage, PageThumbnail, PocketSleeve } from "./binder-page";
 
 type ViewerMetaProps = ComponentProps<"span"> & {
   cover: BinderPreview;
@@ -193,7 +193,7 @@ function PagePockets({
 
 type ViewerPocketProps = {
   slot: number;
-  objekt: CosmoObjekt;
+  objekt: BinderObjekt;
   priority: boolean;
   tabIndex: number | undefined;
 };
@@ -202,12 +202,11 @@ function ViewerPocket({ slot, objekt, priority, tabIndex }: ViewerPocketProps) {
   const queryClient = useQueryClient();
   const { open } = useMetadataDialog();
 
+  // the dialog fetches the collection itself, so only start the metadata request alongside it
   function handleClick() {
-    // seed the collection and start the metadata request, as grid objekts do
-    const { collection } = Objekt.fromLegacy(objekt);
-    queryClient.setQueryData(objektQuery(collection.slug).queryKey, collection);
-    void queryClient.prefetchQuery(objektMetadataQuery(collection.slug));
-    open(collection.slug);
+    const slug = slugifyObjekt(objekt.collectionId);
+    void queryClient.prefetchQuery(objektMetadataQuery(slug));
+    open(slug);
   }
 
   return (
@@ -260,8 +259,8 @@ type RailProps = {
 };
 
 /**
- * Every page as a dot map with its filled pockets lit, to jump anywhere
- * without flipping. The pages in view are outlined, and the pockets light up
+ * Every page as a thumbnail with its filled pockets tinted, to jump anywhere
+ * without flipping. The pages in view are outlined, and the pockets fill in
  * once the binder loads.
  */
 export function PageRail({
@@ -291,7 +290,6 @@ function Rail({
   onSelect,
   className,
 }: RailProps & { pages: BinderPages }) {
-  const { columns, pocketsPerPage } = binderGrid(layout);
   const firstRef = useRef<HTMLButtonElement>(null);
   const first = current[0];
 
@@ -319,22 +317,13 @@ function Rail({
             aria-label={m.binder_viewer_go_to_page({ page: page + 1 })}
             aria-current={on ? "page" : undefined}
             onClick={() => onSelect(page)}
-            style={{ gridTemplateColumns: `repeat(${columns}, 1fr)` }}
-            className={cn(
-              "grid w-11 shrink-0 gap-0.5 rounded-md border border-border bg-muted/60 p-1 transition-colors outline-none hover:border-foreground/30 focus-visible:border-foreground",
-              on &&
-                "border-cosmo-text shadow-[0_0_0_2px_color-mix(in_oklch,var(--color-cosmo)_30%,transparent)] hover:border-cosmo-text",
-            )}
+            className="group shrink-0 rounded-md outline-none"
           >
-            {Array.from({ length: pocketsPerPage }, (_, slot) => (
-              <i
-                key={slot}
-                className={cn(
-                  "block aspect-[5.5/7] rounded-[2px] bg-foreground/8",
-                  pages.get(page)?.has(slot) === true && "bg-cosmo-text",
-                )}
-              />
-            ))}
+            <PageThumbnail
+              layout={layout}
+              pockets={pages.get(page)}
+              current={on}
+            />
           </button>
         );
       })}

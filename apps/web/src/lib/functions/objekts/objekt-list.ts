@@ -1,19 +1,30 @@
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
-import { collections, members, objekts } from "@/lib/server/db/indexer/schema";
+import {
+  collections,
+  collectionStats,
+  members,
+  objekts,
+} from "@/lib/server/db/indexer/schema";
 import type { Collection } from "@/lib/server/db/indexer/schema";
 import {
+  mintOrder,
   withArtist,
   withClass,
   withMember,
-  withObjektListEntries,
   withOnlineType,
   withSeason,
 } from "@/lib/server/objekts/filters.server";
 import { objektListBackendSchema } from "@/lib/universal/parsers";
-import { isMemberSort } from "@apollo/cosmo/types/common";
+import {
+  type IndexSort,
+  indexSorts,
+  supportedSort,
+} from "@/lib/universal/sorts";
+import { isMemberSort, isMintSort } from "@apollo/cosmo/types/common";
+import type { ObjektListEntry } from "@apollo/database/web/types";
 import { createServerFn } from "@tanstack/react-start";
-import { and, inArray } from "drizzle-orm";
+import { and, eq, type SQL, sql } from "drizzle-orm";
 import * as z from "zod";
 
 const LIMIT = 60;
@@ -77,151 +88,160 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
       };
     }
 
-    const matchingCollections = await indexer
-      .select()
-      .from(collections)
-      .where(
-        and(
-          ...withObjektListEntries(entries.map((e) => e.collectionId)),
-          ...withArtist(data.artist),
-          ...withClass(data.class ?? []),
-          ...withSeason(data.season ?? []),
-          ...withOnlineType(data.on_offline ?? []),
-          ...withMember(data.member),
-        ),
-      );
+    const start = data.page * LIMIT;
+    const rows = await fetchListPage(entries, data, start);
 
-    const collectionsBySlug = new Map(
-      matchingCollections.map((c) => [c.slug, c]),
-    );
-
-    const serialByTokenId = await fetchSerials(
-      entries.map((e) => e.tokenId).filter((id): id is string => id !== null),
-    );
-
+    const entriesById = new Map(entries.map((e) => [e.id, e]));
     const items: ObjektListItem[] = [];
-    for (const entry of entries) {
-      const collection = collectionsBySlug.get(entry.collectionId);
-      if (!collection) continue;
+    for (const row of rows) {
+      const entry = entriesById.get(row.entryId);
+      if (!entry) continue;
       items.push({
-        ...collection,
+        ...row.collection,
         id: entry.id,
         entryQuantity: entry.quantity,
         entryPrice: entry.price,
         entryTokenId: entry.tokenId,
-        entrySerial:
-          entry.tokenId !== null
-            ? (serialByTokenId.get(entry.tokenId) ?? null)
-            : null,
+        entrySerial: row.serial,
         entryCreatedAt: entry.createdAt.toISOString(),
         medianPriceUsd: entry.priceStats?.medianPriceUsd ?? null,
         listingCount: entry.priceStats?.listingCount ?? 0,
       });
     }
 
-    const sort = data.sort ?? "newest";
-    const memberOrder = isMemberSort(sort)
-      ? await fetchMemberOrder()
-      : undefined;
-    sortObjektListItems(items, sort, memberOrder);
-
-    const total = items.length;
-    const start = data.page * LIMIT;
-    const page = items.slice(start, start + LIMIT);
+    const total = rows[0]?.total ?? 0;
     const hasNext = start + LIMIT < total;
 
     return {
       total,
       hasNext,
       nextStartAfter: hasNext ? data.page + 1 : undefined,
-      objekts: page,
+      objekts: items,
     };
   });
 
 /**
- * Fetch serials from the indexer for the given token IDs.
+ * Fetch one page of list entries from the indexer. Entries live in the web
+ * database, so they're passed in as a JSON recordset; the indexer then applies
+ * the collection filters, sorts and pages them, and joins the collection and
+ * serial for just the page's rows.
  */
-async function fetchSerials(tokenIds: string[]) {
-  if (tokenIds.length === 0) {
-    return new Map<string, number>();
-  }
-
-  const result = await indexer
-    .select({ id: objekts.id, serial: objekts.serial })
-    .from(objekts)
-    .where(inArray(objekts.id, tokenIds));
-
-  return new Map(result.map((o) => [o.id, o.serial]));
-}
-
-/**
- * Sort list items by the selected sort, applied after entry projection so
- * per-entry rendering stays consistent across types. Newest/oldest order by
- * when the entry was added to the list (not when the collection released),
- * and other sorts break ties between entries of the same collection the
- * same way.
- */
-function sortObjektListItems(
-  items: ObjektListItem[],
-  sort: string,
-  memberOrder: Map<string, number> | undefined,
+async function fetchListPage(
+  entries: Pick<
+    ObjektListEntry,
+    "id" | "collectionId" | "tokenId" | "createdAt"
+  >[],
+  data: z.infer<typeof objektListBackendSchema>,
+  start: number,
 ) {
-  // newest-added entry first, also breaks ties within a collection
-  const newestAdded = (a: ObjektListItem, b: ObjektListItem) =>
-    b.entryCreatedAt.localeCompare(a.entryCreatedAt);
+  const sort = supportedSort(data.sort, indexSorts);
+  const recordset = JSON.stringify(
+    entries.map((e) => ({
+      entry_id: e.id,
+      slug: e.collectionId,
+      token_id: e.tokenId,
+      created_at: e.createdAt,
+    })),
+  );
+  const listEntries = indexer.$with("list_entries").as(
+    indexer
+      .select({
+        entryId: sql<string>`entry_id`.as("entry_id"),
+        slug: sql<string>`slug`.as("slug"),
+        tokenId: sql<string | null>`token_id`.as("token_id"),
+        createdAt: sql<string>`created_at`.as("created_at"),
+      })
+      .from(
+        sql`jsonb_to_recordset(${recordset}::text::jsonb) as e(entry_id uuid, slug text, token_id text, created_at timestamptz)`,
+      ),
+  );
 
-  switch (sort) {
-    case "oldest":
-      items.sort((a, b) => a.entryCreatedAt.localeCompare(b.entryCreatedAt));
-      return;
-    case "noAscending":
-      items.sort(
-        (a, b) =>
-          a.collectionNo.localeCompare(b.collectionNo) || newestAdded(a, b),
-      );
-      return;
-    case "noDescending":
-      items.sort(
-        (a, b) =>
-          b.collectionNo.localeCompare(a.collectionNo) || newestAdded(a, b),
-      );
-      return;
-    case "memberAsc":
-      items.sort(
-        (a, b) =>
-          memberRank(a, memberOrder) - memberRank(b, memberOrder) ||
-          a.collectionNo.localeCompare(b.collectionNo) ||
-          newestAdded(a, b),
-      );
-      return;
-    case "memberDesc":
-      items.sort(
-        (a, b) =>
-          memberRank(b, memberOrder) - memberRank(a, memberOrder) ||
-          a.collectionNo.localeCompare(b.collectionNo) ||
-          newestAdded(a, b),
-      );
-      return;
-    case "newest":
-    default:
-      items.sort(newestAdded);
+  let pageQuery = indexer
+    .with(listEntries)
+    .select({
+      entryId: listEntries.entryId,
+      tokenId: listEntries.tokenId,
+      collectionId: collections.id,
+      position:
+        sql<number>`row_number() over (order by ${sql.join([...listSortOrder(sort, listEntries.createdAt), sql`${listEntries.entryId}`], sql`, `)})`.as(
+          "position",
+        ),
+      total: sql<number>`count(*) over ()::int`.as("total"),
+    })
+    .from(listEntries)
+    .innerJoin(collections, eq(collections.slug, listEntries.slug))
+    .where(
+      and(
+        ...withArtist(data.artist),
+        ...withClass(data.class ?? []),
+        ...withSeason(data.season ?? []),
+        ...withOnlineType(data.on_offline ?? []),
+        ...withMember(data.member),
+      ),
+    )
+    .$dynamic();
+  if (isMemberSort(sort)) {
+    pageQuery = pageQuery.leftJoin(
+      members,
+      eq(members.name, collections.member),
+    );
   }
+  if (isMintSort(sort)) {
+    pageQuery = pageQuery.leftJoin(
+      collectionStats,
+      eq(collectionStats.collectionId, collections.id),
+    );
+  }
+  const page = pageQuery
+    .orderBy(sql`position`)
+    .limit(LIMIT)
+    .offset(start)
+    .as("page");
+
+  return await indexer
+    .select({
+      entryId: page.entryId,
+      total: page.total,
+      serial: objekts.serial,
+      collection: collections,
+    })
+    .from(page)
+    .innerJoin(collections, eq(collections.id, page.collectionId))
+    .leftJoin(objekts, eq(objekts.id, page.tokenId))
+    .orderBy(page.position)
+    .comment({ fn: "fetchObjektListPage" });
 }
 
 /**
- * Resolve a member's canonical sort position, falling back to last for any
- * member missing from the synced member table.
+ * Sort keys for list entries. Newest/oldest order by when the entry was added
+ * to the list (not when the collection released), and other sorts break ties
+ * between entries of the same collection the same way.
  */
-function memberRank(item: ObjektListItem, memberOrder?: Map<string, number>) {
-  return memberOrder?.get(item.member) ?? Number.MAX_SAFE_INTEGER;
-}
-
-/**
- * Load the member name → canonical sort order map from the indexer.
- */
-async function fetchMemberOrder() {
-  const rows = await indexer
-    .select({ name: members.name, sortOrder: members.sortOrder })
-    .from(members);
-  return new Map(rows.map((r) => [r.name, r.sortOrder]));
+function listSortOrder(sort: IndexSort, addedAt: SQL.Aliased<string>): SQL[] {
+  const newestAdded = sql`${addedAt} desc`;
+  switch (sort) {
+    case "newest":
+      return [newestAdded];
+    case "oldest":
+      return [sql`${addedAt} asc`];
+    case "noAscending":
+      return [sql`${collections.collectionNo} asc`, newestAdded];
+    case "noDescending":
+      return [sql`${collections.collectionNo} desc`, newestAdded];
+    case "memberAsc":
+      return [
+        sql`${members.sortOrder} asc nulls last`,
+        sql`${collections.collectionNo} asc`,
+        newestAdded,
+      ];
+    case "memberDesc":
+      return [
+        sql`${members.sortOrder} desc nulls last`,
+        sql`${collections.collectionNo} asc`,
+        newestAdded,
+      ];
+    case "mintsAsc":
+    case "mintsDesc":
+      return [mintOrder(sort), newestAdded];
+  }
 }

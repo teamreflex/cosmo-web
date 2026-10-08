@@ -80,6 +80,12 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2026-10-07",
+    changes: [
+      "Binders now allow a maximum of 50 pages instead of 20, and pages can be reordered.",
+    ],
+  },
+  {
     date: "2026-09-30",
     changes: [
       "Added: 3D objekt interaction from COSMO",

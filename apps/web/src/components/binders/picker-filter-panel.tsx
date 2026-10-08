@@ -6,8 +6,9 @@ import { m } from "@/i18n/messages";
 import { sortLabel } from "@/lib/client/objekt-util";
 import type { NeighbourSuggestion } from "@/lib/universal/binders";
 import { getSeasonColor } from "@/lib/universal/seasons";
+import { profileSorts } from "@/lib/universal/sorts";
 import { classSort, cn } from "@/lib/utils";
-import { validOnlineTypes, validSorts } from "@apollo/cosmo/types/common";
+import { validOnlineTypes } from "@apollo/cosmo/types/common";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
 import { Suspense, useId } from "react";
 import type { ComponentProps, ReactNode } from "react";
@@ -137,7 +138,7 @@ export default function PickerFilterPanel({
 
         <Group title={m.filter_sort()}>
           <Options>
-            {validSorts.map((sort) => (
+            {profileSorts.map((sort) => (
               <Option
                 key={sort}
                 pressed={filters.sort === sort}

@@ -1,4 +1,5 @@
-import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
+import { getObjektFrontImageRef } from "@/lib/client/objekt-util";
+import { env } from "@/lib/env/client";
 import {
   type BinderArtwork,
   type BinderPreview,
@@ -7,6 +8,7 @@ import {
   COLLAGE_SIZE,
 } from "@/lib/universal/binders";
 import { cn } from "@/lib/utils";
+import { objektImageUrl } from "@apollo/image";
 
 type Props = {
   binder: Pick<BinderPreview, "name" | "colour" | "artwork">;
@@ -109,9 +111,15 @@ function CoverObjekt({
   fill: boolean;
   className?: string;
 }) {
+  const ref = getObjektFrontImageRef(image);
+
   return (
     <img
-      src={getObjektFrontImageUrl(image, fill ? "thumbnail" : "xs")}
+      src={
+        ref === null
+          ? undefined
+          : objektImageUrl(env.VITE_CDN_URL, ref, fill ? "thumbnail" : "xs")
+      }
       alt={image.collectionId}
       decoding="async"
       className={cn(card, "bg-white/15 object-cover object-top", className)}

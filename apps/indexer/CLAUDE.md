@@ -142,6 +142,10 @@ Pin a fixed `fingerprint` and carry the real rejection as `cause`: one issue acc
 
 Before each chunk's collection upsert, `mirrorImages` (`src/images.ts`) mirrors the front and back image of every collection whose `frontImageVersion`/`backImageVersion` doesn't match a hash of its source URL into R2 via `@apollo/image` (see its README), four at a time, and sets the version on the batch's own instances.
 
+### Collection Stats
+
+`collection_stats` holds each collection's `objekt_count` (every objekt row, spun included) and `spun_count` (rows owned by `Addresses.SPIN`) for apps/web's mint-count sorts. Triggers on `objekt` maintain it (migration `1791327933173-Data.js`): inserts and deletes adjust both counts, and owner changes to or from spin adjust `spun_count`. The processor never reads or writes it, so hot-block rollbacks and hand-run repairs to `objekt` stay counted without any TypeScript changes. A collection's row exists only while it has objekts.
+
 ## Key Files
 
 - `schema.graphql` — source of truth for entity definitions; TypeORM entities in `src/model/generated/` are manually kept in sync with it (do not regenerate)
