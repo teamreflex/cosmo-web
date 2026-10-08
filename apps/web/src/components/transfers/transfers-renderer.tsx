@@ -35,11 +35,11 @@ export default function TransfersRenderer({ cosmo }: Props) {
       ...prev,
       type: value,
       // outcomes only apply to spins
-      outcome: value === "spin" ? prev.outcome : null,
+      outcome: value === "spin" ? prev.outcome : undefined,
     }));
   }
 
-  function setOutcome(value: SpinOutcome | null) {
+  function setOutcome(value: SpinOutcome | undefined) {
     setFilters((prev) => ({ ...prev, outcome: value }));
   }
 
@@ -49,7 +49,7 @@ export default function TransfersRenderer({ cosmo }: Props) {
         <TransfersFilters
           type={type}
           setType={setType}
-          outcome={filters.outcome ?? null}
+          outcome={filters.outcome ?? undefined}
           setOutcome={setOutcome}
         />
       </FiltersContainer>

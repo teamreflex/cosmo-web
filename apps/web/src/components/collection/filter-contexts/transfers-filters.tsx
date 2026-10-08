@@ -12,8 +12,8 @@ import TransferTypeFilter from "../filter-transfer-type";
 type Props = {
   type: TransferType;
   setType: (type: TransferType) => void;
-  outcome: SpinOutcome | null;
-  setOutcome: (outcome: SpinOutcome | null) => void;
+  outcome: SpinOutcome | undefined;
+  setOutcome: (outcome: SpinOutcome | undefined) => void;
 };
 
 /**

@@ -8,8 +8,8 @@ import SingleSelectList, {
 type Value = SpinOutcome | "all";
 
 type Props = {
-  outcome: SpinOutcome | null;
-  setOutcome: (outcome: SpinOutcome | null) => void;
+  outcome: SpinOutcome | undefined;
+  setOutcome: (outcome: SpinOutcome | undefined) => void;
 };
 
 export default function SpinOutcomeFilter({ outcome, setOutcome }: Props) {
@@ -31,14 +31,14 @@ export default function SpinOutcomeFilter({ outcome, setOutcome }: Props) {
               options.find((o) => o.value === value)?.label ?? value
             ).toLowerCase()
       }
-      active={outcome !== null}
+      active={outcome !== undefined}
       width={180}
     >
       {({ close }) => (
         <SingleSelectList
           options={options}
           value={value}
-          onChange={(next) => setOutcome(next === "all" ? null : next)}
+          onChange={(next) => setOutcome(next === "all" ? undefined : next)}
           close={close}
         />
       )}
