@@ -10,7 +10,7 @@ Detailed conventions live in `docs/`. Read the relevant file **before** working 
 | Routes, loaders, data fetching, server functions, import protection (`apps/web`)                 | [`docs/tanstack.md`](docs/tanstack.md)   |
 | Components, forms, Tailwind/styling, i18n strings (`apps/web`)                                   | [`docs/frontend.md`](docs/frontend.md)   |
 | Throwing/handling errors, `ExpectedError`, Sentry filtering (`apps/web`)                         | [`docs/errors.md`](docs/errors.md)       |
-| Better Auth config, API keys, auth schema generation (`apps/web`)                                | [`docs/auth.md`](docs/auth.md)           |
+| Better Auth config, staff roles and permissions, API keys, auth schema generation (`apps/web`)   | [`docs/auth.md`](docs/auth.md)           |
 | Writing or running tests (`bun test`, mocking cosmo endpoints)                                   | [`docs/testing.md`](docs/testing.md)     |
 | COSMO domain concepts: collections, objekts, serials, grids, COMO, gravity polls                 | [`docs/cosmo.md`](docs/cosmo.md)         |
 | Looking up library documentation (TanStack, Drizzle, Effect, …)                                  | [`docs/libraries.md`](docs/libraries.md) |

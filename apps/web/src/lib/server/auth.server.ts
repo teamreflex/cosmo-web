@@ -1,21 +1,23 @@
 import * as clientEnv from "@/lib/env/client";
 import * as serverEnv from "@/lib/env/server";
 import { baseUrl } from "@/lib/utils";
-import { adminPluginOptions } from "@apollo/auth";
+import { adminPluginOptions, parseRole, roleNames } from "@apollo/auth";
 import * as authSchema from "@apollo/database/auth";
-import { cosmoAccounts } from "@apollo/database/web/schema";
+import { cosmoAccounts, reports } from "@apollo/database/web/schema";
+import type { StaffAuditDetail } from "@apollo/database/web/types";
 import { GRID_COLUMNS } from "@apollo/util";
 import type { CollectionDataSource } from "@apollo/util";
 import { apiKey } from "@better-auth/api-key";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
-import { APIError, createAuthMiddleware } from "better-auth/api";
+import { APIError, createAuthMiddleware, isAPIError } from "better-auth/api";
 import { parseSessionOutput, parseUserOutput } from "better-auth/db";
 import { betterAuth } from "better-auth/minimal";
 import { admin } from "better-auth/plugins/admin";
 import { username } from "better-auth/plugins/username";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { createCipheriv, randomBytes } from "node:crypto";
+import * as z from "zod";
 import type { PublicUser } from "../universal/auth";
 import { settingsSchema } from "../universal/schema/auth";
 import { db } from "./db";
@@ -24,6 +26,15 @@ import {
   sendPasswordResetEmail,
   sendVerificationEmail,
 } from "./mail.server";
+import { recordStaffAudit } from "./staff-audit.server";
+import { publishUserEvent } from "./user-events.server";
+
+const PREVIOUS_ROLE_HEADER = "x-apollo-previous-role";
+
+const setRoleBodySchema = z.object({
+  userId: z.coerce.string(),
+  role: z.enum(roleNames),
+});
 
 /**
  * Better Auth server instance.
@@ -180,6 +191,33 @@ export const auth = betterAuth({
       }
 
       /**
+       * Allow exactly one known role: the plugin would comma-join an array,
+       * which the role CHECK rejects. The previous role is gone once the
+       * update commits, so it reaches the after-hook's audit row in a request
+       * header that overwrites any value the client sent.
+       */
+      if (ctx.path === "/admin/set-role") {
+        const body = setRoleBodySchema.safeParse(ctx.body);
+        if (!body.success) {
+          throw new APIError("BAD_REQUEST", {
+            message: `Role must be one of: ${roleNames.join(", ")}`,
+          });
+        }
+
+        const target = await db.query.user.findFirst({
+          where: { id: body.data.userId },
+          columns: { role: true },
+        });
+        if (target) {
+          return {
+            context: {
+              headers: new Headers({ [PREVIOUS_ROLE_HEADER]: target.role }),
+            },
+          };
+        }
+      }
+
+      /**
        * Override the internal adapter to return the session and user in one query.
        */
       if (ctx.path === "/get-session") {
@@ -215,6 +253,69 @@ export const auth = betterAuth({
             },
           },
         };
+      }
+    }),
+
+    /**
+     * Audits staff actions and publishes them on `user-events`. After-hooks
+     * also run when the endpoint refused the caller, and `ctx.body` is the
+     * raw request body.
+     */
+    after: createAuthMiddleware(async (ctx) => {
+      const session = ctx.context.session;
+      if (isAPIError(ctx.context.returned) || !session) {
+        return;
+      }
+
+      switch (ctx.path) {
+        case "/admin/ban-user": {
+          const { userId, banReason, banExpiresIn } = z
+            .object({
+              userId: z.coerce.string(),
+              banReason: z.string().optional(),
+              banExpiresIn: z.number().optional(),
+            })
+            .parse(ctx.body);
+          await recordBan({
+            staffId: session.user.id,
+            userId,
+            reportId: z.uuid().safeParse(ctx.headers?.get("x-report-id")).data,
+            // the plugin treats a zero length as permanent
+            detail: {
+              kind: "ban",
+              expiresIn: banExpiresIn || null,
+              reason: banReason ?? "",
+            },
+          });
+          return;
+        }
+        case "/admin/unban-user": {
+          const { userId } = z
+            .object({ userId: z.coerce.string() })
+            .parse(ctx.body);
+          await recordStaffAudit(db, {
+            staffId: session.user.id,
+            action: "user:unban",
+            userId,
+          });
+          await publishUserEvent({ type: "unbanned", userId });
+          return;
+        }
+        case "/admin/set-role": {
+          const { userId, role } = setRoleBodySchema.parse(ctx.body);
+          await recordStaffAudit(db, {
+            staffId: session.user.id,
+            action: "user:set-role",
+            userId,
+            detail: {
+              kind: "set-role",
+              from: parseRole(ctx.headers?.get(PREVIOUS_ROLE_HEADER)),
+              to: role,
+            },
+          });
+          await publishUserEvent({ type: "role-changed", userId, role });
+          return;
+        }
       }
     }),
   },
@@ -323,6 +424,73 @@ export const auth = betterAuth({
     },
   },
 });
+
+type BanRecord = {
+  staffId: string;
+  userId: string;
+  reportId: string | undefined;
+  detail: Extract<StaffAuditDetail, { kind: "ban" }>;
+};
+
+/**
+ * Audit a ban, then announce it. A ban started from a report links that
+ * report and resolves every open report on the user, each with its own audit
+ * row.
+ */
+async function recordBan({ staffId, userId, reportId, detail }: BanRecord) {
+  const banExpires = await db.transaction(async (tx) => {
+    const target = await tx.query.user.findFirst({
+      where: { id: userId },
+      columns: { banExpires: true },
+    });
+    const linkedReport = reportId
+      ? await tx.query.reports.findFirst({
+          where: { id: reportId, targetType: "user", targetId: userId },
+          columns: { id: true },
+        })
+      : undefined;
+    const resolved = linkedReport
+      ? await tx
+          .update(reports)
+          .set({
+            status: "resolved",
+            resolvedBy: staffId,
+            resolvedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(reports.targetType, "user"),
+              eq(reports.targetId, userId),
+              inArray(reports.status, ["open", "escalated"]),
+            ),
+          )
+          .returning({ id: reports.id })
+      : [];
+
+    await recordStaffAudit(tx, {
+      staffId,
+      action: "user:ban",
+      userId,
+      reportId: linkedReport?.id ?? null,
+      detail,
+    });
+    for (const report of resolved) {
+      await recordStaffAudit(tx, {
+        staffId,
+        action: "report:resolve",
+        reportId: report.id,
+      });
+    }
+
+    return target?.banExpires ?? null;
+  });
+
+  await publishUserEvent({
+    type: "banned",
+    userId,
+    expiresAt: banExpires?.toISOString() ?? null,
+  });
+}
 
 // should not be used in client code
 type ServerUser = (typeof auth.$Infer.Session)["user"];

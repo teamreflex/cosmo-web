@@ -117,6 +117,8 @@
   "auth_error_not_signed_in": "続行するにはログインしてください。",
   "auth_error_cosmo_required": "続行するにはCOSMOアカウントを連携してください。",
   "auth_error_forbidden": "この操作を実行する権限がありません。",
+  "auth_error_banned": "このアカウントは利用停止されています。",
+  "auth_error_ban_self": "自分自身を利用停止することはできません。",
   "auth_error_verification_not_found": "COSMOのbio内に認証コードが見つかりません。",
   "_comment_link_cosmo": "Link COSMO account strings",
   "link_cosmo_title": "COSMO連携",
