@@ -32,17 +32,24 @@ export const Route = createFileRoute("/admin/reports")({
     type: z.enum(reportTargetTypes).optional().catch(undefined),
     report: z.uuid().optional().catch(undefined),
   }),
+  loaderDeps: ({ search: { status, type } }) => ({ status, type }),
+  // built once here so the loader and the queue share the same cache key
+  context: ({ deps }) => ({
+    queueFilters: {
+      status: deps.status,
+      targetType: deps.type,
+    } satisfies ReportQueueFilters,
+  }),
   beforeLoad: ({ context }) => {
     if (!can(context.role, { report: ["read"] })) {
       throw redirect({ to: "/admin" });
     }
   },
-  loaderDeps: ({ search: { status, type } }) => ({ status, type }),
-  loader: async ({ context, deps }) => {
+  loader: async ({ context }) => {
     await Promise.all([
       context.queryClient.ensureQueryData(reportCountsQuery),
       context.queryClient.ensureInfiniteQueryData(
-        reportQueueQuery({ status: deps.status, targetType: deps.type }),
+        reportQueueQuery(context.queueFilters),
       ),
     ]);
   },
@@ -53,14 +60,14 @@ export const Route = createFileRoute("/admin/reports")({
 });
 
 function RouteComponent() {
-  const { status, type, report } = Route.useSearch();
-  const filters = { status, targetType: type } satisfies ReportQueueFilters;
+  const { report } = Route.useSearch();
+  const { queueFilters } = Route.useRouteContext();
 
   return (
     <section className="flex flex-col gap-4 p-4">
-      <Toolbar filters={filters} />
+      <Toolbar filters={queueFilters} />
       <div className="flex flex-wrap items-start gap-4">
-        <ReportQueue filters={filters} />
+        <ReportQueue filters={queueFilters} />
         <ReportDetail id={report} />
       </div>
     </section>
