@@ -859,7 +859,7 @@
   "admin_audit_empty_filtered": "Aucun résultat pour ces filtres",
   "admin_audit_action_report_read": "A consulté un signalement",
   "admin_audit_action_report_resolve": "A résolu un signalement",
-  "admin_audit_action_report_dismiss": "A classé un signalement",
+  "admin_audit_action_report_dismiss": "A rejeté un signalement",
   "admin_audit_action_report_escalate": "A transmis un signalement",
   "admin_audit_action_user_ban": "A banni un utilisateur",
   "admin_audit_action_user_unban": "A débanni un utilisateur",
