@@ -135,8 +135,10 @@ export async function recordStaffAudit(
 export async function fetchStaffAudit(input: StaffAuditQueryInput) {
   const [rows, total] = await Promise.all([
     db.query.staffAudit.findMany({
-      // drizzle rc.5 throws on explicit undefined filter values, so optional
-      // filters are only present when set
+      /**
+       * drizzle rc.5 throws on explicit undefined filter values, so optional
+       * filters are only present when set
+       */
       where: {
         ...(input.staffId && { staffId: input.staffId }),
         ...(input.action && { action: input.action }),

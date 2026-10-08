@@ -32,8 +32,10 @@ const QUEUE_PAGE_SIZE = 30;
  */
 export async function fetchReportQueue(input: ReportQueueInput) {
   const after = decodeQueueCursor(input.cursor);
-  // drizzle rc.5 throws on explicit undefined filter values, so optional
-  // filters are only present when set
+  /**
+   * drizzle rc.5 throws on explicit undefined filter values, so optional
+   * filters are only present when set
+   */
   const rows = await db.query.reports.findMany({
     where: {
       status: input.status,
