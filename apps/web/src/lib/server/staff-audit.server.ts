@@ -1,7 +1,25 @@
+import { db } from "@/lib/server/db";
 import type { DbOrTx } from "@/lib/server/db";
+import {
+  fetchStaffUsernames,
+  staffUsername,
+} from "@/lib/server/staff-users.server";
+import type { StaffAuditQueryInput } from "@/lib/universal/schema/staff-audit";
+import type {
+  AdminAuditDetail,
+  AdminAuditRow,
+  AdminAuditTarget,
+  AuditStaffMember,
+} from "@/lib/universal/staff-audit";
+import { parseRole } from "@apollo/auth";
 import { staffAudit } from "@apollo/database/web/schema";
-import type { StaffAuditDetail } from "@apollo/database/web/types";
-import { and, eq, gt, sql } from "drizzle-orm";
+import type {
+  StaffAuditDetail,
+  StaffAuditTargetType,
+} from "@apollo/database/web/types";
+import { and, eq, gt, inArray, sql } from "drizzle-orm";
+
+const AUDIT_PAGE_SIZE = 50;
 
 type ReportAuditEntry = {
   staffId: string;
@@ -108,4 +126,116 @@ export async function recordStaffAudit(
   }
 
   await executor.insert(staffAudit).values(toAuditRow(entry));
+}
+
+/**
+ * One page of the audit log, newest first, plus how many rows match the
+ * filters in total.
+ */
+export async function fetchStaffAudit(input: StaffAuditQueryInput) {
+  const [rows, total] = await Promise.all([
+    db.query.staffAudit.findMany({
+      // drizzle rc.5 throws on explicit undefined filter values, so optional
+      // filters are only present when set
+      where: {
+        ...(input.staffId && { staffId: input.staffId }),
+        ...(input.action && { action: input.action }),
+        ...(input.cursor !== undefined && { id: { lt: input.cursor } }),
+      },
+      orderBy: { id: "desc" },
+      limit: AUDIT_PAGE_SIZE,
+      with: {
+        staff: {
+          columns: {
+            id: true,
+            name: true,
+            username: true,
+            displayUsername: true,
+            role: true,
+          },
+        },
+      },
+    }),
+    db.$count(
+      staffAudit,
+      and(
+        input.staffId ? eq(staffAudit.staffId, input.staffId) : undefined,
+        input.action ? eq(staffAudit.action, input.action) : undefined,
+      ),
+    ),
+  ]);
+
+  const usernames = await fetchStaffUsernames(
+    rows.filter((row) => row.targetType === "user").map((row) => row.targetId),
+  );
+
+  const last = rows.at(-1);
+  return {
+    rows: rows.map((row): AdminAuditRow => ({
+      id: row.id,
+      createdAt: row.createdAt,
+      action: row.action,
+      staff: {
+        id: row.staff.id,
+        username: staffUsername(row.staff),
+        role: parseRole(row.staff.role),
+      },
+      reportId: row.reportId,
+      detail: row.detail === null ? null : toAuditDetail(row.detail),
+      target: toAuditTarget(row.targetType, row.targetId, usernames),
+    })),
+    nextCursor: rows.length === AUDIT_PAGE_SIZE && last ? last.id : undefined,
+    total,
+  };
+}
+
+function toAuditTarget(
+  targetType: StaffAuditTargetType,
+  targetId: string,
+  usernames: Map<string, string>,
+): AdminAuditTarget {
+  switch (targetType) {
+    case "user":
+      return {
+        type: "user",
+        id: targetId,
+        username: usernames.get(targetId) ?? null,
+      };
+    case "report":
+      return { type: "report", id: targetId };
+  }
+}
+
+function toAuditDetail(detail: StaffAuditDetail): AdminAuditDetail {
+  switch (detail.kind) {
+    case "ban":
+      return { kind: "ban", expiresIn: detail.expiresIn };
+    case "set-role":
+      return {
+        kind: "set-role",
+        from: parseRole(detail.from),
+        to: parseRole(detail.to),
+      };
+  }
+}
+
+/**
+ * Everyone with at least one audit row, for the log's Staff filter. Demoted
+ * staff stay listed because their rows remain.
+ */
+export async function fetchAuditStaff(): Promise<AuditStaffMember[]> {
+  const staff = await db.query.user.findMany({
+    where: {
+      RAW: (t) =>
+        inArray(
+          t.id,
+          db.selectDistinct({ id: staffAudit.staffId }).from(staffAudit),
+        ),
+    },
+    columns: { id: true, name: true, username: true, displayUsername: true },
+  });
+
+  return staff
+    .map((user) => ({ id: user.id, username: staffUsername(user) }))
+    .toSorted((a, b) => a.username.localeCompare(b.username));
 }

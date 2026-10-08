@@ -1,5 +1,10 @@
 import { db } from "@/lib/server/db";
 import { recordStaffAudit } from "@/lib/server/staff-audit.server";
+import {
+  fetchStaffUsernames,
+  staffUsername,
+} from "@/lib/server/staff-users.server";
+import type { NamedUser } from "@/lib/server/staff-users.server";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import { openReportStatuses } from "@/lib/universal/reports";
 import type {
@@ -19,20 +24,6 @@ import type {
 import { and, eq, inArray, ne, sql } from "drizzle-orm";
 
 const QUEUE_PAGE_SIZE = 30;
-
-type NamedUser = {
-  name: string;
-  username: string | null;
-  displayUsername: string | null;
-};
-
-/**
- * The name staff see for an account: the username as the user typed it,
- * falling back to the account name for users who never set one.
- */
-function staffUsername(user: NamedUser) {
-  return user.displayUsername ?? user.username ?? user.name;
-}
 
 /**
  * One page of the staff queue, newest first. The cursor carries `created_at`
@@ -71,22 +62,9 @@ export async function fetchReportQueue(input: ReportQueueInput) {
     },
   });
 
-  const userIds = rows
-    .filter((row) => row.targetType === "user")
-    .map((row) => row.targetId);
-  const users =
-    userIds.length === 0
-      ? []
-      : await db.query.user.findMany({
-          where: { id: { in: userIds } },
-          columns: {
-            id: true,
-            name: true,
-            username: true,
-            displayUsername: true,
-          },
-        });
-  const usersById = new Map(users.map((user) => [user.id, user]));
+  const usernames = await fetchStaffUsernames(
+    rows.filter((row) => row.targetType === "user").map((row) => row.targetId),
+  );
 
   const last = rows.at(-1);
   return {
@@ -96,7 +74,7 @@ export async function fetchReportQueue(input: ReportQueueInput) {
       status: row.status,
       createdAt: row.createdAt,
       reporter: { username: staffUsername(row.reporter) },
-      target: toRowTarget(row.targetType, usersById.get(row.targetId)),
+      target: toRowTarget(row.targetType, row.targetId, usernames),
     })),
     nextCursor:
       rows.length === QUEUE_PAGE_SIZE && last
@@ -107,14 +85,17 @@ export async function fetchReportQueue(input: ReportQueueInput) {
 
 function toRowTarget(
   targetType: ReportTargetType,
-  user: (NamedUser & { id: string }) | undefined,
+  targetId: string,
+  usernames: Map<string, string>,
 ): AdminReportRowTarget {
   switch (targetType) {
-    case "user":
+    case "user": {
+      const username = usernames.get(targetId);
       return {
         type: "user",
-        user: user ? { id: user.id, username: staffUsername(user) } : null,
+        user: username === undefined ? null : { id: targetId, username },
       };
+    }
     case "message":
     case "listing":
     case "feedback":

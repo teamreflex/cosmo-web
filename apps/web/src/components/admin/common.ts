@@ -7,6 +7,7 @@ import {
   IconDatabase,
   IconDisc,
   IconFlag,
+  IconHistory,
   IconHome,
   IconKey,
   IconLayoutSidebarRight,
@@ -41,6 +42,12 @@ export function getAdminItems(): AdminItem[] {
       url: "/admin/reports",
       icon: IconFlag,
       permissions: { report: ["read"] },
+    },
+    {
+      title: m.admin_audit_nav(),
+      url: "/admin/audit",
+      icon: IconHistory,
+      permissions: { audit: ["read"] },
     },
     {
       title: m.admin_bands_title(),
