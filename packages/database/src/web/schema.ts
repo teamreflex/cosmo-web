@@ -21,11 +21,17 @@ import {
 } from "drizzle-orm/pg-core";
 import { user } from "../auth";
 import { citext, createdAt, createdTimestamp } from "../custom";
-import type {
-  CosmoGravityType,
-  CosmoPollType,
-  EventTypeKey,
-  NotificationPayload,
+import {
+  type CosmoGravityType,
+  type CosmoPollType,
+  type EventTypeKey,
+  type NotificationPayload,
+  type ReportReason,
+  type StaffAuditAction,
+  type StaffAuditDetail,
+  type StaffAuditTargetType,
+  reportStatuses,
+  reportTargetTypes,
 } from "./types";
 
 export * from "../auth";
@@ -38,6 +44,8 @@ export const listType = pgEnum("list_type", [
 ]);
 export const notificationType = pgEnum("notification_type", ["list_match"]);
 export const binderLayout = pgEnum("binder_layout", ["3x3", "2x2", "4x3"]);
+export const reportTargetType = pgEnum("report_target_type", reportTargetTypes);
+export const reportStatus = pgEnum("report_status", reportStatuses);
 
 export const cosmoAccounts = pgTable(
   "cosmo_account",
@@ -437,6 +445,73 @@ export const polygonVotes = pgTable(
     index("polygon_votes_contract_poll_id_idx").on(t.contract, t.pollId),
   ],
 );
+
+// #region Moderation
+export const reports = pgTable(
+  "reports",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    createdAt,
+    reporterId: text("reporter_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    targetType: reportTargetType("target_type").notNull(),
+    targetId: text("target_id").notNull(),
+    reason: varchar("reason", { length: 32 }).$type<ReportReason>().notNull(),
+    note: varchar("note", { length: 1000 }),
+    status: reportStatus("status").notNull().default("open"),
+    resolvedBy: text("resolved_by").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    resolvedAt: timestamp("resolved_at", { mode: "date" }),
+  },
+  (t) => [
+    // one open report per reporter and target; escalated reports are still open
+    uniqueIndex("reports_open_reporter_target_idx")
+      .on(t.reporterId, t.targetType, t.targetId)
+      .where(sql`${t.status} IN ('open', 'escalated')`),
+    // serves the staff queue's keyset paging
+    index("reports_status_created_idx").on(t.status, t.createdAt, t.id),
+    index("reports_target_idx").on(t.targetType, t.targetId),
+    check(
+      "reports_resolved_chk",
+      sql`(${t.status} IN ('resolved', 'dismissed')) = (${t.resolvedAt} IS NOT NULL)`,
+    ),
+  ],
+);
+
+/**
+ * Append-only log of staff reads and actions. `staff_id` deliberately has no
+ * ON DELETE action, so deleting an account can never remove its audit rows.
+ */
+export const staffAudit = pgTable(
+  "staff_audit",
+  {
+    id: serial("id").primaryKey(),
+    createdAt,
+    staffId: text("staff_id")
+      .notNull()
+      .references(() => user.id),
+    action: varchar("action", { length: 48 })
+      .$type<StaffAuditAction>()
+      .notNull(),
+    targetType: varchar("target_type", { length: 16 })
+      .$type<StaffAuditTargetType>()
+      .notNull(),
+    targetId: text("target_id").notNull(),
+    reportId: uuid("report_id").references(() => reports.id, {
+      onDelete: "set null",
+    }),
+    detail: jsonb("detail").$type<StaffAuditDetail>(),
+  },
+  (t) => [
+    index("staff_audit_staff_idx").on(t.staffId, t.id),
+    index("staff_audit_action_idx").on(t.action, t.id),
+    index("staff_audit_report_idx").on(t.reportId),
+    index("staff_audit_target_idx").on(t.targetType, t.targetId),
+  ],
+);
+// #endregion
 
 // #region Legacy
 export const lists = pgTable(

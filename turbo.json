@@ -36,6 +36,10 @@
       "cache": false,
       "dependsOn": ["//#services"]
     },
+    "db:seed:staff": {
+      "cache": false,
+      "dependsOn": ["//#services"]
+    },
     "image:mirror": {
       "cache": false
     },

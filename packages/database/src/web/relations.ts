@@ -179,6 +179,31 @@ export const relations = defineRelations(schema, (r) => ({
   },
   // #endregion
 
+  // #region Moderation
+  reports: {
+    reporter: r.one.user({
+      from: r.reports.reporterId,
+      to: r.user.id,
+      optional: false,
+    }),
+    resolver: r.one.user({
+      from: r.reports.resolvedBy,
+      to: r.user.id,
+    }),
+  },
+  staffAudit: {
+    staff: r.one.user({
+      from: r.staffAudit.staffId,
+      to: r.user.id,
+      optional: false,
+    }),
+    report: r.one.reports({
+      from: r.staffAudit.reportId,
+      to: r.reports.id,
+    }),
+  },
+  // #endregion
+
   // #region Legacy
   lists: {
     entries: r.many.listEntries(),

@@ -1,4 +1,5 @@
 import { GRID_COLUMNS, type CollectionDataSource } from "@apollo/util";
+import { sql } from "drizzle-orm";
 import {
   pgTable,
   text,
@@ -6,6 +7,7 @@ import {
   boolean,
   integer,
   index,
+  check,
 } from "drizzle-orm/pg-core";
 import { citext } from "./custom";
 
@@ -33,11 +35,18 @@ export const user = pgTable(
     discord: text("discord"),
     twitter: text("twitter"),
     showSocials: boolean("show_socials").notNull().default(false),
+    // admin plugin
+    role: text("role").notNull().default("user"),
+    banned: boolean("banned").notNull().default(false),
+    banReason: text("ban_reason"),
+    banExpires: timestamp("ban_expires", { mode: "date" }),
   },
   (t) => [
     index("user_username_idx").on(t.username),
     index("user_display_username_idx").on(t.displayUsername),
     index("user_discord_idx").on(t.discord),
+    // mirrors the roles in @apollo/auth
+    check("user_role_chk", sql`${t.role} IN ('user', 'moderator', 'admin')`),
   ],
 );
 
@@ -56,6 +65,8 @@ export const session = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
+    // admin plugin
+    impersonatedBy: text("impersonated_by"),
   },
   (t) => [index("session_userId_idx").on(t.userId)],
 );

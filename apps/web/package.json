@@ -22,6 +22,7 @@
     "db:check": "drizzle-kit check",
     "db:migrate": "bun run env -- drizzle-kit migrate",
     "db:seed": "bun run env -- bun run scripts/seed.ts",
+    "db:seed:staff": "bun run env -- bun run scripts/seed-staff.ts",
     "auth:generate": "bun run env -- bunx @better-auth/cli generate --output ../../packages/database/src/auth.ts --y",
     "i18n": "bunx @inlang/paraglide-js compile --project ./project.inlang --outdir ./src/i18n"
   },
