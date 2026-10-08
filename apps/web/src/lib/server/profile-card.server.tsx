@@ -28,6 +28,7 @@ import dmSans from "@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal
 import jetbrainsMono from "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2?inline";
 import { desc, eq, min } from "drizzle-orm";
 import { render } from "takumi-js";
+import { googleFonts } from "takumi-js/helpers";
 import { Renderer } from "takumi-js/node";
 import halvar from "../../../public/HalvarBreit-Bd.woff2?inline";
 
@@ -116,11 +117,18 @@ async function fetchCardObjekts(
   }));
 }
 
-let renderer: Promise<Renderer> | undefined;
+let renderer:
+  | Promise<{
+      instance: Renderer;
+      cjkFonts: Awaited<ReturnType<typeof googleFonts>>;
+    }>
+  | undefined;
 
 /**
  * One renderer for the process, so fonts are parsed once and decoded images are cached between renders.
  * A failed setup is dropped so the next render retries it.
+ * Usernames can be Korean, Japanese or Chinese, which the bundled fonts can't draw. Noto Sans covers them as a fallback,
+ * split by Google Fonts into unicode-range subsets that only download once a card's text needs them.
  */
 function getRenderer() {
   renderer ??= (async () => {
@@ -134,7 +142,13 @@ function getRenderer() {
       const data = await (await fetch(font.uri)).arrayBuffer();
       await instance.registerFont({ name: font.name, data });
     }
-    return instance;
+    const cjkFonts = await googleFonts(
+      ["Noto Sans KR", "Noto Sans JP", "Noto Sans SC"].map((name) => ({
+        name,
+        weight: [400, 700],
+      })),
+    );
+    return { instance, cjkFonts };
   })();
 
   renderer.catch(() => {
@@ -171,6 +185,7 @@ export async function renderProfileCard(card: ProfileCard) {
   const images = await fetchImages(card.objekts);
   const loaded = new Set(images.map((image) => image.src));
   const shown = card.objekts.filter((objekt) => loaded.has(objekt.image));
+  const { instance, cjkFonts } = await getRenderer();
 
   return await render(
     <ProfileCardImage
@@ -182,7 +197,8 @@ export async function renderProfileCard(card: ProfileCard) {
       )}
     />,
     {
-      renderer: await getRenderer(),
+      renderer: instance,
+      fonts: cjkFonts,
       width: PROFILE_CARD_WIDTH,
       height: PROFILE_CARD_HEIGHT,
       format: "jpeg",

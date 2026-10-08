@@ -128,6 +128,8 @@ export default function ProfileCardImage({ card, images, placements }: Props) {
                 }
               : {
                   fontFamily: PROFILE_CARD_FONTS.display,
+                  // matches Halvar Breit Bold for glyphs drawn by the CJK fallback
+                  fontWeight: 700,
                   fontSize: nameSize(card.name),
                   lineHeight: 0.9,
                   textTransform: "uppercase",

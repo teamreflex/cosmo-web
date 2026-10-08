@@ -2,7 +2,7 @@
  * Bump whenever the card's look changes. It's part of the image URL, so
  * Discord and Cloudflare fetch the new design instead of a cached copy.
  */
-export const PROFILE_CARD_VERSION = 2;
+export const PROFILE_CARD_VERSION = 3;
 
 export const PROFILE_CARD_WIDTH = 1200;
 export const PROFILE_CARD_HEIGHT = 630;
