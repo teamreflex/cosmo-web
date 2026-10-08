@@ -3,7 +3,7 @@ import * as serverEnv from "@/lib/env/server";
 import { baseUrl } from "@/lib/utils";
 import { adminPluginOptions, parseRole, roleNames } from "@apollo/auth";
 import * as authSchema from "@apollo/database/auth";
-import { cosmoAccounts, reports } from "@apollo/database/web/schema";
+import { cosmoAccounts } from "@apollo/database/web/schema";
 import type { StaffAuditDetail } from "@apollo/database/web/types";
 import { GRID_COLUMNS } from "@apollo/util";
 import type { CollectionDataSource } from "@apollo/util";
@@ -15,7 +15,7 @@ import { betterAuth } from "better-auth/minimal";
 import { admin } from "better-auth/plugins/admin";
 import { username } from "better-auth/plugins/username";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
-import { and, eq, inArray } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { createCipheriv, randomBytes } from "node:crypto";
 import * as z from "zod";
 import type { PublicUser } from "../universal/auth";
@@ -26,6 +26,7 @@ import {
   sendPasswordResetEmail,
   sendVerificationEmail,
 } from "./mail.server";
+import { resolveUserReports } from "./reports.server";
 import { recordStaffAudit } from "./staff-audit.server";
 import { publishUserEvent } from "./user-events.server";
 
@@ -460,23 +461,6 @@ async function recordBan({ staffId, userId, reportId, detail }: BanRecord) {
           columns: { id: true },
         })
       : undefined;
-    const resolved = linkedReport
-      ? await tx
-          .update(reports)
-          .set({
-            status: "resolved",
-            resolvedBy: staffId,
-            resolvedAt: new Date(),
-          })
-          .where(
-            and(
-              eq(reports.targetType, "user"),
-              eq(reports.targetId, userId),
-              inArray(reports.status, ["open", "escalated"]),
-            ),
-          )
-          .returning({ id: reports.id })
-      : [];
 
     await recordStaffAudit(tx, {
       staffId,
@@ -485,12 +469,8 @@ async function recordBan({ staffId, userId, reportId, detail }: BanRecord) {
       reportId: linkedReport?.id ?? null,
       detail,
     });
-    for (const report of resolved) {
-      await recordStaffAudit(tx, {
-        staffId,
-        action: "report:resolve",
-        reportId: report.id,
-      });
+    if (linkedReport) {
+      await resolveUserReports(tx, staffId, userId);
     }
 
     return target?.banExpires ?? null;

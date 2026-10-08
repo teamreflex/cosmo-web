@@ -1,4 +1,5 @@
 import { db } from "@/lib/server/db";
+import type { DbOrTx } from "@/lib/server/db";
 import { recordStaffAudit } from "@/lib/server/staff-audit.server";
 import {
   fetchStaffUsernames,
@@ -288,6 +289,38 @@ export async function transitionReport(
 
     await recordStaffAudit(tx, { staffId, action, reportId: id });
   });
+}
+
+/**
+ * Resolves every open report on a user, auditing each one, as a ban started
+ * from a report does.
+ */
+export async function resolveUserReports(
+  tx: DbOrTx,
+  staffId: string,
+  userId: string,
+) {
+  const { from, set } = reportTransition("report:resolve", staffId);
+
+  const resolved = await tx
+    .update(reports)
+    .set(set)
+    .where(
+      and(
+        eq(reports.targetType, "user"),
+        eq(reports.targetId, userId),
+        inArray(reports.status, from),
+      ),
+    )
+    .returning({ id: reports.id });
+
+  for (const report of resolved) {
+    await recordStaffAudit(tx, {
+      staffId,
+      action: "report:resolve",
+      reportId: report.id,
+    });
+  }
 }
 
 /**
