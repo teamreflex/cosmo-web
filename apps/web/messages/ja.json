@@ -751,6 +751,82 @@
   "admin_matrix_custom_member_placeholder": "Custom member...",
   "admin_matrix_invalid_number": "Invalid format. Use 101z, 301a, etc.",
   "admin_matrix_preview_empty": "Select members, seasons, and collection numbers to preview",
+  "role_user": "ユーザー",
+  "role_moderator": "モデレーター",
+  "role_admin": "管理者",
+  "admin_signed_in_as": "{role}としてログイン中",
+  "admin_reports_title": "報告",
+  "admin_reports_status_open": "対応待ち",
+  "admin_reports_status_escalated": "管理者へ移行",
+  "admin_reports_status_resolved": "解決済み",
+  "admin_reports_status_dismissed": "却下",
+  "admin_reports_type_all": "すべて",
+  "admin_reports_type_user": "ユーザー",
+  "admin_reports_row_summary": "{target} · @{reporter}が報告",
+  "admin_reports_deleted_user": "削除されたユーザー",
+  "admin_reports_load_more": "さらに読み込む",
+  "admin_reports_empty_open": "対応待ちの報告はありません",
+  "admin_reports_empty_escalated": "管理者へ移行した報告はありません",
+  "admin_reports_empty_resolved": "解決済みの報告はありません",
+  "admin_reports_empty_dismissed": "却下した報告はありません",
+  "admin_reports_pick": "確認する報告を選択してください",
+  "admin_reports_staff_view_title": "スタッフとして閲覧中。",
+  "admin_reports_staff_view_description": "この閲覧は記録されます。対応しない限り、当事者には通知されません。",
+  "admin_reports_reported_by": "報告者",
+  "admin_reports_banned_until": "利用停止期限",
+  "admin_reports_banned_permanently": "無期限の利用停止",
+  "admin_reports_other_open": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "他に対応待ちの報告が{count}件"
+      }
+    }
+  ],
+  "admin_reports_unban": "利用停止を解除",
+  "admin_reports_unbanned": "@{username}の利用停止を解除しました",
+  "admin_reports_actions": "操作 · 利用停止は管理者のみ",
+  "admin_reports_ban": "利用停止にする",
+  "admin_reports_escalate": "管理者へ移行",
+  "admin_reports_dismiss": "却下",
+  "admin_reports_resolve": "解決",
+  "admin_reports_resolved": "報告を解決しました",
+  "admin_reports_dismissed": "報告を却下しました",
+  "admin_reports_escalated": "報告を管理者へ移行しました",
+  "admin_reports_resolved_by": "{name}が解決",
+  "admin_reports_dismissed_by": "{name}が却下",
+  "admin_ban_title": "@{username}を利用停止",
+  "admin_ban_from_report": "報告「{reason}」より。",
+  "admin_ban_from_report_others": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "報告「{reason}」ほか{count}件より。"
+      }
+    }
+  ],
+  "admin_ban_reason": "理由",
+  "admin_ban_reason_hint": "この理由はスタッフにのみ表示されます。",
+  "admin_ban_length": "期間",
+  "admin_ban_length_7d": "7日間",
+  "admin_ban_length_30d": "30日間",
+  "admin_ban_length_permanent": "無期限",
+  "admin_ban_effects": "実行される内容",
+  "admin_ban_effect_sign_out": "すべての端末からログアウトさせ、ログインをブロックする",
+  "admin_ban_effect_resolve": "この報告を解決する",
+  "admin_ban_effect_resolve_others": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "この報告と、このユーザーに関する他の{count}件の報告を解決する"
+      }
+    }
+  ],
+  "admin_ban_effect_audit": "staff_auditに記録する",
+  "admin_ban_banned": "@{username}を利用停止しました",
   "_comment_events": "Event display strings",
   "events_header": "イベント",
   "events_filter_era": "時代",

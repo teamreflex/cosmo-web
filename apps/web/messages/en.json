@@ -758,6 +758,85 @@
   "admin_matrix_custom_member_placeholder": "Custom member...",
   "admin_matrix_invalid_number": "Invalid format. Use 101z, 301a, etc.",
   "admin_matrix_preview_empty": "Select members, seasons, and collection numbers to preview",
+  "role_user": "user",
+  "role_moderator": "moderator",
+  "role_admin": "admin",
+  "admin_signed_in_as": "Signed in as {role}",
+  "admin_reports_title": "Reports",
+  "admin_reports_status_open": "Open",
+  "admin_reports_status_escalated": "Escalated",
+  "admin_reports_status_resolved": "Resolved",
+  "admin_reports_status_dismissed": "Dismissed",
+  "admin_reports_type_all": "All",
+  "admin_reports_type_user": "User",
+  "admin_reports_row_summary": "{target} · reported by @{reporter}",
+  "admin_reports_deleted_user": "Deleted user",
+  "admin_reports_load_more": "Load more",
+  "admin_reports_empty_open": "No open reports",
+  "admin_reports_empty_escalated": "Nothing escalated",
+  "admin_reports_empty_resolved": "No resolved reports",
+  "admin_reports_empty_dismissed": "No dismissed reports",
+  "admin_reports_pick": "Pick a report to review it",
+  "admin_reports_staff_view_title": "Viewing as staff.",
+  "admin_reports_staff_view_description": "This read is logged; the two parties aren't notified unless you act.",
+  "admin_reports_reported_by": "Reported by",
+  "admin_reports_banned_until": "Banned until",
+  "admin_reports_banned_permanently": "Banned permanently",
+  "admin_reports_other_open": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} other open report",
+        "countPlural=other": "{count} other open reports"
+      }
+    }
+  ],
+  "admin_reports_unban": "Unban",
+  "admin_reports_unbanned": "@{username} unbanned",
+  "admin_reports_actions": "Actions · banning is admin-only",
+  "admin_reports_ban": "Ban user",
+  "admin_reports_escalate": "Escalate to admin",
+  "admin_reports_dismiss": "Dismiss",
+  "admin_reports_resolve": "Resolve",
+  "admin_reports_resolved": "Report resolved",
+  "admin_reports_dismissed": "Report dismissed",
+  "admin_reports_escalated": "Report escalated to admins",
+  "admin_reports_resolved_by": "Resolved by {name}",
+  "admin_reports_dismissed_by": "Dismissed by {name}",
+  "admin_ban_title": "Ban @{username}",
+  "admin_ban_from_report": "From report “{reason}”.",
+  "admin_ban_from_report_others": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "From report “{reason}” and {count} other.",
+        "countPlural=other": "From report “{reason}” and {count} others."
+      }
+    }
+  ],
+  "admin_ban_reason": "Reason",
+  "admin_ban_reason_hint": "Only staff see this reason.",
+  "admin_ban_length": "Length",
+  "admin_ban_length_7d": "7 days",
+  "admin_ban_length_30d": "30 days",
+  "admin_ban_length_permanent": "Permanent",
+  "admin_ban_effects": "This will",
+  "admin_ban_effect_sign_out": "sign them out everywhere and block sign-in",
+  "admin_ban_effect_resolve": "resolve this report",
+  "admin_ban_effect_resolve_others": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "resolve this report and the {count} other about them",
+        "countPlural=other": "resolve this report and the {count} others about them"
+      }
+    }
+  ],
+  "admin_ban_effect_audit": "write a staff_audit row",
+  "admin_ban_banned": "@{username} banned",
   "_comment_events": "Event display strings",
   "events_header": "Events",
   "events_filter_era": "Era",

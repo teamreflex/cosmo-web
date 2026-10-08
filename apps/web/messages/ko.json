@@ -751,6 +751,82 @@
   "admin_matrix_custom_member_placeholder": "커스텀 멤버...",
   "admin_matrix_invalid_number": "잘못된 형식입니다. 101z, 301a 등을 사용하세요.",
   "admin_matrix_preview_empty": "멤버, 시즌, 컬렉션 번호를 선택하여 미리보기",
+  "role_user": "사용자",
+  "role_moderator": "모더레이터",
+  "role_admin": "관리자",
+  "admin_signed_in_as": "{role}(으)로 로그인됨",
+  "admin_reports_title": "신고",
+  "admin_reports_status_open": "처리 대기",
+  "admin_reports_status_escalated": "관리자에게 전달됨",
+  "admin_reports_status_resolved": "해결됨",
+  "admin_reports_status_dismissed": "기각됨",
+  "admin_reports_type_all": "전체",
+  "admin_reports_type_user": "사용자",
+  "admin_reports_row_summary": "{target} · @{reporter} 신고",
+  "admin_reports_deleted_user": "삭제된 사용자",
+  "admin_reports_load_more": "더 보기",
+  "admin_reports_empty_open": "처리 대기 중인 신고가 없습니다",
+  "admin_reports_empty_escalated": "전달된 신고가 없습니다",
+  "admin_reports_empty_resolved": "해결된 신고가 없습니다",
+  "admin_reports_empty_dismissed": "기각된 신고가 없습니다",
+  "admin_reports_pick": "검토할 신고를 선택하세요",
+  "admin_reports_staff_view_title": "스태프로 보는 중.",
+  "admin_reports_staff_view_description": "이 열람은 기록되며, 조치하지 않는 한 당사자에게 알리지 않습니다.",
+  "admin_reports_reported_by": "신고자",
+  "admin_reports_banned_until": "정지 기한",
+  "admin_reports_banned_permanently": "영구 정지",
+  "admin_reports_other_open": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "처리 대기 중인 다른 신고 {count}건"
+      }
+    }
+  ],
+  "admin_reports_unban": "정지 해제",
+  "admin_reports_unbanned": "@{username} 정지 해제됨",
+  "admin_reports_actions": "조치 · 정지는 관리자만 가능",
+  "admin_reports_ban": "사용자 정지",
+  "admin_reports_escalate": "관리자에게 전달",
+  "admin_reports_dismiss": "기각",
+  "admin_reports_resolve": "해결",
+  "admin_reports_resolved": "신고를 해결했습니다",
+  "admin_reports_dismissed": "신고를 기각했습니다",
+  "admin_reports_escalated": "신고를 관리자에게 전달했습니다",
+  "admin_reports_resolved_by": "{name} 해결",
+  "admin_reports_dismissed_by": "{name} 기각",
+  "admin_ban_title": "@{username} 정지",
+  "admin_ban_from_report": "신고 “{reason}” 기준.",
+  "admin_ban_from_report_others": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "신고 “{reason}” 외 {count}건 기준."
+      }
+    }
+  ],
+  "admin_ban_reason": "사유",
+  "admin_ban_reason_hint": "이 사유는 스태프만 볼 수 있습니다.",
+  "admin_ban_length": "기간",
+  "admin_ban_length_7d": "7일",
+  "admin_ban_length_30d": "30일",
+  "admin_ban_length_permanent": "영구",
+  "admin_ban_effects": "수행되는 작업",
+  "admin_ban_effect_sign_out": "모든 기기에서 로그아웃시키고 로그인을 차단합니다",
+  "admin_ban_effect_resolve": "이 신고를 해결합니다",
+  "admin_ban_effect_resolve_others": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "이 신고와 이 사용자에 대한 다른 신고 {count}건을 해결합니다"
+      }
+    }
+  ],
+  "admin_ban_effect_audit": "staff_audit 기록을 남깁니다",
+  "admin_ban_banned": "@{username} 정지됨",
   "_comment_events": "Event display strings",
   "events_header": "이벤트",
   "events_filter_era": "시대",

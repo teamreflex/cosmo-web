@@ -758,6 +758,85 @@
   "admin_matrix_custom_member_placeholder": "Custom member...",
   "admin_matrix_invalid_number": "Invalid format. Use 101z, 301a, etc.",
   "admin_matrix_preview_empty": "Select members, seasons, and collection numbers to preview",
+  "role_user": "utilisateur",
+  "role_moderator": "modérateur",
+  "role_admin": "admin",
+  "admin_signed_in_as": "Connecté en tant que {role}",
+  "admin_reports_title": "Signalements",
+  "admin_reports_status_open": "Ouverts",
+  "admin_reports_status_escalated": "Transmis",
+  "admin_reports_status_resolved": "Résolus",
+  "admin_reports_status_dismissed": "Rejetés",
+  "admin_reports_type_all": "Tous",
+  "admin_reports_type_user": "Utilisateur",
+  "admin_reports_row_summary": "{target} · signalé par @{reporter}",
+  "admin_reports_deleted_user": "Utilisateur supprimé",
+  "admin_reports_load_more": "Charger plus",
+  "admin_reports_empty_open": "Aucun signalement ouvert",
+  "admin_reports_empty_escalated": "Aucun signalement transmis",
+  "admin_reports_empty_resolved": "Aucun signalement résolu",
+  "admin_reports_empty_dismissed": "Aucun signalement rejeté",
+  "admin_reports_pick": "Choisissez un signalement à examiner",
+  "admin_reports_staff_view_title": "Consultation en tant que staff.",
+  "admin_reports_staff_view_description": "Cette consultation est enregistrée ; les deux parties ne sont prévenues que si vous agissez.",
+  "admin_reports_reported_by": "Signalé par",
+  "admin_reports_banned_until": "Banni jusqu'au",
+  "admin_reports_banned_permanently": "Banni définitivement",
+  "admin_reports_other_open": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} autre signalement ouvert",
+        "countPlural=other": "{count} autres signalements ouverts"
+      }
+    }
+  ],
+  "admin_reports_unban": "Débannir",
+  "admin_reports_unbanned": "@{username} débanni",
+  "admin_reports_actions": "Actions · seuls les admins peuvent bannir",
+  "admin_reports_ban": "Bannir",
+  "admin_reports_escalate": "Transmettre aux admins",
+  "admin_reports_dismiss": "Rejeter",
+  "admin_reports_resolve": "Résoudre",
+  "admin_reports_resolved": "Signalement résolu",
+  "admin_reports_dismissed": "Signalement rejeté",
+  "admin_reports_escalated": "Signalement transmis aux admins",
+  "admin_reports_resolved_by": "Résolu par {name}",
+  "admin_reports_dismissed_by": "Rejeté par {name}",
+  "admin_ban_title": "Bannir @{username}",
+  "admin_ban_from_report": "D'après le signalement « {reason} ».",
+  "admin_ban_from_report_others": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "D'après le signalement « {reason} » et {count} autre.",
+        "countPlural=other": "D'après le signalement « {reason} » et {count} autres."
+      }
+    }
+  ],
+  "admin_ban_reason": "Motif",
+  "admin_ban_reason_hint": "Seul le staff voit ce motif.",
+  "admin_ban_length": "Durée",
+  "admin_ban_length_7d": "7 jours",
+  "admin_ban_length_30d": "30 jours",
+  "admin_ban_length_permanent": "Définitif",
+  "admin_ban_effects": "Cela va",
+  "admin_ban_effect_sign_out": "le déconnecter partout et bloquer sa connexion",
+  "admin_ban_effect_resolve": "résoudre ce signalement",
+  "admin_ban_effect_resolve_others": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "résoudre ce signalement et {count} autre le concernant",
+        "countPlural=other": "résoudre ce signalement et les {count} autres le concernant"
+      }
+    }
+  ],
+  "admin_ban_effect_audit": "écrire une ligne staff_audit",
+  "admin_ban_banned": "@{username} banni",
   "_comment_events": "Event display strings",
   "events_header": "Évènements",
   "events_filter_era": "Ère",

@@ -6,6 +6,7 @@ import {
   IconCards,
   IconDatabase,
   IconDisc,
+  IconFlag,
   IconHome,
   IconKey,
   IconLayoutSidebarRight,
@@ -13,10 +14,11 @@ import {
 import type { Icon } from "@tabler/icons-react";
 
 /**
- * Who can open the admin layout and see its link in the user dropdown.
+ * Who can open the admin layout and see its link in the user dropdown: every
+ * staff role, since moderators work the report queue.
  */
 export const ADMIN_SHELL_PERMISSIONS = {
-  site: ["manage"],
+  report: ["read"],
 } satisfies Permissions;
 
 type AdminItem = {
@@ -33,6 +35,12 @@ export function getAdminItems(): AdminItem[] {
       url: "/admin",
       icon: IconHome,
       permissions: { site: ["manage"] },
+    },
+    {
+      title: m.admin_reports_title(),
+      url: "/admin/reports",
+      icon: IconFlag,
+      permissions: { report: ["read"] },
     },
     {
       title: m.admin_bands_title(),

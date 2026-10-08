@@ -14,6 +14,7 @@ import { env } from "@/lib/env/client";
 import type { PropsWithClassName } from "@/lib/utils";
 import { Link, useLocation } from "@tanstack/react-router";
 import { getAdminItems } from "./common";
+import ReportsBadge from "./reports/reports-badge";
 
 type Props = PropsWithClassName<{}>;
 
@@ -40,6 +41,7 @@ export function AdminSidebar({ className }: Props) {
                     <item.icon />
                     <span>{item.title}</span>
                   </SidebarMenuButton>
+                  {item.url === "/admin/reports" && <ReportsBadge />}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>

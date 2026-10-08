@@ -76,3 +76,14 @@ export type AdminReportDetail = ReportOutcome & {
   otherOpenCount: number;
   target: AdminReportDetailTarget;
 };
+
+/**
+ * The ban lengths staff pick from, as the admin plugin's `banExpiresIn`
+ * seconds; a null length is permanent and omits it.
+ */
+export const banLengthOptions = [
+  { value: "7d", seconds: 604_800 },
+  { value: "30d", seconds: 2_592_000 },
+  { value: "permanent", seconds: null },
+] as const;
+export type BanLength = (typeof banLengthOptions)[number]["value"];

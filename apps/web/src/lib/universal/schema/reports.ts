@@ -1,3 +1,4 @@
+import { banLengthOptions } from "@/lib/universal/reports";
 import {
   reportReasons,
   reportStatuses,
@@ -47,3 +48,18 @@ export type CreateReport = z.infer<typeof createReportSchema>;
 export type ReportTarget = z.infer<typeof reportTargetSchema>;
 export type ReportQueueFilters = z.infer<typeof reportQueueFiltersSchema>;
 export type ReportQueueInput = z.infer<typeof reportQueueSchema>;
+
+/**
+ * The Ban dialog's form; its length maps to `banExpiresIn` through
+ * `banLengthOptions`.
+ */
+export const banUserSchema = z.object({
+  reason: z
+    .string()
+    .trim()
+    .min(1, "Give a reason for the ban")
+    .max(500, "Reason cannot be longer than 500 characters"),
+  length: z.literal(banLengthOptions.map((option) => option.value)),
+});
+
+export type BanUser = z.infer<typeof banUserSchema>;
