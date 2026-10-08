@@ -5,7 +5,7 @@ Effect-TS service that continuously syncs new objekt collections from the indexe
 ## Flow
 
 1. **Setup** (startup, idempotent — safe to re-run): create the search-only API key, the collection schema, and the synonym sets (`src/setup.ts`).
-2. **Import loop** (`src/main.ts`, repeats every `LOOP_INTERVAL` ms): fetch collections created after the last-seen timestamp (an in-memory `Ref`, so a restart re-imports from scratch — harmless because imports upsert), enrich them, and bulk-upsert into Typesense in chunks of 500. The watermark only advances after a fully successful upsert, so a failed tick re-fetches and re-upserts the whole batch on the next tick.
+2. **Import loop** (`src/main.ts`, repeats every `LOOP_INTERVAL` ms): fetch collections created after the last-seen timestamp (an in-memory `Ref`, so a restart re-imports from scratch — harmless because imports upsert), plus any whose `unobtainable` flag changed since the last successful tick (it's flipped by hand long after `createdAt`, so the watermark alone never sees it), enrich them, and bulk-upsert into Typesense in chunks of 500. The watermark only advances after a fully successful upsert, so a failed tick re-fetches and re-upserts the whole batch on the next tick.
 
 Two databases are involved: collections and member sort order come from the **indexer** DB, descriptions from the **metadata** (web) DB. They are separate Postgres instances, so the join happens in memory on `collection.slug`.
 

@@ -43,6 +43,7 @@ export type ObjektMetadata = {
   total: number;
   transferable: number;
   percentage: number;
+  unobtainable: boolean;
   data: ObjektCollectionData | undefined;
   priceStats: PriceStats | null;
 };
