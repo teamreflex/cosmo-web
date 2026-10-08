@@ -16,24 +16,18 @@ export type OpenReportStatus = (typeof openReportStatuses)[number];
  */
 export type MyReport = { status: OpenReportStatus } | null;
 
-type ReportUser = {
-  id: string;
-  username: string;
-};
-
 /**
  * What a queue row shows of the reported thing; null when it no longer
  * exists. Later phases add messages, listings, feedback and trades.
  */
 export type AdminReportRowTarget = {
   type: "user";
-  user: ReportUser | null;
+  user: { username: string } | null;
 };
 
 export type AdminReportRow = {
   id: string;
   reason: ReportReason;
-  status: ReportStatus;
   createdAt: Date;
   reporter: { username: string };
   target: AdminReportRowTarget;
@@ -43,8 +37,9 @@ export type AdminReportRow = {
  * A reported user as staff see them. `ban` is null unless a ban is in force;
  * a null `until` is permanent. `profile` is the COSMO username to link to.
  */
-export type ReportTargetUser = ReportUser & {
-  image: string | null;
+export type ReportTargetUser = {
+  id: string;
+  username: string;
   role: Role;
   ban: { until: Date | null } | null;
   profile: string | null;

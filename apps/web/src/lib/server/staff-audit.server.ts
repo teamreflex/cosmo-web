@@ -147,7 +147,6 @@ export async function fetchStaffAudit(input: StaffAuditQueryInput) {
       with: {
         staff: {
           columns: {
-            id: true,
             name: true,
             username: true,
             displayUsername: true,
@@ -176,7 +175,6 @@ export async function fetchStaffAudit(input: StaffAuditQueryInput) {
       createdAt: row.createdAt,
       action: row.action,
       staff: {
-        id: row.staff.id,
         username: staffUsername(row.staff),
         role: parseRole(row.staff.role),
       },

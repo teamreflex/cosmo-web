@@ -21,7 +21,7 @@ export type AdminAuditRow = {
   id: number;
   createdAt: Date;
   action: StaffAuditAction;
-  staff: { id: string; username: string; role: Role };
+  staff: { username: string; role: Role };
   reportId: string | null;
   detail: AdminAuditDetail | null;
   target: AdminAuditTarget;

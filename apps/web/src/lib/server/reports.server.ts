@@ -48,7 +48,6 @@ export async function fetchReportQueue(input: ReportQueueInput) {
       targetType: true,
       targetId: true,
       reason: true,
-      status: true,
       createdAt: true,
     },
     extras: {
@@ -72,7 +71,6 @@ export async function fetchReportQueue(input: ReportQueueInput) {
     rows: rows.map((row): AdminReportRow => ({
       id: row.id,
       reason: row.reason,
-      status: row.status,
       createdAt: row.createdAt,
       reporter: { username: staffUsername(row.reporter) },
       target: toRowTarget(row.targetType, row.targetId, usernames),
@@ -94,7 +92,7 @@ function toRowTarget(
       const username = usernames.get(targetId);
       return {
         type: "user",
-        user: username === undefined ? null : { id: targetId, username },
+        user: username === undefined ? null : { username },
       };
     }
     case "message":
@@ -166,7 +164,6 @@ async function fetchDetailTarget(
           name: true,
           username: true,
           displayUsername: true,
-          image: true,
           role: true,
           banned: true,
           banExpires: true,
@@ -190,7 +187,6 @@ async function fetchDetailTarget(
         user: {
           id: user.id,
           username: staffUsername(user),
-          image: user.image,
           role: parseRole(user.role),
           ban: banActive ? { until: user.banExpires } : null,
           profile: user.cosmoAccount?.username ?? null,
