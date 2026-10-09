@@ -19,7 +19,7 @@
     "db:push": "drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "db:upgrade": "drizzle-kit up",
-    "db:check": "drizzle-kit check",
+    "db:check": "bun run env -- drizzle-kit check",
     "db:migrate": "bun run env -- drizzle-kit migrate",
     "db:seed": "bun run env -- bun run scripts/seed.ts",
     "db:seed:staff": "bun run env -- bun run scripts/seed-staff.ts",
