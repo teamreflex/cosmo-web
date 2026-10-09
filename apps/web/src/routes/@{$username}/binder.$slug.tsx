@@ -1,5 +1,6 @@
 import BinderEditor from "@/components/binders/binder-editor";
 import { Error } from "@/components/error-boundary";
+import { ensureProfileTarget } from "@/components/profile/common";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
@@ -22,7 +23,7 @@ export const Route = createFileRoute("/@{$username}/binder/$slug")({
   loader: async ({ context, params }) => {
     const [account, target] = await Promise.all([
       context.queryClient.ensureQueryData(currentAccountQuery),
-      context.queryClient.ensureQueryData(context.targetAccountOptions),
+      ensureProfileTarget(context.queryClient, context.targetAccountOptions),
     ]);
 
     if (target.user === undefined) {

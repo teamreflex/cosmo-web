@@ -35,7 +35,10 @@ export default function AuditFilters({ filters, className }: Props) {
     { value: "everyone", label: m.admin_audit_staff_everyone() },
     ...staff.map((member) => ({
       value: member.id,
-      label: `@${member.username}`,
+      label:
+        member.username === null
+          ? m.admin_audit_staff_deleted({ id: member.id.slice(0, 8) })
+          : `@${member.username}`,
     })),
   ];
   const actionItems = [
@@ -69,7 +72,8 @@ export default function AuditFilters({ filters, className }: Props) {
           >
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          {/* wide enough for a deleted member's id prefix */}
+          <SelectContent className="w-auto min-w-(--anchor-width)">
             {staffItems.map((item) => (
               <SelectItem key={item.value} value={item.value}>
                 {item.label}

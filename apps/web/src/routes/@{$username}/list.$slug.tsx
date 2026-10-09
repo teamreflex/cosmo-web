@@ -6,6 +6,7 @@ import ListRenderer from "@/components/lists/list-renderer";
 import Overlay from "@/components/misc/overlay";
 import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
 import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
+import { ensureProfileTarget } from "@/components/profile/common";
 import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
@@ -39,7 +40,7 @@ export const Route = createFileRoute("/@{$username}/list/$slug")({
   loader: async ({ context, params, deps }) => {
     const [account, target, selected] = await Promise.all([
       context.queryClient.ensureQueryData(currentAccountQuery),
-      context.queryClient.ensureQueryData(context.targetAccountOptions),
+      ensureProfileTarget(context.queryClient, context.targetAccountOptions),
       context.queryClient.ensureQueryData(selectedArtistsQuery),
     ]);
 

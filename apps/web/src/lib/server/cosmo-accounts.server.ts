@@ -8,8 +8,8 @@ import { addr, isAddress } from "@apollo/util";
 import { eq, isNull, like, or, sql } from "drizzle-orm";
 import type {
   CosmoLink,
-  FullAccount,
   PublicCosmo,
+  TargetAccount,
 } from "../universal/cosmo-accounts";
 import { ExpectedError } from "../universal/errors/expected";
 import { toPublicUser } from "./auth.server";
@@ -35,12 +35,13 @@ export async function getCosmoAddress(
 
 /**
  * Fetch a full account from the database.
- * This includes the user, locked objekts and pins.
+ * This includes the user, locked objekts and pins. An account whose linked
+ * user is deleted comes back as deleted, with nothing else.
  */
 export async function fetchFullAccount(
   identifier: string,
   signal?: AbortSignal,
-): Promise<FullAccount | undefined> {
+): Promise<TargetAccount | undefined> {
   const identifierIsAddress = isAddress(identifier);
 
   // check db for a profile
@@ -56,10 +57,15 @@ export async function fetchFullAccount(
 
   // found a cosmo account
   if (result) {
+    if (result.user?.deletedAt) {
+      return { status: "deleted" };
+    }
+
     const { user, ...cosmoResult } = result;
     const { lockedObjekts, pins, ...cosmo } = cosmoResult;
 
     return {
+      status: "active",
       cosmo: toPublicCosmo(cosmo),
       user: toPublicUser(user ?? undefined),
       lockedObjekts: lockedObjekts
@@ -73,6 +79,7 @@ export async function fetchFullAccount(
   // if no cosmo account and it's an address, make a fake one
   if (identifierIsAddress) {
     return {
+      status: "active",
       cosmo: {
         ...toPublicCosmo({
           username: identifier.substring(0, 6),

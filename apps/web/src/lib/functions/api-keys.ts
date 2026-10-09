@@ -16,7 +16,8 @@ import { createServerFn } from "@tanstack/react-start";
 import { eq } from "drizzle-orm";
 
 /**
- * Search linked COSMO accounts by username to pick an API key owner.
+ * Search linked COSMO accounts by username to pick an API key owner. Deleted
+ * users keep their link, so they are left out explicitly.
  */
 export const $searchUsers = createServerFn({ method: "GET" })
   .middleware([staffMiddleware({ site: ["manage"] })])
@@ -28,6 +29,7 @@ export const $searchUsers = createServerFn({ method: "GET" })
       where: {
         username: { ilike: pattern },
         userId: { isNotNull: true },
+        user: { deletedAt: { isNull: true } },
       },
       columns: { username: true },
       with: {
@@ -89,7 +91,7 @@ export const $createApiKey = createServerFn({ method: "POST" })
   .validator(createApiKeySchema)
   .handler(async ({ data, context }) => {
     const owner = await db.query.user.findFirst({
-      where: { id: data.userId },
+      where: { id: data.userId, deletedAt: { isNull: true } },
       columns: { id: true },
     });
     if (!owner) {

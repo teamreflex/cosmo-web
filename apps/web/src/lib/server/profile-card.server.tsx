@@ -35,7 +35,8 @@ import halvar from "../../../public/HalvarBreit-Bd.woff2?inline";
 /**
  * Gather everything a profile card shows: pinned objekts, or the most
  * recently received ones when nothing is pinned, plus the account's stats.
- * Undefined for the spin account, which holds millions of objekts.
+ * Undefined for the spin account, which holds millions of objekts, and for
+ * deleted accounts.
  * Count: cached for 24 hours
  * Join date: cached for 7 days
  */
@@ -44,7 +45,7 @@ export async function fetchProfileCard(
   signal?: AbortSignal,
 ): Promise<ProfileCard | undefined> {
   const account = await fetchFullAccount(identifier, signal);
-  if (account === undefined) return undefined;
+  if (account?.status !== "active") return undefined;
 
   const address = addr(account.cosmo.address);
   if (isEqual(address, Addresses.SPIN)) return undefined;

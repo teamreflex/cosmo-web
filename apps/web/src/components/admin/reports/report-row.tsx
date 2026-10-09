@@ -41,7 +41,9 @@ export default function ReportRow({ row }: Props) {
       <span className="text-[13px] text-muted-foreground">
         {m.admin_reports_row_summary({
           target,
-          reporter: row.reporter.username,
+          reporter: row.reporter
+            ? `@${row.reporter.username}`
+            : m.admin_reports_deleted_user(),
         })}
       </span>
     </Link>

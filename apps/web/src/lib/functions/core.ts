@@ -14,7 +14,10 @@ import {
 } from "@/lib/server/objekts/filter-data.server";
 import { getRequestSignal } from "@/lib/server/request.server";
 import type { PublicUser } from "@/lib/universal/auth";
-import type { FullAccount, PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import type {
+  PublicCosmo,
+  TargetAccount,
+} from "@/lib/universal/cosmo-accounts";
 import type { Role } from "@apollo/auth";
 import type { ObjektList } from "@apollo/database/web/types";
 import { notFound } from "@tanstack/react-router";
@@ -118,11 +121,12 @@ export const $fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
 );
 
 /**
- * Fetch the target account.
+ * Fetch the target account. A deleted user's account resolves rather than
+ * throwing, so the profile can show that it was deleted.
  */
 export const $fetchTargetAccount = createServerFn({ method: "GET" })
   .validator(z.object({ identifier: z.string() }))
-  .handler(async ({ data }): Promise<FullAccount> => {
+  .handler(async ({ data }): Promise<TargetAccount> => {
     const account = await fetchFullAccount(data.identifier, getRequestSignal());
     if (!account) {
       throw notFound();

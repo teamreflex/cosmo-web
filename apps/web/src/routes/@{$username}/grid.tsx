@@ -4,6 +4,7 @@ import GridRenderer, {
 } from "@/components/grid/grid-renderer";
 import HelpDialog from "@/components/grid/help-dialog";
 import Portal from "@/components/portal";
+import { ensureProfileTarget } from "@/components/profile/common";
 import { findArtistForMember } from "@/hooks/use-artists";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
@@ -23,7 +24,7 @@ export const Route = createFileRoute("/@{$username}/grid")({
   loaderDeps: ({ search: { binder, ...searchParams } }) => ({ searchParams }),
   loader: async ({ context, deps }) => {
     const [target, account] = await Promise.all([
-      context.queryClient.ensureQueryData(context.targetAccountOptions),
+      ensureProfileTarget(context.queryClient, context.targetAccountOptions),
       context.queryClient.ensureQueryData(currentAccountQuery),
     ]);
 

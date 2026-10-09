@@ -5,6 +5,8 @@ import type { DbOrTx } from "@/lib/server/db";
 import { recordStaffAudit } from "@/lib/server/staff-audit.server";
 import {
   fetchStaffUsernames,
+  namedUserColumns,
+  staffName,
   staffUsername,
 } from "@/lib/server/staff-users.server";
 import type { NamedUser } from "@/lib/server/staff-users.server";
@@ -120,9 +122,7 @@ export async function fetchReportQueue(
     orderBy: { createdAt: "desc", id: "desc" },
     limit: QUEUE_PAGE_SIZE,
     with: {
-      reporter: {
-        columns: { name: true, username: true, displayUsername: true },
-      },
+      reporter: { columns: namedUserColumns },
     },
   });
 
@@ -136,7 +136,7 @@ export async function fetchReportQueue(
       id: row.id,
       reason: row.reason,
       createdAt: row.createdAt,
-      reporter: { username: staffUsername(row.reporter) },
+      reporter: staffName(row.reporter),
       target: toRowTarget(row.targetType, row.targetId, usernames),
     })),
     nextCursor:
@@ -179,12 +179,8 @@ export async function fetchReportDetail(
   const report = await db.query.reports.findFirst({
     where: { id, NOT: reportsOn(viewer.id) },
     with: {
-      reporter: {
-        columns: { name: true, username: true, displayUsername: true },
-      },
-      resolver: {
-        columns: { name: true, username: true, displayUsername: true },
-      },
+      reporter: { columns: namedUserColumns },
+      resolver: { columns: namedUserColumns },
     },
   });
 
@@ -211,7 +207,7 @@ export async function fetchReportDetail(
     reason: report.reason,
     note: report.note,
     createdAt: report.createdAt,
-    reporter: { username: staffUsername(report.reporter) },
+    reporter: staffName(report.reporter),
     otherOpenReportCount,
     target,
   };
@@ -228,9 +224,7 @@ async function fetchDetailTarget(
         where: { id: targetId },
         columns: {
           id: true,
-          name: true,
-          username: true,
-          displayUsername: true,
+          ...namedUserColumns,
           email: true,
           emailVerified: true,
           role: true,
@@ -242,7 +236,9 @@ async function fetchDetailTarget(
         },
       });
 
-      if (!user) {
+      // a deleted user's row remains, but staff see them as gone
+      const username = user ? staffUsername(user) : null;
+      if (!user || username === null) {
         return { type: "user", user: null };
       }
 
@@ -250,7 +246,7 @@ async function fetchDetailTarget(
         type: "user",
         user: {
           id: user.id,
-          username: staffUsername(user),
+          username,
           role: user.role,
           ban: isBanActive(user) ? { until: user.banExpires } : null,
           profile: user.cosmoAccount?.username ?? null,
@@ -289,9 +285,7 @@ function toOutcome(report: {
       return {
         status: report.status,
         resolvedAt: report.resolvedAt,
-        resolver: report.resolver
-          ? { username: staffUsername(report.resolver) }
-          : null,
+        resolver: staffName(report.resolver),
       };
   }
 }

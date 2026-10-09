@@ -121,7 +121,9 @@ function Detail({ id }: { id: string }) {
           <div className="text-[13px] text-muted-foreground">
             {m.admin_reports_reported_by()}{" "}
             <b className="font-semibold text-foreground">
-              @{report.reporter.username}
+              {report.reporter
+                ? `@${report.reporter.username}`
+                : m.admin_reports_deleted_user()}
             </b>
             {" · "}
             <Timestamp date={report.createdAt} relative="long" />

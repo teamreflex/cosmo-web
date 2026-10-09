@@ -1,17 +1,44 @@
+import { m } from "@/i18n/messages";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
+/**
+ * A deleted user shows a muted "?" with no picture, so nothing of the
+ * account's name or image remains.
+ */
 type Props = {
   className?: string;
-  username?: string;
   variant?: "circle" | "square";
-};
+} & ({ deleted: true } | { deleted?: false; username?: string });
 
 export default function UserAvatar({
   className,
-  username = "User",
   variant = "circle",
+  ...props
 }: Props) {
+  if (props.deleted === true) {
+    return variant === "square" ? (
+      <div
+        className={cn(
+          "relative flex size-20 shrink-0 items-center justify-center overflow-hidden rounded-md bg-muted font-cosmo text-3xl leading-none font-black text-muted-foreground",
+          className,
+        )}
+        aria-label={m.common_deleted_user()}
+      >
+        <span>?</span>
+      </div>
+    ) : (
+      <Avatar
+        className={cn("size-20", className)}
+        aria-label={m.common_deleted_user()}
+      >
+        <AvatarFallback>?</AvatarFallback>
+      </Avatar>
+    );
+  }
+
+  const username = props.username ?? "User";
+
   if (variant === "square") {
     return (
       <div

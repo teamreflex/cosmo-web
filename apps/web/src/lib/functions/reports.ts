@@ -43,7 +43,7 @@ export const $createReport = createServerFn({ method: "POST" })
     }
 
     const target = await db.query.user.findFirst({
-      where: { id: data.targetId },
+      where: { id: data.targetId, deletedAt: { isNull: true } },
       columns: { id: true },
     });
     if (!target) {

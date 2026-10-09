@@ -17,7 +17,8 @@ export type OpenReportStatus = (typeof openReportStatuses)[number];
 
 /**
  * What a queue row shows of the reported thing; null when it no longer
- * exists. Later phases add messages, listings, feedback and trades.
+ * exists or its account is deleted. Later phases add messages, listings,
+ * feedback and trades.
  */
 export type AdminReportRowTarget = {
   type: "user";
@@ -33,11 +34,14 @@ export const reportTargetTypeFilters = [
 ] as const satisfies readonly (ReportTargetType &
   AdminReportRowTarget["type"])[];
 
+/**
+ * The reporter is null once their account is deleted.
+ */
 export type AdminReportRow = {
   id: string;
   reason: ReportReason;
   createdAt: Date;
-  reporter: { username: string };
+  reporter: { username: string } | null;
   target: AdminReportRowTarget;
 };
 
@@ -79,7 +83,7 @@ export type AdminReportDetail = ReportOutcome & {
   reason: ReportReason;
   note: string | null;
   createdAt: Date;
-  reporter: { username: string };
+  reporter: { username: string } | null;
   /** Open or escalated reports on the same target, besides this one. */
   otherOpenReportCount: number;
   target: AdminReportDetailTarget;

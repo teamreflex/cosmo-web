@@ -32,18 +32,22 @@ export type AdminAuditDetail =
 /**
  * `report` is the linked report, with its current status so a link to it
  * opens the matching queue tab; null when there is none or it was deleted.
+ * The staff member's username is null once their account is deleted.
  */
 export type AdminAuditRow = {
   id: number;
   createdAt: Date;
   action: StaffAuditAction;
-  staff: { username: string; role: Role };
+  staff: { username: string | null; role: Role };
   report: { id: string; status: ReportStatus } | null;
   detail: AdminAuditDetail | null;
   target: AdminAuditTarget;
 };
 
+/**
+ * A null username is a deleted staff member.
+ */
 export type AuditStaffMember = {
   id: string;
-  username: string;
+  username: string | null;
 };

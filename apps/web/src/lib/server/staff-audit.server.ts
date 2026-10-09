@@ -2,6 +2,7 @@ import { db } from "@/lib/server/db";
 import type { DbOrTx } from "@/lib/server/db";
 import {
   fetchStaffUsernames,
+  namedUserColumns,
   staffUsername,
 } from "@/lib/server/staff-users.server";
 import type { StaffAuditQueryInput } from "@/lib/universal/schema/staff-audit";
@@ -189,14 +190,7 @@ export async function fetchStaffAudit(input: StaffAuditQueryInput) {
       orderBy: { id: "desc" },
       limit: AUDIT_PAGE_SIZE,
       with: {
-        staff: {
-          columns: {
-            name: true,
-            username: true,
-            displayUsername: true,
-            role: true,
-          },
-        },
+        staff: { columns: { ...namedUserColumns, role: true } },
         report: { columns: { id: true, status: true } },
       },
     }),
@@ -293,7 +287,8 @@ function toAuditDetail(detail: StaffAuditDetail): AdminAuditDetail | null {
 
 /**
  * Everyone with at least one audit row, for the log's Staff filter. Demoted
- * staff stay listed because their rows remain.
+ * and deleted staff stay listed because their rows remain; deleted staff
+ * have no name and sort last.
  */
 export async function fetchAuditStaff(): Promise<AuditStaffMember[]> {
   const staff = await db.query.user.findMany({
@@ -304,10 +299,14 @@ export async function fetchAuditStaff(): Promise<AuditStaffMember[]> {
           db.selectDistinct({ id: staffAudit.staffId }).from(staffAudit),
         ),
     },
-    columns: { id: true, name: true, username: true, displayUsername: true },
+    columns: { id: true, ...namedUserColumns },
   });
 
   return staff
     .map((user) => ({ id: user.id, username: staffUsername(user) }))
-    .toSorted((a, b) => a.username.localeCompare(b.username));
+    .toSorted((a, b) =>
+      a.username === null || b.username === null
+        ? Number(a.username === null) - Number(b.username === null)
+        : a.username.localeCompare(b.username),
+    );
 }

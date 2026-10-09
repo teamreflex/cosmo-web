@@ -94,14 +94,26 @@ export default function AuditRow({ row }: Props) {
         role="cell"
         className="flex min-w-0 items-center gap-2 [grid-area:who]"
       >
-        <UserAvatar
-          username={row.staff.username}
-          className="size-5.5 **:p-0.5"
-        />
-        <span className="truncate font-medium">@{row.staff.username}</span>
-        <StatusPill tone="muted" className="font-sans">
-          {roleLabel(row.staff.role)}
-        </StatusPill>
+        {row.staff.username === null ? (
+          /* a deleted account's role was reset, so it has no pill */
+          <>
+            <UserAvatar deleted className="size-5.5" />
+            <span className="truncate font-medium text-muted-foreground">
+              {m.admin_audit_target_deleted_user()}
+            </span>
+          </>
+        ) : (
+          <>
+            <UserAvatar
+              username={row.staff.username}
+              className="size-5.5 **:p-0.5"
+            />
+            <span className="truncate font-medium">@{row.staff.username}</span>
+            <StatusPill tone="muted" className="font-sans">
+              {roleLabel(row.staff.role)}
+            </StatusPill>
+          </>
+        )}
       </div>
 
       <div

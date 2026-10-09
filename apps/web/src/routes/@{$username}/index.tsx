@@ -4,6 +4,7 @@ import Overlay from "@/components/misc/overlay";
 import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
 import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
 import BatchSelectionBar from "@/components/profile/batch-selection-bar";
+import { ensureProfileTarget } from "@/components/profile/common";
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
@@ -37,7 +38,7 @@ export const Route = createFileRoute("/@{$username}/")({
   loader: async ({ context, deps }) => {
     const [account, target, , selected] = await Promise.all([
       context.queryClient.ensureQueryData(currentAccountQuery),
-      context.queryClient.ensureQueryData(context.targetAccountOptions),
+      ensureProfileTarget(context.queryClient, context.targetAccountOptions),
       context.queryClient.ensureQueryData(context.pinsOptions),
       context.queryClient.ensureQueryData(selectedArtistsQuery),
     ]);

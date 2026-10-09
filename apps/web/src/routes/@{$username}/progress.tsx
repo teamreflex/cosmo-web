@@ -1,4 +1,5 @@
 import Portal from "@/components/portal";
+import { ensureProfileTarget } from "@/components/profile/common";
 import ProgressCharts from "@/components/progress/charts/progress-charts";
 import {
   ProgressChartsError,
@@ -34,7 +35,7 @@ export const Route = createFileRoute("/@{$username}/progress")({
   }),
   loader: async ({ context, deps }) => {
     const [target, account] = await Promise.all([
-      context.queryClient.ensureQueryData(context.targetAccountOptions),
+      ensureProfileTarget(context.queryClient, context.targetAccountOptions),
       context.queryClient.ensureQueryData(currentAccountQuery),
     ]);
 
