@@ -33,6 +33,7 @@ import {
 } from "drizzle-orm";
 import { union, unionAll } from "drizzle-orm/pg-core";
 import type { z } from "zod";
+import { decodeCursor, encodeCursor } from "./cursor.server";
 import { indexer } from "./db/indexer";
 import { collections, objekts, transfers } from "./db/indexer/schema";
 import {
@@ -619,28 +620,6 @@ function cursorFilter(cursor: Cursor) {
         sql`(${transfers.timestamp}, ${transfers.id}) < (${cursor.timestamp}::timestamptz, ${cursor.id})`,
       ]
     : [];
-}
-
-/**
- * Decode a base64 cursor into timestamp and id.
- */
-function decodeCursor(cursor: string | null | undefined) {
-  if (!cursor) return null;
-
-  try {
-    const decoded = Buffer.from(cursor, "base64").toString();
-    const [timestamp, id] = decoded.split("|");
-    return timestamp && id ? { timestamp, id } : null;
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Encode timestamp and id into a base64 cursor.
- */
-function encodeCursor(timestamp: string, id: string) {
-  return Buffer.from(`${timestamp}|${id}`).toString("base64");
 }
 
 function toItems<T extends Candidate>(rows: T[]) {

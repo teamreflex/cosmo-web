@@ -1,4 +1,5 @@
 import { env } from "@/lib/env/server";
+import { decodeCursor, encodeCursor } from "@/lib/server/cursor.server";
 import { db } from "@/lib/server/db";
 import type { DbOrTx } from "@/lib/server/db";
 import { recordStaffAudit } from "@/lib/server/staff-audit.server";
@@ -96,7 +97,7 @@ export async function fetchReportQueue(
   staffId: string,
   input: ReportQueueInput,
 ) {
-  const after = decodeQueueCursor(input.cursor);
+  const after = decodeCursor(input.cursor);
   const rows = await db.query.reports.findMany({
     where: {
       status: input.status,
@@ -104,7 +105,7 @@ export async function fetchReportQueue(
       targetType: input.targetType ?? EmptyFilter,
       RAW: after
         ? (t) =>
-            sql`(${t.createdAt}, ${t.id}) < (${after.at}::timestamp, ${after.id}::uuid)`
+            sql`(${t.createdAt}, ${t.id}) < (${after.timestamp}::timestamp, ${after.id}::uuid)`
         : EmptyFilter,
     },
     columns: {
@@ -141,7 +142,7 @@ export async function fetchReportQueue(
     })),
     nextCursor:
       rows.length === QUEUE_PAGE_SIZE && last
-        ? encodeQueueCursor(last.cursorAt, last.id)
+        ? encodeCursor(last.cursorAt, last.id)
         : undefined,
   };
 }
@@ -402,21 +403,4 @@ export async function resolveUserReports(
       reportId: report.id,
     })),
   );
-}
-
-/**
- * Decode a base64 queue cursor into `created_at` text and id.
- */
-function decodeQueueCursor(cursor: string | undefined) {
-  if (!cursor) return null;
-
-  const [at, id] = Buffer.from(cursor, "base64").toString().split("|");
-  return at && id ? { at, id } : null;
-}
-
-/**
- * Encode `created_at` text and id into a base64 queue cursor.
- */
-function encodeQueueCursor(at: string, id: string) {
-  return Buffer.from(`${at}|${id}`).toString("base64");
 }
