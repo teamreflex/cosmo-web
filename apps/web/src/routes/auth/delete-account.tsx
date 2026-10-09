@@ -29,6 +29,7 @@ import {
 import type { AccountErrorCode } from "@/lib/universal/errors/accounts";
 import type { PropsWithClassName } from "@/lib/utils";
 import {
+  IconBan,
   IconLinkOff,
   IconLoader2,
   IconLogin2,
@@ -76,6 +77,7 @@ type PageState =
   | { kind: "idle" }
   | { kind: "blocked"; blockers: DeletionBlocked["blockers"] }
   | { kind: "invalid" }
+  | { kind: "banned" }
   | { kind: "deleted" };
 
 /**
@@ -105,13 +107,15 @@ function RouteComponent() {
       await router.invalidate();
     },
     onError: (error) => {
-      if (
-        error.message ===
-        ("account_deletion_link_invalid" satisfies AccountErrorCode)
-      ) {
-        setState({ kind: "invalid" });
-      } else {
-        toast.error(formatError(error));
+      switch (error.message) {
+        case "account_deletion_link_invalid" satisfies AccountErrorCode:
+          setState({ kind: "invalid" });
+          break;
+        case "account_deletion_banned" satisfies AccountErrorCode:
+          setState({ kind: "banned" });
+          break;
+        default:
+          toast.error(formatError(error));
       }
     },
   });
@@ -144,6 +148,14 @@ function RouteComponent() {
             icon={<IconLinkOff />}
             title={m.delete_account_link_invalid_title()}
             description={m.delete_account_link_invalid_description()}
+          >
+            <BackHome variant="outline" />
+          </Notice>
+        ) : state.kind === "banned" ? (
+          <Notice
+            icon={<IconBan />}
+            title={m.delete_account_title()}
+            description={m.account_error_deletion_banned()}
           >
             <BackHome variant="outline" />
           </Notice>
