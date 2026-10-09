@@ -31,6 +31,7 @@ The admin plugin's columns are transplanted this way into `packages/database/src
 ## Bans
 
 - A ban deletes the user's sessions, and the plugin's `session.create.before` hook refuses new sign-ins with the `BANNED_USER` code, which `getAuthErrorMessage` localises. OAuth sign-ins by a banned user land on Better Auth's error page instead.
+- The ban reason is staff-only. It is stored in `user.ban_reason` and the `user:ban` audit row's detail, and never reaches the banned user, who sees only the generic localised "This account has been banned" message. The Ban dialog's reason hint tells staff so.
 - Ban lengths are lazy: `banned` stays true after `ban_expires` passes, until the next sign-in attempt clears it. Treat a ban as active only when `banned` is true and `ban_expires` is null or in the future. That automatic unban writes no audit row and publishes no event.
 - A ban with no `banExpiresIn` (or zero) is permanent, but the plugin then leaves `ban_expires` untouched, so a lapsed earlier ban's expiry would lift it at the next sign-in. The ban after-hook clears `ban_expires` for permanent bans in the same transaction as the audit row, so the stored ban, the audit row and the published event agree.
 

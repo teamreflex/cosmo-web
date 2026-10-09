@@ -818,7 +818,7 @@
     }
   ],
   "admin_ban_reason": "Reason",
-  "admin_ban_reason_hint": "Only staff see this reason.",
+  "admin_ban_reason_hint": "Only staff see this reason. The user is only told their account is banned.",
   "admin_ban_length": "Length",
   "admin_ban_length_7d": "7 days",
   "admin_ban_length_30d": "30 days",

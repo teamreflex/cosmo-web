@@ -818,7 +818,7 @@
     }
   ],
   "admin_ban_reason": "Motif",
-  "admin_ban_reason_hint": "Seul le staff voit ce motif.",
+  "admin_ban_reason_hint": "Seul le staff voit ce motif. L'utilisateur voit seulement que son compte est banni.",
   "admin_ban_length": "Durée",
   "admin_ban_length_7d": "7 jours",
   "admin_ban_length_30d": "30 jours",

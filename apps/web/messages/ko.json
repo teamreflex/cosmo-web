@@ -809,7 +809,7 @@
     }
   ],
   "admin_ban_reason": "사유",
-  "admin_ban_reason_hint": "이 사유는 스태프만 볼 수 있습니다.",
+  "admin_ban_reason_hint": "이 사유는 스태프만 볼 수 있습니다. 사용자에게는 계정이 정지되었다는 사실만 표시됩니다.",
   "admin_ban_length": "기간",
   "admin_ban_length_7d": "7일",
   "admin_ban_length_30d": "30일",

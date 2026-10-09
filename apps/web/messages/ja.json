@@ -809,7 +809,7 @@
     }
   ],
   "admin_ban_reason": "理由",
-  "admin_ban_reason_hint": "この理由はスタッフにのみ表示されます。",
+  "admin_ban_reason_hint": "この理由はスタッフにのみ表示されます。ユーザーにはアカウントが利用停止されたことだけが表示されます。",
   "admin_ban_length": "期間",
   "admin_ban_length_7d": "7日間",
   "admin_ban_length_30d": "30日間",
