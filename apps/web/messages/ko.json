@@ -611,7 +611,7 @@
   "delete_account_done_description": "이름, 이메일, 소셜 정보가 지워졌고 로그아웃되었습니다.",
   "delete_account_link_invalid_title": "사용할 수 없는 링크입니다",
   "delete_account_link_invalid_description": "만료되었거나 이미 사용되었거나 다른 계정의 링크입니다. 삭제하려는 계정으로 로그인한 뒤 아바타 메뉴의 계정에서 확인 이메일을 다시 보내세요.",
-  "delete_account_sign_in_required": "삭제하려는 계정으로 로그인한 뒤 링크를 다시 여세요.",
+  "delete_account_sign_in_required": "계속하려면 삭제하려는 계정으로 로그인하세요.",
   "delete_account_back_home": "홈으로 돌아가기",
   "_comment_linked_accounts": "Linked accounts strings",
   "linked_accounts_unlink": "{provider} 연결 해제",

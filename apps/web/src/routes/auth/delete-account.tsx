@@ -43,6 +43,7 @@ import {
   Link,
   createFileRoute,
   redirect,
+  useLocation,
   useRouter,
 } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
@@ -86,6 +87,7 @@ function RouteComponent() {
   const { data: account } = useSuspenseQuery(currentAccountQuery);
   const queryClient = useQueryClient();
   const router = useRouter();
+  const href = useLocation({ select: (location) => location.href });
   const [state, setState] = useState<PageState>({ kind: "idle" });
 
   const mutation = useMutation({
@@ -131,7 +133,11 @@ function RouteComponent() {
             title={m.delete_account_title()}
             description={m.delete_account_sign_in_required()}
           >
-            <SignIn trigger={<Button>{m.auth_sign_in()}</Button>} />
+            {/* returns here, so the emailed token isn't lost */}
+            <SignIn
+              trigger={<Button>{m.auth_sign_in()}</Button>}
+              callbackURL={href}
+            />
           </Notice>
         ) : state.kind === "invalid" ? (
           <Notice

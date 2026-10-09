@@ -16,6 +16,7 @@ import { Field, FieldError, FieldLabel } from "../ui/field";
 import { Input } from "../ui/input";
 
 type Props = {
+  callbackURL?: string;
   onForgotPassword: () => void;
   onSuccess: () => void;
 };
@@ -56,7 +57,7 @@ export default function WithEmail(props: Props) {
           queryKey: currentAccountQuery.queryKey,
         });
         await router.invalidate();
-        void router.navigate({ to: "/" });
+        void router.navigate({ href: props.callbackURL ?? "/" });
         props.onSuccess();
       },
       onError: (error) => {

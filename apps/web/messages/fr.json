@@ -619,7 +619,7 @@
   "delete_account_done_description": "Votre nom, votre email et vos réseaux sociaux ont été effacés, et vous avez été déconnecté.",
   "delete_account_link_invalid_title": "Ce lien ne peut pas être utilisé",
   "delete_account_link_invalid_description": "Il a expiré, a déjà été utilisé ou appartient à un autre compte. Connectez-vous au compte que vous supprimez, ouvrez Compte depuis le menu de votre avatar et envoyez un nouvel email de confirmation.",
-  "delete_account_sign_in_required": "Connectez-vous au compte que vous supprimez, puis rouvrez le lien.",
+  "delete_account_sign_in_required": "Connectez-vous au compte que vous supprimez pour continuer.",
   "delete_account_back_home": "Retour à l'accueil",
   "_comment_linked_accounts": "Linked accounts strings",
   "linked_accounts_unlink": "Désassocier {provider}",

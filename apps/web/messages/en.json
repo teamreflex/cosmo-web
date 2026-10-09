@@ -619,7 +619,7 @@
   "delete_account_done_description": "Your name, email and socials are erased, and you've been signed out.",
   "delete_account_link_invalid_title": "This link can't be used",
   "delete_account_link_invalid_description": "It has expired, was already used or belongs to another account. Sign in to the account you're deleting, open Account from your avatar menu and send a new confirmation email.",
-  "delete_account_sign_in_required": "Sign in to the account you're deleting, then open the link again.",
+  "delete_account_sign_in_required": "Sign in to the account you're deleting to continue.",
   "delete_account_back_home": "Back to home",
   "_comment_linked_accounts": "Linked accounts strings",
   "linked_accounts_unlink": "Unlink {provider}",

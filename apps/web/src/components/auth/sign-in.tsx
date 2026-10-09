@@ -26,6 +26,10 @@ type Props = {
    * collapses to an icon on phones.
    */
   trigger?: ReactElement;
+  /**
+   * The path signing in returns to. Defaults to the home page.
+   */
+  callbackURL?: string;
 };
 
 export default function SignIn({
@@ -40,6 +44,7 @@ export default function SignIn({
       <span className="hidden md:inline">{m.auth_sign_in()}</span>
     </Button>
   ),
+  callbackURL,
 }: Props) {
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<State>("sign-in");
@@ -72,6 +77,7 @@ export default function SignIn({
               case "sign-in":
                 return (
                   <WithEmail
+                    callbackURL={callbackURL}
                     onForgotPassword={() => setState("forgot-password")}
                     onSuccess={() => setOpen(false)}
                   />
@@ -96,8 +102,8 @@ export default function SignIn({
               <Separator />
 
               <div className="flex flex-col items-center gap-2 lg:flex-row">
-                <SignInWithDiscord />
-                <SignInWithTwitter />
+                <SignInWithDiscord callbackURL={callbackURL} />
+                <SignInWithTwitter callbackURL={callbackURL} />
               </div>
 
               <Link

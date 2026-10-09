@@ -611,7 +611,7 @@
   "delete_account_done_description": "名前、メールアドレス、SNS情報を消去し、サインアウトしました。",
   "delete_account_link_invalid_title": "このリンクは使用できません",
   "delete_account_link_invalid_description": "有効期限が切れているか、すでに使用されているか、別のアカウントのリンクです。削除するアカウントにサインインし、アバターメニューの「アカウント」から確認メールを再送信してください。",
-  "delete_account_sign_in_required": "削除するアカウントにサインインしてから、もう一度リンクを開いてください。",
+  "delete_account_sign_in_required": "続行するには、削除するアカウントにサインインしてください。",
   "delete_account_back_home": "ホームに戻る",
   "_comment_linked_accounts": "Linked accounts strings",
   "linked_accounts_unlink": "{provider}の連携を解除",
