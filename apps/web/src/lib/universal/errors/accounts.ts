@@ -5,6 +5,8 @@ export const accountErrorCodes = [
   "account_deletion_link_invalid",
   "account_deletion_no_email",
   "account_deletion_banned",
+  "account_deletion_email_required",
+  "account_deletion_session_stale",
   "cosmo_transfer_source_changed",
   "cosmo_transfer_target_linked",
   "cosmo_transfer_banned",

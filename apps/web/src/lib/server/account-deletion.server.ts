@@ -1,4 +1,6 @@
 import {
+  deletionProofRefusal,
+  deletionStep,
   toDeletionCheck,
   tombstoneEmail,
 } from "@/lib/universal/account-deletion";
@@ -9,6 +11,7 @@ import type {
 } from "@/lib/universal/account-deletion";
 import type { CosmoLink } from "@/lib/universal/cosmo-accounts";
 import { ExpectedError } from "@/lib/universal/errors/expected";
+import type { DeletionProof } from "@/lib/universal/schema/account";
 import { isBanActive } from "@apollo/auth/guard";
 import * as authSchema from "@apollo/database/auth";
 import {
@@ -92,19 +95,20 @@ export async function createDeletionToken(userId: string) {
 type DeletionOutcome = DeletionBlocked | { status: "deleted"; link: CosmoLink };
 
 /**
- * Delete the account by anonymising it, once the emailed token checks out.
- * The user row is locked first, so a ban or a blocker can't appear between
- * the check and the scrub, and a blocked deletion leaves the token for a
+ * Delete the account by anonymising it, once the proof checks out. The user
+ * row is locked first, so a ban, a blocker or a new email can't appear between
+ * the checks and the scrub, and a blocked deletion leaves the token for a
  * later attempt. An actively banned user can't delete their account, since
  * deleting unlinks their COSMO account for anyone to link again.
  */
 export async function deleteAccount(
-  userId: string,
-  token: string,
+  { userId, sessionCreatedAt }: { userId: string; sessionCreatedAt: Date },
+  proof: DeletionProof,
 ): Promise<DeleteAccountResult> {
   const result = await db.transaction(async (tx): Promise<DeletionOutcome> => {
     const [caller] = await tx
       .select({
+        email: authSchema.user.email,
         banned: authSchema.user.banned,
         banExpires: authSchema.user.banExpires,
       })
@@ -125,22 +129,31 @@ export async function deleteAccount(
       return check;
     }
 
-    // expires_at holds UTC without a zone, as drizzle writes a Date, so compare with a Date rather than now()
-    const [consumed] = await tx
-      .delete(authSchema.verification)
-      .where(
-        and(
-          eq(
-            authSchema.verification.identifier,
-            deletionTokenIdentifier(token),
+    const refusal = deletionProofRefusal(
+      proof,
+      deletionStep(caller.email, sessionCreatedAt, new Date()),
+    );
+    if (refusal) {
+      throw new ExpectedError(refusal);
+    }
+    if (proof.kind === "email") {
+      // expires_at holds UTC without a zone, as drizzle writes a Date, so compare with a Date rather than now()
+      const [consumed] = await tx
+        .delete(authSchema.verification)
+        .where(
+          and(
+            eq(
+              authSchema.verification.identifier,
+              deletionTokenIdentifier(proof.token),
+            ),
+            eq(authSchema.verification.value, userId),
+            gt(authSchema.verification.expiresAt, new Date()),
           ),
-          eq(authSchema.verification.value, userId),
-          gt(authSchema.verification.expiresAt, new Date()),
-        ),
-      )
-      .returning({ id: authSchema.verification.id });
-    if (!consumed) {
-      throw new ExpectedError("account_deletion_link_invalid");
+        )
+        .returning({ id: authSchema.verification.id });
+      if (!consumed) {
+        throw new ExpectedError("account_deletion_link_invalid");
+      }
     }
 
     return { status: "deleted", link: await anonymiseAccount(tx, userId) };

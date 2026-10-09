@@ -91,7 +91,7 @@ function RouteComponent() {
   const [state, setState] = useState<PageState>({ kind: "idle" });
 
   const mutation = useMutation({
-    mutationFn: () => $deleteAccount({ data: { token } }),
+    mutationFn: () => $deleteAccount({ data: { kind: "email", token } }),
     onSuccess: async (result) => {
       if (result.status === "blocked") {
         setState({ kind: "blocked", blockers: result.blockers });

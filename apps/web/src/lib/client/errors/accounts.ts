@@ -1,5 +1,6 @@
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
+import { FRESH_SESSION_MINUTES } from "@/lib/universal/account-deletion";
 import { isAccountErrorCode } from "@/lib/universal/errors/accounts";
 
 /**
@@ -26,6 +27,12 @@ export function formatAccountError(error: unknown): string | null {
       return m.account_error_deletion_no_email();
     case "account_deletion_banned":
       return m.account_error_deletion_banned();
+    case "account_deletion_email_required":
+      return m.account_error_deletion_email_required();
+    case "account_deletion_session_stale":
+      return m.account_error_deletion_session_stale({
+        minutes: FRESH_SESSION_MINUTES,
+      });
     case "cosmo_transfer_source_changed":
       return m.account_error_transfer_source_changed();
     case "cosmo_transfer_target_linked":

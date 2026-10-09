@@ -13,15 +13,22 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { env } from "@/lib/env/client";
-import { $requestAccountDeletion } from "@/lib/functions/account";
+import {
+  $deleteAccount,
+  $requestAccountDeletion,
+} from "@/lib/functions/account";
 import { accountDeletionQuery } from "@/lib/queries/account";
+import { currentAccountQuery, removeViewerQueries } from "@/lib/queries/core";
 import {
   type DeletionBlocker,
+  FRESH_SESSION_MINUTES,
   deletionBlockerCount,
 } from "@/lib/universal/account-deletion";
+import type { AccountErrorCode } from "@/lib/universal/errors/accounts";
 import { isExpectedError } from "@/lib/universal/errors/expected";
 import { IconLoader2, IconMailCheck, IconTrash } from "@tabler/icons-react";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
 import DeletionBlockerRows from "./deletion-blockers";
@@ -54,6 +61,28 @@ export default function DeleteAccount() {
  */
 function DeleteAccountContent() {
   const check = useQuery(accountDeletionQuery);
+
+  switch (check.status) {
+    case "pending":
+      return <Pending />;
+    case "error":
+      return <CheckFailed error={check.error} />;
+    case "success":
+      if (check.data.status === "blocked") {
+        return <Blocked blockers={check.data.blockers} />;
+      }
+      switch (check.data.step) {
+        case "send-email":
+          return <SendEmail />;
+        case "delete":
+          return <DeleteNow />;
+        case "sign-in-again":
+          return <SignInAgain />;
+      }
+  }
+}
+
+function SendEmail() {
   const request = useMutation({
     mutationFn: () => $requestAccountDeletion(),
     onError: (error) => {
@@ -66,23 +95,86 @@ function DeleteAccountContent() {
       return <Sent />;
     case "blocked":
       return <Blocked blockers={request.data.blockers} />;
-  }
-
-  switch (check.status) {
-    case "pending":
-      return <Pending />;
-    case "error":
-      return <CheckFailed error={check.error} />;
-    case "success":
-      return check.data.status === "blocked" ? (
-        <Blocked blockers={check.data.blockers} />
-      ) : (
+    default:
+      return (
         <Confirm
+          action={m.delete_account_send_email()}
           pending={request.isPending}
           onConfirm={() => request.mutate()}
         />
       );
   }
+}
+
+/**
+ * An account without a deliverable email deletes from here, on a session
+ * signed in within the last few minutes.
+ */
+function DeleteNow() {
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  const deletion = useMutation({
+    mutationFn: () => $deleteAccount({ data: { kind: "fresh-session" } }),
+    onSuccess: async (result) => {
+      if (result.status === "blocked") {
+        return;
+      }
+
+      toast.success(m.delete_account_done_title(), {
+        description: m.delete_account_done_description(),
+      });
+      queryClient.setQueryData(currentAccountQuery.queryKey, null);
+      await router.navigate({ to: "/" });
+      // after navigating, so no mounted staff page refetches what's removed
+      removeViewerQueries(queryClient);
+      await router.invalidate();
+    },
+    onError: (error) => {
+      if (!isSessionStale(error)) {
+        toast.error(formatError(error));
+      }
+    },
+  });
+
+  if (deletion.data?.status === "blocked") {
+    return <Blocked blockers={deletion.data.blockers} />;
+  }
+  if (isSessionStale(deletion.error)) {
+    return <SignInAgain />;
+  }
+  return (
+    <Confirm
+      action={m.delete_account_finish_submit()}
+      note={m.delete_account_finish_description()}
+      pending={deletion.isPending}
+      onConfirm={() => deletion.mutate()}
+    />
+  );
+}
+
+function isSessionStale(error: Error | null) {
+  return (
+    error?.message ===
+    ("account_deletion_session_stale" satisfies AccountErrorCode)
+  );
+}
+
+function SignInAgain() {
+  return (
+    <>
+      <DialogHeader>
+        <DialogTitle>{m.delete_account_sign_in_again_title()}</DialogTitle>
+        <DialogDescription>
+          {m.delete_account_sign_in_again_description({
+            minutes: FRESH_SESSION_MINUTES,
+          })}
+        </DialogDescription>
+      </DialogHeader>
+      <DialogFooter>
+        <CloseButton />
+      </DialogFooter>
+    </>
+  );
 }
 
 function Pending() {
@@ -142,11 +234,13 @@ function Blocked({ blockers }: { blockers: readonly DeletionBlocker[] }) {
 }
 
 type ConfirmProps = {
+  action: string;
+  note?: string;
   pending: boolean;
   onConfirm: () => void;
 };
 
-function Confirm({ pending, onConfirm }: ConfirmProps) {
+function Confirm({ action, note, pending, onConfirm }: ConfirmProps) {
   return (
     <>
       <DialogHeader>
@@ -157,6 +251,7 @@ function Confirm({ pending, onConfirm }: ConfirmProps) {
         <p className="text-sm text-muted-foreground">
           {m.delete_account_confirm_cosmo({ appName: env.VITE_APP_NAME })}
         </p>
+        {note && <p className="text-sm text-muted-foreground">{note}</p>}
       </DialogHeader>
       <DialogFooter>
         <DialogClose
@@ -170,7 +265,7 @@ function Confirm({ pending, onConfirm }: ConfirmProps) {
           disabled={pending}
           onClick={onConfirm}
         >
-          <span>{m.delete_account_send_email()}</span>
+          <span>{action}</span>
           {pending && <IconLoader2 className="animate-spin" />}
         </Button>
       </DialogFooter>

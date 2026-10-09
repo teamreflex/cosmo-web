@@ -7,28 +7,40 @@ import { db } from "@/lib/server/db";
 import { sendAccountDeletionEmail } from "@/lib/server/mail.server";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import { consumeRateLimit } from "@/lib/server/rate-limit.server";
+import {
+  deletionStep,
+  hasDeliverableEmail,
+} from "@/lib/universal/account-deletion";
 import type {
-  DeletionCheck,
+  DeletionAvailability,
   RequestDeletionResult,
 } from "@/lib/universal/account-deletion";
 import { ExpectedError } from "@/lib/universal/errors/expected";
-import { deleteAccountSchema } from "@/lib/universal/schema/account";
+import { deletionProofSchema } from "@/lib/universal/schema/account";
 import { baseUrl } from "@/lib/utils";
 import { createServerFn } from "@tanstack/react-start";
-import * as z from "zod";
 
 /**
- * Whether the caller may delete their account, and what blocks it if not.
+ * Whether the caller may delete their account and how they confirm it, or
+ * what blocks it.
  */
 export const $checkAccountDeletion = createServerFn({ method: "GET" })
   .middleware([authenticatedMiddleware])
-  .handler(({ context }): Promise<DeletionCheck> =>
-    canDeleteAccount(db, context.session.user.id),
-  );
+  .handler(async ({ context }): Promise<DeletionAvailability> => {
+    const { user, session } = context.session;
+    const check = await canDeleteAccount(db, user.id);
+    return check.status === "blocked"
+      ? check
+      : {
+          status: "allowed",
+          step: deletionStep(user.email, session.createdAt, new Date()),
+        };
+  });
 
 /**
  * Email the caller a link to confirm their account's deletion, unless
- * something blocks it. Accounts without a deliverable email are refused.
+ * something blocks it. Accounts without a deliverable email are refused; they
+ * delete on a fresh session instead.
  */
 export const $requestAccountDeletion = createServerFn({ method: "POST" })
   .middleware([authenticatedMiddleware])
@@ -41,8 +53,7 @@ export const $requestAccountDeletion = createServerFn({ method: "POST" })
       window: "1 hour",
     });
 
-    // X sign-ins without a confirmed email store the X username instead
-    if (!z.email().safeParse(email).success) {
+    if (!hasDeliverableEmail(email)) {
       throw new ExpectedError("account_deletion_no_email");
     }
 
@@ -62,11 +73,18 @@ export const $requestAccountDeletion = createServerFn({ method: "POST" })
   });
 
 /**
- * Delete the caller's account with the token from the emailed link.
+ * Delete the caller's account with the token from the emailed link, or, for an
+ * account without a deliverable email, on a fresh session.
  */
 export const $deleteAccount = createServerFn({ method: "POST" })
   .middleware([authenticatedMiddleware])
-  .validator(deleteAccountSchema)
+  .validator(deletionProofSchema)
   .handler(({ data, context }) =>
-    deleteAccount(context.session.user.id, data.token),
+    deleteAccount(
+      {
+        userId: context.session.user.id,
+        sessionCreatedAt: context.session.session.createdAt,
+      },
+      data,
+    ),
   );
