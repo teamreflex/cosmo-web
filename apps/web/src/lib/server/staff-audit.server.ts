@@ -21,13 +21,15 @@ import { and, EmptyFilter, eq, gt, inArray, sql } from "drizzle-orm";
 
 const AUDIT_PAGE_SIZE = 50;
 
+type ReportReadAuditEntry = {
+  staffId: string;
+  action: "report:read";
+  reportId: string;
+};
+
 type ReportAuditEntry = {
   staffId: string;
-  action:
-    | "report:read"
-    | "report:resolve"
-    | "report:dismiss"
-    | "report:escalate";
+  action: "report:resolve" | "report:dismiss" | "report:escalate";
   reportId: string;
 };
 
@@ -65,13 +67,19 @@ type MetadataAuditEntry = {
   slug: string;
 };
 
-export type StaffAuditEntry =
+/**
+ * Entries written without checking for a recent duplicate, so several can go
+ * in one insert.
+ */
+type UndeduplicatedAuditEntry =
   | ReportAuditEntry
   | BanAuditEntry
   | UnbanAuditEntry
   | SetRoleAuditEntry
   | ApiKeyAuditEntry
   | MetadataAuditEntry;
+
+export type StaffAuditEntry = ReportReadAuditEntry | UndeduplicatedAuditEntry;
 
 function toAuditRow(entry: StaffAuditEntry): typeof staffAudit.$inferInsert {
   switch (entry.action) {
@@ -131,24 +139,25 @@ function toAuditRow(entry: StaffAuditEntry): typeof staffAudit.$inferInsert {
 }
 
 /**
- * Append a staff read or action to the audit log.
+ * Append a staff read or action to the audit log, or several undeduplicated
+ * entries in one insert.
  */
 export async function recordStaffAudit(
   executor: DbOrTx,
-  entry: StaffAuditEntry,
+  entries: StaffAuditEntry | UndeduplicatedAuditEntry[],
 ) {
   /**
    * Reads are logged once per staff visit: SSR, hydration and query
    * invalidation would otherwise log the same report several times.
    */
-  if (entry.action === "report:read") {
+  if (!Array.isArray(entries) && entries.action === "report:read") {
     const recent = await executor.$count(
       staffAudit,
       and(
-        eq(staffAudit.staffId, entry.staffId),
-        eq(staffAudit.action, entry.action),
+        eq(staffAudit.staffId, entries.staffId),
+        eq(staffAudit.action, entries.action),
         eq(staffAudit.targetType, "report"),
-        eq(staffAudit.targetId, entry.reportId),
+        eq(staffAudit.targetId, entries.reportId),
         gt(staffAudit.createdAt, sql`now() - interval '10 minutes'`),
       ),
     );
@@ -157,7 +166,11 @@ export async function recordStaffAudit(
     }
   }
 
-  await executor.insert(staffAudit).values(toAuditRow(entry));
+  const rows = (Array.isArray(entries) ? entries : [entries]).map(toAuditRow);
+  // values() throws on an empty list, as when a ban finds no open reports
+  if (rows.length > 0) {
+    await executor.insert(staffAudit).values(rows);
+  }
 }
 
 /**

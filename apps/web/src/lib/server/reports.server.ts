@@ -394,13 +394,14 @@ export async function resolveUserReports(
     )
     .returning({ id: reports.id });
 
-  for (const report of resolved) {
-    await recordStaffAudit(tx, {
+  await recordStaffAudit(
+    tx,
+    resolved.map((report) => ({
       staffId,
       action: "report:resolve",
       reportId: report.id,
-    });
-  }
+    })),
+  );
 }
 
 /**
