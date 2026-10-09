@@ -120,7 +120,16 @@ export default function AuditRow({ row }: Props) {
         role="cell"
         className="font-mono text-xs whitespace-nowrap text-muted-foreground tabular-nums [grid-area:when] @lg:pt-0.5 @4xl:pt-0"
       >
-        <Timestamp date={row.createdAt} format="MMM d HH:mm" />
+        <Timestamp
+          date={row.createdAt}
+          format={{
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            hourCycle: "h23",
+          }}
+        />
       </div>
     </div>
   );

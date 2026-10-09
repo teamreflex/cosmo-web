@@ -82,7 +82,10 @@ function TargetMeta({
           ) : (
             <>
               {m.admin_reports_banned_until()}{" "}
-              <Timestamp date={user.ban.until} format="MMM d, yyyy" />
+              <Timestamp
+                date={user.ban.until}
+                format={{ dateStyle: "medium" }}
+              />
             </>
           )}
         </span>
