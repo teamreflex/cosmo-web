@@ -1,3 +1,4 @@
+import { env } from "@/lib/env/server";
 import { db } from "@/lib/server/db";
 import type { DbOrTx } from "@/lib/server/db";
 import { recordStaffAudit } from "@/lib/server/staff-audit.server";
@@ -17,6 +18,7 @@ import type {
 } from "@/lib/universal/reports";
 import type { ReportQueueInput } from "@/lib/universal/schema/reports";
 import { parseRole } from "@apollo/auth";
+import { hasEmailDomain } from "@apollo/auth/guard";
 import { reports } from "@apollo/database/web/schema";
 import type {
   ReportStatus,
@@ -166,6 +168,7 @@ async function fetchDetailTarget(
           name: true,
           username: true,
           displayUsername: true,
+          email: true,
           role: true,
           banned: true,
           banExpires: true,
@@ -192,6 +195,7 @@ async function fetchDetailTarget(
           role: parseRole(user.role),
           ban: banActive ? { until: user.banExpires } : null,
           profile: user.cosmoAccount?.username ?? null,
+          protected: hasEmailDomain(user.email, env.PROTECTED_EMAIL_DOMAINS),
         },
       };
     }

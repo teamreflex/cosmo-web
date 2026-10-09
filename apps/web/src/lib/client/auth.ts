@@ -40,6 +40,10 @@ export function getAuthErrorMessage(error: ErrorInput) {
         return m.auth_error_banned();
       case "YOU_CANNOT_BAN_YOURSELF":
         return m.auth_error_ban_self();
+      case "CANNOT_DEMOTE_SELF":
+        return m.auth_error_demote_self();
+      case "PROTECTED_USER":
+        return m.auth_error_protected_user();
       case "YOU_ARE_NOT_ALLOWED_TO_BAN_USERS":
       case "YOU_ARE_NOT_ALLOWED_TO_CHANGE_USERS_ROLE":
       case "YOU_ARE_NOT_ALLOWED_TO_IMPERSONATE_USERS":

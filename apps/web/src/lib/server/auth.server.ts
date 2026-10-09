@@ -1,7 +1,9 @@
 import * as clientEnv from "@/lib/env/client";
 import * as serverEnv from "@/lib/env/server";
 import { baseUrl } from "@/lib/utils";
-import { adminPluginOptions, parseRole, roleNames } from "@apollo/auth";
+import { adminPluginOptions, can, parseRole, roleNames } from "@apollo/auth";
+import { userChangeRefusal } from "@apollo/auth/guard";
+import type { UserChange, UserChangeRefusal } from "@apollo/auth/guard";
 import * as authSchema from "@apollo/database/auth";
 import { cosmoAccounts } from "@apollo/database/web/schema";
 import type { StaffAuditDetail } from "@apollo/database/web/types";
@@ -9,7 +11,12 @@ import { GRID_COLUMNS } from "@apollo/util";
 import type { CollectionDataSource } from "@apollo/util";
 import { apiKey } from "@better-auth/api-key";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
-import { APIError, createAuthMiddleware, isAPIError } from "better-auth/api";
+import {
+  APIError,
+  createAuthMiddleware,
+  getSessionFromCtx,
+  isAPIError,
+} from "better-auth/api";
 import { parseSessionOutput, parseUserOutput } from "better-auth/db";
 import { betterAuth } from "better-auth/minimal";
 import { admin } from "better-auth/plugins/admin";
@@ -32,8 +39,9 @@ import { publishUserEvent } from "./user-events.server";
 
 const PREVIOUS_ROLE_HEADER = "x-apollo-previous-role";
 
-const setRoleBodySchema = z.object({
-  userId: z.coerce.string(),
+const userIdBodySchema = z.object({ userId: z.coerce.string() });
+
+const setRoleBodySchema = userIdBodySchema.extend({
   role: z.enum(roleNames),
 });
 
@@ -191,6 +199,19 @@ export const auth = betterAuth({
         throw new APIError("NOT_FOUND");
       }
 
+      if (ctx.path === "/admin/ban-user" || ctx.path === "/admin/unban-user") {
+        const body = userIdBodySchema.safeParse(ctx.body);
+        if (body.success) {
+          await guardUserChange(
+            await getSessionFromCtx(ctx),
+            body.data.userId,
+            {
+              kind: ctx.path === "/admin/ban-user" ? "ban" : "unban",
+            },
+          );
+        }
+      }
+
       /**
        * Allow exactly one known role: the plugin would comma-join an array,
        * which the role CHECK rejects. The previous role is gone once the
@@ -205,10 +226,11 @@ export const auth = betterAuth({
           });
         }
 
-        const target = await db.query.user.findFirst({
-          where: { id: body.data.userId },
-          columns: { role: true },
-        });
+        const target = await guardUserChange(
+          await getSessionFromCtx(ctx),
+          body.data.userId,
+          { kind: "set-role", role: body.data.role },
+        );
         if (target) {
           return {
             context: {
@@ -291,9 +313,7 @@ export const auth = betterAuth({
           return;
         }
         case "/admin/unban-user": {
-          const { userId } = z
-            .object({ userId: z.coerce.string() })
-            .parse(ctx.body);
+          const { userId } = userIdBodySchema.parse(ctx.body);
           await recordStaffAudit(db, {
             staffId: session.user.id,
             action: "user:unban",
@@ -425,6 +445,66 @@ export const auth = betterAuth({
     },
   },
 });
+
+/**
+ * Localised on the client by `getAuthErrorMessage`, keyed by code.
+ */
+const userChangeErrors = {
+  "protected-user": {
+    code: "PROTECTED_USER",
+    message: "This account is protected: nobody can ban it or change its role",
+  },
+  "self-demotion": {
+    code: "CANNOT_DEMOTE_SELF",
+    message: "You can't lower your own role",
+  },
+} satisfies Record<UserChangeRefusal, { code: string; message: string }>;
+
+/**
+ * Refuses a ban, unban or role change that the caller's role allows but
+ * `userChangeRefusal` doesn't, and returns the target otherwise. Callers
+ * without the permission are left to the plugin's own refusal, so they never
+ * learn which accounts are protected.
+ *
+ * No other admin plugin endpoint that changes an account is reachable: the
+ * rest need permissions outside the statement, so the plugin refuses them.
+ */
+async function guardUserChange(
+  session: { user: { id: string; role?: string | null } } | null,
+  userId: string,
+  change: UserChange,
+) {
+  const role = parseRole(session?.user.role);
+  if (
+    !session ||
+    !can(
+      role,
+      change.kind === "set-role" ? { user: ["set-role"] } : { user: ["ban"] },
+    )
+  ) {
+    return null;
+  }
+
+  const target = await db.query.user.findFirst({
+    where: { id: userId },
+    columns: { id: true, email: true, role: true },
+  });
+  if (!target) {
+    return null;
+  }
+
+  const refusal = userChangeRefusal({
+    caller: { id: session.user.id, role },
+    target,
+    change,
+    protectedDomains: serverEnv.env.PROTECTED_EMAIL_DOMAINS,
+  });
+  if (refusal !== null) {
+    throw APIError.from("FORBIDDEN", userChangeErrors[refusal]);
+  }
+
+  return target;
+}
 
 type BanRecord = {
   staffId: string;

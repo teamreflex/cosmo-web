@@ -6,7 +6,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./events": "./src/events.ts"
+    "./events": "./src/events.ts",
+    "./guard": "./src/guard.ts"
   },
   "scripts": {
     "lint": "bun --bun oxlint --type-aware --type-check",

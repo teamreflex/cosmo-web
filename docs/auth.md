@@ -28,6 +28,14 @@ The admin plugin's columns are transplanted this way into `packages/database/src
 - A ban started from a report sends the report's id in an `x-report-id` header, through the `authClient.admin.banUser` call's fetch options. When the id names a report on the banned user, the after-hook links the `user:ban` audit row to it and resolves every open or escalated report on that user with `resolveUserReports()` (`lib/server/reports.server.ts`), which reuses the report actions' resolve transition and writes one `report:resolve` row per report, all in one transaction. Bans without the header leave reports untouched.
 - `recordStaffAudit()` takes a `DbOrTx`, so a server function can write the audit row in the same transaction as the change it records. Report reads (`report:read`) are deduplicated per staff member and report for 10 minutes; actions never are.
 
+## Protected accounts and self-demotion
+
+- `PROTECTED_EMAIL_DOMAINS` is an optional server variable: a comma-separated list of email domains, trimmed and matched case-insensitively and exactly, so `team-reflex.com` matches neither `evil-team-reflex.com` nor `sub.team-reflex.com` unless that domain is listed too. The env schema parses it into a set with `parseEmailDomains()`; unset or empty protects nobody.
+- Nobody, admins included, can ban, unban or change the role of an account whose email domain is listed. Nobody can lower their own role either; raising it or setting the same role is allowed.
+- `hooks.before` enforces both on `/admin/ban-user`, `/admin/unban-user` and `/admin/set-role` through `guardUserChange()`, which applies `userChangeRefusal()` from `@apollo/auth/guard` (unit-tested in `packages/auth/tests/guard.test.ts`). These are the only plugin endpoints reachable under the statement that change an account's access or role; the others need permissions no role holds. Refusals are 403s with the `PROTECTED_USER` or `CANNOT_DEMOTE_SELF` code, which `getAuthErrorMessage` localises.
+- The guard reads the caller's session itself and only runs for callers holding the endpoint's permission. Everyone else gets the plugin's own refusal, so nobody without the permission can probe which accounts are protected.
+- The report detail's target carries a `protected` flag computed on the server, so the domain list never reaches the client. For a protected target the report detail hides Ban and Unban, and the action bar's heading says protected accounts can't be banned.
+
 ## Bans
 
 - A ban deletes the user's sessions, and the plugin's `session.create.before` hook refuses new sign-ins with the `BANNED_USER` code, which `getAuthErrorMessage` localises. OAuth sign-ins by a banned user land on Better Auth's error page instead.

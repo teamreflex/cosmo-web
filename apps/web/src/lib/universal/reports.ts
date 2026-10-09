@@ -49,6 +49,8 @@ export type AdminReportRow = {
 /**
  * A reported user as staff see them. `ban` is null unless a ban is in force;
  * a null `until` is permanent. `profile` is the COSMO username to link to.
+ * A `protected` account is on a protected email domain, so nobody can ban,
+ * unban or re-role it.
  */
 export type ReportTargetUser = {
   id: string;
@@ -56,6 +58,7 @@ export type ReportTargetUser = {
   role: Role;
   ban: { until: Date | null } | null;
   profile: string | null;
+  protected: boolean;
 };
 
 export type AdminReportDetailTarget = {

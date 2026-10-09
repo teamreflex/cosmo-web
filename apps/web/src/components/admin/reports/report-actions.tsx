@@ -108,7 +108,8 @@ function OpenActions({ report }: Props) {
     canBan &&
     target !== null &&
     target.id !== account?.user.id &&
-    target.ban === null
+    target.ban === null &&
+    !target.protected
       ? target
       : null;
   const showEscalate =
@@ -121,7 +122,7 @@ function OpenActions({ report }: Props) {
   return (
     <div className="flex flex-col gap-2.5 border-t bg-muted/40 px-4 py-3">
       <span className="text-xxs font-medium tracking-[0.14em] text-muted-foreground uppercase">
-        {canBan ? m.admin_reports_actions() : m.admin_reports_actions_no_ban()}
+        {actionsCaption(canBan, target?.protected ?? false)}
       </span>
       <div
         className={cn(
@@ -167,4 +168,17 @@ function OpenActions({ report }: Props) {
       )}
     </div>
   );
+}
+
+/**
+ * The action bar's heading, which says why Ban is missing when the viewer
+ * could otherwise ban.
+ */
+function actionsCaption(canBan: boolean, targetProtected: boolean) {
+  if (!canBan) {
+    return m.admin_reports_actions_no_ban();
+  }
+  return targetProtected
+    ? m.admin_reports_actions_protected()
+    : m.admin_reports_actions();
 }

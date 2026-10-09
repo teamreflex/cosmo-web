@@ -1,3 +1,4 @@
+import { parseEmailDomains } from "@apollo/auth/guard";
 import { createEnv } from "@t3-oss/env-core";
 import * as z from "zod";
 
@@ -14,6 +15,8 @@ export const env = createEnv({
     ABSTRACT_RPC: z.url(),
     // better auth
     BETTER_AUTH_SECRET: z.string().min(1),
+    // comma-separated email domains whose accounts nobody can ban, unban or change the role of
+    PROTECTED_EMAIL_DOMAINS: z.string().optional().transform(parseEmailDomains),
     // discord oauth
     DISCORD_CLIENT_ID: z.string().min(1),
     DISCORD_CLIENT_SECRET: z.string().min(1),
@@ -49,6 +52,7 @@ export const env = createEnv({
     REDIS_URL: process.env.REDIS_URL,
     ABSTRACT_RPC: process.env.ABSTRACT_RPC,
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
+    PROTECTED_EMAIL_DOMAINS: process.env.PROTECTED_EMAIL_DOMAINS,
     DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,
     DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
     TWITTER_CLIENT_ID: process.env.TWITTER_CLIENT_ID,
