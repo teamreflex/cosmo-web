@@ -8,7 +8,7 @@ import type { CosmoLinkHistoryEntry } from "@/lib/universal/cosmo-link-history";
 import type { CosmoLinkHistoryQueryInput } from "@/lib/universal/schema/cosmo-link-history";
 import { user } from "@apollo/database/auth";
 import { cosmoAccounts, cosmoLinkAudit } from "@apollo/database/web/schema";
-import { and, eq, exists, ilike, or } from "drizzle-orm";
+import { and, EmptyFilter, eq, exists, ilike, or } from "drizzle-orm";
 
 const HISTORY_PAGE_SIZE = 50;
 
@@ -39,21 +39,19 @@ function matchesSearch(t: typeof cosmoLinkAudit, search: string) {
 }
 
 /**
- * One page of the link history, newest first, plus how many rows match the
- * search in total. Events written in one transaction share a timestamp, so
- * the id orders them.
+ * One page of the link history, newest first. The first page also carries how
+ * many rows match the search in total, the only page the client reads it
+ * from. Events written in one transaction share a timestamp, so the id orders
+ * them.
  */
 export async function fetchCosmoLinkHistory(input: CosmoLinkHistoryQueryInput) {
   const { search } = input;
   const [rows, total] = await Promise.all([
     db.query.cosmoLinkAudit.findMany({
-      /**
-       * drizzle rc.5 throws on explicit undefined filter values, so optional
-       * filters are only present when set
-       */
       where: {
-        ...(input.cursor !== undefined && { id: { lt: input.cursor } }),
-        ...(search !== undefined && { RAW: (t) => matchesSearch(t, search) }),
+        id: { lt: input.cursor ?? EmptyFilter },
+        RAW:
+          search === undefined ? EmptyFilter : (t) => matchesSearch(t, search),
       },
       columns: { id: true, createdAt: true, event: true, reason: true },
       with: {
@@ -64,10 +62,14 @@ export async function fetchCosmoLinkHistory(input: CosmoLinkHistoryQueryInput) {
       orderBy: { id: "desc" },
       limit: HISTORY_PAGE_SIZE,
     }),
-    db.$count(
-      cosmoLinkAudit,
-      search === undefined ? undefined : matchesSearch(cosmoLinkAudit, search),
-    ),
+    input.cursor === undefined
+      ? db.$count(
+          cosmoLinkAudit,
+          search === undefined
+            ? undefined
+            : matchesSearch(cosmoLinkAudit, search),
+        )
+      : undefined,
   ]);
 
   const last = rows.at(-1);
