@@ -341,6 +341,10 @@ export const auth = betterAuth({
     }),
   },
 
+  /**
+   * `overrideUserInfoOnSignIn` also writes the provider's email and
+   * `emailVerified` onto the user, which decide account protection.
+   */
   socialProviders: {
     discord: {
       enabled: true,

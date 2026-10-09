@@ -37,6 +37,7 @@ The admin plugin's columns are transplanted this way into `packages/database/src
 - `hooks.before` enforces both on `/admin/ban-user`, `/admin/unban-user` and `/admin/set-role` through `guardUserChange()`, which applies `userChangeRefusal()` from `@apollo/auth/guard` (unit-tested in `packages/auth/tests/guard.test.ts`). These are the only plugin endpoints reachable under the statement that change an account's access or role; the others need permissions no role holds. Refusals are 403s with the `PROTECTED_USER` or `CANNOT_DEMOTE_SELF` code, which `getAuthErrorMessage` localises.
 - The guard reads the caller's session itself and only runs for callers holding the endpoint's permission. Everyone else gets the plugin's own refusal, so nobody without the permission can probe which accounts are protected.
 - The report detail's target carries a `protected` flag computed on the server, so the domain list never reaches the client. For a protected target the report detail hides Ban and Unban, and the action bar's heading says protected accounts can't be banned.
+- Protection follows the account's current `email` and `email_verified`, and an OAuth sign-in can replace both. Discord and X are configured with `overrideUserInfoOnSignIn`, so every sign-in through an already-linked Discord or X account writes the provider's email and verification onto the user. With `allowDifferentEmails`, that email can differ from the stored one (X sends the username when the X account has no confirmed email), and the account then silently loses protection.
 
 ## Bans
 
