@@ -28,7 +28,7 @@ import type {
   ReportStatus,
   ReportTargetType,
 } from "@apollo/database/web/types";
-import { and, eq, inArray, ne, or, sql } from "drizzle-orm";
+import { and, EmptyFilter, eq, inArray, ne, or, sql } from "drizzle-orm";
 
 const QUEUE_PAGE_SIZE = 30;
 
@@ -86,19 +86,15 @@ export async function fetchReportQueue(
   input: ReportQueueInput,
 ) {
   const after = decodeQueueCursor(input.cursor);
-  /**
-   * drizzle rc.5 throws on explicit undefined filter values, so optional
-   * filters are only present when set
-   */
   const rows = await db.query.reports.findMany({
     where: {
       status: input.status,
       NOT: reportsOn(staffId),
-      ...(input.targetType && { targetType: input.targetType }),
-      ...(after && {
-        RAW: (t) =>
-          sql`(${t.createdAt}, ${t.id}) < (${after.at}::timestamp, ${after.id}::uuid)`,
-      }),
+      targetType: input.targetType ?? EmptyFilter,
+      RAW: after
+        ? (t) =>
+            sql`(${t.createdAt}, ${t.id}) < (${after.at}::timestamp, ${after.id}::uuid)`
+        : EmptyFilter,
     },
     columns: {
       id: true,

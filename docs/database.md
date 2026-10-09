@@ -50,6 +50,8 @@ const profile = await db.query.cosmoAccounts.findFirst({
 
 The relational query builder's `where` takes the object-based filter syntax below. The `eq()` / `and()` / `or()` builder functions and the `(table, { eq }) => ...` callback form belong to the select query builder and are rejected by the relational API.
 
+Drizzle throws on an explicit `undefined` filter value (including `where: undefined`) and the types don't catch it, so write an optional scalar filter as `column: value ?? EmptyFilter`, an optional RAW as ``RAW: cond ? (t) => sql`...` : EmptyFilter``, and an optional array filter as `column: arr.length ? { in: arr } : EmptyFilter`, because `in: []` matches nothing.
+
 ### Available Filters
 
 The `where` clause accepts an object with the following operators:

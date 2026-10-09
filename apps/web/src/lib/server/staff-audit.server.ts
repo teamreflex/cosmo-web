@@ -17,7 +17,7 @@ import type {
   StaffAuditDetail,
   StaffAuditTargetType,
 } from "@apollo/database/web/types";
-import { and, eq, gt, inArray, sql } from "drizzle-orm";
+import { and, EmptyFilter, eq, gt, inArray, sql } from "drizzle-orm";
 
 const AUDIT_PAGE_SIZE = 50;
 
@@ -167,14 +167,10 @@ export async function recordStaffAudit(
 export async function fetchStaffAudit(input: StaffAuditQueryInput) {
   const [rows, total] = await Promise.all([
     db.query.staffAudit.findMany({
-      /**
-       * drizzle rc.5 throws on explicit undefined filter values, so optional
-       * filters are only present when set
-       */
       where: {
-        ...(input.staffId && { staffId: input.staffId }),
-        ...(input.action && { action: input.action }),
-        ...(input.cursor !== undefined && { id: { lt: input.cursor } }),
+        staffId: input.staffId ?? EmptyFilter,
+        action: input.action ?? EmptyFilter,
+        id: { lt: input.cursor ?? EmptyFilter },
       },
       orderBy: { id: "desc" },
       limit: AUDIT_PAGE_SIZE,
