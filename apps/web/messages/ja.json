@@ -849,7 +849,7 @@
   "admin_audit_target_report": "報告",
   "admin_audit_target_api_key": "APIキー「{name}」",
   "admin_audit_target_api_key_unnamed": "名前のないAPIキー",
-  "admin_audit_target_collection": "コレクション {slug}",
+  "admin_audit_target_collection": "コレクション",
   "admin_audit_report_link": "報告 #{id}",
   "admin_audit_note_escalated": "管理者へ",
   "admin_audit_note_api_key_owner": "所有者 @{username}",

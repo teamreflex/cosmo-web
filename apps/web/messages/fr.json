@@ -859,7 +859,7 @@
   "admin_audit_target_report": "Signalement",
   "admin_audit_target_api_key": "Clé API « {name} »",
   "admin_audit_target_api_key_unnamed": "Clé API sans nom",
-  "admin_audit_target_collection": "Collection {slug}",
+  "admin_audit_target_collection": "Collection",
   "admin_audit_report_link": "signalement #{id}",
   "admin_audit_note_escalated": "aux admins",
   "admin_audit_note_api_key_owner": "appartenant à @{username}",

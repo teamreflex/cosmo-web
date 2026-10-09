@@ -115,8 +115,13 @@ function Toolbar() {
           }}
         >
           <TabsList className="max-md:h-10">
+            {/* hit areas fill the bar's padding: 40px targets on phones */}
             {reportStatuses.map((status) => (
-              <TabsTrigger key={status} value={status}>
+              <TabsTrigger
+                key={status}
+                value={status}
+                className="before:absolute before:-inset-x-px before:-inset-y-[4.5px]"
+              >
                 {reportStatusLabel(status)}
                 {status === "open" && (
                   <span

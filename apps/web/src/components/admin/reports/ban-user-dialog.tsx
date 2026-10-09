@@ -59,6 +59,7 @@ export default function BanUserDialog({
   user,
 }: Props) {
   const reasonId = useId();
+  const lengthId = useId();
   const queryClient = useQueryClient();
 
   const form = useForm({
@@ -163,7 +164,9 @@ export default function BanUserDialog({
             name="length"
             render={({ field }) => (
               <Field>
-                <FieldLabel>{m.admin_ban_length()}</FieldLabel>
+                <FieldLabel htmlFor={lengthId}>
+                  {m.admin_ban_length()}
+                </FieldLabel>
                 <Select
                   items={lengthItems}
                   value={field.value}
@@ -171,7 +174,10 @@ export default function BanUserDialog({
                     if (value !== null) field.onChange(value);
                   }}
                 >
-                  <SelectTrigger className="w-full max-sm:data-[size=default]:h-10">
+                  <SelectTrigger
+                    id={lengthId}
+                    className="w-full max-sm:data-[size=default]:h-10"
+                  >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>

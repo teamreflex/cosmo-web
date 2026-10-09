@@ -849,7 +849,7 @@
   "admin_audit_target_report": "신고",
   "admin_audit_target_api_key": "API 키 “{name}”",
   "admin_audit_target_api_key_unnamed": "이름 없는 API 키",
-  "admin_audit_target_collection": "컬렉션 {slug}",
+  "admin_audit_target_collection": "컬렉션",
   "admin_audit_report_link": "신고 #{id}",
   "admin_audit_note_escalated": "관리자에게",
   "admin_audit_note_api_key_owner": "소유자 @{username}",

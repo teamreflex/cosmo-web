@@ -859,7 +859,7 @@
   "admin_audit_target_report": "Report",
   "admin_audit_target_api_key": "API key “{name}”",
   "admin_audit_target_api_key_unnamed": "Unnamed API key",
-  "admin_audit_target_collection": "Collection {slug}",
+  "admin_audit_target_collection": "Collection",
   "admin_audit_report_link": "report #{id}",
   "admin_audit_note_escalated": "to admins",
   "admin_audit_note_api_key_owner": "owned by @{username}",

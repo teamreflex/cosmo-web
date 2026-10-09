@@ -47,6 +47,7 @@ type Props = {
 };
 
 export default function ReportDialog({ target, open, onOpenChange }: Props) {
+  const reasonId = useId();
   const noteId = useId();
   const queryClient = useQueryClient();
   const myReport = myReportQuery({
@@ -126,7 +127,7 @@ export default function ReportDialog({ target, open, onOpenChange }: Props) {
             name="reason"
             render={({ field }) => (
               <Field>
-                <FieldLabel>{m.report_reason()}</FieldLabel>
+                <FieldLabel htmlFor={reasonId}>{m.report_reason()}</FieldLabel>
                 <Select
                   items={reasonItems}
                   value={field.value}
@@ -134,7 +135,10 @@ export default function ReportDialog({ target, open, onOpenChange }: Props) {
                     if (value !== null) field.onChange(value);
                   }}
                 >
-                  <SelectTrigger className="w-full max-sm:data-[size=default]:h-10">
+                  <SelectTrigger
+                    id={reasonId}
+                    className="w-full max-sm:data-[size=default]:h-10"
+                  >
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
