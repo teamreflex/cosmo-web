@@ -28,8 +28,7 @@ export const $transferCosmoAccount = createServerFn({ method: "POST" })
   );
 
 /**
- * Linked COSMO accounts by username, for the Move dialog's From. Deleted
- * owners stay listed, without a name, so staff can see why a move is refused.
+ * Linked COSMO accounts by username, for the Move dialog's From.
  */
 export const $searchCosmoTransferSources = createServerFn({ method: "GET" })
   .middleware([staffMiddleware(COSMO_TRANSFER_PERMISSIONS)])
@@ -45,18 +44,22 @@ export const $searchCosmoTransferSources = createServerFn({ method: "GET" })
       limit: 10,
     });
 
-    // a link can name a user id that no longer exists, which can't be moved
-    return rows.flatMap((row): CosmoTransferSource[] =>
-      row.user === null
+    return rows.flatMap((row): CosmoTransferSource[] => {
+      // a link can name a user id that no longer exists, which can't be moved
+      if (row.user === null) {
+        return [];
+      }
+      const username = staffUsername(row.user);
+      return username === null
         ? []
         : [
             {
               address: row.address,
               cosmoUsername: row.username,
-              owner: { id: row.user.id, username: staffUsername(row.user) },
+              owner: { id: row.user.id, username },
             },
-          ],
-    );
+          ];
+    });
   });
 
 /**

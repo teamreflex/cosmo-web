@@ -9,13 +9,12 @@ export const COSMO_TRANSFER_PERMISSIONS = {
 } satisfies Permissions;
 
 /**
- * A linked COSMO account as the Move dialog's From search finds it. A null
- * owner username is a deleted owner.
+ * A linked COSMO account as the Move dialog's From search finds it.
  */
 export type CosmoTransferSource = {
   address: string;
   cosmoUsername: string;
-  owner: { id: string; username: string | null };
+  owner: { id: string; username: string };
 };
 
 /**

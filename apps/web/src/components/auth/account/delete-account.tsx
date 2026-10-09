@@ -12,6 +12,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
+import { env } from "@/lib/env/client";
 import { $requestAccountDeletion } from "@/lib/functions/account";
 import { accountDeletionQuery } from "@/lib/queries/account";
 import {
@@ -154,7 +155,7 @@ function Confirm({ pending, onConfirm }: ConfirmProps) {
           {m.delete_account_confirm_description()}
         </DialogDescription>
         <p className="text-sm text-muted-foreground">
-          {m.delete_account_confirm_cosmo()}
+          {m.delete_account_confirm_cosmo({ appName: env.VITE_APP_NAME })}
         </p>
       </DialogHeader>
       <DialogFooter>

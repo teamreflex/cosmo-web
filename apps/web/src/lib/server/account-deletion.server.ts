@@ -9,9 +9,11 @@ import type {
 } from "@/lib/universal/account-deletion";
 import type { CosmoLink } from "@/lib/universal/cosmo-accounts";
 import { ExpectedError } from "@/lib/universal/errors/expected";
+import { isBanActive } from "@apollo/auth/guard";
 import * as authSchema from "@apollo/database/auth";
 import {
   binders,
+  cosmoAccounts,
   lists,
   lockedObjekts,
   notifications,
@@ -21,7 +23,7 @@ import {
 import { and, eq, gt, isNull } from "drizzle-orm";
 import { randomBytes } from "node:crypto";
 import { clearBinderPinCache } from "./binders.server";
-import { getCosmoAddress } from "./cosmo-accounts.server";
+import { recordCosmoLinkChanges } from "./cosmo-accounts.server";
 import { db, type DbOrTx, type WebTx } from "./db";
 import { deleteListMatchNotificationsFrom } from "./objekts/lists.server";
 import { clearVerification } from "./verification-codes.server";
@@ -77,8 +79,10 @@ type DeletionOutcome = DeletionBlocked | { status: "deleted"; link: CosmoLink };
 
 /**
  * Delete the account by anonymising it, once the emailed token checks out.
- * The user row is locked first, so a blocker can't appear between the check
- * and the scrub, and a blocked deletion leaves the token for a later attempt.
+ * The user row is locked first, so a ban or a blocker can't appear between
+ * the check and the scrub, and a blocked deletion leaves the token for a
+ * later attempt. An actively banned user can't delete their account, since
+ * deleting unlinks their COSMO account for anyone to link again.
  */
 export async function deleteAccount(
   userId: string,
@@ -86,7 +90,10 @@ export async function deleteAccount(
 ): Promise<DeleteAccountResult> {
   const result = await db.transaction(async (tx): Promise<DeletionOutcome> => {
     const [caller] = await tx
-      .select({ id: authSchema.user.id })
+      .select({
+        banned: authSchema.user.banned,
+        banExpires: authSchema.user.banExpires,
+      })
       .from(authSchema.user)
       .where(
         and(eq(authSchema.user.id, userId), isNull(authSchema.user.deletedAt)),
@@ -94,6 +101,9 @@ export async function deleteAccount(
       .for("update");
     if (!caller) {
       throw new ExpectedError("not_signed_in");
+    }
+    if (isBanActive(caller)) {
+      throw new ExpectedError("account_deletion_banned");
     }
 
     const check = await canDeleteAccount(tx, userId);
@@ -134,17 +144,26 @@ export async function deleteAccount(
 }
 
 /**
- * Scrub the user row and delete everything the user made, keeping the id,
- * settings, ban fields, COSMO link, reports and staff audit rows. The row is
+ * Unlink the user's COSMO account, recording it in the link history, then
+ * scrub the user row and delete everything the user made, keeping the id,
+ * settings, ban fields, reports, staff audit rows and link history. The row is
  * never removed, so none of the foreign keys' cascades run; this deletes
- * their data instead. Returns the COSMO link, whose pin cache the caller
- * clears after commit.
+ * their data instead. Returns the COSMO link the user had, whose pin cache the
+ * caller clears after commit.
  */
 export async function anonymiseAccount(
   tx: WebTx,
   userId: string,
 ): Promise<CosmoLink> {
-  const link = await getCosmoAddress(tx, userId);
+  const [unlinked] = await tx
+    .update(cosmoAccounts)
+    .set({ userId: null })
+    .where(eq(cosmoAccounts.userId, userId))
+    .returning({
+      id: cosmoAccounts.id,
+      address: cosmoAccounts.address,
+      username: cosmoAccounts.username,
+    });
 
   await tx
     .delete(authSchema.session)
@@ -167,12 +186,20 @@ export async function anonymiseAccount(
   await tx.delete(objektLists).where(eq(objektLists.userId, userId));
   await tx.delete(binders).where(eq(binders.userId, userId));
 
-  if (link.kind === "linked") {
-    await tx.delete(pins).where(eq(pins.address, link.address));
+  if (unlinked) {
+    await recordCosmoLinkChanges(tx, [
+      {
+        cosmoAccountId: unlinked.id,
+        userId,
+        event: "unlinked",
+        reason: "account-deleted",
+      },
+    ]);
+    await tx.delete(pins).where(eq(pins.address, unlinked.address));
     await tx
       .delete(lockedObjekts)
-      .where(eq(lockedObjekts.address, link.address));
-    await tx.delete(lists).where(eq(lists.userAddress, link.address));
+      .where(eq(lockedObjekts.address, unlinked.address));
+    await tx.delete(lists).where(eq(lists.userAddress, unlinked.address));
   }
 
   await tx
@@ -193,5 +220,7 @@ export async function anonymiseAccount(
     })
     .where(eq(authSchema.user.id, userId));
 
-  return link;
+  return unlinked
+    ? { kind: "linked", address: unlinked.address, username: unlinked.username }
+    : { kind: "none" };
 }

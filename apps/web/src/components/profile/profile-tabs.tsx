@@ -75,13 +75,13 @@ export default function ProfileTabs({ isAuthenticated }: Props) {
   }
 
   function prefetchBinders() {
-    if (target.status === "active" && target.user) {
+    if (target.user) {
       void queryClient.prefetchQuery(binderShelfQuery(target.user.id));
     }
   }
 
   function prefetchLists() {
-    if (target.status === "active" && target.user) {
+    if (target.user) {
       void queryClient.prefetchQuery(listShelfQuery(target.user.id));
     }
   }
@@ -96,11 +96,6 @@ export default function ProfileTabs({ isAuthenticated }: Props) {
     ) {
       setOpenShelf(undefined);
     }
-  }
-
-  // the layout only renders tabs for active accounts
-  if (target.status === "deleted") {
-    return null;
   }
 
   /**

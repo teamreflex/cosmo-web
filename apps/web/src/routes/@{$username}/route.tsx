@@ -1,9 +1,7 @@
 import UserBalances, {
   ComoBalanceErrorFallback,
 } from "@/components/navbar/como-balances";
-import { ensureProfileTarget } from "@/components/profile/common";
 import CopyAddressButton from "@/components/profile/copy-address-button";
-import DeletedProfile from "@/components/profile/deleted-profile";
 import {
   CosmoVerifiedBadge,
   DiscordBadge,
@@ -27,7 +25,6 @@ import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
 import { Addresses, isEqual } from "@apollo/util";
 import { IconAlertCircle } from "@tabler/icons-react";
-import { useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, createFileRoute } from "@tanstack/react-router";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -42,21 +39,10 @@ export const Route = createFileRoute("/@{$username}")({
     targetAccountOptions: targetAccountQuery(params.username),
     pinsOptions: pinsQuery(params.username),
   }),
-  /**
-   * A deleted account stops here, before any child loader fetches its
-   * collection. It returns nothing, since a return value would be merged into
-   * every child's context and serialized for SSR.
-   */
-  beforeLoad: async ({ context }) => {
-    await ensureProfileTarget(
-      context.queryClient,
-      context.targetAccountOptions,
-    );
-  },
   loader: async ({ context }) => {
     const [account, target] = await Promise.all([
       context.queryClient.ensureQueryData(currentAccountQuery),
-      ensureProfileTarget(context.queryClient, context.targetAccountOptions),
+      context.queryClient.ensureQueryData(context.targetAccountOptions),
     ]);
 
     // the owner's binder viewer reads the pins on every tab
@@ -71,25 +57,13 @@ export const Route = createFileRoute("/@{$username}")({
     return { account, target };
   },
   /**
-   * Titles the not-found states, which this layout renders in place of any
-   * child route. The deleted state reads the same cache entry as
-   * `NotFoundComponent`.
+   * Titles the not-found state, which this layout renders in place of any
+   * child route.
    */
-  head: ({ match }) => {
-    if (match.status !== "notFound") {
-      return {};
-    }
-
-    const target = match.context.queryClient.getQueryData(
-      match.context.targetAccountOptions.queryKey,
-    );
-    return defineHead({
-      title:
-        target?.status === "deleted"
-          ? m.common_deleted_user()
-          : m.error_not_found_title(),
-    });
-  },
+  head: ({ match }) =>
+    match.status === "notFound"
+      ? defineHead({ title: m.error_not_found_title() })
+      : {},
 });
 
 function RouteComponent() {
@@ -223,17 +197,6 @@ function PendingComponent() {
 }
 
 function NotFoundComponent() {
-  const { targetAccountOptions } = Route.useRouteContext();
-  /**
-   * Read without subscribing: a query observer would refetch an unknown
-   * user's errored query on mount.
-   */
-  const target = useQueryClient().getQueryData(targetAccountOptions.queryKey);
-
-  if (target?.status === "deleted") {
-    return <DeletedProfile />;
-  }
-
   return (
     <main className="container flex w-full flex-col items-center justify-center gap-2 py-12">
       <IconAlertCircle className="h-24 w-24" />

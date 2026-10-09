@@ -1,7 +1,6 @@
 import FiltersContainer from "@/components/collection/filters-container";
 import Overlay from "@/components/misc/overlay";
 import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
-import { ensureProfileTarget } from "@/components/profile/common";
 import TransfersRenderer, {
   TransfersSkeleton,
 } from "@/components/transfers/transfers-renderer";
@@ -23,7 +22,7 @@ export const Route = createFileRoute("/@{$username}/trades")({
   loaderDeps: ({ search: { binder, ...searchParams } }) => ({ searchParams }),
   loader: async ({ context, deps }) => {
     const [target, selected] = await Promise.all([
-      ensureProfileTarget(context.queryClient, context.targetAccountOptions),
+      context.queryClient.ensureQueryData(context.targetAccountOptions),
       context.queryClient.ensureQueryData(selectedArtistsQuery),
     ]);
 

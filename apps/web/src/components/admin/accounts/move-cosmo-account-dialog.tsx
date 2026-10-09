@@ -139,14 +139,10 @@ export default function MoveCosmoAccountDialog() {
                     }}
                     search={cosmoTransferSourcesQuery}
                     getKey={(account) => account.address}
-                    getLabel={(account) =>
-                      account.owner.username === null
-                        ? m.common_deleted_user()
-                        : `@${account.owner.username}`
-                    }
+                    getLabel={(account) => `@${account.owner.username}`}
                     getSublabel={(account) => account.cosmoUsername}
                     getInitial={(account) =>
-                      account.owner.username?.charAt(0).toUpperCase() ?? "?"
+                      account.owner.username.charAt(0).toUpperCase()
                     }
                     placeholder={m.admin_cosmo_move_from_placeholder()}
                     invalid={fieldState.invalid}

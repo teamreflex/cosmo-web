@@ -11,8 +11,8 @@ import { addr, isAddress } from "@apollo/util";
 import { and, eq, isNull, like, sql } from "drizzle-orm";
 import type {
   CosmoLink,
+  FullAccount,
   PublicCosmo,
-  TargetAccount,
 } from "../universal/cosmo-accounts";
 import type { AccountErrorCode } from "../universal/errors/accounts";
 import { ExpectedError } from "../universal/errors/expected";
@@ -24,7 +24,6 @@ import { isPostgresError } from "./util.server";
 /**
  * The one place to read a user's linked COSMO address. The address keeps its
  * stored case, so compare it against indexer rows with isEqual() or addr().
- * A deleted user keeps their link.
  */
 export async function getCosmoAddress(
   executor: DbOrTx,
@@ -40,13 +39,12 @@ export async function getCosmoAddress(
 
 /**
  * Fetch a full account from the database.
- * This includes the user, locked objekts and pins. An account whose linked
- * user is deleted comes back as deleted, with nothing else.
+ * This includes the user, locked objekts and pins.
  */
 export async function fetchFullAccount(
   identifier: string,
   signal?: AbortSignal,
-): Promise<TargetAccount | undefined> {
+): Promise<FullAccount | undefined> {
   const identifierIsAddress = isAddress(identifier);
 
   // check db for a profile
@@ -62,15 +60,10 @@ export async function fetchFullAccount(
 
   // found a cosmo account
   if (result) {
-    if (result.user?.deletedAt) {
-      return { status: "deleted" };
-    }
-
     const { user, ...cosmoResult } = result;
     const { lockedObjekts, pins, ...cosmo } = cosmoResult;
 
     return {
-      status: "active",
       cosmo: toPublicCosmo(cosmo),
       user: toPublicUser(user ?? undefined),
       lockedObjekts: lockedObjekts
@@ -84,7 +77,6 @@ export async function fetchFullAccount(
   // if no cosmo account and it's an address, make a fake one
   if (identifierIsAddress) {
     return {
-      status: "active",
       cosmo: {
         ...toPublicCosmo({
           username: identifier.substring(0, 6),
@@ -209,12 +201,10 @@ export const linkOwnerColumns = {
   id: true,
   banned: true,
   banExpires: true,
-  deletedAt: true,
 } satisfies Record<keyof CosmoLinkOwner, true>;
 
 const linkRefusalErrors = {
   "linked-elsewhere": "account_linked_elsewhere",
-  deleted: "cosmo_account_deleted",
   banned: "cosmo_account_banned",
 } satisfies Record<CosmoLinkRefusal, AccountErrorCode>;
 

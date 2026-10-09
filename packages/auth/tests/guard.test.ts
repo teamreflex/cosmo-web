@@ -358,21 +358,21 @@ describe("userChangeRefusal", () => {
 describe("cosmoTransferRefusal", () => {
   const protectedDomains = parseEmailDomains("team-reflex.com");
   const now = new Date("2026-10-09T12:00:00Z");
-  const active = { banned: false, banExpires: null, deletedAt: null };
+  const unbanned = { banned: false, banExpires: null };
+  const active = { ...unbanned, deletedAt: null };
   const member = {
-    ...active,
+    ...unbanned,
     email: "member@example.org",
     emailVerified: true,
   };
   const protectedMember = {
-    ...active,
+    ...unbanned,
     email: "kairu@team-reflex.com",
     emailVerified: true,
   };
   const deleted = { ...active, deletedAt: new Date("2026-10-08T12:00:00Z") };
-  const banned = { ...active, banned: true };
+  const banned = { banned: true, banExpires: null };
   const lapsedBan = {
-    ...active,
     banned: true,
     banExpires: new Date("2026-10-09T11:00:00Z"),
   };
@@ -380,13 +380,17 @@ describe("cosmoTransferRefusal", () => {
   test.each([
     ["no refusal", null, member, active],
     ["a protected source", "protected-user", protectedMember, active],
-    ["a protected target", null, member, protectedMember],
-    ["a deleted source", "deleted", { ...member, ...deleted }, active],
+    [
+      "a protected target",
+      null,
+      member,
+      { ...protectedMember, deletedAt: null },
+    ],
     ["a deleted target", "deleted", member, deleted],
     ["a banned source", "banned", { ...member, ...banned }, active],
-    ["a banned target", "banned", member, banned],
+    ["a banned target", "banned", member, { ...active, ...banned }],
     ["a lapsed ban on the source", null, { ...member, ...lapsedBan }, active],
-    ["a lapsed ban on the target", null, member, lapsedBan],
+    ["a lapsed ban on the target", null, member, { ...active, ...lapsedBan }],
     [
       "a protected source that is also banned",
       "protected-user",
@@ -428,7 +432,6 @@ describe("cosmoLinkRefusal", () => {
     id: "owner",
     banned: false,
     banExpires: null,
-    deletedAt: null,
   };
 
   test.each([
@@ -443,20 +446,6 @@ describe("cosmoLinkRefusal", () => {
         ...owner,
         banned: true,
         banExpires: new Date("2026-10-09T11:00:00Z"),
-      },
-    ],
-    [
-      "a deleted owner's address",
-      "deleted",
-      { ...owner, deletedAt: new Date("2026-10-08T12:00:00Z") },
-    ],
-    [
-      "a deleted owner's address while their ban runs",
-      "deleted",
-      {
-        ...owner,
-        banned: true,
-        deletedAt: new Date("2026-10-08T12:00:00Z"),
       },
     ],
   ] satisfies [

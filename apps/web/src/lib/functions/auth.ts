@@ -70,13 +70,9 @@ export const $generateVerificationCode = createServerFn({ method: "POST" })
       owner: owner?.user ?? null,
       now: new Date(),
     });
-    // a deleted owner is public on the profile, but a ban is only revealed after the bio check
+    // a ban is only revealed after the bio check
     if (refusal !== null) {
-      throw new ExpectedError(
-        refusal === "deleted"
-          ? "cosmo_account_deleted"
-          : "account_linked_elsewhere",
-      );
+      throw new ExpectedError("account_linked_elsewhere");
     }
 
     const code = await storeVerification(userId, {

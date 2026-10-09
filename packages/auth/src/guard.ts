@@ -142,15 +142,14 @@ export function userChangeRefusal({
 
 export type CosmoTransferRefusal = "protected-user" | "deleted" | "banned";
 
-type TransferUser = {
+type BanState = {
   banned: boolean;
   banExpires: Date | null;
-  deletedAt: Date | null;
 };
 
 type CosmoTransferCheck = {
-  from: TransferUser & { email: string; emailVerified: boolean };
-  to: TransferUser;
+  from: BanState & { email: string; emailVerified: boolean };
+  to: BanState & { deletedAt: Date | null };
   protectedDomains: ReadonlySet<string>;
   now: Date;
 };
@@ -158,8 +157,9 @@ type CosmoTransferCheck = {
 /**
  * Why staff may not move a COSMO link from one user to another, or null when
  * they may. Only the source is protected, because receiving a link takes
- * nothing from an account. A deleted or actively banned user can neither give
- * nor receive one.
+ * nothing from an account. A deleted user can't receive a link, and has none
+ * to give, since deletion unlinks it. An actively banned user can neither
+ * give nor receive one.
  */
 export function cosmoTransferRefusal({
   from,
@@ -171,7 +171,7 @@ export function cosmoTransferRefusal({
     return "protected-user";
   }
 
-  if (from.deletedAt !== null || to.deletedAt !== null) {
+  if (to.deletedAt !== null) {
     return "deleted";
   }
 
@@ -182,12 +182,12 @@ export function cosmoTransferRefusal({
   return null;
 }
 
-export type CosmoLinkRefusal = "linked-elsewhere" | "deleted" | "banned";
+export type CosmoLinkRefusal = "linked-elsewhere" | "banned";
 
 /**
  * The user a COSMO address is linked to.
  */
-export type CosmoLinkOwner = TransferUser & { id: string };
+export type CosmoLinkOwner = BanState & { id: string };
 
 type CosmoLinkCheck = {
   callerId: string;
@@ -197,9 +197,8 @@ type CosmoLinkCheck = {
 
 /**
  * Why the caller may not link a COSMO address, or null when nobody holds it
- * or the caller already does. A deleted owner keeps the address for good.
- * Callers decide whether to reveal a ban, since it says something about the
- * owner.
+ * or the caller already does. Callers decide whether to reveal a ban, since
+ * it says something about the owner.
  */
 export function cosmoLinkRefusal({
   callerId,
@@ -208,10 +207,6 @@ export function cosmoLinkRefusal({
 }: CosmoLinkCheck): CosmoLinkRefusal | null {
   if (owner === null || owner.id === callerId) {
     return null;
-  }
-
-  if (owner.deletedAt !== null) {
-    return "deleted";
   }
 
   return isBanActive(owner, now) ? "banned" : "linked-elsewhere";

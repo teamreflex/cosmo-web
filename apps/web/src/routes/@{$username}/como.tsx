@@ -2,7 +2,6 @@ import ComoCalendar from "@/components/como/calendar";
 import HelpDialog from "@/components/como/help-dialog";
 import { Error } from "@/components/error-boundary";
 import Portal from "@/components/portal";
-import { ensureProfileTarget } from "@/components/profile/common";
 import { useArtists } from "@/hooks/use-artists";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
@@ -15,8 +14,7 @@ export const Route = createFileRoute("/@{$username}/como")({
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
   loader: async ({ context }) => {
-    const target = await ensureProfileTarget(
-      context.queryClient,
+    const target = await context.queryClient.ensureQueryData(
       context.targetAccountOptions,
     );
 

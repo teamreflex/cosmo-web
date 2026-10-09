@@ -73,7 +73,7 @@ A prefetch only helps if the component subscribes with the exact same query key 
 - `router.invalidate()` (from `useRouter`) after mutations that change SSR loader data — auth/profile changes such as password, email, username, and cosmo link.
 - `queryClient.invalidateQueries(...)` for client-only cache refreshes that don't touch the root loader — most admin data mutations.
 - Sign-out, email sign-in and account deletion call `removeViewerQueries()` (`lib/queries/core.ts`), so the next account on a tab never reads the previous one's cache; OAuth sign-ins reload the page. It removes the staff data (every query keyed under `"admin"`) and the account-deletion check (`["account-deletion"]`), whose answers depend on who is signed in although their keys don't name them. A new query of that kind goes under one of those prefixes or into that function.
-- The same target account can be cached under multiple identifiers (username or address). Mutations touching account data go through `targetAccountQueryFilter` — `invalidateQueries` with it, or `setQueriesData<TargetAccount>` with an ownership check (`old.status === "active" && old.user?.id`) in the updater — never by rebuilding a single `targetAccountQuery(...)` key.
+- The same target account can be cached under multiple identifiers (username or address). Mutations touching account data go through `targetAccountQueryFilter` — `invalidateQueries` with it, or `setQueriesData<FullAccount>` with an ownership check (`old.user?.id`) in the updater — never by rebuilding a single `targetAccountQuery(...)` key.
 
 ## Version Notes
 
