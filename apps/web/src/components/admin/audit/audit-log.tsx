@@ -11,7 +11,7 @@ import { staffAuditQuery } from "@/lib/queries/staff-audit";
 import type { StaffAuditFilters } from "@/lib/universal/schema/staff-audit";
 import { IconHistory, IconLoader2 } from "@tabler/icons-react";
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
-import AuditRow, { AuditHeaderRow } from "./audit-row";
+import AuditRow, { AuditTable } from "./audit-row";
 
 type Props = {
   filters: StaffAuditFilters;
@@ -44,12 +44,11 @@ export default function AuditLog({ filters }: Props) {
         </Empty>
       ) : (
         <>
-          <div role="table" aria-label={m.admin_audit_title()}>
-            <AuditHeaderRow />
+          <AuditTable>
             {rows.map((row) => (
               <AuditRow key={row.id} row={row} />
             ))}
-          </div>
+          </AuditTable>
 
           <div className="flex items-center gap-2 px-4 py-2.5">
             <span className="text-xs text-muted-foreground tabular-nums">

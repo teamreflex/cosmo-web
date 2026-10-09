@@ -11,14 +11,13 @@ import type {
 import { cn } from "@/lib/utils";
 import type { StaffAuditAction } from "@apollo/database/web/types";
 import { Link } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 
 /**
- * The log's grid, by the width of its container: stacked rows on phones,
- * two lines per row (who and action, beside target and time) on tablets,
- * and four columns once they fit.
+ * A row's place in the table's columns, which it shares through subgrid.
  */
-const auditGrid =
-  "grid-cols-[minmax(0,1fr)_auto] gap-x-4 [grid-template-areas:'who_when'_'act_act'_'target_target'] @lg:grid-cols-[200px_minmax(0,1fr)_6rem] @lg:grid-rows-[auto_1fr] @lg:[grid-template-areas:'who_target_when'_'act_target_when'] @4xl:grid-cols-[240px_180px_minmax(0,1fr)_140px] @4xl:grid-rows-none @4xl:[grid-template-areas:'who_act_target_when']";
+const auditRow =
+  "col-span-full grid-cols-subgrid [grid-template-areas:'who_when'_'act_act'_'target_target'] @lg:grid-rows-[auto_1fr] @lg:[grid-template-areas:'who_target_when'_'act_target_when'] @4xl:grid-rows-none @4xl:[grid-template-areas:'who_act_target_when']";
 
 /**
  * Reads are muted, report actions plain, and actions on accounts stand out.
@@ -38,29 +37,40 @@ type Props = {
 };
 
 /**
- * Column headings; phones read each row on its own, so they get none.
+ * The log's table, laid out by the width of its container: stacked rows on
+ * phones, two lines per row (who and action, beside target and time) on
+ * tablets, and four columns once they fit. Who fits the longest staff name
+ * shown, up to half the table. Phones read each row on its own, so they get
+ * no column headings.
  */
-export function AuditHeaderRow() {
+export function AuditTable({ children }: { children: ReactNode }) {
   return (
     <div
-      role="row"
-      className={cn(
-        "hidden border-b px-4 font-medium text-muted-foreground @lg:grid @lg:py-2 @lg:text-xs @4xl:h-10 @4xl:items-center @4xl:py-0 @4xl:text-sm",
-        auditGrid,
-      )}
+      role="table"
+      aria-label={m.admin_audit_title()}
+      className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-4 @lg:grid-cols-[fit-content(50%)_minmax(0,1fr)_auto] @4xl:grid-cols-[fit-content(50%)_180px_minmax(0,1fr)_auto]"
     >
-      <span role="columnheader" className="[grid-area:who]">
-        {m.admin_audit_who()}
-      </span>
-      <span role="columnheader" className="[grid-area:act]">
-        {m.admin_audit_action()}
-      </span>
-      <span role="columnheader" className="[grid-area:target]">
-        {m.admin_audit_target()}
-      </span>
-      <span role="columnheader" className="[grid-area:when]">
-        {m.admin_audit_when()}
-      </span>
+      <div
+        role="row"
+        className={cn(
+          "hidden border-b px-4 font-medium text-muted-foreground @lg:grid @lg:py-2 @lg:text-xs @4xl:h-10 @4xl:items-center @4xl:py-0 @4xl:text-sm",
+          auditRow,
+        )}
+      >
+        <span role="columnheader" className="[grid-area:who]">
+          {m.admin_audit_who()}
+        </span>
+        <span role="columnheader" className="[grid-area:act]">
+          {m.admin_audit_action()}
+        </span>
+        <span role="columnheader" className="[grid-area:target]">
+          {m.admin_audit_target()}
+        </span>
+        <span role="columnheader" className="[grid-area:when]">
+          {m.admin_audit_when()}
+        </span>
+      </div>
+      {children}
     </div>
   );
 }
@@ -71,7 +81,7 @@ export default function AuditRow({ row }: Props) {
       role="row"
       className={cn(
         "grid items-center gap-y-1 border-b border-border/60 px-4 py-2.5 @lg:items-start @lg:py-2 @4xl:min-h-11 @4xl:items-center",
-        auditGrid,
+        auditRow,
       )}
     >
       <div
@@ -108,7 +118,7 @@ export default function AuditRow({ row }: Props) {
 
       <div
         role="cell"
-        className="font-mono text-xs text-muted-foreground tabular-nums [grid-area:when] @lg:pt-0.5 @4xl:pt-0"
+        className="font-mono text-xs whitespace-nowrap text-muted-foreground tabular-nums [grid-area:when] @lg:pt-0.5 @4xl:pt-0"
       >
         <Timestamp date={row.createdAt} format="MMM d HH:mm" />
       </div>
