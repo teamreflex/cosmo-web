@@ -161,8 +161,9 @@ export async function recordStaffAudit(
 }
 
 /**
- * One page of the audit log, newest first, plus how many rows match the
- * filters in total.
+ * One page of the audit log, newest first. The first page also carries how
+ * many rows match the filters in total, the only page the client reads it
+ * from.
  */
 export async function fetchStaffAudit(input: StaffAuditQueryInput) {
   const [rows, total] = await Promise.all([
@@ -186,13 +187,15 @@ export async function fetchStaffAudit(input: StaffAuditQueryInput) {
         report: { columns: { id: true, status: true } },
       },
     }),
-    db.$count(
-      staffAudit,
-      and(
-        input.staffId ? eq(staffAudit.staffId, input.staffId) : undefined,
-        input.action ? eq(staffAudit.action, input.action) : undefined,
-      ),
-    ),
+    input.cursor === undefined
+      ? db.$count(
+          staffAudit,
+          and(
+            input.staffId ? eq(staffAudit.staffId, input.staffId) : undefined,
+            input.action ? eq(staffAudit.action, input.action) : undefined,
+          ),
+        )
+      : undefined,
   ]);
 
   const usernames = await fetchStaffUsernames(

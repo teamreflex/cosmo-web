@@ -64,16 +64,27 @@ export async function fetchReportCounts(
   staffId: string,
   input: ReportCountsInput,
 ) {
-  const visible = and(
-    visibleTo(staffId),
-    input.targetType ? eq(reports.targetType, input.targetType) : undefined,
-  );
-  const [open, escalated] = await Promise.all([
-    db.$count(reports, and(eq(reports.status, "open"), visible)),
-    db.$count(reports, and(eq(reports.status, "escalated"), visible)),
-  ]);
+  const [counts] = await db
+    .select({
+      open: sql<number>`count(*) filter (where ${eq(reports.status, "open")})::int`.mapWith(
+        Number,
+      ),
+      escalated:
+        sql<number>`count(*) filter (where ${eq(reports.status, "escalated")})::int`.mapWith(
+          Number,
+        ),
+    })
+    .from(reports)
+    .where(
+      and(
+        // redundant with the FILTERs, but keeps the status index in play
+        inArray(reports.status, [...openReportStatuses]),
+        visibleTo(staffId),
+        input.targetType ? eq(reports.targetType, input.targetType) : undefined,
+      ),
+    );
 
-  return { open, escalated };
+  return counts ?? { open: 0, escalated: 0 };
 }
 
 /**
