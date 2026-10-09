@@ -527,8 +527,6 @@
   "report_note_optional": "선택 사항",
   "report_send": "신고 보내기",
   "report_sent": "신고가 접수되었습니다. 알려 주셔서 감사합니다.",
-  "report_already_reported_open": "@{username} 신고함 · 처리 대기",
-  "report_already_reported_escalated": "@{username} 신고함 · 관리자에게 전달됨",
   "report_rate_limited_title": "신고가 너무 많습니다",
   "report_rate_limited_description": "짧은 시간에 여러 번 신고했습니다. 나중에 다시 시도하세요.",
   "_comment_system": "System status strings",

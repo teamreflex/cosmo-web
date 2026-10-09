@@ -16,11 +16,6 @@ export const openReportStatuses = [
 export type OpenReportStatus = (typeof openReportStatuses)[number];
 
 /**
- * The caller's own open report on a target, if any.
- */
-export type MyReport = { status: OpenReportStatus } | null;
-
-/**
  * What a queue row shows of the reported thing; null when it no longer
  * exists. Later phases add messages, listings, feedback and trades.
  */

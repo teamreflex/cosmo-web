@@ -527,8 +527,6 @@
   "report_note_optional": "任意",
   "report_send": "報告を送信",
   "report_sent": "報告を送信しました。お知らせいただきありがとうございます。",
-  "report_already_reported_open": "@{username}を報告済み · 対応待ち",
-  "report_already_reported_escalated": "@{username}を報告済み · 管理者へ移行",
   "report_rate_limited_title": "報告が多すぎます",
   "report_rate_limited_description": "短時間に複数の報告を送信しました。しばらくしてからもう一度お試しください。",
   "_comment_system": "System status strings",

@@ -2,11 +2,7 @@ import {
   banLengthOptions,
   reportTargetTypeFilters,
 } from "@/lib/universal/reports";
-import {
-  reportReasons,
-  reportStatuses,
-  reportTargetTypes,
-} from "@apollo/database/web/types";
+import { reportReasons, reportStatuses } from "@apollo/database/web/types";
 import * as z from "zod";
 
 const noteSchema = z
@@ -29,11 +25,6 @@ export const createReportSchema = z.discriminatedUnion("targetType", [
   }),
 ]);
 
-export const reportTargetSchema = z.object({
-  targetType: z.enum(reportTargetTypes),
-  targetId: z.string().min(1),
-});
-
 export const reportQueueFiltersSchema = z.object({
   status: z.enum(reportStatuses),
   targetType: z.enum(reportTargetTypeFilters).optional(),
@@ -52,7 +43,6 @@ export const reportIdSchema = z.object({
 });
 
 export type CreateReport = z.infer<typeof createReportSchema>;
-export type ReportTarget = z.infer<typeof reportTargetSchema>;
 export type ReportQueueFilters = z.infer<typeof reportQueueFiltersSchema>;
 export type ReportCountsInput = z.infer<typeof reportCountsSchema>;
 export type ReportQueueInput = z.infer<typeof reportQueueSchema>;

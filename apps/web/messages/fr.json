@@ -534,8 +534,6 @@
   "report_note_optional": "facultatif",
   "report_send": "Envoyer le signalement",
   "report_sent": "Signalement envoyé. Merci de nous avoir prévenus.",
-  "report_already_reported_open": "Vous avez signalé @{username} · ouvert",
-  "report_already_reported_escalated": "Vous avez signalé @{username} · transmis",
   "report_rate_limited_title": "Trop de signalements",
   "report_rate_limited_description": "Vous avez envoyé plusieurs signalements en peu de temps. Réessayez plus tard.",
   "_comment_system": "System status strings",

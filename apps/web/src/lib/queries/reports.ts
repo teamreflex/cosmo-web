@@ -1,5 +1,4 @@
 import {
-  $fetchMyReport,
   $fetchReport,
   $fetchReportCounts,
   $fetchReportQueue,
@@ -7,28 +6,8 @@ import {
 import type {
   ReportCountsInput,
   ReportQueueFilters,
-  ReportTarget,
 } from "@/lib/universal/schema/reports";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
-
-export const myReportQueryFilter = { queryKey: ["my-report"] };
-
-/**
- * The signed-in user's open report on a target, if any.
- */
-export function myReportQuery(target: ReportTarget) {
-  return queryOptions({
-    queryKey: [
-      ...myReportQueryFilter.queryKey,
-      target.targetType,
-      target.targetId,
-    ],
-    queryFn: () =>
-      $fetchMyReport({
-        data: { targetType: target.targetType, targetId: target.targetId },
-      }),
-  });
-}
 
 /**
  * Matches every staff report query (counts, queue pages and details), which

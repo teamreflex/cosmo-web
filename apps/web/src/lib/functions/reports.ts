@@ -12,14 +12,11 @@ import {
 } from "@/lib/server/reports.server";
 import { recordStaffAudit } from "@/lib/server/staff-audit.server";
 import { ExpectedError } from "@/lib/universal/errors/expected";
-import { openReportStatuses } from "@/lib/universal/reports";
-import type { MyReport } from "@/lib/universal/reports";
 import {
   createReportSchema,
   reportCountsSchema,
   reportIdSchema,
   reportQueueSchema,
-  reportTargetSchema,
 } from "@/lib/universal/schema/reports";
 import { reports } from "@apollo/database/web/schema";
 import { createServerFn } from "@tanstack/react-start";
@@ -75,27 +72,6 @@ export const $createReport = createServerFn({ method: "POST" })
     }
 
     return result;
-  });
-
-/**
- * The caller's open or escalated report on a target, if any.
- */
-export const $fetchMyReport = createServerFn({ method: "GET" })
-  .validator(reportTargetSchema)
-  .middleware([authenticatedMiddleware])
-  .handler(async ({ data, context }): Promise<MyReport> => {
-    const report = await db.query.reports.findFirst({
-      where: {
-        reporterId: context.session.user.id,
-        targetType: data.targetType,
-        targetId: data.targetId,
-        status: { in: [...openReportStatuses] },
-      },
-      columns: { status: true },
-    });
-
-    const status = openReportStatuses.find((open) => open === report?.status);
-    return status ? { status } : null;
   });
 
 /**

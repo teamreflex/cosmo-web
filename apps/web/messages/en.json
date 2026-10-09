@@ -534,8 +534,6 @@
   "report_note_optional": "optional",
   "report_send": "Send report",
   "report_sent": "Report sent. Thanks for letting us know.",
-  "report_already_reported_open": "You reported @{username} · open",
-  "report_already_reported_escalated": "You reported @{username} · escalated",
   "report_rate_limited_title": "Too many reports",
   "report_rate_limited_description": "You've sent several reports in a short time. Try again later.",
   "_comment_system": "System status strings",

@@ -7,7 +7,6 @@ import {
   $fetchSelectedArtists,
   $fetchTargetAccount,
 } from "../functions/core";
-import { myReportQueryFilter } from "./reports";
 
 /**
  * Fetch the filter data.
@@ -32,14 +31,13 @@ export const currentAccountQuery = queryOptions({
 });
 
 /**
- * Removes the staff data (every query keyed under "admin") and the viewer's
- * own reports, whose answers depend on who is signed in although their keys
- * don't name them. Sign-in and sign-out call it so the next account on the
- * tab never reads the previous one's cache.
+ * Removes the staff data (every query keyed under "admin"), whose answers
+ * depend on who is signed in although their keys don't name them. Sign-in and
+ * sign-out call it so the next account on the tab never reads the previous
+ * one's cache.
  */
 export function removeViewerQueries(queryClient: QueryClient) {
   queryClient.removeQueries({ queryKey: ["admin"] });
-  queryClient.removeQueries(myReportQueryFilter);
 }
 
 /**

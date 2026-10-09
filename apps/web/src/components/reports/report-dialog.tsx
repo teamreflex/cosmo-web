@@ -22,7 +22,6 @@ import { formatError } from "@/lib/client/errors";
 import { reportReasonLabel } from "@/lib/client/reports";
 import { env } from "@/lib/env/client";
 import { $createReport } from "@/lib/functions/reports";
-import { myReportQuery } from "@/lib/queries/reports";
 import { isRateLimitErrorCode } from "@/lib/universal/errors/rate-limit";
 import {
   type CreateReport,
@@ -31,7 +30,7 @@ import {
 import { reportReasons } from "@apollo/database/web/types";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconLoader2 } from "@tabler/icons-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useId } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -49,11 +48,6 @@ type Props = {
 export default function ReportDialog({ target, open, onOpenChange }: Props) {
   const reasonId = useId();
   const noteId = useId();
-  const queryClient = useQueryClient();
-  const myReport = myReportQuery({
-    targetType: target.targetType,
-    targetId: target.targetId,
-  });
 
   const form = useForm({
     resolver: standardSchemaResolver(createReportSchema),
@@ -67,12 +61,11 @@ export default function ReportDialog({ target, open, onOpenChange }: Props) {
 
   const mutation = useMutation({
     mutationFn: $createReport,
-    onSuccess: async () => {
+    onSuccess: () => {
       toast.success(m.report_sent());
       handleOpenChange(false);
-      await queryClient.invalidateQueries({ queryKey: myReport.queryKey });
     },
-    onError: async (error) => {
+    onError: (error) => {
       if (error instanceof Error && isRateLimitErrorCode(error.message)) {
         toast.error(m.report_rate_limited_title(), {
           description: m.report_rate_limited_description(),
@@ -81,11 +74,6 @@ export default function ReportDialog({ target, open, onOpenChange }: Props) {
       }
 
       toast.error(formatError(error));
-      // another tab got there first; show the reported state instead
-      if (error instanceof Error && error.message === "report_already_open") {
-        handleOpenChange(false);
-        await queryClient.invalidateQueries({ queryKey: myReport.queryKey });
-      }
     },
   });
 
