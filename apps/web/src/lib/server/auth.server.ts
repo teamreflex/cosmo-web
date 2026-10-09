@@ -214,9 +214,12 @@ export const auth = betterAuth({
 
       /**
        * Allow exactly one known role: the plugin would comma-join an array,
-       * which the role CHECK rejects. The previous role is gone once the
-       * update commits, so it reaches the after-hook's audit row in a request
-       * header that overwrites any value the client sent.
+       * which the role CHECK rejects. Setting the role the user already has
+       * is answered here as the plugin would answer it, so the endpoint and
+       * the after-hook never run and nothing is audited or published.
+       * Otherwise the previous role, gone once the update commits, reaches
+       * the after-hook's audit row in a request header that overwrites any
+       * value the client sent.
        */
       if (ctx.path === "/admin/set-role") {
         const body = setRoleBodySchema.safeParse(ctx.body);
@@ -232,6 +235,17 @@ export const auth = betterAuth({
           { kind: "set-role", role: body.data.role },
         );
         if (target) {
+          if (parseRole(target.role) === body.data.role) {
+            const user = await ctx.context.internalAdapter.findUserById(
+              target.id,
+            );
+            if (user) {
+              return ctx.json({
+                user: parseUserOutput(ctx.context.options, user),
+              });
+            }
+          }
+
           return {
             context: {
               headers: new Headers({ [PREVIOUS_ROLE_HEADER]: target.role }),
