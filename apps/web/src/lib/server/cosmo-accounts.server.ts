@@ -5,10 +5,10 @@ import { runCosmo } from "@apollo/cosmo/runtime";
 import { fetchByNickname } from "@apollo/cosmo/server/user";
 import type { CosmoSearchResult } from "@apollo/cosmo/types/user";
 import * as authSchema from "@apollo/database/auth";
-import { cosmoAccounts } from "@apollo/database/web/schema";
-import type { CosmoAccount } from "@apollo/database/web/types";
+import { cosmoAccounts, cosmoLinkAudit } from "@apollo/database/web/schema";
+import type { CosmoAccount, CosmoLinkEvent } from "@apollo/database/web/types";
 import { addr, isAddress } from "@apollo/util";
-import { and, eq, isNull, like, or, sql } from "drizzle-orm";
+import { and, eq, isNull, like, sql } from "drizzle-orm";
 import type {
   CosmoLink,
   PublicCosmo,
@@ -17,7 +17,7 @@ import type {
 import type { AccountErrorCode } from "../universal/errors/accounts";
 import { ExpectedError } from "../universal/errors/expected";
 import { toPublicUser } from "./auth.server";
-import { db, type DbOrTx } from "./db";
+import { db, type DbOrTx, type WebTx } from "./db";
 import { importObjektLists } from "./objekts/lists.server";
 import { isPostgresError } from "./util.server";
 
@@ -127,17 +127,37 @@ export async function fetchFullAccount(
 }
 
 /**
- * Upsert a COSMO account into the database and link it to a user.
- * Used when verifying ownership of a COSMO account. The upsert never takes an
- * address linked to another user, and the unique user_id index refuses a
- * second link for the same user.
+ * A change to which user a COSMO account is linked to, as the link history
+ * records it. Only a staff move names the staff member.
+ */
+export type CosmoLinkChange = { cosmoAccountId: number; userId: string } & (
+  | { event: "linked"; reason: "verified" }
+  | { event: "unlinked"; reason: "account-deleted" }
+  | { event: CosmoLinkEvent; reason: "staff-move"; staffId: string }
+);
+
+/**
+ * Append to the link history, in the transaction that changes the link.
+ */
+export async function recordCosmoLinkChanges(
+  tx: WebTx,
+  changes: [CosmoLinkChange, ...CosmoLinkChange[]],
+) {
+  await tx.insert(cosmoLinkAudit).values(changes);
+}
+
+/**
+ * Upsert a COSMO account into the database, link it to a user and record the
+ * link. Used when verifying ownership of a COSMO account. The upsert only
+ * takes an unlinked address, and the unique user_id index refuses a second
+ * link for the same user.
  */
 export async function linkAccount(
-  executor: DbOrTx,
+  tx: WebTx,
   account: Omit<CosmoAccount, "id" | "userId"> & { userId: string },
 ) {
   try {
-    const [result] = await executor
+    const [result] = await tx
       .insert(cosmoAccounts)
       .values(account)
       .onConflictDoUpdate({
@@ -147,16 +167,31 @@ export async function linkAccount(
           cosmoId: account.cosmoId,
           userId: account.userId,
         },
-        setWhere: or(
-          isNull(cosmoAccounts.userId),
-          eq(cosmoAccounts.userId, account.userId),
-        ),
+        setWhere: isNull(cosmoAccounts.userId),
       })
       .returning();
 
     if (!result) {
-      throw new ExpectedError("account_linked_elsewhere");
+      // held by another user, or by the caller after a concurrent link
+      const holder = await tx.query.cosmoAccounts.findFirst({
+        where: { address: account.address },
+        columns: { userId: true },
+      });
+      throw new ExpectedError(
+        holder?.userId === account.userId
+          ? "cosmo_already_linked"
+          : "account_linked_elsewhere",
+      );
     }
+
+    await recordCosmoLinkChanges(tx, [
+      {
+        cosmoAccountId: result.id,
+        userId: account.userId,
+        event: "linked",
+        reason: "verified",
+      },
+    ]);
 
     return result;
   } catch (error) {

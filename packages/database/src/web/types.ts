@@ -16,6 +16,7 @@ import type {
   events,
   reports,
   staffAudit,
+  cosmoLinkAudit,
 } from "./schema";
 
 export type {
@@ -49,6 +50,7 @@ export type Era = typeof eras.$inferSelect;
 export type Event = typeof events.$inferSelect;
 export type Report = typeof reports.$inferSelect;
 export type StaffAudit = typeof staffAudit.$inferSelect;
+export type CosmoLinkAudit = typeof cosmoLinkAudit.$inferSelect;
 
 export interface EventWithEra extends Event {
   era: Era;
@@ -162,6 +164,20 @@ export const staffAuditTargetTypes = [
   "cosmo-account",
 ] as const;
 export type StaffAuditTargetType = (typeof staffAuditTargetTypes)[number];
+
+export const cosmoLinkEvents = ["linked", "unlinked"] as const;
+export type CosmoLinkEvent = (typeof cosmoLinkEvents)[number];
+
+/**
+ * Why a COSMO link changed: the user proved control through the COSMO bio,
+ * deleted their account, or staff moved the link.
+ */
+export const cosmoLinkReasons = [
+  "verified",
+  "account-deleted",
+  "staff-move",
+] as const;
+export type CosmoLinkReason = (typeof cosmoLinkReasons)[number];
 
 /**
  * Extra context for an audit row. Roles are stored as plain strings so this

@@ -26,6 +26,22 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.cosmoAccountChanges.address,
     }),
   },
+  cosmoLinkAudit: {
+    cosmoAccount: r.one.cosmoAccounts({
+      from: r.cosmoLinkAudit.cosmoAccountId,
+      to: r.cosmoAccounts.id,
+      optional: false,
+    }),
+    user: r.one.user({
+      from: r.cosmoLinkAudit.userId,
+      to: r.user.id,
+      optional: false,
+    }),
+    staff: r.one.user({
+      from: r.cosmoLinkAudit.staffId,
+      to: r.user.id,
+    }),
+  },
   lockedObjekts: {
     profile: r.one.cosmoAccounts({
       from: r.lockedObjekts.address,

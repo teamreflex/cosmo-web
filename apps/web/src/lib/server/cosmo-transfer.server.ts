@@ -8,7 +8,10 @@ import * as authSchema from "@apollo/database/auth";
 import { cosmoAccounts, pins } from "@apollo/database/web/schema";
 import { and, eq, inArray, isNotNull } from "drizzle-orm";
 import { clearBinderPinCache } from "./binders.server";
-import { getCosmoAddress } from "./cosmo-accounts.server";
+import {
+  getCosmoAddress,
+  recordCosmoLinkChanges,
+} from "./cosmo-accounts.server";
 import { db } from "./db";
 import { recordStaffAudit } from "./staff-audit.server";
 import { isPostgresError } from "./util.server";
@@ -21,11 +24,11 @@ const refusalErrors = {
 
 /**
  * Move a COSMO link from one user to another, for someone who lost access to
- * the account it was linked to. Both user rows are locked in id order before
- * the cosmo_account row, the lock order linking and deletion also follow.
- * Only the link moves: lists, binders, token pins and locks stay where they
- * are, but binder pins on the address go, because they point at binders the
- * old owner keeps.
+ * the account it was linked to, and record both sides in the link history.
+ * Both user rows are locked in id order before the cosmo_account row, the
+ * lock order linking and deletion also follow. Only the link moves: lists,
+ * binders, token pins and locks stay where they are, but binder pins on the
+ * address go, because they point at binders the old owner keeps.
  */
 export async function transferCosmoAccount(
   staffId: string,
@@ -58,6 +61,7 @@ export async function transferCosmoAccount(
 
     const [account] = await tx
       .select({
+        id: cosmoAccounts.id,
         address: cosmoAccounts.address,
         username: cosmoAccounts.username,
         userId: cosmoAccounts.userId,
@@ -94,6 +98,23 @@ export async function transferCosmoAccount(
       }
       throw error;
     }
+
+    await recordCosmoLinkChanges(tx, [
+      {
+        cosmoAccountId: account.id,
+        userId: input.fromUserId,
+        event: "unlinked",
+        reason: "staff-move",
+        staffId,
+      },
+      {
+        cosmoAccountId: account.id,
+        userId: input.toUserId,
+        event: "linked",
+        reason: "staff-move",
+        staffId,
+      },
+    ]);
 
     await tx
       .delete(pins)
