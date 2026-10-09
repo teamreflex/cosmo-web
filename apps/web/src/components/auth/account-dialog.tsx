@@ -55,7 +55,7 @@ export default function AccountDialog({ open, onOpenChange, cosmo }: Props) {
 
           <Separator />
 
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-start gap-2.5 sm:items-center">
             {cosmo === undefined ? (
               <LinkCosmo />
             ) : (
@@ -65,15 +65,20 @@ export default function AccountDialog({ open, onOpenChange, cosmo }: Props) {
                   src="/cosmo.webp"
                   alt={m.common_cosmo()}
                 />
-                <div className="flex min-w-0 flex-col">
-                  <span className="truncate font-medium">{cosmo.username}</span>
-                  <span className="font-mono text-xs text-muted-foreground">
-                    {shortAddress(cosmo.address)}
-                  </span>
+                {/* the note sits under the account on phones, where beside it some locales wrap to four lines */}
+                <div className="flex min-w-0 flex-1 flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
+                  <div className="flex min-w-0 flex-col">
+                    <span className="truncate font-medium">
+                      {cosmo.username}
+                    </span>
+                    <span className="font-mono text-xs text-muted-foreground">
+                      {shortAddress(cosmo.address)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground sm:ml-auto sm:max-w-1/2 sm:text-right sm:text-balance">
+                    {m.account_cosmo_linked_note()}
+                  </p>
                 </div>
-                <p className="ml-auto max-w-[150px] text-right text-xs text-muted-foreground">
-                  {m.account_cosmo_linked_note()}
-                </p>
               </>
             )}
           </div>
