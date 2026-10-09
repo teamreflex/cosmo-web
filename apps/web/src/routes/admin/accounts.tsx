@@ -1,4 +1,4 @@
-import CosmoLinkHistoryCard from "@/components/admin/accounts/cosmo-link-history-card";
+import CosmoLinkHistory from "@/components/admin/accounts/cosmo-link-history";
 import MoveCosmoAccountCard from "@/components/admin/accounts/move-cosmo-account-card";
 import { requireStaffPage } from "@/components/admin/common";
 import AdminNoAccess from "@/components/admin/no-access";
@@ -27,8 +27,8 @@ function RouteComponent() {
       {/* sized by the content area, which the admin sidebar narrows */}
       <div className="grid gap-4 @2xl:grid-cols-2 @5xl:grid-cols-3">
         <MoveCosmoAccountCard />
-        <CosmoLinkHistoryCard />
       </div>
+      <CosmoLinkHistory />
     </section>
   );
 }

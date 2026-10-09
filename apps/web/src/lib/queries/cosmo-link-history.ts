@@ -1,19 +1,20 @@
-import {
-  $fetchCosmoLinkHistory,
-  $searchCosmoLinkHistory,
-} from "@/lib/functions/cosmo-link-history";
-import { queryOptions } from "@tanstack/react-query";
+import { $fetchCosmoLinkHistory } from "@/lib/functions/cosmo-link-history";
+import { infiniteQueryOptions, keepPreviousData } from "@tanstack/react-query";
 
-export const cosmoLinkHistorySearchQuery = (query: string) =>
-  queryOptions({
-    queryKey: ["admin", "cosmo-link-history", "search", query],
-    queryFn: ({ signal }) =>
-      $searchCosmoLinkHistory({ signal, data: { query } }),
+/**
+ * The history grows with every link anywhere on the site, so it is refetched
+ * whenever it's shown. A changed search keeps the previous rows on screen
+ * until its own arrive.
+ */
+export function cosmoLinkHistoryQuery(search: string | undefined) {
+  return infiniteQueryOptions({
+    queryKey: ["admin", "cosmo-link-history", { search }],
+    queryFn: ({ signal, pageParam }) =>
+      $fetchCosmoLinkHistory({ signal, data: { search, cursor: pageParam } }),
+    // SAFETY: cursor seed; widened for TanStack Query inference
+    initialPageParam: undefined as number | undefined,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
+    placeholderData: keepPreviousData,
+    staleTime: 0,
   });
-
-export const cosmoLinkHistoryQuery = (cosmoAccountId: number) =>
-  queryOptions({
-    queryKey: ["admin", "cosmo-link-history", cosmoAccountId],
-    queryFn: ({ signal }) =>
-      $fetchCosmoLinkHistory({ signal, data: { cosmoAccountId } }),
-  });
+}
