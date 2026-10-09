@@ -63,12 +63,24 @@ function deletionTokenIdentifier(token: string) {
 /**
  * Store a single-use token that proves the emailed link reached the account's
  * owner, valid for 24 hours. It replaces the user's earlier tokens, so only
- * the newest email's link can delete the account.
+ * the newest email's link can delete the account. The user row is locked
+ * first, so two requests at once can't both keep their token.
  */
 export async function createDeletionToken(userId: string) {
   const token = randomBytes(32).toString("base64url");
   const now = new Date();
   await db.transaction(async (tx) => {
+    const [caller] = await tx
+      .select({ id: authSchema.user.id })
+      .from(authSchema.user)
+      .where(
+        and(eq(authSchema.user.id, userId), isNull(authSchema.user.deletedAt)),
+      )
+      .for("update");
+    if (!caller) {
+      throw new ExpectedError("not_signed_in");
+    }
+
     await tx
       .delete(authSchema.verification)
       .where(
