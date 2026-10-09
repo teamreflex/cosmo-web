@@ -18,6 +18,7 @@ import {
   type DeletionBlocker,
   deletionBlockerCount,
 } from "@/lib/universal/account-deletion";
+import { isExpectedError } from "@/lib/universal/errors/expected";
 import { IconLoader2, IconMailCheck, IconTrash } from "@tabler/icons-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRef, useState } from "react";
@@ -107,7 +108,12 @@ function CheckFailed({ error }: { error: Error }) {
       <DialogHeader>
         <DialogTitle>{m.delete_account_title()}</DialogTitle>
       </DialogHeader>
-      <p className="text-sm text-destructive">{formatError(error)}</p>
+      {/* a genuine failure's message is for Sentry, not the viewer */}
+      <p className="text-sm text-destructive">
+        {isExpectedError(error)
+          ? formatError(error)
+          : m.delete_account_check_failed()}
+      </p>
       <DialogFooter>
         <CloseButton />
       </DialogFooter>

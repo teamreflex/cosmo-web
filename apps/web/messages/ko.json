@@ -613,6 +613,7 @@
   "delete_account_link_invalid_description": "만료되었거나 이미 사용되었거나 다른 계정의 링크입니다. 삭제하려는 계정으로 로그인한 뒤 아바타 메뉴의 계정에서 확인 이메일을 다시 보내세요.",
   "delete_account_sign_in_required": "계속하려면 삭제하려는 계정으로 로그인하세요.",
   "delete_account_back_home": "홈으로 돌아가기",
+  "delete_account_check_failed": "계정을 삭제할 수 있는지 확인하지 못했습니다. 잠시 후 다시 시도하세요.",
   "_comment_linked_accounts": "Linked accounts strings",
   "linked_accounts_unlink": "{provider} 연결 해제",
   "linked_accounts_link": "{provider} 연결",

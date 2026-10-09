@@ -621,6 +621,7 @@
   "delete_account_link_invalid_description": "It has expired, was already used or belongs to another account. Sign in to the account you're deleting, open Account from your avatar menu and send a new confirmation email.",
   "delete_account_sign_in_required": "Sign in to the account you're deleting to continue.",
   "delete_account_back_home": "Back to home",
+  "delete_account_check_failed": "We couldn't check whether your account can be deleted. Try again in a moment.",
   "_comment_linked_accounts": "Linked accounts strings",
   "linked_accounts_unlink": "Unlink {provider}",
   "linked_accounts_link": "Link {provider}",

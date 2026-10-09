@@ -613,6 +613,7 @@
   "delete_account_link_invalid_description": "有効期限が切れているか、すでに使用されているか、別のアカウントのリンクです。削除するアカウントにサインインし、アバターメニューの「アカウント」から確認メールを再送信してください。",
   "delete_account_sign_in_required": "続行するには、削除するアカウントにサインインしてください。",
   "delete_account_back_home": "ホームに戻る",
+  "delete_account_check_failed": "アカウントを削除できるか確認できませんでした。しばらくしてからもう一度お試しください。",
   "_comment_linked_accounts": "Linked accounts strings",
   "linked_accounts_unlink": "{provider}の連携を解除",
   "linked_accounts_link": "{provider}を連携",
