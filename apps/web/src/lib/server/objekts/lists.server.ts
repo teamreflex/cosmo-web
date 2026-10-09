@@ -1,5 +1,6 @@
 import { indexer } from "@/lib/server/db/indexer";
 import { ExpectedError } from "@/lib/universal/errors/expected";
+import { numberLegacyListCopies } from "@/lib/universal/lists";
 import { objekts } from "@apollo/database/indexer/schema";
 import {
   notifications,
@@ -12,8 +13,9 @@ import { alias } from "drizzle-orm/pg-core";
 import { db, type DbOrTx } from "../db";
 
 /**
- * Import objekt lists from the old tables into the new ones. Runs on the
- * caller's transaction.
+ * Copy the address's legacy lists and their entries onto the user. Runs on
+ * the caller's transaction, under slugs that are free for the user, so the
+ * copy can't fail on the (user, slug) unique index.
  */
 export async function importObjektLists(
   executor: DbOrTx,
@@ -33,45 +35,35 @@ export async function importObjektLists(
     return;
   }
 
-  // insert the lists
-  const result = await executor
+  const owned = await executor.query.objektLists.findMany({
+    where: { userId },
+    columns: { slug: true },
+  });
+  const copies = numberLegacyListCopies(
+    owned.map((list) => list.slug),
+    lists,
+  );
+
+  const inserted = await executor
     .insert(objektLists)
-    .values(
-      // ensure there's no slug or name collision
-      lists.map((list) => {
-        const name = list.name.length > 22 ? list.name.slice(0, 22) : list.name;
-        const slug = list.slug.length > 22 ? list.slug.slice(0, 22) : list.slug;
+    .values(copies.map(({ name, slug }) => ({ userId, name, slug })))
+    .returning({ id: objektLists.id, slug: objektLists.slug });
+  const idBySlug = new Map(inserted.map((list) => [list.slug, list.id]));
 
-        return {
-          userId,
-          name: `${name} 2`,
-          slug: `${slug}-2`,
-        };
-      }),
-    )
-    .returning();
-
-  // build entries
-  const entries = [];
-  for (const list of lists) {
-    const objektList = result.find((r) => r.slug === list.slug);
-    if (!objektList) {
-      continue;
-    }
-
-    for (const entry of list.entries) {
-      entries.push({
-        objektListId: objektList.id,
-        collectionId: entry.collectionId,
-      });
-    }
-  }
+  const entries = copies.flatMap((copy) => {
+    const objektListId = idBySlug.get(copy.slug);
+    return objektListId === undefined
+      ? []
+      : copy.entries.map((entry) => ({
+          objektListId,
+          collectionId: entry.collectionId,
+        }));
+  });
 
   if (entries.length === 0) {
     return;
   }
 
-  // insert entries
   await executor.insert(objektListEntries).values(entries);
 }
 
