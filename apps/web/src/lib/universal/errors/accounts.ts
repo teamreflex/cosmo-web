@@ -2,6 +2,7 @@ export const accountErrorCodes = [
   "account_linked_elsewhere",
   "cosmo_already_linked",
   "cosmo_account_banned",
+  "cosmo_account_deleted",
   "account_deletion_link_invalid",
   "account_deletion_no_email",
   "cosmo_transfer_source_changed",

@@ -338,6 +338,7 @@
   "account_error_linked_elsewhere": "Ce compte COSMO est déjà associé à un autre compte {appName}. Chaque compte COSMO ne peut appartenir qu'à un seul compte {appName}.",
   "account_error_already_linked": "Votre compte a déjà un compte COSMO associé.",
   "account_error_cosmo_banned": "Ce compte COSMO appartient à un compte {appName} banni et ne peut pas être associé.",
+  "account_error_cosmo_deleted": "Ce compte COSMO appartient à un compte {appName} supprimé et ne peut plus être associé.",
   "account_error_deletion_link_invalid": "Ce lien a expiré ou a déjà été utilisé.",
   "account_error_deletion_no_email": "Votre compte n'a pas d'adresse email à laquelle envoyer la confirmation. Ajoutez-en une dans « Adresse email », puis réessayez.",
   "account_error_transfer_source_changed": "Ce compte COSMO a changé de propriétaire depuis votre sélection. Recherchez-le à nouveau.",

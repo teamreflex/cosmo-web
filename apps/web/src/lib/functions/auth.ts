@@ -59,6 +59,7 @@ export const $generateVerificationCode = createServerFn({ method: "POST" })
       db.query.cosmoAccounts.findFirst({
         where: { address: data.address },
         columns: { userId: true },
+        with: { user: { columns: { deletedAt: true } } },
       }),
     ]);
 
@@ -66,13 +67,17 @@ export const $generateVerificationCode = createServerFn({ method: "POST" })
       throw new ExpectedError("cosmo_already_linked");
     }
 
-    // one code for every other owner, so a ban is only revealed after the bio check
+    // a deleted owner is public on the profile, but a ban is only revealed after the bio check
     if (
       owner !== undefined &&
       owner.userId !== null &&
       owner.userId !== userId
     ) {
-      throw new ExpectedError("account_linked_elsewhere");
+      throw new ExpectedError(
+        owner.user?.deletedAt
+          ? "cosmo_account_deleted"
+          : "account_linked_elsewhere",
+      );
     }
 
     const code = await storeVerification(userId, {
@@ -140,13 +145,20 @@ export const $verifyCosmoBio = createServerFn({ method: "POST" })
       const owner = await tx.query.cosmoAccounts.findFirst({
         where: { address: profile.address },
         columns: { userId: true },
-        with: { user: { columns: { banned: true, banExpires: true } } },
+        with: {
+          user: {
+            columns: { banned: true, banExpires: true, deletedAt: true },
+          },
+        },
       });
       if (
         owner !== undefined &&
         owner.userId !== null &&
         owner.userId !== userId
       ) {
+        if (owner.user?.deletedAt) {
+          throw new ExpectedError("cosmo_account_deleted");
+        }
         throw new ExpectedError(
           owner.user && isBanActive(owner.user)
             ? "cosmo_account_banned"

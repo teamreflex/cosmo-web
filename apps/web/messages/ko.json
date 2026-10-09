@@ -336,6 +336,7 @@
   "account_error_linked_elsewhere": "이 코스모 계정은 이미 다른 {appName} 계정에 연결되어 있습니다. 코스모 계정은 하나의 {appName} 계정에만 연결할 수 있습니다.",
   "account_error_already_linked": "이미 코스모 계정이 연결된 계정입니다.",
   "account_error_cosmo_banned": "이 코스모 계정은 정지된 {appName} 계정의 것이라 연결할 수 없습니다.",
+  "account_error_cosmo_deleted": "이 코스모 계정은 삭제된 {appName} 계정의 것이라 다시 연결할 수 없습니다.",
   "account_error_deletion_link_invalid": "만료되었거나 이미 사용된 링크입니다.",
   "account_error_deletion_no_email": "확인 메일을 보낼 이메일 주소가 계정에 없습니다. “이메일 주소”에서 추가한 뒤 다시 시도하세요.",
   "account_error_transfer_source_changed": "선택한 뒤 이 코스모 계정의 연결이 바뀌었습니다. 다시 검색하세요.",

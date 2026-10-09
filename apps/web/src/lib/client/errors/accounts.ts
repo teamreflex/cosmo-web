@@ -20,6 +20,8 @@ export function formatAccountError(error: unknown): string | null {
       return m.account_error_already_linked();
     case "cosmo_account_banned":
       return m.account_error_cosmo_banned({ appName });
+    case "cosmo_account_deleted":
+      return m.account_error_cosmo_deleted({ appName });
     case "account_deletion_link_invalid":
       return m.account_error_deletion_link_invalid();
     case "account_deletion_no_email":

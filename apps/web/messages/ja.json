@@ -336,6 +336,7 @@
   "account_error_linked_elsewhere": "このCOSMOアカウントはすでに別の{appName}アカウントと連携されています。COSMOアカウントは1つの{appName}アカウントにしか連携できません。",
   "account_error_already_linked": "このアカウントにはすでにCOSMOアカウントが連携されています。",
   "account_error_cosmo_banned": "このCOSMOアカウントは利用停止中の{appName}アカウントのものなので、連携できません。",
+  "account_error_cosmo_deleted": "このCOSMOアカウントは削除された{appName}アカウントのものなので、再び連携することはできません。",
   "account_error_deletion_link_invalid": "このリンクは有効期限が切れているか、すでに使用されています。",
   "account_error_deletion_no_email": "確認メールの送信先となるメールアドレスがアカウントに登録されていません。「メールアドレス」から追加してから、もう一度お試しください。",
   "account_error_transfer_source_changed": "選択後にこのCOSMOアカウントの連携先が変わりました。もう一度検索してください。",
