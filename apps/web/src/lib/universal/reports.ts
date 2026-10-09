@@ -80,7 +80,8 @@ export type AdminReportDetail = ReportOutcome & {
   note: string | null;
   createdAt: Date;
   reporter: { username: string };
-  otherOpenCount: number;
+  /** Open or escalated reports on the same target, besides this one. */
+  otherOpenReportCount: number;
   target: AdminReportDetailTarget;
 };
 

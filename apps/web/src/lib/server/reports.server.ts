@@ -193,7 +193,7 @@ export async function fetchReportDetail(
     throw await hiddenReportError(db, id);
   }
 
-  const [target, otherOpenCount] = await Promise.all([
+  const [target, otherOpenReportCount] = await Promise.all([
     fetchDetailTarget(viewer.role, report.targetType, report.targetId),
     db.$count(
       reports,
@@ -213,7 +213,7 @@ export async function fetchReportDetail(
     note: report.note,
     createdAt: report.createdAt,
     reporter: { username: staffUsername(report.reporter) },
-    otherOpenCount,
+    otherOpenReportCount,
     target,
   };
 }

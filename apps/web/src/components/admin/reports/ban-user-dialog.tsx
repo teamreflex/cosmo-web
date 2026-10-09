@@ -112,9 +112,11 @@ export default function BanUserDialog({
   }));
   const effects = [
     m.admin_ban_effect_sign_out(),
-    report.otherOpenCount === 0
+    report.otherOpenReportCount === 0
       ? m.admin_ban_effect_resolve()
-      : m.admin_ban_effect_resolve_others({ count: report.otherOpenCount }),
+      : m.admin_ban_effect_resolve_others({
+          count: report.otherOpenReportCount,
+        }),
     m.admin_ban_effect_audit(),
   ];
 
@@ -126,11 +128,11 @@ export default function BanUserDialog({
             {m.admin_ban_title({ username: user.username })}
           </DialogTitle>
           <DialogDescription>
-            {report.otherOpenCount === 0
+            {report.otherOpenReportCount === 0
               ? m.admin_ban_from_report({ reason })
               : m.admin_ban_from_report_others({
                   reason,
-                  count: report.otherOpenCount,
+                  count: report.otherOpenReportCount,
                 })}
           </DialogDescription>
         </DialogHeader>

@@ -55,7 +55,10 @@ export default function ReportTarget({ report }: Props) {
             {roleLabel(user.role)}
           </StatusPill>
         </div>
-        <TargetMeta user={user} otherOpenCount={report.otherOpenCount} />
+        <TargetMeta
+          user={user}
+          otherOpenReportCount={report.otherOpenReportCount}
+        />
       </div>
       {user.ban !== null && user.protected === false && (
         <UnbanButton user={user} />
@@ -66,12 +69,12 @@ export default function ReportTarget({ report }: Props) {
 
 function TargetMeta({
   user,
-  otherOpenCount,
+  otherOpenReportCount,
 }: {
   user: ReportTargetUser;
-  otherOpenCount: number;
+  otherOpenReportCount: number;
 }) {
-  if (user.ban === null && otherOpenCount === 0) {
+  if (user.ban === null && otherOpenReportCount === 0) {
     return null;
   }
 
@@ -92,11 +95,13 @@ function TargetMeta({
           )}
         </span>
       )}
-      {user.ban !== null && otherOpenCount > 0 && (
+      {user.ban !== null && otherOpenReportCount > 0 && (
         <span aria-hidden="true">·</span>
       )}
-      {otherOpenCount > 0 && (
-        <span>{m.admin_reports_other_open({ count: otherOpenCount })}</span>
+      {otherOpenReportCount > 0 && (
+        <span>
+          {m.admin_reports_other_open({ count: otherOpenReportCount })}
+        </span>
       )}
     </div>
   );
