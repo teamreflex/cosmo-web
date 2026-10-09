@@ -32,7 +32,8 @@ export default function IndexRenderer(props: Props) {
 
   return (
     <div className="flex flex-col">
-      <TitleHeader title={m.objekts_header()}>
+      {/* tighter on phones, where the lists button would otherwise push the header past the screen */}
+      <TitleHeader title={m.objekts_header()} className="max-sm:gap-2">
         <div
           id="objekt-total"
           className="font-mono text-xs text-muted-foreground tabular-nums"
