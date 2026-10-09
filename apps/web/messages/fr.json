@@ -330,6 +330,7 @@
   "report_error_report_self": "Vous ne pouvez pas vous signaler vous-même.",
   "report_error_report_target_not_found": "Ce compte n'existe plus.",
   "report_error_report_not_found": "Signalement introuvable.",
+  "report_error_report_about_you": "Ce signalement vous concerne : d'autres membres du staff s'en chargeront.",
   "report_error_report_status_changed": "Quelqu'un d'autre a déjà mis à jour ce signalement. Rechargez pour voir son dernier statut.",
   "binder_page_count": [
     {

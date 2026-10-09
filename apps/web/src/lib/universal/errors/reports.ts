@@ -3,6 +3,7 @@ export const reportErrorCodes = [
   "report_self",
   "report_target_not_found",
   "report_not_found",
+  "report_about_you",
   "report_status_changed",
 ] as const;
 

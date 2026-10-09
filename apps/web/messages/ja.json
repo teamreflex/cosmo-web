@@ -328,6 +328,7 @@
   "report_error_report_self": "自分自身を報告することはできません。",
   "report_error_report_target_not_found": "このアカウントはもう存在しません。",
   "report_error_report_not_found": "報告が見つかりません。",
+  "report_error_report_about_you": "この報告はあなたに関するものなので、他のスタッフが対応します。",
   "report_error_report_status_changed": "この報告は他のスタッフがすでに更新しました。再読み込みして最新の状態を確認してください。",
   "binder_page_count": [
     {

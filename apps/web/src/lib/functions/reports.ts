@@ -5,6 +5,7 @@ import {
 } from "@/lib/server/middlewares";
 import { consumeRateLimit } from "@/lib/server/rate-limit.server";
 import {
+  fetchReportCounts,
   fetchReportDetail,
   fetchReportQueue,
   transitionReport,
@@ -22,7 +23,7 @@ import {
 } from "@/lib/universal/schema/reports";
 import { reports } from "@apollo/database/web/schema";
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, sql } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 
 /**
  * Report a user. One open report per reporter and target, and a generous
@@ -99,39 +100,38 @@ export const $fetchMyReport = createServerFn({ method: "GET" })
 
 /**
  * Open and escalated report counts for the staff tabs and sidebar badge,
- * optionally of one target type.
+ * optionally of one target type. Reports on the caller aren't counted.
  */
 export const $fetchReportCounts = createServerFn({ method: "GET" })
   .middleware([staffMiddleware({ report: ["read"] })])
   .validator(reportCountsSchema)
-  .handler(async ({ data }) => {
-    const ofType = data.targetType
-      ? eq(reports.targetType, data.targetType)
-      : undefined;
-    const [open, escalated] = await Promise.all([
-      db.$count(reports, and(eq(reports.status, "open"), ofType)),
-      db.$count(reports, and(eq(reports.status, "escalated"), ofType)),
-    ]);
-
-    return { open, escalated };
-  });
+  .handler(({ data, context }) =>
+    fetchReportCounts(context.session.user.id, data),
+  );
 
 /**
- * One page of the staff report queue for a status.
+ * One page of the staff report queue for a status, without reports on the
+ * caller.
  */
 export const $fetchReportQueue = createServerFn({ method: "GET" })
   .middleware([staffMiddleware({ report: ["read"] })])
   .validator(reportQueueSchema)
-  .handler(({ data }) => fetchReportQueue(data));
+  .handler(({ data, context }) =>
+    fetchReportQueue(context.session.user.id, data),
+  );
 
 /**
- * A report's full detail. Staff reads are audited, once per visit.
+ * A report's full detail, refused when the report is on the caller. Staff
+ * reads are audited, once per visit.
  */
 export const $fetchReport = createServerFn({ method: "GET" })
   .middleware([staffMiddleware({ report: ["read"] })])
   .validator(reportIdSchema)
   .handler(async ({ data, context }) => {
-    const report = await fetchReportDetail(context.role, data.id);
+    const report = await fetchReportDetail(
+      { id: context.session.user.id, role: context.role },
+      data.id,
+    );
 
     await recordStaffAudit(db, {
       staffId: context.session.user.id,

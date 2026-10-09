@@ -16,7 +16,10 @@ import type {
   AdminReportRowTarget,
   ReportOutcome,
 } from "@/lib/universal/reports";
-import type { ReportQueueInput } from "@/lib/universal/schema/reports";
+import type {
+  ReportCountsInput,
+  ReportQueueInput,
+} from "@/lib/universal/schema/reports";
 import { parseRole } from "@apollo/auth";
 import type { Role } from "@apollo/auth";
 import { protectionFor } from "@apollo/auth/guard";
@@ -25,15 +28,63 @@ import type {
   ReportStatus,
   ReportTargetType,
 } from "@apollo/database/web/types";
-import { and, eq, inArray, ne, sql } from "drizzle-orm";
+import { and, eq, inArray, ne, or, sql } from "drizzle-orm";
 
 const QUEUE_PAGE_SIZE = 30;
 
 /**
- * One page of the staff queue, newest first. The cursor carries `created_at`
- * as Postgres text, which keeps the microseconds a JS Date would drop.
+ * Reports on a staff member are hidden from them, whatever their role, so
+ * they never see who reported them; other staff handle those. Relational
+ * reads alias the table, so they filter with `NOT: reportsOn(staffId)`.
  */
-export async function fetchReportQueue(input: ReportQueueInput) {
+function visibleTo(staffId: string) {
+  return or(ne(reports.targetType, "user"), ne(reports.targetId, staffId));
+}
+
+function reportsOn(userId: string) {
+  return { targetType: "user", targetId: userId } as const;
+}
+
+/**
+ * The refusal for a report id a staff member may not see: it is about them,
+ * or it doesn't exist.
+ */
+async function hiddenReportError(executor: DbOrTx, id: string) {
+  const exists = await executor.$count(reports, eq(reports.id, id));
+  return new ExpectedError(
+    exists > 0 ? "report_about_you" : "report_not_found",
+  );
+}
+
+/**
+ * Open and escalated counts of the reports the staff member may see,
+ * optionally of one target type.
+ */
+export async function fetchReportCounts(
+  staffId: string,
+  input: ReportCountsInput,
+) {
+  const visible = and(
+    visibleTo(staffId),
+    input.targetType ? eq(reports.targetType, input.targetType) : undefined,
+  );
+  const [open, escalated] = await Promise.all([
+    db.$count(reports, and(eq(reports.status, "open"), visible)),
+    db.$count(reports, and(eq(reports.status, "escalated"), visible)),
+  ]);
+
+  return { open, escalated };
+}
+
+/**
+ * One page of the staff member's queue, newest first. The cursor carries
+ * `created_at` as Postgres text, which keeps the microseconds a JS Date would
+ * drop.
+ */
+export async function fetchReportQueue(
+  staffId: string,
+  input: ReportQueueInput,
+) {
   const after = decodeQueueCursor(input.cursor);
   /**
    * drizzle rc.5 throws on explicit undefined filter values, so optional
@@ -42,6 +93,7 @@ export async function fetchReportQueue(input: ReportQueueInput) {
   const rows = await db.query.reports.findMany({
     where: {
       status: input.status,
+      NOT: reportsOn(staffId),
       ...(input.targetType && { targetType: input.targetType }),
       ...(after && {
         RAW: (t) =>
@@ -110,14 +162,15 @@ function toRowTarget(
 
 /**
  * A report with everything staff need to act on it. Throws
- * `report_not_found` for an unknown id.
+ * `report_about_you` for a report on the viewer and `report_not_found` for an
+ * unknown id.
  */
 export async function fetchReportDetail(
-  viewerRole: Role,
+  viewer: { id: string; role: Role },
   id: string,
 ): Promise<AdminReportDetail> {
   const report = await db.query.reports.findFirst({
-    where: { id },
+    where: { id, NOT: reportsOn(viewer.id) },
     with: {
       reporter: {
         columns: { name: true, username: true, displayUsername: true },
@@ -129,11 +182,11 @@ export async function fetchReportDetail(
   });
 
   if (!report) {
-    throw new ExpectedError("report_not_found");
+    throw await hiddenReportError(db, id);
   }
 
   const [target, otherOpenCount] = await Promise.all([
-    fetchDetailTarget(viewerRole, report.targetType, report.targetId),
+    fetchDetailTarget(viewer.role, report.targetType, report.targetId),
     db.$count(
       reports,
       and(
@@ -274,7 +327,8 @@ function reportTransition(
 /**
  * Moves a report to its next status and audits the action in one
  * transaction. The status guard turns a lost race into
- * `report_status_changed` instead of overwriting another staff member.
+ * `report_status_changed` instead of overwriting another staff member, and a
+ * report on the staff member is refused as it is for reads.
  */
 export async function transitionReport(
   staffId: string,
@@ -287,14 +341,23 @@ export async function transitionReport(
     const [updated] = await tx
       .update(reports)
       .set(set)
-      .where(and(eq(reports.id, id), inArray(reports.status, from)))
+      .where(
+        and(
+          eq(reports.id, id),
+          inArray(reports.status, from),
+          visibleTo(staffId),
+        ),
+      )
       .returning({ id: reports.id });
 
     if (!updated) {
-      const exists = await tx.$count(reports, eq(reports.id, id));
-      throw new ExpectedError(
-        exists > 0 ? "report_status_changed" : "report_not_found",
+      const visible = await tx.$count(
+        reports,
+        and(eq(reports.id, id), visibleTo(staffId)),
       );
+      throw visible > 0
+        ? new ExpectedError("report_status_changed")
+        : await hiddenReportError(tx, id);
     }
 
     await recordStaffAudit(tx, { staffId, action, reportId: id });

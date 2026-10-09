@@ -20,6 +20,8 @@ export function formatReportError(error: unknown): string | null {
       return m.report_error_report_target_not_found();
     case "report_not_found":
       return m.report_error_report_not_found();
+    case "report_about_you":
+      return m.report_error_report_about_you();
     case "report_status_changed":
       return m.report_error_report_status_changed();
     default:

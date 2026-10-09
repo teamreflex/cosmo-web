@@ -328,6 +328,7 @@
   "report_error_report_self": "자신을 신고할 수 없습니다.",
   "report_error_report_target_not_found": "이 계정은 더 이상 존재하지 않습니다.",
   "report_error_report_not_found": "신고를 찾을 수 없습니다.",
+  "report_error_report_about_you": "본인에 대한 신고이므로 다른 스태프가 처리합니다.",
   "report_error_report_status_changed": "다른 사람이 이미 이 신고를 업데이트했습니다. 새로고침하여 최신 상태를 확인하세요.",
   "binder_page_count": [
     {

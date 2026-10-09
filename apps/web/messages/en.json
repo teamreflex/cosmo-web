@@ -330,6 +330,7 @@
   "report_error_report_self": "You can't report yourself.",
   "report_error_report_target_not_found": "That account no longer exists.",
   "report_error_report_not_found": "Report not found.",
+  "report_error_report_about_you": "This report is about you, so other staff will handle it.",
   "report_error_report_status_changed": "Someone else has already updated this report. Reload to see its latest status.",
   "binder_page_count": [
     {
