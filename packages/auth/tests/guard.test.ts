@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
+  cosmoTransferRefusal,
   hasEmailDomain,
   isBanActive,
   isDemotion,
@@ -8,7 +9,7 @@ import {
   protectionFor,
   userChangeRefusal,
 } from "../src/guard";
-import type { UserChange } from "../src/guard";
+import type { CosmoTransferRefusal, UserChange } from "../src/guard";
 import { roleNames } from "../src/index";
 import type { Role } from "../src/index";
 
@@ -344,6 +345,73 @@ describe("userChangeRefusal", () => {
         target: protectedMember,
         change: { kind: "ban" },
         protectedDomains: parseEmailDomains(""),
+      }),
+    ).toBeNull();
+  });
+});
+
+describe("cosmoTransferRefusal", () => {
+  const protectedDomains = parseEmailDomains("team-reflex.com");
+  const now = new Date("2026-10-09T12:00:00Z");
+  const active = { banned: false, banExpires: null, deletedAt: null };
+  const member = {
+    ...active,
+    email: "member@example.org",
+    emailVerified: true,
+  };
+  const protectedMember = {
+    ...active,
+    email: "kairu@team-reflex.com",
+    emailVerified: true,
+  };
+  const deleted = { ...active, deletedAt: new Date("2026-10-08T12:00:00Z") };
+  const banned = { ...active, banned: true };
+  const lapsedBan = {
+    ...active,
+    banned: true,
+    banExpires: new Date("2026-10-09T11:00:00Z"),
+  };
+
+  test.each([
+    ["no refusal", null, member, active],
+    ["a protected source", "protected-user", protectedMember, active],
+    ["a protected target", null, member, protectedMember],
+    ["a deleted source", "deleted", { ...member, ...deleted }, active],
+    ["a deleted target", "deleted", member, deleted],
+    ["a banned source", "banned", { ...member, ...banned }, active],
+    ["a banned target", "banned", member, banned],
+    ["a lapsed ban on the source", null, { ...member, ...lapsedBan }, active],
+    ["a lapsed ban on the target", null, member, lapsedBan],
+    [
+      "a protected source that is also banned",
+      "protected-user",
+      { ...protectedMember, ...banned },
+      active,
+    ],
+    [
+      "a deleted target with a banned source",
+      "deleted",
+      { ...member, ...banned },
+      deleted,
+    ],
+  ] satisfies [
+    string,
+    CosmoTransferRefusal | null,
+    Parameters<typeof cosmoTransferRefusal>[0]["from"],
+    Parameters<typeof cosmoTransferRefusal>[0]["to"],
+  ][])("%s gives %p", (_, expected, from, to) => {
+    expect(cosmoTransferRefusal({ from, to, protectedDomains, now })).toBe(
+      expected,
+    );
+  });
+
+  test("protects nobody without domains", () => {
+    expect(
+      cosmoTransferRefusal({
+        from: protectedMember,
+        to: active,
+        protectedDomains: parseEmailDomains(""),
+        now,
       }),
     ).toBeNull();
   });

@@ -20,6 +20,7 @@ import { Route as AtChar123usernameChar125GridRouteImport } from './routes/@{$us
 import { Route as AtChar123usernameChar125ProgressRouteImport } from './routes/@{$username}/progress'
 import { Route as AtChar123usernameChar125TradesRouteImport } from './routes/@{$username}/trades'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminAccountsRouteImport } from './routes/admin/accounts'
 import { Route as AdminApiKeysRouteImport } from './routes/admin/api-keys'
 import { Route as AdminAuditRouteImport } from './routes/admin/audit'
 import { Route as AdminBandsRouteImport } from './routes/admin/bands'
@@ -111,6 +112,11 @@ const AtChar123usernameChar125TradesRoute =
 const AdminIndexRoute = AdminIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminAccountsRoute = AdminAccountsRouteImport.update({
+  id: '/accounts',
+  path: '/accounts',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AdminApiKeysRoute = AdminApiKeysRouteImport.update({
@@ -287,6 +293,7 @@ export interface FileRoutesByFullPath {
   '/@{$username}/grid': typeof AtChar123usernameChar125GridRoute
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
+  '/admin/accounts': typeof AdminAccountsRoute
   '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/bands': typeof AdminBandsRoute
@@ -329,6 +336,7 @@ export interface FileRoutesByTo {
   '/@{$username}/grid': typeof AtChar123usernameChar125GridRoute
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
+  '/admin/accounts': typeof AdminAccountsRoute
   '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/bands': typeof AdminBandsRoute
@@ -374,6 +382,7 @@ export interface FileRoutesById {
   '/@{$username}/grid': typeof AtChar123usernameChar125GridRoute
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
+  '/admin/accounts': typeof AdminAccountsRoute
   '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/bands': typeof AdminBandsRoute
@@ -420,6 +429,7 @@ export interface FileRouteTypes {
     | '/@{$username}/grid'
     | '/@{$username}/progress'
     | '/@{$username}/trades'
+    | '/admin/accounts'
     | '/admin/api-keys'
     | '/admin/audit'
     | '/admin/bands'
@@ -462,6 +472,7 @@ export interface FileRouteTypes {
     | '/@{$username}/grid'
     | '/@{$username}/progress'
     | '/@{$username}/trades'
+    | '/admin/accounts'
     | '/admin/api-keys'
     | '/admin/audit'
     | '/admin/bands'
@@ -506,6 +517,7 @@ export interface FileRouteTypes {
     | '/@{$username}/grid'
     | '/@{$username}/progress'
     | '/@{$username}/trades'
+    | '/admin/accounts'
     | '/admin/api-keys'
     | '/admin/audit'
     | '/admin/bands'
@@ -646,6 +658,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/admin/'
       preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/accounts': {
+      id: '/admin/accounts'
+      path: '/accounts'
+      fullPath: '/admin/accounts'
+      preLoaderRoute: typeof AdminAccountsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/admin/api-keys': {
@@ -898,6 +917,7 @@ const AtChar123usernameChar125RouteRouteWithChildren =
   )
 
 interface AdminRouteRouteChildren {
+  AdminAccountsRoute: typeof AdminAccountsRoute
   AdminApiKeysRoute: typeof AdminApiKeysRoute
   AdminAuditRoute: typeof AdminAuditRoute
   AdminBandsRoute: typeof AdminBandsRoute
@@ -911,6 +931,7 @@ interface AdminRouteRouteChildren {
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminAccountsRoute: AdminAccountsRoute,
   AdminApiKeysRoute: AdminApiKeysRoute,
   AdminAuditRoute: AdminAuditRoute,
   AdminBandsRoute: AdminBandsRoute,

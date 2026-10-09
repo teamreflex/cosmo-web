@@ -10,6 +10,7 @@ import type {
 } from "@/lib/universal/staff-audit";
 import { cn } from "@/lib/utils";
 import type { StaffAuditAction } from "@apollo/database/web/types";
+import { shortAddress } from "@apollo/util";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
@@ -35,6 +36,7 @@ const actionTones = {
   "api-key:update": "text-destructive",
   "api-key:delete": "text-destructive",
   "metadata:update": "text-foreground",
+  "cosmo-account:transfer": "text-destructive",
 } satisfies Record<StaffAuditAction, string>;
 
 type Props = {
@@ -242,7 +244,32 @@ function AuditTarget({ row }: Props) {
           </span>
         </>
       );
+    case "cosmo-account":
+      return (
+        <>
+          <span className="min-w-0 break-words">
+            {m.admin_audit_target_cosmo_account({
+              username: row.target.username,
+            })}
+          </span>
+          <span className="font-mono text-xs text-muted-foreground">
+            {shortAddress(row.target.address)}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            {`${moveSide(row.target.from)} → ${moveSide(row.target.to)}`}
+          </span>
+        </>
+      );
   }
+}
+
+/**
+ * One side of a COSMO account move; null is a deleted account.
+ */
+function moveSide(username: string | null) {
+  return username === null
+    ? m.admin_audit_target_deleted_user()
+    : `@${username}`;
 }
 
 function detailNote(detail: AdminAuditDetail) {

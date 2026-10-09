@@ -1,4 +1,5 @@
 import { m } from "@/i18n/messages";
+import { COSMO_TRANSFER_PERMISSIONS } from "@/lib/universal/cosmo-transfer";
 import { can } from "@apollo/auth";
 import type { Permissions, Role } from "@apollo/auth";
 import {
@@ -12,6 +13,7 @@ import {
   IconHome,
   IconKey,
   IconLayoutSidebarRight,
+  IconUserCog,
 } from "@tabler/icons-react";
 import type { Icon } from "@tabler/icons-react";
 import { notFound } from "@tanstack/react-router";
@@ -62,6 +64,12 @@ export function getAdminItems(): AdminItem[] {
       url: "/admin/audit",
       icon: IconHistory,
       permissions: { audit: ["read"] },
+    },
+    {
+      title: m.admin_accounts_title(),
+      url: "/admin/accounts",
+      icon: IconUserCog,
+      permissions: COSMO_TRANSFER_PERMISSIONS,
     },
     {
       title: m.admin_bands_title(),

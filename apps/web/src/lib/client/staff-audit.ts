@@ -16,6 +16,7 @@ const actionLabels = {
   "api-key:update": m.admin_audit_action_api_key_update,
   "api-key:delete": m.admin_audit_action_api_key_delete,
   "metadata:update": m.admin_audit_action_metadata_update,
+  "cosmo-account:transfer": m.admin_audit_action_cosmo_account_transfer,
 } satisfies Record<StaffAuditAction, () => string>;
 
 /**

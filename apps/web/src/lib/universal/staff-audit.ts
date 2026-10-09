@@ -5,9 +5,10 @@ import type {
 } from "@apollo/database/web/types";
 
 /**
- * What an audit row acted on. A user's username, and an API key owner's, is
- * null once their account is deleted. An API key's name and enabled state are
- * as they were when the action ran.
+ * What an audit row acted on. A user's username, an API key owner's, and the
+ * two sides of a COSMO account move, are null once that account is deleted.
+ * An API key's name and enabled state, and a moved COSMO account's username,
+ * are as they were when the action ran.
  */
 export type AdminAuditTarget =
   | { type: "user"; id: string; username: string | null }
@@ -19,7 +20,14 @@ export type AdminAuditTarget =
       owner: string | null;
       enabled: boolean;
     }
-  | { type: "collection"; slug: string };
+  | { type: "collection"; slug: string }
+  | {
+      type: "cosmo-account";
+      address: string;
+      username: string;
+      from: string | null;
+      to: string | null;
+    };
 
 /**
  * The parts of an audit row's stored detail that the log shows, with roles
