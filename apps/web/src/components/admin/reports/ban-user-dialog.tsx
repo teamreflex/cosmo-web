@@ -23,9 +23,9 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { m } from "@/i18n/messages";
-import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { formatError } from "@/lib/client/errors";
 import { banLengthLabel, reportReasonLabel } from "@/lib/client/reports";
+import { $banUser } from "@/lib/functions/staff-users";
 import { adminReportsQueryFilter } from "@/lib/queries/reports";
 import { banLengthOptions } from "@/lib/universal/reports";
 import type {
@@ -48,9 +48,8 @@ type Props = {
 };
 
 /**
- * Bans a reported user through the admin plugin. The report id rides along
- * as `x-report-id`, so the server links the ban to this report and resolves
- * every open report on the user.
+ * Bans a reported user. The ban carries the report's id, so the server links
+ * it to this report and resolves every open report on the user.
  */
 export default function BanUserDialog({
   open,
@@ -68,21 +67,17 @@ export default function BanUserDialog({
   });
 
   const mutation = useMutation({
-    mutationFn: async (data: BanUser) => {
-      const result = await authClient.admin.banUser(
-        {
+    mutationFn: (data: BanUser) =>
+      $banUser({
+        data: {
           userId: user.id,
-          banReason: data.reason,
-          banExpiresIn:
+          reason: data.reason,
+          expiresIn:
             banLengthOptions.find((option) => option.value === data.length)
-              ?.seconds ?? undefined,
+              ?.seconds ?? null,
+          reportId: report.id,
         },
-        { headers: { "x-report-id": report.id } },
-      );
-      if (result.error) {
-        throw new Error(getAuthErrorMessage(result.error));
-      }
-    },
+      }),
     onSuccess: async () => {
       toast.success(m.admin_ban_banned({ username: user.username }));
       handleOpenChange(false);

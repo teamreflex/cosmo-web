@@ -7,6 +7,9 @@ export const authErrorCodes = [
   "NOT_FOUND",
   "api_key_not_found",
   "user_not_found",
+  "protected_user",
+  "self_ban",
+  "self_demotion",
 ] as const;
 
 export type AuthErrorCode = (typeof authErrorCodes)[number];

@@ -1,22 +1,14 @@
 import * as clientEnv from "@/lib/env/client";
 import * as serverEnv from "@/lib/env/server";
 import { baseUrl } from "@/lib/utils";
-import { adminPluginOptions, can, parseRole, roleNames } from "@apollo/auth";
-import { userChangeRefusal } from "@apollo/auth/guard";
-import type { UserChange, UserChangeRefusal } from "@apollo/auth/guard";
+import { adminPluginOptions } from "@apollo/auth";
 import * as authSchema from "@apollo/database/auth";
 import { cosmoAccounts } from "@apollo/database/web/schema";
-import type { StaffAuditDetail } from "@apollo/database/web/types";
 import { GRID_COLUMNS } from "@apollo/util";
 import type { CollectionDataSource } from "@apollo/util";
 import { apiKey } from "@better-auth/api-key";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
-import {
-  APIError,
-  createAuthMiddleware,
-  getSessionFromCtx,
-  isAPIError,
-} from "better-auth/api";
+import { APIError, createAuthMiddleware } from "better-auth/api";
 import { parseSessionOutput, parseUserOutput } from "better-auth/db";
 import { betterAuth } from "better-auth/minimal";
 import { admin } from "better-auth/plugins/admin";
@@ -24,7 +16,6 @@ import { username } from "better-auth/plugins/username";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { eq } from "drizzle-orm";
 import { createCipheriv, randomBytes } from "node:crypto";
-import * as z from "zod";
 import type { PublicUser } from "../universal/auth";
 import { settingsSchema } from "../universal/schema/auth";
 import { db } from "./db";
@@ -33,17 +24,6 @@ import {
   sendPasswordResetEmail,
   sendVerificationEmail,
 } from "./mail.server";
-import { resolveUserReports } from "./reports.server";
-import { recordStaffAudit } from "./staff-audit.server";
-import { publishUserEvent } from "./user-events.server";
-
-const PREVIOUS_ROLE_HEADER = "x-apollo-previous-role";
-
-const userIdBodySchema = z.object({ userId: z.coerce.string() });
-
-const setRoleBodySchema = userIdBodySchema.extend({
-  role: z.enum(roleNames),
-});
 
 /**
  * Better Auth server instance.
@@ -199,59 +179,14 @@ export const auth = betterAuth({
         throw new APIError("NOT_FOUND");
       }
 
-      if (ctx.path === "/admin/ban-user" || ctx.path === "/admin/unban-user") {
-        const body = userIdBodySchema.safeParse(ctx.body);
-        if (body.success) {
-          await guardUserChange(
-            await getSessionFromCtx(ctx),
-            body.data.userId,
-            {
-              kind: ctx.path === "/admin/ban-user" ? "ban" : "unban",
-            },
-          );
-        }
-      }
-
       /**
-       * Allow exactly one known role: the plugin would comma-join an array,
-       * which the role CHECK rejects. Setting the role the user already has
-       * is answered here as the plugin would answer it, so the endpoint and
-       * the after-hook never run and nothing is audited or published.
-       * Otherwise the previous role, gone once the update commits, reaches
-       * the after-hook's audit row in a request header that overwrites any
-       * value the client sent.
+       * Staff change accounts through server functions, which call the admin
+       * plugin with the request's headers so it can read their session. Only
+       * router calls carry `ctx.request`, so testing it alone (unlike the
+       * api-key block) keeps those calls working.
        */
-      if (ctx.path === "/admin/set-role") {
-        const body = setRoleBodySchema.safeParse(ctx.body);
-        if (!body.success) {
-          throw new APIError("BAD_REQUEST", {
-            message: `Role must be one of: ${roleNames.join(", ")}`,
-          });
-        }
-
-        const target = await guardUserChange(
-          await getSessionFromCtx(ctx),
-          body.data.userId,
-          { kind: "set-role", role: body.data.role },
-        );
-        if (target) {
-          if (parseRole(target.role) === body.data.role) {
-            const user = await ctx.context.internalAdapter.findUserById(
-              target.id,
-            );
-            if (user) {
-              return ctx.json({
-                user: parseUserOutput(ctx.context.options, user),
-              });
-            }
-          }
-
-          return {
-            context: {
-              headers: new Headers({ [PREVIOUS_ROLE_HEADER]: target.role }),
-            },
-          };
-        }
+      if (ctx.path?.startsWith("/admin/") && ctx.request) {
+        throw new APIError("NOT_FOUND");
       }
 
       /**
@@ -290,67 +225,6 @@ export const auth = betterAuth({
             },
           },
         };
-      }
-    }),
-
-    /**
-     * Audits staff actions and publishes them on `user-events`. After-hooks
-     * also run when the endpoint refused the caller, and `ctx.body` is the
-     * raw request body.
-     */
-    after: createAuthMiddleware(async (ctx) => {
-      const session = ctx.context.session;
-      if (isAPIError(ctx.context.returned) || !session) {
-        return;
-      }
-
-      switch (ctx.path) {
-        case "/admin/ban-user": {
-          const { userId, banReason, banExpiresIn } = z
-            .object({
-              userId: z.coerce.string(),
-              banReason: z.string().optional(),
-              banExpiresIn: z.number().optional(),
-            })
-            .parse(ctx.body);
-          await recordBan({
-            staffId: session.user.id,
-            userId,
-            reportId: z.uuid().safeParse(ctx.headers?.get("x-report-id")).data,
-            // the plugin treats a zero length as permanent
-            detail: {
-              kind: "ban",
-              expiresIn: banExpiresIn || null,
-              reason: banReason ?? "",
-            },
-          });
-          return;
-        }
-        case "/admin/unban-user": {
-          const { userId } = userIdBodySchema.parse(ctx.body);
-          await recordStaffAudit(db, {
-            staffId: session.user.id,
-            action: "user:unban",
-            userId,
-          });
-          await publishUserEvent({ type: "unbanned", userId });
-          return;
-        }
-        case "/admin/set-role": {
-          const { userId, role } = setRoleBodySchema.parse(ctx.body);
-          await recordStaffAudit(db, {
-            staffId: session.user.id,
-            action: "user:set-role",
-            userId,
-            detail: {
-              kind: "set-role",
-              from: parseRole(ctx.headers?.get(PREVIOUS_ROLE_HEADER)),
-              to: role,
-            },
-          });
-          await publishUserEvent({ type: "role-changed", userId, role });
-          return;
-        }
       }
     }),
   },
@@ -463,123 +337,6 @@ export const auth = betterAuth({
     },
   },
 });
-
-/**
- * Localised on the client by `getAuthErrorMessage`, keyed by code.
- */
-const userChangeErrors = {
-  "protected-user": {
-    code: "PROTECTED_USER",
-    message: "This account is protected: nobody can ban it or change its role",
-  },
-  "self-demotion": {
-    code: "CANNOT_DEMOTE_SELF",
-    message: "You can't lower your own role",
-  },
-} satisfies Record<UserChangeRefusal, { code: string; message: string }>;
-
-/**
- * Refuses a ban, unban or role change that the caller's role allows but
- * `userChangeRefusal` doesn't, and returns the target otherwise. Callers
- * without the permission are left to the plugin's own refusal, so they never
- * learn which accounts are protected.
- *
- * No other admin plugin endpoint that changes an account is reachable: the
- * rest need permissions outside the statement, so the plugin refuses them.
- */
-async function guardUserChange(
-  session: { user: { id: string; role?: string | null } } | null,
-  userId: string,
-  change: UserChange,
-) {
-  const role = parseRole(session?.user.role);
-  if (
-    !session ||
-    !can(
-      role,
-      change.kind === "set-role" ? { user: ["set-role"] } : { user: ["ban"] },
-    )
-  ) {
-    return null;
-  }
-
-  const target = await db.query.user.findFirst({
-    where: { id: userId },
-    columns: { id: true, email: true, emailVerified: true, role: true },
-  });
-  if (!target) {
-    return null;
-  }
-
-  const refusal = userChangeRefusal({
-    caller: { id: session.user.id, role },
-    target,
-    change,
-    protectedDomains: serverEnv.env.PROTECTED_EMAIL_DOMAINS,
-  });
-  if (refusal !== null) {
-    throw APIError.from("FORBIDDEN", userChangeErrors[refusal]);
-  }
-
-  return target;
-}
-
-type BanRecord = {
-  staffId: string;
-  userId: string;
-  reportId: string | undefined;
-  detail: Extract<StaffAuditDetail, { kind: "ban" }>;
-};
-
-/**
- * Audit a ban, then announce it. A ban started from a report links that
- * report and resolves every open report on the user, each with its own audit
- * row.
- */
-async function recordBan({ staffId, userId, reportId, detail }: BanRecord) {
-  const banExpires = await db.transaction(async (tx) => {
-    /**
-     * Without a length the plugin leaves `ban_expires` as it was, so a lapsed
-     * earlier ban would lift this permanent one at the next sign-in.
-     */
-    if (detail.expiresIn === null) {
-      await tx
-        .update(authSchema.user)
-        .set({ banExpires: null })
-        .where(eq(authSchema.user.id, userId));
-    }
-
-    const target = await tx.query.user.findFirst({
-      where: { id: userId },
-      columns: { banExpires: true },
-    });
-    const linkedReport = reportId
-      ? await tx.query.reports.findFirst({
-          where: { id: reportId, targetType: "user", targetId: userId },
-          columns: { id: true },
-        })
-      : undefined;
-
-    await recordStaffAudit(tx, {
-      staffId,
-      action: "user:ban",
-      userId,
-      reportId: linkedReport?.id ?? null,
-      detail,
-    });
-    if (linkedReport) {
-      await resolveUserReports(tx, staffId, userId);
-    }
-
-    return target?.banExpires ?? null;
-  });
-
-  await publishUserEvent({
-    type: "banned",
-    userId,
-    expiresAt: banExpires?.toISOString() ?? null,
-  });
-}
 
 // should not be used in client code
 type ServerUser = (typeof auth.$Infer.Session)["user"];

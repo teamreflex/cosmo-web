@@ -179,6 +179,36 @@ describe("userChangeRefusal", () => {
     ).toBeNull();
   });
 
+  test("refuses banning yourself", () => {
+    expect(
+      userChangeRefusal({
+        caller: admin,
+        target: {
+          id: admin.id,
+          email: "admin@example.org",
+          emailVerified: true,
+        },
+        change: { kind: "ban" },
+        protectedDomains,
+      }),
+    ).toBe("self-ban");
+  });
+
+  test("allows unbanning yourself", () => {
+    expect(
+      userChangeRefusal({
+        caller: admin,
+        target: {
+          id: admin.id,
+          email: "admin@example.org",
+          emailVerified: true,
+        },
+        change: { kind: "unban" },
+        protectedDomains,
+      }),
+    ).toBeNull();
+  });
+
   test("refuses lowering your own role", () => {
     for (const role of ["moderator", "user"] as const) {
       expect(

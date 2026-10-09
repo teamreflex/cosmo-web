@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Timestamp } from "@/components/ui/timestamp";
 import { useHasPermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
-import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { formatError } from "@/lib/client/errors";
 import { roleLabel } from "@/lib/client/roles";
+import { $unbanUser } from "@/lib/functions/staff-users";
 import { adminReportsQueryFilter } from "@/lib/queries/reports";
 import type {
   AdminReportDetail,
@@ -108,18 +108,13 @@ function TargetMeta({
 }
 
 /**
- * Lifts a ban through the admin plugin; only roles that can ban see it.
+ * Lifts a ban; only roles that can ban see it.
  */
 function UnbanButton({ user }: { user: ReportTargetUser }) {
   const hasPermission = useHasPermission();
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: async () => {
-      const result = await authClient.admin.unbanUser({ userId: user.id });
-      if (result.error) {
-        throw new Error(getAuthErrorMessage(result.error));
-      }
-    },
+    mutationFn: () => $unbanUser({ data: { userId: user.id } }),
     onSuccess: async () => {
       toast.success(m.admin_reports_unbanned({ username: user.username }));
       await queryClient.invalidateQueries(adminReportsQueryFilter);

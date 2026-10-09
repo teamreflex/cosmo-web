@@ -69,15 +69,14 @@ export function protectionFor(
 }
 
 /**
- * A staff change to an account's access or role, as the admin plugin's
- * ban, unban and set-role endpoints make it.
+ * A staff change to an account's access or role.
  */
 export type UserChange =
   | { kind: "ban" }
   | { kind: "unban" }
   | { kind: "set-role"; role: Role };
 
-export type UserChangeRefusal = "protected-user" | "self-demotion";
+export type UserChangeRefusal = "protected-user" | "self-ban" | "self-demotion";
 
 type UserChangeCheck = {
   caller: { id: string; role: Role };
@@ -89,7 +88,7 @@ type UserChangeCheck = {
 /**
  * Why a staff member who holds the permission still may not make the change,
  * or null when they may. Nobody, admins included, can change a protected
- * account, and nobody can lower their own role.
+ * account, and nobody can ban themselves or lower their own role.
  */
 export function userChangeRefusal({
   caller,
@@ -99,6 +98,10 @@ export function userChangeRefusal({
 }: UserChangeCheck): UserChangeRefusal | null {
   if (isProtectedAccount(target, protectedDomains)) {
     return "protected-user";
+  }
+
+  if (change.kind === "ban" && target.id === caller.id) {
+    return "self-ban";
   }
 
   if (

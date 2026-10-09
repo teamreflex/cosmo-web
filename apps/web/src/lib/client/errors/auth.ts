@@ -28,6 +28,12 @@ export function formatAuthError(error: unknown): string | null {
       return m.auth_error_api_key_not_found();
     case "user_not_found":
       return m.auth_error_user_not_found();
+    case "protected_user":
+      return m.auth_error_protected_user();
+    case "self_ban":
+      return m.auth_error_ban_self();
+    case "self_demotion":
+      return m.auth_error_demote_self();
     default:
       error.message satisfies never;
       return null;
