@@ -12,8 +12,4 @@ export const transferCosmoAccountSchema = z
     path: ["toUserId"],
   });
 
-export const cosmoTransferSearchSchema = z.object({
-  query: z.string().min(3),
-});
-
 export type TransferCosmoAccount = z.infer<typeof transferCosmoAccountSchema>;

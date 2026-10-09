@@ -179,10 +179,10 @@ const users = await db.query.users.findMany({
   },
 });
 
-// String search
+// Prefix search on user input; prefixPattern() (lib/server/util.server.ts) escapes the query's % and _
 const users = await db.query.users.findMany({
   where: {
-    username: { ilike: "%search%" },
+    username: { ilike: prefixPattern(query) },
   },
 });
 

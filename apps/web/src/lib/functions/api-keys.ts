@@ -2,12 +2,13 @@ import { auth } from "@/lib/server/auth.server";
 import { db } from "@/lib/server/db";
 import { staffMiddleware } from "@/lib/server/middlewares";
 import { recordStaffAudit } from "@/lib/server/staff-audit.server";
+import { prefixPattern } from "@/lib/server/util.server";
 import type { AdminApiKey, UserSearchResult } from "@/lib/universal/api-keys";
 import { ExpectedError } from "@/lib/universal/errors/expected";
+import { adminSearchSchema } from "@/lib/universal/schema/admin";
 import {
   createApiKeySchema,
   deleteApiKeySchema,
-  searchUsersSchema,
   updateApiKeySchema,
 } from "@/lib/universal/schema/api-keys";
 import { apikey } from "@apollo/database/web/schema";
@@ -21,13 +22,11 @@ import { eq } from "drizzle-orm";
  */
 export const $searchUsers = createServerFn({ method: "GET" })
   .middleware([staffMiddleware({ site: ["manage"] })])
-  .validator(searchUsersSchema)
+  .validator(adminSearchSchema)
   .handler(async ({ data }) => {
-    // escape LIKE wildcards so they match literally
-    const pattern = `${data.query.replace(/[\\%_]/g, "\\$&")}%`;
     const rows = await db.query.cosmoAccounts.findMany({
       where: {
-        username: { ilike: pattern },
+        username: { ilike: prefixPattern(data.query) },
         userId: { isNotNull: true },
         user: { deletedAt: { isNull: true } },
       },

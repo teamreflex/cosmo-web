@@ -5,25 +5,17 @@ import {
   namedUserColumns,
   staffUsername,
 } from "@/lib/server/staff-users.server";
+import { prefixPattern } from "@/lib/server/util.server";
 import {
   COSMO_TRANSFER_PERMISSIONS,
   type CosmoTransferSource,
   type CosmoTransferTarget,
 } from "@/lib/universal/cosmo-transfer";
-import {
-  cosmoTransferSearchSchema,
-  transferCosmoAccountSchema,
-} from "@/lib/universal/schema/cosmo-transfer";
+import { adminSearchSchema } from "@/lib/universal/schema/admin";
+import { transferCosmoAccountSchema } from "@/lib/universal/schema/cosmo-transfer";
 import { cosmoAccounts } from "@apollo/database/web/schema";
 import { createServerFn } from "@tanstack/react-start";
 import { eq, notExists } from "drizzle-orm";
-
-/**
- * A prefix match with LIKE wildcards escaped, so they match literally.
- */
-function prefixPattern(query: string) {
-  return `${query.replace(/[\\%_]/g, "\\$&")}%`;
-}
 
 /**
  * Move a COSMO account's link to another user.
@@ -41,7 +33,7 @@ export const $transferCosmoAccount = createServerFn({ method: "POST" })
  */
 export const $searchCosmoTransferSources = createServerFn({ method: "GET" })
   .middleware([staffMiddleware(COSMO_TRANSFER_PERMISSIONS)])
-  .validator(cosmoTransferSearchSchema)
+  .validator(adminSearchSchema)
   .handler(async ({ data }) => {
     const rows = await db.query.cosmoAccounts.findMany({
       where: {
@@ -73,7 +65,7 @@ export const $searchCosmoTransferSources = createServerFn({ method: "GET" })
  */
 export const $searchCosmoTransferTargets = createServerFn({ method: "GET" })
   .middleware([staffMiddleware(COSMO_TRANSFER_PERMISSIONS)])
-  .validator(cosmoTransferSearchSchema)
+  .validator(adminSearchSchema)
   .handler(async ({ data }) => {
     const pattern = prefixPattern(data.query);
     const users = await db.query.user.findMany({

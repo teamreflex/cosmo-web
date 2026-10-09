@@ -15,3 +15,11 @@ export function isPostgresError(error: unknown, code: string) {
 
   return false;
 }
+
+/**
+ * A LIKE or ILIKE pattern matching values that start with `query`, with the
+ * query's wildcards escaped so they match literally.
+ */
+export function prefixPattern(query: string) {
+  return `${query.replace(/[\\%_]/g, "\\$&")}%`;
+}
