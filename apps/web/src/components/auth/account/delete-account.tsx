@@ -27,7 +27,12 @@ import {
 import type { AccountErrorCode } from "@/lib/universal/errors/accounts";
 import { isExpectedError } from "@/lib/universal/errors/expected";
 import { IconLoader2, IconMailCheck, IconTrash } from "@tabler/icons-react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
@@ -241,6 +246,8 @@ type ConfirmProps = {
 };
 
 function Confirm({ action, note, pending, onConfirm }: ConfirmProps) {
+  const { data: account } = useSuspenseQuery(currentAccountQuery);
+
   return (
     <>
       <DialogHeader>
@@ -248,9 +255,11 @@ function Confirm({ action, note, pending, onConfirm }: ConfirmProps) {
         <DialogDescription>
           {m.delete_account_confirm_description()}
         </DialogDescription>
-        <p className="text-sm text-muted-foreground">
-          {m.delete_account_confirm_cosmo({ appName: env.VITE_APP_NAME })}
-        </p>
+        {account?.cosmo !== undefined && (
+          <p className="text-sm text-muted-foreground">
+            {m.delete_account_confirm_cosmo({ appName: env.VITE_APP_NAME })}
+          </p>
+        )}
         {note && <p className="text-sm text-muted-foreground">{note}</p>}
       </DialogHeader>
       <DialogFooter>
