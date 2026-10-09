@@ -1,4 +1,5 @@
 import { toPublicUser } from "@/lib/server/auth.server";
+import { getCosmoAddress } from "@/lib/server/cosmo-accounts.server";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { collections, members } from "@/lib/server/db/indexer/schema";
@@ -366,14 +367,11 @@ export const $updateObjektList = createServerFn({ method: "POST" })
       throw new Error("Failed to update list");
     }
 
-    const cosmo = await db.query.cosmoAccounts.findFirst({
-      where: { userId: context.session.session.userId },
-    });
-
-    if (cosmo) {
+    const link = await getCosmoAddress(db, context.session.session.userId);
+    if (link.kind === "linked") {
       throw redirect({
         to: "/@{$username}/list/$slug",
-        params: { username: cosmo.username, slug: result.slug },
+        params: { username: link.username, slug: result.slug },
       });
     }
 

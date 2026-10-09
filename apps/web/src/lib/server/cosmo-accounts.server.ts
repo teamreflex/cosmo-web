@@ -5,10 +5,33 @@ import type { CosmoSearchResult } from "@apollo/cosmo/types/user";
 import { cosmoAccounts } from "@apollo/database/web/schema";
 import type { CosmoAccount } from "@apollo/database/web/types";
 import { addr, isAddress } from "@apollo/util";
-import { like, sql } from "drizzle-orm";
-import type { FullAccount, PublicCosmo } from "../universal/cosmo-accounts";
+import { eq, isNull, like, or, sql } from "drizzle-orm";
+import type {
+  CosmoLink,
+  FullAccount,
+  PublicCosmo,
+} from "../universal/cosmo-accounts";
+import { ExpectedError } from "../universal/errors/expected";
 import { toPublicUser } from "./auth.server";
-import { db } from "./db";
+import { db, type DbOrTx } from "./db";
+import { isPostgresError } from "./util.server";
+
+/**
+ * The one place to read a user's linked COSMO address. The address keeps its
+ * stored case, so compare it against indexer rows with isEqual() or addr().
+ * A deleted user keeps their link.
+ */
+export async function getCosmoAddress(
+  executor: DbOrTx,
+  userId: string,
+): Promise<CosmoLink> {
+  const cosmo = await executor.query.cosmoAccounts.findFirst({
+    where: { userId },
+    columns: { address: true, username: true },
+  });
+
+  return cosmo ? { kind: "linked", ...cosmo } : { kind: "none" };
+}
 
 /**
  * Fetch a full account from the database.
@@ -52,10 +75,6 @@ export async function fetchFullAccount(
     return {
       cosmo: {
         ...toPublicCosmo({
-          id: 0,
-          cosmoId: null,
-          polygonAddress: null,
-          userId: null,
           username: identifier.substring(0, 6),
           address: identifier,
         }),
@@ -97,27 +116,43 @@ export async function fetchFullAccount(
 
 /**
  * Upsert a COSMO account into the database and link it to a user.
- * Used when verifying ownership of a COSMO account.
+ * Used when verifying ownership of a COSMO account. The upsert never takes an
+ * address linked to another user, and the unique user_id index refuses a
+ * second link for the same user.
  */
-export async function linkAccount(account: Omit<CosmoAccount, "id">) {
-  const [result] = await db
-    .insert(cosmoAccounts)
-    .values(account)
-    .onConflictDoUpdate({
-      target: cosmoAccounts.address,
-      set: {
-        username: account.username,
-        cosmoId: account.cosmoId,
-        userId: account.userId,
-      },
-    })
-    .returning();
+export async function linkAccount(
+  executor: DbOrTx,
+  account: Omit<CosmoAccount, "id" | "userId"> & { userId: string },
+) {
+  try {
+    const [result] = await executor
+      .insert(cosmoAccounts)
+      .values(account)
+      .onConflictDoUpdate({
+        target: cosmoAccounts.address,
+        set: {
+          username: account.username,
+          cosmoId: account.cosmoId,
+          userId: account.userId,
+        },
+        setWhere: or(
+          isNull(cosmoAccounts.userId),
+          eq(cosmoAccounts.userId, account.userId),
+        ),
+      })
+      .returning();
 
-  if (!result) {
-    throw new Error("Failed to link COSMO account");
+    if (!result) {
+      throw new ExpectedError("account_linked_elsewhere");
+    }
+
+    return result;
+  } catch (error) {
+    if (isPostgresError(error, "23505")) {
+      throw new ExpectedError("cosmo_already_linked");
+    }
+    throw error;
   }
-
-  return result;
 }
 
 type PartialAccount = Omit<CosmoAccount, "id" | "cosmoId" | "userId">;
@@ -244,9 +279,11 @@ export async function fetchKnownPolygonAddresses(addresses: string[]) {
  * Safely convert a COSMO account object for public use.
  */
 export function toPublicCosmo(cosmo: undefined): undefined;
-export function toPublicCosmo(cosmo: CosmoAccount): PublicCosmo;
 export function toPublicCosmo(
-  cosmo: CosmoAccount | undefined,
+  cosmo: Pick<CosmoAccount, "username" | "address">,
+): PublicCosmo;
+export function toPublicCosmo(
+  cosmo: Pick<CosmoAccount, "username" | "address"> | undefined,
 ): PublicCosmo | undefined {
   if (!cosmo) {
     return undefined;

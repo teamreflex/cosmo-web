@@ -3,6 +3,7 @@ import { remember } from "@/lib/server/cache.server";
 import { fetchCookie, putCookie } from "@/lib/server/cookies.server";
 import {
   fetchFullAccount,
+  getCosmoAddress,
   toPublicCosmo,
 } from "@/lib/server/cosmo-accounts.server";
 import { db } from "@/lib/server/db";
@@ -92,35 +93,25 @@ export const $fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
       setResponseHeader("Set-Cookie", cookies);
     }
 
-    const result = await db.query.user.findFirst({
-      where: { id: session.response.session.userId },
-      with: {
-        cosmoAccount: true,
-        objektLists: true,
-      },
-    });
+    const userId = session.response.session.userId;
+    const [result, link] = await Promise.all([
+      db.query.user.findFirst({
+        where: { id: userId },
+        with: { objektLists: true },
+      }),
+      getCosmoAddress(db, userId),
+    ]);
 
     // broken user account
     if (!result) {
       return null;
     }
 
-    // no cosmo account, just return the user
-    const { cosmoAccount, objektLists, ...user } = result;
-    if (!cosmoAccount) {
-      return {
-        user: toPublicUser(user),
-        role: user.role,
-        cosmo: undefined,
-        objektLists,
-      };
-    }
-
-    // return the user and cosmo account
+    const { objektLists, ...user } = result;
     return {
-      cosmo: toPublicCosmo(cosmoAccount),
       user: toPublicUser(user),
       role: user.role,
+      cosmo: link.kind === "linked" ? toPublicCosmo(link) : undefined,
       objektLists,
     };
   },

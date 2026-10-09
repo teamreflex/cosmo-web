@@ -332,6 +332,9 @@
   "report_error_report_not_found": "Report not found.",
   "report_error_report_about_you": "This report is about you, so other staff will handle it.",
   "report_error_report_status_changed": "Someone else has already updated this report. Reload to see its latest status.",
+  "account_error_linked_elsewhere": "This COSMO account is already linked to another {appName} account. Each COSMO account can belong to one {appName} account only.",
+  "account_error_already_linked": "Your account already has a COSMO account linked.",
+  "account_error_cosmo_banned": "This COSMO account belongs to a banned {appName} account, so it can't be linked.",
   "binder_page_count": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

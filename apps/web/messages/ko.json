@@ -330,6 +330,9 @@
   "report_error_report_not_found": "신고를 찾을 수 없습니다.",
   "report_error_report_about_you": "본인에 대한 신고이므로 다른 스태프가 처리합니다.",
   "report_error_report_status_changed": "다른 사람이 이미 이 신고를 업데이트했습니다. 새로고침하여 최신 상태를 확인하세요.",
+  "account_error_linked_elsewhere": "이 코스모 계정은 이미 다른 {appName} 계정에 연결되어 있습니다. 코스모 계정은 하나의 {appName} 계정에만 연결할 수 있습니다.",
+  "account_error_already_linked": "이미 코스모 계정이 연결된 계정입니다.",
+  "account_error_cosmo_banned": "이 코스모 계정은 정지된 {appName} 계정의 것이라 연결할 수 없습니다.",
   "binder_page_count": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

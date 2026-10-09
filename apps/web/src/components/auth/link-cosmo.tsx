@@ -244,6 +244,7 @@ function SearchStep({ artistId, onContinue }: SearchStepProps) {
         data: {
           userId: selected.id,
           artistId,
+          address: selected.address,
         },
       },
       {

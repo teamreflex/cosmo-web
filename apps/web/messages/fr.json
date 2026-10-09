@@ -332,6 +332,9 @@
   "report_error_report_not_found": "Signalement introuvable.",
   "report_error_report_about_you": "Ce signalement vous concerne : d'autres membres du staff s'en chargeront.",
   "report_error_report_status_changed": "Quelqu'un d'autre a déjà mis à jour ce signalement. Rechargez pour voir son dernier statut.",
+  "account_error_linked_elsewhere": "Ce compte COSMO est déjà associé à un autre compte {appName}. Chaque compte COSMO ne peut appartenir qu'à un seul compte {appName}.",
+  "account_error_already_linked": "Votre compte a déjà un compte COSMO associé.",
+  "account_error_cosmo_banned": "Ce compte COSMO appartient à un compte {appName} banni et ne peut pas être associé.",
   "binder_page_count": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

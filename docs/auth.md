@@ -10,6 +10,8 @@ The admin plugin's columns are transplanted this way into `packages/database/src
 
 `user.is_admin` is unused and is dropped in a follow-up release. Drizzle selects every column the TS schema declares on each session lookup, so remove `isAdmin` from the TS schema one release before the migration that drops the column; otherwise the image still serving during that deploy fails every authenticated request.
 
+The same follow-up release drops the non-unique `cosmo_account_user_id_idx`, which `cosmo_account_user_id_unique_idx` covers.
+
 ## Staff roles and permissions
 
 - `@apollo/auth` (`packages/auth`) holds the access-control `statement`, the `user`, `moderator` and `admin` roles, `can(role, permissions)`, `parseRole()` and `adminPluginOptions`. The statement is declared `as const`, so a misspelt resource or action fails to compile. Moderators hold the trade, chat, listing, feedback and report actions; admins hold everything, adding `user: ["ban", "set-role"]`, `site: ["manage"]` and `audit: ["read"]`. Its bun test checks every role against every action through both `can()` and the plugin's `userHasPermission`.
@@ -46,6 +48,17 @@ The admin plugin's columns are transplanted this way into `packages/database/src
 - The ban reason is staff-only. It is stored in `user.ban_reason` and the `user:ban` audit row's detail, and never reaches the banned user, who sees only the generic localised "This account has been banned" message. The Ban dialog's reason hint tells staff so.
 - Ban lengths are lazy: `banned` stays true after `ban_expires` passes, until the next sign-in attempt clears it. Treat a ban as active only when `banned` is true and `ban_expires` is null or in the future. That automatic unban writes no audit row and publishes no event.
 - A ban with no `banExpiresIn` (or zero) is permanent, but the plugin then leaves `ban_expires` untouched, so a lapsed earlier ban's expiry would lift it at the next sign-in. `$banUser` clears `ban_expires` for permanent bans in the same transaction as the audit row, so the stored ban, the audit row and the published event agree.
+
+## COSMO accounts
+
+- A user links at most one COSMO account, and a COSMO account belongs to at most one user: `cosmo_account.address` is unique, and `cosmo_account_user_id_unique_idx` makes `user_id` unique too. The index is NULLS DISTINCT, so the many cached, unlinked rows don't collide. Users can't unlink a COSMO account.
+- `linkAccount()` (`lib/server/cosmo-accounts.server.ts`) is an upsert on the address whose update only applies when the row's `user_id` is null or already the caller. An empty RETURNING means another user holds the address (`account_linked_elsewhere`), and a unique violation on `user_id` means the caller already has a link (`cosmo_already_linked`). The codes live in the `accounts` error domain (`lib/universal/errors/accounts.ts`).
+- The link wizard checks twice. `$generateVerificationCode` refuses when the account is picked, before storing a code, if the caller is already linked or the picked address belongs to anyone else. It is advisory: it trusts the address the client sends, and it answers `account_linked_elsewhere` whoever the owner is, so it reveals no more than the profile's verified badge already shows. The checks in `$verifyCosmoBio` after the bio check are the authoritative ones, and the conditional upsert backstops races between them.
+- An address whose owner has an active ban (`isBanActive()` from `@apollo/auth/guard`) is refused with `cosmo_account_banned`. Only `$verifyCosmoBio` returns it, after the bio check, so ban status is told only to someone who has proven control of the COSMO account; every other owner gets `account_linked_elsewhere`.
+- `$verifyCosmoBio` links and imports the address's legacy lists in one transaction that first takes `FOR SHARE` on the caller's user row where `deleted_at` is null. The lock conflicts with any `FOR UPDATE` on that row, so a transaction that rewrites the user can't interleave with a link and leave a link or freshly imported lists on a deleted row. A caller whose row is deleted gets `not_signed_in`.
+- Lock order: a transaction that locks both a user row and a `cosmo_account` row locks the user row first, and two user rows in id order. Two transactions taking the same locks in opposite orders deadlock, and Postgres aborts one with `40P01`.
+- `getCosmoAddress(executor, userId)` is the only way to read a user's linked address. It returns `{ kind: "linked", address, username }` or `{ kind: "none" }`, and a deleted user keeps their link. The address keeps its stored case, because the client compares it with `===` against the profile's address; compare it against lowercase indexer rows with `isEqual()` or `addr()`. `cosmoMiddleware` puts `{ address, username }` on the context.
+- Reads that deliberately bypass `getCosmoAddress`: joins that only show a username beside a user (list owners, list matches, the notifications join, report targets, the API key owner search, `/api/objekt-list/for-user`), reads keyed by address rather than by user (`fetchFullAccount`, `searchCosmoAccounts`, `fetchKnownAddresses`, `fetchKnownPolygonAddresses`, `$fetchPins`, the by-address and by-addresses APIs, the schedules outbox drain), and writes (`cacheAccounts`, the seeds).
 
 ## API Keys (admin-administered)
 

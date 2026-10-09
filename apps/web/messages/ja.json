@@ -330,6 +330,9 @@
   "report_error_report_not_found": "報告が見つかりません。",
   "report_error_report_about_you": "この報告はあなたに関するものなので、他のスタッフが対応します。",
   "report_error_report_status_changed": "この報告は他のスタッフがすでに更新しました。再読み込みして最新の状態を確認してください。",
+  "account_error_linked_elsewhere": "このCOSMOアカウントはすでに別の{appName}アカウントと連携されています。COSMOアカウントは1つの{appName}アカウントにしか連携できません。",
+  "account_error_already_linked": "このアカウントにはすでにCOSMOアカウントが連携されています。",
+  "account_error_cosmo_banned": "このCOSMOアカウントは利用停止中の{appName}アカウントのものなので、連携できません。",
   "binder_page_count": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

@@ -12,10 +12,15 @@ import { alias } from "drizzle-orm/pg-core";
 import { db, type DbOrTx } from "../db";
 
 /**
- * Import objekt lists from the old tables into the new ones.
+ * Import objekt lists from the old tables into the new ones. Runs on the
+ * caller's transaction.
  */
-export async function importObjektLists(userId: string, address: string) {
-  const lists = await db.query.lists.findMany({
+export async function importObjektLists(
+  executor: DbOrTx,
+  userId: string,
+  address: string,
+) {
+  const lists = await executor.query.lists.findMany({
     where: {
       userAddress: address,
     },
@@ -28,50 +33,46 @@ export async function importObjektLists(userId: string, address: string) {
     return;
   }
 
-  await db.transaction(async (tx) => {
-    // insert the lists
-    const result = await tx
-      .insert(objektLists)
-      .values(
-        // ensure there's no slug or name collision
-        lists.map((list) => {
-          const name =
-            list.name.length > 22 ? list.name.slice(0, 22) : list.name;
-          const slug =
-            list.slug.length > 22 ? list.slug.slice(0, 22) : list.slug;
+  // insert the lists
+  const result = await executor
+    .insert(objektLists)
+    .values(
+      // ensure there's no slug or name collision
+      lists.map((list) => {
+        const name = list.name.length > 22 ? list.name.slice(0, 22) : list.name;
+        const slug = list.slug.length > 22 ? list.slug.slice(0, 22) : list.slug;
 
-          return {
-            userId,
-            name: `${name} 2`,
-            slug: `${slug}-2`,
-          };
-        }),
-      )
-      .returning();
+        return {
+          userId,
+          name: `${name} 2`,
+          slug: `${slug}-2`,
+        };
+      }),
+    )
+    .returning();
 
-    // build entries
-    const entries = [];
-    for (const list of lists) {
-      const objektList = result.find((r) => r.slug === list.slug);
-      if (!objektList) {
-        continue;
-      }
-
-      for (const entry of list.entries) {
-        entries.push({
-          objektListId: objektList.id,
-          collectionId: entry.collectionId,
-        });
-      }
+  // build entries
+  const entries = [];
+  for (const list of lists) {
+    const objektList = result.find((r) => r.slug === list.slug);
+    if (!objektList) {
+      continue;
     }
 
-    if (entries.length === 0) {
-      return;
+    for (const entry of list.entries) {
+      entries.push({
+        objektListId: objektList.id,
+        collectionId: entry.collectionId,
+      });
     }
+  }
 
-    // insert entries
-    await tx.insert(objektListEntries).values(entries);
-  });
+  if (entries.length === 0) {
+    return;
+  }
+
+  // insert entries
+  await executor.insert(objektListEntries).values(entries);
 }
 
 /**
