@@ -1,10 +1,10 @@
 {
+  "id": "855d6b3c-84d5-438d-a6cd-afd20a76fcf8",
+  "prevIds": [
+    "41d69aed-5d58-4ecc-97f9-80ecaf32aeac"
+  ],
   "version": "8",
   "dialect": "postgres",
-  "id": "7c02ab3f-6482-4c32-b6ef-d007f7f301a7",
-  "prevIds": [
-    "dbdf3d1b-7e8b-42d1-a5f8-fbb45b3d27f6"
-  ],
   "ddl": [
     {
       "values": [
@@ -55,6 +55,16 @@
         "trade"
       ],
       "name": "report_target_type",
+      "entityType": "enums",
+      "schema": "public"
+    },
+    {
+      "values": [
+        "user",
+        "moderator",
+        "admin"
+      ],
+      "name": "user_role",
       "entityType": "enums",
       "schema": "public"
     },
@@ -3106,8 +3116,8 @@
       "table": "user"
     },
     {
-      "type": "text",
-      "typeSchema": null,
+      "type": "user_role",
+      "typeSchema": "public",
       "notNull": true,
       "dimensions": 0,
       "default": "'user'",
@@ -3153,19 +3163,6 @@
       "generated": null,
       "identity": null,
       "name": "ban_expires",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "deleted_at",
       "entityType": "columns",
       "schema": "public",
       "table": "user"
@@ -3559,27 +3556,6 @@
       "method": "btree",
       "concurrently": false,
       "name": "cosmo_account_username_address_idx",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "cosmo_account"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "user_id",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
-      ],
-      "isUnique": true,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "cosmo_account_user_id_unique_idx",
       "entityType": "indexes",
       "schema": "public",
       "table": "cosmo_account"
@@ -5418,20 +5394,6 @@
       "entityType": "checks",
       "schema": "public",
       "table": "reports"
-    },
-    {
-      "value": "\"role\" IN ('user', 'moderator', 'admin')",
-      "name": "user_role_chk",
-      "entityType": "checks",
-      "schema": "public",
-      "table": "user"
-    },
-    {
-      "value": "\"deleted_at\" IS NULL OR (\"name\" = '' AND \"email\" = ('deleted+' || \"id\" || '@invalid') AND \"email_verified\" = false AND \"image\" IS NULL AND \"username\" IS NULL AND \"display_username\" IS NULL AND \"discord\" IS NULL AND \"twitter\" IS NULL AND \"show_socials\" = false AND \"role\" = 'user')",
-      "name": "user_deleted_scrubbed_chk",
-      "entityType": "checks",
-      "schema": "public",
-      "table": "user"
     }
   ],
   "renames": []
