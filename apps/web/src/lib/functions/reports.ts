@@ -131,7 +131,7 @@ export const $fetchReport = createServerFn({ method: "GET" })
   .middleware([staffMiddleware({ report: ["read"] })])
   .validator(reportIdSchema)
   .handler(async ({ data, context }) => {
-    const report = await fetchReportDetail(data.id);
+    const report = await fetchReportDetail(context.role, data.id);
 
     await recordStaffAudit(db, {
       staffId: context.session.user.id,

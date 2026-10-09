@@ -4,6 +4,7 @@ import {
   isDemotion,
   isProtectedAccount,
   parseEmailDomains,
+  protectionFor,
   userChangeRefusal,
 } from "../src/guard";
 import type { UserChange } from "../src/guard";
@@ -79,6 +80,36 @@ describe("isProtectedAccount", () => {
         domains,
       ),
     ).toBe(false);
+  });
+});
+
+describe("protectionFor", () => {
+  const domains = parseEmailDomains("team-reflex.com");
+  const protectedAccount = {
+    email: "kairu@team-reflex.com",
+    emailVerified: true,
+  };
+  const member = { email: "member@example.org", emailVerified: true };
+
+  /**
+   * Written out by hand so a new role has to decide whether it learns which
+   * accounts are protected.
+   */
+  const told = ["admin"] satisfies Role[];
+
+  test.each([...roleNames])("tells %p only when it can ban", (role) => {
+    for (const account of [protectedAccount, member]) {
+      expect(protectionFor(role, account, domains)).toBe(
+        told.some((toldRole) => toldRole === role)
+          ? isProtectedAccount(account, domains)
+          : null,
+      );
+    }
+  });
+
+  test("tells a role that can ban either way", () => {
+    expect(protectionFor("admin", protectedAccount, domains)).toBe(true);
+    expect(protectionFor("admin", member, domains)).toBe(false);
   });
 });
 

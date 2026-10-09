@@ -18,7 +18,8 @@ import type {
 } from "@/lib/universal/reports";
 import type { ReportQueueInput } from "@/lib/universal/schema/reports";
 import { parseRole } from "@apollo/auth";
-import { isProtectedAccount } from "@apollo/auth/guard";
+import type { Role } from "@apollo/auth";
+import { protectionFor } from "@apollo/auth/guard";
 import { reports } from "@apollo/database/web/schema";
 import type {
   ReportStatus,
@@ -112,6 +113,7 @@ function toRowTarget(
  * `report_not_found` for an unknown id.
  */
 export async function fetchReportDetail(
+  viewerRole: Role,
   id: string,
 ): Promise<AdminReportDetail> {
   const report = await db.query.reports.findFirst({
@@ -131,7 +133,7 @@ export async function fetchReportDetail(
   }
 
   const [target, otherOpenCount] = await Promise.all([
-    fetchDetailTarget(report.targetType, report.targetId),
+    fetchDetailTarget(viewerRole, report.targetType, report.targetId),
     db.$count(
       reports,
       and(
@@ -156,6 +158,7 @@ export async function fetchReportDetail(
 }
 
 async function fetchDetailTarget(
+  viewerRole: Role,
   targetType: ReportTargetType,
   targetId: string,
 ): Promise<AdminReportDetailTarget> {
@@ -196,7 +199,11 @@ async function fetchDetailTarget(
           role: parseRole(user.role),
           ban: banActive ? { until: user.banExpires } : null,
           profile: user.cosmoAccount?.username ?? null,
-          protected: isProtectedAccount(user, env.PROTECTED_EMAIL_DOMAINS),
+          protected: protectionFor(
+            viewerRole,
+            user,
+            env.PROTECTED_EMAIL_DOMAINS,
+          ),
         },
       };
     }

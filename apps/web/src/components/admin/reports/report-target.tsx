@@ -57,7 +57,9 @@ export default function ReportTarget({ report }: Props) {
         </div>
         <TargetMeta user={user} otherOpenCount={report.otherOpenCount} />
       </div>
-      {user.ban !== null && !user.protected && <UnbanButton user={user} />}
+      {user.ban !== null && user.protected === false && (
+        <UnbanButton user={user} />
+      )}
     </div>
   );
 }

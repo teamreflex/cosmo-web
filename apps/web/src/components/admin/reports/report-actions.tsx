@@ -109,7 +109,7 @@ function OpenActions({ report }: Props) {
     target !== null &&
     target.id !== account?.user.id &&
     target.ban === null &&
-    !target.protected
+    target.protected === false
       ? target
       : null;
   const showEscalate =
@@ -122,7 +122,7 @@ function OpenActions({ report }: Props) {
   return (
     <div className="flex flex-col gap-2.5 border-t bg-muted/40 px-4 py-3">
       <span className="text-xxs font-medium tracking-[0.14em] text-muted-foreground uppercase">
-        {actionsCaption(canBan, target?.protected ?? false)}
+        {actionsCaption(canBan, target?.protected === true)}
       </span>
       <div
         className={cn(

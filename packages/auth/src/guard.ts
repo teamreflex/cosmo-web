@@ -1,3 +1,4 @@
+import { can } from "./index";
 import type { Role } from "./index";
 
 /**
@@ -50,6 +51,21 @@ export function isProtectedAccount(
   domains: ReadonlySet<string>,
 ) {
   return account.emailVerified && hasEmailDomain(account.email, domains);
+}
+
+/**
+ * Whether the account is protected, as `viewer` may learn it: only roles that
+ * can ban are told, so nobody else can map out which accounts are protected.
+ * Null for everyone else.
+ */
+export function protectionFor(
+  viewer: Role,
+  account: { email: string; emailVerified: boolean },
+  domains: ReadonlySet<string>,
+) {
+  return can(viewer, { user: ["ban"] })
+    ? isProtectedAccount(account, domains)
+    : null;
 }
 
 /**
