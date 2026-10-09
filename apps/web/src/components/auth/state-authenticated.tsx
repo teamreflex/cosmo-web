@@ -1,5 +1,5 @@
 import { authClient } from "@/lib/client/auth";
-import { currentAccountQuery } from "@/lib/queries/core";
+import { currentAccountQuery, removeViewerQueries } from "@/lib/queries/core";
 import type { PublicUser } from "@/lib/universal/auth";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { IconLoader2 } from "@tabler/icons-react";
@@ -20,6 +20,8 @@ export default function StateAuthenticated({ user, cosmo }: Props) {
       await authClient.signOut();
       queryClient.setQueryData(currentAccountQuery.queryKey, null);
       await router.navigate({ to: "/" });
+      // after navigating, so no mounted staff page refetches what's removed
+      removeViewerQueries(queryClient);
       await router.invalidate();
     },
   });
