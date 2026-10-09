@@ -32,9 +32,15 @@ export default function ReportDetail({ id }: Props) {
 
   // below md the detail sits under the queue, so bring it into view
   useEffect(() => {
-    if (id !== undefined && window.matchMedia("(width < 48rem)").matches) {
-      ref.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (id === undefined || !window.matchMedia("(width < 48rem)").matches) {
+      return;
     }
+
+    // a frame later, so the router's own scroll reset can't cancel it
+    const frame = requestAnimationFrame(() =>
+      ref.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
+    );
+    return () => cancelAnimationFrame(frame);
   }, [id]);
 
   return (
