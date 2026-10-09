@@ -46,8 +46,8 @@ function RouteComponent() {
   const { auditFilters } = Route.useRouteContext();
 
   return (
-    <section className="flex flex-col gap-4 p-4">
-      <div className="flex flex-col gap-3 md:flex-row md:flex-wrap md:items-center md:gap-4">
+    <section className="@container flex flex-col gap-4 p-4">
+      <div className="flex flex-col gap-3 md:@xl:flex-row md:@xl:flex-wrap md:@xl:items-center md:@xl:gap-4">
         <div className="flex flex-col gap-1 md:flex-row md:items-center md:gap-4">
           <div className="flex items-baseline gap-3">
             <h1 className="text-lg font-semibold">{m.admin_audit_title()}</h1>
@@ -57,7 +57,7 @@ function RouteComponent() {
             {m.admin_audit_description()}
           </p>
         </div>
-        <AuditFilters filters={auditFilters} className="md:ml-auto" />
+        <AuditFilters filters={auditFilters} className="md:@xl:ml-auto" />
       </div>
 
       <AuditLog filters={auditFilters} />

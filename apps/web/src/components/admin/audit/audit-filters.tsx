@@ -23,8 +23,9 @@ type Props = PropsWithClassName<{
 
 /**
  * The log's Staff and Action filters, kept in the URL. Inline beside the
- * title on wider screens. On phones they share a row, and a filter whose
- * value doesn't fit half the width takes a row of its own.
+ * title once the content area, which the admin sidebar narrows, fits them.
+ * Below that they share a row, and a filter whose value doesn't fit half the
+ * width takes a row of its own.
  */
 export default function AuditFilters({ filters, className }: Props) {
   const navigate = useNavigate({ from: "/admin/audit" });
@@ -48,7 +49,7 @@ export default function AuditFilters({ filters, className }: Props) {
   ];
 
   return (
-    <div className={cn("flex flex-wrap gap-2 md:gap-3", className)}>
+    <div className={cn("flex flex-wrap gap-2 md:@xl:gap-3", className)}>
       <FilterField labelId={staffLabelId} label={m.admin_audit_staff()}>
         <Select
           items={staffItems}
@@ -64,7 +65,7 @@ export default function AuditFilters({ filters, className }: Props) {
         >
           <SelectTrigger
             aria-labelledby={staffLabelId}
-            className="w-full max-md:data-[size=default]:h-10 md:w-auto md:min-w-40"
+            className="w-full max-md:data-[size=default]:h-10 md:@xl:w-auto md:@xl:min-w-40"
           >
             <SelectValue />
           </SelectTrigger>
@@ -94,7 +95,7 @@ export default function AuditFilters({ filters, className }: Props) {
         >
           <SelectTrigger
             aria-labelledby={actionLabelId}
-            className="w-full max-md:data-[size=default]:h-10 md:w-auto md:min-w-50"
+            className="w-full max-md:data-[size=default]:h-10 md:@xl:w-auto md:@xl:min-w-50"
           >
             <SelectValue />
           </SelectTrigger>
@@ -126,7 +127,7 @@ function FilterField({
   children: ReactNode;
 }) {
   return (
-    <div className="flex flex-[1_1_10rem] flex-col gap-1.5 md:flex-none md:flex-row md:items-center md:gap-2">
+    <div className="flex flex-[1_1_10rem] flex-col gap-1.5 md:@xl:flex-none md:@xl:flex-row md:@xl:items-center md:@xl:gap-2">
       <span
         id={labelId}
         className="text-xxs font-medium tracking-[0.14em] text-muted-foreground uppercase"
