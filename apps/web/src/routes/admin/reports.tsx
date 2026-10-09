@@ -19,6 +19,7 @@ import type {
   ReportCountsInput,
   ReportQueueFilters,
 } from "@/lib/universal/schema/reports";
+import { cn } from "@/lib/utils";
 import { can } from "@apollo/auth";
 import { reportStatuses } from "@apollo/database/web/types";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -119,7 +120,12 @@ function Toolbar() {
               <TabsTrigger key={status} value={status}>
                 {reportStatusLabel(status)}
                 {status === "open" && (
-                  <span className="text-destructive tabular-nums">
+                  <span
+                    className={cn(
+                      "tabular-nums",
+                      counts.open > 0 && "text-destructive",
+                    )}
+                  >
                     {counts.open}
                   </span>
                 )}
