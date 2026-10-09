@@ -32,6 +32,8 @@ export function getAuthErrorMessage(error: ErrorInput) {
         return m.auth_error_email_exists();
       case "BANNED_USER":
         return m.auth_error_banned();
+      case "ACCOUNT_DELETED":
+        return m.auth_error_account_deleted();
       default:
         return error.message ?? m.auth_error_unknown();
     }

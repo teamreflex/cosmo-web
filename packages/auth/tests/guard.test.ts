@@ -166,11 +166,13 @@ describe("userChangeRefusal", () => {
     id: "member",
     email: "member@example.org",
     emailVerified: true,
+    deletedAt: null,
   };
   const protectedMember = {
     id: "kairu",
     email: "kairu@team-reflex.com",
     emailVerified: true,
+    deletedAt: null,
   };
 
   const changes = [
@@ -179,6 +181,42 @@ describe("userChangeRefusal", () => {
     { kind: "set-role", role: "admin" },
     { kind: "set-role", role: "user" },
   ] satisfies UserChange[];
+
+  test.each(changes)("refuses $kind on a deleted account", (change) => {
+    expect(
+      userChangeRefusal({
+        caller: admin,
+        target: { ...member, deletedAt: new Date("2026-10-09T12:00:00Z") },
+        change,
+        protectedDomains,
+      }),
+    ).toBe("deleted-user");
+  });
+
+  test("refuses a deleted account ahead of protection and self-demotion", () => {
+    const deletedAt = new Date("2026-10-09T12:00:00Z");
+    expect(
+      userChangeRefusal({
+        caller: admin,
+        target: { ...protectedMember, deletedAt },
+        change: { kind: "ban" },
+        protectedDomains,
+      }),
+    ).toBe("deleted-user");
+    expect(
+      userChangeRefusal({
+        caller: admin,
+        target: {
+          id: admin.id,
+          email: "admin@example.org",
+          emailVerified: true,
+          deletedAt,
+        },
+        change: { kind: "set-role", role: "user" },
+        protectedDomains,
+      }),
+    ).toBe("deleted-user");
+  });
 
   test.each(changes)("refuses $kind on a protected account", (change) => {
     expect(
@@ -210,6 +248,7 @@ describe("userChangeRefusal", () => {
           id: admin.id,
           email: "admin@example.org",
           emailVerified: true,
+          deletedAt: null,
         },
         change: { kind: "ban" },
         protectedDomains,
@@ -225,6 +264,7 @@ describe("userChangeRefusal", () => {
           id: admin.id,
           email: "admin@example.org",
           emailVerified: true,
+          deletedAt: null,
         },
         change: { kind: "unban" },
         protectedDomains,
@@ -241,6 +281,7 @@ describe("userChangeRefusal", () => {
             id: admin.id,
             email: "admin@example.org",
             emailVerified: true,
+            deletedAt: null,
           },
           change: { kind: "set-role", role },
           protectedDomains,
@@ -258,6 +299,7 @@ describe("userChangeRefusal", () => {
             id: "moderator",
             email: "moderator@example.org",
             emailVerified: true,
+            deletedAt: null,
           },
           change: { kind: "set-role", role },
           protectedDomains,
@@ -274,6 +316,7 @@ describe("userChangeRefusal", () => {
           id: "other-admin",
           email: "other@example.org",
           emailVerified: true,
+          deletedAt: null,
         },
         change: { kind: "set-role", role: "user" },
         protectedDomains,

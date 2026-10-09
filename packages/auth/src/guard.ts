@@ -87,19 +87,29 @@ export type UserChange =
   | { kind: "unban" }
   | { kind: "set-role"; role: Role };
 
-export type UserChangeRefusal = "protected-user" | "self-ban" | "self-demotion";
+export type UserChangeRefusal =
+  | "deleted-user"
+  | "protected-user"
+  | "self-ban"
+  | "self-demotion";
 
 type UserChangeCheck = {
   caller: { id: string; role: Role };
-  target: { id: string; email: string; emailVerified: boolean };
+  target: {
+    id: string;
+    email: string;
+    emailVerified: boolean;
+    deletedAt: Date | null;
+  };
   change: UserChange;
   protectedDomains: ReadonlySet<string>;
 };
 
 /**
  * Why a staff member who holds the permission still may not make the change,
- * or null when they may. Nobody, admins included, can change a protected
- * account, and nobody can ban themselves or lower their own role.
+ * or null when they may. A deleted account can't be changed at all. Nobody,
+ * admins included, can change a protected account, and nobody can ban
+ * themselves or lower their own role.
  */
 export function userChangeRefusal({
   caller,
@@ -107,6 +117,10 @@ export function userChangeRefusal({
   change,
   protectedDomains,
 }: UserChangeCheck): UserChangeRefusal | null {
+  if (target.deletedAt !== null) {
+    return "deleted-user";
+  }
+
   if (isProtectedAccount(target, protectedDomains)) {
     return "protected-user";
   }

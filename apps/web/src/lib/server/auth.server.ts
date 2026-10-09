@@ -26,6 +26,15 @@ import {
 } from "./mail.server";
 
 /**
+ * Refuses sign-ins to a deleted account. Localised on the client by
+ * `getAuthErrorMessage`.
+ */
+const accountDeletedError = {
+  code: "ACCOUNT_DELETED",
+  message: "This account has been deleted",
+};
+
+/**
  * Better Auth server instance.
  */
 export const auth = betterAuth({
@@ -95,10 +104,27 @@ export const auth = betterAuth({
     },
   },
 
-  /**
-   * Encrypt OAuth access and refresh tokens.
-   */
   databaseHooks: {
+    /**
+     * Refuses sign-ins to a deleted account. Deletion already removes every
+     * credential and session; this backstops any sign-in method.
+     */
+    session: {
+      create: {
+        async before(session) {
+          const owner = await db.query.user.findFirst({
+            where: { id: session.userId },
+            columns: { deletedAt: true },
+          });
+          if (owner?.deletedAt) {
+            throw APIError.from("FORBIDDEN", accountDeletedError);
+          }
+        },
+      },
+    },
+    /**
+     * Encrypt OAuth access and refresh tokens.
+     */
     account: {
       create: {
         async before(account) {

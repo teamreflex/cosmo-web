@@ -2,6 +2,8 @@ export const accountErrorCodes = [
   "account_linked_elsewhere",
   "cosmo_already_linked",
   "cosmo_account_banned",
+  "account_deletion_link_invalid",
+  "account_deletion_no_email",
 ] as const;
 
 export type AccountErrorCode = (typeof accountErrorCodes)[number];

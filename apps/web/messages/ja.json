@@ -118,6 +118,7 @@
   "auth_error_cosmo_required": "続行するにはCOSMOアカウントを連携してください。",
   "auth_error_forbidden": "この操作を実行する権限がありません。",
   "auth_error_banned": "このアカウントは利用停止されています。",
+  "auth_error_account_deleted": "このアカウントは削除されています。",
   "auth_error_ban_self": "自分自身を利用停止することはできません。",
   "auth_error_demote_self": "自分の権限を下げることはできません。",
   "auth_error_protected_user": "このアカウントは保護されています。利用停止や権限の変更はできません。",
@@ -334,6 +335,8 @@
   "account_error_linked_elsewhere": "このCOSMOアカウントはすでに別の{appName}アカウントと連携されています。COSMOアカウントは1つの{appName}アカウントにしか連携できません。",
   "account_error_already_linked": "このアカウントにはすでにCOSMOアカウントが連携されています。",
   "account_error_cosmo_banned": "このCOSMOアカウントは利用停止中の{appName}アカウントのものなので、連携できません。",
+  "account_error_deletion_link_invalid": "このリンクは有効期限が切れているか、すでに使用されています。",
+  "account_error_deletion_no_email": "確認メールの送信先となるメールアドレスがアカウントに登録されていません。「メールアドレス」から追加してから、もう一度お試しください。",
   "binder_page_count": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

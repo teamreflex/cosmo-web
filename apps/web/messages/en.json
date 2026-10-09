@@ -118,6 +118,7 @@
   "auth_error_cosmo_required": "Please link your COSMO account to continue.",
   "auth_error_forbidden": "You are not authorized to perform this action.",
   "auth_error_banned": "This account has been banned.",
+  "auth_error_account_deleted": "This account has been deleted.",
   "auth_error_ban_self": "You can't ban yourself.",
   "auth_error_demote_self": "You can't lower your own role.",
   "auth_error_protected_user": "This account is protected. Nobody can ban it or change its role.",
@@ -336,6 +337,8 @@
   "account_error_linked_elsewhere": "This COSMO account is already linked to another {appName} account. Each COSMO account can belong to one {appName} account only.",
   "account_error_already_linked": "Your account already has a COSMO account linked.",
   "account_error_cosmo_banned": "This COSMO account belongs to a banned {appName} account, so it can't be linked.",
+  "account_error_deletion_link_invalid": "This link has expired or was already used.",
+  "account_error_deletion_no_email": "Your account has no email address to send the confirmation to. Add one under Email Address, then try again.",
   "binder_page_count": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

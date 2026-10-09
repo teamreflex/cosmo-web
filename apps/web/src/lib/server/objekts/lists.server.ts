@@ -7,7 +7,7 @@ import {
   objektLists,
 } from "@apollo/database/web/schema";
 import type { ListMatchPayload } from "@apollo/database/web/types";
-import { and, eq, exists, inArray, isNotNull, ne } from "drizzle-orm";
+import { and, eq, exists, inArray, isNotNull, ne, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { db, type DbOrTx } from "../db";
 
@@ -340,4 +340,23 @@ export async function fireWantAddNotifications(
   if (values.length === 0) return;
 
   await tx.insert(notifications).values(values).onConflictDoNothing();
+}
+
+/**
+ * Delete the list_match notifications other users received about this user's
+ * lists. Anonymising an account calls it, so a rebuild of the notifications
+ * table must keep it in step with the producers above.
+ */
+export async function deleteListMatchNotificationsFrom(
+  executor: DbOrTx,
+  userId: string,
+) {
+  await executor
+    .delete(notifications)
+    .where(
+      and(
+        eq(notifications.type, "list_match"),
+        eq(sql`${notifications.payload}->>'sourceUserId'`, userId),
+      ),
+    );
 }

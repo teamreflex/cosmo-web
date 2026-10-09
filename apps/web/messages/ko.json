@@ -118,6 +118,7 @@
   "auth_error_cosmo_required": "계속하려면 코스모 계정을 연결해 주세요.",
   "auth_error_forbidden": "이 작업을 수행할 권한이 없습니다.",
   "auth_error_banned": "이 계정은 이용이 정지되었습니다.",
+  "auth_error_account_deleted": "삭제된 계정입니다.",
   "auth_error_ban_self": "자기 자신을 정지할 수 없습니다.",
   "auth_error_demote_self": "자신의 역할을 낮출 수 없습니다.",
   "auth_error_protected_user": "이 계정은 보호되어 있습니다. 누구도 정지하거나 역할을 변경할 수 없습니다.",
@@ -334,6 +335,8 @@
   "account_error_linked_elsewhere": "이 코스모 계정은 이미 다른 {appName} 계정에 연결되어 있습니다. 코스모 계정은 하나의 {appName} 계정에만 연결할 수 있습니다.",
   "account_error_already_linked": "이미 코스모 계정이 연결된 계정입니다.",
   "account_error_cosmo_banned": "이 코스모 계정은 정지된 {appName} 계정의 것이라 연결할 수 없습니다.",
+  "account_error_deletion_link_invalid": "만료되었거나 이미 사용된 링크입니다.",
+  "account_error_deletion_no_email": "확인 메일을 보낼 이메일 주소가 계정에 없습니다. “이메일 주소”에서 추가한 뒤 다시 시도하세요.",
   "binder_page_count": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

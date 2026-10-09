@@ -42,6 +42,7 @@ export async function fetchStaffUsernames(ids: string[]) {
 }
 
 const userChangeErrors = {
+  "deleted-user": "deleted_user",
   "protected-user": "protected_user",
   "self-ban": "self_ban",
   "self-demotion": "self_demotion",
@@ -59,7 +60,7 @@ export async function guardUserChange(
 ) {
   const target = await db.query.user.findFirst({
     where: { id: userId },
-    columns: { id: true, email: true, emailVerified: true },
+    columns: { id: true, email: true, emailVerified: true, deletedAt: true },
   });
   if (!target) {
     throw new ExpectedError("user_not_found");
