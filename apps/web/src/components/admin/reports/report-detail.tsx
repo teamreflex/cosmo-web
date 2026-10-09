@@ -30,16 +30,24 @@ type Props = {
 export default function ReportDetail({ id }: Props) {
   const ref = useRef<HTMLDivElement>(null);
 
-  // below md the detail sits under the queue, so bring it into view
+  /**
+   * When the detail has wrapped under the queue, bring it into view. A frame
+   * later, so the router's own scroll reset can't cancel it.
+   */
   useEffect(() => {
-    if (id === undefined || !window.matchMedia("(width < 48rem)").matches) {
-      return;
-    }
+    if (id === undefined) return;
 
-    // a frame later, so the router's own scroll reset can't cancel it
-    const frame = requestAnimationFrame(() =>
-      ref.current?.scrollIntoView({ behavior: "smooth", block: "start" }),
-    );
+    const frame = requestAnimationFrame(() => {
+      const el = ref.current;
+      const queue = el?.previousElementSibling;
+      if (
+        el &&
+        queue instanceof HTMLElement &&
+        el.offsetTop > queue.offsetTop
+      ) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
     return () => cancelAnimationFrame(frame);
   }, [id]);
 
