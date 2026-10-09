@@ -2,7 +2,7 @@ import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
 import { IconLogin } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { type ReactElement, useState } from "react";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -20,7 +20,27 @@ import SignInWithTwitter from "./with-twitter";
 
 type State = "sign-in" | "sign-up" | "forgot-password";
 
-export default function SignIn() {
+type Props = {
+  /**
+   * The button that opens the dialog. Defaults to the navbar's, which
+   * collapses to an icon on phones.
+   */
+  trigger?: ReactElement;
+};
+
+export default function SignIn({
+  trigger = (
+    <Button
+      variant="ghost"
+      size="icon"
+      className="md:w-auto md:px-3"
+      aria-label={m.auth_sign_in()}
+    >
+      <IconLogin className="size-6 md:hidden" />
+      <span className="hidden md:inline">{m.auth_sign_in()}</span>
+    </Button>
+  ),
+}: Props) {
   const [open, setOpen] = useState(false);
   const [state, setState] = useState<State>("sign-in");
 
@@ -37,20 +57,7 @@ export default function SignIn() {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogTrigger
-        render={
-          <Button
-            onClick={() => setOpen(true)}
-            variant="ghost"
-            size="icon"
-            className="md:w-auto md:px-3"
-            aria-label={m.auth_sign_in()}
-          />
-        }
-      >
-        <IconLogin className="size-6 md:hidden" />
-        <span className="hidden md:inline">{m.auth_sign_in()}</span>
-      </DialogTrigger>
+      <DialogTrigger render={trigger} />
       <DialogContent className="w-full">
         <DialogHeader>
           <DialogTitle>{m.auth_sign_in()}</DialogTitle>

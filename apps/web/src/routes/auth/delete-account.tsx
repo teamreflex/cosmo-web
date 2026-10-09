@@ -1,4 +1,5 @@
 import DeletionBlockerRows from "@/components/auth/account/deletion-blockers";
+import SignIn from "@/components/auth/sign-in";
 import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Card,
@@ -26,6 +27,7 @@ import {
   deletionBlockerCount,
 } from "@/lib/universal/account-deletion";
 import type { AccountErrorCode } from "@/lib/universal/errors/accounts";
+import type { PropsWithClassName } from "@/lib/utils";
 import {
   IconLinkOff,
   IconLoader2,
@@ -121,22 +123,24 @@ function RouteComponent() {
             title={m.delete_account_done_title()}
             description={m.delete_account_done_description()}
           >
-            <Link to="/" className={buttonVariants()}>
-              {m.delete_account_back_home()}
-            </Link>
+            <BackHome />
           </Notice>
         ) : account === null ? (
           <Notice
             icon={<IconLogin2 />}
             title={m.delete_account_title()}
             description={m.delete_account_sign_in_required()}
-          />
+          >
+            <SignIn trigger={<Button>{m.auth_sign_in()}</Button>} />
+          </Notice>
         ) : state.kind === "invalid" ? (
           <Notice
             icon={<IconLinkOff />}
             title={m.delete_account_link_invalid_title()}
             description={m.delete_account_link_invalid_description()}
-          />
+          >
+            <BackHome variant="outline" />
+          </Notice>
         ) : state.kind === "blocked" ? (
           <Card>
             <CardHeader>
@@ -150,6 +154,12 @@ function RouteComponent() {
             <CardContent>
               <DeletionBlockerRows blockers={state.blockers} />
             </CardContent>
+            <CardFooter className="justify-end">
+              <BackHome
+                variant="outline"
+                className="max-sm:h-11 max-sm:w-full"
+              />
+            </CardFooter>
           </Card>
         ) : (
           <Card>
@@ -159,7 +169,16 @@ function RouteComponent() {
                 {m.delete_account_finish_description()}
               </CardDescription>
             </CardHeader>
-            <CardFooter className="justify-end">
+            <CardFooter className="flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              <Link
+                to="/"
+                className={buttonVariants({
+                  variant: "secondary",
+                  className: "max-sm:h-11 max-sm:w-full",
+                })}
+              >
+                {m.common_cancel()}
+              </Link>
               <Button
                 variant="destructive"
                 className="max-sm:h-11 max-sm:w-full"
@@ -174,6 +193,18 @@ function RouteComponent() {
         )}
       </div>
     </main>
+  );
+}
+
+type BackHomeProps = PropsWithClassName<{
+  variant?: "default" | "outline";
+}>;
+
+function BackHome({ variant, className }: BackHomeProps) {
+  return (
+    <Link to="/" className={buttonVariants({ variant, className })}>
+      {m.delete_account_back_home()}
+    </Link>
   );
 }
 
