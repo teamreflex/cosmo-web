@@ -15,7 +15,7 @@ export const env = createEnv({
     ABSTRACT_RPC: z.url(),
     // better auth
     BETTER_AUTH_SECRET: z.string().min(1),
-    // comma-separated email domains whose accounts nobody can ban, unban or change the role of
+    // comma-separated email domains; accounts with a verified email on one can't be banned, unbanned or re-roled
     PROTECTED_EMAIL_DOMAINS: z.string().optional().transform(parseEmailDomains),
     // discord oauth
     DISCORD_CLIENT_ID: z.string().min(1),

@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
   hasEmailDomain,
   isDemotion,
+  isProtectedAccount,
   parseEmailDomains,
   userChangeRefusal,
 } from "../src/guard";
@@ -50,6 +51,37 @@ describe("hasEmailDomain", () => {
   });
 });
 
+describe("isProtectedAccount", () => {
+  const domains = parseEmailDomains("team-reflex.com");
+
+  test("protects a verified email on a listed domain", () => {
+    expect(
+      isProtectedAccount(
+        { email: "kairu@team-reflex.com", emailVerified: true },
+        domains,
+      ),
+    ).toBe(true);
+  });
+
+  test("ignores an unverified email on a listed domain", () => {
+    expect(
+      isProtectedAccount(
+        { email: "kairu@team-reflex.com", emailVerified: false },
+        domains,
+      ),
+    ).toBe(false);
+  });
+
+  test("ignores a verified email elsewhere", () => {
+    expect(
+      isProtectedAccount(
+        { email: "kairu@example.org", emailVerified: true },
+        domains,
+      ),
+    ).toBe(false);
+  });
+});
+
 describe("isDemotion", () => {
   /**
    * Written out by hand so a new role has to take a place in the ranking.
@@ -76,8 +108,16 @@ describe("isDemotion", () => {
 describe("userChangeRefusal", () => {
   const protectedDomains = parseEmailDomains("team-reflex.com");
   const admin = { id: "admin", role: "admin" } as const;
-  const member = { id: "member", email: "member@example.org" };
-  const protectedMember = { id: "kairu", email: "kairu@team-reflex.com" };
+  const member = {
+    id: "member",
+    email: "member@example.org",
+    emailVerified: true,
+  };
+  const protectedMember = {
+    id: "kairu",
+    email: "kairu@team-reflex.com",
+    emailVerified: true,
+  };
 
   const changes = [
     { kind: "ban" },
@@ -113,7 +153,11 @@ describe("userChangeRefusal", () => {
       expect(
         userChangeRefusal({
           caller: admin,
-          target: { id: admin.id, email: "admin@example.org" },
+          target: {
+            id: admin.id,
+            email: "admin@example.org",
+            emailVerified: true,
+          },
           change: { kind: "set-role", role },
           protectedDomains,
         }),
@@ -126,7 +170,11 @@ describe("userChangeRefusal", () => {
       expect(
         userChangeRefusal({
           caller: { id: "moderator", role: "moderator" },
-          target: { id: "moderator", email: "moderator@example.org" },
+          target: {
+            id: "moderator",
+            email: "moderator@example.org",
+            emailVerified: true,
+          },
           change: { kind: "set-role", role },
           protectedDomains,
         }),
@@ -138,11 +186,28 @@ describe("userChangeRefusal", () => {
     expect(
       userChangeRefusal({
         caller: admin,
-        target: { id: "other-admin", email: "other@example.org" },
+        target: {
+          id: "other-admin",
+          email: "other@example.org",
+          emailVerified: true,
+        },
         change: { kind: "set-role", role: "user" },
         protectedDomains,
       }),
     ).toBeNull();
+  });
+
+  test("allows any change to an unverified account on a protected domain", () => {
+    for (const change of changes) {
+      expect(
+        userChangeRefusal({
+          caller: admin,
+          target: { ...protectedMember, emailVerified: false },
+          change,
+          protectedDomains,
+        }),
+      ).toBeNull();
+    }
   });
 
   test("protects nobody without domains", () => {

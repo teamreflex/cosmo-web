@@ -18,7 +18,7 @@ import type {
 } from "@/lib/universal/reports";
 import type { ReportQueueInput } from "@/lib/universal/schema/reports";
 import { parseRole } from "@apollo/auth";
-import { hasEmailDomain } from "@apollo/auth/guard";
+import { isProtectedAccount } from "@apollo/auth/guard";
 import { reports } from "@apollo/database/web/schema";
 import type {
   ReportStatus,
@@ -169,6 +169,7 @@ async function fetchDetailTarget(
           username: true,
           displayUsername: true,
           email: true,
+          emailVerified: true,
           role: true,
           banned: true,
           banExpires: true,
@@ -195,7 +196,7 @@ async function fetchDetailTarget(
           role: parseRole(user.role),
           ban: banActive ? { until: user.banExpires } : null,
           profile: user.cosmoAccount?.username ?? null,
-          protected: hasEmailDomain(user.email, env.PROTECTED_EMAIL_DOMAINS),
+          protected: isProtectedAccount(user, env.PROTECTED_EMAIL_DOMAINS),
         },
       };
     }

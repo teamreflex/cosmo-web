@@ -41,6 +41,18 @@ export function hasEmailDomain(email: string, domains: ReadonlySet<string>) {
 }
 
 /**
+ * Whether nobody may ban, unban or re-role the account. Only a verified email
+ * counts: sign-up doesn't require verification, so anyone could otherwise
+ * register on a protected domain and become unbannable.
+ */
+export function isProtectedAccount(
+  account: { email: string; emailVerified: boolean },
+  domains: ReadonlySet<string>,
+) {
+  return account.emailVerified && hasEmailDomain(account.email, domains);
+}
+
+/**
  * A staff change to an account's access or role, as the admin plugin's
  * ban, unban and set-role endpoints make it.
  */
@@ -53,15 +65,15 @@ export type UserChangeRefusal = "protected-user" | "self-demotion";
 
 type UserChangeCheck = {
   caller: { id: string; role: Role };
-  target: { id: string; email: string };
+  target: { id: string; email: string; emailVerified: boolean };
   change: UserChange;
   protectedDomains: ReadonlySet<string>;
 };
 
 /**
  * Why a staff member who holds the permission still may not make the change,
- * or null when they may. Nobody, admins included, can change an account on a
- * protected email domain, and nobody can lower their own role.
+ * or null when they may. Nobody, admins included, can change a protected
+ * account, and nobody can lower their own role.
  */
 export function userChangeRefusal({
   caller,
@@ -69,7 +81,7 @@ export function userChangeRefusal({
   change,
   protectedDomains,
 }: UserChangeCheck): UserChangeRefusal | null {
-  if (hasEmailDomain(target.email, protectedDomains)) {
+  if (isProtectedAccount(target, protectedDomains)) {
     return "protected-user";
   }
 

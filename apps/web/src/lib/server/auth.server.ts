@@ -487,7 +487,7 @@ async function guardUserChange(
 
   const target = await db.query.user.findFirst({
     where: { id: userId },
-    columns: { id: true, email: true, role: true },
+    columns: { id: true, email: true, emailVerified: true, role: true },
   });
   if (!target) {
     return null;
