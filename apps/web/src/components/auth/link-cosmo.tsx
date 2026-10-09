@@ -8,15 +8,24 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Field, FieldError } from "@/components/ui/field";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
+import { formatError } from "@/lib/client/errors";
 import { env } from "@/lib/env/client";
 import {
   $generateVerificationCode,
   $verifyCosmoBio,
 } from "@/lib/functions/auth";
 import { artistsQuery, currentAccountQuery } from "@/lib/queries/core";
-import { artistColors, cn, track } from "@/lib/utils";
+import { isAccountErrorCode } from "@/lib/universal/errors/accounts";
+import {
+  DISCORD_INVITE_URL,
+  type PropsWithClassName,
+  artistColors,
+  cn,
+  track,
+} from "@/lib/utils";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
 import type { CosmoPublicUser } from "@apollo/cosmo/types/user";
 import { IconCheck, IconCircleCheck, IconLoader2 } from "@tabler/icons-react";
@@ -232,7 +241,7 @@ type SearchStepProps = {
 
 function SearchStep({ artistId, onContinue }: SearchStepProps) {
   const [selected, setSelected] = useState<CosmoPublicUser | null>(null);
-  const { mutate, isPending } = useMutation({
+  const { mutate, isPending, error, reset } = useMutation({
     mutationFn: $generateVerificationCode,
   });
 
@@ -261,11 +270,18 @@ function SearchStep({ artistId, onContinue }: SearchStepProps) {
         {m.link_cosmo_search_account()}
       </p>
 
-      <CosmoUserCombobox
-        artistId={artistId}
-        value={selected}
-        onChange={setSelected}
-      />
+      <Field data-invalid={error !== null}>
+        <CosmoUserCombobox
+          artistId={artistId}
+          value={selected}
+          onChange={(user) => {
+            reset();
+            setSelected(user);
+          }}
+          invalid={error !== null}
+        />
+        {error !== null && <LinkRefusal error={error} />}
+      </Field>
 
       <Button
         className="mx-auto w-fit"
@@ -298,6 +314,8 @@ function CodeStep({ code, onSuccess, onBack }: CodeStepProps) {
   });
 
   const isNotFound = error?.message === "NOT_FOUND";
+  // account refusals are final, so checking the bio again can't help
+  const isRefused = error !== null && isAccountErrorCode(error.message);
 
   function handleCopy() {
     void navigator.clipboard.writeText(code);
@@ -355,16 +373,54 @@ function CodeStep({ code, onSuccess, onBack }: CodeStepProps) {
         </p>
       )}
 
+      {error !== null && !isNotFound && (
+        <LinkRefusal error={error} className="text-center" />
+      )}
+
       <div className="flex gap-2">
-        {isNotFound && (
+        {error !== null && (
           <Button variant="outline" onClick={onBack}>
             {m.common_back()}
           </Button>
         )}
-        <Button onClick={handleVerify}>
-          {isNotFound ? m.link_cosmo_check_again() : m.link_cosmo_check()}
-        </Button>
+        {!isRefused && (
+          <Button onClick={handleVerify}>
+            {error === null ? m.link_cosmo_check() : m.link_cosmo_check_again()}
+          </Button>
+        )}
       </div>
+    </div>
+  );
+}
+
+type LinkRefusalProps = PropsWithClassName<{
+  error: Error;
+}>;
+
+/**
+ * Why a link attempt was refused. An account linked elsewhere can be moved by
+ * staff, so that refusal also points to the Discord.
+ */
+function LinkRefusal({ error, className }: LinkRefusalProps) {
+  return (
+    <div className={cn("flex flex-col gap-2", className)}>
+      <FieldError>{formatError(error)}</FieldError>
+      {isAccountErrorCode(error.message) &&
+        error.message === "account_linked_elsewhere" && (
+          <p className="text-xs text-muted-foreground">
+            {m.link_cosmo_linked_elsewhere_help({
+              appName: env.VITE_APP_NAME,
+            })}{" "}
+            <a
+              href={DISCORD_INVITE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-cosmo hover:underline dark:text-cosmo-text"
+            >
+              {m.common_discord()}
+            </a>
+          </p>
+        )}
     </div>
   );
 }

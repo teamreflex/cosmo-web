@@ -15,6 +15,11 @@ export function baseUrl() {
 }
 
 /**
+ * Invite link to the Apollo Discord server.
+ */
+export const DISCORD_INVITE_URL = "https://discord.gg/A72VRX8FgK";
+
+/**
  * Format a price in the given currency. Falls back to a manual format string
  * when the currency code is not recognized by `Intl.NumberFormat` (we allow
  * freeform currency input on objekt lists).
