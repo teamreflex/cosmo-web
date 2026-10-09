@@ -155,7 +155,7 @@ export async function anonymiseAccount(
   await tx
     .delete(authSchema.apikey)
     .where(eq(authSchema.apikey.referenceId, userId));
-  // a leftover reset-password token would otherwise re-create a credential
+  // reset-password and deletion tokens, whose value is the user id
   await tx
     .delete(authSchema.verification)
     .where(eq(authSchema.verification.value, userId));
