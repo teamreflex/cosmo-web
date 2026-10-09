@@ -7,7 +7,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
  * Checks the signed-in user's staff role against a set of permissions.
  * Signed-out visitors are treated as the "user" role.
  */
-export function useCan() {
+export function useHasPermission() {
   const { data } = useSuspenseQuery(currentAccountQuery);
   const role = data?.role ?? "user";
 

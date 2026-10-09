@@ -7,7 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useArtists } from "@/hooks/use-artists";
-import { useCan } from "@/hooks/use-can";
+import { useHasPermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
 import type { PublicUser } from "@/lib/universal/auth";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
@@ -40,7 +40,7 @@ export default function UserDropdown({
   onSignOut,
 }: UserDropdownProps) {
   const { artistList, selectedIds } = useArtists();
-  const can = useCan();
+  const hasPermission = useHasPermission();
   const [openSettings, setOpenSettings] = useState(false);
   const [openAccount, setOpenAccount] = useState(false);
   const [openAbout, setOpenAbout] = useState(false);
@@ -95,7 +95,7 @@ export default function UserDropdown({
           <span>{m.user_dropdown_settings()}</span>
         </DropdownMenuItem>
 
-        {can(ADMIN_SHELL_PERMISSIONS) && (
+        {hasPermission(ADMIN_SHELL_PERMISSIONS) && (
           <div className="contents">
             <DropdownMenuSeparator />
             <DropdownMenuItem

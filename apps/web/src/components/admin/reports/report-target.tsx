@@ -2,7 +2,7 @@ import StatusPill from "@/components/objekt/detail/status-pill";
 import UserAvatar from "@/components/profile/user-avatar";
 import { Button } from "@/components/ui/button";
 import { Timestamp } from "@/components/ui/timestamp";
-import { useCan } from "@/hooks/use-can";
+import { useHasPermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { formatError } from "@/lib/client/errors";
@@ -106,7 +106,7 @@ function TargetMeta({
  * Lifts a ban through the admin plugin; only roles that can ban see it.
  */
 function UnbanButton({ user }: { user: ReportTargetUser }) {
-  const can = useCan();
+  const hasPermission = useHasPermission();
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: async () => {
@@ -124,7 +124,7 @@ function UnbanButton({ user }: { user: ReportTargetUser }) {
     },
   });
 
-  if (!can({ user: ["ban"] })) {
+  if (!hasPermission({ user: ["ban"] })) {
     return null;
   }
 

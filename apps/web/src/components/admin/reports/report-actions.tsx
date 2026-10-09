@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Timestamp } from "@/components/ui/timestamp";
-import { useCan } from "@/hooks/use-can";
+import { useHasPermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import {
@@ -84,7 +84,7 @@ export default function ReportActions({ report }: Props) {
 }
 
 function OpenActions({ report }: Props) {
-  const can = useCan();
+  const hasPermission = useHasPermission();
   const queryClient = useQueryClient();
   const [banOpen, setBanOpen] = useState(false);
   const { data: account } = useSuspenseQuery(currentAccountQuery);
@@ -103,7 +103,7 @@ function OpenActions({ report }: Props) {
   });
 
   const target = report.target.user;
-  const canBan = can({ user: ["ban"] });
+  const canBan = hasPermission({ user: ["ban"] });
   const banTarget =
     canBan &&
     target !== null &&
@@ -113,8 +113,10 @@ function OpenActions({ report }: Props) {
       ? target
       : null;
   const showEscalate =
-    !canBan && can({ report: ["escalate"] }) && report.status === "open";
-  const canResolve = can({ report: ["resolve"] });
+    !canBan &&
+    hasPermission({ report: ["escalate"] }) &&
+    report.status === "open";
+  const canResolve = hasPermission({ report: ["resolve"] });
   const actions = (["escalate", "dismiss", "resolve"] as const).filter(
     (action) => (action === "escalate" ? showEscalate : canResolve),
   );

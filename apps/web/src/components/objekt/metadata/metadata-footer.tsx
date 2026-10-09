@@ -4,7 +4,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useCan } from "@/hooks/use-can";
+import { useHasPermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
 import { objektMetadataQuery } from "@/lib/queries/objekt-queries";
@@ -81,7 +81,7 @@ function NoticeRow({ text, className }: { text: string; className?: string }) {
 }
 
 function FooterInner(props: Props) {
-  const can = useCan();
+  const hasPermission = useHasPermission();
   const [_, copy] = useCopyToClipboard();
   const { data } = useSuspenseQuery(objektMetadataQuery(props.objekt.slug));
 
@@ -98,7 +98,7 @@ function FooterInner(props: Props) {
       {event !== null && <EventBadge event={event} />}
 
       <div className="ml-auto flex shrink-0 items-center gap-1">
-        {can({ site: ["manage"] }) && (
+        {hasPermission({ site: ["manage"] }) && (
           <EditMetadata
             slug={props.objekt.slug}
             defaultValue={data.data?.description}
