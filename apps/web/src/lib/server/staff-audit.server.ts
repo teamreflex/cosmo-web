@@ -155,6 +155,7 @@ export async function fetchStaffAudit(input: StaffAuditQueryInput) {
             role: true,
           },
         },
+        report: { columns: { id: true, status: true } },
       },
     }),
     db.$count(
@@ -180,7 +181,7 @@ export async function fetchStaffAudit(input: StaffAuditQueryInput) {
         username: staffUsername(row.staff),
         role: parseRole(row.staff.role),
       },
-      reportId: row.reportId,
+      report: row.report,
       detail: row.detail === null ? null : toAuditDetail(row.detail),
       target: toAuditTarget(row.targetType, row.targetId, usernames),
     })),

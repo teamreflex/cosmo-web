@@ -153,13 +153,13 @@ function AuditTarget({ row }: Props) {
               {detailNote(row.detail)}
             </span>
           )}
-          {row.reportId !== null && (
+          {row.report !== null && (
             <Link
               to="/admin/reports"
-              search={{ report: row.reportId }}
+              search={{ status: row.report.status, report: row.report.id }}
               className="text-xs text-cosmo hover:underline dark:text-cosmo-text"
             >
-              {m.admin_audit_report_link({ id: shortId(row.reportId) })}
+              {m.admin_audit_report_link({ id: shortId(row.report.id) })}
             </Link>
           )}
         </>
@@ -168,17 +168,17 @@ function AuditTarget({ row }: Props) {
       return (
         <>
           <span>{m.admin_audit_target_report()}</span>
-          {row.reportId === null ? (
+          {row.report === null ? (
             <span className="font-mono text-xs text-muted-foreground">
               #{shortId(row.target.id)}
             </span>
           ) : (
             <Link
               to="/admin/reports"
-              search={{ report: row.reportId }}
+              search={{ status: row.report.status, report: row.report.id }}
               className="font-mono text-xs text-cosmo hover:underline dark:text-cosmo-text"
             >
-              #{shortId(row.reportId)}
+              #{shortId(row.report.id)}
             </Link>
           )}
           {row.action === "report:escalate" && (
