@@ -20,12 +20,13 @@ import {
 } from "@/lib/universal/account-deletion";
 import { IconLoader2, IconMailCheck, IconTrash } from "@tabler/icons-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import DeletionBlockerRows from "./deletion-blockers";
 
 export default function DeleteAccount() {
   const [open, setOpen] = useState(false);
+  const popupRef = useRef<HTMLDivElement>(null);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -37,7 +38,8 @@ export default function DeleteAccount() {
         <IconTrash className="size-4" />
         <span>{m.delete_account_title()}</span>
       </DialogTrigger>
-      <DialogContent>
+      {/* the content loads after opening, so the dialog takes focus rather than its close button */}
+      <DialogContent ref={popupRef} initialFocus={popupRef}>
         <DeleteAccountContent />
       </DialogContent>
     </Dialog>
