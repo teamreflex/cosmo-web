@@ -12,6 +12,10 @@ const actionLabels = {
   "user:ban": m.admin_audit_action_user_ban,
   "user:unban": m.admin_audit_action_user_unban,
   "user:set-role": m.admin_audit_action_user_set_role,
+  "api-key:create": m.admin_audit_action_api_key_create,
+  "api-key:update": m.admin_audit_action_api_key_update,
+  "api-key:delete": m.admin_audit_action_api_key_delete,
+  "metadata:update": m.admin_audit_action_metadata_update,
 } satisfies Record<StaffAuditAction, () => string>;
 
 /**

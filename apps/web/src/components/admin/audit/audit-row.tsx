@@ -20,7 +20,8 @@ const auditRow =
   "col-span-full grid-cols-subgrid [grid-template-areas:'who_when'_'act_act'_'target_target'] @lg:grid-rows-[auto_1fr] @lg:[grid-template-areas:'who_target_when'_'act_target_when'] @4xl:grid-rows-none @4xl:[grid-template-areas:'who_act_target_when']";
 
 /**
- * Reads are muted, report actions plain, and actions on accounts stand out.
+ * Reads are muted, report actions and content edits plain, and actions that
+ * change who has access stand out.
  */
 const actionTones = {
   "report:read": "text-muted-foreground",
@@ -30,6 +31,10 @@ const actionTones = {
   "user:ban": "text-destructive",
   "user:unban": "text-destructive",
   "user:set-role": "text-destructive",
+  "api-key:create": "text-destructive",
+  "api-key:update": "text-destructive",
+  "api-key:delete": "text-destructive",
+  "metadata:update": "text-foreground",
 } satisfies Record<StaffAuditAction, string>;
 
 type Props = {
@@ -187,6 +192,39 @@ function AuditTarget({ row }: Props) {
             </span>
           )}
         </>
+      );
+    case "api-key":
+      return (
+        <>
+          <span className="min-w-0 break-words">
+            {row.target.name === null
+              ? m.admin_audit_target_api_key_unnamed()
+              : m.admin_audit_target_api_key({ name: row.target.name })}
+          </span>
+          <span className="font-mono text-xs text-muted-foreground">
+            {shortId(row.target.id)}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            {row.target.owner === null
+              ? m.admin_audit_note_api_key_owner_deleted()
+              : m.admin_audit_note_api_key_owner({
+                  username: row.target.owner,
+                })}
+          </span>
+          {row.action === "api-key:update" && (
+            <span className="text-xs text-muted-foreground">
+              {row.target.enabled
+                ? m.admin_api_key_status_enabled()
+                : m.admin_api_key_status_disabled()}
+            </span>
+          )}
+        </>
+      );
+    case "collection":
+      return (
+        <span className="min-w-0 break-words">
+          {m.admin_audit_target_collection({ slug: row.target.slug })}
+        </span>
       );
   }
 }

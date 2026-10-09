@@ -142,17 +142,37 @@ export const staffAuditActions = [
   "user:ban",
   "user:unban",
   "user:set-role",
+  "api-key:create",
+  "api-key:update",
+  "api-key:delete",
+  "metadata:update",
 ] as const;
 export type StaffAuditAction = (typeof staffAuditActions)[number];
 
-export const staffAuditTargetTypes = ["user", "report"] as const;
+/**
+ * A `collection` target's id is the collection's slug.
+ */
+export const staffAuditTargetTypes = [
+  "user",
+  "report",
+  "api-key",
+  "collection",
+] as const;
 export type StaffAuditTargetType = (typeof staffAuditTargetTypes)[number];
 
 /**
  * Extra context for an audit row. Roles are stored as plain strings so this
  * package stays independent of @apollo/auth; readers parse them.
- * `expiresIn` is the ban length in seconds, null for a permanent ban.
+ * `expiresIn` is the ban length in seconds, null for a permanent ban. An API
+ * key's name, owner and enabled state are copied in when the action runs, so
+ * the row still reads after the key is deleted.
  */
 export type StaffAuditDetail =
   | { kind: "ban"; expiresIn: number | null; reason: string }
-  | { kind: "set-role"; from: string; to: string };
+  | { kind: "set-role"; from: string; to: string }
+  | {
+      kind: "api-key";
+      name: string | null;
+      ownerId: string;
+      enabled: boolean;
+    };

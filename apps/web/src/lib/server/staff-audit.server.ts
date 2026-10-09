@@ -52,11 +52,26 @@ type SetRoleAuditEntry = {
   detail: Extract<StaffAuditDetail, { kind: "set-role" }>;
 };
 
+type ApiKeyAuditEntry = {
+  staffId: string;
+  action: "api-key:create" | "api-key:update" | "api-key:delete";
+  apiKeyId: string;
+  detail: Extract<StaffAuditDetail, { kind: "api-key" }>;
+};
+
+type MetadataAuditEntry = {
+  staffId: string;
+  action: "metadata:update";
+  slug: string;
+};
+
 export type StaffAuditEntry =
   | ReportAuditEntry
   | BanAuditEntry
   | UnbanAuditEntry
-  | SetRoleAuditEntry;
+  | SetRoleAuditEntry
+  | ApiKeyAuditEntry
+  | MetadataAuditEntry;
 
 function toAuditRow(entry: StaffAuditEntry): typeof staffAudit.$inferInsert {
   switch (entry.action) {
@@ -94,6 +109,23 @@ function toAuditRow(entry: StaffAuditEntry): typeof staffAudit.$inferInsert {
         targetType: "user",
         targetId: entry.userId,
         detail: entry.detail,
+      };
+    case "api-key:create":
+    case "api-key:update":
+    case "api-key:delete":
+      return {
+        staffId: entry.staffId,
+        action: entry.action,
+        targetType: "api-key",
+        targetId: entry.apiKeyId,
+        detail: entry.detail,
+      };
+    case "metadata:update":
+      return {
+        staffId: entry.staffId,
+        action: entry.action,
+        targetType: "collection",
+        targetId: entry.slug,
       };
   }
 }
@@ -168,7 +200,12 @@ export async function fetchStaffAudit(input: StaffAuditQueryInput) {
   ]);
 
   const usernames = await fetchStaffUsernames(
-    rows.filter((row) => row.targetType === "user").map((row) => row.targetId),
+    rows.flatMap((row) => {
+      if (row.targetType === "user") {
+        return [row.targetId];
+      }
+      return row.detail?.kind === "api-key" ? [row.detail.ownerId] : [];
+    }),
   );
 
   const last = rows.at(-1);
@@ -183,7 +220,7 @@ export async function fetchStaffAudit(input: StaffAuditQueryInput) {
       },
       report: row.report,
       detail: row.detail === null ? null : toAuditDetail(row.detail),
-      target: toAuditTarget(row.targetType, row.targetId, usernames),
+      target: toAuditTarget(row, usernames),
     })),
     nextCursor: rows.length === AUDIT_PAGE_SIZE && last ? last.id : undefined,
     total,
@@ -191,23 +228,43 @@ export async function fetchStaffAudit(input: StaffAuditQueryInput) {
 }
 
 function toAuditTarget(
-  targetType: StaffAuditTargetType,
-  targetId: string,
+  row: {
+    targetType: StaffAuditTargetType;
+    targetId: string;
+    detail: StaffAuditDetail | null;
+  },
   usernames: Map<string, string>,
 ): AdminAuditTarget {
-  switch (targetType) {
+  switch (row.targetType) {
     case "user":
       return {
         type: "user",
-        id: targetId,
-        username: usernames.get(targetId) ?? null,
+        id: row.targetId,
+        username: usernames.get(row.targetId) ?? null,
       };
     case "report":
-      return { type: "report", id: targetId };
+      return { type: "report", id: row.targetId };
+    case "api-key":
+      // recordStaffAudit always stores the key's detail with these rows
+      if (row.detail?.kind !== "api-key") {
+        throw new Error(`Audit row on API key ${row.targetId} has no detail`);
+      }
+      return {
+        type: "api-key",
+        id: row.targetId,
+        name: row.detail.name,
+        owner: usernames.get(row.detail.ownerId) ?? null,
+        enabled: row.detail.enabled,
+      };
+    case "collection":
+      return { type: "collection", slug: row.targetId };
   }
 }
 
-function toAuditDetail(detail: StaffAuditDetail): AdminAuditDetail {
+/**
+ * API key details are shown as the target instead.
+ */
+function toAuditDetail(detail: StaffAuditDetail): AdminAuditDetail | null {
   switch (detail.kind) {
     case "ban":
       return { kind: "ban", expiresIn: detail.expiresIn };
@@ -217,6 +274,8 @@ function toAuditDetail(detail: StaffAuditDetail): AdminAuditDetail {
         from: parseRole(detail.from),
         to: parseRole(detail.to),
       };
+    case "api-key":
+      return null;
   }
 }
 
