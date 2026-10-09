@@ -121,7 +121,7 @@ function OpenActions({ report }: Props) {
   return (
     <div className="flex flex-col gap-2.5 border-t bg-muted/40 px-4 py-3">
       <span className="text-xxs font-medium tracking-[0.14em] text-muted-foreground uppercase">
-        {m.admin_reports_actions()}
+        {canBan ? m.admin_reports_actions() : m.admin_reports_actions_no_ban()}
       </span>
       <div
         className={cn(
