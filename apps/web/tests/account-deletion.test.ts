@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import * as z from "zod";
 import {
+  deletionBlockerCount,
   toDeletionCheck,
   tombstoneEmail,
 } from "../src/lib/universal/account-deletion";
@@ -31,6 +32,26 @@ describe("toDeletionCheck", () => {
       status: "blocked",
       blockers: [blocker],
     });
+  });
+});
+
+describe("deletionBlockerCount", () => {
+  test("counts every live trade across blockers", () => {
+    const twoTrades = {
+      kind: "live-trades",
+      trades: [
+        ...blocker.trades,
+        {
+          id: "trade-2",
+          kind: "purchase",
+          counterparty: null,
+          state: { kind: "deadline", at: new Date(0) },
+        },
+      ],
+    } satisfies DeletionBlocker;
+
+    expect(deletionBlockerCount([])).toBe(0);
+    expect(deletionBlockerCount([blocker, twoTrades])).toBe(3);
   });
 });
 

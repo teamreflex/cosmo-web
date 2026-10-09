@@ -576,11 +576,35 @@
   "account_cosmo_linked_note": "영구적으로 연결되었습니다. 접근 권한을 잃으면 스태프에게 문의하세요.",
   "_comment_delete_account": "Delete account strings",
   "delete_account_title": "계정 삭제",
-  "delete_account_confirm_title": "정말로 삭제하시겠습니까?",
-  "delete_account_confirm_description": "계정과 관련된 모든 데이터가 삭제되며 되돌릴 수 없습니다. 삭제를 확인하기 위한 인증 이메일이 발송됩니다.",
-  "delete_account_send_email": "이메일 보내기",
+  "delete_account_confirm_title": "계정을 삭제하시겠습니까?",
+  "delete_account_confirm_description": "이름, 프로필 사진, 이메일, 소셜 정보가 지워지고 리스트, 바인더, 고정 항목, API 키가 삭제됩니다. 프로필은 “삭제된 사용자”로 표시됩니다.",
+  "delete_account_confirm_cosmo": "코스모 계정은 삭제된 계정에 연결된 채로 남으며 다시 연결할 수 없습니다.",
+  "delete_account_send_email": "확인 이메일 보내기",
   "delete_account_success_title": "이메일의 링크를 클릭하여 계정 삭제를 확인하세요.",
   "delete_account_success_description": "인증 이메일의 링크를 클릭하기 전까지는 계정이 삭제되지 않습니다.",
+  "delete_account_blocked_title": "먼저 교환을 마무리하세요",
+  "delete_account_blocked_description": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "다른 사람이 기다리고 있는 교환이 {count}건 있습니다. 완료하거나 취소한 뒤 다시 시도하세요."
+      }
+    }
+  ],
+  "delete_account_blocked_trade": "{name}님과의 교환",
+  "delete_account_blocked_purchase": "{name}님에게서 구매",
+  "delete_account_blocked_sale": "{name}님에게 판매",
+  "delete_account_blocked_deleted_counterparty": "삭제된 사용자",
+  "delete_account_blocked_disputed": "분쟁 중",
+  "delete_account_finish_description": "이 작업은 되돌릴 수 없습니다. 모든 기기에서 로그아웃됩니다.",
+  "delete_account_finish_submit": "내 계정 삭제",
+  "delete_account_done_title": "계정이 삭제되었습니다",
+  "delete_account_done_description": "이름, 이메일, 소셜 정보가 지워졌고 로그아웃되었습니다.",
+  "delete_account_link_invalid_title": "만료된 링크입니다",
+  "delete_account_link_invalid_description": "아바타 메뉴의 계정에서 확인 이메일을 다시 보내세요.",
+  "delete_account_sign_in_required": "삭제하려는 계정으로 로그인한 뒤 링크를 다시 여세요.",
+  "delete_account_back_home": "홈으로 돌아가기",
   "_comment_linked_accounts": "Linked accounts strings",
   "linked_accounts_unlink": "{provider} 연결 해제",
   "linked_accounts_link": "{provider} 연결",

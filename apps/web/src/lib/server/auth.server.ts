@@ -3,7 +3,6 @@ import * as serverEnv from "@/lib/env/server";
 import { baseUrl } from "@/lib/utils";
 import { adminPluginOptions } from "@apollo/auth";
 import * as authSchema from "@apollo/database/auth";
-import { cosmoAccounts } from "@apollo/database/web/schema";
 import { GRID_COLUMNS } from "@apollo/util";
 import type { CollectionDataSource } from "@apollo/util";
 import { apiKey } from "@better-auth/api-key";
@@ -14,16 +13,11 @@ import { betterAuth } from "better-auth/minimal";
 import { admin } from "better-auth/plugins/admin";
 import { username } from "better-auth/plugins/username";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
-import { eq } from "drizzle-orm";
 import { createCipheriv, randomBytes } from "node:crypto";
 import type { PublicUser } from "../universal/auth";
 import { settingsSchema } from "../universal/schema/auth";
 import { db } from "./db";
-import {
-  sendAccountDeletionEmail,
-  sendPasswordResetEmail,
-  sendVerificationEmail,
-} from "./mail.server";
+import { sendPasswordResetEmail, sendVerificationEmail } from "./mail.server";
 
 /**
  * Refuses sign-ins to a deleted account. Localised on the client by
@@ -294,25 +288,6 @@ export const auth = betterAuth({
   user: {
     changeEmail: {
       enabled: true,
-    },
-    deleteUser: {
-      enabled: true,
-      sendDeleteAccountVerification: async ({ user, url, token }) => {
-        await sendAccountDeletionEmail({
-          to: user.email,
-          url: url,
-          token: token,
-        });
-      },
-      // unlink the cosmo account when the user is deleted
-      afterDelete: async (user) => {
-        await db
-          .update(cosmoAccounts)
-          .set({
-            userId: null,
-          })
-          .where(eq(cosmoAccounts.userId, user.id));
-      },
     },
     additionalFields: {
       gridColumns: {

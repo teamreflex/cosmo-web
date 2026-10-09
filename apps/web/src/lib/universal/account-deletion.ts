@@ -38,6 +38,21 @@ export function toDeletionCheck(
 }
 
 /**
+ * How many things the blockers list, for the blocked description's plural.
+ */
+export function deletionBlockerCount(blockers: readonly DeletionBlocker[]) {
+  return blockers.reduce((count, blocker) => {
+    switch (blocker.kind) {
+      case "live-trades":
+        return count + blocker.trades.length;
+      default:
+        blocker.kind satisfies never;
+        return count;
+    }
+  }, 0);
+}
+
+/**
  * The email an anonymised account keeps. It is unique per user, and its domain
  * has no dot, so `z.email()`, which Better Auth checks sign-in, sign-up and
  * email changes with, rejects it.

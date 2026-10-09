@@ -576,11 +576,35 @@
   "account_cosmo_linked_note": "連携は解除できません。アクセスできなくなった場合はスタッフにご連絡ください。",
   "_comment_delete_account": "Delete account strings",
   "delete_account_title": "アカウント削除",
-  "delete_account_confirm_title": "本当に実行しますか？",
-  "delete_account_confirm_description": "アカウントに関連するすべてのデータが削除され、元に戻すことはできません。削除確認のためのメールが送信されます。",
-  "delete_account_send_email": "メールを送信",
+  "delete_account_confirm_title": "アカウントを削除しますか？",
+  "delete_account_confirm_description": "名前、プロフィール画像、メールアドレス、SNS情報は消去され、リスト、バインダー、ピン、APIキーは削除されます。プロフィールは「削除されたユーザー」と表示されます。",
+  "delete_account_confirm_cosmo": "COSMOアカウントは削除されたアカウントに紐づいたままとなり、再び連携することはできません。",
+  "delete_account_send_email": "確認メールを送信",
   "delete_account_success_title": "メール内のリンクをクリックして削除を確定してください。",
   "delete_account_success_description": "確認メールのリンクが押されるまで、アカウントは削除されません。",
+  "delete_account_blocked_title": "先に取引を完了してください",
+  "delete_account_blocked_description": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "他の人が待っている取引が{count}件あります。完了またはキャンセルしてから、もう一度お試しください。"
+      }
+    }
+  ],
+  "delete_account_blocked_trade": "{name}との取引",
+  "delete_account_blocked_purchase": "{name}からの購入",
+  "delete_account_blocked_sale": "{name}への販売",
+  "delete_account_blocked_deleted_counterparty": "削除されたユーザー",
+  "delete_account_blocked_disputed": "紛争中",
+  "delete_account_finish_description": "この操作は取り消せません。すべての端末からサインアウトされます。",
+  "delete_account_finish_submit": "アカウントを削除する",
+  "delete_account_done_title": "アカウントを削除しました",
+  "delete_account_done_description": "名前、メールアドレス、SNS情報を消去し、サインアウトしました。",
+  "delete_account_link_invalid_title": "このリンクは有効期限が切れています",
+  "delete_account_link_invalid_description": "アバターメニューの「アカウント」から確認メールを再送信してください。",
+  "delete_account_sign_in_required": "削除するアカウントにサインインしてから、もう一度リンクを開いてください。",
+  "delete_account_back_home": "ホームに戻る",
   "_comment_linked_accounts": "Linked accounts strings",
   "linked_accounts_unlink": "{provider}の連携を解除",
   "linked_accounts_link": "{provider}を連携",
