@@ -143,4 +143,5 @@ const variants = cva({
 
 - When writing new components that include strings, always use the i18n system and create new strings for all languages in `messages/`.
 - Use `turbo i18n` to compile messages into `.js` modules for use with the `m()` helper.
+- For a link or other element inside a sentence, wrap that part of the message in markup (`"ask in the {#link}{appName} Discord{/link}"`) in every locale, so translators can move it, and render it with `<ParaglideMessage message={m.key} inputs={…} markup={{ link: ({ children }) => <a …>{children}</a> }} />` from `@inlang/paraglide-js-react`. The markup names are type-checked, and calling `m.key()` directly returns the text with the markup stripped. Don't split a sentence into several messages around the link.
 - After merging a branch that added `messages/*.json` keys, run `bun run i18n` before typechecking. `src/i18n/messages` is gitignored Paraglide output, so a plain text-merge leaves the compiled `m.*` stale and typecheck fails with TS2339.

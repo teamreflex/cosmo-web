@@ -18,7 +18,10 @@ import {
   $verifyCosmoBio,
 } from "@/lib/functions/auth";
 import { artistsQuery, currentAccountQuery } from "@/lib/queries/core";
-import { isAccountErrorCode } from "@/lib/universal/errors/accounts";
+import {
+  type AccountErrorCode,
+  isAccountErrorCode,
+} from "@/lib/universal/errors/accounts";
 import {
   DISCORD_INVITE_URL,
   type PropsWithClassName,
@@ -28,6 +31,7 @@ import {
 } from "@/lib/utils";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
 import type { CosmoPublicUser } from "@apollo/cosmo/types/user";
+import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconCheck, IconCircleCheck, IconLoader2 } from "@tabler/icons-react";
 import {
   useMutation,
@@ -405,22 +409,27 @@ function LinkRefusal({ error, className }: LinkRefusalProps) {
   return (
     <div className={cn("flex flex-col gap-2", className)}>
       <FieldError>{formatError(error)}</FieldError>
-      {isAccountErrorCode(error.message) &&
-        error.message === "account_linked_elsewhere" && (
-          <p className="text-xs text-muted-foreground">
-            {m.link_cosmo_linked_elsewhere_help({
-              appName: env.VITE_APP_NAME,
-            })}{" "}
-            <a
-              href={DISCORD_INVITE_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-cosmo hover:underline dark:text-cosmo-text"
-            >
-              {m.common_discord()}
-            </a>
-          </p>
-        )}
+      {error.message ===
+        ("account_linked_elsewhere" satisfies AccountErrorCode) && (
+        <p className="text-xs text-muted-foreground">
+          <ParaglideMessage
+            message={m.link_cosmo_linked_elsewhere_help}
+            inputs={{ appName: env.VITE_APP_NAME }}
+            markup={{
+              link: ({ children }) => (
+                <a
+                  href={DISCORD_INVITE_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-cosmo hover:underline dark:text-cosmo-text"
+                >
+                  {children}
+                </a>
+              ),
+            }}
+          />
+        </p>
+      )}
     </div>
   );
 }

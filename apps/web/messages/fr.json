@@ -157,7 +157,7 @@
   "link_cosmo_error_not_found": "Le code de vérification n'a pas été trouvé dans votre bio.",
   "link_cosmo_how_it_works": "Pour vérifier votre compte, vous devez ajouter un code temporaire dans votre bio COSMO",
   "link_cosmo_remove_code": "Vous pouvez supprimer le code de votre bio.",
-  "link_cosmo_linked_elsewhere_help": "S'il vous appartient et que vous n'avez plus accès à l'autre compte {appName}, demandez sur le Discord {appName} : un membre du staff pourra le déplacer.",
+  "link_cosmo_linked_elsewhere_help": "S'il vous appartient et que vous n'avez plus accès à l'autre compte {appName}, demandez sur le {#link}Discord {appName}{/link} : un membre du staff pourra le déplacer.",
   "_comment_toast": "Toast notification messages",
   "toast_copied_clipboard": "Copié dans le presse-papier!",
   "toast_wallet_address_copied": "Adresse de wallet copiée dans le presse-papier",
