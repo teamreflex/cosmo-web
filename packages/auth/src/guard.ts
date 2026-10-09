@@ -181,3 +181,38 @@ export function cosmoTransferRefusal({
 
   return null;
 }
+
+export type CosmoLinkRefusal = "linked-elsewhere" | "deleted" | "banned";
+
+/**
+ * The user a COSMO address is linked to.
+ */
+export type CosmoLinkOwner = TransferUser & { id: string };
+
+type CosmoLinkCheck = {
+  callerId: string;
+  owner: CosmoLinkOwner | null;
+  now: Date;
+};
+
+/**
+ * Why the caller may not link a COSMO address, or null when nobody holds it
+ * or the caller already does. A deleted owner keeps the address for good.
+ * Callers decide whether to reveal a ban, since it says something about the
+ * owner.
+ */
+export function cosmoLinkRefusal({
+  callerId,
+  owner,
+  now,
+}: CosmoLinkCheck): CosmoLinkRefusal | null {
+  if (owner === null || owner.id === callerId) {
+    return null;
+  }
+
+  if (owner.deletedAt !== null) {
+    return "deleted";
+  }
+
+  return isBanActive(owner, now) ? "banned" : "linked-elsewhere";
+}

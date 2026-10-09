@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
+  cosmoLinkRefusal,
   cosmoTransferRefusal,
   hasEmailDomain,
   isBanActive,
@@ -9,7 +10,11 @@ import {
   protectionFor,
   userChangeRefusal,
 } from "../src/guard";
-import type { CosmoTransferRefusal, UserChange } from "../src/guard";
+import type {
+  CosmoLinkRefusal,
+  CosmoTransferRefusal,
+  UserChange,
+} from "../src/guard";
 import { roleNames } from "../src/index";
 import type { Role } from "../src/index";
 
@@ -414,5 +419,53 @@ describe("cosmoTransferRefusal", () => {
         now,
       }),
     ).toBeNull();
+  });
+});
+
+describe("cosmoLinkRefusal", () => {
+  const now = new Date("2026-10-09T12:00:00Z");
+  const owner = {
+    id: "owner",
+    banned: false,
+    banExpires: null,
+    deletedAt: null,
+  };
+
+  test.each([
+    ["an unlinked address", null, null],
+    ["the caller's own address", null, { ...owner, id: "caller" }],
+    ["another user's address", "linked-elsewhere", owner],
+    ["a banned owner's address", "banned", { ...owner, banned: true }],
+    [
+      "an owner whose ban has lapsed",
+      "linked-elsewhere",
+      {
+        ...owner,
+        banned: true,
+        banExpires: new Date("2026-10-09T11:00:00Z"),
+      },
+    ],
+    [
+      "a deleted owner's address",
+      "deleted",
+      { ...owner, deletedAt: new Date("2026-10-08T12:00:00Z") },
+    ],
+    [
+      "a deleted owner's address while their ban runs",
+      "deleted",
+      {
+        ...owner,
+        banned: true,
+        deletedAt: new Date("2026-10-08T12:00:00Z"),
+      },
+    ],
+  ] satisfies [
+    string,
+    CosmoLinkRefusal | null,
+    Parameters<typeof cosmoLinkRefusal>[0]["owner"],
+  ][])("%s gives %p", (_, expected, linkedOwner) => {
+    expect(
+      cosmoLinkRefusal({ callerId: "caller", owner: linkedOwner, now }),
+    ).toBe(expected);
   });
 });

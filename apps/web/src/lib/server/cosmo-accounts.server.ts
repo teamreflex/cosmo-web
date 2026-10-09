@@ -1,19 +1,24 @@
+import { cosmoLinkRefusal } from "@apollo/auth/guard";
+import type { CosmoLinkOwner, CosmoLinkRefusal } from "@apollo/auth/guard";
 import { CosmoApiError, CosmoDecodeError } from "@apollo/cosmo/errors";
 import { runCosmo } from "@apollo/cosmo/runtime";
 import { fetchByNickname } from "@apollo/cosmo/server/user";
 import type { CosmoSearchResult } from "@apollo/cosmo/types/user";
+import * as authSchema from "@apollo/database/auth";
 import { cosmoAccounts } from "@apollo/database/web/schema";
 import type { CosmoAccount } from "@apollo/database/web/types";
 import { addr, isAddress } from "@apollo/util";
-import { eq, isNull, like, or, sql } from "drizzle-orm";
+import { and, eq, isNull, like, or, sql } from "drizzle-orm";
 import type {
   CosmoLink,
   PublicCosmo,
   TargetAccount,
 } from "../universal/cosmo-accounts";
+import type { AccountErrorCode } from "../universal/errors/accounts";
 import { ExpectedError } from "../universal/errors/expected";
 import { toPublicUser } from "./auth.server";
 import { db, type DbOrTx } from "./db";
+import { importObjektLists } from "./objekts/lists.server";
 import { isPostgresError } from "./util.server";
 
 /**
@@ -160,6 +165,68 @@ export async function linkAccount(
     }
     throw error;
   }
+}
+
+/**
+ * The owner columns `cosmoLinkRefusal` reads.
+ */
+export const linkOwnerColumns = {
+  id: true,
+  banned: true,
+  banExpires: true,
+  deletedAt: true,
+} satisfies Record<keyof CosmoLinkOwner, true>;
+
+const linkRefusalErrors = {
+  "linked-elsewhere": "account_linked_elsewhere",
+  deleted: "cosmo_account_deleted",
+  banned: "cosmo_account_banned",
+} satisfies Record<CosmoLinkRefusal, AccountErrorCode>;
+
+/**
+ * Link a COSMO account to a user who has proven they control it through its
+ * bio, and copy the address's legacy lists onto them. Having proven control,
+ * the user may learn that the address belongs to a banned user.
+ */
+export async function linkVerifiedAccount(
+  userId: string,
+  account: Pick<CosmoAccount, "address" | "username" | "cosmoId">,
+) {
+  await db.transaction(async (tx) => {
+    // lock the caller's live row, so an account deletion can't run alongside the link
+    const [caller] = await tx
+      .select({ id: authSchema.user.id })
+      .from(authSchema.user)
+      .where(
+        and(eq(authSchema.user.id, userId), isNull(authSchema.user.deletedAt)),
+      )
+      .for("share");
+    if (!caller) {
+      throw new ExpectedError("not_signed_in");
+    }
+
+    const owner = await tx.query.cosmoAccounts.findFirst({
+      where: { address: account.address },
+      columns: {},
+      with: { user: { columns: linkOwnerColumns } },
+    });
+    const refusal = cosmoLinkRefusal({
+      callerId: userId,
+      owner: owner?.user ?? null,
+      now: new Date(),
+    });
+    if (refusal !== null) {
+      throw new ExpectedError(linkRefusalErrors[refusal]);
+    }
+
+    const linked = await linkAccount(tx, {
+      ...account,
+      userId,
+      polygonAddress: null,
+    });
+
+    await importObjektLists(tx, userId, linked.address);
+  });
 }
 
 type PartialAccount = Omit<CosmoAccount, "id" | "cosmoId" | "userId">;
