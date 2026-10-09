@@ -18,7 +18,7 @@ export default function ReportsBadge() {
 }
 
 function OpenCount() {
-  const { data } = useSuspenseQuery(reportCountsQuery);
+  const { data } = useSuspenseQuery(reportCountsQuery({}));
 
   if (data.open === 0) {
     return null;

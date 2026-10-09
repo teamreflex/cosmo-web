@@ -15,13 +15,14 @@ import { openReportStatuses } from "@/lib/universal/reports";
 import type { MyReport } from "@/lib/universal/reports";
 import {
   createReportSchema,
+  reportCountsSchema,
   reportIdSchema,
   reportQueueSchema,
   reportTargetSchema,
 } from "@/lib/universal/schema/reports";
 import { reports } from "@apollo/database/web/schema";
 import { createServerFn } from "@tanstack/react-start";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 
 /**
  * Report a user. One open report per reporter and target, and a generous
@@ -97,14 +98,19 @@ export const $fetchMyReport = createServerFn({ method: "GET" })
   });
 
 /**
- * Open and escalated report counts for the staff tabs and sidebar badge.
+ * Open and escalated report counts for the staff tabs and sidebar badge,
+ * optionally of one target type.
  */
 export const $fetchReportCounts = createServerFn({ method: "GET" })
   .middleware([staffMiddleware({ report: ["read"] })])
-  .handler(async () => {
+  .validator(reportCountsSchema)
+  .handler(async ({ data }) => {
+    const ofType = data.targetType
+      ? eq(reports.targetType, data.targetType)
+      : undefined;
     const [open, escalated] = await Promise.all([
-      db.$count(reports, eq(reports.status, "open")),
-      db.$count(reports, eq(reports.status, "escalated")),
+      db.$count(reports, and(eq(reports.status, "open"), ofType)),
+      db.$count(reports, and(eq(reports.status, "escalated"), ofType)),
     ]);
 
     return { open, escalated };

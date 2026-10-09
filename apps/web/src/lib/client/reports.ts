@@ -38,14 +38,6 @@ const targetTypeLabels = {
 } satisfies Record<QueueTargetType, () => string>;
 
 /**
- * The target types the queue's Type filter offers; later phases add theirs
- * as their reports arrive.
- */
-export const reportTargetTypeFilters = [
-  "user",
-] as const satisfies readonly QueueTargetType[];
-
-/**
  * Maps a reportable target type to its localized label.
  */
 export function reportTargetTypeLabel(type: QueueTargetType): string {

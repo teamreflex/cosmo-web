@@ -5,6 +5,7 @@ import {
   $fetchReportQueue,
 } from "@/lib/functions/reports";
 import type {
+  ReportCountsInput,
   ReportQueueFilters,
   ReportTarget,
 } from "@/lib/universal/schema/reports";
@@ -29,10 +30,16 @@ export function myReportQuery(target: ReportTarget) {
  */
 export const adminReportsQueryFilter = { queryKey: ["admin", "reports"] };
 
-export const reportCountsQuery = queryOptions({
-  queryKey: [...adminReportsQueryFilter.queryKey, "counts"],
-  queryFn: () => $fetchReportCounts(),
-});
+/**
+ * Open and escalated counts; the queue's tabs pass its Type filter, and the
+ * sidebar badge counts every type.
+ */
+export function reportCountsQuery(filters: ReportCountsInput) {
+  return queryOptions({
+    queryKey: [...adminReportsQueryFilter.queryKey, "counts", filters],
+    queryFn: () => $fetchReportCounts({ data: filters }),
+  });
+}
 
 export function reportQueueQuery(filters: ReportQueueFilters) {
   return infiniteQueryOptions({

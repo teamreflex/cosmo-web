@@ -1,4 +1,7 @@
-import { banLengthOptions } from "@/lib/universal/reports";
+import {
+  banLengthOptions,
+  reportTargetTypeFilters,
+} from "@/lib/universal/reports";
 import {
   reportReasons,
   reportStatuses,
@@ -33,7 +36,11 @@ export const reportTargetSchema = z.object({
 
 export const reportQueueFiltersSchema = z.object({
   status: z.enum(reportStatuses),
-  targetType: z.enum(reportTargetTypes).optional(),
+  targetType: z.enum(reportTargetTypeFilters).optional(),
+});
+
+export const reportCountsSchema = reportQueueFiltersSchema.pick({
+  targetType: true,
 });
 
 export const reportQueueSchema = reportQueueFiltersSchema.extend({
@@ -47,6 +54,7 @@ export const reportIdSchema = z.object({
 export type CreateReport = z.infer<typeof createReportSchema>;
 export type ReportTarget = z.infer<typeof reportTargetSchema>;
 export type ReportQueueFilters = z.infer<typeof reportQueueFiltersSchema>;
+export type ReportCountsInput = z.infer<typeof reportCountsSchema>;
 export type ReportQueueInput = z.infer<typeof reportQueueSchema>;
 
 /**

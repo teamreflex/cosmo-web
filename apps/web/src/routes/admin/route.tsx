@@ -25,7 +25,7 @@ export const Route = createFileRoute("/admin")({
   },
   loader: ({ context }) => {
     if (can(context.role, { report: ["read"] })) {
-      void context.queryClient.prefetchQuery(reportCountsQuery);
+      void context.queryClient.prefetchQuery(reportCountsQuery({}));
     }
   },
   component: RouteComponent,

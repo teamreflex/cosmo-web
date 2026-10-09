@@ -11,16 +11,16 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { m } from "@/i18n/messages";
-import {
-  reportStatusLabel,
-  reportTargetTypeFilters,
-  reportTargetTypeLabel,
-} from "@/lib/client/reports";
+import { reportStatusLabel, reportTargetTypeLabel } from "@/lib/client/reports";
 import { defineHead } from "@/lib/meta";
 import { reportCountsQuery, reportQueueQuery } from "@/lib/queries/reports";
-import type { ReportQueueFilters } from "@/lib/universal/schema/reports";
+import { reportTargetTypeFilters } from "@/lib/universal/reports";
+import type {
+  ReportCountsInput,
+  ReportQueueFilters,
+} from "@/lib/universal/schema/reports";
 import { can } from "@apollo/auth";
-import { reportStatuses, reportTargetTypes } from "@apollo/database/web/types";
+import { reportStatuses } from "@apollo/database/web/types";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useId } from "react";
@@ -29,16 +29,17 @@ import * as z from "zod";
 export const Route = createFileRoute("/admin/reports")({
   validateSearch: z.object({
     status: z.enum(reportStatuses).default("open").catch("open"),
-    type: z.enum(reportTargetTypes).optional().catch(undefined),
+    type: z.enum(reportTargetTypeFilters).optional().catch(undefined),
     report: z.uuid().optional().catch(undefined),
   }),
   loaderDeps: ({ search: { status, type } }) => ({ status, type }),
-  // built once here so the loader and the queue share the same cache key
+  // built once here so the loader and the page share the same cache keys
   context: ({ deps }) => ({
     queueFilters: {
       status: deps.status,
       targetType: deps.type,
     } satisfies ReportQueueFilters,
+    countsFilters: { targetType: deps.type } satisfies ReportCountsInput,
   }),
   beforeLoad: ({ context }) => {
     if (!can(context.role, { report: ["read"] })) {
@@ -47,7 +48,9 @@ export const Route = createFileRoute("/admin/reports")({
   },
   loader: async ({ context }) => {
     await Promise.all([
-      context.queryClient.ensureQueryData(reportCountsQuery),
+      context.queryClient.ensureQueryData(
+        reportCountsQuery(context.countsFilters),
+      ),
       context.queryClient.ensureInfiniteQueryData(
         reportQueueQuery(context.queueFilters),
       ),
@@ -65,7 +68,7 @@ function RouteComponent() {
 
   return (
     <section className="flex flex-col gap-4 p-4">
-      <Toolbar filters={queueFilters} />
+      <Toolbar />
       <div className="flex flex-wrap items-start gap-4">
         <ReportQueue filters={queueFilters} />
         <ReportDetail id={report} />
@@ -74,10 +77,14 @@ function RouteComponent() {
   );
 }
 
-function Toolbar({ filters }: { filters: ReportQueueFilters }) {
+/**
+ * The status tabs and Type filter; the tab counts follow the Type filter.
+ */
+function Toolbar() {
   const navigate = Route.useNavigate();
   const typeLabelId = useId();
-  const { data: counts } = useSuspenseQuery(reportCountsQuery);
+  const { queueFilters: filters, countsFilters } = Route.useRouteContext();
+  const { data: counts } = useSuspenseQuery(reportCountsQuery(countsFilters));
 
   const typeItems = [
     { value: "all", label: m.admin_reports_type_all() },

@@ -1,5 +1,9 @@
 import type { Role } from "@apollo/auth";
-import type { ReportReason, ReportStatus } from "@apollo/database/web/types";
+import type {
+  ReportReason,
+  ReportStatus,
+  ReportTargetType,
+} from "@apollo/database/web/types";
 
 /**
  * Escalated reports still wait on staff, so they count as open for the
@@ -24,6 +28,15 @@ export type AdminReportRowTarget = {
   type: "user";
   user: { username: string } | null;
 };
+
+/**
+ * The target types the staff queue can be filtered by; later phases add
+ * theirs as their reports arrive.
+ */
+export const reportTargetTypeFilters = [
+  "user",
+] as const satisfies readonly (ReportTargetType &
+  AdminReportRowTarget["type"])[];
 
 export type AdminReportRow = {
   id: string;
