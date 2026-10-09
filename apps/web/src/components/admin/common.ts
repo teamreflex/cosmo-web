@@ -1,5 +1,6 @@
 import { m } from "@/i18n/messages";
-import type { Permissions } from "@apollo/auth";
+import { can } from "@apollo/auth";
+import type { Permissions, Role } from "@apollo/auth";
 import {
   IconAlertTriangle,
   IconCalendarEvent,
@@ -13,6 +14,7 @@ import {
   IconLayoutSidebarRight,
 } from "@tabler/icons-react";
 import type { Icon } from "@tabler/icons-react";
+import { notFound } from "@tanstack/react-router";
 
 /**
  * Who can open the admin layout and see its link in the user dropdown: every
@@ -21,6 +23,18 @@ import type { Icon } from "@tabler/icons-react";
 export const ADMIN_SHELL_PERMISSIONS = {
   report: ["read"],
 } satisfies Permissions;
+
+/**
+ * Called from an admin page's `beforeLoad`, so its loader never runs for a
+ * role without the page's permission. The page's `notFoundComponent`
+ * (`AdminNoAccess`) then fills the admin shell. It is a not-found rather than
+ * an error because SSR answers route errors with a 500.
+ */
+export function requireStaffPage(role: Role, permissions: Permissions) {
+  if (!can(role, permissions)) {
+    throw notFound();
+  }
+}
 
 type AdminItem = {
   title: string;

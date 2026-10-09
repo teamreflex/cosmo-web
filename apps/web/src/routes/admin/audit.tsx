@@ -1,14 +1,15 @@
 import AuditFilters from "@/components/admin/audit/audit-filters";
 import AuditLog from "@/components/admin/audit/audit-log";
+import { requireStaffPage } from "@/components/admin/common";
+import AdminNoAccess from "@/components/admin/no-access";
 import StaffRoleMeta from "@/components/admin/staff-role-meta";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { auditStaffQuery, staffAuditQuery } from "@/lib/queries/staff-audit";
 import type { StaffAuditFilters } from "@/lib/universal/schema/staff-audit";
-import { can } from "@apollo/auth";
 import { staffAuditActions } from "@apollo/database/web/types";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import * as z from "zod";
 
 export const Route = createFileRoute("/admin/audit")({
@@ -24,11 +25,9 @@ export const Route = createFileRoute("/admin/audit")({
       action: deps.action,
     } satisfies StaffAuditFilters,
   }),
-  beforeLoad: ({ context }) => {
-    if (!can(context.role, { audit: ["read"] })) {
-      throw redirect({ to: "/admin" });
-    }
-  },
+  beforeLoad: ({ context }) =>
+    requireStaffPage(context.role, { audit: ["read"] }),
+  notFoundComponent: AdminNoAccess,
   loader: async ({ context }) => {
     await Promise.all([
       context.queryClient.ensureQueryData(auditStaffQuery),

@@ -3,6 +3,8 @@ import CollectionLookup from "@/components/admin/collections/collection-lookup";
 import LatestCollections, {
   LatestCollectionsSkeleton,
 } from "@/components/admin/collections/latest-collections";
+import { requireStaffPage } from "@/components/admin/common";
+import AdminNoAccess from "@/components/admin/no-access";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
@@ -11,18 +13,15 @@ import {
   latestCollectionsQuery,
 } from "@/lib/queries/collections";
 import { artistsQuery, filterDataQuery } from "@/lib/queries/core";
-import { can } from "@apollo/auth";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Suspense, useState } from "react";
 
 export const Route = createFileRoute("/admin/collections")({
   staleTime: Infinity,
-  beforeLoad: ({ context }) => {
-    if (!can(context.role, { site: ["manage"] })) {
-      throw redirect({ to: "/admin" });
-    }
-  },
+  beforeLoad: ({ context }) =>
+    requireStaffPage(context.role, { site: ["manage"] }),
+  notFoundComponent: AdminNoAccess,
   loader: async ({ context }) => {
     void context.queryClient.prefetchInfiniteQuery(latestCollectionsQuery());
 

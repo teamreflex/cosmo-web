@@ -1,17 +1,16 @@
+import { requireStaffPage } from "@/components/admin/common";
+import AdminNoAccess from "@/components/admin/no-access";
 import UpdateNoticeCard from "@/components/admin/notice/update-notice-card";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { noticeQuery } from "@/lib/queries/notice";
-import { can } from "@apollo/auth";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/admin/notice")({
   staleTime: Infinity,
-  beforeLoad: ({ context }) => {
-    if (!can(context.role, { site: ["manage"] })) {
-      throw redirect({ to: "/admin" });
-    }
-  },
+  beforeLoad: ({ context }) =>
+    requireStaffPage(context.role, { site: ["manage"] }),
+  notFoundComponent: AdminNoAccess,
   loader: async ({ context }) => {
     await context.queryClient.ensureQueryData(noticeQuery);
   },

@@ -1,3 +1,5 @@
+import { requireStaffPage } from "@/components/admin/common";
+import AdminNoAccess from "@/components/admin/no-access";
 import ReportDetail from "@/components/admin/reports/report-detail";
 import ReportQueue from "@/components/admin/reports/report-queue";
 import StaffRoleMeta from "@/components/admin/staff-role-meta";
@@ -20,10 +22,9 @@ import type {
   ReportQueueFilters,
 } from "@/lib/universal/schema/reports";
 import { cn } from "@/lib/utils";
-import { can } from "@apollo/auth";
 import { reportStatuses } from "@apollo/database/web/types";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useId } from "react";
 import * as z from "zod";
 
@@ -42,11 +43,9 @@ export const Route = createFileRoute("/admin/reports")({
     } satisfies ReportQueueFilters,
     countsFilters: { targetType: deps.type } satisfies ReportCountsInput,
   }),
-  beforeLoad: ({ context }) => {
-    if (!can(context.role, { report: ["read"] })) {
-      throw redirect({ to: "/admin" });
-    }
-  },
+  beforeLoad: ({ context }) =>
+    requireStaffPage(context.role, { report: ["read"] }),
+  notFoundComponent: AdminNoAccess,
   loader: async ({ context }) => {
     await Promise.all([
       context.queryClient.ensureQueryData(

@@ -1,20 +1,19 @@
+import { requireStaffPage } from "@/components/admin/common";
 import CreateEvent from "@/components/admin/events/create-event-dialog";
 import EventsGrid from "@/components/admin/events/events-grid";
+import AdminNoAccess from "@/components/admin/no-access";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { artistsQuery, filterDataQuery } from "@/lib/queries/core";
 import { adminErasQuery, adminEventsQuery } from "@/lib/queries/events";
-import { can } from "@apollo/auth";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Suspense } from "react";
 
 export const Route = createFileRoute("/admin/events")({
   staleTime: Infinity,
-  beforeLoad: ({ context }) => {
-    if (!can(context.role, { site: ["manage"] })) {
-      throw redirect({ to: "/admin" });
-    }
-  },
+  beforeLoad: ({ context }) =>
+    requireStaffPage(context.role, { site: ["manage"] }),
+  notFoundComponent: AdminNoAccess,
   loader: async ({ context }) => {
     void context.queryClient.prefetchInfiniteQuery(adminEventsQuery());
 
