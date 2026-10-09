@@ -16,6 +16,7 @@ import UserAvatar from "@/components/profile/user-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
+import { defineHead } from "@/lib/meta";
 import { tokenBalancesQuery } from "@/lib/queries/como";
 import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
 import { pinsQuery } from "@/lib/queries/profile";
@@ -68,6 +69,26 @@ export const Route = createFileRoute("/@{$username}")({
     );
 
     return { account, target };
+  },
+  /**
+   * Titles the not-found states, which this layout renders in place of any
+   * child route. The deleted state reads the same cache entry as
+   * `NotFoundComponent`.
+   */
+  head: ({ match }) => {
+    if (match.status !== "notFound") {
+      return {};
+    }
+
+    const target = match.context.queryClient.getQueryData(
+      match.context.targetAccountOptions.queryKey,
+    );
+    return defineHead({
+      title:
+        target?.status === "deleted"
+          ? m.common_deleted_user()
+          : m.error_not_found_title(),
+    });
   },
 });
 
