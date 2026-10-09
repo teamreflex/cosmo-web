@@ -20,7 +20,7 @@ import {
   objektLists,
   pins,
 } from "@apollo/database/web/schema";
-import { and, eq, gt, isNull } from "drizzle-orm";
+import { and, eq, gt, isNull, like } from "drizzle-orm";
 import { randomBytes } from "node:crypto";
 import { clearBinderPinCache } from "./binders.server";
 import { recordCosmoLinkChanges } from "./cosmo-accounts.server";
@@ -59,18 +59,32 @@ function deletionTokenIdentifier(token: string) {
 
 /**
  * Store a single-use token that proves the emailed link reached the account's
- * owner, valid for 24 hours.
+ * owner, valid for 24 hours. It replaces the user's earlier tokens, so only
+ * the newest email's link can delete the account.
  */
 export async function createDeletionToken(userId: string) {
   const token = randomBytes(32).toString("base64url");
   const now = new Date();
-  await db.insert(authSchema.verification).values({
-    id: crypto.randomUUID(),
-    identifier: deletionTokenIdentifier(token),
-    value: userId,
-    expiresAt: new Date(now.getTime() + DELETION_TOKEN_TTL),
-    createdAt: now,
-    updatedAt: now,
+  await db.transaction(async (tx) => {
+    await tx
+      .delete(authSchema.verification)
+      .where(
+        and(
+          like(
+            authSchema.verification.identifier,
+            deletionTokenIdentifier("%"),
+          ),
+          eq(authSchema.verification.value, userId),
+        ),
+      );
+    await tx.insert(authSchema.verification).values({
+      id: crypto.randomUUID(),
+      identifier: deletionTokenIdentifier(token),
+      value: userId,
+      expiresAt: new Date(now.getTime() + DELETION_TOKEN_TTL),
+      createdAt: now,
+      updatedAt: now,
+    });
   });
   return token;
 }
