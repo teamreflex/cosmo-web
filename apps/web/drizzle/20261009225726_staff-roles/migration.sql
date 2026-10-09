@@ -1,5 +1,6 @@
 CREATE TYPE "report_status" AS ENUM('open', 'escalated', 'resolved', 'dismissed');--> statement-breakpoint
 CREATE TYPE "report_target_type" AS ENUM('user', 'message', 'listing', 'feedback', 'trade');--> statement-breakpoint
+CREATE TYPE "user_role" AS ENUM('user', 'moderator', 'admin');--> statement-breakpoint
 CREATE TABLE "reports" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid(),
 	"created_at" timestamp DEFAULT now() NOT NULL,
@@ -26,7 +27,7 @@ CREATE TABLE "staff_audit" (
 );
 --> statement-breakpoint
 ALTER TABLE "session" ADD COLUMN "impersonated_by" text;--> statement-breakpoint
-ALTER TABLE "user" ADD COLUMN "role" text DEFAULT 'user' NOT NULL;--> statement-breakpoint
+ALTER TABLE "user" ADD COLUMN "role" "user_role" DEFAULT 'user'::"user_role" NOT NULL;--> statement-breakpoint
 ALTER TABLE "user" ADD COLUMN "banned" boolean DEFAULT false NOT NULL;--> statement-breakpoint
 ALTER TABLE "user" ADD COLUMN "ban_reason" text;--> statement-breakpoint
 ALTER TABLE "user" ADD COLUMN "ban_expires" timestamp;--> statement-breakpoint
@@ -40,5 +41,4 @@ CREATE INDEX "staff_audit_target_idx" ON "staff_audit" ("target_type","target_id
 ALTER TABLE "reports" ADD CONSTRAINT "reports_reporter_id_user_id_fkey" FOREIGN KEY ("reporter_id") REFERENCES "user"("id") ON DELETE CASCADE;--> statement-breakpoint
 ALTER TABLE "reports" ADD CONSTRAINT "reports_resolved_by_user_id_fkey" FOREIGN KEY ("resolved_by") REFERENCES "user"("id") ON DELETE SET NULL;--> statement-breakpoint
 ALTER TABLE "staff_audit" ADD CONSTRAINT "staff_audit_staff_id_user_id_fkey" FOREIGN KEY ("staff_id") REFERENCES "user"("id");--> statement-breakpoint
-ALTER TABLE "staff_audit" ADD CONSTRAINT "staff_audit_report_id_reports_id_fkey" FOREIGN KEY ("report_id") REFERENCES "reports"("id") ON DELETE SET NULL;--> statement-breakpoint
-ALTER TABLE "user" ADD CONSTRAINT "user_role_chk" CHECK ("role" IN ('user', 'moderator', 'admin'));
+ALTER TABLE "staff_audit" ADD CONSTRAINT "staff_audit_report_id_reports_id_fkey" FOREIGN KEY ("report_id") REFERENCES "reports"("id") ON DELETE SET NULL;

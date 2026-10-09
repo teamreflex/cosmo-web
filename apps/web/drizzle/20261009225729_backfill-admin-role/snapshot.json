@@ -1,7 +1,7 @@
 {
-  "id": "1251c93e-426c-4b11-9b67-6c09fef92bcd",
+  "id": "41d69aed-5d58-4ecc-97f9-80ecaf32aeac",
   "prevIds": [
-    "00c74fd4-2e30-47a1-b875-d8607b873b8b"
+    "1c3d5956-82cb-4293-849b-d40e720d9bbd"
   ],
   "version": "8",
   "dialect": "postgres",
@@ -55,6 +55,16 @@
         "trade"
       ],
       "name": "report_target_type",
+      "entityType": "enums",
+      "schema": "public"
+    },
+    {
+      "values": [
+        "user",
+        "moderator",
+        "admin"
+      ],
+      "name": "user_role",
       "entityType": "enums",
       "schema": "public"
     },
@@ -3106,8 +3116,8 @@
       "table": "user"
     },
     {
-      "type": "text",
-      "typeSchema": null,
+      "type": "user_role",
+      "typeSchema": "public",
       "notNull": true,
       "dimensions": 0,
       "default": "'user'",
@@ -5384,13 +5394,6 @@
       "entityType": "checks",
       "schema": "public",
       "table": "reports"
-    },
-    {
-      "value": "\"role\" IN ('user', 'moderator', 'admin')",
-      "name": "user_role_chk",
-      "entityType": "checks",
-      "schema": "public",
-      "table": "user"
     }
   ],
   "renames": []

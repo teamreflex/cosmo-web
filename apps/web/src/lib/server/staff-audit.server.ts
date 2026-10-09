@@ -228,7 +228,7 @@ export async function fetchStaffAudit(input: StaffAuditQueryInput) {
       action: row.action,
       staff: {
         username: staffUsername(row.staff),
-        role: parseRole(row.staff.role),
+        role: row.staff.role,
       },
       report: row.report,
       detail: row.detail === null ? null : toAuditDetail(row.detail),

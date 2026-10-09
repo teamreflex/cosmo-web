@@ -1,5 +1,4 @@
 import { GRID_COLUMNS, type CollectionDataSource } from "@apollo/util";
-import { sql } from "drizzle-orm";
 import {
   pgTable,
   text,
@@ -7,9 +6,12 @@ import {
   boolean,
   integer,
   index,
-  check,
+  pgEnum,
 } from "drizzle-orm/pg-core";
 import { citext } from "./custom";
+
+// mirrors the roles in @apollo/auth
+export const userRole = pgEnum("user_role", ["user", "moderator", "admin"]);
 
 export const user = pgTable(
   "user",
@@ -36,7 +38,7 @@ export const user = pgTable(
     twitter: text("twitter"),
     showSocials: boolean("show_socials").notNull().default(false),
     // admin plugin
-    role: text("role").notNull().default("user"),
+    role: userRole("role").notNull().default("user"),
     banned: boolean("banned").notNull().default(false),
     banReason: text("ban_reason"),
     banExpires: timestamp("ban_expires", { mode: "date" }),
@@ -45,8 +47,6 @@ export const user = pgTable(
     index("user_username_idx").on(t.username),
     index("user_display_username_idx").on(t.displayUsername),
     index("user_discord_idx").on(t.discord),
-    // mirrors the roles in @apollo/auth
-    check("user_role_chk", sql`${t.role} IN ('user', 'moderator', 'admin')`),
   ],
 );
 

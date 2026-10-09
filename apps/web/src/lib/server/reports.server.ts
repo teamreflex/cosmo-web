@@ -21,7 +21,6 @@ import type {
   ReportCountsInput,
   ReportQueueInput,
 } from "@/lib/universal/schema/reports";
-import { parseRole } from "@apollo/auth";
 import type { Role } from "@apollo/auth";
 import { protectionFor } from "@apollo/auth/guard";
 import { reports } from "@apollo/database/web/schema";
@@ -257,7 +256,7 @@ async function fetchDetailTarget(
         user: {
           id: user.id,
           username: staffUsername(user),
-          role: parseRole(user.role),
+          role: user.role,
           ban: banActive ? { until: user.banExpires } : null,
           profile: user.cosmoAccount?.username ?? null,
           protected: protectionFor(
