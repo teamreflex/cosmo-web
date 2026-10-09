@@ -1,0 +1,2 @@
+ALTER TABLE "user" ADD COLUMN "deleted_at" timestamp;--> statement-breakpoint
+ALTER TABLE "user" ADD CONSTRAINT "user_deleted_scrubbed_chk" CHECK ("deleted_at" IS NULL OR ("name" = '' AND "email" = ('deleted+' || "id" || '@invalid') AND "email_verified" = false AND "image" IS NULL AND "username" IS NULL AND "display_username" IS NULL AND "discord" IS NULL AND "twitter" IS NULL AND "show_socials" = false AND "role" = 'user'));

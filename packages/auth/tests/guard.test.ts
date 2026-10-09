@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import {
   hasEmailDomain,
+  isBanActive,
   isDemotion,
   isProtectedAccount,
   parseEmailDomains,
@@ -110,6 +111,28 @@ describe("protectionFor", () => {
   test("tells a role that can ban either way", () => {
     expect(protectionFor("admin", protectedAccount, domains)).toBe(true);
     expect(protectionFor("admin", member, domains)).toBe(false);
+  });
+});
+
+describe("isBanActive", () => {
+  const now = new Date("2026-10-09T12:00:00Z");
+
+  test.each([
+    ["not banned", { banned: false, banExpires: null }, false],
+    ["banned with no expiry", { banned: true, banExpires: null }, true],
+    [
+      "banned until later",
+      { banned: true, banExpires: new Date("2026-10-09T12:00:01Z") },
+      true,
+    ],
+    [
+      "banned until earlier",
+      { banned: true, banExpires: new Date("2026-10-09T11:59:59Z") },
+      false,
+    ],
+    ["banned until now", { banned: true, banExpires: now }, false],
+  ])("%s is %p", (_, user, expected) => {
+    expect(isBanActive(user, now)).toBe(expected);
   });
 });
 

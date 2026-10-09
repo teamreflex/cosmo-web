@@ -69,6 +69,17 @@ export function protectionFor(
 }
 
 /**
+ * Whether the ban still applies. The admin plugin lifts a lapsed ban only at
+ * the user's next sign-in, so `banned` can stay true after it expires.
+ */
+export function isBanActive(
+  user: { banned: boolean; banExpires: Date | null },
+  now: Date = new Date(),
+) {
+  return user.banned && (user.banExpires === null || user.banExpires > now);
+}
+
+/**
  * A staff change to an account's access or role.
  */
 export type UserChange =

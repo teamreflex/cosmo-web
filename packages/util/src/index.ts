@@ -21,6 +21,13 @@ export function isEqual(a?: string, b?: string) {
 }
 
 /**
+ * Truncate an address for display, e.g. 0xa584…a98d.
+ */
+export function shortAddress(address: string) {
+  return `${address.slice(0, 6)}…${address.slice(-4)}`;
+}
+
+/**
  * Addresses that may need special handling.
  */
 export const Addresses = {

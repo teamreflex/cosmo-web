@@ -22,7 +22,7 @@ import type {
   ReportQueueInput,
 } from "@/lib/universal/schema/reports";
 import type { Role } from "@apollo/auth";
-import { protectionFor } from "@apollo/auth/guard";
+import { isBanActive, protectionFor } from "@apollo/auth/guard";
 import { reports } from "@apollo/database/web/schema";
 import type {
   ReportStatus,
@@ -246,18 +246,13 @@ async function fetchDetailTarget(
         return { type: "user", user: null };
       }
 
-      // expired bans stay flagged until the user's next sign-in clears them
-      const banActive =
-        user.banned &&
-        (user.banExpires === null || user.banExpires > new Date());
-
       return {
         type: "user",
         user: {
           id: user.id,
           username: staffUsername(user),
           role: user.role,
-          ban: banActive ? { until: user.banExpires } : null,
+          ban: isBanActive(user) ? { until: user.banExpires } : null,
           profile: user.cosmoAccount?.username ?? null,
           protected: protectionFor(
             viewerRole,

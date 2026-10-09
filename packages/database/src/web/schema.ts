@@ -64,6 +64,8 @@ export const cosmoAccounts = pgTable(
     index("cosmo_account_polygon_address_idx").on(t.polygonAddress),
     index("cosmo_account_cosmo_id_idx").on(t.cosmoId),
     uniqueIndex("cosmo_account_username_address_idx").on(t.username, t.address),
+    uniqueIndex("cosmo_account_user_id_unique_idx").on(t.userId),
+    // covered by the unique index; dropped in the follow-up release with user.is_admin
     index("cosmo_account_user_id_idx").on(t.userId),
   ],
 );
