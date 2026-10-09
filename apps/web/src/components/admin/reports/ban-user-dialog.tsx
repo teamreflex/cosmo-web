@@ -171,7 +171,7 @@ export default function BanUserDialog({
                     if (value !== null) field.onChange(value);
                   }}
                 >
-                  <SelectTrigger className="w-full">
+                  <SelectTrigger className="w-full max-sm:data-[size=default]:h-10">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
