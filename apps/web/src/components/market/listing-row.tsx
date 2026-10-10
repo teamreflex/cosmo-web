@@ -25,7 +25,8 @@ type Props = {
   collection: Objekt.Collection;
   listing: CollectionListing;
   viewerId: string | undefined;
-  isDesktop: boolean;
+  // two lines and a contact button, for phones and narrow columns
+  compact: boolean;
   pinned?: boolean;
 };
 
@@ -34,13 +35,13 @@ type Props = {
  * it when they differ (or the seller's alone when it has no rate), serial,
  * seller and list links, age, and contacts. The serial opens the objekt's
  * metadata at that serial. The viewer's own listing is faded and shows no
- * contacts. Phones get two lines and a contact button instead of chips.
+ * contacts. A compact row has two lines and a contact button instead of chips.
  */
 export default function ListingRow({
   collection,
   listing,
   viewerId,
-  isDesktop,
+  compact,
   pinned = false,
 }: Props) {
   const queryClient = useQueryClient();
@@ -68,7 +69,7 @@ export default function ListingRow({
     own && "opacity-60",
   );
 
-  if (!isDesktop) {
+  if (compact) {
     return (
       <div className={cn(className, "gap-3 px-4 py-3")}>
         <ObjektRibbon collection={collection} className="h-auto self-stretch" />

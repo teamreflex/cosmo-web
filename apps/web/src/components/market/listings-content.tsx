@@ -20,8 +20,9 @@ import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconLoader2 } from "@tabler/icons-react";
 import { usePrefetchQuery, useSuspenseQuery } from "@tanstack/react-query";
 import type { ReactNode } from "react";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useMemo, useRef, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { useIsomorphicLayoutEffect } from "usehooks-ts";
 import ListingRow from "./listing-row";
 import { FloorChange, FloorTrend, ListingsStatsStrip } from "./listings-stats";
 
@@ -40,12 +41,29 @@ type Props = {
 };
 
 /**
+ * How much room the listings have: a phone drawer, a desktop column too
+ * narrow for the full rows, or one wide enough for them.
+ */
+type Layout = "phone" | "narrow" | "wide";
+
+/**
+ * Below this column width the full rows' cells no longer fit.
+ */
+const WIDE_LISTINGS = 800;
+
+/**
  * Desktop puts the full objekt beside the listings; phones get a thumbnail
  * header above them instead.
  */
 export default function ListingsContent({ collection, pinnedEntryId }: Props) {
   const isDesktop = useMediaQuery();
+  const { ref: columnRef, wide } = useWideColumn();
   usePrefetchQuery(objektPriceHistoryQuery(collection.slug, "30d"));
+  const layout: Layout = !isDesktop
+    ? "phone"
+    : wide
+      ? "wide"
+      : "narrow";
 
   const listings = (
     <ErrorBoundary fallback={<Message>{m.error_loading_objekt()}</Message>}>
@@ -62,7 +80,7 @@ export default function ListingsContent({ collection, pinnedEntryId }: Props) {
         <Listings
           collection={collection}
           pinnedEntryId={pinnedEntryId}
-          isDesktop={isDesktop}
+          layout={layout}
         />
       </Suspense>
     </ErrorBoundary>
@@ -76,16 +94,39 @@ export default function ListingsContent({ collection, pinnedEntryId }: Props) {
     <div className="grid min-h-0 flex-1 grid-cols-[minmax(280px,380px)_1fr] overflow-hidden">
       <ObjektPanel collection={collection} isDesktop />
       {/* the panel alone sets the height, so long lists scroll instead of growing the dialog */}
-      <div className="flex min-h-0 flex-col contain-size">{listings}</div>
+      <div ref={columnRef} className="flex min-h-0 flex-col contain-size">
+        {listings}
+      </div>
     </div>
   );
+}
+
+/**
+ * Whether the listings column fits the full rows. Reads the layout width
+ * rather than the on-screen box, which the dialog's opening zoom shrinks.
+ */
+function useWideColumn() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [wide, setWide] = useState(false);
+
+  useIsomorphicLayoutEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+    const update = () => setWide(element.offsetWidth >= WIDE_LISTINGS);
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  return { ref, wide };
 }
 
 function Listings({
   collection,
   pinnedEntryId,
-  isDesktop,
-}: Props & { isDesktop: boolean }) {
+  layout,
+}: Props & { layout: Layout }) {
   const { user } = useUserState();
   const { data: listings } = useSuspenseQuery(
     collectionListingsQuery(collection.slug),
@@ -119,7 +160,9 @@ function Listings({
       dir={sortDir}
       onClick={() => toggleSort(key)}
       className={
-        isDesktop ? undefined : "h-8 flex-1 justify-center border-transparent"
+        layout === "wide"
+          ? undefined
+          : "h-8 flex-1 justify-center border-transparent"
       }
     >
       {sortLabels[key]()}
@@ -133,18 +176,18 @@ function Listings({
       <>
         {pinned && (
           <>
-            <SectionLabel isDesktop={isDesktop}>
+            <SectionLabel wide={layout === "wide"}>
               {m.listings_this_listing()}
             </SectionLabel>
             <ListingRow
               collection={collection}
               listing={pinned}
               viewerId={user?.id}
-              isDesktop={isDesktop}
+              compact={layout !== "wide"}
               pinned
             />
             {others.length > 0 && (
-              <SectionLabel isDesktop={isDesktop}>
+              <SectionLabel wide={layout === "wide"}>
                 {m.listings_other_listings({
                   count: others.length.toString(),
                 })}
@@ -158,26 +201,32 @@ function Listings({
             collection={collection}
             listing={listing}
             viewerId={user?.id}
-            isDesktop={isDesktop}
+            compact={layout !== "wide"}
           />
         ))}
       </>
     );
 
-  if (!isDesktop) {
+  if (layout !== "wide") {
+    const summary = stats !== null && (
+      <div className="flex items-center gap-1.5">
+        <CountFrom stats={stats} />
+        <FloorChange slug={collection.slug} floorUsd={stats.floorUsd} />
+      </div>
+    );
+
     return (
       <div className="flex min-h-0 flex-1 flex-col">
-        <PhoneHeader collection={collection}>
-          {stats !== null && (
-            <div className="mt-0.5 flex items-center gap-1.5">
-              <CountFrom stats={stats} />
-              <FloorChange
-                slug={collection.slug}
-                floorUsd={stats.floorUsd}
-              />
-            </div>
-          )}
-        </PhoneHeader>
+        {layout === "phone" ? (
+          <PhoneHeader collection={collection}>{summary}</PhoneHeader>
+        ) : (
+          <div className="flex shrink-0 flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-border px-4 py-3">
+            <span className="font-cosmo text-sm font-black tracking-widest uppercase">
+              {m.listings_title()}
+            </span>
+            {summary}
+          </div>
+        )}
         <div className="shrink-0 border-b border-border px-4 py-2.5">
           <div className="flex gap-1 rounded-md bg-secondary p-0.75 text-xxs font-medium tracking-widest uppercase">
             {sortButtons}
@@ -287,16 +336,16 @@ function Message({ children }: { children: ReactNode }) {
 }
 
 function SectionLabel({
-  isDesktop,
+  wide,
   children,
 }: {
-  isDesktop: boolean;
+  wide: boolean;
   children: ReactNode;
 }) {
   return (
     <div
-      className="flex items-center gap-3 border-b border-border px-4 pt-2.5 pb-1.5 data-[desktop=true]:px-5"
-      data-desktop={isDesktop}
+      className="flex items-center gap-3 border-b border-border px-4 pt-2.5 pb-1.5 data-[wide=true]:px-5"
+      data-wide={wide}
     >
       <span className="text-xxs font-medium tracking-widest uppercase">
         {children}
