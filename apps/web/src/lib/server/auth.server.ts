@@ -15,9 +15,8 @@ import { admin } from "better-auth/plugins/admin";
 import { username } from "better-auth/plugins/username";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { createCipheriv, randomBytes } from "node:crypto";
-import type { PublicUser } from "../universal/auth";
+import type { CurrentUser, PublicUser } from "../universal/auth";
 import { settingsSchema } from "../universal/schema/auth";
-import { DEFAULT_CURRENCY } from "../universal/schema/currency";
 import { db } from "./db";
 import { sendPasswordResetEmail, sendVerificationEmail } from "./mail.server";
 
@@ -394,11 +393,17 @@ export function toPublicUser(
     // SAFETY: the column only stores CollectionDataSource values
     collectionMode: (user.collectionMode ??
       "blockchain") as CollectionDataSource,
-    currency: user.currency ?? DEFAULT_CURRENCY,
     social: {
       discord: user.showSocials ? (user.discord ?? undefined) : undefined,
       twitter: user.showSocials ? (user.twitter ?? undefined) : undefined,
     },
     showSocials: user.showSocials ?? false,
   } as PublicUser;
+}
+
+/**
+ * Convert the signed-in user for their own account payload.
+ */
+export function toCurrentUser(user: ServerUser): CurrentUser {
+  return { ...toPublicUser(user), currency: user.currency ?? null };
 }

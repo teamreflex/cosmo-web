@@ -22,8 +22,9 @@ import { getLocale, setLocale } from "@/i18n/runtime";
 import { formatError } from "@/lib/client/errors";
 import { $updateSettings } from "@/lib/functions/auth";
 import { currentAccountQuery } from "@/lib/queries/core";
-import type { PublicUser } from "@/lib/universal/auth";
+import type { CurrentUser } from "@/lib/universal/auth";
 import { settingsSchema } from "@/lib/universal/schema/auth";
+import { DEFAULT_CURRENCY } from "@/lib/universal/schema/currency";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -36,7 +37,7 @@ import { Field, FieldContent, FieldError, FieldLabel } from "../ui/field";
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  user: PublicUser;
+  user: CurrentUser;
 };
 
 export default function SettingsDialog({ open, onOpenChange, user }: Props) {
@@ -70,7 +71,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
     defaultValues: {
       gridColumns: user.gridColumns,
       collectionMode: user.collectionMode,
-      currency: user.currency,
+      currency: user.currency ?? DEFAULT_CURRENCY,
     },
   });
 

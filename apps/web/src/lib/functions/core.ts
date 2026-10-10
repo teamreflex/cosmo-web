@@ -1,4 +1,4 @@
-import { auth, toPublicUser } from "@/lib/server/auth.server";
+import { auth, toCurrentUser, toPublicUser } from "@/lib/server/auth.server";
 import { remember } from "@/lib/server/cache.server";
 import { fetchCookie, putCookie } from "@/lib/server/cookies.server";
 import {
@@ -13,7 +13,7 @@ import {
   fetchUniqueSeasons,
 } from "@/lib/server/objekts/filter-data.server";
 import { getRequestSignal } from "@/lib/server/request.server";
-import type { PublicUser } from "@/lib/universal/auth";
+import type { CurrentUser, PublicUser } from "@/lib/universal/auth";
 import type { FullAccount, PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import type { Role } from "@apollo/auth";
 import type { ObjektList } from "@apollo/database/web/types";
@@ -66,7 +66,7 @@ export const $fetchFilterData = createServerFn({ method: "GET" }).handler(() =>
 );
 
 type GetAccount = {
-  user: PublicUser;
+  user: CurrentUser;
   role: Role;
   cosmo: PublicCosmo | undefined;
   objektLists: ObjektList[];
@@ -118,7 +118,7 @@ export const $fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
 
     const { objektLists, fxRates, ...user } = result;
     return {
-      user: toPublicUser(user),
+      user: toCurrentUser(user),
       role: user.role,
       cosmo: link.kind === "linked" ? toPublicCosmo(link) : undefined,
       objektLists,
