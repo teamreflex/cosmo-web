@@ -1301,7 +1301,7 @@
   "objekt_metadata_max_price": "最高値",
   "objekt_metadata_listing_count": "出品数",
   "objekt_metadata_pricing_empty": "まだ誰もこのコレクションに価格を付けて出品していません。",
-  "objekt_metadata_pricing_updated": "{when}に更新",
+  "objekt_metadata_pricing_updated": "{#time}{when}{/time}に更新",
   "objekt_metadata_pricing_source": "他のユーザーがオブジェクトリストで設定した価格に基づいています。",
   "objekt_metadata_history_floor": "最低価格",
   "objekt_metadata_history_floor_current": "現在の最安値",

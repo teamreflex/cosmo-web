@@ -10,6 +10,7 @@ import {
   SPARSE_PRICE_HISTORY,
 } from "@/lib/universal/objekts";
 import { cn } from "@/lib/utils";
+import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense, useState, useTransition } from "react";
@@ -142,14 +143,15 @@ function Footer({
  * "Updated 2 hours ago", with the relative time wherever each language puts it.
  */
 function UpdatedAt({ date }: { date: string }) {
-  const [before, after] = m
-    .objekt_metadata_pricing_updated({ when: "{when}" })
-    .split("{when}");
   return (
     <span>
-      {before}
-      <Timestamp date={new Date(date)} relative="long" />
-      {after}
+      <ParaglideMessage
+        message={m.objekt_metadata_pricing_updated}
+        inputs={{ when: date }}
+        markup={{
+          time: () => <Timestamp date={new Date(date)} relative="long" />,
+        }}
+      />
     </span>
   );
 }
