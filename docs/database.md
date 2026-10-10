@@ -217,6 +217,7 @@ Postgres returns `COUNT`, `SUM`, and window functions (`count(*) over()`, `row_n
 ## Migrations
 
 - Put CHECK constraints in the Drizzle **schema**, not in hand-edited SQL.
+- A descending index column needs `.desc().nullsFirst()`. Drizzle's bare `.desc()` emits `DESC NULLS LAST`, which Postgres can't use for a plain `ORDER BY col DESC` (that means `NULLS FIRST`), even on a `NOT NULL` column, so the planner falls back to another index or a sort. `fx_rates_currency_date_idx` is declared this way.
 - `db:migrate` applies **every pending migration in one transaction**: drizzle-kit 1.0 rc.5 hands the pending folders to drizzle-orm's `migrate()`, which runs them all inside a single `db.transaction` (`pg-core/async/session.js`). Neither the `--> statement-breakpoint` separator nor a separate migration file starts a new transaction. Consequences for a release:
   - A new enum value can't be used by any migration in the same release: Postgres refuses a value added by `ADD VALUE` until the transaction that added it commits.
   - A check that fails (a `DO $$ … RAISE EXCEPTION … $$` block) rolls back the whole release, earlier pending migrations included, and Railway's pre-deploy step then aborts the deploy.
