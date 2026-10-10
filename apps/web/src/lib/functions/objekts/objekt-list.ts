@@ -15,6 +15,11 @@ import {
   withOnlineType,
   withSeason,
 } from "@/lib/server/objekts/filters.server";
+import { fetchLatestFxRate } from "@/lib/server/objekts/fx.server";
+import {
+  fetchMarketStats,
+  isFloorPrice,
+} from "@/lib/server/objekts/market.server";
 import { objektListBackendSchema } from "@/lib/universal/parsers";
 import {
   type IndexSort,
@@ -22,7 +27,7 @@ import {
   supportedSort,
 } from "@/lib/universal/sorts";
 import { isMemberSort, isMintSort } from "@apollo/cosmo/types/common";
-import type { ObjektListEntry } from "@apollo/database/web/types";
+import type { ObjektList, ObjektListEntry } from "@apollo/database/web/types";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, type SQL, sql } from "drizzle-orm";
 import * as z from "zod";
@@ -37,6 +42,8 @@ export type ObjektListItem = Collection & {
   entryCreatedAt: string;
   medianPriceUsd: number | null;
   listingCount: number;
+  // a priced sale serial at its collection's market floor
+  entryAtFloor: boolean;
 };
 
 type FetchObjektListEntries = {
@@ -50,7 +57,8 @@ type FetchObjektListEntries = {
  * Fetch list entries joined with their indexer collection (and serial, when
  * the entry is keyed to a specific token). Each entry produces its own card,
  * so a have list with multiple serials of the same collection renders one
- * card per serial.
+ * card per serial. Sale list serials are flagged when they're at the market
+ * floor of their collection.
  */
 export const $fetchObjektListEntries = createServerFn({ method: "GET" })
   .validator(
@@ -59,27 +67,32 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
     }),
   )
   .handler(async ({ data }): Promise<FetchObjektListEntries> => {
-    const entries = await db.query.objektListEntries.findMany({
-      where: { objektListId: data.objektListId },
-      columns: {
-        id: true,
-        collectionId: true,
-        tokenId: true,
-        quantity: true,
-        price: true,
-        createdAt: true,
-      },
+    const list = await db.query.objektLists.findFirst({
+      where: { id: data.objektListId },
+      columns: { type: true, currency: true },
       with: {
-        priceStats: {
+        entries: {
           columns: {
-            medianPriceUsd: true,
-            listingCount: true,
+            id: true,
+            collectionId: true,
+            tokenId: true,
+            quantity: true,
+            price: true,
+            createdAt: true,
+          },
+          with: {
+            priceStats: {
+              columns: {
+                medianPriceUsd: true,
+                listingCount: true,
+              },
+            },
           },
         },
       },
     });
 
-    if (entries.length === 0) {
+    if (list === undefined || list.entries.length === 0) {
       return {
         total: 0,
         hasNext: false,
@@ -88,8 +101,12 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
       };
     }
 
+    const { entries } = list;
     const start = data.page * LIMIT;
-    const rows = await fetchListPage(entries, data, start);
+    const [rows, floors] = await Promise.all([
+      fetchListPage(entries, data, start),
+      fetchFloors(list),
+    ]);
 
     const entriesById = new Map(entries.map((e) => [e.id, e]));
     const items: ObjektListItem[] = [];
@@ -106,6 +123,7 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
         entryCreatedAt: entry.createdAt.toISOString(),
         medianPriceUsd: entry.priceStats?.medianPriceUsd ?? null,
         listingCount: entry.priceStats?.listingCount ?? 0,
+        entryAtFloor: floors.has(entry.id),
       });
     }
 
@@ -119,6 +137,42 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
       objekts: items,
     };
   });
+
+/**
+ * Ids of a sale list's priced serials that sit at their collection's market
+ * floor. Other lists, and sale lists whose currency has no rate, have none.
+ */
+async function fetchFloors(
+  list: Pick<ObjektList, "type" | "currency"> & {
+    entries: Pick<
+      ObjektListEntry,
+      "id" | "collectionId" | "tokenId" | "price"
+    >[];
+  },
+) {
+  const rateToUsd =
+    list.type === "sale" && list.currency !== null
+      ? await fetchLatestFxRate(list.currency)
+      : null;
+  if (rateToUsd === null) {
+    return new Set<string>();
+  }
+
+  const priced = list.entries.flatMap((e) =>
+    e.tokenId !== null && e.price !== null ? [{ ...e, price: e.price }] : [],
+  );
+  const stats = await fetchMarketStats([
+    ...new Set(priced.map((e) => e.collectionId)),
+  ]);
+
+  return new Set(
+    priced
+      .filter((e) =>
+        isFloorPrice(e.price * rateToUsd, stats.get(e.collectionId)),
+      )
+      .map((e) => e.id),
+  );
+}
 
 /**
  * Fetch one page of list entries from the indexer. Entries live in the web
