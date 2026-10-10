@@ -112,6 +112,7 @@ The project uses Tailwind v4, so always use v4 conventions rather than v3. This 
 - A new custom size needs a `--text-*` token in `styles/tailwind.css` and an entry in the `font-size` class group of `createCn` in `lib/utils.ts`. Without the latter, `cn()` reads the class as a text colour and drops it whenever a colour class follows.
 - The only arbitrary sizes allowed are computed ones with no scale equivalent: container-relative `text-[clamp(...)]` or `text-[length:...]`, and `text-[0px]`.
 - Small uppercase labels above a value use `text-xxs font-medium tracking-widest text-muted-foreground uppercase`.
+- `font-mono` is for numbers and codes: prices, serials, counts, ranks such as "#2 of 3". Labels, headings, links and buttons stay in the sans font, even when uppercase.
 
 ### Component Variants
 

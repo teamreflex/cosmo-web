@@ -35,7 +35,7 @@ export default function SingleSelectList<T extends string>({
             <div className="flex flex-col">
               <span className="font-medium">{option.label}</span>
               {option.sublabel && (
-                <span className="font-mono text-xxs text-muted-foreground">
+                <span className="text-xxs text-muted-foreground">
                   {option.sublabel}
                 </span>
               )}

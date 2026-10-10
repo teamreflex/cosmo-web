@@ -48,7 +48,7 @@ export default function DetailContent({ collection, tokens }: Props) {
           <div className="font-cosmo text-xl leading-none font-black tracking-wide uppercase">
             {collection.member}
           </div>
-          <div className="mt-1 font-mono text-xxs tracking-widest text-muted-foreground uppercase">
+          <div className="mt-1 text-xxs font-medium tracking-widest text-muted-foreground uppercase">
             {collection.artist} · {collection.season} ·{" "}
             {collection.collectionNo} · {collection.class}
           </div>

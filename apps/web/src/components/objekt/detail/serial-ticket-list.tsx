@@ -53,11 +53,11 @@ export default function SerialTicketList({
           <span className="hidden font-cosmo text-sm font-black tracking-widest uppercase sm:block">
             {title}
           </span>
-          <span className="font-mono text-xs text-muted-foreground">
+          <span className="text-xs text-muted-foreground tabular-nums">
             {m.detail_copies_count({ count: tokens.length.toString() })}
           </span>
         </div>
-        <div className="flex items-center gap-1 font-mono text-xxs tracking-widest uppercase">
+        <div className="flex items-center gap-1 text-xxs font-medium tracking-widest uppercase">
           <SortButton
             active={sortKey === "serial"}
             dir={sortDir}

@@ -22,7 +22,7 @@ export default function ListContacts({ ownerName, user }: Props) {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-2 font-mono text-xxs font-semibold tracking-widest text-muted-foreground uppercase">
+      <div className="flex items-center gap-2 text-xxs font-semibold tracking-widest text-muted-foreground uppercase">
         <span>{m.list_header_contacts_heading({ user: ownerName })}</span>
         <span className="h-px flex-1 bg-border" />
       </div>

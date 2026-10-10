@@ -87,7 +87,7 @@ export default function ArtistGroupedMultiSelect({
       </div>
 
       <div className="flex items-center justify-between px-3 py-2">
-        <span className="font-mono text-xxs text-muted-foreground">
+        <span className="text-xxs text-muted-foreground tabular-nums">
           {selectedCount === 0
             ? m.filter_none_selected()
             : m.filter_count_selected({ count: selectedCount.toString() })}

@@ -299,7 +299,7 @@ function MiniObjektTile({ collection }: { collection: Objekt.Collection }) {
         className="relative flex flex-1 flex-col items-start justify-between px-1.5 py-1 dark:[&>*]:[text-shadow:_0_1px_2px_rgba(0,0,0,0.9)]"
         style={{ background: tileBackground }}
       >
-        <div className="font-mono text-xxs font-bold tracking-widest text-foreground uppercase">
+        <div className="text-xxs font-bold tracking-widest text-foreground uppercase">
           {collection.season}
         </div>
         <div className="font-cosmo text-xxs leading-none font-black text-foreground uppercase">
