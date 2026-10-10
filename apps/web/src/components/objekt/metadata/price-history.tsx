@@ -7,7 +7,6 @@ import {
   type PriceHistory as PriceHistoryData,
   type PriceHistoryRange,
   type PriceStats,
-  priceHistoryRangeDays,
   priceHistoryRanges,
 } from "@/lib/universal/objekts";
 import { cn, type PropsWithClassName } from "@/lib/utils";
@@ -35,9 +34,9 @@ const RANGE_LABELS = {
 } satisfies Record<PriceHistoryRange, () => string>;
 
 /**
- * Floor price history block on the pricing tab: the latest floor with its
- * change over the selected range, a range toggle, the current listing stats,
- * and the daily snapshot chart.
+ * Floor price history block on the pricing tab: the current floor with its
+ * change since the range's first snapshot, a range toggle, the current
+ * listing stats, and the daily snapshot chart.
  */
 export default function PriceHistory({
   history,
@@ -59,11 +58,7 @@ export default function PriceHistory({
       <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-2">
         <div className="flex flex-col gap-0.5">
           <span className="text-xxs font-medium tracking-widest text-muted-foreground uppercase">
-            {range === "all"
-              ? m.objekt_metadata_history_floor_all()
-              : m.objekt_metadata_history_floor_days({
-                  days: priceHistoryRangeDays[range].toString(),
-                })}
+            {m.objekt_metadata_history_floor_current()}
           </span>
           <div className="flex items-baseline gap-2">
             <span className="font-mono text-lg font-bold tabular-nums">
