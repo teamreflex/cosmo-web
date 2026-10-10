@@ -257,7 +257,7 @@ function SaleRow({ index, serial, currency, control }: SaleRowProps) {
       )}
     >
       <div className="w-16 shrink-0 sm:w-20">
-        <div className="font-mono text-xxs tracking-[0.14em] text-muted-foreground uppercase">
+        <div className="font-mono text-xxs tracking-widest text-muted-foreground uppercase">
           {m.detail_sort_serial()}
         </div>
         <div className="font-mono text-sm font-bold tabular-nums sm:text-lg">

@@ -149,7 +149,7 @@ function CollectionChip({
         className="relative flex min-w-0 flex-1 flex-col items-start justify-between px-2 py-1.5 dark:[&>*]:[text-shadow:_0_1px_2px_rgba(0,0,0,0.9)]"
         style={{ background: tileBackground }}
       >
-        <div className="font-mono text-[9px] font-bold tracking-widest text-foreground uppercase">
+        <div className="font-mono text-xxs font-bold tracking-widest text-foreground uppercase">
           {collection.season}
         </div>
         <div className="max-w-full truncate font-cosmo text-sm leading-none font-black text-foreground uppercase">

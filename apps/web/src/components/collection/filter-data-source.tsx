@@ -70,7 +70,7 @@ export default function FilterDataSource({
                   </span>
                 </div>
                 {selected && (
-                  <span className="ml-auto font-mono text-[11px] text-cosmo">
+                  <span className="ml-auto font-mono text-xs text-cosmo">
                     ●
                   </span>
                 )}

@@ -4,7 +4,7 @@ import type { VariantProps } from "class-variance-authority";
 import type { ReactNode } from "react";
 
 const statusPillVariants = cva(
-  "inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 font-mono text-[10px] tracking-widest uppercase",
+  "inline-flex items-center gap-1 rounded-sm px-1.5 py-0.5 font-mono text-xxs tracking-widest uppercase",
   {
     variants: {
       tone: {

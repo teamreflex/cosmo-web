@@ -92,7 +92,7 @@ function TokenRow(props: {
       </div>
 
       <div className="flex flex-1 flex-col">
-        <div className="font-mono text-xxs tracking-[0.14em] text-muted-foreground uppercase">
+        <div className="font-mono text-xxs tracking-widest text-muted-foreground uppercase">
           {m.detail_sort_serial()}
         </div>
         <div className="font-mono text-sm font-bold tabular-nums">

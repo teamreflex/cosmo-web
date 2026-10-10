@@ -199,7 +199,7 @@ export default function BanUserDialog({
           />
           <div className="flex flex-col gap-1.5 rounded-sm bg-secondary p-3">
             <span className="font-medium">{m.admin_ban_effects()}</span>
-            <ul className="flex flex-col gap-1.5 text-[13px] text-muted-foreground">
+            <ul className="flex flex-col gap-1.5 text-sm text-muted-foreground">
               {effects.map((effect) => (
                 <li key={effect} className="flex gap-2">
                   <span aria-hidden="true" className="text-foreground">

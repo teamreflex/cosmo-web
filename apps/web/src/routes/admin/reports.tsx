@@ -145,7 +145,7 @@ function Toolbar() {
       <div className="flex items-center gap-2">
         <span
           id={typeLabelId}
-          className="text-xxs font-medium tracking-[0.14em] text-muted-foreground uppercase"
+          className="text-xxs font-medium tracking-widest text-muted-foreground uppercase"
         >
           {m.common_type()}
         </span>
