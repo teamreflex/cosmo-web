@@ -1,9 +1,7 @@
-import { useHydrated } from "@/hooks/use-hydrated";
 import { m } from "@/i18n/messages";
 import { recentVotesQuery } from "@/lib/queries/gravity";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
-import { Skeleton } from "../ui/skeleton";
+import { Timestamp } from "../ui/timestamp";
 
 type Props = {
   pollId: number;
@@ -15,8 +13,6 @@ type Props = {
  */
 export default function RecentVotes(props: Props) {
   const { data: votes } = useSuspenseQuery(recentVotesQuery(props.pollId));
-  // vote times render in the viewer's timezone, so they wait for the client
-  const hydrated = useHydrated();
 
   return (
     // the sealed panel sits opposite the rail, and the two share a height
@@ -34,13 +30,11 @@ export default function RecentVotes(props: Props) {
         <div className="flex max-h-120 flex-col overflow-y-auto">
           {votes.map((vote) => (
             <div key={vote.id} className="flex h-8 items-center gap-2">
-              {hydrated ? (
-                <span className="shrink-0 font-mono text-xs text-muted-foreground">
-                  {format(new Date(vote.createdAt), "h:mm:ssaaa")}
-                </span>
-              ) : (
-                <Skeleton className="h-3 w-16 shrink-0 rounded-full" />
-              )}
+              <Timestamp
+                date={new Date(vote.createdAt)}
+                format="h:mm:ssaaa"
+                className="shrink-0 font-mono text-xs text-muted-foreground"
+              />
               <span className="min-w-0 flex-1 truncate text-sm">
                 {vote.username ?? vote.address.substring(0, 8)}
               </span>
