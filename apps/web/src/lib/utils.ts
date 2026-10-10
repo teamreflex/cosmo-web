@@ -1,8 +1,15 @@
 import type { ValidArtist } from "@apollo/cosmo/types/common";
+import { createCn } from "cn/config";
 import * as z from "zod";
 import { env } from "./env/client";
 
-export { cn } from "cn";
+/**
+ * Class merging that knows the app's custom `--text-xxs` size, which it would
+ * otherwise read as a text colour and drop beside one.
+ */
+export const cn = createCn({
+  extend: { classGroups: { "font-size": [{ text: ["xxs"] }] } },
+});
 
 export type PropsWithClassName<T> = T & { className?: string };
 

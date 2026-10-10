@@ -108,6 +108,7 @@ function SortButton({ active, dir, onClick, children }: SortButtonProps) {
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={cn(
         "inline-flex items-center gap-1 rounded-sm border px-2 py-1 transition-colors",
         active
