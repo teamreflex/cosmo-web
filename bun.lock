@@ -304,6 +304,22 @@
         "zod": "catalog:",
       },
     },
+    "packages/trades": {
+      "name": "@apollo/trades",
+      "version": "0.0.0",
+      "dependencies": {
+        "@apollo/cosmo": "workspace:*",
+        "@apollo/database": "workspace:*",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@apollo/lint": "workspace:*",
+        "@apollo/typescript": "workspace:*",
+        "@types/bun": "catalog:",
+        "turbo": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
     "packages/typescript": {
       "name": "@apollo/typescript",
       "version": "0.0.0",
@@ -373,6 +389,8 @@
     "@apollo/queue": ["@apollo/queue@workspace:packages/queue"],
 
     "@apollo/serial-estimation": ["@apollo/serial-estimation@workspace:packages/serial-estimation"],
+
+    "@apollo/trades": ["@apollo/trades@workspace:packages/trades"],
 
     "@apollo/typescript": ["@apollo/typescript@workspace:packages/typescript"],
 
