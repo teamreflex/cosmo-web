@@ -294,16 +294,24 @@ export const notifications = pgTable(
     collectionId: varchar("collection_id", { length: 36 }), // slug: atom01-jinsoul-101z
   },
   (t) => [
-    // the bell's page; a backward scan serves `order by created_at desc`
-    index("notifications_user_created_idx").on(t.userId, t.createdAt),
+    /**
+     * The bell's pages, a backward scan for `order by created_at desc, id desc`.
+     * One job's rows share `created_at`, so `id` breaks the keyset ties.
+     */
+    index("notifications_user_created_idx").on(t.userId, t.createdAt, t.id),
     // the polled unread badge reads only unread rows
     index("notifications_user_unread_idx")
       .on(t.userId, t.createdAt)
       .where(isNull(t.readAt)),
-    // an actor re-adding a collection never notifies the same user twice
+    /**
+     * An actor re-adding a collection never notifies the same user twice.
+     * Leading with the actor serves the cascade when their account is deleted.
+     */
     uniqueIndex("notifications_trade_dedup_idx")
-      .on(t.userId, t.actorId, t.type, t.collectionId)
+      .on(t.actorId, t.userId, t.type, t.collectionId)
       .where(inArray(t.type, ["trade_have", "trade_want"])),
+    // serves the cascade when the list is deleted
+    index("notifications_list_idx").on(t.listId),
     check(
       "notifications_subject_chk",
       sql`${t.type} not in ('trade_have', 'trade_want') or num_nonnulls(${t.actorId}, ${t.listId}, ${t.collectionId}) = 3`,

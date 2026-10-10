@@ -1,7 +1,7 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "4f13f03a-9b17-4046-90c1-2f700110f0e6",
+  "id": "4e6fff71-feb9-40fc-bcf2-621443389047",
   "prevIds": [
     "9d7c0531-6128-4c28-99e8-0b947137c6b0"
   ],
@@ -4265,6 +4265,13 @@
           "asc": true,
           "nullsFirst": false,
           "opclass": null
+        },
+        {
+          "value": "id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
         }
       ],
       "isUnique": false,
@@ -4309,14 +4316,14 @@
       "nameExplicit": true,
       "columns": [
         {
-          "value": "user_id",
+          "value": "actor_id",
           "isExpression": false,
           "asc": true,
           "nullsFirst": false,
           "opclass": null
         },
         {
-          "value": "actor_id",
+          "value": "user_id",
           "isExpression": false,
           "asc": true,
           "nullsFirst": false,
@@ -4343,6 +4350,27 @@
       "method": "btree",
       "concurrently": false,
       "name": "notifications_trade_dedup_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "notifications"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "list_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "notifications_list_idx",
       "entityType": "indexes",
       "schema": "public",
       "table": "notifications"
