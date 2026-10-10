@@ -7,6 +7,7 @@ import {
   integer,
   index,
   pgEnum,
+  varchar,
 } from "drizzle-orm/pg-core";
 import { citext } from "./custom";
 
@@ -37,6 +38,8 @@ export const user = pgTable(
     discord: text("discord"),
     twitter: text("twitter"),
     showSocials: boolean("show_socials").notNull().default(false),
+    // display currency (ISO 4217) with an fx_rates row, null means USD
+    currency: varchar("currency", { length: 3 }),
     // admin plugin
     role: userRole("role").notNull().default("user"),
     banned: boolean("banned").notNull().default(false),

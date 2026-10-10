@@ -16,6 +16,7 @@ import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { createCipheriv, randomBytes } from "node:crypto";
 import type { PublicUser } from "../universal/auth";
 import { settingsSchema } from "../universal/schema/auth";
+import { DEFAULT_CURRENCY } from "../universal/schema/currency";
 import { db } from "./db";
 import { sendPasswordResetEmail, sendVerificationEmail } from "./mail.server";
 
@@ -282,6 +283,15 @@ export const auth = betterAuth({
         // oxlint-disable-next-line anti-slop/no-shape-in-symbol-names -- zod's field accessor
         validator: { input: settingsSchema.shape.collectionMode },
       },
+      currency: {
+        type: "string",
+        required: false,
+        defaultValue: null,
+        input: true,
+        returned: true,
+        // oxlint-disable-next-line anti-slop/no-shape-in-symbol-names -- zod's field accessor
+        validator: { input: settingsSchema.shape.currency },
+      },
       discord: {
         type: "string",
         required: false,
@@ -359,6 +369,7 @@ export function toPublicUser(
     // SAFETY: the column only stores CollectionDataSource values
     collectionMode: (user.collectionMode ??
       "blockchain") as CollectionDataSource,
+    currency: user.currency ?? DEFAULT_CURRENCY,
     social: {
       discord: user.showSocials ? (user.discord ?? undefined) : undefined,
       twitter: user.showSocials ? (user.twitter ?? undefined) : undefined,

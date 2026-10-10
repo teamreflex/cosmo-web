@@ -6,6 +6,7 @@ export type PublicUser = {
   image: string | undefined;
   gridColumns: number;
   collectionMode: CollectionDataSource;
+  currency: string;
   social: {
     discord: string | undefined;
     twitter: string | undefined;

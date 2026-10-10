@@ -8,7 +8,10 @@ import {
   authenticatedMiddleware,
   cosmoMiddleware,
 } from "@/lib/server/middlewares";
-import { fetchLatestFxRate } from "@/lib/server/objekts/fx.server";
+import {
+  assertSupportedCurrency,
+  fetchLatestFxRate,
+} from "@/lib/server/objekts/fx.server";
 import {
   assertOwnsTokensMulti,
   assertUserOwnsList,
@@ -191,6 +194,9 @@ export const $createObjektList = createServerFn({ method: "POST" })
     if (data.type !== "regular" && data.type !== "sale") {
       throw new Error("Use $createLiveList for have/want lists.");
     }
+    if (data.type === "sale") {
+      await assertSupportedCurrency(data.currency);
+    }
 
     const slug = createSlug(data.name);
 
@@ -322,6 +328,9 @@ export const $updateObjektList = createServerFn({ method: "POST" })
     }
     if (existingRow.type !== data.type) {
       throw new ExpectedError("list_type_locked");
+    }
+    if (data.type === "sale") {
+      await assertSupportedCurrency(data.currency);
     }
 
     const slug = createSlug(data.name);
