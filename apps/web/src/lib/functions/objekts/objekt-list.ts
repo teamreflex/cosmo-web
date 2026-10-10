@@ -27,7 +27,7 @@ import {
   supportedSort,
 } from "@/lib/universal/sorts";
 import { isMemberSort, isMintSort } from "@apollo/cosmo/types/common";
-import type { ObjektList, ObjektListEntry } from "@apollo/database/web/types";
+import type { ObjektListEntry } from "@apollo/database/web/types";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, type SQL, sql } from "drizzle-orm";
 import * as z from "zod";
@@ -91,29 +91,38 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
       };
     }
 
-    const { entries } = list;
     const start = data.page * LIMIT;
-    const [rows, floors] = await Promise.all([
-      fetchListPage(entries, data, start),
-      fetchFloors(list),
+    // only sale lists whose currency has a rate can sit at the market floor
+    const [rows, rateToUsd] = await Promise.all([
+      fetchListPage(list.entries, data, start),
+      list.type === "sale" && list.currency !== null
+        ? fetchLatestFxRate(list.currency)
+        : null,
     ]);
 
-    const entriesById = new Map(entries.map((e) => [e.id, e]));
-    const items: ObjektListItem[] = [];
-    for (const row of rows) {
+    const entriesById = new Map(list.entries.map((e) => [e.id, e]));
+    const page = rows.flatMap((row) => {
       const entry = entriesById.get(row.entryId);
-      if (!entry) continue;
-      items.push({
-        ...row.collection,
-        id: entry.id,
-        entryQuantity: entry.quantity,
-        entryPrice: entry.price,
-        entryTokenId: entry.tokenId,
-        entrySerial: row.serial,
-        entryCreatedAt: entry.createdAt.toISOString(),
-        entryAtFloor: floors.has(entry.id),
-      });
-    }
+      return entry === undefined ? [] : [{ row, entry }];
+    });
+    const floors =
+      rateToUsd === null
+        ? new Set<string>()
+        : await fetchFloors(
+            page.map(({ entry }) => entry),
+            rateToUsd,
+          );
+
+    const items = page.map(({ row, entry }): ObjektListItem => ({
+      ...row.collection,
+      id: entry.id,
+      entryQuantity: entry.quantity,
+      entryPrice: entry.price,
+      entryTokenId: entry.tokenId,
+      entrySerial: row.serial,
+      entryCreatedAt: entry.createdAt.toISOString(),
+      entryAtFloor: floors.has(entry.id),
+    }));
 
     const total = rows[0]?.total ?? 0;
     const hasNext = start + LIMIT < total;
@@ -127,26 +136,14 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
   });
 
 /**
- * Ids of a sale list's priced serials that sit at their collection's market
- * floor. Other lists, and sale lists whose currency has no rate, have none.
+ * Ids of a page of sale list entries whose priced serials sit at their
+ * collection's market floor, given the list currency's USD rate.
  */
 async function fetchFloors(
-  list: Pick<ObjektList, "type" | "currency"> & {
-    entries: Pick<
-      ObjektListEntry,
-      "id" | "collectionId" | "tokenId" | "price"
-    >[];
-  },
+  entries: Pick<ObjektListEntry, "id" | "collectionId" | "tokenId" | "price">[],
+  rateToUsd: number,
 ) {
-  const rateToUsd =
-    list.type === "sale" && list.currency !== null
-      ? await fetchLatestFxRate(list.currency)
-      : null;
-  if (rateToUsd === null) {
-    return new Set<string>();
-  }
-
-  const priced = list.entries.flatMap((e) =>
+  const priced = entries.flatMap((e) =>
     e.tokenId !== null && e.price !== null ? [{ ...e, price: e.price }] : [],
   );
   const stats = await fetchMarketStats([
