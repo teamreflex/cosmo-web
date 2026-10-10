@@ -3,7 +3,6 @@ import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { collections } from "@/lib/server/db/indexer/schema";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
-import { countUnreadBursts } from "@/lib/server/notifications.server";
 import type {
   NotificationCollection,
   NotificationPage,
@@ -131,8 +130,16 @@ export const $markNotificationsRead = createServerFn({ method: "POST" })
   });
 
 /**
- * Count unread bursts for the current user — used by the header badge.
+ * Count unread notifications for the current user — used by the header badge.
  */
 export const $unreadNotificationCount = createServerFn({ method: "GET" })
   .middleware([authenticatedMiddleware])
-  .handler(({ context }) => countUnreadBursts(context.session.session.userId));
+  .handler(({ context }) =>
+    db.$count(
+      notifications,
+      and(
+        eq(notifications.userId, context.session.session.userId),
+        isNull(notifications.readAt),
+      ),
+    ),
+  );

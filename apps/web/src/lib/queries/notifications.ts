@@ -5,7 +5,7 @@ import {
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
 /**
- * Count of unread bursts for the current user — drives the header bell badge.
+ * Count of unread notifications for the current user — drives the header bell badge.
  */
 export const unreadNotificationsQuery = queryOptions({
   queryKey: ["notifications-unread"],

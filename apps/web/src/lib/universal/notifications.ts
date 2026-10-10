@@ -44,12 +44,9 @@ export type NotificationListItem = {
 
 /**
  * A burst is a run of one user's notifications sharing type, actor, list and
- * read state, with no gap longer than this between neighbours. The unread
- * badge counts bursts by the same rule in SQL.
+ * read state, with no gap longer than this between neighbours.
  */
-export const BURST_GAP_HOURS = 6;
-
-const BURST_GAP_MS = BURST_GAP_HOURS * 60 * 60 * 1000;
+const BURST_GAP_MS = 6 * 60 * 60 * 1000;
 const BURST_COLLECTIONS = 5;
 
 /**
