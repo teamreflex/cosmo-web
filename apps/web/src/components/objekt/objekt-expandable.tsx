@@ -15,19 +15,31 @@ type Props = PropsWithChildren<{
   collection: Objekt.Collection;
   selectionKey?: string;
   setActive?: (slug: string | undefined) => void;
+  action?: ObjektAction;
   priority?: boolean;
   eager?: boolean;
   className?: string;
 }>;
 
 /**
- * Displays the front of an objekt and opens the shared MetadataDialog on click.
+ * What clicking the card does in place of opening the metadata dialog, with
+ * the accessible name that describes it.
+ */
+type ObjektAction = {
+  label: string;
+  onClick: () => void;
+};
+
+/**
+ * Displays the front of an objekt and opens the shared MetadataDialog on
+ * click, unless the caller supplies its own action.
  */
 export default function ExpandableObjekt({
   children,
   selectionKey,
   collection,
   setActive,
+  action,
   priority = false,
   eager = false,
   className,
@@ -54,6 +66,7 @@ export default function ExpandableObjekt({
         <FrontImage
           collection={collection}
           setActive={setActive}
+          action={action}
           priority={priority}
           eager={eager}
         />
@@ -67,6 +80,7 @@ export default function ExpandableObjekt({
 type FrontImageProps = {
   collection: Objekt.Collection;
   setActive?: (slug: string | undefined) => void;
+  action?: ObjektAction;
   priority?: boolean;
   eager?: boolean;
 };
@@ -95,6 +109,11 @@ function FrontImage(props: FrontImageProps) {
   }
 
   function handleClick() {
+    if (props.action) {
+      props.action.onClick();
+      return;
+    }
+
     // populate the query cache so the dialog skips its initial fetch, and
     // start the metadata request now rather than after the dialog mounts
     queryClient.setQueryData(
@@ -115,7 +134,7 @@ function FrontImage(props: FrontImageProps) {
     <img
       ref={handleImageRef}
       role="button"
-      aria-label={m.aria_view_objekt()}
+      aria-label={props.action?.label ?? m.aria_view_objekt()}
       onMouseOver={prefetch}
       onLoad={() => setIsLoaded(true)}
       onClick={handleClick}

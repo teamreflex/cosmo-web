@@ -40,8 +40,6 @@ export type ObjektListItem = Collection & {
   entryTokenId: string | null;
   entrySerial: number | null;
   entryCreatedAt: string;
-  medianPriceUsd: number | null;
-  listingCount: number;
   // a priced sale serial at its collection's market floor
   entryAtFloor: boolean;
 };
@@ -80,14 +78,6 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
             price: true,
             createdAt: true,
           },
-          with: {
-            priceStats: {
-              columns: {
-                medianPriceUsd: true,
-                listingCount: true,
-              },
-            },
-          },
         },
       },
     });
@@ -121,8 +111,6 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
         entryTokenId: entry.tokenId,
         entrySerial: row.serial,
         entryCreatedAt: entry.createdAt.toISOString(),
-        medianPriceUsd: entry.priceStats?.medianPriceUsd ?? null,
-        listingCount: entry.priceStats?.listingCount ?? 0,
         entryAtFloor: floors.has(entry.id),
       });
     }
