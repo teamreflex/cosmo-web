@@ -30,39 +30,37 @@ type Props = {
 
 /**
  * Picks a currency with an FX rate: the common ones first, then the rest.
- * The options load when the menu opens, so the trigger shows the raw code.
+ * The rates load with the select, which shows a disabled trigger until then.
  */
-export default function CurrencySelect({
+export default function CurrencySelect(props: Props) {
+  const fallback = (
+    <Select disabled value={props.value}>
+      <CurrencyTrigger {...props} />
+    </Select>
+  );
+
+  return (
+    <ErrorBoundary fallback={fallback}>
+      <Suspense fallback={fallback}>
+        <CurrencySelectOptions {...props} />
+      </Suspense>
+    </ErrorBoundary>
+  );
+}
+
+function CurrencyTrigger({
   id,
-  name,
-  value,
-  onValueChange,
   placeholder = m.list_currency(),
   className,
 }: Props) {
   return (
-    <Select
-      name={name}
-      value={value}
-      onValueChange={(next) => {
-        if (next !== null) onValueChange(next);
-      }}
-    >
-      <SelectTrigger id={id} className={className}>
-        <SelectValue placeholder={placeholder} />
-      </SelectTrigger>
-      <SelectContent className="max-h-72">
-        <ErrorBoundary fallback={null}>
-          <Suspense fallback={null}>
-            <Options />
-          </Suspense>
-        </ErrorBoundary>
-      </SelectContent>
-    </Select>
+    <SelectTrigger id={id} className={className}>
+      <SelectValue placeholder={placeholder} />
+    </SelectTrigger>
   );
 }
 
-function Options() {
+function CurrencySelectOptions(props: Props) {
   const { data: currencies } = useSuspenseQuery(fxCurrenciesQuery);
   const names = new Intl.DisplayNames(getLocale(), { type: "currency" });
   // USD is the base of every rate, so it's offered even without a row
@@ -87,16 +85,25 @@ function Options() {
   }
 
   return (
-    <>
-      <SelectGroup>
-        <SelectLabel>{m.currency_common()}</SelectLabel>
-        {common.map(renderItem)}
-      </SelectGroup>
-      <SelectSeparator />
-      <SelectGroup>
-        <SelectLabel>{m.currency_all()}</SelectLabel>
-        {others.map(renderItem)}
-      </SelectGroup>
-    </>
+    <Select
+      name={props.name}
+      value={props.value}
+      onValueChange={(next) => {
+        if (next !== null) props.onValueChange(next);
+      }}
+    >
+      <CurrencyTrigger {...props} />
+      <SelectContent className="max-h-72 w-auto max-w-(--available-width) min-w-(--anchor-width)">
+        <SelectGroup>
+          <SelectLabel>{m.currency_common()}</SelectLabel>
+          {common.map(renderItem)}
+        </SelectGroup>
+        <SelectSeparator />
+        <SelectGroup>
+          <SelectLabel>{m.currency_all()}</SelectLabel>
+          {others.map(renderItem)}
+        </SelectGroup>
+      </SelectContent>
+    </Select>
   );
 }

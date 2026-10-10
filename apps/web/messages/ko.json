@@ -235,6 +235,7 @@
   "list_currency": "통화",
   "list_currency_description": "통화를 설정하면 가격과 수량이 포함된 판매 리스트가 생성됩니다.",
   "list_currency_change_warning": "가격은 환산되지 않습니다. 각 항목의 금액이 그대로 새 통화로 표시됩니다.",
+  "currency_placeholder": "통화 선택…",
   "currency_common": "자주 쓰는 통화",
   "currency_all": "모든 통화",
   "list_add_to_sale_list": "판매 리스트에 추가",

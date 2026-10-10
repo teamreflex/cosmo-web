@@ -24,7 +24,6 @@ import { $updateSettings } from "@/lib/functions/auth";
 import { currentAccountQuery } from "@/lib/queries/core";
 import type { CurrentUser } from "@/lib/universal/auth";
 import { settingsSchema } from "@/lib/universal/schema/auth";
-import { DEFAULT_CURRENCY } from "@/lib/universal/schema/currency";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -230,7 +229,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
                   id="settings-currency"
                   name="currency"
                   value={field.value}
-                  placeholder={DEFAULT_CURRENCY}
+                  placeholder={m.currency_placeholder()}
                   onValueChange={field.onChange}
                   className="w-36"
                 />

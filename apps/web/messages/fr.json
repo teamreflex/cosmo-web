@@ -235,6 +235,7 @@
   "list_currency": "Devise",
   "list_currency_description": "Choisissez une devise pour créer une liste de vente avec prix et quantités.",
   "list_currency_change_warning": "Les prix ne sont pas convertis : chaque entrée garde son montant dans la nouvelle devise.",
+  "currency_placeholder": "Choisir une devise…",
   "currency_common": "Courantes",
   "currency_all": "Toutes les devises",
   "list_add_to_sale_list": "Ajouter à la liste de vente",
