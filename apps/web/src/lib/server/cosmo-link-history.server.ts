@@ -14,7 +14,7 @@ const HISTORY_PAGE_SIZE = 50;
 
 /**
  * Rows whose COSMO account's username or address, or whose user's username,
- * starts with the search. A deleted user has no username, so their rows are
+ * starts with the search. A deleted user's row is gone, so their rows are
  * found through the COSMO account.
  */
 function matchesSearch(t: typeof cosmoLinkAudit, search: string) {
@@ -23,7 +23,7 @@ function matchesSearch(t: typeof cosmoLinkAudit, search: string) {
     db
       .select({ id: cosmoAccounts.id })
       .from(cosmoAccounts)
-      .innerJoin(user, eq(user.id, t.userId))
+      .leftJoin(user, eq(user.id, t.userId))
       .where(
         and(
           eq(cosmoAccounts.id, t.cosmoAccountId),
@@ -53,10 +53,16 @@ export async function fetchCosmoLinkHistory(input: CosmoLinkHistoryQueryInput) {
         RAW:
           search === undefined ? EmptyFilter : (t) => matchesSearch(t, search),
       },
-      columns: { id: true, createdAt: true, event: true, reason: true },
+      columns: {
+        id: true,
+        createdAt: true,
+        userId: true,
+        event: true,
+        reason: true,
+      },
       with: {
         cosmoAccount: { columns: { username: true, address: true } },
-        user: { columns: { id: true, ...namedUserColumns } },
+        user: { columns: namedUserColumns },
         staff: { columns: namedUserColumns },
       },
       orderBy: { id: "desc" },
@@ -79,7 +85,10 @@ export async function fetchCosmoLinkHistory(input: CosmoLinkHistoryQueryInput) {
       createdAt: row.createdAt,
       event: row.event,
       cosmo: row.cosmoAccount,
-      user: { id: row.user.id, username: staffUsername(row.user) },
+      user: {
+        id: row.userId,
+        username: row.user === null ? null : staffUsername(row.user),
+      },
       reason:
         row.reason === "staff-move"
           ? {

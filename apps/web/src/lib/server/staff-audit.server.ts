@@ -18,7 +18,7 @@ import type {
   StaffAuditDetail,
   StaffAuditTargetType,
 } from "@apollo/database/web/types";
-import { and, EmptyFilter, eq, gt, inArray, sql } from "drizzle-orm";
+import { and, EmptyFilter, eq, gt, sql } from "drizzle-orm";
 
 const AUDIT_PAGE_SIZE = 50;
 
@@ -243,10 +243,10 @@ export async function fetchStaffAudit(input: StaffAuditQueryInput) {
       id: row.id,
       createdAt: row.createdAt,
       action: row.action,
-      staff: {
-        username: staffUsername(row.staff),
-        role: row.staff.role,
-      },
+      staff:
+        row.staff === null
+          ? null
+          : { username: staffUsername(row.staff), role: row.staff.role },
       report: row.report,
       detail: row.detail === null ? null : toAuditDetail(row.detail),
       target: toAuditTarget(row, usernames),
@@ -329,19 +329,13 @@ function toAuditDetail(detail: StaffAuditDetail): AdminAuditDetail | null {
  * have no name and sort last.
  */
 export async function fetchAuditStaff(): Promise<AuditStaffMember[]> {
-  const staff = await db.query.user.findMany({
-    where: {
-      RAW: (t) =>
-        inArray(
-          t.id,
-          db.selectDistinct({ id: staffAudit.staffId }).from(staffAudit),
-        ),
-    },
-    columns: { id: true, ...namedUserColumns },
-  });
+  const staff = await db
+    .selectDistinct({ id: staffAudit.staffId })
+    .from(staffAudit);
+  const usernames = await fetchStaffUsernames(staff.map((row) => row.id));
 
   return staff
-    .map((user) => ({ id: user.id, username: staffUsername(user) }))
+    .map(({ id }) => ({ id, username: usernames.get(id) ?? null }))
     .toSorted((a, b) =>
       a.username === null || b.username === null
         ? Number(a.username === null) - Number(b.username === null)

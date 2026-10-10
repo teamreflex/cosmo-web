@@ -83,8 +83,8 @@ export const cosmoAccountChanges = pgTable("cosmo_account_changes", {
 /**
  * Append-only history of COSMO links: a row each time an address is linked to
  * or unlinked from a user, written in the transaction that changes
- * `cosmo_account.user_id`, which stays the current link. No foreign key has an
- * ON DELETE action, so nothing can remove a row.
+ * `cosmo_account.user_id`, which stays the current link. `user_id` and
+ * `staff_id` have no foreign key, so the rows outlive deleted accounts.
  */
 export const cosmoLinkAudit = pgTable(
   "cosmo_link_audit",
@@ -94,12 +94,10 @@ export const cosmoLinkAudit = pgTable(
     cosmoAccountId: integer("cosmo_account_id")
       .notNull()
       .references(() => cosmoAccounts.id),
-    userId: text("user_id")
-      .notNull()
-      .references(() => user.id),
+    userId: text("user_id").notNull(),
     event: cosmoLinkEvent("event").notNull(),
     reason: cosmoLinkReason("reason").notNull(),
-    staffId: text("staff_id").references(() => user.id),
+    staffId: text("staff_id"),
   },
   (t) => [
     index("cosmo_link_audit_cosmo_account_idx").on(t.cosmoAccountId, t.id),
@@ -494,9 +492,9 @@ export const reports = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     createdAt,
-    reporterId: text("reporter_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+    reporterId: text("reporter_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
     targetType: reportTargetType("target_type").notNull(),
     targetId: text("target_id").notNull(),
     reason: varchar("reason", { length: 32 }).$type<ReportReason>().notNull(),
@@ -523,17 +521,15 @@ export const reports = pgTable(
 );
 
 /**
- * Append-only log of staff reads and actions. `staff_id` deliberately has no
- * ON DELETE action, so deleting an account can never remove its audit rows.
+ * Append-only log of staff reads and actions. `staff_id` has no foreign key,
+ * so the rows outlive a staff member's deleted account.
  */
 export const staffAudit = pgTable(
   "staff_audit",
   {
     id: serial("id").primaryKey(),
     createdAt,
-    staffId: text("staff_id")
-      .notNull()
-      .references(() => user.id),
+    staffId: text("staff_id").notNull(),
     action: varchar("action", { length: 48 })
       .$type<StaffAuditAction>()
       .notNull(),

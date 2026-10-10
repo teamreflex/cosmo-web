@@ -12,8 +12,9 @@ CREATE TABLE "cosmo_link_audit" (
 	CONSTRAINT "cosmo_link_audit_event_chk" CHECK (("reason" <> 'verified' OR "event" = 'linked') AND ("reason" <> 'account-deleted' OR "event" = 'unlinked'))
 );
 --> statement-breakpoint
+ALTER TABLE "staff_audit" DROP CONSTRAINT "staff_audit_staff_id_user_id_fkey";--> statement-breakpoint
+ALTER TABLE "reports" ALTER COLUMN "reporter_id" DROP NOT NULL;--> statement-breakpoint
 CREATE INDEX "cosmo_link_audit_cosmo_account_idx" ON "cosmo_link_audit" ("cosmo_account_id","id");--> statement-breakpoint
 CREATE INDEX "cosmo_link_audit_user_idx" ON "cosmo_link_audit" ("user_id","id");--> statement-breakpoint
 ALTER TABLE "cosmo_link_audit" ADD CONSTRAINT "cosmo_link_audit_cosmo_account_id_cosmo_account_id_fkey" FOREIGN KEY ("cosmo_account_id") REFERENCES "cosmo_account"("id");--> statement-breakpoint
-ALTER TABLE "cosmo_link_audit" ADD CONSTRAINT "cosmo_link_audit_user_id_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id");--> statement-breakpoint
-ALTER TABLE "cosmo_link_audit" ADD CONSTRAINT "cosmo_link_audit_staff_id_user_id_fkey" FOREIGN KEY ("staff_id") REFERENCES "user"("id");
+ALTER TABLE "reports" DROP CONSTRAINT "reports_reporter_id_user_id_fkey", ADD CONSTRAINT "reports_reporter_id_user_id_fkey" FOREIGN KEY ("reporter_id") REFERENCES "user"("id") ON DELETE SET NULL;

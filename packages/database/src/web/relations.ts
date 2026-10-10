@@ -35,7 +35,6 @@ export const relations = defineRelations(schema, (r) => ({
     user: r.one.user({
       from: r.cosmoLinkAudit.userId,
       to: r.user.id,
-      optional: false,
     }),
     staff: r.one.user({
       from: r.cosmoLinkAudit.staffId,
@@ -200,7 +199,6 @@ export const relations = defineRelations(schema, (r) => ({
     reporter: r.one.user({
       from: r.reports.reporterId,
       to: r.user.id,
-      optional: false,
     }),
     resolver: r.one.user({
       from: r.reports.resolvedBy,
@@ -211,7 +209,6 @@ export const relations = defineRelations(schema, (r) => ({
     staff: r.one.user({
       from: r.staffAudit.staffId,
       to: r.user.id,
-      optional: false,
     }),
     report: r.one.reports({
       from: r.staffAudit.reportId,

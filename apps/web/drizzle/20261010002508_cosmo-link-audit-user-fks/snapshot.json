@@ -1,9 +1,9 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "088170d0-8734-43b9-bac1-b3d010bad92d",
+  "id": "a14dbc4c-74eb-4405-a07e-b0ebb426ba17",
   "prevIds": [
-    "a1ba3ed9-415c-447f-af72-19fd2f1241f3"
+    "e988bd77-1c23-48ad-a98c-84de706cf653"
   ],
   "ddl": [
     {
@@ -2714,7 +2714,7 @@
     {
       "type": "text",
       "typeSchema": null,
-      "notNull": true,
+      "notNull": false,
       "dimensions": 0,
       "default": null,
       "generated": null,
@@ -3279,19 +3279,6 @@
       "generated": null,
       "identity": null,
       "name": "ban_expires",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "user"
-    },
-    {
-      "type": "timestamp",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "deleted_at",
       "entityType": "columns",
       "schema": "public",
       "table": "user"
@@ -5019,40 +5006,6 @@
     {
       "nameExplicit": false,
       "columns": [
-        "user_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
-      "name": "cosmo_link_audit_user_id_user_id_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "cosmo_link_audit"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "staff_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
-      "name": "cosmo_link_audit_staff_id_user_id_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "cosmo_link_audit"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
         "era_id"
       ],
       "schemaTo": "public",
@@ -5180,7 +5133,7 @@
         "id"
       ],
       "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
+      "onDelete": "SET NULL",
       "name": "reports_reporter_id_user_id_fkey",
       "entityType": "fks",
       "schema": "public",
@@ -5219,23 +5172,6 @@
       "entityType": "fks",
       "schema": "public",
       "table": "session"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "staff_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
-      "name": "staff_audit_staff_id_user_id_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "staff_audit"
     },
     {
       "nameExplicit": false,
@@ -5675,13 +5611,6 @@
       "entityType": "checks",
       "schema": "public",
       "table": "reports"
-    },
-    {
-      "value": "\"deleted_at\" IS NULL OR (\"name\" = '' AND \"email\" = ('deleted+' || \"id\" || '@invalid') AND \"email_verified\" = false AND \"image\" IS NULL AND \"username\" IS NULL AND \"display_username\" IS NULL AND \"discord\" IS NULL AND \"twitter\" IS NULL AND \"show_socials\" = false AND \"role\" = 'user')",
-      "name": "user_deleted_scrubbed_chk",
-      "entityType": "checks",
-      "schema": "public",
-      "table": "user"
     }
   ],
   "renames": []

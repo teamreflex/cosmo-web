@@ -96,8 +96,7 @@ export default function AuditRow({ row }: Props) {
         role="cell"
         className="flex min-w-0 items-center gap-2 [grid-area:who]"
       >
-        {row.staff.username === null ? (
-          /* a deleted account's role was reset, so it has no pill */
+        {row.staff === null ? (
           <>
             <UserAvatar deleted className="size-5.5" />
             <span className="truncate font-medium text-muted-foreground">
