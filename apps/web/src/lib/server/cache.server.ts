@@ -1,8 +1,10 @@
 import { env } from "@/lib/env/server";
+import { keepConnected } from "@apollo/util-server/redis";
 import { RedisClient } from "bun";
 import { Exit, Schema } from "effect";
 
 export const redis = new RedisClient(env.REDIS_URL);
+keepConnected(redis);
 
 /**
  * Get an item from the cache, or store the default value.

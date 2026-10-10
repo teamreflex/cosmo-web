@@ -306,6 +306,10 @@
     "packages/util-server": {
       "name": "@apollo/util-server",
       "version": "0.0.0",
+      "dependencies": {
+        "@effect/platform-bun": "catalog:",
+        "effect": "catalog:",
+      },
       "devDependencies": {
         "@apollo/lint": "workspace:*",
         "@apollo/typescript": "workspace:*",
