@@ -5,7 +5,11 @@ import { currentAccountQuery } from "@/lib/queries/core";
 import { listShelfQuery } from "@/lib/queries/lists";
 import type { ObjektList } from "@apollo/database/web/types";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { IconEdit, IconLoader2 } from "@tabler/icons-react";
+import {
+  IconAlertTriangle,
+  IconEdit,
+  IconLoader2,
+} from "@tabler/icons-react";
 import {
   useMutation,
   useQueryClient,
@@ -362,6 +366,15 @@ function CurrencyField() {
             onValueChange={field.onChange}
           />
           <FieldDescription>{m.list_currency_description()}</FieldDescription>
+          {fieldState.isDirty && (
+            <FieldDescription
+              role="status"
+              className="flex gap-1.5 text-amber-600 dark:text-amber-500"
+            >
+              <IconAlertTriangle className="mt-0.5 size-4 shrink-0" />
+              {m.list_currency_change_warning()}
+            </FieldDescription>
+          )}
           <FieldError errors={[fieldState.error]} />
         </Field>
       )}

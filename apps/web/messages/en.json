@@ -234,6 +234,7 @@
   "list_remove_from_list": "Remove {collectionId} from {listName}",
   "list_currency": "Currency",
   "list_currency_description": "Set a currency to create a sale list with prices and quantities.",
+  "list_currency_change_warning": "Prices aren't converted: each entry keeps its number in the new currency.",
   "currency_common": "Common",
   "currency_all": "All currencies",
   "list_add_to_sale_list": "Add to Sale List",
