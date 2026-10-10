@@ -8,12 +8,21 @@ import AdminNoAccess from "@/components/admin/no-access";
 import { useHasPermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
+import { cosmoLinkHistoryQuery } from "@/lib/queries/cosmo-link-history";
+import { can } from "@apollo/auth";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/admin/accounts")({
   staleTime: Infinity,
   beforeLoad: ({ context }) =>
     requireStaffPage(context.role, ...ADMIN_ACCOUNTS_PERMISSIONS),
+  loader: ({ context }) => {
+    if (can(context.role, { cosmo: ["history"] })) {
+      void context.queryClient.prefetchInfiniteQuery(
+        cosmoLinkHistoryQuery(undefined),
+      );
+    }
+  },
   notFoundComponent: AdminNoAccess,
   head: () =>
     defineHead({

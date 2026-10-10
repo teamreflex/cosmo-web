@@ -18,9 +18,19 @@ import type { CosmoLinkHistoryEntry } from "@/lib/universal/cosmo-link-history";
 import { cn } from "@/lib/utils";
 import type { CosmoLinkEvent } from "@apollo/database/web/types";
 import { shortAddress } from "@apollo/util";
-import { IconHistory, IconLoader2 } from "@tabler/icons-react";
-import { useInfiniteQuery } from "@tanstack/react-query";
-import { type ReactNode, useId, useState } from "react";
+import { IconHistory, IconLoader2, IconRefresh } from "@tabler/icons-react";
+import {
+  QueryErrorResetBoundary,
+  useSuspenseInfiniteQuery,
+} from "@tanstack/react-query";
+import {
+  type ReactNode,
+  Suspense,
+  useDeferredValue,
+  useId,
+  useState,
+} from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import { useDebounceValue } from "usehooks-ts";
 
 const eventLabels = {
@@ -50,6 +60,9 @@ export default function CosmoLinkHistory() {
   const searchId = useId();
   const [search, setSearch] = useState("");
   const [debouncedSearch] = useDebounceValue(search.trim(), 500);
+  const query = debouncedSearch.length >= 3 ? debouncedSearch : undefined;
+  // the log follows a render behind, so the last rows stay up while the next load
+  const loadedQuery = useDeferredValue(query);
 
   return (
     <div className="flex flex-col gap-3">
@@ -80,96 +93,101 @@ export default function CosmoLinkHistory() {
         </div>
       </div>
 
-      <HistoryLog
-        search={debouncedSearch.length >= 3 ? debouncedSearch : undefined}
-      />
+      <QueryErrorResetBoundary>
+        {({ reset }) => (
+          <ErrorBoundary
+            onReset={reset}
+            fallbackRender={({ resetErrorBoundary }) => (
+              <div className="flex flex-col items-center gap-2 rounded-md border bg-card py-12 max-md:-mx-4 max-md:rounded-none max-md:border-x-0">
+                <p className="text-sm text-destructive">
+                  {m.admin_accounts_history_error()}
+                </p>
+                <Button variant="outline" onClick={resetErrorBoundary}>
+                  <IconRefresh /> {m.common_retry()}
+                </Button>
+              </div>
+            )}
+          >
+            <Suspense
+              fallback={<Skeleton className="h-64 w-full rounded-md" />}
+            >
+              <HistoryLog search={loadedQuery} stale={loadedQuery !== query} />
+            </Suspense>
+          </ErrorBoundary>
+        )}
+      </QueryErrorResetBoundary>
     </div>
   );
 }
+
+type HistoryLogProps = {
+  search: string | undefined;
+  /** a newer search is loading, so these rows are dimmed until it lands */
+  stale: boolean;
+};
 
 /**
  * The log's layout follows its own width, since the admin sidebar takes a
  * varying share of the screen.
  */
-function HistoryLog({ search }: { search: string | undefined }) {
-  const {
-    status,
-    data,
-    isPlaceholderData,
-    hasNextPage,
-    fetchNextPage,
-    isFetchingNextPage,
-  } = useInfiniteQuery(cosmoLinkHistoryQuery(search));
+function HistoryLog({ search, stale }: HistoryLogProps) {
+  const { data, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useSuspenseInfiniteQuery(cosmoLinkHistoryQuery(search));
+  const rows = data.pages.flatMap((page) => page.rows);
+  const numbers = new Intl.NumberFormat(getLocale());
 
-  switch (status) {
-    case "pending":
-      return <Skeleton className="h-64 w-full rounded-md" />;
-    case "error":
-      return (
-        <p className="text-sm text-destructive">
-          {m.admin_accounts_history_error()}
-        </p>
-      );
-    case "success": {
-      const rows = data.pages.flatMap((page) => page.rows);
-      const numbers = new Intl.NumberFormat(getLocale());
+  return (
+    <div
+      className={cn(
+        "@container overflow-hidden rounded-md border bg-card text-sm transition-opacity max-md:-mx-4 max-md:rounded-none max-md:border-x-0",
+        stale && "opacity-60",
+      )}
+    >
+      {rows.length === 0 ? (
+        <Empty className="p-8">
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <IconHistory />
+            </EmptyMedia>
+            <EmptyTitle className="text-base">
+              {search === undefined
+                ? m.admin_accounts_history_empty()
+                : m.admin_accounts_history_empty_search()}
+            </EmptyTitle>
+          </EmptyHeader>
+        </Empty>
+      ) : (
+        <>
+          <HistoryTable>
+            {rows.map((entry) => (
+              <HistoryRow key={entry.id} entry={entry} />
+            ))}
+          </HistoryTable>
 
-      return (
-        <div
-          className={cn(
-            "@container overflow-hidden rounded-md border bg-card text-sm transition-opacity max-md:-mx-4 max-md:rounded-none max-md:border-x-0",
-            isPlaceholderData && "opacity-60",
-          )}
-        >
-          {rows.length === 0 ? (
-            <Empty className="p-8">
-              <EmptyHeader>
-                <EmptyMedia variant="icon">
-                  <IconHistory />
-                </EmptyMedia>
-                <EmptyTitle className="text-base">
-                  {search === undefined
-                    ? m.admin_accounts_history_empty()
-                    : m.admin_accounts_history_empty_search()}
-                </EmptyTitle>
-              </EmptyHeader>
-            </Empty>
-          ) : (
-            <>
-              <HistoryTable>
-                {rows.map((entry) => (
-                  <HistoryRow key={entry.id} entry={entry} />
-                ))}
-              </HistoryTable>
-
-              <div className="flex items-center gap-2 px-4 py-2.5">
-                <span className="text-xs text-muted-foreground tabular-nums">
-                  {m.admin_accounts_history_showing({
-                    loaded: numbers.format(rows.length),
-                    total: numbers.format(data.pages[0]?.total ?? rows.length),
-                  })}
-                </span>
-                {hasNextPage && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="ml-auto"
-                    onClick={() => void fetchNextPage()}
-                    disabled={isFetchingNextPage}
-                  >
-                    <span>{m.admin_accounts_history_older()}</span>
-                    {isFetchingNextPage && (
-                      <IconLoader2 className="animate-spin" />
-                    )}
-                  </Button>
-                )}
-              </div>
-            </>
-          )}
-        </div>
-      );
-    }
-  }
+          <div className="flex items-center gap-2 px-4 py-2.5">
+            <span className="text-xs text-muted-foreground tabular-nums">
+              {m.admin_accounts_history_showing({
+                loaded: numbers.format(rows.length),
+                total: numbers.format(data.pages[0]?.total ?? rows.length),
+              })}
+            </span>
+            {hasNextPage && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="ml-auto"
+                onClick={() => void fetchNextPage()}
+                disabled={isFetchingNextPage}
+              >
+                <span>{m.admin_accounts_history_older()}</span>
+                {isFetchingNextPage && <IconLoader2 className="animate-spin" />}
+              </Button>
+            )}
+          </div>
+        </>
+      )}
+    </div>
+  );
 }
 
 /**

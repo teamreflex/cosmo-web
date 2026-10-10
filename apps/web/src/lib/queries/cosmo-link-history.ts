@@ -1,10 +1,9 @@
 import { $fetchCosmoLinkHistory } from "@/lib/functions/cosmo-link-history";
-import { infiniteQueryOptions, keepPreviousData } from "@tanstack/react-query";
+import { infiniteQueryOptions } from "@tanstack/react-query";
 
 /**
  * The history grows with every link anywhere on the site, so it is refetched
- * whenever it's shown. A changed search keeps the previous rows on screen
- * until its own arrive.
+ * whenever it's shown.
  */
 export function cosmoLinkHistoryQuery(search: string | undefined) {
   return infiniteQueryOptions({
@@ -14,7 +13,6 @@ export function cosmoLinkHistoryQuery(search: string | undefined) {
     // SAFETY: cursor seed; widened for TanStack Query inference
     initialPageParam: undefined as number | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
-    placeholderData: keepPreviousData,
     staleTime: 0,
   });
 }
