@@ -146,6 +146,8 @@ Before each chunk's collection upsert, `mirrorImages` (`src/images.ts`) mirrors 
 
 `collection_stats` holds each collection's `objekt_count` (every objekt row, spun included) and `spun_count` (rows owned by `Addresses.SPIN`) for apps/web's mint-count sorts. Triggers on `objekt` maintain it (migration `1791327933173-Data.js`): inserts and deletes adjust both counts, and owner changes to or from spin adjust `spun_count`. The processor never reads or writes it, so hot-block rollbacks and hand-run repairs to `objekt` stay counted without any TypeScript changes. A collection's row exists only while it has objekts.
 
+`collection_market_stats` holds the floor (USD), listing count and latest listing time of each collection's priced sale listings, keyed by `collection_id` (migration `1791625636889-Data.js`). apps/schedules' `sync-market-stats` owns it: every minute it upserts changed rows from the web DB and deletes the rows of collections no longer listed, so a row exists only while its collection is listed. apps/web's `/market` inner-joins it to `collection` to filter, sort and page in one query, with one index per sort. The processor never touches it.
+
 ## Key Files
 
 - `schema.graphql` — source of truth for entity definitions; TypeORM entities in `src/model/generated/` are manually kept in sync with it (do not regenerate)
