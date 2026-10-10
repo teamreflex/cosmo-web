@@ -2,7 +2,7 @@
   "type": "diff",
   "version": "9",
   "dialect": "postgres",
-  "id": "d001a897-6b4a-42fb-9981-16ead7d5f489",
+  "id": "0a49c919-18c6-4645-84da-0f921bf9eec6",
   "prevIds": [
     "13d4b262-7e11-4270-a42c-e8a8d62d35f8"
   ],
@@ -1968,6 +1968,22 @@
         "table": "trade_offers",
         "name": "created_at",
         "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "updated_at",
+        "type": "timestamp(3) with time zone",
         "typeSchema": null,
         "notNull": true,
         "dimensions": 0,

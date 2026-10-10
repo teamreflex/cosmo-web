@@ -90,6 +90,7 @@ CREATE TABLE "trade_offers" (
 	"dispute_report_id" uuid,
 	"note" varchar(500),
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp(3) with time zone DEFAULT now() NOT NULL,
 	"expires_at" timestamp with time zone,
 	"accepted_at" timestamp with time zone,
 	"ended_at" timestamp with time zone,

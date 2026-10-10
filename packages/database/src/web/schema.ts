@@ -691,6 +691,19 @@ export const tradeOffers = pgTable(
     }),
     note: varchar("note", { length: 500 }),
     createdAt: tradeTimestamp("created_at").notNull().defaultNow(),
+    /**
+     * Moves on every update, so accepting can refuse a listing that changed
+     * after the claimer opened it. Millisecond precision, so the value
+     * survives a round trip through a JS Date.
+     */
+    updatedAt: timestamp("updated_at", {
+      mode: "date",
+      withTimezone: true,
+      precision: 3,
+    })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
     expiresAt: tradeTimestamp("expires_at"),
     acceptedAt: tradeTimestamp("accepted_at"),
     endedAt: tradeTimestamp("ended_at"),
