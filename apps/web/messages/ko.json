@@ -1300,7 +1300,7 @@
   "objekt_metadata_market_price": "중앙값",
   "objekt_metadata_max_price": "최고가",
   "objekt_metadata_listing_count": "매물 수",
-  "objekt_metadata_pricing_empty": "시장 가격을 계산하기에 충분한 매물이 없습니다.",
+  "objekt_metadata_pricing_empty": "아직 이 컬렉션을 가격과 함께 등록한 사람이 없습니다.",
   "objekt_metadata_pricing_updated": "{when} 업데이트됨",
   "objekt_metadata_pricing_source": "다른 사용자가 오브젝트 목록에서 설정한 가격을 기반으로 합니다.",
   "objekt_metadata_history_floor": "최저가",

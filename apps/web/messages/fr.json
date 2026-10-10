@@ -1319,7 +1319,7 @@
   "objekt_metadata_market_price": "Médiane",
   "objekt_metadata_max_price": "Le plus haut",
   "objekt_metadata_listing_count": "Annonces",
-  "objekt_metadata_pricing_empty": "Pas assez d'annonces pour calculer un prix du marché.",
+  "objekt_metadata_pricing_empty": "Personne n'a encore mis cette collection en vente avec un prix.",
   "objekt_metadata_pricing_updated": "Mis à jour {when}",
   "objekt_metadata_pricing_source": "Basé sur les prix définis par d'autres utilisateurs dans leurs listes d'objekts.",
   "objekt_metadata_history_floor": "Prix plancher",
