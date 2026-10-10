@@ -1,3 +1,4 @@
+import { useDisplayCurrency } from "@/hooks/use-display-currency";
 import { useUserState } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
@@ -204,6 +205,7 @@ function RegularForm({ onCreated }: FormProps) {
 }
 
 function SaleForm({ onCreated }: FormProps) {
+  const { currency } = useDisplayCurrency();
   const mutation = useMutation({
     mutationFn: $createObjektList,
     onError: (error) => {
@@ -216,7 +218,7 @@ function SaleForm({ onCreated }: FormProps) {
       type: "sale",
       name: "",
       description: undefined,
-      currency: "",
+      currency,
     },
   });
 
