@@ -24,6 +24,7 @@ import { randomBytes } from "node:crypto";
 import { clearBinderPinCache } from "./binders.server";
 import { recordCosmoLinkChanges } from "./cosmo-accounts.server";
 import { db, type DbOrTx, type WebTx } from "./db";
+import { closeOpenOffers, liveTradesBlocker } from "./trades.server";
 import { clearVerification } from "./verification-codes.server";
 
 type BlockerCheck = (
@@ -35,7 +36,7 @@ type BlockerCheck = (
  * Each check returns a blocker or null, and deletion is refused while any
  * returns one.
  */
-const blockerChecks: readonly BlockerCheck[] = [];
+const blockerChecks: readonly BlockerCheck[] = [liveTradesBlocker];
 
 /**
  * Whether the user may delete their account right now. The checks run one
@@ -174,11 +175,12 @@ export async function deleteAccount(
 
 /**
  * Unlink the user's COSMO account, recording it in the link history, delete
- * what the user row's foreign keys don't reach, then delete the row and let
- * them cascade to sessions, credentials, API keys, lists, binders and the
- * notifications they received or caused. Reports they filed keep a null
- * reporter, and the audit tables keep their id. Returns the COSMO link the
- * user had, whose pin cache the caller clears after commit.
+ * what the user row's foreign keys don't reach, close their open listings and
+ * pending offers, then delete the row and let them cascade to sessions,
+ * credentials, API keys, lists, binders and the notifications they received
+ * or caused. Reports they filed keep a null reporter, past trades keep a null
+ * party, and the audit tables keep their id. Returns the COSMO link the user
+ * had, whose pin cache the caller clears after commit.
  */
 async function purgeAccount(tx: WebTx, userId: string): Promise<CosmoLink> {
   const [unlinked] = await tx
@@ -206,6 +208,8 @@ async function purgeAccount(tx: WebTx, userId: string): Promise<CosmoLink> {
       .where(eq(lockedObjekts.address, unlinked.address));
     await tx.delete(lists).where(eq(lists.userAddress, unlinked.address));
   }
+
+  await closeOpenOffers(tx, userId);
 
   // reset-password and deletion tokens, whose value is the user id
   await tx
