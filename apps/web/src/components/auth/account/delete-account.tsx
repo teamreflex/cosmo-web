@@ -28,13 +28,14 @@ import type { AccountErrorCode } from "@/lib/universal/errors/accounts";
 import { isExpectedError } from "@/lib/universal/errors/expected";
 import { IconLoader2, IconMailCheck, IconTrash } from "@tabler/icons-react";
 import {
+  QueryErrorResetBoundary,
   useMutation,
-  useQuery,
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { useRef, useState } from "react";
+import { Suspense, useRef, useState } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import { toast } from "sonner";
 import DeletionBlockerRows from "./deletion-blockers";
 
@@ -54,36 +55,41 @@ export default function DeleteAccount() {
       </DialogTrigger>
       {/* the content loads after opening, so the dialog takes focus rather than its close button */}
       <DialogContent ref={popupRef} initialFocus={popupRef}>
-        <DeleteAccountContent />
+        {/* inside the content, so the check suspends only the dialog's body */}
+        <QueryErrorResetBoundary>
+          {({ reset }) => (
+            <ErrorBoundary
+              onReset={reset}
+              fallbackRender={({ error }) => <CheckFailed error={error} />}
+            >
+              <Suspense fallback={<Pending />}>
+                <DeleteAccountContent />
+              </Suspense>
+            </ErrorBoundary>
+          )}
+        </QueryErrorResetBoundary>
       </DialogContent>
     </Dialog>
   );
 }
 
 /**
- * Mounted only while the dialog is open, so every open checks again and
- * starts from the confirmation.
+ * Mounted only while the dialog is open, so each open starts from the
+ * confirmation and checks again once the last answer is a second old.
  */
 function DeleteAccountContent() {
-  const check = useQuery(accountDeletionQuery);
+  const { data: check } = useSuspenseQuery(accountDeletionQuery);
 
-  switch (check.status) {
-    case "pending":
-      return <Pending />;
-    case "error":
-      return <CheckFailed error={check.error} />;
-    case "success":
-      if (check.data.status === "blocked") {
-        return <Blocked blockers={check.data.blockers} />;
-      }
-      switch (check.data.step) {
-        case "send-email":
-          return <SendEmail />;
-        case "delete":
-          return <DeleteNow />;
-        case "sign-in-again":
-          return <SignInAgain />;
-      }
+  if (check.status === "blocked") {
+    return <Blocked blockers={check.blockers} />;
+  }
+  switch (check.step) {
+    case "send-email":
+      return <SendEmail />;
+    case "delete":
+      return <DeleteNow />;
+    case "sign-in-again":
+      return <SignInAgain />;
   }
 }
 
@@ -200,7 +206,7 @@ function Pending() {
   );
 }
 
-function CheckFailed({ error }: { error: Error }) {
+function CheckFailed({ error }: { error: unknown }) {
   return (
     <>
       <DialogHeader>
