@@ -34,38 +34,64 @@ type Props = {
 const DAY = 24 * 60 * 60 * 1000;
 
 /**
- * One chart row per snapshot on a time axis. Days without a snapshot get a
- * row with only `gapUsd`, which breaks the solid series there and carries the
- * floor across the gap as a faded dashed line instead.
+ * A snapshot with its prices in the display currency.
  */
-type Row = {
-  t: number;
-  floorUsd: number | null;
-  medianUsd: number | null;
-  listingCount: number | null;
-  gapUsd: number | null;
+type Snapshot = {
+  date: string;
+  floor: number;
+  median: number;
+  listingCount: number;
 };
 
 /**
- * Floor (area) and median (dashed line) in USD over listing counts (bars on
- * their own hidden axis, squashed into the bottom quarter of the plot), on a
- * time axis running up to today so missing days show as gaps.
+ * One chart row per snapshot on a time axis, prices in the display currency.
+ * Days without a snapshot get a row with only a gap value, which breaks the
+ * solid series there and carries the floor across the gap as a faded dashed
+ * line instead. Gaps alternate between two series, so the solid stretch
+ * between two gaps never gets a dashed line drawn over it.
+ */
+type Row = {
+  t: number;
+  floor: number | null;
+  median: number | null;
+  listingCount: number | null;
+  gapEven: number | null;
+  gapOdd: number | null;
+};
+
+type GapKey = "gapEven" | "gapOdd";
+
+/**
+ * Floor (area) and median (dashed line) over listing counts (bars on their
+ * own hidden axis, squashed into the bottom quarter of the plot), on a time
+ * axis running up to today so missing days show as gaps. Prices are converted
+ * before plotting so the axis picks round ticks in the display currency.
  */
 export default function PriceHistoryChart({ points }: Props) {
   // colons in a generated id break the url(#id) the fill references
   const gradientId = `floor-${useId().replace(/:/g, "")}`;
-  const { formatUsd } = useDisplayCurrency();
-  const rows = toRows(points, dayStart(new Date().toISOString()));
+  const { fromUsd, format } = useDisplayCurrency();
+  const rows = toRows(
+    points.map((point) => ({
+      date: point.date,
+      floor: fromUsd(point.floorUsd),
+      median: fromUsd(point.medianUsd),
+      listingCount: point.listingCount,
+    })),
+    dayStart(new Date().toISOString()),
+  );
   const start = rows[0]?.t ?? 0;
   const end = rows[rows.length - 1]?.t ?? 0;
-  const hasGaps = rows.some((row) => row.gapUsd !== null);
+  const gapKeys = (["gapEven", "gapOdd"] satisfies GapKey[]).filter((key) =>
+    rows.some((row) => row[key] !== null),
+  );
 
   const config = {
-    floorUsd: {
+    floor: {
       label: m.objekt_metadata_history_floor(),
       color: "var(--color-cosmo-text)",
     },
-    medianUsd: {
+    median: {
       label: m.objekt_metadata_market_price(),
       color: "var(--color-muted-foreground)",
     },
@@ -73,7 +99,7 @@ export default function PriceHistoryChart({ points }: Props) {
       label: m.objekt_metadata_listing_count(),
       color: "var(--color-muted)",
     },
-    gapUsd: {
+    gapEven: {
       label: m.objekt_metadata_history_gap(),
       color: "color-mix(in oklab, var(--color-cosmo-text) 45%, transparent)",
     },
@@ -85,9 +111,9 @@ export default function PriceHistoryChart({ points }: Props) {
    */
   function dot({ index, cx, cy, stroke }: DotItemDotProps) {
     const isolated =
-      rows[index]?.floorUsd != null &&
-      rows[index - 1]?.floorUsd == null &&
-      rows[index + 1]?.floorUsd == null;
+      rows[index]?.floor != null &&
+      rows[index - 1]?.floor == null &&
+      rows[index + 1]?.floor == null;
     if (points.length >= SPARSE_PRICE_HISTORY && !isolated) return null;
     return (
       <Dot
@@ -111,12 +137,12 @@ export default function PriceHistoryChart({ points }: Props) {
           <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
             <stop
               offset="0%"
-              stopColor="var(--color-floorUsd)"
+              stopColor="var(--color-floor)"
               stopOpacity={0.28}
             />
             <stop
               offset="100%"
-              stopColor="var(--color-floorUsd)"
+              stopColor="var(--color-floor)"
               stopOpacity={0}
             />
           </linearGradient>
@@ -128,7 +154,7 @@ export default function PriceHistoryChart({ points }: Props) {
           cursor={{ strokeDasharray: "3 3" }}
           content={({ active, payload, label }) =>
             // gap rows have no snapshot to show
-            rows.some((row) => row.t === label && row.floorUsd !== null) ? (
+            rows.some((row) => row.t === label && row.floor !== null) ? (
               <ChartTooltipContent
                 active={active}
                 payload={payload}
@@ -149,7 +175,7 @@ export default function PriceHistoryChart({ points }: Props) {
                         {name === "listingCount" ? (
                           Number(value)
                         ) : (
-                          <ApproxPrice price={formatUsd(Number(value))} />
+                          <ApproxPrice price={format(Number(value))} />
                         )}
                       </span>
                     </div>
@@ -176,7 +202,7 @@ export default function PriceHistoryChart({ points }: Props) {
           tickFormatter={(t: number) => formatDay(isoDay(t))}
         />
         <YAxis
-          yAxisId="usd"
+          yAxisId="price"
           // sized to the labels, which vary with the viewer's currency
           width="auto"
           tickLine={false}
@@ -184,7 +210,7 @@ export default function PriceHistoryChart({ points }: Props) {
           domain={["auto", "auto"]}
           // keeps the lines clear of the listing bars along the bottom
           padding={{ top: 4, bottom: 40 }}
-          tickFormatter={(usd: number) => formatUsd(usd).text}
+          tickFormatter={(amount: number) => format(amount).text}
         />
         {/* hidden, but still on the right so it doesn't reserve left gutter */}
         <YAxis
@@ -195,10 +221,10 @@ export default function PriceHistoryChart({ points }: Props) {
         />
 
         <Area
-          yAxisId="usd"
-          dataKey="floorUsd"
+          yAxisId="price"
+          dataKey="floor"
           type="monotone"
-          stroke="var(--color-floorUsd)"
+          stroke="var(--color-floor)"
           strokeWidth={2}
           fill={`url(#${gradientId})`}
           dot={dot}
@@ -206,10 +232,10 @@ export default function PriceHistoryChart({ points }: Props) {
           isAnimationActive={false}
         />
         <Line
-          yAxisId="usd"
-          dataKey="medianUsd"
+          yAxisId="price"
+          dataKey="median"
           type="monotone"
-          stroke="var(--color-medianUsd)"
+          stroke="var(--color-median)"
           strokeWidth={1.5}
           strokeDasharray="4 4"
           dot={dot}
@@ -225,20 +251,23 @@ export default function PriceHistoryChart({ points }: Props) {
           radius={1}
           isAnimationActive={false}
         />
-        {hasGaps && (
+        {gapKeys.map((key, i) => (
           <Line
-            yAxisId="usd"
-            dataKey="gapUsd"
+            key={key}
+            yAxisId="price"
+            dataKey={key}
             type="linear"
-            stroke="var(--color-gapUsd)"
+            stroke="var(--color-gapEven)"
             strokeWidth={2}
             strokeDasharray="2 5"
             dot={false}
             activeDot={false}
             tooltipType="none"
+            // one legend entry covers both
+            legendType={i === 0 ? "line" : "none"}
             isAnimationActive={false}
           />
-        )}
+        ))}
 
         <ChartLegend
           // in series order rather than by key
@@ -256,32 +285,53 @@ export default function PriceHistoryChart({ points }: Props) {
  * Chart rows for the snapshots, with a gap row after each run of days and,
  * when the latest snapshot is older than yesterday, one for today.
  */
-function toRows(points: PriceHistoryPoint[], today: number) {
+function toRows(snapshots: Snapshot[], today: number) {
   const rows: Row[] = [];
-  let prev: { row: Row; floorUsd: number } | undefined;
+  let prev: { row: Row; floor: number } | undefined;
+  let gaps = 0;
 
-  for (const { date, ...values } of points) {
-    const row: Row = { t: dayStart(date), ...values, gapUsd: null };
+  function nextGapKey(): GapKey {
+    gaps += 1;
+    return gaps % 2 === 1 ? "gapEven" : "gapOdd";
+  }
+
+  for (const { date, ...values } of snapshots) {
+    const row: Row = {
+      t: dayStart(date),
+      ...values,
+      gapEven: null,
+      gapOdd: null,
+    };
     if (prev !== undefined && row.t - prev.row.t > DAY) {
-      const slope = (values.floorUsd - prev.floorUsd) / (row.t - prev.row.t);
-      prev.row.gapUsd = prev.floorUsd;
-      rows.push(gapRow(prev.row.t + DAY, prev.floorUsd + slope * DAY));
-      row.gapUsd = values.floorUsd;
+      const key = nextGapKey();
+      const slope = (values.floor - prev.floor) / (row.t - prev.row.t);
+      prev.row[key] = prev.floor;
+      rows.push(gapRow(prev.row.t + DAY, key, prev.floor + slope * DAY));
+      row[key] = values.floor;
     }
     rows.push(row);
-    prev = { row, floorUsd: values.floorUsd };
+    prev = { row, floor: values.floor };
   }
 
   if (prev !== undefined && today - prev.row.t > DAY) {
-    prev.row.gapUsd = prev.floorUsd;
-    rows.push(gapRow(today, prev.floorUsd));
+    const key = nextGapKey();
+    prev.row[key] = prev.floor;
+    rows.push(gapRow(today, key, prev.floor));
   }
 
   return rows;
 }
 
-function gapRow(t: number, gapUsd: number): Row {
-  return { t, floorUsd: null, medianUsd: null, listingCount: null, gapUsd };
+function gapRow(t: number, key: GapKey, value: number): Row {
+  return {
+    t,
+    floor: null,
+    median: null,
+    listingCount: null,
+    gapEven: null,
+    gapOdd: null,
+    [key]: value,
+  };
 }
 
 /**

@@ -5,8 +5,9 @@ import { formatConvertedPrice } from "@/lib/utils";
 import { useSuspenseQuery } from "@tanstack/react-query";
 
 /**
- * The currency prices are shown in and a formatter from USD into it. Signed
- * out viewers and a currency whose rate is missing fall back to USD.
+ * The currency prices are shown in, a converter from USD into it, and
+ * formatters for amounts in either. Signed out viewers and a currency whose
+ * rate is missing fall back to USD.
  */
 export function useDisplayCurrency() {
   const { data: account } = useSuspenseQuery(currentAccountQuery);
@@ -15,11 +16,14 @@ export function useDisplayCurrency() {
     account?.fxRateToUsd != null
       ? { currency: account.user.currency, rate: account.fxRateToUsd }
       : { currency: DEFAULT_CURRENCY, rate: 1 };
+  const format = (amount: number) =>
+    formatConvertedPrice(amount, currency, getLocale());
 
   return {
     currency,
-    formatUsd: (usd: number) =>
-      formatConvertedPrice(usd / rate, currency, getLocale()),
+    fromUsd: (usd: number) => usd / rate,
+    format,
+    formatUsd: (usd: number) => format(usd / rate),
   };
 }
 
