@@ -855,8 +855,10 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
       throw new ExpectedError("not_live_list");
     }
 
-    // my side of the trade pair: the anchor and the list it's paired with,
-    // so partner matches are pair against pair
+    /**
+     * My side of the trade pair: the anchor and the list it's paired with,
+     * so partner matches are pair against pair.
+     */
     const [myWantListId, myHaveListId] =
       myList.type === "want"
         ? [myList.id, myList.linkingHaveList?.id ?? null]
@@ -865,8 +867,10 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
       throw new ExpectedError("anchor_not_trade_active");
     }
 
-    // every other user's trade pair: a discoverable have list and the
-    // discoverable want list it's paired with
+    /**
+     * Every other user's trade pair: a discoverable have list and the
+     * discoverable want list it's paired with.
+     */
     const h = alias(objektLists, "h");
     const w = alias(objektLists, "w");
     const theyHaveIWant = sharedCollections(h.id, myWantListId);

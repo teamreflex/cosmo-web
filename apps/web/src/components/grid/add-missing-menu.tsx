@@ -21,8 +21,6 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
 type Props = {
-  member: string;
-  season: string;
   deficits: EditionLedger["deficits"];
   label: string;
 };
