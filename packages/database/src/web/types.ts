@@ -32,6 +32,18 @@ export type ObjektListEntry = typeof objektListEntries.$inferSelect;
 export type Binder = typeof binders.$inferSelect;
 export type BinderEntry = typeof binderEntries.$inferSelect;
 export type Notification = typeof notifications.$inferSelect;
+
+/**
+ * A notification to insert. Every type names an actor, a list and a
+ * collection (notifications_subject_chk).
+ */
+export type NewNotification = {
+  type: "trade_have" | "trade_want";
+  userId: string;
+  actorId: string;
+  listId: string;
+  collectionId: string;
+};
 export type CosmoToken = typeof cosmoTokens.$inferSelect;
 export type Gravity = typeof gravities.$inferSelect;
 export type GravityPoll = typeof gravityPolls.$inferSelect;
