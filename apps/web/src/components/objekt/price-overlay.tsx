@@ -64,7 +64,7 @@ export default function PriceOverlay({
           onClick={action.onClick}
           aria-label={action.label}
           aria-describedby={contentId}
-          className="pointer-events-auto -mx-1.5 -mb-1 flex min-w-0 flex-1 cursor-pointer rounded-md px-1.5 py-1 text-left outline-none hover:bg-current/10 focus-visible:ring-2 focus-visible:ring-current"
+          className="pointer-events-auto -mx-1.5 -mb-1 flex max-w-full min-w-0 cursor-pointer rounded-md px-1.5 py-1 text-left transition-colors outline-none hover:bg-current/10 focus-visible:ring-2 focus-visible:ring-current"
         >
           <PriceContent
             id={contentId}

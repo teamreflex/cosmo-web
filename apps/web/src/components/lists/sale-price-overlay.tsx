@@ -79,7 +79,7 @@ export default function SalePriceOverlay({
         price={
           <span
             title={m.list_sale_add_price()}
-            className="inline-flex h-6 max-w-full items-center gap-1 rounded-md border border-dashed border-current/55 bg-black/25 px-1.5 font-sans text-xxs font-semibold @[180px]:h-7 @[180px]:gap-1.5 @[180px]:px-2.5 @[180px]:text-xs"
+            className="inline-flex h-6 max-w-full items-center gap-0.5 rounded-md border border-dashed border-current/55 bg-black/25 px-1 font-sans text-xxs font-semibold @[180px]:h-7 @[180px]:gap-1.5 @[180px]:px-2.5 @[180px]:text-xs"
           >
             <IconPlus className="size-3 shrink-0" />
             <span className="truncate">{m.list_sale_add_price()}</span>
