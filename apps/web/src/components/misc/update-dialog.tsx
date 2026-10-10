@@ -80,6 +80,10 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2026-10-11",
+    changes: ["Fixed trade matching dropping transfers when over ~60 objekts"],
+  },
+  {
     date: "2026-10-07",
     changes: [
       "Binders now allow a maximum of 50 pages instead of 20, and pages can be reordered.",
