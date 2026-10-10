@@ -7,9 +7,8 @@ import {
   objektListEntries,
   objektLists,
 } from "@apollo/database/web/schema";
-import type { ListMatchPayload } from "@apollo/database/web/types";
 import { captureException } from "@sentry/bun";
-import { and, eq, exists, inArray, isNotNull, ne, sql } from "drizzle-orm";
+import { and, eq, exists, inArray, isNotNull, ne } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { db, type DbOrTx } from "../db";
 
@@ -123,7 +122,7 @@ export async function assertOwnsTokensMulti(
 type FireListAddNotificationArgs = {
   sourceUserId: string;
   sourceListId: string;
-  collections: { slug: string; collectionName: string }[];
+  slugs: string[];
 };
 
 /**
@@ -134,7 +133,7 @@ type FireListAddNotificationArgs = {
 export async function fireHaveAddNotifications(
   args: FireListAddNotificationArgs,
 ) {
-  if (args.collections.length === 0) return;
+  if (args.slugs.length === 0) return;
   await insertHaveAddNotifications(args).catch(captureException);
 }
 
@@ -146,7 +145,7 @@ export async function fireHaveAddNotifications(
 export async function fireWantAddNotifications(
   args: FireListAddNotificationArgs,
 ) {
-  if (args.collections.length === 0) return;
+  if (args.slugs.length === 0) return;
   await insertWantAddNotifications(args).catch(captureException);
 }
 
@@ -182,10 +181,7 @@ async function insertHaveAddNotifications(args: FireListAddNotificationArgs) {
       watcherWantEntry,
       and(
         eq(watcherWantEntry.objektListId, watcherWant.id),
-        inArray(
-          watcherWantEntry.collectionId,
-          args.collections.map((c) => c.slug),
-        ),
+        inArray(watcherWantEntry.collectionId, args.slugs),
       ),
     )
     .where(
@@ -214,7 +210,7 @@ async function insertHaveAddNotifications(args: FireListAddNotificationArgs) {
       ),
     );
 
-  await insertListMatches(args, watchers, "they_added_have");
+  await insertListMatches(args, watchers, "trade_have");
 }
 
 async function insertWantAddNotifications(args: FireListAddNotificationArgs) {
@@ -240,10 +236,7 @@ async function insertWantAddNotifications(args: FireListAddNotificationArgs) {
       watcherHaveEntry,
       and(
         eq(watcherHaveEntry.objektListId, watcherHave.id),
-        inArray(
-          watcherHaveEntry.collectionId,
-          args.collections.map((c) => c.slug),
-        ),
+        inArray(watcherHaveEntry.collectionId, args.slugs),
       ),
     )
     .where(
@@ -276,7 +269,7 @@ async function insertWantAddNotifications(args: FireListAddNotificationArgs) {
       ),
     );
 
-  await insertListMatches(args, watchers, "they_added_want");
+  await insertListMatches(args, watchers, "trade_want");
 }
 
 /**
@@ -316,47 +309,20 @@ async function fetchTradeActiveCollections(
 async function insertListMatches(
   args: FireListAddNotificationArgs,
   watchers: { userId: string; slug: string }[],
-  direction: ListMatchPayload["direction"],
+  type: "trade_have" | "trade_want",
 ) {
-  const collectionNameBySlug = new Map(
-    args.collections.map((c) => [c.slug, c.collectionName]),
-  );
-  const values = watchers.flatMap(({ userId, slug }) => {
-    const collectionName = collectionNameBySlug.get(slug);
-    if (collectionName === undefined) return [];
-    return [
-      {
+  if (watchers.length === 0) return;
+
+  await db
+    .insert(notifications)
+    .values(
+      watchers.map(({ userId, slug }) => ({
         userId,
-        type: "list_match" as const,
-        payload: {
-          sourceUserId: args.sourceUserId,
-          sourceListId: args.sourceListId,
-          collectionId: collectionName,
-          direction,
-        } satisfies ListMatchPayload,
-      },
-    ];
-  });
-  if (values.length === 0) return;
-
-  await db.insert(notifications).values(values).onConflictDoNothing();
-}
-
-/**
- * Delete the list_match notifications other users received about this user's
- * lists. Deleting an account calls it, so a rebuild of the notifications
- * table must keep it in step with the producers above.
- */
-export async function deleteListMatchNotificationsFrom(
-  executor: DbOrTx,
-  userId: string,
-) {
-  await executor
-    .delete(notifications)
-    .where(
-      and(
-        eq(notifications.type, "list_match"),
-        eq(sql`${notifications.payload}->>'sourceUserId'`, userId),
-      ),
-    );
+        type,
+        actorId: args.sourceUserId,
+        listId: args.sourceListId,
+        collectionId: slug,
+      })),
+    )
+    .onConflictDoNothing();
 }

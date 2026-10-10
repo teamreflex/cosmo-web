@@ -213,7 +213,6 @@ function HaveItem({ list, selected, onDone }: ItemProps) {
           objekts: eligible.map((s) => ({
             slug: s.collection.slug,
             collectionId: s.collection.id,
-            collectionName: s.collection.collectionId,
             tokenId: String(s.token.tokenId),
           })),
         },
@@ -254,7 +253,6 @@ function WantItem({ list, collections, onDone }: WantItemProps) {
           objektListId: list.id,
           objekts: collections.map((c) => ({
             slug: c.slug,
-            collectionName: c.collectionId,
           })),
         },
       }),

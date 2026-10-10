@@ -623,7 +623,7 @@ export const $addObjektsToHaveList = createServerFn({ method: "POST" })
 
     const verifiedAt = new Date().toISOString();
 
-    const { inserted, collections } = await db.transaction(async (tx) => {
+    const { inserted, slugs } = await db.transaction(async (tx) => {
       const list = await tx.query.objektLists.findFirst({
         where: { id: data.objektListId, userId },
         columns: { type: true, discoverable: true, linkedWantListId: true },
@@ -651,26 +651,20 @@ export const $addObjektsToHaveList = createServerFn({ method: "POST" })
         .returning();
 
       // a trade-active list notifies once per distinct collection that actually gained a serial
-      const collectionNames = new Map<string, string>();
+      const slugs = new Set<string>();
       if (list.discoverable && list.linkedWantListId !== null) {
-        const insertedTokenIds = new Set(inserted.map((r) => r.tokenId));
-        for (const o of data.objekts) {
-          if (insertedTokenIds.has(o.tokenId)) {
-            collectionNames.set(o.slug, o.collectionName);
-          }
+        for (const entry of inserted) {
+          slugs.add(entry.collectionId);
         }
       }
 
-      return { inserted: inserted.length, collections: collectionNames };
+      return { inserted: inserted.length, slugs };
     });
 
     await fireHaveAddNotifications({
       sourceUserId: userId,
       sourceListId: data.objektListId,
-      collections: [...collections].map(([slug, collectionName]) => ({
-        slug,
-        collectionName,
-      })),
+      slugs: [...slugs],
     });
 
     return { inserted };
@@ -756,7 +750,7 @@ export const $addObjektsToWantList = createServerFn({ method: "POST" })
       await fireWantAddNotifications({
         sourceUserId: userId,
         sourceListId: data.objektListId,
-        collections: objekts,
+        slugs: objekts.map((o) => o.slug),
       });
     }
 

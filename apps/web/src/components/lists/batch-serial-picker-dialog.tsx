@@ -182,7 +182,6 @@ function HaveBody({ list, sections, onClose }: HaveBodyProps) {
               .map((s) => ({
                 slug: section.collection.slug,
                 collectionId: section.collection.id,
-                collectionName: section.collection.collectionId,
                 tokenId: s.tokenId,
               })),
           ),

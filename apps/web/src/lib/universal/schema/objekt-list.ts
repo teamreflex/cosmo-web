@@ -119,7 +119,6 @@ export const addObjektsToHaveListSchema = z.object({
       z.object({
         slug: z.string(),
         collectionId: z.uuid(),
-        collectionName: z.string(),
         tokenId: z.string(),
       }),
     )
@@ -133,7 +132,6 @@ export const addObjektsToWantListSchema = z.object({
     .array(
       z.object({
         slug: z.string(),
-        collectionName: z.string(),
         // want-list entries stack, so one add can represent multiple copies
         quantity: z.number().int().min(1).max(100).default(1),
       }),
