@@ -17,6 +17,10 @@ import type {
   pins,
   reports,
   staffAudit,
+  tradeListingWants,
+  tradeMessages,
+  tradeOfferItems,
+  tradeOffers,
 } from "./schema";
 
 export type {
@@ -54,6 +58,10 @@ export type Event = typeof events.$inferSelect;
 export type Report = typeof reports.$inferSelect;
 export type StaffAudit = typeof staffAudit.$inferSelect;
 export type CosmoLinkAudit = typeof cosmoLinkAudit.$inferSelect;
+export type TradeOffer = typeof tradeOffers.$inferSelect;
+export type TradeOfferItem = typeof tradeOfferItems.$inferSelect;
+export type TradeListingWant = typeof tradeListingWants.$inferSelect;
+export type TradeMessage = typeof tradeMessages.$inferSelect;
 
 export interface EventWithEra extends Event {
   era: Era;
@@ -189,3 +197,145 @@ export type StaffAuditDetail =
       ownerId: string;
       enabled: boolean;
     };
+
+export const tradeOfferKinds = ["listing", "trade"] as const;
+export type TradeOfferKind = (typeof tradeOfferKinds)[number];
+
+/**
+ * Every listing and trade status, in one enum. `trade_offers_status_chk`
+ * ties each kind to its own subset below.
+ */
+export const tradeOfferStatuses = [
+  "open",
+  "claimed",
+  "filled",
+  "broken",
+  "removed",
+  "abandoned",
+  "pending",
+  "accepted",
+  "disputed",
+  "completed",
+  "cancelled",
+  "timed_out",
+  "declined",
+  "countered",
+  "stale",
+  "withdrawn",
+  "expired",
+] as const;
+export type TradeOfferStatus = (typeof tradeOfferStatuses)[number];
+
+/**
+ * A listing is open until claimed, and filled when its trade completes. It
+ * ends early when the poster withdraws it, it expires, an offered serial
+ * leaves the poster or turns untransferable (broken), staff remove it, or
+ * the poster abandons a claim.
+ */
+export const listingStatuses = [
+  "open",
+  "claimed",
+  "filled",
+  "withdrawn",
+  "expired",
+  "broken",
+  "removed",
+  "abandoned",
+] as const satisfies readonly TradeOfferStatus[];
+export type ListingStatus = (typeof listingStatuses)[number];
+
+/**
+ * A direct offer is pending until the recipient answers it; a trade from a
+ * listing starts accepted. `stale` is a pending offer whose serial moved.
+ */
+export const tradeStatuses = [
+  "pending",
+  "accepted",
+  "disputed",
+  "completed",
+  "cancelled",
+  "timed_out",
+  "declined",
+  "withdrawn",
+  "countered",
+  "expired",
+  "stale",
+] as const satisfies readonly TradeOfferStatus[];
+export type TradeStatus = (typeof tradeStatuses)[number];
+
+// a trade whose serials are reserved, which blocks either party's deletion
+export const liveTradeStatuses = [
+  "accepted",
+  "disputed",
+] as const satisfies readonly TradeStatus[];
+
+// statuses nothing leaves, which set `ended_at`
+export const endedStatuses = [
+  "filled",
+  "withdrawn",
+  "expired",
+  "broken",
+  "removed",
+  "abandoned",
+  "completed",
+  "cancelled",
+  "timed_out",
+  "declined",
+  "countered",
+  "stale",
+] as const satisfies readonly TradeOfferStatus[];
+
+// the poster (`from`) or the counterparty (`to`)
+export const tradeSides = ["from", "to"] as const;
+export type TradeSide = (typeof tradeSides)[number];
+
+export const tradeCancellers = ["from", "to", "staff"] as const;
+export type TradeCanceller = (typeof tradeCancellers)[number];
+
+export const tradeItemKinds = ["objekt", "payment"] as const;
+export type TradeItemKind = (typeof tradeItemKinds)[number];
+
+export const tradeWantKinds = ["exact", "range", "payment"] as const;
+export type TradeWantKind = (typeof tradeWantKinds)[number];
+
+export const tradeMessageKinds = ["text", "event"] as const;
+export type TradeMessageKind = (typeof tradeMessageKinds)[number];
+
+// how a listing with a payment side takes offers
+export const listingOfferModes = [
+  "price_or_offer",
+  "price_only",
+  "offer_only",
+] as const;
+export type ListingOfferMode = (typeof listingOfferModes)[number];
+
+export const paymentMethods = [
+  "paypal_ff",
+  "wise",
+  "bank_transfer",
+  "promptpay",
+  "kakaopay",
+  "toss",
+  "gcash",
+  "alipay",
+  "wechat_pay",
+  "venmo",
+] as const;
+export type PaymentMethod = (typeof paymentMethods)[number];
+
+/**
+ * A timeline event in a trade's message stream, rendered through i18n.
+ * Times are ISO strings, since the payload is stored as jsonb.
+ */
+export type TradeEvent =
+  | { type: "accepted" }
+  | { type: "item_transferred"; itemId: number; hash: string }
+  | { type: "marked_paid"; itemId: number }
+  | { type: "payment_confirmed"; itemId: number }
+  | { type: "completed" }
+  | { type: "cancelled"; by: TradeCanceller }
+  | { type: "disputed"; by: TradeSide; reportId: string }
+  | { type: "deadline_extended"; deadlineAt: string }
+  | { type: "timed_out"; abandoned: TradeSide[] }
+  | { type: "serial_moved"; tokenId: number }
+  | { type: "serial_untransferable"; tokenId: number };

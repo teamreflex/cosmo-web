@@ -2,17 +2,20 @@ import { inArray, isNull, sql } from "drizzle-orm";
 import {
   type AnyPgColumn,
   bigint,
+  bigserial,
   boolean,
   check,
   date,
   index,
   integer,
   jsonb,
+  numeric,
   pgEnum,
   pgTable,
   primaryKey,
   real,
   serial,
+  smallint,
   text,
   timestamp,
   uniqueIndex,
@@ -29,10 +32,23 @@ import {
   type StaffAuditAction,
   type StaffAuditDetail,
   type StaffAuditTargetType,
+  type TradeEvent,
   cosmoLinkEvents,
   cosmoLinkReasons,
+  endedStatuses,
+  listingOfferModes,
+  listingStatuses,
+  paymentMethods,
   reportStatuses,
   reportTargetTypes,
+  tradeCancellers,
+  tradeItemKinds,
+  tradeMessageKinds,
+  tradeOfferKinds,
+  tradeOfferStatuses,
+  tradeSides,
+  tradeStatuses,
+  tradeWantKinds,
 } from "./types";
 
 export * from "../auth";
@@ -54,6 +70,18 @@ export const reportTargetType = pgEnum("report_target_type", reportTargetTypes);
 export const reportStatus = pgEnum("report_status", reportStatuses);
 export const cosmoLinkEvent = pgEnum("cosmo_link_event", cosmoLinkEvents);
 export const cosmoLinkReason = pgEnum("cosmo_link_reason", cosmoLinkReasons);
+export const tradeOfferKind = pgEnum("trade_offer_kind", tradeOfferKinds);
+export const tradeOfferStatus = pgEnum(
+  "trade_offer_status",
+  tradeOfferStatuses,
+);
+export const tradeSide = pgEnum("trade_side", tradeSides);
+export const tradeCanceller = pgEnum("trade_canceller", tradeCancellers);
+export const tradeItemKind = pgEnum("trade_item_kind", tradeItemKinds);
+export const tradeWantKind = pgEnum("trade_want_kind", tradeWantKinds);
+export const tradeMessageKind = pgEnum("trade_message_kind", tradeMessageKinds);
+export const listingOfferMode = pgEnum("listing_offer_mode", listingOfferModes);
+export const paymentMethod = pgEnum("payment_method", paymentMethods);
 
 export const cosmoAccounts = pgTable(
   "cosmo_account",
@@ -597,6 +625,266 @@ export const staffAudit = pgTable(
     index("staff_audit_action_idx").on(t.action, t.id),
     index("staff_audit_report_idx").on(t.reportId),
     index("staff_audit_target_idx").on(t.targetType, t.targetId),
+  ],
+);
+// #endregion
+
+// #region Trades
+/**
+ * Inlines constant enum values into a check or index predicate, which
+ * drizzle-kit can't parameterise.
+ */
+function sqlValues(values: readonly string[]) {
+  return sql.raw(values.map((value) => `'${value}'`).join(", "));
+}
+
+const tradeTimestamp = (name: string) =>
+  timestamp(name, { mode: "date", withTimezone: true });
+
+/**
+ * Listings and the trades they turn into, plus direct offers, which are
+ * trades that start pending. `from` is the poster or the offer's sender, and
+ * `to` the claimer, buyer or recipient; a listing has no `to`. Both addresses
+ * are pinned when the row is created or accepted, and the drain compares
+ * transfers against them. Parties are set null when their account is
+ * deleted, which live trades block.
+ *
+ * The collection arrays copy the indexer's values verbatim for every objekt a
+ * listing offers, so the feed's filters run without crossing databases.
+ */
+export const tradeOffers = pgTable(
+  "trade_offers",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    kind: tradeOfferKind("kind").notNull(),
+    status: tradeOfferStatus("status").notNull(),
+    fromUserId: varchar("from_user_id", { length: 32 }).references(
+      () => user.id,
+      { onDelete: "set null" },
+    ),
+    toUserId: varchar("to_user_id", { length: 32 }).references(() => user.id, {
+      onDelete: "set null",
+    }),
+    fromAddress: citext("from_address", { length: 42 }).notNull(),
+    toAddress: citext("to_address", { length: 42 }),
+    // the offer a counter replies to
+    parentId: uuid("parent_id").references((): AnyPgColumn => tradeOffers.id, {
+      onDelete: "set null",
+    }),
+    // judged against the drain's chain-time watermark, not the clock
+    deadlineAt: tradeTimestamp("deadline_at"),
+    // listings with a payment side
+    offers: listingOfferMode("offers"),
+    slugs: varchar("slugs", { length: 255 }).array().notNull().default([]),
+    artists: varchar("artists", { length: 32 }).array().notNull().default([]),
+    seasons: varchar("seasons", { length: 32 }).array().notNull().default([]),
+    members: varchar("members", { length: 32 }).array().notNull().default([]),
+    classes: varchar("classes", { length: 8 }).array().notNull().default([]),
+    onOfflines: varchar("on_offlines", { length: 16 })
+      .array()
+      .notNull()
+      .default([]),
+    cancelledBy: tradeCanceller("cancelled_by"),
+    abandonedBy: tradeSide("abandoned_by").array(),
+    disputeReportId: uuid("dispute_report_id").references(() => reports.id, {
+      onDelete: "set null",
+    }),
+    note: varchar("note", { length: 500 }),
+    createdAt: tradeTimestamp("created_at").notNull().defaultNow(),
+    expiresAt: tradeTimestamp("expires_at"),
+    acceptedAt: tradeTimestamp("accepted_at"),
+    endedAt: tradeTimestamp("ended_at"),
+  },
+  (t) => [
+    // the feed, a backward scan for `order by created_at desc, id desc`
+    index("trade_offers_feed_idx")
+      .on(t.createdAt, t.id)
+      .where(sql`${t.kind} = 'listing' AND ${t.status} = 'open'`),
+    // Offering and Looking for narrow on any subset of these columns
+    index("trade_offers_feed_filters_idx")
+      .using(
+        "gin",
+        t.slugs,
+        t.artists,
+        t.seasons,
+        t.members,
+        t.classes,
+        t.onOfflines,
+      )
+      .where(sql`${t.kind} = 'listing' AND ${t.status} = 'open'`),
+    // my trades, sales pages, claim caps and the deletion check
+    index("trade_offers_from_user_idx").on(t.fromUserId, t.status),
+    index("trade_offers_to_user_idx").on(t.toUserId, t.status),
+    check(
+      "trade_offers_status_chk",
+      sql`CASE ${t.kind} WHEN 'listing' THEN ${t.status} IN (${sqlValues(listingStatuses)}) ELSE ${t.status} IN (${sqlValues(tradeStatuses)}) END`,
+    ),
+    check(
+      "trade_offers_listing_chk",
+      sql`${t.kind} = 'trade' OR num_nulls(${t.toUserId}, ${t.toAddress}, ${t.parentId}, ${t.deadlineAt}, ${t.acceptedAt}) = 5`,
+    ),
+    check(
+      "trade_offers_trade_chk",
+      sql`${t.kind} = 'listing' OR (${t.toAddress} IS NOT NULL AND ${t.offers} IS NULL AND ${t.note} IS NULL)`,
+    ),
+    check(
+      "trade_offers_accepted_chk",
+      sql`${t.status} NOT IN ('accepted', 'disputed', 'completed', 'timed_out') OR (${t.deadlineAt} IS NOT NULL AND ${t.acceptedAt} IS NOT NULL)`,
+    ),
+    check(
+      "trade_offers_ended_chk",
+      sql`(${t.status} IN (${sqlValues(endedStatuses)})) = (${t.endedAt} IS NOT NULL)`,
+    ),
+    check(
+      "trade_offers_cancelled_chk",
+      sql`(${t.status} = 'cancelled') = (${t.cancelledBy} IS NOT NULL)`,
+    ),
+    check(
+      "trade_offers_abandoned_chk",
+      sql`CASE WHEN ${t.status} = 'timed_out' THEN coalesce(cardinality(${t.abandonedBy}), 0) BETWEEN 1 AND 2 ELSE ${t.abandonedBy} IS NULL END`,
+    ),
+    check(
+      "trade_offers_disputed_chk",
+      sql`${t.status} <> 'disputed' OR ${t.disputeReportId} IS NOT NULL`,
+    ),
+  ],
+);
+
+/**
+ * Everything a listing or trade moves: serials and payments, each sent by
+ * one side. A listing's own serials are copied into its trade, keeping
+ * `listing_id`. `live` is set in the same statement as every status change
+ * and is only ever true on an accepted or disputed trade's serials, so a
+ * serial can be in one such trade at a time. Serials copy their collection's
+ * indexer values verbatim, like the listing arrays.
+ */
+export const tradeOfferItems = pgTable(
+  "trade_offer_items",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    offerId: uuid("offer_id")
+      .notNull()
+      .references(() => tradeOffers.id, { onDelete: "cascade" }),
+    // the listing a trade's serial came from
+    listingId: uuid("listing_id").references(() => tradeOffers.id, {
+      onDelete: "set null",
+    }),
+    sender: tradeSide("sender").notNull(),
+    kind: tradeItemKind("kind").notNull(),
+    // integer like pins and binder entries; the indexer's is text
+    tokenId: integer("token_id"),
+    slug: varchar("slug", { length: 255 }),
+    artist: varchar("artist", { length: 32 }),
+    member: varchar("member", { length: 32 }),
+    season: varchar("season", { length: 32 }),
+    class: varchar("class", { length: 8 }),
+    onOffline: varchar("on_offline", { length: 16 }),
+    amount: numeric("amount", { precision: 14, scale: 2 }),
+    currency: varchar("currency", { length: 3 }),
+    method: paymentMethod("method"),
+    live: boolean("live").notNull().default(false),
+    // chain time and hash of the transfer the drain matched
+    transferredAt: tradeTimestamp("transferred_at"),
+    txHash: varchar("tx_hash", { length: 66 }),
+    markedPaidAt: tradeTimestamp("marked_paid_at"),
+    confirmedAt: tradeTimestamp("confirmed_at"),
+  },
+  (t) => [
+    // one accepted trade per serial, which also makes a listing claimable once
+    uniqueIndex("trade_offer_items_live_token_idx")
+      .on(t.tokenId)
+      .where(sql`${t.live}`),
+    // the drain's lookup of every offer a transferred serial is part of
+    index("trade_offer_items_token_idx").on(t.tokenId),
+    index("trade_offer_items_offer_idx").on(t.offerId),
+    index("trade_offer_items_listing_idx").on(t.listingId),
+    check(
+      "trade_offer_items_objekt_chk",
+      sql`CASE ${t.kind} WHEN 'objekt' THEN num_nulls(${t.tokenId}, ${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}) = 0 AND num_nonnulls(${t.amount}, ${t.currency}, ${t.method}, ${t.markedPaidAt}, ${t.confirmedAt}) = 0 ELSE num_nonnulls(${t.tokenId}, ${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}, ${t.transferredAt}, ${t.txHash}) = 0 AND coalesce(${t.amount}, 0) > 0 AND ${t.currency} IS NOT NULL AND NOT ${t.live} END`,
+    ),
+    check(
+      "trade_offer_items_transfer_chk",
+      sql`(${t.transferredAt} IS NULL) = (${t.txHash} IS NULL)`,
+    ),
+  ],
+);
+
+/**
+ * What a listing asks for. Exact rows name a collection and copy its indexer
+ * values, range rows hold one array per column where an empty array matches
+ * any value, and the payment row prices the listing. The trade side is every
+ * exact and range row, all required.
+ */
+export const tradeListingWants = pgTable(
+  "trade_listing_wants",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    listingId: uuid("listing_id")
+      .notNull()
+      .references(() => tradeOffers.id, { onDelete: "cascade" }),
+    position: smallint("position").notNull(),
+    kind: tradeWantKind("kind").notNull(),
+    count: smallint("count"),
+    slug: varchar("slug", { length: 255 }),
+    artist: varchar("artist", { length: 32 }),
+    member: varchar("member", { length: 32 }),
+    season: varchar("season", { length: 32 }),
+    class: varchar("class", { length: 8 }),
+    onOffline: varchar("on_offline", { length: 16 }),
+    artists: varchar("artists", { length: 32 }).array(),
+    members: varchar("members", { length: 32 }).array(),
+    seasons: varchar("seasons", { length: 32 }).array(),
+    classes: varchar("classes", { length: 8 }).array(),
+    onOfflines: varchar("on_offlines", { length: 16 }).array(),
+    amount: numeric("amount", { precision: 14, scale: 2 }),
+    currency: varchar("currency", { length: 3 }),
+  },
+  (t) => [
+    uniqueIndex("trade_listing_wants_position_idx").on(
+      t.listingId,
+      t.position,
+    ),
+    // at most one payment side
+    uniqueIndex("trade_listing_wants_payment_idx")
+      .on(t.listingId)
+      .where(sql`${t.kind} = 'payment'`),
+    check(
+      "trade_listing_wants_shape_chk",
+      sql`CASE ${t.kind}
+        WHEN 'exact' THEN coalesce(${t.count}, 0) > 0 AND num_nulls(${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}) = 0 AND num_nonnulls(${t.artists}, ${t.members}, ${t.seasons}, ${t.classes}, ${t.onOfflines}, ${t.amount}, ${t.currency}) = 0
+        WHEN 'range' THEN coalesce(${t.count}, 0) > 0 AND num_nulls(${t.artists}, ${t.members}, ${t.seasons}, ${t.classes}, ${t.onOfflines}) = 0 AND num_nonnulls(${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}, ${t.amount}, ${t.currency}) = 0
+        ELSE coalesce(${t.amount}, 0) > 0 AND ${t.currency} IS NOT NULL AND num_nonnulls(${t.count}, ${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}, ${t.artists}, ${t.members}, ${t.seasons}, ${t.classes}, ${t.onOfflines}) = 0
+      END`,
+    ),
+  ],
+);
+
+/**
+ * A trade's chat and timeline in one stream. Text messages have a sender, or
+ * none once their account is deleted, and their body is blanked 14 days after
+ * the trade ends. Events are system or staff actions with a typed payload.
+ */
+export const tradeMessages = pgTable(
+  "trade_messages",
+  {
+    id: bigserial("id", { mode: "number" }).primaryKey(),
+    tradeId: uuid("trade_id")
+      .notNull()
+      .references(() => tradeOffers.id, { onDelete: "cascade" }),
+    senderId: varchar("sender_id", { length: 32 }).references(() => user.id, {
+      onDelete: "set null",
+    }),
+    kind: tradeMessageKind("kind").notNull(),
+    body: varchar("body", { length: 1000 }),
+    event: jsonb("event").$type<TradeEvent>(),
+    createdAt: tradeTimestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [
+    index("trade_messages_trade_idx").on(t.tradeId, t.id),
+    check(
+      "trade_messages_kind_chk",
+      sql`CASE ${t.kind} WHEN 'text' THEN ${t.event} IS NULL ELSE ${t.event} IS NOT NULL AND num_nonnulls(${t.body}, ${t.senderId}) = 0 END`,
+    ),
   ],
 );
 // #endregion

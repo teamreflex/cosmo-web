@@ -1,0 +1,2765 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "edb99533-8066-43c0-a71b-102139079139",
+  "prevIds": [
+    "13d4b262-7e11-4270-a42c-e8a8d62d35f8"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "listing_offer_mode"
+      ],
+      "writes": [
+        "s|enum|public.listing_offer_mode",
+        "n|enum|public.listing_offer_mode",
+        "e|enum|public.listing_offer_mode",
+        "n|type|public.listing_offer_mode"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "payment_method"
+      ],
+      "writes": [
+        "s|enum|public.payment_method",
+        "n|enum|public.payment_method",
+        "e|enum|public.payment_method",
+        "n|type|public.payment_method"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "trade_canceller"
+      ],
+      "writes": [
+        "s|enum|public.trade_canceller",
+        "n|enum|public.trade_canceller",
+        "e|enum|public.trade_canceller",
+        "n|type|public.trade_canceller"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "trade_item_kind"
+      ],
+      "writes": [
+        "s|enum|public.trade_item_kind",
+        "n|enum|public.trade_item_kind",
+        "e|enum|public.trade_item_kind",
+        "n|type|public.trade_item_kind"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "trade_message_kind"
+      ],
+      "writes": [
+        "s|enum|public.trade_message_kind",
+        "n|enum|public.trade_message_kind",
+        "e|enum|public.trade_message_kind",
+        "n|type|public.trade_message_kind"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "trade_offer_kind"
+      ],
+      "writes": [
+        "s|enum|public.trade_offer_kind",
+        "n|enum|public.trade_offer_kind",
+        "e|enum|public.trade_offer_kind",
+        "n|type|public.trade_offer_kind"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "trade_offer_status"
+      ],
+      "writes": [
+        "s|enum|public.trade_offer_status",
+        "n|enum|public.trade_offer_status",
+        "e|enum|public.trade_offer_status",
+        "n|type|public.trade_offer_status"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "trade_side"
+      ],
+      "writes": [
+        "s|enum|public.trade_side",
+        "n|enum|public.trade_side",
+        "e|enum|public.trade_side",
+        "n|type|public.trade_side"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "trade_want_kind"
+      ],
+      "writes": [
+        "s|enum|public.trade_want_kind",
+        "n|enum|public.trade_want_kind",
+        "e|enum|public.trade_want_kind",
+        "n|type|public.trade_want_kind"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "alter_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "cosmo_link_reason"
+      ],
+      "writes": [
+        "s|enum|public.cosmo_link_reason"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "alter_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "report_target_type"
+      ],
+      "writes": [
+        "s|enum|public.report_target_type"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_listing_wants"
+      ],
+      "writes": [
+        "s|tbl|public.trade_listing_wants",
+        "n|tbl|public.trade_listing_wants",
+        "e|tbl|public.trade_listing_wants",
+        "n|rel|public.trade_listing_wants",
+        "n|type|public.trade_listing_wants",
+        "n|rel|public.trade_listing_wants_pkey"
+      ],
+      "reads": [
+        "n|sch|public",
+        "n|enum|public.trade_want_kind"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_messages"
+      ],
+      "writes": [
+        "s|tbl|public.trade_messages",
+        "n|tbl|public.trade_messages",
+        "e|tbl|public.trade_messages",
+        "n|rel|public.trade_messages",
+        "n|type|public.trade_messages",
+        "n|rel|public.trade_messages_pkey"
+      ],
+      "reads": [
+        "n|sch|public",
+        "n|enum|public.trade_message_kind"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_offer_items"
+      ],
+      "writes": [
+        "s|tbl|public.trade_offer_items",
+        "n|tbl|public.trade_offer_items",
+        "e|tbl|public.trade_offer_items",
+        "n|rel|public.trade_offer_items",
+        "n|type|public.trade_offer_items",
+        "n|rel|public.trade_offer_items_pkey"
+      ],
+      "reads": [
+        "n|sch|public",
+        "n|enum|public.trade_side",
+        "n|enum|public.trade_item_kind",
+        "n|enum|public.payment_method"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_offers"
+      ],
+      "writes": [
+        "s|tbl|public.trade_offers",
+        "n|tbl|public.trade_offers",
+        "e|tbl|public.trade_offers",
+        "n|rel|public.trade_offers",
+        "n|type|public.trade_offers",
+        "n|rel|public.trade_offers_pkey"
+      ],
+      "reads": [
+        "n|sch|public",
+        "n|enum|public.trade_offer_kind",
+        "n|enum|public.trade_offer_status",
+        "n|enum|public.listing_offer_mode",
+        "n|enum|public.trade_canceller",
+        "n|enum|public.trade_side"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "cosmo_link_audit",
+        "staff_id"
+      ],
+      "writes": [
+        "s|col|public.cosmo_link_audit.staff_id",
+        "n|col|public.cosmo_link_audit.staff_id",
+        "e|col|public.cosmo_link_audit.staff_id"
+      ],
+      "reads": [
+        "n|tbl|public.cosmo_link_audit",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "trade_listing_wants",
+        "trade_listing_wants_position_idx"
+      ],
+      "writes": [
+        "s|idx|public.trade_listing_wants_position_idx",
+        "n|idx|public.trade_listing_wants_position_idx",
+        "e|idx|public.trade_listing_wants_position_idx",
+        "n|rel|public.trade_listing_wants_position_idx"
+      ],
+      "reads": [
+        "n|tbl|public.trade_listing_wants",
+        "n|sch|public",
+        "n|col|public.trade_listing_wants.listing_id",
+        "n|col|public.trade_listing_wants.position"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "trade_listing_wants",
+        "trade_listing_wants_payment_idx"
+      ],
+      "writes": [
+        "s|idx|public.trade_listing_wants_payment_idx",
+        "n|idx|public.trade_listing_wants_payment_idx",
+        "e|idx|public.trade_listing_wants_payment_idx",
+        "n|rel|public.trade_listing_wants_payment_idx"
+      ],
+      "reads": [
+        "n|tbl|public.trade_listing_wants",
+        "n|sch|public",
+        "n|col|public.trade_listing_wants.listing_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "trade_messages",
+        "trade_messages_trade_idx"
+      ],
+      "writes": [
+        "s|idx|public.trade_messages_trade_idx",
+        "n|idx|public.trade_messages_trade_idx",
+        "e|idx|public.trade_messages_trade_idx",
+        "n|rel|public.trade_messages_trade_idx"
+      ],
+      "reads": [
+        "n|tbl|public.trade_messages",
+        "n|sch|public",
+        "n|col|public.trade_messages.trade_id",
+        "n|col|public.trade_messages.id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "trade_offer_items",
+        "trade_offer_items_live_token_idx"
+      ],
+      "writes": [
+        "s|idx|public.trade_offer_items_live_token_idx",
+        "n|idx|public.trade_offer_items_live_token_idx",
+        "e|idx|public.trade_offer_items_live_token_idx",
+        "n|rel|public.trade_offer_items_live_token_idx"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offer_items",
+        "n|sch|public",
+        "n|col|public.trade_offer_items.token_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "trade_offer_items",
+        "trade_offer_items_token_idx"
+      ],
+      "writes": [
+        "s|idx|public.trade_offer_items_token_idx",
+        "n|idx|public.trade_offer_items_token_idx",
+        "e|idx|public.trade_offer_items_token_idx",
+        "n|rel|public.trade_offer_items_token_idx"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offer_items",
+        "n|sch|public",
+        "n|col|public.trade_offer_items.token_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "trade_offer_items",
+        "trade_offer_items_offer_idx"
+      ],
+      "writes": [
+        "s|idx|public.trade_offer_items_offer_idx",
+        "n|idx|public.trade_offer_items_offer_idx",
+        "e|idx|public.trade_offer_items_offer_idx",
+        "n|rel|public.trade_offer_items_offer_idx"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offer_items",
+        "n|sch|public",
+        "n|col|public.trade_offer_items.offer_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "trade_offer_items",
+        "trade_offer_items_listing_idx"
+      ],
+      "writes": [
+        "s|idx|public.trade_offer_items_listing_idx",
+        "n|idx|public.trade_offer_items_listing_idx",
+        "e|idx|public.trade_offer_items_listing_idx",
+        "n|rel|public.trade_offer_items_listing_idx"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offer_items",
+        "n|sch|public",
+        "n|col|public.trade_offer_items.listing_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "trade_offers",
+        "trade_offers_feed_idx"
+      ],
+      "writes": [
+        "s|idx|public.trade_offers_feed_idx",
+        "n|idx|public.trade_offers_feed_idx",
+        "e|idx|public.trade_offers_feed_idx",
+        "n|rel|public.trade_offers_feed_idx"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|col|public.trade_offers.created_at",
+        "n|col|public.trade_offers.id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "trade_offers",
+        "trade_offers_feed_filters_idx"
+      ],
+      "writes": [
+        "s|idx|public.trade_offers_feed_filters_idx",
+        "n|idx|public.trade_offers_feed_filters_idx",
+        "e|idx|public.trade_offers_feed_filters_idx",
+        "n|rel|public.trade_offers_feed_filters_idx"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|col|public.trade_offers.slugs",
+        "n|col|public.trade_offers.artists",
+        "n|col|public.trade_offers.seasons",
+        "n|col|public.trade_offers.members",
+        "n|col|public.trade_offers.classes",
+        "n|col|public.trade_offers.on_offlines"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "trade_offers",
+        "trade_offers_from_user_idx"
+      ],
+      "writes": [
+        "s|idx|public.trade_offers_from_user_idx",
+        "n|idx|public.trade_offers_from_user_idx",
+        "e|idx|public.trade_offers_from_user_idx",
+        "n|rel|public.trade_offers_from_user_idx"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|col|public.trade_offers.from_user_id",
+        "n|col|public.trade_offers.status"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "trade_offers",
+        "trade_offers_to_user_idx"
+      ],
+      "writes": [
+        "s|idx|public.trade_offers_to_user_idx",
+        "n|idx|public.trade_offers_to_user_idx",
+        "e|idx|public.trade_offers_to_user_idx",
+        "n|rel|public.trade_offers_to_user_idx"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|col|public.trade_offers.to_user_id",
+        "n|col|public.trade_offers.status"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_listing_wants"
+      ],
+      "writes": [
+        "s|fk|public.trade_listing_wants.trade_listing_wants_listing_id_trade_offers_id_fkey",
+        "n|fk|public.trade_listing_wants.trade_listing_wants_listing_id_trade_offers_id_fkey",
+        "e|fk|public.trade_listing_wants.trade_listing_wants_listing_id_trade_offers_id_fkey",
+        "n|con|public.trade_listing_wants.trade_listing_wants_listing_id_trade_offers_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.trade_listing_wants",
+        "n|sch|public",
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|col|public.trade_listing_wants.listing_id",
+        "n|col|public.trade_offers.id",
+        "e|uniqueness|public.trade_offers.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_messages"
+      ],
+      "writes": [
+        "s|fk|public.trade_messages.trade_messages_trade_id_trade_offers_id_fkey",
+        "n|fk|public.trade_messages.trade_messages_trade_id_trade_offers_id_fkey",
+        "e|fk|public.trade_messages.trade_messages_trade_id_trade_offers_id_fkey",
+        "n|con|public.trade_messages.trade_messages_trade_id_trade_offers_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.trade_messages",
+        "n|sch|public",
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|col|public.trade_messages.trade_id",
+        "n|col|public.trade_offers.id",
+        "e|uniqueness|public.trade_offers.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_messages"
+      ],
+      "writes": [
+        "s|fk|public.trade_messages.trade_messages_sender_id_user_id_fkey",
+        "n|fk|public.trade_messages.trade_messages_sender_id_user_id_fkey",
+        "e|fk|public.trade_messages.trade_messages_sender_id_user_id_fkey",
+        "n|con|public.trade_messages.trade_messages_sender_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.trade_messages",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.trade_messages.sender_id",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_offer_items"
+      ],
+      "writes": [
+        "s|fk|public.trade_offer_items.trade_offer_items_offer_id_trade_offers_id_fkey",
+        "n|fk|public.trade_offer_items.trade_offer_items_offer_id_trade_offers_id_fkey",
+        "e|fk|public.trade_offer_items.trade_offer_items_offer_id_trade_offers_id_fkey",
+        "n|con|public.trade_offer_items.trade_offer_items_offer_id_trade_offers_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offer_items",
+        "n|sch|public",
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|col|public.trade_offer_items.offer_id",
+        "n|col|public.trade_offers.id",
+        "e|uniqueness|public.trade_offers.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_offer_items"
+      ],
+      "writes": [
+        "s|fk|public.trade_offer_items.trade_offer_items_listing_id_trade_offers_id_fkey",
+        "n|fk|public.trade_offer_items.trade_offer_items_listing_id_trade_offers_id_fkey",
+        "e|fk|public.trade_offer_items.trade_offer_items_listing_id_trade_offers_id_fkey",
+        "n|con|public.trade_offer_items.trade_offer_items_listing_id_trade_offers_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offer_items",
+        "n|sch|public",
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|col|public.trade_offer_items.listing_id",
+        "n|col|public.trade_offers.id",
+        "e|uniqueness|public.trade_offers.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_offers"
+      ],
+      "writes": [
+        "s|fk|public.trade_offers.trade_offers_from_user_id_user_id_fkey",
+        "n|fk|public.trade_offers.trade_offers_from_user_id_user_id_fkey",
+        "e|fk|public.trade_offers.trade_offers_from_user_id_user_id_fkey",
+        "n|con|public.trade_offers.trade_offers_from_user_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.trade_offers.from_user_id",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_offers"
+      ],
+      "writes": [
+        "s|fk|public.trade_offers.trade_offers_to_user_id_user_id_fkey",
+        "n|fk|public.trade_offers.trade_offers_to_user_id_user_id_fkey",
+        "e|fk|public.trade_offers.trade_offers_to_user_id_user_id_fkey",
+        "n|con|public.trade_offers.trade_offers_to_user_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.trade_offers.to_user_id",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_offers"
+      ],
+      "writes": [
+        "s|fk|public.trade_offers.trade_offers_parent_id_trade_offers_id_fkey",
+        "n|fk|public.trade_offers.trade_offers_parent_id_trade_offers_id_fkey",
+        "e|fk|public.trade_offers.trade_offers_parent_id_trade_offers_id_fkey",
+        "n|con|public.trade_offers.trade_offers_parent_id_trade_offers_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|col|public.trade_offers.parent_id",
+        "n|col|public.trade_offers.id",
+        "e|uniqueness|public.trade_offers.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_offers"
+      ],
+      "writes": [
+        "s|fk|public.trade_offers.trade_offers_dispute_report_id_reports_id_fkey",
+        "n|fk|public.trade_offers.trade_offers_dispute_report_id_reports_id_fkey",
+        "e|fk|public.trade_offers.trade_offers_dispute_report_id_reports_id_fkey",
+        "n|con|public.trade_offers.trade_offers_dispute_report_id_reports_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|tbl|public.reports",
+        "n|sch|public",
+        "n|col|public.trade_offers.dispute_report_id",
+        "n|col|public.reports.id",
+        "e|uniqueness|public.reports.id"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "cosmo_link_audit"
+      ],
+      "writes": [
+        "s|ck|public.cosmo_link_audit.cosmo_link_audit_staff_chk",
+        "n|ck|public.cosmo_link_audit.cosmo_link_audit_staff_chk",
+        "e|ck|public.cosmo_link_audit.cosmo_link_audit_staff_chk",
+        "n|con|public.cosmo_link_audit.cosmo_link_audit_staff_chk"
+      ],
+      "reads": [
+        "n|tbl|public.cosmo_link_audit",
+        "n|sch|public",
+        "n|col|public.cosmo_link_audit.reason",
+        "n|col|public.cosmo_link_audit.staff_id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "trade_listing_wants",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "trade_messages",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "trade_offer_items",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "trade_offers",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "listing_offer_mode",
+        "values": [
+          "price_or_offer",
+          "price_only",
+          "offer_only"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "payment_method",
+        "values": [
+          "paypal_ff",
+          "wise",
+          "bank_transfer",
+          "promptpay",
+          "kakaopay",
+          "toss",
+          "gcash",
+          "alipay",
+          "wechat_pay",
+          "venmo"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "trade_canceller",
+        "values": [
+          "from",
+          "to",
+          "staff"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "trade_item_kind",
+        "values": [
+          "objekt",
+          "payment"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "trade_message_kind",
+        "values": [
+          "text",
+          "event"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "trade_offer_kind",
+        "values": [
+          "listing",
+          "trade"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "trade_offer_status",
+        "values": [
+          "open",
+          "claimed",
+          "filled",
+          "broken",
+          "removed",
+          "abandoned",
+          "pending",
+          "accepted",
+          "disputed",
+          "completed",
+          "cancelled",
+          "timed_out",
+          "declined",
+          "countered",
+          "stale",
+          "withdrawn",
+          "expired"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "trade_side",
+        "values": [
+          "from",
+          "to"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "trade_want_kind",
+        "values": [
+          "exact",
+          "range",
+          "payment"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "cosmo_link_audit",
+        "name": "staff_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_wants",
+        "name": "id",
+        "type": "bigserial",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_wants",
+        "name": "listing_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_wants",
+        "name": "position",
+        "type": "smallint",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_wants",
+        "name": "kind",
+        "type": "trade_want_kind",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_wants",
+        "name": "count",
+        "type": "smallint",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_wants",
+        "name": "slug",
+        "type": "varchar(255)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_wants",
+        "name": "artist",
+        "type": "varchar(32)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_wants",
+        "name": "member",
+        "type": "varchar(32)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_wants",
+        "name": "season",
+        "type": "varchar(32)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_wants",
+        "name": "class",
+        "type": "varchar(8)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_wants",
+        "name": "on_offline",
+        "type": "varchar(16)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_wants",
+        "name": "artists",
+        "type": "varchar(32)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 1,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_wants",
+        "name": "members",
+        "type": "varchar(32)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 1,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_wants",
+        "name": "seasons",
+        "type": "varchar(32)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 1,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_wants",
+        "name": "classes",
+        "type": "varchar(8)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 1,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_wants",
+        "name": "on_offlines",
+        "type": "varchar(16)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 1,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_wants",
+        "name": "amount",
+        "type": "numeric(14,2)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_wants",
+        "name": "currency",
+        "type": "varchar(3)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_messages",
+        "name": "id",
+        "type": "bigserial",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_messages",
+        "name": "trade_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_messages",
+        "name": "sender_id",
+        "type": "varchar(32)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_messages",
+        "name": "kind",
+        "type": "trade_message_kind",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_messages",
+        "name": "body",
+        "type": "varchar(1000)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_messages",
+        "name": "event",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_messages",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "id",
+        "type": "bigserial",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "offer_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "listing_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "sender",
+        "type": "trade_side",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "kind",
+        "type": "trade_item_kind",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "token_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "slug",
+        "type": "varchar(255)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "artist",
+        "type": "varchar(32)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "member",
+        "type": "varchar(32)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "season",
+        "type": "varchar(32)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "class",
+        "type": "varchar(8)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "on_offline",
+        "type": "varchar(16)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "amount",
+        "type": "numeric(14,2)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "currency",
+        "type": "varchar(3)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "method",
+        "type": "payment_method",
+        "typeSchema": "public",
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "live",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "transferred_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "tx_hash",
+        "type": "varchar(66)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "marked_paid_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "confirmed_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "kind",
+        "type": "trade_offer_kind",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "status",
+        "type": "trade_offer_status",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "from_user_id",
+        "type": "varchar(32)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "to_user_id",
+        "type": "varchar(32)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "from_address",
+        "type": "citext",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "to_address",
+        "type": "citext",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "parent_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "deadline_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "offers",
+        "type": "listing_offer_mode",
+        "typeSchema": "public",
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "slugs",
+        "type": "varchar(255)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 1,
+        "default": "'{}'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "artists",
+        "type": "varchar(32)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 1,
+        "default": "'{}'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "seasons",
+        "type": "varchar(32)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 1,
+        "default": "'{}'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "members",
+        "type": "varchar(32)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 1,
+        "default": "'{}'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "classes",
+        "type": "varchar(8)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 1,
+        "default": "'{}'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "on_offlines",
+        "type": "varchar(16)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 1,
+        "default": "'{}'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "cancelled_by",
+        "type": "trade_canceller",
+        "typeSchema": "public",
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "abandoned_by",
+        "type": "trade_side",
+        "typeSchema": "public",
+        "notNull": false,
+        "dimensions": 1,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "dispute_report_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "note",
+        "type": "varchar(500)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "expires_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "accepted_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "ended_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_wants",
+        "name": "trade_listing_wants_position_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "listing_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "position",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_wants",
+        "name": "trade_listing_wants_payment_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "listing_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": "\"kind\" = 'payment'",
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_messages",
+        "name": "trade_messages_trade_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "trade_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "trade_offer_items_live_token_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "token_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": "\"live\"",
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "trade_offer_items_token_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "token_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "trade_offer_items_offer_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "offer_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "trade_offer_items_listing_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "listing_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "trade_offers_feed_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "created_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": "\"kind\" = 'listing' AND \"status\" = 'open'",
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "trade_offers_feed_filters_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "slugs",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "artists",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "seasons",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "members",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "classes",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "on_offlines",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": "\"kind\" = 'listing' AND \"status\" = 'open'",
+        "with": "",
+        "method": "gin",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "trade_offers_from_user_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "from_user_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "status",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "trade_offers_to_user_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "to_user_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "status",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_wants",
+        "name": "trade_listing_wants_listing_id_trade_offers_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "listing_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "trade_offers",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_messages",
+        "name": "trade_messages_trade_id_trade_offers_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "trade_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "trade_offers",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_messages",
+        "name": "trade_messages_sender_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "sender_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "trade_offer_items_offer_id_trade_offers_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "offer_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "trade_offers",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "trade_offer_items_listing_id_trade_offers_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "listing_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "trade_offers",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "trade_offers_from_user_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "from_user_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "trade_offers_to_user_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "to_user_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "trade_offers_parent_id_trade_offers_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "parent_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "trade_offers",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "trade_offers_dispute_report_id_reports_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "dispute_report_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "reports",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_wants",
+        "name": "trade_listing_wants_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_messages",
+        "name": "trade_messages_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "trade_offer_items_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "trade_offers_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "cosmo_link_audit",
+        "name": "cosmo_link_audit_staff_chk",
+        "value": "(\"reason\" = 'staff-move') = (\"staff_id\" IS NOT NULL)",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_wants",
+        "name": "trade_listing_wants_shape_chk",
+        "value": "CASE \"kind\"\n        WHEN 'exact' THEN coalesce(\"count\", 0) > 0 AND num_nulls(\"slug\", \"artist\", \"member\", \"season\", \"class\", \"on_offline\") = 0 AND num_nonnulls(\"artists\", \"members\", \"seasons\", \"classes\", \"on_offlines\", \"amount\", \"currency\") = 0\n        WHEN 'range' THEN coalesce(\"count\", 0) > 0 AND num_nulls(\"artists\", \"members\", \"seasons\", \"classes\", \"on_offlines\") = 0 AND num_nonnulls(\"slug\", \"artist\", \"member\", \"season\", \"class\", \"on_offline\", \"amount\", \"currency\") = 0\n        ELSE coalesce(\"amount\", 0) > 0 AND \"currency\" IS NOT NULL AND num_nonnulls(\"count\", \"slug\", \"artist\", \"member\", \"season\", \"class\", \"on_offline\", \"artists\", \"members\", \"seasons\", \"classes\", \"on_offlines\") = 0\n      END",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_messages",
+        "name": "trade_messages_kind_chk",
+        "value": "CASE \"kind\" WHEN 'text' THEN \"event\" IS NULL ELSE \"event\" IS NOT NULL AND num_nonnulls(\"body\", \"sender_id\") = 0 END",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "trade_offer_items_objekt_chk",
+        "value": "CASE \"kind\" WHEN 'objekt' THEN num_nulls(\"token_id\", \"slug\", \"artist\", \"member\", \"season\", \"class\", \"on_offline\") = 0 AND num_nonnulls(\"amount\", \"currency\", \"method\", \"marked_paid_at\", \"confirmed_at\") = 0 ELSE num_nonnulls(\"token_id\", \"slug\", \"artist\", \"member\", \"season\", \"class\", \"on_offline\", \"transferred_at\", \"tx_hash\") = 0 AND coalesce(\"amount\", 0) > 0 AND \"currency\" IS NOT NULL AND NOT \"live\" END",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "trade_offer_items_transfer_chk",
+        "value": "(\"transferred_at\" IS NULL) = (\"tx_hash\" IS NULL)",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "trade_offers_status_chk",
+        "value": "CASE \"kind\" WHEN 'listing' THEN \"status\" IN ('open', 'claimed', 'filled', 'withdrawn', 'expired', 'broken', 'removed', 'abandoned') ELSE \"status\" IN ('pending', 'accepted', 'disputed', 'completed', 'cancelled', 'timed_out', 'declined', 'withdrawn', 'countered', 'expired', 'stale') END",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "trade_offers_listing_chk",
+        "value": "\"kind\" = 'trade' OR num_nulls(\"to_user_id\", \"to_address\", \"parent_id\", \"deadline_at\", \"accepted_at\") = 5",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "trade_offers_trade_chk",
+        "value": "\"kind\" = 'listing' OR (\"to_address\" IS NOT NULL AND \"offers\" IS NULL AND \"note\" IS NULL)",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "trade_offers_accepted_chk",
+        "value": "\"status\" NOT IN ('accepted', 'disputed', 'completed', 'timed_out') OR (\"deadline_at\" IS NOT NULL AND \"accepted_at\" IS NOT NULL)",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "trade_offers_ended_chk",
+        "value": "(\"status\" IN ('filled', 'withdrawn', 'expired', 'broken', 'removed', 'abandoned', 'completed', 'cancelled', 'timed_out', 'declined', 'countered', 'stale')) = (\"ended_at\" IS NOT NULL)",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "trade_offers_cancelled_chk",
+        "value": "(\"status\" = 'cancelled') = (\"cancelled_by\" IS NOT NULL)",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "trade_offers_abandoned_chk",
+        "value": "CASE WHEN \"status\" = 'timed_out' THEN coalesce(cardinality(\"abandoned_by\"), 0) BETWEEN 1 AND 2 ELSE \"abandoned_by\" IS NULL END",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "trade_offers_disputed_chk",
+        "value": "\"status\" <> 'disputed' OR \"dispute_report_id\" IS NOT NULL",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "enums\u0000[\"public\",\"cosmo_link_reason\"]",
+      "set": {
+        "values": [
+          "verified",
+          "account-deleted",
+          "staff-move"
+        ]
+      }
+    },
+    {
+      "op": "alter",
+      "key": "enums\u0000[\"public\",\"report_target_type\"]",
+      "set": {
+        "values": [
+          "user",
+          "message",
+          "listing",
+          "feedback",
+          "trade"
+        ]
+      }
+    }
+  ]
+}

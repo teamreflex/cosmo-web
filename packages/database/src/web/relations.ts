@@ -214,6 +214,55 @@ export const relations = defineRelations(schema, (r) => ({
   },
   // #endregion
 
+  // #region Trades
+  tradeOffers: {
+    items: r.many.tradeOfferItems({
+      from: r.tradeOffers.id,
+      to: r.tradeOfferItems.offerId,
+    }),
+    wants: r.many.tradeListingWants(),
+    messages: r.many.tradeMessages(),
+    fromUser: r.one.user({
+      from: r.tradeOffers.fromUserId,
+      to: r.user.id,
+    }),
+    toUser: r.one.user({
+      from: r.tradeOffers.toUserId,
+      to: r.user.id,
+    }),
+    // the COSMO accounts behind the pinned addresses
+    fromCosmo: r.one.cosmoAccounts({
+      from: r.tradeOffers.fromAddress,
+      to: r.cosmoAccounts.address,
+    }),
+    toCosmo: r.one.cosmoAccounts({
+      from: r.tradeOffers.toAddress,
+      to: r.cosmoAccounts.address,
+    }),
+  },
+  tradeOfferItems: {
+    offer: r.one.tradeOffers({
+      from: r.tradeOfferItems.offerId,
+      to: r.tradeOffers.id,
+      optional: false,
+    }),
+  },
+  tradeListingWants: {
+    listing: r.one.tradeOffers({
+      from: r.tradeListingWants.listingId,
+      to: r.tradeOffers.id,
+      optional: false,
+    }),
+  },
+  tradeMessages: {
+    trade: r.one.tradeOffers({
+      from: r.tradeMessages.tradeId,
+      to: r.tradeOffers.id,
+      optional: false,
+    }),
+  },
+  // #endregion
+
   // #region Legacy
   lists: {
     entries: r.many.listEntries(),
