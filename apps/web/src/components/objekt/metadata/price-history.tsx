@@ -10,6 +10,7 @@ import {
   priceHistoryRangeDays,
   priceHistoryRanges,
 } from "@/lib/universal/objekts";
+import { cn, type PropsWithClassName } from "@/lib/utils";
 import type { ReactNode } from "react";
 import PriceDelta from "../price-delta";
 import PriceDisplay from "../price-display";
@@ -109,8 +110,9 @@ export default function PriceHistory({
         )}
       </div>
 
+      {/* two prices to a row in a narrow sheet, so neither truncates */}
       {stats !== null && (
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2 @xs:grid-cols-3">
           <StatBox
             label={m.objekt_metadata_market_price()}
             value={<PriceDisplay usd={stats.medianPriceUsd} />}
@@ -122,6 +124,7 @@ export default function PriceHistory({
           <StatBox
             label={m.objekt_metadata_listing_count()}
             value={stats.listingCount.toString()}
+            className="col-span-2 @xs:col-span-1"
           />
         </div>
       )}
@@ -139,9 +142,19 @@ export default function PriceHistory({
   );
 }
 
-function StatBox({ label, value }: { label: string; value: ReactNode }) {
+type StatBoxProps = PropsWithClassName<{
+  label: string;
+  value: ReactNode;
+}>;
+
+function StatBox({ label, value, className }: StatBoxProps) {
   return (
-    <div className="flex min-w-0 flex-col gap-0.5 rounded-md border border-border px-2 py-2 @sm:px-2.5">
+    <div
+      className={cn(
+        "flex min-w-0 flex-col gap-0.5 rounded-md border border-border px-2 py-2 @sm:px-2.5",
+        className,
+      )}
+    >
       <span className="truncate text-xxs font-medium tracking-widest text-muted-foreground uppercase">
         {label}
       </span>
