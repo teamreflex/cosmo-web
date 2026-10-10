@@ -227,7 +227,7 @@ Postgres returns `COUNT`, `SUM`, and window functions (`count(*) over()`, `row_n
 
 ## Append-only audit tables
 
-`staff_audit` and `cosmo_link_audit` record who did what and are only ever inserted into; `cosmo_link_audit` rows are written in the transaction that changes the link (`docs/auth.md`, COSMO link history). Their foreign keys to `user` have no ON DELETE action: users are anonymised rather than removed (`docs/auth.md`), and a hard delete is refused rather than taking the history with it. Order their rows by `id`, not `created_at`: `defaultNow()` is `now()`, the transaction's start time, so every row one transaction writes shares a timestamp.
+`staff_audit` and `cosmo_link_audit` record who did what and are only ever inserted into; `cosmo_link_audit` rows are written in the transaction that changes the link (`docs/auth.md`, COSMO link history). Deleting an account deletes the user row (`docs/auth.md`, Account deletion), so every foreign key to `user.id` is `ON DELETE CASCADE` or `SET NULL`: a `NO ACTION` key would make the delete fail. The audit tables must outlive the accounts they name, so their user columns (`staff_audit.staff_id`, `cosmo_link_audit.user_id` and `staff_id`) are plain text ids with no foreign key, and their relations to `user` are declared in `relations.ts` without a constraint; a missing user reads back as null and shows as "Deleted user". Order their rows by `id`, not `created_at`: `defaultNow()` is `now()`, the transaction's start time, so every row one transaction writes shares a timestamp.
 
 ## Current VACUUM settings
 
