@@ -35,10 +35,7 @@ export const $updateSettings = createServerFn({ method: "POST" })
   .validator(settingsSchema)
   .handler(async ({ data, context }) => {
     // a stored code that lost its rate mustn't block saving other settings
-    if (
-      data.currency !== null &&
-      data.currency !== context.session.user.currency
-    ) {
+    if (data.currency !== context.session.user.currency) {
       await assertSupportedCurrency(data.currency);
     }
     await auth.api.updateUser({

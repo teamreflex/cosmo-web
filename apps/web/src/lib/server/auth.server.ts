@@ -17,6 +17,7 @@ import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { createCipheriv, randomBytes } from "node:crypto";
 import type { CurrentUser, PublicUser } from "../universal/auth";
 import { settingsSchema } from "../universal/schema/auth";
+import { DEFAULT_CURRENCY } from "../universal/schema/currency";
 import { db } from "./db";
 import { sendPasswordResetEmail, sendVerificationEmail } from "./mail.server";
 
@@ -310,7 +311,7 @@ export const auth = betterAuth({
       currency: {
         type: "string",
         required: false,
-        defaultValue: null,
+        defaultValue: DEFAULT_CURRENCY,
         input: true,
         returned: true,
         // oxlint-disable-next-line anti-slop/no-shape-in-symbol-names -- zod's field accessor
@@ -405,5 +406,5 @@ export function toPublicUser(
  * Convert the signed-in user for their own account payload.
  */
 export function toCurrentUser(user: ServerUser): CurrentUser {
-  return { ...toPublicUser(user), currency: user.currency ?? null };
+  return { ...toPublicUser(user), currency: user.currency ?? DEFAULT_CURRENCY };
 }

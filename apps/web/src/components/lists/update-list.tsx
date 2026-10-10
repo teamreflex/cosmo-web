@@ -5,11 +5,7 @@ import { currentAccountQuery } from "@/lib/queries/core";
 import { listShelfQuery } from "@/lib/queries/lists";
 import type { ObjektList } from "@apollo/database/web/types";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import {
-  IconAlertTriangle,
-  IconEdit,
-  IconLoader2,
-} from "@tabler/icons-react";
+import { IconAlertTriangle, IconEdit, IconLoader2 } from "@tabler/icons-react";
 import {
   useMutation,
   useQueryClient,

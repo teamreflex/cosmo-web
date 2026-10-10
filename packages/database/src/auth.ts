@@ -38,8 +38,8 @@ export const user = pgTable(
     discord: text("discord"),
     twitter: text("twitter"),
     showSocials: boolean("show_socials").notNull().default(false),
-    // display currency (ISO 4217) with an fx_rates row, null means USD
-    currency: varchar("currency", { length: 3 }),
+    // display currency (ISO 4217): USD or a code with an fx_rates row
+    currency: varchar("currency", { length: 3 }).notNull().default("USD"),
     // admin plugin
     role: userRole("role").notNull().default("user"),
     banned: boolean("banned").notNull().default(false),

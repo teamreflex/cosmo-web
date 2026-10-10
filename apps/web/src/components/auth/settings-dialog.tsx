@@ -229,7 +229,6 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
                   id="settings-currency"
                   name="currency"
                   value={field.value}
-                  placeholder={m.currency_placeholder()}
                   onValueChange={field.onChange}
                   className="w-36"
                 />

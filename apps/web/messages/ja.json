@@ -235,7 +235,6 @@
   "list_currency": "通貨",
   "list_currency_description": "通貨を設定すると、価格と数量を指定した販売リストを作成できます。",
   "list_currency_change_warning": "価格は換算されません。各エントリーの金額はそのまま新しい通貨で表示されます。",
-  "currency_placeholder": "通貨を選択…",
   "currency_common": "よく使う通貨",
   "currency_all": "すべての通貨",
   "list_add_to_sale_list": "販売リストに追加",

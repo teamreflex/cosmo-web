@@ -6,14 +6,13 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 
 /**
  * The currency prices are shown in and a formatter from USD into it. Signed
- * out viewers, an unset currency and a currency whose rate is missing all
- * fall back to USD.
+ * out viewers and a currency whose rate is missing fall back to USD.
  */
 export function useDisplayCurrency() {
   const { data: account } = useSuspenseQuery(currentAccountQuery);
 
   const { currency, rate } =
-    account?.user.currency != null && account.fxRateToUsd !== null
+    account?.fxRateToUsd != null
       ? { currency: account.user.currency, rate: account.fxRateToUsd }
       : { currency: DEFAULT_CURRENCY, rate: 1 };
 

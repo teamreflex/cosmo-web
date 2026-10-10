@@ -18,6 +18,5 @@ export type PublicUser = {
  * payloads leave out, since the display currency hints at a user's country.
  */
 export type CurrentUser = PublicUser & {
-  // stored display currency, null means DEFAULT_CURRENCY
-  currency: string | null;
+  currency: string;
 };

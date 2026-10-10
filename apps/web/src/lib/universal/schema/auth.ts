@@ -52,6 +52,5 @@ export const updateSocialsSchema = z.object({
 export const settingsSchema = z.object({
   gridColumns: z.coerce.number<number>().min(3).max(8),
   collectionMode: z.enum(collectionDataSources),
-  // null leaves the display currency unset, which shows USD
-  currency: currencySchema.nullable(),
+  currency: currencySchema,
 });
