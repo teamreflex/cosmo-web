@@ -14,8 +14,9 @@ import type { ScheduledTask } from "../task";
  * Recompute per-collection USD median prices from priced entries across every
  * objekt list, upserting into `collection_price_stats` and evicting rows for
  * collections that no longer have any priced listings. The surviving rows are
- * then copied into `collection_price_history` under today's UTC date, so the
- * last run of the day is the day's snapshot.
+ * then copied into `collection_price_history` under today's UTC date, and
+ * today's rows for evicted collections are dropped, so the last run of the
+ * day is the day's snapshot.
  */
 export const syncCollectionPriceStatsTask = {
   name: "sync-collection-price-stats",
@@ -31,6 +32,8 @@ export const syncCollectionPriceStatsTask = {
       yield* Effect.logWarning("Skipping price stats: fx_rates is empty");
       return;
     }
+
+    const today = sql<string>`(now() at time zone 'utc')::date`;
 
     yield* db.transaction((tx) =>
       Effect.gen(function* () {
@@ -153,7 +156,7 @@ export const syncCollectionPriceStatsTask = {
             tx
               .select({
                 collectionId: collectionPriceStats.collectionId,
-                date: sql<string>`(now() at time zone 'utc')::date`.as("date"),
+                date: sql<string>`${today}`.as("date"),
                 floorUsd: collectionPriceStats.minPriceUsd,
                 medianUsd: collectionPriceStats.medianPriceUsd,
                 listingCount: collectionPriceStats.listingCount,
@@ -170,7 +173,27 @@ export const syncCollectionPriceStatsTask = {
               medianUsd: sql`excluded.median_usd`,
               listingCount: sql`excluded.listing_count`,
             },
+            // most runs change nothing, so skip rewriting those rows
+            setWhere: sql`(${collectionPriceHistory.floorUsd}, ${collectionPriceHistory.medianUsd}, ${collectionPriceHistory.listingCount}) is distinct from (excluded.floor_usd, excluded.median_usd, excluded.listing_count)`,
           });
+
+        // a collection delisted since an earlier run today has no snapshot
+        yield* tx.delete(collectionPriceHistory).where(
+          and(
+            eq(collectionPriceHistory.date, today),
+            notExists(
+              tx
+                .select({ one: sql`1` })
+                .from(collectionPriceStats)
+                .where(
+                  eq(
+                    collectionPriceStats.collectionId,
+                    collectionPriceHistory.collectionId,
+                  ),
+                ),
+            ),
+          ),
+        );
       }),
     );
 
