@@ -5,18 +5,13 @@
   "license": "MIT",
   "type": "module",
   "exports": {
-    ".": "./src/index.ts",
-    "./redis": "./src/redis.ts"
+    ".": "./src/index.ts"
   },
   "scripts": {
     "lint": "bun --bun oxlint --type-aware --type-check",
     "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
     "typecheck": "tsc --pretty --noEmit",
     "format": "oxfmt ."
-  },
-  "dependencies": {
-    "@effect/platform-bun": "catalog:",
-    "effect": "catalog:"
   },
   "devDependencies": {
     "@apollo/lint": "workspace:*",

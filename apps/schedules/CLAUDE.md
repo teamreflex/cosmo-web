@@ -27,7 +27,6 @@ Defined as `Context.Service` classes in `src/` — a `make:` effect plus a hand-
 ## Conventions
 
 - Config is read where it is consumed (`Config.Redacted("...")` inside a service's `make`, `BunRedis.layerConfig` for Redis) via the default `ConfigProvider` (`fromEnv()`), so a missing variable fails at boot; env files are loaded by the `dev` script, not the code.
-- `redisLayer` wraps `BunRedis.layerConfig` in `keepConnectedLayer` (`@apollo/util-server/redis`). Bun's client gives up on a reconnect once its `connectionTimeout` runs out, whatever `maxRetries` says, and then fails every command until something calls `connect()`; the wrapper does that with backoff, so the app rides out a Redis outage without a restart. The web app wraps its clients the same way.
 - Errors are per-failure-mode `Data.TaggedError` classes; wrap promise-based calls in `Effect.tryPromise` with a typed `catch`. Drizzle calls are already effectful — yield them directly and let drizzle's typed errors flow, adding a domain wrapper via `Effect.mapError` only where it carries extra context (e.g. `StoreGravitiesError{artist}`).
 - Cross-package logic lives in `@apollo/cosmo` (API calls), `@apollo/database` (schemas), `@apollo/queue` (job queues), `@apollo/util` / `@apollo/util-server` (helpers) — don't duplicate it here.
 - Use context7 for Effect API documentation (see `docs/libraries.md`).

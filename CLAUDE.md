@@ -70,7 +70,7 @@ Detailed conventions live in `docs/`. Read the relevant file **before** working 
 - `packages/queue`: Redis-backed job queues (Effect `PersistedQueue`) the web app offers to and the schedules app takes from
 - `packages/typescript`: Shared tsconfig.json file
 - `packages/util`: Shared utility functions
-- `packages/util-server`: Shared server-only utilities (Redis cache keys, crypto, and `/redis` for Redis clients that reconnect through an outage)
+- `packages/util-server`: Shared server-only utilities (Redis cache keys, crypto)
 
 ## Project Context
 
