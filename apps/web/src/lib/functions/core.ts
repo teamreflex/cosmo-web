@@ -70,6 +70,8 @@ type GetAccount = {
   role: Role;
   cosmo: PublicCosmo | undefined;
   objektLists: ObjektList[];
+  // USD-per-unit rate of the user's display currency, null when unrecorded
+  fxRateToUsd: number | null;
 };
 
 /**
@@ -97,7 +99,14 @@ export const $fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
     const [result, link] = await Promise.all([
       db.query.user.findFirst({
         where: { id: userId },
-        with: { objektLists: true },
+        with: {
+          objektLists: true,
+          fxRates: {
+            columns: { rateToUsd: true },
+            orderBy: { date: "desc" },
+            limit: 1,
+          },
+        },
       }),
       getCosmoAddress(db, userId),
     ]);
@@ -107,12 +116,13 @@ export const $fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
       return null;
     }
 
-    const { objektLists, ...user } = result;
+    const { objektLists, fxRates, ...user } = result;
     return {
       user: toPublicUser(user),
       role: user.role,
       cosmo: link.kind === "linked" ? toPublicCosmo(link) : undefined,
       objektLists,
+      fxRateToUsd: fxRates[0]?.rateToUsd ?? null,
     };
   },
 );

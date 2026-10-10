@@ -1,5 +1,6 @@
 import { useArtists } from "@/hooks/use-artists";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { useSaleConversionRate } from "@/hooks/use-display-currency";
 import { useGridColumns } from "@/hooks/use-grid-columns";
 import { objektOptions } from "@/hooks/use-objekt-response";
 import { m } from "@/i18n/messages";
@@ -19,6 +20,14 @@ export default function ListRenderer(props: Props) {
   const { filters } = useCosmoFilters();
   const { selectedIds } = useArtists();
   const gridColumns = useGridColumns();
+  // a converted sale bar adds a line for the seller's own price
+  const saleBarHeight =
+    useSaleConversionRate(
+      props.objektList.currency,
+      props.objektList.fxRateToUsd,
+    ) === null
+      ? 28
+      : 42;
 
   /**
    * Query options
@@ -60,7 +69,7 @@ export default function ListRenderer(props: Props) {
             authenticated: props.authenticated,
             objektList: props.objektList,
           }}
-          extraRowHeight={props.objektList.type === "sale" ? 28 : 0}
+          extraRowHeight={props.objektList.type === "sale" ? saleBarHeight : 0}
           showTotal
         />
       </div>

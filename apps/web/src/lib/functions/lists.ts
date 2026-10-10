@@ -51,9 +51,9 @@ import * as z from "zod";
 
 /**
  * Fetch a single objekt list along with the latest USD FX rate for its
- * currency, so the client can convert the global market price into the list's
- * own currency for display. Have and want lists also carry the list they're
- * paired with for trading.
+ * currency, so the client can convert its prices into the viewer's display
+ * currency. Have and want lists also carry the list they're paired with for
+ * trading.
  */
 export const $fetchObjektList = createServerFn({ method: "GET" })
   .validator(

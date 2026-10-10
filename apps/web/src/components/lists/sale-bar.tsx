@@ -1,3 +1,7 @@
+import {
+  useDisplayCurrency,
+  useSaleConversionRate,
+} from "@/hooks/use-display-currency";
 import { m } from "@/i18n/messages";
 import { PRICE_STATS_MIN_LISTINGS } from "@/lib/universal/objekts";
 import { cn, formatPrice } from "@/lib/utils";
@@ -14,15 +18,25 @@ type Props = {
   onClick?: () => void;
 };
 
+/**
+ * A sale entry's price, market median and quantity under its card. The median
+ * shows in the viewer's display currency. When the list's prices convert into
+ * it too, the seller's own price sits on a small line above the converted one.
+ */
 export default function SaleBar(props: Props) {
-  const formattedPrice =
+  const viewer = useDisplayCurrency();
+  const rateToUsd = useSaleConversionRate(props.currency, props.fxRateToUsd);
+  const listed =
     props.price != null ? formatPrice(props.price, props.currency) : null;
-  const market = convertMarket(
-    props.medianPriceUsd,
-    props.listingCount,
-    props.currency,
-    props.fxRateToUsd,
-  );
+  const price =
+    rateToUsd !== null && props.price != null
+      ? viewer.formatUsd(props.price * rateToUsd)
+      : listed;
+  const market =
+    props.medianPriceUsd !== null &&
+    props.listingCount >= PRICE_STATS_MIN_LISTINGS
+      ? viewer.formatUsd(props.medianPriceUsd)
+      : null;
 
   return (
     <button
@@ -30,41 +44,27 @@ export default function SaleBar(props: Props) {
       onClick={props.onClick}
       disabled={!props.onClick}
       className={cn(
-        "-mt-3 flex w-full min-w-0 items-center justify-between rounded-b-photocard px-2 pt-4 pb-1.5 text-xs font-medium transition-[filter]",
+        "-mt-3 flex w-full min-w-0 flex-col rounded-b-photocard px-2 pt-4 pb-1.5 text-left text-xs font-medium transition-[filter]",
         props.onClick && "cursor-pointer hover:brightness-90",
       )}
       style={{ backgroundColor: props.backgroundColor, color: props.textColor }}
     >
-      {/* keep the bar a single line: the grid assumes a fixed cell height */}
-      {formattedPrice && <span className="truncate">{formattedPrice}</span>}
-      {market !== null && (
-        <span className="ml-2 truncate opacity-70">
-          {m.list_median_price({ price: market })}
-        </span>
+      {/* the grid assumes a fixed cell height, so the line keeps its height when unpriced */}
+      {rateToUsd !== null && (
+        <span className="h-3.5 truncate text-xxs opacity-70">{listed}</span>
       )}
-      <span className="ml-auto shrink-0 pl-2 whitespace-nowrap">
-        x{props.quantity}
+      {/* keep the price line to one line for the same reason */}
+      <span className="flex w-full min-w-0 items-center justify-between">
+        {price && <span className="truncate">{price}</span>}
+        {market !== null && (
+          <span className="ml-2 truncate opacity-70">
+            {m.list_median_price({ price: market })}
+          </span>
+        )}
+        <span className="ml-auto shrink-0 pl-2 whitespace-nowrap">
+          x{props.quantity}
+        </span>
       </span>
     </button>
   );
-}
-
-/**
- * Convert the USD market median into the list's own currency when an FX rate
- * is available, otherwise fall back to USD. Returns null when there aren't
- * enough listings to display a meaningful market price.
- */
-function convertMarket(
-  medianPriceUsd: number | null,
-  listingCount: number,
-  currency: string,
-  fxRateToUsd: number | null,
-) {
-  if (medianPriceUsd === null || listingCount < PRICE_STATS_MIN_LISTINGS) {
-    return null;
-  }
-  if (fxRateToUsd && fxRateToUsd > 0) {
-    return formatPrice(medianPriceUsd / fxRateToUsd, currency);
-  }
-  return formatPrice(medianPriceUsd, "USD");
 }
