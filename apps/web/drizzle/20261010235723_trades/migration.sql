@@ -1,5 +1,5 @@
 CREATE TYPE "listing_offer_mode" AS ENUM('price_or_offer', 'price_only', 'offer_only');--> statement-breakpoint
-CREATE TYPE "payment_method" AS ENUM('paypal_ff', 'wise', 'bank_transfer', 'promptpay', 'kakaopay', 'toss', 'gcash', 'alipay', 'wechat_pay', 'venmo');--> statement-breakpoint
+CREATE TYPE "payment_method" AS ENUM('paypal_ff', 'wise', 'bank_transfer', 'promptpay', 'kakaopay', 'toss', 'gcash', 'alipay', 'wechat_pay', 'venmo', 'cashapp');--> statement-breakpoint
 CREATE TYPE "trade_canceller" AS ENUM('from', 'to', 'staff');--> statement-breakpoint
 CREATE TYPE "trade_item_kind" AS ENUM('objekt', 'payment');--> statement-breakpoint
 CREATE TYPE "trade_message_kind" AS ENUM('text', 'event');--> statement-breakpoint

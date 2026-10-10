@@ -74,11 +74,9 @@ export async function liveTradesBlocker(
  * trades block deletion, so nothing reserved is touched.
  */
 export async function closeOpenOffers(tx: WebTx, userId: string) {
-  const endedAt = sql`now()`;
-
   await tx
     .update(tradeOffers)
-    .set({ status: "withdrawn", endedAt })
+    .set({ status: "withdrawn", endedAt: sql`now()` })
     .where(
       and(
         eq(tradeOffers.fromUserId, userId),
@@ -88,7 +86,7 @@ export async function closeOpenOffers(tx: WebTx, userId: string) {
 
   await tx
     .update(tradeOffers)
-    .set({ status: "declined", endedAt })
+    .set({ status: "declined", endedAt: sql`now()` })
     .where(
       and(
         eq(tradeOffers.toUserId, userId),

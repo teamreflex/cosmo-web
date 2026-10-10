@@ -319,6 +319,7 @@ export const paymentMethods = [
   "alipay",
   "wechat_pay",
   "venmo",
+  "cashapp",
 ] as const;
 export type PaymentMethod = (typeof paymentMethods)[number];
 

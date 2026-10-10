@@ -2,7 +2,7 @@
   "type": "diff",
   "version": "9",
   "dialect": "postgres",
-  "id": "52d2cf23-4f4e-4816-b4d6-01e50019760f",
+  "id": "f3a416a8-2f71-4488-a772-94ff32e962b9",
   "prevIds": [
     "13d4b262-7e11-4270-a42c-e8a8d62d35f8"
   ],
@@ -815,7 +815,8 @@
           "gcash",
           "alipay",
           "wechat_pay",
-          "venmo"
+          "venmo",
+          "cashapp"
         ],
         "entityType": "enums"
       }
