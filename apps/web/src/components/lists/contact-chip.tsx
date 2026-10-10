@@ -13,10 +13,13 @@ export default function ContactChip({ contact }: { contact: Contact }) {
   const content = (
     <>
       <span className="text-cosmo">{CONTACT_ICONS[contact.kind]}</span>
-      <span className="text-xxs tracking-widest text-muted-foreground uppercase">
-        {contact.label}
+      {/* on one baseline, so the label's caps line up with the handle's lowercase */}
+      <span className="flex items-baseline gap-2">
+        <span className="text-xxs tracking-widest text-muted-foreground uppercase">
+          {contact.label}
+        </span>
+        <span className="font-mono tabular-nums">{contact.handle}</span>
       </span>
-      <span className="font-mono tabular-nums">{contact.handle}</span>
     </>
   );
 
