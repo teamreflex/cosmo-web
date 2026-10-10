@@ -17,6 +17,8 @@ import { createQueueWorker } from "../queue";
 const handle = Effect.fn("handleTradeNotifications")(function* (
   job: TradeNotificationsJob,
 ) {
+  if (!(yield* isSourceListTradeActive(job))) return;
+
   const watchers =
     job.side === "have"
       ? yield* fetchHaveAddWatchers(job)
@@ -162,14 +164,56 @@ const fetchWantAddWatchers = Effect.fn("fetchWantAddWatchers")(function* (
 });
 
 /**
- * Distinct collections across the user's trade-active lists of one side: a
- * discoverable have list paired with a want list, or a discoverable want list
- * a have list is paired with.
+ * A trade-active list of one side: a discoverable have list paired with a
+ * want list, or a discoverable want list a have list is paired with.
+ */
+function tradeActive(
+  db: DatabaseWeb["Service"],
+  side: TradeNotificationsJob["side"],
+) {
+  const pairedHave = alias(objektLists, "paired_have");
+  return and(
+    eq(objektLists.type, side),
+    eq(objektLists.discoverable, true),
+    side === "have"
+      ? isNotNull(objektLists.linkedWantListId)
+      : exists(
+          db
+            .select({ id: pairedHave.id })
+            .from(pairedHave)
+            .where(eq(pairedHave.linkedWantListId, objektLists.id)),
+        ),
+  );
+}
+
+/**
+ * Whether the job's list still belongs to its user and is still trade-active.
+ * A list or account deleted before the job ran would otherwise fail every
+ * insert on a foreign key, retry and end up in the failed list.
+ */
+const isSourceListTradeActive = Effect.fn("isSourceListTradeActive")(
+  function* (job: TradeNotificationsJob) {
+    const db = yield* DatabaseWeb;
+    const rows = yield* db
+      .select({ id: objektLists.id })
+      .from(objektLists)
+      .where(
+        and(
+          eq(objektLists.id, job.sourceListId),
+          eq(objektLists.userId, job.sourceUserId),
+          tradeActive(db, job.side),
+        ),
+      );
+    return rows.length > 0;
+  },
+);
+
+/**
+ * Distinct collections across the user's trade-active lists of one side.
  */
 const fetchTradeActiveCollections = Effect.fn("fetchTradeActiveCollections")(
   function* (userId: string, side: TradeNotificationsJob["side"]) {
     const db = yield* DatabaseWeb;
-    const pairedHave = alias(objektLists, "paired_have");
     const rows = yield* db
       .selectDistinct({ slug: objektListEntries.collectionId })
       .from(objektLists)
@@ -177,21 +221,7 @@ const fetchTradeActiveCollections = Effect.fn("fetchTradeActiveCollections")(
         objektListEntries,
         eq(objektListEntries.objektListId, objektLists.id),
       )
-      .where(
-        and(
-          eq(objektLists.userId, userId),
-          eq(objektLists.type, side),
-          eq(objektLists.discoverable, true),
-          side === "have"
-            ? isNotNull(objektLists.linkedWantListId)
-            : exists(
-                db
-                  .select({ id: pairedHave.id })
-                  .from(pairedHave)
-                  .where(eq(pairedHave.linkedWantListId, objektLists.id)),
-              ),
-        ),
-      );
+      .where(and(eq(objektLists.userId, userId), tradeActive(db, side)));
     return rows.map((r) => r.slug);
   },
 );
