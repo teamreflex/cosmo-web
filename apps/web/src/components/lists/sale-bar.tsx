@@ -57,7 +57,7 @@ export default function SaleBar(props: Props) {
       <span className="flex w-full min-w-0 items-center justify-between">
         {price && <span className="truncate">{price}</span>}
         {market !== null && (
-          <span className="ml-2 truncate opacity-70">
+          <span className="ml-2 min-w-0 flex-1 truncate opacity-70">
             {m.list_median_price({ price: market })}
           </span>
         )}
