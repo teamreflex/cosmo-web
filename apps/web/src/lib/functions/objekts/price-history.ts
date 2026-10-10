@@ -13,8 +13,8 @@ import * as z from "zod";
 
 /**
  * Daily floor/median/listing-count snapshots for the pricing tab chart, plus
- * when tracking started regardless of range, cached for the 4 hours between
- * runs of the job that writes them.
+ * when tracking started regardless of range, cached until the next run of
+ * the job that writes them.
  */
 export const $fetchPriceHistory = createServerFn({ method: "GET" })
   .validator(
@@ -30,7 +30,7 @@ export const $fetchPriceHistory = createServerFn({ method: "GET" })
   .handler(async ({ data }) =>
     remember(
       `price-history:${data.slug}:${data.range}`,
-      60 * 60 * 4,
+      secondsUntilNextSnapshot(),
       async (): Promise<PriceHistory> => {
         const [points, [tracking]] = await Promise.all([
           db.query.collectionPriceHistory.findMany({
@@ -73,4 +73,18 @@ export const $fetchPriceHistory = createServerFn({ method: "GET" })
  */
 function rangeStart(days: number) {
   return subDays(new Date(), days).toISOString().slice(0, 10);
+}
+
+const SNAPSHOT_INTERVAL = 4 * 60 * 60 * 1000;
+
+/**
+ * Seconds until shortly after the next run of `sync-collection-price-stats`
+ * in `apps/schedules`, which runs at every 4th UTC hour. The margin covers
+ * the run itself.
+ */
+function secondsUntilNextSnapshot() {
+  return (
+    Math.ceil((SNAPSHOT_INTERVAL - (Date.now() % SNAPSHOT_INTERVAL)) / 1000) +
+    5 * 60
+  );
 }

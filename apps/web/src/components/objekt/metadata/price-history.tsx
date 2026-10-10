@@ -50,8 +50,8 @@ export default function PriceHistory({
   const hydrated = useHydrated();
   const { points } = history;
   const first = points[0];
-  const last = points[points.length - 1];
-  const floor = last?.floorUsd ?? stats?.minPriceUsd;
+  // matches the stat boxes, which show the current listings
+  const floor = stats?.minPriceUsd ?? points[points.length - 1]?.floorUsd;
 
   return (
     <div className="@container flex flex-col gap-2.5 border-b border-border px-4 py-3">
@@ -69,20 +69,22 @@ export default function PriceHistory({
             <span className="font-mono text-lg font-bold tabular-nums">
               {floor === undefined ? "—" : <PriceDisplay usd={floor} />}
             </span>
-            {first !== undefined && last !== undefined && points.length > 1 && (
-              <>
-                <PriceDelta from={first.floorUsd} to={last.floorUsd} />
-                {hydrated ? (
-                  <span className="text-xxs whitespace-nowrap text-muted-foreground">
-                    {m.objekt_metadata_history_vs({
-                      date: formatDay(first.date),
-                    })}
-                  </span>
-                ) : (
-                  <Skeleton className="h-3 w-16 rounded-full" />
-                )}
-              </>
-            )}
+            {first !== undefined &&
+              floor !== undefined &&
+              points.length > 1 && (
+                <>
+                  <PriceDelta from={first.floorUsd} to={floor} />
+                  {hydrated ? (
+                    <span className="text-xxs whitespace-nowrap text-muted-foreground">
+                      {m.objekt_metadata_history_vs({
+                        date: formatDay(first.date),
+                      })}
+                    </span>
+                  ) : (
+                    <Skeleton className="h-3 w-16 rounded-full" />
+                  )}
+                </>
+              )}
           </div>
         </div>
 
