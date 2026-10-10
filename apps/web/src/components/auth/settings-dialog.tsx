@@ -71,7 +71,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
     defaultValues: {
       gridColumns: user.gridColumns,
       collectionMode: user.collectionMode,
-      currency: user.currency ?? DEFAULT_CURRENCY,
+      currency: user.currency,
     },
   });
 
@@ -221,6 +221,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
                 <CurrencySelect
                   name="currency"
                   value={field.value}
+                  placeholder={DEFAULT_CURRENCY}
                   onValueChange={field.onChange}
                   className="w-36"
                 />

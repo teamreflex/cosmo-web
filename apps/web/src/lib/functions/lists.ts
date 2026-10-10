@@ -321,7 +321,7 @@ export const $updateObjektList = createServerFn({ method: "POST" })
         id: data.id,
         userId: context.session.session.userId,
       },
-      columns: { type: true },
+      columns: { type: true, currency: true },
     });
     if (!existingRow) {
       throw new ExpectedError("list_not_found");
@@ -329,7 +329,8 @@ export const $updateObjektList = createServerFn({ method: "POST" })
     if (existingRow.type !== data.type) {
       throw new ExpectedError("list_type_locked");
     }
-    if (data.type === "sale") {
+    // a list whose code lost its rate can still be renamed
+    if (data.type === "sale" && data.currency !== existingRow.currency) {
       await assertSupportedCurrency(data.currency);
     }
 

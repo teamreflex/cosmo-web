@@ -17,8 +17,9 @@ import { ErrorBoundary } from "react-error-boundary";
 
 type Props = {
   name?: string;
-  value: string;
+  value: string | null;
   onValueChange: (value: string) => void;
+  placeholder?: string;
   className?: string;
 };
 
@@ -30,6 +31,7 @@ export default function CurrencySelect({
   name,
   value,
   onValueChange,
+  placeholder = m.list_currency(),
   className,
 }: Props) {
   return (
@@ -41,7 +43,7 @@ export default function CurrencySelect({
       }}
     >
       <SelectTrigger className={className}>
-        <SelectValue placeholder={m.list_currency()} />
+        <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent className="max-h-72">
         <ErrorBoundary fallback={null}>

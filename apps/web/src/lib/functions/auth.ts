@@ -33,8 +33,14 @@ import { getRequestHeaders } from "@tanstack/react-start/server";
 export const $updateSettings = createServerFn({ method: "POST" })
   .middleware([authenticatedMiddleware])
   .validator(settingsSchema)
-  .handler(async ({ data }) => {
-    await assertSupportedCurrency(data.currency);
+  .handler(async ({ data, context }) => {
+    // a stored code that lost its rate mustn't block saving other settings
+    if (
+      data.currency !== null &&
+      data.currency !== context.session.user.currency
+    ) {
+      await assertSupportedCurrency(data.currency);
+    }
     await auth.api.updateUser({
       headers: getRequestHeaders(),
       body: {
