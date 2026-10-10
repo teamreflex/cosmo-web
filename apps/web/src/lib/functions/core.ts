@@ -65,7 +65,7 @@ export const $fetchFilterData = createServerFn({ method: "GET" }).handler(() =>
   }),
 );
 
-type GetAccount = {
+export type GetAccount = {
   user: CurrentUser;
   role: Role;
   cosmo: PublicCosmo | undefined;
