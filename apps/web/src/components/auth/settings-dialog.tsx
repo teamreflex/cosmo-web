@@ -110,7 +110,9 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
           {/* language */}
           <Field orientation="horizontal">
             <FieldContent>
-              <FieldLabel>{m.settings_language()}</FieldLabel>
+              <FieldLabel htmlFor="settings-language">
+                {m.settings_language()}
+              </FieldLabel>
               <p className="text-xs opacity-80">
                 {m.settings_language_description()}
               </p>
@@ -125,7 +127,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
                 if (value !== null && value !== locale) void setLocale(value);
               }}
             >
-              <SelectTrigger className="w-36">
+              <SelectTrigger id="settings-language" className="w-36">
                 <SelectValue placeholder={m.settings_language()} />
               </SelectTrigger>
               <SelectContent align="end">
@@ -141,7 +143,9 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
           {/* theme */}
           <Field orientation="horizontal">
             <FieldContent>
-              <FieldLabel>{m.settings_theme()}</FieldLabel>
+              <FieldLabel htmlFor="settings-theme">
+                {m.settings_theme()}
+              </FieldLabel>
               <p className="text-xs opacity-80">
                 {m.settings_theme_description()}
               </p>
@@ -155,7 +159,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
                 if (value !== null) setTheme(value);
               }}
             >
-              <SelectTrigger className="w-36">
+              <SelectTrigger id="settings-theme" className="w-36">
                 <SelectValue placeholder={m.settings_theme()} />
               </SelectTrigger>
               <SelectContent align="end">
@@ -175,7 +179,9 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
             render={({ field, fieldState }) => (
               <Field orientation="horizontal" data-invalid={fieldState.invalid}>
                 <FieldContent>
-                  <FieldLabel>{m.settings_objekt_columns()}</FieldLabel>
+                  <FieldLabel htmlFor="settings-columns">
+                    {m.settings_objekt_columns()}
+                  </FieldLabel>
                   <p className="text-xs opacity-80">
                     {m.settings_objekt_columns_description()}
                   </p>
@@ -189,7 +195,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
                   }}
                   defaultValue={field.value.toString()}
                 >
-                  <SelectTrigger className="w-36">
+                  <SelectTrigger id="settings-columns" className="w-36">
                     <SelectValue placeholder={m.settings_objekt_columns()} />
                   </SelectTrigger>
                   <SelectContent>
@@ -212,13 +218,16 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
             render={({ field, fieldState }) => (
               <Field orientation="horizontal" data-invalid={fieldState.invalid}>
                 <FieldContent>
-                  <FieldLabel>{m.settings_currency()}</FieldLabel>
+                  <FieldLabel htmlFor="settings-currency">
+                    {m.settings_currency()}
+                  </FieldLabel>
                   <p className="text-xs opacity-80">
                     {m.settings_currency_description()}
                   </p>
                 </FieldContent>
 
                 <CurrencySelect
+                  id="settings-currency"
                   name="currency"
                   value={field.value}
                   placeholder={DEFAULT_CURRENCY}
@@ -237,13 +246,16 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
             render={({ field, fieldState }) => (
               <Field orientation="horizontal" data-invalid={fieldState.invalid}>
                 <FieldContent>
-                  <FieldLabel>{m.settings_collection_mode()}</FieldLabel>
+                  <FieldLabel htmlFor="settings-collection-mode">
+                    {m.settings_collection_mode()}
+                  </FieldLabel>
                   <p className="text-xs opacity-80">
                     {m.settings_collection_mode_description()}
                   </p>
                 </FieldContent>
 
                 <DataSourceSelector
+                  id="settings-collection-mode"
                   name="collectionMode"
                   onValueChange={field.onChange}
                   defaultValue={field.value}

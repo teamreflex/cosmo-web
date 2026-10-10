@@ -4,7 +4,6 @@ import { formatError } from "@/lib/client/errors";
 import { $createLiveList, $createObjektList } from "@/lib/functions/lists";
 import { currentAccountQuery } from "@/lib/queries/core";
 import { listShelfQuery } from "@/lib/queries/lists";
-import { commonCurrencies } from "@/lib/universal/schema/currency";
 import { track } from "@/lib/utils";
 import type { ObjektList } from "@apollo/database/web/types";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
@@ -396,26 +395,13 @@ function CurrencyField() {
       name="currency"
       render={({ field, fieldState }) => (
         <Field data-invalid={fieldState.invalid}>
-          <FieldLabel>{m.list_currency()}</FieldLabel>
+          <FieldLabel htmlFor="currency">{m.list_currency()}</FieldLabel>
           <CurrencySelect
+            id="currency"
             name="currency"
-            value={field.value ?? ""}
+            value={field.value ?? null}
             onValueChange={field.onChange}
           />
-          <div className="flex flex-wrap gap-1">
-            {commonCurrencies.map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => field.onChange(c)}
-                className="rounded-md border px-2 py-0.5 text-xs data-[active=true]:bg-accent"
-                data-active={field.value === c}
-                aria-pressed={field.value === c}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
           <FieldDescription>{m.list_currency_description()}</FieldDescription>
           <FieldError errors={[fieldState.error]} />
         </Field>
