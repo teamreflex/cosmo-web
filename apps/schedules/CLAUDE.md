@@ -1,6 +1,6 @@
 # Schedules App
 
-Effect-TS service that runs Apollo's cron-scheduled background tasks (syncing gravities, members, FX rates, price stats and their daily history; draining outboxes; clearing stats) and the workers for the web app's job queues (notification fan-outs). Runs on Bun via `BunRuntime`.
+Effect-TS service that runs Apollo's cron-scheduled background tasks (syncing gravities, members, FX rates, price stats and their daily history, market stats; draining outboxes; clearing stats) and the workers for the web app's job queues (notification fan-outs). Runs on Bun via `BunRuntime`.
 
 ## Task model
 
