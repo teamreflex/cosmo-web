@@ -148,6 +148,12 @@ Before each chunk's collection upsert, `mirrorImages` (`src/images.ts`) mirrors 
 
 `collection_market_stats` holds the floor (USD), listing count and latest listing time of each collection's priced sale listings, keyed by `collection_id` (migration `1791625636889-Data.js`). apps/schedules' `sync-market-stats` owns it: every minute it upserts changed rows from the web DB and deletes the rows of collections no longer listed, so a row exists only while its collection is listed. apps/web's `/market` inner-joins it to `collection` to filter, sort and page in one query, with one index per sort. The processor never touches it.
 
+### List Event Outbox
+
+`list_event_outbox` feeds apps/schedules' `drain-outbox` (migration `1791627703101-Data.js` adds `type`, `transferable` and `hash`). The processor appends a `transfer` row for every transfer except mints, with `transfer_id`, `from_address` and `to_address`, and a `transferability` row for every token a `batchUpdateObjektTransferability` call updates, with the new `transferable` flag. Both carry the collection slug, token id, block timestamp and transaction hash. A `NOT VALID` check enforces each type's columns on new rows without scanning old ones. The processor only appends (the drain purges drained rows once they are a week old), and ids follow processing order: within one batch, every transfer row precedes every transferability row.
+
+The processor runs with `supportHotBlocks`, so it writes rows for blocks that aren't final yet. A hot-block rollback doesn't remove them: the change log records each insert by entity id, and a bigserial row has no id until the insert has run.
+
 ## Key Files
 
 - `schema.graphql` — source of truth for entity definitions; TypeORM entities in `src/model/generated/` are manually kept in sync with it (do not regenerate)

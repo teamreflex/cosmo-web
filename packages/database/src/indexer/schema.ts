@@ -102,17 +102,26 @@ export const listEventOutbox = pgTable(
   "list_event_outbox",
   {
     id: bigserial("id", { mode: "bigint" }).primaryKey(),
-    transferId: varchar("transfer_id", { length: 36 }).notNull(),
-    fromAddress: text("from_address").notNull(),
-    toAddress: text("to_address").notNull(),
+    type: varchar("type", { length: 16 })
+      .notNull()
+      .default("transfer")
+      .$type<"transfer" | "transferability">(),
+    // set on transfer rows only
+    transferId: varchar("transfer_id", { length: 36 }),
+    fromAddress: text("from_address"),
+    toAddress: text("to_address"),
+    // set on transferability rows only
+    transferable: boolean("transferable"),
     collectionId: varchar("collection_id", { length: 36 }).notNull(),
     tokenId: text("token_id").notNull(),
     timestamp: timestamp("timestamp", {
-      mode: "string",
+      mode: "date",
       withTimezone: true,
     }).notNull(),
+    // transaction hash, null on rows written before the column was added
+    hash: text("hash"),
     createdAt: timestamp("created_at", {
-      mode: "string",
+      mode: "date",
       withTimezone: true,
     })
       .notNull()
