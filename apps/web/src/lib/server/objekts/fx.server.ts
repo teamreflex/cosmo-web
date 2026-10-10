@@ -1,6 +1,14 @@
 import { db } from "@/lib/server/db";
 import { ExpectedError } from "@/lib/universal/errors/expected";
+import { DEFAULT_CURRENCY } from "@/lib/universal/schema/currency";
 import { fxRates } from "@apollo/database/web/schema";
+import { eq, sql } from "drizzle-orm";
+
+/**
+ * The newest rates date. A code missing from it has no current rate, so it
+ * isn't offered or accepted even if older dates have it.
+ */
+const latestDate = sql`(select max(${fxRates.date}) from ${fxRates})`;
 
 /**
  * Look up the most recent USD-per-unit FX rate for a given currency. Returns
@@ -20,24 +28,30 @@ export async function fetchLatestFxRate(
 }
 
 /**
- * Every currency with a rate row, sorted by code.
+ * Every currency with a rate on the newest date, sorted by code.
  */
 export async function fetchFxCurrencies() {
-  const rows = await db
-    .selectDistinct({ currency: fxRates.currency })
-    .from(fxRates)
-    .orderBy(fxRates.currency);
-
-  return rows.map((r) => r.currency);
+  return (
+    await db
+      .select({ currency: fxRates.currency })
+      .from(fxRates)
+      .where(eq(fxRates.date, latestDate))
+      .orderBy(fxRates.currency)
+  ).map((r) => r.currency);
 }
 
 /**
  * Rejects currency codes that can't be converted, so every stored price and
- * viewer setting has a rate behind it.
+ * viewer setting has a rate behind it. USD is the base of every rate, so it
+ * passes even when `fx_rates` is empty.
  */
 export async function assertSupportedCurrency(currency: string) {
+  if (currency === DEFAULT_CURRENCY) {
+    return;
+  }
+
   const row = await db.query.fxRates.findFirst({
-    where: { currency },
+    where: { currency, RAW: (t) => sql`${t.date} = ${latestDate}` },
     columns: { currency: true },
   });
 
