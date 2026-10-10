@@ -76,7 +76,8 @@ export default function ListingRow({
 
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <Price listing={listing} />
-          <div className="flex min-w-0 items-center gap-1.5 text-xs whitespace-nowrap text-muted-foreground">
+          {/* one line tall, so whatever wraps is hidden */}
+          <div className="flex h-4 min-w-0 flex-wrap items-center gap-x-1.5 overflow-hidden text-xs whitespace-nowrap text-muted-foreground">
             <button
               type="button"
               onClick={openMetadata}
@@ -88,13 +89,16 @@ export default function ListingRow({
             <span>·</span>
             <Seller listing={listing} own={own} className="shrink-0" />
             <span>·</span>
-            <ListName listing={listing} />
-            <span>·</span>
             <Timestamp
               date={new Date(listing.listedAt)}
               relative="narrow"
               className="shrink-0"
             />
+            {/* wraps out of sight with its separator when under 4rem is left, rather than truncating to a letter */}
+            <span className="flex min-w-0 grow basis-16 items-center gap-1.5">
+              <span>·</span>
+              <ListName listing={listing} />
+            </span>
           </div>
         </div>
 
