@@ -11,17 +11,17 @@ export type TradeWant =
 export type InventoryObjekt = ObjektAttributes & { tokenId: number };
 
 /**
- * The serials picked for one want, in inventory order, and how many it is
+ * The tokens picked for one want, in inventory order, and how many it is
  * still short.
  */
 export type WantAllocation = { tokenIds: number[]; missing: number };
 
 /**
- * Pick serials from the inventory for every want, each serial used once.
+ * Pick tokens from the inventory for every want, each token used once.
  * Exact rows go first, since every copy of a collection is interchangeable
  * to the ranges. Ranges follow, narrowest first, each taking candidates in
  * inventory order. When that greedy pass leaves a row short, augmenting
- * paths move serials between rows to free one up, so the result is short
+ * paths move tokens between rows to free one up, so the result is short
  * only when no assignment could cover every row.
  */
 export function allocate(
@@ -60,8 +60,8 @@ export function allocate(
   }
 
   /**
-   * Find another serial for `row`: a free candidate, or one held by another
-   * row that can take a different serial in its place.
+   * Find another token for `row`: a free candidate, or one held by another
+   * row that can take a different token in its place.
    */
   function augment(row: Row, visited: Set<number>): boolean {
     for (const candidate of row.candidates) {
@@ -81,7 +81,7 @@ export function allocate(
 
   for (const row of order) {
     while (row.picks.size < row.want.count && augment(row, new Set())) {
-      // each pass adds one serial to this row without shrinking another
+      // each pass adds one token to this row without shrinking another
     }
   }
 
@@ -94,7 +94,7 @@ export function allocate(
 }
 
 /**
- * Whether every want got all its serials.
+ * Whether every want got all its tokens.
  */
 export function isFullyAllocated(allocation: readonly WantAllocation[]) {
   return allocation.every((row) => row.missing === 0);

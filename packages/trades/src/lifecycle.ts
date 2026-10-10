@@ -38,9 +38,9 @@ export type TradeEvent =
   | { type: "withdraw"; by: TradeSide }
   // a pending offer went unanswered for 72 hours
   | { type: "expire" }
-  // a pending offer's serial moved
+  // a pending offer's token moved
   | { type: "go_stale" }
-  // the drain saw a serial reach its receiver
+  // the drain saw a token reach its receiver
   | { type: "transfer"; item: number }
   | { type: "mark_paid"; item: number; by: TradeSide }
   | { type: "confirm_payment"; item: number; by: TradeSide }
@@ -83,7 +83,7 @@ const refuse = (reason: TransitionRefusal): TransitionResult => ({
  * that, a dispute is the only way out. A dispute freezes the deadline, mark
  * paid and cancelling. Transfers and confirmations are still recorded while
  * disputed, but only staff complete or cancel a disputed trade. An accepted
- * trade completes once every serial has arrived and every payment is
+ * trade completes once every token has arrived and every payment is
  * confirmed.
  */
 export function transition(
@@ -154,7 +154,7 @@ function answerOffer(
 }
 
 /**
- * A serial arriving, a payment marked paid, or a payment confirmed. Marking
+ * A token arriving, a payment marked paid, or a payment confirmed. Marking
  * paid is frozen while disputed; the other two are still recorded.
  */
 function updateItem(
@@ -286,7 +286,7 @@ function isDone(item: TradeItemState) {
 }
 
 /**
- * The sides with a serial that hasn't arrived or a payment they haven't
+ * The sides with a token that hasn't arrived or a payment they haven't
  * marked paid, `from` first.
  */
 export function owingSides(items: readonly TradeItemState[]): TradeSide[] {
@@ -302,13 +302,12 @@ export function owingSides(items: readonly TradeItemState[]): TradeSide[] {
 export type ListingEvent =
   // a trade was created from the listing
   | "claim"
-  // the claim ended with the serials still with the poster
+  // the claim ended with the tokens still with the poster
   | "reopen"
   // the claim's trade completed
   | "fill"
   | "withdraw"
-  | "expire"
-  // an offered serial left the poster or turned untransferable
+  // an offered token left the poster or turned untransferable
   | "break"
   // staff removed it, or banned the poster
   | "remove"
@@ -317,7 +316,7 @@ export type ListingEvent =
 
 /**
  * Which statuses each listing event leaves from, and where it goes. A
- * claimed listing doesn't check its serials itself; its trade does, and the
+ * claimed listing doesn't check its tokens itself; its trade does, and the
  * listing follows the trade's outcome.
  */
 const listingTransitions = {
@@ -325,7 +324,6 @@ const listingTransitions = {
   reopen: { from: ["claimed"], to: "open" },
   fill: { from: ["claimed"], to: "filled" },
   withdraw: { from: ["open"], to: "withdrawn" },
-  expire: { from: ["open"], to: "expired" },
   break: { from: ["open", "claimed"], to: "broken" },
   remove: { from: ["open"], to: "removed" },
   abandon: { from: ["claimed"], to: "abandoned" },

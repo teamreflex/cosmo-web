@@ -704,6 +704,7 @@ export const tradeOffers = pgTable(
       .notNull()
       .defaultNow()
       .$onUpdate(() => new Date()),
+    // a pending direct offer's answer window; listings don't expire
     expiresAt: tradeTimestamp("expires_at"),
     acceptedAt: tradeTimestamp("accepted_at"),
     endedAt: tradeTimestamp("ended_at"),
@@ -734,7 +735,7 @@ export const tradeOffers = pgTable(
     ),
     check(
       "trade_offers_listing_chk",
-      sql`${t.kind} = 'trade' OR num_nulls(${t.toUserId}, ${t.toAddress}, ${t.parentId}, ${t.deadlineAt}, ${t.acceptedAt}) = 5`,
+      sql`${t.kind} = 'trade' OR num_nulls(${t.toUserId}, ${t.toAddress}, ${t.parentId}, ${t.deadlineAt}, ${t.acceptedAt}, ${t.expiresAt}) = 6`,
     ),
     check(
       "trade_offers_trade_chk",
@@ -764,11 +765,11 @@ export const tradeOffers = pgTable(
 );
 
 /**
- * Everything a listing or trade moves: serials and payments, each sent by
- * one side. A listing's own serials are copied into its trade, keeping
+ * Everything a listing or trade moves: tokens and payments, each sent by
+ * one side. A listing's own tokens are copied into its trade, keeping
  * `listing_id`. `live` is set in the same statement as every status change
- * and is only ever true on an accepted or disputed trade's serials, so a
- * serial can be in one such trade at a time. Serials copy their collection's
+ * and is only ever true on an accepted or disputed trade's tokens, so a
+ * token can be in one such trade at a time. Tokens copy their collection's
  * indexer values verbatim, like the listing arrays.
  */
 export const tradeOfferItems = pgTable(
@@ -778,7 +779,7 @@ export const tradeOfferItems = pgTable(
     offerId: uuid("offer_id")
       .notNull()
       .references(() => tradeOffers.id, { onDelete: "cascade" }),
-    // the listing a trade's serial came from
+    // the listing a trade's token came from
     listingId: uuid("listing_id").references(() => tradeOffers.id, {
       onDelete: "set null",
     }),
@@ -803,11 +804,11 @@ export const tradeOfferItems = pgTable(
     confirmedAt: tradeTimestamp("confirmed_at"),
   },
   (t) => [
-    // one accepted trade per serial, which also makes a listing claimable once
+    // one accepted trade per token, which also makes a listing claimable once
     uniqueIndex("trade_offer_items_live_token_idx")
       .on(t.tokenId)
       .where(sql`${t.live}`),
-    // the drain's lookup of every offer a transferred serial is part of
+    // the drain's lookup of every offer a transferred token is part of
     index("trade_offer_items_token_idx").on(t.tokenId),
     index("trade_offer_items_offer_idx").on(t.offerId),
     index("trade_offer_items_listing_idx").on(t.listingId),

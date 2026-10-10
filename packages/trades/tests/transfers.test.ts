@@ -26,7 +26,7 @@ function transferability(transferable: boolean): ChainRow {
   return { type: "transferability", tokenId: 201, transferable, timestamp: AT };
 }
 
-// @Kairu owes trader B this serial
+// @Kairu owes trader B this token
 const live: ExpectedItem = {
   kind: "live",
   itemId: 7,
@@ -36,7 +36,7 @@ const live: ExpectedItem = {
   transferred: false,
 };
 
-// @Kairu offers this serial on an open listing
+// @Kairu offers this token on an open listing
 const offered: ExpectedItem = {
   kind: "offered",
   offerId: "listing-1",
@@ -74,13 +74,13 @@ describe("decideTransfer: live trade items", () => {
 
   test("a transfer to anyone else posts a moved event", () => {
     expect(decideTransfer(transfer(KAIRU, OUTSIDER), [live])).toEqual([
-      { type: "event", tradeId: "trade-1", event: "serial_moved" },
+      { type: "event", tradeId: "trade-1", event: "token_moved" },
     ]);
   });
 
   test("turning untransferable posts an event", () => {
     expect(decideTransfer(transferability(false), [live])).toEqual([
-      { type: "event", tradeId: "trade-1", event: "serial_untransferable" },
+      { type: "event", tradeId: "trade-1", event: "token_untransferable" },
     ]);
   });
 
@@ -106,8 +106,8 @@ describe("decideTransfer: live trade items", () => {
 
 describe("decideTransfer: offered items", () => {
   test.each([
-    ["the serial leaves the holder", transfer(KAIRU, OUTSIDER)],
-    ["the serial turns untransferable", transferability(false)],
+    ["the token leaves the holder", transfer(KAIRU, OUTSIDER)],
+    ["the token turns untransferable", transferability(false)],
   ])("breaks when %s", (_, row) => {
     expect(decideTransfer(row, [offered])).toEqual([
       { type: "breaks", offerId: "listing-1" },
@@ -123,7 +123,7 @@ describe("decideTransfer: offered items", () => {
   });
 });
 
-test("decides each item holding the serial, in order", () => {
+test("decides each item holding the token, in order", () => {
   const pendingOffer: ExpectedItem = {
     kind: "offered",
     offerId: "offer-1",

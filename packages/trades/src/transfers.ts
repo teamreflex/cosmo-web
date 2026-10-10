@@ -19,7 +19,7 @@ export type ChainRow =
     };
 
 /**
- * A row in the trade tables that holds the row's serial. A live item belongs
+ * A row in the trade tables that holds the row's token. A live item belongs
  * to an accepted or disputed trade and should move `from` → `to`. An offered
  * item is on an open listing or a pending direct offer, held by `from`.
  */
@@ -35,7 +35,7 @@ export type ExpectedItem =
   | { kind: "offered"; offerId: string; from: string };
 
 export type TransferDecision =
-  // the serial reached its receiver
+  // the token reached its receiver
   | {
       type: "transferred";
       itemId: number;
@@ -45,16 +45,16 @@ export type TransferDecision =
     }
   // the listing breaks, or the pending offer goes stale
   | { type: "breaks"; offerId: string }
-  // a live trade's serial went elsewhere; the trade gets a timeline event
+  // a live trade's token went elsewhere; the trade gets a timeline event
   | {
       type: "event";
       tradeId: string;
-      event: "serial_moved" | "serial_untransferable";
+      event: "token_moved" | "token_untransferable";
     }
   | { type: "ignore" };
 
 /**
- * What one outbox row means for each item holding its serial, in the same
+ * What one outbox row means for each item holding its token, in the same
  * order. Addresses compare case-insensitively.
  */
 export function decideTransfer(
@@ -70,7 +70,7 @@ function decideItem(row: ChainRow, item: ExpectedItem): TransferDecision {
   if (row.type === "transferability") {
     if (row.transferable) return { type: "ignore" };
     return item.kind === "live"
-      ? { type: "event", tradeId: item.tradeId, event: "serial_untransferable" }
+      ? { type: "event", tradeId: item.tradeId, event: "token_untransferable" }
       : { type: "breaks", offerId: item.offerId };
   }
 
@@ -86,7 +86,7 @@ function decideItem(row: ChainRow, item: ExpectedItem): TransferDecision {
         at: row.timestamp,
         hash: row.hash,
       }
-    : { type: "event", tradeId: item.tradeId, event: "serial_moved" };
+    : { type: "event", tradeId: item.tradeId, event: "token_moved" };
 }
 
 function sameAddress(a: string, b: string) {

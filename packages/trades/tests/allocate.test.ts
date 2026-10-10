@@ -150,7 +150,7 @@ describe("allocate", () => {
     expect(isFullyAllocated(allocation)).toBe(false);
   });
 
-  test("never gives one serial to two rows", () => {
+  test("never gives one token to two rows", () => {
     const heejin = objekt("Atom01", "HeeJin", "101Z");
     const wants = [
       range(1, { member: ["HeeJin"] }),

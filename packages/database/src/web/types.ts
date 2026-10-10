@@ -227,17 +227,16 @@ export const tradeOfferStatuses = [
 export type TradeOfferStatus = (typeof tradeOfferStatuses)[number];
 
 /**
- * A listing is open until claimed, and filled when its trade completes. It
- * ends early when the poster withdraws it, it expires, an offered serial
- * leaves the poster or turns untransferable (broken), staff remove it, or
- * the poster abandons a claim.
+ * A listing is open until claimed, and filled when its trade completes.
+ * Listings don't expire. One ends early when the poster withdraws it, an
+ * offered token leaves the poster or turns untransferable (broken), staff
+ * remove it, or the poster abandons a claim.
  */
 export const listingStatuses = [
   "open",
   "claimed",
   "filled",
   "withdrawn",
-  "expired",
   "broken",
   "removed",
   "abandoned",
@@ -246,7 +245,7 @@ export type ListingStatus = (typeof listingStatuses)[number];
 
 /**
  * A direct offer is pending until the recipient answers it; a trade from a
- * listing starts accepted. `stale` is a pending offer whose serial moved.
+ * listing starts accepted. `stale` is a pending offer whose token moved.
  */
 export const tradeStatuses = [
   "pending",
@@ -263,7 +262,7 @@ export const tradeStatuses = [
 ] as const satisfies readonly TradeOfferStatus[];
 export type TradeStatus = (typeof tradeStatuses)[number];
 
-// a trade whose serials are reserved, which blocks either party's deletion
+// a trade whose tokens are reserved, which blocks either party's deletion
 export const liveTradeStatuses = [
   "accepted",
   "disputed",
@@ -337,5 +336,5 @@ export type TradeEvent =
   | { type: "disputed"; by: TradeSide; reportId: string }
   | { type: "deadline_extended"; deadlineAt: string }
   | { type: "timed_out"; abandoned: TradeSide[] }
-  | { type: "serial_moved"; tokenId: number }
-  | { type: "serial_untransferable"; tokenId: number };
+  | { type: "token_moved"; tokenId: number }
+  | { type: "token_untransferable"; tokenId: number };

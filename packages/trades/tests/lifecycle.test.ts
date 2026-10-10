@@ -45,7 +45,7 @@ function statusAfter(state: TradeState, event: TradeEvent) {
   return result.ok ? result.trade.status : result.reason;
 }
 
-// a purchase: the seller (`from`) sends a serial, the buyer (`to`) pays
+// a purchase: the seller (`from`) sends a token, the buyer (`to`) pays
 const purchase = [objekt("from"), payment("to")];
 
 /**
@@ -132,7 +132,7 @@ describe("transition: parties", () => {
 
 describe("transition: cancelling", () => {
   test.each([
-    ["a serial arrived", [objekt("from", true), payment("to")]],
+    ["a token arrived", [objekt("from", true), payment("to")]],
     [
       "the buyer marked paid",
       [objekt("from"), payment("to", { markedPaid: true })],
@@ -160,7 +160,7 @@ describe("transition: cancelling", () => {
 describe("transition: items", () => {
   const swap = [objekt("from"), objekt("to"), objekt("to")];
 
-  test("a swap completes when the last serial arrives", () => {
+  test("a swap completes when the last token arrives", () => {
     let state = trade("accepted", swap);
     for (const item of [0, 2]) {
       const result = transition(state, { type: "transfer", item });
@@ -199,7 +199,7 @@ describe("transition: items", () => {
     );
   });
 
-  test("a disputed trade records the last serial but stays disputed", () => {
+  test("a disputed trade records the last token but stays disputed", () => {
     expect(
       transition(trade("disputed", [objekt("from", true), objekt("to")]), {
         type: "transfer",
@@ -216,10 +216,10 @@ describe("transition: items", () => {
 
   test.each([
     ["an index past the end", { type: "transfer", item: 2 }],
-    ["a payment as a serial", { type: "transfer", item: 1 }],
-    ["a serial as a payment", { type: "mark_paid", item: 0, by: "to" }],
+    ["a payment as a token", { type: "transfer", item: 1 }],
+    ["a token as a payment", { type: "mark_paid", item: 0, by: "to" }],
     [
-      "a confirmation for a serial",
+      "a confirmation for a token",
       { type: "confirm_payment", item: 0, by: "to" },
     ],
   ] satisfies [string, TradeEvent][])("refuses %s", (_, event) => {
@@ -248,7 +248,7 @@ describe("transition: items", () => {
 });
 
 describe("transition: timing out", () => {
-  test("marks the side still owing serials", () => {
+  test("marks the side still owing tokens", () => {
     // B sent 3 of 6, @Kairu sent theirs
     const items = [
       objekt("from", true),
@@ -307,7 +307,6 @@ const listingAllowed: [ListingEvent, ListingStatus[], ListingStatus][] = [
   ["reopen", ["claimed"], "open"],
   ["fill", ["claimed"], "filled"],
   ["withdraw", ["open"], "withdrawn"],
-  ["expire", ["open"], "expired"],
   ["break", ["open", "claimed"], "broken"],
   ["remove", ["open"], "removed"],
   ["abandon", ["claimed"], "abandoned"],
