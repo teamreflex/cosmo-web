@@ -1,7 +1,9 @@
 import { db } from "@/lib/server/db";
 import {
+  apolloUsername,
   namedUserColumns,
-  staffUsername,
+  staffUser,
+  staffUserFields,
 } from "@/lib/server/staff-users.server";
 import { prefixPattern } from "@/lib/server/util.server";
 import type { CosmoLinkHistoryEntry } from "@/lib/universal/cosmo-link-history";
@@ -63,7 +65,7 @@ export async function fetchCosmoLinkHistory(input: CosmoLinkHistoryQueryInput) {
       with: {
         cosmoAccount: { columns: { username: true, address: true } },
         user: { columns: namedUserColumns },
-        staff: { columns: namedUserColumns },
+        staff: staffUserFields,
       },
       orderBy: { id: "desc" },
       limit: HISTORY_PAGE_SIZE,
@@ -87,13 +89,13 @@ export async function fetchCosmoLinkHistory(input: CosmoLinkHistoryQueryInput) {
       cosmo: row.cosmoAccount,
       user: {
         id: row.userId,
-        username: row.user === null ? null : staffUsername(row.user),
+        username: row.user === null ? null : apolloUsername(row.user),
       },
       reason:
         row.reason === "staff-move"
           ? {
               kind: "staff-move",
-              staff: row.staff === null ? null : staffUsername(row.staff),
+              staff: staffUser(row.staff),
             }
           : { kind: row.reason },
     })),

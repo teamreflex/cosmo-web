@@ -1,3 +1,4 @@
+import StaffUserName from "@/components/admin/staff-user-name";
 import {
   Select,
   SelectContent,
@@ -38,9 +39,11 @@ export default function AuditFilters({ filters, className }: Props) {
     ...staff.map((member) => ({
       value: member.id,
       label:
-        member.username === null
-          ? m.admin_audit_staff_deleted({ id: member.id.slice(0, 8) })
-          : `@${member.username}`,
+        member.user === null ? (
+          m.admin_audit_staff_deleted({ id: member.id.slice(0, 8) })
+        ) : (
+          <StaffUserName user={member.user} link={false} />
+        ),
     })),
   ];
   const actionItems = [

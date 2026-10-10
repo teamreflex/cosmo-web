@@ -2,8 +2,8 @@ import { transferCosmoAccount } from "@/lib/server/cosmo-transfer.server";
 import { db } from "@/lib/server/db";
 import { staffMiddleware } from "@/lib/server/middlewares";
 import {
+  apolloUsername,
   namedUserColumns,
-  staffUsername,
 } from "@/lib/server/staff-users.server";
 import { prefixPattern } from "@/lib/server/util.server";
 import type {
@@ -39,7 +39,7 @@ export const $searchCosmoTransferSources = createServerFn({ method: "GET" })
         userId: { isNotNull: true },
       },
       columns: { address: true, username: true },
-      with: { user: { columns: { id: true, ...namedUserColumns } } },
+      with: { user: { columns: { id: true } } },
       limit: 10,
     });
 
@@ -51,7 +51,7 @@ export const $searchCosmoTransferSources = createServerFn({ method: "GET" })
             {
               address: row.address,
               cosmoUsername: row.username,
-              owner: { id: row.user.id, username: staffUsername(row.user) },
+              ownerId: row.user.id,
             },
           ],
     );
@@ -87,6 +87,6 @@ export const $searchCosmoTransferTargets = createServerFn({ method: "GET" })
 
     return users.map((user): CosmoTransferTarget => ({
       id: user.id,
-      username: staffUsername(user),
+      username: apolloUsername(user),
     }));
   });

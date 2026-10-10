@@ -1,19 +1,23 @@
 import { db } from "@/lib/server/db";
 import type { DbOrTx } from "@/lib/server/db";
 import {
-  fetchStaffUsernames,
-  namedUserColumns,
-  staffUsername,
+  apolloUsername,
+  fetchStaffUsers,
+  staffUser,
+  staffUserFields,
 } from "@/lib/server/staff-users.server";
+import type { StaffUserRow } from "@/lib/server/staff-users.server";
 import type { StaffAuditQueryInput } from "@/lib/universal/schema/staff-audit";
 import type {
   AdminAuditDetail,
   AdminAuditRow,
   AdminAuditTarget,
   AuditStaffMember,
+  MoveSide,
 } from "@/lib/universal/staff-audit";
 import { parseRole } from "@apollo/auth";
-import { staffAudit } from "@apollo/database/web/schema";
+import { user } from "@apollo/database/auth";
+import { cosmoAccounts, staffAudit } from "@apollo/database/web/schema";
 import type {
   StaffAuditDetail,
   StaffAuditTargetType,
@@ -206,7 +210,10 @@ export async function fetchStaffAudit(input: StaffAuditQueryInput) {
       orderBy: { id: "desc" },
       limit: AUDIT_PAGE_SIZE,
       with: {
-        staff: { columns: { ...namedUserColumns, role: true } },
+        staff: {
+          columns: { ...staffUserFields.columns, role: true },
+          with: staffUserFields.with,
+        },
         report: { columns: { id: true, status: true } },
       },
     }),
@@ -221,7 +228,7 @@ export async function fetchStaffAudit(input: StaffAuditQueryInput) {
       : undefined,
   ]);
 
-  const usernames = await fetchStaffUsernames(
+  const users = await fetchStaffUsers(
     rows.flatMap((row) => {
       if (row.targetType === "user") {
         return [row.targetId];
@@ -246,10 +253,10 @@ export async function fetchStaffAudit(input: StaffAuditQueryInput) {
       staff:
         row.staff === null
           ? null
-          : { username: staffUsername(row.staff), role: row.staff.role },
+          : { ...staffUser(row.staff), role: row.staff.role },
       report: row.report,
       detail: row.detail === null ? null : toAuditDetail(row.detail),
-      target: toAuditTarget(row, usernames),
+      target: toAuditTarget(row, users),
     })),
     nextCursor: rows.length === AUDIT_PAGE_SIZE && last ? last.id : undefined,
     total,
@@ -262,14 +269,14 @@ function toAuditTarget(
     targetId: string;
     detail: StaffAuditDetail | null;
   },
-  usernames: Map<string, string>,
+  users: Map<string, StaffUserRow>,
 ): AdminAuditTarget {
   switch (row.targetType) {
     case "user":
       return {
         type: "user",
         id: row.targetId,
-        username: usernames.get(row.targetId) ?? null,
+        user: staffUser(users.get(row.targetId) ?? null),
       };
     case "report":
       return { type: "report", id: row.targetId };
@@ -282,7 +289,7 @@ function toAuditTarget(
         type: "api-key",
         id: row.targetId,
         name: row.detail.name,
-        owner: usernames.get(row.detail.ownerId) ?? null,
+        owner: staffUser(users.get(row.detail.ownerId) ?? null),
         enabled: row.detail.enabled,
       };
     case "collection":
@@ -298,10 +305,15 @@ function toAuditTarget(
         type: "cosmo-account",
         address: row.targetId,
         username: row.detail.username,
-        from: usernames.get(row.detail.fromUserId) ?? null,
-        to: usernames.get(row.detail.toUserId) ?? null,
+        from: moveSide(row.detail.fromUserId, users),
+        to: moveSide(row.detail.toUserId, users),
       };
   }
+}
+
+function moveSide(id: string, users: Map<string, StaffUserRow>): MoveSide {
+  const side = users.get(id);
+  return { id, username: side === undefined ? null : apolloUsername(side) };
 }
 
 /**
@@ -329,16 +341,35 @@ function toAuditDetail(detail: StaffAuditDetail): AdminAuditDetail | null {
  * have no name and sort last.
  */
 export async function fetchAuditStaff(): Promise<AuditStaffMember[]> {
-  const staff = await db
+  const staffIds = db
     .selectDistinct({ id: staffAudit.staffId })
-    .from(staffAudit);
-  const usernames = await fetchStaffUsernames(staff.map((row) => row.id));
+    .from(staffAudit)
+    .as("audit_staff");
+  const staff = await db
+    .select({
+      id: staffIds.id,
+      user: {
+        name: user.name,
+        username: user.username,
+        displayUsername: user.displayUsername,
+      },
+      cosmoAccount: { username: cosmoAccounts.username },
+    })
+    .from(staffIds)
+    .leftJoin(user, eq(user.id, staffIds.id))
+    .leftJoin(cosmoAccounts, eq(cosmoAccounts.userId, user.id));
 
   return staff
-    .map(({ id }) => ({ id, username: usernames.get(id) ?? null }))
+    .map((row) => ({
+      id: row.id,
+      user:
+        row.user === null
+          ? null
+          : staffUser({ ...row.user, cosmoAccount: row.cosmoAccount }),
+    }))
     .toSorted((a, b) =>
-      a.username === null || b.username === null
-        ? Number(a.username === null) - Number(b.username === null)
-        : a.username.localeCompare(b.username),
+      a.user === null || b.user === null
+        ? Number(a.user === null) - Number(b.user === null)
+        : a.user.username.localeCompare(b.user.username),
     );
 }

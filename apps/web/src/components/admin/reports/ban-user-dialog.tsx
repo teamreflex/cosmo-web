@@ -1,3 +1,4 @@
+import StaffUserName from "@/components/admin/staff-user-name";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -33,7 +34,9 @@ import type {
   ReportTargetUser,
 } from "@/lib/universal/reports";
 import { type BanUser, banUserSchema } from "@/lib/universal/schema/reports";
+import { staffUserText } from "@/lib/universal/staff-users";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useId } from "react";
@@ -79,7 +82,7 @@ export default function BanUserDialog({
         },
       }),
     onSuccess: async () => {
-      toast.success(m.admin_ban_banned({ username: user.username }));
+      toast.success(m.admin_ban_banned({ username: staffUserText(user) }));
       handleOpenChange(false);
       await queryClient.invalidateQueries(adminReportsQueryFilter);
     },
@@ -120,7 +123,13 @@ export default function BanUserDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
-            {m.admin_ban_title({ username: user.username })}
+            <ParaglideMessage
+              message={m.admin_ban_title}
+              inputs={{ username: staffUserText(user) }}
+              markup={{
+                user: () => <StaffUserName user={user} link={false} />,
+              }}
+            />
           </DialogTitle>
           <DialogDescription>
             {report.otherOpenReportCount === 0

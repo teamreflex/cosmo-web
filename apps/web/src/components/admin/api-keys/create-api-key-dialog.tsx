@@ -160,8 +160,7 @@ export default function CreateApiKeyDialog() {
                       onChange={handleSelectUser}
                       search={searchUsersQuery}
                       getKey={(user) => user.id}
-                      getLabel={(user) => user.cosmoUsername}
-                      getSublabel={(user) => user.username}
+                      getLabel={(user) => `@${user.cosmoUsername}`}
                       getInitial={(user) =>
                         user.cosmoUsername.charAt(0).toUpperCase()
                       }

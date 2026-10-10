@@ -1,3 +1,4 @@
+import StaffUserName from "@/components/admin/staff-user-name";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -51,7 +52,9 @@ export default function ApiKeysTable() {
           {data.map((key) => (
             <TableRow key={key.id}>
               <TableCell className="font-medium">{key.name ?? "—"}</TableCell>
-              <TableCell>{key.owner.username ?? "—"}</TableCell>
+              <TableCell>
+                <StaffUserName user={key.owner} />
+              </TableCell>
               <TableCell className="font-mono text-xs text-muted-foreground">
                 {keyPreview(key)}
               </TableCell>

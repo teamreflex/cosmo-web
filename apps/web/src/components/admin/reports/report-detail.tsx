@@ -1,3 +1,4 @@
+import StaffUserName from "@/components/admin/staff-user-name";
 import StatusPill from "@/components/objekt/detail/status-pill";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -120,11 +121,16 @@ function Detail({ id }: { id: string }) {
           </div>
           <div className="text-[13px] text-muted-foreground">
             {m.admin_reports_reported_by()}{" "}
-            <b className="font-semibold text-foreground">
-              {report.reporter
-                ? `@${report.reporter.username}`
-                : m.admin_reports_deleted_user()}
-            </b>
+            {report.reporter === null ? (
+              <b className="font-semibold text-foreground">
+                {m.admin_reports_deleted_user()}
+              </b>
+            ) : (
+              <StaffUserName
+                user={report.reporter}
+                className="font-semibold text-foreground"
+              />
+            )}
             {" · "}
             <Timestamp date={report.createdAt} relative="long" />
           </div>

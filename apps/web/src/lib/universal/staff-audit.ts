@@ -1,3 +1,4 @@
+import type { StaffUser } from "@/lib/universal/staff-users";
 import type { Role } from "@apollo/auth";
 import type {
   ReportStatus,
@@ -5,19 +6,21 @@ import type {
 } from "@apollo/database/web/types";
 
 /**
- * What an audit row acted on. A user's username, an API key owner's, and the
- * two sides of a COSMO account move, are null once that account is deleted.
- * An API key's name and enabled state, and a moved COSMO account's username,
- * are as they were when the action ran.
+ * What an audit row acted on. A target user, an API key's owner, and the two
+ * sides of a COSMO account move are null once that account is deleted. The
+ * sides of a move are named by their Apollo usernames, because their current
+ * COSMO accounts may not be the one that moved. An API key's name and enabled
+ * state, and a moved COSMO account's username, are as they were when the
+ * action ran.
  */
 export type AdminAuditTarget =
-  | { type: "user"; id: string; username: string | null }
+  | { type: "user"; id: string; user: StaffUser | null }
   | { type: "report"; id: string }
   | {
       type: "api-key";
       id: string;
       name: string | null;
-      owner: string | null;
+      owner: StaffUser | null;
       enabled: boolean;
     }
   | { type: "collection"; slug: string }
@@ -25,9 +28,15 @@ export type AdminAuditTarget =
       type: "cosmo-account";
       address: string;
       username: string;
-      from: string | null;
-      to: string | null;
+      from: MoveSide;
+      to: MoveSide;
     };
+
+/**
+ * One side of a COSMO account move: the user's id and Apollo username, which
+ * is null once the account is deleted.
+ */
+export type MoveSide = { id: string; username: string | null };
 
 /**
  * The parts of an audit row's stored detail that the log shows, with roles
@@ -46,16 +55,16 @@ export type AdminAuditRow = {
   id: number;
   createdAt: Date;
   action: StaffAuditAction;
-  staff: { username: string; role: Role } | null;
+  staff: (StaffUser & { role: Role }) | null;
   report: { id: string; status: ReportStatus } | null;
   detail: AdminAuditDetail | null;
   target: AdminAuditTarget;
 };
 
 /**
- * A null username is a deleted staff member.
+ * A null user is a deleted staff member.
  */
 export type AuditStaffMember = {
   id: string;
-  username: string | null;
+  user: StaffUser | null;
 };

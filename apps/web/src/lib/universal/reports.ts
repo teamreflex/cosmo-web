@@ -1,3 +1,4 @@
+import type { StaffUser } from "@/lib/universal/staff-users";
 import type { Role } from "@apollo/auth";
 import type {
   ReportReason,
@@ -22,7 +23,7 @@ export type OpenReportStatus = (typeof openReportStatuses)[number];
  */
 export type AdminReportRowTarget = {
   type: "user";
-  user: { username: string } | null;
+  user: StaffUser | null;
 };
 
 /**
@@ -41,23 +42,20 @@ export type AdminReportRow = {
   id: string;
   reason: ReportReason;
   createdAt: Date;
-  reporter: { username: string } | null;
+  reporter: StaffUser | null;
   target: AdminReportRowTarget;
 };
 
 /**
  * A reported user as staff see them. `ban` is null unless a ban is in force;
- * a null `until` is permanent. `profile` is the COSMO username to link to.
- * A `protected` account has a verified email on a protected domain, so
+ * a null `until` is permanent. A `protected` account has a verified email on a protected domain, so
  * nobody can ban, unban or re-role it; only viewers who can ban are told,
  * and everyone else gets null.
  */
-export type ReportTargetUser = {
+export type ReportTargetUser = StaffUser & {
   id: string;
-  username: string;
   role: Role;
   ban: { until: Date | null } | null;
-  profile: string | null;
   protected: boolean | null;
 };
 
@@ -75,7 +73,7 @@ export type ReportOutcome =
   | {
       status: "resolved" | "dismissed";
       resolvedAt: Date;
-      resolver: { username: string } | null;
+      resolver: StaffUser | null;
     };
 
 export type AdminReportDetail = ReportOutcome & {
@@ -83,7 +81,7 @@ export type AdminReportDetail = ReportOutcome & {
   reason: ReportReason;
   note: string | null;
   createdAt: Date;
-  reporter: { username: string } | null;
+  reporter: StaffUser | null;
   /** Open or escalated reports on the same target, besides this one. */
   otherOpenReportCount: number;
   target: AdminReportDetailTarget;

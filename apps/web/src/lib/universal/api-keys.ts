@@ -1,3 +1,5 @@
+import type { StaffUser } from "@/lib/universal/staff-users";
+
 export type AdminApiKey = {
   id: string;
   name: string | null;
@@ -7,14 +9,10 @@ export type AdminApiKey = {
   lastRequest: Date | null;
   expiresAt: Date | null;
   createdAt: Date;
-  owner: {
-    id: string;
-    username: string | null;
-  };
+  owner: StaffUser;
 };
 
 export type UserSearchResult = {
   id: string;
   cosmoUsername: string;
-  username: string | null;
 };

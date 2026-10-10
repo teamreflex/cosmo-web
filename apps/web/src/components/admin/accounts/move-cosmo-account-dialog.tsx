@@ -44,8 +44,8 @@ const emptyForm = {
 
 /**
  * Moves a COSMO account's link from the Apollo account that holds it to
- * another one without a link. From is found by COSMO username and labelled
- * with its owner; To lists only live users without a link.
+ * another one without a link. From is found by COSMO username; To lists only
+ * live users without a link, by Apollo username and id prefix.
  */
 export default function MoveCosmoAccountDialog() {
   const fromId = useId();
@@ -134,15 +134,15 @@ export default function MoveCosmoAccountDialog() {
                     value={source}
                     onChange={(picked) => {
                       setSource(picked);
-                      field.onChange(picked?.owner.id ?? "");
+                      field.onChange(picked?.ownerId ?? "");
                       form.setValue("address", picked?.address ?? "");
                     }}
                     search={cosmoTransferSourcesQuery}
                     getKey={(account) => account.address}
-                    getLabel={(account) => `@${account.owner.username}`}
-                    getSublabel={(account) => account.cosmoUsername}
+                    getLabel={(account) => `@${account.cosmoUsername}`}
+                    getSublabel={(account) => shortAddress(account.address)}
                     getInitial={(account) =>
-                      account.owner.username.charAt(0).toUpperCase()
+                      account.cosmoUsername.charAt(0).toUpperCase()
                     }
                     placeholder={m.admin_cosmo_move_from_placeholder()}
                     invalid={fieldState.invalid}
@@ -168,7 +168,8 @@ export default function MoveCosmoAccountDialog() {
                     }}
                     search={cosmoTransferTargetsQuery}
                     getKey={(user) => user.id}
-                    getLabel={(user) => `@${user.username}`}
+                    getLabel={(user) => user.username}
+                    getSublabel={(user) => user.id.slice(0, 8)}
                     getInitial={(user) => user.username.charAt(0).toUpperCase()}
                     placeholder={m.admin_cosmo_move_to_placeholder({
                       appName: env.VITE_APP_NAME,

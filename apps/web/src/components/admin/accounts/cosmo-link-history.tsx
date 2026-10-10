@@ -1,3 +1,4 @@
+import StaffUserName from "@/components/admin/staff-user-name";
 import StatusPill from "@/components/objekt/detail/status-pill";
 import UserAvatar from "@/components/profile/user-avatar";
 import { Button } from "@/components/ui/button";
@@ -272,7 +273,7 @@ function HistoryRow({ entry }: { entry: CosmoLinkHistoryEntry }) {
               username={entry.user.username}
               className="size-5.5 **:p-0.5"
             />
-            <span className="truncate font-medium">@{entry.user.username}</span>
+            <span className="truncate font-medium">{entry.user.username}</span>
           </span>
         )}
         {/* tells apart deleted accounts, which share a label */}
@@ -281,8 +282,16 @@ function HistoryRow({ entry }: { entry: CosmoLinkHistoryEntry }) {
         </span>
         <span className="text-xs text-muted-foreground">
           {reasonLabels[entry.reason.kind]()}
-          {entry.reason.kind === "staff-move" &&
-            ` · ${entry.reason.staff === null ? m.common_deleted_user() : `@${entry.reason.staff}`}`}
+          {entry.reason.kind === "staff-move" && (
+            <>
+              {" · "}
+              {entry.reason.staff === null ? (
+                m.common_deleted_user()
+              ) : (
+                <StaffUserName user={entry.reason.staff} />
+              )}
+            </>
+          )}
         </span>
       </div>
 

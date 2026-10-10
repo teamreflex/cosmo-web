@@ -1,3 +1,4 @@
+import StaffUserName from "@/components/admin/staff-user-name";
 import StatusPill from "@/components/objekt/detail/status-pill";
 import UserAvatar from "@/components/profile/user-avatar";
 import { Button } from "@/components/ui/button";
@@ -12,9 +13,9 @@ import type {
   AdminReportDetail,
   ReportTargetUser,
 } from "@/lib/universal/reports";
+import { staffUserText } from "@/lib/universal/staff-users";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 type Props = {
@@ -40,17 +41,7 @@ export default function ReportTarget({ report }: Props) {
       <UserAvatar username={user.username} className="size-8 **:p-1" />
       <div className="flex min-w-0 flex-col gap-0.5">
         <div className="flex flex-wrap items-center gap-2">
-          {user.profile === null ? (
-            <span className="truncate font-medium">@{user.username}</span>
-          ) : (
-            <Link
-              to="/@{$username}"
-              params={{ username: user.profile }}
-              className="truncate font-medium hover:underline"
-            >
-              @{user.username}
-            </Link>
-          )}
+          <StaffUserName user={user} className="font-medium" />
           <StatusPill tone="muted" className="font-sans">
             {roleLabel(user.role)}
           </StatusPill>
@@ -116,7 +107,9 @@ function UnbanButton({ user }: { user: ReportTargetUser }) {
   const mutation = useMutation({
     mutationFn: () => $unbanUser({ data: { userId: user.id } }),
     onSuccess: async () => {
-      toast.success(m.admin_reports_unbanned({ username: user.username }));
+      toast.success(
+        m.admin_reports_unbanned({ username: staffUserText(user) }),
+      );
       await queryClient.invalidateQueries(adminReportsQueryFilter);
     },
     onError: (error) => {
