@@ -813,7 +813,8 @@ export const tradeOfferItems = pgTable(
  * What a listing asks for. Exact rows name a collection and copy its indexer
  * values, range rows hold one array per column where an empty array matches
  * any value, and the payment row prices the listing. The trade side is every
- * exact and range row, all required.
+ * exact and range row, all required. A listing's wants are inserted
+ * together and never edited, so id order is the order they were posted in.
  */
 export const tradeListingWants = pgTable(
   "trade_listing_wants",
@@ -822,7 +823,6 @@ export const tradeListingWants = pgTable(
     listingId: uuid("listing_id")
       .notNull()
       .references(() => tradeOffers.id, { onDelete: "cascade" }),
-    position: smallint("position").notNull(),
     kind: tradeWantKind("kind").notNull(),
     count: smallint("count"),
     slug: varchar("slug", { length: 255 }),
@@ -840,10 +840,8 @@ export const tradeListingWants = pgTable(
     currency: varchar("currency", { length: 3 }),
   },
   (t) => [
-    uniqueIndex("trade_listing_wants_position_idx").on(
-      t.listingId,
-      t.position,
-    ),
+    // a listing's wants in the order they were posted, which is id order
+    index("trade_listing_wants_listing_idx").on(t.listingId, t.id),
     // at most one payment side
     uniqueIndex("trade_listing_wants_payment_idx")
       .on(t.listingId)

@@ -10,7 +10,6 @@ CREATE TYPE "trade_want_kind" AS ENUM('exact', 'range', 'payment');--> statement
 CREATE TABLE "trade_listing_wants" (
 	"id" bigserial PRIMARY KEY,
 	"listing_id" uuid NOT NULL,
-	"position" smallint NOT NULL,
 	"kind" "trade_want_kind" NOT NULL,
 	"count" smallint,
 	"slug" varchar(255),
@@ -104,7 +103,7 @@ CREATE TABLE "trade_offers" (
 	CONSTRAINT "trade_offers_disputed_chk" CHECK ("status" <> 'disputed' OR "dispute_report_id" IS NOT NULL)
 );
 --> statement-breakpoint
-CREATE UNIQUE INDEX "trade_listing_wants_position_idx" ON "trade_listing_wants" ("listing_id","position");--> statement-breakpoint
+CREATE INDEX "trade_listing_wants_listing_idx" ON "trade_listing_wants" ("listing_id","id");--> statement-breakpoint
 CREATE UNIQUE INDEX "trade_listing_wants_payment_idx" ON "trade_listing_wants" ("listing_id") WHERE "kind" = 'payment';--> statement-breakpoint
 CREATE INDEX "trade_messages_trade_idx" ON "trade_messages" ("trade_id","id");--> statement-breakpoint
 CREATE UNIQUE INDEX "trade_offer_items_live_token_idx" ON "trade_offer_items" ("token_id") WHERE "live";--> statement-breakpoint

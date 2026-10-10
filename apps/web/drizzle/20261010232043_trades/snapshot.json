@@ -2,7 +2,7 @@
   "type": "diff",
   "version": "9",
   "dialect": "postgres",
-  "id": "edb99533-8066-43c0-a71b-102139079139",
+  "id": "d001a897-6b4a-42fb-9981-16ead7d5f489",
   "prevIds": [
     "13d4b262-7e11-4270-a42c-e8a8d62d35f8"
   ],
@@ -298,19 +298,19 @@
         "index",
         "public",
         "trade_listing_wants",
-        "trade_listing_wants_position_idx"
+        "trade_listing_wants_listing_idx"
       ],
       "writes": [
-        "s|idx|public.trade_listing_wants_position_idx",
-        "n|idx|public.trade_listing_wants_position_idx",
-        "e|idx|public.trade_listing_wants_position_idx",
-        "n|rel|public.trade_listing_wants_position_idx"
+        "s|idx|public.trade_listing_wants_listing_idx",
+        "n|idx|public.trade_listing_wants_listing_idx",
+        "e|idx|public.trade_listing_wants_listing_idx",
+        "n|rel|public.trade_listing_wants_listing_idx"
       ],
       "reads": [
         "n|tbl|public.trade_listing_wants",
         "n|sch|public",
         "n|col|public.trade_listing_wants.listing_id",
-        "n|col|public.trade_listing_wants.position"
+        "n|col|public.trade_listing_wants.id"
       ]
     },
     {
@@ -960,22 +960,6 @@
         "table": "trade_listing_wants",
         "name": "listing_id",
         "type": "uuid",
-        "typeSchema": null,
-        "notNull": true,
-        "dimensions": 0,
-        "default": null,
-        "generated": null,
-        "identity": null,
-        "entityType": "columns"
-      }
-    },
-    {
-      "op": "create",
-      "row": {
-        "schema": "public",
-        "table": "trade_listing_wants",
-        "name": "position",
-        "type": "smallint",
         "typeSchema": null,
         "notNull": true,
         "dimensions": 0,
@@ -2046,7 +2030,7 @@
       "row": {
         "schema": "public",
         "table": "trade_listing_wants",
-        "name": "trade_listing_wants_position_idx",
+        "name": "trade_listing_wants_listing_idx",
         "nameExplicit": true,
         "columns": [
           {
@@ -2057,14 +2041,14 @@
             "opclass": null
           },
           {
-            "value": "position",
+            "value": "id",
             "isExpression": false,
             "asc": true,
             "nullsFirst": false,
             "opclass": null
           }
         ],
-        "isUnique": true,
+        "isUnique": false,
         "where": null,
         "with": "",
         "method": "btree",
