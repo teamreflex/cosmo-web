@@ -5,9 +5,10 @@ import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
 import type { GravityWithPoll } from "@apollo/database/web/types";
 import { IconCalendarEvent } from "@tabler/icons-react";
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { ClientOnly, Link } from "@tanstack/react-router";
 import { format } from "date-fns";
 import { Card, CardContent } from "../ui/card";
+import { Skeleton } from "../ui/skeleton";
 import GravityTypeBadge from "./gravity-type-badge";
 
 type Props = {
@@ -86,11 +87,14 @@ function GravityRow({ gravity, artist }: GravityRowProps) {
         {/* Mobile: Row 2 / Desktop: Column 3 */}
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <IconCalendarEvent className="size-4" />
-          <div className="flex gap-1">
-            <span>{format(gravity.startDate, "MMM d, yyyy")}</span>
-            <span>~</span>
-            <span>{format(gravity.endDate, "MMM d, yyyy")}</span>
-          </div>
+          {/* dates render in the viewer's timezone, so they wait for the client */}
+          <ClientOnly fallback={<Skeleton className="h-4 w-40 rounded-full" />}>
+            <div className="flex gap-1">
+              <span>{format(gravity.startDate, "MMM d, yyyy")}</span>
+              <span>~</span>
+              <span>{format(gravity.endDate, "MMM d, yyyy")}</span>
+            </div>
+          </ClientOnly>
         </div>
 
         {/* Mobile: Row 3 / Desktop: Column 4 */}
