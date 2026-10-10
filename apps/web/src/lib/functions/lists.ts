@@ -12,8 +12,8 @@ import { fetchLatestFxRate } from "@/lib/server/objekts/fx.server";
 import {
   assertOwnsTokensMulti,
   assertUserOwnsList,
+  queueTradeNotifications,
 } from "@/lib/server/objekts/lists.server";
-import { Runtime } from "@/lib/server/runtime.server";
 import type { PublicUser } from "@/lib/universal/auth";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import type {
@@ -40,7 +40,6 @@ import {
 import { createSlug, sanitizeUuid } from "@/lib/utils";
 import { objektListEntries, objektLists } from "@apollo/database/web/schema";
 import type { ObjektListEntry } from "@apollo/database/web/types";
-import { TradeNotificationsQueue } from "@apollo/queue";
 import { redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, inArray, ne, type SQLWrapper, sql } from "drizzle-orm";
@@ -662,16 +661,12 @@ export const $addObjektsToHaveList = createServerFn({ method: "POST" })
     });
 
     if (slugs.size > 0) {
-      await Runtime.runPromise(
-        TradeNotificationsQueue.use((queue) =>
-          queue.offer({
-            side: "have",
-            sourceUserId: userId,
-            sourceListId: data.objektListId,
-            slugs: [...slugs],
-          }),
-        ),
-      );
+      await queueTradeNotifications({
+        side: "have",
+        sourceUserId: userId,
+        sourceListId: data.objektListId,
+        slugs: [...slugs],
+      });
     }
 
     return { inserted };
@@ -754,16 +749,12 @@ export const $addObjektsToWantList = createServerFn({ method: "POST" })
     });
 
     if (notify) {
-      await Runtime.runPromise(
-        TradeNotificationsQueue.use((queue) =>
-          queue.offer({
-            side: "want",
-            sourceUserId: userId,
-            sourceListId: data.objektListId,
-            slugs: objekts.map((o) => o.slug),
-          }),
-        ),
-      );
+      await queueTradeNotifications({
+        side: "want",
+        sourceUserId: userId,
+        sourceListId: data.objektListId,
+        slugs: objekts.map((o) => o.slug),
+      });
     }
 
     // want lists stack quantity, so every add counts toward the inserted total

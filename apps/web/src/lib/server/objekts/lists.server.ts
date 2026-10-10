@@ -3,8 +3,14 @@ import { ExpectedError } from "@/lib/universal/errors/expected";
 import { numberLegacyListCopies } from "@/lib/universal/lists";
 import { objekts } from "@apollo/database/indexer/schema";
 import { objektListEntries, objektLists } from "@apollo/database/web/schema";
+import {
+  type TradeNotificationsJob,
+  TradeNotificationsQueue,
+} from "@apollo/queue";
+import { captureException } from "@sentry/bun";
 import { and, eq, inArray } from "drizzle-orm";
 import { db, type DbOrTx } from "../db";
+import { Runtime } from "../runtime.server";
 
 /**
  * Copy the address's legacy lists and their entries onto the user. Runs on
@@ -111,4 +117,15 @@ export async function assertOwnsTokensMulti(
       throw new ExpectedError("not_owned");
     }
   }
+}
+
+/**
+ * Queue the trade-notification fan-out for a list add that has already
+ * committed. A Redis failure is reported instead of thrown: the add succeeded,
+ * and a client retry would repeat it, stacking want-list quantities twice.
+ */
+export async function queueTradeNotifications(job: TradeNotificationsJob) {
+  await Runtime.runPromise(
+    TradeNotificationsQueue.use((queue) => queue.offer(job)),
+  ).catch(captureException);
 }
