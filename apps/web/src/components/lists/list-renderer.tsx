@@ -25,7 +25,7 @@ export default function ListRenderer(props: Props) {
     useSaleConversionRate(
       props.objektList.currency,
       props.objektList.fxRateToUsd,
-    ) === null
+    ).rate === null
       ? 28
       : 42;
 

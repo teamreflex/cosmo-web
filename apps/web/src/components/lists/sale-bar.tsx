@@ -1,10 +1,8 @@
-import {
-  useDisplayCurrency,
-  useSaleConversionRate,
-} from "@/hooks/use-display-currency";
+import { useSaleConversionRate } from "@/hooks/use-display-currency";
 import { m } from "@/i18n/messages";
 import { PRICE_STATS_MIN_LISTINGS } from "@/lib/universal/objekts";
 import { cn, formatPrice } from "@/lib/utils";
+import { ApproxPrice } from "../objekt/price-display";
 
 type Props = {
   quantity: number;
@@ -24,14 +22,12 @@ type Props = {
  * it too, the seller's own price sits on a small line above the converted one.
  */
 export default function SaleBar(props: Props) {
-  const viewer = useDisplayCurrency();
-  const rateToUsd = useSaleConversionRate(props.currency, props.fxRateToUsd);
+  const { viewer, rate } = useSaleConversionRate(
+    props.currency,
+    props.fxRateToUsd,
+  );
   const listed =
     props.price != null ? formatPrice(props.price, props.currency) : null;
-  const price =
-    rateToUsd !== null && props.price != null
-      ? viewer.formatUsd(props.price * rateToUsd)
-      : listed;
   const market =
     props.medianPriceUsd !== null &&
     props.listingCount >= PRICE_STATS_MIN_LISTINGS
@@ -50,20 +46,33 @@ export default function SaleBar(props: Props) {
       style={{ backgroundColor: props.backgroundColor, color: props.textColor }}
     >
       {/* the grid assumes a fixed cell height, so the line keeps its height when unpriced */}
-      {rateToUsd !== null && (
+      {rate !== null && (
         <span className="h-3.5 truncate text-xxs opacity-70">{listed}</span>
       )}
       {/* keep the price line to one line for the same reason */}
-      <span className="flex w-full min-w-0 items-center justify-between">
-        {price && <span className="truncate">{price}</span>}
+      <span className="flex w-full min-w-0 items-center">
+        {props.price != null &&
+          (rate === null ? (
+            <span className="shrink-0 whitespace-nowrap">{listed}</span>
+          ) : (
+            <ApproxPrice
+              price={viewer.formatUsd(props.price * rate)}
+              className="shrink-0 whitespace-nowrap"
+            />
+          ))}
+        {/* the leading empty box lets a median that doesn't fit wrap onto the clipped second row */}
         {market !== null && (
-          <span className="ml-2 min-w-0 flex-1 truncate opacity-70">
-            {m.list_median_price({ price: market })}
+          <span className="flex h-4 min-w-0 flex-1 flex-wrap overflow-hidden before:h-4 before:content-['']">
+            <span
+              className="pl-2 whitespace-nowrap opacity-70"
+              title={market.text === market.full ? undefined : market.full}
+            >
+              {m.list_median_price({ price: market.text })}
+            </span>
           </span>
         )}
-        <span className="ml-auto shrink-0 pl-2 whitespace-nowrap">
-          x{props.quantity}
-        </span>
+        {/* the price never gives way, so the quantity does on the narrowest cards */}
+        <span className="ml-auto min-w-0 truncate pl-2">x{props.quantity}</span>
       </span>
     </button>
   );
