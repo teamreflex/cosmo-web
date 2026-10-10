@@ -65,7 +65,7 @@ const ICONS = {
 
 function ContactChip({ contact }: { contact: Contact }) {
   const className = cn(
-    "inline-flex h-8 items-center gap-2 rounded-sm border border-border bg-card px-2.5 font-mono text-xs",
+    "inline-flex h-8 items-center gap-2 rounded-sm border border-border bg-card px-2.5 text-xs",
     contact.href && "transition-colors hover:bg-accent",
   );
   const content = (
@@ -74,7 +74,7 @@ function ContactChip({ contact }: { contact: Contact }) {
       <span className="text-xxs tracking-widest text-muted-foreground uppercase">
         {contact.label}
       </span>
-      <span className="tabular-nums">{contact.handle}</span>
+      <span className="font-mono tabular-nums">{contact.handle}</span>
     </>
   );
 

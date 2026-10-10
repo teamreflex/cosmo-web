@@ -38,7 +38,7 @@ export default function StaffUserName({ user, link = true, className }: Props) {
           <span className="truncate text-muted-foreground">
             {user.username}
           </span>
-          <Badge variant="pill" className="font-sans">
+          <Badge variant="pill">
             {m.admin_user_no_cosmo()}
           </Badge>
         </span>

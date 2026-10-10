@@ -169,7 +169,7 @@ type MatchSignatureProps = {
 
 function MatchSignature({ have, want }: MatchSignatureProps) {
   return (
-    <div className="flex shrink-0 items-center gap-1.5 font-mono text-xs tabular-nums">
+    <div className="flex shrink-0 items-center gap-1.5 text-xs">
       <MatchChip value={have} label={m.list_matches_have_label()} tone="have" />
       <IconArrowsExchange className="size-3.5 text-muted-foreground" />
       <MatchChip value={want} label={m.list_matches_want_label()} tone="want" />
@@ -209,7 +209,7 @@ function MatchChip({
         c.text,
       )}
     >
-      <span className="font-semibold">{value}</span>
+      <span className="font-mono font-semibold tabular-nums">{value}</span>
       <span className="text-xxs tracking-wider uppercase">{label}</span>
     </span>
   );
