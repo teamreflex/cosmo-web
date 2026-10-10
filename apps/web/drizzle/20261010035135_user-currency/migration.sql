@@ -1,1 +1,0 @@
-ALTER TABLE "user" ADD COLUMN "currency" varchar(3);

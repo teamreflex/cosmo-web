@@ -51,7 +51,8 @@ export async function assertSupportedCurrency(currency: string) {
   const row = await db.query.fxRates.findFirst({
     where: {
       currency,
-      RAW: (t) => sql`${t.date} = (select max(${t.date}) from ${fxRates})`,
+      RAW: (t) =>
+        sql`${t.date} = (select max(${fxRates.date}) from ${fxRates})`,
     },
     columns: { currency: true },
   });
