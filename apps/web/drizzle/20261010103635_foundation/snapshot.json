@@ -1,9 +1,9 @@
 {
   "version": "8",
   "dialect": "postgres",
-  "id": "a14dbc4c-74eb-4405-a07e-b0ebb426ba17",
+  "id": "6213a753-a256-48fd-a207-475dcb7d1056",
   "prevIds": [
-    "e988bd77-1c23-48ad-a98c-84de706cf653"
+    "b8ec81a9-905b-41bf-9fb0-1c563a14c6b4"
   ],
   "ddl": [
     {
@@ -114,6 +114,12 @@
     {
       "isRlsEnabled": false,
       "name": "collection_data",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "collection_price_history",
       "entityType": "tables",
       "schema": "public"
     },
@@ -981,6 +987,71 @@
       "entityType": "columns",
       "schema": "public",
       "table": "collection_data"
+    },
+    {
+      "type": "varchar(36)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "collection_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "collection_price_history"
+    },
+    {
+      "type": "date",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "date",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "collection_price_history"
+    },
+    {
+      "type": "real",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "floor_usd",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "collection_price_history"
+    },
+    {
+      "type": "real",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "median_usd",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "collection_price_history"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "listing_count",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "collection_price_history"
     },
     {
       "type": "varchar(36)",
@@ -2031,6 +2102,19 @@
       "generated": null,
       "identity": null,
       "name": "seq",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "list_drain_cursor"
+    },
+    {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "chain_time",
       "entityType": "columns",
       "schema": "public",
       "table": "list_drain_cursor"
@@ -3232,6 +3316,19 @@
       "table": "user"
     },
     {
+      "type": "varchar(3)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'USD'",
+      "generated": null,
+      "identity": null,
+      "name": "currency",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "user"
+    },
+    {
       "type": "user_role",
       "typeSchema": "public",
       "notNull": true,
@@ -3951,6 +4048,13 @@
           "asc": true,
           "nullsFirst": false,
           "opclass": null
+        },
+        {
+          "value": "date",
+          "isExpression": false,
+          "asc": false,
+          "nullsFirst": true,
+          "opclass": null
         }
       ],
       "isUnique": false,
@@ -3958,7 +4062,7 @@
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "fx_rates_currency_idx",
+      "name": "fx_rates_currency_date_idx",
       "entityType": "indexes",
       "schema": "public",
       "table": "fx_rates"
@@ -5201,6 +5305,17 @@
       "entityType": "pks",
       "schema": "public",
       "table": "binder_entries"
+    },
+    {
+      "columns": [
+        "collection_id",
+        "date"
+      ],
+      "nameExplicit": false,
+      "name": "collection_price_history_pkey",
+      "entityType": "pks",
+      "schema": "public",
+      "table": "collection_price_history"
     },
     {
       "columns": [

@@ -1,10 +1,10 @@
 {
-  "id": "41d69aed-5d58-4ecc-97f9-80ecaf32aeac",
-  "prevIds": [
-    "1c3d5956-82cb-4293-849b-d40e720d9bbd"
-  ],
   "version": "8",
   "dialect": "postgres",
+  "id": "13d4b262-7e11-4270-a42c-e8a8d62d35f8",
+  "prevIds": [
+    "5e5f5aaf-c61e-40bc-b06e-22eb82205637"
+  ],
   "ddl": [
     {
       "values": [
@@ -13,6 +13,25 @@
         "4x3"
       ],
       "name": "binder_layout",
+      "entityType": "enums",
+      "schema": "public"
+    },
+    {
+      "values": [
+        "linked",
+        "unlinked"
+      ],
+      "name": "cosmo_link_event",
+      "entityType": "enums",
+      "schema": "public"
+    },
+    {
+      "values": [
+        "verified",
+        "account-deleted",
+        "staff-move"
+      ],
+      "name": "cosmo_link_reason",
       "entityType": "enums",
       "schema": "public"
     },
@@ -29,7 +48,8 @@
     },
     {
       "values": [
-        "list_match"
+        "trade_have",
+        "trade_want"
       ],
       "name": "notification_type",
       "entityType": "enums",
@@ -100,6 +120,12 @@
     },
     {
       "isRlsEnabled": false,
+      "name": "collection_price_history",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
       "name": "collection_price_stats",
       "entityType": "tables",
       "schema": "public"
@@ -113,6 +139,12 @@
     {
       "isRlsEnabled": false,
       "name": "cosmo_account",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "cosmo_link_audit",
       "entityType": "tables",
       "schema": "public"
     },
@@ -968,6 +1000,71 @@
       "name": "collection_id",
       "entityType": "columns",
       "schema": "public",
+      "table": "collection_price_history"
+    },
+    {
+      "type": "date",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "date",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "collection_price_history"
+    },
+    {
+      "type": "real",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "floor_usd",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "collection_price_history"
+    },
+    {
+      "type": "real",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "median_usd",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "collection_price_history"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "listing_count",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "collection_price_history"
+    },
+    {
+      "type": "varchar(36)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "collection_id",
+      "entityType": "columns",
+      "schema": "public",
       "table": "collection_price_stats"
     },
     {
@@ -1151,6 +1248,97 @@
       "entityType": "columns",
       "schema": "public",
       "table": "cosmo_account"
+    },
+    {
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "cosmo_link_audit"
+    },
+    {
+      "type": "timestamp",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "now()",
+      "generated": null,
+      "identity": null,
+      "name": "created_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "cosmo_link_audit"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "cosmo_account_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "cosmo_link_audit"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "user_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "cosmo_link_audit"
+    },
+    {
+      "type": "cosmo_link_event",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "event",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "cosmo_link_audit"
+    },
+    {
+      "type": "cosmo_link_reason",
+      "typeSchema": "public",
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "reason",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "cosmo_link_audit"
+    },
+    {
+      "type": "text",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "staff_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "cosmo_link_audit"
     },
     {
       "type": "serial",
@@ -1920,6 +2108,19 @@
       "table": "list_drain_cursor"
     },
     {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "chain_time",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "list_drain_cursor"
+    },
+    {
       "type": "serial",
       "typeSchema": null,
       "notNull": true,
@@ -2076,7 +2277,7 @@
       "table": "notifications"
     },
     {
-      "type": "timestamp",
+      "type": "timestamp with time zone",
       "typeSchema": null,
       "notNull": true,
       "dimensions": 0,
@@ -2089,7 +2290,7 @@
       "table": "notifications"
     },
     {
-      "type": "text",
+      "type": "varchar(32)",
       "typeSchema": null,
       "notNull": true,
       "dimensions": 0,
@@ -2115,20 +2316,7 @@
       "table": "notifications"
     },
     {
-      "type": "jsonb",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "payload",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "notifications"
-    },
-    {
-      "type": "timestamp",
+      "type": "timestamp with time zone",
       "typeSchema": null,
       "notNull": false,
       "dimensions": 0,
@@ -2136,6 +2324,45 @@
       "generated": null,
       "identity": null,
       "name": "read_at",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "notifications"
+    },
+    {
+      "type": "varchar(32)",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "actor_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "notifications"
+    },
+    {
+      "type": "uuid",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "list_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "notifications"
+    },
+    {
+      "type": "varchar(36)",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "collection_id",
       "entityType": "columns",
       "schema": "public",
       "table": "notifications"
@@ -2598,7 +2825,7 @@
     {
       "type": "text",
       "typeSchema": null,
-      "notNull": true,
+      "notNull": false,
       "dimensions": 0,
       "default": null,
       "generated": null,
@@ -3116,6 +3343,19 @@
       "table": "user"
     },
     {
+      "type": "varchar(3)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "'USD'",
+      "generated": null,
+      "identity": null,
+      "name": "currency",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "user"
+    },
+    {
       "type": "user_role",
       "typeSchema": "public",
       "notNull": true,
@@ -3571,6 +3811,27 @@
           "opclass": null
         }
       ],
+      "isUnique": true,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "cosmo_account_user_id_unique_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "cosmo_account"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "user_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
       "isUnique": false,
       "where": null,
       "with": "",
@@ -3580,6 +3841,62 @@
       "entityType": "indexes",
       "schema": "public",
       "table": "cosmo_account"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "cosmo_account_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "cosmo_link_audit_cosmo_account_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "cosmo_link_audit"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "user_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "cosmo_link_audit_user_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "cosmo_link_audit"
     },
     {
       "nameExplicit": true,
@@ -3758,6 +4075,13 @@
           "asc": true,
           "nullsFirst": false,
           "opclass": null
+        },
+        {
+          "value": "date",
+          "isExpression": false,
+          "asc": false,
+          "nullsFirst": true,
+          "opclass": null
         }
       ],
       "isUnique": false,
@@ -3765,7 +4089,7 @@
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "fx_rates_currency_idx",
+      "name": "fx_rates_currency_date_idx",
       "entityType": "indexes",
       "schema": "public",
       "table": "fx_rates"
@@ -4040,7 +4364,14 @@
           "opclass": null
         },
         {
-          "value": "read_at",
+          "value": "created_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "id",
           "isExpression": false,
           "asc": true,
           "nullsFirst": false,
@@ -4052,7 +4383,7 @@
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "notifications_user_unread_idx",
+      "name": "notifications_user_created_idx",
       "entityType": "indexes",
       "schema": "public",
       "table": "notifications"
@@ -4068,33 +4399,82 @@
           "opclass": null
         },
         {
-          "value": "(payload->>'sourceUserId')",
-          "isExpression": true,
+          "value": "created_at",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": "(\"read_at\" is null)",
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "notifications_user_unread_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "notifications"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "actor_id",
+          "isExpression": false,
           "asc": true,
           "nullsFirst": false,
           "opclass": null
         },
         {
-          "value": "(payload->>'collectionId')",
-          "isExpression": true,
+          "value": "user_id",
+          "isExpression": false,
           "asc": true,
           "nullsFirst": false,
           "opclass": null
         },
         {
-          "value": "(payload->>'direction')",
-          "isExpression": true,
+          "value": "type",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "collection_id",
+          "isExpression": false,
           "asc": true,
           "nullsFirst": false,
           "opclass": null
         }
       ],
       "isUnique": true,
-      "where": "\"type\" = 'list_match'",
+      "where": "\"type\" in ('trade_have', 'trade_want')",
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "notifications_list_match_dedup_idx",
+      "name": "notifications_trade_dedup_idx",
+      "entityType": "indexes",
+      "schema": "public",
+      "table": "notifications"
+    },
+    {
+      "nameExplicit": true,
+      "columns": [
+        {
+          "value": "list_id",
+          "isExpression": false,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        }
+      ],
+      "isUnique": false,
+      "where": null,
+      "with": "",
+      "method": "btree",
+      "concurrently": false,
+      "name": "notifications_list_idx",
       "entityType": "indexes",
       "schema": "public",
       "table": "notifications"
@@ -4796,6 +5176,23 @@
     {
       "nameExplicit": false,
       "columns": [
+        "cosmo_account_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "cosmo_account",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "NO ACTION",
+      "name": "cosmo_link_audit_cosmo_account_id_cosmo_account_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "cosmo_link_audit"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
         "era_id"
       ],
       "schemaTo": "public",
@@ -4840,6 +5237,40 @@
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "notifications_user_id_user_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "notifications"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "actor_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "user",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "notifications_actor_id_user_id_fkey",
+      "entityType": "fks",
+      "schema": "public",
+      "table": "notifications"
+    },
+    {
+      "nameExplicit": false,
+      "columns": [
+        "list_id"
+      ],
+      "schemaTo": "public",
+      "tableTo": "objekt_lists",
+      "columnsTo": [
+        "id"
+      ],
+      "onUpdate": "NO ACTION",
+      "onDelete": "CASCADE",
+      "name": "notifications_list_id_objekt_lists_id_fkey",
       "entityType": "fks",
       "schema": "public",
       "table": "notifications"
@@ -4923,7 +5354,7 @@
         "id"
       ],
       "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
+      "onDelete": "SET NULL",
       "name": "reports_reporter_id_user_id_fkey",
       "entityType": "fks",
       "schema": "public",
@@ -4966,23 +5397,6 @@
     {
       "nameExplicit": false,
       "columns": [
-        "staff_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "NO ACTION",
-      "name": "staff_audit_staff_id_user_id_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "staff_audit"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
         "report_id"
       ],
       "schemaTo": "public",
@@ -5008,6 +5422,17 @@
       "entityType": "pks",
       "schema": "public",
       "table": "binder_entries"
+    },
+    {
+      "columns": [
+        "collection_id",
+        "date"
+      ],
+      "nameExplicit": false,
+      "name": "collection_price_history_pkey",
+      "entityType": "pks",
+      "schema": "public",
+      "table": "collection_price_history"
     },
     {
       "columns": [
@@ -5078,6 +5503,16 @@
       "name": "cosmo_account_pkey",
       "schema": "public",
       "table": "cosmo_account",
+      "entityType": "pks"
+    },
+    {
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "name": "cosmo_link_audit_pkey",
+      "schema": "public",
+      "table": "cosmo_link_audit",
       "entityType": "pks"
     },
     {
@@ -5373,6 +5808,27 @@
       "entityType": "checks",
       "schema": "public",
       "table": "binders"
+    },
+    {
+      "value": "(\"reason\" = 'staff-move') = (\"staff_id\" IS NOT NULL)",
+      "name": "cosmo_link_audit_staff_chk",
+      "entityType": "checks",
+      "schema": "public",
+      "table": "cosmo_link_audit"
+    },
+    {
+      "value": "(\"reason\" <> 'verified' OR \"event\" = 'linked') AND (\"reason\" <> 'account-deleted' OR \"event\" = 'unlinked')",
+      "name": "cosmo_link_audit_event_chk",
+      "entityType": "checks",
+      "schema": "public",
+      "table": "cosmo_link_audit"
+    },
+    {
+      "value": "\"type\" not in ('trade_have', 'trade_want') or num_nonnulls(\"actor_id\", \"list_id\", \"collection_id\") = 3",
+      "name": "notifications_subject_chk",
+      "entityType": "checks",
+      "schema": "public",
+      "table": "notifications"
     },
     {
       "value": "(\"type\" = 'sale') = (\"currency\" IS NOT NULL)",

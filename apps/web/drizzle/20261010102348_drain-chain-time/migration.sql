@@ -1,1 +1,0 @@
-ALTER TABLE "list_drain_cursor" ADD COLUMN "chain_time" timestamp with time zone;
