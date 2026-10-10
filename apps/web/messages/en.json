@@ -1442,6 +1442,8 @@
   "aria_discord": "Discord",
   "aria_flip_objekt": "Flip objekt",
   "aria_view_objekt": "View objekt",
+  "aria_edit_sale_price": "Edit price for {collection}",
+  "aria_add_sale_price": "Add price for {collection}",
   "aria_play_audio": "Play audio",
   "aria_pause_audio": "Pause audio"
 }

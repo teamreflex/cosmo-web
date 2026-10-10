@@ -1,14 +1,22 @@
 import { getVariantRibbon } from "@/components/objekt/variant-gradients";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
-import type { ReactNode } from "react";
+import { type ReactNode, useId } from "react";
 
 type Props = {
   collection: Pick<Objekt.Collection, "class" | "artist">;
   // pills shown in a row above the label
   badges?: ReactNode;
-  label?: string;
+  // small line above the price, styled by the caller
+  label?: ReactNode;
   price: ReactNode;
+  // turns the price into a button with this accessible name
+  action?: PriceAction;
+};
+
+type PriceAction = {
+  label: string;
+  onClick: () => void;
 };
 
 /**
@@ -17,14 +25,17 @@ type Props = {
 const BAND_MASK = `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 550 850'%3E%3Cpath fill-rule='evenodd' d='M0 0H550V850H0Z M510.3 51.9H620V799H510.3A18.6 18.6 0 0 1 491.7 780.4V70.5A18.6 18.6 0 0 1 510.3 51.9Z'/%3E%3C/svg%3E")`;
 
 /**
- * Price band along the bottom of an objekt card.
+ * Price band along the bottom of an objekt card. The band lets clicks through
+ * to the card, apart from the price when it has an action.
  */
 export default function PriceOverlay({
   collection,
   badges,
   label,
   price,
+  action,
 }: Props) {
+  const contentId = useId();
   const ribbon = getVariantRibbon(collection);
   const tint =
     ribbon ??
@@ -47,17 +58,42 @@ export default function PriceOverlay({
         )}
         style={{ background: tint }}
       />
-      <span className="flex min-w-0 flex-col">
-        {badges && <span className="mb-1 flex min-w-0 gap-1">{badges}</span>}
-        {label && (
-          <span className="text-xxs leading-3 font-medium tracking-wider uppercase opacity-70">
-            {label}
-          </span>
-        )}
-        <span className="truncate font-mono text-xs font-bold tabular-nums @[180px]:text-base">
-          {price}
-        </span>
-      </span>
+      {action ? (
+        <button
+          type="button"
+          onClick={action.onClick}
+          aria-label={action.label}
+          aria-describedby={contentId}
+          className="pointer-events-auto -mx-1.5 -mb-1 flex min-w-0 flex-1 cursor-pointer rounded-md px-1.5 py-1 text-left outline-none hover:bg-current/10 focus-visible:ring-2 focus-visible:ring-current"
+        >
+          <PriceContent
+            id={contentId}
+            badges={badges}
+            label={label}
+            price={price}
+          />
+        </button>
+      ) : (
+        <PriceContent badges={badges} label={label} price={price} />
+      )}
     </div>
+  );
+}
+
+type PriceContentProps = Pick<Props, "badges" | "label" | "price"> & {
+  id?: string;
+};
+
+function PriceContent({ id, badges, label, price }: PriceContentProps) {
+  return (
+    <span id={id} className="flex min-w-0 flex-col">
+      {badges && <span className="mb-1 flex min-w-0 gap-1">{badges}</span>}
+      {label && (
+        <span className="truncate text-xxs leading-3 opacity-70">{label}</span>
+      )}
+      <span className="truncate font-mono text-xs font-bold tabular-nums @[180px]:text-base">
+        {price}
+      </span>
+    </span>
   );
 }

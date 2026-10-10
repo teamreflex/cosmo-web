@@ -240,9 +240,9 @@
   "list_add_to_sale_list": "Ajouter à la liste de vente",
   "list_sale_quantity": "Quantité",
   "list_sale_price": "Prix",
-  "list_sale_add_price": "Ajouter un prix",
+  "list_sale_add_price": "Prix",
   "list_sale_no_price": "Aucun prix",
-  "list_sale_ask_seller": "Demander au vendeur",
+  "list_sale_ask_seller": "Sur demande",
   "list_sale_floor_badge": "Plancher",
   "list_sale_quantity_badge": "×{quantity}",
   "list_edit_sale_entry": "Modifier l'entrée",
@@ -1442,6 +1442,8 @@
   "aria_discord": "Discord",
   "aria_flip_objekt": "Retourner l'objekt",
   "aria_view_objekt": "Voir l'objekt",
+  "aria_edit_sale_price": "Modifier le prix de {collection}",
+  "aria_add_sale_price": "Ajouter un prix pour {collection}",
   "aria_play_audio": "Lire l'audio",
   "aria_pause_audio": "Mettre l'audio en pause"
 }

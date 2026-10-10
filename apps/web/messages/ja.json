@@ -242,7 +242,7 @@
   "list_sale_price": "価格",
   "list_sale_add_price": "価格を追加",
   "list_sale_no_price": "価格未設定",
-  "list_sale_ask_seller": "出品者に問い合わせ",
+  "list_sale_ask_seller": "要問い合わせ",
   "list_sale_floor_badge": "最安",
   "list_sale_quantity_badge": "×{quantity}",
   "list_edit_sale_entry": "エントリーを編集",
@@ -1423,6 +1423,8 @@
   "aria_discord": "Discord",
   "aria_flip_objekt": "Objektを反転",
   "aria_view_objekt": "Objektを表示",
+  "aria_edit_sale_price": "{collection}の価格を編集",
+  "aria_add_sale_price": "{collection}に価格を追加",
   "aria_play_audio": "音声を再生",
   "aria_pause_audio": "音声を一時停止"
 }

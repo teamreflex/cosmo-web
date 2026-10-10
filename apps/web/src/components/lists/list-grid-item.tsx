@@ -1,4 +1,3 @@
-import { m } from "@/i18n/messages";
 import type { ObjektListItem } from "@/lib/functions/objekts/objekt-list";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import type { ObjektList } from "@apollo/database/web/types";
@@ -26,23 +25,12 @@ export const ListGridItem = memo(function ListGridItem({
   const collection = useMemo(() => Objekt.fromIndexer(item), [item]);
   const currency = objektList.type === "sale" ? objektList.currency : null;
   const [editOpen, setEditOpen] = useState(false);
-  // the owner's sale list cards edit their entry instead of opening metadata
+  // the owner edits a sale entry from its price band
   const editable = currency !== null && authenticated;
 
   return (
     <>
-      <ExpandableObjekt
-        collection={collection}
-        priority={priority}
-        action={
-          editable
-            ? {
-                label: m.list_edit_sale_entry(),
-                onClick: () => setEditOpen(true),
-              }
-            : undefined
-        }
-      >
+      <ExpandableObjekt collection={collection} priority={priority}>
         <ObjektSidebar
           collection={collection}
           serial={item.entrySerial ?? undefined}
@@ -62,7 +50,7 @@ export const ListGridItem = memo(function ListGridItem({
             fxRateToUsd={objektList.fxRateToUsd}
             quantity={item.entryQuantity}
             atFloor={item.entryAtFloor}
-            editable={editable}
+            onEdit={editable ? () => setEditOpen(true) : undefined}
           />
         )}
       </ExpandableObjekt>

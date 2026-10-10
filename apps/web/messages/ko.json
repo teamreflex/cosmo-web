@@ -242,7 +242,7 @@
   "list_sale_price": "가격",
   "list_sale_add_price": "가격 추가",
   "list_sale_no_price": "가격 미정",
-  "list_sale_ask_seller": "판매자에게 문의",
+  "list_sale_ask_seller": "판매자 문의",
   "list_sale_floor_badge": "최저가",
   "list_sale_quantity_badge": "×{quantity}",
   "list_edit_sale_entry": "항목 수정",
@@ -1423,6 +1423,8 @@
   "aria_discord": "Discord",
   "aria_flip_objekt": "오브젝트 뒤집기",
   "aria_view_objekt": "오브젝트 보기",
+  "aria_edit_sale_price": "{collection} 가격 수정",
+  "aria_add_sale_price": "{collection} 가격 추가",
   "aria_play_audio": "오디오 재생",
   "aria_pause_audio": "오디오 일시정지"
 }

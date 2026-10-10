@@ -15,7 +15,8 @@ type Props = {
   fxRateToUsd: number | null;
   quantity: number;
   atFloor: boolean;
-  editable: boolean;
+  // set for the list's owner, whose price opens the entry editor
+  onEdit?: () => void;
 };
 
 /**
@@ -30,7 +31,7 @@ export default function SalePriceOverlay({
   fxRateToUsd,
   quantity,
   atFloor,
-  editable,
+  onEdit,
 }: Props) {
   const { viewer, rate } = useSaleConversionRate(currency, fxRateToUsd);
   const badges =
@@ -48,37 +49,75 @@ export default function SalePriceOverlay({
     ) : undefined;
 
   if (price === null) {
-    return editable ? (
+    if (onEdit === undefined) {
+      return (
+        <PriceOverlay
+          collection={collection}
+          badges={badges}
+          label={
+            <span className="font-medium tracking-wider uppercase">
+              {m.list_sale_no_price()}
+            </span>
+          }
+          price={
+            <span className="font-sans" title={m.list_sale_ask_seller()}>
+              {m.list_sale_ask_seller()}
+            </span>
+          }
+        />
+      );
+    }
+
+    return (
       <PriceOverlay
         collection={collection}
         badges={badges}
+        action={{
+          label: m.aria_add_sale_price({ collection: collection.collectionId }),
+          onClick: onEdit,
+        }}
         price={
-          <span className="inline-flex h-6 items-center gap-1 rounded-md border border-dashed border-current/55 bg-black/25 px-2 font-sans text-xxs font-semibold @[180px]:h-7 @[180px]:gap-1.5 @[180px]:px-2.5 @[180px]:text-xs">
-            <IconPlus className="size-3" />
-            {m.list_sale_add_price()}
+          <span
+            title={m.list_sale_add_price()}
+            className="inline-flex h-6 max-w-full items-center gap-1 rounded-md border border-dashed border-current/55 bg-black/25 px-1.5 font-sans text-xxs font-semibold @[180px]:h-7 @[180px]:gap-1.5 @[180px]:px-2.5 @[180px]:text-xs"
+          >
+            <IconPlus className="size-3 shrink-0" />
+            <span className="truncate">{m.list_sale_add_price()}</span>
           </span>
         }
-      />
-    ) : (
-      <PriceOverlay
-        collection={collection}
-        badges={badges}
-        label={m.list_sale_no_price()}
-        price={<span className="font-sans">{m.list_sale_ask_seller()}</span>}
       />
     );
   }
 
   const listed = formatPrice(price, currency);
+  const action =
+    onEdit === undefined
+      ? undefined
+      : {
+          label: m.aria_edit_sale_price({
+            collection: collection.collectionId,
+          }),
+          onClick: onEdit,
+        };
 
   return rate === null ? (
-    <PriceOverlay collection={collection} badges={badges} price={listed} />
+    <PriceOverlay
+      collection={collection}
+      badges={badges}
+      price={listed}
+      action={action}
+    />
   ) : (
     <PriceOverlay
       collection={collection}
       badges={badges}
-      label={listed}
+      label={
+        <span className="font-mono tabular-nums" title={listed}>
+          {listed}
+        </span>
+      }
       price={<ApproxPrice price={viewer.formatUsd(price * rate)} />}
+      action={action}
     />
   );
 }
