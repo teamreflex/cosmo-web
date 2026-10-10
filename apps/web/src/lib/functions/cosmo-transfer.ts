@@ -6,10 +6,9 @@ import {
   staffUsername,
 } from "@/lib/server/staff-users.server";
 import { prefixPattern } from "@/lib/server/util.server";
-import {
-  COSMO_TRANSFER_PERMISSIONS,
-  type CosmoTransferSource,
-  type CosmoTransferTarget,
+import type {
+  CosmoTransferSource,
+  CosmoTransferTarget,
 } from "@/lib/universal/cosmo-transfer";
 import { adminSearchSchema } from "@/lib/universal/schema/admin";
 import { transferCosmoAccountSchema } from "@/lib/universal/schema/cosmo-transfer";
@@ -21,7 +20,7 @@ import { eq, notExists } from "drizzle-orm";
  * Move a COSMO account's link to another user.
  */
 export const $transferCosmoAccount = createServerFn({ method: "POST" })
-  .middleware([staffMiddleware(COSMO_TRANSFER_PERMISSIONS)])
+  .middleware([staffMiddleware({ cosmo: ["transfer"] })])
   .validator(transferCosmoAccountSchema)
   .handler(({ data, context }) =>
     transferCosmoAccount(context.session.user.id, data),
@@ -31,7 +30,7 @@ export const $transferCosmoAccount = createServerFn({ method: "POST" })
  * Linked COSMO accounts by username, for the Move dialog's From.
  */
 export const $searchCosmoTransferSources = createServerFn({ method: "GET" })
-  .middleware([staffMiddleware(COSMO_TRANSFER_PERMISSIONS)])
+  .middleware([staffMiddleware({ cosmo: ["transfer"] })])
   .validator(adminSearchSchema)
   .handler(async ({ data }) => {
     const rows = await db.query.cosmoAccounts.findMany({
@@ -63,7 +62,7 @@ export const $searchCosmoTransferSources = createServerFn({ method: "GET" })
  * dialog's To.
  */
 export const $searchCosmoTransferTargets = createServerFn({ method: "GET" })
-  .middleware([staffMiddleware(COSMO_TRANSFER_PERMISSIONS)])
+  .middleware([staffMiddleware({ cosmo: ["transfer"] })])
   .validator(adminSearchSchema)
   .handler(async ({ data }) => {
     const pattern = prefixPattern(data.query);

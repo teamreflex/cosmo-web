@@ -1,5 +1,4 @@
 import { m } from "@/i18n/messages";
-import { COSMO_TRANSFER_PERMISSIONS } from "@/lib/universal/cosmo-transfer";
 import { can } from "@apollo/auth";
 import type { Permissions, Role } from "@apollo/auth";
 import {
@@ -27,13 +26,23 @@ export const ADMIN_SHELL_PERMISSIONS = {
 } satisfies Permissions;
 
 /**
- * Called from an admin page's `beforeLoad`, so its loader never runs for a
- * role without the page's permission. The page's `notFoundComponent`
- * (`AdminNoAccess`) then fills the admin shell. It is a not-found rather than
- * an error because SSR answers route errors with a 500.
+ * Who can open /admin/accounts. The Move card and the link history each
+ * render only for their own action, so either one opens the page.
  */
-export function requireStaffPage(role: Role, permissions: Permissions) {
-  if (!can(role, permissions)) {
+export const ADMIN_ACCOUNTS_PERMISSIONS = [
+  { cosmo: ["transfer"] },
+  { cosmo: ["history"] },
+] satisfies Permissions[];
+
+/**
+ * Called from an admin page's `beforeLoad` with the permissions that open it,
+ * any one of which is enough, so its loader never runs for a role without
+ * them. The page's `notFoundComponent` (`AdminNoAccess`) then fills the admin
+ * shell. It is a not-found rather than an error because SSR answers route
+ * errors with a 500.
+ */
+export function requireStaffPage(role: Role, ...anyOf: Permissions[]) {
+  if (!anyOf.some((permissions) => can(role, permissions))) {
     throw notFound();
   }
 }
@@ -42,7 +51,8 @@ type AdminItem = {
   title: string;
   url: string;
   icon: Icon;
-  permissions: Permissions;
+  /** the item shows to a role holding any one of these */
+  permissions: Permissions[];
 };
 
 export function getAdminItems(): AdminItem[] {
@@ -51,67 +61,67 @@ export function getAdminItems(): AdminItem[] {
       title: m.admin_home(),
       url: "/admin",
       icon: IconHome,
-      permissions: { site: ["manage"] },
+      permissions: [{ site: ["manage"] }],
     },
     {
       title: m.admin_reports_title(),
       url: "/admin/reports",
       icon: IconFlag,
-      permissions: { report: ["read"] },
+      permissions: [{ report: ["read"] }],
     },
     {
       title: m.admin_audit_nav(),
       url: "/admin/audit",
       icon: IconHistory,
-      permissions: { audit: ["read"] },
+      permissions: [{ audit: ["read"] }],
     },
     {
       title: m.admin_accounts_title(),
       url: "/admin/accounts",
       icon: IconUserCog,
-      permissions: COSMO_TRANSFER_PERMISSIONS,
+      permissions: ADMIN_ACCOUNTS_PERMISSIONS,
     },
     {
       title: m.admin_bands_title(),
       url: "/admin/bands",
       icon: IconLayoutSidebarRight,
-      permissions: { site: ["manage"] },
+      permissions: [{ site: ["manage"] }],
     },
     {
       title: m.admin_eras_title(),
       url: "/admin/eras",
       icon: IconDisc,
-      permissions: { site: ["manage"] },
+      permissions: [{ site: ["manage"] }],
     },
     {
       title: m.admin_collections_title(),
       url: "/admin/collections",
       icon: IconCards,
-      permissions: { site: ["manage"] },
+      permissions: [{ site: ["manage"] }],
     },
     {
       title: m.admin_events_title(),
       url: "/admin/events",
       icon: IconCalendarEvent,
-      permissions: { site: ["manage"] },
+      permissions: [{ site: ["manage"] }],
     },
     {
       title: m.admin_cache_title(),
       url: "/admin/cache",
       icon: IconDatabase,
-      permissions: { site: ["manage"] },
+      permissions: [{ site: ["manage"] }],
     },
     {
       title: m.admin_api_keys_title(),
       url: "/admin/api-keys",
       icon: IconKey,
-      permissions: { site: ["manage"] },
+      permissions: [{ site: ["manage"] }],
     },
     {
       title: m.admin_notice_title(),
       url: "/admin/notice",
       icon: IconAlertTriangle,
-      permissions: { site: ["manage"] },
+      permissions: [{ site: ["manage"] }],
     },
   ];
 }
