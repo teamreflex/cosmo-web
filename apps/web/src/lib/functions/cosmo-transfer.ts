@@ -44,26 +44,22 @@ export const $searchCosmoTransferSources = createServerFn({ method: "GET" })
       limit: 10,
     });
 
-    return rows.flatMap((row): CosmoTransferSource[] => {
-      // a link can name a user id that no longer exists, which can't be moved
-      if (row.user === null) {
-        return [];
-      }
-      const username = staffUsername(row.user);
-      return username === null
+    // a link can name a user id that no longer exists, which can't be moved
+    return rows.flatMap((row): CosmoTransferSource[] =>
+      row.user === null
         ? []
         : [
             {
               address: row.address,
               cosmoUsername: row.username,
-              owner: { id: row.user.id, username },
+              owner: { id: row.user.id, username: staffUsername(row.user) },
             },
-          ];
-    });
+          ],
+    );
   });
 
 /**
- * Live users without a COSMO link, by username or name, for the Move
+ * Users without a COSMO link, by username or name, for the Move
  * dialog's To.
  */
 export const $searchCosmoTransferTargets = createServerFn({ method: "GET" })
@@ -78,7 +74,6 @@ export const $searchCosmoTransferTargets = createServerFn({ method: "GET" })
           { displayUsername: { ilike: pattern } },
           { name: { ilike: pattern } },
         ],
-        deletedAt: { isNull: true },
         RAW: (t) =>
           notExists(
             db
@@ -91,8 +86,8 @@ export const $searchCosmoTransferTargets = createServerFn({ method: "GET" })
       limit: 10,
     });
 
-    return users.flatMap((user): CosmoTransferTarget[] => {
-      const username = staffUsername(user);
-      return username === null ? [] : [{ id: user.id, username }];
-    });
+    return users.map((user): CosmoTransferTarget => ({
+      id: user.id,
+      username: staffUsername(user),
+    }));
   });

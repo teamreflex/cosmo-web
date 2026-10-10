@@ -20,15 +20,6 @@ import { db } from "./db";
 import { sendPasswordResetEmail, sendVerificationEmail } from "./mail.server";
 
 /**
- * Refuses sign-ins and new credentials for a deleted account. Localised on the
- * client by `getAuthErrorMessage`.
- */
-const accountDeletedError = {
-  code: "ACCOUNT_DELETED",
-  message: "This account has been deleted",
-};
-
-/**
  * Better Auth server instance.
  */
 export const auth = betterAuth({
@@ -98,28 +89,13 @@ export const auth = betterAuth({
     },
   },
 
+  /**
+   * Encrypt OAuth access and refresh tokens.
+   */
   databaseHooks: {
-    /**
-     * Refuses sign-ins to a deleted account. Deletion already removes every
-     * credential and session; this backstops any sign-in method.
-     */
-    session: {
-      create: {
-        async before(session) {
-          await refuseDeletedUser(session.userId);
-        },
-      },
-    },
     account: {
-      /**
-       * Refuses a credential for a deleted account, such as a Discord link
-       * started before the deletion and finished after it, and encrypts OAuth
-       * access and refresh tokens.
-       */
       create: {
         async before(account) {
-          await refuseDeletedUser(account.userId);
-
           const withEncryptedTokens = { ...account };
           if (account.accessToken) {
             const encryptedAccessToken = encryptToken(
@@ -336,16 +312,6 @@ export const auth = betterAuth({
     },
   },
 });
-
-async function refuseDeletedUser(userId: string) {
-  const user = await db.query.user.findFirst({
-    where: { id: userId },
-    columns: { deletedAt: true },
-  });
-  if (user?.deletedAt) {
-    throw APIError.from("FORBIDDEN", accountDeletedError);
-  }
-}
 
 // should not be used in client code
 type ServerUser = (typeof auth.$Infer.Session)["user"];

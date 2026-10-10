@@ -87,29 +87,19 @@ export type UserChange =
   | { kind: "unban" }
   | { kind: "set-role"; role: Role };
 
-export type UserChangeRefusal =
-  | "deleted-user"
-  | "protected-user"
-  | "self-ban"
-  | "self-demotion";
+export type UserChangeRefusal = "protected-user" | "self-ban" | "self-demotion";
 
 type UserChangeCheck = {
   caller: { id: string; role: Role };
-  target: {
-    id: string;
-    email: string;
-    emailVerified: boolean;
-    deletedAt: Date | null;
-  };
+  target: { id: string; email: string; emailVerified: boolean };
   change: UserChange;
   protectedDomains: ReadonlySet<string>;
 };
 
 /**
  * Why a staff member who holds the permission still may not make the change,
- * or null when they may. A deleted account can't be changed at all. Nobody,
- * admins included, can change a protected account, and nobody can ban
- * themselves or lower their own role.
+ * or null when they may. Nobody, admins included, can change a protected
+ * account, and nobody can ban themselves or lower their own role.
  */
 export function userChangeRefusal({
   caller,
@@ -117,10 +107,6 @@ export function userChangeRefusal({
   change,
   protectedDomains,
 }: UserChangeCheck): UserChangeRefusal | null {
-  if (target.deletedAt !== null) {
-    return "deleted-user";
-  }
-
   if (isProtectedAccount(target, protectedDomains)) {
     return "protected-user";
   }
@@ -140,7 +126,7 @@ export function userChangeRefusal({
   return null;
 }
 
-export type CosmoTransferRefusal = "protected-user" | "deleted" | "banned";
+export type CosmoTransferRefusal = "protected-user" | "banned";
 
 type BanState = {
   banned: boolean;
@@ -149,7 +135,7 @@ type BanState = {
 
 type CosmoTransferCheck = {
   from: BanState & { email: string; emailVerified: boolean };
-  to: BanState & { deletedAt: Date | null };
+  to: BanState;
   protectedDomains: ReadonlySet<string>;
   now: Date;
 };
@@ -157,9 +143,8 @@ type CosmoTransferCheck = {
 /**
  * Why staff may not move a COSMO link from one user to another, or null when
  * they may. Only the source is protected, because receiving a link takes
- * nothing from an account. A deleted user can't receive a link, and has none
- * to give, since deletion unlinks it. An actively banned user can neither
- * give nor receive one.
+ * nothing from an account. An actively banned user can neither give nor
+ * receive one.
  */
 export function cosmoTransferRefusal({
   from,
@@ -169,10 +154,6 @@ export function cosmoTransferRefusal({
 }: CosmoTransferCheck): CosmoTransferRefusal | null {
   if (isProtectedAccount(from, protectedDomains)) {
     return "protected-user";
-  }
-
-  if (to.deletedAt !== null) {
-    return "deleted";
   }
 
   if (isBanActive(from, now) || isBanActive(to, now)) {

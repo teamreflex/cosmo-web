@@ -10,7 +10,6 @@ export type NamedUser = {
   name: string;
   username: string | null;
   displayUsername: string | null;
-  deletedAt: Date | null;
 };
 
 /**
@@ -20,29 +19,22 @@ export const namedUserColumns = {
   name: true,
   username: true,
   displayUsername: true,
-  deletedAt: true,
 } satisfies Record<keyof NamedUser, true>;
 
 /**
  * The name staff see for an account: the username as the user typed it,
- * falling back to the account name for users who never set one. Null for a
- * deleted user, whose row is kept but scrubbed, so staff surfaces show them
- * as deleted rather than with an empty name.
+ * falling back to the account name for users who never set one.
  */
 export function staffUsername(user: NamedUser) {
-  if (user.deletedAt !== null) {
-    return null;
-  }
   return user.displayUsername ?? user.username ?? user.name;
 }
 
 /**
  * A user as a staff surface names them, such as a report's reporter or
- * resolver; null when there is no user or their account is deleted.
+ * resolver; null when the account was deleted.
  */
 export function staffName(user: NamedUser | null) {
-  const username = user === null ? null : staffUsername(user);
-  return username === null ? null : { username };
+  return user === null ? null : { username: staffUsername(user) };
 }
 
 /**
@@ -58,16 +50,10 @@ export async function fetchStaffUsernames(ids: string[]) {
           columns: { id: true, ...namedUserColumns },
         });
 
-  return new Map(
-    users.flatMap((user) => {
-      const username = staffUsername(user);
-      return username === null ? [] : [[user.id, username] as const];
-    }),
-  );
+  return new Map(users.map((user) => [user.id, staffUsername(user)]));
 }
 
 const userChangeErrors = {
-  "deleted-user": "deleted_user",
   "protected-user": "protected_user",
   "self-ban": "self_ban",
   "self-demotion": "self_demotion",
@@ -85,7 +71,7 @@ export async function guardUserChange(
 ) {
   const target = await db.query.user.findFirst({
     where: { id: userId },
-    columns: { id: true, email: true, emailVerified: true, deletedAt: true },
+    columns: { id: true, email: true, emailVerified: true },
   });
   if (!target) {
     throw new ExpectedError("user_not_found");

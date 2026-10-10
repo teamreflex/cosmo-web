@@ -8,7 +8,7 @@ import * as authSchema from "@apollo/database/auth";
 import { cosmoAccounts, cosmoLinkAudit } from "@apollo/database/web/schema";
 import type { CosmoAccount, CosmoLinkEvent } from "@apollo/database/web/types";
 import { addr, isAddress } from "@apollo/util";
-import { and, eq, isNull, like, sql } from "drizzle-orm";
+import { eq, isNull, like, sql } from "drizzle-orm";
 import type {
   CosmoLink,
   FullAccount,
@@ -218,13 +218,11 @@ export async function linkVerifiedAccount(
   account: Pick<CosmoAccount, "address" | "username" | "cosmoId">,
 ) {
   await db.transaction(async (tx) => {
-    // lock the caller's live row, so an account deletion can't run alongside the link
+    // lock the caller's row, so an account deletion can't run alongside the link
     const [caller] = await tx
       .select({ id: authSchema.user.id })
       .from(authSchema.user)
-      .where(
-        and(eq(authSchema.user.id, userId), isNull(authSchema.user.deletedAt)),
-      )
+      .where(eq(authSchema.user.id, userId))
       .for("share");
     if (!caller) {
       throw new ExpectedError("not_signed_in");

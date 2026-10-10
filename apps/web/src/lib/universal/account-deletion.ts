@@ -3,13 +3,12 @@ import type { AccountErrorCode } from "./errors/accounts";
 import type { DeletionProof } from "./schema/account";
 
 /**
- * A live trade that keeps its participant from deleting their account. A null
- * counterparty is a deleted user.
+ * A live trade that keeps its participant from deleting their account.
  */
 export type LiveTradeSummary = {
   id: string;
   kind: "trade" | "purchase" | "sale";
-  counterparty: string | null;
+  counterparty: string;
   state: { kind: "deadline"; at: Date } | { kind: "disputed" };
 };
 
@@ -124,13 +123,4 @@ export function deletionBlockerCount(blockers: readonly DeletionBlocker[]) {
         return count;
     }
   }, 0);
-}
-
-/**
- * The email an anonymised account keeps. It is unique per user, and its domain
- * has no dot, so `z.email()`, which Better Auth checks sign-in, sign-up and
- * email changes with, rejects it.
- */
-export function tombstoneEmail(userId: string) {
-  return `deleted+${userId}@invalid`;
 }

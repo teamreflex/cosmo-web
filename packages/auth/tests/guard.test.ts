@@ -172,13 +172,11 @@ describe("userChangeRefusal", () => {
     id: "member",
     email: "member@example.org",
     emailVerified: true,
-    deletedAt: null,
   };
   const protectedMember = {
     id: "kairu",
     email: "kairu@team-reflex.com",
     emailVerified: true,
-    deletedAt: null,
   };
 
   const changes = [
@@ -187,42 +185,6 @@ describe("userChangeRefusal", () => {
     { kind: "set-role", role: "admin" },
     { kind: "set-role", role: "user" },
   ] satisfies UserChange[];
-
-  test.each(changes)("refuses $kind on a deleted account", (change) => {
-    expect(
-      userChangeRefusal({
-        caller: admin,
-        target: { ...member, deletedAt: new Date("2026-10-09T12:00:00Z") },
-        change,
-        protectedDomains,
-      }),
-    ).toBe("deleted-user");
-  });
-
-  test("refuses a deleted account ahead of protection and self-demotion", () => {
-    const deletedAt = new Date("2026-10-09T12:00:00Z");
-    expect(
-      userChangeRefusal({
-        caller: admin,
-        target: { ...protectedMember, deletedAt },
-        change: { kind: "ban" },
-        protectedDomains,
-      }),
-    ).toBe("deleted-user");
-    expect(
-      userChangeRefusal({
-        caller: admin,
-        target: {
-          id: admin.id,
-          email: "admin@example.org",
-          emailVerified: true,
-          deletedAt,
-        },
-        change: { kind: "set-role", role: "user" },
-        protectedDomains,
-      }),
-    ).toBe("deleted-user");
-  });
 
   test.each(changes)("refuses $kind on a protected account", (change) => {
     expect(
@@ -254,7 +216,6 @@ describe("userChangeRefusal", () => {
           id: admin.id,
           email: "admin@example.org",
           emailVerified: true,
-          deletedAt: null,
         },
         change: { kind: "ban" },
         protectedDomains,
@@ -270,7 +231,6 @@ describe("userChangeRefusal", () => {
           id: admin.id,
           email: "admin@example.org",
           emailVerified: true,
-          deletedAt: null,
         },
         change: { kind: "unban" },
         protectedDomains,
@@ -287,7 +247,6 @@ describe("userChangeRefusal", () => {
             id: admin.id,
             email: "admin@example.org",
             emailVerified: true,
-            deletedAt: null,
           },
           change: { kind: "set-role", role },
           protectedDomains,
@@ -305,7 +264,6 @@ describe("userChangeRefusal", () => {
             id: "moderator",
             email: "moderator@example.org",
             emailVerified: true,
-            deletedAt: null,
           },
           change: { kind: "set-role", role },
           protectedDomains,
@@ -322,7 +280,6 @@ describe("userChangeRefusal", () => {
           id: "other-admin",
           email: "other@example.org",
           emailVerified: true,
-          deletedAt: null,
         },
         change: { kind: "set-role", role: "user" },
         protectedDomains,
@@ -359,7 +316,6 @@ describe("cosmoTransferRefusal", () => {
   const protectedDomains = parseEmailDomains("team-reflex.com");
   const now = new Date("2026-10-09T12:00:00Z");
   const unbanned = { banned: false, banExpires: null };
-  const active = { ...unbanned, deletedAt: null };
   const member = {
     ...unbanned,
     email: "member@example.org",
@@ -370,7 +326,6 @@ describe("cosmoTransferRefusal", () => {
     email: "kairu@team-reflex.com",
     emailVerified: true,
   };
-  const deleted = { ...active, deletedAt: new Date("2026-10-08T12:00:00Z") };
   const banned = { banned: true, banExpires: null };
   const lapsedBan = {
     banned: true,
@@ -378,30 +333,18 @@ describe("cosmoTransferRefusal", () => {
   };
 
   test.each([
-    ["no refusal", null, member, active],
-    ["a protected source", "protected-user", protectedMember, active],
-    [
-      "a protected target",
-      null,
-      member,
-      { ...protectedMember, deletedAt: null },
-    ],
-    ["a deleted target", "deleted", member, deleted],
-    ["a banned source", "banned", { ...member, ...banned }, active],
-    ["a banned target", "banned", member, { ...active, ...banned }],
-    ["a lapsed ban on the source", null, { ...member, ...lapsedBan }, active],
-    ["a lapsed ban on the target", null, member, { ...active, ...lapsedBan }],
+    ["no refusal", null, member, unbanned],
+    ["a protected source", "protected-user", protectedMember, unbanned],
+    ["a protected target", null, member, protectedMember],
+    ["a banned source", "banned", { ...member, ...banned }, unbanned],
+    ["a banned target", "banned", member, { ...unbanned, ...banned }],
+    ["a lapsed ban on the source", null, { ...member, ...lapsedBan }, unbanned],
+    ["a lapsed ban on the target", null, member, { ...unbanned, ...lapsedBan }],
     [
       "a protected source that is also banned",
       "protected-user",
       { ...protectedMember, ...banned },
-      active,
-    ],
-    [
-      "a deleted target with a banned source",
-      "deleted",
-      { ...member, ...banned },
-      deleted,
+      unbanned,
     ],
   ] satisfies [
     string,
@@ -418,7 +361,7 @@ describe("cosmoTransferRefusal", () => {
     expect(
       cosmoTransferRefusal({
         from: protectedMember,
-        to: active,
+        to: unbanned,
         protectedDomains: parseEmailDomains(""),
         now,
       }),

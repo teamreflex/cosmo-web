@@ -1,5 +1,4 @@
 import { describe, expect, test } from "bun:test";
-import * as z from "zod";
 import {
   FRESH_SESSION_MINUTES,
   deletionBlockerCount,
@@ -7,7 +6,6 @@ import {
   deletionStep,
   isFreshSession,
   toDeletionCheck,
-  tombstoneEmail,
 } from "../src/lib/universal/account-deletion";
 import type {
   DeletionBlocker,
@@ -53,7 +51,7 @@ describe("deletionBlockerCount", () => {
         {
           id: "trade-2",
           kind: "purchase",
-          counterparty: null,
+          counterparty: "Kairu",
           state: { kind: "deadline", at: new Date(0) },
         },
       ],
@@ -61,20 +59,6 @@ describe("deletionBlockerCount", () => {
 
     expect(deletionBlockerCount([])).toBe(0);
     expect(deletionBlockerCount([blocker, twoTrades])).toBe(3);
-  });
-});
-
-describe("tombstoneEmail", () => {
-  test("is unique per user", () => {
-    expect(tombstoneEmail("abc")).toBe("deleted+abc@invalid");
-  });
-
-  /**
-   * Better Auth checks sign-in, sign-up and email changes with z.email(), so
-   * nobody can sign in with, register or move to a tombstone address.
-   */
-  test("is rejected by z.email()", () => {
-    expect(z.email().safeParse(tombstoneEmail("abc")).success).toBe(false);
   });
 });
 

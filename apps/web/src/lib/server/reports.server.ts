@@ -236,9 +236,7 @@ async function fetchDetailTarget(
         },
       });
 
-      // a deleted user's row remains, but staff see them as gone
-      const username = user ? staffUsername(user) : null;
-      if (!user || username === null) {
+      if (!user) {
         return { type: "user", user: null };
       }
 
@@ -246,7 +244,7 @@ async function fetchDetailTarget(
         type: "user",
         user: {
           id: user.id,
-          username,
+          username: staffUsername(user),
           role: user.role,
           ban: isBanActive(user) ? { until: user.banExpires } : null,
           profile: user.cosmoAccount?.username ?? null,

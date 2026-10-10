@@ -1,5 +1,4 @@
 import { GRID_COLUMNS, type CollectionDataSource } from "@apollo/util";
-import { sql } from "drizzle-orm";
 import {
   pgTable,
   text,
@@ -8,7 +7,6 @@ import {
   integer,
   index,
   pgEnum,
-  check,
 } from "drizzle-orm/pg-core";
 import { citext } from "./custom";
 
@@ -44,17 +42,11 @@ export const user = pgTable(
     banned: boolean("banned").notNull().default(false),
     banReason: text("ban_reason"),
     banExpires: timestamp("ban_expires", { mode: "date" }),
-    // deleting an account anonymises the row rather than removing it (docs/auth.md)
-    deletedAt: timestamp("deleted_at", { mode: "date" }),
   },
   (t) => [
     index("user_username_idx").on(t.username),
     index("user_display_username_idx").on(t.displayUsername),
     index("user_discord_idx").on(t.discord),
-    check(
-      "user_deleted_scrubbed_chk",
-      sql`${t.deletedAt} IS NULL OR (${t.name} = '' AND ${t.email} = ('deleted+' || ${t.id} || '@invalid') AND ${t.emailVerified} = false AND ${t.image} IS NULL AND ${t.username} IS NULL AND ${t.displayUsername} IS NULL AND ${t.discord} IS NULL AND ${t.twitter} IS NULL AND ${t.showSocials} = false AND ${t.role} = 'user')`,
-    ),
   ],
 );
 

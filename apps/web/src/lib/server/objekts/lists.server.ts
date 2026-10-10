@@ -336,7 +336,7 @@ export async function fireWantAddNotifications(
 
 /**
  * Delete the list_match notifications other users received about this user's
- * lists. Anonymising an account calls it, so a rebuild of the notifications
+ * lists. Deleting an account calls it, so a rebuild of the notifications
  * table must keep it in step with the producers above.
  */
 export async function deleteListMatchNotificationsFrom(

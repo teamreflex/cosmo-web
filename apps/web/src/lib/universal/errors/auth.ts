@@ -7,7 +7,6 @@ export const authErrorCodes = [
   "NOT_FOUND",
   "api_key_not_found",
   "user_not_found",
-  "deleted_user",
   "protected_user",
   "self_ban",
   "self_demotion",

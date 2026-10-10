@@ -50,14 +50,11 @@ function LiveTradeRow({
   trade: LiveTradeSummary;
   now: number;
 }) {
-  const name =
-    trade.counterparty === null
-      ? m.delete_account_blocked_deleted_counterparty()
-      : `@${trade.counterparty}`;
-
   return (
     <li className="flex min-h-10 items-center justify-between gap-3 px-3 py-2">
-      <span className="min-w-0">{tradeLabels[trade.kind]({ name })}</span>
+      <span className="min-w-0">
+        {tradeLabels[trade.kind]({ name: `@${trade.counterparty}` })}
+      </span>
       {trade.state.kind === "deadline" ? (
         <span className="shrink-0 font-mono text-xs text-muted-foreground tabular-nums">
           {formatTimeLeft(trade.state.at.getTime() - now)}

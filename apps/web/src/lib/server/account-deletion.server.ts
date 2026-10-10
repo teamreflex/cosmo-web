@@ -2,7 +2,6 @@ import {
   deletionProofRefusal,
   deletionStep,
   toDeletionCheck,
-  tombstoneEmail,
 } from "@/lib/universal/account-deletion";
 import type {
   DeleteAccountResult,
@@ -15,15 +14,12 @@ import type { DeletionProof } from "@/lib/universal/schema/account";
 import { isBanActive } from "@apollo/auth/guard";
 import * as authSchema from "@apollo/database/auth";
 import {
-  binders,
   cosmoAccounts,
   lists,
   lockedObjekts,
-  notifications,
-  objektLists,
   pins,
 } from "@apollo/database/web/schema";
-import { and, eq, gt, isNull, like } from "drizzle-orm";
+import { and, eq, gt, like } from "drizzle-orm";
 import { randomBytes } from "node:crypto";
 import { clearBinderPinCache } from "./binders.server";
 import { recordCosmoLinkChanges } from "./cosmo-accounts.server";
@@ -73,9 +69,7 @@ export async function createDeletionToken(userId: string) {
     const [caller] = await tx
       .select({ id: authSchema.user.id })
       .from(authSchema.user)
-      .where(
-        and(eq(authSchema.user.id, userId), isNull(authSchema.user.deletedAt)),
-      )
+      .where(eq(authSchema.user.id, userId))
       .for("update");
     if (!caller) {
       throw new ExpectedError("not_signed_in");
@@ -107,10 +101,9 @@ export async function createDeletionToken(userId: string) {
 type DeletionOutcome = DeletionBlocked | { status: "deleted"; link: CosmoLink };
 
 /**
- * Delete the account by anonymising it, once the proof checks out. The user
- * row is locked first, so a ban, a blocker or a new email can't appear between
- * the checks and the scrub, and a blocked deletion leaves the token for a
- * later attempt. An actively banned user can't delete their account, since
+ * Delete the account once the proof checks out. The user row is locked first,
+ * so a ban, a blocker or a new email can't appear between the checks and the
+ * delete, and a blocked deletion leaves the token for a later attempt. An actively banned user can't delete their account, since
  * deleting unlinks their COSMO account for anyone to link again.
  */
 export async function deleteAccount(
@@ -125,9 +118,7 @@ export async function deleteAccount(
         banExpires: authSchema.user.banExpires,
       })
       .from(authSchema.user)
-      .where(
-        and(eq(authSchema.user.id, userId), isNull(authSchema.user.deletedAt)),
-      )
+      .where(eq(authSchema.user.id, userId))
       .for("update");
     if (!caller) {
       throw new ExpectedError("not_signed_in");
@@ -168,7 +159,7 @@ export async function deleteAccount(
       }
     }
 
-    return { status: "deleted", link: await anonymiseAccount(tx, userId) };
+    return { status: "deleted", link: await purgeAccount(tx, userId) };
   });
 
   if (result.status === "blocked") {
@@ -183,17 +174,14 @@ export async function deleteAccount(
 }
 
 /**
- * Unlink the user's COSMO account, recording it in the link history, then
- * scrub the user row and delete everything the user made, keeping the id,
- * settings, ban fields, reports, staff audit rows and link history. The row is
- * never removed, so none of the foreign keys' cascades run; this deletes
- * their data instead. Returns the COSMO link the user had, whose pin cache the
- * caller clears after commit.
+ * Unlink the user's COSMO account, recording it in the link history, delete
+ * what the user row's foreign keys don't reach, then delete the row and let
+ * them cascade to sessions, credentials, API keys, lists, binders and
+ * notifications. Reports they filed keep a null reporter, and the audit
+ * tables keep their id. Returns the COSMO link the user had, whose pin cache
+ * the caller clears after commit.
  */
-export async function anonymiseAccount(
-  tx: WebTx,
-  userId: string,
-): Promise<CosmoLink> {
+async function purgeAccount(tx: WebTx, userId: string): Promise<CosmoLink> {
   const [unlinked] = await tx
     .update(cosmoAccounts)
     .set({ userId: null })
@@ -203,27 +191,6 @@ export async function anonymiseAccount(
       address: cosmoAccounts.address,
       username: cosmoAccounts.username,
     });
-
-  await tx
-    .delete(authSchema.session)
-    .where(eq(authSchema.session.userId, userId));
-  await tx
-    .delete(authSchema.account)
-    .where(eq(authSchema.account.userId, userId));
-  await tx
-    .delete(authSchema.apikey)
-    .where(eq(authSchema.apikey.referenceId, userId));
-  // reset-password and deletion tokens, whose value is the user id
-  await tx
-    .delete(authSchema.verification)
-    .where(eq(authSchema.verification.value, userId));
-
-  await tx.delete(notifications).where(eq(notifications.userId, userId));
-  await deleteListMatchNotificationsFrom(tx, userId);
-
-  // entries, binder entries and binder pins cascade
-  await tx.delete(objektLists).where(eq(objektLists.userId, userId));
-  await tx.delete(binders).where(eq(binders.userId, userId));
 
   if (unlinked) {
     await recordCosmoLinkChanges(tx, [
@@ -241,23 +208,13 @@ export async function anonymiseAccount(
     await tx.delete(lists).where(eq(lists.userAddress, unlinked.address));
   }
 
+  // reset-password and deletion tokens, whose value is the user id
   await tx
-    .update(authSchema.user)
-    .set({
-      name: "",
-      email: tombstoneEmail(userId),
-      emailVerified: false,
-      image: null,
-      username: null,
-      displayUsername: null,
-      discord: null,
-      twitter: null,
-      showSocials: false,
-      role: "user",
-      isAdmin: false,
-      deletedAt: new Date(),
-    })
-    .where(eq(authSchema.user.id, userId));
+    .delete(authSchema.verification)
+    .where(eq(authSchema.verification.value, userId));
+  await deleteListMatchNotificationsFrom(tx, userId);
+
+  await tx.delete(authSchema.user).where(eq(authSchema.user.id, userId));
 
   return unlinked
     ? { kind: "linked", address: unlinked.address, username: unlinked.username }

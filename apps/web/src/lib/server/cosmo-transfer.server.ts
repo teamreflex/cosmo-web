@@ -18,7 +18,6 @@ import { isPostgresError } from "./util.server";
 
 const refusalErrors = {
   "protected-user": "cosmo_transfer_protected",
-  deleted: "cosmo_transfer_deleted",
   banned: "cosmo_transfer_banned",
 } satisfies Record<CosmoTransferRefusal, AccountErrorCode>;
 
@@ -42,7 +41,6 @@ export async function transferCosmoAccount(
         emailVerified: authSchema.user.emailVerified,
         banned: authSchema.user.banned,
         banExpires: authSchema.user.banExpires,
-        deletedAt: authSchema.user.deletedAt,
       })
       .from(authSchema.user)
       .where(inArray(authSchema.user.id, [input.fromUserId, input.toUserId]))

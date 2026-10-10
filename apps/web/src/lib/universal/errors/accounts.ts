@@ -10,7 +10,6 @@ export const accountErrorCodes = [
   "cosmo_transfer_source_changed",
   "cosmo_transfer_target_linked",
   "cosmo_transfer_banned",
-  "cosmo_transfer_deleted",
   "cosmo_transfer_protected",
 ] as const;
 
