@@ -7,6 +7,7 @@ import { GRID_COLUMNS } from "@apollo/util";
 import type { CollectionDataSource } from "@apollo/util";
 import { apiKey } from "@better-auth/api-key";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
+import type { BetterAuthPlugin } from "better-auth";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { parseSessionOutput, parseUserOutput } from "better-auth/db";
 import { betterAuth } from "better-auth/minimal";
@@ -19,6 +20,29 @@ import { settingsSchema } from "../universal/schema/auth";
 import { DEFAULT_CURRENCY } from "../universal/schema/currency";
 import { db } from "./db";
 import { sendPasswordResetEmail, sendVerificationEmail } from "./mail.server";
+
+/**
+ * Drops `currency` from client sign-up and update-user requests, since it needs
+ * an FX rate check that a synchronous field validator can't run. $updateSettings
+ * checks it and calls `auth.api.updateUser` directly, which has no `request`.
+ */
+function serverOnlyCurrency() {
+  return {
+    id: "server-only-currency",
+    hooks: {
+      before: [
+        {
+          matcher: (ctx) =>
+            ctx.request !== undefined &&
+            (ctx.path === "/update-user" || ctx.path === "/sign-up/email"),
+          handler: createAuthMiddleware(async (ctx) => {
+            delete ctx.body?.currency;
+          }),
+        },
+      ],
+    },
+  } satisfies BetterAuthPlugin;
+}
 
 /**
  * Better Auth server instance.
@@ -50,6 +74,7 @@ export const auth = betterAuth({
       startingCharactersConfig: { charactersLength: 13 },
     }),
     admin(adminPluginOptions),
+    serverOnlyCurrency(),
     tanstackStartCookies(),
   ],
 
