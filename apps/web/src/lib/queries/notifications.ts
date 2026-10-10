@@ -2,10 +2,10 @@ import {
   $listNotifications,
   $unreadNotificationCount,
 } from "@/lib/functions/notifications";
-import { queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
 /**
- * Count of unread notifications for the current user — drives the header bell badge.
+ * Count of unread bursts for the current user — drives the header bell badge.
  */
 export const unreadNotificationsQuery = queryOptions({
   queryKey: ["notifications-unread"],
@@ -14,13 +14,15 @@ export const unreadNotificationsQuery = queryOptions({
 });
 
 /**
- * Paginated list of the current user's notifications, newest first.
+ * The current user's notifications, newest first, a page at a time. Always
+ * stale, so opening the bell refetches the loaded pages.
  */
-export const notificationsListQuery = (params: {
-  limit: number;
-  offset: number;
-}) =>
-  queryOptions({
-    queryKey: ["notifications", "list", params],
-    queryFn: ({ signal }) => $listNotifications({ signal, data: params }),
-  });
+export const notificationsListQuery = infiniteQueryOptions({
+  queryKey: ["notifications", "list"],
+  queryFn: ({ signal, pageParam }) =>
+    $listNotifications({ signal, data: { cursor: pageParam } }),
+  // SAFETY: cursor seed; widened for TanStack Query inference
+  initialPageParam: undefined as string | undefined,
+  getNextPageParam: (lastPage) => lastPage.nextCursor,
+  staleTime: 0,
+});

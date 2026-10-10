@@ -5,19 +5,27 @@ import {
   notificationsListQuery,
   unreadNotificationsQuery,
 } from "@/lib/queries/notifications";
-import type {
-  NotificationCollection,
-  NotificationListItem,
-} from "@/lib/universal/notifications";
-import { IconArrowsExchange, IconBell, IconChecks } from "@tabler/icons-react";
 import {
-  type QueryKey,
+  groupNotifications,
+  type NotificationCollection,
+  type NotificationListItem,
+} from "@/lib/universal/notifications";
+import type { MarkNotificationsRead } from "@/lib/universal/schema/notifications";
+import {
+  IconArrowsExchange,
+  IconBell,
+  IconChecks,
+  IconLoader2,
+} from "@tabler/icons-react";
+import {
+  useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
 import { Link, linkOptions, useLocation } from "@tanstack/react-router";
-import { type ReactNode, useRef, useState } from "react";
+import { type ReactNode, useState } from "react";
+import { useOnInView } from "react-intersection-observer";
 import UserAvatar from "../profile/user-avatar";
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -32,35 +40,51 @@ export default function NotificationBell() {
   const pathname = useLocation({ select: (location) => location.pathname });
   const [openedOn, setOpenedOn] = useState<string | null>(null);
   const open = openedOn === pathname;
+  const queryClient = useQueryClient();
   const unread = useQuery(unreadNotificationsQuery);
-  const list = useQuery({
-    ...notificationsListQuery({ limit: 20, offset: 0 }),
-    enabled: open,
-  });
+  const list = useInfiniteQuery({ ...notificationsListQuery, enabled: open });
   const markRead = useMarkRead();
 
   const count = unread.data ?? 0;
-  const fresh = list.data?.filter((n) => n.unread) ?? [];
-  const earlier = list.data?.filter((n) => !n.unread) ?? [];
+  const bursts = groupNotifications(
+    list.data?.pages.flatMap((page) => page.rows) ?? [],
+  );
+  const fresh = bursts.filter((n) => n.unread);
+  const earlier = bursts.filter((n) => !n.unread);
 
   return (
     <Popover
       open={open}
-      onOpenChange={(open) => setOpenedOn(open ? pathname : null)}
+      onOpenChange={(open) => {
+        setOpenedOn(open ? pathname : null);
+        // the list refetches on open, so the badge catches up with it
+        if (open) {
+          void queryClient.invalidateQueries({
+            queryKey: unreadNotificationsQuery.queryKey,
+          });
+        }
+      }}
     >
       <PopoverTrigger
         render={
           <Button
             variant="ghost"
             size="icon"
-            aria-label={m.notification_bell_label()}
+            aria-label={
+              count > 0
+                ? m.notification_bell_label_unread({ count })
+                : m.notification_bell_label()
+            }
             className="relative"
           />
         }
       >
         <IconBell className="size-6" />
         {count > 0 && (
-          <div className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-cosmo px-1 text-xs font-semibold text-white tabular-nums ring-2 ring-background">
+          <div
+            aria-hidden
+            className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-cosmo px-1 text-xs font-semibold text-white tabular-nums ring-2 ring-background"
+          >
             {count > 99 ? "99+" : count}
           </div>
         )}
@@ -80,7 +104,7 @@ export default function NotificationBell() {
               size="icon-sm"
               aria-label={m.notification_mark_all_read()}
               title={m.notification_mark_all_read()}
-              onClick={() => markRead.mutate(undefined)}
+              onClick={() => markRead.mutate({ all: true })}
               disabled={markRead.isPending}
             >
               <IconChecks />
@@ -97,7 +121,7 @@ export default function NotificationBell() {
               ))}
             </div>
           )}
-          {list.data && list.data.length === 0 && (
+          {list.isSuccess && bursts.length === 0 && (
             <p className="px-3.5 py-4 text-sm text-muted-foreground">
               {m.notification_empty()}
             </p>
@@ -105,15 +129,46 @@ export default function NotificationBell() {
           <NotificationSection
             title={m.notification_section_new()}
             notifications={fresh}
-            onOpen={(n) => markRead.mutate(n.ids)}
+            onOpen={(n) => markRead.mutate({ ids: n.ids })}
           />
           <NotificationSection
             title={m.notification_section_earlier()}
             notifications={earlier}
           />
+          {list.hasNextPage && (
+            <div className="flex justify-center border-t p-1.5">
+              {list.isFetching ? (
+                <IconLoader2 className="my-1.5 size-5 animate-spin text-muted-foreground" />
+              ) : (
+                <LoadOlder onLoad={() => void list.fetchNextPage()} />
+              )}
+            </div>
+          )}
         </ScrollArea>
       </PopoverContent>
     </Popover>
+  );
+}
+
+/**
+ * Loads the next page once scrolled into view, or on click. It unmounts while
+ * a page loads, so it observes afresh and loads again if still in view.
+ */
+function LoadOlder({ onLoad }: { onLoad: () => void }) {
+  const ref = useOnInView((inView) => {
+    if (inView) onLoad();
+  });
+
+  return (
+    <Button
+      ref={ref}
+      variant="ghost"
+      size="sm"
+      className="w-full text-muted-foreground"
+      onClick={onLoad}
+    >
+      {m.notification_load_older()}
+    </Button>
   );
 }
 
@@ -188,7 +243,7 @@ function NotificationRow({
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <p className="text-sm text-foreground/80">
+        <p className="text-sm wrap-anywhere text-foreground/80">
           {emphasize(text, emphasis)}
         </p>
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -313,67 +368,61 @@ function emphasize(text: string, parts: string[]) {
 }
 
 /**
- * Mark bursts read by their notification ids, or everything when called
- * without ids. Optimistic: the rows and badge update before the server does.
+ * Mark notifications read by id, or all of them. Optimistic: the rows and
+ * badge update before the server does.
  */
 function useMarkRead() {
   const queryClient = useQueryClient();
-  const snapshot = useRef<{
-    unread: number | undefined;
-    list: Array<[QueryKey, NotificationListItem[] | undefined]>;
-  } | null>(null);
+  const unreadKey = unreadNotificationsQuery.queryKey;
+  const listKey = notificationsListQuery.queryKey;
 
   return useMutation({
-    mutationFn: (ids: string[] | undefined) =>
-      $markNotificationsRead({ data: { ids } }),
-    onMutate: async (ids) => {
-      await queryClient.cancelQueries({
-        queryKey: unreadNotificationsQuery.queryKey,
-      });
-      await queryClient.cancelQueries({
-        queryKey: ["notifications", "list"],
-      });
-
-      const list = queryClient.getQueriesData<NotificationListItem[]>({
-        queryKey: ["notifications", "list"],
-      });
-      snapshot.current = {
-        unread: queryClient.getQueryData<number>(
-          unreadNotificationsQuery.queryKey,
-        ),
-        list,
+    mutationFn: (data: MarkNotificationsRead) =>
+      $markNotificationsRead({ data }),
+    onMutate: async (data) => {
+      await Promise.all([
+        queryClient.cancelQueries({ queryKey: unreadKey }),
+        queryClient.cancelQueries({ queryKey: listKey }),
+      ]);
+      const previous = {
+        unread: queryClient.getQueryData(unreadKey),
+        list: queryClient.getQueryData(listKey),
       };
 
-      const marked = new Set(ids);
-      const matches = (n: NotificationListItem) =>
-        n.unread && (ids === undefined || n.ids.some((id) => marked.has(id)));
-      const markedBursts = (list[0]?.[1] ?? []).filter(matches).length;
+      // every row when marking all
+      const marked = "ids" in data ? new Set(data.ids) : undefined;
+      const isMarked = (id: string) => marked === undefined || marked.has(id);
+      const markedBursts = groupNotifications(
+        previous.list?.pages.flatMap((page) => page.rows) ?? [],
+      ).filter((n) => n.unread && n.ids.some(isMarked)).length;
 
-      queryClient.setQueryData<number>(
-        unreadNotificationsQuery.queryKey,
-        (old) =>
-          ids === undefined ? 0 : Math.max(0, (old ?? 0) - markedBursts),
+      queryClient.setQueryData(unreadKey, (old) =>
+        marked === undefined ? 0 : Math.max(0, (old ?? 0) - markedBursts),
       );
-      queryClient.setQueriesData<NotificationListItem[]>(
-        { queryKey: ["notifications", "list"] },
-        (old) => old?.map((n) => (matches(n) ? { ...n, unread: false } : n)),
+      queryClient.setQueryData(listKey, (old) =>
+        old === undefined
+          ? old
+          : {
+              ...old,
+              pages: old.pages.map((page) => ({
+                ...page,
+                rows: page.rows.map((row) =>
+                  isMarked(row.id) ? { ...row, unread: false } : row,
+                ),
+              })),
+            },
       );
+
+      return previous;
     },
-    onError: () => {
-      const prev = snapshot.current;
-      if (!prev) return;
-      queryClient.setQueryData(unreadNotificationsQuery.queryKey, prev.unread);
-      for (const [key, data] of prev.list) {
-        queryClient.setQueryData(key, data);
-      }
+    onError: (_error, _data, previous) => {
+      if (previous === undefined) return;
+      queryClient.setQueryData(unreadKey, previous.unread);
+      queryClient.setQueryData(listKey, previous.list);
     },
     onSettled: () => {
-      void queryClient.invalidateQueries({
-        queryKey: unreadNotificationsQuery.queryKey,
-      });
-      void queryClient.invalidateQueries({
-        queryKey: ["notifications", "list"],
-      });
+      void queryClient.invalidateQueries({ queryKey: unreadKey });
+      void queryClient.invalidateQueries({ queryKey: listKey });
     },
   });
 }

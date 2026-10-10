@@ -1,115 +1,74 @@
+import { decodeCursor, encodeCursor } from "@/lib/server/cursor.server";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { collections } from "@/lib/server/db/indexer/schema";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
-import { markedNotifications } from "@/lib/server/notifications.server";
+import { countUnreadBursts } from "@/lib/server/notifications.server";
 import type {
   NotificationCollection,
-  NotificationListItem,
+  NotificationPage,
+  NotificationRow,
 } from "@/lib/universal/notifications";
+import {
+  listNotificationsSchema,
+  markNotificationsReadSchema,
+} from "@/lib/universal/schema/notifications";
 import {
   cosmoAccounts,
   notifications,
   objektLists,
 } from "@apollo/database/web/schema";
 import { createServerFn } from "@tanstack/react-start";
-import { and, count, desc, eq, inArray, isNull, max, sql } from "drizzle-orm";
-import * as z from "zod";
+import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 
-const listNotificationsSchema = z.object({
-  limit: z.number().int().min(1).max(100).default(20),
-  offset: z.number().int().min(0).default(0),
-});
-
-const markReadSchema = z.object({
-  ids: z.array(z.uuid()).optional(),
-});
+const PAGE_SIZE = 30;
 
 /**
- * The current user's notifications grouped into bursts, newest first.
+ * One page of the current user's notifications, newest first. The bell groups
+ * the loaded rows into bursts. The cursor carries `created_at` as Postgres
+ * text, which keeps the microseconds a JS Date would drop.
  */
 export const $listNotifications = createServerFn({ method: "GET" })
   .validator(listNotificationsSchema)
   .middleware([authenticatedMiddleware])
-  .handler(async ({ data, context }): Promise<NotificationListItem[]> => {
-    const marked = markedNotifications(
-      context.session.session.userId,
-      "recent",
-    );
-    const numbered = db.$with("numbered").as(
-      db
-        .select({
-          id: marked.id,
-          createdAt: marked.createdAt,
-          type: marked.type,
-          actorId: marked.actorId,
-          listId: marked.listId,
-          collectionId: marked.collectionId,
-          unread: marked.unread,
-          burst:
-            sql<number>`sum(${marked.startsBurst}) over (partition by ${marked.type}, ${marked.actorId}, ${marked.listId}, ${marked.unread} order by ${marked.createdAt})`.as(
-              "burst",
-            ),
-        })
-        .from(marked),
-    );
-
-    const bursts = await db
-      .with(marked, numbered)
+  .handler(async ({ data, context }): Promise<NotificationPage> => {
+    const after = decodeCursor(data.cursor);
+    const rows = await db
       .select({
-        type: numbered.type,
-        actorId: numbered.actorId,
-        listId: numbered.listId,
-        unread: numbered.unread,
-        lastAt: max(numbered.createdAt),
-        itemCount: count(),
-        // text[], since Bun returns a uuid[] as an unparsed array literal
-        ids: sql<string[]>`array_agg(${numbered.id}::text)`,
-        // the newest few, for the row's names and thumbnails
-        slugs: sql<
-          string[]
-        >`(array_agg(${numbered.collectionId} order by ${numbered.createdAt} desc))[1:5]`,
+        id: notifications.id,
+        createdAt: notifications.createdAt,
+        cursorAt: sql<string>`${notifications.createdAt}::text`,
+        type: notifications.type,
+        readAt: notifications.readAt,
+        actorId: notifications.actorId,
+        username: cosmoAccounts.username,
+        listId: objektLists.id,
+        listSlug: objektLists.slug,
+        collectionId: notifications.collectionId,
       })
-      .from(numbered)
-      .groupBy(
-        numbered.type,
-        numbered.actorId,
-        numbered.listId,
-        numbered.unread,
-        numbered.burst,
+      .from(notifications)
+      .leftJoin(objektLists, eq(objektLists.id, notifications.listId))
+      .leftJoin(cosmoAccounts, eq(cosmoAccounts.userId, notifications.actorId))
+      .where(
+        and(
+          eq(notifications.userId, context.session.session.userId),
+          after
+            ? sql`(${notifications.createdAt}, ${notifications.id}) < (${after.timestamp}::timestamptz, ${after.id}::uuid)`
+            : undefined,
+        ),
       )
-      .orderBy(desc(max(numbered.createdAt)))
-      .limit(data.limit)
-      .offset(data.offset);
+      .orderBy(desc(notifications.createdAt), desc(notifications.id))
+      .limit(PAGE_SIZE);
 
-    const actorIds = [
+    const slugs = [
       ...new Set(
-        bursts.flatMap((b) => (b.actorId === null ? [] : [b.actorId])),
+        rows.flatMap((r) => (r.collectionId === null ? [] : [r.collectionId])),
       ),
     ];
-    const listIds = [
-      ...new Set(bursts.flatMap((b) => (b.listId === null ? [] : [b.listId]))),
-    ];
-    const slugs = [...new Set(bursts.flatMap((b) => b.slugs))];
-    const [actors, lists, pageCollections] = await Promise.all([
-      actorIds.length === 0
-        ? []
-        : db
-            .select({
-              userId: cosmoAccounts.userId,
-              username: cosmoAccounts.username,
-            })
-            .from(cosmoAccounts)
-            .where(inArray(cosmoAccounts.userId, actorIds)),
-      listIds.length === 0
-        ? []
-        : db
-            .select({ id: objektLists.id, slug: objektLists.slug })
-            .from(objektLists)
-            .where(inArray(objektLists.id, listIds)),
+    const pageCollections =
       slugs.length === 0
         ? []
-        : indexer
+        : await indexer
             .select({
               slug: collections.slug,
               name: collections.collectionId,
@@ -117,75 +76,57 @@ export const $listNotifications = createServerFn({ method: "GET" })
               frontImageVersion: collections.frontImageVersion,
             })
             .from(collections)
-            .where(inArray(collections.slug, slugs)),
-    ]);
-    const usernames = new Map(actors.map((a) => [a.userId, a.username]));
-    const listSlugs = new Map(lists.map((l) => [l.id, l.slug]));
+            .where(inArray(collections.slug, slugs));
     const collectionsBySlug = new Map<string, NotificationCollection>(
       pageCollections.map((c) => [c.slug, c]),
     );
 
-    // every type has an actor, a list and a collection (notifications_subject_chk)
-    return bursts.flatMap((burst): NotificationListItem[] => {
-      const listSlug =
-        burst.listId === null ? undefined : listSlugs.get(burst.listId);
-      if (
-        burst.actorId === null ||
-        burst.listId === null ||
-        listSlug === undefined ||
-        burst.lastAt === null
-      ) {
-        return [];
-      }
-      return [
-        {
-          type: burst.type,
-          ids: burst.ids,
-          lastAt: burst.lastAt,
-          unread: burst.unread,
-          itemCount: burst.itemCount,
-          actor: {
-            userId: burst.actorId,
-            username: usernames.get(burst.actorId) ?? null,
-          },
-          list: { id: burst.listId, slug: listSlug },
-          collections: burst.slugs.flatMap((slug) => {
-            const collection = collectionsBySlug.get(slug);
-            return collection === undefined ? [] : [collection];
-          }),
-        },
-      ];
-    });
+    const last = rows.at(-1);
+    return {
+      // every type has an actor, a list and a collection (notifications_subject_chk)
+      rows: rows.flatMap((row): NotificationRow[] =>
+        row.actorId === null || row.listId === null || row.listSlug === null
+          ? []
+          : [
+              {
+                id: row.id,
+                createdAt: row.createdAt,
+                type: row.type,
+                unread: row.readAt === null,
+                actor: { userId: row.actorId, username: row.username },
+                list: { id: row.listId, slug: row.listSlug },
+                collection:
+                  row.collectionId === null
+                    ? null
+                    : (collectionsBySlug.get(row.collectionId) ?? null),
+              },
+            ],
+      ),
+      nextCursor:
+        rows.length === PAGE_SIZE && last
+          ? encodeCursor(last.cursorAt, last.id)
+          : undefined,
+    };
   });
 
 /**
- * Mark notifications read. Pass an explicit list of IDs, or omit to mark all.
+ * Mark the given notifications read, or all of them.
  */
 export const $markNotificationsRead = createServerFn({ method: "POST" })
-  .validator(markReadSchema)
+  .validator(markNotificationsReadSchema)
   .middleware([authenticatedMiddleware])
   .handler(async ({ data, context }) => {
-    const userId = context.session.session.userId;
-    const now = new Date();
-
-    if (data.ids && data.ids.length > 0) {
-      await db
-        .update(notifications)
-        .set({ readAt: now })
-        .where(
-          and(
-            eq(notifications.userId, userId),
-            inArray(notifications.id, data.ids),
-          ),
-        );
-    } else {
-      await db
-        .update(notifications)
-        .set({ readAt: now })
-        .where(
-          and(eq(notifications.userId, userId), isNull(notifications.readAt)),
-        );
-    }
+    await db
+      .update(notifications)
+      .set({ readAt: new Date() })
+      .where(
+        and(
+          eq(notifications.userId, context.session.session.userId),
+          "ids" in data
+            ? inArray(notifications.id, data.ids)
+            : isNull(notifications.readAt),
+        ),
+      );
     return true;
   });
 
@@ -194,19 +135,4 @@ export const $markNotificationsRead = createServerFn({ method: "POST" })
  */
 export const $unreadNotificationCount = createServerFn({ method: "GET" })
   .middleware([authenticatedMiddleware])
-  .handler(async ({ context }) => {
-    const marked = markedNotifications(
-      context.session.session.userId,
-      "unread",
-    );
-    const [row] = await db
-      .with(marked)
-      .select({
-        count:
-          sql<number>`count(*) filter (where ${marked.startsBurst} = 1)`.mapWith(
-            Number,
-          ),
-      })
-      .from(marked);
-    return row?.count ?? 0;
-  });
+  .handler(({ context }) => countUnreadBursts(context.session.session.userId));

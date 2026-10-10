@@ -1,57 +1,42 @@
+import { BURST_GAP_HOURS } from "@/lib/universal/notifications";
 import { notifications } from "@apollo/database/web/schema";
-import { and, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import { db } from "./db";
 
-/**
- * A burst is a run of one user's notifications sharing type, actor, list and
- * read state, with no gap longer than this between neighbours.
- */
-const BURST_GAP = sql.raw(`interval '6 hours'`);
+const BURST_GAP = sql.raw(`interval '${BURST_GAP_HOURS} hours'`);
 
 /**
- * The bell groups only this many of the newest rows,
- * so its cost stays flat however long a user's history grows.
+ * Count the user's unread bursts by the rule `groupNotifications` groups the
+ * bell's rows with. Reads only unread rows, which the partial unread index serves.
  */
-const RECENT_ROWS = 500;
-
-/**
- * The user's newest notifications, or all of their unread ones, each flagged
- * when it starts a new burst. The unread set stays on the partial unread index.
- */
-export function markedNotifications(userId: string, rows: "recent" | "unread") {
-  const source =
-    rows === "recent"
-      ? db
-          .select()
-          .from(notifications)
-          .where(eq(notifications.userId, userId))
-          .orderBy(desc(notifications.createdAt))
-          .limit(RECENT_ROWS)
-          .as("source")
-      : db
-          .select()
-          .from(notifications)
-          .where(
-            and(eq(notifications.userId, userId), isNull(notifications.readAt)),
-          )
-          .as("source");
-  const partition = sql`partition by ${source.type}, ${source.actorId}, ${source.listId}, ${source.readAt} is null order by ${source.createdAt}`;
-
-  return db.$with("marked").as(
+export async function countUnreadBursts(userId: string) {
+  const unread = db
+    .select()
+    .from(notifications)
+    .where(and(eq(notifications.userId, userId), isNull(notifications.readAt)))
+    .as("unread");
+  const marked = db.$with("marked").as(
     db
       .select({
-        id: source.id,
-        createdAt: source.createdAt,
-        type: source.type,
-        actorId: source.actorId,
-        listId: source.listId,
-        collectionId: source.collectionId,
-        unread: sql<boolean>`${source.readAt} is null`.as("unread"),
         startsBurst: sql<number>`case
-          when ${source.createdAt} - lag(${source.createdAt}) over (${partition}) <= ${BURST_GAP}
+          when ${unread.createdAt} - lag(${unread.createdAt}) over (
+            partition by ${unread.type}, ${unread.actorId}, ${unread.listId}
+            order by ${unread.createdAt}
+          ) <= ${BURST_GAP}
           then 0 else 1
         end`.as("starts_burst"),
       })
-      .from(source),
+      .from(unread),
   );
+
+  const [row] = await db
+    .with(marked)
+    .select({
+      count:
+        sql<number>`count(*) filter (where ${marked.startsBurst} = 1)::int`.mapWith(
+          Number,
+        ),
+    })
+    .from(marked);
+  return row?.count ?? 0;
 }
