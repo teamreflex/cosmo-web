@@ -146,6 +146,10 @@ Before each chunk's collection upsert, `mirrorImages` (`src/images.ts`) mirrors 
 
 `collection_stats` holds each collection's `objekt_count` (every objekt row, spun included) and `spun_count` (rows owned by `Addresses.SPIN`) for apps/web's mint-count sorts. Triggers on `objekt` maintain it (migration `1791327933173-Data.js`): inserts and deletes adjust both counts, and owner changes to or from spin adjust `spun_count`. The processor never reads or writes it, so hot-block rollbacks and hand-run repairs to `objekt` stay counted without any TypeScript changes. A collection's row exists only while it has objekts.
 
+### Serial Numbering
+
+COSMO stopped returning serials at the v1 metadata cutoff, so `src/serials.ts` sets the serial of each objekt minted after it before the chunk's upsert, using `@apollo/serial-estimation` (see the serials section of `docs/cosmo.md`). A digital mint above its collection's cached top takes the next serial; anything else is estimated from its whole collection plus the chunk's new objekts, and only the new objekts keep the result. The processor never renumbers existing rows: `apps/schedules` recomputes collections and applies confirmed serials. It also adds a `serial_reservation` range whenever an online mint lands 20 or more ids above the previous one. The reads go through the store's `EntityManager` with raw SQL, because `Store` can't select single columns or scan id ranges.
+
 ## Key Files
 
 - `schema.graphql` — source of truth for entity definitions; TypeORM entities in `src/model/generated/` are manually kept in sync with it (do not regenerate)

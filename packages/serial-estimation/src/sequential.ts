@@ -15,7 +15,7 @@ export function sequentialSerials(
   confirmations: ReadonlyMap<number, number>,
   cutoff: number,
 ): Map<number, number> {
-  const ordered = objekts.toSorted((a, b) => a.tokenId - b.tokenId);
+  const ordered = [...objekts].sort((a, b) => a.tokenId - b.tokenId);
   const serials = new Map<number, number>();
   let offset = 0;
 

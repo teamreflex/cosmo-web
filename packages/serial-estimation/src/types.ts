@@ -18,8 +18,10 @@ export type ReservedRange = {
 };
 
 /**
- * A reserved range as one collection sees it: `foreign` lists the token ids
- * inside it that belong to other collections.
+ * A reserved range as one collection sees it. `foreign` holds the token ids
+ * of other collections that numbering depends on: every one between the
+ * collection's own objekts in the range, and at least one more when the range
+ * is shared. Ids outside the collection's own span don't change its chunks.
  */
 export type Reservation = ReservedRange & {
   foreign: readonly number[];

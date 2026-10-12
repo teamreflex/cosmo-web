@@ -6,10 +6,10 @@
  *   bun scripts/accuracy.ts [cutoff] [minGap]
  *
  * `cutoff` defaults to 2025-12-15T00:00:00Z and `minGap` to
- * RESERVATION_MIN_GAP. Reads INDEXER_URL (default: the local docker indexer)
- * and streams objekts through `psql`, so nothing is written to disk.
+ * RESERVATION_MIN_GAP. Reads the indexer database at INDEXER_DATABASE_URL and
+ * streams objekts through `psql`, so nothing is written to disk.
  */
-import { SQL } from "bun";
+import { collections } from "@apollo/database/indexer/schema";
 import {
   collectionKind,
   estimateSerials,
@@ -20,29 +20,24 @@ import {
   type Reservation,
   type ReservedRange,
 } from "../src";
+import { client, db, INDEXER_DATABASE_URL } from "./database";
 
-const url =
-  process.env.INDEXER_URL ??
-  "postgres://postgres:postgres@localhost:5434/indexer";
 const [cutoffArg, minGapArg] = process.argv.slice(2);
 const cutoff = Date.parse(cutoffArg ?? "2025-12-15T00:00:00Z");
 const minGap =
   minGapArg === undefined ? RESERVATION_MIN_GAP : Number(minGapArg);
 
-type CollectionRow = {
-  id: string;
-  slug: string;
-  on_offline: "online" | "offline";
-};
-
-const db = new SQL(url);
-const collectionRows: CollectionRow[] =
-  await db`select id, slug, on_offline from collection`;
-await db.close();
-const collections = collectionRows.map((row) => ({
+const collectionRows = await db
+  .select({
+    id: collections.id,
+    slug: collections.slug,
+    onOffline: collections.onOffline,
+  })
+  .from(collections);
+const kinds = collectionRows.map((row) => ({
   slug: row.slug,
-  kind: collectionKind(row.slug, row.on_offline),
-  physical: row.on_offline === "offline",
+  kind: collectionKind(row.slug, row.onOffline),
+  physical: row.onOffline === "offline",
 }));
 const collectionIndex = new Map(
   collectionRows.map((row, index) => [row.id, index]),
@@ -74,7 +69,7 @@ function grow() {
 const psql = Bun.spawn(
   [
     "psql",
-    url,
+    INDEXER_DATABASE_URL,
     "-c",
     String.raw`\copy (select id, collection_id, serial, (extract(epoch from minted_at) * 1000)::bigint from objekt where id ~ '^[0-9]+$') to stdout`,
   ],
@@ -114,7 +109,7 @@ const byTokenId = Uint32Array.from({ length: size }, (_, index) => index).sort(
 
 const ranges = findReservations(
   Array.from(byTokenId)
-    .filter((row) => collections[owners[row] ?? -1]?.kind === "sequential")
+    .filter((row) => kinds[owners[row] ?? -1]?.kind === "sequential")
     .map((row) => tokenIds[row] ?? 0),
   minGap,
 );
@@ -201,7 +196,7 @@ function tally(segment: string): Tally {
 
 const misses: string[] = [];
 for (const [collection, rows] of rowsByCollection) {
-  const info = collections[collection];
+  const info = kinds[collection];
   if (info === undefined) {
     continue;
   }
@@ -291,3 +286,4 @@ for (const [segment, entry] of tallies) {
 if (process.env.MISSES) {
   await Bun.write(process.env.MISSES, `${misses.join("\n")}\n`);
 }
+await client.close();

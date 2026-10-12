@@ -236,7 +236,7 @@ function chain(
  * run nobody has scanned.
  */
 function chunkStarts(chunks: ReadonlyMap<number, Chunk>): Map<number, number> {
-  const ordered = [...chunks.values()].toSorted((a, b) => a.start - b.start);
+  const ordered = [...chunks.values()].sort((a, b) => a.start - b.start);
   const starts = ordered.map(anchoredStart);
   const sameReservation = (a: Chunk, b: Chunk) =>
     a.reservation === b.reservation;
@@ -306,7 +306,7 @@ export function reservedSerials(
   confirmations: ReadonlyMap<number, number>,
   cutoff: number,
 ): Map<number, number> {
-  const sortedReservations = reservations.toSorted((a, b) => a.lo - b.lo);
+  const sortedReservations = [...reservations].sort((a, b) => a.lo - b.lo);
   const anchors = objekts.flatMap((objekt): Anchor[] => {
     const serial =
       confirmations.get(objekt.tokenId) ??

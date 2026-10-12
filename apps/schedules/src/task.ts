@@ -4,8 +4,10 @@ import type { Redis } from "effect/unstable/persistence";
 import type { DatabaseWeb } from "./db";
 import type { DatabaseIndexer } from "./db-indexer";
 import type { Exchangerate } from "./exchangerate";
+import { applySerialConfirmationsTask } from "./functions/apply-serial-confirmations";
 import { clearObjektStatsTask } from "./functions/clear-objekt-stats";
 import { drainOutboxTask } from "./functions/drain-outbox";
+import { recomputeSerialsTask } from "./functions/recompute-serials";
 import { syncCollectionPriceStatsTask } from "./functions/sync-collection-price-stats";
 import { syncFxRatesTask } from "./functions/sync-fx-rates";
 import { syncGravitiesTask } from "./functions/sync-gravities";
@@ -35,6 +37,8 @@ export const SCHEDULED_TASKS: ScheduledTask[] = [
   syncFxRatesTask,
   syncCollectionPriceStatsTask,
   syncMembersTask,
+  recomputeSerialsTask,
+  applySerialConfirmationsTask,
 ];
 
 /**
