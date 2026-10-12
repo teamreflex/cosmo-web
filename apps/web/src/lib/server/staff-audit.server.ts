@@ -1,23 +1,28 @@
 import { db } from "@/lib/server/db";
 import type { DbOrTx } from "@/lib/server/db";
 import {
-  fetchStaffUsernames,
-  staffUsername,
+  apolloUsername,
+  fetchStaffUsers,
+  staffUser,
+  staffUserFields,
 } from "@/lib/server/staff-users.server";
+import type { StaffUserRow } from "@/lib/server/staff-users.server";
 import type { StaffAuditQueryInput } from "@/lib/universal/schema/staff-audit";
 import type {
   AdminAuditDetail,
   AdminAuditRow,
   AdminAuditTarget,
   AuditStaffMember,
+  MoveSide,
 } from "@/lib/universal/staff-audit";
 import { parseRole } from "@apollo/auth";
-import { staffAudit } from "@apollo/database/web/schema";
+import { user } from "@apollo/database/auth";
+import { cosmoAccounts, staffAudit } from "@apollo/database/web/schema";
 import type {
   StaffAuditDetail,
   StaffAuditTargetType,
 } from "@apollo/database/web/types";
-import { and, EmptyFilter, eq, gt, inArray, sql } from "drizzle-orm";
+import { and, EmptyFilter, eq, gt, sql } from "drizzle-orm";
 
 const AUDIT_PAGE_SIZE = 50;
 
@@ -67,6 +72,13 @@ type MetadataAuditEntry = {
   slug: string;
 };
 
+type CosmoTransferAuditEntry = {
+  staffId: string;
+  action: "cosmo-account:transfer";
+  address: string;
+  detail: Extract<StaffAuditDetail, { kind: "cosmo-transfer" }>;
+};
+
 /**
  * Entries written without checking for a recent duplicate, so several can go
  * in one insert.
@@ -77,7 +89,8 @@ type UndeduplicatedAuditEntry =
   | UnbanAuditEntry
   | SetRoleAuditEntry
   | ApiKeyAuditEntry
-  | MetadataAuditEntry;
+  | MetadataAuditEntry
+  | CosmoTransferAuditEntry;
 
 export type StaffAuditEntry = ReportReadAuditEntry | UndeduplicatedAuditEntry;
 
@@ -135,6 +148,14 @@ function toAuditRow(entry: StaffAuditEntry): typeof staffAudit.$inferInsert {
         targetType: "collection",
         targetId: entry.slug,
       };
+    case "cosmo-account:transfer":
+      return {
+        staffId: entry.staffId,
+        action: entry.action,
+        targetType: "cosmo-account",
+        targetId: entry.address,
+        detail: entry.detail,
+      };
   }
 }
 
@@ -190,12 +211,8 @@ export async function fetchStaffAudit(input: StaffAuditQueryInput) {
       limit: AUDIT_PAGE_SIZE,
       with: {
         staff: {
-          columns: {
-            name: true,
-            username: true,
-            displayUsername: true,
-            role: true,
-          },
+          columns: { ...staffUserFields.columns, role: true },
+          with: staffUserFields.with,
         },
         report: { columns: { id: true, status: true } },
       },
@@ -211,12 +228,19 @@ export async function fetchStaffAudit(input: StaffAuditQueryInput) {
       : undefined,
   ]);
 
-  const usernames = await fetchStaffUsernames(
+  const users = await fetchStaffUsers(
     rows.flatMap((row) => {
       if (row.targetType === "user") {
         return [row.targetId];
       }
-      return row.detail?.kind === "api-key" ? [row.detail.ownerId] : [];
+      switch (row.detail?.kind) {
+        case "api-key":
+          return [row.detail.ownerId];
+        case "cosmo-transfer":
+          return [row.detail.fromUserId, row.detail.toUserId];
+        default:
+          return [];
+      }
     }),
   );
 
@@ -226,13 +250,13 @@ export async function fetchStaffAudit(input: StaffAuditQueryInput) {
       id: row.id,
       createdAt: row.createdAt,
       action: row.action,
-      staff: {
-        username: staffUsername(row.staff),
-        role: row.staff.role,
-      },
+      staff:
+        row.staff === null
+          ? null
+          : { ...staffUser(row.staff), role: row.staff.role },
       report: row.report,
       detail: row.detail === null ? null : toAuditDetail(row.detail),
-      target: toAuditTarget(row, usernames),
+      target: toAuditTarget(row, users),
     })),
     nextCursor: rows.length === AUDIT_PAGE_SIZE && last ? last.id : undefined,
     total,
@@ -245,14 +269,14 @@ function toAuditTarget(
     targetId: string;
     detail: StaffAuditDetail | null;
   },
-  usernames: Map<string, string>,
+  users: Map<string, StaffUserRow>,
 ): AdminAuditTarget {
   switch (row.targetType) {
     case "user":
       return {
         type: "user",
         id: row.targetId,
-        username: usernames.get(row.targetId) ?? null,
+        user: staffUser(users.get(row.targetId) ?? null),
       };
     case "report":
       return { type: "report", id: row.targetId };
@@ -265,16 +289,35 @@ function toAuditTarget(
         type: "api-key",
         id: row.targetId,
         name: row.detail.name,
-        owner: usernames.get(row.detail.ownerId) ?? null,
+        owner: staffUser(users.get(row.detail.ownerId) ?? null),
         enabled: row.detail.enabled,
       };
     case "collection":
       return { type: "collection", slug: row.targetId };
+    case "cosmo-account":
+      // recordStaffAudit always stores the move's detail with these rows
+      if (row.detail?.kind !== "cosmo-transfer") {
+        throw new Error(
+          `Audit row on COSMO account ${row.targetId} has no detail`,
+        );
+      }
+      return {
+        type: "cosmo-account",
+        address: row.targetId,
+        username: row.detail.username,
+        from: moveSide(row.detail.fromUserId, users),
+        to: moveSide(row.detail.toUserId, users),
+      };
   }
 }
 
+function moveSide(id: string, users: Map<string, StaffUserRow>): MoveSide {
+  const side = users.get(id);
+  return { id, username: side === undefined ? null : apolloUsername(side) };
+}
+
 /**
- * API key details are shown as the target instead.
+ * API key and COSMO account move details are shown as the target instead.
  */
 function toAuditDetail(detail: StaffAuditDetail): AdminAuditDetail | null {
   switch (detail.kind) {
@@ -287,27 +330,46 @@ function toAuditDetail(detail: StaffAuditDetail): AdminAuditDetail | null {
         to: parseRole(detail.to),
       };
     case "api-key":
+    case "cosmo-transfer":
       return null;
   }
 }
 
 /**
  * Everyone with at least one audit row, for the log's Staff filter. Demoted
- * staff stay listed because their rows remain.
+ * and deleted staff stay listed because their rows remain; deleted staff
+ * have no name and sort last.
  */
 export async function fetchAuditStaff(): Promise<AuditStaffMember[]> {
-  const staff = await db.query.user.findMany({
-    where: {
-      RAW: (t) =>
-        inArray(
-          t.id,
-          db.selectDistinct({ id: staffAudit.staffId }).from(staffAudit),
-        ),
-    },
-    columns: { id: true, name: true, username: true, displayUsername: true },
-  });
+  const staffIds = db
+    .selectDistinct({ id: staffAudit.staffId })
+    .from(staffAudit)
+    .as("audit_staff");
+  const staff = await db
+    .select({
+      id: staffIds.id,
+      user: {
+        name: user.name,
+        username: user.username,
+        displayUsername: user.displayUsername,
+      },
+      cosmoAccount: { username: cosmoAccounts.username },
+    })
+    .from(staffIds)
+    .leftJoin(user, eq(user.id, staffIds.id))
+    .leftJoin(cosmoAccounts, eq(cosmoAccounts.userId, user.id));
 
   return staff
-    .map((user) => ({ id: user.id, username: staffUsername(user) }))
-    .toSorted((a, b) => a.username.localeCompare(b.username));
+    .map((row) => ({
+      id: row.id,
+      user:
+        row.user === null
+          ? null
+          : staffUser({ ...row.user, cosmoAccount: row.cosmoAccount }),
+    }))
+    .toSorted((a, b) =>
+      a.user === null || b.user === null
+        ? Number(a.user === null) - Number(b.user === null)
+        : a.user.username.localeCompare(b.user.username),
+    );
 }

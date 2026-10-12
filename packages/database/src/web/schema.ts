@@ -30,6 +30,8 @@ import {
   type StaffAuditAction,
   type StaffAuditDetail,
   type StaffAuditTargetType,
+  cosmoLinkEvents,
+  cosmoLinkReasons,
   reportStatuses,
   reportTargetTypes,
 } from "./types";
@@ -46,6 +48,8 @@ export const notificationType = pgEnum("notification_type", ["list_match"]);
 export const binderLayout = pgEnum("binder_layout", ["3x3", "2x2", "4x3"]);
 export const reportTargetType = pgEnum("report_target_type", reportTargetTypes);
 export const reportStatus = pgEnum("report_status", reportStatuses);
+export const cosmoLinkEvent = pgEnum("cosmo_link_event", cosmoLinkEvents);
+export const cosmoLinkReason = pgEnum("cosmo_link_reason", cosmoLinkReasons);
 
 export const cosmoAccounts = pgTable(
   "cosmo_account",
@@ -64,6 +68,8 @@ export const cosmoAccounts = pgTable(
     index("cosmo_account_polygon_address_idx").on(t.polygonAddress),
     index("cosmo_account_cosmo_id_idx").on(t.cosmoId),
     uniqueIndex("cosmo_account_username_address_idx").on(t.username, t.address),
+    uniqueIndex("cosmo_account_user_id_unique_idx").on(t.userId),
+    // covered by the unique index; dropped in the follow-up release with user.is_admin
     index("cosmo_account_user_id_idx").on(t.userId),
   ],
 );
@@ -73,6 +79,40 @@ export const cosmoAccountChanges = pgTable("cosmo_account_changes", {
   username: citext("username", { length: 24 }).notNull(),
   createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
 });
+
+/**
+ * Append-only history of COSMO links: a row each time an address is linked to
+ * or unlinked from a user, written in the transaction that changes
+ * `cosmo_account.user_id`, which stays the current link. `user_id` and
+ * `staff_id` have no foreign key, so the rows outlive deleted accounts.
+ */
+export const cosmoLinkAudit = pgTable(
+  "cosmo_link_audit",
+  {
+    id: serial("id").primaryKey(),
+    createdAt,
+    cosmoAccountId: integer("cosmo_account_id")
+      .notNull()
+      .references(() => cosmoAccounts.id),
+    userId: text("user_id").notNull(),
+    event: cosmoLinkEvent("event").notNull(),
+    reason: cosmoLinkReason("reason").notNull(),
+    staffId: text("staff_id"),
+  },
+  (t) => [
+    index("cosmo_link_audit_cosmo_account_idx").on(t.cosmoAccountId, t.id),
+    index("cosmo_link_audit_user_idx").on(t.userId, t.id),
+    check(
+      "cosmo_link_audit_staff_chk",
+      sql`(${t.reason} = 'staff-move') = (${t.staffId} IS NOT NULL)`,
+    ),
+    // verifying only links and deleting only unlinks; staff move either way
+    check(
+      "cosmo_link_audit_event_chk",
+      sql`(${t.reason} <> 'verified' OR ${t.event} = 'linked') AND (${t.reason} <> 'account-deleted' OR ${t.event} = 'unlinked')`,
+    ),
+  ],
+);
 
 export const lockedObjekts = pgTable(
   "locked_objekts",
@@ -452,9 +492,9 @@ export const reports = pgTable(
   {
     id: uuid("id").primaryKey().defaultRandom(),
     createdAt,
-    reporterId: text("reporter_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+    reporterId: text("reporter_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
     targetType: reportTargetType("target_type").notNull(),
     targetId: text("target_id").notNull(),
     reason: varchar("reason", { length: 32 }).$type<ReportReason>().notNull(),
@@ -481,17 +521,15 @@ export const reports = pgTable(
 );
 
 /**
- * Append-only log of staff reads and actions. `staff_id` deliberately has no
- * ON DELETE action, so deleting an account can never remove its audit rows.
+ * Append-only log of staff reads and actions. `staff_id` has no foreign key,
+ * so the rows outlive a staff member's deleted account.
  */
 export const staffAudit = pgTable(
   "staff_audit",
   {
     id: serial("id").primaryKey(),
     createdAt,
-    staffId: text("staff_id")
-      .notNull()
-      .references(() => user.id),
+    staffId: text("staff_id").notNull(),
     action: varchar("action", { length: 48 })
       .$type<StaffAuditAction>()
       .notNull(),

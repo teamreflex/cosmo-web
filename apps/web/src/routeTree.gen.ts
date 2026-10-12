@@ -20,6 +20,7 @@ import { Route as AtChar123usernameChar125GridRouteImport } from './routes/@{$us
 import { Route as AtChar123usernameChar125ProgressRouteImport } from './routes/@{$username}/progress'
 import { Route as AtChar123usernameChar125TradesRouteImport } from './routes/@{$username}/trades'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
+import { Route as AdminAccountsRouteImport } from './routes/admin/accounts'
 import { Route as AdminApiKeysRouteImport } from './routes/admin/api-keys'
 import { Route as AdminAuditRouteImport } from './routes/admin/audit'
 import { Route as AdminBandsRouteImport } from './routes/admin/bands'
@@ -29,6 +30,7 @@ import { Route as AdminErasRouteImport } from './routes/admin/eras'
 import { Route as AdminEventsRouteImport } from './routes/admin/events'
 import { Route as AdminNoticeRouteImport } from './routes/admin/notice'
 import { Route as AdminReportsRouteImport } from './routes/admin/reports'
+import { Route as AuthDeleteAccountRouteImport } from './routes/auth/delete-account'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
 import { Route as EventsIndexRouteImport } from './routes/events/index'
 import { Route as EventsSlugRouteImport } from './routes/events/$slug'
@@ -112,6 +114,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminAccountsRoute = AdminAccountsRouteImport.update({
+  id: '/accounts',
+  path: '/accounts',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminApiKeysRoute = AdminApiKeysRouteImport.update({
   id: '/api-keys',
   path: '/api-keys',
@@ -156,6 +163,11 @@ const AdminReportsRoute = AdminReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
   getParentRoute: () => AdminRouteRoute,
+} as any)
+const AuthDeleteAccountRoute = AuthDeleteAccountRouteImport.update({
+  id: '/auth/delete-account',
+  path: '/auth/delete-account',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
   id: '/auth/reset-password',
@@ -281,6 +293,7 @@ export interface FileRoutesByFullPath {
   '/@{$username}/grid': typeof AtChar123usernameChar125GridRoute
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
+  '/admin/accounts': typeof AdminAccountsRoute
   '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/bands': typeof AdminBandsRoute
@@ -290,6 +303,7 @@ export interface FileRoutesByFullPath {
   '/admin/events': typeof AdminEventsRoute
   '/admin/notice': typeof AdminNoticeRoute
   '/admin/reports': typeof AdminReportsRoute
+  '/auth/delete-account': typeof AuthDeleteAccountRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
@@ -322,6 +336,7 @@ export interface FileRoutesByTo {
   '/@{$username}/grid': typeof AtChar123usernameChar125GridRoute
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
+  '/admin/accounts': typeof AdminAccountsRoute
   '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/bands': typeof AdminBandsRoute
@@ -331,6 +346,7 @@ export interface FileRoutesByTo {
   '/admin/events': typeof AdminEventsRoute
   '/admin/notice': typeof AdminNoticeRoute
   '/admin/reports': typeof AdminReportsRoute
+  '/auth/delete-account': typeof AuthDeleteAccountRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
@@ -366,6 +382,7 @@ export interface FileRoutesById {
   '/@{$username}/grid': typeof AtChar123usernameChar125GridRoute
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
+  '/admin/accounts': typeof AdminAccountsRoute
   '/admin/api-keys': typeof AdminApiKeysRoute
   '/admin/audit': typeof AdminAuditRoute
   '/admin/bands': typeof AdminBandsRoute
@@ -375,6 +392,7 @@ export interface FileRoutesById {
   '/admin/events': typeof AdminEventsRoute
   '/admin/notice': typeof AdminNoticeRoute
   '/admin/reports': typeof AdminReportsRoute
+  '/auth/delete-account': typeof AuthDeleteAccountRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
@@ -411,6 +429,7 @@ export interface FileRouteTypes {
     | '/@{$username}/grid'
     | '/@{$username}/progress'
     | '/@{$username}/trades'
+    | '/admin/accounts'
     | '/admin/api-keys'
     | '/admin/audit'
     | '/admin/bands'
@@ -420,6 +439,7 @@ export interface FileRouteTypes {
     | '/admin/events'
     | '/admin/notice'
     | '/admin/reports'
+    | '/auth/delete-account'
     | '/auth/reset-password'
     | '/events/$slug'
     | '/list/$id'
@@ -452,6 +472,7 @@ export interface FileRouteTypes {
     | '/@{$username}/grid'
     | '/@{$username}/progress'
     | '/@{$username}/trades'
+    | '/admin/accounts'
     | '/admin/api-keys'
     | '/admin/audit'
     | '/admin/bands'
@@ -461,6 +482,7 @@ export interface FileRouteTypes {
     | '/admin/events'
     | '/admin/notice'
     | '/admin/reports'
+    | '/auth/delete-account'
     | '/auth/reset-password'
     | '/events/$slug'
     | '/list/$id'
@@ -495,6 +517,7 @@ export interface FileRouteTypes {
     | '/@{$username}/grid'
     | '/@{$username}/progress'
     | '/@{$username}/trades'
+    | '/admin/accounts'
     | '/admin/api-keys'
     | '/admin/audit'
     | '/admin/bands'
@@ -504,6 +527,7 @@ export interface FileRouteTypes {
     | '/admin/events'
     | '/admin/notice'
     | '/admin/reports'
+    | '/auth/delete-account'
     | '/auth/reset-password'
     | '/events/$slug'
     | '/list/$id'
@@ -535,6 +559,7 @@ export interface RootRouteChildren {
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   ShareDataRoute: typeof ShareDataRoute
   TermsPrivacyRoute: typeof TermsPrivacyRoute
+  AuthDeleteAccountRoute: typeof AuthDeleteAccountRoute
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   EventsSlugRoute: typeof EventsSlugRoute
   ListIdRoute: typeof ListIdRoute
@@ -635,6 +660,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/accounts': {
+      id: '/admin/accounts'
+      path: '/accounts'
+      fullPath: '/admin/accounts'
+      preLoaderRoute: typeof AdminAccountsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/api-keys': {
       id: '/admin/api-keys'
       path: '/api-keys'
@@ -697,6 +729,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/reports'
       preLoaderRoute: typeof AdminReportsRouteImport
       parentRoute: typeof AdminRouteRoute
+    }
+    '/auth/delete-account': {
+      id: '/auth/delete-account'
+      path: '/auth/delete-account'
+      fullPath: '/auth/delete-account'
+      preLoaderRoute: typeof AuthDeleteAccountRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/auth/reset-password': {
       id: '/auth/reset-password'
@@ -878,6 +917,7 @@ const AtChar123usernameChar125RouteRouteWithChildren =
   )
 
 interface AdminRouteRouteChildren {
+  AdminAccountsRoute: typeof AdminAccountsRoute
   AdminApiKeysRoute: typeof AdminApiKeysRoute
   AdminAuditRoute: typeof AdminAuditRoute
   AdminBandsRoute: typeof AdminBandsRoute
@@ -891,6 +931,7 @@ interface AdminRouteRouteChildren {
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
+  AdminAccountsRoute: AdminAccountsRoute,
   AdminApiKeysRoute: AdminApiKeysRoute,
   AdminAuditRoute: AdminAuditRoute,
   AdminBandsRoute: AdminBandsRoute,
@@ -914,6 +955,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRouteRoute: AdminRouteRouteWithChildren,
   ShareDataRoute: ShareDataRoute,
   TermsPrivacyRoute: TermsPrivacyRoute,
+  AuthDeleteAccountRoute: AuthDeleteAccountRoute,
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   EventsSlugRoute: EventsSlugRoute,
   ListIdRoute: ListIdRoute,

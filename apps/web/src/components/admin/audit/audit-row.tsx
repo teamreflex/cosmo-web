@@ -1,3 +1,4 @@
+import StaffUserName from "@/components/admin/staff-user-name";
 import StatusPill from "@/components/objekt/detail/status-pill";
 import UserAvatar from "@/components/profile/user-avatar";
 import { Timestamp } from "@/components/ui/timestamp";
@@ -7,9 +8,13 @@ import { auditActionLabel, auditBanLength } from "@/lib/client/staff-audit";
 import type {
   AdminAuditDetail,
   AdminAuditRow,
+  MoveSide,
 } from "@/lib/universal/staff-audit";
+import { staffUserText } from "@/lib/universal/staff-users";
 import { cn } from "@/lib/utils";
 import type { StaffAuditAction } from "@apollo/database/web/types";
+import { shortAddress } from "@apollo/util";
+import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 
@@ -35,6 +40,7 @@ const actionTones = {
   "api-key:update": "text-destructive",
   "api-key:delete": "text-destructive",
   "metadata:update": "text-foreground",
+  "cosmo-account:transfer": "text-destructive",
 } satisfies Record<StaffAuditAction, string>;
 
 type Props = {
@@ -94,14 +100,25 @@ export default function AuditRow({ row }: Props) {
         role="cell"
         className="flex min-w-0 items-center gap-2 [grid-area:who]"
       >
-        <UserAvatar
-          username={row.staff.username}
-          className="size-5.5 **:p-0.5"
-        />
-        <span className="truncate font-medium">@{row.staff.username}</span>
-        <StatusPill tone="muted" className="font-sans">
-          {roleLabel(row.staff.role)}
-        </StatusPill>
+        {row.staff === null ? (
+          <>
+            <UserAvatar deleted className="size-5.5" />
+            <span className="truncate font-medium text-muted-foreground">
+              {m.admin_audit_target_deleted_user()}
+            </span>
+          </>
+        ) : (
+          <>
+            <UserAvatar
+              username={row.staff.username}
+              className="size-5.5 **:p-0.5"
+            />
+            <StaffUserName user={row.staff} className="font-medium" />
+            <StatusPill tone="muted" className="font-sans">
+              {roleLabel(row.staff.role)}
+            </StatusPill>
+          </>
+        )}
       </div>
 
       <div
@@ -143,13 +160,20 @@ export default function AuditRow({ row }: Props) {
 
 function AuditTarget({ row }: Props) {
   switch (row.target.type) {
-    case "user":
+    case "user": {
+      const { user } = row.target;
       return (
         <>
           <span className="min-w-0 break-words">
-            {row.target.username === null
-              ? m.admin_audit_target_deleted_user()
-              : m.admin_audit_target_user({ username: row.target.username })}
+            {user === null ? (
+              m.admin_audit_target_deleted_user()
+            ) : (
+              <ParaglideMessage
+                message={m.admin_audit_target_user}
+                inputs={{ username: staffUserText(user) }}
+                markup={{ user: () => <StaffUserName user={user} /> }}
+              />
+            )}
           </span>
           <span className="font-mono text-xs text-muted-foreground">
             {shortId(row.target.id)}
@@ -170,6 +194,7 @@ function AuditTarget({ row }: Props) {
           )}
         </>
       );
+    }
     case "report":
       return (
         <>
@@ -194,7 +219,8 @@ function AuditTarget({ row }: Props) {
           )}
         </>
       );
-    case "api-key":
+    case "api-key": {
+      const { owner } = row.target;
       return (
         <>
           <span className="min-w-0 break-words">
@@ -206,11 +232,15 @@ function AuditTarget({ row }: Props) {
             {shortId(row.target.id)}
           </span>
           <span className="text-xs text-muted-foreground">
-            {row.target.owner === null
-              ? m.admin_audit_note_api_key_owner_deleted()
-              : m.admin_audit_note_api_key_owner({
-                  username: row.target.owner,
-                })}
+            {owner === null ? (
+              m.admin_audit_note_api_key_owner_deleted()
+            ) : (
+              <ParaglideMessage
+                message={m.admin_audit_note_api_key_owner}
+                inputs={{ username: staffUserText(owner) }}
+                markup={{ user: () => <StaffUserName user={owner} /> }}
+              />
+            )}
           </span>
           {row.action === "api-key:update" && (
             <span className="text-xs text-muted-foreground">
@@ -221,6 +251,7 @@ function AuditTarget({ row }: Props) {
           )}
         </>
       );
+    }
     case "collection":
       return (
         <>
@@ -230,7 +261,38 @@ function AuditTarget({ row }: Props) {
           </span>
         </>
       );
+    case "cosmo-account":
+      return (
+        <>
+          <span className="min-w-0 break-words">
+            {m.admin_audit_target_cosmo_account({
+              username: row.target.username,
+            })}
+          </span>
+          <span className="font-mono text-xs text-muted-foreground">
+            {shortAddress(row.target.address)}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            <MoveSideName side={row.target.from} />
+            {" → "}
+            <MoveSideName side={row.target.to} />
+          </span>
+        </>
+      );
   }
+}
+
+/**
+ * One side of a COSMO account move, by Apollo username and id prefix, since
+ * the user's current COSMO account may not be the one that moved.
+ */
+function MoveSideName({ side }: { side: MoveSide }) {
+  return (
+    <>
+      {side.username ?? m.admin_audit_target_deleted_user()}{" "}
+      <span className="font-mono">{shortId(side.id)}</span>
+    </>
+  );
 }
 
 function detailNote(detail: AdminAuditDetail) {

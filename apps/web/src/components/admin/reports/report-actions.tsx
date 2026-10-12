@@ -1,3 +1,4 @@
+import StaffUserName from "@/components/admin/staff-user-name";
 import { Button } from "@/components/ui/button";
 import { Timestamp } from "@/components/ui/timestamp";
 import { useHasPermission } from "@/hooks/use-has-permission";
@@ -11,7 +12,9 @@ import {
 import { currentAccountQuery } from "@/lib/queries/core";
 import { adminReportsQueryFilter } from "@/lib/queries/reports";
 import type { AdminReportDetail } from "@/lib/universal/reports";
+import { staffUserText } from "@/lib/universal/staff-users";
 import { cn } from "@/lib/utils";
+import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconLoader2 } from "@tabler/icons-react";
 import {
   useMutation,
@@ -67,14 +70,33 @@ export default function ReportActions({ report }: Props) {
       return <OpenActions report={report} />;
     case "resolved":
     case "dismissed": {
-      const name = report.resolver
-        ? `@${report.resolver.username}`
-        : m.admin_reports_deleted_user();
+      const { resolver } = report;
       return (
         <div className="border-t bg-muted/40 px-4 py-3 text-xs text-muted-foreground">
-          {report.status === "resolved"
-            ? m.admin_reports_resolved_by({ name })
-            : m.admin_reports_dismissed_by({ name })}
+          <ParaglideMessage
+            message={
+              report.status === "resolved"
+                ? m.admin_reports_resolved_by
+                : m.admin_reports_dismissed_by
+            }
+            inputs={{
+              name:
+                resolver === null
+                  ? m.admin_reports_deleted_user()
+                  : staffUserText(resolver),
+            }}
+            markup={{
+              user: ({ children }) =>
+                resolver === null ? (
+                  children
+                ) : (
+                  <StaffUserName
+                    user={resolver}
+                    className="font-medium text-foreground"
+                  />
+                ),
+            }}
+          />
           {" · "}
           <Timestamp date={report.resolvedAt} relative="long" />
         </div>

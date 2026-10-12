@@ -22,7 +22,7 @@ export function AdminSidebar({ className }: Props) {
   const location = useLocation();
   const hasPermission = useHasPermission();
   const items = getAdminItems().filter((item) =>
-    hasPermission(item.permissions),
+    item.permissions.some(hasPermission),
   );
 
   return (

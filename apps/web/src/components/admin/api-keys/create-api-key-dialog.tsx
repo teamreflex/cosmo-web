@@ -1,3 +1,4 @@
+import UserCombobox from "@/components/admin/user-combobox";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -21,7 +22,7 @@ import {
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { $createApiKey } from "@/lib/functions/api-keys";
-import { apiKeysQuery } from "@/lib/queries/api-keys";
+import { apiKeysQuery, searchUsersQuery } from "@/lib/queries/api-keys";
 import type { UserSearchResult } from "@/lib/universal/api-keys";
 import {
   type CreateApiKeyInput,
@@ -33,7 +34,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
-import UserCombobox from "./user-combobox";
 
 const EXPIRY_OPTIONS = [
   { value: "none", days: null },
@@ -158,6 +158,13 @@ export default function CreateApiKeyDialog() {
                     <UserCombobox
                       value={selectedUser}
                       onChange={handleSelectUser}
+                      search={searchUsersQuery}
+                      getKey={(user) => user.id}
+                      getLabel={(user) => `@${user.cosmoUsername}`}
+                      getInitial={(user) =>
+                        user.cosmoUsername.charAt(0).toUpperCase()
+                      }
+                      placeholder={m.user_search_placeholder()}
                     />
                     <FieldError errors={[fieldState.error]} />
                   </Field>

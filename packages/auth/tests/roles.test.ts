@@ -86,6 +86,14 @@ const rows = [
     permissions: { audit: ["read"] },
     expected: { user: false, moderator: false, admin: true },
   },
+  {
+    permissions: { cosmo: ["transfer"] },
+    expected: { user: false, moderator: false, admin: true },
+  },
+  {
+    permissions: { cosmo: ["history"] },
+    expected: { user: false, moderator: false, admin: true },
+  },
 ] satisfies readonly {
   permissions: Permissions;
   expected: Record<Role, boolean>;

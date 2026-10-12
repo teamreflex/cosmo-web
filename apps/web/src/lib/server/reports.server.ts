@@ -4,10 +4,11 @@ import { db } from "@/lib/server/db";
 import type { DbOrTx } from "@/lib/server/db";
 import { recordStaffAudit } from "@/lib/server/staff-audit.server";
 import {
-  fetchStaffUsernames,
-  staffUsername,
+  fetchStaffUsers,
+  staffUser,
+  staffUserFields,
 } from "@/lib/server/staff-users.server";
-import type { NamedUser } from "@/lib/server/staff-users.server";
+import type { StaffUserRow } from "@/lib/server/staff-users.server";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import { openReportStatuses } from "@/lib/universal/reports";
 import type {
@@ -22,7 +23,7 @@ import type {
   ReportQueueInput,
 } from "@/lib/universal/schema/reports";
 import type { Role } from "@apollo/auth";
-import { protectionFor } from "@apollo/auth/guard";
+import { isBanActive, protectionFor } from "@apollo/auth/guard";
 import { reports } from "@apollo/database/web/schema";
 import type {
   ReportStatus,
@@ -120,13 +121,11 @@ export async function fetchReportQueue(
     orderBy: { createdAt: "desc", id: "desc" },
     limit: QUEUE_PAGE_SIZE,
     with: {
-      reporter: {
-        columns: { name: true, username: true, displayUsername: true },
-      },
+      reporter: staffUserFields,
     },
   });
 
-  const usernames = await fetchStaffUsernames(
+  const users = await fetchStaffUsers(
     rows.filter((row) => row.targetType === "user").map((row) => row.targetId),
   );
 
@@ -136,8 +135,8 @@ export async function fetchReportQueue(
       id: row.id,
       reason: row.reason,
       createdAt: row.createdAt,
-      reporter: { username: staffUsername(row.reporter) },
-      target: toRowTarget(row.targetType, row.targetId, usernames),
+      reporter: staffUser(row.reporter),
+      target: toRowTarget(row.targetType, row.targetId, users),
     })),
     nextCursor:
       rows.length === QUEUE_PAGE_SIZE && last
@@ -149,16 +148,11 @@ export async function fetchReportQueue(
 function toRowTarget(
   targetType: ReportTargetType,
   targetId: string,
-  usernames: Map<string, string>,
+  users: Map<string, StaffUserRow>,
 ): AdminReportRowTarget {
   switch (targetType) {
-    case "user": {
-      const username = usernames.get(targetId);
-      return {
-        type: "user",
-        user: username === undefined ? null : { username },
-      };
-    }
+    case "user":
+      return { type: "user", user: staffUser(users.get(targetId) ?? null) };
     case "message":
     case "listing":
     case "feedback":
@@ -179,12 +173,8 @@ export async function fetchReportDetail(
   const report = await db.query.reports.findFirst({
     where: { id, NOT: reportsOn(viewer.id) },
     with: {
-      reporter: {
-        columns: { name: true, username: true, displayUsername: true },
-      },
-      resolver: {
-        columns: { name: true, username: true, displayUsername: true },
-      },
+      reporter: staffUserFields,
+      resolver: staffUserFields,
     },
   });
 
@@ -211,7 +201,7 @@ export async function fetchReportDetail(
     reason: report.reason,
     note: report.note,
     createdAt: report.createdAt,
-    reporter: { username: staffUsername(report.reporter) },
+    reporter: staffUser(report.reporter),
     otherOpenReportCount,
     target,
   };
@@ -228,37 +218,27 @@ async function fetchDetailTarget(
         where: { id: targetId },
         columns: {
           id: true,
-          name: true,
-          username: true,
-          displayUsername: true,
+          ...staffUserFields.columns,
           email: true,
           emailVerified: true,
           role: true,
           banned: true,
           banExpires: true,
         },
-        with: {
-          cosmoAccount: { columns: { username: true } },
-        },
+        with: staffUserFields.with,
       });
 
       if (!user) {
         return { type: "user", user: null };
       }
 
-      // expired bans stay flagged until the user's next sign-in clears them
-      const banActive =
-        user.banned &&
-        (user.banExpires === null || user.banExpires > new Date());
-
       return {
         type: "user",
         user: {
+          ...staffUser(user),
           id: user.id,
-          username: staffUsername(user),
           role: user.role,
-          ban: banActive ? { until: user.banExpires } : null,
-          profile: user.cosmoAccount?.username ?? null,
+          ban: isBanActive(user) ? { until: user.banExpires } : null,
           protected: protectionFor(
             viewerRole,
             user,
@@ -279,7 +259,7 @@ function toOutcome(report: {
   id: string;
   status: ReportStatus;
   resolvedAt: Date | null;
-  resolver: NamedUser | null;
+  resolver: StaffUserRow | null;
 }): ReportOutcome {
   switch (report.status) {
     case "open":
@@ -294,9 +274,7 @@ function toOutcome(report: {
       return {
         status: report.status,
         resolvedAt: report.resolvedAt,
-        resolver: report.resolver
-          ? { username: staffUsername(report.resolver) }
-          : null,
+        resolver: staffUser(report.resolver),
       };
   }
 }

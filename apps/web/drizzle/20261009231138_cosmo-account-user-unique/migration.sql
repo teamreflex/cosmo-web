@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "cosmo_account_user_id_unique_idx" ON "cosmo_account" ("user_id");

@@ -2,12 +2,14 @@ import { auth } from "@/lib/server/auth.server";
 import { db } from "@/lib/server/db";
 import { staffMiddleware } from "@/lib/server/middlewares";
 import { recordStaffAudit } from "@/lib/server/staff-audit.server";
+import { staffUser, staffUserFields } from "@/lib/server/staff-users.server";
+import { prefixPattern } from "@/lib/server/util.server";
 import type { AdminApiKey, UserSearchResult } from "@/lib/universal/api-keys";
 import { ExpectedError } from "@/lib/universal/errors/expected";
+import { adminSearchSchema } from "@/lib/universal/schema/admin";
 import {
   createApiKeySchema,
   deleteApiKeySchema,
-  searchUsersSchema,
   updateApiKeySchema,
 } from "@/lib/universal/schema/api-keys";
 import { apikey } from "@apollo/database/web/schema";
@@ -20,19 +22,15 @@ import { eq } from "drizzle-orm";
  */
 export const $searchUsers = createServerFn({ method: "GET" })
   .middleware([staffMiddleware({ site: ["manage"] })])
-  .validator(searchUsersSchema)
+  .validator(adminSearchSchema)
   .handler(async ({ data }) => {
-    // escape LIKE wildcards so they match literally
-    const pattern = `${data.query.replace(/[\\%_]/g, "\\$&")}%`;
     const rows = await db.query.cosmoAccounts.findMany({
       where: {
-        username: { ilike: pattern },
+        username: { ilike: prefixPattern(data.query) },
         userId: { isNotNull: true },
       },
       columns: { username: true },
-      with: {
-        user: { columns: { id: true, username: true, displayUsername: true } },
-      },
+      with: { user: { columns: { id: true } } },
       limit: 10,
     });
 
@@ -43,7 +41,6 @@ export const $searchUsers = createServerFn({ method: "GET" })
       const result: UserSearchResult = {
         id: row.user.id,
         cosmoUsername: row.username,
-        username: row.user.displayUsername ?? row.user.username,
       };
       return [result];
     });
@@ -56,9 +53,7 @@ export const $listApiKeys = createServerFn({ method: "GET" })
   .middleware([staffMiddleware({ site: ["manage"] })])
   .handler(async () => {
     const rows = await db.query.apikey.findMany({
-      with: {
-        user: { columns: { id: true, username: true, displayUsername: true } },
-      },
+      with: { user: staffUserFields },
       orderBy: { createdAt: "desc" },
     });
 
@@ -71,10 +66,7 @@ export const $listApiKeys = createServerFn({ method: "GET" })
       lastRequest: row.lastRequest,
       expiresAt: row.expiresAt,
       createdAt: row.createdAt,
-      owner: {
-        id: row.user.id,
-        username: row.user.displayUsername ?? row.user.username,
-      },
+      owner: staffUser(row.user),
     })) satisfies AdminApiKey[];
   });
 

@@ -69,6 +69,17 @@ export function protectionFor(
 }
 
 /**
+ * Whether the ban still applies. The admin plugin lifts a lapsed ban only at
+ * the user's next sign-in, so `banned` can stay true after it expires.
+ */
+export function isBanActive(
+  user: { banned: boolean; banExpires: Date | null },
+  now: Date = new Date(),
+) {
+  return user.banned && (user.banExpires === null || user.banExpires > now);
+}
+
+/**
  * A staff change to an account's access or role.
  */
 export type UserChange =
@@ -113,4 +124,71 @@ export function userChangeRefusal({
   }
 
   return null;
+}
+
+export type CosmoTransferRefusal = "protected-user" | "banned";
+
+type BanState = {
+  banned: boolean;
+  banExpires: Date | null;
+};
+
+type CosmoTransferCheck = {
+  from: BanState & { email: string; emailVerified: boolean };
+  to: BanState;
+  protectedDomains: ReadonlySet<string>;
+  now: Date;
+};
+
+/**
+ * Why staff may not move a COSMO link from one user to another, or null when
+ * they may. Only the source is protected, because receiving a link takes
+ * nothing from an account. An actively banned user can neither give nor
+ * receive one.
+ */
+export function cosmoTransferRefusal({
+  from,
+  to,
+  protectedDomains,
+  now,
+}: CosmoTransferCheck): CosmoTransferRefusal | null {
+  if (isProtectedAccount(from, protectedDomains)) {
+    return "protected-user";
+  }
+
+  if (isBanActive(from, now) || isBanActive(to, now)) {
+    return "banned";
+  }
+
+  return null;
+}
+
+export type CosmoLinkRefusal = "linked-elsewhere" | "banned";
+
+/**
+ * The user a COSMO address is linked to.
+ */
+export type CosmoLinkOwner = BanState & { id: string };
+
+type CosmoLinkCheck = {
+  callerId: string;
+  owner: CosmoLinkOwner | null;
+  now: Date;
+};
+
+/**
+ * Why the caller may not link a COSMO address, or null when nobody holds it
+ * or the caller already does. Callers decide whether to reveal a ban, since
+ * it says something about the owner.
+ */
+export function cosmoLinkRefusal({
+  callerId,
+  owner,
+  now,
+}: CosmoLinkCheck): CosmoLinkRefusal | null {
+  if (owner === null || owner.id === callerId) {
+    return null;
+  }
+
+  return isBanActive(owner, now) ? "banned" : "linked-elsewhere";
 }

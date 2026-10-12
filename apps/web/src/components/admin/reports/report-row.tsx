@@ -1,8 +1,11 @@
+import StaffUserName from "@/components/admin/staff-user-name";
 import StatusPill from "@/components/objekt/detail/status-pill";
 import { Timestamp } from "@/components/ui/timestamp";
 import { m } from "@/i18n/messages";
 import { reportReasonLabel, reportTargetTypeLabel } from "@/lib/client/reports";
 import type { AdminReportRow } from "@/lib/universal/reports";
+import { staffUserText } from "@/lib/universal/staff-users";
+import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconChevronRight } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 
@@ -15,10 +18,6 @@ type Props = {
  * screens), and the router marks the open one active.
  */
 export default function ReportRow({ row }: Props) {
-  const target = row.target.user
-    ? `@${row.target.user.username}`
-    : m.admin_reports_deleted_user();
-
   return (
     <Link
       from="/admin/reports"
@@ -39,10 +38,34 @@ export default function ReportRow({ row }: Props) {
         <IconChevronRight className="size-4 shrink-0 text-muted-foreground md:hidden" />
       </span>
       <span className="text-[13px] text-muted-foreground">
-        {m.admin_reports_row_summary({
-          target,
-          reporter: row.reporter.username,
-        })}
+        {/* the row is a link, so the names inside it aren't */}
+        <ParaglideMessage
+          message={m.admin_reports_row_summary}
+          inputs={{
+            target:
+              row.target.user === null
+                ? m.admin_reports_deleted_user()
+                : staffUserText(row.target.user),
+            reporter:
+              row.reporter === null
+                ? m.admin_reports_deleted_user()
+                : staffUserText(row.reporter),
+          }}
+          markup={{
+            target: ({ children }) =>
+              row.target.user === null ? (
+                children
+              ) : (
+                <StaffUserName user={row.target.user} link={false} />
+              ),
+            reporter: ({ children }) =>
+              row.reporter === null ? (
+                children
+              ) : (
+                <StaffUserName user={row.reporter} link={false} />
+              ),
+          }}
+        />
       </span>
     </Link>
   );

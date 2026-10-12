@@ -11,6 +11,7 @@ import { useHasPermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
 import type { PublicUser } from "@/lib/universal/auth";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import { DISCORD_INVITE_URL } from "@/lib/utils";
 import {
   IconBrandDiscord,
   IconInfoCircle,
@@ -122,7 +123,7 @@ export default function UserDropdown({
           className="cursor-pointer"
           render={
             <a
-              href="https://discord.gg/A72VRX8FgK"
+              href={DISCORD_INVITE_URL}
               target="_blank"
               rel="noopener noreferrer"
             />

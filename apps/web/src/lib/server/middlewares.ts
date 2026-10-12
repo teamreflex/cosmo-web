@@ -4,6 +4,7 @@ import type { Permissions } from "@apollo/auth";
 import { createMiddleware } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 import { auth } from "./auth.server";
+import { getCosmoAddress } from "./cosmo-accounts.server";
 import { db } from "./db";
 
 /**
@@ -46,19 +47,15 @@ export const authenticatedMiddleware = createMiddleware({ type: "function" })
 export const cosmoMiddleware = createMiddleware({ type: "function" })
   .middleware([authenticatedMiddleware])
   .server(async ({ next, context }) => {
-    // fetch the user's cosmo account
-    const cosmo = await db.query.cosmoAccounts.findFirst({
-      where: { userId: context.session.user.id },
-    });
-
-    if (!cosmo) {
+    const link = await getCosmoAddress(db, context.session.user.id);
+    if (link.kind === "none") {
       throw new ExpectedError("cosmo_not_linked");
     }
 
     return next({
       context: {
         ...context,
-        cosmo,
+        cosmo: { address: link.address, username: link.username },
       },
     });
   });
