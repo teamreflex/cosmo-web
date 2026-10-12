@@ -79,7 +79,7 @@ export default function CosmoLinkHistory() {
         <div className="flex flex-col gap-1.5 @3xl:ml-auto @3xl:shrink-0 @3xl:flex-row @3xl:items-center @3xl:gap-2">
           <label
             htmlFor={searchId}
-            className="text-xxs font-medium tracking-[0.14em] text-muted-foreground uppercase"
+            className="text-xxs font-medium tracking-widest text-muted-foreground uppercase"
           >
             {m.admin_accounts_history_account()}
           </label>

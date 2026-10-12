@@ -115,11 +115,11 @@ function Detail({ id }: { id: string }) {
             <StatusPill tone="muted" className="font-sans">
               {reportTargetTypeLabel(report.target.type)}
             </StatusPill>
-            <h2 className="text-[15px] font-semibold">
+            <h2 className="text-base font-semibold">
               {reportReasonLabel(report.reason)}
             </h2>
           </div>
-          <div className="text-[13px] text-muted-foreground">
+          <div className="text-sm text-muted-foreground">
             {m.admin_reports_reported_by()}{" "}
             {report.reporter === null ? (
               <b className="font-semibold text-foreground">
@@ -135,7 +135,7 @@ function Detail({ id }: { id: string }) {
             <Timestamp date={report.createdAt} relative="long" />
           </div>
           {report.note !== null && (
-            <q className="text-[13px] wrap-break-word italic">{report.note}</q>
+            <q className="text-sm wrap-break-word italic">{report.note}</q>
           )}
         </header>
 

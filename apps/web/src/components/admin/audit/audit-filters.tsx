@@ -133,7 +133,7 @@ function FilterField({
     <div className="flex flex-[1_1_10rem] flex-col gap-1.5 md:@xl:flex-none md:@xl:flex-row md:@xl:items-center md:@xl:gap-2">
       <span
         id={labelId}
-        className="text-xxs font-medium tracking-[0.14em] text-muted-foreground uppercase"
+        className="text-xxs font-medium tracking-widest text-muted-foreground uppercase"
       >
         {label}
       </span>

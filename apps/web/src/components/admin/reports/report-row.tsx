@@ -37,7 +37,7 @@ export default function ReportRow({ row }: Props) {
         </span>
         <IconChevronRight className="size-4 shrink-0 text-muted-foreground md:hidden" />
       </span>
-      <span className="text-[13px] text-muted-foreground">
+      <span className="text-sm text-muted-foreground">
         {/* the row is a link, so the names inside it aren't */}
         <ParaglideMessage
           message={m.admin_reports_row_summary}

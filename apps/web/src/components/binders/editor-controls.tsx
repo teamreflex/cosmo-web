@@ -126,7 +126,7 @@ export function EditorStatus({ saving }: { saving: boolean }) {
     <span
       role="status"
       className={cn(
-        "shrink-0 text-[11px] transition-colors",
+        "shrink-0 text-xs transition-colors",
         saving
           ? "text-amber-600 dark:text-amber-400"
           : "text-emerald-600 dark:text-emerald-400",
@@ -417,7 +417,7 @@ function RoundButton({ className, ...props }: ComponentProps<"button">) {
  */
 export function EditorHints() {
   return (
-    <p className="hidden flex-wrap items-center gap-x-3 gap-y-1.5 text-[11px] text-muted-foreground lg:flex">
+    <p className="hidden flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground lg:flex">
       <span>
         <Key>{m.binder_editor_hint_click()}</Key> {m.binder_editor_hint_fill()}
       </span>
@@ -434,7 +434,7 @@ export function EditorHints() {
 
 function Key({ children }: { children: string }) {
   return (
-    <kbd className="rounded border border-border px-1.5 py-px font-mono text-[10px] text-foreground/80">
+    <kbd className="rounded border border-border px-1.5 py-px font-mono text-xxs text-foreground/80">
       {children}
     </kbd>
   );

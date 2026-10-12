@@ -6,7 +6,7 @@ import { ObjektSidebar } from "../objekt/common";
 import ExpandableObjekt from "../objekt/objekt-expandable";
 import EditEntryDialog from "./edit-entry-dialog";
 import ListOverlay from "./list-overlay";
-import SaleBar from "./sale-bar";
+import SalePriceOverlay from "./sale-price-overlay";
 
 type Props = {
   item: ObjektListItem;
@@ -23,54 +23,51 @@ export const ListGridItem = memo(function ListGridItem({
   objektList,
 }: Props) {
   const collection = useMemo(() => Objekt.fromIndexer(item), [item]);
-  const isSaleList = objektList.type === "sale";
-  const serial = item.entrySerial ?? undefined;
-  const { fxRateToUsd } = objektList;
+  const currency = objektList.type === "sale" ? objektList.currency : null;
   const [editOpen, setEditOpen] = useState(false);
+  // the owner edits a sale entry from its price band
+  const editable = currency !== null && authenticated;
 
   return (
-    <div className="@container relative">
-      <div className="relative z-10 drop-shadow-md">
-        <ExpandableObjekt collection={collection} priority={priority}>
-          <ObjektSidebar collection={collection} serial={serial} />
-          {authenticated && (
-            <ListOverlay
-              id={item.id}
-              collection={collection}
-              objektList={objektList}
-            />
-          )}
-        </ExpandableObjekt>
-      </div>
-
-      {isSaleList && objektList.currency && (
-        <>
-          <SaleBar
-            quantity={item.entryQuantity}
-            price={item.entryPrice}
-            currency={objektList.currency}
-            medianPriceUsd={item.medianPriceUsd}
-            listingCount={item.listingCount}
-            fxRateToUsd={fxRateToUsd}
-            backgroundColor={collection.backgroundColor}
-            textColor={collection.textColor}
-            onClick={authenticated ? () => setEditOpen(true) : undefined}
+    <>
+      <ExpandableObjekt collection={collection} priority={priority}>
+        <ObjektSidebar
+          collection={collection}
+          serial={item.entrySerial ?? undefined}
+        />
+        {authenticated && (
+          <ListOverlay
+            id={item.id}
+            collection={collection}
+            objektList={objektList}
           />
-          {authenticated && (
-            <EditEntryDialog
-              open={editOpen}
-              onOpenChange={setEditOpen}
-              objektListId={objektList.id}
-              objektListEntryId={item.id}
-              tokenId={item.entryTokenId}
-              quantity={item.entryQuantity}
-              price={item.entryPrice}
-              currency={objektList.currency}
-              collectionId={collection.collectionId}
-            />
-          )}
-        </>
+        )}
+        {currency !== null && (
+          <SalePriceOverlay
+            collection={collection}
+            price={item.entryPrice}
+            currency={currency}
+            fxRateToUsd={objektList.fxRateToUsd}
+            quantity={item.entryQuantity}
+            atFloor={item.entryAtFloor}
+            onEdit={editable ? () => setEditOpen(true) : undefined}
+          />
+        )}
+      </ExpandableObjekt>
+
+      {editable && (
+        <EditEntryDialog
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          objektListId={objektList.id}
+          objektListEntryId={item.id}
+          tokenId={item.entryTokenId}
+          quantity={item.entryQuantity}
+          price={item.entryPrice}
+          currency={currency}
+          collectionId={collection.collectionId}
+        />
       )}
-    </div>
+    </>
   );
 });

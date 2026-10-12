@@ -171,7 +171,7 @@ function BatchSaleRow({
         <span className="truncate text-sm font-semibold">
           {collection.collectionId}
         </span>
-        <span className="font-mono text-xxs tracking-[0.14em] text-muted-foreground tabular-nums">
+        <span className="font-mono text-xxs tracking-widest text-muted-foreground tabular-nums">
           #{paddedSerial}
         </span>
       </div>

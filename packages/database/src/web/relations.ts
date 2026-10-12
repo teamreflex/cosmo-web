@@ -94,10 +94,6 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.objektListEntries.objektListId,
       to: r.objektLists.id,
     }),
-    priceStats: r.one.collectionPriceStats({
-      from: r.objektListEntries.collectionId,
-      to: r.collectionPriceStats.collectionId,
-    }),
   },
   binders: {
     user: r.one.user({
@@ -124,6 +120,7 @@ export const relations = defineRelations(schema, (r) => ({
   },
   listDrainCursor: {},
   collectionPriceStats: {},
+  collectionPriceHistory: {},
   fxRates: {},
   cosmoTokens: {},
   gravities: {
