@@ -2,15 +2,15 @@ import { indexer } from "@/lib/server/db/indexer";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import { numberLegacyListCopies } from "@/lib/universal/lists";
 import { objekts } from "@apollo/database/indexer/schema";
+import { objektListEntries, objektLists } from "@apollo/database/web/schema";
 import {
-  notifications,
-  objektListEntries,
-  objektLists,
-} from "@apollo/database/web/schema";
-import type { ListMatchPayload } from "@apollo/database/web/types";
-import { and, eq, exists, inArray, isNotNull, ne, sql } from "drizzle-orm";
-import { alias } from "drizzle-orm/pg-core";
+  type TradeNotificationsJob,
+  TradeNotificationsQueue,
+} from "@apollo/queue";
+import { captureException } from "@sentry/bun";
+import { and, eq, inArray } from "drizzle-orm";
 import { db, type DbOrTx } from "../db";
+import { Runtime } from "../runtime.server";
 
 /**
  * Copy the address's legacy lists and their entries onto the user. Runs on
@@ -119,236 +119,13 @@ export async function assertOwnsTokensMulti(
   }
 }
 
-type FireListAddNotificationArgs = {
-  sourceUserId: string;
-  sourceListId: string;
-  collections: { slug: string; collectionName: string }[];
-};
-
 /**
- * Insert mutual-viability notifications for users whose trade-active want list
- * contains one of the just-added collections AND whose trade-active have list
- * overlaps with the source user's trade-active want lists. All added
- * collections are matched in a single query (so a 100-objekt batch stays one
- * round-trip), then one notification is inserted per (watcher, collection); the
- * dedup index prevents repeats for the same source/target/collection.
+ * Queue the trade-notification fan-out for a list add that has already
+ * committed. A Redis failure is reported instead of thrown: the add succeeded,
+ * and a client retry would repeat it, stacking want-list quantities twice.
  */
-export async function fireHaveAddNotifications(
-  tx: DbOrTx,
-  args: FireListAddNotificationArgs,
-): Promise<void> {
-  const collectionNameBySlug = new Map(
-    args.collections.map((c) => [c.slug, c.collectionName]),
-  );
-  const slugs = [...collectionNameBySlug.keys()];
-  if (slugs.length === 0) return;
-
-  const watcherWant = alias(objektLists, "watcher_want");
-  const watcherWantLink = alias(objektLists, "watcher_want_link");
-  const watcherWantEntry = alias(objektListEntries, "watcher_want_entry");
-  const watcherHave = alias(objektLists, "watcher_have");
-  const watcherHaveEntry = alias(objektListEntries, "watcher_have_entry");
-  const sourceWant = alias(objektLists, "source_want");
-  const sourceWantLink = alias(objektLists, "source_want_link");
-  const sourceWantEntry = alias(objektListEntries, "source_want_entry");
-
-  const watchers = await tx
-    .selectDistinct({
-      userId: watcherWant.userId,
-      slug: watcherWantEntry.collectionId,
-    })
-    .from(watcherWant)
-    .innerJoin(
-      watcherWantLink,
-      eq(watcherWantLink.linkedWantListId, watcherWant.id),
-    )
-    .innerJoin(
-      watcherWantEntry,
-      and(
-        eq(watcherWantEntry.objektListId, watcherWant.id),
-        inArray(watcherWantEntry.collectionId, slugs),
-      ),
-    )
-    .where(
-      and(
-        eq(watcherWant.type, "want"),
-        eq(watcherWant.discoverable, true),
-        ne(watcherWant.userId, args.sourceUserId),
-        exists(
-          tx
-            .select({ id: sourceWant.id })
-            .from(sourceWant)
-            .innerJoin(
-              sourceWantLink,
-              eq(sourceWantLink.linkedWantListId, sourceWant.id),
-            )
-            .innerJoin(
-              sourceWantEntry,
-              eq(sourceWantEntry.objektListId, sourceWant.id),
-            )
-            .innerJoin(
-              watcherHaveEntry,
-              eq(watcherHaveEntry.collectionId, sourceWantEntry.collectionId),
-            )
-            .innerJoin(
-              watcherHave,
-              eq(watcherHave.id, watcherHaveEntry.objektListId),
-            )
-            .where(
-              and(
-                eq(sourceWant.type, "want"),
-                eq(sourceWant.discoverable, true),
-                eq(sourceWant.userId, args.sourceUserId),
-                eq(watcherHave.type, "have"),
-                eq(watcherHave.discoverable, true),
-                isNotNull(watcherHave.linkedWantListId),
-                eq(watcherHave.userId, watcherWant.userId),
-              ),
-            ),
-        ),
-      ),
-    );
-
-  if (watchers.length === 0) return;
-
-  const values = watchers.flatMap(({ userId, slug }) => {
-    const collectionName = collectionNameBySlug.get(slug);
-    if (collectionName === undefined) return [];
-    return [
-      {
-        userId,
-        type: "list_match" as const,
-        payload: {
-          sourceUserId: args.sourceUserId,
-          sourceListId: args.sourceListId,
-          collectionId: collectionName,
-          direction: "they_added_have",
-        } satisfies ListMatchPayload,
-      },
-    ];
-  });
-
-  if (values.length === 0) return;
-
-  await tx.insert(notifications).values(values).onConflictDoNothing();
-}
-
-/**
- * Mirror of fireHaveAddNotifications: fires when the source user adds to a
- * trade-active want list. Targets users who hold the collection AND want
- * something the source user already has.
- */
-export async function fireWantAddNotifications(
-  tx: DbOrTx,
-  args: FireListAddNotificationArgs,
-): Promise<void> {
-  const collectionNameBySlug = new Map(
-    args.collections.map((c) => [c.slug, c.collectionName]),
-  );
-  const slugs = [...collectionNameBySlug.keys()];
-  if (slugs.length === 0) return;
-
-  const watcherHave = alias(objektLists, "watcher_have");
-  const watcherHaveEntry = alias(objektListEntries, "watcher_have_entry");
-  const watcherWant = alias(objektLists, "watcher_want");
-  const watcherWantLink = alias(objektLists, "watcher_want_link");
-  const watcherWantEntry = alias(objektListEntries, "watcher_want_entry");
-  const sourceHave = alias(objektLists, "source_have");
-  const sourceHaveEntry = alias(objektListEntries, "source_have_entry");
-
-  const watchers = await tx
-    .selectDistinct({
-      userId: watcherHave.userId,
-      slug: watcherHaveEntry.collectionId,
-    })
-    .from(watcherHave)
-    .innerJoin(
-      watcherHaveEntry,
-      and(
-        eq(watcherHaveEntry.objektListId, watcherHave.id),
-        inArray(watcherHaveEntry.collectionId, slugs),
-      ),
-    )
-    .where(
-      and(
-        eq(watcherHave.type, "have"),
-        eq(watcherHave.discoverable, true),
-        isNotNull(watcherHave.linkedWantListId),
-        ne(watcherHave.userId, args.sourceUserId),
-        exists(
-          tx
-            .select({ id: sourceHave.id })
-            .from(sourceHave)
-            .innerJoin(
-              sourceHaveEntry,
-              eq(sourceHaveEntry.objektListId, sourceHave.id),
-            )
-            .innerJoin(
-              watcherWantEntry,
-              eq(watcherWantEntry.collectionId, sourceHaveEntry.collectionId),
-            )
-            .innerJoin(
-              watcherWant,
-              eq(watcherWant.id, watcherWantEntry.objektListId),
-            )
-            .innerJoin(
-              watcherWantLink,
-              eq(watcherWantLink.linkedWantListId, watcherWant.id),
-            )
-            .where(
-              and(
-                eq(sourceHave.type, "have"),
-                eq(sourceHave.discoverable, true),
-                isNotNull(sourceHave.linkedWantListId),
-                eq(sourceHave.userId, args.sourceUserId),
-                eq(watcherWant.type, "want"),
-                eq(watcherWant.discoverable, true),
-                eq(watcherWant.userId, watcherHave.userId),
-              ),
-            ),
-        ),
-      ),
-    );
-
-  if (watchers.length === 0) return;
-
-  const values = watchers.flatMap(({ userId, slug }) => {
-    const collectionName = collectionNameBySlug.get(slug);
-    if (collectionName === undefined) return [];
-    return [
-      {
-        userId,
-        type: "list_match" as const,
-        payload: {
-          sourceUserId: args.sourceUserId,
-          sourceListId: args.sourceListId,
-          collectionId: collectionName,
-          direction: "they_added_want",
-        } satisfies ListMatchPayload,
-      },
-    ];
-  });
-
-  if (values.length === 0) return;
-
-  await tx.insert(notifications).values(values).onConflictDoNothing();
-}
-
-/**
- * Delete the list_match notifications other users received about this user's
- * lists. Deleting an account calls it, so a rebuild of the notifications
- * table must keep it in step with the producers above.
- */
-export async function deleteListMatchNotificationsFrom(
-  executor: DbOrTx,
-  userId: string,
-) {
-  await executor
-    .delete(notifications)
-    .where(
-      and(
-        eq(notifications.type, "list_match"),
-        eq(sql`${notifications.payload}->>'sourceUserId'`, userId),
-      ),
-    );
+export async function queueTradeNotifications(job: TradeNotificationsJob) {
+  await Runtime.runPromise(
+    TradeNotificationsQueue.use((queue) => queue.offer(job)),
+  ).catch(captureException);
 }

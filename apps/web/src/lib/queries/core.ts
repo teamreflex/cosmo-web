@@ -8,6 +8,10 @@ import {
   $fetchTargetAccount,
 } from "../functions/core";
 import { accountDeletionQuery } from "./account";
+import {
+  notificationsListQuery,
+  unreadNotificationsQuery,
+} from "./notifications";
 
 /**
  * Fetch the filter data.
@@ -32,14 +36,17 @@ export const currentAccountQuery = queryOptions({
 });
 
 /**
- * Removes the staff data (every query keyed under "admin") and the viewer's
- * account-deletion check, whose answers depend on who is signed in although
- * their keys don't name them. Sign-in, sign-out and account deletion call it
- * so the next account on the tab never reads the previous one's cache.
+ * Removes the staff data (every query keyed under "admin"), the viewer's
+ * account-deletion check and their notifications, whose answers depend on who
+ * is signed in although their keys don't name them. Sign-in, sign-out and
+ * account deletion call it so the next account on the tab never reads the
+ * previous one's cache.
  */
 export function removeViewerQueries(queryClient: QueryClient) {
   queryClient.removeQueries({ queryKey: ["admin"] });
   queryClient.removeQueries({ queryKey: accountDeletionQuery.queryKey });
+  queryClient.removeQueries({ queryKey: notificationsListQuery.queryKey });
+  queryClient.removeQueries({ queryKey: unreadNotificationsQuery.queryKey });
 }
 
 /**

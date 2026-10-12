@@ -33,14 +33,17 @@ export type Binder = typeof binders.$inferSelect;
 export type BinderEntry = typeof binderEntries.$inferSelect;
 export type Notification = typeof notifications.$inferSelect;
 
-export type ListMatchPayload = {
-  sourceUserId: string;
-  sourceListId: string;
+/**
+ * A notification to insert. Every type names an actor, a list and a
+ * collection (notifications_subject_chk).
+ */
+export type NewNotification = {
+  type: "trade_have" | "trade_want";
+  userId: string;
+  actorId: string;
+  listId: string;
   collectionId: string;
-  direction: "they_added_have" | "they_added_want";
 };
-
-export type NotificationPayload = ListMatchPayload;
 export type CosmoToken = typeof cosmoTokens.$inferSelect;
 export type Gravity = typeof gravities.$inferSelect;
 export type GravityPoll = typeof gravityPolls.$inferSelect;

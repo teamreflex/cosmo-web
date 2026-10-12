@@ -24,7 +24,6 @@ import { randomBytes } from "node:crypto";
 import { clearBinderPinCache } from "./binders.server";
 import { recordCosmoLinkChanges } from "./cosmo-accounts.server";
 import { db, type DbOrTx, type WebTx } from "./db";
-import { deleteListMatchNotificationsFrom } from "./objekts/lists.server";
 import { clearVerification } from "./verification-codes.server";
 
 type BlockerCheck = (
@@ -176,10 +175,10 @@ export async function deleteAccount(
 /**
  * Unlink the user's COSMO account, recording it in the link history, delete
  * what the user row's foreign keys don't reach, then delete the row and let
- * them cascade to sessions, credentials, API keys, lists, binders and
- * notifications. Reports they filed keep a null reporter, and the audit
- * tables keep their id. Returns the COSMO link the user had, whose pin cache
- * the caller clears after commit.
+ * them cascade to sessions, credentials, API keys, lists, binders and the
+ * notifications they received or caused. Reports they filed keep a null
+ * reporter, and the audit tables keep their id. Returns the COSMO link the
+ * user had, whose pin cache the caller clears after commit.
  */
 async function purgeAccount(tx: WebTx, userId: string): Promise<CosmoLink> {
   const [unlinked] = await tx
@@ -212,7 +211,6 @@ async function purgeAccount(tx: WebTx, userId: string): Promise<CosmoLink> {
   await tx
     .delete(authSchema.verification)
     .where(eq(authSchema.verification.value, userId));
-  await deleteListMatchNotificationsFrom(tx, userId);
 
   await tx.delete(authSchema.user).where(eq(authSchema.user.id, userId));
 

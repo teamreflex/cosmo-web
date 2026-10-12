@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { inArray, isNull, sql } from "drizzle-orm";
 import {
   type AnyPgColumn,
   bigint,
@@ -25,7 +25,6 @@ import {
   type CosmoGravityType,
   type CosmoPollType,
   type EventTypeKey,
-  type NotificationPayload,
   type ReportReason,
   type StaffAuditAction,
   type StaffAuditDetail,
@@ -44,7 +43,12 @@ export const listType = pgEnum("list_type", [
   "want",
   "sale",
 ]);
-export const notificationType = pgEnum("notification_type", ["list_match"]);
+export const notificationType = pgEnum("notification_type", [
+  // the actor added something you want to their have list
+  "trade_have",
+  // the actor wants something on your have list
+  "trade_want",
+]);
 export const binderLayout = pgEnum("binder_layout", ["3x3", "2x2", "4x3"]);
 export const reportTargetType = pgEnum("report_target_type", reportTargetTypes);
 export const reportStatus = pgEnum("report_status", reportStatuses);
@@ -262,28 +266,56 @@ export const binderEntries = pgTable(
   ],
 );
 
+/**
+ * One row per event. Subject columns are nullable so a future type can do
+ * without a list or an actor; the check says which ones each type requires.
+ * The bell groups rows into bursts when it reads them.
+ */
 export const notifications = pgTable(
   "notifications",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    createdAt,
-    userId: text("user_id")
+    createdAt: timestamp("created_at", { mode: "date", withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    // better-auth ids are 32 characters
+    userId: varchar("user_id", { length: 32 })
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     type: notificationType("type").notNull(),
-    payload: jsonb("payload").$type<NotificationPayload>().notNull(),
-    readAt: timestamp("read_at", { mode: "date" }),
+    readAt: timestamp("read_at", { mode: "date", withTimezone: true }),
+    // deleting the actor's account removes what they caused
+    actorId: varchar("actor_id", { length: 32 }).references(() => user.id, {
+      onDelete: "cascade",
+    }),
+    listId: uuid("list_id").references(() => objektLists.id, {
+      onDelete: "cascade",
+    }),
+    collectionId: varchar("collection_id", { length: 36 }), // slug: atom01-jinsoul-101z
   },
   (t) => [
-    index("notifications_user_unread_idx").on(t.userId, t.readAt),
-    uniqueIndex("notifications_list_match_dedup_idx")
-      .on(
-        t.userId,
-        sql`(payload->>'sourceUserId')`,
-        sql`(payload->>'collectionId')`,
-        sql`(payload->>'direction')`,
-      )
-      .where(eq(t.type, "list_match")),
+    /**
+     * The bell's pages, a backward scan for `order by created_at desc, id desc`.
+     * One job's rows share `created_at`, so `id` breaks the keyset ties.
+     */
+    index("notifications_user_created_idx").on(t.userId, t.createdAt, t.id),
+    // the polled unread badge reads only unread rows
+    index("notifications_user_unread_idx")
+      .on(t.userId, t.createdAt)
+      .where(isNull(t.readAt)),
+    /**
+     * An actor re-adding a collection never notifies the same user twice.
+     * Leading with the actor serves the cascade when their account is deleted.
+     */
+    uniqueIndex("notifications_trade_dedup_idx")
+      .on(t.actorId, t.userId, t.type, t.collectionId)
+      .where(inArray(t.type, ["trade_have", "trade_want"])),
+    // serves the cascade when the list is deleted
+    index("notifications_list_idx").on(t.listId),
+    check(
+      "notifications_subject_chk",
+      sql`${t.type} not in ('trade_have', 'trade_want') or num_nonnulls(${t.actorId}, ${t.listId}, ${t.collectionId}) = 3`,
+    ),
   ],
 );
 
