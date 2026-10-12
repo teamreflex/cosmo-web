@@ -155,8 +155,5 @@ export function foldTransfers(
     }
   }
 
-  return {
-    trades,
-    breaks: Array.from(breaks, ([offerId, tokenId]) => ({ offerId, tokenId })),
-  };
+  return { trades, breaks };
 }

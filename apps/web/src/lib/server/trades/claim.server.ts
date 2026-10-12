@@ -39,13 +39,13 @@ import {
   type TokenState,
 } from "./holdings.server";
 import { bumpUpdatedAt, type ListingActor } from "./listings.server";
-import { insertTradeEvent, notifyUsers } from "./trade.server";
 import {
   type PosterFacts,
   posterRefusal,
   readPosterAccount,
   readPosterFacts,
 } from "./poster.server";
+import { insertTradeEvent, notifyUsers } from "./trade.server";
 
 function refuse(code: TradeErrorCode | AuthErrorCode): never {
   throw new ExpectedError(code);

@@ -52,8 +52,6 @@ export function formatTradeError(error: unknown): string | null {
       return m.trade_error_trade_deadline_passed();
     case "trade_own":
       return m.trade_error_trade_own();
-    case "trade_party_banned":
-      return m.trade_error_trade_party_banned();
     default:
       error.message satisfies never;
       return null;

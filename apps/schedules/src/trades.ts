@@ -13,53 +13,83 @@ import type {
   NewNotification,
   TradeEvent as StoredTradeEvent,
   TradeNotificationType,
+  TradeOffer,
+  TradeOfferItem,
 } from "@apollo/database/web/types";
 import { TRADE_EVENTS_CHANNEL, type TradeUpdate } from "@apollo/trades/events";
 import {
+  endedTradeColumns,
+  type ListingEvent,
   listingEventAfter,
   listingTransition,
   type TradeState,
   tradeState,
 } from "@apollo/trades/lifecycle";
 import { addr } from "@apollo/util";
-import {
-  and,
-  asc,
-  eq,
-  gt,
-  inArray,
-  isNull,
-  or,
-  type SQL,
-  sql,
-} from "drizzle-orm";
+import { and, asc, eq, inArray, type SQL, sql } from "drizzle-orm";
+import type { EffectDrizzleQueryError } from "drizzle-orm/effect-core";
 import { Effect } from "effect";
 import { Redis } from "effect/persistence";
 
 /**
- * Locks every user a trade write may notify, in one statement ordered by id,
- * before any trade or listing row (the lock order in docs/auth.md). An
- * account deletion locks its user `FOR UPDATE` before updating their
- * listings, so it now waits for this transaction or makes it wait, instead of
- * deadlocking on a notification's foreign key. `FOR SHARE` also holds off a
- * ban's update of the row, for a caller that must not act on a party banned
- * meanwhile. Returns the ids whose account still exists.
+ * The user row has an active ban: isBanActive in @apollo/auth/guard, which
+ * this app doesn't depend on.
+ */
+export const banActive = sql<boolean>`(${user.banned} and (${user.banExpires} is null or ${user.banExpires} > now()))`;
+
+/**
+ * Locks every user a trade write may notify `FOR KEY SHARE`, in one
+ * statement ordered by id, before any trade or listing row (the lock order in
+ * docs/auth.md). An account deletion locks its user `FOR UPDATE` before
+ * updating their listings, so it now waits for this transaction or makes it
+ * wait, instead of deadlocking on a notification's foreign key. Maps each
+ * user whose account still exists to whether they're banned.
  */
 export const lockUsers = Effect.fn("lockUsers")(function* (
   tx: WebTx,
   userIds: readonly (string | null)[],
-  strength: "key share" | "share",
 ) {
   const ids = [...new Set(userIds.flatMap((id) => id ?? []))];
-  if (ids.length === 0) return new Set<string>();
+  if (ids.length === 0) return new Map<string, boolean>();
   const rows = yield* tx
-    .select({ id: user.id })
+    .select({ id: user.id, banned: banActive })
     .from(user)
     .where(inArray(user.id, ids))
     .orderBy(asc(user.id))
-    .for(strength);
-  return new Set(rows.map((row) => row.id));
+    .for("key share");
+  return new Map(rows.map((row) => [row.id, row.banned]));
 });
+
+/**
+ * A live trade as lockLiveTrades reads it under its lock: the row, its items
+ * in id order, and the state transitions take.
+ */
+export type LiveTrade = Pick<
+  TradeOffer,
+  | "id"
+  | "status"
+  | "fromUserId"
+  | "toUserId"
+  | "fromAddress"
+  | "cancelledBy"
+  | "abandonedBy"
+> & {
+  toAddress: string;
+  items: Pick<
+    TradeOfferItem,
+    | "id"
+    | "offerId"
+    | "kind"
+    | "sender"
+    | "tokenId"
+    | "listingId"
+    | "live"
+    | "transferredAt"
+    | "markedPaidAt"
+    | "confirmedAt"
+  >[];
+  state: TradeState;
+};
 
 /**
  * Locks the accepted or disputed trades among the ids `FOR NO KEY UPDATE` in
@@ -72,7 +102,7 @@ export const lockLiveTrades = Effect.fn("lockLiveTrades")(function* (
   tx: WebTx,
   tradeIds: readonly string[],
   recheck?: SQL,
-) {
+): Effect.fn.Return<LiveTrade[], EffectDrizzleQueryError> {
   if (tradeIds.length === 0) return [];
   const rows = yield* tx
     .select({
@@ -123,21 +153,18 @@ export const lockLiveTrades = Effect.fn("lockLiveTrades")(function* (
 
   return rows.map(({ toAddress, ...row }) => {
     // trade_offers_trade_chk: a trade always pins the claimer's address
-    if (toAddress === null)
+    if (toAddress === null) {
       throw new Error(`trade ${row.id} has no to_address`);
+    }
     const tradeItems = itemsByTrade.get(row.id) ?? [];
     return {
       ...row,
       toAddress,
       items: tradeItems,
       state: tradeState(row, tradeItems),
-    };
+    } satisfies LiveTrade;
   });
 });
-
-export type LiveTrade = Effect.Success<
-  ReturnType<typeof lockLiveTrades>
->[number];
 
 /**
  * Whether the poster could offer every token again: each is still theirs in
@@ -185,23 +212,19 @@ const posterHolds = Effect.fn("posterHolds")(function* (
  * items' reservations, and each listing it came from (listingEventAfter),
  * locked in id order before their guarded updates. Whether the poster holds
  * a released listing is read only for a release, once this trade no longer
- * reserves its tokens. A banned poster never reaches here: the drain only
- * completes trades, which fills the listing whoever posted it, and
- * trade-timers skips trades with a banned party.
+ * reserves its tokens. `locked` is lockUsers' map, which says whether the
+ * poster is banned. Returns the trade's timeline event and both parties'
+ * notifications.
  */
 export const endTrade = Effect.fn("endTrade")(function* (
   tx: WebTx,
   trade: LiveTrade,
   next: TradeState,
+  locked: ReadonlyMap<string, boolean>,
 ) {
   const [ended] = yield* tx
     .update(tradeOffers)
-    .set({
-      status: next.status,
-      endedAt: sql`now()`,
-      cancelledBy: next.status === "cancelled" ? next.cancelledBy : null,
-      abandonedBy: next.status === "timed_out" ? next.abandonedBy : null,
-    })
+    .set({ ...endedTradeColumns(next), endedAt: sql`now()` })
     .where(
       and(
         eq(tradeOffers.id, trade.id),
@@ -209,8 +232,9 @@ export const endTrade = Effect.fn("endTrade")(function* (
       ),
     )
     .returning({ id: tradeOffers.id });
-  if (!ended)
+  if (!ended) {
     return yield* Effect.die(`trade ${trade.id} changed under its lock`);
+  }
 
   yield* tx
     .update(tradeOfferItems)
@@ -228,8 +252,44 @@ export const endTrade = Effect.fn("endTrade")(function* (
     ),
     (item) => item.listingId,
   );
-  if (listings.size === 0) return;
+  const outcome = listingEventAfter(next, {
+    banned: trade.fromUserId !== null && locked.get(trade.fromUserId) === true,
+  });
+  if (outcome !== undefined && listings.size > 0) {
+    yield* updateListings(tx, trade.fromAddress, listings, outcome);
+  }
 
+  const timedOut = next.status === "timed_out";
+  return {
+    event: {
+      tradeId: trade.id,
+      event: timedOut
+        ? { type: "timed_out", abandoned: next.abandonedBy }
+        : { type: "completed", by: null },
+    } satisfies { tradeId: string; event: StoredTradeEvent },
+    notifications: [trade.fromUserId, trade.toUserId].map(
+      (userId): TradeNotification => ({
+        type: timedOut ? "trade_timed_out" : "trade_completed",
+        userId,
+        offerId: trade.id,
+        actorId: null,
+        tokenId: null,
+      }),
+    ),
+  };
+});
+
+/**
+ * Moves each listing an ended trade came from to its outcome, locking them in
+ * id order first. A release reopens a listing whose poster still holds every
+ * token, else breaks it.
+ */
+const updateListings = Effect.fn("updateListings")(function* (
+  tx: WebTx,
+  fromAddress: string,
+  listings: Map<string, { tokenId: number }[]>,
+  outcome: ListingEvent | "release",
+) {
   yield* tx
     .select({ id: tradeOffers.id })
     .from(tradeOffers)
@@ -237,12 +297,11 @@ export const endTrade = Effect.fn("endTrade")(function* (
     .orderBy(asc(tradeOffers.id))
     .for("no key update");
   for (const [listingId, tokens] of listings) {
-    let event = listingEventAfter(next, { banned: false });
-    if (event === undefined) continue;
+    let event = outcome;
     if (event === "release") {
       event = (yield* posterHolds(
         tx,
-        trade.fromAddress,
+        fromAddress,
         tokens.map((token) => token.tokenId),
       ))
         ? "reopen"
@@ -268,12 +327,11 @@ export const endTrade = Effect.fn("endTrade")(function* (
  */
 export const insertTradeEvents = Effect.fn("insertTradeEvents")(function* (
   tx: WebTx,
-  tradeId: string,
-  events: readonly StoredTradeEvent[],
+  events: readonly { tradeId: string; event: StoredTradeEvent }[],
 ) {
   if (events.length === 0) return;
   yield* tx.insert(tradeMessages).values(
-    events.map((event): typeof tradeMessages.$inferInsert => ({
+    events.map(({ tradeId, event }): typeof tradeMessages.$inferInsert => ({
       tradeId,
       kind: "event",
       event,
@@ -296,27 +354,14 @@ export type TradeNotification = Omit<
 export const insertTradeNotifications = Effect.fn("insertTradeNotifications")(
   function* (
     tx: WebTx,
-    locked: ReadonlySet<string>,
+    locked: ReadonlyMap<string, boolean>,
     rows: readonly TradeNotification[],
   ) {
-    const recipients = rows.flatMap(({ userId, ...row }) =>
-      userId !== null && locked.has(userId) ? [{ ...row, userId }] : [],
+    const values = rows.flatMap(({ userId, ...row }) =>
+      userId !== null && locked.get(userId) === false
+        ? [{ ...row, userId }]
+        : [],
     );
-    if (recipients.length === 0) return;
-
-    // isBanActive in @apollo/auth/guard, which this app doesn't depend on
-    const banned = yield* tx
-      .select({ id: user.id })
-      .from(user)
-      .where(
-        and(
-          inArray(user.id, [...new Set(recipients.map((row) => row.userId))]),
-          eq(user.banned, true),
-          or(isNull(user.banExpires), gt(user.banExpires, sql`now()`)),
-        ),
-      );
-    const bannedIds = new Set(banned.map((row) => row.id));
-    const values = recipients.filter((row) => !bannedIds.has(row.userId));
     if (values.length > 0) yield* tx.insert(notifications).values(values);
   },
 );
@@ -337,6 +382,6 @@ export const publishTradeUpdates = Effect.fn("publishTradeUpdates")(function* (
         TRADE_EVENTS_CHANNEL,
         JSON.stringify({ type: "updated", tradeId } satisfies TradeUpdate),
       ),
-    { discard: true },
+    { concurrency: "unbounded", discard: true },
   );
 });

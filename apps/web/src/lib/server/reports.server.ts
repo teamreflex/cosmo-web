@@ -48,24 +48,24 @@ const QUEUE_PAGE_SIZE = 30;
  * Reports on a staff member, or on a trade they're a party to, are hidden
  * from them, whatever their role, so they never see who reported them or act
  * on their own dispute; other staff handle those. Relational reads alias the
- * table, so they filter with `NOT: hiddenFrom(staffId)`.
+ * table, so they pass theirs as `t`.
  */
-function visibleTo(staffId: string) {
-  return not(aboutStaff(staffId));
+function visibleTo(staffId: string, t: typeof reports = reports) {
+  return not(aboutStaff(staffId, t));
 }
 
-function aboutStaff(staffId: string) {
+function aboutStaff(staffId: string, t: typeof reports = reports) {
   return or(
-    and(eq(reports.targetType, "user"), eq(reports.targetId, staffId)),
+    and(eq(t.targetType, "user"), eq(t.targetId, staffId)),
     and(
-      eq(reports.targetType, "trade"),
+      eq(t.targetType, "trade"),
       exists(
         db
           .select({ id: tradeOffers.id })
           .from(tradeOffers)
           .where(
             and(
-              sql`${tradeOffers.id}::text = ${reports.targetId}`,
+              sql`${tradeOffers.id}::text = ${t.targetId}`,
               or(
                 eq(tradeOffers.fromUserId, staffId),
                 eq(tradeOffers.toUserId, staffId),
@@ -77,25 +77,20 @@ function aboutStaff(staffId: string) {
   );
 }
 
-function reportsOn(userId: string) {
-  return { targetType: "user", targetId: userId } as const;
+/**
+ * The queue, its counts and the detail read leave trade reports out, since
+ * the queue has no trade target yet.
+ */
+function queued(t: typeof reports = reports) {
+  return ne(t.targetType, "trade");
 }
 
 /**
- * Trade reports are disputes, which staff settle by completing, cancelling or
- * extending the trade rather than through the report itself. The queue, its
- * counts and the detail read leave them out, since the queue has no trade
- * target yet.
+ * A trade report is a dispute, which closes only when staff complete, cancel
+ * or extend its trade, never through resolve or dismiss: a dismissed dispute
+ * would leave its trade frozen.
  */
-const queued = ne(reports.targetType, "trade");
-
-/**
- * What a staff member's relational report reads leave out: reports on them,
- * and trade reports.
- */
-function hiddenFrom(staffId: string) {
-  return { OR: [reportsOn(staffId), { targetType: "trade" as const }] };
-}
+const closableAsReport = ne(reports.targetType, "trade");
 
 /**
  * The refusal for a report id a staff member may not see: it is about them
@@ -139,7 +134,7 @@ export async function fetchReportCounts(
         // redundant with the FILTERs, but keeps the status index in play
         inArray(reports.status, [...openReportStatuses]),
         visibleTo(staffId),
-        queued,
+        queued(),
         input.targetType ? eq(reports.targetType, input.targetType) : undefined,
       ),
     );
@@ -160,12 +155,15 @@ export async function fetchReportQueue(
   const rows = await db.query.reports.findMany({
     where: {
       status: input.status,
-      NOT: hiddenFrom(staffId),
       targetType: input.targetType ?? EmptyFilter,
-      RAW: after
-        ? (t) =>
-            sql`(${t.createdAt}, ${t.id}) < (${after.timestamp}::timestamp, ${after.id}::uuid)`
-        : EmptyFilter,
+      RAW: (t) =>
+        and(
+          visibleTo(staffId, t),
+          queued(t),
+          after
+            ? sql`(${t.createdAt}, ${t.id}) < (${after.timestamp}::timestamp, ${after.id}::uuid)`
+            : undefined,
+        ) ?? EmptyFilter,
     },
     columns: {
       id: true,
@@ -229,7 +227,10 @@ export async function fetchReportDetail(
   id: string,
 ): Promise<AdminReportDetail> {
   const report = await db.query.reports.findFirst({
-    where: { id, NOT: hiddenFrom(viewer.id) },
+    where: {
+      id,
+      RAW: (t) => and(visibleTo(viewer.id, t), queued(t)) ?? EmptyFilter,
+    },
     with: {
       reporter: staffUserFields,
       resolver: staffUserFields,
@@ -402,7 +403,7 @@ export async function transitionReport(
           eq(reports.id, id),
           inArray(reports.status, from),
           visibleTo(staffId),
-          action === "report:escalate" ? undefined : queued,
+          action === "report:escalate" ? undefined : closableAsReport,
         ),
       )
       .returning({ id: reports.id });

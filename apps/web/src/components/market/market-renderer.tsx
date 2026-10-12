@@ -17,10 +17,7 @@ export default function MarketRenderer() {
 
   return (
     <div className="flex flex-col">
-      <MarketHeader
-        total={<ObjektTotalSlot />}
-        actions={<NewListingButton />}
-      >
+      <MarketHeader total={<ObjektTotalSlot />} actions={<NewListingButton />}>
         <CosmoMemberFilter />
       </MarketHeader>
 

@@ -14,6 +14,7 @@ import {
   listingEventAfter,
   listingTransition,
   owingSides,
+  partyAction,
   tradeState,
   transition,
   transitionListing,
@@ -206,6 +207,72 @@ describe("transition: cancelling", () => {
         statusAfter(trade("accepted", items), { type: "dispute", by }),
       ).toBe("disputed");
     }
+  });
+});
+
+describe("partyAction", () => {
+  const due = { deadlinePassed: true, arrived: false };
+  const open = { deadlinePassed: false, arrived: false };
+  const reason = (
+    state: TradeState,
+    type: "cancel" | "dispute",
+    facts: { deadlinePassed: boolean; arrived: boolean },
+  ) => {
+    const result = partyAction(state, { type, by: "from" }, facts);
+    return result.ok ? result.trade.status : result.reason;
+  };
+
+  test.each(["cancel", "dispute"] as const)(
+    "%s: a trade that moved on is refused before its deadline",
+    (type) => {
+      expect(reason(trade("completed", sixObjekts(true)), type, due)).toBe(
+        "wrong_status",
+      );
+    },
+  );
+
+  test.each(["cancel", "dispute"] as const)(
+    "%s: a due trade is refused before anything else",
+    (type) => {
+      expect(reason(trade("accepted", sixObjekts()), type, due)).toBe(
+        "deadline_passed",
+      );
+      expect(
+        reason(
+          trade("accepted", [objekt("from", true), objekt("to")]),
+          type,
+          due,
+        ),
+      ).toBe("deadline_passed");
+    },
+  );
+
+  test("cancel: refused once a token arrived, recorded or not", () => {
+    expect(
+      reason(
+        trade("accepted", [objekt("from", true), objekt("to")]),
+        "cancel",
+        open,
+      ),
+    ).toBe("already_started");
+    expect(
+      reason(trade("accepted", sixObjekts()), "cancel", {
+        deadlinePassed: false,
+        arrived: true,
+      }),
+    ).toBe("already_started");
+    expect(reason(trade("accepted", sixObjekts()), "cancel", open)).toBe(
+      "cancelled",
+    );
+  });
+
+  test("dispute: an arrival doesn't stop it", () => {
+    expect(
+      reason(trade("accepted", sixObjekts()), "dispute", {
+        deadlinePassed: false,
+        arrived: true,
+      }),
+    ).toBe("disputed");
   });
 });
 

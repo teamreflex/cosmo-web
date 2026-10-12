@@ -1,81 +1,26 @@
-import { db, type WebTx } from "@/lib/server/db";
+import { db } from "@/lib/server/db";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import { consumeRateLimit } from "@/lib/server/rate-limit.server";
 import { publishTradeUpdates } from "@/lib/server/trade-events.server";
 import { readIndexerTokens } from "@/lib/server/trades/holdings.server";
-import { refusePoster } from "@/lib/server/trades/listings.server";
 import {
   disputeTrade,
   endTrade,
   insertTradeEvent,
-  type LockedTrade,
-  lockParties,
-  lockTrade,
+  lockPartyTrade,
   notifyUsers,
-  readWatermark,
+  partyTrade,
+  isDue,
+  partyRefusals,
+  refuseTrade,
 } from "@/lib/server/trades/trade.server";
-import { ExpectedError } from "@/lib/universal/errors/expected";
-import type { TradeErrorCode } from "@/lib/universal/errors/trades";
 import {
   openDisputeInputSchema,
   tradeIdInputSchema,
 } from "@/lib/universal/schema/trades";
-import type { TradeSide } from "@apollo/database/web/types";
-import { transition } from "@apollo/trades/lifecycle";
-import { isTimedOut } from "@apollo/trades/timers";
+import { partyAction } from "@apollo/trades/lifecycle";
 import { addr } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
-
-function refuse(code: TradeErrorCode): never {
-  throw new ExpectedError(code);
-}
-
-/**
- * The trade's parties, read without a lock, when the caller is one of them.
- * Anything else, a listing included, is not found.
- */
-async function partyTrade(userId: string, tradeId: string) {
-  const trade = await db.query.tradeOffers.findFirst({
-    where: {
-      id: tradeId,
-      kind: "trade",
-      OR: [{ fromUserId: userId }, { toUserId: userId }],
-    },
-    columns: { fromUserId: true, toUserId: true },
-  });
-  if (!trade) refuse("trade_not_found");
-  return trade;
-}
-
-/**
- * Locks a party action's users, then its trade, refusing a caller whose
- * account is gone or banned. The caller's side comes from the session.
- */
-async function lockPartyTrade(
-  tx: WebTx,
-  userId: string,
-  tradeId: string,
-  parties: { fromUserId: string | null; toUserId: string | null },
-) {
-  const users = await lockParties(tx, [parties.fromUserId, parties.toUserId]);
-  refusePoster(users.find((row) => row.id === userId));
-  const trade = await lockTrade(tx, tradeId);
-  const by: TradeSide = trade.fromUserId === userId ? "from" : "to";
-  return { users, trade, by };
-}
-
-/**
- * Refuses a party action once the trade's deadline has passed the drain's
- * watermark, so a party can't dodge the timers' abandoned mark.
- */
-async function refuseIfDue(tx: WebTx, trade: LockedTrade) {
-  if (
-    trade.deadlineAt !== null &&
-    isTimedOut(trade.deadlineAt, await readWatermark(tx))
-  ) {
-    refuse("trade_deadline_passed");
-  }
-}
 
 /**
  * Cancel an accepted trade the caller is part of, while nothing has been
@@ -104,13 +49,6 @@ export const $cancelTrade = createServerFn({ method: "POST" })
         parties,
       );
 
-      const result = transition(trade.state, { type: "cancel", by });
-      if (!result.ok && result.reason === "wrong_status") {
-        refuse("trade_status_changed");
-      }
-      await refuseIfDue(tx, trade);
-      if (!result.ok) refuse("trade_cancel_started");
-
       const unsent = trade.items.flatMap(
         ({ tokenId, sender, transferredAt }) =>
           tokenId === null || transferredAt !== null
@@ -126,25 +64,24 @@ export const $cancelTrade = createServerFn({ method: "POST" })
       const states = await readIndexerTokens(
         unsent.map((item) => item.tokenId),
       );
-      if (
-        unsent.some(({ tokenId, receiver }) => {
-          const state = states.get(tokenId);
-          return (
-            state?.kind === "found" &&
-            receiver !== null &&
-            state.owner === addr(receiver)
-          );
-        })
-      ) {
-        refuse("trade_cancel_started");
-      }
-
-      await endTrade(
-        tx,
-        trade,
-        result.trade,
-        users.find((row) => row.id === trade.fromUserId),
+      const result = partyAction(
+        trade.state,
+        { type: "cancel", by },
+        {
+          deadlinePassed: await isDue(tx, trade),
+          arrived: unsent.some(({ tokenId, receiver }) => {
+            const state = states.get(tokenId);
+            return (
+              state?.kind === "found" &&
+              receiver !== null &&
+              state.owner === addr(receiver)
+            );
+          }),
+        },
       );
+      if (!result.ok) refuseTrade(partyRefusals[result.reason]);
+
+      await endTrade(tx, trade, result.trade, users);
       await insertTradeEvent(tx, trade.id, { type: "cancelled", by });
       await notifyUsers(
         tx,
@@ -187,10 +124,12 @@ export const $openDispute = createServerFn({ method: "POST" })
         parties,
       );
 
-      if (!transition(trade.state, { type: "dispute", by }).ok) {
-        refuse("trade_status_changed");
-      }
-      await refuseIfDue(tx, trade);
+      const result = partyAction(
+        trade.state,
+        { type: "dispute", by },
+        { deadlinePassed: await isDue(tx, trade), arrived: false },
+      );
+      if (!result.ok) refuseTrade(partyRefusals[result.reason]);
 
       const reportId = await disputeTrade(tx, trade, {
         reporterId: userId,

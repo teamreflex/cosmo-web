@@ -191,22 +191,22 @@ function tradeActive(
  * A list or account deleted before the job ran would otherwise fail every
  * insert on a foreign key, retry and end up in the failed list.
  */
-const isSourceListTradeActive = Effect.fn("isSourceListTradeActive")(
-  function* (job: TradeNotificationsJob) {
-    const db = yield* DatabaseWeb;
-    const rows = yield* db
-      .select({ id: objektLists.id })
-      .from(objektLists)
-      .where(
-        and(
-          eq(objektLists.id, job.sourceListId),
-          eq(objektLists.userId, job.sourceUserId),
-          tradeActive(db, job.side),
-        ),
-      );
-    return rows.length > 0;
-  },
-);
+const isSourceListTradeActive = Effect.fn("isSourceListTradeActive")(function* (
+  job: TradeNotificationsJob,
+) {
+  const db = yield* DatabaseWeb;
+  const rows = yield* db
+    .select({ id: objektLists.id })
+    .from(objektLists)
+    .where(
+      and(
+        eq(objektLists.id, job.sourceListId),
+        eq(objektLists.userId, job.sourceUserId),
+        tradeActive(db, job.side),
+      ),
+    );
+  return rows.length > 0;
+});
 
 /**
  * Distinct collections across the user's trade-active lists of one side.

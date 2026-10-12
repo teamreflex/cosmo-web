@@ -2,12 +2,6 @@ import { disputeReasons } from "@apollo/database/web/types";
 import { EXTEND_HOURS } from "@apollo/trades/timers";
 import * as z from "zod";
 
-export const tradeIdInputSchema = z.strictObject({
-  tradeId: z.uuid(),
-});
-
-export type TradeIdInput = z.infer<typeof tradeIdInputSchema>;
-
 const tradeNoteSchema = z
   .string()
   .trim()
@@ -15,19 +9,19 @@ const tradeNoteSchema = z
   .optional()
   .transform((note) => (note === undefined || note === "" ? null : note));
 
-export const openDisputeInputSchema = z.strictObject({
+export const tradeIdInputSchema = z.strictObject({
   tradeId: z.uuid(),
+});
+
+export const openDisputeInputSchema = tradeIdInputSchema.extend({
   reason: z.enum(disputeReasons),
   note: tradeNoteSchema,
 });
 
-export const staffTradeInputSchema = z.strictObject({
-  tradeId: z.uuid(),
+export const staffTradeInputSchema = tradeIdInputSchema.extend({
   note: tradeNoteSchema,
 });
 
-export const staffExtendTradeInputSchema = z.strictObject({
-  tradeId: z.uuid(),
-  note: tradeNoteSchema,
+export const staffExtendTradeInputSchema = staffTradeInputSchema.extend({
   hours: z.literal(EXTEND_HOURS),
 });

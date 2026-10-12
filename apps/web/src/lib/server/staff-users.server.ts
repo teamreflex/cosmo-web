@@ -1,11 +1,24 @@
 import { env } from "@/lib/env/server";
-import { db } from "@/lib/server/db";
+import { db, type WebTx } from "@/lib/server/db";
+import { recordStaffAudit } from "@/lib/server/staff-audit.server";
+import { closeOpenOffers } from "@/lib/server/trades.server";
+import {
+  disputeTrade,
+  insertTradeEvent,
+  lockParties,
+  lockTrade,
+  notifyUsers,
+} from "@/lib/server/trades/trade.server";
 import type { AuthErrorCode } from "@/lib/universal/errors/auth";
 import { ExpectedError } from "@/lib/universal/errors/expected";
+import type { BanUserInput } from "@/lib/universal/schema/staff-users";
 import type { StaffUser } from "@/lib/universal/staff-users";
 import type { Role } from "@apollo/auth";
 import { userChangeRefusal } from "@apollo/auth/guard";
 import type { UserChange, UserChangeRefusal } from "@apollo/auth/guard";
+import { tradeOffers, user } from "@apollo/database/web/schema";
+import { transition } from "@apollo/trades/lifecycle";
+import { and, asc, eq, or } from "drizzle-orm";
 
 export type NamedUser = {
   name: string;
@@ -109,4 +122,91 @@ export async function guardUserChange(
   if (refusal !== null) {
     throw new ExpectedError(userChangeErrors[refusal]);
   }
+}
+
+/**
+ * Bans a user and, in the same transaction, puts their accepted trades on
+ * hold under a dispute the ban files for each, removes their open listings
+ * and closes their pending offers, so a banned user never has a live trade
+ * that isn't with staff. The user and every counterparty are locked first,
+ * in id order. Returns when the ban ends and the disputed trades' ids.
+ */
+export async function banAndSweep(
+  tx: WebTx,
+  staffId: string,
+  { userId, reason, expiresIn }: BanUserInput,
+) {
+  const trades = await tx
+    .select({
+      id: tradeOffers.id,
+      fromUserId: tradeOffers.fromUserId,
+      toUserId: tradeOffers.toUserId,
+    })
+    .from(tradeOffers)
+    .where(
+      and(
+        eq(tradeOffers.kind, "trade"),
+        eq(tradeOffers.status, "accepted"),
+        or(
+          eq(tradeOffers.fromUserId, userId),
+          eq(tradeOffers.toUserId, userId),
+        ),
+      ),
+    )
+    .orderBy(asc(tradeOffers.id));
+  const users = await lockParties(
+    tx,
+    [userId, ...trades.flatMap((trade) => [trade.fromUserId, trade.toUserId])],
+    "no key update",
+  );
+
+  const banExpires =
+    expiresIn === null ? null : new Date(Date.now() + expiresIn * 1000);
+  await tx
+    .update(user)
+    .set({ banned: true, banReason: reason, banExpires, updatedAt: new Date() })
+    .where(eq(user.id, userId));
+
+  const disputedIds: string[] = [];
+  for (const { id } of trades) {
+    const trade = await lockTrade(tx, id);
+    if (!transition(trade.state, { type: "dispute", by: "staff" }).ok) {
+      continue;
+    }
+
+    const reportId = await disputeTrade(tx, trade, {
+      reporterId: staffId,
+      reason: "party_banned",
+      note: reason,
+    });
+    await insertTradeEvent(tx, trade.id, {
+      type: "disputed",
+      by: "staff",
+      reportId,
+    });
+    await notifyUsers(
+      tx,
+      users.filter(
+        (row) =>
+          row.id !== userId &&
+          (row.id === trade.fromUserId || row.id === trade.toUserId),
+      ),
+      {
+        type: "trade_disputed",
+        offerId: trade.id,
+        actorId: null,
+        tokenId: null,
+      },
+    );
+    await recordStaffAudit(tx, {
+      staffId,
+      action: "trade:dispute",
+      tradeId: trade.id,
+      reportId,
+    });
+    disputedIds.push(trade.id);
+  }
+
+  await closeOpenOffers(tx, userId, "removed");
+  return { banExpires, disputedIds };
 }

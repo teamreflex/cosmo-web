@@ -119,6 +119,29 @@ export function transition(
   }
 }
 
+export type PartyActionRefusal = TransitionRefusal | "deadline_passed";
+
+/**
+ * A party cancelling or disputing, judged with what the trade's row doesn't
+ * hold: whether its deadline has passed the drain's watermark, and whether a
+ * token has reached its receiver before the drain recorded it. A trade that
+ * moved on is refused first, then one past its deadline, then a cancel once
+ * anything has started.
+ */
+export function partyAction(
+  trade: TradeState,
+  event: Extract<TradeEvent, { type: "cancel" | "dispute" }>,
+  facts: { deadlinePassed: boolean; arrived: boolean },
+): { ok: true; trade: TradeState } | { ok: false; reason: PartyActionRefusal } {
+  const result = transition(trade, event);
+  if (!result.ok && result.reason === "wrong_status") return result;
+  if (facts.deadlinePassed) return { ok: false, reason: "deadline_passed" };
+  if (result.ok && event.type === "cancel" && facts.arrived) {
+    return refuse("already_started");
+  }
+  return result;
+}
+
 type EventOf<TType extends TradeEvent["type"]> = Extract<
   TradeEvent,
   { type: TType }
@@ -389,6 +412,17 @@ export function listingEventAfter(
     default:
       return undefined;
   }
+}
+
+/**
+ * The columns a trade's row takes when it ends in this state.
+ */
+export function endedTradeColumns(trade: TradeState) {
+  return {
+    status: trade.status,
+    cancelledBy: trade.status === "cancelled" ? trade.cancelledBy : null,
+    abandonedBy: trade.status === "timed_out" ? trade.abandonedBy : null,
+  };
 }
 
 /**

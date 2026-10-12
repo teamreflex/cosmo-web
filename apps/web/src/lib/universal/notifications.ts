@@ -1,14 +1,15 @@
-import type {
-  ListMatchNotificationType,
-  NotificationType,
-  TradeNotificationType,
-  TradeOfferStatus,
+import {
+  type ListMatchNotificationType,
+  listMatchNotificationTypes,
+  type NotificationType,
+  type TradeNotificationType,
+  type TradeOfferStatus,
 } from "@apollo/database/web/types";
 
 export function isListMatchNotification(
   type: NotificationType,
 ): type is ListMatchNotificationType {
-  return type === "trade_have" || type === "trade_want";
+  return listMatchNotificationTypes.some((listMatch) => listMatch === type);
 }
 
 export type NotificationCollection = {

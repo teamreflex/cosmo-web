@@ -1,6 +1,5 @@
 import { redis } from "@/lib/server/cache.server";
-import { TRADE_EVENTS_CHANNEL } from "@apollo/trades/events";
-import type { TradeUpdate } from "@apollo/trades/events";
+import { TRADE_EVENTS_CHANNEL, type TradeUpdate } from "@apollo/trades/events";
 
 /**
  * Announce trades whose rows changed on the `trade-events` channel, once the

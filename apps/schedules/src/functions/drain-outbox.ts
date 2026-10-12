@@ -337,7 +337,6 @@ const applyTrades = (tx: WebTx, rows: readonly OutboxRow[]) =>
         if (item.live) return [item.fromUserId, item.toUserId];
         return item.kind === "listing" ? [item.fromUserId] : [];
       }),
-      "key share",
     );
     const trades = yield* lockLiveTrades(tx, [
       ...new Set(candidates.flatMap((item) => (item.live ? item.offerId : []))),
@@ -422,123 +421,132 @@ const applyTrades = (tx: WebTx, rows: readonly OutboxRow[]) =>
     });
     const folded = foldTransfers(chainRows, expected);
 
-    const notifications: TradeNotification[] = [];
-    const tradeIds: string[] = [];
-    let transferred = 0;
-    let completed = 0;
-    for (const trade of trades) {
+    const recorded = trades.flatMap((trade) => {
       const chainEvents = folded.trades.get(trade.id);
-      if (chainEvents === undefined) continue;
-      tradeIds.push(trade.id);
-      const applied = yield* applyChainEvents(tx, trade, chainEvents);
-      notifications.push(...applied.notifications);
-      transferred += applied.transferred;
-      if (applied.completed) completed++;
+      return chainEvents === undefined
+        ? []
+        : [recordChainEvents(trade, chainEvents)];
+    });
+    const arrivals = recorded.flatMap((trade) => trade.arrivals);
+    if (arrivals.length > 0) {
+      const values = sql.join(
+        arrivals.map(
+          ({ itemId, at, hash }) =>
+            sql`(${itemId}::bigint, ${at.toISOString()}::timestamptz, ${hash})`,
+        ),
+        sql`, `,
+      );
+      yield* tx
+        .update(tradeOfferItems)
+        .set({ transferredAt: sql`arrival.at`, txHash: sql`arrival.hash` })
+        .from(sql`(VALUES ${values}) AS arrival (id, at, hash)`)
+        .where(
+          and(
+            sql`${tradeOfferItems.id} = arrival.id`,
+            eq(tradeOfferItems.live, true),
+            isNull(tradeOfferItems.transferredAt),
+          ),
+        );
     }
+
+    const notifications = recorded.flatMap((trade) => trade.notifications);
+    const events = recorded.flatMap((trade) => trade.events);
+    const completed = recorded.filter(
+      ({ state }) => state.status === "completed",
+    );
+    for (const { trade, state } of completed) {
+      const ended = yield* endTrade(tx, trade, state, locked);
+      events.push(ended.event);
+      notifications.push(...ended.notifications);
+    }
+    const pending = recorded.flatMap(({ trade, state }) =>
+      state.status === "completed" ? [] : [trade.id],
+    );
+    if (pending.length > 0) {
+      yield* tx
+        .update(tradeOffers)
+        .set({ updatedAt: new Date() })
+        .where(inArray(tradeOffers.id, pending));
+    }
+    yield* insertTradeEvents(tx, events);
     const broken = yield* breakOffers(tx, folded.breaks);
     notifications.push(...broken.notifications);
 
     yield* insertTradeNotifications(tx, locked, notifications);
     return {
-      tradeIds,
-      transferred,
-      completed,
+      tradeIds: recorded.map(({ trade }) => trade.id),
+      transferred: arrivals.length,
+      completed: completed.length,
       broken: broken.listings,
       stale: broken.offers,
     };
   });
 
 /**
- * Record one locked trade's events from a batch, in row order: each item
- * that arrived, and each token that moved elsewhere or turned
- * untransferable, which notifies the item's receiver once per token and
- * kind. A trade with nothing left owed completes and fills its listing.
+ * One locked trade's events from a batch, in row order: each item that
+ * arrived, and each token that moved elsewhere or turned untransferable,
+ * which notifies the item's receiver once per token and kind. Writes
+ * nothing; the caller applies every trade's arrivals in one update and ends
+ * the trades left owing nothing.
  */
-const applyChainEvents = (
-  tx: WebTx,
+function recordChainEvents(
   trade: LiveTrade,
   chainEvents: readonly TradeChainEvent[],
-) =>
-  Effect.gen(function* () {
-    let state = trade.state;
-    const events: StoredTradeEvent[] = [];
-    const notifications: TradeNotification[] = [];
-    const notified = new Set<string>();
-    let transferred = 0;
-    for (const event of chainEvents) {
-      if (event.type === "transferred") {
-        yield* tx
-          .update(tradeOfferItems)
-          .set({ transferredAt: event.at, txHash: event.hash })
-          .where(
-            and(
-              eq(tradeOfferItems.id, event.itemId),
-              eq(tradeOfferItems.live, true),
-              isNull(tradeOfferItems.transferredAt),
-            ),
-          );
-        const result = transition(state, {
-          type: "transfer",
-          item: trade.items.findIndex((item) => item.id === event.itemId),
-        });
-        if (!result.ok) {
-          return yield* Effect.die(
-            `transfer of item ${event.itemId} refused on trade ${trade.id}: ${result.reason}`,
-          );
-        }
-        state = result.trade;
-        transferred++;
-        events.push({
+) {
+  let state = trade.state;
+  const arrivals: { itemId: number; at: Date; hash: string }[] = [];
+  const events: { tradeId: string; event: StoredTradeEvent }[] = [];
+  const notifications: TradeNotification[] = [];
+  const notified = new Set<string>();
+  for (const event of chainEvents) {
+    if (event.type === "transferred") {
+      const result = transition(state, {
+        type: "transfer",
+        item: trade.items.findIndex((item) => item.id === event.itemId),
+      });
+      if (!result.ok) {
+        throw new Error(
+          `transfer of item ${event.itemId} refused on trade ${trade.id}: ${result.reason}`,
+        );
+      }
+      state = result.trade;
+      arrivals.push({ itemId: event.itemId, at: event.at, hash: event.hash });
+      events.push({
+        tradeId: trade.id,
+        event: {
           type: "item_transferred",
           itemId: event.itemId,
           hash: event.hash,
-        });
-        continue;
-      }
-
-      events.push({ type: event.type, tokenId: event.tokenId });
-      const item = trade.items.find(({ tokenId }) => tokenId === event.tokenId);
-      const key = `${event.type}:${event.tokenId}`;
-      if (item === undefined || notified.has(key)) continue;
-      notified.add(key);
-      const [receiver, sender] =
-        item.sender === "from"
-          ? [trade.toUserId, trade.fromUserId]
-          : [trade.fromUserId, trade.toUserId];
-      notifications.push({
-        type:
-          event.type === "token_moved"
-            ? "trade_token_moved"
-            : "trade_token_untransferable",
-        userId: receiver,
-        offerId: trade.id,
-        actorId: sender,
-        tokenId: event.tokenId,
+        },
       });
+      continue;
     }
 
-    const completed = state.status === "completed";
-    if (completed) {
-      yield* endTrade(tx, trade, state);
-      events.push({ type: "completed", by: null });
-      for (const userId of [trade.fromUserId, trade.toUserId]) {
-        notifications.push({
-          type: "trade_completed",
-          userId,
-          offerId: trade.id,
-          actorId: null,
-          tokenId: null,
-        });
-      }
-    } else {
-      yield* tx
-        .update(tradeOffers)
-        .set({ updatedAt: new Date() })
-        .where(eq(tradeOffers.id, trade.id));
-    }
-    yield* insertTradeEvents(tx, trade.id, events);
-    return { notifications, transferred, completed };
-  });
+    events.push({
+      tradeId: trade.id,
+      event: { type: event.type, tokenId: event.tokenId },
+    });
+    const item = trade.items.find(({ tokenId }) => tokenId === event.tokenId);
+    const key = `${event.type}:${event.tokenId}`;
+    if (item === undefined || notified.has(key)) continue;
+    notified.add(key);
+    const [receiver, sender] =
+      item.sender === "from"
+        ? [trade.toUserId, trade.fromUserId]
+        : [trade.fromUserId, trade.toUserId];
+    notifications.push({
+      type:
+        event.type === "token_moved"
+          ? "trade_token_moved"
+          : "trade_token_untransferable",
+      userId: receiver,
+      offerId: trade.id,
+      actorId: sender,
+      tokenId: event.tokenId,
+    });
+  }
+  return { trade, state, arrivals, events, notifications };
+}
 
 /**
  * Break the open listings and turn stale the pending offers whose token
@@ -546,14 +554,12 @@ const applyChainEvents = (
  * Each broken listing's poster hears which token closed it. A listing
  * claimed since the unlocked read is left to its trade.
  */
-const breakOffers = (
-  tx: WebTx,
-  breaks: readonly { offerId: string; tokenId: number }[],
-) =>
+const breakOffers = (tx: WebTx, breaks: ReadonlyMap<string, number>) =>
   Effect.gen(function* () {
-    if (breaks.length === 0)
+    if (breaks.size === 0) {
       return { notifications: [], listings: 0, offers: 0 };
-    const offerIds = breaks.map((offer) => offer.offerId);
+    }
+    const offerIds = [...breaks.keys()];
     yield* tx
       .select({ id: tradeOffers.id })
       .from(tradeOffers)
@@ -584,16 +590,16 @@ const breakOffers = (
       .returning({ id: tradeOffers.id });
 
     return {
-      notifications: breaks.flatMap(
-        ({ offerId, tokenId }): TradeNotification[] => {
-          const listing = listings.find(({ id }) => id === offerId);
-          return listing === undefined
+      notifications: listings.flatMap(
+        ({ id, fromUserId }): TradeNotification[] => {
+          const tokenId = breaks.get(id);
+          return tokenId === undefined
             ? []
             : [
                 {
                   type: "listing_closed",
-                  userId: listing.fromUserId,
-                  offerId,
+                  userId: fromUserId,
+                  offerId: id,
                   actorId: null,
                   tokenId,
                 },
