@@ -1,0 +1,292 @@
+import { DatabaseIndexer } from "@/db-indexer";
+import {
+  collections,
+  objekts,
+  serialConfirmations,
+  serialReservations,
+} from "@apollo/database/indexer/schema";
+import {
+  collectionKind,
+  estimateSerials,
+  SERIAL_CUTOFF,
+  type CollectionObjekts,
+  type Reservation,
+  type ReservedRange,
+  type SerialUpdate,
+} from "@apollo/serial-estimation";
+import { and, eq, gt, gte, inArray, lt, lte, ne, or, sql } from "drizzle-orm";
+import { Duration, Effect } from "effect";
+import type { ScheduledTask } from "../task";
+
+export type CollectionRef = {
+  id: string;
+  slug: string;
+  onOffline: "online" | "offline";
+};
+
+/**
+ * Rows per serial update statement, and the pause between statements so a
+ * large rewrite doesn't outrun WAL shipping and vacuum.
+ */
+const WRITE_BATCH = 1000;
+const WRITE_PAUSE = Duration.millis(250);
+
+const tokenId = sql`${objekts.id}::int4`.mapWith(Number);
+
+const collectionColumns = {
+  id: collections.id,
+  slug: collections.slug,
+  onOffline: collections.onOffline,
+};
+
+/**
+ * Objekt ids are varchar. Ids of equal length compare as text in numeric
+ * order, so an inclusive token-id range becomes primary-key range scans, one
+ * per digit count it spans, each guarded by length.
+ */
+function tokenIdBetween(from: number, to: number) {
+  const spans = [];
+  for (let start = from; start <= to;) {
+    const end = Math.min(to, 10 ** String(start).length - 1);
+    spans.push(
+      and(
+        gte(objekts.id, String(start)),
+        lte(objekts.id, String(end)),
+        eq(sql`length(${objekts.id})`, String(start).length),
+      ),
+    );
+    start = end + 1;
+  }
+  return or(...spans);
+}
+
+function findRange(sorted: readonly ReservedRange[], id: number) {
+  let low = 0;
+  let high = sorted.length - 1;
+  while (low <= high) {
+    const middle = (low + high) >> 1;
+    const range = sorted[middle];
+    if (range === undefined) {
+      return undefined;
+    }
+    if (id <= range.lo) {
+      high = middle - 1;
+    } else if (id >= range.hi) {
+      low = middle + 1;
+    } else {
+      return range;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * The reserved ranges holding any of the token ids, each with the other
+ * collections' ids numbering depends on (see `Reservation`). Only the span
+ * between the collection's own objekts is read in full; one id beyond it is
+ * enough to mark the range shared, which keeps wide early ranges cheap.
+ */
+const loadReservations = Effect.fn("loadReservations")(function* (
+  collectionId: string,
+  tokenIds: readonly number[],
+) {
+  if (tokenIds.length === 0) {
+    return [];
+  }
+  const db = yield* DatabaseIndexer;
+  const ranges = yield* db
+    .select({ lo: serialReservations.lo, hi: serialReservations.hi })
+    .from(serialReservations)
+    .where(
+      and(
+        lt(serialReservations.lo, Math.max(...tokenIds)),
+        gt(serialReservations.hi, Math.min(...tokenIds)),
+      ),
+    )
+    .orderBy(serialReservations.lo);
+
+  // the collection's own span in each range it has objekts in
+  const spans = new Map<number, ReservedRange & { min: number; max: number }>();
+  for (const id of tokenIds) {
+    const range = findRange(ranges, id);
+    if (range !== undefined) {
+      const span = spans.get(range.lo) ?? { ...range, min: id, max: id };
+      span.min = Math.min(span.min, id);
+      span.max = Math.max(span.max, id);
+      spans.set(range.lo, span);
+    }
+  }
+
+  // other collections' ids between its own
+  const inside = [...spans.values()]
+    .filter((span) => span.max - span.min > 1)
+    .map((span) => tokenIdBetween(span.min + 1, span.max - 1));
+  const between =
+    inside.length === 0
+      ? []
+      : (yield* db
+          .select({ tokenId })
+          .from(objekts)
+          .where(
+            and(ne(objekts.collectionId, collectionId), or(...inside)),
+          )).map((row) => row.tokenId);
+
+  const reservations: Reservation[] = [];
+  for (const span of spans.values()) {
+    // one id outside its span marks the range shared
+    const outside = [
+      span.min > span.lo + 1 && tokenIdBetween(span.lo + 1, span.min - 1),
+      span.max < span.hi - 1 && tokenIdBetween(span.max + 1, span.hi - 1),
+    ].filter((condition) => condition !== false);
+    const [witness] =
+      outside.length === 0
+        ? []
+        : yield* db
+            .select({ tokenId })
+            .from(objekts)
+            .where(and(ne(objekts.collectionId, collectionId), or(...outside)))
+            .limit(1);
+    reservations.push({
+      lo: span.lo,
+      hi: span.hi,
+      foreign: [
+        ...between.filter((id) => id > span.lo && id < span.hi),
+        ...(witness === undefined ? [] : [witness.tokenId]),
+      ],
+    });
+  }
+  return reservations;
+});
+
+/**
+ * A collection's objekts as the estimator needs them, with its reservations
+ * when it is numbered by them.
+ */
+const loadCollection = Effect.fn("loadCollection")(function* (
+  collection: CollectionRef,
+) {
+  const db = yield* DatabaseIndexer;
+  const rows = yield* db
+    .select({
+      tokenId,
+      serial: objekts.serial,
+      mintedAt: sql`extract(epoch from ${objekts.mintedAt}) * 1000`.mapWith(
+        Number,
+      ),
+    })
+    .from(objekts)
+    .where(eq(objekts.collectionId, collection.id));
+
+  if (collectionKind(collection.slug, collection.onOffline) === "sequential") {
+    return { kind: "sequential", objekts: rows } satisfies CollectionObjekts;
+  }
+  return {
+    kind: "reserved",
+    objekts: rows,
+    reservations: yield* loadReservations(
+      collection.id,
+      rows.map((objekt) => objekt.tokenId),
+    ),
+  } satisfies CollectionObjekts;
+});
+
+/**
+ * Confirmed serials for a collection's objekts, keyed by token id.
+ */
+const loadConfirmations = Effect.fn("loadConfirmations")(function* (
+  collectionId: string,
+) {
+  const db = yield* DatabaseIndexer;
+  const rows = yield* db
+    .select({ tokenId, serial: serialConfirmations.serial })
+    .from(serialConfirmations)
+    .innerJoin(objekts, eq(objekts.id, serialConfirmations.tokenId))
+    .where(eq(objekts.collectionId, collectionId));
+  return new Map(rows.map((row) => [row.tokenId, row.serial]));
+});
+
+/**
+ * Write serials in one statement.
+ */
+const writeSerials = Effect.fn("writeSerials")(function* (
+  updates: readonly SerialUpdate[],
+) {
+  const db = yield* DatabaseIndexer;
+  yield* db
+    .update(objekts)
+    .set({
+      serial: sql`case ${objekts.id} ${sql.join(
+        updates.map(
+          (update) =>
+            sql`when ${String(update.tokenId)} then ${update.serial}::int4`,
+        ),
+        sql` `,
+      )} end`,
+    })
+    .where(
+      inArray(
+        objekts.id,
+        updates.map((update) => String(update.tokenId)),
+      ),
+    );
+});
+
+/**
+ * Re-estimate whole collections from what is stored and write the serials
+ * that differ, in token-id order. Estimating from what is stored makes it
+ * idempotent: a write lost to the indexer's upsert of a stale objekt is
+ * redone on the next run. Returns how many serials changed.
+ */
+export const recomputeCollections = Effect.fn("recomputeCollections")(
+  function* (refs: readonly CollectionRef[]) {
+    const updates: SerialUpdate[] = [];
+    for (const collection of refs) {
+      updates.push(
+        ...estimateSerials(
+          yield* loadCollection(collection),
+          yield* loadConfirmations(collection.id),
+        ),
+      );
+    }
+
+    updates.sort((a, b) => a.tokenId - b.tokenId);
+    for (let index = 0; index < updates.length; index += WRITE_BATCH) {
+      yield* writeSerials(updates.slice(index, index + WRITE_BATCH));
+      yield* Effect.sleep(WRITE_PAUSE);
+    }
+    return updates.length;
+  },
+);
+
+/**
+ * Re-estimate every collection with an objekt minted after COSMO's v1
+ * metadata cutoff. The indexer numbers each new objekt as it inserts it but
+ * never touches existing rows, so this repairs what insertion can't: the
+ * objekts above a late digital mint, physicals scanned before their reserved
+ * range was known, and ranges that later scans re-anchor. Runs daily during
+ * Apollo's quiet hours, which also bounds how long a late mint's neighbours
+ * share a serial.
+ */
+export const recomputeSerialsTask = {
+  name: "recompute-serials",
+  cron: "0 8 * * *",
+  timezone: "Pacific/Auckland",
+  effect: Effect.gen(function* () {
+    const db = yield* DatabaseIndexer;
+    const minted = db
+      .selectDistinct({ collectionId: objekts.collectionId })
+      .from(objekts)
+      .where(gt(objekts.mintedAt, new Date(SERIAL_CUTOFF).toISOString()))
+      .as("minted");
+    const refs = yield* db
+      .select(collectionColumns)
+      .from(collections)
+      .innerJoin(minted, eq(minted.collectionId, collections.id));
+
+    const started = Date.now();
+    const changed = yield* recomputeCollections(refs);
+    yield* Effect.logInfo(
+      `Recomputed serials for ${refs.length} collections: ${changed} changed in ${Math.round((Date.now() - started) / 1000)}s`,
+    );
+  }),
+} satisfies ScheduledTask;
