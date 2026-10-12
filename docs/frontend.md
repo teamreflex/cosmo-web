@@ -87,11 +87,13 @@ return (
 );
 ```
 
+Submit with `mutation.mutate` and handle outcomes in `onSuccess`/`onError`. Make the handler `async` with `mutateAsync` only when it needs `formState.isSubmitting` or the mutation's result, because a rejection then escapes `handleSubmit` as an unhandled rejection.
+
 Gate bad input on the **client** with RHF — keep server-fn validators strict rather than loosening them to absorb bad input. Prefer `useForm` + `standardSchemaResolver` over raw `useState` dialogs. Use plain-English `.refine` messages (not i18n); a row-level `.refine` maps its path to `rows.${i}.field`.
 
 **Schema reuse:** default to using the server fn's own Zod schema as the RHF resolver — seed `defaultValues` with the full payload (identity fields like `slug`/`tokenId` ride along un-edited), bind inputs to the real paths (`entries.${i}.price`), and submit `data` straight through. One schema, validated both sides. Only use a bespoke client schema when the form is a genuinely different *shape* than the request (e.g. a selection subset); even then, extract the shared per-field rule to one source (e.g. a `salePriceSchema` imported by both).
 
-**Hook variables, not closures:** when a shared mutation hook needs form values, make its `mutationFn` generic over `TVariables` (default `void`) and pass validated values via `form.handleSubmit(async (values) => mutation.mutateAsync(values))` — don't read `form.getValues()` inside a no-arg thunk.
+**Hook variables, not closures:** when a shared mutation hook needs form values, make its `mutationFn` generic over `TVariables` (default `void`) and pass validated values via `form.handleSubmit((values) => mutation.mutate(values))` — don't read `form.getValues()` inside a no-arg thunk.
 
 ## Tailwind
 
@@ -103,6 +105,14 @@ The project uses Tailwind v4, so always use v4 conventions rather than v3. This 
 - Standard shadcn/ui color tokens apply.
 
 `@theme inline` collapses `var()` chains at build time. For tokens you want to override at runtime via JS or `:root`, declare them in a **non-inline** `@theme` block so utilities keep emitting `var(--your-token)`. Verify by checking the built CSS — the utility must reference your token, not the underlying one.
+
+### Typography
+
+- Font size and letter spacing come from the theme scale, never arbitrary values such as `text-[11px]` or `tracking-[0.14em]`. Sizes are `text-xxs` (10px, a custom step defined in `styles/tailwind.css`), `text-xs`, `text-sm`, `text-base` and up; tracking is `tracking-wide`, `tracking-wider` or `tracking-widest`. Round an in-between design value to the nearest step.
+- A new custom size needs a `--text-*` token in `styles/tailwind.css` and an entry in the `font-size` class group of `createCn` in `lib/utils.ts`. Without the latter, `cn()` reads the class as a text colour and drops it whenever a colour class follows.
+- The only arbitrary sizes allowed are computed ones with no scale equivalent: container-relative `text-[clamp(...)]` or `text-[length:...]`, and `text-[0px]`.
+- Small uppercase labels above a value use `text-xxs font-medium tracking-widest text-muted-foreground uppercase`.
+- `font-mono` is for numbers and codes: prices, serials, counts, ranks such as "#2 of 3". Labels, headings, links and buttons stay in the sans font, even when uppercase.
 
 ### Component Variants
 
@@ -141,4 +151,5 @@ const variants = cva({
 
 - When writing new components that include strings, always use the i18n system and create new strings for all languages in `messages/`.
 - Use `turbo i18n` to compile messages into `.js` modules for use with the `m()` helper.
+- For a link or other element inside a sentence, wrap that part of the message in markup (`"ask in the {#link}{appName} Discord{/link}"`) in every locale, so translators can move it, and render it with `<ParaglideMessage message={m.key} inputs={…} markup={{ link: ({ children }) => <a …>{children}</a> }} />` from `@inlang/paraglide-js-react`. The markup names are type-checked, and calling `m.key()` directly returns the text with the markup stripped. Don't split a sentence into several messages around the link.
 - After merging a branch that added `messages/*.json` keys, run `bun run i18n` before typechecking. `src/i18n/messages` is gitignored Paraglide output, so a plain text-merge leaves the compiled `m.*` stale and typecheck fails with TS2339.

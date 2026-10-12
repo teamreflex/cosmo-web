@@ -1,7 +1,7 @@
+import { AttrCell } from "@/components/ui/stat-cell";
 import { m } from "@/i18n/messages";
 import { getEdition } from "@/lib/client/objekt-util";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import { AttrCell } from "./common";
 
 type Props = {
   objekt: Objekt.Collection;

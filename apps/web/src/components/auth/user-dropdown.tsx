@@ -7,9 +7,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useArtists } from "@/hooks/use-artists";
+import { useHasPermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
-import type { PublicUser } from "@/lib/universal/auth";
+import type { CurrentUser } from "@/lib/universal/auth";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import { DISCORD_INVITE_URL } from "@/lib/utils";
 import {
   IconBrandDiscord,
   IconInfoCircle,
@@ -20,6 +22,7 @@ import {
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
+import { ADMIN_SHELL_PERMISSIONS } from "../admin/common";
 import AboutDialog from "../navbar/about";
 import { ArtistItem } from "../navbar/artist-selectbox";
 import UserAvatar from "../profile/user-avatar";
@@ -27,7 +30,7 @@ import AccountDialog from "./account-dialog";
 import SettingsDialog from "./settings-dialog";
 
 type UserDropdownProps = {
-  user: PublicUser;
+  user: CurrentUser;
   cosmo?: PublicCosmo;
   onSignOut: () => void;
 };
@@ -38,6 +41,7 @@ export default function UserDropdown({
   onSignOut,
 }: UserDropdownProps) {
   const { artistList, selectedIds } = useArtists();
+  const hasPermission = useHasPermission();
   const [openSettings, setOpenSettings] = useState(false);
   const [openAccount, setOpenAccount] = useState(false);
   const [openAbout, setOpenAbout] = useState(false);
@@ -92,7 +96,7 @@ export default function UserDropdown({
           <span>{m.user_dropdown_settings()}</span>
         </DropdownMenuItem>
 
-        {user.isAdmin && (
+        {hasPermission(ADMIN_SHELL_PERMISSIONS) && (
           <div className="contents">
             <DropdownMenuSeparator />
             <DropdownMenuItem
@@ -119,7 +123,7 @@ export default function UserDropdown({
           className="cursor-pointer"
           render={
             <a
-              href="https://discord.gg/A72VRX8FgK"
+              href={DISCORD_INVITE_URL}
               target="_blank"
               rel="noopener noreferrer"
             />

@@ -60,7 +60,6 @@ export default function ListRenderer(props: Props) {
             authenticated: props.authenticated,
             objektList: props.objektList,
           }}
-          extraRowHeight={props.objektList.type === "sale" ? 28 : 0}
           showTotal
         />
       </div>

@@ -11,7 +11,8 @@ import { IconInfoCircle } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { useShallow } from "zustand/react/shallow";
-import { ObjektNewIndicator, ObjektSidebar } from "./common";
+import { ObjektCount, ObjektNewIndicator, ObjektSidebar } from "./common";
+import DetailContent from "./detail/detail-content";
 import DetailDialog from "./detail/detail-dialog";
 import {
   CornerOverlay,
@@ -99,11 +100,13 @@ function Detail({
       />
 
       <DetailDialog
-        collection={collection}
-        tokens={tokens}
+        title={collection.collectionId}
+        description={m.objekt_group_select()}
         open={open}
         onOpenChange={setOpen}
-      />
+      >
+        <DetailContent collection={collection} tokens={tokens} />
+      </DetailDialog>
     </>
   );
 }
@@ -212,15 +215,9 @@ function RootObjektOverlay({
         </OverlayIconButton>
       </CornerOverlay>
 
-      <div className="absolute top-1 left-1 flex flex-row items-center gap-1 sm:top-2 sm:left-2">
-        {count > 1 && (
-          <span className="rounded-full bg-black px-2 py-px text-sm font-semibold text-white">
-            {count}
-          </span>
-        )}
-
+      <ObjektCount count={count}>
         {hasNew && <ObjektNewIndicator />}
-      </div>
+      </ObjektCount>
     </div>
   );
 }

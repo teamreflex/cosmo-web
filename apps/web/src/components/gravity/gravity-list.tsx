@@ -6,8 +6,8 @@ import type { GravityWithPoll } from "@apollo/database/web/types";
 import { IconCalendarEvent } from "@tabler/icons-react";
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { format } from "date-fns";
 import { Card, CardContent } from "../ui/card";
+import { Timestamp } from "../ui/timestamp";
 import GravityTypeBadge from "./gravity-type-badge";
 
 type Props = {
@@ -87,9 +87,9 @@ function GravityRow({ gravity, artist }: GravityRowProps) {
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <IconCalendarEvent className="size-4" />
           <div className="flex gap-1">
-            <span>{format(gravity.startDate, "MMM d, yyyy")}</span>
+            <Timestamp date={gravity.startDate} format="MMM d, yyyy" />
             <span>~</span>
-            <span>{format(gravity.endDate, "MMM d, yyyy")}</span>
+            <Timestamp date={gravity.endDate} format="MMM d, yyyy" />
           </div>
         </div>
 

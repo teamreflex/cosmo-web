@@ -68,9 +68,7 @@ export default function ArtistGroupedMultiSelect({
                       )}
                     >
                       {on && (
-                        <span className="text-[9px] font-bold text-white">
-                          ✓
-                        </span>
+                        <span className="text-xxs font-bold text-white">✓</span>
                       )}
                     </span>
                     <span
@@ -89,7 +87,7 @@ export default function ArtistGroupedMultiSelect({
       </div>
 
       <div className="flex items-center justify-between px-3 py-2">
-        <span className="font-mono text-xxs text-muted-foreground">
+        <span className="text-xxs text-muted-foreground tabular-nums">
           {selectedCount === 0
             ? m.filter_none_selected()
             : m.filter_count_selected({ count: selectedCount.toString() })}
@@ -98,7 +96,7 @@ export default function ArtistGroupedMultiSelect({
           <button
             type="button"
             onClick={onClear}
-            className="text-[11px] tracking-[0.14em] text-muted-foreground uppercase transition-colors hover:text-foreground"
+            className="text-xxs tracking-widest text-muted-foreground uppercase transition-colors hover:text-foreground"
           >
             {m.filter_clear()}
           </button>

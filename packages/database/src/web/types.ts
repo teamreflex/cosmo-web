@@ -14,6 +14,9 @@ import type {
   objektLists,
   eras,
   events,
+  reports,
+  staffAudit,
+  cosmoLinkAudit,
 } from "./schema";
 
 export type {
@@ -30,14 +33,17 @@ export type Binder = typeof binders.$inferSelect;
 export type BinderEntry = typeof binderEntries.$inferSelect;
 export type Notification = typeof notifications.$inferSelect;
 
-export type ListMatchPayload = {
-  sourceUserId: string;
-  sourceListId: string;
+/**
+ * A notification to insert. Every type names an actor, a list and a
+ * collection (notifications_subject_chk).
+ */
+export type NewNotification = {
+  type: "trade_have" | "trade_want";
+  userId: string;
+  actorId: string;
+  listId: string;
   collectionId: string;
-  direction: "they_added_have" | "they_added_want";
 };
-
-export type NotificationPayload = ListMatchPayload;
 export type CosmoToken = typeof cosmoTokens.$inferSelect;
 export type Gravity = typeof gravities.$inferSelect;
 export type GravityPoll = typeof gravityPolls.$inferSelect;
@@ -45,6 +51,9 @@ export type GravityPollCandidate = typeof gravityPollCandidates.$inferSelect;
 export type CollectionData = typeof collectionData.$inferSelect;
 export type Era = typeof eras.$inferSelect;
 export type Event = typeof events.$inferSelect;
+export type Report = typeof reports.$inferSelect;
+export type StaffAudit = typeof staffAudit.$inferSelect;
+export type CosmoLinkAudit = typeof cosmoLinkAudit.$inferSelect;
 
 export interface EventWithEra extends Event {
   era: Era;
@@ -102,3 +111,97 @@ export const eventTypeKeys = Object.keys(
   eventTypes,
 ) as (keyof typeof eventTypes)[];
 export type EventTypeKey = (typeof eventTypeKeys)[number];
+
+export const reportTargetTypes = [
+  "user",
+  "message",
+  "listing",
+  "feedback",
+  "trade",
+] as const;
+export type ReportTargetType = (typeof reportTargetTypes)[number];
+
+// open and escalated count as open for the one-report-per-target rule
+export const reportStatuses = [
+  "open",
+  "escalated",
+  "resolved",
+  "dismissed",
+] as const;
+export type ReportStatus = (typeof reportStatuses)[number];
+
+export const reportReasons = [
+  "scam",
+  "harassment",
+  "impersonation",
+  "spam",
+  "other",
+] as const;
+export type ReportReason = (typeof reportReasons)[number];
+
+export const staffAuditActions = [
+  "report:read",
+  "report:resolve",
+  "report:dismiss",
+  "report:escalate",
+  "user:ban",
+  "user:unban",
+  "user:set-role",
+  "api-key:create",
+  "api-key:update",
+  "api-key:delete",
+  "metadata:update",
+  "cosmo-account:transfer",
+] as const;
+export type StaffAuditAction = (typeof staffAuditActions)[number];
+
+/**
+ * A `collection` target's id is the collection's slug, and a `cosmo-account`
+ * target's id is the account's address.
+ */
+export const staffAuditTargetTypes = [
+  "user",
+  "report",
+  "api-key",
+  "collection",
+  "cosmo-account",
+] as const;
+export type StaffAuditTargetType = (typeof staffAuditTargetTypes)[number];
+
+export const cosmoLinkEvents = ["linked", "unlinked"] as const;
+export type CosmoLinkEvent = (typeof cosmoLinkEvents)[number];
+
+/**
+ * Why a COSMO link changed: the user proved control through the COSMO bio,
+ * deleted their account, or staff moved the link.
+ */
+export const cosmoLinkReasons = [
+  "verified",
+  "account-deleted",
+  "staff-move",
+] as const;
+export type CosmoLinkReason = (typeof cosmoLinkReasons)[number];
+
+/**
+ * Extra context for an audit row. Roles are stored as plain strings so this
+ * package stays independent of @apollo/auth; readers parse them.
+ * `expiresIn` is the ban length in seconds, null for a permanent ban. An API
+ * key's name, owner and enabled state, and a moved COSMO account's username,
+ * are copied in when the action runs, so the row still reads after the key is
+ * deleted or the account renamed.
+ */
+export type StaffAuditDetail =
+  | { kind: "ban"; expiresIn: number | null; reason: string }
+  | { kind: "set-role"; from: string; to: string }
+  | {
+      kind: "api-key";
+      name: string | null;
+      ownerId: string;
+      enabled: boolean;
+    }
+  | {
+      kind: "cosmo-transfer";
+      username: string;
+      fromUserId: string;
+      toUserId: string;
+    };

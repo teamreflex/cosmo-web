@@ -10,7 +10,7 @@ import {
   getBestAlbumArt,
   searchSpotifyAlbums,
 } from "@/lib/server/events/spotify.server";
-import { adminMiddleware } from "@/lib/server/middlewares";
+import { cosmoMiddleware, staffMiddleware } from "@/lib/server/middlewares";
 import {
   generateEraImageKey,
   generateEventImageKey,
@@ -47,7 +47,7 @@ import * as z from "zod";
  * Creates a new era.
  */
 export const $createEra = createServerFn({ method: "POST" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(createEraSchema)
   .handler(async ({ data }) => {
     await validateEraSlug(data.slug);
@@ -82,7 +82,7 @@ export const $createEra = createServerFn({ method: "POST" })
  * Updates an era.
  */
 export const $updateEra = createServerFn({ method: "POST" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(updateEraSchema)
   .handler(async ({ data }) => {
     const { id, ...updateData } = data;
@@ -114,7 +114,7 @@ export const $updateEra = createServerFn({ method: "POST" })
  * Deletes an era.
  */
 export const $deleteEra = createServerFn({ method: "POST" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(z.object({ id: z.uuid() }))
   .handler(async ({ data }) => {
     await db.delete(eras).where(eq(eras.id, data.id));
@@ -125,7 +125,7 @@ export const $deleteEra = createServerFn({ method: "POST" })
  * Creates a new event.
  */
 export const $createEvent = createServerFn({ method: "POST" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(createEventSchema)
   .handler(async ({ data }) => {
     await validateEventSlug(data.slug);
@@ -161,7 +161,7 @@ export const $createEvent = createServerFn({ method: "POST" })
  * Updates an event.
  */
 export const $updateEvent = createServerFn({ method: "POST" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(updateEventSchema)
   .handler(async ({ data }) => {
     const { id, ...updateData } = data;
@@ -194,7 +194,7 @@ export const $updateEvent = createServerFn({ method: "POST" })
  * Deletes an event.
  */
 export const $deleteEvent = createServerFn({ method: "POST" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(z.object({ id: z.uuid() }))
   .handler(async ({ data }) => {
     await db.delete(events).where(eq(events.id, data.id));
@@ -205,7 +205,7 @@ export const $deleteEvent = createServerFn({ method: "POST" })
  * Adds collections to an event.
  */
 export const $addCollectionsToEvent = createServerFn({ method: "POST" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] }), cosmoMiddleware])
   .validator(addCollectionsToEventSchema)
   .handler(async ({ data, context }) => {
     const result = await db
@@ -234,7 +234,7 @@ export const $addCollectionsToEvent = createServerFn({ method: "POST" })
  * Removes a collection from an event.
  */
 export const $removeCollectionFromEvent = createServerFn({ method: "POST" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(removeCollectionFromEventSchema)
   .handler(async ({ data }) => {
     await db
@@ -252,7 +252,7 @@ export const $removeCollectionFromEvent = createServerFn({ method: "POST" })
  * Searches for albums on Spotify.
  */
 export const $searchSpotifyAlbums = createServerFn({ method: "GET" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(z.object({ query: z.string().min(1) }))
   .handler(async ({ data }) => {
     return searchSpotifyAlbums(data.query);
@@ -262,7 +262,7 @@ export const $searchSpotifyAlbums = createServerFn({ method: "GET" })
  * Gets a Spotify album.
  */
 export const $getSpotifyAlbum = createServerFn({ method: "GET" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(z.object({ albumId: z.string().min(1) }))
   .handler(async ({ data }) => {
     const album = await fetchSpotifyAlbum(data.albumId);
@@ -278,7 +278,7 @@ export const $getSpotifyAlbum = createServerFn({ method: "GET" })
  * Gets a presigned URL for uploading an era image to R2.
  */
 export const $getEraImageUploadUrl = createServerFn({ method: "POST" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(
     z.object({
       filename: z.string().min(1),
@@ -306,7 +306,7 @@ export const $getEraImageUploadUrl = createServerFn({ method: "POST" })
  * Gets a presigned URL for uploading an event image to R2.
  */
 export const $getEventImageUploadUrl = createServerFn({ method: "POST" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(
     z.object({
       filename: z.string().min(1),
@@ -334,7 +334,7 @@ export const $getEventImageUploadUrl = createServerFn({ method: "POST" })
  * Fetches all eras (admin).
  */
 export const $fetchEras = createServerFn({ method: "GET" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .handler(async () => {
     return db.query.eras.findMany({
       orderBy: { startDate: "desc" },
@@ -365,7 +365,7 @@ const PER_PAGE_ADMIN = 24;
  * Fetches paginated eras for the admin grid, newest first.
  */
 export const $fetchAdminEras = createServerFn({ method: "GET" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(z.object({ cursor: z.iso.datetime().optional() }))
   .handler(async ({ data }) => {
     // drizzle rc.5 throws on explicit undefined filter values, so the cursor
@@ -392,7 +392,7 @@ export const $fetchAdminEras = createServerFn({ method: "GET" })
  * Fetches paginated events for the admin grid, newest first.
  */
 export const $fetchAdminEvents = createServerFn({ method: "GET" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(z.object({ cursor: z.iso.datetime().optional() }))
   .handler(async ({ data }) => {
     const rows = await db.query.events.findMany({
@@ -420,7 +420,7 @@ export const $fetchAdminEvents = createServerFn({ method: "GET" })
  * Fetches all collections for an event (admin use).
  */
 export const $fetchCollectionsForEvent = createServerFn({ method: "GET" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(z.object({ eventId: z.uuid() }))
   .handler(async ({ data }) => {
     return db.query.collectionData.findMany({

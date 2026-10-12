@@ -1,10 +1,11 @@
+import { StatCell } from "@/components/ui/stat-cell";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { m } from "@/i18n/messages";
 import { objektMetadataQuery } from "@/lib/queries/objekt-queries";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { unobtainables } from "@/lib/unobtainables";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { StatCell, type ObjektMetadataTab } from "./common";
+import type { ObjektMetadataTab } from "./common";
 import PricingPanel from "./pricing-panel";
 import SerialsPanel from "./serials-panel";
 
@@ -76,7 +77,7 @@ export default function Metadata(props: Props) {
 
         {!isUnobtainable && (
           <TabsContent value="pricing">
-            <PricingPanel data={data.priceStats} />
+            <PricingPanel slug={props.objekt.slug} data={data.priceStats} />
           </TabsContent>
         )}
       </Tabs>

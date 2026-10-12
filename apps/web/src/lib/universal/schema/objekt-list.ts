@@ -1,16 +1,5 @@
 import * as z from "zod";
-
-export const defaultCurrencies = [
-  "USD",
-  "KRW",
-  "EUR",
-  "GBP",
-  "JPY",
-  "RMB",
-  "NTD",
-  "HKD",
-  "SGD",
-] as const;
+import { currencySchema } from "./currency";
 
 export const listTypes = ["regular", "have", "want", "sale"] as const;
 export type ListType = (typeof listTypes)[number];
@@ -24,11 +13,6 @@ export const listNameSchema = z
     (value) => /^[a-zA-Z0-9 ]+$/.test(value),
     "Name can only use letters, numbers and spaces",
   );
-
-const currencySchema = z
-  .string()
-  .length(3, "Currency must be 3 characters")
-  .transform((v) => v.toUpperCase());
 
 const descriptionSchema = z
   .string()
@@ -119,7 +103,6 @@ export const addObjektsToHaveListSchema = z.object({
       z.object({
         slug: z.string(),
         collectionId: z.uuid(),
-        collectionName: z.string(),
         tokenId: z.string(),
       }),
     )
@@ -133,7 +116,6 @@ export const addObjektsToWantListSchema = z.object({
     .array(
       z.object({
         slug: z.string(),
-        collectionName: z.string(),
         // want-list entries stack, so one add can represent multiple copies
         quantity: z.number().int().min(1).max(100).default(1),
       }),

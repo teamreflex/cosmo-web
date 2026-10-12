@@ -1,27 +1,48 @@
 import * as clientEnv from "@/lib/env/client";
 import * as serverEnv from "@/lib/env/server";
 import { baseUrl } from "@/lib/utils";
+import { adminPluginOptions } from "@apollo/auth";
 import * as authSchema from "@apollo/database/auth";
-import { cosmoAccounts } from "@apollo/database/web/schema";
 import { GRID_COLUMNS } from "@apollo/util";
 import type { CollectionDataSource } from "@apollo/util";
 import { apiKey } from "@better-auth/api-key";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
+import type { BetterAuthPlugin } from "better-auth";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { parseSessionOutput, parseUserOutput } from "better-auth/db";
 import { betterAuth } from "better-auth/minimal";
+import { admin } from "better-auth/plugins/admin";
 import { username } from "better-auth/plugins/username";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
-import { eq } from "drizzle-orm";
 import { createCipheriv, randomBytes } from "node:crypto";
-import type { PublicUser } from "../universal/auth";
+import type { CurrentUser, PublicUser } from "../universal/auth";
 import { settingsSchema } from "../universal/schema/auth";
+import { DEFAULT_CURRENCY } from "../universal/schema/currency";
 import { db } from "./db";
-import {
-  sendAccountDeletionEmail,
-  sendPasswordResetEmail,
-  sendVerificationEmail,
-} from "./mail.server";
+import { sendPasswordResetEmail, sendVerificationEmail } from "./mail.server";
+
+/**
+ * Drops `currency` from client sign-up and update-user requests, since it needs
+ * an FX rate check that a synchronous field validator can't run. $updateSettings
+ * checks it and calls `auth.api.updateUser` directly, which has no `request`.
+ */
+function serverOnlyCurrency() {
+  return {
+    id: "server-only-currency",
+    hooks: {
+      before: [
+        {
+          matcher: (ctx) =>
+            ctx.request !== undefined &&
+            (ctx.path === "/update-user" || ctx.path === "/sign-up/email"),
+          handler: createAuthMiddleware(async (ctx) => {
+            delete ctx.body?.currency;
+          }),
+        },
+      ],
+    },
+  } satisfies BetterAuthPlugin;
+}
 
 /**
  * Better Auth server instance.
@@ -52,6 +73,8 @@ export const auth = betterAuth({
       // `start` (shown in the admin table) keeps the prefix + a few key chars
       startingCharactersConfig: { charactersLength: 13 },
     }),
+    admin(adminPluginOptions),
+    serverOnlyCurrency(),
     tanstackStartCookies(),
   ],
 
@@ -177,6 +200,16 @@ export const auth = betterAuth({
       }
 
       /**
+       * Staff change accounts through server functions, which call the admin
+       * plugin with the request's headers so it can read their session. Only
+       * router calls carry `ctx.request`, so testing it alone (unlike the
+       * api-key block) keeps those calls working.
+       */
+      if (ctx.path?.startsWith("/admin/") && ctx.request) {
+        throw new APIError("NOT_FOUND");
+      }
+
+      /**
        * Override the internal adapter to return the session and user in one query.
        */
       if (ctx.path === "/get-session") {
@@ -216,6 +249,10 @@ export const auth = betterAuth({
     }),
   },
 
+  /**
+   * `overrideUserInfoOnSignIn` also writes the provider's email and
+   * `emailVerified` onto the user, which decide account protection.
+   */
   socialProviders: {
     discord: {
       enabled: true,
@@ -252,33 +289,7 @@ export const auth = betterAuth({
     changeEmail: {
       enabled: true,
     },
-    deleteUser: {
-      enabled: true,
-      sendDeleteAccountVerification: async ({ user, url, token }) => {
-        await sendAccountDeletionEmail({
-          to: user.email,
-          url: url,
-          token: token,
-        });
-      },
-      // unlink the cosmo account when the user is deleted
-      afterDelete: async (user) => {
-        await db
-          .update(cosmoAccounts)
-          .set({
-            userId: null,
-          })
-          .where(eq(cosmoAccounts.userId, user.id));
-      },
-    },
     additionalFields: {
-      isAdmin: {
-        type: "boolean",
-        required: false,
-        defaultValue: false,
-        input: false,
-        returned: true,
-      },
       gridColumns: {
         type: "number",
         required: false,
@@ -296,6 +307,15 @@ export const auth = betterAuth({
         returned: true,
         // oxlint-disable-next-line anti-slop/no-shape-in-symbol-names -- zod's field accessor
         validator: { input: settingsSchema.shape.collectionMode },
+      },
+      currency: {
+        type: "string",
+        required: false,
+        defaultValue: DEFAULT_CURRENCY,
+        input: true,
+        returned: true,
+        // oxlint-disable-next-line anti-slop/no-shape-in-symbol-names -- zod's field accessor
+        validator: { input: settingsSchema.shape.currency },
       },
       discord: {
         type: "string",
@@ -370,7 +390,6 @@ export function toPublicUser(
     id: user.id,
     username: user.displayUsername ?? undefined,
     image: user.image ?? undefined,
-    isAdmin: user.isAdmin ?? false,
     gridColumns: user.gridColumns ?? GRID_COLUMNS,
     // SAFETY: the column only stores CollectionDataSource values
     collectionMode: (user.collectionMode ??
@@ -381,4 +400,11 @@ export function toPublicUser(
     },
     showSocials: user.showSocials ?? false,
   } as PublicUser;
+}
+
+/**
+ * Convert the signed-in user for their own account payload.
+ */
+export function toCurrentUser(user: ServerUser): CurrentUser {
+  return { ...toPublicUser(user), currency: user.currency ?? DEFAULT_CURRENCY };
 }

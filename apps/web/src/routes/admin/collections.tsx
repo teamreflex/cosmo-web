@@ -3,6 +3,8 @@ import CollectionLookup from "@/components/admin/collections/collection-lookup";
 import LatestCollections, {
   LatestCollectionsSkeleton,
 } from "@/components/admin/collections/latest-collections";
+import { requireStaffPage } from "@/components/admin/common";
+import AdminNoAccess from "@/components/admin/no-access";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
@@ -10,23 +12,16 @@ import {
   adminCollectionQuery,
   latestCollectionsQuery,
 } from "@/lib/queries/collections";
-import {
-  artistsQuery,
-  currentAccountQuery,
-  filterDataQuery,
-} from "@/lib/queries/core";
+import { artistsQuery, filterDataQuery } from "@/lib/queries/core";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Suspense, useState } from "react";
 
 export const Route = createFileRoute("/admin/collections")({
   staleTime: Infinity,
-  beforeLoad: async ({ context }) => {
-    const user = await context.queryClient.ensureQueryData(currentAccountQuery);
-    if (!user?.user.isAdmin) {
-      throw redirect({ to: "/" });
-    }
-  },
+  beforeLoad: ({ context }) =>
+    requireStaffPage(context.role, { site: ["manage"] }),
+  notFoundComponent: AdminNoAccess,
   loader: async ({ context }) => {
     void context.queryClient.prefetchInfiniteQuery(latestCollectionsQuery());
 

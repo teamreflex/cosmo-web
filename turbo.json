@@ -12,7 +12,7 @@
     },
     "test": {
       "cache": true,
-      "inputs": ["src/**/*.ts", "tests/**/*.ts", "bunfig.toml"]
+      "inputs": ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts", "bunfig.toml"]
     },
     "lint": {
       "cache": true,
@@ -33,6 +33,10 @@
       "cache": false
     },
     "db:seed": {
+      "cache": false,
+      "dependsOn": ["//#services"]
+    },
+    "db:seed:staff": {
       "cache": false,
       "dependsOn": ["//#services"]
     },

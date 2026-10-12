@@ -1,7 +1,7 @@
 import { m } from "@/i18n/messages";
 import { recentVotesQuery } from "@/lib/queries/gravity";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
+import { Timestamp } from "../ui/timestamp";
 
 type Props = {
   pollId: number;
@@ -30,9 +30,11 @@ export default function RecentVotes(props: Props) {
         <div className="flex max-h-120 flex-col overflow-y-auto">
           {votes.map((vote) => (
             <div key={vote.id} className="flex h-8 items-center gap-2">
-              <span className="shrink-0 font-mono text-xs text-muted-foreground">
-                {format(new Date(vote.createdAt), "h:mm:ssaaa")}
-              </span>
+              <Timestamp
+                date={new Date(vote.createdAt)}
+                format="h:mm:ssaaa"
+                className="shrink-0 font-mono text-xs text-muted-foreground"
+              />
               <span className="min-w-0 flex-1 truncate text-sm">
                 {vote.username ?? vote.address.substring(0, 8)}
               </span>

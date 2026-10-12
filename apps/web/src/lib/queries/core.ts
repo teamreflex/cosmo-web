@@ -1,5 +1,5 @@
 import type { CosmoMemberBFF } from "@apollo/cosmo/types/artists";
-import { queryOptions } from "@tanstack/react-query";
+import { type QueryClient, queryOptions } from "@tanstack/react-query";
 import { $fetchArtists } from "../functions/artists";
 import {
   $fetchCurrentAccount,
@@ -7,6 +7,11 @@ import {
   $fetchSelectedArtists,
   $fetchTargetAccount,
 } from "../functions/core";
+import { accountDeletionQuery } from "./account";
+import {
+  notificationsListQuery,
+  unreadNotificationsQuery,
+} from "./notifications";
 
 /**
  * Fetch the filter data.
@@ -29,6 +34,20 @@ export const currentAccountQuery = queryOptions({
   refetchOnWindowFocus: false,
   refetchOnMount: false,
 });
+
+/**
+ * Removes the staff data (every query keyed under "admin"), the viewer's
+ * account-deletion check and their notifications, whose answers depend on who
+ * is signed in although their keys don't name them. Sign-in, sign-out and
+ * account deletion call it so the next account on the tab never reads the
+ * previous one's cache.
+ */
+export function removeViewerQueries(queryClient: QueryClient) {
+  queryClient.removeQueries({ queryKey: ["admin"] });
+  queryClient.removeQueries({ queryKey: accountDeletionQuery.queryKey });
+  queryClient.removeQueries({ queryKey: notificationsListQuery.queryKey });
+  queryClient.removeQueries({ queryKey: unreadNotificationsQuery.queryKey });
+}
 
 /**
  * Fetch the target account.

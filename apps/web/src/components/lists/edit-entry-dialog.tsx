@@ -5,6 +5,7 @@ import { updateObjektListEntrySchema } from "@/lib/universal/schema/objekt-list"
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useId } from "react";
 import {
   Controller,
   FormProvider,
@@ -44,6 +45,8 @@ export default function EditEntryDialog({
   collectionId,
 }: Props) {
   const isTokenKeyed = tokenId !== null;
+  const quantityId = useId();
+  const priceId = useId();
   const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: $updateObjektListEntry,
@@ -95,8 +98,11 @@ export default function EditEntryDialog({
                 name="quantity"
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel>{m.list_sale_quantity()}</FieldLabel>
+                    <FieldLabel htmlFor={quantityId}>
+                      {m.list_sale_quantity()}
+                    </FieldLabel>
                     <Input
+                      id={quantityId}
                       type="number"
                       min={1}
                       max={99}
@@ -114,10 +120,11 @@ export default function EditEntryDialog({
               name="price"
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel>
+                  <FieldLabel htmlFor={priceId}>
                     {m.list_sale_price()} ({currency})
                   </FieldLabel>
                   <Input
+                    id={priceId}
                     type="number"
                     min={0}
                     step="any"

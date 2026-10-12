@@ -26,6 +26,21 @@ export const relations = defineRelations(schema, (r) => ({
       to: r.cosmoAccountChanges.address,
     }),
   },
+  cosmoLinkAudit: {
+    cosmoAccount: r.one.cosmoAccounts({
+      from: r.cosmoLinkAudit.cosmoAccountId,
+      to: r.cosmoAccounts.id,
+      optional: false,
+    }),
+    user: r.one.user({
+      from: r.cosmoLinkAudit.userId,
+      to: r.user.id,
+    }),
+    staff: r.one.user({
+      from: r.cosmoLinkAudit.staffId,
+      to: r.user.id,
+    }),
+  },
   lockedObjekts: {
     profile: r.one.cosmoAccounts({
       from: r.lockedObjekts.address,
@@ -79,10 +94,6 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.objektListEntries.objektListId,
       to: r.objektLists.id,
     }),
-    priceStats: r.one.collectionPriceStats({
-      from: r.objektListEntries.collectionId,
-      to: r.collectionPriceStats.collectionId,
-    }),
   },
   binders: {
     user: r.one.user({
@@ -109,6 +120,7 @@ export const relations = defineRelations(schema, (r) => ({
   },
   listDrainCursor: {},
   collectionPriceStats: {},
+  collectionPriceHistory: {},
   fxRates: {},
   cosmoTokens: {},
   gravities: {
@@ -145,6 +157,10 @@ export const relations = defineRelations(schema, (r) => ({
     }),
     objektLists: r.many.objektLists(),
     binders: r.many.binders(),
+    fxRates: r.many.fxRates({
+      from: r.user.currency,
+      to: r.fxRates.currency,
+    }),
   },
   apikey: {
     user: r.one.user({
@@ -176,6 +192,29 @@ export const relations = defineRelations(schema, (r) => ({
       optional: false,
     }),
     collections: r.many.collectionData(),
+  },
+  // #endregion
+
+  // #region Moderation
+  reports: {
+    reporter: r.one.user({
+      from: r.reports.reporterId,
+      to: r.user.id,
+    }),
+    resolver: r.one.user({
+      from: r.reports.resolvedBy,
+      to: r.user.id,
+    }),
+  },
+  staffAudit: {
+    staff: r.one.user({
+      from: r.staffAudit.staffId,
+      to: r.user.id,
+    }),
+    report: r.one.reports({
+      from: r.staffAudit.reportId,
+      to: r.reports.id,
+    }),
   },
   // #endregion
 

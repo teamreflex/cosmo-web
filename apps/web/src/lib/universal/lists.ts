@@ -43,3 +43,37 @@ export type ListShelfPreview = Pick<
 export type ListShelfItem = ObjektList & {
   previews: ListShelfPreview[];
 };
+
+/**
+ * Both `name` and `slug` are 24 characters at most.
+ */
+const LIST_LABEL_LENGTH = 24;
+
+type ListLabel = { name: string; slug: string };
+
+/**
+ * Renames legacy lists for copying onto a user when their address is linked.
+ * Each copy takes the lowest number from 2 up whose slug, compared
+ * case-insensitively like the `citext` column, is free among `takenSlugs` and
+ * the earlier copies: legacy lists can share a slug, or share one once
+ * truncated to fit the suffix.
+ */
+export function numberLegacyListCopies<T extends ListLabel>(
+  takenSlugs: readonly string[],
+  lists: readonly T[],
+): T[] {
+  const taken = new Set(takenSlugs.map((slug) => slug.toLowerCase()));
+  return lists.map((list) => {
+    for (let n = 2; ; n++) {
+      const slug = withSuffix(list.slug, `-${n}`);
+      if (!taken.has(slug.toLowerCase())) {
+        taken.add(slug.toLowerCase());
+        return { ...list, name: withSuffix(list.name, ` ${n}`), slug };
+      }
+    }
+  });
+}
+
+function withSuffix(label: string, suffix: string) {
+  return `${label.slice(0, LIST_LABEL_LENGTH - suffix.length)}${suffix}`;
+}

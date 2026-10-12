@@ -1,3 +1,4 @@
+import { useDisplayCurrency } from "@/hooks/use-display-currency";
 import { useUserState } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
@@ -24,9 +25,9 @@ import {
   createRegularListSchema,
   createSaleListSchema,
   createWantListSchema,
-  defaultCurrencies,
   type ListType,
 } from "../../lib/universal/schema/objekt-list";
+import CurrencySelect from "../misc/currency-select";
 import Portal from "../portal";
 import { Button } from "../ui/button";
 import {
@@ -204,6 +205,7 @@ function RegularForm({ onCreated }: FormProps) {
 }
 
 function SaleForm({ onCreated }: FormProps) {
+  const { currency } = useDisplayCurrency();
   const mutation = useMutation({
     mutationFn: $createObjektList,
     onError: (error) => {
@@ -216,7 +218,7 @@ function SaleForm({ onCreated }: FormProps) {
       type: "sale",
       name: "",
       description: undefined,
-      currency: "",
+      currency,
     },
   });
 
@@ -395,30 +397,13 @@ function CurrencyField() {
       name="currency"
       render={({ field, fieldState }) => (
         <Field data-invalid={fieldState.invalid}>
-          <FieldLabel>{m.list_currency()}</FieldLabel>
-          <Input
-            placeholder="USD"
-            maxLength={3}
-            value={field.value ?? ""}
-            onChange={(e) =>
-              field.onChange(e.target.value === "" ? undefined : e.target.value)
-            }
+          <FieldLabel htmlFor="currency">{m.list_currency()}</FieldLabel>
+          <CurrencySelect
+            id="currency"
+            name="currency"
+            value={field.value ?? null}
+            onValueChange={field.onChange}
           />
-          <div className="flex flex-wrap gap-1">
-            {defaultCurrencies.map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() =>
-                  field.onChange(field.value === c ? undefined : c)
-                }
-                className="rounded-md border px-2 py-0.5 text-xs data-[active=true]:bg-accent"
-                data-active={field.value?.toUpperCase() === c}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
           <FieldDescription>{m.list_currency_description()}</FieldDescription>
           <FieldError errors={[fieldState.error]} />
         </Field>

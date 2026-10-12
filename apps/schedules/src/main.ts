@@ -1,13 +1,20 @@
-import { BunRuntime, BunServices } from "@effect/platform-bun";
+import { cleanupLayer } from "@apollo/queue";
+import { BunRuntime } from "@effect/platform-bun";
 import { Effect, Layer } from "effect";
-import { FetchHttpClient } from "effect/unstable/http";
-import { CosmoKey } from "./cosmo-key";
 import { DatabaseWeb } from "./db";
-import { DatabaseIndexer } from "./db-indexer";
-import { Exchangerate } from "./exchangerate";
-import { ProxiedToken } from "./proxied-token";
+import { tradeNotificationsWorker } from "./queues/trade-notifications";
 import { redisLayer } from "./redis";
+import { servicesLayer } from "./services";
 import { createResilientTask, SCHEDULED_TASKS } from "./task";
+
+/**
+ * Every queue worker, plus the cleanup that trims old job ids.
+ * They run from the moment the layer is built until shutdown.
+ */
+const queueWorkers = Layer.mergeAll(
+  tradeNotificationsWorker,
+  cleanupLayer,
+).pipe(Layer.provide([DatabaseWeb.layer, redisLayer]));
 
 const main = Effect.gen(function* () {
   yield* Effect.logInfo("Starting scheduled tasks...");
@@ -22,18 +29,5 @@ const main = Effect.gen(function* () {
 });
 
 BunRuntime.runMain(
-  main.pipe(
-    Effect.provide(
-      Layer.mergeAll(
-        BunServices.layer,
-        FetchHttpClient.layer,
-        DatabaseWeb.layer,
-        DatabaseIndexer.layer,
-        ProxiedToken.layer,
-        CosmoKey.layer,
-        Exchangerate.layer,
-        redisLayer,
-      ),
-    ),
-  ),
+  main.pipe(Effect.provide(Layer.mergeAll(servicesLayer, queueWorkers))),
 );

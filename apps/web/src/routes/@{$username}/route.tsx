@@ -9,10 +9,12 @@ import {
   TwitterBadge,
 } from "@/components/profile/profile-badges";
 import ProfileTabs from "@/components/profile/profile-tabs";
+import ReportButton from "@/components/profile/report-button";
 import UserAvatar from "@/components/profile/user-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
+import { defineHead } from "@/lib/meta";
 import { tokenBalancesQuery } from "@/lib/queries/como";
 import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
 import { pinsQuery } from "@/lib/queries/profile";
@@ -54,6 +56,14 @@ export const Route = createFileRoute("/@{$username}")({
 
     return { account, target };
   },
+  /**
+   * Titles the not-found state, which this layout renders in place of any
+   * child route.
+   */
+  head: ({ match }) =>
+    match.status === "notFound"
+      ? defineHead({ title: m.error_not_found_title() })
+      : {},
 });
 
 function RouteComponent() {
@@ -110,6 +120,14 @@ function RouteComponent() {
 
                     <div className="flex items-center gap-0.5">
                       <CopyAddressButton address={target.cosmo.address} />
+                      {account &&
+                        target.user &&
+                        account.user.id !== target.user.id && (
+                          <ReportButton
+                            userId={target.user.id}
+                            username={target.cosmo.username}
+                          />
+                        )}
                       {/* content gets portaled in */}
                       <div
                         className="flex items-center empty:hidden"

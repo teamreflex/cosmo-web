@@ -16,12 +16,14 @@ type Props = {
   artistId: ValidArtist;
   value: CosmoPublicUser | null;
   onChange: (user: CosmoPublicUser | null) => void;
+  invalid?: boolean;
 };
 
 export default function CosmoUserCombobox({
   artistId,
   value,
   onChange,
+  invalid,
 }: Props) {
   const [query, setQuery] = useState("");
   const [debouncedQuery] = useDebounceValue(query, 500);
@@ -60,7 +62,10 @@ export default function CosmoUserCombobox({
 
   if (value) {
     return (
-      <div className="flex items-center gap-3 rounded-md border border-input bg-transparent px-3 py-2">
+      <div
+        aria-invalid={invalid}
+        className="flex items-center gap-3 rounded-md border border-input bg-transparent px-3 py-2 text-foreground aria-invalid:border-destructive/60"
+      >
         <Avatar className="size-8">
           <AvatarImage src={getProfileImage(value)} alt={value.nickname} />
           <AvatarFallback>

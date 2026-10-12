@@ -1,8 +1,15 @@
 import type { ValidArtist } from "@apollo/cosmo/types/common";
+import { createCn } from "cn/config";
 import * as z from "zod";
 import { env } from "./env/client";
 
-export { cn } from "cn";
+/**
+ * Class merging that knows the app's custom `--text-xxs` size, which it would
+ * otherwise read as a text colour and drop beside one.
+ */
+export const cn = createCn({
+  extend: { classGroups: { "font-size": [{ text: ["xxs"] }] } },
+});
 
 export type PropsWithClassName<T> = T & { className?: string };
 
@@ -13,6 +20,11 @@ export function baseUrl() {
   const scheme = env.VITE_APP_ENV === "development" ? "http" : "https";
   return `${scheme}://${env.VITE_BASE_URL}`;
 }
+
+/**
+ * Invite link to the Apollo Discord server.
+ */
+export const DISCORD_INVITE_URL = "https://discord.gg/A72VRX8FgK";
 
 /**
  * Format a price in the given currency. Falls back to a manual format string
@@ -29,6 +41,49 @@ export function formatPrice(price: number, currency: string) {
   } catch {
     return `${price.toLocaleString("en", { maximumFractionDigits: 2 })} ${currency}`;
   }
+}
+
+/**
+ * A converted price: `text` to show, and `full` with every whole unit for a
+ * tooltip and screen readers when `text` is compact.
+ */
+export type ConvertedPrice = {
+  text: string;
+  full: string;
+};
+
+/**
+ * Format an amount converted into another currency. Conversions are
+ * approximate, so amounts from 1,000 drop minor units and amounts from
+ * 1,000,000 use the locale's compact notation (e.g. "₩85.3M", "₩8530만").
+ */
+export function formatConvertedPrice(
+  amount: number,
+  currency: string,
+  locale: string,
+): ConvertedPrice {
+  const full = new Intl.NumberFormat("en", {
+    style: "currency",
+    currency,
+    ...(amount >= 1000 && {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }),
+  }).format(amount);
+
+  if (amount < 1_000_000) {
+    return { text: full, full };
+  }
+
+  return {
+    text: new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency,
+      notation: "compact",
+      maximumSignificantDigits: 3,
+    }).format(amount),
+    full,
+  };
 }
 
 /**

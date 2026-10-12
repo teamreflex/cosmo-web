@@ -21,8 +21,6 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 
 type Props = {
-  member: string;
-  season: string;
   deficits: EditionLedger["deficits"];
   label: string;
 };
@@ -84,7 +82,6 @@ function WantListItem(props: Props & { list: ObjektList; onDone: () => void }) {
           objektListId: props.list.id,
           objekts: props.deficits.map((deficit) => ({
             slug: deficit.slug,
-            collectionName: `${props.season} ${props.member} ${deficit.collectionNo}${deficit.slug.slice(-1).toUpperCase()}`,
             quantity: deficit.needed,
           })),
         },

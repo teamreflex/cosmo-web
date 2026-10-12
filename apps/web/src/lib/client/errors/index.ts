@@ -1,20 +1,24 @@
+import { formatAccountError } from "./accounts";
 import { formatAuthError } from "./auth";
 import { formatBinderError } from "./binders";
 import { formatCollectionError } from "./collections";
 import { type Context, formatListError } from "./lists";
 import { formatRateLimitError } from "./rate-limit";
+import { formatReportError } from "./reports";
 
 export {
+  formatAccountError,
   formatAuthError,
   formatBinderError,
   formatCollectionError,
   formatListError,
   formatRateLimitError,
+  formatReportError,
 };
 
 /**
- * Localizes any expected error code (list/binder/auth/collection),
- * falling back to the raw message for genuine errors.
+ * Localizes any expected error code (list/binder/auth/collection/report/
+ * account), falling back to the raw message for genuine errors.
  */
 // oxlint-disable-next-line anti-slop/no-unknown-parameters -- boundary parser; caught errors are genuinely unknown
 export function formatError(error: unknown, context: Context = {}): string {
@@ -23,6 +27,8 @@ export function formatError(error: unknown, context: Context = {}): string {
     formatBinderError(error) ??
     formatAuthError(error) ??
     formatCollectionError(error) ??
+    formatReportError(error) ??
+    formatAccountError(error) ??
     formatRateLimitError(error);
 
   if (message !== null) {

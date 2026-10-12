@@ -1,5 +1,6 @@
 import { collectionDataSources } from "@apollo/util";
 import * as z from "zod";
+import { currencySchema } from "./currency";
 
 const emailSchema = z.email("Invalid email address");
 const passwordSchema = z
@@ -51,4 +52,5 @@ export const updateSocialsSchema = z.object({
 export const settingsSchema = z.object({
   gridColumns: z.coerce.number<number>().min(3).max(8),
   collectionMode: z.enum(collectionDataSources),
+  currency: currencySchema,
 });

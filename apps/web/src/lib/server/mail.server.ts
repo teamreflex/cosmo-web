@@ -84,7 +84,7 @@ export async function sendPasswordResetEmail({ to, url }: EmailProps) {
 }
 
 /**
- * Send a account deletion email to the user.
+ * Send an account deletion email to the user.
  */
 export async function sendAccountDeletionEmail({ to, url }: EmailProps) {
   await ses.sendEmail({
@@ -99,10 +99,11 @@ export async function sendAccountDeletionEmail({ to, url }: EmailProps) {
           Data: `
   <html>
     <body>
-      <p>Click the link below to delete your ${clientEnv.VITE_APP_NAME} account.</p>
+      <p>Open the link below to confirm the deletion of your ${clientEnv.VITE_APP_NAME} account. Your account is deleted only once you confirm on that page.</p>
       <a href="${url}">${url}</a>
       <br />
-      <p>This action cannot be undone.</p>
+      <p>Deleting your account permanently deletes it, along with your lists, binders, pins and API keys. It can't be restored.</p>
+      <p>The link expires in 24 hours. If you didn't ask to delete your account, ignore this email.</p>
       <br />
       <p>Replies to this address are not monitored.</p>
     </body>

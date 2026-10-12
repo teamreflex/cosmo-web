@@ -1,9 +1,5 @@
 import * as z from "zod";
 
-export const searchUsersSchema = z.object({
-  query: z.string().min(3),
-});
-
 export const createApiKeySchema = z.object({
   userId: z.string().min(1),
   name: z.string().min(1).max(32),

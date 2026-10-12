@@ -13,3 +13,6 @@ const client = new SQL({
 });
 
 export const db = drizzle({ client, relations });
+
+export type WebTx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+export type DbOrTx = typeof db | WebTx;

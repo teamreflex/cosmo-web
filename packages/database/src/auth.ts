@@ -6,8 +6,13 @@ import {
   boolean,
   integer,
   index,
+  pgEnum,
+  varchar,
 } from "drizzle-orm/pg-core";
 import { citext } from "./custom";
+
+// mirrors the roles in @apollo/auth
+export const userRole = pgEnum("user_role", ["user", "moderator", "admin"]);
 
 export const user = pgTable(
   "user",
@@ -33,6 +38,13 @@ export const user = pgTable(
     discord: text("discord"),
     twitter: text("twitter"),
     showSocials: boolean("show_socials").notNull().default(false),
+    // display currency (ISO 4217): USD or a code with an fx_rates row
+    currency: varchar("currency", { length: 3 }).notNull().default("USD"),
+    // admin plugin
+    role: userRole("role").notNull().default("user"),
+    banned: boolean("banned").notNull().default(false),
+    banReason: text("ban_reason"),
+    banExpires: timestamp("ban_expires", { mode: "date" }),
   },
   (t) => [
     index("user_username_idx").on(t.username),
@@ -56,6 +68,8 @@ export const session = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
+    // admin plugin
+    impersonatedBy: text("impersonated_by"),
   },
   (t) => [index("session_userId_idx").on(t.userId)],
 );

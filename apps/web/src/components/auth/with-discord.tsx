@@ -5,13 +5,18 @@ import { IconBrandDiscordFilled } from "@tabler/icons-react";
 import { useTransition } from "react";
 import { Button } from "../ui/button";
 
-export default function SignInWithDiscord() {
+type Props = {
+  callbackURL?: string;
+};
+
+export default function SignInWithDiscord({ callbackURL }: Props) {
   const [isPending, startTransition] = useTransition();
 
   function handleRedirect() {
     startTransition(async () => {
       await authClient.signIn.social({
         provider: "discord",
+        callbackURL,
         fetchOptions: {
           onSuccess: () => {
             track("sign-in");

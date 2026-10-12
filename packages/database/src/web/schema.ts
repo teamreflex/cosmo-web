@@ -1,4 +1,4 @@
-import { eq, sql } from "drizzle-orm";
+import { inArray, isNull, sql } from "drizzle-orm";
 import {
   type AnyPgColumn,
   bigint,
@@ -21,11 +21,18 @@ import {
 } from "drizzle-orm/pg-core";
 import { user } from "../auth";
 import { citext, createdAt, createdTimestamp } from "../custom";
-import type {
-  CosmoGravityType,
-  CosmoPollType,
-  EventTypeKey,
-  NotificationPayload,
+import {
+  type CosmoGravityType,
+  type CosmoPollType,
+  type EventTypeKey,
+  type ReportReason,
+  type StaffAuditAction,
+  type StaffAuditDetail,
+  type StaffAuditTargetType,
+  cosmoLinkEvents,
+  cosmoLinkReasons,
+  reportStatuses,
+  reportTargetTypes,
 } from "./types";
 
 export * from "../auth";
@@ -36,8 +43,17 @@ export const listType = pgEnum("list_type", [
   "want",
   "sale",
 ]);
-export const notificationType = pgEnum("notification_type", ["list_match"]);
+export const notificationType = pgEnum("notification_type", [
+  // the actor added something you want to their have list
+  "trade_have",
+  // the actor wants something on your have list
+  "trade_want",
+]);
 export const binderLayout = pgEnum("binder_layout", ["3x3", "2x2", "4x3"]);
+export const reportTargetType = pgEnum("report_target_type", reportTargetTypes);
+export const reportStatus = pgEnum("report_status", reportStatuses);
+export const cosmoLinkEvent = pgEnum("cosmo_link_event", cosmoLinkEvents);
+export const cosmoLinkReason = pgEnum("cosmo_link_reason", cosmoLinkReasons);
 
 export const cosmoAccounts = pgTable(
   "cosmo_account",
@@ -56,6 +72,8 @@ export const cosmoAccounts = pgTable(
     index("cosmo_account_polygon_address_idx").on(t.polygonAddress),
     index("cosmo_account_cosmo_id_idx").on(t.cosmoId),
     uniqueIndex("cosmo_account_username_address_idx").on(t.username, t.address),
+    uniqueIndex("cosmo_account_user_id_unique_idx").on(t.userId),
+    // covered by the unique index; dropped in the follow-up release with user.is_admin
     index("cosmo_account_user_id_idx").on(t.userId),
   ],
 );
@@ -65,6 +83,40 @@ export const cosmoAccountChanges = pgTable("cosmo_account_changes", {
   username: citext("username", { length: 24 }).notNull(),
   createdAt: timestamp("created_at", { mode: "string" }).notNull().defaultNow(),
 });
+
+/**
+ * Append-only history of COSMO links: a row each time an address is linked to
+ * or unlinked from a user, written in the transaction that changes
+ * `cosmo_account.user_id`, which stays the current link. `user_id` and
+ * `staff_id` have no foreign key, so the rows outlive deleted accounts.
+ */
+export const cosmoLinkAudit = pgTable(
+  "cosmo_link_audit",
+  {
+    id: serial("id").primaryKey(),
+    createdAt,
+    cosmoAccountId: integer("cosmo_account_id")
+      .notNull()
+      .references(() => cosmoAccounts.id),
+    userId: text("user_id").notNull(),
+    event: cosmoLinkEvent("event").notNull(),
+    reason: cosmoLinkReason("reason").notNull(),
+    staffId: text("staff_id"),
+  },
+  (t) => [
+    index("cosmo_link_audit_cosmo_account_idx").on(t.cosmoAccountId, t.id),
+    index("cosmo_link_audit_user_idx").on(t.userId, t.id),
+    check(
+      "cosmo_link_audit_staff_chk",
+      sql`(${t.reason} = 'staff-move') = (${t.staffId} IS NOT NULL)`,
+    ),
+    // verifying only links and deleting only unlinks; staff move either way
+    check(
+      "cosmo_link_audit_event_chk",
+      sql`(${t.reason} <> 'verified' OR ${t.event} = 'linked') AND (${t.reason} <> 'account-deleted' OR ${t.event} = 'unlinked')`,
+    ),
+  ],
+);
 
 export const lockedObjekts = pgTable(
   "locked_objekts",
@@ -214,39 +266,70 @@ export const binderEntries = pgTable(
   ],
 );
 
+/**
+ * One row per event. Subject columns are nullable so a future type can do
+ * without a list or an actor; the check says which ones each type requires.
+ * The bell groups rows into bursts when it reads them.
+ */
 export const notifications = pgTable(
   "notifications",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    createdAt,
-    userId: text("user_id")
+    createdAt: timestamp("created_at", { mode: "date", withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    // better-auth ids are 32 characters
+    userId: varchar("user_id", { length: 32 })
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     type: notificationType("type").notNull(),
-    payload: jsonb("payload").$type<NotificationPayload>().notNull(),
-    readAt: timestamp("read_at", { mode: "date" }),
+    readAt: timestamp("read_at", { mode: "date", withTimezone: true }),
+    // deleting the actor's account removes what they caused
+    actorId: varchar("actor_id", { length: 32 }).references(() => user.id, {
+      onDelete: "cascade",
+    }),
+    listId: uuid("list_id").references(() => objektLists.id, {
+      onDelete: "cascade",
+    }),
+    collectionId: varchar("collection_id", { length: 36 }), // slug: atom01-jinsoul-101z
   },
   (t) => [
-    index("notifications_user_unread_idx").on(t.userId, t.readAt),
-    uniqueIndex("notifications_list_match_dedup_idx")
-      .on(
-        t.userId,
-        sql`(payload->>'sourceUserId')`,
-        sql`(payload->>'collectionId')`,
-        sql`(payload->>'direction')`,
-      )
-      .where(eq(t.type, "list_match")),
+    /**
+     * The bell's pages, a backward scan for `order by created_at desc, id desc`.
+     * One job's rows share `created_at`, so `id` breaks the keyset ties.
+     */
+    index("notifications_user_created_idx").on(t.userId, t.createdAt, t.id),
+    // the polled unread badge reads only unread rows
+    index("notifications_user_unread_idx")
+      .on(t.userId, t.createdAt)
+      .where(isNull(t.readAt)),
+    /**
+     * An actor re-adding a collection never notifies the same user twice.
+     * Leading with the actor serves the cascade when their account is deleted.
+     */
+    uniqueIndex("notifications_trade_dedup_idx")
+      .on(t.actorId, t.userId, t.type, t.collectionId)
+      .where(inArray(t.type, ["trade_have", "trade_want"])),
+    // serves the cascade when the list is deleted
+    index("notifications_list_idx").on(t.listId),
+    check(
+      "notifications_subject_chk",
+      sql`${t.type} not in ('trade_have', 'trade_want') or num_nonnulls(${t.actorId}, ${t.listId}, ${t.collectionId}) = 3`,
+    ),
   ],
 );
 
 /**
- * Named cursor for the indexer outbox drain. The drain advances `seq`
- * inside the same transaction as the entry deletes so a crash cannot
- * replay already-applied outbox rows.
+ * Named cursor for the indexer outbox drain. The drain locks the row, then
+ * advances `seq` inside the same transaction as the entry deletes, so a crash
+ * or an overlapping run cannot replay already-applied outbox rows.
+ * `chain_time` is the newest chain timestamp among the drained rows, whether
+ * or not they changed anything; null until the first drain records one.
  */
 export const listDrainCursor = pgTable("list_drain_cursor", {
   name: text("name").primaryKey(),
   seq: bigint("seq", { mode: "bigint" }).notNull(),
+  chainTime: timestamp("chain_time", { mode: "date", withTimezone: true }),
 });
 
 export const eras = pgTable(
@@ -330,7 +413,11 @@ export const fxRates = pgTable(
   },
   (t) => [
     primaryKey({ columns: [t.date, t.currency] }),
-    index("fx_rates_currency_idx").on(t.currency),
+    // latest rate per currency
+    index("fx_rates_currency_date_idx").on(
+      t.currency,
+      t.date.desc().nullsFirst(),
+    ),
   ],
 );
 
@@ -342,6 +429,22 @@ export const collectionPriceStats = pgTable("collection_price_stats", {
   maxPriceUsd: real("max_price_usd").notNull(),
   updatedAt: timestamp("updated_at", { mode: "date" }).notNull().defaultNow(),
 });
+
+/**
+ * Daily snapshot of `collection_price_stats`, written by the same job. The last
+ * run of each UTC day wins, so a collection has at most one row per day.
+ */
+export const collectionPriceHistory = pgTable(
+  "collection_price_history",
+  {
+    collectionId: varchar("collection_id", { length: 36 }).notNull(),
+    date: date("date", { mode: "string" }).notNull(),
+    floorUsd: real("floor_usd").notNull(),
+    medianUsd: real("median_usd").notNull(),
+    listingCount: integer("listing_count").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.collectionId, t.date] })],
+);
 
 export const cosmoTokens = pgTable(
   "cosmo_tokens",
@@ -437,6 +540,71 @@ export const polygonVotes = pgTable(
     index("polygon_votes_contract_poll_id_idx").on(t.contract, t.pollId),
   ],
 );
+
+// #region Moderation
+export const reports = pgTable(
+  "reports",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    createdAt,
+    reporterId: text("reporter_id").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    targetType: reportTargetType("target_type").notNull(),
+    targetId: text("target_id").notNull(),
+    reason: varchar("reason", { length: 32 }).$type<ReportReason>().notNull(),
+    note: varchar("note", { length: 1000 }),
+    status: reportStatus("status").notNull().default("open"),
+    resolvedBy: text("resolved_by").references(() => user.id, {
+      onDelete: "set null",
+    }),
+    resolvedAt: timestamp("resolved_at", { mode: "date" }),
+  },
+  (t) => [
+    // one open report per reporter and target; escalated reports are still open
+    uniqueIndex("reports_open_reporter_target_idx")
+      .on(t.reporterId, t.targetType, t.targetId)
+      .where(sql`${t.status} IN ('open', 'escalated')`),
+    // serves the staff queue's keyset paging
+    index("reports_status_created_idx").on(t.status, t.createdAt, t.id),
+    index("reports_target_idx").on(t.targetType, t.targetId),
+    check(
+      "reports_resolved_chk",
+      sql`(${t.status} IN ('resolved', 'dismissed')) = (${t.resolvedAt} IS NOT NULL)`,
+    ),
+  ],
+);
+
+/**
+ * Append-only log of staff reads and actions. `staff_id` has no foreign key,
+ * so the rows outlive a staff member's deleted account.
+ */
+export const staffAudit = pgTable(
+  "staff_audit",
+  {
+    id: serial("id").primaryKey(),
+    createdAt,
+    staffId: text("staff_id").notNull(),
+    action: varchar("action", { length: 48 })
+      .$type<StaffAuditAction>()
+      .notNull(),
+    targetType: varchar("target_type", { length: 16 })
+      .$type<StaffAuditTargetType>()
+      .notNull(),
+    targetId: text("target_id").notNull(),
+    reportId: uuid("report_id").references(() => reports.id, {
+      onDelete: "set null",
+    }),
+    detail: jsonb("detail").$type<StaffAuditDetail>(),
+  },
+  (t) => [
+    index("staff_audit_staff_idx").on(t.staffId, t.id),
+    index("staff_audit_action_idx").on(t.action, t.id),
+    index("staff_audit_report_idx").on(t.reportId),
+    index("staff_audit_target_idx").on(t.targetType, t.targetId),
+  ],
+);
+// #endregion
 
 // #region Legacy
 export const lists = pgTable(
