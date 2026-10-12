@@ -95,3 +95,10 @@ type CollectionStats @entity {
   objektCount: Int!
   spunCount: Int!
 }
+
+type CollectionMarketStats @entity {
+  collectionId: ID! # joins to collection.id
+  floorUsd: Float!
+  listingCount: Int!
+  lastListedAt: DateTime!
+}

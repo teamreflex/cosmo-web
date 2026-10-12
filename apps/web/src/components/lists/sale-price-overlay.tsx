@@ -38,7 +38,7 @@ export default function SalePriceOverlay({
     atFloor || quantity > 1 ? (
       <>
         {atFloor && (
-          <PriceBadge tone="floor">{m.list_sale_floor_badge()}</PriceBadge>
+          <PriceBadge tone="floor">{m.market_floor()}</PriceBadge>
         )}
         {quantity > 1 && (
           <PriceBadge tone="neutral">

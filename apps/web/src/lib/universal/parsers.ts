@@ -4,6 +4,7 @@ import {
   validSorts,
 } from "@apollo/cosmo/types/common";
 import * as z from "zod";
+import { marketListedWindows, marketSorts } from "./market";
 import { spinOutcomes, transferTypes } from "./transfers";
 
 // cap on distinct filter values parsed from a URL; anything longer hits HTTP
@@ -63,6 +64,37 @@ export const objektIndexBackendSchema = cosmoSchema
   .omit({ transferable: true, gridable: true })
   .extend({
     page: z.coerce.number().int().nonnegative().default(0),
+    artists: z.string().array().default([]),
+  });
+
+// market page frontend - the sort is market-specific, prices are in the viewer's currency
+export const marketFrontendSchema = cosmoSchema
+  .omit({ sort: true, transferable: true, gridable: true })
+  .extend({
+    sort: z.enum(marketSorts).nullish().catch(null),
+    listed: z.enum(marketListedWindows).nullish().catch(null),
+    price_min: z.coerce.number().nonnegative().nullish().catch(null),
+    price_max: z.coerce.number().nonnegative().nullish().catch(null),
+  })
+  .partial();
+
+// market keyset cursor - the sort values of the previous page's last row
+export const marketCursorSchema = z.object({
+  id: z.string(),
+  floorUsd: z.number(),
+  listingCount: z.number().int(),
+  lastListedAt: z.iso.datetime(),
+});
+
+// market page backend - the price range arrives as USD floor bounds
+export const marketBackendSchema = cosmoSchema
+  .omit({ sort: true, transferable: true, gridable: true })
+  .extend({
+    sort: z.enum(marketSorts).nullish().catch(null),
+    listed: z.enum(marketListedWindows).nullish().catch(null),
+    minFloorUsd: z.number().optional(),
+    maxFloorUsd: z.number().optional(),
+    cursor: marketCursorSchema.optional(),
     artists: z.string().array().default([]),
   });
 
@@ -164,6 +196,26 @@ export const progressLeaderboardBackendSchema = z.object({
   onlineType: z.enum(validOnlineTypes).nullish().default(null),
   season: z.string().nullish().default(null),
 });
+
+/**
+ * Market page equivalent of normalizeFilters: the market sort replaces the
+ * cosmo sort and the ownership flags never apply. The price range is left
+ * out, since the query sends it converted to USD.
+ */
+export function normalizeMarketFilters(
+  data: z.infer<typeof marketFrontendSchema>,
+) {
+  return {
+    sort: data.sort,
+    listed: data.listed,
+    season: data.season,
+    class: data.class,
+    on_offline: data.on_offline,
+    member: data.member,
+    artist: data.artist,
+    collectionNo: data.collectionNo,
+  };
+}
 
 /**
  * Ensures extra query params are removed and don't trigger queryKey changes.

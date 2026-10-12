@@ -1,3 +1,4 @@
+import type { MetadataDialogTarget } from "@/hooks/use-metadata-dialog";
 import { useObjektSerial } from "@/hooks/use-objekt-serial";
 import { objektQuery } from "@/lib/queries/objekt-queries";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -11,7 +12,7 @@ import MetadataPanel from "./metadata-panel";
 
 type Props = {
   slug: string;
-  initialSerial?: number;
+  target?: MetadataDialogTarget;
 };
 
 export default function MetadataContent(props: Props) {
@@ -20,7 +21,11 @@ export default function MetadataContent(props: Props) {
   // prefer the caller's intent over the URL, since the URL navigation racing
   // with this component's mount can leave `serial` stale on first render
   const [tab, setTab] = useState<ObjektMetadataTab>(() =>
-    (props.initialSerial ?? serial) !== undefined ? "serials" : "metadata",
+    props.target?.type === "tab"
+      ? props.target.tab
+      : props.target?.type === "serial" || serial !== undefined
+        ? "serials"
+        : "metadata",
   );
 
   return (

@@ -8,6 +8,7 @@ import {
   numeric,
   pgSchema,
   pgTable,
+  real,
   text,
   timestamp,
   uuid,
@@ -157,4 +158,18 @@ export const collectionStats = pgTable("collection_stats", {
   collectionId: varchar("collection_id", { length: 36 }).primaryKey(),
   objektCount: integer("objekt_count").notNull(),
   spunCount: integer("spun_count").notNull(),
+});
+
+// floor, listing count and latest listing of each collection's priced sale
+// listings, synced by apps/schedules and read by apps/web's market. a row
+// exists only while the collection is listed; the processor never touches it.
+export const collectionMarketStats = pgTable("collection_market_stats", {
+  // joins to collection.id
+  collectionId: varchar("collection_id", { length: 36 }).primaryKey(),
+  floorUsd: real("floor_usd").notNull(),
+  listingCount: integer("listing_count").notNull(),
+  lastListedAt: timestamp("last_listed_at", {
+    mode: "date",
+    withTimezone: true,
+  }).notNull(),
 });

@@ -1,4 +1,5 @@
 import { getLocale } from "@/i18n/runtime";
+import type { GetAccount } from "@/lib/functions/core";
 import { currentAccountQuery } from "@/lib/queries/core";
 import { DEFAULT_CURRENCY } from "@/lib/universal/schema/currency";
 import { formatConvertedPrice } from "@/lib/utils";
@@ -6,25 +7,31 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 
 /**
  * The currency prices are shown in, a converter from USD into it, and
- * formatters for amounts in either. Signed out viewers and a currency whose
- * rate is missing fall back to USD.
+ * formatters for amounts in either.
  */
 export function useDisplayCurrency() {
   const { data: account } = useSuspenseQuery(currentAccountQuery);
-
-  const { currency, rate } =
-    account?.fxRateToUsd != null
-      ? { currency: account.user.currency, rate: account.fxRateToUsd }
-      : { currency: DEFAULT_CURRENCY, rate: 1 };
+  const { currency, rateToUsd } = displayCurrency(account);
   const format = (amount: number) =>
     formatConvertedPrice(amount, currency, getLocale());
 
   return {
     currency,
-    fromUsd: (usd: number) => usd / rate,
+    rateToUsd,
+    fromUsd: (usd: number) => usd / rateToUsd,
     format,
-    formatUsd: (usd: number) => format(usd / rate),
+    formatUsd: (usd: number) => format(usd / rateToUsd),
   };
+}
+
+/**
+ * The viewer's display currency and its USD rate. Signed out viewers and a
+ * currency whose rate is missing fall back to USD.
+ */
+export function displayCurrency(account: GetAccount | null) {
+  return account?.fxRateToUsd != null
+    ? { currency: account.user.currency, rateToUsd: account.fxRateToUsd }
+    : { currency: DEFAULT_CURRENCY, rateToUsd: 1 };
 }
 
 /**
