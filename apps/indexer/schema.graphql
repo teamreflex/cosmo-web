@@ -70,12 +70,15 @@ type Vote @entity {
 
 type ListEventOutbox @entity {
   id: ID! # auto-generated bigserial seq
-  transferId: String!
-  fromAddress: String!
-  toAddress: String!
+  type: String! # transfer | transferability
+  transferId: String # transfer rows only
+  fromAddress: String # transfer rows only
+  toAddress: String # transfer rows only
+  transferable: Boolean # transferability rows only
   collectionId: String!
   tokenId: String!
   timestamp: DateTime!
+  hash: String # transaction hash
   createdAt: DateTime! @index
 }
 

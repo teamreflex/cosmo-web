@@ -1,10 +1,10 @@
 {
+  "id": "e027633f-9d64-418f-83e7-b85f912349cc",
+  "prevIds": [
+    "6213a753-a256-48fd-a207-475dcb7d1056"
+  ],
   "version": "8",
   "dialect": "postgres",
-  "id": "3c2e251d-05ab-4041-9cd9-e25af3ff3507",
-  "prevIds": [
-    "4e6fff71-feb9-40fc-bcf2-621443389047"
-  ],
   "ddl": [
     {
       "values": [
@@ -48,8 +48,7 @@
     },
     {
       "values": [
-        "trade_have",
-        "trade_want"
+        "list_match"
       ],
       "name": "notification_type",
       "entityType": "enums",
@@ -115,6 +114,12 @@
     {
       "isRlsEnabled": false,
       "name": "collection_data",
+      "entityType": "tables",
+      "schema": "public"
+    },
+    {
+      "isRlsEnabled": false,
+      "name": "collection_price_history",
       "entityType": "tables",
       "schema": "public"
     },
@@ -982,6 +987,71 @@
       "entityType": "columns",
       "schema": "public",
       "table": "collection_data"
+    },
+    {
+      "type": "varchar(36)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "collection_id",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "collection_price_history"
+    },
+    {
+      "type": "date",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "date",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "collection_price_history"
+    },
+    {
+      "type": "real",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "floor_usd",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "collection_price_history"
+    },
+    {
+      "type": "real",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "median_usd",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "collection_price_history"
+    },
+    {
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "listing_count",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "collection_price_history"
     },
     {
       "type": "varchar(36)",
@@ -2037,6 +2107,19 @@
       "table": "list_drain_cursor"
     },
     {
+      "type": "timestamp with time zone",
+      "typeSchema": null,
+      "notNull": false,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "chain_time",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "list_drain_cursor"
+    },
+    {
       "type": "serial",
       "typeSchema": null,
       "notNull": true,
@@ -2193,7 +2276,7 @@
       "table": "notifications"
     },
     {
-      "type": "timestamp with time zone",
+      "type": "timestamp",
       "typeSchema": null,
       "notNull": true,
       "dimensions": 0,
@@ -2206,7 +2289,7 @@
       "table": "notifications"
     },
     {
-      "type": "varchar(32)",
+      "type": "text",
       "typeSchema": null,
       "notNull": true,
       "dimensions": 0,
@@ -2232,7 +2315,20 @@
       "table": "notifications"
     },
     {
-      "type": "timestamp with time zone",
+      "type": "jsonb",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "name": "payload",
+      "entityType": "columns",
+      "schema": "public",
+      "table": "notifications"
+    },
+    {
+      "type": "timestamp",
       "typeSchema": null,
       "notNull": false,
       "dimensions": 0,
@@ -2240,45 +2336,6 @@
       "generated": null,
       "identity": null,
       "name": "read_at",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "notifications"
-    },
-    {
-      "type": "varchar(32)",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "actor_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "notifications"
-    },
-    {
-      "type": "uuid",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "list_id",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "notifications"
-    },
-    {
-      "type": "varchar(36)",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "collection_id",
       "entityType": "columns",
       "schema": "public",
       "table": "notifications"
@@ -3991,6 +4048,13 @@
           "asc": true,
           "nullsFirst": false,
           "opclass": null
+        },
+        {
+          "value": "date",
+          "isExpression": false,
+          "asc": false,
+          "nullsFirst": true,
+          "opclass": null
         }
       ],
       "isUnique": false,
@@ -3998,7 +4062,7 @@
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "fx_rates_currency_idx",
+      "name": "fx_rates_currency_date_idx",
       "entityType": "indexes",
       "schema": "public",
       "table": "fx_rates"
@@ -4273,14 +4337,7 @@
           "opclass": null
         },
         {
-          "value": "created_at",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        },
-        {
-          "value": "id",
+          "value": "read_at",
           "isExpression": false,
           "asc": true,
           "nullsFirst": false,
@@ -4289,34 +4346,6 @@
       ],
       "isUnique": false,
       "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "notifications_user_created_idx",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "notifications"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "user_id",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        },
-        {
-          "value": "created_at",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
-      ],
-      "isUnique": false,
-      "where": "(\"read_at\" is null)",
       "with": "",
       "method": "btree",
       "concurrently": false,
@@ -4329,13 +4358,6 @@
       "nameExplicit": true,
       "columns": [
         {
-          "value": "actor_id",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        },
-        {
           "value": "user_id",
           "isExpression": false,
           "asc": true,
@@ -4343,47 +4365,33 @@
           "opclass": null
         },
         {
-          "value": "type",
-          "isExpression": false,
+          "value": "(payload->>'sourceUserId')",
+          "isExpression": true,
           "asc": true,
           "nullsFirst": false,
           "opclass": null
         },
         {
-          "value": "collection_id",
-          "isExpression": false,
+          "value": "(payload->>'collectionId')",
+          "isExpression": true,
+          "asc": true,
+          "nullsFirst": false,
+          "opclass": null
+        },
+        {
+          "value": "(payload->>'direction')",
+          "isExpression": true,
           "asc": true,
           "nullsFirst": false,
           "opclass": null
         }
       ],
       "isUnique": true,
-      "where": "\"type\" in ('trade_have', 'trade_want')",
+      "where": "\"type\" = 'list_match'",
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "notifications_trade_dedup_idx",
-      "entityType": "indexes",
-      "schema": "public",
-      "table": "notifications"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "list_id",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "notifications_list_idx",
+      "name": "notifications_list_match_dedup_idx",
       "entityType": "indexes",
       "schema": "public",
       "table": "notifications"
@@ -5153,40 +5161,6 @@
     {
       "nameExplicit": false,
       "columns": [
-        "actor_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "notifications_actor_id_user_id_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "notifications"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "list_id"
-      ],
-      "schemaTo": "public",
-      "tableTo": "objekt_lists",
-      "columnsTo": [
-        "id"
-      ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "notifications_list_id_objekt_lists_id_fkey",
-      "entityType": "fks",
-      "schema": "public",
-      "table": "notifications"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
         "objekt_list_id"
       ],
       "schemaTo": "public",
@@ -5331,6 +5305,17 @@
       "entityType": "pks",
       "schema": "public",
       "table": "binder_entries"
+    },
+    {
+      "columns": [
+        "collection_id",
+        "date"
+      ],
+      "nameExplicit": false,
+      "name": "collection_price_history_pkey",
+      "entityType": "pks",
+      "schema": "public",
+      "table": "collection_price_history"
     },
     {
       "columns": [
@@ -5720,13 +5705,6 @@
       "entityType": "checks",
       "schema": "public",
       "table": "cosmo_link_audit"
-    },
-    {
-      "value": "\"type\" not in ('trade_have', 'trade_want') or num_nonnulls(\"actor_id\", \"list_id\", \"collection_id\") = 3",
-      "name": "notifications_subject_chk",
-      "entityType": "checks",
-      "schema": "public",
-      "table": "notifications"
     },
     {
       "value": "(\"type\" = 'sale') = (\"currency\" IS NOT NULL)",

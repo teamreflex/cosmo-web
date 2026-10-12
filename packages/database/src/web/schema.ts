@@ -320,13 +320,16 @@ export const notifications = pgTable(
 );
 
 /**
- * Named cursor for the indexer outbox drain. The drain advances `seq`
- * inside the same transaction as the entry deletes so a crash cannot
- * replay already-applied outbox rows.
+ * Named cursor for the indexer outbox drain. The drain locks the row, then
+ * advances `seq` inside the same transaction as the entry deletes, so a crash
+ * or an overlapping run cannot replay already-applied outbox rows.
+ * `chain_time` is the newest chain timestamp among the drained rows, whether
+ * or not they changed anything; null until the first drain records one.
  */
 export const listDrainCursor = pgTable("list_drain_cursor", {
   name: text("name").primaryKey(),
   seq: bigint("seq", { mode: "bigint" }).notNull(),
+  chainTime: timestamp("chain_time", { mode: "date", withTimezone: true }),
 });
 
 export const eras = pgTable(

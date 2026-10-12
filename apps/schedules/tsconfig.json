@@ -1,7 +1,7 @@
 {
   "extends": "@apollo/typescript/tsconfig.bun.json",
 
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "tests/**/*.ts", "scripts/**/*.ts"],
   "exclude": ["node_modules", ".turbo", "dist"],
 
   "compilerOptions": {

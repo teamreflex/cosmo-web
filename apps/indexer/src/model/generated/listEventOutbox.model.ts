@@ -10,14 +10,20 @@ export class ListEventOutbox {
   @PrimaryGeneratedColumn({ type: "bigint" })
   id!: string;
 
-  @Column("varchar", { length: 36, nullable: false })
-  transferId!: string;
+  @Column("varchar", { length: 16, nullable: false, default: "transfer" })
+  type!: "transfer" | "transferability";
 
-  @Column("text", { nullable: false })
-  fromAddress!: string;
+  @Column("varchar", { length: 36, nullable: true })
+  transferId!: string | null;
 
-  @Column("text", { nullable: false })
-  toAddress!: string;
+  @Column("text", { nullable: true })
+  fromAddress!: string | null;
+
+  @Column("text", { nullable: true })
+  toAddress!: string | null;
+
+  @Column("boolean", { nullable: true })
+  transferable!: boolean | null;
 
   @Column("varchar", { length: 36, nullable: false })
   collectionId!: string;
@@ -27,6 +33,9 @@ export class ListEventOutbox {
 
   @Column("timestamp with time zone", { nullable: false })
   timestamp!: Date;
+
+  @Column("text", { nullable: true })
+  hash!: string | null;
 
   @Index()
   @Column("timestamp with time zone", {

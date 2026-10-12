@@ -1,12 +1,33 @@
 # Schedules App
 
-Effect-TS service that runs Apollo's cron-scheduled background tasks (syncing gravities, members, FX rates, price stats and their daily history, market stats; draining outboxes; clearing stats) and the workers for the web app's job queues (notification fan-outs). Runs on Bun via `BunRuntime`.
+Effect-TS service that runs Apollo's cron-scheduled background tasks (syncing gravities, members, FX rates, price stats and their daily history, market stats; draining the indexer outbox; clearing stats) and the workers for the web app's job queues (notification fan-outs). Runs on Bun via `BunRuntime`.
 
 ## Task model
 
 Each task is a `ScheduledTask` (`src/task.ts`): `{ name, cron, timezone?, effect }`. One file per task in `src/functions/`, registered in the `SCHEDULED_TASKS` array. `createResilientTask` forks each task as its own fiber: executions retry with exponential backoff (3 retries), any remaining failure is caught inside the repeat and logged with its cause, and the task then waits for the next cron tick — a failing iteration never kills the fiber or its siblings.
 
 **Adding a task:** create `src/functions/<name>.ts` exporting a `ScheduledTask`, register it in `SCHEDULED_TASKS`, and give it a `/** */` docblock stating what it does and why the cadence was chosen (see `sync-members.ts`).
+
+**Running one task:** `bun run task <name>` (`src/run-task.ts`) runs a registered task's effect once and exits, with the same services `main.ts` provides (`servicesLayer` in `src/services.ts`) but no queue workers and no retries, so a failure exits non-zero. Stop `bun run dev` first when the task is `drain-outbox`, since dev runs it at boot and every minute.
+
+## Outbox drain
+
+`drain-outbox` applies the indexer's `list_event_outbox` (see `apps/indexer/CLAUDE.md`) to the web DB, tracking progress in `list_drain_cursor`. Each batch runs in one web DB transaction: it locks the cursor row (`SELECT … FOR UPDATE`), reads up to 1,000 outbox rows past it in id order, applies them, and advances `seq` before committing. An overlapping run waits on the lock, then reads past the advanced cursor, so a batch applies once.
+
+The per-row logic is pure (`src/outbox.ts`, tested in `tests/outbox.test.ts`): `parseOutboxRow` narrows each row by its `type`, `decideRow` says what it does, and `planBatch` walks the batch in id order. A `transfer` row clears its token: the token's list entries, pins and binder slot are deleted, and binder covers showing it are cleared. A `transferability` row changes nothing in the web DB. Every drained row, whether or not it changed anything, moves `list_drain_cursor.chain_time` to the newest chain timestamp seen (it never moves back), so the watermark keeps moving through quiet periods.
+
+The drain logs a warning when its cursor is past the outbox's max id, which happens after the indexer DB is restored or replaced, and purges outbox rows that are both drained and older than 7 days.
+
+**Deploying outbox changes:** indexer migration → processor → schedules. The indexer migration runs when the processor starts, and the drain reads the outbox columns it adds and writes `list_drain_cursor.chain_time`, so schedules deploys last, after the web migrations too.
+
+## Simulating the chain locally
+
+Locally the processor stays off and chain activity is simulated against the indexer DB with `bun run simulate` (`scripts/simulate.ts`):
+
+- `simulate init` sets the drain cursor to the outbox's max id. Run it after restoring either database, or the drain skips every simulated row.
+- `simulate transfer --token <id> --to <address> [--at <iso>]` moves the objekt, inserts a `transfer` row and appends a `transfer` outbox row, in one transaction. `--at` sets the chain timestamp (default now).
+- `simulate transferability --token <id> --transferable <true|false>` flips the objekt and appends a `transferability` outbox row.
+- `simulate reset` reverts every simulated row and restores each objekt from the journal those commands keep in the indexer's `simulate` schema, then drops the schema. The web-side effects of drained rows stay, and the outbox sequence stays advanced, so a later row never reuses an id the drain has passed.
 
 ## Queue workers
 
@@ -18,7 +39,7 @@ Each worker is a layer made by `createQueueWorker(name, take)` (`src/queue.ts`),
 
 ## Services
 
-Defined as `Context.Service` classes in `src/` — a `make:` effect plus a hand-written `static readonly layer` (`Layer.effect(this, this.make)`, with `Layer.provide([...])` wiring dependencies) — and provided via `Layer.mergeAll` in `src/main.ts`:
+Defined as `Context.Service` classes in `src/` — a `make:` effect plus a hand-written `static readonly layer` (`Layer.effect(this, this.make)`, with `Layer.provide([...])` wiring dependencies) — and merged into `servicesLayer` (`src/services.ts`), which `main.ts` and `run-task.ts` provide:
 
 - `DatabaseWeb` / `DatabaseIndexer` — drizzle's Effect API over the two Postgres databases via `@apollo/drizzle-bun-effect` (Bun SQL-backed, same driver stack as the web app). Each `make` acquires a scoped Bun `SQL` client (application_name via URL, `end({ timeout: 5 })` finalizer); queries and `db.transaction` are Effects, failing with `EffectDrizzleQueryError` / `SqlError`
 - `ProxiedToken` — COSMO access token for the dummy account, read from the web DB `cosmoTokens` table and auto-refreshed (via `refreshV3` + `CosmoKey`) when the JWT is expired

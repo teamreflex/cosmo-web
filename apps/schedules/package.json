@@ -7,8 +7,11 @@
     "dev": "bun run --bun --watch --env-file=../../.env --env-file=../../.env.local ./src/main.ts",
     "build": "bun build ./src/main.ts --outdir ./dist --target bun",
     "start": "bun run --bun dist/main.js",
+    "task": "bun run --bun --env-file=../../.env --env-file=../../.env.local ./src/run-task.ts",
+    "simulate": "bun run --bun --env-file=../../.env --env-file=../../.env.local ./scripts/simulate.ts",
     "lint": "bun --bun oxlint --type-aware --type-check",
     "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
+    "test": "bun test",
     "typecheck": "tsc --pretty --noEmit",
     "format": "oxfmt ."
   },
