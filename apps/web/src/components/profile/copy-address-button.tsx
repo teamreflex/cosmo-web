@@ -17,7 +17,7 @@ export default function CopyAddressButton({ address }: { address: string }) {
       onClick={copyAddress}
       variant="ghost"
       size="icon-xs"
-      className="text-muted-foreground"
+      className="text-muted-foreground max-md:size-10"
       aria-label={m.profile_copy_address()}
       title={m.profile_copy_address()}
     >

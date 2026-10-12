@@ -14,6 +14,7 @@ import {
 import { getRequestSignal } from "@/lib/server/request.server";
 import type { PublicUser } from "@/lib/universal/auth";
 import type { FullAccount, PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import type { Role } from "@apollo/auth";
 import type { ObjektList } from "@apollo/database/web/types";
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
@@ -65,6 +66,7 @@ export const $fetchFilterData = createServerFn({ method: "GET" }).handler(() =>
 
 type GetAccount = {
   user: PublicUser;
+  role: Role;
   cosmo: PublicCosmo | undefined;
   objektLists: ObjektList[];
 };
@@ -108,6 +110,7 @@ export const $fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
     if (!cosmoAccount) {
       return {
         user: toPublicUser(user),
+        role: user.role,
         cosmo: undefined,
         objektLists,
       };
@@ -117,6 +120,7 @@ export const $fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
     return {
       cosmo: toPublicCosmo(cosmoAccount),
       user: toPublicUser(user),
+      role: user.role,
       objektLists,
     };
   },

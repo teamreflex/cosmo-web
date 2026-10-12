@@ -1,7 +1,7 @@
 import { m } from "@/i18n/messages";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
 import { formatError } from "@/lib/client/errors";
-import { currentAccountQuery } from "@/lib/queries/core";
+import { currentAccountQuery, removeViewerQueries } from "@/lib/queries/core";
 import { signInSchema } from "@/lib/universal/schema/auth";
 import { track } from "@/lib/utils";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
@@ -51,6 +51,7 @@ export default function WithEmail(props: Props) {
     mutation.mutate(data, {
       onSuccess: async () => {
         track("sign-in");
+        removeViewerQueries(queryClient);
         await queryClient.invalidateQueries({
           queryKey: currentAccountQuery.queryKey,
         });

@@ -87,11 +87,13 @@ return (
 );
 ```
 
+Submit with `mutation.mutate` and handle outcomes in `onSuccess`/`onError`. Make the handler `async` with `mutateAsync` only when it needs `formState.isSubmitting` or the mutation's result, because a rejection then escapes `handleSubmit` as an unhandled rejection.
+
 Gate bad input on the **client** with RHF — keep server-fn validators strict rather than loosening them to absorb bad input. Prefer `useForm` + `standardSchemaResolver` over raw `useState` dialogs. Use plain-English `.refine` messages (not i18n); a row-level `.refine` maps its path to `rows.${i}.field`.
 
 **Schema reuse:** default to using the server fn's own Zod schema as the RHF resolver — seed `defaultValues` with the full payload (identity fields like `slug`/`tokenId` ride along un-edited), bind inputs to the real paths (`entries.${i}.price`), and submit `data` straight through. One schema, validated both sides. Only use a bespoke client schema when the form is a genuinely different *shape* than the request (e.g. a selection subset); even then, extract the shared per-field rule to one source (e.g. a `salePriceSchema` imported by both).
 
-**Hook variables, not closures:** when a shared mutation hook needs form values, make its `mutationFn` generic over `TVariables` (default `void`) and pass validated values via `form.handleSubmit(async (values) => mutation.mutateAsync(values))` — don't read `form.getValues()` inside a no-arg thunk.
+**Hook variables, not closures:** when a shared mutation hook needs form values, make its `mutationFn` generic over `TVariables` (default `void`) and pass validated values via `form.handleSubmit((values) => mutation.mutate(values))` — don't read `form.getValues()` inside a no-arg thunk.
 
 ## Tailwind
 

@@ -9,10 +9,7 @@ import {
 import type { ListMatchPayload } from "@apollo/database/web/types";
 import { and, eq, exists, inArray, isNotNull, ne } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
-import { db } from "../db";
-
-type WebTx = Parameters<Parameters<typeof db.transaction>[0]>[0];
-type DbOrTx = typeof db | WebTx;
+import { db, type DbOrTx } from "../db";
 
 /**
  * Import objekt lists from the old tables into the new ones.

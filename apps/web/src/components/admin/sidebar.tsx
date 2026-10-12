@@ -8,17 +8,22 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useHasPermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
 import type { PropsWithClassName } from "@/lib/utils";
 import { Link, useLocation } from "@tanstack/react-router";
 import { getAdminItems } from "./common";
+import ReportsBadge from "./reports/reports-badge";
 
 type Props = PropsWithClassName<{}>;
 
 export function AdminSidebar({ className }: Props) {
   const location = useLocation();
-  const items = getAdminItems();
+  const hasPermission = useHasPermission();
+  const items = getAdminItems().filter((item) =>
+    hasPermission(item.permissions),
+  );
 
   return (
     <Sidebar variant="inset" className={className}>
@@ -38,6 +43,7 @@ export function AdminSidebar({ className }: Props) {
                     <item.icon />
                     <span>{item.title}</span>
                   </SidebarMenuButton>
+                  {item.url === "/admin/reports" && <ReportsBadge />}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>

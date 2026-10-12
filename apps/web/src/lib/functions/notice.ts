@@ -1,5 +1,5 @@
 import { redis } from "@/lib/server/cache.server";
-import { adminMiddleware } from "@/lib/server/middlewares";
+import { staffMiddleware } from "@/lib/server/middlewares";
 import { noticeSchema } from "@/lib/universal/schema/notice";
 import { createServerFn } from "@tanstack/react-start";
 
@@ -18,7 +18,7 @@ export const $getNotice = createServerFn({ method: "GET" }).handler(
  * Set or clear the platform notice in Redis. An empty message removes it.
  */
 export const $setNotice = createServerFn({ method: "POST" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(noticeSchema)
   .handler(async ({ data }) => {
     const message = data.message.trim();

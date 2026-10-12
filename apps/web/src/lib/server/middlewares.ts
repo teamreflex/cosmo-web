@@ -1,4 +1,6 @@
 import { ExpectedError } from "@/lib/universal/errors/expected";
+import { can, parseRole } from "@apollo/auth";
+import type { Permissions } from "@apollo/auth";
 import { createMiddleware } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 import { auth } from "./auth.server";
@@ -62,16 +64,24 @@ export const cosmoMiddleware = createMiddleware({ type: "function" })
   });
 
 /**
- * Ensures the user is an admin.
+ * Ensures the user's staff role holds every requested permission. Staff don't
+ * need a linked COSMO account; chain `cosmoMiddleware` after it when the
+ * handler reads one.
  */
-export const adminMiddleware = createMiddleware({ type: "function" })
-  .middleware([cosmoMiddleware])
-  .server(async ({ next, context }) => {
-    if (context.session.user.isAdmin !== true) {
-      throw new ExpectedError("not_admin");
-    }
+export function staffMiddleware(permissions: Permissions) {
+  return createMiddleware({ type: "function" })
+    .middleware([authenticatedMiddleware])
+    .server(async ({ next, context }) => {
+      const role = parseRole(context.session.user.role);
+      if (!can(role, permissions)) {
+        throw new ExpectedError("forbidden");
+      }
 
-    return next({
-      context,
+      return next({
+        context: {
+          ...context,
+          role,
+        },
+      });
     });
-  });
+}

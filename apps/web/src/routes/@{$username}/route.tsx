@@ -9,6 +9,7 @@ import {
   TwitterBadge,
 } from "@/components/profile/profile-badges";
 import ProfileTabs from "@/components/profile/profile-tabs";
+import ReportButton from "@/components/profile/report-button";
 import UserAvatar from "@/components/profile/user-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
@@ -110,6 +111,14 @@ function RouteComponent() {
 
                     <div className="flex items-center gap-0.5">
                       <CopyAddressButton address={target.cosmo.address} />
+                      {account &&
+                        target.user &&
+                        account.user.id !== target.user.id && (
+                          <ReportButton
+                            userId={target.user.id}
+                            username={target.cosmo.username}
+                          />
+                        )}
                       {/* content gets portaled in */}
                       <div
                         className="flex items-center empty:hidden"

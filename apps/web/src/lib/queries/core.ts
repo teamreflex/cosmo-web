@@ -1,5 +1,5 @@
 import type { CosmoMemberBFF } from "@apollo/cosmo/types/artists";
-import { queryOptions } from "@tanstack/react-query";
+import { type QueryClient, queryOptions } from "@tanstack/react-query";
 import { $fetchArtists } from "../functions/artists";
 import {
   $fetchCurrentAccount,
@@ -29,6 +29,16 @@ export const currentAccountQuery = queryOptions({
   refetchOnWindowFocus: false,
   refetchOnMount: false,
 });
+
+/**
+ * Removes the staff data (every query keyed under "admin"), whose answers
+ * depend on who is signed in although their keys don't name them. Sign-in and
+ * sign-out call it so the next account on the tab never reads the previous
+ * one's cache.
+ */
+export function removeViewerQueries(queryClient: QueryClient) {
+  queryClient.removeQueries({ queryKey: ["admin"] });
+}
 
 /**
  * Fetch the target account.

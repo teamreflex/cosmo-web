@@ -30,6 +30,8 @@ export function getAuthErrorMessage(error: ErrorInput) {
         return m.auth_error_username_taken();
       case "USER_ALREADY_EXISTS":
         return m.auth_error_email_exists();
+      case "BANNED_USER":
+        return m.auth_error_banned();
       default:
         return error.message ?? m.auth_error_unknown();
     }

@@ -21,12 +21,14 @@ import { Route as AtChar123usernameChar125ProgressRouteImport } from './routes/@
 import { Route as AtChar123usernameChar125TradesRouteImport } from './routes/@{$username}/trades'
 import { Route as AdminIndexRouteImport } from './routes/admin/index'
 import { Route as AdminApiKeysRouteImport } from './routes/admin/api-keys'
+import { Route as AdminAuditRouteImport } from './routes/admin/audit'
 import { Route as AdminBandsRouteImport } from './routes/admin/bands'
 import { Route as AdminCacheRouteImport } from './routes/admin/cache'
 import { Route as AdminCollectionsRouteImport } from './routes/admin/collections'
 import { Route as AdminErasRouteImport } from './routes/admin/eras'
 import { Route as AdminEventsRouteImport } from './routes/admin/events'
 import { Route as AdminNoticeRouteImport } from './routes/admin/notice'
+import { Route as AdminReportsRouteImport } from './routes/admin/reports'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
 import { Route as EventsIndexRouteImport } from './routes/events/index'
 import { Route as EventsSlugRouteImport } from './routes/events/$slug'
@@ -115,6 +117,11 @@ const AdminApiKeysRoute = AdminApiKeysRouteImport.update({
   path: '/api-keys',
   getParentRoute: () => AdminRouteRoute,
 } as any)
+const AdminAuditRoute = AdminAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
 const AdminBandsRoute = AdminBandsRouteImport.update({
   id: '/bands',
   path: '/bands',
@@ -143,6 +150,11 @@ const AdminEventsRoute = AdminEventsRouteImport.update({
 const AdminNoticeRoute = AdminNoticeRouteImport.update({
   id: '/notice',
   path: '/notice',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminReportsRoute = AdminReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
@@ -270,12 +282,14 @@ export interface FileRoutesByFullPath {
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
   '/admin/api-keys': typeof AdminApiKeysRoute
+  '/admin/audit': typeof AdminAuditRoute
   '/admin/bands': typeof AdminBandsRoute
   '/admin/cache': typeof AdminCacheRoute
   '/admin/collections': typeof AdminCollectionsRoute
   '/admin/eras': typeof AdminErasRoute
   '/admin/events': typeof AdminEventsRoute
   '/admin/notice': typeof AdminNoticeRoute
+  '/admin/reports': typeof AdminReportsRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
@@ -309,12 +323,14 @@ export interface FileRoutesByTo {
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
   '/admin/api-keys': typeof AdminApiKeysRoute
+  '/admin/audit': typeof AdminAuditRoute
   '/admin/bands': typeof AdminBandsRoute
   '/admin/cache': typeof AdminCacheRoute
   '/admin/collections': typeof AdminCollectionsRoute
   '/admin/eras': typeof AdminErasRoute
   '/admin/events': typeof AdminEventsRoute
   '/admin/notice': typeof AdminNoticeRoute
+  '/admin/reports': typeof AdminReportsRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
@@ -351,12 +367,14 @@ export interface FileRoutesById {
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
   '/admin/api-keys': typeof AdminApiKeysRoute
+  '/admin/audit': typeof AdminAuditRoute
   '/admin/bands': typeof AdminBandsRoute
   '/admin/cache': typeof AdminCacheRoute
   '/admin/collections': typeof AdminCollectionsRoute
   '/admin/eras': typeof AdminErasRoute
   '/admin/events': typeof AdminEventsRoute
   '/admin/notice': typeof AdminNoticeRoute
+  '/admin/reports': typeof AdminReportsRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
@@ -394,12 +412,14 @@ export interface FileRouteTypes {
     | '/@{$username}/progress'
     | '/@{$username}/trades'
     | '/admin/api-keys'
+    | '/admin/audit'
     | '/admin/bands'
     | '/admin/cache'
     | '/admin/collections'
     | '/admin/eras'
     | '/admin/events'
     | '/admin/notice'
+    | '/admin/reports'
     | '/auth/reset-password'
     | '/events/$slug'
     | '/list/$id'
@@ -433,12 +453,14 @@ export interface FileRouteTypes {
     | '/@{$username}/progress'
     | '/@{$username}/trades'
     | '/admin/api-keys'
+    | '/admin/audit'
     | '/admin/bands'
     | '/admin/cache'
     | '/admin/collections'
     | '/admin/eras'
     | '/admin/events'
     | '/admin/notice'
+    | '/admin/reports'
     | '/auth/reset-password'
     | '/events/$slug'
     | '/list/$id'
@@ -474,12 +496,14 @@ export interface FileRouteTypes {
     | '/@{$username}/progress'
     | '/@{$username}/trades'
     | '/admin/api-keys'
+    | '/admin/audit'
     | '/admin/bands'
     | '/admin/cache'
     | '/admin/collections'
     | '/admin/eras'
     | '/admin/events'
     | '/admin/notice'
+    | '/admin/reports'
     | '/auth/reset-password'
     | '/events/$slug'
     | '/list/$id'
@@ -618,6 +642,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminApiKeysRouteImport
       parentRoute: typeof AdminRouteRoute
     }
+    '/admin/audit': {
+      id: '/admin/audit'
+      path: '/audit'
+      fullPath: '/admin/audit'
+      preLoaderRoute: typeof AdminAuditRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
     '/admin/bands': {
       id: '/admin/bands'
       path: '/bands'
@@ -658,6 +689,13 @@ declare module '@tanstack/react-router' {
       path: '/notice'
       fullPath: '/admin/notice'
       preLoaderRoute: typeof AdminNoticeRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/reports': {
+      id: '/admin/reports'
+      path: '/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AdminReportsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/auth/reset-password': {
@@ -841,23 +879,27 @@ const AtChar123usernameChar125RouteRouteWithChildren =
 
 interface AdminRouteRouteChildren {
   AdminApiKeysRoute: typeof AdminApiKeysRoute
+  AdminAuditRoute: typeof AdminAuditRoute
   AdminBandsRoute: typeof AdminBandsRoute
   AdminCacheRoute: typeof AdminCacheRoute
   AdminCollectionsRoute: typeof AdminCollectionsRoute
   AdminErasRoute: typeof AdminErasRoute
   AdminEventsRoute: typeof AdminEventsRoute
   AdminNoticeRoute: typeof AdminNoticeRoute
+  AdminReportsRoute: typeof AdminReportsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminApiKeysRoute: AdminApiKeysRoute,
+  AdminAuditRoute: AdminAuditRoute,
   AdminBandsRoute: AdminBandsRoute,
   AdminCacheRoute: AdminCacheRoute,
   AdminCollectionsRoute: AdminCollectionsRoute,
   AdminErasRoute: AdminErasRoute,
   AdminEventsRoute: AdminEventsRoute,
   AdminNoticeRoute: AdminNoticeRoute,
+  AdminReportsRoute: AdminReportsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 
