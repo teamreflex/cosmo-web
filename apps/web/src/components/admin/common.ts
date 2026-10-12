@@ -5,6 +5,7 @@ import {
   IconCards,
   IconDatabase,
   IconDisc,
+  IconHash,
   IconHome,
   IconKey,
   IconLayoutSidebarRight,
@@ -31,6 +32,11 @@ export function getAdminItems() {
       title: m.admin_collections_title(),
       url: "/admin/collections",
       icon: IconCards,
+    },
+    {
+      title: m.admin_serials_title(),
+      url: "/admin/serials",
+      icon: IconHash,
     },
     {
       title: m.admin_events_title(),
