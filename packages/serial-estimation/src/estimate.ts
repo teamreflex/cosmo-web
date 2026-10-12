@@ -15,7 +15,12 @@ export function estimateSerials(
 ): SerialUpdate[] {
   const serials =
     collection.kind === "sequential"
-      ? sequentialSerials(collection.objekts, confirmations, cutoff)
+      ? sequentialSerials(
+          collection.objekts,
+          collection.claimBlocks,
+          confirmations,
+          cutoff,
+        )
       : reservedSerials(
           collection.objekts,
           collection.reservations,

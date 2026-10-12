@@ -49,7 +49,7 @@ export function hideSerials(
   return {
     collection:
       collection.kind === "sequential"
-        ? { kind: "sequential", objekts }
+        ? { kind: "sequential", objekts, claimBlocks: collection.claimBlocks }
         : { kind: "reserved", objekts, reservations: collection.reservations },
     truth,
   };

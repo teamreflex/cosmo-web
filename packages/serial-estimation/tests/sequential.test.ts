@@ -104,4 +104,33 @@ describe("digital collections", () => {
     );
     expect(updates.filter((update) => before.has(update.tokenId))).toEqual([]);
   });
+
+  it("counts a claim block's whole width", async () => {
+    /**
+     * atom02-choerry-101z holds a 400-serial claim block from 2026-07-15,
+     * with 70 of its ids claimed. Token 29273487 is #4616 in the COSMO app:
+     * 4,216 objekts outside the block up to it, plus the block's 400.
+     * Counting only the claims put it at #4286.
+     */
+    const fixture = await loadFixture("atom02-choerry-101z");
+    const serials = serialsOf(estimateSerials(fixture.collection, new Map()));
+    expect(serials.get(29273487)).toBe(4616);
+    // below the block nothing moves
+    expect(serials.get(24976406)).toBe(17);
+    // a claim takes its place in the block
+    expect(serials.get(27653656)).toBe(
+      fixture.collection.objekts.filter((objekt) => objekt.tokenId < 27653653)
+        .length +
+        1 +
+        (27653656 - 27653653),
+    );
+
+    const withoutBlock = serialsOf(
+      estimateSerials(
+        { ...fixture.collection, kind: "sequential", claimBlocks: [] },
+        new Map(),
+      ),
+    );
+    expect(withoutBlock.get(29273487)).toBe(4286);
+  });
 });

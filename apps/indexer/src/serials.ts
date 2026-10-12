@@ -1,4 +1,5 @@
 import {
+  claimBlocks,
   collectionKind,
   estimateSerials,
   RESERVATION_MIN_GAP,
@@ -257,7 +258,11 @@ async function loadCollection(
 
   // only physicals and coupon sets need their reservations
   return collectionKind(collection.slug, collection.onOffline) === "sequential"
-    ? { kind: "sequential", objekts }
+    ? {
+        kind: "sequential",
+        objekts,
+        claimBlocks: claimBlocks(collection.slug),
+      }
     : {
         kind: "reserved",
         objekts,
