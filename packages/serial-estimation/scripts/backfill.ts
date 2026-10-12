@@ -70,6 +70,7 @@ const KNOWN_SERIALS: [tokenId: number, serial: number][] = [
   [28919711, 2990],
   [30072049, 130],
   [30090253, 1089],
+  [29273487, 4616],
 ];
 
 const args = parseArgs({

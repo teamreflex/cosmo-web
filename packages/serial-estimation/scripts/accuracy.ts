@@ -11,6 +11,7 @@
  */
 import { collections } from "@apollo/database/indexer/schema";
 import {
+  claimBlocks,
   collectionKind,
   estimateSerials,
   findReservations,
@@ -217,7 +218,11 @@ for (const [collection, rows] of rowsByCollection) {
 
   const input: CollectionObjekts =
     info.kind === "sequential"
-      ? { kind: "sequential", objekts }
+      ? {
+          kind: "sequential",
+          objekts,
+          claimBlocks: claimBlocks(info.slug),
+        }
       : {
           kind: "reserved",
           objekts,

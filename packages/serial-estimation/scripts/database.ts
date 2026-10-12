@@ -9,6 +9,7 @@ import { and, eq, gt, gte, inArray, lt, lte, ne, or, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/bun-sql";
 import * as z from "zod";
 import {
+  claimBlocks,
   collectionKind,
   type CollectionObjekts,
   type Reservation,
@@ -179,7 +180,11 @@ export async function loadCollection(
   ).filter((objekt) => objekt.tokenId <= maxTokenId);
 
   return collectionKind(collection.slug, collection.onOffline) === "sequential"
-    ? { kind: "sequential", objekts: rows }
+    ? {
+        kind: "sequential",
+        objekts: rows,
+        claimBlocks: claimBlocks(collection.slug),
+      }
     : {
         kind: "reserved",
         objekts: rows,

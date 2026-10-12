@@ -28,11 +28,24 @@ export type Reservation = ReservedRange & {
 };
 
 /**
- * Digital collections are numbered in token-id order. Physical collections
- * and QR coupon sets are numbered by position inside their reservations.
+ * An inclusive token-id range a digital collection holds as a claim block.
+ */
+export type ClaimBlock = {
+  from: number;
+  to: number;
+};
+
+/**
+ * Digital collections are numbered in token-id order, counting any claim
+ * blocks in full. Physical collections and QR coupon sets are numbered by
+ * position inside their reservations.
  */
 export type CollectionObjekts =
-  | { kind: "sequential"; objekts: readonly ObjektSerial[] }
+  | {
+      kind: "sequential";
+      objekts: readonly ObjektSerial[];
+      claimBlocks: readonly ClaimBlock[];
+    }
   | {
       kind: "reserved";
       objekts: readonly ObjektSerial[];

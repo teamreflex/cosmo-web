@@ -6,6 +6,7 @@ import {
   serialReservations,
 } from "@apollo/database/indexer/schema";
 import {
+  claimBlocks,
   collectionKind,
   estimateSerials,
   SERIAL_CUTOFF,
@@ -178,7 +179,11 @@ const loadCollection = Effect.fn("loadCollection")(function* (
     .where(eq(objekts.collectionId, collection.id));
 
   if (collectionKind(collection.slug, collection.onOffline) === "sequential") {
-    return { kind: "sequential", objekts: rows } satisfies CollectionObjekts;
+    return {
+      kind: "sequential",
+      objekts: rows,
+      claimBlocks: claimBlocks(collection.slug),
+    } satisfies CollectionObjekts;
   }
   return {
     kind: "reserved",
