@@ -136,8 +136,10 @@ export const votes = pgTable("vote", {
   candidateId: integer("candidate_id"),
 });
 
-// reference table synced by apps/schedules (canonical member sort order), read
-// by apps/web. the processor never touches it.
+/**
+ * reference table synced by apps/schedules (canonical member sort order), read by apps/web.
+ * processor never touches it.
+ */
 export const members = pgTable("member", {
   id: uuid("id").primaryKey(),
   // joins to collection.member
@@ -150,11 +152,42 @@ export const members = pgTable("member", {
   sortOrder: integer("sort_order").notNull(),
 });
 
-// objekt and spun counts per collection, read by apps/web's mint-count sorts.
-// maintained by triggers on objekt; the processor never touches it.
+/**
+ * objekt and spun counts per collection, read by apps/web's mint-count sorts.
+ * maintained by triggers on objekt; the processor never touches it.
+ */
 export const collectionStats = pgTable("collection_stats", {
   // joins to objekt.collection_id and collection.id
   collectionId: varchar("collection_id", { length: 36 }).primaryKey(),
   objektCount: integer("objekt_count").notNull(),
   spunCount: integer("spun_count").notNull(),
+});
+
+/**
+ * token-id ranges COSMO reserved for physical and QR coupon objekts,
+ * used by serial estimation (@apollo/serial-estimation). written by the processor.
+ */
+export const serialReservations = pgTable("serial_reservation", {
+  // the online token id just below the reserved range
+  lo: integer("lo").primaryKey(),
+  // the online token id just above it
+  hi: integer("hi").notNull(),
+});
+
+/**
+ * real serials reported by users, separate table so data isn't lost upon recompute.
+ * the processor applies them to their collections but never writes this table.
+ */
+export const serialConfirmations = pgTable("serial_confirmation", {
+  // joins to objekt.id
+  tokenId: varchar("token_id").primaryKey(),
+  serial: integer("serial").notNull(),
+  // web user id, null when seeded from COSMO's own data
+  confirmedBy: text("confirmed_by"),
+  confirmedAt: timestamp("confirmed_at", {
+    mode: "string",
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow(),
 });
