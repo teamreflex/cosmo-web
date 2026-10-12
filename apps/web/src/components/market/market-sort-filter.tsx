@@ -10,7 +10,7 @@ import SingleSelectList, {
   type SingleSelectOption,
 } from "../collection/single-select-list";
 
-const route = getRouteApi("/market/");
+const route = getRouteApi("/market/collections");
 
 const labelMap = {
   floorAsc: m.filter_sort_floor_asc(),
@@ -43,7 +43,7 @@ export default function MarketSortFilter() {
 
   function handleChange(next: MarketSort) {
     void navigate({
-      to: "/market",
+      to: "/market/collections",
       search: (prev) => ({
         ...prev,
         sort: next === DEFAULT_MARKET_SORT ? undefined : next,

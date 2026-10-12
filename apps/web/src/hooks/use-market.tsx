@@ -5,7 +5,7 @@ import { useArtists } from "./use-artists";
 import { useDisplayCurrency } from "./use-display-currency";
 import { objektOptions } from "./use-objekt-response";
 
-const route = getRouteApi("/market/");
+const route = getRouteApi("/market/collections");
 
 /**
  * Grid options for the market page: collections with sale listings, sorted by

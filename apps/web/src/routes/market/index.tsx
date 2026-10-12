@@ -1,101 +1,133 @@
+import FiltersContainer from "@/components/collection/filters-container";
 import { Error } from "@/components/error-boundary";
-import MarketRenderer from "@/components/market/market-renderer";
+import MarketHeader from "@/components/market/market-header";
 import Overlay from "@/components/misc/overlay";
 import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
-import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
-import ObjektGridSkeleton from "@/components/objekt/objekt-grid-skeleton";
-import ObjektTotalSlot from "@/components/objekt/objekt-total-slot";
-import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
+import ListingFeed, {
+  ListingFeedCount,
+  ListingFeedSkeleton,
+} from "@/components/trade-listings/listing-feed";
+import ListingFeedFilters from "@/components/trade-listings/listing-feed-filters";
+import ListingTypePicker from "@/components/trade-listings/listing-type-picker";
+import NewListingButton from "@/components/trade-listings/new-listing-button";
 import { Skeleton } from "@/components/ui/skeleton";
-import TitleHeader from "@/components/ui/title-header";
-import { displayCurrency } from "@/hooks/use-display-currency";
+import { useArtists } from "@/hooks/use-artists";
+import { useListingFeedFilters } from "@/hooks/use-listing-feed-filters";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { currentAccountQuery, selectedArtistsQuery } from "@/lib/queries/core";
-import { marketQuery } from "@/lib/queries/market";
-import { marketFrontendSchema } from "@/lib/universal/parsers";
-import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
-import { ProfileProvider } from "@/providers/profile-provider";
-import { UserStateProvider } from "@/providers/user-state-provider";
-import { noop } from "@tanstack/react-query";
+import {
+  listingFeedQuery,
+  listingFeedTotalQuery,
+} from "@/lib/queries/listing-feed";
+import { listingFeedFrontendSchema } from "@/lib/universal/parsers";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/market/")({
-  staleTime: 1000 * 60 * 15, // 15 minutes
-  validateSearch: marketFrontendSchema,
+  validateSearch: listingFeedFrontendSchema,
   component: RouteComponent,
   errorComponent: ErrorComponent,
   pendingComponent: PendingComponent,
-  loaderDeps: ({ search }) => ({ searchParams: search }),
-  loader: async ({ context, deps }) => {
-    const [account, selected] = await Promise.all([
-      context.queryClient.query({
-        ...currentAccountQuery,
-        staleTime: "static",
-      }),
-      context.queryClient.query({
-        ...selectedArtistsQuery,
-        staleTime: "static",
-      }),
+  loaderDeps: ({ search }) => ({ search }),
+  /**
+   * The navbar's artists live in the query cache rather than the URL, so
+   * the feed's options take them when read.
+   */
+  context: ({ deps }) => ({
+    listingFeedOptions: (artists: string[]) =>
+      listingFeedQuery(deps.search, artists),
+    listingFeedTotalOptions: (artists: string[]) =>
+      listingFeedTotalQuery(deps.search, artists),
+  }),
+  loader: async ({ context }) => {
+    const [, selected] = await Promise.all([
+      context.queryClient.ensureQueryData(currentAccountQuery),
+      context.queryClient.ensureQueryData(selectedArtistsQuery),
     ]);
 
-    void context.queryClient
-      .infiniteQuery(
-        marketQuery(deps.searchParams, selected, displayCurrency(account)),
-      )
-      .catch(noop);
-
-    return { account };
+    void context.queryClient.prefetchInfiniteQuery(
+      context.listingFeedOptions(selected),
+    );
+    void context.queryClient.prefetchQuery(
+      context.listingFeedTotalOptions(selected),
+    );
   },
-  head: () => defineHead({ title: "Market", canonical: "/market" }),
+  head: () => defineHead({ title: m.market_header(), canonical: "/market" }),
 });
 
 function RouteComponent() {
-  const { account } = Route.useLoaderData();
+  const { listingFeedOptions, listingFeedTotalOptions } =
+    Route.useRouteContext();
+  const { selectedIds } = useArtists();
+  const { type, setType, count, reset } = useListingFeedFilters();
+  const options = listingFeedOptions(selectedIds);
 
   return (
     <main className="relative flex w-full flex-col">
-      <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
-        <MetadataDialogProvider>
-          <ProfileProvider objektLists={account?.objektLists ?? []}>
-            <MarketRenderer />
-          </ProfileProvider>
-        </MetadataDialogProvider>
-      </UserStateProvider>
+      <MarketHeader
+        total={
+          <ListingFeedCount
+            options={listingFeedTotalOptions(selectedIds)}
+            filtered={count > 0}
+          />
+        }
+        actions={
+          <>
+            <ListingTypePicker value={type} onChange={setType} />
+            <NewListingButton />
+          </>
+        }
+      />
+
+      <FiltersContainer>
+        <ListingFeedFilters />
+      </FiltersContainer>
+
+      <div className="container flex flex-col py-2">
+        <ListingFeed options={options} filtered={count > 0} onReset={reset} />
+      </div>
+
+      <div id="pagination" />
 
       <Overlay>
         <ScrollToTop />
-        <ToggleObjektBands />
       </Overlay>
     </main>
   );
 }
 
 function ErrorComponent() {
-  return <Error message={m.error_could_not_load_objekts()} />;
+  return <Error message={m.market_listings_error()} />;
 }
 
 function PendingComponent() {
   return (
     <div className="flex flex-col">
-      <TitleHeader title={m.market_header()} total={<ObjektTotalSlot />}>
-        <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
-          <div className="md:pointer-events-auto">
-            <MemberFilterSkeleton />
-          </div>
-        </div>
-      </TitleHeader>
+      <MarketHeader
+        total={<Skeleton className="h-4 w-12" />}
+        actions={
+          <>
+            <Skeleton className="h-9 w-28 md:h-8" />
+            <Skeleton className="h-9 w-28 md:h-8" />
+          </>
+        }
+      />
 
       <div className="border-b border-border bg-muted/40">
-        <div className="container flex flex-wrap items-center gap-2 py-2">
-          {Array.from({ length: 7 }).map((_, i) => (
-            <Skeleton key={i} className="h-8 w-24" />
+        <div className="container flex flex-col gap-2 py-2">
+          {Array.from({ length: 2 }).map((_, row) => (
+            <div key={row} className="flex gap-2 max-md:hidden">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-8 w-24" />
+              ))}
+            </div>
           ))}
+          <Skeleton className="h-10 w-24 md:hidden" />
         </div>
       </div>
 
-      <div className="container">
-        <ObjektGridSkeleton gridColumns={5} />
+      <div className="container py-2">
+        <ListingFeedSkeleton />
       </div>
     </div>
   );

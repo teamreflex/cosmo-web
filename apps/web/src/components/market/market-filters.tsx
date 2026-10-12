@@ -13,7 +13,7 @@ import MarketListedFilter from "./market-listed-filter";
 import MarketPriceFilter from "./market-price-filter";
 import MarketSortFilter from "./market-sort-filter";
 
-const route = getRouteApi("/market/");
+const route = getRouteApi("/market/collections");
 
 /**
  * The objekt index filter set with the market sort in place of the cosmo sort,
@@ -31,7 +31,7 @@ export default function MarketFilters() {
 
   function handleReset() {
     void navigate({
-      to: "/market",
+      to: "/market/collections",
       search: {},
       replace: true,
     });

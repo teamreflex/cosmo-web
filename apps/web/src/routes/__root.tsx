@@ -2,6 +2,7 @@ import Devtools from "@/components/devtools";
 import Navbar from "@/components/navbar/navbar";
 import TailwindIndicator from "@/components/tailwind-indicator";
 import { Button } from "@/components/ui/button";
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { m } from "@/i18n/messages";
 import { getLocale } from "@/i18n/runtime";
@@ -26,7 +27,6 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import React from "react";
-import { Toaster } from "sonner";
 import appCss from "../styles/tailwind.css?url";
 
 interface RouterContext {
