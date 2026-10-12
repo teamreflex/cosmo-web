@@ -1,6 +1,6 @@
 # Schedules App
 
-Effect-TS service that runs Apollo's cron-scheduled background tasks (syncing gravities, members, FX rates, price stats and their daily history, market stats; draining outboxes; clearing stats; recomputing estimated objekt serials) and the workers for the web app's job queues (notification fan-outs). Runs on Bun via `BunRuntime`.
+Effect-TS service that runs Apollo's cron-scheduled background tasks (syncing gravities, members, FX rates, price stats and their daily history, market stats; draining outboxes; timing out trades; clearing stats; recomputing estimated objekt serials) and the workers for the web app's job queues (notification fan-outs). Runs on Bun via `BunRuntime`.
 
 ## Task model
 
@@ -8,7 +8,7 @@ Each task is a `ScheduledTask` (`src/task.ts`): `{ name, cron, timezone?, effect
 
 **Adding a task:** create `src/functions/<name>.ts` exporting a `ScheduledTask`, register it in `SCHEDULED_TASKS`, and give it a `/** */` docblock stating what it does and why the cadence was chosen (see `sync-members.ts`).
 
-**Running one task:** `bun run task <name>` (`src/run-task.ts`) runs a registered task's effect once and exits, with the same services `main.ts` provides (`servicesLayer` in `src/services.ts`) but no queue workers and no retries, so a failure exits non-zero. Stop `bun run dev` first when the task is `drain-outbox`, since dev runs it at boot and every minute.
+**Running one task:** `bun run task <name>` (`src/run-task.ts`) runs a registered task's effect once and exits, with the same services `main.ts` provides (`servicesLayer` in `src/services.ts`) but no queue workers and no retries, so a failure exits non-zero. Stop `bun run dev` first when the task is `drain-outbox` or `trade-timers`, since dev runs both at boot and every minute.
 
 ## Outbox drain
 
@@ -16,9 +16,21 @@ Each task is a `ScheduledTask` (`src/task.ts`): `{ name, cron, timezone?, effect
 
 The per-row logic is pure (`src/outbox.ts`, tested in `tests/outbox.test.ts`): `parseOutboxRow` narrows each row by its `type`, `decideRow` says what it does, and `planBatch` walks the batch in id order. A `transfer` row clears its token: the token's list entries, pins and binder slot are deleted, and binder covers showing it are cleared. A `transferability` row changes nothing in the web DB. Every drained row, whether or not it changed anything, moves `list_drain_cursor.chain_time` to the newest chain timestamp seen (it never moves back), so the watermark keeps moving through quiet periods.
 
+**Trades.** After the clears, the same transaction applies the batch to the trade tables (`applyTrades`). An unlocked read through `trade_offer_items_token_idx` finds the batch's tokens on live trades (accepted or disputed), open listings and pending direct offers. `@apollo/trades`' `foldTransfers` then decides each row against them in order, so a token that arrives and is passed on in one batch is recorded once and never reported as moved. A transfer to a live item's receiver at the trade's pinned address sets the item's `transferred_at` (the chain time) and `tx_hash`, and a trade with nothing left owed completes (`completed {by: null}`, both parties notified) and fills its listing; a disputed trade still records transfers but only staff complete it. A token that moves elsewhere or turns untransferable posts `token_moved` or `token_untransferable` on its live trade and notifies the item's receiver once per token and kind per batch, breaks every open listing offering it (`listing_closed` to the poster) and turns pending offers holding it `stale`. Only the exact pinned tokens count, never a substitute. The hash comes from the indexer `transfer` row named by the outbox row's `transfer_id`: the processor runs with hot blocks, so a row whose transfer was rolled back is gone from `transfer`, and the drain skips it for trades (it still clears the token's entries, pins and binder slot). Touched trades are published on `trade-events` (`@apollo/trades/events`) after the commit, next to the pin-cache deletes.
+
+Lock order, after the cursor: `FOR KEY SHARE` on every user the batch may notify (live-trade parties and open-listing posters) in one id-ordered statement (`lockUsers`), then the live trades `FOR NO KEY UPDATE` in id order (`lockLiveTrades`), then listings, each set by one `ORDER BY id` select before its guarded update. An account deletion locks its user `FOR UPDATE` and then updates their listings, while a notification insert takes `FOR KEY SHARE` on its recipient through the foreign key; locking users first makes the drain wait behind a deletion (or the deletion behind the drain) instead of deadlocking with it. A recipient whose account is gone by then is skipped, and so is one with an active ban (an SQL mirror of `isBanActive`, since this app doesn't depend on `@apollo/auth`). Notifications go in with `tx.insert` inside the transaction (`insertTradeNotifications` in `src/trades.ts`), never through `insertNotifications` or the pool: the web client has one connection, which the transaction holds, so either would wait forever.
+
+Known gaps, left to staff through a dispute: a token passed back and forth across several batches notifies once per batch, without a bound; a transfer the drain recorded and a reorg then rolled back stays recorded; a transfer still in flight on chain (not yet indexed) can be followed by a successful party cancel, after which the drain ignores it; and a rolled-back `transferability` row has no `transfer_id`, so it still breaks listings and posts `token_untransferable`.
+
 The drain logs a warning when its cursor is past the outbox's max id, which happens after the indexer DB is restored or replaced, and purges outbox rows that are both drained and older than 7 days.
 
 **Deploying outbox changes:** indexer migration → processor → schedules. The indexer migration runs when the processor starts, and the drain reads the outbox columns it adds and writes `list_drain_cursor.chain_time`, so schedules deploys last, after the web migrations too.
+
+## Trade timers
+
+`trade-timers` runs every minute and ends accepted trades whose `deadline_at` is at or before `list_drain_cursor.chain_time`, the drain's watermark, never `now()`: a transfer stamped before the deadline but drained after it still counts, because the watermark reaches the deadline only once that transfer is drained. `transition(time_out)` either completes the trade (nobody owes anything, only a payment confirmation is missing; `completed {by: null}`, listing filled) or times it out with every side still owing in `abandoned_by` (`timed_out {abandoned}`), and its listing is abandoned when the poster owes, otherwise reopened when the poster can still offer every token, otherwise broken (`listingEventAfter`). Both parties are notified. It locks the cursor `FOR SHARE`, so it waits for a drain batch in flight, then reads up to 100 due trades unlocked through `trade_offers_deadline_idx` (the literal `kind`/`status` predicate lets the partial index serve it), locks their parties `FOR SHARE` (`lockUsers`) and re-checks the trades under `FOR NO KEY UPDATE` in id order (`lockLiveTrades`). Trades with an actively banned party are skipped in both reads (the same SQL mirror of `isBanActive`): the ban disputes them, and if the ban's sweep failed they wait until staff ban again. The parties are locked `FOR SHARE` rather than the drain's `FOR KEY SHARE` because the re-check reads users under its statement's snapshot, taken before it waits for a trade lock: `FOR SHARE` makes a ban's update of the user row wait for the timers instead of committing unseen during that wait. It logs an error when the watermark is null, and when it trails the clock by more than 10 minutes, since then the drain is stuck and nothing times out on time.
+
+Locally, make a trade due by moving its deadline behind the watermark (`UPDATE trade_offers SET deadline_at = (SELECT chain_time FROM list_drain_cursor WHERE name = 'outbox-drain') - interval '1 second' WHERE id = '<trade>'`) rather than simulating future-stamped rows, then run `bun run task trade-timers`.
 
 ## Simulating the chain locally
 
@@ -27,6 +39,8 @@ Locally the processor stays off and chain activity is simulated against the inde
 - `simulate init` sets the drain cursor to the outbox's max id. Run it after restoring either database, or the drain skips every simulated row.
 - `simulate transfer --token <id> --to <address> [--at <iso>]` moves the objekt, inserts a `transfer` row and appends a `transfer` outbox row, in one transaction. `--at` sets the chain timestamp (default now).
 - `simulate transferability --token <id> --transferable <true|false>` flips the objekt and appends a `transferability` outbox row.
+- Deadlines are judged against `list_drain_cursor.chain_time`, which only a drained row moves: to seed it, simulate a transfer of an objekt in no listing or trade (to `0x000000000000000000000000000000000000dEaD`) and run `bun run task drain-outbox`.
+- To simulate a hot-block rollback, delete the `transfer` row the outbox row names (`DELETE FROM transfer WHERE id = '<transfer_id>'` in the indexer) before draining: the drain then clears the token as usual but records nothing on a trade.
 - `simulate reset` reverts every simulated row and restores each objekt from the journal those commands keep in the indexer's `simulate` schema, then drops the schema. The web-side effects of drained rows stay, and the outbox sequence stays advanced, so a later row never reuses an id the drain has passed.
 
 ## Queue workers
@@ -49,5 +63,5 @@ Defined as `Context.Service` classes in `src/` — a `make:` effect plus a hand-
 
 - Config is read where it is consumed (`Config.Redacted("...")` inside a service's `make`, `BunRedis.layerConfig` for Redis) via the default `ConfigProvider` (`fromEnv()`), so a missing variable fails at boot; env files are loaded by the `dev` script, not the code.
 - Errors are per-failure-mode `Data.TaggedError` classes; wrap promise-based calls in `Effect.tryPromise` with a typed `catch`. Drizzle calls are already effectful — yield them directly and let drizzle's typed errors flow, adding a domain wrapper via `Effect.mapError` only where it carries extra context (e.g. `StoreGravitiesError{artist}`).
-- Cross-package logic lives in `@apollo/cosmo` (API calls), `@apollo/database` (schemas), `@apollo/queue` (job queues), `@apollo/util` / `@apollo/util-server` (helpers) — don't duplicate it here.
+- Cross-package logic lives in `@apollo/cosmo` (API calls), `@apollo/database` (schemas), `@apollo/queue` (job queues), `@apollo/trades` (trade lifecycle, the drain's transfer decisions, deadlines), `@apollo/util` / `@apollo/util-server` (helpers) — don't duplicate it here.
 - Use context7 for Effect API documentation (see `docs/libraries.md`).

@@ -22,7 +22,7 @@
     "exactOptionalPropertyTypes": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "types": [],
     "noImplicitReturns": false,
     "noUnusedParameters": false,

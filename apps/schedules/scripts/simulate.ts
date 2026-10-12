@@ -7,6 +7,7 @@ import {
   transfers,
 } from "@apollo/database/indexer/schema";
 import { listDrainCursor } from "@apollo/database/web/schema";
+import { DRAIN_CURSOR_NAME } from "@apollo/trades/timers";
 import { addr } from "@apollo/util";
 import { BunRuntime } from "@effect/platform-bun";
 import { desc, eq, inArray, max, sql } from "drizzle-orm";
@@ -42,8 +43,6 @@ import { parseArgs } from "node:util";
  * init sets the drain cursor to the outbox's max id, so the drain picks up
  * every row simulated after it.
  */
-
-const CURSOR_NAME = "outbox-drain";
 
 const simulateSchema = pgSchema("simulate");
 const journal = simulateSchema.table("journal", {
@@ -308,13 +307,13 @@ const init = Effect.gen(function* () {
   const seq = outbox?.maxId ?? 0n;
 
   const previous = yield* web.query.listDrainCursor.findFirst({
-    where: { name: CURSOR_NAME },
+    where: { name: DRAIN_CURSOR_NAME },
     columns: { seq: true },
   });
 
   yield* web
     .insert(listDrainCursor)
-    .values({ name: CURSOR_NAME, seq })
+    .values({ name: DRAIN_CURSOR_NAME, seq })
     .onConflictDoUpdate({ target: listDrainCursor.name, set: { seq } });
 
   yield* Effect.logInfo(

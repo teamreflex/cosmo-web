@@ -13,6 +13,7 @@ import { syncFxRatesTask } from "./functions/sync-fx-rates";
 import { syncGravitiesTask } from "./functions/sync-gravities";
 import { syncMarketStatsTask } from "./functions/sync-market-stats";
 import { syncMembersTask } from "./functions/sync-members";
+import { tradeTimersTask } from "./functions/trade-timers";
 import type { ProxiedToken } from "./proxied-token";
 
 export interface ScheduledTask<TSuccess = void, TFailure = unknown> {
@@ -36,6 +37,7 @@ export const SCHEDULED_TASKS: ScheduledTask[] = [
   clearObjektStatsTask,
   syncGravitiesTask,
   drainOutboxTask,
+  tradeTimersTask,
   syncFxRatesTask,
   syncCollectionPriceStatsTask,
   syncMembersTask,

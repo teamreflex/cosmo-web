@@ -26,3 +26,7 @@ export class DatabaseWeb extends Context.Service<DatabaseWeb>()(
 ) {
   static readonly layer = Layer.effect(this, this.make);
 }
+
+export type WebTx = Parameters<
+  Parameters<typeof DatabaseWeb.Service.transaction>[0]
+>[0];
