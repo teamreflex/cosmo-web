@@ -2,7 +2,8 @@ import {
   claimBlocks,
   collectionKind,
   estimateSerials,
-  RESERVATION_MIN_GAP,
+  findRange,
+  findReservations,
   SERIAL_CUTOFF,
   type CollectionObjekts,
   type ObjektSerial,
@@ -31,7 +32,7 @@ import type { ProcessorContext } from "./processor";
 type CollectionRef = {
   id: string;
   slug: string;
-  onOffline: "online" | "offline";
+  kind: CollectionObjekts["kind"];
 };
 
 type Top = { tokenId: number; serial: number };
@@ -63,24 +64,18 @@ function manager(ctx: ProcessorContext<Store>): EntityManager {
 }
 
 const objektRows = z.array(
-  z
-    .object({
-      token_id: z.coerce.number(),
-      serial: z.coerce.number(),
-      minted_at: z.coerce.number(),
-    })
-    .transform((row): ObjektSerial => ({
-      tokenId: row.token_id,
-      serial: row.serial,
-      mintedAt: row.minted_at,
-    })),
+  z.object({
+    token_id: z.coerce.number(),
+    serial: z.coerce.number(),
+    minted_at: z.coerce.number(),
+    confirmed: z.coerce.number().nullable(),
+  }),
 );
 const rangeRows = z.array(
   z.object({ lo: z.coerce.number(), hi: z.coerce.number() }),
 );
 const tokenIdRows = z.array(z.object({ token_id: z.coerce.number() }));
-const serialRows = z.array(z.object({ serial: z.coerce.number() }));
-const confirmationRows = z.array(
+const serialRows = z.array(
   z.object({ token_id: z.coerce.number(), serial: z.coerce.number() }),
 );
 const recentMintRows = z.array(
@@ -91,25 +86,20 @@ const recentMintRows = z.array(
   }),
 );
 
-type IdCondition = { sql: string; parameters: string[] };
-
 /**
  * A SQL condition matching objekt ids in any of the inclusive token-id
- * ranges, with its parameters numbered from `offset`. Objekt ids are varchar,
- * and ids of equal length compare as text in numeric order, so each range
- * splits into primary-key range scans by digit count.
+ * ranges, with its parameters numbered from $2 after the collection id.
+ * Objekt ids are varchar, and ids of equal length compare as text in numeric
+ * order, so each range splits into primary-key range scans by digit count.
  */
-function tokenIdRanges(
-  ranges: readonly { from: number; to: number }[],
-  offset: number,
-): IdCondition {
+function tokenIdRanges(ranges: readonly { from: number; to: number }[]) {
   const clauses: string[] = [];
   const parameters: string[] = [];
   for (const range of ranges) {
     // split the range wherever the digit count changes
     for (let start = range.from; start <= range.to;) {
       const end = Math.min(range.to, 10 ** String(start).length - 1);
-      const index = offset + parameters.length;
+      const index = 2 + parameters.length;
       clauses.push(
         `(o.id >= $${index} and o.id <= $${index + 1} and length(o.id) = ${String(start).length})`,
       );
@@ -121,33 +111,9 @@ function tokenIdRanges(
 }
 
 /**
- * The range in `sorted` (ordered by `lo`) holding the token id.
- */
-function findRange(sorted: readonly ReservedRange[], tokenId: number) {
-  // binary search on the ordered ranges
-  let low = 0;
-  let high = sorted.length - 1;
-  while (low <= high) {
-    const middle = (low + high) >> 1;
-    const range = sorted[middle];
-    if (range === undefined) {
-      return undefined;
-    }
-    if (tokenId <= range.lo) {
-      high = middle - 1;
-    } else if (tokenId >= range.hi) {
-      low = middle + 1;
-    } else {
-      return range;
-    }
-  }
-  return undefined;
-}
-
-/**
- * The reserved ranges holding any of the token ids, each with the other
- * collections' ids numbering depends on (see `Reservation`), stored or
- * `pending` in this chunk. Only the span between the collection's own
+ * The reserved ranges holding any of the token ids, as the collection sees
+ * them (see `Reservation`), counting other collections' objekts both stored
+ * and `pending` in this chunk. Only the span between the collection's own
  * objekts is read in full; one id beyond it is enough to mark the range
  * shared, which keeps wide early ranges cheap.
  */
@@ -186,7 +152,6 @@ async function loadReservations(
     [...spans.values()]
       .filter((span) => span.max - span.min > 1)
       .map((span) => ({ from: span.min + 1, to: span.max - 1 })),
-    2,
   );
   const between =
     inside.parameters.length === 0
@@ -204,13 +169,10 @@ async function loadReservations(
   const reservations: Reservation[] = [];
   for (const span of spans.values()) {
     // one id outside its span marks the range shared
-    const outside = tokenIdRanges(
-      [
-        { from: span.lo + 1, to: span.min - 1 },
-        { from: span.max + 1, to: span.hi - 1 },
-      ],
-      2,
-    );
+    const outside = tokenIdRanges([
+      { from: span.lo + 1, to: span.min - 1 },
+      { from: span.max + 1, to: span.hi - 1 },
+    ]);
     const [witness] =
       outside.parameters.length === 0
         ? []
@@ -221,43 +183,33 @@ async function loadReservations(
               [collectionId, ...outside.parameters],
             ),
           );
+    const foreign = [...between, ...pending].filter(
+      (tokenId) => tokenId > span.min && tokenId < span.max,
+    );
     reservations.push({
       lo: span.lo,
       hi: span.hi,
-      foreign: [
-        ...between,
-        ...pending,
-        ...(witness ? [witness.token_id] : []),
-      ].filter((tokenId) => tokenId > span.lo && tokenId < span.hi),
+      shared:
+        foreign.length > 0 ||
+        witness !== undefined ||
+        pending.some((tokenId) => tokenId > span.lo && tokenId < span.hi),
+      foreign,
     });
   }
   return reservations;
 }
 
 /**
- * A collection as stored plus its new objekts from this chunk, with its
- * reservations when it is numbered by them.
+ * A collection's objekts with its reservations when it is numbered by them.
  */
 async function loadCollection(
   em: EntityManager,
   collection: CollectionRef,
-  created: readonly ObjektSerial[],
+  objekts: readonly ObjektSerial[],
   pending: readonly number[],
 ): Promise<CollectionObjekts> {
-  // stored objekts plus the chunk's new ones, not inserted yet
-  const objekts = [
-    ...objektRows.parse(
-      await em.query(
-        `select id::int4 as token_id, serial, (extract(epoch from minted_at) * 1000)::float8 as minted_at
-         from objekt where collection_id = $1`,
-        [collection.id],
-      ),
-    ),
-    ...created,
-  ];
-
   // only physicals and coupon sets need their reservations
-  return collectionKind(collection.slug, collection.onOffline) === "sequential"
+  return collection.kind === "sequential"
     ? {
         kind: "sequential",
         objekts,
@@ -276,43 +228,34 @@ async function loadCollection(
 }
 
 /**
- * Confirmed serials for a collection's objekts, keyed by token id.
+ * The cached tops of these collections whose stored serial still matches,
+ * since apps/schedules may have renumbered them since they were cached.
  */
-async function loadConfirmations(
+async function storedTops(
   em: EntityManager,
-  collectionId: string,
-): Promise<Map<number, number>> {
-  const rows = confirmationRows.parse(
-    await em.query(
-      `select c.token_id::int4 as token_id, c.serial
-       from serial_confirmation c join objekt o on o.id = c.token_id
-       where o.collection_id = $1`,
-      [collectionId],
-    ),
-  );
-  return new Map(rows.map((row) => [row.token_id, row.serial]));
-}
-
-/**
- * The cached top of a digital collection, if its stored serial still
- * matches.
- */
-async function storedTop(
-  em: EntityManager,
-  collectionId: string,
-): Promise<Top | undefined> {
-  const top = tops.get(collectionId);
-  if (top === undefined) {
-    return undefined;
+  collectionIds: readonly string[],
+): Promise<Map<string, Top>> {
+  const cached = collectionIds.flatMap((id): [string, Top][] => {
+    const top = tops.get(id);
+    return top === undefined ? [] : [[id, top]];
+  });
+  if (cached.length === 0) {
+    return new Map();
   }
 
-  // apps/schedules may have renumbered it since it was cached
-  const [row] = serialRows.parse(
-    await em.query(`select serial from objekt where id = $1`, [
-      String(top.tokenId),
-    ]),
+  const stored = new Map(
+    serialRows
+      .parse(
+        await em.query(
+          `select id::int4 as token_id, serial from objekt where id = any($1::text[])`,
+          [cached.map(([, top]) => String(top.tokenId))],
+        ),
+      )
+      .map((row) => [row.token_id, row.serial]),
   );
-  return row?.serial === top.serial ? top : undefined;
+  return new Map(
+    cached.filter(([, top]) => stored.get(top.tokenId) === top.serial),
+  );
 }
 
 /**
@@ -325,23 +268,43 @@ async function estimateNewObjekts(
   created: readonly Objekt[],
   pending: readonly number[],
 ) {
-  // load the collection with the new objekts at serial 0
+  // the stored collection with its confirmed serials
+  const rows = objektRows.parse(
+    await em.query(
+      `select o.id::int4 as token_id, o.serial, (extract(epoch from o.minted_at) * 1000)::float8 as minted_at, c.serial as confirmed
+       from objekt o left join serial_confirmation c on c.token_id = o.id
+       where o.collection_id = $1`,
+      [collection.id],
+    ),
+  );
+
+  // estimate it with the new objekts at serial 0, but only they take the result
   const objekts = await loadCollection(
     em,
     collection,
-    created.map((objekt) => ({
-      tokenId: Number(objekt.id),
-      serial: 0,
-      mintedAt: objekt.mintedAt.getTime(),
-    })),
+    [
+      ...rows.map((row) => ({
+        tokenId: row.token_id,
+        serial: row.serial,
+        mintedAt: row.minted_at,
+      })),
+      ...created.map((objekt) => ({
+        tokenId: Number(objekt.id),
+        serial: 0,
+        mintedAt: objekt.mintedAt.getTime(),
+      })),
+    ],
     pending,
   );
-
-  // estimate everything, but only the new objekts take the result
   const serials = new Map(
-    estimateSerials(objekts, await loadConfirmations(em, collection.id)).map(
-      (update) => [update.tokenId, update.serial],
-    ),
+    estimateSerials(
+      objekts,
+      new Map(
+        rows.flatMap((row): [number, number][] =>
+          row.confirmed === null ? [] : [[row.token_id, row.confirmed]],
+        ),
+      ),
+    ).map((update) => [update.tokenId, update.serial]),
   );
   for (const objekt of created) {
     objekt.serial = serials.get(Number(objekt.id)) ?? 0;
@@ -349,15 +312,11 @@ async function estimateNewObjekts(
 
   // remember a digital collection's top for the next mint
   if (objekts.kind === "sequential") {
-    let top: ObjektSerial | undefined;
-    for (const objekt of objekts.objekts) {
-      if (top === undefined || objekt.tokenId > top.tokenId) {
-        top = objekt;
-      }
-    }
-    const serial =
-      top === undefined ? 0 : (serials.get(top.tokenId) ?? top.serial);
-    if (top !== undefined && serial > 0) {
+    const top = objekts.objekts.reduce((a, b) =>
+      b.tokenId > a.tokenId ? b : a,
+    );
+    const serial = serials.get(top.tokenId) ?? top.serial;
+    if (serial > 0) {
       tops.set(collection.id, { tokenId: top.tokenId, serial });
     } else {
       tops.delete(collection.id);
@@ -366,10 +325,13 @@ async function estimateNewObjekts(
 }
 
 /**
- * Add a reserved range for every jump of RESERVATION_MIN_GAP or more above
- * the frontier. Mints below the frontier never split a range.
+ * Keep serial_reservation equal to findReservations over every digital mint
+ * so far. A jump of RESERVATION_MIN_GAP or more above the frontier opens a
+ * range. A late mint below the frontier, minted after ids above it, splits
+ * the stored range it lands in, as it would sit between them in token-id
+ * order.
  */
-async function openReservations(
+async function updateReservations(
   em: EntityManager,
   ctx: ProcessorContext<Store>,
   tokenIds: readonly number[],
@@ -397,31 +359,67 @@ async function openReservations(
       }
     }
   }
+  const previous = frontier;
 
-  // walk the new mints upwards, opening a range at each jump
-  const ranges: ReservedRange[] = [];
-  for (const tokenId of [...tokenIds].sort((a, b) => a - b)) {
-    if (frontier === undefined || tokenId > frontier) {
-      if (frontier !== undefined && tokenId - frontier >= RESERVATION_MIN_GAP) {
-        ranges.push({ lo: frontier, hi: tokenId });
-      }
-      frontier = tokenId;
-    }
-  }
-  if (ranges.length === 0) {
-    return;
-  }
+  // each jump between the frontier and the new mints above it opens a range
+  const above = tokenIds
+    .filter((tokenId) => previous === undefined || tokenId > previous)
+    .sort((a, b) => a - b);
+  const opened = findReservations(
+    previous === undefined ? above : [previous, ...above],
+  );
+  frontier = above.at(-1) ?? previous;
 
-  // a range already stored under the same lo is kept
-  await em.query(
-    `insert into serial_reservation (lo, hi)
-     select * from unnest($1::int4[], $2::int4[])
-     on conflict (lo) do nothing`,
-    [ranges.map((range) => range.lo), ranges.map((range) => range.hi)],
+  // stored ranges holding a late mint, each with the late mints inside it
+  const late =
+    previous === undefined
+      ? []
+      : tokenIds.filter((tokenId) => tokenId < previous);
+  const split =
+    late.length === 0
+      ? []
+      : rangeRows.parse(
+          await em.query(
+            `select distinct r.lo, r.hi
+             from serial_reservation r join unnest($1::int4[]) t(id) on r.lo < t.id and r.hi > t.id
+             order by r.lo`,
+            [late],
+          ),
+        );
+  const remaining = split.flatMap((range) =>
+    findReservations([
+      range.lo,
+      ...late
+        .filter((tokenId) => tokenId > range.lo && tokenId < range.hi)
+        .sort((a, b) => a - b),
+      range.hi,
+    ]),
   );
-  ctx.log.info(
-    `Opened ${ranges.length} reserved ranges: ${ranges.map((range) => `${range.lo}-${range.hi}`).join(", ")}`,
-  );
+
+  // replace the split ranges, then add the new ones
+  if (split.length > 0) {
+    await em.query(
+      `delete from serial_reservation where lo = any($1::int4[])`,
+      [split.map((range) => range.lo)],
+    );
+    ctx.log.info(
+      `Split ${split.length} reserved ranges with late mints: ${split.map((range) => `${range.lo}-${range.hi}`).join(", ")} kept ${remaining.map((range) => `${range.lo}-${range.hi}`).join(", ") || "none"}`,
+    );
+  }
+  const ranges = [...opened, ...remaining];
+  if (ranges.length > 0) {
+    await em.query(
+      `insert into serial_reservation (lo, hi)
+       select * from unnest($1::int4[], $2::int4[])
+       on conflict (lo) do nothing`,
+      [ranges.map((range) => range.lo), ranges.map((range) => range.hi)],
+    );
+  }
+  if (opened.length > 0) {
+    ctx.log.info(
+      `Opened ${opened.length} reserved ranges: ${opened.map((range) => `${range.lo}-${range.hi}`).join(", ")}`,
+    );
+  }
 }
 
 /**
@@ -439,7 +437,7 @@ export function startSerialBatch(ctx: ProcessorContext<Store>) {
 
 /**
  * Set the serial of each objekt created in a chunk, before the chunk is
- * upserted, and record any reserved range the new digital mints reveal.
+ * upserted, and update the reserved ranges from the new digital mints.
  */
 export async function numberNewObjekts(
   ctx: ProcessorContext<Store>,
@@ -457,7 +455,10 @@ export async function numberNewObjekts(
       collection: {
         id: collection.id,
         slug: collection.slug,
-        onOffline: collection.onOffline === "offline" ? "offline" : "online",
+        kind: collectionKind(
+          collection.slug,
+          collection.onOffline === "offline" ? "offline" : "online",
+        ),
       },
       objekts: [],
     };
@@ -465,17 +466,21 @@ export async function numberNewObjekts(
     byCollection.set(collection.id, entry);
   }
 
-  // digital mints reveal reserved ranges before anything is estimated
-  await openReservations(
+  // digital mints update the reserved ranges before anything is estimated
+  await updateReservations(
     em,
     ctx,
     [...byCollection.values()]
-      .filter(
-        ({ collection }) =>
-          collectionKind(collection.slug, collection.onOffline) ===
-          "sequential",
-      )
+      .filter(({ collection }) => collection.kind === "sequential")
       .flatMap(({ objekts }) => objekts.map((objekt) => Number(objekt.id))),
+  );
+
+  // cached tops of the chunk's digital collections, checked in one read
+  const checkedTops = await storedTops(
+    em,
+    [...byCollection.values()]
+      .filter(({ collection }) => collection.kind === "sequential")
+      .map(({ collection }) => collection.id),
   );
 
   for (const { collection, objekts } of byCollection.values()) {
@@ -490,10 +495,7 @@ export async function numberNewObjekts(
     }
 
     // digital mints above the cached top continue its count
-    const top =
-      collectionKind(collection.slug, collection.onOffline) === "sequential"
-        ? await storedTop(em, collection.id)
-        : undefined;
+    const top = checkedTops.get(collection.id);
     if (top !== undefined && Number(lowest.id) > top.tokenId) {
       for (const objekt of minted) {
         top.tokenId = Number(objekt.id);

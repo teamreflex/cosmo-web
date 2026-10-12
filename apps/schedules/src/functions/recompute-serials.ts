@@ -9,6 +9,7 @@ import {
   claimBlocks,
   collectionKind,
   estimateSerials,
+  findRange,
   SERIAL_CUTOFF,
   type CollectionObjekts,
   type Reservation,
@@ -19,7 +20,7 @@ import { and, eq, gt, gte, inArray, lt, lte, ne, or, sql } from "drizzle-orm";
 import { Duration, Effect } from "effect";
 import type { ScheduledTask } from "../task";
 
-export type CollectionRef = {
+type CollectionRef = {
   id: string;
   slug: string;
   onOffline: "online" | "offline";
@@ -34,7 +35,7 @@ const WRITE_PAUSE = Duration.millis(250);
 
 const tokenId = sql`${objekts.id}::int4`.mapWith(Number);
 
-const collectionColumns = {
+export const collectionColumns = {
   id: collections.id,
   slug: collections.slug,
   onOffline: collections.onOffline,
@@ -61,39 +62,16 @@ function tokenIdBetween(from: number, to: number) {
   return or(...spans);
 }
 
-function findRange(sorted: readonly ReservedRange[], id: number) {
-  let low = 0;
-  let high = sorted.length - 1;
-  while (low <= high) {
-    const middle = (low + high) >> 1;
-    const range = sorted[middle];
-    if (range === undefined) {
-      return undefined;
-    }
-    if (id <= range.lo) {
-      high = middle - 1;
-    } else if (id >= range.hi) {
-      low = middle + 1;
-    } else {
-      return range;
-    }
-  }
-  return undefined;
-}
-
 /**
- * The reserved ranges holding any of the token ids, each with the other
- * collections' ids numbering depends on (see `Reservation`). Only the span
- * between the collection's own objekts is read in full; one id beyond it is
- * enough to mark the range shared, which keeps wide early ranges cheap.
+ * The reserved ranges holding any of the token ids, as the collection sees
+ * them (see `Reservation`). Only the span between the collection's own
+ * objekts is read in full; one id beyond it is enough to mark the range
+ * shared, which keeps wide early ranges cheap.
  */
 const loadReservations = Effect.fn("loadReservations")(function* (
   collectionId: string,
   tokenIds: readonly number[],
 ) {
-  if (tokenIds.length === 0) {
-    return [];
-  }
   const db = yield* DatabaseIndexer;
   const ranges = yield* db
     .select({ lo: serialReservations.lo, hi: serialReservations.hi })
@@ -147,13 +125,12 @@ const loadReservations = Effect.fn("loadReservations")(function* (
             .from(objekts)
             .where(and(ne(objekts.collectionId, collectionId), or(...outside)))
             .limit(1);
+    const foreign = between.filter((id) => id > span.min && id < span.max);
     reservations.push({
       lo: span.lo,
       hi: span.hi,
-      foreign: [
-        ...between.filter((id) => id > span.lo && id < span.hi),
-        ...(witness === undefined ? [] : [witness.tokenId]),
-      ],
+      shared: foreign.length > 0 || witness !== undefined,
+      foreign,
     });
   }
   return reservations;
@@ -196,17 +173,17 @@ const loadCollection = Effect.fn("loadCollection")(function* (
 });
 
 /**
- * Confirmed serials for a collection's objekts, keyed by token id.
+ * Every confirmed serial, keyed by token id. The table holds only what staff
+ * have confirmed, so one read serves every collection in a run.
  */
-const loadConfirmations = Effect.fn("loadConfirmations")(function* (
-  collectionId: string,
-) {
+const loadConfirmations = Effect.fn("loadConfirmations")(function* () {
   const db = yield* DatabaseIndexer;
   const rows = yield* db
-    .select({ tokenId, serial: serialConfirmations.serial })
-    .from(serialConfirmations)
-    .innerJoin(objekts, eq(objekts.id, serialConfirmations.tokenId))
-    .where(eq(objekts.collectionId, collectionId));
+    .select({
+      tokenId: sql`${serialConfirmations.tokenId}::int4`.mapWith(Number),
+      serial: serialConfirmations.serial,
+    })
+    .from(serialConfirmations);
   return new Map(rows.map((row) => [row.tokenId, row.serial]));
 });
 
@@ -244,20 +221,20 @@ const writeSerials = Effect.fn("writeSerials")(function* (
  */
 export const recomputeCollections = Effect.fn("recomputeCollections")(
   function* (refs: readonly CollectionRef[]) {
+    const confirmations = yield* loadConfirmations();
     const updates: SerialUpdate[] = [];
     for (const collection of refs) {
       updates.push(
-        ...estimateSerials(
-          yield* loadCollection(collection),
-          yield* loadConfirmations(collection.id),
-        ),
+        ...estimateSerials(yield* loadCollection(collection), confirmations),
       );
     }
 
     updates.sort((a, b) => a.tokenId - b.tokenId);
     for (let index = 0; index < updates.length; index += WRITE_BATCH) {
+      if (index > 0) {
+        yield* Effect.sleep(WRITE_PAUSE);
+      }
       yield* writeSerials(updates.slice(index, index + WRITE_BATCH));
-      yield* Effect.sleep(WRITE_PAUSE);
     }
     return updates.length;
   },

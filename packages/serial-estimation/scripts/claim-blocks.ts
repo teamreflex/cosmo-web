@@ -1,7 +1,7 @@
 // oxlint-disable no-console -- CLI script reporting results on stdout
 import { collections } from "@apollo/database/indexer/schema";
 import { claimBlocks, collectionKind, SERIAL_CUTOFF } from "../src";
-import { client, db, INDEXER_DATABASE_URL } from "./database";
+import { client, collectionColumns, copyRows, db } from "./database";
 
 /**
  * Find claim blocks in the indexer database at INDEXER_DATABASE_URL: ranges
@@ -21,13 +21,7 @@ import { client, db, INDEXER_DATABASE_URL } from "./database";
 
 const MIN_CLAIMS = 10;
 
-const rows = await db
-  .select({
-    id: collections.id,
-    slug: collections.slug,
-    onOffline: collections.onOffline,
-  })
-  .from(collections);
+const rows = await db.select(collectionColumns).from(collections);
 const index = new Map(rows.map((row, position) => [row.id, position]));
 const sequential = rows.map(
   (row) => collectionKind(row.slug, row.onOffline) === "sequential",
@@ -42,44 +36,29 @@ let tokenIds = new Float64Array(capacity);
 let mintedAts = new Float64Array(capacity);
 let owners = new Int32Array(capacity);
 
-const psql = Bun.spawn(
-  [
-    "psql",
-    INDEXER_DATABASE_URL,
-    "-c",
-    String.raw`\copy (select id, collection_id, (extract(epoch from minted_at) * 1000)::bigint from objekt) to stdout`,
-  ],
-  { stdout: "pipe", stderr: "inherit" },
-);
-let pending = "";
-const decoder = new TextDecoder();
-for await (const bytes of psql.stdout) {
-  const lines = (pending + decoder.decode(bytes, { stream: true })).split("\n");
-  pending = lines.pop() ?? "";
-  for (const line of lines) {
-    const [id, collectionId, mintedAt] = line.split("\t");
-    const owner =
-      collectionId === undefined ? undefined : index.get(collectionId);
-    if (owner === undefined || !sequential[owner]) {
-      continue;
-    }
-    if (size === capacity) {
-      capacity *= 2;
-      const grow = <T extends Float64Array | Int32Array>(from: T, to: T) => {
-        to.set(from);
-        return to;
-      };
-      tokenIds = grow(tokenIds, new Float64Array(capacity));
-      mintedAts = grow(mintedAts, new Float64Array(capacity));
-      owners = grow(owners, new Int32Array(capacity));
-    }
-    tokenIds[size] = Number(id);
-    mintedAts[size] = Number(mintedAt);
-    owners[size] = owner;
-    size++;
+for await (const [id, collectionId, mintedAt] of copyRows(
+  "select id, collection_id, (extract(epoch from minted_at) * 1000)::bigint from objekt",
+)) {
+  const owner =
+    collectionId === undefined ? undefined : index.get(collectionId);
+  if (owner === undefined || !sequential[owner]) {
+    continue;
   }
+  if (size === capacity) {
+    capacity *= 2;
+    const grow = <T extends Float64Array | Int32Array>(from: T, to: T) => {
+      to.set(from);
+      return to;
+    };
+    tokenIds = grow(tokenIds, new Float64Array(capacity));
+    mintedAts = grow(mintedAts, new Float64Array(capacity));
+    owners = grow(owners, new Int32Array(capacity));
+  }
+  tokenIds[size] = Number(id);
+  mintedAts[size] = Number(mintedAt);
+  owners[size] = owner;
+  size++;
 }
-await psql.exited;
 
 // mark claims: minted when the frontier had already passed their id
 const late = new Uint8Array(size);

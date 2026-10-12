@@ -14,27 +14,21 @@ import {
   claimBlocks,
   collectionKind,
   estimateSerials,
+  findRange,
   findReservations,
   RESERVATION_MIN_GAP,
   type CollectionObjekts,
   type ObjektSerial,
   type Reservation,
-  type ReservedRange,
 } from "../src";
-import { client, db, INDEXER_DATABASE_URL } from "./database";
+import { client, collectionColumns, copyRows, db } from "./database";
 
 const [cutoffArg, minGapArg] = process.argv.slice(2);
 const cutoff = Date.parse(cutoffArg ?? "2025-12-15T00:00:00Z");
 const minGap =
   minGapArg === undefined ? RESERVATION_MIN_GAP : Number(minGapArg);
 
-const collectionRows = await db
-  .select({
-    id: collections.id,
-    slug: collections.slug,
-    onOffline: collections.onOffline,
-  })
-  .from(collections);
+const collectionRows = await db.select(collectionColumns).from(collections);
 const kinds = collectionRows.map((row) => ({
   slug: row.slug,
   kind: collectionKind(row.slug, row.onOffline),
@@ -67,41 +61,23 @@ function grow() {
   owners = resize(owners, new Int32Array(capacity));
 }
 
-const psql = Bun.spawn(
-  [
-    "psql",
-    INDEXER_DATABASE_URL,
-    "-c",
-    String.raw`\copy (select id, collection_id, serial, (extract(epoch from minted_at) * 1000)::bigint from objekt where id ~ '^[0-9]+$') to stdout`,
-  ],
-  { stdout: "pipe", stderr: "inherit" },
-);
-
-let pending = "";
-const decoder = new TextDecoder();
-for await (const bytes of psql.stdout) {
-  const lines = (pending + decoder.decode(bytes, { stream: true })).split("\n");
-  pending = lines.pop() ?? "";
-  for (const line of lines) {
-    const [id, collectionId, serial, mintedAt] = line.split("\t");
-    const owner =
-      collectionId === undefined
-        ? undefined
-        : collectionIndex.get(collectionId);
-    if (owner === undefined) {
-      continue;
-    }
-    if (size === capacity) {
-      grow();
-    }
-    tokenIds[size] = Number(id);
-    serials[size] = Number(serial);
-    mintedAts[size] = Number(mintedAt);
-    owners[size] = owner;
-    size++;
+for await (const [id, collectionId, serial, mintedAt] of copyRows(
+  "select id, collection_id, serial, (extract(epoch from minted_at) * 1000)::bigint from objekt where id ~ '^[0-9]+$'",
+)) {
+  const owner =
+    collectionId === undefined ? undefined : collectionIndex.get(collectionId);
+  if (owner === undefined) {
+    continue;
   }
+  if (size === capacity) {
+    grow();
+  }
+  tokenIds[size] = Number(id);
+  serials[size] = Number(serial);
+  mintedAts[size] = Number(mintedAt);
+  owners[size] = owner;
+  size++;
 }
-await psql.exited;
 process.stdout.write(`loaded ${size} objekts\n`);
 
 const byTokenId = Uint32Array.from({ length: size }, (_, index) => index).sort(
@@ -130,45 +106,34 @@ function lowerBound(tokenId: number) {
   return low;
 }
 
-function findRange(tokenId: number): ReservedRange | undefined {
-  let low = 0;
-  let high = ranges.length - 1;
-  while (low <= high) {
-    const middle = (low + high) >> 1;
-    const range = ranges[middle];
-    if (range === undefined) {
-      return undefined;
-    }
-    if (tokenId <= range.lo) {
-      high = middle - 1;
-    } else if (tokenId >= range.hi) {
-      low = middle + 1;
-    } else {
-      return range;
-    }
-  }
-  return undefined;
-}
-
 function reservationsOf(collection: number, objekts: readonly ObjektSerial[]) {
   const found = new Map<number, Reservation>();
   for (const objekt of objekts) {
-    const range = findRange(objekt.tokenId);
+    const range = findRange(ranges, objekt.tokenId);
     if (range === undefined || found.has(range.lo)) {
       continue;
     }
     const foreign: number[] = [];
+    let min = Number.POSITIVE_INFINITY;
+    let max = Number.NEGATIVE_INFINITY;
     for (let position = lowerBound(range.lo + 1); position < size; position++) {
       const row = byTokenId[position] ?? 0;
       const tokenId = tokenIds[row] ?? 0;
       if (tokenId >= range.hi) {
         break;
       }
-      if (owners[row] !== collection) {
+      if (owners[row] === collection) {
+        min = Math.min(min, tokenId);
+        max = tokenId;
+      } else {
         foreign.push(tokenId);
       }
     }
-    found.set(range.lo, { ...range, foreign });
+    found.set(range.lo, {
+      ...range,
+      shared: foreign.length > 0,
+      foreign: foreign.filter((tokenId) => tokenId > min && tokenId < max),
+    });
   }
   return [...found.values()];
 }

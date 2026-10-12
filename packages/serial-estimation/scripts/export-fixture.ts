@@ -28,14 +28,13 @@ const collection = {
     objekt.mintedAt > SERIAL_CUTOFF ? { ...objekt, serial: 0 } : objekt,
   ),
 };
-const file: FixtureFile = {
-  slug,
-  exportedAt: new Date().toISOString(),
-  collection,
-};
 await Bun.write(
   `${import.meta.dir}/../tests/fixtures/${slug}.json`,
-  JSON.stringify(file),
+  JSON.stringify({
+    slug,
+    exportedAt: new Date().toISOString(),
+    collection,
+  } satisfies FixtureFile),
 );
 console.log(
   `${slug}: ${collection.objekts.length} objekts${collection.kind === "reserved" ? `, ${collection.reservations.length} reservations` : ""}`,

@@ -7,7 +7,7 @@ import {
 import { eq, ne } from "drizzle-orm";
 import { Effect } from "effect";
 import type { ScheduledTask } from "../task";
-import { recomputeCollections } from "./recompute-serials";
+import { collectionColumns, recomputeCollections } from "./recompute-serials";
 
 /**
  * Apply serials staff confirmed in the admin panel: re-estimate every
@@ -22,11 +22,7 @@ export const applySerialConfirmationsTask = {
   effect: Effect.gen(function* () {
     const db = yield* DatabaseIndexer;
     const pending = yield* db
-      .selectDistinct({
-        id: collections.id,
-        slug: collections.slug,
-        onOffline: collections.onOffline,
-      })
+      .selectDistinct(collectionColumns)
       .from(serialConfirmations)
       .innerJoin(objekts, eq(objekts.id, serialConfirmations.tokenId))
       .innerJoin(collections, eq(collections.id, objekts.collectionId))

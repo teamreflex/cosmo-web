@@ -15,9 +15,10 @@ import {
 } from "../src";
 import {
   client,
+  collectionColumns,
   collectionsMintedSince,
+  copyRows,
   db,
-  INDEXER_DATABASE_URL,
   loadCollection,
   loadConfirmations,
   writeSerials,
@@ -99,15 +100,7 @@ function log(message: string) {
  */
 async function onlineTokenIds(): Promise<Float64Array> {
   const sequential = new Set(
-    (
-      await db
-        .select({
-          id: collections.id,
-          slug: collections.slug,
-          onOffline: collections.onOffline,
-        })
-        .from(collections)
-    )
+    (await db.select(collectionColumns).from(collections))
       .filter(
         (collection) =>
           collectionKind(collection.slug, collection.onOffline) ===
@@ -116,39 +109,20 @@ async function onlineTokenIds(): Promise<Float64Array> {
       .map((collection) => collection.id),
   );
 
-  const psql = Bun.spawn(
-    [
-      "psql",
-      INDEXER_DATABASE_URL,
-      "-c",
-      String.raw`\copy (select id, collection_id from objekt) to stdout`,
-    ],
-    { stdout: "pipe", stderr: "inherit" },
-  );
   let tokenIds = new Float64Array(1 << 24);
   let size = 0;
-  let pending = "";
-  const decoder = new TextDecoder();
-  for await (const bytes of psql.stdout) {
-    const lines = (pending + decoder.decode(bytes, { stream: true })).split(
-      "\n",
-    );
-    pending = lines.pop() ?? "";
-    for (const line of lines) {
-      const [id, collectionId] = line.split("\t");
-      if (collectionId === undefined || !sequential.has(collectionId)) {
-        continue;
-      }
-      if (size === tokenIds.length) {
-        const grown = new Float64Array(tokenIds.length * 2);
-        grown.set(tokenIds);
-        tokenIds = grown;
-      }
-      tokenIds[size++] = Number(id);
+  for await (const [id, collectionId] of copyRows(
+    "select id, collection_id from objekt",
+  )) {
+    if (collectionId === undefined || !sequential.has(collectionId)) {
+      continue;
     }
-  }
-  if ((await psql.exited) !== 0) {
-    throw new Error("psql failed");
+    if (size === tokenIds.length) {
+      const grown = new Float64Array(tokenIds.length * 2);
+      grown.set(tokenIds);
+      tokenIds = grown;
+    }
+    tokenIds[size++] = Number(id);
   }
   return tokenIds.slice(0, size).sort();
 }
@@ -184,14 +158,12 @@ async function backfillSerials() {
   const minted = await collectionsMintedSince(SERIAL_CUTOFF);
   log(`${minted.length} collections minted since the cutoff`);
 
+  const confirmations = await loadConfirmations();
   const updates: SerialUpdate[] = [];
   const zeros = { sequential: 0, reserved: 0 };
   for (const [index, collection] of minted.entries()) {
     const objekts = await loadCollection(collection);
-    const changed = estimateSerials(
-      objekts,
-      await loadConfirmations(collection.id),
-    );
+    const changed = estimateSerials(objekts, confirmations);
     updates.push(...changed);
 
     const serials = new Map(
@@ -226,7 +198,9 @@ async function backfillSerials() {
         `wrote ${written}/${updates.length}, up to token ${batch.at(-1)?.tokenId}`,
       );
     }
-    await Bun.sleep(options.pause);
+    if (written < updates.length) {
+      await Bun.sleep(options.pause);
+    }
   }
 }
 
