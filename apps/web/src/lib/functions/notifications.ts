@@ -1,12 +1,14 @@
 import { decodeCursor, encodeCursor } from "@/lib/server/cursor.server";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
-import { collections } from "@/lib/server/db/indexer/schema";
+import { collections, objekts } from "@/lib/server/db/indexer/schema";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
-import type {
-  NotificationCollection,
-  NotificationPage,
-  NotificationRow,
+import {
+  isListMatchNotification,
+  type NotificationCollection,
+  type NotificationPage,
+  type NotificationRow,
+  type NotificationToken,
 } from "@/lib/universal/notifications";
 import {
   listNotificationsSchema,
@@ -16,9 +18,12 @@ import {
   cosmoAccounts,
   notifications,
   objektLists,
+  tradeOfferItems,
+  tradeOffers,
 } from "@apollo/database/web/schema";
 import { createServerFn } from "@tanstack/react-start";
-import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 
 const PAGE_SIZE = 30;
 
@@ -26,12 +31,21 @@ const PAGE_SIZE = 30;
  * One page of the current user's notifications, newest first. The bell groups
  * the loaded rows into bursts. The cursor carries `created_at` as Postgres
  * text, which keeps the microseconds a JS Date would drop.
+ *
+ * A trade notification's counterparty is whichever party of its trade the
+ * recipient isn't, and its listing is the one the trade's items came from,
+ * or the listing itself.
  */
 export const $listNotifications = createServerFn({ method: "GET" })
   .validator(listNotificationsSchema)
   .middleware([authenticatedMiddleware])
   .handler(async ({ data, context }): Promise<NotificationPage> => {
     const after = decodeCursor(data.cursor);
+    const actor = alias(cosmoAccounts, "actor");
+    const counterparty = alias(cosmoAccounts, "counterparty");
+    const counterpartyId = sql<
+      string | null
+    >`CASE WHEN ${tradeOffers.fromUserId} = ${notifications.userId} THEN ${tradeOffers.toUserId} ELSE ${tradeOffers.fromUserId} END`;
     const rows = await db
       .select({
         id: notifications.id,
@@ -40,14 +54,24 @@ export const $listNotifications = createServerFn({ method: "GET" })
         type: notifications.type,
         readAt: notifications.readAt,
         actorId: notifications.actorId,
-        username: cosmoAccounts.username,
+        actorUsername: actor.username,
         listId: objektLists.id,
         listSlug: objektLists.slug,
         collectionId: notifications.collectionId,
+        tokenId: notifications.tokenId,
+        offerId: tradeOffers.id,
+        offerStatus: tradeOffers.status,
+        listingId: sql<
+          string | null
+        >`CASE WHEN ${tradeOffers.kind} = 'listing' THEN ${tradeOffers.id} ELSE (SELECT ${tradeOfferItems.listingId} FROM ${tradeOfferItems} WHERE ${tradeOfferItems.offerId} = ${tradeOffers.id} AND ${tradeOfferItems.listingId} IS NOT NULL LIMIT 1) END`,
+        counterpartyId,
+        counterpartyUsername: counterparty.username,
       })
       .from(notifications)
       .leftJoin(objektLists, eq(objektLists.id, notifications.listId))
-      .leftJoin(cosmoAccounts, eq(cosmoAccounts.userId, notifications.actorId))
+      .leftJoin(tradeOffers, eq(tradeOffers.id, notifications.offerId))
+      .leftJoin(actor, eq(actor.userId, notifications.actorId))
+      .leftJoin(counterparty, eq(counterparty.userId, counterpartyId))
       .where(
         and(
           eq(notifications.userId, context.session.session.userId),
@@ -59,15 +83,44 @@ export const $listNotifications = createServerFn({ method: "GET" })
       .orderBy(desc(notifications.createdAt), desc(notifications.id))
       .limit(PAGE_SIZE);
 
+    // what each claimed listing's poster sends, in posted order
+    const claimedIds = rows.flatMap((r) =>
+      r.type === "listing_claimed" && r.offerId !== null ? [r.offerId] : [],
+    );
+    const posterItems =
+      claimedIds.length === 0
+        ? []
+        : await db
+            .select({
+              offerId: tradeOfferItems.offerId,
+              tokenId: tradeOfferItems.tokenId,
+            })
+            .from(tradeOfferItems)
+            .where(
+              and(
+                inArray(tradeOfferItems.offerId, claimedIds),
+                eq(tradeOfferItems.sender, "from"),
+                eq(tradeOfferItems.kind, "objekt"),
+              ),
+            )
+            .orderBy(asc(tradeOfferItems.id));
+    const posterTokens = Map.groupBy(posterItems, (i) => i.offerId);
+
     const slugs = [
       ...new Set(
         rows.flatMap((r) => (r.collectionId === null ? [] : [r.collectionId])),
       ),
     ];
-    const pageCollections =
+    const tokenIds = [
+      ...new Set([
+        ...rows.flatMap((r) => (r.tokenId === null ? [] : [r.tokenId])),
+        ...posterItems.flatMap((i) => (i.tokenId === null ? [] : [i.tokenId])),
+      ]),
+    ];
+    const [pageCollections, pageTokens] = await Promise.all([
       slugs.length === 0
         ? []
-        : await indexer
+        : indexer
             .select({
               slug: collections.slug,
               name: collections.collectionId,
@@ -75,32 +128,102 @@ export const $listNotifications = createServerFn({ method: "GET" })
               frontImageVersion: collections.frontImageVersion,
             })
             .from(collections)
-            .where(inArray(collections.slug, slugs));
+            .where(inArray(collections.slug, slugs)),
+      tokenIds.length === 0
+        ? []
+        : indexer
+            .select({
+              id: objekts.id,
+              serial: objekts.serial,
+              slug: collections.slug,
+              name: collections.collectionId,
+              frontImage: collections.frontImage,
+              frontImageVersion: collections.frontImageVersion,
+            })
+            .from(objekts)
+            .innerJoin(collections, eq(objekts.collectionId, collections.id))
+            .where(inArray(objekts.id, tokenIds.map(String))),
+    ]);
     const collectionsBySlug = new Map<string, NotificationCollection>(
       pageCollections.map((c) => [c.slug, c]),
     );
+    const tokensById = new Map(pageTokens.map((t) => [Number(t.id), t]));
+    const toToken = (tokenId: number): NotificationToken => {
+      const token = tokensById.get(tokenId);
+      return token === undefined
+        ? { tokenId, serial: null, collection: null }
+        : {
+            tokenId,
+            serial: token.serial,
+            collection: {
+              slug: token.slug,
+              name: token.name,
+              frontImage: token.frontImage,
+              frontImageVersion: token.frontImageVersion,
+            },
+          };
+    };
 
     const last = rows.at(-1);
     return {
-      // every type has an actor, a list and a collection (notifications_subject_chk)
-      rows: rows.flatMap((row): NotificationRow[] =>
-        row.actorId === null || row.listId === null || row.listSlug === null
+      // the joins are present for every row of the type (notifications_subject_chk)
+      rows: rows.flatMap((row): NotificationRow[] => {
+        if (isListMatchNotification(row.type)) {
+          return row.actorId === null ||
+            row.listId === null ||
+            row.listSlug === null
+            ? []
+            : [
+                {
+                  kind: "list_match",
+                  id: row.id,
+                  createdAt: row.createdAt,
+                  type: row.type,
+                  unread: row.readAt === null,
+                  actor: { userId: row.actorId, username: row.actorUsername },
+                  list: { id: row.listId, slug: row.listSlug },
+                  collection:
+                    row.collectionId === null
+                      ? null
+                      : (collectionsBySlug.get(row.collectionId) ?? null),
+                },
+              ];
+        }
+        return row.offerId === null || row.offerStatus === null
           ? []
           : [
               {
+                kind: "trade",
                 id: row.id,
                 createdAt: row.createdAt,
                 type: row.type,
                 unread: row.readAt === null,
-                actor: { userId: row.actorId, username: row.username },
-                list: { id: row.listId, slug: row.listSlug },
-                collection:
-                  row.collectionId === null
+                actor:
+                  row.actorId === null
                     ? null
-                    : (collectionsBySlug.get(row.collectionId) ?? null),
+                    : { userId: row.actorId, username: row.actorUsername },
+                counterparty:
+                  row.counterpartyId === null
+                    ? null
+                    : {
+                        userId: row.counterpartyId,
+                        username: row.counterpartyUsername,
+                      },
+                offer: {
+                  id: row.offerId,
+                  status: row.offerStatus,
+                  listingId: row.listingId,
+                },
+                token: row.tokenId === null ? null : toToken(row.tokenId),
+                objekts:
+                  row.type === "listing_claimed"
+                    ? (posterTokens.get(row.offerId) ?? []).flatMap((i) =>
+                        i.tokenId === null ? [] : [toToken(i.tokenId)],
+                      )
+                    : [],
               },
-            ],
-      ),
+            ];
+      }),
       nextCursor:
         rows.length === PAGE_SIZE && last
           ? encodeCursor(last.cursorAt, last.id)

@@ -39,6 +39,7 @@ import {
   type TokenState,
 } from "./holdings.server";
 import { bumpUpdatedAt, type ListingActor } from "./listings.server";
+import { insertTradeEvent, notifyUsers } from "./trade.server";
 import {
   type PosterFacts,
   posterRefusal,
@@ -207,7 +208,8 @@ async function recheckPoster(tx: WebTx, { listing, poster }: Preflight) {
  * listing's row lock: a claim or edit that committed while this one waited
  * leaves no row to update, and the re-read says which. Then repeats every
  * check that could have changed; a refusal rolls the claim back. Returns
- * the claimer's COSMO address as stored, which the trade pins.
+ * the claimer's COSMO address as stored, which the trade pins, and the
+ * poster's locked row, missing when the listing has no poster.
  */
 export async function lockAndRecheck(
   tx: WebTx,
@@ -270,7 +272,10 @@ export async function lockAndRecheck(
     actor.address,
   );
   if (refusal) refuseToken(refusal);
-  return link.address;
+  return {
+    toAddress: link.address,
+    poster: users.find((row) => row.id === listing.fromUserId),
+  };
 }
 
 /**
@@ -295,13 +300,14 @@ async function insertLiveItems(
 /**
  * Creates the accepted trade for the claimed listing with both addresses
  * pinned and the fixed claim window, and copies both sides' tokens into it
- * as live items. The poster's keep the listing's id.
+ * as live items. The poster's keep the listing's id. Starts the trade's
+ * timeline and tells the poster what to send.
  */
 export async function insertTrade(
   tx: WebTx,
   actor: ListingActor,
   { listing, submitted, claimerStates }: Preflight,
-  toAddress: string,
+  { toAddress, poster }: Awaited<ReturnType<typeof lockAndRecheck>>,
 ) {
   const [trade] = await tx
     .insert(tradeOffers)
@@ -350,5 +356,12 @@ export async function insertTrade(
     }),
     "claim_token_unavailable",
   );
+  await insertTradeEvent(tx, trade.id, { type: "accepted" });
+  await notifyUsers(tx, poster ? [poster] : [], {
+    type: "listing_claimed",
+    offerId: trade.id,
+    actorId: actor.userId,
+    tokenId: null,
+  });
   return { tradeId: trade.id };
 }

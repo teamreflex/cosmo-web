@@ -14,6 +14,12 @@ export const tradeErrorCodes = [
   "claim_cap_reached",
   "claim_assignment_invalid",
   "claim_token_unavailable",
+  "trade_not_found",
+  "trade_status_changed",
+  "trade_cancel_started",
+  "trade_deadline_passed",
+  "trade_own",
+  "trade_party_banned",
 ] as const;
 
 export type TradeErrorCode = (typeof tradeErrorCodes)[number];

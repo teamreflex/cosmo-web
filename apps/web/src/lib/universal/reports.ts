@@ -1,9 +1,9 @@
 import type { StaffUser } from "@/lib/universal/staff-users";
 import type { Role } from "@apollo/auth";
 import type {
-  ReportReason,
   ReportStatus,
   ReportTargetType,
+  StoredReportReason,
 } from "@apollo/database/web/types";
 
 /**
@@ -40,7 +40,7 @@ export const reportTargetTypeFilters = [
  */
 export type AdminReportRow = {
   id: string;
-  reason: ReportReason;
+  reason: StoredReportReason;
   createdAt: Date;
   reporter: StaffUser | null;
   target: AdminReportRowTarget;
@@ -57,6 +57,8 @@ export type ReportTargetUser = StaffUser & {
   role: Role;
   ban: { until: Date | null } | null;
   protected: boolean | null;
+  /** Accepted and disputed trades, which a ban leaves on hold for staff. */
+  liveTradeCount: number;
 };
 
 export type AdminReportDetailTarget = {
@@ -78,7 +80,7 @@ export type ReportOutcome =
 
 export type AdminReportDetail = ReportOutcome & {
   id: string;
-  reason: ReportReason;
+  reason: StoredReportReason;
   note: string | null;
   createdAt: Date;
   reporter: StaffUser | null;

@@ -5,6 +5,7 @@ export const reportErrorCodes = [
   "report_not_found",
   "report_about_you",
   "report_status_changed",
+  "report_trade_dispute",
 ] as const;
 
 export type ReportErrorCode = (typeof reportErrorCodes)[number];

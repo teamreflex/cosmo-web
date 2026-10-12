@@ -1,6 +1,8 @@
 import type {
   ListingStatus,
   TradeCanceller,
+  TradeOffer,
+  TradeOfferItem,
   TradeSide,
   TradeStatus,
 } from "@apollo/database/web/types";
@@ -45,12 +47,16 @@ export type TradeEvent =
   | { type: "mark_paid"; item: number; by: TradeSide }
   | { type: "confirm_payment"; item: number; by: TradeSide }
   | { type: "cancel"; by: TradeSide }
-  | { type: "dispute"; by: TradeSide }
+  // a party opens a dispute, or a ban freezes the trade as staff
+  | { type: "dispute"; by: TradeCanceller }
   // the deadline passed the drain's watermark
   | { type: "time_out" }
   | { type: "staff_complete" }
   | { type: "staff_cancel" }
-  // staff gave a disputed trade a new deadline, which unfreezes it
+  /**
+   * Staff gave a disputed trade a new deadline, which unfreezes it, or
+   * completes it when everything already arrived.
+   */
   | { type: "staff_extend" };
 
 export type TransitionRefusal =
@@ -82,9 +88,9 @@ const refuse = (reason: TransitionRefusal): TransitionResult => ({
  * party may cancel only while nothing has been sent or marked paid; after
  * that, a dispute is the only way out. A dispute freezes the deadline, mark
  * paid and cancelling. Transfers and confirmations are still recorded while
- * disputed, but only staff complete or cancel a disputed trade. An accepted
- * trade completes once every token has arrived and every payment is
- * confirmed.
+ * disputed, but only staff complete, cancel or extend a disputed trade. An
+ * accepted trade completes once every token has arrived and every payment is
+ * confirmed, which an extend checks too.
  */
 export function transition(
   trade: TradeState,
@@ -167,7 +173,8 @@ function updateItem(
   ) {
     return refuse("wrong_status");
   }
-  const item = items.at(event.item);
+  // plain indexing, since `at` would wrap a negative index to the last item
+  const item = items[event.item];
 
   switch (event.type) {
     case "transfer":
@@ -234,6 +241,8 @@ function endEarly(
 
 /**
  * Staff complete or extend a disputed trade, and may cancel any live one.
+ * An extend settles like a transfer, so a trade whose items all arrived
+ * while disputed completes rather than waiting for its new deadline.
  */
 function resolveAsStaff(
   { status, items }: TradeState,
@@ -253,7 +262,7 @@ function resolveAsStaff(
       };
     case "staff_extend":
       if (status !== "disputed") return refuse("wrong_status");
-      return { ok: true, trade: { status: "accepted", items } };
+      return settle("accepted", items);
   }
 }
 
@@ -309,7 +318,7 @@ export type ListingEvent =
   | "withdraw"
   // an offered token left the poster or turned untransferable
   | "break"
-  // staff removed it, or banned the poster
+  // staff removed it, or its poster was banned
   | "remove"
   // the claim timed out with the poster marked abandoned
   | "abandon";
@@ -325,7 +334,7 @@ const listingTransitions = {
   fill: { from: ["claimed"], to: "filled" },
   withdraw: { from: ["open"], to: "withdrawn" },
   break: { from: ["open", "claimed"], to: "broken" },
-  remove: { from: ["open"], to: "removed" },
+  remove: { from: ["open", "claimed"], to: "removed" },
   abandon: { from: ["claimed"], to: "abandoned" },
 } as const satisfies Record<
   ListingEvent,
@@ -355,4 +364,88 @@ export function listingTransition(event: ListingEvent): {
   to: ListingStatus;
 } {
   return listingTransitions[event];
+}
+
+/**
+ * What happens to a claimed listing when its trade ends. A completed trade
+ * fills it. Otherwise a banned poster's listing is removed, a poster marked
+ * abandoned loses it, and anything else releases it back to the poster: the
+ * caller reopens it if the poster can still offer every token, else breaks
+ * it. Only a release depends on the poster's holdings, so callers read them
+ * only then. Live trades leave it alone.
+ */
+export function listingEventAfter(
+  trade: TradeState,
+  poster: { banned: boolean },
+): ListingEvent | "release" | undefined {
+  switch (trade.status) {
+    case "completed":
+      return "fill";
+    case "cancelled":
+      return poster.banned ? "remove" : "release";
+    case "timed_out":
+      if (poster.banned) return "remove";
+      return trade.abandonedBy.includes("from") ? "abandon" : "release";
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * Read a trade and its items, in id order, into the state transitions take.
+ * Throws on a listing or on a row the table's checks forbid.
+ */
+export function tradeState(
+  row: Pick<TradeOffer, "status" | "cancelledBy" | "abandonedBy">,
+  rows: readonly Pick<
+    TradeOfferItem,
+    "kind" | "sender" | "transferredAt" | "markedPaidAt" | "confirmedAt"
+  >[],
+): TradeState {
+  const items = rows.map((item): TradeItemState =>
+    item.kind === "objekt"
+      ? {
+          kind: "objekt",
+          sender: item.sender,
+          transferred: item.transferredAt !== null,
+        }
+      : {
+          kind: "payment",
+          sender: item.sender,
+          markedPaid: item.markedPaidAt !== null,
+          confirmed: item.confirmedAt !== null,
+        },
+  );
+
+  switch (row.status) {
+    case "cancelled":
+      if (row.cancelledBy === null) {
+        throw new Error("cancelled trade without cancelled_by");
+      }
+      return { status: row.status, cancelledBy: row.cancelledBy, items };
+    case "timed_out": {
+      const [first, ...rest] = row.abandonedBy ?? [];
+      if (first === undefined) {
+        throw new Error("timed out trade without abandoned_by");
+      }
+      return { status: row.status, abandonedBy: [first, ...rest], items };
+    }
+    case "pending":
+    case "accepted":
+    case "disputed":
+    case "completed":
+    case "declined":
+    case "withdrawn":
+    case "countered":
+    case "expired":
+    case "stale":
+      return { status: row.status, items };
+    case "open":
+    case "claimed":
+    case "filled":
+    case "broken":
+    case "removed":
+    case "abandoned":
+      throw new Error(`${row.status} is a listing status`);
+  }
 }

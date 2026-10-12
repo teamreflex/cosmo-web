@@ -9,6 +9,7 @@
     "./assignment": "./src/assignment.ts",
     "./caps": "./src/caps.ts",
     "./composer": "./src/composer.ts",
+    "./events": "./src/events.ts",
     "./feed": "./src/feed.ts",
     "./inventory": "./src/inventory.ts",
     "./lifecycle": "./src/lifecycle.ts",

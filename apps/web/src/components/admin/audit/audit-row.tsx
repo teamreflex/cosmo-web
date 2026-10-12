@@ -38,6 +38,10 @@ const actionTones = {
   "api-key:update": "text-destructive",
   "api-key:delete": "text-destructive",
   "metadata:update": "text-foreground",
+  "trade:dispute": "text-foreground",
+  "trade:complete": "text-foreground",
+  "trade:cancel": "text-foreground",
+  "trade:extend": "text-foreground",
 } satisfies Record<StaffAuditAction, string>;
 
 type Props = {
@@ -180,15 +184,7 @@ function AuditTarget({ row }: Props) {
               {detailNote(row.detail)}
             </span>
           )}
-          {row.report !== null && (
-            <Link
-              to="/admin/reports"
-              search={{ status: row.report.status, report: row.report.id }}
-              className="text-xs text-cosmo hover:underline dark:text-cosmo-text"
-            >
-              {m.admin_audit_report_link({ id: shortId(row.report.id) })}
-            </Link>
-          )}
+          {row.report !== null && <ReportLink report={row.report} />}
         </>
       );
     }
@@ -258,7 +254,41 @@ function AuditTarget({ row }: Props) {
           </span>
         </>
       );
+    case "trade":
+      return (
+        <>
+          <span>{m.admin_audit_target_trade()}</span>
+          <span className="font-mono text-xs text-muted-foreground">
+            {shortId(row.target.id)}
+          </span>
+          {row.detail !== null && (
+            <span className="text-xs text-muted-foreground">
+              {detailNote(row.detail)}
+            </span>
+          )}
+          {row.report !== null && <ReportLink report={row.report} />}
+        </>
+      );
   }
+}
+
+/**
+ * The report a user or trade action was taken from, opened in the queue.
+ */
+function ReportLink({
+  report,
+}: {
+  report: NonNullable<AdminAuditRow["report"]>;
+}) {
+  return (
+    <Link
+      to="/admin/reports"
+      search={{ status: report.status, report: report.id }}
+      className="text-xs text-cosmo hover:underline dark:text-cosmo-text"
+    >
+      {m.admin_audit_report_link({ id: shortId(report.id) })}
+    </Link>
+  );
 }
 
 function detailNote(detail: AdminAuditDetail) {
@@ -267,6 +297,23 @@ function detailNote(detail: AdminAuditDetail) {
       return auditBanLength(detail.expiresIn);
     case "set-role":
       return `${roleLabel(detail.from)} → ${roleLabel(detail.to)}`;
+    case "trade-extend":
+      return (
+        <>
+          {m.admin_audit_note_trade_extend({ hours: detail.hours })}
+          {" → "}
+          <Timestamp
+            date={detail.deadlineAt}
+            format={{
+              month: "short",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+              hourCycle: "h23",
+            }}
+          />
+        </>
+      );
   }
 }
 

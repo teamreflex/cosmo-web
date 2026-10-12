@@ -1,5 +1,6 @@
 import {
   type ListingStatus,
+  type TradeSide,
   type TradeStatus,
   listingStatuses,
   tradeStatuses,
@@ -10,8 +11,10 @@ import {
   type TradeEvent,
   type TradeItemState,
   type TradeState,
+  listingEventAfter,
   listingTransition,
   owingSides,
+  tradeState,
   transition,
   transitionListing,
 } from "../src/lifecycle";
@@ -49,9 +52,27 @@ function statusAfter(state: TradeState, event: TradeEvent) {
 // a purchase: the seller (`from`) sends a token, the buyer (`to`) pays
 const purchase = [objekt("from"), payment("to")];
 
+// a 1-for-6 shaped swap: the poster sends 3, the claimer sends 3
+const sixObjekts = (transferred = false) => [
+  objekt("from", transferred),
+  objekt("from", transferred),
+  objekt("from", transferred),
+  objekt("to", transferred),
+  objekt("to", transferred),
+  objekt("to", transferred),
+];
+
+function apply(state: TradeState, event: TradeEvent) {
+  const result = transition(state, event);
+  if (!result.ok) throw new Error(result.reason);
+  return result.trade;
+}
+
 /**
  * Each event with an acting side that may take it, the statuses it is
- * allowed from with `purchase`'s items, and where it goes.
+ * allowed from with `purchase`'s items, and where it goes. Every status not
+ * listed refuses with wrong_status (LIFE-03, LIFE-06, LIFE-13, LIFE-14,
+ * LIFE-16, LIFE-17).
  */
 const allowed: [TradeEvent, TradeStatus[], TradeStatus | "unchanged"][] = [
   [{ type: "accept", by: "to" }, ["pending"], "accepted"],
@@ -68,7 +89,10 @@ const allowed: [TradeEvent, TradeStatus[], TradeStatus | "unchanged"][] = [
     "unchanged",
   ],
   [{ type: "cancel", by: "from" }, ["accepted"], "cancelled"],
+  [{ type: "cancel", by: "to" }, ["accepted"], "cancelled"],
+  [{ type: "dispute", by: "from" }, ["accepted"], "disputed"],
   [{ type: "dispute", by: "to" }, ["accepted"], "disputed"],
+  [{ type: "dispute", by: "staff" }, ["accepted"], "disputed"],
   [{ type: "time_out" }, ["accepted"], "timed_out"],
   [{ type: "staff_complete" }, ["disputed"], "completed"],
   [{ type: "staff_cancel" }, ["accepted", "disputed"], "cancelled"],
@@ -110,7 +134,7 @@ describe("transition: parties", () => {
     ).toBe("wrong_party");
   });
 
-  test("either party may cancel or dispute", () => {
+  test("either party may cancel or dispute (LIFE-04)", () => {
     const state = trade("accepted", purchase);
     for (const by of ["from", "to"] as const) {
       expect(transition(state, { type: "cancel", by })).toEqual({
@@ -129,6 +153,31 @@ describe("transition: parties", () => {
       trade: { status: "cancelled", cancelledBy: "staff", items: purchase },
     });
   });
+
+  test("staff cancel leaves no abandoned marks once items were sent (LIFE-15)", () => {
+    const items = [objekt("from", true), objekt("to")];
+    for (const status of ["accepted", "disputed"] as const) {
+      expect(
+        transition(trade(status, items), { type: "staff_cancel" }),
+      ).toEqual({
+        ok: true,
+        trade: { status: "cancelled", cancelledBy: "staff", items },
+      });
+    }
+  });
+
+  test("a ban disputes an accepted trade as staff, leaving its items (LIFE-01)", () => {
+    const items = [objekt("from"), objekt("to")];
+    expect(
+      transition(trade("accepted", items), { type: "dispute", by: "staff" }),
+    ).toEqual({ ok: true, trade: { status: "disputed", items } });
+  });
+
+  test("a ban skips a trade that is already disputed (LIFE-03)", () => {
+    expect(
+      transition(trade("disputed", purchase), { type: "dispute", by: "staff" }),
+    ).toEqual({ ok: false, reason: "wrong_status" });
+  });
 });
 
 describe("transition: cancelling", () => {
@@ -142,7 +191,7 @@ describe("transition: cancelling", () => {
       "the seller confirmed",
       [objekt("from"), payment("to", { confirmed: true })],
     ],
-  ])("is refused once %s", (_, items) => {
+  ])("is refused once %s (LIFE-05)", (_, items) => {
     for (const by of ["from", "to"] as const) {
       expect(
         statusAfter(trade("accepted", items), { type: "cancel", by }),
@@ -150,11 +199,13 @@ describe("transition: cancelling", () => {
     }
   });
 
-  test("a dispute is still possible once something started", () => {
+  test("a dispute is still possible once something started (LIFE-02)", () => {
     const items = [objekt("from", true), payment("to")];
-    expect(
-      statusAfter(trade("accepted", items), { type: "dispute", by: "to" }),
-    ).toBe("disputed");
+    for (const by of ["from", "to"] as const) {
+      expect(
+        statusAfter(trade("accepted", items), { type: "dispute", by }),
+      ).toBe("disputed");
+    }
   });
 });
 
@@ -176,6 +227,20 @@ describe("transition: items", () => {
         items: [objekt("from", true), objekt("to", true), objekt("to", true)],
       },
     });
+  });
+
+  test("six tokens from both sides complete on the last one, in any order (LIFE-07)", () => {
+    for (const order of [
+      [0, 1, 2, 3, 4, 5],
+      [5, 0, 4, 1, 3, 2],
+    ]) {
+      let state = trade("accepted", sixObjekts());
+      for (const [step, item] of order.entries()) {
+        state = apply(state, { type: "transfer", item });
+        expect(state.status).toBe(step < 5 ? "accepted" : "completed");
+      }
+      expect(state.items).toEqual(sixObjekts(true));
+    }
   });
 
   test("a purchase completes on the transfer and the confirmation, in either order", () => {
@@ -200,6 +265,15 @@ describe("transition: items", () => {
     );
   });
 
+  test("a disputed trade records all six tokens but stays disputed (LIFE-09)", () => {
+    let state = trade("disputed", sixObjekts());
+    for (const item of [0, 1, 2, 3, 4, 5]) {
+      state = apply(state, { type: "transfer", item });
+      expect(state.status).toBe("disputed");
+    }
+    expect(state.items).toEqual(sixObjekts(true));
+  });
+
   test("a disputed trade records the last token but stays disputed", () => {
     expect(
       transition(trade("disputed", [objekt("from", true), objekt("to")]), {
@@ -217,6 +291,14 @@ describe("transition: items", () => {
 
   test.each([
     ["an index past the end", { type: "transfer", item: 2 }],
+    ["a negative index", { type: "transfer", item: -1 }],
+    ["a negative index past the start", { type: "transfer", item: -3 }],
+    ["a fractional index", { type: "transfer", item: 0.5 }],
+    ["a negative payment index", { type: "mark_paid", item: -1, by: "to" }],
+    [
+      "a negative confirmation index",
+      { type: "confirm_payment", item: -1, by: "from" },
+    ],
     ["a payment as a token", { type: "transfer", item: 1 }],
     ["a token as a payment", { type: "mark_paid", item: 0, by: "to" }],
     [
@@ -241,6 +323,23 @@ describe("transition: items", () => {
     expect(statusAfter(done, event)).toBe("already_done");
   });
 
+  test.each([6, -1, -7])(
+    "refuses index %d on six tokens without touching any (LIFE-08, LIFE-24)",
+    (item) => {
+      expect(
+        transition(trade("accepted", sixObjekts()), { type: "transfer", item }),
+      ).toEqual({ ok: false, reason: "no_such_item" });
+    },
+  );
+
+  test("refuses a transfer on an ended trade (LIFE-08)", () => {
+    for (const status of ["completed", "cancelled", "timed_out"] as const) {
+      expect(
+        statusAfter(trade(status, sixObjekts()), { type: "transfer", item: 0 }),
+      ).toBe("wrong_status");
+    }
+  });
+
   test("leaves the given state untouched", () => {
     const items = [objekt("from"), objekt("to")];
     transition(trade("accepted", items), { type: "transfer", item: 0 });
@@ -263,6 +362,27 @@ describe("transition: timing out", () => {
     });
   });
 
+  test("marks the poster when only the poster owes (LIFE-10)", () => {
+    const items = [objekt("from", true), objekt("from"), objekt("to", true)];
+    expect(transition(trade("accepted", items), { type: "time_out" })).toEqual({
+      ok: true,
+      trade: { status: "timed_out", abandonedBy: ["from"], items },
+    });
+  });
+
+  test("marks both sides when each sent only part (LIFE-11)", () => {
+    const items = [
+      objekt("from", true),
+      objekt("from"),
+      objekt("to"),
+      objekt("to", true),
+    ];
+    expect(transition(trade("accepted", items), { type: "time_out" })).toEqual({
+      ok: true,
+      trade: { status: "timed_out", abandonedBy: ["from", "to"], items },
+    });
+  });
+
   test("marks both sides when neither sent", () => {
     const items = [objekt("from"), objekt("to")];
     expect(transition(trade("accepted", items), { type: "time_out" })).toEqual({
@@ -279,7 +399,7 @@ describe("transition: timing out", () => {
     });
   });
 
-  test("completes when only the seller's confirmation is missing", () => {
+  test("completes when only the seller's confirmation is missing (LIFE-12)", () => {
     const items = [objekt("from", true), payment("to", { markedPaid: true })];
     expect(statusAfter(trade("accepted", items), { type: "time_out" })).toBe(
       "completed",
@@ -293,11 +413,175 @@ describe("transition: timing out", () => {
   });
 });
 
-describe("owingSides", () => {
-  test("lists sides in from, to order", () => {
-    expect(owingSides([objekt("to"), objekt("from")])).toEqual(["from", "to"]);
-    expect(owingSides([objekt("from", true), objekt("to", true)])).toEqual([]);
+describe("transition: staff extend", () => {
+  test("unfreezes a disputed trade with items still owed (LIFE-16)", () => {
+    const items = [objekt("from", true), objekt("to")];
+    expect(
+      transition(trade("disputed", items), { type: "staff_extend" }),
+    ).toEqual({ ok: true, trade: { status: "accepted", items } });
   });
+
+  test("completes a disputed trade whose items all arrived (LIFE-25)", () => {
+    expect(
+      transition(trade("disputed", sixObjekts(true)), { type: "staff_extend" }),
+    ).toEqual({
+      ok: true,
+      trade: { status: "completed", items: sixObjekts(true) },
+    });
+  });
+});
+
+describe("owingSides (LIFE-23)", () => {
+  test.each([
+    ["nobody owes", [objekt("from", true), objekt("to", true)], []],
+    ["only the poster owes", [objekt("from"), objekt("to", true)], ["from"]],
+    ["only the claimer owes", [objekt("from", true), objekt("to")], ["to"]],
+    ["both owe", [objekt("to"), objekt("from")], ["from", "to"]],
+    [
+      "a payment marked paid but unconfirmed counts as paid",
+      [objekt("from", true), payment("to", { markedPaid: true })],
+      [],
+    ],
+  ] satisfies [string, TradeItemState[], TradeSide[]][])(
+    "%s",
+    (_, items, expected) => {
+      expect(owingSides(items)).toEqual(expected);
+    },
+  );
+});
+
+describe("listingEventAfter", () => {
+  const posters = [{ banned: false }, { banned: true }];
+
+  test("a completed trade fills the listing, banned poster or not (LIFE-19)", () => {
+    for (const poster of posters) {
+      expect(
+        listingEventAfter(trade("completed", sixObjekts(true)), poster),
+      ).toBe("fill");
+    }
+  });
+
+  /**
+   * Only a release needs the poster's holdings, which the caller reads to
+   * reopen or break the listing.
+   */
+  describe("after a cancel, by any side (LIFE-20)", () => {
+    test.each([
+      [{ banned: false }, "release"],
+      [{ banned: true }, "remove"],
+    ] satisfies [{ banned: boolean }, ListingEvent | "release"][])(
+      "%o",
+      (poster, expected) => {
+        for (const cancelledBy of ["from", "to", "staff"] as const) {
+          expect(
+            listingEventAfter(
+              { status: "cancelled", cancelledBy, items: purchase },
+              poster,
+            ),
+          ).toBe(expected);
+        }
+      },
+    );
+  });
+
+  /**
+   * A banned poster's listing is removed before anything else is checked,
+   * even when the poster was marked abandoned.
+   */
+  describe("after a time out (LIFE-21)", () => {
+    test.each([
+      [["to"], { banned: false }, "release"],
+      [["from"], { banned: false }, "abandon"],
+      [["from", "to"], { banned: false }, "abandon"],
+      [["to"], { banned: true }, "remove"],
+      [["from"], { banned: true }, "remove"],
+      [["from", "to"], { banned: true }, "remove"],
+    ] satisfies [
+      [TradeSide, ...TradeSide[]],
+      { banned: boolean },
+      ListingEvent | "release",
+    ][])("abandoned by %o, poster %o", (abandonedBy, poster, expected) => {
+      expect(
+        listingEventAfter(
+          { status: "timed_out", abandonedBy, items: sixObjekts() },
+          poster,
+        ),
+      ).toBe(expected);
+    });
+  });
+
+  test("a live or pending trade leaves the listing alone (LIFE-22)", () => {
+    for (const status of ["accepted", "disputed", "pending"] as const) {
+      for (const poster of posters) {
+        expect(listingEventAfter(trade(status, purchase), poster)).toBe(
+          undefined,
+        );
+      }
+    }
+  });
+});
+
+describe("tradeState", () => {
+  const unsent = {
+    transferredAt: null,
+    markedPaidAt: null,
+    confirmedAt: null,
+  };
+  const at = new Date("2026-10-12T12:00:00Z");
+
+  test("reads items in order, by what their timestamps say", () => {
+    expect(
+      tradeState({ status: "accepted", cancelledBy: null, abandonedBy: null }, [
+        { kind: "objekt", sender: "from", ...unsent, transferredAt: at },
+        { kind: "objekt", sender: "to", ...unsent },
+        { kind: "payment", sender: "to", ...unsent, markedPaidAt: at },
+        { kind: "payment", sender: "to", ...unsent, confirmedAt: at },
+      ]),
+    ).toEqual({
+      status: "accepted",
+      items: [
+        objekt("from", true),
+        objekt("to"),
+        payment("to", { markedPaid: true }),
+        payment("to", { confirmed: true }),
+      ],
+    });
+  });
+
+  test("carries who cancelled or abandoned", () => {
+    expect(
+      tradeState(
+        { status: "cancelled", cancelledBy: "staff", abandonedBy: null },
+        [],
+      ),
+    ).toEqual({ status: "cancelled", cancelledBy: "staff", items: [] });
+    expect(
+      tradeState(
+        { status: "timed_out", cancelledBy: null, abandonedBy: ["from", "to"] },
+        [],
+      ),
+    ).toEqual({ status: "timed_out", abandonedBy: ["from", "to"], items: [] });
+  });
+
+  test.each([
+    [
+      "a listing status",
+      { status: "claimed", cancelledBy: null, abandonedBy: null },
+    ],
+    [
+      "a cancel without a side",
+      { status: "cancelled", cancelledBy: null, abandonedBy: null },
+    ],
+    [
+      "a time out without a mark",
+      { status: "timed_out", cancelledBy: null, abandonedBy: [] },
+    ],
+  ] satisfies [string, Parameters<typeof tradeState>[0]][])(
+    "throws on %s",
+    (_, row) => {
+      expect(() => tradeState(row, [])).toThrow();
+    },
+  );
 });
 
 /**
@@ -309,11 +593,11 @@ const listingAllowed: [ListingEvent, ListingStatus[], ListingStatus][] = [
   ["fill", ["claimed"], "filled"],
   ["withdraw", ["open"], "withdrawn"],
   ["break", ["open", "claimed"], "broken"],
-  ["remove", ["open"], "removed"],
+  ["remove", ["open", "claimed"], "removed"],
   ["abandon", ["claimed"], "abandoned"],
 ];
 
-describe("transitionListing: every event from every status", () => {
+describe("transitionListing: every event from every status (LIFE-18)", () => {
   for (const [event, from, to] of listingAllowed) {
     test.each([...listingStatuses])(`${event} from %s`, (status) => {
       expect(transitionListing(status, event)).toEqual(

@@ -92,3 +92,71 @@ function decideItem(row: ChainRow, item: ExpectedItem): TransferDecision {
 function sameAddress(a: string, b: string) {
   return a.toLowerCase() === b.toLowerCase();
 }
+
+/**
+ * What a batch of outbox rows means for one live trade: an item arrived, or
+ * one of its tokens went elsewhere or turned untransferable.
+ */
+export type TradeChainEvent =
+  | { type: "transferred"; itemId: number; at: Date; hash: string }
+  | { type: "token_moved" | "token_untransferable"; tokenId: number };
+
+/**
+ * Decide a drain batch's rows in order, keyed by token. An item that arrives
+ * counts as transferred for the rows after it, so a token passed on in the
+ * same batch is recorded once and isn't reported as moved. Each trade's
+ * events keep row order, and each listing or pending offer breaks once, on
+ * the first token that breaks it.
+ */
+export function foldTransfers(
+  rows: readonly ChainRow[],
+  expected: ReadonlyMap<number, readonly ExpectedItem[]>,
+) {
+  const arrived = new Set<number>();
+  const trades = new Map<string, TradeChainEvent[]>();
+  const breaks = new Map<string, number>();
+  const post = (tradeId: string, event: TradeChainEvent) => {
+    const events = trades.get(tradeId);
+    if (events === undefined) trades.set(tradeId, [event]);
+    else events.push(event);
+  };
+
+  for (const row of rows) {
+    const items = (expected.get(row.tokenId) ?? []).map((item) =>
+      item.kind === "live" && arrived.has(item.itemId)
+        ? { ...item, transferred: true }
+        : item,
+    );
+    for (const decision of decideTransfer(row, items)) {
+      switch (decision.type) {
+        case "transferred":
+          arrived.add(decision.itemId);
+          post(decision.tradeId, {
+            type: "transferred",
+            itemId: decision.itemId,
+            at: decision.at,
+            hash: decision.hash,
+          });
+          break;
+        case "event":
+          post(decision.tradeId, {
+            type: decision.event,
+            tokenId: row.tokenId,
+          });
+          break;
+        case "breaks":
+          if (!breaks.has(decision.offerId)) {
+            breaks.set(decision.offerId, row.tokenId);
+          }
+          break;
+        case "ignore":
+          break;
+      }
+    }
+  }
+
+  return {
+    trades,
+    breaks: Array.from(breaks, ([offerId, tokenId]) => ({ offerId, tokenId })),
+  };
+}

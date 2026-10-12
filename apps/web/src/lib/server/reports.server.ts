@@ -24,22 +24,57 @@ import type {
 } from "@/lib/universal/schema/reports";
 import type { Role } from "@apollo/auth";
 import { isBanActive, protectionFor } from "@apollo/auth/guard";
-import { reports } from "@apollo/database/web/schema";
-import type {
-  ReportStatus,
-  ReportTargetType,
+import { reports, tradeOffers } from "@apollo/database/web/schema";
+import {
+  liveTradeStatuses,
+  type ReportStatus,
+  type ReportTargetType,
 } from "@apollo/database/web/types";
-import { and, EmptyFilter, eq, inArray, ne, or, sql } from "drizzle-orm";
+import {
+  and,
+  EmptyFilter,
+  eq,
+  exists,
+  inArray,
+  ne,
+  not,
+  or,
+  sql,
+} from "drizzle-orm";
 
 const QUEUE_PAGE_SIZE = 30;
 
 /**
- * Reports on a staff member are hidden from them, whatever their role, so
- * they never see who reported them; other staff handle those. Relational
- * reads alias the table, so they filter with `NOT: reportsOn(staffId)`.
+ * Reports on a staff member, or on a trade they're a party to, are hidden
+ * from them, whatever their role, so they never see who reported them or act
+ * on their own dispute; other staff handle those. Relational reads alias the
+ * table, so they filter with `NOT: hiddenFrom(staffId)`.
  */
 function visibleTo(staffId: string) {
-  return or(ne(reports.targetType, "user"), ne(reports.targetId, staffId));
+  return not(aboutStaff(staffId));
+}
+
+function aboutStaff(staffId: string) {
+  return or(
+    and(eq(reports.targetType, "user"), eq(reports.targetId, staffId)),
+    and(
+      eq(reports.targetType, "trade"),
+      exists(
+        db
+          .select({ id: tradeOffers.id })
+          .from(tradeOffers)
+          .where(
+            and(
+              sql`${tradeOffers.id}::text = ${reports.targetId}`,
+              or(
+                eq(tradeOffers.fromUserId, staffId),
+                eq(tradeOffers.toUserId, staffId),
+              ),
+            ),
+          ),
+      ),
+    ),
+  );
 }
 
 function reportsOn(userId: string) {
@@ -47,13 +82,36 @@ function reportsOn(userId: string) {
 }
 
 /**
- * The refusal for a report id a staff member may not see: it is about them,
- * or it doesn't exist.
+ * Trade reports are disputes, which staff settle by completing, cancelling or
+ * extending the trade rather than through the report itself. The queue, its
+ * counts and the detail read leave them out, since the queue has no trade
+ * target yet.
  */
-async function hiddenReportError(executor: DbOrTx, id: string) {
-  const exists = await executor.$count(reports, eq(reports.id, id));
+const queued = ne(reports.targetType, "trade");
+
+/**
+ * What a staff member's relational report reads leave out: reports on them,
+ * and trade reports.
+ */
+function hiddenFrom(staffId: string) {
+  return { OR: [reportsOn(staffId), { targetType: "trade" as const }] };
+}
+
+/**
+ * The refusal for a report id a staff member may not see: it is about them
+ * or their trade, or, for anything else, it doesn't exist.
+ */
+async function hiddenReportError(
+  executor: DbOrTx,
+  staffId: string,
+  id: string,
+) {
+  const aboutYou = await executor.$count(
+    reports,
+    and(eq(reports.id, id), aboutStaff(staffId)),
+  );
   return new ExpectedError(
-    exists > 0 ? "report_about_you" : "report_not_found",
+    aboutYou > 0 ? "report_about_you" : "report_not_found",
   );
 }
 
@@ -81,6 +139,7 @@ export async function fetchReportCounts(
         // redundant with the FILTERs, but keeps the status index in play
         inArray(reports.status, [...openReportStatuses]),
         visibleTo(staffId),
+        queued,
         input.targetType ? eq(reports.targetType, input.targetType) : undefined,
       ),
     );
@@ -101,7 +160,7 @@ export async function fetchReportQueue(
   const rows = await db.query.reports.findMany({
     where: {
       status: input.status,
-      NOT: reportsOn(staffId),
+      NOT: hiddenFrom(staffId),
       targetType: input.targetType ?? EmptyFilter,
       RAW: after
         ? (t) =>
@@ -170,7 +229,7 @@ export async function fetchReportDetail(
   id: string,
 ): Promise<AdminReportDetail> {
   const report = await db.query.reports.findFirst({
-    where: { id, NOT: reportsOn(viewer.id) },
+    where: { id, NOT: hiddenFrom(viewer.id) },
     with: {
       reporter: staffUserFields,
       resolver: staffUserFields,
@@ -178,7 +237,7 @@ export async function fetchReportDetail(
   });
 
   if (!report) {
-    throw await hiddenReportError(db, id);
+    throw await hiddenReportError(db, viewer.id, id);
   }
 
   return {
@@ -212,19 +271,32 @@ async function fetchDetailTarget(
 ): Promise<AdminReportDetailTarget> {
   switch (targetType) {
     case "user": {
-      const user = await db.query.user.findFirst({
-        where: { id: targetId },
-        columns: {
-          id: true,
-          ...staffUserFields.columns,
-          email: true,
-          emailVerified: true,
-          role: true,
-          banned: true,
-          banExpires: true,
-        },
-        with: staffUserFields.with,
-      });
+      const [user, liveTradeCount] = await Promise.all([
+        db.query.user.findFirst({
+          where: { id: targetId },
+          columns: {
+            id: true,
+            ...staffUserFields.columns,
+            email: true,
+            emailVerified: true,
+            role: true,
+            banned: true,
+            banExpires: true,
+          },
+          with: staffUserFields.with,
+        }),
+        db.$count(
+          tradeOffers,
+          and(
+            eq(tradeOffers.kind, "trade"),
+            inArray(tradeOffers.status, [...liveTradeStatuses]),
+            or(
+              eq(tradeOffers.fromUserId, targetId),
+              eq(tradeOffers.toUserId, targetId),
+            ),
+          ),
+        ),
+      ]);
 
       if (!user) {
         return { type: "user", user: null };
@@ -237,6 +309,7 @@ async function fetchDetailTarget(
           id: user.id,
           role: user.role,
           ban: isBanActive(user) ? { until: user.banExpires } : null,
+          liveTradeCount,
           protected: protectionFor(
             viewerRole,
             user,
@@ -310,7 +383,8 @@ function reportTransition(
  * Moves a report to its next status and audits the action in one
  * transaction. The status guard turns a lost race into
  * `report_status_changed` instead of overwriting another staff member, and a
- * report on the staff member is refused as it is for reads.
+ * report on the staff member is refused as it is for reads. A trade report
+ * can be escalated, but only settling its trade resolves it.
  */
 export async function transitionReport(
   staffId: string,
@@ -328,18 +402,22 @@ export async function transitionReport(
           eq(reports.id, id),
           inArray(reports.status, from),
           visibleTo(staffId),
+          action === "report:escalate" ? undefined : queued,
         ),
       )
       .returning({ id: reports.id });
 
     if (!updated) {
-      const visible = await tx.$count(
-        reports,
-        and(eq(reports.id, id), visibleTo(staffId)),
+      const [report] = await tx
+        .select({ targetType: reports.targetType })
+        .from(reports)
+        .where(and(eq(reports.id, id), visibleTo(staffId)));
+      if (!report) throw await hiddenReportError(tx, staffId, id);
+      throw new ExpectedError(
+        report.targetType === "trade" && action !== "report:escalate"
+          ? "report_trade_dispute"
+          : "report_status_changed",
       );
-      throw visible > 0
-        ? new ExpectedError("report_status_changed")
-        : await hiddenReportError(tx, id);
     }
 
     await recordStaffAudit(tx, { staffId, action, reportId: id });
@@ -347,13 +425,14 @@ export async function transitionReport(
 }
 
 /**
- * Resolves every open report on a user, auditing each one, as a ban started
- * from a report does.
+ * Resolves every open report on a target, auditing each one, as a ban
+ * started from a report does for its user.
  */
-export async function resolveUserReports(
+export async function resolveTargetReports(
   tx: DbOrTx,
   staffId: string,
-  userId: string,
+  targetType: ReportTargetType,
+  targetId: string,
 ) {
   const { from, set } = reportTransition("report:resolve", staffId);
 
@@ -362,8 +441,8 @@ export async function resolveUserReports(
     .set(set)
     .where(
       and(
-        eq(reports.targetType, "user"),
-        eq(reports.targetId, userId),
+        eq(reports.targetType, targetType),
+        eq(reports.targetId, targetId),
         inArray(reports.status, from),
       ),
     )

@@ -28,16 +28,17 @@ import {
   type CosmoGravityType,
   type CosmoPollType,
   type EventTypeKey,
-  type ReportReason,
   type StaffAuditAction,
   type StaffAuditDetail,
   type StaffAuditTargetType,
+  type StoredReportReason,
   type TradeEvent,
   cosmoLinkEvents,
   cosmoLinkReasons,
   endedStatuses,
   listingOfferModes,
   listingStatuses,
+  notificationTypes,
   paymentMethods,
   reportStatuses,
   reportTargetTypes,
@@ -59,12 +60,7 @@ export const listType = pgEnum("list_type", [
   "want",
   "sale",
 ]);
-export const notificationType = pgEnum("notification_type", [
-  // the actor added something you want to their have list
-  "trade_have",
-  // the actor wants something on your have list
-  "trade_want",
-]);
+export const notificationType = pgEnum("notification_type", notificationTypes);
 export const binderLayout = pgEnum("binder_layout", ["3x3", "2x2", "4x3"]);
 export const reportTargetType = pgEnum("report_target_type", reportTargetTypes);
 export const reportStatus = pgEnum("report_status", reportStatuses);
@@ -315,6 +311,12 @@ export const notifications = pgTable(
       onDelete: "cascade",
     }),
     collectionId: varchar("collection_id", { length: 36 }), // slug: atom01-jinsoul-101z
+    // the trade or listing a trade notification is about
+    offerId: uuid("offer_id").references(() => tradeOffers.id, {
+      onDelete: "cascade",
+    }),
+    // the token a token event or a closed listing is about
+    tokenId: integer("token_id"),
   },
   (t) => [
     /**
@@ -335,9 +337,16 @@ export const notifications = pgTable(
       .where(inArray(t.type, ["trade_have", "trade_want"])),
     // serves the cascade when the list is deleted
     index("notifications_list_idx").on(t.listId),
+    // serves the cascade when the trade or listing is deleted
+    index("notifications_offer_idx").on(t.offerId),
+    /**
+     * Names only the list-match values, so it can be added in the release
+     * that adds the trade values (a new enum value is unusable until the
+     * transaction that added it commits).
+     */
     check(
       "notifications_subject_chk",
-      sql`${t.type} not in ('trade_have', 'trade_want') or num_nonnulls(${t.actorId}, ${t.listId}, ${t.collectionId}) = 3`,
+      sql`CASE WHEN ${t.type} IN ('trade_have', 'trade_want') THEN num_nonnulls(${t.actorId}, ${t.listId}, ${t.collectionId}) = 3 AND ${t.offerId} IS NULL AND ${t.tokenId} IS NULL ELSE ${t.offerId} IS NOT NULL AND ${t.listId} IS NULL AND ${t.collectionId} IS NULL END`,
     ),
   ],
 );
@@ -575,7 +584,9 @@ export const reports = pgTable(
     }),
     targetType: reportTargetType("target_type").notNull(),
     targetId: text("target_id").notNull(),
-    reason: varchar("reason", { length: 32 }).$type<ReportReason>().notNull(),
+    reason: varchar("reason", { length: 32 })
+      .$type<StoredReportReason>()
+      .notNull(),
     note: varchar("note", { length: 1000 }),
     status: reportStatus("status").notNull().default("open"),
     resolvedBy: text("resolved_by").references(() => user.id, {
@@ -737,6 +748,10 @@ export const tradeOffers = pgTable(
     // my trades, sales pages, claim caps and the deletion check
     index("trade_offers_from_user_idx").on(t.fromUserId, t.status),
     index("trade_offers_to_user_idx").on(t.toUserId, t.status),
+    // trade-timers' scan for accepted trades past the watermark
+    index("trade_offers_deadline_idx")
+      .on(t.deadlineAt)
+      .where(sql`${t.kind} = 'trade' AND ${t.status} = 'accepted'`),
     check(
       "trade_offers_status_chk",
       sql`CASE ${t.kind} WHEN 'listing' THEN ${t.status} IN (${sqlValues(listingStatuses)}) ELSE ${t.status} IN (${sqlValues(tradeStatuses)}) END`,

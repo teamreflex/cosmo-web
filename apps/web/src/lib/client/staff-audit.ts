@@ -16,6 +16,10 @@ const actionLabels = {
   "api-key:update": m.admin_audit_action_api_key_update,
   "api-key:delete": m.admin_audit_action_api_key_delete,
   "metadata:update": m.admin_audit_action_metadata_update,
+  "trade:dispute": m.admin_audit_action_trade_dispute,
+  "trade:complete": m.admin_audit_action_trade_complete,
+  "trade:cancel": m.admin_audit_action_trade_cancel,
+  "trade:extend": m.admin_audit_action_trade_extend,
 } satisfies Record<StaffAuditAction, () => string>;
 
 /**

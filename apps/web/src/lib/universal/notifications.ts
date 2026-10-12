@@ -1,4 +1,15 @@
-export type NotificationType = "trade_have" | "trade_want";
+import type {
+  ListMatchNotificationType,
+  NotificationType,
+  TradeNotificationType,
+  TradeOfferStatus,
+} from "@apollo/database/web/types";
+
+export function isListMatchNotification(
+  type: NotificationType,
+): type is ListMatchNotificationType {
+  return type === "trade_have" || type === "trade_want";
+}
 
 export type NotificationCollection = {
   slug: string;
@@ -7,19 +18,53 @@ export type NotificationCollection = {
   frontImageVersion: string | null;
 };
 
+// `username` is null when the user has no COSMO link
+export type NotificationUser = { userId: string; username: string | null };
+
 /**
- * One notification as the bell's pages return it, newest first.
- * `collection` is null when the indexer no longer has the collection.
+ * A token a trade notification names. `serial` and `collection` are null
+ * when the indexer no longer has it.
  */
-export type NotificationRow = {
-  id: string;
-  createdAt: Date;
-  type: NotificationType;
-  unread: boolean;
-  actor: { userId: string; username: string | null };
-  list: { id: string; slug: string };
+export type NotificationToken = {
+  tokenId: number;
+  serial: number | null;
   collection: NotificationCollection | null;
 };
+
+/**
+ * What a trade notification shows. `actor` is the party who caused it, or
+ * null when staff or the system did. `counterparty` is the recipient's other
+ * party, null on a listing or once their account is gone. `listingId` is the
+ * listing the trade came from, or the listing itself. `objekts` is what the
+ * poster sends, filled for listing_claimed only.
+ */
+type TradeNotificationFields = {
+  kind: "trade";
+  type: TradeNotificationType;
+  unread: boolean;
+  actor: NotificationUser | null;
+  counterparty: NotificationUser | null;
+  offer: { id: string; status: TradeOfferStatus; listingId: string | null };
+  token: NotificationToken | null;
+  objekts: NotificationToken[];
+};
+
+/**
+ * One notification as the bell's pages return it, newest first. A list
+ * match's `collection` is null when the indexer no longer has it.
+ */
+export type NotificationRow =
+  | {
+      kind: "list_match";
+      id: string;
+      createdAt: Date;
+      type: ListMatchNotificationType;
+      unread: boolean;
+      actor: NotificationUser;
+      list: { id: string; slug: string };
+      collection: NotificationCollection | null;
+    }
+  | (TradeNotificationFields & { id: string; createdAt: Date });
 
 export type NotificationPage = {
   rows: NotificationRow[];
@@ -27,37 +72,51 @@ export type NotificationPage = {
 };
 
 /**
- * A burst of one actor's adds to one of their lists, grouped from the loaded
- * rows. `ids` are every loaded notification in it, for marking read.
+ * A row in the bell: a burst of one actor's adds to one of their lists, or a
+ * single trade notification. `ids` are every loaded notification in it, for
+ * marking read.
  */
-export type NotificationListItem = {
-  type: NotificationType;
-  ids: string[];
-  lastAt: Date;
-  unread: boolean;
-  itemCount: number;
-  actor: { userId: string; username: string | null };
-  list: { id: string; slug: string };
-  // the newest few, for the row's names and thumbnails
-  collections: NotificationCollection[];
-};
+export type NotificationListItem =
+  | {
+      kind: "list_match";
+      type: ListMatchNotificationType;
+      ids: string[];
+      lastAt: Date;
+      unread: boolean;
+      itemCount: number;
+      actor: NotificationUser;
+      list: { id: string; slug: string };
+      // the newest few, for the row's names and thumbnails
+      collections: NotificationCollection[];
+    }
+  | (TradeNotificationFields & { ids: string[]; lastAt: Date });
+
+type ListMatchBurst = Extract<NotificationListItem, { kind: "list_match" }>;
 
 /**
- * A burst is a run of one user's notifications sharing type, actor, list and
- * read state, with no gap longer than this between neighbours.
+ * A burst is a run of one user's list-match notifications sharing type,
+ * actor, list and read state, with no gap longer than this between
+ * neighbours.
  */
 const BURST_GAP_MS = 6 * 60 * 60 * 1000;
 const BURST_COLLECTIONS = 5;
 
 /**
- * Group rows, newest first, into bursts ordered by their newest row.
+ * Group rows, newest first, into bursts ordered by their newest row. Trade
+ * notifications each stand alone.
  */
 export function groupNotifications(rows: NotificationRow[]) {
-  const bursts: NotificationListItem[] = [];
+  const items: NotificationListItem[] = [];
   // the open burst per partition, and the time of its oldest row so far
-  const open = new Map<string, { burst: NotificationListItem; oldest: Date }>();
+  const open = new Map<string, { burst: ListMatchBurst; oldest: Date }>();
 
   for (const row of rows) {
+    if (row.kind === "trade") {
+      const { id, createdAt, ...fields } = row;
+      items.push({ ...fields, ids: [id], lastAt: createdAt });
+      continue;
+    }
+
     const key = `${row.type}|${row.actor.userId}|${row.list.id}|${row.unread}`;
     const current = open.get(key);
 
@@ -77,7 +136,8 @@ export function groupNotifications(rows: NotificationRow[]) {
       continue;
     }
 
-    const burst: NotificationListItem = {
+    const burst: ListMatchBurst = {
+      kind: "list_match",
       type: row.type,
       ids: [row.id],
       lastAt: row.createdAt,
@@ -87,9 +147,9 @@ export function groupNotifications(rows: NotificationRow[]) {
       list: row.list,
       collections: row.collection === null ? [] : [row.collection],
     };
-    bursts.push(burst);
+    items.push(burst);
     open.set(key, { burst, oldest: row.createdAt });
   }
 
-  return bursts;
+  return items;
 }

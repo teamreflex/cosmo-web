@@ -38,16 +38,56 @@ export type BinderEntry = typeof binderEntries.$inferSelect;
 export type Notification = typeof notifications.$inferSelect;
 
 /**
- * A notification to insert. Every type names an actor, a list and a
- * collection (notifications_subject_chk).
+ * A notification to insert (notifications_subject_chk). A list match names
+ * an actor, their list and the collection they added. A trade notification
+ * names the trade or listing it is about, the party who caused it (null when
+ * staff or the system did), and the token for token events.
  */
-export type NewNotification = {
-  type: "trade_have" | "trade_want";
-  userId: string;
-  actorId: string;
-  listId: string;
-  collectionId: string;
-};
+export type NewNotification =
+  | {
+      type: ListMatchNotificationType;
+      userId: string;
+      actorId: string;
+      listId: string;
+      collectionId: string;
+    }
+  | {
+      type: TradeNotificationType;
+      userId: string;
+      offerId: string;
+      actorId: string | null;
+      tokenId: number | null;
+    };
+
+// the actor added something you want to their have list, or wants something on yours
+export const listMatchNotificationTypes = ["trade_have", "trade_want"] as const;
+export type ListMatchNotificationType =
+  (typeof listMatchNotificationTypes)[number];
+
+/**
+ * Events on a trade or listing the recipient is part of. Each value keeps one
+ * meaning for good, since a row's copy is rebuilt from it on every read.
+ */
+export const tradeNotificationTypes = [
+  "listing_claimed",
+  "trade_completed",
+  "trade_timed_out",
+  "trade_cancelled",
+  "trade_disputed",
+  "trade_dispute_resolved",
+  "trade_deadline_extended",
+  "trade_token_moved",
+  "trade_token_untransferable",
+  "listing_closed",
+] as const;
+export type TradeNotificationType = (typeof tradeNotificationTypes)[number];
+
+// new values go at the end, so the enum migration is a plain ADD VALUE
+export const notificationTypes = [
+  ...listMatchNotificationTypes,
+  ...tradeNotificationTypes,
+] as const;
+export type NotificationType = (typeof notificationTypes)[number];
 export type CosmoToken = typeof cosmoTokens.$inferSelect;
 export type Gravity = typeof gravities.$inferSelect;
 export type GravityPoll = typeof gravityPolls.$inferSelect;
@@ -147,6 +187,23 @@ export const reportReasons = [
   "other",
 ] as const;
 export type ReportReason = (typeof reportReasons)[number];
+
+// why a party opened a dispute on a trade
+export const disputeReasons = [
+  "not_responding",
+  "objekt_not_received",
+  "payment_not_received",
+  "off_terms",
+  "other",
+] as const;
+export type DisputeReason = (typeof disputeReasons)[number];
+
+/**
+ * A stored report's reason: a user report's, a party dispute's, or
+ * `party_banned` for the dispute a ban opens on each of the user's trades.
+ */
+export type StoredReportReason = ReportReason | DisputeReason | "party_banned";
+
 export const staffAuditActions = [
   "report:read",
   "report:resolve",
@@ -159,6 +216,10 @@ export const staffAuditActions = [
   "api-key:update",
   "api-key:delete",
   "metadata:update",
+  "trade:dispute",
+  "trade:complete",
+  "trade:cancel",
+  "trade:extend",
 ] as const;
 export type StaffAuditAction = (typeof staffAuditActions)[number];
 
@@ -170,6 +231,7 @@ export const staffAuditTargetTypes = [
   "report",
   "api-key",
   "collection",
+  "trade",
 ] as const;
 export type StaffAuditTargetType = (typeof staffAuditTargetTypes)[number];
 
@@ -188,7 +250,8 @@ export type CosmoLinkReason = (typeof cosmoLinkReasons)[number];
  * package stays independent of @apollo/auth; readers parse them.
  * `expiresIn` is the ban length in seconds, null for a permanent ban. An API
  * key's name, owner and enabled state are copied in when the action runs, so
- * the row still reads after the key is deleted.
+ * the row still reads after the key is deleted. A trade extension stores the
+ * new deadline and the hours staff picked.
  */
 export type StaffAuditDetail =
   | { kind: "ban"; expiresIn: number | null; reason: string }
@@ -198,7 +261,8 @@ export type StaffAuditDetail =
       name: string | null;
       ownerId: string;
       enabled: boolean;
-    };
+    }
+  | { kind: "trade-extend"; deadlineAt: string; hours: number };
 
 export const tradeOfferKinds = ["listing", "trade"] as const;
 export type TradeOfferKind = (typeof tradeOfferKinds)[number];
@@ -327,17 +391,27 @@ export type PaymentMethod = (typeof paymentMethods)[number];
 
 /**
  * A timeline event in a trade's message stream, rendered through i18n.
- * Times are ISO strings, since the payload is stored as jsonb.
+ * Times are ISO strings, since the payload is stored as jsonb. Staff actions
+ * carry the moderator's note but never who took them, and a dispute opened
+ * by a ban names staff rather than a party.
  */
 export type TradeEvent =
   | { type: "accepted" }
   | { type: "item_transferred"; itemId: number; hash: string }
   | { type: "marked_paid"; itemId: number }
   | { type: "payment_confirmed"; itemId: number }
-  | { type: "completed" }
-  | { type: "cancelled"; by: TradeCanceller }
-  | { type: "disputed"; by: TradeSide; reportId: string }
-  | { type: "deadline_extended"; deadlineAt: string }
+  | { type: "completed"; by: null }
+  | { type: "completed"; by: "staff"; note: string | null }
+  | { type: "cancelled"; by: TradeSide }
+  | { type: "cancelled"; by: "staff"; note: string | null }
+  | {
+      type: "disputed";
+      by: TradeSide;
+      reportId: string;
+      reason: DisputeReason;
+    }
+  | { type: "disputed"; by: "staff"; reportId: string }
+  | { type: "deadline_extended"; deadlineAt: string; note: string | null }
   | { type: "timed_out"; abandoned: TradeSide[] }
   | { type: "token_moved"; tokenId: number }
   | { type: "token_untransferable"; tokenId: number };

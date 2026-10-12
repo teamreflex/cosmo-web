@@ -1,6 +1,7 @@
 import { useMarkNotificationsRead } from "@/hooks/use-mark-notifications-read";
 import { m } from "@/i18n/messages";
-import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
+import { formatSerial, getObjektFrontImageUrl } from "@/lib/client/objekt-util";
+import { env } from "@/lib/env/client";
 import {
   notificationsListQuery,
   unreadNotificationsQuery,
@@ -9,12 +10,24 @@ import {
   groupNotifications,
   type NotificationCollection,
   type NotificationListItem,
+  type NotificationToken,
 } from "@/lib/universal/notifications";
+import { cn } from "@/lib/utils";
 import {
+  type Icon as TablerIcon,
+  IconArrowBarRight,
   IconArrowsExchange,
   IconBell,
+  IconCheck,
   IconChecks,
+  IconClockPlus,
+  IconFlag,
+  IconGavel,
+  IconHourglassEmpty,
   IconLoader2,
+  IconLock,
+  IconTagOff,
+  IconX,
 } from "@tabler/icons-react";
 import {
   useInfiniteQuery,
@@ -197,18 +210,8 @@ function NotificationSection({
   );
 }
 
-/**
- * The actor's list, linked under their profile when they have one, the same
- * place `/list/$id` would redirect to.
- */
-function listLink({ actor, list }: NotificationListItem) {
-  return actor.username === null
-    ? linkOptions({ to: "/list/$id", params: { id: list.id } })
-    : linkOptions({
-        to: "/@{$username}/list/$slug",
-        params: { username: actor.username, slug: list.slug },
-      });
-}
+const rowClassName =
+  "relative flex gap-3 py-3 pr-8 pl-3.5 transition-colors hover:bg-accent data-[unread=true]:bg-accent/40 data-[unread=true]:hover:bg-accent";
 
 function NotificationRow({
   notification,
@@ -217,17 +220,47 @@ function NotificationRow({
   notification: NotificationListItem;
   onOpen: () => void;
 }) {
+  return notification.kind === "list_match" ? (
+    <ListMatchRow notification={notification} onOpen={onOpen} />
+  ) : (
+    <TradeRow notification={notification} onOpen={onOpen} />
+  );
+}
+
+type ListMatchItem = Extract<NotificationListItem, { kind: "list_match" }>;
+type TradeItem = Extract<NotificationListItem, { kind: "trade" }>;
+
+/**
+ * The actor's list, linked under their profile when they have one, the same
+ * place `/list/$id` would redirect to.
+ */
+function listLink({ actor, list }: ListMatchItem) {
+  return actor.username === null
+    ? linkOptions({ to: "/list/$id", params: { id: list.id } })
+    : linkOptions({
+        to: "/@{$username}/list/$slug",
+        params: { username: actor.username, slug: list.slug },
+      });
+}
+
+function ListMatchRow({
+  notification,
+  onOpen,
+}: {
+  notification: ListMatchItem;
+  onOpen: () => void;
+}) {
   const username = notification.actor.username ?? m.notification_unknown_user();
   const [first] = notification.collections;
   const single = notification.itemCount === 1 ? first : undefined;
-  const { text, emphasis } = describe(notification, username, single);
+  const { text, emphasis } = describeListMatch(notification, username, single);
 
   return (
     <Link
       {...listLink(notification)}
       onClick={onOpen}
       data-unread={notification.unread}
-      className="relative flex gap-3 py-3 pr-8 pl-3.5 transition-colors hover:bg-accent data-[unread=true]:bg-accent/40 data-[unread=true]:hover:bg-accent"
+      className={rowClassName}
     >
       <div className="relative h-fit shrink-0">
         <UserAvatar
@@ -235,9 +268,7 @@ function NotificationRow({
           username={username}
           className="size-8 text-sm"
         />
-        <span className="absolute -right-1.5 -bottom-1.5 flex size-4.5 items-center justify-center rounded-full border-2 border-popover bg-blue-400 text-blue-950">
-          <IconArrowsExchange className="size-2.5" stroke={3} />
-        </span>
+        <TypeBadge type={notification.type} />
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
@@ -256,10 +287,166 @@ function NotificationRow({
       </div>
 
       {single !== undefined && <Thumbnail collection={single} />}
-      {notification.unread && (
-        <span className="absolute top-4.5 right-3.5 size-2 rounded-full bg-foreground" />
-      )}
+      {notification.unread && <UnreadDot />}
     </Link>
+  );
+}
+
+/**
+ * A trade notification links to its listing until trades have a page of
+ * their own; one with no listing is a button, so opening it still marks it
+ * read.
+ */
+function TradeRow({
+  notification,
+  onOpen,
+}: {
+  notification: TradeItem;
+  onOpen: () => void;
+}) {
+  const { counterparty, objekts, token, offer } = notification;
+  const username = counterparty?.username ?? m.notification_unknown_user();
+  const { text, emphasis } = describeTrade(notification, username);
+  const shown = token ?? (objekts.length === 1 ? objekts[0] : undefined);
+  const content = (
+    <>
+      {notification.type === "listing_closed" ? (
+        // a closed listing has no other party, so its icon stands in
+        <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-amber-400/15 text-amber-600 dark:text-amber-400">
+          <IconTagOff className="size-4" />
+        </div>
+      ) : (
+        <div className="relative h-fit shrink-0">
+          {counterparty === null ? (
+            <UserAvatar variant="square" deleted className="size-8 text-sm" />
+          ) : (
+            <UserAvatar
+              variant="square"
+              username={username}
+              className="size-8 text-sm"
+            />
+          )}
+          <TypeBadge type={notification.type} />
+        </div>
+      )}
+
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <p className="text-sm wrap-anywhere text-foreground/80">
+          {emphasize(text, emphasis)}
+        </p>
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Timestamp date={notification.lastAt} relative="narrow" />
+        </div>
+        {objekts.length > 1 && (
+          <Thumbnails
+            collections={objekts.flatMap((o) =>
+              o.collection === null ? [] : [o.collection],
+            )}
+            itemCount={objekts.length}
+          />
+        )}
+      </div>
+
+      {shown?.collection && <Thumbnail collection={shown.collection} />}
+      {notification.unread && <UnreadDot />}
+    </>
+  );
+
+  return offer.listingId === null ? (
+    <button
+      type="button"
+      onClick={onOpen}
+      data-unread={notification.unread}
+      className={cn(rowClassName, "w-full text-left")}
+    >
+      {content}
+    </button>
+  ) : (
+    <Link
+      to="/market/listing/$id"
+      params={{ id: offer.listingId }}
+      onClick={onOpen}
+      data-unread={notification.unread}
+      className={rowClassName}
+    >
+      {content}
+    </Link>
+  );
+}
+
+function UnreadDot() {
+  return (
+    <span className="absolute top-4.5 right-3.5 size-2 rounded-full bg-foreground" />
+  );
+}
+
+/**
+ * The corner badge's icon and colour per type, after the dots on the
+ * Notifications board: list matches, your move, good news, a warning, a
+ * problem, or staff and plain updates.
+ */
+const typeBadges = {
+  trade_have: {
+    icon: IconArrowsExchange,
+    className: "bg-blue-400 text-blue-950",
+  },
+  trade_want: {
+    icon: IconArrowsExchange,
+    className: "bg-blue-400 text-blue-950",
+  },
+  listing_claimed: {
+    icon: IconArrowsExchange,
+    className: "bg-cosmo text-white",
+  },
+  trade_completed: {
+    icon: IconCheck,
+    className: "bg-emerald-400 text-emerald-950",
+  },
+  trade_timed_out: {
+    icon: IconHourglassEmpty,
+    className: "bg-amber-400 text-amber-950",
+  },
+  trade_cancelled: {
+    icon: IconX,
+    className: "bg-muted-foreground text-background",
+  },
+  trade_disputed: { icon: IconFlag, className: "bg-red-400 text-red-950" },
+  trade_dispute_resolved: {
+    icon: IconGavel,
+    className: "bg-muted-foreground text-background",
+  },
+  trade_deadline_extended: {
+    icon: IconClockPlus,
+    className: "bg-muted-foreground text-background",
+  },
+  trade_token_moved: {
+    icon: IconArrowBarRight,
+    className: "bg-amber-400 text-amber-950",
+  },
+  trade_token_untransferable: {
+    icon: IconLock,
+    className: "bg-red-400 text-red-950",
+  },
+  listing_closed: {
+    icon: IconTagOff,
+    className: "bg-amber-400 text-amber-950",
+  },
+} satisfies Record<
+  NotificationListItem["type"],
+  { icon: TablerIcon; className: string }
+>;
+
+function TypeBadge({ type }: { type: NotificationListItem["type"] }) {
+  const { icon: Icon, className } = typeBadges[type];
+  return (
+    <span
+      className={cn(
+        "absolute -right-1.5 -bottom-1.5 flex size-4.5 items-center justify-center rounded-full border-2 border-popover",
+        className,
+      )}
+    >
+      <Icon className="size-2.5" stroke={3} />
+    </span>
   );
 }
 
@@ -270,10 +457,10 @@ type RowDescription = {
 };
 
 /**
- * The row's sentence for each notification type.
+ * The row's sentence for each list-match type.
  */
-function describe(
-  notification: NotificationListItem,
+function describeListMatch(
+  notification: ListMatchItem,
   username: string,
   single: NotificationCollection | undefined,
 ): RowDescription {
@@ -306,6 +493,101 @@ function describe(
   }
 }
 
+// "Atom02 HeeJin 201Z #00217", or less when the indexer has lost it
+function tokenName(token: NotificationToken | null | undefined) {
+  if (!token?.collection) return m.notification_unknown_objekt();
+  return token.serial === null
+    ? token.collection.name
+    : `${token.collection.name} ${formatSerial(token.serial)}`;
+}
+
+/**
+ * The row's sentence for each trade type. A null actor means staff or the
+ * system acted, which never names who.
+ */
+function describeTrade(
+  notification: TradeItem,
+  username: string,
+): RowDescription {
+  const appName = env.VITE_APP_NAME;
+  const staff = notification.actor === null;
+
+  switch (notification.type) {
+    case "listing_claimed": {
+      const { objekts } = notification;
+      const sent =
+        objekts.length === 1
+          ? tokenName(objekts[0])
+          : m.notification_objekts_count({ count: objekts.length });
+      return {
+        text: m.notification_listing_claimed({ username, objekts: sent }),
+        emphasis: [username, sent],
+      };
+    }
+    case "trade_completed":
+      return {
+        text: m.notification_trade_completed({ username }),
+        emphasis: [username],
+      };
+    case "trade_timed_out":
+      return {
+        text: m.notification_trade_timed_out({ username }),
+        emphasis: [username],
+      };
+    case "trade_cancelled":
+      return {
+        text: staff
+          ? m.notification_trade_cancelled_staff({ appName, username })
+          : m.notification_trade_cancelled({ username }),
+        emphasis: [username],
+      };
+    case "trade_disputed":
+      return {
+        text: staff
+          ? m.notification_trade_disputed_staff({ appName, username })
+          : m.notification_trade_disputed({ username }),
+        emphasis: [username],
+      };
+    case "trade_dispute_resolved":
+      return {
+        text:
+          notification.offer.status === "cancelled"
+            ? m.notification_trade_dispute_resolved_cancelled({ username })
+            : m.notification_trade_dispute_resolved_completed({ username }),
+        emphasis: [username],
+      };
+    case "trade_deadline_extended":
+      return {
+        text: m.notification_trade_deadline_extended({ username }),
+        emphasis: [username],
+      };
+    case "trade_token_moved": {
+      const objekt = tokenName(notification.token);
+      return {
+        text: m.notification_trade_token_moved({ objekt, username }),
+        emphasis: [objekt, username],
+      };
+    }
+    case "trade_token_untransferable": {
+      const objekt = tokenName(notification.token);
+      return {
+        text: m.notification_trade_token_untransferable({ objekt, username }),
+        emphasis: [objekt, username],
+      };
+    }
+    case "listing_closed": {
+      const objekt = tokenName(notification.token);
+      return {
+        text: m.notification_listing_closed({ objekt }),
+        emphasis: [objekt],
+      };
+    }
+    default:
+      notification.type satisfies never;
+      return { text: "", emphasis: [] };
+  }
+}
+
 function Thumbnails({
   collections,
   itemCount,
@@ -318,8 +600,9 @@ function Thumbnails({
 
   return (
     <div className="mt-1.5 flex gap-1.5">
-      {shown.map((collection) => (
-        <Thumbnail key={collection.slug} collection={collection} />
+      {/* a listing can offer several copies of one collection */}
+      {shown.map((collection, i) => (
+        <Thumbnail key={`${collection.slug}-${i}`} collection={collection} />
       ))}
       {more > 0 && (
         <span className="flex aspect-photocard w-8.5 items-center justify-center rounded-[3px] bg-secondary text-xs font-semibold text-muted-foreground">

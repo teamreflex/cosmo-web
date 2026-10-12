@@ -70,6 +70,21 @@ type MetadataAuditEntry = {
   slug: string;
 };
 
+type TradeAuditEntry = {
+  staffId: string;
+  action: "trade:dispute" | "trade:complete" | "trade:cancel";
+  tradeId: string;
+  reportId: string | null;
+};
+
+type TradeExtendAuditEntry = {
+  staffId: string;
+  action: "trade:extend";
+  tradeId: string;
+  reportId: string | null;
+  detail: Extract<StaffAuditDetail, { kind: "trade-extend" }>;
+};
+
 /**
  * Entries written without checking for a recent duplicate, so several can go
  * in one insert.
@@ -80,7 +95,9 @@ type UndeduplicatedAuditEntry =
   | UnbanAuditEntry
   | SetRoleAuditEntry
   | ApiKeyAuditEntry
-  | MetadataAuditEntry;
+  | MetadataAuditEntry
+  | TradeAuditEntry
+  | TradeExtendAuditEntry;
 
 export type StaffAuditEntry = ReportReadAuditEntry | UndeduplicatedAuditEntry;
 
@@ -137,6 +154,25 @@ function toAuditRow(entry: StaffAuditEntry): typeof staffAudit.$inferInsert {
         action: entry.action,
         targetType: "collection",
         targetId: entry.slug,
+      };
+    case "trade:dispute":
+    case "trade:complete":
+    case "trade:cancel":
+      return {
+        staffId: entry.staffId,
+        action: entry.action,
+        targetType: "trade",
+        targetId: entry.tradeId,
+        reportId: entry.reportId,
+      };
+    case "trade:extend":
+      return {
+        staffId: entry.staffId,
+        action: entry.action,
+        targetType: "trade",
+        targetId: entry.tradeId,
+        reportId: entry.reportId,
+        detail: entry.detail,
       };
   }
 }
@@ -268,6 +304,8 @@ function toAuditTarget(
       };
     case "collection":
       return { type: "collection", slug: row.targetId };
+    case "trade":
+      return { type: "trade", id: row.targetId };
   }
 }
 
@@ -283,6 +321,12 @@ function toAuditDetail(detail: StaffAuditDetail): AdminAuditDetail | null {
         kind: "set-role",
         from: parseRole(detail.from),
         to: parseRole(detail.to),
+      };
+    case "trade-extend":
+      return {
+        kind: "trade-extend",
+        deadlineAt: new Date(detail.deadlineAt),
+        hours: detail.hours,
       };
     case "api-key":
       return null;

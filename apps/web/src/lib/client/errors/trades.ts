@@ -42,6 +42,18 @@ export function formatTradeError(error: unknown): string | null {
       return m.trade_error_claim_assignment_invalid();
     case "claim_token_unavailable":
       return m.trade_error_claim_token_unavailable();
+    case "trade_not_found":
+      return m.trade_error_trade_not_found();
+    case "trade_status_changed":
+      return m.trade_error_trade_status_changed();
+    case "trade_cancel_started":
+      return m.trade_error_trade_cancel_started();
+    case "trade_deadline_passed":
+      return m.trade_error_trade_deadline_passed();
+    case "trade_own":
+      return m.trade_error_trade_own();
+    case "trade_party_banned":
+      return m.trade_error_trade_party_banned();
     default:
       error.message satisfies never;
       return null;

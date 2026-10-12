@@ -4,8 +4,9 @@ import type {
 } from "@/lib/universal/account-deletion";
 import { tradeOffers } from "@apollo/database/web/schema";
 import { liveTradeStatuses } from "@apollo/database/web/types";
-import { and, eq, sql } from "drizzle-orm";
+import { and, asc, eq, or, sql } from "drizzle-orm";
 import type { DbOrTx, WebTx } from "./db";
+import { bumpUpdatedAt } from "./trades/listings.server";
 
 /**
  * The user's accepted and disputed trades, which keep them from deleting
@@ -69,29 +70,46 @@ export async function liveTradesBlocker(
 }
 
 /**
- * Withdraw the user's open listings and the direct offers they sent, and
- * decline the offers they received, ahead of deleting their account. Live
- * trades block deletion, so nothing reserved is touched.
+ * Close the user's open listings with `listingStatus` (withdrawn when they
+ * delete their account, removed when staff ban them), withdraw the direct
+ * offers they sent and decline the offers they received. The rows are locked
+ * in id order first, since a multi-row update locks in scan order and the
+ * outbox drain locks a poster's listings in id order to break them. Accepted
+ * and disputed trades are left alone: they block deletion, and a ban disputes
+ * them first.
  */
-export async function closeOpenOffers(tx: WebTx, userId: string) {
+export async function closeOpenOffers(
+  tx: WebTx,
+  userId: string,
+  listingStatus: "withdrawn" | "removed",
+) {
+  const sent = and(
+    eq(tradeOffers.fromUserId, userId),
+    sql`(${tradeOffers.kind}, ${tradeOffers.status}) IN (('listing', 'open'), ('trade', 'pending'))`,
+  );
+  const received = and(
+    eq(tradeOffers.toUserId, userId),
+    eq(tradeOffers.kind, "trade"),
+    eq(tradeOffers.status, "pending"),
+  );
   await tx
-    .update(tradeOffers)
-    .set({ status: "withdrawn", endedAt: sql`now()` })
-    .where(
-      and(
-        eq(tradeOffers.fromUserId, userId),
-        sql`(${tradeOffers.kind}, ${tradeOffers.status}) IN (('listing', 'open'), ('trade', 'pending'))`,
-      ),
-    );
+    .select({ id: tradeOffers.id })
+    .from(tradeOffers)
+    .where(or(sent, received))
+    .orderBy(asc(tradeOffers.id))
+    .for("no key update");
 
   await tx
     .update(tradeOffers)
-    .set({ status: "declined", endedAt: sql`now()` })
-    .where(
-      and(
-        eq(tradeOffers.toUserId, userId),
-        eq(tradeOffers.kind, "trade"),
-        eq(tradeOffers.status, "pending"),
-      ),
-    );
+    .set({
+      status: sql`CASE WHEN ${tradeOffers.kind} = 'listing' THEN ${listingStatus}::trade_offer_status ELSE 'withdrawn' END`,
+      endedAt: sql`now()`,
+      updatedAt: bumpUpdatedAt,
+    })
+    .where(sent);
+
+  await tx
+    .update(tradeOffers)
+    .set({ status: "declined", endedAt: sql`now()`, updatedAt: bumpUpdatedAt })
+    .where(received);
 }

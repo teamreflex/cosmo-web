@@ -7,6 +7,7 @@ import {
   cosmoMiddleware,
 } from "@/lib/server/middlewares";
 import { consumeRateLimit } from "@/lib/server/rate-limit.server";
+import { publishTradeUpdates } from "@/lib/server/trade-events.server";
 import {
   insertTrade,
   lockAndRecheck,
@@ -224,10 +225,16 @@ export const $claimListing = createServerFn({ method: "POST" })
     });
 
     const preflight = await preflightClaim(actor, data);
-    return db.transaction(async (tx) => {
-      const toAddress = await lockAndRecheck(tx, actor, data, preflight);
-      return insertTrade(tx, actor, preflight, toAddress);
-    });
+    const claim = await db.transaction(async (tx) =>
+      insertTrade(
+        tx,
+        actor,
+        preflight,
+        await lockAndRecheck(tx, actor, data, preflight),
+      ),
+    );
+    await publishTradeUpdates([claim.tradeId]);
+    return claim;
   });
 
 /**
