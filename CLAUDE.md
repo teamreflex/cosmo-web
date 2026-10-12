@@ -66,6 +66,7 @@ Detailed conventions live in `docs/`. Read the relevant file **before** working 
 - `packages/database`: `drizzle-orm` schemas for both databases
 - `packages/drizzle-bun-effect`: Effect service for Bun.SQL, derived from `drizzle-orm/effect-postgres`
 - `packages/lint`: Shared oxlint config
+- `packages/serial-estimation`: Estimates the serials of objekts minted after COSMO's v1 metadata cutoff, used by the indexer and its backfill
 - `packages/typescript`: Shared tsconfig.json file
 - `packages/util`: Shared utility functions
 - `packages/util-server`: Shared server-only utilities (Redis cache keys, crypto)
