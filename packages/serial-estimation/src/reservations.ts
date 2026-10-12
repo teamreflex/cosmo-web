@@ -26,3 +26,29 @@ export function findReservations(
   }
   return ranges;
 }
+
+/**
+ * The range in `sorted` (ordered by `lo`) holding the token id.
+ */
+export function findRange<T extends ReservedRange>(
+  sorted: readonly T[],
+  tokenId: number,
+): T | undefined {
+  let low = 0;
+  let high = sorted.length - 1;
+  while (low <= high) {
+    const middle = (low + high) >> 1;
+    const range = sorted[middle];
+    if (range === undefined) {
+      return undefined;
+    }
+    if (tokenId <= range.lo) {
+      high = middle - 1;
+    } else if (tokenId >= range.hi) {
+      low = middle + 1;
+    } else {
+      return range;
+    }
+  }
+  return undefined;
+}

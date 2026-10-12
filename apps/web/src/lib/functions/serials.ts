@@ -72,8 +72,8 @@ export const $listSerialConfirmations = createServerFn({ method: "GET" })
 
 /**
  * Record a confirmed serial for an objekt. Only `serial_confirmation` is
- * written; the indexer recomputes the objekt's collection once it notices the
- * confirmation differs from the stored serial.
+ * written; apps/schedules recomputes the objekt's collection once it notices
+ * the confirmation differs from the stored serial.
  */
 export const $confirmSerial = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])
@@ -105,8 +105,8 @@ export const $confirmSerial = createServerFn({ method: "POST" })
   });
 
 /**
- * Delete a serial confirmation. The objekt keeps its current serial until the
- * indexer next recomputes its collection.
+ * Delete a serial confirmation. The objekt keeps its current serial until
+ * apps/schedules next recomputes its collection.
  */
 export const $deleteSerialConfirmation = createServerFn({ method: "POST" })
   .middleware([adminMiddleware])

@@ -1,3 +1,4 @@
+import { findRange } from "./reservations";
 import type { ObjektSerial, Reservation } from "./types";
 
 /**
@@ -29,7 +30,7 @@ type Chunk = {
  */
 function chunkSize(reservation: Reservation): number {
   const width = reservation.hi - reservation.lo - 1;
-  if (width % 100 === 0 && reservation.foreign.length === 0) {
+  if (width % 100 === 0 && !reservation.shared) {
     return 100;
   }
   if (width % 50 === 0) {
@@ -47,43 +48,29 @@ function chunkStart(reservation: Reservation, tokenId: number): number {
   );
 }
 
-function findReservation(
-  sorted: readonly Reservation[],
-  tokenId: number,
-): Reservation | undefined {
-  let low = 0;
-  let high = sorted.length - 1;
-  while (low <= high) {
-    const middle = (low + high) >> 1;
-    const reservation = sorted[middle];
-    if (reservation === undefined) {
-      return undefined;
-    }
-    if (tokenId <= reservation.lo) {
-      high = middle - 1;
-    } else if (tokenId >= reservation.hi) {
-      low = middle + 1;
-    } else {
-      return reservation;
-    }
-  }
-  return undefined;
-}
-
+/**
+ * The anchor closest to the token id, given anchors ordered by token id.
+ */
 function nearest(
-  anchors: readonly Anchor[],
+  sorted: readonly Anchor[],
   tokenId: number,
 ): Anchor | undefined {
-  let best: Anchor | undefined;
-  for (const anchor of anchors) {
-    if (
-      best === undefined ||
-      Math.abs(anchor.tokenId - tokenId) < Math.abs(best.tokenId - tokenId)
-    ) {
-      best = anchor;
+  let low = 0;
+  let high = sorted.length;
+  while (low < high) {
+    const middle = (low + high) >> 1;
+    if ((sorted[middle]?.tokenId ?? tokenId) < tokenId) {
+      low = middle + 1;
+    } else {
+      high = middle;
     }
   }
-  return best;
+  const before = sorted[low - 1];
+  const after = sorted[low];
+  if (before === undefined || after === undefined) {
+    return before ?? after;
+  }
+  return tokenId - before.tokenId <= after.tokenId - tokenId ? before : after;
 }
 
 /**
@@ -121,7 +108,7 @@ function ownChunkStarts(
   for (let start = reservation.lo + 1; start < reservation.hi; start += size) {
     starts.push(start);
   }
-  if (reservation.foreign.length === 0) {
+  if (!reservation.shared) {
     return starts;
   }
 
@@ -155,7 +142,7 @@ function collectChunks(
   const touched = new Map<number, Reservation>();
   const owned = new Set<number>();
   for (const objekt of objekts) {
-    const reservation = findReservation(reservations, objekt.tokenId);
+    const reservation = findRange(reservations, objekt.tokenId);
     if (reservation !== undefined) {
       touched.set(reservation.lo, reservation);
       owned.add(chunkStart(reservation, objekt.tokenId));
@@ -177,7 +164,7 @@ function collectChunks(
   }
 
   for (const anchor of anchors) {
-    const reservation = findReservation(reservations, anchor.tokenId);
+    const reservation = findRange(reservations, anchor.tokenId);
     if (reservation !== undefined) {
       chunks.get(chunkStart(reservation, anchor.tokenId))?.anchors.push(anchor);
     }
@@ -238,11 +225,9 @@ function chain(
 function chunkStarts(chunks: ReadonlyMap<number, Chunk>): Map<number, number> {
   const ordered = [...chunks.values()].sort((a, b) => a.start - b.start);
   const starts = ordered.map(anchoredStart);
-  const sameReservation = (a: Chunk, b: Chunk) =>
-    a.reservation === b.reservation;
   const any = () => true;
 
-  chain(ordered, starts, sameReservation);
+  chain(ordered, starts, (a, b) => a.reservation === b.reservation);
   chain(ordered, starts, any);
   if (starts.length > 0 && !starts.some((start) => start !== undefined)) {
     starts[ordered.findIndex((chunk) => chunk.owned)] = 1;
@@ -273,7 +258,7 @@ function estimate(
   starts: ReadonlyMap<number, number>,
   anchors: readonly Anchor[],
 ): number {
-  const reservation = findReservation(reservations, objekt.tokenId);
+  const reservation = findRange(reservations, objekt.tokenId);
   if (reservation === undefined) {
     const anchor = nearest(anchors, objekt.tokenId);
     return anchor &&
@@ -307,14 +292,16 @@ export function reservedSerials(
   cutoff: number,
 ): Map<number, number> {
   const sortedReservations = [...reservations].sort((a, b) => a.lo - b.lo);
-  const anchors = objekts.flatMap((objekt): Anchor[] => {
-    const serial =
-      confirmations.get(objekt.tokenId) ??
-      (objekt.mintedAt <= cutoff && objekt.serial > 0
-        ? objekt.serial
-        : undefined);
-    return serial === undefined ? [] : [{ tokenId: objekt.tokenId, serial }];
-  });
+  const anchors = objekts
+    .flatMap((objekt): Anchor[] => {
+      const serial =
+        confirmations.get(objekt.tokenId) ??
+        (objekt.mintedAt <= cutoff && objekt.serial > 0
+          ? objekt.serial
+          : undefined);
+      return serial === undefined ? [] : [{ tokenId: objekt.tokenId, serial }];
+    })
+    .sort((a, b) => a.tokenId - b.tokenId);
   const chunks = collectChunks(objekts, sortedReservations, anchors);
   const starts = chunkStarts(chunks);
 

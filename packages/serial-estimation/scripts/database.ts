@@ -11,6 +11,7 @@ import * as z from "zod";
 import {
   claimBlocks,
   collectionKind,
+  findRange,
   type CollectionObjekts,
   type Reservation,
   type ReservedRange,
@@ -32,7 +33,38 @@ export type CollectionRef = {
   onOffline: "online" | "offline";
 };
 
+export const collectionColumns = {
+  id: collections.id,
+  slug: collections.slug,
+  onOffline: collections.onOffline,
+};
+
 const tokenId = sql`${objekts.id}::int4`.mapWith(Number);
+
+/**
+ * The rows of a query copied out through `psql`, split into fields. Streams
+ * them, so tables of 20M+ rows never sit in memory as text.
+ */
+export async function* copyRows(query: string): AsyncGenerator<string[]> {
+  const psql = Bun.spawn(
+    ["psql", INDEXER_DATABASE_URL, "-c", `\\copy (${query}) to stdout`],
+    { stdout: "pipe", stderr: "inherit" },
+  );
+  let pending = "";
+  const decoder = new TextDecoder();
+  for await (const bytes of psql.stdout) {
+    const lines = (pending + decoder.decode(bytes, { stream: true })).split(
+      "\n",
+    );
+    pending = lines.pop() ?? "";
+    for (const line of lines) {
+      yield line.split("\t");
+    }
+  }
+  if ((await psql.exited) !== 0) {
+    throw new Error("psql failed");
+  }
+}
 
 /**
  * Objekt ids are varchar. Ids of equal length compare as text in numeric
@@ -55,31 +87,11 @@ function tokenIdBetween(from: number, to: number) {
   return or(...spans);
 }
 
-function findRange(sorted: readonly ReservedRange[], id: number) {
-  let low = 0;
-  let high = sorted.length - 1;
-  while (low <= high) {
-    const middle = (low + high) >> 1;
-    const range = sorted[middle];
-    if (range === undefined) {
-      return undefined;
-    }
-    if (id <= range.lo) {
-      high = middle - 1;
-    } else if (id >= range.hi) {
-      low = middle + 1;
-    } else {
-      return range;
-    }
-  }
-  return undefined;
-}
-
 /**
- * The reserved ranges holding any of the token ids, each with the other
- * collections' ids numbering depends on (see `Reservation`). Only the span
- * between the collection's own objekts is read in full; one id beyond it is
- * enough to mark the range shared, which keeps wide early ranges cheap.
+ * The reserved ranges holding any of the token ids, as the collection sees
+ * them (see `Reservation`). Only the span between the collection's own
+ * objekts is read in full; one id beyond it is enough to mark the range
+ * shared, which keeps wide early ranges cheap.
  */
 async function loadReservations(
   collectionId: string,
@@ -109,9 +121,6 @@ async function loadReservations(
       span.max = Math.max(span.max, id);
       spans.set(range.lo, span);
     }
-  }
-  if (spans.size === 0) {
-    return [];
   }
 
   // other collections' ids between its own
@@ -145,13 +154,12 @@ async function loadReservations(
                 and(ne(objekts.collectionId, collectionId), or(...outside)),
               )
               .limit(1);
+      const foreign = between.filter((id) => id > span.min && id < span.max);
       return {
         lo: span.lo,
         hi: span.hi,
-        foreign: [
-          ...between.filter((id) => id > span.lo && id < span.hi),
-          ...(witness === undefined ? [] : [witness.tokenId]),
-        ],
+        shared: foreign.length > 0 || witness !== undefined,
+        foreign,
       };
     }),
   );
@@ -196,26 +204,21 @@ export async function loadCollection(
 }
 
 /**
- * Confirmed serials for a collection's objekts, keyed by token id.
+ * Every confirmed serial, keyed by token id.
  */
-export async function loadConfirmations(
-  collectionId: string,
-): Promise<Map<number, number>> {
+export async function loadConfirmations(): Promise<Map<number, number>> {
   const rows = await db
-    .select({ tokenId, serial: serialConfirmations.serial })
-    .from(serialConfirmations)
-    .innerJoin(objekts, eq(objekts.id, serialConfirmations.tokenId))
-    .where(eq(objekts.collectionId, collectionId));
+    .select({
+      tokenId: sql`${serialConfirmations.tokenId}::int4`.mapWith(Number),
+      serial: serialConfirmations.serial,
+    })
+    .from(serialConfirmations);
   return new Map(rows.map((row) => [row.tokenId, row.serial]));
 }
 
 export async function findCollection(slug: string): Promise<CollectionRef> {
   const [collection] = await db
-    .select({
-      id: collections.id,
-      slug: collections.slug,
-      onOffline: collections.onOffline,
-    })
+    .select(collectionColumns)
     .from(collections)
     .where(eq(collections.slug, slug));
   if (collection === undefined) {
@@ -237,11 +240,7 @@ export async function collectionsMintedSince(
     .where(gt(objekts.mintedAt, new Date(cutoff).toISOString()))
     .as("minted");
   return db
-    .select({
-      id: collections.id,
-      slug: collections.slug,
-      onOffline: collections.onOffline,
-    })
+    .select(collectionColumns)
     .from(collections)
     .innerJoin(minted, eq(minted.collectionId, collections.id))
     .orderBy(collections.id);
@@ -251,9 +250,6 @@ export async function collectionsMintedSince(
  * Write serials in one statement.
  */
 export async function writeSerials(updates: readonly SerialUpdate[]) {
-  if (updates.length === 0) {
-    return;
-  }
   await db
     .update(objekts)
     .set({

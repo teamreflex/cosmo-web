@@ -14,19 +14,8 @@ export type FixtureFile = {
 };
 
 export async function loadFixture(slug: string): Promise<FixtureFile> {
-  const file: FixtureFile = await Bun.file(
-    `${import.meta.dir}/fixtures/${slug}.json`,
-  ).json();
-  return file;
+  return Bun.file(`${import.meta.dir}/fixtures/${slug}.json`).json();
 }
-
-/**
- * A fixture with some serials hidden, and the real serials they had.
- */
-export type HiddenSerials = {
-  collection: CollectionObjekts;
-  truth: Map<number, number>;
-};
 
 /**
  * The fixture with some known serials hidden, as if their objekts had been
@@ -37,7 +26,7 @@ export function hideSerials(
   collection: CollectionObjekts,
   cutoff: number,
   hidden: (objekt: ObjektSerial) => boolean,
-): HiddenSerials {
+) {
   const truth = new Map<number, number>();
   const objekts = collection.objekts.map((objekt) => {
     if (!hidden(objekt)) {
@@ -46,13 +35,7 @@ export function hideSerials(
     truth.set(objekt.tokenId, objekt.serial);
     return { ...objekt, serial: 0, mintedAt: cutoff + 1 };
   });
-  return {
-    collection:
-      collection.kind === "sequential"
-        ? { kind: "sequential", objekts, claimBlocks: collection.claimBlocks }
-        : { kind: "reserved", objekts, reservations: collection.reservations },
-    truth,
-  };
+  return { collection: { ...collection, objekts }, truth };
 }
 
 /**
