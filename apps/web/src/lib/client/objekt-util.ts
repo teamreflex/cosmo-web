@@ -89,6 +89,13 @@ export function getObjektBackImageUrl(collection: BackImageSource) {
 }
 
 /**
+ * A serial as COSMO prints it, "#00217".
+ */
+export function formatSerial(serial: number) {
+  return `#${serial.toString().padStart(5, "0")}`;
+}
+
+/**
  * Returns the edition of the collection based on the collection number.
  */
 export function getEdition(collectionNo: string): string | null {

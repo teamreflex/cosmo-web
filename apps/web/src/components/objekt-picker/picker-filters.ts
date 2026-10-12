@@ -1,5 +1,7 @@
 import { m } from "@/i18n/messages";
+import { formatSerial } from "@/lib/client/objekt-util";
 import type { NeighbourSuggestion } from "@/lib/universal/binders";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type { userCollectionFrontendSchema } from "@/lib/universal/parsers";
 import type {
   ValidArtist,
@@ -187,4 +189,11 @@ export function suggestionSource(
   return kind === "like"
     ? m.binder_picker_suggestion_two({ first, second })
     : m.binder_picker_matches_two({ first, second });
+}
+
+/**
+ * The name a picker card reads out: "HeeJin Atom02 201Z #00217".
+ */
+export function pickerCardLabel(collection: Objekt.Collection, serial: number) {
+  return `${collection.member} ${collection.season} ${collection.collectionNo}${serial > 0 ? ` ${formatSerial(serial)}` : ""}`;
 }

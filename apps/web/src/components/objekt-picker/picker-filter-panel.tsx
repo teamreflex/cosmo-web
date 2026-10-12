@@ -12,19 +12,21 @@ import { validOnlineTypes } from "@apollo/cosmo/types/common";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
 import { Suspense, useId } from "react";
 import type { ComponentProps, ReactNode } from "react";
+import SuggestionChip from "../binders/suggestion-chip";
 import type {
   FlagKey,
   PickerFilterAction,
   PickerFilters,
 } from "./picker-filters";
 import { suggestionSource } from "./picker-filters";
-import SuggestionChip from "./suggestion-chip";
 
 type Props = {
   id: string;
   open: boolean;
   filters: PickerFilters;
   suggestion: NeighbourSuggestion | null;
+  /** the binder editor's picker, which adds the Not in binder filter */
+  binder: boolean;
   shown: number;
   onChange: (action: PickerFilterAction) => void;
   onClose: () => void;
@@ -40,6 +42,7 @@ export default function PickerFilterPanel({
   open,
   filters,
   suggestion,
+  binder,
   shown,
   onChange,
   onClose,
@@ -127,14 +130,16 @@ export default function PickerFilterPanel({
           />
         </Group>
 
-        <Group title={m.binder_picker_binder()}>
-          <Toggle
-            flag="notInBinder"
-            label={m.binder_picker_not_in_binder()}
-            filters={filters}
-            onChange={onChange}
-          />
-        </Group>
+        {binder && (
+          <Group title={m.binder_picker_binder()}>
+            <Toggle
+              flag="notInBinder"
+              label={m.binder_picker_not_in_binder()}
+              filters={filters}
+              onChange={onChange}
+            />
+          </Group>
+        )}
 
         <Group title={m.filter_sort()}>
           <Options>

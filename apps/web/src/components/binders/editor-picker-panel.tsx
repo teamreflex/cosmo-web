@@ -6,7 +6,9 @@ import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import { IconPhotoStar, IconX } from "@tabler/icons-react";
 import { useId, useRef } from "react";
 import type { KeyboardEvent, PointerEvent, RefObject } from "react";
-import ObjektPicker from "./objekt-picker";
+import { useEventCallback } from "usehooks-ts";
+import ObjektPicker from "../objekt-picker/objekt-picker";
+import BinderPickerCard from "./binder-picker-card";
 
 /**
  * A swipe down on the handle past this share of the sheet's height closes it,
@@ -46,6 +48,8 @@ export default function EditorPickerPanel({
   onKeyDown,
 }: Props) {
   const titleId = useId();
+  // stable, so a new handler from the editor doesn't re-render every card
+  const pick = useEventCallback(onPick);
   const swipe = useRef<{ pointerId: number; y: number; time: number } | null>(
     null,
   );
@@ -175,7 +179,18 @@ export default function EditorPickerPanel({
         lockedTokenIds={lockedTokenIds}
         inBinderTokenIds={editor.inBinderTokenIds}
         suggestion={editor.suggestion}
-        onPick={onPick}
+        renderCard={(objekt, { priority }) => {
+          const tokenId = Number(objekt.tokenId);
+          return (
+            <BinderPickerCard
+              objekt={objekt}
+              inBinder={editor.inBinderTokenIds.has(tokenId)}
+              locked={lockedTokenIds.has(tokenId)}
+              priority={priority}
+              onPick={pick}
+            />
+          );
+        }}
         className="min-h-0 flex-1 lg:absolute lg:inset-0 max-lg:[&>div:first-child]:pt-0"
       />
     </section>

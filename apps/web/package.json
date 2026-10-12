@@ -32,6 +32,7 @@
     "@apollo/database": "workspace:*",
     "@apollo/image": "workspace:*",
     "@apollo/queue": "workspace:*",
+    "@apollo/trades": "workspace:*",
     "@apollo/util": "workspace:*",
     "@apollo/util-server": "workspace:*",
     "@aws-sdk/client-ses": "^3.1152.0",

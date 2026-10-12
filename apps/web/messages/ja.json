@@ -67,6 +67,7 @@
   "common_menu": "メニュー",
   "common_filters": "フィルター",
   "common_loading": "読み込み中",
+  "common_hours_minutes": "{hours}時間{minutes}分",
   "common_saving": "保存中...",
   "common_close": "閉じる",
   "common_como": "COMO",
@@ -356,6 +357,153 @@
   "report_error_report_not_found": "報告が見つかりません。",
   "report_error_report_about_you": "この報告はあなたに関するものなので、他のスタッフが対応します。",
   "report_error_report_status_changed": "この報告は他のスタッフがすでに更新しました。再読み込みして最新の状態を確認してください。",
+  "trade_error_listing_not_found": "この出品は見つかりませんでした。",
+  "trade_error_listing_own": "自分の出品は承諾できません。",
+  "trade_error_listing_closed": "この出品は終了しています。",
+  "trade_error_listing_claimed": "この出品は承諾済みのため、変更できません。",
+  "trade_error_already_claimed": "他のユーザーが先にこの出品を承諾しました。",
+  "trade_error_listing_updated": "この出品は更新されました。新しい条件を確認してから承諾してください。",
+  "trade_error_listing_unavailable": "この出品は現在承諾できません。",
+  "trade_error_listing_want_unknown": "探しているオブジェクトの一つが存在しません。",
+  "trade_error_listing_range_empty": "範囲の一つに一致するオブジェクトがありません。",
+  "trade_error_claim_cap_reached": "進行中の承諾済みトレードが上限に達しています。新たに承諾する前に、いずれかを完了してください。",
+  "trade_error_claim_assignment_invalid": "選んだオブジェクトがこの出品に合いません。再読み込みして選び直してください。",
+  "trade_error_claim_token_unavailable": "選んだオブジェクトの一つがトレードできなくなりました。",
+  "trade_token_refusal_not_owned": "{objekt} #{serial}はあなたのCOSMOアカウントにありません。",
+  "trade_token_refusal_untransferable": "{objekt} #{serial}は譲渡できません。",
+  "trade_token_refusal_locked": "{objekt} #{serial}はCOSMOでロックされています。",
+  "trade_token_refusal_live": "{objekt} #{serial}はすでにトレード中です。",
+  "listing_detail_title": "トレード出品",
+  "listing_detail_posted": "{#time}{when}{/time}に投稿",
+  "listing_detail_error": "この出品を読み込めませんでした。",
+  "listing_detail_viewer_error": "この出品のあなた側の情報を読み込めませんでした。",
+  "listing_detail_you_get": "受け取る · {count}",
+  "listing_detail_offering": "出品 · {count}",
+  "listing_detail_looking_for": "求めているもの · {count}",
+  "listing_detail_range_any_member": "メンバー指定なし",
+  "listing_detail_range_any_of": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{formatted}件のコレクションのいずれか"
+      }
+    }
+  ],
+  "listing_detail_kind_exact": "指定",
+  "listing_detail_kind_range": "範囲",
+  "listing_detail_kind_payment": "支払い",
+  "listing_detail_owned_exact": "{count}個所持",
+  "listing_detail_owned_range": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "条件に合う{formatted}個を所持"
+      }
+    }
+  ],
+  "listing_detail_short": "{count}個不足",
+  "listing_detail_picked": "{count}個中{picked}個を選択",
+  "listing_detail_duplicates_hint": "重複しているものから先に選びました。タップで入れ替えられます。",
+  "listing_detail_card_other_row": "別の行で選択済み",
+  "listing_detail_card_swap": "{objekt}と入れ替え",
+  "listing_detail_incomplete_footer": "承諾するには、各行で求められている数のオブジェクトを選んでください。",
+  "listing_detail_blocked_body": "出品者側の問題で取引できません。たとえば、出品中のオブジェクトがロックされたか、アカウントから移動されています。解決すれば承諾できます。",
+  "listing_detail_accept": "承諾",
+  "listing_detail_accept_footer": "承諾するとシリアルを再確認し、この出品を48時間確保します。お互いにCOSMOアプリで順不同で送ってください。すべての送信が完了すると、{appName}が完了にします。",
+  "listing_detail_short_footer": "条件に合うオブジェクトが足りないため、この出品を承諾できません。",
+  "listing_detail_hold": "48時間確保されます",
+  "listing_detail_accepted": "トレードを承諾しました。COSMOアプリでオブジェクトを送ってください。",
+  "listing_detail_signed_out": "サインインすると、条件に合うオブジェクトを確認して承諾できます。",
+  "listing_detail_unlinked_title": "トレードするにはCOSMOアカウントを連携してください。",
+  "listing_detail_unlinked_body": "{appName}は所持品を出品と照合し、そのアカウントの送信を確認します。{appName}アカウント1つにつきCOSMOアカウントは1つで、連携は解除されません。",
+  "listing_detail_link_cosmo": "COSMOアカウントを連携",
+  "listing_detail_cap_title": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "進行中のトレードが{count}件あり、同時に進められる上限に達しています。"
+      }
+    }
+  ],
+  "listing_detail_cap_body": "1件完了すると、別の出品を承諾できます。",
+  "listing_detail_lost_race_title": "あなたより少し前に他のユーザーが承諾しました。",
+  "listing_detail_lost_race_body": "あなたのオブジェクトは何も確保されていません。そのトレードが完了しなければ、出品は再開されます。",
+  "listing_detail_updated_title": "承諾する前にこの出品が変更されました。",
+  "listing_detail_updated_body": "新しい条件を確認して、もう一度選んでください。",
+  "listing_detail_status_open": "受付中",
+  "listing_detail_status_claimed": "承諾済み",
+  "listing_detail_status_filled": "成立",
+  "listing_detail_status_withdrawn": "取り下げ",
+  "listing_detail_status_closed": "終了",
+  "listing_detail_status_removed": "削除",
+  "listing_detail_onlooker": "他のユーザーが完了するまで残り{#time}{left}{/time}",
+  "listing_detail_claimer_title": "あなたが承諾しました",
+  "listing_detail_time_left": "残り{#time}{left}{/time}",
+  "listing_detail_claimer_body": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "COSMOアプリで{poster}に{count}個のオブジェクトを送ってください。すべての送信が完了すると、{appName}が完了にします。"
+      }
+    }
+  ],
+  "listing_detail_poster_claimed": "{#user}{username}{/user}が承諾 · 残り{#time}{left}{/time}",
+  "listing_detail_poster_claimed_someone": "他のユーザーが承諾 · 残り{#time}{left}{/time}",
+  "listing_detail_poster_claimed_body": "この先はトレード次第です。完了すれば出品は成立し、時間切れやキャンセルになれば再開されます。",
+  "listing_detail_withdraw_claimed": "トレードが進行中の出品は取り下げできません。",
+  "listing_detail_withdraw": "取り下げ",
+  "listing_detail_withdraw_title": "この出品を取り下げますか？",
+  "listing_detail_withdraw_description": "すぐにマーケットから消え、誰も承諾できなくなります。",
+  "listing_detail_withdraw_confirm": "取り下げる",
+  "listing_detail_withdrawn": "出品を取り下げました",
+  "listing_detail_closed_filled": "{#user}{username}{/user}とトレードしました。双方の送信が完了しました。",
+  "listing_detail_closed_filled_unknown": "トレードしました。双方の送信が完了しました。",
+  "listing_detail_closed_withdrawn": "{poster}がこの出品を終了しました。",
+  "listing_detail_closed_broken": "出品されたオブジェクトが{poster}のアカウントから移動したか、送信できなくなったため、この出品は進められません。",
+  "listing_detail_closed_removed": "{appName}スタッフによって削除されました。",
+  "listing_detail_closed_abandoned": "{poster}が承諾されたトレードで自分の分を送らなかったため、この出品は終了しました。",
+  "listing_detail_you_give_summary": "所持品から選択",
+  "listing_detail_you_get_summary": "{poster}から",
+  "listing_detail_summary_ranges": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "範囲{count}件"
+      }
+    }
+  ],
+  "listing_detail_summary_exact": "指定{count}件",
+  "listing_detail_summary_payments": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "支払い{count}件"
+      }
+    }
+  ],
+  "listing_detail_in_exchange_for": "交換",
+  "listing_confirm_title": "トレードを確定",
+  "listing_confirm_submit": "確定",
+  "listing_confirm_lead": "{#user}{poster}{/user}の出品を承諾します。すべてのシリアルを確認してください。これが実際に送るものと受け取るものです。",
+  "listing_confirm_deadline": "お互いに{#hours}48時間{/hours}、{#time}{date}{/time}までにCOSMOアプリで送ってください。あなたの分は{#user}{poster}{/user}に送ります。期限までに送らなかった側は放棄とみなされます。",
+  "listing_confirm_deadline_short": "送信期限は48時間、{#time}{date}{/time}まで",
+  "listing_confirm_updated_title": "{poster}がこの出品を変更しました",
+  "listing_confirm_updated_body": "変更内容を確認してください。",
+  "listing_confirm_review": "確認する",
+  "listing_confirm_claimed_title": "他のユーザーが先に承諾しました",
+  "listing_confirm_token_title": "{objekt} {#serial}{serial}{/serial}はトレードできません",
+  "listing_confirm_token_not_owned": "あなたのアカウントから移動しています。別のコピーと入れ替えてください。",
+  "listing_confirm_token_untransferable": "COSMOで譲渡できません。別のコピーと入れ替えてください。",
+  "listing_confirm_token_locked": "COSMOでロックされています。別のコピーと入れ替えてください。",
+  "listing_confirm_token_live": "別のトレードに使われています。別のコピーと入れ替えてください。",
+  "listing_confirm_token_unknown": "ロックされているか、別のトレード中か、アカウントから移動しています。別のコピーと入れ替えてください。",
+  "listing_confirm_back_to_picker": "選択に戻る",
   "account_error_linked_elsewhere": "このCOSMOアカウントはすでに別の{appName}アカウントと連携されています。COSMOアカウントは1つの{appName}アカウントにしか連携できません。",
   "account_error_already_linked": "このアカウントにはすでにCOSMOアカウントが連携されています。",
   "account_error_cosmo_banned": "このCOSMOアカウントは利用停止中の{appName}アカウントのものなので、連携できません。",
@@ -1055,7 +1203,8 @@
   "filter_online_any_sub": "フィジカル + デジタル",
   "filter_online_physical_sub": "印刷版",
   "filter_online_digital_sub": "デジタルのみ",
-  "filter_value_all": "all",
+  "filter_value_all": "すべて",
+  "filter_value_any": "指定なし",
   "filter_value_multiple": "複数",
   "filter_label_total": "合計",
   "filter_label_types": "種類",
@@ -1483,5 +1632,160 @@
   "aria_edit_sale_price": "{collection}の価格を編集",
   "aria_add_sale_price": "{collection}に価格を追加",
   "aria_play_audio": "音声を再生",
-  "aria_pause_audio": "音声を一時停止"
+  "aria_pause_audio": "音声を一時停止",
+  "market_listings_open_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "公開中の出品 {formatted}件"
+      }
+    }
+  ],
+  "market_listings_match_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{formatted}件が一致"
+      }
+    }
+  ],
+  "market_listings_offering": "出品",
+  "market_listings_looking_for": "求めているもの",
+  "market_listings_filter_artist": "アーティスト",
+  "market_listings_filter_member": "メンバー",
+  "market_listings_any_artist": "すべてのアーティスト",
+  "market_listings_type_label": "出品の種類",
+  "market_listings_type_all": "すべて",
+  "market_listings_type_trade": "トレード",
+  "market_listings_column_type": "種類",
+  "market_listings_column_offering": "出品",
+  "market_listings_column_asking": "求めるもの",
+  "market_listings_column_from": "出品者",
+  "market_listings_trade": "トレード",
+  "market_listings_objekts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}個のオブジェクト"
+      }
+    }
+  ],
+  "market_listings_empty": "公開中の出品はまだありません",
+  "market_listings_empty_body": "投稿された出品は新しい順にここに表示されます。",
+  "market_listings_empty_filtered": "条件に合う出品はありません",
+  "market_listings_empty_filtered_body": "フィルターを減らすか、リセットしてすべての出品を表示してください。",
+  "market_listings_error": "出品を読み込めませんでした。",
+  "listing_composer_new": "新規出品",
+  "listing_composer_title_create": "新規出品",
+  "listing_composer_title_edit": "出品を編集",
+  "listing_composer_edit": "編集",
+  "listing_composer_edit_claimed": "この出品は承諾済みのため、トレード中は条件を変更できません。",
+  "listing_composer_offering": "出品 · {count}",
+  "listing_composer_offering_full": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "1つの出品に含められるのは最大{count}個までです。"
+      }
+    }
+  ],
+  "listing_composer_add_objekts": "コレクションから追加",
+  "listing_composer_remove_objekt": "{objekt}を外す",
+  "listing_composer_picker_help": "ロック中、譲渡不可、トレード中のオブジェクトは表示されますが選べません。",
+  "listing_composer_picker_done": "完了 · {count}",
+  "listing_composer_pill_offering": "出品中",
+  "listing_composer_pill_untransferable": "譲渡不可",
+  "listing_composer_pill_live": "トレード中",
+  "listing_composer_looking_for": "求めているもの",
+  "listing_composer_looking_for_help": "代わりに受け取るオブジェクト",
+  "listing_composer_trade_total": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "トレード · {count}個"
+      }
+    }
+  ],
+  "listing_composer_add_exact": "特定のオブジェクト",
+  "listing_composer_add_range": "範囲",
+  "listing_composer_wants_full": "この出品はすでに求められる上限に達しています。",
+  "listing_composer_count": "個数",
+  "listing_composer_fewer": "減らす",
+  "listing_composer_more": "増やす",
+  "listing_composer_remove_row": "{position}行目を削除: {row}",
+  "listing_composer_matching": "個（条件に合うもの）",
+  "listing_composer_range_matches": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{formatted}件のコレクションが該当"
+      }
+    }
+  ],
+  "listing_composer_range_no_matches": "この範囲に該当するコレクションはまだありません。",
+  "listing_composer_range_empty": "範囲を絞るには値を1つ以上選んでください。",
+  "listing_composer_range_edit": "範囲を編集",
+  "listing_composer_range_collapse": "範囲を閉じる",
+  "listing_composer_search_placeholder": "コレクションを検索（例: HeeJin 201Z）",
+  "listing_composer_search_hint": "入力してすべてのコレクションから検索します。",
+  "listing_composer_search_empty": "コレクションが見つかりません。",
+  "listing_composer_search_error": "現在検索を利用できません。",
+  "listing_composer_note": "メモ（任意）",
+  "listing_composer_note_placeholder": "例: すべて別のコレクション、シリアル1000未満",
+  "listing_composer_footer_offered": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}個"
+      }
+    }
+  ],
+  "listing_composer_footer_wanted": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}個"
+      }
+    }
+  ],
+  "listing_composer_footer": "{offered} ⇄ {wanted}",
+  "listing_composer_reason_offered": "出品するオブジェクトを1つ以上選んでください。",
+  "listing_composer_reason_wants": "求めるオブジェクトを1つ以上追加してください。",
+  "listing_composer_reason_range": "各範囲には値が1つ以上必要です。",
+  "listing_composer_reason_refused": "出品するオブジェクトの中に、今はトレードできないものがあります。",
+  "listing_composer_reason_note": "メモは{max}文字以内にしてください。",
+  "listing_composer_post": "作成",
+  "listing_composer_save": "保存",
+  "listing_composer_posted": "出品しました",
+  "listing_composer_saved": "出品を更新しました",
+  "listing_composer_view": "見る",
+  "listing_composer_rate_limited_title": "出品の変更が多すぎます",
+  "listing_composer_rate_limited_description": "数分待ってからもう一度お試しください。",
+  "listing_composer_pill_not_owned": "所持していません",
+  "listing_composer_offered_refused": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "出品または保存するには、外すかCOSMOで解決してください。"
+      }
+    }
+  ],
+  "listing_composer_discard_title_create": "この出品を破棄しますか？",
+  "listing_composer_discard_title_edit": "変更を破棄しますか？",
+  "listing_composer_discard_description": "ここで入力した内容は失われます。",
+  "listing_composer_discard_keep": "編集を続ける",
+  "listing_composer_discard_confirm": "破棄",
+  "listing_detail_you_give_total": "渡す · {count}",
+  "listing_detail_poster_blocked_title": "現在、誰もこの出品を承諾できません。",
+  "listing_detail_poster_blocked_body": "出品したオブジェクトのいずれかがロックされているか、譲渡できないか、別のトレード中か、アカウントから移動しています。",
+  "listing_detail_poster_blocked_fix": "出品を編集して別のものを出すか、COSMOで解決してください。"
 }

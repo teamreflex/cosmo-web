@@ -11,9 +11,19 @@ type OnlineValue = "any" | ValidOnlineType;
 type Props = {
   onOffline: CosmoFilters["on_offline"];
   onChange: SetCosmoFilters;
+  label?: string;
+  /**
+   * What the chip reads with nothing picked, in place of "all".
+   */
+  unsetLabel?: string;
 };
 
-export default function OnlineFilter({ onOffline, onChange }: Props) {
+export default function OnlineFilter({
+  onOffline,
+  onChange,
+  label = m.filter_type(),
+  unsetLabel = m.filter_value_all(),
+}: Props) {
   const value: OnlineValue = deriveValue(onOffline);
 
   const options: SingleSelectOption<OnlineValue>[] = [
@@ -42,12 +52,12 @@ export default function OnlineFilter({ onOffline, onChange }: Props) {
 
   const valueLabel =
     value === "any"
-      ? m.filter_value_all()
-      : (options.find((o) => o.value === value)?.label ?? value).toLowerCase();
+      ? unsetLabel
+      : (options.find((o) => o.value === value)?.label ?? value);
 
   return (
     <FilterChip
-      label={m.filter_type()}
+      label={label}
       valueLabel={valueLabel}
       active={value !== "any"}
       width={240}

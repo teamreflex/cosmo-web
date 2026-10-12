@@ -1,6 +1,9 @@
 import { useArtists } from "@/hooks/use-artists";
 import type { NeighbourSuggestion } from "@/lib/universal/binders";
-import { suggestionSource, suggestionSummary } from "./picker-filters";
+import {
+  suggestionSource,
+  suggestionSummary,
+} from "../objekt-picker/picker-filters";
 
 type Props = {
   suggestion: NeighbourSuggestion;

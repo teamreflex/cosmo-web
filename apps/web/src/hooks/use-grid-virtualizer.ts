@@ -27,7 +27,7 @@ export function useGridVirtualizer({
   "use no memo";
   // oxlint-disable-next-line react/incompatible-library -- this hook already opts out of the compiler
   const virtualizer = useWindowVirtualizer({
-    ...gridOptions({ count, lanes, gap, itemHeight }),
+    ...gridOptions({ count, lanes, gap, itemHeight, overscanRows: 3 }),
     scrollMargin: container.current?.offsetTop ?? 0,
   });
 
@@ -40,10 +40,12 @@ type ElementOptions = Options & {
 
 /**
  * The same grid virtualizer against a scrolling element instead of the window,
- * for grids inside a scrolling panel such as the binder picker. The scroll
+ * for grids inside a scrolling panel such as the objekt picker. The scroll
  * element must be positioned, so the grid's `offsetTop` is its offset inside
- * that element (0 when the grid is its first child). Opts out of the React
- * Compiler for the same reasons as `useGridVirtualizer`.
+ * that element (0 when the grid is its first child). It buffers one row
+ * rather than three, since a picker in a wide dialog is many columns across
+ * and swapping its results mounts every buffered card in one frame. Opts out
+ * of the React Compiler for the same reasons as `useGridVirtualizer`.
  */
 export function useGridElementVirtualizer({
   count,
@@ -56,7 +58,7 @@ export function useGridElementVirtualizer({
   "use no memo";
   // oxlint-disable-next-line react/incompatible-library -- this hook already opts out of the compiler
   const virtualizer = useVirtualizer({
-    ...gridOptions({ count, lanes, gap, itemHeight }),
+    ...gridOptions({ count, lanes, gap, itemHeight, overscanRows: 1 }),
     getScrollElement: () => scrollElement.current,
     scrollMargin: container.current?.offsetTop ?? 0,
   });
@@ -73,13 +75,14 @@ function gridOptions({
   lanes,
   gap,
   itemHeight,
-}: Omit<Options, "container">) {
+  overscanRows,
+}: Omit<Options, "container"> & { overscanRows: number }) {
   return {
     count,
     lanes,
     gap,
-    // overscan is counted in items, so scale it to keep ~3 rows buffered
-    overscan: lanes * 3,
+    // overscan is counted in items, so scale it to keep whole rows buffered
+    overscan: lanes * overscanRows,
     estimateSize: () => itemHeight,
     measureElement: () => itemHeight,
   };

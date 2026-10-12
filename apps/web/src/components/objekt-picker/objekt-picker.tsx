@@ -9,7 +9,6 @@ import { getSeasonColor } from "@/lib/universal/seasons";
 import { cn } from "@/lib/utils";
 import { validArtists } from "@apollo/cosmo/types/common";
 import type { ValidArtist, ValidSort } from "@apollo/cosmo/types/common";
-import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import { Radio } from "@base-ui/react/radio";
 import { RadioGroup } from "@base-ui/react/radio-group";
 import {
@@ -30,9 +29,9 @@ import {
   useRef,
   useState,
 } from "react";
-import type { ReactNode, RefObject } from "react";
+import type { ComponentProps, ReactNode, RefObject } from "react";
 import { ErrorBoundary } from "react-error-boundary";
-import { useEventCallback } from "usehooks-ts";
+import SuggestionChip from "../binders/suggestion-chip";
 import PickerFilterPanel from "./picker-filter-panel";
 import type {
   FlagKey,
@@ -48,36 +47,44 @@ import {
   toCollectionFilters,
 } from "./picker-filters";
 import PickerGrid, { PickerGridSkeleton } from "./picker-grid";
-import SuggestionChip from "./suggestion-chip";
 
 // radix radio values are strings, so "no artist" needs a stand-in
 const ALL_ARTISTS = "all";
 
 type Props = {
-  /** the binder owner's address, whose collection is listed */
+  /** the address whose collection is listed */
   address: string;
-  /** objekts the owner has locked, for the lock badge and Hide locked */
+  /** objekts the owner has locked, for Hide locked */
   lockedTokenIds: ReadonlySet<number>;
-  /** objekts already in this binder, shown dimmed but still pickable */
-  inBinderTokenIds: ReadonlySet<number>;
+  /** one objekt's card, which handles picking it */
+  renderCard: PickerCardRenderer;
+  /**
+   * The binder editor's objekts already in the binder, which adds the Not
+   * in binder filter.
+   */
+  inBinderTokenIds?: ReadonlySet<number>;
   /** filters proposed from the selected pocket's neighbours */
-  suggestion: NeighbourSuggestion | null;
-  onPick: (objekt: CosmoObjekt) => void;
+  suggestion?: NeighbourSuggestion | null;
   className?: string;
 };
 
+export type PickerCardRenderer = ComponentProps<
+  typeof PickerGrid
+>["renderCard"];
+
 /**
- * Picks objekts from the owner's collection for a binder. The artist switch
- * stays in the top bar and everything else sits behind a Filters panel. The
- * filters are local state, and the same collection query the profile runs
- * backs the grid. It fills whatever box it's given, three columns wide.
+ * Picks objekts from an address's collection, for a binder or a listing.
+ * The artist switch stays in the top bar and everything else sits behind a
+ * Filters panel. The filters are local state, and the same collection query
+ * the profile runs backs the grid. It fills whatever box it's given, at
+ * least three columns wide.
  */
 export default function ObjektPicker({
   address,
   lockedTokenIds,
+  renderCard,
   inBinderTokenIds,
-  suggestion,
-  onPick,
+  suggestion = null,
   className,
 }: Props) {
   const { selected: selectedArtists } = useArtists();
@@ -100,8 +107,6 @@ export default function ObjektPicker({
   const scrollRef = useRef<HTMLDivElement>(null);
   const filtersButtonRef = useRef<HTMLButtonElement>(null);
   const panelId = useId();
-  // stable, so a new handler from the editor doesn't re-render every card
-  const pick = useEventCallback(onPick);
 
   const pendingSuggestion =
     suggestion !== null &&
@@ -189,14 +194,16 @@ export default function ObjektPicker({
                 scrollRef={scrollRef}
                 inBinderTokenIds={inBinderTokenIds}
                 lockedTokenIds={lockedTokenIds}
-                onPick={pick}
+                renderCard={renderCard}
                 panelOpen={panelOpen}
                 panel={(shown) => (
                   <PickerFilterPanel
                     id={panelId}
                     open={panelOpen}
-                    filters={filters}
+                    // closed, it follows the results, so an artist switch doesn't mount the next artist's options before the switch repaints
+                    filters={panelOpen ? filters : loadedFilters}
                     suggestion={pendingSuggestion}
+                    binder={inBinderTokenIds !== undefined}
                     shown={shown}
                     onChange={update}
                     onClose={() => {
@@ -248,11 +255,16 @@ function PickerSection({
         </span>
       </div>
 
-      <div className="relative min-h-0 flex-1 overflow-hidden border-t border-border">
+      {/* clipped rather than hidden, so a programmatic scroll can't slide the results aside and expose the closed panel */}
+      <div className="relative min-h-0 flex-1 overflow-clip border-t border-border">
         <div
           ref={scrollRef}
           inert={inert}
-          className="absolute inset-0 panel-scrollbar overflow-y-auto overscroll-contain px-3 pt-2.5 pb-3.5"
+          className={cn(
+            "absolute inset-0 panel-scrollbar [scrollbar-gutter:stable] overflow-y-auto overscroll-contain px-3 pt-2.5 pb-3.5",
+            // hidden once the panel has slid over, so no edge shows past it; shown at once as it leaves
+            inert && "invisible transition-[visibility] duration-300",
+          )}
         >
           {children}
         </div>
@@ -269,9 +281,9 @@ type PickerCollectionProps = {
   /** newer filters are loading, so these results are on their way out */
   stale: boolean;
   scrollRef: RefObject<HTMLDivElement | null>;
-  inBinderTokenIds: ReadonlySet<number>;
+  inBinderTokenIds: ReadonlySet<number> | undefined;
   lockedTokenIds: ReadonlySet<number>;
-  onPick: (objekt: CosmoObjekt) => void;
+  renderCard: PickerCardRenderer;
   panelOpen: boolean;
   /** the filter panel, given how many objekts the results hold */
   panel: (shown: number) => ReactNode;
@@ -308,7 +320,7 @@ function PickerCollection({
         const tokenId = Number(objekt.tokenId);
         return (
           !(filters.hideLocked && lockedTokenIds.has(tokenId)) &&
-          !(filters.notInBinder && inBinderTokenIds.has(tokenId))
+          !(filters.notInBinder && inBinderTokenIds?.has(tokenId))
         );
       })
     : loaded;
@@ -335,13 +347,7 @@ function PickerCollection({
         </p>
       ) : (
         <div className={cn("transition-opacity", stale && "opacity-60")}>
-          <PickerGrid
-            objekts={objekts}
-            scrollElement={scrollRef}
-            inBinderTokenIds={inBinderTokenIds}
-            lockedTokenIds={lockedTokenIds}
-            {...grid}
-          />
+          <PickerGrid objekts={objekts} scrollElement={scrollRef} {...grid} />
           <InfiniteQueryNext
             status={query.status}
             hasNextPage={query.hasNextPage}
@@ -401,21 +407,39 @@ function ArtistSwitch({ value, onChange }: ArtistSwitchProps) {
             key={artist.id}
             value={artist.id}
             label={artist.title}
+            image={artist.logoImageUrl}
           />
         ))}
     </RadioGroup>
   );
 }
 
-function ArtistOption({ value, label }: { value: string; label: string }) {
+/**
+ * One artist's option, with the group's logo beside its name. All has no
+ * logo. The fill doesn't transition: a colour transition runs on the main
+ * thread, so the results swap that follows a switch would stall it with both
+ * options half filled.
+ */
+function ArtistOption({
+  value,
+  label,
+  image,
+}: {
+  value: string;
+  label: string;
+  image?: string;
+}) {
   return (
     <Radio.Root
       value={value}
       nativeButton
       render={<button type="button" />}
-      className="min-w-0 flex-auto truncate rounded-[5px] px-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-cosmo data-checked:bg-cosmo data-checked:text-white"
+      className="flex min-w-0 flex-auto items-center justify-center gap-1.5 rounded-[5px] px-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-cosmo data-checked:bg-cosmo data-checked:text-white"
     >
-      {label}
+      {image !== undefined && (
+        <img src={image} alt="" className="size-4 shrink-0 rounded-full" />
+      )}
+      <span className="truncate">{label}</span>
     </Radio.Root>
   );
 }

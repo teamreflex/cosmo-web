@@ -67,6 +67,7 @@
   "common_menu": "Menu",
   "common_filters": "Filtres",
   "common_loading": "Chargement",
+  "common_hours_minutes": "{hours} h {minutes} min",
   "common_saving": "Sauvegarde...",
   "common_close": "Fermer",
   "common_como": "COMO",
@@ -358,6 +359,168 @@
   "report_error_report_not_found": "Signalement introuvable.",
   "report_error_report_about_you": "Ce signalement vous concerne : d'autres membres du staff s'en chargeront.",
   "report_error_report_status_changed": "Quelqu'un d'autre a déjà mis à jour ce signalement. Rechargez pour voir son dernier statut.",
+  "trade_error_listing_not_found": "Cette annonce est introuvable.",
+  "trade_error_listing_own": "Vous ne pouvez pas accepter votre propre annonce.",
+  "trade_error_listing_closed": "Cette annonce est fermée.",
+  "trade_error_listing_claimed": "Quelqu'un a accepté cette annonce, elle ne peut donc plus être modifiée.",
+  "trade_error_already_claimed": "Quelqu'un d'autre a accepté cette annonce en premier.",
+  "trade_error_listing_updated": "Cette annonce a été modifiée. Vérifiez les nouvelles conditions avant d'accepter.",
+  "trade_error_listing_unavailable": "Cette annonce ne peut pas être acceptée pour le moment.",
+  "trade_error_listing_want_unknown": "L'un des objekts que vous recherchez n'existe pas.",
+  "trade_error_listing_range_empty": "L'une de vos plages ne correspond à aucun objekt.",
+  "trade_error_claim_cap_reached": "Vous avez atteint le nombre maximal d'échanges acceptés en cours. Terminez-en un avant d'en accepter un autre.",
+  "trade_error_claim_assignment_invalid": "Les objekts choisis ne correspondent pas à cette annonce. Actualisez et choisissez à nouveau.",
+  "trade_error_claim_token_unavailable": "L'un des objekts choisis ne peut plus être échangé.",
+  "trade_token_refusal_not_owned": "{objekt} #{serial} n'est pas dans votre compte COSMO.",
+  "trade_token_refusal_untransferable": "{objekt} #{serial} n'est pas transférable.",
+  "trade_token_refusal_locked": "{objekt} #{serial} est verrouillé dans COSMO.",
+  "trade_token_refusal_live": "{objekt} #{serial} fait déjà partie d'un échange.",
+  "listing_detail_title": "Annonce d'échange",
+  "listing_detail_posted": "publiée {#time}{when}{/time}",
+  "listing_detail_error": "Impossible de charger cette annonce.",
+  "listing_detail_viewer_error": "Impossible de charger votre partie de cette annonce.",
+  "listing_detail_you_get": "Vous recevez · {count}",
+  "listing_detail_offering": "Propose · {count}",
+  "listing_detail_looking_for": "Recherche · {count}",
+  "listing_detail_range_any_member": "N'importe quel membre",
+  "listing_detail_range_any_of": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "parmi {formatted} collection",
+        "countPlural=other": "parmi {formatted} collections"
+      }
+    }
+  ],
+  "listing_detail_kind_exact": "Exact",
+  "listing_detail_kind_range": "Plage",
+  "listing_detail_kind_payment": "Paiement",
+  "listing_detail_owned_exact": "vous en avez {count}",
+  "listing_detail_owned_range": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "vous en avez {formatted} qui correspond",
+        "countPlural=other": "vous en avez {formatted} qui correspondent"
+      }
+    }
+  ],
+  "listing_detail_short": "il en manque {count}",
+  "listing_detail_picked": "{picked} sur {count} choisis",
+  "listing_detail_duplicates_hint": "Vos doublons sont choisis en premier. Touchez pour en échanger un.",
+  "listing_detail_card_other_row": "choisi pour une autre ligne",
+  "listing_detail_card_swap": "remplace {objekt}",
+  "listing_detail_incomplete_footer": "Choisissez autant d'objekts que chaque ligne en demande pour accepter.",
+  "listing_detail_blocked_body": "Un souci du côté de l'auteur bloque les échanges, par exemple un objekt proposé qui a été verrouillé ou qui a quitté son compte. Vous pourrez accepter une fois le problème réglé.",
+  "listing_detail_accept": "Accepter",
+  "listing_detail_accept_footer": "Accepter revérifie ces numéros de série et vous réserve l'annonce pendant 48 heures. Vous envoyez chacun vos objekts dans l'app COSMO, dans n'importe quel ordre. {appName} marque l'échange comme terminé dès que tous les transferts sont passés.",
+  "listing_detail_short_footer": "Vous n'avez pas assez d'objekts correspondants pour accepter cette annonce.",
+  "listing_detail_hold": "Vous est réservée pendant 48 heures",
+  "listing_detail_accepted": "Échange accepté. Envoyez vos objekts dans l'app COSMO.",
+  "listing_detail_signed_out": "Connectez-vous pour voir lesquels de vos objekts correspondent et pour accepter.",
+  "listing_detail_unlinked_title": "Liez votre compte COSMO pour échanger.",
+  "listing_detail_unlinked_body": "{appName} compare ce que vous possédez avec l'annonce et surveille ce compte pour les transferts. Un compte COSMO par compte {appName}, et il reste lié.",
+  "listing_detail_link_cosmo": "Associer un compte COSMO",
+  "listing_detail_cap_title": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Vous avez {count} échange en cours, le maximum que votre compte peut mener à la fois.",
+        "countPlural=other": "Vous avez {count} échanges en cours, le maximum que votre compte peut mener à la fois."
+      }
+    }
+  ],
+  "listing_detail_cap_body": "Terminez-en un pour en accepter un autre.",
+  "listing_detail_lost_race_title": "Quelqu'un a accepté cette annonce juste avant vous.",
+  "listing_detail_lost_race_body": "Rien de ce qui vous appartient n'a été réservé. Si son échange n'aboutit pas, l'annonce rouvre.",
+  "listing_detail_updated_title": "Cette annonce a changé avant que vous acceptiez.",
+  "listing_detail_updated_body": "Vérifiez les nouvelles conditions et choisissez à nouveau.",
+  "listing_detail_status_open": "Ouverte",
+  "listing_detail_status_claimed": "Acceptée",
+  "listing_detail_status_filled": "Conclue",
+  "listing_detail_status_withdrawn": "Retirée",
+  "listing_detail_status_closed": "Fermée",
+  "listing_detail_status_removed": "Supprimée",
+  "listing_detail_onlooker": "quelqu'un a {#time}{left}{/time} pour la conclure",
+  "listing_detail_claimer_title": "Vous avez accepté cette annonce",
+  "listing_detail_time_left": "il reste {#time}{left}{/time}",
+  "listing_detail_claimer_body": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Envoyez votre objekt à {poster} dans l'app COSMO ; {appName} marque l'échange comme terminé dès que tous les transferts sont passés.",
+        "countPlural=other": "Envoyez vos {count} objekts à {poster} dans l'app COSMO ; {appName} marque l'échange comme terminé dès que tous les transferts sont passés."
+      }
+    }
+  ],
+  "listing_detail_poster_claimed": "{#user}{username}{/user} a accepté · il reste {#time}{left}{/time}",
+  "listing_detail_poster_claimed_someone": "Quelqu'un a accepté · il reste {#time}{left}{/time}",
+  "listing_detail_poster_claimed_body": "L'échange décide de la suite : s'il aboutit, l'annonce est conclue ; s'il n'aboutit pas à temps ou est annulé, elle rouvre.",
+  "listing_detail_withdraw_claimed": "Une annonce ne peut pas être retirée pendant qu'un échange est en cours dessus.",
+  "listing_detail_withdraw": "Retirer",
+  "listing_detail_withdraw_title": "Retirer cette annonce ?",
+  "listing_detail_withdraw_description": "Elle quitte le marché immédiatement, et personne ne pourra plus l'accepter.",
+  "listing_detail_withdraw_confirm": "Retirer",
+  "listing_detail_withdrawn": "Annonce retirée",
+  "listing_detail_closed_filled": "Échangée avec {#user}{username}{/user}. Les deux envois sont passés.",
+  "listing_detail_closed_filled_unknown": "Échangée. Les deux envois sont passés.",
+  "listing_detail_closed_withdrawn": "{poster} a fermé cette annonce.",
+  "listing_detail_closed_broken": "Un objekt proposé a quitté le compte de {poster} ou ne peut pas être transféré, donc cette annonce ne peut pas aboutir.",
+  "listing_detail_closed_removed": "Supprimée par l'équipe {appName}.",
+  "listing_detail_closed_abandoned": "{poster} n'a pas envoyé sa part d'un échange accepté, donc cette annonce a été fermée.",
+  "listing_detail_you_give_summary": "choisis parmi vos objekts",
+  "listing_detail_you_get_summary": "de {poster}",
+  "listing_detail_summary_ranges": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} plage",
+        "countPlural=other": "{count} plages"
+      }
+    }
+  ],
+  "listing_detail_summary_exact": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} exact",
+        "countPlural=other": "{count} exacts"
+      }
+    }
+  ],
+  "listing_detail_summary_payments": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} paiement",
+        "countPlural=other": "{count} paiements"
+      }
+    }
+  ],
+  "listing_detail_in_exchange_for": "en échange de",
+  "listing_confirm_title": "Confirmer l'échange",
+  "listing_confirm_submit": "Confirmer",
+  "listing_confirm_lead": "Vous acceptez l'annonce de {#user}{poster}{/user}. Vérifiez chaque numéro de série : c'est exactement ce que vous allez envoyer et recevoir.",
+  "listing_confirm_deadline": "Vous aurez tous les deux {#hours}48 heures{/hours}, jusqu'au {#time}{date}{/time}, pour envoyer dans l'app COSMO. Envoyez votre part à {#user}{poster}{/user} ; le côté qui n'a pas envoyé d'ici là est marqué comme abandonné.",
+  "listing_confirm_deadline_short": "48 heures pour envoyer, jusqu'au {#time}{date}{/time}",
+  "listing_confirm_updated_title": "{poster} a modifié cette annonce",
+  "listing_confirm_updated_body": "Vérifiez les changements.",
+  "listing_confirm_review": "Vérifier",
+  "listing_confirm_claimed_title": "Quelqu'un d'autre a accepté en premier",
+  "listing_confirm_token_title": "{objekt} {#serial}{serial}{/serial} ne peut pas être échangé",
+  "listing_confirm_token_not_owned": "Il a quitté votre compte. Remplacez-le par un autre exemplaire.",
+  "listing_confirm_token_untransferable": "COSMO ne le transfère pas. Remplacez-le par un autre exemplaire.",
+  "listing_confirm_token_locked": "Il est verrouillé dans COSMO. Remplacez-le par un autre exemplaire.",
+  "listing_confirm_token_live": "Il est dans un autre échange. Remplacez-le par un autre exemplaire.",
+  "listing_confirm_token_unknown": "Il est verrouillé, dans un autre échange ou a quitté votre compte. Remplacez-le par un autre exemplaire.",
+  "listing_confirm_back_to_picker": "Retour à la sélection",
   "account_error_linked_elsewhere": "Ce compte COSMO est déjà associé à un autre compte {appName}. Chaque compte COSMO ne peut appartenir qu'à un seul compte {appName}.",
   "account_error_already_linked": "Votre compte a déjà un compte COSMO associé.",
   "account_error_cosmo_banned": "Ce compte COSMO appartient à un compte {appName} banni et ne peut pas être associé.",
@@ -1066,7 +1229,8 @@
   "filter_online_any_sub": "physique + digital",
   "filter_online_physical_sub": "copies physiques",
   "filter_online_digital_sub": "digital uniquement",
-  "filter_value_all": "all",
+  "filter_value_all": "tous",
+  "filter_value_any": "indifférent",
   "filter_value_multiple": "plusieurs",
   "filter_label_total": "total",
   "filter_label_types": "types",
@@ -1502,5 +1666,169 @@
   "aria_edit_sale_price": "Modifier le prix de {collection}",
   "aria_add_sale_price": "Ajouter un prix pour {collection}",
   "aria_play_audio": "Lire l'audio",
-  "aria_pause_audio": "Mettre l'audio en pause"
+  "aria_pause_audio": "Mettre l'audio en pause",
+  "market_listings_open_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} annonce ouverte",
+        "countPlural=other": "{formatted} annonces ouvertes"
+      }
+    }
+  ],
+  "market_listings_match_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} correspond",
+        "countPlural=other": "{formatted} correspondent"
+      }
+    }
+  ],
+  "market_listings_offering": "Propose",
+  "market_listings_looking_for": "Recherche",
+  "market_listings_filter_artist": "Artiste",
+  "market_listings_filter_member": "Membre",
+  "market_listings_any_artist": "Tous les artistes",
+  "market_listings_type_label": "Type d'annonce",
+  "market_listings_type_all": "Tout",
+  "market_listings_type_trade": "Échanges",
+  "market_listings_column_type": "Type",
+  "market_listings_column_offering": "Propose",
+  "market_listings_column_asking": "Demande",
+  "market_listings_column_from": "De",
+  "market_listings_trade": "Échange",
+  "market_listings_objekts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} objekt",
+        "countPlural=other": "{count} objekts"
+      }
+    }
+  ],
+  "market_listings_empty": "Aucune annonce ouverte pour l'instant",
+  "market_listings_empty_body": "Les annonces publiées apparaissent ici, des plus récentes aux plus anciennes.",
+  "market_listings_empty_filtered": "Aucune annonce ne correspond à ces filtres",
+  "market_listings_empty_filtered_body": "Retirez des filtres, ou réinitialisez-les pour voir toutes les annonces ouvertes.",
+  "market_listings_error": "Impossible de charger les annonces.",
+  "listing_composer_new": "Nouvelle annonce",
+  "listing_composer_title_create": "Nouvelle annonce",
+  "listing_composer_title_edit": "Modifier l'annonce",
+  "listing_composer_edit": "Modifier",
+  "listing_composer_edit_claimed": "Quelqu'un a accepté cette annonce, ses conditions ne peuvent donc pas changer pendant l'échange.",
+  "listing_composer_offering": "Vous proposez · {count}",
+  "listing_composer_offering_full": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Une annonce peut proposer au plus {count} objekt.",
+        "countPlural=other": "Une annonce peut proposer au plus {count} objekts."
+      }
+    }
+  ],
+  "listing_composer_add_objekts": "Ajouter depuis votre collection",
+  "listing_composer_remove_objekt": "Retirer {objekt}",
+  "listing_composer_picker_help": "Les objekts verrouillés, non transférables ou déjà dans un échange sont affichés mais ne peuvent pas être choisis.",
+  "listing_composer_picker_done": "Terminé · {count}",
+  "listing_composer_pill_offering": "Proposé",
+  "listing_composer_pill_untransferable": "Non transférable",
+  "listing_composer_pill_live": "Dans un échange",
+  "listing_composer_looking_for": "Vous recherchez",
+  "listing_composer_looking_for_help": "les objekts que vous accepteriez en retour",
+  "listing_composer_trade_total": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Échange · {count} objekt",
+        "countPlural=other": "Échange · {count} objekts"
+      }
+    }
+  ],
+  "listing_composer_add_exact": "Objekt précis",
+  "listing_composer_add_range": "Plage",
+  "listing_composer_wants_full": "Cette annonce demande déjà autant d'objekts que possible.",
+  "listing_composer_count": "Combien",
+  "listing_composer_fewer": "Moins",
+  "listing_composer_more": "Plus",
+  "listing_composer_remove_row": "Supprimer la ligne {position} : {row}",
+  "listing_composer_matching": "objekts correspondant à",
+  "listing_composer_range_matches": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{formatted} collection correspond",
+        "countPlural=other": "{formatted} collections correspondent"
+      }
+    }
+  ],
+  "listing_composer_range_no_matches": "Aucune collection ne correspond encore à cette plage.",
+  "listing_composer_range_empty": "Choisissez au moins une valeur pour affiner la plage.",
+  "listing_composer_range_edit": "Modifier la plage",
+  "listing_composer_range_collapse": "Replier la plage",
+  "listing_composer_search_placeholder": "Rechercher une collection, par ex. HeeJin 201Z",
+  "listing_composer_search_hint": "Tapez pour rechercher parmi toutes les collections.",
+  "listing_composer_search_empty": "Aucune collection trouvée.",
+  "listing_composer_search_error": "La recherche n'est pas disponible pour le moment.",
+  "listing_composer_note": "Note (facultative)",
+  "listing_composer_note_placeholder": "ex. toutes des collections différentes, numéros de série sous 1000",
+  "listing_composer_footer_offered": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} objekt",
+        "countPlural=other": "{count} objekts"
+      }
+    }
+  ],
+  "listing_composer_footer_wanted": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} objekt",
+        "countPlural=other": "{count} objekts"
+      }
+    }
+  ],
+  "listing_composer_footer": "{offered} ⇄ {wanted}",
+  "listing_composer_reason_offered": "Choisissez au moins un objekt à proposer.",
+  "listing_composer_reason_wants": "Ajoutez au moins un objekt que vous recherchez.",
+  "listing_composer_reason_range": "Chaque plage doit avoir au moins une valeur.",
+  "listing_composer_reason_refused": "Un objekt que vous proposez ne peut pas être échangé pour le moment.",
+  "listing_composer_reason_note": "La note doit faire {max} caractères au maximum.",
+  "listing_composer_post": "Créer",
+  "listing_composer_save": "Enregistrer",
+  "listing_composer_posted": "Annonce publiée",
+  "listing_composer_saved": "Annonce mise à jour",
+  "listing_composer_view": "Voir",
+  "listing_composer_rate_limited_title": "Vous modifiez des annonces trop rapidement",
+  "listing_composer_rate_limited_description": "Patientez quelques minutes, puis réessayez.",
+  "listing_composer_pill_not_owned": "Plus à vous",
+  "listing_composer_offered_refused": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Retirez-le, ou réglez le problème dans COSMO, pour publier ou enregistrer.",
+        "countPlural=other": "Retirez-les, ou réglez le problème dans COSMO, pour publier ou enregistrer."
+      }
+    }
+  ],
+  "listing_composer_discard_title_create": "Abandonner cette annonce ?",
+  "listing_composer_discard_title_edit": "Abandonner vos modifications ?",
+  "listing_composer_discard_description": "Ce que vous avez saisi ici sera perdu.",
+  "listing_composer_discard_keep": "Continuer",
+  "listing_composer_discard_confirm": "Abandonner",
+  "listing_detail_you_give_total": "Vous donnez · {count}",
+  "listing_detail_poster_blocked_title": "Personne ne peut accepter cette annonce pour le moment.",
+  "listing_detail_poster_blocked_body": "L'un des objekts que vous proposez est verrouillé, n'est pas transférable, est dans un autre échange ou a quitté votre compte.",
+  "listing_detail_poster_blocked_fix": "Modifiez l'annonce pour proposer autre chose, ou réglez le problème dans COSMO."
 }
