@@ -27,6 +27,7 @@ import type {
   TradePartnersResponse,
 } from "@/lib/universal/lists";
 import { Objekt } from "@/lib/universal/objekt-conversion";
+import { sanitizeUuid } from "@/lib/universal/parsers";
 import {
   addObjektsToHaveListSchema,
   addObjektsToListSchema,
@@ -40,7 +41,7 @@ import {
   updateObjektListEntrySchema,
   updateObjektListSchema,
 } from "@/lib/universal/schema/objekt-list";
-import { createSlug, sanitizeUuid } from "@/lib/utils";
+import { createSlug } from "@/lib/utils";
 import { objektListEntries, objektLists } from "@apollo/database/web/schema";
 import type { ObjektListEntry } from "@apollo/database/web/types";
 import { redirect } from "@tanstack/react-router";

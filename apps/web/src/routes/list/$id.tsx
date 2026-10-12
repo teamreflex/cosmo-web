@@ -14,8 +14,10 @@ import { $getObjektListWithUser } from "@/lib/functions/lists";
 import { defineHead } from "@/lib/meta";
 import { currentAccountQuery, selectedArtistsQuery } from "@/lib/queries/core";
 import { objektListQuery } from "@/lib/queries/objekt-queries";
-import { objektListFrontendSchema } from "@/lib/universal/parsers";
-import { sanitizeUuid } from "@/lib/utils";
+import {
+  objektListFrontendSchema,
+  sanitizeUuid,
+} from "@/lib/universal/parsers";
 import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";

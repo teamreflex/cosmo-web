@@ -210,6 +210,8 @@ The query builder is where `eq()`, `and()`, `or()` and the other builder functio
 
 Do not write raw SQL in `sql` template tags unless absolutely necessary due to the lack of Drizzle function. Things like `array_agg()`, `CASE ... WHEN` statements etc.
 
+Bun SQL prepares every statement, and a generic plan can't prove a partial index's `WHERE` from a bound parameter, so a query meant to use a partial index writes that predicate as a literal matching the index (`` sql`${t.kind} = 'listing' AND ${t.status} = 'open'` ``, as the trade feed does), not `eq(t.kind, kind)`. Array filters bind through `arrayOverlaps()` and `inArray()`, which encode the values as one array parameter or one parameter each, never by joining values into SQL text.
+
 ## Counts & Aggregates
 
 Postgres returns `COUNT`, `SUM`, and window functions (`count(*) over()`, `row_number()`, …) as `bigint`, and bun:sql hands `bigint` back as a JS `BigInt`. `JSON.stringify` throws on `BigInt`, so any such value reaching a `Response.json` route or a `createServerFn` return 500s with `cannot serialize BigInt` — the `sql<number>` annotation is compile-time only and does not coerce. Cast and map every raw aggregate: ``sql<number>`count(*)::int`.mapWith(Number)``. Drizzle's `count()` / `db.$count()` helpers and `bigint` columns declared `mode: "number"` are already safe; `mode: "bigint"` columns return a real `BigInt` and must stay out of serialized payloads.

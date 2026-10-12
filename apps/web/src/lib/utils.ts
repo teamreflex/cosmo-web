@@ -1,6 +1,5 @@
 import type { ValidArtist } from "@apollo/cosmo/types/common";
 import { createCn } from "cn/config";
-import * as z from "zod";
 import { env } from "./env/client";
 
 /**
@@ -95,22 +94,6 @@ export function sum<T>(rows: T[], value: (row: T) => number) {
  */
 export function createSlug(name: string) {
   return name.trim().toLowerCase().replace(/ /g, "-");
-}
-
-/**
- * Sanitize and validate a UUID string.
- * Discord users will accidentally apply formatting to URLs, resulting in an ID of something like `8043b748-011c-4705-a0a1-eb9d261970ff**`
- * This will error when sent to Postgres, so we need to sanitize it.
- * Lowercases so the result matches ids as Postgres returns them — query cache keys built from both must agree.
- */
-export function sanitizeUuid(uuid: string): string | null {
-  const schema = z
-    .string()
-    .transform((val) => val.slice(0, 36).toLowerCase())
-    .pipe(z.uuid());
-
-  const result = schema.safeParse(uuid);
-  return result.success ? result.data : null;
 }
 
 /**

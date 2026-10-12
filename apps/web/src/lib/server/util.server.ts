@@ -1,19 +1,21 @@
 import { DrizzleQueryError } from "drizzle-orm";
 
 /**
- * Check if an error is a Postgres error with a specific code.
+ * Check if an error is a Postgres error with a specific code, and, when one
+ * is given, raised by a specific constraint or index.
  */
-// oxlint-disable-next-line anti-slop/no-unknown-parameters -- boundary predicate; caught errors are genuinely unknown
-export function isPostgresError(error: unknown, code: string) {
-  if (error instanceof DrizzleQueryError) {
-    if (error.cause instanceof Bun.SQL.PostgresError) {
-      if (error.cause.errno === code) {
-        return true;
-      }
-    }
-  }
-
-  return false;
+export function isPostgresError(
+  // oxlint-disable-next-line anti-slop/no-unknown-parameters -- boundary predicate; caught errors are genuinely unknown
+  error: unknown,
+  code: string,
+  constraint?: string,
+) {
+  return (
+    error instanceof DrizzleQueryError &&
+    error.cause instanceof Bun.SQL.PostgresError &&
+    error.cause.errno === code &&
+    (constraint === undefined || error.cause.constraint === constraint)
+  );
 }
 
 /**
