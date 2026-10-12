@@ -693,8 +693,10 @@ export const tradeOffers = pgTable(
     createdAt: tradeTimestamp("created_at").notNull().defaultNow(),
     /**
      * Moves on every update, so accepting can refuse a listing that changed
-     * after the claimer opened it. Millisecond precision, so the value
-     * survives a round trip through a JS Date.
+     * after the claimer opened it. Listing writes set it from the database
+     * clock, never less than a millisecond past the old value, so it strictly
+     * increases; `$onUpdate` covers every other writer. Millisecond
+     * precision, so the value survives a round trip through a JS Date.
      */
     updatedAt: timestamp("updated_at", {
       mode: "date",
@@ -714,7 +716,13 @@ export const tradeOffers = pgTable(
     index("trade_offers_feed_idx")
       .on(t.createdAt, t.id)
       .where(sql`${t.kind} = 'listing' AND ${t.status} = 'open'`),
-    // Offering and Looking for narrow on any subset of these columns
+    /**
+     * Offering narrows on any subset of these offered-objekt columns before
+     * the per-objekt EXISTS over the items. At 50k open listings a selective
+     * Offering page reads about 1,900 buffers through it against 61,000
+     * through the items alone. Looking for has no listing-level arrays and
+     * walks the feed index, probing each listing's wants.
+     */
     index("trade_offers_feed_filters_idx")
       .using(
         "gin",
@@ -770,7 +778,8 @@ export const tradeOffers = pgTable(
  * `listing_id`. `live` is set in the same statement as every status change
  * and is only ever true on an accepted or disputed trade's tokens, so a
  * token can be in one such trade at a time. Tokens copy their collection's
- * indexer values verbatim, like the listing arrays.
+ * indexer values verbatim, like the listing arrays. Any change to a listing's
+ * items updates the listing row in the same transaction.
  */
 export const tradeOfferItems = pgTable(
   "trade_offer_items",
@@ -828,7 +837,8 @@ export const tradeOfferItems = pgTable(
  * values, range rows hold one array per column where an empty array matches
  * any value, and the payment row prices the listing. The trade side is every
  * exact and range row, all required. A listing's wants are inserted
- * together and never edited, so id order is the order they were posted in.
+ * together and replaced together on edit, so id order is the posted order.
+ * Any change to them updates the listing row in the same transaction.
  */
 export const tradeListingWants = pgTable(
   "trade_listing_wants",

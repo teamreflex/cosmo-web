@@ -8,3 +8,6 @@
 export function isTimedOut(deadline: Date, watermark: Date | null) {
   return watermark !== null && deadline.getTime() <= watermark.getTime();
 }
+
+// how long a claimed listing's trade has to complete; posters can't change it
+export const CLAIM_WINDOW = 48 * 60 * 60 * 1000;

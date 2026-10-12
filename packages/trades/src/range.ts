@@ -4,6 +4,35 @@ import * as z from "zod";
 // the most values one column of a range can hold
 const MAX_RANGE_VALUES = 12;
 
+/**
+ * Text bound for a Postgres text parameter, which can't carry a NUL byte,
+ * so those are refused before they reach it.
+ */
+export const pgText = () =>
+  z.string().refine((value) => !value.includes("\0"), {
+    message: "Text can't contain a NUL byte",
+  });
+
+// directional formatting characters, which no collection value contains
+const bidiControls = /[\u061C\u200E\u200F\u202A-\u202E\u2066-\u2069]/;
+
+export function hasBidiControl(value: string) {
+  return bidiControls.test(value);
+}
+
+/**
+ * One collection value, such as a member or a season, sized to its column.
+ * Values sit side by side wherever a listing is shown, so a bidi control
+ * in one would visually reorder the others; those are refused.
+ */
+export const columnValue = (length: number) =>
+  pgText()
+    .min(1)
+    .max(length)
+    .refine((value) => !hasBidiControl(value), {
+      message: "Text can't contain bidi control characters",
+    });
+
 const column = <TSchema extends z.ZodType<string>>(schema: TSchema) =>
   z
     .array(schema)
@@ -30,9 +59,9 @@ export const rangeFilterSchema = z
         .pipe(z.enum(validArtists))
         .transform((artist) => artist.toLowerCase()),
     ),
-    member: column(z.string().min(1).max(32)),
-    season: column(z.string().min(1).max(32)),
-    class: column(z.string().min(1).max(8)),
+    member: column(columnValue(32)),
+    season: column(columnValue(32)),
+    class: column(columnValue(8)),
     on_offline: column(z.enum(validOnlineTypes)),
   })
   .refine((filter) => Object.values(filter).some((values) => values.length), {
@@ -40,6 +69,14 @@ export const rangeFilterSchema = z
   });
 
 export type RangeFilter = z.infer<typeof rangeFilterSchema>;
+
+export const rangeColumns = [
+  "artist",
+  "member",
+  "season",
+  "class",
+  "on_offline",
+] as const satisfies readonly (keyof RangeFilter)[];
 
 /**
  * The indexer values a listing copies for each objekt it offers or wants.

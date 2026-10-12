@@ -345,3 +345,14 @@ export function transitionListing(
     ? { ok: true, status: to }
     : { ok: false, reason: "wrong_status" };
 }
+
+/**
+ * The statuses an event leaves from and the one it moves to, for guarded
+ * updates that check the status in SQL.
+ */
+export function listingTransition(event: ListingEvent): {
+  from: readonly ListingStatus[];
+  to: ListingStatus;
+} {
+  return listingTransitions[event];
+}

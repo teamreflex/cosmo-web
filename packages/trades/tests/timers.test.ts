@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import { claimCap } from "../src/caps";
-import { isTimedOut } from "../src/timers";
+import { CLAIM_WINDOW, isTimedOut } from "../src/timers";
 
 describe("isTimedOut", () => {
   const deadline = new Date("2026-10-13T12:00:00Z");
@@ -22,5 +22,14 @@ describe("claimCap", () => {
   test("is 3 for everyone until feedback exists", () => {
     expect(claimCap({ positive: 0, abandoned: 0 })).toBe(3);
     expect(claimCap({ positive: 40, abandoned: 2 })).toBe(3);
+  });
+});
+
+describe("CLAIM_WINDOW (LTR-02)", () => {
+  test("is exactly 48 hours", () => {
+    expect(CLAIM_WINDOW).toBe(172_800_000);
+    expect(
+      new Date(Date.UTC(2026, 9, 11, 12) + CLAIM_WINDOW).toISOString(),
+    ).toBe("2026-10-13T12:00:00.000Z");
   });
 });

@@ -11,6 +11,16 @@ export type TradeWant =
 export type InventoryObjekt = ObjektAttributes & { tokenId: number };
 
 /**
+ * Whether the objekt can fill the want: the same collection for an exact
+ * row, or inside the range.
+ */
+export function fitsWant(want: TradeWant, objekt: ObjektAttributes) {
+  return want.kind === "exact"
+    ? objekt.slug === want.slug
+    : matchesRange(want.filter, objekt);
+}
+
+/**
  * The tokens picked for one want, in inventory order, and how many it is
  * still short.
  */
@@ -31,13 +41,9 @@ export function allocate(
   const rows = wants.map((want) => ({
     want,
     // inventory indexes this want could take, in inventory order
-    candidates: inventory.flatMap((objekt, index) => {
-      const matches =
-        want.kind === "exact"
-          ? objekt.slug === want.slug
-          : matchesRange(want.filter, objekt);
-      return matches ? [index] : [];
-    }),
+    candidates: inventory.flatMap((objekt, index) =>
+      fitsWant(want, objekt) ? [index] : [],
+    ),
     picks: new Set<number>(),
   }));
   type Row = (typeof rows)[number];

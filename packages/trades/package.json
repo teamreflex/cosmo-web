@@ -6,8 +6,14 @@
   "type": "module",
   "exports": {
     "./allocate": "./src/allocate.ts",
+    "./assignment": "./src/assignment.ts",
     "./caps": "./src/caps.ts",
+    "./composer": "./src/composer.ts",
+    "./feed": "./src/feed.ts",
+    "./inventory": "./src/inventory.ts",
     "./lifecycle": "./src/lifecycle.ts",
+    "./listing": "./src/listing.ts",
+    "./picker": "./src/picker.ts",
     "./range": "./src/range.ts",
     "./timers": "./src/timers.ts",
     "./transfers": "./src/transfers.ts"

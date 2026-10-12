@@ -10,6 +10,7 @@ import {
   type TradeEvent,
   type TradeItemState,
   type TradeState,
+  listingTransition,
   owingSides,
   transition,
   transitionListing,
@@ -322,4 +323,21 @@ describe("transitionListing: every event from every status", () => {
       );
     });
   }
+});
+
+describe("listingTransition agrees with transitionListing (LTR-01)", () => {
+  for (const [event] of listingAllowed) {
+    test.each([...listingStatuses])(`${event} from %s`, (status) => {
+      const { from, to } = listingTransition(event);
+      const result = transitionListing(status, event);
+      expect(from.includes(status)).toBe(result.ok);
+      if (result.ok) expect(result.status).toBe(to);
+    });
+  }
+
+  test("covers every listing event", () => {
+    expect(
+      listingAllowed.map(([event]) => [event, listingTransition(event)]),
+    ).toEqual(listingAllowed.map(([event, from, to]) => [event, { from, to }]));
+  });
 });

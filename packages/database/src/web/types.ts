@@ -61,6 +61,8 @@ export type CosmoLinkAudit = typeof cosmoLinkAudit.$inferSelect;
 export type TradeOffer = typeof tradeOffers.$inferSelect;
 export type TradeOfferItem = typeof tradeOfferItems.$inferSelect;
 export type TradeListingWant = typeof tradeListingWants.$inferSelect;
+export type NewTradeOfferItem = typeof tradeOfferItems.$inferInsert;
+export type NewTradeListingWant = typeof tradeListingWants.$inferInsert;
 export type TradeMessage = typeof tradeMessages.$inferSelect;
 
 export interface EventWithEra extends Event {

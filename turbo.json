@@ -12,7 +12,14 @@
     },
     "test": {
       "cache": true,
-      "inputs": ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts", "bunfig.toml"]
+      "dependsOn": ["^typecheck"],
+      "inputs": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "tests/**/*.ts",
+        "tests/**/*.tsx",
+        "bunfig.toml"
+      ]
     },
     "lint": {
       "cache": true,

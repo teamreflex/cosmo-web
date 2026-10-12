@@ -32,6 +32,14 @@ describe("rangeFilterSchema", () => {
     ["an unknown artist", { artist: ["loona"] }],
     ["an unknown on_offline", { on_offline: ["both"] }],
     ["an empty value", { member: [""] }],
+    ["a NUL byte in a member", { member: ["\u0000"] }],
+    ["a NUL byte in a season", { season: ["Atom02\u0000"] }],
+    ["a NUL byte in a class", { class: ["\u0000"] }],
+    // a bidi control would reorder the values shown beside it (FUI-14)
+    ["a right-to-left override in a member", { member: ["\u202Eabc"] }],
+    ["a bidi isolate in a season", { season: ["Atom02\u2066"] }],
+    ["a left-to-right mark in a class", { class: ["\u200EFirst"] }],
+    ["an Arabic letter mark in a member", { member: ["Hee\u061CJin"] }],
     [
       "too many values",
       { member: Array.from({ length: 13 }, (_, i) => `m${i}`) },
