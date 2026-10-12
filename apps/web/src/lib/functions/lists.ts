@@ -8,7 +8,10 @@ import {
   authenticatedMiddleware,
   cosmoMiddleware,
 } from "@/lib/server/middlewares";
-import { fetchLatestFxRate } from "@/lib/server/objekts/fx.server";
+import {
+  assertSupportedCurrency,
+  fetchLatestFxRate,
+} from "@/lib/server/objekts/fx.server";
 import {
   assertOwnsTokensMulti,
   assertUserOwnsList,
@@ -48,9 +51,9 @@ import * as z from "zod";
 
 /**
  * Fetch a single objekt list along with the latest USD FX rate for its
- * currency, so the client can convert the global market price into the list's
- * own currency for display. Have and want lists also carry the list they're
- * paired with for trading.
+ * currency, so the client can convert its prices into the viewer's display
+ * currency. Have and want lists also carry the list they're paired with for
+ * trading.
  */
 export const $fetchObjektList = createServerFn({ method: "GET" })
   .validator(
@@ -191,6 +194,9 @@ export const $createObjektList = createServerFn({ method: "POST" })
     if (data.type !== "regular" && data.type !== "sale") {
       throw new Error("Use $createLiveList for have/want lists.");
     }
+    if (data.type === "sale") {
+      await assertSupportedCurrency(data.currency);
+    }
 
     const slug = createSlug(data.name);
 
@@ -315,13 +321,17 @@ export const $updateObjektList = createServerFn({ method: "POST" })
         id: data.id,
         userId: context.session.session.userId,
       },
-      columns: { type: true },
+      columns: { type: true, currency: true },
     });
     if (!existingRow) {
       throw new ExpectedError("list_not_found");
     }
     if (existingRow.type !== data.type) {
       throw new ExpectedError("list_type_locked");
+    }
+    // a list whose code lost its rate can still be renamed
+    if (data.type === "sale" && data.currency !== existingRow.currency) {
+      await assertSupportedCurrency(data.currency);
     }
 
     const slug = createSlug(data.name);

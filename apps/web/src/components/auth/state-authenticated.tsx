@@ -1,6 +1,6 @@
 import { authClient } from "@/lib/client/auth";
 import { currentAccountQuery, removeViewerQueries } from "@/lib/queries/core";
-import type { PublicUser } from "@/lib/universal/auth";
+import type { CurrentUser } from "@/lib/universal/auth";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -8,7 +8,7 @@ import { useRouter } from "@tanstack/react-router";
 import UserDropdown from "./user-dropdown";
 
 type Props = {
-  user: PublicUser;
+  user: CurrentUser;
   cosmo?: PublicCosmo;
 };
 

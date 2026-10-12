@@ -160,6 +160,10 @@ export const relations = defineRelations(schema, (r) => ({
     }),
     objektLists: r.many.objektLists(),
     binders: r.many.binders(),
+    fxRates: r.many.fxRates({
+      from: r.user.currency,
+      to: r.fxRates.currency,
+    }),
   },
   apikey: {
     user: r.one.user({

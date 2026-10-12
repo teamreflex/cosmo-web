@@ -7,6 +7,7 @@ import { GRID_COLUMNS } from "@apollo/util";
 import type { CollectionDataSource } from "@apollo/util";
 import { apiKey } from "@better-auth/api-key";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
+import type { BetterAuthPlugin } from "better-auth";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { parseSessionOutput, parseUserOutput } from "better-auth/db";
 import { betterAuth } from "better-auth/minimal";
@@ -14,10 +15,34 @@ import { admin } from "better-auth/plugins/admin";
 import { username } from "better-auth/plugins/username";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { createCipheriv, randomBytes } from "node:crypto";
-import type { PublicUser } from "../universal/auth";
+import type { CurrentUser, PublicUser } from "../universal/auth";
 import { settingsSchema } from "../universal/schema/auth";
+import { DEFAULT_CURRENCY } from "../universal/schema/currency";
 import { db } from "./db";
 import { sendPasswordResetEmail, sendVerificationEmail } from "./mail.server";
+
+/**
+ * Drops `currency` from client sign-up and update-user requests, since it needs
+ * an FX rate check that a synchronous field validator can't run. $updateSettings
+ * checks it and calls `auth.api.updateUser` directly, which has no `request`.
+ */
+function serverOnlyCurrency() {
+  return {
+    id: "server-only-currency",
+    hooks: {
+      before: [
+        {
+          matcher: (ctx) =>
+            ctx.request !== undefined &&
+            (ctx.path === "/update-user" || ctx.path === "/sign-up/email"),
+          handler: createAuthMiddleware(async (ctx) => {
+            delete ctx.body?.currency;
+          }),
+        },
+      ],
+    },
+  } satisfies BetterAuthPlugin;
+}
 
 /**
  * Better Auth server instance.
@@ -49,6 +74,7 @@ export const auth = betterAuth({
       startingCharactersConfig: { charactersLength: 13 },
     }),
     admin(adminPluginOptions),
+    serverOnlyCurrency(),
     tanstackStartCookies(),
   ],
 
@@ -282,6 +308,15 @@ export const auth = betterAuth({
         // oxlint-disable-next-line anti-slop/no-shape-in-symbol-names -- zod's field accessor
         validator: { input: settingsSchema.shape.collectionMode },
       },
+      currency: {
+        type: "string",
+        required: false,
+        defaultValue: DEFAULT_CURRENCY,
+        input: true,
+        returned: true,
+        // oxlint-disable-next-line anti-slop/no-shape-in-symbol-names -- zod's field accessor
+        validator: { input: settingsSchema.shape.currency },
+      },
       discord: {
         type: "string",
         required: false,
@@ -365,4 +400,11 @@ export function toPublicUser(
     },
     showSocials: user.showSocials ?? false,
   } as PublicUser;
+}
+
+/**
+ * Convert the signed-in user for their own account payload.
+ */
+export function toCurrentUser(user: ServerUser): CurrentUser {
+  return { ...toPublicUser(user), currency: user.currency ?? DEFAULT_CURRENCY };
 }

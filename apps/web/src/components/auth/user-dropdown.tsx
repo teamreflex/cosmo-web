@@ -9,7 +9,7 @@ import {
 import { useArtists } from "@/hooks/use-artists";
 import { useHasPermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
-import type { PublicUser } from "@/lib/universal/auth";
+import type { CurrentUser } from "@/lib/universal/auth";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { DISCORD_INVITE_URL } from "@/lib/utils";
 import {
@@ -30,7 +30,7 @@ import AccountDialog from "./account-dialog";
 import SettingsDialog from "./settings-dialog";
 
 type UserDropdownProps = {
-  user: PublicUser;
+  user: CurrentUser;
   cosmo?: PublicCosmo;
   onSignOut: () => void;
 };

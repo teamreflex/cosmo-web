@@ -37,6 +37,49 @@ export function formatPrice(price: number, currency: string) {
 }
 
 /**
+ * A converted price: `text` to show, and `full` with every whole unit for a
+ * tooltip and screen readers when `text` is compact.
+ */
+export type ConvertedPrice = {
+  text: string;
+  full: string;
+};
+
+/**
+ * Format an amount converted into another currency. Conversions are
+ * approximate, so amounts from 1,000 drop minor units and amounts from
+ * 1,000,000 use the locale's compact notation (e.g. "₩85.3M", "₩8530만").
+ */
+export function formatConvertedPrice(
+  amount: number,
+  currency: string,
+  locale: string,
+): ConvertedPrice {
+  const full = new Intl.NumberFormat("en", {
+    style: "currency",
+    currency,
+    ...(amount >= 1000 && {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }),
+  }).format(amount);
+
+  if (amount < 1_000_000) {
+    return { text: full, full };
+  }
+
+  return {
+    text: new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency,
+      notation: "compact",
+      maximumSignificantDigits: 3,
+    }).format(amount),
+    full,
+  };
+}
+
+/**
  * Sum the rows of a list by a numeric field.
  */
 export function sum<T>(rows: T[], value: (row: T) => number) {
