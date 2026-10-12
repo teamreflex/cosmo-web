@@ -6,3 +6,5 @@ export * from "./vote.model";
 export * from "./listEventOutbox.model";
 export * from "./member.model";
 export * from "./collectionStats.model";
+export * from "./serialReservation.model";
+export * from "./serialConfirmation.model";
