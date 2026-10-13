@@ -2,7 +2,6 @@ import { m } from "@/i18n/messages";
 import { reportReasonLabel } from "@/lib/client/reports";
 import { itemName, partyName, tradeTimeFormat } from "@/lib/client/trades";
 import { env } from "@/lib/env/client";
-import { $recordTradeView } from "@/lib/functions/staff-trades";
 import type {
   TradeParty,
   TradeView as Trade,
@@ -26,9 +25,8 @@ import {
   IconPlayerPause,
   IconX,
 } from "@tabler/icons-react";
-import { useMutation } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { type ReactNode, useEffect, useId, useState } from "react";
+import { type ReactNode, useId, useState } from "react";
 import { toast } from "sonner";
 import { useCopyToClipboard } from "usehooks-ts";
 import { bold } from "../notifications/row-utils";
@@ -184,8 +182,7 @@ function PartyView({ trade, side }: { trade: Trade; side: TradeSide }) {
 
 /**
  * The page as staff read it: both parties named, in the third person,
- * with no actions. Opening it records one audit row, from here rather
- * than the loader, which can run several times per visit.
+ * with no actions.
  */
 function StaffView({
   trade,
@@ -194,11 +191,6 @@ function StaffView({
   trade: Trade;
   report: Extract<TradeViewer, { kind: "staff" }>["report"];
 }) {
-  const { mutate: recordView } = useMutation({ mutationFn: $recordTradeView });
-  useEffect(() => {
-    recordView({ data: { tradeId: trade.id } });
-  }, [recordView, trade.id]);
-
   return (
     <TradeLayout
       trade={trade}

@@ -538,7 +538,7 @@
   "trade_page_dispute_pause": "Le minuteur se met en pause à {#time}{left}{/time}. Aucun de vous deux ne peut annuler tant que le litige est ouvert ; les transferts comptent toujours.",
   "trade_page_dispute_opened": "Litige ouvert",
   "trade_page_staff_title": "Consultation en tant que staff, en lecture seule.",
-  "trade_page_staff_description": "Cette visite est enregistrée une fois. Les parties ne sont pas prévenues.",
+  "trade_page_staff_description": "Les parties ne sont pas prévenues.",
   "trade_page_staff_back": "Retour au signalement",
   "trade_page_step_accepted_staff": "{claimer} a accepté l'annonce de {poster}",
   "trade_page_problem_staff_body": "{sender} ne peut plus l'envoyer à {receiver} par cet échange.",
@@ -1344,7 +1344,6 @@
   "admin_audit_action_api_key_update": "A modifié une clé API",
   "admin_audit_action_api_key_delete": "A supprimé une clé API",
   "admin_audit_action_metadata_update": "A modifié les métadonnées d'un objekt",
-  "admin_audit_action_trade_read": "A consulté un échange",
   "admin_audit_action_trade_dispute": "A suspendu un échange pour examen",
   "admin_audit_action_trade_complete": "A terminé un échange",
   "admin_audit_action_trade_cancel": "A annulé un échange",
@@ -2070,26 +2069,6 @@
   "listing_detail_poster_blocked_body": "L'un des objekts que vous proposez est verrouillé, n'est pas transférable, est dans un autre échange ou a quitté votre compte.",
   "listing_detail_poster_blocked_fix": "Modifiez l'annonce pour proposer autre chose, ou réglez le problème dans COSMO.",
   "my_trades_title": "Mes échanges",
-  "my_trades_need_you": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=one": "{count} vous attend",
-        "countPlural=other": "{count} vous attendent"
-      }
-    }
-  ],
-  "my_trades_label_count": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=one": "Mes échanges, {count} vous attend",
-        "countPlural=other": "Mes échanges, {count} vous attendent"
-      }
-    }
-  ],
   "my_trades_tabs": "Quels échanges",
   "my_trades_tab_active": "En cours",
   "my_trades_tab_finished": "Terminés",
@@ -2103,7 +2082,6 @@
   "my_trades_column_time": "Temps restant",
   "my_trades_column_ended": "Terminé",
   "my_trades_kind_listing": "Annonce",
-  "my_trades_sent": "{sent} sur {count} envoyés",
   "my_trades_next_send": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

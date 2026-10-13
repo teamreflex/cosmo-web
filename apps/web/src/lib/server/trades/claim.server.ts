@@ -1,5 +1,6 @@
 import { isBanActive } from "@apollo/auth/guard";
 import {
+  cosmoAccounts,
   tradeOfferItems,
   tradeOffers,
   user,
@@ -29,7 +30,6 @@ import {
   storedWantSchema,
   toTradeWant,
 } from "../../universal/trade-listings";
-import { getCosmoAddress } from "../cosmo-accounts.server";
 import { db, type DbOrTx, type WebTx } from "../db";
 import { isPostgresError } from "../util.server";
 import { activeClaimCount } from "./detail.server";
@@ -41,9 +41,9 @@ import {
 } from "./holdings.server";
 import type { ListingActor } from "./listings.server";
 import {
+  type PosterAccount,
   type PosterFacts,
   posterRefusal,
-  readPosterAccount,
   readPosterFacts,
 } from "./poster.server";
 import { insertTradeEvent, notifyUsers } from "./trade.server";
@@ -183,11 +183,14 @@ export async function preflightClaim(
 
 /**
  * Re-judges the poster's side on what can change under the lock: their
- * account, ban and link, and the locks and live trades on the offered
- * tokens. The indexer values come from the preflight.
+ * account, ban and link, as the lock read them, and the locks and live
+ * trades on the offered tokens. The indexer values come from the preflight.
  */
-async function recheckPoster(tx: WebTx, { listing, poster }: Preflight) {
-  const account = await readPosterAccount(tx, listing.fromUserId);
+async function recheckPoster(
+  tx: WebTx,
+  { listing, poster }: Preflight,
+  account: PosterAccount | null,
+) {
   const flags = await readWebTokenFlags(
     tx,
     listing.fromAddress,
@@ -219,9 +222,17 @@ export async function lockAndRecheck(
   preflight: Preflight,
 ) {
   const { listing } = preflight;
+  // each user's COSMO link comes back with their locked row
   const users = await tx
-    .select({ id: user.id, banned: user.banned, banExpires: user.banExpires })
+    .select({
+      id: user.id,
+      banned: user.banned,
+      banExpires: user.banExpires,
+      address: cosmoAccounts.address,
+      username: cosmoAccounts.username,
+    })
     .from(user)
+    .leftJoin(cosmoAccounts, eq(cosmoAccounts.userId, user.id))
     .where(
       inArray(
         user.id,
@@ -231,9 +242,10 @@ export async function lockAndRecheck(
       ),
     )
     .orderBy(asc(user.id))
-    .for("no key update");
+    .for("no key update", { of: user });
   const claimer = users.find((row) => row.id === actor.userId);
   if (!claimer) refuse("not_signed_in");
+  const poster = users.find((row) => row.id === listing.fromUserId);
 
   const { from, to } = listingTransition("claim");
   const [claimed] = await tx
@@ -252,11 +264,26 @@ export async function lockAndRecheck(
     refuse(statusRefusal(row, input.seen) ?? "listing_updated");
   }
 
-  await recheckPoster(tx, preflight);
+  await recheckPoster(
+    tx,
+    preflight,
+    poster === undefined
+      ? null
+      : {
+          banned: poster.banned,
+          banExpires: poster.banExpires,
+          link:
+            poster.address === null || poster.username === null
+              ? { kind: "none" }
+              : {
+                  kind: "linked",
+                  address: poster.address,
+                  username: poster.username,
+                },
+        },
+  );
   if (isBanActive(claimer)) refuse("forbidden");
-
-  const link = await getCosmoAddress(tx, actor.userId);
-  if (link.kind === "none" || !isEqual(link.address, actor.address)) {
+  if (claimer.address === null || !isEqual(claimer.address, actor.address)) {
     refuse("cosmo_not_linked");
   }
   if (
@@ -273,10 +300,7 @@ export async function lockAndRecheck(
     actor.address,
   );
   if (refusal) refuseToken(refusal);
-  return {
-    toAddress: link.address,
-    poster: users.find((row) => row.id === listing.fromUserId),
-  };
+  return { toAddress: claimer.address, poster };
 }
 
 /**

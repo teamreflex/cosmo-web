@@ -11,9 +11,10 @@ import type {
 import { cn } from "@/lib/utils";
 import { offersSwap, swapTarget } from "@apollo/trades/picker";
 import { IconCircleCheck } from "@tabler/icons-react";
+import { Skeleton } from "../ui/skeleton";
 import PickerCard from "./picker-card";
 import { RangeBadges } from "./range-want";
-import SideHeading from "./side-heading";
+import SideHeading, { SideHeadingSkeleton } from "./side-heading";
 import WantLabel from "./want-label";
 
 type Candidate = Extract<ListingViewer, { role: "candidate" }>;
@@ -70,6 +71,56 @@ export default function AllocationPicker({ viewer, rows, picks }: Props) {
   );
 }
 
+/**
+ * The picker's shape while the viewer's objekts load: each row's frame,
+ * label and footer around placeholder cards, so nothing grows when the
+ * picks arrive.
+ */
+export function AllocationPickerSkeleton({ rows }: { rows: PickerRow[] }) {
+  return (
+    <section className="flex min-w-0 flex-col gap-3.5">
+      <SideHeadingSkeleton />
+
+      {rows.map((row, index) => (
+        <div
+          key={index}
+          className="flex flex-col overflow-clip rounded-lg border border-teal-500/30"
+        >
+          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 border-b border-border/60 px-4 py-3 text-sm">
+            <RowLabel row={row} />
+          </div>
+          <div className="flex gap-2.5 overflow-hidden px-4 py-3.5">
+            {Array.from({ length: row.trade.count }, (_, slot) => (
+              <div key={slot} className="@container w-11 shrink-0 md:w-21">
+                <Skeleton className="aspect-photocard w-full rounded-photocard" />
+              </div>
+            ))}
+          </div>
+          <div className="flex border-t border-border/60 bg-muted/40 px-4 py-2.5">
+            <Skeleton className="ml-auto h-4 w-20" />
+          </div>
+        </div>
+      ))}
+
+      <p className="text-xs leading-relaxed text-muted-foreground">
+        {m.listing_detail_accept_footer({ appName: env.VITE_APP_NAME })}
+      </p>
+    </section>
+  );
+}
+
+function RowLabel({ row }: { row: PickerRow }) {
+  return row.want.kind === "range" ? (
+    <RangeBadges
+      count={row.want.count}
+      filter={row.want.filter}
+      matches={false}
+    />
+  ) : (
+    <WantLabel want={row.want} />
+  );
+}
+
 type WantRowProps = {
   row: PickerRow;
   owned: number;
@@ -104,15 +155,7 @@ function WantRow({
   return (
     <div className="flex flex-col overflow-clip rounded-lg border border-teal-500/30">
       <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 border-b border-border/60 px-4 py-3 text-sm">
-        {row.want.kind === "range" ? (
-          <RangeBadges
-            count={row.want.count}
-            filter={row.want.filter}
-            matches={false}
-          />
-        ) : (
-          <WantLabel want={row.want} />
-        )}
+        <RowLabel row={row} />
         <span
           className={cn(
             "flex items-center gap-1.5 text-xs md:ml-auto",

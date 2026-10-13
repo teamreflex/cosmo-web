@@ -1,50 +1,19 @@
-import { db } from "@/lib/server/db";
 import { staffMiddleware } from "@/lib/server/middlewares";
-import { recordStaffAudit } from "@/lib/server/staff-audit.server";
 import { actOnTrade, completeAsStaff } from "@/lib/server/staff-trades.server";
 import {
   endTrade,
   insertTradeEvent,
   notifyUsers,
-  refuseTrade,
   updateLockedTrade,
 } from "@/lib/server/trades/trade.server";
 import {
   staffExtendTradeInputSchema,
   staffTradeInputSchema,
-  tradeIdInputSchema,
 } from "@/lib/universal/schema/trades";
 import { tradeMessages } from "@apollo/database/web/schema";
 import { extendedDeadline } from "@apollo/trades/timers";
 import { createServerFn } from "@tanstack/react-start";
 import { and, desc, eq, sql } from "drizzle-orm";
-
-/**
- * Record that a staff member opened a trade they aren't a party to. The
- * trade page calls it once when it mounts, never from its loader, and a
- * repeat visit within 10 minutes isn't recorded again.
- */
-export const $recordTradeView = createServerFn({ method: "POST" })
-  .middleware([staffMiddleware({ trade: ["read-any"] })])
-  .validator(tradeIdInputSchema)
-  .handler(async ({ data, context }) => {
-    const staffId = context.session.user.id;
-    const trade = await db.query.tradeOffers.findFirst({
-      where: { id: data.tradeId, kind: "trade" },
-      columns: { fromUserId: true, toUserId: true, disputeReportId: true },
-    });
-    if (!trade) refuseTrade("trade_not_found");
-    if (trade.fromUserId === staffId || trade.toUserId === staffId) {
-      refuseTrade("trade_own");
-    }
-
-    await recordStaffAudit(db, {
-      staffId,
-      action: "trade:read",
-      tradeId: data.tradeId,
-      reportId: trade.disputeReportId,
-    });
-  });
 
 /**
  * Complete a disputed trade, whatever its items have done.
@@ -80,8 +49,8 @@ export const $staffCancelTrade = createServerFn({ method: "POST" })
       staffId,
       data,
       { type: "staff_cancel" },
-      async (tx, trade, users, next) => {
-        await endTrade(tx, trade, next, users);
+      async (tx, trade, users, next, tokens) => {
+        await endTrade(tx, trade, next, users, tokens);
         await insertTradeEvent(tx, trade.id, {
           type: "cancelled",
           by: "staff",
@@ -98,6 +67,7 @@ export const $staffCancelTrade = createServerFn({ method: "POST" })
         });
         return { action: "trade:cancel" };
       },
+      { readTokens: true },
     );
   });
 

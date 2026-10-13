@@ -92,16 +92,19 @@ export async function readTokenStates(
 }
 
 /**
- * Reads the address's locks and the live trade items among the tokens. Safe
- * inside a transaction: the two reads run one after the other.
+ * Reads the address's locks and the live trade items among the tokens, in
+ * one statement. Safe inside a transaction.
  */
 export async function readWebTokenFlags(
   executor: DbOrTx,
   address: string,
   tokenIds: readonly number[],
 ): Promise<TokenFlags> {
-  const locked = await executor
-    .selectDistinct({ tokenId: lockedObjekts.tokenId })
+  const rows = await executor
+    .select({
+      tokenId: sql<number>`${lockedObjekts.tokenId}`.as("token_id"),
+      flag: sql<"locked" | "live">`'locked'`.as("flag"),
+    })
     .from(lockedObjekts)
     .where(
       and(
@@ -109,20 +112,28 @@ export async function readWebTokenFlags(
         eq(lockedObjekts.locked, true),
         inArray(lockedObjekts.tokenId, [...tokenIds]),
       ),
+    )
+    .unionAll(
+      executor
+        .select({
+          tokenId: sql<number>`${tradeOfferItems.tokenId}`.as("token_id"),
+          flag: sql<"locked" | "live">`'live'`.as("flag"),
+        })
+        .from(tradeOfferItems)
+        .where(
+          and(
+            eq(tradeOfferItems.live, true),
+            inArray(tradeOfferItems.tokenId, [...tokenIds]),
+          ),
+        ),
     );
-  const live = await executor
-    .select({ tokenId: tradeOfferItems.tokenId })
-    .from(tradeOfferItems)
-    .where(
-      and(
-        eq(tradeOfferItems.live, true),
-        inArray(tradeOfferItems.tokenId, [...tokenIds]),
-      ),
-    );
-
   return {
-    locked: new Set(locked.map((row) => row.tokenId)),
-    live: new Set(live.flatMap((row) => row.tokenId ?? [])),
+    locked: new Set(
+      rows.flatMap((row) => (row.flag === "locked" ? [row.tokenId] : [])),
+    ),
+    live: new Set(
+      rows.flatMap((row) => (row.flag === "live" ? [row.tokenId] : [])),
+    ),
   };
 }
 
@@ -196,7 +207,10 @@ export async function resolveWants(
   const slugs = wants.flatMap((want) =>
     want.kind === "exact" ? [want.slug] : [],
   );
-  const [rows, rangeCounts] = await Promise.all([
+  const ranges = wants.flatMap((want, index) =>
+    want.kind === "range" ? [{ index, filter: want.filter }] : [],
+  );
+  const [rows, [matched]] = await Promise.all([
     indexer
       .select({
         slug: collections.slug,
@@ -208,17 +222,29 @@ export async function resolveWants(
       })
       .from(collections)
       .where(inArray(collections.slug, slugs)),
-    Promise.all(
-      wants.map(async (want) =>
-        want.kind === "range" ? await countRangeMatches(want.filter) : null,
-      ),
-    ),
+    // every range row's match count in one pass over the collections
+    ranges.length
+      ? indexer
+          .select({
+            counts: sql<number[]>`array[${sql.join(
+              ranges.map(
+                ({ filter }) =>
+                  sql`count(*) filter (where ${rangeConditions(filter)})`,
+              ),
+              sql`, `,
+            )}]::int[]`,
+          })
+          .from(collections)
+      : [{ counts: [] }],
   ]);
 
   const bySlug = new Map(rows.map((row) => [row.slug, row]));
+  const rangeCounts = new Map(
+    ranges.map(({ index }, position) => [index, matched?.counts[position]]),
+  );
   return wants.map((want, index): ResolvedWant => {
     if (want.kind === "range") {
-      if (rangeCounts[index] === 0) {
+      if (rangeCounts.get(index) === 0) {
         throw new ExpectedError("listing_range_empty" satisfies TradeErrorCode);
       }
       return want;
@@ -232,24 +258,66 @@ export async function resolveWants(
 }
 
 /**
- * Tokens the address can't give right now: the ones it locked, and every
- * token an accepted or disputed trade holds.
+ * Tokens the address can't give to the wants right now, in one statement:
+ * the ones it locked, and every token a live trade holds among the
+ * collections the wants can take, matched on the item's copied collection
+ * values. A live token can sit with someone other than its sender, so the
+ * live side isn't narrowed by address.
  */
-async function unusableTokens(address: string) {
-  const [locked, live] = await Promise.all([
-    db
-      .selectDistinct({ tokenId: lockedObjekts.tokenId })
-      .from(lockedObjekts)
-      .where(
-        and(eq(lockedObjekts.address, address), eq(lockedObjekts.locked, true)),
-      ),
-    db
-      .select({ tokenId: tradeOfferItems.tokenId })
-      .from(tradeOfferItems)
-      .where(eq(tradeOfferItems.live, true)),
-  ]);
-  return [...locked, ...live].flatMap((row) =>
+async function unusableTokens(address: string, wants: readonly TradeWant[]) {
+  const slugs = wants.flatMap((want) =>
+    want.kind === "exact" ? [want.slug] : [],
+  );
+  const rows = await db
+    .select({
+      tokenId: sql<number | null>`${lockedObjekts.tokenId}`.as("token_id"),
+    })
+    .from(lockedObjekts)
+    .where(
+      and(eq(lockedObjekts.address, address), eq(lockedObjekts.locked, true)),
+    )
+    .unionAll(
+      db
+        .select({
+          tokenId: sql<number | null>`${tradeOfferItems.tokenId}`.as(
+            "token_id",
+          ),
+        })
+        .from(tradeOfferItems)
+        .where(
+          and(
+            eq(tradeOfferItems.live, true),
+            or(
+              slugs.length ? inArray(tradeOfferItems.slug, slugs) : undefined,
+              ...wants.flatMap((want) =>
+                want.kind === "range" ? [itemRangeConditions(want.filter)] : [],
+              ),
+            ),
+          ),
+        ),
+    );
+  return rows.flatMap((row) =>
     row.tokenId === null ? [] : [String(row.tokenId)],
+  );
+}
+
+/**
+ * A range's conditions on a trade item's copied collection values, as
+ * rangeConditions() puts them on the indexer's collections.
+ */
+function itemRangeConditions(filter: RangeFilter) {
+  return and(
+    ...(
+      [
+        [tradeOfferItems.artist, filter.artist],
+        [tradeOfferItems.member, filter.member],
+        [tradeOfferItems.season, filter.season],
+        [tradeOfferItems.class, filter.class],
+        [tradeOfferItems.onOffline, filter.on_offline],
+      ] as const
+    ).flatMap(([column, values]) =>
+      values.length ? [inArray(column, values)] : [],
+    ),
   );
 }
 
@@ -269,7 +337,7 @@ export async function readCandidates(
   n: number,
 ) {
   if (wants.length === 0) return [];
-  const excluded = await unusableTokens(address);
+  const excluded = await unusableTokens(address, wants);
   const slugs = wants.flatMap((want) =>
     want.kind === "exact" ? [want.slug] : [],
   );

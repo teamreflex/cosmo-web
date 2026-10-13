@@ -51,38 +51,37 @@ export const Route = createFileRoute("/market/listing/$id")({
         linked: account.cosmo !== undefined,
       },
     );
+
+    // the poster's blocked listing names the objekts that block it
+    if (panel.kind === "poster_open" && listing.blocked && account?.cosmo) {
+      void context.queryClient
+        .query(
+          offeredTokenRefusalsQuery(listing.items.map((item) => item.tokenId)),
+        )
+        .catch(noop);
+    }
+    for (const want of listing.wants) {
+      if (want.kind === "range") {
+        void context.queryClient
+          .query(rangeMatchCountQuery(want.filter))
+          .catch(noop);
+      }
+    }
+
     /**
-     * Everything the page shows is read before it renders, so a navigation
-     * paints the listing once instead of filling in its sides; a read that
-     * fails is retried by the component that shows it. The viewer's
-     * side reads their holdings, so hovering a link never fetches it. An
+     * The viewer's side is awaited, so a navigation paints the listing once
+     * instead of filling it in; a failed read is left to its error state. It
+     * reads the viewer's holdings, so hovering a link never fetches it. An
      * ended listing asks only whether the viewer was a party to its trade.
      */
-    await Promise.all([
+    if (
       !preload &&
-        (panel.kind === "viewer" || (panel.kind === "closed" && account)) &&
-        context.queryClient
-          .query(tradeListingViewerQuery(id, listing.updatedAt))
-          .catch(noop),
-      // the poster's blocked listing names the objekts that block it
-      panel.kind === "poster_open" &&
-        listing.blocked &&
-        account?.cosmo &&
-        context.queryClient
-          .query(
-            offeredTokenRefusalsQuery(
-              listing.items.map((item) => item.tokenId),
-            ),
-          )
-          .catch(noop),
-      ...listing.wants.map(
-        (want) =>
-          want.kind === "range" &&
-          context.queryClient
-            .query(rangeMatchCountQuery(want.filter))
-            .catch(noop),
-      ),
-    ]);
+      (panel.kind === "viewer" || (panel.kind === "closed" && account))
+    ) {
+      await context.queryClient
+        .query(tradeListingViewerQuery(id, listing.updatedAt))
+        .catch(noop);
+    }
 
     return { id, account };
   },

@@ -7,6 +7,7 @@ import type {
 import type { TradeState } from "@apollo/trades/lifecycle";
 import type { PublicUser } from "./auth";
 import type { Objekt } from "./objekt-conversion";
+import type { ListingFeedItem } from "./trade-listings";
 
 /**
  * One side of a trade. Both are null once the side's account is deleted,
@@ -82,12 +83,11 @@ export const myTradesTabs = ["active", "finished"] as const;
 export type MyTradesTab = (typeof myTradesTabs)[number];
 
 /**
- * One side of a trade in a My trades row: its first objekt, how many there
- * are and how many the drain has seen.
+ * One side of a trade in a My trades row: the objekts it sends, as the
+ * Listings feed shows an offered side, and how many the drain has seen.
  */
 export type MyTradeSide = {
-  first: Pick<TradeItemView, "collection" | "slug" | "serial"> | null;
-  count: number;
+  items: ListingFeedItem[];
   sent: number;
 };
 

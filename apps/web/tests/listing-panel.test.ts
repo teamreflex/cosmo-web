@@ -115,20 +115,24 @@ describe("publicListingPanel", () => {
 describe("candidatePanel", () => {
   test("the cap comes first, then the poster's side, then the picker", () => {
     const wants = [{ kind: "exact", count: 1, objekt: { slug: "a" } }] as const;
+    const open = { wants, blocked: false };
+    const claims = { active: 2, cap: 3 };
     expect(
-      candidatePanel(wants, { claims: { active: 3, cap: 3 }, blocked: true }),
+      candidatePanel(
+        { wants, blocked: true },
+        { claims: { active: 3, cap: 3 }, ownAddress: true },
+      ),
     ).toBe("cap");
     expect(
-      candidatePanel(wants, { claims: { active: 2, cap: 3 }, blocked: true }),
+      candidatePanel({ wants, blocked: true }, { claims, ownAddress: false }),
     ).toBe("blocked");
+    expect(candidatePanel(open, { claims, ownAddress: true })).toBe("blocked");
+    expect(candidatePanel(open, { claims, ownAddress: false })).toBe("picker");
     expect(
-      candidatePanel(wants, { claims: { active: 2, cap: 3 }, blocked: false }),
-    ).toBe("picker");
-    expect(
-      candidatePanel([...wants, { kind: "payment" }], {
-        claims: { active: 0, cap: 3 },
-        blocked: false,
-      }),
+      candidatePanel(
+        { wants: [...wants, { kind: "payment" }], blocked: false },
+        { claims: { active: 0, cap: 3 }, ownAddress: false },
+      ),
     ).toBe("blocked");
   });
 });
@@ -156,7 +160,7 @@ describe("pickerVersion (DUI-14)", () => {
       allocation: [{ tokenIds: tokenIds.slice(0, 1), missing: 0 }],
       rowOwned: [tokenIds.length],
       claims: { active: 0, cap: 3 },
-      blocked: false,
+      ownAddress: false,
     }) satisfies ListingViewer;
 
   test("a refetch with the same copies keeps the viewer's swaps", () => {

@@ -216,9 +216,11 @@ export type ListingClaim = {
  *   its latest trade when the viewer was a party to it.
  * - `candidate`: an open listing, with the viewer's usable copies in the
  *   order allocation spends them, the allocation, how many matching copies
- *   each row could draw on, the viewer's claim count and whether the
- *   poster's side stops any claim. `updatedAt` is the listing version all
- *   of it was read against, which Accept sends back.
+ *   each row could draw on, the viewer's claim count and whether their
+ *   linked address is the one the listing offers from (`ownAddress`).
+ *   Whether the poster's side stops any claim is the listing's `blocked`.
+ *   `updatedAt` is the listing version all of it was read against, which
+ *   Accept sends back.
  */
 export type ListingViewer =
   | { role: "anonymous" }
@@ -238,7 +240,7 @@ export type ListingViewer =
       allocation: WantAllocation[];
       rowOwned: number[];
       claims: { active: number; cap: number };
-      blocked: boolean;
+      ownAddress: boolean;
     };
 
 /**
@@ -280,14 +282,21 @@ export function publicListingPanel(
  * or the picker.
  */
 export function candidatePanel(
-  wants: readonly { kind: StoredWant["kind"] }[],
+  listing: {
+    wants: readonly { kind: StoredWant["kind"] }[];
+    blocked: boolean;
+  },
   viewer: Pick<
     Extract<ListingViewer, { role: "candidate" }>,
-    "claims" | "blocked"
+    "claims" | "ownAddress"
   >,
 ) {
   if (viewer.claims.active >= viewer.claims.cap) return "cap";
-  if (viewer.blocked || wants.some((want) => want.kind === "payment")) {
+  if (
+    listing.blocked ||
+    viewer.ownAddress ||
+    listing.wants.some((want) => want.kind === "payment")
+  ) {
     return "blocked";
   }
   return "picker";

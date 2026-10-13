@@ -530,7 +530,7 @@
   "trade_page_dispute_pause": "タイマーは残り{#time}{left}{/time}で停止します。申し立て中はどちらもキャンセルできませんが、送信はカウントされます。",
   "trade_page_dispute_opened": "申し立てをしました",
   "trade_page_staff_title": "スタッフとして閲覧中（読み取り専用）。",
-  "trade_page_staff_description": "この訪問は一度だけ記録されます。当事者には通知されません。",
+  "trade_page_staff_description": "当事者には通知されません。",
   "trade_page_staff_back": "通報に戻る",
   "trade_page_step_accepted_staff": "{claimer}が{poster}の出品を承諾しました",
   "trade_page_problem_staff_body": "{sender}はこの取引でこれを{receiver}に送ることはもうできません。",
@@ -1311,7 +1311,6 @@
   "admin_audit_action_api_key_update": "APIキーを編集",
   "admin_audit_action_api_key_delete": "APIキーを削除",
   "admin_audit_action_metadata_update": "objektのメタデータを編集",
-  "admin_audit_action_trade_read": "取引を閲覧",
   "admin_audit_action_trade_dispute": "取引を確認のため保留",
   "admin_audit_action_trade_complete": "取引を完了",
   "admin_audit_action_trade_cancel": "取引をキャンセル",
@@ -2020,24 +2019,6 @@
   "listing_detail_poster_blocked_body": "出品したオブジェクトのいずれかがロックされているか、譲渡できないか、別のトレード中か、アカウントから移動しています。",
   "listing_detail_poster_blocked_fix": "出品を編集して別のものを出すか、COSMOで解決してください。",
   "my_trades_title": "マイトレード",
-  "my_trades_need_you": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=other": "{count}件の対応待ち"
-      }
-    }
-  ],
-  "my_trades_label_count": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=other": "マイトレード、{count}件の対応待ち"
-      }
-    }
-  ],
   "my_trades_tabs": "表示するトレード",
   "my_trades_tab_active": "進行中",
   "my_trades_tab_finished": "終了",
@@ -2051,7 +2032,6 @@
   "my_trades_column_time": "残り時間",
   "my_trades_column_ended": "終了日",
   "my_trades_kind_listing": "出品",
-  "my_trades_sent": "{count}件中{sent}件送信済み",
   "my_trades_next_send": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

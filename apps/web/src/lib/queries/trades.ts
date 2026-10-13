@@ -1,8 +1,4 @@
-import {
-  $fetchMyTrades,
-  $fetchTrade,
-  $fetchTradesNeedingYou,
-} from "@/lib/functions/trades";
+import { $fetchMyTrades, $fetchTrade } from "@/lib/functions/trades";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
 /**
@@ -32,15 +28,6 @@ export const finishedTradesQuery = () =>
     initialPageParam: firstPage,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
   });
-
-/**
- * How many accepted trades wait on the viewer, beside every link to My
- * trades. Fetched on the client only.
- */
-export const tradesNeedingYouQuery = queryOptions({
-  queryKey: [...tradesKey, "needs-you"],
-  queryFn: ({ signal }) => $fetchTradesNeedingYou({ signal }),
-});
 
 /**
  * The first page has no cursor. Typed as the cursor union so the query

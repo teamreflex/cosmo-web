@@ -4,7 +4,6 @@ import {
   notificationsListQuery,
   unreadNotificationsQuery,
 } from "@/lib/queries/notifications";
-import { tradesNeedingYouQuery } from "@/lib/queries/trades";
 import {
   groupNotifications,
   type NotificationListItem,
@@ -12,11 +11,12 @@ import {
 import { IconBell, IconChecks, IconLoader2 } from "@tabler/icons-react";
 import {
   useInfiniteQuery,
-  useQuery,
   useQueryClient,
+  useSuspenseQuery,
 } from "@tanstack/react-query";
 import { Link, useLocation } from "@tanstack/react-router";
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import { useOnInView } from "react-intersection-observer";
 import { Button, buttonVariants } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
@@ -31,12 +31,9 @@ export default function NotificationBell() {
   const [openedOn, setOpenedOn] = useState<string | null>(null);
   const open = openedOn === pathname;
   const queryClient = useQueryClient();
-  const unread = useQuery(unreadNotificationsQuery);
-  const needsYou = useQuery(tradesNeedingYouQuery).data ?? 0;
   const list = useInfiniteQuery({ ...notificationsListQuery, enabled: open });
   const markRead = useMarkNotificationsRead();
 
-  const count = unread.data ?? 0;
   const bursts = groupNotifications(
     list.data?.pages.flatMap((page) => page.rows) ?? [],
   );
@@ -53,35 +50,18 @@ export default function NotificationBell() {
           void queryClient.invalidateQueries({
             queryKey: unreadNotificationsQuery.queryKey,
           });
-          void queryClient.invalidateQueries({
-            queryKey: tradesNeedingYouQuery.queryKey,
-          });
         }
       }}
     >
       <PopoverTrigger
-        render={
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={
-              count > 0
-                ? m.notification_bell_label_unread({ count })
-                : m.notification_bell_label()
-            }
-            className="relative"
-          />
-        }
+        render={<Button variant="ghost" size="icon" className="relative" />}
       >
-        <IconBell className="size-6" />
-        {count > 0 && (
-          <div
-            aria-hidden
-            className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-cosmo px-1 text-xs font-semibold text-white tabular-nums ring-2 ring-background"
-          >
-            {count > 99 ? "99+" : count}
-          </div>
-        )}
+        <IconBell aria-hidden className="size-6" />
+        <ErrorBoundary fallback={<BellLabel count={0} />}>
+          <Suspense fallback={<BellLabel count={0} />}>
+            <UnreadLabel />
+          </Suspense>
+        </ErrorBoundary>
       </PopoverTrigger>
       <PopoverContent
         align="end"
@@ -96,33 +76,16 @@ export default function NotificationBell() {
             to="/market/trades"
             // already on My trades, the path doesn't change to close it
             onClick={() => setOpenedOn(null)}
-            aria-label={
-              needsYou > 0
-                ? m.my_trades_label_count({ count: needsYou })
-                : m.my_trades_title()
-            }
             className={buttonVariants({ variant: "ghost", size: "sm" })}
           >
             {m.my_trades_title()}
-            {needsYou > 0 && (
-              <span className="font-mono text-cosmo tabular-nums dark:text-cosmo-text">
-                · {needsYou}
-              </span>
-            )}
           </Link>
 
-          {count > 0 && (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={m.notification_mark_all_read()}
-              title={m.notification_mark_all_read()}
-              onClick={() => markRead.mutate({ all: true })}
-              disabled={markRead.isPending}
-            >
-              <IconChecks />
-            </Button>
-          )}
+          <ErrorBoundary fallback={null}>
+            <Suspense fallback={null}>
+              <MarkAllRead />
+            </Suspense>
+          </ErrorBoundary>
         </header>
 
         {/* a flex column lets the viewport shrink to the max height and scroll */}
@@ -223,5 +186,52 @@ function NotificationRow({
     <ListMatchRow notification={notification} onOpen={onOpen} />
   ) : (
     <TradeRow notification={notification} onOpen={onOpen} />
+  );
+}
+
+function UnreadLabel() {
+  const { data: count } = useSuspenseQuery(unreadNotificationsQuery);
+  return <BellLabel count={count} />;
+}
+
+/**
+ * The bell's name, with its unread count, and the count as a badge.
+ */
+function BellLabel({ count }: { count: number }) {
+  return count > 0 ? (
+    <>
+      <span className="sr-only">
+        {m.notification_bell_label_unread({ count })}
+      </span>
+      <span
+        aria-hidden
+        className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-cosmo px-1 text-xs font-semibold text-white tabular-nums ring-2 ring-background"
+      >
+        {count > 99 ? "99+" : count}
+      </span>
+    </>
+  ) : (
+    <span className="sr-only">{m.notification_bell_label()}</span>
+  );
+}
+
+// shown while anything is unread
+function MarkAllRead() {
+  const { data: count } = useSuspenseQuery(unreadNotificationsQuery);
+  const markRead = useMarkNotificationsRead();
+
+  return (
+    count > 0 && (
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        aria-label={m.notification_mark_all_read()}
+        title={m.notification_mark_all_read()}
+        onClick={() => markRead.mutate({ all: true })}
+        disabled={markRead.isPending}
+      >
+        <IconChecks />
+      </Button>
+    )
   );
 }

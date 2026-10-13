@@ -38,7 +38,6 @@ const actionTones = {
   "api-key:update": "text-destructive",
   "api-key:delete": "text-destructive",
   "metadata:update": "text-foreground",
-  "trade:read": "text-muted-foreground",
   "trade:dispute": "text-foreground",
   "trade:complete": "text-foreground",
   "trade:cancel": "text-foreground",

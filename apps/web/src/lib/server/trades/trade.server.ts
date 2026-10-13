@@ -31,7 +31,7 @@ import type { PgUpdateSetSource } from "drizzle-orm/pg-core";
 import { ExpectedError } from "../../universal/errors/expected";
 import type { TradeErrorCode } from "../../universal/errors/trades";
 import { db, type DbOrTx, type WebTx } from "../db";
-import { readIndexerTokens, readWebTokenFlags } from "./holdings.server";
+import { readWebTokenFlags, type TokenState } from "./holdings.server";
 import { refusePoster } from "./listings.server";
 
 export function refuseTrade(code: TradeErrorCode): never {
@@ -114,8 +114,8 @@ export async function lockTrade(tx: WebTx, tradeId: string) {
 export type LockedTrade = Awaited<ReturnType<typeof lockTrade>>;
 
 /**
- * The trade's parties, read without a lock, when the caller is one of them.
- * Anything else, a listing included, is not found.
+ * The trade's parties and token ids, read without a lock, when the caller
+ * is one of them. Anything else, a listing included, is not found.
  */
 export async function partyTrade(userId: string, tradeId: string) {
   const trade = await db.query.tradeOffers.findFirst({
@@ -125,9 +125,14 @@ export async function partyTrade(userId: string, tradeId: string) {
       OR: [{ fromUserId: userId }, { toUserId: userId }],
     },
     columns: { fromUserId: true, toUserId: true },
+    with: { items: { columns: { tokenId: true } } },
   });
   if (!trade) refuseTrade("trade_not_found");
-  return trade;
+  return {
+    fromUserId: trade.fromUserId,
+    toUserId: trade.toUserId,
+    tokenIds: trade.items.flatMap((item) => item.tokenId ?? []),
+  };
 }
 
 /**
@@ -209,7 +214,9 @@ export async function updateLockedTrade(
  * Ends a locked trade in the state a transition returned: its row, its
  * items' reservations, and its listing's outcome (listingEventAfter). A
  * released listing reopens when the poster could offer every token again
- * now that this trade no longer reserves them, which is read only then.
+ * now that this trade no longer reserves them: `tokens` are the indexer's
+ * states for the trade's tokens, which a caller that may release reads
+ * before its transaction, so the transaction never waits on the indexer.
  * `users` are the parties the caller locked; the poster has no row once
  * their account is gone.
  */
@@ -218,6 +225,7 @@ export async function endTrade(
   trade: LockedTrade,
   next: TradeState,
   users: readonly LockedUser[],
+  tokens: ReadonlyMap<number, TokenState>,
 ) {
   await updateLockedTrade(tx, trade, {
     ...endedTradeColumns(next),
@@ -249,11 +257,8 @@ export async function endTrade(
   for (const [listingId, tokenIds] of listings) {
     let event = outcome;
     if (event === "release") {
-      const [states, flags] = await Promise.all([
-        readIndexerTokens(tokenIds),
-        readWebTokenFlags(tx, trade.fromAddress, tokenIds),
-      ]);
-      event = canOfferAll(tokenIds, states, trade.fromAddress, flags)
+      const flags = await readWebTokenFlags(tx, trade.fromAddress, tokenIds);
+      event = canOfferAll(tokenIds, tokens, trade.fromAddress, flags)
         ? "reopen"
         : "break";
     }

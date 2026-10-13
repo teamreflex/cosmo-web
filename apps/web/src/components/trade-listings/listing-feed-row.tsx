@@ -140,7 +140,7 @@ export default function ListingFeedRow({ row }: Props) {
 /**
  * One side of the trade: its images, then its words.
  */
-function Half({
+export function Half({
   label,
   thumbs,
   className,
@@ -171,7 +171,7 @@ function Half({
  * One offered objekt reads as its name and serial; several as a count over
  * their seasons and members on a phone, and their names from md.
  */
-function OfferingCaption({ items }: { items: ListingFeedItem[] }) {
+export function OfferingCaption({ items }: { items: ListingFeedItem[] }) {
   const [first] = items;
   if (first === undefined) return null;
 
@@ -355,7 +355,7 @@ const thumbSize = "w-13 sm:w-11 md:w-9";
 /**
  * Up to three offered objekts, stacked.
  */
-function Thumbs({ items }: { items: ListingFeedItem[] }) {
+export function Thumbs({ items }: { items: ListingFeedItem[] }) {
   return (
     <Stack
       thumbs={items.map((item) => ({

@@ -22,6 +22,7 @@ import {
   openDisputeInputSchema,
   tradeIdInputSchema,
 } from "@/lib/universal/schema/trades";
+import { storedObjektItemSchema } from "@/lib/universal/trade-listings";
 import type {
   MyTradeSide,
   MyTradesPage,
@@ -34,7 +35,7 @@ import { liveTradeStatuses, type TradeSide } from "@apollo/database/web/types";
 import { needsYou, partyAction, tradeState } from "@apollo/trades/lifecycle";
 import { addr } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
-import { eq, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, or, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
 /**
@@ -53,17 +54,9 @@ export const $fetchTrade = createServerFn({ method: "GET" })
     }): Promise<{ trade: TradeView; viewer: TradeViewer } | null> => {
       const { id: userId, role } = context.session.user;
       const staff = can(parseRole(role), { trade: ["read-any"] });
-      const [trade, offer] = await Promise.all([
-        readTradeView(data.tradeId),
-        staff
-          ? db.query.tradeOffers.findFirst({
-              where: { id: data.tradeId, kind: "trade" },
-              columns: {},
-              with: { disputeReport: { columns: { id: true, status: true } } },
-            })
-          : undefined,
-      ]);
-      if (trade === null) return null;
+      const read = await readTradeView(data.tradeId);
+      if (read === null) return null;
+      const { trade } = read;
 
       const side =
         trade.parties.from.user?.id === userId
@@ -75,7 +68,7 @@ export const $fetchTrade = createServerFn({ method: "GET" })
       return staff
         ? {
             trade,
-            viewer: { kind: "staff", report: offer?.disputeReport ?? null },
+            viewer: { kind: "staff", report: read.disputeReport },
           }
         : null;
     },
@@ -86,8 +79,8 @@ const FINISHED_PAGE_SIZE = 30;
 /**
  * The caller's trades for My trades: every live one by deadline, or the
  * ended ones newest first, keyset-paged on the trade id like the Listings
- * feed. Each side shows only its first objekt, so the indexer is read for
- * those alone.
+ * feed. Each side lists every objekt it sends, as the feed shows a
+ * listing's offered side.
  */
 export const $fetchMyTrades = createServerFn({ method: "GET" })
   .validator(myTradesInputSchema)
@@ -95,23 +88,46 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
   .handler(async ({ data, context }): Promise<MyTradesPage> => {
     const userId = context.session.user.id;
     const { cursor } = data;
+    const active = data.tab === "active";
     const cursorRow = alias(tradeOffers, "cursor_row");
+    const pageQuery = db
+      .select({ id: tradeOffers.id })
+      .from(tradeOffers)
+      .where(
+        and(
+          eq(tradeOffers.kind, "trade"),
+          or(
+            eq(tradeOffers.fromUserId, userId),
+            eq(tradeOffers.toUserId, userId),
+          ),
+          active
+            ? inArray(tradeOffers.status, [...liveTradeStatuses])
+            : inArray(tradeOffers.status, [
+                "completed",
+                "cancelled",
+                "timed_out",
+              ]),
+          !active && cursor !== undefined
+            ? sql`(${tradeOffers.endedAt}, ${tradeOffers.id}) < (${db
+                .select({ endedAt: cursorRow.endedAt, id: cursorRow.id })
+                .from(cursorRow)
+                .where(eq(cursorRow.id, cursor))})`
+            : undefined,
+        ),
+      )
+      .orderBy(
+        ...(active
+          ? [asc(tradeOffers.deadlineAt), asc(tradeOffers.id)]
+          : [desc(tradeOffers.endedAt), desc(tradeOffers.id)]),
+      )
+      .$dynamic();
     const rows = await db.query.tradeOffers.findMany({
       where: {
-        kind: "trade",
-        OR: [{ fromUserId: userId }, { toUserId: userId }],
-        ...(data.tab === "active"
-          ? { status: { in: [...liveTradeStatuses] } }
-          : {
-              status: { in: ["completed", "cancelled", "timed_out"] },
-              ...(cursor !== undefined && {
-                RAW: (t) =>
-                  sql`(${t.endedAt}, ${t.id}) < (${db
-                    .select({ endedAt: cursorRow.endedAt, id: cursorRow.id })
-                    .from(cursorRow)
-                    .where(eq(cursorRow.id, cursor))})`,
-              }),
-            }),
+        RAW: (t) =>
+          inArray(
+            t.id,
+            active ? pageQuery : pageQuery.limit(FINISHED_PAGE_SIZE + 1),
+          ),
       },
       columns: {
         id: true,
@@ -124,19 +140,7 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
         endedAt: true,
       },
       with: {
-        items: {
-          columns: {
-            kind: true,
-            sender: true,
-            tokenId: true,
-            slug: true,
-            listingId: true,
-            transferredAt: true,
-            markedPaidAt: true,
-            confirmedAt: true,
-          },
-          orderBy: { id: "asc" },
-        },
+        items: { orderBy: { id: "asc" } },
         // the dispute that froze a disputed trade
         messages: {
           where: {
@@ -152,52 +156,44 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
         fromCosmo: { columns: { username: true } },
         toCosmo: { columns: { username: true } },
       },
-      orderBy:
-        data.tab === "active"
-          ? { deadlineAt: "asc", id: "asc" }
-          : { endedAt: "desc", id: "desc" },
-      limit: data.tab === "active" ? undefined : FINISHED_PAGE_SIZE + 1,
+      orderBy: active
+        ? { deadlineAt: "asc", id: "asc" }
+        : { endedAt: "desc", id: "desc" },
     });
-    const page = rows.slice(0, FINISHED_PAGE_SIZE);
-    const trades = (data.tab === "active" ? rows : page).map((row) => {
+    const page = active ? rows : rows.slice(0, FINISHED_PAGE_SIZE);
+    const trades = page.map((row) => {
       const side: TradeSide = row.fromUserId === userId ? "from" : "to";
+      // payments arrive with phase 12a; every item so far is an objekt
+      const objekts = row.items.flatMap((item) =>
+        item.kind === "objekt"
+          ? [{ item, ...storedObjektItemSchema.parse(item) }]
+          : [],
+      );
       return {
         row,
         side,
-        send: row.items.filter((item) => item.sender === side),
-        get: row.items.filter((item) => item.sender !== side),
+        send: objekts.filter(({ item }) => item.sender === side),
+        get: objekts.filter(({ item }) => item.sender !== side),
       };
     });
-    const firsts = trades.flatMap(({ send, get }) =>
-      [send[0], get[0]].flatMap((item) => item ?? []),
-    );
+    const objekts = trades.flatMap(({ send, get }) => [...send, ...get]);
     const indexed = await readIndexed(
-      [...new Set(firsts.flatMap((item) => item.slug ?? []))],
-      firsts.flatMap((item) => item.tokenId ?? []),
+      [...new Set(objekts.map(({ attributes }) => attributes.slug))],
+      objekts.map(({ tokenId }) => tokenId),
     );
 
-    const summary = (items: typeof firsts): MyTradeSide => {
-      const [first] = items;
-      const token =
-        first === undefined || first.tokenId === null
-          ? undefined
-          : indexed.states.get(first.tokenId);
-      return {
-        first:
-          first === undefined
-            ? null
-            : {
-                slug: first.slug,
-                serial: token?.kind === "found" ? token.serial : null,
-                collection:
-                  first.slug === null
-                    ? null
-                    : (indexed.collections.get(first.slug) ?? null),
-              },
-        count: items.length,
-        sent: items.filter((item) => item.transferredAt !== null).length,
-      };
-    };
+    const summary = (items: typeof objekts): MyTradeSide => ({
+      items: items.map(({ tokenId, attributes }) => {
+        const token = indexed.states.get(tokenId);
+        return {
+          tokenId,
+          attributes,
+          serial: token?.kind === "found" ? token.serial : null,
+          collection: indexed.collections.get(attributes.slug) ?? null,
+        };
+      }),
+      sent: items.filter(({ item }) => item.transferredAt !== null).length,
+    });
 
     const mapped = trades.map(({ row, side, send, get }) => {
       if (row.deadlineAt === null) {
@@ -241,46 +237,6 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
   });
 
 /**
- * How many of the caller's accepted trades wait on them to send something,
- * for the count beside every link to My trades.
- */
-export const $fetchTradesNeedingYou = createServerFn({ method: "GET" })
-  .middleware([authenticatedMiddleware])
-  .handler(async ({ context }) => {
-    const userId = context.session.user.id;
-    const rows = await db.query.tradeOffers.findMany({
-      where: {
-        kind: "trade",
-        status: "accepted",
-        OR: [{ fromUserId: userId }, { toUserId: userId }],
-      },
-      columns: {
-        status: true,
-        fromUserId: true,
-        cancelledBy: true,
-        abandonedBy: true,
-      },
-      with: {
-        items: {
-          columns: {
-            kind: true,
-            sender: true,
-            transferredAt: true,
-            markedPaidAt: true,
-            confirmedAt: true,
-          },
-        },
-      },
-    });
-    return rows.filter((row) =>
-      needsYou(
-        tradeState(row, row.items),
-        row.fromUserId === userId ? "from" : "to",
-      ),
-    ).length;
-  });
-
-/**
  * Cancel an accepted trade the caller is part of, while nothing has been
  * sent or marked paid and its deadline hasn't passed the drain's watermark.
  * A token already in its receiver's account counts as sent before the
@@ -299,6 +255,8 @@ export const $cancelTrade = createServerFn({ method: "POST" })
     });
 
     const parties = await partyTrade(userId, data.tradeId);
+    // read before the transaction, so it never holds a connection on the indexer
+    const tokens = await readIndexerTokens(parties.tokenIds);
     await db.transaction(async (tx) => {
       const { users, trade, by } = await lockPartyTrade(
         tx,
@@ -319,16 +277,13 @@ export const $cancelTrade = createServerFn({ method: "POST" })
                 },
               ],
       );
-      const states = await readIndexerTokens(
-        unsent.map((item) => item.tokenId),
-      );
       const result = partyAction(
         trade.state,
         { type: "cancel", by },
         {
           deadlinePassed: await isDue(tx, trade),
           arrived: unsent.some(({ tokenId, receiver }) => {
-            const state = states.get(tokenId);
+            const state = tokens.get(tokenId);
             return (
               state?.kind === "found" &&
               receiver !== null &&
@@ -339,7 +294,7 @@ export const $cancelTrade = createServerFn({ method: "POST" })
       );
       if (!result.ok) refuseTrade(partyRefusals[result.reason]);
 
-      await endTrade(tx, trade, result.trade, users);
+      await endTrade(tx, trade, result.trade, users, tokens);
       await insertTradeEvent(tx, trade.id, { type: "cancelled", by });
       await notifyUsers(
         tx,

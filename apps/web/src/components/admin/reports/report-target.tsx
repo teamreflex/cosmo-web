@@ -119,9 +119,8 @@ function TradeTarget({ trade }: { trade: ReportTargetTrade | null }) {
         </Link>
       </div>
       <div className="grid gap-2 sm:grid-cols-2">
-        {(["from", "to"] satisfies TradeSide[]).map((side) => (
-          <TradeParty key={side} party={trade[side]} side={side} />
-        ))}
+        <TradeParty party={trade.from} side="from" />
+        <TradeParty party={trade.to} side="to" />
       </div>
       <TransferRows trade={view} side={null} />
     </div>

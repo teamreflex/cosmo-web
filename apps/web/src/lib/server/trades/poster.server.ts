@@ -3,7 +3,6 @@ import type { TradeWantKind } from "@apollo/database/web/types";
 import { isEqual } from "@apollo/util";
 import type { CosmoLink } from "../../universal/cosmo-accounts";
 import type { TradeErrorCode } from "../../universal/errors/trades";
-import { getCosmoAddress } from "../cosmo-accounts.server";
 import { db, type DbOrTx } from "../db";
 import {
   firstRefusal,
@@ -47,9 +46,14 @@ export async function readPosterAccount(
   const row = await executor.query.user.findFirst({
     where: { id: fromUserId },
     columns: { banned: true, banExpires: true },
+    with: { cosmoAccount: { columns: { address: true, username: true } } },
   });
   if (!row) return null;
-  return { ...row, link: await getCosmoAddress(executor, fromUserId) };
+  const { cosmoAccount, ...ban } = row;
+  return {
+    ...ban,
+    link: cosmoAccount ? { kind: "linked", ...cosmoAccount } : { kind: "none" },
+  };
 }
 
 /**

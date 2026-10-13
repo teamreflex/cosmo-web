@@ -166,7 +166,7 @@ function viewerRole(listing: TradeListing, viewer: ListingViewer): ListingRole {
     case "onlooker":
       return { role: "onlooker", deadlineAt: viewer.deadlineAt };
     case "candidate": {
-      const panel = candidatePanel(listing.wants, viewer);
+      const panel = candidatePanel(listing, viewer);
       return panel === "picker"
         ? { role: "picker", viewer }
         : {

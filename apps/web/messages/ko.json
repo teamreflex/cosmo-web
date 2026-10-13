@@ -530,7 +530,7 @@
   "trade_page_dispute_pause": "타이머는 {#time}{left}{/time} 남은 상태로 멈춥니다. 이의 제기 중에는 두 사람 모두 취소할 수 없지만 전송은 그대로 인정됩니다.",
   "trade_page_dispute_opened": "이의를 제기했습니다",
   "trade_page_staff_title": "스태프로 보는 중, 읽기 전용.",
-  "trade_page_staff_description": "이 방문은 한 번 기록됩니다. 당사자에게는 알리지 않습니다.",
+  "trade_page_staff_description": "당사자에게는 알리지 않습니다.",
   "trade_page_staff_back": "신고로 돌아가기",
   "trade_page_step_accepted_staff": "{claimer}님이 {poster}님의 등록글을 수락했습니다",
   "trade_page_problem_staff_body": "{sender}님은 이 교환으로 더 이상 {receiver}님에게 이것을 보낼 수 없습니다.",
@@ -1311,7 +1311,6 @@
   "admin_audit_action_api_key_update": "API 키 수정",
   "admin_audit_action_api_key_delete": "API 키 삭제",
   "admin_audit_action_metadata_update": "objekt 메타데이터 수정",
-  "admin_audit_action_trade_read": "교환 열람",
   "admin_audit_action_trade_dispute": "검토를 위해 교환 보류",
   "admin_audit_action_trade_complete": "교환 완료",
   "admin_audit_action_trade_cancel": "교환 취소",
@@ -2020,24 +2019,6 @@
   "listing_detail_poster_blocked_body": "제시한 오브젝트 중 하나가 잠겼거나, 전송할 수 없거나, 다른 교환 중이거나, 계정에서 옮겨졌습니다.",
   "listing_detail_poster_blocked_fix": "교환 글을 수정해 다른 것을 제시하거나 COSMO에서 해결하세요.",
   "my_trades_title": "내 거래",
-  "my_trades_need_you": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=other": "{count}건 처리 필요"
-      }
-    }
-  ],
-  "my_trades_label_count": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=other": "내 거래, {count}건 처리 필요"
-      }
-    }
-  ],
   "my_trades_tabs": "표시할 거래",
   "my_trades_tab_active": "진행 중",
   "my_trades_tab_finished": "종료",
@@ -2051,7 +2032,6 @@
   "my_trades_column_time": "남은 시간",
   "my_trades_column_ended": "종료일",
   "my_trades_kind_listing": "리스팅",
-  "my_trades_sent": "{count}개 중 {sent}개 보냄",
   "my_trades_next_send": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

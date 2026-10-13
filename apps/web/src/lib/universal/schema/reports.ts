@@ -35,7 +35,8 @@ export const reportCountsSchema = reportQueueFiltersSchema.pick({
 });
 
 export const reportQueueSchema = reportQueueFiltersSchema.extend({
-  cursor: z.string().optional(),
+  // the previous page's last report
+  cursor: z.uuid().optional(),
 });
 
 export const reportIdSchema = z.object({

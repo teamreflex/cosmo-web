@@ -1,6 +1,9 @@
+import { listDrainCursor } from "@apollo/database/web/schema";
+import type { ReportStatus } from "@apollo/database/web/types";
 import { tradeState } from "@apollo/trades/lifecycle";
-import { isTimedOut } from "@apollo/trades/timers";
+import { DRAIN_CURSOR_NAME, isTimedOut } from "@apollo/trades/timers";
 import { addr } from "@apollo/util";
+import { sql } from "drizzle-orm";
 import type {
   TradeItemView,
   TradeParty,
@@ -9,54 +12,59 @@ import type {
 import { toPublicUser } from "../auth.server";
 import { db } from "../db";
 import { readIndexed } from "./feed.server";
-import { readWatermark } from "./trade.server";
 
 /**
- * A trade as its page shows it, or null when the id isn't an accepted,
- * disputed or ended trade. Each unsent item's status comes from its token's
- * owner in the indexer while the trade is live.
+ * A trade as its page shows it, with its dispute report for staff, or null
+ * when the id isn't an accepted, disputed or ended trade. Each unsent item's
+ * status comes from its token's owner in the indexer while the trade is
+ * live. The drain's watermark comes back with the row, in one statement.
  */
-export async function readTradeView(
-  tradeId: string,
-): Promise<TradeView | null> {
-  const [row, watermark] = await Promise.all([
-    db.query.tradeOffers.findFirst({
-      where: {
-        id: tradeId,
-        kind: "trade",
-        status: {
-          in: ["accepted", "disputed", "completed", "cancelled", "timed_out"],
-        },
+export async function readTradeView(tradeId: string): Promise<{
+  trade: TradeView;
+  disputeReport: { id: string; status: ReportStatus } | null;
+} | null> {
+  const row = await db.query.tradeOffers.findFirst({
+    where: {
+      id: tradeId,
+      kind: "trade",
+      status: {
+        in: ["accepted", "disputed", "completed", "cancelled", "timed_out"],
       },
-      columns: {
-        id: true,
-        status: true,
-        fromUserId: true,
-        toUserId: true,
-        fromAddress: true,
-        toAddress: true,
-        cancelledBy: true,
-        abandonedBy: true,
-        createdAt: true,
-        acceptedAt: true,
-        deadlineAt: true,
-        endedAt: true,
+    },
+    columns: {
+      id: true,
+      status: true,
+      fromUserId: true,
+      toUserId: true,
+      fromAddress: true,
+      toAddress: true,
+      cancelledBy: true,
+      abandonedBy: true,
+      createdAt: true,
+      acceptedAt: true,
+      deadlineAt: true,
+      endedAt: true,
+    },
+    extras: {
+      watermark: () =>
+        sql<Date | null>`(select ${listDrainCursor.chainTime} from ${listDrainCursor} where ${listDrainCursor.name} = ${DRAIN_CURSOR_NAME})`.mapWith(
+          listDrainCursor.chainTime,
+        ),
+    },
+    with: {
+      items: { orderBy: { id: "asc" } },
+      messages: {
+        where: { kind: "event" },
+        columns: { id: true, event: true, createdAt: true },
+        orderBy: { id: "asc" },
       },
-      with: {
-        items: { orderBy: { id: "asc" } },
-        messages: {
-          where: { kind: "event" },
-          columns: { id: true, event: true, createdAt: true },
-          orderBy: { id: "asc" },
-        },
-        fromUser: true,
-        toUser: true,
-        fromCosmo: { columns: { username: true } },
-        toCosmo: { columns: { username: true } },
-      },
-    }),
-    readWatermark(db),
-  ]);
+      fromUser: true,
+      toUser: true,
+      fromCosmo: { columns: { username: true } },
+      toCosmo: { columns: { username: true } },
+      disputeReport: { columns: { id: true, status: true } },
+    },
+  });
   if (!row) return null;
   if (row.acceptedAt === null || row.deadlineAt === null) {
     throw new Error("accepted trade without a deadline");
@@ -88,7 +96,7 @@ export async function readTradeView(
           cosmoUsername: cosmo?.username ?? null,
         };
 
-  return {
+  const trade: TradeView = {
     id: row.id,
     state,
     createdAt: row.createdAt,
@@ -101,7 +109,7 @@ export async function readTradeView(
             ?.createdAt ?? null)
         : null,
     deadlinePassed:
-      state.status === "accepted" && isTimedOut(row.deadlineAt, watermark),
+      state.status === "accepted" && isTimedOut(row.deadlineAt, row.watermark),
     listingId:
       row.items.find((item) => item.listingId !== null)?.listingId ?? null,
     parties: {
@@ -144,4 +152,5 @@ export async function readTradeView(
     }),
     events,
   };
+  return { trade, disputeReport: row.disputeReport };
 }

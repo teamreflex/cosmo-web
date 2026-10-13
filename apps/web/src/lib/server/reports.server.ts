@@ -1,5 +1,4 @@
 import { env } from "@/lib/env/server";
-import { decodeCursor, encodeCursor } from "@/lib/server/cursor.server";
 import { db } from "@/lib/server/db";
 import type { DbOrTx } from "@/lib/server/db";
 import { recordStaffAudit } from "@/lib/server/staff-audit.server";
@@ -32,7 +31,18 @@ import {
   type ReportStatus,
   type ReportTargetType,
 } from "@apollo/database/web/types";
-import { and, EmptyFilter, eq, inArray, ne, not, or, sql } from "drizzle-orm";
+import {
+  and,
+  desc,
+  EmptyFilter,
+  eq,
+  inArray,
+  ne,
+  not,
+  or,
+  sql,
+} from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 
 const QUEUE_PAGE_SIZE = 30;
 
@@ -119,27 +129,40 @@ export async function fetchReportCounts(
 }
 
 /**
- * One page of the staff member's queue, newest first. The cursor carries
- * `created_at` as Postgres text, which keeps the microseconds a JS Date would
- * drop.
+ * One page of the staff member's queue, newest first, keyset-paged on the
+ * report id like the Listings feed: the cursor is the previous page's last
+ * id, looked up whatever its status is now, so a report closed between
+ * pages still marks the place. The page reads one row past its size to say
+ * whether there's more.
  */
 export async function fetchReportQueue(
   staffId: string,
   input: ReportQueueInput,
 ) {
-  const after = decodeCursor(input.cursor);
-  const rows = await db.query.reports.findMany({
-    where: {
-      status: input.status,
-      targetType: input.targetType ?? EmptyFilter,
-      RAW: (t) =>
-        and(
-          visibleTo(staffId, t),
-          after
-            ? sql`(${t.createdAt}, ${t.id}) < (${after.timestamp}::timestamp, ${after.id}::uuid)`
-            : undefined,
-        ) ?? EmptyFilter,
-    },
+  const { cursor } = input;
+  const cursorRow = alias(reports, "cursor_row");
+  const pageIds = db
+    .select({ id: reports.id })
+    .from(reports)
+    .where(
+      and(
+        eq(reports.status, input.status),
+        input.targetType === undefined
+          ? undefined
+          : eq(reports.targetType, input.targetType),
+        visibleTo(staffId),
+        cursor === undefined
+          ? undefined
+          : sql`(${reports.createdAt}, ${reports.id}) < (${db
+              .select({ createdAt: cursorRow.createdAt, id: cursorRow.id })
+              .from(cursorRow)
+              .where(eq(cursorRow.id, cursor))})`,
+      ),
+    )
+    .orderBy(desc(reports.createdAt), desc(reports.id))
+    .limit(QUEUE_PAGE_SIZE + 1);
+  const found = await db.query.reports.findMany({
+    where: { RAW: (t) => inArray(t.id, pageIds) },
     columns: {
       id: true,
       targetType: true,
@@ -147,15 +170,12 @@ export async function fetchReportQueue(
       reason: true,
       createdAt: true,
     },
-    extras: {
-      cursorAt: (t) => sql<string>`${t.createdAt}::text`,
-    },
     orderBy: { createdAt: "desc", id: "desc" },
-    limit: QUEUE_PAGE_SIZE,
     with: {
       reporter: staffUserFields,
     },
   });
+  const rows = found.slice(0, QUEUE_PAGE_SIZE);
 
   const tradeIds = rows.flatMap((row) =>
     row.targetType === "trade" ? [row.targetId] : [],
@@ -176,7 +196,6 @@ export async function fetchReportQueue(
   ]);
   const trades = new Map(tradeRows.map((trade) => [trade.id, trade]));
 
-  const last = rows.at(-1);
   return {
     rows: rows.map((row): AdminReportRow => ({
       id: row.id,
@@ -185,10 +204,7 @@ export async function fetchReportQueue(
       reporter: staffUser(row.reporter),
       target: toRowTarget(row.targetType, row.targetId, users, trades),
     })),
-    nextCursor:
-      rows.length === QUEUE_PAGE_SIZE && last
-        ? encodeCursor(last.cursorAt, last.id)
-        : undefined,
+    nextCursor: found.length > rows.length ? rows.at(-1)?.id : undefined,
   };
 }
 
@@ -331,7 +347,7 @@ async function fetchDetailTarget(
         columns: { ...staffUserFields.columns, banned: true, banExpires: true },
         with: staffUserFields.with,
       } as const;
-      const [view, trade] = await Promise.all([
+      const [read, trade] = await Promise.all([
         readTradeView(targetId),
         db.query.tradeOffers.findFirst({
           where: { id: targetId, kind: "trade" },
@@ -340,7 +356,7 @@ async function fetchDetailTarget(
         }),
       ]);
 
-      if (view === null || !trade) {
+      if (read === null || !trade) {
         return { type: "trade", trade: null };
       }
 
@@ -352,7 +368,7 @@ async function fetchDetailTarget(
       return {
         type: "trade",
         trade: {
-          view,
+          view: read.trade,
           from: named(trade.fromUser),
           to: named(trade.toUser),
           current: trade.disputeReportId === id,

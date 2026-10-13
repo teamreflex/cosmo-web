@@ -538,7 +538,7 @@
   "trade_page_dispute_pause": "The timer pauses at {#time}{left}{/time}. Neither of you can cancel while it's open; transfers still count.",
   "trade_page_dispute_opened": "Dispute opened",
   "trade_page_staff_title": "Viewing as staff, read-only.",
-  "trade_page_staff_description": "This visit is logged once. The parties aren't told.",
+  "trade_page_staff_description": "The parties aren't told.",
   "trade_page_staff_back": "Back to report",
   "trade_page_step_accepted_staff": "{claimer} accepted {poster}'s listing",
   "trade_page_problem_staff_body": "{sender} can't send it to {receiver} through this trade any more.",
@@ -1335,7 +1335,6 @@
   "admin_audit_action_api_key_update": "Edited an API key",
   "admin_audit_action_api_key_delete": "Deleted an API key",
   "admin_audit_action_metadata_update": "Edited objekt metadata",
-  "admin_audit_action_trade_read": "Opened a trade",
   "admin_audit_action_trade_dispute": "Put a trade on hold for review",
   "admin_audit_action_trade_complete": "Completed a trade",
   "admin_audit_action_trade_cancel": "Cancelled a trade",
@@ -2061,26 +2060,6 @@
   "listing_detail_poster_blocked_body": "One of the objekts you offer is locked, can't be transferred, is in another trade or has left your account.",
   "listing_detail_poster_blocked_fix": "Edit the listing to offer something else, or fix it in COSMO.",
   "my_trades_title": "My trades",
-  "my_trades_need_you": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=one": "{count} needs you",
-        "countPlural=other": "{count} need you"
-      }
-    }
-  ],
-  "my_trades_label_count": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=one": "My trades, {count} needs you",
-        "countPlural=other": "My trades, {count} need you"
-      }
-    }
-  ],
   "my_trades_tabs": "Which trades",
   "my_trades_tab_active": "Active",
   "my_trades_tab_finished": "Finished",
@@ -2094,7 +2073,6 @@
   "my_trades_column_time": "Time left",
   "my_trades_column_ended": "Ended",
   "my_trades_kind_listing": "Listing",
-  "my_trades_sent": "{sent} of {count} sent",
   "my_trades_next_send": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],

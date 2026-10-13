@@ -3,6 +3,10 @@ import { resolveTargetReports } from "@/lib/server/reports.server";
 import { recordStaffAudit } from "@/lib/server/staff-audit.server";
 import { publishTradeUpdates } from "@/lib/server/trade-events.server";
 import {
+  readIndexerTokens,
+  type TokenState,
+} from "@/lib/server/trades/holdings.server";
+import {
   endTrade,
   insertTradeEvent,
   type LockedTrade,
@@ -38,7 +42,9 @@ type StaffTradeAction =
  * dispute report the action was taken from (none for an undisputed trade),
  * or it is refused as changed. Every open or escalated report on the trade
  * is resolved with it, and the trade is published once that commits.
- * Returns the audit action, which says what the action did.
+ * Returns the audit action, which says what the action did. An action
+ * that may release a listing asks for `tokens`, the trade's indexer states,
+ * which are read before the transaction so it never waits on the indexer.
  */
 export async function actOnTrade(
   staffId: string,
@@ -52,16 +58,24 @@ export async function actOnTrade(
     trade: LockedTrade,
     users: LockedUser[],
     next: TradeState,
+    tokens: ReadonlyMap<number, TokenState>,
   ) => Promise<StaffTradeAction>,
+  { readTokens = false }: { readTokens?: boolean } = {},
 ) {
   const parties = await db.query.tradeOffers.findFirst({
     where: { id: tradeId, kind: "trade" },
     columns: { fromUserId: true, toUserId: true },
+    with: { items: { columns: { tokenId: true } } },
   });
   if (!parties) refuseTrade("trade_not_found");
   if (parties.fromUserId === staffId || parties.toUserId === staffId) {
     refuseTrade("trade_own");
   }
+  const tokens = readTokens
+    ? await readIndexerTokens(
+        parties.items.flatMap((item) => item.tokenId ?? []),
+      )
+    : new Map<number, TokenState>();
 
   const { action } = await db.transaction(async (tx) => {
     const users = await lockParties(tx, [parties.fromUserId, parties.toUserId]);
@@ -71,7 +85,7 @@ export async function actOnTrade(
     }
     const result = transition(trade.state, event);
     if (!result.ok) refuseTrade("trade_status_changed");
-    const done = await act(tx, trade, users, result.trade);
+    const done = await act(tx, trade, users, result.trade, tokens);
     await recordStaffAudit(tx, {
       staffId,
       tradeId,
@@ -97,7 +111,8 @@ export async function completeAsStaff(
   next: TradeState,
   note: string | null,
 ) {
-  await endTrade(tx, trade, next, users);
+  // a fill reads no token states
+  await endTrade(tx, trade, next, users, new Map());
   await insertTradeEvent(tx, trade.id, {
     type: "completed",
     by: "staff",

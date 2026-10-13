@@ -1,21 +1,24 @@
 import { m } from "@/i18n/messages";
-import { formatSerial } from "@/lib/client/objekt-util";
-import { itemLabel, partyName } from "@/lib/client/trades";
+import { partyName } from "@/lib/client/trades";
 import { finishedTradesQuery } from "@/lib/queries/trades";
 import {
   type MyTradeRow,
-  type MyTradeSide,
   type MyTradesTab,
   myTradesTabs,
 } from "@/lib/universal/trades";
 import { cn } from "@/lib/utils";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
-import { IconArrowsExchange } from "@tabler/icons-react";
+import { IconArrowsExchange, IconArrowsRightLeft } from "@tabler/icons-react";
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { InfiniteQueryNext } from "../infinite-query-pending";
 import Countdown from "../misc/countdown";
 import UserAvatar from "../profile/user-avatar";
+import {
+  Half,
+  OfferingCaption,
+  Thumbs,
+} from "../trade-listings/listing-feed-row";
 import { tones } from "../trade-listings/state-tones";
 import { Badge } from "../ui/badge";
 import { buttonVariants } from "../ui/button";
@@ -30,7 +33,6 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
 import { Timestamp } from "../ui/timestamp";
 import { EndedBadge } from "./trade-header";
-import { Thumbnail } from "./transfer-rows";
 
 type Props = {
   tab: MyTradesTab;
@@ -56,11 +58,7 @@ export default function MyTrades({ tab, active }: Props) {
 
   return (
     <>
-      <MyTradesHeader
-        tab={tab}
-        live={active.length}
-        needsYou={groups[0]?.rows.length ?? 0}
-      />
+      <MyTradesHeader tab={tab} live={active.length} />
 
       <div className="container py-4">
         {tab === "finished" ? (
@@ -68,7 +66,7 @@ export default function MyTrades({ tab, active }: Props) {
         ) : active.length === 0 ? (
           <MyTradesEmpty tab={tab} />
         ) : (
-          <div className="overflow-clip rounded-lg border bg-card text-sm">
+          <div className="flex flex-col gap-4 text-sm md:gap-0 md:overflow-clip md:rounded-lg md:border md:bg-card">
             <ColumnHeader tab={tab} />
             {groups.map(
               (group) =>
@@ -76,9 +74,9 @@ export default function MyTrades({ tab, active }: Props) {
                   <section
                     key={group.title}
                     aria-label={group.title}
-                    className="border-t first-of-type:border-t-0"
+                    className="flex flex-col gap-2.5 md:block md:border-t md:first-of-type:border-t-0"
                   >
-                    <h2 className="flex items-baseline gap-2 bg-muted/40 px-4 py-2">
+                    <h2 className="flex items-baseline gap-2 md:bg-muted/40 md:px-4 md:py-2">
                       <span className="text-sm font-semibold">
                         {group.title}
                       </span>
@@ -86,7 +84,7 @@ export default function MyTrades({ tab, active }: Props) {
                         {group.rows.length}
                       </span>
                     </h2>
-                    <ul>
+                    <ul className="flex flex-col gap-2.5 md:block">
                       {group.rows.map((row) => (
                         <TradeRow key={row.id} row={row} />
                       ))}
@@ -108,9 +106,9 @@ function FinishedTrades() {
   if (rows.length === 0) return <MyTradesEmpty tab="finished" />;
   return (
     <>
-      <div className="overflow-clip rounded-lg border bg-card text-sm">
+      <div className="flex flex-col text-sm md:overflow-clip md:rounded-lg md:border md:bg-card">
         <ColumnHeader tab="finished" />
-        <ul className="*:first:border-t-0">
+        <ul className="flex flex-col gap-2.5 md:block md:*:first:border-t-0">
           {rows.map((row) => (
             <TradeRow key={row.id} row={row} />
           ))}
@@ -127,18 +125,9 @@ function FinishedTrades() {
 }
 
 /**
- * The title, how many trades need the viewer, and the tabs, which keep their
- * place in the URL.
+ * The title and the tabs, which keep their place in the URL.
  */
-function MyTradesHeader({
-  tab,
-  live,
-  needsYou,
-}: {
-  tab: MyTradesTab;
-  live: number;
-  needsYou: number;
-}) {
+function MyTradesHeader({ tab, live }: { tab: MyTradesTab; live: number }) {
   const navigate = useNavigate();
 
   return (
@@ -147,12 +136,6 @@ function MyTradesHeader({
         <h1 className="font-cosmo text-xl leading-none font-black tracking-wide uppercase md:text-2xl">
           {m.my_trades_title()}
         </h1>
-        {needsYou > 0 && (
-          <Badge variant="cosmo" className="tabular-nums">
-            {m.my_trades_need_you({ count: needsYou })}
-          </Badge>
-        )}
-
         <Tabs
           className="max-md:basis-full md:ml-auto"
           value={tab}
@@ -184,19 +167,19 @@ function MyTradesHeader({
 }
 
 /**
- * Desktop columns: kind, you send, arrow, you get, status, with, time. Below
- * lg the sides take the first line and everything else the second.
+ * From lg: kind, you send, arrow, you get, status, with, time. Below lg a
+ * row is a trade slip like the Listings feed's.
  */
-const grid =
-  "grid grid-cols-[minmax(0,1fr)_18px_minmax(0,1fr)] gap-x-2 lg:grid-cols-[72px_minmax(0,1fr)_20px_minmax(0,1fr)_160px_168px_112px] lg:gap-x-4";
+const columns =
+  "lg:grid-cols-[72px_minmax(0,1fr)_20px_minmax(0,1fr)_150px_160px_100px]";
 
 function ColumnHeader({ tab }: { tab: MyTradesTab }) {
   return (
     <div
       aria-hidden
       className={cn(
-        grid,
-        "sticky top-14 z-20 hidden border-b bg-card/90 px-4 py-2 text-xs font-medium tracking-wide text-muted-foreground backdrop-blur-lg lg:grid",
+        "sticky top-14 z-20 hidden gap-x-3.5 border-b bg-card/90 px-4 py-2 text-xs font-medium tracking-wide text-muted-foreground backdrop-blur-lg lg:grid",
+        columns,
       )}
     >
       <span>{m.my_trades_column_kind()}</span>
@@ -214,50 +197,68 @@ function ColumnHeader({ tab }: { tab: MyTradesTab }) {
   );
 }
 
+/**
+ * Laid out as a Listings feed row, with the tokens each side sends. Below
+ * md the second line holds the status, the other party and the time.
+ */
 function TradeRow({ row }: { row: MyTradeRow }) {
   return (
-    <li className="border-t border-border/60">
+    <li className="transition-colors md:border-t md:border-border/60 md:hover:bg-secondary/50">
       <Link
         to="/trade/$id"
         params={{ id: row.id }}
         className={cn(
-          grid,
-          "items-center gap-y-2.5 px-3.5 py-3 transition-colors hover:bg-secondary/50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring sm:px-4 lg:py-2.5",
+          "grid grid-cols-[minmax(0,1fr)_0_minmax(0,1fr)] text-sm outline-none md:grid-cols-[minmax(0,1fr)_16px_minmax(0,1fr)] md:items-center md:gap-x-3.5 md:gap-y-2.5 md:px-4 md:py-3 md:focus-visible:bg-secondary/50",
+          columns,
+          "max-md:overflow-hidden max-md:rounded-[10px] max-md:border max-md:bg-card max-md:hover:bg-secondary max-md:focus-visible:border-ring max-md:focus-visible:bg-secondary",
         )}
       >
-        <Side
-          side={row.send}
-          className="col-start-1 row-start-1 lg:col-start-2"
-        />
-        <IconArrowsExchange
-          aria-hidden
-          className="col-start-2 row-start-1 size-4 justify-self-center text-muted-foreground lg:col-start-3 lg:size-5"
-        />
-        <Side
-          side={row.get}
-          className="col-start-3 row-start-1 lg:col-start-4"
-        />
+        <Half
+          label={m.my_trades_column_send()}
+          thumbs={<Thumbs items={row.send.items} />}
+          className="col-start-1 max-md:bg-teal-700/5 lg:col-start-2 max-md:dark:bg-teal-500/5"
+        >
+          <OfferingCaption items={row.send.items} />
+        </Half>
 
-        <div className="col-span-full row-start-2 flex items-center gap-x-3 lg:contents">
-          <span className="flex lg:col-start-1 lg:row-start-1">
+        <span
+          aria-hidden
+          className="relative col-start-2 row-start-1 text-muted-foreground max-md:border-l max-md:border-dashed lg:col-start-3"
+        >
+          <span className="absolute top-13 left-0 z-5 flex size-6 -translate-1/2 items-center justify-center rounded-full border bg-card sm:top-1/2 md:hidden">
+            <IconArrowsRightLeft className="size-3.5" />
+          </span>
+          <IconArrowsRightLeft className="size-4 max-md:hidden" />
+        </span>
+
+        <Half
+          label={m.my_trades_column_get()}
+          thumbs={<Thumbs items={row.get.items} />}
+          className="col-start-3 max-md:bg-amber-700/5 lg:col-start-4 max-md:dark:bg-amber-500/5"
+        >
+          <OfferingCaption items={row.get.items} />
+        </Half>
+
+        <span className="col-span-full row-start-2 flex min-w-0 items-center gap-2 max-md:border-t max-md:border-dashed max-md:px-3 max-md:py-2 max-md:text-xs lg:contents">
+          <span className="flex max-lg:hidden lg:col-start-1 lg:row-start-1">
             {row.listingId !== null && (
               <Badge variant="outline">{m.my_trades_kind_listing()}</Badge>
             )}
           </span>
-          {/* below lg a long name gives way rather than wrapping the line */}
-          <span className="flex max-w-48 min-w-0 lg:col-start-5 lg:row-start-1 lg:max-w-none">
+          {/* a long name gives way rather than wrapping the line */}
+          <span className="flex max-w-48 min-w-0 shrink-0 lg:col-start-5 lg:row-start-1 lg:max-w-none">
             <Status row={row} />
           </span>
-          <span className="flex max-w-48 min-w-0 items-center gap-1.5 lg:col-start-6 lg:row-start-1 lg:max-w-none">
+          <span className="flex min-w-0 items-center gap-1.5 lg:col-start-6 lg:row-start-1">
             {row.counterparty.user === null ? (
-              <UserAvatar deleted className="size-5.5" />
+              <UserAvatar deleted className="size-4.5 md:size-6" />
             ) : (
               <UserAvatar
                 username={
                   row.counterparty.cosmoUsername ??
                   row.counterparty.user.username
                 }
-                className="size-5.5 text-xxs **:p-0.5"
+                className="size-4.5 text-xxs **:p-0.5 md:size-6"
               />
             )}
             <span
@@ -270,46 +271,9 @@ function TradeRow({ row }: { row: MyTradeRow }) {
           <span className="ml-auto shrink-0 text-xs text-muted-foreground lg:col-start-7 lg:row-start-1 lg:ml-0 lg:text-right">
             <Time row={row} />
           </span>
-        </div>
+        </span>
       </Link>
     </li>
-  );
-}
-
-/**
- * One side's first objekt, how many more there are, and how many of them
- * the drain has seen.
- */
-function Side({ side, className }: { side: MyTradeSide; className: string }) {
-  return (
-    <span className={cn("flex min-w-0 items-center gap-2", className)}>
-      <Thumbnail collection={side.first?.collection ?? null} />
-      <span className="flex min-w-0 flex-col gap-0.5">
-        {side.first !== null && (
-          <span
-            className="truncate font-medium max-sm:line-clamp-2 max-sm:whitespace-normal"
-            title={itemLabel(side.first)}
-          >
-            {itemLabel(side.first)}
-          </span>
-        )}
-        <span className="flex min-w-0 flex-wrap items-center gap-x-1.5 text-xs text-muted-foreground">
-          {side.first !== null && side.first.serial !== null && (
-            <span className="font-mono tabular-nums">
-              {formatSerial(side.first.serial)}
-            </span>
-          )}
-          {side.count > 1 && (
-            <span className="rounded-sm border bg-muted px-1 font-mono">
-              +{side.count - 1}
-            </span>
-          )}
-          <span className="tabular-nums">
-            {m.my_trades_sent({ sent: side.sent, count: side.count })}
-          </span>
-        </span>
-      </span>
-    </span>
   );
 }
 
@@ -321,7 +285,9 @@ function Status({ row }: { row: MyTradeRow }) {
     case "accepted":
       return row.needsYou ? (
         <Badge className="border-transparent bg-cosmo/15 text-cosmo dark:text-cosmo-text">
-          {m.my_trades_next_send({ count: row.send.count - row.send.sent })}
+          {m.my_trades_next_send({
+            count: row.send.items.length - row.send.sent,
+          })}
         </Badge>
       ) : (
         // a long name gives way, so the verb stays

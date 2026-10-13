@@ -7,7 +7,6 @@ import {
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
 import { tradeListingQuery } from "@/lib/queries/trade-listings";
-import { tradesNeedingYouQuery } from "@/lib/queries/trades";
 import {
   type ClosedListingState,
   type ListingClaim,
@@ -18,14 +17,16 @@ import {
 import { cn } from "@/lib/utils";
 import { CLAIM_WINDOW } from "@apollo/trades/timers";
 import { IconArrowRight, IconPencil, IconX } from "@tabler/icons-react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation } from "@tanstack/react-router";
 import { type ReactNode, useId, useState } from "react";
 import { toast } from "sonner";
 import LinkCosmo from "../auth/link-cosmo";
 import SignIn from "../auth/sign-in";
 import { Button, buttonVariants } from "../ui/button";
-import AllocationPicker from "./allocation-picker";
+import AllocationPicker, {
+  AllocationPickerSkeleton,
+} from "./allocation-picker";
 import ClosedBanner from "./closed-banner";
 import ConfirmTradeDialog, {
   type ConfirmSnapshot,
@@ -44,7 +45,6 @@ import {
   StatusDetail,
   StatusSkeleton,
   ViewerErrorStatus,
-  WantsSkeleton,
 } from "./listing-status";
 import { WantList } from "./want-label";
 import WithdrawListingDialog from "./withdraw-listing-dialog";
@@ -186,7 +186,7 @@ export default function ListingView({
       offered={offeredHeading(role)}
       wants={
         role.role === "loading" ? (
-          <WantsSkeleton />
+          <AllocationPickerSkeleton rows={rows} />
         ) : role.role === "picker" && picks !== null ? (
           <AllocationPicker viewer={role.viewer} rows={rows} picks={picks} />
         ) : (
@@ -510,20 +510,15 @@ function PickerBar({
 }
 
 /**
- * Where a viewer at their claim cap goes to finish a trade, with how many
- * wait on them.
+ * Where a viewer at their claim cap goes to finish a trade.
  */
 function MyTradesLink() {
-  const needsYou = useQuery(tradesNeedingYouQuery).data ?? 0;
-
   return (
     <Link
       to="/market/trades"
       className="text-xs font-medium text-cosmo underline-offset-4 hover:underline dark:text-cosmo-text"
     >
-      {needsYou > 0
-        ? `${m.my_trades_title()} · ${m.my_trades_need_you({ count: needsYou })}`
-        : m.my_trades_title()}
+      {m.my_trades_title()}
     </Link>
   );
 }

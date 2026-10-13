@@ -41,7 +41,6 @@ import {
 import {
   posterRefusal,
   readPosterAccount,
-  readPosterFacts,
 } from "@/lib/server/trades/poster.server";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import {
@@ -394,7 +393,6 @@ export const $fetchTradeListingViewer = createServerFn({ method: "GET" })
         endedAt: true,
       },
       with: {
-        items: { columns: { tokenId: true }, orderBy: { id: "asc" } },
         wants: { orderBy: { id: "asc" } },
       },
     });
@@ -441,15 +439,12 @@ export const $fetchTradeListingViewer = createServerFn({ method: "GET" })
     const link = await getCosmoAddress(db, viewerId);
     if (link.kind === "none") return { role: "unlinked" };
 
-    const wants = listing.wants.map((want) => storedWantSchema.parse(want));
-    const [facts, side, active] = await Promise.all([
-      readPosterFacts({
-        fromUserId: listing.fromUserId,
-        fromAddress: listing.fromAddress,
-        tokenIds: listing.items.flatMap((item) => item.tokenId ?? []),
-        wantKinds: wants.map((want) => want.kind),
-      }),
-      readCandidateSide(link.address, wants),
+    // whether the poster's side stops a claim is $fetchTradeListing's `blocked`
+    const [side, active] = await Promise.all([
+      readCandidateSide(
+        link.address,
+        listing.wants.map((want) => storedWantSchema.parse(want)),
+      ),
       activeClaimCount(db, viewerId),
     ]);
 
@@ -458,8 +453,6 @@ export const $fetchTradeListingViewer = createServerFn({ method: "GET" })
       updatedAt: listing.updatedAt,
       ...side,
       claims: { active, cap: claimCap({ positive: 0, abandoned: 0 }) },
-      blocked:
-        posterRefusal(facts, listing.fromAddress) !== null ||
-        isEqual(link.address, listing.fromAddress),
+      ownAddress: isEqual(link.address, listing.fromAddress),
     };
   });
