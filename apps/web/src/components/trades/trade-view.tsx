@@ -2,6 +2,7 @@ import { m } from "@/i18n/messages";
 import { reportReasonLabel } from "@/lib/client/reports";
 import { itemName, partyName, tradeTimeFormat } from "@/lib/client/trades";
 import { env } from "@/lib/env/client";
+import { $recordTradeView } from "@/lib/functions/staff-trades";
 import type {
   TradeParty,
   TradeView as Trade,
@@ -19,12 +20,14 @@ import {
   IconAlertTriangle,
   IconCircleCheck,
   IconCopy,
+  IconEye,
   IconFlag,
   IconHourglassEmpty,
   IconX,
 } from "@tabler/icons-react";
+import { useMutation } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { type ReactNode, useId, useState } from "react";
+import { type ReactNode, useEffect, useId, useState } from "react";
 import { toast } from "sonner";
 import { useCopyToClipboard } from "usehooks-ts";
 import { bold } from "../notifications/row-utils";
@@ -54,17 +57,27 @@ type Props = {
 
 /**
  * The trade page: the header, the steps, where the trade stands, every
- * transfer, and beside them who it's with and the timeline. While the
- * viewer still owes objekts it says what to send to whom, with their
- * partner's COSMO ID to copy, and it offers cancel and dispute wherever
- * the server would allow them, in the phone bar below tablet width.
+ * transfer, and beside them who it's with and the timeline. Its parties
+ * can act on it; staff read it.
  */
 export default function TradeView({ trade, viewer }: Props) {
+  return viewer.kind === "party" ? (
+    <PartyView trade={trade} side={viewer.side} />
+  ) : (
+    <StaffView trade={trade} report={viewer.report} />
+  );
+}
+
+/**
+ * The page as one of its parties sees it. While they still owe objekts it
+ * says what to send to whom, with their partner's COSMO ID to copy, and it
+ * offers cancel and dispute wherever the server would allow them, in the
+ * phone bar below tablet width.
+ */
+function PartyView({ trade, side }: { trade: Trade; side: TradeSide }) {
   const startedId = useId();
   const [dialog, setDialog] = useState<"cancel" | "dispute" | null>(null);
-  const { side } = viewer;
-  const other = side === "from" ? "to" : "from";
-  const counterparty = trade.parties[other];
+  const counterparty = trade.parties[side === "from" ? "to" : "from"];
   const owing = needsYou(trade.state, side);
   const copyName = owing ? counterparty.cosmoUsername : null;
   /**
@@ -88,71 +101,56 @@ export default function TradeView({ trade, viewer }: Props) {
 
   return (
     <>
-      <TradeHeader trade={trade} side={side} />
-      <div
-        className={cn(
-          "container flex flex-col gap-5 pt-5 lg:pt-6",
-          !bar ? "pb-10" : barRows === 1 ? "pb-28 md:pb-10" : "pb-40 md:pb-10",
-        )}
-      >
-        <TradeSteps trade={trade} side={side} />
-        <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:items-start">
-          <div className="flex min-w-0 flex-col gap-4">
-            <StatePanel trade={trade} side={side} />
-            <TransferRows
-              items={trade.items}
-              parties={trade.parties}
-              side={side}
-            >
-              <ActionStrip
-                trade={trade}
-                side={side}
-                owing={owing}
-                refusal={cancel.ok ? null : cancel.reason}
-                startedId={startedId}
-              >
-                {bar && (
-                  <div className="flex flex-wrap gap-2 max-md:hidden">
-                    {copyName !== null && <CopyCosmoId username={copyName} />}
+      <TradeLayout
+        trade={trade}
+        side={side}
+        strip={
+          <ActionStrip
+            trade={trade}
+            side={side}
+            owing={owing}
+            refusal={cancel.ok ? null : cancel.reason}
+            startedId={startedId}
+          >
+            {bar && (
+              <div className="flex flex-wrap gap-2 max-md:hidden">
+                {copyName !== null && <CopyCosmoId username={copyName} />}
+                <PartyActions
+                  offered={offered}
+                  describedBy={describedBy}
+                  onOpen={setDialog}
+                />
+              </div>
+            )}
+          </ActionStrip>
+        }
+        bar={
+          bar
+            ? {
+                rows: barRows,
+                children: (
+                  <div className="flex flex-1 flex-wrap gap-2">
+                    {copyName !== null && (
+                      <CopyCosmoId
+                        username={copyName}
+                        className={cn(
+                          "h-11 flex-1",
+                          barRows === 2 && "basis-full",
+                        )}
+                      />
+                    )}
                     <PartyActions
                       offered={offered}
                       describedBy={describedBy}
                       onOpen={setDialog}
+                      className="h-11 flex-1"
                     />
                   </div>
-                )}
-              </ActionStrip>
-            </TransferRows>
-            {trade.state.status === "accepted" && (
-              <p className="text-xs leading-relaxed text-muted-foreground">
-                {m.trade_page_deadline_note({ appName: env.VITE_APP_NAME })}
-              </p>
-            )}
-          </div>
-          <aside className="flex min-w-0 flex-col gap-4">
-            <Counterparty party={counterparty} side={other} />
-            <TradeTimeline trade={trade} side={side} />
-          </aside>
-        </div>
-      </div>
-      {bar && (
-        <ListingBottomBar>
-          <div className="flex flex-1 flex-wrap gap-2">
-            {copyName !== null && (
-              <CopyCosmoId
-                username={copyName}
-                className={cn("h-11 flex-1", barRows === 2 && "basis-full")}
-              />
-            )}
-            <PartyActions
-              offered={offered}
-              describedBy={describedBy}
-              onOpen={setDialog}
-              className="h-11 flex-1"
-            />
-          </div>
-        </ListingBottomBar>
-      )}
+                ),
+              }
+            : undefined
+        }
+      />
       <CancelTradeDialog
         tradeId={trade.id}
         listingId={trade.listingId}
@@ -169,6 +167,123 @@ export default function TradeView({ trade, viewer }: Props) {
         open={dialog === "dispute" && offered.dispute}
         onOpenChange={(open) => setDialog(open ? "dispute" : null)}
       />
+    </>
+  );
+}
+
+/**
+ * The page as staff read it: both parties named, in the third person,
+ * with no actions. Opening it records one audit row, from here rather
+ * than the loader, which can run several times per visit.
+ */
+function StaffView({
+  trade,
+  report,
+}: {
+  trade: Trade;
+  report: Extract<TradeViewer, { kind: "staff" }>["report"];
+}) {
+  const { mutate: recordView } = useMutation({ mutationFn: $recordTradeView });
+  useEffect(() => {
+    recordView({ data: { tradeId: trade.id } });
+  }, [recordView, trade.id]);
+
+  return (
+    <TradeLayout
+      trade={trade}
+      side={null}
+      banner={
+        <Alert variant="destructive" role="status">
+          <IconEye />
+          <AlertTitle>{m.trade_page_staff_title()}</AlertTitle>
+          <AlertDescription>
+            {m.trade_page_staff_description()}
+          </AlertDescription>
+          {report !== null && (
+            <Link
+              to="/admin/reports"
+              search={{ status: report.status, report: report.id }}
+              className={cn(
+                buttonVariants({ variant: "outline", size: "sm" }),
+                "mt-2 w-fit no-underline! group-has-[>svg]/alert:col-start-2",
+              )}
+            >
+              {m.trade_page_staff_back()}
+            </Link>
+          )}
+        </Alert>
+      }
+    />
+  );
+}
+
+/**
+ * The page around the viewer's own parts: staff's banner above the steps,
+ * the party's strip under the transfers, and the phone bar with the room
+ * it takes at the bottom of the page.
+ */
+function TradeLayout({
+  trade,
+  side,
+  banner,
+  strip,
+  bar,
+}: {
+  trade: Trade;
+  /** the viewer's side, or null for staff */
+  side: TradeSide | null;
+  banner?: ReactNode;
+  strip?: ReactNode;
+  bar?: { rows: 1 | 2; children: ReactNode };
+}) {
+  return (
+    <>
+      <TradeHeader trade={trade} side={side} />
+      <div
+        className={cn(
+          "container flex flex-col gap-5 pt-5 lg:pt-6",
+          bar === undefined
+            ? "pb-10"
+            : bar.rows === 1
+              ? "pb-28 md:pb-10"
+              : "pb-40 md:pb-10",
+        )}
+      >
+        {banner}
+        <TradeSteps trade={trade} side={side} />
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:items-start">
+          <div className="flex min-w-0 flex-col gap-4">
+            <StatePanel trade={trade} side={side} />
+            <TransferRows
+              items={trade.items}
+              parties={trade.parties}
+              side={side}
+            >
+              {strip}
+            </TransferRows>
+            {trade.state.status === "accepted" && (
+              <p className="text-xs leading-relaxed text-muted-foreground">
+                {m.trade_page_deadline_note({ appName: env.VITE_APP_NAME })}
+              </p>
+            )}
+          </div>
+          <aside className="flex min-w-0 flex-col gap-4">
+            {(
+              (side === null
+                ? ["from", "to"]
+                : [side === "from" ? "to" : "from"]) satisfies TradeSide[]
+            ).map((party) => (
+              <PartyCard
+                key={party}
+                party={trade.parties[party]}
+                side={party}
+              />
+            ))}
+            <TradeTimeline trade={trade} side={side} />
+          </aside>
+        </div>
+      </div>
+      {bar !== undefined && <ListingBottomBar>{bar.children}</ListingBottomBar>}
     </>
   );
 }
@@ -312,21 +427,25 @@ const stepTones = {
  * step. Phones show only the step the trade is on. An ended trade that
  * didn't complete has no steps left to show.
  */
-function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide }) {
+function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
   const { status } = trade.state;
   if (status === "cancelled" || status === "timed_out") return null;
 
   const completed = status === "completed";
   const seen = trade.items.filter((item) => item.status === "sent").length;
-  const name = partyName(trade.parties[side === "from" ? "to" : "from"]);
+  const poster = partyName(trade.parties.from);
+  const claimer = partyName(trade.parties.to);
   const steps = [
     {
       tone: "done",
       eyebrow: m.trade_page_step_done({ step: 0 }),
+      // the claimer is always the side that accepts a listing
       title:
         side === "to"
-          ? m.trade_page_step_accepted_you({ name })
-          : m.trade_page_step_accepted_them({ name }),
+          ? m.trade_page_step_accepted_you({ name: poster })
+          : side === "from"
+            ? m.trade_page_step_accepted_them({ name: claimer })
+            : m.trade_page_step_accepted_staff({ claimer, poster }),
     },
     {
       tone: completed ? "done" : status === "disputed" ? "dispute" : "current",
@@ -398,11 +517,10 @@ const warningAlert =
 /**
  * Where the trade stands when it isn't simply running: how it ended, the
  * dispute that froze it, or an objekt that can no longer reach its
- * receiver.
+ * receiver. Staff read it in the third person.
  */
-function StatePanel({ trade, side }: { trade: Trade; side: TradeSide }) {
+function StatePanel({ trade, side }: { trade: Trade; side: TradeSide | null }) {
   const appName = env.VITE_APP_NAME;
-  const name = partyName(trade.parties[side === "from" ? "to" : "from"]);
   const { state } = trade;
 
   switch (state.status) {
@@ -413,6 +531,7 @@ function StatePanel({ trade, side }: { trade: Trade; side: TradeSide }) {
         }
         const objekt = itemName(item);
         const yours = item.sender === side;
+        const receiver = item.sender === "from" ? "to" : "from";
         return (
           <Alert key={item.id} className={warningAlert}>
             <IconAlertTriangle />
@@ -434,9 +553,17 @@ function StatePanel({ trade, side }: { trade: Trade; side: TradeSide }) {
             <AlertDescription>
               {yours
                 ? item.status === "moved"
-                  ? m.trade_page_moved_yours_body({ name })
-                  : m.trade_page_untransferable_yours_body({ name })
-                : m.trade_page_problem_theirs_body()}
+                  ? m.trade_page_moved_yours_body({
+                      name: partyName(trade.parties[receiver]),
+                    })
+                  : m.trade_page_untransferable_yours_body({
+                      name: partyName(trade.parties[receiver]),
+                    })
+                : side === null
+                  ? m.trade_page_problem_staff_body({
+                      name: partyName(trade.parties[receiver]),
+                    })
+                  : m.trade_page_problem_theirs_body()}
             </AlertDescription>
           </Alert>
         );
@@ -480,19 +607,21 @@ function StatePanel({ trade, side }: { trade: Trade; side: TradeSide }) {
       );
     }
     case "cancelled": {
-      const staff = state.cancelledBy === "staff";
+      const { cancelledBy } = state;
       const cancel = trade.events.findLast(
         ({ event }) => event.type === "cancelled",
       );
       return (
-        <Alert variant={staff ? "destructive" : "default"}>
+        <Alert variant={cancelledBy === "staff" ? "destructive" : "default"}>
           <IconX />
           <AlertTitle>
-            {staff
+            {cancelledBy === "staff"
               ? m.trade_page_cancelled_staff({ appName })
-              : state.cancelledBy === side
+              : cancelledBy === side
                 ? m.trade_page_cancelled_you()
-                : m.trade_page_cancelled_them({ name })}
+                : m.trade_page_cancelled_them({
+                    name: partyName(trade.parties[cancelledBy]),
+                  })}
           </AlertTitle>
           {cancel !== undefined && <StaffNote event={cancel.event} />}
           {trade.items.some((item) => item.status === "sent") && (
@@ -520,9 +649,14 @@ function StatePanel({ trade, side }: { trade: Trade; side: TradeSide }) {
  * The dispute that froze the trade: who opened it and why, what happens
  * next, and when. Its note is only for moderators.
  */
-function DisputedAlert({ trade, side }: { trade: Trade; side: TradeSide }) {
+function DisputedAlert({
+  trade,
+  side,
+}: {
+  trade: Trade;
+  side: TradeSide | null;
+}) {
   const appName = env.VITE_APP_NAME;
-  const name = partyName(trade.parties[side === "from" ? "to" : "from"]);
   const dispute = trade.events.findLast(
     ({ event }) => event.type === "disputed",
   );
@@ -541,12 +675,16 @@ function DisputedAlert({ trade, side }: { trade: Trade; side: TradeSide }) {
                 reason: reportReasonLabel(event.reason),
               })
             : m.trade_page_disputed_them({
-                name,
+                name: partyName(trade.parties[event.by]),
                 reason: reportReasonLabel(event.reason),
               })}
       </AlertTitle>
       <AlertDescription className="flex flex-col gap-1 [&_p:not(:last-child)]:mb-0">
-        <p>{m.trade_page_disputed_body()}</p>
+        <p>
+          {side === null
+            ? m.trade_page_disputed_body_staff()
+            : m.trade_page_disputed_body()}
+        </p>
         <p className="text-xs">
           <ParaglideMessage
             message={m.trade_page_disputed_meta}
@@ -573,11 +711,10 @@ function TimedOutAlert({
   abandoned,
 }: {
   trade: Trade;
-  side: TradeSide;
+  side: TradeSide | null;
   abandoned: TradeSide[];
 }) {
   const appName = env.VITE_APP_NAME;
-  const name = partyName(trade.parties[side === "from" ? "to" : "from"]);
   const owed = (sender: TradeSide) =>
     trade.items.filter(
       (item) => item.sender === sender && item.status !== "sent",
@@ -587,10 +724,16 @@ function TimedOutAlert({
       <IconHourglassEmpty />
       <AlertTitle>
         {abandoned.length > 1
-          ? m.trade_page_timed_out_both()
-          : abandoned.includes(side)
+          ? side === null
+            ? m.trade_page_timed_out_both_staff()
+            : m.trade_page_timed_out_both()
+          : side !== null && abandoned.includes(side)
             ? m.trade_page_timed_out_you()
-            : m.trade_page_timed_out_them({ name })}
+            : m.trade_page_timed_out_them({
+                name: partyName(
+                  trade.parties[abandoned.includes("from") ? "from" : "to"],
+                ),
+              })}
       </AlertTitle>
       <AlertDescription className="flex flex-col gap-1 [&_p:not(:last-child)]:mb-0">
         <p>
@@ -598,7 +741,10 @@ function TimedOutAlert({
             .map((sender) =>
               sender === side
                 ? m.trade_page_owed_you({ count: owed(sender) })
-                : m.trade_page_owed_them({ count: owed(sender), name }),
+                : m.trade_page_owed_them({
+                    count: owed(sender),
+                    name: partyName(trade.parties[sender]),
+                  }),
             )
             .join(" ")}{" "}
           {m.trade_page_abandoned_note()}
@@ -638,11 +784,11 @@ function StaffNote({ event }: { event: Trade["events"][number]["event"] }) {
 }
 
 /**
- * Who the trade is with: their avatar and name, linking to their profile
+ * A party to the trade: their avatar and name, linking to their profile
  * when they have a COSMO username, and whether they posted or accepted
  * the listing.
  */
-function Counterparty({ party, side }: { party: TradeParty; side: TradeSide }) {
+function PartyCard({ party, side }: { party: TradeParty; side: TradeSide }) {
   const name = partyName(party);
 
   return (

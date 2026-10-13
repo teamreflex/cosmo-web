@@ -18,15 +18,15 @@ import { Timestamp } from "../ui/timestamp";
 type Props = {
   items: TradeItemView[];
   parties: Record<TradeSide, TradeParty>;
-  /** the viewer's side, which words each direction */
-  side: TradeSide;
+  /** the viewer's side, which words each direction, or null for staff */
+  side: TradeSide | null;
   /** a strip under the rows, such as what the viewer has to send */
   children?: ReactNode;
 };
 
 /**
  * Every serial in the trade, grouped by direction with what the viewer
- * receives first. Each row shows where its transfer stands and, once the
+ * receives first, or the poster's first for staff. Each row shows where its transfer stands and, once the
  * drain has seen it, when and a link to the transaction.
  */
 export default function TransferRows({
@@ -35,24 +35,29 @@ export default function TransferRows({
   side,
   children,
 }: Props) {
-  const other = side === "from" ? "to" : "from";
-  const name = partyName(parties[other]);
-
   return (
     <section
       aria-label={m.trade_page_transfers()}
       className="overflow-clip rounded-lg border border-border bg-card text-sm"
     >
-      {[other, side].map((sender) => {
+      {(
+        (side === "from"
+          ? ["to", "from"]
+          : ["from", "to"]) satisfies TradeSide[]
+      ).map((sender) => {
         const sent = items.filter((item) => item.sender === sender);
         if (sent.length === 0) return null;
+        const from = partyName(parties[sender]);
+        const to = partyName(parties[sender === "from" ? "to" : "from"]);
         return (
           <div key={sender} className="not-first:border-t">
             <h3 className="flex items-center gap-2 bg-muted/40 px-4 py-2 text-xs font-medium text-muted-foreground">
               <span className="min-w-0 flex-1 truncate">
-                {sender === side
-                  ? m.trade_page_direction_from_you({ name })
-                  : m.trade_page_direction_to_you({ name })}
+                {side === null
+                  ? `${from} → ${to}`
+                  : sender === side
+                    ? m.trade_page_direction_from_you({ name: to })
+                    : m.trade_page_direction_to_you({ name: from })}
               </span>
               <span className="tabular-nums">
                 {m.trade_page_direction_seen({

@@ -19,6 +19,7 @@ export const tradeErrorCodes = [
   "trade_cancel_started",
   "trade_deadline_passed",
   "trade_own",
+  "trade_party_banned",
 ] as const;
 
 export type TradeErrorCode = (typeof tradeErrorCodes)[number];

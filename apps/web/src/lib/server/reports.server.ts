@@ -10,6 +10,7 @@ import {
 } from "@/lib/server/staff-users.server";
 import type { StaffUserRow } from "@/lib/server/staff-users.server";
 import { tradeParty } from "@/lib/server/trades.server";
+import { readTradeView } from "@/lib/server/trades/trade-view.server";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import { openReportStatuses } from "@/lib/universal/reports";
 import type {
@@ -62,14 +63,6 @@ function aboutStaff(staffId: string, t: typeof reports = reports) {
 }
 
 /**
- * The queue, its counts and the detail read leave trade reports out, since
- * the queue has no trade target yet.
- */
-function queued(t: typeof reports = reports) {
-  return ne(t.targetType, "trade");
-}
-
-/**
  * A trade report is a dispute, which closes only when staff complete, cancel
  * or extend its trade, never through resolve or dismiss: a dismissed dispute
  * would leave its trade frozen.
@@ -118,7 +111,6 @@ export async function fetchReportCounts(
         // redundant with the FILTERs, but keeps the status index in play
         inArray(reports.status, [...openReportStatuses]),
         visibleTo(staffId),
-        queued(),
         input.targetType ? eq(reports.targetType, input.targetType) : undefined,
       ),
     );
@@ -143,7 +135,6 @@ export async function fetchReportQueue(
       RAW: (t) =>
         and(
           visibleTo(staffId, t),
-          queued(t),
           after
             ? sql`(${t.createdAt}, ${t.id}) < (${after.timestamp}::timestamp, ${after.id}::uuid)`
             : undefined,
@@ -166,9 +157,23 @@ export async function fetchReportQueue(
     },
   });
 
-  const users = await fetchStaffUsers(
-    rows.filter((row) => row.targetType === "user").map((row) => row.targetId),
+  const tradeIds = rows.flatMap((row) =>
+    row.targetType === "trade" ? [row.targetId] : [],
   );
+  const tradeRows =
+    tradeIds.length === 0
+      ? []
+      : await db.query.tradeOffers.findMany({
+          where: { id: { in: tradeIds }, kind: "trade" },
+          columns: { id: true, fromUserId: true, toUserId: true },
+        });
+  const users = await fetchStaffUsers([
+    ...rows.flatMap((row) => (row.targetType === "user" ? [row.targetId] : [])),
+    ...tradeRows.flatMap((trade) =>
+      [trade.fromUserId, trade.toUserId].flatMap((id) => id ?? []),
+    ),
+  ]);
+  const trades = new Map(tradeRows.map((trade) => [trade.id, trade]));
 
   const last = rows.at(-1);
   return {
@@ -177,7 +182,7 @@ export async function fetchReportQueue(
       reason: row.reason,
       createdAt: row.createdAt,
       reporter: staffUser(row.reporter),
-      target: toRowTarget(row.targetType, row.targetId, users),
+      target: toRowTarget(row.targetType, row.targetId, users, trades),
     })),
     nextCursor:
       rows.length === QUEUE_PAGE_SIZE && last
@@ -190,13 +195,33 @@ function toRowTarget(
   targetType: ReportTargetType,
   targetId: string,
   users: Map<string, StaffUserRow>,
+  trades: Map<
+    string,
+    { id: string; fromUserId: string | null; toUserId: string | null }
+  >,
 ): AdminReportRowTarget {
+  const named = (id: string | null) =>
+    id === null ? null : staffUser(users.get(id) ?? null);
+
   switch (targetType) {
     case "user":
-      return { type: "user", user: staffUser(users.get(targetId) ?? null) };
+      return { type: "user", user: named(targetId) };
+    case "trade": {
+      const trade = trades.get(targetId);
+      return {
+        type: "trade",
+        trade:
+          trade === undefined
+            ? null
+            : {
+                id: trade.id,
+                from: named(trade.fromUserId),
+                to: named(trade.toUserId),
+              },
+      };
+    }
     case "message":
     case "feedback":
-    case "trade":
       throw new Error(`Reports on ${targetType} targets aren't supported yet`);
   }
 }
@@ -213,7 +238,7 @@ export async function fetchReportDetail(
   const report = await db.query.reports.findFirst({
     where: {
       id,
-      RAW: (t) => and(visibleTo(viewer.id, t), queued(t)) ?? EmptyFilter,
+      RAW: (t) => visibleTo(viewer.id, t) ?? EmptyFilter,
     },
     with: {
       reporter: staffUserFields,
@@ -241,18 +266,21 @@ export async function fetchReportDetail(
         ne(reports.id, report.id),
       ),
     ),
-    target: await fetchDetailTarget(
-      viewer.role,
-      report.targetType,
-      report.targetId,
-    ),
+    target: await fetchDetailTarget(viewer.role, report),
   };
 }
 
 async function fetchDetailTarget(
   viewerRole: Role,
-  targetType: ReportTargetType,
-  targetId: string,
+  {
+    id,
+    targetType,
+    targetId,
+  }: {
+    id: string;
+    targetType: ReportTargetType;
+    targetId: string;
+  },
 ): Promise<AdminReportDetailTarget> {
   switch (targetType) {
     case "user": {
@@ -300,9 +328,41 @@ async function fetchDetailTarget(
         },
       };
     }
+    case "trade": {
+      const party = {
+        columns: { ...staffUserFields.columns, banned: true, banExpires: true },
+        with: staffUserFields.with,
+      } as const;
+      const [view, trade] = await Promise.all([
+        readTradeView(targetId),
+        db.query.tradeOffers.findFirst({
+          where: { id: targetId, kind: "trade" },
+          columns: { disputeReportId: true },
+          with: { fromUser: party, toUser: party },
+        }),
+      ]);
+
+      if (view === null || !trade) {
+        return { type: "trade", trade: null };
+      }
+
+      const named = (user: typeof trade.fromUser) =>
+        user === null
+          ? null
+          : { ...staffUser(user), banActive: isBanActive(user) };
+
+      return {
+        type: "trade",
+        trade: {
+          view,
+          from: named(trade.fromUser),
+          to: named(trade.toUser),
+          current: trade.disputeReportId === id,
+        },
+      };
+    }
     case "message":
     case "feedback":
-    case "trade":
       throw new Error(`Reports on ${targetType} targets aren't supported yet`);
   }
 }

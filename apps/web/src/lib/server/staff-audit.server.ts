@@ -30,6 +30,13 @@ type ReportReadAuditEntry = {
   reportId: string;
 };
 
+type TradeReadAuditEntry = {
+  staffId: string;
+  action: "trade:read";
+  tradeId: string;
+  reportId: string | null;
+};
+
 type ReportAuditEntry = {
   staffId: string;
   action: "report:resolve" | "report:dismiss" | "report:escalate";
@@ -99,7 +106,10 @@ type UndeduplicatedAuditEntry =
   | TradeAuditEntry
   | TradeExtendAuditEntry;
 
-export type StaffAuditEntry = ReportReadAuditEntry | UndeduplicatedAuditEntry;
+export type StaffAuditEntry =
+  | ReportReadAuditEntry
+  | TradeReadAuditEntry
+  | UndeduplicatedAuditEntry;
 
 function toAuditRow(entry: StaffAuditEntry): typeof staffAudit.$inferInsert {
   switch (entry.action) {
@@ -155,6 +165,7 @@ function toAuditRow(entry: StaffAuditEntry): typeof staffAudit.$inferInsert {
         targetType: "collection",
         targetId: entry.slug,
       };
+    case "trade:read":
     case "trade:dispute":
     case "trade:complete":
     case "trade:cancel":
@@ -187,16 +198,21 @@ export async function recordStaffAudit(
 ) {
   /**
    * Reads are logged once per staff visit: SSR, hydration and query
-   * invalidation would otherwise log the same report several times.
+   * invalidation would otherwise log the same report several times, and
+   * reloading a trade page would log the trade again.
    */
-  if (!Array.isArray(entries) && entries.action === "report:read") {
+  if (
+    !Array.isArray(entries) &&
+    (entries.action === "report:read" || entries.action === "trade:read")
+  ) {
+    const { targetType, targetId } = toAuditRow(entries);
     const recent = await executor.$count(
       staffAudit,
       and(
         eq(staffAudit.staffId, entries.staffId),
         eq(staffAudit.action, entries.action),
-        eq(staffAudit.targetType, "report"),
-        eq(staffAudit.targetId, entries.reportId),
+        eq(staffAudit.targetType, targetType),
+        eq(staffAudit.targetId, targetId),
         gt(staffAudit.createdAt, sql`now() - interval '10 minutes'`),
       ),
     );

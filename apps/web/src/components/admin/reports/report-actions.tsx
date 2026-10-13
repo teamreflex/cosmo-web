@@ -24,6 +24,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import BanUserDialog from "./ban-user-dialog";
+import DisputeActions from "./dispute-actions";
 
 /**
  * The status actions in their on-screen order; the phone grid spans Escalate
@@ -61,13 +62,25 @@ type Props = {
 
 /**
  * What the viewer's role can do with a report. Admins ban; moderators, who
- * can't, escalate to the admins instead.
+ * can't, escalate to the admins instead. A dispute still under its trade is
+ * settled through the trade, never resolved or dismissed as a report.
  */
 export default function ReportActions({ report }: Props) {
   switch (report.status) {
     case "open":
-    case "escalated":
-      return <OpenActions report={report} />;
+    case "escalated": {
+      const { target } = report;
+      return (
+        <>
+          {target.type === "trade" &&
+            target.trade?.current === true &&
+            target.trade.view.state.status === "disputed" && (
+              <DisputeActions report={report} trade={target.trade} />
+            )}
+          <OpenActions report={report} />
+        </>
+      );
+    }
     case "resolved":
     case "dismissed": {
       const { resolver } = report;
@@ -124,63 +137,72 @@ function OpenActions({ report }: Props) {
     onSettled: () => queryClient.invalidateQueries(adminReportsQueryFilter),
   });
 
-  const target = report.target.user;
+  const { target } = report;
+  const user = target.type === "user" ? target.user : null;
+  // a dispute closes when its trade is settled, never as a report
+  const dispute = target.type === "trade";
   const canBan = hasPermission({ user: ["ban"] });
   const banTarget =
     canBan &&
-    target !== null &&
-    target.id !== account?.user.id &&
-    target.ban === null &&
-    target.protected === false
-      ? target
+    user !== null &&
+    user.id !== account?.user.id &&
+    user.ban === null &&
+    user.protected === false
+      ? user
       : null;
   const showEscalate =
     !canBan &&
     hasPermission({ report: ["escalate"] }) &&
     report.status === "open";
-  const canResolve = hasPermission({ report: ["resolve"] });
+  const canResolve = !dispute && hasPermission({ report: ["resolve"] });
   const actions = (["escalate", "dismiss", "resolve"] as const).filter(
     (action) => (action === "escalate" ? showEscalate : canResolve),
   );
 
   return (
-    <div className="flex flex-col gap-2.5 border-t bg-muted/40 px-4 py-3">
-      <span className="text-xxs font-medium tracking-widest text-muted-foreground uppercase">
-        {actionsCaption(canBan, target?.protected === true)}
-      </span>
-      <div
-        className={cn(
-          "flex flex-wrap items-center gap-2 max-md:grid",
-          banTarget === null ? "max-md:grid-cols-2" : "max-md:grid-cols-3",
-        )}
-      >
-        {banTarget !== null && (
-          <Button
-            variant="destructive"
-            size="sm"
-            className="max-md:h-10"
-            onClick={() => setBanOpen(true)}
-            disabled={mutation.isPending}
-          >
-            {m.admin_reports_ban()}
-          </Button>
-        )}
-        {actions.map((action) => (
-          <Button
-            key={action}
-            variant={statusActions[action].variant}
-            size="sm"
-            className={cn("max-md:h-10", statusActions[action].className)}
-            onClick={() => mutation.mutate(action)}
-            disabled={mutation.isPending}
-          >
-            <span>{statusActions[action].label()}</span>
-            {mutation.isPending && mutation.variables === action && (
-              <IconLoader2 className="animate-spin" />
+    <>
+      {(banTarget !== null || actions.length > 0) && (
+        <div className="flex flex-col gap-2.5 border-t bg-muted/40 px-4 py-3">
+          <span className="text-xxs font-medium tracking-widest text-muted-foreground uppercase">
+            {dispute
+              ? m.admin_dispute_report_actions()
+              : actionsCaption(canBan, user?.protected === true)}
+          </span>
+          <div
+            className={cn(
+              "flex flex-wrap items-center gap-2 max-md:grid",
+              banTarget === null ? "max-md:grid-cols-2" : "max-md:grid-cols-3",
             )}
-          </Button>
-        ))}
-      </div>
+          >
+            {banTarget !== null && (
+              <Button
+                variant="destructive"
+                size="sm"
+                className="max-md:h-10"
+                onClick={() => setBanOpen(true)}
+                disabled={mutation.isPending}
+              >
+                {m.admin_reports_ban()}
+              </Button>
+            )}
+            {actions.map((action) => (
+              <Button
+                key={action}
+                variant={statusActions[action].variant}
+                size="sm"
+                className={cn("max-md:h-10", statusActions[action].className)}
+                onClick={() => mutation.mutate(action)}
+                disabled={mutation.isPending}
+              >
+                <span>{statusActions[action].label()}</span>
+                {mutation.isPending && mutation.variables === action && (
+                  <IconLoader2 className="animate-spin" />
+                )}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {banTarget !== null && (
         <BanUserDialog
@@ -190,7 +212,7 @@ function OpenActions({ report }: Props) {
           user={banTarget}
         />
       )}
-    </div>
+    </>
   );
 }
 

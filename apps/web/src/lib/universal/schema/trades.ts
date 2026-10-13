@@ -18,7 +18,13 @@ export const openDisputeInputSchema = tradeIdInputSchema.extend({
   note: tradeNoteSchema,
 });
 
+/**
+ * A staff action names the dispute report it was taken from, or null for a
+ * trade with no dispute, so a stale view can't act on a trade that has since
+ * moved on.
+ */
 export const staffTradeInputSchema = tradeIdInputSchema.extend({
+  reportId: z.uuid().nullable(),
   note: tradeNoteSchema,
 });
 

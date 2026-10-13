@@ -1,19 +1,51 @@
+import { db } from "@/lib/server/db";
 import { staffMiddleware } from "@/lib/server/middlewares";
+import { recordStaffAudit } from "@/lib/server/staff-audit.server";
 import { actOnTrade, completeAsStaff } from "@/lib/server/staff-trades.server";
 import {
   endTrade,
   insertTradeEvent,
   notifyUsers,
+  refuseTrade,
   updateLockedTrade,
 } from "@/lib/server/trades/trade.server";
 import {
   staffExtendTradeInputSchema,
   staffTradeInputSchema,
+  tradeIdInputSchema,
 } from "@/lib/universal/schema/trades";
+import { isBanActive } from "@apollo/auth/guard";
 import { tradeMessages } from "@apollo/database/web/schema";
 import { extendedDeadline } from "@apollo/trades/timers";
 import { createServerFn } from "@tanstack/react-start";
 import { and, desc, eq, sql } from "drizzle-orm";
+
+/**
+ * Record that a staff member opened a trade they aren't a party to. The
+ * trade page calls it once when it mounts, never from its loader, and a
+ * repeat visit within 10 minutes isn't recorded again.
+ */
+export const $recordTradeView = createServerFn({ method: "POST" })
+  .middleware([staffMiddleware({ trade: ["read-any"] })])
+  .validator(tradeIdInputSchema)
+  .handler(async ({ data, context }) => {
+    const staffId = context.session.user.id;
+    const trade = await db.query.tradeOffers.findFirst({
+      where: { id: data.tradeId, kind: "trade" },
+      columns: { fromUserId: true, toUserId: true, disputeReportId: true },
+    });
+    if (!trade) refuseTrade("trade_not_found");
+    if (trade.fromUserId === staffId || trade.toUserId === staffId) {
+      refuseTrade("trade_own");
+    }
+
+    await recordStaffAudit(db, {
+      staffId,
+      action: "trade:read",
+      tradeId: data.tradeId,
+      reportId: trade.disputeReportId,
+    });
+  });
 
 /**
  * Complete a disputed trade, whatever its items have done.
@@ -25,7 +57,7 @@ export const $staffCompleteTrade = createServerFn({ method: "POST" })
     const staffId = context.session.user.id;
     await actOnTrade(
       staffId,
-      data.tradeId,
+      data,
       { type: "staff_complete" },
       async (tx, trade, users, next) => {
         await completeAsStaff(tx, trade, users, next, data.note);
@@ -47,7 +79,7 @@ export const $staffCancelTrade = createServerFn({ method: "POST" })
     const staffId = context.session.user.id;
     await actOnTrade(
       staffId,
-      data.tradeId,
+      data,
       { type: "staff_cancel" },
       async (tx, trade, users, next) => {
         await endTrade(tx, trade, next, users);
@@ -74,7 +106,8 @@ export const $staffCancelTrade = createServerFn({ method: "POST" })
  * Give a disputed trade a new deadline: the time it had left when it was
  * last frozen, plus the hours picked. It goes back to accepted without its
  * dispute report, which this resolves. A trade whose items all arrived while
- * disputed completes instead, recorded as a staff complete.
+ * disputed completes instead, recorded as a staff complete. A trade with a
+ * banned party can only be completed or cancelled.
  */
 export const $staffExtendTradeDeadline = createServerFn({ method: "POST" })
   .middleware([staffMiddleware({ trade: ["resolve-dispute"] })])
@@ -83,9 +116,13 @@ export const $staffExtendTradeDeadline = createServerFn({ method: "POST" })
     const staffId = context.session.user.id;
     await actOnTrade(
       staffId,
-      data.tradeId,
+      data,
       { type: "staff_extend" },
       async (tx, trade, users, next) => {
+        // trade-timers skip a banned party's trade, so it would never time out
+        if (users.some((user) => isBanActive(user))) {
+          refuseTrade("trade_party_banned");
+        }
         if (next.status === "completed") {
           await completeAsStaff(tx, trade, users, next, data.note);
           return { action: "trade:complete" };

@@ -38,6 +38,7 @@ const actionTones = {
   "api-key:update": "text-destructive",
   "api-key:delete": "text-destructive",
   "metadata:update": "text-foreground",
+  "trade:read": "text-muted-foreground",
   "trade:dispute": "text-foreground",
   "trade:complete": "text-foreground",
   "trade:cancel": "text-foreground",
@@ -258,9 +259,13 @@ function AuditTarget({ row }: Props) {
       return (
         <>
           <span>{m.admin_audit_target_trade()}</span>
-          <span className="font-mono text-xs text-muted-foreground">
+          <Link
+            to="/trade/$id"
+            params={{ id: row.target.id }}
+            className="font-mono text-xs text-cosmo hover:underline dark:text-cosmo-text"
+          >
             {shortId(row.target.id)}
-          </span>
+          </Link>
           {row.detail !== null && (
             <span className="text-xs text-muted-foreground">
               {detailNote(row.detail)}

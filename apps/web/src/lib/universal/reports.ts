@@ -1,4 +1,5 @@
 import type { StaffUser } from "@/lib/universal/staff-users";
+import type { TradeView } from "@/lib/universal/trades";
 import type { Role } from "@apollo/auth";
 import type {
   ReportStatus,
@@ -17,21 +18,27 @@ export const openReportStatuses = [
 export type OpenReportStatus = (typeof openReportStatuses)[number];
 
 /**
- * What a queue row shows of the reported thing; null when it no longer
- * exists or its account is deleted. Later phases add messages, feedback and
- * trades.
+ * What a queue row shows of the reported thing: a user, or the trade a
+ * dispute is about with its parties. Each is null when it no longer exists
+ * or its account is deleted.
  */
-export type AdminReportRowTarget = {
-  type: "user";
-  user: StaffUser | null;
-};
+export type AdminReportRowTarget =
+  | { type: "user"; user: StaffUser | null }
+  | {
+      type: "trade";
+      trade: {
+        id: string;
+        from: StaffUser | null;
+        to: StaffUser | null;
+      } | null;
+    };
 
 /**
- * The target types the staff queue can be filtered by; later phases add
- * theirs as their reports arrive.
+ * The target types the staff queue can be filtered by, one per row target.
  */
 export const reportTargetTypeFilters = [
   "user",
+  "trade",
 ] as const satisfies readonly (ReportTargetType &
   AdminReportRowTarget["type"])[];
 
@@ -61,10 +68,27 @@ export type ReportTargetUser = StaffUser & {
   liveTradeCount: number;
 };
 
-export type AdminReportDetailTarget = {
-  type: "user";
-  user: ReportTargetUser | null;
+/**
+ * A disputed trade's party as staff see them, and whether a ban is in force
+ * on them; null once their account is deleted.
+ */
+export type ReportTradeParty = StaffUser & { banActive: boolean };
+
+/**
+ * The trade a dispute is about. `current` says the report is still the
+ * trade's dispute, which staff settle by completing, cancelling or extending
+ * the trade.
+ */
+export type ReportTargetTrade = {
+  view: TradeView;
+  from: ReportTradeParty | null;
+  to: ReportTradeParty | null;
+  current: boolean;
 };
+
+export type AdminReportDetailTarget =
+  | { type: "user"; user: ReportTargetUser | null }
+  | { type: "trade"; trade: ReportTargetTrade | null };
 
 /**
  * Closed reports carry who closed them and when; the resolver is null once

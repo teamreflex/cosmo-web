@@ -15,13 +15,13 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 type Props = {
   trade: TradeView;
-  /** the viewer's side */
-  side: TradeSide;
+  /** the viewer's side, or null for staff, who see both parties */
+  side: TradeSide | null;
 };
 
 /**
- * The page title, whether the trade came from a listing, who it's with and
- * where it stands: the time left, the time left when a dispute paused it,
+ * The page title, whether the trade came from a listing, who it's between
+ * and where it stands: the time left, the time left when a dispute paused it,
  * or how it ended. From tablet width it sticks under the navbar. On phones
  * the parties take their own line under the title and the status.
  */
@@ -43,20 +43,28 @@ export default function TradeHeader({ trade, side }: Props) {
           </Badge>
         )}
         <span className="flex min-w-0 items-center gap-2 text-sm max-md:order-last max-md:basis-full">
-          <ParaglideMessage
-            message={m.trade_page_parties}
-            inputs={{ name: "" }}
-            markup={{
-              user: () => (
-                <PartyName
-                  party={trade.parties[side === "from" ? "to" : "from"]}
-                />
-              ),
-            }}
-          />
+          {side === null ? (
+            <>
+              <PartyName party={trade.parties.from} />
+              {"⇄"}
+              <PartyName party={trade.parties.to} />
+            </>
+          ) : (
+            <ParaglideMessage
+              message={m.trade_page_parties}
+              inputs={{ name: "" }}
+              markup={{
+                user: () => (
+                  <PartyName
+                    party={trade.parties[side === "from" ? "to" : "from"]}
+                  />
+                ),
+              }}
+            />
+          )}
         </span>
         <span className="ml-auto flex items-center gap-2 text-sm text-muted-foreground">
-          <HeaderStatus trade={trade} />
+          <TradeStatus trade={trade} />
         </span>
       </div>
     </div>
@@ -64,7 +72,7 @@ export default function TradeHeader({ trade, side }: Props) {
 }
 
 /**
- * The other party's avatar and name, linking to their profile when they
+ * A party's avatar and name, linking to their profile when they
  * have a COSMO username.
  */
 function PartyName({ party }: { party: TradeParty }) {
@@ -95,7 +103,11 @@ function PartyName({ party }: { party: TradeParty }) {
   );
 }
 
-function HeaderStatus({ trade }: { trade: TradeView }) {
+/**
+ * Where a trade stands: the time left, the time left when a dispute paused
+ * it, or how and when it ended. Staff see it on the dispute's report too.
+ */
+export function TradeStatus({ trade }: { trade: TradeView }) {
   switch (trade.state.status) {
     case "accepted":
       return (

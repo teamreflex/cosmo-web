@@ -1,7 +1,9 @@
 import StaffUserName from "@/components/admin/staff-user-name";
 import StatusPill from "@/components/objekt/detail/status-pill";
 import UserAvatar from "@/components/profile/user-avatar";
-import { Button } from "@/components/ui/button";
+import { TradeStatus } from "@/components/trades/trade-header";
+import TransferRows from "@/components/trades/transfer-rows";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Timestamp } from "@/components/ui/timestamp";
 import { useHasPermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
@@ -11,11 +13,16 @@ import { $unbanUser } from "@/lib/functions/staff-users";
 import { adminReportsQueryFilter } from "@/lib/queries/reports";
 import type {
   AdminReportDetail,
+  ReportTargetTrade,
   ReportTargetUser,
+  ReportTradeParty,
 } from "@/lib/universal/reports";
 import { staffUserText } from "@/lib/universal/staff-users";
+import { cn } from "@/lib/utils";
+import type { TradeSide } from "@apollo/database/web/types";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 
 type Props = {
@@ -23,11 +30,33 @@ type Props = {
 };
 
 /**
- * Who was reported, with their role, ban state and other open reports.
+ * What was reported: a user, or the trade a dispute is about.
  */
 export default function ReportTarget({ report }: Props) {
-  const user = report.target.user;
+  const { target } = report;
+  switch (target.type) {
+    case "user":
+      return (
+        <UserTarget
+          user={target.user}
+          otherOpenReportCount={report.otherOpenReportCount}
+        />
+      );
+    case "trade":
+      return <TradeTarget trade={target.trade} />;
+  }
+}
 
+/**
+ * The reported user, with their role, ban state and other open reports.
+ */
+function UserTarget({
+  user,
+  otherOpenReportCount,
+}: {
+  user: ReportTargetUser | null;
+  otherOpenReportCount: number;
+}) {
   if (user === null) {
     return (
       <p className="px-4 py-3.5 text-sm text-muted-foreground">
@@ -46,14 +75,97 @@ export default function ReportTarget({ report }: Props) {
             {roleLabel(user.role)}
           </StatusPill>
         </div>
-        <TargetMeta
-          user={user}
-          otherOpenReportCount={report.otherOpenReportCount}
-        />
+        <TargetMeta user={user} otherOpenReportCount={otherOpenReportCount} />
       </div>
       {user.ban !== null && user.protected === false && (
         <UnbanButton user={user} />
       )}
+    </div>
+  );
+}
+
+/**
+ * The disputed trade: its parties, where it stands (frozen while disputed)
+ * and every transfer, as the staff view of the trade page shows them.
+ */
+function TradeTarget({ trade }: { trade: ReportTargetTrade | null }) {
+  if (trade === null) {
+    return (
+      <p className="px-4 py-3.5 text-sm text-muted-foreground">
+        {m.admin_reports_trade_gone()}
+      </p>
+    );
+  }
+
+  const { view } = trade;
+  return (
+    <div className="flex flex-col gap-3 px-4 py-3.5">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+        <span className="text-sm font-medium">
+          {m.admin_reports_trade_title({ id: view.id.slice(0, 8) })}
+        </span>
+        <span className="flex items-center gap-2 text-sm text-muted-foreground">
+          <TradeStatus trade={view} />
+        </span>
+        <Link
+          to="/trade/$id"
+          params={{ id: view.id }}
+          className={cn(
+            buttonVariants({ variant: "outline", size: "sm" }),
+            "ml-auto max-md:h-10",
+          )}
+        >
+          {m.admin_reports_open_trade()}
+        </Link>
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2">
+        {(["from", "to"] satisfies TradeSide[]).map((side) => (
+          <TradeParty key={side} party={trade[side]} side={side} />
+        ))}
+      </div>
+      <TransferRows items={view.items} parties={view.parties} side={null} />
+    </div>
+  );
+}
+
+/**
+ * A party to the disputed trade: who they are, which side of the listing
+ * they're on, and whether they're banned.
+ */
+function TradeParty({
+  party,
+  side,
+}: {
+  party: ReportTradeParty | null;
+  side: TradeSide;
+}) {
+  return (
+    <div className="flex min-w-0 items-center gap-3 rounded-md border px-3 py-2.5">
+      {party === null ? (
+        <UserAvatar deleted className="size-8" />
+      ) : (
+        <UserAvatar username={party.username} className="size-8 **:p-1" />
+      )}
+      <div className="flex min-w-0 flex-col gap-0.5 text-sm">
+        {party === null ? (
+          <span className="font-medium">{m.admin_reports_deleted_user()}</span>
+        ) : (
+          <StaffUserName user={party} className="font-medium" />
+        )}
+        <span className="text-xs text-muted-foreground">
+          {side === "from"
+            ? m.trade_page_role_poster()
+            : m.trade_page_role_claimer()}
+          {party?.banActive === true && (
+            <>
+              {" · "}
+              <span className="text-destructive">
+                {m.admin_reports_party_banned()}
+              </span>
+            </>
+          )}
+        </span>
+      </div>
     </div>
   );
 }

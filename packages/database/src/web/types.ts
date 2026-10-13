@@ -222,6 +222,7 @@ export const staffAuditActions = [
   "api-key:update",
   "api-key:delete",
   "metadata:update",
+  "trade:read",
   "trade:dispute",
   "trade:complete",
   "trade:cancel",

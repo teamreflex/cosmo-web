@@ -20,14 +20,16 @@ import {
   tradeIdInputSchema,
 } from "@/lib/universal/schema/trades";
 import type { TradeView, TradeViewer } from "@/lib/universal/trades";
+import { can, parseRole } from "@apollo/auth";
 import { partyAction } from "@apollo/trades/lifecycle";
 import { addr } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
 
 /**
- * A trade the caller is part of, with their side, or null for anyone else
- * so a trade's existence never leaks. Only accepted, disputed and ended
- * trades are shown.
+ * A trade the caller is part of, with their side, or for staff who may read
+ * any trade, the trade with its dispute report. Anyone else gets null, so a
+ * trade's existence never leaks. Only accepted, disputed and ended trades
+ * are shown.
  */
 export const $fetchTrade = createServerFn({ method: "GET" })
   .validator(tradeIdInputSchema)
@@ -37,25 +39,39 @@ export const $fetchTrade = createServerFn({ method: "GET" })
       data,
       context,
     }): Promise<{ trade: TradeView; viewer: TradeViewer } | null> => {
-      const userId = context.session.user.id;
+      const { id: userId, role } = context.session.user;
       const parties = await db.query.tradeOffers.findFirst({
-        where: {
-          id: data.tradeId,
-          kind: "trade",
-          OR: [{ fromUserId: userId }, { toUserId: userId }],
-        },
-        columns: { fromUserId: true },
+        where: { id: data.tradeId, kind: "trade" },
+        columns: { fromUserId: true, toUserId: true, disputeReportId: true },
       });
       if (!parties) return null;
 
-      const trade = await readTradeView(data.tradeId);
+      const side =
+        parties.fromUserId === userId
+          ? "from"
+          : parties.toUserId === userId
+            ? "to"
+            : null;
+      if (side === null && !can(parseRole(role), { trade: ["read-any"] })) {
+        return null;
+      }
+
+      const [trade, report] = await Promise.all([
+        readTradeView(data.tradeId),
+        side === null && parties.disputeReportId !== null
+          ? db.query.reports.findFirst({
+              where: { id: parties.disputeReportId },
+              columns: { id: true, status: true },
+            })
+          : undefined,
+      ]);
       return (
         trade && {
           trade,
-          viewer: {
-            kind: "party",
-            side: parties.fromUserId === userId ? "from" : "to",
-          },
+          viewer:
+            side === null
+              ? { kind: "staff", report: report ?? null }
+              : { kind: "party", side },
         }
       );
     },

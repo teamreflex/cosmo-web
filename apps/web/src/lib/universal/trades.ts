@@ -1,4 +1,5 @@
 import type {
+  ReportStatus,
   TradeEvent,
   TradeItemKind,
   TradeSide,
@@ -68,5 +69,10 @@ export type TradeView = {
   events: { id: number; createdAt: Date; event: TradeEvent }[];
 };
 
-// who is looking at a trade
-export type TradeViewer = { kind: "party"; side: TradeSide };
+/**
+ * Who is looking at a trade: one of its parties, or staff reading it, with
+ * the dispute report it is under, if any.
+ */
+export type TradeViewer =
+  | { kind: "party"; side: TradeSide }
+  | { kind: "staff"; report: { id: string; status: ReportStatus } | null };

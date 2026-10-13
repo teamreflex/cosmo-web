@@ -120,7 +120,9 @@ function Detail({ id }: { id: string }) {
             </h2>
           </div>
           <div className="text-sm text-muted-foreground">
-            {m.admin_reports_reported_by()}{" "}
+            {report.target.type === "trade"
+              ? m.admin_reports_opened_by()
+              : m.admin_reports_reported_by()}{" "}
             {report.reporter === null ? (
               <b className="font-semibold text-foreground">
                 {m.admin_reports_deleted_user()}

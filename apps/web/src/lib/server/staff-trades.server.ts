@@ -34,12 +34,14 @@ type StaffTradeAction =
  * Runs a staff action on a trade, which staff can't take on their own
  * trades: locks its parties, then the trade, refuses the event when the
  * trade's status no longer allows it, and lets `act` write the state it
- * moves to and name its audit entry. Every open or escalated report on the
- * trade is resolved with it, and the trade is published once that commits.
+ * moves to and name its audit entry. The trade must still be under the
+ * dispute report the action was taken from (none for an undisputed trade),
+ * or it is refused as changed. Every open or escalated report on the trade
+ * is resolved with it, and the trade is published once that commits.
  */
 export async function actOnTrade(
   staffId: string,
-  tradeId: string,
+  { tradeId, reportId }: { tradeId: string; reportId: string | null },
   event: Extract<
     TradeEvent,
     { type: "staff_complete" | "staff_cancel" | "staff_extend" }
@@ -63,6 +65,9 @@ export async function actOnTrade(
   await db.transaction(async (tx) => {
     const users = await lockParties(tx, [parties.fromUserId, parties.toUserId]);
     const trade = await lockTrade(tx, tradeId);
+    if (trade.disputeReportId !== reportId) {
+      refuseTrade("trade_status_changed");
+    }
     const result = transition(trade.state, event);
     if (!result.ok) refuseTrade("trade_status_changed");
     await recordStaffAudit(tx, {

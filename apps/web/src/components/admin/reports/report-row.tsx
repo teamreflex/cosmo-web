@@ -4,10 +4,11 @@ import { Timestamp } from "@/components/ui/timestamp";
 import { m } from "@/i18n/messages";
 import { reportReasonLabel, reportTargetTypeLabel } from "@/lib/client/reports";
 import type { AdminReportRow } from "@/lib/universal/reports";
-import { staffUserText } from "@/lib/universal/staff-users";
+import { type StaffUser, staffUserText } from "@/lib/universal/staff-users";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconChevronRight } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 
 type Props = {
   row: AdminReportRow;
@@ -39,34 +40,68 @@ export default function ReportRow({ row }: Props) {
       </span>
       <span className="text-sm text-muted-foreground">
         {/* the row is a link, so the names inside it aren't */}
-        <ParaglideMessage
-          message={m.admin_reports_row_summary}
-          inputs={{
-            target:
-              row.target.user === null
-                ? m.admin_reports_deleted_user()
-                : staffUserText(row.target.user),
-            reporter:
-              row.reporter === null
-                ? m.admin_reports_deleted_user()
-                : staffUserText(row.reporter),
-          }}
-          markup={{
-            target: ({ children }) =>
-              row.target.user === null ? (
-                children
-              ) : (
-                <StaffUserName user={row.target.user} link={false} />
-              ),
-            reporter: ({ children }) =>
-              row.reporter === null ? (
-                children
-              ) : (
-                <StaffUserName user={row.reporter} link={false} />
-              ),
-          }}
-        />
+        <RowSummary row={row} />
       </span>
     </Link>
   );
+}
+
+function RowSummary({ row }: Props) {
+  const reporter = nameInput(row.reporter);
+  const { target } = row;
+
+  switch (target.type) {
+    case "user": {
+      const user = nameInput(target.user);
+      return (
+        <ParaglideMessage
+          message={m.admin_reports_row_summary}
+          inputs={{ target: user.text, reporter: reporter.text }}
+          markup={{ target: user.markup, reporter: reporter.markup }}
+        />
+      );
+    }
+    case "trade": {
+      const { trade } = target;
+      if (trade === null) {
+        return (
+          <ParaglideMessage
+            message={m.admin_reports_row_trade_gone}
+            inputs={{ reporter: reporter.text }}
+            markup={{ reporter: reporter.markup }}
+          />
+        );
+      }
+      const from = nameInput(trade.from);
+      const to = nameInput(trade.to);
+      return (
+        <ParaglideMessage
+          message={m.admin_reports_row_trade_summary}
+          inputs={{
+            id: trade.id.slice(0, 8),
+            from: from.text,
+            to: to.text,
+            reporter: reporter.text,
+          }}
+          markup={{
+            from: from.markup,
+            to: to.markup,
+            reporter: reporter.markup,
+          }}
+        />
+      );
+    }
+  }
+}
+
+/**
+ * A user named in a row summary, as message text and as the markup that
+ * renders it; "Deleted user" once their account is gone.
+ */
+function nameInput(user: StaffUser | null) {
+  return {
+    text: user === null ? m.admin_reports_deleted_user() : staffUserText(user),
+    markup: ({ children }: { children?: ReactNode }) =>
+      user === null ? children : <StaffUserName user={user} link={false} />,
+  };
 }

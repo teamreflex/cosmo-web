@@ -12,8 +12,8 @@ import { Timestamp } from "../ui/timestamp";
 
 type Props = {
   trade: TradeView;
-  /** the viewer's side, which words each event */
-  side: TradeSide;
+  /** the viewer's side, which words each event, or null for staff */
+  side: TradeSide | null;
 };
 
 /**
@@ -58,61 +58,38 @@ export default function TradeTimeline({ trade, side }: Props) {
 
 /**
  * The event's sentence as the viewer reads it, naming the other party in
- * bold. Staff are never named.
+ * bold, or both parties for staff. Staff members are never named.
  */
 function describeEvent(
   trade: TradeView,
-  side: TradeSide,
+  side: TradeSide | null,
   event: TradeEvent,
 ): ReactNode {
   const appName = env.VITE_APP_NAME;
-  const name = partyName(trade.parties[side === "from" ? "to" : "from"]);
+  const nameOf = (party: TradeSide) => partyName(trade.parties[party]);
 
   switch (event.type) {
     case "accepted":
       // the claimer is always the side that accepts a listing
-      return (
+      return side === null ? (
+        <ParaglideMessage
+          message={m.trade_page_event_accepted_staff}
+          inputs={{ claimer: nameOf("to"), poster: nameOf("from") }}
+          markup={bold}
+        />
+      ) : (
         <ParaglideMessage
           message={
             side === "to"
               ? m.trade_page_event_accepted_you
               : m.trade_page_event_accepted_them
           }
-          inputs={{ name }}
+          inputs={{ name: nameOf(side === "from" ? "to" : "from") }}
           markup={bold}
         />
       );
-    case "item_transferred": {
-      const item = trade.items.find(({ id }) => id === event.itemId);
-      if (item === undefined) return null;
-      return (
-        <>
-          {item.sender === side ? (
-            <ParaglideMessage
-              message={m.trade_page_event_sent_by_you}
-              inputs={{ objekt: itemName(item), name }}
-              markup={bold}
-            />
-          ) : (
-            <ParaglideMessage
-              message={m.trade_page_event_sent_to_you}
-              inputs={{ objekt: itemName(item) }}
-              markup={bold}
-            />
-          )}{" "}
-          <a
-            href={`https://abscan.org/tx/${event.hash}`}
-            target="_blank"
-            rel="noopener"
-            aria-label={m.trade_page_view_transfer()}
-            title={m.trade_page_view_transfer()}
-            className="inline-flex align-middle text-muted-foreground hover:text-foreground"
-          >
-            <IconExternalLink className="size-3.5" />
-          </a>
-        </>
-      );
-    }
+    case "item_transferred":
+      return <TransferEvent trade={trade} side={side} event={event} />;
     case "completed":
       return event.by === null
         ? m.trade_page_event_completed()
@@ -125,7 +102,7 @@ function describeEvent(
       ) : (
         <ParaglideMessage
           message={m.trade_page_event_cancelled_them}
-          inputs={{ name }}
+          inputs={{ name: nameOf(event.by) }}
           markup={bold}
         />
       );
@@ -140,14 +117,21 @@ function describeEvent(
       ) : (
         <ParaglideMessage
           message={m.trade_page_event_disputed_them}
-          inputs={{ name, reason: reportReasonLabel(event.reason) }}
+          inputs={{
+            name: nameOf(event.by),
+            reason: reportReasonLabel(event.reason),
+          }}
           markup={bold}
         />
       );
     case "deadline_extended":
       return (
         <ParaglideMessage
-          message={m.trade_page_event_extended}
+          message={
+            side === null
+              ? m.trade_page_event_extended_staff
+              : m.trade_page_event_extended
+          }
           inputs={{ appName, when: "" }}
           markup={{
             time: () => (
@@ -161,13 +145,19 @@ function describeEvent(
       );
     case "timed_out":
       return event.abandoned.length > 1 ? (
-        m.trade_page_event_timed_out_both()
-      ) : event.abandoned.includes(side) ? (
+        side === null ? (
+          m.trade_page_timed_out_both_staff()
+        ) : (
+          m.trade_page_event_timed_out_both()
+        )
+      ) : side !== null && event.abandoned.includes(side) ? (
         m.trade_page_event_timed_out_you()
       ) : (
         <ParaglideMessage
           message={m.trade_page_event_timed_out_them}
-          inputs={{ name }}
+          inputs={{
+            name: nameOf(event.abandoned.includes("from") ? "from" : "to"),
+          }}
           markup={bold}
         />
       );
@@ -191,7 +181,7 @@ function describeEvent(
       ) : (
         <ParaglideMessage
           message={m.trade_page_event_moved_theirs}
-          inputs={{ objekt, name }}
+          inputs={{ objekt, name: nameOf(item.sender) }}
           markup={bold}
         />
       );
@@ -203,4 +193,54 @@ function describeEvent(
     default:
       return event satisfies never;
   }
+}
+
+/**
+ * An objekt the drain saw reach its receiver, with a link to the transfer.
+ */
+function TransferEvent({
+  trade,
+  side,
+  event,
+}: {
+  trade: TradeView;
+  side: TradeSide | null;
+  event: Extract<TradeEvent, { type: "item_transferred" }>;
+}) {
+  const item = trade.items.find(({ id }) => id === event.itemId);
+  if (item === undefined) return null;
+
+  return (
+    <>
+      {/* "X reached @y" names the receiver, which also reads for staff */}
+      {item.sender === side || side === null ? (
+        <ParaglideMessage
+          message={m.trade_page_event_sent_by_you}
+          inputs={{
+            objekt: itemName(item),
+            name: partyName(
+              trade.parties[item.sender === "from" ? "to" : "from"],
+            ),
+          }}
+          markup={bold}
+        />
+      ) : (
+        <ParaglideMessage
+          message={m.trade_page_event_sent_to_you}
+          inputs={{ objekt: itemName(item) }}
+          markup={bold}
+        />
+      )}{" "}
+      <a
+        href={`https://abscan.org/tx/${event.hash}`}
+        target="_blank"
+        rel="noopener"
+        aria-label={m.trade_page_view_transfer()}
+        title={m.trade_page_view_transfer()}
+        className="inline-flex align-middle text-muted-foreground hover:text-foreground"
+      >
+        <IconExternalLink className="size-3.5" />
+      </a>
+    </>
+  );
 }
