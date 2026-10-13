@@ -41,6 +41,7 @@ import { Route as MarketIndexRouteImport } from './routes/market/index'
 import { Route as MarketCollectionsRouteImport } from './routes/market/collections'
 import { Route as ObjektsIndexRouteImport } from './routes/objekts/index'
 import { Route as ObjektsStatsRouteImport } from './routes/objekts/stats'
+import { Route as TradeIdRouteImport } from './routes/trade/$id'
 import { Route as AtChar123usernameChar125BinderSlugRouteImport } from './routes/@{$username}/binder.$slug'
 import { Route as AtChar123usernameChar125ListSlugRouteImport } from './routes/@{$username}/list.$slug'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -223,6 +224,11 @@ const ObjektsStatsRoute = ObjektsStatsRouteImport.update({
   path: '/objekts/stats',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TradeIdRoute = TradeIdRouteImport.update({
+  id: '/trade/$id',
+  path: '/trade/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AtChar123usernameChar125BinderSlugRoute =
   AtChar123usernameChar125BinderSlugRouteImport.update({
     id: '/binder/$slug',
@@ -334,6 +340,7 @@ export interface FileRoutesByFullPath {
   '/list/$id': typeof ListIdRoute
   '/market/collections': typeof MarketCollectionsRoute
   '/objekts/stats': typeof ObjektsStatsRoute
+  '/trade/$id': typeof TradeIdRoute
   '/@{$username}/': typeof AtChar123usernameChar125IndexRoute
   '/admin/': typeof AdminIndexRoute
   '/events/': typeof EventsIndexRoute
@@ -381,6 +388,7 @@ export interface FileRoutesByTo {
   '/list/$id': typeof ListIdRoute
   '/market/collections': typeof MarketCollectionsRoute
   '/objekts/stats': typeof ObjektsStatsRoute
+  '/trade/$id': typeof TradeIdRoute
   '/@{$username}': typeof AtChar123usernameChar125IndexRoute
   '/admin': typeof AdminIndexRoute
   '/events': typeof EventsIndexRoute
@@ -431,6 +439,7 @@ export interface FileRoutesById {
   '/list/$id': typeof ListIdRoute
   '/market/collections': typeof MarketCollectionsRoute
   '/objekts/stats': typeof ObjektsStatsRoute
+  '/trade/$id': typeof TradeIdRoute
   '/@{$username}/': typeof AtChar123usernameChar125IndexRoute
   '/admin/': typeof AdminIndexRoute
   '/events/': typeof EventsIndexRoute
@@ -482,6 +491,7 @@ export interface FileRouteTypes {
     | '/list/$id'
     | '/market/collections'
     | '/objekts/stats'
+    | '/trade/$id'
     | '/@{$username}/'
     | '/admin/'
     | '/events/'
@@ -529,6 +539,7 @@ export interface FileRouteTypes {
     | '/list/$id'
     | '/market/collections'
     | '/objekts/stats'
+    | '/trade/$id'
     | '/@{$username}'
     | '/admin'
     | '/events'
@@ -578,6 +589,7 @@ export interface FileRouteTypes {
     | '/list/$id'
     | '/market/collections'
     | '/objekts/stats'
+    | '/trade/$id'
     | '/@{$username}/'
     | '/admin/'
     | '/events/'
@@ -613,6 +625,7 @@ export interface RootRouteChildren {
   ListIdRoute: typeof ListIdRoute
   MarketCollectionsRoute: typeof MarketCollectionsRoute
   ObjektsStatsRoute: typeof ObjektsStatsRoute
+  TradeIdRoute: typeof TradeIdRoute
   EventsIndexRoute: typeof EventsIndexRoute
   GravityIndexRoute: typeof GravityIndexRoute
   MarketIndexRoute: typeof MarketIndexRoute
@@ -858,6 +871,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ObjektsStatsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/trade/$id': {
+      id: '/trade/$id'
+      path: '/trade/$id'
+      fullPath: '/trade/$id'
+      preLoaderRoute: typeof TradeIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/@{$username}/binder/$slug': {
       id: '/@{$username}/binder/$slug'
       path: '/binder/$slug'
@@ -1042,6 +1062,7 @@ const rootRouteChildren: RootRouteChildren = {
   ListIdRoute: ListIdRoute,
   MarketCollectionsRoute: MarketCollectionsRoute,
   ObjektsStatsRoute: ObjektsStatsRoute,
+  TradeIdRoute: TradeIdRoute,
   EventsIndexRoute: EventsIndexRoute,
   GravityIndexRoute: GravityIndexRoute,
   MarketIndexRoute: MarketIndexRoute,

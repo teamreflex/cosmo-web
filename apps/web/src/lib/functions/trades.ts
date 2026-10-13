@@ -3,6 +3,7 @@ import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import { consumeRateLimit } from "@/lib/server/rate-limit.server";
 import { publishTradeUpdates } from "@/lib/server/trade-events.server";
 import { readIndexerTokens } from "@/lib/server/trades/holdings.server";
+import { readTradeView } from "@/lib/server/trades/trade-view.server";
 import {
   disputeTrade,
   endTrade,
@@ -18,9 +19,47 @@ import {
   openDisputeInputSchema,
   tradeIdInputSchema,
 } from "@/lib/universal/schema/trades";
+import type { TradeView, TradeViewer } from "@/lib/universal/trades";
 import { partyAction } from "@apollo/trades/lifecycle";
 import { addr } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
+
+/**
+ * A trade the caller is part of, with their side, or null for anyone else
+ * so a trade's existence never leaks. Only accepted, disputed and ended
+ * trades are shown.
+ */
+export const $fetchTrade = createServerFn({ method: "GET" })
+  .validator(tradeIdInputSchema)
+  .middleware([authenticatedMiddleware])
+  .handler(
+    async ({
+      data,
+      context,
+    }): Promise<{ trade: TradeView; viewer: TradeViewer } | null> => {
+      const userId = context.session.user.id;
+      const parties = await db.query.tradeOffers.findFirst({
+        where: {
+          id: data.tradeId,
+          kind: "trade",
+          OR: [{ fromUserId: userId }, { toUserId: userId }],
+        },
+        columns: { fromUserId: true },
+      });
+      if (!parties) return null;
+
+      const trade = await readTradeView(data.tradeId);
+      return (
+        trade && {
+          trade,
+          viewer: {
+            kind: "party",
+            side: parties.fromUserId === userId ? "from" : "to",
+          },
+        }
+      );
+    },
+  );
 
 /**
  * Cancel an accepted trade the caller is part of, while nothing has been

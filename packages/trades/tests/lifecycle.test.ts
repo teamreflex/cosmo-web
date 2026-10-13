@@ -13,6 +13,7 @@ import {
   type TradeState,
   listingEventAfter,
   listingTransition,
+  needsYou,
   owingSides,
   partyAction,
   tradeState,
@@ -135,14 +136,16 @@ describe("transition: parties", () => {
     ).toBe("wrong_party");
   });
 
-  test("either party may cancel or dispute (LIFE-04)", () => {
-    const state = trade("accepted", purchase);
-    for (const by of ["from", "to"] as const) {
-      expect(transition(state, { type: "cancel", by })).toEqual({
-        ok: true,
-        trade: { status: "cancelled", cancelledBy: by, items: purchase },
-      });
-      expect(statusAfter(state, { type: "dispute", by })).toBe("disputed");
+  test("either party may cancel or dispute (LIFE-04, UNIT-01)", () => {
+    for (const items of [purchase, sixObjekts()]) {
+      const state = trade("accepted", items);
+      for (const by of ["from", "to"] as const) {
+        expect(transition(state, { type: "cancel", by })).toEqual({
+          ok: true,
+          trade: { status: "cancelled", cancelledBy: by, items },
+        });
+        expect(statusAfter(state, { type: "dispute", by })).toBe("disputed");
+      }
     }
   });
 
@@ -184,6 +187,7 @@ describe("transition: parties", () => {
 describe("transition: cancelling", () => {
   test.each([
     ["a token arrived", [objekt("from", true), payment("to")]],
+    ["the claimer's token arrived", [objekt("from"), objekt("to", true)]],
     [
       "the buyer marked paid",
       [objekt("from"), payment("to", { markedPaid: true })],
@@ -192,7 +196,7 @@ describe("transition: cancelling", () => {
       "the seller confirmed",
       [objekt("from"), payment("to", { confirmed: true })],
     ],
-  ])("is refused once %s (LIFE-05)", (_, items) => {
+  ])("is refused once %s (LIFE-05, UNIT-02)", (_, items) => {
     for (const by of ["from", "to"] as const) {
       expect(
         statusAfter(trade("accepted", items), { type: "cancel", by }),
@@ -200,14 +204,45 @@ describe("transition: cancelling", () => {
     }
   });
 
-  test("a dispute is still possible once something started (LIFE-02)", () => {
-    const items = [objekt("from", true), payment("to")];
+  test.each([
+    ["a token arrived", [objekt("from", true), payment("to")]],
+    ["part of one side arrived", sixObjekts().with(0, objekt("from", true))],
+    [
+      "all of one side arrived",
+      [...sixObjekts(true).slice(0, 3), ...sixObjekts().slice(3)],
+    ],
+    ["all but one arrived", sixObjekts(true).with(5, objekt("to"))],
+  ])("a dispute is still possible once %s (LIFE-02, UNIT-04)", (_, items) => {
     for (const by of ["from", "to"] as const) {
       expect(
         statusAfter(trade("accepted", items), { type: "dispute", by }),
       ).toBe("disputed");
     }
   });
+
+  /**
+   * Every way a trade can sit outside accepted, with each canceller and
+   * abandoned mark, so the page offers no party action in any of them.
+   */
+  test.each([
+    { status: "disputed", items: sixObjekts() },
+    { status: "completed", items: sixObjekts(true) },
+    { status: "cancelled", cancelledBy: "from", items: sixObjekts() },
+    { status: "cancelled", cancelledBy: "to", items: sixObjekts() },
+    { status: "cancelled", cancelledBy: "staff", items: sixObjekts() },
+    { status: "timed_out", abandonedBy: ["from"], items: sixObjekts() },
+    { status: "timed_out", abandonedBy: ["to"], items: sixObjekts() },
+    { status: "timed_out", abandonedBy: ["from", "to"], items: sixObjekts() },
+  ] satisfies TradeState[])(
+    "cancel and dispute are refused when %o (UNIT-03)",
+    (state) => {
+      for (const type of ["cancel", "dispute"] as const) {
+        for (const by of ["from", "to"] as const) {
+          expect(statusAfter(state, { type, by })).toBe("wrong_status");
+        }
+      }
+    },
+  );
 });
 
 describe("partyAction", () => {
@@ -223,9 +258,12 @@ describe("partyAction", () => {
   };
 
   test.each(["cancel", "dispute"] as const)(
-    "%s: a trade that moved on is refused before its deadline",
+    "%s: a trade that moved on is refused before its deadline (UNIT-06)",
     (type) => {
       expect(reason(trade("completed", sixObjekts(true)), type, due)).toBe(
+        "wrong_status",
+      );
+      expect(reason(trade("disputed", sixObjekts()), type, due)).toBe(
         "wrong_status",
       );
     },
@@ -505,6 +543,11 @@ describe("owingSides (LIFE-23)", () => {
     ["only the claimer owes", [objekt("from", true), objekt("to")], ["to"]],
     ["both owe", [objekt("to"), objekt("from")], ["from", "to"]],
     [
+      "both sent part",
+      [objekt("from", true), objekt("from"), objekt("to"), objekt("to", true)],
+      ["from", "to"],
+    ],
+    [
       "a payment marked paid but unconfirmed counts as paid",
       [objekt("from", true), payment("to", { markedPaid: true })],
       [],
@@ -513,6 +556,28 @@ describe("owingSides (LIFE-23)", () => {
     "%s",
     (_, items, expected) => {
       expect(owingSides(items)).toEqual(expected);
+    },
+  );
+});
+
+describe("needsYou (UNIT-05)", () => {
+  const partial = [objekt("from", true), objekt("from"), objekt("to", true)];
+
+  test("an accepted trade needs the sides still owing", () => {
+    expect(needsYou(trade("accepted", partial), "from")).toBe(true);
+    expect(needsYou(trade("accepted", partial), "to")).toBe(false);
+    for (const side of ["from", "to"] as const) {
+      expect(needsYou(trade("accepted", sixObjekts()), side)).toBe(true);
+      expect(needsYou(trade("accepted", sixObjekts(true)), side)).toBe(false);
+    }
+  });
+
+  test.each(["disputed", "completed", "cancelled", "timed_out"] as const)(
+    "a %s trade never needs anyone",
+    (status) => {
+      for (const side of ["from", "to"] as const) {
+        expect(needsYou(trade(status, sixObjekts()), side)).toBe(false);
+      }
     },
   );
 });

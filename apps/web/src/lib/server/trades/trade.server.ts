@@ -30,7 +30,7 @@ import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import type { PgUpdateSetSource } from "drizzle-orm/pg-core";
 import { ExpectedError } from "../../universal/errors/expected";
 import type { TradeErrorCode } from "../../universal/errors/trades";
-import { db, type WebTx } from "../db";
+import { db, type DbOrTx, type WebTx } from "../db";
 import { readIndexerTokens, readWebTokenFlags } from "./holdings.server";
 import { refusePoster } from "./listings.server";
 
@@ -152,12 +152,10 @@ export async function lockPartyTrade(
  * a party can't cancel or dispute it and dodge the timers' abandoned mark.
  */
 export async function isDue(tx: WebTx, trade: LockedTrade) {
-  if (trade.deadlineAt === null) return false;
-  const [cursor] = await tx
-    .select({ chainTime: listDrainCursor.chainTime })
-    .from(listDrainCursor)
-    .where(eq(listDrainCursor.name, DRAIN_CURSOR_NAME));
-  return isTimedOut(trade.deadlineAt, cursor?.chainTime ?? null);
+  return (
+    trade.deadlineAt !== null &&
+    isTimedOut(trade.deadlineAt, await readWatermark(tx))
+  );
 }
 
 /**
@@ -172,6 +170,18 @@ export const partyRefusals = {
   already_done: "trade_status_changed",
   no_such_item: "trade_status_changed",
 } as const satisfies Record<PartyActionRefusal, TradeErrorCode>;
+
+/**
+ * The drain's chain-time watermark, which deadlines are judged against, or
+ * null before the drain has stamped one.
+ */
+export async function readWatermark(executor: DbOrTx) {
+  const [cursor] = await executor
+    .select({ chainTime: listDrainCursor.chainTime })
+    .from(listDrainCursor)
+    .where(eq(listDrainCursor.name, DRAIN_CURSOR_NAME));
+  return cursor?.chainTime ?? null;
+}
 
 /**
  * Updates a locked trade's row, guarded on the status it was locked in. The

@@ -143,9 +143,9 @@ export function listingFeedWhere(
 /**
  * The indexer's collections for every slug the page names, and the state
  * of each of its tokens: the serial to show, and the owner and
- * transferability that decide whether the poster can still give it.
+ * transferability that decide whether it can still be given.
  */
-async function readIndexed(slugs: string[], tokenIds: number[]) {
+export async function readIndexed(slugs: string[], tokenIds: number[]) {
   const [collectionRows, states] = await Promise.all([
     slugs.length
       ? indexer.query.collections.findMany({ where: { slug: { in: slugs } } })

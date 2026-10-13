@@ -42,24 +42,31 @@ function timeLeft(now: Date, deadline: Date) {
 }
 
 /**
- * The time left until `deadline` as "41h 12m", ticking on the client.
+ * The time left until `deadline` as "41h 12m", ticking on the client. With
+ * `pausedAt` it holds the time that was left then, the same on the server
+ * and the client, so it renders straight away.
  */
 export default function Countdown({
   deadline,
+  pausedAt,
   className,
-}: PropsWithClassName<{ deadline: Date }>) {
-  return (
+}: PropsWithClassName<{ deadline: Date; pausedAt?: Date }>) {
+  const time = (now: Date) => (
+    <time
+      dateTime={deadline.toISOString()}
+      className={cn("font-mono tabular-nums", className)}
+    >
+      {m.common_hours_minutes(timeLeft(now, deadline))}
+    </time>
+  );
+
+  return pausedAt === undefined ? (
     <Ticker
       fallback={<Skeleton className="inline-block h-4 w-14 rounded-full" />}
     >
-      {(now) => (
-        <time
-          dateTime={deadline.toISOString()}
-          className={cn("font-mono tabular-nums", className)}
-        >
-          {m.common_hours_minutes(timeLeft(now, deadline))}
-        </time>
-      )}
+      {time}
     </Ticker>
+  ) : (
+    time(pausedAt)
   );
 }

@@ -1,0 +1,206 @@
+import { m } from "@/i18n/messages";
+import { reportReasonLabel } from "@/lib/client/reports";
+import { itemName, partyName, tradeTimeFormat } from "@/lib/client/trades";
+import { env } from "@/lib/env/client";
+import type { TradeView } from "@/lib/universal/trades";
+import type { TradeEvent, TradeSide } from "@apollo/database/web/types";
+import { ParaglideMessage } from "@inlang/paraglide-js-react";
+import { IconExternalLink } from "@tabler/icons-react";
+import type { ReactNode } from "react";
+import { bold } from "../notifications/row-utils";
+import { Timestamp } from "../ui/timestamp";
+
+type Props = {
+  trade: TradeView;
+  /** the viewer's side, which words each event */
+  side: TradeSide;
+};
+
+/**
+ * What happened in the trade, oldest first: the claim, each transfer the
+ * drain saw, disputes, staff actions with the reason they gave, and how it
+ * ended.
+ */
+export default function TradeTimeline({ trade, side }: Props) {
+  return (
+    <section className="rounded-lg border border-border bg-card text-sm">
+      <h2 className="border-b border-border px-4 py-3 font-semibold">
+        {m.trade_page_timeline()}
+      </h2>
+      <ol className="flex flex-col gap-3 px-4 py-3">
+        {trade.events.map(({ id, createdAt, event }) => {
+          const line = describeEvent(trade, side, event);
+          return (
+            line !== null && (
+              <li key={id} className="flex flex-col gap-0.5">
+                <Timestamp
+                  date={createdAt}
+                  format={tradeTimeFormat}
+                  className="font-mono text-xs text-muted-foreground tabular-nums"
+                />
+                <p className="text-foreground/80">{line}</p>
+                {"note" in event && event.note !== null && (
+                  <p
+                    dir="auto"
+                    className="text-xs break-words text-muted-foreground"
+                  >
+                    {m.trade_page_reason_given({ note: event.note })}
+                  </p>
+                )}
+              </li>
+            )
+          );
+        })}
+      </ol>
+    </section>
+  );
+}
+
+/**
+ * The event's sentence as the viewer reads it, naming the other party in
+ * bold. Staff are never named.
+ */
+function describeEvent(
+  trade: TradeView,
+  side: TradeSide,
+  event: TradeEvent,
+): ReactNode {
+  const appName = env.VITE_APP_NAME;
+  const name = partyName(trade.parties[side === "from" ? "to" : "from"]);
+
+  switch (event.type) {
+    case "accepted":
+      // the claimer is always the side that accepts a listing
+      return (
+        <ParaglideMessage
+          message={
+            side === "to"
+              ? m.trade_page_event_accepted_you
+              : m.trade_page_event_accepted_them
+          }
+          inputs={{ name }}
+          markup={bold}
+        />
+      );
+    case "item_transferred": {
+      const item = trade.items.find(({ id }) => id === event.itemId);
+      if (item === undefined) return null;
+      return (
+        <>
+          {item.sender === side ? (
+            <ParaglideMessage
+              message={m.trade_page_event_sent_by_you}
+              inputs={{ objekt: itemName(item), name }}
+              markup={bold}
+            />
+          ) : (
+            <ParaglideMessage
+              message={m.trade_page_event_sent_to_you}
+              inputs={{ objekt: itemName(item) }}
+              markup={bold}
+            />
+          )}{" "}
+          <a
+            href={`https://abscan.org/tx/${event.hash}`}
+            target="_blank"
+            rel="noopener"
+            aria-label={m.trade_page_view_transfer()}
+            title={m.trade_page_view_transfer()}
+            className="inline-flex align-middle text-muted-foreground hover:text-foreground"
+          >
+            <IconExternalLink className="size-3.5" />
+          </a>
+        </>
+      );
+    }
+    case "completed":
+      return event.by === null
+        ? m.trade_page_event_completed()
+        : m.trade_page_event_completed_staff({ appName });
+    case "cancelled":
+      return event.by === "staff" ? (
+        m.trade_page_event_cancelled_staff({ appName })
+      ) : event.by === side ? (
+        m.trade_page_event_cancelled_you()
+      ) : (
+        <ParaglideMessage
+          message={m.trade_page_event_cancelled_them}
+          inputs={{ name }}
+          markup={bold}
+        />
+      );
+    case "disputed":
+      if (event.by === "staff") {
+        return m.trade_page_event_disputed_staff({ appName });
+      }
+      return event.by === side ? (
+        m.trade_page_event_disputed_you({
+          reason: reportReasonLabel(event.reason),
+        })
+      ) : (
+        <ParaglideMessage
+          message={m.trade_page_event_disputed_them}
+          inputs={{ name, reason: reportReasonLabel(event.reason) }}
+          markup={bold}
+        />
+      );
+    case "deadline_extended":
+      return (
+        <ParaglideMessage
+          message={m.trade_page_event_extended}
+          inputs={{ appName, when: "" }}
+          markup={{
+            time: () => (
+              <Timestamp
+                date={new Date(event.deadlineAt)}
+                format={tradeTimeFormat}
+              />
+            ),
+          }}
+        />
+      );
+    case "timed_out":
+      return event.abandoned.length > 1 ? (
+        m.trade_page_event_timed_out_both()
+      ) : event.abandoned.includes(side) ? (
+        m.trade_page_event_timed_out_you()
+      ) : (
+        <ParaglideMessage
+          message={m.trade_page_event_timed_out_them}
+          inputs={{ name }}
+          markup={bold}
+        />
+      );
+    case "token_moved":
+    case "token_untransferable": {
+      const item = trade.items.find(({ tokenId }) => tokenId === event.tokenId);
+      if (item === undefined) return null;
+      const objekt = itemName(item);
+      return event.type === "token_untransferable" ? (
+        <ParaglideMessage
+          message={m.trade_page_event_untransferable}
+          inputs={{ objekt }}
+          markup={bold}
+        />
+      ) : item.sender === side ? (
+        <ParaglideMessage
+          message={m.trade_page_event_moved_yours}
+          inputs={{ objekt }}
+          markup={bold}
+        />
+      ) : (
+        <ParaglideMessage
+          message={m.trade_page_event_moved_theirs}
+          inputs={{ objekt, name }}
+          markup={bold}
+        />
+      );
+    }
+    // the payment side arrives in phase 12a
+    case "marked_paid":
+    case "payment_confirmed":
+      return null;
+    default:
+      return event satisfies never;
+  }
+}

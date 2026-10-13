@@ -331,6 +331,11 @@ export function owingSides(items: readonly TradeItemState[]): TradeSide[] {
   return (["from", "to"] as const).filter(owes);
 }
 
+// whether the side still owes something on an accepted trade, so it has to act
+export function needsYou(state: TradeState, side: TradeSide) {
+  return state.status === "accepted" && owingSides(state.items).includes(side);
+}
+
 export type ListingEvent =
   // a trade was created from the listing
   | "claim"

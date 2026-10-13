@@ -6,8 +6,8 @@ import * as z from "zod";
 const tradeNoteSchema = pgText()
   .trim()
   .max(1000)
-  .optional()
-  .transform((note) => (note === undefined || note === "" ? null : note));
+  .nullish()
+  .transform((note) => note || null);
 
 export const tradeIdInputSchema = z.strictObject({
   tradeId: z.uuid(),
