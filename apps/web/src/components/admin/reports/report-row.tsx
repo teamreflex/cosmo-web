@@ -27,7 +27,7 @@ export default function ReportRow({ row }: Props) {
       className="flex flex-col gap-1.5 border-b border-border/60 px-3.5 py-3 transition-colors last:border-b-0 hover:bg-muted/30 data-[status=active]:bg-muted/50 data-[status=active]:shadow-[inset_3px_0_0_var(--color-destructive)] max-md:px-4"
     >
       <span className="flex min-w-0 items-center gap-2">
-        <StatusPill tone="muted" className="font-sans">
+        <StatusPill tone="muted" className="shrink-0 font-sans">
           {reportTargetTypeLabel(row.target.type)}
         </StatusPill>
         <span className="truncate text-sm font-semibold">
@@ -96,12 +96,21 @@ function RowSummary({ row }: Props) {
 
 /**
  * A user named in a row summary, as message text and as the markup that
- * renders it; "Deleted user" once their account is gone.
+ * renders it, cut short with the full name on hover since a COSMO username
+ * can be a 42-character address; "Deleted user" once their account is gone.
  */
 function nameInput(user: StaffUser | null) {
+  const text =
+    user === null ? m.admin_reports_deleted_user() : staffUserText(user);
   return {
-    text: user === null ? m.admin_reports_deleted_user() : staffUserText(user),
+    text,
     markup: ({ children }: { children?: ReactNode }) =>
-      user === null ? children : <StaffUserName user={user} link={false} />,
+      user === null ? (
+        children
+      ) : (
+        <span title={text} className="inline-flex max-w-40 align-bottom">
+          <StaffUserName user={user} link={false} />
+        </span>
+      ),
   };
 }

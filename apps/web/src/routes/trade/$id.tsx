@@ -1,6 +1,6 @@
 import SignIn from "@/components/auth/sign-in";
 import { Error } from "@/components/error-boundary";
-import TradeView, { TradeViewSkeleton } from "@/components/trades/trade-view";
+import TradeView from "@/components/trades/trade-view";
 import { Button } from "@/components/ui/button";
 import {
   Empty,
@@ -10,6 +10,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { currentAccountQuery } from "@/lib/queries/core";
@@ -61,7 +62,8 @@ function TradeDetail({ id }: { id: string }) {
     <NotFoundComponent />
   ) : (
     <main className="flex flex-col">
-      <TradeView trade={data.trade} viewer={data.viewer} />
+      {/* forms and dialogs keep their first values, so each trade gets its own */}
+      <TradeView key={data.trade.id} trade={data.trade} viewer={data.viewer} />
     </main>
   );
 }
@@ -93,7 +95,29 @@ function SignedOut() {
 function PendingComponent() {
   return (
     <main className="flex flex-col">
-      <TradeViewSkeleton />
+      <div className="border-b border-border">
+        <div className="container flex flex-wrap items-center gap-3 py-3 md:py-4">
+          <h1 className="font-cosmo text-xl leading-none font-black tracking-wide uppercase md:text-2xl">
+            {m.trade_page_title()}
+          </h1>
+          <Skeleton className="h-5 w-24 rounded-full" />
+          <div className="flex basis-full items-center gap-3 md:contents">
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="ml-auto h-5 w-28" />
+          </div>
+        </div>
+      </div>
+      <div className="container flex flex-col gap-5 pt-5 pb-10 lg:pt-6">
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-2 sm:grid-cols-3">
+          <Skeleton className="h-16 rounded-md max-sm:hidden" />
+          <Skeleton className="h-16 rounded-md" />
+          <Skeleton className="h-16 rounded-md max-sm:hidden" />
+        </div>
+        <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
+          <Skeleton className="h-64 rounded-lg" />
+          <Skeleton className="h-64 rounded-lg" />
+        </div>
+      </div>
     </main>
   );
 }

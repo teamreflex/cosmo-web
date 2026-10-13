@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { m } from "@/i18n/messages";
 import { cn } from "@/lib/utils";
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import { IconX } from "@tabler/icons-react";
@@ -70,7 +71,7 @@ function DialogContent({
             }
           >
             <IconX />
-            <span className="sr-only">Close</span>
+            <span className="sr-only">{m.common_close()}</span>
           </DialogPrimitive.Close>
         )}
       </DialogPrimitive.Popup>

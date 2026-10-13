@@ -160,18 +160,19 @@ export async function fetchReportQueue(
   const tradeIds = rows.flatMap((row) =>
     row.targetType === "trade" ? [row.targetId] : [],
   );
-  const tradeRows =
+  const [users, tradeRows] = await Promise.all([
+    fetchStaffUsers(
+      rows
+        .filter((row) => row.targetType === "user")
+        .map((row) => row.targetId),
+    ),
     tradeIds.length === 0
       ? []
-      : await db.query.tradeOffers.findMany({
+      : db.query.tradeOffers.findMany({
           where: { id: { in: tradeIds }, kind: "trade" },
-          columns: { id: true, fromUserId: true, toUserId: true },
-        });
-  const users = await fetchStaffUsers([
-    ...rows.flatMap((row) => (row.targetType === "user" ? [row.targetId] : [])),
-    ...tradeRows.flatMap((trade) =>
-      [trade.fromUserId, trade.toUserId].flatMap((id) => id ?? []),
-    ),
+          columns: { id: true },
+          with: { fromUser: staffUserFields, toUser: staffUserFields },
+        }),
   ]);
   const trades = new Map(tradeRows.map((trade) => [trade.id, trade]));
 
@@ -197,15 +198,12 @@ function toRowTarget(
   users: Map<string, StaffUserRow>,
   trades: Map<
     string,
-    { id: string; fromUserId: string | null; toUserId: string | null }
+    { id: string; fromUser: StaffUserRow | null; toUser: StaffUserRow | null }
   >,
 ): AdminReportRowTarget {
-  const named = (id: string | null) =>
-    id === null ? null : staffUser(users.get(id) ?? null);
-
   switch (targetType) {
     case "user":
-      return { type: "user", user: named(targetId) };
+      return { type: "user", user: staffUser(users.get(targetId) ?? null) };
     case "trade": {
       const trade = trades.get(targetId);
       return {
@@ -215,8 +213,8 @@ function toRowTarget(
             ? null
             : {
                 id: trade.id,
-                from: named(trade.fromUserId),
-                to: named(trade.toUserId),
+                from: staffUser(trade.fromUser),
+                to: staffUser(trade.toUser),
               },
       };
     }

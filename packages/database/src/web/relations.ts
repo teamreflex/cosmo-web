@@ -239,6 +239,11 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.tradeOffers.toAddress,
       to: r.cosmoAccounts.address,
     }),
+    // the report a dispute or a party's ban froze the trade under
+    disputeReport: r.one.reports({
+      from: r.tradeOffers.disputeReportId,
+      to: r.reports.id,
+    }),
   },
   tradeOfferItems: {
     offer: r.one.tradeOffers({

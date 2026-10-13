@@ -88,7 +88,8 @@ export default function ReportDetail({ id }: Props) {
           )}
         >
           <Suspense fallback={<DetailSkeleton />}>
-            <Detail id={id} />
+            {/* forms keep their first values, so each report gets its own */}
+            <Detail key={id} id={id} />
           </Suspense>
         </ErrorBoundary>
       )}
@@ -137,7 +138,7 @@ function Detail({ id }: { id: string }) {
             <Timestamp date={report.createdAt} relative="long" />
           </div>
           {report.note !== null && (
-            <q className="text-sm wrap-break-word italic">{report.note}</q>
+            <q className="text-sm wrap-anywhere italic">{report.note}</q>
           )}
         </header>
 

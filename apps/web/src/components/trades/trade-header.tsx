@@ -9,7 +9,6 @@ import Countdown from "../misc/countdown";
 import UserAvatar from "../profile/user-avatar";
 import { tones } from "../trade-listings/state-tones";
 import { Badge } from "../ui/badge";
-import { Skeleton } from "../ui/skeleton";
 import { Timestamp } from "../ui/timestamp";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
@@ -23,7 +22,7 @@ type Props = {
  * The page title, whether the trade came from a listing, who it's between
  * and where it stands: the time left, the time left when a dispute paused it,
  * or how it ended. From tablet width it sticks under the navbar. On phones
- * the parties take their own line under the title and the status.
+ * the parties and the status share a line under the title.
  */
 export default function TradeHeader({ trade, side }: Props) {
   return (
@@ -32,40 +31,33 @@ export default function TradeHeader({ trade, side }: Props) {
         <h1 className="font-cosmo text-xl leading-none font-black tracking-wide uppercase md:text-2xl">
           {m.trade_page_title()}
         </h1>
-        {trade.listingId !== null && (
-          <Badge
-            variant="outline"
-            render={
-              <Link to="/market/listing/$id" params={{ id: trade.listingId }} />
-            }
-          >
-            {m.trade_page_from_listing()}
-          </Badge>
-        )}
-        <span className="flex min-w-0 items-center gap-2 text-sm max-md:order-last max-md:basis-full">
-          {side === null ? (
-            <>
-              <PartyName party={trade.parties.from} />
-              {"⇄"}
-              <PartyName party={trade.parties.to} />
-            </>
-          ) : (
-            <ParaglideMessage
-              message={m.trade_page_parties}
-              inputs={{ name: "" }}
-              markup={{
-                user: () => (
-                  <PartyName
-                    party={trade.parties[side === "from" ? "to" : "from"]}
-                  />
-                ),
-              }}
-            />
-          )}
-        </span>
-        <span className="ml-auto flex items-center gap-2 text-sm text-muted-foreground">
-          <TradeStatus trade={trade} />
-        </span>
+        {/* phones put the parties and the status on a line of their own, or two when they need it */}
+        <div className="flex min-w-0 basis-full flex-wrap items-center gap-x-3 gap-y-2 md:contents">
+          <span className="flex min-w-0 items-center gap-2 text-sm whitespace-nowrap">
+            {side === null ? (
+              <>
+                <PartyName party={trade.parties.from} />
+                {"⇄"}
+                <PartyName party={trade.parties.to} />
+              </>
+            ) : (
+              <ParaglideMessage
+                message={m.trade_page_parties}
+                inputs={{ name: "" }}
+                markup={{
+                  user: () => (
+                    <PartyName
+                      party={trade.parties[side === "from" ? "to" : "from"]}
+                    />
+                  ),
+                }}
+              />
+            )}
+          </span>
+          <span className="ml-auto flex shrink-0 items-center gap-2 text-sm text-muted-foreground">
+            <TradeStatus trade={trade} />
+          </span>
+        </div>
       </div>
     </div>
   );
@@ -89,11 +81,14 @@ function PartyName({ party }: { party: TradeParty }) {
         />
       )}
       {party.cosmoUsername === null ? (
-        <span className="truncate font-semibold">{name}</span>
+        <span className="truncate font-semibold" title={name}>
+          {name}
+        </span>
       ) : (
         <Link
           to="/@{$username}"
           params={{ username: party.cosmoUsername }}
+          title={name}
           className="truncate font-semibold underline-offset-4 hover:underline"
         >
           {name}
@@ -104,15 +99,19 @@ function PartyName({ party }: { party: TradeParty }) {
 }
 
 /**
- * Where a trade stands: the time left, the time left when a dispute paused
- * it, or how and when it ended. Staff see it on the dispute's report too.
+ * Where a trade stands: the time left, that the deadline has passed, the
+ * time left when a dispute paused it, or how and when it ended. Staff see it
+ * on the dispute's report too.
  */
 export function TradeStatus({ trade }: { trade: TradeView }) {
   switch (trade.state.status) {
     case "accepted":
-      return (
+      return trade.deadlinePassed ? (
+        m.trade_page_deadline_passed_short()
+      ) : (
         <Tooltip>
-          <TooltipTrigger render={<span />}>
+          {/* focusable, since only the tooltip gives the due time */}
+          <TooltipTrigger render={<span tabIndex={0} />}>
             <ParaglideMessage
               message={m.trade_page_time_left}
               inputs={{ left: "" }}
@@ -198,19 +197,4 @@ export function EndedBadge({
         <Badge className={tones.warn}>{m.trade_page_status_timed_out()}</Badge>
       );
   }
-}
-
-export function TradeHeaderSkeleton() {
-  return (
-    <div className="border-b border-border">
-      <div className="container flex flex-wrap items-center gap-3 py-3 md:py-4">
-        <h1 className="font-cosmo text-xl leading-none font-black tracking-wide uppercase md:text-2xl">
-          {m.trade_page_title()}
-        </h1>
-        <Skeleton className="h-5 w-24 rounded-full" />
-        <Skeleton className="h-5 w-40 max-md:order-last max-md:basis-full" />
-        <Skeleton className="ml-auto h-5 w-28" />
-      </div>
-    </div>
-  );
 }

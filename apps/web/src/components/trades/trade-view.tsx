@@ -23,6 +23,7 @@ import {
   IconEye,
   IconFlag,
   IconHourglassEmpty,
+  IconPlayerPause,
   IconX,
 } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";
@@ -42,11 +43,10 @@ import {
   ItemMedia,
   ItemTitle,
 } from "../ui/item";
-import { Skeleton } from "../ui/skeleton";
 import { Timestamp } from "../ui/timestamp";
 import CancelTradeDialog from "./cancel-trade-dialog";
 import OpenDisputeDialog from "./open-dispute-dialog";
-import TradeHeader, { TradeHeaderSkeleton } from "./trade-header";
+import TradeHeader from "./trade-header";
 import TradeTimeline from "./trade-timeline";
 import TransferRows from "./transfer-rows";
 
@@ -69,17 +69,28 @@ export default function TradeView({ trade, viewer }: Props) {
 }
 
 /**
- * The page as one of its parties sees it. While they still owe objekts it
- * says what to send to whom, with their partner's COSMO ID to copy, and it
- * offers cancel and dispute wherever the server would allow them, in the
- * phone bar below tablet width.
+ * The page as one of its parties sees it. While they still owe objekts
+ * before the deadline it says what to send to whom, with their partner's
+ * COSMO ID to copy, and it offers cancel and dispute wherever the server
+ * would allow them, in the phone bar below tablet width.
  */
 function PartyView({ trade, side }: { trade: Trade; side: TradeSide }) {
   const startedId = useId();
   const [dialog, setDialog] = useState<"cancel" | "dispute" | null>(null);
   const counterparty = trade.parties[side === "from" ? "to" : "from"];
-  const owing = needsYou(trade.state, side);
-  const copyName = owing ? counterparty.cosmoUsername : null;
+  // past the deadline a transfer can't count, so nothing more is asked
+  const owing = needsYou(trade.state, side) && !trade.deadlinePassed;
+  /**
+   * Copy only helps while something is still to send: an arrived objekt
+   * waits for the drain, and one that moved or can't move can't be sent.
+   */
+  const copyName =
+    owing &&
+    trade.items.some(
+      (item) => item.sender === side && item.status === "waiting",
+    )
+      ? counterparty.cosmoUsername
+      : null;
   /**
    * The same judgement the server makes, so a refused action refetches
    * into a page that no longer offers it.
@@ -254,11 +265,7 @@ function TradeLayout({
         <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:items-start">
           <div className="flex min-w-0 flex-col gap-4">
             <StatePanel trade={trade} side={side} />
-            <TransferRows
-              items={trade.items}
-              parties={trade.parties}
-              side={side}
-            >
+            <TransferRows trade={trade} side={side}>
               {strip}
             </TransferRows>
             {trade.state.status === "accepted" && (
@@ -310,7 +317,8 @@ function ActionStrip({
   /** the actions, or nothing when none apply */
   children: ReactNode;
 }) {
-  const name = partyName(trade.parties[side === "from" ? "to" : "from"]);
+  const counterparty = trade.parties[side === "from" ? "to" : "from"];
+  const name = partyName(counterparty);
   /**
    * Only waiting objekts are left to send: an arrived one waits for the
    * drain, and one that moved or can't move has its own alert.
@@ -322,27 +330,52 @@ function ActionStrip({
       ? (trade.items.find((item) => item.status === "sent") ??
         trade.items.find((item) => item.status === "arrived"))
       : undefined;
+  const startedCount =
+    started === undefined
+      ? 0
+      : trade.items.filter(
+          (item) =>
+            item.sender === started.sender &&
+            (item.status === "sent" || item.status === "arrived"),
+        ).length;
   if (!owing && !children && refusal !== "deadline_passed") return null;
 
   return (
     <div className="flex flex-wrap items-center gap-3 border-t border-border bg-muted/40 px-4 py-3">
-      <div className="flex min-w-0 flex-[1_1_18rem] flex-col gap-1 text-sm text-muted-foreground">
-        {owing && (
-          <p>
-            {waiting > 0
-              ? m.trade_page_send({ count: waiting, name })
-              : mine.some((item) => item.status === "arrived") &&
-                m.trade_page_send_arrived({ appName: env.VITE_APP_NAME })}
-          </p>
-        )}
+      <div className="flex min-w-0 flex-[1_1_18rem] flex-col gap-1 text-sm wrap-anywhere text-muted-foreground">
+        {owing &&
+          (waiting > 0 ? (
+            <p>
+              {counterparty.cosmoUsername === null
+                ? m.trade_page_send_no_cosmo({
+                    count: waiting,
+                    name,
+                    appName: env.VITE_APP_NAME,
+                  })
+                : m.trade_page_send({ count: waiting, name })}
+            </p>
+          ) : (
+            mine.some((item) => item.status === "arrived") && (
+              <p>{m.trade_page_send_arrived({ appName: env.VITE_APP_NAME })}</p>
+            )
+          ))}
         {started !== undefined && (
           <p id={startedId}>
             {started.sender === side ? (
-              <ParaglideMessage
-                message={m.trade_page_cancel_started_you}
-                inputs={{ objekt: itemName(started) }}
-                markup={bold}
-              />
+              startedCount > 1 ? (
+                m.trade_page_cancel_started_you_many({ count: startedCount })
+              ) : (
+                <ParaglideMessage
+                  message={m.trade_page_cancel_started_you}
+                  inputs={{ objekt: itemName(started) }}
+                  markup={bold}
+                />
+              )
+            ) : startedCount > 1 ? (
+              m.trade_page_cancel_started_them_many({
+                count: startedCount,
+                name,
+              })
             ) : (
               <ParaglideMessage
                 message={m.trade_page_cancel_started_them}
@@ -414,7 +447,11 @@ const stepTones = {
   },
   dispute: {
     box: "border-destructive/45 bg-destructive/10",
-    eyebrow: "text-destructive",
+    eyebrow: "text-red-700 dark:text-destructive",
+  },
+  paused: {
+    box: "border-border bg-muted/50",
+    eyebrow: "text-muted-foreground",
   },
   todo: {
     box: "border-border bg-card text-muted-foreground",
@@ -424,14 +461,23 @@ const stepTones = {
 
 /**
  * Accepted, both send, complete, with a segment per transfer in the middle
- * step. Phones show only the step the trade is on. An ended trade that
- * didn't complete has no steps left to show.
+ * step, or one bar once segments would be too thin to read. Phones show
+ * only the step the trade is on. An ended trade that didn't complete has no
+ * steps left to show. A dispute staff opened by banning a party reads as a
+ * neutral pause, as its alert does.
  */
 function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
   const { status } = trade.state;
   if (status === "cancelled" || status === "timed_out") return null;
 
   const completed = status === "completed";
+  const dispute = trade.events.findLast(
+    ({ event }) => event.type === "disputed",
+  )?.event;
+  const paused =
+    status === "disputed" &&
+    dispute?.type === "disputed" &&
+    dispute.by === "staff";
   const seen = trade.items.filter((item) => item.status === "sent").length;
   const poster = partyName(trade.parties.from);
   const claimer = partyName(trade.parties.to);
@@ -448,12 +494,20 @@ function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
             : m.trade_page_step_accepted_staff({ claimer, poster }),
     },
     {
-      tone: completed ? "done" : status === "disputed" ? "dispute" : "current",
+      tone: completed
+        ? "done"
+        : paused
+          ? "paused"
+          : status === "disputed"
+            ? "dispute"
+            : "current",
       eyebrow: completed
         ? m.trade_page_step_done({ step: 1 })
-        : status === "disputed"
-          ? m.trade_page_step_dispute({ step: 1 })
-          : m.trade_page_step({ step: 1 }),
+        : paused
+          ? m.trade_page_step_paused({ step: 1 })
+          : status === "disputed"
+            ? m.trade_page_step_dispute({ step: 1 })
+            : m.trade_page_step({ step: 1 }),
       title: m.trade_page_step_send({ seen, count: trade.items.length }),
     },
     {
@@ -489,22 +543,34 @@ function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
           >
             {step.eyebrow}
           </span>
-          <span className="text-sm font-semibold tabular-nums">
+          {/* a COSMO username can be a 42-character address */}
+          <span className="text-sm font-semibold wrap-anywhere tabular-nums">
             {step.title}
           </span>
-          {index === 1 && (
-            <span aria-hidden className="flex gap-0.75 pt-0.5">
-              {trade.items.map((item) => (
+          {index === 1 &&
+            (trade.items.length > 12 ? (
+              <span
+                aria-hidden
+                className="mt-0.5 h-1.5 overflow-hidden rounded-full bg-muted"
+              >
                 <span
-                  key={item.id}
-                  className={cn(
-                    "h-1.5 min-w-0 flex-1 rounded-full",
-                    item.status === "sent" ? "bg-teal-500" : "bg-muted",
-                  )}
+                  className="block h-full rounded-full bg-teal-500"
+                  style={{ width: `${(seen / trade.items.length) * 100}%` }}
                 />
-              ))}
-            </span>
-          )}
+              </span>
+            ) : (
+              <span aria-hidden className="flex gap-0.75 pt-0.5">
+                {trade.items.map((item) => (
+                  <span
+                    key={item.id}
+                    className={cn(
+                      "h-1.5 min-w-0 flex-1 rounded-full",
+                      item.status === "sent" ? "bg-teal-500" : "bg-muted",
+                    )}
+                  />
+                ))}
+              </span>
+            ))}
         </li>
       ))}
     </ol>
@@ -561,7 +627,8 @@ function StatePanel({ trade, side }: { trade: Trade; side: TradeSide | null }) {
                     })
                 : side === null
                   ? m.trade_page_problem_staff_body({
-                      name: partyName(trade.parties[receiver]),
+                      sender: partyName(trade.parties[item.sender]),
+                      receiver: partyName(trade.parties[receiver]),
                     })
                   : m.trade_page_problem_theirs_body()}
             </AlertDescription>
@@ -573,7 +640,7 @@ function StatePanel({ trade, side }: { trade: Trade; side: TradeSide | null }) {
     case "completed": {
       const staff = trade.events.findLast(
         ({ event }) => event.type === "completed" && event.by === "staff",
-      );
+      )?.event;
       const last = trade.items.reduce<Date | null>(
         (latest, { transferredAt }) =>
           transferredAt !== null && (latest === null || transferredAt > latest)
@@ -602,7 +669,11 @@ function StatePanel({ trade, side }: { trade: Trade; side: TradeSide | null }) {
               />
             </AlertDescription>
           )}
-          {staff !== undefined && <StaffNote event={staff.event} />}
+          {staff !== undefined && "note" in staff && staff.note !== null && (
+            <AlertDescription>
+              <StaffNote note={staff.note} />
+            </AlertDescription>
+          )}
         </Alert>
       );
     }
@@ -610,7 +681,10 @@ function StatePanel({ trade, side }: { trade: Trade; side: TradeSide | null }) {
       const { cancelledBy } = state;
       const cancel = trade.events.findLast(
         ({ event }) => event.type === "cancelled",
-      );
+      )?.event;
+      const note =
+        cancel !== undefined && "note" in cancel ? cancel.note : null;
+      const sent = trade.items.some((item) => item.status === "sent");
       return (
         <Alert variant={cancelledBy === "staff" ? "destructive" : "default"}>
           <IconX />
@@ -623,10 +697,10 @@ function StatePanel({ trade, side }: { trade: Trade; side: TradeSide | null }) {
                     name: partyName(trade.parties[cancelledBy]),
                   })}
           </AlertTitle>
-          {cancel !== undefined && <StaffNote event={cancel.event} />}
-          {trade.items.some((item) => item.status === "sent") && (
-            <AlertDescription>
-              {m.trade_page_not_reversed({ appName })}
+          {(note !== null || sent) && (
+            <AlertDescription className="flex flex-col gap-1 text-pretty [&_p:not(:last-child)]:mb-0">
+              {note !== null && <StaffNote note={note} />}
+              {sent && <p>{m.trade_page_not_reversed({ appName })}</p>}
             </AlertDescription>
           )}
         </Alert>
@@ -647,7 +721,9 @@ function StatePanel({ trade, side }: { trade: Trade; side: TradeSide | null }) {
 
 /**
  * The dispute that froze the trade: who opened it and why, what happens
- * next, and when. Its note is only for moderators.
+ * next, and when. Its note is only for moderators. A dispute staff opened
+ * when a party was banned reads as a neutral pause, which staff can only
+ * complete or cancel while the ban lasts.
  */
 function DisputedAlert({
   trade,
@@ -664,9 +740,20 @@ function DisputedAlert({
     return null;
   }
   const { event } = dispute;
+  const paused = event.by === "staff";
+  const time = () => (
+    <Timestamp date={dispute.createdAt} format={tradeTimeFormat} />
+  );
   return (
-    <Alert variant="destructive">
-      <IconFlag />
+    <Alert
+      variant={paused ? "default" : "destructive"}
+      // the destructive token is just under 4.5:1 on the light card
+      className={cn(
+        !paused &&
+          "text-red-700 *:data-[slot=alert-description]:text-red-700 dark:text-destructive dark:*:data-[slot=alert-description]:text-destructive",
+      )}
+    >
+      {paused ? <IconPlayerPause /> : <IconFlag />}
       <AlertTitle>
         {event.by === "staff"
           ? m.trade_page_disputed_staff({ appName })
@@ -679,22 +766,30 @@ function DisputedAlert({
                 reason: reportReasonLabel(event.reason),
               })}
       </AlertTitle>
-      <AlertDescription className="flex flex-col gap-1 [&_p:not(:last-child)]:mb-0">
+      <AlertDescription className="flex flex-col gap-1 text-pretty [&_p:not(:last-child)]:mb-0">
         <p>
           {side === null
-            ? m.trade_page_disputed_body_staff()
-            : m.trade_page_disputed_body()}
+            ? paused
+              ? m.trade_page_disputed_body_staff_paused()
+              : m.trade_page_disputed_body_staff()
+            : paused
+              ? m.trade_page_disputed_body_paused()
+              : m.trade_page_disputed_body()}
         </p>
         <p className="text-xs">
-          <ParaglideMessage
-            message={m.trade_page_disputed_meta}
-            inputs={{ when: "", report: event.reportId.slice(0, 8) }}
-            markup={{
-              time: () => (
-                <Timestamp date={dispute.createdAt} format={tradeTimeFormat} />
-              ),
-            }}
-          />
+          {paused ? (
+            <ParaglideMessage
+              message={m.trade_page_disputed_meta_paused}
+              inputs={{ when: "" }}
+              markup={{ time }}
+            />
+          ) : (
+            <ParaglideMessage
+              message={m.trade_page_disputed_meta}
+              inputs={{ when: "", report: event.reportId.slice(0, 8) }}
+              markup={{ time }}
+            />
+          )}
         </p>
       </AlertDescription>
     </Alert>
@@ -735,7 +830,7 @@ function TimedOutAlert({
                 ),
               })}
       </AlertTitle>
-      <AlertDescription className="flex flex-col gap-1 [&_p:not(:last-child)]:mb-0">
+      <AlertDescription className="flex flex-col gap-1 text-pretty [&_p:not(:last-child)]:mb-0">
         <p>
           {abandoned
             .map((sender) =>
@@ -770,16 +865,14 @@ function TimedOutAlert({
 }
 
 /**
- * The reason staff gave when they ended the trade, if they gave one.
+ * The reason staff gave when they ended the trade, which may be one long
+ * unbroken string such as a link.
  */
-function StaffNote({ event }: { event: Trade["events"][number]["event"] }) {
+function StaffNote({ note }: { note: string }) {
   return (
-    "note" in event &&
-    event.note !== null && (
-      <AlertDescription dir="auto" className="break-words">
-        {m.trade_page_reason_given({ note: event.note })}
-      </AlertDescription>
-    )
+    <p dir="auto" className="wrap-anywhere">
+      {m.trade_page_reason_given({ note })}
+    </p>
   );
 }
 
@@ -803,15 +896,18 @@ function PartyCard({ party, side }: { party: TradeParty; side: TradeSide }) {
           />
         )}
       </ItemMedia>
-      <ItemContent>
-        <ItemTitle>
+      <ItemContent className="min-w-0">
+        <ItemTitle className="max-w-full">
           {party.cosmoUsername === null ? (
-            name
+            <span className="truncate" title={name}>
+              {name}
+            </span>
           ) : (
             <Link
               to="/@{$username}"
               params={{ username: party.cosmoUsername }}
-              className="underline-offset-4 hover:underline"
+              title={name}
+              className="truncate underline-offset-4 hover:underline"
             >
               {name}
             </Link>
@@ -855,24 +951,5 @@ function CopyCosmoId({
       <IconCopy />
       {m.trade_page_copy()}
     </Button>
-  );
-}
-
-export function TradeViewSkeleton() {
-  return (
-    <>
-      <TradeHeaderSkeleton />
-      <div className="container flex flex-col gap-5 pt-5 pb-10 lg:pt-6">
-        <div className="grid grid-cols-[minmax(0,1fr)] gap-2 sm:grid-cols-3">
-          <Skeleton className="h-16 rounded-md max-sm:hidden" />
-          <Skeleton className="h-16 rounded-md" />
-          <Skeleton className="h-16 rounded-md max-sm:hidden" />
-        </div>
-        <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
-          <Skeleton className="h-64 rounded-lg" />
-          <Skeleton className="h-64 rounded-lg" />
-        </div>
-      </div>
-    </>
   );
 }

@@ -19,53 +19,53 @@ import { readWatermark } from "./trade.server";
 export async function readTradeView(
   tradeId: string,
 ): Promise<TradeView | null> {
-  const row = await db.query.tradeOffers.findFirst({
-    where: {
-      id: tradeId,
-      kind: "trade",
-      status: {
-        in: ["accepted", "disputed", "completed", "cancelled", "timed_out"],
+  const [row, watermark] = await Promise.all([
+    db.query.tradeOffers.findFirst({
+      where: {
+        id: tradeId,
+        kind: "trade",
+        status: {
+          in: ["accepted", "disputed", "completed", "cancelled", "timed_out"],
+        },
       },
-    },
-    columns: {
-      id: true,
-      status: true,
-      fromUserId: true,
-      toUserId: true,
-      fromAddress: true,
-      toAddress: true,
-      cancelledBy: true,
-      abandonedBy: true,
-      createdAt: true,
-      acceptedAt: true,
-      deadlineAt: true,
-      endedAt: true,
-    },
-    with: {
-      items: { orderBy: { id: "asc" } },
-      messages: {
-        where: { kind: "event" },
-        columns: { id: true, event: true, createdAt: true },
-        orderBy: { id: "asc" },
+      columns: {
+        id: true,
+        status: true,
+        fromUserId: true,
+        toUserId: true,
+        fromAddress: true,
+        toAddress: true,
+        cancelledBy: true,
+        abandonedBy: true,
+        createdAt: true,
+        acceptedAt: true,
+        deadlineAt: true,
+        endedAt: true,
       },
-      fromUser: true,
-      toUser: true,
-      fromCosmo: { columns: { username: true } },
-      toCosmo: { columns: { username: true } },
-    },
-  });
+      with: {
+        items: { orderBy: { id: "asc" } },
+        messages: {
+          where: { kind: "event" },
+          columns: { id: true, event: true, createdAt: true },
+          orderBy: { id: "asc" },
+        },
+        fromUser: true,
+        toUser: true,
+        fromCosmo: { columns: { username: true } },
+        toCosmo: { columns: { username: true } },
+      },
+    }),
+    readWatermark(db),
+  ]);
   if (!row) return null;
   if (row.acceptedAt === null || row.deadlineAt === null) {
     throw new Error("accepted trade without a deadline");
   }
 
-  const [indexed, watermark] = await Promise.all([
-    readIndexed(
-      [...new Set(row.items.flatMap((item) => item.slug ?? []))],
-      row.items.flatMap((item) => item.tokenId ?? []),
-    ),
-    readWatermark(db),
-  ]);
+  const indexed = await readIndexed(
+    [...new Set(row.items.flatMap((item) => item.slug ?? []))],
+    row.items.flatMap((item) => item.tokenId ?? []),
+  );
   const state = tradeState(row, row.items);
   const live = state.status === "accepted" || state.status === "disputed";
   const pinned = {

@@ -38,11 +38,11 @@ export default function TradeTimeline({ trade, side }: Props) {
                   format={tradeTimeFormat}
                   className="font-mono text-xs text-muted-foreground tabular-nums"
                 />
-                <p className="text-foreground/80">{line}</p>
+                <p className="wrap-anywhere text-foreground/80">{line}</p>
                 {"note" in event && event.note !== null && (
                   <p
                     dir="auto"
-                    className="text-xs break-words text-muted-foreground"
+                    className="text-xs wrap-anywhere text-muted-foreground"
                   >
                     {m.trade_page_reason_given({ note: event.note })}
                   </p>

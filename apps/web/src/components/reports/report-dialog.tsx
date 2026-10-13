@@ -155,7 +155,7 @@ export default function ReportDialog({ target, open, onOpenChange }: Props) {
                   id={noteId}
                   rows={3}
                   maxLength={1000}
-                  className="resize-none"
+                  className="max-h-40 resize-none"
                   aria-invalid={fieldState.invalid}
                   {...field}
                   value={field.value ?? ""}

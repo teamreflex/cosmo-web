@@ -77,7 +77,7 @@ export type TradeViewer =
   | { kind: "party"; side: TradeSide }
   | { kind: "staff"; report: { id: string; status: ReportStatus } | null };
 
-// the My trades page's tabs: live trades, and those that ended lately
+// the My trades page's tabs: live trades, and those that have ended
 export const myTradesTabs = ["active", "finished"] as const;
 export type MyTradesTab = (typeof myTradesTabs)[number];
 
@@ -92,19 +92,30 @@ export type MyTradeSide = {
 };
 
 /**
- * A trade as My trades lists it, from the viewer's side. `needsYou` says
- * the trade is accepted and the viewer still owes something.
+ * A trade as My trades lists it, from the viewer's side. `pause` is the
+ * dispute that froze a disputed trade: when, and by a party or by staff
+ * banning one. `needsYou` says the trade is accepted and the viewer still
+ * owes something.
  */
 export type MyTradeRow = {
   id: string;
   side: TradeSide;
   state: TradeState;
   deadlineAt: Date;
-  pausedAt: Date | null;
+  pause: { at: Date; by: TradeSide | "staff" } | null;
   endedAt: Date | null;
   listingId: string | null;
   counterparty: TradeParty;
   send: MyTradeSide;
   get: MyTradeSide;
   needsYou: boolean;
+};
+
+/**
+ * A page of My trades. The Active tab is one page; Finished pages on until
+ * `nextCursor` is undefined.
+ */
+export type MyTradesPage = {
+  rows: MyTradeRow[];
+  nextCursor: string | undefined;
 };

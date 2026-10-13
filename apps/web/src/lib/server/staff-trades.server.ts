@@ -38,6 +38,7 @@ type StaffTradeAction =
  * dispute report the action was taken from (none for an undisputed trade),
  * or it is refused as changed. Every open or escalated report on the trade
  * is resolved with it, and the trade is published once that commits.
+ * Returns the audit action, which says what the action did.
  */
 export async function actOnTrade(
   staffId: string,
@@ -62,7 +63,7 @@ export async function actOnTrade(
     refuseTrade("trade_own");
   }
 
-  await db.transaction(async (tx) => {
+  const { action } = await db.transaction(async (tx) => {
     const users = await lockParties(tx, [parties.fromUserId, parties.toUserId]);
     const trade = await lockTrade(tx, tradeId);
     if (trade.disputeReportId !== reportId) {
@@ -70,15 +71,18 @@ export async function actOnTrade(
     }
     const result = transition(trade.state, event);
     if (!result.ok) refuseTrade("trade_status_changed");
+    const done = await act(tx, trade, users, result.trade);
     await recordStaffAudit(tx, {
       staffId,
       tradeId,
       reportId: trade.disputeReportId,
-      ...(await act(tx, trade, users, result.trade)),
+      ...done,
     });
     await resolveTargetReports(tx, staffId, "trade", tradeId);
+    return done;
   });
   await publishTradeUpdates([tradeId]);
+  return action;
 }
 
 /**

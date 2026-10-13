@@ -23,18 +23,19 @@ import {
   tradeIdInputSchema,
 } from "@/lib/universal/schema/trades";
 import type {
-  MyTradeRow,
   MyTradeSide,
+  MyTradesPage,
   TradeView,
   TradeViewer,
 } from "@/lib/universal/trades";
 import { can, parseRole } from "@apollo/auth";
+import { tradeOffers } from "@apollo/database/web/schema";
 import { liveTradeStatuses, type TradeSide } from "@apollo/database/web/types";
 import { needsYou, partyAction, tradeState } from "@apollo/trades/lifecycle";
 import { addr } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
-import { subDays } from "date-fns";
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
+import { alias } from "drizzle-orm/pg-core";
 
 /**
  * A trade the caller is part of, with their side, or for staff who may read
@@ -51,53 +52,50 @@ export const $fetchTrade = createServerFn({ method: "GET" })
       context,
     }): Promise<{ trade: TradeView; viewer: TradeViewer } | null> => {
       const { id: userId, role } = context.session.user;
-      const parties = await db.query.tradeOffers.findFirst({
-        where: { id: data.tradeId, kind: "trade" },
-        columns: { fromUserId: true, toUserId: true, disputeReportId: true },
-      });
-      if (!parties) return null;
-
-      const side =
-        parties.fromUserId === userId
-          ? "from"
-          : parties.toUserId === userId
-            ? "to"
-            : null;
-      if (side === null && !can(parseRole(role), { trade: ["read-any"] })) {
-        return null;
-      }
-
-      const [trade, report] = await Promise.all([
+      const staff = can(parseRole(role), { trade: ["read-any"] });
+      const [trade, offer] = await Promise.all([
         readTradeView(data.tradeId),
-        side === null && parties.disputeReportId !== null
-          ? db.query.reports.findFirst({
-              where: { id: parties.disputeReportId },
-              columns: { id: true, status: true },
+        staff
+          ? db.query.tradeOffers.findFirst({
+              where: { id: data.tradeId, kind: "trade" },
+              columns: {},
+              with: { disputeReport: { columns: { id: true, status: true } } },
             })
           : undefined,
       ]);
-      return (
-        trade && {
-          trade,
-          viewer:
-            side === null
-              ? { kind: "staff", report: report ?? null }
-              : { kind: "party", side },
-        }
-      );
+      if (trade === null) return null;
+
+      const side =
+        trade.parties.from.user?.id === userId
+          ? "from"
+          : trade.parties.to.user?.id === userId
+            ? "to"
+            : null;
+      if (side !== null) return { trade, viewer: { kind: "party", side } };
+      return staff
+        ? {
+            trade,
+            viewer: { kind: "staff", report: offer?.disputeReport ?? null },
+          }
+        : null;
     },
   );
 
+const FINISHED_PAGE_SIZE = 30;
+
 /**
- * The caller's trades for My trades: the live ones by deadline, or those
- * that ended in the last 30 days, newest first. Each side shows only its
- * first objekt, so the indexer is read for those alone.
+ * The caller's trades for My trades: every live one by deadline, or the
+ * ended ones newest first, keyset-paged on the trade id like the Listings
+ * feed. Each side shows only its first objekt, so the indexer is read for
+ * those alone.
  */
 export const $fetchMyTrades = createServerFn({ method: "GET" })
   .validator(myTradesInputSchema)
   .middleware([authenticatedMiddleware])
-  .handler(async ({ data, context }): Promise<MyTradeRow[]> => {
+  .handler(async ({ data, context }): Promise<MyTradesPage> => {
     const userId = context.session.user.id;
+    const { cursor } = data;
+    const cursorRow = alias(tradeOffers, "cursor_row");
     const rows = await db.query.tradeOffers.findMany({
       where: {
         kind: "trade",
@@ -106,7 +104,13 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
           ? { status: { in: [...liveTradeStatuses] } }
           : {
               status: { in: ["completed", "cancelled", "timed_out"] },
-              endedAt: { gt: subDays(new Date(), 30) },
+              ...(cursor !== undefined && {
+                RAW: (t) =>
+                  sql`(${t.endedAt}, ${t.id}) < (${db
+                    .select({ endedAt: cursorRow.endedAt, id: cursorRow.id })
+                    .from(cursorRow)
+                    .where(eq(cursorRow.id, cursor))})`,
+              }),
             }),
       },
       columns: {
@@ -139,7 +143,7 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
             kind: "event",
             RAW: (t) => sql`${t.event}->>'type' = 'disputed'`,
           },
-          columns: { createdAt: true },
+          columns: { createdAt: true, event: true },
           orderBy: { id: "desc" },
           limit: 1,
         },
@@ -152,9 +156,10 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
         data.tab === "active"
           ? { deadlineAt: "asc", id: "asc" }
           : { endedAt: "desc", id: "desc" },
+      limit: data.tab === "active" ? undefined : FINISHED_PAGE_SIZE + 1,
     });
-
-    const trades = rows.map((row) => {
+    const page = rows.slice(0, FINISHED_PAGE_SIZE);
+    const trades = (data.tab === "active" ? rows : page).map((row) => {
       const side: TradeSide = row.fromUserId === userId ? "from" : "to";
       return {
         row,
@@ -194,11 +199,12 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
       };
     };
 
-    return trades.map(({ row, side, send, get }) => {
+    const mapped = trades.map(({ row, side, send, get }) => {
       if (row.deadlineAt === null) {
         throw new Error("accepted trade without a deadline");
       }
       const state = tradeState(row, row.items);
+      const [dispute] = row.messages;
       const other =
         side === "from"
           ? { id: row.toUserId, user: row.toUser, cosmo: row.toCosmo }
@@ -208,9 +214,9 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
         side,
         state,
         deadlineAt: row.deadlineAt,
-        pausedAt:
-          state.status === "disputed"
-            ? (row.messages[0]?.createdAt ?? null)
+        pause:
+          state.status === "disputed" && dispute?.event?.type === "disputed"
+            ? { at: dispute.createdAt, by: dispute.event.by }
             : null,
         endedAt: row.endedAt,
         listingId:
@@ -228,6 +234,10 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
         needsYou: needsYou(state, side),
       };
     });
+    return {
+      rows: mapped,
+      nextCursor: rows.length > page.length ? page.at(-1)?.id : undefined,
+    };
   });
 
 /**

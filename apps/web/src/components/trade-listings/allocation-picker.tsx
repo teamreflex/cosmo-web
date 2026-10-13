@@ -1,6 +1,6 @@
 import type { PickerRow, Picks } from "@/hooks/use-listing-picks";
 import { m } from "@/i18n/messages";
-import { formatSerial } from "@/lib/client/objekt-util";
+import { formatSerial, getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import { formatCount, objektName } from "@/lib/client/trade-listings";
 import { env } from "@/lib/env/client";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
@@ -102,14 +102,7 @@ function WantRow({
     `${objektName(collections.get(swapped.attributes.slug) ?? null, swapped.attributes)} ${formatSerial(swapped.serial)}`;
 
   return (
-    <div
-      className={cn(
-        "flex flex-col overflow-clip rounded-lg border",
-        missing > 0
-          ? "border-amber-500/50 bg-amber-500/5"
-          : "border-teal-500/30",
-      )}
-    >
+    <div className="flex flex-col overflow-clip rounded-lg border border-teal-500/30">
       <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 border-b border-border/60 px-4 py-3 text-sm">
         {row.want.kind === "range" ? (
           <RangeBadges
@@ -163,12 +156,25 @@ function WantRow({
             />
           );
         })}
+        {/* what the viewer doesn't own: the wanted objekt greyed out, or a blank card for a range */}
         {Array.from({ length: missing }, (_, slot) => (
           <div
             key={`missing-${slot}`}
             className="@container w-11 shrink-0 md:w-21"
           >
-            <div className="aspect-photocard rounded-photocard border border-dashed border-amber-500/60" />
+            {row.want.kind === "exact" && row.want.collection !== null ? (
+              <img
+                src={getObjektFrontImageUrl(row.want.collection, "xs")}
+                alt=""
+                width={291}
+                height={450}
+                loading="lazy"
+                decoding="async"
+                className="aspect-photocard w-full rounded-photocard opacity-30 grayscale"
+              />
+            ) : (
+              <div className="aspect-photocard rounded-photocard border border-dashed border-teal-500/40" />
+            )}
           </div>
         ))}
       </div>

@@ -52,33 +52,37 @@ export const Route = createFileRoute("/market/listing/$id")({
       },
     );
     /**
-     * The viewer's side reads their holdings, so hovering a link never
-     * fetches it. An ended listing asks only whether the viewer was a party
-     * to its trade.
+     * Everything the page shows is read before it renders, so a navigation
+     * paints the listing once instead of filling in its sides; a read that
+     * fails is retried by the component that shows it. The viewer's
+     * side reads their holdings, so hovering a link never fetches it. An
+     * ended listing asks only whether the viewer was a party to its trade.
      */
-    if (
+    await Promise.all([
       !preload &&
-      (panel.kind === "viewer" || (panel.kind === "closed" && account))
-    ) {
-      void context.queryClient
-        .query(tradeListingViewerQuery(id, listing.updatedAt))
-        .catch(noop);
-    }
-    // the poster's blocked listing names the objekts that block it
-    if (panel.kind === "poster_open" && listing.blocked && account?.cosmo) {
-      void context.queryClient
-        .query(
-          offeredTokenRefusalsQuery(listing.items.map((item) => item.tokenId)),
-        )
-        .catch(noop);
-    }
-    for (const want of listing.wants) {
-      if (want.kind === "range") {
-        void context.queryClient
-          .query(rangeMatchCountQuery(want.filter))
-          .catch(noop);
-      }
-    }
+        (panel.kind === "viewer" || (panel.kind === "closed" && account)) &&
+        context.queryClient
+          .query(tradeListingViewerQuery(id, listing.updatedAt))
+          .catch(noop),
+      // the poster's blocked listing names the objekts that block it
+      panel.kind === "poster_open" &&
+        listing.blocked &&
+        account?.cosmo &&
+        context.queryClient
+          .query(
+            offeredTokenRefusalsQuery(
+              listing.items.map((item) => item.tokenId),
+            ),
+          )
+          .catch(noop),
+      ...listing.wants.map(
+        (want) =>
+          want.kind === "range" &&
+          context.queryClient
+            .query(rangeMatchCountQuery(want.filter))
+            .catch(noop),
+      ),
+    ]);
 
     return { id, account };
   },

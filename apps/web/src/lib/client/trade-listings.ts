@@ -13,6 +13,7 @@ import {
   type RangeFilter,
   hasBidiControl,
 } from "@apollo/trades/range";
+import { isAddress, shortAddress } from "@apollo/util";
 
 /**
  * The poster as the listing page names them: their COSMO username, else
@@ -22,7 +23,9 @@ export function posterName(
   listing: Pick<TradeListing, "poster" | "cosmoUsername">,
 ) {
   const name = listing.cosmoUsername ?? listing.poster?.username;
-  return name === undefined ? m.common_deleted_user() : `@${name}`;
+  if (name === undefined) return m.common_deleted_user();
+  // a COSMO account without a nickname goes by its address
+  return `@${isAddress(name) ? shortAddress(name) : name}`;
 }
 
 /**

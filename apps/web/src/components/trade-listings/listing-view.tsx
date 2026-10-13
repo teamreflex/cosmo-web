@@ -1,3 +1,4 @@
+import { useInvalidateListing } from "@/hooks/use-invalidate-listing";
 import {
   type PickerRow,
   type Picks,
@@ -5,6 +6,7 @@ import {
 } from "@/hooks/use-listing-picks";
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
+import { tradeListingQuery } from "@/lib/queries/trade-listings";
 import { tradesNeedingYouQuery } from "@/lib/queries/trades";
 import {
   type ClosedListingState,
@@ -16,9 +18,10 @@ import {
 import { cn } from "@/lib/utils";
 import { CLAIM_WINDOW } from "@apollo/trades/timers";
 import { IconArrowRight, IconPencil, IconX } from "@tabler/icons-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation } from "@tanstack/react-router";
 import { type ReactNode, useId, useState } from "react";
+import { toast } from "sonner";
 import LinkCosmo from "../auth/link-cosmo";
 import SignIn from "../auth/sign-in";
 import { Button, buttonVariants } from "../ui/button";
@@ -101,6 +104,8 @@ export default function ListingView({
   const barReasonId = useId();
   const [dialog, setDialog] = useState<Dialog | null>(null);
   const [snapshot, setSnapshot] = useState<ConfirmSnapshot | null>(null);
+  const queryClient = useQueryClient();
+  const invalidateListing = useInvalidateListing(listing.id);
   const rows = listing.wants.flatMap((want): PickerRow[] => {
     const trade = toTradeWant(want);
     return trade === null ? [] : [{ want, trade }];
@@ -109,6 +114,22 @@ export default function ListingView({
     role.role === "picker" ? role.viewer : null,
     rows,
   );
+  /**
+   * Edit starts from the listing as it is now: one accepted since the page
+   * loaded can't change, so the dialog closes and says so.
+   */
+  async function openDialog(name: Dialog) {
+    setDialog(name);
+    if (name !== "edit") return;
+    await invalidateListing();
+    const fresh = queryClient.getQueryData(
+      tradeListingQuery(listing.id).queryKey,
+    );
+    if (fresh?.state.status === "claimed") {
+      setDialog(null);
+      toast.error(m.trade_error_listing_claimed());
+    }
+  }
   const dialogProps = (name: Dialog) => ({
     open: dialog === name,
     onOpenChange: (open: boolean) => setDialog(open ? name : null),
@@ -122,7 +143,7 @@ export default function ListingView({
         className={className}
         reasonId={describedBy}
         detailId={detailId}
-        onDialog={setDialog}
+        onDialog={(name) => void openDialog(name)}
         onAccept={(assignment) => {
           setSnapshot({
             assignment,

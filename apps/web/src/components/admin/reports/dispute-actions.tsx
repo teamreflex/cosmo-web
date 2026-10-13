@@ -38,11 +38,12 @@ import type * as z from "zod";
 
 type DisputeAction = "extend" | "complete" | "cancel";
 
+// by what the server did: extending a trade where everything arrived completes it
 const doneMessages = {
-  extend: m.admin_dispute_extended,
-  complete: m.admin_dispute_completed,
-  cancel: m.admin_dispute_cancelled,
-} satisfies Record<DisputeAction, () => string>;
+  "trade:extend": m.admin_dispute_extended,
+  "trade:complete": m.admin_dispute_completed,
+  "trade:cancel": m.admin_dispute_cancelled,
+} satisfies Record<`trade:${DisputeAction}`, () => string>;
 
 type Props = {
   report: AdminReportDetail;
@@ -91,7 +92,7 @@ export default function DisputeActions({ report, trade }: Props) {
           return $staffCancelTrade({ data });
       }
     },
-    onSuccess: (_, { action }) => toast.success(doneMessages[action]()),
+    onSuccess: (done) => toast.success(doneMessages[done]()),
     // the note stays for another try
     onError: (error) => toast.error(formatError(error)),
     onSettled: () =>
@@ -145,7 +146,7 @@ export default function DisputeActions({ report, trade }: Props) {
               id={noteId}
               rows={3}
               maxLength={1000}
-              className="resize-none bg-background"
+              className="max-h-40 resize-none bg-background"
               aria-invalid={fieldState.invalid}
               aria-describedby={noteDescriptionId}
               {...field}

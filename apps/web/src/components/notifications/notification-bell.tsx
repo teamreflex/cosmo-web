@@ -48,10 +48,13 @@ export default function NotificationBell() {
       open={open}
       onOpenChange={(open) => {
         setOpenedOn(open ? pathname : null);
-        // the list refetches on open, so the badge catches up with it
+        // the list refetches on open, so the badge and count catch up with it
         if (open) {
           void queryClient.invalidateQueries({
             queryKey: unreadNotificationsQuery.queryKey,
+          });
+          void queryClient.invalidateQueries({
+            queryKey: tradesNeedingYouQuery.queryKey,
           });
         }
       }}

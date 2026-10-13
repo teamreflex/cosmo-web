@@ -123,7 +123,7 @@ function TradeTarget({ trade }: { trade: ReportTargetTrade | null }) {
           <TradeParty key={side} party={trade[side]} side={side} />
         ))}
       </div>
-      <TransferRows items={view.items} parties={view.parties} side={null} />
+      <TransferRows trade={view} side={null} />
     </div>
   );
 }

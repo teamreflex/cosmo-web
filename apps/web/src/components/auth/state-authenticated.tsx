@@ -22,6 +22,8 @@ export default function StateAuthenticated({ user, cosmo }: Props) {
       await router.navigate({ to: "/" });
       // after navigating, so no mounted staff page refetches what's removed
       removeViewerQueries(queryClient);
+      // so Back to a signed-in page runs its loader rather than showing it
+      router.clearCache();
       await router.invalidate();
     },
   });

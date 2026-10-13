@@ -23,8 +23,8 @@ import {
   IconUserCog,
 } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { Link, useLocation } from "@tanstack/react-router";
+import { useId, useState } from "react";
 import { ADMIN_SHELL_PERMISSIONS } from "../admin/common";
 import AboutDialog from "../navbar/about";
 import { ArtistItem } from "../navbar/artist-selectbox";
@@ -46,9 +46,18 @@ export default function UserDropdown({
   const { artistList, selectedIds } = useArtists();
   const hasPermission = useHasPermission();
   const [openSettings, setOpenSettings] = useState(false);
-  const [openAccount, setOpenAccount] = useState(false);
+  /**
+   * Remembering where the account dialog was opened closes it on any
+   * navigation, such as a deletion blocker's link to its trade.
+   */
+  const pathname = useLocation({ select: (location) => location.pathname });
+  const [accountOpenedOn, setAccountOpenedOn] = useState<string | null>(null);
+  if (accountOpenedOn !== null && accountOpenedOn !== pathname) {
+    setAccountOpenedOn(null);
+  }
   const [openAbout, setOpenAbout] = useState(false);
   const needsYou = useQuery(tradesNeedingYouQuery).data ?? 0;
+  const needsYouId = useId();
 
   return (
     <DropdownMenu>
@@ -58,22 +67,26 @@ export default function UserDropdown({
         user={user}
       />
       <AccountDialog
-        open={openAccount}
-        onOpenChange={setOpenAccount}
+        open={accountOpenedOn !== null}
+        onOpenChange={(open) => setAccountOpenedOn(open ? pathname : null)}
         cosmo={cosmo}
       />
       <AboutDialog open={openAbout} onOpenChange={setOpenAbout} />
 
-      <DropdownMenuTrigger className="group relative outline-hidden">
+      {/* describes the trigger, since inside it the count would become its name */}
+      {needsYou > 0 && (
+        <span id={needsYouId} className="sr-only">
+          {m.my_trades_label_count({ count: needsYou })}
+        </span>
+      )}
+      <DropdownMenuTrigger
+        aria-describedby={needsYou > 0 ? needsYouId : undefined}
+        className="group relative outline-hidden"
+      >
         <UserAvatar
           className="h-8 w-8 shadow-sm **:p-1"
           username={user.username ?? "Apollo"}
         />
-        {needsYou > 0 && (
-          <span className="sr-only">
-            {m.my_trades_label_count({ count: needsYou })}
-          </span>
-        )}
         {needsYou > 0 && (
           <span
             aria-hidden
@@ -98,7 +111,7 @@ export default function UserDropdown({
         <DropdownMenuSeparator />
 
         <DropdownMenuItem
-          onClick={() => setOpenAccount(true)}
+          onClick={() => setAccountOpenedOn(pathname)}
           className="cursor-pointer"
         >
           <IconUserCog className="h-4 w-4" />

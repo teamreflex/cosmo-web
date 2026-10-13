@@ -86,8 +86,8 @@ export function OnlookerStatus({ deadlineAt }: { deadlineAt: Date | null }) {
 }
 
 /**
- * The claimer's own claimed listing: how long their trade has left, unless
- * a dispute froze it, and what to send to whom.
+ * The claimer's own claimed listing: how long their trade has left and what
+ * to send to whom, or that a dispute froze it.
  */
 export function ClaimerStatus({
   listing,
@@ -113,11 +113,13 @@ export function ClaimerStatus({
         )}
       </div>
       <StatusDetail>
-        {m.listing_detail_claimer_body({
-          count: wantedObjektCount(listing.wants),
-          poster: posterName(listing),
-          appName: env.VITE_APP_NAME,
-        })}
+        {deadlineAt === null
+          ? m.listing_detail_claim_disputed()
+          : m.listing_detail_claimer_body({
+              count: wantedObjektCount(listing.wants),
+              poster: posterName(listing),
+              appName: env.VITE_APP_NAME,
+            })}
       </StatusDetail>
     </Status>
   );
@@ -180,8 +182,8 @@ export function NoticeStrip({ notice }: { notice: Notice }) {
 
 /**
  * The poster's own claimed listing: who accepted it and how long their trade
- * has left, unless a dispute froze it. Edit and Withdraw stay disabled while
- * it runs, each described by why.
+ * has left, or that a dispute froze it. Edit and Withdraw stay disabled
+ * while it runs, each described by why.
  */
 export function PosterClaimedStatus({
   claim,
@@ -227,7 +229,11 @@ export function PosterClaimedStatus({
           />
         )}
       </span>
-      <StatusDetail>{m.listing_detail_poster_claimed_body()}</StatusDetail>
+      <StatusDetail>
+        {deadlineAt === null
+          ? m.listing_detail_claim_disputed()
+          : m.listing_detail_poster_claimed_body()}
+      </StatusDetail>
       <span id={editReasonId} className="sr-only">
         {m.listing_composer_edit_claimed()}
       </span>

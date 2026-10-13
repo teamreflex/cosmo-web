@@ -3,8 +3,7 @@ import {
   $fetchTrade,
   $fetchTradesNeedingYou,
 } from "@/lib/functions/trades";
-import type { MyTradesTab } from "@/lib/universal/trades";
-import { queryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
 /**
  * Every trade query. Their answers depend on who is signed in, so
@@ -19,10 +18,19 @@ export const tradeQuery = (id: string) =>
     queryFn: ({ signal }) => $fetchTrade({ signal, data: { tradeId: id } }),
   });
 
-export const myTradesQuery = (tab: MyTradesTab) =>
-  queryOptions({
-    queryKey: [...tradesKey, "mine", tab],
-    queryFn: ({ signal }) => $fetchMyTrades({ signal, data: { tab } }),
+// the viewer's live trades, which also give My trades its counts
+export const activeTradesQuery = queryOptions({
+  queryKey: [...tradesKey, "mine", "active"],
+  queryFn: ({ signal }) => $fetchMyTrades({ signal, data: { tab: "active" } }),
+});
+
+export const finishedTradesQuery = () =>
+  infiniteQueryOptions({
+    queryKey: [...tradesKey, "mine", "finished"],
+    queryFn: ({ signal, pageParam }) =>
+      $fetchMyTrades({ signal, data: { tab: "finished", cursor: pageParam } }),
+    initialPageParam: firstPage,
+    getNextPageParam: (lastPage) => lastPage.nextCursor,
   });
 
 /**
@@ -33,3 +41,9 @@ export const tradesNeedingYouQuery = queryOptions({
   queryKey: [...tradesKey, "needs-you"],
   queryFn: ({ signal }) => $fetchTradesNeedingYou({ signal }),
 });
+
+/**
+ * The first page has no cursor. Typed as the cursor union so the query
+ * infers its page param from it.
+ */
+const firstPage: string | undefined = undefined;

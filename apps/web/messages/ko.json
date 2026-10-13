@@ -371,7 +371,7 @@
   "trade_error_claim_assignment_invalid": "선택한 오브젝트가 이 교환 글에 맞지 않습니다. 새로고침한 뒤 다시 선택하세요.",
   "trade_error_claim_token_unavailable": "선택한 오브젝트 중 하나를 더 이상 교환할 수 없습니다.",
   "trade_error_trade_not_found": "교환을 찾을 수 없습니다.",
-  "trade_error_trade_status_changed": "교환 상태가 바뀌었습니다. 새로고침해서 확인해 주세요.",
+  "trade_error_trade_status_changed": "그 사이에 교환 상태가 바뀌었습니다. 지금 페이지에 현재 상태가 표시됩니다.",
   "trade_error_trade_cancel_started": "이 교환에서 이미 오브젝트가 전송되어 취소할 수 없습니다. 대신 분쟁을 신청해 주세요.",
   "trade_error_trade_deadline_passed": "이 교환의 기한이 지났습니다.",
   "trade_error_trade_own": "이 교환의 당사자이므로 다른 스태프가 처리합니다.",
@@ -385,7 +385,6 @@
   "trade_page_error": "이 교환을 불러오는 중에 문제가 발생했습니다.",
   "trade_page_signed_out_title": "이 교환을 보려면 로그인하세요",
   "trade_page_signed_out_body": "교환은 참여한 두 사람에게만 보입니다.",
-  "trade_page_from_listing": "등록글에서",
   "trade_page_parties": "나 ⇄ {#user}{name}{/user}",
   "trade_page_time_left": "완료까지 {#time}{left}{/time} 남음",
   "trade_page_due": "마감: {#time}{when}{/time}",
@@ -397,6 +396,7 @@
   "trade_page_step": "{step}단계",
   "trade_page_step_done": "{step}단계 · 완료",
   "trade_page_step_dispute": "{step}단계 · 이의 제기 중",
+  "trade_page_step_paused": "{step}단계 · 일시 정지",
   "trade_page_step_accepted_you": "{name}님의 등록글을 수락했습니다",
   "trade_page_step_accepted_them": "{name}님이 내 등록글을 수락했습니다",
   "trade_page_step_send": "서로 보내기 · {count}개 중 {seen}개 확인",
@@ -423,6 +423,15 @@
       }
     }
   ],
+  "trade_page_send_no_cosmo": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{appName}에서 {name}님의 COSMO ID를 알 수 없습니다. 본인에게 ID를 확인한 뒤 COSMO 앱에서 오브젝트 {count}개를 보내세요."
+      }
+    }
+  ],
   "trade_page_copy": "COSMO ID 복사",
   "trade_page_copy_failed": "복사하지 못했습니다. 상대의 COSMO ID는 {username}입니다.",
   "trade_page_completed_title": [
@@ -441,7 +450,9 @@
   "trade_page_disputed_them": "{name}님이 이의를 제기했습니다: {reason}",
   "trade_page_disputed_staff": "{appName} 스태프가 검토를 위해 이 교환을 일시 정지했습니다.",
   "trade_page_disputed_body": "모더레이터가 교환을 살펴보고 완료하거나, 취소하거나, 두 사람 모두에게 시간을 더 줄 수 있습니다. 그때까지 타이머는 멈추고 아무도 취소할 수 없습니다. 그동안 보낸 전송도 그대로 인정됩니다.",
+  "trade_page_disputed_body_paused": "모더레이터가 교환을 살펴봅니다. 그때까지 타이머는 멈추고 아무도 취소할 수 없습니다. 그동안 보낸 전송도 그대로 인정됩니다.",
   "trade_page_disputed_meta": "{#time}{when}{/time}에 제기됨 · 신고 #{report}",
+  "trade_page_disputed_meta_paused": "{#time}{when}{/time}에 일시 정지됨",
   "trade_page_cancelled_you": "이 교환을 취소했습니다.",
   "trade_page_cancelled_them": "{name}님이 이 교환을 취소했습니다.",
   "trade_page_cancelled_staff": "{appName} 스태프가 이 교환을 취소했습니다.",
@@ -506,8 +517,11 @@
   "trade_page_cancel_description_claimer": "아직 두 사람 모두 아무것도 보내지 않았습니다. {name}님이 오브젝트를 아직 가지고 있다면 그 게시물이 다시 누구나 수락할 수 있게 열립니다.",
   "trade_page_cancelled_toast": "교환을 취소했습니다",
   "trade_page_cancel_started_you": "이미 {#b}{objekt}{/b}을(를) 보냈기 때문에 이제 두 사람 모두 취소할 수 없습니다. 문제가 있다면 이의를 제기하세요.",
+  "trade_page_cancel_started_you_many": "이미 오브젝트 {count}개를 보냈기 때문에 이제 두 사람 모두 취소할 수 없습니다. 문제가 있다면 이의를 제기하세요.",
   "trade_page_cancel_started_them": "{name}님이 이미 {#b}{objekt}{/b}을(를) 보냈기 때문에 이제 두 사람 모두 취소할 수 없습니다. 문제가 있다면 이의를 제기하세요.",
+  "trade_page_cancel_started_them_many": "{name}님이 이미 오브젝트 {count}개를 보냈기 때문에 이제 두 사람 모두 취소할 수 없습니다. 문제가 있다면 이의를 제기하세요.",
   "trade_page_deadline_passed": "기한이 지났습니다. {appName}이(가) 다음에 기한을 확인할 때 이 교환을 종료합니다.",
+  "trade_page_deadline_passed_short": "기한 지남",
   "trade_page_dispute_open": "이의 제기",
   "trade_page_dispute_title": "이의 제기하기",
   "trade_page_dispute_description": "모더레이터가 교환을 살펴본 뒤 완료하거나, 취소하거나, 두 사람 모두에게 시간을 더 줍니다.",
@@ -520,8 +534,9 @@
   "trade_page_staff_description": "이 방문은 한 번 기록됩니다. 당사자에게는 알리지 않습니다.",
   "trade_page_staff_back": "신고로 돌아가기",
   "trade_page_step_accepted_staff": "{claimer}님이 {poster}님의 등록글을 수락했습니다",
-  "trade_page_problem_staff_body": "이 교환으로는 더 이상 {name}님에게 보낼 수 없습니다.",
+  "trade_page_problem_staff_body": "{sender}님은 이 교환으로 더 이상 {receiver}님에게 이것을 보낼 수 없습니다.",
   "trade_page_disputed_body_staff": "타이머가 멈춰 있고 어느 쪽도 취소할 수 없습니다. 전송은 그대로 인정됩니다. 스태프는 신고에서 완료, 취소 또는 기한 연장을 할 수 있습니다.",
+  "trade_page_disputed_body_staff_paused": "타이머가 멈춰 있고 어느 쪽도 취소할 수 없습니다. 전송은 그대로 인정됩니다. 스태프는 신고에서 완료하거나 취소할 수 있으며, 두 당사자 모두 정지 상태가 아니게 되면 연장할 수도 있습니다.",
   "trade_page_timed_out_both_staff": "두 사람 모두 보낼 오브젝트가 남은 채 시간이 다 되었습니다.",
   "trade_page_event_accepted_staff": "{#b}{claimer}{/b}님이 {#b}{poster}{/b}님의 등록글을 수락했습니다.",
   "trade_page_event_extended_staff": "{appName} 스태프가 두 사람의 기한을 {#time}{when}{/time}까지 연장했습니다.",
@@ -594,6 +609,7 @@
   "listing_detail_onlooker": "다른 사람이 완료하기까지 {#time}{left}{/time} 남음",
   "listing_detail_onlooker_untimed": "다른 사람이 수락했습니다",
   "listing_detail_claimer_title": "내가 수락한 교환 글",
+  "listing_detail_claim_disputed": "모더레이터가 살펴보는 동안 교환이 일시 정지됩니다. 그동안 보낸 전송도 그대로 인정됩니다.",
   "listing_detail_time_left": "{#time}{left}{/time} 남음",
   "listing_detail_claimer_body": [
     {
@@ -2008,7 +2024,6 @@
   "listing_detail_poster_blocked_body": "제시한 오브젝트 중 하나가 잠겼거나, 전송할 수 없거나, 다른 교환 중이거나, 계정에서 옮겨졌습니다.",
   "listing_detail_poster_blocked_fix": "교환 글을 수정해 다른 것을 제시하거나 COSMO에서 해결하세요.",
   "my_trades_title": "내 거래",
-  "my_trades_description": "참여 중인 거래입니다. 끝난 거래는 30일 동안 여기에 남습니다.",
   "my_trades_need_you": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
@@ -2032,11 +2047,10 @@
   "my_trades_tab_finished": "종료",
   "my_trades_group_needs_you": "내 차례",
   "my_trades_group_waiting": "상대 차례",
-  "my_trades_group_finished": "최근 30일",
   "my_trades_column_kind": "종류",
   "my_trades_column_send": "보내는 것",
   "my_trades_column_get": "받는 것",
-  "my_trades_column_next": "다음 단계",
+  "my_trades_column_status": "상태",
   "my_trades_column_with": "상대",
   "my_trades_column_time": "남은 시간",
   "my_trades_column_ended": "종료일",
@@ -2051,12 +2065,13 @@
       }
     }
   ],
-  "my_trades_next_them": "{name}님이 보낼 차례",
+  "my_trades_next_them": "{#user}{name}{/user}님이 보낼 차례",
   "my_trades_next_dispute": "분쟁 진행 중",
+  "my_trades_next_paused": "일시 정지",
   "my_trades_empty_active": "진행 중인 거래가 없습니다",
   "my_trades_empty_active_body": "다른 사람의 리스팅을 수락하거나 내 리스팅이 수락되면 거래가 여기에 표시됩니다.",
   "my_trades_browse": "리스팅 둘러보기",
   "my_trades_empty_finished": "끝난 거래가 없습니다",
-  "my_trades_empty_finished_body": "최근 30일 동안 끝난 거래가 여기에 표시됩니다.",
+  "my_trades_empty_finished_body": "끝난 거래가 여기에 표시됩니다.",
   "my_trades_error": "거래를 불러오지 못했습니다."
 }

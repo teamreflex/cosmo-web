@@ -1,11 +1,12 @@
 import { m } from "@/i18n/messages";
 import { formatSerial } from "@/lib/client/objekt-util";
 import { env } from "@/lib/env/client";
-import { tradeQuery } from "@/lib/queries/trades";
+import { tradesKey } from "@/lib/queries/trades";
 import type {
   NotificationListItem,
   NotificationToken,
 } from "@/lib/universal/notifications";
+import { isAddress, shortAddress } from "@apollo/util";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconTagOff } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -16,8 +17,9 @@ import { bold, rowClassName } from "./row-utils";
 type TradeItem = Extract<NotificationListItem, { kind: "trade" }>;
 
 /**
- * A trade notification links to its trade, which opening it refreshes, and
- * a closed listing's to the listing.
+ * A trade notification links to its trade, and opening it refreshes every
+ * trade query, so the needs-you counts follow too. A closed listing's links
+ * to the listing.
  */
 export default function TradeRow({
   notification,
@@ -28,7 +30,14 @@ export default function TradeRow({
 }) {
   const { counterparty, objekts, token, offer } = notification;
   const queryClient = useQueryClient();
-  const username = counterparty?.username ?? m.notification_unknown_user();
+  // trade pages name a deleted or nicknameless counterparty the same way
+  const name = counterparty?.username ?? null;
+  const username =
+    name === null
+      ? m.common_deleted_user()
+      : isAddress(name)
+        ? shortAddress(name)
+        : name;
   const shown = token ?? (objekts.length === 1 ? objekts[0] : undefined);
   const content = (
     <RowBody
@@ -67,12 +76,12 @@ export default function TradeRow({
     <Link
       to={closed ? "/market/listing/$id" : "/trade/$id"}
       params={{ id: offer.id }}
+      // the click refetches the trade, so a hover preload would fetch it twice
+      preload={closed ? undefined : false}
       onClick={() => {
         onOpen();
         if (!closed) {
-          void queryClient.invalidateQueries({
-            queryKey: tradeQuery(offer.id).queryKey,
-          });
+          void queryClient.invalidateQueries({ queryKey: tradesKey });
         }
       }}
       data-unread={notification.unread}

@@ -55,7 +55,7 @@ export const $staffCompleteTrade = createServerFn({ method: "POST" })
   .validator(staffTradeInputSchema)
   .handler(async ({ data, context }) => {
     const staffId = context.session.user.id;
-    await actOnTrade(
+    return actOnTrade(
       staffId,
       data,
       { type: "staff_complete" },
@@ -77,7 +77,7 @@ export const $staffCancelTrade = createServerFn({ method: "POST" })
   .validator(staffTradeInputSchema)
   .handler(async ({ data, context }) => {
     const staffId = context.session.user.id;
-    await actOnTrade(
+    return actOnTrade(
       staffId,
       data,
       { type: "staff_cancel" },
@@ -106,15 +106,16 @@ export const $staffCancelTrade = createServerFn({ method: "POST" })
  * Give a disputed trade a new deadline: the time it had left when it was
  * last frozen, plus the hours picked. It goes back to accepted without its
  * dispute report, which this resolves. A trade whose items all arrived while
- * disputed completes instead, recorded as a staff complete. A trade with a
- * banned party can only be completed or cancelled.
+ * disputed completes instead, recorded as a staff complete, which the
+ * returned audit action tells the caller. A trade with a banned party can
+ * only be completed or cancelled.
  */
 export const $staffExtendTradeDeadline = createServerFn({ method: "POST" })
   .middleware([staffMiddleware({ trade: ["resolve-dispute"] })])
   .validator(staffExtendTradeInputSchema)
   .handler(async ({ data, context }) => {
     const staffId = context.session.user.id;
-    await actOnTrade(
+    return actOnTrade(
       staffId,
       data,
       { type: "staff_extend" },

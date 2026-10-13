@@ -373,7 +373,7 @@
   "trade_error_claim_assignment_invalid": "The objekts you picked don't fit this listing. Refresh and pick again.",
   "trade_error_claim_token_unavailable": "One of the objekts you picked can no longer be traded.",
   "trade_error_trade_not_found": "This trade couldn't be found.",
-  "trade_error_trade_status_changed": "This trade has changed. Reload to see where it stands.",
+  "trade_error_trade_status_changed": "This trade changed in the meantime. The page now shows where it stands.",
   "trade_error_trade_cancel_started": "Objekts have already been sent in this trade, so it can't be cancelled. Open a dispute instead.",
   "trade_error_trade_deadline_passed": "This trade's deadline has passed.",
   "trade_error_trade_own": "You're part of this trade, so other staff will handle it.",
@@ -387,7 +387,6 @@
   "trade_page_error": "Something went wrong loading this trade.",
   "trade_page_signed_out_title": "Sign in to see this trade",
   "trade_page_signed_out_body": "A trade is only visible to the two people in it.",
-  "trade_page_from_listing": "From a listing",
   "trade_page_parties": "You ⇄ {#user}{name}{/user}",
   "trade_page_time_left": "{#time}{left}{/time} left to finish",
   "trade_page_due": "Due {#time}{when}{/time}",
@@ -399,6 +398,7 @@
   "trade_page_step": "Step {step}",
   "trade_page_step_done": "Step {step} · done",
   "trade_page_step_dispute": "Step {step} · in dispute",
+  "trade_page_step_paused": "Step {step} · paused",
   "trade_page_step_accepted_you": "You accepted {name}'s listing",
   "trade_page_step_accepted_them": "{name} accepted your listing",
   "trade_page_step_send": "Both send · {seen} of {count} seen",
@@ -426,15 +426,26 @@
       }
     }
   ],
+  "trade_page_send_no_cosmo": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{appName} doesn't know {name}'s COSMO ID, so get it from them, then send your objekt in the COSMO app.",
+        "countPlural=other": "{appName} doesn't know {name}'s COSMO ID, so get it from them, then send your {count} objekts in the COSMO app."
+      }
+    }
+  ],
   "trade_page_copy": "Copy COSMO ID",
   "trade_page_copy_failed": "Couldn't copy. Their COSMO ID is {username}.",
   "trade_page_completed_title": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
+      "selectors": ["count", "countPlural"],
       "match": {
-        "countPlural=one": "The transfer went through.",
-        "countPlural=other": "All {count} transfers went through."
+        "count=2, countPlural=*": "Both transfers went through.",
+        "count=*, countPlural=one": "The transfer went through.",
+        "count=*, countPlural=other": "All {count} transfers went through."
       }
     }
   ],
@@ -445,7 +456,9 @@
   "trade_page_disputed_them": "{name} opened a dispute: {reason}.",
   "trade_page_disputed_staff": "{appName} staff paused this trade for review.",
   "trade_page_disputed_body": "A moderator will look at the trade and can complete it, cancel it or give you both more time. Until then the timer is paused and nobody can cancel. Transfers you make still count.",
+  "trade_page_disputed_body_paused": "A moderator will look at the trade. Until then the timer is paused and nobody can cancel. Transfers you make still count.",
   "trade_page_disputed_meta": "Opened {#time}{when}{/time} · report #{report}",
+  "trade_page_disputed_meta_paused": "Paused {#time}{when}{/time}",
   "trade_page_cancelled_you": "You cancelled this trade.",
   "trade_page_cancelled_them": "{name} cancelled this trade.",
   "trade_page_cancelled_staff": "{appName} staff cancelled this trade.",
@@ -512,8 +525,11 @@
   "trade_page_cancel_description_claimer": "Neither of you has sent anything yet. {name}'s listing opens again for anyone to accept if they still hold its objekts.",
   "trade_page_cancelled_toast": "Trade cancelled",
   "trade_page_cancel_started_you": "You already sent {#b}{objekt}{/b}, so neither of you can cancel now. If something's wrong, open a dispute.",
+  "trade_page_cancel_started_you_many": "You already sent {count} objekts, so neither of you can cancel now. If something's wrong, open a dispute.",
   "trade_page_cancel_started_them": "{name} already sent {#b}{objekt}{/b}, so neither of you can cancel now. If something's wrong, open a dispute.",
+  "trade_page_cancel_started_them_many": "{name} already sent {count} objekts, so neither of you can cancel now. If something's wrong, open a dispute.",
   "trade_page_deadline_passed": "The deadline has passed. {appName} closes this trade the next time it checks deadlines.",
+  "trade_page_deadline_passed_short": "Deadline passed",
   "trade_page_dispute_open": "Open dispute",
   "trade_page_dispute_title": "Open a dispute",
   "trade_page_dispute_description": "A moderator looks at the trade, then completes it, cancels it or gives you both more time.",
@@ -526,8 +542,9 @@
   "trade_page_staff_description": "This visit is logged once. The parties aren't told.",
   "trade_page_staff_back": "Back to report",
   "trade_page_step_accepted_staff": "{claimer} accepted {poster}'s listing",
-  "trade_page_problem_staff_body": "It can't reach {name} through this trade any more.",
+  "trade_page_problem_staff_body": "{sender} can't send it to {receiver} through this trade any more.",
   "trade_page_disputed_body_staff": "The timer is paused and neither party can cancel; transfers still count. Staff complete, cancel or extend it from the report.",
+  "trade_page_disputed_body_staff_paused": "The timer is paused and neither party can cancel; transfers still count. Staff complete or cancel it from the report, and can extend it once neither party is banned.",
   "trade_page_timed_out_both_staff": "Time ran out with both parties still owing objekts.",
   "trade_page_event_accepted_staff": "{#b}{claimer}{/b} accepted {#b}{poster}{/b}'s listing.",
   "trade_page_event_extended_staff": "{appName} staff gave both parties until {#time}{when}{/time}.",
@@ -603,6 +620,7 @@
   "listing_detail_onlooker": "someone has {#time}{left}{/time} to complete it",
   "listing_detail_onlooker_untimed": "someone accepted it",
   "listing_detail_claimer_title": "You accepted this",
+  "listing_detail_claim_disputed": "The trade is paused while a moderator looks at it. Transfers you make still count.",
   "listing_detail_time_left": "{#time}{left}{/time} left",
   "listing_detail_claimer_body": [
     {
@@ -2047,7 +2065,6 @@
   "listing_detail_poster_blocked_body": "One of the objekts you offer is locked, can't be transferred, is in another trade or has left your account.",
   "listing_detail_poster_blocked_fix": "Edit the listing to offer something else, or fix it in COSMO.",
   "my_trades_title": "My trades",
-  "my_trades_description": "Trades you're part of. Finished ones stay here for 30 days.",
   "my_trades_need_you": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
@@ -2073,11 +2090,10 @@
   "my_trades_tab_finished": "Finished",
   "my_trades_group_needs_you": "Needs you",
   "my_trades_group_waiting": "Waiting on them",
-  "my_trades_group_finished": "Last 30 days",
   "my_trades_column_kind": "Kind",
   "my_trades_column_send": "You send",
   "my_trades_column_get": "You get",
-  "my_trades_column_next": "Next",
+  "my_trades_column_status": "Status",
   "my_trades_column_with": "With",
   "my_trades_column_time": "Time left",
   "my_trades_column_ended": "Ended",
@@ -2093,12 +2109,13 @@
       }
     }
   ],
-  "my_trades_next_them": "{name} sends",
+  "my_trades_next_them": "{#user}{name}{/user} sends",
   "my_trades_next_dispute": "Dispute open",
+  "my_trades_next_paused": "Paused",
   "my_trades_empty_active": "No trades in progress",
   "my_trades_empty_active_body": "Accept someone's listing, or have yours accepted, and the trade shows up here.",
   "my_trades_browse": "Browse listings",
   "my_trades_empty_finished": "No finished trades",
-  "my_trades_empty_finished_body": "Trades that ended in the last 30 days show up here.",
+  "my_trades_empty_finished_body": "Trades that have ended show up here.",
   "my_trades_error": "Couldn't load your trades."
 }

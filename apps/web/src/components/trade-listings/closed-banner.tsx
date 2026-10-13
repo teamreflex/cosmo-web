@@ -8,8 +8,10 @@ import type {
   TradeListing,
 } from "@/lib/universal/trade-listings";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
-import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import { Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import { Timestamp } from "../ui/timestamp";
 
 type Props = {
@@ -24,10 +26,6 @@ type Props = {
  */
 export default function ClosedBanner({ listing, state }: Props) {
   const { data: account } = useSuspenseQuery(currentAccountQuery);
-  const { data: viewer } = useQuery({
-    ...tradeListingViewerQuery(listing.id, listing.updatedAt),
-    enabled: account !== null,
-  });
 
   return (
     <div className="flex min-w-0 flex-1 basis-70 flex-wrap items-center gap-x-3 gap-y-1.5 text-sm xl:justify-end">
@@ -39,17 +37,31 @@ export default function ClosedBanner({ listing, state }: Props) {
         format={{ dateStyle: "medium" }}
         className="text-xs text-muted-foreground"
       />
-      {viewer?.role === "closed" && viewer.tradeId !== null && (
-        <Link
-          to="/trade/$id"
-          params={{ id: viewer.tradeId }}
-          className="text-xs font-medium text-cosmo underline-offset-4 hover:underline dark:text-cosmo-text"
-        >
-          {m.listing_detail_view_trade()}
-        </Link>
+      {account !== null && (
+        <ErrorBoundary fallback={null}>
+          <Suspense fallback={null}>
+            <TradeLink listing={listing} />
+          </Suspense>
+        </ErrorBoundary>
       )}
     </div>
   );
+}
+
+function TradeLink({ listing }: { listing: TradeListing }) {
+  const { data: viewer } = useSuspenseQuery(
+    tradeListingViewerQuery(listing.id, listing.updatedAt),
+  );
+
+  return viewer?.role === "closed" && viewer.tradeId !== null ? (
+    <Link
+      to="/trade/$id"
+      params={{ id: viewer.tradeId }}
+      className="text-xs font-medium text-cosmo underline-offset-4 hover:underline dark:text-cosmo-text"
+    >
+      {m.listing_detail_view_trade()}
+    </Link>
+  ) : null;
 }
 
 function ClosedText({ listing, state }: Props) {

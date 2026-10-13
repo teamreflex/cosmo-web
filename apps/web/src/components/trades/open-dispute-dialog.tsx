@@ -110,7 +110,7 @@ export default function OpenDisputeDialog({
         </DialogHeader>
         <form
           onSubmit={form.handleSubmit((data) => mutation.mutate({ data }))}
-          className="flex flex-col gap-4"
+          className="flex min-w-0 flex-col gap-4"
         >
           <Controller
             control={form.control}
@@ -131,7 +131,8 @@ export default function OpenDisputeDialog({
                     id={reasonId}
                     className="w-full max-sm:data-[size=default]:h-10"
                   >
-                    <SelectValue />
+                    {/* a long reason ends in an ellipsis on phones */}
+                    <SelectValue className="block! min-w-0 truncate" />
                   </SelectTrigger>
                   <SelectContent>
                     {reasonItems.map((item) => (
@@ -159,7 +160,7 @@ export default function OpenDisputeDialog({
                   id={noteId}
                   rows={3}
                   maxLength={1000}
-                  className="resize-none"
+                  className="max-h-40 resize-none"
                   aria-invalid={fieldState.invalid}
                   aria-describedby={noteDescriptionId}
                   {...field}

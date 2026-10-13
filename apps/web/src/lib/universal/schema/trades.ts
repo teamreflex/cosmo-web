@@ -35,4 +35,6 @@ export const staffExtendTradeInputSchema = staffTradeInputSchema.extend({
 
 export const myTradesInputSchema = z.strictObject({
   tab: z.enum(myTradesTabs),
+  // the previous Finished page's last trade
+  cursor: z.uuid().optional(),
 });
