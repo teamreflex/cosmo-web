@@ -42,7 +42,7 @@ function tradeRow(
     kind: "trade",
     id,
     createdAt: new Date(start - hoursAgo * HOUR),
-    type: "trade_token_moved",
+    type: "listing_closed",
     unread: true,
     actor: { userId: "actor", username: "Actor" },
     counterparty: { userId: "actor", username: "Actor" },

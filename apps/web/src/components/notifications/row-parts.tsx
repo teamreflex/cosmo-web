@@ -6,14 +6,12 @@ import type {
 import { cn } from "@/lib/utils";
 import {
   type Icon as TablerIcon,
-  IconArrowBarRight,
   IconArrowsExchange,
   IconCheck,
   IconClockPlus,
   IconFlag,
   IconGavel,
   IconHourglassEmpty,
-  IconLock,
   IconX,
 } from "@tabler/icons-react";
 import type { ReactNode } from "react";
@@ -134,14 +132,6 @@ const typeBadges = {
   trade_deadline_extended: {
     icon: IconClockPlus,
     className: "bg-muted-foreground text-background",
-  },
-  trade_token_moved: {
-    icon: IconArrowBarRight,
-    className: "bg-amber-400 text-amber-950",
-  },
-  trade_token_untransferable: {
-    icon: IconLock,
-    className: "bg-red-400 text-red-950",
   },
 } satisfies Record<BadgedType, { icon: TablerIcon; className: string }>;
 

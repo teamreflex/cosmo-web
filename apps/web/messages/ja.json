@@ -852,8 +852,6 @@
   "notification_trade_dispute_resolved_completed": "モデレーターが{#b}{username}{/b}との取引の異議を解決しました：完了",
   "notification_trade_dispute_resolved_cancelled": "モデレーターが{#b}{username}{/b}との取引の異議を解決しました：キャンセル",
   "notification_trade_deadline_extended": "モデレーターが{#b}{username}{/b}との取引の期限を延長しました",
-  "notification_trade_token_moved": "取引中に{#b}{objekt}{/b}が{#b}{username}{/b}のアカウントから移動しました",
-  "notification_trade_token_untransferable": "{#b}{username}{/b}との取引の{#b}{objekt}{/b}は送信できなくなりました",
   "notification_listing_closed": "出品が終了しました：{#b}{objekt}{/b}は利用できなくなりました",
   "_comment_help": "Help dialog content",
   "help_como_title": "COMOカレンダー",

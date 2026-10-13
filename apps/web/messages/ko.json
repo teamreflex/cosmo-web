@@ -852,8 +852,6 @@
   "notification_trade_dispute_resolved_completed": "모더레이터가 {#b}{username}{/b}님과의 교환 이의를 해결했습니다: 완료",
   "notification_trade_dispute_resolved_cancelled": "모더레이터가 {#b}{username}{/b}님과의 교환 이의를 해결했습니다: 취소",
   "notification_trade_deadline_extended": "모더레이터가 {#b}{username}{/b}님과의 교환 시간을 연장했습니다",
-  "notification_trade_token_moved": "교환 중에 {#b}{objekt}{/b}이(가) {#b}{username}{/b}님의 계정에서 이동했습니다",
-  "notification_trade_token_untransferable": "{#b}{username}{/b}님과의 교환에 있는 {#b}{objekt}{/b}은(는) 더 이상 전송할 수 없습니다",
   "notification_listing_closed": "교환 글이 종료되었습니다: {#b}{objekt}{/b}을(를) 더 이상 사용할 수 없습니다",
   "_comment_help": "Help dialog content",
   "help_como_title": "코모 캘린더",

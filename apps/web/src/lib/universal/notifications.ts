@@ -4,12 +4,20 @@ import {
   type NotificationType,
   type TradeNotificationType,
   type TradeOfferStatus,
+  tradeNotificationTypes,
 } from "@apollo/database/web/types";
 
 export function isListMatchNotification(
   type: NotificationType,
 ): type is ListMatchNotificationType {
   return listMatchNotificationTypes.some((listMatch) => listMatch === type);
+}
+
+// false for the enum's retired values, which nothing writes any more
+export function isTradeNotification(
+  type: NotificationType,
+): type is TradeNotificationType {
+  return tradeNotificationTypes.some((trade) => trade === type);
 }
 
 export type NotificationCollection = {

@@ -880,8 +880,6 @@
   "notification_trade_dispute_resolved_completed": "Un modérateur a résolu le litige sur votre échange avec {#b}{username}{/b} : terminé",
   "notification_trade_dispute_resolved_cancelled": "Un modérateur a résolu le litige sur votre échange avec {#b}{username}{/b} : annulé",
   "notification_trade_deadline_extended": "Un modérateur a accordé plus de temps à votre échange avec {#b}{username}{/b}",
-  "notification_trade_token_moved": "{#b}{objekt}{/b} a quitté le compte de {#b}{username}{/b} pendant votre échange",
-  "notification_trade_token_untransferable": "{#b}{objekt}{/b} de votre échange avec {#b}{username}{/b} ne peut plus être transféré",
   "notification_listing_closed": "Votre annonce est fermée : {#b}{objekt}{/b} n'est plus disponible",
   "_comment_help": "Help dialog content",
   "help_como_title": "Calendrier de COMO",

@@ -189,22 +189,6 @@ function describeTrade(notification: TradeItem, username: string) {
           markup={bold}
         />
       );
-    case "trade_token_moved":
-      return (
-        <ParaglideMessage
-          message={m.notification_trade_token_moved}
-          inputs={{ objekt: tokenName(notification.token), username }}
-          markup={bold}
-        />
-      );
-    case "trade_token_untransferable":
-      return (
-        <ParaglideMessage
-          message={m.notification_trade_token_untransferable}
-          inputs={{ objekt: tokenName(notification.token), username }}
-          markup={bold}
-        />
-      );
     case "listing_closed":
       return (
         <ParaglideMessage

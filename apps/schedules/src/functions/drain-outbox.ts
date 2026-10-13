@@ -380,7 +380,7 @@ const applyTrades = (tx: WebTx, rows: readonly OutboxRow[]) =>
         );
     }
 
-    const notifications = recorded.flatMap((trade) => trade.notifications);
+    const notifications: TradeNotification[] = [];
     const events = recorded.flatMap((trade) => trade.events);
     const { completed = [], pending = [] } = Object.groupBy(
       recorded,
@@ -496,9 +496,8 @@ function toChainRow(row: OutboxRow): ChainRow[] {
 /**
  * One locked trade's events from a batch, in row order: each item that
  * arrived, and each token that moved elsewhere or turned untransferable,
- * which notifies the item's receiver once per token and kind. Writes
- * nothing; the caller applies every trade's arrivals in one update and ends
- * the trades left owing nothing.
+ * which the trade page shows. Writes nothing; the caller applies every
+ * trade's arrivals in one update and ends the trades left owing nothing.
  */
 function recordChainEvents(
   trade: LiveTrade,
@@ -507,8 +506,6 @@ function recordChainEvents(
   let state = trade.state;
   const arrivals: { itemId: number; at: Date; hash: string }[] = [];
   const events: TradeEventRow[] = [];
-  const notifications: TradeNotification[] = [];
-  const notified = new Set<string>();
   for (const event of chainEvents) {
     if (event.type === "transferred") {
       const result = transition(state, {
@@ -537,26 +534,8 @@ function recordChainEvents(
       tradeId: trade.id,
       event: { type: event.type, tokenId: event.tokenId },
     });
-    const item = trade.items.find(({ tokenId }) => tokenId === event.tokenId);
-    const key = `${event.type}:${event.tokenId}`;
-    if (item === undefined || notified.has(key)) continue;
-    notified.add(key);
-    const [receiver, sender] =
-      item.sender === "from"
-        ? [trade.toUserId, trade.fromUserId]
-        : [trade.fromUserId, trade.toUserId];
-    notifications.push({
-      type:
-        event.type === "token_moved"
-          ? "trade_token_moved"
-          : "trade_token_untransferable",
-      userId: receiver,
-      offerId: trade.id,
-      actorId: sender,
-      tokenId: event.tokenId,
-    });
   }
-  return { trade, state, arrivals, events, notifications };
+  return { trade, state, arrivals, events };
 }
 
 /**

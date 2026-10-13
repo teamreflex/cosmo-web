@@ -871,8 +871,6 @@
   "notification_trade_dispute_resolved_completed": "A moderator resolved the dispute on your trade with {#b}{username}{/b}: completed",
   "notification_trade_dispute_resolved_cancelled": "A moderator resolved the dispute on your trade with {#b}{username}{/b}: cancelled",
   "notification_trade_deadline_extended": "A moderator gave your trade with {#b}{username}{/b} more time",
-  "notification_trade_token_moved": "{#b}{objekt}{/b} left {#b}{username}{/b}'s account during your trade",
-  "notification_trade_token_untransferable": "{#b}{objekt}{/b} in your trade with {#b}{username}{/b} can no longer be transferred",
   "notification_listing_closed": "Your listing closed: {#b}{objekt}{/b} is no longer available",
   "_comment_help": "Help dialog content",
   "help_como_title": "COMO Calendar",

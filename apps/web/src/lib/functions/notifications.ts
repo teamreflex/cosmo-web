@@ -5,6 +5,7 @@ import { collections, objekts } from "@/lib/server/db/indexer/schema";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import {
   isListMatchNotification,
+  isTradeNotification,
   type NotificationCollection,
   type NotificationPage,
   type NotificationRow,
@@ -176,7 +177,9 @@ export const $listNotifications = createServerFn({ method: "GET" })
                 },
               ];
         }
-        return row.offerId === null || row.offerStatus === null
+        return !isTradeNotification(row.type) ||
+          row.offerId === null ||
+          row.offerStatus === null
           ? []
           : [
               {

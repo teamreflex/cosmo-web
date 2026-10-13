@@ -82,16 +82,32 @@ export const tradeNotificationTypes = [
   "trade_disputed",
   "trade_dispute_resolved",
   "trade_deadline_extended",
-  "trade_token_moved",
-  "trade_token_untransferable",
   "listing_closed",
 ] as const;
 export type TradeNotificationType = (typeof tradeNotificationTypes)[number];
 
-// new values go at the end, so the enum migration is a plain ADD VALUE
+/**
+ * Enum values nothing writes: a token in a trade moving elsewhere or turning
+ * untransferable shows on the trade page instead. They stay in the enum until
+ * the stack's migrations are consolidated (phase 16).
+ */
+const retiredNotificationTypes = [
+  "trade_token_moved",
+  "trade_token_untransferable",
+] as const;
+
+// in the enum's order; new values go at the end, so its migration is a plain ADD VALUE
 export const notificationTypes = [
   ...listMatchNotificationTypes,
-  ...tradeNotificationTypes,
+  "listing_claimed",
+  "trade_completed",
+  "trade_timed_out",
+  "trade_cancelled",
+  "trade_disputed",
+  "trade_dispute_resolved",
+  "trade_deadline_extended",
+  ...retiredNotificationTypes,
+  "listing_closed",
 ] as const;
 export type NotificationType = (typeof notificationTypes)[number];
 export type CosmoToken = typeof cosmoTokens.$inferSelect;
