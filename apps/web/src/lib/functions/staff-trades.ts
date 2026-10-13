@@ -14,7 +14,6 @@ import {
   staffTradeInputSchema,
   tradeIdInputSchema,
 } from "@/lib/universal/schema/trades";
-import { isBanActive } from "@apollo/auth/guard";
 import { tradeMessages } from "@apollo/database/web/schema";
 import { extendedDeadline } from "@apollo/trades/timers";
 import { createServerFn } from "@tanstack/react-start";
@@ -107,8 +106,7 @@ export const $staffCancelTrade = createServerFn({ method: "POST" })
  * last frozen, plus the hours picked. It goes back to accepted without its
  * dispute report, which this resolves. A trade whose items all arrived while
  * disputed completes instead, recorded as a staff complete, which the
- * returned audit action tells the caller. A trade with a banned party can
- * only be completed or cancelled.
+ * returned audit action tells the caller.
  */
 export const $staffExtendTradeDeadline = createServerFn({ method: "POST" })
   .middleware([staffMiddleware({ trade: ["resolve-dispute"] })])
@@ -120,10 +118,6 @@ export const $staffExtendTradeDeadline = createServerFn({ method: "POST" })
       data,
       { type: "staff_extend" },
       async (tx, trade, users, next) => {
-        // trade-timers skip a banned party's trade, so it would never time out
-        if (users.some((user) => isBanActive(user))) {
-          refuseTrade("trade_party_banned");
-        }
         if (next.status === "completed") {
           await completeAsStaff(tx, trade, users, next, data.note);
           return { action: "trade:complete" };

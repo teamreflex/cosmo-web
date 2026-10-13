@@ -722,8 +722,7 @@ function StatePanel({ trade, side }: { trade: Trade; side: TradeSide | null }) {
 /**
  * The dispute that froze the trade: who opened it and why, what happens
  * next, and when. Its note is only for moderators. A dispute staff opened
- * when a party was banned reads as a neutral pause, which staff can only
- * complete or cancel while the ban lasts.
+ * when a party was banned reads as a neutral pause.
  */
 function DisputedAlert({
   trade,

@@ -54,8 +54,7 @@ type Props = {
  * Settles a disputed trade, which also resolves its report: extend its
  * deadline, complete it or cancel it, with an optional note both parties
  * read on its timeline. Each action names this report, so it is refused if
- * the trade has moved on since the detail loaded. A trade with a banned
- * party can't be extended, since its timer would never run out.
+ * the trade has moved on since the detail loaded.
  */
 export default function DisputeActions({ report, trade }: Props) {
   const hasPermission = useHasPermission();
@@ -108,8 +107,6 @@ export default function DisputeActions({ report, trade }: Props) {
     return null;
   }
 
-  const partyBanned =
-    trade.from?.banActive === true || trade.to?.banActive === true;
   const { deadlineAt, pausedAt } = trade.view;
 
   function run(action: DisputeAction) {
@@ -160,98 +157,91 @@ export default function DisputeActions({ report, trade }: Props) {
         )}
       />
 
-      {canSettle &&
-        (partyBanned ? (
-          <p className="text-sm text-muted-foreground">
-            {m.admin_dispute_extend_banned()}
-          </p>
-        ) : (
-          <div className="flex flex-col gap-2.5 rounded-md border bg-card p-3">
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-              <span id={hoursLabelId} className="text-sm font-medium">
-                {m.admin_dispute_extend_by()}
-              </span>
-              <Controller
-                control={form.control}
-                name="hours"
-                render={({ field }) => (
-                  <ToggleGroup
-                    aria-labelledby={hoursLabelId}
-                    variant="outline"
-                    size="sm"
-                    spacing={0}
-                    value={[String(field.value)]}
-                    // pressing the picked length again keeps it
-                    onValueChange={([picked]) => {
-                      const next = EXTEND_HOURS.find(
-                        (option) => String(option) === picked,
-                      );
-                      if (next !== undefined) field.onChange(next);
-                    }}
-                  >
-                    {EXTEND_HOURS.map((option) => (
-                      <ToggleGroupItem
-                        key={option}
-                        value={String(option)}
-                        className="font-mono max-md:h-10 max-md:px-4"
-                      >
-                        {m.admin_dispute_extend_option({ hours: option })}
-                      </ToggleGroupItem>
-                    ))}
-                  </ToggleGroup>
-                )}
-              />
-              <span className="text-sm text-muted-foreground">
-                <Ticker
-                  fallback={<Skeleton className="inline-block h-4 w-48" />}
-                >
-                  {(now) => {
-                    const due = extendedDeadline(
-                      deadlineAt,
-                      pausedAt ?? deadlineAt,
-                      now,
-                      hours,
+      {canSettle && (
+        <div className="flex flex-col gap-2.5 rounded-md border bg-card p-3">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            <span id={hoursLabelId} className="text-sm font-medium">
+              {m.admin_dispute_extend_by()}
+            </span>
+            <Controller
+              control={form.control}
+              name="hours"
+              render={({ field }) => (
+                <ToggleGroup
+                  aria-labelledby={hoursLabelId}
+                  variant="outline"
+                  size="sm"
+                  spacing={0}
+                  value={[String(field.value)]}
+                  // pressing the picked length again keeps it
+                  onValueChange={([picked]) => {
+                    const next = EXTEND_HOURS.find(
+                      (option) => String(option) === picked,
                     );
-                    return (
-                      <ParaglideMessage
-                        message={m.admin_dispute_extend_preview}
-                        inputs={{ left: "", due: "" }}
-                        markup={{
-                          left: () => (
-                            <Countdown
-                              deadline={due}
-                              pausedAt={now}
-                              className="font-semibold text-foreground"
-                            />
-                          ),
-                          due: () => (
-                            <Timestamp
-                              date={due}
-                              format={tradeTimeFormat}
-                              className="font-mono text-foreground tabular-nums"
-                            />
-                          ),
-                        }}
-                      />
-                    );
+                    if (next !== undefined) field.onChange(next);
                   }}
-                </Ticker>
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {m.admin_dispute_extend_hint()}
-            </p>
-            <Button
-              size="sm"
-              className="self-start max-md:h-10 max-md:self-stretch"
-              onClick={run("extend")}
-              disabled={mutation.isPending}
-            >
-              <span>{m.admin_dispute_extend()}</span>
-              {spinner("extend")}
-            </Button>
+                >
+                  {EXTEND_HOURS.map((option) => (
+                    <ToggleGroupItem
+                      key={option}
+                      value={String(option)}
+                      className="font-mono max-md:h-10 max-md:px-4"
+                    >
+                      {m.admin_dispute_extend_option({ hours: option })}
+                    </ToggleGroupItem>
+                  ))}
+                </ToggleGroup>
+              )}
+            />
+            <span className="text-sm text-muted-foreground">
+              <Ticker fallback={<Skeleton className="inline-block h-4 w-48" />}>
+                {(now) => {
+                  const due = extendedDeadline(
+                    deadlineAt,
+                    pausedAt ?? deadlineAt,
+                    now,
+                    hours,
+                  );
+                  return (
+                    <ParaglideMessage
+                      message={m.admin_dispute_extend_preview}
+                      inputs={{ left: "", due: "" }}
+                      markup={{
+                        left: () => (
+                          <Countdown
+                            deadline={due}
+                            pausedAt={now}
+                            className="font-semibold text-foreground"
+                          />
+                        ),
+                        due: () => (
+                          <Timestamp
+                            date={due}
+                            format={tradeTimeFormat}
+                            className="font-mono text-foreground tabular-nums"
+                          />
+                        ),
+                      }}
+                    />
+                  );
+                }}
+              </Ticker>
+            </span>
           </div>
-        ))}
+          <p className="text-xs text-muted-foreground">
+            {m.admin_dispute_extend_hint()}
+          </p>
+          <Button
+            size="sm"
+            className="self-start max-md:h-10 max-md:self-stretch"
+            onClick={run("extend")}
+            disabled={mutation.isPending}
+          >
+            <span>{m.admin_dispute_extend()}</span>
+            {spinner("extend")}
+          </Button>
+        </div>
+      )}
 
       <div className="grid gap-2 md:grid-cols-2">
         {canSettle && (
