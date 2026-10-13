@@ -2040,5 +2040,60 @@
   "listing_detail_you_give_total": "You give · {count}",
   "listing_detail_poster_blocked_title": "Nobody can accept this listing right now.",
   "listing_detail_poster_blocked_body": "One of the objekts you offer is locked, can't be transferred, is in another trade or has left your account.",
-  "listing_detail_poster_blocked_fix": "Edit the listing to offer something else, or fix it in COSMO."
+  "listing_detail_poster_blocked_fix": "Edit the listing to offer something else, or fix it in COSMO.",
+  "my_trades_title": "My trades",
+  "my_trades_description": "Trades you're part of. Finished ones stay here for 30 days.",
+  "my_trades_need_you": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} needs you",
+        "countPlural=other": "{count} need you"
+      }
+    }
+  ],
+  "my_trades_label_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "My trades, {count} needs you",
+        "countPlural=other": "My trades, {count} need you"
+      }
+    }
+  ],
+  "my_trades_tabs": "Which trades",
+  "my_trades_tab_active": "Active",
+  "my_trades_tab_finished": "Finished",
+  "my_trades_group_needs_you": "Needs you",
+  "my_trades_group_waiting": "Waiting on them",
+  "my_trades_group_finished": "Last 30 days",
+  "my_trades_column_kind": "Kind",
+  "my_trades_column_send": "You send",
+  "my_trades_column_get": "You get",
+  "my_trades_column_next": "Next",
+  "my_trades_column_with": "With",
+  "my_trades_column_time": "Time left",
+  "my_trades_column_ended": "Ended",
+  "my_trades_kind_listing": "Listing",
+  "my_trades_sent": "{sent} of {count} sent",
+  "my_trades_next_send": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Send 1 objekt",
+        "countPlural=other": "Send {count} objekts"
+      }
+    }
+  ],
+  "my_trades_next_them": "{name} sends",
+  "my_trades_next_dispute": "Dispute open",
+  "my_trades_empty_active": "No trades in progress",
+  "my_trades_empty_active_body": "Accept someone's listing, or have yours accepted, and the trade shows up here.",
+  "my_trades_browse": "Browse listings",
+  "my_trades_empty_finished": "No finished trades",
+  "my_trades_empty_finished_body": "Trades that ended in the last 30 days show up here.",
+  "my_trades_error": "Couldn't load your trades."
 }

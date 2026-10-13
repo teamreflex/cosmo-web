@@ -10,6 +10,7 @@ import ListingFeed, {
 import ListingFeedFilters from "@/components/trade-listings/listing-feed-filters";
 import ListingTypePicker from "@/components/trade-listings/listing-type-picker";
 import NewListingButton from "@/components/trade-listings/new-listing-button";
+import MyTradesButton from "@/components/trades/my-trades-button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useArtists } from "@/hooks/use-artists";
 import { useListingFeedFilters } from "@/hooks/use-listing-feed-filters";
@@ -81,6 +82,7 @@ function RouteComponent() {
         actions={
           <>
             <ListingTypePicker value={type} onChange={setType} />
+            <MyTradesButton />
             <NewListingButton />
           </>
         }
@@ -115,6 +117,7 @@ function PendingComponent() {
         actions={
           <>
             <Skeleton className="h-9 w-28 md:h-8" />
+            <Skeleton className="size-9 md:h-8 md:w-28" />
             <Skeleton className="h-9 w-28 md:h-8" />
           </>
         }

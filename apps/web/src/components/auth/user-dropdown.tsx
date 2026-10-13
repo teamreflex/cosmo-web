@@ -9,10 +9,12 @@ import {
 import { useArtists } from "@/hooks/use-artists";
 import { useHasPermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
+import { tradesNeedingYouQuery } from "@/lib/queries/trades";
 import type { CurrentUser } from "@/lib/universal/auth";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { DISCORD_URL } from "@/lib/utils";
 import {
+  IconArrowsExchange,
   IconBrandDiscord,
   IconInfoCircle,
   IconLogout,
@@ -20,6 +22,7 @@ import {
   IconTool,
   IconUserCog,
 } from "@tabler/icons-react";
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { ADMIN_SHELL_PERMISSIONS } from "../admin/common";
@@ -45,6 +48,7 @@ export default function UserDropdown({
   const [openSettings, setOpenSettings] = useState(false);
   const [openAccount, setOpenAccount] = useState(false);
   const [openAbout, setOpenAbout] = useState(false);
+  const needsYou = useQuery(tradesNeedingYouQuery).data ?? 0;
 
   return (
     <DropdownMenu>
@@ -60,11 +64,24 @@ export default function UserDropdown({
       />
       <AboutDialog open={openAbout} onOpenChange={setOpenAbout} />
 
-      <DropdownMenuTrigger className="group outline-hidden">
+      <DropdownMenuTrigger className="group relative outline-hidden">
         <UserAvatar
           className="h-8 w-8 shadow-sm **:p-1"
           username={user.username ?? "Apollo"}
         />
+        {needsYou > 0 && (
+          <span className="sr-only">
+            {m.my_trades_label_count({ count: needsYou })}
+          </span>
+        )}
+        {needsYou > 0 && (
+          <span
+            aria-hidden
+            className="absolute -top-1 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-cosmo px-1 text-xxs font-semibold text-white tabular-nums ring-2 ring-background"
+          >
+            {needsYou > 99 ? "99+" : needsYou}
+          </span>
+        )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-fit">
         <DropdownMenuGroup>
@@ -94,6 +111,19 @@ export default function UserDropdown({
         >
           <IconTool className="h-4 w-4" />
           <span>{m.user_dropdown_settings()}</span>
+        </DropdownMenuItem>
+
+        <DropdownMenuItem
+          className="cursor-pointer"
+          render={<Link to="/market/trades" />}
+        >
+          <IconArrowsExchange className="h-4 w-4" />
+          <span>{m.my_trades_title()}</span>
+          {needsYou > 0 && (
+            <span className="ml-auto pl-3 font-mono text-xs text-cosmo tabular-nums dark:text-cosmo-text">
+              {needsYou}
+            </span>
+          )}
         </DropdownMenuItem>
 
         {hasPermission(ADMIN_SHELL_PERMISSIONS) && (

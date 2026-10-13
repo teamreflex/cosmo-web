@@ -1,7 +1,9 @@
+import { toPublicUser } from "@/lib/server/auth.server";
 import { db } from "@/lib/server/db";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import { consumeRateLimit } from "@/lib/server/rate-limit.server";
 import { publishTradeUpdates } from "@/lib/server/trade-events.server";
+import { readIndexed } from "@/lib/server/trades/feed.server";
 import { readIndexerTokens } from "@/lib/server/trades/holdings.server";
 import { readTradeView } from "@/lib/server/trades/trade-view.server";
 import {
@@ -16,14 +18,23 @@ import {
   refuseTrade,
 } from "@/lib/server/trades/trade.server";
 import {
+  myTradesInputSchema,
   openDisputeInputSchema,
   tradeIdInputSchema,
 } from "@/lib/universal/schema/trades";
-import type { TradeView, TradeViewer } from "@/lib/universal/trades";
+import type {
+  MyTradeRow,
+  MyTradeSide,
+  TradeView,
+  TradeViewer,
+} from "@/lib/universal/trades";
 import { can, parseRole } from "@apollo/auth";
-import { partyAction } from "@apollo/trades/lifecycle";
+import { liveTradeStatuses, type TradeSide } from "@apollo/database/web/types";
+import { needsYou, partyAction, tradeState } from "@apollo/trades/lifecycle";
 import { addr } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
+import { subDays } from "date-fns";
+import { sql } from "drizzle-orm";
 
 /**
  * A trade the caller is part of, with their side, or for staff who may read
@@ -76,6 +87,188 @@ export const $fetchTrade = createServerFn({ method: "GET" })
       );
     },
   );
+
+/**
+ * The caller's trades for My trades: the live ones by deadline, or those
+ * that ended in the last 30 days, newest first. Each side shows only its
+ * first objekt, so the indexer is read for those alone.
+ */
+export const $fetchMyTrades = createServerFn({ method: "GET" })
+  .validator(myTradesInputSchema)
+  .middleware([authenticatedMiddleware])
+  .handler(async ({ data, context }): Promise<MyTradeRow[]> => {
+    const userId = context.session.user.id;
+    const rows = await db.query.tradeOffers.findMany({
+      where: {
+        kind: "trade",
+        OR: [{ fromUserId: userId }, { toUserId: userId }],
+        ...(data.tab === "active"
+          ? { status: { in: [...liveTradeStatuses] } }
+          : {
+              status: { in: ["completed", "cancelled", "timed_out"] },
+              endedAt: { gt: subDays(new Date(), 30) },
+            }),
+      },
+      columns: {
+        id: true,
+        status: true,
+        fromUserId: true,
+        toUserId: true,
+        cancelledBy: true,
+        abandonedBy: true,
+        deadlineAt: true,
+        endedAt: true,
+      },
+      with: {
+        items: {
+          columns: {
+            kind: true,
+            sender: true,
+            tokenId: true,
+            slug: true,
+            listingId: true,
+            transferredAt: true,
+            markedPaidAt: true,
+            confirmedAt: true,
+          },
+          orderBy: { id: "asc" },
+        },
+        // the dispute that froze a disputed trade
+        messages: {
+          where: {
+            kind: "event",
+            RAW: (t) => sql`${t.event}->>'type' = 'disputed'`,
+          },
+          columns: { createdAt: true },
+          orderBy: { id: "desc" },
+          limit: 1,
+        },
+        fromUser: true,
+        toUser: true,
+        fromCosmo: { columns: { username: true } },
+        toCosmo: { columns: { username: true } },
+      },
+      orderBy:
+        data.tab === "active"
+          ? { deadlineAt: "asc", id: "asc" }
+          : { endedAt: "desc", id: "desc" },
+    });
+
+    const trades = rows.map((row) => {
+      const side: TradeSide = row.fromUserId === userId ? "from" : "to";
+      return {
+        row,
+        side,
+        send: row.items.filter((item) => item.sender === side),
+        get: row.items.filter((item) => item.sender !== side),
+      };
+    });
+    const firsts = trades.flatMap(({ send, get }) =>
+      [send[0], get[0]].flatMap((item) => item ?? []),
+    );
+    const indexed = await readIndexed(
+      [...new Set(firsts.flatMap((item) => item.slug ?? []))],
+      firsts.flatMap((item) => item.tokenId ?? []),
+    );
+
+    const summary = (items: typeof firsts): MyTradeSide => {
+      const [first] = items;
+      const token =
+        first === undefined || first.tokenId === null
+          ? undefined
+          : indexed.states.get(first.tokenId);
+      return {
+        first:
+          first === undefined
+            ? null
+            : {
+                slug: first.slug,
+                serial: token?.kind === "found" ? token.serial : null,
+                collection:
+                  first.slug === null
+                    ? null
+                    : (indexed.collections.get(first.slug) ?? null),
+              },
+        count: items.length,
+        sent: items.filter((item) => item.transferredAt !== null).length,
+      };
+    };
+
+    return trades.map(({ row, side, send, get }) => {
+      if (row.deadlineAt === null) {
+        throw new Error("accepted trade without a deadline");
+      }
+      const state = tradeState(row, row.items);
+      const other =
+        side === "from"
+          ? { id: row.toUserId, user: row.toUser, cosmo: row.toCosmo }
+          : { id: row.fromUserId, user: row.fromUser, cosmo: row.fromCosmo };
+      return {
+        id: row.id,
+        side,
+        state,
+        deadlineAt: row.deadlineAt,
+        pausedAt:
+          state.status === "disputed"
+            ? (row.messages[0]?.createdAt ?? null)
+            : null,
+        endedAt: row.endedAt,
+        listingId:
+          row.items.find((item) => item.listingId !== null)?.listingId ?? null,
+        // a deleted party's pinned address may since belong to someone else
+        counterparty:
+          other.id === null
+            ? { user: null, cosmoUsername: null }
+            : {
+                user: other.user && toPublicUser(other.user),
+                cosmoUsername: other.cosmo?.username ?? null,
+              },
+        send: summary(send),
+        get: summary(get),
+        needsYou: needsYou(state, side),
+      };
+    });
+  });
+
+/**
+ * How many of the caller's accepted trades wait on them to send something,
+ * for the count beside every link to My trades.
+ */
+export const $fetchTradesNeedingYou = createServerFn({ method: "GET" })
+  .middleware([authenticatedMiddleware])
+  .handler(async ({ context }) => {
+    const userId = context.session.user.id;
+    const rows = await db.query.tradeOffers.findMany({
+      where: {
+        kind: "trade",
+        status: "accepted",
+        OR: [{ fromUserId: userId }, { toUserId: userId }],
+      },
+      columns: {
+        status: true,
+        fromUserId: true,
+        cancelledBy: true,
+        abandonedBy: true,
+      },
+      with: {
+        items: {
+          columns: {
+            kind: true,
+            sender: true,
+            transferredAt: true,
+            markedPaidAt: true,
+            confirmedAt: true,
+          },
+        },
+      },
+    });
+    return rows.filter((row) =>
+      needsYou(
+        tradeState(row, row.items),
+        row.fromUserId === userId ? "from" : "to",
+      ),
+    ).length;
+  });
 
 /**
  * Cancel an accepted trade the caller is part of, while nothing has been

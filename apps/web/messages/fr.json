@@ -2049,5 +2049,60 @@
   "listing_detail_you_give_total": "Vous donnez · {count}",
   "listing_detail_poster_blocked_title": "Personne ne peut accepter cette annonce pour le moment.",
   "listing_detail_poster_blocked_body": "L'un des objekts que vous proposez est verrouillé, n'est pas transférable, est dans un autre échange ou a quitté votre compte.",
-  "listing_detail_poster_blocked_fix": "Modifiez l'annonce pour proposer autre chose, ou réglez le problème dans COSMO."
+  "listing_detail_poster_blocked_fix": "Modifiez l'annonce pour proposer autre chose, ou réglez le problème dans COSMO.",
+  "my_trades_title": "Mes échanges",
+  "my_trades_description": "Les échanges auxquels vous participez. Ceux qui sont terminés restent ici 30 jours.",
+  "my_trades_need_you": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} vous attend",
+        "countPlural=other": "{count} vous attendent"
+      }
+    }
+  ],
+  "my_trades_label_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Mes échanges, {count} vous attend",
+        "countPlural=other": "Mes échanges, {count} vous attendent"
+      }
+    }
+  ],
+  "my_trades_tabs": "Quels échanges",
+  "my_trades_tab_active": "En cours",
+  "my_trades_tab_finished": "Terminés",
+  "my_trades_group_needs_you": "À vous d'agir",
+  "my_trades_group_waiting": "En attente de l'autre",
+  "my_trades_group_finished": "30 derniers jours",
+  "my_trades_column_kind": "Type",
+  "my_trades_column_send": "Vous envoyez",
+  "my_trades_column_get": "Vous recevez",
+  "my_trades_column_next": "Ensuite",
+  "my_trades_column_with": "Avec",
+  "my_trades_column_time": "Temps restant",
+  "my_trades_column_ended": "Terminé",
+  "my_trades_kind_listing": "Annonce",
+  "my_trades_sent": "{sent} sur {count} envoyés",
+  "my_trades_next_send": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Envoyer 1 objekt",
+        "countPlural=other": "Envoyer {count} objekts"
+      }
+    }
+  ],
+  "my_trades_next_them": "{name} envoie",
+  "my_trades_next_dispute": "Litige ouvert",
+  "my_trades_empty_active": "Aucun échange en cours",
+  "my_trades_empty_active_body": "Acceptez l'annonce de quelqu'un, ou faites accepter la vôtre, et l'échange apparaîtra ici.",
+  "my_trades_browse": "Voir les annonces",
+  "my_trades_empty_finished": "Aucun échange terminé",
+  "my_trades_empty_finished_body": "Les échanges terminés ces 30 derniers jours apparaissent ici.",
+  "my_trades_error": "Impossible de charger vos échanges."
 }

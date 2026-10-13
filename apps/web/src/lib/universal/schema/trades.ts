@@ -2,6 +2,7 @@ import { disputeReasons } from "@apollo/database/web/types";
 import { pgText } from "@apollo/trades/range";
 import { EXTEND_HOURS } from "@apollo/trades/timers";
 import * as z from "zod";
+import { myTradesTabs } from "../trades";
 
 const tradeNoteSchema = pgText()
   .trim()
@@ -30,4 +31,8 @@ export const staffTradeInputSchema = tradeIdInputSchema.extend({
 
 export const staffExtendTradeInputSchema = staffTradeInputSchema.extend({
   hours: z.literal(EXTEND_HOURS),
+});
+
+export const myTradesInputSchema = z.strictObject({
+  tab: z.enum(myTradesTabs),
 });

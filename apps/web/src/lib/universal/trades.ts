@@ -76,3 +76,35 @@ export type TradeView = {
 export type TradeViewer =
   | { kind: "party"; side: TradeSide }
   | { kind: "staff"; report: { id: string; status: ReportStatus } | null };
+
+// the My trades page's tabs: live trades, and those that ended lately
+export const myTradesTabs = ["active", "finished"] as const;
+export type MyTradesTab = (typeof myTradesTabs)[number];
+
+/**
+ * One side of a trade in a My trades row: its first objekt, how many there
+ * are and how many the drain has seen.
+ */
+export type MyTradeSide = {
+  first: Pick<TradeItemView, "collection" | "slug" | "serial"> | null;
+  count: number;
+  sent: number;
+};
+
+/**
+ * A trade as My trades lists it, from the viewer's side. `needsYou` says
+ * the trade is accepted and the viewer still owes something.
+ */
+export type MyTradeRow = {
+  id: string;
+  side: TradeSide;
+  state: TradeState;
+  deadlineAt: Date;
+  pausedAt: Date | null;
+  endedAt: Date | null;
+  listingId: string | null;
+  counterparty: TradeParty;
+  send: MyTradeSide;
+  get: MyTradeSide;
+  needsYou: boolean;
+};

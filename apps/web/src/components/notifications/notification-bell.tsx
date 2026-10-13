@@ -4,6 +4,7 @@ import {
   notificationsListQuery,
   unreadNotificationsQuery,
 } from "@/lib/queries/notifications";
+import { tradesNeedingYouQuery } from "@/lib/queries/trades";
 import {
   groupNotifications,
   type NotificationListItem,
@@ -14,10 +15,10 @@ import {
   useQuery,
   useQueryClient,
 } from "@tanstack/react-query";
-import { useLocation } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { useState } from "react";
 import { useOnInView } from "react-intersection-observer";
-import { Button } from "../ui/button";
+import { Button, buttonVariants } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { ScrollArea } from "../ui/scroll-area";
 import { Skeleton } from "../ui/skeleton";
@@ -31,6 +32,7 @@ export default function NotificationBell() {
   const open = openedOn === pathname;
   const queryClient = useQueryClient();
   const unread = useQuery(unreadNotificationsQuery);
+  const needsYou = useQuery(tradesNeedingYouQuery).data ?? 0;
   const list = useInfiniteQuery({ ...notificationsListQuery, enabled: open });
   const markRead = useMarkNotificationsRead();
 
@@ -82,10 +84,29 @@ export default function NotificationBell() {
         align="end"
         className="w-96 max-w-[calc(100vw-1rem)] gap-0 p-0"
       >
-        <header className="flex h-12 items-center justify-between border-b pr-2 pl-3.5">
-          <h4 className="text-sm font-semibold">
+        <header className="flex h-12 items-center gap-1 border-b pr-2 pl-3.5">
+          <h4 className="mr-auto text-sm font-semibold">
             {m.notification_bell_label()}
           </h4>
+
+          <Link
+            to="/market/trades"
+            // already on My trades, the path doesn't change to close it
+            onClick={() => setOpenedOn(null)}
+            aria-label={
+              needsYou > 0
+                ? m.my_trades_label_count({ count: needsYou })
+                : m.my_trades_title()
+            }
+            className={buttonVariants({ variant: "ghost", size: "sm" })}
+          >
+            {m.my_trades_title()}
+            {needsYou > 0 && (
+              <span className="font-mono text-cosmo tabular-nums dark:text-cosmo-text">
+                · {needsYou}
+              </span>
+            )}
+          </Link>
 
           {count > 0 && (
             <Button

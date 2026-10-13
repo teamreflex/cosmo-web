@@ -134,7 +134,11 @@ function TransferRow({ item }: { item: TradeItemView }) {
  * The objekt's front at thumbnail size, or a muted card of the same size
  * when the indexer has lost it or the image fails to load.
  */
-function Thumbnail({ collection }: { collection: Objekt.Collection | null }) {
+export function Thumbnail({
+  collection,
+}: {
+  collection: Objekt.Collection | null;
+}) {
   const [failed, setFailed] = useState(false);
 
   return collection === null || failed ? (

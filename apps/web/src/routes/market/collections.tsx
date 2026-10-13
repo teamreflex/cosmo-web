@@ -81,7 +81,12 @@ function PendingComponent() {
     <div className="flex flex-col">
       <MarketHeader
         total={<ObjektTotalSlot />}
-        actions={<Skeleton className="h-8 w-28" />}
+        actions={
+          <>
+            <Skeleton className="size-9 md:h-8 md:w-28" />
+            <Skeleton className="h-8 w-28" />
+          </>
+        }
       >
         <MemberFilterSkeleton />
       </MarketHeader>

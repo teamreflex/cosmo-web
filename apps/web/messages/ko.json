@@ -2001,5 +2001,57 @@
   "listing_detail_you_give_total": "주는 것 · {count}",
   "listing_detail_poster_blocked_title": "지금은 아무도 이 교환 글을 수락할 수 없습니다.",
   "listing_detail_poster_blocked_body": "제시한 오브젝트 중 하나가 잠겼거나, 전송할 수 없거나, 다른 교환 중이거나, 계정에서 옮겨졌습니다.",
-  "listing_detail_poster_blocked_fix": "교환 글을 수정해 다른 것을 제시하거나 COSMO에서 해결하세요."
+  "listing_detail_poster_blocked_fix": "교환 글을 수정해 다른 것을 제시하거나 COSMO에서 해결하세요.",
+  "my_trades_title": "내 거래",
+  "my_trades_description": "참여 중인 거래입니다. 끝난 거래는 30일 동안 여기에 남습니다.",
+  "my_trades_need_you": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}건 처리 필요"
+      }
+    }
+  ],
+  "my_trades_label_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "내 거래, {count}건 처리 필요"
+      }
+    }
+  ],
+  "my_trades_tabs": "표시할 거래",
+  "my_trades_tab_active": "진행 중",
+  "my_trades_tab_finished": "종료",
+  "my_trades_group_needs_you": "내 차례",
+  "my_trades_group_waiting": "상대 차례",
+  "my_trades_group_finished": "최근 30일",
+  "my_trades_column_kind": "종류",
+  "my_trades_column_send": "보내는 것",
+  "my_trades_column_get": "받는 것",
+  "my_trades_column_next": "다음 단계",
+  "my_trades_column_with": "상대",
+  "my_trades_column_time": "남은 시간",
+  "my_trades_column_ended": "종료일",
+  "my_trades_kind_listing": "리스팅",
+  "my_trades_sent": "{count}개 중 {sent}개 보냄",
+  "my_trades_next_send": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "오브젝트 {count}개 보내기"
+      }
+    }
+  ],
+  "my_trades_next_them": "{name}님이 보낼 차례",
+  "my_trades_next_dispute": "분쟁 진행 중",
+  "my_trades_empty_active": "진행 중인 거래가 없습니다",
+  "my_trades_empty_active_body": "다른 사람의 리스팅을 수락하거나 내 리스팅이 수락되면 거래가 여기에 표시됩니다.",
+  "my_trades_browse": "리스팅 둘러보기",
+  "my_trades_empty_finished": "끝난 거래가 없습니다",
+  "my_trades_empty_finished_body": "최근 30일 동안 끝난 거래가 여기에 표시됩니다.",
+  "my_trades_error": "거래를 불러오지 못했습니다."
 }

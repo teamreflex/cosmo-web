@@ -179,7 +179,7 @@ export function TradeStatus({ trade }: { trade: TradeView }) {
   }
 }
 
-function EndedBadge({
+export function EndedBadge({
   status,
 }: {
   status: "completed" | "cancelled" | "timed_out";

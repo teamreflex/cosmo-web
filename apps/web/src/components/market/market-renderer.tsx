@@ -6,6 +6,7 @@ import CosmoMemberFilter from "../objekt/cosmo-member-filter";
 import ObjektTotalSlot from "../objekt/objekt-total-slot";
 import VirtualizedObjektGrid from "../objekt/virtualized-objekt-grid";
 import NewListingButton from "../trade-listings/new-listing-button";
+import MyTradesButton from "../trades/my-trades-button";
 import MarketFilters from "./market-filters";
 import { MarketGridItem } from "./market-grid-item";
 import MarketHeader from "./market-header";
@@ -17,7 +18,15 @@ export default function MarketRenderer() {
 
   return (
     <div className="flex flex-col">
-      <MarketHeader total={<ObjektTotalSlot />} actions={<NewListingButton />}>
+      <MarketHeader
+        total={<ObjektTotalSlot />}
+        actions={
+          <>
+            <MyTradesButton />
+            <NewListingButton />
+          </>
+        }
+      >
         <CosmoMemberFilter />
       </MarketHeader>
 

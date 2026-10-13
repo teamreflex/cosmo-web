@@ -2001,5 +2001,57 @@
   "listing_detail_you_give_total": "渡す · {count}",
   "listing_detail_poster_blocked_title": "現在、誰もこの出品を承諾できません。",
   "listing_detail_poster_blocked_body": "出品したオブジェクトのいずれかがロックされているか、譲渡できないか、別のトレード中か、アカウントから移動しています。",
-  "listing_detail_poster_blocked_fix": "出品を編集して別のものを出すか、COSMOで解決してください。"
+  "listing_detail_poster_blocked_fix": "出品を編集して別のものを出すか、COSMOで解決してください。",
+  "my_trades_title": "マイトレード",
+  "my_trades_description": "あなたが参加しているトレードです。終了したトレードは30日間ここに残ります。",
+  "my_trades_need_you": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}件の対応待ち"
+      }
+    }
+  ],
+  "my_trades_label_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "マイトレード、{count}件の対応待ち"
+      }
+    }
+  ],
+  "my_trades_tabs": "表示するトレード",
+  "my_trades_tab_active": "進行中",
+  "my_trades_tab_finished": "終了",
+  "my_trades_group_needs_you": "あなたの対応待ち",
+  "my_trades_group_waiting": "相手の対応待ち",
+  "my_trades_group_finished": "過去30日間",
+  "my_trades_column_kind": "種類",
+  "my_trades_column_send": "送るもの",
+  "my_trades_column_get": "受け取るもの",
+  "my_trades_column_next": "次のステップ",
+  "my_trades_column_with": "相手",
+  "my_trades_column_time": "残り時間",
+  "my_trades_column_ended": "終了日",
+  "my_trades_kind_listing": "出品",
+  "my_trades_sent": "{count}件中{sent}件送信済み",
+  "my_trades_next_send": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}個のオブジェクトを送る"
+      }
+    }
+  ],
+  "my_trades_next_them": "{name}が送る番",
+  "my_trades_next_dispute": "紛争中",
+  "my_trades_empty_active": "進行中のトレードはありません",
+  "my_trades_empty_active_body": "誰かの出品を承諾するか、あなたの出品が承諾されると、トレードがここに表示されます。",
+  "my_trades_browse": "出品を見る",
+  "my_trades_empty_finished": "終了したトレードはありません",
+  "my_trades_empty_finished_body": "過去30日間に終了したトレードがここに表示されます。",
+  "my_trades_error": "トレードを読み込めませんでした。"
 }

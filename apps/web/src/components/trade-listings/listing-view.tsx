@@ -5,6 +5,7 @@ import {
 } from "@/hooks/use-listing-picks";
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
+import { tradesNeedingYouQuery } from "@/lib/queries/trades";
 import {
   type ClosedListingState,
   type ListingViewer,
@@ -14,7 +15,8 @@ import {
 import { cn } from "@/lib/utils";
 import { CLAIM_WINDOW } from "@apollo/trades/timers";
 import { IconPencil, IconX } from "@tabler/icons-react";
-import { useLocation } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { Link, useLocation } from "@tanstack/react-router";
 import { type ReactNode, useId, useState } from "react";
 import LinkCosmo from "../auth/link-cosmo";
 import SignIn from "../auth/sign-in";
@@ -298,6 +300,7 @@ function RoleStatus({ listing, role, picks, reasonId, detailId }: StatusProps) {
               ? m.listing_detail_cap_body()
               : m.listing_detail_blocked_body()}
           </StatusDetail>
+          {role.reason === "cap" && <MyTradesLink />}
         </Status>
       );
     case "picker":
@@ -461,6 +464,25 @@ function PickerBar({
 /**
  * Why Accept is disabled, or how long accepting holds the listing.
  */
+/**
+ * Where a viewer at their claim cap goes to finish a trade, with how many
+ * wait on them.
+ */
+function MyTradesLink() {
+  const needsYou = useQuery(tradesNeedingYouQuery).data ?? 0;
+
+  return (
+    <Link
+      to="/market/trades"
+      className="text-xs font-medium text-cosmo underline-offset-4 hover:underline dark:text-cosmo-text"
+    >
+      {needsYou > 0
+        ? `${m.my_trades_title()} · ${m.my_trades_need_you({ count: needsYou })}`
+        : m.my_trades_title()}
+    </Link>
+  );
+}
+
 function pickReason(picks: Picks) {
   if (picks.short > 0) return m.listing_detail_short_footer();
   return picks.valid
