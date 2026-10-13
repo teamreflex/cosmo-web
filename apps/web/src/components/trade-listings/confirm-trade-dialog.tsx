@@ -6,6 +6,7 @@ import { type ClaimFailure, claimFailure } from "@/lib/client/errors/trades";
 import { formatSerial, getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import { objektName, posterName } from "@/lib/client/trade-listings";
 import { $claimListing } from "@/lib/functions/trade-listings";
+import { tradesKey } from "@/lib/queries/trades";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type {
   ListingViewer,
@@ -21,7 +22,8 @@ import {
   IconRefresh,
   IconX,
 } from "@tabler/icons-react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { type ReactNode, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
@@ -73,9 +75,9 @@ type Shown = {
  * Confirms a claim on exactly the serials Accept froze: what the viewer
  * gives, grouped by the want row each one fills, and what they get, with
  * the deadline and who to send to. Confirm claims that list against the
- * listing version the picks were made on. A changed listing, a lost race
- * or an unusable serial answer here; closing after one refetches what it
- * makes stale.
+ * listing version the picks were made on, then opens the trade. A changed
+ * listing, a lost race or an unusable serial answer here; closing after one
+ * refetches what it makes stale.
  */
 export default function ConfirmTradeDialog({
   listing,
@@ -87,6 +89,8 @@ export default function ConfirmTradeDialog({
   onNotice,
 }: Props) {
   const invalidate = useInvalidateListing(listing.id);
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [failure, setFailure] = useState<ClaimFailure | null>(null);
   const confirming = useRef(false);
 
@@ -99,8 +103,11 @@ export default function ConfirmTradeDialog({
           rows: assignment,
         },
       }),
-    onSuccess: async () => {
+    onSuccess: async ({ tradeId }) => {
       toast.success(m.listing_detail_accepted());
+      void queryClient.invalidateQueries({ queryKey: tradesKey });
+      // the claimer's next step is on the trade, and Back finds the listing claimed
+      await navigate({ to: "/trade/$id", params: { id: tradeId } });
       await invalidate();
     },
     onError: async (error) => {

@@ -51,8 +51,15 @@ export const Route = createFileRoute("/market/listing/$id")({
         linked: account.cosmo !== undefined,
       },
     );
-    // the viewer's side reads their holdings, so hovering a link never fetches it
-    if (!preload && panel.kind === "viewer") {
+    /**
+     * The viewer's side reads their holdings, so hovering a link never
+     * fetches it. An ended listing asks only whether the viewer was a party
+     * to its trade.
+     */
+    if (
+      !preload &&
+      (panel.kind === "viewer" || (panel.kind === "closed" && account))
+    ) {
       void context.queryClient
         .query(tradeListingViewerQuery(id, listing.updatedAt))
         .catch(noop);

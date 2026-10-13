@@ -1,13 +1,14 @@
 import { m } from "@/i18n/messages";
 import { formatSerial } from "@/lib/client/objekt-util";
 import { env } from "@/lib/env/client";
+import { tradeQuery } from "@/lib/queries/trades";
 import type {
   NotificationListItem,
   NotificationToken,
 } from "@/lib/universal/notifications";
-import { cn } from "@/lib/utils";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconTagOff } from "@tabler/icons-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { RowAvatar, RowBody } from "./row-parts";
 import { bold, rowClassName } from "./row-utils";
@@ -15,9 +16,8 @@ import { bold, rowClassName } from "./row-utils";
 type TradeItem = Extract<NotificationListItem, { kind: "trade" }>;
 
 /**
- * A trade notification links to its listing until trades have a page of
- * their own; one with no listing is a button, so opening it still marks it
- * read.
+ * A trade notification links to its trade, which opening it refreshes, and
+ * a closed listing's to the listing.
  */
 export default function TradeRow({
   notification,
@@ -27,6 +27,7 @@ export default function TradeRow({
   onOpen: () => void;
 }) {
   const { counterparty, objekts, token, offer } = notification;
+  const queryClient = useQueryClient();
   const username = counterparty?.username ?? m.notification_unknown_user();
   const shown = token ?? (objekts.length === 1 ? objekts[0] : undefined);
   const content = (
@@ -61,20 +62,19 @@ export default function TradeRow({
     />
   );
 
-  return offer.listingId === null ? (
-    <button
-      type="button"
-      onClick={onOpen}
-      data-unread={notification.unread}
-      className={cn(rowClassName, "w-full text-left")}
-    >
-      {content}
-    </button>
-  ) : (
+  const closed = notification.type === "listing_closed";
+  return (
     <Link
-      to="/market/listing/$id"
-      params={{ id: offer.listingId }}
-      onClick={onOpen}
+      to={closed ? "/market/listing/$id" : "/trade/$id"}
+      params={{ id: offer.id }}
+      onClick={() => {
+        onOpen();
+        if (!closed) {
+          void queryClient.invalidateQueries({
+            queryKey: tradeQuery(offer.id).queryKey,
+          });
+        }
+      }}
       data-unread={notification.unread}
       className={rowClassName}
     >

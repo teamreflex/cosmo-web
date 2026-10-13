@@ -52,18 +52,21 @@ export function activeClaimCount(executor: DbOrTx, userId: string) {
 }
 
 /**
- * The trade a claimed or filled listing led to, with the COSMO username
- * behind the claimer's pinned address. A claim's trade keeps the listing's
- * id on the poster's items, and a listing has at most one live or
- * completed trade.
+ * The trade a listing led to, with the COSMO username behind the claimer's
+ * pinned address: a claimed listing's live trade, or an ended listing's
+ * latest trade. A claim's trade keeps the listing's id on the poster's
+ * items, and a listing has at most one live trade.
  */
 async function readListingTrade(listing: {
   id: string;
   status: TradeOfferStatus;
 }) {
-  if (listing.status !== "claimed" && listing.status !== "filled") return;
+  if (listing.status === "open") return;
   const [trade] = await db
     .select({
+      id: tradeOffers.id,
+      status: tradeOffers.status,
+      fromUserId: tradeOffers.fromUserId,
       toUserId: tradeOffers.toUserId,
       deadlineAt: tradeOffers.deadlineAt,
       username: cosmoAccounts.username,
@@ -73,10 +76,9 @@ async function readListingTrade(listing: {
     .where(
       and(
         eq(tradeOffers.kind, "trade"),
-        inArray(
-          tradeOffers.status,
-          listing.status === "claimed" ? [...liveTradeStatuses] : ["completed"],
-        ),
+        listing.status === "claimed"
+          ? inArray(tradeOffers.status, [...liveTradeStatuses])
+          : undefined,
         exists(
           qb
             .select({ id: tradeOfferItems.id })
@@ -96,7 +98,8 @@ async function readListingTrade(listing: {
 }
 
 /**
- * The listing's state, and the trade behind a claim or a fill.
+ * The listing's state, and the trade behind it. A claim whose trade is
+ * disputed has no deadline to show, since the dispute froze it.
  */
 export async function readListingState(listing: {
   id: string;
@@ -107,7 +110,7 @@ export async function readListingState(listing: {
   const state = listingStateSchema.parse({
     status: listing.status,
     endedAt: listing.endedAt,
-    deadlineAt: trade?.deadlineAt,
+    deadlineAt: trade?.status === "disputed" ? null : trade?.deadlineAt,
     counterparty: trade?.username ?? null,
   });
   return { state, trade };

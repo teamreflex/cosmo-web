@@ -8,19 +8,20 @@ import { env } from "@/lib/env/client";
 import { tradesNeedingYouQuery } from "@/lib/queries/trades";
 import {
   type ClosedListingState,
+  type ListingClaim,
   type ListingViewer,
   type TradeListing,
   toTradeWant,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
 import { CLAIM_WINDOW } from "@apollo/trades/timers";
-import { IconPencil, IconX } from "@tabler/icons-react";
+import { IconArrowRight, IconPencil, IconX } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useLocation } from "@tanstack/react-router";
 import { type ReactNode, useId, useState } from "react";
 import LinkCosmo from "../auth/link-cosmo";
 import SignIn from "../auth/sign-in";
-import { Button } from "../ui/button";
+import { Button, buttonVariants } from "../ui/button";
 import AllocationPicker from "./allocation-picker";
 import ClosedBanner from "./closed-banner";
 import ConfirmTradeDialog, {
@@ -50,7 +51,8 @@ type Candidate = Extract<ListingViewer, { role: "candidate" }>;
 /**
  * Who is looking at the listing, as the page needs it.
  * - `loading` / `error`: the server hasn't named a signed-in viewer's role.
- * - `poster`: their own listing, with who claimed it and until when.
+ * - `poster`: their own listing, with who claimed it, until when and the
+ *   trade it led to.
  * - `claimer` / `onlooker`: a claimed listing, theirs or someone else's.
  * - `picker`: an open listing the viewer can accept, picking what to give.
  * - `refused`: an open listing the viewer can't accept: they're at their
@@ -62,12 +64,9 @@ export type ListingRole =
   | { role: "closed"; state: ClosedListingState }
   | { role: "signed_out" }
   | { role: "unlinked" }
-  | {
-      role: "poster";
-      claim: { username: string | null; deadlineAt: Date } | null;
-    }
-  | { role: "claimer"; deadlineAt: Date }
-  | { role: "onlooker"; deadlineAt: Date }
+  | { role: "poster"; claim: ListingClaim | null }
+  | { role: "claimer"; deadlineAt: Date | null; tradeId: string }
+  | { role: "onlooker"; deadlineAt: Date | null }
   | { role: "picker"; viewer: Candidate }
   | { role: "refused"; reason: "cap" | "blocked"; activeClaims: number };
 
@@ -214,6 +213,7 @@ function hasActions(role: ListingRole) {
     case "signed_out":
     case "unlinked":
     case "poster":
+    case "claimer":
     case "picker":
     case "refused":
       return true;
@@ -377,6 +377,9 @@ function RoleActions({
       const claimed = role.claim !== null;
       return (
         <>
+          {role.claim !== null && (
+            <TradeLink tradeId={role.claim.tradeId} className={className} />
+          )}
           {(claimed || address !== undefined) && (
             <Button
               variant="outline"
@@ -402,6 +405,8 @@ function RoleActions({
         </>
       );
     }
+    case "claimer":
+      return <TradeLink tradeId={role.tradeId} className={className} />;
     case "picker":
     case "refused":
       return (
@@ -427,6 +432,28 @@ function RoleActions({
     default:
       return null;
   }
+}
+
+/**
+ * Where the listing's two parties go once it's claimed.
+ */
+function TradeLink({
+  tradeId,
+  className,
+}: {
+  tradeId: string;
+  className: string | undefined;
+}) {
+  return (
+    <Link
+      to="/trade/$id"
+      params={{ id: tradeId }}
+      className={cn(buttonVariants({ variant: "cosmo" }), className)}
+    >
+      {m.listing_detail_go_to_trade()}
+      <IconArrowRight />
+    </Link>
+  );
 }
 
 /**
@@ -462,9 +489,6 @@ function PickerBar({
 }
 
 /**
- * Why Accept is disabled, or how long accepting holds the listing.
- */
-/**
  * Where a viewer at their claim cap goes to finish a trade, with how many
  * wait on them.
  */
@@ -483,6 +507,9 @@ function MyTradesLink() {
   );
 }
 
+/**
+ * Why Accept is disabled, or how long accepting holds the listing.
+ */
 function pickReason(picks: Picks) {
   if (picks.short > 0) return m.listing_detail_short_footer();
   return picks.valid

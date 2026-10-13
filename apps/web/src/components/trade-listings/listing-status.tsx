@@ -8,7 +8,10 @@ import {
 } from "@/lib/client/trade-listings";
 import { env } from "@/lib/env/client";
 import { offeredTokenRefusalsQuery } from "@/lib/queries/trade-listings";
-import type { TradeListing } from "@/lib/universal/trade-listings";
+import type {
+  ListingClaim,
+  TradeListing,
+} from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import {
@@ -62,32 +65,36 @@ export function StatusDetail({
 
 /**
  * A claimed listing seen by anyone but its two parties: how long the trade
- * on it has left.
+ * on it has left, unless a dispute froze it.
  */
-export function OnlookerStatus({ deadlineAt }: { deadlineAt: Date }) {
+export function OnlookerStatus({ deadlineAt }: { deadlineAt: Date | null }) {
   return (
     <Status>
       <span className="text-muted-foreground">
-        <ParaglideMessage
-          message={m.listing_detail_onlooker}
-          inputs={{ left: "" }}
-          markup={{ time: () => <Countdown deadline={deadlineAt} /> }}
-        />
+        {deadlineAt === null ? (
+          m.listing_detail_onlooker_untimed()
+        ) : (
+          <ParaglideMessage
+            message={m.listing_detail_onlooker}
+            inputs={{ left: "" }}
+            markup={{ time: () => <Countdown deadline={deadlineAt} /> }}
+          />
+        )}
       </span>
     </Status>
   );
 }
 
 /**
- * The claimer's own claimed listing: how long their trade has left, and
- * what to send to whom.
+ * The claimer's own claimed listing: how long their trade has left, unless
+ * a dispute froze it, and what to send to whom.
  */
 export function ClaimerStatus({
   listing,
   deadlineAt,
 }: {
   listing: TradeListing;
-  deadlineAt: Date;
+  deadlineAt: Date | null;
 }) {
   return (
     <Status>
@@ -95,13 +102,15 @@ export function ClaimerStatus({
         <span className="font-semibold">
           {m.listing_detail_claimer_title()}
         </span>
-        <span className="text-xs text-muted-foreground">
-          <ParaglideMessage
-            message={m.listing_detail_time_left}
-            inputs={{ left: "" }}
-            markup={{ time: () => <Countdown deadline={deadlineAt} /> }}
-          />
-        </span>
+        {deadlineAt !== null && (
+          <span className="text-xs text-muted-foreground">
+            <ParaglideMessage
+              message={m.listing_detail_time_left}
+              inputs={{ left: "" }}
+              markup={{ time: () => <Countdown deadline={deadlineAt} /> }}
+            />
+          </span>
+        )}
       </div>
       <StatusDetail>
         {m.listing_detail_claimer_body({
@@ -171,38 +180,49 @@ export function NoticeStrip({ notice }: { notice: Notice }) {
 
 /**
  * The poster's own claimed listing: who accepted it and how long their trade
- * has left. Edit and Withdraw stay disabled while it runs, each described
- * by why.
+ * has left, unless a dispute froze it. Edit and Withdraw stay disabled while
+ * it runs, each described by why.
  */
 export function PosterClaimedStatus({
   claim,
   editReasonId,
   withdrawReasonId,
 }: {
-  claim: { username: string | null; deadlineAt: Date };
+  claim: ListingClaim;
   editReasonId: string;
   withdrawReasonId: string;
 }) {
-  const time = () => <Countdown deadline={claim.deadlineAt} />;
+  const { username, deadlineAt } = claim;
+  const user = ({ children }: PropsWithChildren) => (
+    <span className="font-semibold">{children}</span>
+  );
 
   return (
     <Status>
       <span>
-        {claim.username === null ? (
+        {deadlineAt === null ? (
+          username === null ? (
+            m.listing_detail_poster_claimed_someone_untimed()
+          ) : (
+            <ParaglideMessage
+              message={m.listing_detail_poster_claimed_untimed}
+              inputs={{ username: `@${username}` }}
+              markup={{ user }}
+            />
+          )
+        ) : username === null ? (
           <ParaglideMessage
             message={m.listing_detail_poster_claimed_someone}
             inputs={{ left: "" }}
-            markup={{ time }}
+            markup={{ time: () => <Countdown deadline={deadlineAt} /> }}
           />
         ) : (
           <ParaglideMessage
             message={m.listing_detail_poster_claimed}
-            inputs={{ username: `@${claim.username}`, left: "" }}
+            inputs={{ username: `@${username}`, left: "" }}
             markup={{
-              user: ({ children }) => (
-                <span className="font-semibold">{children}</span>
-              ),
-              time,
+              user,
+              time: () => <Countdown deadline={deadlineAt} />,
             }}
           />
         )}

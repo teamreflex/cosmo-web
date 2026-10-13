@@ -375,9 +375,9 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
 /**
  * The signed-in viewer's side of a listing, shown in place of Accept, or
  * null when the id isn't a listing. Always the session's own view; signed
- * out, it's anonymous. Only an open listing's candidates are read: closed
- * and claimed listings and the poster's own never touch the viewer's
- * holdings or the poster's.
+ * out, it's anonymous. Only the listing's parties learn its trade's id.
+ * Only an open listing's candidates are read: closed and claimed listings
+ * and the poster's own never touch the viewer's holdings or the poster's.
  */
 export const $fetchTradeListingViewer = createServerFn({ method: "GET" })
   .validator(listingIdInputSchema)
@@ -402,25 +402,36 @@ export const $fetchTradeListingViewer = createServerFn({ method: "GET" })
     const viewerId = context.session?.user.id;
     if (viewerId === undefined) return { role: "anonymous" };
 
-    if (listing.status !== "open" && listing.status !== "claimed") {
-      return { role: "closed" };
+    const { state, trade } = await readListingState(listing);
+    if (state.status !== "open" && state.status !== "claimed") {
+      return {
+        role: "closed",
+        tradeId:
+          trade?.fromUserId === viewerId || trade?.toUserId === viewerId
+            ? trade.id
+            : null,
+      };
     }
 
-    const { state, trade } = await readListingState(listing);
     if (listing.fromUserId === viewerId) {
       return {
         role: "poster",
         claim:
-          state.status === "claimed"
+          state.status === "claimed" && trade !== undefined
             ? {
-                username: trade?.username ?? null,
+                tradeId: trade.id,
+                username: trade.username,
                 deadlineAt: state.deadlineAt,
               }
             : null,
       };
     }
     if (state.status === "claimed" && trade?.toUserId === viewerId) {
-      return { role: "claimer", deadlineAt: state.deadlineAt };
+      return {
+        role: "claimer",
+        deadlineAt: state.deadlineAt,
+        tradeId: trade.id,
+      };
     }
 
     if (state.status === "claimed") {

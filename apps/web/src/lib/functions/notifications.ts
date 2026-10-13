@@ -33,8 +33,7 @@ const PAGE_SIZE = 30;
  * text, which keeps the microseconds a JS Date would drop.
  *
  * A trade notification's counterparty is whichever party of its trade the
- * recipient isn't, and its listing is the one the trade's items came from,
- * or the listing itself.
+ * recipient isn't.
  */
 export const $listNotifications = createServerFn({ method: "GET" })
   .validator(listNotificationsSchema)
@@ -61,9 +60,6 @@ export const $listNotifications = createServerFn({ method: "GET" })
         tokenId: notifications.tokenId,
         offerId: tradeOffers.id,
         offerStatus: tradeOffers.status,
-        listingId: sql<
-          string | null
-        >`CASE WHEN ${tradeOffers.kind} = 'listing' THEN ${tradeOffers.id} ELSE (SELECT ${tradeOfferItems.listingId} FROM ${tradeOfferItems} WHERE ${tradeOfferItems.offerId} = ${tradeOffers.id} AND ${tradeOfferItems.listingId} IS NOT NULL LIMIT 1) END`,
         counterpartyId,
         counterpartyUsername: counterparty.username,
       })
@@ -200,11 +196,7 @@ export const $listNotifications = createServerFn({ method: "GET" })
                         userId: row.counterpartyId,
                         username: row.counterpartyUsername,
                       },
-                offer: {
-                  id: row.offerId,
-                  status: row.offerStatus,
-                  listingId: row.listingId,
-                },
+                offer: { id: row.offerId, status: row.offerStatus },
                 token: row.tokenId === null ? null : toToken(row.tokenId),
                 objekts:
                   row.type === "listing_claimed"

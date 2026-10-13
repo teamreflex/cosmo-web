@@ -158,7 +158,11 @@ function viewerRole(listing: TradeListing, viewer: ListingViewer): ListingRole {
     case "poster":
       return { role: "poster", claim: viewer.claim };
     case "claimer":
-      return { role: "claimer", deadlineAt: viewer.deadlineAt };
+      return {
+        role: "claimer",
+        deadlineAt: viewer.deadlineAt,
+        tradeId: viewer.tradeId,
+      };
     case "onlooker":
       return { role: "onlooker", deadlineAt: viewer.deadlineAt };
     case "candidate": {

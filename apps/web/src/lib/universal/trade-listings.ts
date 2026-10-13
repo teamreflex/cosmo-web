@@ -141,13 +141,14 @@ export type ListingFeedPage = {
 
 /**
  * Where a listing stands, parsed from the listing row and the trade it led
- * to. A claim shows only its deadline, so the public payload never says who
- * claimed it; a filled listing names the COSMO account it was traded to.
- * Listings never expire, so there is no expired state.
+ * to. A claim shows only its deadline, null while its trade is disputed, so
+ * the public payload never says who claimed it; a filled listing names the
+ * COSMO account it was traded to. Listings never expire, so there is no
+ * expired state.
  */
 export const listingStateSchema = z.discriminatedUnion("status", [
   z.object({ status: z.literal("open") }),
-  z.object({ status: z.literal("claimed"), deadlineAt: z.date() }),
+  z.object({ status: z.literal("claimed"), deadlineAt: z.date().nullable() }),
   z.object({
     status: z.literal("filled"),
     endedAt: z.date(),
@@ -195,10 +196,24 @@ export type ListingCandidate = {
 };
 
 /**
+ * The claim on the poster's own listing: the trade, who accepted it and
+ * until when.
+ */
+export type ListingClaim = {
+  tradeId: string;
+  username: string | null;
+  deadlineAt: Date | null;
+};
+
+/**
  * What the listing page shows the signed-in viewer in place of Accept.
- * - `poster`: their own listing, with who claimed it and until when.
+ * - `poster`: their own listing, with who claimed it, until when and the
+ *   trade it led to.
  * - `claimer` / `onlooker`: a claimed listing, theirs or someone else's.
- * - `closed`: the listing ended; the public payload says how.
+ *   Only the claimer learns the trade. A null `deadlineAt` here or on the
+ *   poster's claim means the trade is disputed.
+ * - `closed`: the listing ended; the public payload says how. `tradeId` is
+ *   its latest trade when the viewer was a party to it.
  * - `candidate`: an open listing, with the viewer's usable copies in the
  *   order allocation spends them, the allocation, how many matching copies
  *   each row could draw on, the viewer's claim count and whether the
@@ -208,13 +223,13 @@ export type ListingCandidate = {
 export type ListingViewer =
   | { role: "anonymous" }
   | { role: "unlinked" }
-  | { role: "closed" }
+  | { role: "closed"; tradeId: string | null }
   | {
       role: "poster";
-      claim: { username: string | null; deadlineAt: Date } | null;
+      claim: ListingClaim | null;
     }
-  | { role: "claimer"; deadlineAt: Date }
-  | { role: "onlooker"; deadlineAt: Date }
+  | { role: "claimer"; deadlineAt: Date | null; tradeId: string }
+  | { role: "onlooker"; deadlineAt: Date | null }
   | {
       role: "candidate";
       updatedAt: Date;
@@ -235,7 +250,7 @@ export type ListingViewer =
  */
 export type PublicListingPanel =
   | { kind: "closed"; state: ClosedListingState }
-  | { kind: "onlooker"; deadlineAt: Date }
+  | { kind: "onlooker"; deadlineAt: Date | null }
   | { kind: "signed_out" }
   | { kind: "poster_open" }
   | { kind: "unlinked" }
