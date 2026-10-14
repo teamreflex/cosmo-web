@@ -5,6 +5,7 @@ import type { Redis } from "effect/persistence";
 import type { DatabaseIndexer } from "./db-indexer";
 import type { Exchangerate } from "./exchangerate";
 import { applySerialConfirmationsTask } from "./functions/apply-serial-confirmations";
+import { chatRetentionTask } from "./functions/chat-retention";
 import { clearObjektStatsTask } from "./functions/clear-objekt-stats";
 import { drainOutboxTask } from "./functions/drain-outbox";
 import { recomputeSerialsTask } from "./functions/recompute-serials";
@@ -44,6 +45,7 @@ export const SCHEDULED_TASKS: ScheduledTask[] = [
   syncMarketStatsTask,
   recomputeSerialsTask,
   applySerialConfirmationsTask,
+  chatRetentionTask,
 ];
 
 /**

@@ -32,6 +32,10 @@ The drain logs a warning when its cursor is past the outbox's max id, which happ
 
 Locally, make a trade due by moving its deadline behind the watermark (`UPDATE trade_offers SET deadline_at = (SELECT chain_time FROM list_drain_cursor WHERE name = 'outbox-drain') - interval '1 second' WHERE id = '<trade>'`) rather than simulating future-stamped rows, then run `bun run task trade-timers`.
 
+## Chat retention
+
+`chat-retention` runs hourly and blanks the body of every chat message whose trade ended more than 14 days ago (`ended_at`), leaving the row, its sender and `removed_at`. Event rows and reported messages' copies in `report_messages` are untouched. Bodies are ciphertext only apps/chat can read; this task never reads them.
+
 ## Simulating the chain locally
 
 Locally the processor stays off and chain activity is simulated against the indexer DB with `bun run simulate` (`scripts/simulate.ts`):

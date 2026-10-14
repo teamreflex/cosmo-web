@@ -15,6 +15,9 @@ export const CLAIM_WINDOW = 48 * 60 * 60 * 1000;
 // the drain's row in `list_drain_cursor`, whose `chain_time` is the watermark
 export const DRAIN_CURSOR_NAME = "outbox-drain";
 
+// how many days a trade's chat messages outlive the trade's end
+export const CHAT_RETENTION_DAYS = 14;
+
 // the new deadlines staff can give a disputed trade, in hours
 export const EXTEND_HOURS = [24, 48, 72] as const;
 
