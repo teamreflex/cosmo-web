@@ -43,11 +43,7 @@ const rows = [
     expected: { user: false, moderator: true, admin: true },
   },
   {
-    permissions: { chat: ["read-any"] },
-    expected: { user: false, moderator: true, admin: true },
-  },
-  {
-    permissions: { chat: ["remove-message"] },
+    permissions: { trade: ["remove-message"] },
     expected: { user: false, moderator: true, admin: true },
   },
   {
@@ -137,6 +133,11 @@ describe("role matrix", () => {
 
     expect(covered).toHaveLength(rows.length);
     expect(covered.toSorted()).toEqual(flatten(statement).toSorted());
+  });
+
+  test("has no chat resource: staff read and moderate chats through trade", () => {
+    expect(Object.keys(statement)).not.toContain("chat");
+    expect(statement.trade).toContain("remove-message");
   });
 
   test("rejects actions and resources outside the statement", () => {

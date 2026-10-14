@@ -22,6 +22,8 @@ export const env = createEnv({
     VITE_TYPESENSE_KEY: z.string().min(1),
     // cdn serving mirrored objekt images
     VITE_CDN_URL: z.url(),
+    // chat websocket origin (ws: or wss:); unset turns chat off
+    VITE_CHAT_URL: z.url().optional(),
   },
   runtimeEnv: import.meta.env,
   emptyStringAsUndefined: true,

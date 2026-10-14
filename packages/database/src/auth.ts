@@ -147,3 +147,12 @@ export const apikey = pgTable(
     index("apikey_key_idx").on(t.key),
   ],
 );
+
+// jwt plugin: signing keys for chat tokens, private keys encrypted with BETTER_AUTH_SECRET
+export const jwks = pgTable("jwks", {
+  id: text("id").primaryKey(),
+  publicKey: text("public_key").notNull(),
+  privateKey: text("private_key").notNull(),
+  createdAt: timestamp("created_at", { mode: "date" }).notNull(),
+  expiresAt: timestamp("expires_at", { mode: "date" }),
+});

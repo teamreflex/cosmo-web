@@ -7,8 +7,7 @@ import type { AdminOptions } from "better-auth/plugins/admin";
  * and session management are absent, so no role can be granted them.
  */
 export const statement = {
-  trade: ["read-any", "cancel-any", "resolve-dispute"],
-  chat: ["read-any", "remove-message"],
+  trade: ["read-any", "cancel-any", "resolve-dispute", "remove-message"],
   listing: ["remove-any"],
   feedback: ["remove-any"],
   report: ["read", "resolve", "escalate"],
@@ -24,7 +23,6 @@ export const roles = {
   user: ac.newRole({}),
   moderator: ac.newRole({
     trade: statement.trade,
-    chat: statement.chat,
     listing: statement.listing,
     feedback: statement.feedback,
     report: statement.report,

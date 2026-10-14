@@ -2,6 +2,7 @@ import { m } from "@/i18n/messages";
 import { baseUrl } from "@/lib/utils";
 import {
   inferAdditionalFields,
+  jwtClient,
   usernameClient,
 } from "better-auth/client/plugins";
 import { createAuthClient } from "better-auth/react";
@@ -12,7 +13,11 @@ import type { auth } from "../server/auth.server";
  */
 export const authClient = createAuthClient({
   baseURL: baseUrl(),
-  plugins: [usernameClient(), inferAdditionalFields<typeof auth>()],
+  plugins: [
+    usernameClient(),
+    inferAdditionalFields<typeof auth>(),
+    jwtClient(),
+  ],
 });
 
 type ErrorInput = {

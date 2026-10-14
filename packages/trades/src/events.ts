@@ -1,15 +1,37 @@
 /**
  * Redis channel for trades whose rows changed. apps/web and apps/schedules
- * publish on it after their transaction commits, and apps/chat will
- * subscribe.
+ * publish on it after their transaction commits, and apps/chat subscribes.
  */
 export const TRADE_EVENTS_CHANNEL = "trade-events";
 
 export type TradeUpdate = { type: "updated"; tradeId: string };
 
 /**
+ * A chat message committed to a trade. apps/chat routes it by the stored
+ * row's trade id, never by `tradeId`.
+ */
+export type TradeMessage = {
+  type: "message";
+  tradeId: string;
+  messageId: number;
+};
+
+export type TradeChannelEvent = TradeUpdate | TradeMessage;
+
+/**
  * The message announcing that the trade's row changed.
  */
 export function tradeUpdateMessage(tradeId: string) {
   return JSON.stringify({ type: "updated", tradeId } satisfies TradeUpdate);
+}
+
+/**
+ * The message announcing a new chat message in the trade.
+ */
+export function tradeMessageMessage(tradeId: string, messageId: number) {
+  return JSON.stringify({
+    type: "message",
+    tradeId,
+    messageId,
+  } satisfies TradeMessage);
 }

@@ -25,6 +25,7 @@ import { clearBinderPinCache } from "./binders.server";
 import { recordCosmoLinkChanges } from "./cosmo-accounts.server";
 import { db, type DbOrTx, type WebTx } from "./db";
 import { closeOpenOffers, liveTradesBlocker } from "./trades.server";
+import { publishUserEvent } from "./user-events.server";
 import { clearVerification } from "./verification-codes.server";
 
 type BlockerCheck = (
@@ -170,6 +171,11 @@ export async function deleteAccount(
     await clearBinderPinCache(result.link);
   }
   await clearVerification(userId);
+  /**
+   * The user row's foreign key deletes the sessions without Better Auth's
+   * hooks, so the disconnect is published here.
+   */
+  await publishUserEvent({ type: "disconnect", userId });
   return { status: "deleted" };
 }
 
