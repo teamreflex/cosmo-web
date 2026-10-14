@@ -357,8 +357,8 @@ function TradeLayout({
                     trade={trade}
                     side={side}
                     className={cn(chatHeight, !chatTab && "max-lg:hidden")}
-                    onIncoming={(count) => {
-                      if (!chatTab) setUnread((total) => total + count);
+                    onIncoming={() => {
+                      if (!chatTab) setUnread((total) => total + 1);
                     }}
                   />
                 </Suspense>

@@ -48,7 +48,11 @@ import { currentAccountQuery, removeViewerQueries } from "@/lib/queries/core";
 import { tradeQuery } from "@/lib/queries/trades";
 import type { TradeView } from "@/lib/universal/trades";
 import { cn } from "@/lib/utils";
-import { isKnownEvent, MAX_MESSAGE_LENGTH } from "@apollo/chat/items";
+import {
+  type ChatItem,
+  isKnownEvent,
+  MAX_MESSAGE_LENGTH,
+} from "@apollo/chat/items";
 import { sanitizeMessage } from "@apollo/chat/sanitize";
 import {
   type MessageReportReason,
@@ -74,7 +78,6 @@ import {
   type KeyboardEvent,
   useEffect,
   useId,
-  useRef,
   useState,
   useTransition,
 } from "react";
@@ -88,13 +91,14 @@ import {
   chatRows,
   unreadAfter,
 } from "./chat-rows";
+import { useChatArrivals } from "./use-chat-arrivals";
 
 type Props = {
   trade: TradeView;
   // the viewer's side, or null for staff, who read it without sending
   side: TradeSide | null;
-  // the other party's messages that arrived live, after the history
-  onIncoming?: (count: number) => void;
+  // one of the other party's messages arrived after the history
+  onIncoming?: () => void;
   className?: string;
 };
 
@@ -118,6 +122,38 @@ export default function ChatPanel({
     ? Option.getOrUndefined(Cause.findErrorOption(result.cause))?._tag
     : undefined;
   useSignedOutCheck(refusal === "Unauthorized");
+
+  /**
+   * Chat is the page's only live feed of the trade: when the other party,
+   * staff or the transfer drain moves the trade on, its event arrives here
+   * and the page refetches the trade. An event the page already has, such
+   * as the viewer's own action, or a removal changes nothing.
+   */
+  const queryClient = useQueryClient();
+  const pageEvent = trade.events.at(-1)?.id ?? 0;
+  const changesPage = (item: ChatItem) =>
+    item._tag === "Event" &&
+    item.id > pageEvent &&
+    !(isKnownEvent(item.event) && item.event.type === "message_removed");
+
+  function refetchTrade() {
+    void queryClient.invalidateQueries({
+      queryKey: tradeQuery(trade.id).queryKey,
+    });
+  }
+
+  useChatArrivals(trade.id, {
+    // an event that landed between the page loading and the chat joining
+    onHistory: (items) => {
+      if (items.some(changesPage)) refetchTrade();
+    },
+    onEvent: (event) => {
+      if (changesPage(event)) refetchTrade();
+    },
+    onMessage: (message) => {
+      if (side !== null && message.sender !== side) onIncoming?.();
+    },
+  });
 
   return (
     <section
@@ -143,12 +179,7 @@ export default function ChatPanel({
         <ChatEnded closed={refusal === "StaffAccessRequired"} onRetry={retry} />
       ) : AsyncResult.isSuccess(result) &&
         (result.value.live || result.value.items.length > 0) ? (
-        <Conversation
-          trade={trade}
-          side={side}
-          conversation={result.value}
-          onIncoming={onIncoming}
-        />
+        <Conversation trade={trade} side={side} conversation={result.value} />
       ) : (
         <ChatSkeleton />
       )}
@@ -185,43 +216,16 @@ function Conversation({
   trade,
   side,
   conversation: { items, live },
-  onIncoming,
 }: {
   trade: TradeView;
   side: TradeSide | null;
   conversation: Conversation;
-  onIncoming: Props["onIncoming"];
 }) {
-  const queryClient = useQueryClient();
   const [reporting, setReporting] = useState<ChatMessage | null>(null);
   const rows = chatRows(items);
   const canSend =
     side !== null &&
     (trade.state.status === "accepted" || trade.state.status === "disputed");
-
-  /**
-   * Chat is the page's only live feed of the trade: when the other party,
-   * staff or the transfer drain moves the trade on, its event arrives here
-   * and the page refetches the trade, whose newest event then catches up so
-   * each event refetches once. It also covers an event that landed between
-   * the page loading and the chat joining. Removals change nothing on the
-   * page.
-   */
-  const pageEvent = trade.events.at(-1)?.id ?? 0;
-  const newestEvent = items.findLast(
-    (item) =>
-      item._tag === "Event" &&
-      !(isKnownEvent(item.event) && item.event.type === "message_removed"),
-  )?.id;
-  useEffect(() => {
-    if (newestEvent !== undefined && newestEvent > pageEvent) {
-      void queryClient.invalidateQueries({
-        queryKey: tradeQuery(trade.id).queryKey,
-      });
-    }
-  }, [newestEvent, pageEvent, queryClient, trade.id]);
-
-  useIncomingCount(items, live, side, onIncoming);
 
   return (
     <>
@@ -279,30 +283,6 @@ function Conversation({
       )}
     </>
   );
-}
-
-/**
- * Tells the page how many of the other party's messages arrive after the
- * history, which badges the chat tab while it's closed below laptop width.
- * The history only sets where counting starts, so it never shows as new.
- */
-function useIncomingCount(
-  items: Conversation["items"],
-  live: boolean,
-  side: TradeSide | null,
-  onIncoming: Props["onIncoming"],
-) {
-  const counted = useRef<number | null>(null);
-  const newest = items.at(-1)?.id ?? 0;
-  useEffect(() => {
-    if (counted.current === null) {
-      if (live) counted.current = newest;
-      return;
-    }
-    const count = unreadAfter(items, side, counted.current);
-    if (count > 0) onIncoming?.(count);
-    counted.current = newest;
-  }, [items, live, newest, onIncoming, side]);
 }
 
 function Row({
