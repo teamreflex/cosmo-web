@@ -42,6 +42,7 @@ const actionTones = {
   "trade:complete": "text-foreground",
   "trade:cancel": "text-foreground",
   "trade:extend": "text-foreground",
+  "trade:remove-message": "text-destructive",
 } satisfies Record<StaffAuditAction, string>;
 
 type Props = {
@@ -273,11 +274,31 @@ function AuditTarget({ row }: Props) {
           {row.report !== null && <ReportLink report={row.report} />}
         </>
       );
+    case "message":
+      return (
+        <>
+          <span>{m.admin_audit_target_message()}</span>
+          <span className="font-mono text-xs text-muted-foreground">
+            #{row.target.id}
+          </span>
+          <Link
+            to="/trade/$id"
+            params={{ id: row.target.tradeId }}
+            className="text-xs text-cosmo hover:underline dark:text-cosmo-text"
+          >
+            {m.admin_audit_note_message_trade({
+              id: shortId(row.target.tradeId),
+            })}
+          </Link>
+          {row.report !== null && <ReportLink report={row.report} />}
+        </>
+      );
   }
 }
 
 /**
- * The report a user or trade action was taken from, opened in the queue.
+ * The report a user, trade or message action was taken from, opened in the
+ * queue.
  */
 function ReportLink({
   report,

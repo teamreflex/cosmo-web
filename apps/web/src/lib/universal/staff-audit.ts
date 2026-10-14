@@ -21,7 +21,8 @@ export type AdminAuditTarget =
       enabled: boolean;
     }
   | { type: "collection"; slug: string }
-  | { type: "trade"; id: string };
+  | { type: "trade"; id: string }
+  | { type: "message"; id: string; tradeId: string };
 
 /**
  * The parts of an audit row's stored detail that the log shows, with roles

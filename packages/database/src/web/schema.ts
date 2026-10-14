@@ -4,6 +4,7 @@ import {
   bigint,
   bigserial,
   boolean,
+  bytea,
   check,
   date,
   index,
@@ -898,8 +899,10 @@ export const tradeListingWants = pgTable(
 
 /**
  * A trade's chat and timeline in one stream. Text messages have a sender, or
- * none once their account is deleted, and their body is blanked 14 days after
- * the trade ends. Events are system or staff actions with a typed payload.
+ * none once their account is deleted. Their body is ciphertext only apps/chat
+ * reads and writes, blanked when staff remove the message (`removed_at`) and
+ * 14 days after the trade ends. Events are system or staff actions with a
+ * typed payload.
  */
 export const tradeMessages = pgTable(
   "trade_messages",
@@ -912,17 +915,42 @@ export const tradeMessages = pgTable(
       onDelete: "set null",
     }),
     kind: tradeMessageKind("kind").notNull(),
-    body: varchar("body", { length: 1000 }),
+    body: bytea("body"),
     event: jsonb("event").$type<TradeEvent>(),
+    removedAt: tradeTimestamp("removed_at"),
     createdAt: tradeTimestamp("created_at").notNull().defaultNow(),
   },
   (t) => [
     index("trade_messages_trade_idx").on(t.tradeId, t.id),
     check(
       "trade_messages_kind_chk",
-      sql`CASE ${t.kind} WHEN 'text' THEN ${t.event} IS NULL ELSE ${t.event} IS NOT NULL AND num_nonnulls(${t.body}, ${t.senderId}) = 0 END`,
+      sql`CASE ${t.kind} WHEN 'text' THEN ${t.event} IS NULL ELSE ${t.event} IS NOT NULL AND num_nonnulls(${t.body}, ${t.senderId}, ${t.removedAt}) = 0 END`,
+    ),
+    check(
+      "trade_messages_removed_chk",
+      sql`${t.removedAt} IS NULL OR ${t.body} IS NULL`,
     ),
   ],
+);
+
+/**
+ * A reported chat message's own encrypted copy, so the evidence outlives the
+ * message's removal and retention. No foreign key to the message, trade or
+ * sender for the same reason.
+ */
+export const reportMessages = pgTable(
+  "report_messages",
+  {
+    reportId: uuid("report_id")
+      .primaryKey()
+      .references(() => reports.id, { onDelete: "cascade" }),
+    messageId: bigint("message_id", { mode: "number" }).notNull(),
+    tradeId: uuid("trade_id").notNull(),
+    senderId: varchar("sender_id", { length: 32 }),
+    sentAt: tradeTimestamp("sent_at").notNull(),
+    body: bytea("body").notNull(),
+  },
+  (t) => [index("report_messages_trade_idx").on(t.tradeId)],
 );
 // #endregion
 

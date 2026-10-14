@@ -192,6 +192,8 @@ function describeEvent(
         />
       );
     }
+    case "message_removed":
+      return m.trade_page_event_message_removed({ appName });
     // the payment side arrives in phase 13a
     case "marked_paid":
     case "payment_confirmed":

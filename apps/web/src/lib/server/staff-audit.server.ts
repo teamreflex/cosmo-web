@@ -306,6 +306,12 @@ function toAuditTarget(
       return { type: "collection", slug: row.targetId };
     case "trade":
       return { type: "trade", id: row.targetId };
+    case "message":
+      // apps/chat always stores the message's trade with these rows
+      if (row.detail?.kind !== "message") {
+        throw new Error(`Audit row on message ${row.targetId} has no detail`);
+      }
+      return { type: "message", id: row.targetId, tradeId: row.detail.tradeId };
   }
 }
 
@@ -329,6 +335,7 @@ function toAuditDetail(detail: StaffAuditDetail): AdminAuditDetail | null {
         hours: detail.hours,
       };
     case "api-key":
+    case "message":
       return null;
   }
 }

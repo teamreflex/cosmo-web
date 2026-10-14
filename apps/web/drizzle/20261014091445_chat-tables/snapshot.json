@@ -1,0 +1,359 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "c14d755f-e797-43d4-8e0a-690871e857c5",
+  "prevIds": [
+    "172377df-727b-4ec7-a8e3-f63eb6b48459"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "report_messages"
+      ],
+      "writes": [
+        "s|tbl|public.report_messages",
+        "n|tbl|public.report_messages",
+        "e|tbl|public.report_messages",
+        "n|rel|public.report_messages",
+        "n|type|public.report_messages",
+        "n|rel|public.report_messages_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "trade_messages",
+        "removed_at"
+      ],
+      "writes": [
+        "s|col|public.trade_messages.removed_at",
+        "n|col|public.trade_messages.removed_at",
+        "e|col|public.trade_messages.removed_at"
+      ],
+      "reads": [
+        "n|tbl|public.trade_messages",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "alter_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "trade_messages",
+        "body"
+      ],
+      "writes": [
+        "s|colprop|public.trade_messages.body.type",
+        "s|colprop|public.trade_messages.body.default"
+      ],
+      "reads": [
+        "n|tbl|public.trade_messages",
+        "n|sch|public",
+        "n|col|public.trade_messages.body"
+      ],
+      "sqlHash": "555cc02bea78bb3d"
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "report_messages",
+        "report_messages_trade_idx"
+      ],
+      "writes": [
+        "s|idx|public.report_messages_trade_idx",
+        "n|idx|public.report_messages_trade_idx",
+        "e|idx|public.report_messages_trade_idx",
+        "n|rel|public.report_messages_trade_idx"
+      ],
+      "reads": [
+        "n|tbl|public.report_messages",
+        "n|sch|public",
+        "n|col|public.report_messages.trade_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "report_messages"
+      ],
+      "writes": [
+        "s|fk|public.report_messages.report_messages_report_id_reports_id_fkey",
+        "n|fk|public.report_messages.report_messages_report_id_reports_id_fkey",
+        "e|fk|public.report_messages.report_messages_report_id_reports_id_fkey",
+        "n|con|public.report_messages.report_messages_report_id_reports_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.report_messages",
+        "n|sch|public",
+        "n|tbl|public.reports",
+        "n|sch|public",
+        "n|col|public.report_messages.report_id",
+        "n|col|public.reports.id",
+        "e|uniqueness|public.reports.id"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_messages"
+      ],
+      "writes": [
+        "s|ck|public.trade_messages.trade_messages_removed_chk",
+        "n|ck|public.trade_messages.trade_messages_removed_chk",
+        "e|ck|public.trade_messages.trade_messages_removed_chk",
+        "n|con|public.trade_messages.trade_messages_removed_chk"
+      ],
+      "reads": [
+        "n|tbl|public.trade_messages",
+        "n|sch|public",
+        "n|col|public.trade_messages.removed_at",
+        "n|col|public.trade_messages.body"
+      ]
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_messages"
+      ],
+      "writes": [
+        "s|ck|public.trade_messages.trade_messages_kind_chk"
+      ],
+      "reads": [
+        "n|tbl|public.trade_messages",
+        "n|sch|public",
+        "n|col|public.trade_messages.kind",
+        "n|col|public.trade_messages.event",
+        "n|col|public.trade_messages.body",
+        "n|col|public.trade_messages.sender_id",
+        "n|col|public.trade_messages.removed_at",
+        "e|col|public.trade_messages.kind",
+        "e|col|public.trade_messages.event",
+        "e|col|public.trade_messages.body",
+        "e|col|public.trade_messages.sender_id"
+      ],
+      "sqlHash": "b7f7f09fd4445707"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "report_messages",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "report_messages",
+        "name": "report_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "report_messages",
+        "name": "message_id",
+        "type": "bigint",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "report_messages",
+        "name": "trade_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "report_messages",
+        "name": "sender_id",
+        "type": "varchar(32)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "report_messages",
+        "name": "sent_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "report_messages",
+        "name": "body",
+        "type": "bytea",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_messages",
+        "name": "removed_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "report_messages",
+        "name": "report_messages_trade_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "trade_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "report_messages",
+        "name": "report_messages_report_id_reports_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "report_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "reports",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "report_messages",
+        "name": "report_messages_pkey",
+        "columns": [
+          "report_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_messages",
+        "name": "trade_messages_removed_chk",
+        "value": "\"removed_at\" IS NULL OR \"body\" IS NULL",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "columns\u0000[\"public\",\"trade_messages\",\"body\"]",
+      "set": {
+        "type": "bytea"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"public\",\"trade_messages\",\"trade_messages_kind_chk\"]",
+      "set": {
+        "value": "CASE \"kind\" WHEN 'text' THEN \"event\" IS NULL ELSE \"event\" IS NOT NULL AND num_nonnulls(\"body\", \"sender_id\", \"removed_at\") = 0 END"
+      }
+    }
+  ]
+}

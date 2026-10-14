@@ -201,6 +201,11 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.reports.resolvedBy,
       to: r.user.id,
     }),
+    // a chat message report's copy of the message
+    messageCopy: r.one.reportMessages({
+      from: r.reports.id,
+      to: r.reportMessages.reportId,
+    }),
   },
   staffAudit: {
     staff: r.one.user({

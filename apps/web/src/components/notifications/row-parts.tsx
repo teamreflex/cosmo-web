@@ -12,6 +12,7 @@ import {
   IconFlag,
   IconGavel,
   IconHourglassEmpty,
+  IconMessage,
   IconX,
 } from "@tabler/icons-react";
 import type { ReactNode } from "react";
@@ -131,6 +132,10 @@ const typeBadges = {
   },
   trade_deadline_extended: {
     icon: IconClockPlus,
+    className: "bg-muted-foreground text-background",
+  },
+  trade_message: {
+    icon: IconMessage,
     className: "bg-muted-foreground text-background",
   },
 } satisfies Record<BadgedType, { icon: TablerIcon; className: string }>;

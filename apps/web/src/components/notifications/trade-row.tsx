@@ -191,6 +191,14 @@ function describeTrade(notification: TradeItem, username: string) {
           markup={bold}
         />
       );
+    case "trade_message":
+      return (
+        <ParaglideMessage
+          message={m.notification_trade_message}
+          inputs={{ username }}
+          markup={bold}
+        />
+      );
     case "listing_closed":
       return (
         <ParaglideMessage

@@ -20,6 +20,7 @@ const actionLabels = {
   "trade:complete": m.admin_audit_action_trade_complete,
   "trade:cancel": m.admin_audit_action_trade_cancel,
   "trade:extend": m.admin_audit_action_trade_extend,
+  "trade:remove-message": m.admin_audit_action_trade_remove_message,
 } satisfies Record<StaffAuditAction, () => string>;
 
 /**

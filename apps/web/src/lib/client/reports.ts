@@ -15,6 +15,7 @@ const reasonLabels = {
   objekt_not_received: m.report_reason_objekt_not_received,
   payment_not_received: m.report_reason_payment_not_received,
   off_terms: m.report_reason_off_terms,
+  off_platform_payment: m.report_reason_off_platform_payment,
   party_banned: m.report_reason_party_banned,
 } satisfies Record<StoredReportReason, () => string>;
 

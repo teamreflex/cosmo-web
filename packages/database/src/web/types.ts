@@ -15,6 +15,7 @@ import type {
   objektListEntries,
   objektLists,
   pins,
+  reportMessages,
   reports,
   staffAudit,
   tradeListingWants,
@@ -83,6 +84,7 @@ export const tradeNotificationTypes = [
   "trade_dispute_resolved",
   "trade_deadline_extended",
   "listing_closed",
+  "trade_message",
 ] as const;
 export type TradeNotificationType = (typeof tradeNotificationTypes)[number];
 
@@ -108,6 +110,7 @@ export const notificationTypes = [
   "trade_deadline_extended",
   ...retiredNotificationTypes,
   "listing_closed",
+  "trade_message",
 ] as const;
 export type NotificationType = (typeof notificationTypes)[number];
 export type CosmoToken = typeof cosmoTokens.$inferSelect;
@@ -126,6 +129,7 @@ export type TradeListingWant = typeof tradeListingWants.$inferSelect;
 export type NewTradeOfferItem = typeof tradeOfferItems.$inferInsert;
 export type NewTradeListingWant = typeof tradeListingWants.$inferInsert;
 export type TradeMessage = typeof tradeMessages.$inferSelect;
+export type ReportMessage = typeof reportMessages.$inferSelect;
 
 export interface EventWithEra extends Event {
   era: Era;
@@ -220,11 +224,22 @@ export const disputeReasons = [
 ] as const;
 export type DisputeReason = (typeof disputeReasons)[number];
 
+// why a party reported a chat message
+export const messageReportReasons = [
+  "off_platform_payment",
+  "harassment",
+  "spam",
+  "other",
+] as const;
+export type MessageReportReason = (typeof messageReportReasons)[number];
+
 /**
- * A stored report's reason: a user report's, a party dispute's, or
- * `party_banned` for the dispute a ban opens on each of the user's trades.
+ * A stored report's reason: a user report's, a party dispute's, a chat
+ * message report's, or `party_banned` for the dispute a ban opens on each of
+ * the user's trades.
  */
-export type StoredReportReason = ReportReason | DisputeReason | "party_banned";
+export type StoredReportReason =
+  ReportReason | DisputeReason | MessageReportReason | "party_banned";
 
 export const staffAuditActions = [
   "report:read",
@@ -242,11 +257,13 @@ export const staffAuditActions = [
   "trade:complete",
   "trade:cancel",
   "trade:extend",
+  "trade:remove-message",
 ] as const;
 export type StaffAuditAction = (typeof staffAuditActions)[number];
 
 /**
- * A `collection` target's id is the collection's slug.
+ * A `collection` target's id is the collection's slug, and a `message`
+ * target's id is the chat message's id.
  */
 export const staffAuditTargetTypes = [
   "user",
@@ -254,6 +271,7 @@ export const staffAuditTargetTypes = [
   "api-key",
   "collection",
   "trade",
+  "message",
 ] as const;
 export type StaffAuditTargetType = (typeof staffAuditTargetTypes)[number];
 
@@ -273,7 +291,8 @@ export type CosmoLinkReason = (typeof cosmoLinkReasons)[number];
  * `expiresIn` is the ban length in seconds, null for a permanent ban. An API
  * key's name, owner and enabled state are copied in when the action runs, so
  * the row still reads after the key is deleted. A trade extension stores the
- * new deadline and the hours staff picked.
+ * new deadline and the hours staff picked. A removed chat message names its
+ * trade.
  */
 export type StaffAuditDetail =
   | { kind: "ban"; expiresIn: number | null; reason: string }
@@ -284,7 +303,8 @@ export type StaffAuditDetail =
       ownerId: string;
       enabled: boolean;
     }
-  | { kind: "trade-extend"; deadlineAt: string; hours: number };
+  | { kind: "trade-extend"; deadlineAt: string; hours: number }
+  | { kind: "message"; tradeId: string };
 
 export const tradeOfferKinds = ["listing", "trade"] as const;
 export type TradeOfferKind = (typeof tradeOfferKinds)[number];
