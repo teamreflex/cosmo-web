@@ -10,7 +10,7 @@ Detailed conventions live in `docs/`. Read the relevant file **before** working 
 | Routes, loaders, data fetching, server functions, import protection (`apps/web`)                 | [`docs/tanstack.md`](docs/tanstack.md)   |
 | Components, forms, Tailwind/styling, i18n strings (`apps/web`)                                   | [`docs/frontend.md`](docs/frontend.md)   |
 | Throwing/handling errors, `ExpectedError`, Sentry filtering (`apps/web`)                         | [`docs/errors.md`](docs/errors.md)       |
-| Better Auth config, staff roles and permissions, API keys, auth schema generation (`apps/web`)   | [`docs/auth.md`](docs/auth.md)           |
+| Better Auth, staff roles, bans, COSMO links, account deletion, lock order, API keys (`apps/web`) | [`docs/auth.md`](docs/auth.md)           |
 | Writing or running tests (`bun test`, mocking cosmo endpoints)                                   | [`docs/testing.md`](docs/testing.md)     |
 | COSMO domain concepts: collections, objekts, serials, grids, COMO, gravity polls                 | [`docs/cosmo.md`](docs/cosmo.md)         |
 | Looking up library documentation (TanStack, Drizzle, Effect, …)                                  | [`docs/libraries.md`](docs/libraries.md) |
@@ -65,16 +65,17 @@ Detailed conventions live in `docs/`. Read the relevant file **before** working 
 
 #### Packages
 
-- `packages/auth`: Shared staff roles (Better Auth access control), the protected-account and self-demotion guard, and the user-events contract
-- `packages/chat`: The chat RPC protocol, its errors and the chat access policy, shared by apps/chat and the web app
+- `packages/auth`: Staff roles (Better Auth access control), the account guards (protected accounts, self-demotion, COSMO links) and the user-events contract
+- `packages/chat`: The chat RPC protocol, its errors and access policy, shared by apps/chat and the web app
 - `packages/cosmo`: COSMO related types and API functions
 - `packages/database`: `drizzle-orm` schemas for both databases
 - `packages/drizzle-bun-effect`: Effect service for Bun.SQL, derived from `drizzle-orm/effect-postgres`
+- `packages/image`: Mirrors COSMO objekt images into R2, shared by the indexer and the web app
 - `packages/lint`: Shared oxlint config
 - `packages/queue`: Redis-backed job queues (Effect `PersistedQueue`) the web app offers to and the schedules app takes from
 - `packages/serial-estimation`: Estimates the serials of objekts minted after COSMO's v1 metadata cutoff, used by the indexer and its backfill
 - `packages/services`: Effect layers shared by the Effect apps: the pooled web DB client (`DatabaseWeb`, `WebTx`) and the Redis client
-- `packages/trades`: Pure trade logic shared by the web and schedules apps: the listing and trade lifecycle, the holdings allocator, whether a token can be offered, range filters, the drain's per-row transfer decision and each trade item's status, timeouts and claim caps
+- `packages/trades`: Pure trade logic shared by the web and schedules apps: the listing and trade lifecycle, the holdings allocator, the drain's transfer decisions, timers and caps
 - `packages/typescript`: Shared tsconfig.json file
 - `packages/util`: Shared utility functions
 - `packages/util-server`: Shared server-only utilities (Redis cache keys, crypto)

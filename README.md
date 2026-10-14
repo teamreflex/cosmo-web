@@ -15,22 +15,31 @@ A platform for exploring objekts & gravities from [MODHAUS](https://www.mod-haus
 - Per member, season and class collection progress breakdowns
 - Collection completion leaderboards
 - View historical and live gravity results
+- Objekt price history tracking via user-aggregated sale listings
+- Complete objekt trade listing system with chat, transfer tracking and feedback
 
 ## Project
 
 - `apps/web`: Core TanStack Start web app deployed at [apollo.cafe](https://apollo.cafe)
 - `apps/indexer`: Subsquid blockchain indexer for cataloging Modhaus objekt collections
 - `apps/schedules`: Scheduled tasks and queue workers
+- `apps/chat`: Trade chat over Effect RPC on a websocket, with encrypted messages
 - `apps/typesense`: Dockerfile for building Typesense with `curl` available
 - `apps/typesense-import`: Sync new objekt collections to the Typesense database
 - `apps/proxy`: mitmproxy addons for intercepting COSMO app traffic
+- `packages/auth`: Staff roles and permissions, and the account guards
+- `packages/chat`: The chat protocol and access policy
 - `packages/cosmo`: COSMO related types and API functions
 - `packages/database`: `drizzle-orm` schemas for both databases
 - `packages/drizzle-bun-effect`: Effect service for Bun.SQL, derived from `drizzle-orm/effect-postgres`
+- `packages/image`: Mirrors objekt images into R2
 - `packages/lint`: Shared oxlint config
-- `packages/queue`: Shared queue definitions
+- `packages/queue`: Redis-backed job queues between the web and schedules apps
+- `packages/services`: Effect layers shared by the Effect apps (web database, Redis)
+- `packages/trades`: Trade and listing rules shared by the web and schedules apps
 - `packages/typescript`: Shared tsconfig.json file
 - `packages/util`: Shared utility functions
+- `packages/util-server`: Shared server-only utilities
 
 ## Requirements
 
@@ -51,8 +60,10 @@ cd cosmo-web
 bun install
 cp .env.example .env
 turbo i18n
+# also starts the Docker services DEV_* in .env selects
 turbo dev --filter web
-turbo db:migrate
+# in another terminal, once Postgres is up
+turbo db:migrate --filter web
 ```
 
 ## Tooling

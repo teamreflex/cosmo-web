@@ -147,6 +147,7 @@ const variants = cva({
 - Combine classes with `cn()` utility from `lib/utils.ts`
 - Use data attributes for state: `data-active:bg-muted`, `data-open:`, `data-checked:` (Base UI sets `data-open`/`data-closed`, `data-checked`, `data-active`, `data-popup-open` rather than Radix's `data-state`)
 - Photocard aspect ratio: `aspect-photocard`
+- Prices: a seller's own price keeps its decimals through `formatPrice()`. A price converted into the viewer's currency (`useDisplayCurrency()`, `useSaleConversionRate()`) is approximate, so it goes through `formatConvertedPrice()`, which drops minor units from 1,000 and compacts from 1,000,000, with the whole value in a `title`.
 
 ## i18n
 
