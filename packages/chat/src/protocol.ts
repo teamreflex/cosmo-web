@@ -63,7 +63,12 @@ export class ChatAuth extends RpcMiddleware.Service<
 export const Join = Rpc.make("Join", {
   payload: { tradeId: TradeId, afterId: Schema.optionalKey(MessageId) },
   success: JoinItem,
-  error: Schema.Union([ChatNotFound, StaffAccessRequired, ChatUnavailable]),
+  error: Schema.Union([
+    ChatNotFound,
+    StaffAccessRequired,
+    RateLimited,
+    ChatUnavailable,
+  ]),
   stream: true,
 });
 

@@ -58,6 +58,7 @@ Detailed conventions live in `docs/`. Read the relevant file **before** working 
 - `apps/web`: Core TanStack Start web app
 - `apps/indexer`: Subsquid blockchain indexer for cataloging Modhaus objekt collections
 - `apps/schedules`: Scheduled tasks and queue workers
+- `apps/chat`: Trade chat over Effect RPC on a websocket, with encrypted messages
 - `apps/typesense`: Dockerfile for building Typesense with `curl` available
 - `apps/typesense-import`: Sync new objekt collections to the Typesense database
 - `apps/proxy`: mitmproxy addons for intercepting COSMO app traffic
@@ -65,6 +66,7 @@ Detailed conventions live in `docs/`. Read the relevant file **before** working 
 #### Packages
 
 - `packages/auth`: Shared staff roles (Better Auth access control), the protected-account and self-demotion guard, and the user-events contract
+- `packages/chat`: The chat RPC protocol, its errors and the chat access policy, shared by apps/chat and the web app
 - `packages/cosmo`: COSMO related types and API functions
 - `packages/database`: `drizzle-orm` schemas for both databases
 - `packages/drizzle-bun-effect`: Effect service for Bun.SQL, derived from `drizzle-orm/effect-postgres`

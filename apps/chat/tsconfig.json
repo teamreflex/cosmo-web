@@ -1,0 +1,13 @@
+{
+  "extends": "@apollo/typescript/tsconfig.bun.json",
+  "include": ["src/**/*.ts", "tests/**/*.ts"],
+  "exclude": ["node_modules", ".turbo", "dist"],
+
+  "compilerOptions": {
+    "types": ["bun"],
+    "plugins": [{ "name": "@effect/language-service" }],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}

@@ -1,0 +1,22 @@
+# Chat App
+
+Effect service for trade chat: the `ChatRpcs` group from `@apollo/chat/protocol`, served with `RpcServer.layerHttp({ protocol: "websocket" })` at `/rpc` on `BunHttpServer`. One instance; fan-out is in process. The web app's lazily loaded chat panel is the only client. `README.md` diagrams the flow.
+
+## How a call runs
+
+- **Auth** (`src/auth.ts`): `ChatAuth` reads the call's `authorization: Bearer` token, verifies it with jose against the web app's JWKS (`AUTH_JWKS_URL`; EdDSA only, `AUTH_ISSUER` and `AUTH_AUDIENCE` always checked), then reads the session, ban and role from the database. The token carries only `sub` and `sid`. The call runs as `CurrentUser` until it ends, the token expires (`TokenExpired`) or the user is disconnected (`SessionEnded`); for a `Join` that is the whole stream. The websocket upgrade only checks `Origin` against `ALLOWED_ORIGINS`.
+- **Access**: every handler decides through `@apollo/chat/policy` from what it read itself, never from the payload. Failures are the tagged errors in `@apollo/chat/errors`.
+- **Join** (`src/handlers.ts`): subscribes to the trade's signal (`src/channels.ts`), then reads the trade's rows after `afterId`. Once the history is sent it sends `CaughtUp`. Each signal re-checks access and reads the trade's own rows past the last id sent, so an id goes out once and only to its own trade's streams, and a signal for the wrong trade is a harmless re-read.
+- **Redis** (`src/redis-events.ts`): `trade-events` updates signal the trade; `user-events` disconnects, bans and role changes end the user's calls through `Disconnects`. A lost subscription resubscribes after a second and signals every open trade.
+
+## Storage
+
+`ChatStore` (`src/store.ts`) is every read and write chat makes, as single operations with no access decisions; the live layer uses the shared pooled `DatabaseWeb` (`@apollo/services`). Message bodies and report copies are AES-256-GCM ciphertext under `MESSAGE_KEY` (`src/cipher.ts`, `openssl rand -base64 32`), with the trade id bound in as additional data. Removal blanks the body, sets `removed_at`, posts a `message_removed` event and audits it. Store failures log only the error's name, since statement parameters can hold ciphertext.
+
+## Tests
+
+`bun test` runs entirely in memory: `tests/memory-store.ts` is a Map-backed `ChatStore`, `tests/harness.ts` signs tokens with a local EdDSA key, reads config from a test `ConfigProvider`, uses a random message key and a memory rate limiter, and drives the server through `RpcTest.makeClient` with the `TestClock`. Nothing opens a database or Redis. `RpcTest` skips the socket and JSON, so `tests/socket.test.ts` serves the real routes (`src/http.ts`) on a random port to a real websocket client, on the real clock: the Origin check, and messages, dates and errors crossing the socket.
+
+## Running locally
+
+`bun run dev` serves on :3001 with the root `.env` (`MESSAGE_KEY`, `AUTH_*`, `ALLOWED_ORIGINS`, `WEB_DATABASE_URL`, `REDIS_URL`); set the web app's `VITE_CHAT_URL` to `ws://localhost:3001`. Point `AUTH_JWKS_URL`, `AUTH_ISSUER` and `ALLOWED_ORIGINS` at the web server you test against.

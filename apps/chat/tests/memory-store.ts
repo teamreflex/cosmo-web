@@ -1,0 +1,206 @@
+import type { MessageReportReason } from "@apollo/database/web/types";
+import { Context, Effect, Layer } from "effect";
+import {
+  ChatStore,
+  type StoredCopy,
+  type StoredRow,
+  type StoredSession,
+  type StoredTrade,
+} from "../src/store";
+
+export type MemoryReport = {
+  id: string;
+  reporterId: string | null;
+  targetType: "trade" | "message";
+  targetId: string;
+  status: "open" | "escalated" | "resolved" | "dismissed";
+  reason: MessageReportReason | "not_responding";
+  note: string | null;
+};
+
+export type MemoryNotification = {
+  userId: string;
+  actorId: string;
+  offerId: string;
+  readAt: Date | null;
+};
+
+export type MemoryAudit = {
+  staffId: string;
+  action: "trade:remove-message";
+  targetId: string;
+  reportId: string;
+};
+
+/**
+ * The rows the Map store holds, open to tests for seeding and assertions.
+ */
+export type MemoryState = {
+  sessions: Map<string, StoredSession>;
+  trades: Map<string, StoredTrade>;
+  rows: StoredRow[];
+  reports: MemoryReport[];
+  copies: Map<string, StoredCopy>;
+  notifications: MemoryNotification[];
+  audit: MemoryAudit[];
+  // trade_messages ids, shared by messages and events so they only grow
+  nextId: number;
+};
+
+export function makeState(): MemoryState {
+  return {
+    sessions: new Map(),
+    trades: new Map(),
+    rows: [],
+    reports: [],
+    copies: new Map(),
+    notifications: [],
+    audit: [],
+    nextId: 1,
+  };
+}
+
+export class Memory extends Context.Service<Memory, MemoryState>()(
+  "test/Memory",
+) {}
+
+const isOpen = (report: MemoryReport) =>
+  report.status === "open" || report.status === "escalated";
+
+/**
+ * ChatStore over a MemoryState, with the live store's semantics: ids only
+ * grow, a removal blanks the body and posts `message_removed`, and a
+ * reporter has one open report per message.
+ */
+export function memoryStoreLayer(state: MemoryState) {
+  const append = (row: StoredRow) => {
+    state.rows.push(row);
+    return row.id;
+  };
+
+  const store: ChatStore["Service"] = {
+    session: (sessionId) =>
+      Effect.sync(() => state.sessions.get(sessionId) ?? null),
+    trade: (tradeId) => Effect.sync(() => state.trades.get(tradeId) ?? null),
+    openReport: (tradeId) =>
+      Effect.sync(() => {
+        const report = state.reports.find(
+          (each) =>
+            isOpen(each) &&
+            ((each.targetType === "trade" && each.targetId === tradeId) ||
+              (each.targetType === "message" &&
+                state.copies.get(each.id)?.tradeId === tradeId)),
+        );
+        return report?.id ?? null;
+      }),
+    rowsAfter: (tradeId, afterId, limit) =>
+      Effect.sync(() =>
+        state.rows
+          .filter((row) => row.tradeId === tradeId && row.id > afterId)
+          .slice(0, limit),
+      ),
+    row: (messageId) =>
+      Effect.sync(() => state.rows.find((row) => row.id === messageId) ?? null),
+    insertMessage: ({ tradeId, senderId, recipientId, body }) =>
+      Effect.sync(() => {
+        const id = append({
+          kind: "text",
+          id: state.nextId++,
+          tradeId,
+          senderId,
+          body,
+          removedAt: null,
+          createdAt: new Date(),
+        });
+        if (
+          recipientId !== null &&
+          !state.notifications.some(
+            (each) =>
+              each.userId === recipientId &&
+              each.offerId === tradeId &&
+              each.readAt === null,
+          )
+        ) {
+          state.notifications.push({
+            userId: recipientId,
+            actorId: senderId,
+            offerId: tradeId,
+            readAt: null,
+          });
+        }
+        return id;
+      }),
+    insertReport: ({ reporterId, reason, note, copy }) =>
+      Effect.sync(() => {
+        const targetId = String(copy.messageId);
+        if (
+          state.reports.some(
+            (each) =>
+              isOpen(each) &&
+              each.reporterId === reporterId &&
+              each.targetType === "message" &&
+              each.targetId === targetId,
+          )
+        ) {
+          return null;
+        }
+        const id = crypto.randomUUID();
+        state.reports.push({
+          id,
+          reporterId,
+          targetType: "message",
+          targetId,
+          status: "open",
+          reason,
+          note,
+        });
+        state.copies.set(id, copy);
+        return id;
+      }),
+    removeMessage: ({ messageId, tradeId, staffId, reportId }) =>
+      Effect.sync(() => {
+        const index = state.rows.findIndex(
+          (row) =>
+            row.id === messageId &&
+            row.kind === "text" &&
+            row.removedAt === null,
+        );
+        const row = state.rows[index];
+        if (row === undefined || row.kind !== "text") {
+          return;
+        }
+        state.rows[index] = { ...row, body: null, removedAt: new Date() };
+        append({
+          kind: "event",
+          id: state.nextId++,
+          tradeId,
+          event: { type: "message_removed", messageId },
+          createdAt: new Date(),
+        });
+        state.audit.push({
+          staffId,
+          action: "trade:remove-message",
+          targetId: String(messageId),
+          reportId,
+        });
+      }),
+    reportCopy: (reportId) =>
+      Effect.sync(() => state.copies.get(reportId) ?? null),
+  };
+
+  return Layer.mergeAll(
+    Layer.succeed(ChatStore, store),
+    Layer.succeed(Memory, state),
+  );
+}
+
+// an event row, as the web app and schedules write them
+export function appendEvent(
+  state: MemoryState,
+  tradeId: string,
+  event: Extract<StoredRow, { kind: "event" }>["event"],
+) {
+  const id = state.nextId++;
+  state.rows.push({ kind: "event", id, tradeId, event, createdAt: new Date() });
+  return id;
+}

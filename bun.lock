@@ -16,6 +16,29 @@
         "typescript": "catalog:",
       },
     },
+    "apps/chat": {
+      "name": "chat",
+      "version": "1.0.0",
+      "dependencies": {
+        "@apollo/auth": "workspace:*",
+        "@apollo/chat": "workspace:*",
+        "@apollo/database": "workspace:*",
+        "@apollo/services": "workspace:*",
+        "@apollo/trades": "workspace:*",
+        "@effect/platform-bun": "catalog:",
+        "drizzle-orm": "catalog:",
+        "effect": "catalog:",
+        "jose": "catalog:",
+      },
+      "devDependencies": {
+        "@apollo/lint": "workspace:*",
+        "@apollo/typescript": "workspace:*",
+        "@effect/eslint-plugin": "catalog:",
+        "@effect/language-service": "catalog:",
+        "@types/bun": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
     "apps/indexer": {
       "name": "indexer",
       "version": "1.0.0",
@@ -1666,6 +1689,8 @@
     "ce-la-react": ["ce-la-react@0.3.2", "", { "peerDependencies": { "react": ">=17.0.0" } }, "sha512-QJ6k4lOD/btI08xG8jBPxRCGXvCnusGGkTsiXk0u3NqUu/W+BXRnFD4PYjwtqh8AWmGa5LDbGk0fLQsqr0nSMA=="],
 
     "chalk": ["chalk@5.6.2", "", {}, "sha512-7NzBL0rN6fMUW+f7A6Io4h40qQlG+xGmtMxfbnH/K7TAtt8JQWVQK+6g0UXKMeVJoyV5EkkNsErQ8pVD3bLHbA=="],
+
+    "chat": ["chat@workspace:apps/chat"],
 
     "chokidar": ["chokidar@5.0.0", "", { "dependencies": { "readdirp": "^5.0.0" } }, "sha512-TQMmc3w+5AxjpL8iIiwebF73dRDF4fBIieAqGn9RGCWaEVwQ6Fb2cGe31Yns0RRIzii5goJ1Y7xbMwo1TxMplw=="],
 
