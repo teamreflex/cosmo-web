@@ -331,9 +331,26 @@ export function owingSides(items: readonly TradeItemState[]): TradeSide[] {
   return (["from", "to"] as const).filter(owes);
 }
 
-// whether the side still owes something on an accepted trade, so it has to act
-export function needsYou(state: TradeState, side: TradeSide) {
-  return state.status === "accepted" && owingSides(state.items).includes(side);
+// the trade's other side, who receives what this side sends
+export function otherSide(side: TradeSide): TradeSide {
+  return side === "from" ? "to" : "from";
+}
+
+/**
+ * Whether the side still owes something on an accepted trade, so it has to
+ * act. Once the deadline has passed the drain's watermark a transfer can't
+ * count, so nothing more is asked.
+ */
+export function needsYou(
+  state: TradeState,
+  side: TradeSide,
+  facts: { deadlinePassed: boolean },
+) {
+  return (
+    state.status === "accepted" &&
+    !facts.deadlinePassed &&
+    owingSides(state.items).includes(side)
+  );
 }
 
 export type ListingEvent =

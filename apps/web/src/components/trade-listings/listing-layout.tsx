@@ -11,12 +11,12 @@ import YouGet, { type OfferedHeading } from "./you-get";
 type Props = {
   listing: TradeListing;
   /** the header's status, shown on every width */
-  status: ReactNode;
+  status?: ReactNode;
   /** the header's actions from tablet width */
   actions?: ReactNode;
   /** the phone bottom bar, which keeps the actions in reach */
   bar?: ReactNode;
-  /** a full-width strip under the header, such as a lost race */
+  /** full-width alerts under the header, such as a lost race */
   notice?: ReactNode;
   /** how the offering half is headed; null while the viewer's role loads */
   offered?: OfferedHeading | null;
@@ -30,8 +30,8 @@ type Props = {
 
 /**
  * The listing page: a header holding the listing's status and the viewer's
- * actions, then what it offers and what it asks for as equal halves, with
- * an exchange coin on the seam. Below desktop width the halves stack and
+ * actions, any alerts under it, then what it offers and what it asks for as
+ * equal halves, with an exchange coin on the seam. Below desktop width the halves stack and
  * the coin turns down.
  */
 export default function ListingLayout({
@@ -48,7 +48,10 @@ export default function ListingLayout({
   return (
     <>
       <ListingHeader listing={listing} status={status} actions={actions} />
-      {notice !== undefined && <div className="container pt-4">{notice}</div>}
+      {/* margins rather than padding, so an alert hidden on phones leaves no gap */}
+      <div className="container flex flex-col *:mt-4 empty:hidden">
+        {notice}
+      </div>
       <div
         className={cn(
           "container grid grid-cols-[minmax(0,1fr)] gap-5 pt-5 pb-28 md:pb-10 lg:grid-cols-[minmax(0,1fr)_2.5rem_minmax(0,1fr)] lg:gap-6 lg:pt-6",

@@ -1,9 +1,15 @@
 import { m } from "@/i18n/messages";
 import { reportReasonLabel } from "@/lib/client/reports";
-import { itemName, partyName, tradeTimeFormat } from "@/lib/client/trades";
+import {
+  itemName,
+  partyName,
+  tradeTimeFormat,
+  txUrl,
+} from "@/lib/client/trades";
 import { env } from "@/lib/env/client";
 import type { TradeView } from "@/lib/universal/trades";
 import type { TradeEvent, TradeSide } from "@apollo/database/web/types";
+import { otherSide } from "@apollo/trades/lifecycle";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconExternalLink } from "@tabler/icons-react";
 import type { ReactNode } from "react";
@@ -84,7 +90,7 @@ function describeEvent(
               ? m.trade_page_event_accepted_you
               : m.trade_page_event_accepted_them
           }
-          inputs={{ name: nameOf(side === "from" ? "to" : "from") }}
+          inputs={{ name: nameOf(otherSide(side)) }}
           markup={bold}
         />
       );
@@ -186,7 +192,7 @@ function describeEvent(
         />
       );
     }
-    // the payment side arrives in phase 12a
+    // the payment side arrives in phase 13a
     case "marked_paid":
     case "payment_confirmed":
       return null;
@@ -219,7 +225,7 @@ function TransferEvent({
           inputs={{
             objekt: itemName(item),
             name: partyName(
-              trade.parties[item.sender === "from" ? "to" : "from"],
+              trade.parties[otherSide(item.sender)],
             ),
           }}
           markup={bold}
@@ -232,7 +238,7 @@ function TransferEvent({
         />
       )}{" "}
       <a
-        href={`https://abscan.org/tx/${event.hash}`}
+        href={txUrl(event.hash)}
         target="_blank"
         rel="noopener"
         aria-label={m.trade_page_view_transfer()}

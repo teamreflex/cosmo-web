@@ -1,47 +1,41 @@
 import { PickerCardFace } from "@/components/objekt-picker/picker-grid";
-import { m } from "@/i18n/messages";
 import { formatSerial } from "@/lib/client/objekt-util";
-import { refusalLabel } from "@/lib/client/trade-listings";
 import { Objekt } from "@/lib/universal/objekt-conversion";
-import type { TokenRefusalReason } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import { IconCheck } from "@tabler/icons-react";
 import { memo } from "react";
 
-/**
- * Why an objekt in the viewer's own collection can't be offered, in the
- * order posting checks them.
- */
-export type OfferBlock = Exclude<TokenRefusalReason, "not_owned">;
-
 type Props = {
   objekt: CosmoObjekt;
   picked: boolean;
-  blocked: OfferBlock | null;
-  /** the listing offers as many objekts as it can, so only removing works */
+  /** why the objekt can't be picked, as its pill names it */
+  blocked: string | null;
+  /** as many objekts are picked as fit, so only removing works */
   full: boolean;
+  /** what a picked objekt's pill says, when it has one */
+  pickedLabel: string | null;
   priority: boolean;
   onToggle: (objekt: CosmoObjekt) => void;
 };
 
 /**
- * One objekt in the composer's picker, toggled in and out of the offer.
- * Objekts that can't be offered stay visible but greyed, with the reason on
- * the card and in its name; one already picked (an edit's offered objekt
- * that got locked since) keeps its reason in place of "Offering" and can
- * still be taken out.
+ * One objekt in a trade picker, toggled in and out of the composer's offer
+ * or a listing's want row. Objekts that can't be picked stay visible but
+ * greyed, with the reason on the card and in its name; one already picked
+ * (an edit's offered objekt that got locked since) keeps its reason in
+ * place of its picked label and can still be taken out.
  */
 const ComposerPickerCard = memo(function ComposerPickerCard({
   objekt,
   picked,
-  blocked,
+  blocked: reason,
   full,
+  pickedLabel,
   priority,
   onToggle,
 }: Props) {
   const { collection, objekt: token } = Objekt.fromLegacy(objekt);
-  const reason = blocked === null ? null : refusalLabel(blocked);
   const label = [
     `${collection.member} ${collection.collectionNo} ${formatSerial(token.serial)}`,
     reason,
@@ -54,7 +48,7 @@ const ComposerPickerCard = memo(function ComposerPickerCard({
       <button
         type="button"
         aria-pressed={picked}
-        disabled={!picked && (blocked !== null || full)}
+        disabled={!picked && (reason !== null || full)}
         aria-label={label}
         onClick={() => onToggle(objekt)}
         style={{
@@ -69,7 +63,7 @@ const ComposerPickerCard = memo(function ComposerPickerCard({
         <span
           className={cn(
             "block transition-opacity",
-            !picked && (blocked !== null || full) && "opacity-40",
+            !picked && (reason !== null || full) && "opacity-40",
           )}
         >
           <PickerCardFace
@@ -85,14 +79,13 @@ const ComposerPickerCard = memo(function ComposerPickerCard({
           </span>
         )}
 
-        {(picked || reason !== null) && (
-          <OfferPill
-            tone={
-              reason !== null ? (picked ? "refused" : "blocked") : "offering"
-            }
-          >
-            {reason ?? m.listing_composer_pill_offering()}
-          </OfferPill>
+        {reason !== null ? (
+          <OfferPill tone={picked ? "refused" : "blocked"}>{reason}</OfferPill>
+        ) : (
+          picked &&
+          pickedLabel !== null && (
+            <OfferPill tone="offering">{pickedLabel}</OfferPill>
+          )
         )}
       </button>
     </div>
@@ -115,7 +108,7 @@ export function OfferPill({
   return (
     <span
       className={cn(
-        "absolute bottom-[4cqw] left-[4cqw] max-w-[92cqw] truncate rounded-sm px-1.5 py-0.5 text-xxs font-medium tracking-wider uppercase",
+        "absolute bottom-[4cqw] left-[4cqw] line-clamp-2 max-w-[92cqw] rounded-sm px-1.5 py-0.5 text-xxs font-medium tracking-wider uppercase",
         tone === "offering" && "bg-cosmo text-white",
         tone === "blocked" && "bg-black/70 text-neutral-100",
         tone === "refused" && "bg-amber-400 text-black",

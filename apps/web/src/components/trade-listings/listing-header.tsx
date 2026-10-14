@@ -15,7 +15,7 @@ type Props = {
 
 type HeaderProps = Props & {
   /** where the listing stands for this viewer, shown on every width */
-  status: ReactNode;
+  status?: ReactNode;
   /** what the viewer can do, from tablet width; phones show it in the bottom bar */
   actions?: ReactNode;
 };
@@ -33,7 +33,8 @@ export default function ListingHeader({
 }: HeaderProps) {
   return (
     <div className="border-b border-border bg-background md:sticky md:top-14 md:z-20 md:bg-background/90 md:backdrop-blur-lg">
-      <div className="container flex flex-wrap items-center gap-x-8 gap-y-3 py-3 md:py-4">
+      {/* phones space the status by margin, so hidden actions leave no gap */}
+      <div className="container flex flex-wrap items-center gap-x-8 py-3 md:gap-y-3 md:py-4">
         <div className="flex min-w-0 flex-1 basis-105 flex-col gap-2">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
             <h1 className="font-cosmo text-xl leading-none font-black tracking-wide uppercase md:text-2xl">
@@ -64,7 +65,7 @@ export default function ListingHeader({
             )}
           </div>
         </div>
-        <div className="flex min-w-0 flex-[1_1_37.5rem] flex-wrap items-center gap-x-4 gap-y-3 xl:justify-end">
+        <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-3 max-md:*:mt-3 md:ml-auto">
           {status}
           {actions !== undefined && (
             <div className="flex flex-wrap gap-2 max-md:hidden">{actions}</div>

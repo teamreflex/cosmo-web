@@ -1,10 +1,9 @@
-import { useInvalidateListing } from "@/hooks/use-invalidate-listing";
+import { useInvalidateTrade } from "@/hooks/use-invalidate-trade";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { $cancelTrade } from "@/lib/functions/trades";
-import { tradesKey } from "@/lib/queries/trades";
 import type { TradeSide } from "@apollo/database/web/types";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -41,8 +40,7 @@ export default function CancelTradeDialog({
   open,
   onOpenChange,
 }: Props) {
-  const queryClient = useQueryClient();
-  const invalidateListing = useInvalidateListing(listingId ?? undefined);
+  const invalidateTrade = useInvalidateTrade(listingId);
   const mutation = useMutation({
     mutationFn: () => $cancelTrade({ data: { tradeId } }),
     onSuccess: () => {
@@ -50,11 +48,7 @@ export default function CancelTradeDialog({
       onOpenChange(false);
     },
     onError: (error) => toast.error(formatError(error)),
-    onSettled: () =>
-      Promise.all([
-        queryClient.invalidateQueries({ queryKey: tradesKey }),
-        listingId !== null && invalidateListing(),
-      ]),
+    onSettled: invalidateTrade,
   });
 
   return (

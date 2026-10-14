@@ -1,4 +1,5 @@
 import { describe, expect, test } from "bun:test";
+import type { Objekt } from "../src/lib/universal/objekt-conversion";
 import {
   type ListingState,
   type ListingViewer,
@@ -90,9 +91,9 @@ describe("publicListingPanel", () => {
       for (const [name, viewer] of viewers) {
         test(`${state.status} listing${suffix}, ${name}`, () => {
           const kind = expected[state.status][suffix][name];
-          expect(publicListingPanel({ state, poster }, viewer)).toEqual(
-            kind === "onlooker" ? { kind, deadlineAt } : { kind },
-          );
+          expect(publicListingPanel({ state, poster }, viewer)).toEqual({
+            kind,
+          });
         });
       }
     }
@@ -146,44 +147,62 @@ describe("pickerVersion (DUI-14)", () => {
     class: "Special",
     onOffline: "online",
   };
-  const copy = (tokenId: number) => ({
-    tokenId,
-    serial: tokenId,
-    attributes,
-  });
-  const viewer = (tokenIds: number[], updatedAt = endedAt) =>
+  const collection = {
+    id: "atom02-heejin-201z",
+    artist: "artms",
+    member: "HeeJin",
+    season: "Atom02",
+    class: "Special",
+    collectionNo: "201Z",
+    collectionId: "Atom02 HeeJin 201Z",
+    frontImage: "",
+    backImage: "",
+    frontImageVersion: null,
+    backImageVersion: null,
+    backgroundColor: "#000000",
+    textColor: "#ffffff",
+    bandImageUrl: null,
+    frontMedia: null,
+    hasAudio: false,
+    slug: "atom02-heejin-201z",
+    artistName: "ARTMS",
+    onOffline: "online",
+  } satisfies Objekt.Collection;
+  const viewer = (tokenIds: number[], owned = 3, updatedAt = endedAt) =>
     ({
       role: "candidate",
       updatedAt,
-      collections: [],
-      inventory: tokenIds.map(copy),
-      allocation: [{ tokenIds: tokenIds.slice(0, 1), missing: 0 }],
-      rowOwned: [tokenIds.length],
+      rows: [
+        {
+          owned,
+          missing: 0,
+          picks: tokenIds.map((tokenId) => ({
+            tokenId,
+            serial: tokenId,
+            attributes,
+            collection,
+          })),
+        },
+      ],
       claims: { active: 0, cap: 3 },
       ownAddress: false,
     }) satisfies ListingViewer;
 
-  test("a refetch with the same copies keeps the viewer's swaps", () => {
-    expect(pickerVersion(viewer([1, 2, 3]))).toBe(
-      pickerVersion(viewer([1, 2, 3])),
-    );
+  test("a refetch with the same answer keeps the viewer's picks", () => {
+    expect(pickerVersion(viewer([1]))).toBe(pickerVersion(viewer([1])));
   });
 
-  test("a copy that became unavailable starts the picks again", () => {
-    expect(pickerVersion(viewer([2, 3]))).not.toBe(
-      pickerVersion(viewer([1, 2, 3])),
-    );
+  test("a prefilled copy that became unavailable starts the picks again", () => {
+    expect(pickerVersion(viewer([2]))).not.toBe(pickerVersion(viewer([1])));
   });
 
-  test("another account's copies start the picks again", () => {
-    expect(pickerVersion(viewer([7, 8, 9]))).not.toBe(
-      pickerVersion(viewer([1, 2, 3])),
-    );
+  test("a change in what the viewer owns starts the picks again", () => {
+    expect(pickerVersion(viewer([1], 2))).not.toBe(pickerVersion(viewer([1])));
   });
 
   test("new terms start the picks again", () => {
-    expect(pickerVersion(viewer([1, 2, 3], deadlineAt))).not.toBe(
-      pickerVersion(viewer([1, 2, 3])),
+    expect(pickerVersion(viewer([1], 3, deadlineAt))).not.toBe(
+      pickerVersion(viewer([1])),
     );
   });
 });

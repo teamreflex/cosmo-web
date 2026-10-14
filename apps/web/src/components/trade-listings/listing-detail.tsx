@@ -136,7 +136,7 @@ function publicRole(
     case "closed":
       return { role: "closed", state: panel.state };
     case "onlooker":
-      return { role: "onlooker", deadlineAt: panel.deadlineAt };
+      return { role: "onlooker" };
     case "signed_out":
       return { role: "signed_out" };
     case "poster_open":
@@ -164,7 +164,7 @@ function viewerRole(listing: TradeListing, viewer: ListingViewer): ListingRole {
         tradeId: viewer.tradeId,
       };
     case "onlooker":
-      return { role: "onlooker", deadlineAt: viewer.deadlineAt };
+      return { role: "onlooker" };
     case "candidate": {
       const panel = candidatePanel(listing, viewer);
       return panel === "picker"

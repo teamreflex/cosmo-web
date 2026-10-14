@@ -180,7 +180,7 @@ export const partyRefusals = {
  * The drain's chain-time watermark, which deadlines are judged against, or
  * null before the drain has stamped one.
  */
-export async function readWatermark(executor: DbOrTx) {
+async function readWatermark(executor: DbOrTx) {
   const [cursor] = await executor
     .select({ chainTime: listDrainCursor.chainTime })
     .from(listDrainCursor)

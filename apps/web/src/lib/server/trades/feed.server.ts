@@ -163,6 +163,22 @@ export async function readIndexed(slugs: string[], tokenIds: number[]) {
 }
 
 /**
+ * An offered objekt with the serial and collection the indexer knows for
+ * it, or null for either it doesn't.
+ */
+export function feedItem(
+  item: Pick<ListingFeedItem, "tokenId" | "attributes">,
+  indexed: Awaited<ReturnType<typeof readIndexed>>,
+): ListingFeedItem {
+  const state = indexed.states.get(item.tokenId);
+  return {
+    ...item,
+    serial: state?.kind === "found" ? state.serial : null,
+    collection: indexed.collections.get(item.attributes.slug) ?? null,
+  };
+}
+
+/**
  * A listing's stored items and wants, as the relational query reads them.
  */
 type StoredParts = { items: unknown[]; wants: unknown[] };
@@ -211,14 +227,7 @@ export async function hydrateListings<T extends StoredParts>(
     states: indexed.states,
     listings: listings.map((listing) => ({
       ...listing.rest,
-      items: listing.items.map((item): ListingFeedItem => {
-        const state = indexed.states.get(item.tokenId);
-        return {
-          ...item,
-          serial: state?.kind === "found" ? state.serial : null,
-          collection: indexed.collections.get(item.attributes.slug) ?? null,
-        };
-      }),
+      items: listing.items.map((item) => feedItem(item, indexed)),
       wants: listing.wants.map((want): ListingFeedWant =>
         want.kind === "exact"
           ? {

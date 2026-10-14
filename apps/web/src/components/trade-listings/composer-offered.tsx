@@ -1,25 +1,15 @@
-import ObjektPicker from "@/components/objekt-picker/objekt-picker";
-import { PickerGridSkeleton } from "@/components/objekt-picker/picker-grid";
 import { m } from "@/i18n/messages";
 import { formatTokenRefusal } from "@/lib/client/errors/trades";
 import { formatSerial, getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import { type ComposerShown, refusalLabel } from "@/lib/client/trade-listings";
-import { tradeTokenStatesQuery } from "@/lib/queries/trade-listings";
 import type { TokenRefusalReason } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
-import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import { MAX_OFFERED } from "@apollo/trades/caps";
-import { IconArrowLeft, IconPlus, IconX } from "@tabler/icons-react";
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { Suspense } from "react";
-import { useEventCallback } from "usehooks-ts";
+import { IconPlus, IconX } from "@tabler/icons-react";
 import { ObjektSidebar } from "../objekt/common";
 import { Button } from "../ui/button";
 import { FieldError } from "../ui/field";
-import ComposerPickerCard, {
-  type OfferBlock,
-  OfferPill,
-} from "./composer-picker-card";
+import { OfferPill } from "./composer-picker-card";
 
 type OfferedProps = {
   tokenIds: number[];
@@ -122,7 +112,7 @@ export default function ComposerOffered({
  * under it, a size smaller on phones, so a narrow tile never breaks either
  * in two.
  */
-function OfferedCaption({ shown }: { shown: ComposerShown }) {
+export function OfferedCaption({ shown }: { shown: ComposerShown }) {
   const { collection } = shown;
 
   return (
@@ -145,7 +135,11 @@ function OfferedCaption({ shown }: { shown: ComposerShown }) {
   );
 }
 
-function OfferedTile({
+/**
+ * A picked objekt's card with a control that takes it out, and why it
+ * can't be traded any more when it can't.
+ */
+export function OfferedTile({
   shown,
   refusal,
   onRemove,
@@ -207,112 +201,6 @@ function OfferedTile({
       >
         <IconX />
       </Button>
-    </div>
-  );
-}
-
-type PickerViewProps = {
-  address: string;
-  picked: ReadonlySet<number>;
-  onToggle: (objekt: CosmoObjekt) => void;
-  onBack: () => void;
-};
-
-/**
- * The picker inside the composer, in place of the form: the viewer's
- * collection with what they can't offer greyed out.
- */
-export function ComposerPickerView({
-  address,
-  picked,
-  onToggle,
-  onBack,
-}: PickerViewProps) {
-  return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 border-b border-border px-4 py-2.5 md:px-5">
-        <Button type="button" variant="ghost" size="sm" onClick={onBack}>
-          <IconArrowLeft />
-          {m.common_back()}
-        </Button>
-        <span className="text-sm font-semibold">
-          {m.listing_composer_add_objekts()}
-        </span>
-        <Button
-          type="button"
-          variant="cosmo"
-          size="sm"
-          onClick={onBack}
-          className="ml-auto"
-        >
-          {m.listing_composer_picker_done({ count: picked.size })}
-        </Button>
-        <p className="w-full text-xs text-muted-foreground">
-          {m.listing_composer_picker_help()}
-        </p>
-      </div>
-
-      <Suspense fallback={<PickerFallback />}>
-        <PickerWithStates
-          address={address}
-          picked={picked}
-          onToggle={onToggle}
-        />
-      </Suspense>
-    </div>
-  );
-}
-
-function PickerWithStates({
-  address,
-  picked,
-  onToggle,
-}: Omit<PickerViewProps, "onBack">) {
-  const { data: states } = useSuspenseQuery(tradeTokenStatesQuery);
-  const toggle = useEventCallback(onToggle);
-  const full = picked.size >= MAX_OFFERED;
-
-  return (
-    <ObjektPicker
-      address={address}
-      lockedTokenIds={states.locked}
-      className="min-h-0 flex-1"
-      renderCard={(objekt, { priority }) => {
-        const tokenId = Number(objekt.tokenId);
-        return (
-          <ComposerPickerCard
-            objekt={objekt}
-            picked={picked.has(tokenId)}
-            blocked={offerBlock(objekt, states)}
-            full={full}
-            priority={priority}
-            onToggle={toggle}
-          />
-        );
-      }}
-    />
-  );
-}
-
-/**
- * Why the objekt can't be offered, if it can't: in the order posting
- * checks, so the card names the reason posting would give.
- */
-function offerBlock(
-  objekt: CosmoObjekt,
-  states: { locked: ReadonlySet<number>; live: ReadonlySet<number> },
-): OfferBlock | null {
-  const tokenId = Number(objekt.tokenId);
-  if (!objekt.transferable) return "untransferable";
-  if (states.locked.has(tokenId)) return "locked";
-  if (states.live.has(tokenId)) return "live";
-  return null;
-}
-
-function PickerFallback() {
-  return (
-    <div className="min-h-0 flex-1 overflow-hidden px-3 pt-3">
-      <PickerGridSkeleton />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { userCollectionBlockchainQuery } from "@/lib/queries/objekt-queries";
 import type { NeighbourSuggestion } from "@/lib/universal/binders";
 import { getSeasonColor } from "@/lib/universal/seasons";
 import { cn } from "@/lib/utils";
+import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import { validArtists } from "@apollo/cosmo/types/common";
 import type { ValidArtist, ValidSort } from "@apollo/cosmo/types/common";
 import { Radio } from "@base-ui/react/radio";
@@ -37,13 +38,14 @@ import type {
   FlagKey,
   PickerFilterAction,
   PickerFilters,
+  PickerScope,
 } from "./picker-filters";
 import {
   activeFilterCount,
   hasClientFilters,
-  initialPickerFilters,
   isSuggestionApplied,
   pickerFiltersReducer,
+  scopedPickerFilters,
   toCollectionFilters,
 } from "./picker-filters";
 import PickerGrid, { PickerGridSkeleton } from "./picker-grid";
@@ -65,6 +67,11 @@ type Props = {
   inBinderTokenIds?: ReadonlySet<number>;
   /** filters proposed from the selected pocket's neighbours */
   suggestion?: NeighbourSuggestion | null;
+  /**
+   * The collections the picker is held to, such as a listing's want row,
+   * in place of the navbar's artists.
+   */
+  scope?: PickerScope | null;
   className?: string;
 };
 
@@ -85,19 +92,21 @@ export default function ObjektPicker({
   renderCard,
   inBinderTokenIds,
   suggestion = null,
+  scope = null,
   className,
 }: Props) {
-  const { selected: selectedArtists } = useArtists();
+  const listedArtists = useListedArtists(scope);
   const [filters, dispatch] = useReducer(
     pickerFiltersReducer,
-    initialPickerFilters,
+    scope,
+    scopedPickerFilters,
   );
   const isListed = (artist: ValidArtist) =>
-    selectedArtists.some(
+    listedArtists.some(
       (listed) => listed.id.toLowerCase() === artist.toLowerCase(),
     );
 
-  // only the navbar's artists are listed, so one deselected there falls back to All
+  // only the listed artists can be picked, so one deselected in the navbar falls back to All
   if (filters.artist !== null && !isListed(filters.artist)) {
     dispatch({ type: "artist", artist: null });
   }
@@ -125,10 +134,14 @@ export default function ObjektPicker({
   return (
     <div className={cn("flex min-h-0 flex-col", className)}>
       <div className="flex items-start gap-2 px-3 pt-3 pb-2">
-        <ArtistSwitch
-          value={filters.artist}
-          onChange={(artist) => update({ type: "artist", artist })}
-        />
+        {/* a scope held to one artist has nothing to switch */}
+        {scope?.artist.length !== 1 && (
+          <ArtistSwitch
+            artists={listedArtists}
+            value={filters.artist}
+            onChange={(artist) => update({ type: "artist", artist })}
+          />
+        )}
 
         <button
           ref={filtersButtonRef}
@@ -137,7 +150,7 @@ export default function ObjektPicker({
           aria-controls={panelId}
           onClick={() => setPanelOpen((open) => !open)}
           className={cn(
-            "inline-flex h-[34px] shrink-0 items-center gap-1.5 rounded-md border border-border bg-card px-2.5 text-sm font-semibold transition-colors hover:bg-muted",
+            "ml-auto inline-flex h-[34px] shrink-0 items-center gap-1.5 rounded-md border border-border bg-card px-2.5 text-sm font-semibold transition-colors hover:bg-muted",
             panelOpen &&
               "border-cosmo bg-cosmo/15 text-cosmo hover:bg-cosmo/20 dark:text-cosmo-text",
           )}
@@ -190,6 +203,7 @@ export default function ObjektPicker({
               <PickerCollection
                 address={address}
                 filters={loadedFilters}
+                scope={scope}
                 stale={loadedFilters !== filters}
                 scrollRef={scrollRef}
                 inBinderTokenIds={inBinderTokenIds}
@@ -203,6 +217,7 @@ export default function ObjektPicker({
                     // closed, it follows the results, so an artist switch doesn't mount the next artist's options before the switch repaints
                     filters={panelOpen ? filters : loadedFilters}
                     suggestion={pendingSuggestion}
+                    scope={scope}
                     binder={inBinderTokenIds !== undefined}
                     shown={shown}
                     onChange={update}
@@ -278,6 +293,7 @@ type PickerCollectionProps = {
   address: string;
   /** the filters the results are loaded for */
   filters: PickerFilters;
+  scope: PickerScope | null;
   /** newer filters are loading, so these results are on their way out */
   stale: boolean;
   scrollRef: RefObject<HTMLDivElement | null>;
@@ -297,6 +313,7 @@ type PickerCollectionProps = {
 function PickerCollection({
   address,
   filters,
+  scope,
   stale,
   scrollRef,
   inBinderTokenIds,
@@ -309,8 +326,9 @@ function PickerCollection({
   const query = useSuspenseInfiniteQuery(
     userCollectionBlockchainQuery(
       address,
-      toCollectionFilters(filters),
-      selectedIds,
+      toCollectionFilters(filters, scope),
+      // a scope names its own artists, so the navbar's can't empty or widen it
+      scope?.artist ?? selectedIds,
     ),
   );
 
@@ -375,17 +393,31 @@ function PickerCount({ count }: { count: number }) {
   );
 }
 
+/**
+ * The artists the switch offers: the scope's, every artist for a scope open
+ * to any, or else the ones the viewer selected in the navbar.
+ */
+function useListedArtists(scope: PickerScope | null) {
+  const { artistList, selected } = useArtists();
+  if (scope === null) return selected;
+  if (scope.artist.length === 0) return artistList;
+  return artistList.filter((artist) =>
+    scope.artist.some(
+      (scoped) => scoped.toLowerCase() === artist.id.toLowerCase(),
+    ),
+  );
+}
+
 type ArtistSwitchProps = {
+  artists: CosmoArtistWithMembersBFF[];
   value: ValidArtist | null;
   onChange: (artist: ValidArtist | null) => void;
 };
 
 /**
- * All, then one option per artist the viewer has selected, as a radio group.
+ * All, then one option per listed artist, as a radio group.
  */
-function ArtistSwitch({ value, onChange }: ArtistSwitchProps) {
-  const { selected } = useArtists();
-
+function ArtistSwitch({ artists, value, onChange }: ArtistSwitchProps) {
   return (
     <RadioGroup
       aria-label={m.objekt_attribute_artist()}
@@ -400,7 +432,7 @@ function ArtistSwitch({ value, onChange }: ArtistSwitchProps) {
       className="flex h-[34px] min-w-0 flex-1 gap-0.5 rounded-md border border-border bg-card p-0.5"
     >
       <ArtistOption value={ALL_ARTISTS} label={m.binder_picker_all_artists()} />
-      {selected
+      {artists
         .toSorted((a, b) => a.comoTokenId - b.comoTokenId)
         .map((artist) => (
           <ArtistOption

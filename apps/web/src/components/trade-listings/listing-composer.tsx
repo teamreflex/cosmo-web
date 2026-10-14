@@ -34,7 +34,7 @@ import { totalWanted } from "@apollo/trades/composer";
 import { type ListingInput, listingInputSchema } from "@apollo/trades/listing";
 import { rangeFilterSchema } from "@apollo/trades/range";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { IconX } from "@tabler/icons-react";
+import { IconArrowLeft } from "@tabler/icons-react";
 import {
   useMutation,
   useQueries,
@@ -61,13 +61,13 @@ import {
   AlertDialogTitle,
 } from "../ui/alert-dialog";
 import { Button } from "../ui/button";
-import { Dialog, DialogClose, DialogContent, DialogTitle } from "../ui/dialog";
-import { Drawer, DrawerClose, DrawerContent, DrawerTitle } from "../ui/drawer";
 import { Field, FieldError, FieldLabel } from "../ui/field";
 import { Spinner } from "../ui/spinner";
 import { Textarea } from "../ui/textarea";
-import ComposerOffered, { ComposerPickerView } from "./composer-offered";
+import ComposerOffered from "./composer-offered";
 import ComposerWantRows from "./composer-want-rows";
+import TradePicker from "./trade-picker";
+import TradeSheet from "./trade-sheet";
 
 type Props = {
   mode: ComposerMode;
@@ -246,20 +246,12 @@ export default function ListingComposer({
       className="flex min-h-0 flex-1 flex-col"
     >
       {view === "picker" ? (
-        <div
-          className={
-            isDesktop
-              ? "flex h-[min(720px,calc(100dvh-12rem))] flex-col"
-              : "flex min-h-0 flex-1 flex-col"
-          }
-        >
-          <PickerView
-            form={form}
-            address={address}
-            onToggle={toggleOffered}
-            onBack={() => setView("form")}
-          />
-        </div>
+        <PickerView
+          form={form}
+          address={address}
+          onToggle={toggleOffered}
+          onBack={() => setView("form")}
+        />
       ) : (
         <>
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
@@ -314,67 +306,15 @@ export default function ListingComposer({
     </form>
   );
 
-  if (isDesktop) {
-    return (
-      <Dialog
-        open={open}
-        onOpenChange={requestClose}
-        onOpenChangeComplete={handleOpenChangeComplete}
-      >
-        <DialogContent
-          showCloseButton={false}
-          className="flex max-h-[calc(100dvh-4rem)] w-[calc(100%-2rem)] flex-col gap-0 overflow-hidden p-0 sm:max-w-[min(1240px,calc(100%-4rem))]"
-        >
-          <header className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 border-b border-border px-5 py-3">
-            <DialogTitle className="font-cosmo text-sm font-black tracking-widest uppercase">
-              {title}
-            </DialogTitle>
-            <DialogClose
-              render={
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label={m.common_close()}
-                  className="ml-auto"
-                />
-              }
-            >
-              <IconX />
-            </DialogClose>
-          </header>
-          {shell}
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
   return (
-    <Drawer
+    <TradeSheet
+      title={title}
       open={open}
       onOpenChange={requestClose}
       onOpenChangeComplete={handleOpenChangeComplete}
     >
-      <DrawerContent className="h-[92dvh] max-h-[92dvh] gap-0 rounded-t-md p-0">
-        <header className="flex shrink-0 items-center gap-2 border-b border-border px-4 pt-1.5 pb-3">
-          <DrawerTitle className="min-w-0 flex-1 font-cosmo text-sm font-black tracking-widest uppercase">
-            {title}
-          </DrawerTitle>
-          <DrawerClose
-            render={
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label={m.common_close()}
-                className="-my-1 -mr-2"
-              />
-            }
-          >
-            <IconX />
-          </DrawerClose>
-        </header>
-        {shell}
-      </DrawerContent>
-    </Drawer>
+      {shell}
+    </TradeSheet>
   );
 }
 
@@ -471,11 +411,24 @@ function PickerView({
   const offered = useWatch({ control: form.control, name: "offered" });
 
   return (
-    <ComposerPickerView
+    <TradePicker
       address={address}
+      heading={
+        <>
+          <Button type="button" variant="ghost" size="sm" onClick={onBack}>
+            <IconArrowLeft />
+            {m.common_back()}
+          </Button>
+          <span className="text-sm font-semibold">
+            {m.listing_composer_add_objekts()}
+          </span>
+        </>
+      }
       picked={new Set(offered.map((item) => item.tokenId))}
+      full={offered.length >= MAX_OFFERED}
+      pickedLabel={m.listing_composer_pill_offering()}
       onToggle={onToggle}
-      onBack={onBack}
+      onDone={onBack}
     />
   );
 }
@@ -592,7 +545,6 @@ function ComposerFooter({
         {cancel}
         <Button
           type="submit"
-          variant="cosmo"
           disabled={reason !== null || pending}
           aria-describedby={reason === null ? undefined : reasonId}
           className="max-md:h-11 max-md:flex-1"

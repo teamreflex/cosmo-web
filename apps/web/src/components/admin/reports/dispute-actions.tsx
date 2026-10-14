@@ -107,7 +107,7 @@ export default function DisputeActions({ report, trade }: Props) {
     return null;
   }
 
-  const { deadlineAt, pausedAt } = trade.view;
+  const { deadlineAt, dispute } = trade.view;
 
   function run(action: DisputeAction) {
     return form.handleSubmit((input) => mutation.mutate({ action, input }));
@@ -198,7 +198,7 @@ export default function DisputeActions({ report, trade }: Props) {
                 {(now) => {
                   const due = extendedDeadline(
                     deadlineAt,
-                    pausedAt ?? deadlineAt,
+                    dispute?.at ?? deadlineAt,
                     now,
                     hours,
                   );

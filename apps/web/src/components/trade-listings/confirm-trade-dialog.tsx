@@ -4,11 +4,17 @@ import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { type ClaimFailure, claimFailure } from "@/lib/client/errors/trades";
 import { formatSerial, getObjektFrontImageUrl } from "@/lib/client/objekt-util";
-import { objektName, posterName } from "@/lib/client/trade-listings";
+import {
+  objektName,
+  pickShown,
+  posterName,
+} from "@/lib/client/trade-listings";
+import { env } from "@/lib/env/client";
 import { $claimListing } from "@/lib/functions/trade-listings";
 import { tradesKey } from "@/lib/queries/trades";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type {
+  ListingPick,
   ListingViewer,
   TokenRefusalReason,
   TradeListing,
@@ -47,7 +53,7 @@ type Candidate = Extract<ListingViewer, { role: "candidate" }>;
  * when the trade would have to finish if it were claimed then.
  */
 export type ConfirmSnapshot = {
-  assignment: number[][];
+  picked: ListingPick[][];
   deadlineAt: Date;
 };
 
@@ -141,27 +147,7 @@ export default function ConfirmTradeDialog({
     }
   };
 
-  const inventory = new Map(
-    viewer.inventory.map((candidate) => [candidate.tokenId, candidate]),
-  );
-  const collections = new Map(
-    viewer.collections.map((collection) => [collection.slug, collection]),
-  );
-  const give = (snapshot?.assignment ?? []).map((tokenIds) =>
-    tokenIds.flatMap((tokenId): Shown[] => {
-      const candidate = inventory.get(tokenId);
-      if (candidate === undefined) return [];
-      const collection = collections.get(candidate.attributes.slug) ?? null;
-      return [
-        {
-          tokenId,
-          name: objektName(collection, candidate.attributes),
-          serial: candidate.serial,
-          collection,
-        },
-      ];
-    }),
-  );
+  const give = (snapshot?.picked ?? []).map((picks) => picks.map(pickShown));
   const giveCount = give.reduce((total, tokens) => total + tokens.length, 0);
   const poster = posterName(listing);
 
@@ -290,14 +276,17 @@ export default function ConfirmTradeDialog({
                   {m.common_back()}
                 </Button>
                 <Button
-                  variant="cosmo"
                   className="relative px-4 max-sm:h-11 max-sm:flex-1"
                   disabled={claim.isPending || snapshot === null}
                   onClick={() => {
                     if (snapshot === null || confirming.current) return;
                     confirming.current = true;
                     onNotice(null);
-                    claim.mutate(snapshot.assignment);
+                    claim.mutate(
+                      snapshot.picked.map((picks) =>
+                        picks.map((pick) => pick.tokenId),
+                      ),
+                    );
                   }}
                 >
                   {claim.isPending ? (
@@ -333,11 +322,7 @@ export default function ConfirmTradeDialog({
                   {m.common_close()}
                 </Button>
               ) : (
-                <Button
-                  variant="cosmo"
-                  className="px-4 max-sm:h-11"
-                  onClick={close}
-                >
+                <Button className="px-4 max-sm:h-11" onClick={close}>
                   {failure.kind === "updated"
                     ? m.listing_confirm_review()
                     : m.listing_confirm_back_to_picker()}
@@ -490,7 +475,7 @@ function FailureAlert({
           ? undefined
           : tokens.find((shown) => shown.tokenId === refusal.tokenId);
       return (
-        <Alert className="border-amber-500/40 *:[svg]:text-amber-700 dark:*:[svg]:text-amber-500">
+        <Alert variant="warning">
           <IconAlertTriangle />
           <AlertTitle>
             {token === undefined || token.serial === null ? (
@@ -528,7 +513,7 @@ function tokenReason(reason: TokenRefusalReason) {
     case "untransferable":
       return m.listing_confirm_token_untransferable();
     case "locked":
-      return m.listing_confirm_token_locked();
+      return m.listing_confirm_token_locked({ appName: env.VITE_APP_NAME });
     case "live":
       return m.listing_confirm_token_live();
   }

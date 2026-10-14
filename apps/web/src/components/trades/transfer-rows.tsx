@@ -1,16 +1,20 @@
 import { m } from "@/i18n/messages";
 import { formatSerial, getObjektFrontImageUrl } from "@/lib/client/objekt-util";
-import { itemLabel, partyName, tradeTimeFormat } from "@/lib/client/trades";
+import {
+  itemLabel,
+  partyName,
+  tradeTimeFormat,
+  txUrl,
+} from "@/lib/client/trades";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import type {
-  TradeItemStatus,
-  TradeItemView,
-  TradeView,
-} from "@/lib/universal/trades";
+import type { TradeItemView, TradeView } from "@/lib/universal/trades";
 import { cn } from "@/lib/utils";
 import type { TradeSide } from "@apollo/database/web/types";
+import { otherSide } from "@apollo/trades/lifecycle";
+import type { TradeItemStatus } from "@apollo/trades/transfers";
 import { IconExternalLink } from "@tabler/icons-react";
 import { type ReactNode, useState } from "react";
+import { tones } from "../trade-listings/state-tones";
 import { Badge } from "../ui/badge";
 import { buttonVariants } from "../ui/button";
 import { Timestamp } from "../ui/timestamp";
@@ -44,7 +48,7 @@ export default function TransferRows({ trade, side, children }: Props) {
         const sent = trade.items.filter((item) => item.sender === sender);
         if (sent.length === 0) return null;
         const from = partyName(trade.parties[sender]);
-        const to = partyName(trade.parties[sender === "from" ? "to" : "from"]);
+        const to = partyName(trade.parties[otherSide(sender)]);
         const heading =
           side === null
             ? `${from} → ${to}`
@@ -141,7 +145,7 @@ function TransferRow({
         <span className="size-8 shrink-0 @max-lg:hidden" />
       ) : (
         <a
-          href={`https://abscan.org/tx/${item.txHash}`}
+          href={txUrl(item.txHash)}
           target="_blank"
           rel="noopener"
           aria-label={m.trade_page_view_transfer()}
@@ -162,7 +166,7 @@ function TransferRow({
  * The objekt's front at thumbnail size, or a muted card of the same size
  * when the indexer has lost it or the image fails to load.
  */
-export function Thumbnail({
+function Thumbnail({
   collection,
 }: {
   collection: Objekt.Collection | null;
@@ -207,12 +211,11 @@ const statusBadges = {
   },
   untransferable: {
     label: m.trade_page_item_untransferable,
-    className:
-      "border-transparent bg-destructive/10 text-destructive dark:bg-destructive/20",
+    className: tones.bad,
   },
   not_sent: {
     label: m.trade_page_item_not_sent,
-    className: "border-transparent bg-secondary text-muted-foreground",
+    className: tones.muted,
   },
 } satisfies Record<TradeItemStatus, { label: () => string; className: string }>;
 

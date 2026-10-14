@@ -1,19 +1,24 @@
 import type { PickerRow, Picks } from "@/hooks/use-listing-picks";
 import { m } from "@/i18n/messages";
-import { formatSerial, getObjektFrontImageUrl } from "@/lib/client/objekt-util";
-import { formatCount, objektName } from "@/lib/client/trade-listings";
+import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
+import {
+  formatCount,
+  pickShown,
+  wantScope,
+} from "@/lib/client/trade-listings";
 import { env } from "@/lib/env/client";
-import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type {
-  ListingCandidate,
+  CandidateRow,
+  ListingPick,
   ListingViewer,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
-import { offersSwap, swapTarget } from "@apollo/trades/picker";
-import { IconCircleCheck } from "@tabler/icons-react";
+import { IconCircleCheck, IconPlus } from "@tabler/icons-react";
+import { Fragment, type ReactNode, useState } from "react";
 import { Skeleton } from "../ui/skeleton";
-import PickerCard from "./picker-card";
+import { OfferedCaption, OfferedTile } from "./composer-offered";
 import { RangeBadges } from "./range-want";
+import RowPicker from "./row-picker";
 import SideHeading, { SideHeadingSkeleton } from "./side-heading";
 import WantLabel from "./want-label";
 
@@ -21,25 +26,29 @@ type Candidate = Extract<ListingViewer, { role: "candidate" }>;
 
 type Props = {
   viewer: Candidate;
+  /**
+   * The viewer's linked COSMO address, whose collection the row pickers
+   * list. A viewer who can pick is always linked.
+   */
+  address: string | undefined;
   rows: PickerRow[];
   picks: Picks;
 };
 
 /**
- * What the viewer would give, one panel per want row. Tapping a copy picks
- * it or drops it; tapping one in a full row swaps it for the row's last
- * pick. Accept lives in the page header, which says whether the picks fit.
+ * What the viewer would give, one panel of slots per want row, filled from
+ * the server's picks. Removing a pick empties its slot, and an empty slot
+ * opens the viewer's collection held to that row. Accept lives in the page
+ * header, which says whether the picks fit.
  */
-export default function AllocationPicker({ viewer, rows, picks }: Props) {
-  const { candidates, picked, total } = picks;
-  const collections = new Map(
-    viewer.collections.map((collection) => [collection.slug, collection]),
-  );
-  const pickedRow = new Map(
-    picked.flatMap((tokenIds, row) =>
-      tokenIds.map((tokenId) => [tokenId, row] as const),
-    ),
-  );
+export default function AllocationPicker({
+  viewer,
+  address,
+  rows,
+  picks,
+}: Props) {
+  const [picking, setPicking] = useState<number | null>(null);
+  const { picked, total } = picks;
 
   return (
     <section className="flex min-w-0 flex-col gap-3.5">
@@ -49,20 +58,41 @@ export default function AllocationPicker({ viewer, rows, picks }: Props) {
         summary={m.listing_detail_you_give_summary()}
       />
 
-      {rows.map((row, index) => (
-        <WantRow
-          key={index}
-          row={row}
-          owned={viewer.rowOwned[index] ?? 0}
-          missing={viewer.allocation[index]?.missing ?? 0}
-          candidates={candidates[index] ?? []}
-          picked={picked[index] ?? []}
-          pickedRow={pickedRow}
-          index={index}
-          collections={collections}
-          onToggle={(tokenId) => picks.toggle(index, tokenId, row.trade.count)}
-        />
-      ))}
+      {rows.map((row, index) => {
+        const rowPicks = picked[index] ?? [];
+        return (
+          <Fragment key={index}>
+            <WantRow
+              row={row}
+              side={viewer.rows[index]}
+              picked={rowPicks}
+              onPick={() => setPicking(index)}
+              onRemove={(pick) => picks.toggle(index, pick)}
+            />
+            {address !== undefined && row.want.kind !== "payment" && (
+              <RowPicker
+                address={address}
+                label={<RowLabel row={row} />}
+                scope={wantScope(row.want)}
+                count={row.trade.count}
+                picked={rowPicks}
+                elsewhere={
+                  new Set(
+                    picked.flatMap((other, otherIndex) =>
+                      otherIndex === index
+                        ? []
+                        : other.map((pick) => pick.tokenId),
+                    ),
+                  )
+                }
+                open={picking === index}
+                onOpenChange={(open) => setPicking(open ? index : null)}
+                onToggle={(pick) => picks.toggle(index, pick)}
+              />
+            )}
+          </Fragment>
+        );
+      })}
 
       <p className="text-xs leading-relaxed text-muted-foreground">
         {m.listing_detail_accept_footer({ appName: env.VITE_APP_NAME })}
@@ -73,7 +103,7 @@ export default function AllocationPicker({ viewer, rows, picks }: Props) {
 
 /**
  * The picker's shape while the viewer's objekts load: each row's frame,
- * label and footer around placeholder cards, so nothing grows when the
+ * label and footer around placeholder slots, so nothing grows when the
  * picks arrive.
  */
 export function AllocationPickerSkeleton({ rows }: { rows: PickerRow[] }) {
@@ -82,24 +112,19 @@ export function AllocationPickerSkeleton({ rows }: { rows: PickerRow[] }) {
       <SideHeadingSkeleton />
 
       {rows.map((row, index) => (
-        <div
+        <RowFrame
           key={index}
-          className="flex flex-col overflow-clip rounded-lg border border-teal-500/30"
+          header={<RowLabel row={row} />}
+          footer={<Skeleton className="ml-auto h-4 w-20" />}
         >
-          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 border-b border-border/60 px-4 py-3 text-sm">
-            <RowLabel row={row} />
-          </div>
-          <div className="flex gap-2.5 overflow-hidden px-4 py-3.5">
-            {Array.from({ length: row.trade.count }, (_, slot) => (
-              <div key={slot} className="@container w-11 shrink-0 md:w-21">
-                <Skeleton className="aspect-photocard w-full rounded-photocard" />
-              </div>
-            ))}
-          </div>
-          <div className="flex border-t border-border/60 bg-muted/40 px-4 py-2.5">
-            <Skeleton className="ml-auto h-4 w-20" />
-          </div>
-        </div>
+          {Array.from({ length: row.trade.count }, (_, slot) => (
+            <li key={slot} className={slotClass}>
+              <Skeleton className="aspect-photocard w-full rounded-photocard" />
+              <Skeleton className="h-3.5 w-3/4" />
+              <Skeleton className="h-3 w-1/2" />
+            </li>
+          ))}
+        </RowFrame>
       ))}
 
       <p className="text-xs leading-relaxed text-muted-foreground">
@@ -108,6 +133,9 @@ export function AllocationPickerSkeleton({ rows }: { rows: PickerRow[] }) {
     </section>
   );
 }
+
+// a slot, as wide as the composer's offered objekts
+const slotClass = "@container flex w-[84px] flex-col gap-1.5 md:w-30";
 
 function RowLabel({ row }: { row: PickerRow }) {
   return row.want.kind === "range" ? (
@@ -121,118 +149,121 @@ function RowLabel({ row }: { row: PickerRow }) {
   );
 }
 
-type WantRowProps = {
-  row: PickerRow;
-  owned: number;
-  missing: number;
-  candidates: ListingCandidate[];
-  picked: number[];
-  pickedRow: Map<number, number>;
-  index: number;
-  collections: Map<string, Objekt.Collection>;
-  onToggle: (tokenId: number) => void;
-};
-
-function WantRow({
-  row,
-  owned,
-  missing,
-  candidates,
-  picked,
-  pickedRow,
-  index,
-  collections,
-  onToggle,
-}: WantRowProps) {
-  // what tapping an unpicked copy of a full row would swap out
-  const swapped = candidates.find(
-    (candidate) => candidate.tokenId === swapTarget(picked, row.trade.count),
-  );
-  const swapping =
-    swapped &&
-    `${objektName(collections.get(swapped.attributes.slug) ?? null, swapped.attributes)} ${formatSerial(swapped.serial)}`;
-
+function RowFrame({
+  header,
+  footer,
+  children,
+}: {
+  header: ReactNode;
+  footer: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <div className="flex flex-col overflow-clip rounded-lg border border-teal-500/30">
       <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1.5 border-b border-border/60 px-4 py-3 text-sm">
-        <RowLabel row={row} />
-        <span
-          className={cn(
-            "flex items-center gap-1.5 text-xs md:ml-auto",
-            missing > 0
-              ? "font-medium text-amber-700 dark:text-amber-400"
-              : "text-teal-700 dark:text-teal-500",
-          )}
-        >
-          {missing === 0 && <IconCircleCheck className="size-3.5" />}
-          {row.want.kind === "exact"
-            ? m.listing_detail_owned_exact({ count: formatCount(owned) })
-            : m.listing_detail_owned_range({
-                count: owned,
-                formatted: formatCount(owned),
-              })}
-          {missing > 0 && ` · ${m.listing_detail_short({ count: missing })}`}
-        </span>
+        {header}
       </div>
-
-      {/* one scrolling strip at every width, however many copies match */}
-      <div className="flex gap-2.5 overflow-x-auto overscroll-x-contain px-4 py-3.5">
-        {candidates.map((candidate) => {
-          const owner = pickedRow.get(candidate.tokenId);
-          return (
-            <PickerCard
-              key={candidate.tokenId}
-              candidate={candidate}
-              collection={collections.get(candidate.attributes.slug)}
-              picked={owner === index}
-              disabledReason={
-                owner !== undefined && owner !== index
-                  ? m.listing_detail_card_other_row()
-                  : null
-              }
-              swapsOut={
-                owner === undefined && swapping !== undefined
-                  ? m.listing_detail_card_swap({ objekt: swapping })
-                  : null
-              }
-              onToggle={() => onToggle(candidate.tokenId)}
-            />
-          );
-        })}
-        {/* what the viewer doesn't own: the wanted objekt greyed out, or a blank card for a range */}
-        {Array.from({ length: missing }, (_, slot) => (
-          <div
-            key={`missing-${slot}`}
-            className="@container w-11 shrink-0 md:w-21"
-          >
-            {row.want.kind === "exact" && row.want.collection !== null ? (
-              <img
-                src={getObjektFrontImageUrl(row.want.collection, "xs")}
-                alt=""
-                width={291}
-                height={450}
-                loading="lazy"
-                decoding="async"
-                className="aspect-photocard w-full rounded-photocard opacity-30 grayscale"
-              />
-            ) : (
-              <div className="aspect-photocard rounded-photocard border border-dashed border-teal-500/40" />
-            )}
-          </div>
-        ))}
-      </div>
-
+      <ul className="flex flex-wrap items-start gap-3 px-4 py-3.5">
+        {children}
+      </ul>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border/60 bg-muted/40 px-4 py-2.5 text-xs text-muted-foreground">
-        {offersSwap(candidates, row.trade.count) && (
-          <span>{m.listing_detail_duplicates_hint()}</span>
-        )}
-        <span className="ml-auto tabular-nums">
-          {m.listing_detail_picked({
-            picked: picked.length,
-            count: row.trade.count,
-          })}
-        </span>
+        {footer}
       </div>
     </div>
+  );
+}
+
+type WantRowProps = {
+  row: PickerRow;
+  side: CandidateRow | undefined;
+  picked: ListingPick[];
+  onPick: () => void;
+  onRemove: (pick: ListingPick) => void;
+};
+
+/**
+ * A want row's slots: its picks, then a slot that opens the picker for each
+ * copy still to pick, then a dashed one for each the viewer is short.
+ */
+function WantRow({ row, side, picked, onPick, onRemove }: WantRowProps) {
+  const { count } = row.trade;
+  const owned = side?.owned ?? 0;
+  const missing = side?.missing ?? 0;
+  const short = Math.min(missing, count - picked.length);
+
+  return (
+    <RowFrame
+      header={
+        <>
+          <RowLabel row={row} />
+          <span
+            className={cn(
+              "flex items-center gap-1.5 text-xs md:ml-auto",
+              missing > 0
+                ? "font-medium text-amber-700 dark:text-amber-400"
+                : "text-teal-700 dark:text-teal-500",
+            )}
+          >
+            {missing === 0 && <IconCircleCheck className="size-3.5" />}
+            {row.want.kind === "exact"
+              ? m.listing_detail_owned_exact({ count: formatCount(owned) })
+              : m.listing_detail_owned_range({
+                  count: owned,
+                  formatted: formatCount(owned),
+                })}
+            {missing > 0 && ` · ${m.listing_detail_short({ count: missing })}`}
+          </span>
+        </>
+      }
+      footer={
+        <span className="ml-auto tabular-nums">
+          {m.listing_detail_picked({ picked: picked.length, count })}
+        </span>
+      }
+    >
+      {picked.map((pick) => {
+        const shown = pickShown(pick);
+        return (
+          <li key={pick.tokenId} className={slotClass}>
+            <OfferedTile
+              shown={shown}
+              refusal={undefined}
+              onRemove={() => onRemove(pick)}
+            />
+            <OfferedCaption shown={shown} />
+          </li>
+        );
+      })}
+      {Array.from({ length: count - picked.length - short }, (_, slot) => (
+        <li key={`open-${slot}`} className={slotClass}>
+          <button
+            type="button"
+            onClick={onPick}
+            className="flex aspect-photocard w-full flex-col items-center justify-center gap-1.5 rounded-photocard border border-dashed border-input p-2 text-center text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground focus-visible:outline-2 focus-visible:outline-cosmo"
+          >
+            <IconPlus className="size-4" />
+            {m.listing_detail_slot_pick()}
+          </button>
+        </li>
+      ))}
+      {/* what the viewer doesn't own: the wanted objekt greyed out, or a blank card for a range */}
+      {Array.from({ length: short }, (_, slot) => (
+        <li key={`short-${slot}`} className={slotClass}>
+          {row.want.kind === "exact" && row.want.collection !== null ? (
+            <img
+              src={getObjektFrontImageUrl(row.want.collection, "xs")}
+              alt=""
+              width={291}
+              height={450}
+              loading="lazy"
+              decoding="async"
+              className="aspect-photocard w-full rounded-photocard opacity-30 grayscale"
+            />
+          ) : (
+            <div className="aspect-photocard rounded-photocard border border-dashed border-teal-500/40" />
+          )}
+        </li>
+      ))}
+    </RowFrame>
   );
 }

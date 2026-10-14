@@ -1,5 +1,5 @@
 import { validOnlineTypes } from "@apollo/cosmo/types/common";
-import type { TradeWant, WantAllocation } from "@apollo/trades/allocate";
+import type { TradeWant } from "@apollo/trades/allocate";
 import type { TokenRefusalReason } from "@apollo/trades/holdings";
 import type { ObjektAttributes, RangeFilter } from "@apollo/trades/range";
 import * as z from "zod";
@@ -186,13 +186,25 @@ export type TradeListing<TPoster = PublicUser> = {
 };
 
 /**
- * A copy the viewer could give, with the collection values the picker
- * matches against each want row.
+ * A copy the viewer picked to give, with the collection values the picks
+ * are checked against each want row and the collection its card shows.
  */
-export type ListingCandidate = {
+export type ListingPick = {
   tokenId: number;
   serial: number;
   attributes: ObjektAttributes;
+  collection: Objekt.Collection;
+};
+
+/**
+ * The viewer's side of one want row: how many usable copies of the
+ * collections it fits they own, how many it is short once every row draws
+ * on them, and the copies the server's allocation picked for it.
+ */
+export type CandidateRow = {
+  owned: number;
+  missing: number;
+  picks: ListingPick[];
 };
 
 /**
@@ -210,14 +222,13 @@ export type ListingClaim = {
  * - `poster`: their own listing, with who claimed it, until when and the
  *   trade it led to.
  * - `claimer` / `onlooker`: a claimed listing, theirs or someone else's.
- *   Only the claimer learns the trade. A null `deadlineAt` here or on the
- *   poster's claim means the trade is disputed.
+ *   Only the claimer learns the trade and its deadline. A null `deadlineAt`
+ *   here or on the poster's claim means the trade is disputed.
  * - `closed`: the listing ended; the public payload says how. `tradeId` is
  *   its latest trade when the viewer was a party to it.
- * - `candidate`: an open listing, with the viewer's usable copies in the
- *   order allocation spends them, the allocation, how many matching copies
- *   each row could draw on, the viewer's claim count and whether their
- *   linked address is the one the listing offers from (`ownAddress`).
+ * - `candidate`: an open listing, with the viewer's side of each want row,
+ *   the viewer's claim count and whether their linked address is the one
+ *   the listing offers from (`ownAddress`).
  *   Whether the poster's side stops any claim is the listing's `blocked`.
  *   `updatedAt` is the listing version all of it was read against, which
  *   Accept sends back.
@@ -231,14 +242,11 @@ export type ListingViewer =
       claim: ListingClaim | null;
     }
   | { role: "claimer"; deadlineAt: Date | null; tradeId: string }
-  | { role: "onlooker"; deadlineAt: Date | null }
+  | { role: "onlooker" }
   | {
       role: "candidate";
       updatedAt: Date;
-      collections: Objekt.Collection[];
-      inventory: ListingCandidate[];
-      allocation: WantAllocation[];
-      rowOwned: number[];
+      rows: CandidateRow[];
       claims: { active: number; cap: number };
       ownAddress: boolean;
     };
@@ -252,7 +260,7 @@ export type ListingViewer =
  */
 export type PublicListingPanel =
   | { kind: "closed"; state: ClosedListingState }
-  | { kind: "onlooker"; deadlineAt: Date | null }
+  | { kind: "onlooker" }
   | { kind: "signed_out" }
   | { kind: "poster_open" }
   | { kind: "unlinked" }
@@ -267,9 +275,7 @@ export function publicListingPanel(
     return { kind: "closed", state };
   }
   if (state.status === "claimed") {
-    return viewer === null
-      ? { kind: "onlooker", deadlineAt: state.deadlineAt }
-      : { kind: "viewer" };
+    return viewer === null ? { kind: "onlooker" } : { kind: "viewer" };
   }
   if (viewer === null) return { kind: "signed_out" };
   if (listing.poster?.id === viewer.userId) return { kind: "poster_open" };
@@ -311,18 +317,23 @@ export type WantsHeading = "you_give" | "looking_for";
 
 /**
  * Which answer the listing page's picker starts its picks from: the terms
- * it was read against and the copies the viewer could give. A refetch with
- * the same copies keeps the viewer's swaps; a copy that became unavailable,
- * another account's copies or new terms start again from the server's
- * allocation.
+ * it was read against, and per row the copies the viewer owns and the
+ * server's picks. A refetch with the same answer keeps the viewer's picks;
+ * a prefilled copy that became unavailable, a change in what the viewer
+ * owns, another account or new terms start again from the server's picks.
+ * A hand-picked copy that became unavailable is left to Accept, which
+ * checks every copy again.
  */
 export function pickerVersion(
   viewer: Pick<
     Extract<ListingViewer, { role: "candidate" }>,
-    "updatedAt" | "inventory"
+    "updatedAt" | "rows"
   >,
 ) {
-  return `${viewer.updatedAt.toISOString()}:${viewer.inventory
-    .map((candidate) => candidate.tokenId)
-    .join(",")}`;
+  return `${viewer.updatedAt.toISOString()}:${viewer.rows
+    .map(
+      (row) =>
+        `${row.owned}/${row.picks.map((pick) => pick.tokenId).join(",")}`,
+    )
+    .join(";")}`;
 }

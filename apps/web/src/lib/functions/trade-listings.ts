@@ -433,14 +433,14 @@ export const $fetchTradeListingViewer = createServerFn({ method: "GET" })
     }
 
     if (state.status === "claimed") {
-      return { role: "onlooker", deadlineAt: state.deadlineAt };
+      return { role: "onlooker" };
     }
 
     const link = await getCosmoAddress(db, viewerId);
     if (link.kind === "none") return { role: "unlinked" };
 
     // whether the poster's side stops a claim is $fetchTradeListing's `blocked`
-    const [side, active] = await Promise.all([
+    const [rows, active] = await Promise.all([
       readCandidateSide(
         link.address,
         listing.wants.map((want) => storedWantSchema.parse(want)),
@@ -451,7 +451,7 @@ export const $fetchTradeListingViewer = createServerFn({ method: "GET" })
     return {
       role: "candidate",
       updatedAt: listing.updatedAt,
-      ...side,
+      rows,
       claims: { active, cap: claimCap({ positive: 0, abandoned: 0 }) },
       ownAddress: isEqual(link.address, listing.fromAddress),
     };

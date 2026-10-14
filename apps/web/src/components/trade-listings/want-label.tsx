@@ -20,18 +20,19 @@ type Props = {
 };
 
 /**
- * A want row's kind badge, count and what it asks for, as the listing page
- * heads each row: "Range 5× Atom02 · ARTMS · First". It flows as one line
- * of text, so a long label wraps after the count instead of leaving the
- * count alone beside the badge.
+ * A want row's count and what it asks for, as the listing page heads an
+ * exact row ("1× Atom01 KimLip 207A"), or a payment row behind its badge.
+ * It flows as one line of text, so a long label wraps after the count
+ * instead of leaving the count alone.
  */
 export default function WantLabel({ want }: Props) {
   return (
     <span className="min-w-0 leading-relaxed break-words">
-      <Badge variant="outline" className="me-2 align-middle">
-        {kindLabel(want.kind)}
-      </Badge>
-      {want.kind !== "payment" && (
+      {want.kind === "payment" ? (
+        <Badge variant="outline" className="me-2 align-middle">
+          {m.listing_detail_kind_payment()}
+        </Badge>
+      ) : (
         <span className="me-2 font-mono font-bold text-amber-700 tabular-nums dark:text-amber-500">
           {want.count}×
         </span>
@@ -48,17 +49,6 @@ export default function WantLabel({ want }: Props) {
       </span>
     </span>
   );
-}
-
-function kindLabel(kind: ListingFeedWant["kind"]) {
-  switch (kind) {
-    case "exact":
-      return m.listing_detail_kind_exact();
-    case "range":
-      return m.listing_detail_kind_range();
-    case "payment":
-      return m.listing_detail_kind_payment();
-  }
 }
 
 /**

@@ -1,17 +1,89 @@
 import { listDrainCursor } from "@apollo/database/web/schema";
-import type { ReportStatus } from "@apollo/database/web/types";
-import { tradeState } from "@apollo/trades/lifecycle";
+import {
+  endedTradeStatuses,
+  liveTradeStatuses,
+  type ReportStatus,
+  type TradeEvent,
+} from "@apollo/database/web/types";
+import { type TradeState, tradeState } from "@apollo/trades/lifecycle";
 import { DRAIN_CURSOR_NAME, isTimedOut } from "@apollo/trades/timers";
-import { addr } from "@apollo/util";
+import { itemStatus } from "@apollo/trades/transfers";
 import { sql } from "drizzle-orm";
 import type {
+  TradeDispute,
   TradeItemView,
   TradeParty,
   TradeView,
 } from "../../universal/trades";
-import { toPublicUser } from "../auth.server";
+import { type ServerUser, toPublicUser } from "../auth.server";
 import { db } from "../db";
 import { readIndexed } from "./feed.server";
+
+/**
+ * The drain's watermark as a scalar subquery, so a trade read gets it in
+ * the same statement.
+ */
+export const watermarkExtra = () =>
+  sql<Date | null>`(select ${listDrainCursor.chainTime} from ${listDrainCursor} where ${listDrainCursor.name} = ${DRAIN_CURSOR_NAME})`.mapWith(
+    listDrainCursor.chainTime,
+  );
+
+// both parties' users and the COSMO accounts behind their pinned addresses
+export const tradePartyRelations = {
+  fromUser: true,
+  toUser: true,
+  fromCosmo: { columns: { username: true } },
+  toCosmo: { columns: { username: true } },
+} as const;
+
+/**
+ * One side as a trade shows it. A deleted party's pinned address may since
+ * belong to someone else, so neither name is shown.
+ */
+export function toTradeParty(
+  userId: string | null,
+  user: ServerUser | null,
+  cosmo: { username: string } | null,
+): TradeParty {
+  return userId === null
+    ? { user: null, cosmoUsername: null }
+    : {
+        user: user && toPublicUser(user),
+        cosmoUsername: cosmo?.username ?? null,
+      };
+}
+
+// the listing a trade was claimed from, which every listing item names
+export function tradeListingId(items: { listingId: string | null }[]) {
+  return items.find((item) => item.listingId !== null)?.listingId ?? null;
+}
+
+/**
+ * Whether an accepted trade's deadline has passed the drain's watermark, so
+ * its parties can no longer act.
+ */
+export function deadlinePassed(
+  state: TradeState,
+  deadlineAt: Date,
+  watermark: Date | null,
+) {
+  return state.status === "accepted" && isTimedOut(deadlineAt, watermark);
+}
+
+/**
+ * The dispute that froze a disputed trade, from its events, newest last.
+ * Null for any other status.
+ */
+export function tradeDispute(
+  state: TradeState,
+  events: readonly { createdAt: Date; event: TradeEvent | null }[],
+): TradeDispute | null {
+  if (state.status !== "disputed") return null;
+  for (const { createdAt, event } of events.toReversed()) {
+    if (event?.type === "disputed") return { at: createdAt, event };
+  }
+  return null;
+}
 
 /**
  * A trade as its page shows it, with its dispute report for staff, or null
@@ -27,9 +99,7 @@ export async function readTradeView(tradeId: string): Promise<{
     where: {
       id: tradeId,
       kind: "trade",
-      status: {
-        in: ["accepted", "disputed", "completed", "cancelled", "timed_out"],
-      },
+      status: { in: [...liveTradeStatuses, ...endedTradeStatuses] },
     },
     columns: {
       id: true,
@@ -40,17 +110,10 @@ export async function readTradeView(tradeId: string): Promise<{
       toAddress: true,
       cancelledBy: true,
       abandonedBy: true,
-      createdAt: true,
-      acceptedAt: true,
       deadlineAt: true,
       endedAt: true,
     },
-    extras: {
-      watermark: () =>
-        sql<Date | null>`(select ${listDrainCursor.chainTime} from ${listDrainCursor} where ${listDrainCursor.name} = ${DRAIN_CURSOR_NAME})`.mapWith(
-          listDrainCursor.chainTime,
-        ),
-    },
+    extras: { watermark: watermarkExtra },
     with: {
       items: { orderBy: { id: "asc" } },
       messages: {
@@ -58,15 +121,12 @@ export async function readTradeView(tradeId: string): Promise<{
         columns: { id: true, event: true, createdAt: true },
         orderBy: { id: "asc" },
       },
-      fromUser: true,
-      toUser: true,
-      fromCosmo: { columns: { username: true } },
-      toCosmo: { columns: { username: true } },
+      ...tradePartyRelations,
       disputeReport: { columns: { id: true, status: true } },
     },
   });
   if (!row) return null;
-  if (row.acceptedAt === null || row.deadlineAt === null) {
+  if (row.deadlineAt === null) {
     throw new Error("accepted trade without a deadline");
   }
 
@@ -76,45 +136,21 @@ export async function readTradeView(tradeId: string): Promise<{
   );
   const state = tradeState(row, row.items);
   const live = state.status === "accepted" || state.status === "disputed";
-  const pinned = {
-    from: addr(row.fromAddress),
-    to: row.toAddress === null ? null : addr(row.toAddress),
-  };
   const events = row.messages.flatMap(({ id, createdAt, event }) =>
     event === null ? [] : [{ id, createdAt, event }],
   );
 
-  const party = (
-    userId: string | null,
-    user: typeof row.fromUser,
-    cosmo: { username: string } | null,
-  ): TradeParty =>
-    userId === null
-      ? { user: null, cosmoUsername: null }
-      : {
-          user: user && toPublicUser(user),
-          cosmoUsername: cosmo?.username ?? null,
-        };
-
   const trade: TradeView = {
     id: row.id,
     state,
-    createdAt: row.createdAt,
-    acceptedAt: row.acceptedAt,
     deadlineAt: row.deadlineAt,
     endedAt: row.endedAt,
-    pausedAt:
-      state.status === "disputed"
-        ? (events.findLast(({ event }) => event.type === "disputed")
-            ?.createdAt ?? null)
-        : null,
-    deadlinePassed:
-      state.status === "accepted" && isTimedOut(row.deadlineAt, row.watermark),
-    listingId:
-      row.items.find((item) => item.listingId !== null)?.listingId ?? null,
+    dispute: tradeDispute(state, events),
+    deadlinePassed: deadlinePassed(state, row.deadlineAt, row.watermark),
+    listingId: tradeListingId(row.items),
     parties: {
-      from: party(row.fromUserId, row.fromUser, row.fromCosmo),
-      to: party(row.toUserId, row.toUser, row.toCosmo),
+      from: toTradeParty(row.fromUserId, row.fromUser, row.fromCosmo),
+      to: toTradeParty(row.toUserId, row.toUser, row.toCosmo),
     },
     items: row.items.map((item): TradeItemView => {
       const token =
@@ -133,21 +169,11 @@ export async function readTradeView(tradeId: string): Promise<{
             : (indexed.collections.get(item.slug) ?? null),
         transferredAt: item.transferredAt,
         txHash: item.txHash,
-        // recorded first, then the indexed owner while the trade is live
-        status:
-          item.transferredAt !== null
-            ? "sent"
-            : !live
-              ? "not_sent"
-              : found === undefined
-                ? "waiting"
-                : found.owner === pinned[item.sender === "from" ? "to" : "from"]
-                  ? "arrived"
-                  : found.owner !== pinned.from && found.owner !== pinned.to
-                    ? "moved"
-                    : found.transferable
-                      ? "waiting"
-                      : "untransferable",
+        status: itemStatus(item, found, {
+          live,
+          fromAddress: row.fromAddress,
+          toAddress: row.toAddress,
+        }),
       };
     }),
     events,

@@ -1,4 +1,3 @@
-import type { Picks } from "@/hooks/use-listing-picks";
 import { m } from "@/i18n/messages";
 import { formatTokenRefusal } from "@/lib/client/errors/trades";
 import {
@@ -12,11 +11,11 @@ import type {
   ListingClaim,
   TradeListing,
 } from "@/lib/universal/trade-listings";
-import { cn } from "@/lib/utils";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import {
   IconAlertTriangle,
   IconCircleCheck,
+  IconFlag,
   IconInfoCircle,
   IconRefresh,
 } from "@tabler/icons-react";
@@ -30,58 +29,14 @@ import { SideHeadingSkeleton } from "./side-heading";
 
 /**
  * The header's status: a line saying where the listing stands, and below it
- * a quieter line of detail. It right-aligns beside the title on wide
- * screens and sits under it, left-aligned, once the header wraps.
+ * a quieter line of detail. From tablet width it right-aligns at the
+ * header's far end; phones stack it under the title, left-aligned.
  */
-export function Status({
-  className,
-  children,
-}: PropsWithChildren<{ className?: string }>) {
+export function Status({ children }: PropsWithChildren) {
   return (
-    <div
-      className={cn(
-        "flex min-w-0 flex-1 basis-70 flex-col gap-1 text-sm xl:items-end xl:text-right",
-        className,
-      )}
-    >
+    <div className="flex min-w-0 flex-1 basis-70 flex-col gap-1 text-sm md:items-end md:text-right">
       {children}
     </div>
-  );
-}
-
-/**
- * The quieter second line of a status.
- */
-export function StatusDetail({
-  id,
-  children,
-}: PropsWithChildren<{ id?: string }>) {
-  return (
-    <p id={id} className="text-xs leading-relaxed text-muted-foreground">
-      {children}
-    </p>
-  );
-}
-
-/**
- * A claimed listing seen by anyone but its two parties: how long the trade
- * on it has left, unless a dispute froze it.
- */
-export function OnlookerStatus({ deadlineAt }: { deadlineAt: Date | null }) {
-  return (
-    <Status>
-      <span className="text-muted-foreground">
-        {deadlineAt === null ? (
-          m.listing_detail_onlooker_untimed()
-        ) : (
-          <ParaglideMessage
-            message={m.listing_detail_onlooker}
-            inputs={{ left: "" }}
-            markup={{ time: () => <Countdown deadline={deadlineAt} /> }}
-          />
-        )}
-      </span>
-    </Status>
   );
 }
 
@@ -89,7 +44,7 @@ export function OnlookerStatus({ deadlineAt }: { deadlineAt: Date | null }) {
  * The claimer's own claimed listing: how long their trade has left and what
  * to send to whom, or that a dispute froze it.
  */
-export function ClaimerStatus({
+export function ClaimerAlert({
   listing,
   deadlineAt,
 }: {
@@ -97,13 +52,12 @@ export function ClaimerStatus({
   deadlineAt: Date | null;
 }) {
   return (
-    <Status>
-      <div className="flex flex-wrap items-center gap-2 xl:justify-end">
-        <span className="font-semibold">
-          {m.listing_detail_claimer_title()}
-        </span>
+    <Alert role="status" variant={deadlineAt === null ? "warning" : "success"}>
+      {deadlineAt === null ? <IconFlag /> : <IconCircleCheck />}
+      <AlertTitle className="flex flex-wrap items-baseline gap-x-2">
+        {m.listing_detail_claimer_title()}
         {deadlineAt !== null && (
-          <span className="text-xs text-muted-foreground">
+          <span className="font-normal text-muted-foreground">
             <ParaglideMessage
               message={m.listing_detail_time_left}
               inputs={{ left: "" }}
@@ -111,8 +65,8 @@ export function ClaimerStatus({
             />
           </span>
         )}
-      </div>
-      <StatusDetail>
+      </AlertTitle>
+      <AlertDescription>
         {deadlineAt === null
           ? m.listing_detail_claim_disputed()
           : m.listing_detail_claimer_body({
@@ -120,16 +74,8 @@ export function ClaimerStatus({
               poster: posterName(listing),
               appName: env.VITE_APP_NAME,
             })}
-      </StatusDetail>
-    </Status>
-  );
-}
-
-export function ViewerErrorStatus() {
-  return (
-    <Status>
-      <p className="text-muted-foreground">{m.listing_detail_viewer_error()}</p>
-    </Status>
+      </AlertDescription>
+    </Alert>
   );
 }
 
@@ -182,26 +128,18 @@ export function NoticeStrip({ notice }: { notice: Notice }) {
 
 /**
  * The poster's own claimed listing: who accepted it and how long their trade
- * has left, or that a dispute froze it. Edit and Withdraw stay disabled
- * while it runs, each described by why.
+ * has left, or that a dispute froze it.
  */
-export function PosterClaimedStatus({
-  claim,
-  editReasonId,
-  withdrawReasonId,
-}: {
-  claim: ListingClaim;
-  editReasonId: string;
-  withdrawReasonId: string;
-}) {
+export function PosterClaimedAlert({ claim }: { claim: ListingClaim }) {
   const { username, deadlineAt } = claim;
   const user = ({ children }: PropsWithChildren) => (
     <span className="font-semibold">{children}</span>
   );
 
   return (
-    <Status>
-      <span>
+    <Alert role="status" variant={deadlineAt === null ? "warning" : "success"}>
+      {deadlineAt === null ? <IconFlag /> : <IconCircleCheck />}
+      <AlertTitle>
         {deadlineAt === null ? (
           username === null ? (
             m.listing_detail_poster_claimed_someone_untimed()
@@ -228,19 +166,13 @@ export function PosterClaimedStatus({
             }}
           />
         )}
-      </span>
-      <StatusDetail>
+      </AlertTitle>
+      <AlertDescription>
         {deadlineAt === null
           ? m.listing_detail_claim_disputed()
           : m.listing_detail_poster_claimed_body()}
-      </StatusDetail>
-      <span id={editReasonId} className="sr-only">
-        {m.listing_composer_edit_claimed()}
-      </span>
-      <span id={withdrawReasonId} className="sr-only">
-        {m.listing_detail_withdraw_claimed()}
-      </span>
-    </Status>
+      </AlertDescription>
+    </Alert>
   );
 }
 
@@ -252,10 +184,7 @@ export function BlockedAlert({ listing }: { listing: TradeListing }) {
   const fallback = <p>{m.listing_detail_poster_blocked_body()}</p>;
 
   return (
-    <Alert
-      role="status"
-      className="border-amber-500/40 *:[svg]:text-amber-700 dark:*:[svg]:text-amber-500"
-    >
+    <Alert role="status" variant="warning">
       <IconAlertTriangle />
       <AlertTitle>{m.listing_detail_poster_blocked_title()}</AlertTitle>
       <AlertDescription>
@@ -294,31 +223,5 @@ function BlockedReasons({ listing }: { listing: TradeListing }) {
     </ul>
   ) : (
     <p>{m.listing_detail_poster_blocked_body()}</p>
-  );
-}
-
-/**
- * How far the picks get: how many objekts the viewer is short of filling
- * the listing, or how many of its objekts they've picked, ticked once the
- * picks fit.
- */
-export function PickProgress({ picks }: { picks: Picks }) {
-  return (
-    <span
-      className={cn(
-        "flex items-center gap-1.5 text-sm font-medium tabular-nums",
-        picks.valid
-          ? "text-teal-700 dark:text-teal-500"
-          : "text-amber-700 dark:text-amber-400",
-      )}
-    >
-      {picks.valid && <IconCircleCheck className="size-3.5" />}
-      {picks.short > 0
-        ? m.listing_detail_short({ count: picks.short })
-        : m.listing_detail_picked({
-            picked: picks.pickedCount,
-            count: picks.total,
-          })}
-    </span>
   );
 }

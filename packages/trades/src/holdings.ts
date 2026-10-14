@@ -44,9 +44,20 @@ export function tokenRefusal(
   if (state.kind === "missing" || state.owner !== addr(address)) {
     return "not_owned";
   }
-  if (!state.transferable) return "untransferable";
-  if (flags.locked.has(state.tokenId)) return "locked";
-  if (flags.live.has(state.tokenId)) return "live";
+  return heldTokenRefusal(state, flags);
+}
+
+/**
+ * Why a token the address holds can't be offered, in `tokenRefusal`'s
+ * order after ownership, or null when it can.
+ */
+export function heldTokenRefusal(
+  token: { tokenId: number; transferable: boolean },
+  flags: TokenFlags,
+): TokenRefusalReason | null {
+  if (!token.transferable) return "untransferable";
+  if (flags.locked.has(token.tokenId)) return "locked";
+  if (flags.live.has(token.tokenId)) return "live";
   return null;
 }
 

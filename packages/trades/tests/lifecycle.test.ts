@@ -562,13 +562,28 @@ describe("owingSides (LIFE-23)", () => {
 
 describe("needsYou (UNIT-05)", () => {
   const partial = [objekt("from", true), objekt("from"), objekt("to", true)];
+  const running = { deadlinePassed: false };
 
   test("an accepted trade needs the sides still owing", () => {
-    expect(needsYou(trade("accepted", partial), "from")).toBe(true);
-    expect(needsYou(trade("accepted", partial), "to")).toBe(false);
+    expect(needsYou(trade("accepted", partial), "from", running)).toBe(true);
+    expect(needsYou(trade("accepted", partial), "to", running)).toBe(false);
     for (const side of ["from", "to"] as const) {
-      expect(needsYou(trade("accepted", sixObjekts()), side)).toBe(true);
-      expect(needsYou(trade("accepted", sixObjekts(true)), side)).toBe(false);
+      expect(needsYou(trade("accepted", sixObjekts()), side, running)).toBe(
+        true,
+      );
+      expect(
+        needsYou(trade("accepted", sixObjekts(true)), side, running),
+      ).toBe(false);
+    }
+  });
+
+  test("an accepted trade past its deadline needs no one", () => {
+    for (const side of ["from", "to"] as const) {
+      expect(
+        needsYou(trade("accepted", sixObjekts()), side, {
+          deadlinePassed: true,
+        }),
+      ).toBe(false);
     }
   });
 
@@ -576,7 +591,9 @@ describe("needsYou (UNIT-05)", () => {
     "a %s trade never needs anyone",
     (status) => {
       for (const side of ["from", "to"] as const) {
-        expect(needsYou(trade(status, sixObjekts()), side)).toBe(false);
+        expect(needsYou(trade(status, sixObjekts()), side, running)).toBe(
+          false,
+        );
       }
     },
   );

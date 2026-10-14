@@ -26,6 +26,20 @@ export type PickerFilters = {
   sort: ValidSort;
 };
 
+/**
+ * The collections a picker is held to, such as a listing's want row. Each
+ * column lists the values it allows, and an empty column allows any; the
+ * viewer's own filters only narrow inside it.
+ */
+export type PickerScope = {
+  artist: ValidArtist[];
+  member: string[];
+  season: string[];
+  class: string[];
+  onOffline: ValidOnlineType[];
+  collectionNo: string[];
+};
+
 export type ArtistScopedKey = "member" | "season" | "class";
 export type FlagKey = "transferable" | "hideLocked" | "notInBinder";
 
@@ -40,6 +54,15 @@ export const initialPickerFilters: PickerFilters = {
   notInBinder: false,
   sort: "newest",
 };
+
+/**
+ * Where a picker's filters start: a scope held to one artist starts on it,
+ * since member, season and class only apply within one.
+ */
+export function scopedPickerFilters(scope: PickerScope | null): PickerFilters {
+  const [artist = null, ...others] = scope?.artist ?? [];
+  return { ...initialPickerFilters, artist: others.length > 0 ? null : artist };
+}
 
 export type PickerFilterAction =
   | { type: "artist"; artist: ValidArtist | null }
@@ -143,19 +166,28 @@ export function hasClientFilters(filters: PickerFilters) {
 
 /**
  * The collection query's filters, shaped like the profile's URL filters so an
- * unfiltered picker shares the profile's cached pages.
+ * unfiltered picker shares the profile's cached pages. Inside a scope, a
+ * column the viewer hasn't narrowed takes the scope's values.
  */
 export function toCollectionFilters(
   filters: PickerFilters,
+  scope: PickerScope | null = null,
 ): z.infer<typeof userCollectionFrontendSchema> {
-  const list = (values: string[]) => (values.length > 0 ? values : undefined);
+  const list = <T>(values: readonly T[], allowed: readonly T[] = []) => {
+    const narrowed = values.length > 0 ? values : allowed;
+    return narrowed.length > 0 ? [...narrowed] : undefined;
+  };
 
   return {
     artist: filters.artist ?? undefined,
-    member: list(filters.member),
-    season: list(filters.season),
-    class: list(filters.class),
-    on_offline: filters.onOffline === null ? undefined : [filters.onOffline],
+    member: list(filters.member, scope?.member),
+    season: list(filters.season, scope?.season),
+    class: list(filters.class, scope?.class),
+    on_offline: list(
+      filters.onOffline === null ? [] : [filters.onOffline],
+      scope?.onOffline,
+    ),
+    collectionNo: list([], scope?.collectionNo),
     transferable: filters.transferable || undefined,
     sort: filters.sort === "newest" ? undefined : filters.sort,
   };

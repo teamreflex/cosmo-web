@@ -18,7 +18,7 @@ export default function NewListingButton() {
   const href = useLocation({ select: (location) => location.href });
   const [open, setOpen] = useState(false);
   const button = (
-    <Button variant="cosmo" size="sm" className="max-md:h-9">
+    <Button size="sm" className="max-md:h-9">
       <IconPlus />
       {m.listing_composer_new()}
     </Button>
@@ -33,12 +33,7 @@ export default function NewListingButton() {
 
   return (
     <>
-      <Button
-        variant="cosmo"
-        size="sm"
-        className="max-md:h-9"
-        onClick={() => setOpen(true)}
-      >
+      <Button size="sm" className="max-md:h-9" onClick={() => setOpen(true)}>
         <IconPlus />
         {m.listing_composer_new()}
       </Button>

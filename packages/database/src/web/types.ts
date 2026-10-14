@@ -356,6 +356,14 @@ export const liveTradeStatuses = [
   "disputed",
 ] as const satisfies readonly TradeStatus[];
 
+// how a trade ends: every item arrived, someone cancelled it, or it ran out of time
+export const endedTradeStatuses = [
+  "completed",
+  "cancelled",
+  "timed_out",
+] as const satisfies readonly TradeStatus[];
+export type EndedTradeStatus = (typeof endedTradeStatuses)[number];
+
 // statuses nothing leaves, which set `ended_at`
 export const endedStatuses = [
   "filled",

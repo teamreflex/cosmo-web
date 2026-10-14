@@ -1,11 +1,18 @@
-import { toPublicUser } from "@/lib/server/auth.server";
 import { db } from "@/lib/server/db";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import { consumeRateLimit } from "@/lib/server/rate-limit.server";
 import { publishTradeUpdates } from "@/lib/server/trade-events.server";
-import { readIndexed } from "@/lib/server/trades/feed.server";
+import { feedItem, readIndexed } from "@/lib/server/trades/feed.server";
 import { readIndexerTokens } from "@/lib/server/trades/holdings.server";
-import { readTradeView } from "@/lib/server/trades/trade-view.server";
+import {
+  deadlinePassed,
+  readTradeView,
+  toTradeParty,
+  tradeDispute,
+  tradeListingId,
+  tradePartyRelations,
+  watermarkExtra,
+} from "@/lib/server/trades/trade-view.server";
 import {
   disputeTrade,
   endTrade,
@@ -31,9 +38,13 @@ import type {
 } from "@/lib/universal/trades";
 import { can, parseRole } from "@apollo/auth";
 import { tradeOffers } from "@apollo/database/web/schema";
-import { liveTradeStatuses, type TradeSide } from "@apollo/database/web/types";
+import {
+  endedTradeStatuses,
+  liveTradeStatuses,
+  type TradeSide,
+} from "@apollo/database/web/types";
 import { needsYou, partyAction, tradeState } from "@apollo/trades/lifecycle";
-import { addr } from "@apollo/util";
+import { itemStatus } from "@apollo/trades/transfers";
 import { createServerFn } from "@tanstack/react-start";
 import { and, asc, desc, eq, inArray, or, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
@@ -100,13 +111,10 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
             eq(tradeOffers.fromUserId, userId),
             eq(tradeOffers.toUserId, userId),
           ),
-          active
-            ? inArray(tradeOffers.status, [...liveTradeStatuses])
-            : inArray(tradeOffers.status, [
-                "completed",
-                "cancelled",
-                "timed_out",
-              ]),
+          inArray(
+            tradeOffers.status,
+            active ? [...liveTradeStatuses] : [...endedTradeStatuses],
+          ),
           !active && cursor !== undefined
             ? sql`(${tradeOffers.endedAt}, ${tradeOffers.id}) < (${db
                 .select({ endedAt: cursorRow.endedAt, id: cursorRow.id })
@@ -139,6 +147,7 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
         deadlineAt: true,
         endedAt: true,
       },
+      extras: { watermark: watermarkExtra },
       with: {
         items: { orderBy: { id: "asc" } },
         // the dispute that froze a disputed trade
@@ -151,10 +160,7 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
           orderBy: { id: "desc" },
           limit: 1,
         },
-        fromUser: true,
-        toUser: true,
-        fromCosmo: { columns: { username: true } },
-        toCosmo: { columns: { username: true } },
+        ...tradePartyRelations,
       },
       orderBy: active
         ? { deadlineAt: "asc", id: "asc" }
@@ -163,7 +169,7 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
     const page = active ? rows : rows.slice(0, FINISHED_PAGE_SIZE);
     const trades = page.map((row) => {
       const side: TradeSide = row.fromUserId === userId ? "from" : "to";
-      // payments arrive with phase 12a; every item so far is an objekt
+      // payments arrive with phase 13a; every item so far is an objekt
       const objekts = row.items.flatMap((item) =>
         item.kind === "objekt"
           ? [{ item, ...storedObjektItemSchema.parse(item) }]
@@ -183,15 +189,7 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
     );
 
     const summary = (items: typeof objekts): MyTradeSide => ({
-      items: items.map(({ tokenId, attributes }) => {
-        const token = indexed.states.get(tokenId);
-        return {
-          tokenId,
-          attributes,
-          serial: token?.kind === "found" ? token.serial : null,
-          collection: indexed.collections.get(attributes.slug) ?? null,
-        };
-      }),
+      items: items.map((item) => feedItem(item, indexed)),
       sent: items.filter(({ item }) => item.transferredAt !== null).length,
     });
 
@@ -200,34 +198,23 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
         throw new Error("accepted trade without a deadline");
       }
       const state = tradeState(row, row.items);
-      const [dispute] = row.messages;
-      const other =
+      const counterparty =
         side === "from"
-          ? { id: row.toUserId, user: row.toUser, cosmo: row.toCosmo }
-          : { id: row.fromUserId, user: row.fromUser, cosmo: row.fromCosmo };
+          ? toTradeParty(row.toUserId, row.toUser, row.toCosmo)
+          : toTradeParty(row.fromUserId, row.fromUser, row.fromCosmo);
       return {
         id: row.id,
-        side,
         state,
         deadlineAt: row.deadlineAt,
-        pause:
-          state.status === "disputed" && dispute?.event?.type === "disputed"
-            ? { at: dispute.createdAt, by: dispute.event.by }
-            : null,
+        dispute: tradeDispute(state, row.messages),
         endedAt: row.endedAt,
-        listingId:
-          row.items.find((item) => item.listingId !== null)?.listingId ?? null,
-        // a deleted party's pinned address may since belong to someone else
-        counterparty:
-          other.id === null
-            ? { user: null, cosmoUsername: null }
-            : {
-                user: other.user && toPublicUser(other.user),
-                cosmoUsername: other.cosmo?.username ?? null,
-              },
+        listingId: tradeListingId(row.items),
+        counterparty,
         send: summary(send),
         get: summary(get),
-        needsYou: needsYou(state, side),
+        needsYou: needsYou(state, side, {
+          deadlinePassed: deadlinePassed(state, row.deadlineAt, row.watermark),
+        }),
       };
     });
     return {
@@ -265,29 +252,20 @@ export const $cancelTrade = createServerFn({ method: "POST" })
         parties,
       );
 
-      const unsent = trade.items.flatMap(
-        ({ tokenId, sender, transferredAt }) =>
-          tokenId === null || transferredAt !== null
-            ? []
-            : [
-                {
-                  tokenId,
-                  receiver:
-                    sender === "from" ? trade.toAddress : trade.fromAddress,
-                },
-              ],
-      );
       const result = partyAction(
         trade.state,
         { type: "cancel", by },
         {
           deadlinePassed: await isDue(tx, trade),
-          arrived: unsent.some(({ tokenId, receiver }) => {
-            const state = tokens.get(tokenId);
+          arrived: trade.items.some((item) => {
+            const token =
+              item.tokenId === null ? undefined : tokens.get(item.tokenId);
             return (
-              state?.kind === "found" &&
-              receiver !== null &&
-              state.owner === addr(receiver)
+              itemStatus(item, token?.kind === "found" ? token : undefined, {
+                live: true,
+                fromAddress: trade.fromAddress,
+                toAddress: trade.toAddress,
+              }) === "arrived"
             );
           }),
         },

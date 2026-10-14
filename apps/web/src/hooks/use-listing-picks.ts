@@ -1,11 +1,11 @@
 import type {
   ListingFeedWant,
+  ListingPick,
   ListingViewer,
 } from "@/lib/universal/trade-listings";
-import { fitsWant, type TradeWant } from "@apollo/trades/allocate";
+import type { TradeWant } from "@apollo/trades/allocate";
 import { validateAssignment } from "@apollo/trades/assignment";
 import { totalWanted } from "@apollo/trades/composer";
-import { togglePick } from "@apollo/trades/picker";
 import { useState } from "react";
 
 type Candidate = Extract<ListingViewer, { role: "candidate" }>;
@@ -22,45 +22,35 @@ export type PickerRow = {
  * unless the viewer is picking.
  */
 export function useListingPicks(viewer: Candidate | null, rows: PickerRow[]) {
-  const [picks, setPicks] = useState(
-    () => viewer?.allocation.map((allocation) => allocation.tokenIds) ?? [],
+  const [picked, setPicked] = useState(
+    () => viewer?.rows.map((row) => row.picks) ?? [],
   );
   if (viewer === null) return null;
 
-  const candidates = rows.map((row) =>
-    viewer.inventory.filter((candidate) =>
-      fitsWant(row.trade, candidate.attributes),
-    ),
-  );
-  // a refetched inventory can drop a picked copy, which then can't be unpicked
-  const picked = candidates.map((rowCandidates, row) =>
-    (picks[row] ?? []).filter((tokenId) =>
-      rowCandidates.some((candidate) => candidate.tokenId === tokenId),
-    ),
-  );
-  const valid = validateAssignment(
-    rows.map((row) => row.trade),
-    picked,
-    new Map(
-      viewer.inventory.map((candidate) => [
-        candidate.tokenId,
-        candidate.attributes,
-      ]),
-    ),
-  ).ok;
-
   return {
-    candidates,
     picked,
-    valid,
-    pickedCount: picked.reduce((total, row) => total + row.length, 0),
+    valid: validateAssignment(
+      rows.map((row) => row.trade),
+      picked.map((picks) => picks.map((pick) => pick.tokenId)),
+      new Map(picked.flat().map((pick) => [pick.tokenId, pick.attributes])),
+    ).ok,
+    pickedCount: picked.reduce((total, picks) => total + picks.length, 0),
     total: totalWanted(rows.map((row) => row.trade)),
-    short: viewer.allocation.reduce(
-      (total, allocation) => total + allocation.missing,
-      0,
-    ),
-    toggle: (row: number, tokenId: number, count: number) =>
-      setPicks(togglePick(picked, row, tokenId, count)),
+    short: viewer.rows.reduce((total, row) => total + row.missing, 0),
+    /**
+     * Takes a copy out of the row, or adds it while the row has room.
+     */
+    toggle: (row: number, pick: ListingPick) =>
+      setPicked((current) =>
+        current.map((picks, index) => {
+          if (index !== row) return picks;
+          if (picks.some((shown) => shown.tokenId === pick.tokenId)) {
+            return picks.filter((shown) => shown.tokenId !== pick.tokenId);
+          }
+          const count = rows[row]?.trade.count ?? 0;
+          return picks.length < count ? [...picks, pick] : picks;
+        }),
+      ),
   };
 }
 

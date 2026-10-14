@@ -17,6 +17,7 @@ import type {
   FlagKey,
   PickerFilterAction,
   PickerFilters,
+  PickerScope,
 } from "./picker-filters";
 import { suggestionSource } from "./picker-filters";
 
@@ -25,6 +26,8 @@ type Props = {
   open: boolean;
   filters: PickerFilters;
   suggestion: NeighbourSuggestion | null;
+  /** the collections the picker is held to, which offers only their values */
+  scope: PickerScope | null;
   /** the binder editor's picker, which adds the Not in binder filter */
   binder: boolean;
   shown: number;
@@ -35,13 +38,15 @@ type Props = {
 /**
  * Every filter besides the artist, in a panel that slides over the grid.
  * Member, season and class only apply within one artist, so they wait until
- * an artist is picked.
+ * an artist is picked. A scope leaves only its own values, and a column it
+ * fixes to one value isn't offered at all.
  */
 export default function PickerFilterPanel({
   id,
   open,
   filters,
   suggestion,
+  scope,
   binder,
   shown,
   onChange,
@@ -89,14 +94,18 @@ export default function PickerFilterPanel({
             <ArtistFilters
               artist={filters.artist}
               filters={filters}
+              scope={scope}
               onChange={onChange}
             />
           </Suspense>
         )}
 
-        <Group title={m.filter_type()}>
-          <Options>
-            {validOnlineTypes.map((type) => (
+        <ScopedGroup
+          title={m.filter_type()}
+          options={within(validOnlineTypes, scope?.onOffline)}
+        >
+          {(types) =>
+            types.map((type) => (
               <Option
                 key={type}
                 pressed={filters.onOffline === type}
@@ -111,9 +120,9 @@ export default function PickerFilterPanel({
                   ? m.filter_online_physical()
                   : m.filter_online_digital()}
               </Option>
-            ))}
-          </Options>
-        </Group>
+            ))
+          }
+        </ScopedGroup>
 
         <Group title={m.binder_picker_ownership()}>
           <Toggle
@@ -165,7 +174,6 @@ export default function PickerFilterPanel({
           {m.common_reset()}
         </Button>
         <Button
-          variant="cosmo"
           className="h-[38px] flex-2 rounded-md font-semibold"
           onClick={onClose}
         >
@@ -179,6 +187,7 @@ export default function PickerFilterPanel({
 type ArtistFiltersProps = {
   artist: ValidArtist;
   filters: PickerFilters;
+  scope: PickerScope | null;
   onChange: (action: PickerFilterAction) => void;
 };
 
@@ -186,16 +195,28 @@ type ArtistFiltersProps = {
  * Member, season and class options for the chosen artist. Seasons and classes
  * come from the cached filter data.
  */
-function ArtistFilters({ artist, filters, onChange }: ArtistFiltersProps) {
+function ArtistFilters({
+  artist,
+  filters,
+  scope,
+  onChange,
+}: ArtistFiltersProps) {
   const { getArtist } = useArtists();
   const { seasons, classes } = useFilterData();
   const lower = artist.toLowerCase();
 
   return (
     <>
-      <Group title={m.objekt_attribute_member()}>
-        <Options>
-          {(getArtist(artist)?.artistMembers ?? []).map((member) => (
+      <ScopedGroup
+        title={m.objekt_attribute_member()}
+        options={within(
+          getArtist(artist)?.artistMembers ?? [],
+          scope?.member,
+          (member) => member.name,
+        )}
+      >
+        {(members) =>
+          members.map((member) => (
             <Option
               key={member.id}
               pressed={filters.member.includes(member.name)}
@@ -211,16 +232,20 @@ function ArtistFilters({ artist, filters, onChange }: ArtistFiltersProps) {
               />
               {member.name}
             </Option>
-          ))}
-        </Options>
-      </Group>
+          ))
+        }
+      </ScopedGroup>
 
-      <Group title={m.common_season()}>
-        <Options>
-          {(
-            seasons.find((s) => s.artist.id.toLowerCase() === lower)?.seasons ??
-            []
-          ).map((season) => (
+      <ScopedGroup
+        title={m.common_season()}
+        options={within(
+          seasons.find((s) => s.artist.id.toLowerCase() === lower)?.seasons ??
+            [],
+          scope?.season,
+        )}
+      >
+        {(scopedSeasons) =>
+          scopedSeasons.map((season) => (
             <Option
               key={season}
               pressed={filters.season.includes(season)}
@@ -231,31 +256,71 @@ function ArtistFilters({ artist, filters, onChange }: ArtistFiltersProps) {
             >
               {season}
             </Option>
-          ))}
-        </Options>
-      </Group>
+          ))
+        }
+      </ScopedGroup>
 
-      <Group title={m.common_class()}>
-        <Options>
-          {(
+      <ScopedGroup
+        title={m.common_class()}
+        options={within(
+          (
             classes.find((c) => c.artist.id.toLowerCase() === lower)?.classes ??
             []
-          )
-            .toSorted((a, b) => classSort(a, b, artist))
-            .map((className) => (
-              <Option
-                key={className}
-                pressed={filters.class.includes(className)}
-                onClick={() =>
-                  onChange({ type: "toggle", key: "class", value: className })
-                }
-              >
-                {className}
-              </Option>
-            ))}
-        </Options>
-      </Group>
+          ).toSorted((a, b) => classSort(a, b, artist)),
+          scope?.class,
+        )}
+      >
+        {(scopedClasses) =>
+          scopedClasses.map((className) => (
+            <Option
+              key={className}
+              pressed={filters.class.includes(className)}
+              onClick={() =>
+                onChange({ type: "toggle", key: "class", value: className })
+              }
+            >
+              {className}
+            </Option>
+          ))
+        }
+      </ScopedGroup>
     </>
+  );
+}
+
+/**
+ * A column's options inside a scope: every option when the scope leaves the
+ * column open, or the ones it allows when it lists several. Null when it
+ * fixes the column to one value or allows none of these options (another
+ * artist's members), which leaves nothing to pick.
+ */
+function within<T>(
+  options: readonly T[],
+  allowed: readonly string[] = [],
+  value: (option: T) => string = String,
+) {
+  if (allowed.length === 0) return options;
+  const left = options.filter((option) => allowed.includes(value(option)));
+  return allowed.length === 1 || left.length === 0 ? null : left;
+}
+
+/**
+ * A group of options, left out when the scope leaves nothing to pick.
+ */
+function ScopedGroup<T>({
+  title,
+  options,
+  children,
+}: {
+  title: string;
+  options: readonly T[] | null;
+  children: (options: readonly T[]) => ReactNode;
+}) {
+  if (options === null) return null;
+  return (
+    <Group title={title}>
+      <Options>{children(options)}</Options>
+    </Group>
   );
 }
 

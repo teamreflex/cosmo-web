@@ -15,7 +15,6 @@
     "./inventory": "./src/inventory.ts",
     "./lifecycle": "./src/lifecycle.ts",
     "./listing": "./src/listing.ts",
-    "./picker": "./src/picker.ts",
     "./range": "./src/range.ts",
     "./timers": "./src/timers.ts",
     "./transfers": "./src/transfers.ts"

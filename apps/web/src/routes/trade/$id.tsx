@@ -83,7 +83,7 @@ function SignedOut() {
         </EmptyHeader>
         <EmptyContent>
           <SignIn
-            trigger={<Button variant="cosmo">{m.auth_sign_in()}</Button>}
+            trigger={<Button>{m.auth_sign_in()}</Button>}
             callbackURL={href}
           />
         </EmptyContent>

@@ -349,7 +349,7 @@ export const auth = betterAuth({
 });
 
 // should not be used in client code
-type ServerUser = (typeof auth.$Infer.Session)["user"];
+export type ServerUser = (typeof auth.$Infer.Session)["user"];
 
 const ALGORITHM = "aes-256-gcm";
 const AUTH_TAG_LENGTH = 16;

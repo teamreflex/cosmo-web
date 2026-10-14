@@ -13,7 +13,8 @@ import { and, desc, eq, exists, inArray, isNotNull } from "drizzle-orm";
 import { QueryBuilder } from "drizzle-orm/pg-core";
 import { Objekt } from "../../universal/objekt-conversion";
 import {
-  type ListingCandidate,
+  type CandidateRow,
+  type ListingPick,
   listingStateSchema,
   type StoredWant,
   toTradeWant,
@@ -117,54 +118,77 @@ export async function readListingState(listing: {
 }
 
 /**
- * The candidate's side of an open listing: their usable copies, the
- * allocation over them and, per want row, how many usable copies of the
- * collections it fits they own before the cap. A payment row (not
- * claimable until sales) takes nothing and leaves `blocked` to say so.
+ * The candidate's side of an open listing, per want row: how many usable
+ * copies of the collections it fits they own before the cap, how many it
+ * is short, and the copies the allocation over all their usable copies
+ * picks for it. The allocation runs here, since one copy can fit two rows,
+ * but only its picks leave, so the answer stays as small as the listing
+ * whatever the viewer holds. A payment row (not claimable until sales)
+ * takes nothing and leaves `blocked` to say so.
  */
-export async function readCandidateSide(address: string, wants: StoredWant[]) {
+export async function readCandidateSide(
+  address: string,
+  wants: StoredWant[],
+): Promise<CandidateRow[]> {
   const tradeWants = wants.map(toTradeWant);
   const claimable = tradeWants.flatMap((want) => (want ? [want] : []));
-  const rows = await readCandidates(address, claimable, totalWanted(claimable));
-
-  const inventory = rows.map((row): ListingCandidate => ({
-    tokenId: row.tokenId,
-    serial: row.serial,
-    attributes: row.attributes,
-  }));
-  // one row per collection: its values and every usable copy, before the cap
-  const owned = new Map(
-    rows.map((row) => [
-      row.collectionId,
-      { ...row.attributes, owned: row.owned },
-    ]),
+  const inventory = await readCandidates(
+    address,
+    claimable,
+    totalWanted(claimable),
   );
-  const collectionRows = owned.size
-    ? await indexer.query.collections.findMany({
-        where: { id: { in: [...owned.keys()] } },
-      })
-    : [];
+
+  const copies = new Map(inventory.map((copy) => [copy.tokenId, copy]));
   const allocations = allocate(
     claimable,
-    inventory.map((candidate) => ({
-      tokenId: candidate.tokenId,
-      ...candidate.attributes,
-    })),
+    inventory.map((copy) => ({ tokenId: copy.tokenId, ...copy.attributes })),
+  );
+  // one entry per collection: its values and every usable copy, before the cap
+  const owned = new Map(
+    inventory.map((copy) => [
+      copy.collectionId,
+      { ...copy.attributes, owned: copy.owned },
+    ]),
+  );
+  const picked = new Set(
+    allocations.flatMap((allocation) =>
+      allocation.tokenIds.flatMap(
+        (tokenId) => copies.get(tokenId)?.collectionId ?? [],
+      ),
+    ),
+  );
+  const collections = new Map(
+    (picked.size
+      ? await indexer.query.collections.findMany({
+          where: { id: { in: [...picked] } },
+        })
+      : []
+    ).map((row) => [row.id, Objekt.fromIndexer(row)]),
   );
 
-  const picks = allocations.values();
-  return {
-    collections: collectionRows.map((row) => Objekt.fromIndexer(row)),
-    inventory,
-    allocation: tradeWants.map(
-      (want) => (want && picks.next().value) ?? { tokenIds: [], missing: 0 },
-    ),
-    rowOwned: tradeWants.map((want) =>
-      want === null
-        ? 0
-        : [...owned.values()]
-            .filter((collection) => fitsWant(want, collection))
-            .reduce((total, collection) => total + collection.owned, 0),
-    ),
-  };
+  const rows = allocations.values();
+  return tradeWants.map((want): CandidateRow => {
+    const allocation = want && rows.next().value;
+    if (!want || !allocation) return { owned: 0, missing: 0, picks: [] };
+    return {
+      owned: [...owned.values()]
+        .filter((collection) => fitsWant(want, collection))
+        .reduce((total, collection) => total + collection.owned, 0),
+      missing: allocation.missing,
+      picks: allocation.tokenIds.flatMap((tokenId): ListingPick[] => {
+        const copy = copies.get(tokenId);
+        const collection = copy && collections.get(copy.collectionId);
+        return copy && collection
+          ? [
+              {
+                tokenId,
+                serial: copy.serial,
+                attributes: copy.attributes,
+                collection,
+              },
+            ]
+          : [];
+      }),
+    };
+  });
 }

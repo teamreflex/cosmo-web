@@ -32,6 +32,11 @@ export function itemName(
     : `${itemLabel(item)} ${formatSerial(item.serial)}`;
 }
 
+// a transfer on the chain's block explorer
+export function txUrl(hash: string) {
+  return `https://abscan.org/tx/${hash}`;
+}
+
 // "Oct 13, 1:14 PM" in the app locale, for every time on the trade page
 export const tradeTimeFormat = {
   month: "short",

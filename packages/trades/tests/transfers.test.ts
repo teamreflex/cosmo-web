@@ -4,6 +4,7 @@ import {
   type ExpectedItem,
   decideTransfer,
   foldTransfers,
+  itemStatus,
 } from "../src/transfers";
 
 const KAIRU = "0x000000000000000000000000000000000000aaaa";
@@ -440,5 +441,45 @@ describe("foldTransfers", () => {
     expect(
       foldTransfers([move(999, KAIRU, OUTSIDER)], expected(owed(201))),
     ).toEqual({ trades: new Map(), breaks: new Map() });
+  });
+});
+
+describe("itemStatus", () => {
+  const pinned = { fromAddress: KAIRU, toAddress: TRADER_B };
+  const live = { live: true, ...pinned };
+  const unsent = { sender: "from", transferredAt: null } as const;
+  const held = (owner: string, transferable = true) => ({
+    owner,
+    transferable,
+  });
+
+  test("a recorded transfer is sent, live or not", () => {
+    for (const trade of [live, { live: false, ...pinned }]) {
+      expect(
+        itemStatus({ sender: "from", transferredAt: AT }, undefined, trade),
+      ).toBe("sent");
+    }
+  });
+
+  test("an ended trade's unsent item is not sent", () => {
+    expect(itemStatus(unsent, held(TRADER_B), { live: false, ...pinned })).toBe(
+      "not_sent",
+    );
+  });
+
+  test("a live item follows its token's owner", () => {
+    expect(itemStatus(unsent, held(TRADER_B), live)).toBe("arrived");
+    expect(itemStatus(unsent, held(OUTSIDER), live)).toBe("moved");
+    expect(itemStatus(unsent, held(KAIRU), live)).toBe("waiting");
+    expect(itemStatus(unsent, held(KAIRU, false), live)).toBe(
+      "untransferable",
+    );
+    expect(itemStatus(unsent, undefined, live)).toBe("waiting");
+  });
+
+  test("the receiver is the sender's other side", () => {
+    expect(
+      itemStatus({ sender: "to", transferredAt: null }, held(KAIRU), live),
+    ).toBe("arrived");
   });
 });

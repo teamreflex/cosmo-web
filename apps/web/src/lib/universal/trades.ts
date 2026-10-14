@@ -5,6 +5,7 @@ import type {
   TradeSide,
 } from "@apollo/database/web/types";
 import type { TradeState } from "@apollo/trades/lifecycle";
+import type { TradeItemStatus } from "@apollo/trades/transfers";
 import type { PublicUser } from "./auth";
 import type { Objekt } from "./objekt-conversion";
 import type { ListingFeedItem } from "./trade-listings";
@@ -18,20 +19,6 @@ export type TradeParty = {
   user: PublicUser | null;
   cosmoUsername: string | null;
 };
-
-/**
- * Where an item stands. `sent` is recorded by the drain, and `arrived` is
- * in the receiver's account before the drain has seen it. `moved` left the
- * sender for someone else, and `untransferable` can't move. An ended
- * trade's unsent items are `not_sent`.
- */
-export type TradeItemStatus =
-  | "sent"
-  | "arrived"
-  | "waiting"
-  | "moved"
-  | "untransferable"
-  | "not_sent";
 
 /**
  * An item as the trade page shows it, with its serial and collection from
@@ -51,18 +38,24 @@ export type TradeItemView = {
 };
 
 /**
+ * The dispute that froze a disputed trade: when it was opened, and by a
+ * party with their reason, or by staff banning one.
+ */
+export type TradeDispute = {
+  at: Date;
+  event: Extract<TradeEvent, { type: "disputed" }>;
+};
+
+/**
  * A trade as its page shows it. `deadlinePassed` says the deadline has
- * passed the drain's watermark, so the parties can no longer act, and
- * `pausedAt` is when the dispute that froze a disputed trade was opened.
+ * passed the drain's watermark, so the parties can no longer act.
  */
 export type TradeView = {
   id: string;
   state: TradeState;
-  createdAt: Date;
-  acceptedAt: Date;
   deadlineAt: Date;
   endedAt: Date | null;
-  pausedAt: Date | null;
+  dispute: TradeDispute | null;
   deadlinePassed: boolean;
   listingId: string | null;
   parties: Record<TradeSide, TradeParty>;
@@ -92,17 +85,15 @@ export type MyTradeSide = {
 };
 
 /**
- * A trade as My trades lists it, from the viewer's side. `pause` is the
- * dispute that froze a disputed trade: when, and by a party or by staff
- * banning one. `needsYou` says the trade is accepted and the viewer still
- * owes something.
+ * A trade as My trades lists it, from the viewer's side. `needsYou` says
+ * the trade is accepted, its deadline hasn't passed the drain's watermark,
+ * and the viewer still owes something.
  */
 export type MyTradeRow = {
   id: string;
-  side: TradeSide;
   state: TradeState;
   deadlineAt: Date;
-  pause: { at: Date; by: TradeSide | "staff" } | null;
+  dispute: TradeDispute | null;
   endedAt: Date | null;
   listingId: string | null;
   counterparty: TradeParty;

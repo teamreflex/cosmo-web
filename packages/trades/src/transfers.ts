@@ -1,3 +1,7 @@
+import type { TradeSide } from "@apollo/database/web/types";
+import { addr } from "@apollo/util";
+import { otherSide } from "./lifecycle";
+
 /**
  * One outbox row as the drain reads it, with the token id parsed to the
  * integer the trade tables store.
@@ -156,4 +160,40 @@ export function foldTransfers(
   }
 
   return { trades, breaks };
+}
+
+/**
+ * Where an item stands. `sent` is recorded by the drain, and `arrived` is
+ * in the receiver's account before the drain has seen it. `moved` left the
+ * sender for someone else, and `untransferable` can't move. An ended
+ * trade's unsent items are `not_sent`.
+ */
+export type TradeItemStatus =
+  | "sent"
+  | "arrived"
+  | "waiting"
+  | "moved"
+  | "untransferable"
+  | "not_sent";
+
+/**
+ * An item's status: recorded first, then, while the trade is live, its
+ * token's indexed owner against the trade's pinned addresses. A token the
+ * indexer doesn't know is still waiting.
+ */
+export function itemStatus(
+  item: { sender: TradeSide; transferredAt: Date | null },
+  token: { owner: string; transferable: boolean } | undefined,
+  trade: { live: boolean; fromAddress: string; toAddress: string | null },
+): TradeItemStatus {
+  if (item.transferredAt !== null) return "sent";
+  if (!trade.live) return "not_sent";
+  if (token === undefined) return "waiting";
+  const pinned = {
+    from: addr(trade.fromAddress),
+    to: trade.toAddress === null ? null : addr(trade.toAddress),
+  };
+  if (token.owner === pinned[otherSide(item.sender)]) return "arrived";
+  if (token.owner !== pinned.from && token.owner !== pinned.to) return "moved";
+  return token.transferable ? "waiting" : "untransferable";
 }

@@ -1,13 +1,26 @@
+import type { PickerScope } from "@/components/objekt-picker/picker-filters";
 import { m } from "@/i18n/messages";
 import { getLocale } from "@/i18n/runtime";
-import { artistName, type Objekt } from "@/lib/universal/objekt-conversion";
+import { artistName, Objekt } from "@/lib/universal/objekt-conversion";
 import type {
+  ClosedListingState,
   ListingFeedWant,
+  ListingPick,
   TokenRefusalReason,
   TradeListing,
 } from "@/lib/universal/trade-listings";
-import { type ValidArtist, validArtists } from "@apollo/cosmo/types/common";
-import { rangeSummaryColumns, totalWanted } from "@apollo/trades/composer";
+import {
+  type ValidArtist,
+  validArtists,
+  validOnlineTypes,
+} from "@apollo/cosmo/types/common";
+import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
+import { heldTokenRefusal, type TokenFlags } from "@apollo/trades/holdings";
+import {
+  rangeSummaryColumns,
+  toUiArtist,
+  totalWanted,
+} from "@apollo/trades/composer";
 import {
   type ObjektAttributes,
   type RangeFilter,
@@ -23,9 +36,12 @@ export function posterName(
   listing: Pick<TradeListing, "poster" | "cosmoUsername">,
 ) {
   const name = listing.cosmoUsername ?? listing.poster?.username;
-  if (name === undefined) return m.common_deleted_user();
-  // a COSMO account without a nickname goes by its address
-  return `@${isAddress(name) ? shortAddress(name) : name}`;
+  return name === undefined ? m.common_deleted_user() : `@${accountName(name)}`;
+}
+
+// a COSMO account without a nickname goes by its address
+export function accountName(name: string) {
+  return isAddress(name) ? shortAddress(name) : name;
 }
 
 /**
@@ -340,4 +356,90 @@ export function refusalLabel(reason: TokenRefusalReason) {
     case "live":
       return m.listing_composer_pill_live();
   }
+}
+
+/**
+ * Why an objekt in the viewer's own collection can't be offered or given,
+ * as its card names it: the reason posting and accepting would give.
+ */
+export function offerBlock(objekt: CosmoObjekt, flags: TokenFlags) {
+  const reason = heldTokenRefusal(
+    { tokenId: Number(objekt.tokenId), transferable: objekt.transferable },
+    flags,
+  );
+  return reason === null ? null : refusalLabel(reason);
+}
+
+/**
+ * Whether a listing ended the way its poster means one to, traded or
+ * withdrawn, rather than broken, removed or abandoned.
+ */
+export function endedNormally(
+  state: ClosedListingState,
+): state is Extract<ClosedListingState, { status: "filled" | "withdrawn" }> {
+  return state.status === "filled" || state.status === "withdrawn";
+}
+
+/**
+ * The collections a want row's picker is held to: an exact row's one
+ * collection, which its artist, member, season and number pin, or a
+ * range's columns.
+ */
+export function wantScope(
+  want: Exclude<ListingFeedWant, { kind: "payment" }>,
+): PickerScope {
+  if (want.kind === "range") {
+    const { filter } = want;
+    return {
+      artist: filter.artist.flatMap((artist) => toUiArtist(artist) ?? []),
+      member: filter.member,
+      season: filter.season,
+      class: filter.class,
+      onOffline: filter.on_offline,
+      collectionNo: [],
+    };
+  }
+  const { objekt } = want;
+  const artist = toUiArtist(objekt.artist);
+  return {
+    artist: artist === undefined ? [] : [artist],
+    member: [objekt.member],
+    season: [objekt.season],
+    class: [objekt.class],
+    onOffline: validOnlineTypes.filter((type) => type === objekt.onOffline),
+    collectionNo: [collectionNumber(want.collection, objekt)],
+  };
+}
+
+/**
+ * An objekt from the viewer's collection as a pick for a want row, with the
+ * indexer values the picks are checked against.
+ */
+export function listingPick(objekt: CosmoObjekt): ListingPick {
+  const { collection, objekt: token } = Objekt.fromLegacy(objekt);
+  return {
+    tokenId: token.tokenId,
+    serial: token.serial,
+    attributes: {
+      slug: collection.slug,
+      artist: collection.artist,
+      member: collection.member,
+      season: collection.season,
+      class: collection.class,
+      onOffline: collection.onOffline,
+    },
+    collection,
+  };
+}
+
+// a pick as a card shows it, with its token id
+export function pickShown(
+  pick: ListingPick,
+): ComposerShown & { tokenId: number } {
+  return {
+    tokenId: pick.tokenId,
+    name: objektName(pick.collection, pick.attributes),
+    serial: pick.serial,
+    collection: pick.collection,
+  };
 }

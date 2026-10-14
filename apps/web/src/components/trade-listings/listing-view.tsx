@@ -5,29 +5,41 @@ import {
   useListingPicks,
 } from "@/hooks/use-listing-picks";
 import { m } from "@/i18n/messages";
+import { endedNormally } from "@/lib/client/trade-listings";
 import { env } from "@/lib/env/client";
 import { tradeListingQuery } from "@/lib/queries/trade-listings";
 import {
   type ClosedListingState,
   type ListingClaim,
+  type ListingPick,
   type ListingViewer,
   type TradeListing,
   toTradeWant,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
 import { CLAIM_WINDOW } from "@apollo/trades/timers";
-import { IconArrowRight, IconPencil, IconX } from "@tabler/icons-react";
+import {
+  IconAlertTriangle,
+  IconArrowRight,
+  IconCircleCheck,
+  IconCircleDashed,
+  IconInfoCircle,
+  IconLink,
+  IconPencil,
+  IconX,
+} from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link, useLocation } from "@tanstack/react-router";
 import { type ReactNode, useId, useState } from "react";
 import { toast } from "sonner";
 import LinkCosmo from "../auth/link-cosmo";
 import SignIn from "../auth/sign-in";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Button, buttonVariants } from "../ui/button";
 import AllocationPicker, {
   AllocationPickerSkeleton,
 } from "./allocation-picker";
-import ClosedBanner from "./closed-banner";
+import { ClosedAlert, ClosedStatus } from "./closed-banner";
 import ConfirmTradeDialog, {
   type ConfirmSnapshot,
 } from "./confirm-trade-dialog";
@@ -35,16 +47,11 @@ import ListingComposer from "./listing-composer";
 import ListingLayout from "./listing-layout";
 import {
   BlockedAlert,
-  ClaimerStatus,
+  ClaimerAlert,
   type Notice,
   NoticeStrip,
-  OnlookerStatus,
-  PickProgress,
-  PosterClaimedStatus,
-  Status,
-  StatusDetail,
+  PosterClaimedAlert,
   StatusSkeleton,
-  ViewerErrorStatus,
 } from "./listing-status";
 import { WantList } from "./want-label";
 import WithdrawListingDialog from "./withdraw-listing-dialog";
@@ -69,7 +76,7 @@ export type ListingRole =
   | { role: "unlinked" }
   | { role: "poster"; claim: ListingClaim | null }
   | { role: "claimer"; deadlineAt: Date | null; tradeId: string }
-  | { role: "onlooker"; deadlineAt: Date | null }
+  | { role: "onlooker" }
   | { role: "picker"; viewer: Candidate }
   | { role: "refused"; reason: "cap" | "blocked"; activeClaims: number };
 
@@ -87,10 +94,10 @@ type Dialog = "edit" | "withdraw" | "confirm";
 
 /**
  * The listing page, the same for every viewer: the header with its status
- * and actions, what the listing offers beside what it asks for, and the
- * phone action bar. The role only decides what fills them: Edit and
- * Withdraw for the poster, Accept for anyone else signed in, and "You get"
- * beside the picker for a viewer picking what to give.
+ * and actions, alerts under it, what the listing offers beside what it asks
+ * for, and the phone action bar. The role only decides what fills them:
+ * Edit and Withdraw for the poster, Accept for anyone else signed in, and
+ * "You get" beside the picker for a viewer picking what to give.
  */
 export default function ListingView({
   listing,
@@ -144,9 +151,9 @@ export default function ListingView({
         reasonId={describedBy}
         detailId={detailId}
         onDialog={(name) => void openDialog(name)}
-        onAccept={(assignment) => {
+        onAccept={(picked) => {
           setSnapshot({
-            assignment,
+            picked,
             deadlineAt: new Date(Date.now() + CLAIM_WINDOW),
           });
           setDialog("confirm");
@@ -158,20 +165,26 @@ export default function ListingView({
     <ListingLayout
       listing={listing}
       notice={
-        role.role === "poster" && role.claim === null && listing.blocked ? (
-          <BlockedAlert listing={listing} />
-        ) : notice === null ? undefined : (
-          <NoticeStrip notice={notice} />
-        )
+        <>
+          <RoleAlert
+            listing={listing}
+            role={role}
+            picks={picks}
+            reasonId={reasonId}
+            detailId={detailId}
+          />
+          {role.role === "poster" && role.claim === null && listing.blocked && (
+            <BlockedAlert listing={listing} />
+          )}
+          {notice !== null && <NoticeStrip notice={notice} />}
+        </>
       }
       status={
-        <RoleStatus
-          listing={listing}
-          role={role}
-          picks={picks}
-          reasonId={reasonId}
-          detailId={detailId}
-        />
+        role.role === "loading" ? (
+          <StatusSkeleton />
+        ) : role.role === "closed" && endedNormally(role.state) ? (
+          <ClosedStatus listing={listing} state={role.state} />
+        ) : undefined
       }
       actions={actions()}
       bar={
@@ -188,7 +201,12 @@ export default function ListingView({
         role.role === "loading" ? (
           <AllocationPickerSkeleton rows={rows} />
         ) : role.role === "picker" && picks !== null ? (
-          <AllocationPicker viewer={role.viewer} rows={rows} picks={picks} />
+          <AllocationPicker
+            viewer={role.viewer}
+            address={address}
+            rows={rows}
+            picks={picks}
+          />
         ) : (
           <WantList
             wants={listing.wants}
@@ -259,80 +277,108 @@ function offeredHeading(role: ListingRole) {
   }
 }
 
-type StatusProps = {
+type AlertProps = {
   listing: TradeListing;
   role: ListingRole;
   picks: Picks | null;
-  /** what the header's actions are described by */
+  /** what the header's Accept is described by */
   reasonId: string;
+  /** what describes a refused Accept further */
   detailId: string;
 };
 
 /**
- * Where the listing stands for this viewer, in the header on every width.
+ * The alert under the header saying where the listing stands for this
+ * viewer. A listing that ended normally says so in the header instead, and
+ * a claimed one seen from outside its trade leaves it to the state badge.
+ * Phones leave the picks to the bottom bar.
  */
-function RoleStatus({ listing, role, picks, reasonId, detailId }: StatusProps) {
+function RoleAlert({ listing, role, picks, reasonId, detailId }: AlertProps) {
   switch (role.role) {
-    case "loading":
-      return <StatusSkeleton />;
     case "error":
-      return <ViewerErrorStatus />;
+      return (
+        <Alert variant="destructive">
+          <IconAlertTriangle />
+          <AlertTitle>{m.listing_detail_viewer_error()}</AlertTitle>
+        </Alert>
+      );
     case "closed":
-      return <ClosedBanner listing={listing} state={role.state} />;
+      return (
+        !endedNormally(role.state) && (
+          <ClosedAlert listing={listing} state={role.state} />
+        )
+      );
     case "signed_out":
       return (
-        <Status>
-          <p className="text-muted-foreground">
-            {m.listing_detail_signed_out()}
-          </p>
-        </Status>
+        <Alert role="status">
+          <IconInfoCircle />
+          <AlertTitle>{m.listing_detail_signed_out()}</AlertTitle>
+        </Alert>
       );
     case "unlinked":
       return (
-        <Status>
-          <p className="font-semibold">{m.listing_detail_unlinked_title()}</p>
-          <StatusDetail>
+        <Alert role="status">
+          <IconLink />
+          <AlertTitle>{m.listing_detail_unlinked_title()}</AlertTitle>
+          <AlertDescription>
             {m.listing_detail_unlinked_body({ appName: env.VITE_APP_NAME })}
-          </StatusDetail>
-        </Status>
+          </AlertDescription>
+        </Alert>
       );
     case "poster":
-      return role.claim === null ? null : (
-        <PosterClaimedStatus
-          claim={role.claim}
-          editReasonId={detailId}
-          withdrawReasonId={reasonId}
-        />
-      );
+      return role.claim !== null && <PosterClaimedAlert claim={role.claim} />;
     case "claimer":
-      return <ClaimerStatus listing={listing} deadlineAt={role.deadlineAt} />;
-    case "onlooker":
-      return <OnlookerStatus deadlineAt={role.deadlineAt} />;
+      return <ClaimerAlert listing={listing} deadlineAt={role.deadlineAt} />;
     case "refused":
       return (
-        <Status>
-          <p id={reasonId} className="font-semibold">
+        <Alert role="status" variant="warning">
+          <IconAlertTriangle />
+          <AlertTitle id={reasonId}>
             {role.reason === "cap"
               ? m.listing_detail_cap_title({ count: role.activeClaims })
               : m.trade_error_listing_unavailable()}
-          </p>
-          <StatusDetail id={detailId}>
-            {role.reason === "cap"
-              ? m.listing_detail_cap_body()
-              : m.listing_detail_blocked_body()}
-          </StatusDetail>
-          {role.reason === "cap" && <MyTradesLink />}
-        </Status>
+          </AlertTitle>
+          <AlertDescription>
+            <span id={detailId}>
+              {role.reason === "cap"
+                ? m.listing_detail_cap_body()
+                : m.listing_detail_blocked_body()}
+            </span>
+            {role.reason === "cap" && (
+              <>
+                {" "}
+                <MyTradesLink />
+              </>
+            )}
+          </AlertDescription>
+        </Alert>
       );
     case "picker":
       return (
         picks !== null && (
-          <Status className="max-md:hidden">
-            <PickProgress picks={picks} />
-            <StatusDetail id={reasonId}>{pickReason(picks)}</StatusDetail>
-          </Status>
+          <Alert
+            role="status"
+            variant={
+              picks.valid ? "success" : picks.short > 0 ? "warning" : "default"
+            }
+            className="max-md:hidden"
+          >
+            {picks.valid ? (
+              <IconCircleCheck />
+            ) : picks.short > 0 ? (
+              <IconAlertTriangle />
+            ) : (
+              <IconCircleDashed />
+            )}
+            <AlertTitle>{pickCount(picks)}</AlertTitle>
+            <AlertDescription id={reasonId}>
+              {pickReason(picks)}
+            </AlertDescription>
+          </Alert>
         )
       );
+    default:
+      return null;
   }
 }
 
@@ -341,18 +387,19 @@ type ActionsProps = {
   address: string | undefined;
   picks: Picks | null;
   className: string | undefined;
-  /** what describes Accept or Withdraw while they're disabled */
+  /** what describes Accept while it's disabled */
   reasonId: string;
-  /** what describes a refused Accept further, or a disabled Edit */
+  /** what describes a refused Accept further */
   detailId: string;
   onDialog: (dialog: Dialog) => void;
-  onAccept: (assignment: number[][]) => void;
+  onAccept: (picked: ListingPick[][]) => void;
 };
 
 /**
  * What the viewer can do: sign in, link a COSMO account, edit or withdraw
- * their own listing, or accept someone else's. A disabled button is
- * described by why, and a disabled Accept stays in the tab order.
+ * their own open listing or go to the trade on it once claimed, or accept
+ * someone else's. A disabled Accept is described by why and stays in the
+ * tab order.
  */
 function RoleActions({
   role,
@@ -370,11 +417,7 @@ function RoleActions({
     case "signed_out":
       return (
         <SignIn
-          trigger={
-            <Button variant="cosmo" className={className}>
-              {m.auth_sign_in()}
-            </Button>
-          }
+          trigger={<Button className={className}>{m.auth_sign_in()}</Button>}
           callbackURL={href}
         />
       );
@@ -393,20 +436,14 @@ function RoleActions({
           }
         />
       );
-    case "poster": {
-      // a claimed listing can't change while its trade runs
-      const claimed = role.claim !== null;
-      return (
+    // a claimed listing can't change while its trade runs
+    case "poster":
+      return role.claim === null ? (
         <>
-          {role.claim !== null && (
-            <TradeLink tradeId={role.claim.tradeId} className={className} />
-          )}
-          {(claimed || address !== undefined) && (
+          {address !== undefined && (
             <Button
               variant="outline"
               className={className}
-              disabled={claimed}
-              aria-describedby={claimed ? detailId : undefined}
               onClick={() => onDialog("edit")}
             >
               <IconPencil />
@@ -416,26 +453,23 @@ function RoleActions({
           <Button
             variant="destructive"
             className={className}
-            disabled={claimed}
-            aria-describedby={claimed ? reasonId : undefined}
             onClick={() => onDialog("withdraw")}
           >
             <IconX />
             {m.listing_detail_withdraw()}
           </Button>
         </>
+      ) : (
+        <TradeLink tradeId={role.claim.tradeId} className={className} />
       );
-    }
     case "claimer":
       return <TradeLink tradeId={role.tradeId} className={className} />;
     case "picker":
     case "refused":
       return (
         <Button
-          variant="cosmo"
-          size="lg"
           className={cn(
-            "px-4 data-disabled:pointer-events-none data-disabled:opacity-50",
+            "data-disabled:pointer-events-none data-disabled:opacity-50",
             className,
           )}
           disabled={picks === null || !picks.valid}
@@ -469,7 +503,7 @@ function TradeLink({
     <Link
       to="/trade/$id"
       params={{ id: tradeId }}
-      className={cn(buttonVariants({ variant: "cosmo" }), className)}
+      className={cn(buttonVariants(), className)}
     >
       {m.listing_detail_go_to_trade()}
       <IconArrowRight />
@@ -516,11 +550,41 @@ function MyTradesLink() {
   return (
     <Link
       to="/market/trades"
-      className="text-xs font-medium text-cosmo underline-offset-4 hover:underline dark:text-cosmo-text"
+      className="font-medium text-cosmo dark:text-cosmo-text"
     >
       {m.my_trades_title()}
     </Link>
   );
+}
+
+/**
+ * How far the picks get: how many objekts the viewer is short of filling
+ * the listing, or how many of its objekts they've picked, ticked once the
+ * picks fit.
+ */
+function PickProgress({ picks }: { picks: Picks }) {
+  return (
+    <span
+      className={cn(
+        "flex items-center gap-1.5 text-sm font-medium tabular-nums",
+        picks.valid
+          ? "text-teal-700 dark:text-teal-500"
+          : "text-amber-700 dark:text-amber-400",
+      )}
+    >
+      {picks.valid && <IconCircleCheck className="size-3.5" />}
+      {pickCount(picks)}
+    </span>
+  );
+}
+
+function pickCount(picks: Picks) {
+  return picks.short > 0
+    ? m.listing_detail_short({ count: picks.short })
+    : m.listing_detail_picked({
+        picked: picks.pickedCount,
+        count: picks.total,
+      });
 }
 
 /**

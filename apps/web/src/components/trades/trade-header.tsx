@@ -1,7 +1,12 @@
 import { m } from "@/i18n/messages";
 import { partyName, tradeTimeFormat } from "@/lib/client/trades";
 import type { TradeParty, TradeView } from "@/lib/universal/trades";
-import type { TradeSide } from "@apollo/database/web/types";
+import { cn } from "@/lib/utils";
+import type {
+  EndedTradeStatus,
+  TradeSide,
+} from "@apollo/database/web/types";
+import { otherSide } from "@apollo/trades/lifecycle";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconPlayerPause } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
@@ -47,7 +52,7 @@ export default function TradeHeader({ trade, side }: Props) {
                 markup={{
                   user: () => (
                     <PartyName
-                      party={trade.parties[side === "from" ? "to" : "from"]}
+                      party={trade.parties[otherSide(side)]}
                     />
                   ),
                 }}
@@ -68,33 +73,58 @@ export default function TradeHeader({ trade, side }: Props) {
  * have a COSMO username.
  */
 function PartyName({ party }: { party: TradeParty }) {
-  const name = partyName(party);
-
   return (
     <span className="inline-flex min-w-0 items-center gap-2">
-      {party.user === null ? (
-        <UserAvatar deleted className="size-6" />
-      ) : (
-        <UserAvatar
-          username={party.cosmoUsername ?? party.user.username}
-          className="size-6 text-xs **:p-1"
-        />
-      )}
-      {party.cosmoUsername === null ? (
-        <span className="truncate font-semibold" title={name}>
-          {name}
-        </span>
-      ) : (
-        <Link
-          to="/@{$username}"
-          params={{ username: party.cosmoUsername }}
-          title={name}
-          className="truncate font-semibold underline-offset-4 hover:underline"
-        >
-          {name}
-        </Link>
-      )}
+      <PartyAvatar party={party} className="size-6 text-xs **:p-1" />
+      <PartyLink party={party} className="font-semibold" />
     </span>
+  );
+}
+
+// a party's avatar, or the deleted user's "?"
+export function PartyAvatar({
+  party,
+  className,
+}: {
+  party: TradeParty;
+  className: string;
+}) {
+  return party.user === null ? (
+    <UserAvatar deleted className={className} />
+  ) : (
+    <UserAvatar
+      username={party.cosmoUsername ?? party.user.username}
+      className={className}
+    />
+  );
+}
+
+/**
+ * A party's name, linking to their profile when they have a COSMO
+ * username.
+ */
+export function PartyLink({
+  party,
+  className,
+}: {
+  party: TradeParty;
+  className?: string;
+}) {
+  const name = partyName(party);
+
+  return party.cosmoUsername === null ? (
+    <span className={cn("truncate", className)} title={name}>
+      {name}
+    </span>
+  ) : (
+    <Link
+      to="/@{$username}"
+      params={{ username: party.cosmoUsername }}
+      title={name}
+      className={cn("truncate underline-offset-4 hover:underline", className)}
+    >
+      {name}
+    </Link>
   );
 }
 
@@ -149,7 +179,7 @@ export function TradeStatus({ trade }: { trade: TradeView }) {
               time: () => (
                 <Countdown
                   deadline={trade.deadlineAt}
-                  pausedAt={trade.pausedAt ?? trade.deadlineAt}
+                  pausedAt={trade.dispute?.at ?? trade.deadlineAt}
                   className="font-semibold text-foreground"
                 />
               ),
@@ -172,7 +202,7 @@ export function TradeStatus({ trade }: { trade: TradeView }) {
           )}
         </>
       );
-    // phase 10's offers aren't shown on this page yet
+    // phase 12's offers aren't shown on this page yet
     default:
       return null;
   }
@@ -181,7 +211,7 @@ export function TradeStatus({ trade }: { trade: TradeView }) {
 export function EndedBadge({
   status,
 }: {
-  status: "completed" | "cancelled" | "timed_out";
+  status: EndedTradeStatus;
 }) {
   switch (status) {
     case "completed":

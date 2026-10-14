@@ -1,12 +1,12 @@
 import { m } from "@/i18n/messages";
 import { formatSerial } from "@/lib/client/objekt-util";
+import { accountName } from "@/lib/client/trade-listings";
 import { env } from "@/lib/env/client";
-import { tradesKey } from "@/lib/queries/trades";
+import { tradeQuery, tradesKey } from "@/lib/queries/trades";
 import type {
   NotificationListItem,
   NotificationToken,
 } from "@/lib/universal/notifications";
-import { isAddress, shortAddress } from "@apollo/util";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconTagOff } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
@@ -17,9 +17,10 @@ import { bold, rowClassName } from "./row-utils";
 type TradeItem = Extract<NotificationListItem, { kind: "trade" }>;
 
 /**
- * A trade notification links to its trade, and opening it refreshes every
- * trade query, so the needs-you counts follow too. A closed listing's links
- * to the listing.
+ * A trade notification links to its trade, and opening it refreshes that
+ * trade and marks every other trade query stale, so My trades and its
+ * needs-you counts refetch when next shown. A closed listing's links to the
+ * listing.
  */
 export default function TradeRow({
   notification,
@@ -32,12 +33,7 @@ export default function TradeRow({
   const queryClient = useQueryClient();
   // trade pages name a deleted or nicknameless counterparty the same way
   const name = counterparty?.username ?? null;
-  const username =
-    name === null
-      ? m.common_deleted_user()
-      : isAddress(name)
-        ? shortAddress(name)
-        : name;
+  const username = name === null ? m.common_deleted_user() : accountName(name);
   const shown = token ?? (objekts.length === 1 ? objekts[0] : undefined);
   const content = (
     <RowBody
@@ -81,7 +77,13 @@ export default function TradeRow({
       onClick={() => {
         onOpen();
         if (!closed) {
-          void queryClient.invalidateQueries({ queryKey: tradesKey });
+          void queryClient.invalidateQueries({
+            queryKey: tradeQuery(offer.id).queryKey,
+          });
+          void queryClient.invalidateQueries({
+            queryKey: tradesKey,
+            refetchType: "none",
+          });
         }
       }}
       data-unread={notification.unread}

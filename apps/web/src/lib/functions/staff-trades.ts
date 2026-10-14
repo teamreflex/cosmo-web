@@ -67,7 +67,6 @@ export const $staffCancelTrade = createServerFn({ method: "POST" })
         });
         return { action: "trade:cancel" };
       },
-      { readTokens: true },
     );
   });
 

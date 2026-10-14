@@ -42,9 +42,9 @@ type StaffTradeAction =
  * dispute report the action was taken from (none for an undisputed trade),
  * or it is refused as changed. Every open or escalated report on the trade
  * is resolved with it, and the trade is published once that commits.
- * Returns the audit action, which says what the action did. An action
- * that may release a listing asks for `tokens`, the trade's indexer states,
- * which are read before the transaction so it never waits on the indexer.
+ * Returns the audit action, which says what the action did. A cancel may
+ * release a listing, so it reads the trade's indexer states (`tokens`)
+ * first, before the transaction so it never waits on the indexer.
  */
 export async function actOnTrade(
   staffId: string,
@@ -60,7 +60,6 @@ export async function actOnTrade(
     next: TradeState,
     tokens: ReadonlyMap<number, TokenState>,
   ) => Promise<StaffTradeAction>,
-  { readTokens = false }: { readTokens?: boolean } = {},
 ) {
   const parties = await db.query.tradeOffers.findFirst({
     where: { id: tradeId, kind: "trade" },
@@ -71,8 +70,9 @@ export async function actOnTrade(
   if (parties.fromUserId === staffId || parties.toUserId === staffId) {
     refuseTrade("trade_own");
   }
-  const tokens = readTokens
-    ? await readIndexerTokens(
+  const tokens =
+    event.type === "staff_cancel"
+      ? await readIndexerTokens(
         parties.items.flatMap((item) => item.tokenId ?? []),
       )
     : new Map<number, TokenState>();

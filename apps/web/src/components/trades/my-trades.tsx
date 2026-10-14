@@ -13,7 +13,6 @@ import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { InfiniteQueryNext } from "../infinite-query-pending";
 import Countdown from "../misc/countdown";
-import UserAvatar from "../profile/user-avatar";
 import {
   Half,
   OfferingCaption,
@@ -32,7 +31,7 @@ import {
 } from "../ui/empty";
 import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
 import { Timestamp } from "../ui/timestamp";
-import { EndedBadge } from "./trade-header";
+import { EndedBadge, PartyAvatar } from "./trade-header";
 
 type Props = {
   tab: MyTradesTab;
@@ -250,17 +249,10 @@ function TradeRow({ row }: { row: MyTradeRow }) {
             <Status row={row} />
           </span>
           <span className="flex min-w-0 items-center gap-1.5 lg:col-start-6 lg:row-start-1">
-            {row.counterparty.user === null ? (
-              <UserAvatar deleted className="size-4.5 md:size-6" />
-            ) : (
-              <UserAvatar
-                username={
-                  row.counterparty.cosmoUsername ??
-                  row.counterparty.user.username
-                }
-                className="size-4.5 text-xxs **:p-0.5 md:size-6"
-              />
-            )}
+            <PartyAvatar
+              party={row.counterparty}
+              className="size-4.5 text-xxs **:p-0.5 md:size-6"
+            />
             <span
               className="truncate font-medium"
               title={partyName(row.counterparty)}
@@ -308,7 +300,7 @@ function Status({ row }: { row: MyTradeRow }) {
       );
     // a ban's pause reads as neutral, as on the trade page
     case "disputed":
-      return row.pause?.by === "staff" ? (
+      return row.dispute?.event.by === "staff" ? (
         <Badge className={tones.muted}>{m.my_trades_next_paused()}</Badge>
       ) : (
         <Badge className={tones.bad}>{m.my_trades_next_dispute()}</Badge>
@@ -317,7 +309,7 @@ function Status({ row }: { row: MyTradeRow }) {
     case "cancelled":
     case "timed_out":
       return <EndedBadge status={row.state.status} />;
-    // phase 10's offers aren't listed yet
+    // phase 12's offers aren't listed yet
     default:
       return null;
   }
@@ -345,7 +337,7 @@ function Time({ row }: { row: MyTradeRow }) {
             time: () => (
               <Countdown
                 deadline={row.deadlineAt}
-                pausedAt={row.pause?.at ?? row.deadlineAt}
+                pausedAt={row.dispute?.at ?? row.deadlineAt}
               />
             ),
           }}

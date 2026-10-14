@@ -4,11 +4,6 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import * as z from "zod";
 import { m } from "../src/i18n/messages";
-import {
-  claimFailure,
-  formatTokenRefusal,
-  formatTradeError,
-} from "../src/lib/client/errors/trades";
 import { ExpectedError } from "../src/lib/universal/errors/expected";
 import { expectedErrorSerializationAdapter } from "../src/lib/universal/errors/serialization";
 import {
@@ -19,8 +14,8 @@ import {
 const locales = ["en", "fr", "ja", "ko"] as const;
 
 /**
- * formatError's chain includes the accounts formatter, which reads the
- * validated client env, so the test supplies placeholders before loading it.
+ * The formatters read the validated client env for the app name, so the
+ * test supplies placeholders before loading them.
  */
 const clientEnv = {
   VITE_APP_NAME: "Apollo",
@@ -35,6 +30,8 @@ for (const [key, value] of Object.entries(clientEnv)) {
   process.env[key] ??= value;
 }
 const { formatError } = await import("../src/lib/client/errors");
+const { claimFailure, formatTokenRefusal, formatTradeError } =
+  await import("../src/lib/client/errors/trades");
 
 const catalogs = Object.fromEntries(
   locales.map((locale) => [
@@ -148,7 +145,7 @@ describe("formatTokenRefusal", () => {
   test.each([
     ["not_owned", "HaSeul 310Z #00131 isn't in your COSMO account."],
     ["untransferable", "HaSeul 310Z #00131 can't be transferred."],
-    ["locked", "HaSeul 310Z #00131 is locked in COSMO."],
+    ["locked", "HaSeul 310Z #00131 is locked on Apollo."],
     ["live", "HaSeul 310Z #00131 is already in a trade."],
   ] as const)("%s names the objekt and padded serial", (reason, expected) => {
     expect<string>(
@@ -159,7 +156,7 @@ describe("formatTokenRefusal", () => {
   test("keeps five-digit and longer serials whole", () => {
     expect<string>(
       formatTokenRefusal("locked", { objekt: "JinSoul 101Z", serial: 123456 }),
-    ).toBe("JinSoul 101Z #123456 is locked in COSMO.");
+    ).toBe("JinSoul 101Z #123456 is locked on Apollo.");
   });
 
   test.each(
@@ -168,7 +165,7 @@ describe("formatTokenRefusal", () => {
     ),
   )("%s interpolates fully in %s", (reason, locale) => {
     const message = tokenRefusalMessages[reason](
-      { objekt: "HaSeul 310Z", serial: "00131" },
+      { objekt: "HaSeul 310Z", serial: "00131", appName: "Apollo" },
       { locale },
     );
     expect(message).toContain("HaSeul 310Z #00131");
@@ -179,7 +176,7 @@ describe("formatTokenRefusal", () => {
     for (const locale of locales) {
       const messages = tokenRefusalReasons.map((reason) =>
         tokenRefusalMessages[reason](
-          { objekt: "HaSeul 310Z", serial: "00131" },
+          { objekt: "HaSeul 310Z", serial: "00131", appName: "Apollo" },
           { locale },
         ),
       );

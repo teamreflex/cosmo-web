@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import type { TradeSide } from "@apollo/database/web/types";
 import {
   needsYou,
+  otherSide,
   partyAction,
   type PartyActionRefusal,
 } from "@apollo/trades/lifecycle";
@@ -30,7 +31,6 @@ import { type ReactNode, useId, useState } from "react";
 import { toast } from "sonner";
 import { useCopyToClipboard } from "usehooks-ts";
 import { bold } from "../notifications/row-utils";
-import UserAvatar from "../profile/user-avatar";
 import ListingBottomBar from "../trade-listings/listing-bottom-bar";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Button, buttonVariants } from "../ui/button";
@@ -44,7 +44,7 @@ import {
 import { Timestamp } from "../ui/timestamp";
 import CancelTradeDialog from "./cancel-trade-dialog";
 import OpenDisputeDialog from "./open-dispute-dialog";
-import TradeHeader from "./trade-header";
+import TradeHeader, { PartyAvatar, PartyLink } from "./trade-header";
 import TradeTimeline from "./trade-timeline";
 import TransferRows from "./transfer-rows";
 
@@ -75,20 +75,7 @@ export default function TradeView({ trade, viewer }: Props) {
 function PartyView({ trade, side }: { trade: Trade; side: TradeSide }) {
   const startedId = useId();
   const [dialog, setDialog] = useState<"cancel" | "dispute" | null>(null);
-  const counterparty = trade.parties[side === "from" ? "to" : "from"];
-  // past the deadline a transfer can't count, so nothing more is asked
-  const owing = needsYou(trade.state, side) && !trade.deadlinePassed;
-  /**
-   * Copy only helps while something is still to send: an arrived objekt
-   * waits for the drain, and one that moved or can't move can't be sent.
-   */
-  const copyName =
-    owing &&
-    trade.items.some(
-      (item) => item.sender === side && item.status === "waiting",
-    )
-      ? counterparty.cosmoUsername
-      : null;
+  const counterparty = trade.parties[otherSide(side)];
   /**
    * The same judgement the server makes, so a refused action refetches
    * into a page that no longer offers it.
@@ -97,6 +84,16 @@ function PartyView({ trade, side }: { trade: Trade; side: TradeSide }) {
     deadlinePassed: trade.deadlinePassed,
     arrived: trade.items.some((item) => item.status === "arrived"),
   };
+  const owing = needsYou(trade.state, side, facts);
+  /**
+   * Only waiting objekts are left to send: an arrived one waits for the
+   * drain, and one that moved or can't move can't be sent. Copy only helps
+   * while one is.
+   */
+  const waiting = trade.items.filter(
+    (item) => item.sender === side && item.status === "waiting",
+  ).length;
+  const copyName = owing && waiting > 0 ? counterparty.cosmoUsername : null;
   const cancel = partyAction(trade.state, { type: "cancel", by: side }, facts);
   const offered = {
     cancel: cancel.ok,
@@ -117,7 +114,9 @@ function PartyView({ trade, side }: { trade: Trade; side: TradeSide }) {
           <ActionStrip
             trade={trade}
             side={side}
+            counterparty={counterparty}
             owing={owing}
+            waiting={waiting}
             refusal={cancel.ok ? null : cancel.reason}
             startedId={startedId}
           >
@@ -270,7 +269,7 @@ function TradeLayout({
             {(
               (side === null
                 ? ["from", "to"]
-                : [side === "from" ? "to" : "from"]) satisfies TradeSide[]
+                : [otherSide(side)]) satisfies TradeSide[]
             ).map((party) => (
               <PartyCard
                 key={party}
@@ -295,28 +294,26 @@ function TradeLayout({
 function ActionStrip({
   trade,
   side,
+  counterparty,
   owing,
+  waiting,
   refusal,
   startedId,
   children,
 }: {
   trade: Trade;
   side: TradeSide;
+  counterparty: TradeParty;
   owing: boolean;
+  /** how many of the viewer's objekts are still to send */
+  waiting: number;
   /** why the viewer can't cancel, if they can't */
   refusal: PartyActionRefusal | null;
   startedId: string;
   /** the actions, or nothing when none apply */
   children: ReactNode;
 }) {
-  const counterparty = trade.parties[side === "from" ? "to" : "from"];
   const name = partyName(counterparty);
-  /**
-   * Only waiting objekts are left to send: an arrived one waits for the
-   * drain, and one that moved or can't move has its own alert.
-   */
-  const mine = trade.items.filter((item) => item.sender === side);
-  const waiting = mine.filter((item) => item.status === "waiting").length;
   const started =
     refusal === "already_started"
       ? (trade.items.find((item) => item.status === "sent") ??
@@ -347,7 +344,9 @@ function ActionStrip({
                 : m.trade_page_send({ count: waiting, name })}
             </p>
           ) : (
-            mine.some((item) => item.status === "arrived") && (
+            trade.items.some(
+              (item) => item.sender === side && item.status === "arrived",
+            ) && (
               <p>{m.trade_page_send_arrived({ appName: env.VITE_APP_NAME })}</p>
             )
           ))}
@@ -463,13 +462,7 @@ function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
   if (status === "cancelled" || status === "timed_out") return null;
 
   const completed = status === "completed";
-  const dispute = trade.events.findLast(
-    ({ event }) => event.type === "disputed",
-  )?.event;
-  const paused =
-    status === "disputed" &&
-    dispute?.type === "disputed" &&
-    dispute.by === "staff";
+  const paused = trade.dispute?.event.by === "staff";
   const seen = trade.items.filter((item) => item.status === "sent").length;
   const poster = partyName(trade.parties.from);
   const claimer = partyName(trade.parties.to);
@@ -569,9 +562,6 @@ function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
   );
 }
 
-const warningAlert =
-  "border-amber-500/40 *:[svg]:text-amber-700 dark:*:[svg]:text-amber-500";
-
 /**
  * Where the trade stands when it isn't simply running: how it ended, the
  * dispute that froze it, or an objekt that can no longer reach its
@@ -589,9 +579,9 @@ function StatePanel({ trade, side }: { trade: Trade; side: TradeSide | null }) {
         }
         const objekt = itemName(item);
         const yours = item.sender === side;
-        const receiver = item.sender === "from" ? "to" : "from";
+        const receiver = otherSide(item.sender);
         return (
-          <Alert key={item.id} className={warningAlert}>
+          <Alert key={item.id} variant="warning">
             <IconAlertTriangle />
             <AlertTitle>
               <ParaglideMessage
@@ -724,17 +714,11 @@ function DisputedAlert({
   side: TradeSide | null;
 }) {
   const appName = env.VITE_APP_NAME;
-  const dispute = trade.events.findLast(
-    ({ event }) => event.type === "disputed",
-  );
-  if (dispute === undefined || dispute.event.type !== "disputed") {
-    return null;
-  }
+  const { dispute } = trade;
+  if (dispute === null) return null;
   const { event } = dispute;
   const paused = event.by === "staff";
-  const time = () => (
-    <Timestamp date={dispute.createdAt} format={tradeTimeFormat} />
-  );
+  const time = () => <Timestamp date={dispute.at} format={tradeTimeFormat} />;
   return (
     <Alert
       variant={paused ? "default" : "destructive"}
@@ -806,7 +790,7 @@ function TimedOutAlert({
       (item) => item.sender === sender && item.status !== "sent",
     ).length;
   return (
-    <Alert className={warningAlert}>
+    <Alert variant="warning">
       <IconHourglassEmpty />
       <AlertTitle>
         {abandoned.length > 1
@@ -873,36 +857,14 @@ function StaffNote({ note }: { note: string }) {
  * the listing.
  */
 function PartyCard({ party, side }: { party: TradeParty; side: TradeSide }) {
-  const name = partyName(party);
-
   return (
     <Item variant="outline" className="bg-card">
       <ItemMedia>
-        {party.user === null ? (
-          <UserAvatar deleted className="size-9" />
-        ) : (
-          <UserAvatar
-            username={party.cosmoUsername ?? party.user.username}
-            className="size-9 text-sm **:p-1.5"
-          />
-        )}
+        <PartyAvatar party={party} className="size-9 text-sm **:p-1.5" />
       </ItemMedia>
       <ItemContent className="min-w-0">
         <ItemTitle className="max-w-full">
-          {party.cosmoUsername === null ? (
-            <span className="truncate" title={name}>
-              {name}
-            </span>
-          ) : (
-            <Link
-              to="/@{$username}"
-              params={{ username: party.cosmoUsername }}
-              title={name}
-              className="truncate underline-offset-4 hover:underline"
-            >
-              {name}
-            </Link>
-          )}
+          <PartyLink party={party} />
         </ItemTitle>
         <ItemDescription>
           {side === "from"

@@ -1,15 +1,14 @@
-import { useInvalidateListing } from "@/hooks/use-invalidate-listing";
+import { useInvalidateTrade } from "@/hooks/use-invalidate-trade";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { reportReasonLabel } from "@/lib/client/reports";
 import { $openDispute } from "@/lib/functions/trades";
-import { tradesKey } from "@/lib/queries/trades";
 import { openDisputeInputSchema } from "@/lib/universal/schema/trades";
 import { disputeReasons } from "@apollo/database/web/types";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconLoader2 } from "@tabler/icons-react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { useId } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -59,8 +58,7 @@ export default function OpenDisputeDialog({
   const reasonId = useId();
   const noteId = useId();
   const noteDescriptionId = useId();
-  const queryClient = useQueryClient();
-  const invalidateListing = useInvalidateListing(listingId ?? undefined);
+  const invalidateTrade = useInvalidateTrade(listingId);
 
   const form = useForm({
     resolver: standardSchemaResolver(openDisputeInputSchema),
@@ -74,11 +72,7 @@ export default function OpenDisputeDialog({
       handleOpenChange(false);
     },
     onError: (error) => toast.error(formatError(error)),
-    onSettled: () =>
-      Promise.all([
-        queryClient.invalidateQueries({ queryKey: tradesKey }),
-        listingId !== null && invalidateListing(),
-      ]),
+    onSettled: invalidateTrade,
   });
 
   function handleOpenChange(next: boolean) {

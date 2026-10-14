@@ -1,4 +1,5 @@
 import { m } from "@/i18n/messages";
+import { env } from "@/lib/env/client";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import {
   type ClaimTokenRefusal,
@@ -77,7 +78,10 @@ export function formatTokenRefusal(
     case "untransferable":
       return m.trade_token_refusal_untransferable(inputs);
     case "locked":
-      return m.trade_token_refusal_locked(inputs);
+      return m.trade_token_refusal_locked({
+        ...inputs,
+        appName: env.VITE_APP_NAME,
+      });
     case "live":
       return m.trade_token_refusal_live(inputs);
   }
