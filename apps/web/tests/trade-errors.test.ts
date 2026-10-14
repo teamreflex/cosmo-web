@@ -1,3 +1,4 @@
+import { tokenRefusalReasons } from "@apollo/trades/holdings";
 import { describe, expect, test } from "bun:test";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
@@ -14,7 +15,6 @@ import {
   isTradeErrorCode,
   tradeErrorCodes,
 } from "../src/lib/universal/errors/trades";
-import { tokenRefusalReasons } from "../src/lib/universal/trade-listings";
 
 const locales = ["en", "fr", "ja", "ko"] as const;
 

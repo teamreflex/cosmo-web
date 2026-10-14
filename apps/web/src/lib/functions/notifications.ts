@@ -117,16 +117,17 @@ export const $listNotifications = createServerFn({ method: "GET" })
         ...posterItems.flatMap((i) => (i.tokenId === null ? [] : [i.tokenId])),
       ]),
     ];
+    const collectionColumns = {
+      slug: collections.slug,
+      name: collections.collectionId,
+      frontImage: collections.frontImage,
+      frontImageVersion: collections.frontImageVersion,
+    };
     const [pageCollections, pageTokens] = await Promise.all([
       slugs.length === 0
         ? []
         : indexer
-            .select({
-              slug: collections.slug,
-              name: collections.collectionId,
-              frontImage: collections.frontImage,
-              frontImageVersion: collections.frontImageVersion,
-            })
+            .select(collectionColumns)
             .from(collections)
             .where(inArray(collections.slug, slugs)),
       tokenIds.length === 0
@@ -135,10 +136,7 @@ export const $listNotifications = createServerFn({ method: "GET" })
             .select({
               id: objekts.id,
               serial: objekts.serial,
-              slug: collections.slug,
-              name: collections.collectionId,
-              frontImage: collections.frontImage,
-              frontImageVersion: collections.frontImageVersion,
+              collection: collectionColumns,
             })
             .from(objekts)
             .innerJoin(collections, eq(objekts.collectionId, collections.id))
@@ -150,18 +148,11 @@ export const $listNotifications = createServerFn({ method: "GET" })
     const tokensById = new Map(pageTokens.map((t) => [Number(t.id), t]));
     const toToken = (tokenId: number): NotificationToken => {
       const token = tokensById.get(tokenId);
-      return token === undefined
-        ? { tokenId, serial: null, collection: null }
-        : {
-            tokenId,
-            serial: token.serial,
-            collection: {
-              slug: token.slug,
-              name: token.name,
-              frontImage: token.frontImage,
-              frontImageVersion: token.frontImageVersion,
-            },
-          };
+      return {
+        tokenId,
+        serial: token?.serial ?? null,
+        collection: token?.collection ?? null,
+      };
     };
 
     const last = rows.at(-1);

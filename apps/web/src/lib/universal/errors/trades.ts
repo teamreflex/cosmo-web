@@ -1,5 +1,5 @@
+import { tokenRefusalReasons } from "@apollo/trades/holdings";
 import * as z from "zod";
-import { tokenRefusalReasons } from "../trade-listings";
 
 export const tradeErrorCodes = [
   "listing_not_found",

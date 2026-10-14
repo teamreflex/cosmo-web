@@ -9,9 +9,7 @@ import { cn } from "@/lib/utils";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconTagOff } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import UserAvatar from "../profile/user-avatar";
-import { Timestamp } from "../ui/timestamp";
-import { Thumbnail, Thumbnails, TypeBadge, UnreadDot } from "./row-parts";
+import { RowAvatar, RowBody } from "./row-parts";
 import { bold, rowClassName } from "./row-utils";
 
 type TradeItem = Extract<NotificationListItem, { kind: "trade" }>;
@@ -32,47 +30,35 @@ export default function TradeRow({
   const username = counterparty?.username ?? m.notification_unknown_user();
   const shown = token ?? (objekts.length === 1 ? objekts[0] : undefined);
   const content = (
-    <>
-      {notification.type === "listing_closed" ? (
-        // a closed listing has no other party, so its icon stands in
-        <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-amber-400/15 text-amber-600 dark:text-amber-400">
-          <IconTagOff className="size-4" />
-        </div>
-      ) : (
-        <div className="relative h-fit shrink-0">
-          {counterparty === null ? (
-            <UserAvatar variant="square" deleted className="size-8 text-sm" />
-          ) : (
-            <UserAvatar
-              variant="square"
-              username={username}
-              className="size-8 text-sm"
-            />
-          )}
-          <TypeBadge type={notification.type} />
-        </div>
-      )}
-
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <p className="text-sm wrap-anywhere text-foreground/80">
-          {describeTrade(notification, username)}
-        </p>
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Timestamp date={notification.lastAt} relative="narrow" />
-        </div>
-        {objekts.length > 1 && (
-          <Thumbnails
-            collections={objekts.flatMap((o) =>
-              o.collection === null ? [] : [o.collection],
-            )}
-            itemCount={objekts.length}
+    <RowBody
+      leading={
+        notification.type === "listing_closed" ? (
+          // a closed listing has no other party, so its icon stands in
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-amber-400/15 text-amber-600 dark:text-amber-400">
+            <IconTagOff className="size-4" />
+          </div>
+        ) : (
+          <RowAvatar
+            username={counterparty === null ? null : username}
+            type={notification.type}
           />
-        )}
-      </div>
-
-      {shown?.collection && <Thumbnail collection={shown.collection} />}
-      {notification.unread && <UnreadDot />}
-    </>
+        )
+      }
+      sentence={describeTrade(notification, username)}
+      lastAt={notification.lastAt}
+      single={shown?.collection}
+      strip={
+        objekts.length > 1
+          ? {
+              collections: objekts.flatMap((o) =>
+                o.collection === null ? [] : [o.collection],
+              ),
+              itemCount: objekts.length,
+            }
+          : null
+      }
+      unread={notification.unread}
+    />
   );
 
   return offer.listingId === null ? (

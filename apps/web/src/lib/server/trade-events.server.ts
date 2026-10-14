@@ -1,5 +1,8 @@
 import { redis } from "@/lib/server/cache.server";
-import { TRADE_EVENTS_CHANNEL, type TradeUpdate } from "@apollo/trades/events";
+import {
+  TRADE_EVENTS_CHANNEL,
+  tradeUpdateMessage,
+} from "@apollo/trades/events";
 
 /**
  * Announce trades whose rows changed on the `trade-events` channel, once the
@@ -8,10 +11,7 @@ import { TRADE_EVENTS_CHANNEL, type TradeUpdate } from "@apollo/trades/events";
 export async function publishTradeUpdates(tradeIds: readonly string[]) {
   await Promise.all(
     tradeIds.map((tradeId) =>
-      redis.publish(
-        TRADE_EVENTS_CHANNEL,
-        JSON.stringify({ type: "updated", tradeId } satisfies TradeUpdate),
-      ),
+      redis.publish(TRADE_EVENTS_CHANNEL, tradeUpdateMessage(tradeId)),
     ),
   );
 }

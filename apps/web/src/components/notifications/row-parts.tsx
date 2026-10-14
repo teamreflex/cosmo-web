@@ -16,10 +16,78 @@ import {
   IconLock,
   IconX,
 } from "@tabler/icons-react";
+import type { ReactNode } from "react";
+import UserAvatar from "../profile/user-avatar";
+import { Timestamp } from "../ui/timestamp";
 
 const MAX_THUMBNAILS = 5;
 
-export function UnreadDot() {
+/**
+ * A notification row's contents after its leading avatar or icon: the
+ * sentence, when it last happened, and its objekts, either one trailing
+ * thumbnail or a strip of several under the sentence.
+ */
+export function RowBody({
+  leading,
+  sentence,
+  lastAt,
+  single,
+  strip,
+  unread,
+}: {
+  leading: ReactNode;
+  sentence: ReactNode;
+  lastAt: Date;
+  single: NotificationCollection | null | undefined;
+  strip: { collections: NotificationCollection[]; itemCount: number } | null;
+  unread: boolean;
+}) {
+  return (
+    <>
+      {leading}
+
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <p className="text-sm wrap-anywhere text-foreground/80">{sentence}</p>
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <Timestamp date={lastAt} relative="narrow" />
+        </div>
+        {strip !== null && <Thumbnails {...strip} />}
+      </div>
+
+      {single && <Thumbnail collection={single} />}
+      {unread && <UnreadDot />}
+    </>
+  );
+}
+
+/**
+ * The other user's avatar, or the deleted placeholder when their account is
+ * gone, badged with the notification's type.
+ */
+export function RowAvatar({
+  username,
+  type,
+}: {
+  username: string | null;
+  type: BadgedType;
+}) {
+  return (
+    <div className="relative h-fit shrink-0">
+      {username === null ? (
+        <UserAvatar variant="square" deleted className="size-8 text-sm" />
+      ) : (
+        <UserAvatar
+          variant="square"
+          username={username}
+          className="size-8 text-sm"
+        />
+      )}
+      <TypeBadge type={type} />
+    </div>
+  );
+}
+
+function UnreadDot() {
   return (
     <span className="absolute top-4.5 right-3.5 size-2 rounded-full bg-foreground" />
   );
@@ -77,7 +145,7 @@ const typeBadges = {
   },
 } satisfies Record<BadgedType, { icon: TablerIcon; className: string }>;
 
-export function TypeBadge({ type }: { type: BadgedType }) {
+function TypeBadge({ type }: { type: BadgedType }) {
   const { icon: Icon, className } = typeBadges[type];
   return (
     <span
@@ -91,7 +159,7 @@ export function TypeBadge({ type }: { type: BadgedType }) {
   );
 }
 
-export function Thumbnails({
+function Thumbnails({
   collections,
   itemCount,
 }: {
@@ -116,11 +184,7 @@ export function Thumbnails({
   );
 }
 
-export function Thumbnail({
-  collection,
-}: {
-  collection: NotificationCollection;
-}) {
+function Thumbnail({ collection }: { collection: NotificationCollection }) {
   return (
     <img
       src={getObjektFrontImageUrl(collection, "xs")}

@@ -71,7 +71,7 @@ Detailed conventions live in `docs/`. Read the relevant file **before** working 
 - `packages/lint`: Shared oxlint config
 - `packages/queue`: Redis-backed job queues (Effect `PersistedQueue`) the web app offers to and the schedules app takes from
 - `packages/serial-estimation`: Estimates the serials of objekts minted after COSMO's v1 metadata cutoff, used by the indexer and its backfill
-- `packages/trades`: Pure trade logic shared by the web and schedules apps: the listing and trade lifecycle, the holdings allocator, range filters, the drain's per-row transfer decision, timeouts and claim caps
+- `packages/trades`: Pure trade logic shared by the web and schedules apps: the listing and trade lifecycle, the holdings allocator, whether a token can be offered, range filters, the drain's per-row transfer decision, timeouts and claim caps
 - `packages/typescript`: Shared tsconfig.json file
 - `packages/util`: Shared utility functions
 - `packages/util-server`: Shared server-only utilities (Redis cache keys, crypto)

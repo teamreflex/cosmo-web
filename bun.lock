@@ -312,6 +312,7 @@
       "dependencies": {
         "@apollo/cosmo": "workspace:*",
         "@apollo/database": "workspace:*",
+        "@apollo/util": "workspace:*",
         "zod": "catalog:",
       },
       "devDependencies": {

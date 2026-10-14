@@ -13,7 +13,7 @@ import type {
 import type { ListingInput } from "@apollo/trades/listing";
 import type { ObjektAttributes } from "@apollo/trades/range";
 import { isEqual } from "@apollo/util";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { AuthErrorCode } from "../../universal/errors/auth";
 import { ExpectedError } from "../../universal/errors/expected";
 import type { TradeErrorCode } from "../../universal/errors/trades";
@@ -34,14 +34,6 @@ import {
  * session was checked against.
  */
 export type ListingActor = { userId: string; address: string };
-
-/**
- * What every listing write sets `updated_at` to: the database clock, but
- * always at least a millisecond past the old value, so it strictly increases
- * however the app servers' clocks drift. Accept compares it to the value the
- * claimer saw.
- */
-export const bumpUpdatedAt = sql`greatest(clock_timestamp(), ${tradeOffers.updatedAt} + interval '1 millisecond')`;
 
 export function posterRow(executor: DbOrTx, userId: string) {
   return executor

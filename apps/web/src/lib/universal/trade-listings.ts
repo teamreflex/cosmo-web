@@ -1,23 +1,12 @@
 import { validOnlineTypes } from "@apollo/cosmo/types/common";
 import type { TradeWant, WantAllocation } from "@apollo/trades/allocate";
+import type { TokenRefusalReason } from "@apollo/trades/holdings";
 import type { ObjektAttributes, RangeFilter } from "@apollo/trades/range";
 import * as z from "zod";
 import type { PublicUser } from "./auth";
 import type { Objekt } from "./objekt-conversion";
 
-/**
- * Why an offered token can't go into a listing, checked in this order: it
- * isn't in the poster's account (or the indexer doesn't know it), COSMO
- * won't transfer it, the poster locked it, or an accepted trade holds it.
- */
-export const tokenRefusalReasons = [
-  "not_owned",
-  "untransferable",
-  "locked",
-  "live",
-] as const;
-
-export type TokenRefusalReason = (typeof tokenRefusalReasons)[number];
+export type { TokenRefusalReason } from "@apollo/trades/holdings";
 
 /**
  * A posting or edit refused over one offered token, returned rather than

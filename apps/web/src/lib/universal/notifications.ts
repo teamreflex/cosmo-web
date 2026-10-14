@@ -20,7 +20,7 @@ export type NotificationCollection = {
 };
 
 // `username` is null when the user has no COSMO link
-export type NotificationUser = { userId: string; username: string | null };
+type NotificationUser = { userId: string; username: string | null };
 
 /**
  * A token a trade notification names. `serial` and `collection` are null

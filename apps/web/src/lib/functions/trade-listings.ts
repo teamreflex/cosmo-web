@@ -26,7 +26,6 @@ import {
   tokenRefusals,
 } from "@/lib/server/trades/holdings.server";
 import {
-  bumpUpdatedAt,
   checkTerms,
   insertTerms,
   listingArrays,
@@ -57,6 +56,7 @@ import {
   tradeOfferItems,
   tradeOffers,
 } from "@apollo/database/web/schema";
+import { bumpUpdatedAt } from "@apollo/database/web/sql";
 import { claimCap } from "@apollo/trades/caps";
 import { listingTransition } from "@apollo/trades/lifecycle";
 import {

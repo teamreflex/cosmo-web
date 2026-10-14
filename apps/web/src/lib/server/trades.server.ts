@@ -3,10 +3,20 @@ import type {
   LiveTradeSummary,
 } from "@/lib/universal/account-deletion";
 import { tradeOffers } from "@apollo/database/web/schema";
+import { bumpUpdatedAt } from "@apollo/database/web/sql";
 import { liveTradeStatuses } from "@apollo/database/web/types";
 import { and, asc, eq, or, sql } from "drizzle-orm";
 import type { DbOrTx, WebTx } from "./db";
-import { bumpUpdatedAt } from "./trades/listings.server";
+
+/**
+ * The trade or offer has the user as either party.
+ */
+export function tradeParty(userId: string) {
+  return or(
+    eq(tradeOffers.fromUserId, userId),
+    eq(tradeOffers.toUserId, userId),
+  );
+}
 
 /**
  * The user's accepted and disputed trades, which keep them from deleting

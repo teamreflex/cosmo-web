@@ -1,6 +1,7 @@
 import { collections, objekts } from "@apollo/database/indexer/schema";
 import { lockedObjekts, tradeOfferItems } from "@apollo/database/web/schema";
 import type { TradeWant } from "@apollo/trades/allocate";
+import { type TokenFlags, tokenRefusal } from "@apollo/trades/holdings";
 import { orderInventory } from "@apollo/trades/inventory";
 import type { ListingInput } from "@apollo/trades/listing";
 import type { ObjektAttributes, RangeFilter } from "@apollo/trades/range";
@@ -8,10 +9,7 @@ import { addr } from "@apollo/util";
 import { and, eq, inArray, lte, notInArray, or, sql } from "drizzle-orm";
 import { ExpectedError } from "../../universal/errors/expected";
 import type { TradeErrorCode } from "../../universal/errors/trades";
-import type {
-  TokenRefusal,
-  TokenRefusalReason,
-} from "../../universal/trade-listings";
+import type { TokenRefusal } from "../../universal/trade-listings";
 import { db, type DbOrTx } from "../db";
 import { indexer } from "../db/indexer";
 import {
@@ -36,15 +34,6 @@ export type TokenState =
       owner: string;
       transferable: boolean;
     };
-
-/**
- * Which of a set of tokens the address has locked, and which any accepted
- * or disputed trade holds.
- */
-export type TokenFlags = {
-  locked: ReadonlySet<number>;
-  live: ReadonlySet<number>;
-};
 
 export type TokenHoldings = TokenFlags & {
   states: ReadonlyMap<number, TokenState>;
@@ -135,25 +124,6 @@ export async function readWebTokenFlags(
     locked: new Set(locked.map((row) => row.tokenId)),
     live: new Set(live.flatMap((row) => row.tokenId ?? [])),
   };
-}
-
-/**
- * Why the address can't offer the token, checked in a fixed order, or null
- * when it can. Ownership comes first, so a refusal never reveals anything
- * about a token the address doesn't hold.
- */
-function tokenRefusal(
-  state: TokenState,
-  address: string,
-  flags: TokenFlags,
-): TokenRefusalReason | null {
-  if (state.kind === "missing" || state.owner !== addr(address)) {
-    return "not_owned";
-  }
-  if (!state.transferable) return "untransferable";
-  if (flags.locked.has(state.tokenId)) return "locked";
-  if (flags.live.has(state.tokenId)) return "live";
-  return null;
 }
 
 /**

@@ -5,9 +5,7 @@ import type {
 } from "@/lib/universal/notifications";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { Link, linkOptions } from "@tanstack/react-router";
-import UserAvatar from "../profile/user-avatar";
-import { Timestamp } from "../ui/timestamp";
-import { Thumbnail, Thumbnails, TypeBadge, UnreadDot } from "./row-parts";
+import { RowAvatar, RowBody } from "./row-parts";
 import { bold, rowClassName } from "./row-utils";
 
 type ListMatchItem = Extract<NotificationListItem, { kind: "list_match" }>;
@@ -43,32 +41,21 @@ export default function ListMatchRow({
       data-unread={notification.unread}
       className={rowClassName}
     >
-      <div className="relative h-fit shrink-0">
-        <UserAvatar
-          variant="square"
-          username={username}
-          className="size-8 text-sm"
-        />
-        <TypeBadge type={notification.type} />
-      </div>
-
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <p className="text-sm wrap-anywhere text-foreground/80">
-          {describeListMatch(notification, username, single)}
-        </p>
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Timestamp date={notification.lastAt} relative="narrow" />
-        </div>
-        {single === undefined && (
-          <Thumbnails
-            collections={notification.collections}
-            itemCount={notification.itemCount}
-          />
-        )}
-      </div>
-
-      {single !== undefined && <Thumbnail collection={single} />}
-      {notification.unread && <UnreadDot />}
+      <RowBody
+        leading={<RowAvatar username={username} type={notification.type} />}
+        sentence={describeListMatch(notification, username, single)}
+        lastAt={notification.lastAt}
+        single={single}
+        strip={
+          single === undefined
+            ? {
+                collections: notification.collections,
+                itemCount: notification.itemCount,
+              }
+            : null
+        }
+        unread={notification.unread}
+      />
     </Link>
   );
 }

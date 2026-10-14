@@ -1,9 +1,9 @@
 import { disputeReasons } from "@apollo/database/web/types";
+import { pgText } from "@apollo/trades/range";
 import { EXTEND_HOURS } from "@apollo/trades/timers";
 import * as z from "zod";
 
-const tradeNoteSchema = z
-  .string()
+const tradeNoteSchema = pgText()
   .trim()
   .max(1000)
   .optional()

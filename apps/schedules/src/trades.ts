@@ -9,23 +9,32 @@ import {
   tradeOffers,
   user,
 } from "@apollo/database/web/schema";
+import { bumpUpdatedAt } from "@apollo/database/web/sql";
 import type {
-  NewNotification,
+  NewTradeNotification,
   TradeEvent as StoredTradeEvent,
   TradeNotificationType,
   TradeOffer,
   TradeOfferItem,
 } from "@apollo/database/web/types";
-import { TRADE_EVENTS_CHANNEL, type TradeUpdate } from "@apollo/trades/events";
+import {
+  TRADE_EVENTS_CHANNEL,
+  tradeUpdateMessage,
+} from "@apollo/trades/events";
+import {
+  canOfferAll,
+  type TokenFlags,
+  type TokenOwnership,
+} from "@apollo/trades/holdings";
 import {
   endedTradeColumns,
   type ListingEvent,
   listingEventAfter,
   listingTransition,
+  tradeListings,
   type TradeState,
   tradeState,
 } from "@apollo/trades/lifecycle";
-import { addr } from "@apollo/util";
 import { and, asc, eq, inArray, type SQL, sql } from "drizzle-orm";
 import type { EffectDrizzleQueryError } from "drizzle-orm/effect-core";
 import { Effect } from "effect";
@@ -35,7 +44,7 @@ import { Redis } from "effect/persistence";
  * The user row has an active ban: isBanActive in @apollo/auth/guard, which
  * this app doesn't depend on.
  */
-export const banActive = sql<boolean>`(${user.banned} and (${user.banExpires} is null or ${user.banExpires} > now()))`;
+const banActive = sql<boolean>`(${user.banned} and (${user.banExpires} is null or ${user.banExpires} > now()))`;
 
 /**
  * Locks every user a trade write may notify `FOR KEY SHARE`, in one
@@ -167,61 +176,117 @@ export const lockLiveTrades = Effect.fn("lockLiveTrades")(function* (
 });
 
 /**
- * Whether the poster could offer every token again: each is still theirs in
- * the indexer and transferable, not locked by them and in no live trade. The
- * same facts the web app's `firstRefusal` checks.
+ * Which of the tokens the address has locked, and which a live trade holds,
+ * as the web app's readWebTokenFlags reads them.
  */
-const posterHolds = Effect.fn("posterHolds")(function* (
+const readTokenFlags = Effect.fn("readTokenFlags")(function* (
   tx: WebTx,
-  fromAddress: string,
+  address: string,
   tokenIds: readonly number[],
 ) {
-  const indexer = yield* DatabaseIndexer;
-  const owned = yield* indexer
-    .select({ id: objekts.id })
-    .from(objekts)
+  const locked = yield* tx
+    .selectDistinct({ tokenId: lockedObjekts.tokenId })
+    .from(lockedObjekts)
     .where(
       and(
-        inArray(objekts.id, tokenIds.map(String)),
-        eq(objekts.owner, addr(fromAddress)),
-        eq(objekts.transferable, true),
+        eq(lockedObjekts.address, address),
+        eq(lockedObjekts.locked, true),
+        inArray(lockedObjekts.tokenId, [...tokenIds]),
       ),
     );
-  if (owned.length < tokenIds.length) return false;
-
-  const locked = yield* tx.$count(
-    lockedObjekts,
-    and(
-      eq(lockedObjekts.address, fromAddress),
-      eq(lockedObjekts.locked, true),
-      inArray(lockedObjekts.tokenId, [...tokenIds]),
-    ),
-  );
-  const live = yield* tx.$count(
-    tradeOfferItems,
-    and(
-      eq(tradeOfferItems.live, true),
-      inArray(tradeOfferItems.tokenId, [...tokenIds]),
-    ),
-  );
-  return locked === 0 && live === 0;
+  const live = yield* tx
+    .select({ tokenId: tradeOfferItems.tokenId })
+    .from(tradeOfferItems)
+    .where(
+      and(
+        eq(tradeOfferItems.live, true),
+        inArray(tradeOfferItems.tokenId, [...tokenIds]),
+      ),
+    );
+  return {
+    locked: new Set(locked.map((row) => row.tokenId)),
+    live: new Set(live.flatMap((row) => row.tokenId ?? [])),
+  } satisfies TokenFlags;
 });
 
 /**
- * Ends a locked trade in the state a transition returned: its row, its
- * items' reservations, and each listing it came from (listingEventAfter),
- * locked in id order before their guarded updates. Whether the poster holds
- * a released listing is read only for a release, once this trade no longer
- * reserves its tokens. `locked` is lockUsers' map, which says whether the
- * poster is banned. Returns the trade's timeline event and both parties'
- * notifications.
+ * Reads who holds each of the trades' listing tokens in the indexer, for
+ * endTrade to decide whether a released listing reopens. One read for the
+ * whole batch, since the web transaction waits on it.
+ */
+export const readListingTokens = Effect.fn("readListingTokens")(function* (
+  trades: readonly LiveTrade[],
+) {
+  const tokenIds = trades.flatMap((trade) =>
+    [...tradeListings(trade.items).values()].flat(),
+  );
+  if (tokenIds.length === 0) return new Map<number, TokenOwnership>();
+  const indexer = yield* DatabaseIndexer;
+  const rows = yield* indexer
+    .select({
+      id: objekts.id,
+      owner: objekts.owner,
+      transferable: objekts.transferable,
+    })
+    .from(objekts)
+    .where(inArray(objekts.id, tokenIds.map(String)));
+  return new Map(
+    rows.map((row): [number, TokenOwnership] => [
+      Number(row.id),
+      {
+        kind: "found",
+        tokenId: Number(row.id),
+        owner: row.owner,
+        transferable: row.transferable,
+      },
+    ]),
+  );
+});
+
+/**
+ * The timeline event a trade ending without a party's action posts, and the
+ * notification both parties get.
+ */
+type TradeEnding = { event: StoredTradeEvent; type: TradeNotificationType };
+
+function tradeEnding(next: TradeState): TradeEnding | undefined {
+  switch (next.status) {
+    case "completed":
+      return {
+        event: { type: "completed", by: null },
+        type: "trade_completed",
+      };
+    case "timed_out":
+      return {
+        event: { type: "timed_out", abandoned: next.abandonedBy },
+        type: "trade_timed_out",
+      };
+    default:
+      return undefined;
+  }
+}
+
+/**
+ * Ends a locked trade that completed or timed out: its row, its items'
+ * reservations, and each listing it came from (listingEventAfter), locked in
+ * id order before their guarded updates. A released listing reopens when the
+ * poster could offer every token again now that this trade no longer
+ * reserves them; `tokens` is readListingTokens' read, which a fill doesn't
+ * need. `locked` is lockUsers' map, which says whether the poster is banned.
+ * Returns the trade's timeline event and both parties' notifications.
  */
 export const endTrade = Effect.fn("endTrade")(function* (
   tx: WebTx,
   trade: LiveTrade,
   next: TradeState,
   locked: ReadonlyMap<string, boolean>,
+  tokens: ReadonlyMap<number, TokenOwnership>,
 ) {
+  const ending = tradeEnding(next);
+  if (ending === undefined) {
+    return yield* Effect.die(`trade ${trade.id} can't end as ${next.status}`);
+  }
+
   const [ended] = yield* tx
     .update(tradeOffers)
     .set({ ...endedTradeColumns(next), endedAt: sql`now()` })
@@ -246,30 +311,19 @@ export const endTrade = Effect.fn("endTrade")(function* (
       ),
     );
 
-  const listings = Map.groupBy(
-    trade.items.flatMap(({ listingId, tokenId }) =>
-      listingId === null || tokenId === null ? [] : [{ listingId, tokenId }],
-    ),
-    (item) => item.listingId,
-  );
+  const listings = tradeListings(trade.items);
   const outcome = listingEventAfter(next, {
     banned: trade.fromUserId !== null && locked.get(trade.fromUserId) === true,
   });
   if (outcome !== undefined && listings.size > 0) {
-    yield* updateListings(tx, trade.fromAddress, listings, outcome);
+    yield* updateListings(tx, trade.fromAddress, listings, outcome, tokens);
   }
 
-  const timedOut = next.status === "timed_out";
   return {
-    event: {
-      tradeId: trade.id,
-      event: timedOut
-        ? { type: "timed_out", abandoned: next.abandonedBy }
-        : { type: "completed", by: null },
-    } satisfies { tradeId: string; event: StoredTradeEvent },
+    event: { tradeId: trade.id, event: ending.event } satisfies TradeEventRow,
     notifications: [trade.fromUserId, trade.toUserId].map(
       (userId): TradeNotification => ({
-        type: timedOut ? "trade_timed_out" : "trade_completed",
+        type: ending.type,
         userId,
         offerId: trade.id,
         actorId: null,
@@ -281,14 +335,15 @@ export const endTrade = Effect.fn("endTrade")(function* (
 
 /**
  * Moves each listing an ended trade came from to its outcome, locking them in
- * id order first. A release reopens a listing whose poster still holds every
- * token, else breaks it.
+ * id order first. A release reopens a listing whose poster could offer every
+ * token again, else breaks it.
  */
 const updateListings = Effect.fn("updateListings")(function* (
   tx: WebTx,
   fromAddress: string,
-  listings: Map<string, { tokenId: number }[]>,
+  listings: ReadonlyMap<string, number[]>,
   outcome: ListingEvent | "release",
+  tokens: ReadonlyMap<number, TokenOwnership>,
 ) {
   yield* tx
     .select({ id: tradeOffers.id })
@@ -296,14 +351,11 @@ const updateListings = Effect.fn("updateListings")(function* (
     .where(inArray(tradeOffers.id, [...listings.keys()]))
     .orderBy(asc(tradeOffers.id))
     .for("no key update");
-  for (const [listingId, tokens] of listings) {
+  for (const [listingId, tokenIds] of listings) {
     let event = outcome;
     if (event === "release") {
-      event = (yield* posterHolds(
-        tx,
-        fromAddress,
-        tokens.map((token) => token.tokenId),
-      ))
+      const flags = yield* readTokenFlags(tx, fromAddress, tokenIds);
+      event = canOfferAll(tokenIds, tokens, fromAddress, flags)
         ? "reopen"
         : "break";
     }
@@ -311,7 +363,11 @@ const updateListings = Effect.fn("updateListings")(function* (
     const { from, to } = listingTransition(event);
     yield* tx
       .update(tradeOffers)
-      .set({ status: to, endedAt: event === "reopen" ? null : sql`now()` })
+      .set({
+        status: to,
+        endedAt: event === "reopen" ? null : sql`now()`,
+        updatedAt: bumpUpdatedAt,
+      })
       .where(
         and(
           eq(tradeOffers.id, listingId),
@@ -322,12 +378,15 @@ const updateListings = Effect.fn("updateListings")(function* (
   }
 });
 
+// a timeline event bound for a trade's message stream
+export type TradeEventRow = { tradeId: string; event: StoredTradeEvent };
+
 /**
  * Appends timeline events to a trade's message stream, in order.
  */
 export const insertTradeEvents = Effect.fn("insertTradeEvents")(function* (
   tx: WebTx,
-  events: readonly { tradeId: string; event: StoredTradeEvent }[],
+  events: readonly TradeEventRow[],
 ) {
   if (events.length === 0) return;
   yield* tx.insert(tradeMessages).values(
@@ -339,10 +398,9 @@ export const insertTradeEvents = Effect.fn("insertTradeEvents")(function* (
   );
 });
 
-export type TradeNotification = Omit<
-  Extract<NewNotification, { type: TradeNotificationType }>,
-  "userId"
-> & { userId: string | null };
+export type TradeNotification = NewTradeNotification & {
+  userId: string | null;
+};
 
 /**
  * Inserts trade and listing notifications inside the caller's transaction,
@@ -377,11 +435,7 @@ export const publishTradeUpdates = Effect.fn("publishTradeUpdates")(function* (
   yield* Effect.forEach(
     tradeIds,
     (tradeId) =>
-      redis.send(
-        "PUBLISH",
-        TRADE_EVENTS_CHANNEL,
-        JSON.stringify({ type: "updated", tradeId } satisfies TradeUpdate),
-      ),
+      redis.send("PUBLISH", TRADE_EVENTS_CHANNEL, tradeUpdateMessage(tradeId)),
     { concurrency: "unbounded", discard: true },
   );
 });

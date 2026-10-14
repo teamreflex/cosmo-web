@@ -131,26 +131,11 @@ export const $openDispute = createServerFn({ method: "POST" })
       );
       if (!result.ok) refuseTrade(partyRefusals[result.reason]);
 
-      const reportId = await disputeTrade(tx, trade, {
-        reporterId: userId,
-        reason: data.reason,
-        note: data.note,
-      });
-      await insertTradeEvent(tx, trade.id, {
-        type: "disputed",
-        by,
-        reportId,
-        reason: data.reason,
-      });
-      await notifyUsers(
+      await disputeTrade(
         tx,
+        trade,
         users.filter((row) => row.id !== userId),
-        {
-          type: "trade_disputed",
-          offerId: trade.id,
-          actorId: userId,
-          tokenId: null,
-        },
+        { by, reporterId: userId, reason: data.reason, note: data.note },
       );
     });
     await publishTradeUpdates([data.tradeId]);

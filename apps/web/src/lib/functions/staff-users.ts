@@ -57,12 +57,14 @@ export const $banUser = createServerFn({ method: "POST" })
 
     const { internalAdapter } = await auth.$context;
     await internalAdapter.deleteUserSessions(data.userId);
-    await publishUserEvent({
-      type: "banned",
-      userId: data.userId,
-      expiresAt: banExpires?.toISOString() ?? null,
-    });
-    await publishTradeUpdates(disputedIds);
+    await Promise.all([
+      publishUserEvent({
+        type: "banned",
+        userId: data.userId,
+        expiresAt: banExpires?.toISOString() ?? null,
+      }),
+      publishTradeUpdates(disputedIds),
+    ]);
   });
 
 /**

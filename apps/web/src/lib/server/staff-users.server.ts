@@ -1,13 +1,11 @@
 import { env } from "@/lib/env/server";
 import { db, type WebTx } from "@/lib/server/db";
 import { recordStaffAudit } from "@/lib/server/staff-audit.server";
-import { closeOpenOffers } from "@/lib/server/trades.server";
+import { closeOpenOffers, tradeParty } from "@/lib/server/trades.server";
 import {
   disputeTrade,
-  insertTradeEvent,
   lockParties,
   lockTrade,
-  notifyUsers,
 } from "@/lib/server/trades/trade.server";
 import type { AuthErrorCode } from "@/lib/universal/errors/auth";
 import { ExpectedError } from "@/lib/universal/errors/expected";
@@ -18,7 +16,7 @@ import { userChangeRefusal } from "@apollo/auth/guard";
 import type { UserChange, UserChangeRefusal } from "@apollo/auth/guard";
 import { tradeOffers, user } from "@apollo/database/web/schema";
 import { transition } from "@apollo/trades/lifecycle";
-import { and, asc, eq, or } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 
 export type NamedUser = {
   name: string;
@@ -147,10 +145,7 @@ export async function banAndSweep(
       and(
         eq(tradeOffers.kind, "trade"),
         eq(tradeOffers.status, "accepted"),
-        or(
-          eq(tradeOffers.fromUserId, userId),
-          eq(tradeOffers.toUserId, userId),
-        ),
+        tradeParty(userId),
       ),
     )
     .orderBy(asc(tradeOffers.id));
@@ -174,28 +169,19 @@ export async function banAndSweep(
       continue;
     }
 
-    const reportId = await disputeTrade(tx, trade, {
-      reporterId: staffId,
-      reason: "party_banned",
-      note: reason,
-    });
-    await insertTradeEvent(tx, trade.id, {
-      type: "disputed",
-      by: "staff",
-      reportId,
-    });
-    await notifyUsers(
+    const reportId = await disputeTrade(
       tx,
+      trade,
       users.filter(
         (row) =>
           row.id !== userId &&
           (row.id === trade.fromUserId || row.id === trade.toUserId),
       ),
       {
-        type: "trade_disputed",
-        offerId: trade.id,
-        actorId: null,
-        tokenId: null,
+        by: "staff",
+        reporterId: staffId,
+        reason: "party_banned",
+        note: reason,
       },
     );
     await recordStaffAudit(tx, {

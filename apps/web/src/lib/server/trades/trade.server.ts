@@ -8,32 +8,31 @@ import {
   tradeOffers,
   user,
 } from "@apollo/database/web/schema";
+import { bumpUpdatedAt } from "@apollo/database/web/sql";
 import type {
-  NewNotification,
-  StoredReportReason,
+  DisputeReason,
+  NewTradeNotification,
   TradeEvent as StoredTradeEvent,
-  TradeNotificationType,
   TradeSide,
 } from "@apollo/database/web/types";
+import { canOfferAll } from "@apollo/trades/holdings";
 import {
   endedTradeColumns,
   listingEventAfter,
   type PartyActionRefusal,
   listingTransition,
+  tradeListings,
   type TradeState,
   tradeState,
 } from "@apollo/trades/lifecycle";
 import { DRAIN_CURSOR_NAME, isTimedOut } from "@apollo/trades/timers";
 import { and, asc, eq, inArray, sql } from "drizzle-orm";
+import type { PgUpdateSetSource } from "drizzle-orm/pg-core";
 import { ExpectedError } from "../../universal/errors/expected";
 import type { TradeErrorCode } from "../../universal/errors/trades";
-import { db, type DbOrTx, type WebTx } from "../db";
-import {
-  firstRefusal,
-  readIndexerTokens,
-  readWebTokenFlags,
-} from "./holdings.server";
-import { bumpUpdatedAt, refusePoster } from "./listings.server";
+import { db, type WebTx } from "../db";
+import { readIndexerTokens, readWebTokenFlags } from "./holdings.server";
+import { refusePoster } from "./listings.server";
 
 export function refuseTrade(code: TradeErrorCode): never {
   throw new ExpectedError(code);
@@ -153,10 +152,12 @@ export async function lockPartyTrade(
  * a party can't cancel or dispute it and dodge the timers' abandoned mark.
  */
 export async function isDue(tx: WebTx, trade: LockedTrade) {
-  return (
-    trade.deadlineAt !== null &&
-    isTimedOut(trade.deadlineAt, await readWatermark(tx))
-  );
+  if (trade.deadlineAt === null) return false;
+  const [cursor] = await tx
+    .select({ chainTime: listDrainCursor.chainTime })
+    .from(listDrainCursor)
+    .where(eq(listDrainCursor.name, DRAIN_CURSOR_NAME));
+  return isTimedOut(trade.deadlineAt, cursor?.chainTime ?? null);
 }
 
 /**
@@ -173,15 +174,25 @@ export const partyRefusals = {
 } as const satisfies Record<PartyActionRefusal, TradeErrorCode>;
 
 /**
- * The drain's chain-time watermark, which deadlines are judged against, or
- * null before the drain has stamped one.
+ * Updates a locked trade's row, guarded on the status it was locked in. The
+ * lock means nothing else can have changed it, so a miss is a bug.
  */
-export async function readWatermark(executor: DbOrTx) {
-  const [cursor] = await executor
-    .select({ chainTime: listDrainCursor.chainTime })
-    .from(listDrainCursor)
-    .where(eq(listDrainCursor.name, DRAIN_CURSOR_NAME));
-  return cursor?.chainTime ?? null;
+export async function updateLockedTrade(
+  tx: WebTx,
+  trade: LockedTrade,
+  set: PgUpdateSetSource<typeof tradeOffers>,
+) {
+  const [updated] = await tx
+    .update(tradeOffers)
+    .set(set)
+    .where(
+      and(
+        eq(tradeOffers.id, trade.id),
+        eq(tradeOffers.status, trade.state.status),
+      ),
+    )
+    .returning({ id: tradeOffers.id });
+  if (!updated) throw new Error("Trade changed under its lock");
 }
 
 /**
@@ -198,18 +209,10 @@ export async function endTrade(
   next: TradeState,
   users: readonly LockedUser[],
 ) {
-  const [ended] = await tx
-    .update(tradeOffers)
-    .set({ ...endedTradeColumns(next), endedAt: sql`now()` })
-    .where(
-      and(
-        eq(tradeOffers.id, trade.id),
-        eq(tradeOffers.status, trade.state.status),
-      ),
-    )
-    .returning({ id: tradeOffers.id });
-  if (!ended) throw new Error("Trade changed under its lock");
-
+  await updateLockedTrade(tx, trade, {
+    ...endedTradeColumns(next),
+    endedAt: sql`now()`,
+  });
   await tx
     .update(tradeOfferItems)
     .set({ live: false })
@@ -224,12 +227,7 @@ export async function endTrade(
   const outcome = listingEventAfter(next, {
     banned: poster !== undefined && isBanActive(poster),
   });
-  const listings = Map.groupBy(
-    trade.items.flatMap(({ listingId, tokenId }) =>
-      listingId === null || tokenId === null ? [] : [{ listingId, tokenId }],
-    ),
-    (item) => item.listingId,
-  );
+  const listings = tradeListings(trade.items);
   if (outcome === undefined || listings.size === 0) return;
 
   await tx
@@ -238,18 +236,16 @@ export async function endTrade(
     .where(inArray(tradeOffers.id, [...listings.keys()]))
     .orderBy(asc(tradeOffers.id))
     .for("no key update");
-  for (const [listingId, tokens] of listings) {
+  for (const [listingId, tokenIds] of listings) {
     let event = outcome;
     if (event === "release") {
-      const tokenIds = tokens.map((token) => token.tokenId);
       const [states, flags] = await Promise.all([
         readIndexerTokens(tokenIds),
         readWebTokenFlags(tx, trade.fromAddress, tokenIds),
       ]);
-      event =
-        firstRefusal(tokenIds, { states, ...flags }, trade.fromAddress) === null
-          ? "reopen"
-          : "break";
+      event = canOfferAll(tokenIds, states, trade.fromAddress, flags)
+        ? "reopen"
+        : "break";
     }
 
     const { from, to } = listingTransition(event);
@@ -271,38 +267,60 @@ export async function endTrade(
 }
 
 /**
+ * A dispute a party opens, or one a ban files as staff.
+ */
+type Dispute = { reporterId: string; note: string | null } & (
+  | { by: TradeSide; reason: DisputeReason }
+  | { by: "staff"; reason: "party_banned" }
+);
+
+/**
  * Files a trade report on a locked accepted trade and freezes the trade
  * under it: it becomes disputed, and its deadline stops counting until
- * staff act. Returns the report's id for the timeline event.
+ * staff act. Posts the timeline event and notifies `recipients`, the
+ * parties who didn't open it. Returns the report's id.
  */
 export async function disputeTrade(
   tx: WebTx,
   trade: LockedTrade,
-  report: {
-    reporterId: string;
-    reason: StoredReportReason;
-    note: string | null;
-  },
+  recipients: readonly LockedUser[],
+  dispute: Dispute,
 ) {
-  const [inserted] = await tx
+  const [report] = await tx
     .insert(reports)
-    .values({ ...report, targetType: "trade", targetId: trade.id })
+    .values({
+      reporterId: dispute.reporterId,
+      reason: dispute.reason,
+      note: dispute.note,
+      targetType: "trade",
+      targetId: trade.id,
+    })
     .returning({ id: reports.id });
-  if (!inserted) throw new Error("Report insert returned no row");
+  if (!report) throw new Error("Report insert returned no row");
 
-  const [disputed] = await tx
-    .update(tradeOffers)
-    .set({ status: "disputed", disputeReportId: inserted.id })
-    .where(
-      and(
-        eq(tradeOffers.id, trade.id),
-        eq(tradeOffers.status, trade.state.status),
-      ),
-    )
-    .returning({ id: tradeOffers.id });
-  if (!disputed) throw new Error("Trade changed under its lock");
-
-  return inserted.id;
+  await updateLockedTrade(tx, trade, {
+    status: "disputed",
+    disputeReportId: report.id,
+  });
+  await insertTradeEvent(
+    tx,
+    trade.id,
+    dispute.by === "staff"
+      ? { type: "disputed", by: dispute.by, reportId: report.id }
+      : {
+          type: "disputed",
+          by: dispute.by,
+          reportId: report.id,
+          reason: dispute.reason,
+        },
+  );
+  await notifyUsers(tx, recipients, {
+    type: "trade_disputed",
+    offerId: trade.id,
+    actorId: dispute.by === "staff" ? null : dispute.reporterId,
+    tokenId: null,
+  });
+  return report.id;
 }
 
 /**
@@ -324,10 +342,7 @@ export async function insertTradeEvent(
 export async function notifyUsers(
   tx: WebTx,
   recipients: readonly LockedUser[],
-  notification: Omit<
-    Extract<NewNotification, { type: TradeNotificationType }>,
-    "userId"
-  >,
+  notification: NewTradeNotification,
 ) {
   const values = recipients.flatMap((recipient) =>
     isBanActive(recipient) ? [] : [{ ...notification, userId: recipient.id }],

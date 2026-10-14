@@ -4,14 +4,13 @@ import {
   endTrade,
   insertTradeEvent,
   notifyUsers,
-  refuseTrade,
+  updateLockedTrade,
 } from "@/lib/server/trades/trade.server";
 import {
   staffExtendTradeInputSchema,
   staffTradeInputSchema,
 } from "@/lib/universal/schema/trades";
-import { tradeMessages, tradeOffers } from "@apollo/database/web/schema";
-import { transition } from "@apollo/trades/lifecycle";
+import { tradeMessages } from "@apollo/database/web/schema";
 import { extendedDeadline } from "@apollo/trades/timers";
 import { createServerFn } from "@tanstack/react-start";
 import { and, desc, eq, sql } from "drizzle-orm";
@@ -24,13 +23,15 @@ export const $staffCompleteTrade = createServerFn({ method: "POST" })
   .validator(staffTradeInputSchema)
   .handler(async ({ data, context }) => {
     const staffId = context.session.user.id;
-    await actOnTrade(staffId, data.tradeId, async (tx, trade, users) => {
-      const result = transition(trade.state, { type: "staff_complete" });
-      if (!result.ok) refuseTrade("trade_status_changed");
-
-      await completeAsStaff(tx, trade, users, result.trade, data.note);
-      return { action: "trade:complete" };
-    });
+    await actOnTrade(
+      staffId,
+      data.tradeId,
+      { type: "staff_complete" },
+      async (tx, trade, users, next) => {
+        await completeAsStaff(tx, trade, users, next, data.note);
+        return { action: "trade:complete" };
+      },
+    );
   });
 
 /**
@@ -44,27 +45,29 @@ export const $staffCancelTrade = createServerFn({ method: "POST" })
   .validator(staffTradeInputSchema)
   .handler(async ({ data, context }) => {
     const staffId = context.session.user.id;
-    await actOnTrade(staffId, data.tradeId, async (tx, trade, users) => {
-      const result = transition(trade.state, { type: "staff_cancel" });
-      if (!result.ok) refuseTrade("trade_status_changed");
-
-      await endTrade(tx, trade, result.trade, users);
-      await insertTradeEvent(tx, trade.id, {
-        type: "cancelled",
-        by: "staff",
-        note: data.note,
-      });
-      await notifyUsers(tx, users, {
-        type:
-          trade.state.status === "disputed"
-            ? "trade_dispute_resolved"
-            : "trade_cancelled",
-        offerId: trade.id,
-        actorId: null,
-        tokenId: null,
-      });
-      return { action: "trade:cancel" };
-    });
+    await actOnTrade(
+      staffId,
+      data.tradeId,
+      { type: "staff_cancel" },
+      async (tx, trade, users, next) => {
+        await endTrade(tx, trade, next, users);
+        await insertTradeEvent(tx, trade.id, {
+          type: "cancelled",
+          by: "staff",
+          note: data.note,
+        });
+        await notifyUsers(tx, users, {
+          type:
+            trade.state.status === "disputed"
+              ? "trade_dispute_resolved"
+              : "trade_cancelled",
+          offerId: trade.id,
+          actorId: null,
+          tokenId: null,
+        });
+        return { action: "trade:cancel" };
+      },
+    );
   });
 
 /**
@@ -78,67 +81,65 @@ export const $staffExtendTradeDeadline = createServerFn({ method: "POST" })
   .validator(staffExtendTradeInputSchema)
   .handler(async ({ data, context }) => {
     const staffId = context.session.user.id;
-    await actOnTrade(staffId, data.tradeId, async (tx, trade, users) => {
-      const result = transition(trade.state, { type: "staff_extend" });
-      if (!result.ok) refuseTrade("trade_status_changed");
+    await actOnTrade(
+      staffId,
+      data.tradeId,
+      { type: "staff_extend" },
+      async (tx, trade, users, next) => {
+        if (next.status === "completed") {
+          await completeAsStaff(tx, trade, users, next, data.note);
+          return { action: "trade:complete" };
+        }
 
-      if (result.trade.status === "completed") {
-        await completeAsStaff(tx, trade, users, result.trade, data.note);
-        return { action: "trade:complete" };
-      }
+        const [frozen] = await tx
+          .select({ createdAt: tradeMessages.createdAt })
+          .from(tradeMessages)
+          .where(
+            and(
+              eq(tradeMessages.tradeId, trade.id),
+              eq(tradeMessages.kind, "event"),
+              sql`${tradeMessages.event}->>'type' = 'disputed'`,
+            ),
+          )
+          .orderBy(desc(tradeMessages.id))
+          .limit(1);
+        if (!frozen || trade.deadlineAt === null) {
+          throw new Error(
+            `Disputed trade ${trade.id} has no deadline or event`,
+          );
+        }
 
-      const [frozen] = await tx
-        .select({ createdAt: tradeMessages.createdAt })
-        .from(tradeMessages)
-        .where(
-          and(
-            eq(tradeMessages.tradeId, trade.id),
-            eq(tradeMessages.kind, "event"),
-            sql`${tradeMessages.event}->>'type' = 'disputed'`,
-          ),
-        )
-        .orderBy(desc(tradeMessages.id))
-        .limit(1);
-      if (!frozen || trade.deadlineAt === null) {
-        throw new Error(`Disputed trade ${trade.id} has no deadline or event`);
-      }
+        const deadlineAt = extendedDeadline(
+          trade.deadlineAt,
+          frozen.createdAt,
+          new Date(),
+          data.hours,
+        );
+        await updateLockedTrade(tx, trade, {
+          status: "accepted",
+          deadlineAt,
+          disputeReportId: null,
+        });
 
-      const deadlineAt = extendedDeadline(
-        trade.deadlineAt,
-        frozen.createdAt,
-        new Date(),
-        data.hours,
-      );
-      const [extended] = await tx
-        .update(tradeOffers)
-        .set({ status: "accepted", deadlineAt, disputeReportId: null })
-        .where(
-          and(
-            eq(tradeOffers.id, trade.id),
-            eq(tradeOffers.status, trade.state.status),
-          ),
-        )
-        .returning({ id: tradeOffers.id });
-      if (!extended) throw new Error("Trade changed under its lock");
-
-      await insertTradeEvent(tx, trade.id, {
-        type: "deadline_extended",
-        deadlineAt: deadlineAt.toISOString(),
-        note: data.note,
-      });
-      await notifyUsers(tx, users, {
-        type: "trade_deadline_extended",
-        offerId: trade.id,
-        actorId: null,
-        tokenId: null,
-      });
-      return {
-        action: "trade:extend",
-        detail: {
-          kind: "trade-extend",
+        await insertTradeEvent(tx, trade.id, {
+          type: "deadline_extended",
           deadlineAt: deadlineAt.toISOString(),
-          hours: data.hours,
-        },
-      };
-    });
+          note: data.note,
+        });
+        await notifyUsers(tx, users, {
+          type: "trade_deadline_extended",
+          offerId: trade.id,
+          actorId: null,
+          tokenId: null,
+        });
+        return {
+          action: "trade:extend",
+          detail: {
+            kind: "trade-extend",
+            deadlineAt: deadlineAt.toISOString(),
+            hours: data.hours,
+          },
+        };
+      },
+    );
   });

@@ -144,20 +144,20 @@ export default function AuditRow({ row }: Props) {
         role="cell"
         className="font-mono text-xs whitespace-nowrap text-muted-foreground tabular-nums [grid-area:when] @md:pt-0.5 @4xl:pt-0"
       >
-        <Timestamp
-          date={row.createdAt}
-          format={{
-            month: "short",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-            hourCycle: "h23",
-          }}
-        />
+        <Timestamp date={row.createdAt} format={auditTimeFormat} />
       </div>
     </div>
   );
 }
+
+// a day and a 24-hour time, short enough for the row's last column
+const auditTimeFormat = {
+  month: "short",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+} satisfies Intl.DateTimeFormatOptions;
 
 function AuditTarget({ row }: Props) {
   switch (row.target.type) {
@@ -302,16 +302,7 @@ function detailNote(detail: AdminAuditDetail) {
         <>
           {m.admin_audit_note_trade_extend({ hours: detail.hours })}
           {" → "}
-          <Timestamp
-            date={detail.deadlineAt}
-            format={{
-              month: "short",
-              day: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-              hourCycle: "h23",
-            }}
-          />
+          <Timestamp date={detail.deadlineAt} format={auditTimeFormat} />
         </>
       );
   }

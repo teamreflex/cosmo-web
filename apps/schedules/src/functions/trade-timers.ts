@@ -6,10 +6,11 @@ import {
   lockLiveTrades,
   lockUsers,
   publishTradeUpdates,
+  readListingTokens,
+  type TradeEventRow,
   type TradeNotification,
 } from "@/trades";
 import { listDrainCursor, tradeOffers } from "@apollo/database/web/schema";
-import type { TradeEvent as StoredTradeEvent } from "@apollo/database/web/types";
 import { transition } from "@apollo/trades/lifecycle";
 import { DRAIN_CURSOR_NAME } from "@apollo/trades/timers";
 import { and, asc, eq, lte, sql } from "drizzle-orm";
@@ -87,8 +88,10 @@ export const tradeTimersTask = {
           ),
         );
 
+        const tokens = yield* readListingTokens(trades);
+
         const notifications: TradeNotification[] = [];
-        const events: { tradeId: string; event: StoredTradeEvent }[] = [];
+        const events: TradeEventRow[] = [];
         let completed = 0;
         for (const trade of trades) {
           const result = transition(trade.state, { type: "time_out" });
@@ -97,7 +100,13 @@ export const tradeTimersTask = {
               `time out refused on trade ${trade.id}: ${result.reason}`,
             );
           }
-          const ended = yield* endTrade(tx, trade, result.trade, locked);
+          const ended = yield* endTrade(
+            tx,
+            trade,
+            result.trade,
+            locked,
+            tokens,
+          );
           if (result.trade.status === "completed") completed++;
           events.push(ended.event);
           notifications.push(...ended.notifications);

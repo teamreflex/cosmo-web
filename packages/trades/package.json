@@ -11,6 +11,7 @@
     "./composer": "./src/composer.ts",
     "./events": "./src/events.ts",
     "./feed": "./src/feed.ts",
+    "./holdings": "./src/holdings.ts",
     "./inventory": "./src/inventory.ts",
     "./lifecycle": "./src/lifecycle.ts",
     "./listing": "./src/listing.ts",
@@ -29,6 +30,7 @@
   "dependencies": {
     "@apollo/cosmo": "workspace:*",
     "@apollo/database": "workspace:*",
+    "@apollo/util": "workspace:*",
     "zod": "catalog:"
   },
   "devDependencies": {

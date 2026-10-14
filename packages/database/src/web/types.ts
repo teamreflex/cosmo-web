@@ -59,6 +59,12 @@ export type NewNotification =
       tokenId: number | null;
     };
 
+// a trade notification before its recipient is filled in
+export type NewTradeNotification = Omit<
+  Extract<NewNotification, { type: TradeNotificationType }>,
+  "userId"
+>;
+
 // the actor added something you want to their have list, or wants something on yours
 export const listMatchNotificationTypes = ["trade_have", "trade_want"] as const;
 export type ListMatchNotificationType =

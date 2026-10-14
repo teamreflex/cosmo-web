@@ -9,6 +9,7 @@ import {
   staffUserFields,
 } from "@/lib/server/staff-users.server";
 import type { StaffUserRow } from "@/lib/server/staff-users.server";
+import { tradeParty } from "@/lib/server/trades.server";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import { openReportStatuses } from "@/lib/universal/reports";
 import type {
@@ -30,17 +31,7 @@ import {
   type ReportStatus,
   type ReportTargetType,
 } from "@apollo/database/web/types";
-import {
-  and,
-  EmptyFilter,
-  eq,
-  exists,
-  inArray,
-  ne,
-  not,
-  or,
-  sql,
-} from "drizzle-orm";
+import { and, EmptyFilter, eq, inArray, ne, not, or, sql } from "drizzle-orm";
 
 const QUEUE_PAGE_SIZE = 30;
 
@@ -59,19 +50,12 @@ function aboutStaff(staffId: string, t: typeof reports = reports) {
     and(eq(t.targetType, "user"), eq(t.targetId, staffId)),
     and(
       eq(t.targetType, "trade"),
-      exists(
+      inArray(
+        t.targetId,
         db
-          .select({ id: tradeOffers.id })
+          .select({ id: sql<string>`${tradeOffers.id}::text` })
           .from(tradeOffers)
-          .where(
-            and(
-              sql`${tradeOffers.id}::text = ${t.targetId}`,
-              or(
-                eq(tradeOffers.fromUserId, staffId),
-                eq(tradeOffers.toUserId, staffId),
-              ),
-            ),
-          ),
+          .where(tradeParty(staffId)),
       ),
     ),
   );
@@ -291,10 +275,7 @@ async function fetchDetailTarget(
           and(
             eq(tradeOffers.kind, "trade"),
             inArray(tradeOffers.status, [...liveTradeStatuses]),
-            or(
-              eq(tradeOffers.fromUserId, targetId),
-              eq(tradeOffers.toUserId, targetId),
-            ),
+            tradeParty(targetId),
           ),
         ),
       ]);

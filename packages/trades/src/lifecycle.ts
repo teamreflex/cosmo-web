@@ -426,6 +426,27 @@ export function endedTradeColumns(trade: TradeState) {
 }
 
 /**
+ * The listings a trade's items came from, each with the tokens it offered,
+ * which the listing's outcome applies to when the trade ends.
+ */
+export function tradeListings(
+  items: readonly Pick<TradeOfferItem, "listingId" | "tokenId">[],
+): Map<string, number[]> {
+  const offered = Map.groupBy(
+    items.flatMap(({ listingId, tokenId }) =>
+      listingId === null || tokenId === null ? [] : [{ listingId, tokenId }],
+    ),
+    (item) => item.listingId,
+  );
+  return new Map(
+    [...offered].map(([listingId, tokens]) => [
+      listingId,
+      tokens.map((token) => token.tokenId),
+    ]),
+  );
+}
+
+/**
  * Read a trade and its items, in id order, into the state transitions take.
  * Throws on a listing or on a row the table's checks forbid.
  */

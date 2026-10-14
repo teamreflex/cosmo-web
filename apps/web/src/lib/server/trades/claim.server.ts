@@ -4,6 +4,7 @@ import {
   tradeOffers,
   user,
 } from "@apollo/database/web/schema";
+import { bumpUpdatedAt } from "@apollo/database/web/sql";
 import type {
   NewTradeOfferItem,
   TradeOfferStatus,
@@ -38,7 +39,7 @@ import {
   readWebTokenFlags,
   type TokenState,
 } from "./holdings.server";
-import { bumpUpdatedAt, type ListingActor } from "./listings.server";
+import type { ListingActor } from "./listings.server";
 import {
   type PosterFacts,
   posterRefusal,
