@@ -4,15 +4,20 @@ import UserAvatar from "@/components/profile/user-avatar";
 import { TradeStatus } from "@/components/trades/trade-header";
 import TransferRows from "@/components/trades/transfer-rows";
 import { Button, buttonVariants } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Timestamp } from "@/components/ui/timestamp";
 import { useHasPermission } from "@/hooks/use-has-permission";
+import { useHydrated } from "@/hooks/use-hydrated";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { roleLabel } from "@/lib/client/roles";
+import { tradeTimeFormat } from "@/lib/client/trades";
+import { env } from "@/lib/env/client";
 import { $unbanUser } from "@/lib/functions/staff-users";
 import { adminReportsQueryFilter } from "@/lib/queries/reports";
 import type {
   AdminReportDetail,
+  ReportTargetMessage,
   ReportTargetTrade,
   ReportTargetUser,
   ReportTradeParty,
@@ -20,9 +25,11 @@ import type {
 import { staffUserText } from "@/lib/universal/staff-users";
 import { cn } from "@/lib/utils";
 import type { TradeSide } from "@apollo/database/web/types";
+import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import { lazy, Suspense } from "react";
 import { toast } from "sonner";
 
 type Props = {
@@ -30,7 +37,8 @@ type Props = {
 };
 
 /**
- * What was reported: a user, or the trade a dispute is about.
+ * What was reported: a user, the trade a dispute is about, or a chat
+ * message.
  */
 export default function ReportTarget({ report }: Props) {
   const { target } = report;
@@ -44,7 +52,93 @@ export default function ReportTarget({ report }: Props) {
       );
     case "trade":
       return <TradeTarget trade={target.trade} />;
+    case "message":
+      return <MessageTarget report={report} message={target.message} />;
   }
+}
+
+// chat's client and Effect download only with a message report
+const MessageReport = lazy(() => import("./message-report"));
+
+/**
+ * The reported message: who sent it in which trade, its text from the
+ * report's own copy, and the trade's chat, which chat lets staff read while
+ * the report is open.
+ */
+function MessageTarget({
+  report,
+  message,
+}: {
+  report: AdminReportDetail;
+  message: ReportTargetMessage | null;
+}) {
+  const hydrated = useHydrated();
+  if (message === null) {
+    return (
+      <p className="px-4 py-3.5 text-sm text-muted-foreground">
+        {m.admin_reports_message_gone()}
+      </p>
+    );
+  }
+  const { trade, sender } = message;
+  const senderName =
+    sender === null ? m.admin_reports_deleted_user() : staffUserText(sender);
+
+  return (
+    <div className="flex flex-col gap-3 px-4 py-3.5">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+        <div className="flex min-w-0 flex-col gap-0.5">
+          <span className="text-sm font-medium">
+            {m.admin_reports_message_title()}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            <ParaglideMessage
+              message={m.admin_reports_message_sent_by}
+              inputs={{ sender: senderName, time: "" }}
+              markup={{
+                sender: ({ children }) =>
+                  sender === null ? (
+                    children
+                  ) : (
+                    <StaffUserName
+                      user={sender}
+                      className="font-medium text-foreground"
+                    />
+                  ),
+                time: () => (
+                  <Timestamp date={message.sentAt} format={tradeTimeFormat} />
+                ),
+              }}
+            />
+          </span>
+        </div>
+        {trade !== null && (
+          <Link
+            to="/trade/$id"
+            params={{ id: trade.id }}
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "ml-auto max-md:h-10",
+            )}
+          >
+            {m.admin_reports_open_trade()}
+          </Link>
+        )}
+      </div>
+      {env.VITE_CHAT_URL === undefined ? (
+        <p className="text-sm text-muted-foreground">
+          {m.admin_reports_message_unavailable()}
+        </p>
+      ) : hydrated ? (
+        <Suspense fallback={<Skeleton className="h-24 rounded-md" />}>
+          <MessageReport report={report} message={message} />
+        </Suspense>
+      ) : (
+        // the server never renders it, since its client would dial chat
+        <Skeleton className="h-24 rounded-md" />
+      )}
+    </div>
+  );
 }
 
 /**

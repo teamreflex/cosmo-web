@@ -91,6 +91,30 @@ function RowSummary({ row }: Props) {
         />
       );
     }
+    case "message": {
+      const { message } = target;
+      if (message === null) {
+        return (
+          <ParaglideMessage
+            message={m.admin_reports_row_message_gone}
+            inputs={{ reporter: reporter.text }}
+            markup={{ reporter: reporter.markup }}
+          />
+        );
+      }
+      const sender = nameInput(message.sender);
+      return (
+        <ParaglideMessage
+          message={m.admin_reports_row_message_summary}
+          inputs={{
+            sender: sender.text,
+            id: message.tradeId.slice(0, 8),
+            reporter: reporter.text,
+          }}
+          markup={{ sender: sender.markup, reporter: reporter.markup }}
+        />
+      );
+    }
   }
 }
 

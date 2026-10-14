@@ -14,10 +14,14 @@ export const tradeQuery = (id: string) =>
     queryFn: ({ signal }) => $fetchTrade({ signal, data: { tradeId: id } }),
   });
 
-// the viewer's live trades, which also give My trades its counts
+/**
+ * The viewer's live trades, which also give My trades its counts. Nothing
+ * pushes them, so they refetch whenever the window regains focus.
+ */
 export const activeTradesQuery = queryOptions({
   queryKey: [...tradesKey, "mine", "active"],
   queryFn: ({ signal }) => $fetchMyTrades({ signal, data: { tab: "active" } }),
+  refetchOnWindowFocus: "always",
 });
 
 export const finishedTradesQuery = () =>

@@ -5,7 +5,7 @@ import {
 import { reportReasons, reportStatuses } from "@apollo/database/web/types";
 import * as z from "zod";
 
-const noteSchema = z
+export const reportNoteSchema = z
   .string()
   .trim()
   .max(1000, "Note cannot be longer than 1000 characters")
@@ -21,7 +21,7 @@ export const createReportSchema = z.discriminatedUnion("targetType", [
     targetType: z.literal("user"),
     targetId: z.string().min(1),
     reason: z.enum(reportReasons),
-    note: noteSchema,
+    note: reportNoteSchema,
   }),
 ]);
 

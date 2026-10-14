@@ -5,6 +5,7 @@ import type {
   ReportStatus,
   ReportTargetType,
   StoredReportReason,
+  TradeSide,
 } from "@apollo/database/web/types";
 
 /**
@@ -18,9 +19,10 @@ export const openReportStatuses = [
 export type OpenReportStatus = (typeof openReportStatuses)[number];
 
 /**
- * What a queue row shows of the reported thing: a user, or the trade a
- * dispute is about with its parties. Each is null when it no longer exists
- * or its account is deleted.
+ * What a queue row shows of the reported thing: a user, the trade a dispute
+ * is about with its parties, or a chat message's sender and trade. Each user
+ * is null once their account is deleted, a trade once it is gone, and a
+ * message once its report's copy is.
  */
 export type AdminReportRowTarget =
   | { type: "user"; user: StaffUser | null }
@@ -31,6 +33,10 @@ export type AdminReportRowTarget =
         from: StaffUser | null;
         to: StaffUser | null;
       } | null;
+    }
+  | {
+      type: "message";
+      message: { tradeId: string; sender: StaffUser | null } | null;
     };
 
 /**
@@ -39,6 +45,7 @@ export type AdminReportRowTarget =
 export const reportTargetTypeFilters = [
   "user",
   "trade",
+  "message",
 ] as const satisfies readonly (ReportTargetType &
   AdminReportRowTarget["type"])[];
 
@@ -86,9 +93,25 @@ export type ReportTargetTrade = {
   current: boolean;
 };
 
+/**
+ * A reported chat message as the web app knows it: never its text, which
+ * staff read from the report's own copy through chat. `sender` is the user
+ * staff can ban; `side` places them in the trade, which is null once gone.
+ */
+export type ReportTargetMessage = {
+  id: number;
+  sentAt: Date;
+  side: TradeSide | null;
+  sender: ReportTargetUser | null;
+  // staff removed it from the chat since it was reported
+  removed: boolean;
+  trade: TradeView | null;
+};
+
 export type AdminReportDetailTarget =
   | { type: "user"; user: ReportTargetUser | null }
-  | { type: "trade"; trade: ReportTargetTrade | null };
+  | { type: "trade"; trade: ReportTargetTrade | null }
+  | { type: "message"; message: ReportTargetMessage | null };
 
 /**
  * Closed reports carry who closed them and when; the resolver is null once

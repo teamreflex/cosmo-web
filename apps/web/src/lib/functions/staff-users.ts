@@ -16,8 +16,8 @@ import { getRequestHeaders } from "@tanstack/react-start/server";
 /**
  * Ban a user and sign them out. One transaction bans them and sweeps their
  * trades and listings (banAndSweep), writes the audit row and, for a ban
- * started from a report on the user, resolves every open report on them,
- * each with its own audit row. Once that commits, their sessions are deleted
+ * started from a report on the user or on a message they sent, resolves
+ * every open report on that user or message, each with its own audit row. Once that commits, their sessions are deleted
  * and the user event and the disputed trades are published.
  */
 export const $banUser = createServerFn({ method: "POST" })
@@ -35,10 +35,15 @@ export const $banUser = createServerFn({ method: "POST" })
         ? await tx.query.reports.findFirst({
             where: {
               id: data.reportId,
-              targetType: "user",
-              targetId: data.userId,
+              OR: [
+                { targetType: "user", targetId: data.userId },
+                {
+                  targetType: "message",
+                  messageCopy: { senderId: data.userId },
+                },
+              ],
             },
-            columns: { id: true },
+            columns: { id: true, targetType: true, targetId: true },
           })
         : undefined;
 
@@ -50,7 +55,12 @@ export const $banUser = createServerFn({ method: "POST" })
         detail: { kind: "ban", expiresIn: data.expiresIn, reason: data.reason },
       });
       if (linkedReport) {
-        await resolveTargetReports(tx, staffId, "user", data.userId);
+        await resolveTargetReports(
+          tx,
+          staffId,
+          linkedReport.targetType,
+          linkedReport.targetId,
+        );
       }
       return banned;
     });

@@ -45,6 +45,7 @@ type QueueTargetType = AdminReportRowTarget["type"];
 const targetTypeLabels = {
   user: m.admin_reports_type_user,
   trade: m.admin_reports_type_trade,
+  message: m.admin_reports_type_message,
 } satisfies Record<QueueTargetType, () => string>;
 
 /**

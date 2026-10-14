@@ -1,3 +1,4 @@
+import { useHydrated } from "@/hooks/use-hydrated";
 import { m } from "@/i18n/messages";
 import { reportReasonLabel } from "@/lib/client/reports";
 import { itemName, partyName, tradeTimeFormat } from "@/lib/client/trades";
@@ -27,12 +28,13 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import { type ReactNode, useId, useState } from "react";
+import { lazy, type ReactNode, Suspense, useId, useState } from "react";
 import { toast } from "sonner";
 import { useCopyToClipboard } from "usehooks-ts";
 import { bold } from "../notifications/row-utils";
 import ListingBottomBar from "../trade-listings/listing-bottom-bar";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { Badge } from "../ui/badge";
 import { Button, buttonVariants } from "../ui/button";
 import {
   Item,
@@ -41,6 +43,8 @@ import {
   ItemMedia,
   ItemTitle,
 } from "../ui/item";
+import { Skeleton } from "../ui/skeleton";
+import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
 import { Timestamp } from "../ui/timestamp";
 import CancelTradeDialog from "./cancel-trade-dialog";
 import OpenDisputeDialog from "./open-dispute-dialog";
@@ -55,8 +59,8 @@ type Props = {
 
 /**
  * The trade page: the header, the steps, where the trade stands, every
- * transfer, and beside them who it's with and the timeline. Its parties
- * can act on it; staff read it.
+ * transfer, and beside them who it's with and the chat, or for staff the
+ * timeline too. Its parties can act on it; staff read it.
  */
 export default function TradeView({ trade, viewer }: Props) {
   return viewer.kind === "party" ? (
@@ -219,10 +223,23 @@ function StaffView({
   );
 }
 
+// chat only runs where the web app knows its URL
+const chat = env.VITE_CHAT_URL !== undefined;
+
+// Effect and the RPC client download only with the panel
+const ChatPanel = lazy(() => import("./chat/chat-panel"));
+
+const chatHeight = "h-[min(40rem,calc(100dvh-12rem))] min-h-96";
+
+// below laptop width the page splits into transfers and the chat
+const tradeTabs = ["transfers", "chat"] as const;
+type TradeTab = (typeof tradeTabs)[number];
+
 /**
  * The page around the viewer's own parts: staff's banner above the steps,
  * the party's strip under the transfers, and the phone bar with the room
- * it takes at the bottom of the page.
+ * it takes at the bottom of the page. The chat sits beside the transfers,
+ * or in its own tab below laptop width.
  */
 function TradeLayout({
   trade,
@@ -238,6 +255,15 @@ function TradeLayout({
   strip?: ReactNode;
   bar?: { rows: 1 | 2; children: ReactNode };
 }) {
+  const [tab, setTab] = useState<TradeTab>("transfers");
+  // the other party's messages that arrived while the chat tab was closed
+  const [unread, setUnread] = useState(0);
+  const chatTab = chat && tab === "chat";
+  const hydrated = useHydrated();
+  const chatSkeleton = (
+    <Skeleton className={cn(chatHeight, !chatTab && "max-lg:hidden")} />
+  );
+
   return (
     <>
       <TradeHeader trade={trade} side={side} />
@@ -253,8 +279,43 @@ function TradeLayout({
       >
         {banner}
         <TradeSteps trade={trade} side={side} />
+        {chat && (
+          <Tabs
+            className="lg:hidden"
+            value={tab}
+            onValueChange={(value) => {
+              const picked = tradeTabs.find((option) => option === value);
+              if (picked !== undefined) {
+                setTab(picked);
+                if (picked === "chat") setUnread(0);
+              }
+            }}
+          >
+            <TabsList
+              aria-label={m.trade_page_tabs_label()}
+              className="w-full max-md:h-10"
+            >
+              <TabsTrigger value="transfers" className="flex-1">
+                {m.trade_page_tab_transfers()}
+              </TabsTrigger>
+              <TabsTrigger value="chat" className="flex-1">
+                {m.trade_page_tab_chat()}
+                {unread > 0 && (
+                  <Badge className="h-4.5 min-w-4.5 px-1 font-mono tabular-nums">
+                    {unread}
+                  </Badge>
+                )}
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        )}
         <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)] lg:items-start">
-          <div className="flex min-w-0 flex-col gap-4">
+          <div
+            className={cn(
+              "flex min-w-0 flex-col gap-4",
+              chatTab && "max-lg:hidden",
+            )}
+          >
             <StatePanel trade={trade} side={side} />
             <TransferRows trade={trade} side={side}>
               {strip}
@@ -266,18 +327,44 @@ function TradeLayout({
             )}
           </div>
           <aside className="flex min-w-0 flex-col gap-4">
-            {(
-              (side === null
-                ? ["from", "to"]
-                : [otherSide(side)]) satisfies TradeSide[]
-            ).map((party) => (
-              <PartyCard
-                key={party}
-                party={trade.parties[party]}
-                side={party}
-              />
-            ))}
-            <TradeTimeline trade={trade} side={side} />
+            <div
+              className={cn(
+                "flex min-w-0 flex-col gap-4",
+                chatTab && "max-lg:hidden",
+              )}
+            >
+              {(
+                (side === null
+                  ? ["from", "to"]
+                  : [otherSide(side)]) satisfies TradeSide[]
+              ).map((party) => (
+                <PartyCard
+                  key={party}
+                  party={trade.parties[party]}
+                  side={party}
+                />
+              ))}
+              {/* the parties read every event in the chat */}
+              {(side === null || !chat) && (
+                <TradeTimeline trade={trade} side={side} />
+              )}
+            </div>
+            {chat &&
+              // the server never renders the panel, whose client would dial chat
+              (hydrated ? (
+                <Suspense fallback={chatSkeleton}>
+                  <ChatPanel
+                    trade={trade}
+                    side={side}
+                    className={cn(chatHeight, !chatTab && "max-lg:hidden")}
+                    onIncoming={(count) => {
+                      if (!chatTab) setUnread((total) => total + count);
+                    }}
+                  />
+                </Suspense>
+              ) : (
+                chatSkeleton
+              ))}
           </aside>
         </div>
       </div>

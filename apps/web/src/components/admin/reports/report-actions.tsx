@@ -138,7 +138,7 @@ function OpenActions({ report }: Props) {
   });
 
   const { target } = report;
-  const user = target.type === "user" ? target.user : null;
+  const user = reportedUser(target);
   // a dispute closes when its trade is settled, never as a report
   const dispute = target.type === "trade";
   const canBan = hasPermission({ user: ["ban"] });
@@ -182,7 +182,9 @@ function OpenActions({ report }: Props) {
                 onClick={() => setBanOpen(true)}
                 disabled={mutation.isPending}
               >
-                {m.admin_reports_ban()}
+                {target.type === "message"
+                  ? m.admin_reports_ban_sender()
+                  : m.admin_reports_ban()}
               </Button>
             )}
             {actions.map((action) => (
@@ -214,6 +216,21 @@ function OpenActions({ report }: Props) {
       )}
     </>
   );
+}
+
+/**
+ * Who a ban from this report bans: the reported user, or a reported
+ * message's sender.
+ */
+function reportedUser(target: AdminReportDetail["target"]) {
+  switch (target.type) {
+    case "user":
+      return target.user;
+    case "message":
+      return target.message?.sender ?? null;
+    case "trade":
+      return null;
+  }
 }
 
 /**

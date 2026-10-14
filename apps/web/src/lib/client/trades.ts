@@ -37,10 +37,23 @@ export function txUrl(hash: string) {
   return `https://abscan.org/tx/${hash}`;
 }
 
+// "1:14 PM" in the app locale, for a chat message or marker
+export const chatTimeFormat = {
+  hour: "numeric",
+  minute: "2-digit",
+} satisfies Intl.DateTimeFormatOptions;
+
 // "Oct 13, 1:14 PM" in the app locale, for every time on the trade page
 export const tradeTimeFormat = {
   month: "short",
   day: "numeric",
   hour: "numeric",
   minute: "2-digit",
+} satisfies Intl.DateTimeFormatOptions;
+
+// "Tue, Oct 14" in the app locale, for the day dividers in a chat
+export const chatDayFormat = {
+  weekday: "short",
+  month: "short",
+  day: "numeric",
 } satisfies Intl.DateTimeFormatOptions;
