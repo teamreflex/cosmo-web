@@ -415,6 +415,7 @@
   },
   "patchedDependencies": {
     "@subsquid/http-client@1.8.1": "patches/@subsquid%2Fhttp-client@1.8.1.patch",
+    "@effect/platform-bun@4.0.6": "patches/@effect%2Fplatform-bun@4.0.6.patch",
   },
   "catalog": {
     "@better-auth/api-key": "1.6.33",
