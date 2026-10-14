@@ -53,9 +53,9 @@ Each worker is a layer made by `createQueueWorker(name, take)` (`src/queue.ts`),
 
 ## Services
 
-Defined as `Context.Service` classes in `src/` — a `make:` effect plus a hand-written `static readonly layer` (`Layer.effect(this, this.make)`, with `Layer.provide([...])` wiring dependencies) — and merged into `servicesLayer` (`src/services.ts`), which `main.ts` and `run-task.ts` provide:
+Defined as `Context.Service` classes in `src/` (or `@apollo/services`) — a `make:` effect plus a hand-written `static readonly layer` (`Layer.effect(this, this.make)`, with `Layer.provide([...])` wiring dependencies) — and merged into `servicesLayer` (`src/services.ts`), which `main.ts` and `run-task.ts` provide:
 
-- `DatabaseWeb` / `DatabaseIndexer` — drizzle's Effect API over the two Postgres databases via `@apollo/drizzle-bun-effect` (Bun SQL-backed, same driver stack as the web app). Each `make` acquires a scoped Bun `SQL` client (application_name via URL, `end({ timeout: 5 })` finalizer); queries and `db.transaction` are Effects, failing with `EffectDrizzleQueryError` / `SqlError`
+- `DatabaseWeb` / `DatabaseIndexer` — drizzle's Effect API over the two Postgres databases via `@apollo/drizzle-bun-effect` (Bun SQL-backed, same driver stack as the web app). Each `make` acquires a scoped Bun `SQL` client (application_name via URL, `end({ timeout: 5 })` finalizer); queries and `db.transaction` are Effects, failing with `EffectDrizzleQueryError` / `SqlError`. `DatabaseWeb` (with `WebTx`) and `redisLayer` come from `@apollo/services`, shared with `apps/chat`. `DatabaseWeb.layer({ applicationName, max })` builds a new layer on every call and layers memoize by reference, so `services.ts` declares `webDatabaseLayer` (one connection) once and everything here reuses it
 - `ProxiedToken` — COSMO access token for the dummy account, read from the web DB `cosmoTokens` table and auto-refreshed (via `refreshV3` + `CosmoKey`) when the JWT is expired
 - `CosmoKey`, `Redis`, `Exchangerate` — encryption key, cache, FX rates API
 

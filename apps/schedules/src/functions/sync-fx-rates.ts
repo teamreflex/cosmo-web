@@ -1,6 +1,6 @@
-import { DatabaseWeb } from "@/db";
 import { Exchangerate } from "@/exchangerate";
 import { fxRates } from "@apollo/database/web/schema";
+import { DatabaseWeb } from "@apollo/services/database-web";
 import { sql } from "drizzle-orm";
 import { Clock, Effect } from "effect";
 import type { ScheduledTask } from "../task";

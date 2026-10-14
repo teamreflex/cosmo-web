@@ -1,4 +1,3 @@
-import { DatabaseWeb } from "@/db";
 import {
   endTrade,
   insertTradeEvents,
@@ -11,6 +10,7 @@ import {
   type TradeNotification,
 } from "@/trades";
 import { listDrainCursor, tradeOffers } from "@apollo/database/web/schema";
+import { DatabaseWeb } from "@apollo/services/database-web";
 import { transition } from "@apollo/trades/lifecycle";
 import { DRAIN_CURSOR_NAME } from "@apollo/trades/timers";
 import { and, asc, eq, lte, sql } from "drizzle-orm";

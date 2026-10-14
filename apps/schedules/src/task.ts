@@ -1,7 +1,7 @@
+import type { DatabaseWeb } from "@apollo/services/database-web";
 import { Cron, Duration, Effect, Schedule } from "effect";
 import type { HttpClient } from "effect/http";
 import type { Redis } from "effect/persistence";
-import type { DatabaseWeb } from "./db";
 import type { DatabaseIndexer } from "./db-indexer";
 import type { Exchangerate } from "./exchangerate";
 import { applySerialConfirmationsTask } from "./functions/apply-serial-confirmations";

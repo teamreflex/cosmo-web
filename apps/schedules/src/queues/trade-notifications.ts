@@ -1,10 +1,10 @@
-import { DatabaseWeb } from "@/db";
 import { insertNotifications } from "@/notifications";
 import { objektListEntries, objektLists } from "@apollo/database/web/schema";
 import {
   TradeNotificationsQueue,
   type TradeNotificationsJob,
 } from "@apollo/queue";
+import { DatabaseWeb } from "@apollo/services/database-web";
 import { and, eq, exists, inArray, isNotNull, ne } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { Effect, Layer } from "effect";

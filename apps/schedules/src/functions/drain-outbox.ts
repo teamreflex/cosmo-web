@@ -1,4 +1,3 @@
-import { DatabaseWeb, type WebTx } from "@/db";
 import { DatabaseIndexer } from "@/db-indexer";
 import {
   type BatchPlan,
@@ -29,6 +28,7 @@ import {
 } from "@apollo/database/web/schema";
 import { bumpUpdatedAt } from "@apollo/database/web/sql";
 import type { TradeSide } from "@apollo/database/web/types";
+import { DatabaseWeb, type WebTx } from "@apollo/services/database-web";
 import { transition } from "@apollo/trades/lifecycle";
 import { DRAIN_CURSOR_NAME } from "@apollo/trades/timers";
 import {

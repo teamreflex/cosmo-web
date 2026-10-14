@@ -1,5 +1,5 @@
-import { DatabaseWeb } from "@/db";
 import { DatabaseIndexer } from "@/db-indexer";
+import { webDatabaseLayer } from "@/services";
 import {
   collections,
   listEventOutbox,
@@ -7,6 +7,7 @@ import {
   transfers,
 } from "@apollo/database/indexer/schema";
 import { listDrainCursor } from "@apollo/database/web/schema";
+import { DatabaseWeb } from "@apollo/services/database-web";
 import { DRAIN_CURSOR_NAME } from "@apollo/trades/timers";
 import { addr } from "@apollo/util";
 import { BunRuntime } from "@effect/platform-bun";
@@ -392,6 +393,6 @@ const program = Effect.gen(function* () {
 
 BunRuntime.runMain(
   program.pipe(
-    Effect.provide(Layer.mergeAll(DatabaseWeb.layer, DatabaseIndexer.layer)),
+    Effect.provide(Layer.mergeAll(webDatabaseLayer, DatabaseIndexer.layer)),
   ),
 );

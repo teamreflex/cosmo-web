@@ -1,6 +1,6 @@
-import { DatabaseWeb } from "@/db";
 import { notifications } from "@apollo/database/web/schema";
 import type { NewNotification } from "@apollo/database/web/types";
+import { DatabaseWeb } from "@apollo/services/database-web";
 import { Array, Effect } from "effect";
 
 const BATCH_SIZE = 100;

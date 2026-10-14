@@ -1,4 +1,3 @@
-import type { WebTx } from "@/db";
 import { DatabaseIndexer } from "@/db-indexer";
 import { objekts } from "@apollo/database/indexer/schema";
 import {
@@ -17,6 +16,7 @@ import type {
   TradeOffer,
   TradeOfferItem,
 } from "@apollo/database/web/types";
+import type { WebTx } from "@apollo/services/database-web";
 import {
   TRADE_EVENTS_CHANNEL,
   tradeUpdateMessage,

@@ -1,7 +1,7 @@
+import { redisLayer } from "@apollo/services/redis";
 import { cosmoKeyCacheKey } from "@apollo/util-server";
 import { Config, Context, Effect, Layer, Redacted } from "effect";
 import { Redis } from "effect/persistence";
-import { redisLayer } from "./redis";
 
 export class CosmoKey extends Context.Service<CosmoKey>()("app/CosmoKey", {
   make: Effect.gen(function* () {
