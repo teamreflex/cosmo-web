@@ -210,6 +210,24 @@
         "typescript": "catalog:",
       },
     },
+    "packages/chat": {
+      "name": "@apollo/chat",
+      "version": "0.0.0",
+      "dependencies": {
+        "@apollo/auth": "workspace:*",
+        "@apollo/database": "workspace:*",
+        "effect": "catalog:",
+      },
+      "devDependencies": {
+        "@apollo/lint": "workspace:*",
+        "@apollo/typescript": "workspace:*",
+        "@effect/eslint-plugin": "catalog:",
+        "@effect/language-service": "catalog:",
+        "@types/bun": "catalog:",
+        "turbo": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
     "packages/cosmo": {
       "name": "@apollo/cosmo",
       "version": "0.0.0",
@@ -396,6 +414,8 @@
     "@adraffy/ens-normalize": ["@adraffy/ens-normalize@1.11.1", "", {}, "sha512-nhCBV3quEgesuf7c7KYfperqSS14T8bYuvJ8PcLJp6znkZpFc0AuW4qBtr8eKVyPPe/8RSr7sglCWPU5eaxwKQ=="],
 
     "@apollo/auth": ["@apollo/auth@workspace:packages/auth"],
+
+    "@apollo/chat": ["@apollo/chat@workspace:packages/chat"],
 
     "@apollo/cosmo": ["@apollo/cosmo@workspace:packages/cosmo"],
 

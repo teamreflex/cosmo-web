@@ -464,4 +464,5 @@ export type TradeEvent =
   | { type: "deadline_extended"; deadlineAt: string; note: string | null }
   | { type: "timed_out"; abandoned: TradeSide[] }
   | { type: "token_moved"; tokenId: number }
-  | { type: "token_untransferable"; tokenId: number };
+  | { type: "token_untransferable"; tokenId: number }
+  | { type: "message_removed"; messageId: number };

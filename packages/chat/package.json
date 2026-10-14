@@ -1,0 +1,35 @@
+{
+  "name": "@apollo/chat",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    "./errors": "./src/errors.ts",
+    "./items": "./src/items.ts",
+    "./policy": "./src/policy.ts",
+    "./protocol": "./src/protocol.ts",
+    "./sanitize": "./src/sanitize.ts"
+  },
+  "scripts": {
+    "lint": "bun --bun oxlint --type-aware --type-check",
+    "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
+    "test": "bun test",
+    "typecheck": "tsc --pretty --noEmit",
+    "format": "oxfmt ."
+  },
+  "dependencies": {
+    "@apollo/auth": "workspace:*",
+    "@apollo/database": "workspace:*",
+    "effect": "catalog:"
+  },
+  "devDependencies": {
+    "@apollo/lint": "workspace:*",
+    "@apollo/typescript": "workspace:*",
+    "@effect/eslint-plugin": "catalog:",
+    "@effect/language-service": "catalog:",
+    "@types/bun": "catalog:",
+    "turbo": "catalog:",
+    "typescript": "catalog:"
+  }
+}
