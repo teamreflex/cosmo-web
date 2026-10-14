@@ -19,4 +19,4 @@ Effect service for trade chat: the `ChatRpcs` group from `@apollo/chat/protocol`
 
 ## Running locally
 
-`bun run dev` serves on :3001 with the root `.env` (`MESSAGE_KEY`, `AUTH_*`, `ALLOWED_ORIGINS`, `WEB_DATABASE_URL`, `REDIS_URL`); set the web app's `VITE_CHAT_URL` to `ws://localhost:3001`. Point `AUTH_JWKS_URL`, `AUTH_ISSUER` and `ALLOWED_ORIGINS` at the web server you test against.
+`bun run dev` serves on :3001 with the root `.env` (`MESSAGE_KEY`, `AUTH_*`, `ALLOWED_ORIGINS`, `WEB_DATABASE_URL`, `REDIS_URL`); set the web app's `VITE_CHAT_URL` to `ws://localhost:3001`. Point `AUTH_JWKS_URL`, `AUTH_ISSUER` and `ALLOWED_ORIGINS` at the web server you test against. `DEV_CHAT=true` runs it in Docker with the other dev services instead, reaching the web app's JWKS on the host through `host.docker.internal`.
