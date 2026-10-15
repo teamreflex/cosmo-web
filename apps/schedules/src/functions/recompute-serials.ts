@@ -253,6 +253,7 @@ export const recomputeSerialsTask = {
   name: "recompute-serials",
   cron: "0 8 * * *",
   timezone: "Pacific/Auckland",
+  runAtBoot: false,
   effect: Effect.gen(function* () {
     const db = yield* DatabaseIndexer;
     const minted = db
