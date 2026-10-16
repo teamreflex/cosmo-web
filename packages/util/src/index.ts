@@ -20,6 +20,11 @@ export function isEqual(a?: string, b?: string) {
   );
 }
 
+// length in code points, as Postgres counts it, so an astral emoji counts once
+export function textLength(text: string) {
+  return Array.from(text).length;
+}
+
 /**
  * Truncate an address for display, e.g. 0xa584…a98d.
  */
