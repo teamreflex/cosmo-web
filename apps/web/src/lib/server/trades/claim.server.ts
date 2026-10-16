@@ -32,10 +32,11 @@ import {
 } from "../../universal/trade-listings";
 import { db, type DbOrTx, type WebTx } from "../db";
 import { isPostgresError } from "../util.server";
-import { activeClaimCount } from "./detail.server";
+import { claimStanding } from "./detail.server";
 import {
   firstRefusal,
   readIndexerTokens,
+  readTokenStates,
   readWebTokenFlags,
   type TokenState,
 } from "./holdings.server";
@@ -43,8 +44,9 @@ import type { ListingActor } from "./listings.server";
 import {
   type PosterAccount,
   type PosterFacts,
+  posterLinkColumns,
   posterRefusal,
-  readPosterFacts,
+  toPosterAccount,
 } from "./poster.server";
 import { insertTradeEvent, notifyUsers } from "./trade.server";
 
@@ -120,6 +122,10 @@ export async function preflightClaim(
     with: {
       items: { orderBy: { id: "asc" } },
       wants: { orderBy: { id: "asc" } },
+      fromUser: {
+        columns: { banned: true, banExpires: true },
+        with: { cosmoAccount: posterLinkColumns },
+      },
     },
   });
   if (!row) refuse("listing_not_found");
@@ -139,22 +145,21 @@ export async function preflightClaim(
     items: row.items.map((item) => storedObjektItemSchema.parse(item)),
     wants: row.wants.map((want) => storedWantSchema.parse(want)),
   };
-  const submitted = input.rows.flat();
-  const [poster, claimerStates] = await Promise.all([
-    readPosterFacts({
-      fromUserId: listing.fromUserId,
-      fromAddress: listing.fromAddress,
-      tokenIds: listing.items.map((item) => item.tokenId),
-      wantKinds: listing.wants.map((want) => want.kind),
-    }),
-    readIndexerTokens(submitted),
-  ]);
+  const tokenIds = listing.items.map((item) => item.tokenId);
+  const poster: PosterFacts = {
+    tokenIds,
+    wantKinds: listing.wants.map((want) => want.kind),
+    holdings: await readTokenStates(listing.fromAddress, tokenIds),
+    poster: row.fromUser && toPosterAccount(row.fromUser),
+  };
   if (posterRefusal(poster, listing.fromAddress)) {
     // a claim or edit committed since the status read is the better answer
     const [now] = await listingStatus(db, listing.id);
     refuse(statusRefusal(now, input.seen) ?? "listing_unavailable");
   }
 
+  const submitted = input.rows.flat();
+  const claimerStates = await readIndexerTokens(submitted);
   const states = [...claimerStates.values()];
   const missing = states.find((state) => state.kind === "missing");
   if (missing) {
@@ -207,13 +212,14 @@ async function recheckPoster(
 /**
  * Locks both users' rows in one statement ordered by id, so a claim can't
  * deadlock against a crossed claim or interleave with a deletion or ban,
- * and the claimer's parallel claims queue for the cap. Then claims the
- * listing behind its status and `updated_at` guard, which takes the
- * listing's row lock: a claim or edit that committed while this one waited
- * leaves no row to update, and the re-read says which. Then repeats every
- * check that could have changed; a refusal rolls the claim back. Returns
- * the claimer's COSMO address as stored, which the trade pins, and the
- * poster's locked row, missing when the listing has no poster.
+ * and the claimer's parallel claims queue for the cap, which their linked
+ * address's feedback score sets. Then claims the listing behind its status
+ * and `updated_at` guard, which takes the listing's row lock: a claim or
+ * edit that committed while this one waited leaves no row to update, and
+ * the re-read says which. Then repeats every check that could have changed;
+ * a refusal rolls the claim back. Returns the claimer's COSMO address as
+ * stored, which the trade pins, and the poster's locked row, missing when
+ * the listing has no poster.
  */
 export async function lockAndRecheck(
   tx: WebTx,
@@ -286,12 +292,8 @@ export async function lockAndRecheck(
   if (claimer.address === null || !isEqual(claimer.address, actor.address)) {
     refuse("cosmo_not_linked");
   }
-  if (
-    (await activeClaimCount(tx, actor.userId)) >=
-    claimCap({ positive: 0, abandoned: 0 })
-  ) {
-    refuse("claim_cap_reached");
-  }
+  const standing = await claimStanding(tx, actor.userId);
+  if (standing.active >= claimCap(standing)) refuse("claim_cap_reached");
 
   const flags = await readWebTokenFlags(tx, actor.address, preflight.submitted);
   const refusal = firstRefusal(

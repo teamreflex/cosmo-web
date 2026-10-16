@@ -1,4 +1,7 @@
-import { ReportFormDialog } from "@/components/reports/report-dialog";
+import {
+  ReportFormDialog,
+  ReportQuote,
+} from "@/components/reports/report-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Bubble, BubbleContent } from "@/components/ui/bubble";
 import { Button } from "@/components/ui/button";
@@ -753,15 +756,18 @@ function ReportMessageDialog({
       quote={
         shown !== null &&
         shown.body !== null && (
-          <blockquote className="flex flex-col gap-1 rounded-md border border-border bg-muted/50 px-3 py-2 text-sm">
-            <span className="text-xs text-muted-foreground">
-              {name} ·{" "}
-              <Timestamp date={shown.sentAt} format={tradeTimeFormat} />
-            </span>
+          <ReportQuote
+            by={
+              <>
+                {name} ·{" "}
+                <Timestamp date={shown.sentAt} format={tradeTimeFormat} />
+              </>
+            }
+          >
             <span dir="auto" className="wrap-anywhere whitespace-pre-wrap">
               {Redacted.value(shown.body)}
             </span>
-          </blockquote>
+          </ReportQuote>
         )
       }
       reasons={messageReportReasons}

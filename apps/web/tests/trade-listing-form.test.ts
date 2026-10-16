@@ -220,6 +220,7 @@ const fillers = {
   updatedAt: new Date(0),
   poster: null,
   cosmoUsername: null,
+  rep: null,
   state: { status: "open" },
   blocked: false,
 } satisfies Omit<TradeListing, "id" | "items" | "wants" | "note">;

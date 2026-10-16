@@ -16,6 +16,7 @@ import { Route as ShareDataRouteImport } from './routes/share-data'
 import { Route as TermsPrivacyRouteImport } from './routes/terms-privacy'
 import { Route as AtChar123usernameChar125IndexRouteImport } from './routes/@{$username}/index'
 import { Route as AtChar123usernameChar125ComoRouteImport } from './routes/@{$username}/como'
+import { Route as AtChar123usernameChar125FeedbackRouteImport } from './routes/@{$username}/feedback'
 import { Route as AtChar123usernameChar125GridRouteImport } from './routes/@{$username}/grid'
 import { Route as AtChar123usernameChar125ProgressRouteImport } from './routes/@{$username}/progress'
 import { Route as AtChar123usernameChar125TradesRouteImport } from './routes/@{$username}/trades'
@@ -95,6 +96,12 @@ const AtChar123usernameChar125ComoRoute =
   AtChar123usernameChar125ComoRouteImport.update({
     id: '/como',
     path: '/como',
+    getParentRoute: () => AtChar123usernameChar125RouteRoute,
+  } as any)
+const AtChar123usernameChar125FeedbackRoute =
+  AtChar123usernameChar125FeedbackRouteImport.update({
+    id: '/feedback',
+    path: '/feedback',
     getParentRoute: () => AtChar123usernameChar125RouteRoute,
   } as any)
 const AtChar123usernameChar125GridRoute =
@@ -326,6 +333,7 @@ export interface FileRoutesByFullPath {
   '/share-data': typeof ShareDataRoute
   '/terms-privacy': typeof TermsPrivacyRoute
   '/@{$username}/como': typeof AtChar123usernameChar125ComoRoute
+  '/@{$username}/feedback': typeof AtChar123usernameChar125FeedbackRoute
   '/@{$username}/grid': typeof AtChar123usernameChar125GridRoute
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
@@ -375,6 +383,7 @@ export interface FileRoutesByTo {
   '/share-data': typeof ShareDataRoute
   '/terms-privacy': typeof TermsPrivacyRoute
   '/@{$username}/como': typeof AtChar123usernameChar125ComoRoute
+  '/@{$username}/feedback': typeof AtChar123usernameChar125FeedbackRoute
   '/@{$username}/grid': typeof AtChar123usernameChar125GridRoute
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
@@ -427,6 +436,7 @@ export interface FileRoutesById {
   '/share-data': typeof ShareDataRoute
   '/terms-privacy': typeof TermsPrivacyRoute
   '/@{$username}/como': typeof AtChar123usernameChar125ComoRoute
+  '/@{$username}/feedback': typeof AtChar123usernameChar125FeedbackRoute
   '/@{$username}/grid': typeof AtChar123usernameChar125GridRoute
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
@@ -480,6 +490,7 @@ export interface FileRouteTypes {
     | '/share-data'
     | '/terms-privacy'
     | '/@{$username}/como'
+    | '/@{$username}/feedback'
     | '/@{$username}/grid'
     | '/@{$username}/progress'
     | '/@{$username}/trades'
@@ -529,6 +540,7 @@ export interface FileRouteTypes {
     | '/share-data'
     | '/terms-privacy'
     | '/@{$username}/como'
+    | '/@{$username}/feedback'
     | '/@{$username}/grid'
     | '/@{$username}/progress'
     | '/@{$username}/trades'
@@ -580,6 +592,7 @@ export interface FileRouteTypes {
     | '/share-data'
     | '/terms-privacy'
     | '/@{$username}/como'
+    | '/@{$username}/feedback'
     | '/@{$username}/grid'
     | '/@{$username}/progress'
     | '/@{$username}/trades'
@@ -707,6 +720,13 @@ declare module '@tanstack/react-router' {
       path: '/como'
       fullPath: '/@{$username}/como'
       preLoaderRoute: typeof AtChar123usernameChar125ComoRouteImport
+      parentRoute: typeof AtChar123usernameChar125RouteRoute
+    }
+    '/@{$username}/feedback': {
+      id: '/@{$username}/feedback'
+      path: '/feedback'
+      fullPath: '/@{$username}/feedback'
+      preLoaderRoute: typeof AtChar123usernameChar125FeedbackRouteImport
       parentRoute: typeof AtChar123usernameChar125RouteRoute
     }
     '/@{$username}/grid': {
@@ -1008,6 +1028,7 @@ declare module '@tanstack/react-router' {
 
 interface AtChar123usernameChar125RouteRouteChildren {
   AtChar123usernameChar125ComoRoute: typeof AtChar123usernameChar125ComoRoute
+  AtChar123usernameChar125FeedbackRoute: typeof AtChar123usernameChar125FeedbackRoute
   AtChar123usernameChar125GridRoute: typeof AtChar123usernameChar125GridRoute
   AtChar123usernameChar125ProgressRoute: typeof AtChar123usernameChar125ProgressRoute
   AtChar123usernameChar125TradesRoute: typeof AtChar123usernameChar125TradesRoute
@@ -1019,6 +1040,8 @@ interface AtChar123usernameChar125RouteRouteChildren {
 const AtChar123usernameChar125RouteRouteChildren: AtChar123usernameChar125RouteRouteChildren =
   {
     AtChar123usernameChar125ComoRoute: AtChar123usernameChar125ComoRoute,
+    AtChar123usernameChar125FeedbackRoute:
+      AtChar123usernameChar125FeedbackRoute,
     AtChar123usernameChar125GridRoute: AtChar123usernameChar125GridRoute,
     AtChar123usernameChar125ProgressRoute:
       AtChar123usernameChar125ProgressRoute,

@@ -1,9 +1,11 @@
 import { toPublicUser } from "@/lib/server/auth.server";
 import { db } from "@/lib/server/db";
+import { feedbackRepColumns } from "@/lib/server/feedback.server";
 import {
   hydrateListings,
   listingFeedWhere,
 } from "@/lib/server/trades/feed.server";
+import { toFeedbackRep } from "@/lib/universal/feedback";
 import {
   listingFeedInputSchema,
   listingFeedTotalInputSchema,
@@ -57,6 +59,7 @@ export const $fetchListingFeed = createServerFn({ method: "GET" })
         wants: { orderBy: { id: "asc" } },
         fromUser: true,
         fromCosmo: { columns: { username: true } },
+        fromStats: { columns: feedbackRepColumns },
       },
       orderBy: { createdAt: "desc", id: "desc" },
     });
@@ -70,6 +73,7 @@ export const $fetchListingFeed = createServerFn({ method: "GET" })
         createdAt: listing.createdAt,
         poster: listing.fromUser && toPublicUser(listing.fromUser),
         cosmoUsername: listing.fromCosmo?.username ?? null,
+        rep: listing.fromUser && toFeedbackRep(listing.fromStats),
         items: listing.items,
         wants: listing.wants,
       })),

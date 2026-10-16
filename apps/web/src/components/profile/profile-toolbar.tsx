@@ -1,4 +1,5 @@
 import ComoTotals from "@/components/como/como-totals";
+import FeedbackRatingFilter from "@/components/feedback/feedback-rating-filter";
 import GridToolbar from "@/components/grid/grid-toolbar";
 import CosmoMemberFilter from "@/components/objekt/cosmo-member-filter";
 import ProgressToolbar from "@/components/progress/progress-toolbar";
@@ -55,6 +56,17 @@ export default function ProfileToolbar({ address }: Props) {
       return (
         <Toolbar title={m.grid_title()}>
           <GridToolbar />
+        </Toolbar>
+      );
+    // the page carries its own heading, as it has no tab to name it
+    case "/@{$username}/feedback":
+      return (
+        <Toolbar title={m.feedback_page_title()} heading={false}>
+          <ErrorBoundary fallback={null}>
+            <Suspense fallback={null}>
+              <FeedbackRatingFilter address={address} />
+            </Suspense>
+          </ErrorBoundary>
         </Toolbar>
       );
     // the list header below the tabs carries this page's heading

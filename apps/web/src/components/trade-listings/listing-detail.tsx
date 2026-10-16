@@ -166,14 +166,14 @@ function viewerRole(listing: TradeListing, viewer: ListingViewer): ListingRole {
     case "onlooker":
       return { role: "onlooker" };
     case "candidate": {
-      const panel = candidatePanel(listing, viewer);
-      return panel === "picker"
-        ? { role: "picker", viewer }
-        : {
-            role: "refused",
-            reason: panel,
-            activeClaims: viewer.claims.active,
-          };
+      switch (candidatePanel(listing, viewer)) {
+        case "picker":
+          return { role: "picker", viewer };
+        case "cap":
+          return { role: "refused", reason: "cap", claims: viewer.claims };
+        case "blocked":
+          return { role: "refused", reason: "blocked" };
+      }
     }
   }
 }

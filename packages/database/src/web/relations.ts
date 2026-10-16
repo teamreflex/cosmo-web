@@ -227,6 +227,7 @@ export const relations = defineRelations(schema, (r) => ({
     }),
     wants: r.many.tradeListingWants(),
     messages: r.many.tradeMessages(),
+    feedback: r.many.tradeFeedback(),
     fromUser: r.one.user({
       from: r.tradeOffers.fromUserId,
       to: r.user.id,
@@ -243,6 +244,15 @@ export const relations = defineRelations(schema, (r) => ({
     toCosmo: r.one.cosmoAccounts({
       from: r.tradeOffers.toAddress,
       to: r.cosmoAccounts.address,
+    }),
+    // received feedback of the pinned addresses
+    fromStats: r.one.userFeedbackStats({
+      from: r.tradeOffers.fromAddress,
+      to: r.userFeedbackStats.address,
+    }),
+    toStats: r.one.userFeedbackStats({
+      from: r.tradeOffers.toAddress,
+      to: r.userFeedbackStats.address,
     }),
     // the report a dispute or a party's ban froze the trade under
     disputeReport: r.one.reports({
@@ -269,6 +279,30 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.tradeMessages.tradeId,
       to: r.tradeOffers.id,
       optional: false,
+    }),
+  },
+  tradeFeedback: {
+    trade: r.one.tradeOffers({
+      from: r.tradeFeedback.tradeId,
+      to: r.tradeOffers.id,
+      optional: false,
+    }),
+    fromUser: r.one.user({
+      from: r.tradeFeedback.fromUserId,
+      to: r.user.id,
+    }),
+    toUser: r.one.user({
+      from: r.tradeFeedback.toUserId,
+      to: r.user.id,
+    }),
+    // the COSMO account and received feedback of the rater's pinned address
+    fromCosmo: r.one.cosmoAccounts({
+      from: r.tradeFeedback.fromAddress,
+      to: r.cosmoAccounts.address,
+    }),
+    fromStats: r.one.userFeedbackStats({
+      from: r.tradeFeedback.fromAddress,
+      to: r.userFeedbackStats.address,
     }),
   },
   // #endregion

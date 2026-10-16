@@ -313,7 +313,8 @@ function isStarted(item: TradeItemState) {
     : item.markedPaid || item.confirmed;
 }
 
-function isDone(item: TradeItemState) {
+// whether a token arrived or a payment was confirmed
+export function isDone(item: TradeItemState) {
   return item.kind === "objekt" ? item.transferred : item.confirmed;
 }
 

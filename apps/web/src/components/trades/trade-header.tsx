@@ -1,15 +1,17 @@
 import { m } from "@/i18n/messages";
 import { partyName, tradeTimeFormat } from "@/lib/client/trades";
-import type { TradeParty, TradeView } from "@/lib/universal/trades";
-import { cn } from "@/lib/utils";
 import type {
-  EndedTradeStatus,
-  TradeSide,
-} from "@apollo/database/web/types";
+  TradeParty,
+  TradePartyName,
+  TradeView,
+} from "@/lib/universal/trades";
+import { cn } from "@/lib/utils";
+import type { EndedTradeStatus, TradeSide } from "@apollo/database/web/types";
 import { otherSide } from "@apollo/trades/lifecycle";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconPlayerPause } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
+import FeedbackBadge from "../feedback/feedback-badge";
 import Countdown from "../misc/countdown";
 import UserAvatar from "../profile/user-avatar";
 import { tones } from "../trade-listings/state-tones";
@@ -51,9 +53,7 @@ export default function TradeHeader({ trade, side }: Props) {
                 inputs={{ name: "" }}
                 markup={{
                   user: () => (
-                    <PartyName
-                      party={trade.parties[otherSide(side)]}
-                    />
+                    <PartyName party={trade.parties[otherSide(side)]} />
                   ),
                 }}
               />
@@ -69,14 +69,15 @@ export default function TradeHeader({ trade, side }: Props) {
 }
 
 /**
- * A party's avatar and name, linking to their profile when they
- * have a COSMO username.
+ * A party's avatar, name, linking to their profile when they have a COSMO
+ * username, and rating.
  */
 function PartyName({ party }: { party: TradeParty }) {
   return (
     <span className="inline-flex min-w-0 items-center gap-2">
       <PartyAvatar party={party} className="size-6 text-xs **:p-1" />
       <PartyLink party={party} className="font-semibold" />
+      <FeedbackBadge variant="compact" rep={party.rep} />
     </span>
   );
 }
@@ -86,7 +87,7 @@ export function PartyAvatar({
   party,
   className,
 }: {
-  party: TradeParty;
+  party: TradePartyName;
   className: string;
 }) {
   return party.user === null ? (
@@ -107,7 +108,7 @@ export function PartyLink({
   party,
   className,
 }: {
-  party: TradeParty;
+  party: TradePartyName;
   className?: string;
 }) {
   const name = partyName(party);
@@ -208,11 +209,7 @@ export function TradeStatus({ trade }: { trade: TradeView }) {
   }
 }
 
-export function EndedBadge({
-  status,
-}: {
-  status: EndedTradeStatus;
-}) {
+export function EndedBadge({ status }: { status: EndedTradeStatus }) {
   switch (status) {
     case "completed":
       return (

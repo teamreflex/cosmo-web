@@ -18,10 +18,12 @@ import type {
   reportMessages,
   reports,
   staffAudit,
+  tradeFeedback,
   tradeListingWants,
   tradeMessages,
   tradeOfferItems,
   tradeOffers,
+  userFeedbackStats,
 } from "./schema";
 
 export type {
@@ -85,6 +87,7 @@ export const tradeNotificationTypes = [
   "trade_deadline_extended",
   "listing_closed",
   "trade_message",
+  "feedback_received",
 ] as const;
 export type TradeNotificationType = (typeof tradeNotificationTypes)[number];
 
@@ -111,6 +114,7 @@ export const notificationTypes = [
   ...retiredNotificationTypes,
   "listing_closed",
   "trade_message",
+  "feedback_received",
 ] as const;
 export type NotificationType = (typeof notificationTypes)[number];
 export type CosmoToken = typeof cosmoTokens.$inferSelect;
@@ -130,6 +134,8 @@ export type NewTradeOfferItem = typeof tradeOfferItems.$inferInsert;
 export type NewTradeListingWant = typeof tradeListingWants.$inferInsert;
 export type TradeMessage = typeof tradeMessages.$inferSelect;
 export type ReportMessage = typeof reportMessages.$inferSelect;
+export type TradeFeedback = typeof tradeFeedback.$inferSelect;
+export type UserFeedbackStats = typeof userFeedbackStats.$inferSelect;
 
 export interface EventWithEra extends Event {
   era: Era;
@@ -233,13 +239,27 @@ export const messageReportReasons = [
 ] as const;
 export type MessageReportReason = (typeof messageReportReasons)[number];
 
+// why someone reported a rating
+export const feedbackReportReasons = [
+  "retaliation",
+  "harassment",
+  "personal_info",
+  "spam",
+  "other",
+] as const;
+export type FeedbackReportReason = (typeof feedbackReportReasons)[number];
+
 /**
  * A stored report's reason: a user report's, a party dispute's, a chat
- * message report's, or `party_banned` for the dispute a ban opens on each of
- * the user's trades.
+ * message or feedback report's, or `party_banned` for the dispute a ban
+ * opens on each of the user's trades.
  */
 export type StoredReportReason =
-  ReportReason | DisputeReason | MessageReportReason | "party_banned";
+  | ReportReason
+  | DisputeReason
+  | MessageReportReason
+  | FeedbackReportReason
+  | "party_banned";
 
 export const staffAuditActions = [
   "report:read",
@@ -258,12 +278,14 @@ export const staffAuditActions = [
   "trade:cancel",
   "trade:extend",
   "trade:remove-message",
+  "feedback:remove",
 ] as const;
 export type StaffAuditAction = (typeof staffAuditActions)[number];
 
 /**
- * A `collection` target's id is the collection's slug, and a `message`
- * target's id is the chat message's id.
+ * A `collection` target's id is the collection's slug, a `message` target's
+ * id is the chat message's id, and a `feedback` target's id is the rating's
+ * id.
  */
 export const staffAuditTargetTypes = [
   "user",
@@ -272,6 +294,7 @@ export const staffAuditTargetTypes = [
   "collection",
   "trade",
   "message",
+  "feedback",
 ] as const;
 export type StaffAuditTargetType = (typeof staffAuditTargetTypes)[number];
 
@@ -291,7 +314,8 @@ export type CosmoLinkReason = (typeof cosmoLinkReasons)[number];
  * `expiresIn` is the ban length in seconds, null for a permanent ban. An API
  * key's name, owner and enabled state are copied in when the action runs, so
  * the row still reads after the key is deleted. A trade extension stores the
- * new deadline and the hours staff picked. A removed chat message names its
+ * new deadline and the hours staff picked. A removed chat message or rating
+ * names its
  * trade.
  */
 export type StaffAuditDetail =
@@ -304,7 +328,8 @@ export type StaffAuditDetail =
       enabled: boolean;
     }
   | { kind: "trade-extend"; deadlineAt: string; hours: number }
-  | { kind: "message"; tradeId: string };
+  | { kind: "message"; tradeId: string }
+  | { kind: "feedback"; tradeId: string };
 
 export const tradeOfferKinds = ["listing", "trade"] as const;
 export type TradeOfferKind = (typeof tradeOfferKinds)[number];
@@ -416,6 +441,16 @@ export type TradeWantKind = (typeof tradeWantKinds)[number];
 export const tradeMessageKinds = ["text", "event"] as const;
 export type TradeMessageKind = (typeof tradeMessageKinds)[number];
 
+export const feedbackRatings = ["positive", "neutral", "negative"] as const;
+export type FeedbackRating = (typeof feedbackRatings)[number];
+
+/**
+ * The rater's role on the trade: the payment's sender is the buyer and the
+ * other side the seller, and a trade with no payment has two traders.
+ */
+export const feedbackRoles = ["buyer", "seller", "trader"] as const;
+export type FeedbackRole = (typeof feedbackRoles)[number];
+
 // how a listing with a payment side takes offers
 export const listingOfferModes = [
   "price_or_offer",
@@ -443,7 +478,8 @@ export type PaymentMethod = (typeof paymentMethods)[number];
  * A timeline event in a trade's message stream, rendered through i18n.
  * Times are ISO strings, since the payload is stored as jsonb. Staff actions
  * carry the moderator's note but never who took them, and a dispute opened
- * by a ban names staff rather than a party.
+ * by a ban names staff rather than a party. `feedback_removed` names the
+ * removed rating's rater.
  */
 export type TradeEvent =
   | { type: "accepted" }
@@ -465,4 +501,5 @@ export type TradeEvent =
   | { type: "timed_out"; abandoned: TradeSide[] }
   | { type: "token_moved"; tokenId: number }
   | { type: "token_untransferable"; tokenId: number }
-  | { type: "message_removed"; messageId: number };
+  | { type: "message_removed"; messageId: number }
+  | { type: "feedback_removed"; side: TradeSide };

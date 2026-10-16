@@ -3,7 +3,7 @@ import StatusPill from "@/components/objekt/detail/status-pill";
 import UserAvatar from "@/components/profile/user-avatar";
 import { TradeStatus } from "@/components/trades/trade-header";
 import TransferRows from "@/components/trades/transfer-rows";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Timestamp } from "@/components/ui/timestamp";
 import { useHasPermission } from "@/hooks/use-has-permission";
@@ -23,22 +23,23 @@ import type {
   ReportTradeParty,
 } from "@/lib/universal/reports";
 import { staffUserText } from "@/lib/universal/staff-users";
-import { cn } from "@/lib/utils";
 import type { TradeSide } from "@apollo/database/web/types";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
 import { lazy, Suspense } from "react";
 import { toast } from "sonner";
+import FeedbackReport from "./feedback-report";
+import { nameInput } from "./name-input";
+import { OpenTradeLink, TargetHeader } from "./target-header";
 
 type Props = {
   report: AdminReportDetail;
 };
 
 /**
- * What was reported: a user, the trade a dispute is about, or a chat
- * message.
+ * What was reported: a user, the trade a dispute is about, a chat message,
+ * or a rating.
  */
 export default function ReportTarget({ report }: Props) {
   const { target } = report;
@@ -54,6 +55,8 @@ export default function ReportTarget({ report }: Props) {
       return <TradeTarget trade={target.trade} />;
     case "message":
       return <MessageTarget report={report} message={target.message} />;
+    case "feedback":
+      return <FeedbackReport report={report} feedback={target.feedback} />;
   }
 }
 
@@ -80,51 +83,26 @@ function MessageTarget({
       </p>
     );
   }
-  const { trade, sender } = message;
-  const senderName =
-    sender === null ? m.admin_reports_deleted_user() : staffUserText(sender);
+  const sender = nameInput(message.sender, "detail");
 
   return (
     <div className="flex flex-col gap-3 px-4 py-3.5">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
-        <div className="flex min-w-0 flex-col gap-0.5">
-          <span className="text-sm font-medium">
-            {m.admin_reports_message_title()}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            <ParaglideMessage
-              message={m.admin_reports_message_sent_by}
-              inputs={{ sender: senderName, time: "" }}
-              markup={{
-                sender: ({ children }) =>
-                  sender === null ? (
-                    children
-                  ) : (
-                    <StaffUserName
-                      user={sender}
-                      className="font-medium text-foreground"
-                    />
-                  ),
-                time: () => (
-                  <Timestamp date={message.sentAt} format={tradeTimeFormat} />
-                ),
-              }}
-            />
-          </span>
-        </div>
-        {trade !== null && (
-          <Link
-            to="/trade/$id"
-            params={{ id: trade.id }}
-            className={cn(
-              buttonVariants({ variant: "outline", size: "sm" }),
-              "ml-auto max-md:h-10",
-            )}
-          >
-            {m.admin_reports_open_trade()}
-          </Link>
-        )}
-      </div>
+      <TargetHeader
+        title={m.admin_reports_message_title()}
+        byline={
+          <ParaglideMessage
+            message={m.admin_reports_message_sent_by}
+            inputs={{ sender: sender.text, time: "" }}
+            markup={{
+              sender: sender.markup,
+              time: () => (
+                <Timestamp date={message.sentAt} format={tradeTimeFormat} />
+              ),
+            }}
+          />
+        }
+        tradeId={message.trade?.id ?? null}
+      />
       {env.VITE_CHAT_URL === undefined ? (
         <p className="text-sm text-muted-foreground">
           {m.admin_reports_message_unavailable()}
@@ -201,16 +179,7 @@ function TradeTarget({ trade }: { trade: ReportTargetTrade | null }) {
         <span className="flex items-center gap-2 text-sm text-muted-foreground">
           <TradeStatus trade={view} />
         </span>
-        <Link
-          to="/trade/$id"
-          params={{ id: view.id }}
-          className={cn(
-            buttonVariants({ variant: "outline", size: "sm" }),
-            "ml-auto max-md:h-10",
-          )}
-        >
-          {m.admin_reports_open_trade()}
-        </Link>
+        <OpenTradeLink tradeId={view.id} />
       </div>
       <div className="grid gap-2 sm:grid-cols-2">
         <TradeParty party={trade.from} side="from" />

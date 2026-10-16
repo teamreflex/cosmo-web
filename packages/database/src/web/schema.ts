@@ -7,6 +7,7 @@ import {
   bytea,
   check,
   date,
+  doublePrecision,
   index,
   integer,
   jsonb,
@@ -37,6 +38,8 @@ import {
   cosmoLinkEvents,
   cosmoLinkReasons,
   endedStatuses,
+  feedbackRatings,
+  feedbackRoles,
   listingOfferModes,
   listingStatuses,
   notificationTypes,
@@ -79,6 +82,8 @@ export const tradeWantKind = pgEnum("trade_want_kind", tradeWantKinds);
 export const tradeMessageKind = pgEnum("trade_message_kind", tradeMessageKinds);
 export const listingOfferMode = pgEnum("listing_offer_mode", listingOfferModes);
 export const paymentMethod = pgEnum("payment_method", paymentMethods);
+export const feedbackRating = pgEnum("feedback_rating", feedbackRatings);
+export const feedbackRole = pgEnum("feedback_role", feedbackRoles);
 
 export const cosmoAccounts = pgTable(
   "cosmo_account",
@@ -951,6 +956,100 @@ export const reportMessages = pgTable(
     body: bytea("body").notNull(),
   },
   (t) => [index("report_messages_trade_idx").on(t.tradeId)],
+);
+
+/**
+ * One rating per party per trade, showing from the moment it's left.
+ * `scored` says whether it counts towards the rated address's stats, set
+ * when it's left (`feedbackScored()`). The addresses are the trade's pinned
+ * ones, so received feedback follows the rated COSMO address across
+ * account deletion and link transfers, while the user columns are set null
+ * when an account is deleted. Moderators remove a rating by stamping it;
+ * nothing is ever edited.
+ */
+export const tradeFeedback = pgTable(
+  "trade_feedback",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tradeId: uuid("trade_id")
+      .notNull()
+      .references(() => tradeOffers.id, { onDelete: "cascade" }),
+    fromUserId: varchar("from_user_id", { length: 32 }).references(
+      () => user.id,
+      { onDelete: "set null" },
+    ),
+    toUserId: varchar("to_user_id", { length: 32 }).references(() => user.id, {
+      onDelete: "set null",
+    }),
+    fromAddress: citext("from_address", { length: 42 }).notNull(),
+    toAddress: citext("to_address", { length: 42 }).notNull(),
+    raterSide: tradeSide("rater_side").notNull(),
+    // the rater's role; the profile's role tabs read the rated party's inverse
+    role: feedbackRole("role").notNull(),
+    rating: feedbackRating("rating").notNull(),
+    // null when the rater left no comment
+    comment: varchar("comment", { length: 280 }),
+    communication: smallint("communication"),
+    speed: smallint("speed"),
+    scored: boolean("scored").notNull(),
+    createdAt: tradeTimestamp("created_at").notNull().defaultNow(),
+    removedAt: tradeTimestamp("removed_at"),
+  },
+  (t) => [
+    uniqueIndex("trade_feedback_trade_side_idx").on(t.tradeId, t.raterSide),
+    // the profile's keyset over an address's received feedback
+    index("trade_feedback_to_address_idx").on(
+      t.toAddress,
+      t.createdAt.desc().nullsFirst(),
+      t.id.desc().nullsFirst(),
+    ),
+    // serve the set-null cascades when an account is deleted
+    index("trade_feedback_to_user_idx").on(t.toUserId),
+    index("trade_feedback_from_user_idx").on(t.fromUserId),
+    check(
+      "trade_feedback_stars_chk",
+      sql`(${t.communication} IS NULL OR ${t.communication} BETWEEN 1 AND 5) AND (${t.speed} IS NULL OR ${t.speed} BETWEEN 1 AND 5)`,
+    ),
+    check(
+      "trade_feedback_addresses_chk",
+      sql`${t.fromAddress} <> ${t.toAddress}`,
+    ),
+    // both users are null once both accounts are deleted
+    check(
+      "trade_feedback_users_chk",
+      sql`${t.fromUserId} IS NULL OR ${t.toUserId} IS NULL OR ${t.fromUserId} <> ${t.toUserId}`,
+    ),
+  ],
+);
+
+/**
+ * Received feedback per COSMO address: the lifetime counts of its scored
+ * ratings no moderator removed, kept by an upsert in the transaction that
+ * leaves or removes one (`addFeedbackStats()`). Keyed by address with no
+ * foreign key, so it belongs to whichever user links the address now and
+ * survives account deletion. `score` is positives minus negatives, and
+ * `percent_positive` the share of positives among positives and negatives,
+ * null with neither.
+ */
+export const userFeedbackStats = pgTable(
+  "user_feedback_stats",
+  {
+    address: citext("address", { length: 42 }).primaryKey(),
+    positive: integer("positive").notNull().default(0),
+    neutral: integer("neutral").notNull().default(0),
+    negative: integer("negative").notNull().default(0),
+    score: integer("score")
+      .notNull()
+      .generatedAlwaysAs(sql`positive - negative`),
+    percentPositive: doublePrecision("percent_positive").generatedAlwaysAs(
+      sql`positive::float8 / nullif(positive + negative, 0)`,
+    ),
+  },
+  (t) => [
+    check("user_feedback_stats_positive_chk", sql`${t.positive} >= 0`),
+    check("user_feedback_stats_neutral_chk", sql`${t.neutral} >= 0`),
+    check("user_feedback_stats_negative_chk", sql`${t.negative} >= 0`),
+  ],
 );
 // #endregion
 

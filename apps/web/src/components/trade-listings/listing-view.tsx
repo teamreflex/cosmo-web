@@ -17,6 +17,7 @@ import {
   toTradeWant,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
+import { CLAIM_CAP_CEILING } from "@apollo/trades/caps";
 import { CLAIM_WINDOW } from "@apollo/trades/timers";
 import {
   IconAlertTriangle,
@@ -78,7 +79,12 @@ export type ListingRole =
   | { role: "claimer"; deadlineAt: Date | null; tradeId: string }
   | { role: "onlooker" }
   | { role: "picker"; viewer: Candidate }
-  | { role: "refused"; reason: "cap" | "blocked"; activeClaims: number };
+  | {
+      role: "refused";
+      reason: "cap";
+      claims: Extract<ListingViewer, { role: "candidate" }>["claims"];
+    }
+  | { role: "refused"; reason: "blocked" };
 
 type Props = {
   listing: TradeListing;
@@ -329,30 +335,46 @@ function RoleAlert({ listing, role, picks, reasonId, detailId }: AlertProps) {
       return role.claim !== null && <PosterClaimedAlert claim={role.claim} />;
     case "claimer":
       return <ClaimerAlert listing={listing} deadlineAt={role.deadlineAt} />;
-    case "refused":
+    case "refused": {
+      if (role.reason === "blocked") {
+        return (
+          <Alert role="status" variant="warning">
+            <IconAlertTriangle />
+            <AlertTitle id={reasonId}>
+              {m.trade_error_listing_unavailable()}
+            </AlertTitle>
+            <AlertDescription id={detailId}>
+              {m.listing_detail_blocked_body()}
+            </AlertDescription>
+          </Alert>
+        );
+      }
+      /**
+       * A rating removed since the viewer claimed can leave them holding
+       * more claims than their cap now allows, which the alert then says.
+       * Below the ceiling it adds that feedback raises the cap.
+       */
+      const { active, cap } = role.claims;
+      const finish =
+        active > cap
+          ? m.listing_detail_cap_over_body({ count: active - cap + 1 })
+          : m.listing_detail_cap_body();
       return (
         <Alert role="status" variant="warning">
           <IconAlertTriangle />
           <AlertTitle id={reasonId}>
-            {role.reason === "cap"
-              ? m.listing_detail_cap_title({ count: role.activeClaims })
-              : m.trade_error_listing_unavailable()}
+            {active > cap
+              ? m.listing_detail_cap_over_title({ active, cap })
+              : m.listing_detail_cap_title({ count: active })}
           </AlertTitle>
-          <AlertDescription>
-            <span id={detailId}>
-              {role.reason === "cap"
-                ? m.listing_detail_cap_body()
-                : m.listing_detail_blocked_body()}
-            </span>
-            {role.reason === "cap" && (
-              <>
-                {" "}
-                <MyTradesLink />
-              </>
-            )}
+          <AlertDescription id={detailId}>
+            {cap >= CLAIM_CAP_CEILING
+              ? finish
+              : `${finish} ${m.listing_detail_cap_grows()}`}
           </AlertDescription>
         </Alert>
       );
+    }
     case "picker":
       return (
         picks !== null && (
@@ -467,22 +489,27 @@ function RoleActions({
     case "picker":
     case "refused":
       return (
-        <Button
-          className={cn(
-            "data-disabled:pointer-events-none data-disabled:opacity-50",
-            className,
+        <>
+          <Button
+            className={cn(
+              "data-disabled:pointer-events-none data-disabled:opacity-50",
+              className,
+            )}
+            disabled={picks === null || !picks.valid}
+            focusableWhenDisabled
+            aria-describedby={
+              role.role === "refused" ? `${reasonId} ${detailId}` : reasonId
+            }
+            onClick={() => {
+              if (picks !== null) onAccept(picks.picked);
+            }}
+          >
+            {m.listing_detail_accept()}
+          </Button>
+          {role.role === "refused" && role.reason === "cap" && (
+            <MyTradesButton className={className} />
           )}
-          disabled={picks === null || !picks.valid}
-          focusableWhenDisabled
-          aria-describedby={
-            role.role === "refused" ? `${reasonId} ${detailId}` : reasonId
-          }
-          onClick={() => {
-            if (picks !== null) onAccept(picks.picked);
-          }}
-        >
-          {m.listing_detail_accept()}
-        </Button>
+        </>
       );
     default:
       return null;
@@ -543,14 +570,12 @@ function PickerBar({
   );
 }
 
-/**
- * Where a viewer at their claim cap goes to finish a trade.
- */
-function MyTradesLink() {
+// where a viewer at their claim cap goes to finish a trade
+function MyTradesButton({ className }: { className: string | undefined }) {
   return (
     <Link
       to="/market/trades"
-      className="font-medium text-cosmo dark:text-cosmo-text"
+      className={cn(buttonVariants({ variant: "outline" }), className)}
     >
       {m.my_trades_title()}
     </Link>

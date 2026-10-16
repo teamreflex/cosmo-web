@@ -1,6 +1,6 @@
 import { toPublicUser } from "@/lib/server/auth.server";
-import { getCosmoAddress } from "@/lib/server/cosmo-accounts.server";
 import { db } from "@/lib/server/db";
+import { feedbackRepColumns } from "@/lib/server/feedback.server";
 import {
   authenticatedMiddleware,
   authMiddleware,
@@ -14,7 +14,7 @@ import {
   preflightClaim,
 } from "@/lib/server/trades/claim.server";
 import {
-  activeClaimCount,
+  claimStanding,
   readCandidateSide,
   readListingState,
 } from "@/lib/server/trades/detail.server";
@@ -39,10 +39,12 @@ import {
   refusePoster,
 } from "@/lib/server/trades/listings.server";
 import {
+  posterLinkColumns,
   posterRefusal,
-  readPosterAccount,
+  toPosterAccount,
 } from "@/lib/server/trades/poster.server";
 import { ExpectedError } from "@/lib/universal/errors/expected";
+import { toFeedbackRep } from "@/lib/universal/feedback";
 import {
   type ListingViewer,
   type ListingWriteResult,
@@ -252,36 +254,45 @@ export const $fetchTradeTokenStates = createServerFn({ method: "GET" })
   .middleware([cosmoMiddleware])
   .handler(async ({ context }) => {
     const { address } = context.cosmo;
-    const [locked, live] = await Promise.all([
-      db
-        .selectDistinct({ tokenId: lockedObjekts.tokenId })
-        .from(lockedObjekts)
-        .where(
-          and(
-            eq(lockedObjekts.address, address),
-            eq(lockedObjekts.locked, true),
-          ),
-        )
-        .orderBy(lockedObjekts.tokenId),
-      db
-        .selectDistinct({ tokenId: tradeOfferItems.tokenId })
-        .from(tradeOfferItems)
-        .innerJoin(tradeOffers, eq(tradeOfferItems.offerId, tradeOffers.id))
-        .where(
-          and(
-            eq(tradeOfferItems.live, true),
-            or(
-              eq(tradeOffers.fromAddress, address),
-              eq(tradeOffers.toAddress, address),
+    // the caller's locks and live trade tokens, in one statement
+    const rows = await db
+      .select({
+        tokenId: sql<number | null>`${lockedObjekts.tokenId}`.as("token_id"),
+        flag: sql<"locked" | "live">`'locked'`.as("flag"),
+      })
+      .from(lockedObjekts)
+      .where(
+        and(eq(lockedObjekts.address, address), eq(lockedObjekts.locked, true)),
+      )
+      .union(
+        db
+          .select({
+            tokenId: sql<number | null>`${tradeOfferItems.tokenId}`.as(
+              "token_id",
+            ),
+            flag: sql<"locked" | "live">`'live'`.as("flag"),
+          })
+          .from(tradeOfferItems)
+          .innerJoin(tradeOffers, eq(tradeOfferItems.offerId, tradeOffers.id))
+          .where(
+            and(
+              eq(tradeOfferItems.live, true),
+              or(
+                eq(tradeOffers.fromAddress, address),
+                eq(tradeOffers.toAddress, address),
+              ),
             ),
           ),
-        )
-        .orderBy(tradeOfferItems.tokenId),
-    ]);
+      )
+      .orderBy(sql`token_id`);
 
     return {
-      locked: locked.map((row) => row.tokenId),
-      live: live.flatMap((row) => row.tokenId ?? []),
+      locked: rows.flatMap((row) =>
+        row.flag === "locked" && row.tokenId !== null ? [row.tokenId] : [],
+      ),
+      live: rows.flatMap((row) =>
+        row.flag === "live" && row.tokenId !== null ? [row.tokenId] : [],
+      ),
     };
   });
 
@@ -324,8 +335,9 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
       with: {
         items: { orderBy: { id: "asc" } },
         wants: { orderBy: { id: "asc" } },
-        fromUser: true,
+        fromUser: { with: { cosmoAccount: posterLinkColumns } },
         fromCosmo: { columns: { username: true } },
+        fromStats: { columns: feedbackRepColumns },
       },
     });
     if (!row) return null;
@@ -340,12 +352,9 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
     if (!listing) return null;
     const tokenIds = listing.items.map((item) => item.tokenId);
     // a claimed listing's trade runs on as agreed, so only an open one is judged
-    const poster =
+    const flags =
       state.status === "open"
-        ? await Promise.all([
-            readWebTokenFlags(db, listing.fromAddress, tokenIds),
-            readPosterAccount(db, listing.fromUserId),
-          ])
+        ? await readWebTokenFlags(db, listing.fromAddress, tokenIds)
         : null;
     return {
       id: listing.id,
@@ -354,17 +363,18 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
       note: listing.note,
       poster: listing.fromUser && toPublicUser(listing.fromUser),
       cosmoUsername: listing.fromCosmo?.username ?? null,
+      rep: listing.fromUser && toFeedbackRep(listing.fromStats),
       items: listing.items,
       wants: listing.wants,
       state,
       blocked:
-        poster !== null &&
+        flags !== null &&
         posterRefusal(
           {
             tokenIds,
             wantKinds: listing.wants.map((want) => want.kind),
-            holdings: { states, ...poster[0] },
-            poster: poster[1],
+            holdings: { states, ...flags },
+            poster: listing.fromUser && toPosterAccount(listing.fromUser),
           },
           listing.fromAddress,
         ) !== null,
@@ -436,23 +446,18 @@ export const $fetchTradeListingViewer = createServerFn({ method: "GET" })
       return { role: "onlooker" };
     }
 
-    const link = await getCosmoAddress(db, viewerId);
-    if (link.kind === "none") return { role: "unlinked" };
+    const { address, ...standing } = await claimStanding(db, viewerId);
+    if (address === null) return { role: "unlinked" };
 
     // whether the poster's side stops a claim is $fetchTradeListing's `blocked`
-    const [rows, active] = await Promise.all([
-      readCandidateSide(
-        link.address,
-        listing.wants.map((want) => storedWantSchema.parse(want)),
-      ),
-      activeClaimCount(db, viewerId),
-    ]);
-
     return {
       role: "candidate",
       updatedAt: listing.updatedAt,
-      rows,
-      claims: { active, cap: claimCap({ positive: 0, abandoned: 0 }) },
-      ownAddress: isEqual(link.address, listing.fromAddress),
+      rows: await readCandidateSide(
+        address,
+        listing.wants.map((want) => storedWantSchema.parse(want)),
+      ),
+      claims: { active: standing.active, cap: claimCap(standing) },
+      ownAddress: isEqual(address, listing.fromAddress),
     };
   });

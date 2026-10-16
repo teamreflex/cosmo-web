@@ -7,15 +7,20 @@ import type {
 import type { TradeState } from "@apollo/trades/lifecycle";
 import type { TradeItemStatus } from "@apollo/trades/transfers";
 import type { PublicUser } from "./auth";
+import type { FeedbackRep, TradeFeedbackView } from "./feedback";
 import type { Objekt } from "./objekt-conversion";
 import type { ListingFeedItem } from "./trade-listings";
 
 /**
- * One side of a trade. Both are null once the side's account is deleted,
+ * One side of a trade. All are null once the side's account is deleted,
  * since its pinned address may since belong to someone else. Otherwise the
- * username is the COSMO account's behind the pinned address.
+ * username and the rating are those of the pinned address, the rating null
+ * before its first visible one.
  */
-export type TradeParty = {
+export type TradeParty = TradePartyName & { rep: FeedbackRep | null };
+
+// a side as lists that don't show ratings name it
+export type TradePartyName = {
   user: PublicUser | null;
   cosmoUsername: string | null;
 };
@@ -49,6 +54,7 @@ export type TradeDispute = {
 /**
  * A trade as its page shows it. `deadlinePassed` says the deadline has
  * passed the drain's watermark, so the parties can no longer act.
+ * `feedback` is where the viewer's feedback stands, `none` for staff.
  */
 export type TradeView = {
   id: string;
@@ -61,6 +67,7 @@ export type TradeView = {
   parties: Record<TradeSide, TradeParty>;
   items: TradeItemView[];
   events: { id: number; createdAt: Date; event: TradeEvent }[];
+  feedback: TradeFeedbackView;
 };
 
 /**
@@ -96,15 +103,14 @@ export type MyTradeRow = {
   dispute: TradeDispute | null;
   endedAt: Date | null;
   listingId: string | null;
-  counterparty: TradeParty;
+  counterparty: TradePartyName;
   send: MyTradeSide;
   get: MyTradeSide;
   needsYou: boolean;
 };
 
 /**
- * A page of My trades. The Active tab is one page; Finished pages on until
- * `nextCursor` is undefined.
+ * A page of My trades; either tab pages on until `nextCursor` is undefined.
  */
 export type MyTradesPage = {
   rows: MyTradeRow[];

@@ -1,14 +1,13 @@
-import StaffUserName from "@/components/admin/staff-user-name";
 import StatusPill from "@/components/objekt/detail/status-pill";
 import { Timestamp } from "@/components/ui/timestamp";
 import { m } from "@/i18n/messages";
 import { reportReasonLabel, reportTargetTypeLabel } from "@/lib/client/reports";
 import type { AdminReportRow } from "@/lib/universal/reports";
-import { type StaffUser, staffUserText } from "@/lib/universal/staff-users";
+import type { FeedbackRating } from "@apollo/database/web/types";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconChevronRight } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import type { ReactNode } from "react";
+import { nameInput } from "./name-input";
 
 type Props = {
   row: AdminReportRow;
@@ -47,12 +46,12 @@ export default function ReportRow({ row }: Props) {
 }
 
 function RowSummary({ row }: Props) {
-  const reporter = nameInput(row.reporter);
+  const reporter = nameInput(row.reporter, "row");
   const { target } = row;
 
   switch (target.type) {
     case "user": {
-      const user = nameInput(target.user);
+      const user = nameInput(target.user, "row");
       return (
         <ParaglideMessage
           message={m.admin_reports_row_summary}
@@ -72,8 +71,8 @@ function RowSummary({ row }: Props) {
           />
         );
       }
-      const from = nameInput(trade.from);
-      const to = nameInput(trade.to);
+      const from = nameInput(trade.from, "row");
+      const to = nameInput(trade.to, "row");
       return (
         <ParaglideMessage
           message={m.admin_reports_row_trade_summary}
@@ -102,7 +101,7 @@ function RowSummary({ row }: Props) {
           />
         );
       }
-      const sender = nameInput(message.sender);
+      const sender = nameInput(message.sender, "row");
       return (
         <ParaglideMessage
           message={m.admin_reports_row_message_summary}
@@ -115,26 +114,43 @@ function RowSummary({ row }: Props) {
         />
       );
     }
+    case "feedback": {
+      const { feedback } = target;
+      if (feedback === null) {
+        return (
+          <ParaglideMessage
+            message={m.admin_reports_row_feedback_gone}
+            inputs={{ reporter: reporter.text }}
+            markup={{ reporter: reporter.markup }}
+          />
+        );
+      }
+      const author = nameInput(feedback.author, "row");
+      const rated = nameInput(feedback.rated, "row");
+      return (
+        <ParaglideMessage
+          message={feedbackSummaries[feedback.rating]}
+          inputs={{
+            author: author.text,
+            rated: rated.text,
+            reporter: reporter.text,
+          }}
+          markup={{
+            author: author.markup,
+            rated: rated.markup,
+            reporter: reporter.markup,
+          }}
+        />
+      );
+    }
   }
 }
 
-/**
- * A user named in a row summary, as message text and as the markup that
- * renders it, cut short with the full name on hover since a COSMO username
- * can be a 42-character address; "Deleted user" once their account is gone.
- */
-function nameInput(user: StaffUser | null) {
-  const text =
-    user === null ? m.admin_reports_deleted_user() : staffUserText(user);
-  return {
-    text,
-    markup: ({ children }: { children?: ReactNode }) =>
-      user === null ? (
-        children
-      ) : (
-        <span title={text} className="inline-flex max-w-40 align-bottom">
-          <StaffUserName user={user} link={false} />
-        </span>
-      ),
-  };
-}
+const feedbackSummaries = {
+  positive: m.admin_reports_row_feedback_positive,
+  neutral: m.admin_reports_row_feedback_neutral,
+  negative: m.admin_reports_row_feedback_negative,
+} satisfies Record<
+  FeedbackRating,
+  typeof m.admin_reports_row_feedback_positive
+>;

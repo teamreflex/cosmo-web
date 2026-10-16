@@ -2,14 +2,25 @@ import {
   cosmoAccounts,
   tradeOfferItems,
   tradeOffers,
+  userFeedbackStats,
 } from "@apollo/database/web/schema";
 import {
   liveTradeStatuses,
   type TradeOfferStatus,
 } from "@apollo/database/web/types";
 import { allocate, fitsWant } from "@apollo/trades/allocate";
+import type { ClaimStats } from "@apollo/trades/caps";
 import { totalWanted } from "@apollo/trades/composer";
-import { and, desc, eq, exists, inArray, isNotNull } from "drizzle-orm";
+import {
+  and,
+  count,
+  desc,
+  eq,
+  exists,
+  inArray,
+  isNotNull,
+  sql,
+} from "drizzle-orm";
 import { QueryBuilder } from "drizzle-orm/pg-core";
 import { Objekt } from "../../universal/objekt-conversion";
 import {
@@ -26,30 +37,53 @@ import { readCandidates } from "./holdings.server";
 const qb = new QueryBuilder();
 
 /**
- * How many claims the user holds open: trades they accepted from a
- * listing that are still accepted or disputed. Only a claim's trade copies
- * items with a `listing_id`.
+ * What a user's claim cap is judged on, in one statement: their linked COSMO
+ * `address` (null when unlinked), how many claims they hold open (trades
+ * they accepted from a listing that are still accepted or disputed; only a
+ * claim's trade copies items with a `listing_id`), and the feedback score of
+ * their linked address, or 0 before its first scored rating.
  */
-export function activeClaimCount(executor: DbOrTx, userId: string) {
-  return executor.$count(
-    tradeOffers,
-    and(
-      eq(tradeOffers.kind, "trade"),
-      eq(tradeOffers.toUserId, userId),
-      inArray(tradeOffers.status, [...liveTradeStatuses]),
-      exists(
-        qb
-          .select({ id: tradeOfferItems.id })
-          .from(tradeOfferItems)
-          .where(
-            and(
-              eq(tradeOfferItems.offerId, tradeOffers.id),
-              isNotNull(tradeOfferItems.listingId),
+export async function claimStanding(
+  executor: DbOrTx,
+  userId: string,
+): Promise<ClaimStats & { address: string | null; active: number }> {
+  const link = qb
+    .select({ address: cosmoAccounts.address })
+    .from(cosmoAccounts)
+    .where(eq(cosmoAccounts.userId, userId));
+  const [row] = await executor
+    .select({
+      address: sql<string | null>`(${link})`,
+      active: count(),
+      score: sql<number>`coalesce((${qb
+        .select({ score: userFeedbackStats.score })
+        .from(userFeedbackStats)
+        .where(inArray(userFeedbackStats.address, link))}), 0)`.mapWith(Number),
+    })
+    .from(tradeOffers)
+    .where(
+      and(
+        eq(tradeOffers.kind, "trade"),
+        eq(tradeOffers.toUserId, userId),
+        inArray(tradeOffers.status, [...liveTradeStatuses]),
+        exists(
+          qb
+            .select({ id: tradeOfferItems.id })
+            .from(tradeOfferItems)
+            .where(
+              and(
+                eq(tradeOfferItems.offerId, tradeOffers.id),
+                isNotNull(tradeOfferItems.listingId),
+              ),
             ),
-          ),
+        ),
       ),
-    ),
-  );
+    );
+  return {
+    address: row?.address ?? null,
+    active: row?.active ?? 0,
+    score: row?.score ?? 0,
+  };
 }
 
 /**

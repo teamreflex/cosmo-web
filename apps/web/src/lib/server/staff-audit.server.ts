@@ -85,6 +85,14 @@ type TradeExtendAuditEntry = {
   detail: Extract<StaffAuditDetail, { kind: "trade-extend" }>;
 };
 
+type FeedbackRemoveAuditEntry = {
+  staffId: string;
+  action: "feedback:remove";
+  feedbackId: string;
+  reportId: string | null;
+  detail: Extract<StaffAuditDetail, { kind: "feedback" }>;
+};
+
 /**
  * Entries written without checking for a recent duplicate, so several can go
  * in one insert.
@@ -97,7 +105,8 @@ type UndeduplicatedAuditEntry =
   | ApiKeyAuditEntry
   | MetadataAuditEntry
   | TradeAuditEntry
-  | TradeExtendAuditEntry;
+  | TradeExtendAuditEntry
+  | FeedbackRemoveAuditEntry;
 
 export type StaffAuditEntry = ReportReadAuditEntry | UndeduplicatedAuditEntry;
 
@@ -171,6 +180,15 @@ function toAuditRow(entry: StaffAuditEntry): typeof staffAudit.$inferInsert {
         action: entry.action,
         targetType: "trade",
         targetId: entry.tradeId,
+        reportId: entry.reportId,
+        detail: entry.detail,
+      };
+    case "feedback:remove":
+      return {
+        staffId: entry.staffId,
+        action: entry.action,
+        targetType: "feedback",
+        targetId: entry.feedbackId,
         reportId: entry.reportId,
         detail: entry.detail,
       };
@@ -312,11 +330,21 @@ function toAuditTarget(
         throw new Error(`Audit row on message ${row.targetId} has no detail`);
       }
       return { type: "message", id: row.targetId, tradeId: row.detail.tradeId };
+    case "feedback":
+      // recordStaffAudit always stores the rating's trade with these rows
+      if (row.detail?.kind !== "feedback") {
+        throw new Error(`Audit row on feedback ${row.targetId} has no detail`);
+      }
+      return {
+        type: "feedback",
+        id: row.targetId,
+        tradeId: row.detail.tradeId,
+      };
   }
 }
 
 /**
- * API key details are shown as the target instead.
+ * API key, message and feedback details are shown as the target instead.
  */
 function toAuditDetail(detail: StaffAuditDetail): AdminAuditDetail | null {
   switch (detail.kind) {
@@ -336,6 +364,7 @@ function toAuditDetail(detail: StaffAuditDetail): AdminAuditDetail | null {
       };
     case "api-key":
     case "message":
+    case "feedback":
       return null;
   }
 }

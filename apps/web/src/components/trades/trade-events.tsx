@@ -149,6 +149,17 @@ export function describeEvent(
     }
     case "message_removed":
       return m.trade_page_event_message_removed({ appName });
+    case "feedback_removed":
+      // a moderator removing a rating, naming whoever left it
+      return event.side === side ? (
+        m.trade_page_event_feedback_removed_rating_you({ appName })
+      ) : (
+        <ParaglideMessage
+          message={m.trade_page_event_feedback_removed_rating_them}
+          inputs={{ appName, name: nameOf(event.side) }}
+          markup={bold}
+        />
+      );
     // the payment side arrives in phase 13a
     case "marked_paid":
     case "payment_confirmed":

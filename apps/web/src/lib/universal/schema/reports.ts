@@ -2,7 +2,11 @@ import {
   banLengthOptions,
   reportTargetTypeFilters,
 } from "@/lib/universal/reports";
-import { reportReasons, reportStatuses } from "@apollo/database/web/types";
+import {
+  feedbackReportReasons,
+  reportReasons,
+  reportStatuses,
+} from "@apollo/database/web/types";
 import * as z from "zod";
 
 export const reportNoteSchema = z
@@ -13,14 +17,21 @@ export const reportNoteSchema = z
   .transform((note) => (note === "" ? undefined : note));
 
 /**
- * One variant per reportable target; later phases add messages, feedback
- * and trades.
+ * One variant per target reported through the web app, each with its own
+ * reasons. Chat reports its messages itself, and trades are reported by
+ * opening a dispute.
  */
 export const createReportSchema = z.discriminatedUnion("targetType", [
   z.object({
     targetType: z.literal("user"),
     targetId: z.string().min(1),
     reason: z.enum(reportReasons),
+    note: reportNoteSchema,
+  }),
+  z.object({
+    targetType: z.literal("feedback"),
+    targetId: z.uuid(),
+    reason: z.enum(feedbackReportReasons),
     note: reportNoteSchema,
   }),
 ]);

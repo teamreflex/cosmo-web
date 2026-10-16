@@ -1,22 +1,30 @@
-import { listDrainCursor } from "@apollo/database/web/schema";
+import { listDrainCursor, tradeOffers } from "@apollo/database/web/schema";
 import {
   endedTradeStatuses,
   liveTradeStatuses,
   type ReportStatus,
   type TradeEvent,
+  type TradeSide,
 } from "@apollo/database/web/types";
 import { type TradeState, tradeState } from "@apollo/trades/lifecycle";
 import { DRAIN_CURSOR_NAME, isTimedOut } from "@apollo/trades/timers";
 import { itemStatus } from "@apollo/trades/transfers";
 import { sql } from "drizzle-orm";
+import {
+  toFeedbackRep,
+  tradeFeedbackView,
+  type VisibleFeedbackRow,
+} from "../../universal/feedback";
 import type {
   TradeDispute,
   TradeItemView,
   TradeParty,
+  TradePartyName,
   TradeView,
 } from "../../universal/trades";
 import { type ServerUser, toPublicUser } from "../auth.server";
 import { db } from "../db";
+import { feedbackRepColumns } from "../feedback.server";
 import { readIndexed } from "./feed.server";
 
 /**
@@ -28,29 +36,29 @@ export const watermarkExtra = () =>
     listDrainCursor.chainTime,
   );
 
-// both parties' users and the COSMO accounts behind their pinned addresses
-export const tradePartyRelations = {
-  fromUser: true,
-  toUser: true,
-  fromCosmo: { columns: { username: true } },
-  toCosmo: { columns: { username: true } },
-} as const;
-
 /**
  * One side as a trade shows it. A deleted party's pinned address may since
- * belong to someone else, so neither name is shown.
+ * belong to someone else, so neither its name nor its rating is shown.
  */
-export function toTradeParty(
+function toTradeParty(
   userId: string | null,
   user: ServerUser | null,
   cosmo: { username: string } | null,
+  stats: Parameters<typeof toFeedbackRep>[0],
 ): TradeParty {
-  return userId === null
+  const party = toPartyName(userId, user, cosmo);
+  return { ...party, rep: party.user === null ? null : toFeedbackRep(stats) };
+}
+
+// one side's name without its rating, for lists that don't show ratings
+export function toPartyName(
+  userId: string | null,
+  user: ServerUser | null,
+  cosmo: { username: string } | null,
+): TradePartyName {
+  return userId === null || user === null
     ? { user: null, cosmoUsername: null }
-    : {
-        user: user && toPublicUser(user),
-        cosmoUsername: cosmo?.username ?? null,
-      };
+    : { user: toPublicUser(user), cosmoUsername: cosmo?.username ?? null };
 }
 
 // the listing a trade was claimed from, which every listing item names
@@ -85,15 +93,44 @@ export function tradeDispute(
   return null;
 }
 
+// what a party's trade page reads of each rating
+const feedbackColumns = {
+  id: true,
+  raterSide: true,
+  rating: true,
+  comment: true,
+  communication: true,
+  speed: true,
+  createdAt: true,
+  removedAt: true,
+} as const satisfies Record<keyof VisibleFeedbackRow, true>;
+
 /**
- * A trade as its page shows it, with its dispute report for staff, or null
- * when the id isn't an accepted, disputed or ended trade. Each unsent item's
- * status comes from its token's owner in the indexer while the trade is
- * live. The drain's watermark comes back with the row, in one statement.
+ * Who reads a trade: a signed-in user, or staff reading it from a report.
  */
-export async function readTradeView(tradeId: string): Promise<{
+type TradeReader = { kind: "user"; userId: string } | { kind: "staff" };
+
+/**
+ * The reader against the trade's parties. A user who is a party reads it as
+ * one even when they are staff; anyone else reads it as staff, and the
+ * caller decides whether they may.
+ */
+type TradeReadViewer = { kind: "party"; side: TradeSide } | { kind: "staff" };
+
+/**
+ * A trade as its page shows it, with its dispute report for staff and who
+ * reads it, or null when the id isn't an accepted, disputed or ended trade.
+ * Each unsent item's status comes from its token's owner in the indexer
+ * while the trade is live. The drain's watermark comes back with the row,
+ * in one statement.
+ */
+export async function readTradeView(
+  tradeId: string,
+  reader: TradeReader,
+): Promise<{
   trade: TradeView;
   disputeReport: { id: string; status: ReportStatus } | null;
+  viewer: TradeReadViewer;
 } | null> {
   const row = await db.query.tradeOffers.findFirst({
     where: {
@@ -113,15 +150,40 @@ export async function readTradeView(tradeId: string): Promise<{
       deadlineAt: true,
       endedAt: true,
     },
-    extras: { watermark: watermarkExtra },
+    extras: {
+      watermark: watermarkExtra,
+      now: () => sql<Date>`now()`.mapWith(tradeOffers.endedAt),
+    },
     with: {
       items: { orderBy: { id: "asc" } },
+      /**
+       * A party's own rating, and the other party's while no moderator
+       * removed it. Staff read none.
+       */
+      feedback: {
+        columns: feedbackColumns,
+        where: {
+          RAW: (t) =>
+            reader.kind === "staff"
+              ? sql`false`
+              : sql`${t.fromUserId} = ${reader.userId} or ${t.removedAt} is null`,
+        },
+      },
       messages: {
         where: { kind: "event" },
         columns: { id: true, event: true, createdAt: true },
         orderBy: { id: "asc" },
       },
-      ...tradePartyRelations,
+      /**
+       * Both parties' users, and the COSMO accounts and feedback stats
+       * behind their pinned addresses.
+       */
+      fromUser: true,
+      toUser: true,
+      fromCosmo: { columns: { username: true } },
+      toCosmo: { columns: { username: true } },
+      fromStats: { columns: feedbackRepColumns },
+      toStats: { columns: feedbackRepColumns },
       disputeReport: { columns: { id: true, status: true } },
     },
   });
@@ -134,6 +196,12 @@ export async function readTradeView(tradeId: string): Promise<{
     [...new Set(row.items.flatMap((item) => item.slug ?? []))],
     row.items.flatMap((item) => item.tokenId ?? []),
   );
+  const viewer: TradeReadViewer =
+    reader.kind === "user" && row.fromUserId === reader.userId
+      ? { kind: "party", side: "from" }
+      : reader.kind === "user" && row.toUserId === reader.userId
+        ? { kind: "party", side: "to" }
+        : { kind: "staff" };
   const state = tradeState(row, row.items);
   const live = state.status === "accepted" || state.status === "disputed";
   const events = row.messages.flatMap(({ id, createdAt, event }) =>
@@ -149,8 +217,13 @@ export async function readTradeView(tradeId: string): Promise<{
     deadlinePassed: deadlinePassed(state, row.deadlineAt, row.watermark),
     listingId: tradeListingId(row.items),
     parties: {
-      from: toTradeParty(row.fromUserId, row.fromUser, row.fromCosmo),
-      to: toTradeParty(row.toUserId, row.toUser, row.toCosmo),
+      from: toTradeParty(
+        row.fromUserId,
+        row.fromUser,
+        row.fromCosmo,
+        row.fromStats,
+      ),
+      to: toTradeParty(row.toUserId, row.toUser, row.toCosmo, row.toStats),
     },
     items: row.items.map((item): TradeItemView => {
       const token =
@@ -177,6 +250,18 @@ export async function readTradeView(tradeId: string): Promise<{
       };
     }),
     events,
+    feedback:
+      viewer.kind === "staff"
+        ? { state: "none" }
+        : tradeFeedbackView({
+            state,
+            side: viewer.side,
+            endedAt: row.endedAt,
+            now: row.now,
+            rows: row.feedback,
+            counterpartExists:
+              (viewer.side === "from" ? row.toUser : row.fromUser) !== null,
+          }),
   };
-  return { trade, disputeReport: row.disputeReport };
+  return { trade, disputeReport: row.disputeReport, viewer };
 }

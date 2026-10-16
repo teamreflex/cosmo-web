@@ -3,23 +3,7 @@ import type { TradeWantKind } from "@apollo/database/web/types";
 import { isEqual } from "@apollo/util";
 import type { CosmoLink } from "../../universal/cosmo-accounts";
 import type { TradeErrorCode } from "../../universal/errors/trades";
-import { db, type DbOrTx } from "../db";
-import {
-  firstRefusal,
-  readTokenStates,
-  type TokenHoldings,
-} from "./holdings.server";
-
-/**
- * What the poster-side check needs from a listing: who posted it from which
- * address, the tokens it offers and the kinds of its wants.
- */
-export type PosterListing = {
-  fromUserId: string | null;
-  fromAddress: string;
-  tokenIds: readonly number[];
-  wantKinds: readonly TradeWantKind[];
-};
+import { firstRefusal, type TokenHoldings } from "./holdings.server";
 
 /**
  * The poster's user row and COSMO link, or null when the listing has no
@@ -38,39 +22,30 @@ export type PosterFacts = {
   poster: PosterAccount | null;
 };
 
-export async function readPosterAccount(
-  executor: DbOrTx,
-  fromUserId: string | null,
-): Promise<PosterAccount | null> {
-  if (fromUserId === null) return null;
-  const row = await executor.query.user.findFirst({
-    where: { id: fromUserId },
-    columns: { banned: true, banExpires: true },
-    with: { cosmoAccount: { columns: { address: true, username: true } } },
-  });
-  if (!row) return null;
-  const { cosmoAccount, ...ban } = row;
-  return {
-    ...ban,
-    link: cosmoAccount ? { kind: "linked", ...cosmoAccount } : { kind: "none" },
-  };
-}
+/**
+ * The relational `with` that loads a poster's COSMO link with their user row.
+ */
+export const posterLinkColumns = {
+  columns: { address: true, username: true },
+} as const;
 
 /**
- * Gathers everything posterRefusal() judges, without taking locks.
+ * A poster's user row, read with posterLinkColumns, as posterRefusal() judges
+ * it.
  */
-export async function readPosterFacts(
-  listing: PosterListing,
-): Promise<PosterFacts> {
-  const [holdings, poster] = await Promise.all([
-    readTokenStates(listing.fromAddress, listing.tokenIds),
-    readPosterAccount(db, listing.fromUserId),
-  ]);
+export function toPosterAccount({
+  banned,
+  banExpires,
+  cosmoAccount,
+}: {
+  banned: boolean;
+  banExpires: Date | null;
+  cosmoAccount: { address: string; username: string } | null;
+}): PosterAccount {
   return {
-    tokenIds: listing.tokenIds,
-    wantKinds: listing.wantKinds,
-    holdings,
-    poster,
+    banned,
+    banExpires,
+    link: cosmoAccount ? { kind: "linked", ...cosmoAccount } : { kind: "none" },
   };
 }
 

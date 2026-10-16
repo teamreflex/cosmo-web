@@ -1,4 +1,5 @@
 import { db } from "@/lib/server/db";
+import { refuseFeedback } from "@/lib/server/feedback.server";
 import {
   authenticatedMiddleware,
   staffMiddleware,
@@ -23,8 +24,9 @@ import { createServerFn } from "@tanstack/react-start";
 import { sql } from "drizzle-orm";
 
 /**
- * Report a user. One open report per reporter and target, and a generous
- * rate limit so a burst of reports can't flood the queue.
+ * Report a user or a rating. One open report per reporter and
+ * target, and a generous rate limit so a burst of reports can't flood the
+ * queue.
  */
 export const $createReport = createServerFn({ method: "POST" })
   .validator(createReportSchema)
@@ -38,16 +40,33 @@ export const $createReport = createServerFn({ method: "POST" })
       window: "10 minutes",
     });
 
-    if (data.targetId === userId) {
-      throw new ExpectedError("report_self");
-    }
+    switch (data.targetType) {
+      case "user": {
+        if (data.targetId === userId) {
+          throw new ExpectedError("report_self");
+        }
 
-    const target = await db.query.user.findFirst({
-      where: { id: data.targetId },
-      columns: { id: true },
-    });
-    if (!target) {
-      throw new ExpectedError("report_target_not_found");
+        const target = await db.query.user.findFirst({
+          where: { id: data.targetId },
+          columns: { id: true },
+        });
+        if (!target) {
+          throw new ExpectedError("report_target_not_found");
+        }
+        break;
+      }
+      case "feedback": {
+        // a removed rating answers as not found, so a report can't probe for one
+        const target = await db.query.tradeFeedback.findFirst({
+          where: { id: data.targetId, removedAt: { isNull: true } },
+          columns: { fromUserId: true },
+        });
+        if (!target) refuseFeedback("feedback_not_found");
+        if (target.fromUserId === userId) {
+          throw new ExpectedError("report_self");
+        }
+        break;
+      }
     }
 
     const [result] = await db

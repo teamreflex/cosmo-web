@@ -31,6 +31,11 @@ import { Link } from "@tanstack/react-router";
 import { lazy, type ReactNode, Suspense, useId, useState } from "react";
 import { toast } from "sonner";
 import { useCopyToClipboard } from "usehooks-ts";
+import FeedbackBadge from "../feedback/feedback-badge";
+import type { FeedbackWindow } from "../feedback/feedback-leave-dialog";
+import FeedbackPrompt, { FeedbackBar } from "../feedback/feedback-prompt";
+import TradeFeedback from "../feedback/trade-feedback";
+import { useFeedbackLeave } from "../feedback/use-feedback-leave";
 import { bold } from "../notifications/row-utils";
 import ListingBottomBar from "../trade-listings/listing-bottom-bar";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
@@ -74,11 +79,14 @@ export default function TradeView({ trade, viewer }: Props) {
  * The page as one of its parties sees it. While they still owe objekts
  * before the deadline it says what to send to whom, with their partner's
  * COSMO ID to copy, and it offers cancel and dispute wherever the server
- * would allow them, in the phone bar below tablet width.
+ * would allow them, in the phone bar below tablet width. Once the trade
+ * ended, the phone bar holds Leave feedback while the viewer may rate.
  */
 function PartyView({ trade, side }: { trade: Trade; side: TradeSide }) {
   const startedId = useId();
   const [dialog, setDialog] = useState<"cancel" | "dispute" | null>(null);
+  const feedbackLeave = useFeedbackLeave(trade, side);
+  const { feedback } = trade;
   const counterparty = trade.parties[otherSide(side)];
   /**
    * The same judgement the server makes, so a refused action refetches
@@ -114,6 +122,7 @@ function PartyView({ trade, side }: { trade: Trade; side: TradeSide }) {
       <TradeLayout
         trade={trade}
         side={side}
+        onLeave={feedbackLeave.leave}
         strip={
           <ActionStrip
             trade={trade}
@@ -160,9 +169,30 @@ function PartyView({ trade, side }: { trade: Trade; side: TradeSide }) {
                   </div>
                 ),
               }
-            : undefined
+            : feedback.state === "open"
+              ? {
+                  rows: 1,
+                  children: (
+                    <FeedbackBar
+                      trade={trade}
+                      side={side}
+                      onLeave={() => feedbackLeave.leave(feedback)}
+                      actions={
+                        trade.state.status === "timed_out" &&
+                        trade.listingId !== null ? (
+                          <ViewListingLink
+                            listingId={trade.listingId}
+                            className="h-11 px-4"
+                          />
+                        ) : undefined
+                      }
+                    />
+                  ),
+                }
+              : undefined
         }
       />
+      {feedbackLeave.dialog}
       <CancelTradeDialog
         tradeId={trade.id}
         listingId={trade.listingId}
@@ -244,6 +274,7 @@ type TradeTab = (typeof tradeTabs)[number];
 function TradeLayout({
   trade,
   side,
+  onLeave,
   banner,
   strip,
   bar,
@@ -251,6 +282,8 @@ function TradeLayout({
   trade: Trade;
   /** the viewer's side, or null for staff */
   side: TradeSide | null;
+  /** opens the party's leave-feedback dialog */
+  onLeave?: (feedbackWindow: FeedbackWindow) => void;
   banner?: ReactNode;
   strip?: ReactNode;
   bar?: { rows: 1 | 2; children: ReactNode };
@@ -316,7 +349,7 @@ function TradeLayout({
               chatTab && "max-lg:hidden",
             )}
           >
-            <StatePanel trade={trade} side={side} />
+            <StatePanel trade={trade} side={side} onLeave={onLeave} />
             <TransferRows trade={trade} side={side}>
               {strip}
             </TransferRows>
@@ -344,6 +377,7 @@ function TradeLayout({
                   side={party}
                 />
               ))}
+              {side !== null && <TradeFeedback trade={trade} side={side} />}
               {/* the parties read every event in the chat */}
               {(side === null || !chat) && (
                 <TradeTimeline trade={trade} side={side} />
@@ -654,7 +688,15 @@ function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
  * dispute that froze it, or an objekt that can no longer reach its
  * receiver. Staff read it in the third person.
  */
-function StatePanel({ trade, side }: { trade: Trade; side: TradeSide | null }) {
+function StatePanel({
+  trade,
+  side,
+  onLeave,
+}: {
+  trade: Trade;
+  side: TradeSide | null;
+  onLeave?: (feedbackWindow: FeedbackWindow) => void;
+}) {
   const appName = env.VITE_APP_NAME;
   const { state } = trade;
 
@@ -743,49 +785,81 @@ function StatePanel({ trade, side }: { trade: Trade; side: TradeSide | null }) {
               <StaffNote note={staff.note} />
             </AlertDescription>
           )}
-        </Alert>
-      );
-    }
-    case "cancelled": {
-      const { cancelledBy } = state;
-      const cancel = trade.events.findLast(
-        ({ event }) => event.type === "cancelled",
-      )?.event;
-      const note =
-        cancel !== undefined && "note" in cancel ? cancel.note : null;
-      const sent = trade.items.some((item) => item.status === "sent");
-      return (
-        <Alert variant={cancelledBy === "staff" ? "destructive" : "default"}>
-          <IconX />
-          <AlertTitle>
-            {cancelledBy === "staff"
-              ? m.trade_page_cancelled_staff({ appName })
-              : cancelledBy === side
-                ? m.trade_page_cancelled_you()
-                : m.trade_page_cancelled_them({
-                    name: partyName(trade.parties[cancelledBy]),
-                  })}
-          </AlertTitle>
-          {(note !== null || sent) && (
-            <AlertDescription className="flex flex-col gap-1 text-pretty [&_p:not(:last-child)]:mb-0">
-              {note !== null && <StaffNote note={note} />}
-              {sent && <p>{m.trade_page_not_reversed({ appName })}</p>}
-            </AlertDescription>
+          {side !== null && onLeave !== undefined && (
+            <FeedbackPrompt trade={trade} side={side} onLeave={onLeave} />
           )}
         </Alert>
       );
     }
+    case "cancelled":
+      return (
+        <CancelledAlert
+          trade={trade}
+          side={side}
+          onLeave={onLeave}
+          cancelledBy={state.cancelledBy}
+        />
+      );
     case "timed_out":
       return (
         <TimedOutAlert
           trade={trade}
           side={side}
+          onLeave={onLeave}
           abandoned={state.abandonedBy}
         />
       );
     default:
       return null;
   }
+}
+
+/**
+ * Who cancelled the trade, the reason staff gave, that sent objekts aren't
+ * moved back, and whether its parties can rate each other.
+ */
+function CancelledAlert({
+  trade,
+  side,
+  onLeave,
+  cancelledBy,
+}: {
+  trade: Trade;
+  side: TradeSide | null;
+  onLeave?: (feedbackWindow: FeedbackWindow) => void;
+  cancelledBy: TradeSide | "staff";
+}) {
+  const appName = env.VITE_APP_NAME;
+  const cancel = trade.events.findLast(
+    ({ event }) => event.type === "cancelled",
+  )?.event;
+  const note = cancel !== undefined && "note" in cancel ? cancel.note : null;
+  const sent = trade.items.some((item) => item.status === "sent");
+  const unrated = trade.feedback.state === "ineligible";
+  return (
+    <Alert variant={cancelledBy === "staff" ? "destructive" : "default"}>
+      <IconX />
+      <AlertTitle>
+        {cancelledBy === "staff"
+          ? m.trade_page_cancelled_staff({ appName })
+          : cancelledBy === side
+            ? m.trade_page_cancelled_you()
+            : m.trade_page_cancelled_them({
+                name: partyName(trade.parties[cancelledBy]),
+              })}
+      </AlertTitle>
+      {(note !== null || sent || unrated) && (
+        <AlertDescription className="flex flex-col gap-1 text-pretty [&_p:not(:last-child)]:mb-0">
+          {note !== null && <StaffNote note={note} />}
+          {sent && <p>{m.trade_page_not_reversed({ appName })}</p>}
+          {unrated && <p>{m.feedback_no_transfer()}</p>}
+        </AlertDescription>
+      )}
+      {side !== null && onLeave !== undefined && (
+        <FeedbackPrompt trade={trade} side={side} onLeave={onLeave} compact />
+      )}
+    </Alert>
+  );
 }
 
 /**
@@ -865,13 +939,24 @@ function DisputedAlert({
 function TimedOutAlert({
   trade,
   side,
+  onLeave,
   abandoned,
 }: {
   trade: Trade;
   side: TradeSide | null;
+  onLeave?: (feedbackWindow: FeedbackWindow) => void;
   abandoned: TradeSide[];
 }) {
   const appName = env.VITE_APP_NAME;
+  const listing =
+    trade.listingId === null ? undefined : (
+      <ViewListingLink
+        listingId={trade.listingId}
+        className={cn(
+          side === null && "mt-2 group-has-[>svg]/alert:col-start-2",
+        )}
+      />
+    );
   const owed = (sender: TradeSide) =>
     trade.items.filter(
       (item) => item.sender === sender && item.status !== "sent",
@@ -910,19 +995,41 @@ function TimedOutAlert({
           <p>{m.trade_page_not_reversed({ appName })}</p>
         )}
       </AlertDescription>
-      {trade.listingId !== null && (
-        <Link
-          to="/market/listing/$id"
-          params={{ id: trade.listingId }}
-          className={cn(
-            buttonVariants({ variant: "outline", size: "sm" }),
-            "mt-2 w-fit no-underline! group-has-[>svg]/alert:col-start-2",
-          )}
-        >
-          {m.trade_page_view_listing()}
-        </Link>
+      {side === null || onLeave === undefined ? (
+        listing
+      ) : (
+        <FeedbackPrompt
+          trade={trade}
+          side={side}
+          onLeave={onLeave}
+          compact
+          actions={listing}
+        />
       )}
     </Alert>
+  );
+}
+
+// the way back to the listing a timed-out trade came from
+function ViewListingLink({
+  listingId,
+  className,
+}: {
+  listingId: string;
+  className?: string;
+}) {
+  return (
+    <Link
+      to="/market/listing/$id"
+      params={{ id: listingId }}
+      className={cn(
+        buttonVariants({ variant: "outline", size: "sm" }),
+        "w-fit no-underline!",
+        className,
+      )}
+    >
+      {m.trade_page_view_listing()}
+    </Link>
   );
 }
 
@@ -940,8 +1047,8 @@ function StaffNote({ note }: { note: string }) {
 
 /**
  * A party to the trade: their avatar and name, linking to their profile
- * when they have a COSMO username, and whether they posted or accepted
- * the listing.
+ * when they have a COSMO username, whether they posted or accepted the
+ * listing, and their rating, which a deleted party has none of.
  */
 function PartyCard({ party, side }: { party: TradeParty; side: TradeSide }) {
   return (
@@ -958,6 +1065,9 @@ function PartyCard({ party, side }: { party: TradeParty; side: TradeSide }) {
             ? m.trade_page_role_poster()
             : m.trade_page_role_claimer()}
         </ItemDescription>
+        {party.user !== null && (
+          <FeedbackBadge variant="full" rep={party.rep} />
+        )}
       </ItemContent>
     </Item>
   );

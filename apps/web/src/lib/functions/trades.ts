@@ -7,10 +7,9 @@ import { readIndexerTokens } from "@/lib/server/trades/holdings.server";
 import {
   deadlinePassed,
   readTradeView,
-  toTradeParty,
+  toPartyName,
   tradeDispute,
   tradeListingId,
-  tradePartyRelations,
   watermarkExtra,
 } from "@/lib/server/trades/trade-view.server";
 import {
@@ -64,19 +63,14 @@ export const $fetchTrade = createServerFn({ method: "GET" })
       context,
     }): Promise<{ trade: TradeView; viewer: TradeViewer } | null> => {
       const { id: userId, role } = context.session.user;
-      const staff = can(parseRole(role), { trade: ["read-any"] });
-      const read = await readTradeView(data.tradeId);
+      const read = await readTradeView(data.tradeId, { kind: "user", userId });
       if (read === null) return null;
-      const { trade } = read;
+      const { trade, viewer } = read;
 
-      const side =
-        trade.parties.from.user?.id === userId
-          ? "from"
-          : trade.parties.to.user?.id === userId
-            ? "to"
-            : null;
-      if (side !== null) return { trade, viewer: { kind: "party", side } };
-      return staff
+      if (viewer.kind === "party") {
+        return { trade, viewer };
+      }
+      return can(parseRole(role), { trade: ["read-any"] })
         ? {
             trade,
             viewer: { kind: "staff", report: read.disputeReport },
@@ -160,7 +154,10 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
           orderBy: { id: "desc" },
           limit: 1,
         },
-        ...tradePartyRelations,
+        fromUser: true,
+        toUser: true,
+        fromCosmo: { columns: { username: true } },
+        toCosmo: { columns: { username: true } },
       },
       orderBy: active
         ? { deadlineAt: "asc", id: "asc" }
@@ -200,8 +197,8 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
       const state = tradeState(row, row.items);
       const counterparty =
         side === "from"
-          ? toTradeParty(row.toUserId, row.toUser, row.toCosmo)
-          : toTradeParty(row.fromUserId, row.fromUser, row.fromCosmo);
+          ? toPartyName(row.toUserId, row.toUser, row.toCosmo)
+          : toPartyName(row.fromUserId, row.fromUser, row.fromCosmo);
       return {
         id: row.id,
         state,

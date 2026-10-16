@@ -1,5 +1,5 @@
 import { m } from "@/i18n/messages";
-import type { TradeItemView, TradeParty } from "@/lib/universal/trades";
+import type { TradeItemView, TradePartyName } from "@/lib/universal/trades";
 import { formatSerial } from "./objekt-util";
 import { objektName, posterName } from "./trade-listings";
 
@@ -7,7 +7,7 @@ import { objektName, posterName } from "./trade-listings";
  * A party as the trade page names them: their COSMO username, else their
  * Apollo username, else "Deleted user".
  */
-export function partyName(party: TradeParty) {
+export function partyName(party: TradePartyName) {
   return posterName({ poster: party.user, cosmoUsername: party.cosmoUsername });
 }
 

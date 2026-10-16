@@ -13,6 +13,7 @@ import {
   IconGavel,
   IconHourglassEmpty,
   IconMessage,
+  IconStar,
   IconX,
 } from "@tabler/icons-react";
 import type { ReactNode } from "react";
@@ -136,6 +137,11 @@ const typeBadges = {
   },
   trade_message: {
     icon: IconMessage,
+    className: "bg-muted-foreground text-background",
+  },
+  // a rating can be good or bad news, so it reads as an update
+  feedback_received: {
+    icon: IconStar,
     className: "bg-muted-foreground text-background",
   },
 } satisfies Record<BadgedType, { icon: TablerIcon; className: string }>;

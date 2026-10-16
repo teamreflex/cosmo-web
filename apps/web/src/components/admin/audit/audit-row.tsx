@@ -43,6 +43,7 @@ const actionTones = {
   "trade:cancel": "text-foreground",
   "trade:extend": "text-foreground",
   "trade:remove-message": "text-destructive",
+  "feedback:remove": "text-destructive",
 } satisfies Record<StaffAuditAction, string>;
 
 type Props = {
@@ -276,29 +277,58 @@ function AuditTarget({ row }: Props) {
       );
     case "message":
       return (
-        <>
-          <span>{m.admin_audit_target_message()}</span>
-          <span className="font-mono text-xs text-muted-foreground">
-            #{row.target.id}
-          </span>
-          <Link
-            to="/trade/$id"
-            params={{ id: row.target.tradeId }}
-            className="text-xs text-cosmo hover:underline dark:text-cosmo-text"
-          >
-            {m.admin_audit_note_message_trade({
-              id: shortId(row.target.tradeId),
-            })}
-          </Link>
-          {row.report !== null && <ReportLink report={row.report} />}
-        </>
+        <TradeContentTarget
+          label={m.admin_audit_target_message()}
+          id={`#${row.target.id}`}
+          tradeId={row.target.tradeId}
+          report={row.report}
+        />
+      );
+    case "feedback":
+      return (
+        <TradeContentTarget
+          label={m.admin_audit_target_feedback_rating()}
+          id={shortId(row.target.id)}
+          tradeId={row.target.tradeId}
+          report={row.report}
+        />
       );
   }
 }
 
 /**
- * The report a user, trade or message action was taken from, opened in the
- * queue.
+ * A message or rating, by its id and the trade it's in.
+ */
+function TradeContentTarget({
+  label,
+  id,
+  tradeId,
+  report,
+}: {
+  label: string;
+  id: string;
+  tradeId: string;
+  report: AdminAuditRow["report"];
+}) {
+  return (
+    <>
+      <span>{label}</span>
+      <span className="font-mono text-xs text-muted-foreground">{id}</span>
+      <Link
+        to="/trade/$id"
+        params={{ id: tradeId }}
+        className="text-xs text-cosmo hover:underline dark:text-cosmo-text"
+      >
+        {m.admin_audit_note_in_trade({ id: shortId(tradeId) })}
+      </Link>
+      {report !== null && <ReportLink report={report} />}
+    </>
+  );
+}
+
+/**
+ * The report a user, trade, message or feedback action was taken from,
+ * opened in the queue.
  */
 function ReportLink({
   report,

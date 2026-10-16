@@ -10,15 +10,18 @@ import {
   banUserInputSchema,
   unbanUserInputSchema,
 } from "@/lib/universal/schema/staff-users";
+import { tradeFeedback } from "@apollo/database/web/schema";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
+import { eq, inArray, sql } from "drizzle-orm";
 
 /**
  * Ban a user and sign them out. One transaction bans them and sweeps their
  * trades and listings (banAndSweep), writes the audit row and, for a ban
- * started from a report on the user or on a message they sent, resolves
- * every open report on that user or message, each with its own audit row. Once that commits, their sessions are deleted
- * and the user event and the disputed trades are published.
+ * started from a report on the user, on a message they sent or on a rating
+ * they left, resolves every open report on that target, each with its own
+ * audit row. Once that commits, their sessions are deleted and the user event and the
+ * disputed trades are published.
  */
 export const $banUser = createServerFn({ method: "POST" })
   .middleware([staffMiddleware({ user: ["ban"] })])
@@ -40,6 +43,17 @@ export const $banUser = createServerFn({ method: "POST" })
                 {
                   targetType: "message",
                   messageCopy: { senderId: data.userId },
+                },
+                {
+                  targetType: "feedback",
+                  RAW: (t) =>
+                    inArray(
+                      t.targetId,
+                      tx
+                        .select({ id: sql<string>`${tradeFeedback.id}::text` })
+                        .from(tradeFeedback)
+                        .where(eq(tradeFeedback.fromUserId, data.userId)),
+                    ),
                 },
               ],
             },

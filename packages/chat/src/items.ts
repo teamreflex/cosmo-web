@@ -86,6 +86,10 @@ const KnownTradeEvent = Schema.Union([
     type: Schema.Literal("message_removed"),
     messageId: Schema.Int,
   }),
+  Schema.Struct({
+    type: Schema.Literal("feedback_removed"),
+    side: TradeSide,
+  }),
 ]);
 
 /**

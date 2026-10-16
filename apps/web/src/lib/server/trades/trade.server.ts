@@ -73,7 +73,8 @@ export function lockParties(
 
 /**
  * Locks a trade's row `FOR NO KEY UPDATE` and reads its items in id order,
- * with the state transitions take. Listings and missing ids are not found.
+ * with the state transitions take and the database's clock, which feedback's
+ * window is judged by. Listings and missing ids are not found.
  */
 export async function lockTrade(tx: WebTx, tradeId: string) {
   const [row] = await tx
@@ -85,9 +86,11 @@ export async function lockTrade(tx: WebTx, tradeId: string) {
       fromAddress: tradeOffers.fromAddress,
       toAddress: tradeOffers.toAddress,
       deadlineAt: tradeOffers.deadlineAt,
+      endedAt: tradeOffers.endedAt,
       cancelledBy: tradeOffers.cancelledBy,
       abandonedBy: tradeOffers.abandonedBy,
       disputeReportId: tradeOffers.disputeReportId,
+      now: sql<Date>`now()`.mapWith(tradeOffers.endedAt),
     })
     .from(tradeOffers)
     .where(and(eq(tradeOffers.id, tradeId), eq(tradeOffers.kind, "trade")))

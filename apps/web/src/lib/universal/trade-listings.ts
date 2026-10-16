@@ -4,6 +4,7 @@ import type { TokenRefusalReason } from "@apollo/trades/holdings";
 import type { ObjektAttributes, RangeFilter } from "@apollo/trades/range";
 import * as z from "zod";
 import type { PublicUser } from "./auth";
+import type { FeedbackRep } from "./feedback";
 import type { Objekt } from "./objekt-conversion";
 
 export type { TokenRefusalReason } from "@apollo/trades/holdings";
@@ -123,13 +124,15 @@ export type ListingFeedWant =
   | Exclude<StoredWant, { kind: "exact" }>;
 
 /**
- * An open listing in the feed.
+ * An open listing in the feed, with its poster's rating, null without a
+ * visible rating or a poster.
  */
 export type ListingFeedRow = {
   id: string;
   createdAt: Date;
   poster: PublicUser | null;
   cosmoUsername: string | null;
+  rep: FeedbackRep | null;
   items: ListingFeedItem[];
   wants: ListingFeedWant[];
 };
@@ -170,7 +173,8 @@ export type ClosedListingState = Exclude<
  * A listing's public detail. The poster is null once their account is
  * deleted. `blocked` says an open listing's poster side stops every claim
  * right now: an offered objekt locked, moved or in a trade, a payment row,
- * or the poster banned or linked elsewhere.
+ * or the poster banned or linked elsewhere. `rep` is the listing address's
+ * rating, null without a visible rating or a poster.
  */
 export type TradeListing<TPoster = PublicUser> = {
   id: string;
@@ -179,6 +183,7 @@ export type TradeListing<TPoster = PublicUser> = {
   note: string | null;
   poster: TPoster | null;
   cosmoUsername: string | null;
+  rep: FeedbackRep | null;
   items: ListingFeedItem[];
   wants: ListingFeedWant[];
   state: ListingState;

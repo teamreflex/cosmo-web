@@ -22,6 +22,7 @@ import { cn } from "@/lib/utils";
 import { IconArrowRight, IconArrowsRightLeft } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
+import FeedbackBadge from "../feedback/feedback-badge";
 import UserAvatar from "../profile/user-avatar";
 import { Badge } from "../ui/badge";
 import { Timestamp } from "../ui/timestamp";
@@ -127,8 +128,15 @@ export default function ListingFeedRow({ row }: Props) {
                 className="size-4.5 text-xxs **:p-0.5 md:size-6"
               />
             )}
-            <span dir="auto" className="min-w-0 truncate font-medium">
-              {posterName(row)}
+            {/* the rating follows the name, and sits under it in its lg column */}
+            <span className="flex min-w-0 items-baseline gap-1.5 lg:flex-col lg:gap-0">
+              <span
+                dir="auto"
+                className="max-w-full min-w-0 truncate font-medium"
+              >
+                {posterName(row)}
+              </span>
+              <FeedbackBadge variant="compact" rep={row.rep} narrow />
             </span>
           </span>
         </span>

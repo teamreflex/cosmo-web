@@ -11,7 +11,7 @@ import {
 } from "@/lib/functions/reports";
 import { currentAccountQuery } from "@/lib/queries/core";
 import { adminReportsQueryFilter } from "@/lib/queries/reports";
-import type { AdminReportDetail } from "@/lib/universal/reports";
+import { type AdminReportDetail, reportedUser } from "@/lib/universal/reports";
 import { staffUserText } from "@/lib/universal/staff-users";
 import { cn } from "@/lib/utils";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
@@ -184,7 +184,9 @@ function OpenActions({ report }: Props) {
               >
                 {target.type === "message"
                   ? m.admin_reports_ban_sender()
-                  : m.admin_reports_ban()}
+                  : target.type === "feedback"
+                    ? m.admin_reports_ban_author()
+                    : m.admin_reports_ban()}
               </Button>
             )}
             {actions.map((action) => (
@@ -216,21 +218,6 @@ function OpenActions({ report }: Props) {
       )}
     </>
   );
-}
-
-/**
- * Who a ban from this report bans: the reported user, or a reported
- * message's sender.
- */
-function reportedUser(target: AdminReportDetail["target"]) {
-  switch (target.type) {
-    case "user":
-      return target.user;
-    case "message":
-      return target.message?.sender ?? null;
-    case "trade":
-      return null;
-  }
 }
 
 /**

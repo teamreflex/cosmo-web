@@ -1,5 +1,4 @@
 import { describe, expect, test } from "bun:test";
-import { claimCap } from "../src/caps";
 import {
   CLAIM_WINDOW,
   EXTEND_HOURS,
@@ -20,13 +19,6 @@ describe("isTimedOut (TIME-01)", () => {
 
   test("never times out before the drain records a watermark", () => {
     expect(isTimedOut(deadline, null)).toBe(false);
-  });
-});
-
-describe("claimCap", () => {
-  test("is 3 for everyone until feedback exists", () => {
-    expect(claimCap({ positive: 0, abandoned: 0 })).toBe(3);
-    expect(claimCap({ positive: 40, abandoned: 2 })).toBe(3);
   });
 });
 

@@ -29,15 +29,20 @@ import { isBanActive, protectionFor } from "@apollo/auth/guard";
 import {
   reportMessages,
   reports,
+  tradeFeedback,
+  tradeMessages,
   tradeOffers,
+  type user,
 } from "@apollo/database/web/schema";
 import {
+  type FeedbackRating,
   liveTradeStatuses,
   type ReportStatus,
   type ReportTargetType,
 } from "@apollo/database/web/types";
 import {
   and,
+  count,
   desc,
   EmptyFilter,
   eq,
@@ -53,9 +58,9 @@ const QUEUE_PAGE_SIZE = 30;
 
 /**
  * Reports on a staff member, or on a trade they're a party to or a message
- * in one, are hidden from them, whatever their role, so they never see who reported them or act
- * on their own dispute; other staff handle those. Relational reads alias the
- * table, so they pass theirs as `t`.
+ * or rating in one, are hidden from them, whatever their role, so they never
+ * see who reported them or act on their own dispute; other staff handle
+ * those. Relational reads alias the table, so they pass theirs as `t`.
  */
 function visibleTo(staffId: string, t: typeof reports = reports) {
   return not(aboutStaff(staffId, t));
@@ -87,6 +92,17 @@ function aboutStaff(staffId: string, t: typeof reports = reports) {
           .select({ id: reportMessages.reportId })
           .from(reportMessages)
           .where(inArray(reportMessages.tradeId, theirTrades)),
+      ),
+    ),
+    // a rating in one of their trades, theirs or the other party's
+    and(
+      eq(t.targetType, "feedback"),
+      inArray(
+        t.targetId,
+        db
+          .select({ id: sql<string>`${tradeFeedback.id}::text` })
+          .from(tradeFeedback)
+          .where(inArray(tradeFeedback.tradeId, theirTrades)),
       ),
     ),
   );
@@ -200,6 +216,9 @@ export async function fetchReportQueue(
   const tradeIds = rows.flatMap((row) =>
     row.targetType === "trade" ? [row.targetId] : [],
   );
+  const feedbackIds = rows.flatMap((row) =>
+    row.targetType === "feedback" ? [row.targetId] : [],
+  );
   const messageReportIds = rows.flatMap((row) =>
     row.targetType === "message" ? [row.id] : [],
   );
@@ -215,24 +234,32 @@ export async function fetchReportQueue(
           .from(reportMessages)
           .where(inArray(reportMessages.reportId, messageReportIds));
   const copies = new Map(copyRows.map((copy) => [copy.reportId, copy]));
-  const [users, tradeRows] = await Promise.all([
-    fetchStaffUsers([
-      ...rows
-        .filter((row) => row.targetType === "user")
-        .map((row) => row.targetId),
-      ...copyRows.flatMap((copy) =>
-        copy.senderId === null ? [] : [copy.senderId],
-      ),
-    ]),
+  const users = await fetchStaffUsers([
+    ...rows
+      .filter((row) => row.targetType === "user")
+      .map((row) => row.targetId),
+    ...copyRows.flatMap((copy) =>
+      copy.senderId === null ? [] : [copy.senderId],
+    ),
+  ]);
+  const tradeRows =
     tradeIds.length === 0
       ? []
-      : db.query.tradeOffers.findMany({
+      : await db.query.tradeOffers.findMany({
           where: { id: { in: tradeIds }, kind: "trade" },
           columns: { id: true },
           with: { fromUser: staffUserFields, toUser: staffUserFields },
-        }),
-  ]);
+        });
+  const feedbackRows =
+    feedbackIds.length === 0
+      ? []
+      : await db.query.tradeFeedback.findMany({
+          where: { id: { in: feedbackIds } },
+          columns: { id: true, rating: true },
+          with: { fromUser: staffUserFields, toUser: staffUserFields },
+        });
   const trades = new Map(tradeRows.map((trade) => [trade.id, trade]));
+  const feedback = new Map(feedbackRows.map((row) => [row.id, row]));
 
   return {
     rows: rows.map((row): AdminReportRow => ({
@@ -240,7 +267,7 @@ export async function fetchReportQueue(
       reason: row.reason,
       createdAt: row.createdAt,
       reporter: staffUser(row.reporter),
-      target: toRowTarget(row, users, trades, copies),
+      target: toRowTarget(row, users, trades, copies, feedback),
     })),
     nextCursor: found.length > rows.length ? rows.at(-1)?.id : undefined,
   };
@@ -258,6 +285,14 @@ function toRowTarget(
     { id: string; fromUser: StaffUserRow | null; toUser: StaffUserRow | null }
   >,
   copies: Map<string, { tradeId: string; senderId: string | null }>,
+  feedback: Map<
+    string,
+    {
+      rating: FeedbackRating;
+      fromUser: StaffUserRow | null;
+      toUser: StaffUserRow | null;
+    }
+  >,
 ): AdminReportRowTarget {
   switch (targetType) {
     case "user":
@@ -293,7 +328,20 @@ function toRowTarget(
               },
       };
     }
-    case "feedback":
+    case "feedback": {
+      const rating = feedback.get(targetId);
+      return {
+        type: "feedback",
+        feedback:
+          rating === undefined
+            ? null
+            : {
+                rating: rating.rating,
+                author: staffUser(rating.fromUser),
+                rated: staffUser(rating.toUser),
+              },
+      };
+    }
       throw new Error(`Reports on ${targetType} targets aren't supported yet`);
   }
 }
@@ -307,10 +355,25 @@ export async function fetchReportDetail(
   viewer: { id: string; role: Role },
   id: string,
 ): Promise<AdminReportDetail> {
+  const others = alias(reports, "other_reports");
   const report = await db.query.reports.findFirst({
     where: {
       id,
       RAW: (t) => visibleTo(viewer.id, t) ?? EmptyFilter,
+    },
+    extras: {
+      otherOpenReportCount: (t) =>
+        sql<number>`(${db
+          .select({ count: count() })
+          .from(others)
+          .where(
+            and(
+              eq(others.targetType, t.targetType),
+              eq(others.targetId, t.targetId),
+              inArray(others.status, [...openReportStatuses]),
+              ne(others.id, t.id),
+            ),
+          )})`.mapWith(Number),
     },
     with: {
       reporter: staffUserFields,
@@ -329,15 +392,7 @@ export async function fetchReportDetail(
     note: report.note,
     createdAt: report.createdAt,
     reporter: staffUser(report.reporter),
-    otherOpenReportCount: await db.$count(
-      reports,
-      and(
-        eq(reports.targetType, report.targetType),
-        eq(reports.targetId, report.targetId),
-        inArray(reports.status, [...openReportStatuses]),
-        ne(reports.id, report.id),
-      ),
-    ),
+    otherOpenReportCount: report.otherOpenReportCount,
     target: await fetchDetailTarget(viewer.role, report),
   };
 }
@@ -365,16 +420,16 @@ async function fetchDetailTarget(
         columns: { ...staffUserFields.columns, banned: true, banExpires: true },
         with: staffUserFields.with,
       } as const;
-      const [read, trade] = await Promise.all([
-        readTradeView(targetId),
-        db.query.tradeOffers.findFirst({
+      const read = await readTradeView(targetId, { kind: "staff" });
+      const trade =
+        read &&
+        (await db.query.tradeOffers.findFirst({
           where: { id: targetId, kind: "trade" },
-          columns: { disputeReportId: true },
+          columns: {},
           with: { fromUser: party, toUser: party },
-        }),
-      ]);
+        }));
 
-      if (read === null || !trade) {
+      if (!read || !trade) {
         return { type: "trade", trade: null };
       }
 
@@ -389,7 +444,7 @@ async function fetchDetailTarget(
           view: read.trade,
           from: named(trade.fromUser),
           to: named(trade.toUser),
-          current: trade.disputeReportId === id,
+          current: read.disputeReport?.id === id,
         },
       };
     }
@@ -402,22 +457,21 @@ async function fetchDetailTarget(
           senderId: true,
           sentAt: true,
         },
+        extras: {
+          removed: (t) =>
+            sql<boolean>`exists (select 1 from ${tradeMessages} where ${tradeMessages.id} = ${t.messageId} and ${tradeMessages.removedAt} is not null)`,
+        },
       });
       if (!copy) {
         return { type: "message", message: null };
       }
 
-      const [sender, read, message] = await Promise.all([
+      const sender =
         copy.senderId === null
           ? null
-          : fetchTargetUser(viewerRole, copy.senderId),
-        readTradeView(copy.tradeId),
-        db.query.tradeMessages.findFirst({
-          where: { id: copy.messageId },
-          columns: { removedAt: true },
-        }),
-      ]);
-      const trade = read?.trade ?? null;
+          : await fetchTargetUser(viewerRole, copy.senderId);
+      const trade =
+        (await readTradeView(copy.tradeId, { kind: "staff" }))?.trade ?? null;
       const side = (["from", "to"] as const).find(
         (party) =>
           copy.senderId !== null &&
@@ -430,15 +484,83 @@ async function fetchDetailTarget(
           sentAt: copy.sentAt,
           side: side ?? null,
           sender,
-          removed: message !== undefined && message.removedAt !== null,
+          removed: copy.removed,
           trade,
         },
       };
     }
-    case "feedback":
+    case "feedback": {
+      // removed or not, with its rater as staff act on them
+      const row = await db.query.tradeFeedback.findFirst({
+        where: { id: targetId },
+        columns: {
+          id: true,
+          tradeId: true,
+          rating: true,
+          role: true,
+          comment: true,
+          communication: true,
+          speed: true,
+          createdAt: true,
+          removedAt: true,
+        },
+        with: { fromUser: targetUserFields, toUser: staffUserFields },
+      });
+      if (!row) {
+        return { type: "feedback", feedback: null };
+      }
+
+      return {
+        type: "feedback",
+        feedback: {
+          id: row.id,
+          tradeId: row.tradeId,
+          rating: row.rating,
+          role: row.role,
+          comment: row.comment,
+          communication: row.communication,
+          speed: row.speed,
+          createdAt: row.createdAt,
+          removed: row.removedAt !== null,
+          author:
+            row.fromUser === null
+              ? null
+              : toTargetUser(viewerRole, row.fromUser),
+          rated: staffUser(row.toUser),
+        },
+      };
+    }
       throw new Error(`Reports on ${targetType} targets aren't supported yet`);
   }
 }
+
+/**
+ * The relational fields toTargetUser reads, for a reported user, a reported
+ * message's sender or a reported rating's author.
+ */
+const targetUserFields = {
+  columns: {
+    id: true,
+    ...staffUserFields.columns,
+    email: true,
+    emailVerified: true,
+    role: true,
+    banned: true,
+    banExpires: true,
+  },
+  extras: {
+    liveTradeCount: (t: typeof user) =>
+      db.$count(
+        tradeOffers,
+        and(
+          eq(tradeOffers.kind, "trade"),
+          inArray(tradeOffers.status, [...liveTradeStatuses]),
+          or(eq(tradeOffers.fromUserId, t.id), eq(tradeOffers.toUserId, t.id)),
+        ),
+      ),
+  },
+  with: staffUserFields.with,
+} as const;
 
 /**
  * A reported user, or a reported message's sender, as staff act on them;
@@ -448,41 +570,28 @@ async function fetchTargetUser(
   viewerRole: Role,
   userId: string,
 ): Promise<ReportTargetUser | null> {
-  const [user, liveTradeCount] = await Promise.all([
-    db.query.user.findFirst({
-      where: { id: userId },
-      columns: {
-        id: true,
-        ...staffUserFields.columns,
-        email: true,
-        emailVerified: true,
-        role: true,
-        banned: true,
-        banExpires: true,
-      },
-      with: staffUserFields.with,
-    }),
-    db.$count(
-      tradeOffers,
-      and(
-        eq(tradeOffers.kind, "trade"),
-        inArray(tradeOffers.status, [...liveTradeStatuses]),
-        tradeParty(userId),
-      ),
-    ),
-  ]);
+  const row = await db.query.user.findFirst({
+    where: { id: userId },
+    ...targetUserFields,
+  });
+  return row ? toTargetUser(viewerRole, row) : null;
+}
 
-  if (!user) {
-    return null;
-  }
-
+function toTargetUser(
+  viewerRole: Role,
+  row: StaffUserRow &
+    Pick<
+      typeof user.$inferSelect,
+      "id" | "email" | "emailVerified" | "role" | "banned" | "banExpires"
+    > & { liveTradeCount: number },
+): ReportTargetUser {
   return {
-    ...staffUser(user),
-    id: user.id,
-    role: user.role,
-    ban: isBanActive(user) ? { until: user.banExpires } : null,
-    liveTradeCount,
-    protected: protectionFor(viewerRole, user, env.PROTECTED_EMAIL_DOMAINS),
+    ...staffUser(row),
+    id: row.id,
+    role: row.role,
+    ban: isBanActive(row) ? { until: row.banExpires } : null,
+    liveTradeCount: row.liveTradeCount,
+    protected: protectionFor(viewerRole, row, env.PROTECTED_EMAIL_DOMAINS),
   };
 }
 

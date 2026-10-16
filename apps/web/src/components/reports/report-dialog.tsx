@@ -18,11 +18,8 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { m } from "@/i18n/messages";
-import { formatError } from "@/lib/client/errors";
 import { reportReasonLabel } from "@/lib/client/reports";
 import { env } from "@/lib/env/client";
-import { $createReport } from "@/lib/functions/reports";
-import { isRateLimitErrorCode } from "@/lib/universal/errors/rate-limit";
 import { reportNoteSchema } from "@/lib/universal/schema/reports";
 import {
   reportReasons,
@@ -30,11 +27,10 @@ import {
 } from "@apollo/database/web/types";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconLoader2 } from "@tabler/icons-react";
-import { useMutation } from "@tanstack/react-query";
 import { type ReactNode, useId, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { toast } from "sonner";
 import * as z from "zod";
+import { useCreateReport } from "./use-create-report";
 
 type Props = {
   target: {
@@ -50,23 +46,7 @@ type Props = {
  * Reports a profile to moderators.
  */
 export default function ReportDialog({ target, open, onOpenChange }: Props) {
-  const mutation = useMutation({
-    mutationFn: $createReport,
-    onSuccess: () => {
-      toast.success(m.report_sent());
-      onOpenChange(false);
-    },
-    onError: (error) => {
-      if (error instanceof Error && isRateLimitErrorCode(error.message)) {
-        toast.error(m.report_rate_limited_title(), {
-          description: m.report_rate_limited_description(),
-        });
-        return;
-      }
-
-      toast.error(formatError(error));
-    },
-  });
+  const report = useCreateReport(onOpenChange);
 
   return (
     <ReportFormDialog
@@ -76,23 +56,36 @@ export default function ReportDialog({ target, open, onOpenChange }: Props) {
         username: target.label,
       })}
       reasons={reportReasons}
-      pending={mutation.isPending}
+      pending={report.pending}
       onSubmit={({ reason, note }) =>
-        mutation.mutate({
-          data: {
-            targetType: target.targetType,
-            targetId: target.targetId,
-            reason,
-            note,
-          },
+        report.send({
+          targetType: target.targetType,
+          targetId: target.targetId,
+          reason,
+          note,
         })
       }
       open={open}
-      onOpenChange={(next) => {
-        onOpenChange(next);
-        if (!next) mutation.reset();
-      }}
+      onOpenChange={report.onOpenChange}
     />
+  );
+}
+
+/**
+ * What is being reported, quoted above the report form under who wrote it.
+ */
+export function ReportQuote({
+  by,
+  children,
+}: {
+  by: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <blockquote className="flex flex-col gap-1 rounded-md border border-border bg-muted/50 px-3 py-2 text-sm">
+      <span className="text-xs text-muted-foreground">{by}</span>
+      {children}
+    </blockquote>
   );
 }
 

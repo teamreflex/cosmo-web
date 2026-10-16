@@ -17,6 +17,8 @@ const reasonLabels = {
   off_terms: m.report_reason_off_terms,
   off_platform_payment: m.report_reason_off_platform_payment,
   party_banned: m.report_reason_party_banned,
+  retaliation: m.report_reason_retaliation,
+  personal_info: m.report_reason_personal_info,
 } satisfies Record<StoredReportReason, () => string>;
 
 /**
@@ -46,6 +48,7 @@ const targetTypeLabels = {
   user: m.admin_reports_type_user,
   trade: m.admin_reports_type_trade,
   message: m.admin_reports_type_message,
+  feedback: m.admin_reports_type_feedback,
 } satisfies Record<QueueTargetType, () => string>;
 
 /**
