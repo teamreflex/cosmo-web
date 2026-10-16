@@ -30,9 +30,9 @@ type Props = {
 
 /**
  * The listing page: a header holding the listing's status and the viewer's
- * actions, any alerts under it, then what it offers and what it asks for as
- * equal halves, with an exchange coin on the seam. Below desktop width the halves stack and
- * the coin turns down.
+ * actions, any alerts under it, the poster's note, then what it offers and
+ * what it asks for as equal halves, with an exchange coin on the seam.
+ * Below desktop width the halves stack and the coin turns down.
  */
 export default function ListingLayout({
   listing,
@@ -58,6 +58,14 @@ export default function ListingLayout({
           closed && "opacity-55",
         )}
       >
+        {listing.note !== null && (
+          <p
+            dir="auto"
+            className="max-w-prose border-l-2 border-border pl-4 text-sm leading-relaxed break-words whitespace-pre-line text-foreground lg:col-span-full"
+          >
+            {listing.note}
+          </p>
+        )}
         <YouGet listing={listing} heading={offered} />
         <Seam />
         {wants}
