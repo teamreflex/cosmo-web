@@ -13,11 +13,6 @@ import { Data, Effect } from "effect";
 import type { ScheduledTask } from "../task";
 
 /**
- * COSMO gravity ids the sync never stores.
- */
-const excludedGravities = new Set([229]);
-
-/**
  * Sync gravities from COSMO API to database.
  */
 export const syncGravitiesTask = {
@@ -87,9 +82,7 @@ const processGravities = Effect.fn("processGravities")(function* (
     );
 
   const notStoredGravities = remoteGravities.filter(
-    (gravity) =>
-      !excludedGravities.has(gravity.id) &&
-      !storedGravities.some((g) => g.cosmoId === gravity.id),
+    (gravity) => !storedGravities.some((g) => g.cosmoId === gravity.id),
   );
 
   // gravities are stored sequentially; a failed poll fetch aborts the artist,
