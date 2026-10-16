@@ -3,6 +3,10 @@ import {
   tradeOfferItems,
   tradeOffers,
 } from "@apollo/database/web/schema";
+import type {
+  TradeListingWant,
+  TradeOfferItem,
+} from "@apollo/database/web/types";
 import { rangeColumns } from "@apollo/trades/range";
 import { and, arrayOverlaps, eq, exists, inArray, or, sql } from "drizzle-orm";
 import { QueryBuilder } from "drizzle-orm/pg-core";
@@ -146,14 +150,14 @@ export function listingFeedWhere(
  * transferability that decide whether it can still be given.
  */
 export async function readIndexed(slugs: string[], tokenIds: number[]) {
-  const [collectionRows, states] = await Promise.all([
-    slugs.length
-      ? indexer.query.collections.findMany({ where: { slug: { in: slugs } } })
-      : [],
-    tokenIds.length
-      ? readIndexerTokens(tokenIds)
-      : new Map<number, TokenState>(),
-  ]);
+  const collectionRows = slugs.length
+    ? await indexer.query.collections.findMany({
+        where: { slug: { in: slugs } },
+      })
+    : [];
+  const states = tokenIds.length
+    ? await readIndexerTokens(tokenIds)
+    : new Map<number, TokenState>();
   return {
     collections: new Map(
       collectionRows.map((row) => [row.slug, Objekt.fromIndexer(row)]),
@@ -181,7 +185,7 @@ export function feedItem(
 /**
  * A listing's stored items and wants, as the relational query reads them.
  */
-type StoredParts = { items: unknown[]; wants: unknown[] };
+type StoredParts = { items: TradeOfferItem[]; wants: TradeListingWant[] };
 
 /**
  * Parses each listing's stored items and wants and fills in what the

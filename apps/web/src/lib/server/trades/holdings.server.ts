@@ -210,33 +210,31 @@ export async function resolveWants(
   const ranges = wants.flatMap((want, index) =>
     want.kind === "range" ? [{ index, filter: want.filter }] : [],
   );
-  const [rows, [matched]] = await Promise.all([
-    indexer
-      .select({
-        slug: collections.slug,
-        artist: collections.artist,
-        member: collections.member,
-        season: collections.season,
-        class: collections.class,
-        onOffline: collections.onOffline,
-      })
-      .from(collections)
-      .where(inArray(collections.slug, slugs)),
-    // every range row's match count in one pass over the collections
-    ranges.length
-      ? indexer
-          .select({
-            counts: sql<number[]>`array[${sql.join(
-              ranges.map(
-                ({ filter }) =>
-                  sql`count(*) filter (where ${rangeConditions(filter)})`,
-              ),
-              sql`, `,
-            )}]::int[]`,
-          })
-          .from(collections)
-      : [{ counts: [] }],
-  ]);
+  const rows = await indexer
+    .select({
+      slug: collections.slug,
+      artist: collections.artist,
+      member: collections.member,
+      season: collections.season,
+      class: collections.class,
+      onOffline: collections.onOffline,
+    })
+    .from(collections)
+    .where(inArray(collections.slug, slugs));
+  // every range row's match count in one pass over the collections
+  const [matched] = ranges.length
+    ? await indexer
+        .select({
+          counts: sql<number[]>`array[${sql.join(
+            ranges.map(
+              ({ filter }) =>
+                sql`count(*) filter (where ${rangeConditions(filter)})`,
+            ),
+            sql`, `,
+          )}]::int[]`,
+        })
+        .from(collections)
+    : [{ counts: [] }];
 
   const bySlug = new Map(rows.map((row) => [row.slug, row]));
   const rangeCounts = new Map(

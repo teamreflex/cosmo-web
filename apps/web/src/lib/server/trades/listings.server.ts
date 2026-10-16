@@ -130,10 +130,8 @@ export async function checkTerms(
   input: ListingInput,
 ): Promise<CheckedTerms | TokenRefusal> {
   const tokenIds = input.offered.map(({ tokenId }) => tokenId);
-  const [wants, holdings] = await Promise.all([
-    resolveWants(input.wants),
-    readTokenStates(address, tokenIds),
-  ]);
+  const wants = await resolveWants(input.wants);
+  const holdings = await readTokenStates(address, tokenIds);
 
   return (
     firstRefusal(tokenIds, holdings, address) ?? {

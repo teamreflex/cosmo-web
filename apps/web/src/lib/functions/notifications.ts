@@ -120,16 +120,17 @@ export const $listNotifications = createServerFn({ method: "GET" })
       frontImage: collections.frontImage,
       frontImageVersion: collections.frontImageVersion,
     };
-    const [pageCollections, pageTokens] = await Promise.all([
+    const pageCollections =
       slugs.length === 0
         ? []
-        : indexer
+        : await indexer
             .select(collectionColumns)
             .from(collections)
-            .where(inArray(collections.slug, slugs)),
+            .where(inArray(collections.slug, slugs));
+    const pageTokens =
       tokenIds.length === 0
         ? []
-        : indexer
+        : await indexer
             .select({
               id: objekts.id,
               serial: objekts.serial,
@@ -137,8 +138,7 @@ export const $listNotifications = createServerFn({ method: "GET" })
             })
             .from(objekts)
             .innerJoin(collections, eq(objekts.collectionId, collections.id))
-            .where(inArray(objekts.id, tokenIds.map(String))),
-    ]);
+            .where(inArray(objekts.id, tokenIds.map(String)));
     const collectionsBySlug = new Map<string, NotificationCollection>(
       pageCollections.map((c) => [c.slug, c]),
     );
