@@ -1,6 +1,6 @@
 import { m } from "@/i18n/messages";
 import { partyName } from "@/lib/client/trades";
-import { finishedTradesQuery } from "@/lib/queries/trades";
+import { myTradesQuery } from "@/lib/queries/trades";
 import {
   type MyTradeRow,
   type MyTradesTab,
@@ -33,80 +33,30 @@ import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
 import { Timestamp } from "../ui/timestamp";
 import { EndedBadge, PartyAvatar } from "./trade-header";
 
-type Props = {
-  tab: MyTradesTab;
-  /** the live trades, which give the counts on either tab */
-  active: MyTradeRow[];
-};
-
 /**
- * The viewer's trades: the live ones split by who has to act next, or the
- * ended ones a page at a time. Each row opens its trade.
+ * The viewer's live or ended trades, a page at a time. Each row opens its
+ * trade.
  */
-export default function MyTrades({ tab, active }: Props) {
-  const groups = [
-    {
-      title: m.my_trades_group_needs_you(),
-      rows: active.filter((row) => row.needsYou),
-    },
-    {
-      title: m.my_trades_group_waiting(),
-      rows: active.filter((row) => !row.needsYou),
-    },
-  ];
-
+export default function MyTrades({ tab }: { tab: MyTradesTab }) {
   return (
     <>
-      <MyTradesHeader tab={tab} live={active.length} />
-
+      <MyTradesHeader tab={tab} />
       <div className="container py-4">
-        {tab === "finished" ? (
-          <FinishedTrades />
-        ) : active.length === 0 ? (
-          <MyTradesEmpty tab={tab} />
-        ) : (
-          <div className="flex flex-col gap-4 text-sm md:gap-0 md:overflow-clip md:rounded-lg md:border md:bg-card">
-            <ColumnHeader tab={tab} />
-            {groups.map(
-              (group) =>
-                group.rows.length > 0 && (
-                  <section
-                    key={group.title}
-                    aria-label={group.title}
-                    className="flex flex-col gap-2.5 md:block md:border-t md:first-of-type:border-t-0"
-                  >
-                    <h2 className="flex items-baseline gap-2 md:bg-muted/40 md:px-4 md:py-2">
-                      <span className="text-sm font-semibold">
-                        {group.title}
-                      </span>
-                      <span className="text-xs text-muted-foreground tabular-nums">
-                        {group.rows.length}
-                      </span>
-                    </h2>
-                    <ul className="flex flex-col gap-2.5 md:block">
-                      {group.rows.map((row) => (
-                        <TradeRow key={row.id} row={row} />
-                      ))}
-                    </ul>
-                  </section>
-                ),
-            )}
-          </div>
-        )}
+        <TradeList key={tab} tab={tab} />
       </div>
     </>
   );
 }
 
-function FinishedTrades() {
-  const query = useSuspenseInfiniteQuery(finishedTradesQuery());
+function TradeList({ tab }: { tab: MyTradesTab }) {
+  const query = useSuspenseInfiniteQuery(myTradesQuery(tab));
   const rows = query.data.pages.flatMap((page) => page.rows);
 
-  if (rows.length === 0) return <MyTradesEmpty tab="finished" />;
+  if (rows.length === 0) return <MyTradesEmpty tab={tab} />;
   return (
     <>
       <div className="flex flex-col text-sm md:overflow-clip md:rounded-lg md:border md:bg-card">
-        <ColumnHeader tab="finished" />
+        <ColumnHeader tab={tab} />
         <ul className="flex flex-col gap-2.5 md:block md:*:first:border-t-0">
           {rows.map((row) => (
             <TradeRow key={row.id} row={row} />
@@ -126,7 +76,7 @@ function FinishedTrades() {
 /**
  * The title and the tabs, which keep their place in the URL.
  */
-function MyTradesHeader({ tab, live }: { tab: MyTradesTab; live: number }) {
+function MyTradesHeader({ tab }: { tab: MyTradesTab }) {
   const navigate = useNavigate();
 
   return (
@@ -149,12 +99,7 @@ function MyTradesHeader({ tab, live }: { tab: MyTradesTab; live: number }) {
           }}
         >
           <TabsList aria-label={m.my_trades_tabs()} className="max-md:h-10">
-            <TabsTrigger value="active">
-              {m.my_trades_tab_active()}
-              {live > 0 && (
-                <span className="font-mono text-xs tabular-nums">{live}</span>
-              )}
-            </TabsTrigger>
+            <TabsTrigger value="active">{m.my_trades_tab_active()}</TabsTrigger>
             <TabsTrigger value="finished">
               {m.my_trades_tab_finished()}
             </TabsTrigger>

@@ -2122,8 +2122,6 @@
   "my_trades_tabs": "表示するトレード",
   "my_trades_tab_active": "進行中",
   "my_trades_tab_finished": "終了",
-  "my_trades_group_needs_you": "あなたの対応待ち",
-  "my_trades_group_waiting": "相手の対応待ち",
   "my_trades_column_kind": "種類",
   "my_trades_column_send": "送るもの",
   "my_trades_column_get": "受け取るもの",

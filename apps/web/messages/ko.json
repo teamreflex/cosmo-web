@@ -2122,8 +2122,6 @@
   "my_trades_tabs": "표시할 거래",
   "my_trades_tab_active": "진행 중",
   "my_trades_tab_finished": "종료",
-  "my_trades_group_needs_you": "내 차례",
-  "my_trades_group_waiting": "상대 차례",
   "my_trades_column_kind": "종류",
   "my_trades_column_send": "보내는 것",
   "my_trades_column_get": "받는 것",

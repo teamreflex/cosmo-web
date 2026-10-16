@@ -4,9 +4,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { currentAccountQuery } from "@/lib/queries/core";
-import { activeTradesQuery, finishedTradesQuery } from "@/lib/queries/trades";
+import { myTradesQuery } from "@/lib/queries/trades";
 import { myTradesTabs } from "@/lib/universal/trades";
-import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import * as z from "zod";
 
@@ -24,16 +23,11 @@ export const Route = createFileRoute("/market/trades")({
     }
   },
   loaderDeps: ({ search: { tab } }) => ({ tab }),
-  // the live trades give the counts on either tab
   loader: async ({ context, deps }) => {
-    await Promise.all([
-      context.queryClient.query({ ...activeTradesQuery, staleTime: "static" }),
-      deps.tab === "finished" &&
-        context.queryClient.infiniteQuery({
-          ...finishedTradesQuery(),
-          staleTime: "static",
-        }),
-    ]);
+    await context.queryClient.infiniteQuery({
+      ...myTradesQuery(deps.tab),
+      staleTime: "static",
+    });
   },
   head: () =>
     defineHead({
@@ -48,11 +42,10 @@ export const Route = createFileRoute("/market/trades")({
 
 function RouteComponent() {
   const { tab } = Route.useSearch();
-  const { data: active } = useSuspenseQuery(activeTradesQuery);
 
   return (
     <main className="flex flex-col">
-      <MyTrades tab={tab} active={active.rows} />
+      <MyTrades tab={tab} />
     </main>
   );
 }

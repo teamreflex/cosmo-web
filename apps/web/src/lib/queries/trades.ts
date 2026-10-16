@@ -1,4 +1,5 @@
 import { $fetchMyTrades, $fetchTrade } from "@/lib/functions/trades";
+import type { MyTradesTab } from "@/lib/universal/trades";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
 /**
@@ -15,22 +16,18 @@ export const tradeQuery = (id: string) =>
   });
 
 /**
- * The viewer's live trades, which also give My trades its counts. Nothing
- * pushes them, so they refetch whenever the window regains focus.
+ * The viewer's trades on one My trades tab, a page at a time. Nothing
+ * pushes live trades, so the Active tab refetches whenever the window
+ * regains focus.
  */
-export const activeTradesQuery = queryOptions({
-  queryKey: [...tradesKey, "mine", "active"],
-  queryFn: ({ signal }) => $fetchMyTrades({ signal, data: { tab: "active" } }),
-  refetchOnWindowFocus: "always",
-});
-
-export const finishedTradesQuery = () =>
+export const myTradesQuery = (tab: MyTradesTab) =>
   infiniteQueryOptions({
-    queryKey: [...tradesKey, "mine", "finished"],
+    queryKey: [...tradesKey, "mine", tab],
     queryFn: ({ signal, pageParam }) =>
-      $fetchMyTrades({ signal, data: { tab: "finished", cursor: pageParam } }),
+      $fetchMyTrades({ signal, data: { tab, cursor: pageParam } }),
     initialPageParam: firstPage,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
+    refetchOnWindowFocus: tab === "active" ? "always" : true,
   });
 
 /**
