@@ -10,7 +10,6 @@ import {
   collectionKind,
   estimateSerials,
   findRange,
-  SERIAL_CUTOFF,
   type CollectionObjekts,
   type Reservation,
   type ReservedRange,
@@ -241,13 +240,13 @@ export const recomputeCollections = Effect.fn("recomputeCollections")(
 );
 
 /**
- * Re-estimate every collection with an objekt minted after COSMO's v1
- * metadata cutoff. The indexer numbers each new objekt as it inserts it but
- * never touches existing rows, so this repairs what insertion can't: the
- * objekts above a late digital mint, physicals scanned before their reserved
- * range was known, and ranges that later scans re-anchor. Runs daily during
- * Apollo's quiet hours, which also bounds how long a late mint's neighbours
- * share a serial.
+ * How far back a daily run looks for new objekts:
+ * a day, plus an hour of slack for a run that starts late.
+ */
+const DAILY_WINDOW = Duration.hours(25);
+
+/**
+ * Re-estimate every collection with an objekt minted in the last day.
  */
 export const recomputeSerialsTask = {
   name: "recompute-serials",
@@ -259,7 +258,12 @@ export const recomputeSerialsTask = {
     const minted = db
       .selectDistinct({ collectionId: objekts.collectionId })
       .from(objekts)
-      .where(gt(objekts.mintedAt, new Date(SERIAL_CUTOFF).toISOString()))
+      .where(
+        gt(
+          objekts.mintedAt,
+          new Date(Date.now() - Duration.toMillis(DAILY_WINDOW)).toISOString(),
+        ),
+      )
       .as("minted");
     const refs = yield* db
       .select(collectionColumns)

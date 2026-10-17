@@ -6,6 +6,8 @@ export { cn } from "cn";
 
 export type PropsWithClassName<T> = T & { className?: string };
 
+export const DISCORD_URL = "https://discord.gg/A72VRX8FgK";
+
 /**
  * Get the base URL for the app.
  */

@@ -19,8 +19,8 @@ import type { ProcessorContext } from "./processor";
 /**
  * Serials for objekts minted after COSMO's v1 metadata cutoff, set on each
  * new objekt before it is inserted, using @apollo/serial-estimation. Existing
- * rows are never renumbered here; apps/schedules recomputes collections daily
- * and applies confirmed serials.
+ * rows are never renumbered here; apps/schedules recomputes collections with
+ * new objekts daily and applies confirmed serials.
  *
  * - A digital mint above its collection's highest token id takes the next
  *   serial.

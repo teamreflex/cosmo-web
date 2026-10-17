@@ -10,6 +10,7 @@ import { useArtists } from "@/hooks/use-artists";
 import { m } from "@/i18n/messages";
 import type { PublicUser } from "@/lib/universal/auth";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import { DISCORD_URL } from "@/lib/utils";
 import {
   IconBrandDiscord,
   IconInfoCircle,
@@ -118,11 +119,7 @@ export default function UserDropdown({
         <DropdownMenuItem
           className="cursor-pointer"
           render={
-            <a
-              href="https://discord.gg/A72VRX8FgK"
-              target="_blank"
-              rel="noopener noreferrer"
-            />
+            <a href={DISCORD_URL} target="_blank" rel="noopener noreferrer" />
           }
         >
           <IconBrandDiscord className="h-4 w-4" />
