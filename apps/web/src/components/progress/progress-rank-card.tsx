@@ -22,7 +22,7 @@ export default function ProgressRankCard(props: Props) {
   const { setFilters } = useProgressFilters();
 
   return (
-    <div className="relative flex min-w-0 flex-[1_1_16rem] flex-col justify-between gap-5 rounded-xl border bg-card p-5 transition-colors has-[button:hover]:border-cosmo/50 has-[button:hover]:bg-accent/40 md:p-7">
+    <div className="relative flex h-46 min-w-0 flex-col justify-between gap-5 rounded-xl border bg-card p-5 transition-colors has-[button:hover]:border-cosmo/50 has-[button:hover]:bg-accent/40 md:h-53 md:p-7 lg:h-auto">
       <span className="flex items-center justify-between text-sm font-semibold text-muted-foreground">
         {m.progress_leaderboard()}
         <IconTrophy className="size-5 text-cosmo-text" aria-hidden />

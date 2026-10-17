@@ -22,7 +22,7 @@ import {
 import ProgressLeaderboardContent, {
   LeaderboardSkeleton,
 } from "./progress-leaderboard-content";
-import ProgressTypeTabs from "./progress-type-tabs";
+import { ProgressTypeTabs } from "./progress-type-filter";
 
 type Props = {
   address: string;

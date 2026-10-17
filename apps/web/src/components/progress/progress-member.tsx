@@ -6,9 +6,7 @@ import { progressBreakdownQuery } from "@/lib/queries/progress";
 import type { SeasonProgress } from "@/lib/universal/progress";
 import { classSort, seasonSort } from "@/lib/utils";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
-import { IconArrowLeft } from "@tabler/icons-react";
 import { useSuspenseQueries } from "@tanstack/react-query";
-import { Link, getRouteApi } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { Skeleton } from "../ui/skeleton";
 import MemberAvatar from "./member-avatar";
@@ -16,8 +14,6 @@ import ProgressBreakdown from "./progress-breakdown";
 import type { BreakdownRow } from "./progress-breakdown";
 import ProgressLeaderboard from "./progress-leaderboard";
 import ProgressRankCard from "./progress-rank-card";
-
-const route = getRouteApi("/@{$username}");
 
 type Props = {
   artist: ValidArtist;
@@ -60,18 +56,16 @@ export default function ProgressMember(props: Props) {
 
   return (
     <div className="flex flex-col gap-6 pb-8">
-      <BackLink />
-
-      <section className="flex flex-wrap gap-4">
-        <div className="flex min-w-0 flex-[999_1_32rem] flex-col gap-5 rounded-xl border bg-card p-5 md:p-7">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
+      <section className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <div className="flex h-78 min-w-0 flex-col justify-between gap-5 rounded-xl border bg-card p-5 sm:h-48 md:h-58 md:p-7">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-center gap-4">
               <MemberAvatar
                 member={props.member}
                 className="size-14 md:size-18"
               />
-              <div className="flex flex-col gap-1.5">
-                <h2 className="font-cosmo text-2xl leading-none uppercase md:text-4xl">
+              <div className="flex min-w-0 flex-col gap-1.5">
+                <h2 className="truncate font-cosmo text-2xl leading-none uppercase md:text-4xl">
                   {props.member}
                 </h2>
                 <span className="text-sm font-semibold text-muted-foreground">
@@ -79,7 +73,7 @@ export default function ProgressMember(props: Props) {
                 </span>
               </div>
             </div>
-            <p className="flex items-baseline gap-2">
+            <p className="flex shrink-0 items-baseline gap-2">
               <span className="text-4xl font-bold tabular-nums md:text-6xl">
                 {percentage}%
               </span>
@@ -96,7 +90,7 @@ export default function ProgressMember(props: Props) {
             />
           </div>
 
-          <dl className="grid grid-cols-2 gap-x-7 gap-y-3 sm:flex sm:flex-wrap">
+          <dl className="grid grid-cols-2 gap-x-7 gap-y-3 sm:grid-cols-[repeat(4,minmax(0,auto))] sm:justify-start">
             <Total label={m.progress_collected()}>
               {totals.owned}
               <span className="font-medium text-muted-foreground">
@@ -146,28 +140,15 @@ export default function ProgressMember(props: Props) {
   );
 }
 
-function BackLink() {
-  const { username } = route.useParams();
-
-  return (
-    <Link
-      to="/@{$username}/progress"
-      params={{ username }}
-      className="flex min-h-11 items-center gap-1.5 self-start text-sm font-semibold text-cosmo-text hover:underline"
-    >
-      <IconArrowLeft className="size-4" />
-      {m.progress_all_members()}
-    </Link>
-  );
-}
-
 function Total(props: { label: string; children: ReactNode }) {
   return (
-    <div className="flex flex-col-reverse gap-0.5">
-      <dt className="text-xs text-muted-foreground md:text-sm">
+    <div className="flex min-w-0 flex-col-reverse gap-0.5">
+      <dt className="truncate text-xs text-muted-foreground md:text-sm">
         {props.label}
       </dt>
-      <dd className="text-xl font-bold tabular-nums">{props.children}</dd>
+      <dd className="truncate text-xl font-bold tabular-nums">
+        {props.children}
+      </dd>
     </div>
   );
 }
@@ -209,13 +190,16 @@ function buildBreakdown(
 export function ProgressMemberSkeleton() {
   return (
     <div className="flex flex-col gap-6">
-      <Skeleton className="h-11 w-32" />
-      <div className="flex flex-wrap gap-4">
-        <Skeleton className="h-60 flex-[999_1_32rem] rounded-xl" />
-        <Skeleton className="h-60 flex-[1_1_16rem] rounded-xl" />
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_20rem]">
+        <Skeleton className="h-78 rounded-xl sm:h-48 md:h-58" />
+        <Skeleton className="h-46 rounded-xl md:h-53 lg:h-auto" />
       </div>
-      <Skeleton className="h-10 w-full rounded-xl" />
-      <Skeleton className="h-96 w-full rounded-xl" />
+      <div className="flex flex-col gap-3">
+        <div className="flex h-21 items-start sm:h-11 sm:items-center">
+          <Skeleton className="h-7 w-36 max-sm:mt-1" />
+        </div>
+        <Skeleton className="h-96 w-full rounded-xl" />
+      </div>
     </div>
   );
 }

@@ -69,12 +69,12 @@ export default function ProgressOverview(props: Props) {
 
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
         <StatList
-          title={m.progress_objekts_by_season()}
+          title={m.progress_by_season()}
           data={stats.seasons}
           total={total}
         />
         <StatList
-          title={m.progress_objekts_by_class()}
+          title={m.progress_by_class()}
           data={stats.classes}
           total={total}
         />

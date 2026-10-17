@@ -5,14 +5,13 @@ import {
   progressRankQuery,
 } from "@/lib/queries/progress";
 import type { LeaderboardItem } from "@/lib/universal/progress";
-import { cn, ordinal } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import type { ValidOnlineType } from "@apollo/cosmo/types/common";
 import { isEqual } from "@apollo/util";
 import { useSuspenseQueries } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import RankNumber from "../gravity/rank-number";
 import { Skeleton } from "../ui/skeleton";
-
-const PODIUM = 3;
 
 type Props = {
   address: string;
@@ -65,35 +64,8 @@ export default function ProgressLeaderboardContent(props: Props) {
         )}
       </div>
 
-      <ol className="grid grid-cols-3 items-end gap-2">
-        {data.leaderboard.slice(0, PODIUM).map((item, i) => (
-          <li
-            key={item.address}
-            className={cn(
-              "flex min-w-0 flex-col justify-end gap-1.5 rounded-xl border p-3",
-              // second place sits left of first, third on the right
-              i === 0 && "order-2 h-36 border-cosmo/50 bg-cosmo/15",
-              i === 1 && "order-1 h-30 bg-card",
-              i === 2 && "order-3 h-27 bg-card",
-            )}
-          >
-            <span className="text-xs font-bold text-muted-foreground">
-              {ordinal(i + 1)}
-            </span>
-            <ProfileLink
-              item={item}
-              member={props.member}
-              className="truncate font-cosmo text-sm uppercase"
-            />
-            <span className="text-xl font-bold tabular-nums">
-              {percentage(item.count)}%
-            </span>
-          </li>
-        ))}
-      </ol>
-
-      <ol start={PODIUM + 1} className="flex flex-col gap-1">
-        {data.leaderboard.slice(PODIUM).map((item, i) => {
+      <ol className="flex flex-col gap-1">
+        {data.leaderboard.map((item, i) => {
           const isTarget = isEqual(item.address, props.address);
           const value = percentage(item.count);
           return (
@@ -106,9 +78,7 @@ export default function ProgressLeaderboardContent(props: Props) {
                   : "hover:bg-accent/40",
               )}
             >
-              <span className="text-right font-semibold text-muted-foreground tabular-nums">
-                {i + PODIUM + 1}
-              </span>
+              <RankNumber rank={i + 1} className="text-right font-semibold" />
               <ProfileLink
                 item={item}
                 member={props.member}
@@ -157,13 +127,8 @@ export function LeaderboardSkeleton() {
   return (
     <div className="flex flex-col gap-5 p-5">
       <Skeleton className="h-17 rounded-xl" />
-      <div className="grid grid-cols-3 items-end gap-2">
-        <Skeleton className="h-30 rounded-xl" />
-        <Skeleton className="h-36 rounded-xl" />
-        <Skeleton className="h-27 rounded-xl" />
-      </div>
       <div className="flex flex-col gap-2">
-        {Array.from({ length: 22 }).map((_, i) => (
+        {Array.from({ length: 25 }).map((_, i) => (
           <Skeleton key={i} className="h-9 rounded-lg" />
         ))}
       </div>
