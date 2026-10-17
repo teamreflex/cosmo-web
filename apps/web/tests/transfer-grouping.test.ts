@@ -4,7 +4,10 @@ import {
   chainTransfers,
   groupTransfers,
   pairSpins,
+  rowTransfers,
+  TRADE_GAP_MS,
   tradedIds,
+  unfinishedChains,
 } from "../src/lib/universal/transfer-grouping";
 import type {
   TransferObjekt,
@@ -38,20 +41,37 @@ function transfer(
   };
 }
 
+/**
+ * Pick the page's row transfers, then fold them, as the server does. `related`
+ * defaults to the page, all of it in the stream.
+ */
 function group(
   page: TransferObjekt[],
-  overrides: Partial<Parameters<typeof groupTransfers>[0]> = {},
+  {
+    related = page,
+    inStream = new Set(related.map((t) => t.transfer.id)),
+    rewards = new Map<string, TransferObjekt>(),
+    rewardIds = new Set<string>(),
+    now = BASE + 60 * 60_000,
+  }: {
+    related?: TransferObjekt[];
+    inStream?: Set<string>;
+    rewards?: Map<string, TransferObjekt>;
+    rewardIds?: Set<string>;
+    now?: number;
+  } = {},
 ): TransferRow[] {
-  const related = overrides.related ?? page;
   return groupTransfers({
     address: OWNER,
-    page,
-    rewards: new Map(),
-    rewardIds: new Set(),
+    page: rowTransfers(
+      page,
+      chainTransfers(OWNER, related),
+      rewardIds,
+      inStream,
+    ),
+    rewards,
     related,
-    inStream: new Set(related.map((t) => t.transfer.id)),
-    now: BASE + 60 * 60_000,
-    ...overrides,
+    now,
   });
 }
 
@@ -128,6 +148,11 @@ describe("groupTransfers", () => {
     expect(spinRow?.kind === "spin" && spinRow.outcome).toBe("success");
   });
 
+  it("hides a reward whose spin is on another page", () => {
+    const reward = transfer("reward", 0.25, Addresses.NULL, OWNER);
+    expect(group([reward], { rewardIds: new Set(["reward"]) })).toEqual([]);
+  });
+
   it("marks a spin without a reward pending, then failed", () => {
     const spin = transfer("spin", 0, OWNER, Addresses.SPIN);
     const outcome = (now: number) => {
@@ -150,6 +175,71 @@ describe("tradedIds", () => {
     ];
     const traded = tradedIds(OWNER, chainTransfers(OWNER, transfers));
     expect([...traded].toSorted()).toEqual(["r1", "s1", "s2"]);
+  });
+});
+
+describe("unfinishedChains", () => {
+  const at = (minute: number) => BASE + minute * 60_000;
+  const unfinished = (
+    transfers: TransferObjekt[],
+    ranges: { lo: number; hi: number }[],
+    page = transfers,
+  ) => unfinishedChains(OWNER, page, chainTransfers(OWNER, transfers), ranges);
+
+  it("leaves a chain with a full gap of read time on both sides", () => {
+    const transfers = [
+      transfer("s1", 0, OWNER, ALICE),
+      transfer("r1", 10, ALICE, OWNER),
+    ];
+    expect(unfinished(transfers, [{ lo: at(-15), hi: at(25) }])).toEqual([]);
+  });
+
+  it("finds a chain that could continue past either edge", () => {
+    const older = [transfer("s1", 0, OWNER, ALICE)];
+    const newer = [transfer("r1", 20, BOB, OWNER)];
+    expect(
+      unfinished([...older, ...newer], [{ lo: at(-14), hi: at(34) }]),
+    ).toEqual([
+      { counterparty: ALICE, oldest: at(0), newest: at(0) },
+      { counterparty: BOB, oldest: at(20), newest: at(20) },
+    ]);
+  });
+
+  it("finds a chain spanning two ranges, which may skip transfers between", () => {
+    const transfers = [
+      transfer("s1", 0, OWNER, ALICE),
+      transfer("r1", 14, ALICE, OWNER),
+    ];
+    const ranges = [
+      { lo: at(-30), hi: at(5) },
+      { lo: at(10), hi: at(40) },
+    ];
+    expect(unfinished(transfers, ranges)).toEqual([
+      { counterparty: ALICE, oldest: at(0), newest: at(14) },
+    ]);
+  });
+
+  it("ignores chains without one of the page's transfers", () => {
+    const onPage = transfer("s1", 30, OWNER, ALICE);
+    const offPage = transfer("r1", 0, BOB, OWNER);
+    expect(
+      unfinished([onPage, offPage], [{ lo: at(-5), hi: at(45) }], [onPage]),
+    ).toEqual([]);
+  });
+
+  it("ignores mints, burns and spins", () => {
+    const transfers = [
+      transfer("mint", 0, Addresses.NULL, OWNER),
+      transfer("burn", 1, OWNER, Addresses.NULL),
+      transfer("spin", 2, OWNER, Addresses.SPIN),
+    ];
+    expect(unfinished(transfers, [{ lo: at(0), hi: at(2) }])).toEqual([]);
+  });
+
+  it("treats a gap of exactly TRADE_GAP_MS as read", () => {
+    const transfers = [transfer("s1", 0, OWNER, ALICE)];
+    const ranges = [{ lo: at(0) - TRADE_GAP_MS, hi: at(0) + TRADE_GAP_MS }];
+    expect(unfinished(transfers, ranges)).toEqual([]);
   });
 });
 

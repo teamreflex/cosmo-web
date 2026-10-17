@@ -4,8 +4,10 @@ import type { Redis } from "effect/unstable/persistence";
 import type { DatabaseWeb } from "./db";
 import type { DatabaseIndexer } from "./db-indexer";
 import type { Exchangerate } from "./exchangerate";
+import { applySerialConfirmationsTask } from "./functions/apply-serial-confirmations";
 import { clearObjektStatsTask } from "./functions/clear-objekt-stats";
 import { drainOutboxTask } from "./functions/drain-outbox";
+import { recomputeSerialsTask } from "./functions/recompute-serials";
 import { syncCollectionPriceStatsTask } from "./functions/sync-collection-price-stats";
 import { syncFxRatesTask } from "./functions/sync-fx-rates";
 import { syncGravitiesTask } from "./functions/sync-gravities";
@@ -16,6 +18,7 @@ export interface ScheduledTask<TSuccess = void, TFailure = unknown> {
   name: string;
   cron: string;
   timezone?: string;
+  runAtBoot?: boolean;
   effect: Effect.Effect<
     TSuccess,
     TFailure,
@@ -35,6 +38,8 @@ export const SCHEDULED_TASKS: ScheduledTask[] = [
   syncFxRatesTask,
   syncCollectionPriceStatsTask,
   syncMembersTask,
+  recomputeSerialsTask,
+  applySerialConfirmationsTask,
 ];
 
 /**
@@ -42,8 +47,9 @@ export const SCHEDULED_TASKS: ScheduledTask[] = [
  * - Retries individual executions with exponential backoff (max 3 retries)
  * - Failures (errors and defects) are logged with their cause, then the task
  *   waits for the next cron tick — the repeat schedule never ends
- * - Effect.repeat runs the effect once immediately, so every task executes
- *   at boot before settling into its cron cadence
+ * - Effect.repeat runs the effect once immediately, so a task executes at
+ *   boot before settling into its cron cadence, unless `runAtBoot` is false,
+ *   where Effect.schedule waits for the first cron tick
  */
 export const createResilientTask = Effect.fn("createResilientTask")(function* (
   task: ScheduledTask,
@@ -53,16 +59,19 @@ export const createResilientTask = Effect.fn("createResilientTask")(function* (
 
   yield* Effect.logInfo(`Starting task: ${task.name}`);
 
-  return yield* Effect.forkChild(
-    task.effect.pipe(
-      Effect.retry({
-        schedule: Schedule.exponential(Duration.seconds(1)),
-        times: 3,
-      }),
-      Effect.catchCause((cause) =>
-        Effect.logError(`Task ${task.name} failed`, cause),
-      ),
-      Effect.repeat(schedule),
+  const run = task.effect.pipe(
+    Effect.retry({
+      schedule: Schedule.exponential(Duration.seconds(1)),
+      times: 3,
+    }),
+    Effect.catchCause((cause) =>
+      Effect.logError(`Task ${task.name} failed`, cause),
     ),
+  );
+
+  return yield* Effect.forkChild(
+    task.runAtBoot === false
+      ? Effect.schedule(run, schedule)
+      : Effect.repeat(run, schedule),
   );
 });

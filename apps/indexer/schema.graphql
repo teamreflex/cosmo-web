@@ -96,3 +96,15 @@ type CollectionStats @entity {
   objektCount: Int!
   spunCount: Int!
 }
+
+type SerialReservation @entity {
+  lo: Int! # primary key: the online token id just below the reserved range
+  hi: Int! # the online token id just above it
+}
+
+type SerialConfirmation @entity {
+  tokenId: ID! # joins to objekt.id
+  serial: Int!
+  confirmedBy: String # web user id, null when seeded from COSMO's own data
+  confirmedAt: DateTime!
+}

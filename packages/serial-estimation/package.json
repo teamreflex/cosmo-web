@@ -1,0 +1,27 @@
+{
+  "name": "@apollo/serial-estimation",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "bun --bun oxlint --type-aware --type-check",
+    "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
+    "test": "bun test",
+    "typecheck": "tsc --pretty --noEmit",
+    "format": "oxfmt ."
+  },
+  "devDependencies": {
+    "@apollo/database": "workspace:*",
+    "@apollo/lint": "workspace:*",
+    "@apollo/typescript": "workspace:*",
+    "@types/bun": "catalog:",
+    "drizzle-orm": "catalog:",
+    "turbo": "catalog:",
+    "typescript": "catalog:",
+    "zod": "catalog:"
+  }
+}

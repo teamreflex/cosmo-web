@@ -6,7 +6,8 @@ import {
 } from "@/components/ui/accordion";
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
-import { IconSpeakerphone } from "@tabler/icons-react";
+import { DISCORD_URL } from "@/lib/utils";
+import { IconBrandDiscord, IconSpeakerphone } from "@tabler/icons-react";
 import { addDays, format, isWithinInterval, subDays } from "date-fns";
 import { useMemo } from "react";
 import {
@@ -19,6 +20,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
+import { Button } from "../ui/button";
 
 export default function UpdateDialog() {
   const isNew = useMemo(() => {
@@ -70,7 +72,16 @@ export default function UpdateDialog() {
             ))}
           </Accordion>
         </div>
-        <AlertDialogFooter>
+        <AlertDialogFooter className="sm:justify-between">
+          <Button
+            variant="discord"
+            render={
+              <a href={DISCORD_URL} target="_blank" rel="noopener noreferrer">
+                <IconBrandDiscord />
+                <span>Discord</span>
+              </a>
+            }
+          />
           <AlertDialogAction>{m.common_continue()}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -80,19 +91,11 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2026-10-07",
+    date: "2026-10-17",
     changes: [
-      "Binders now allow a maximum of 50 pages instead of 20, and pages can be reordered.",
-    ],
-  },
-  {
-    date: "2026-09-30",
-    changes: [
-      "Added: 3D objekt interaction from COSMO",
-      "Added: Details/descriptions from gravities",
-      "Added: Image optimization to help responsiveness and loading speed",
-      "Added: Pinnable objekt collectbook/binder system",
-      "Small rework of profile pages to better suit mobile devices",
+      "Missing serials since June have been restored.",
+      "These are estimates based on how COSMO works, not official. It should be most accurate for standard shop releases, less accurate for physical scans.",
+      "If you have an incorrect serial, we have a #serial-fix-requests channel in Discord.",
     ],
   },
 ];

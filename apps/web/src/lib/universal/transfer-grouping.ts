@@ -29,16 +29,12 @@ const SPIN_REWARD_DELAY_MS = 3 * 1000;
 
 type GroupInput = {
   address: string;
-  // the page of transfers in list order, newest first
+  // the transfers rows are listed at, in list order, newest first
   page: TransferObjekt[];
   // spin transfer id -> its reward mint
   rewards: Map<string, TransferObjekt>;
-  // mint transfer ids that are spin rewards
-  rewardIds: Set<string>;
-  // transfers between the owner and the page's counterparties around the page
+  // every transfer in a chain with one of the page's user transfers
   related: TransferObjekt[];
-  // ids of related transfers that match the active filters
-  inStream: Set<string>;
   now: number;
 };
 
@@ -93,6 +89,36 @@ export function chainTransfers<T extends ChainItem>(
 }
 
 /**
+ * Chains with one of the page's transfers that could continue past the time
+ * ranges read: ones without TRADE_GAP_MS of read time on both sides inside a
+ * single range. Returns each one's counterparty and oldest and newest times.
+ */
+export function unfinishedChains(
+  address: string,
+  page: ChainItem[],
+  chains: Map<string, ChainItem[]>,
+  ranges: { lo: number; hi: number }[],
+) {
+  return [...new Set(page.map((t) => chains.get(t.transfer.id) ?? []))].flatMap(
+    (chain) => {
+      const [first] = chain;
+      const last = chain.at(-1);
+      if (!first || !last) return [];
+
+      const oldest = time(first);
+      const newest = time(last);
+      const covered = ranges.some(
+        ({ lo, hi }) =>
+          lo <= oldest - TRADE_GAP_MS && newest + TRADE_GAP_MS <= hi,
+      );
+      return covered
+        ? []
+        : [{ counterparty: counterpartyOf(address, first), oldest, newest }];
+    },
+  );
+}
+
+/**
  * Pair the owner's spins with their reward mints. A spin's reward is its
  * first mint between SPIN_REWARD_DELAY_MS and SPIN_REWARD_WINDOW_MS later,
  * unless the owner spun again more than SPIN_REWARD_DELAY_MS before it.
@@ -127,7 +153,7 @@ export function pairSpins(spins: ChainItem[], mints: ChainItem[]) {
 
 /**
  * Ids of every transfer in a chain with one of the page's user transfers:
- * the ones the page's rows can display or anchor on.
+ * the ones the page's rows display.
  */
 export function chainedIds(
   address: string,
@@ -156,65 +182,70 @@ export function tradedIds(address: string, chains: Map<string, ChainItem[]>) {
 }
 
 /**
- * Fold a page of transfers into display rows.
- *
- * A chain of transfers with one user renders once, at its newest transfer
- * that matches the active filters. Every page computes the same anchor, so a
- * chain split across pages never renders twice.
+ * The page's transfers that a row is listed at. A spin's reward renders
+ * inside its spin, and a chain renders once, at its newest transfer in the
+ * stream: every page computes the same one, so a chain split across pages
+ * never renders twice.
  */
-export function groupTransfers(input: GroupInput): TransferRow[] {
-  const { address, page, rewards, rewardIds, inStream, now } = input;
+export function rowTransfers<T extends ChainItem>(
+  page: T[],
+  chains: Map<string, ChainItem[]>,
+  rewardIds: Set<string>,
+  inStream: Set<string>,
+) {
+  return page.filter((t) => {
+    const { id, from } = t.transfer;
+    if (from === Addresses.NULL) return !rewardIds.has(id);
 
-  // the page's own transfers are always part of their chains
-  const chains = chainTransfers(address, [
-    ...new Map(
-      [...input.related, ...page].map((t) => [t.transfer.id, t]),
-    ).values(),
-  ]);
+    const anchor = chains.get(id)?.findLast((m) => inStream.has(m.transfer.id));
+    return (anchor ?? t).transfer.id === id;
+  });
+}
 
-  const rows: TransferRow[] = [];
-  for (const t of page) {
+/**
+ * Fold the transfers rows are listed at into display rows.
+ */
+export function groupTransfers({
+  address,
+  page,
+  rewards,
+  related,
+  now,
+}: GroupInput): TransferRow[] {
+  const chains = chainTransfers(address, related);
+
+  return page.map((t): TransferRow => {
     const { id, timestamp, from, to } = t.transfer;
 
-    // spins render at the spin itself; their reward never renders alone
     if (from === address && to === Addresses.SPIN) {
       const reward = rewards.get(id) ?? null;
-      rows.push({
+      return {
         kind: "spin",
         id,
         timestamp,
         spun: t,
         reward,
         outcome: spinOutcome(t, reward !== null, now),
-      });
-      continue;
+      };
     }
 
     if (from === Addresses.NULL) {
-      if (!rewardIds.has(id)) {
-        rows.push({ kind: "mint", id, timestamp, objekt: t });
-      }
-      continue;
+      return { kind: "mint", id, timestamp, objekt: t };
     }
 
     // burns have no counterparty to group with
     if (to === Addresses.NULL) {
-      rows.push({
+      return {
         kind: "sent",
         id,
         timestamp,
         counterparty: { address: to, username: null },
         objekts: [t],
-      });
-      continue;
+      };
     }
 
-    const chain = chains.get(id) ?? [t];
-    const anchor = chain.findLast((m) => inStream.has(m.transfer.id)) ?? t;
-    if (anchor.transfer.id === id) rows.push(chainRow(address, t, chain));
-  }
-
-  return rows;
+    return chainRow(address, t, chains.get(id) ?? [t]);
+  });
 }
 
 /**

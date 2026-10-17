@@ -18,6 +18,7 @@ import {
   parseBlocks,
 } from "./parser";
 import { processor, type ProcessorContext } from "./processor";
+import { numberNewObjekts, startSerialBatch } from "./serials";
 
 const db = new TypeormDatabase({ supportHotBlocks: true });
 
@@ -26,6 +27,8 @@ processor.run(db, async (ctx) => {
     parseBlocks(ctx.blocks);
 
   if (env.ENABLE_OBJEKTS) {
+    startSerialBatch(ctx);
+
     if (transfers.length > 0) {
       ctx.log.info(`Processing ${transfers.length} objekt transfers`);
     }
@@ -35,6 +38,7 @@ processor.run(db, async (ctx) => {
       const transferBatch: Transfer[] = [];
       const collectionBatch = new Map<string, Collection>();
       const objektBatch = new Map<string, Objekt>();
+      const createdObjekts: { objekt: Objekt; collection: Collection }[] = [];
 
       const results = await Promise.allSettled(
         chunk.map((transfer) => fetchMetadataWithRetryV3(transfer.tokenId)),
@@ -85,15 +89,26 @@ processor.run(db, async (ctx) => {
         collectionBatch.set(collection.slug, collection);
 
         // handle objekt
-        const objekt = await handleObjekt(ctx, metadata, objektBatch, transfer);
+        const { objekt, created } = await handleObjekt(
+          ctx,
+          metadata,
+          objektBatch,
+          transfer,
+        );
         objekt.collection = collection;
         objektBatch.set(objekt.id, objekt);
+        if (created) {
+          createdObjekts.push({ objekt, collection });
+        }
 
         // handle transfer
         transfer.objekt = objekt;
         transfer.collection = collection;
         transferBatch.push(transfer);
       }
+
+      // set serials for objekts minted after the v1 metadata cutoff
+      await numberNewObjekts(ctx, createdObjekts);
 
       // mirror new or replaced images so the upsert carries their versions
       await mirrorImages(ctx, collectionBatch.values());
@@ -287,26 +302,25 @@ async function handleObjekt(
     objekt = await ctx.store.get(Objekt, transfer.tokenId);
   }
 
-  // if not new, update fields. skip transferable
+  // if not new, update fields. skip transferable and serial
   if (objekt) {
     objekt.receivedAt = new Date(transfer.timestamp);
     objekt.owner = addr(transfer.to);
-    return objekt;
+    return { objekt, created: false };
   }
 
-  // otherwise create it
-  if (!objekt) {
-    objekt = new Objekt({
+  // otherwise create it; numberNewObjekts replaces v3's serial 0 after the cutoff
+  return {
+    objekt: new Objekt({
       id: transfer.tokenId,
       mintedAt: new Date(transfer.timestamp),
       receivedAt: new Date(transfer.timestamp),
       owner: addr(transfer.to),
       serial: metadata.objekt.objektNo,
       transferable: metadata.objekt.transferable,
-    });
-  }
-
-  return objekt;
+    }),
+    created: true,
+  };
 }
 
 /**
