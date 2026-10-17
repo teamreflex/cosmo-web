@@ -851,6 +851,7 @@
   "progress_filter_combined": "Combiné",
   "progress_by_season": "Par saison",
   "progress_by_class": "Par classe",
+  "progress_spin_unsupported": "Nous ne prenons pas en charge la progression de cosmo-spin.",
   "progress_column_objekts": "Objekts",
   "progress_column_share": "Part",
   "progress_objekt_count": "{count} objekts",

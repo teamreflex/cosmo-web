@@ -140,8 +140,10 @@ module.exports = class Data1790444346394 {
     /**
      * Distinct obtainable collections each owner holds per member, per season and
      * online type. An empty season or on_offline is the total across all of them.
-     * count is indexed, so every change leaves a dead row version: vacuum after roughly
-     * a day of churn instead of the default 20% of the table.
+     * count is indexed, so every change leaves a dead row version and clears its page's
+     * visibility bit. Each member's rows sit on separate pages, so the rank count only stays
+     * an index-only scan if vacuum resets those bits often: after about an hour of churn
+     * rather than the default 20% of the table.
      */
     await db.query(`
       CREATE TABLE IF NOT EXISTS "progress_leaderboard" (
@@ -151,7 +153,12 @@ module.exports = class Data1790444346394 {
         "on_offline" text NOT NULL,
         "count" integer NOT NULL,
         CONSTRAINT "progress_leaderboard_pkey" PRIMARY KEY ("owner", "member", "season", "on_offline")
-      ) WITH (autovacuum_vacuum_scale_factor = 0, autovacuum_vacuum_threshold = 200000);
+      ) WITH (
+        autovacuum_vacuum_scale_factor = 0,
+        autovacuum_vacuum_threshold = 10000,
+        autovacuum_vacuum_insert_scale_factor = 0,
+        autovacuum_vacuum_insert_threshold = 10000
+      );
     `);
 
     // backfill, skipped once the tables hold data

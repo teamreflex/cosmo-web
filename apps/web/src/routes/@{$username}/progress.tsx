@@ -19,6 +19,7 @@ import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { progressFrontendSchema } from "@/lib/universal/parsers";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
+import { Addresses, isEqual } from "@apollo/util";
 import { createFileRoute } from "@tanstack/react-router";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -38,6 +39,11 @@ export const Route = createFileRoute("/@{$username}/progress")({
       context.queryClient.ensureQueryData(context.targetAccountOptions),
       context.queryClient.ensureQueryData(currentAccountQuery),
     ]);
+
+    // SPIN's progress isn't supported, so there's nothing to fetch
+    if (isEqual(target.cosmo.address, Addresses.SPIN)) {
+      return { target, account };
+    }
 
     void context.queryClient.prefetchQuery(
       artistStatsQuery(target.cosmo.address),
@@ -101,13 +107,19 @@ function RouteComponent() {
     <section className="flex flex-col">
       <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
         <ProfileProvider target={target}>
-          <ProgressRenderer address={target.cosmo.address}>
-            <ErrorBoundary fallback={<ProgressOverviewError />}>
-              <Suspense fallback={<ProgressOverviewSkeleton />}>
-                <ProgressOverview address={target.cosmo.address} />
-              </Suspense>
-            </ErrorBoundary>
-          </ProgressRenderer>
+          {isEqual(target.cosmo.address, Addresses.SPIN) ? (
+            <p className="container py-12 text-center text-sm font-semibold text-muted-foreground">
+              {m.progress_spin_unsupported()}
+            </p>
+          ) : (
+            <ProgressRenderer address={target.cosmo.address}>
+              <ErrorBoundary fallback={<ProgressOverviewError />}>
+                <Suspense fallback={<ProgressOverviewSkeleton />}>
+                  <ProgressOverview address={target.cosmo.address} />
+                </Suspense>
+              </ErrorBoundary>
+            </ProgressRenderer>
+          )}
           <Portal to="#help">
             <HelpDialog />
           </Portal>

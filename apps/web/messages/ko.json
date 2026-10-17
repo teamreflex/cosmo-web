@@ -844,6 +844,7 @@
   "progress_filter_combined": "결합",
   "progress_by_season": "시즌별",
   "progress_by_class": "클래스별",
+  "progress_spin_unsupported": "cosmo-spin의 진행 상황은 지원하지 않습니다.",
   "progress_column_objekts": "오브젝트",
   "progress_column_share": "비율",
   "progress_objekt_count": "오브젝트 {count}개",

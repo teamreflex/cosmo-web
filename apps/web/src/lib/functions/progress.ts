@@ -6,7 +6,6 @@ import {
   objekts,
   progressLeaderboard,
 } from "@/lib/server/db/indexer/schema";
-import { withSpinMonth } from "@/lib/server/objekts/filters.server";
 import {
   fetchLeaderboard,
   fetchProgress,
@@ -39,7 +38,12 @@ export const $fetchProgressBreakdown = createServerFn({ method: "GET" })
       address: z.string(),
     }),
   )
-  .handler(async ({ data }) => {
+  .handler(async ({ data }): Promise<SeasonProgress[]> => {
+    // SPIN holds millions of objekts, so its progress isn't supported
+    if (isEqual(data.address, Addresses.SPIN)) {
+      return [];
+    }
+
     const [totals, progress] = await Promise.all([
       fetchTotal({ member: data.member }),
       fetchProgress(data.address.toLowerCase(), data.member),
@@ -117,6 +121,10 @@ export const $fetchProgressRank = createServerFn({ method: "GET" })
     }),
   )
   .handler(async ({ data }): Promise<ProgressRank | null> => {
+    if (isEqual(data.address, Addresses.SPIN)) {
+      return null;
+    }
+
     const address = data.address.toLowerCase();
     const variant = and(
       eq(progressLeaderboard.member, data.member),
@@ -130,7 +138,7 @@ export const $fetchProgressRank = createServerFn({ method: "GET" })
       .where(and(variant, eq(progressLeaderboard.owner, address)))
       .comment({ fn: "fetchProgressRank" });
 
-    // no collections of the member for the filters, or SPIN
+    // no collections of the member for the filters
     if (own === undefined) {
       return null;
     }
@@ -160,6 +168,10 @@ export const $fetchProgressRank = createServerFn({ method: "GET" })
 export const $fetchMemberCompletion = createServerFn({ method: "GET" })
   .validator(z.object({ address: z.string() }))
   .handler(async ({ data }): Promise<MemberCompletion[]> => {
+    if (isEqual(data.address, Addresses.SPIN)) {
+      return [];
+    }
+
     const owned = await indexer
       .select({
         member: progressLeaderboard.member,
@@ -175,7 +187,6 @@ export const $fetchMemberCompletion = createServerFn({ method: "GET" })
       )
       .comment({ fn: "fetchMemberCompletion" });
 
-    // SPIN has no leaderboard rows
     if (owned.length === 0) {
       return [];
     }
@@ -210,8 +221,10 @@ export const $fetchMemberCompletion = createServerFn({ method: "GET" })
  */
 export const $fetchArtistStatsByAddress = createServerFn({ method: "GET" })
   .validator(z.object({ address: z.string() }))
-  .handler(async ({ data }) => {
-    const isSpin = isEqual(data.address, Addresses.SPIN);
+  .handler(async ({ data }): Promise<ArtistStats[]> => {
+    if (isEqual(data.address, Addresses.SPIN)) {
+      return [];
+    }
 
     const stats = await indexer
       .select({
@@ -223,12 +236,7 @@ export const $fetchArtistStatsByAddress = createServerFn({ method: "GET" })
       })
       .from(objekts)
       .innerJoin(collections, eq(objekts.collectionId, collections.id))
-      .where(
-        and(
-          eq(objekts.owner, data.address.toLowerCase()),
-          ...withSpinMonth(isSpin, objekts.receivedAt),
-        ),
-      )
+      .where(eq(objekts.owner, data.address.toLowerCase()))
       .groupBy(
         collections.season,
         collections.member,
