@@ -92,6 +92,14 @@ export default function UpdateDialog() {
 
 const updates = [
   {
+    date: "2026-10-19",
+    changes: [
+      "Added Chinese (simplified & traditional) translations.",
+      "Redesigned the progress page, making it clearer to read.",
+      "Leaderboards are now real-time instead of updating once a day.",
+    ],
+  },
+  {
     date: "2026-10-17",
     changes: [
       "Missing serials since June have been restored.",
