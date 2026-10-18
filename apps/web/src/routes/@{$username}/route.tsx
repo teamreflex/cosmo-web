@@ -23,6 +23,7 @@ import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
 import { Addresses, isEqual } from "@apollo/util";
 import { IconAlertCircle } from "@tabler/icons-react";
+import { noop } from "@tanstack/react-query";
 import { Link, Outlet, createFileRoute } from "@tanstack/react-router";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -39,18 +40,24 @@ export const Route = createFileRoute("/@{$username}")({
   }),
   loader: async ({ context }) => {
     const [account, target] = await Promise.all([
-      context.queryClient.ensureQueryData(currentAccountQuery),
-      context.queryClient.ensureQueryData(context.targetAccountOptions),
+      context.queryClient.query({
+        ...currentAccountQuery,
+        staleTime: "static",
+      }),
+      context.queryClient.query({
+        ...context.targetAccountOptions,
+        staleTime: "static",
+      }),
     ]);
 
     // the owner's binder viewer reads the pins on every tab
     if (target.user !== undefined && account?.user.id === target.user.id) {
-      void context.queryClient.prefetchQuery(context.pinsOptions);
+      void context.queryClient.query(context.pinsOptions).catch(noop);
     }
 
-    void context.queryClient.prefetchQuery(
-      tokenBalancesQuery(target.cosmo.address),
-    );
+    void context.queryClient
+      .query(tokenBalancesQuery(target.cosmo.address))
+      .catch(noop);
 
     return { account, target };
   },

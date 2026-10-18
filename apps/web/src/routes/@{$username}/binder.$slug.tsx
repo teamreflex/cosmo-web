@@ -21,8 +21,14 @@ export const Route = createFileRoute("/@{$username}/binder/$slug")({
   notFoundComponent: NotFoundComponent,
   loader: async ({ context, params }) => {
     const [account, target] = await Promise.all([
-      context.queryClient.ensureQueryData(currentAccountQuery),
-      context.queryClient.ensureQueryData(context.targetAccountOptions),
+      context.queryClient.query({
+        ...currentAccountQuery,
+        staleTime: "static",
+      }),
+      context.queryClient.query({
+        ...context.targetAccountOptions,
+        staleTime: "static",
+      }),
     ]);
 
     if (target.user === undefined) {
@@ -38,9 +44,10 @@ export const Route = createFileRoute("/@{$username}/binder/$slug")({
       });
     }
 
-    const binder = await context.queryClient.ensureQueryData(
-      binderQuery(target.user.id, params.slug),
-    );
+    const binder = await context.queryClient.query({
+      ...binderQuery(target.user.id, params.slug),
+      staleTime: "static",
+    });
     if (binder === null) {
       throw notFound();
     }

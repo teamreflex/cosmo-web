@@ -23,7 +23,7 @@ import {
 } from "@/lib/universal/profile-card";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { Addresses, isEqual } from "@apollo/util";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery, noop } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/@{$username}/")({
@@ -36,10 +36,22 @@ export const Route = createFileRoute("/@{$username}/")({
   errorComponent: ErrorComponent,
   loader: async ({ context, deps }) => {
     const [account, target, , selected] = await Promise.all([
-      context.queryClient.ensureQueryData(currentAccountQuery),
-      context.queryClient.ensureQueryData(context.targetAccountOptions),
-      context.queryClient.ensureQueryData(context.pinsOptions),
-      context.queryClient.ensureQueryData(selectedArtistsQuery),
+      context.queryClient.query({
+        ...currentAccountQuery,
+        staleTime: "static",
+      }),
+      context.queryClient.query({
+        ...context.targetAccountOptions,
+        staleTime: "static",
+      }),
+      context.queryClient.query({
+        ...context.pinsOptions,
+        staleTime: "static",
+      }),
+      context.queryClient.query({
+        ...selectedArtistsQuery,
+        staleTime: "static",
+      }),
     ]);
 
     // serial sorts only exist on the blockchain data source, so the component
@@ -54,22 +66,26 @@ export const Route = createFileRoute("/@{$username}/")({
       account?.user.collectionMode === "blockchain-groups" &&
       !isEqual(target.cosmo.address, Addresses.SPIN)
     ) {
-      void context.queryClient.prefetchInfiniteQuery(
-        userCollectionBlockchainGroupsQuery(
-          target.cosmo.address,
-          deps.searchParams,
-          selected,
-        ),
-      );
+      void context.queryClient
+        .infiniteQuery(
+          userCollectionBlockchainGroupsQuery(
+            target.cosmo.address,
+            deps.searchParams,
+            selected,
+          ),
+        )
+        .catch(noop);
     } else {
       // if the user is a guest or is in blockchain mode, prefetch the objekts
-      void context.queryClient.prefetchInfiniteQuery(
-        userCollectionBlockchainQuery(
-          target.cosmo.address,
-          deps.searchParams,
-          selected,
-        ),
-      );
+      void context.queryClient
+        .infiniteQuery(
+          userCollectionBlockchainQuery(
+            target.cosmo.address,
+            deps.searchParams,
+            selected,
+          ),
+        )
+        .catch(noop);
     }
 
     return { target };

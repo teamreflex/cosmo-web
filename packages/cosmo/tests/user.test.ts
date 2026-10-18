@@ -37,6 +37,20 @@ describe("fetchByNickname", () => {
     expect(rec.requests).toHaveLength(1);
   });
 
+  it("keeps the nickname inside its path segment", async () => {
+    const rec = recorder();
+    handle.get(
+      "https://api.cosmo.fans/bff/v3/users/by-nickname/..%2F..%2Fsearch%3Fquery%3Dx",
+      (request) => {
+        rec.record(request);
+        return Response.json(byNickname);
+      },
+    );
+
+    await runTest(fetchByNickname("../../search?query=x"));
+    expect(rec.requests).toHaveLength(1);
+  });
+
   it("rejects with status 404 for a missing user", async () => {
     handle.get("https://api.cosmo.fans/bff/v3/users/by-nickname/Missing", () =>
       Response.json({ message: "not found" }, { status: 404 }),

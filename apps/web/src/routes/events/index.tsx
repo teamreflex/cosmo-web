@@ -22,7 +22,7 @@ import {
 import { castToArray } from "@/lib/universal/parsers";
 import { validArtists } from "@apollo/cosmo/types/common";
 import { eventTypeKeys, type EventWithEra } from "@apollo/database/web/types";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery, noop } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Suspense, useCallback, useState } from "react";
 import * as z from "zod";
@@ -39,21 +39,26 @@ export const Route = createFileRoute("/events/")({
   validateSearch: eventsSearchSchema,
   loaderDeps: ({ search }) => ({ search }),
   loader: async ({ context, deps: { search } }) => {
-    void context.queryClient.prefetchQuery(erasForFilterQuery);
+    void context.queryClient.query(erasForFilterQuery).catch(noop);
 
-    const selected =
-      await context.queryClient.ensureQueryData(selectedArtistsQuery);
+    const selected = await context.queryClient.query({
+      ...selectedArtistsQuery,
+      staleTime: "static",
+    });
 
     const globalSelectedIds = selected.length > 0 ? selected : undefined;
     const filteredArtists = search.artist ? [search.artist] : globalSelectedIds;
 
-    void context.queryClient.prefetchInfiniteQuery(
-      paginatedEventsQuery({ artists: filteredArtists, filters: search }),
-    );
+    void context.queryClient
+      .infiniteQuery(
+        paginatedEventsQuery({ artists: filteredArtists, filters: search }),
+      )
+      .catch(noop);
 
-    const activeEvents = await context.queryClient.ensureQueryData(
-      activeEventsQuery(globalSelectedIds),
-    );
+    const activeEvents = await context.queryClient.query({
+      ...activeEventsQuery(globalSelectedIds),
+      staleTime: "static",
+    });
 
     return { activeEvents };
   },

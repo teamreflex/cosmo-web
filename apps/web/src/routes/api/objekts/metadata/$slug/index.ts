@@ -20,12 +20,11 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/")({
        * Fetches metadata about a collection.
        */
       GET: async ({ params }) => {
-        const [collection, data, priceStats] = await Promise.all([
+        // one query per pool at a time: the indexer count beside the event read
+        const [collection, data] = await Promise.all([
           fetchCollection(params.slug),
           fetchEventForCollection(params.slug),
-          fetchPriceStats(params.slug),
         ]);
-
         return Response.json(
           {
             total: collection.total,
@@ -33,7 +32,7 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/")({
             percentage: collection.percentage,
             unobtainable: collection.unobtainable,
             data,
-            priceStats,
+            priceStats: await fetchPriceStats(params.slug),
           } satisfies ObjektMetadata,
           {
             headers: cacheHeaders({

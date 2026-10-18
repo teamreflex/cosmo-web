@@ -45,10 +45,11 @@ export const $fetchProgressBreakdown = createServerFn({ method: "GET" })
       return [];
     }
 
-    const [totals, progress] = await Promise.all([
-      fetchTotal({ member: data.member }),
-      fetchProgress(data.address.toLowerCase(), data.member),
-    ]);
+    const totals = await fetchTotal({ member: data.member });
+    const progress = await fetchProgress(
+      data.address.toLowerCase(),
+      data.member,
+    );
 
     // dynamically build the matrix based on the data instead of hardcoding seasons and classes
     const classes = new Set<string>();
@@ -81,10 +82,8 @@ export const $fetchProgressLeaderboard = createServerFn({ method: "GET" })
     }),
   )
   .handler(async ({ data }) => {
-    const [totals, leaderboard] = await Promise.all([
-      fetchTotal(data),
-      fetchLeaderboard(data),
-    ]);
+    const totals = await fetchTotal(data);
+    const leaderboard = await fetchLeaderboard(data);
 
     // fetch profiles for each address
     const addressMap = await fetchKnownAddresses(

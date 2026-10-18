@@ -38,7 +38,7 @@ export class AbstractDecodeError extends Data.TaggedError(
 
 // a JSON-RPC response carries exactly one of result or error
 const RpcResponseSchema = Schema.Union([
-  Schema.Struct({ result: Schema.String }),
+  Schema.Struct({ result: Schema.Struct({ timestamp: Schema.String }) }),
   Schema.Struct({
     error: Schema.Struct({ code: Schema.Number, message: Schema.String }),
   }),
@@ -83,48 +83,50 @@ const abstractClient = Effect.map(HttpClient.HttpClient, (client) =>
 );
 
 /**
- * Fetch the current block height via eth_blockNumber.
+ * Fetch the timestamp of a block via eth_getBlockByNumber.
  */
-export const fetchBlockNumber = Effect.fn("Abstract.blockNumber")(function* () {
-  const client = yield* abstractClient;
-  const response = yield* client
-    .post("/", {
-      body: HttpBody.jsonUnsafe({
-        id: 1,
-        jsonrpc: "2.0",
-        method: "eth_blockNumber",
-        params: [],
-      }),
-    })
-    .pipe(
-      Effect.mapError(
-        (error) =>
-          new AbstractApiError({
-            status: error.response?.status,
-            cause: error,
-          }),
+export const fetchBlockTimestamp = Effect.fn("Abstract.blockTimestamp")(
+  function* (blockNumber: number) {
+    const client = yield* abstractClient;
+    const response = yield* client
+      .post("/", {
+        body: HttpBody.jsonUnsafe({
+          id: 1,
+          jsonrpc: "2.0",
+          method: "eth_getBlockByNumber",
+          params: [`0x${blockNumber.toString(16)}`, false],
+        }),
+      })
+      .pipe(
+        Effect.mapError(
+          (error) =>
+            new AbstractApiError({
+              status: error.response?.status,
+              cause: error,
+            }),
+        ),
+      );
+
+    const decoded = yield* HttpClientResponse.schemaBodyJson(RpcResponseSchema)(
+      response,
+    ).pipe(
+      Effect.mapError((error) =>
+        error._tag === "SchemaError"
+          ? new AbstractDecodeError({ cause: error })
+          : new AbstractApiError({ cause: error }),
       ),
     );
 
-  const decoded = yield* HttpClientResponse.schemaBodyJson(RpcResponseSchema)(
-    response,
-  ).pipe(
-    Effect.mapError((error) =>
-      error._tag === "SchemaError"
-        ? new AbstractDecodeError({ cause: error })
-        : new AbstractApiError({ cause: error }),
-    ),
-  );
+    if ("error" in decoded) {
+      return yield* new AbstractApiError({
+        description: `RPC error ${decoded.error.code}: ${decoded.error.message}`,
+      });
+    }
 
-  if ("error" in decoded) {
-    return yield* new AbstractApiError({
-      description: `RPC error ${decoded.error.code}: ${decoded.error.message}`,
-    });
-  }
-
-  // eth_blockNumber returns a hex string
-  return parseInt(decoded.result, 16);
-});
+    // block timestamps are hex-encoded unix seconds
+    return new Date(parseInt(decoded.result.timestamp, 16) * 1000);
+  },
+);
 
 const runtime = ManagedRuntime.make(FetchHttpClient.layer);
 

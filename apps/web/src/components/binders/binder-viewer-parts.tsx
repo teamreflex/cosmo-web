@@ -23,7 +23,7 @@ import type {
 import { cn } from "@/lib/utils";
 import { slugifyObjekt } from "@apollo/util";
 import { IconShare3 } from "@tabler/icons-react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, noop } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Suspense, useDeferredValue, useEffect, useRef } from "react";
 import type { ComponentProps, ReactNode, RefObject } from "react";
@@ -205,7 +205,7 @@ function ViewerPocket({ slot, objekt, priority, tabIndex }: ViewerPocketProps) {
   // the dialog fetches the collection itself, so only start the metadata request alongside it
   function handleClick() {
     const slug = slugifyObjekt(objekt.collectionId);
-    void queryClient.prefetchQuery(objektMetadataQuery(slug));
+    void queryClient.query(objektMetadataQuery(slug)).catch(noop);
     open(slug);
   }
 

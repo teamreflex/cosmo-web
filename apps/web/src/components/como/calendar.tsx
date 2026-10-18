@@ -4,6 +4,7 @@ import { buildCalendar, getDays } from "@/lib/universal/como";
 import { cn } from "@/lib/utils";
 import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
 import { IconSparkles } from "@tabler/icons-react";
+import { useState } from "react";
 import ArtistIcon from "../artist-icon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
@@ -26,7 +27,7 @@ function getWeek() {
 
 export default function ComoCalendar({ artists, transfers }: Props) {
   // run date functions in client
-  const now = new Date();
+  const [now] = useState(() => new Date());
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const days = getDays(now);
   const startOffset =

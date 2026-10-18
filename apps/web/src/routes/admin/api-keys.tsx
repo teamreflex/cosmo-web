@@ -10,13 +10,16 @@ import { Suspense } from "react";
 export const Route = createFileRoute("/admin/api-keys")({
   staleTime: Infinity,
   beforeLoad: async ({ context }) => {
-    const user = await context.queryClient.ensureQueryData(currentAccountQuery);
+    const user = await context.queryClient.query({
+      ...currentAccountQuery,
+      staleTime: "static",
+    });
     if (!user?.user.isAdmin) {
       throw redirect({ to: "/" });
     }
   },
   loader: async ({ context }) => {
-    await context.queryClient.ensureQueryData(apiKeysQuery);
+    await context.queryClient.query({ ...apiKeysQuery, staleTime: "static" });
   },
   head: () =>
     defineHead({

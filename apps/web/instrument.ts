@@ -27,7 +27,20 @@ if (process.env.VITE_SENTRY_DSN !== undefined) {
   console.log("[INFO] Initializing Sentry");
   Sentry.init({
     dsn: process.env.VITE_SENTRY_DSN,
-    sendDefaultPii: false,
+    dataCollection: {
+      userInfo: false,
+      cookies: false,
+      httpHeaders: {
+        request: { deny: ["forwarded", "-ip", "remote-", "via", "-user"] },
+        response: { deny: ["forwarded", "-ip", "remote-", "via", "-user"] },
+      },
+      httpBodies: [],
+      urlQueryParams: { deny: ["forwarded", "-ip", "remote-", "via", "-user"] },
+      genAI: { inputs: false, outputs: false },
+      databaseQueryData: false,
+      queues: false,
+      graphQL: { document: false, variables: false },
+    },
     debug: false,
     tracesSampleRate: 0,
     beforeSend(event, hint) {

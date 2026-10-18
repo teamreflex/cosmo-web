@@ -23,13 +23,18 @@ export const Route = createFileRoute("/api/user/by-address/$address/")({
         const now = url.searchParams.get("now");
         const tz = url.searchParams.get("tz") ?? "UTC";
 
-        const [account, calendar, stats] = await Promise.all([
+        // one query per pool at a time: the web account beside the indexer calendar
+        const [account, calendar] = await Promise.all([
           getCosmoAccount(params.address),
           getCalendar(params.address, now, tz),
-          $fetchArtistStatsByAddress({ data: { address: params.address } }),
         ]);
-
-        return Response.json({ account, calendar, stats });
+        return Response.json({
+          account,
+          calendar,
+          stats: await $fetchArtistStatsByAddress({
+            data: { address: params.address },
+          }),
+        });
       },
     },
   },

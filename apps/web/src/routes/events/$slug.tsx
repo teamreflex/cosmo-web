@@ -17,17 +17,24 @@ import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
 import { IconAlertCircle } from "@tabler/icons-react";
+import { noop } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/events/$slug")({
   loader: async ({ context, params }) => {
-    void context.queryClient.prefetchInfiniteQuery(
-      eventObjektsQuery(params.slug),
-    );
+    void context.queryClient
+      .infiniteQuery(eventObjektsQuery(params.slug))
+      .catch(noop);
 
     const [account, event] = await Promise.all([
-      context.queryClient.ensureQueryData(currentAccountQuery),
-      context.queryClient.ensureQueryData(eventBySlugQuery(params.slug)),
+      context.queryClient.query({
+        ...currentAccountQuery,
+        staleTime: "static",
+      }),
+      context.queryClient.query({
+        ...eventBySlugQuery(params.slug),
+        staleTime: "static",
+      }),
     ]);
 
     return { account, event };

@@ -16,7 +16,7 @@ const MAX_FILTER_VALUES = 12;
  * value into an array before validation, accepting a real array (legacy JSON-encoded
  * URLs), a comma-separated string, or a single bare value.
  */
-export function castToArray<TSchema extends z.Schema>(schema: TSchema) {
+export function castToArray<TSchema extends z.ZodType>(schema: TSchema) {
   return z.preprocess((val) => {
     const raw = Array.isArray(val) ? val : String(val).split(",");
     return [...new Set(raw.filter((v) => v !== ""))].slice(

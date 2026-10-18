@@ -11,6 +11,7 @@ import { IconActivity, IconServer } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import { Timestamp } from "../ui/timestamp";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 export default function SystemStatus() {
@@ -48,20 +49,21 @@ function SystemStatusPopover() {
         {/* processor */}
         <div className="flex flex-col">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-semibold">{m.system_database()}</p>
-            <div
-              className={cn(
-                "flex items-center gap-1",
-                textStatus(processor.status),
-              )}
-            >
-              <span className="font-semibold">
-                {processor.height.processor}
-              </span>
+            <div className="flex items-center gap-1">
               <IconServer className="size-4" />
+              <p className="text-sm font-semibold">{m.system_database()}</p>
             </div>
+            <Timestamp
+              date={new Date(processor.timestamp)}
+              relative="long"
+              className={cn("font-semibold", textStatus(processor.status))}
+            />
           </div>
-          <p className="text-xs">{processorText[processor.status]}</p>
+          <Timestamp
+            date={new Date(processor.timestamp)}
+            format="MMM d, yyyy h:mm:ss a"
+            className="self-end text-xs text-muted-foreground"
+          />
         </div>
       </PopoverContent>
     </Popover>
@@ -107,9 +109,3 @@ function bgStatus(status: SystemStatusType) {
     status === "down" && "bg-red-600/25 hover:bg-red-600/40 border-red-600/40",
   ];
 }
-
-const processorText = {
-  normal: m.system_status_normal(),
-  degraded: m.system_status_degraded(),
-  down: m.system_status_down(),
-};

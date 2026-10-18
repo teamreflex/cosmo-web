@@ -11,6 +11,7 @@ import { selectedArtistsQuery } from "@/lib/queries/core";
 import { transfersQuery } from "@/lib/queries/objekt-queries";
 import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { transfersFrontendSchema } from "@/lib/universal/parsers";
+import { noop } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/@{$username}/trades")({
@@ -22,13 +23,21 @@ export const Route = createFileRoute("/@{$username}/trades")({
   loaderDeps: ({ search: { binder, ...searchParams } }) => ({ searchParams }),
   loader: async ({ context, deps }) => {
     const [target, selected] = await Promise.all([
-      context.queryClient.ensureQueryData(context.targetAccountOptions),
-      context.queryClient.ensureQueryData(selectedArtistsQuery),
+      context.queryClient.query({
+        ...context.targetAccountOptions,
+        staleTime: "static",
+      }),
+      context.queryClient.query({
+        ...selectedArtistsQuery,
+        staleTime: "static",
+      }),
     ]);
 
-    void context.queryClient.prefetchInfiniteQuery(
-      transfersQuery(target.cosmo.address, deps.searchParams, selected),
-    );
+    void context.queryClient
+      .infiniteQuery(
+        transfersQuery(target.cosmo.address, deps.searchParams, selected),
+      )
+      .catch(noop);
 
     return { selected, cosmo: target.cosmo };
   },

@@ -9,7 +9,7 @@ import { env } from "@/lib/env/client";
 import { DISCORD_URL } from "@/lib/utils";
 import { IconBrandDiscord, IconSpeakerphone } from "@tabler/icons-react";
 import { addDays, format, isWithinInterval, subDays } from "date-fns";
-import { useMemo } from "react";
+import { useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,15 +23,16 @@ import {
 import { Button } from "../ui/button";
 
 export default function UpdateDialog() {
-  const isNew = useMemo(() => {
+  const [isNew] = useState(() => {
     const latest = updates[0];
     if (!latest) return false;
 
+    const now = new Date();
     return isWithinInterval(latest.date, {
-      start: subDays(new Date(), 2),
-      end: addDays(new Date(), 2),
+      start: subDays(now, 2),
+      end: addDays(now, 2),
     });
-  }, []);
+  });
 
   return (
     <AlertDialog>

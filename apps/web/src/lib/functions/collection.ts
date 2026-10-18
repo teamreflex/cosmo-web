@@ -4,6 +4,7 @@ import { indexer } from "@/lib/server/db/indexer";
 import { cosmoMiddleware } from "@/lib/server/middlewares";
 import { frontPinPosition } from "@/lib/server/pins.server";
 import type { ProfilePin } from "@/lib/universal/binders";
+import { ExpectedError } from "@/lib/universal/errors/expected";
 import { lockedObjekts, pins } from "@apollo/database/web/schema";
 import { pinCacheKey } from "@apollo/util-server";
 import { createServerFn } from "@tanstack/react-start";
@@ -61,29 +62,31 @@ export const $pinObjekt = createServerFn({ method: "POST" })
   )
   .middleware([cosmoMiddleware])
   .handler(async ({ data, context }): Promise<ProfilePin> => {
-    // perform both operations in parallel
-    const [[pin], objekt] = await Promise.all([
-      // insert pin, placing it first to match the prepend behavior
-      db
-        .insert(pins)
-        .values({
-          tokenId: data.tokenId,
-          address: context.cosmo.address,
-          position: frontPinPosition(context.cosmo.address),
-        })
-        .returning({ id: pins.id }),
-      // fetch objekt
-      indexer.query.objekts.findFirst({
-        where: {
-          id: data.tokenId.toString(),
-        },
-        with: {
-          collection: true,
-        },
-      }),
-    ]);
+    const objekt = await indexer.query.objekts.findFirst({
+      where: {
+        id: data.tokenId.toString(),
+        owner: context.cosmo.address.toLowerCase(),
+      },
+      with: {
+        collection: true,
+      },
+    });
 
-    if (pin === undefined || objekt === undefined) {
+    if (objekt === undefined) {
+      throw new ExpectedError("objekt_not_owned");
+    }
+
+    // insert pin, placing it first to match the prepend behavior
+    const [pin] = await db
+      .insert(pins)
+      .values({
+        tokenId: data.tokenId,
+        address: context.cosmo.address,
+        position: frontPinPosition(context.cosmo.address),
+      })
+      .returning({ id: pins.id });
+
+    if (pin === undefined) {
       throw new Error("Error pinning objekt");
     }
 

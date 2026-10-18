@@ -10,13 +10,19 @@ import { Suspense } from "react";
 export const Route = createFileRoute("/admin/serials")({
   staleTime: Infinity,
   beforeLoad: async ({ context }) => {
-    const user = await context.queryClient.ensureQueryData(currentAccountQuery);
+    const user = await context.queryClient.query({
+      ...currentAccountQuery,
+      staleTime: "static",
+    });
     if (!user?.user.isAdmin) {
       throw redirect({ to: "/" });
     }
   },
   loader: async ({ context }) => {
-    await context.queryClient.ensureQueryData(serialConfirmationsQuery);
+    await context.queryClient.query({
+      ...serialConfirmationsQuery,
+      staleTime: "static",
+    });
   },
   head: () =>
     defineHead({ title: m.admin_serials_title(), canonical: "/admin/serials" }),
