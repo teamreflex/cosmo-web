@@ -18,6 +18,7 @@ import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { progressFrontendSchema } from "@/lib/universal/parsers";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
+import { noop } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -34,29 +35,37 @@ export const Route = createFileRoute("/@{$username}/progress")({
   }),
   loader: async ({ context, deps }) => {
     const [target, account] = await Promise.all([
-      context.queryClient.ensureQueryData(context.targetAccountOptions),
-      context.queryClient.ensureQueryData(currentAccountQuery),
+      context.queryClient.query({
+        ...context.targetAccountOptions,
+        staleTime: "static",
+      }),
+      context.queryClient.query({
+        ...currentAccountQuery,
+        staleTime: "static",
+      }),
     ]);
 
-    void context.queryClient.prefetchQuery(
-      artistStatsQuery(target.cosmo.address),
-    );
+    void context.queryClient
+      .query(artistStatsQuery(target.cosmo.address))
+      .catch(noop);
 
     // a member filter swaps the charts out for the breakdown table
     if (deps.member) {
-      void context.queryClient.prefetchQuery(
-        progressBreakdownQuery(target.cosmo.address, deps.member),
-      );
+      void context.queryClient
+        .query(progressBreakdownQuery(target.cosmo.address, deps.member))
+        .catch(noop);
 
       // the leaderboard sheet opens via search param
       if (deps.leaderboard) {
-        void context.queryClient.prefetchQuery(
-          progressLeaderboardQuery(
-            deps.member,
-            deps.filter ?? undefined,
-            deps.season ?? undefined,
-          ),
-        );
+        void context.queryClient
+          .query(
+            progressLeaderboardQuery(
+              deps.member,
+              deps.filter ?? undefined,
+              deps.season ?? undefined,
+            ),
+          )
+          .catch(noop);
       }
     }
 

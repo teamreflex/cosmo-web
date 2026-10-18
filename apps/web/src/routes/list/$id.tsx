@@ -20,6 +20,7 @@ import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
 import { IconHeartBroken } from "@tabler/icons-react";
+import { noop } from "@tanstack/react-query";
 import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/list/$id")({
@@ -39,16 +40,21 @@ export const Route = createFileRoute("/list/$id")({
     }
 
     // kick off loading of objekt list entries
-    const selected =
-      await context.queryClient.ensureQueryData(selectedArtistsQuery);
-    void context.queryClient.prefetchInfiniteQuery(
-      objektListQuery(sanitizedId, deps.searchParams, selected),
-    );
+    const selected = await context.queryClient.query({
+      ...selectedArtistsQuery,
+      staleTime: "static",
+    });
+    void context.queryClient
+      .infiniteQuery(objektListQuery(sanitizedId, deps.searchParams, selected))
+      .catch(noop);
 
     // load required data
     const [objektListWithUser, account] = await Promise.all([
       $getObjektListWithUser({ data: { id: sanitizedId } }),
-      context.queryClient.ensureQueryData(currentAccountQuery),
+      context.queryClient.query({
+        ...currentAccountQuery,
+        staleTime: "static",
+      }),
     ]);
 
     if (!objektListWithUser) {

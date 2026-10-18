@@ -16,6 +16,7 @@ import {
 import { noticeQuery } from "@/lib/queries/notice";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { IconFileUnknown, IconRefresh } from "@tabler/icons-react";
+import { noop } from "@tanstack/react-query";
 import type { QueryClient } from "@tanstack/react-query";
 import {
   HeadContent,
@@ -33,12 +34,15 @@ interface RouterContext {
 export const Route = createRootRouteWithContext<RouterContext>()({
   staleTime: Infinity,
   loader: async ({ context }) => {
-    void context.queryClient.prefetchQuery(currentAccountQuery);
-    void context.queryClient.prefetchQuery(artistsQuery);
-    void context.queryClient.prefetchQuery(filterDataQuery);
-    void context.queryClient.prefetchQuery(noticeQuery);
+    void context.queryClient.query(currentAccountQuery).catch(noop);
+    void context.queryClient.query(artistsQuery).catch(noop);
+    void context.queryClient.query(filterDataQuery).catch(noop);
+    void context.queryClient.query(noticeQuery).catch(noop);
 
-    await context.queryClient.ensureQueryData(selectedArtistsQuery);
+    await context.queryClient.query({
+      ...selectedArtistsQuery,
+      staleTime: "static",
+    });
   },
   shellComponent: ShellComponent,
   notFoundComponent: NotFoundComponent,

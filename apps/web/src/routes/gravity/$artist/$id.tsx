@@ -10,6 +10,7 @@ import { $fetchGravityDetails } from "@/lib/functions/gravity";
 import { defineHead } from "@/lib/meta";
 import { gravityPollDetailsQuery } from "@/lib/queries/gravity";
 import { IconAlertTriangle, IconHeartBroken } from "@tabler/icons-react";
+import { noop } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { lazy, Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -53,14 +54,16 @@ export const Route = createFileRoute("/gravity/$artist/$id")({
      * prefetch poll details (candidates etc) for the selected poll only.
      * vote data is deliberately not prefetched — the payload can be huge, so the client fetches it.
      */
-    void context.queryClient.prefetchQuery(
-      gravityPollDetailsQuery({
-        artistName: params.artist,
-        tokenId: artist.comoTokenId,
-        gravityId: gravity.id,
-        pollId,
-      }),
-    );
+    void context.queryClient
+      .query(
+        gravityPollDetailsQuery({
+          artistName: params.artist,
+          tokenId: artist.comoTokenId,
+          gravityId: gravity.id,
+          pollId,
+        }),
+      )
+      .catch(noop);
 
     return { artist, gravity, polls, pollId };
   },

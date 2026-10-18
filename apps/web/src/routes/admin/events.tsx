@@ -8,24 +8,28 @@ import {
   filterDataQuery,
 } from "@/lib/queries/core";
 import { adminErasQuery, adminEventsQuery } from "@/lib/queries/events";
+import { noop } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Suspense } from "react";
 
 export const Route = createFileRoute("/admin/events")({
   staleTime: Infinity,
   beforeLoad: async ({ context }) => {
-    const user = await context.queryClient.ensureQueryData(currentAccountQuery);
+    const user = await context.queryClient.query({
+      ...currentAccountQuery,
+      staleTime: "static",
+    });
     if (!user?.user.isAdmin) {
       throw redirect({ to: "/" });
     }
   },
   loader: async ({ context }) => {
-    void context.queryClient.prefetchInfiniteQuery(adminEventsQuery());
+    void context.queryClient.infiniteQuery(adminEventsQuery()).catch(noop);
 
     const [{ artists }, filterData] = await Promise.all([
-      context.queryClient.ensureQueryData(artistsQuery),
-      context.queryClient.ensureQueryData(filterDataQuery),
-      context.queryClient.ensureQueryData(adminErasQuery()),
+      context.queryClient.query({ ...artistsQuery, staleTime: "static" }),
+      context.queryClient.query({ ...filterDataQuery, staleTime: "static" }),
+      context.queryClient.query({ ...adminErasQuery(), staleTime: "static" }),
     ]);
 
     return { artists, filterData };

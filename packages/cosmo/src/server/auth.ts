@@ -5,22 +5,6 @@ import { encrypt, EncryptionError } from "./encryption";
 import { cosmoClient, decodeBody } from "./http";
 
 /**
- * Refresh the given token.
- * @deprecated use refreshV3
- */
-export const refresh = Effect.fn("Cosmo.refresh")(function* (
-  refreshToken: string,
-) {
-  const client = yield* cosmoClient;
-  const response = yield* client
-    .post("/auth/v1/refresh", {
-      body: HttpBody.jsonUnsafe({ refreshToken }),
-    })
-    .pipe(Effect.flatMap(decodeBody(RefreshResponseSchema)));
-  return response.credentials;
-});
-
-/**
  * Refresh the given token, encrypting the payload with the COSMO key.
  */
 export const refreshV3 = Effect.fn("Cosmo.refreshV3")(function* (

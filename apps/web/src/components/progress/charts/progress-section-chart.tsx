@@ -5,7 +5,7 @@ import {
 } from "@/components/ui/chart";
 import type { Stat } from "@/lib/universal/progress";
 import { useMemo } from "react";
-import { Cell, Pie, PieChart } from "recharts";
+import { Pie, PieChart, Sector } from "recharts";
 
 const RADIAN = Math.PI / 180;
 
@@ -58,19 +58,19 @@ export default function ProgressSectionChart(props: Props) {
               </text>
             );
           }}
-        >
-          {data.map((entry, index) => (
-            <Cell
-              key={`cell-${index}`}
-              fill={entry.color}
+          // oxlint-disable-next-line anti-slop/no-shape-in-symbol-names -- recharts' prop name
+          shape={(sector) => (
+            <Sector
+              {...sector}
+              fill={data[sector.index]?.color}
               stroke="none"
               className="cursor-pointer outline-hidden transition-transform duration-200 hover:scale-110"
               style={{
                 transformOrigin: "50% 50%",
               }}
             />
-          ))}
-        </Pie>
+          )}
+        />
         <ChartTooltip content={<ChartTooltipContent hideLabel />} />
       </PieChart>
     </ChartContainer>

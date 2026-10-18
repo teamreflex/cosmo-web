@@ -4,21 +4,30 @@ import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { artistsQuery, currentAccountQuery } from "@/lib/queries/core";
 import { adminErasInfiniteQuery } from "@/lib/queries/events";
+import { noop } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Suspense } from "react";
 
 export const Route = createFileRoute("/admin/eras")({
   staleTime: Infinity,
   beforeLoad: async ({ context }) => {
-    const user = await context.queryClient.ensureQueryData(currentAccountQuery);
+    const user = await context.queryClient.query({
+      ...currentAccountQuery,
+      staleTime: "static",
+    });
     if (!user?.user.isAdmin) {
       throw redirect({ to: "/" });
     }
   },
   loader: async ({ context }) => {
-    void context.queryClient.prefetchInfiniteQuery(adminErasInfiniteQuery());
+    void context.queryClient
+      .infiniteQuery(adminErasInfiniteQuery())
+      .catch(noop);
 
-    const { artists } = await context.queryClient.ensureQueryData(artistsQuery);
+    const { artists } = await context.queryClient.query({
+      ...artistsQuery,
+      staleTime: "static",
+    });
 
     return { artists: Object.values(artists) };
   },

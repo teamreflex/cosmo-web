@@ -14,9 +14,12 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/objekts/stats")({
   loader: async ({ context }) => {
     const [selected, data] = await Promise.all([
-      context.queryClient.ensureQueryData(selectedArtistsQuery),
-      context.queryClient.ensureQueryData(objektStatsQuery),
-      context.queryClient.ensureQueryData(artistsQuery),
+      context.queryClient.query({
+        ...selectedArtistsQuery,
+        staleTime: "static",
+      }),
+      context.queryClient.query({ ...objektStatsQuery, staleTime: "static" }),
+      context.queryClient.query({ ...artistsQuery, staleTime: "static" }),
     ]);
 
     return {

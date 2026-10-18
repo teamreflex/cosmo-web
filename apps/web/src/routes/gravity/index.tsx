@@ -13,22 +13,29 @@ import {
   activeGravitiesQuery,
   paginatedGravitiesQuery,
 } from "@/lib/queries/gravity";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery, noop } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/gravity/")({
   loader: async ({ context }) => {
-    const selected =
-      await context.queryClient.ensureQueryData(selectedArtistsQuery);
+    const selected = await context.queryClient.query({
+      ...selectedArtistsQuery,
+      staleTime: "static",
+    });
     const artistsFilter = selected.length > 0 ? selected : undefined;
 
     // prefetch gravities
-    void context.queryClient.prefetchQuery(activeGravitiesQuery(artistsFilter));
-    void context.queryClient.prefetchInfiniteQuery(
-      paginatedGravitiesQuery(artistsFilter),
-    );
+    void context.queryClient
+      .query(activeGravitiesQuery(artistsFilter))
+      .catch(noop);
+    void context.queryClient
+      .infiniteQuery(paginatedGravitiesQuery(artistsFilter))
+      .catch(noop);
 
-    const { artists } = await context.queryClient.ensureQueryData(artistsQuery);
+    const { artists } = await context.queryClient.query({
+      ...artistsQuery,
+      staleTime: "static",
+    });
 
     return { artists };
   },

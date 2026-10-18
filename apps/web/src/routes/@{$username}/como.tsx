@@ -15,13 +15,15 @@ export const Route = createFileRoute("/@{$username}/como")({
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
   loader: async ({ context }) => {
-    const target = await context.queryClient.ensureQueryData(
-      context.targetAccountOptions,
-    );
+    const target = await context.queryClient.query({
+      ...context.targetAccountOptions,
+      staleTime: "static",
+    });
 
-    const data = await context.queryClient.ensureQueryData(
-      fetchObjektsWithComoQuery(target.cosmo.address),
-    );
+    const data = await context.queryClient.query({
+      ...fetchObjektsWithComoQuery(target.cosmo.address),
+      staleTime: "static",
+    });
 
     return { cosmo: target.cosmo, data };
   },

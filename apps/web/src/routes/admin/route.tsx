@@ -11,7 +11,10 @@ import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: async ({ context }) => {
-    const user = await context.queryClient.ensureQueryData(currentAccountQuery);
+    const user = await context.queryClient.query({
+      ...currentAccountQuery,
+      staleTime: "static",
+    });
     if (!user?.user.isAdmin) {
       throw redirect({ to: "/" });
     }

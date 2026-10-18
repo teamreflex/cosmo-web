@@ -18,6 +18,7 @@ import { objektListFrontendSchema } from "@/lib/universal/parsers";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
 import { IconArrowsExchange, IconHeartBroken } from "@tabler/icons-react";
+import { noop } from "@tanstack/react-query";
 import {
   Link,
   createFileRoute,
@@ -38,9 +39,18 @@ export const Route = createFileRoute("/@{$username}/list/$slug")({
   }),
   loader: async ({ context, params, deps }) => {
     const [account, target, selected] = await Promise.all([
-      context.queryClient.ensureQueryData(currentAccountQuery),
-      context.queryClient.ensureQueryData(context.targetAccountOptions),
-      context.queryClient.ensureQueryData(selectedArtistsQuery),
+      context.queryClient.query({
+        ...currentAccountQuery,
+        staleTime: "static",
+      }),
+      context.queryClient.query({
+        ...context.targetAccountOptions,
+        staleTime: "static",
+      }),
+      context.queryClient.query({
+        ...selectedArtistsQuery,
+        staleTime: "static",
+      }),
     ]);
 
     // user not found
@@ -64,9 +74,11 @@ export const Route = createFileRoute("/@{$username}/list/$slug")({
     }
 
     // fetch entries
-    void context.queryClient.prefetchInfiniteQuery(
-      objektListQuery(objektList.id, deps.searchParams, selected),
-    );
+    void context.queryClient
+      .infiniteQuery(
+        objektListQuery(objektList.id, deps.searchParams, selected),
+      )
+      .catch(noop);
 
     const isAuthenticated = account?.user.id === objektList.userId;
 

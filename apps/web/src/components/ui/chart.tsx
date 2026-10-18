@@ -298,7 +298,6 @@ function ChartLegendContent({
   className,
   hideIcon = false,
   payload,
-  verticalAlign = "bottom",
   nameKey,
 }: React.ComponentProps<"div"> & {
   hideIcon?: boolean;
@@ -312,11 +311,7 @@ function ChartLegendContent({
 
   return (
     <div
-      className={cn(
-        "flex items-center justify-center gap-4",
-        verticalAlign === "top" ? "pb-3" : "pt-3",
-        className,
-      )}
+      className={cn("flex items-center justify-center gap-4 pt-3", className)}
     >
       {payload
         .filter((item) => item.type !== "none")

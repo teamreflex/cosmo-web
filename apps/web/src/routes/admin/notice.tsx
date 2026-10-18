@@ -8,13 +8,16 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 export const Route = createFileRoute("/admin/notice")({
   staleTime: Infinity,
   beforeLoad: async ({ context }) => {
-    const user = await context.queryClient.ensureQueryData(currentAccountQuery);
+    const user = await context.queryClient.query({
+      ...currentAccountQuery,
+      staleTime: "static",
+    });
     if (!user?.user.isAdmin) {
       throw redirect({ to: "/" });
     }
   },
   loader: async ({ context }) => {
-    await context.queryClient.ensureQueryData(noticeQuery);
+    await context.queryClient.query({ ...noticeQuery, staleTime: "static" });
   },
   head: () =>
     defineHead({ title: m.admin_notice_title(), canonical: "/admin/notice" }),

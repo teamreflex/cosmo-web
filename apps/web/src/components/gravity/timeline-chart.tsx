@@ -12,9 +12,9 @@ import { addMinutes, format } from "date-fns";
 import { useId, useMemo, useState } from "react";
 import {
   Bar,
-  Cell,
   ComposedChart,
   Line,
+  Rectangle,
   ReferenceDot,
   XAxis,
   YAxis,
@@ -216,20 +216,20 @@ export default function TimelineChart(props: Props) {
               "transition-opacity duration-300",
               hovered && "opacity-25",
             )}
-          >
-            {data.map((segment, index) => (
-              <Cell
-                key={segment.timestamp}
+            // oxlint-disable-next-line anti-slop/no-shape-in-symbol-names -- recharts' prop name
+            shape={(bar) => (
+              <Rectangle
+                {...bar}
                 className={
                   // faster than the default, so the counted segment reads live
-                  index === pulsing
+                  bar.index === pulsing
                     ? "animate-pulse [animation-duration:1.4s]"
                     : undefined
                 }
-                fillOpacity={index > frontier ? 0.22 : 1}
+                fillOpacity={bar.index > frontier ? 0.22 : 1}
               />
-            ))}
-          </Bar>
+            )}
+          />
 
           {props.lines.map((line, index) => (
             <Line
