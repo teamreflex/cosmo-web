@@ -25,6 +25,7 @@ export function useGridVirtualizer({
   container,
 }: Options) {
   "use no memo";
+  // oxlint-disable-next-line react/incompatible-library -- this hook already opts out of the compiler
   const virtualizer = useWindowVirtualizer({
     ...gridOptions({ count, lanes, gap, itemHeight }),
     scrollMargin: container.current?.offsetTop ?? 0,
