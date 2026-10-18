@@ -14,7 +14,7 @@ import { differenceInMinutes } from "date-fns";
  */
 export const $fetchSystemStatus = createServerFn().handler(async () => {
   const signal = getRequestSignal();
-  return await remember(`system-status:v2`, 60 * 5, async () => {
+  return await remember(`system-status:v2`, 60 * 2, async () => {
     const timestamp = await runAbstract(
       fetchBlockTimestamp(await fetchProcessorHeight()),
       signal,

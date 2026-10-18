@@ -2,7 +2,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { m } from "@/i18n/messages";
 import { objektMetadataQuery } from "@/lib/queries/objekt-queries";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import { unobtainables } from "@/lib/unobtainables";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { StatCell, type ObjektMetadataTab } from "./common";
 import PricingPanel from "./pricing-panel";
@@ -17,7 +16,6 @@ type Props = {
 export default function Metadata(props: Props) {
   const { data } = useSuspenseQuery(objektMetadataQuery(props.objekt.slug));
 
-  const isUnobtainable = unobtainables.includes(props.objekt.slug);
   const total = Number(data.total).toLocaleString();
   const description =
     data.data?.description ?? data.data?.event?.description ?? null;
@@ -57,7 +55,7 @@ export default function Metadata(props: Props) {
           <TabsTrigger value="serials">
             {m.objekt_metadata_serials()}
           </TabsTrigger>
-          {!isUnobtainable && (
+          {!data.unobtainable && (
             <TabsTrigger value="pricing">
               {m.objekt_metadata_pricing_tab()}
             </TabsTrigger>
@@ -74,7 +72,7 @@ export default function Metadata(props: Props) {
           <SerialsPanel slug={props.objekt.slug} />
         </TabsContent>
 
-        {!isUnobtainable && (
+        {!data.unobtainable && (
           <TabsContent value="pricing">
             <PricingPanel data={data.priceStats} />
           </TabsContent>

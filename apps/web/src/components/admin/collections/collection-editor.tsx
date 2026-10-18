@@ -40,6 +40,7 @@ function toFormValues(c: Collection): UpdateCollectionInput {
     accentColor: c.accentColor,
     onOffline: c.onOffline,
     hasAudio: c.hasAudio,
+    unobtainable: c.unobtainable,
     frontMedia: c.frontMedia,
   };
 }

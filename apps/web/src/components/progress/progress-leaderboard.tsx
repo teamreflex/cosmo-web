@@ -9,10 +9,7 @@ import { useArtists } from "@/hooks/use-artists";
 import type { FilterData } from "@/hooks/use-filter-data";
 import { useProgressFilters } from "@/hooks/use-progress-filters";
 import { m } from "@/i18n/messages";
-import type { ValidOnlineType } from "@apollo/cosmo/types/common";
-import { IconTrophy } from "@tabler/icons-react";
 import { Suspense } from "react";
-import { Button } from "../ui/button";
 import {
   Select,
   SelectContent,
@@ -22,122 +19,66 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { Separator } from "../ui/separator";
-import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import ProgressLeaderboardContent, {
   LeaderboardSkeleton,
 } from "./progress-leaderboard-content";
+import { ProgressTypeTabs } from "./progress-type-filter";
 
 type Props = {
+  address: string;
   member: string;
   seasons: FilterData["seasons"];
 };
 
-export default function ProgressLeaderboard({ member, seasons }: Props) {
+/**
+ * The member's top collectors, opened from the rank card via the search params.
+ */
+export default function ProgressLeaderboard({
+  address,
+  member,
+  seasons,
+}: Props) {
   const { filters, setFilters, setFilter } = useProgressFilters();
 
-  const isOpen = filters.leaderboard === true;
-
-  function toggle() {
-    setFilters((prev) => ({
-      ...prev,
-      leaderboard: prev.leaderboard === true ? undefined : true,
-      season: prev.leaderboard === true ? undefined : prev.season,
-    }));
+  function close() {
+    setFilters({ leaderboard: undefined, season: undefined });
   }
 
   return (
-    <Sheet open={isOpen} onOpenChange={() => toggle()}>
-      <Tooltip>
-        <TooltipTrigger
-          render={
-            <Button
-              className="rounded-full"
-              variant="secondary"
-              size="icon"
-              onClick={() => toggle()}
-              aria-label={m.aria_open_leaderboard()}
-            />
-          }
-        >
-          <IconTrophy className="h-5 w-5" />
-        </TooltipTrigger>
-        <TooltipContent side="left">{m.progress_leaderboard()}</TooltipContent>
-      </Tooltip>
-
-      <SheetContent className="gap-0 overflow-y-scroll outline-hidden">
-        <SheetHeader className="pb-0">
-          <SheetTitle className="font-cosmo text-xl uppercase">
-            {m.progress_leaderboard()}
-          </SheetTitle>
-          <SheetDescription className="font-cosmo text-lg uppercase">
+    <Sheet open={filters.leaderboard === true} onOpenChange={close}>
+      <SheetContent className="gap-0 overflow-y-scroll outline-hidden sm:max-w-md">
+        <SheetHeader className="flex-col-reverse gap-1.5 border-b p-5">
+          <SheetTitle className="font-cosmo text-2xl leading-none uppercase">
             {member}
+          </SheetTitle>
+          <SheetDescription className="font-semibold">
+            {m.progress_leaderboard()}
           </SheetDescription>
         </SheetHeader>
 
-        <div className="flex flex-col px-3">
-          {/* filters */}
-          <div className="flex items-center justify-center gap-2 pt-2 pb-4">
-            <FilterSelect
-              value={filters.filter ?? undefined}
-              update={(value) => setFilter("filter", value)}
-            />
-            <SeasonSelect
-              seasons={seasons}
-              member={member}
-              value={filters.season ?? "all"}
-              update={(value) => setFilter("season", value)}
-            />
-          </div>
-
-          <Separator orientation="horizontal" />
-
-          <Suspense fallback={<LeaderboardSkeleton />}>
-            <ProgressLeaderboardContent
-              member={member}
-              onlineType={filters.filter ?? undefined}
-              season={filters.season ?? undefined}
-            />
-          </Suspense>
+        <div className="flex flex-wrap gap-2 border-b p-5 pt-4">
+          <ProgressTypeTabs
+            value={filters.filter ?? undefined}
+            onChange={(value) => setFilter("filter", value)}
+          />
+          <SeasonSelect
+            seasons={seasons}
+            member={member}
+            value={filters.season ?? "all"}
+            update={(value) => setFilter("season", value)}
+          />
         </div>
+
+        <Suspense fallback={<LeaderboardSkeleton />}>
+          <ProgressLeaderboardContent
+            address={address}
+            member={member}
+            onlineType={filters.filter ?? undefined}
+            season={filters.season ?? undefined}
+          />
+        </Suspense>
       </SheetContent>
     </Sheet>
-  );
-}
-
-function FilterSelect(props: {
-  value: ValidOnlineType | undefined;
-  update: (value: ValidOnlineType | undefined) => void;
-}) {
-  const items = [
-    { value: "combined", label: m.progress_filter_combined() },
-    { value: "offline", label: m.filter_online_physical() },
-    { value: "online", label: m.filter_online_digital() },
-  ] satisfies { value: ValidOnlineType | "combined"; label: string }[];
-  // no filter is the combined view
-  const selected: ValidOnlineType | "combined" = props.value ?? "combined";
-
-  return (
-    <Select
-      items={items}
-      value={selected}
-      onValueChange={(value: ValidOnlineType | "combined" | null) => {
-        if (value !== null) {
-          props.update(value === "combined" ? undefined : value);
-        }
-      }}
-    >
-      <SelectTrigger>
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent className="outline-hidden">
-        {items.map((item) => (
-          <SelectItem key={item.value} value={item.value}>
-            {item.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
   );
 }
 
@@ -162,7 +103,7 @@ function SeasonSelect(props: SeasonSelectProps) {
         .includes(props.member.toLowerCase()),
     );
   const items = [
-    { value: "all", label: m.filter_type_all() },
+    { value: "all", label: m.progress_all_seasons() },
     ...data.flatMap(({ seasons }) =>
       seasons.map((season) => ({ value: season, label: season })),
     ),
@@ -176,11 +117,14 @@ function SeasonSelect(props: SeasonSelectProps) {
         if (value !== null) props.update(value === "all" ? undefined : value);
       }}
     >
-      <SelectTrigger>
-        <SelectValue placeholder={m.filter_sort()} />
+      <SelectTrigger
+        aria-label={m.progress_season()}
+        className="min-w-32 flex-1"
+      >
+        <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="all">{m.filter_type_all()}</SelectItem>
+        <SelectItem value="all">{m.progress_all_seasons()}</SelectItem>
 
         {data.map(({ artist, seasons }) => (
           <SelectGroup key={artist.id}>

@@ -41,16 +41,6 @@ export function sum<T>(rows: T[], value: (row: T) => number) {
 }
 
 /**
- * Get the ordinal suffix for a number.
- */
-export function ordinal(input: number) {
-  const suffixes = ["th", "st", "nd", "rd"];
-  const value = input % 100;
-  const suffix = suffixes[(value - 20) % 10] || suffixes[value] || suffixes[0];
-  return suffix ? input + suffix : input;
-}
-
-/**
  * Derive a URL slug from a list or binder name.
  */
 export function createSlug(name: string) {
