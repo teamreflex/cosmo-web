@@ -23,7 +23,7 @@ export const fetchByNickname = Effect.fn("Cosmo.fetchByNickname")(function* (
 ) {
   const client = yield* cosmoNoRetryClient;
   return yield* client
-    .get(`/bff/v3/users/by-nickname/${nickname}`)
+    .get(`/bff/v3/users/by-nickname/${encodeURIComponent(nickname)}`)
     .pipe(Effect.flatMap(decodeBody(CosmoByNicknameSchema)));
 });
 

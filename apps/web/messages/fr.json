@@ -292,7 +292,7 @@
   "list_description": "Description",
   "list_description_placeholder": "Ajoutez des notes, des coordonnées ou vos préférences d'échange",
   "list_description_public_notice": "Cette description est visible par les autres utilisateurs. N'incluez aucune information sensible.",
-  "list_discoverable": "Visible",
+  "list_discoverable": "Incluse dans les correspondances",
   "list_discoverable_description": "Permettre aux autres utilisateurs de trouver cette liste lorsqu'ils recherchent des partenaires d'échange.",
   "list_link_cosmo_required": "Liez un compte COSMO pour utiliser les listes have/want.",
   "list_pair_with": "Associer à",
