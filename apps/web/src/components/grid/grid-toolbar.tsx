@@ -7,16 +7,16 @@ export default function GridToolbar() {
 
   return (
     <>
-      <ProgressViewSwitch
-        view="grid"
-        search={{ artist: filters.artist, member: filters.member }}
-      />
       <MemberFilter
         align="end"
         activeArtist={filters.artist ?? null}
         activeMembers={filters.member ? [filters.member] : []}
         updateArtist={setActiveArtist}
         updateMember={setActiveMember}
+      />
+      <ProgressViewSwitch
+        view="grid"
+        search={{ artist: filters.artist, member: filters.member }}
       />
     </>
   );
