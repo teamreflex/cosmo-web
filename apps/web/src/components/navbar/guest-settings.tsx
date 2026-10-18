@@ -11,7 +11,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useTheme, type Theme } from "@/hooks/use-theme";
 import { m } from "@/i18n/messages";
-import { getLocale, setLocale } from "@/i18n/runtime";
+import { getLocale, locales, setLocale } from "@/i18n/runtime";
+import { localeNames } from "@/lib/universal/locales";
 import { IconLanguage, IconMoon, IconSun } from "@tabler/icons-react";
 
 export default function GuestSettings() {
@@ -78,18 +79,11 @@ function LanguageSubmenu() {
           value={locale}
           onValueChange={handleLanguageChange}
         >
-          <DropdownMenuRadioItem value="en" closeOnClick>
-            {m.settings_language_english()}
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="ko" closeOnClick>
-            {m.settings_language_korean()}
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="ja" closeOnClick>
-            {m.settings_language_japanese()}
-          </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="fr" closeOnClick>
-            {m.settings_language_french()}
-          </DropdownMenuRadioItem>
+          {locales.map((value) => (
+            <DropdownMenuRadioItem key={value} value={value} closeOnClick>
+              <span lang={value}>{localeNames[value]}</span>
+            </DropdownMenuRadioItem>
+          ))}
         </DropdownMenuRadioGroup>
       </DropdownMenuSubContent>
     </DropdownMenuSub>
