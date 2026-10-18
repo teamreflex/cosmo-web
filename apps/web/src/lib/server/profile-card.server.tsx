@@ -23,6 +23,7 @@ import type {
   ProfileCard,
   ProfileCardObjekt,
 } from "@/lib/universal/profile-card";
+import halvar from "@/styles/fonts/HalvarBreit-Bd.woff2?inline";
 import { Addresses, addr, isAddress, isEqual } from "@apollo/util";
 import dmSans from "@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2?inline";
 import jetbrainsMono from "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2?inline";
@@ -30,7 +31,6 @@ import { desc, eq, min } from "drizzle-orm";
 import { render } from "takumi-js";
 import { googleFonts } from "takumi-js/helpers";
 import { Renderer } from "takumi-js/node";
-import halvar from "../../../public/HalvarBreit-Bd.woff2?inline";
 
 /**
  * Gather everything a profile card shows: pinned objekts, or the most

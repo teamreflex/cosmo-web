@@ -15,6 +15,8 @@ import {
 } from "@/lib/queries/core";
 import { noticeQuery } from "@/lib/queries/notice";
 import { ThemeProvider } from "@/providers/theme-provider";
+import halvar from "@/styles/fonts/HalvarBreit-Bd.woff2?url";
+import dmSans from "@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2?url";
 import { IconFileUnknown, IconRefresh } from "@tabler/icons-react";
 import { noop } from "@tanstack/react-query";
 import type { QueryClient } from "@tanstack/react-query";
@@ -96,7 +98,14 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         },
         {
           rel: "preload",
-          href: "/HalvarBreit-Bd.woff2",
+          href: halvar,
+          as: "font",
+          type: "font/woff2",
+          crossOrigin: "anonymous",
+        },
+        {
+          rel: "preload",
+          href: dmSans,
           as: "font",
           type: "font/woff2",
           crossOrigin: "anonymous",

@@ -103,6 +103,7 @@
     "@vitejs/plugin-react": "^6.1.2",
     "drizzle-kit": "catalog:",
     "eslint-plugin-drizzle": "^0.2.3",
+    "fontaine": "^1.0.1",
     "oxc-transform-react": "^0.154.0",
     "tailwindcss": "^4.3.3",
     "turbo": "catalog:",
