@@ -49,27 +49,27 @@ export async function fetchProfileCard(
   const address = addr(account.cosmo.address);
   if (isEqual(address, Addresses.SPIN)) return undefined;
 
-  const [cardObjekts, objektCount, since] = await Promise.all([
-    fetchCardObjekts(identifier, address),
-    remember(`objekt-count:v1:${address}`, 60 * 60 * 24, () =>
-      indexer.$count(objekts, eq(objekts.owner, address)),
-    ),
-    remember(`first-transfer:v1:${address}`, 60 * 60 * 24 * 7, async () => {
-      const [row] = await indexer
-        .select({ at: min(transfers.timestamp) })
-        .from(transfers)
-        .where(eq(transfers.to, address));
-      return row?.at ?? null;
-    }),
-  ]);
-
   const name = profileIdentifier(account.cosmo);
   return {
     name,
     isAddress: isAddress(name),
-    objekts: cardObjekts,
-    objektCount,
-    since,
+    objekts: await fetchCardObjekts(identifier, address),
+    objektCount: await remember(
+      `objekt-count:v1:${address}`,
+      60 * 60 * 24,
+      () => indexer.$count(objekts, eq(objekts.owner, address)),
+    ),
+    since: await remember(
+      `first-transfer:v1:${address}`,
+      60 * 60 * 24 * 7,
+      async () => {
+        const [row] = await indexer
+          .select({ at: min(transfers.timestamp) })
+          .from(transfers)
+          .where(eq(transfers.to, address));
+        return row?.at ?? null;
+      },
+    ),
   };
 }
 

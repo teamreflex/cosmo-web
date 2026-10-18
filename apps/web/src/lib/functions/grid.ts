@@ -25,18 +25,11 @@ export const $fetchGridLedger = createServerFn({ method: "GET" })
       };
     }
 
-    const [catalog, owned, sourceTokens, memberOrder] = await Promise.all([
-      fetchGridCatalog(data.artist),
-      fetchOwnedGridCounts(data.address, data.artist),
-      fetchGridSourceTokens(data.address, data.artist),
-      fetchGridMembers(data.artist),
-    ]);
-
     return buildGridLedger({
       artist: data.artist,
-      catalog,
-      owned,
-      sourceTokens,
-      memberOrder,
+      catalog: await fetchGridCatalog(data.artist),
+      owned: await fetchOwnedGridCounts(data.address, data.artist),
+      sourceTokens: await fetchGridSourceTokens(data.address, data.artist),
+      memberOrder: await fetchGridMembers(data.artist),
     });
   });

@@ -9,6 +9,7 @@ import { polygonVotes } from "@apollo/database/web/schema";
 import { addr } from "@apollo/util";
 import { addMinutes, isBefore, startOfHour } from "date-fns";
 import { and, asc, count, desc, eq, isNotNull, sql } from "drizzle-orm";
+import { remember } from "./cache.server";
 import {
   fetchKnownAddresses,
   fetchKnownPolygonAddresses,
@@ -105,8 +106,13 @@ export async function fetchAggregatedGravityData(
   poll: PollSource,
 ): Promise<AggregatedGravityData> {
   const isPolygon = isPolygonGravity(poll.gravity.endDate);
+  // the polygon archive never changes, so its summary is shared across every edge and SSR render
   const summary = isPolygon
-    ? await summarizePolygonPoll(poll)
+    ? await remember(
+        `polygon-poll-summary:v1:${poll.cosmoId}`,
+        60 * 60 * 24 * 30,
+        () => summarizePolygonPoll(poll),
+      )
     : await summarizeAbstractPoll(poll.cosmoId);
 
   const chartData = chartSegments(poll.startDate, poll.endDate);
@@ -294,51 +300,49 @@ async function summarizePolygonPoll(
     .as("top_voters");
 
   // the archive never changes, so separate snapshots can't disagree
-  const [rollup, topVotes, topVoterVotes] = await Promise.all([
-    db
-      .select({
-        candidateId: polygonVotes.candidateId,
-        bucket,
-        voteCount: count(),
-        como,
-      })
-      .from(polygonVotes)
-      .where(inPoll)
-      .groupBy(polygonVotes.candidateId, bucket),
-    db
-      .select({
-        id: polygonVotes.id,
-        voter: polygonVotes.address,
-        amount: polygonVotes.amount,
-        candidateId: polygonVotes.candidateId,
-        blockNumber: polygonVotes.blockNumber,
-      })
-      .from(polygonVotes)
-      .where(inPoll)
-      .orderBy(
-        desc(polygonVotes.amount),
-        asc(polygonVotes.blockNumber),
-        asc(polygonVotes.index),
-        asc(polygonVotes.id),
-      )
-      .limit(TOP_VOTE_COUNT),
-    db
-      .select({
-        id: polygonVotes.id,
-        address: polygonVotes.address,
-        amount: polygonVotes.amount,
-        candidateId: polygonVotes.candidateId,
-        createdAt: polygonVotes.createdAt,
-      })
-      .from(polygonVotes)
-      .innerJoin(topVoters, eq(polygonVotes.address, topVoters.address))
-      .where(inPoll)
-      .orderBy(
-        asc(polygonVotes.blockNumber),
-        asc(polygonVotes.index),
-        asc(polygonVotes.id),
-      ),
-  ]);
+  const rollup = await db
+    .select({
+      candidateId: polygonVotes.candidateId,
+      bucket,
+      voteCount: count(),
+      como,
+    })
+    .from(polygonVotes)
+    .where(inPoll)
+    .groupBy(polygonVotes.candidateId, bucket);
+  const topVotes = await db
+    .select({
+      id: polygonVotes.id,
+      voter: polygonVotes.address,
+      amount: polygonVotes.amount,
+      candidateId: polygonVotes.candidateId,
+      blockNumber: polygonVotes.blockNumber,
+    })
+    .from(polygonVotes)
+    .where(inPoll)
+    .orderBy(
+      desc(polygonVotes.amount),
+      asc(polygonVotes.blockNumber),
+      asc(polygonVotes.index),
+      asc(polygonVotes.id),
+    )
+    .limit(TOP_VOTE_COUNT);
+  const topVoterVotes = await db
+    .select({
+      id: polygonVotes.id,
+      address: polygonVotes.address,
+      amount: polygonVotes.amount,
+      candidateId: polygonVotes.candidateId,
+      createdAt: polygonVotes.createdAt,
+    })
+    .from(polygonVotes)
+    .innerJoin(topVoters, eq(polygonVotes.address, topVoters.address))
+    .where(inPoll)
+    .orderBy(
+      asc(polygonVotes.blockNumber),
+      asc(polygonVotes.index),
+      asc(polygonVotes.id),
+    );
 
   return {
     rollup,

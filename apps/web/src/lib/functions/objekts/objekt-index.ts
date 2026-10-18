@@ -66,16 +66,15 @@ export const $fetchObjektsIndex = createServerFn({ method: "GET" })
     // the client only reads `total` from page 0, so skip the count elsewhere.
     // the unfiltered total is the bulk of count traffic and only changes when
     // collections drop, so it's cached; filtered counts are too varied to cache.
-    const [collectionList, total] = await Promise.all([
-      query,
+    const collectionList = await query;
+    const total =
       data.page > 0
         ? 0
         : where === undefined
-          ? remember("objekt-index-total", 60 * 15, () =>
+          ? await remember("objekt-index-total", 60 * 15, () =>
               indexer.$count(collections),
             )
-          : indexer.$count(collections, where),
-    ]);
+          : await indexer.$count(collections, where);
 
     const hasNext = collectionList.length === LIMIT;
     const nextStartAfter = hasNext ? data.page + 1 : undefined;

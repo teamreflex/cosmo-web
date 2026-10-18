@@ -1,6 +1,6 @@
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
-import { objekts } from "@/lib/server/db/indexer/schema";
+import { collections, objekts } from "@/lib/server/db/indexer/schema";
 import { cosmoMiddleware } from "@/lib/server/middlewares";
 import { MAX_OBJEKT_SELECTIONS } from "@/lib/universal/schema/objekt-list";
 import type { NonTransferableReason } from "@apollo/cosmo/types/objekts";
@@ -33,26 +33,22 @@ export const $fetchOwnedSerials = createServerFn({ method: "GET" })
   .middleware([cosmoMiddleware])
   .handler(
     async ({ data, context }): Promise<Record<string, OwnedSerial[]>> => {
-      const [owned, collections] = await Promise.all([
-        indexer
-          .select({
-            tokenId: objekts.id,
-            serial: objekts.serial,
-            transferable: objekts.transferable,
-            collectionId: objekts.collectionId,
-          })
-          .from(objekts)
-          .where(
-            and(
-              eq(objekts.owner, context.cosmo.address.toLowerCase()),
-              inArray(objekts.collectionId, data.collectionIds),
-            ),
+      const owned = await indexer
+        .select({
+          tokenId: objekts.id,
+          serial: objekts.serial,
+          transferable: objekts.transferable,
+          collectionId: objekts.collectionId,
+          className: collections.class,
+        })
+        .from(objekts)
+        .innerJoin(collections, eq(objekts.collectionId, collections.id))
+        .where(
+          and(
+            eq(objekts.owner, context.cosmo.address.toLowerCase()),
+            inArray(objekts.collectionId, data.collectionIds),
           ),
-        indexer.query.collections.findMany({
-          where: { id: { in: data.collectionIds } },
-          columns: { id: true, class: true },
-        }),
-      ]);
+        );
 
       const result: Record<string, OwnedSerial[]> = {};
       for (const collectionId of data.collectionIds) {
@@ -60,10 +56,6 @@ export const $fetchOwnedSerials = createServerFn({ method: "GET" })
       }
 
       if (owned.length === 0) return result;
-
-      const classByCollection = new Map(
-        collections.map((c) => [c.id, c.class]),
-      );
 
       const tokenNumbers = owned.map((o) => Number(o.tokenId));
       const locks = await db
@@ -83,14 +75,13 @@ export const $fetchOwnedSerials = createServerFn({ method: "GET" })
       const lockedSet = new Set(locks.map((l) => l.tokenId));
 
       for (const o of owned) {
-        const className = classByCollection.get(o.collectionId) ?? "";
         result[o.collectionId]?.push({
           tokenId: o.tokenId,
           serial: o.serial,
           transferable: o.transferable,
           locked: lockedSet.has(Number(o.tokenId)),
           nonTransferableReason: nonTransferableReason(
-            className,
+            o.className,
             o.transferable,
           ),
         });
