@@ -65,6 +65,7 @@ export default defineConfig({
     "typescript/no-misused-promises": "off",
     "typescript/restrict-template-expressions": "error",
     "typescript/no-base-to-string": "error",
+    "typescript/no-generated-empty-object-type": "error",
     "unicorn/no-useless-spread": "error",
   },
   ignorePatterns: [

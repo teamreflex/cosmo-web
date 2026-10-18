@@ -17,10 +17,7 @@ import type { FullAccount, PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import type { ObjektList } from "@apollo/database/web/types";
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import {
-  getRequestHeaders,
-  setResponseHeader,
-} from "@tanstack/react-start/server";
+import { getRequestHeaders } from "@tanstack/react-start/server";
 import * as z from "zod";
 
 /**
@@ -76,22 +73,15 @@ export const $fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
   async (): Promise<GetAccount | null> => {
     const session = await auth.api.getSession({
       headers: getRequestHeaders(),
-      returnHeaders: true,
     });
 
     // not signed in
-    if (!session.response) {
+    if (!session) {
       return null;
     }
 
-    // forward Set-Cookie headers to the client
-    const cookies = session.headers.getSetCookie();
-    if (cookies.length) {
-      setResponseHeader("Set-Cookie", cookies);
-    }
-
     const result = await db.query.user.findFirst({
-      where: { id: session.response.session.userId },
+      where: { id: session.session.userId },
       with: {
         cosmoAccount: true,
         objektLists: true,

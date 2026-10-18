@@ -8,6 +8,7 @@ import { defineHead } from "@/lib/meta";
 import { fetchObjektsWithComoQuery } from "@/lib/queries/como";
 import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { ClientOnly, createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 
 export const Route = createFileRoute("/@{$username}/como")({
   component: RouteComponent,
@@ -55,9 +56,8 @@ function RouteComponent() {
 }
 
 function PendingComponent() {
-  const cells = Array.from(
-    { length: getCellCount(new Date()) },
-    (_, i) => i + 1,
+  const [cells] = useState(() =>
+    Array.from({ length: getCellCount(new Date()) }, (_, i) => i + 1),
   );
 
   return (

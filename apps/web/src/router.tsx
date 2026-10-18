@@ -68,7 +68,22 @@ export function getRouter() {
   if (!router.isServer && env.VITE_SENTRY_DSN !== undefined) {
     initSentry({
       dsn: env.VITE_SENTRY_DSN,
-      sendDefaultPii: false,
+      dataCollection: {
+        userInfo: false,
+        cookies: false,
+        httpHeaders: {
+          request: { deny: ["forwarded", "-ip", "remote-", "via", "-user"] },
+          response: { deny: ["forwarded", "-ip", "remote-", "via", "-user"] },
+        },
+        httpBodies: [],
+        urlQueryParams: {
+          deny: ["forwarded", "-ip", "remote-", "via", "-user"],
+        },
+        genAI: { inputs: false, outputs: false },
+        databaseQueryData: false,
+        queues: false,
+        graphQL: { document: false, variables: false },
+      },
       debug: false,
       tracesSampleRate: 0,
       ignoreErrors: sentryIgnoreErrors,
