@@ -202,6 +202,22 @@ export const progressLeaderboard = pgTable(
 );
 
 /**
+ * How many owners hold each progressLeaderboard count per member, season and online type,
+ * maintained by triggers on progress_leaderboard. Buckets that empty out stay at 0 owners.
+ */
+export const progressHistogram = pgTable(
+  "progress_histogram",
+  {
+    member: text("member").notNull(),
+    season: text("season").notNull(),
+    onOffline: text("on_offline").notNull(),
+    count: integer("count").notNull(),
+    owners: integer("owners").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.member, t.season, t.onOffline, t.count] })],
+);
+
+/**
  * token-id ranges COSMO reserved for physical and QR coupon objekts,
  * used by serial estimation (@apollo/serial-estimation). written by the processor.
  */

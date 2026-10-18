@@ -4,6 +4,7 @@ import type { Collection } from "@/lib/server/db/indexer/schema";
 import {
   collections,
   objekts,
+  progressHistogram,
   progressLeaderboard,
 } from "@/lib/server/db/indexer/schema";
 import {
@@ -95,6 +96,8 @@ export const $fetchProgressLeaderboard = createServerFn({ method: "GET" })
       const known = addressMap.get(row.owner.toLowerCase());
 
       return {
+        // ties share the rank of the first row with their count, as $fetchProgressRank counts
+        rank: leaderboard.findIndex((r) => r.count === row.count) + 1,
         count: row.count,
         nickname: known?.username ?? row.owner.substring(0, 8),
         address: row.owner,
@@ -125,40 +128,47 @@ export const $fetchProgressRank = createServerFn({ method: "GET" })
       return null;
     }
 
-    const address = data.address.toLowerCase();
-    const variant = and(
-      eq(progressLeaderboard.member, data.member),
-      eq(progressLeaderboard.season, data.season ?? ""),
-      eq(progressLeaderboard.onOffline, data.onlineType ?? ""),
-    );
-
-    const [own] = await indexer
-      .select({ count: progressLeaderboard.count })
+    // the owner's count against the histogram of every count, so ties share a rank
+    const [standing] = await indexer
+      .select({
+        count: progressLeaderboard.count,
+        collectors: sql<number>`sum(${progressHistogram.owners})`.mapWith(
+          Number,
+        ),
+        above:
+          sql<number>`coalesce(sum(${progressHistogram.owners}) filter (where ${progressHistogram.count} > ${progressLeaderboard.count}), 0)`.mapWith(
+            Number,
+          ),
+      })
       .from(progressLeaderboard)
-      .where(and(variant, eq(progressLeaderboard.owner, address)))
+      .innerJoin(
+        progressHistogram,
+        and(
+          eq(progressHistogram.member, progressLeaderboard.member),
+          eq(progressHistogram.season, progressLeaderboard.season),
+          eq(progressHistogram.onOffline, progressLeaderboard.onOffline),
+        ),
+      )
+      .where(
+        and(
+          eq(progressLeaderboard.member, data.member),
+          eq(progressLeaderboard.season, data.season ?? ""),
+          eq(progressLeaderboard.onOffline, data.onlineType ?? ""),
+          eq(progressLeaderboard.owner, data.address.toLowerCase()),
+        ),
+      )
+      .groupBy(progressLeaderboard.count)
       .comment({ fn: "fetchProgressRank" });
 
     // no collections of the member for the filters
-    if (own === undefined) {
+    if (standing === undefined) {
       return null;
     }
 
-    // ties with a lower address place above, matching the top 25's order
-    const [standing] = await indexer
-      .select({
-        collectors: count(),
-        above: count(
-          sql`case when ${progressLeaderboard.count} > ${own.count} or (${progressLeaderboard.count} = ${own.count} and ${progressLeaderboard.owner} < ${address}) then 1 end`,
-        ),
-      })
-      .from(progressLeaderboard)
-      .where(variant)
-      .comment({ fn: "fetchProgressRank" });
-
     return {
-      rank: (standing?.above ?? 0) + 1,
-      collectors: standing?.collectors ?? 0,
-      count: own.count,
+      rank: standing.above + 1,
+      collectors: standing.collectors,
+      count: standing.count,
     };
   });
 

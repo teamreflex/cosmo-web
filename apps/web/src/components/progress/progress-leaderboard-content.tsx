@@ -65,7 +65,7 @@ export default function ProgressLeaderboardContent(props: Props) {
       </div>
 
       <ol className="flex flex-col gap-1">
-        {data.leaderboard.map((item, i) => {
+        {data.leaderboard.map((item) => {
           const isTarget = isEqual(item.address, props.address);
           const value = percentage(item.count);
           return (
@@ -78,7 +78,10 @@ export default function ProgressLeaderboardContent(props: Props) {
                   : "hover:bg-accent/40",
               )}
             >
-              <RankNumber rank={i + 1} className="text-right font-semibold" />
+              <RankNumber
+                rank={item.rank}
+                className="text-right font-semibold"
+              />
               <ProfileLink
                 item={item}
                 member={props.member}

@@ -1,6 +1,7 @@
 /**
  * Progress leaderboard kept current by triggers on objekt and collection, replacing the
- * per-request count over every objekt of a member's collections.
+ * per-request count over every objekt of a member's collections, plus a histogram of
+ * leaderboard counts so an owner's rank is a sum over a few hundred buckets.
  *
  * Every statement is idempotent and the backfill only fills empty tables, so on a large
  * database run these statements by hand first (autocommit, processor stopped) and let this
@@ -8,10 +9,10 @@
  * the lock from adding collection.unobtainable (blocking reads of collection) for minutes.
  *
  * A full reindex from the start block would run every transfer through the triggers:
- * disable them, reindex, truncate both tables and re-run the backfill instead.
+ * disable them, reindex, truncate all three tables and re-run the backfill instead.
  */
-module.exports = class Data1790444346394 {
-  name = "Data1790444346394";
+module.exports = class Data1792234623962 {
+  name = "Data1792234623962";
 
   async up(db) {
     /**
@@ -140,10 +141,9 @@ module.exports = class Data1790444346394 {
     /**
      * Distinct obtainable collections each owner holds per member, per season and
      * online type. An empty season or on_offline is the total across all of them.
-     * count is indexed, so every change leaves a dead row version and clears its page's
-     * visibility bit. Each member's rows sit on separate pages, so the rank count only stays
-     * an index-only scan if vacuum resets those bits often: after about an hour of churn
-     * rather than the default 20% of the table.
+     * count is indexed, so no update is HOT and every change leaves a dead row version in
+     * the heap and both indexes: vacuum after about an hour of churn rather than the
+     * default 20% of the table.
      */
     await db.query(`
       CREATE TABLE IF NOT EXISTS "progress_leaderboard" (
@@ -159,6 +159,22 @@ module.exports = class Data1790444346394 {
         autovacuum_vacuum_insert_scale_factor = 0,
         autovacuum_vacuum_insert_threshold = 10000
       );
+    `);
+
+    /**
+     * How many owners hold each count per member, season and online type, so an owner's
+     * rank is the sum of the buckets above their count. Buckets that empty out stay at 0
+     * rather than churning the primary key, and owners is unindexed so updates stay HOT.
+     */
+    await db.query(`
+      CREATE TABLE IF NOT EXISTS "progress_histogram" (
+        "member" text NOT NULL,
+        "season" text NOT NULL,
+        "on_offline" text NOT NULL,
+        "count" integer NOT NULL,
+        "owners" integer NOT NULL,
+        CONSTRAINT "progress_histogram_pkey" PRIMARY KEY ("member", "season", "on_offline", "count")
+      ) WITH (fillfactor = 90);
     `);
 
     // backfill, skipped once the tables hold data
@@ -185,17 +201,26 @@ module.exports = class Data1790444346394 {
       ORDER BY co.owner, c.member, s.season, s.on_offline;
     `);
 
-    /**
-     * top 25 for a member, season and online type, plus an owner's rank. owner breaks
-     * ties in the same order as the top 25, so both read only the index.
-     */
+    // top 25 for a member, season and online type, ties ordered by owner
     await db.query(
       `CREATE INDEX IF NOT EXISTS "idx_progress_leaderboard_top" ON "progress_leaderboard" ("member", "season", "on_offline", "count" DESC, "owner");`,
     );
 
+    // inserted in key order so each variant's buckets share a few pages
+    await db.query(`
+      INSERT INTO progress_histogram (member, season, on_offline, count, owners)
+      SELECT member, season, on_offline, count, count(*) AS owners
+      FROM progress_leaderboard
+      WHERE NOT EXISTS (SELECT 1 FROM progress_histogram)
+      GROUP BY member, season, on_offline, count
+      ORDER BY member, season, on_offline, count;
+    `);
+
     /**
      * Applies per-(collection, owner) copy deltas, then turns first-copy and last-copy
      * transitions into +1/-1 on the owner's four leaderboard rows for that collection.
+     * Upserts run in key order, so a hand-run collection update can't deadlock with a
+     * processor batch over the same rows.
      */
     await db.query(`
       CREATE OR REPLACE FUNCTION leaderboard_apply_ownership(p_collection_ids varchar[], p_owners text[], p_deltas integer[])
@@ -210,6 +235,7 @@ module.exports = class Data1790444346394 {
         pairs AS (
           INSERT INTO collection_owner AS co (collection_id, owner, copies)
           SELECT collection_id, owner, delta FROM changes
+          ORDER BY collection_id, owner
           ON CONFLICT (collection_id, owner) DO UPDATE SET copies = co.copies + excluded.copies
           RETURNING co.collection_id, co.owner, co.copies
         ),
@@ -226,6 +252,7 @@ module.exports = class Data1790444346394 {
         WHERE t.delta <> 0 AND c.class NOT IN ('Welcome', 'Zero') AND NOT c.unobtainable
         GROUP BY t.owner, c.member, s.season, s.on_offline
         HAVING sum(t.delta) <> 0
+        ORDER BY t.owner, c.member, s.season, s.on_offline
         ON CONFLICT (owner, member, season, on_offline) DO UPDATE SET count = lb.count + excluded.count;
 
         DELETE FROM collection_owner co
@@ -251,6 +278,7 @@ module.exports = class Data1790444346394 {
         FROM collection_owner co
         CROSS JOIN (VALUES ('', ''), (p_season, ''), ('', p_on_offline), (p_season, p_on_offline)) AS s (season, on_offline)
         WHERE co.collection_id = p_collection_id
+        ORDER BY co.owner, s.season, s.on_offline
         ON CONFLICT (owner, member, season, on_offline) DO UPDATE SET count = lb.count + excluded.count;
 
         DELETE FROM progress_leaderboard lb
@@ -334,9 +362,76 @@ module.exports = class Data1790444346394 {
           IS DISTINCT FROM (new.member, new.season, new.on_offline, new.class, new.unobtainable))
         EXECUTE FUNCTION leaderboard_collection_trigger();
     `);
+
+    /**
+     * Moves owners between histogram buckets as their leaderboard counts change, so every
+     * writer of progress_leaderboard keeps it current. Created after the backfill, which
+     * would otherwise pass all 12M rows through a transition table.
+     */
+    await db.query(`
+      CREATE OR REPLACE FUNCTION leaderboard_histogram_trigger() RETURNS trigger LANGUAGE plpgsql AS $$
+      BEGIN
+        IF tg_op = 'INSERT' THEN
+          INSERT INTO progress_histogram AS h (member, season, on_offline, count, owners)
+          SELECT member, season, on_offline, count, count(*) AS owners
+          FROM new_rows
+          WHERE count > 0
+          GROUP BY member, season, on_offline, count
+          ORDER BY member, season, on_offline, count
+          ON CONFLICT (member, season, on_offline, count) DO UPDATE SET owners = h.owners + excluded.owners;
+        ELSIF tg_op = 'UPDATE' THEN
+          INSERT INTO progress_histogram AS h (member, season, on_offline, count, owners)
+          SELECT member, season, on_offline, count, sum(n) AS owners
+          FROM (
+            SELECT member, season, on_offline, count, 1 AS n FROM new_rows WHERE count > 0
+            UNION ALL
+            SELECT member, season, on_offline, count, -1 FROM old_rows WHERE count > 0
+          ) moves
+          GROUP BY member, season, on_offline, count
+          HAVING sum(n) <> 0
+          ORDER BY member, season, on_offline, count
+          ON CONFLICT (member, season, on_offline, count) DO UPDATE SET owners = h.owners + excluded.owners;
+        ELSE
+          INSERT INTO progress_histogram AS h (member, season, on_offline, count, owners)
+          SELECT member, season, on_offline, count, -count(*) AS owners
+          FROM old_rows
+          WHERE count > 0
+          GROUP BY member, season, on_offline, count
+          ORDER BY member, season, on_offline, count
+          ON CONFLICT (member, season, on_offline, count) DO UPDATE SET owners = h.owners + excluded.owners;
+        END IF;
+        RETURN NULL;
+      END
+      $$;
+    `);
+    await db.query(`
+      CREATE OR REPLACE TRIGGER "leaderboard_histogram_insert" AFTER INSERT ON "progress_leaderboard"
+        REFERENCING NEW TABLE AS new_rows
+        FOR EACH STATEMENT EXECUTE FUNCTION leaderboard_histogram_trigger();
+    `);
+    await db.query(`
+      CREATE OR REPLACE TRIGGER "leaderboard_histogram_update" AFTER UPDATE ON "progress_leaderboard"
+        REFERENCING OLD TABLE AS old_rows NEW TABLE AS new_rows
+        FOR EACH STATEMENT EXECUTE FUNCTION leaderboard_histogram_trigger();
+    `);
+    await db.query(`
+      CREATE OR REPLACE TRIGGER "leaderboard_histogram_delete" AFTER DELETE ON "progress_leaderboard"
+        REFERENCING OLD TABLE AS old_rows
+        FOR EACH STATEMENT EXECUTE FUNCTION leaderboard_histogram_trigger();
+    `);
   }
 
   async down(db) {
+    await db.query(
+      `DROP TRIGGER IF EXISTS "leaderboard_histogram_delete" ON "progress_leaderboard";`,
+    );
+    await db.query(
+      `DROP TRIGGER IF EXISTS "leaderboard_histogram_update" ON "progress_leaderboard";`,
+    );
+    await db.query(
+      `DROP TRIGGER IF EXISTS "leaderboard_histogram_insert" ON "progress_leaderboard";`,
+    );
+    await db.query(`DROP FUNCTION IF EXISTS leaderboard_histogram_trigger();`);
     await db.query(
       `DROP TRIGGER IF EXISTS "collection_leaderboard_update" ON "collection";`,
     );
@@ -357,6 +452,7 @@ module.exports = class Data1790444346394 {
     await db.query(
       `DROP FUNCTION IF EXISTS leaderboard_apply_ownership(varchar[], text[], integer[]);`,
     );
+    await db.query(`DROP TABLE IF EXISTS "progress_histogram";`);
     await db.query(`DROP TABLE IF EXISTS "progress_leaderboard";`);
     await db.query(`DROP TABLE IF EXISTS "collection_owner";`);
     await db.query(

@@ -257,6 +257,8 @@ ALTER TABLE list_event_outbox SET (
 
 ALTER TABLE progress_leaderboard SET (
   autovacuum_vacuum_scale_factor = 0,
-  autovacuum_vacuum_threshold = 200000
+  autovacuum_vacuum_threshold = 10000,
+  autovacuum_vacuum_insert_scale_factor = 0,
+  autovacuum_vacuum_insert_threshold = 10000
 );
 ```

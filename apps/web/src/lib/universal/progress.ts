@@ -22,6 +22,7 @@ export interface SeasonProgress extends SeasonMatrix {
 }
 
 export type LeaderboardItem = {
+  rank: number;
   count: number;
   nickname: string;
   address: string;
@@ -29,8 +30,8 @@ export type LeaderboardItem = {
 };
 
 /**
- * An address's place on a member leaderboard. collectors is everyone holding at least one
- * of the member's obtainable collections for the same filters.
+ * An address's place on a member leaderboard, shared with everyone on the same count.
+ * collectors is everyone holding at least one of the member's obtainable collections for the same filters.
  */
 export type ProgressRank = {
   rank: number;
