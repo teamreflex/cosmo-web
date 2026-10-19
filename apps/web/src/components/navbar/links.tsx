@@ -9,6 +9,7 @@ import {
   IconFolderOpen,
   IconMenu2,
   IconPackage,
+  IconTag,
 } from "@tabler/icons-react";
 import { Link, useLocation } from "@tanstack/react-router";
 import { Button } from "../ui/button";
@@ -50,6 +51,11 @@ export function DesktopPublicLinks() {
         href="/gravity"
         active={pathname.startsWith("/gravity")}
         name={m.gravity_header()}
+      />
+      <LinkButton
+        href="/market"
+        active={pathname.startsWith("/market")}
+        name={m.market_header()}
       />
     </div>
   );
@@ -164,6 +170,19 @@ function MobileMenuItems(props: MobileMenuProps) {
           )}
         />
         <span>{m.gravity_header()}</span>
+      </DropdownMenuItem>
+
+      {/* market */}
+      <DropdownMenuItem
+        render={<Link to="/market" aria-label={m.market_header()} />}
+      >
+        <IconTag
+          className={cn(
+            "h-4 w-4 shrink-0 fill-transparent transition-all",
+            pathname.startsWith("/market") && "fill-white/50",
+          )}
+        />
+        <span>{m.market_header()}</span>
       </DropdownMenuItem>
 
       {props.cosmo && (

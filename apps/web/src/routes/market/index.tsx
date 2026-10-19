@@ -18,13 +18,9 @@ import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
 import { noop } from "@tanstack/react-query";
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/market/")({
-  // hidden until the trade system ships
-  beforeLoad: () => {
-    throw notFound();
-  },
   staleTime: 1000 * 60 * 15, // 15 minutes
   validateSearch: marketFrontendSchema,
   component: RouteComponent,
