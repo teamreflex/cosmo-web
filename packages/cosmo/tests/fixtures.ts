@@ -246,6 +246,34 @@ export const freshlyEndedGravity = {
   },
 } satisfies CosmoPastGravity;
 
+// a gravity that closed without any votes: its poll never finalizes, but the
+// gravity still moves to the past list once the reveal date passes
+export const unfinalizedGravity = {
+  ...pastGravity,
+  id: 97,
+  title: "Unfinalized Gravity",
+  polls: [
+    {
+      id: 275,
+      artist: "tripleS",
+      artistId: "tripleS",
+      pollIdOnChain: 0,
+      gravityId: 97,
+      type: "single-poll",
+      indexInGravity: 1,
+      title: "Unfinalized Gravity",
+      imageUrl: "https://static.cosmo.fans/poll-unfinalized.png",
+      startDate: "2026-10-18T14:12:00.000Z",
+      endDate: "2026-10-18T14:17:00.000Z",
+      revealDate: "2026-10-18T15:00:00.000Z",
+      finalized: false,
+      result: { totalComoUsed: null, voteResults: [] },
+    },
+  ],
+  result: { totalComoUsed: 0, resultImageUrl: null, resultTitle: null },
+  leaderboard: { userRanking: [] },
+} satisfies CosmoPastGravity;
+
 export const pollChoices = {
   id: 7,
   artist: "tripleS",

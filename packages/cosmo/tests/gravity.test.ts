@@ -7,6 +7,7 @@ import {
   pastGravity,
   pollChoices,
   unitGravity,
+  unfinalizedGravity,
   unitPollChoices,
   upcomingGravity,
 } from "./fixtures";
@@ -49,6 +50,15 @@ describe("fetchGravities", () => {
 
   it("decodes a past gravity with no summary card yet", async () => {
     const list = { upcoming: [], ongoing: [], past: [freshlyEndedGravity] };
+    handle.get("https://api.cosmo.fans/bff/v3/gravities", () =>
+      Response.json(list),
+    );
+
+    expect(await runTest(fetchGravities("token-123", "tripleS"))).toEqual(list);
+  });
+
+  it("decodes a past gravity whose poll never finalized", async () => {
+    const list = { upcoming: [], ongoing: [], past: [unfinalizedGravity] };
     handle.get("https://api.cosmo.fans/bff/v3/gravities", () =>
       Response.json(list),
     );

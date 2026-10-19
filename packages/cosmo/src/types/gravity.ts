@@ -3,6 +3,7 @@ import type {
   PastGravitySchema,
   PollChoicesSchema,
   PollFinalizedSchema,
+  PollUnfinalizedSchema,
   PollUpcomingSchema,
   PollViewSelectedContentSchema,
   UpcomingGravitySchema,
@@ -12,6 +13,7 @@ export type CosmoGravityType = "event-gravity" | "grand-gravity";
 export type CosmoPollType = "single-poll" | "combination-poll" | "unit-poll";
 
 export type CosmoPollFinalized = typeof PollFinalizedSchema.Type;
+export type CosmoPollUnfinalized = typeof PollUnfinalizedSchema.Type;
 export type CosmoPollUpcoming = typeof PollUpcomingSchema.Type;
 
 export type CosmoPastGravity = typeof PastGravitySchema.Type;

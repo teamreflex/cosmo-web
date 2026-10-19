@@ -134,6 +134,33 @@ export const PollFinalizedSchema = Schema.Union([
   UnitPollFinalizedSchema,
 ]);
 
+const UnfinalizedResultSchema = Schema.Struct({
+  totalComoUsed: Schema.Null,
+  voteResults: Schema.mutable(Schema.Tuple([])),
+});
+
+/**
+ * a poll COSMO never finalized (no votes were cast) still moves to the past
+ * list after its reveal date, keeping an empty result
+ */
+export const PollUnfinalizedSchema = Schema.Union([
+  Schema.Struct({
+    ...pollCommonFields("single-poll"),
+    finalized: Schema.Literal(false),
+    result: UnfinalizedResultSchema,
+  }),
+  Schema.Struct({
+    ...pollCommonFields("combination-poll"),
+    finalized: Schema.Literal(false),
+    result: UnfinalizedResultSchema,
+  }),
+  Schema.Struct({
+    ...pollCommonFields("unit-poll"),
+    finalized: Schema.Literal(false),
+    result: UnfinalizedResultSchema,
+  }),
+]);
+
 /**
  * finalized flips to true during the counting window (endDate → revealDate)
  * while the poll still has no result, so it can't be a false literal here
@@ -169,7 +196,9 @@ export const GravityCommonFieldsSchema = Schema.Struct({
 
 export const PastGravitySchema = Schema.Struct({
   ...GravityCommonFieldsSchema.fields,
-  polls: Schema.mutable(Schema.Array(PollFinalizedSchema)),
+  polls: Schema.mutable(
+    Schema.Array(Schema.Union([PollFinalizedSchema, PollUnfinalizedSchema])),
+  ),
   result: Schema.Struct({
     totalComoUsed: Schema.Number,
     resultImageUrl: Schema.NullOr(Schema.String),
