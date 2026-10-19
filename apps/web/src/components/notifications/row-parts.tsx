@@ -190,7 +190,7 @@ function Thumbnail({ collection }: { collection: NotificationCollection }) {
       src={getObjektFrontImageUrl(collection, "xs")}
       alt={collection.name}
       decoding="async"
-      className="aspect-photocard w-8.5 shrink-0 rounded-[3px] bg-secondary object-cover"
+      className="aspect-photocard w-8.5 shrink-0 self-start rounded-[3px] bg-secondary object-cover"
     />
   );
 }
