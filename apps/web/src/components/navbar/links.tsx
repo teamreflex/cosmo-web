@@ -54,7 +54,10 @@ export function DesktopPublicLinks() {
       />
       <LinkButton
         href="/market"
-        active={pathname.startsWith("/market")}
+        // trades are part of the market
+        active={
+          pathname.startsWith("/market") || pathname.startsWith("/trade/")
+        }
         name={m.market_header()}
       />
     </div>
@@ -179,7 +182,9 @@ function MobileMenuItems(props: MobileMenuProps) {
         <IconTag
           className={cn(
             "h-4 w-4 shrink-0 fill-transparent transition-all",
-            pathname.startsWith("/market") && "fill-white/50",
+            (pathname.startsWith("/market") ||
+              pathname.startsWith("/trade/")) &&
+              "fill-white/50",
           )}
         />
         <span>{m.market_header()}</span>
