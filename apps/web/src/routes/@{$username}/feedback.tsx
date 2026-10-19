@@ -26,7 +26,7 @@ import {
   feedbackSearchSchema,
 } from "@/lib/universal/feedback";
 import { IconStar, IconUserQuestion } from "@tabler/icons-react";
-import { useSuspenseQueries } from "@tanstack/react-query";
+import { noop, useSuspenseQueries } from "@tanstack/react-query";
 import { createFileRoute, stripSearchParams } from "@tanstack/react-router";
 import { Suspense } from "react";
 
@@ -45,16 +45,21 @@ export const Route = createFileRoute("/@{$username}/feedback")({
   },
   loaderDeps: ({ search: { role, rating } }) => ({ role, rating }),
   loader: async ({ context, deps }) => {
-    const target = await context.queryClient.ensureQueryData(
-      context.targetAccountOptions,
-    );
-    void context.queryClient.prefetchInfiniteQuery(
-      feedbackEntriesQuery(target.cosmo.address, deps),
-    );
-    await context.queryClient.ensureQueryData(currentAccountQuery);
-    await context.queryClient.ensureQueryData(
-      feedbackSummaryQuery(target.cosmo.address),
-    );
+    const target = await context.queryClient.query({
+      ...context.targetAccountOptions,
+      staleTime: "static",
+    });
+    void context.queryClient
+      .infiniteQuery(feedbackEntriesQuery(target.cosmo.address, deps))
+      .catch(noop);
+    await context.queryClient.query({
+      ...currentAccountQuery,
+      staleTime: "static",
+    });
+    await context.queryClient.query({
+      ...feedbackSummaryQuery(target.cosmo.address),
+      staleTime: "static",
+    });
 
     return { cosmo: target.cosmo, hasAccount: target.user !== undefined };
   },
