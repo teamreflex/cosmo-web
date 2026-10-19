@@ -156,57 +156,54 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
 
     const collectionIds = idsResult.map((r) => r.collectionId);
 
-    // 2. fetch collections and objekts separately in parallel
-    const [collectionsResult, objektsResult] = await Promise.all([
-      // 2a. fetch collections
-      indexer
-        .select({
-          id: collections.id,
-          collectionId: collections.collectionId,
-          season: collections.season,
-          collectionNo: collections.collectionNo,
-          class: collections.class,
-          member: collections.member,
-          artist: collections.artist,
-          thumbnailImage: collections.thumbnailImage,
-          frontImage: collections.frontImage,
-          backImage: collections.backImage,
-          accentColor: collections.accentColor,
-          backgroundColor: collections.backgroundColor,
-          textColor: collections.textColor,
-          comoAmount: collections.comoAmount,
-          bandImageUrl: collections.bandImageUrl,
-          frontMedia: collections.frontMedia,
-          hasAudio: collections.hasAudio,
-          frontImageVersion: collections.frontImageVersion,
-          backImageVersion: collections.backImageVersion,
-          createdAt: collections.createdAt,
-        })
-        .from(collections)
-        .where(inArray(collections.id, collectionIds))
-        .comment({ fn: "fetchBlockchainGroupCollections" }),
+    // 2a. fetch collections
+    const collectionsResult = await indexer
+      .select({
+        id: collections.id,
+        collectionId: collections.collectionId,
+        season: collections.season,
+        collectionNo: collections.collectionNo,
+        class: collections.class,
+        member: collections.member,
+        artist: collections.artist,
+        thumbnailImage: collections.thumbnailImage,
+        frontImage: collections.frontImage,
+        backImage: collections.backImage,
+        accentColor: collections.accentColor,
+        backgroundColor: collections.backgroundColor,
+        textColor: collections.textColor,
+        comoAmount: collections.comoAmount,
+        bandImageUrl: collections.bandImageUrl,
+        frontMedia: collections.frontMedia,
+        hasAudio: collections.hasAudio,
+        frontImageVersion: collections.frontImageVersion,
+        backImageVersion: collections.backImageVersion,
+        createdAt: collections.createdAt,
+      })
+      .from(collections)
+      .where(inArray(collections.id, collectionIds))
+      .comment({ fn: "fetchBlockchainGroupCollections" });
 
-      // 2b. fetch objekts
-      indexer
-        .select({
-          collectionId: objekts.collectionId,
-          id: objekts.id,
-          serial: objekts.serial,
-          transferable: objekts.transferable,
-          owner: objekts.owner,
-          mintedAt: objekts.mintedAt,
-          receivedAt: objekts.receivedAt,
-        })
-        .from(objekts)
-        .where(
-          and(
-            eq(objekts.owner, address),
-            inArray(objekts.collectionId, collectionIds),
-            ...withTransferable(data.transferable),
-          ),
-        )
-        .comment({ fn: "fetchBlockchainGroupObjekts" }),
-    ]);
+    // 2b. fetch objekts
+    const objektsResult = await indexer
+      .select({
+        collectionId: objekts.collectionId,
+        id: objekts.id,
+        serial: objekts.serial,
+        transferable: objekts.transferable,
+        owner: objekts.owner,
+        mintedAt: objekts.mintedAt,
+        receivedAt: objekts.receivedAt,
+      })
+      .from(objekts)
+      .where(
+        and(
+          eq(objekts.owner, address),
+          inArray(objekts.collectionId, collectionIds),
+          ...withTransferable(data.transferable),
+        ),
+      )
+      .comment({ fn: "fetchBlockchainGroupObjekts" });
 
     // 3. build the response in JS
     const collectionsMap = new Map(collectionsResult.map((c) => [c.id, c]));

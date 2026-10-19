@@ -4,6 +4,8 @@ import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import react from "@vitejs/plugin-react";
+import { FontaineTransform } from "fontaine";
+import { createRequire } from "node:module";
 import { defineConfig } from "vite";
 import "./src/lib/env/client.ts";
 import "./src/lib/env/server.ts";
@@ -39,6 +41,18 @@ export default defineConfig({
         // writes to R2 with Bun APIs; only reachable through lib/server
         client: { specifiers: ["@apollo/image/server"] },
       },
+    }),
+    /**
+     * Generates metric-matched local fallbacks for each @font-face, so text doesn't reflow when the webfont swaps in.
+     * It only rewrites `font-family` declarations, so the `--font-*` theme variables list the fallbacks themselves.
+     */
+    FontaineTransform.vite({
+      // fontaine can't detect JetBrains Mono as monospace from the file, so it would get sans-serif fallbacks
+      fallbacks: { "JetBrains Mono Variable": ["Courier New"] },
+      // hand-tuned in tailwind.css
+      skipFontFaceGeneration: (name) => name === "HalvarBreitBd fallback",
+      // fontaine resolves `src` URLs against the stylesheet, so the @fontsource package specifiers need resolving here
+      resolvePath: (source) => createRequire(import.meta.url).resolve(source),
     }),
     tailwindcss(),
     react({

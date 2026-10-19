@@ -19,10 +19,7 @@ import type { Role } from "@apollo/auth";
 import type { ObjektList } from "@apollo/database/web/types";
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import {
-  getRequestHeaders,
-  setResponseHeader,
-} from "@tanstack/react-start/server";
+import { getRequestHeaders } from "@tanstack/react-start/server";
 import * as z from "zod";
 
 /**
@@ -51,16 +48,10 @@ export const FILTER_DATA_CACHE_KEY = "filter-data";
  */
 export const $fetchFilterData = createServerFn({ method: "GET" }).handler(() =>
   remember(FILTER_DATA_CACHE_KEY, 60 * 60 * 4, async () => {
-    const [uniqueCollections, seasons, classes] = await Promise.all([
-      fetchUniqueCollections(),
-      fetchUniqueSeasons(),
-      fetchUniqueClasses(),
-    ]);
-
     return {
-      collections: uniqueCollections,
-      seasons,
-      classes,
+      collections: await fetchUniqueCollections(),
+      seasons: await fetchUniqueSeasons(),
+      classes: await fetchUniqueClasses(),
     };
   }),
 );
@@ -81,41 +72,32 @@ export const $fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
   async (): Promise<GetAccount | null> => {
     const session = await auth.api.getSession({
       headers: getRequestHeaders(),
-      returnHeaders: true,
     });
 
     // not signed in
-    if (!session.response) {
+    if (!session) {
       return null;
     }
 
-    // forward Set-Cookie headers to the client
-    const cookies = session.headers.getSetCookie();
-    if (cookies.length) {
-      setResponseHeader("Set-Cookie", cookies);
-    }
-
-    const userId = session.response.session.userId;
-    const [result, link] = await Promise.all([
-      db.query.user.findFirst({
-        where: { id: userId },
-        with: {
-          objektLists: true,
-          fxRates: {
-            columns: { rateToUsd: true },
-            orderBy: { date: "desc" },
-            limit: 1,
-          },
+    const userId = session.session.userId;
+    const result = await db.query.user.findFirst({
+      where: { id: userId },
+      with: {
+        objektLists: true,
+        fxRates: {
+          columns: { rateToUsd: true },
+          orderBy: { date: "desc" },
+          limit: 1,
         },
-      }),
-      getCosmoAddress(db, userId),
-    ]);
+      },
+    });
 
     // broken user account
     if (!result) {
       return null;
     }
 
+    const link = await getCosmoAddress(db, userId);
     const { objektLists, fxRates, ...user } = result;
     return {
       user: toCurrentUser(user),

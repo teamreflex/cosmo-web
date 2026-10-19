@@ -13,6 +13,8 @@ export const cn = createCn({
 
 export type PropsWithClassName<T> = T & { className?: string };
 
+export const DISCORD_URL = "https://discord.gg/A72VRX8FgK";
+
 /**
  * Get the base URL for the app.
  */
@@ -20,11 +22,6 @@ export function baseUrl() {
   const scheme = env.VITE_APP_ENV === "development" ? "http" : "https";
   return `${scheme}://${env.VITE_BASE_URL}`;
 }
-
-/**
- * Invite link to the Apollo Discord server.
- */
-export const DISCORD_INVITE_URL = "https://discord.gg/A72VRX8FgK";
 
 /**
  * Format a price in the given currency. Falls back to a manual format string
@@ -91,16 +88,6 @@ export function formatConvertedPrice(
  */
 export function sum<T>(rows: T[], value: (row: T) => number) {
   return rows.reduce((total, row) => total + value(row), 0);
-}
-
-/**
- * Get the ordinal suffix for a number.
- */
-export function ordinal(input: number) {
-  const suffixes = ["th", "st", "nd", "rd"];
-  const value = input % 100;
-  const suffix = suffixes[(value - 20) % 10] || suffixes[value] || suffixes[0];
-  return suffix ? input + suffix : input;
 }
 
 /**

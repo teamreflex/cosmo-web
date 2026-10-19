@@ -182,9 +182,14 @@ export async function fetchReportDetail(
     throw await hiddenReportError(db, id);
   }
 
-  const [target, otherOpenReportCount] = await Promise.all([
-    fetchDetailTarget(viewer.role, report.targetType, report.targetId),
-    db.$count(
+  return {
+    ...toOutcome(report),
+    id: report.id,
+    reason: report.reason,
+    note: report.note,
+    createdAt: report.createdAt,
+    reporter: staffUser(report.reporter),
+    otherOpenReportCount: await db.$count(
       reports,
       and(
         eq(reports.targetType, report.targetType),
@@ -193,17 +198,11 @@ export async function fetchReportDetail(
         ne(reports.id, report.id),
       ),
     ),
-  ]);
-
-  return {
-    ...toOutcome(report),
-    id: report.id,
-    reason: report.reason,
-    note: report.note,
-    createdAt: report.createdAt,
-    reporter: staffUser(report.reporter),
-    otherOpenReportCount,
-    target,
+    target: await fetchDetailTarget(
+      viewer.role,
+      report.targetType,
+      report.targetId,
+    ),
   };
 }
 

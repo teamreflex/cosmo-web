@@ -32,12 +32,19 @@ const log = {
 };
 
 /**
- * Build the Content-Security-Policy header value from known origins.
+ * Request header carrying the per-request CSP nonce into the SSR handler, read
+ * by `getCspNonce` in src/router.tsx. Always overwritten, so clients can't
+ * supply one.
  */
-function buildContentSecurityPolicy(): string {
+const CSP_NONCE_HEADER = "x-csp-nonce";
+
+/**
+ * Build the Content-Security-Policy header from known origins. Inline scripts
+ * only run with the SSR response's nonce; responses without one allow none.
+ */
+function buildContentSecurityPolicy(): (nonce?: string) => string {
   const scriptSrc = [
     "'self'",
-    "'unsafe-inline'",
     // cloudflare web analytics beacon, injected by the proxy
     "https://static.cloudflareinsights.com",
   ];
@@ -112,28 +119,29 @@ function buildContentSecurityPolicy(): string {
     }
   }
 
-  return [
-    "default-src 'self'",
-    `script-src ${scriptSrc.join(" ")}`,
-    "style-src 'self' 'unsafe-inline'",
-    `img-src ${imgSrc.join(" ")}`,
-    `media-src ${mediaSrc.join(" ")}`,
-    "font-src 'self'",
-    `connect-src ${connectSrc.join(" ")}`,
-    "object-src 'none'",
-    "frame-ancestors 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-  ].join("; ");
+  return (nonce) =>
+    [
+      "default-src 'self'",
+      `script-src ${nonce === undefined ? "" : `'nonce-${nonce}' `}${scriptSrc.join(" ")}`,
+      "style-src 'self' 'unsafe-inline'",
+      `img-src ${imgSrc.join(" ")}`,
+      `media-src ${mediaSrc.join(" ")}`,
+      "font-src 'self'",
+      `connect-src ${connectSrc.join(" ")}`,
+      "object-src 'none'",
+      "frame-ancestors 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join("; ");
 }
 
-const CONTENT_SECURITY_POLICY = buildContentSecurityPolicy();
+const contentSecurityPolicy = buildContentSecurityPolicy();
 
 /**
  * Add basic security headers to response
  */
-function addSecurityHeaders(headers: Headers): void {
-  headers.set("Content-Security-Policy", CONTENT_SECURITY_POLICY);
+function addSecurityHeaders(headers: Headers, nonce?: string): void {
+  headers.set("Content-Security-Policy", contentSecurityPolicy(nonce));
   headers.set("X-Content-Type-Options", "nosniff");
   headers.set("X-Frame-Options", "DENY");
   headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
@@ -250,13 +258,21 @@ async function initializeServer() {
       // Fallback to TanStack Start
       "/*": async (req: Request) => {
         try {
+          const nonce = Buffer.from(
+            crypto.getRandomValues(new Uint8Array(16)),
+          ).toString("base64");
+          const requestHeaders = new Headers(req.headers);
+          requestHeaders.set(CSP_NONCE_HEADER, nonce);
+
           const start = performance.now();
-          const response = await handler.fetch(req);
+          const response = await handler.fetch(
+            new Request(req, { headers: requestHeaders }),
+          );
           const end = performance.now() - start;
 
           const headers = new Headers(response.headers);
           headers.set("Server-Timing", `handler;dur=${end.toFixed(1)}`);
-          addSecurityHeaders(headers);
+          addSecurityHeaders(headers, nonce);
           ensureCacheControl(headers);
           return new Response(response.body, {
             status: response.status,

@@ -61,10 +61,12 @@ export default defineConfig({
     "typescript/no-explicit-any": "error",
     "typescript/no-non-null-assertion": "error",
     "typescript/await-thenable": "error",
+    "typescript/no-deprecated": "error",
     "typescript/no-floating-promises": "error",
     "typescript/no-misused-promises": "off",
     "typescript/restrict-template-expressions": "error",
     "typescript/no-base-to-string": "error",
+    "typescript/no-generated-empty-object-type": "error",
     "unicorn/no-useless-spread": "error",
   },
   ignorePatterns: [

@@ -48,12 +48,14 @@ export const Route = createFileRoute("/admin/reports")({
   notFoundComponent: AdminNoAccess,
   loader: async ({ context }) => {
     await Promise.all([
-      context.queryClient.ensureQueryData(
-        reportCountsQuery(context.countsFilters),
-      ),
-      context.queryClient.ensureInfiniteQueryData(
-        reportQueueQuery(context.queueFilters),
-      ),
+      context.queryClient.query({
+        ...reportCountsQuery(context.countsFilters),
+        staleTime: "static",
+      }),
+      context.queryClient.infiniteQuery({
+        ...reportQueueQuery(context.queueFilters),
+        staleTime: "static",
+      }),
     ]);
   },
   head: () =>

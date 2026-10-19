@@ -13,7 +13,7 @@ import {
   latestCollectionsQuery,
 } from "@/lib/queries/collections";
 import { artistsQuery, filterDataQuery } from "@/lib/queries/core";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useSuspenseQuery, noop } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Suspense, useState } from "react";
 
@@ -23,11 +23,13 @@ export const Route = createFileRoute("/admin/collections")({
     requireStaffPage(context.role, { site: ["manage"] }),
   notFoundComponent: AdminNoAccess,
   loader: async ({ context }) => {
-    void context.queryClient.prefetchInfiniteQuery(latestCollectionsQuery());
+    void context.queryClient
+      .infiniteQuery(latestCollectionsQuery())
+      .catch(noop);
 
     await Promise.all([
-      context.queryClient.ensureQueryData(artistsQuery),
-      context.queryClient.ensureQueryData(filterDataQuery),
+      context.queryClient.query({ ...artistsQuery, staleTime: "static" }),
+      context.queryClient.query({ ...filterDataQuery, staleTime: "static" }),
     ]);
   },
   head: () =>

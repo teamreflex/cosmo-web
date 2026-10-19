@@ -8,6 +8,7 @@ export default defineConfig({
     ".turbo",
     "lib",
     "src/model/generated/**",
+    "src/abi/**",
     "db/migrations/**",
   ],
 });

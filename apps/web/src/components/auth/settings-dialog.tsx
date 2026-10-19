@@ -18,11 +18,12 @@ import {
 } from "@/components/ui/select";
 import { useTheme, type Theme } from "@/hooks/use-theme";
 import { m } from "@/i18n/messages";
-import { getLocale, setLocale } from "@/i18n/runtime";
+import { getLocale, locales, setLocale } from "@/i18n/runtime";
 import { formatError } from "@/lib/client/errors";
 import { $updateSettings } from "@/lib/functions/auth";
 import { currentAccountQuery } from "@/lib/queries/core";
 import type { CurrentUser } from "@/lib/universal/auth";
+import { localeNames } from "@/lib/universal/locales";
 import { settingsSchema } from "@/lib/universal/schema/auth";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconLoader2 } from "@tabler/icons-react";
@@ -48,12 +49,10 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
   });
 
   const locale = getLocale();
-  const languageItems = [
-    { value: "en", label: m.settings_language_english() },
-    { value: "ko", label: m.settings_language_korean() },
-    { value: "ja", label: m.settings_language_japanese() },
-    { value: "fr", label: m.settings_language_french() },
-  ] satisfies { value: typeof locale; label: string }[];
+  const languageItems = locales.map((value) => ({
+    value,
+    label: localeNames[value],
+  }));
 
   const themeItems = [
     { value: "dark", label: m.settings_theme_dark() },
@@ -132,7 +131,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
               <SelectContent align="end">
                 {languageItems.map((item) => (
                   <SelectItem key={item.value} value={item.value}>
-                    {item.label}
+                    <span lang={item.value}>{item.label}</span>
                   </SelectItem>
                 ))}
               </SelectContent>

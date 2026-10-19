@@ -32,30 +32,41 @@ export const $fetchPriceHistory = createServerFn({ method: "GET" })
       `price-history:${data.slug}:${data.range}`,
       secondsUntilNextSnapshot(),
       async (): Promise<PriceHistory> => {
-        const [points, [tracking]] = await Promise.all([
-          db.query.collectionPriceHistory.findMany({
-            where: {
-              collectionId: data.slug,
-              ...(data.range !== "all" && {
-                date: { gte: rangeStart(priceHistoryRangeDays[data.range]) },
-              }),
-            },
-            columns: {
-              date: true,
-              floorUsd: true,
-              medianUsd: true,
-              listingCount: true,
-            },
-            orderBy: { date: "asc" },
-          }),
-          db
-            .select({
-              since: min(collectionPriceHistory.date),
-              snapshots: count(),
-            })
-            .from(collectionPriceHistory)
-            .where(eq(collectionPriceHistory.collectionId, data.slug)),
-        ]);
+        const points = await db.query.collectionPriceHistory.findMany({
+          where: {
+            collectionId: data.slug,
+            ...(data.range !== "all" && {
+              date: { gte: rangeStart(priceHistoryRangeDays[data.range]) },
+            }),
+          },
+          columns: {
+            date: true,
+            floorUsd: true,
+            medianUsd: true,
+            listingCount: true,
+          },
+          orderBy: { date: "asc" },
+        });
+
+        // the full range already holds every snapshot
+        if (data.range === "all") {
+          const first = points[0];
+          return {
+            points,
+            tracking:
+              first === undefined
+                ? null
+                : { since: first.date, snapshots: points.length },
+          };
+        }
+
+        const [tracking] = await db
+          .select({
+            since: min(collectionPriceHistory.date),
+            snapshots: count(),
+          })
+          .from(collectionPriceHistory)
+          .where(eq(collectionPriceHistory.collectionId, data.slug));
 
         return {
           points,

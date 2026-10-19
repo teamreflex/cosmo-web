@@ -320,6 +320,25 @@ export default function CollectionForm(props: Props) {
               </Field>
             )}
           />
+
+          {/* Unobtainable */}
+          <Controller
+            control={form.control}
+            name="unobtainable"
+            render={({ field, fieldState }) => (
+              <Field orientation="horizontal">
+                <FieldLabel htmlFor="unobtainable">
+                  {m.admin_collection_unobtainable()}
+                </FieldLabel>
+                <Switch
+                  id="unobtainable"
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  className={cn(fieldState.isDirty && "border-cosmo")}
+                />
+              </Field>
+            )}
+          />
         </Section>
       </div>
     </div>

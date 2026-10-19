@@ -200,33 +200,32 @@ export async function recordStaffAudit(
  * from.
  */
 export async function fetchStaffAudit(input: StaffAuditQueryInput) {
-  const [rows, total] = await Promise.all([
-    db.query.staffAudit.findMany({
-      where: {
-        staffId: input.staffId ?? EmptyFilter,
-        action: input.action ?? EmptyFilter,
-        id: { lt: input.cursor ?? EmptyFilter },
+  const rows = await db.query.staffAudit.findMany({
+    where: {
+      staffId: input.staffId ?? EmptyFilter,
+      action: input.action ?? EmptyFilter,
+      id: { lt: input.cursor ?? EmptyFilter },
+    },
+    orderBy: { id: "desc" },
+    limit: AUDIT_PAGE_SIZE,
+    with: {
+      staff: {
+        columns: { ...staffUserFields.columns, role: true },
+        with: staffUserFields.with,
       },
-      orderBy: { id: "desc" },
-      limit: AUDIT_PAGE_SIZE,
-      with: {
-        staff: {
-          columns: { ...staffUserFields.columns, role: true },
-          with: staffUserFields.with,
-        },
-        report: { columns: { id: true, status: true } },
-      },
-    }),
+      report: { columns: { id: true, status: true } },
+    },
+  });
+  const total =
     input.cursor === undefined
-      ? db.$count(
+      ? await db.$count(
           staffAudit,
           and(
             input.staffId ? eq(staffAudit.staffId, input.staffId) : undefined,
             input.action ? eq(staffAudit.action, input.action) : undefined,
           ),
         )
-      : undefined,
-  ]);
+      : undefined;
 
   const users = await fetchStaffUsers(
     rows.flatMap((row) => {

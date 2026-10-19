@@ -13,6 +13,7 @@ import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { gridFrontendSchema } from "@/lib/universal/parsers";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
+import { noop } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/@{$username}/grid")({
@@ -23,22 +24,30 @@ export const Route = createFileRoute("/@{$username}/grid")({
   loaderDeps: ({ search: { binder, ...searchParams } }) => ({ searchParams }),
   loader: async ({ context, deps }) => {
     const [target, account] = await Promise.all([
-      context.queryClient.ensureQueryData(context.targetAccountOptions),
-      context.queryClient.ensureQueryData(currentAccountQuery),
+      context.queryClient.query({
+        ...context.targetAccountOptions,
+        staleTime: "static",
+      }),
+      context.queryClient.query({
+        ...currentAccountQuery,
+        staleTime: "static",
+      }),
     ]);
 
     // member-only URLs resolve the member's artist from the cached artist list
     let artist = deps.searchParams.artist ?? undefined;
     if (!artist && deps.searchParams.member) {
-      const { artists } =
-        await context.queryClient.ensureQueryData(artistsQuery);
+      const { artists } = await context.queryClient.query({
+        ...artistsQuery,
+        staleTime: "static",
+      });
       artist = findArtistForMember(artists, deps.searchParams.member);
     }
 
     if (artist) {
-      void context.queryClient.prefetchQuery(
-        gridLedgerQuery(target.cosmo.address, artist),
-      );
+      void context.queryClient
+        .query(gridLedgerQuery(target.cosmo.address, artist))
+        .catch(noop);
     }
 
     return { target, account };

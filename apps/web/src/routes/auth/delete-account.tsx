@@ -61,7 +61,10 @@ export const Route = createFileRoute("/auth/delete-account")({
       throw redirect({ to: "/" });
     }
 
-    await context.queryClient.ensureQueryData(currentAccountQuery);
+    await context.queryClient.query({
+      ...currentAccountQuery,
+      staleTime: "static",
+    });
     return { token };
   },
   head: () =>

@@ -9,6 +9,7 @@ import {
   pgSchema,
   pgTable,
   real,
+  primaryKey,
   text,
   timestamp,
   uuid,
@@ -53,6 +54,7 @@ export const collections = pgTable("collection", {
   hasAudio: boolean("has_audio").notNull().default(false),
   frontImageVersion: varchar("front_image_version", { length: 12 }),
   backImageVersion: varchar("back_image_version", { length: 12 }),
+  unobtainable: boolean("unobtainable").notNull().default(false),
 });
 
 export const objekts = pgTable("objekt", {
@@ -146,8 +148,10 @@ export const votes = pgTable("vote", {
   candidateId: integer("candidate_id"),
 });
 
-// reference table synced by apps/schedules (canonical member sort order), read
-// by apps/web. the processor never touches it.
+/**
+ * reference table synced by apps/schedules (canonical member sort order), read by apps/web.
+ * processor never touches it.
+ */
 export const members = pgTable("member", {
   id: uuid("id").primaryKey(),
   // joins to collection.member
@@ -160,8 +164,10 @@ export const members = pgTable("member", {
   sortOrder: integer("sort_order").notNull(),
 });
 
-// objekt and spun counts per collection, read by apps/web's mint-count sorts.
-// maintained by triggers on objekt; the processor never touches it.
+/**
+ * objekt and spun counts per collection, read by apps/web's mint-count sorts.
+ * maintained by triggers on objekt; the processor never touches it.
+ */
 export const collectionStats = pgTable("collection_stats", {
   // joins to objekt.collection_id and collection.id
   collectionId: varchar("collection_id", { length: 36 }).primaryKey(),
@@ -181,4 +187,85 @@ export const collectionMarketStats = pgTable("collection_market_stats", {
     mode: "date",
     withTimezone: true,
   }).notNull(),
+});
+
+// copies each owner holds of each collection (SPIN excluded), maintained by triggers on objekt
+export const collectionOwners = pgTable(
+  "collection_owner",
+  {
+    collectionId: varchar("collection_id", { length: 36 }).notNull(),
+    owner: text("owner").notNull(),
+    copies: integer("copies").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.collectionId, t.owner] })],
+);
+
+/**
+ * Distinct obtainable collections each owner holds, maintained by triggers on objekt and
+ * collection. An empty season or onOffline is the total across all seasons or online types.
+ */
+export const progressLeaderboard = pgTable(
+  "progress_leaderboard",
+  {
+    owner: text("owner").notNull(),
+    member: text("member").notNull(),
+    season: text("season").notNull(),
+    onOffline: text("on_offline").notNull(),
+    count: integer("count").notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.owner, t.member, t.season, t.onOffline] }),
+    index("idx_progress_leaderboard_top").on(
+      t.member,
+      t.season,
+      t.onOffline,
+      t.count.desc(),
+      t.owner,
+    ),
+  ],
+);
+
+/**
+ * How many owners hold each progressLeaderboard count per member, season and online type,
+ * maintained by triggers on progress_leaderboard. Buckets that empty out stay at 0 owners.
+ */
+export const progressHistogram = pgTable(
+  "progress_histogram",
+  {
+    member: text("member").notNull(),
+    season: text("season").notNull(),
+    onOffline: text("on_offline").notNull(),
+    count: integer("count").notNull(),
+    owners: integer("owners").notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.member, t.season, t.onOffline, t.count] })],
+);
+
+/**
+ * token-id ranges COSMO reserved for physical and QR coupon objekts,
+ * used by serial estimation (@apollo/serial-estimation). written by the processor.
+ */
+export const serialReservations = pgTable("serial_reservation", {
+  // the online token id just below the reserved range
+  lo: integer("lo").primaryKey(),
+  // the online token id just above it
+  hi: integer("hi").notNull(),
+});
+
+/**
+ * real serials reported by users, separate table so data isn't lost upon recompute.
+ * the processor applies them to their collections but never writes this table.
+ */
+export const serialConfirmations = pgTable("serial_confirmation", {
+  // joins to objekt.id
+  tokenId: varchar("token_id").primaryKey(),
+  serial: integer("serial").notNull(),
+  // web user id, null when seeded from COSMO's own data
+  confirmedBy: text("confirmed_by"),
+  confirmedAt: timestamp("confirmed_at", {
+    mode: "string",
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow(),
 });

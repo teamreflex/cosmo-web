@@ -30,16 +30,16 @@ export default function ProgressToolbar() {
 
   return (
     <>
-      <ProgressViewSwitch
-        view="progress"
-        search={{ artist: filters.artist, member: filters.member }}
-      />
       <MemberFilter
         align="end"
         activeArtist={filters.artist ?? null}
         activeMembers={filters.member ? [filters.member] : []}
         updateArtist={setActiveArtist}
         updateMember={setActiveMember}
+      />
+      <ProgressViewSwitch
+        view="progress"
+        search={{ artist: filters.artist, member: filters.member }}
       />
     </>
   );

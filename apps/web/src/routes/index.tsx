@@ -16,6 +16,7 @@ import { objektIndexFrontendSchema } from "@/lib/universal/parsers";
 import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
+import { noop } from "@tanstack/react-query";
 import { createFileRoute, useLoaderData } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
@@ -29,16 +30,22 @@ export const Route = createFileRoute("/")({
   }),
   loader: async ({ context, deps }) => {
     const [account, selected] = await Promise.all([
-      context.queryClient.ensureQueryData(currentAccountQuery),
-      context.queryClient.ensureQueryData(selectedArtistsQuery),
+      context.queryClient.query({
+        ...currentAccountQuery,
+        staleTime: "static",
+      }),
+      context.queryClient.query({
+        ...selectedArtistsQuery,
+        staleTime: "static",
+      }),
     ]);
 
     // prefetch objekts
     if (!deps.searchParams.search) {
       // prefetch blockchain
-      void context.queryClient.prefetchInfiniteQuery(
-        objektIndexBlockchainQuery(deps.searchParams, selected),
-      );
+      void context.queryClient
+        .infiniteQuery(objektIndexBlockchainQuery(deps.searchParams, selected))
+        .catch(noop);
     }
 
     return { account };

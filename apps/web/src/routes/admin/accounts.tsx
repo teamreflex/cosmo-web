@@ -10,6 +10,7 @@ import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { cosmoLinkHistoryQuery } from "@/lib/queries/cosmo-link-history";
 import { can } from "@apollo/auth";
+import { noop } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/admin/accounts")({
@@ -18,9 +19,9 @@ export const Route = createFileRoute("/admin/accounts")({
     requireStaffPage(context.role, ...ADMIN_ACCOUNTS_PERMISSIONS),
   loader: ({ context }) => {
     if (can(context.role, { cosmo: ["history"] })) {
-      void context.queryClient.prefetchInfiniteQuery(
-        cosmoLinkHistoryQuery(undefined),
-      );
+      void context.queryClient
+        .infiniteQuery(cosmoLinkHistoryQuery(undefined))
+        .catch(noop);
     }
   },
   notFoundComponent: AdminNoAccess,

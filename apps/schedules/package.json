@@ -20,6 +20,7 @@
     "@apollo/database": "workspace:*",
     "@apollo/drizzle-bun-effect": "workspace:*",
     "@apollo/queue": "workspace:*",
+    "@apollo/serial-estimation": "workspace:*",
     "@apollo/util": "workspace:*",
     "@apollo/util-server": "workspace:*",
     "@effect/platform-bun": "catalog:",

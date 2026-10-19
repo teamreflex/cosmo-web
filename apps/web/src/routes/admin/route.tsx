@@ -11,12 +11,15 @@ import {
 import { currentAccountQuery } from "@/lib/queries/core";
 import { reportCountsQuery } from "@/lib/queries/reports";
 import { can } from "@apollo/auth";
+import { noop } from "@tanstack/react-query";
 import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: async ({ context }) => {
-    const account =
-      await context.queryClient.ensureQueryData(currentAccountQuery);
+    const account = await context.queryClient.query({
+      ...currentAccountQuery,
+      staleTime: "static",
+    });
     if (!account || !can(account.role, ADMIN_SHELL_PERMISSIONS)) {
       throw redirect({ to: "/" });
     }
@@ -25,7 +28,7 @@ export const Route = createFileRoute("/admin")({
   },
   loader: ({ context }) => {
     if (can(context.role, { report: ["read"] })) {
-      void context.queryClient.prefetchQuery(reportCountsQuery({}));
+      void context.queryClient.query(reportCountsQuery({})).catch(noop);
     }
   },
   component: RouteComponent,

@@ -29,6 +29,8 @@ const main = Effect.gen(function* () {
   const metadata = yield* Metadata;
   const typesense = yield* Typesense;
   const timestamp = yield* Ref.make<number | null>(null);
+  // ids flagged unobtainable as of the last successful tick
+  const flagged = yield* Ref.make<ReadonlySet<string> | null>(null);
 
   // perform initial setup
   yield* setupTypesenseApiKey;
@@ -44,6 +46,14 @@ const main = Effect.gen(function* () {
       `Fetching collections from ${current === null ? "the start" : new Date(current).toISOString()}`,
     );
 
+    // read before the new collections, so a flip racing this tick is caught on the next one
+    const flaggedNow: ReadonlySet<string> = new Set(
+      (yield* indexer.query.collections.findMany({
+        where: { unobtainable: true },
+        columns: { id: true },
+      })).map((c) => c.id),
+    );
+
     const collections = yield* indexer.query.collections.findMany({
       where: {
         ...(current !== null && {
@@ -55,15 +65,36 @@ const main = Effect.gen(function* () {
       },
     });
 
-    yield* Effect.logInfo(`Found ${collections.length} collections`);
-    if (collections.length === 0) {
+    // unobtainable is flipped by hand long after createdAt, so re-import collections whose flag changed
+    const flaggedBefore = yield* Ref.get(flagged);
+    const newIds = new Set(collections.map((c) => c.id));
+    const flippedIds =
+      flaggedBefore === null
+        ? []
+        : [
+            ...[...flaggedNow].filter((id) => !flaggedBefore.has(id)),
+            ...[...flaggedBefore].filter((id) => !flaggedNow.has(id)),
+          ].filter((id) => !newIds.has(id));
+    const flipped =
+      flippedIds.length === 0
+        ? []
+        : yield* indexer.query.collections.findMany({
+            where: { id: { in: flippedIds } },
+          });
+
+    yield* Effect.logInfo(
+      `Found ${collections.length} new collections and ${flipped.length} unobtainable flips`,
+    );
+    if (collections.length === 0 && flipped.length === 0) {
       // set the timestamp to the start time so nothing is missed
       yield* Ref.set(timestamp, startTime);
+      yield* Ref.set(flagged, flaggedNow);
       return void 0;
     }
+    const toImport = [...collections, ...flipped];
 
     // for each collection, fetch the metadata
-    const slugs = collections.map((c) => c.slug);
+    const slugs = toImport.map((c) => c.slug);
     const descriptions = yield* metadata.query.collectionData.findMany({
       where: {
         collectionId: {
@@ -91,7 +122,7 @@ const main = Effect.gen(function* () {
     const memberSortMap = new Map(
       memberRows.map((row) => [row.name, row.sortOrder]),
     );
-    const zipped = collections.map((c) => ({
+    const zipped = toImport.map((c) => ({
       // collection fields
       ...c,
       createdAt: new Date(c.createdAt).getTime(),
@@ -122,8 +153,12 @@ const main = Effect.gen(function* () {
 
     // advance the watermark only after a fully successful upsert — a failed
     // tick re-fetches and re-upserts the whole batch next tick (idempotent)
-    const newTimestamp = collections[collections.length - 1].createdAt;
-    yield* Ref.set(timestamp, new Date(newTimestamp).getTime());
+    const newest = collections.at(-1);
+    yield* Ref.set(
+      timestamp,
+      newest === undefined ? startTime : new Date(newest.createdAt).getTime(),
+    );
+    yield* Ref.set(flagged, flaggedNow);
   }).pipe(
     // a transient tick failure logs and waits for the next tick instead of
     // killing the daemon; setup failures above stay fatal at boot

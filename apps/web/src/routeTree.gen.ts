@@ -30,6 +30,7 @@ import { Route as AdminErasRouteImport } from './routes/admin/eras'
 import { Route as AdminEventsRouteImport } from './routes/admin/events'
 import { Route as AdminNoticeRouteImport } from './routes/admin/notice'
 import { Route as AdminReportsRouteImport } from './routes/admin/reports'
+import { Route as AdminSerialsRouteImport } from './routes/admin/serials'
 import { Route as AuthDeleteAccountRouteImport } from './routes/auth/delete-account'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
 import { Route as EventsIndexRouteImport } from './routes/events/index'
@@ -163,6 +164,11 @@ const AdminNoticeRoute = AdminNoticeRouteImport.update({
 const AdminReportsRoute = AdminReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
+  getParentRoute: () => AdminRouteRoute,
+} as any)
+const AdminSerialsRoute = AdminSerialsRouteImport.update({
+  id: '/serials',
+  path: '/serials',
   getParentRoute: () => AdminRouteRoute,
 } as any)
 const AuthDeleteAccountRoute = AuthDeleteAccountRouteImport.update({
@@ -309,6 +315,7 @@ export interface FileRoutesByFullPath {
   '/admin/events': typeof AdminEventsRoute
   '/admin/notice': typeof AdminNoticeRoute
   '/admin/reports': typeof AdminReportsRoute
+  '/admin/serials': typeof AdminSerialsRoute
   '/auth/delete-account': typeof AuthDeleteAccountRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
@@ -353,6 +360,7 @@ export interface FileRoutesByTo {
   '/admin/events': typeof AdminEventsRoute
   '/admin/notice': typeof AdminNoticeRoute
   '/admin/reports': typeof AdminReportsRoute
+  '/admin/serials': typeof AdminSerialsRoute
   '/auth/delete-account': typeof AuthDeleteAccountRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
@@ -400,6 +408,7 @@ export interface FileRoutesById {
   '/admin/events': typeof AdminEventsRoute
   '/admin/notice': typeof AdminNoticeRoute
   '/admin/reports': typeof AdminReportsRoute
+  '/admin/serials': typeof AdminSerialsRoute
   '/auth/delete-account': typeof AuthDeleteAccountRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
@@ -448,6 +457,7 @@ export interface FileRouteTypes {
     | '/admin/events'
     | '/admin/notice'
     | '/admin/reports'
+    | '/admin/serials'
     | '/auth/delete-account'
     | '/auth/reset-password'
     | '/events/$slug'
@@ -492,6 +502,7 @@ export interface FileRouteTypes {
     | '/admin/events'
     | '/admin/notice'
     | '/admin/reports'
+    | '/admin/serials'
     | '/auth/delete-account'
     | '/auth/reset-password'
     | '/events/$slug'
@@ -538,6 +549,7 @@ export interface FileRouteTypes {
     | '/admin/events'
     | '/admin/notice'
     | '/admin/reports'
+    | '/admin/serials'
     | '/auth/delete-account'
     | '/auth/reset-password'
     | '/events/$slug'
@@ -741,6 +753,13 @@ declare module '@tanstack/react-router' {
       path: '/reports'
       fullPath: '/admin/reports'
       preLoaderRoute: typeof AdminReportsRouteImport
+      parentRoute: typeof AdminRouteRoute
+    }
+    '/admin/serials': {
+      id: '/admin/serials'
+      path: '/serials'
+      fullPath: '/admin/serials'
+      preLoaderRoute: typeof AdminSerialsRouteImport
       parentRoute: typeof AdminRouteRoute
     }
     '/auth/delete-account': {
@@ -947,6 +966,7 @@ interface AdminRouteRouteChildren {
   AdminEventsRoute: typeof AdminEventsRoute
   AdminNoticeRoute: typeof AdminNoticeRoute
   AdminReportsRoute: typeof AdminReportsRoute
+  AdminSerialsRoute: typeof AdminSerialsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
@@ -961,6 +981,7 @@ const AdminRouteRouteChildren: AdminRouteRouteChildren = {
   AdminEventsRoute: AdminEventsRoute,
   AdminNoticeRoute: AdminNoticeRoute,
   AdminReportsRoute: AdminReportsRoute,
+  AdminSerialsRoute: AdminSerialsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 

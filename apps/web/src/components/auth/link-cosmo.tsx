@@ -23,7 +23,7 @@ import {
   isAccountErrorCode,
 } from "@/lib/universal/errors/accounts";
 import {
-  DISCORD_INVITE_URL,
+  DISCORD_URL,
   type PropsWithClassName,
   artistColors,
   cn,
@@ -418,7 +418,7 @@ function LinkRefusal({ error, className }: LinkRefusalProps) {
             markup={{
               link: ({ children }) => (
                 <a
-                  href={DISCORD_INVITE_URL}
+                  href={DISCORD_URL}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-cosmo hover:underline dark:text-cosmo-text"

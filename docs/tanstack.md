@@ -54,10 +54,12 @@ Load the rows via `db.query.user.findMany(...)` (or `cosmoAccounts` with `with: 
 
 ## Data Fetching in Loaders
 
-- `await context.queryClient.ensureQueryData(...)` for data the route **needs** to render.
-- `void context.queryClient.prefetchQuery(...)` for nice-to-have data that can stream in (e.g. global layout data prefetched in `__root`).
+- `await context.queryClient.query({ ...options, staleTime: "static" })` for data the route **needs** to render. `"static"` returns cached data without refetching, so the loader only blocks when nothing is cached; errors reach the route's `errorComponent`.
+- `void context.queryClient.query(options).catch(noop)` for nice-to-have data that can stream in (e.g. global layout data prefetched in `__root`). Use `infiniteQuery` for infinite queries. `noop` comes from `@tanstack/react-query`.
 
-Optional, non-blocking widgets (navbar status, etc.) use `useSuspenseQuery` wrapped in their own `<ErrorBoundary>` + `<Suspense fallback={null}>`, with the query prefetched in the `__root` loader — not a non-suspense `useQuery`. See `system-status` for the canonical shape. An admin/editor page that reads the same value should `ensureQueryData` it in its own route loader and use `useSuspenseQuery` too.
+`query()` applies the options' `select` to the returned value, so a loader receives the same shape `useSuspenseQuery` does. `ensureQueryData`, `prefetchQuery`, `fetchQuery` and their infinite variants are deprecated.
+
+Optional, non-blocking widgets (navbar status, etc.) use `useSuspenseQuery` wrapped in their own `<ErrorBoundary>` + `<Suspense fallback={null}>`, with the query prefetched in the `__root` loader — not a non-suspense `useQuery`. See `system-status` for the canonical shape. An admin/editor page that reads the same value should `query` it (with `staleTime: "static"`) in its own route loader and use `useSuspenseQuery` too.
 
 ### Loader ↔ Component Sync
 

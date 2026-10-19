@@ -13,15 +13,21 @@ import { useState } from "react";
 
 export const Route = createFileRoute("/share-data")({
   beforeLoad: async ({ context }) => {
-    const user = await context.queryClient.ensureQueryData(currentAccountQuery);
+    const user = await context.queryClient.query({
+      ...currentAccountQuery,
+      staleTime: "static",
+    });
     if (!user) {
       throw redirect({ to: "/" });
     }
   },
   loader: async ({ context }) => {
     const [collections] = await Promise.all([
-      context.queryClient.ensureQueryData(scrapeCandidatesQuery),
-      context.queryClient.ensureQueryData(artistsQuery),
+      context.queryClient.query({
+        ...scrapeCandidatesQuery,
+        staleTime: "static",
+      }),
+      context.queryClient.query({ ...artistsQuery, staleTime: "static" }),
     ]);
 
     return { collections };

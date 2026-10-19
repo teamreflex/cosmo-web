@@ -12,7 +12,7 @@ export const Route = createFileRoute("/admin/notice")({
     requireStaffPage(context.role, { site: ["manage"] }),
   notFoundComponent: AdminNoAccess,
   loader: async ({ context }) => {
-    await context.queryClient.ensureQueryData(noticeQuery);
+    await context.queryClient.query({ ...noticeQuery, staleTime: "static" });
   },
   head: () =>
     defineHead({ title: m.admin_notice_title(), canonical: "/admin/notice" }),

@@ -1,5 +1,6 @@
 import { useUpdatePins } from "@/hooks/use-profile-pins";
 import { m } from "@/i18n/messages";
+import { formatError } from "@/lib/client/errors";
 import { $pinObjekt, $unpinObjekt } from "@/lib/functions/collection";
 import { track } from "@/lib/utils";
 import { IconLoader2, IconPin, IconPinnedOff } from "@tabler/icons-react";
@@ -35,6 +36,7 @@ function PinButton(props: ButtonProps) {
       updatePins((pins) => [pin, ...pins]);
       toast.success(m.toast_pinned({ collectionId: props.collectionId }));
     },
+    onError: (error) => toast.error(formatError(error)),
   });
 
   function handleClick() {

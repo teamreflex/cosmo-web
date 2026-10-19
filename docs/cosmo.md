@@ -15,6 +15,28 @@ A `collection` represents a type of objekt. Properties on a collection:
   - the first digit can inform the class: 1 is either Welcome or First class, 2 is Special class, 3 is Double class, 4 is Premier class
   - Welcome class objekts are always 100Z
 
+### Unobtainable collections
+
+Some collections can no longer be obtained: event rewards that were only handed out once, test collections and minting errors. `collection.unobtainable` marks them, and they are left out of progress totals and the progress leaderboard. The flag is set by hand once a collection is known to be unobtainable; new collections are always inserted as obtainable. Flag one with `UPDATE collection SET unobtainable = true WHERE slug = '...'` on the indexer database: triggers move its owners' leaderboard counts, and the Typesense importer picks it up on its next tick.
+
+The database column is the source of truth. This copy of the 81 collections flagged so far is for reference:
+
+- Test collection: `atom01-artmstest-100u`
+- Minting errors: `atom01-jinsoul-109a`, `binary01-mayu-101a`, `binary01-mayu-104a`, `binary01-mayu-105a`, `binary01-mayu-106a`, `binary01-mayu-107a`, `binary01-mayu-108a`
+- ARTMS 1st anniversary events: `atom01-heejin-346z`, `atom01-haseul-346z`, `atom01-kimlip-346z`, `atom01-jinsoul-346z`, `atom01-choerry-346z`
+- Chilsung event: `atom01-heejin-351z`, `atom01-haseul-351z`, `atom01-kimlip-351z`, `atom01-jinsoul-351z`, `atom01-choerry-351z`
+- Virtual Angel events: `binary01-heejin-310z`, `binary01-haseul-310z`, `binary01-kimlip-310z`, `binary01-jinsoul-310z`, `binary01-choerry-310z`
+- Lunar Theory events: `cream01-haseul-330z`, `cream01-heejin-330z`, `cream01-kimlip-330z`, `cream01-jinsoul-330z`, `cream01-choerry-330z`
+- Burn event: `cream01-heejin-333z`, `cream01-haseul-333z`, `cream01-kimlip-333z`, `cream01-jinsoul-333z`, `cream01-choerry-333z`
+- Zero class: `atom01-triples-000z`, `atom01-aaa-000z`, `atom01-kre-000z`
+- Self-made events: `divine01-seoyeon-312z`, `divine01-hyerin-312z`, `divine01-jiwoo-312z`, `divine01-chaeyeon-312z`, `divine01-yooyeon-312z`, `divine01-soomin-312z`, `divine01-nakyoung-312z`, `divine01-yubin-312z`, `divine01-kaede-312z`, `divine01-dahyun-312z`, `divine01-kotone-312z`, `divine01-yeonji-312z`, `divine01-nien-312z`, `divine01-sohyun-312z`, `divine01-xinyu-312z`, `divine01-mayu-312z`, `divine01-lynn-312z`, `divine01-joobin-312z`, `divine01-hayeon-312z`, `divine01-shion-312z`, `divine01-chaewon-312z`, `divine01-sullin-312z`, `divine01-seoah-312z`, `divine01-jiyeon-312z`
+- Love Poison streaming event: `divine01-haseul-331z`
+- Can You Entertain streaming event: `divine01-kimlip-337z`
+- Ring of Chaos streaming event: `divine01-jinsoul-338z`
+- Pressure streaming event: `divine01-choerry-339z`
+- Savior streaming event: `divine01-heejin-340z`
+- 22/05/26 minting error: `binary01-hyerin-118a`, `binary01-seoyeon-119a`, `binary01-dahyun-117a`, `binary01-chaeyeon-120a`, `binary01-yubin-118a`, `binary01-nakyoung-118a`, `binary01-kaede-120a`, `binary01-nien-120a`, `binary01-sohyun-103a`, `binary01-hyerin-120a`, `binary01-nien-118a`, `binary01-mayu-119a`, `binary01-yooyeon-118a`, `binary01-kotone-117a`, `binary01-xinyu-120a`, `atom01-heejin-111a`
+
 ## Objekts
 
 An `objekt` is a single NFT on the Abstract blockchain. Every objekt within a collection has a unique serial number.
@@ -28,24 +50,25 @@ An `objekt` is a single NFT on the Abstract blockchain. Every objekt within a co
 
 COSMO numbers objekts differently per kind:
 
-- **Online (Z) objekts are minted on the fly.** Token id is a global mint counter and serial is a per-collection mint counter, so serial order follows token id order and every serial has a minted objekt. Grid rewards mint the same way; there are no reserved pools for Z. A serial gap in an Abstract-era online collection means a row is missing from our database. Polygon-era gaps are permanent: objekts spun on Polygon were never re-minted when COSMO migrated chains, so counting serials from 1 is wrong for old collections (e.g. cream01-mobius-club-321z has 8,889 rows but a max serial of 12,483).
-- **Offline (A) objekts are reserved as contiguous token-id blocks per print batch** before the physical is scanned. Inside a block, `id - serial` is constant; redemption date is irrelevant because the mapping is fixed at reservation. Most collections have a couple of print batches. Reprints get a second block later (every atom02-*-352a got one ~2,000 ids after the first), with the first batch's unredeemed tail in between.
-- **Coupon sets are the only Z exception.** A block of ids and serials is allocated when QR coupons are printed and minted on redemption, so they follow the offline block model and unredeemed coupons leave holes. Known sets: ARTMS `binary01-{choerry,haseul,heejin,jinsoul,kimlip}-312z`; OEC `atom01-{choerry,jinsoul,kimlip}-{213z,338z}`; all 13 `cream01-*-308z`; `cream02-{hayeon,jiwoo,jiyeon,kotone,xinyu,yeonji}-315z`. The collection number is not a signal — regular collections use 308/312/315/338 too.
-- COSMO's counter is not perfectly monotonic: serials occasionally permute within a same-second mint batch, regress, spike, or get burned without a mint. These are bounded and are not reservations.
+- **Online (Z) objekts are minted on the fly.** Token id is a global mint counter and serial is a per-collection mint counter, so serial order follows token id order. Grid rewards mint the same way; there are no reserved pools for Z. Polygon-era gaps are permanent: objekts spun on Polygon were never re-minted when COSMO migrated chains, so counting serials from 1 is wrong for old collections (e.g. cream01-mobius-club-321z has 8,889 rows but a max serial of 12,483).
+- **Offline (A) objekts are reserved as token-id ranges per print batch** before the physical is scanned. A reservation shows up as a range of ids with no online mints in it, allocated in 100-id chunks (some in 50s); a range shared by several collections splits between them on 50s. Inside a chunk `id - serial` is constant, and serials carry on across a collection's chunks in reservation order, counting ids nobody has scanned yet. Reprints get a later range (every atom02-*-352a got one ~2,000 ids after the first).
+- **Coupon sets are the only Z exception.** A range of ids and serials is allocated when QR coupons are printed and minted on redemption, so they follow the offline model and unredeemed coupons leave holes. Known sets: ARTMS `binary01-{choerry,haseul,heejin,jinsoul,kimlip}-312z`; OEC `atom01-{choerry,jinsoul,kimlip}-{213z,338z}`; `cream02-{hayeon,jiwoo,jiyeon,kotone,xinyu,yeonji}-315z`; `atom02-{chaewon,hayeon,jiyeon,kotone,lynn,nien,shion,yooyeon}-375z`. `cream01-*-308z` were coupon sets too but finished before the cutoff. The collection number is not a signal — regular collections use 312/315/338/375 too.
+- **Claim blocks mix the two.** COSMO can allocate a digital collection a block of serials in 100-id chunks, like a print run, and mint them as claims over the following months while ordinary mints carry on above it. The block's whole width counts towards later serials, claimed or not. Each atom02-{heejin,haseul,kimlip,jinsoul,choerry}-101z got 400 on 2026-07-15. They're listed in `CLAIM_BLOCKS` in `@apollo/serial-estimation`, and `scripts/claim-blocks.ts` finds new ones.
+- COSMO's counter is not perfectly monotonic. Serials occasionally permute within one mint transaction (±1 on ~0.2% of pairs), and COSMO sometimes assigns a serial without ever minting the objekt, mostly on incident days. Neither shows up on-chain.
 
 ### Serial sources
 
-The indexer stores `objektNo` from COSMO's token metadata. COSMO's v1 API (`api.cosmo.fans/objekt/v1/*`) is gone, and the v3 metadata endpoint (`/bff/v3/objekts/nft-metadata/{id}`) has no serial — the `#N` in its `name` is the token id — so the v3 normalization in `packages/cosmo` stores serial `0`. Objekts with token ids above 24,582,445 therefore have no real serial. Nothing on-chain carries one either: `mint`/`mintBatch` take no serial and no event emits it, and v3 returns `OBJEKT_NOT_FOUND` for reserved-but-unminted ids. The remaining possible sources are the endpoint the COSMO app itself renders serials from (capturable via `apps/proxy`) or MODHAUS restoring `objektNo` in v3.
+The indexer stores `objektNo` from COSMO's token metadata. COSMO's v1 API (`api.cosmo.fans/objekt/v1/*`) is gone, and the v3 metadata endpoint (`/bff/v3/objekts/nft-metadata/{id}`) has no serial — the `#N` in its `name` is the token id — so the v3 normalization in `packages/cosmo` stores serial `0`. The last real serial was minted at 2026-06-04 08:07:05 UTC (`SERIAL_CUTOFF` in `@apollo/serial-estimation`); the cutoff is a mint time rather than a token id because physicals are scanned long after their ids are reserved. Nothing on-chain carries a serial: `mint`/`mintBatch` take none and no event emits one. The remaining sources are the COSMO app itself (users reading their own objekts, or traffic captured via `apps/proxy`) or MODHAUS restoring `objektNo` in v3.
 
-### Estimating serials
+### Estimated serials
 
-Measured against the real serials below 24,582,445:
+Every serial on an objekt minted after the cutoff is an estimate from `@apollo/serial-estimation`, unless `serial_confirmation` holds its real serial. There is no per-row marker: the cutoff is the marker.
 
-- Predict from the previous known serial (the anchor) in the same collection, never by ranking from 1.
-  - Offline: `anchor + (id gap) - (foreign minted rows between)`. Abstract-era physicals are 99.95% exact from one anchor and 100% when the anchors on both sides agree. Cap the distance: with fewer than 100 unminted ids between anchor and target there were no misses; past ~1,000 the target is almost always in a different print batch.
-  - Online: `anchor + (own rows between)` is ~99.5% exact for Abstract-native collections. The misses are same-second batch permutations (errors of −1/+2) and counter spikes, so validate an anchor against its predecessors before using it.
-- A block with no anchor that follows an online mint almost always starts at the previous minted id + 1. After another physical block, the gap is that block's unredeemed tail and shrinks as redemptions land.
-- Burned serials make online estimates drift slightly low over time, and this is undetectable on-chain. Store an estimated/exact marker with any estimate.
+- Digital collections are numbered in token-id order, continuing from the last real or confirmed serial, or from #1 for a collection that started after the cutoff.
+- Physical collections and coupon sets are numbered by position in their chunk, from a known serial in the same chunk, else chained through the collection's other chunks. `serial_reservation` holds the reserved ranges: the backfill seeds it from every online mint, and the processor keeps it equal to that: an online mint landing 20 or more ids above the highest one so far opens a range, and a late online mint (minted after ids above it) splits the range it lands in.
+- `serial_confirmation` holds real serials reported by users, entered by staff at `/admin/serials`. A confirmation fixes its objekt and re-anchors the rest of the collection; `apps/schedules` applies new ones every 5 minutes.
+- The indexer sets each new objekt's serial as it inserts it and never renumbers existing rows. `apps/schedules` recomputes every collection with an objekt minted in the last day, daily at 08:00 Pacific/Auckland, which repairs what insertion can't, such as the objekts above a late digital mint. A collection with nothing new is only recomputed when a confirmation lands in it.
+- Measured by hiding real serials after a pretend cutoff (`packages/serial-estimation/scripts/accuracy.ts`): physicals are ~99% exact, digital collections that started after the cutoff ~98.5% exact and 99.7% within ±2, and older digital collections drift lower over months (95% exact, 99% within ±2 five months out) because of serials COSMO assigned without minting. One confirmation removes the drift before it.
 
 ## Grids
 

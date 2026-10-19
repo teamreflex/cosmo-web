@@ -19,19 +19,19 @@ export const Route = createFileRoute("/api/objekts/metadata/$slug/")({
        * Fetches metadata about a collection.
        */
       GET: async ({ params }) => {
-        const [collection, data, priceStats] = await Promise.all([
+        // one query per pool at a time: the indexer count beside the event read
+        const [collection, data] = await Promise.all([
           fetchCollection(params.slug),
           fetchEventForCollection(params.slug),
-          fetchPriceStats(params.slug),
         ]);
-
         return Response.json(
           {
             total: collection.total,
             transferable: collection.transferable,
             percentage: collection.percentage,
+            unobtainable: collection.unobtainable,
             data,
-            priceStats,
+            priceStats: await fetchPriceStats(params.slug),
           } satisfies ObjektMetadata,
           {
             headers: cacheHeaders({
@@ -52,6 +52,7 @@ async function fetchCollection(slug: string) {
   const result = await indexer
     .select({
       createdAt: collections.createdAt,
+      unobtainable: collections.unobtainable,
       total: sql`COUNT(*)::int`.mapWith(Number),
       transferable: sql`COUNT(CASE WHEN transferable = true AND ${
         objekts.owner
@@ -68,13 +69,14 @@ async function fetchCollection(slug: string) {
     .from(collections)
     .leftJoin(objekts, eq(collections.id, objekts.collectionId))
     .where(eq(collections.slug, slug))
-    .groupBy(collections.id, collections.createdAt)
+    .groupBy(collections.id, collections.createdAt, collections.unobtainable)
     .comment({ fn: "fetchCollectionMetadata" });
 
   const collection = result[0];
   if (!collection) {
     return {
       createdAt: new Date(),
+      unobtainable: false,
       total: 0,
       transferable: 0,
       percentage: 0,

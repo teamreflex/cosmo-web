@@ -1,9 +1,12 @@
-import { remember } from "@/lib/server/cache.server";
 import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts.server";
 import { indexer } from "@/lib/server/db/indexer";
 import type { Collection } from "@/lib/server/db/indexer/schema";
-import { collections, objekts } from "@/lib/server/db/indexer/schema";
-import { withSpinMonth } from "@/lib/server/objekts/filters.server";
+import {
+  collections,
+  objekts,
+  progressHistogram,
+  progressLeaderboard,
+} from "@/lib/server/db/indexer/schema";
 import {
   fetchLeaderboard,
   fetchProgress,
@@ -12,15 +15,16 @@ import {
 import type {
   ArtistStats,
   LeaderboardItem,
+  MemberCompletion,
   ProcessingArtistStats,
+  ProgressRank,
   SeasonMatrix,
   SeasonProgress,
 } from "@/lib/universal/progress";
-import { unobtainables } from "@/lib/unobtainables";
 import { validOnlineTypes } from "@apollo/cosmo/types/common";
 import { Addresses, isEqual } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
-import { and, count, eq } from "drizzle-orm";
+import { and, count, eq, inArray, notInArray, sql } from "drizzle-orm";
 import * as z from "zod";
 
 type PartialObjekt = Awaited<ReturnType<typeof fetchProgress>>;
@@ -35,11 +39,17 @@ export const $fetchProgressBreakdown = createServerFn({ method: "GET" })
       address: z.string(),
     }),
   )
-  .handler(async ({ data }) => {
-    const [totals, progress] = await Promise.all([
-      fetchTotal({ member: data.member }),
-      fetchProgress(data.address.toLowerCase(), data.member),
-    ]);
+  .handler(async ({ data }): Promise<SeasonProgress[]> => {
+    // SPIN holds millions of objekts, so its progress isn't supported
+    if (isEqual(data.address, Addresses.SPIN)) {
+      return [];
+    }
+
+    const totals = await fetchTotal({ member: data.member });
+    const progress = await fetchProgress(
+      data.address.toLowerCase(),
+      data.member,
+    );
 
     // dynamically build the matrix based on the data instead of hardcoding seasons and classes
     const classes = new Set<string>();
@@ -59,7 +69,6 @@ export const $fetchProgressBreakdown = createServerFn({ method: "GET" })
 
 /**
  * Fetch the progress leaderboard for a given member and filters.
- * Cached for 24 hours, resets 9am KST (UTC+9).
  */
 export const $fetchProgressLeaderboard = createServerFn({ method: "GET" })
   .validator(
@@ -73,44 +82,147 @@ export const $fetchProgressLeaderboard = createServerFn({ method: "GET" })
     }),
   )
   .handler(async ({ data }) => {
-    const key = [data.member, data.onlineType, data.season]
-      .filter(Boolean)
-      .join("-");
+    const totals = await fetchTotal(data);
+    const leaderboard = await fetchLeaderboard(data);
 
-    // cache until next 9am KST (UTC+9), i.e. midnight UTC
-    const now = Date.now();
-    const msInDay = 86_400_000;
-    const nextMidnightUTC = Math.ceil(now / msInDay) * msInDay;
-    const ttl = Math.floor((nextMidnightUTC - now) / 1000) || 86_400;
+    // fetch profiles for each address
+    const addressMap = await fetchKnownAddresses(
+      leaderboard.map((a) => a.owner),
+    );
 
-    return await remember(`leaderboard:${key}`, ttl, async () => {
-      const [totals, leaderboard] = await Promise.all([
-        fetchTotal(data),
-        fetchLeaderboard(data),
-      ]);
-
-      // fetch profiles for each address
-      const addressMap = await fetchKnownAddresses(
-        leaderboard.map((a) => a.owner),
-      );
-
-      // map the nickname onto the results
-      const results = leaderboard.map((row) => {
-        const known = addressMap.get(row.owner.toLowerCase());
-
-        return {
-          count: row.count,
-          nickname: known?.username ?? row.owner.substring(0, 8),
-          address: row.owner,
-          isAddress: known === undefined,
-        };
-      }) satisfies LeaderboardItem[];
+    // map the nickname onto the results
+    const results = leaderboard.map((row) => {
+      const known = addressMap.get(row.owner.toLowerCase());
 
       return {
-        total: totals.filter((c) => !unobtainables.includes(c.slug)).length,
-        leaderboard: results,
+        // ties share the rank of the first row with their count, as $fetchProgressRank counts
+        rank: leaderboard.findIndex((r) => r.count === row.count) + 1,
+        count: row.count,
+        nickname: known?.username ?? row.owner.substring(0, 8),
+        address: row.owner,
+        isAddress: known === undefined,
       };
-    });
+    }) satisfies LeaderboardItem[];
+
+    return {
+      total: totals.filter((c) => !c.unobtainable).length,
+      leaderboard: results,
+    };
+  });
+
+/**
+ * Fetch where an address places on a member's leaderboard for the given filters.
+ */
+export const $fetchProgressRank = createServerFn({ method: "GET" })
+  .validator(
+    z.object({
+      address: z.string(),
+      member: z.string(),
+      onlineType: z.enum(validOnlineTypes).nullish().default(null),
+      season: z.string().nullish().default(null),
+    }),
+  )
+  .handler(async ({ data }): Promise<ProgressRank | null> => {
+    if (isEqual(data.address, Addresses.SPIN)) {
+      return null;
+    }
+
+    // the owner's count against the histogram of every count, so ties share a rank
+    const [standing] = await indexer
+      .select({
+        count: progressLeaderboard.count,
+        collectors: sql<number>`sum(${progressHistogram.owners})`.mapWith(
+          Number,
+        ),
+        above:
+          sql<number>`coalesce(sum(${progressHistogram.owners}) filter (where ${progressHistogram.count} > ${progressLeaderboard.count}), 0)`.mapWith(
+            Number,
+          ),
+      })
+      .from(progressLeaderboard)
+      .innerJoin(
+        progressHistogram,
+        and(
+          eq(progressHistogram.member, progressLeaderboard.member),
+          eq(progressHistogram.season, progressLeaderboard.season),
+          eq(progressHistogram.onOffline, progressLeaderboard.onOffline),
+        ),
+      )
+      .where(
+        and(
+          eq(progressLeaderboard.member, data.member),
+          eq(progressLeaderboard.season, data.season ?? ""),
+          eq(progressLeaderboard.onOffline, data.onlineType ?? ""),
+          eq(progressLeaderboard.owner, data.address.toLowerCase()),
+        ),
+      )
+      .groupBy(progressLeaderboard.count)
+      .comment({ fn: "fetchProgressRank" });
+
+    // no collections of the member for the filters
+    if (standing === undefined) {
+      return null;
+    }
+
+    return {
+      rank: standing.above + 1,
+      collectors: standing.collectors,
+      count: standing.count,
+    };
+  });
+
+/**
+ * Fetch an address's completion of every member it holds collections of.
+ */
+export const $fetchMemberCompletion = createServerFn({ method: "GET" })
+  .validator(z.object({ address: z.string() }))
+  .handler(async ({ data }): Promise<MemberCompletion[]> => {
+    if (isEqual(data.address, Addresses.SPIN)) {
+      return [];
+    }
+
+    const owned = await indexer
+      .select({
+        member: progressLeaderboard.member,
+        count: progressLeaderboard.count,
+      })
+      .from(progressLeaderboard)
+      .where(
+        and(
+          eq(progressLeaderboard.owner, data.address.toLowerCase()),
+          eq(progressLeaderboard.season, ""),
+          eq(progressLeaderboard.onOffline, ""),
+        ),
+      )
+      .comment({ fn: "fetchMemberCompletion" });
+
+    if (owned.length === 0) {
+      return [];
+    }
+
+    // the same collections progress_leaderboard counts
+    const totals = await indexer
+      .select({ member: collections.member, total: count() })
+      .from(collections)
+      .where(
+        and(
+          inArray(
+            collections.member,
+            owned.map((row) => row.member),
+          ),
+          notInArray(collections.class, ["Welcome", "Zero"]),
+          eq(collections.unobtainable, false),
+        ),
+      )
+      .groupBy(collections.member)
+      .comment({ fn: "fetchMemberCompletion" });
+
+    const totalMap = new Map(totals.map((row) => [row.member, row.total]));
+    return owned.map((row) => ({
+      member: row.member,
+      count: row.count,
+      total: totalMap.get(row.member) ?? row.count,
+    }));
   });
 
 /**
@@ -118,8 +230,10 @@ export const $fetchProgressLeaderboard = createServerFn({ method: "GET" })
  */
 export const $fetchArtistStatsByAddress = createServerFn({ method: "GET" })
   .validator(z.object({ address: z.string() }))
-  .handler(async ({ data }) => {
-    const isSpin = isEqual(data.address, Addresses.SPIN);
+  .handler(async ({ data }): Promise<ArtistStats[]> => {
+    if (isEqual(data.address, Addresses.SPIN)) {
+      return [];
+    }
 
     const stats = await indexer
       .select({
@@ -131,12 +245,7 @@ export const $fetchArtistStatsByAddress = createServerFn({ method: "GET" })
       })
       .from(objekts)
       .innerJoin(collections, eq(objekts.collectionId, collections.id))
-      .where(
-        and(
-          eq(objekts.owner, data.address.toLowerCase()),
-          ...withSpinMonth(isSpin, objekts.receivedAt),
-        ),
-      )
+      .where(eq(objekts.owner, data.address.toLowerCase()))
       .groupBy(
         collections.season,
         collections.member,
@@ -232,15 +341,14 @@ function zipResults(
 
     // exclude unobtainable collections from total count
     const totalCollections = collectionsInScope.filter(
-      (c) => !unobtainables.includes(c.slug),
+      (c) => !c.unobtainable,
     ).length;
 
     // get unobtainable collections separately to be added in later
     const { progressTotal, unobtainableTotal } = ownedInScope.reduce(
       (acc, c) => {
-        const isUnobtainable = unobtainables.includes(c.slug);
-        acc.progressTotal += isUnobtainable ? 0 : 1;
-        acc.unobtainableTotal += isUnobtainable ? 1 : 0;
+        acc.progressTotal += c.unobtainable ? 0 : 1;
+        acc.unobtainableTotal += c.unobtainable ? 1 : 0;
         return acc;
       },
       { progressTotal: 0, unobtainableTotal: 0 },
@@ -254,7 +362,7 @@ function zipResults(
       collections: collectionsInScope.map((c) => ({
         collection: c,
         obtained: ownedInScope.some((p) => p.collectionId === c.id),
-        unobtainable: unobtainables.includes(c.slug),
+        unobtainable: c.unobtainable,
       })),
     };
   });

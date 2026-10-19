@@ -7,3 +7,5 @@ export * from "./listEventOutbox.model";
 export * from "./member.model";
 export * from "./collectionStats.model";
 export * from "./collectionMarketStats.model";
+export * from "./serialReservation.model";
+export * from "./serialConfirmation.model";

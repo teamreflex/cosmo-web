@@ -8,19 +8,22 @@ import { defineHead } from "@/lib/meta";
 import { fetchObjektsWithComoQuery } from "@/lib/queries/como";
 import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { ClientOnly, createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 
 export const Route = createFileRoute("/@{$username}/como")({
   component: RouteComponent,
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
   loader: async ({ context }) => {
-    const target = await context.queryClient.ensureQueryData(
-      context.targetAccountOptions,
-    );
+    const target = await context.queryClient.query({
+      ...context.targetAccountOptions,
+      staleTime: "static",
+    });
 
-    const data = await context.queryClient.ensureQueryData(
-      fetchObjektsWithComoQuery(target.cosmo.address),
-    );
+    const data = await context.queryClient.query({
+      ...fetchObjektsWithComoQuery(target.cosmo.address),
+      staleTime: "static",
+    });
 
     return { cosmo: target.cosmo, data };
   },
@@ -55,9 +58,8 @@ function RouteComponent() {
 }
 
 function PendingComponent() {
-  const cells = Array.from(
-    { length: getCellCount(new Date()) },
-    (_, i) => i + 1,
+  const [cells] = useState(() =>
+    Array.from({ length: getCellCount(new Date()) }, (_, i) => i + 1),
   );
 
   return (

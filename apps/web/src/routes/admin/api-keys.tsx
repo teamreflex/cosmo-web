@@ -14,7 +14,7 @@ export const Route = createFileRoute("/admin/api-keys")({
     requireStaffPage(context.role, { site: ["manage"] }),
   notFoundComponent: AdminNoAccess,
   loader: async ({ context }) => {
-    await context.queryClient.ensureQueryData(apiKeysQuery);
+    await context.queryClient.query({ ...apiKeysQuery, staleTime: "static" });
   },
   head: () =>
     defineHead({

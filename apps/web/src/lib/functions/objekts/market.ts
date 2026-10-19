@@ -82,22 +82,20 @@ export const $fetchMarket = createServerFn({ method: "GET" })
         .limit(LIMIT + 1),
     );
 
-    const [rows, totals] = await Promise.all([
-      indexer
-        .with(page)
-        .select({
-          ...getColumns(collections),
-          floorUsd: page.floorUsd,
-          listingCount: page.listingCount,
-          lastListedAt: page.lastListedAt,
-        })
-        .from(page)
-        .innerJoin(collections, eq(collections.id, page.id))
-        .orderBy(...orderBy(sorting, page))
-        .comment({ fn: "fetchMarket" }),
-      // the header only reads the first page's totals
-      data.cursor === undefined ? fetchTotals(where) : null,
-    ]);
+    const rows = await indexer
+      .with(page)
+      .select({
+        ...getColumns(collections),
+        floorUsd: page.floorUsd,
+        listingCount: page.listingCount,
+        lastListedAt: page.lastListedAt,
+      })
+      .from(page)
+      .innerJoin(collections, eq(collections.id, page.id))
+      .orderBy(...orderBy(sorting, page))
+      .comment({ fn: "fetchMarket" });
+    // the header only reads the first page's totals
+    const totals = data.cursor === undefined ? await fetchTotals(where) : null;
 
     const items = rows.slice(0, LIMIT);
     const last = items.at(-1);

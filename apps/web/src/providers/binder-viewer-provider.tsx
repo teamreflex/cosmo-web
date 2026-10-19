@@ -3,7 +3,7 @@ import { BinderViewerContext } from "@/hooks/use-open-binder";
 import type { BinderViewerOrigin } from "@/hooks/use-open-binder";
 import { binderQuery } from "@/lib/queries/binders";
 import type { BinderPreview } from "@/lib/universal/binders";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, noop } from "@tanstack/react-query";
 import { getRouteApi, useMatches, useNavigate } from "@tanstack/react-router";
 import { startTransition, useState } from "react";
 import type { ReactNode } from "react";
@@ -103,7 +103,9 @@ export function BinderViewerProvider({
   }
 
   function prefetch(preview: BinderPreview) {
-    void queryClient.prefetchQuery(binderQuery(preview.userId, preview.slug));
+    void queryClient
+      .query(binderQuery(preview.userId, preview.slug))
+      .catch(noop);
   }
 
   function close() {

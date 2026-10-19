@@ -48,37 +48,35 @@ function matchesSearch(t: typeof cosmoLinkAudit, search: string) {
  */
 export async function fetchCosmoLinkHistory(input: CosmoLinkHistoryQueryInput) {
   const { search } = input;
-  const [rows, total] = await Promise.all([
-    db.query.cosmoLinkAudit.findMany({
-      where: {
-        id: { lt: input.cursor ?? EmptyFilter },
-        RAW:
-          search === undefined ? EmptyFilter : (t) => matchesSearch(t, search),
-      },
-      columns: {
-        id: true,
-        createdAt: true,
-        userId: true,
-        event: true,
-        reason: true,
-      },
-      with: {
-        cosmoAccount: { columns: { username: true, address: true } },
-        user: { columns: namedUserColumns },
-        staff: staffUserFields,
-      },
-      orderBy: { id: "desc" },
-      limit: HISTORY_PAGE_SIZE,
-    }),
+  const rows = await db.query.cosmoLinkAudit.findMany({
+    where: {
+      id: { lt: input.cursor ?? EmptyFilter },
+      RAW: search === undefined ? EmptyFilter : (t) => matchesSearch(t, search),
+    },
+    columns: {
+      id: true,
+      createdAt: true,
+      userId: true,
+      event: true,
+      reason: true,
+    },
+    with: {
+      cosmoAccount: { columns: { username: true, address: true } },
+      user: { columns: namedUserColumns },
+      staff: staffUserFields,
+    },
+    orderBy: { id: "desc" },
+    limit: HISTORY_PAGE_SIZE,
+  });
+  const total =
     input.cursor === undefined
-      ? db.$count(
+      ? await db.$count(
           cosmoLinkAudit,
           search === undefined
             ? undefined
             : matchesSearch(cosmoLinkAudit, search),
         )
-      : undefined,
-  ]);
+      : undefined;
 
   const last = rows.at(-1);
   return {

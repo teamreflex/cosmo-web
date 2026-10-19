@@ -1,36 +1,33 @@
 import { remember } from "@/lib/server/cache.server";
-import { fetchBlockNumber, runAbstract } from "@/lib/server/http.server";
+import { fetchBlockTimestamp, runAbstract } from "@/lib/server/http.server";
 import { getRequestSignal } from "@/lib/server/request.server";
 import { fetchProcessorHeight } from "@/lib/server/system.server";
 import type { SystemStatus } from "@/lib/universal/system";
 import { createServerFn } from "@tanstack/react-start";
+import { differenceInMinutes } from "date-fns";
 
 /**
- * Calculate status for indexer height.
- * - within 6000 blocks / 30 minutes: normal
- * - over 6000 but within 12000 blocks / 60 minutes: degraded
- * - more than 12000 blocks / 60 minutes: down
+ * Calculate status from the age of the indexer's latest block.
+ * - within 30 minutes: normal
+ * - within 60 minutes: degraded
+ * - more than 60 minutes: down
  */
 export const $fetchSystemStatus = createServerFn().handler(async () => {
   const signal = getRequestSignal();
-  return await remember(`system-status`, 60 * 5, async () => {
-    const [blockHeight, processorHeight] = await Promise.all([
-      runAbstract(fetchBlockNumber(), signal),
-      fetchProcessorHeight(),
-    ]);
+  return await remember(`system-status:v2`, 60 * 2, async () => {
+    const timestamp = await runAbstract(
+      fetchBlockTimestamp(await fetchProcessorHeight()),
+      signal,
+    );
 
-    // calculate processor status
-    const diff = blockHeight - processorHeight;
+    const age = differenceInMinutes(new Date(), timestamp);
     const status: SystemStatus =
-      diff < 6000 ? "normal" : diff < 12000 ? "degraded" : "down";
+      age < 30 ? "normal" : age < 60 ? "degraded" : "down";
 
     return {
       processor: {
         status,
-        height: {
-          processor: processorHeight,
-          chain: blockHeight,
-        },
+        timestamp: timestamp.toISOString(),
       },
     };
   });

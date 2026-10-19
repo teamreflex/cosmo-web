@@ -30,10 +30,11 @@ export const Route = createFileRoute("/admin/audit")({
   notFoundComponent: AdminNoAccess,
   loader: async ({ context }) => {
     await Promise.all([
-      context.queryClient.ensureQueryData(auditStaffQuery),
-      context.queryClient.ensureInfiniteQueryData(
-        staffAuditQuery(context.auditFilters),
-      ),
+      context.queryClient.query({ ...auditStaffQuery, staleTime: "static" }),
+      context.queryClient.infiniteQuery({
+        ...staffAuditQuery(context.auditFilters),
+        staleTime: "static",
+      }),
     ]);
   },
   head: () =>

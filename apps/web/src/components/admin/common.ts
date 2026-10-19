@@ -8,6 +8,7 @@ import {
   IconDatabase,
   IconDisc,
   IconFlag,
+  IconHash,
   IconHistory,
   IconHome,
   IconKey,
@@ -97,6 +98,12 @@ export function getAdminItems(): AdminItem[] {
       title: m.admin_collections_title(),
       url: "/admin/collections",
       icon: IconCards,
+      permissions: [{ site: ["manage"] }],
+    },
+    {
+      title: m.admin_serials_title(),
+      url: "/admin/serials",
+      icon: IconHash,
       permissions: [{ site: ["manage"] }],
     },
     {

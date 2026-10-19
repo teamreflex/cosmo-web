@@ -58,19 +58,18 @@ export const $generateVerificationCode = createServerFn({ method: "POST" })
   .validator(generateVerificationCodeSchema)
   .handler(async ({ data, context }) => {
     const userId = context.session.user.id;
-    const [link, owner] = await Promise.all([
-      getCosmoAddress(db, userId),
-      db.query.cosmoAccounts.findFirst({
-        where: { address: data.address },
-        columns: {},
-        with: { user: { columns: linkOwnerColumns } },
-      }),
-    ]);
+    // the caller's own link and the picked address's link, in one read
+    const accounts = await db.query.cosmoAccounts.findMany({
+      where: { OR: [{ userId }, { address: data.address }] },
+      columns: { userId: true, address: true },
+      with: { user: { columns: linkOwnerColumns } },
+    });
 
-    if (link.kind === "linked") {
+    if (accounts.some((account) => account.userId === userId)) {
       throw new ExpectedError("cosmo_already_linked");
     }
 
+    const owner = accounts.find((account) => account.address === data.address);
     const refusal = cosmoLinkRefusal({
       callerId: userId,
       owner: owner?.user ?? null,

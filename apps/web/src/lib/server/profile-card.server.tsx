@@ -23,6 +23,7 @@ import type {
   ProfileCard,
   ProfileCardObjekt,
 } from "@/lib/universal/profile-card";
+import halvar from "@/styles/fonts/HalvarBreit-Bd.woff2?inline";
 import { Addresses, addr, isAddress, isEqual } from "@apollo/util";
 import dmSans from "@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2?inline";
 import jetbrainsMono from "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2?inline";
@@ -30,7 +31,6 @@ import { desc, eq, min } from "drizzle-orm";
 import { render } from "takumi-js";
 import { googleFonts } from "takumi-js/helpers";
 import { Renderer } from "takumi-js/node";
-import halvar from "../../../public/HalvarBreit-Bd.woff2?inline";
 
 /**
  * Gather everything a profile card shows: pinned objekts, or the most
@@ -49,27 +49,27 @@ export async function fetchProfileCard(
   const address = addr(account.cosmo.address);
   if (isEqual(address, Addresses.SPIN)) return undefined;
 
-  const [cardObjekts, objektCount, since] = await Promise.all([
-    fetchCardObjekts(identifier, address),
-    remember(`objekt-count:v1:${address}`, 60 * 60 * 24, () =>
-      indexer.$count(objekts, eq(objekts.owner, address)),
-    ),
-    remember(`first-transfer:v1:${address}`, 60 * 60 * 24 * 7, async () => {
-      const [row] = await indexer
-        .select({ at: min(transfers.timestamp) })
-        .from(transfers)
-        .where(eq(transfers.to, address));
-      return row?.at ?? null;
-    }),
-  ]);
-
   const name = profileIdentifier(account.cosmo);
   return {
     name,
     isAddress: isAddress(name),
-    objekts: cardObjekts,
-    objektCount,
-    since,
+    objekts: await fetchCardObjekts(identifier, address),
+    objektCount: await remember(
+      `objekt-count:v1:${address}`,
+      60 * 60 * 24,
+      () => indexer.$count(objekts, eq(objekts.owner, address)),
+    ),
+    since: await remember(
+      `first-transfer:v1:${address}`,
+      60 * 60 * 24 * 7,
+      async () => {
+        const [row] = await indexer
+          .select({ at: min(transfers.timestamp) })
+          .from(transfers)
+          .where(eq(transfers.to, address));
+        return row?.at ?? null;
+      },
+    ),
   };
 }
 

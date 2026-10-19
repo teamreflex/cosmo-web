@@ -1,11 +1,12 @@
 import { indexer } from "@/lib/server/db/indexer";
 import type { Collection } from "@/lib/server/db/indexer/schema";
-import { collections, objekts } from "@/lib/server/db/indexer/schema";
+import {
+  collections,
+  objekts,
+  progressLeaderboard,
+} from "@/lib/server/db/indexer/schema";
 import type { ValidOnlineType } from "@apollo/cosmo/types/common";
-import { Addresses, isEqual } from "@apollo/util";
-import { and, eq, inArray, not, notInArray, sql } from "drizzle-orm";
-import { unobtainables } from "../unobtainables";
-import { withSpinMonth } from "./objekts/filters.server";
+import { and, asc, desc, eq, notInArray } from "drizzle-orm";
 
 type FetchTotal = {
   member: string;
@@ -41,8 +42,6 @@ export async function fetchTotal({
  * Fetch unique collections the user owns for given member.
  */
 export async function fetchProgress(address: string, member: string) {
-  const isSpin = isEqual(address, Addresses.SPIN);
-
   return await indexer
     // ensure we only count each collection once
     .selectDistinctOn([objekts.collectionId], {
@@ -53,6 +52,7 @@ export async function fetchProgress(address: string, member: string) {
       season: collections.season,
       class: collections.class,
       onOffline: collections.onOffline,
+      unobtainable: collections.unobtainable,
     })
     .from(objekts)
     .innerJoin(collections, eq(objekts.collectionId, collections.id))
@@ -62,7 +62,6 @@ export async function fetchProgress(address: string, member: string) {
         eq(objekts.owner, address),
         // only operate on objekts of the given member
         eq(collections.member, member),
-        ...withSpinMonth(isSpin, objekts.receivedAt),
       ),
     )
     .orderBy(objekts.collectionId)
@@ -78,57 +77,30 @@ type FetchLeaderboard = {
 const LEADERBOARD_COUNT = 25;
 
 /**
- * Fetch top 25 for the given member.
- * TODO: optimize or refactor, it's blowing up the db
+ * Fetch the top 25 owners of distinct obtainable collections for the given member,
+ * read from the trigger-maintained leaderboard. Ties are ordered by address so the
+ * ranking stays stable between requests.
  */
 export async function fetchLeaderboard({
   member,
   onlineType,
   season,
 }: FetchLeaderboard) {
-  const collectionIds = (
-    await indexer
-      .select({ id: collections.id })
-      .from(collections)
-      .where(
-        and(
-          eq(collections.member, member),
-          notInArray(collections.class, ["Welcome", "Zero"]),
-          notInArray(collections.slug, unobtainables),
-          ...(onlineType !== null
-            ? [eq(collections.onOffline, onlineType)]
-            : []),
-          ...(season !== null ? [eq(collections.season, season)] : []),
-        ),
-      )
-      .comment({ fn: "fetchLeaderboardCollections" })
-  ).map((c) => c.id);
-
-  if (collectionIds.length === 0) return [];
-
-  const distinctPairs = indexer
-    .select({
-      owner: objekts.owner,
-      collectionId: objekts.collectionId,
-    })
-    .from(objekts)
-    .where(
-      and(
-        not(eq(objekts.owner, Addresses.SPIN)),
-        inArray(objekts.collectionId, collectionIds),
-      ),
-    )
-    .groupBy(objekts.owner, objekts.collectionId)
-    .as("distinct_pairs");
-
   return await indexer
     .select({
-      owner: distinctPairs.owner,
-      count: sql<number>`count(*)::int`.as("count"),
+      owner: progressLeaderboard.owner,
+      count: progressLeaderboard.count,
     })
-    .from(distinctPairs)
-    .groupBy(distinctPairs.owner)
-    .orderBy(sql`count desc`)
+    .from(progressLeaderboard)
+    .where(
+      and(
+        eq(progressLeaderboard.member, member),
+        // an empty season or onOffline row is the total across all of them
+        eq(progressLeaderboard.season, season ?? ""),
+        eq(progressLeaderboard.onOffline, onlineType ?? ""),
+      ),
+    )
+    .orderBy(desc(progressLeaderboard.count), asc(progressLeaderboard.owner))
     .limit(LEADERBOARD_COUNT)
     .comment({ fn: "fetchLeaderboard" });
 }

@@ -13,7 +13,7 @@ import {
   IconPackage,
   IconSend,
 } from "@tabler/icons-react";
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useQueryClient, useSuspenseQuery, noop } from "@tanstack/react-query";
 import {
   Link,
   getRouteApi,
@@ -76,13 +76,13 @@ export default function ProfileTabs({ isAuthenticated }: Props) {
 
   function prefetchBinders() {
     if (target.user) {
-      void queryClient.prefetchQuery(binderShelfQuery(target.user.id));
+      void queryClient.query(binderShelfQuery(target.user.id)).catch(noop);
     }
   }
 
   function prefetchLists() {
     if (target.user) {
-      void queryClient.prefetchQuery(listShelfQuery(target.user.id));
+      void queryClient.query(listShelfQuery(target.user.id)).catch(noop);
     }
   }
 

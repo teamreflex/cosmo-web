@@ -17,6 +17,7 @@ import { marketFrontendSchema } from "@/lib/universal/parsers";
 import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
+import { noop } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/market/")({
@@ -28,13 +29,21 @@ export const Route = createFileRoute("/market/")({
   loaderDeps: ({ search }) => ({ searchParams: search }),
   loader: async ({ context, deps }) => {
     const [account, selected] = await Promise.all([
-      context.queryClient.ensureQueryData(currentAccountQuery),
-      context.queryClient.ensureQueryData(selectedArtistsQuery),
+      context.queryClient.query({
+        ...currentAccountQuery,
+        staleTime: "static",
+      }),
+      context.queryClient.query({
+        ...selectedArtistsQuery,
+        staleTime: "static",
+      }),
     ]);
 
-    void context.queryClient.prefetchInfiniteQuery(
-      marketQuery(deps.searchParams, selected, displayCurrency(account)),
-    );
+    void context.queryClient
+      .infiniteQuery(
+        marketQuery(deps.searchParams, selected, displayCurrency(account)),
+      )
+      .catch(noop);
 
     return { account };
   },
