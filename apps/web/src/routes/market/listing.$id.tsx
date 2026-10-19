@@ -19,6 +19,7 @@ import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
 import { IconHeartBroken } from "@tabler/icons-react";
+import { noop } from "@tanstack/react-query";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/market/listing/$id")({
@@ -32,8 +33,14 @@ export const Route = createFileRoute("/market/listing/$id")({
     if (!id) throw notFound();
 
     const [account, listing] = await Promise.all([
-      context.queryClient.ensureQueryData(currentAccountQuery),
-      context.queryClient.ensureQueryData(tradeListingQuery(id)),
+      context.queryClient.query({
+        ...currentAccountQuery,
+        staleTime: "static",
+      }),
+      context.queryClient.query({
+        ...tradeListingQuery(id),
+        staleTime: "static",
+      }),
     ]);
     if (!listing) throw notFound();
 
@@ -46,21 +53,23 @@ export const Route = createFileRoute("/market/listing/$id")({
     );
     // the viewer's side reads their holdings, so hovering a link never fetches it
     if (!preload && panel.kind === "viewer") {
-      void context.queryClient.prefetchQuery(
-        tradeListingViewerQuery(id, listing.updatedAt),
-      );
+      void context.queryClient
+        .query(tradeListingViewerQuery(id, listing.updatedAt))
+        .catch(noop);
     }
     // the poster's blocked listing names the objekts that block it
     if (panel.kind === "poster_open" && listing.blocked && account?.cosmo) {
-      void context.queryClient.prefetchQuery(
-        offeredTokenRefusalsQuery(listing.items.map((item) => item.tokenId)),
-      );
+      void context.queryClient
+        .query(
+          offeredTokenRefusalsQuery(listing.items.map((item) => item.tokenId)),
+        )
+        .catch(noop);
     }
     for (const want of listing.wants) {
       if (want.kind === "range") {
-        void context.queryClient.prefetchQuery(
-          rangeMatchCountQuery(want.filter),
-        );
+        void context.queryClient
+          .query(rangeMatchCountQuery(want.filter))
+          .catch(noop);
       }
     }
 

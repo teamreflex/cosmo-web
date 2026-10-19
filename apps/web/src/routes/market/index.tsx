@@ -21,6 +21,7 @@ import {
   listingFeedTotalQuery,
 } from "@/lib/queries/listing-feed";
 import { listingFeedFrontendSchema } from "@/lib/universal/parsers";
+import { noop } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/market/")({
@@ -41,16 +42,22 @@ export const Route = createFileRoute("/market/")({
   }),
   loader: async ({ context }) => {
     const [, selected] = await Promise.all([
-      context.queryClient.ensureQueryData(currentAccountQuery),
-      context.queryClient.ensureQueryData(selectedArtistsQuery),
+      context.queryClient.query({
+        ...currentAccountQuery,
+        staleTime: "static",
+      }),
+      context.queryClient.query({
+        ...selectedArtistsQuery,
+        staleTime: "static",
+      }),
     ]);
 
-    void context.queryClient.prefetchInfiniteQuery(
-      context.listingFeedOptions(selected),
-    );
-    void context.queryClient.prefetchQuery(
-      context.listingFeedTotalOptions(selected),
-    );
+    void context.queryClient
+      .infiniteQuery(context.listingFeedOptions(selected))
+      .catch(noop);
+    void context.queryClient
+      .query(context.listingFeedTotalOptions(selected))
+      .catch(noop);
   },
   head: () => defineHead({ title: m.market_header(), canonical: "/market" }),
 });
