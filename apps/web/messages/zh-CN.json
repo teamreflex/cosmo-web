@@ -67,6 +67,7 @@
   "common_menu": "菜单",
   "common_filters": "筛选",
   "common_loading": "加载中",
+  "common_hours_minutes": "{hours} 小时 {minutes} 分钟",
   "common_saving": "保存中…",
   "common_close": "关闭",
   "common_como": "COMO",
@@ -356,6 +357,153 @@
   "report_error_report_not_found": "未找到举报。",
   "report_error_report_about_you": "此举报与你有关，将由其他工作人员处理。",
   "report_error_report_status_changed": "其他人已更新此举报。请重新加载以查看最新状态。",
+  "trade_error_listing_not_found": "未找到此挂单。",
+  "trade_error_listing_own": "你不能接受自己的挂单。",
+  "trade_error_listing_closed": "此挂单已关闭。",
+  "trade_error_listing_claimed": "已有人接受此挂单，因此无法更改。",
+  "trade_error_already_claimed": "其他人已抢先接受此挂单。",
+  "trade_error_listing_updated": "此挂单已更新。请在接受前查看新的条件。",
+  "trade_error_listing_unavailable": "此挂单目前无法接受。",
+  "trade_error_listing_want_unknown": "你寻找的某张 Objekt 不存在。",
+  "trade_error_listing_range_empty": "你的某个范围没有匹配任何 Objekt。",
+  "trade_error_claim_cap_reached": "你进行中的已接受交换已达上限。请先完成一笔，再接受新的挂单。",
+  "trade_error_claim_assignment_invalid": "你选择的 Objekt 不符合此挂单。请刷新后重新选择。",
+  "trade_error_claim_token_unavailable": "你选择的某张 Objekt 已无法交换。",
+  "trade_token_refusal_not_owned": "{objekt} #{serial} 不在你的 COSMO 账号中。",
+  "trade_token_refusal_untransferable": "{objekt} #{serial} 不可转移。",
+  "trade_token_refusal_locked": "{objekt} #{serial} 已在 COSMO 中锁定。",
+  "trade_token_refusal_live": "{objekt} #{serial} 已在另一笔交换中。",
+  "listing_detail_title": "交换挂单",
+  "listing_detail_posted": "发布于 {#time}{when}{/time}",
+  "listing_detail_error": "无法加载此挂单。",
+  "listing_detail_viewer_error": "无法加载你在此挂单中的部分。",
+  "listing_detail_you_get": "你获得 · {count}",
+  "listing_detail_offering": "提供 · {count}",
+  "listing_detail_looking_for": "寻找 · {count}",
+  "listing_detail_range_any_member": "任意成员",
+  "listing_detail_range_any_of": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{formatted} 个卡款中的任意一个"
+      }
+    }
+  ],
+  "listing_detail_kind_exact": "指定",
+  "listing_detail_kind_range": "范围",
+  "listing_detail_kind_payment": "付款",
+  "listing_detail_owned_exact": "你拥有 {count} 张",
+  "listing_detail_owned_range": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "你拥有 {formatted} 张符合条件的 Objekt"
+      }
+    }
+  ],
+  "listing_detail_short": "还差 {count} 张",
+  "listing_detail_picked": "已选 {picked} / {count}",
+  "listing_detail_duplicates_hint": "已优先选择你的重复卡。点击可换入或换出。",
+  "listing_detail_card_other_row": "已用于其他行",
+  "listing_detail_card_swap": "换出 {objekt}",
+  "listing_detail_incomplete_footer": "请按每行要求的数量选择 Objekt 后再接受。",
+  "listing_detail_blocked_body": "发布者那边的问题导致交换无法进行，例如提供的 Objekt 已被锁定或已离开其账号。问题解决后你即可接受。",
+  "listing_detail_accept": "接受",
+  "listing_detail_accept_footer": "接受时会再次检查这些序号，并为你保留此挂单 48 小时。双方都在 COSMO App 中发送，顺序不限。所有转移完成后，{appName} 会将其标记为已完成。",
+  "listing_detail_short_footer": "你没有足够的符合条件的 Objekt 来接受此挂单。",
+  "listing_detail_hold": "为你保留 48 小时",
+  "listing_detail_accepted": "已接受交换。请在 COSMO App 中发送你的 Objekt。",
+  "listing_detail_signed_out": "登录后即可查看你有哪些 Objekt 符合条件并接受挂单。",
+  "listing_detail_unlinked_title": "关联你的 COSMO 账号即可交换。",
+  "listing_detail_unlinked_body": "{appName} 会根据挂单核对你持有的 Objekt，并监测该账号的转移。每个 {appName} 账号只能关联一个 COSMO 账号，且关联后将保持关联。",
+  "listing_detail_link_cosmo": "关联 COSMO 账号",
+  "listing_detail_cap_title": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "你有 {count} 笔交换正在进行，已达到你的账号可同时进行的上限。"
+      }
+    }
+  ],
+  "listing_detail_cap_body": "完成一笔后即可接受新的挂单。",
+  "listing_detail_lost_race_title": "有人比你早一步接受了此挂单。",
+  "listing_detail_lost_race_body": "你的任何 Objekt 都没有被保留。如果对方的交换未能完成，此挂单会重新开放。",
+  "listing_detail_updated_title": "此挂单在你接受前已更改。",
+  "listing_detail_updated_body": "请查看新的条件并重新选择。",
+  "listing_detail_status_open": "开放中",
+  "listing_detail_status_claimed": "已被接受",
+  "listing_detail_status_filled": "已成交",
+  "listing_detail_status_withdrawn": "已撤下",
+  "listing_detail_status_closed": "已关闭",
+  "listing_detail_status_removed": "已移除",
+  "listing_detail_onlooker": "接受者还有 {#time}{left}{/time} 完成交换",
+  "listing_detail_claimer_title": "你已接受此挂单",
+  "listing_detail_time_left": "剩余 {#time}{left}{/time}",
+  "listing_detail_claimer_body": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "请在 COSMO App 中将你的 {count} 张 Objekt 发送给 {poster}；所有转移完成后，{appName} 会将其标记为已完成。"
+      }
+    }
+  ],
+  "listing_detail_poster_claimed": "{#user}{username}{/user} 已接受 · 剩余 {#time}{left}{/time}",
+  "listing_detail_poster_claimed_someone": "有人已接受 · 剩余 {#time}{left}{/time}",
+  "listing_detail_poster_claimed_body": "接下来取决于这笔交换：完成后挂单即成交；超时或取消则挂单会重新开放。",
+  "listing_detail_withdraw_claimed": "挂单上有交换正在进行时无法撤下。",
+  "listing_detail_withdraw": "撤下",
+  "listing_detail_withdraw_title": "撤下此挂单？",
+  "listing_detail_withdraw_description": "挂单会立即从市场下架，之后任何人都无法接受。",
+  "listing_detail_withdraw_confirm": "撤下",
+  "listing_detail_withdrawn": "挂单已撤下",
+  "listing_detail_closed_filled": "已与 {#user}{username}{/user} 完成交换。双方的转移均已完成。",
+  "listing_detail_closed_filled_unknown": "已完成交换。双方的转移均已完成。",
+  "listing_detail_closed_withdrawn": "{poster} 已关闭此挂单。",
+  "listing_detail_closed_broken": "提供的某张 Objekt 已离开 {poster} 的账号或无法转移，因此此挂单无法继续。",
+  "listing_detail_closed_removed": "已被 {appName} 工作人员移除。",
+  "listing_detail_closed_abandoned": "{poster} 未在已接受的交换中发送自己的 Objekt，因此此挂单已关闭。",
+  "listing_detail_you_give_summary": "从你持有的 Objekt 中选择",
+  "listing_detail_you_get_summary": "来自 {poster}",
+  "listing_detail_summary_ranges": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 个范围"
+      }
+    }
+  ],
+  "listing_detail_summary_exact": "{count} 个指定",
+  "listing_detail_summary_payments": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 笔付款"
+      }
+    }
+  ],
+  "listing_detail_in_exchange_for": "换取",
+  "listing_confirm_title": "确认交换",
+  "listing_confirm_submit": "确认",
+  "listing_confirm_lead": "你正在接受 {#user}{poster}{/user} 的挂单。请核对每个序号：这正是你将发送和收到的内容。",
+  "listing_confirm_deadline": "你们双方有 {#hours}48 小时{/hours}（截至 {#time}{date}{/time}）在 COSMO App 中发送。请将你的 Objekt 发送给 {#user}{poster}{/user}；届时仍未发送的一方将被记为弃单。",
+  "listing_confirm_deadline_short": "48 小时内发送，截至 {#time}{date}{/time}",
+  "listing_confirm_updated_title": "{poster} 更改了此挂单",
+  "listing_confirm_updated_body": "请查看更改内容。",
+  "listing_confirm_review": "查看",
+  "listing_confirm_claimed_title": "其他人已抢先接受",
+  "listing_confirm_token_title": "{objekt} {#serial}{serial}{/serial} 无法交换",
+  "listing_confirm_token_not_owned": "它已离开你的账号。请换成另一张。",
+  "listing_confirm_token_untransferable": "COSMO 不允许转移它。请换成另一张。",
+  "listing_confirm_token_locked": "它已在 COSMO 中锁定。请换成另一张。",
+  "listing_confirm_token_live": "它已在另一笔交换中。请换成另一张。",
+  "listing_confirm_token_unknown": "它已被锁定、在另一笔交换中，或已离开你的账号。请换成另一张。",
+  "listing_confirm_back_to_picker": "返回选择",
   "account_error_linked_elsewhere": "此 COSMO 账号已关联到另一个 {appName} 账号。每个 COSMO 账号只能关联一个 {appName} 账号。",
   "account_error_already_linked": "你的账号已关联 COSMO 账号。",
   "account_error_cosmo_banned": "此 COSMO 账号属于一个已被封禁的 {appName} 账号，因此无法关联。",
@@ -1056,6 +1204,7 @@
   "filter_online_physical_sub": "实体印刷卡",
   "filter_online_digital_sub": "仅线上",
   "filter_value_all": "全部",
+  "filter_value_any": "任意",
   "filter_value_multiple": "多个",
   "filter_label_total": "总计",
   "filter_label_types": "类型",
@@ -1483,5 +1632,160 @@
   "aria_edit_sale_price": "编辑 {collection} 的价格",
   "aria_add_sale_price": "为 {collection} 添加价格",
   "aria_play_audio": "播放音频",
-  "aria_pause_audio": "暂停音频"
+  "aria_pause_audio": "暂停音频",
+  "market_listings_open_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{formatted} 条开放中的挂单"
+      }
+    }
+  ],
+  "market_listings_match_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{formatted} 个匹配"
+      }
+    }
+  ],
+  "market_listings_offering": "提供",
+  "market_listings_looking_for": "寻找",
+  "market_listings_filter_artist": "艺人",
+  "market_listings_filter_member": "成员",
+  "market_listings_any_artist": "任意艺人",
+  "market_listings_type_label": "挂单类型",
+  "market_listings_type_all": "全部",
+  "market_listings_type_trade": "交换",
+  "market_listings_column_type": "类型",
+  "market_listings_column_offering": "提供",
+  "market_listings_column_asking": "想要",
+  "market_listings_column_from": "发布者",
+  "market_listings_trade": "交换",
+  "market_listings_objekts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 张 Objekt"
+      }
+    }
+  ],
+  "market_listings_empty": "暂无开放中的挂单",
+  "market_listings_empty_body": "用户发布的挂单会显示在这里，最新的在前。",
+  "market_listings_empty_filtered": "没有符合这些筛选条件的挂单",
+  "market_listings_empty_filtered_body": "请减少筛选条件，或重置筛选以查看所有开放中的挂单。",
+  "market_listings_error": "无法加载挂单。",
+  "listing_composer_new": "新建挂单",
+  "listing_composer_title_create": "新建挂单",
+  "listing_composer_title_edit": "编辑挂单",
+  "listing_composer_edit": "编辑",
+  "listing_composer_edit_claimed": "已有人接受此挂单，在对方的交换进行期间无法更改条件。",
+  "listing_composer_offering": "你提供 · {count}",
+  "listing_composer_offering_full": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "每条挂单最多可提供 {count} 张 Objekt。"
+      }
+    }
+  ],
+  "listing_composer_add_objekts": "从你的收藏中添加",
+  "listing_composer_remove_objekt": "移除 {objekt}",
+  "listing_composer_picker_help": "已锁定、不可转移和交换中的 Objekt 会显示，但无法选择。",
+  "listing_composer_picker_done": "完成 · {count}",
+  "listing_composer_pill_offering": "已提供",
+  "listing_composer_pill_untransferable": "不可转移",
+  "listing_composer_pill_live": "交换中",
+  "listing_composer_looking_for": "你寻找",
+  "listing_composer_looking_for_help": "你愿意换回的 Objekt",
+  "listing_composer_trade_total": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "交换 · {count} 张 Objekt"
+      }
+    }
+  ],
+  "listing_composer_add_exact": "指定 Objekt",
+  "listing_composer_add_range": "范围",
+  "listing_composer_wants_full": "此挂单寻找的 Objekt 数量已达上限。",
+  "listing_composer_count": "数量",
+  "listing_composer_fewer": "减少",
+  "listing_composer_more": "增加",
+  "listing_composer_remove_row": "移除第 {position} 行：{row}",
+  "listing_composer_matching": "符合以下条件的 Objekt",
+  "listing_composer_range_matches": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{formatted} 个卡款符合"
+      }
+    }
+  ],
+  "listing_composer_range_no_matches": "暂无符合此范围的卡款。",
+  "listing_composer_range_empty": "请至少选择一个值来缩小范围。",
+  "listing_composer_range_edit": "编辑范围",
+  "listing_composer_range_collapse": "收起范围",
+  "listing_composer_search_placeholder": "搜索卡款，例如 HeeJin 201Z",
+  "listing_composer_search_hint": "输入以搜索所有卡款。",
+  "listing_composer_search_empty": "未找到卡款。",
+  "listing_composer_search_error": "搜索暂时不可用。",
+  "listing_composer_note": "备注（可选）",
+  "listing_composer_note_placeholder": "例如：卡款各不相同，序号低于 1000",
+  "listing_composer_footer_offered": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 张 Objekt"
+      }
+    }
+  ],
+  "listing_composer_footer_wanted": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 张 Objekt"
+      }
+    }
+  ],
+  "listing_composer_footer": "{offered} ⇄ {wanted}",
+  "listing_composer_reason_offered": "请至少选择一张要提供的 Objekt。",
+  "listing_composer_reason_wants": "请至少添加一张你寻找的 Objekt。",
+  "listing_composer_reason_range": "每个范围至少需要一个值。",
+  "listing_composer_reason_refused": "你提供的某张 Objekt 目前无法交换。",
+  "listing_composer_reason_note": "备注不能超过 {max} 个字符。",
+  "listing_composer_post": "发布",
+  "listing_composer_save": "保存",
+  "listing_composer_posted": "挂单已发布",
+  "listing_composer_saved": "挂单已更新",
+  "listing_composer_view": "查看",
+  "listing_composer_rate_limited_title": "你更改挂单的速度太快了",
+  "listing_composer_rate_limited_description": "请等待几分钟后再试。",
+  "listing_composer_pill_not_owned": "不属于你",
+  "listing_composer_offered_refused": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "请移除，或在 COSMO 中处理后，再发布或保存。"
+      }
+    }
+  ],
+  "listing_composer_discard_title_create": "放弃此挂单？",
+  "listing_composer_discard_title_edit": "放弃你的更改？",
+  "listing_composer_discard_description": "你在此输入的内容将会丢失。",
+  "listing_composer_discard_keep": "继续编辑",
+  "listing_composer_discard_confirm": "放弃",
+  "listing_detail_you_give_total": "你给出 · {count}",
+  "listing_detail_poster_blocked_title": "目前没有人能接受此挂单。",
+  "listing_detail_poster_blocked_body": "你提供的某张 Objekt 已被锁定、无法转移、在另一笔交换中，或已离开你的账号。",
+  "listing_detail_poster_blocked_fix": "编辑挂单以提供其他 Objekt，或在 COSMO 中处理。"
 }

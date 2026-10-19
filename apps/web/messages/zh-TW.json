@@ -67,6 +67,7 @@
   "common_menu": "選單",
   "common_filters": "篩選",
   "common_loading": "載入中",
+  "common_hours_minutes": "{hours} 小時 {minutes} 分鐘",
   "common_saving": "儲存中…",
   "common_close": "關閉",
   "common_como": "COMO",
@@ -356,6 +357,153 @@
   "report_error_report_not_found": "找不到檢舉。",
   "report_error_report_about_you": "這則檢舉與你有關，將由其他工作人員處理。",
   "report_error_report_status_changed": "其他人已更新這則檢舉。請重新載入以查看最新狀態。",
+  "trade_error_listing_not_found": "找不到這則刊登。",
+  "trade_error_listing_own": "你無法接受自己的刊登。",
+  "trade_error_listing_closed": "這則刊登已關閉。",
+  "trade_error_listing_claimed": "已有人接受這則刊登，因此無法變更。",
+  "trade_error_already_claimed": "其他人已搶先接受這則刊登。",
+  "trade_error_listing_updated": "這則刊登已更新。請在接受前查看新的條件。",
+  "trade_error_listing_unavailable": "目前無法接受這則刊登。",
+  "trade_error_listing_want_unknown": "你徵求的某張 Objekt 不存在。",
+  "trade_error_listing_range_empty": "你的某個範圍沒有符合任何 Objekt。",
+  "trade_error_claim_cap_reached": "你進行中的已接受交換已達上限。請先完成一筆，再接受新的刊登。",
+  "trade_error_claim_assignment_invalid": "你選擇的 Objekt 不符合這則刊登。請重新整理後再選擇一次。",
+  "trade_error_claim_token_unavailable": "你選擇的某張 Objekt 已無法交換。",
+  "trade_token_refusal_not_owned": "{objekt} #{serial} 不在你的 COSMO 帳號中。",
+  "trade_token_refusal_untransferable": "{objekt} #{serial} 無法轉移。",
+  "trade_token_refusal_locked": "{objekt} #{serial} 已在 COSMO 中鎖定。",
+  "trade_token_refusal_live": "{objekt} #{serial} 已在另一筆交換中。",
+  "listing_detail_title": "交換刊登",
+  "listing_detail_posted": "刊登於 {#time}{when}{/time}",
+  "listing_detail_error": "無法載入這則刊登。",
+  "listing_detail_viewer_error": "無法載入你在這則刊登中的部分。",
+  "listing_detail_you_get": "你獲得 · {count}",
+  "listing_detail_offering": "提供 · {count}",
+  "listing_detail_looking_for": "徵求 · {count}",
+  "listing_detail_range_any_member": "任一成員",
+  "listing_detail_range_any_of": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{formatted} 個卡款中的任一個"
+      }
+    }
+  ],
+  "listing_detail_kind_exact": "指定",
+  "listing_detail_kind_range": "範圍",
+  "listing_detail_kind_payment": "付款",
+  "listing_detail_owned_exact": "你擁有 {count} 張",
+  "listing_detail_owned_range": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "你擁有 {formatted} 張符合條件的 Objekt"
+      }
+    }
+  ],
+  "listing_detail_short": "還差 {count} 張",
+  "listing_detail_picked": "已選 {picked} / {count}",
+  "listing_detail_duplicates_hint": "已優先選擇你的重複卡。輕觸即可換入或換出。",
+  "listing_detail_card_other_row": "已用於其他列",
+  "listing_detail_card_swap": "換出 {objekt}",
+  "listing_detail_incomplete_footer": "請依每列要求的數量選擇 Objekt 後再接受。",
+  "listing_detail_blocked_body": "刊登者那邊的狀況導致交換無法進行，例如提供的 Objekt 已被鎖定或已離開其帳號。問題解決後你就可以接受。",
+  "listing_detail_accept": "接受",
+  "listing_detail_accept_footer": "接受時會再次檢查這些序號，並為你保留這則刊登 48 小時。雙方都在 COSMO App 中傳送，順序不限。所有轉移完成後，{appName} 會將其標為已完成。",
+  "listing_detail_short_footer": "你沒有足夠符合條件的 Objekt 來接受這則刊登。",
+  "listing_detail_hold": "為你保留 48 小時",
+  "listing_detail_accepted": "已接受交換。請在 COSMO App 中傳送你的 Objekt。",
+  "listing_detail_signed_out": "登入後即可查看你有哪些 Objekt 符合條件並接受刊登。",
+  "listing_detail_unlinked_title": "連結你的 COSMO 帳號即可交換。",
+  "listing_detail_unlinked_body": "{appName} 會依據刊登核對你持有的 Objekt，並監測該帳號的轉移。每個 {appName} 帳號只能連結一個 COSMO 帳號，且連結後會一直保持連結。",
+  "listing_detail_link_cosmo": "連結 COSMO 帳號",
+  "listing_detail_cap_title": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "你有 {count} 筆交換正在進行，已達你的帳號可同時進行的上限。"
+      }
+    }
+  ],
+  "listing_detail_cap_body": "完成一筆後即可接受新的刊登。",
+  "listing_detail_lost_race_title": "有人比你早一步接受了這則刊登。",
+  "listing_detail_lost_race_body": "你的任何 Objekt 都沒有被保留。如果對方的交換未能完成，這則刊登會重新開放。",
+  "listing_detail_updated_title": "這則刊登在你接受前已變更。",
+  "listing_detail_updated_body": "請查看新的條件並重新選擇。",
+  "listing_detail_status_open": "開放中",
+  "listing_detail_status_claimed": "已被接受",
+  "listing_detail_status_filled": "已成交",
+  "listing_detail_status_withdrawn": "已撤下",
+  "listing_detail_status_closed": "已關閉",
+  "listing_detail_status_removed": "已移除",
+  "listing_detail_onlooker": "接受者還有 {#time}{left}{/time} 完成交換",
+  "listing_detail_claimer_title": "你已接受這則刊登",
+  "listing_detail_time_left": "剩餘 {#time}{left}{/time}",
+  "listing_detail_claimer_body": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "請在 COSMO App 中將你的 {count} 張 Objekt 傳送給 {poster}；所有轉移完成後，{appName} 會將其標為已完成。"
+      }
+    }
+  ],
+  "listing_detail_poster_claimed": "{#user}{username}{/user} 已接受 · 剩餘 {#time}{left}{/time}",
+  "listing_detail_poster_claimed_someone": "有人已接受 · 剩餘 {#time}{left}{/time}",
+  "listing_detail_poster_claimed_body": "接下來取決於這筆交換：完成後刊登即成交；逾時或取消則刊登會重新開放。",
+  "listing_detail_withdraw_claimed": "刊登上有交換正在進行時無法撤下。",
+  "listing_detail_withdraw": "撤下",
+  "listing_detail_withdraw_title": "要撤下這則刊登嗎？",
+  "listing_detail_withdraw_description": "刊登會立即從市集下架，之後任何人都無法接受。",
+  "listing_detail_withdraw_confirm": "撤下",
+  "listing_detail_withdrawn": "刊登已撤下",
+  "listing_detail_closed_filled": "已與 {#user}{username}{/user} 完成交換。雙方的轉移皆已完成。",
+  "listing_detail_closed_filled_unknown": "已完成交換。雙方的轉移皆已完成。",
+  "listing_detail_closed_withdrawn": "{poster} 已關閉這則刊登。",
+  "listing_detail_closed_broken": "提供的某張 Objekt 已離開 {poster} 的帳號或無法轉移，因此這則刊登無法繼續。",
+  "listing_detail_closed_removed": "已被 {appName} 工作人員移除。",
+  "listing_detail_closed_abandoned": "{poster} 未在已接受的交換中傳送自己的 Objekt，因此這則刊登已關閉。",
+  "listing_detail_you_give_summary": "從你持有的 Objekt 中選擇",
+  "listing_detail_you_get_summary": "來自 {poster}",
+  "listing_detail_summary_ranges": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 個範圍"
+      }
+    }
+  ],
+  "listing_detail_summary_exact": "{count} 個指定",
+  "listing_detail_summary_payments": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 筆付款"
+      }
+    }
+  ],
+  "listing_detail_in_exchange_for": "換取",
+  "listing_confirm_title": "確認交換",
+  "listing_confirm_submit": "確認",
+  "listing_confirm_lead": "你正在接受 {#user}{poster}{/user} 的刊登。請核對每個序號：這就是你將傳送和收到的內容。",
+  "listing_confirm_deadline": "你們雙方有 {#hours}48 小時{/hours}（至 {#time}{date}{/time} 為止）可在 COSMO App 中傳送。請將你的 Objekt 傳送給 {#user}{poster}{/user}；屆時仍未傳送的一方會被記為棄單。",
+  "listing_confirm_deadline_short": "48 小時內傳送，至 {#time}{date}{/time} 為止",
+  "listing_confirm_updated_title": "{poster} 變更了這則刊登",
+  "listing_confirm_updated_body": "請查看變更內容。",
+  "listing_confirm_review": "查看",
+  "listing_confirm_claimed_title": "其他人已搶先接受",
+  "listing_confirm_token_title": "{objekt} {#serial}{serial}{/serial} 無法交換",
+  "listing_confirm_token_not_owned": "它已離開你的帳號。請換成另一張。",
+  "listing_confirm_token_untransferable": "COSMO 不允許轉移它。請換成另一張。",
+  "listing_confirm_token_locked": "它已在 COSMO 中鎖定。請換成另一張。",
+  "listing_confirm_token_live": "它已在另一筆交換中。請換成另一張。",
+  "listing_confirm_token_unknown": "它已被鎖定、在另一筆交換中，或已離開你的帳號。請換成另一張。",
+  "listing_confirm_back_to_picker": "返回選擇",
   "account_error_linked_elsewhere": "此 COSMO 帳號已連結到另一個 {appName} 帳號。每個 COSMO 帳號只能屬於一個 {appName} 帳號。",
   "account_error_already_linked": "你的帳號已連結 COSMO 帳號。",
   "account_error_cosmo_banned": "此 COSMO 帳號屬於已停權的 {appName} 帳號，因此無法連結。",
@@ -1056,6 +1204,7 @@
   "filter_online_physical_sub": "實體印刷卡",
   "filter_online_digital_sub": "僅線上",
   "filter_value_all": "全部",
+  "filter_value_any": "任一",
   "filter_value_multiple": "多個",
   "filter_label_total": "總計",
   "filter_label_types": "類型",
@@ -1483,5 +1632,160 @@
   "aria_edit_sale_price": "編輯 {collection} 的價格",
   "aria_add_sale_price": "新增 {collection} 的價格",
   "aria_play_audio": "播放音訊",
-  "aria_pause_audio": "暫停音訊"
+  "aria_pause_audio": "暫停音訊",
+  "market_listings_open_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{formatted} 則開放中的刊登"
+      }
+    }
+  ],
+  "market_listings_match_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{formatted} 個配對"
+      }
+    }
+  ],
+  "market_listings_offering": "提供",
+  "market_listings_looking_for": "徵求",
+  "market_listings_filter_artist": "藝人",
+  "market_listings_filter_member": "成員",
+  "market_listings_any_artist": "任一藝人",
+  "market_listings_type_label": "刊登類型",
+  "market_listings_type_all": "全部",
+  "market_listings_type_trade": "交換",
+  "market_listings_column_type": "類型",
+  "market_listings_column_offering": "提供",
+  "market_listings_column_asking": "徵求",
+  "market_listings_column_from": "刊登者",
+  "market_listings_trade": "交換",
+  "market_listings_objekts": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 張 Objekt"
+      }
+    }
+  ],
+  "market_listings_empty": "目前沒有開放中的刊登",
+  "market_listings_empty_body": "使用者發布的刊登會顯示在這裡，最新的在最前面。",
+  "market_listings_empty_filtered": "沒有符合這些篩選條件的刊登",
+  "market_listings_empty_filtered_body": "請減少篩選條件，或重設篩選以查看所有開放中的刊登。",
+  "market_listings_error": "無法載入刊登。",
+  "listing_composer_new": "新增刊登",
+  "listing_composer_title_create": "新增刊登",
+  "listing_composer_title_edit": "編輯刊登",
+  "listing_composer_edit": "編輯",
+  "listing_composer_edit_claimed": "已有人接受這則刊登，在對方的交換進行期間無法變更條件。",
+  "listing_composer_offering": "你提供 · {count}",
+  "listing_composer_offering_full": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "每則刊登最多可提供 {count} 張 Objekt。"
+      }
+    }
+  ],
+  "listing_composer_add_objekts": "從你的收藏中加入",
+  "listing_composer_remove_objekt": "移除 {objekt}",
+  "listing_composer_picker_help": "已鎖定、無法轉移和交換中的 Objekt 會顯示，但無法選擇。",
+  "listing_composer_picker_done": "完成 · {count}",
+  "listing_composer_pill_offering": "已提供",
+  "listing_composer_pill_untransferable": "無法轉移",
+  "listing_composer_pill_live": "交換中",
+  "listing_composer_looking_for": "你徵求",
+  "listing_composer_looking_for_help": "你願意換回的 Objekt",
+  "listing_composer_trade_total": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "交換 · {count} 張 Objekt"
+      }
+    }
+  ],
+  "listing_composer_add_exact": "指定 Objekt",
+  "listing_composer_add_range": "範圍",
+  "listing_composer_wants_full": "這則刊登徵求的 Objekt 數量已達上限。",
+  "listing_composer_count": "數量",
+  "listing_composer_fewer": "減少",
+  "listing_composer_more": "增加",
+  "listing_composer_remove_row": "移除第 {position} 列：{row}",
+  "listing_composer_matching": "符合以下條件的 Objekt",
+  "listing_composer_range_matches": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{formatted} 個卡款符合"
+      }
+    }
+  ],
+  "listing_composer_range_no_matches": "目前沒有符合此範圍的卡款。",
+  "listing_composer_range_empty": "請至少選擇一個值來縮小範圍。",
+  "listing_composer_range_edit": "編輯範圍",
+  "listing_composer_range_collapse": "收合範圍",
+  "listing_composer_search_placeholder": "搜尋卡款，例如 HeeJin 201Z",
+  "listing_composer_search_hint": "輸入文字以搜尋所有卡款。",
+  "listing_composer_search_empty": "找不到卡款。",
+  "listing_composer_search_error": "目前無法使用搜尋。",
+  "listing_composer_note": "備註（選填）",
+  "listing_composer_note_placeholder": "例如：卡款各不相同，序號低於 1000",
+  "listing_composer_footer_offered": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 張 Objekt"
+      }
+    }
+  ],
+  "listing_composer_footer_wanted": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 張 Objekt"
+      }
+    }
+  ],
+  "listing_composer_footer": "{offered} ⇄ {wanted}",
+  "listing_composer_reason_offered": "請至少選擇一張要提供的 Objekt。",
+  "listing_composer_reason_wants": "請至少加入一張你徵求的 Objekt。",
+  "listing_composer_reason_range": "每個範圍至少需要一個值。",
+  "listing_composer_reason_refused": "你提供的某張 Objekt 目前無法交換。",
+  "listing_composer_reason_note": "備註不得超過 {max} 個字元。",
+  "listing_composer_post": "刊登",
+  "listing_composer_save": "儲存",
+  "listing_composer_posted": "已刊登",
+  "listing_composer_saved": "刊登已更新",
+  "listing_composer_view": "查看",
+  "listing_composer_rate_limited_title": "你變更刊登的速度太快了",
+  "listing_composer_rate_limited_description": "請等候幾分鐘後再試一次。",
+  "listing_composer_pill_not_owned": "不屬於你",
+  "listing_composer_offered_refused": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "請移除，或在 COSMO 中處理後，再刊登或儲存。"
+      }
+    }
+  ],
+  "listing_composer_discard_title_create": "要捨棄這則刊登嗎？",
+  "listing_composer_discard_title_edit": "要捨棄你的變更嗎？",
+  "listing_composer_discard_description": "你在這裡輸入的內容將會遺失。",
+  "listing_composer_discard_keep": "繼續編輯",
+  "listing_composer_discard_confirm": "捨棄",
+  "listing_detail_you_give_total": "你給出 · {count}",
+  "listing_detail_poster_blocked_title": "目前沒有人能接受這則刊登。",
+  "listing_detail_poster_blocked_body": "你提供的某張 Objekt 已被鎖定、無法轉移、在另一筆交換中，或已離開你的帳號。",
+  "listing_detail_poster_blocked_fix": "編輯刊登以提供其他 Objekt，或在 COSMO 中處理。"
 }
