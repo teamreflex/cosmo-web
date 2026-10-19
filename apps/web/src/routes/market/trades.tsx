@@ -15,8 +15,10 @@ export const Route = createFileRoute("/market/trades")({
     tab: z.enum(myTradesTabs).default("active").catch("active"),
   }),
   beforeLoad: async ({ context }) => {
-    const account =
-      await context.queryClient.ensureQueryData(currentAccountQuery);
+    const account = await context.queryClient.query({
+      ...currentAccountQuery,
+      staleTime: "static",
+    });
     if (!account) {
       throw redirect({ to: "/" });
     }
@@ -25,9 +27,12 @@ export const Route = createFileRoute("/market/trades")({
   // the live trades give the counts on either tab
   loader: async ({ context, deps }) => {
     await Promise.all([
-      context.queryClient.ensureQueryData(activeTradesQuery),
+      context.queryClient.query({ ...activeTradesQuery, staleTime: "static" }),
       deps.tab === "finished" &&
-        context.queryClient.ensureInfiniteQueryData(finishedTradesQuery()),
+        context.queryClient.infiniteQuery({
+          ...finishedTradesQuery(),
+          staleTime: "static",
+        }),
     ]);
   },
   head: () =>

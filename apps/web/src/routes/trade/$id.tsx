@@ -31,12 +31,19 @@ export const Route = createFileRoute("/trade/$id")({
     if (!id) throw notFound();
 
     // a signed-out visitor gets the sign-in state, never the trade
-    const account =
-      await context.queryClient.ensureQueryData(currentAccountQuery);
+    const account = await context.queryClient.query({
+      ...currentAccountQuery,
+      staleTime: "static",
+    });
     if (account === null) return { id, signedIn: false };
 
     // anyone but the trade's parties gets not found
-    if ((await context.queryClient.ensureQueryData(tradeQuery(id))) === null) {
+    if (
+      (await context.queryClient.query({
+        ...tradeQuery(id),
+        staleTime: "static",
+      })) === null
+    ) {
       throw notFound();
     }
     return { id, signedIn: true };
