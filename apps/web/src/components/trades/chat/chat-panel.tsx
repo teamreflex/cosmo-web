@@ -199,7 +199,7 @@ function useSignedOutCheck(refused: boolean) {
   useEffect(() => {
     if (!refused) return;
     void (async () => {
-      const account = await queryClient.fetchQuery({
+      const account = await queryClient.query({
         ...currentAccountQuery,
         staleTime: 0,
       });
