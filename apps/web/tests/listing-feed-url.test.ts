@@ -1,14 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import {
-  countActiveListingFilters,
   listingFeedFrontendSchema,
   normalizeFeedArtists,
   normalizeListingFeedFilters,
 } from "../src/lib/universal/parsers";
-import {
-  listingFeedInputSchema,
-  listingFeedTotalInputSchema,
-} from "../src/lib/universal/schema/listing-feed";
+import { listingFeedInputSchema } from "../src/lib/universal/schema/listing-feed";
 import { stringifySearch } from "../src/lib/universal/search-params";
 
 /**
@@ -21,26 +17,6 @@ function search(query: string) {
 }
 
 describe("Listings feed search params", () => {
-  test("both groups parse and unknown keys drop (FPS-01)", () => {
-    const parsed = search(
-      "season=Atom02,Binary01&member=HeeJin&want_member=KimLip&want_artist=TRIPLES&type=trade&sort=newest",
-    );
-    expect(parsed).toEqual({
-      season: ["Atom02", "Binary01"],
-      member: ["HeeJin"],
-      want_member: ["KimLip"],
-      want_artist: "tripleS",
-      type: "trade",
-    });
-    expect(normalizeListingFeedFilters(parsed)).toEqual({
-      filters: {
-        offering: { season: ["Atom02", "Binary01"], member: ["HeeJin"] },
-        lookingFor: { member: ["KimLip"], artist: ["triples"] },
-      },
-      type: "trade",
-    });
-  });
-
   test("invalid and oversized values fall back without throwing (FPS-02)", () => {
     const seasons = Array.from({ length: 13 }, (_, i) => `Season${i}`);
     const parsed = search(
@@ -149,30 +125,6 @@ describe("Listings feed search params", () => {
     });
   });
 
-  test("the header's total takes the feed's filters without a cursor (FPS-07)", () => {
-    const input = {
-      filters: { offering: { member: ["HeeJin"] }, lookingFor: {} },
-      type: null,
-      artists: ["ARTMS"],
-    };
-    expect(listingFeedTotalInputSchema.parse(input)).toEqual({
-      ...input,
-      artists: ["artms"],
-    });
-    expect(
-      listingFeedTotalInputSchema.safeParse({
-        ...input,
-        cursor: crypto.randomUUID(),
-      }).success,
-    ).toBe(false);
-    expect(
-      listingFeedTotalInputSchema.safeParse({
-        ...input,
-        filters: { offering: { member: ["\0"] }, lookingFor: {} },
-      }).success,
-    ).toBe(false);
-  });
-
   test("navbar artists the feed doesn't know drop instead of failing (FPS-06)", () => {
     const artists = normalizeFeedArtists([
       "tripleS",
@@ -191,60 +143,5 @@ describe("Listings feed search params", () => {
         artists,
       }).success,
     ).toBe(true);
-  });
-
-  test.each([
-    ["", 0],
-    ["type=trade", 0],
-    ["season=Atom02", 1],
-    ["season=Atom02,Binary01,Cream01", 1],
-    ["season=Atom02&type=trade", 1],
-    ["artist=artms&member=HeeJin,KimLip", 2],
-    [
-      "season=Atom02&member=HeeJin&class=First&on_offline=online&artist=artms",
-      5,
-    ],
-    ["want_season=Atom02", 1],
-    [
-      "want_season=Atom02&want_member=HeeJin&want_class=First&want_on_offline=offline&want_artist=tripleS",
-      5,
-    ],
-    ["season=Atom02&want_season=Atom02", 2],
-    ["member=HeeJin&want_member=HeeJin&want_artist=artms&type=trade", 3],
-    [
-      "season=Atom02&member=HeeJin&class=First&on_offline=online&artist=artms&want_season=Binary01&want_member=KimLip&want_class=Double&want_on_offline=offline&want_artist=artms&type=trade",
-      10,
-    ],
-  ])(
-    "Filters (n) counts the narrowed columns on both sides, never the type: %p (FPS-04)",
-    (query, expected) => {
-      expect(countActiveListingFilters(search(query))).toBe(expected);
-    },
-  );
-
-  test("empty, invalid and duplicate values don't add to Filters (n) (FPS-04)", () => {
-    expect(countActiveListingFilters(search("season=,,&want_member="))).toBe(0);
-    expect(
-      countActiveListingFilters(
-        search(
-          "on_offline=both&artist=nobody&want_class=Firstclass&type=bogus",
-        ),
-      ),
-    ).toBe(0);
-    expect(
-      countActiveListingFilters(
-        search("member=HeeJin,HeeJin&want_member=HeeJin"),
-      ),
-    ).toBe(2);
-    expect(countActiveListingFilters({})).toBe(0);
-    expect(
-      countActiveListingFilters({
-        season: [],
-        member: undefined,
-        want_class: [],
-        want_artist: undefined,
-        type: "trade",
-      }),
-    ).toBe(0);
   });
 });

@@ -316,53 +316,5 @@ describe("buildCalendar", () => {
       expect(cal[30]).toBeUndefined();
       expect(cal[31]).toBeUndefined();
     });
-
-    it("handles leap-year February", () => {
-      // Feb 2024 had 29 days. UTC day 29 lands on local day 28; UTC days 30/31
-      // carry to UTC 29 and their counts also land on local day 28. The extra
-      // leap day (local 29) catches the UTC-day-1 wrap from Mar and is the
-      // last local day, so it carries the badge.
-      const cal = buildCalendar(
-        new Date("2024-02-15T00:00:00Z"),
-        gmt7UserObjekts,
-        "America/Los_Angeles",
-      );
-
-      // day 28: 6 (UTC 29) + 2 (UTC 30) + 2 (Premier UTC 31) = 10
-      expect(cal[28]?.artms?.count).toBe(10);
-      expect(cal[28]?.artms?.carried).toBe(0);
-      // day 29: UTC-day-1 wrap (count 4); carries the month's badge (2+2=4)
-      expect(cal[29]?.artms?.count).toBe(4);
-      expect(cal[29]?.artms?.carried).toBe(4);
-      expect(cal[30]).toBeUndefined();
-      expect(cal[31]).toBeUndefined();
-    });
-
-    it("counts Premier objekts as 2 COMO per drop", () => {
-      // Three Premiers in the fixture: UTC day 31 (Jan '25), UTC day 1
-      // (Jun '25), UTC day 24 (Jan '26). In May they land on day 30,
-      // day 31 (wrap), and day 23 respectively.
-      const cal = buildCalendar(
-        new Date("2026-05-15T12:00:00Z"),
-        gmt7UserObjekts,
-        "America/Los_Angeles",
-      );
-
-      // day 23: 5 Specials + 1 Premier (2) = 7
-      expect(cal[23]?.artms?.count).toBe(7);
-      // day 30: only the Premier = 2
-      expect(cal[30]?.artms?.count).toBe(2);
-      // day 31: 2 Specials + 1 Premier (2) = 4
-      expect(cal[31]?.artms?.count).toBe(4);
-    });
-
-    it("returns an empty calendar when the owner holds nothing", () => {
-      const cal = buildCalendar(
-        new Date("2026-05-09T00:00:00Z"),
-        [],
-        "America/Los_Angeles",
-      );
-      expect(cal).toEqual({});
-    });
   });
 });

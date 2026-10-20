@@ -1,13 +1,7 @@
 import Countdown, { Ticker } from "@/components/misc/countdown";
+import StaffNoteField from "@/components/trades/staff-note-field";
 import { Button } from "@/components/ui/button";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldLabel,
-} from "@/components/ui/field";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
 import { Timestamp } from "@/components/ui/timestamp";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useHasPermission } from "@/hooks/use-has-permission";
@@ -59,8 +53,6 @@ type Props = {
 export default function DisputeActions({ report, trade }: Props) {
   const hasPermission = useHasPermission();
   const queryClient = useQueryClient();
-  const noteId = useId();
-  const noteDescriptionId = useId();
   const hoursLabelId = useId();
 
   const form = useForm({
@@ -134,28 +126,7 @@ export default function DisputeActions({ report, trade }: Props) {
         control={form.control}
         name="note"
         render={({ field, fieldState }) => (
-          <Field data-invalid={fieldState.invalid}>
-            <FieldLabel htmlFor={noteId}>
-              {m.admin_dispute_note()}
-              <span className="text-xs font-normal text-muted-foreground">
-                {m.report_note_optional()}
-              </span>
-            </FieldLabel>
-            <Textarea
-              id={noteId}
-              rows={3}
-              maxLength={1000}
-              className="max-h-40 resize-none bg-background"
-              aria-invalid={fieldState.invalid}
-              aria-describedby={noteDescriptionId}
-              {...field}
-              value={field.value ?? ""}
-            />
-            <FieldDescription id={noteDescriptionId}>
-              {m.admin_dispute_note_description()}
-            </FieldDescription>
-            <FieldError errors={[fieldState.error]} />
-          </Field>
+          <StaffNoteField field={field} fieldState={fieldState} optional />
         )}
       />
 

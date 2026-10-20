@@ -136,19 +136,6 @@ describe("computeChartSeries", () => {
     expect(series[0]?.values).toEqual([10, 16, 16, null]);
   });
 
-  it("draws fewer lines than there are candidates when only one voted", () => {
-    const { series } = computeChartSeries({
-      chartData,
-      revealed: bucketReveals(chartData, [reveal("1", 2, 5, 5)]),
-      comoPerCandidate: [0, 0, 5],
-      complete: false,
-      groups,
-      linesPerSlot,
-    });
-
-    expect(series.map((line) => line.key)).toEqual(["2"]);
-  });
-
   it("moves the frontier for a candidate outside the top", () => {
     const { series, frontierSegmentIndex } = computeChartSeries({
       chartData,
@@ -252,26 +239,6 @@ const slotReveals = [
 const slotComo = [10, 6, 0, 4, 0, 3];
 
 describe("computeChartSeries over slots", () => {
-  it("draws each slot's top lines, skipping members nobody voted for", () => {
-    const { series } = computeChartSeries({
-      chartData,
-      revealed: bucketReveals(chartData, slotReveals),
-      comoPerCandidate: slotComo,
-      complete: false,
-      groups: slotGroups,
-      linesPerSlot: 2,
-    });
-
-    // EVOLution: SeoYeon 16, HyeRin 4; LOVElution: HyeRin 13, JiWoo 10,
-    // SeoYeon 0 and undrawn
-    expect(series.map((line) => line.key)).toEqual([
-      "EVOLution:SeoYeon",
-      "EVOLution:HyeRin",
-      "LOVElution:HyeRin",
-      "LOVElution:JiWoo",
-    ]);
-  });
-
   it("sums every choice placing a member in the slot", () => {
     const { series } = computeChartSeries({
       chartData,

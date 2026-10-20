@@ -232,6 +232,10 @@ Postgres returns `COUNT`, `SUM`, and window functions (`count(*) over()`, `row_n
 
 `staff_audit` and `cosmo_link_audit` are only ever inserted into, and must outlive the accounts they name. Deleting an account deletes the user row, so their user columns (`staff_audit.staff_id` and `cosmo_link_audit.user_id`) are plain text ids with no foreign key, with relations declared in `relations.ts` without a constraint; a missing user reads back as null. Order their rows by `id`, not `created_at`: `defaultNow()` is the transaction's start time, so every row one transaction writes shares a timestamp.
 
+## Trade tables
+
+`trade_offers`, `trade_offer_items`, `trade_listing_wants`, `trade_messages`, `trade_feedback` and `user_feedback_stats` are mapped in `docs/trades.md`, including the `token_id` boundary (an integer in the web database, text in the indexer) and the payment columns that nothing writes.
+
 ## Current VACUUM settings
 
 ```sql

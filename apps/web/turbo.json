@@ -75,8 +75,11 @@
       "cache": false
     },
     "test": {
-      "persistent": true,
-      "cache": false
+      "inputs": [
+        "$TURBO_EXTENDS$",
+        "messages/*.json",
+        "project.inlang/settings.json"
+      ]
     }
   }
 }

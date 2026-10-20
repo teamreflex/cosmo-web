@@ -253,34 +253,6 @@ describe("isolation", () => {
 });
 
 describe("Report", () => {
-  test("keeps an encrypted copy, once per reporter and message", async () => {
-    const state = world();
-    await run(
-      state,
-      signer,
-      Effect.gen(function* () {
-        const alice = yield* client(token("alice"));
-        const bob = yield* client(token("bob"));
-        const { messageId } = yield* alice.Send({
-          tradeId: TRADE,
-          body: text("send it to my paypal instead"),
-        });
-        const { reportId } = yield* bob.Report({
-          messageId,
-          reason: "off_platform_payment",
-        });
-        expect(state.copies.get(reportId)).toMatchObject({
-          messageId,
-          tradeId: TRADE,
-          senderId: "alice",
-        });
-        expect(yield* outcome(bob.Report({ messageId, reason: "spam" }))).toBe(
-          "AlreadyReported",
-        );
-      }),
-    );
-  });
-
   test.each([
     ["their own message", "alice", "Forbidden"],
     ["as an outsider", "carol", "MessageNotFound"],

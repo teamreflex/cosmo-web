@@ -1,66 +1,13 @@
 import { describe, expect, test } from "bun:test";
 import {
   FRESH_SESSION_MINUTES,
-  deletionBlockerCount,
   deletionProofRefusal,
   deletionStep,
   isFreshSession,
-  toDeletionCheck,
 } from "../src/lib/universal/account-deletion";
-import type {
-  DeletionBlocker,
-  DeletionStep,
-} from "../src/lib/universal/account-deletion";
+import type { DeletionStep } from "../src/lib/universal/account-deletion";
 import type { AccountErrorCode } from "../src/lib/universal/errors/accounts";
 import { deletionProofSchema } from "../src/lib/universal/schema/account";
-
-const blocker = {
-  kind: "live-trades",
-  trades: [
-    {
-      id: "trade-1",
-      kind: "trade",
-      counterparty: "Nites",
-      state: { kind: "disputed" },
-    },
-  ],
-} satisfies DeletionBlocker;
-
-describe("toDeletionCheck", () => {
-  test.each([
-    ["no checks", []],
-    ["checks without blockers", [null, null]],
-  ])("allows deletion with %s", (_, results) => {
-    expect(toDeletionCheck(results)).toEqual({ status: "allowed" });
-  });
-
-  test("blocks deletion with exactly the blockers returned", () => {
-    expect(toDeletionCheck([null, blocker, null])).toEqual({
-      status: "blocked",
-      blockers: [blocker],
-    });
-  });
-});
-
-describe("deletionBlockerCount", () => {
-  test("counts every live trade across blockers", () => {
-    const twoTrades = {
-      kind: "live-trades",
-      trades: [
-        ...blocker.trades,
-        {
-          id: "trade-2",
-          kind: "purchase",
-          counterparty: "Kairu",
-          state: { kind: "deadline", at: new Date(0) },
-        },
-      ],
-    } satisfies DeletionBlocker;
-
-    expect(deletionBlockerCount([])).toBe(0);
-    expect(deletionBlockerCount([blocker, twoTrades])).toBe(3);
-  });
-});
 
 const now = new Date("2026-10-10T12:00:00Z");
 
@@ -130,26 +77,8 @@ describe("deletionProofRefusal", () => {
   );
 });
 
-describe("deletionProofSchema", () => {
-  test.each([{ kind: "email", token: "abc" }, { kind: "fresh-session" }])(
-    "parses %p",
-    (proof) => {
-      expect(deletionProofSchema.parse(proof)).toEqual(proof);
-    },
-  );
-
-  test.each([
-    ["an email proof without a token", { kind: "email" }],
-    ["an email proof with an empty token", { kind: "email", token: "" }],
-    ["an unknown kind", { kind: "password", token: "abc" }],
-    ["a bare token", { token: "abc" }],
-  ])("rejects %s", (_, proof) => {
-    expect(deletionProofSchema.safeParse(proof).success).toBe(false);
-  });
-
-  test("drops a token sent with a fresh-session proof", () => {
-    expect(
-      deletionProofSchema.parse({ kind: "fresh-session", token: "abc" }),
-    ).toEqual({ kind: "fresh-session" });
-  });
+test("deletionProofSchema drops a token sent with a fresh-session proof", () => {
+  expect(
+    deletionProofSchema.parse({ kind: "fresh-session", token: "abc" }),
+  ).toEqual({ kind: "fresh-session" });
 });

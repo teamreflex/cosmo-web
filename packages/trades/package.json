@@ -10,7 +10,6 @@
     "./caps": "./src/caps.ts",
     "./composer": "./src/composer.ts",
     "./events": "./src/events.ts",
-    "./feed": "./src/feed.ts",
     "./feedback": "./src/feedback.ts",
     "./holdings": "./src/holdings.ts",
     "./inventory": "./src/inventory.ts",

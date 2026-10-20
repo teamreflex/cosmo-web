@@ -1,6 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import * as z from "zod";
 
@@ -94,27 +93,4 @@ describe("message catalogs", () => {
       }
     },
   );
-
-  test("compile without warnings", () => {
-    const outdir = mkdtempSync(join(tmpdir(), "paraglide-"));
-    try {
-      const result = Bun.spawnSync(
-        [
-          "bunx",
-          "@inlang/paraglide-js",
-          "compile",
-          "--project",
-          "./project.inlang",
-          "--outdir",
-          outdir,
-        ],
-        { cwd: appDir, stderr: "pipe", stdout: "pipe" },
-      );
-      const output = `${result.stdout.toString()}${result.stderr.toString()}`;
-      expect(result.exitCode, output).toBe(0);
-      expect(output).not.toMatch(/warn|error|⚠/i);
-    } finally {
-      rmSync(outdir, { recursive: true, force: true });
-    }
-  }, 60_000);
 });

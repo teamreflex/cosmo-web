@@ -1,3 +1,4 @@
+import { useHasPermission } from "@/hooks/use-has-permission";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { m } from "@/i18n/messages";
 import { reportReasonLabel } from "@/lib/client/reports";
@@ -70,6 +71,7 @@ import {
   type OfferTrade,
 } from "./offer-view";
 import OpenDisputeDialog from "./open-dispute-dialog";
+import StaffCancelTradeDialog from "./staff-cancel-trade-dialog";
 import TradeHeader, { PartyAvatar, PartyLink } from "./trade-header";
 import TradeTimeline from "./trade-timeline";
 import TransferRows from "./transfer-rows";
@@ -321,8 +323,10 @@ function OfferView({ trade, side }: { trade: OfferTrade; side: TradeSide }) {
 }
 
 /**
- * The page as staff read it: both parties named, in the third person,
- * with no actions. A pending offer says what was offered and until when.
+ * The page as staff read it: both parties named, in the third person. A
+ * pending offer says what was offered and until when. Staff who may cancel
+ * any trade can cancel an accepted or disputed one from the banner; staff
+ * who are a party get the party's page instead.
  */
 function StaffView({
   trade,
@@ -331,38 +335,68 @@ function StaffView({
   trade: Trade;
   report: Extract<TradeViewer, { kind: "staff" }>["report"];
 }) {
+  const hasPermission = useHasPermission();
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const canCancel = hasPermission({ trade: ["cancel-any"] });
+  const cancellable =
+    canCancel && transition(trade.state, { type: "staff_cancel" }).ok;
+
   return (
-    <TradeLayout
-      trade={trade}
-      side={null}
-      banner={
-        <Alert variant="destructive" role="status">
-          <IconEye />
-          <AlertTitle>{m.trade_page_staff_title()}</AlertTitle>
-          <AlertDescription>
-            {m.trade_page_staff_description()}
-          </AlertDescription>
-          {report !== null && (
-            <Link
-              to="/admin/reports"
-              search={{ status: report.status, report: report.id }}
-              className={cn(
-                buttonVariants({ variant: "outline", size: "sm" }),
-                "mt-2 w-fit no-underline! group-has-[>svg]/alert:col-start-2",
-              )}
-            >
-              {m.trade_page_staff_back()}
-            </Link>
-          )}
-        </Alert>
-      }
-      strip={
-        trade.stage === "offer" &&
-        trade.state.status === "pending" && (
-          <OfferStrip trade={trade} side={null} />
-        )
-      }
-    />
+    <>
+      <TradeLayout
+        trade={trade}
+        side={null}
+        banner={
+          <Alert variant="destructive" role="status">
+            <IconEye />
+            <AlertTitle>{m.trade_page_staff_title()}</AlertTitle>
+            {(report !== null || cancellable) && (
+              <div className="mt-2 flex flex-wrap gap-2 group-has-[>svg]/alert:col-start-2">
+                {report !== null && (
+                  <Link
+                    to="/admin/reports"
+                    search={{ status: report.status, report: report.id }}
+                    className={cn(
+                      buttonVariants({ variant: "outline", size: "sm" }),
+                      "no-underline!",
+                    )}
+                  >
+                    {m.trade_page_staff_back()}
+                  </Link>
+                )}
+                {cancellable && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setCancelOpen(true)}
+                  >
+                    <IconX />
+                    {m.admin_dispute_cancel()}
+                  </Button>
+                )}
+              </div>
+            )}
+          </Alert>
+        }
+        strip={
+          trade.stage === "offer" &&
+          trade.state.status === "pending" && (
+            <OfferStrip trade={trade} side={null} />
+          )
+        }
+      />
+      {canCancel && (
+        <StaffCancelTradeDialog
+          // a dispute opened since the page loaded changes the report the cancel names
+          key={report?.id}
+          tradeId={trade.id}
+          listingId={trade.listingId}
+          reportId={report?.id ?? null}
+          open={cancelOpen && cancellable}
+          onOpenChange={setCancelOpen}
+        />
+      )}
+    </>
   );
 }
 

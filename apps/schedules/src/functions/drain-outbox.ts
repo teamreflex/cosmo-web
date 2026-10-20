@@ -281,11 +281,12 @@ const applyPlan = (tx: WebTx, plan: BatchPlan) =>
  * foldTransfers. A transfer to a live item's receiver records it, with the
  * hash from the indexer's `transfer` row, and completes the trade once
  * nothing is owed, which fills its listing. A token moved elsewhere or made
- * untransferable posts an event on its live trade and notifies the item's
- * receiver, breaks each open listing offering it and turns each pending
- * offer holding it stale, with an event and a notification to its sender. A
- * transfer whose `transfer` row is gone was rolled back with a hot block, so
- * it doesn't count here.
+ * untransferable posts an event on its live trade without notifying anyone,
+ * breaks each open listing offering it with a `listing_closed` notification
+ * to its poster, and turns each pending offer holding it stale with an event
+ * and an `offer_stale` notification to its sender. A transfer whose
+ * `transfer` row is gone was rolled back with a hot block, so it doesn't
+ * count here.
  *
  * Locks, after the cursor: every user it may notify `FOR KEY SHARE`, then the
  * live trades, then the pending offers, then listings (docs/auth.md). The

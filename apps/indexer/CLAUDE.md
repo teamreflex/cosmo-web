@@ -154,7 +154,7 @@ COSMO stopped returning serials at the v1 metadata cutoff, so `src/serials.ts` s
 
 ### List Event Outbox
 
-`list_event_outbox` feeds apps/schedules' `drain-outbox`. The processor only appends: a `transfer` row for every transfer except mints, and a `transferability` row for every token a `batchUpdateObjektTransferability` call updates. Ids follow processing order, so within one batch every transfer row precedes every transferability row. A `NOT VALID` check enforces each type's columns on new rows without scanning old ones.
+`list_event_outbox` feeds apps/schedules' `drain-outbox`, which clears list entries, pins and binder slots and settles trades from it (see `docs/trades.md`). The processor only appends: a `transfer` row for every transfer except mints, and a `transferability` row for every token a `batchUpdateObjektTransferability` call updates. Ids follow processing order, so within one batch every transfer row precedes every transferability row. A `NOT VALID` check enforces each type's columns on new rows without scanning old ones.
 
 The processor runs with `supportHotBlocks`, and a hot-block rollback doesn't remove outbox rows: the change log records each insert by entity id, and a bigserial row has no id until the insert has run. The drain detects this through the row's `transfer_id`.
 

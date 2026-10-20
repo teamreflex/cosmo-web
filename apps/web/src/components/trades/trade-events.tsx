@@ -169,7 +169,7 @@ export function describeEvent(
           markup={bold}
         />
       );
-    // the payment side arrives in phase 13a
+    // payments aren't implemented, so nothing writes these yet
     case "marked_paid":
     case "payment_confirmed":
       return null;

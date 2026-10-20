@@ -1,6 +1,6 @@
 # Chat App
 
-Effect service for trade chat: the `ChatRpcs` group from `@apollo/chat/protocol`, served with `RpcServer.layerHttp({ protocol: "websocket" })` at `/rpc` on `BunHttpServer`. One instance; fan-out is in process. The web app's lazily loaded chat panel is the only client. `README.md` diagrams the flow.
+Effect service for trade chat: the `ChatRpcs` group from `@apollo/chat/protocol`, served with `RpcServer.layerHttp({ protocol: "websocket" })` at `/rpc` on `BunHttpServer`. One instance; fan-out is in process. The web app's lazily loaded chat panel is the only client. `README.md` diagrams the flow, and `docs/trades.md` covers where chat sits in the trade lifecycle.
 
 ## How a call runs
 

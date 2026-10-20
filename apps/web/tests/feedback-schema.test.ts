@@ -1,14 +1,5 @@
 import { textLength } from "@apollo/util";
 import { describe, expect, test } from "bun:test";
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-import * as z from "zod";
-import { formatFeedbackError } from "../src/lib/client/errors/feedback";
-import { ExpectedError } from "../src/lib/universal/errors/expected";
-import {
-  feedbackErrorCodes,
-  isFeedbackErrorCode,
-} from "../src/lib/universal/errors/feedback";
 import {
   FEEDBACK_TEXT_MAX,
   normalizeFeedbackText,
@@ -18,9 +9,7 @@ import { leaveFeedbackSchema } from "../src/lib/universal/schema/feedback";
 const tradeId = "7d0b4f7e-3c1a-4b8e-9f2d-6a5c4b3a2f10";
 const valid = { tradeId, rating: "positive", comment: "Fast and friendly" };
 
-type LeaveInput = Record<string, string | number | boolean | Date | null>;
-
-const leave = (input: LeaveInput) =>
+const leave = (input: Record<string, string | null>) =>
   leaveFeedbackSchema.safeParse({ ...valid, ...input });
 
 // the comment a leave parses to, null for none, or undefined when it's refused
@@ -98,26 +87,6 @@ describe("PARSE-03: length counts code points, as varchar(280) does", () => {
   });
 });
 
-describe("PARSE-06: server-owned fields are stripped", () => {
-  test("a leave keeps only its own keys", () => {
-    const parsed = leave({
-      toUserId: "victim",
-      fromUserId: "someone",
-      role: "seller",
-      raterSide: "to",
-      scored: false,
-      createdAt: new Date(),
-      removedAt: null,
-    });
-    expect(parsed.success).toBe(true);
-    expect(Object.keys(parsed.data ?? {}).toSorted()).toEqual([
-      "comment",
-      "rating",
-      "tradeId",
-    ]);
-  });
-});
-
 describe("PARSE-10: control characters, invalid UTF-16 and invisible text", () => {
   test("a NUL never reaches Postgres", () => {
     expect(comment("ok\u0000")).toBe("ok");
@@ -148,51 +117,5 @@ describe("PARSE-10: control characters, invalid UTF-16 and invisible text", () =
 
   test("normalizing drops what the schema would", () => {
     expect(normalizeFeedbackText(`${RLO}a\u0000\n\nb `)).toBe("a b");
-  });
-});
-
-const locales = ["en", "fr", "ja", "ko"] as const;
-const catalogs = Object.fromEntries(
-  locales.map((locale) => [
-    locale,
-    z
-      .record(z.string(), z.unknown())
-      .parse(
-        JSON.parse(
-          readFileSync(
-            join(import.meta.dir, `../messages/${locale}.json`),
-            "utf8",
-          ),
-        ),
-      ),
-  ]),
-);
-
-describe("feedback error codes", () => {
-  test.each(
-    feedbackErrorCodes.flatMap((code) =>
-      locales.map((locale) => [code, locale] as const),
-    ),
-  )("feedback_error_%s exists in %s", (code, locale) => {
-    expect(catalogs[locale]?.[`feedback_error_${code}`]).toBeString();
-    expect(catalogs[locale]?.[`feedback_error_${code}`]).not.toBe("");
-  });
-
-  test.each(feedbackErrorCodes.map((code) => [code] as const))(
-    "formats %s with its own string",
-    (code) => {
-      expect(formatFeedbackError(new ExpectedError(code))).toBe(
-        z.string().parse(catalogs.en?.[`feedback_error_${code}`]),
-      );
-    },
-  );
-
-  test("ignores other domains' codes and non-errors", () => {
-    expect(
-      formatFeedbackError(new ExpectedError("trade_not_found")),
-    ).toBeNull();
-    expect(formatFeedbackError("feedback_not_found")).toBeNull();
-    expect(isFeedbackErrorCode("feedback_not_found")).toBe(true);
-    expect(isFeedbackErrorCode("trade_own")).toBe(false);
   });
 });

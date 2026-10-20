@@ -44,6 +44,7 @@ An `objekt` is a single NFT on the Abstract blockchain. Every objekt within a co
 - Objekts users "spin" are transferred to `Addresses.SPIN`, a sink with no outgoing transfers. They are real rows owned by that address, not deletions.
 - "spin" is an in-app gacha system where there's a chance of swapping an First/Double class objekt for a more valuable Special or Premier class objekt.
 - `objekt.minted_at` is the timestamp of whichever transfer created the row (indexer `handleObjekt`), not necessarily the mint. A mint the indexer missed gets the timestamp of the later transfer that created the row. Check for a transfer from `0x0` before treating `minted_at` as mint evidence.
+- `objekt.transferable` is false for an objekt COSMO won't let its owner send, such as a First class objekt locked by a completed grid. Apollo's trades only take transferable objekts, since every trade settles through transfers the parties make in COSMO (see `docs/trades.md`).
 - A token id below the first Abstract-native mint (9,419,276) doesn't mean the objekt was minted on Polygon: physicals keep the id reserved when they were printed, so Atom02 A objekts carry 8–9M ids yet were scanned on Abstract in late 2025. Split Polygon-range ids by `on_offline`: online ones were minted on Polygon, offline ones need checking on-chain.
 
 ## Serials

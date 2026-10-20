@@ -11,8 +11,9 @@ Detailed conventions live in `docs/`. Read the relevant file **before** working 
 | Components, forms, Tailwind/styling, i18n strings (`apps/web`)                                   | [`docs/frontend.md`](docs/frontend.md)   |
 | Throwing/handling errors, `ExpectedError`, Sentry filtering (`apps/web`)                         | [`docs/errors.md`](docs/errors.md)       |
 | Better Auth, staff roles, bans, COSMO links, account deletion, lock order, API keys (`apps/web`) | [`docs/auth.md`](docs/auth.md)           |
-| Writing or running tests (`bun test`, mocking cosmo endpoints)                                   | [`docs/testing.md`](docs/testing.md)     |
+| Writing or running tests (`bun test`), what earns a test                                         | [`docs/testing.md`](docs/testing.md)     |
 | COSMO domain concepts: collections, objekts, serials, grids, COMO, gravity polls                 | [`docs/cosmo.md`](docs/cosmo.md)         |
+| Listings, trades, direct offers, the drain and timers, feedback, chat, the market gate           | [`docs/trades.md`](docs/trades.md)       |
 | Looking up library documentation (TanStack, Drizzle, Effect, …)                                  | [`docs/libraries.md`](docs/libraries.md) |
 
 ## Development
