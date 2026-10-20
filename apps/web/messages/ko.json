@@ -562,7 +562,7 @@
   "trade_page_cancelled_you": "이 교환을 취소했습니다.",
   "trade_page_cancelled_them": "{name}님이 이 교환을 취소했습니다.",
   "trade_page_cancelled_staff": "{appName} 스태프가 이 교환을 취소했습니다.",
-  "trade_page_not_reversed": "{appName}은(는) 이미 보낸 것을 되돌리지 않습니다.",
+  "trade_page_not_reversed": "{appName}는 이미 보낸 것을 되돌리지 않습니다.",
   "trade_page_timed_out_both": "두 사람 모두 보낼 오브젝트가 남은 채 시간이 다 되었습니다.",
   "trade_page_timed_out_you": "보낼 오브젝트가 남은 채 시간이 다 되었습니다.",
   "trade_page_timed_out_them": "{name}님이 보낼 오브젝트가 남은 채 시간이 다 되었습니다.",
@@ -1158,10 +1158,27 @@
   "error_loading_user": "사용자를 불러올 수 없습니다",
   "_comment_terms": "Terms & Privacy page",
   "terms_title": "약관 및 개인정보",
+  "terms_section_account": "내 계정",
   "terms_email_usage": "이메일 주소는 로그인, 계정 복구 및 소셜 로그인 연결 목적으로만 사용됩니다.",
   "terms_email_receive": "계정 복구를 요청한 경우에만 이메일을 받게 됩니다.",
-  "terms_delete_account": "언제든지 계정을 삭제할 수 있습니다.",
   "terms_cosmo_linking": "코스모 계정을 연결할 때, 로그인은 계정의 사용자명과 지갑 주소를 읽는 데만 사용되며, 이는 프로필 표시를 위해 저장됩니다.",
+  "terms_delete_account": "진행 중인 교환이 있는 동안을 제외하고 언제든지 계정을 삭제할 수 있습니다. 계정을 삭제하면 프로필, 리스트, 고정 항목이 삭제되고, 공개 중인 교환 글과 제안은 종료됩니다. 일부 기록은 다른 사람들에게 필요하기 때문에 남습니다. 참여한 교환(관련된 코스모 주소 포함), 다른 사람에게 남긴 평가, 신고, 스태프 조치 기록이 여기에 해당합니다. 이 기록들에는 이메일이나 사용자명이 남지 않습니다.",
+  "terms_feedback_address": "받은 평가는 {appName} 계정이 아닌 코스모 주소에 속하므로, 계정이 삭제되어도 해당 주소에 남습니다.",
+  "terms_section_trading": "교환",
+  "terms_trading_matching": "{appName}는 교환 상대를 연결하고 교환을 기록할 뿐입니다. 오브젝트는 양측이 각자 COSMO 앱에서 보내며, {appName}는 오브젝트를 보관하거나 보내거나 보증하지 않습니다. 교환에 따른 위험은 본인이 부담합니다.",
+  "terms_trading_modhaus": "{appName}는 모드하우스와 관련이 없습니다. 스태프는 사용자 계정의 이용을 정지할 수 있으며, 사기 행위는 모드하우스에 신고합니다.",
+  "terms_trading_public": "내 교환 글과 내가 주고받은 평가(평점과 코멘트)는 공개됩니다. 교환 페이지와 채팅은 해당 교환의 두 당사자만 볼 수 있습니다.",
+  "terms_section_chat": "교환 채팅",
+  "terms_chat_retention": [
+    {
+      "declarations": ["input days", "local countPlural = days: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "채팅 메시지는 암호화되어 저장되며, 교환이 끝나고 {days}일 후에 삭제됩니다. 민감한 정보는 보내지 마세요."
+      }
+    }
+  ],
+  "terms_chat_staff_access": "스태프는 해당 교환이나 그 메시지 중 하나에 처리 중인 신고 또는 이의 제기가 있을 때만 교환 채팅을 읽을 수 있습니다. 신고된 메시지는 암호화된 상태로 신고와 함께 보관됩니다.",
   "terms_source_code": "이 애플리케이션의 소스 코드는 다음에서 확인할 수 있습니다",
   "_comment_account": "Account page strings",
   "account_description": "여기서 계정을 관리하세요.",
@@ -1550,6 +1567,18 @@
   "admin_audit_action_trade_remove_message": "채팅 메시지 삭제",
   "admin_audit_action_feedback_remove": "평가 삭제",
   "admin_accounts_title": "계정",
+  "admin_accounts_role_title": "역할 변경",
+  "admin_accounts_role_description": "사용자를 모더레이터나 관리자로 올리거나 다시 내립니다. 보호된 계정은 변경할 수 없으며, 자신의 역할은 낮출 수 없습니다.",
+  "admin_accounts_past_role_changes": "이전 변경 기록",
+  "admin_role_title": "사용자 역할 변경",
+  "admin_role_description": "코스모 사용자 이름으로 사용자를 찾은 뒤 새 역할을 선택하세요.",
+  "admin_role_user": "사용자",
+  "admin_role_role": "역할",
+  "admin_role_current": "현재 역할: {role}",
+  "admin_role_not_linked": "이 코스모 계정과 연결된 {appName} 계정이 없어 변경할 역할이 없습니다.",
+  "admin_role_note": "사용자의 다음 요청부터 적용되며 채팅 연결이 끊어집니다. 스태프 감사 기록에 남습니다.",
+  "admin_role_submit": "역할 변경",
+  "admin_role_success": "{username}의 역할을 {role}(으)로 변경했습니다",
   "admin_accounts_history_title": "연결 기록",
   "admin_accounts_history_description": "기록이 시작된 이후 코스모 계정이 {appName} 계정에 연결되거나 연결 해제된 기록을 최신순으로 보여줍니다. 그 이전의 연결은 포함되지 않습니다.",
   "admin_accounts_history_account": "계정",
@@ -2142,6 +2171,20 @@
   "market_listings_empty_filtered": "필터에 맞는 글이 없어요",
   "market_listings_empty_filtered_body": "필터를 줄이거나 초기화해서 모든 글을 확인해 보세요.",
   "market_listings_error": "교환 글을 불러오지 못했어요.",
+  "market_notice_title": "교환하기 전에",
+  "market_notice_transfers": "{appName}는 오브젝트를 직접 다루지 않습니다. 교환 상대를 연결하고 교환을 기록할 뿐이며, 오브젝트는 각자 COSMO 앱에서 보냅니다.",
+  "market_notice_modhaus": "{appName}는 모드하우스와 관련이 없지만, 사기는 모드하우스에 신고됩니다.",
+  "market_notice_caps": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "새 계정은 교환 글을 동시에 {count}건까지 수락할 수 있습니다. 평가 점수가 {tiers}에 도달할 때마다 1건씩 늘어나 최대 {ceiling}건이 됩니다."
+      }
+    }
+  ],
+  "market_notice_staff": "스태프가 여러 시간대에 있어 언제든 바로 답변할 수는 없습니다. 답변에 시간이 걸릴 수 있습니다.",
+  "market_notice_accept": "동의",
   "listing_composer_new": "새 교환 글",
   "listing_composer_title_create": "새 교환 글",
   "listing_composer_title_edit": "교환 글 수정",

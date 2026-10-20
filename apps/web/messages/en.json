@@ -1182,10 +1182,28 @@
   "error_loading_user": "Could not load user",
   "_comment_terms": "Terms & Privacy page",
   "terms_title": "Terms & Privacy",
+  "terms_section_account": "Your account",
   "terms_email_usage": "Email addresses are only used for sign in, account recovery, and social sign-in linking purposes.",
   "terms_email_receive": "You will only receive emails from us if you have requested them for account recovery purposes.",
-  "terms_delete_account": "You can delete your account at any time.",
   "terms_cosmo_linking": "When linking a COSMO account, the sign-in is only used to read the account's username and wallet address, which are then stored to display profiles.",
+  "terms_delete_account": "You can delete your account at any time, except while you have a trade in progress. Deleting it removes your profile, lists and pins, and closes your open listings and offers. Some records stay because other people rely on them: trades you took part in (with the COSMO addresses involved), feedback you left for others, reports, and records of staff actions. None of these keep your email or username.",
+  "terms_feedback_address": "Feedback you receive belongs to your COSMO address, not your {appName} account, so it stays with the address if the account is deleted.",
+  "terms_section_trading": "Trading",
+  "terms_trading_matching": "{appName} only matches traders and records their trades. Both sides send their own objekts in the COSMO app; {appName} never holds, sends or guarantees them, and you trade at your own risk.",
+  "terms_trading_modhaus": "{appName} isn't associated with MODHAUS. Staff can ban user accounts and will report scamming behavior to MODHAUS.",
+  "terms_trading_public": "Your listings, and the feedback you give and receive (ratings and comments), are public. A trade's page and chat are visible only to its two parties.",
+  "terms_section_chat": "Trade chat",
+  "terms_chat_retention": [
+    {
+      "declarations": ["input days", "local countPlural = days: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Chat messages are stored encrypted and deleted {days} day after the trade ends. Do not send sensitive information.",
+        "countPlural=other": "Chat messages are stored encrypted and deleted {days} days after the trade ends. Do not send sensitive information."
+      }
+    }
+  ],
+  "terms_chat_staff_access": "Staff can read a trade's chat only while that trade, or one of its messages, has an open report or dispute. A reported message is kept, encrypted, with its report.",
   "terms_source_code": "Source code for this application is available on",
   "_comment_account": "Account page strings",
   "account_description": "Manage your account here.",
@@ -1411,9 +1429,9 @@
   "admin_matrix_custom_member_placeholder": "Custom member...",
   "admin_matrix_invalid_number": "Invalid format. Use 101z, 301a, etc.",
   "admin_matrix_preview_empty": "Select members, seasons, and collection numbers to preview",
-  "role_user": "user",
-  "role_moderator": "moderator",
-  "role_admin": "admin",
+  "role_user": "User",
+  "role_moderator": "Moderator",
+  "role_admin": "Admin",
   "admin_signed_in_as": "Signed in as {role}",
   "admin_reports_title": "Reports",
   "admin_reports_status_open": "Open",
@@ -1579,6 +1597,18 @@
   "admin_audit_action_trade_remove_message": "Removed a chat message",
   "admin_audit_action_feedback_remove": "Removed a rating",
   "admin_accounts_title": "Accounts",
+  "admin_accounts_role_title": "Change a role",
+  "admin_accounts_role_description": "Raise a user to moderator or admin, or lower them again. Protected accounts can't be changed, and nobody can lower their own role.",
+  "admin_accounts_past_role_changes": "Past changes",
+  "admin_role_title": "Change a user's role",
+  "admin_role_description": "Find the user by their COSMO username, then pick their new role.",
+  "admin_role_user": "User",
+  "admin_role_role": "Role",
+  "admin_role_current": "Current role: {role}",
+  "admin_role_not_linked": "No {appName} account has linked this COSMO account, so it has no role to change.",
+  "admin_role_note": "Applies from the user's next request and closes their chat connections. Logged to staff audit.",
+  "admin_role_submit": "Change role",
+  "admin_role_success": "Changed {username}'s role to {role}",
   "admin_accounts_history_title": "Link history",
   "admin_accounts_history_description": "Links and unlinks between COSMO accounts and {appName} accounts since link history began, newest first. Links made before then aren't listed.",
   "admin_accounts_history_account": "Account",
@@ -2182,6 +2212,21 @@
   "market_listings_empty_filtered": "No listings match these filters",
   "market_listings_empty_filtered_body": "Try fewer filters, or reset them to see every open listing.",
   "market_listings_error": "Couldn't load listings.",
+  "market_notice_title": "Before you trade",
+  "market_notice_transfers": "{appName} never handles your objekts. It only matches traders and records each trade; both sides send their own objekts in the COSMO app.",
+  "market_notice_modhaus": "{appName} isn't associated with MODHAUS, but scams are reported to them.",
+  "market_notice_caps": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "A new account can accept {count} listing at a time. The limit rises by one at feedback scores of {tiers}, up to {ceiling}.",
+        "countPlural=other": "A new account can accept {count} listings at a time. The limit rises by one at feedback scores of {tiers}, up to {ceiling}."
+      }
+    }
+  ],
+  "market_notice_staff": "Staff are spread across timezones and can't answer around the clock, so replies can take a while.",
+  "market_notice_accept": "Accept",
   "listing_composer_new": "New Listing",
   "listing_composer_title_create": "New Listing",
   "listing_composer_title_edit": "Edit listing",

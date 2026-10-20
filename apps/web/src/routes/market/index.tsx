@@ -1,6 +1,7 @@
 import FiltersContainer from "@/components/collection/filters-container";
 import { Error } from "@/components/error-boundary";
 import MarketHeader from "@/components/market/market-header";
+import MarketNotice from "@/components/market/market-notice";
 import Overlay from "@/components/misc/overlay";
 import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
 import ListingFeed, {
@@ -101,6 +102,8 @@ function RouteComponent() {
       <Overlay>
         <ScrollToTop />
       </Overlay>
+
+      <MarketNotice />
     </main>
   );
 }

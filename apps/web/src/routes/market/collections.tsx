@@ -1,5 +1,6 @@
 import { Error } from "@/components/error-boundary";
 import MarketHeader from "@/components/market/market-header";
+import MarketNotice from "@/components/market/market-notice";
 import MarketRenderer from "@/components/market/market-renderer";
 import Overlay from "@/components/misc/overlay";
 import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
@@ -68,6 +69,8 @@ function RouteComponent() {
         <ScrollToTop />
         <ToggleObjektBands />
       </Overlay>
+
+      <MarketNotice />
     </main>
   );
 }

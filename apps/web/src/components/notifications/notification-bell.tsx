@@ -1,3 +1,4 @@
+import { useHasPermission } from "@/hooks/use-has-permission";
 import { useMarkNotificationsRead } from "@/hooks/use-mark-notifications-read";
 import { m } from "@/i18n/messages";
 import {
@@ -8,6 +9,7 @@ import {
   groupNotifications,
   type NotificationListItem,
 } from "@/lib/universal/notifications";
+import { marketAccess } from "@apollo/auth";
 import { IconBell, IconChecks, IconLoader2 } from "@tabler/icons-react";
 import {
   useInfiniteQuery,
@@ -33,6 +35,7 @@ export default function NotificationBell() {
   const queryClient = useQueryClient();
   const list = useInfiniteQuery({ ...notificationsListQuery, enabled: open });
   const markRead = useMarkNotificationsRead();
+  const hasPermission = useHasPermission();
 
   const bursts = groupNotifications(
     list.data?.pages.flatMap((page) => page.rows) ?? [],
@@ -72,14 +75,16 @@ export default function NotificationBell() {
             {m.notification_bell_label()}
           </h4>
 
-          <Link
-            to="/market/trades"
-            // already on My trades, the path doesn't change to close it
-            onClick={() => setOpenedOn(null)}
-            className={buttonVariants({ variant: "ghost", size: "sm" })}
-          >
-            {m.my_trades_title()}
-          </Link>
+          {hasPermission(marketAccess) && (
+            <Link
+              to="/market/trades"
+              // already on My trades, the path doesn't change to close it
+              onClick={() => setOpenedOn(null)}
+              className={buttonVariants({ variant: "ghost", size: "sm" })}
+            >
+              {m.my_trades_title()}
+            </Link>
+          )}
 
           <ErrorBoundary fallback={null}>
             <Suspense fallback={null}>

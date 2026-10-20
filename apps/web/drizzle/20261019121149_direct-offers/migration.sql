@@ -1,2 +1,0 @@
-CREATE INDEX "trade_offers_expiry_idx" ON "trade_offers" ("expires_at") WHERE "kind" = 'trade' AND "status" = 'pending';--> statement-breakpoint
-ALTER TABLE "trade_offers" ADD CONSTRAINT "trade_offers_pending_chk" CHECK ("status" <> 'pending' OR "expires_at" IS NOT NULL);

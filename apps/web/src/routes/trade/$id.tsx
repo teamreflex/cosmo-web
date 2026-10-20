@@ -11,6 +11,7 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
+import { requireMarketAccess } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { currentAccountQuery } from "@/lib/queries/core";
@@ -25,6 +26,7 @@ export const Route = createFileRoute("/trade/$id")({
   pendingComponent: PendingComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
+  beforeLoad: ({ context }) => requireMarketAccess(context.queryClient),
   loader: async ({ context, params }) => {
     // discord users sometimes paste formatting onto the end of the URL
     const id = sanitizeUuid(params.id);

@@ -1160,10 +1160,27 @@
   "error_loading_user": "無法載入使用者",
   "_comment_terms": "Terms & Privacy page",
   "terms_title": "條款與隱私權",
+  "terms_section_account": "你的帳號",
   "terms_email_usage": "電子郵件地址僅用於登入、帳號復原以及連結社群帳號。",
   "terms_email_receive": "只有在你為了復原帳號而提出要求時，才會收到我們寄出的電子郵件。",
-  "terms_delete_account": "你可以隨時刪除你的帳號。",
   "terms_cosmo_linking": "連結 COSMO 帳號時，登入僅用於讀取該帳號的使用者名稱和錢包地址，這些資料會被儲存以顯示個人檔案。",
+  "terms_delete_account": "你可以隨時刪除你的帳號，但有進行中的交換時除外。刪除帳號會移除你的個人檔案、清單和釘選，並關閉你開放中的刊登和報價。部分紀錄會保留，因為其他人需要仰賴這些紀錄：你參與過的交換（包含相關的 COSMO 地址）、你給他人留下的評價、檢舉，以及工作人員的操作紀錄。這些紀錄都不會保留你的電子郵件地址或使用者名稱。",
+  "terms_feedback_address": "你收到的評價屬於你的 COSMO 地址，而不是你的 {appName} 帳號，因此即使帳號被刪除，評價仍會保留在該地址下。",
+  "terms_section_trading": "交換",
+  "terms_trading_matching": "{appName} 只負責媒合交換雙方並記錄交換。雙方各自在 COSMO App 中傳送自己的 Objekt；{appName} 從不持有、傳送或擔保這些 Objekt，交換風險由你自行承擔。",
+  "terms_trading_modhaus": "{appName} 與 MODHAUS 無關。工作人員可以將使用者帳號停權，並會向 MODHAUS 檢舉詐騙行為。",
+  "terms_trading_public": "你的刊登，以及你給出和收到的評價（評分和留言）皆為公開內容。交換的頁面和聊天僅限交換雙方查看。",
+  "terms_section_chat": "交換聊天",
+  "terms_chat_retention": [
+    {
+      "declarations": ["input days", "local countPlural = days: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "聊天訊息會加密儲存，並在交換結束 {days} 天後刪除。請勿傳送敏感資訊。"
+      }
+    }
+  ],
+  "terms_chat_staff_access": "只有在某筆交換或其中某則訊息有待處理的檢舉或爭議時，工作人員才能查看該交換的聊天。被檢舉的訊息會以加密形式隨檢舉一併保留。",
   "terms_source_code": "本應用程式的原始碼公開於",
   "_comment_account": "Account page strings",
   "account_description": "在這裡管理你的帳號。",
@@ -1552,6 +1569,18 @@
   "admin_audit_action_trade_remove_message": "移除了一則聊天訊息",
   "admin_audit_action_feedback_remove": "移除了一則評價",
   "admin_accounts_title": "帳號",
+  "admin_accounts_role_title": "變更角色",
+  "admin_accounts_role_description": "將使用者提升為版主或管理員，或將其降回。受保護的帳號無法變更，任何人都不能降低自己的角色。",
+  "admin_accounts_past_role_changes": "過往變更紀錄",
+  "admin_role_title": "變更使用者的角色",
+  "admin_role_description": "以 COSMO 使用者名稱找到使用者，再選擇新的角色。",
+  "admin_role_user": "使用者",
+  "admin_role_role": "角色",
+  "admin_role_current": "目前角色：{role}",
+  "admin_role_not_linked": "沒有任何 {appName} 帳號連結此 COSMO 帳號，因此沒有可變更的角色。",
+  "admin_role_note": "從該使用者的下一次請求起生效，並會中斷其聊天連線。此操作會記錄到工作人員稽核。",
+  "admin_role_submit": "變更角色",
+  "admin_role_success": "已將 {username} 的角色變更為{role}",
   "admin_accounts_history_title": "連結紀錄",
   "admin_accounts_history_description": "自開始保存連結紀錄以來，COSMO 帳號與 {appName} 帳號之間的連結與解除連結，由新到舊排列。在此之前建立的連結不會列出。",
   "admin_accounts_history_account": "帳號",
@@ -2144,6 +2173,20 @@
   "market_listings_empty_filtered": "沒有符合這些篩選條件的刊登",
   "market_listings_empty_filtered_body": "請減少篩選條件，或重設篩選以查看所有開放中的刊登。",
   "market_listings_error": "無法載入刊登。",
+  "market_notice_title": "交換前須知",
+  "market_notice_transfers": "{appName} 從不經手你的 Objekt。它只負責媒合交換雙方並記錄交換，雙方各自在 COSMO App 中傳送自己的 Objekt。",
+  "market_notice_modhaus": "{appName} 與 MODHAUS 無關，但會向 MODHAUS 檢舉詐騙行為。",
+  "market_notice_caps": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "新帳號最多可同時接受 {count} 筆刊登。評價分數每達到 {tiers} 中的一級，上限就增加 1 筆，最多 {ceiling} 筆。"
+      }
+    }
+  ],
+  "market_notice_staff": "工作人員分布在不同時區，無法全天候即時回覆，回覆可能需要一些時間。",
+  "market_notice_accept": "同意",
   "listing_composer_new": "新增刊登",
   "listing_composer_title_create": "新增刊登",
   "listing_composer_title_edit": "編輯刊登",

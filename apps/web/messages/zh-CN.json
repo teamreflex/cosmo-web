@@ -1160,10 +1160,27 @@
   "error_loading_user": "无法加载用户",
   "_comment_terms": "Terms & Privacy page",
   "terms_title": "条款与隐私",
+  "terms_section_account": "你的账号",
   "terms_email_usage": "电子邮箱地址仅用于登录、找回账号以及关联社交账号登录。",
   "terms_email_receive": "只有在你申请找回账号时，才会收到我们发送的邮件。",
-  "terms_delete_account": "你可以随时删除你的账号。",
   "terms_cosmo_linking": "关联 COSMO 账号时，登录仅用于读取该账号的用户名和钱包地址，这些信息会被保存以用于显示个人主页。",
+  "terms_delete_account": "你可以随时删除你的账号，但有进行中的交换时除外。删除账号会移除你的个人主页、清单和置顶，并关闭你开放中的挂单和报价。部分记录会保留，因为其他人需要依赖它们：你参与过的交换（包括涉及的 COSMO 地址）、你给他人留下的评价、举报，以及工作人员的操作记录。这些记录都不会保留你的电子邮箱地址或用户名。",
+  "terms_feedback_address": "你收到的评价属于你的 COSMO 地址，而不是你的 {appName} 账号，因此即使账号被删除，评价仍会保留在该地址下。",
+  "terms_section_trading": "交换",
+  "terms_trading_matching": "{appName} 只负责匹配交换双方并记录交换。双方各自在 COSMO App 中发送自己的 Objekt；{appName} 从不持有、发送或担保这些 Objekt，交换风险由你自行承担。",
+  "terms_trading_modhaus": "{appName} 与 MODHAUS 无关。工作人员可以封禁用户账号，并会向 MODHAUS 举报诈骗行为。",
+  "terms_trading_public": "你的挂单，以及你给出和收到的评价（评分和评论）均为公开内容。交换的页面和聊天仅对交换双方可见。",
+  "terms_section_chat": "交换聊天",
+  "terms_chat_retention": [
+    {
+      "declarations": ["input days", "local countPlural = days: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "聊天消息会加密存储，并在交换结束 {days} 天后删除。请勿发送敏感信息。"
+      }
+    }
+  ],
+  "terms_chat_staff_access": "只有当某个交换或其中某条消息有待处理的举报或争议时，工作人员才能查看该交换的聊天。被举报的消息会以加密形式随举报一起保留。",
   "terms_source_code": "本应用的源代码托管于",
   "_comment_account": "Account page strings",
   "account_description": "在这里管理你的账号。",
@@ -1552,6 +1569,18 @@
   "admin_audit_action_trade_remove_message": "移除了一条聊天消息",
   "admin_audit_action_feedback_remove": "移除了一条评价",
   "admin_accounts_title": "账号",
+  "admin_accounts_role_title": "更改角色",
+  "admin_accounts_role_description": "将用户提升为版主或管理员，或将其降回。受保护的账号无法更改，任何人都不能降低自己的角色。",
+  "admin_accounts_past_role_changes": "历史更改",
+  "admin_role_title": "更改用户角色",
+  "admin_role_description": "通过 COSMO 用户名找到该用户，然后选择新角色。",
+  "admin_role_user": "用户",
+  "admin_role_role": "角色",
+  "admin_role_current": "当前角色：{role}",
+  "admin_role_not_linked": "没有 {appName} 账号关联此 COSMO 账号，因此没有可更改的角色。",
+  "admin_role_note": "从该用户的下一次请求起生效，并会断开其聊天连接。此操作会记录到工作人员审计中。",
+  "admin_role_submit": "更改角色",
+  "admin_role_success": "已将 {username} 的角色更改为{role}",
   "admin_accounts_history_title": "关联记录",
   "admin_accounts_history_description": "自开始记录关联历史以来，COSMO 账号与 {appName} 账号之间的关联和解除关联记录，最新的在前。在此之前建立的关联不会列出。",
   "admin_accounts_history_account": "账号",
@@ -2144,6 +2173,20 @@
   "market_listings_empty_filtered": "没有符合这些筛选条件的挂单",
   "market_listings_empty_filtered_body": "请减少筛选条件，或重置筛选以查看所有开放中的挂单。",
   "market_listings_error": "无法加载挂单。",
+  "market_notice_title": "交换前须知",
+  "market_notice_transfers": "{appName} 从不经手你的 Objekt。它只负责匹配交换双方并记录交换，双方各自在 COSMO App 中发送自己的 Objekt。",
+  "market_notice_modhaus": "{appName} 与 MODHAUS 无关，但会向 MODHAUS 举报诈骗行为。",
+  "market_notice_caps": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "新账号最多可同时接受 {count} 笔挂单。评价得分每达到 {tiers} 中的一档，上限就增加 1 笔，最多 {ceiling} 笔。"
+      }
+    }
+  ],
+  "market_notice_staff": "工作人员分布在不同时区，无法全天候即时回复，回复可能需要一些时间。",
+  "market_notice_accept": "同意",
   "listing_composer_new": "新建挂单",
   "listing_composer_title_create": "新建挂单",
   "listing_composer_title_edit": "编辑挂单",

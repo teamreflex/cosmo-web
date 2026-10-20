@@ -1158,10 +1158,27 @@
   "error_loading_user": "ユーザーを読み込めませんでした",
   "_comment_terms": "Terms & Privacy page",
   "terms_title": "利用規約とプライバシー",
+  "terms_section_account": "アカウント",
   "terms_email_usage": "メールアドレスはログイン、アカウント復旧、ソーシャル連携のためにのみ使用されます。",
   "terms_email_receive": "アカウント復旧をリクエストした場合にのみメールが送信されます。",
-  "terms_delete_account": "アカウントはいつでも削除できます。",
   "terms_cosmo_linking": "COSMO連携時のログインは、ユーザー名とウォレットアドレスを読み取るためだけに使用され、プロフィール表示のために保存されます。",
+  "terms_delete_account": "アカウントはいつでも削除できますが、進行中の取引がある間は削除できません。削除すると、プロフィール、リスト、ピンが削除され、公開中の出品とオファーは終了します。他のユーザーが必要とするため、一部の記録は残ります：参加した取引（関係するCOSMOアドレスを含む）、他のユーザーに残した評価、報告、スタッフの対応記録です。これらの記録には、メールアドレスやユーザー名は残りません。",
+  "terms_feedback_address": "受け取った評価は{appName}アカウントではなくCOSMOアドレスに紐づくため、アカウントが削除されてもそのアドレスに残ります。",
+  "terms_section_trading": "トレード",
+  "terms_trading_matching": "{appName}はトレード相手をマッチングし、その取引を記録するだけです。オブジェクトは双方がそれぞれCOSMOアプリで送ります。{appName}がオブジェクトを預かったり、送ったり、保証したりすることはなく、トレードは自己責任で行うものとします。",
+  "terms_trading_modhaus": "{appName}はMODHAUSとは関係ありません。スタッフはユーザーアカウントを利用停止にでき、詐欺行為はMODHAUSに報告します。",
+  "terms_trading_public": "あなたの出品と、あなたが付けた評価・受け取った評価（レーティングとコメント）は公開されます。取引のページとチャットは、その取引の当事者2人だけが見られます。",
+  "terms_section_chat": "取引チャット",
+  "terms_chat_retention": [
+    {
+      "declarations": ["input days", "local countPlural = days: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "チャットのメッセージは暗号化して保存され、取引終了から{days}日後に削除されます。個人情報や機密情報は送信しないでください。"
+      }
+    }
+  ],
+  "terms_chat_staff_access": "スタッフが取引のチャットを読めるのは、その取引またはそのメッセージのいずれかに未対応の報告または申し立てがある間だけです。報告されたメッセージは、暗号化されたまま報告とともに保管されます。",
   "terms_source_code": "このアプリケーションのソースコードはこちら：",
   "_comment_account": "Account page strings",
   "account_description": "ここでアカウントを管理できます。",
@@ -1550,6 +1567,18 @@
   "admin_audit_action_trade_remove_message": "チャットメッセージを削除",
   "admin_audit_action_feedback_remove": "評価を削除",
   "admin_accounts_title": "アカウント",
+  "admin_accounts_role_title": "権限の変更",
+  "admin_accounts_role_description": "ユーザーをモデレーターや管理者に昇格させたり、元に戻したりします。保護されたアカウントは変更できず、自分の権限を下げることもできません。",
+  "admin_accounts_past_role_changes": "過去の変更",
+  "admin_role_title": "ユーザーの権限を変更",
+  "admin_role_description": "COSMOのユーザー名でユーザーを探し、新しい権限を選んでください。",
+  "admin_role_user": "ユーザー",
+  "admin_role_role": "権限",
+  "admin_role_current": "現在の権限：{role}",
+  "admin_role_not_linked": "このCOSMOアカウントと連携している{appName}アカウントがないため、変更できる権限はありません。",
+  "admin_role_note": "ユーザーの次のリクエストから適用され、チャットの接続は切断されます。スタッフ監査ログに記録されます。",
+  "admin_role_submit": "権限を変更",
+  "admin_role_success": "{username}の権限を{role}に変更しました",
   "admin_accounts_history_title": "連携履歴",
   "admin_accounts_history_description": "履歴の記録開始以降に、COSMOアカウントが{appName}アカウントと連携・連携解除された記録を新しい順に表示します。それ以前の連携は含まれません。",
   "admin_accounts_history_account": "アカウント",
@@ -2142,6 +2171,20 @@
   "market_listings_empty_filtered": "条件に合う出品はありません",
   "market_listings_empty_filtered_body": "フィルターを減らすか、リセットしてすべての出品を表示してください。",
   "market_listings_error": "出品を読み込めませんでした。",
+  "market_notice_title": "トレードの前に",
+  "market_notice_transfers": "{appName}がオブジェクトを扱うことはありません。トレード相手を見つけて取引を記録するだけで、オブジェクトはそれぞれがCOSMOアプリで送ります。",
+  "market_notice_modhaus": "{appName}はMODHAUSとは関係ありませんが、詐欺はMODHAUSに報告されます。",
+  "market_notice_caps": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "新しいアカウントが同時に承諾できる出品は{count}件までです。評価スコアが{tiers}に達するごとに1件ずつ増え、最大{ceiling}件になります。"
+      }
+    }
+  ],
+  "market_notice_staff": "スタッフは複数のタイムゾーンにいるため、24時間いつでもすぐに対応できるわけではありません。返信に時間がかかる場合があります。",
+  "market_notice_accept": "同意する",
   "listing_composer_new": "新規出品",
   "listing_composer_title_create": "新規出品",
   "listing_composer_title_edit": "出品を編集",

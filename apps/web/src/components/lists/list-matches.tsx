@@ -1,9 +1,11 @@
+import { useHasPermission } from "@/hooks/use-has-permission";
 import { useSendOffer } from "@/hooks/use-send-offer";
 import { m } from "@/i18n/messages";
 import { $sendOffer } from "@/lib/functions/trade-offers";
 import { listMatchesQuery } from "@/lib/queries/objekt-queries";
 import type { TradePartner } from "@/lib/universal/lists";
 import { cn } from "@/lib/utils";
+import { marketAccess } from "@apollo/auth";
 import type { ObjektList } from "@apollo/database/web/types";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconUsers } from "@tabler/icons-react";
@@ -33,8 +35,9 @@ type Props = {
 
 /**
  * The people whose trade lists pair with this one, each opening to the
- * collections either side would give. Picking cards on both sides builds a
- * direct offer to that person, sent from the bar under them.
+ * collections either side would give. With market access, picking cards on
+ * both sides builds a direct offer to that person, sent from the bar under
+ * them.
  */
 export default function ListMatches({ list }: Props) {
   const [open, setOpen] = useState(false);
@@ -42,6 +45,7 @@ export default function ListMatches({ list }: Props) {
   const [offer, setOffer] = useState<
     ({ partner: TradePartner } & OfferPicks) | null
   >(null);
+  const canOffer = useHasPermission()(marketAccess);
   const send = useSendOffer({
     mutationFn: $sendOffer,
     picks: offer,
@@ -65,7 +69,7 @@ export default function ListMatches({ list }: Props) {
           </ErrorBoundary>
         }
         footer={
-          offer === null ? undefined : (
+          offer === null || !canOffer ? undefined : (
             <OfferBar
               eyebrow={
                 <ParaglideMessage
@@ -150,10 +154,15 @@ export default function ListMatches({ list }: Props) {
                           : { partner, give: new Map(), get: new Map() },
                       )
                     }
-                    onToggle={(side, card) =>
-                      setOffer((prev) =>
-                        prev === null ? prev : togglePick(prev, side, card),
-                      )
+                    onToggle={
+                      canOffer
+                        ? (side, card) =>
+                            setOffer((prev) =>
+                              prev === null
+                                ? prev
+                                : togglePick(prev, side, card),
+                            )
+                        : null
                     }
                   />
                 </Suspense>

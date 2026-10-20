@@ -12,6 +12,7 @@ import { m } from "@/i18n/messages";
 import type { CurrentUser } from "@/lib/universal/auth";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { DISCORD_URL } from "@/lib/utils";
+import { marketAccess } from "@apollo/auth";
 import {
   IconArrowsExchange,
   IconBrandDiscord,
@@ -105,13 +106,15 @@ export default function UserDropdown({
           <span>{m.user_dropdown_settings()}</span>
         </DropdownMenuItem>
 
-        <DropdownMenuItem
-          className="cursor-pointer"
-          render={<Link to="/market/trades" />}
-        >
-          <IconArrowsExchange className="h-4 w-4" />
-          <span>{m.my_trades_title()}</span>
-        </DropdownMenuItem>
+        {hasPermission(marketAccess) && (
+          <DropdownMenuItem
+            className="cursor-pointer"
+            render={<Link to="/market/trades" />}
+          >
+            <IconArrowsExchange className="h-4 w-4" />
+            <span>{m.my_trades_title()}</span>
+          </DropdownMenuItem>
+        )}
 
         {hasPermission(ADMIN_SHELL_PERMISSIONS) && (
           <div className="contents">

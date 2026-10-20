@@ -13,6 +13,7 @@ import { useRef, useState } from "react";
 import { useDebounceValue } from "usehooks-ts";
 
 type Props = {
+  id?: string;
   artistId: ValidArtist;
   value: CosmoPublicUser | null;
   onChange: (user: CosmoPublicUser | null) => void;
@@ -20,6 +21,7 @@ type Props = {
 };
 
 export default function CosmoUserCombobox({
+  id,
   artistId,
   value,
   onChange,
@@ -92,6 +94,7 @@ export default function CosmoUserCombobox({
   return (
     <Popover open={resultsOpen} onOpenChange={setOpen}>
       <Input
+        id={id}
         ref={inputRef}
         placeholder={m.user_search_placeholder()}
         value={query}

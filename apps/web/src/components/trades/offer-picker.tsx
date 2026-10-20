@@ -1,10 +1,14 @@
+import { useMetadataDialog } from "@/hooks/use-metadata-dialog";
 import { m } from "@/i18n/messages";
+import { objektQuery } from "@/lib/queries/objekt-queries";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type { OfferSerials } from "@/lib/universal/trades";
 import { cn } from "@/lib/utils";
 import { MAX_OFFERED } from "@apollo/trades/caps";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
+import { useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
+import { PickerCardFace } from "../objekt-picker/picker-grid";
 import SelectableCard from "../trade-listings/selectable-card";
 import { Skeleton } from "../ui/skeleton";
 import {
@@ -23,19 +27,24 @@ type OfferColumnsProps = {
   give: readonly string[];
   get: readonly string[];
   collections: Record<string, Objekt.Collection>;
+  /** the first row's images load first */
+  priority: boolean;
+  /** how the cards are picked; without it they only open their collection */
+  selection: OfferSelection | null;
+};
+
+export type OfferSelection = {
   /** the copy behind each card, by collection */
   serials: OfferSerials;
   picks: OfferPicks;
-  /** the first row's images load first */
-  priority: boolean;
   onToggle: (side: OfferSide, card: OfferCard) => void;
 };
 
 /**
  * What one side gives and the other gets, as two columns of cards: the
- * viewer's, then the other party's. Tapping a card adds its copy to the
- * offer or takes it out. A collection's cards share one copy and one pick,
- * so a collection shown twice is never offered twice.
+ * viewer's, then the other party's. With a selection, tapping a card adds
+ * its copy to the offer or takes it out. A collection's cards share one copy
+ * and one pick, so a collection shown twice is never offered twice.
  */
 export function OfferColumns(props: OfferColumnsProps) {
   return (
@@ -49,21 +58,16 @@ export function OfferColumns(props: OfferColumnsProps) {
 function OfferColumn({
   side,
   collections,
-  serials,
-  picks,
   priority,
-  onToggle,
+  selection,
   ...sides
 }: OfferColumnsProps & { side: OfferSide }) {
   const column = columns[side];
   const tone = offerTones[side];
-  const picked = picks[side];
-  const copies = sides[side].map((slug) => ({
-    slug,
-    collection: collections[slug],
-    pick: picked.get(slug) ?? serials[side][slug] ?? null,
-  }));
-  const anyPicked = copies.some(({ slug }) => picked.has(slug));
+  const slugs = sides[side];
+  const picked: ReadonlyMap<string, OfferCard> =
+    selection?.picks[side] ?? new Map();
+  const anyPicked = slugs.some((slug) => picked.has(slug));
 
   return (
     <div
@@ -78,11 +82,12 @@ function OfferColumn({
         <span>{column.arrow}</span>
         <span className="flex-1 truncate">{column.title()}</span>
         <span className="font-mono text-muted-foreground tabular-nums">
-          {copies.length}
+          {slugs.length}
         </span>
       </div>
       <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-[repeat(auto-fill,minmax(110px,1fr))] sm:gap-2">
-        {copies.map(({ slug, collection, pick }, index) => {
+        {slugs.map((slug, index) => {
+          const collection = collections[slug];
           if (collection === undefined) {
             return (
               <span
@@ -93,6 +98,19 @@ function OfferColumn({
               </span>
             );
           }
+          // a first row is three cards on phones and up to six wider
+          const first = priority && index < 6;
+          if (selection === null) {
+            return (
+              <CollectionCard
+                key={slug}
+                collection={collection}
+                priority={first}
+              />
+            );
+          }
+          const pick =
+            picked.get(slug) ?? selection.serials[side][slug] ?? null;
           return (
             <SelectableCard
               key={slug}
@@ -102,11 +120,10 @@ function OfferColumn({
               blocked={pick === null ? m.list_matches_card_unavailable() : null}
               full={picked.size >= MAX_OFFERED}
               faded={anyPicked}
-              // a first row is three cards on phones and up to six wider
-              priority={priority && index < 6}
+              priority={first}
               onToggle={() => {
                 if (pick !== null) {
-                  onToggle(side, {
+                  selection.onToggle(side, {
                     tokenId: pick.tokenId,
                     serial: pick.serial,
                     slug,
@@ -118,6 +135,44 @@ function OfferColumn({
           );
         })}
       </div>
+    </div>
+  );
+}
+
+/**
+ * A card that can't be picked, which opens its collection's details.
+ */
+function CollectionCard({
+  collection,
+  priority,
+}: {
+  collection: Objekt.Collection;
+  priority: boolean;
+}) {
+  const queryClient = useQueryClient();
+  const { open } = useMetadataDialog();
+
+  return (
+    <div className="@container">
+      <button
+        type="button"
+        aria-label={`${collection.member} ${collection.collectionNo}`}
+        onClick={() => {
+          queryClient.setQueryData(
+            objektQuery(collection.slug).queryKey,
+            collection,
+          );
+          open(collection.slug);
+        }}
+        style={{ "--objekt-background-color": collection.backgroundColor }}
+        className="relative block aspect-photocard w-full cursor-pointer overflow-hidden rounded-photocard bg-secondary outline-2 -outline-offset-2 outline-transparent transition-[outline-color] duration-150 hover:outline-(--objekt-background-color) focus-visible:outline-offset-2 focus-visible:outline-cosmo"
+      >
+        <PickerCardFace
+          collection={collection}
+          serial={undefined}
+          priority={priority}
+        />
+      </button>
     </div>
   );
 }

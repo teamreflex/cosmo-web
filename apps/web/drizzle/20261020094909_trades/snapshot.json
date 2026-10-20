@@ -2,11 +2,45 @@
   "type": "diff",
   "version": "9",
   "dialect": "postgres",
-  "id": "f3a416a8-2f71-4488-a772-94ff32e962b9",
+  "id": "718c4c14-0273-4550-a17b-ebc1ebdb3ba6",
   "prevIds": [
     "13d4b262-7e11-4270-a42c-e8a8d62d35f8"
   ],
   "footprints": [
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "feedback_rating"
+      ],
+      "writes": [
+        "s|enum|public.feedback_rating",
+        "n|enum|public.feedback_rating",
+        "e|enum|public.feedback_rating",
+        "n|type|public.feedback_rating"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "feedback_role"
+      ],
+      "writes": [
+        "s|enum|public.feedback_role",
+        "n|enum|public.feedback_role",
+        "e|enum|public.feedback_role",
+        "n|type|public.feedback_role"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
     {
       "statementType": "create_enum",
       "statementTarget": [
@@ -189,6 +223,61 @@
       ]
     },
     {
+      "statementType": "alter_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "notification_type"
+      ],
+      "writes": [
+        "s|enum|public.notification_type"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "report_messages"
+      ],
+      "writes": [
+        "s|tbl|public.report_messages",
+        "n|tbl|public.report_messages",
+        "e|tbl|public.report_messages",
+        "n|rel|public.report_messages",
+        "n|type|public.report_messages",
+        "n|rel|public.report_messages_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_feedback"
+      ],
+      "writes": [
+        "s|tbl|public.trade_feedback",
+        "n|tbl|public.trade_feedback",
+        "e|tbl|public.trade_feedback",
+        "n|rel|public.trade_feedback",
+        "n|type|public.trade_feedback",
+        "n|rel|public.trade_feedback_pkey"
+      ],
+      "reads": [
+        "n|sch|public",
+        "n|enum|public.trade_side",
+        "n|enum|public.feedback_role",
+        "n|enum|public.feedback_rating"
+      ]
+    },
+    {
       "statementType": "create_table",
       "statementTarget": [
         "table",
@@ -275,6 +364,44 @@
       ]
     },
     {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "user_feedback_stats"
+      ],
+      "writes": [
+        "s|tbl|public.user_feedback_stats",
+        "n|tbl|public.user_feedback_stats",
+        "e|tbl|public.user_feedback_stats",
+        "n|rel|public.user_feedback_stats",
+        "n|type|public.user_feedback_stats",
+        "n|rel|public.user_feedback_stats_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "jwks"
+      ],
+      "writes": [
+        "s|tbl|public.jwks",
+        "n|tbl|public.jwks",
+        "e|tbl|public.jwks",
+        "n|rel|public.jwks",
+        "n|type|public.jwks",
+        "n|rel|public.jwks_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
       "statementType": "add_column",
       "statementTarget": [
         "column",
@@ -290,6 +417,165 @@
       "reads": [
         "n|tbl|public.cosmo_link_audit",
         "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "notifications",
+        "offer_id"
+      ],
+      "writes": [
+        "s|col|public.notifications.offer_id",
+        "n|col|public.notifications.offer_id",
+        "e|col|public.notifications.offer_id"
+      ],
+      "reads": [
+        "n|tbl|public.notifications",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "notifications",
+        "token_id"
+      ],
+      "writes": [
+        "s|col|public.notifications.token_id",
+        "n|col|public.notifications.token_id",
+        "e|col|public.notifications.token_id"
+      ],
+      "reads": [
+        "n|tbl|public.notifications",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "notifications",
+        "notifications_offer_idx"
+      ],
+      "writes": [
+        "s|idx|public.notifications_offer_idx",
+        "n|idx|public.notifications_offer_idx",
+        "e|idx|public.notifications_offer_idx",
+        "n|rel|public.notifications_offer_idx"
+      ],
+      "reads": [
+        "n|tbl|public.notifications",
+        "n|sch|public",
+        "n|col|public.notifications.offer_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "report_messages",
+        "report_messages_trade_idx"
+      ],
+      "writes": [
+        "s|idx|public.report_messages_trade_idx",
+        "n|idx|public.report_messages_trade_idx",
+        "e|idx|public.report_messages_trade_idx",
+        "n|rel|public.report_messages_trade_idx"
+      ],
+      "reads": [
+        "n|tbl|public.report_messages",
+        "n|sch|public",
+        "n|col|public.report_messages.trade_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "trade_feedback",
+        "trade_feedback_trade_side_idx"
+      ],
+      "writes": [
+        "s|idx|public.trade_feedback_trade_side_idx",
+        "n|idx|public.trade_feedback_trade_side_idx",
+        "e|idx|public.trade_feedback_trade_side_idx",
+        "n|rel|public.trade_feedback_trade_side_idx"
+      ],
+      "reads": [
+        "n|tbl|public.trade_feedback",
+        "n|sch|public",
+        "n|col|public.trade_feedback.trade_id",
+        "n|col|public.trade_feedback.rater_side"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "trade_feedback",
+        "trade_feedback_to_address_idx"
+      ],
+      "writes": [
+        "s|idx|public.trade_feedback_to_address_idx",
+        "n|idx|public.trade_feedback_to_address_idx",
+        "e|idx|public.trade_feedback_to_address_idx",
+        "n|rel|public.trade_feedback_to_address_idx"
+      ],
+      "reads": [
+        "n|tbl|public.trade_feedback",
+        "n|sch|public",
+        "n|col|public.trade_feedback.to_address",
+        "n|col|public.trade_feedback.created_at",
+        "n|col|public.trade_feedback.id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "trade_feedback",
+        "trade_feedback_to_user_idx"
+      ],
+      "writes": [
+        "s|idx|public.trade_feedback_to_user_idx",
+        "n|idx|public.trade_feedback_to_user_idx",
+        "e|idx|public.trade_feedback_to_user_idx",
+        "n|rel|public.trade_feedback_to_user_idx"
+      ],
+      "reads": [
+        "n|tbl|public.trade_feedback",
+        "n|sch|public",
+        "n|col|public.trade_feedback.to_user_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "trade_feedback",
+        "trade_feedback_from_user_idx"
+      ],
+      "writes": [
+        "s|idx|public.trade_feedback_from_user_idx",
+        "n|idx|public.trade_feedback_from_user_idx",
+        "e|idx|public.trade_feedback_from_user_idx",
+        "n|rel|public.trade_feedback_from_user_idx"
+      ],
+      "reads": [
+        "n|tbl|public.trade_feedback",
+        "n|sch|public",
+        "n|col|public.trade_feedback.from_user_id"
       ]
     },
     {
@@ -523,6 +809,161 @@
       ]
     },
     {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "trade_offers",
+        "trade_offers_deadline_idx"
+      ],
+      "writes": [
+        "s|idx|public.trade_offers_deadline_idx",
+        "n|idx|public.trade_offers_deadline_idx",
+        "e|idx|public.trade_offers_deadline_idx",
+        "n|rel|public.trade_offers_deadline_idx"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|col|public.trade_offers.deadline_at"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "trade_offers",
+        "trade_offers_expiry_idx"
+      ],
+      "writes": [
+        "s|idx|public.trade_offers_expiry_idx",
+        "n|idx|public.trade_offers_expiry_idx",
+        "e|idx|public.trade_offers_expiry_idx",
+        "n|rel|public.trade_offers_expiry_idx"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|col|public.trade_offers.expires_at"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "notifications"
+      ],
+      "writes": [
+        "s|fk|public.notifications.notifications_offer_id_trade_offers_id_fkey",
+        "n|fk|public.notifications.notifications_offer_id_trade_offers_id_fkey",
+        "e|fk|public.notifications.notifications_offer_id_trade_offers_id_fkey",
+        "n|con|public.notifications.notifications_offer_id_trade_offers_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.notifications",
+        "n|sch|public",
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|col|public.notifications.offer_id",
+        "n|col|public.trade_offers.id",
+        "e|uniqueness|public.trade_offers.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "report_messages"
+      ],
+      "writes": [
+        "s|fk|public.report_messages.report_messages_report_id_reports_id_fkey",
+        "n|fk|public.report_messages.report_messages_report_id_reports_id_fkey",
+        "e|fk|public.report_messages.report_messages_report_id_reports_id_fkey",
+        "n|con|public.report_messages.report_messages_report_id_reports_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.report_messages",
+        "n|sch|public",
+        "n|tbl|public.reports",
+        "n|sch|public",
+        "n|col|public.report_messages.report_id",
+        "n|col|public.reports.id",
+        "e|uniqueness|public.reports.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_feedback"
+      ],
+      "writes": [
+        "s|fk|public.trade_feedback.trade_feedback_trade_id_trade_offers_id_fkey",
+        "n|fk|public.trade_feedback.trade_feedback_trade_id_trade_offers_id_fkey",
+        "e|fk|public.trade_feedback.trade_feedback_trade_id_trade_offers_id_fkey",
+        "n|con|public.trade_feedback.trade_feedback_trade_id_trade_offers_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.trade_feedback",
+        "n|sch|public",
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|col|public.trade_feedback.trade_id",
+        "n|col|public.trade_offers.id",
+        "e|uniqueness|public.trade_offers.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_feedback"
+      ],
+      "writes": [
+        "s|fk|public.trade_feedback.trade_feedback_from_user_id_user_id_fkey",
+        "n|fk|public.trade_feedback.trade_feedback_from_user_id_user_id_fkey",
+        "e|fk|public.trade_feedback.trade_feedback_from_user_id_user_id_fkey",
+        "n|con|public.trade_feedback.trade_feedback_from_user_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.trade_feedback",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.trade_feedback.from_user_id",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_feedback"
+      ],
+      "writes": [
+        "s|fk|public.trade_feedback.trade_feedback_to_user_id_user_id_fkey",
+        "n|fk|public.trade_feedback.trade_feedback_to_user_id_user_id_fkey",
+        "e|fk|public.trade_feedback.trade_feedback_to_user_id_user_id_fkey",
+        "n|con|public.trade_feedback.trade_feedback_to_user_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.trade_feedback",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.trade_feedback.to_user_id",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    },
+    {
       "statementType": "create_fk",
       "statementTarget": [
         "table",
@@ -748,9 +1189,53 @@
         "n|col|public.cosmo_link_audit.reason",
         "n|col|public.cosmo_link_audit.staff_id"
       ]
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "notifications"
+      ],
+      "writes": [
+        "s|ck|public.notifications.notifications_subject_chk"
+      ],
+      "reads": [
+        "n|tbl|public.notifications",
+        "n|sch|public",
+        "n|col|public.notifications.type",
+        "n|col|public.notifications.actor_id",
+        "n|col|public.notifications.list_id",
+        "n|col|public.notifications.collection_id",
+        "n|col|public.notifications.offer_id",
+        "n|col|public.notifications.token_id",
+        "e|col|public.notifications.type",
+        "e|col|public.notifications.actor_id",
+        "e|col|public.notifications.list_id",
+        "e|col|public.notifications.collection_id"
+      ],
+      "sqlHash": "082efe05e063b23d"
     }
   ],
   "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "report_messages",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "trade_feedback",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
     {
       "op": "create",
       "row": {
@@ -785,6 +1270,50 @@
         "name": "trade_offers",
         "isRlsEnabled": false,
         "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "user_feedback_stats",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "jwks",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "feedback_rating",
+        "values": [
+          "positive",
+          "neutral",
+          "negative"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "feedback_role",
+        "values": [
+          "buyer",
+          "seller",
+          "trader"
+        ],
+        "entityType": "enums"
       }
     },
     {
@@ -929,6 +1458,374 @@
         "table": "cosmo_link_audit",
         "name": "staff_id",
         "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notifications",
+        "name": "offer_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notifications",
+        "name": "token_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "report_messages",
+        "name": "report_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "report_messages",
+        "name": "message_id",
+        "type": "bigint",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "report_messages",
+        "name": "trade_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "report_messages",
+        "name": "sender_id",
+        "type": "varchar(32)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "report_messages",
+        "name": "sent_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "report_messages",
+        "name": "body",
+        "type": "bytea",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_feedback",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_feedback",
+        "name": "trade_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_feedback",
+        "name": "from_user_id",
+        "type": "varchar(32)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_feedback",
+        "name": "to_user_id",
+        "type": "varchar(32)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_feedback",
+        "name": "from_address",
+        "type": "citext",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_feedback",
+        "name": "to_address",
+        "type": "citext",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_feedback",
+        "name": "rater_side",
+        "type": "trade_side",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_feedback",
+        "name": "role",
+        "type": "feedback_role",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_feedback",
+        "name": "rating",
+        "type": "feedback_rating",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_feedback",
+        "name": "comment",
+        "type": "varchar(280)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_feedback",
+        "name": "communication",
+        "type": "smallint",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_feedback",
+        "name": "speed",
+        "type": "smallint",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_feedback",
+        "name": "scored",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_feedback",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_feedback",
+        "name": "removed_at",
+        "type": "timestamp with time zone",
         "typeSchema": null,
         "notNull": false,
         "dimensions": 0,
@@ -1280,7 +2177,7 @@
         "schema": "public",
         "table": "trade_messages",
         "name": "body",
-        "type": "varchar(1000)",
+        "type": "bytea",
         "typeSchema": null,
         "notNull": false,
         "dimensions": 0,
@@ -1297,6 +2194,22 @@
         "table": "trade_messages",
         "name": "event",
         "type": "jsonb",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_messages",
+        "name": "removed_at",
+        "type": "timestamp with time zone",
         "typeSchema": null,
         "notNull": false,
         "dimensions": 0,
@@ -2046,6 +2959,353 @@
       "op": "create",
       "row": {
         "schema": "public",
+        "table": "user_feedback_stats",
+        "name": "address",
+        "type": "citext",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "user_feedback_stats",
+        "name": "positive",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "0",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "user_feedback_stats",
+        "name": "neutral",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "0",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "user_feedback_stats",
+        "name": "negative",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "0",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "user_feedback_stats",
+        "name": "score",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": {
+          "as": "positive - negative",
+          "type": "stored"
+        },
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "user_feedback_stats",
+        "name": "percent_positive",
+        "type": "double precision",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": {
+          "as": "positive::float8 / nullif(positive + negative, 0)",
+          "type": "stored"
+        },
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "jwks",
+        "name": "id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "jwks",
+        "name": "public_key",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "jwks",
+        "name": "private_key",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "jwks",
+        "name": "created_at",
+        "type": "timestamp",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "jwks",
+        "name": "expires_at",
+        "type": "timestamp",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notifications",
+        "name": "notifications_offer_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "offer_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "report_messages",
+        "name": "report_messages_trade_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "trade_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_feedback",
+        "name": "trade_feedback_trade_side_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "trade_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "rater_side",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_feedback",
+        "name": "trade_feedback_to_address_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "to_address",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "created_at",
+            "isExpression": false,
+            "asc": false,
+            "nullsFirst": true,
+            "opclass": null
+          },
+          {
+            "value": "id",
+            "isExpression": false,
+            "asc": false,
+            "nullsFirst": true,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_feedback",
+        "name": "trade_feedback_to_user_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "to_user_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_feedback",
+        "name": "trade_feedback_from_user_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "from_user_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
         "table": "trade_listing_wants",
         "name": "trade_listing_wants_listing_idx",
         "nameExplicit": true,
@@ -2380,6 +3640,154 @@
       "op": "create",
       "row": {
         "schema": "public",
+        "table": "trade_offers",
+        "name": "trade_offers_deadline_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "deadline_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": "\"kind\" = 'trade' AND \"status\" = 'accepted'",
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "trade_offers_expiry_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "expires_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": "\"kind\" = 'trade' AND \"status\" = 'pending'",
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notifications",
+        "name": "notifications_offer_id_trade_offers_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "offer_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "trade_offers",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "report_messages",
+        "name": "report_messages_report_id_reports_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "report_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "reports",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_feedback",
+        "name": "trade_feedback_trade_id_trade_offers_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "trade_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "trade_offers",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_feedback",
+        "name": "trade_feedback_from_user_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "from_user_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_feedback",
+        "name": "trade_feedback_to_user_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "to_user_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
         "table": "trade_listing_wants",
         "name": "trade_listing_wants_listing_id_trade_offers_id_fkey",
         "nameExplicit": false,
@@ -2560,6 +3968,32 @@
       "op": "create",
       "row": {
         "schema": "public",
+        "table": "report_messages",
+        "name": "report_messages_pkey",
+        "columns": [
+          "report_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_feedback",
+        "name": "trade_feedback_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
         "table": "trade_listing_wants",
         "name": "trade_listing_wants_pkey",
         "columns": [
@@ -2612,9 +4046,65 @@
       "op": "create",
       "row": {
         "schema": "public",
+        "table": "user_feedback_stats",
+        "name": "user_feedback_stats_pkey",
+        "columns": [
+          "address"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "jwks",
+        "name": "jwks_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
         "table": "cosmo_link_audit",
         "name": "cosmo_link_audit_staff_chk",
         "value": "(\"reason\" = 'staff-move') = (\"staff_id\" IS NOT NULL)",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_feedback",
+        "name": "trade_feedback_stars_chk",
+        "value": "(\"communication\" IS NULL OR \"communication\" BETWEEN 1 AND 5) AND (\"speed\" IS NULL OR \"speed\" BETWEEN 1 AND 5)",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_feedback",
+        "name": "trade_feedback_addresses_chk",
+        "value": "\"from_address\" <> \"to_address\"",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_feedback",
+        "name": "trade_feedback_users_chk",
+        "value": "\"from_user_id\" IS NULL OR \"to_user_id\" IS NULL OR \"from_user_id\" <> \"to_user_id\"",
         "entityType": "checks"
       }
     },
@@ -2634,7 +4124,17 @@
         "schema": "public",
         "table": "trade_messages",
         "name": "trade_messages_kind_chk",
-        "value": "CASE \"kind\" WHEN 'text' THEN \"event\" IS NULL ELSE \"event\" IS NOT NULL AND num_nonnulls(\"body\", \"sender_id\") = 0 END",
+        "value": "CASE \"kind\" WHEN 'text' THEN \"event\" IS NULL ELSE \"event\" IS NOT NULL AND num_nonnulls(\"body\", \"sender_id\", \"removed_at\") = 0 END",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_messages",
+        "name": "trade_messages_removed_chk",
+        "value": "\"removed_at\" IS NULL OR \"body\" IS NULL",
         "entityType": "checks"
       }
     },
@@ -2703,6 +4203,16 @@
       "row": {
         "schema": "public",
         "table": "trade_offers",
+        "name": "trade_offers_pending_chk",
+        "value": "\"status\" <> 'pending' OR \"expires_at\" IS NOT NULL",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
         "name": "trade_offers_ended_chk",
         "value": "(\"status\" IN ('filled', 'withdrawn', 'expired', 'broken', 'removed', 'abandoned', 'completed', 'cancelled', 'timed_out', 'declined', 'countered', 'stale')) = (\"ended_at\" IS NOT NULL)",
         "entityType": "checks"
@@ -2739,6 +4249,36 @@
       }
     },
     {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "user_feedback_stats",
+        "name": "user_feedback_stats_positive_chk",
+        "value": "\"positive\" >= 0",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "user_feedback_stats",
+        "name": "user_feedback_stats_neutral_chk",
+        "value": "\"neutral\" >= 0",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "user_feedback_stats",
+        "name": "user_feedback_stats_negative_chk",
+        "value": "\"negative\" >= 0",
+        "entityType": "checks"
+      }
+    },
+    {
       "op": "alter",
       "key": "enums\u0000[\"public\",\"cosmo_link_reason\"]",
       "set": {
@@ -2760,6 +4300,41 @@
           "feedback",
           "trade"
         ]
+      }
+    },
+    {
+      "op": "alter",
+      "key": "enums\u0000[\"public\",\"notification_type\"]",
+      "set": {
+        "values": [
+          "trade_have",
+          "trade_want",
+          "listing_claimed",
+          "trade_completed",
+          "trade_timed_out",
+          "trade_cancelled",
+          "trade_disputed",
+          "trade_dispute_resolved",
+          "trade_deadline_extended",
+          "trade_token_moved",
+          "trade_token_untransferable",
+          "listing_closed",
+          "trade_message",
+          "feedback_received",
+          "offer_received",
+          "offer_accepted",
+          "offer_declined",
+          "offer_countered",
+          "offer_expired",
+          "offer_stale"
+        ]
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"public\",\"notifications\",\"notifications_subject_chk\"]",
+      "set": {
+        "value": "CASE WHEN \"type\" IN ('trade_have', 'trade_want') THEN num_nonnulls(\"actor_id\", \"list_id\", \"collection_id\") = 3 AND \"offer_id\" IS NULL AND \"token_id\" IS NULL ELSE \"offer_id\" IS NOT NULL AND \"list_id\" IS NULL AND \"collection_id\" IS NULL END"
       }
     }
   ]

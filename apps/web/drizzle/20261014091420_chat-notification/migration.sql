@@ -1,1 +1,0 @@
-ALTER TYPE "notification_type" ADD VALUE 'trade_message';

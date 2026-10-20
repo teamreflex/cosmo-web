@@ -1,7 +1,7 @@
-import { requireStaffPage } from "@/components/admin/common";
 import CreateEvent from "@/components/admin/events/create-event-dialog";
 import EventsGrid from "@/components/admin/events/events-grid";
 import AdminNoAccess from "@/components/admin/no-access";
+import { requirePermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { artistsQuery, filterDataQuery } from "@/lib/queries/core";
@@ -13,7 +13,7 @@ import { Suspense } from "react";
 export const Route = createFileRoute("/admin/events")({
   staleTime: Infinity,
   beforeLoad: ({ context }) =>
-    requireStaffPage(context.role, { site: ["manage"] }),
+    requirePermission(context.role, [{ site: ["manage"] }]),
   notFoundComponent: AdminNoAccess,
   loader: async ({ context }) => {
     void context.queryClient.infiniteQuery(adminEventsQuery()).catch(noop);

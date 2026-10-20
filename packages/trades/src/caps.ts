@@ -6,19 +6,25 @@ export type ClaimStats = {
   score: number;
 };
 
+// the claims a new account may hold at once
+export const CLAIM_CAP_BASE = 3;
+
 // the scores at which a user may hold one more claim
 export const CLAIM_CAP_TIERS = [1, 5, 15, 30, 60] as const;
 
 // the most claims anyone may hold at once
-export const CLAIM_CAP_CEILING = 3 + CLAIM_CAP_TIERS.length;
+export const CLAIM_CAP_CEILING = CLAIM_CAP_BASE + CLAIM_CAP_TIERS.length;
 
 /**
  * How many listings a user may have claimed at once. Open listings aren't
- * capped. A new account may hold 3, and each tier its score reaches adds one,
- * so the first positive rating raises it and a negative score never lowers it.
+ * capped. A new account may hold the base, and each tier its score reaches
+ * adds one, so the first positive rating raises it and a negative score never
+ * lowers it.
  */
 export function claimCap({ score }: ClaimStats) {
-  return 3 + CLAIM_CAP_TIERS.filter((tier) => score >= tier).length;
+  return (
+    CLAIM_CAP_BASE + CLAIM_CAP_TIERS.filter((tier) => score >= tier).length
+  );
 }
 
 // the most objekts one listing can offer

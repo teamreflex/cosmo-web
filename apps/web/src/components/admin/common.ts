@@ -1,6 +1,5 @@
 import { m } from "@/i18n/messages";
-import { can } from "@apollo/auth";
-import type { Permissions, Role } from "@apollo/auth";
+import type { Permissions } from "@apollo/auth";
 import {
   IconAlertTriangle,
   IconCalendarEvent,
@@ -16,7 +15,6 @@ import {
   IconUserCog,
 } from "@tabler/icons-react";
 import type { Icon } from "@tabler/icons-react";
-import { notFound } from "@tanstack/react-router";
 
 /**
  * Who can open the admin layout and see its link in the user dropdown: every
@@ -27,17 +25,13 @@ export const ADMIN_SHELL_PERMISSIONS = {
 } satisfies Permissions;
 
 /**
- * Called from an admin page's `beforeLoad` with the permissions that open it,
- * any one of which is enough, so its loader never runs for a role without
- * them. The page's `notFoundComponent` (`AdminNoAccess`) then fills the admin
- * shell. It is a not-found rather than an error because SSR answers route
- * errors with a 500.
+ * Who can open /admin/accounts. The role card and the link history each
+ * render only for their own action, so either one opens the page.
  */
-export function requireStaffPage(role: Role, ...anyOf: Permissions[]) {
-  if (!anyOf.some((permissions) => can(role, permissions))) {
-    throw notFound();
-  }
-}
+export const ADMIN_ACCOUNTS_PERMISSIONS = [
+  { user: ["set-role"] },
+  { cosmo: ["history"] },
+] satisfies Permissions[];
 
 type AdminItem = {
   title: string;
@@ -71,7 +65,7 @@ export function getAdminItems(): AdminItem[] {
       title: m.admin_accounts_title(),
       url: "/admin/accounts",
       icon: IconUserCog,
-      permissions: [{ cosmo: ["history"] }],
+      permissions: ADMIN_ACCOUNTS_PERMISSIONS,
     },
     {
       title: m.admin_bands_title(),

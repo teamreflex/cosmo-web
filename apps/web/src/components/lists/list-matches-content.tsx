@@ -18,9 +18,12 @@ import { Link } from "@tanstack/react-router";
 import { type ReactNode, Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import UserAvatar from "../profile/user-avatar";
-import { OfferColumns, OfferColumnsSkeleton } from "../trades/offer-picker";
 import {
-  type OfferCard,
+  OfferColumns,
+  OfferColumnsSkeleton,
+  type OfferSelection,
+} from "../trades/offer-picker";
+import {
   type OfferPicks,
   type OfferSide,
   offerTones,
@@ -33,7 +36,8 @@ type Props = {
   /** the partner whose matches are open, and the copies picked from them */
   offer: ({ partner: TradePartner } & OfferPicks) | null;
   onExpand: (partner: TradePartner) => void;
-  onToggle: (side: OfferSide, card: OfferCard) => void;
+  /** null when the viewer can't make offers, which leaves the cards unpickable */
+  onToggle: OfferSelection["onToggle"] | null;
 };
 
 export default function ListMatchesContent({
@@ -64,30 +68,38 @@ export default function ListMatchesContent({
             expanded={picks !== null}
             onExpand={() => onExpand(partner)}
           >
-            {picks !== null && (
-              <QueryErrorResetBoundary>
-                {({ reset }) => (
-                  <ErrorBoundary
-                    onReset={reset}
-                    fallbackRender={() => (
-                      <p className="text-sm text-muted-foreground">
-                        {m.list_matches_serials_error()}
-                      </p>
-                    )}
-                  >
-                    <Suspense fallback={<OfferColumnsSkeleton />}>
-                      <PartnerOffer
-                        listName={name}
-                        partner={partner}
-                        collections={data.collections}
-                        picks={picks}
-                        onToggle={onToggle}
-                      />
-                    </Suspense>
-                  </ErrorBoundary>
-                )}
-              </QueryErrorResetBoundary>
-            )}
+            {picks !== null &&
+              (onToggle === null ? (
+                <PartnerMatches
+                  listName={name}
+                  partner={partner}
+                  collections={data.collections}
+                  selection={null}
+                />
+              ) : (
+                <QueryErrorResetBoundary>
+                  {({ reset }) => (
+                    <ErrorBoundary
+                      onReset={reset}
+                      fallbackRender={() => (
+                        <p className="text-sm text-muted-foreground">
+                          {m.list_matches_serials_error()}
+                        </p>
+                      )}
+                    >
+                      <Suspense fallback={<OfferColumnsSkeleton />}>
+                        <PartnerOffer
+                          listName={name}
+                          partner={partner}
+                          collections={data.collections}
+                          picks={picks}
+                          onToggle={onToggle}
+                        />
+                      </Suspense>
+                    </ErrorBoundary>
+                  )}
+                </QueryErrorResetBoundary>
+              ))}
           </PartnerRow>
         );
       })}
@@ -159,36 +171,44 @@ function PartnerRow({
   );
 }
 
-type PartnerOfferProps = {
+type PartnerMatchesProps = {
   listName: string;
   partner: TradePartner;
   collections: Record<string, Objekt.Collection>;
-  picks: OfferPicks;
-  onToggle: (side: OfferSide, card: OfferCard) => void;
 };
 
 /**
- * Each of the partner's matching lists, with what each side would give. The
- * copies behind the cards are read once for all of their lists.
+ * The copies behind the partner's cards, read once for all of their lists,
+ * so the viewer can pick them into an offer.
  */
 function PartnerOffer({
+  picks,
+  onToggle,
+  ...props
+}: PartnerMatchesProps & Omit<OfferSelection, "serials">) {
+  // a list has no cap, so past the request's cap a collection shows as unavailable
+  const give = [
+    ...new Set(props.partner.matches.flatMap((match) => match.iHaveTheyWant)),
+  ].slice(0, MAX_OFFER_SERIAL_SLUGS);
+  const get = [
+    ...new Set(props.partner.matches.flatMap((match) => match.theyHaveIWant)),
+  ].slice(0, MAX_OFFER_SERIAL_SLUGS);
+  const { data: serials } = useSuspenseQuery(
+    offerSerialsQuery(props.partner.userId, give, get),
+  );
+
+  return <PartnerMatches {...props} selection={{ serials, picks, onToggle }} />;
+}
+
+/**
+ * Each of the partner's matching lists, with what each side would give.
+ */
+function PartnerMatches({
   listName,
   partner,
   collections,
-  picks,
-  onToggle,
-}: PartnerOfferProps) {
-  // a list has no cap, so past the request's cap a collection shows as unavailable
-  const give = [
-    ...new Set(partner.matches.flatMap((match) => match.iHaveTheyWant)),
-  ].slice(0, MAX_OFFER_SERIAL_SLUGS);
-  const get = [
-    ...new Set(partner.matches.flatMap((match) => match.theyHaveIWant)),
-  ].slice(0, MAX_OFFER_SERIAL_SLUGS);
-  const { data: serials } = useSuspenseQuery(
-    offerSerialsQuery(partner.userId, give, get),
-  );
-
+  selection,
+}: PartnerMatchesProps & { selection: OfferSelection | null }) {
   return partner.matches.map((match, index) => (
     <div key={match.listId} className="flex flex-col gap-2">
       <div className="flex items-center justify-between text-xs">
@@ -210,10 +230,8 @@ function PartnerOffer({
         give={match.iHaveTheyWant}
         get={match.theyHaveIWant}
         collections={collections}
-        serials={serials}
-        picks={picks}
         priority={index === 0}
-        onToggle={onToggle}
+        selection={selection}
       />
     </div>
   ));
@@ -227,9 +245,9 @@ type MatchSignatureProps = {
 function MatchSignature({ have, want }: MatchSignatureProps) {
   return (
     <div className="flex shrink-0 items-center gap-1.5 text-xs">
-      <MatchChip value={have} label={m.list_matches_have_label()} tone="give" />
+      <MatchChip value={have} label={m.list_matches_have_label()} tone="get" />
       <IconArrowsExchange className="size-3.5 text-muted-foreground" />
-      <MatchChip value={want} label={m.list_matches_want_label()} tone="get" />
+      <MatchChip value={want} label={m.list_matches_want_label()} tone="give" />
     </div>
   );
 }
@@ -241,7 +259,7 @@ function MatchChip({
 }: {
   value: number;
   label: string;
-  /** a have count takes the give side's colour, a want count the get side's */
+  /** what they have is what you'd get, what they want is what you'd give */
   tone: OfferSide;
 }) {
   const c = offerTones[tone];

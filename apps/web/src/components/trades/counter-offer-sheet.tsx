@@ -206,10 +206,12 @@ function CounterColumns({
       give={matches.give}
       get={matches.get}
       collections={matches.collections}
-      serials={{ give: pinned("give"), get: pinned("get") }}
-      picks={picks}
       priority
-      onToggle={onToggle}
+      selection={{
+        serials: { give: pinned("give"), get: pinned("get") },
+        picks,
+        onToggle,
+      }}
     />
   );
 }

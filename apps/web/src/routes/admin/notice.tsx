@@ -1,6 +1,6 @@
-import { requireStaffPage } from "@/components/admin/common";
 import AdminNoAccess from "@/components/admin/no-access";
 import UpdateNoticeCard from "@/components/admin/notice/update-notice-card";
+import { requirePermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { noticeQuery } from "@/lib/queries/notice";
@@ -9,7 +9,7 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/admin/notice")({
   staleTime: Infinity,
   beforeLoad: ({ context }) =>
-    requireStaffPage(context.role, { site: ["manage"] }),
+    requirePermission(context.role, [{ site: ["manage"] }]),
   notFoundComponent: AdminNoAccess,
   loader: async ({ context }) => {
     await context.queryClient.query({ ...noticeQuery, staleTime: "static" });

@@ -1,4 +1,5 @@
 import { Error } from "@/components/error-boundary";
+import MarketNotice from "@/components/market/market-notice";
 import ListingDetail from "@/components/trade-listings/listing-detail";
 import { ListingHeaderSkeleton } from "@/components/trade-listings/listing-header";
 import { WantsSkeleton } from "@/components/trade-listings/listing-status";
@@ -104,6 +105,8 @@ function RouteComponent() {
           </ProfileProvider>
         </MetadataDialogProvider>
       </UserStateProvider>
+
+      <MarketNotice />
     </main>
   );
 }

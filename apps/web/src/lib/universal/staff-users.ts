@@ -1,3 +1,5 @@
+import type { Role } from "@apollo/auth";
+
 /**
  * A user as staff surfaces name them: by the username of their linked COSMO
  * account, or by their Apollo username when they have no link. The two
@@ -14,3 +16,11 @@ export type StaffUser =
 export function staffUserText(user: StaffUser) {
   return user.kind === "cosmo" ? `@${user.username}` : user.username;
 }
+
+/**
+ * The user who has linked a COSMO account, as the role tool reads them.
+ */
+export type RoleUser = {
+  id: string;
+  role: Role;
+};

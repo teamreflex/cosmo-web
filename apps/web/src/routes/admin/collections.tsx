@@ -3,9 +3,9 @@ import CollectionLookup from "@/components/admin/collections/collection-lookup";
 import LatestCollections, {
   LatestCollectionsSkeleton,
 } from "@/components/admin/collections/latest-collections";
-import { requireStaffPage } from "@/components/admin/common";
 import AdminNoAccess from "@/components/admin/no-access";
 import { Skeleton } from "@/components/ui/skeleton";
+import { requirePermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import {
@@ -20,7 +20,7 @@ import { Suspense, useState } from "react";
 export const Route = createFileRoute("/admin/collections")({
   staleTime: Infinity,
   beforeLoad: ({ context }) =>
-    requireStaffPage(context.role, { site: ["manage"] }),
+    requirePermission(context.role, [{ site: ["manage"] }]),
   notFoundComponent: AdminNoAccess,
   loader: async ({ context }) => {
     void context.queryClient

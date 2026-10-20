@@ -1,6 +1,6 @@
 import { getCookie, setCookie } from "@tanstack/react-start/server";
 
-type CookieKey = "artists";
+type CookieKey = "artists" | "market-notice";
 
 /**
  * Read the value from a cookie.
@@ -20,7 +20,7 @@ export function fetchCookie<T = string>(key: CookieKey) {
 
 type SetCookie = {
   key: CookieKey;
-  value: string | string[] | object;
+  value: string | number | string[] | object;
   maxAge?: number;
 };
 
@@ -30,22 +30,11 @@ type SetCookie = {
 export function putCookie({ key, value, maxAge }: SetCookie) {
   // oxlint-disable-next-line anti-slop/no-runtime-typeof -- narrowing the SetCookie value union, not unparsed input
   const stringValue = typeof value === "string" ? value : JSON.stringify(value);
-  const payload = generateCookiePayload();
-  if (maxAge) {
-    payload.maxAge = maxAge;
-  }
-  setCookie(key, stringValue, payload);
-}
-
-/**
- * Generate the payload for a cookie.
- */
-function generateCookiePayload() {
-  return {
+  setCookie(key, stringValue, {
     path: "/",
-    maxAge: 60 * 60 * 24 * 30, // 30 days
-    sameSite: true,
+    maxAge: maxAge ?? 60 * 60 * 24 * 30, // 30 days
+    sameSite: "lax",
     httpOnly: true,
     secure: true,
-  };
+  });
 }

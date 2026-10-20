@@ -6,11 +6,19 @@ import { recordStaffAudit } from "@/lib/server/staff-audit.server";
 import { banAndSweep, guardUserChange } from "@/lib/server/staff-users.server";
 import { publishTradeUpdates } from "@/lib/server/trade-events.server";
 import { publishUserEvent } from "@/lib/server/user-events.server";
+import { ExpectedError } from "@/lib/universal/errors/expected";
 import {
   banUserInputSchema,
+  roleUserInputSchema,
+  setRoleInputSchema,
   unbanUserInputSchema,
 } from "@/lib/universal/schema/staff-users";
-import { tradeFeedback } from "@apollo/database/web/schema";
+import type { RoleUser } from "@/lib/universal/staff-users";
+import {
+  cosmoAccounts,
+  tradeFeedback,
+  user,
+} from "@apollo/database/web/schema";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 import { eq, inArray, sql } from "drizzle-orm";
@@ -115,4 +123,74 @@ export const $unbanUser = createServerFn({ method: "POST" })
       userId: data.userId,
     });
     await publishUserEvent({ type: "unbanned", userId: data.userId });
+  });
+
+/**
+ * Change a user's role. The user row is locked first, as every write that
+ * locks users does, and the role and its audit row commit together. Once
+ * they have, apps/chat hears of it and closes the user's sockets, so their
+ * next connection reads the new role. Sessions read the role from the user
+ * row on every request, so nothing else needs refreshing.
+ */
+export const $setRole = createServerFn({ method: "POST" })
+  .middleware([staffMiddleware({ user: ["set-role"] })])
+  .validator(setRoleInputSchema)
+  .handler(async ({ data, context }) => {
+    const staffId = context.session.user.id;
+    await guardUserChange({ id: staffId, role: context.role }, data.userId, {
+      kind: "set-role",
+      role: data.role,
+    });
+
+    const changed = await db.transaction(async (tx) => {
+      // the role the change replaces, read under the user's lock
+      const [target] = await tx
+        .select({ role: user.role })
+        .from(user)
+        .where(eq(user.id, data.userId))
+        .for("no key update");
+      if (target === undefined) {
+        throw new ExpectedError("user_not_found");
+      }
+      if (target.role === data.role) {
+        return false;
+      }
+
+      await tx
+        .update(user)
+        .set({ role: data.role, updatedAt: new Date() })
+        .where(eq(user.id, data.userId));
+      await recordStaffAudit(tx, {
+        staffId,
+        action: "user:set-role",
+        userId: data.userId,
+        detail: { kind: "set-role", from: target.role, to: data.role },
+      });
+      return true;
+    });
+
+    if (changed) {
+      await publishUserEvent({
+        type: "role-changed",
+        userId: data.userId,
+        role: data.role,
+      });
+    }
+  });
+
+/**
+ * The user who has linked a COSMO address, with their current role, for the
+ * role tool; null when no user has linked it. The admin finds the address
+ * through COSMO's own user search.
+ */
+export const $fetchRoleUser = createServerFn({ method: "GET" })
+  .middleware([staffMiddleware({ user: ["set-role"] })])
+  .validator(roleUserInputSchema)
+  .handler(async ({ data }): Promise<RoleUser | null> => {
+    const [row] = await db
+      .select({ id: user.id, role: user.role })
+      .from(cosmoAccounts)
+      .innerJoin(user, eq(user.id, cosmoAccounts.userId))
+      .where(eq(cosmoAccounts.address, data.address));
+    return row ?? null;
   });

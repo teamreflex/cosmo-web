@@ -10,7 +10,10 @@ import {
   EmptyTitle,
 } from "@/components/ui/empty";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useHasPermission } from "@/hooks/use-has-permission";
+import {
+  requireMarketAccess,
+  useHasPermission,
+} from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
 import { accountName } from "@/lib/client/trade-listings";
 import { env } from "@/lib/env/client";
@@ -44,6 +47,8 @@ export const Route = createFileRoute("/@{$username}/feedback")({
     middlewares: [stripSearchParams(feedbackSearchDefaults)],
   },
   loaderDeps: ({ search: { role, rating } }) => ({ role, rating }),
+  // ratings come from trades, so the page is part of the trade system
+  beforeLoad: ({ context }) => requireMarketAccess(context.queryClient),
   loader: async ({ context, deps }) => {
     const target = await context.queryClient.query({
       ...context.targetAccountOptions,
