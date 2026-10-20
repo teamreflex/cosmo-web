@@ -108,7 +108,7 @@ processor.run(db, async (ctx) => {
       }
 
       // set serials for objekts minted after the v1 metadata cutoff
-      await numberNewObjekts(ctx, createdObjekts);
+      await numberNewObjekts(ctx, createdObjekts, objektBatch);
 
       // mirror new or replaced images so the upsert carries their versions
       await mirrorImages(ctx, collectionBatch.values());
