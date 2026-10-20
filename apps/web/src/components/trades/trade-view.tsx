@@ -1,7 +1,12 @@
 import { useHydrated } from "@/hooks/use-hydrated";
 import { m } from "@/i18n/messages";
 import { reportReasonLabel } from "@/lib/client/reports";
-import { itemName, partyName, tradeTimeFormat } from "@/lib/client/trades";
+import {
+  itemName,
+  partyName,
+  partyRole,
+  tradeTimeFormat,
+} from "@/lib/client/trades";
 import { env } from "@/lib/env/client";
 import type {
   TradeParty,
@@ -9,13 +14,15 @@ import type {
   TradeViewer,
 } from "@/lib/universal/trades";
 import { cn } from "@/lib/utils";
-import type { TradeSide } from "@apollo/database/web/types";
+import type { TradeSide, TradeStatus } from "@apollo/database/web/types";
 import {
   needsYou,
   otherSide,
   partyAction,
   type PartyActionRefusal,
+  transition,
 } from "@apollo/trades/lifecycle";
+import { CLAIM_WINDOW } from "@apollo/trades/timers";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import {
   IconAlertTriangle,
@@ -52,6 +59,16 @@ import { Skeleton } from "../ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
 import { Timestamp } from "../ui/timestamp";
 import CancelTradeDialog from "./cancel-trade-dialog";
+import CounterOfferSheet from "./counter-offer-sheet";
+import OfferActionDialog from "./offer-action-dialog";
+import {
+  CounterLink,
+  type OfferButton,
+  OfferActions,
+  OfferEndedAlert,
+  OfferStrip,
+  type OfferTrade,
+} from "./offer-view";
 import OpenDisputeDialog from "./open-dispute-dialog";
 import TradeHeader, { PartyAvatar, PartyLink } from "./trade-header";
 import TradeTimeline from "./trade-timeline";
@@ -65,13 +82,17 @@ type Props = {
 /**
  * The trade page: the header, the steps, where the trade stands, every
  * transfer, and beside them who it's with and the chat, or for staff the
- * timeline too. Its parties can act on it; staff read it.
+ * timeline too. Its parties can act on it; staff read it. Until a direct
+ * offer is accepted its parties answer the offer instead.
  */
 export default function TradeView({ trade, viewer }: Props) {
-  return viewer.kind === "party" ? (
-    <PartyView trade={trade} side={viewer.side} />
+  if (viewer.kind === "staff") {
+    return <StaffView trade={trade} report={viewer.report} />;
+  }
+  return trade.stage === "offer" ? (
+    <OfferView trade={trade} side={viewer.side} />
   ) : (
-    <StaffView trade={trade} report={viewer.report} />
+    <PartyView trade={trade} side={viewer.side} />
   );
 }
 
@@ -82,7 +103,13 @@ export default function TradeView({ trade, viewer }: Props) {
  * would allow them, in the phone bar below tablet width. Once the trade
  * ended, the phone bar holds Leave feedback while the viewer may rate.
  */
-function PartyView({ trade, side }: { trade: Trade; side: TradeSide }) {
+function PartyView({
+  trade,
+  side,
+}: {
+  trade: Extract<Trade, { stage: "trade" }>;
+  side: TradeSide;
+}) {
   const startedId = useId();
   const [dialog, setDialog] = useState<"cancel" | "dispute" | null>(null);
   const feedbackLeave = useFeedbackLeave(trade, side);
@@ -214,8 +241,88 @@ function PartyView({ trade, side }: { trade: Trade; side: TradeSide }) {
 }
 
 /**
+ * A direct offer as one of its parties sees it before it's accepted. Its
+ * recipient can decline, counter or accept it and its sender can withdraw
+ * it, each only where the server would allow it, in the phone bar below
+ * tablet width. Once it ended there, a countered offer's phone bar leads to
+ * the counter.
+ */
+function OfferView({ trade, side }: { trade: OfferTrade; side: TradeSide }) {
+  const [dialog, setDialog] = useState<OfferButton | null>(null);
+  const actions = (
+    ["decline", "counter", "accept", "withdraw"] satisfies OfferButton[]
+  ).filter((type) => transition(trade.state, { type, by: side }).ok);
+
+  return (
+    <>
+      <TradeLayout
+        trade={trade}
+        side={side}
+        strip={
+          trade.state.status === "pending" && (
+            <OfferStrip trade={trade} side={side}>
+              {actions.length > 0 && (
+                <div className="flex flex-wrap gap-2 max-md:hidden">
+                  <OfferActions actions={actions} onOpen={setDialog} />
+                </div>
+              )}
+            </OfferStrip>
+          )
+        }
+        bar={
+          actions.length > 0
+            ? {
+                rows: 1,
+                children: (
+                  <div className="flex flex-1 gap-2">
+                    <OfferActions
+                      actions={actions}
+                      onOpen={setDialog}
+                      className="h-11 flex-1"
+                    />
+                  </div>
+                ),
+              }
+            : trade.counter === null
+              ? undefined
+              : {
+                  rows: 1,
+                  children: (
+                    <CounterLink
+                      counterId={trade.counter.id}
+                      className="h-11 flex-1"
+                    />
+                  ),
+                }
+        }
+      />
+      {actions.includes("counter") && (
+        <CounterOfferSheet
+          trade={trade}
+          open={dialog === "counter"}
+          onOpenChange={(open) => setDialog(open ? "counter" : null)}
+        />
+      )}
+      {actions
+        .filter((action) => action !== "counter")
+        .map((action) => (
+          <OfferActionDialog
+            key={action}
+            tradeId={trade.id}
+            items={trade.items}
+            action={action}
+            name={partyName(trade.parties[otherSide(side)])}
+            open={dialog === action}
+            onOpenChange={(open) => setDialog(open ? action : null)}
+          />
+        ))}
+    </>
+  );
+}
+
+/**
  * The page as staff read it: both parties named, in the third person,
- * with no actions.
+ * with no actions. A pending offer says what was offered and until when.
  */
 function StaffView({
   trade,
@@ -249,12 +356,15 @@ function StaffView({
           )}
         </Alert>
       }
+      strip={
+        trade.stage === "offer" &&
+        trade.state.status === "pending" && (
+          <OfferStrip trade={trade} side={null} />
+        )
+      }
     />
   );
 }
-
-// chat only runs where the web app knows its URL
-const chat = env.VITE_CHAT_URL !== undefined;
 
 // Effect and the RPC client download only with the panel
 const ChatPanel = lazy(() => import("./chat/chat-panel"));
@@ -268,8 +378,9 @@ type TradeTab = (typeof tradeTabs)[number];
 /**
  * The page around the viewer's own parts: staff's banner above the steps,
  * the party's strip under the transfers, and the phone bar with the room
- * it takes at the bottom of the page. The chat sits beside the transfers,
- * or in its own tab below laptop width.
+ * it takes at the bottom of the page. Once an offer is accepted, the chat
+ * sits beside the transfers, or in its own tab below laptop width; before
+ * that, the parties read the timeline there.
  */
 function TradeLayout({
   trade,
@@ -291,6 +402,8 @@ function TradeLayout({
   const [tab, setTab] = useState<TradeTab>("transfers");
   // the other party's messages that arrived while the chat tab was closed
   const [unread, setUnread] = useState(0);
+  // chat runs where the web app knows its URL, and opens once an offer is accepted
+  const chat = env.VITE_CHAT_URL !== undefined && trade.stage === "trade";
   const chatTab = chat && tab === "chat";
   const hydrated = useHydrated();
   const chatSkeleton = (
@@ -374,7 +487,7 @@ function TradeLayout({
                 <PartyCard
                   key={party}
                   party={trade.parties[party]}
-                  side={party}
+                  role={partyRole(party, trade.listingId)}
                 />
               ))}
               {side !== null && <TradeFeedback trade={trade} side={side} />}
@@ -571,42 +684,78 @@ const stepTones = {
   },
 };
 
+// the statuses a trade shows its steps in; the rest ended without completing
+const steppedStatuses: TradeStatus[] = [
+  "pending",
+  "accepted",
+  "disputed",
+  "completed",
+];
+
 /**
- * Accepted, both send, complete, with a segment per transfer in the middle
- * step, or one bar once segments would be too thin to read. Phones show
- * only the step the trade is on. An ended trade that didn't complete has no
- * steps left to show. A dispute staff opened by banning a party reads as a
- * neutral pause, as its alert does.
+ * Accept, both send, complete, with a segment per transfer in the middle
+ * step, or one bar once segments would be too thin to read. A pending offer
+ * is on the first step, which its recipient takes by accepting it. Phones
+ * show only the step the trade is on, with how long a pending offer's
+ * second step will take. A trade or offer that ended without completing has
+ * no steps left to show. A dispute staff opened by banning a party reads as
+ * a neutral pause, as its alert does.
  */
 function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
   const { status } = trade.state;
-  if (status === "cancelled" || status === "timed_out") return null;
+  if (!steppedStatuses.includes(status)) return null;
 
+  const offer = status === "pending";
   const completed = status === "completed";
   const paused = trade.dispute?.event.by === "staff";
   const seen = trade.items.filter((item) => item.status === "sent").length;
-  const poster = partyName(trade.parties.from);
-  const claimer = partyName(trade.parties.to);
-  const steps = [
-    {
-      tone: "done",
-      eyebrow: m.trade_page_step_done({ step: 0 }),
-      // the claimer is always the side that accepts a listing
-      title:
-        side === "to"
-          ? m.trade_page_step_accepted_you({ name: poster })
-          : side === "from"
-            ? m.trade_page_step_accepted_them({ name: claimer })
-            : m.trade_page_step_accepted_staff({ claimer, poster }),
-    },
+  const sender = partyName(trade.parties.from);
+  const recipient = partyName(trade.parties.to);
+  // the recipient always accepts, which for a listing is its claimer
+  const accepted =
+    trade.listingId === null
+      ? {
+          to: m.trade_page_step_accepted_offer_you({ name: sender }),
+          from: m.trade_page_step_accepted_offer_them({ name: recipient }),
+          staff: m.trade_page_step_accepted_offer_staff({ sender, recipient }),
+        }
+      : {
+          to: m.trade_page_step_accepted_you({ name: sender }),
+          from: m.trade_page_step_accepted_them({ name: recipient }),
+          staff: m.trade_page_step_accepted_staff({
+            claimer: recipient,
+            poster: sender,
+          }),
+        };
+  const steps: {
+    tone: keyof typeof stepTones;
+    eyebrow: string;
+    title: string;
+  }[] = [
+    offer
+      ? {
+          tone: "current",
+          eyebrow: m.trade_page_step({ step: 0 }),
+          title:
+            side === "to"
+              ? m.trade_page_step_offer_you()
+              : m.trade_page_step_offer_them({ name: recipient }),
+        }
+      : {
+          tone: "done",
+          eyebrow: m.trade_page_step_done({ step: 0 }),
+          title: accepted[side ?? "staff"],
+        },
     {
       tone: completed
         ? "done"
-        : paused
-          ? "paused"
-          : status === "disputed"
-            ? "dispute"
-            : "current",
+        : offer
+          ? "todo"
+          : paused
+            ? "paused"
+            : status === "disputed"
+              ? "dispute"
+              : "current",
       eyebrow: completed
         ? m.trade_page_step_done({ step: 1 })
         : paused
@@ -623,8 +772,8 @@ function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
         : m.trade_page_step({ step: 2 }),
       title: m.trade_page_step_complete(),
     },
-  ] as const;
-  const current = completed ? 2 : 1;
+  ];
+  const current = offer ? 0 : completed ? 2 : 1;
 
   return (
     <ol
@@ -653,6 +802,13 @@ function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
           <span className="text-sm font-semibold wrap-anywhere tabular-nums">
             {step.title}
           </span>
+          {offer && index === 0 && (
+            <span className="text-xs text-muted-foreground sm:hidden">
+              {m.trade_page_step_offer_then({
+                hours: CLAIM_WINDOW / 3_600_000,
+              })}
+            </span>
+          )}
           {index === 1 &&
             (trade.items.length > 12 ? (
               <span
@@ -685,8 +841,9 @@ function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
 
 /**
  * Where the trade stands when it isn't simply running: how it ended, the
- * dispute that froze it, or an objekt that can no longer reach its
- * receiver. Staff read it in the third person.
+ * dispute that froze it, an objekt that can no longer reach its receiver,
+ * or how an offer ended before it was accepted. Staff read it in the third
+ * person.
  */
 function StatePanel({
   trade,
@@ -697,6 +854,9 @@ function StatePanel({
   side: TradeSide | null;
   onLeave?: (feedbackWindow: FeedbackWindow) => void;
 }) {
+  if (trade.stage === "offer") {
+    return <OfferEndedAlert trade={trade} side={side} />;
+  }
   const appName = env.VITE_APP_NAME;
   const { state } = trade;
 
@@ -1048,9 +1208,10 @@ function StaffNote({ note }: { note: string }) {
 /**
  * A party to the trade: their avatar and name, linking to their profile
  * when they have a COSMO username, whether they posted or accepted the
- * listing, and their rating, which a deleted party has none of.
+ * listing, or sent or received the offer, and their rating, which a deleted
+ * party has none of.
  */
-function PartyCard({ party, side }: { party: TradeParty; side: TradeSide }) {
+function PartyCard({ party, role }: { party: TradeParty; role: string }) {
   return (
     <Item variant="outline" className="bg-card">
       <ItemMedia>
@@ -1060,11 +1221,7 @@ function PartyCard({ party, side }: { party: TradeParty; side: TradeSide }) {
         <ItemTitle className="max-w-full">
           <PartyLink party={party} />
         </ItemTitle>
-        <ItemDescription>
-          {side === "from"
-            ? m.trade_page_role_poster()
-            : m.trade_page_role_claimer()}
-        </ItemDescription>
+        <ItemDescription>{role}</ItemDescription>
         {party.user !== null && (
           <FeedbackBadge variant="full" rep={party.rep} />
         )}

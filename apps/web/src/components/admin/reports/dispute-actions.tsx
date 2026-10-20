@@ -103,11 +103,13 @@ export default function DisputeActions({ report, trade }: Props) {
 
   const canSettle = hasPermission({ trade: ["resolve-dispute"] });
   const canCancel = hasPermission({ trade: ["cancel-any"] });
-  if (!canSettle && !canCancel) {
+  const { view } = trade;
+  // only an accepted trade has a deadline, and only one can be disputed
+  if ((!canSettle && !canCancel) || view.stage === "offer") {
     return null;
   }
 
-  const { deadlineAt, dispute } = trade.view;
+  const { deadlineAt, dispute, listingId } = view;
 
   function run(action: DisputeAction) {
     return form.handleSubmit((input) => mutation.mutate({ action, input }));
@@ -257,7 +259,9 @@ export default function DisputeActions({ report, trade }: Props) {
               {spinner("complete")}
             </Button>
             <p className="text-xs text-muted-foreground">
-              {m.admin_dispute_complete_hint()}
+              {listingId === null
+                ? m.admin_dispute_complete_hint_offer()
+                : m.admin_dispute_complete_hint()}
             </p>
           </div>
         )}
@@ -274,7 +278,9 @@ export default function DisputeActions({ report, trade }: Props) {
               {spinner("cancel")}
             </Button>
             <p className="text-xs text-muted-foreground">
-              {m.admin_dispute_cancel_hint()}
+              {listingId === null
+                ? m.admin_dispute_cancel_hint_offer()
+                : m.admin_dispute_cancel_hint()}
             </p>
           </div>
         )}

@@ -9,6 +9,7 @@ import {
   IconArrowsExchange,
   IconCheck,
   IconClockPlus,
+  IconExchangeOff,
   IconFlag,
   IconGavel,
   IconHourglassEmpty,
@@ -143,6 +144,30 @@ const typeBadges = {
   feedback_received: {
     icon: IconStar,
     className: "bg-muted-foreground text-background",
+  },
+  offer_received: {
+    icon: IconArrowsExchange,
+    className: "bg-cosmo text-white",
+  },
+  offer_accepted: {
+    icon: IconArrowsExchange,
+    className: "bg-cosmo text-white",
+  },
+  offer_declined: {
+    icon: IconX,
+    className: "bg-muted-foreground text-background",
+  },
+  offer_countered: {
+    icon: IconArrowsExchange,
+    className: "bg-cosmo text-white",
+  },
+  offer_expired: {
+    icon: IconHourglassEmpty,
+    className: "bg-amber-400 text-amber-950",
+  },
+  offer_stale: {
+    icon: IconExchangeOff,
+    className: "bg-amber-400 text-amber-950",
   },
 } satisfies Record<BadgedType, { icon: TablerIcon; className: string }>;
 

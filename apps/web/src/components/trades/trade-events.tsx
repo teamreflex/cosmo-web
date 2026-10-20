@@ -8,10 +8,16 @@ import {
 } from "@/lib/client/trades";
 import { env } from "@/lib/env/client";
 import type { TradeView } from "@/lib/universal/trades";
-import type { TradeEvent, TradeSide } from "@apollo/database/web/types";
+import type {
+  OfferCloser,
+  OfferEvent,
+  TradeEvent,
+  TradeSide,
+} from "@apollo/database/web/types";
 import { otherSide } from "@apollo/trades/lifecycle";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconExternalLink } from "@tabler/icons-react";
+import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { bold } from "../notifications/row-utils";
 import { Timestamp } from "../ui/timestamp";
@@ -31,6 +37,9 @@ export function describeEvent(
 
   switch (event.type) {
     case "accepted":
+      if (trade.listingId === null) {
+        return describeOfferEvent(trade, side, event);
+      }
       // the claimer is always the side that accepts a listing
       return side === null ? (
         <ParaglideMessage
@@ -164,6 +173,159 @@ export function describeEvent(
     case "marked_paid":
     case "payment_confirmed":
       return null;
+    default:
+      return describeOfferEvent(trade, side, event);
+  }
+}
+
+/**
+ * A direct offer's step 0, which the sender (`from`) sends and the
+ * recipient (`to`) answers, and how it ended unaccepted, which a ban's
+ * closing puts down to staff without naming who was banned, and an account
+ * deletion's to the deletion.
+ */
+function describeOfferEvent(
+  trade: TradeView,
+  side: TradeSide | null,
+  event: OfferEvent | { type: "accepted" },
+): ReactNode {
+  const sender = partyName(trade.parties.from);
+  const recipient = partyName(trade.parties.to);
+  const linkTo =
+    (id: string) =>
+    ({ children }: { children?: ReactNode }) => (
+      <Link
+        to="/trade/$id"
+        params={{ id }}
+        className="text-cosmo hover:underline dark:text-cosmo-text"
+      >
+        {children}
+      </Link>
+    );
+  // an ending a ban or an account deletion closed, which names neither party
+  const closedEvent = (by: OfferCloser) =>
+    by === "staff"
+      ? m.trade_page_event_closed_staff({ appName: env.VITE_APP_NAME })
+      : m.trade_page_event_closed_deletion();
+
+  switch (event.type) {
+    case "offered":
+      // a counter links back to the offer it answers
+      return trade.parentId === null ? (
+        <ParaglideMessage
+          message={
+            side === null
+              ? m.trade_page_event_offered_staff
+              : side === "from"
+                ? m.trade_page_event_offered_you
+                : m.trade_page_event_offered_them
+          }
+          inputs={{ sender, recipient }}
+          markup={bold}
+        />
+      ) : (
+        <ParaglideMessage
+          message={
+            side === null
+              ? m.trade_page_event_counter_offered_staff
+              : side === "from"
+                ? m.trade_page_event_counter_offered_you
+                : m.trade_page_event_counter_offered_them
+          }
+          inputs={{ sender, recipient }}
+          markup={{ ...bold, link: linkTo(trade.parentId) }}
+        />
+      );
+    case "accepted":
+      return (
+        <ParaglideMessage
+          message={
+            side === null
+              ? m.trade_page_event_accepted_offer_staff
+              : side === "to"
+                ? m.trade_page_event_accepted_offer_you
+                : m.trade_page_event_accepted_offer_them
+          }
+          inputs={{ sender, recipient }}
+          markup={bold}
+        />
+      );
+    case "declined":
+      if (event.by !== "to") return closedEvent(event.by);
+      return (
+        <ParaglideMessage
+          message={
+            side === null
+              ? m.trade_page_event_declined_staff
+              : side === "to"
+                ? m.trade_page_event_declined_you
+                : m.trade_page_event_declined_them
+          }
+          inputs={{ sender, recipient }}
+          markup={bold}
+        />
+      );
+    case "withdrawn":
+      if (event.by !== "from") return closedEvent(event.by);
+      return side === "from" ? (
+        m.trade_page_event_withdrawn_you()
+      ) : (
+        <ParaglideMessage
+          message={m.trade_page_event_withdrawn_them}
+          inputs={{ sender }}
+          markup={bold}
+        />
+      );
+    case "countered":
+      return (
+        <ParaglideMessage
+          message={
+            side === null
+              ? m.trade_page_event_countered_staff
+              : side === "to"
+                ? m.trade_page_event_countered_you
+                : m.trade_page_event_countered_them
+          }
+          inputs={{ sender, recipient }}
+          markup={{ ...bold, link: linkTo(event.counterId) }}
+        />
+      );
+    case "expired":
+      return side === "to" ? (
+        m.trade_page_event_expired_you()
+      ) : (
+        <ParaglideMessage
+          message={m.trade_page_event_expired_them}
+          inputs={{ recipient }}
+          markup={bold}
+        />
+      );
+    case "stale": {
+      const item = trade.items.find(({ tokenId }) => tokenId === event.tokenId);
+      if (item === undefined) return null;
+      return event.reason === "untransferable" ? (
+        <ParaglideMessage
+          message={m.trade_page_event_stale_untransferable}
+          inputs={{ objekt: itemName(item) }}
+          markup={bold}
+        />
+      ) : item.sender === side ? (
+        <ParaglideMessage
+          message={m.trade_page_event_stale_yours}
+          inputs={{ objekt: itemName(item) }}
+          markup={bold}
+        />
+      ) : (
+        <ParaglideMessage
+          message={m.trade_page_event_stale_theirs}
+          inputs={{
+            objekt: itemName(item),
+            name: partyName(trade.parties[item.sender]),
+          }}
+          markup={bold}
+        />
+      );
+    }
     default:
       return event satisfies never;
   }

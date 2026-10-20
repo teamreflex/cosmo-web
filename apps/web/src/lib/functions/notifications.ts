@@ -80,28 +80,43 @@ export const $listNotifications = createServerFn({ method: "GET" })
       .orderBy(desc(notifications.createdAt), desc(notifications.id))
       .limit(PAGE_SIZE);
 
-    // what each claimed listing's poster sends, in posted order
-    const claimedIds = rows.flatMap((r) =>
-      r.type === "listing_claimed" && r.offerId !== null ? [r.offerId] : [],
+    /**
+     * The objekts of claimed trades, received offers and stale offers, in
+     * posted order: the first two show what their `from` side sends, and a
+     * stale offer says whose objekt moved.
+     */
+    const sendsShown = new Set(
+      rows.flatMap((r) =>
+        r.offerId !== null &&
+        (r.type === "listing_claimed" || r.type === "offer_received")
+          ? [r.offerId]
+          : [],
+      ),
     );
-    const posterItems =
-      claimedIds.length === 0
+    const itemOfferIds = [
+      ...sendsShown,
+      ...rows.flatMap((r) =>
+        r.offerId !== null && r.type === "offer_stale" ? [r.offerId] : [],
+      ),
+    ];
+    const offerItems =
+      itemOfferIds.length === 0
         ? []
         : await db
             .select({
               offerId: tradeOfferItems.offerId,
+              sender: tradeOfferItems.sender,
               tokenId: tradeOfferItems.tokenId,
             })
             .from(tradeOfferItems)
             .where(
               and(
-                inArray(tradeOfferItems.offerId, claimedIds),
-                eq(tradeOfferItems.sender, "from"),
+                inArray(tradeOfferItems.offerId, itemOfferIds),
                 eq(tradeOfferItems.kind, "objekt"),
               ),
             )
             .orderBy(asc(tradeOfferItems.id));
-    const posterTokens = Map.groupBy(posterItems, (i) => i.offerId);
+    const itemsByOffer = Map.groupBy(offerItems, (i) => i.offerId);
 
     const slugs = [
       ...new Set(
@@ -111,7 +126,11 @@ export const $listNotifications = createServerFn({ method: "GET" })
     const tokenIds = [
       ...new Set([
         ...rows.flatMap((r) => (r.tokenId === null ? [] : [r.tokenId])),
-        ...posterItems.flatMap((i) => (i.tokenId === null ? [] : [i.tokenId])),
+        ...offerItems.flatMap((i) =>
+          i.sender === "from" && i.tokenId !== null && sendsShown.has(i.offerId)
+            ? [i.tokenId]
+            : [],
+        ),
       ]),
     ];
     const collectionColumns = {
@@ -177,38 +196,52 @@ export const $listNotifications = createServerFn({ method: "GET" })
                 },
               ];
         }
-        return !isTradeNotification(row.type) ||
+        if (
+          !isTradeNotification(row.type) ||
           row.offerId === null ||
           row.offerStatus === null
-          ? []
-          : [
-              {
-                kind: "trade",
-                id: row.id,
-                createdAt: row.createdAt,
-                type: row.type,
-                unread: row.readAt === null,
-                actor:
-                  row.actorId === null
-                    ? null
-                    : { userId: row.actorId, username: row.actorUsername },
-                counterparty:
-                  row.counterpartyId === null
-                    ? null
-                    : {
-                        userId: row.counterpartyId,
-                        username: row.counterpartyUsername,
-                      },
-                offer: { id: row.offerId, status: row.offerStatus },
-                token: row.tokenId === null ? null : toToken(row.tokenId),
-                objekts:
-                  row.type === "listing_claimed"
-                    ? (posterTokens.get(row.offerId) ?? []).flatMap((i) =>
-                        i.tokenId === null ? [] : [toToken(i.tokenId)],
-                      )
-                    : [],
-              },
-            ];
+        ) {
+          return [];
+        }
+        const items = itemsByOffer.get(row.offerId) ?? [];
+        return [
+          {
+            kind: "trade",
+            id: row.id,
+            createdAt: row.createdAt,
+            type: row.type,
+            unread: row.readAt === null,
+            actor:
+              row.actorId === null
+                ? null
+                : { userId: row.actorId, username: row.actorUsername },
+            counterparty:
+              row.counterpartyId === null
+                ? null
+                : {
+                    userId: row.counterpartyId,
+                    username: row.counterpartyUsername,
+                  },
+            offer: { id: row.offerId, status: row.offerStatus },
+            token: row.tokenId === null ? null : toToken(row.tokenId),
+            tokenSender:
+              row.type === "offer_stale"
+                ? (items.find((i) => i.tokenId === row.tokenId)?.sender ?? null)
+                : null,
+            objekts:
+              row.type === "listing_claimed" || row.type === "offer_received"
+                ? items.flatMap((i) =>
+                    i.sender === "from" && i.tokenId !== null
+                      ? [toToken(i.tokenId)]
+                      : [],
+                  )
+                : [],
+            asked:
+              row.type === "offer_received"
+                ? items.filter((i) => i.sender === "to").length
+                : 0,
+          },
+        ];
       }),
       nextCursor:
         rows.length === PAGE_SIZE && last

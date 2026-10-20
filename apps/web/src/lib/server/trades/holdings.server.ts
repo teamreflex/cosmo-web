@@ -262,13 +262,17 @@ export async function resolveWants(
  * values. A live token can sit with someone other than its sender, so the
  * live side isn't narrowed by address.
  */
-async function unusableTokens(address: string, wants: readonly TradeWant[]) {
+export async function unusableTokens(
+  address: string,
+  wants: readonly TradeWant[],
+): Promise<TokenFlags> {
   const slugs = wants.flatMap((want) =>
     want.kind === "exact" ? [want.slug] : [],
   );
   const rows = await db
     .select({
       tokenId: sql<number | null>`${lockedObjekts.tokenId}`.as("token_id"),
+      flag: sql<"locked" | "live">`'locked'`.as("flag"),
     })
     .from(lockedObjekts)
     .where(
@@ -280,6 +284,7 @@ async function unusableTokens(address: string, wants: readonly TradeWant[]) {
           tokenId: sql<number | null>`${tradeOfferItems.tokenId}`.as(
             "token_id",
           ),
+          flag: sql<"locked" | "live">`'live'`.as("flag"),
         })
         .from(tradeOfferItems)
         .where(
@@ -294,9 +299,13 @@ async function unusableTokens(address: string, wants: readonly TradeWant[]) {
           ),
         ),
     );
-  return rows.flatMap((row) =>
-    row.tokenId === null ? [] : [String(row.tokenId)],
-  );
+  const flagged = (flag: "locked" | "live") =>
+    new Set(
+      rows.flatMap((row) =>
+        row.flag === flag && row.tokenId !== null ? [row.tokenId] : [],
+      ),
+    );
+  return { locked: flagged("locked"), live: flagged("live") };
 }
 
 /**
@@ -327,15 +336,18 @@ function itemRangeConditions(filter: RangeFilter) {
  * are interchangeable to every row and no allocation uses more than `n`
  * (the listing's total wanted count), so only the top `n` of each
  * collection by serial (highest first) come back, which bounds the read for
- * big holders without changing the allocation.
+ * big holders without changing the allocation. A caller that has read
+ * unusableTokens() for these wants, or for more, passes them as `unusable`.
  */
 export async function readCandidates(
   address: string,
   wants: readonly TradeWant[],
   n: number,
+  unusable?: TokenFlags,
 ) {
   if (wants.length === 0) return [];
-  const excluded = await unusableTokens(address, wants);
+  const { locked, live } = unusable ?? (await unusableTokens(address, wants));
+  const excluded = [...locked, ...live].map(String);
   const slugs = wants.flatMap((want) =>
     want.kind === "exact" ? [want.slug] : [],
   );

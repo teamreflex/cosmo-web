@@ -11,7 +11,7 @@ import { useHydrated } from "@/hooks/use-hydrated";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { roleLabel } from "@/lib/client/roles";
-import { tradeTimeFormat } from "@/lib/client/trades";
+import { partyRole, tradeTimeFormat } from "@/lib/client/trades";
 import { env } from "@/lib/env/client";
 import { $unbanUser } from "@/lib/functions/staff-users";
 import { adminReportsQueryFilter } from "@/lib/queries/reports";
@@ -23,7 +23,6 @@ import type {
   ReportTradeParty,
 } from "@/lib/universal/reports";
 import { staffUserText } from "@/lib/universal/staff-users";
-import type { TradeSide } from "@apollo/database/web/types";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -182,8 +181,11 @@ function TradeTarget({ trade }: { trade: ReportTargetTrade | null }) {
         <OpenTradeLink tradeId={view.id} />
       </div>
       <div className="grid gap-2 sm:grid-cols-2">
-        <TradeParty party={trade.from} side="from" />
-        <TradeParty party={trade.to} side="to" />
+        <TradeParty
+          party={trade.from}
+          role={partyRole("from", view.listingId)}
+        />
+        <TradeParty party={trade.to} role={partyRole("to", view.listingId)} />
       </div>
       <TransferRows trade={view} side={null} />
     </div>
@@ -192,14 +194,14 @@ function TradeTarget({ trade }: { trade: ReportTargetTrade | null }) {
 
 /**
  * A party to the disputed trade: who they are, which side of the listing
- * they're on, and whether they're banned.
+ * or direct offer they're on, and whether they're banned.
  */
 function TradeParty({
   party,
-  side,
+  role,
 }: {
   party: ReportTradeParty | null;
-  side: TradeSide;
+  role: string;
 }) {
   return (
     <div className="flex min-w-0 items-center gap-3 rounded-md border px-3 py-2.5">
@@ -215,9 +217,7 @@ function TradeParty({
           <StaffUserName user={party} className="font-medium" />
         )}
         <span className="text-xs text-muted-foreground">
-          {side === "from"
-            ? m.trade_page_role_poster()
-            : m.trade_page_role_claimer()}
+          {role}
           {party?.banActive === true && (
             <>
               {" · "}

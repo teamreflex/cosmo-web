@@ -6,6 +6,7 @@ import { feedItem, readIndexed } from "@/lib/server/trades/feed.server";
 import { readIndexerTokens } from "@/lib/server/trades/holdings.server";
 import {
   deadlinePassed,
+  offerCloser,
   readTradeView,
   toPartyName,
   tradeDispute,
@@ -45,7 +46,7 @@ import {
 } from "@apollo/database/web/schema";
 import {
   endedTradeStatuses,
-  liveTradeStatuses,
+  openTradeStatuses,
   type TradeSide,
 } from "@apollo/database/web/types";
 import { needsYou, partyAction, tradeState } from "@apollo/trades/lifecycle";
@@ -63,13 +64,12 @@ import {
   sql,
   type SQLWrapper,
 } from "drizzle-orm";
-import { alias, type AnyPgColumn } from "drizzle-orm/pg-core";
 
 /**
  * A trade the caller is part of, with their side, or for staff who may read
  * any trade, the trade with its dispute report. Anyone else gets null, so a
- * trade's existence never leaks. Only accepted, disputed and ended trades
- * are shown.
+ * trade's existence never leaks. Direct offers show from the moment they're
+ * sent.
  */
 export const $fetchTrade = createServerFn({ method: "GET" })
   .validator(tradeIdInputSchema)
@@ -99,10 +99,10 @@ export const $fetchTrade = createServerFn({ method: "GET" })
 const PAGE_SIZE = 30;
 
 /**
- * The caller's trades for My trades: the live ones by deadline, or the
- * ended ones newest first, keyset-paged after the previous page's last
- * trade. Each side lists every objekt it sends, as the feed shows a
- * listing's offered side.
+ * The caller's trades for My trades: the live ones and pending offers by
+ * when they're due, or the ended ones newest first, keyset-paged after the
+ * previous page's last trade. Each side lists every objekt it sends, as
+ * the feed shows a listing's offered side.
  */
 export const $fetchMyTrades = createServerFn({ method: "GET" })
   .validator(myTradesInputSchema)
@@ -110,27 +110,28 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
   .handler(async ({ data, context }): Promise<MyTradesPage> => {
     const userId = context.session.user.id;
     const active = data.tab === "active";
+
+    // when a live trade or a pending offer is due, or when a finished one ended
+    const sortedBy = (t: {
+      deadlineAt: SQLWrapper;
+      expiresAt: SQLWrapper;
+      endedAt: SQLWrapper;
+    }) =>
+      active
+        ? sql`coalesce(${t.deadlineAt}, ${t.expiresAt})`
+        : sql`${t.endedAt}`;
+
+    // the trade id breaks ties
     const order = (t: {
       deadlineAt: SQLWrapper;
+      expiresAt: SQLWrapper;
       endedAt: SQLWrapper;
       id: SQLWrapper;
     }) =>
-      active ? [asc(t.deadlineAt), asc(t.id)] : [desc(t.endedAt), desc(t.id)];
-
-    const cursorRow = alias(tradeOffers, "cursor_row");
-
-    // the tab's sort column; the trade id breaks ties
-    const sortedBy = (t: { deadlineAt: AnyPgColumn; endedAt: AnyPgColumn }) =>
-      active ? t.deadlineAt : t.endedAt;
+      active ? [asc(sortedBy(t)), asc(t.id)] : [desc(sortedBy(t)), desc(t.id)];
 
     // switch operator depending on tab
     const past = active ? gt : lt;
-
-    const cursorAt = (cursor: string) =>
-      db
-        .select({ at: sortedBy(cursorRow) })
-        .from(cursorRow)
-        .where(eq(cursorRow.id, cursor));
 
     const mine = db
       .select({
@@ -140,7 +141,13 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
         cancelledBy: tradeOffers.cancelledBy,
         abandonedBy: tradeOffers.abandonedBy,
         deadlineAt: tradeOffers.deadlineAt,
+        expiresAt: tradeOffers.expiresAt,
         endedAt: tradeOffers.endedAt,
+        // the sort value as exact text for the next cursor, since a Date drops the microseconds
+        cursorAt:
+          sql<string>`to_char(${sortedBy(tradeOffers)} at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.US"Z"')`.as(
+            "cursor_at",
+          ),
         // the other party, and the address their side is pinned to
         counterpartyId: sql<
           string | null
@@ -161,18 +168,33 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
             eq(tradeOffers.fromUserId, userId),
             eq(tradeOffers.toUserId, userId),
           ),
+          // a countered offer is left out, since its counter is a row of its own
           inArray(
             tradeOffers.status,
-            active ? [...liveTradeStatuses] : [...endedTradeStatuses],
+            active
+              ? [...openTradeStatuses]
+              : [
+                  ...endedTradeStatuses,
+                  "declined",
+                  "withdrawn",
+                  "expired",
+                  "stale",
+                ],
           ),
-          // a page continues after the previous page's last trade
+          // a page continues after the previous page's last trade, as it sorted then
           data.cursor === undefined
             ? undefined
             : or(
-                past(sortedBy(tradeOffers), cursorAt(data.cursor)),
+                past(
+                  sortedBy(tradeOffers),
+                  sql`${data.cursor.at}::timestamptz`,
+                ),
                 and(
-                  eq(sortedBy(tradeOffers), cursorAt(data.cursor)),
-                  past(tradeOffers.id, data.cursor),
+                  eq(
+                    sortedBy(tradeOffers),
+                    sql`${data.cursor.at}::timestamptz`,
+                  ),
+                  past(tradeOffers.id, data.cursor.id),
                 ),
               ),
         ),
@@ -182,8 +204,8 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
 
     const page = db.$with("page").as(mine);
 
-    // the event that froze a disputed trade
-    const dispute = db
+    // the event that froze a disputed trade, or that closed an offer
+    const halt = db
       .select({
         createdAt: tradeMessages.createdAt,
         event: tradeMessages.event,
@@ -193,12 +215,12 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
         and(
           eq(tradeMessages.tradeId, page.id),
           eq(tradeMessages.kind, "event"),
-          sql`${tradeMessages.event}->>'type' = 'disputed'`,
+          sql`${tradeMessages.event}->>'type' in ('disputed', 'declined', 'withdrawn')`,
         ),
       )
       .orderBy(desc(tradeMessages.id))
       .limit(1)
-      .as("dispute");
+      .as("halt");
 
     // one row per item, in page order
     const rows = await db
@@ -211,13 +233,15 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
           cancelledBy: page.cancelledBy,
           abandonedBy: page.abandonedBy,
           deadlineAt: page.deadlineAt,
+          expiresAt: page.expiresAt,
           endedAt: page.endedAt,
+          cursorAt: page.cursorAt,
           counterpartyId: page.counterpartyId,
         },
         item: tradeOfferItems,
         counterparty: user,
         cosmo: { username: cosmoAccounts.username },
-        dispute: { createdAt: dispute.createdAt, event: dispute.event },
+        halt: { createdAt: halt.createdAt, event: halt.event },
         watermark: watermarkExtra(),
       })
       .from(page)
@@ -227,7 +251,7 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
         cosmoAccounts,
         eq(cosmoAccounts.address, page.counterpartyAddress),
       )
-      .leftJoinLateral(dispute, sql`true`)
+      .leftJoinLateral(halt, sql`true`)
       .orderBy(...order(page), asc(tradeOfferItems.id));
 
     type Row = (typeof rows)[number];
@@ -279,15 +303,18 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
     // each trade as a My trades row from the caller's side
     const mapped = trades.map(({ row, items, side, send, get }) => {
       const { trade } = row;
-      if (trade.deadlineAt === null) {
-        throw new Error("accepted trade without a deadline");
+      // a trade has a deadline once accepted, and an offer expires until then
+      const dueAt = trade.deadlineAt ?? trade.expiresAt;
+      if (dueAt === null) {
+        throw new Error("trade without a deadline or an expiry");
       }
       const state = tradeState(trade, items);
       return {
         id: trade.id,
         state,
-        deadlineAt: trade.deadlineAt,
-        dispute: tradeDispute(state, row.dispute === null ? [] : [row.dispute]),
+        dueAt,
+        dispute: tradeDispute(state, row.halt === null ? [] : [row.halt]),
+        closer: offerCloser(row.halt?.event ?? null),
         endedAt: trade.endedAt,
         listingId: tradeListingId(items),
         counterparty: toPartyName(
@@ -298,20 +325,17 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
         send: summary(send),
         get: summary(get),
         needsYou: needsYou(state, side, {
-          deadlinePassed: deadlinePassed(
-            state,
-            trade.deadlineAt,
-            row.watermark,
-          ),
+          deadlinePassed: deadlinePassed(state, dueAt, row.watermark),
         }),
       };
     });
 
+    const last = pageTrades.at(-1)?.row.trade;
     return {
       rows: mapped,
       nextCursor:
-        all.length > pageTrades.length
-          ? pageTrades.at(-1)?.row.trade.id
+        all.length > pageTrades.length && last !== undefined
+          ? { at: last.cursorAt, id: last.id }
           : undefined,
     };
   });
@@ -355,7 +379,7 @@ export const $cancelTrade = createServerFn({ method: "POST" })
               item.tokenId === null ? undefined : tokens.get(item.tokenId);
             return (
               itemStatus(item, token?.kind === "found" ? token : undefined, {
-                live: true,
+                status: trade.state.status,
                 fromAddress: trade.fromAddress,
                 toAddress: trade.toAddress,
               }) === "arrived"

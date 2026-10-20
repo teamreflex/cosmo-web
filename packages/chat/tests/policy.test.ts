@@ -1,5 +1,10 @@
 import type { Role } from "@apollo/auth";
-import { tradeStatuses } from "@apollo/database/web/types";
+import {
+  endedTradeStatuses,
+  liveTradeStatuses,
+  type TradeStatus,
+  tradeStatuses,
+} from "@apollo/database/web/types";
 import { describe, expect, test } from "bun:test";
 import { Effect, Exit } from "effect";
 import {
@@ -7,6 +12,7 @@ import {
   canRemoveMessage,
   canReportMessage,
   canSendChat,
+  type ChatAccess,
   type ChatTrade,
   type ChatViewer,
 } from "../src/policy";
@@ -153,4 +159,36 @@ describe("canRemoveMessage", () => {
       ),
     ).toBe("Forbidden");
   });
+});
+
+// UNIT-09
+describe("direct offers", () => {
+  test("the live and ended lists are exactly the accepted trade's statuses", () => {
+    expect(liveTradeStatuses).toEqual(["accepted", "disputed"]);
+    expect(endedTradeStatuses).toEqual(["completed", "cancelled", "timed_out"]);
+  });
+
+  test.each([
+    ["pending", "ChatNotFound", "ChatReadOnly"],
+    ["declined", "ChatNotFound", "ChatReadOnly"],
+    ["withdrawn", "ChatNotFound", "ChatReadOnly"],
+    ["countered", "ChatNotFound", "ChatReadOnly"],
+    ["expired", "ChatNotFound", "ChatReadOnly"],
+    ["stale", "ChatNotFound", "ChatReadOnly"],
+    ["accepted", { kind: "party", side: "from" }, "from"],
+    ["disputed", { kind: "party", side: "from" }, "from"],
+    ["completed", { kind: "party", side: "from" }, "ChatReadOnly"],
+    ["cancelled", { kind: "party", side: "from" }, "ChatReadOnly"],
+    ["timed_out", { kind: "party", side: "from" }, "ChatReadOnly"],
+  ] satisfies [TradeStatus, ChatAccess | string, string][])(
+    "%s: join gives %p and send gives %p",
+    (status, join, send) => {
+      expect(outcome(canJoinChat(viewers.from, trade(status), null))).toEqual(
+        join,
+      );
+      expect(
+        outcome(canSendChat({ kind: "party", side: "from" }, trade(status))),
+      ).toBe(send);
+    },
+  );
 });

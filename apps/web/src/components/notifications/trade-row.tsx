@@ -215,6 +215,70 @@ function describeTrade(notification: TradeItem, username: string) {
           markup={bold}
         />
       );
+    case "offer_received":
+      return (
+        <ParaglideMessage
+          message={m.notification_offer_received}
+          inputs={{
+            username,
+            offered: notification.objekts.length,
+            asked: notification.asked,
+          }}
+          markup={bold}
+        />
+      );
+    case "offer_accepted":
+      return (
+        <ParaglideMessage
+          message={m.notification_offer_accepted}
+          inputs={{ username }}
+          markup={bold}
+        />
+      );
+    // staff close the offers a banned user received, never saying who was banned
+    case "offer_declined":
+      return staff ? (
+        <ParaglideMessage
+          message={m.notification_offer_declined_staff}
+          inputs={{ appName, username }}
+          markup={bold}
+        />
+      ) : (
+        <ParaglideMessage
+          message={m.notification_offer_declined}
+          inputs={{ username }}
+          markup={bold}
+        />
+      );
+    case "offer_countered":
+      return (
+        <ParaglideMessage
+          message={m.notification_offer_countered}
+          inputs={{ username }}
+          markup={bold}
+        />
+      );
+    case "offer_expired":
+      return (
+        <ParaglideMessage
+          message={m.notification_offer_expired}
+          inputs={{ username }}
+          markup={bold}
+        />
+      );
+    case "offer_stale":
+      // only the offer's sender (`from`) is told, so `from` is their own objekt
+      return (
+        <ParaglideMessage
+          message={
+            notification.tokenSender === "from"
+              ? m.notification_offer_stale_yours
+              : m.notification_offer_stale_theirs
+          }
+          inputs={{ username, objekt: tokenName(notification.token) }}
+          markup={bold}
+        />
+      );
     default:
       notification.type satisfies never;
       return null;

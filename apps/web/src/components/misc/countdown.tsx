@@ -30,13 +30,13 @@ function TickerInner({ children }: Pick<TickerProps, "children">) {
 }
 
 /**
- * Whole hours and minutes from `now` until `deadline`, held at zero once it
- * has passed.
+ * Hours and minutes from `now` until `deadline`, a part minute counting as
+ * one so it only reads zero once the deadline has passed.
  */
 function timeLeft(now: Date, deadline: Date) {
   const minutes = Math.max(
     0,
-    Math.floor((deadline.getTime() - now.getTime()) / 60_000),
+    Math.ceil((deadline.getTime() - now.getTime()) / 60_000),
   );
   return { hours: Math.floor(minutes / 60), minutes: minutes % 60 };
 }

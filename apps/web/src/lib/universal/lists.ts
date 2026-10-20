@@ -1,5 +1,6 @@
 import type { PublicUser } from "@/lib/universal/auth";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
+import type { OfferSerials } from "@/lib/universal/trades";
 import type { ObjektList } from "@apollo/database/web/types";
 
 export type PartnerListMatch = {
@@ -29,6 +30,19 @@ export type TradePartner = {
 export type TradePartnersResponse = {
   partners: TradePartner[];
   collections: Record<string, Objekt.Collection>;
+};
+
+/**
+ * The collections a counter to a pending offer could trade, from the
+ * caller's side, with the offer's sender it would go to and the copy
+ * behind each of the first MAX_OFFER_SERIAL_SLUGS a side.
+ */
+export type CounterMatches = {
+  partnerId: string;
+  give: string[];
+  get: string[];
+  collections: Record<string, Objekt.Collection>;
+  serials: OfferSerials;
 };
 
 export type ListShelfPreview = Pick<

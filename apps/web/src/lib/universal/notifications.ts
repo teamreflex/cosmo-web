@@ -4,6 +4,7 @@ import {
   type NotificationType,
   type TradeNotificationType,
   type TradeOfferStatus,
+  type TradeSide,
   tradeNotificationTypes,
 } from "@apollo/database/web/types";
 
@@ -44,8 +45,10 @@ export type NotificationToken = {
  * What a trade notification shows. `actor` is the party who caused it, or
  * null when staff or the system did. `counterparty` is the recipient's other
  * party, null on a listing or once their account is gone. `offer` is the
- * trade, or the listing for listing_closed. `objekts` is what the poster
- * sends, filled for listing_claimed only.
+ * trade, or the listing for listing_closed. `objekts` is what the poster of
+ * a listing_claimed or the sender of an offer_received sends, and `asked`
+ * how many objekts that offer asks for in return. `tokenSender` is the side
+ * whose objekt `token` is on offer_stale.
  */
 type TradeNotificationFields = {
   kind: "trade";
@@ -55,7 +58,9 @@ type TradeNotificationFields = {
   counterparty: NotificationUser | null;
   offer: { id: string; status: TradeOfferStatus };
   token: NotificationToken | null;
+  tokenSender: TradeSide | null;
   objekts: NotificationToken[];
+  asked: number;
 };
 
 /**

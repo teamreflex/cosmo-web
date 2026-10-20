@@ -4,6 +4,7 @@ import {
   EXTEND_HOURS,
   extendedDeadline,
   isTimedOut,
+  OFFER_WINDOW,
 } from "../src/timers";
 
 describe("isTimedOut (TIME-01)", () => {
@@ -28,6 +29,15 @@ describe("CLAIM_WINDOW (LTR-02)", () => {
     expect(
       new Date(Date.UTC(2026, 9, 11, 12) + CLAIM_WINDOW).toISOString(),
     ).toBe("2026-10-13T12:00:00.000Z");
+  });
+});
+
+describe("OFFER_WINDOW (UNIT-01)", () => {
+  test("is exactly 72 hours", () => {
+    expect(OFFER_WINDOW).toBe(259_200_000);
+    expect(
+      new Date(Date.UTC(2026, 9, 20, 12) + OFFER_WINDOW).toISOString(),
+    ).toBe("2026-10-23T12:00:00.000Z");
   });
 });
 

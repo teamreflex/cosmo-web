@@ -108,11 +108,15 @@ describe("decideTransfer: live trade items", () => {
 
 describe("decideTransfer: offered items", () => {
   test.each([
-    ["the token leaves the holder", transfer(KAIRU, OUTSIDER)],
-    ["the token turns untransferable", transferability(false)],
-  ])("breaks when %s", (_, row) => {
+    ["the token leaves the holder", transfer(KAIRU, OUTSIDER), "moved"],
+    [
+      "the token turns untransferable",
+      transferability(false),
+      "untransferable",
+    ],
+  ] as const)("breaks when %s", (_, row, reason) => {
     expect(decideTransfer(row, [offered])).toEqual([
-      { type: "breaks", offerId: "listing-1" },
+      { type: "breaks", offerId: "listing-1", reason },
     ]);
   });
 
@@ -125,6 +129,73 @@ describe("decideTransfer: offered items", () => {
   });
 });
 
+/**
+ * A pending offer between @Kairu (the sender) and trader B: each side's
+ * offered token is held by that side and nothing counts before acceptance.
+ */
+describe.each([
+  ["the sender's", KAIRU, TRADER_B],
+  ["the recipient's", TRADER_B, KAIRU],
+])("a pending offer's item on %s side (UNIT-07)", (_, holder, counterparty) => {
+  const item: ExpectedItem = {
+    kind: "offered",
+    offerId: "offer-1",
+    from: holder,
+  };
+  const breaks = [
+    ["the token leaves the holder", transfer(holder, OUTSIDER), "moved"],
+    [
+      "the token is sent to the counterparty early",
+      transfer(holder, counterparty),
+      "moved",
+    ],
+    [
+      "the token turns untransferable",
+      transferability(false),
+      "untransferable",
+    ],
+  ] as const;
+  const ignored = [
+    ["a transfer into the holder", transfer(OUTSIDER, holder)],
+    ["a transfer between others", transfer(counterparty, OUTSIDER)],
+  ] as const;
+
+  test.each(breaks)("goes stale when %s", (_, row, reason) => {
+    expect(decideTransfer(row, [item])).toEqual([
+      { type: "breaks", offerId: "offer-1", reason },
+    ]);
+  });
+
+  test("says the token turned untransferable rather than moved (STALE-03)", () => {
+    expect(
+      foldTransfers([transferability(false)], new Map([[201, [item]]])).breaks,
+    ).toEqual(
+      new Map([["offer-1", { tokenId: 201, reason: "untransferable" }]]),
+    );
+  });
+
+  test.each(ignored)("ignores %s", (_, row) => {
+    expect(decideTransfer(row, [item])).toEqual([{ type: "ignore" }]);
+  });
+
+  test("never counts a transfer, so the offer can't complete", () => {
+    for (const [, row] of [...breaks, ...ignored] as const) {
+      expect(foldTransfers([row], new Map([[201, [item]]])).trades).toEqual(
+        new Map(),
+      );
+    }
+    expect(
+      foldTransfers(
+        [transfer(holder, counterparty), transfer(counterparty, holder)],
+        new Map([[201, [item]]]),
+      ),
+    ).toEqual({
+      trades: new Map(),
+      breaks: new Map([["offer-1", { tokenId: 201, reason: "moved" }]]),
+    });
+  });
+});
+
 test("decides each item holding the token, in order", () => {
   const pendingOffer: ExpectedItem = {
     kind: "offered",
@@ -134,8 +205,8 @@ test("decides each item holding the token, in order", () => {
   expect(
     decideTransfer(transfer(KAIRU, OUTSIDER), [offered, pendingOffer]),
   ).toEqual([
-    { type: "breaks", offerId: "listing-1" },
-    { type: "breaks", offerId: "offer-1" },
+    { type: "breaks", offerId: "listing-1", reason: "moved" },
+    { type: "breaks", offerId: "offer-1", reason: "moved" },
   ]);
   expect(decideTransfer(transfer(KAIRU, OUTSIDER), [])).toEqual([]);
 });
@@ -238,7 +309,7 @@ describe("foldTransfers", () => {
       ),
     ).toEqual({
       trades: new Map(),
-      breaks: new Map([["listing-1", 201]]),
+      breaks: new Map([["listing-1", { tokenId: 201, reason: "moved" }]]),
     });
   });
 
@@ -254,9 +325,9 @@ describe("foldTransfers", () => {
       ).breaks,
     ).toEqual(
       new Map([
-        ["listing-1", 201],
-        ["listing-2", 201],
-        ["listing-3", 201],
+        ["listing-1", { tokenId: 201, reason: "moved" }],
+        ["listing-2", { tokenId: 201, reason: "moved" }],
+        ["listing-3", { tokenId: 201, reason: "moved" }],
       ]),
     );
   });
@@ -274,7 +345,7 @@ describe("foldTransfers", () => {
           [{ type: "transferred", itemId: 2010, at: at(1), hash: hash(1) }],
         ],
       ]),
-      breaks: new Map([["listing-2", 201]]),
+      breaks: new Map([["listing-2", { tokenId: 201, reason: "moved" }]]),
     });
   });
 
@@ -304,7 +375,9 @@ describe("foldTransfers", () => {
         trades: new Map([
           ["trade-1", [{ type: "token_untransferable", tokenId: 201 }]],
         ]),
-        breaks: new Map([["listing-1", 202]]),
+        breaks: new Map([
+          ["listing-1", { tokenId: 202, reason: "untransferable" }],
+        ]),
       });
     });
 
@@ -410,7 +483,7 @@ describe("foldTransfers", () => {
       ),
     ).toEqual({
       trades: new Map(),
-      breaks: new Map([["offer-1", 201]]),
+      breaks: new Map([["offer-1", { tokenId: 201, reason: "moved" }]]),
     });
   });
 
@@ -446,35 +519,54 @@ describe("foldTransfers", () => {
 
 describe("itemStatus", () => {
   const pinned = { fromAddress: KAIRU, toAddress: TRADER_B };
-  const live = { live: true, ...pinned };
+  const live = { status: "accepted", ...pinned } as const;
+  const pending = { status: "pending", ...pinned } as const;
   const unsent = { sender: "from", transferredAt: null } as const;
   const held = (owner: string, transferable = true) => ({
     owner,
     transferable,
   });
 
-  test("a recorded transfer is sent, live or not", () => {
-    for (const trade of [live, { live: false, ...pinned }]) {
+  test("a recorded transfer is sent, open or not", () => {
+    for (const trade of [live, { status: "completed", ...pinned } as const]) {
       expect(
         itemStatus({ sender: "from", transferredAt: AT }, undefined, trade),
       ).toBe("sent");
     }
   });
 
-  test("an ended trade's unsent item is not sent", () => {
-    expect(itemStatus(unsent, held(TRADER_B), { live: false, ...pinned })).toBe(
+  test.each([
+    "completed",
+    "cancelled",
+    "timed_out",
+    "declined",
+    "expired",
+  ] as const)("a %s trade's unsent item is not sent", (status) => {
+    expect(itemStatus(unsent, held(TRADER_B), { status, ...pinned })).toBe(
       "not_sent",
     );
   });
 
   test("a live item follows its token's owner", () => {
-    expect(itemStatus(unsent, held(TRADER_B), live)).toBe("arrived");
-    expect(itemStatus(unsent, held(OUTSIDER), live)).toBe("moved");
-    expect(itemStatus(unsent, held(KAIRU), live)).toBe("waiting");
-    expect(itemStatus(unsent, held(KAIRU, false), live)).toBe(
+    for (const trade of [live, { status: "disputed", ...pinned } as const]) {
+      expect(itemStatus(unsent, held(TRADER_B), trade)).toBe("arrived");
+      expect(itemStatus(unsent, held(OUTSIDER), trade)).toBe("moved");
+      expect(itemStatus(unsent, held(KAIRU), trade)).toBe("waiting");
+      expect(itemStatus(unsent, held(KAIRU, false), trade)).toBe(
+        "untransferable",
+      );
+      expect(itemStatus(unsent, undefined, trade)).toBe("waiting");
+    }
+  });
+
+  test("nothing on a pending offer has started, and a token at its receiver has only moved", () => {
+    expect(itemStatus(unsent, held(KAIRU), pending)).toBe("not_started");
+    expect(itemStatus(unsent, undefined, pending)).toBe("not_started");
+    expect(itemStatus(unsent, held(TRADER_B), pending)).toBe("moved");
+    expect(itemStatus(unsent, held(OUTSIDER), pending)).toBe("moved");
+    expect(itemStatus(unsent, held(KAIRU, false), pending)).toBe(
       "untransferable",
     );
-    expect(itemStatus(unsent, undefined, live)).toBe("waiting");
   });
 
   test("the receiver is the sender's other side", () => {

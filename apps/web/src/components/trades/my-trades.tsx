@@ -111,11 +111,12 @@ function MyTradesHeader({ tab }: { tab: MyTradesTab }) {
 }
 
 /**
- * From lg: kind, you send, arrow, you get, status, with, time. Below lg a
- * row is a trade slip like the Listings feed's.
+ * From lg: kind, you send, arrow, you get, status, with, time, the fixed
+ * columns narrower until xl so a single objekt's name and number fit. Below
+ * lg a row is a trade slip like the Listings feed's.
  */
 const columns =
-  "lg:grid-cols-[72px_minmax(0,1fr)_20px_minmax(0,1fr)_150px_160px_100px]";
+  "lg:grid-cols-[64px_minmax(0,1fr)_20px_minmax(0,1fr)_150px_114px_96px] xl:grid-cols-[72px_minmax(0,1fr)_20px_minmax(0,1fr)_150px_160px_100px]";
 
 function ColumnHeader({ tab }: { tab: MyTradesTab }) {
   return (
@@ -184,10 +185,12 @@ function TradeRow({ row }: { row: MyTradeRow }) {
         </Half>
 
         <span className="col-span-full row-start-2 flex min-w-0 items-center gap-2 max-md:border-t max-md:border-dashed max-md:px-3 max-md:py-2 max-md:text-xs lg:contents">
-          <span className="flex max-lg:hidden lg:col-start-1 lg:row-start-1">
-            {row.listingId !== null && (
-              <Badge variant="outline">{m.my_trades_kind_listing()}</Badge>
-            )}
+          <span className="flex lg:col-start-1 lg:row-start-1">
+            <Badge variant="outline">
+              {row.listingId === null
+                ? m.my_trades_kind_offer()
+                : m.my_trades_kind_listing()}
+            </Badge>
           </span>
           {/* a long name gives way rather than wrapping the line */}
           <span className="flex max-w-48 min-w-0 shrink-0 lg:col-start-5 lg:row-start-1 lg:max-w-none">
@@ -198,8 +201,14 @@ function TradeRow({ row }: { row: MyTradeRow }) {
               party={row.counterparty}
               className="size-4.5 text-xxs **:p-0.5 md:size-6"
             />
+            {/* on phones "{name} sends" names them already, so the avatar stands in */}
             <span
-              className="truncate font-medium"
+              className={cn(
+                "truncate font-medium",
+                !row.needsYou &&
+                  row.state.status === "accepted" &&
+                  "max-md:sr-only",
+              )}
               title={partyName(row.counterparty)}
             >
               {partyName(row.counterparty)}
@@ -215,13 +224,20 @@ function TradeRow({ row }: { row: MyTradeRow }) {
 }
 
 /**
- * Who has to act next on a live trade, or how a finished one ended.
+ * Who has to act next on a live trade or a pending offer, or how a
+ * finished one ended.
  */
 function Status({ row }: { row: MyTradeRow }) {
   switch (row.state.status) {
+    case "pending":
+      return row.needsYou ? (
+        <Badge className={tones.cosmo}>{m.my_trades_next_respond()}</Badge>
+      ) : (
+        <Badge className={tones.muted}>{m.my_trades_next_reply()}</Badge>
+      );
     case "accepted":
       return row.needsYou ? (
-        <Badge className="border-transparent bg-cosmo/15 text-cosmo dark:text-cosmo-text">
+        <Badge className={tones.cosmo}>
           {m.my_trades_next_send({
             count: row.send.items.length - row.send.sent,
           })}
@@ -253,23 +269,30 @@ function Status({ row }: { row: MyTradeRow }) {
     case "completed":
     case "cancelled":
     case "timed_out":
-      return <EndedBadge status={row.state.status} />;
-    // phase 12's offers aren't listed yet
-    default:
-      return null;
+    case "declined":
+    case "withdrawn":
+    case "countered":
+    case "expired":
+    case "stale":
+      return (
+        <EndedBadge
+          status={row.closer === null ? row.state.status : "closed"}
+        />
+      );
   }
 }
 
 /**
- * The time left on a live trade, held where a dispute paused it, or the
- * day a finished one ended.
+ * The time left on a live trade or a pending offer, held where a dispute
+ * paused it, or the day a finished one ended.
  */
 function Time({ row }: { row: MyTradeRow }) {
   switch (row.state.status) {
+    case "pending":
     case "accepted":
       return (
         <Countdown
-          deadline={row.deadlineAt}
+          deadline={row.dueAt}
           className="text-sm font-medium text-foreground"
         />
       );
@@ -281,8 +304,8 @@ function Time({ row }: { row: MyTradeRow }) {
           markup={{
             time: () => (
               <Countdown
-                deadline={row.deadlineAt}
-                pausedAt={row.dispute?.at ?? row.deadlineAt}
+                deadline={row.dueAt}
+                pausedAt={row.dispute?.at ?? row.dueAt}
               />
             ),
           }}

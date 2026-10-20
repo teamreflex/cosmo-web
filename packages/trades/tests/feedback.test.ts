@@ -96,6 +96,32 @@ describe("feedbackOpening eligibility", () => {
     },
   );
 
+  test.each([
+    "pending",
+    "declined",
+    "withdrawn",
+    "countered",
+    "expired",
+    "stale",
+  ] as const)(
+    "not a %s offer, which was never accepted (UNIT-13)",
+    (status) => {
+      for (const items of [
+        [objekt("from"), objekt("to")],
+        [objekt("from", true), objekt("to", true)],
+      ]) {
+        expect(
+          feedbackOpening({
+            state: trade(status, items),
+            endedAt,
+            now: at(DAY),
+            counterpartExists: true,
+          }),
+        ).toEqual({ status: "ineligible" });
+      }
+    },
+  );
+
   test("not a disputed trade, whatever arrived (ELIG-05)", () => {
     expect(
       opening(

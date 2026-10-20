@@ -53,6 +53,12 @@ export function formatTradeError(error: unknown): string | null {
       return m.trade_error_trade_deadline_passed();
     case "trade_own":
       return m.trade_error_trade_own();
+    case "offer_own":
+      return m.trade_error_offer_own();
+    case "offer_unavailable":
+      return m.trade_error_offer_unavailable();
+    case "offer_expired":
+      return m.trade_error_offer_expired();
     default:
       error.message satisfies never;
       return null;

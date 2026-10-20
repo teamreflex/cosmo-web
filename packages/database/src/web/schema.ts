@@ -758,6 +758,10 @@ export const tradeOffers = pgTable(
     index("trade_offers_deadline_idx")
       .on(t.deadlineAt)
       .where(sql`${t.kind} = 'trade' AND ${t.status} = 'accepted'`),
+    // trade-timers' scan for pending offers past their 72 hours
+    index("trade_offers_expiry_idx")
+      .on(t.expiresAt)
+      .where(sql`${t.kind} = 'trade' AND ${t.status} = 'pending'`),
     check(
       "trade_offers_status_chk",
       sql`CASE ${t.kind} WHEN 'listing' THEN ${t.status} IN (${sqlValues(listingStatuses)}) ELSE ${t.status} IN (${sqlValues(tradeStatuses)}) END`,
@@ -773,6 +777,10 @@ export const tradeOffers = pgTable(
     check(
       "trade_offers_accepted_chk",
       sql`${t.status} NOT IN ('accepted', 'disputed', 'completed', 'timed_out') OR (${t.deadlineAt} IS NOT NULL AND ${t.acceptedAt} IS NOT NULL)`,
+    ),
+    check(
+      "trade_offers_pending_chk",
+      sql`${t.status} <> 'pending' OR ${t.expiresAt} IS NOT NULL`,
     ),
     check(
       "trade_offers_ended_chk",

@@ -1,35 +1,49 @@
-import { useMetadataDialog } from "@/hooks/use-metadata-dialog";
 import { m } from "@/i18n/messages";
-import { listMatchesQuery, objektQuery } from "@/lib/queries/objekt-queries";
+import { listMatchesQuery } from "@/lib/queries/objekt-queries";
+import { offerSerialsQuery } from "@/lib/queries/trades";
 import type { TradePartner } from "@/lib/universal/lists";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
+import { MAX_OFFER_SERIAL_SLUGS } from "@/lib/universal/schema/trades";
 import { cn } from "@/lib/utils";
 import {
   IconArrowsExchange,
   IconArrowUpRight,
   IconChevronRight,
 } from "@tabler/icons-react";
-import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
-import { useState } from "react";
 import {
-  getVariantGradient,
-  getVariantRibbon,
-} from "../objekt/variant-gradients";
-import Portal from "../portal";
+  QueryErrorResetBoundary,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
+import { type ReactNode, Suspense } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import UserAvatar from "../profile/user-avatar";
+import { OfferColumns, OfferColumnsSkeleton } from "../trades/offer-picker";
+import {
+  type OfferCard,
+  type OfferPicks,
+  type OfferSide,
+  offerTones,
+} from "../trades/offer-picks";
 import { Skeleton } from "../ui/skeleton";
 
 type Props = {
   id: string;
   name: string;
+  /** the partner whose matches are open, and the copies picked from them */
+  offer: ({ partner: TradePartner } & OfferPicks) | null;
+  onExpand: (partner: TradePartner) => void;
+  onToggle: (side: OfferSide, card: OfferCard) => void;
 };
 
-const MAX_VISIBLE_TILES = 12;
-
-export default function ListMatchesContent(props: Props) {
-  const { data } = useSuspenseQuery(listMatchesQuery(props.id));
-  const [expandedUserId, setExpandedUserId] = useState<string | null>(null);
+export default function ListMatchesContent({
+  id,
+  name,
+  offer,
+  onExpand,
+  onToggle,
+}: Props) {
+  const { data } = useSuspenseQuery(listMatchesQuery(id));
 
   if (data.partners.length === 0) {
     return (
@@ -38,47 +52,64 @@ export default function ListMatchesContent(props: Props) {
   }
 
   return (
-    <>
-      <Portal to="#list-matches-count">
-        {m.list_matches_count_label({ count: data.partners.length })}
-      </Portal>
-      <ul className="flex flex-col divide-y divide-border overflow-clip rounded-md border">
-        {data.partners.map((partner, index) => (
+    <ul className="flex flex-col divide-y divide-border overflow-clip rounded-md border">
+      {data.partners.map((partner, index) => {
+        // only the open partner has picks
+        const picks = offer?.partner.userId === partner.userId ? offer : null;
+        return (
           <PartnerRow
             key={partner.userId}
-            listName={props.name}
             partner={partner}
             rank={index + 1}
-            expanded={expandedUserId === partner.userId}
-            collections={data.collections}
-            onToggle={() =>
-              setExpandedUserId((prev) =>
-                prev === partner.userId ? null : partner.userId,
-              )
-            }
-          />
-        ))}
-      </ul>
-    </>
+            expanded={picks !== null}
+            onExpand={() => onExpand(partner)}
+          >
+            {picks !== null && (
+              <QueryErrorResetBoundary>
+                {({ reset }) => (
+                  <ErrorBoundary
+                    onReset={reset}
+                    fallbackRender={() => (
+                      <p className="text-sm text-muted-foreground">
+                        {m.list_matches_serials_error()}
+                      </p>
+                    )}
+                  >
+                    <Suspense fallback={<OfferColumnsSkeleton />}>
+                      <PartnerOffer
+                        listName={name}
+                        partner={partner}
+                        collections={data.collections}
+                        picks={picks}
+                        onToggle={onToggle}
+                      />
+                    </Suspense>
+                  </ErrorBoundary>
+                )}
+              </QueryErrorResetBoundary>
+            )}
+          </PartnerRow>
+        );
+      })}
+    </ul>
   );
 }
 
 type PartnerRowProps = {
-  listName: string;
   partner: TradePartner;
   rank: number;
   expanded: boolean;
-  collections: Record<string, Objekt.Collection>;
-  onToggle: () => void;
+  onExpand: () => void;
+  /** the partner's matches, shown while expanded */
+  children: ReactNode;
 };
 
 function PartnerRow({
-  listName,
   partner,
   rank,
   expanded,
-  collections,
-  onToggle,
+  onExpand,
+  children,
 }: PartnerRowProps) {
   const overlapHave = new Set(
     partner.matches.flatMap((match) => match.theyHaveIWant),
@@ -91,7 +122,7 @@ function PartnerRow({
     <li className={cn(expanded && "bg-muted/40")}>
       <button
         type="button"
-        onClick={onToggle}
+        onClick={onExpand}
         aria-expanded={expanded}
         className="flex w-full items-center gap-3 px-3 py-3 text-left transition-colors hover:bg-muted/60"
       >
@@ -120,46 +151,72 @@ function PartnerRow({
       </button>
 
       {expanded && (
-        <div className="flex flex-col gap-4 border-t border-border px-3 pt-3 pb-3">
-          {partner.matches.map((match) => (
-            <div key={match.listId} className="flex flex-col gap-2">
-              <div className="flex items-center justify-between text-xs">
-                <span>{listName}</span>
-
-                <Link
-                  to="/@{$username}/list/$slug"
-                  params={{
-                    username: partner.username,
-                    slug: match.listSlug,
-                  }}
-                  className="flex items-center justify-end gap-1.5 text-muted-foreground transition-colors hover:text-foreground"
-                >
-                  <span>{match.listName}</span>
-                  <IconArrowUpRight className="size-3.5" />
-                </Link>
-              </div>
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <DirectionColumn
-                  arrow="←"
-                  title={m.list_matches_you_have_they_want()}
-                  slugs={match.iHaveTheyWant}
-                  collections={collections}
-                  tone="have"
-                />
-                <DirectionColumn
-                  arrow="→"
-                  title={m.list_matches_they_have_you_want()}
-                  slugs={match.theyHaveIWant}
-                  collections={collections}
-                  tone="want"
-                />
-              </div>
-            </div>
-          ))}
+        <div className="flex flex-col gap-5 border-t border-border px-2 py-3 sm:px-3">
+          {children}
         </div>
       )}
     </li>
   );
+}
+
+type PartnerOfferProps = {
+  listName: string;
+  partner: TradePartner;
+  collections: Record<string, Objekt.Collection>;
+  picks: OfferPicks;
+  onToggle: (side: OfferSide, card: OfferCard) => void;
+};
+
+/**
+ * Each of the partner's matching lists, with what each side would give. The
+ * copies behind the cards are read once for all of their lists.
+ */
+function PartnerOffer({
+  listName,
+  partner,
+  collections,
+  picks,
+  onToggle,
+}: PartnerOfferProps) {
+  // a list has no cap, so past the request's cap a collection shows as unavailable
+  const give = [
+    ...new Set(partner.matches.flatMap((match) => match.iHaveTheyWant)),
+  ].slice(0, MAX_OFFER_SERIAL_SLUGS);
+  const get = [
+    ...new Set(partner.matches.flatMap((match) => match.theyHaveIWant)),
+  ].slice(0, MAX_OFFER_SERIAL_SLUGS);
+  const { data: serials } = useSuspenseQuery(
+    offerSerialsQuery(partner.userId, give, get),
+  );
+
+  return partner.matches.map((match, index) => (
+    <div key={match.listId} className="flex flex-col gap-2">
+      <div className="flex items-center justify-between text-xs">
+        <span>{listName}</span>
+
+        <Link
+          to="/@{$username}/list/$slug"
+          params={{
+            username: partner.username,
+            slug: match.listSlug,
+          }}
+          className="flex items-center justify-end gap-1.5 text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <span>{match.listName}</span>
+          <IconArrowUpRight className="size-3.5" />
+        </Link>
+      </div>
+      <OfferColumns
+        give={match.iHaveTheyWant}
+        get={match.theyHaveIWant}
+        collections={collections}
+        serials={serials}
+        picks={picks}
+        priority={index === 0}
+        onToggle={onToggle}
+      />
+    </div>
+  ));
 }
 
 type MatchSignatureProps = {
@@ -170,25 +227,12 @@ type MatchSignatureProps = {
 function MatchSignature({ have, want }: MatchSignatureProps) {
   return (
     <div className="flex shrink-0 items-center gap-1.5 text-xs">
-      <MatchChip value={have} label={m.list_matches_have_label()} tone="have" />
+      <MatchChip value={have} label={m.list_matches_have_label()} tone="give" />
       <IconArrowsExchange className="size-3.5 text-muted-foreground" />
-      <MatchChip value={want} label={m.list_matches_want_label()} tone="want" />
+      <MatchChip value={want} label={m.list_matches_want_label()} tone="get" />
     </div>
   );
 }
-
-const toneClasses = {
-  have: {
-    border: "border-teal-500/60",
-    bg: "bg-teal-500/10",
-    text: "text-teal-500",
-  },
-  want: {
-    border: "border-amber-500/60",
-    bg: "bg-amber-500/10",
-    text: "text-amber-500",
-  },
-} as const;
 
 function MatchChip({
   value,
@@ -197,9 +241,10 @@ function MatchChip({
 }: {
   value: number;
   label: string;
-  tone: "have" | "want";
+  /** a have count takes the give side's colour, a want count the get side's */
+  tone: OfferSide;
 }) {
-  const c = toneClasses[tone];
+  const c = offerTones[tone];
   return (
     <span
       className={cn(
@@ -212,108 +257,6 @@ function MatchChip({
       <span className="font-mono font-semibold tabular-nums">{value}</span>
       <span className="text-xxs tracking-wider uppercase">{label}</span>
     </span>
-  );
-}
-
-type DirectionColumnProps = {
-  arrow: "←" | "→";
-  title: string;
-  slugs: string[];
-  collections: Record<string, Objekt.Collection>;
-  tone: "have" | "want";
-};
-
-function DirectionColumn({
-  arrow,
-  title,
-  slugs,
-  collections,
-  tone,
-}: DirectionColumnProps) {
-  const visible = slugs.slice(0, MAX_VISIBLE_TILES);
-  const overflow = slugs.length - visible.length;
-  const c = toneClasses[tone];
-
-  return (
-    <div className={cn("flex flex-col gap-1.5 border-l-2 pl-3", c.border)}>
-      <div
-        className={cn(
-          "flex items-center gap-1.5 text-xxs font-semibold tracking-wider uppercase",
-          c.text,
-        )}
-      >
-        <span>{arrow}</span>
-        <span className="flex-1 truncate">{title}</span>
-        <span className="text-muted-foreground tabular-nums">
-          {slugs.length}
-        </span>
-      </div>
-      <div className="flex flex-wrap gap-1.5">
-        {visible.map((slug) => {
-          const collection = collections[slug];
-          return collection ? (
-            <MiniObjektTile key={slug} collection={collection} />
-          ) : (
-            <span
-              key={slug}
-              className="rounded-sm bg-muted px-1.5 py-0.5 font-mono text-xxs"
-            >
-              {slug}
-            </span>
-          );
-        })}
-        {overflow > 0 && (
-          <span className="flex h-14 items-center rounded-sm bg-muted px-2 font-mono text-xs text-muted-foreground">
-            +{overflow}
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function MiniObjektTile({ collection }: { collection: Objekt.Collection }) {
-  const { open } = useMetadataDialog();
-  const queryClient = useQueryClient();
-  const background = collection.backgroundColor || "#333";
-  const variantGradient = getVariantGradient(collection);
-  const variantRibbon = getVariantRibbon(collection);
-  const tileBackground = variantGradient
-    ? `linear-gradient(180deg, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 70%, rgba(0,0,0,0.8) 100%), repeating-linear-gradient(135deg, rgba(0,0,0,0.12) 0 2px, transparent 2px 8px), ${variantGradient}`
-    : `linear-gradient(180deg, ${background}33 0%, ${background}08 60%, rgba(0,0,0,.35) 100%), repeating-linear-gradient(135deg, ${background}14 0 2px, transparent 2px 8px)`;
-  const ribbonBackground = variantRibbon ?? background;
-  return (
-    <button
-      type="button"
-      onClick={() => {
-        queryClient.setQueryData(
-          objektQuery(collection.slug).queryKey,
-          collection,
-        );
-        open(collection.slug);
-      }}
-      className="relative flex h-14 w-28 overflow-hidden rounded-sm border border-border transition-shadow hover:shadow-md"
-      title={`${collection.member} ${collection.collectionNo}`}
-    >
-      <div
-        className="relative flex flex-1 flex-col items-start justify-between px-1.5 py-1 dark:[&>*]:[text-shadow:_0_1px_2px_rgba(0,0,0,0.9)]"
-        style={{ background: tileBackground }}
-      >
-        <div className="text-xxs font-bold tracking-widest text-foreground uppercase">
-          {collection.season}
-        </div>
-        <div className="font-cosmo text-xxs leading-none font-black text-foreground uppercase">
-          {collection.member}
-        </div>
-        <div className="font-mono text-xxs text-foreground tabular-nums">
-          {collection.collectionNo}
-        </div>
-      </div>
-      <div
-        className="w-[14px] shrink-0"
-        style={{ background: ribbonBackground }}
-      />
-    </button>
   );
 }
 

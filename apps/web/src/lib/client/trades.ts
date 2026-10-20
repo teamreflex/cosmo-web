@@ -1,5 +1,8 @@
 import { m } from "@/i18n/messages";
 import type { TradeItemView, TradePartyName } from "@/lib/universal/trades";
+import type { TradeSide } from "@apollo/database/web/types";
+import { formatError } from "./errors";
+import { claimFailure, formatTokenRefusal } from "./errors/trades";
 import { formatSerial } from "./objekt-util";
 import { objektName, posterName } from "./trade-listings";
 
@@ -9,6 +12,21 @@ import { objektName, posterName } from "./trade-listings";
  */
 export function partyName(party: TradePartyName) {
   return posterName({ poster: party.user, cosmoUsername: party.cosmoUsername });
+}
+
+/**
+ * What a side's party is to the trade: a listing's poster or claimer, or a
+ * direct offer's sender or recipient. A direct offer has no listing.
+ */
+export function partyRole(side: TradeSide, listingId: string | null) {
+  if (listingId === null) {
+    return side === "from"
+      ? m.trade_page_role_sender()
+      : m.trade_page_role_recipient();
+  }
+  return side === "from"
+    ? m.trade_page_role_poster()
+    : m.trade_page_role_claimer();
 }
 
 /**
@@ -57,3 +75,27 @@ export const chatDayFormat = {
   month: "short",
   day: "numeric",
 } satisfies Intl.DateTimeFormatOptions;
+
+/**
+ * Why an offer action was refused, naming the caller's own copy from
+ * `copies` when the server could tell which.
+ */
+export function formatOfferError(
+  // oxlint-disable-next-line anti-slop/no-unknown-parameters -- boundary parser; caught errors are genuinely unknown
+  error: unknown,
+  copies: Iterable<
+    Pick<TradeItemView, "tokenId" | "serial" | "collection" | "slug">
+  >,
+) {
+  const failed = claimFailure(error);
+  const refusal = failed?.kind === "token" ? failed.refusal : null;
+  const copy = [...copies].find(
+    ({ tokenId }) => refusal !== null && tokenId === refusal.tokenId,
+  );
+  return refusal !== null && copy !== undefined && copy.serial !== null
+    ? formatTokenRefusal(refusal.reason, {
+        objekt: itemLabel(copy),
+        serial: copy.serial,
+      })
+    : formatError(error);
+}

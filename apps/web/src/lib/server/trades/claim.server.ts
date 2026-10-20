@@ -1,10 +1,5 @@
 import { isBanActive } from "@apollo/auth/guard";
-import {
-  cosmoAccounts,
-  tradeOfferItems,
-  tradeOffers,
-  user,
-} from "@apollo/database/web/schema";
+import { tradeOfferItems, tradeOffers } from "@apollo/database/web/schema";
 import { bumpUpdatedAt } from "@apollo/database/web/sql";
 import type {
   NewTradeOfferItem,
@@ -16,14 +11,11 @@ import { listingTransition } from "@apollo/trades/lifecycle";
 import type { ClaimListingInput } from "@apollo/trades/listing";
 import { CLAIM_WINDOW } from "@apollo/trades/timers";
 import { isEqual } from "@apollo/util";
-import { and, asc, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import type * as z from "zod";
 import type { AuthErrorCode } from "../../universal/errors/auth";
 import { ExpectedError } from "../../universal/errors/expected";
-import type {
-  ClaimTokenRefusal,
-  TradeErrorCode,
-} from "../../universal/errors/trades";
+import type { TradeErrorCode } from "../../universal/errors/trades";
 import {
   type StoredWant,
   storedObjektItemSchema,
@@ -31,7 +23,6 @@ import {
   toTradeWant,
 } from "../../universal/trade-listings";
 import { db, type DbOrTx, type WebTx } from "../db";
-import { isPostgresError } from "../util.server";
 import { claimStanding } from "./detail.server";
 import {
   firstRefusal,
@@ -48,18 +39,17 @@ import {
   posterRefusal,
   toPosterAccount,
 } from "./poster.server";
-import { insertTradeEvent, notifyUsers } from "./trade.server";
+import {
+  insertTradeEvent,
+  lockParties,
+  notifyUsers,
+  readLockedLinks,
+  refuseLiveClash,
+  refuseToken,
+} from "./trade.server";
 
 function refuse(code: TradeErrorCode | AuthErrorCode): never {
   throw new ExpectedError(code);
-}
-
-/**
- * Refuses a picked token the claimer can't give, naming it and why, so the
- * confirm dialog can say which serial to swap.
- */
-function refuseToken({ tokenId, reason }: ClaimTokenRefusal): never {
-  throw new ExpectedError("claim_token_unavailable", { tokenId, reason });
 }
 
 /**
@@ -213,13 +203,14 @@ async function recheckPoster(
  * Locks both users' rows in one statement ordered by id, so a claim can't
  * deadlock against a crossed claim or interleave with a deletion or ban,
  * and the claimer's parallel claims queue for the cap, which their linked
- * address's feedback score sets. Then claims the listing behind its status
- * and `updated_at` guard, which takes the listing's row lock: a claim or
- * edit that committed while this one waited leaves no row to update, and
- * the re-read says which. Then repeats every check that could have changed;
- * a refusal rolls the claim back. Returns the claimer's COSMO address as
- * stored, which the trade pins, and the poster's locked row, missing when
- * the listing has no poster.
+ * address's feedback score sets, and reads their COSMO links under the
+ * locks. Then claims the listing behind its status and `updated_at` guard,
+ * which takes the listing's row lock: a claim or edit that committed while
+ * this one waited leaves no row to update, and the re-read says which. Then
+ * repeats every check that could have changed; a refusal rolls the claim
+ * back. Returns the claimer's COSMO address as stored, which the trade
+ * pins, and the poster's locked row, missing when the listing has no
+ * poster.
  */
 export async function lockAndRecheck(
   tx: WebTx,
@@ -228,30 +219,17 @@ export async function lockAndRecheck(
   preflight: Preflight,
 ) {
   const { listing } = preflight;
-  // each user's COSMO link comes back with their locked row
-  const users = await tx
-    .select({
-      id: user.id,
-      banned: user.banned,
-      banExpires: user.banExpires,
-      address: cosmoAccounts.address,
-      username: cosmoAccounts.username,
-    })
-    .from(user)
-    .leftJoin(cosmoAccounts, eq(cosmoAccounts.userId, user.id))
-    .where(
-      inArray(
-        user.id,
-        listing.fromUserId === null
-          ? [actor.userId]
-          : [actor.userId, listing.fromUserId],
-      ),
-    )
-    .orderBy(asc(user.id))
-    .for("no key update", { of: user });
+  const users = await lockParties(
+    tx,
+    [actor.userId, listing.fromUserId],
+    "no key update",
+  );
+  const links = await readLockedLinks(tx, [actor.userId, listing.fromUserId]);
   const claimer = users.find((row) => row.id === actor.userId);
   if (!claimer) refuse("not_signed_in");
   const poster = users.find((row) => row.id === listing.fromUserId);
+  const posterLink = poster && links.get(poster.id);
+  const claimerAddress = links.get(actor.userId)?.address;
 
   const { from, to } = listingTransition("claim");
   const [claimed] = await tx
@@ -279,17 +257,13 @@ export async function lockAndRecheck(
           banned: poster.banned,
           banExpires: poster.banExpires,
           link:
-            poster.address === null || poster.username === null
+            posterLink === undefined
               ? { kind: "none" }
-              : {
-                  kind: "linked",
-                  address: poster.address,
-                  username: poster.username,
-                },
+              : { kind: "linked", ...posterLink },
         },
   );
   if (isBanActive(claimer)) refuse("forbidden");
-  if (claimer.address === null || !isEqual(claimer.address, actor.address)) {
+  if (claimerAddress === undefined || !isEqual(claimerAddress, actor.address)) {
     refuse("cosmo_not_linked");
   }
   const standing = await claimStanding(tx, actor.userId);
@@ -302,26 +276,7 @@ export async function lockAndRecheck(
     actor.address,
   );
   if (refusal) refuseToken(refusal);
-  return { toAddress: claimer.address, poster };
-}
-
-/**
- * Inserts live items, turning a clash on the live-token index (a token
- * another trade made live after the checks read it) into `refusal`.
- */
-async function insertLiveItems(
-  tx: WebTx,
-  values: NewTradeOfferItem[],
-  refusal: TradeErrorCode,
-) {
-  try {
-    await tx.insert(tradeOfferItems).values(values);
-  } catch (error) {
-    if (isPostgresError(error, "23505", "trade_offer_items_live_token_idx")) {
-      refuse(refusal);
-    }
-    throw error;
-  }
+  return { toAddress: claimerAddress, poster };
 }
 
 /**
@@ -351,36 +306,41 @@ export async function insertTrade(
     .returning({ id: tradeOffers.id });
   if (!trade) throw new Error("Trade insert returned no row");
 
-  await insertLiveItems(
-    tx,
-    listing.items.map(({ tokenId, attributes }) => ({
-      offerId: trade.id,
-      listingId: listing.id,
-      sender: "from",
-      kind: "objekt",
-      live: true,
-      tokenId,
-      ...attributes,
-    })),
+  await refuseLiveClash(
+    tx.insert(tradeOfferItems).values(
+      listing.items.map(
+        ({ tokenId, attributes }) =>
+          ({
+            offerId: trade.id,
+            listingId: listing.id,
+            sender: "from",
+            kind: "objekt",
+            live: true,
+            tokenId,
+            ...attributes,
+          }) satisfies NewTradeOfferItem,
+      ),
+    ),
     "listing_unavailable",
   );
-  await insertLiveItems(
-    tx,
-    submitted.flatMap((tokenId) => {
-      const state = claimerStates.get(tokenId);
-      return state?.kind === "found"
-        ? [
-            {
-              offerId: trade.id,
-              sender: "to",
-              kind: "objekt",
-              live: true,
-              tokenId,
-              ...state.attributes,
-            } satisfies NewTradeOfferItem,
-          ]
-        : [];
-    }),
+  await refuseLiveClash(
+    tx.insert(tradeOfferItems).values(
+      submitted.flatMap((tokenId) => {
+        const state = claimerStates.get(tokenId);
+        return state?.kind === "found"
+          ? [
+              {
+                offerId: trade.id,
+                sender: "to",
+                kind: "objekt",
+                live: true,
+                tokenId,
+                ...state.attributes,
+              } satisfies NewTradeOfferItem,
+            ]
+          : [];
+      }),
+    ),
     "claim_token_unavailable",
   );
   await insertTradeEvent(tx, trade.id, { type: "accepted" });

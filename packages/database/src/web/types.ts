@@ -88,6 +88,12 @@ export const tradeNotificationTypes = [
   "listing_closed",
   "trade_message",
   "feedback_received",
+  "offer_received",
+  "offer_accepted",
+  "offer_declined",
+  "offer_countered",
+  "offer_expired",
+  "offer_stale",
 ] as const;
 export type TradeNotificationType = (typeof tradeNotificationTypes)[number];
 
@@ -115,6 +121,12 @@ export const notificationTypes = [
   "listing_closed",
   "trade_message",
   "feedback_received",
+  "offer_received",
+  "offer_accepted",
+  "offer_declined",
+  "offer_countered",
+  "offer_expired",
+  "offer_stale",
 ] as const;
 export type NotificationType = (typeof notificationTypes)[number];
 export type CosmoToken = typeof cosmoTokens.$inferSelect;
@@ -401,6 +413,13 @@ export const liveTradeStatuses = [
   "disputed",
 ] as const satisfies readonly TradeStatus[];
 
+// a trade still under way: a pending offer, or a live trade
+export const openTradeStatuses = [
+  "pending",
+  ...liveTradeStatuses,
+] as const satisfies readonly TradeStatus[];
+export type OpenTradeStatus = (typeof openTradeStatuses)[number];
+
 // how a trade ends: every item arrived, someone cancelled it, or it ran out of time
 export const endedTradeStatuses = [
   "completed",
@@ -428,6 +447,14 @@ export const endedStatuses = [
 // the poster (`from`) or the counterparty (`to`)
 export const tradeSides = ["from", "to"] as const;
 export type TradeSide = (typeof tradeSides)[number];
+
+// what closed a pending offer for a party: staff banning them, or their account being deleted
+export const offerClosers = ["staff", "deletion"] as const;
+export type OfferCloser = (typeof offerClosers)[number];
+
+// why a pending offer went stale: an offered token left its holder, or can't be transferred
+export const staleReasons = ["moved", "untransferable"] as const;
+export type StaleReason = (typeof staleReasons)[number];
 
 export const tradeCancellers = ["from", "to", "staff"] as const;
 export type TradeCanceller = (typeof tradeCancellers)[number];
@@ -502,4 +529,23 @@ export type TradeEvent =
   | { type: "token_moved"; tokenId: number }
   | { type: "token_untransferable"; tokenId: number }
   | { type: "message_removed"; messageId: number }
-  | { type: "feedback_removed"; side: TradeSide };
+  | { type: "feedback_removed"; side: TradeSide }
+  | OfferEvent;
+
+/**
+ * The events only a direct offer writes: its sending, and how it ended
+ * unaccepted. Accepting one writes `accepted`, as a listing claim does.
+ */
+export type OfferEvent =
+  // a direct offer was sent
+  | { type: "offered" }
+  // the recipient turned the offer down, or it closed when they were banned or deleted their account
+  | { type: "declined"; by: "to" | OfferCloser }
+  // the sender took the offer back before an answer, or it closed when they were banned or deleted their account
+  | { type: "withdrawn"; by: "from" | OfferCloser }
+  // the recipient answered with the counter offer `counterId`
+  | { type: "countered"; counterId: string }
+  // nobody answered within the offer's 72 hours
+  | { type: "expired" }
+  // an offered token left its holder or turned untransferable before the offer was accepted
+  | { type: "stale"; tokenId: number; reason: StaleReason };

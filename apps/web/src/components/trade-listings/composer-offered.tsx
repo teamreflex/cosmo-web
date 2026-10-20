@@ -9,7 +9,7 @@ import { IconPlus, IconX } from "@tabler/icons-react";
 import { ObjektSidebar } from "../objekt/common";
 import { Button } from "../ui/button";
 import { FieldError } from "../ui/field";
-import { OfferPill } from "./composer-picker-card";
+import { OfferPill } from "./selectable-card";
 
 type OfferedProps = {
   tokenIds: number[];

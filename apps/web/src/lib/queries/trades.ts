@@ -1,5 +1,7 @@
+import { $fetchCounterMatches } from "@/lib/functions/lists";
+import { $fetchOfferSerials } from "@/lib/functions/trade-offers";
 import { $fetchMyTrades, $fetchTrade } from "@/lib/functions/trades";
-import type { MyTradesTab } from "@/lib/universal/trades";
+import type { MyTradesCursor, MyTradesTab } from "@/lib/universal/trades";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
 /**
@@ -9,10 +11,45 @@ import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
  */
 export const tradesKey = ["trades"] as const;
 
+/**
+ * One trade's page. Chat pushes an accepted trade's changes, but a pending
+ * offer has no chat yet, so while one is open its page polls for an answer
+ * or its expiry.
+ */
 export const tradeQuery = (id: string) =>
   queryOptions({
     queryKey: [...tradesKey, "detail", id],
     queryFn: ({ signal }) => $fetchTrade({ signal, data: { tradeId: id } }),
+    refetchInterval: (query) =>
+      query.state.data?.trade.state.status === "pending" ? 60_000 : false,
+  });
+
+/**
+ * The copies a direct offer to the partner would trade, for the
+ * collections each side would give.
+ */
+export const offerSerialsQuery = (
+  partnerId: string,
+  give: string[],
+  get: string[],
+) =>
+  queryOptions({
+    queryKey: [...tradesKey, "offer-serials", partnerId, { give, get }],
+    queryFn: ({ signal }) =>
+      $fetchOfferSerials({ signal, data: { partnerId, give, get } }),
+    staleTime: 1000 * 60,
+  });
+
+/**
+ * What the recipient of a pending offer could put in a counter to it, with
+ * the copy behind each collection.
+ */
+export const counterMatchesQuery = (tradeId: string) =>
+  queryOptions({
+    queryKey: [...tradesKey, "counter-matches", tradeId],
+    queryFn: ({ signal }) =>
+      $fetchCounterMatches({ signal, data: { tradeId } }),
+    staleTime: 1000 * 60,
   });
 
 /**
@@ -34,4 +71,4 @@ export const myTradesQuery = (tab: MyTradesTab) =>
  * The first page has no cursor. Typed as the cursor union so the query
  * infers its page param from it.
  */
-const firstPage: string | undefined = undefined;
+const firstPage: MyTradesCursor | undefined = undefined;

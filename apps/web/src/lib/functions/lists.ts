@@ -16,10 +16,14 @@ import {
   assertOwnsTokensMulti,
   assertUserOwnsList,
   queueTradeNotifications,
+  tradePair,
 } from "@/lib/server/objekts/lists.server";
+import { readOfferSerials } from "@/lib/server/trades/offer.server";
+import { refuseTrade } from "@/lib/server/trades/trade.server";
 import type { PublicUser } from "@/lib/universal/auth";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import type {
+  CounterMatches,
   ListShelfItem,
   PartnerListMatch,
   PartnerMatchRow,
@@ -41,9 +45,14 @@ import {
   updateObjektListEntrySchema,
   updateObjektListSchema,
 } from "@/lib/universal/schema/objekt-list";
+import {
+  MAX_OFFER_SERIAL_SLUGS,
+  tradeIdInputSchema,
+} from "@/lib/universal/schema/trades";
 import { createSlug } from "@/lib/utils";
+import { isBanActive } from "@apollo/auth/guard";
 import { objektListEntries, objektLists } from "@apollo/database/web/schema";
-import type { ObjektListEntry } from "@apollo/database/web/types";
+import type { ObjektListEntry, TradeSide } from "@apollo/database/web/types";
 import { redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, inArray, ne, type SQLWrapper, sql } from "drizzle-orm";
@@ -842,7 +851,8 @@ export const $removeObjektFromList = createServerFn({ method: "POST" })
  * Find trade partners for a single live list. Surfaces only mutual matches:
  * the partner must hold something in this anchor (or want it, depending on
  * anchor type) AND must want something the current user already holds (or
- * holds something the current user wants). Anchor must be trade-active.
+ * holds something the current user wants). Anchor must be trade-active, and
+ * a banned user is never a partner.
  */
 export const $findTradePartnersForList = createServerFn({ method: "GET" })
   .validator(findTradePartnersSchema)
@@ -902,14 +912,9 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
         iHaveTheyWant,
       })
       .from(h)
-      .innerJoin(w, eq(w.id, h.linkedWantListId))
+      .innerJoin(w, tradePair(h, w))
       .where(
         and(
-          eq(h.type, "have"),
-          eq(h.discoverable, true),
-          eq(w.type, "want"),
-          eq(w.discoverable, true),
-          eq(w.userId, h.userId),
           ne(h.userId, userId),
           sql`cardinality(${theyHaveIWant}) > 0`,
           sql`cardinality(${iHaveTheyWant}) > 0`,
@@ -950,7 +955,8 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
       { username: string; user: PublicUser }
     >();
     for (const cosmo of cosmos) {
-      if (!cosmo.userId || !cosmo.user) continue;
+      // a banned user can't be offered a trade, so they aren't a partner
+      if (!cosmo.userId || !cosmo.user || isBanActive(cosmo.user)) continue;
       identityByUserId.set(cosmo.userId, {
         username: cosmo.username,
         user: toPublicUser(cosmo.user),
@@ -962,42 +968,25 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
       collections[c.slug] = Objekt.fromIndexer(c);
     }
 
-    const partnerOrder: string[] = [];
-    const matchesByUserId = new Map<string, PartnerListMatch[]>();
-    for (const row of matches) {
-      const list = matchesByUserId.get(row.userId);
-      if (list) {
-        list.push({
+    // each partner's pairs, in the order their first pair ranked
+    const partners: TradePartner[] = [];
+    for (const [partnerUserId, rows] of Map.groupBy(
+      matches,
+      (row) => row.userId,
+    )) {
+      const identity = identityByUserId.get(partnerUserId);
+      if (!identity) continue;
+      partners.push({
+        userId: partnerUserId,
+        username: identity.username,
+        user: identity.user,
+        matches: rows.map((row): PartnerListMatch => ({
           listId: row.listId,
           listSlug: row.listSlug,
           listName: row.listName,
           theyHaveIWant: row.theyHaveIWant,
           iHaveTheyWant: row.iHaveTheyWant,
-        });
-      } else {
-        partnerOrder.push(row.userId);
-        matchesByUserId.set(row.userId, [
-          {
-            listId: row.listId,
-            listSlug: row.listSlug,
-            listName: row.listName,
-            theyHaveIWant: row.theyHaveIWant,
-            iHaveTheyWant: row.iHaveTheyWant,
-          },
-        ]);
-      }
-    }
-
-    const partners: TradePartner[] = [];
-    for (const partnerUserId of partnerOrder) {
-      const identity = identityByUserId.get(partnerUserId);
-      if (!identity) continue;
-      const partnerMatches = matchesByUserId.get(partnerUserId) ?? [];
-      partners.push({
-        userId: partnerUserId,
-        username: identity.username,
-        user: identity.user,
-        matches: partnerMatches,
+        })),
       });
     }
 
@@ -1014,12 +1003,95 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
   });
 
 /**
+ * What the recipient of a pending offer could put in a counter: the
+ * collections either side would give across the caller's trade pairs and
+ * the sender's discoverable ones, as Trade Matches pairs them, after the
+ * offer's own, with the copy behind each as Trade Matches picks it. A
+ * hidden list of the sender's never shows. Anyone but the recipient of a
+ * pending offer gets not found.
+ */
+export const $fetchCounterMatches = createServerFn({ method: "GET" })
+  .validator(tradeIdInputSchema)
+  .middleware([cosmoMiddleware])
+  .handler(async ({ data, context }): Promise<CounterMatches> => {
+    const userId = context.session.session.userId;
+
+    // the offer, which only its recipient can counter while it's pending
+    const trade = await db.query.tradeOffers.findFirst({
+      where: {
+        id: data.tradeId,
+        kind: "trade",
+        status: "pending",
+        toUserId: userId,
+      },
+      columns: { fromUserId: true },
+      with: { items: { columns: { sender: true, slug: true } } },
+    });
+    if (!trade?.fromUserId) refuseTrade("trade_not_found");
+
+    // the caller's trade pairs against each of the sender's discoverable ones
+    const mh = alias(objektLists, "mh");
+    const mw = alias(objektLists, "mw");
+    const h = alias(objektLists, "h");
+    const w = alias(objektLists, "w");
+    const pairs = await db
+      .select({
+        give: sharedCollections(w.id, mh.id),
+        get: sharedCollections(h.id, mw.id),
+      })
+      .from(mh)
+      .innerJoin(mw, tradePair(mh, mw, false))
+      .innerJoin(h, eq(h.userId, trade.fromUserId))
+      .innerJoin(w, tradePair(h, w))
+      .where(eq(mh.userId, userId));
+
+    // the offer's collections first: the caller gives what was asked of them, and gets what was offered
+    const collected = (side: "give" | "get", sender: TradeSide) => [
+      ...new Set([
+        ...trade.items.flatMap((item) =>
+          item.sender === sender && item.slug !== null ? [item.slug] : [],
+        ),
+        ...pairs.flatMap((pair) => pair[side]),
+      ]),
+    ];
+    const give = collected("give", "to");
+    const get = collected("get", "from");
+
+    const indexed = await indexer.query.collections.findMany({
+      where: { slug: { in: [...give, ...get] } },
+    });
+    return {
+      partnerId: trade.fromUserId,
+      give,
+      get,
+      collections: Object.fromEntries(
+        indexed.map((collection) => [
+          collection.slug,
+          Objekt.fromIndexer(collection),
+        ]),
+      ),
+      // the offer's collections come first, so they're always within the cap
+      serials: await readOfferSerials(
+        { userId, address: context.cosmo.address },
+        trade.fromUserId,
+        {
+          give: give.slice(0, MAX_OFFER_SERIAL_SLUGS),
+          get: get.slice(0, MAX_OFFER_SERIAL_SLUGS),
+        },
+      ),
+    };
+  });
+
+/**
  * Collections on a partner's list that are also on one of mine, matched as an
  * intersection per partner list. Every read is by list id, so the plan never
  * looks a collection up across every list. Mine is read once into an array
  * rather than once per partner list.
  */
-function sharedCollections(partnerListId: SQLWrapper, myListId: string) {
+function sharedCollections(
+  partnerListId: SQLWrapper,
+  myListId: SQLWrapper | string,
+) {
   return sql<string[]>`array(
     select ${objektListEntries.collectionId} from ${objektListEntries}
     where ${objektListEntries.objektListId} = ${partnerListId}

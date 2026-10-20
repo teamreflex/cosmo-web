@@ -103,13 +103,14 @@ export default function PickerGrid({
 
 type PickerCardFaceProps = {
   collection: Objekt.Collection;
-  serial: number;
+  serial: number | undefined;
   priority: boolean;
 };
 
 /**
  * A picker card's face: the plain front image with the collection number
- * and serial down its band. Cards put it inside their own button.
+ * and serial down its band. Cards put it inside their own button. Past the
+ * first screenful (`priority`) an image loads as it nears the viewport.
  */
 export function PickerCardFace({
   collection,
@@ -125,6 +126,7 @@ export function PickerCardFace({
         height={450}
         decoding="async"
         fetchPriority={priority ? "high" : "auto"}
+        loading={priority ? "eager" : "lazy"}
         className="w-full"
       />
       <ObjektSidebar collection={collection} serial={serial} />

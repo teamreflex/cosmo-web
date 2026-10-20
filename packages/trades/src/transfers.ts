@@ -1,6 +1,10 @@
-import type { TradeSide } from "@apollo/database/web/types";
+import type {
+  StaleReason,
+  TradeSide,
+  TradeStatus,
+} from "@apollo/database/web/types";
 import { addr } from "@apollo/util";
-import { otherSide } from "./lifecycle";
+import { isOpenTrade, otherSide } from "./lifecycle";
 
 /**
  * One outbox row as the drain reads it, with the token id parsed to the
@@ -47,8 +51,8 @@ export type TransferDecision =
       at: Date;
       hash: string;
     }
-  // the listing breaks, or the pending offer goes stale
-  | { type: "breaks"; offerId: string }
+  // the listing breaks, or the pending offer goes stale, and why
+  | { type: "breaks"; offerId: string; reason: StaleReason }
   // a live trade's token went elsewhere; the trade gets a timeline event
   | {
       type: "event";
@@ -75,13 +79,15 @@ function decideItem(row: ChainRow, item: ExpectedItem): TransferDecision {
     if (row.transferable) return { type: "ignore" };
     return item.kind === "live"
       ? { type: "event", tradeId: item.tradeId, event: "token_untransferable" }
-      : { type: "breaks", offerId: item.offerId };
+      : { type: "breaks", offerId: item.offerId, reason: "untransferable" };
   }
 
   // a transfer into the holder, or between others, changes nothing here
   if (!sameAddress(row.from, item.from)) return { type: "ignore" };
 
-  if (item.kind === "offered") return { type: "breaks", offerId: item.offerId };
+  if (item.kind === "offered") {
+    return { type: "breaks", offerId: item.offerId, reason: "moved" };
+  }
   return sameAddress(row.to, item.to)
     ? {
         type: "transferred",
@@ -110,7 +116,7 @@ export type TradeChainEvent =
  * counts as transferred for the rows after it, so a token passed on in the
  * same batch is recorded once and isn't reported as moved. Each trade's
  * events keep row order, and each listing or pending offer breaks once, on
- * the first token that breaks it.
+ * the first token that breaks it, with why it did.
  */
 export function foldTransfers(
   rows: readonly ChainRow[],
@@ -118,7 +124,7 @@ export function foldTransfers(
 ) {
   const arrived = new Set<number>();
   const trades = new Map<string, TradeChainEvent[]>();
-  const breaks = new Map<string, number>();
+  const breaks = new Map<string, { tokenId: number; reason: StaleReason }>();
   const post = (tradeId: string, event: TradeChainEvent) => {
     const events = trades.get(tradeId);
     if (events === undefined) trades.set(tradeId, [event]);
@@ -150,7 +156,10 @@ export function foldTransfers(
           break;
         case "breaks":
           if (!breaks.has(decision.offerId)) {
-            breaks.set(decision.offerId, row.tokenId);
+            breaks.set(decision.offerId, {
+              tokenId: row.tokenId,
+              reason: decision.reason,
+            });
           }
           break;
         case "ignore":
@@ -165,35 +174,43 @@ export function foldTransfers(
 /**
  * Where an item stands. `sent` is recorded by the drain, and `arrived` is
  * in the receiver's account before the drain has seen it. `moved` left the
- * sender for someone else, and `untransferable` can't move. An ended
- * trade's unsent items are `not_sent`.
+ * sender for someone else, and `untransferable` can't move. Nothing counts
+ * before an offer is accepted: a pending offer's token still with its
+ * sender is `not_started`, and one already with its receiver has only left
+ * its sender, so it is `moved`. An ended trade's unsent items are
+ * `not_sent`.
  */
 export type TradeItemStatus =
   | "sent"
   | "arrived"
   | "waiting"
+  | "not_started"
   | "moved"
   | "untransferable"
   | "not_sent";
 
 /**
- * An item's status: recorded first, then, while the trade is live, its
- * token's indexed owner against the trade's pinned addresses. A token the
- * indexer doesn't know is still waiting.
+ * An item's status: recorded first, then, while the trade is pending or
+ * live, its token's indexed owner against the trade's pinned addresses. A
+ * token the indexer doesn't know is still waiting, or not started on a
+ * pending offer.
  */
 export function itemStatus(
   item: { sender: TradeSide; transferredAt: Date | null },
   token: { owner: string; transferable: boolean } | undefined,
-  trade: { live: boolean; fromAddress: string; toAddress: string | null },
+  trade: { status: TradeStatus; fromAddress: string; toAddress: string | null },
 ): TradeItemStatus {
   if (item.transferredAt !== null) return "sent";
-  if (!trade.live) return "not_sent";
-  if (token === undefined) return "waiting";
+  if (!isOpenTrade(trade.status)) return "not_sent";
+  const waiting = trade.status === "pending" ? "not_started" : "waiting";
+  if (token === undefined) return waiting;
   const pinned = {
     from: addr(trade.fromAddress),
     to: trade.toAddress === null ? null : addr(trade.toAddress),
   };
-  if (token.owner === pinned[otherSide(item.sender)]) return "arrived";
+  if (token.owner === pinned[otherSide(item.sender)]) {
+    return trade.status === "pending" ? "moved" : "arrived";
+  }
   if (token.owner !== pinned.from && token.owner !== pinned.to) return "moved";
-  return token.transferable ? "waiting" : "untransferable";
+  return token.transferable ? waiting : "untransferable";
 }

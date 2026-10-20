@@ -9,14 +9,18 @@ import {
 } from "../src/caps";
 import {
   type ClaimListingInput,
+  type CounterOfferInput,
   type EditListingInput,
   type ListingInput,
+  type OfferInput,
   claimListingInputSchema,
+  counterOfferInputSchema,
   editListingInputSchema,
   listingIdInputSchema,
   listingIdSchema,
   listingInputSchema,
   listingTypes,
+  offerInputSchema,
   offeredTokensInputSchema,
 } from "../src/listing";
 import type { RangeFilter } from "../src/range";
@@ -858,6 +862,124 @@ describe("offeredTokensInputSchema", () => {
       offeredTokensInputSchema.safeParse({ tokenIds: [1], address: "0x" })
         .success,
     ).toBe(false);
+  });
+});
+
+/**
+ * Offers and counters take the same two sides; an offer names its recipient
+ * and a counter the trade it answers.
+ */
+const offerSchemas = [
+  ["offerInputSchema", offerInputSchema, { toUserId: "user-b" }],
+  ["counterOfferInputSchema", counterOfferInputSchema, { tradeId: LISTING_ID }],
+] as const;
+
+describe.each(offerSchemas)("%s", (_, schema, target) => {
+  const ids = (count: number, from = 1) =>
+    Array.from({ length: count }, (_, i) => from + i);
+
+  test.each([
+    ["two a side", [1, 2], [3, 4]],
+    ["one a side (UNIT-02)", [1], [2]],
+    ["MAX_OFFERED a side (UNIT-02)", ids(MAX_OFFERED), ids(MAX_OFFERED, 21)],
+    ["the largest Postgres integer", [2_147_483_647], [1]],
+  ])("accepts %s (UNIT-02)", (_, give, get) => {
+    expect(schema.safeParse({ ...target, give, get })).toEqual({
+      success: true,
+      data: { ...target, give, get },
+    });
+  });
+
+  test.each([
+    ["an empty give", { give: [] }, "give: *"],
+    ["an empty get", { get: [] }, "get: *"],
+    ["no give", { give: undefined }, "give: *"],
+    [
+      "one past MAX_OFFERED given",
+      { give: ids(MAX_OFFERED + 1, 10) },
+      "give: *",
+    ],
+    ["one past MAX_OFFERED asked", { get: ids(MAX_OFFERED + 1, 10) }, "get: *"],
+    [
+      "a token given twice",
+      { give: [1, 1] },
+      "give: Each objekt can only be in an offer once",
+    ],
+    [
+      "a token asked twice",
+      { get: [2, 2] },
+      "get: Each objekt can only be in an offer once",
+    ],
+    [
+      "a token on both sides",
+      { give: [1, 5], get: [2, 5] },
+      "get: Each objekt can only be in an offer once",
+    ],
+    ["token id 0", { give: [0] }, "give.0: *"],
+    ["token id -1", { get: [-1] }, "get.0: *"],
+    ["a fractional token id", { give: [1.5] }, "give.0: *"],
+    ["token id 2^31", { give: [2_147_483_648] }, "give.0: *"],
+    ["token id 2^31 asked", { get: [2_147_483_648] }, "get.0: *"],
+    ["token id 2^53+1", { give: [2 ** 53 + 1] }, "give.0: *"],
+    ["token id 2^53+1 asked", { get: [2 ** 53 + 1] }, "get.0: *"],
+    ["a token id as a string", { get: ["2"] }, "get.0: *"],
+    ["an extra key", { fromUserId: "user-a" }, ": *"],
+  ])("refuses %s (UNIT-03, UNIT-04)", (_, override, issue) => {
+    expectIssue<unknown>(
+      schema.safeParse({ ...target, give: [1], get: [2], ...override }),
+      issue,
+    );
+  });
+});
+
+describe("offerInputSchema", () => {
+  test.each([
+    ["a missing recipient", { toUserId: undefined }],
+    ["an empty recipient", { toUserId: "" }],
+    ["a numeric recipient", { toUserId: 1 }],
+  ])("refuses %s (UNIT-03)", (_, override) => {
+    expectIssue(
+      offerInputSchema.safeParse({ give: [1], get: [2], ...override }),
+      "toUserId: *",
+    );
+  });
+
+  test("outputs the recipient and both sides", () => {
+    expectTypeOf<OfferInput>().toEqualTypeOf<{
+      toUserId: string;
+      give: number[];
+      get: number[];
+    }>();
+  });
+});
+
+describe("counterOfferInputSchema", () => {
+  test.each([
+    ["a non-uuid trade id", { tradeId: "trade-1" }],
+    ["a missing trade id", { tradeId: undefined }],
+    ["a recipient instead of a trade", { tradeId: undefined, toUserId: "b" }],
+  ])("refuses %s (UNIT-04)", (_, override) => {
+    expectIssue(
+      counterOfferInputSchema.safeParse({ give: [1], get: [2], ...override }),
+      "tradeId: *",
+    );
+  });
+
+  test("lowercases the trade id", () => {
+    const result = counterOfferInputSchema.safeParse({
+      tradeId: LISTING_ID.toUpperCase(),
+      give: [1],
+      get: [2],
+    });
+    expect(result.success && result.data.tradeId).toBe(LISTING_ID);
+  });
+
+  test("outputs the trade and both sides", () => {
+    expectTypeOf<CounterOfferInput>().toEqualTypeOf<{
+      tradeId: string;
+      give: number[];
+      get: number[];
+    }>();
   });
 });
 

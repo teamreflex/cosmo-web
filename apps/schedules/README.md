@@ -7,7 +7,7 @@ Scheduled tasks and the workers for the web app's job queues. `bun run task <nam
 | Task                          | Schedule            | Purpose                                                                 |
 | ----------------------------- | ------------------- | ----------------------------------------------------------------------- |
 | `drain-outbox`                | Every minute        | Applies indexed transfers to lists, pins, binders and trades            |
-| `trade-timers`                | Every minute        | Times out or completes accepted trades past their deadline              |
+| `trade-timers`                | Every minute        | Expires pending offers and ends accepted trades past their deadline     |
 | `sync-market-stats`           | Every minute        | Copies each listed collection's floor and listing count for `/market`   |
 | `apply-serial-confirmations`  | Every 5 minutes     | Re-estimates collections whose staff-confirmed serials don't match yet  |
 | `sync-gravities`              | Every 30 minutes    | Syncs gravities and poll candidates from COSMO                          |

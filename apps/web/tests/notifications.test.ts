@@ -48,7 +48,9 @@ function tradeRow(
     counterparty: { userId: "actor", username: "Actor" },
     offer: { id: "trade", status: "accepted" },
     token: { tokenId: 1, serial: 217, collection: null },
+    tokenSender: null,
     objekts: [],
+    asked: 0,
     ...overrides,
   };
 }

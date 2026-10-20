@@ -1,4 +1,9 @@
-import { disputeReasons, tradeSides } from "@apollo/database/web/types";
+import {
+  disputeReasons,
+  offerClosers,
+  staleReasons,
+  tradeSides,
+} from "@apollo/database/web/types";
 import * as Schema from "effect/Schema";
 import * as SchemaTransformation from "effect/SchemaTransformation";
 import { sanitizeMessage } from "./sanitize";
@@ -89,6 +94,25 @@ const KnownTradeEvent = Schema.Union([
   Schema.Struct({
     type: Schema.Literal("feedback_removed"),
     side: TradeSide,
+  }),
+  Schema.Struct({ type: Schema.Literal("offered") }),
+  Schema.Struct({
+    type: Schema.Literal("declined"),
+    by: Schema.Literals(["to", ...offerClosers]),
+  }),
+  Schema.Struct({
+    type: Schema.Literal("withdrawn"),
+    by: Schema.Literals(["from", ...offerClosers]),
+  }),
+  Schema.Struct({
+    type: Schema.Literal("countered"),
+    counterId: Schema.String,
+  }),
+  Schema.Struct({ type: Schema.Literal("expired") }),
+  Schema.Struct({
+    type: Schema.Literal("stale"),
+    tokenId: Schema.Int,
+    reason: Schema.Literals(staleReasons),
   }),
 ]);
 

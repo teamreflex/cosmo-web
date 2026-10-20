@@ -12,6 +12,9 @@ export function isTimedOut(deadline: Date, watermark: Date | null) {
 // how long a claimed listing's trade has to complete; posters can't change it
 export const CLAIM_WINDOW = 48 * 60 * 60 * 1000;
 
+// how long a pending direct offer waits for an answer, judged by the database's clock
+export const OFFER_WINDOW = 72 * 60 * 60 * 1000;
+
 // the drain's row in `list_drain_cursor`, whose `chain_time` is the watermark
 export const DRAIN_CURSOR_NAME = "outbox-drain";
 

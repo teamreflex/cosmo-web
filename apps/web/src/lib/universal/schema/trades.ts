@@ -14,6 +14,11 @@ export const tradeIdInputSchema = z.strictObject({
   tradeId: z.uuid(),
 });
 
+// the recipient declines a pending offer, or its sender withdraws it
+export const endOfferInputSchema = tradeIdInputSchema.extend({
+  action: z.enum(["decline", "withdraw"]),
+});
+
 export const openDisputeInputSchema = tradeIdInputSchema.extend({
   reason: z.enum(disputeReasons),
   note: tradeNoteSchema,
@@ -33,8 +38,31 @@ export const staffExtendTradeInputSchema = staffTradeInputSchema.extend({
   hours: z.literal(EXTEND_HOURS),
 });
 
+/**
+ * The previous page's last trade on either tab: the value it sorted by when
+ * that page was read, to the microsecond, and its id. Carrying the value
+ * keeps the page boundary in place when that trade is accepted since.
+ */
+export const myTradesCursorSchema = z.strictObject({
+  at: z.iso.datetime(),
+  id: z.uuid(),
+});
+
 export const myTradesInputSchema = z.strictObject({
   tab: z.enum(myTradesTabs),
-  // the previous Finished page's last trade
-  cursor: z.uuid().optional(),
+  cursor: myTradesCursorSchema.optional(),
+});
+
+// the most collections a side of one offer-serials request may name
+export const MAX_OFFER_SERIAL_SLUGS = 200;
+
+/**
+ * The collections Trade Matches shows for one partner, up to
+ * MAX_OFFER_SERIAL_SLUGS a side: the caller's (`give`) and the partner's
+ * (`get`).
+ */
+export const offerSerialsInputSchema = z.strictObject({
+  partnerId: z.string().min(1),
+  give: z.array(z.string().min(1)).max(MAX_OFFER_SERIAL_SLUGS),
+  get: z.array(z.string().min(1)).max(MAX_OFFER_SERIAL_SLUGS),
 });

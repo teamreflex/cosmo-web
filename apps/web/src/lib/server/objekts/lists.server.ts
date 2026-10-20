@@ -9,6 +9,7 @@ import {
 } from "@apollo/queue";
 import { captureException } from "@sentry/bun";
 import { and, eq, inArray } from "drizzle-orm";
+import type { alias } from "drizzle-orm/pg-core";
 import { db, type DbOrTx } from "../db";
 import { Runtime } from "../runtime.server";
 
@@ -128,4 +129,27 @@ export async function queueTradeNotifications(job: TradeNotificationsJob) {
   await Runtime.runPromise(
     TradeNotificationsQueue.use((queue) => queue.offer(job)),
   ).catch(captureException);
+}
+
+// `objekt_lists` under an alias, as the trade pair reads join it to itself
+type ObjektListAlias = ReturnType<typeof alias<typeof objektLists, string>>;
+
+/**
+ * `h` and `w` are a trade pair: a have list and the want list it's paired
+ * with, the same user's. Both are discoverable, the pairs Trade Matches
+ * shows, unless `discoverable` is false, for the caller's own pairs.
+ */
+export function tradePair(
+  h: ObjektListAlias,
+  w: ObjektListAlias,
+  discoverable = true,
+) {
+  return and(
+    eq(w.id, h.linkedWantListId),
+    eq(h.type, "have"),
+    eq(w.type, "want"),
+    eq(w.userId, h.userId),
+    discoverable ? eq(h.discoverable, true) : undefined,
+    discoverable ? eq(w.discoverable, true) : undefined,
+  );
 }

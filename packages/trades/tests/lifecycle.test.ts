@@ -8,12 +8,14 @@ import {
 import { describe, expect, test } from "bun:test";
 import {
   type ListingEvent,
+  type OfferEvent,
   type TradeEvent,
   type TradeItemState,
   type TradeState,
   listingEventAfter,
   listingTransition,
   needsYou,
+  offerTransition,
   owingSides,
   partyAction,
   tradeState,
@@ -74,15 +76,13 @@ function apply(state: TradeState, event: TradeEvent) {
  * Each event with an acting side that may take it, the statuses it is
  * allowed from with `purchase`'s items, and where it goes. Every status not
  * listed refuses with wrong_status (LIFE-03, LIFE-06, LIFE-13, LIFE-14,
- * LIFE-16, LIFE-17).
+ * LIFE-16, LIFE-17, UNIT-05).
  */
 const allowed: [TradeEvent, TradeStatus[], TradeStatus | "unchanged"][] = [
   [{ type: "accept", by: "to" }, ["pending"], "accepted"],
   [{ type: "decline", by: "to" }, ["pending"], "declined"],
   [{ type: "counter", by: "to" }, ["pending"], "countered"],
   [{ type: "withdraw", by: "from" }, ["pending"], "withdrawn"],
-  [{ type: "expire" }, ["pending"], "expired"],
-  [{ type: "go_stale" }, ["pending"], "stale"],
   [{ type: "transfer", item: 0 }, ["accepted", "disputed"], "unchanged"],
   [{ type: "mark_paid", item: 1, by: "to" }, ["accepted"], "accepted"],
   [
@@ -122,9 +122,14 @@ describe("transition: parties", () => {
     [{ type: "decline", by: "from" }],
     [{ type: "counter", by: "from" }],
     [{ type: "withdraw", by: "to" }],
-  ] satisfies [TradeEvent][])("refuses %o on a pending offer", (event) => {
-    expect(statusAfter(trade("pending", purchase), event)).toBe("wrong_party");
-  });
+  ] satisfies [TradeEvent][])(
+    "refuses %o on a pending offer (UNIT-05)",
+    (event) => {
+      expect(statusAfter(trade("pending", purchase), event)).toBe(
+        "wrong_party",
+      );
+    },
+  );
 
   test("only the payer marks paid, and only the receiver confirms", () => {
     const state = trade("accepted", purchase);
@@ -571,9 +576,9 @@ describe("needsYou (UNIT-05)", () => {
       expect(needsYou(trade("accepted", sixObjekts()), side, running)).toBe(
         true,
       );
-      expect(
-        needsYou(trade("accepted", sixObjekts(true)), side, running),
-      ).toBe(false);
+      expect(needsYou(trade("accepted", sixObjekts(true)), side, running)).toBe(
+        false,
+      );
     }
   });
 
@@ -587,16 +592,32 @@ describe("needsYou (UNIT-05)", () => {
     }
   });
 
-  test.each(["disputed", "completed", "cancelled", "timed_out"] as const)(
-    "a %s trade never needs anyone",
-    (status) => {
-      for (const side of ["from", "to"] as const) {
-        expect(needsYou(trade(status, sixObjekts()), side, running)).toBe(
-          false,
-        );
-      }
-    },
-  );
+  test("a pending offer needs only its recipient, whatever the facts (UNIT-06)", () => {
+    for (const deadlinePassed of [false, true]) {
+      expect(
+        needsYou(trade("pending", sixObjekts()), "to", { deadlinePassed }),
+      ).toBe(true);
+      expect(
+        needsYou(trade("pending", sixObjekts()), "from", { deadlinePassed }),
+      ).toBe(false);
+    }
+  });
+
+  test.each([
+    "disputed",
+    "completed",
+    "cancelled",
+    "timed_out",
+    "declined",
+    "withdrawn",
+    "countered",
+    "expired",
+    "stale",
+  ] as const)("a %s trade never needs anyone (UNIT-06)", (status) => {
+    for (const side of ["from", "to"] as const) {
+      expect(needsYou(trade(status, sixObjekts()), side, running)).toBe(false);
+    }
+  });
 });
 
 describe("listingEventAfter", () => {
@@ -772,5 +793,32 @@ describe("listingTransition agrees with transitionListing (LTR-01)", () => {
     expect(
       listingAllowed.map(([event]) => [event, listingTransition(event)]),
     ).toEqual(listingAllowed.map(([event, from, to]) => [event, { from, to }]));
+  });
+});
+
+describe("offerTransition", () => {
+  test.each([
+    [{ type: "accept", by: "to" }],
+    [{ type: "decline", by: "to" }],
+    [{ type: "counter", by: "to" }],
+    [{ type: "withdraw", by: "from" }],
+  ] satisfies [TradeEvent & { type: OfferEvent }][])(
+    "agrees with transition for %o",
+    (event) => {
+      const { from, to } = offerTransition(event.type);
+      expect(from).toBe("pending");
+      expect(statusAfter(trade(from, purchase), event)).toBe(to);
+    },
+  );
+
+  test("the timers and the drain end a pending offer as expired or stale", () => {
+    expect(offerTransition("expire")).toEqual({
+      from: "pending",
+      to: "expired",
+    });
+    expect(offerTransition("go_stale")).toEqual({
+      from: "pending",
+      to: "stale",
+    });
   });
 });

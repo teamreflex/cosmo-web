@@ -32,7 +32,8 @@ type Props = {
  * receives first, or the poster's first for staff. Each row shows where its
  * transfer stands and, once the drain has seen it, when and a link to the
  * transaction. An objekt that moved elsewhere or turned untransferable shows
- * when the drain saw that.
+ * when the drain saw that. Before an offer is accepted, each row says
+ * whether its sender still holds it.
  */
 export default function TransferRows({ trade, side, children }: Props) {
   return (
@@ -73,6 +74,7 @@ export default function TransferRows({ trade, side, children }: Props) {
                 <TransferRow
                   key={item.id}
                   item={item}
+                  yours={sender === side}
                   problemAt={
                     trade.events.findLast(
                       ({ event }) =>
@@ -98,21 +100,27 @@ export default function TransferRows({ trade, side, children }: Props) {
  */
 function TransferRow({
   item,
+  yours,
   problemAt,
 }: {
   item: TradeItemView;
+  /** whether the viewer sends it */
+  yours: boolean;
   /** when the drain last saw the objekt move elsewhere or turn untransferable */
   problemAt: Date | undefined;
 }) {
+  const { status } = item;
   const at =
     item.transferredAt ??
-    (item.status === "moved" || item.status === "untransferable"
-      ? problemAt
-      : undefined);
+    (status === "moved" || status === "untransferable" ? problemAt : undefined);
   const when =
     at !== undefined ? (
       <Timestamp date={at} format={tradeTimeFormat} />
-    ) : item.status !== "not_sent" ? (
+    ) : status === "not_started" ? (
+      <span className="text-teal-700 dark:text-teal-500">
+        {yours ? m.trade_page_item_held_you() : m.trade_page_item_held_them()}
+      </span>
+    ) : status !== "not_sent" ? (
       m.trade_page_not_seen()
     ) : null;
 
@@ -140,7 +148,7 @@ function TransferRow({
       <span className="w-32 shrink-0 text-right text-xs text-muted-foreground tabular-nums @max-lg:hidden">
         {when}
       </span>
-      <StatusBadge status={item.status} />
+      <StatusBadge status={status} />
       {item.txHash === null ? (
         <span className="size-8 shrink-0 @max-lg:hidden" />
       ) : (
@@ -166,11 +174,7 @@ function TransferRow({
  * The objekt's front at thumbnail size, or a muted card of the same size
  * when the indexer has lost it or the image fails to load.
  */
-function Thumbnail({
-  collection,
-}: {
-  collection: Objekt.Collection | null;
-}) {
+function Thumbnail({ collection }: { collection: Objekt.Collection | null }) {
   const [failed, setFailed] = useState(false);
 
   return collection === null || failed ? (
@@ -212,6 +216,10 @@ const statusBadges = {
   untransferable: {
     label: m.trade_page_item_untransferable,
     className: tones.bad,
+  },
+  not_started: {
+    label: m.trade_page_item_not_started,
+    className: tones.muted,
   },
   not_sent: {
     label: m.trade_page_item_not_sent,

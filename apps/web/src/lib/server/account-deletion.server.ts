@@ -215,7 +215,7 @@ async function purgeAccount(tx: WebTx, userId: string): Promise<CosmoLink> {
     await tx.delete(lists).where(eq(lists.userAddress, unlinked.address));
   }
 
-  await closeOpenOffers(tx, userId, "withdrawn");
+  await closeOpenOffers(tx, userId, { by: "deletion" });
 
   // reset-password and deletion tokens, whose value is the user id
   await tx

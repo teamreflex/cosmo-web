@@ -1,14 +1,18 @@
 import type {
+  OfferCloser,
   ReportStatus,
   TradeEvent,
   TradeItemKind,
   TradeSide,
 } from "@apollo/database/web/types";
+import type { SerialPick } from "@apollo/trades/holdings";
 import type { TradeState } from "@apollo/trades/lifecycle";
 import type { TradeItemStatus } from "@apollo/trades/transfers";
+import type { z } from "zod";
 import type { PublicUser } from "./auth";
 import type { FeedbackRep, TradeFeedbackView } from "./feedback";
 import type { Objekt } from "./objekt-conversion";
+import type { myTradesCursorSchema } from "./schema/trades";
 import type { ListingFeedItem } from "./trade-listings";
 
 /**
@@ -26,17 +30,21 @@ export type TradePartyName = {
 };
 
 /**
- * An item as the trade page shows it, with its serial and collection from
- * the indexer, or null when the indexer doesn't know them.
+ * An objekt a trade names, with its serial and collection from the indexer,
+ * or null when the indexer doesn't know them.
  */
-export type TradeItemView = {
-  id: number;
-  sender: TradeSide;
-  kind: TradeItemKind;
+export type TradeNamedItem = {
   tokenId: number | null;
   slug: string | null;
   serial: number | null;
   collection: Objekt.Collection | null;
+};
+
+// an item as the trade page shows it
+export type TradeItemView = TradeNamedItem & {
+  id: number;
+  sender: TradeSide;
+  kind: TradeItemKind;
   transferredAt: Date | null;
   txHash: string | null;
   status: TradeItemStatus;
@@ -52,18 +60,38 @@ export type TradeDispute = {
 };
 
 /**
- * A trade as its page shows it. `deadlinePassed` says the deadline has
- * passed the drain's watermark, so the parties can no longer act.
+ * Where a trade is. A direct offer is on its `offer` stage until its
+ * recipient accepts it, with when it expires, what closed it when a ban or
+ * an account deletion did rather than a party, and, once countered, the
+ * counter's id, whether it still waits for an answer and the objekts it
+ * swaps in. Anything accepted is on its `trade` stage, where
+ * `deadlinePassed` says the deadline has passed the drain's watermark, so
+ * the parties can no longer act.
+ */
+export type TradeStage =
+  | {
+      stage: "offer";
+      expiresAt: Date;
+      closer: OfferCloser | null;
+      counter: {
+        id: string;
+        pending: boolean;
+        items: TradeNamedItem[];
+      } | null;
+    }
+  | { stage: "trade"; deadlineAt: Date; deadlinePassed: boolean };
+
+/**
+ * A trade as its page shows it. `parentId` is the offer a counter answers.
  * `feedback` is where the viewer's feedback stands, `none` for staff.
  */
-export type TradeView = {
+export type TradeView = TradeStage & {
   id: string;
   state: TradeState;
-  deadlineAt: Date;
   endedAt: Date | null;
   dispute: TradeDispute | null;
-  deadlinePassed: boolean;
   listingId: string | null;
+  parentId: string | null;
   parties: Record<TradeSide, TradeParty>;
   items: TradeItemView[];
   events: { id: number; createdAt: Date; event: TradeEvent }[];
@@ -92,15 +120,19 @@ export type MyTradeSide = {
 };
 
 /**
- * A trade as My trades lists it, from the viewer's side. `needsYou` says
- * the trade is accepted, its deadline hasn't passed the drain's watermark,
- * and the viewer still owes something.
+ * A trade as My trades lists it, from the viewer's side. `dueAt` is an
+ * accepted trade's deadline, or until then the offer's expiry. `needsYou`
+ * says the viewer has an offer to answer, or an accepted trade whose
+ * deadline hasn't passed the drain's watermark and on which they still owe
+ * something. `closer` says what ended the offer when a ban or an account
+ * deletion did, rather than a party.
  */
 export type MyTradeRow = {
   id: string;
   state: TradeState;
-  deadlineAt: Date;
+  dueAt: Date;
   dispute: TradeDispute | null;
+  closer: OfferCloser | null;
   endedAt: Date | null;
   listingId: string | null;
   counterparty: TradePartyName;
@@ -109,10 +141,22 @@ export type MyTradeRow = {
   needsYou: boolean;
 };
 
+export type MyTradesCursor = z.infer<typeof myTradesCursorSchema>;
+
 /**
  * A page of My trades; either tab pages on until `nextCursor` is undefined.
  */
 export type MyTradesPage = {
   rows: MyTradeRow[];
-  nextCursor: string | undefined;
+  nextCursor: MyTradesCursor | undefined;
 };
+
+/**
+ * The copy of each collection a direct offer would trade, by slug, on each
+ * side: `give` from the caller and `get` from the other party. Null when
+ * they have no copy that can be offered.
+ */
+export type OfferSerials = Record<
+  "give" | "get",
+  Record<string, SerialPick | null>
+>;

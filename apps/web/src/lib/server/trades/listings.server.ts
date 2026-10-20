@@ -42,9 +42,10 @@ export function posterRow(executor: DbOrTx, userId: string) {
     .where(eq(user.id, userId));
 }
 
-export function refusePoster(
-  row: { banned: boolean; banExpires: Date | null } | undefined,
-) {
+// refuses a user whose account is gone or banned
+export function refusePoster<
+  T extends { banned: boolean; banExpires: Date | null },
+>(row: T | undefined): asserts row is T {
   if (!row) {
     throw new ExpectedError("not_signed_in" satisfies AuthErrorCode);
   }

@@ -62,6 +62,9 @@ const listingFields = {
     .transform((note) => note || null),
 };
 
+const isDistinct = (keys: readonly (string | number)[]) =>
+  new Set(keys).size === keys.length;
+
 type ListingTerms = {
   offered: readonly { tokenId: number }[];
   wants: readonly TradeWant[];
@@ -75,9 +78,6 @@ type ListingTerms = {
 function withListingRules<TSchema extends z.ZodType<ListingTerms>>(
   schema: TSchema,
 ) {
-  const isDistinct = (keys: readonly (string | number)[]) =>
-    new Set(keys).size === keys.length;
-
   return schema
     .refine(
       ({ offered }) => isDistinct(offered.map(({ tokenId }) => tokenId)),
@@ -154,3 +154,48 @@ export const claimListingInputSchema = z
     path: ["rows"],
   });
 export type ClaimListingInput = z.output<typeof claimListingInputSchema>;
+
+/**
+ * One side of a direct offer or counter: what the sender gives or gets. Both
+ * sides need at least one objekt, since an offer from Trade Matches is a swap.
+ */
+const offerSideSchema = z
+  .array(tokenIdSchema)
+  .min(1, "Pick at least one objekt on each side")
+  .max(MAX_OFFERED, `An offer can take at most ${MAX_OFFERED} objekts a side`);
+
+const offerFields = { give: offerSideSchema, get: offerSideSchema };
+
+/**
+ * No token appears twice in an offer, within a side or across both. The
+ * issue points at the side that repeats one: `give` when it repeats its own,
+ * else `get`.
+ */
+function withOfferRules<
+  TSchema extends z.ZodType<{
+    give: readonly number[];
+    get: readonly number[];
+  }>,
+>(schema: TSchema) {
+  return schema.superRefine(({ give, get }, ctx) => {
+    if (!isDistinct([...give, ...get])) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Each objekt can only be in an offer once",
+        path: [isDistinct(give) ? "get" : "give"],
+      });
+    }
+  });
+}
+
+// a direct offer from Trade Matches, sent to the partner's user id
+export const offerInputSchema = withOfferRules(
+  z.strictObject({ toUserId: z.string().min(1), ...offerFields }),
+);
+export type OfferInput = z.output<typeof offerInputSchema>;
+
+// a counter to a pending offer, written from the counterer's side
+export const counterOfferInputSchema = withOfferRules(
+  z.strictObject({ tradeId: z.uuid().toLowerCase(), ...offerFields }),
+);
+export type CounterOfferInput = z.output<typeof counterOfferInputSchema>;

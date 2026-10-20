@@ -6,8 +6,13 @@ import type {
   TradeView,
 } from "@/lib/universal/trades";
 import { cn } from "@/lib/utils";
-import type { EndedTradeStatus, TradeSide } from "@apollo/database/web/types";
-import { otherSide } from "@apollo/trades/lifecycle";
+import type { OpenTradeStatus, TradeSide } from "@apollo/database/web/types";
+import {
+  isOpenTrade,
+  needsYou,
+  otherSide,
+  type TradeState,
+} from "@apollo/trades/lifecycle";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconPlayerPause } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
@@ -26,10 +31,12 @@ type Props = {
 };
 
 /**
- * The page title, whether the trade came from a listing, who it's between
- * and where it stands: the time left, the time left when a dispute paused it,
- * or how it ended. From tablet width it sticks under the navbar. On phones
- * the parties and the status share a line under the title.
+ * The page title, a pill when the trade started as a direct offer, who it's
+ * between, its sender first, and where it stands: the time left to answer
+ * an offer, which its recipient reads as waiting for them, or to finish,
+ * the time left when a dispute paused it, or how it ended. From tablet
+ * width it sticks under the navbar. On phones the parties and the status
+ * share a line under the title.
  */
 export default function TradeHeader({ trade, side }: Props) {
   return (
@@ -38,6 +45,9 @@ export default function TradeHeader({ trade, side }: Props) {
         <h1 className="font-cosmo text-xl leading-none font-black tracking-wide uppercase md:text-2xl">
           {m.trade_page_title()}
         </h1>
+        {trade.listingId === null && (
+          <Badge className={tones.muted}>{m.trade_page_direct_offer()}</Badge>
+        )}
         {/* phones put the parties and the status on a line of their own, or two when they need it */}
         <div className="flex min-w-0 basis-full flex-wrap items-center gap-x-3 gap-y-2 md:contents">
           <span className="flex min-w-0 items-center gap-2 text-sm whitespace-nowrap">
@@ -48,8 +58,13 @@ export default function TradeHeader({ trade, side }: Props) {
                 <PartyName party={trade.parties.to} />
               </>
             ) : (
+              // the sending side comes first, as it does for staff
               <ParaglideMessage
-                message={m.trade_page_parties}
+                message={
+                  side === "from"
+                    ? m.trade_page_parties
+                    : m.trade_page_parties_from
+                }
                 inputs={{ name: "" }}
                 markup={{
                   user: () => (
@@ -60,6 +75,13 @@ export default function TradeHeader({ trade, side }: Props) {
             )}
           </span>
           <span className="ml-auto flex shrink-0 items-center gap-2 text-sm text-muted-foreground">
+            {side !== null &&
+              trade.stage === "offer" &&
+              needsYou(trade.state, side, { deadlinePassed: false }) && (
+                <span className="font-medium text-amber-700 dark:text-amber-400">
+                  {m.trade_page_offer_waiting_for_you()}
+                </span>
+              )}
             <TradeStatus trade={trade} />
           </span>
         </div>
@@ -130,86 +152,103 @@ export function PartyLink({
 }
 
 /**
- * Where a trade stands: the time left, that the deadline has passed, the
- * time left when a dispute paused it, or how and when it ended. Staff see it
- * on the dispute's report too.
+ * Where a trade stands: the time left to answer an offer or to finish, that
+ * the deadline has passed, the time left when a dispute paused it, or how
+ * and when it ended. Staff see it on the dispute's report too.
  */
 export function TradeStatus({ trade }: { trade: TradeView }) {
-  switch (trade.state.status) {
-    case "accepted":
-      return trade.deadlinePassed ? (
-        m.trade_page_deadline_passed_short()
-      ) : (
-        <Tooltip>
-          {/* focusable, since only the tooltip gives the due time */}
-          <TooltipTrigger render={<span tabIndex={0} />}>
-            <ParaglideMessage
-              message={m.trade_page_time_left}
-              inputs={{ left: "" }}
-              markup={{
-                time: () => (
-                  <Countdown
-                    deadline={trade.deadlineAt}
-                    className="font-semibold text-foreground"
-                  />
-                ),
-              }}
-            />
-          </TooltipTrigger>
-          <TooltipContent>
-            <ParaglideMessage
-              message={m.trade_page_due}
-              inputs={{ when: "" }}
-              markup={{
-                time: () => (
-                  <Timestamp date={trade.deadlineAt} format={tradeTimeFormat} />
-                ),
-              }}
-            />
-          </TooltipContent>
-        </Tooltip>
-      );
-    case "disputed":
-      return (
-        <>
-          <IconPlayerPause className="size-4" />
-          <ParaglideMessage
-            message={m.trade_page_paused}
-            inputs={{ left: "" }}
-            markup={{
-              time: () => (
-                <Countdown
-                  deadline={trade.deadlineAt}
-                  pausedAt={trade.dispute?.at ?? trade.deadlineAt}
-                  className="font-semibold text-foreground"
-                />
-              ),
-            }}
+  const { status } = trade.state;
+  if (!isOpenTrade(status)) {
+    return (
+      <>
+        <EndedBadge
+          status={
+            trade.stage === "offer" && trade.closer !== null ? "closed" : status
+          }
+        />
+        {trade.endedAt !== null && (
+          <Timestamp
+            date={trade.endedAt}
+            format={tradeTimeFormat}
+            className="text-xs"
           />
-        </>
-      );
-    case "completed":
-    case "cancelled":
-    case "timed_out":
-      return (
-        <>
-          <EndedBadge status={trade.state.status} />
-          {trade.endedAt !== null && (
-            <Timestamp
-              date={trade.endedAt}
-              format={tradeTimeFormat}
-              className="text-xs"
-            />
-          )}
-        </>
-      );
-    // phase 12's offers aren't shown on this page yet
-    default:
-      return null;
+        )}
+      </>
+    );
   }
+  if (trade.stage === "offer") {
+    return <TimeLeft deadline={trade.expiresAt} offer />;
+  }
+  if (status === "disputed") {
+    return (
+      <>
+        <IconPlayerPause className="size-4" />
+        <ParaglideMessage
+          message={m.trade_page_paused}
+          inputs={{ left: "" }}
+          markup={{
+            time: () => (
+              <Countdown
+                deadline={trade.deadlineAt}
+                pausedAt={trade.dispute?.at ?? trade.deadlineAt}
+                className="font-semibold text-foreground"
+              />
+            ),
+          }}
+        />
+      </>
+    );
+  }
+  return trade.deadlinePassed ? (
+    m.trade_page_deadline_passed_short()
+  ) : (
+    <TimeLeft deadline={trade.deadlineAt} offer={false} />
+  );
 }
 
-export function EndedBadge({ status }: { status: EndedTradeStatus }) {
+/**
+ * The time left to answer an offer or to finish a trade, ticking on the
+ * client, with when that runs out in its tooltip.
+ */
+function TimeLeft({ deadline, offer }: { deadline: Date; offer: boolean }) {
+  return (
+    <Tooltip>
+      {/* focusable, since only the tooltip gives the due time */}
+      <TooltipTrigger render={<span tabIndex={0} />}>
+        <ParaglideMessage
+          message={
+            offer ? m.trade_page_offer_time_left : m.trade_page_time_left
+          }
+          inputs={{ left: "" }}
+          markup={{
+            time: () => (
+              <Countdown
+                deadline={deadline}
+                className="font-semibold text-foreground"
+              />
+            ),
+          }}
+        />
+      </TooltipTrigger>
+      <TooltipContent>
+        <ParaglideMessage
+          message={offer ? m.trade_page_offer_expires : m.trade_page_due}
+          inputs={{ when: "" }}
+          markup={{
+            time: () => <Timestamp date={deadline} format={tradeTimeFormat} />,
+          }}
+        />
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
+// how a trade or an offer ended, or that a ban or an account deletion closed the offer
+export function EndedBadge({
+  status,
+}: {
+  status: Exclude<TradeState["status"], OpenTradeStatus> | "closed";
+}) {
   switch (status) {
     case "completed":
       return (
@@ -222,6 +261,28 @@ export function EndedBadge({ status }: { status: EndedTradeStatus }) {
     case "timed_out":
       return (
         <Badge className={tones.warn}>{m.trade_page_status_timed_out()}</Badge>
+      );
+    case "declined":
+      return (
+        <Badge className={tones.muted}>{m.trade_page_status_declined()}</Badge>
+      );
+    case "withdrawn":
+      return (
+        <Badge className={tones.muted}>{m.trade_page_status_withdrawn()}</Badge>
+      );
+    case "countered":
+      return (
+        <Badge className={tones.cosmo}>{m.trade_page_status_countered()}</Badge>
+      );
+    case "expired":
+      return (
+        <Badge className={tones.muted}>{m.trade_page_status_expired()}</Badge>
+      );
+    case "stale":
+      return <Badge className={tones.bad}>{m.trade_page_status_stale()}</Badge>;
+    case "closed":
+      return (
+        <Badge className={tones.muted}>{m.trade_page_status_closed()}</Badge>
       );
   }
 }

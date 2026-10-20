@@ -1,10 +1,12 @@
-import type {
-  ListingStatus,
-  TradeCanceller,
-  TradeOffer,
-  TradeOfferItem,
-  TradeSide,
-  TradeStatus,
+import {
+  type ListingStatus,
+  type OpenTradeStatus,
+  openTradeStatuses,
+  type TradeCanceller,
+  type TradeOffer,
+  type TradeOfferItem,
+  type TradeSide,
+  type TradeStatus,
 } from "@apollo/database/web/types";
 
 export type TradeItemState =
@@ -38,10 +40,6 @@ export type TradeEvent =
   | { type: "counter"; by: TradeSide }
   // the sender takes back a pending direct offer
   | { type: "withdraw"; by: TradeSide }
-  // a pending offer went unanswered for 72 hours
-  | { type: "expire" }
-  // a pending offer's token moved
-  | { type: "go_stale" }
   // the drain saw a token reach its receiver
   | { type: "transfer"; item: number }
   | { type: "mark_paid"; item: number; by: TradeSide }
@@ -101,8 +99,6 @@ export function transition(
     case "decline":
     case "counter":
     case "withdraw":
-    case "expire":
-    case "go_stale":
       return answerOffer(trade, event);
     case "transfer":
     case "mark_paid":
@@ -148,38 +144,19 @@ type EventOf<TType extends TradeEvent["type"]> = Extract<
 >;
 
 /**
- * Everything that ends or accepts a pending direct offer. The recipient
- * answers it, the sender withdraws it, and the timers and drain expire it or
- * turn it stale.
+ * A party's answer to a pending direct offer: the recipient accepts,
+ * declines or counters it, or the sender withdraws it.
  */
 function answerOffer(
   { status, items }: TradeState,
-  event: EventOf<
-    "accept" | "decline" | "counter" | "withdraw" | "expire" | "go_stale"
-  >,
+  event: EventOf<"accept" | "decline" | "counter" | "withdraw">,
 ): TransitionResult {
-  if (status !== "pending") return refuse("wrong_status");
-
-  switch (event.type) {
-    case "accept":
-    case "decline":
-    case "counter": {
-      if (event.by !== "to") return refuse("wrong_party");
-      const next = {
-        accept: "accepted",
-        decline: "declined",
-        counter: "countered",
-      } as const satisfies Record<typeof event.type, TradeStatus>;
-      return { ok: true, trade: { status: next[event.type], items } };
-    }
-    case "withdraw":
-      if (event.by !== "from") return refuse("wrong_party");
-      return { ok: true, trade: { status: "withdrawn", items } };
-    case "expire":
-      return { ok: true, trade: { status: "expired", items } };
-    case "go_stale":
-      return { ok: true, trade: { status: "stale", items } };
+  const { from, to } = offerTransition(event.type);
+  if (status !== from) return refuse("wrong_status");
+  if (event.by !== (event.type === "withdraw" ? "from" : "to")) {
+    return refuse("wrong_party");
   }
+  return { ok: true, trade: { status: to, items } };
 }
 
 /**
@@ -338,20 +315,62 @@ export function otherSide(side: TradeSide): TradeSide {
 }
 
 /**
- * Whether the side still owes something on an accepted trade, so it has to
- * act. Once the deadline has passed the drain's watermark a transfer can't
- * count, so nothing more is asked.
+ * Whether the side has to act: the recipient of a pending offer answers it,
+ * and a side still owing something on an accepted trade sends or pays. Once
+ * an accepted trade's deadline has passed the drain's watermark a transfer
+ * can't count, so nothing more is asked. Nothing else needs anyone.
  */
 export function needsYou(
   state: TradeState,
   side: TradeSide,
   facts: { deadlinePassed: boolean },
 ) {
-  return (
-    state.status === "accepted" &&
-    !facts.deadlinePassed &&
-    owingSides(state.items).includes(side)
-  );
+  switch (state.status) {
+    case "pending":
+      return side === "to";
+    case "accepted":
+      return !facts.deadlinePassed && owingSides(state.items).includes(side);
+    default:
+      return false;
+  }
+}
+
+// whether a trade is still under way: a pending offer, or a live trade
+export function isOpenTrade(status: TradeStatus): status is OpenTradeStatus {
+  return openTradeStatuses.some((open) => open === status);
+}
+
+export type OfferEvent =
+  | "accept"
+  | "decline"
+  | "counter"
+  | "withdraw"
+  // nobody answered within the offer's 72 hours
+  | "expire"
+  // an offered token left its holder or turned untransferable
+  | "go_stale";
+
+/**
+ * Which status each offer event leaves from, always pending, and where it
+ * goes. The parties' answers go through transition(), which checks who
+ * acts; the timers, the drain, a ban and an account deletion end offers in
+ * guarded updates.
+ */
+const offerTransitions = {
+  accept: { from: "pending", to: "accepted" },
+  decline: { from: "pending", to: "declined" },
+  counter: { from: "pending", to: "countered" },
+  withdraw: { from: "pending", to: "withdrawn" },
+  expire: { from: "pending", to: "expired" },
+  go_stale: { from: "pending", to: "stale" },
+} as const satisfies Record<OfferEvent, { from: TradeStatus; to: TradeStatus }>;
+
+/**
+ * The status an offer event leaves from and the one it moves to, for
+ * guarded updates that check the status in SQL.
+ */
+export function offerTransition(event: OfferEvent) {
+  return offerTransitions[event];
 }
 
 export type ListingEvent =
