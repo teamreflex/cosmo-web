@@ -6,7 +6,7 @@ import { fetchByNickname } from "@apollo/cosmo/server/user";
 import type { CosmoSearchResult } from "@apollo/cosmo/types/user";
 import * as authSchema from "@apollo/database/auth";
 import { cosmoAccounts, cosmoLinkAudit } from "@apollo/database/web/schema";
-import type { CosmoAccount, CosmoLinkEvent } from "@apollo/database/web/types";
+import type { CosmoAccount } from "@apollo/database/web/types";
 import { addr, isAddress } from "@apollo/util";
 import { eq, isNull, like, sql } from "drizzle-orm";
 import type {
@@ -120,12 +120,11 @@ export async function fetchFullAccount(
 
 /**
  * A change to which user a COSMO account is linked to, as the link history
- * records it. Only a staff move names the staff member.
+ * records it.
  */
 export type CosmoLinkChange = { cosmoAccountId: number; userId: string } & (
   | { event: "linked"; reason: "verified" }
   | { event: "unlinked"; reason: "account-deleted" }
-  | { event: CosmoLinkEvent; reason: "staff-move"; staffId: string }
 );
 
 /**

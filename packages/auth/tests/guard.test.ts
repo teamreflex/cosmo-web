@@ -1,7 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
   cosmoLinkRefusal,
-  cosmoTransferRefusal,
   hasEmailDomain,
   isBanActive,
   isDemotion,
@@ -10,11 +9,7 @@ import {
   protectionFor,
   userChangeRefusal,
 } from "../src/guard";
-import type {
-  CosmoLinkRefusal,
-  CosmoTransferRefusal,
-  UserChange,
-} from "../src/guard";
+import type { CosmoLinkRefusal, UserChange } from "../src/guard";
 import { roleNames } from "../src/index";
 import type { Role } from "../src/index";
 
@@ -307,63 +302,6 @@ describe("userChangeRefusal", () => {
         target: protectedMember,
         change: { kind: "ban" },
         protectedDomains: parseEmailDomains(""),
-      }),
-    ).toBeNull();
-  });
-});
-
-describe("cosmoTransferRefusal", () => {
-  const protectedDomains = parseEmailDomains("team-reflex.com");
-  const now = new Date("2026-10-09T12:00:00Z");
-  const unbanned = { banned: false, banExpires: null };
-  const member = {
-    ...unbanned,
-    email: "member@example.org",
-    emailVerified: true,
-  };
-  const protectedMember = {
-    ...unbanned,
-    email: "kairu@team-reflex.com",
-    emailVerified: true,
-  };
-  const banned = { banned: true, banExpires: null };
-  const lapsedBan = {
-    banned: true,
-    banExpires: new Date("2026-10-09T11:00:00Z"),
-  };
-
-  test.each([
-    ["no refusal", null, member, unbanned],
-    ["a protected source", "protected-user", protectedMember, unbanned],
-    ["a protected target", null, member, protectedMember],
-    ["a banned source", "banned", { ...member, ...banned }, unbanned],
-    ["a banned target", "banned", member, { ...unbanned, ...banned }],
-    ["a lapsed ban on the source", null, { ...member, ...lapsedBan }, unbanned],
-    ["a lapsed ban on the target", null, member, { ...unbanned, ...lapsedBan }],
-    [
-      "a protected source that is also banned",
-      "protected-user",
-      { ...protectedMember, ...banned },
-      unbanned,
-    ],
-  ] satisfies [
-    string,
-    CosmoTransferRefusal | null,
-    Parameters<typeof cosmoTransferRefusal>[0]["from"],
-    Parameters<typeof cosmoTransferRefusal>[0]["to"],
-  ][])("%s gives %p", (_, expected, from, to) => {
-    expect(cosmoTransferRefusal({ from, to, protectedDomains, now })).toBe(
-      expected,
-    );
-  });
-
-  test("protects nobody without domains", () => {
-    expect(
-      cosmoTransferRefusal({
-        from: protectedMember,
-        to: unbanned,
-        protectedDomains: parseEmailDomains(""),
-        now,
       }),
     ).toBeNull();
   });

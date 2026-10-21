@@ -1,7 +1,6 @@
 import { db } from "@/lib/server/db";
 import type { DbOrTx } from "@/lib/server/db";
 import {
-  apolloUsername,
   fetchStaffUsers,
   staffUser,
   staffUserFields,
@@ -13,7 +12,6 @@ import type {
   AdminAuditRow,
   AdminAuditTarget,
   AuditStaffMember,
-  MoveSide,
 } from "@/lib/universal/staff-audit";
 import { parseRole } from "@apollo/auth";
 import { user } from "@apollo/database/auth";
@@ -72,13 +70,6 @@ type MetadataAuditEntry = {
   slug: string;
 };
 
-type CosmoTransferAuditEntry = {
-  staffId: string;
-  action: "cosmo-account:transfer";
-  address: string;
-  detail: Extract<StaffAuditDetail, { kind: "cosmo-transfer" }>;
-};
-
 /**
  * Entries written without checking for a recent duplicate, so several can go
  * in one insert.
@@ -89,8 +80,7 @@ type UndeduplicatedAuditEntry =
   | UnbanAuditEntry
   | SetRoleAuditEntry
   | ApiKeyAuditEntry
-  | MetadataAuditEntry
-  | CosmoTransferAuditEntry;
+  | MetadataAuditEntry;
 
 export type StaffAuditEntry = ReportReadAuditEntry | UndeduplicatedAuditEntry;
 
@@ -147,14 +137,6 @@ function toAuditRow(entry: StaffAuditEntry): typeof staffAudit.$inferInsert {
         action: entry.action,
         targetType: "collection",
         targetId: entry.slug,
-      };
-    case "cosmo-account:transfer":
-      return {
-        staffId: entry.staffId,
-        action: entry.action,
-        targetType: "cosmo-account",
-        targetId: entry.address,
-        detail: entry.detail,
       };
   }
 }
@@ -232,14 +214,7 @@ export async function fetchStaffAudit(input: StaffAuditQueryInput) {
       if (row.targetType === "user") {
         return [row.targetId];
       }
-      switch (row.detail?.kind) {
-        case "api-key":
-          return [row.detail.ownerId];
-        case "cosmo-transfer":
-          return [row.detail.fromUserId, row.detail.toUserId];
-        default:
-          return [];
-      }
+      return row.detail?.kind === "api-key" ? [row.detail.ownerId] : [];
     }),
   );
 
@@ -293,30 +268,11 @@ function toAuditTarget(
       };
     case "collection":
       return { type: "collection", slug: row.targetId };
-    case "cosmo-account":
-      // recordStaffAudit always stores the move's detail with these rows
-      if (row.detail?.kind !== "cosmo-transfer") {
-        throw new Error(
-          `Audit row on COSMO account ${row.targetId} has no detail`,
-        );
-      }
-      return {
-        type: "cosmo-account",
-        address: row.targetId,
-        username: row.detail.username,
-        from: moveSide(row.detail.fromUserId, users),
-        to: moveSide(row.detail.toUserId, users),
-      };
   }
 }
 
-function moveSide(id: string, users: Map<string, StaffUserRow>): MoveSide {
-  const side = users.get(id);
-  return { id, username: side === undefined ? null : apolloUsername(side) };
-}
-
 /**
- * API key and COSMO account move details are shown as the target instead.
+ * API key details are shown as the target instead.
  */
 function toAuditDetail(detail: StaffAuditDetail): AdminAuditDetail | null {
   switch (detail.kind) {
@@ -329,7 +285,6 @@ function toAuditDetail(detail: StaffAuditDetail): AdminAuditDetail | null {
         to: parseRole(detail.to),
       };
     case "api-key":
-    case "cosmo-transfer":
       return null;
   }
 }

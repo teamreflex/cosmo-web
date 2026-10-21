@@ -18,8 +18,8 @@ export type OpenReportStatus = (typeof openReportStatuses)[number];
 
 /**
  * What a queue row shows of the reported thing; null when it no longer
- * exists or its account is deleted. Later phases add messages, listings,
- * feedback and trades.
+ * exists or its account is deleted. Later phases add messages, feedback and
+ * trades.
  */
 export type AdminReportRowTarget = {
   type: "user";

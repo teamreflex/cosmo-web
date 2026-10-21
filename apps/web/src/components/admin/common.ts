@@ -27,15 +27,6 @@ export const ADMIN_SHELL_PERMISSIONS = {
 } satisfies Permissions;
 
 /**
- * Who can open /admin/accounts. The Move card and the link history each
- * render only for their own action, so either one opens the page.
- */
-export const ADMIN_ACCOUNTS_PERMISSIONS = [
-  { cosmo: ["transfer"] },
-  { cosmo: ["history"] },
-] satisfies Permissions[];
-
-/**
  * Called from an admin page's `beforeLoad` with the permissions that open it,
  * any one of which is enough, so its loader never runs for a role without
  * them. The page's `notFoundComponent` (`AdminNoAccess`) then fills the admin
@@ -80,7 +71,7 @@ export function getAdminItems(): AdminItem[] {
       title: m.admin_accounts_title(),
       url: "/admin/accounts",
       icon: IconUserCog,
-      permissions: ADMIN_ACCOUNTS_PERMISSIONS,
+      permissions: [{ cosmo: ["history"] }],
     },
     {
       title: m.admin_bands_title(),

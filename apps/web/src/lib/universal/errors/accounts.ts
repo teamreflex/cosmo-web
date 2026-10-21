@@ -7,10 +7,6 @@ export const accountErrorCodes = [
   "account_deletion_banned",
   "account_deletion_email_required",
   "account_deletion_session_stale",
-  "cosmo_transfer_source_changed",
-  "cosmo_transfer_target_linked",
-  "cosmo_transfer_banned",
-  "cosmo_transfer_protected",
 ] as const;
 
 export type AccountErrorCode = (typeof accountErrorCodes)[number];

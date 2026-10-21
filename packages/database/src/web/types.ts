@@ -115,7 +115,6 @@ export type EventTypeKey = (typeof eventTypeKeys)[number];
 export const reportTargetTypes = [
   "user",
   "message",
-  "listing",
   "feedback",
   "trade",
 ] as const;
@@ -138,7 +137,6 @@ export const reportReasons = [
   "other",
 ] as const;
 export type ReportReason = (typeof reportReasons)[number];
-
 export const staffAuditActions = [
   "report:read",
   "report:resolve",
@@ -151,20 +149,17 @@ export const staffAuditActions = [
   "api-key:update",
   "api-key:delete",
   "metadata:update",
-  "cosmo-account:transfer",
 ] as const;
 export type StaffAuditAction = (typeof staffAuditActions)[number];
 
 /**
- * A `collection` target's id is the collection's slug, and a `cosmo-account`
- * target's id is the account's address.
+ * A `collection` target's id is the collection's slug.
  */
 export const staffAuditTargetTypes = [
   "user",
   "report",
   "api-key",
   "collection",
-  "cosmo-account",
 ] as const;
 export type StaffAuditTargetType = (typeof staffAuditTargetTypes)[number];
 
@@ -172,23 +167,18 @@ export const cosmoLinkEvents = ["linked", "unlinked"] as const;
 export type CosmoLinkEvent = (typeof cosmoLinkEvents)[number];
 
 /**
- * Why a COSMO link changed: the user proved control through the COSMO bio,
- * deleted their account, or staff moved the link.
+ * Why a COSMO link changed: the user proved control through the COSMO bio, or
+ * deleted their account.
  */
-export const cosmoLinkReasons = [
-  "verified",
-  "account-deleted",
-  "staff-move",
-] as const;
+export const cosmoLinkReasons = ["verified", "account-deleted"] as const;
 export type CosmoLinkReason = (typeof cosmoLinkReasons)[number];
 
 /**
  * Extra context for an audit row. Roles are stored as plain strings so this
  * package stays independent of @apollo/auth; readers parse them.
  * `expiresIn` is the ban length in seconds, null for a permanent ban. An API
- * key's name, owner and enabled state, and a moved COSMO account's username,
- * are copied in when the action runs, so the row still reads after the key is
- * deleted or the account renamed.
+ * key's name, owner and enabled state are copied in when the action runs, so
+ * the row still reads after the key is deleted.
  */
 export type StaffAuditDetail =
   | { kind: "ban"; expiresIn: number | null; reason: string }
@@ -198,10 +188,4 @@ export type StaffAuditDetail =
       name: string | null;
       ownerId: string;
       enabled: boolean;
-    }
-  | {
-      kind: "cosmo-transfer";
-      username: string;
-      fromUserId: string;
-      toUserId: string;
     };

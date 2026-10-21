@@ -154,7 +154,6 @@ function toRowTarget(
     case "user":
       return { type: "user", user: staffUser(users.get(targetId) ?? null) };
     case "message":
-    case "listing":
     case "feedback":
     case "trade":
       throw new Error(`Reports on ${targetType} targets aren't supported yet`);
@@ -247,7 +246,6 @@ async function fetchDetailTarget(
       };
     }
     case "message":
-    case "listing":
     case "feedback":
     case "trade":
       throw new Error(`Reports on ${targetType} targets aren't supported yet`);

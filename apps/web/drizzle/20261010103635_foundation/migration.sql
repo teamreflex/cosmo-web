@@ -1,7 +1,7 @@
 CREATE TYPE "cosmo_link_event" AS ENUM('linked', 'unlinked');--> statement-breakpoint
-CREATE TYPE "cosmo_link_reason" AS ENUM('verified', 'account-deleted', 'staff-move');--> statement-breakpoint
+CREATE TYPE "cosmo_link_reason" AS ENUM('verified', 'account-deleted');--> statement-breakpoint
 CREATE TYPE "report_status" AS ENUM('open', 'escalated', 'resolved', 'dismissed');--> statement-breakpoint
-CREATE TYPE "report_target_type" AS ENUM('user', 'message', 'listing', 'feedback', 'trade');--> statement-breakpoint
+CREATE TYPE "report_target_type" AS ENUM('user', 'message', 'feedback', 'trade');--> statement-breakpoint
 CREATE TYPE "user_role" AS ENUM('user', 'moderator', 'admin');--> statement-breakpoint
 CREATE TABLE "collection_price_history" (
 	"collection_id" varchar(36),
@@ -19,8 +19,6 @@ CREATE TABLE "cosmo_link_audit" (
 	"user_id" text NOT NULL,
 	"event" "cosmo_link_event" NOT NULL,
 	"reason" "cosmo_link_reason" NOT NULL,
-	"staff_id" text,
-	CONSTRAINT "cosmo_link_audit_staff_chk" CHECK (("reason" = 'staff-move') = ("staff_id" IS NOT NULL)),
 	CONSTRAINT "cosmo_link_audit_event_chk" CHECK (("reason" <> 'verified' OR "event" = 'linked') AND ("reason" <> 'account-deleted' OR "event" = 'unlinked'))
 );
 --> statement-breakpoint

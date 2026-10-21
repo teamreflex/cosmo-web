@@ -8,12 +8,10 @@ import { auditActionLabel, auditBanLength } from "@/lib/client/staff-audit";
 import type {
   AdminAuditDetail,
   AdminAuditRow,
-  MoveSide,
 } from "@/lib/universal/staff-audit";
 import { staffUserText } from "@/lib/universal/staff-users";
 import { cn } from "@/lib/utils";
 import type { StaffAuditAction } from "@apollo/database/web/types";
-import { shortAddress } from "@apollo/util";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
@@ -40,7 +38,6 @@ const actionTones = {
   "api-key:update": "text-destructive",
   "api-key:delete": "text-destructive",
   "metadata:update": "text-foreground",
-  "cosmo-account:transfer": "text-destructive",
 } satisfies Record<StaffAuditAction, string>;
 
 type Props = {
@@ -261,38 +258,7 @@ function AuditTarget({ row }: Props) {
           </span>
         </>
       );
-    case "cosmo-account":
-      return (
-        <>
-          <span className="min-w-0 break-words">
-            {m.admin_audit_target_cosmo_account({
-              username: row.target.username,
-            })}
-          </span>
-          <span className="font-mono text-xs text-muted-foreground">
-            {shortAddress(row.target.address)}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            <MoveSideName side={row.target.from} />
-            {" → "}
-            <MoveSideName side={row.target.to} />
-          </span>
-        </>
-      );
   }
-}
-
-/**
- * One side of a COSMO account move, by Apollo username and id prefix, since
- * the user's current COSMO account may not be the one that moved.
- */
-function MoveSideName({ side }: { side: MoveSide }) {
-  return (
-    <>
-      {side.username ?? m.admin_audit_target_deleted_user()}{" "}
-      <span className="font-mono">{shortId(side.id)}</span>
-    </>
-  );
 }
 
 function detailNote(detail: AdminAuditDetail) {

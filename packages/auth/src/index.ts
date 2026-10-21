@@ -15,7 +15,7 @@ export const statement = {
   user: ["ban", "set-role"],
   site: ["manage"],
   audit: ["read"],
-  cosmo: ["transfer", "history"],
+  cosmo: ["history"],
 } as const;
 
 export const ac = createAccessControl(statement);

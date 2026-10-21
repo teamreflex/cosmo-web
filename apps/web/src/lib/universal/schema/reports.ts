@@ -13,8 +13,8 @@ const noteSchema = z
   .transform((note) => (note === "" ? undefined : note));
 
 /**
- * One variant per reportable target; later phases add messages, listings,
- * feedback and trades.
+ * One variant per reportable target; later phases add messages, feedback
+ * and trades.
  */
 export const createReportSchema = z.discriminatedUnion("targetType", [
   z.object({

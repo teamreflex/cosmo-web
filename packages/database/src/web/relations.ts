@@ -36,10 +36,6 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.cosmoLinkAudit.userId,
       to: r.user.id,
     }),
-    staff: r.one.user({
-      from: r.cosmoLinkAudit.staffId,
-      to: r.user.id,
-    }),
   },
   lockedObjekts: {
     profile: r.one.cosmoAccounts({

@@ -126,42 +126,10 @@ export function userChangeRefusal({
   return null;
 }
 
-export type CosmoTransferRefusal = "protected-user" | "banned";
-
 type BanState = {
   banned: boolean;
   banExpires: Date | null;
 };
-
-type CosmoTransferCheck = {
-  from: BanState & { email: string; emailVerified: boolean };
-  to: BanState;
-  protectedDomains: ReadonlySet<string>;
-  now: Date;
-};
-
-/**
- * Why staff may not move a COSMO link from one user to another, or null when
- * they may. Only the source is protected, because receiving a link takes
- * nothing from an account. An actively banned user can neither give nor
- * receive one.
- */
-export function cosmoTransferRefusal({
-  from,
-  to,
-  protectedDomains,
-  now,
-}: CosmoTransferCheck): CosmoTransferRefusal | null {
-  if (isProtectedAccount(from, protectedDomains)) {
-    return "protected-user";
-  }
-
-  if (isBanActive(from, now) || isBanActive(to, now)) {
-    return "banned";
-  }
-
-  return null;
-}
 
 export type CosmoLinkRefusal = "linked-elsewhere" | "banned";
 

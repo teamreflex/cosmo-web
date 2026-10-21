@@ -1,4 +1,3 @@
-import StaffUserName from "@/components/admin/staff-user-name";
 import StatusPill from "@/components/objekt/detail/status-pill";
 import UserAvatar from "@/components/profile/user-avatar";
 import { Button } from "@/components/ui/button";
@@ -17,7 +16,10 @@ import { env } from "@/lib/env/client";
 import { cosmoLinkHistoryQuery } from "@/lib/queries/cosmo-link-history";
 import type { CosmoLinkHistoryEntry } from "@/lib/universal/cosmo-link-history";
 import { cn } from "@/lib/utils";
-import type { CosmoLinkEvent } from "@apollo/database/web/types";
+import type {
+  CosmoLinkEvent,
+  CosmoLinkReason,
+} from "@apollo/database/web/types";
 import { shortAddress } from "@apollo/util";
 import { IconHistory, IconLoader2, IconRefresh } from "@tabler/icons-react";
 import {
@@ -42,8 +44,7 @@ const eventLabels = {
 const reasonLabels = {
   verified: m.admin_accounts_history_reason_verified,
   "account-deleted": m.admin_accounts_history_reason_account_deleted,
-  "staff-move": m.admin_accounts_history_reason_staff_move,
-} satisfies Record<CosmoLinkHistoryEntry["reason"]["kind"], () => string>;
+} satisfies Record<CosmoLinkReason, () => string>;
 
 /**
  * A row's place in the log's columns, which it shares through subgrid: the
@@ -281,17 +282,7 @@ function HistoryRow({ entry }: { entry: CosmoLinkHistoryEntry }) {
           {entry.user.id.slice(0, 8)}
         </span>
         <span className="text-xs text-muted-foreground">
-          {reasonLabels[entry.reason.kind]()}
-          {entry.reason.kind === "staff-move" && (
-            <>
-              {" · "}
-              {entry.reason.staff === null ? (
-                m.common_deleted_user()
-              ) : (
-                <StaffUserName user={entry.reason.staff} />
-              )}
-            </>
-          )}
+          {reasonLabels[entry.reason]()}
         </span>
       </div>
 

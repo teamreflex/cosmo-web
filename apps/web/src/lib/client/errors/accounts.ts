@@ -33,14 +33,6 @@ export function formatAccountError(error: unknown): string | null {
       return m.account_error_deletion_session_stale({
         minutes: FRESH_SESSION_MINUTES,
       });
-    case "cosmo_transfer_source_changed":
-      return m.account_error_transfer_source_changed();
-    case "cosmo_transfer_target_linked":
-      return m.account_error_transfer_target_linked();
-    case "cosmo_transfer_banned":
-      return m.account_error_transfer_banned();
-    case "cosmo_transfer_protected":
-      return m.account_error_transfer_protected();
     default:
       error.message satisfies never;
       return null;

@@ -87,8 +87,8 @@ export const cosmoAccountChanges = pgTable("cosmo_account_changes", {
 /**
  * Append-only history of COSMO links: a row each time an address is linked to
  * or unlinked from a user, written in the transaction that changes
- * `cosmo_account.user_id`, which stays the current link. `user_id` and
- * `staff_id` have no foreign key, so the rows outlive deleted accounts.
+ * `cosmo_account.user_id`, which stays the current link. `user_id` has no
+ * foreign key, so the rows outlive deleted accounts.
  */
 export const cosmoLinkAudit = pgTable(
   "cosmo_link_audit",
@@ -101,16 +101,11 @@ export const cosmoLinkAudit = pgTable(
     userId: text("user_id").notNull(),
     event: cosmoLinkEvent("event").notNull(),
     reason: cosmoLinkReason("reason").notNull(),
-    staffId: text("staff_id"),
   },
   (t) => [
     index("cosmo_link_audit_cosmo_account_idx").on(t.cosmoAccountId, t.id),
     index("cosmo_link_audit_user_idx").on(t.userId, t.id),
-    check(
-      "cosmo_link_audit_staff_chk",
-      sql`(${t.reason} = 'staff-move') = (${t.staffId} IS NOT NULL)`,
-    ),
-    // verifying only links and deleting only unlinks; staff move either way
+    // verifying only links and deleting only unlinks
     check(
       "cosmo_link_audit_event_chk",
       sql`(${t.reason} <> 'verified' OR ${t.event} = 'linked') AND (${t.reason} <> 'account-deleted' OR ${t.event} = 'unlinked')`,

@@ -6,12 +6,9 @@ import type {
 } from "@apollo/database/web/types";
 
 /**
- * What an audit row acted on. A target user, an API key's owner, and the two
- * sides of a COSMO account move are null once that account is deleted. The
- * sides of a move are named by their Apollo usernames, because their current
- * COSMO accounts may not be the one that moved. An API key's name and enabled
- * state, and a moved COSMO account's username, are as they were when the
- * action ran.
+ * What an audit row acted on. A target user and an API key's owner are null
+ * once that account is deleted. An API key's name and enabled state are as
+ * they were when the action ran.
  */
 export type AdminAuditTarget =
   | { type: "user"; id: string; user: StaffUser | null }
@@ -23,20 +20,7 @@ export type AdminAuditTarget =
       owner: StaffUser | null;
       enabled: boolean;
     }
-  | { type: "collection"; slug: string }
-  | {
-      type: "cosmo-account";
-      address: string;
-      username: string;
-      from: MoveSide;
-      to: MoveSide;
-    };
-
-/**
- * One side of a COSMO account move: the user's id and Apollo username, which
- * is null once the account is deleted.
- */
-export type MoveSide = { id: string; username: string | null };
+  | { type: "collection"; slug: string };
 
 /**
  * The parts of an audit row's stored detail that the log shows, with roles

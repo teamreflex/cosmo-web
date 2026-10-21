@@ -87,10 +87,6 @@ const rows = [
     expected: { user: false, moderator: false, admin: true },
   },
   {
-    permissions: { cosmo: ["transfer"] },
-    expected: { user: false, moderator: false, admin: true },
-  },
-  {
     permissions: { cosmo: ["history"] },
     expected: { user: false, moderator: false, admin: true },
   },

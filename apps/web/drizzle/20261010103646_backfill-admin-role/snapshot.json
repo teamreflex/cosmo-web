@@ -28,8 +28,7 @@
     {
       "values": [
         "verified",
-        "account-deleted",
-        "staff-move"
+        "account-deleted"
       ],
       "name": "cosmo_link_reason",
       "entityType": "enums",
@@ -69,7 +68,6 @@
       "values": [
         "user",
         "message",
-        "listing",
         "feedback",
         "trade"
       ],
@@ -1322,19 +1320,6 @@
       "generated": null,
       "identity": null,
       "name": "reason",
-      "entityType": "columns",
-      "schema": "public",
-      "table": "cosmo_link_audit"
-    },
-    {
-      "type": "text",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "staff_id",
       "entityType": "columns",
       "schema": "public",
       "table": "cosmo_link_audit"
@@ -5691,13 +5676,6 @@
       "entityType": "checks",
       "schema": "public",
       "table": "binders"
-    },
-    {
-      "value": "(\"reason\" = 'staff-move') = (\"staff_id\" IS NOT NULL)",
-      "name": "cosmo_link_audit_staff_chk",
-      "entityType": "checks",
-      "schema": "public",
-      "table": "cosmo_link_audit"
     },
     {
       "value": "(\"reason\" <> 'verified' OR \"event\" = 'linked') AND (\"reason\" <> 'account-deleted' OR \"event\" = 'unlinked')",
