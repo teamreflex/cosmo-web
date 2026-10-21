@@ -8,7 +8,7 @@ import {
   RateLimited,
   ReportNotFound,
 } from "@apollo/chat/errors";
-import type { ChatItem } from "@apollo/chat/items";
+import type { ChatItem, MessageSender } from "@apollo/chat/items";
 import {
   canJoinChat,
   canRemoveMessage,
@@ -37,6 +37,16 @@ function senderSide(trade: StoredTrade, senderId: string | null) {
     return "from";
   }
   return senderId === trade.toUserId ? "to" : null;
+}
+
+// who a text row shows as sent by: staff by name, or a party by side
+function messageSender(
+  trade: StoredTrade,
+  row: Extract<StoredRow, { kind: "text" }>,
+): MessageSender | null {
+  return row.staff === null
+    ? senderSide(trade, row.senderId)
+    : { _tag: "Staff", name: row.staff.name };
 }
 
 /**
@@ -94,7 +104,7 @@ export const HandlersLive = ChatRpcs.toLayer(
       const message = {
         _tag: "Message",
         id: row.id,
-        sender: senderSide(trade, row.senderId),
+        sender: messageSender(trade, row),
         sentAt: row.createdAt,
         removed: row.removedAt !== null,
       } as const;
@@ -169,14 +179,18 @@ export const HandlersLive = ChatRpcs.toLayer(
         Effect.gen(function* () {
           const viewer = yield* CurrentUser;
           const { trade, access } = yield* readAccess(viewer, tradeId);
-          const side = yield* canSendChat(access, trade);
+          const as = yield* canSendChat(viewer, access, trade);
           yield* consume(`chat:send:${viewer.userId}`, 10, "10 seconds");
 
           const messageId = yield* unavailable(
             store.insertMessage({
               tradeId,
               senderId: viewer.userId,
-              recipientId: side === "from" ? trade.toUserId : trade.fromUserId,
+              as,
+              // everyone in the trade but the sender: the other party, or both for staff
+              recipientIds: [trade.fromUserId, trade.toUserId].flatMap((id) =>
+                id === null || id === viewer.userId ? [] : [id],
+              ),
               body: yield* cipher.encrypt(tradeId, body),
             }),
           );
@@ -203,7 +217,7 @@ export const HandlersLive = ChatRpcs.toLayer(
             }),
           );
           yield* canReportMessage(access, {
-            sender: senderSide(trade, row.senderId),
+            sender: messageSender(trade, row),
           });
 
           const reportId = yield* unavailable(

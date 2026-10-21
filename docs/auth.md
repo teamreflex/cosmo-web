@@ -36,6 +36,7 @@ Staff surfaces name a user by their COSMO username, their public identity, throu
 - Bans and unbans publish on the Redis `user-events` channel with `publishUserEvent()` after their audit row commits. The channel name and the `UserEvent` union live in `@apollo/auth/events`.
 - `user-events` also carries `{ type: "disconnect", userId }` when a session ends, so apps/chat ends that user's streams. `databaseHooks.session.delete.after` publishes it per deleted session row (sign-out, revoked sessions, password changes, a ban's `deleteUserSessions()`), skipping rows already expired. A Redis failure there goes to Sentry rather than throwing, since the session is already gone; the chat token's lifetime bounds a stream that misses it. Account deletion removes sessions through the user row's foreign key, which Better Auth's hooks never see, so `deleteAccount()` publishes `disconnect` itself after its transaction commits.
 - Staff holding `trade: ["read-any"]` open any trade they aren't a party to read-only at `/trade/$id`. Trade reads aren't audited.
+- Staff holding `trade: ["message"]` (`staffMessaging` in `@apollo/chat/policy`, held by moderators and admins) write to both parties in a trade's chat while they can read it under an open report or dispute, ended trades included. apps/chat audits each message as `trade:message` in the transaction that stores it, under the report that let them in.
 
 ## Chat tokens
 

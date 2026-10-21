@@ -51,6 +51,10 @@ const rows = [
     expected: { user: false, moderator: true, admin: true },
   },
   {
+    permissions: { trade: ["message"] },
+    expected: { user: false, moderator: true, admin: true },
+  },
+  {
     permissions: { listing: ["remove-any"] },
     expected: { user: false, moderator: true, admin: true },
   },

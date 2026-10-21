@@ -36,10 +36,11 @@ import {
 } from "@/components/ui/message-scroller";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Timestamp } from "@/components/ui/timestamp";
+import { useHasPermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
 import { ChatClient, conversationAtom } from "@/lib/client/chat";
 import type { Conversation } from "@/lib/client/chat-conversation";
-import { formatCount } from "@/lib/client/trade-listings";
+import { accountName, formatCount } from "@/lib/client/trade-listings";
 import {
   chatDayFormat,
   chatTimeFormat,
@@ -54,8 +55,10 @@ import { cn } from "@/lib/utils";
 import {
   type ChatItem,
   isKnownEvent,
+  isStaffSender,
   MAX_MESSAGE_LENGTH,
 } from "@apollo/chat/items";
+import { staffMessaging } from "@apollo/chat/policy";
 import { sanitizeMessage } from "@apollo/chat/sanitize";
 import {
   type MessageReportReason,
@@ -98,9 +101,9 @@ import { useChatArrivals } from "./use-chat-arrivals";
 
 type Props = {
   trade: TradeView;
-  // the viewer's side, or null for staff, who read it without sending
+  // the viewer's side, or null for staff
   side: TradeSide | null;
-  // one of the other party's messages arrived after the history
+  // a message from the other party or staff arrived after the history
   onIncoming?: () => void;
   className?: string;
 };
@@ -108,7 +111,8 @@ type Props = {
 /**
  * A trade's chat: its messages and events as they happen, and a composer
  * while the trade is live. Staff read it while the trade or one of its
- * messages has an open report. A trade event refetches the trade, so the
+ * messages has an open report, and with `staffMessaging` also write to both
+ * parties, ended trades included. A trade event refetches the trade, so the
  * page around it stays current.
  */
 export default function ChatPanel({
@@ -119,7 +123,12 @@ export default function ChatPanel({
 }: Props) {
   const result = useAtomValue(conversationAtom(trade.id));
   const retry = useAtomRefresh(conversationAtom(trade.id));
-  const ended = trade.endedAt !== null;
+  const hasPermission = useHasPermission();
+  // as canSendChat decides; staff only see the chat under an open report
+  const canSend =
+    side === null
+      ? hasPermission(staffMessaging)
+      : trade.state.status === "accepted" || trade.state.status === "disputed";
   const failed = AsyncResult.isFailure(result);
   const refusal = failed
     ? Option.getOrUndefined(Cause.findErrorOption(result.cause))?._tag
@@ -172,7 +181,7 @@ export default function ChatPanel({
         <h2 id={`chat-${trade.id}`} className="font-semibold">
           {m.chat_title()}
         </h2>
-        {(side === null || ended) && (
+        {!canSend && (
           <Badge variant="outline" className="ml-auto">
             {m.chat_read_only()}
           </Badge>
@@ -182,7 +191,12 @@ export default function ChatPanel({
         <ChatEnded closed={refusal === "StaffAccessRequired"} onRetry={retry} />
       ) : AsyncResult.isSuccess(result) &&
         (result.value.live || result.value.items.length > 0) ? (
-        <Conversation trade={trade} side={side} conversation={result.value} />
+        <Conversation
+          trade={trade}
+          side={side}
+          canSend={canSend}
+          conversation={result.value}
+        />
       ) : (
         <ChatSkeleton />
       )}
@@ -218,17 +232,16 @@ function useSignedOutCheck(refused: boolean) {
 function Conversation({
   trade,
   side,
+  canSend,
   conversation: { items, live },
 }: {
   trade: TradeView;
   side: TradeSide | null;
+  canSend: boolean;
   conversation: Conversation;
 }) {
   const [reporting, setReporting] = useState<ChatMessage | null>(null);
   const rows = chatRows(items);
-  const canSend =
-    side !== null &&
-    (trade.state.status === "accepted" || trade.state.status === "disputed");
 
   return (
     <>
@@ -273,7 +286,7 @@ function Conversation({
         </MessageScroller>
       </MessageScrollerProvider>
       {canSend ? (
-        <Composer tradeId={trade.id} />
+        <Composer tradeId={trade.id} staff={side === null} />
       ) : (
         <ReadOnlyNote trade={trade} side={side} />
       )}
@@ -361,7 +374,9 @@ function EventMarker({
 
 /**
  * A message as plain text. The viewer's own sit at the end; staff see the
- * poster's at the start and the claimer's at the end, each run named.
+ * poster's at the start and the claimer's at the end, each run named. Staff
+ * messages sit at the start for everyone, their author included, named and
+ * labelled.
  */
 function MessageRow({
   row: { message, first, last },
@@ -374,23 +389,27 @@ function MessageRow({
   side: TradeSide | null;
   onReport: (message: ChatMessage) => void;
 }) {
-  const own = side !== null && message.sender === side;
-  const align =
-    own || (side === null && message.sender === "to") ? "end" : "start";
+  const { sender } = message;
+  const own = side !== null && sender === side;
+  const align = own || (side === null && sender === "to") ? "end" : "start";
   const body = message.body === null ? null : Redacted.value(message.body);
 
   return (
     <Message align={align} className="group/row">
       <MessageContent className="gap-1">
-        {side === null && first && message.sender !== null && (
-          <MessageHeader>
-            {partyName(trade.parties[message.sender])}
-          </MessageHeader>
-        )}
+        {first && <RunName sender={sender} trade={trade} side={side} />}
         <div className="flex items-center gap-1 group-data-[align=end]/message:flex-row-reverse">
           <Bubble
             align={align}
-            variant={body === null ? "outline" : own ? "cosmo" : "secondary"}
+            variant={
+              body === null
+                ? "outline"
+                : isStaffSender(sender)
+                  ? "staff"
+                  : own
+                    ? "cosmo"
+                    : "secondary"
+            }
           >
             <BubbleContent
               dir="auto"
@@ -411,7 +430,7 @@ function MessageRow({
           {body !== null && (
             <MessageActions
               body={body}
-              reportable={side !== null && !own && message.sender !== null}
+              reportable={side !== null && sender === otherSide(side)}
               onReport={() => onReport(message)}
             />
           )}
@@ -428,6 +447,38 @@ function MessageRow({
       </MessageContent>
     </Message>
   );
+}
+
+/**
+ * Who wrote a run: staff by name and label for every viewer, and a party by
+ * name for staff, who see both sides.
+ */
+function RunName({
+  sender,
+  trade,
+  side,
+}: {
+  sender: ChatMessage["sender"];
+  trade: TradeView;
+  side: TradeSide | null;
+}) {
+  if (isStaffSender(sender)) {
+    return (
+      <MessageHeader className="flex items-center gap-1.5">
+        {sender.name === null ? (
+          m.chat_staff_deleted({ appName: env.VITE_APP_NAME })
+        ) : (
+          <>
+            <span className="truncate">@{accountName(sender.name)}</span>
+            <Badge variant="staff">{m.chat_staff_label()}</Badge>
+          </>
+        )}
+      </MessageHeader>
+    );
+  }
+  return side === null && sender !== null ? (
+    <MessageHeader>{partyName(trade.parties[sender])}</MessageHeader>
+  ) : null;
 }
 
 function MessageActions({
@@ -476,8 +527,8 @@ function MessageActions({
 }
 
 /**
- * Scrolls to the newest message, counting the other party's messages that
- * arrived while the reader was scrolled up.
+ * Scrolls to the newest message, counting the other party's and staff's
+ * messages that arrived while the reader was scrolled up.
  */
 function LatestButton({
   items,
@@ -518,9 +569,11 @@ const errorText = {
 
 /**
  * Sends on Enter (Shift+Enter for a new line). The text stays until the
- * message is sent, and the counter shows as the limit nears.
+ * message is sent, and the counter shows as the limit nears. Staff are
+ * reminded that both parties read what they write.
  */
-function Composer({ tradeId }: { tradeId: string }) {
+function Composer({ tradeId, staff }: { tradeId: string; staff: boolean }) {
+  const label = staff ? m.chat_composer_staff() : m.chat_composer_label();
   const id = useId();
   const queryClient = useQueryClient();
   const send = useAtomSet(ChatClient.mutation("Send"), { mode: "promiseExit" });
@@ -578,9 +631,9 @@ function Composer({ tradeId }: { tradeId: string }) {
         <InputGroup>
           <InputGroupTextarea
             id={id}
-            aria-label={m.chat_composer_label()}
+            aria-label={label}
             aria-invalid={error !== null}
-            placeholder={m.chat_composer_label()}
+            placeholder={label}
             rows={1}
             className="field-sizing-content max-h-32 min-h-0 panel-scrollbar"
             value={text}
@@ -627,8 +680,9 @@ function Composer({ tradeId }: { tradeId: string }) {
 }
 
 /**
- * Why there's no composer: staff only read, and an ended trade's chat is
- * read-only, with its bodies deleted CHAT_RETENTION_DAYS later.
+ * Why there's no composer: staff without `staffMessaging` only read, and an
+ * ended trade's chat is read-only, with its bodies deleted
+ * CHAT_RETENTION_DAYS later.
  */
 function ReadOnlyNote({
   trade,

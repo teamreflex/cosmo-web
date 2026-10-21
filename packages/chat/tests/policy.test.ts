@@ -104,24 +104,38 @@ describe("canJoinChat", () => {
 });
 
 describe("canSendChat", () => {
+  const party = { kind: "party", side: "to" } as const;
+  const staff = { kind: "staff", reportId: "report" } as const;
+
   for (const status of tradeStatuses) {
     test(`${status}: a party ${live.has(status) ? "sends" : "is read-only"}`, () => {
-      expect(
-        outcome(canSendChat({ kind: "party", side: "to" }, trade(status))),
-      ).toBe(live.has(status) ? "to" : "ChatReadOnly");
+      expect(outcome(canSendChat(viewers.to, party, trade(status)))).toEqual(
+        live.has(status) ? party : "ChatReadOnly",
+      );
     });
   }
 
-  test("staff are always read-only", () => {
-    expect(
-      outcome(
-        canSendChat({ kind: "staff", reportId: "report" }, trade("accepted")),
-      ),
-    ).toBe("ChatReadOnly");
+  for (const status of tradeStatuses.filter((each) => joinable.has(each))) {
+    test(`${status}: staff with trade:message send under the report`, () => {
+      for (const viewer of [viewers.moderator, viewers.admin]) {
+        expect(outcome(canSendChat(viewer, staff, trade(status)))).toEqual(
+          staff,
+        );
+      }
+    });
+  }
+
+  test("staff without trade:message are read-only", () => {
+    const demoted = { userId: "mod", role: "user" } satisfies ChatViewer;
+    expect(outcome(canSendChat(demoted, staff, trade("accepted")))).toBe(
+      "ChatReadOnly",
+    );
   });
 });
 
 describe("canReportMessage", () => {
+  const staffSender = { _tag: "Staff", name: "moderator" } as const;
+
   test("a party reports the other party's message", () => {
     expect(
       outcome(
@@ -132,7 +146,8 @@ describe("canReportMessage", () => {
 
   test.each([
     ["their own message", { kind: "party", side: "from" }, "from"],
-    ["an event", { kind: "party", side: "from" }, null],
+    ["a deleted party's", { kind: "party", side: "from" }, null],
+    ["a staff message", { kind: "party", side: "from" }, staffSender],
     ["anything, as staff", { kind: "staff", reportId: "report" }, "to"],
   ] as const)("refuses %s", (_label, access, sender) => {
     expect(outcome(canReportMessage(access, { sender }))).toBe("Forbidden");
@@ -175,20 +190,34 @@ describe("direct offers", () => {
     ["countered", "ChatNotFound", "ChatReadOnly"],
     ["expired", "ChatNotFound", "ChatReadOnly"],
     ["stale", "ChatNotFound", "ChatReadOnly"],
-    ["accepted", { kind: "party", side: "from" }, "from"],
-    ["disputed", { kind: "party", side: "from" }, "from"],
+    [
+      "accepted",
+      { kind: "party", side: "from" },
+      { kind: "party", side: "from" },
+    ],
+    [
+      "disputed",
+      { kind: "party", side: "from" },
+      { kind: "party", side: "from" },
+    ],
     ["completed", { kind: "party", side: "from" }, "ChatReadOnly"],
     ["cancelled", { kind: "party", side: "from" }, "ChatReadOnly"],
     ["timed_out", { kind: "party", side: "from" }, "ChatReadOnly"],
-  ] satisfies [TradeStatus, ChatAccess | string, string][])(
+  ] satisfies [TradeStatus, ChatAccess | string, ChatAccess | string][])(
     "%s: join gives %p and send gives %p",
     (status, join, send) => {
       expect(outcome(canJoinChat(viewers.from, trade(status), null))).toEqual(
         join,
       );
       expect(
-        outcome(canSendChat({ kind: "party", side: "from" }, trade(status))),
-      ).toBe(send);
+        outcome(
+          canSendChat(
+            viewers.from,
+            { kind: "party", side: "from" },
+            trade(status),
+          ),
+        ),
+      ).toEqual(send);
     },
   );
 });

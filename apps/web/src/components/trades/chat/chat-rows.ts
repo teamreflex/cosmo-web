@@ -1,4 +1,4 @@
-import type { ChatItem } from "@apollo/chat/items";
+import { type ChatItem, isStaffSender } from "@apollo/chat/items";
 import type { TradeSide } from "@apollo/database/web/types";
 
 export type ChatMessage = Extract<ChatItem, { _tag: "Message" }>;
@@ -11,7 +11,7 @@ export type ChatRow =
       kind: "message";
       key: string;
       message: ChatMessage;
-      // the first of a run from one sender, which staff see named
+      // the first of a run from one sender, which carries a shown name
       first: boolean;
       // the last of a run, which carries the time
       last: boolean;
@@ -19,6 +19,16 @@ export type ChatRow =
 
 const dayOf = (date: Date) =>
   `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+
+/**
+ * Staff messages run together only from the same named staff member, never
+ * with a party's.
+ */
+function sameSender(a: ChatMessage["sender"], b: ChatMessage["sender"]) {
+  return isStaffSender(a) && isStaffSender(b)
+    ? a.name !== null && a.name === b.name
+    : a === b;
+}
 
 /**
  * The rows a chat renders: a divider where the day changes, a marker per
@@ -41,7 +51,8 @@ export function chatRows(items: readonly ChatItem[]): ChatRow[] {
     }
     const previous = rows.at(-1);
     const continues =
-      previous?.kind === "message" && previous.message.sender === item.sender;
+      previous?.kind === "message" &&
+      sameSender(previous.message.sender, item.sender);
     if (continues) {
       rows[rows.length - 1] = { ...previous, last: false };
     }
@@ -58,8 +69,8 @@ export function chatRows(items: readonly ChatItem[]): ChatRow[] {
 }
 
 /**
- * How many messages from the other party came after `afterId`. Staff have
- * no side, so nothing is unread for them.
+ * How many messages from the other party or staff came after `afterId`.
+ * Staff have no side, so nothing is unread for them.
  */
 export function unreadAfter(
   items: readonly ChatItem[],

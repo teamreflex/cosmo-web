@@ -1,7 +1,8 @@
 import type { Role } from "@apollo/auth";
-import type { ChatTrade } from "@apollo/chat/policy";
+import type { ChatAccess, ChatTrade } from "@apollo/chat/policy";
 import { session, user } from "@apollo/database/auth";
 import {
+  cosmoAccounts,
   notifications,
   reportMessages,
   reports,
@@ -14,7 +15,17 @@ import type {
   TradeEvent,
 } from "@apollo/database/web/types";
 import { DatabaseWeb } from "@apollo/services/database-web";
-import { and, asc, eq, exists, gt, inArray, isNull, or } from "drizzle-orm";
+import {
+  and,
+  asc,
+  eq,
+  exists,
+  gt,
+  inArray,
+  isNull,
+  or,
+  sql,
+} from "drizzle-orm";
 import { Context, Data, Effect, Layer } from "effect";
 
 /**
@@ -36,7 +47,8 @@ export type StoredTrade = ChatTrade & { id: string };
 
 /**
  * A `trade_messages` row. A text row's body is ciphertext, null once staff
- * removed it (`removedAt`) or retention blanked it.
+ * removed it (`removedAt`) or retention blanked it. `staff` is set on a
+ * message staff wrote, with the name it shows under.
  */
 export type StoredRow =
   | {
@@ -44,6 +56,7 @@ export type StoredRow =
       id: number;
       tradeId: string;
       senderId: string | null;
+      staff: { name: string | null } | null;
       body: Uint8Array | null;
       removedAt: Date | null;
       createdAt: Date;
@@ -102,13 +115,16 @@ export class ChatStore extends Context.Service<
     ) => Store<ReadonlyArray<StoredRow>>;
     readonly row: (messageId: number) => Store<StoredRow | null>;
     /**
-     * Inserts a text message and, unless the recipient already has one
-     * unread for the trade, a `trade_message` notification.
+     * Inserts a text message and a `trade_message` notification for each
+     * recipient who doesn't already have one unread from the sender for the
+     * trade. A message sent as staff is flagged and audited as
+     * `trade:message` under the report that lets them in.
      */
     readonly insertMessage: (message: {
       tradeId: string;
       senderId: string;
-      recipientId: string | null;
+      as: ChatAccess;
+      recipientIds: ReadonlyArray<string>;
       body: Uint8Array;
     }) => Store<number>;
     // the report's id, or null when the reporter already has one open on the message
@@ -139,6 +155,11 @@ const rowColumns = {
   tradeId: tradeMessages.tradeId,
   kind: tradeMessages.kind,
   senderId: tradeMessages.senderId,
+  byStaff: tradeMessages.byStaff,
+  // joined only on a staff message: their COSMO username, else their Apollo one
+  staffName: sql<
+    string | null
+  >`coalesce(${cosmoAccounts.username}, ${user.username})`,
   body: tradeMessages.body,
   event: tradeMessages.event,
   removedAt: tradeMessages.removedAt,
@@ -150,6 +171,8 @@ type Row = {
   tradeId: string;
   kind: "text" | "event";
   senderId: string | null;
+  byStaff: boolean;
+  staffName: string | null;
   body: Uint8Array | null;
   event: TradeEvent | null;
   removedAt: Date | null;
@@ -157,10 +180,11 @@ type Row = {
 };
 
 // trade_messages_kind_chk guarantees an event row has its event
-function toStoredRow({ event, ...row }: Row): StoredRow {
-  return row.kind === "event" && event !== null
-    ? { ...row, kind: "event", event }
-    : { ...row, kind: "text" };
+function toStoredRow({ event, byStaff, staffName, ...row }: Row): StoredRow {
+  if (row.kind === "event" && event !== null) {
+    return { ...row, kind: "event", event };
+  }
+  return { ...row, kind: "text", staff: byStaff ? { name: staffName } : null };
 }
 
 const failed = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
@@ -176,6 +200,20 @@ const failed = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
   );
 
 function makeDrizzleStore(db: DatabaseWeb["Service"]): ChatStore["Service"] {
+  // a staff message joins its sender and their COSMO link for its name
+  const selectRows = () =>
+    db
+      .select(rowColumns)
+      .from(tradeMessages)
+      .leftJoin(
+        user,
+        and(
+          eq(user.id, tradeMessages.senderId),
+          eq(tradeMessages.byStaff, true),
+        ),
+      )
+      .leftJoin(cosmoAccounts, eq(cosmoAccounts.userId, user.id));
+
   return {
     session: (sessionId) =>
       db
@@ -247,9 +285,7 @@ function makeDrizzleStore(db: DatabaseWeb["Service"]): ChatStore["Service"] {
         ),
 
     rowsAfter: (tradeId, afterId, limit) =>
-      db
-        .select(rowColumns)
-        .from(tradeMessages)
+      selectRows()
         .where(
           and(
             eq(tradeMessages.tradeId, tradeId),
@@ -264,16 +300,14 @@ function makeDrizzleStore(db: DatabaseWeb["Service"]): ChatStore["Service"] {
         ),
 
     row: (messageId) =>
-      db
-        .select(rowColumns)
-        .from(tradeMessages)
+      selectRows()
         .where(eq(tradeMessages.id, messageId))
         .pipe(
           Effect.map(([row]) => (row === undefined ? null : toStoredRow(row))),
           failed,
         ),
 
-    insertMessage: ({ tradeId, senderId, recipientId, body }) =>
+    insertMessage: ({ tradeId, senderId, as, recipientIds, body }) =>
       db
         .transaction((tx) =>
           Effect.gen(function* () {
@@ -282,11 +316,13 @@ function makeDrizzleStore(db: DatabaseWeb["Service"]): ChatStore["Service"] {
               .values({
                 tradeId,
                 senderId,
+                byStaff: as.kind === "staff",
                 kind: "text",
                 body: Buffer.from(body),
               })
               .returning({ id: tradeMessages.id });
-            if (recipientId !== null) {
+            const messageId = inserted?.id ?? 0;
+            for (const recipientId of recipientIds) {
               const unread = yield* tx
                 .select({ id: notifications.id })
                 .from(notifications)
@@ -295,6 +331,7 @@ function makeDrizzleStore(db: DatabaseWeb["Service"]): ChatStore["Service"] {
                     eq(notifications.userId, recipientId),
                     eq(notifications.offerId, tradeId),
                     eq(notifications.type, "trade_message"),
+                    eq(notifications.actorId, senderId),
                     isNull(notifications.readAt),
                   ),
                 )
@@ -308,7 +345,17 @@ function makeDrizzleStore(db: DatabaseWeb["Service"]): ChatStore["Service"] {
                 });
               }
             }
-            return inserted?.id ?? 0;
+            if (as.kind === "staff") {
+              yield* tx.insert(staffAudit).values({
+                staffId: senderId,
+                action: "trade:message",
+                targetType: "message",
+                targetId: String(messageId),
+                reportId: as.reportId,
+                detail: { kind: "message", tradeId },
+              });
+            }
+            return messageId;
           }),
         )
         .pipe(failed),

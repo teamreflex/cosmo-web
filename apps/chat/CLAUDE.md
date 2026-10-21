@@ -11,7 +11,7 @@ Effect service for trade chat: the `ChatRpcs` group from `@apollo/chat/protocol`
 
 ## Storage
 
-`ChatStore` (`src/store.ts`) is every read and write chat makes, as single operations with no access decisions; the live layer uses the shared pooled `DatabaseWeb` (`@apollo/services`). Message bodies and report copies are AES-256-GCM ciphertext under `MESSAGE_KEY` (`src/cipher.ts`, `openssl rand -base64 32`), with the trade id bound in as additional data. Removal blanks the body, sets `removed_at`, posts a `message_removed` event and audits it. Store failures log only the error's name, since statement parameters can hold ciphertext.
+`ChatStore` (`src/store.ts`) is every read and write chat makes, as single operations with no access decisions; the live layer uses the shared pooled `DatabaseWeb` (`@apollo/services`). Message bodies and report copies are AES-256-GCM ciphertext under `MESSAGE_KEY` (`src/cipher.ts`, `openssl rand -base64 32`), with the trade id bound in as additional data. A message notifies everyone in the trade but its sender with `trade_message`, unless they already have one unread from that sender. `Send` from staff (`canSendChat()` returns their staff access) stores the message with `by_staff` and writes its `trade:message` audit row in the same transaction, notifying both parties. Reads join a staff message's sender and their `cosmo_account` for the name it shows under (`Message.sender` is a `Staff` struct), and the flag keeps it a staff message, unnamed, once that account is deleted and `sender_id` is null. Removal blanks the body, sets `removed_at`, posts a `message_removed` event and audits it. Store failures log only the error's name, since statement parameters can hold ciphertext.
 
 ## Tests
 

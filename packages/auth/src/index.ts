@@ -8,7 +8,13 @@ import type { AdminOptions } from "better-auth/plugins/admin";
  */
 export const statement = {
   market: ["access"],
-  trade: ["read-any", "cancel-any", "resolve-dispute", "remove-message"],
+  trade: [
+    "read-any",
+    "cancel-any",
+    "resolve-dispute",
+    "remove-message",
+    "message",
+  ],
   listing: ["remove-any"],
   feedback: ["remove-any"],
   report: ["read", "resolve", "escalate"],

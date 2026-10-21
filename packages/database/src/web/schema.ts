@@ -912,10 +912,11 @@ export const tradeListingWants = pgTable(
 
 /**
  * A trade's chat and timeline in one stream. Text messages have a sender, or
- * none once their account is deleted. Their body is ciphertext only apps/chat
- * reads and writes, blanked when staff remove the message (`removed_at`) and
- * 14 days after the trade ends. Events are system or staff actions with a
- * typed payload.
+ * none once their account is deleted. `by_staff` marks a text message staff
+ * wrote to both parties, and outlives the staff member's account. A text
+ * body is ciphertext only apps/chat reads and writes, blanked when staff
+ * remove the message (`removed_at`) and 14 days after the trade ends. Events are
+ * system or staff actions with a typed payload.
  */
 export const tradeMessages = pgTable(
   "trade_messages",
@@ -927,6 +928,7 @@ export const tradeMessages = pgTable(
     senderId: varchar("sender_id", { length: 32 }).references(() => user.id, {
       onDelete: "set null",
     }),
+    byStaff: boolean("by_staff").notNull().default(false),
     kind: tradeMessageKind("kind").notNull(),
     body: bytea("body"),
     event: jsonb("event").$type<TradeEvent>(),
@@ -942,6 +944,10 @@ export const tradeMessages = pgTable(
     check(
       "trade_messages_removed_chk",
       sql`${t.removedAt} IS NULL OR ${t.body} IS NULL`,
+    ),
+    check(
+      "trade_messages_staff_chk",
+      sql`NOT ${t.byStaff} OR ${t.kind} = 'text'`,
     ),
   ],
 );

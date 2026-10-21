@@ -128,12 +128,25 @@ export const ChatEvent = Schema.Union([KnownTradeEvent, UnknownTradeEvent]);
 export const isKnownEvent = Schema.is(KnownTradeEvent);
 
 /**
- * A text message. `body` is null once staff removed it (`removed`) or
- * retention blanked it.
+ * Staff writing to both parties, named by their COSMO username or else
+ * their Apollo username. `name` is null once their account is deleted.
+ */
+export const StaffSender = Schema.TaggedStruct("Staff", {
+  name: Schema.NullOr(Schema.String),
+});
+
+export const isStaffSender = Schema.is(StaffSender);
+
+export const MessageSender = Schema.Union([TradeSide, StaffSender]);
+export type MessageSender = typeof MessageSender.Type;
+
+/**
+ * A text message. `sender` is null when a party's account is deleted.
+ * `body` is null once staff removed it (`removed`) or retention blanked it.
  */
 export const Message = Schema.TaggedStruct("Message", {
   id: MessageId,
-  sender: Schema.NullOr(TradeSide),
+  sender: Schema.NullOr(MessageSender),
   sentAt: Schema.Date,
   body: Schema.NullOr(MessageBody),
   removed: Schema.Boolean,

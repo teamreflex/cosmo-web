@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, test } from "bun:test";
 import { Effect, Redacted, Stream } from "effect";
 import { TradeChannels } from "../src/channels";
 import {
+  addTrade,
   client,
   collect,
   makeSigner,
@@ -57,7 +58,7 @@ describe("staff", () => {
     );
   });
 
-  test("read under an open dispute, and read-only", async () => {
+  test("read under an open dispute", async () => {
     const state = world();
     openDispute(state);
     await run(
@@ -69,11 +70,6 @@ describe("staff", () => {
         const mod = yield* client(token("mod"));
         const stream = yield* collect(mod.Join({ tradeId: TRADE }));
         expect(yield* stream.take(1)).toHaveLength(1);
-        expect(
-          yield* outcome(
-            mod.Send({ tradeId: TRADE, body: Redacted.make("x") }),
-          ),
-        ).toBe("ChatReadOnly");
       }),
     );
   });
@@ -193,6 +189,152 @@ describe("staff", () => {
         );
         expect(yield* outcome(alice.ReportedMessage({ reportId }))).toBe(
           "Forbidden",
+        );
+      }),
+    );
+  });
+});
+
+describe("staff messages", () => {
+  test("write to both parties under an open dispute, named and audited", async () => {
+    const state = world();
+    openDispute(state);
+    state.names.set("mod", "ModCosmo");
+    await run(
+      state,
+      signer,
+      Effect.gen(function* () {
+        const alice = yield* client(token("alice"));
+        yield* alice.Send({ tradeId: TRADE, body: Redacted.make("hi") });
+        const mod = yield* client(token("mod"));
+        const { messageId } = yield* mod.Send({
+          tradeId: TRADE,
+          body: Redacted.make("staff here"),
+        });
+
+        const staff = { _tag: "Staff", name: "ModCosmo" };
+        for (const viewer of ["alice", "bob", "mod"]) {
+          const stream = yield* collect(
+            (yield* client(token(viewer))).Join({ tradeId: TRADE }),
+          );
+          const [, message] = yield* stream.take(2);
+          expect(message).toMatchObject({ id: messageId, sender: staff });
+        }
+
+        // Bob's unread message from Alice doesn't hide the staff one
+        expect(state.notifications).toEqual([
+          { userId: "bob", actorId: "alice", offerId: TRADE, readAt: null },
+          { userId: "alice", actorId: "mod", offerId: TRADE, readAt: null },
+          { userId: "bob", actorId: "mod", offerId: TRADE, readAt: null },
+        ]);
+        expect(state.audit).toEqual([
+          {
+            staffId: "mod",
+            action: "trade:message",
+            targetId: String(messageId),
+            reportId: "dispute",
+          },
+        ]);
+      }),
+    );
+  });
+
+  test("write on an ended trade, where the parties are read-only", async () => {
+    const state = world();
+    openDispute(state);
+    addTrade(state, {
+      id: TRADE,
+      status: "completed",
+      from: "alice",
+      to: "bob",
+    });
+    await run(
+      state,
+      signer,
+      Effect.gen(function* () {
+        const alice = yield* client(token("alice"));
+        expect(
+          yield* outcome(
+            alice.Send({ tradeId: TRADE, body: Redacted.make("hi") }),
+          ),
+        ).toBe("ChatReadOnly");
+        const admin = yield* client(token("admin"));
+        expect(
+          yield* outcome(
+            admin.Send({ tradeId: TRADE, body: Redacted.make("closing") }),
+          ),
+        ).toBe("ok");
+      }),
+    );
+  });
+
+  test("can't write without an open report or dispute", async () => {
+    const state = world();
+    await run(
+      state,
+      signer,
+      Effect.gen(function* () {
+        const mod = yield* client(token("mod"));
+        expect(
+          yield* outcome(
+            mod.Send({ tradeId: TRADE, body: Redacted.make("hello") }),
+          ),
+        ).toBe("StaffAccessRequired");
+      }),
+    );
+    expect(state.rows).toEqual([]);
+  });
+
+  test("a deleted staff account's message stays a staff message", async () => {
+    const state = world();
+    openDispute(state);
+    state.names.set("mod", "ModCosmo");
+    await run(
+      state,
+      signer,
+      Effect.gen(function* () {
+        const mod = yield* client(token("mod"));
+        yield* mod.Send({ tradeId: TRADE, body: Redacted.make("hi") });
+        // deleting the account sets sender_id null
+        for (const row of state.rows) {
+          if (row.kind === "text") {
+            row.senderId = null;
+          }
+        }
+        const bob = yield* client(token("bob"));
+        const stream = yield* collect(bob.Join({ tradeId: TRADE }));
+        expect(yield* stream.take(1)).toMatchObject([
+          { sender: { _tag: "Staff", name: null } },
+        ]);
+      }),
+    );
+  });
+
+  test("parties can't report one, and staff can remove it", async () => {
+    const state = world();
+    openDispute(state);
+    await run(
+      state,
+      signer,
+      Effect.gen(function* () {
+        const mod = yield* client(token("mod"));
+        const { messageId } = yield* mod.Send({
+          tradeId: TRADE,
+          body: Redacted.make("staff here"),
+        });
+        for (const party of ["alice", "bob"]) {
+          const reporter = yield* client(token(party));
+          expect(
+            yield* outcome(reporter.Report({ messageId, reason: "spam" })),
+          ).toBe("Forbidden");
+        }
+        yield* (yield* client(token("admin"))).Remove({ messageId });
+        expect(state.audit).toContainEqual(
+          expect.objectContaining({
+            staffId: "admin",
+            action: "trade:remove-message",
+            targetId: String(messageId),
+          }),
         );
       }),
     );

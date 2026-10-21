@@ -42,8 +42,17 @@ export type NotificationToken = {
 };
 
 /**
- * What a trade notification shows. `actor` is the party who caused it, or
- * null when staff or the system did. `counterparty` is the recipient's other
+ * Who caused a trade notification: the recipient's other party, or a staff
+ * member who wrote in the trade's chat, named by their COSMO username or
+ * else their Apollo username (null when they have neither).
+ */
+export type TradeActor =
+  | ({ kind: "party" } & NotificationUser)
+  | { kind: "staff"; name: string | null };
+
+/**
+ * What a trade notification shows. `actor` is who caused it, or null when
+ * staff acted unnamed or the system did. `counterparty` is the recipient's other
  * party, null on a listing or once their account is gone. `offer` is the
  * trade, or the listing for listing_closed. `objekts` is what the poster of
  * a listing_claimed or the sender of an offer_received sends, and `asked`
@@ -54,7 +63,7 @@ type TradeNotificationFields = {
   kind: "trade";
   type: TradeNotificationType;
   unread: boolean;
-  actor: NotificationUser | null;
+  actor: TradeActor | null;
   counterparty: NotificationUser | null;
   offer: { id: string; status: TradeOfferStatus };
   token: NotificationToken | null;

@@ -1,6 +1,6 @@
 # chat
 
-Trade chat between the two parties of a trade, served over Effect RPC on a websocket. Staff can read a trade's chat while it has an open report or dispute. Message bodies are stored encrypted, and the web app's chat panel is the only client.
+Trade chat between the two parties of a trade, served over Effect RPC on a websocket. Staff can read a trade's chat while it has an open report or dispute, and staff with `trade: ["message"]` can then write to both parties. Message bodies are stored encrypted, and the web app's chat panel is the only client.
 
 ## A call
 
@@ -52,7 +52,8 @@ A stream subscribes to its trade's signal before it reads any history, so nothin
     |                                  |  ----------------------------------->  | CaughtUp
     |                                  |                                        |
     |------ Send {tradeId, body} ----->|                                        |
-    |                                  |  canSendChat: a party, trade live      |
+    |                                  |  canSendChat: a party on a live trade, |
+    |                                  |  or staff with trade:message           |
     |                                  |  encrypt, insert the row and a         |
     |                                  |  notification for bob                  |
     |<--------- {messageId} -----------|  signal the trade                      |
@@ -79,4 +80,4 @@ Chat runs as a single instance and fans out in process, so it publishes nothing.
                                                                          signal every open trade
 ```
 
-Once a trade ends its chat is read-only, and schedules' `chat-retention` blanks its message bodies 14 days later. A report keeps its own encrypted copy of the reported message, which retention leaves alone.
+Once a trade ends its parties can only read its chat (staff under an open report can still write), and schedules' `chat-retention` blanks its message bodies 14 days later. A report keeps its own encrypted copy of the reported message, which retention leaves alone.

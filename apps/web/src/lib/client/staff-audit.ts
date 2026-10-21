@@ -21,6 +21,7 @@ const actionLabels = {
   "trade:cancel": m.admin_audit_action_trade_cancel,
   "trade:extend": m.admin_audit_action_trade_extend,
   "trade:remove-message": m.admin_audit_action_trade_remove_message,
+  "trade:message": m.admin_audit_action_trade_message,
   "feedback:remove": m.admin_audit_action_feedback_remove,
 } satisfies Record<StaffAuditAction, () => string>;
 

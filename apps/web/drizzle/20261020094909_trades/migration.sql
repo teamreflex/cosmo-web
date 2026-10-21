@@ -86,13 +86,15 @@ CREATE TABLE "trade_messages" (
 	"id" bigserial PRIMARY KEY,
 	"trade_id" uuid NOT NULL,
 	"sender_id" varchar(32),
+	"by_staff" boolean DEFAULT false NOT NULL,
 	"kind" "trade_message_kind" NOT NULL,
 	"body" bytea,
 	"event" jsonb,
 	"removed_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "trade_messages_kind_chk" CHECK (CASE "kind" WHEN 'text' THEN "event" IS NULL ELSE "event" IS NOT NULL AND num_nonnulls("body", "sender_id", "removed_at") = 0 END),
-	CONSTRAINT "trade_messages_removed_chk" CHECK ("removed_at" IS NULL OR "body" IS NULL)
+	CONSTRAINT "trade_messages_removed_chk" CHECK ("removed_at" IS NULL OR "body" IS NULL),
+	CONSTRAINT "trade_messages_staff_chk" CHECK (NOT "by_staff" OR "kind" = 'text')
 );
 --> statement-breakpoint
 CREATE TABLE "trade_offer_items" (

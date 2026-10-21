@@ -103,6 +103,35 @@ function tokenName(token: NotificationToken | null | undefined) {
 }
 
 /**
+ * New chat messages, from the other party or from a named staff member.
+ */
+function describeMessage(actor: TradeItem["actor"], username: string) {
+  const appName = env.VITE_APP_NAME;
+  if (actor?.kind !== "staff") {
+    return (
+      <ParaglideMessage
+        message={m.notification_trade_message}
+        inputs={{ username }}
+        markup={bold}
+      />
+    );
+  }
+  return actor.name === null ? (
+    <ParaglideMessage
+      message={m.notification_trade_message_staff_unnamed}
+      inputs={{ appName, username }}
+      markup={bold}
+    />
+  ) : (
+    <ParaglideMessage
+      message={m.notification_trade_message_staff}
+      inputs={{ appName, staff: accountName(actor.name), username }}
+      markup={bold}
+    />
+  );
+}
+
+/**
  * The row's sentence for each trade type. A null actor means staff or the
  * system acted, which never names who.
  */
@@ -192,13 +221,7 @@ function describeTrade(notification: TradeItem, username: string) {
         />
       );
     case "trade_message":
-      return (
-        <ParaglideMessage
-          message={m.notification_trade_message}
-          inputs={{ username }}
-          markup={bold}
-        />
-      );
+      return describeMessage(notification.actor, username);
     case "feedback_received":
       return (
         <ParaglideMessage

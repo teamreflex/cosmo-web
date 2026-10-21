@@ -290,6 +290,7 @@ export const staffAuditActions = [
   "trade:cancel",
   "trade:extend",
   "trade:remove-message",
+  "trade:message",
   "feedback:remove",
 ] as const;
 export type StaffAuditAction = (typeof staffAuditActions)[number];
@@ -326,9 +327,8 @@ export type CosmoLinkReason = (typeof cosmoLinkReasons)[number];
  * `expiresIn` is the ban length in seconds, null for a permanent ban. An API
  * key's name, owner and enabled state are copied in when the action runs, so
  * the row still reads after the key is deleted. A trade extension stores the
- * new deadline and the hours staff picked. A removed chat message or rating
- * names its
- * trade.
+ * new deadline and the hours staff picked. A chat message staff removed or
+ * sent, and a removed rating, name their trade.
  */
 export type StaffAuditDetail =
   | { kind: "ban"; expiresIn: number | null; reason: string }

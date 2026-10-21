@@ -2,7 +2,7 @@
   "type": "diff",
   "version": "9",
   "dialect": "postgres",
-  "id": "718c4c14-0273-4550-a17b-ebc1ebdb3ba6",
+  "id": "c585280b-0daa-4a07-85c7-a2d8a3166e88",
   "prevIds": [
     "13d4b262-7e11-4270-a42c-e8a8d62d35f8"
   ],
@@ -241,6 +241,25 @@
       "statementTarget": [
         "table",
         "public",
+        "jwks"
+      ],
+      "writes": [
+        "s|tbl|public.jwks",
+        "n|tbl|public.jwks",
+        "e|tbl|public.jwks",
+        "n|rel|public.jwks",
+        "n|type|public.jwks",
+        "n|rel|public.jwks_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
         "report_messages"
       ],
       "writes": [
@@ -377,25 +396,6 @@
         "n|rel|public.user_feedback_stats",
         "n|type|public.user_feedback_stats",
         "n|rel|public.user_feedback_stats_pkey"
-      ],
-      "reads": [
-        "n|sch|public"
-      ]
-    },
-    {
-      "statementType": "create_table",
-      "statementTarget": [
-        "table",
-        "public",
-        "jwks"
-      ],
-      "writes": [
-        "s|tbl|public.jwks",
-        "n|tbl|public.jwks",
-        "e|tbl|public.jwks",
-        "n|rel|public.jwks",
-        "n|type|public.jwks",
-        "n|rel|public.jwks_pkey"
       ],
       "reads": [
         "n|sch|public"
@@ -1222,6 +1222,15 @@
       "op": "create",
       "row": {
         "schema": "public",
+        "name": "jwks",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
         "name": "report_messages",
         "isRlsEnabled": false,
         "entityType": "tables"
@@ -1277,15 +1286,6 @@
       "row": {
         "schema": "public",
         "name": "user_feedback_stats",
-        "isRlsEnabled": false,
-        "entityType": "tables"
-      }
-    },
-    {
-      "op": "create",
-      "row": {
-        "schema": "public",
-        "name": "jwks",
         "isRlsEnabled": false,
         "entityType": "tables"
       }
@@ -1458,6 +1458,86 @@
         "table": "cosmo_link_audit",
         "name": "staff_id",
         "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "jwks",
+        "name": "id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "jwks",
+        "name": "public_key",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "jwks",
+        "name": "private_key",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "jwks",
+        "name": "created_at",
+        "type": "timestamp",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "jwks",
+        "name": "expires_at",
+        "type": "timestamp",
         "typeSchema": null,
         "notNull": false,
         "dimensions": 0,
@@ -2150,6 +2230,22 @@
         "notNull": false,
         "dimensions": 0,
         "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_messages",
+        "name": "by_staff",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
         "generated": null,
         "identity": null,
         "entityType": "columns"
@@ -3061,86 +3157,6 @@
       "op": "create",
       "row": {
         "schema": "public",
-        "table": "jwks",
-        "name": "id",
-        "type": "text",
-        "typeSchema": null,
-        "notNull": true,
-        "dimensions": 0,
-        "default": null,
-        "generated": null,
-        "identity": null,
-        "entityType": "columns"
-      }
-    },
-    {
-      "op": "create",
-      "row": {
-        "schema": "public",
-        "table": "jwks",
-        "name": "public_key",
-        "type": "text",
-        "typeSchema": null,
-        "notNull": true,
-        "dimensions": 0,
-        "default": null,
-        "generated": null,
-        "identity": null,
-        "entityType": "columns"
-      }
-    },
-    {
-      "op": "create",
-      "row": {
-        "schema": "public",
-        "table": "jwks",
-        "name": "private_key",
-        "type": "text",
-        "typeSchema": null,
-        "notNull": true,
-        "dimensions": 0,
-        "default": null,
-        "generated": null,
-        "identity": null,
-        "entityType": "columns"
-      }
-    },
-    {
-      "op": "create",
-      "row": {
-        "schema": "public",
-        "table": "jwks",
-        "name": "created_at",
-        "type": "timestamp",
-        "typeSchema": null,
-        "notNull": true,
-        "dimensions": 0,
-        "default": null,
-        "generated": null,
-        "identity": null,
-        "entityType": "columns"
-      }
-    },
-    {
-      "op": "create",
-      "row": {
-        "schema": "public",
-        "table": "jwks",
-        "name": "expires_at",
-        "type": "timestamp",
-        "typeSchema": null,
-        "notNull": false,
-        "dimensions": 0,
-        "default": null,
-        "generated": null,
-        "identity": null,
-        "entityType": "columns"
-      }
-    },
-    {
-      "op": "create",
-      "row": {
-        "schema": "public",
         "table": "notifications",
         "name": "notifications_offer_idx",
         "nameExplicit": true,
@@ -3968,6 +3984,19 @@
       "op": "create",
       "row": {
         "schema": "public",
+        "table": "jwks",
+        "name": "jwks_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
         "table": "report_messages",
         "name": "report_messages_pkey",
         "columns": [
@@ -4059,19 +4088,6 @@
       "op": "create",
       "row": {
         "schema": "public",
-        "table": "jwks",
-        "name": "jwks_pkey",
-        "columns": [
-          "id"
-        ],
-        "nameExplicit": false,
-        "entityType": "pks"
-      }
-    },
-    {
-      "op": "create",
-      "row": {
-        "schema": "public",
         "table": "cosmo_link_audit",
         "name": "cosmo_link_audit_staff_chk",
         "value": "(\"reason\" = 'staff-move') = (\"staff_id\" IS NOT NULL)",
@@ -4135,6 +4151,16 @@
         "table": "trade_messages",
         "name": "trade_messages_removed_chk",
         "value": "\"removed_at\" IS NULL OR \"body\" IS NULL",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_messages",
+        "name": "trade_messages_staff_chk",
+        "value": "NOT \"by_staff\" OR \"kind\" = 'text'",
         "entityType": "checks"
       }
     },

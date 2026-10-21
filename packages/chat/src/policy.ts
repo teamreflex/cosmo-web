@@ -1,4 +1,4 @@
-import { can, type Role } from "@apollo/auth";
+import { can, type Permissions, type Role } from "@apollo/auth";
 import {
   endedTradeStatuses,
   liveTradeStatuses,
@@ -12,6 +12,7 @@ import {
   Forbidden,
   StaffAccessRequired,
 } from "./errors";
+import type { MessageSender } from "./items";
 
 /**
  * Who may read and write a trade's chat. Every chat access is decided here,
@@ -76,24 +77,33 @@ export function canJoinChat(
   return Effect.fail(new ChatNotFound());
 }
 
-// only a party writes, and only while the trade is live
+// staff write to both parties while they can read the chat
+export const staffMessaging = { trade: ["message"] } satisfies Permissions;
+
+/**
+ * A party writes only while the trade is live. Staff holding
+ * `staffMessaging` write whenever they can read the chat, ended trades
+ * included, under the report or dispute that lets them in.
+ */
 export function canSendChat(
+  viewer: ChatViewer,
   access: ChatAccess,
   trade: ChatTrade,
-): Effect.Effect<TradeSide, ChatReadOnly> {
-  return access.kind === "party" && sendStatuses.includes(trade.status)
-    ? Effect.succeed(access.side)
-    : Effect.fail(new ChatReadOnly());
+): Effect.Effect<ChatAccess, ChatReadOnly> {
+  const allowed =
+    access.kind === "staff"
+      ? can(viewer.role, staffMessaging)
+      : sendStatuses.includes(trade.status);
+  return allowed ? Effect.succeed(access) : Effect.fail(new ChatReadOnly());
 }
 
-// a party reports the other party's messages, never their own or an event
+// a party reports the other party's messages, never their own or a staff message
 export function canReportMessage(
   access: ChatAccess,
-  message: { sender: TradeSide | null },
+  message: { sender: MessageSender | null },
 ): Effect.Effect<void, Forbidden> {
   return access.kind === "party" &&
-    message.sender !== null &&
-    message.sender !== access.side
+    message.sender === (access.side === "from" ? "to" : "from")
     ? Effect.void
     : Effect.fail(new Forbidden());
 }

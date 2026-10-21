@@ -10,6 +10,7 @@ import {
   type NotificationPage,
   type NotificationRow,
   type NotificationToken,
+  type TradeActor,
 } from "@/lib/universal/notifications";
 import {
   listNotificationsSchema,
@@ -21,12 +22,31 @@ import {
   objektLists,
   tradeOfferItems,
   tradeOffers,
+  user,
 } from "@apollo/database/web/schema";
 import { createServerFn } from "@tanstack/react-start";
 import { and, asc, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
 const PAGE_SIZE = 30;
+
+/**
+ * An actor who isn't the recipient's counterparty is a staff member who
+ * wrote in the trade's chat, named as the chat names them.
+ */
+function tradeActor(row: {
+  actorId: string | null;
+  actorUsername: string | null;
+  actorName: string | null;
+  counterpartyId: string | null;
+}): TradeActor | null {
+  if (row.actorId === null) {
+    return null;
+  }
+  return row.actorId === row.counterpartyId
+    ? { kind: "party", userId: row.actorId, username: row.actorUsername }
+    : { kind: "staff", name: row.actorName };
+}
 
 /**
  * One page of the current user's notifications, newest first. The bell groups
@@ -42,6 +62,7 @@ export const $listNotifications = createServerFn({ method: "GET" })
   .handler(async ({ data, context }): Promise<NotificationPage> => {
     const after = decodeCursor(data.cursor);
     const actor = alias(cosmoAccounts, "actor");
+    const actorUser = alias(user, "actor_user");
     const counterparty = alias(cosmoAccounts, "counterparty");
     const counterpartyId = sql<
       string | null
@@ -55,6 +76,9 @@ export const $listNotifications = createServerFn({ method: "GET" })
         readAt: notifications.readAt,
         actorId: notifications.actorId,
         actorUsername: actor.username,
+        actorName: sql<
+          string | null
+        >`coalesce(${actor.username}, ${actorUser.username})`,
         listId: objektLists.id,
         listSlug: objektLists.slug,
         collectionId: notifications.collectionId,
@@ -68,6 +92,7 @@ export const $listNotifications = createServerFn({ method: "GET" })
       .leftJoin(objektLists, eq(objektLists.id, notifications.listId))
       .leftJoin(tradeOffers, eq(tradeOffers.id, notifications.offerId))
       .leftJoin(actor, eq(actor.userId, notifications.actorId))
+      .leftJoin(actorUser, eq(actorUser.id, notifications.actorId))
       .leftJoin(counterparty, eq(counterparty.userId, counterpartyId))
       .where(
         and(
@@ -211,10 +236,7 @@ export const $listNotifications = createServerFn({ method: "GET" })
             createdAt: row.createdAt,
             type: row.type,
             unread: row.readAt === null,
-            actor:
-              row.actorId === null
-                ? null
-                : { userId: row.actorId, username: row.actorUsername },
+            actor: tradeActor(row),
             counterparty:
               row.counterpartyId === null
                 ? null

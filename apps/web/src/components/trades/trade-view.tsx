@@ -434,7 +434,7 @@ function TradeLayout({
   bar?: { rows: 1 | 2; children: ReactNode };
 }) {
   const [tab, setTab] = useState<TradeTab>("transfers");
-  // the other party's messages that arrived while the chat tab was closed
+  // messages from the other party or staff while the chat tab was closed
   const [unread, setUnread] = useState(0);
   // chat runs where the web app knows its URL, and opens once an offer is accepted
   const chat = env.VITE_CHAT_URL !== undefined && trade.stage === "trade";

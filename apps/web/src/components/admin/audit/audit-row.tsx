@@ -43,6 +43,7 @@ const actionTones = {
   "trade:cancel": "text-foreground",
   "trade:extend": "text-foreground",
   "trade:remove-message": "text-destructive",
+  "trade:message": "text-foreground",
   "feedback:remove": "text-destructive",
 } satisfies Record<StaffAuditAction, string>;
 
