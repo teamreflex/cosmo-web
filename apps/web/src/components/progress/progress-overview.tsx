@@ -30,7 +30,7 @@ type Props = {
 };
 
 /**
- * Completion of the members the profile owns the most objekts of, leading into each
+ * Completion of the members the profile has completed the most of, leading into each
  * member's progress, above a breakdown of objekts owned per season and class.
  */
 export default function ProgressOverview(props: Props) {
@@ -41,6 +41,7 @@ export default function ProgressOverview(props: Props) {
     ],
   });
   const { filters } = useProgressFilters();
+  const { getMember } = useArtists();
 
   const stats = useMemo(() => {
     const scoped = filters.artist
@@ -55,10 +56,24 @@ export default function ProgressOverview(props: Props) {
   const completionMap = new Map(completion.map((c) => [c.member, c]));
   const total = stats.members.reduce((acc, stat) => acc + stat.count, 0);
 
+  function completionRatio(member: string) {
+    const c = completionMap.get(member);
+    return c ? c.count / c.total : 0;
+  }
+
+  // filter to only members, excluding one-offs like "Assemble24" etc
+  const topMembers = stats.members
+    .filter((stat) => getMember(stat.name) !== undefined)
+    .toSorted(
+      (a, b) =>
+        completionRatio(b.name) - completionRatio(a.name) || b.count - a.count,
+    )
+    .slice(0, TOP_MEMBERS);
+
   return (
     <div className="flex flex-col gap-8 pb-8">
       <div className="grid grid-cols-1 overflow-hidden rounded-xl border bg-card max-sm:divide-y sm:grid-cols-2 sm:gap-3 sm:overflow-visible sm:rounded-none sm:border-0 sm:bg-transparent md:grid-cols-3 lg:grid-cols-5">
-        {stats.members.slice(0, TOP_MEMBERS).map((stat) => (
+        {topMembers.map((stat) => (
           <MemberTile
             key={stat.name}
             stat={stat}

@@ -9,24 +9,27 @@ import {
   type ObjektSerial,
   type Reservation,
   type ReservedRange,
+  type SerialUpdate,
 } from "@apollo/serial-estimation";
 import type { Store } from "@subsquid/typeorm-store";
-import type { EntityManager } from "typeorm";
+import { In, type EntityManager } from "typeorm";
 import * as z from "zod";
-import type { Collection, Objekt } from "./model";
+import { Objekt, type Collection } from "./model";
 import type { ProcessorContext } from "./processor";
 
 /**
  * Serials for objekts minted after COSMO's v1 metadata cutoff, set on each
- * new objekt before it is inserted, using @apollo/serial-estimation. Existing
- * rows are never renumbered here; apps/schedules recomputes collections with
- * new objekts daily and applies confirmed serials.
+ * new objekt before it is inserted, using @apollo/serial-estimation.
+ * apps/schedules recomputes collections with new objekts daily and applies
+ * confirmed serials.
  *
  * - A digital mint above its collection's highest token id takes the next
  *   serial.
  * - Any other new objekt (physical scans, coupon redemptions, late digital
  *   mints, collections not yet cached) is estimated from its whole
- *   collection, and only the new objekts keep the result.
+ *   collection. The new objekts take the result, and so do a digital
+ *   collection's stored objekts whose serial it changed: a mint landing
+ *   on-chain after higher ids in its collection shifts every one above it.
  */
 
 type CollectionRef = {
@@ -260,14 +263,15 @@ async function storedTops(
 
 /**
  * Estimate the collection with its new objekts added, set their serials, and
- * cache the collection's top when it is digital.
+ * cache the collection's top when it is digital. Returns the new serials of
+ * a digital collection's stored objekts whose estimate changed.
  */
 async function estimateNewObjekts(
   em: EntityManager,
   collection: CollectionRef,
   created: readonly Objekt[],
   pending: readonly number[],
-) {
+): Promise<SerialUpdate[]> {
   // the stored collection with its confirmed serials
   const rows = objektRows.parse(
     await em.query(
@@ -278,7 +282,7 @@ async function estimateNewObjekts(
     ),
   );
 
-  // estimate it with the new objekts at serial 0, but only they take the result
+  // estimate it with the new objekts at serial 0
   const objekts = await loadCollection(
     em,
     collection,
@@ -296,32 +300,83 @@ async function estimateNewObjekts(
     ],
     pending,
   );
-  const serials = new Map(
-    estimateSerials(
-      objekts,
-      new Map(
-        rows.flatMap((row): [number, number][] =>
-          row.confirmed === null ? [] : [[row.token_id, row.confirmed]],
-        ),
+  const updates = estimateSerials(
+    objekts,
+    new Map(
+      rows.flatMap((row): [number, number][] =>
+        row.confirmed === null ? [] : [[row.token_id, row.confirmed]],
       ),
-    ).map((update) => [update.tokenId, update.serial]),
+    ),
+  );
+  const serials = new Map(
+    updates.map((update) => [update.tokenId, update.serial]),
   );
   for (const objekt of created) {
     objekt.serial = serials.get(Number(objekt.id)) ?? 0;
   }
 
-  // remember a digital collection's top for the next mint
-  if (objekts.kind === "sequential") {
-    const top = objekts.objekts.reduce((a, b) =>
-      b.tokenId > a.tokenId ? b : a,
-    );
-    const serial = serials.get(top.tokenId) ?? top.serial;
-    if (serial > 0) {
-      tops.set(collection.id, { tokenId: top.tokenId, serial });
-    } else {
-      tops.delete(collection.id);
+  /**
+   * Physicals keep their stored serials. They are numbered from reserved
+   * ranges, which are least reliable during a drop: a digital mint landing
+   * before a lower batch opens a range that the batch splits again seconds
+   * later. A digital mint in another collection can also split a physical's
+   * range without the physical being in the chunk, so apps/schedules repairs
+   * them instead.
+   */
+  if (objekts.kind !== "sequential") {
+    return [];
+  }
+
+  // remember the collection's top for the next mint
+  const top = objekts.objekts.reduce((a, b) => (b.tokenId > a.tokenId ? b : a));
+  const serial = serials.get(top.tokenId) ?? top.serial;
+  if (serial > 0) {
+    tops.set(collection.id, { tokenId: top.tokenId, serial });
+  } else {
+    tops.delete(collection.id);
+  }
+
+  // stored objekts whose serial changed, such as every one above a late mint
+  const stored = new Set(rows.map((row) => row.token_id));
+  return updates.filter((update) => stored.has(update.tokenId));
+}
+
+/**
+ * Write the changed serials of stored objekts. Goes through the store so a
+ * hot-block rollback restores them, and sets them on the chunk's own
+ * instances too, since its upsert would otherwise write the old serials
+ * back. Rows are written in token-id order, the order apps/schedules writes
+ * serials in, so the two lock overlapping rows in the same order.
+ */
+async function renumberStored(
+  ctx: ProcessorContext<Store>,
+  updates: readonly SerialUpdate[],
+  buffered: ReadonlyMap<string, Objekt>,
+) {
+  if (updates.length === 0) {
+    return;
+  }
+
+  const unbuffered = updates
+    .map((update) => String(update.tokenId))
+    .filter((id) => !buffered.has(id));
+  const loaded = new Map(
+    (unbuffered.length === 0
+      ? []
+      : await ctx.store.find(Objekt, { where: { id: In(unbuffered) } })
+    ).map((objekt) => [objekt.id, objekt]),
+  );
+  for (const update of updates) {
+    const id = String(update.tokenId);
+    const objekt = buffered.get(id) ?? loaded.get(id);
+    if (objekt !== undefined) {
+      objekt.serial = update.serial;
     }
   }
+  await ctx.store.upsert(
+    [...loaded.values()].sort((a, b) => Number(a.id) - Number(b.id)),
+  );
+  ctx.log.info(`Renumbered ${updates.length} stored objekts`);
 }
 
 /**
@@ -442,6 +497,7 @@ export function startSerialBatch(ctx: ProcessorContext<Store>) {
 export async function numberNewObjekts(
   ctx: ProcessorContext<Store>,
   created: readonly { objekt: Objekt; collection: Collection }[],
+  buffered: ReadonlyMap<string, Objekt>,
 ) {
   const em = manager(ctx);
 
@@ -483,6 +539,7 @@ export async function numberNewObjekts(
       .map(({ collection }) => collection.id),
   );
 
+  const shifted: SerialUpdate[] = [];
   for (const { collection, objekts } of byCollection.values()) {
     // only objekts minted after the cutoff need a serial
     const minted = objekts
@@ -506,13 +563,17 @@ export async function numberNewObjekts(
     }
 
     // everything else is estimated from the whole collection
-    await estimateNewObjekts(
-      em,
-      collection,
-      minted,
-      created
-        .filter((entry) => entry.collection.id !== collection.id)
-        .map((entry) => Number(entry.objekt.id)),
+    shifted.push(
+      ...(await estimateNewObjekts(
+        em,
+        collection,
+        minted,
+        created
+          .filter((entry) => entry.collection.id !== collection.id)
+          .map((entry) => Number(entry.objekt.id)),
+      )),
     );
   }
+
+  await renumberStored(ctx, shifted, buffered);
 }

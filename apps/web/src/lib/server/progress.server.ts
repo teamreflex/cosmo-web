@@ -1,8 +1,8 @@
 import { indexer } from "@/lib/server/db/indexer";
 import type { Collection } from "@/lib/server/db/indexer/schema";
 import {
+  collectionOwners,
   collections,
-  objekts,
   progressLeaderboard,
 } from "@/lib/server/db/indexer/schema";
 import type { ValidOnlineType } from "@apollo/cosmo/types/common";
@@ -40,31 +40,26 @@ export async function fetchTotal({
 
 /**
  * Fetch unique collections the user owns for given member.
+ * collection_owner excludes SPIN, whose progress isn't supported.
  */
 export async function fetchProgress(address: string, member: string) {
   return await indexer
-    // ensure we only count each collection once
-    .selectDistinctOn([objekts.collectionId], {
+    .select({
       slug: collections.slug,
-      owner: objekts.owner,
-      collectionId: objekts.collectionId,
+      owner: collectionOwners.owner,
+      collectionId: collectionOwners.collectionId,
       member: collections.member,
       season: collections.season,
       class: collections.class,
       onOffline: collections.onOffline,
       unobtainable: collections.unobtainable,
     })
-    .from(objekts)
-    .innerJoin(collections, eq(objekts.collectionId, collections.id))
+    .from(collectionOwners)
+    .innerJoin(collections, eq(collectionOwners.collectionId, collections.id))
     .where(
-      and(
-        // only operate on objekts the address owns
-        eq(objekts.owner, address),
-        // only operate on objekts of the given member
-        eq(collections.member, member),
-      ),
+      and(eq(collectionOwners.owner, address), eq(collections.member, member)),
     )
-    .orderBy(objekts.collectionId)
+    .orderBy(collectionOwners.collectionId)
     .comment({ fn: "fetchProgress" });
 }
 
