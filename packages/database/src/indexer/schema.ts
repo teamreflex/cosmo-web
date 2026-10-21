@@ -173,7 +173,10 @@ export const collectionOwners = pgTable(
     owner: text("owner").notNull(),
     copies: integer("copies").notNull(),
   },
-  (t) => [primaryKey({ columns: [t.collectionId, t.owner] })],
+  (t) => [
+    primaryKey({ columns: [t.collectionId, t.owner] }),
+    index("idx_collection_owner_progress").on(t.owner, t.collectionId),
+  ],
 );
 
 /**
