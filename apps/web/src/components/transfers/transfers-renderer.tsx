@@ -145,6 +145,7 @@ function Transfers({ address, filters }: TransfersProps) {
           status={query.status}
           hasNextPage={query.hasNextPage}
           isFetchingNextPage={query.isFetchingNextPage}
+          isFetchNextPageError={query.isFetchNextPageError}
           fetchNextPage={query.fetchNextPage}
         />
       </Portal>

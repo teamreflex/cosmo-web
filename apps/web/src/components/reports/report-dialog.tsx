@@ -126,16 +126,8 @@ export function ReportFormDialog<Reason extends StoredReportReason>({
   const [reason, setReason] = useState<Reason>(reasons[0]);
   const form = useForm({
     resolver: standardSchemaResolver(z.object({ note: reportNoteSchema })),
-    defaultValues: { note: undefined },
+    defaultValues: { note: "" },
   });
-
-  function handleOpenChange(next: boolean) {
-    onOpenChange(next);
-    if (!next) {
-      form.reset();
-      setReason(reasons[0]);
-    }
-  }
 
   const reasonItems = reasons.map((reason) => ({
     value: reason,
@@ -143,7 +135,16 @@ export function ReportFormDialog<Reason extends StoredReportReason>({
   }));
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+      // however it closed, the next report starts empty
+      onOpenChangeComplete={(next) => {
+        if (next) return;
+        form.reset();
+        setReason(reasons[0]);
+      }}
+    >
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>

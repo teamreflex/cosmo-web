@@ -247,7 +247,7 @@ export function normalizeFeedArtists(selectedArtists: readonly string[]) {
 
 /**
  * How many feed filter columns narrow either side, for the phone's
- * "Filters (n)" button. The type picker stays outside the drawer.
+ * "Filters (n)" button.
  */
 export function countActiveListingFilters(search: ListingFeedSearch) {
   const { offering, lookingFor } = normalizeListingFeedFilters(search).filters;

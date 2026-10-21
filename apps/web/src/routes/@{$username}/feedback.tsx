@@ -115,6 +115,7 @@ function RouteComponent() {
                   account
                     ? {
                         userId: account.user.id,
+                        address: account.cosmo?.address ?? null,
                         canRemove: hasPermission({ feedback: ["remove-any"] }),
                       }
                     : null

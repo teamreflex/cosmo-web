@@ -5,6 +5,7 @@ import type {
   ListingInput,
   listingInputSchema,
 } from "@apollo/trades/listing";
+import { collapseWholeGroup, MAX_RANGE_VALUES } from "@apollo/trades/range";
 import type { z } from "zod";
 import type { cosmoSchema } from "./parsers";
 import type { TradeListing } from "./trade-listings";
@@ -27,8 +28,7 @@ export type RangeFormFilter = Extract<
  * Whether the composer posts a new listing or replaces an open one's terms.
  */
 export type ComposerMode =
-  | { kind: "create" }
-  | { kind: "edit"; listing: TradeListing };
+  { kind: "create" } | { kind: "edit"; listing: TradeListing };
 
 export type ListingSubmission =
   | { kind: "create"; data: ListingInput }
@@ -65,15 +65,26 @@ export function listingToFormValues(
 
 /**
  * What the composer sends once the schema has checked its values: new
- * terms, or the same terms for the listing being edited.
+ * terms, or the same terms for the listing being edited. A range row
+ * naming one artist's whole roster goes as that artist (collapseWholeGroup),
+ * after the picking, so picking more members afterwards never runs into it.
  */
 export function formValuesToInput(
   values: ListingInput,
   mode: ComposerMode,
+  rosters: ReadonlyMap<string, readonly string[]>,
 ): ListingSubmission {
+  const terms = {
+    ...values,
+    wants: values.wants.map((want) =>
+      want.kind === "range"
+        ? { ...want, filter: collapseWholeGroup(want.filter, rosters) }
+        : want,
+    ),
+  };
   return mode.kind === "create"
-    ? { kind: "create", data: values }
-    : { kind: "edit", data: { ...values, listingId: mode.listing.id } };
+    ? { kind: "create", data: terms }
+    : { kind: "edit", data: { ...terms, listingId: mode.listing.id } };
 }
 
 type ChipFilters = Pick<
@@ -125,24 +136,36 @@ export function rangeIsNarrowed(filter: RangeFormFilter) {
 }
 
 /**
+ * Whether a column of a range row holds more values than the schema takes.
+ */
+export function rangeOverCap(filter: RangeFormFilter) {
+  return Object.values(filter).some(
+    (values) => values.length > MAX_RANGE_VALUES,
+  );
+}
+
+/**
  * Why the composer holds Post and Save back, for what it can tell before
  * the server refuses it, in the order the form reads. `refused` counts the
  * offered objekts the poster can't offer right now. `rangeMatches` holds
  * how many collections the range rows cover, where known: a range that
  * covers none can't be posted, and one still being counted doesn't hold
- * Post back.
+ * Post back. `rangesRepeat` holds when two range rows cover the same
+ * collections.
  */
 export function composerBlock({
   offered,
   refused,
   wants,
   rangeMatches,
+  rangesRepeat,
   note,
 }: {
   offered: number;
   refused: number;
   wants: ListingFormValues["wants"];
   rangeMatches: readonly (number | undefined)[];
+  rangesRepeat: boolean;
   note: string;
 }) {
   if (offered === 0) return "offered";
@@ -153,7 +176,13 @@ export function composerBlock({
   ) {
     return "range";
   }
+  if (
+    wants.some((want) => want.kind === "range" && rangeOverCap(want.filter))
+  ) {
+    return "range_too_many";
+  }
   if (rangeMatches.includes(0)) return "range_empty";
+  if (rangesRepeat) return "range_repeated";
   if (note.trim().length > MAX_NOTE_LENGTH) return "note";
   return null;
 }

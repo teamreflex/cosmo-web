@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
+  holdsAll,
   pickSerials,
   type SerialOwnership,
   type SerialPick,
@@ -187,5 +188,23 @@ describe("pickSerials (UNIT-10)", () => {
         new Map(),
       ),
     ).toEqual({ [X]: { tokenId: 10, serial: 3 } });
+  });
+});
+
+describe("holdsAll", () => {
+  const states = new Map([found(1, 10), found(2, 20)]);
+
+  test("holds every token it owns and can transfer, whatever the address's case", () => {
+    expect(holdsAll([1, 2], states, ME.toUpperCase())).toBe(true);
+  });
+
+  test("a token gone elsewhere, untransferable or unknown breaks it", () => {
+    expect(holdsAll([1], new Map([found(1, 10, { owner: OTHER })]), ME)).toBe(
+      false,
+    );
+    expect(
+      holdsAll([1], new Map([found(1, 10, { transferable: false })]), ME),
+    ).toBe(false);
+    expect(holdsAll([1, 3], states, ME)).toBe(false);
   });
 });

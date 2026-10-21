@@ -15,6 +15,7 @@ import type { Role } from "@apollo/auth";
 import { userChangeRefusal } from "@apollo/auth/guard";
 import type { UserChange, UserChangeRefusal } from "@apollo/auth/guard";
 import { tradeOffers, user } from "@apollo/database/web/schema";
+import { liveTradeStatuses } from "@apollo/database/web/types";
 import { transition } from "@apollo/trades/lifecycle";
 import { and, asc, eq, or } from "drizzle-orm";
 
@@ -127,7 +128,9 @@ export async function guardUserChange(
  * hold under a dispute the ban files for each, removes their open listings
  * and closes their pending offers, so a banned user never has a live trade
  * that isn't with staff. The user and every counterparty to tell are locked
- * first, in id order. Returns when the ban ends and the disputed trades' ids.
+ * first, in id order. Refuses with `ban_trade_party` while the acting admin
+ * has a live trade with the user. Returns when the ban ends and the disputed
+ * trades' ids.
  */
 export async function banAndSweep(
   tx: WebTx,
@@ -177,6 +180,23 @@ export async function banAndSweep(
     .filter((id) => id !== null && !users.some((row) => row.id === id));
   if (late.length > 0) {
     users.push(...(await lockParties(tx, late, "no key update")));
+  }
+
+  // a ban would put the admin's own trade on hold under a dispute they filed
+  if (
+    await tx.query.tradeOffers.findFirst({
+      where: {
+        kind: "trade",
+        status: { in: [...liveTradeStatuses] },
+        OR: [
+          { fromUserId: userId, toUserId: staffId },
+          { fromUserId: staffId, toUserId: userId },
+        ],
+      },
+      columns: { id: true },
+    })
+  ) {
+    throw new ExpectedError("ban_trade_party");
   }
 
   const banExpires =

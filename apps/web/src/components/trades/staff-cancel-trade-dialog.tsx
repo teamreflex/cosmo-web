@@ -22,10 +22,12 @@ import {
 import StaffNoteField from "./staff-note-field";
 
 // an undisputed trade has no report saying why, so a staff cancel always gives one
-const staffCancelSchema = staffTradeInputSchema.refine(
-  (input) => input.note !== null,
-  { path: ["note"], message: "Tell both parties why the trade is cancelled." },
-);
+const staffCancelSchema = staffTradeInputSchema
+  .pick({ note: true })
+  .refine((input) => input.note !== null, {
+    path: ["note"],
+    error: () => m.trade_page_staff_cancel_note_required(),
+  });
 
 type Props = {
   tradeId: string;
@@ -53,7 +55,7 @@ export default function StaffCancelTradeDialog({
 
   const form = useForm({
     resolver: standardSchemaResolver(staffCancelSchema),
-    defaultValues: { tradeId, reportId, note: null },
+    defaultValues: { note: null },
   });
 
   const mutation = useMutation({
@@ -99,7 +101,10 @@ export default function StaffCancelTradeDialog({
           </DialogDescription>
         </DialogHeader>
         <form
-          onSubmit={form.handleSubmit((data) => mutation.mutate({ data }))}
+          // the report is read on submit, so a dispute opened meanwhile keeps the note
+          onSubmit={form.handleSubmit(({ note }) =>
+            mutation.mutate({ data: { tradeId, reportId, note } }),
+          )}
           className="flex min-w-0 flex-col gap-4"
         >
           <Controller

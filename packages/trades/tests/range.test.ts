@@ -1,5 +1,11 @@
 import { describe, expect, test } from "bun:test";
-import { matchesRange, rangeFilterSchema } from "../src/range";
+import {
+  collapseWholeGroup,
+  matchesRange,
+  MAX_RANGE_VALUES,
+  type RangeFilter,
+  rangeFilterSchema,
+} from "../src/range";
 
 describe("rangeFilterSchema", () => {
   test("defaults missing columns to any value", () => {
@@ -42,7 +48,9 @@ describe("rangeFilterSchema", () => {
     ["an Arabic letter mark in a member", { member: ["Hee\u061CJin"] }],
     [
       "too many values",
-      { member: Array.from({ length: 13 }, (_, i) => `m${i}`) },
+      {
+        member: Array.from({ length: MAX_RANGE_VALUES + 1 }, (_, i) => `m${i}`),
+      },
     ],
   ])("rejects %s", (_, input) => {
     expect(rangeFilterSchema.safeParse(input).success).toBe(false);
@@ -75,5 +83,47 @@ describe("matchesRange", () => {
   test("compares values verbatim", () => {
     const members = rangeFilterSchema.parse({ member: ["heejin"] });
     expect(matchesRange(members, heejin)).toBe(false);
+  });
+});
+
+describe("collapseWholeGroup", () => {
+  const artms = ["HeeJin", "HaSeul", "KimLip", "JinSoul", "Choerry"];
+  const rosters = new Map([
+    ["artms", artms],
+    ["triples", ["SeoYeon", "HyeRin", "JiWoo"]],
+  ]);
+  const filter = (columns: Partial<RangeFilter>) =>
+    rangeFilterSchema.parse(columns);
+
+  test("stores one artist's whole roster as that artist", () => {
+    expect(
+      collapseWholeGroup(filter({ member: [...artms].reverse() }), rosters),
+    ).toEqual(filter({ artist: ["artms"] }));
+  });
+
+  test("collapses under the artist already chosen, keeping other columns", () => {
+    expect(
+      collapseWholeGroup(
+        filter({ artist: ["artms"], member: artms, season: ["Atom01"] }),
+        rosters,
+      ),
+    ).toEqual(filter({ artist: ["artms"], season: ["Atom01"] }));
+  });
+
+  test.each([
+    ["a whole group plus another's member", [...artms, "SeoYeon"]],
+    ["part of a group", artms.slice(1)],
+    ["two whole groups", [...artms, "SeoYeon", "HyeRin", "JiWoo"]],
+  ])(
+    "keeps %s as members, which an artist would narrow to nothing",
+    (_, member) => {
+      const kept = filter({ member });
+      expect(collapseWholeGroup(kept, rosters)).toEqual(kept);
+    },
+  );
+
+  test("never collapses into a different artist than the one chosen", () => {
+    const kept = filter({ artist: ["triples"], member: artms });
+    expect(collapseWholeGroup(kept, rosters)).toEqual(kept);
   });
 });

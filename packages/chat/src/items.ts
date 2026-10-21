@@ -74,6 +74,11 @@ const KnownTradeEvent = Schema.Union([
     reportId: Schema.String,
   }),
   Schema.Struct({
+    type: Schema.Literal("disputed"),
+    by: Schema.Literal("deadline"),
+    reportId: Schema.String,
+  }),
+  Schema.Struct({
     type: Schema.Literal("deadline_extended"),
     deadlineAt: Schema.String,
     note: StaffNote,

@@ -291,11 +291,7 @@ export function OfferEndedAlert({
         ({ tokenId }) => tokenId === stale?.tokenId,
       );
       return (
-        <Alert
-          variant="destructive"
-          // the destructive token is just under 4.5:1 on the light card
-          className="text-red-700 *:data-[slot=alert-description]:text-red-700 dark:text-destructive dark:*:data-[slot=alert-description]:text-destructive"
-        >
+        <Alert variant="destructive">
           <IconExchangeOff />
           <AlertTitle>
             {item === undefined

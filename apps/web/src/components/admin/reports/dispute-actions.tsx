@@ -1,6 +1,15 @@
 import Countdown, { Ticker } from "@/components/misc/countdown";
 import StaffNoteField from "@/components/trades/staff-note-field";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Timestamp } from "@/components/ui/timestamp";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -25,7 +34,7 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useId } from "react";
+import { useId, useState } from "react";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import type * as z from "zod";
@@ -46,14 +55,16 @@ type Props = {
 
 /**
  * Settles a disputed trade, which also resolves its report: extend its
- * deadline, complete it or cancel it, with an optional note both parties
- * read on its timeline. Each action names this report, so it is refused if
- * the trade has moved on since the detail loaded.
+ * deadline (not while a party is banned), complete it once confirmed, or
+ * cancel it, with an optional note both parties read on its timeline. Each
+ * action names this report, so it is refused if the trade has moved on since
+ * the detail loaded.
  */
 export default function DisputeActions({ report, trade }: Props) {
   const hasPermission = useHasPermission();
   const queryClient = useQueryClient();
   const hoursLabelId = useId();
+  const [confirming, setConfirming] = useState(false);
 
   const form = useForm({
     resolver: standardSchemaResolver(staffExtendTradeInputSchema),
@@ -83,7 +94,10 @@ export default function DisputeActions({ report, trade }: Props) {
           return $staffCancelTrade({ data });
       }
     },
-    onSuccess: (done) => toast.success(doneMessages[done]()),
+    onSuccess: (done) => {
+      toast.success(doneMessages[done]());
+      setConfirming(false);
+    },
     // the note stays for another try
     onError: (error) => toast.error(formatError(error)),
     onSettled: () =>
@@ -102,6 +116,13 @@ export default function DisputeActions({ report, trade }: Props) {
   }
 
   const { deadlineAt, dispute, listingId } = view;
+  // a banned party can't sign in to finish the trade, so the server refuses an extend
+  const partyBanned =
+    trade.from?.banActive === true || trade.to?.banActive === true;
+  const completeHint =
+    listingId === null
+      ? m.admin_dispute_complete_hint_offer()
+      : m.admin_dispute_complete_hint();
 
   function run(action: DisputeAction) {
     return form.handleSubmit((input) => mutation.mutate({ action, input }));
@@ -130,7 +151,12 @@ export default function DisputeActions({ report, trade }: Props) {
         )}
       />
 
-      {canSettle && (
+      {canSettle && partyBanned && (
+        <p className="text-xs text-muted-foreground">
+          {m.admin_dispute_extend_banned()}
+        </p>
+      )}
+      {canSettle && !partyBanned && (
         <div className="flex flex-col gap-2.5 rounded-md border bg-card p-3">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
             <span id={hoursLabelId} className="text-sm font-medium">
@@ -223,17 +249,67 @@ export default function DisputeActions({ report, trade }: Props) {
               variant="outline"
               size="sm"
               className="max-md:h-10"
-              onClick={run("complete")}
+              onClick={() => setConfirming(true)}
               disabled={mutation.isPending}
             >
-              <span>{m.admin_dispute_complete()}</span>
-              {spinner("complete")}
+              {m.admin_dispute_complete()}
             </Button>
-            <p className="text-xs text-muted-foreground">
-              {listingId === null
-                ? m.admin_dispute_complete_hint_offer()
-                : m.admin_dispute_complete_hint()}
-            </p>
+            <p className="text-xs text-muted-foreground">{completeHint}</p>
+            <Dialog
+              open={confirming}
+              // a completion can't be called back, so the dialog waits for its answer
+              onOpenChange={(next) => {
+                if (!mutation.isPending) setConfirming(next);
+              }}
+            >
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{m.admin_dispute_complete_title()}</DialogTitle>
+                  <DialogDescription>
+                    {completeHint} {m.trade_page_staff_cancel_notify()}
+                  </DialogDescription>
+                </DialogHeader>
+                <form
+                  onSubmit={run("complete")}
+                  className="flex min-w-0 flex-col gap-4"
+                >
+                  {/* the same note as above, so it can be checked before completing */}
+                  <Controller
+                    control={form.control}
+                    name="note"
+                    render={({ field, fieldState }) => (
+                      <StaffNoteField
+                        field={field}
+                        fieldState={fieldState}
+                        optional
+                      />
+                    )}
+                  />
+                  <DialogFooter className="mt-2">
+                    <DialogClose
+                      disabled={mutation.isPending}
+                      render={
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="max-sm:h-11"
+                        />
+                      }
+                    >
+                      {m.common_back()}
+                    </DialogClose>
+                    <Button
+                      type="submit"
+                      className="max-sm:h-11"
+                      disabled={mutation.isPending}
+                    >
+                      <span>{m.admin_dispute_complete()}</span>
+                      {spinner("complete")}
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
           </div>
         )}
         {canCancel && (

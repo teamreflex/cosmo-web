@@ -1,8 +1,8 @@
 import { DatabaseIndexer } from "@/db-indexer";
 import { objekts } from "@apollo/database/indexer/schema";
 import {
-  lockedObjekts,
   notifications,
+  reports,
   tradeMessages,
   tradeOfferItems,
   tradeOffers,
@@ -21,11 +21,7 @@ import {
   TRADE_EVENTS_CHANNEL,
   tradeUpdateMessage,
 } from "@apollo/trades/events";
-import {
-  canOfferAll,
-  type TokenFlags,
-  type TokenOwnership,
-} from "@apollo/trades/holdings";
+import { holdsAll, type TokenOwnership } from "@apollo/trades/holdings";
 import {
   endedTradeColumns,
   type ListingEvent,
@@ -176,40 +172,6 @@ export const lockLiveTrades = Effect.fn("lockLiveTrades")(function* (
 });
 
 /**
- * Which of the tokens the address has locked, and which a live trade holds,
- * as the web app's readWebTokenFlags reads them.
- */
-const readTokenFlags = Effect.fn("readTokenFlags")(function* (
-  tx: WebTx,
-  address: string,
-  tokenIds: readonly number[],
-) {
-  const locked = yield* tx
-    .selectDistinct({ tokenId: lockedObjekts.tokenId })
-    .from(lockedObjekts)
-    .where(
-      and(
-        eq(lockedObjekts.address, address),
-        eq(lockedObjekts.locked, true),
-        inArray(lockedObjekts.tokenId, [...tokenIds]),
-      ),
-    );
-  const live = yield* tx
-    .select({ tokenId: tradeOfferItems.tokenId })
-    .from(tradeOfferItems)
-    .where(
-      and(
-        eq(tradeOfferItems.live, true),
-        inArray(tradeOfferItems.tokenId, [...tokenIds]),
-      ),
-    );
-  return {
-    locked: new Set(locked.map((row) => row.tokenId)),
-    live: new Set(live.flatMap((row) => row.tokenId ?? [])),
-  } satisfies TokenFlags;
-});
-
-/**
  * Reads who holds each of the trades' listing tokens in the indexer, for
  * endTrade to decide whether a released listing reopens. One read for the
  * whole batch, since the web transaction waits on it.
@@ -270,9 +232,10 @@ function tradeEnding(next: TradeState): TradeEnding | undefined {
  * Ends a locked trade that completed or timed out: its row, its items'
  * reservations, and each listing it came from (listingEventAfter), locked in
  * id order before their guarded updates. A released listing reopens when the
- * poster could offer every token again now that this trade no longer
- * reserves them; `tokens` is readListingTokens' read, which a fill doesn't
- * need. `locked` is lockUsers' map, which says whether the poster is banned.
+ * poster still holds every token and can transfer it (holdsAll), even one
+ * they locked meanwhile; `tokens` is readListingTokens' read, which a fill
+ * doesn't need. `locked` is lockUsers' map, which says whether the poster is
+ * banned.
  * Returns the trade's timeline event and both parties' notifications.
  */
 export const endTrade = Effect.fn("endTrade")(function* (
@@ -335,8 +298,8 @@ export const endTrade = Effect.fn("endTrade")(function* (
 
 /**
  * Moves each listing an ended trade came from to its outcome, locking them in
- * id order first. A release reopens a listing whose poster could offer every
- * token again, else breaks it.
+ * id order first. A release reopens a listing whose poster still holds every
+ * token and can transfer it, else breaks it.
  */
 const updateListings = Effect.fn("updateListings")(function* (
   tx: WebTx,
@@ -354,10 +317,7 @@ const updateListings = Effect.fn("updateListings")(function* (
   for (const [listingId, tokenIds] of listings) {
     let event = outcome;
     if (event === "release") {
-      const flags = yield* readTokenFlags(tx, fromAddress, tokenIds);
-      event = canOfferAll(tokenIds, tokens, fromAddress, flags)
-        ? "reopen"
-        : "break";
+      event = holdsAll(tokenIds, tokens, fromAddress) ? "reopen" : "break";
     }
 
     const { from, to } = listingTransition(event);
@@ -376,6 +336,63 @@ const updateListings = Effect.fn("updateListings")(function* (
         ),
       );
   }
+});
+
+/**
+ * Freezes a locked live trade whose deadline passed with something sent and
+ * something still owed under a dispute nobody filed, as transition(time_out)
+ * decided: a side may be out of pocket, so staff settle it. Files its
+ * `deadline_passed` report and returns the timeline event and both parties'
+ * notifications, which read as a pause for review.
+ */
+export const disputeAtDeadline = Effect.fn("disputeAtDeadline")(function* (
+  tx: WebTx,
+  trade: LiveTrade,
+) {
+  const [report] = yield* tx
+    .insert(reports)
+    .values({
+      reporterId: null,
+      reason: "deadline_passed",
+      targetType: "trade",
+      targetId: trade.id,
+    })
+    .returning({ id: reports.id });
+  if (!report) return yield* Effect.die("report insert returned no row");
+
+  const [disputed] = yield* tx
+    .update(tradeOffers)
+    .set({
+      status: "disputed",
+      disputeReportId: report.id,
+      updatedAt: bumpUpdatedAt,
+    })
+    .where(
+      and(
+        eq(tradeOffers.id, trade.id),
+        eq(tradeOffers.status, trade.state.status),
+      ),
+    )
+    .returning({ id: tradeOffers.id });
+  if (!disputed) {
+    return yield* Effect.die(`trade ${trade.id} changed under its lock`);
+  }
+
+  return {
+    event: {
+      tradeId: trade.id,
+      event: { type: "disputed", by: "deadline", reportId: report.id },
+    } satisfies TradeEventRow,
+    notifications: [trade.fromUserId, trade.toUserId].map(
+      (userId): TradeNotification => ({
+        type: "trade_disputed",
+        userId,
+        offerId: trade.id,
+        actorId: null,
+        tokenId: null,
+      }),
+    ),
+  };
 });
 
 // a timeline event bound for a trade's message stream

@@ -199,34 +199,6 @@
       "statementTarget": [
         "enum",
         "public",
-        "cosmo_link_reason"
-      ],
-      "writes": [
-        "s|enum|public.cosmo_link_reason"
-      ],
-      "reads": [
-        "n|sch|public"
-      ]
-    },
-    {
-      "statementType": "alter_enum",
-      "statementTarget": [
-        "enum",
-        "public",
-        "report_target_type"
-      ],
-      "writes": [
-        "s|enum|public.report_target_type"
-      ],
-      "reads": [
-        "n|sch|public"
-      ]
-    },
-    {
-      "statementType": "alter_enum",
-      "statementTarget": [
-        "enum",
-        "public",
         "notification_type"
       ],
       "writes": [
@@ -398,24 +370,6 @@
         "n|rel|public.user_feedback_stats_pkey"
       ],
       "reads": [
-        "n|sch|public"
-      ]
-    },
-    {
-      "statementType": "add_column",
-      "statementTarget": [
-        "column",
-        "public",
-        "cosmo_link_audit",
-        "staff_id"
-      ],
-      "writes": [
-        "s|col|public.cosmo_link_audit.staff_id",
-        "n|col|public.cosmo_link_audit.staff_id",
-        "e|col|public.cosmo_link_audit.staff_id"
-      ],
-      "reads": [
-        "n|tbl|public.cosmo_link_audit",
         "n|sch|public"
       ]
     },
@@ -1171,26 +1125,6 @@
       ]
     },
     {
-      "statementType": "add_check",
-      "statementTarget": [
-        "table",
-        "public",
-        "cosmo_link_audit"
-      ],
-      "writes": [
-        "s|ck|public.cosmo_link_audit.cosmo_link_audit_staff_chk",
-        "n|ck|public.cosmo_link_audit.cosmo_link_audit_staff_chk",
-        "e|ck|public.cosmo_link_audit.cosmo_link_audit_staff_chk",
-        "n|con|public.cosmo_link_audit.cosmo_link_audit_staff_chk"
-      ],
-      "reads": [
-        "n|tbl|public.cosmo_link_audit",
-        "n|sch|public",
-        "n|col|public.cosmo_link_audit.reason",
-        "n|col|public.cosmo_link_audit.staff_id"
-      ]
-    },
-    {
       "statementType": "alter_check",
       "statementTarget": [
         "table",
@@ -1449,22 +1383,6 @@
           "payment"
         ],
         "entityType": "enums"
-      }
-    },
-    {
-      "op": "create",
-      "row": {
-        "schema": "public",
-        "table": "cosmo_link_audit",
-        "name": "staff_id",
-        "type": "text",
-        "typeSchema": null,
-        "notNull": false,
-        "dimensions": 0,
-        "default": null,
-        "generated": null,
-        "identity": null,
-        "entityType": "columns"
       }
     },
     {
@@ -4088,16 +4006,6 @@
       "op": "create",
       "row": {
         "schema": "public",
-        "table": "cosmo_link_audit",
-        "name": "cosmo_link_audit_staff_chk",
-        "value": "(\"reason\" = 'staff-move') = (\"staff_id\" IS NOT NULL)",
-        "entityType": "checks"
-      }
-    },
-    {
-      "op": "create",
-      "row": {
-        "schema": "public",
         "table": "trade_feedback",
         "name": "trade_feedback_stars_chk",
         "value": "(\"communication\" IS NULL OR \"communication\" BETWEEN 1 AND 5) AND (\"speed\" IS NULL OR \"speed\" BETWEEN 1 AND 5)",
@@ -4302,30 +4210,6 @@
         "name": "user_feedback_stats_negative_chk",
         "value": "\"negative\" >= 0",
         "entityType": "checks"
-      }
-    },
-    {
-      "op": "alter",
-      "key": "enums\u0000[\"public\",\"cosmo_link_reason\"]",
-      "set": {
-        "values": [
-          "verified",
-          "account-deleted",
-          "staff-move"
-        ]
-      }
-    },
-    {
-      "op": "alter",
-      "key": "enums\u0000[\"public\",\"report_target_type\"]",
-      "set": {
-        "values": [
-          "user",
-          "message",
-          "listing",
-          "feedback",
-          "trade"
-        ]
       }
     },
     {

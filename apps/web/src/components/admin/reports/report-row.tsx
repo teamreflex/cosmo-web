@@ -7,7 +7,7 @@ import type { FeedbackRating } from "@apollo/database/web/types";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconChevronRight } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import { nameInput } from "./name-input";
+import { nameInput, reporterInput } from "./name-input";
 
 type Props = {
   row: AdminReportRow;
@@ -46,7 +46,7 @@ export default function ReportRow({ row }: Props) {
 }
 
 function RowSummary({ row }: Props) {
-  const reporter = nameInput(row.reporter, "row");
+  const reporter = reporterInput(row, "row");
   const { target } = row;
 
   switch (target.type) {

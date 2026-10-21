@@ -77,23 +77,7 @@ export function describeEvent(
         />
       );
     case "disputed":
-      if (event.by === "staff") {
-        return m.trade_page_event_disputed_staff({ appName });
-      }
-      return event.by === side ? (
-        m.trade_page_event_disputed_you({
-          reason: reportReasonLabel(event.reason),
-        })
-      ) : (
-        <ParaglideMessage
-          message={m.trade_page_event_disputed_them}
-          inputs={{
-            name: nameOf(event.by),
-            reason: reportReasonLabel(event.reason),
-          }}
-          markup={bold}
-        />
-      );
+      return describeDispute(trade, side, event);
     case "deadline_extended":
       return (
         <ParaglideMessage
@@ -328,6 +312,39 @@ function describeOfferEvent(
     }
     default:
       return event satisfies never;
+  }
+}
+
+/**
+ * A dispute: a party's names its reason, while a ban's or a passed
+ * deadline's reads as staff pausing the trade, never naming who was banned.
+ */
+function describeDispute(
+  trade: TradeView,
+  side: TradeSide | null,
+  event: Extract<TradeEvent, { type: "disputed" }>,
+) {
+  const appName = env.VITE_APP_NAME;
+  switch (event.by) {
+    case "staff":
+      return m.trade_page_event_disputed_staff({ appName });
+    case "deadline":
+      return m.trade_page_event_disputed_deadline({ appName });
+    default:
+      return event.by === side ? (
+        m.trade_page_event_disputed_you({
+          reason: reportReasonLabel(event.reason),
+        })
+      ) : (
+        <ParaglideMessage
+          message={m.trade_page_event_disputed_them}
+          inputs={{
+            name: partyName(trade.parties[event.by]),
+            reason: reportReasonLabel(event.reason),
+          }}
+          markup={bold}
+        />
+      );
   }
 }
 

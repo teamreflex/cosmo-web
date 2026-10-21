@@ -45,6 +45,13 @@ export function togglePick<T extends OfferPicks>(
   return { ...picks, [side]: picked };
 }
 
+// the picks without the copy a refusal named, so its card shows the refetched copy instead
+export function dropToken<T extends OfferPicks>(picks: T, tokenId: number): T {
+  const without = (side: OfferSide) =>
+    new Map([...picks[side]].filter(([, card]) => card.tokenId !== tokenId));
+  return { ...picks, give: without("give"), get: without("get") };
+}
+
 // the tokens an offer with these picks gives and asks for
 export function pickedTokenIds(picks: OfferPicks) {
   return {

@@ -160,7 +160,8 @@ export const $counterOffer = createServerFn({ method: "POST" })
  * Accept a pending offer the caller received, as a listing claim starts a
  * trade: it becomes accepted with the claim's 48-hour deadline, and both
  * sides' tokens become live. Refused when either side can no longer give
- * its tokens; only the caller's own are named. The sender is notified.
+ * its tokens, naming the token (and, for the caller's own, why). The sender
+ * is notified.
  */
 export const $acceptOffer = createServerFn({ method: "POST" })
   .validator(tradeIdInputSchema)

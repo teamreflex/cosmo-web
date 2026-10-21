@@ -1,6 +1,8 @@
 import StaffUserName from "@/components/admin/staff-user-name";
 import { m } from "@/i18n/messages";
+import { env } from "@/lib/env/client";
 import { type StaffUser, staffUserText } from "@/lib/universal/staff-users";
+import type { StoredReportReason } from "@apollo/database/web/types";
 import type { ReactNode } from "react";
 
 /**
@@ -25,4 +27,20 @@ export function nameInput(user: StaffUser | null, place: "row" | "detail") {
         <StaffUserName user={user} className="font-medium text-foreground" />
       ),
   };
+}
+
+/**
+ * Who opened a report, as nameInput names them. The dispute trade-timers
+ * opens when a deadline passes has no reporter, and reads as the app.
+ */
+export function reporterInput(
+  report: { reporter: StaffUser | null; reason: StoredReportReason },
+  place: "row" | "detail",
+) {
+  return report.reporter === null && report.reason === "deadline_passed"
+    ? {
+        text: env.VITE_APP_NAME,
+        markup: ({ children }: { children?: ReactNode }) => children,
+      }
+    : nameInput(report.reporter, place);
 }

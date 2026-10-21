@@ -5,6 +5,8 @@ import {
   type ClaimTokenRefusal,
   claimTokenRefusalSchema,
   isTradeErrorCode,
+  type OfferPartnerTokenRefusal,
+  offerPartnerTokenRefusalSchema,
 } from "@/lib/universal/errors/trades";
 import type { TokenRefusalReason } from "@/lib/universal/trade-listings";
 
@@ -53,6 +55,8 @@ export function formatTradeError(error: unknown): string | null {
       return m.trade_error_trade_deadline_passed();
     case "trade_own":
       return m.trade_error_trade_own();
+    case "trade_party_banned":
+      return m.trade_error_trade_party_banned();
     case "offer_own":
       return m.trade_error_offer_own();
     case "offer_unavailable":
@@ -73,10 +77,7 @@ export function formatTokenRefusal(
   reason: TokenRefusalReason,
   token: { objekt: string; serial: number },
 ) {
-  const inputs = {
-    objekt: token.objekt,
-    serial: token.serial.toString().padStart(5, "0"),
-  };
+  const inputs = tokenInputs(token);
 
   switch (reason) {
     case "not_owned":
@@ -90,6 +91,53 @@ export function formatTokenRefusal(
       });
     case "live":
       return m.trade_token_refusal_live(inputs);
+  }
+}
+
+/**
+ * A token on the other party's side of an offer that can't go ahead,
+ * without saying why.
+ */
+export function formatPartnerTokenRefusal(token: {
+  objekt: string;
+  serial: number;
+}) {
+  return m.trade_token_refusal_partner(tokenInputs(token));
+}
+
+function tokenInputs(token: { objekt: string; serial: number }) {
+  return {
+    objekt: token.objekt,
+    serial: token.serial.toString().padStart(5, "0"),
+  };
+}
+
+/**
+ * The picked token a refused offer names: the caller's own with why, or one
+ * on the other party's side without.
+ */
+export type OfferTokenRefusal =
+  | ({ side: "own" } & ClaimTokenRefusal)
+  | ({ side: "partner" } & OfferPartnerTokenRefusal);
+
+/**
+ * Reads the token a refused offer, counter or accept names, or null when it
+ * names none.
+ */
+// oxlint-disable-next-line anti-slop/no-unknown-parameters -- boundary parser; caught errors are genuinely unknown
+export function offerTokenRefusal(error: unknown): OfferTokenRefusal | null {
+  if (!(error instanceof ExpectedError)) return null;
+  switch (error.message) {
+    case "claim_token_unavailable": {
+      const parsed = claimTokenRefusalSchema.safeParse(error.data);
+      return parsed.success ? { side: "own", ...parsed.data } : null;
+    }
+    case "offer_unavailable": {
+      const parsed = offerPartnerTokenRefusalSchema.safeParse(error.data);
+      return parsed.success ? { side: "partner", ...parsed.data } : null;
+    }
+    default:
+      return null;
   }
 }
 

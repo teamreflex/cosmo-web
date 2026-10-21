@@ -6,13 +6,14 @@ import {
   tradeTimeFormat,
   txUrl,
 } from "@/lib/client/trades";
+import { env } from "@/lib/env/client";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type { TradeItemView, TradeView } from "@/lib/universal/trades";
 import { cn } from "@/lib/utils";
 import type { TradeSide } from "@apollo/database/web/types";
 import { otherSide } from "@apollo/trades/lifecycle";
 import type { TradeItemStatus } from "@apollo/trades/transfers";
-import { IconExternalLink } from "@tabler/icons-react";
+import { IconExternalLink, IconLock } from "@tabler/icons-react";
 import { type ReactNode, useState } from "react";
 import { tones } from "../trade-listings/state-tones";
 import { Badge } from "../ui/badge";
@@ -137,6 +138,18 @@ function TransferRow({
         {item.serial !== null && (
           <span className="shrink-0 font-mono text-xs text-muted-foreground tabular-nums">
             {formatSerial(item.serial)}
+          </span>
+        )}
+        {item.locked && (
+          <span
+            role="img"
+            aria-label={m.trade_page_item_locked({
+              appName: env.VITE_APP_NAME,
+            })}
+            title={m.trade_page_item_locked({ appName: env.VITE_APP_NAME })}
+            className="shrink-0 self-center text-muted-foreground"
+          >
+            <IconLock className="size-3.5" />
           </span>
         )}
         {when !== null && (

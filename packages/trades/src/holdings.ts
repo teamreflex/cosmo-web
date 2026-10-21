@@ -62,24 +62,25 @@ export function heldTokenRefusal(
 }
 
 /**
- * Whether the address could offer every token, which decides if a released
- * listing reopens or breaks. A token missing from `states` counts as not
- * owned.
+ * Whether the address still holds every token and can transfer it, which
+ * decides if a released listing reopens or breaks. A lock doesn't break it,
+ * since COSMO ignores Apollo's locks: the reopened listing shows as blocked
+ * to claimers until the poster unlocks the token. A token missing from
+ * `states` counts as not owned.
  */
-export function canOfferAll(
+export function holdsAll(
   tokenIds: readonly number[],
   states: ReadonlyMap<number, TokenOwnership>,
   address: string,
-  flags: TokenFlags,
 ) {
-  return tokenIds.every(
-    (tokenId) =>
-      tokenRefusal(
-        states.get(tokenId) ?? { kind: "missing", tokenId },
-        address,
-        flags,
-      ) === null,
-  );
+  return tokenIds.every((tokenId) => {
+    const state = states.get(tokenId);
+    return (
+      state?.kind === "found" &&
+      state.owner === addr(address) &&
+      state.transferable
+    );
+  });
 }
 
 /**

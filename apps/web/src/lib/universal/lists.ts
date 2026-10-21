@@ -24,6 +24,8 @@ export type TradePartner = {
   userId: string;
   username: string;
   user: PublicUser;
+  // whether they hold market access, without which they can't receive a direct offer
+  offerable: boolean;
   matches: PartnerListMatch[];
 };
 

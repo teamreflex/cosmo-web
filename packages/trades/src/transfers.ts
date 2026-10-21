@@ -82,20 +82,22 @@ function decideItem(row: ChainRow, item: ExpectedItem): TransferDecision {
       : { type: "breaks", offerId: item.offerId, reason: "untransferable" };
   }
 
+  // reaching the receiver delivers it, even when the sender routed it through another wallet
+  if (item.kind === "live" && sameAddress(row.to, item.to)) {
+    return {
+      type: "transferred",
+      itemId: item.itemId,
+      tradeId: item.tradeId,
+      at: row.timestamp,
+      hash: row.hash,
+    };
+  }
+
   // a transfer into the holder, or between others, changes nothing here
   if (!sameAddress(row.from, item.from)) return { type: "ignore" };
 
-  if (item.kind === "offered") {
-    return { type: "breaks", offerId: item.offerId, reason: "moved" };
-  }
-  return sameAddress(row.to, item.to)
-    ? {
-        type: "transferred",
-        itemId: item.itemId,
-        tradeId: item.tradeId,
-        at: row.timestamp,
-        hash: row.hash,
-      }
+  return item.kind === "offered"
+    ? { type: "breaks", offerId: item.offerId, reason: "moved" }
     : { type: "event", tradeId: item.tradeId, event: "token_moved" };
 }
 

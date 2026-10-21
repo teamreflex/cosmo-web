@@ -19,6 +19,7 @@ export const tradeErrorCodes = [
   "trade_cancel_started",
   "trade_deadline_passed",
   "trade_own",
+  "trade_party_banned",
   "offer_own",
   "offer_unavailable",
   "offer_expired",
@@ -44,3 +45,13 @@ export const claimTokenRefusalSchema = z.object({
 });
 
 export type ClaimTokenRefusal = z.output<typeof claimTokenRefusalSchema>;
+
+/**
+ * The data an `offer_unavailable` refusal carries when it was one of the
+ * other party's picked tokens: which one, never why.
+ */
+export const offerPartnerTokenRefusalSchema = z.object({ tokenId: z.int() });
+
+export type OfferPartnerTokenRefusal = z.output<
+  typeof offerPartnerTokenRefusalSchema
+>;

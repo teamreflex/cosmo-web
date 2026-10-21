@@ -9,22 +9,32 @@ import type { RpcClientError } from "effect/rpc/RpcClientError";
 
 /**
  * A trade's chat as the viewer reads it: messages and events oldest first,
- * with removals applied, and whether the stream is live. It is not live
- * until the history has arrived, nor while rejoining after a drop.
+ * with removals applied, and where the stream stands. It is `connecting`
+ * until the history first arrives, and after a drop `reconnecting` until
+ * it's back, either one `unreachable` once UNREACHABLE_AFTER joins in a row
+ * have failed.
  */
 export type Conversation = {
   items: readonly ChatItem[];
-  live: boolean;
+  connection:
+    | { state: "live" }
+    | { state: "connecting" | "reconnecting"; unreachable: boolean };
 };
 
 /**
  * What the Join stream feeds the conversation: its items, `CaughtUp`, and
- * `Down` while it rejoins after a drop.
+ * `Down` with the failed joins in a row while it rejoins.
  */
 export type ConversationUpdate =
-  ChatItem | { _tag: "CaughtUp" } | { _tag: "Down" };
+  ChatItem | { _tag: "CaughtUp" } | { _tag: "Down"; failures: number };
 
-export const noConversation: Conversation = { items: [], live: false };
+// about 3 s of failed joins, past a blip
+const UNREACHABLE_AFTER = 3;
+
+export const noConversation: Conversation = {
+  items: [],
+  connection: { state: "connecting", unreachable: false },
+};
 
 /**
  * Adds a chunk of the stream to the conversation in one step. A removal
@@ -35,14 +45,18 @@ export function applyUpdates(
   updates: readonly ConversationUpdate[],
 ): Conversation {
   const items = [...conversation.items];
-  let { live } = conversation;
+  let { connection } = conversation;
   for (const update of updates) {
     switch (update._tag) {
       case "CaughtUp":
-        live = true;
+        connection = { state: "live" };
         break;
       case "Down":
-        live = false;
+        connection = {
+          state:
+            connection.state === "connecting" ? "connecting" : "reconnecting",
+          unreachable: update.failures >= UNREACHABLE_AFTER,
+        };
         break;
       case "Event": {
         const { event } = update;
@@ -63,7 +77,7 @@ export function applyUpdates(
         break;
     }
   }
-  return { items, live };
+  return { items, connection };
 }
 
 // a Join that ended for a reason the viewer can rejoin after

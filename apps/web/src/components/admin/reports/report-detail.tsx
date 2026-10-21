@@ -1,6 +1,6 @@
 import StaffUserName from "@/components/admin/staff-user-name";
 import StatusPill from "@/components/objekt/detail/status-pill";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertTitle } from "@/components/ui/alert";
 import {
   Empty,
   EmptyHeader,
@@ -12,6 +12,7 @@ import { Timestamp } from "@/components/ui/timestamp";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { reportReasonLabel, reportTargetTypeLabel } from "@/lib/client/reports";
+import { env } from "@/lib/env/client";
 import { reportDetailQuery } from "@/lib/queries/reports";
 import { cn } from "@/lib/utils";
 import { IconEye, IconFlag, IconFlagOff } from "@tabler/icons-react";
@@ -105,9 +106,6 @@ function Detail({ id }: { id: string }) {
       <Alert variant="destructive" role="status">
         <IconEye />
         <AlertTitle>{m.admin_reports_staff_view_title()}</AlertTitle>
-        <AlertDescription>
-          {m.admin_reports_staff_view_description()}
-        </AlertDescription>
       </Alert>
 
       <article className="overflow-hidden rounded-md border bg-card">
@@ -126,7 +124,10 @@ function Detail({ id }: { id: string }) {
               : m.admin_reports_reported_by()}{" "}
             {report.reporter === null ? (
               <b className="font-semibold text-foreground">
-                {m.admin_reports_deleted_user()}
+                {/* the dispute a passed deadline opens has no reporter */}
+                {report.reason === "deadline_passed"
+                  ? env.VITE_APP_NAME
+                  : m.admin_reports_deleted_user()}
               </b>
             ) : (
               <StaffUserName

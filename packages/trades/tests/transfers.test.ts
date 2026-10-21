@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import {
   type ChainRow,
-  type ExpectedItem,
   decideTransfer,
+  type ExpectedItem,
   foldTransfers,
   itemStatus,
 } from "../src/transfers";
@@ -64,6 +64,18 @@ describe("decideTransfer: live trade items", () => {
         live,
       ]),
     ).toEqual([
+      {
+        type: "transferred",
+        itemId: 7,
+        tradeId: "trade-1",
+        at: AT,
+        hash: HASH,
+      },
+    ]);
+  });
+
+  test("a transfer to the receiver from another wallet marks the item transferred", () => {
+    expect(decideTransfer(transfer(OUTSIDER, TRADER_B), [live])).toEqual([
       {
         type: "transferred",
         itemId: 7,
@@ -276,14 +288,22 @@ describe("foldTransfers", () => {
     });
   });
 
-  test("only counts the pinned sender, even if the token reaches the receiver later (FOLD-02)", () => {
+  test("records a token routed through another wallet once it reaches the receiver (FOLD-02)", () => {
     expect(
       foldTransfers(
         [move(201, KAIRU, OUTSIDER, 1), move(201, OUTSIDER, TRADER_B, 2)],
         expected(owed(201)),
       ),
     ).toEqual({
-      trades: new Map([["trade-1", [{ type: "token_moved", tokenId: 201 }]]]),
+      trades: new Map([
+        [
+          "trade-1",
+          [
+            { type: "token_moved", tokenId: 201 },
+            { type: "transferred", itemId: 2010, at: at(2), hash: hash(2) },
+          ],
+        ],
+      ]),
       breaks: new Map(),
     });
   });

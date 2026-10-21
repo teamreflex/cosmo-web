@@ -74,6 +74,7 @@ export default function FeedbackEntries({
         status={query.status}
         hasNextPage={query.hasNextPage}
         isFetchingNextPage={query.isFetchingNextPage}
+        isFetchNextPageError={query.isFetchNextPageError}
         fetchNextPage={query.fetchNextPage}
       />
     </>

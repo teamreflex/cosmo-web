@@ -1,8 +1,11 @@
 import { validArtists, validOnlineTypes } from "@apollo/cosmo/types/common";
 import * as z from "zod";
 
-// the most values one column of a range can hold
-const MAX_RANGE_VALUES = 12;
+/**
+ * The most values one column of a range can hold: a bound on the request,
+ * above every artist's whole roster together and every season.
+ */
+export const MAX_RANGE_VALUES = 64;
 
 /**
  * Text bound for a Postgres text parameter, which can't carry a NUL byte,
@@ -77,6 +80,31 @@ export const rangeColumns = [
   "class",
   "on_offline",
 ] as const satisfies readonly (keyof RangeFilter)[];
+
+/**
+ * A range whose members are one artist's whole roster and nothing else,
+ * stored as that artist instead, so it reads as the group. Members of
+ * several artists stay members: columns are AND'd, so an artist beside
+ * another group's members would match nothing. `rosters` maps each
+ * artist, lowercase as a range stores it, to its members.
+ */
+export function collapseWholeGroup(
+  filter: RangeFilter,
+  rosters: ReadonlyMap<string, readonly string[]>,
+): RangeFilter {
+  if (filter.member.length === 0 || filter.artist.length > 1) return filter;
+  const members = new Set(filter.member);
+  for (const [artist, roster] of rosters) {
+    if (filter.artist.length === 1 && filter.artist[0] !== artist) continue;
+    if (
+      roster.length === members.size &&
+      roster.every((name) => members.has(name))
+    ) {
+      return { ...filter, artist: [artist], member: [] };
+    }
+  }
+  return filter;
+}
 
 /**
  * The indexer values a listing copies for each objekt it offers or wants.

@@ -1,6 +1,7 @@
 import { authClient } from "@/lib/client/auth";
 import {
   applyUpdates,
+  type Conversation,
   type ConversationUpdate,
   noConversation,
   rejoinPlan,
@@ -88,14 +89,22 @@ export type ChatEnded = Unauthorized | ChatNotFound | StaffAccessRequired;
 
 /**
  * A trade's chat, ending for good only when the viewer can't read it; any
- * other end rejoins after the last item it saw, as rejoinPlan says.
+ * other end rejoins after the last item it saw, as rejoinPlan says. A
+ * refresh (Try again) keeps what has loaded and rejoins after it at once,
+ * unless the chat had ended.
  */
-export const conversationAtom = Atom.family((tradeId: string) =>
-  ChatClient.runtime.atom(
-    Stream.unwrap(
+export const conversationAtom = Atom.family((tradeId: string) => {
+  // what has loaded, which a refresh (Try again) rejoins after
+  let loaded: Conversation | null = null;
+  return ChatClient.runtime.atom(() => {
+    const start =
+      loaded === null
+        ? noConversation
+        : applyUpdates(loaded, [{ _tag: "Down", failures: 0 }]);
+    return Stream.unwrap(
       Effect.gen(function* () {
         const client = yield* ChatClient;
-        let afterId: number | undefined;
+        let afterId = start.items.at(-1)?.id;
         let failures = 0;
 
         const join = (): Stream.Stream<ConversationUpdate, ChatEnded> =>
@@ -129,20 +138,31 @@ export const conversationAtom = Atom.family((tradeId: string) =>
               ).pipe(Stream.concat(Stream.suspend(join)));
               return quiet
                 ? rejoin
-                : Stream.make({ _tag: "Down" } as const).pipe(
+                : Stream.make({ _tag: "Down", failures } as const).pipe(
                     Stream.concat(rejoin),
                   );
             }),
           );
 
         return join().pipe(
+          // an ended chat starts fresh on the next refresh
+          Stream.tapError(() =>
+            Effect.sync(() => {
+              loaded = null;
+            }),
+          ),
           Stream.chunks,
-          Stream.scan(() => noConversation, applyUpdates),
+          Stream.scan(() => start, applyUpdates),
+          Stream.tap((conversation) =>
+            Effect.sync(() => {
+              loaded = conversation;
+            }),
+          ),
         );
       }),
-    ),
-  ),
-);
+    );
+  });
+});
 
 // a message report's own copy of the message, as staff read it
 export const reportedMessageAtom = Atom.family((reportId: string) =>

@@ -22,10 +22,15 @@ export default function EventsList({
   filters,
   onHoverChange,
 }: EventsListProps) {
-  const { data, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useSuspenseInfiniteQuery(
-      paginatedEventsQuery({ artists: selectedArtists, filters }),
-    );
+  const {
+    data,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+    isFetchNextPageError,
+  } = useSuspenseInfiniteQuery(
+    paginatedEventsQuery({ artists: selectedArtists, filters }),
+  );
 
   const allEvents = data.pages.flatMap((page) => page.events);
 
@@ -55,6 +60,7 @@ export default function EventsList({
         status="success"
         hasNextPage={hasNextPage}
         isFetchingNextPage={isFetchingNextPage}
+        isFetchNextPageError={isFetchNextPageError}
         fetchNextPage={fetchNextPage}
       />
     </>

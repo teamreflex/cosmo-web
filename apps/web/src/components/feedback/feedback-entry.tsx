@@ -1,9 +1,9 @@
 import { m } from "@/i18n/messages";
-import { ratedRoleLabels } from "@/lib/client/feedback";
-import { formatCount } from "@/lib/client/trade-listings";
+import { formatScore, ratedRoleLabels } from "@/lib/client/feedback";
 import { partyName } from "@/lib/client/trades";
 import { feedbackKey } from "@/lib/queries/feedback";
 import type { FeedbackProfileEntry } from "@/lib/universal/feedback";
+import { isEqual } from "@apollo/util";
 import { IconDots } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -26,7 +26,12 @@ import RemoveFeedbackDialog from "./remove-feedback-dialog";
  * Who is reading the page: their user id, and whether they may remove
  * feedback. Null when signed out.
  */
-export type FeedbackViewer = { userId: string; canRemove: boolean } | null;
+export type FeedbackViewer = {
+  userId: string;
+  // the COSMO address they link, which a rating keeps after its party relinks
+  address: string | null;
+  canRemove: boolean;
+} | null;
 
 type Props = {
   entry: FeedbackProfileEntry;
@@ -53,14 +58,19 @@ export default function FeedbackEntry({
   const [removing, setRemoving] = useState(false);
   const queryClient = useQueryClient();
 
-  // a rating's rater can't report it, and neither party may remove it
+  /**
+   * A rating's rater can't report it, and neither party may remove it. The
+   * viewer's own address counts as the rated party too, which they still
+   * are after relinking it to a new account.
+   */
   const isRater = viewer !== null && viewer.userId === entry.rater.user?.id;
   const canReport = viewer !== null && !isRater;
   const canRemove =
     viewer !== null &&
     viewer.canRemove &&
     !isRater &&
-    viewer.userId !== entry.ratedUserId;
+    viewer.userId !== entry.ratedUserId &&
+    (viewer.address === null || !isEqual(viewer.address, address));
 
   return (
     <>
@@ -159,14 +169,17 @@ function EntryMenu({
  */
 function EntryMeta({ entry }: { entry: FeedbackProfileEntry }) {
   const { rater } = entry;
+  const score = rater.score === null ? null : formatScore(rater.score);
   return (
     <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs text-muted-foreground">
       <span>
         <PartyLink party={rater} className="font-medium text-foreground" />
-        {rater.score !== null && (
+        {score !== null && (
           <span className="tabular-nums">
             {" "}
-            {m.feedback_page_rater_score({ score: formatCount(rater.score) })}
+            {m.feedback_page_rater_score({
+              score: score.sign + score.digits,
+            })}
           </span>
         )}
       </span>

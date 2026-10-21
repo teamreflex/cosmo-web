@@ -15,6 +15,7 @@ import { Button } from "../ui/button";
 import { Spinner } from "../ui/spinner";
 import { OfferBar, OfferColumns, OfferColumnsSkeleton } from "./offer-picker";
 import {
+  dropToken,
   type OfferCard,
   type OfferPicks,
   type OfferSide,
@@ -85,6 +86,7 @@ export default function CounterOfferSheet({
     picks,
     sent: m.trade_page_counter_sent,
     onSent: () => onOpenChange(false),
+    onRefusedToken: (tokenId) => setPicks((prev) => dropToken(prev, tokenId)),
   });
 
   return (

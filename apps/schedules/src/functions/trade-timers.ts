@@ -1,4 +1,5 @@
 import {
+  disputeAtDeadline,
   endTrade,
   insertTradeEvents,
   insertTradeNotifications,
@@ -26,7 +27,8 @@ const BATCH_SIZE = 100;
 /**
  * Expire the pending offers whose 72 hours have passed on the database's
  * clock, then end the accepted trades whose deadline the drain's chain-time
- * watermark has passed, never the clock, timing each out or completing it.
+ * watermark has passed, never the clock, timing each out, completing it or,
+ * with something sent and something still owed, disputing it for staff.
  * Runs every minute so an offer or trade ends within a minute of its time.
  * The locking is explained in apps/schedules/CLAUDE.md.
  */
@@ -150,7 +152,14 @@ export const tradeTimersTask = {
           .orderBy(asc(tradeOffers.deadlineAt), asc(tradeOffers.id))
           .limit(BATCH_SIZE);
         if (due.length === 0) {
-          return { chainTime, lag, tradeIds: [], completed: 0, timedOut: 0 };
+          return {
+            chainTime,
+            lag,
+            tradeIds: [],
+            completed: 0,
+            disputed: 0,
+            timedOut: 0,
+          };
         }
 
         const locked = yield* lockUsers(
@@ -171,12 +180,20 @@ export const tradeTimersTask = {
         const notifications: TradeNotification[] = [];
         const events: TradeEventRow[] = [];
         let completed = 0;
+        let disputed = 0;
         for (const trade of trades) {
           const result = transition(trade.state, { type: "time_out" });
           if (!result.ok) {
             return yield* Effect.die(
               `time out refused on trade ${trade.id}: ${result.reason}`,
             );
+          }
+          if (result.trade.status === "disputed") {
+            const frozen = yield* disputeAtDeadline(tx, trade);
+            disputed++;
+            events.push(frozen.event);
+            notifications.push(...frozen.notifications);
+            continue;
           }
           const ended = yield* endTrade(
             tx,
@@ -197,7 +214,8 @@ export const tradeTimersTask = {
           lag,
           tradeIds: trades.map((trade) => trade.id),
           completed,
-          timedOut: trades.length - completed,
+          disputed,
+          timedOut: trades.length - completed - disputed,
         };
       }),
     );
@@ -205,7 +223,7 @@ export const tradeTimersTask = {
 
     yield* publishTradeUpdates(result.tradeIds);
     yield* Effect.logInfo(
-      `Timed out ${result.timedOut} trades and completed ${result.completed} at watermark ${result.chainTime.toISOString()} (${Math.round(result.lag / 1000)}s behind the clock)`,
+      `Timed out ${result.timedOut} trades, disputed ${result.disputed} and completed ${result.completed} at watermark ${result.chainTime.toISOString()} (${Math.round(result.lag / 1000)}s behind the clock)`,
     );
   }),
 } satisfies ScheduledTask;

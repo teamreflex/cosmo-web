@@ -7,7 +7,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/terms-privacy")({
   head: () =>
-    defineHead({ title: "Terms & Privacy", canonical: "/terms-privacy" }),
+    defineHead({ title: m.terms_title(), canonical: "/terms-privacy" }),
   component: TermsPrivacy,
 });
 
@@ -37,7 +37,7 @@ function TermsPrivacy() {
             <ul className="list-outside list-disc space-y-2 pl-5">
               <li>{m.terms_trading_matching({ appName })}</li>
               <li>{m.terms_trading_modhaus({ appName })}</li>
-              <li>{m.terms_trading_public()}</li>
+              <li>{m.terms_trading_public({ appName })}</li>
             </ul>
           </section>
 

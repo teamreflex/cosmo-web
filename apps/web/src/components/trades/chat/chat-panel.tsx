@@ -39,7 +39,10 @@ import { Timestamp } from "@/components/ui/timestamp";
 import { useHasPermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
 import { ChatClient, conversationAtom } from "@/lib/client/chat";
-import type { Conversation } from "@/lib/client/chat-conversation";
+import {
+  type Conversation,
+  noConversation,
+} from "@/lib/client/chat-conversation";
 import { accountName, formatCount } from "@/lib/client/trade-listings";
 import {
   chatDayFormat,
@@ -69,7 +72,10 @@ import { otherSide } from "@apollo/trades/lifecycle";
 import { CHAT_RETENTION_DAYS } from "@apollo/trades/timers";
 import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
-import { useMessageScrollerScrollable } from "@shadcn/react/message-scroller";
+import {
+  useMessageScroller,
+  useMessageScrollerScrollable,
+} from "@shadcn/react/message-scroller";
 import {
   IconArrowDown,
   IconDots,
@@ -130,6 +136,9 @@ export default function ChatPanel({
       ? hasPermission(staffMessaging)
       : trade.state.status === "accepted" || trade.state.status === "disputed";
   const failed = AsyncResult.isFailure(result);
+  const conversation = AsyncResult.isSuccess(result)
+    ? result.value
+    : noConversation;
   const refusal = failed
     ? Option.getOrUndefined(Cause.findErrorOption(result.cause))?._tag
     : undefined;
@@ -189,16 +198,24 @@ export default function ChatPanel({
       </header>
       {failed ? (
         <ChatEnded closed={refusal === "StaffAccessRequired"} onRetry={retry} />
-      ) : AsyncResult.isSuccess(result) &&
-        (result.value.live || result.value.items.length > 0) ? (
-        <Conversation
-          trade={trade}
-          side={side}
-          canSend={canSend}
-          conversation={result.value}
-        />
       ) : (
-        <ChatSkeleton />
+        <>
+          <ConnectionBanner
+            connection={conversation.connection}
+            onRetry={retry}
+          />
+          {conversation.connection.state !== "connecting" ||
+          conversation.items.length > 0 ? (
+            <Conversation
+              trade={trade}
+              side={side}
+              canSend={canSend}
+              items={conversation.items}
+            />
+          ) : (
+            <ChatSkeleton />
+          )}
+        </>
       )}
     </section>
   );
@@ -229,30 +246,66 @@ function useSignedOutCheck(refused: boolean) {
   }, [refused, queryClient, router]);
 }
 
+/**
+ * Where the stream stands while it isn't live: joining for the first time,
+ * rejoining after a drop, or unreachable after several failed joins, with a
+ * retry that rejoins at once.
+ */
+function ConnectionBanner({
+  connection,
+  onRetry,
+}: {
+  connection: Conversation["connection"];
+  onRetry: () => void;
+}) {
+  if (connection.state === "live") return null;
+  if (connection.unreachable) {
+    return (
+      <div
+        role="alert"
+        className="flex items-center gap-3 border-b border-border bg-destructive/10 px-4 py-2 text-xs text-red-800 dark:text-red-300"
+      >
+        <p className="flex-1">{m.chat_unreachable()}</p>
+        <Button variant="outline" size="xs" onClick={onRetry}>
+          {m.chat_try_again()}
+        </Button>
+      </div>
+    );
+  }
+  return connection.state === "connecting" ? (
+    <p
+      role="status"
+      className="border-b border-border bg-teal-500/10 px-4 py-2 text-xs text-teal-800 dark:text-teal-300"
+    >
+      {m.chat_connecting()}
+    </p>
+  ) : (
+    <p
+      role="status"
+      className="border-b border-border bg-amber-500/10 px-4 py-2 text-xs text-amber-800 dark:text-amber-300"
+    >
+      {m.chat_reconnecting()}
+    </p>
+  );
+}
+
 function Conversation({
   trade,
   side,
   canSend,
-  conversation: { items, live },
+  items,
 }: {
   trade: TradeView;
   side: TradeSide | null;
   canSend: boolean;
-  conversation: Conversation;
+  items: Conversation["items"];
 }) {
   const [reporting, setReporting] = useState<ChatMessage | null>(null);
   const rows = chatRows(items);
 
   return (
     <>
-      {!live && (
-        <p
-          role="status"
-          className="border-b border-border bg-amber-500/10 px-4 py-2 text-xs text-amber-800 dark:text-amber-300"
-        >
-          {m.chat_reconnecting()}
-        </p>
-      )}
+      {/* the composer scrolls to the viewer's own message once it's sent */}
       <MessageScrollerProvider autoScroll defaultScrollPosition="end">
         <MessageScroller className="min-h-0 flex-1">
           <MessageScrollerViewport>
@@ -284,12 +337,12 @@ function Conversation({
           </MessageScrollerViewport>
           <LatestButton items={items} side={side} />
         </MessageScroller>
+        {canSend ? (
+          <Composer tradeId={trade.id} staff={side === null} />
+        ) : (
+          <ReadOnlyNote trade={trade} side={side} />
+        )}
       </MessageScrollerProvider>
-      {canSend ? (
-        <Composer tradeId={trade.id} staff={side === null} />
-      ) : (
-        <ReadOnlyNote trade={trade} side={side} />
-      )}
       {side !== null && (
         <ReportMessageDialog
           message={reporting}
@@ -506,7 +559,7 @@ function MessageActions({
       >
         <IconDots />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="w-fit">
         <DropdownMenuItem
           onClick={async () => {
             if (await copy(body)) {
@@ -518,7 +571,7 @@ function MessageActions({
         </DropdownMenuItem>
         {reportable && (
           <DropdownMenuItem variant="destructive" onClick={onReport}>
-            {m.chat_report_message()}
+            {m.chat_report_submit()}
           </DropdownMenuItem>
         )}
       </DropdownMenuContent>
@@ -564,24 +617,30 @@ function LatestButton({
 const errorText = {
   too_long: () => m.chat_too_long({ max: formatCount(MAX_MESSAGE_LENGTH) }),
   rate_limited: m.chat_rate_limited,
+  read_only: m.chat_send_read_only,
+  closed_to_staff: m.chat_send_closed_to_staff,
   failed: m.chat_send_failed,
 };
+type SendFailure = Exclude<keyof typeof errorText, "too_long">;
+
+// the counter shows from 900 of the 1,000 characters
+const COUNTER_FROM = MAX_MESSAGE_LENGTH * 0.9;
 
 /**
  * Sends on Enter (Shift+Enter for a new line). The text stays until the
- * message is sent, and the counter shows as the limit nears. Staff are
- * reminded that both parties read what they write.
+ * message is sent, which then scrolls into view, and the counter shows as
+ * the limit nears. Staff are reminded that both parties read what they
+ * write.
  */
 function Composer({ tradeId, staff }: { tradeId: string; staff: boolean }) {
   const label = staff ? m.chat_composer_staff() : m.chat_composer_label();
   const id = useId();
   const queryClient = useQueryClient();
+  const { scrollToEnd } = useMessageScroller();
   const send = useAtomSet(ChatClient.mutation("Send"), { mode: "promiseExit" });
   const [text, setText] = useState("");
   const [pending, startTransition] = useTransition();
-  const [failure, setFailure] = useState<"rate_limited" | "failed" | null>(
-    null,
-  );
+  const [failure, setFailure] = useState<SendFailure | null>(null);
   const body = sanitizeMessage(text);
   const tooLong = body.length > MAX_MESSAGE_LENGTH;
   const error = tooLong ? "too_long" : failure;
@@ -595,16 +654,28 @@ function Composer({ tradeId, staff }: { tradeId: string; staff: boolean }) {
       if (Exit.isSuccess(exit)) {
         setText("");
         setFailure(null);
+        // at the end, the scroller follows the message in when it arrives
+        scrollToEnd();
         return;
       }
       const reason = Option.getOrUndefined(Cause.findErrorOption(exit.cause));
-      if (reason?._tag === "ChatReadOnly") {
-        // the trade ended meanwhile; the refetched page drops the composer
-        void queryClient.invalidateQueries({
-          queryKey: tradeQuery(tradeId).queryKey,
-        });
+      switch (reason?._tag) {
+        case "RateLimited":
+          setFailure("rate_limited");
+          return;
+        case "ChatReadOnly":
+          // the trade ended meanwhile; the refetched page drops the composer
+          void queryClient.invalidateQueries({
+            queryKey: tradeQuery(tradeId).queryKey,
+          });
+          setFailure("read_only");
+          return;
+        case "StaffAccessRequired":
+          setFailure("closed_to_staff");
+          return;
+        default:
+          setFailure("failed");
       }
-      setFailure(reason?._tag === "RateLimited" ? "rate_limited" : "failed");
     });
   }
 
@@ -644,17 +715,19 @@ function Composer({ tradeId, staff }: { tradeId: string; staff: boolean }) {
             onKeyDown={onKeyDown}
           />
           <InputGroupAddon align="block-end">
-            <InputGroupText
-              className={cn(
-                "self-end font-mono text-xxs tabular-nums",
-                tooLong && "text-destructive",
-              )}
-            >
-              {m.chat_length({
-                length: formatCount(body.length),
-                max: formatCount(MAX_MESSAGE_LENGTH),
-              })}
-            </InputGroupText>
+            {body.length >= COUNTER_FROM && (
+              <InputGroupText
+                className={cn(
+                  "self-end font-mono text-xxs tabular-nums",
+                  tooLong && "text-destructive",
+                )}
+              >
+                {m.chat_length({
+                  length: formatCount(body.length),
+                  max: formatCount(MAX_MESSAGE_LENGTH),
+                })}
+              </InputGroupText>
+            )}
             <InputGroupButton
               type="submit"
               size="icon-sm"

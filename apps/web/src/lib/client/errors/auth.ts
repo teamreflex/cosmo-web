@@ -34,6 +34,8 @@ export function formatAuthError(error: unknown): string | null {
       return m.auth_error_ban_self();
     case "self_demotion":
       return m.auth_error_demote_self();
+    case "ban_trade_party":
+      return m.auth_error_ban_trade_party();
     default:
       error.message satisfies never;
       return null;

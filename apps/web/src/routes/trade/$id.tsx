@@ -13,6 +13,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { requireMarketAccess } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
+import { env } from "@/lib/env/client";
 import { defineHead } from "@/lib/meta";
 import { currentAccountQuery } from "@/lib/queries/core";
 import { tradeQuery } from "@/lib/queries/trades";
@@ -88,7 +89,9 @@ function SignedOut() {
             <IconLogin2 />
           </EmptyMedia>
           <EmptyTitle>{m.trade_page_signed_out_title()}</EmptyTitle>
-          <EmptyDescription>{m.trade_page_signed_out_body()}</EmptyDescription>
+          <EmptyDescription>
+            {m.trade_page_signed_out_body({ appName: env.VITE_APP_NAME })}
+          </EmptyDescription>
         </EmptyHeader>
         <EmptyContent>
           <SignIn

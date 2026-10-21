@@ -4,12 +4,14 @@ import {
   endTrade,
   insertTradeEvent,
   notifyUsers,
+  refuseTrade,
   updateLockedTrade,
 } from "@/lib/server/trades/trade.server";
 import {
   staffExtendTradeInputSchema,
   staffTradeInputSchema,
 } from "@/lib/universal/schema/trades";
+import { isBanActive } from "@apollo/auth/guard";
 import { tradeMessages } from "@apollo/database/web/schema";
 import { extendedDeadline } from "@apollo/trades/timers";
 import { createServerFn } from "@tanstack/react-start";
@@ -75,7 +77,8 @@ export const $staffCancelTrade = createServerFn({ method: "POST" })
  * last frozen, plus the hours picked. It goes back to accepted without its
  * dispute report, which this resolves. A trade whose items all arrived while
  * disputed completes instead, recorded as a staff complete, which the
- * returned audit action tells the caller.
+ * returned audit action tells the caller. Otherwise it is refused while a
+ * party is banned.
  */
 export const $staffExtendTradeDeadline = createServerFn({ method: "POST" })
   .middleware([staffMiddleware({ trade: ["resolve-dispute"] })])
@@ -90,6 +93,10 @@ export const $staffExtendTradeDeadline = createServerFn({ method: "POST" })
         if (next.status === "completed") {
           await completeAsStaff(tx, trade, users, next, data.note);
           return { action: "trade:complete" };
+        }
+        // a banned party can't sign in to finish it, so staff complete or cancel it
+        if (users.some((user) => isBanActive(user))) {
+          refuseTrade("trade_party_banned");
         }
 
         const [frozen] = await tx

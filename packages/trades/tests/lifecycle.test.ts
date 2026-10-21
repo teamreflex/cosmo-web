@@ -1,23 +1,23 @@
 import {
   type ListingStatus,
+  listingStatuses,
   type TradeSide,
   type TradeStatus,
-  listingStatuses,
   tradeStatuses,
 } from "@apollo/database/web/types";
 import { describe, expect, test } from "bun:test";
 import {
   type ListingEvent,
-  type OfferEvent,
-  type TradeEvent,
-  type TradeItemState,
-  type TradeState,
   listingEventAfter,
   listingTransition,
   needsYou,
+  type OfferEvent,
   offerTransition,
   owingSides,
   partyAction,
+  type TradeEvent,
+  type TradeItemState,
+  type TradeState,
   tradeState,
   transition,
   transitionListing,
@@ -458,7 +458,7 @@ describe("transition: items", () => {
 });
 
 describe("transition: timing out", () => {
-  test("marks the side still owing tokens", () => {
+  test("disputes when one side sent and the other still owes (LIFE-10)", () => {
     // B sent 3 of 6, @Kairu sent theirs
     const items = [
       objekt("from", true),
@@ -468,29 +468,27 @@ describe("transition: timing out", () => {
     ];
     expect(transition(trade("accepted", items), { type: "time_out" })).toEqual({
       ok: true,
-      trade: { status: "timed_out", abandonedBy: ["to"], items },
+      trade: { status: "disputed", items },
     });
   });
 
-  test("marks the poster when only the poster owes (LIFE-10)", () => {
+  test("disputes when only the poster owes, after the claimer sent", () => {
     const items = [objekt("from", true), objekt("from"), objekt("to", true)];
-    expect(transition(trade("accepted", items), { type: "time_out" })).toEqual({
-      ok: true,
-      trade: { status: "timed_out", abandonedBy: ["from"], items },
-    });
+    expect(statusAfter(trade("accepted", items), { type: "time_out" })).toBe(
+      "disputed",
+    );
   });
 
-  test("marks both sides when each sent only part (LIFE-11)", () => {
+  test("disputes when each side sent only part (LIFE-11)", () => {
     const items = [
       objekt("from", true),
       objekt("from"),
       objekt("to"),
       objekt("to", true),
     ];
-    expect(transition(trade("accepted", items), { type: "time_out" })).toEqual({
-      ok: true,
-      trade: { status: "timed_out", abandonedBy: ["from", "to"], items },
-    });
+    expect(statusAfter(trade("accepted", items), { type: "time_out" })).toBe(
+      "disputed",
+    );
   });
 
   test("marks both sides when neither sent", () => {
@@ -501,12 +499,11 @@ describe("transition: timing out", () => {
     });
   });
 
-  test("marks a buyer who never marked paid", () => {
+  test("disputes a buyer who never marked paid once the objekt arrived", () => {
     const items = [objekt("from", true), payment("to")];
-    expect(transition(trade("accepted", items), { type: "time_out" })).toEqual({
-      ok: true,
-      trade: { status: "timed_out", abandonedBy: ["to"], items },
-    });
+    expect(statusAfter(trade("accepted", items), { type: "time_out" })).toBe(
+      "disputed",
+    );
   });
 
   test("completes when only the seller's confirmation is missing (LIFE-12)", () => {

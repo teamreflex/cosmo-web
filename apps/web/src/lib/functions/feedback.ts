@@ -40,6 +40,7 @@ import {
   ratedRole,
 } from "@apollo/trades/feedback";
 import { otherSide } from "@apollo/trades/lifecycle";
+import { isEqual } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
 import {
   and,
@@ -138,8 +139,8 @@ export const $leaveFeedback = createServerFn({ method: "POST" })
 
 /**
  * Remove a rating as a moderator, for good. A rating the caller left or
- * received is refused as their own; one that doesn't exist answers as not
- * found.
+ * received, by user id or by the COSMO address they link now, is refused
+ * as their own; one that doesn't exist answers as not found.
  */
 export const $removeFeedback = createServerFn({ method: "POST" })
   .middleware([staffMiddleware({ feedback: ["remove-any"] })])
@@ -154,10 +155,27 @@ export const $removeFeedback = createServerFn({ method: "POST" })
 
     const target = await db.query.tradeFeedback.findFirst({
       where: { id: data.feedbackId },
-      columns: { tradeId: true, fromUserId: true, toUserId: true },
+      columns: {
+        tradeId: true,
+        fromUserId: true,
+        toUserId: true,
+        fromAddress: true,
+        toAddress: true,
+      },
     });
     if (!target) refuseFeedback("feedback_not_found");
-    if (target.fromUserId === staffId || target.toUserId === staffId) {
+    const link = await db.query.cosmoAccounts.findFirst({
+      where: { userId: staffId },
+      columns: { address: true },
+    });
+    // by address too, which a rating keeps after its party's account is deleted and relinked
+    if (
+      target.fromUserId === staffId ||
+      target.toUserId === staffId ||
+      (link !== undefined &&
+        (isEqual(target.fromAddress, link.address) ||
+          isEqual(target.toAddress, link.address)))
+    ) {
       refuseTrade("trade_own");
     }
 

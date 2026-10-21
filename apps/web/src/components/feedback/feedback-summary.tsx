@@ -1,6 +1,6 @@
 import { m } from "@/i18n/messages";
 import { getLocale } from "@/i18n/runtime";
-import { percentStyle, ratingStyles } from "@/lib/client/feedback";
+import { formatScore, percentStyle, ratingStyles } from "@/lib/client/feedback";
 import { formatCount } from "@/lib/client/trade-listings";
 import {
   type FeedbackSummary as Summary,
@@ -23,15 +23,15 @@ const eyebrow =
  */
 export default function FeedbackSummary({ summary }: { summary: Summary }) {
   const locale = getLocale();
+  const score = formatScore(summary.score);
 
   return (
     <div className="flex flex-col gap-3.5 md:flex-row md:flex-wrap md:items-stretch">
       <Panel className="flex flex-col gap-1.5 p-4 md:flex-[1_1_240px] md:p-4.5">
         <span className={eyebrow}>{m.feedback_page_score()}</span>
         <span className="font-mono text-4xl leading-tight font-bold tabular-nums">
-          {/* a mono hyphen sits apart from the digits, so the sign takes the body font */}
-          {summary.score < 0 && <span className="font-sans">−</span>}
-          {formatCount(Math.abs(summary.score))}
+          <span className="font-sans">{score.sign}</span>
+          {score.digits}
         </span>
         {summary.percent === null ? (
           <span className="text-sm text-muted-foreground">

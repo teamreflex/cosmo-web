@@ -114,7 +114,10 @@ function TradeLink({ listing }: { listing: TradeListing }) {
 }
 
 function ClosedText({ listing, state }: Props) {
+  const { data: account } = useSuspenseQuery(currentAccountQuery);
   const poster = posterName(listing);
+  // the poster reads about their own listing in the second person
+  const own = account !== null && listing.poster?.id === account.user.id;
 
   switch (state.status) {
     case "filled":
@@ -138,13 +141,19 @@ function ClosedText({ listing, state }: Props) {
         />
       );
     case "withdrawn":
-      return m.listing_detail_closed_withdrawn({ poster });
+      return own
+        ? m.listing_detail_closed_withdrawn_own()
+        : m.listing_detail_closed_withdrawn({ poster });
     case "broken":
-      return m.listing_detail_closed_broken({ poster });
+      return own
+        ? m.listing_detail_closed_broken_own()
+        : m.listing_detail_closed_broken({ poster });
     case "removed":
       return m.listing_detail_closed_removed({ appName: env.VITE_APP_NAME });
     case "abandoned":
-      return m.listing_detail_closed_abandoned({ poster });
+      return own
+        ? m.listing_detail_closed_abandoned_own()
+        : m.listing_detail_closed_abandoned({ poster });
     default:
       return state satisfies never;
   }

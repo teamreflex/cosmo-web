@@ -1,3 +1,4 @@
+import { can, marketAccess, parseRole } from "@apollo/auth";
 import { isBanActive } from "@apollo/auth/guard";
 import {
   cosmoAccounts,
@@ -52,11 +53,11 @@ type OfferPreflight = {
 
 /**
  * The checks a send or a counter runs without a lock, from its sender's
- * side: not to themselves, a counterparty with a COSMO link and, for a
- * send, a discoverable have list paired with a discoverable want list (the
- * people Trade Matches shows), then who holds every token. The sender's own
- * token is named; anything on the counterparty's side is unavailable, never
- * why.
+ * side: not to themselves, a counterparty with market access and a COSMO
+ * link and, for a send, a discoverable have list paired with a discoverable
+ * want list (the people Trade Matches shows), then who holds every token.
+ * The sender's own token is named with why; a token on the counterparty's
+ * side is named as unavailable, never why.
  */
 export async function preflightOffer(
   actor: ListingActor,
@@ -65,12 +66,13 @@ export async function preflightOffer(
 ): Promise<OfferPreflight> {
   if (offer.toUserId === actor.userId) refuseTrade("offer_own");
 
-  // the counterparty's link, and for a send their trade pair, in one statement
+  // the counterparty's link and role, and for a send their trade pair, in one statement
   const h = alias(objektLists, "h");
   const w = alias(objektLists, "w");
   const [link] = await db
-    .select({ address: cosmoAccounts.address })
+    .select({ address: cosmoAccounts.address, role: user.role })
     .from(cosmoAccounts)
+    .innerJoin(user, eq(user.id, cosmoAccounts.userId))
     .where(
       and(
         eq(cosmoAccounts.userId, offer.toUserId),
@@ -85,7 +87,10 @@ export async function preflightOffer(
           : undefined,
       ),
     );
-  if (!link) refuseTrade("offer_unavailable");
+  // without market access they couldn't open the offer to answer it
+  if (!link || !can(parseRole(link.role), marketAccess)) {
+    refuseTrade("offer_unavailable");
+  }
 
   // ownership on the indexer; locks and live trades are read under the lock
   const tokens = await readIndexerTokens([...offer.give, ...offer.get]);
@@ -96,8 +101,10 @@ export async function preflightOffer(
   } satisfies TokenHoldings;
   const mine = firstRefusal(offer.give, unflagged, actor.address);
   if (mine) refuseToken(mine);
-  if (firstRefusal(offer.get, unflagged, link.address)) {
-    refuseTrade("offer_unavailable");
+  const theirs = firstRefusal(offer.get, unflagged, link.address);
+  if (theirs) {
+    // names the other party's copy but never why, so the page can drop it
+    throw new ExpectedError("offer_unavailable", { tokenId: theirs.tokenId });
   }
   return { ...offer, toAddress: link.address, tokens };
 }
@@ -146,17 +153,16 @@ export async function recheckOffer(
     fromAddress,
   );
   if (mine) refuseToken(mine);
-  if (
-    firstRefusal(
-      preflight.get,
-      {
-        states: preflight.tokens,
-        ...(await readWebTokenFlags(tx, toAddress, preflight.get)),
-      },
-      toAddress,
-    )
-  ) {
-    refuseTrade("offer_unavailable");
+  const theirs = firstRefusal(
+    preflight.get,
+    {
+      states: preflight.tokens,
+      ...(await readWebTokenFlags(tx, toAddress, preflight.get)),
+    },
+    toAddress,
+  );
+  if (theirs) {
+    throw new ExpectedError("offer_unavailable", { tokenId: theirs.tokenId });
   }
   return { fromAddress, toAddress, recipient };
 }

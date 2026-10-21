@@ -36,7 +36,10 @@ type Props = {
   /** the partner whose matches are open, and the copies picked from them */
   offer: ({ partner: TradePartner } & OfferPicks) | null;
   onExpand: (partner: TradePartner) => void;
-  /** null when the viewer can't make offers, which leaves the cards unpickable */
+  /**
+   * null when the viewer can't make offers, which leaves the cards
+   * unpickable, as they are for a partner who can't receive one
+   */
   onToggle: OfferSelection["onToggle"] | null;
 };
 
@@ -69,7 +72,7 @@ export default function ListMatchesContent({
             onExpand={() => onExpand(partner)}
           >
             {picks !== null &&
-              (onToggle === null ? (
+              (onToggle === null || !partner.offerable ? (
                 <PartnerMatches
                   listName={name}
                   partner={partner}

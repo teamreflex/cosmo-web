@@ -70,8 +70,7 @@ export type TransitionRefusal =
   | "no_such_item";
 
 export type TransitionResult =
-  | { ok: true; trade: TradeState }
-  | { ok: false; reason: TransitionRefusal };
+  { ok: true; trade: TradeState } | { ok: false; reason: TransitionRefusal };
 
 const refuse = (reason: TransitionRefusal): TransitionResult => ({
   ok: false,
@@ -205,7 +204,8 @@ function updateItem(
 
 /**
  * The ways out of an accepted trade before it completes: a party cancels
- * while nothing has started, a party disputes, or the deadline passes.
+ * while nothing has started, a party disputes, or the deadline passes,
+ * which times it out while nothing has started and otherwise disputes it.
  */
 function endEarly(
   { status, items }: TradeState,
@@ -230,6 +230,14 @@ function endEarly(
        */
       if (first === undefined) {
         return { ok: true, trade: { status: "completed", items } };
+      }
+      /**
+       * Something arrived while something is still owed, so a side may be
+       * out of pocket: staff decide it, rather than a time out handing the
+       * listing back over an objekt already sent.
+       */
+      if (items.some(isStarted)) {
+        return { ok: true, trade: { status: "disputed", items } };
       }
       return {
         ok: true,
@@ -407,8 +415,7 @@ const listingTransitions = {
 >;
 
 export type ListingTransitionResult =
-  | { ok: true; status: ListingStatus }
-  | { ok: false; reason: "wrong_status" };
+  { ok: true; status: ListingStatus } | { ok: false; reason: "wrong_status" };
 
 export function transitionListing(
   status: ListingStatus,

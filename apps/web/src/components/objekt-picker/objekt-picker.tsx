@@ -370,6 +370,7 @@ function PickerCollection({
             status={query.status}
             hasNextPage={query.hasNextPage}
             isFetchingNextPage={query.isFetchingNextPage}
+            isFetchNextPageError={query.isFetchNextPageError}
             fetchNextPage={() => void query.fetchNextPage()}
           />
         </div>

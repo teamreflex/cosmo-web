@@ -20,7 +20,6 @@ import {
   needsYou,
   otherSide,
   partyAction,
-  type PartyActionRefusal,
   transition,
 } from "@apollo/trades/lifecycle";
 import { CLAIM_WINDOW } from "@apollo/trades/timers";
@@ -36,7 +35,7 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import { lazy, type ReactNode, Suspense, useId, useState } from "react";
+import { lazy, type ReactNode, Suspense, useState } from "react";
 import { toast } from "sonner";
 import { useCopyToClipboard } from "usehooks-ts";
 import FeedbackBadge from "../feedback/feedback-badge";
@@ -64,8 +63,8 @@ import CounterOfferSheet from "./counter-offer-sheet";
 import OfferActionDialog from "./offer-action-dialog";
 import {
   CounterLink,
-  type OfferButton,
   OfferActions,
+  type OfferButton,
   OfferEndedAlert,
   OfferStrip,
   type OfferTrade,
@@ -112,7 +111,6 @@ function PartyView({
   trade: Extract<Trade, { stage: "trade" }>;
   side: TradeSide;
 }) {
-  const startedId = useId();
   const [dialog, setDialog] = useState<"cancel" | "dispute" | null>(null);
   const feedbackLeave = useFeedbackLeave(trade, side);
   const { feedback } = trade;
@@ -140,8 +138,6 @@ function PartyView({
     cancel: cancel.ok,
     dispute: partyAction(trade.state, { type: "dispute", by: side }, facts).ok,
   };
-  const describedBy =
-    !cancel.ok && cancel.reason === "already_started" ? startedId : undefined;
   const bar = copyName !== null || offered.cancel || offered.dispute;
   // Copy takes its own row in the phone bar when Cancel and Dispute join it
   const barRows = copyName !== null && offered.cancel ? 2 : 1;
@@ -159,17 +155,11 @@ function PartyView({
             counterparty={counterparty}
             owing={owing}
             waiting={waiting}
-            refusal={cancel.ok ? null : cancel.reason}
-            startedId={startedId}
           >
             {bar && (
               <div className="flex flex-wrap gap-2 max-md:hidden">
                 {copyName !== null && <CopyCosmoId username={copyName} />}
-                <PartyActions
-                  offered={offered}
-                  describedBy={describedBy}
-                  onOpen={setDialog}
-                />
+                <PartyActions offered={offered} onOpen={setDialog} />
               </div>
             )}
           </ActionStrip>
@@ -191,7 +181,6 @@ function PartyView({
                     )}
                     <PartyActions
                       offered={offered}
-                      describedBy={describedBy}
                       onOpen={setDialog}
                       className="h-11 flex-1"
                     />
@@ -387,8 +376,6 @@ function StaffView({
       />
       {canCancel && (
         <StaffCancelTradeDialog
-          // a dispute opened since the page loaded changes the report the cancel names
-          key={report?.id}
           tradeId={trade.id}
           listingId={trade.listingId}
           reportId={report?.id ?? null}
@@ -555,9 +542,8 @@ function TradeLayout({
 }
 
 /**
- * The strip under the transfers: what the viewer still has to send, why
- * Cancel is gone once anything was sent, or that the deadline has passed,
- * beside the viewer's actions from tablet width.
+ * The strip under the transfers: what the viewer still has to send, beside
+ * their actions from tablet width.
  */
 function ActionStrip({
   trade,
@@ -565,8 +551,6 @@ function ActionStrip({
   counterparty,
   owing,
   waiting,
-  refusal,
-  startedId,
   children,
 }: {
   trade: Trade;
@@ -575,30 +559,24 @@ function ActionStrip({
   owing: boolean;
   /** how many of the viewer's objekts are still to send */
   waiting: number;
-  /** why the viewer can't cancel, if they can't */
-  refusal: PartyActionRefusal | null;
-  startedId: string;
   /** the actions, or nothing when none apply */
   children: ReactNode;
 }) {
   const name = partyName(counterparty);
-  const started =
-    refusal === "already_started"
-      ? (trade.items.find((item) => item.status === "sent") ??
-        trade.items.find((item) => item.status === "arrived"))
-      : undefined;
-  const startedCount =
-    started === undefined
-      ? 0
-      : trade.items.filter(
-          (item) =>
-            item.sender === started.sender &&
-            (item.status === "sent" || item.status === "arrived"),
-        ).length;
-  if (!owing && !children && refusal !== "deadline_passed") return null;
+  const arrived = trade.items.some(
+    (item) => item.sender === side && item.status === "arrived",
+  );
+  const lines = owing && (waiting > 0 || arrived);
+  if (!lines && !children) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-3 border-t border-border bg-muted/40 px-4 py-3">
+    <div
+      className={cn(
+        "flex flex-wrap items-center gap-3 border-t border-border bg-muted/40 px-4 py-3",
+        // the actions move to the phone bar, which would leave the strip empty
+        !lines && "max-md:hidden",
+      )}
+    >
       <div className="flex min-w-0 flex-[1_1_18rem] flex-col gap-1 text-sm wrap-anywhere text-muted-foreground">
         {owing &&
           (waiting > 0 ? (
@@ -612,41 +590,10 @@ function ActionStrip({
                 : m.trade_page_send({ count: waiting, name })}
             </p>
           ) : (
-            trade.items.some(
-              (item) => item.sender === side && item.status === "arrived",
-            ) && (
+            arrived && (
               <p>{m.trade_page_send_arrived({ appName: env.VITE_APP_NAME })}</p>
             )
           ))}
-        {started !== undefined && (
-          <p id={startedId}>
-            {started.sender === side ? (
-              startedCount > 1 ? (
-                m.trade_page_cancel_started_you_many({ count: startedCount })
-              ) : (
-                <ParaglideMessage
-                  message={m.trade_page_cancel_started_you}
-                  inputs={{ objekt: itemName(started) }}
-                  markup={bold}
-                />
-              )
-            ) : startedCount > 1 ? (
-              m.trade_page_cancel_started_them_many({
-                count: startedCount,
-                name,
-              })
-            ) : (
-              <ParaglideMessage
-                message={m.trade_page_cancel_started_them}
-                inputs={{ objekt: itemName(started), name }}
-                markup={bold}
-              />
-            )}
-          </p>
-        )}
-        {refusal === "deadline_passed" && (
-          <p>{m.trade_page_deadline_passed({ appName: env.VITE_APP_NAME })}</p>
-        )}
       </div>
       {children}
     </div>
@@ -658,13 +605,10 @@ function ActionStrip({
  */
 function PartyActions({
   offered,
-  describedBy,
   onOpen,
   className,
 }: {
   offered: { cancel: boolean; dispute: boolean };
-  /** the line saying why Cancel is gone, when it is */
-  describedBy: string | undefined;
   onOpen: (dialog: "cancel" | "dispute") => void;
   className?: string;
 }) {
@@ -684,7 +628,6 @@ function PartyActions({
         <Button
           variant="destructive"
           className={className}
-          aria-describedby={describedBy}
           onClick={() => onOpen("dispute")}
         >
           <IconFlag />
@@ -706,7 +649,7 @@ const stepTones = {
   },
   dispute: {
     box: "border-destructive/45 bg-destructive/10",
-    eyebrow: "text-red-700 dark:text-destructive",
+    eyebrow: "text-destructive",
   },
   paused: {
     box: "border-border bg-muted/50",
@@ -741,7 +684,9 @@ function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
 
   const offer = status === "pending";
   const completed = status === "completed";
-  const paused = trade.dispute?.event.by === "staff";
+  const paused =
+    trade.dispute?.event.by === "staff" ||
+    trade.dispute?.event.by === "deadline";
   const seen = trade.items.filter((item) => item.status === "sent").length;
   const sender = partyName(trade.parties.from);
   const recipient = partyName(trade.parties.to);
@@ -769,7 +714,7 @@ function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
     offer
       ? {
           tone: "current",
-          eyebrow: m.trade_page_step({ step: 0 }),
+          eyebrow: m.trade_page_step({ step: 1 }),
           title:
             side === "to"
               ? m.trade_page_step_offer_you()
@@ -777,7 +722,7 @@ function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
         }
       : {
           tone: "done",
-          eyebrow: m.trade_page_step_done({ step: 0 }),
+          eyebrow: m.trade_page_step_done({ step: 1 }),
           title: accepted[side ?? "staff"],
         },
     {
@@ -791,19 +736,19 @@ function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
               ? "dispute"
               : "current",
       eyebrow: completed
-        ? m.trade_page_step_done({ step: 1 })
+        ? m.trade_page_step_done({ step: 2 })
         : paused
-          ? m.trade_page_step_paused({ step: 1 })
+          ? m.trade_page_step_paused({ step: 2 })
           : status === "disputed"
-            ? m.trade_page_step_dispute({ step: 1 })
-            : m.trade_page_step({ step: 1 }),
+            ? m.trade_page_step_dispute({ step: 2 })
+            : m.trade_page_step({ step: 2 }),
       title: m.trade_page_step_send({ seen, count: trade.items.length }),
     },
     {
       tone: completed ? "done" : "todo",
       eyebrow: completed
-        ? m.trade_page_step_done({ step: 2 })
-        : m.trade_page_step({ step: 2 }),
+        ? m.trade_page_step_done({ step: 3 })
+        : m.trade_page_step({ step: 3 }),
       title: m.trade_page_step_complete(),
     },
   ];
@@ -1072,29 +1017,24 @@ function DisputedAlert({
   const { dispute } = trade;
   if (dispute === null) return null;
   const { event } = dispute;
-  const paused = event.by === "staff";
+  const paused = event.by === "staff" || event.by === "deadline";
   const time = () => <Timestamp date={dispute.at} format={tradeTimeFormat} />;
   return (
-    <Alert
-      variant={paused ? "default" : "destructive"}
-      // the destructive token is just under 4.5:1 on the light card
-      className={cn(
-        !paused &&
-          "text-red-700 *:data-[slot=alert-description]:text-red-700 dark:text-destructive dark:*:data-[slot=alert-description]:text-destructive",
-      )}
-    >
+    <Alert variant={paused ? "default" : "destructive"}>
       {paused ? <IconPlayerPause /> : <IconFlag />}
       <AlertTitle>
         {event.by === "staff"
           ? m.trade_page_disputed_staff({ appName })
-          : event.by === side
-            ? m.trade_page_disputed_you({
-                reason: reportReasonLabel(event.reason),
-              })
-            : m.trade_page_disputed_them({
-                name: partyName(trade.parties[event.by]),
-                reason: reportReasonLabel(event.reason),
-              })}
+          : event.by === "deadline"
+            ? m.trade_page_disputed_deadline({ appName })
+            : event.by === side
+              ? m.trade_page_disputed_you({
+                  reason: reportReasonLabel(event.reason),
+                })
+              : m.trade_page_disputed_them({
+                  name: partyName(trade.parties[event.by]),
+                  reason: reportReasonLabel(event.reason),
+                })}
       </AlertTitle>
       <AlertDescription className="flex flex-col gap-1 text-pretty [&_p:not(:last-child)]:mb-0">
         <p>

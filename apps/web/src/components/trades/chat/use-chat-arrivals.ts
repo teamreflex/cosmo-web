@@ -28,10 +28,10 @@ export function useChatArrivals(tradeId: string, handlers: Handlers) {
     conversationAtom(tradeId),
     (result) => {
       if (!AsyncResult.isSuccess(result)) return;
-      const { items, live } = result.value;
+      const { items, connection } = result.value;
       const after = seen.current;
       if (after === null) {
-        if (!live) return;
+        if (connection.state !== "live") return;
         handlers.onHistory?.(items);
       } else {
         for (const item of items) {

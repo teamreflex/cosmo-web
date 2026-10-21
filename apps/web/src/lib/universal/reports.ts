@@ -58,8 +58,7 @@ export const reportTargetTypeFilters = [
   "trade",
   "message",
   "feedback",
-] as const satisfies readonly (ReportTargetType &
-  AdminReportRowTarget["type"])[];
+] as const satisfies readonly ReportTargetType[];
 
 /**
  * The reporter is null once their account is deleted.

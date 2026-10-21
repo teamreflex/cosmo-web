@@ -14,7 +14,7 @@ Every writer locks users, then trades, then listings; the full order is under Lo
 
 ## Listings
 
-A listing offers specific tokens the poster holds and asks for collections: exact rows (one collection, a count) or range rows (an array per column, where an empty array matches any value). Wanting a specific serial is left to the listing's note. The limits are in `caps.ts`. Posting copies each offered objekt's collection values onto its item and unions them into the listing's arrays, so the feed filters without crossing databases (see the comments on `trade_offers_feed_filters_idx`).
+A listing offers specific tokens the poster holds and asks for collections: exact rows (one collection, a count) or range rows (an array per column, where an empty array matches any value; values in a column are OR'd and columns AND'd). The composer posts a range whose members are one artist's whole roster as that artist (`collapseWholeGroup()`); members of several artists stay members, since an artist beside another group's members would match nothing. Wanting a specific serial is left to the listing's note. The limits are in `caps.ts`. Posting copies each offered objekt's collection values onto its item and unions them into the listing's arrays, so the feed filters without crossing databases (see the comments on `trade_offers_feed_filters_idx`).
 
 | Status      | Reached by                                                                                                    |
 | ----------- | ------------------------------------------------------------------------------------------------------------- |
@@ -37,8 +37,8 @@ A trade's `from` side is whoever proposed the terms (the poster, or an offer's s
 - `accepted`: a claim or an accepted offer. Each side sends its tokens in COSMO to the other's pinned address before `deadline_at`.
 - `completed`: every item arrived, or staff completed it.
 - `cancelled`: a party cancelled while nothing had been sent (`cancelled_by` names who), or staff cancelled it. A party can't cancel once the indexer shows any token at its receiver, even before the drain records it; after that a dispute is the only way out.
-- `timed_out`: the deadline passed with something still owed, and `abandoned_by` holds every side that still owed.
-- `disputed`: a party opened a dispute, or a ban froze the trade. The deadline stops, transfers still record, and only staff end it.
+- `timed_out`: the deadline passed with nothing sent, and `abandoned_by` holds every side that still owed.
+- `disputed`: a party opened a dispute, a ban froze the trade, or the deadline passed with something sent and something still owed. The deadline stops, transfers still record, and only staff end it.
 
 Parties are matched by user id and pinned addresses (`from_address`, `to_address`) are fixed when the claim's trade or the offer is created, so relinking COSMO doesn't redirect a trade. A live trade (`accepted` or `disputed`) blocks either party's account deletion (`liveTradesBlocker()`).
 
@@ -54,7 +54,7 @@ A pending offer expires 72 hours after it was sent (`OFFER_WINDOW`, `expires_at`
 
 The indexer appends a `list_event_outbox` row for every transfer and transferability change, and `drain-outbox` in apps/schedules applies each batch to the web database in one transaction (`applyTrades`). `foldTransfers()` and `decideTransfer()` in `packages/trades/src/transfers.ts` decide each row in order:
 
-- A pinned token reaching its receiver's pinned address marks the item sent, with the chain time and hash. A trade with nothing left owed completes and fills its listing; a disputed trade records the transfer but waits for staff.
+- A pinned token reaching its receiver's pinned address marks the item sent, with the chain time and hash, whichever wallet it came from, so a sender who routes it through another of their wallets still delivers. A trade with nothing left owed completes and fills its listing; a disputed trade records the transfer but waits for staff.
 - A token leaving elsewhere, or turning untransferable, posts a `token_moved` or `token_untransferable` event on its live trade, breaks the open listings offering it and turns pending offers holding it stale (`breakOffers`).
 - A row whose indexer `transfer` row no longer exists (a hot-block rollback) is skipped for trades.
 
@@ -62,7 +62,7 @@ Only the exact token ids pinned on the trade count; a party who sends a differen
 
 ## Timers
 
-`trade-timers` runs every minute. It ends accepted trades whose `deadline_at` is at or before the drain's watermark, `list_drain_cursor.chain_time`, never `now()`: a transfer stamped before the deadline but drained late still counts, because the watermark only reaches the deadline once that transfer is drained (`isTimedOut()`). A due trade nobody owes anything on completes; otherwise it times out with every side still owing marked abandoned, and its listing is abandoned, reopened or broken (removed if the poster is banned). It logs an error while there is no watermark or it trails the clock by more than 10 minutes, since timeouts trail the watermark. Pending offers expire in a separate transaction on the clock. Staff extend a disputed trade with `extendedDeadline()`: the time left when it froze plus 24, 48 or 72 hours.
+`trade-timers` runs every minute. It ends accepted trades whose `deadline_at` is at or before the drain's watermark, `list_drain_cursor.chain_time`, never `now()`: a transfer stamped before the deadline but drained late still counts, because the watermark only reaches the deadline once that transfer is drained (`isTimedOut()`). A due trade nobody owes anything on completes. One where something was sent and something is still owed is disputed under a `deadline_passed` report with no reporter (`disputeAtDeadline()`), since a side may be out of pocket: staff settle it as any dispute, and the parties read it as a pause for review. Otherwise, with nothing sent, it times out with both sides marked abandoned, and its listing is abandoned (removed if the poster is banned). It logs an error while there is no watermark or it trails the clock by more than 10 minutes, since timeouts trail the watermark. Pending offers expire in a separate transaction on the clock. Staff extend a disputed trade with `extendedDeadline()`: the time left when it froze plus 24, 48 or 72 hours. An extend is refused with `trade_party_banned` while either party is banned, since they couldn't sign in to finish it; staff complete or cancel it instead.
 
 ## Claim caps and feedback
 
@@ -82,7 +82,7 @@ A party opens a dispute (`$openDispute`) on an accepted trade before its deadlin
 
 ## Launch gate
 
-The trade system is gated by `market: ["access"]` (`marketAccess` in `@apollo/auth`), held by moderators and admins; signed-out visitors count as `user`. The gate covers pages and entry points only. `/market/*` (through `routes/market/route.tsx`), `/trade/$id` and `/@{$username}/feedback` call `requireMarketAccess()` in `beforeLoad` and 404 without it. The navbar's Market links, the My trades links in the user menu and notification bell, the report button on profiles and the offer picking in Trade Matches check `useHasPermission()(marketAccess)`. The server functions aren't gated.
+The trade system is gated by `market: ["access"]` (`marketAccess` in `@apollo/auth`), held by moderators and admins; signed-out visitors count as `user`. The gate covers pages and entry points only. `/market/*` (through `routes/market/route.tsx`), `/trade/$id` and `/@{$username}/feedback` call `requireMarketAccess()` in `beforeLoad` and 404 without it. The navbar's Market links, the My trades links in the user menu and notification bell, the report button on profiles and the offer picking in Trade Matches check `useHasPermission()(marketAccess)`. The server functions aren't gated, with one exception: a direct offer only goes to someone who holds market access, since without it they couldn't open it to answer. Trade Matches still lists them, marked not `offerable`, and `preflightOffer()` refuses a send or counter to them with `offer_unavailable`.
 
 Launching is adding `market: statement.market` to the `user` role in `packages/auth/src/index.ts` and setting `user: true` on the `market` row of `packages/auth/tests/roles.test.ts`, then deploying; there is no database step. Removing it again works as a kill switch only while no one outside staff has a live trade: after that, plain users can no longer open their trades or their chat while the deadlines keep running, so whoever hasn't sent is marked abandoned. Past that point, staff cancel the live trades from their trade pages instead (`trade: ["cancel-any"]`).
 

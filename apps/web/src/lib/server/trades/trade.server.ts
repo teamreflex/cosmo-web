@@ -16,12 +16,12 @@ import type {
   TradeEvent as StoredTradeEvent,
   TradeSide,
 } from "@apollo/database/web/types";
-import { canOfferAll } from "@apollo/trades/holdings";
+import { holdsAll } from "@apollo/trades/holdings";
 import {
   endedTradeColumns,
   listingEventAfter,
-  type PartyActionRefusal,
   listingTransition,
+  type PartyActionRefusal,
   type TradeEvent,
   tradeListings,
   type TradeState,
@@ -38,7 +38,7 @@ import type {
 } from "../../universal/errors/trades";
 import { db, type DbOrTx, type WebTx } from "../db";
 import { isPostgresError } from "../util.server";
-import { readWebTokenFlags, type TokenState } from "./holdings.server";
+import type { TokenState } from "./holdings.server";
 import { refusePoster } from "./listings.server";
 
 export function refuseTrade(code: TradeErrorCode): never {
@@ -314,10 +314,11 @@ export async function updateLockedTrade(
 /**
  * Ends a locked trade in the state a transition returned: its row, its
  * items' reservations, and its listing's outcome (listingEventAfter). A
- * released listing reopens when the poster could offer every token again
- * now that this trade no longer reserves them: `tokens` are the indexer's
- * states for the trade's tokens, which a caller that may release reads
- * before its transaction, so the transaction never waits on the indexer.
+ * released listing reopens when the poster still holds every token and can
+ * transfer it (holdsAll), even one they locked meanwhile: `tokens` are the
+ * indexer's states for the trade's tokens, which a caller that may release
+ * reads before its transaction, so the transaction never waits on the
+ * indexer.
  * `users` are the parties the caller locked; the poster has no row once
  * their account is gone.
  */
@@ -358,8 +359,7 @@ export async function endTrade(
   for (const [listingId, tokenIds] of listings) {
     let event = outcome;
     if (event === "release") {
-      const flags = await readWebTokenFlags(tx, trade.fromAddress, tokenIds);
-      event = canOfferAll(tokenIds, tokens, trade.fromAddress, flags)
+      event = holdsAll(tokenIds, tokens, trade.fromAddress)
         ? "reopen"
         : "break";
     }

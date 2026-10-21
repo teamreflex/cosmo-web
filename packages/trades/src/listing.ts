@@ -8,7 +8,12 @@ import {
   MAX_WANT_ROWS,
 } from "./caps";
 import { totalWanted } from "./composer";
-import { pgText, rangeColumns, rangeFilterSchema } from "./range";
+import {
+  pgText,
+  rangeColumns,
+  type RangeFilter,
+  rangeFilterSchema,
+} from "./range";
 
 // the listing types the feed can show; sales add theirs in a later phase
 export const listingTypes = ["trade"] as const;
@@ -65,6 +70,22 @@ const listingFields = {
 const isDistinct = (keys: readonly (string | number)[]) =>
   new Set(keys).size === keys.length;
 
+/**
+ * Whether no two range rows cover the same collections, comparing each
+ * column's values in any order.
+ */
+export function rangesDistinct(filters: readonly RangeFilter[]) {
+  return isDistinct(
+    filters.map((filter) =>
+      JSON.stringify(
+        rangeColumns.map((column) =>
+          filter[column].toSorted((a, b) => (a < b ? -1 : Number(a > b))),
+        ),
+      ),
+    ),
+  );
+}
+
 type ListingTerms = {
   offered: readonly { tokenId: number }[];
   wants: readonly TradeWant[];
@@ -95,20 +116,8 @@ function withListingRules<TSchema extends z.ZodType<ListingTerms>>(
     )
     .refine(
       ({ wants }) =>
-        isDistinct(
-          wants.flatMap((want) =>
-            want.kind === "range"
-              ? [
-                  JSON.stringify(
-                    rangeColumns.map((column) =>
-                      want.filter[column].toSorted((a, b) =>
-                        a < b ? -1 : Number(a > b),
-                      ),
-                    ),
-                  ),
-                ]
-              : [],
-          ),
+        rangesDistinct(
+          wants.flatMap((want) => (want.kind === "range" ? [want.filter] : [])),
         ),
       {
         message: "Each range can only be asked for once",

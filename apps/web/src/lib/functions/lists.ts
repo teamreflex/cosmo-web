@@ -50,12 +50,13 @@ import {
   tradeIdInputSchema,
 } from "@/lib/universal/schema/trades";
 import { createSlug } from "@/lib/utils";
+import { can, marketAccess, parseRole } from "@apollo/auth";
 import { isBanActive } from "@apollo/auth/guard";
 import { objektListEntries, objektLists } from "@apollo/database/web/schema";
 import type { ObjektListEntry, TradeSide } from "@apollo/database/web/types";
 import { redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, inArray, ne, type SQLWrapper, sql } from "drizzle-orm";
+import { and, eq, inArray, ne, sql, type SQLWrapper } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import * as z from "zod";
 
@@ -952,7 +953,7 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
 
     const identityByUserId = new Map<
       string,
-      { username: string; user: PublicUser }
+      { username: string; user: PublicUser; offerable: boolean }
     >();
     for (const cosmo of cosmos) {
       // a banned user can't be offered a trade, so they aren't a partner
@@ -960,6 +961,7 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
       identityByUserId.set(cosmo.userId, {
         username: cosmo.username,
         user: toPublicUser(cosmo.user),
+        offerable: can(parseRole(cosmo.user.role), marketAccess),
       });
     }
 
@@ -980,6 +982,7 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
         userId: partnerUserId,
         username: identity.username,
         user: identity.user,
+        offerable: identity.offerable,
         matches: rows.map((row): PartnerListMatch => ({
           listId: row.listId,
           listSlug: row.listSlug,

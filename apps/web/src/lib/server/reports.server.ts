@@ -27,6 +27,7 @@ import type {
 import type { Role } from "@apollo/auth";
 import { isBanActive, protectionFor } from "@apollo/auth/guard";
 import {
+  cosmoAccounts,
   reportMessages,
   reports,
   tradeFeedback,
@@ -46,13 +47,14 @@ import {
   desc,
   EmptyFilter,
   eq,
+  exists,
   inArray,
   ne,
   not,
   or,
   sql,
 } from "drizzle-orm";
-import { alias } from "drizzle-orm/pg-core";
+import { alias, type AnyPgColumn } from "drizzle-orm/pg-core";
 
 const QUEUE_PAGE_SIZE = 30;
 
@@ -71,6 +73,23 @@ function aboutStaff(staffId: string, t: typeof reports = reports) {
     .select({ id: tradeOffers.id })
     .from(tradeOffers)
     .where(tradeParty(staffId));
+  /**
+   * The address they link now, which their trades and ratings keep after
+   * they delete their account, so relinking the same COSMO account doesn't
+   * show them reports about their old trades. Those reports are checked
+   * through their own target by primary key, since no index finds trades by
+   * address.
+   */
+  const theirAddress = db
+    .select({ address: cosmoAccounts.address })
+    .from(cosmoAccounts)
+    .where(eq(cosmoAccounts.userId, staffId));
+  const pinned = (from: AnyPgColumn, to: AnyPgColumn) =>
+    or(inArray(from, theirAddress), inArray(to, theirAddress));
+  // the target's id as a uuid, cast only for the types whose ids are uuids
+  const targetUuid = (type: ReportTargetType) =>
+    sql`case when ${t.targetType} = ${type} then ${t.targetId}::uuid end`;
+
   return or(
     and(eq(t.targetType, "user"), eq(t.targetId, staffId)),
     and(
@@ -103,6 +122,50 @@ function aboutStaff(staffId: string, t: typeof reports = reports) {
           .select({ id: sql<string>`${tradeFeedback.id}::text` })
           .from(tradeFeedback)
           .where(inArray(tradeFeedback.tradeId, theirTrades)),
+      ),
+    ),
+    // a trade, message or rating pinned to the address they link now
+    and(
+      eq(t.targetType, "trade"),
+      exists(
+        db
+          .select({ id: tradeOffers.id })
+          .from(tradeOffers)
+          .where(
+            and(
+              eq(tradeOffers.id, targetUuid("trade")),
+              pinned(tradeOffers.fromAddress, tradeOffers.toAddress),
+            ),
+          ),
+      ),
+    ),
+    and(
+      eq(t.targetType, "message"),
+      exists(
+        db
+          .select({ id: reportMessages.reportId })
+          .from(reportMessages)
+          .innerJoin(tradeOffers, eq(tradeOffers.id, reportMessages.tradeId))
+          .where(
+            and(
+              eq(reportMessages.reportId, t.id),
+              pinned(tradeOffers.fromAddress, tradeOffers.toAddress),
+            ),
+          ),
+      ),
+    ),
+    and(
+      eq(t.targetType, "feedback"),
+      exists(
+        db
+          .select({ id: tradeFeedback.id })
+          .from(tradeFeedback)
+          .where(
+            and(
+              eq(tradeFeedback.id, targetUuid("feedback")),
+              pinned(tradeFeedback.fromAddress, tradeFeedback.toAddress),
+            ),
+          ),
       ),
     ),
   );
@@ -342,7 +405,6 @@ function toRowTarget(
               },
       };
     }
-      throw new Error(`Reports on ${targetType} targets aren't supported yet`);
   }
 }
 
@@ -530,7 +592,6 @@ async function fetchDetailTarget(
         },
       };
     }
-      throw new Error(`Reports on ${targetType} targets aren't supported yet`);
   }
 }
 

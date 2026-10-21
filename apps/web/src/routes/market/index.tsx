@@ -9,7 +9,6 @@ import ListingFeed, {
   ListingFeedSkeleton,
 } from "@/components/trade-listings/listing-feed";
 import ListingFeedFilters from "@/components/trade-listings/listing-feed-filters";
-import ListingTypePicker from "@/components/trade-listings/listing-type-picker";
 import NewListingButton from "@/components/trade-listings/new-listing-button";
 import MyTradesButton from "@/components/trades/my-trades-button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -68,8 +67,9 @@ function RouteComponent() {
   const { listingFeedOptions, listingFeedTotalOptions } =
     Route.useRouteContext();
   const { selectedIds } = useArtists();
-  const { type, setType, count, reset } = useListingFeedFilters();
+  const { count, reset } = useListingFeedFilters();
   const options = listingFeedOptions(selectedIds);
+  const filtered = count > 0 || selectedIds.length > 0;
 
   return (
     <main className="relative flex w-full flex-col">
@@ -77,12 +77,11 @@ function RouteComponent() {
         total={
           <ListingFeedCount
             options={listingFeedTotalOptions(selectedIds)}
-            filtered={count > 0}
+            filtered={filtered}
           />
         }
         actions={
           <>
-            <ListingTypePicker value={type} onChange={setType} />
             <MyTradesButton />
             <NewListingButton />
           </>
@@ -94,7 +93,12 @@ function RouteComponent() {
       </FiltersContainer>
 
       <div className="container flex flex-col py-2">
-        <ListingFeed options={options} filtered={count > 0} onReset={reset} />
+        <ListingFeed
+          options={options}
+          filtered={filtered}
+          // the navbar's artists are a setting, so Reset leaves them
+          onReset={count > 0 ? reset : null}
+        />
       </div>
 
       <div id="pagination" />

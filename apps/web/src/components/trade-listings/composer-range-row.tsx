@@ -4,13 +4,19 @@ import { formatCount, onOfflineLabel } from "@/lib/client/trade-listings";
 import { rangeMatchCountQuery } from "@/lib/queries/trade-listings";
 import { artistName } from "@/lib/universal/objekt-conversion";
 import {
-  type RangeFormFilter,
   applyChipUpdate,
+  type RangeFormFilter,
+  rangeIsNarrowed,
+  rangeOverCap,
   rangeToChipFilters,
 } from "@/lib/universal/trade-listing-form";
 import { cn } from "@/lib/utils";
 import { wantSummaryParts } from "@apollo/trades/composer";
-import { type RangeFilter, rangeFilterSchema } from "@apollo/trades/range";
+import {
+  MAX_RANGE_VALUES,
+  type RangeFilter,
+  rangeFilterSchema,
+} from "@apollo/trades/range";
 import { IconChevronDown, IconX } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import {
@@ -64,6 +70,11 @@ export default function ComposerRangeRow({
     { artist: artistName, onOffline: onOfflineLabel },
   );
 
+  // the schema files an over-full column's issue on the column, which `error` doesn't carry
+  const shownError = rangeOverCap(filter)
+    ? m.listing_composer_reason_range_too_many({ max: MAX_RANGE_VALUES })
+    : error;
+
   const setFilters: SetCosmoFilters = (input) =>
     onChange(
       applyChipUpdate(filter, input instanceof Function ? input(chips) : input),
@@ -77,7 +88,7 @@ export default function ComposerRangeRow({
         <span className="flex min-w-0 flex-1 items-center gap-2 max-sm:order-last max-sm:basis-full md:gap-2.5">
           {stepper}
           <span className="min-w-0 text-sm leading-tight">
-            {m.listing_composer_matching()}
+            {m.listing_composer_matching({ count })}
           </span>
         </span>
         <span className="flex shrink-0 items-center max-sm:ml-auto">
@@ -174,9 +185,9 @@ export default function ComposerRangeRow({
         {!expanded && <NarrowedBadges filter={filter} />}
       </div>
 
-      {error !== undefined && (
+      {shownError !== undefined && (
         <p role="alert" className="text-sm text-destructive">
-          {error}
+          {shownError}
         </p>
       )}
     </div>
@@ -213,7 +224,8 @@ function MatchCount({
   );
 
   if (!parsed.success) {
-    return (
+    // a narrowed range the schema refuses says why in the row's error
+    return rangeIsNarrowed(filter) ? null : (
       <span className="text-xs text-muted-foreground">
         {gap}
         {m.listing_composer_range_empty()}

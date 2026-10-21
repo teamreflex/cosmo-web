@@ -10,10 +10,16 @@ import {
   type NotificationListItem,
 } from "@/lib/universal/notifications";
 import { marketAccess } from "@apollo/auth";
-import { IconBell, IconChecks, IconLoader2 } from "@tabler/icons-react";
 import {
-  useInfiniteQuery,
+  IconBell,
+  IconChecks,
+  IconLoader2,
+  IconRefresh,
+} from "@tabler/icons-react";
+import {
+  QueryErrorResetBoundary,
   useQueryClient,
+  useSuspenseInfiniteQuery,
   useSuspenseQuery,
 } from "@tanstack/react-query";
 import { Link, useLocation } from "@tanstack/react-router";
@@ -33,15 +39,7 @@ export default function NotificationBell() {
   const [openedOn, setOpenedOn] = useState<string | null>(null);
   const open = openedOn === pathname;
   const queryClient = useQueryClient();
-  const list = useInfiniteQuery({ ...notificationsListQuery, enabled: open });
-  const markRead = useMarkNotificationsRead();
   const hasPermission = useHasPermission();
-
-  const bursts = groupNotifications(
-    list.data?.pages.flatMap((page) => page.rows) ?? [],
-  );
-  const fresh = bursts.filter((n) => n.unread);
-  const earlier = bursts.filter((n) => !n.unread);
 
   return (
     <Popover
@@ -95,39 +93,82 @@ export default function NotificationBell() {
 
         {/* a flex column lets the viewport shrink to the max height and scroll */}
         <ScrollArea className="flex max-h-[28rem] flex-col">
-          {list.isPending && (
-            <div className="flex flex-col gap-2 px-3.5 py-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-14 rounded-md" />
-              ))}
-            </div>
-          )}
-          {list.isSuccess && bursts.length === 0 && (
-            <p className="px-3.5 py-4 text-sm text-muted-foreground">
-              {m.notification_empty()}
-            </p>
-          )}
-          <NotificationSection
-            title={m.notification_section_new()}
-            notifications={fresh}
-            onOpen={(n) => markRead.mutate({ ids: n.ids })}
-          />
-          <NotificationSection
-            title={m.notification_section_earlier()}
-            notifications={earlier}
-          />
-          {list.hasNextPage && (
-            <div className="flex justify-center border-t p-1.5">
-              {list.isFetching ? (
-                <IconLoader2 className="my-1.5 size-5 animate-spin text-muted-foreground" />
-              ) : (
-                <LoadOlder onLoad={() => void list.fetchNextPage()} />
-              )}
-            </div>
-          )}
+          <QueryErrorResetBoundary>
+            {({ reset }) => (
+              <ErrorBoundary
+                onReset={reset}
+                fallbackRender={({ resetErrorBoundary }) => (
+                  <div className="flex flex-col items-center gap-2 px-3.5 py-6">
+                    <p className="text-sm text-muted-foreground">
+                      {m.notification_error()}
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={resetErrorBoundary}
+                    >
+                      <IconRefresh /> {m.common_retry()}
+                    </Button>
+                  </div>
+                )}
+              >
+                <Suspense
+                  fallback={
+                    <div className="flex flex-col gap-2 px-3.5 py-3">
+                      {Array.from({ length: 3 }).map((_, i) => (
+                        <Skeleton key={i} className="h-14 rounded-md" />
+                      ))}
+                    </div>
+                  }
+                >
+                  <NotificationList />
+                </Suspense>
+              </ErrorBoundary>
+            )}
+          </QueryErrorResetBoundary>
         </ScrollArea>
       </PopoverContent>
     </Popover>
+  );
+}
+
+/**
+ * The loaded notifications, unread ones first. The list mounts with the
+ * open popover and refetches its loaded pages each time.
+ */
+function NotificationList() {
+  const list = useSuspenseInfiniteQuery(notificationsListQuery);
+  const markRead = useMarkNotificationsRead();
+  const bursts = groupNotifications(
+    list.data.pages.flatMap((page) => page.rows),
+  );
+
+  return (
+    <>
+      {bursts.length === 0 && (
+        <p className="px-3.5 py-4 text-sm text-muted-foreground">
+          {m.notification_empty()}
+        </p>
+      )}
+      <NotificationSection
+        title={m.notification_section_new()}
+        notifications={bursts.filter((n) => n.unread)}
+        onOpen={(n) => markRead.mutate({ ids: n.ids })}
+      />
+      <NotificationSection
+        title={m.notification_section_earlier()}
+        notifications={bursts.filter((n) => !n.unread)}
+      />
+      {list.hasNextPage && (
+        <div className="flex justify-center border-t p-1.5">
+          {list.isFetching ? (
+            <IconLoader2 className="my-1.5 size-5 animate-spin text-muted-foreground" />
+          ) : (
+            <LoadOlder onLoad={() => void list.fetchNextPage()} />
+          )}
+        </div>
+      )}
+    </>
   );
 }
 

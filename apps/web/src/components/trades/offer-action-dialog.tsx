@@ -68,7 +68,7 @@ type Props = {
 /**
  * Confirms accepting, declining or withdrawing a pending offer. It stays
  * open until the answer lands, then the page refetches into the trade or
- * the offer's ending. A token of the caller's that can no longer be traded
+ * the offer's ending. A token on either side that can no longer be traded
  * is named in the error.
  */
 export default function OfferActionDialog({

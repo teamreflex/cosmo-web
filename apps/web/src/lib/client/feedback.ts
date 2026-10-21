@@ -1,4 +1,5 @@
 import { m } from "@/i18n/messages";
+import { formatCount } from "@/lib/client/trade-listings";
 import type { FeedbackRoleFilter } from "@/lib/universal/feedback";
 import type { FeedbackRating, FeedbackRole } from "@apollo/database/web/types";
 import {
@@ -27,9 +28,9 @@ export const ratingStyles = {
   negative: {
     icon: IconCircleMinus,
     label: m.feedback_rating_negative,
-    text: "text-red-700 dark:text-destructive",
+    text: "text-destructive",
     checked:
-      "has-data-checked:border-red-700 has-data-checked:bg-destructive/8 dark:has-data-checked:border-destructive dark:has-data-checked:bg-destructive/8",
+      "has-data-checked:border-destructive has-data-checked:bg-destructive/8",
   },
 } satisfies Record<
   FeedbackRating,
@@ -64,3 +65,11 @@ export const ratedRoleLabels = {
   buyer: m.feedback_page_role_buyer,
   trader: m.feedback_page_role_trader,
 } satisfies Record<FeedbackRoleFilter, () => string>;
+
+/**
+ * A score's sign and digits. The sign is a real minus, "−4" rather than
+ * "-4", which mono text sets in the body font so it sits with the digits.
+ */
+export function formatScore(score: number) {
+  return { sign: score < 0 ? "−" : "", digits: formatCount(Math.abs(score)) };
+}

@@ -11,10 +11,10 @@ import {
   type InfiniteData,
   QueryErrorResetBoundary,
   type QueryKey,
-  type UseSuspenseInfiniteQueryOptions,
-  type UseSuspenseQueryOptions,
   useSuspenseInfiniteQuery,
+  type UseSuspenseInfiniteQueryOptions,
   useSuspenseQuery,
+  type UseSuspenseQueryOptions,
 } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -41,12 +41,10 @@ type Props<TQueryKey extends QueryKey> = {
     TQueryKey,
     string | undefined
   >;
-  /**
-   * Whether any filter narrows the feed, which the empty state offers to
-   * reset.
-   */
+  /** whether any filter or the navbar's artists narrow the feed */
   filtered: boolean;
-  onReset: () => void;
+  /** clears the page's filters, or null when none are set */
+  onReset: (() => void) | null;
 };
 
 export default function ListingFeed<TQueryKey extends QueryKey>(
@@ -106,7 +104,7 @@ function Rows<TQueryKey extends QueryKey>({
               : m.market_listings_empty_body()}
           </EmptyDescription>
         </EmptyHeader>
-        {filtered && (
+        {onReset !== null && (
           <EmptyContent>
             <Button variant="outline" size="sm" onClick={onReset}>
               {m.filter_reset()}
@@ -132,6 +130,7 @@ function Rows<TQueryKey extends QueryKey>({
           status={query.status}
           hasNextPage={query.hasNextPage}
           isFetchingNextPage={query.isFetchingNextPage}
+          isFetchNextPageError={query.isFetchNextPageError}
           fetchNextPage={query.fetchNextPage}
         />
       </Portal>

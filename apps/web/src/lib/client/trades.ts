@@ -2,7 +2,11 @@ import { m } from "@/i18n/messages";
 import type { TradeItemView, TradePartyName } from "@/lib/universal/trades";
 import type { TradeSide } from "@apollo/database/web/types";
 import { formatError } from "./errors";
-import { claimFailure, formatTokenRefusal } from "./errors/trades";
+import {
+  formatPartnerTokenRefusal,
+  formatTokenRefusal,
+  offerTokenRefusal,
+} from "./errors/trades";
 import { formatSerial } from "./objekt-util";
 import { objektName, posterName } from "./trade-listings";
 
@@ -77,8 +81,9 @@ export const chatDayFormat = {
 } satisfies Intl.DateTimeFormatOptions;
 
 /**
- * Why an offer action was refused, naming the caller's own copy from
- * `copies` when the server could tell which.
+ * Why an offer action was refused, naming the copy from `copies` when the
+ * server could tell which: the caller's own with why, or one on the other
+ * party's side without.
  */
 export function formatOfferError(
   // oxlint-disable-next-line anti-slop/no-unknown-parameters -- boundary parser; caught errors are genuinely unknown
@@ -87,15 +92,15 @@ export function formatOfferError(
     Pick<TradeItemView, "tokenId" | "serial" | "collection" | "slug">
   >,
 ) {
-  const failed = claimFailure(error);
-  const refusal = failed?.kind === "token" ? failed.refusal : null;
+  const refusal = offerTokenRefusal(error);
   const copy = [...copies].find(
     ({ tokenId }) => refusal !== null && tokenId === refusal.tokenId,
   );
-  return refusal !== null && copy !== undefined && copy.serial !== null
-    ? formatTokenRefusal(refusal.reason, {
-        objekt: itemLabel(copy),
-        serial: copy.serial,
-      })
-    : formatError(error);
+  if (refusal === null || copy === undefined || copy.serial === null) {
+    return formatError(error);
+  }
+  const token = { objekt: itemLabel(copy), serial: copy.serial };
+  return refusal.side === "own"
+    ? formatTokenRefusal(refusal.reason, token)
+    : formatPartnerTokenRefusal(token);
 }

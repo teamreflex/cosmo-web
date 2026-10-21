@@ -1,14 +1,23 @@
-import { listDrainCursor, tradeOffers } from "@apollo/database/web/schema";
+import {
+  listDrainCursor,
+  lockedObjekts,
+  tradeOfferItems,
+  tradeOffers,
+} from "@apollo/database/web/schema";
 import type {
   OfferCloser,
   ReportStatus,
   TradeEvent,
   TradeSide,
 } from "@apollo/database/web/types";
-import { type TradeState, tradeState } from "@apollo/trades/lifecycle";
+import {
+  isOpenTrade,
+  type TradeState,
+  tradeState,
+} from "@apollo/trades/lifecycle";
 import { DRAIN_CURSOR_NAME, isTimedOut } from "@apollo/trades/timers";
 import { itemStatus } from "@apollo/trades/transfers";
-import { sql } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import {
   toFeedbackRep,
   tradeFeedbackView,
@@ -164,6 +173,32 @@ export async function readTradeView(
     extras: {
       watermark: watermarkExtra,
       now: () => sql<Date>`now()`.mapWith(tradeOffers.endedAt),
+      /**
+       * The tokens of unsent items that their sender has locked in Apollo
+       * at their pinned address, which the page marks. COSMO ignores the
+       * lock, so it changes nothing else.
+       */
+      lockedTokenIds: (t) =>
+        sql<number[]>`array(${db
+          .select({ tokenId: tradeOfferItems.tokenId })
+          .from(tradeOfferItems)
+          .innerJoin(
+            lockedObjekts,
+            and(
+              eq(lockedObjekts.tokenId, tradeOfferItems.tokenId),
+              eq(lockedObjekts.locked, true),
+              eq(
+                lockedObjekts.address,
+                sql`case ${tradeOfferItems.sender} when 'from' then ${t.fromAddress} else ${t.toAddress} end`,
+              ),
+            ),
+          )
+          .where(
+            and(
+              eq(tradeOfferItems.offerId, t.id),
+              isNull(tradeOfferItems.transferredAt),
+            ),
+          )})`,
     },
     with: {
       items: { orderBy: { id: "asc" } },
@@ -308,6 +343,10 @@ export async function readTradeView(
         kind: item.kind,
         transferredAt: item.transferredAt,
         txHash: item.txHash,
+        locked:
+          isOpenTrade(state.status) &&
+          item.tokenId !== null &&
+          row.lockedTokenIds.includes(item.tokenId),
         status: itemStatus(item, token?.kind === "found" ? token : undefined, {
           status: state.status,
           fromAddress: row.fromAddress,

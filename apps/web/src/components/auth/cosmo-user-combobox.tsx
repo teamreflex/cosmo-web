@@ -31,7 +31,7 @@ export default function CosmoUserCombobox({
   const [debouncedQuery] = useDebounceValue(query, 500);
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  // a picked result swaps the search for the user, whose Cancel takes focus
+  // a picked result swaps the search for the user, whose Clear takes focus
   const picked = useRef(false);
   const resultsOpen = open && debouncedQuery.length > 0;
 
@@ -85,7 +85,7 @@ export default function CosmoUserCombobox({
           onClick={handleClear}
           className="text-xs text-muted-foreground hover:text-foreground"
         >
-          {m.common_cancel()}
+          {m.user_search_clear()}
         </button>
       </div>
     );

@@ -103,13 +103,14 @@ export default function FeedbackLeaveDialog({
       // the mutation still reads as pending here, which handleOpenChange refuses
       onOpenChange(false);
     },
-    onError: (error) => toast.error(formatError(error)),
     onSettled: invalidateTrade,
   });
 
   function handleOpenChange(next: boolean) {
     // the rating can't be taken back, so the dialog waits for its answer
     if (mutation.isPending) return;
+    // the form stays for another open, a refusal doesn't
+    if (!next) mutation.reset();
     onOpenChange(next);
   }
 
@@ -125,26 +126,32 @@ export default function FeedbackLeaveDialog({
         </span>
       }
       footer={
-        <>
-          <Button
-            type="button"
-            variant="outline"
-            className="max-md:h-11 max-md:flex-1"
-            disabled={mutation.isPending}
-            onClick={() => handleOpenChange(false)}
-          >
-            {m.feedback_later()}
-          </Button>
-          <Button
-            type="submit"
-            form={formId}
-            className="max-md:h-11 max-md:flex-1"
-            disabled={mutation.isPending}
-          >
-            <span>{m.feedback_submit()}</span>
-            {mutation.isPending && <IconLoader2 className="animate-spin" />}
-          </Button>
-        </>
+        <div className="flex w-full flex-col gap-2">
+          {/* a toast would cover the buttons in the phone drawer */}
+          <FieldError>
+            {mutation.error === null ? null : formatError(mutation.error)}
+          </FieldError>
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="max-md:h-11 max-md:flex-1"
+              disabled={mutation.isPending}
+              onClick={() => handleOpenChange(false)}
+            >
+              {m.feedback_later()}
+            </Button>
+            <Button
+              type="submit"
+              form={formId}
+              className="max-md:h-11 max-md:flex-1"
+              disabled={mutation.isPending}
+            >
+              <span>{m.feedback_submit()}</span>
+              {mutation.isPending && <IconLoader2 className="animate-spin" />}
+            </Button>
+          </div>
+        </div>
       }
       narrow
       initialFocus={firstRating}

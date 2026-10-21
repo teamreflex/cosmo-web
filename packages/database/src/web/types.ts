@@ -263,15 +263,18 @@ export type FeedbackReportReason = (typeof feedbackReportReasons)[number];
 
 /**
  * A stored report's reason: a user report's, a party dispute's, a chat
- * message or feedback report's, or `party_banned` for the dispute a ban
- * opens on each of the user's trades.
+ * message or feedback report's, `party_banned` for the dispute a ban
+ * opens on each of the user's trades, or `deadline_passed` for the one
+ * trade-timers opens when a deadline passes with something sent and
+ * something still owed.
  */
 export type StoredReportReason =
   | ReportReason
   | DisputeReason
   | MessageReportReason
   | FeedbackReportReason
-  | "party_banned";
+  | "party_banned"
+  | "deadline_passed";
 
 export const staffAuditActions = [
   "report:read",
@@ -524,6 +527,8 @@ export type TradeEvent =
       reason: DisputeReason;
     }
   | { type: "disputed"; by: "staff"; reportId: string }
+  // the deadline passed with something sent and something still owed
+  | { type: "disputed"; by: "deadline"; reportId: string }
   | { type: "deadline_extended"; deadlineAt: string; note: string | null }
   | { type: "timed_out"; abandoned: TradeSide[] }
   | { type: "token_moved"; tokenId: number }

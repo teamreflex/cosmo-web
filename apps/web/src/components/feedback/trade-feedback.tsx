@@ -109,7 +109,7 @@ function FeedbackEntry({
           )}
         </div>
         {entry.removed && (
-          <p className="text-xs font-medium text-red-700 dark:text-destructive">
+          <p className="text-xs font-medium text-destructive">
             {m.feedback_entry_removed()}
           </p>
         )}

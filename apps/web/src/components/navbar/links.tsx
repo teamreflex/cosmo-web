@@ -140,7 +140,8 @@ function MobileMenuItems(props: MobileMenuProps) {
         <IconCards
           className={cn(
             "h-4 w-4 shrink-0 fill-transparent transition-all",
-            (pathname === "/" || pathname === "/objekts") && "fill-white/50",
+            (pathname === "/" || pathname === "/objekts") &&
+              "fill-foreground/50",
           )}
         />
         <span>{m.objekts_header()}</span>
@@ -153,7 +154,7 @@ function MobileMenuItems(props: MobileMenuProps) {
         <IconChartBar
           className={cn(
             "h-4 w-4 shrink-0 fill-transparent transition-all",
-            pathname === "/objekts/stats" && "fill-white/50",
+            pathname === "/objekts/stats" && "fill-foreground/50",
           )}
         />
         <span>{m.nav_objekt_stats()}</span>
@@ -165,7 +166,7 @@ function MobileMenuItems(props: MobileMenuProps) {
         <IconFolderOpen
           className={cn(
             "h-4 w-4 shrink-0 fill-transparent transition-all",
-            pathname === "/events" && "fill-white/50",
+            pathname === "/events" && "fill-foreground/50",
           )}
         />
         <span>{m.events_header()}</span>
@@ -178,7 +179,7 @@ function MobileMenuItems(props: MobileMenuProps) {
         <IconArchive
           className={cn(
             "h-4 w-4 shrink-0 fill-transparent transition-all",
-            pathname.startsWith("/gravity") && "fill-white/50",
+            pathname.startsWith("/gravity") && "fill-foreground/50",
           )}
         />
         <span>{m.gravity_header()}</span>
@@ -194,7 +195,7 @@ function MobileMenuItems(props: MobileMenuProps) {
               "h-4 w-4 shrink-0 fill-transparent transition-all",
               (pathname.startsWith("/market") ||
                 pathname.startsWith("/trade/")) &&
-                "fill-white/50",
+                "fill-foreground/50",
             )}
           />
           <span>{m.market_header()}</span>
@@ -214,7 +215,7 @@ function MobileMenuItems(props: MobileMenuProps) {
           <IconPackage
             className={cn(
               "h-4 w-4 shrink-0 fill-transparent transition-all",
-              pathname === `/@${props.cosmo.username}` && "fill-white/50",
+              pathname === `/@${props.cosmo.username}` && "fill-foreground/50",
             )}
           />
           <span>{m.nav_profile()}</span>

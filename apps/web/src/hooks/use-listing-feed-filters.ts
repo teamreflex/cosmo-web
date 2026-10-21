@@ -7,7 +7,6 @@ import {
   countActiveListingFilters,
   type ListingFeedSearch,
 } from "@/lib/universal/parsers";
-import type { ListingType } from "@apollo/trades/listing";
 import { getRouteApi } from "@tanstack/react-router";
 
 const route = getRouteApi("/market/");
@@ -89,31 +88,18 @@ export function useFeedSideFilters(keys: SideKeys): PropsWithFilters {
 }
 
 /**
- * What the feed lists: the listing type and how many filter columns narrow
- * either side, with a reset that keeps the type picker's choice.
+ * How many filter columns narrow either side of the feed, and a reset that
+ * clears them.
  */
 export function useListingFeedFilters() {
   const navigate = route.useNavigate();
   const search = route.useSearch();
 
-  function setType(type: ListingType | null) {
-    void navigate({
-      // All leaves the key out of the URL
-      search: (prev) => ({ ...prev, type: type ?? undefined }),
-      replace: true,
-    });
-  }
-
   function reset() {
-    void navigate({
-      search: (prev) => ({ type: prev.type }),
-      replace: true,
-    });
+    void navigate({ search: {}, replace: true });
   }
 
   return {
-    type: search.type ?? null,
-    setType,
     count: countActiveListingFilters(search),
     reset,
   };

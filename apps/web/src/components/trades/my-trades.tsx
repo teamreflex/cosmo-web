@@ -67,6 +67,7 @@ function TradeList({ tab }: { tab: MyTradesTab }) {
         status={query.status}
         hasNextPage={query.hasNextPage}
         isFetchingNextPage={query.isFetchingNextPage}
+        isFetchNextPageError={query.isFetchNextPageError}
         fetchNextPage={query.fetchNextPage}
       />
     </>
@@ -144,7 +145,8 @@ function ColumnHeader({ tab }: { tab: MyTradesTab }) {
 
 /**
  * Laid out as a Listings feed row, with the tokens each side sends. Below
- * md the second line holds the status, the other party and the time.
+ * md the footer holds the other party and the time, with the kind and the
+ * status under them.
  */
 function TradeRow({ row }: { row: MyTradeRow }) {
   return (
@@ -184,8 +186,8 @@ function TradeRow({ row }: { row: MyTradeRow }) {
           <OfferingCaption items={row.get.items} />
         </Half>
 
-        <span className="col-span-full row-start-2 flex min-w-0 items-center gap-2 max-md:border-t max-md:border-dashed max-md:px-3 max-md:py-2 max-md:text-xs lg:contents">
-          <span className="flex lg:col-start-1 lg:row-start-1">
+        <span className="col-span-full row-start-2 flex min-w-0 items-center gap-2 max-md:grid max-md:grid-cols-[minmax(0,1fr)_auto] max-md:gap-y-1.5 max-md:border-t max-md:border-dashed max-md:px-3 max-md:py-2 max-md:text-xs lg:contents">
+          <span className="flex max-md:col-start-1 max-md:row-start-2 lg:col-start-1 lg:row-start-1">
             <Badge variant="outline">
               {row.listingId === null
                 ? m.my_trades_kind_offer()
@@ -193,28 +195,22 @@ function TradeRow({ row }: { row: MyTradeRow }) {
             </Badge>
           </span>
           {/* a long name gives way rather than wrapping the line */}
-          <span className="flex max-w-48 min-w-0 shrink-0 lg:col-start-5 lg:row-start-1 lg:max-w-none">
+          <span className="flex max-w-48 min-w-0 shrink-0 max-md:col-start-2 max-md:row-start-2 max-md:justify-self-end lg:col-start-5 lg:row-start-1 lg:max-w-none">
             <Status row={row} />
           </span>
-          <span className="flex min-w-0 items-center gap-1.5 lg:col-start-6 lg:row-start-1">
+          <span className="flex min-w-0 items-center gap-1.5 max-md:col-start-1 max-md:row-start-1 lg:col-start-6 lg:row-start-1">
             <PartyAvatar
               party={row.counterparty}
               className="size-4.5 text-xxs **:p-0.5 md:size-6"
             />
-            {/* on phones "{name} sends" names them already, so the avatar stands in */}
             <span
-              className={cn(
-                "truncate font-medium",
-                !row.needsYou &&
-                  row.state.status === "accepted" &&
-                  "max-md:sr-only",
-              )}
+              className="truncate font-medium"
               title={partyName(row.counterparty)}
             >
               {partyName(row.counterparty)}
             </span>
           </span>
-          <span className="ml-auto shrink-0 text-xs text-muted-foreground lg:col-start-7 lg:row-start-1 lg:ml-0 lg:text-right">
+          <span className="ml-auto shrink-0 text-xs text-muted-foreground max-md:col-start-2 max-md:row-start-1 lg:col-start-7 lg:row-start-1 lg:ml-0 lg:text-right">
             <Time row={row} />
           </span>
         </span>
@@ -259,9 +255,10 @@ function Status({ row }: { row: MyTradeRow }) {
           />
         </Badge>
       );
-    // a ban's pause reads as neutral, as on the trade page
+    // a pause by a ban or a passed deadline reads as neutral, as on the trade page
     case "disputed":
-      return row.dispute?.event.by === "staff" ? (
+      return row.dispute?.event.by === "staff" ||
+        row.dispute?.event.by === "deadline" ? (
         <Badge className={tones.muted}>{m.my_trades_next_paused()}</Badge>
       ) : (
         <Badge className={tones.bad}>{m.my_trades_next_dispute()}</Badge>

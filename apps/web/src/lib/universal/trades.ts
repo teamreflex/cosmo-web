@@ -47,6 +47,8 @@ export type TradeItemView = TradeNamedItem & {
   kind: TradeItemKind;
   transferredAt: Date | null;
   txHash: string | null;
+  // its sender locked it in Apollo while it's still owed, which COSMO ignores
+  locked: boolean;
   status: TradeItemStatus;
 };
 

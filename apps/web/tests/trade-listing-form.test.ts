@@ -1,11 +1,19 @@
 import { listingInputSchema } from "@apollo/trades/listing";
+import { MAX_RANGE_VALUES } from "@apollo/trades/range";
 import { describe, expect, test } from "bun:test";
 import {
+  composerBlock,
   emptyListingForm,
   formValuesToInput,
   listingToFormValues,
 } from "../src/lib/universal/trade-listing-form";
 import type { TradeListing } from "../src/lib/universal/trade-listings";
+
+// each artist's members, keyed as ranges store artists
+const rosters = new Map([
+  ["artms", ["HeeJin", "HaSeul", "KimLip", "JinSoul", "Choerry"]],
+  ["triples", ["SeoYeon", "HyeRin", "JiWoo"]],
+]);
 
 const attributes = (slug: string, member: string, artist = "artms") => ({
   slug,
@@ -78,10 +86,11 @@ describe("composer prefill (CMP-04)", () => {
   });
 
   test("submitting unchanged sends exactly the stored terms", () => {
-    const submission = formValuesToInput(listingInputSchema.parse(values), {
-      kind: "edit",
-      listing: { ...listing, ...fillers },
-    });
+    const submission = formValuesToInput(
+      listingInputSchema.parse(values),
+      { kind: "edit", listing: { ...listing, ...fillers } },
+      rosters,
+    );
     expect(submission).toEqual({
       kind: "edit",
       data: {
@@ -115,6 +124,7 @@ describe("composer prefill (CMP-04)", () => {
         note: "   ",
       }),
       { kind: "create" },
+      rosters,
     );
     expect(submission).toEqual({
       kind: "create",
@@ -124,6 +134,49 @@ describe("composer prefill (CMP-04)", () => {
         note: null,
       },
     });
+  });
+});
+
+describe("range rows on submit", () => {
+  const artms = ["HeeJin", "HaSeul", "KimLip", "JinSoul", "Choerry"];
+  const submit = (member: string[]) =>
+    formValuesToInput(
+      listingInputSchema.parse({
+        offered: [{ tokenId: 9 }],
+        wants: [{ kind: "range", count: 1, filter: { member } }],
+        note: "",
+      }),
+      { kind: "create" },
+      rosters,
+    ).data.wants[0];
+
+  test("a whole group posts as its artist", () => {
+    expect(submit(artms)).toMatchObject({
+      filter: { artist: ["artms"], member: [] },
+    });
+  });
+
+  test("a whole group with another group's member posts every member", () => {
+    expect(submit([...artms, "SeoYeon"])).toMatchObject({
+      filter: { artist: [], member: [...artms, "SeoYeon"] },
+    });
+  });
+
+  test("a column past the cap holds Post back before the schema refuses it", () => {
+    const member = Array.from(
+      { length: MAX_RANGE_VALUES + 1 },
+      (_, i) => `m${i}`,
+    );
+    expect(
+      composerBlock({
+        offered: 1,
+        refused: 0,
+        wants: [{ kind: "range", count: 1, filter: { member } }],
+        rangeMatches: [],
+        rangesRepeat: false,
+        note: "",
+      }),
+    ).toBe("range_too_many");
   });
 });
 

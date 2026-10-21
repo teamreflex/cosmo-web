@@ -7,16 +7,16 @@ import {
   MAX_WANT_ROWS,
 } from "../src/caps";
 import {
-  type ListingInput,
   claimListingInputSchema,
   counterOfferInputSchema,
   editListingInputSchema,
   listingIdSchema,
+  type ListingInput,
   listingInputSchema,
-  offerInputSchema,
   offeredTokensInputSchema,
+  offerInputSchema,
 } from "../src/listing";
-import type { RangeFilter } from "../src/range";
+import { MAX_RANGE_VALUES, type RangeFilter } from "../src/range";
 
 const LISTING_ID = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
 const KIMLIP = "atom02-kimlip-201z";
@@ -180,11 +180,16 @@ const refused = [
     "wants.0.filter: A range needs at least one value",
   ],
   [
-    "13 seasons in one range (SCH-13)",
+    "a season past the column cap in one range (SCH-13)",
     {
       offered,
       wants: [
-        range({ season: Array.from({ length: 13 }, (_, i) => `Season${i}`) }),
+        range({
+          season: Array.from(
+            { length: MAX_RANGE_VALUES + 1 },
+            (_, i) => `Season${i}`,
+          ),
+        }),
       ],
     },
     "wants.0.filter.season: *",
@@ -299,16 +304,20 @@ const accepted: [
     { offered, wants: [exact(KIMLIP)], note: null },
   ],
   [
-    "12 seasons in one range (SCH-13)",
+    "a full column of seasons in one range (SCH-13)",
     {
       offered,
-      wants: [range({ season: Array.from({ length: 12 }, (_, i) => `S${i}`) })],
+      wants: [
+        range({
+          season: Array.from({ length: MAX_RANGE_VALUES }, (_, i) => `S${i}`),
+        }),
+      ],
     },
     {
       offered,
       wants: [
         stored({
-          season: Array.from({ length: 12 }, (_, i) => `S${i}`),
+          season: Array.from({ length: MAX_RANGE_VALUES }, (_, i) => `S${i}`),
         }),
       ],
       note: null,

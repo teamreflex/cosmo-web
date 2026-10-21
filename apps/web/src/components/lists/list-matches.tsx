@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { marketAccess } from "@apollo/auth";
 import type { ObjektList } from "@apollo/database/web/types";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
-import { IconUsers } from "@tabler/icons-react";
+import { IconHeartBroken, IconRefresh, IconUsers } from "@tabler/icons-react";
 import {
   QueryErrorResetBoundary,
   useSuspenseQuery,
@@ -18,6 +18,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import TradeSheet from "../trade-listings/trade-sheet";
 import { OfferBar } from "../trades/offer-picker";
 import {
+  dropToken,
   type OfferPicks,
   offerTones,
   pickedTokenIds,
@@ -35,9 +36,9 @@ type Props = {
 
 /**
  * The people whose trade lists pair with this one, each opening to the
- * collections either side would give. With market access, picking cards on
- * both sides builds a direct offer to that person, sent from the bar under
- * them.
+ * collections either side would give. When both have market access,
+ * picking cards on both sides builds a direct offer to that person, sent
+ * from the bar under them.
  */
 export default function ListMatches({ list }: Props) {
   const [open, setOpen] = useState(false);
@@ -50,6 +51,8 @@ export default function ListMatches({ list }: Props) {
     mutationFn: $sendOffer,
     picks: offer,
     sent: m.list_matches_offer_sent,
+    onRefusedToken: (tokenId) =>
+      setOffer((prev) => (prev === null ? null : dropToken(prev, tokenId))),
   });
 
   return (
@@ -69,7 +72,9 @@ export default function ListMatches({ list }: Props) {
           </ErrorBoundary>
         }
         footer={
-          offer === null || !canOffer ? undefined : (
+          offer === null ||
+          !canOffer ||
+          !offer.partner.offerable ? undefined : (
             <OfferBar
               eyebrow={
                 <ParaglideMessage
@@ -136,10 +141,14 @@ export default function ListMatches({ list }: Props) {
             {({ reset }) => (
               <ErrorBoundary
                 onReset={reset}
-                fallbackRender={() => (
-                  <p className="text-sm text-muted-foreground">
-                    {m.list_matches_empty()}
-                  </p>
+                fallbackRender={({ resetErrorBoundary }) => (
+                  <div className="flex flex-col items-center gap-2 py-12">
+                    <IconHeartBroken className="size-12" />
+                    <p className="text-sm">{m.list_matches_error()}</p>
+                    <Button variant="outline" onClick={resetErrorBoundary}>
+                      <IconRefresh /> {m.common_retry()}
+                    </Button>
+                  </div>
                 )}
               >
                 <Suspense fallback={<ListMatchesSkeleton />}>

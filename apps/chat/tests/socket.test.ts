@@ -33,6 +33,13 @@ beforeAll(async () => {
 function served() {
   const state = makeState();
   seed(state);
+  // seeded sessions expire a week after TEST_NOW, which real time passes
+  for (const [id, session] of state.sessions) {
+    state.sessions.set(id, {
+      ...session,
+      expiresAt: new Date(now() + 7 * 24 * 3600 * 1000),
+    });
+  }
   return HttpRouter.serve(ChatRoutes).pipe(
     Layer.provideMerge(serverLayer(state, signer)),
     Layer.provideMerge(BunHttpServer.layer({ port: 0 })),
