@@ -20,10 +20,6 @@ console.log(
 );
 
 const processor = new EvmBatchProcessor()
-  .setGateway({
-    url: env.SQD_ENDPOINT,
-    apiKey: env.SQD_KEY,
-  })
   .setRpcEndpoint({
     url: env.RPC_ENDPOINT,
     rateLimit: env.RPC_RATE_LIMIT,
