@@ -276,12 +276,8 @@ export class BunSQLEffectSession<
             );
             return Effect.ensuring(
               body,
-              Effect.suspend(() =>
-                tainted
-                  ? Effect.promise(() => reserved.close({ timeout: 1 }))
-                  : Effect.sync(() => {
-                      reserved.release();
-                    }),
+              Effect.promise(() =>
+                tainted ? reserved.close({ timeout: 1 }) : reserved.release(),
               ),
             );
           },

@@ -37,7 +37,7 @@
     "@effect/language-service": "^0.87.5",
     "@effect/platform-bun": "4.0.0-rc.116",
     "@sentry/bun": "^11.8.0",
-    "@types/bun": "1.4.2",
+    "@types/bun": "1.4.4",
     "drizzle-kit": "1.0.0-rc.5-ab785fc",
     "drizzle-orm": "1.0.0-rc.5-169397b",
     "effect": "4.0.0-rc.116",
