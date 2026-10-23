@@ -26,7 +26,12 @@
     "format": {
       "cache": true,
       "dependsOn": ["^format"],
-      "inputs": ["**/*.ts", "**/*.tsx", "!node_modules/**"]
+      "inputs": [
+        "**/*.ts",
+        "**/*.tsx",
+        "$TURBO_ROOT$/bunfig.toml",
+        "!node_modules/**"
+      ]
     },
     "dev": {
       "persistent": true,

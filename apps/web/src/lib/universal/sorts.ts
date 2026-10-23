@@ -1,4 +1,4 @@
-import { validSorts, type ValidSort } from "@apollo/cosmo/types/common";
+import { type ValidSort, validSorts } from "@apollo/cosmo/types/common";
 
 /**
  * Sorts that only order collections, so they work on any collection listing:

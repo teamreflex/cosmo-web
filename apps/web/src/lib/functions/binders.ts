@@ -11,11 +11,11 @@ import {
 } from "@/lib/server/middlewares";
 import { frontPinPosition } from "@/lib/server/pins.server";
 import {
+  binderPreviewTokenIds,
   COLLAGE_SIZE,
   isPocketInRange,
   MAX_BINDER_PAGES,
   MAX_BINDERS,
-  binderPreviewTokenIds,
   movedPage,
   placeInBinder,
   toBinderPreview,

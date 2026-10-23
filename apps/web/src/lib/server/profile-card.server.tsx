@@ -12,19 +12,19 @@ import {
 import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import {
+  cardSeed,
+  placeCards,
   PROFILE_CARD_FONTS,
   PROFILE_CARD_HEIGHT,
   PROFILE_CARD_MAX_OBJEKTS,
   PROFILE_CARD_WIDTH,
-  cardSeed,
-  placeCards,
 } from "@/lib/universal/profile-card";
 import type {
   ProfileCard,
   ProfileCardObjekt,
 } from "@/lib/universal/profile-card";
 import halvar from "@/styles/fonts/HalvarBreit-Bd.woff2?inline";
-import { Addresses, addr, isAddress, isEqual } from "@apollo/util";
+import { addr, Addresses, isAddress, isEqual } from "@apollo/util";
 import dmSans from "@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2?inline";
 import jetbrainsMono from "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2?inline";
 import { desc, eq, min } from "drizzle-orm";

@@ -10,8 +10,8 @@
   "scripts": {
     "lint": "bun --bun oxlint --type-aware --type-check",
     "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
-    "typecheck": "tsc --pretty --noEmit",
-    "format": "oxfmt ."
+    "typecheck": "bun check",
+    "format": "bun fmt"
   },
   "dependencies": {
     "drizzle-orm": "catalog:",

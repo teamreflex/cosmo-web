@@ -9,7 +9,7 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useTheme, type Theme } from "@/hooks/use-theme";
+import { type Theme, useTheme } from "@/hooks/use-theme";
 import { m } from "@/i18n/messages";
 import { getLocale, locales, setLocale } from "@/i18n/runtime";
 import { localeNames } from "@/lib/universal/locales";

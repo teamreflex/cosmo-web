@@ -6,8 +6,8 @@ import {
   freshlyEndedGravity,
   pastGravity,
   pollChoices,
-  unitGravity,
   unfinalizedGravity,
+  unitGravity,
   unitPollChoices,
   upcomingGravity,
 } from "./fixtures";

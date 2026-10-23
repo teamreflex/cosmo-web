@@ -11,9 +11,9 @@ import type {
 } from "../src/lib/universal/binders";
 import {
   binderColourPresets,
-  binderTextColour,
   binderGrid,
   binderPreviewFromDetail,
+  binderTextColour,
   findEmptyPocket,
   fullHexColour,
   isPocketInRange,

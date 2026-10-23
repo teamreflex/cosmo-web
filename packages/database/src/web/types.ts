@@ -1,19 +1,19 @@
 import type {
-  collectionData,
-  cosmoAccounts,
-  cosmoAccountChanges,
-  pins,
-  binders,
   binderEntries,
+  binders,
+  collectionData,
+  cosmoAccountChanges,
+  cosmoAccounts,
   cosmoTokens,
+  eras,
+  events,
   gravities,
-  gravityPolls,
   gravityPollCandidates,
+  gravityPolls,
   notifications,
   objektListEntries,
   objektLists,
-  eras,
-  events,
+  pins,
 } from "./schema";
 
 export type {

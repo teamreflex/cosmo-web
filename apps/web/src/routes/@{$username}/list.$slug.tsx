@@ -20,8 +20,8 @@ import { UserStateProvider } from "@/providers/user-state-provider";
 import { IconArrowsExchange, IconHeartBroken } from "@tabler/icons-react";
 import { noop } from "@tanstack/react-query";
 import {
-  Link,
   createFileRoute,
+  Link,
   notFound,
   redirect,
 } from "@tanstack/react-router";

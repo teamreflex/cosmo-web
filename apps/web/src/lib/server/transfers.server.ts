@@ -1,7 +1,7 @@
 import type { transfersBackendSchema } from "@/lib/universal/parsers";
 import {
-  type ChainItem,
   chainedIds,
+  type ChainItem,
   chainTransfers,
   groupTransfers,
   pairSpins,

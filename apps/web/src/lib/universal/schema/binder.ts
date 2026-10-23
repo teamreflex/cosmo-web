@@ -1,8 +1,8 @@
 import {
-  binderLayouts,
-  MAX_BINDER_PAGES,
   binderGrid,
+  binderLayouts,
   fullHexColour,
+  MAX_BINDER_PAGES,
 } from "@/lib/universal/binders";
 import * as z from "zod";
 import { listNameSchema } from "./objekt-list";

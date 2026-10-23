@@ -23,7 +23,7 @@ import type {
 import { cn } from "@/lib/utils";
 import { slugifyObjekt } from "@apollo/util";
 import { IconShare3 } from "@tabler/icons-react";
-import { useQueryClient, noop } from "@tanstack/react-query";
+import { noop, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Suspense, useDeferredValue, useEffect, useRef } from "react";
 import type { ComponentProps, ReactNode, RefObject } from "react";

@@ -9,8 +9,8 @@
     "start": "bun run --bun dist/main.js",
     "lint": "bun --bun oxlint --type-aware --type-check",
     "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
-    "typecheck": "tsc --pretty --noEmit",
-    "format": "oxfmt ."
+    "typecheck": "bun check",
+    "format": "bun fmt"
   },
   "dependencies": {
     "@apollo/database": "workspace:*",

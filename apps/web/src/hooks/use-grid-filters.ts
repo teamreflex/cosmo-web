@@ -16,8 +16,7 @@ export function useGridFilters() {
   const setFilters = useCallback(
     (
       input:
-        | Partial<GridFilters>
-        | ((prev: GridFilters) => Partial<GridFilters>),
+        Partial<GridFilters> | ((prev: GridFilters) => Partial<GridFilters>),
     ) => {
       // oxlint-disable-next-line anti-slop/no-runtime-typeof -- narrowing the updater-function union, standard setState pattern
       if (typeof input === "function") {

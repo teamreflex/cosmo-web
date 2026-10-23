@@ -13,10 +13,10 @@ import {
   IconPackage,
   IconSend,
 } from "@tabler/icons-react";
-import { useQueryClient, useSuspenseQuery, noop } from "@tanstack/react-query";
+import { noop, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import {
-  Link,
   getRouteApi,
+  Link,
   useLocation,
   useMatch,
 } from "@tanstack/react-router";

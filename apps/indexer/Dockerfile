@@ -1,4 +1,4 @@
-FROM oven/bun:1.4.2-slim AS bun
+FROM oven/bun:1.4.4-slim AS bun
 
 # stage 1: prune workspace
 FROM bun AS pruner

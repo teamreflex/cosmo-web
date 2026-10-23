@@ -1,4 +1,4 @@
-import { address, bytes32, uint256, uint64 } from "@subsquid/evm-codec";
+import { address, bytes32, uint64, uint256 } from "@subsquid/evm-codec";
 import { event, indexed } from "../abi.support.js";
 import type { EventParams as EParams } from "../abi.support.js";
 

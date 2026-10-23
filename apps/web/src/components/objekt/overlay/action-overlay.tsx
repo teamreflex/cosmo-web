@@ -9,6 +9,7 @@ import { type Hoverable, reasonLabel } from "@/lib/client/objekt-util";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
 import {
+  type Icon as TablerIcon,
   IconCloudDownload,
   IconConfetti,
   IconDevices,
@@ -16,7 +17,6 @@ import {
   IconLock,
   IconMailOff,
   IconPin,
-  type Icon as TablerIcon,
 } from "@tabler/icons-react";
 import { Fragment } from "react";
 import { useShallow } from "zustand/react/shallow";

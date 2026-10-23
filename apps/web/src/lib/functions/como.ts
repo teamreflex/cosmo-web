@@ -2,7 +2,7 @@ import { remember } from "@/lib/server/cache.server";
 import { indexer } from "@/lib/server/db/indexer";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
 import type { ComoBalance, ObjektWithCollection } from "@/lib/universal/como";
-import { Addresses, addr, isEqual } from "@apollo/util";
+import { addr, Addresses, isEqual } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, inArray, not, sql } from "drizzle-orm";
 import * as z from "zod";

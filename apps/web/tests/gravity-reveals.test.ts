@@ -1,8 +1,8 @@
 import { describe, expect, it } from "bun:test";
 import {
   findLatestBatch,
-  sumComoPerCandidate,
   type RevealPage,
+  sumComoPerCandidate,
 } from "../src/lib/client/gravity/reveals";
 import type { Reveal } from "../src/lib/client/gravity/types";
 

@@ -1,11 +1,11 @@
-import { GRID_COLUMNS, type CollectionDataSource } from "@apollo/util";
+import { type CollectionDataSource, GRID_COLUMNS } from "@apollo/util";
 import {
+  boolean,
+  index,
+  integer,
   pgTable,
   text,
   timestamp,
-  boolean,
-  integer,
-  index,
 } from "drizzle-orm/pg-core";
 import { citext } from "./custom";
 

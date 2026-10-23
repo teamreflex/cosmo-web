@@ -29,7 +29,7 @@ import {
 import { format } from "date-fns";
 import { AnimatePresence } from "motion/react";
 import * as motion from "motion/react-client";
-import { Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
+import { type ReactNode, Suspense, useEffect, useMemo, useState } from "react";
 import * as z from "zod";
 import { ComoAmount } from "./como-share";
 import GravityDetails from "./gravity-details";

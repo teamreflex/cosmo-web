@@ -6,7 +6,7 @@ import {
 } from "@/lib/client/objekt-util";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { IconPhotoX } from "@tabler/icons-react";
-import { Fragment, useState, lazy, Suspense } from "react";
+import { Fragment, lazy, Suspense, useState } from "react";
 import type { PropsWithChildren } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import ObjektAudio from "./objekt-audio";

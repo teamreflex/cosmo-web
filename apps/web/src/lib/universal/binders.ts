@@ -111,8 +111,7 @@ export function findEmptyPocket(
  * or the first empty pocket.
  */
 export type BinderPlacement =
-  | { kind: "already"; page: number; slot: number }
-  | EmptyPocket;
+  { kind: "already"; page: number; slot: number } | EmptyPocket;
 
 /**
  * Place an objekt into a binder the way "Add to binder" does. An objekt sits
@@ -484,9 +483,7 @@ export function nextEmptySlot(
  * pocket. One already on that page stays where it is.
  */
 export type PageDrop =
-  | { kind: "pocket"; slot: number }
-  | { kind: "stays" }
-  | { kind: "full" };
+  { kind: "pocket"; slot: number } | { kind: "stays" } | { kind: "full" };
 
 export function pageDrop(
   binder: Pick<BinderDetail, "layout" | "entries">,

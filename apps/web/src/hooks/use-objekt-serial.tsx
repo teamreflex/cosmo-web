@@ -24,9 +24,7 @@ export function useObjektSerial() {
    */
   const setSerial = (
     serial:
-      | number
-      | undefined
-      | ((prev: number | undefined) => number | undefined),
+      number | undefined | ((prev: number | undefined) => number | undefined),
   ) => {
     void navigate({
       // @ts-ignore - this hook is used on different routes so we can't reliably type this

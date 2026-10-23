@@ -23,7 +23,7 @@ import {
 } from "@/lib/universal/profile-card";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { Addresses, isEqual } from "@apollo/util";
-import { useSuspenseQuery, noop } from "@tanstack/react-query";
+import { noop, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/@{$username}/")({

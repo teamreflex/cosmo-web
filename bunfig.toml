@@ -4,3 +4,21 @@ minimumReleaseAge = 86400
 
 [install.security]
 scanner = "@socketsecurity/bun-security-scanner"
+
+[fmt]
+printWidth = 80
+trailingComma = "all"
+ignorePatterns = [
+  "/apps/web/src/routeTree.gen.ts",
+  "/apps/web/drizzle/",
+  "/packages/serial-estimation/tests/fixtures/",
+]
+
+[fmt.sortImports]
+groups = [["builtin", "external"], ["internal"], ["parent", "sibling", "index"]]
+internalPattern = ["@/**", "@apollo/**"]
+newlinesBetween = false
+
+[[fmt.overrides]]
+files = ["apps/web/**"]
+options = { sortTailwindcss = { stylesheet = "./apps/web/src/styles/tailwind.css", functions = ["cn"] } }

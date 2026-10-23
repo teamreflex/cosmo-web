@@ -15,7 +15,7 @@ import {
   currentAccountQuery,
   filterDataQuery,
 } from "@/lib/queries/core";
-import { useSuspenseQuery, noop } from "@tanstack/react-query";
+import { noop, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Suspense, useState } from "react";
 

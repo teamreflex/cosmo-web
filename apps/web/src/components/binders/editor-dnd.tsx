@@ -391,8 +391,7 @@ function editorKeyboardCoordinates(
   const fromX = collisionRect.left + collisionRect.width / 2;
   const fromY = collisionRect.top + collisionRect.height / 2;
   let target:
-    | { left: number; top: number; width: number; height: number }
-    | undefined;
+    { left: number; top: number; width: number; height: number } | undefined;
   let best = Infinity;
 
   for (const container of droppableContainers.getEnabled()) {

@@ -2,7 +2,7 @@ import type { GridFilters } from "@/hooks/use-grid-filters";
 import { m } from "@/i18n/messages";
 import { cn } from "@/lib/utils";
 import { IconChartPie, IconLayoutGrid } from "@tabler/icons-react";
-import { Link, getRouteApi } from "@tanstack/react-router";
+import { getRouteApi, Link } from "@tanstack/react-router";
 import { buttonVariants } from "../ui/button";
 import { ButtonGroup } from "../ui/button-group";
 

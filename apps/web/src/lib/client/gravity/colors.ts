@@ -13,8 +13,7 @@ import { findMember, pollCandidates } from "./util";
  * hashed colors.
  */
 export type CandidateColorArtist =
-  | Pick<CosmoArtistWithMembersBFF, "artistMembers">
-  | undefined;
+  Pick<CosmoArtistWithMembersBFF, "artistMembers"> | undefined;
 
 export type CandidateColors = {
   /** Colors in candidate order, indexed by on-chain candidate id. */

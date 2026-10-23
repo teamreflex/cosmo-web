@@ -12,7 +12,7 @@ import {
 import { useObjektSerial } from "@/hooks/use-objekt-serial";
 import { IconLoader2 } from "@tabler/icons-react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
-import { Suspense, lazy, useCallback, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 

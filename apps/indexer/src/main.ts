@@ -1,21 +1,26 @@
 import type { CosmoObjektMetadataV1 } from "@apollo/cosmo/types/metadata";
-import { addr, chunk, slugifyObjekt } from "@apollo/util";
-import { Addresses } from "@apollo/util";
+import { addr, Addresses, chunk, slugifyObjekt } from "@apollo/util";
 import * as Sentry from "@sentry/bun";
-import { TypeormDatabase, type Store } from "@subsquid/typeorm-store";
+import { type Store, TypeormDatabase } from "@subsquid/typeorm-store";
 import { randomUUID } from "crypto";
 import { In } from "typeorm";
 import { env } from "./env";
 import { mirrorImages } from "./images";
 import { fetchMetadataWithRetryV3 } from "./metadata";
-import { Collection, ComoBalance, Objekt, type Transfer, Vote } from "./model";
-import { ListEventOutbox } from "./model";
+import {
+  Collection,
+  ComoBalance,
+  ListEventOutbox,
+  Objekt,
+  type Transfer,
+  Vote,
+} from "./model";
 import {
   type ComoBalanceEvent,
+  parseBlocks,
   type RevealFunction,
   type TransferabilityUpdate,
   type VoteEvent,
-  parseBlocks,
 } from "./parser";
 import { processor, type ProcessorContext } from "./processor";
 import { numberNewObjekts, startSerialBatch } from "./serials";

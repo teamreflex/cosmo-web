@@ -3,7 +3,7 @@ import { m } from "@/i18n/messages";
 import { objektMetadataQuery } from "@/lib/queries/objekt-queries";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { StatCell, type ObjektMetadataTab } from "./common";
+import { type ObjektMetadataTab, StatCell } from "./common";
 import PricingPanel from "./pricing-panel";
 import SerialsPanel from "./serials-panel";
 

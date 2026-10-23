@@ -9,11 +9,11 @@ import { createHash } from "node:crypto";
 import { ImageFetchError, ImageProcessError, ImageStoreError } from "./errors";
 import {
   OBJEKT_IMAGE_WIDTHS,
+  objektImageKey,
   type ObjektImageName,
+  objektImagePrefix,
   type ObjektImageRef,
   type ObjektImageSide,
-  objektImageKey,
-  objektImagePrefix,
 } from "./index";
 
 /**

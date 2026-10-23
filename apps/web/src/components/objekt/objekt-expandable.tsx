@@ -6,7 +6,7 @@ import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import { objektMetadataQuery, objektQuery } from "@/lib/queries/objekt-queries";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
-import { useQueryClient, noop } from "@tanstack/react-query";
+import { noop, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import type { PropsWithChildren } from "react";
 import { useShallow } from "zustand/react/shallow";

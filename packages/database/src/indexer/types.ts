@@ -1,6 +1,6 @@
 import type {
-  comoBalances,
   collections,
+  comoBalances,
   objekts,
   transfers,
   votes,

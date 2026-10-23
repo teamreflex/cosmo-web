@@ -22,10 +22,10 @@ import {
 } from "@/lib/functions/objekts/owned-serials";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import {
-  MAX_OBJEKT_SELECTIONS,
-  type SaleListFormValues,
   type addObjektsToSaleListSchema,
+  MAX_OBJEKT_SELECTIONS,
   saleListFormSchema,
+  type SaleListFormValues,
 } from "@/lib/universal/schema/objekt-list";
 import { cn } from "@/lib/utils";
 import type { ObjektList } from "@apollo/database/web/types";

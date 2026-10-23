@@ -29,8 +29,7 @@ export function useCosmoFilters() {
    */
   const setFilters = (
     input:
-      | Partial<CosmoFilters>
-      | ((prev: CosmoFilters) => Partial<CosmoFilters>),
+      Partial<CosmoFilters> | ((prev: CosmoFilters) => Partial<CosmoFilters>),
   ) => {
     // oxlint-disable-next-line anti-slop/no-runtime-typeof -- narrowing the updater-function union, standard setState pattern
     if (typeof input === "function") {
@@ -67,8 +66,7 @@ export function useCosmoFilters() {
 export type CosmoFilters = z.infer<typeof cosmoSchema>;
 export type SetCosmoFilters = (
   input:
-    | Partial<CosmoFilters>
-    | ((prev: CosmoFilters) => Partial<CosmoFilters>),
+    Partial<CosmoFilters> | ((prev: CosmoFilters) => Partial<CosmoFilters>),
 ) => void;
 export type SetCosmoFilter<TKey extends keyof CosmoFilters> = (
   key: TKey,

@@ -8,8 +8,8 @@ import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
 import SkeletonGradient from "@/components/skeleton/skeleton-overlay";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  useEventsFilters,
   type EventsFilters,
+  useEventsFilters,
 } from "@/hooks/use-events-filters";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
@@ -22,7 +22,7 @@ import {
 import { castToArray } from "@/lib/universal/parsers";
 import { validArtists } from "@apollo/cosmo/types/common";
 import { eventTypeKeys, type EventWithEra } from "@apollo/database/web/types";
-import { useSuspenseQuery, noop } from "@tanstack/react-query";
+import { noop, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Suspense, useCallback, useState } from "react";
 import * as z from "zod";

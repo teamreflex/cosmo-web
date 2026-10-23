@@ -3,12 +3,12 @@ import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
 import {
-  PRICE_STATS_MIN_LISTINGS,
   type ObjektCollectionData,
   type ObjektMetadata,
+  PRICE_STATS_MIN_LISTINGS,
   type PriceStats,
 } from "@/lib/universal/objekts";
-import { Addresses, addr } from "@apollo/util";
+import { addr, Addresses } from "@apollo/util";
 import { createFileRoute } from "@tanstack/react-router";
 import { eq, sql } from "drizzle-orm";
 
