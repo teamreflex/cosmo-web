@@ -72,7 +72,7 @@ export default function ProgressLeaderboardContent(props: Props) {
             <li
               key={item.address}
               className={cn(
-                "grid min-h-11 grid-cols-[1.25rem_minmax(0,1fr)_6rem_2.75rem] items-center gap-3 rounded-lg px-3 text-sm transition-colors",
+                "grid min-h-11 grid-cols-[1.25rem_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 rounded-lg px-3 py-2 text-sm transition-colors sm:grid-cols-[1.25rem_minmax(0,1fr)_6rem_2.75rem] sm:py-0",
                 isTarget
                   ? "bg-cosmo/14 ring-1 ring-cosmo/45 ring-inset"
                   : "hover:bg-accent/40",
@@ -87,7 +87,11 @@ export default function ProgressLeaderboardContent(props: Props) {
                 member={props.member}
                 className="truncate font-semibold"
               />
-              <span className="h-1.5 overflow-hidden rounded-full bg-muted">
+              <span className="text-right font-bold tabular-nums sm:col-start-4 sm:row-start-1">
+                {value}%
+              </span>
+              {/* below sm the bar wraps under the name and percentage */}
+              <span className="col-span-2 col-start-2 h-1.5 overflow-hidden rounded-full bg-muted sm:col-span-1 sm:col-start-3 sm:row-start-1">
                 <span
                   className={cn(
                     "block h-full rounded-full",
@@ -95,9 +99,6 @@ export default function ProgressLeaderboardContent(props: Props) {
                   )}
                   style={{ width: `${value}%` }}
                 />
-              </span>
-              <span className="text-right font-bold tabular-nums">
-                {value}%
               </span>
             </li>
           );
@@ -129,10 +130,10 @@ function ProfileLink({ item, member, className }: ProfileLinkProps) {
 export function LeaderboardSkeleton() {
   return (
     <div className="flex flex-col gap-5 p-5">
-      <Skeleton className="h-17 rounded-xl" />
-      <div className="flex flex-col gap-2">
+      <Skeleton className="h-19 rounded-xl" />
+      <div className="flex flex-col gap-1">
         {Array.from({ length: 25 }).map((_, i) => (
-          <Skeleton key={i} className="h-9 rounded-lg" />
+          <Skeleton key={i} className="h-12 rounded-lg sm:h-11" />
         ))}
       </div>
     </div>
