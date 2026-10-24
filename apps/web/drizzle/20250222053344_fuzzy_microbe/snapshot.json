@@ -1,1466 +1,921 @@
 {
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
   "id": "f0366ca2-3d31-4a95-86bd-ccf90714e8fb",
   "prevIds": [
     "766b801c-3f06-45ad-aa84-38da1e669273"
   ],
-  "version": "8",
-  "dialect": "postgres",
-  "ddl": [
+  "footprints": [
     {
-      "isRlsEnabled": false,
-      "name": "cosmo_tokens",
-      "schema": "public",
-      "entityType": "tables"
-    },
-    {
-      "columns": [
-        "id"
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "cosmo_tokens"
       ],
-      "nameExplicit": false,
-      "name": "cosmo_tokens_pkey",
-      "schema": "public",
-      "table": "cosmo_tokens",
-      "entityType": "pks"
-    },
-    {
-      "type": "serial",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "schema": "public",
-      "table": "cosmo_tokens",
-      "entityType": "columns"
-    },
-    {
-      "type": "varchar(255)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "access_token",
-      "schema": "public",
-      "table": "cosmo_tokens",
-      "entityType": "columns"
-    },
-    {
-      "type": "varchar(255)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "refresh_token",
-      "schema": "public",
-      "table": "cosmo_tokens",
-      "entityType": "columns"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "access_token",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
+      "writes": [
+        "s|tbl|public.cosmo_tokens",
+        "n|tbl|public.cosmo_tokens",
+        "e|tbl|public.cosmo_tokens",
+        "n|rel|public.cosmo_tokens",
+        "n|type|public.cosmo_tokens",
+        "n|rel|public.cosmo_tokens_pkey"
       ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "cosmo_tokens_access_token_idx",
-      "schema": "public",
-      "table": "cosmo_tokens",
-      "entityType": "indexes"
+      "reads": [
+        "n|sch|public"
+      ]
     },
     {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "refresh_token",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "gravities"
       ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "cosmo_tokens_refresh_token_idx",
-      "schema": "public",
-      "table": "cosmo_tokens",
-      "entityType": "indexes"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "gravities",
-      "schema": "public",
-      "entityType": "tables"
-    },
-    {
-      "columns": [
-        "id"
+      "writes": [
+        "s|tbl|public.gravities",
+        "n|tbl|public.gravities",
+        "e|tbl|public.gravities",
+        "n|rel|public.gravities",
+        "n|type|public.gravities",
+        "n|rel|public.gravities_pkey"
       ],
-      "nameExplicit": false,
-      "name": "gravities_pkey",
-      "schema": "public",
-      "table": "gravities",
-      "entityType": "pks"
+      "reads": [
+        "n|sch|public"
+      ]
     },
     {
-      "type": "serial",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "schema": "public",
-      "table": "gravities",
-      "entityType": "columns"
-    },
-    {
-      "type": "citext",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "artist",
-      "schema": "public",
-      "table": "gravities",
-      "entityType": "columns"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "cosmo_id",
-      "schema": "public",
-      "table": "gravities",
-      "entityType": "columns"
-    },
-    {
-      "type": "varchar(255)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "title",
-      "schema": "public",
-      "table": "gravities",
-      "entityType": "columns"
-    },
-    {
-      "type": "varchar(255)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "description",
-      "schema": "public",
-      "table": "gravities",
-      "entityType": "columns"
-    },
-    {
-      "type": "varchar(255)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "image",
-      "schema": "public",
-      "table": "gravities",
-      "entityType": "columns"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "artist",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "gravity_poll_candidates"
       ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "gravities_artist_idx",
-      "schema": "public",
-      "table": "gravities",
-      "entityType": "indexes"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "cosmo_id",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
+      "writes": [
+        "s|tbl|public.gravity_poll_candidates",
+        "n|tbl|public.gravity_poll_candidates",
+        "e|tbl|public.gravity_poll_candidates",
+        "n|rel|public.gravity_poll_candidates",
+        "n|type|public.gravity_poll_candidates",
+        "n|rel|public.gravity_poll_candidates_pkey"
       ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "gravities_cosmo_id_idx",
-      "schema": "public",
-      "table": "gravities",
-      "entityType": "indexes"
+      "reads": [
+        "n|sch|public"
+      ]
     },
     {
-      "isRlsEnabled": false,
-      "name": "gravity_poll_candidates",
-      "schema": "public",
-      "entityType": "tables"
-    },
-    {
-      "columns": [
-        "id"
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "gravity_polls"
       ],
-      "nameExplicit": false,
-      "name": "gravity_poll_candidates_pkey",
-      "schema": "public",
-      "table": "gravity_poll_candidates",
-      "entityType": "pks"
-    },
-    {
-      "type": "serial",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "schema": "public",
-      "table": "gravity_poll_candidates",
-      "entityType": "columns"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "cosmo_gravity_poll_id",
-      "schema": "public",
-      "table": "gravity_poll_candidates",
-      "entityType": "columns"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "candidate_id",
-      "schema": "public",
-      "table": "gravity_poll_candidates",
-      "entityType": "columns"
-    },
-    {
-      "type": "varchar(64)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "cosmo_id",
-      "schema": "public",
-      "table": "gravity_poll_candidates",
-      "entityType": "columns"
-    },
-    {
-      "type": "varchar(255)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "title",
-      "schema": "public",
-      "table": "gravity_poll_candidates",
-      "entityType": "columns"
-    },
-    {
-      "type": "varchar(255)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "image",
-      "schema": "public",
-      "table": "gravity_poll_candidates",
-      "entityType": "columns"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "cosmo_gravity_poll_id",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
+      "writes": [
+        "s|tbl|public.gravity_polls",
+        "n|tbl|public.gravity_polls",
+        "e|tbl|public.gravity_polls",
+        "n|rel|public.gravity_polls",
+        "n|type|public.gravity_polls",
+        "n|rel|public.gravity_polls_pkey"
       ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "gravity_poll_candidates_cosmo_gravity_poll_id_idx",
-      "schema": "public",
-      "table": "gravity_poll_candidates",
-      "entityType": "indexes"
+      "reads": [
+        "n|sch|public"
+      ]
     },
     {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "candidate_id",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "cosmo_tokens",
+        "cosmo_tokens_access_token_idx"
       ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "gravity_poll_candidates_candidate_id_idx",
-      "schema": "public",
-      "table": "gravity_poll_candidates",
-      "entityType": "indexes"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "cosmo_id",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
+      "writes": [
+        "s|idx|public.cosmo_tokens_access_token_idx",
+        "n|idx|public.cosmo_tokens_access_token_idx",
+        "e|idx|public.cosmo_tokens_access_token_idx",
+        "n|rel|public.cosmo_tokens_access_token_idx"
       ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "gravity_poll_candidates_cosmo_id_idx",
-      "schema": "public",
-      "table": "gravity_poll_candidates",
-      "entityType": "indexes"
+      "reads": [
+        "n|tbl|public.cosmo_tokens",
+        "n|sch|public",
+        "n|col|public.cosmo_tokens.access_token"
+      ]
     },
     {
-      "isRlsEnabled": false,
-      "name": "gravity_polls",
-      "schema": "public",
-      "entityType": "tables"
-    },
-    {
-      "columns": [
-        "id"
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "cosmo_tokens",
+        "cosmo_tokens_refresh_token_idx"
       ],
-      "nameExplicit": false,
-      "name": "gravity_polls_pkey",
-      "schema": "public",
-      "table": "gravity_polls",
-      "entityType": "pks"
-    },
-    {
-      "type": "serial",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "schema": "public",
-      "table": "gravity_polls",
-      "entityType": "columns"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "cosmo_gravity_id",
-      "schema": "public",
-      "table": "gravity_polls",
-      "entityType": "columns"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "cosmo_id",
-      "schema": "public",
-      "table": "gravity_polls",
-      "entityType": "columns"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "poll_id_on_chain",
-      "schema": "public",
-      "table": "gravity_polls",
-      "entityType": "columns"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "cosmo_gravity_id",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
+      "writes": [
+        "s|idx|public.cosmo_tokens_refresh_token_idx",
+        "n|idx|public.cosmo_tokens_refresh_token_idx",
+        "e|idx|public.cosmo_tokens_refresh_token_idx",
+        "n|rel|public.cosmo_tokens_refresh_token_idx"
       ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "gravity_polls_cosmo_gravity_id_idx",
-      "schema": "public",
-      "table": "gravity_polls",
-      "entityType": "indexes"
+      "reads": [
+        "n|tbl|public.cosmo_tokens",
+        "n|sch|public",
+        "n|col|public.cosmo_tokens.refresh_token"
+      ]
     },
     {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "cosmo_id",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "gravities",
+        "gravities_artist_idx"
       ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "gravity_polls_cosmo_id_idx",
-      "schema": "public",
-      "table": "gravity_polls",
-      "entityType": "indexes"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "poll_id_on_chain",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
+      "writes": [
+        "s|idx|public.gravities_artist_idx",
+        "n|idx|public.gravities_artist_idx",
+        "e|idx|public.gravities_artist_idx",
+        "n|rel|public.gravities_artist_idx"
       ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "gravity_polls_poll_id_on_chain_idx",
-      "schema": "public",
-      "table": "gravity_polls",
-      "entityType": "indexes"
+      "reads": [
+        "n|tbl|public.gravities",
+        "n|sch|public",
+        "n|col|public.gravities.artist"
+      ]
     },
     {
-      "isRlsEnabled": false,
-      "name": "list_entries",
-      "schema": "public",
-      "entityType": "tables"
-    },
-    {
-      "columns": [
-        "id"
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "gravities",
+        "gravities_cosmo_id_idx"
       ],
-      "nameExplicit": false,
-      "name": "list_entries_pkey",
-      "schema": "public",
-      "table": "list_entries",
-      "entityType": "pks"
-    },
-    {
-      "type": "serial",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "schema": "public",
-      "table": "list_entries",
-      "entityType": "columns"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "list_id",
-      "schema": "public",
-      "table": "list_entries",
-      "entityType": "columns"
-    },
-    {
-      "type": "varchar(36)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "collection_id",
-      "schema": "public",
-      "table": "list_entries",
-      "entityType": "columns"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "list_id",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
+      "writes": [
+        "s|idx|public.gravities_cosmo_id_idx",
+        "n|idx|public.gravities_cosmo_id_idx",
+        "e|idx|public.gravities_cosmo_id_idx",
+        "n|rel|public.gravities_cosmo_id_idx"
       ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "list_entries_list_idx",
-      "schema": "public",
-      "table": "list_entries",
-      "entityType": "indexes"
+      "reads": [
+        "n|tbl|public.gravities",
+        "n|sch|public",
+        "n|col|public.gravities.cosmo_id"
+      ]
     },
     {
-      "nameExplicit": false,
-      "columns": [
-        "list_id"
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "gravity_poll_candidates",
+        "gravity_poll_candidates_cosmo_gravity_poll_id_idx"
       ],
-      "schemaTo": "public",
-      "tableTo": "lists",
-      "columnsTo": [
-        "id"
+      "writes": [
+        "s|idx|public.gravity_poll_candidates_cosmo_gravity_poll_id_idx",
+        "n|idx|public.gravity_poll_candidates_cosmo_gravity_poll_id_idx",
+        "e|idx|public.gravity_poll_candidates_cosmo_gravity_poll_id_idx",
+        "n|rel|public.gravity_poll_candidates_cosmo_gravity_poll_id_idx"
       ],
-      "onUpdate": "NO ACTION",
-      "onDelete": "CASCADE",
-      "name": "list_entries_list_id_lists_id_fk",
-      "schema": "public",
-      "table": "list_entries",
-      "entityType": "fks"
+      "reads": [
+        "n|tbl|public.gravity_poll_candidates",
+        "n|sch|public",
+        "n|col|public.gravity_poll_candidates.cosmo_gravity_poll_id"
+      ]
     },
     {
-      "isRlsEnabled": false,
-      "name": "lists",
-      "schema": "public",
-      "entityType": "tables"
-    },
-    {
-      "columns": [
-        "id"
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "gravity_poll_candidates",
+        "gravity_poll_candidates_candidate_id_idx"
       ],
-      "nameExplicit": false,
-      "name": "lists_pkey",
-      "schema": "public",
-      "table": "lists",
-      "entityType": "pks"
-    },
-    {
-      "type": "serial",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "schema": "public",
-      "table": "lists",
-      "entityType": "columns"
-    },
-    {
-      "type": "citext",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "user_address",
-      "schema": "public",
-      "table": "lists",
-      "entityType": "columns"
-    },
-    {
-      "type": "varchar(24)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "name",
-      "schema": "public",
-      "table": "lists",
-      "entityType": "columns"
-    },
-    {
-      "type": "citext",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "slug",
-      "schema": "public",
-      "table": "lists",
-      "entityType": "columns"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "user_address",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
+      "writes": [
+        "s|idx|public.gravity_poll_candidates_candidate_id_idx",
+        "n|idx|public.gravity_poll_candidates_candidate_id_idx",
+        "e|idx|public.gravity_poll_candidates_candidate_id_idx",
+        "n|rel|public.gravity_poll_candidates_candidate_id_idx"
       ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "lists_address_idx",
-      "schema": "public",
-      "table": "lists",
-      "entityType": "indexes"
+      "reads": [
+        "n|tbl|public.gravity_poll_candidates",
+        "n|sch|public",
+        "n|col|public.gravity_poll_candidates.candidate_id"
+      ]
     },
     {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "slug",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "gravity_poll_candidates",
+        "gravity_poll_candidates_cosmo_id_idx"
       ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "lists_slug_idx",
-      "schema": "public",
-      "table": "lists",
-      "entityType": "indexes"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "locked_objekts",
-      "schema": "public",
-      "entityType": "tables"
-    },
-    {
-      "columns": [
-        "id"
+      "writes": [
+        "s|idx|public.gravity_poll_candidates_cosmo_id_idx",
+        "n|idx|public.gravity_poll_candidates_cosmo_id_idx",
+        "e|idx|public.gravity_poll_candidates_cosmo_id_idx",
+        "n|rel|public.gravity_poll_candidates_cosmo_id_idx"
       ],
-      "nameExplicit": false,
-      "name": "locked_objekts_pkey",
-      "schema": "public",
-      "table": "locked_objekts",
-      "entityType": "pks"
+      "reads": [
+        "n|tbl|public.gravity_poll_candidates",
+        "n|sch|public",
+        "n|col|public.gravity_poll_candidates.cosmo_id"
+      ]
     },
     {
-      "type": "serial",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "schema": "public",
-      "table": "locked_objekts",
-      "entityType": "columns"
-    },
-    {
-      "type": "citext",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "user_address",
-      "schema": "public",
-      "table": "locked_objekts",
-      "entityType": "columns"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "tokenId",
-      "schema": "public",
-      "table": "locked_objekts",
-      "entityType": "columns"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "locked",
-      "schema": "public",
-      "table": "locked_objekts",
-      "entityType": "columns"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "user_address",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "gravity_polls",
+        "gravity_polls_cosmo_gravity_id_idx"
       ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "locked_objekts_user_address_idx",
-      "schema": "public",
-      "table": "locked_objekts",
-      "entityType": "indexes"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "locked",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
+      "writes": [
+        "s|idx|public.gravity_polls_cosmo_gravity_id_idx",
+        "n|idx|public.gravity_polls_cosmo_gravity_id_idx",
+        "e|idx|public.gravity_polls_cosmo_gravity_id_idx",
+        "n|rel|public.gravity_polls_cosmo_gravity_id_idx"
       ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "locked_objekts_locked_idx",
-      "schema": "public",
-      "table": "locked_objekts",
-      "entityType": "indexes"
+      "reads": [
+        "n|tbl|public.gravity_polls",
+        "n|sch|public",
+        "n|col|public.gravity_polls.cosmo_gravity_id"
+      ]
     },
     {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "user_address",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        },
-        {
-          "value": "locked",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "gravity_polls",
+        "gravity_polls_cosmo_id_idx"
       ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "address_locked_idx",
-      "schema": "public",
-      "table": "locked_objekts",
-      "entityType": "indexes"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "user_address",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        },
-        {
-          "value": "tokenId",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
+      "writes": [
+        "s|idx|public.gravity_polls_cosmo_id_idx",
+        "n|idx|public.gravity_polls_cosmo_id_idx",
+        "e|idx|public.gravity_polls_cosmo_id_idx",
+        "n|rel|public.gravity_polls_cosmo_id_idx"
       ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "address_token_idx",
-      "schema": "public",
-      "table": "locked_objekts",
-      "entityType": "indexes"
+      "reads": [
+        "n|tbl|public.gravity_polls",
+        "n|sch|public",
+        "n|col|public.gravity_polls.cosmo_id"
+      ]
     },
     {
-      "isRlsEnabled": false,
-      "name": "objekt_metadata",
-      "schema": "public",
-      "entityType": "tables"
-    },
-    {
-      "columns": [
-        "id"
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "gravity_polls",
+        "gravity_polls_poll_id_on_chain_idx"
       ],
-      "nameExplicit": false,
-      "name": "objekt_metadata_pkey",
-      "schema": "public",
-      "table": "objekt_metadata",
-      "entityType": "pks"
-    },
-    {
-      "type": "serial",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "schema": "public",
-      "table": "objekt_metadata",
-      "entityType": "columns"
-    },
-    {
-      "type": "varchar(36)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "collection_id",
-      "schema": "public",
-      "table": "objekt_metadata",
-      "entityType": "columns"
-    },
-    {
-      "type": "varchar(255)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "description",
-      "schema": "public",
-      "table": "objekt_metadata",
-      "entityType": "columns"
-    },
-    {
-      "type": "citext",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "user_address",
-      "schema": "public",
-      "table": "objekt_metadata",
-      "entityType": "columns"
-    },
-    {
-      "nameExplicit": false,
-      "columns": [
-        "collection_id"
+      "writes": [
+        "s|idx|public.gravity_polls_poll_id_on_chain_idx",
+        "n|idx|public.gravity_polls_poll_id_on_chain_idx",
+        "e|idx|public.gravity_polls_poll_id_on_chain_idx",
+        "n|rel|public.gravity_polls_poll_id_on_chain_idx"
       ],
-      "nullsNotDistinct": false,
-      "name": "objekt_metadata_collection_id_unique",
-      "schema": "public",
-      "table": "objekt_metadata",
-      "entityType": "uniques"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "collection_id",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "objekt_metadata_collection_idx",
-      "schema": "public",
-      "table": "objekt_metadata",
-      "entityType": "indexes"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "user_address",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "objekt_metadata_contributor_idx",
-      "schema": "public",
-      "table": "objekt_metadata",
-      "entityType": "indexes"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "pins",
-      "schema": "public",
-      "entityType": "tables"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "pins_pkey",
-      "schema": "public",
-      "table": "pins",
-      "entityType": "pks"
-    },
-    {
-      "type": "serial",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "schema": "public",
-      "table": "pins",
-      "entityType": "columns"
-    },
-    {
-      "type": "citext",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "user_address",
-      "schema": "public",
-      "table": "pins",
-      "entityType": "columns"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "token_id",
-      "schema": "public",
-      "table": "pins",
-      "entityType": "columns"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "user_address",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "pins_userAddress_idx",
-      "schema": "public",
-      "table": "pins",
-      "entityType": "indexes"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "token_id",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "pins_token_id_idx",
-      "schema": "public",
-      "table": "pins",
-      "entityType": "indexes"
-    },
-    {
-      "isRlsEnabled": false,
-      "name": "profiles",
-      "schema": "public",
-      "entityType": "tables"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "profiles_pkey",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "pks"
-    },
-    {
-      "type": "serial",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "columns"
-    },
-    {
-      "type": "citext",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "user_address",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "columns"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "cosmo_id",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "columns"
-    },
-    {
-      "type": "citext",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "nickname",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "columns"
-    },
-    {
-      "type": "varchar(24)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "artist",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "columns"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "false",
-      "generated": null,
-      "identity": null,
-      "name": "privacy_nickname",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "columns"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "false",
-      "generated": null,
-      "identity": null,
-      "name": "privacy_objekts",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "columns"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "false",
-      "generated": null,
-      "identity": null,
-      "name": "privacy_como",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "columns"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "false",
-      "generated": null,
-      "identity": null,
-      "name": "privacy_trades",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "columns"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "5",
-      "generated": null,
-      "identity": null,
-      "name": "grid_columns",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "columns"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "false",
-      "generated": null,
-      "identity": null,
-      "name": "objekt_editor",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "columns"
-    },
-    {
-      "type": "varchar(12)",
-      "typeSchema": null,
-      "notNull": false,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "data_source",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "columns"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "user_address",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
-      ],
-      "isUnique": true,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "profiles_address_idx",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "indexes"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "cosmo_id",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "profiles_cosmo_id_idx",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "indexes"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "nickname",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "profiles_nickname_idx",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "indexes"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "privacy_nickname",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "profiles_priv_nickname_idx",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "indexes"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "privacy_objekts",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "profiles_priv_objekts_idx",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "indexes"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "privacy_como",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "profiles_priv_como_idx",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "indexes"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "privacy_trades",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
-      ],
-      "isUnique": false,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "profiles_priv_trades_idx",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "indexes"
-    },
-    {
-      "nameExplicit": true,
-      "columns": [
-        {
-          "value": "nickname",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        },
-        {
-          "value": "user_address",
-          "isExpression": false,
-          "asc": true,
-          "nullsFirst": false,
-          "opclass": null
-        }
-      ],
-      "isUnique": true,
-      "where": null,
-      "with": "",
-      "method": "btree",
-      "concurrently": false,
-      "name": "profiles_nickname_address_idx",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "indexes"
+      "reads": [
+        "n|tbl|public.gravity_polls",
+        "n|sch|public",
+        "n|col|public.gravity_polls.poll_id_on_chain"
+      ]
     }
   ],
-  "renames": []
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "cosmo_tokens",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "gravities",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "gravity_poll_candidates",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "gravity_polls",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "cosmo_tokens",
+        "name": "id",
+        "type": "serial",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "cosmo_tokens",
+        "name": "access_token",
+        "type": "varchar(255)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "cosmo_tokens",
+        "name": "refresh_token",
+        "type": "varchar(255)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "gravities",
+        "name": "id",
+        "type": "serial",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "gravities",
+        "name": "artist",
+        "type": "citext",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "gravities",
+        "name": "cosmo_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "gravities",
+        "name": "title",
+        "type": "varchar(255)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "gravities",
+        "name": "description",
+        "type": "varchar(255)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "gravities",
+        "name": "image",
+        "type": "varchar(255)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "gravity_poll_candidates",
+        "name": "id",
+        "type": "serial",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "gravity_poll_candidates",
+        "name": "cosmo_gravity_poll_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "gravity_poll_candidates",
+        "name": "candidate_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "gravity_poll_candidates",
+        "name": "cosmo_id",
+        "type": "varchar(64)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "gravity_poll_candidates",
+        "name": "title",
+        "type": "varchar(255)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "gravity_poll_candidates",
+        "name": "image",
+        "type": "varchar(255)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "gravity_polls",
+        "name": "id",
+        "type": "serial",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "gravity_polls",
+        "name": "cosmo_gravity_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "gravity_polls",
+        "name": "cosmo_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "gravity_polls",
+        "name": "poll_id_on_chain",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "cosmo_tokens",
+        "name": "cosmo_tokens_access_token_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "access_token",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "cosmo_tokens",
+        "name": "cosmo_tokens_refresh_token_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "refresh_token",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "gravities",
+        "name": "gravities_artist_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "artist",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "gravities",
+        "name": "gravities_cosmo_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "cosmo_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "gravity_poll_candidates",
+        "name": "gravity_poll_candidates_cosmo_gravity_poll_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "cosmo_gravity_poll_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "gravity_poll_candidates",
+        "name": "gravity_poll_candidates_candidate_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "candidate_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "gravity_poll_candidates",
+        "name": "gravity_poll_candidates_cosmo_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "cosmo_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "gravity_polls",
+        "name": "gravity_polls_cosmo_gravity_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "cosmo_gravity_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "gravity_polls",
+        "name": "gravity_polls_cosmo_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "cosmo_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "gravity_polls",
+        "name": "gravity_polls_poll_id_on_chain_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "poll_id_on_chain",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "cosmo_tokens",
+        "name": "cosmo_tokens_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "gravities",
+        "name": "gravities_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "gravity_poll_candidates",
+        "name": "gravity_poll_candidates_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "gravity_polls",
+        "name": "gravity_polls_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    }
+  ]
 }

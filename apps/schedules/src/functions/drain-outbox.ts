@@ -11,7 +11,7 @@ import {
 import { pinCacheKey } from "@apollo/util-server";
 import { and, gt, inArray, lt, lte, sql } from "drizzle-orm";
 import { Effect } from "effect";
-import { Redis } from "effect/unstable/persistence";
+import { Redis } from "effect/persistence";
 import type { ScheduledTask } from "../task";
 
 const BATCH_SIZE = 1000;

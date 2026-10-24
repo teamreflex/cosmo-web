@@ -5,7 +5,7 @@ import {
   HttpClient,
   type HttpClientRequest,
   HttpClientResponse,
-} from "effect/unstable/http";
+} from "effect/http";
 
 export interface CapturedRequest {
   readonly method: string;

@@ -4,7 +4,7 @@ import {
   HttpClientError,
   HttpClientRequest,
   HttpClientResponse,
-} from "effect/unstable/http";
+} from "effect/http";
 import { CosmoApiError, CosmoDecodeError } from "../errors";
 import { COSMO_ENDPOINT } from "../types/common";
 

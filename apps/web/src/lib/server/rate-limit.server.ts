@@ -1,7 +1,7 @@
 import { Runtime } from "@/lib/server/runtime.server";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import { Cause, type Duration, Exit } from "effect";
-import { RateLimiter } from "effect/unstable/persistence";
+import { RateLimiter } from "effect/persistence";
 
 /**
  * Consume one request from a fixed-window rate limit, throwing

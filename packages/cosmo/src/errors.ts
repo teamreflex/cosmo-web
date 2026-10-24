@@ -1,5 +1,5 @@
 import { Data, type Schema } from "effect";
-import type { HttpClientError } from "effect/unstable/http";
+import type { HttpClientError } from "effect/http";
 
 /**
  * HTTP failure from the COSMO API. `status` is undefined for network-level

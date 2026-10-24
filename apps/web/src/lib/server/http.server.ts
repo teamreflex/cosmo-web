@@ -16,7 +16,7 @@ import {
   HttpClientError,
   HttpClientRequest,
   HttpClientResponse,
-} from "effect/unstable/http";
+} from "effect/http";
 
 /**
  * The RPC transport failed, or it returned an error status or error payload.

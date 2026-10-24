@@ -1,6 +1,6 @@
 import { afterEach } from "bun:test";
 import { Cause, Effect, Exit, ManagedRuntime } from "effect";
-import { HttpClient, HttpClientResponse } from "effect/unstable/http";
+import { HttpClient, HttpClientResponse } from "effect/http";
 
 export type CapturedRequest = {
   readonly method: string;

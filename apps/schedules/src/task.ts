@@ -1,6 +1,6 @@
 import { Cron, Duration, Effect, Schedule } from "effect";
-import type { HttpClient } from "effect/unstable/http";
-import type { Redis } from "effect/unstable/persistence";
+import type { HttpClient } from "effect/http";
+import type { Redis } from "effect/persistence";
 import type { DatabaseWeb } from "./db";
 import type { DatabaseIndexer } from "./db-indexer";
 import type { Exchangerate } from "./exchangerate";

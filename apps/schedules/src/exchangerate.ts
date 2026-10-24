@@ -9,11 +9,7 @@ import {
   Schedule,
   Schema,
 } from "effect";
-import {
-  FetchHttpClient,
-  HttpClient,
-  HttpClientResponse,
-} from "effect/unstable/http";
+import { FetchHttpClient, HttpClient, HttpClientResponse } from "effect/http";
 
 const ExchangerateResponse = Schema.Union([
   Schema.Struct({
