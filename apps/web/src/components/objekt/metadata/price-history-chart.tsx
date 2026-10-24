@@ -13,7 +13,7 @@ import {
   type PriceHistoryPoint,
   SPARSE_PRICE_HISTORY,
 } from "@/lib/universal/objekts";
-import { useId } from "react";
+import { useId, useState } from "react";
 import {
   Area,
   Bar,
@@ -71,6 +71,7 @@ export default function PriceHistoryChart({ points }: Props) {
   // colons in a generated id break the url(#id) the fill references
   const gradientId = `floor-${useId().replace(/:/g, "")}`;
   const { fromUsd, format } = useDisplayCurrency();
+  const [today] = useState(() => dayStart(new Date().toISOString()));
   const rows = toRows(
     points.map((point) => ({
       date: point.date,
@@ -78,7 +79,7 @@ export default function PriceHistoryChart({ points }: Props) {
       median: fromUsd(point.medianUsd),
       listingCount: point.listingCount,
     })),
-    dayStart(new Date().toISOString()),
+    today,
   );
   const start = rows[0]?.t ?? 0;
   const end = rows[rows.length - 1]?.t ?? 0;

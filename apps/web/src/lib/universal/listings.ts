@@ -3,8 +3,8 @@ import type { PublicUser } from "./auth";
 /**
  * One priced serial on someone's sale list, shaped for the listings dialog.
  * `priceUsd` is null when no FX rate exists for the list currency.
- * `sellerCosmo` is the seller's linked COSMO username, which their profile
- * and their lists are routed under.
+ * `sellerCosmo` is the seller's linked COSMO username, which names them and
+ * routes their profile and lists.
  */
 export type CollectionListing = {
   entryId: string;
@@ -20,8 +20,7 @@ export type CollectionListing = {
     slug: string;
   };
   seller: PublicUser;
-  sellerDisplay: string;
-  sellerCosmo: string | null;
+  sellerCosmo: string;
 };
 
 /**

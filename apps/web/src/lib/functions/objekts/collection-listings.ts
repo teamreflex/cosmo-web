@@ -9,7 +9,9 @@ import * as z from "zod";
 /**
  * Every priced serial of a collection across all sale lists, with the price
  * normalised to USD via the latest FX rate and the seller shaped for display.
- * Unpriced entries are not offers and are left out.
+ * Unpriced entries are not offers and are left out, and so are sellers without
+ * a linked COSMO account, since a listing names its seller by their COSMO
+ * username.
  */
 export const $fetchCollectionListings = createServerFn({ method: "GET" })
   .validator(z.object({ slug: z.string().max(36) }))
@@ -40,7 +42,8 @@ export const $fetchCollectionListings = createServerFn({ method: "GET" })
         entry.tokenId === null ||
         entry.price === null ||
         list === null ||
-        list.currency === null
+        list.currency === null ||
+        list.user.cosmoAccount === null
       ) {
         return [];
       }
@@ -52,6 +55,7 @@ export const $fetchCollectionListings = createServerFn({ method: "GET" })
           price: entry.price,
           currency: list.currency,
           list,
+          sellerCosmo: list.user.cosmoAccount.username,
         },
       ];
     });
@@ -63,7 +67,7 @@ export const $fetchCollectionListings = createServerFn({ method: "GET" })
 
     return priced.map((entry) => {
       const rate = rates.get(entry.currency);
-      const { cosmoAccount, ...user } = entry.list.user;
+      const { cosmoAccount: _, ...user } = entry.list.user;
       return {
         entryId: entry.id,
         tokenId: entry.tokenId,
@@ -78,8 +82,7 @@ export const $fetchCollectionListings = createServerFn({ method: "GET" })
           slug: entry.list.slug,
         },
         seller: toPublicUser(user),
-        sellerDisplay: user.displayUsername ?? user.name,
-        sellerCosmo: cosmoAccount?.username ?? null,
+        sellerCosmo: entry.sellerCosmo,
       };
     });
   });

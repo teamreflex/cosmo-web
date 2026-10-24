@@ -106,7 +106,7 @@ export default function ListingRow({
           <Popover>
             <PopoverTrigger
               aria-label={m.listings_contact_seller({
-                seller: `@${listing.sellerDisplay}`,
+                seller: `@${listing.sellerCosmo}`,
               })}
               className={cn(
                 buttonVariants({ variant: "outline" }),
@@ -235,8 +235,7 @@ const linkClass =
   "truncate underline-offset-2 transition-colors hover:text-cosmo-text hover:underline";
 
 /**
- * The seller's name, linked to their profile when they have a COSMO account
- * (Apollo-only users have no profile page).
+ * The seller's COSMO username, linked to their profile.
  */
 function Seller({
   listing,
@@ -247,37 +246,22 @@ function Seller({
   own: boolean;
   className?: string;
 }) {
-  const name = own ? m.listings_you() : `@${listing.sellerDisplay}`;
-
-  if (listing.sellerCosmo === null) {
-    return <span className={cn("truncate", className)}>{name}</span>;
-  }
-
   return (
     <Link
       to="/@{$username}"
       params={{ username: listing.sellerCosmo }}
       className={cn(linkClass, "text-foreground", className)}
     >
-      {name}
+      {own ? m.listings_you() : `@${listing.sellerCosmo}`}
     </Link>
   );
 }
 
 /**
- * The sale list, linked under the seller's profile when they have one, the
- * same place `/list/$id` would redirect to.
+ * The sale list, linked under the seller's profile.
  */
 function ListName({ listing }: { listing: CollectionListing }) {
-  return listing.sellerCosmo === null ? (
-    <Link
-      to="/list/$id"
-      params={{ id: listing.list.id }}
-      className={cn(linkClass, "min-w-0")}
-    >
-      {listing.list.name}
-    </Link>
-  ) : (
+  return (
     <Link
       to="/@{$username}/list/$slug"
       params={{ username: listing.sellerCosmo, slug: listing.list.slug }}

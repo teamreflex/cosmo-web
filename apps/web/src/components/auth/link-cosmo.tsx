@@ -18,20 +18,10 @@ import {
   $verifyCosmoBio,
 } from "@/lib/functions/auth";
 import { artistsQuery, currentAccountQuery } from "@/lib/queries/core";
-import {
-  type AccountErrorCode,
-  isAccountErrorCode,
-} from "@/lib/universal/errors/accounts";
-import {
-  DISCORD_URL,
-  type PropsWithClassName,
-  artistColors,
-  cn,
-  track,
-} from "@/lib/utils";
+import { isAccountErrorCode } from "@/lib/universal/errors/accounts";
+import { artistColors, cn, track } from "@/lib/utils";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
 import type { CosmoPublicUser } from "@apollo/cosmo/types/user";
-import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconCheck, IconCircleCheck, IconLoader2 } from "@tabler/icons-react";
 import {
   useMutation,
@@ -284,7 +274,7 @@ function SearchStep({ artistId, onContinue }: SearchStepProps) {
           }}
           invalid={error !== null}
         />
-        {error !== null && <LinkRefusal error={error} />}
+        {error !== null && <FieldError>{formatError(error)}</FieldError>}
       </Field>
 
       <Button
@@ -378,7 +368,7 @@ function CodeStep({ code, onSuccess, onBack }: CodeStepProps) {
       )}
 
       {error !== null && !isNotFound && (
-        <LinkRefusal error={error} className="text-center" />
+        <FieldError className="text-center">{formatError(error)}</FieldError>
       )}
 
       <div className="flex gap-2">
@@ -393,43 +383,6 @@ function CodeStep({ code, onSuccess, onBack }: CodeStepProps) {
           </Button>
         )}
       </div>
-    </div>
-  );
-}
-
-type LinkRefusalProps = PropsWithClassName<{
-  error: Error;
-}>;
-
-/**
- * Why a link attempt was refused. An account linked elsewhere can be moved by
- * staff, so that refusal also points to the Discord.
- */
-function LinkRefusal({ error, className }: LinkRefusalProps) {
-  return (
-    <div className={cn("flex flex-col gap-2", className)}>
-      <FieldError>{formatError(error)}</FieldError>
-      {error.message ===
-        ("account_linked_elsewhere" satisfies AccountErrorCode) && (
-        <p className="text-xs text-muted-foreground">
-          <ParaglideMessage
-            message={m.link_cosmo_linked_elsewhere_help}
-            inputs={{ appName: env.VITE_APP_NAME }}
-            markup={{
-              link: ({ children }) => (
-                <a
-                  href={DISCORD_URL}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-cosmo hover:underline dark:text-cosmo-text"
-                >
-                  {children}
-                </a>
-              ),
-            }}
-          />
-        </p>
-      )}
     </div>
   );
 }
