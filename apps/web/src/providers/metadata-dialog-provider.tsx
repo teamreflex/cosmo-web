@@ -79,7 +79,7 @@ export function MetadataDialogProvider({ children }: Props) {
             opener.current?.isConnected === true ? opener.current : true
           }
           side="right"
-          className="w-full gap-0 p-0 outline-hidden data-[side=right]:sm:max-w-xl"
+          className="w-full gap-0 p-0 outline-hidden data-[side=right]:sm:max-w-lg"
         >
           {state !== null && (
             <>

@@ -22,6 +22,7 @@ Base UI behaviours the components rely on:
 - Drawers dismiss on a hard-coded swipe rule (past half the height, or ≥0.5 px/ms). A swipe-dismissed drawer must close in the same `onOpenChange` call (reason `"swipe"`) or it springs back. `data-base-ui-swipe-ignore` stops a swipe starting on an element (the 3D flippable card).
 - A Drawer's first open per page load calls `CSS.registerProperty`, forcing a full-document style recalc inside the tap.
 - With classic (inset) scrollbars, the scroll lock sets `scrollbar-gutter: stable` and leaves an empty strip where the page scrollbar was; fixed layers can't paint into it, so backdrops stop short of the edge ([mui/base-ui#4615](https://github.com/mui/base-ui/issues/4615)). Right-side Sheets use `right-window-edge` to tuck their own scrollbar under that strip. Headless Chrome only has overlay scrollbars, so check this in a desktop browser.
+- iOS 26+ Safari ends `position: fixed` layers at the top of its floating bottom toolbar and fills the strip beneath with a colour sampled from fixed elements at that edge, so open drawers and sheets show a solid band there. Nothing is hidden (fixed layouts see `innerHeight` = `100dvh`, which stops at the toolbar), and no CSS moves it: absolute backdrops, translucent popups and removing the scroll lock all leave it ([Apple forums](https://developer.apple.com/forums/thread/800798)).
 - Don't add Radix primitives alongside Base UI overlays — mixing them breaks Esc layering and focus traps.
 
 If you need a component that doesn't exist in the codebase, you can likely add it from the shadcn library. Use the shadcn CLI or copy the component code from their documentation.
@@ -52,8 +53,8 @@ function SubComponent() {}
 Use `react-hook-form` with `@hookform/resolvers/standard-schema` for Zod validation:
 
 ```tsx
-import { useForm, Controller } from "react-hook-form";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
+import { Controller, useForm } from "react-hook-form";
 
 const form = useForm({
   resolver: standardSchemaResolver(schema),
@@ -91,7 +92,7 @@ Submit with `mutation.mutate` and handle outcomes in `onSuccess`/`onError`. Make
 
 Gate bad input on the **client** with RHF — keep server-fn validators strict rather than loosening them to absorb bad input. Prefer `useForm` + `standardSchemaResolver` over raw `useState` dialogs. Use plain-English `.refine` messages (not i18n); a row-level `.refine` maps its path to `rows.${i}.field`.
 
-**Schema reuse:** default to using the server fn's own Zod schema as the RHF resolver — seed `defaultValues` with the full payload (identity fields like `slug`/`tokenId` ride along un-edited), bind inputs to the real paths (`entries.${i}.price`), and submit `data` straight through. One schema, validated both sides. Only use a bespoke client schema when the form is a genuinely different *shape* than the request (e.g. a selection subset); even then, extract the shared per-field rule to one source (e.g. a `salePriceSchema` imported by both).
+**Schema reuse:** default to using the server fn's own Zod schema as the RHF resolver — seed `defaultValues` with the full payload (identity fields like `slug`/`tokenId` ride along un-edited), bind inputs to the real paths (`entries.${i}.price`), and submit `data` straight through. One schema, validated both sides. Only use a bespoke client schema when the form is a genuinely different _shape_ than the request (e.g. a selection subset); even then, extract the shared per-field rule to one source (e.g. a `salePriceSchema` imported by both).
 
 **Hook variables, not closures:** when a shared mutation hook needs form values, make its `mutationFn` generic over `TVariables` (default `void`) and pass validated values via `form.handleSubmit((values) => mutation.mutate(values))` — don't read `form.getValues()` inside a no-arg thunk.
 

@@ -1,8 +1,8 @@
 import ObjektPanel from "@/components/objekt/detail/objekt-panel";
-import { ApproxPrice } from "@/components/objekt/price-display";
 import SortButton, {
   type SortDir,
 } from "@/components/objekt/detail/sort-button";
+import { ApproxPrice } from "@/components/objekt/price-display";
 import { useDisplayCurrency } from "@/hooks/use-display-currency";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { useUserState } from "@/hooks/use-user-state";
@@ -59,11 +59,7 @@ export default function ListingsContent({ collection, pinnedEntryId }: Props) {
   const isDesktop = useMediaQuery();
   const { ref: columnRef, wide } = useWideColumn();
   usePrefetchQuery(objektPriceHistoryQuery(collection.slug, "30d"));
-  const layout: Layout = !isDesktop
-    ? "phone"
-    : wide
-      ? "wide"
-      : "narrow";
+  const layout: Layout = !isDesktop ? "phone" : wide ? "wide" : "narrow";
 
   const listings = (
     <ErrorBoundary fallback={<Message>{m.error_loading_objekt()}</Message>}>
@@ -91,7 +87,7 @@ export default function ListingsContent({ collection, pinnedEntryId }: Props) {
   }
 
   return (
-    <div className="grid min-h-0 flex-1 grid-cols-[minmax(280px,380px)_1fr] overflow-hidden">
+    <div className="grid min-h-0 flex-1 grid-cols-[calc(var(--objekt-width)+6rem)_1fr] overflow-hidden [--objekt-width:min(280px,calc(50dvh*(var(--aspect-photocard))))]">
       <ObjektPanel collection={collection} isDesktop />
       {/* the panel alone sets the height, so long lists scroll instead of growing the dialog */}
       <div ref={columnRef} className="flex min-h-0 flex-col contain-size">

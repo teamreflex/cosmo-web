@@ -36,7 +36,7 @@ export default function MetadataDialog({ slug, open, onClose }: Props) {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-full gap-0 p-0 outline-hidden data-[side=right]:sm:max-w-xl"
+        className="w-full gap-0 p-0 outline-hidden data-[side=right]:sm:max-w-lg"
       >
         {slug !== undefined && (
           <>
