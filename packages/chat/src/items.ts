@@ -83,10 +83,7 @@ const KnownTradeEvent = Schema.Union([
     deadlineAt: Schema.String,
     note: StaffNote,
   }),
-  Schema.Struct({
-    type: Schema.Literal("timed_out"),
-    abandoned: Schema.mutable(Schema.Array(TradeSide)),
-  }),
+  Schema.Struct({ type: Schema.Literal("timed_out") }),
   Schema.Struct({ type: Schema.Literal("token_moved"), tokenId: Schema.Int }),
   Schema.Struct({
     type: Schema.Literal("token_untransferable"),

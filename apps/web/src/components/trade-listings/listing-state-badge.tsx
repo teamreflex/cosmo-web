@@ -29,7 +29,7 @@ export default function ListingStateBadge({
         </Badge>
       );
     case "broken":
-    case "abandoned":
+    case "timed_out":
       return (
         <Badge className={tones.warn}>{m.listing_detail_status_closed()}</Badge>
       );

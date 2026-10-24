@@ -10,7 +10,7 @@ const DAY = 24 * 60 * 60 * 1000;
 
 /**
  * How a trade its parties may rate ended, or null when they may not, so
- * ratings show who abandoned a trade. A completed or timed-out trade always
+ * ratings show who let a trade lapse. A completed or timed-out trade always
  * may be rated, as may one staff cancelled, since staff usually end a
  * dispute against a silent party that way. A party may only cancel before
  * anything is sent, so their cancel can't be rated, and a disputed trade

@@ -20,13 +20,12 @@ export type TradeItemState =
 
 /**
  * A trade's status and what each of its items has done, which is all a
- * transition needs. Cancelled and timed-out trades carry who cancelled or
- * abandoned them, matching the table's checks.
+ * transition needs. A cancelled trade carries who cancelled it, matching the
+ * table's check.
  */
 export type TradeState = (
   | { status: "cancelled"; cancelledBy: TradeCanceller }
-  | { status: "timed_out"; abandonedBy: [TradeSide, ...TradeSide[]] }
-  | { status: Exclude<TradeStatus, "cancelled" | "timed_out"> }
+  | { status: Exclude<TradeStatus, "cancelled"> }
 ) & { items: readonly TradeItemState[] };
 
 /**
@@ -222,13 +221,12 @@ function endEarly(
       };
     case "dispute":
       return { ok: true, trade: { status: "disputed", items } };
-    case "time_out": {
-      const [first, ...rest] = owingSides(items);
+    case "time_out":
       /**
        * Nobody owes anything, only a payment's confirmation is missing: the
        * receiver had until the deadline to say it never arrived.
        */
-      if (first === undefined) {
+      if (owingSides(items).length === 0) {
         return { ok: true, trade: { status: "completed", items } };
       }
       /**
@@ -239,11 +237,7 @@ function endEarly(
       if (items.some(isStarted)) {
         return { ok: true, trade: { status: "disputed", items } };
       }
-      return {
-        ok: true,
-        trade: { status: "timed_out", abandonedBy: [first, ...rest], items },
-      };
-    }
+      return { ok: true, trade: { status: "timed_out", items } };
   }
 }
 
@@ -315,6 +309,18 @@ export function owingSides(items: readonly TradeItemState[]): TradeSide[] {
         (item.kind === "objekt" ? !item.transferred : !item.markedPaid),
     );
   return (["from", "to"] as const).filter(owes);
+}
+
+/**
+ * The side that sent everything it owed while the other side still owes,
+ * which a dispute at the deadline names as its reporter. Null when both
+ * sides still owe something, or neither does.
+ */
+export function waitingSide(
+  items: readonly TradeItemState[],
+): TradeSide | null {
+  const [owing, ...rest] = owingSides(items);
+  return owing !== undefined && rest.length === 0 ? otherSide(owing) : null;
 }
 
 // the trade's other side, who receives what this side sends
@@ -393,8 +399,8 @@ export type ListingEvent =
   | "break"
   // staff removed it, or its poster was banned
   | "remove"
-  // the claim timed out with the poster marked abandoned
-  | "abandon";
+  // the claim's trade timed out with nothing sent
+  | "time_out";
 
 /**
  * Which statuses each listing event leaves from, and where it goes. A
@@ -408,7 +414,7 @@ const listingTransitions = {
   withdraw: { from: ["open"], to: "withdrawn" },
   break: { from: ["open", "claimed"], to: "broken" },
   remove: { from: ["open", "claimed"], to: "removed" },
-  abandon: { from: ["claimed"], to: "abandoned" },
+  time_out: { from: ["claimed"], to: "timed_out" },
 } as const satisfies Record<
   ListingEvent,
   { from: readonly ListingStatus[]; to: ListingStatus }
@@ -440,24 +446,23 @@ export function listingTransition(event: ListingEvent): {
 
 /**
  * What happens to a claimed listing when its trade ends. A completed trade
- * fills it. Otherwise a banned poster's listing is removed, a poster marked
- * abandoned loses it, and anything else releases it back to the poster: the
- * caller reopens it if the poster can still offer every token, else breaks
- * it. Only a release depends on the poster's holdings, so callers read them
+ * fills it. Otherwise a banned poster's listing is removed, a timed-out
+ * trade closes it, since neither side acted in time, and a cancelled one
+ * releases it back to the poster: the caller reopens it if the poster still
+ * holds every token, else breaks it. Only a release depends on the poster's holdings, so callers read them
  * only then. Live trades leave it alone.
  */
 export function listingEventAfter(
   trade: TradeState,
   poster: { banned: boolean },
-): ListingEvent | "release" | undefined {
+): Exclude<ListingEvent, "reopen"> | "release" | undefined {
   switch (trade.status) {
     case "completed":
       return "fill";
     case "cancelled":
       return poster.banned ? "remove" : "release";
     case "timed_out":
-      if (poster.banned) return "remove";
-      return trade.abandonedBy.includes("from") ? "abandon" : "release";
+      return poster.banned ? "remove" : "time_out";
     default:
       return undefined;
   }
@@ -470,7 +475,6 @@ export function endedTradeColumns(trade: TradeState) {
   return {
     status: trade.status,
     cancelledBy: trade.status === "cancelled" ? trade.cancelledBy : null,
-    abandonedBy: trade.status === "timed_out" ? trade.abandonedBy : null,
   };
 }
 
@@ -500,7 +504,7 @@ export function tradeListings(
  * Throws on a listing or on a row the table's checks forbid.
  */
 export function tradeState(
-  row: Pick<TradeOffer, "status" | "cancelledBy" | "abandonedBy">,
+  row: Pick<TradeOffer, "status" | "cancelledBy">,
   rows: readonly Pick<
     TradeOfferItem,
     "kind" | "sender" | "transferredAt" | "markedPaidAt" | "confirmedAt"
@@ -527,17 +531,11 @@ export function tradeState(
         throw new Error("cancelled trade without cancelled_by");
       }
       return { status: row.status, cancelledBy: row.cancelledBy, items };
-    case "timed_out": {
-      const [first, ...rest] = row.abandonedBy ?? [];
-      if (first === undefined) {
-        throw new Error("timed out trade without abandoned_by");
-      }
-      return { status: row.status, abandonedBy: [first, ...rest], items };
-    }
     case "pending":
     case "accepted":
     case "disputed":
     case "completed":
+    case "timed_out":
     case "declined":
     case "withdrawn":
     case "countered":
@@ -549,7 +547,6 @@ export function tradeState(
     case "filled":
     case "broken":
     case "removed":
-    case "abandoned":
       throw new Error(`${row.status} is a listing status`);
   }
 }

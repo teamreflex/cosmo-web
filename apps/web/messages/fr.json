@@ -530,7 +530,7 @@
   "trade_page_item_not_sent": "Non envoyé",
   "trade_page_not_seen": "pas encore vu",
   "trade_page_view_transfer": "Voir le transfert",
-  "trade_page_deadline_note": "Le délai se base sur le moment où chaque transfert a eu lieu dans l'app COSMO, pas sur le moment où {appName} l'a remarqué. Si le temps s'écoule avec des transferts manquants, la personne qui avait encore des objekts à envoyer reçoit une marque d'abandon.",
+  "trade_page_deadline_note": "Le délai se base sur le moment où chaque transfert a eu lieu dans l'app COSMO, pas sur le moment où {appName} l'a remarqué. Si le temps s'écoule après un envoi, l'équipe examine l'échange ; si rien n'a été envoyé, il est fermé.",
   "trade_page_send": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
@@ -579,30 +579,7 @@
   "trade_page_cancelled_them": "{name} a annulé cet échange.",
   "trade_page_cancelled_staff": "L'équipe {appName} a annulé cet échange.",
   "trade_page_not_reversed": "{appName} ne renvoie pas ce qui a déjà été envoyé.",
-  "trade_page_timed_out_both": "Le temps s'est écoulé alors que vous deviez encore tous les deux des objekts.",
-  "trade_page_timed_out_you": "Le temps s'est écoulé alors que vous deviez encore des objekts.",
-  "trade_page_timed_out_them": "Le temps s'est écoulé alors que {name} devait encore des objekts.",
-  "trade_page_owed_you": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=one": "Vous deviez encore 1 objekt.",
-        "countPlural=other": "Vous deviez encore {count} objekts."
-      }
-    }
-  ],
-  "trade_page_owed_them": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=one": "{name} devait encore 1 objekt.",
-        "countPlural=other": "{name} devait encore {count} objekts."
-      }
-    }
-  ],
-  "trade_page_abandoned_note": "Quiconque devait encore des objekts reçoit une marque d'abandon.",
+  "trade_page_timed_out": "Le temps s'est écoulé avant que quoi que ce soit ne soit envoyé, donc cet échange a été fermé.",
   "trade_page_view_listing": "Voir l'annonce",
   "trade_page_moved_yours_title": "{#b}{objekt}{/b} a quitté votre compte.",
   "trade_page_moved_yours_body": "Cet échange ne compte que cet exemplaire : il ne peut atteindre {name} que s'il revient sur votre compte.",
@@ -628,9 +605,7 @@
   "trade_page_event_disputed_staff": "L'équipe {appName} a mis l'échange en pause pour l'examiner.",
   "trade_page_event_disputed_deadline": "Le délai est passé avec des objekts encore dus : l'équipe {appName} a mis l'échange en pause pour l'examiner.",
   "trade_page_event_extended": "L'équipe {appName} vous a accordé jusqu'au {#time}{when}{/time} à tous les deux.",
-  "trade_page_event_timed_out_both": "Le temps s'est écoulé alors que vous deviez encore tous les deux des objekts.",
-  "trade_page_event_timed_out_you": "Le temps s'est écoulé alors que vous deviez encore des objekts.",
-  "trade_page_event_timed_out_them": "Le temps s'est écoulé alors que {#b}{name}{/b} devait encore des objekts.",
+  "trade_page_event_timed_out": "Le temps s'est écoulé avant que quoi que ce soit ne soit envoyé.",
   "trade_page_event_moved_yours": "{#b}{objekt}{/b} a quitté votre compte.",
   "trade_page_event_moved_theirs": "{#b}{objekt}{/b} a quitté le compte de {#b}{name}{/b}.",
   "trade_page_event_untransferable": "{#b}{objekt}{/b} ne peut plus être transféré.",
@@ -765,7 +740,6 @@
   "trade_page_problem_staff_body": "{sender} ne peut plus l'envoyer à {receiver} par cet échange.",
   "trade_page_disputed_body_staff": "Le minuteur est en pause et aucune des parties ne peut annuler ; les transferts comptent toujours. Le staff l'annule ici, ou le règle depuis le signalement.",
   "trade_page_disputed_body_staff_paused": "Le minuteur est en pause et aucune des parties ne peut annuler ; les transferts comptent toujours. Le staff l'annule ici, ou le règle depuis le signalement.",
-  "trade_page_timed_out_both_staff": "Le temps s'est écoulé alors que les deux parties devaient encore des objekts.",
   "trade_page_event_accepted_staff": "{#b}{claimer}{/b} a accepté l'annonce de {#b}{poster}{/b}.",
   "trade_page_event_extended_staff": "L'équipe {appName} a accordé aux deux parties jusqu'au {#time}{when}{/time}.",
   "listing_detail_title": "Annonce d'échange",
@@ -871,10 +845,9 @@
   "listing_detail_closed_withdrawn": "{poster} a fermé cette annonce.",
   "listing_detail_closed_broken": "Un objekt proposé a quitté le compte de {poster} ou ne peut pas être transféré, donc cette annonce ne peut pas aboutir.",
   "listing_detail_closed_removed": "Supprimée par l'équipe {appName}.",
-  "listing_detail_closed_abandoned": "{poster} n'a pas envoyé sa part d'un échange accepté, donc cette annonce a été fermée.",
+  "listing_detail_closed_timed_out": "Son échange a expiré avant que l'une ou l'autre partie n'envoie quoi que ce soit, donc cette annonce a été fermée.",
   "listing_detail_closed_withdrawn_own": "Vous avez fermé cette annonce.",
   "listing_detail_closed_broken_own": "Un objekt proposé a quitté votre compte ou ne peut pas être transféré, donc cette annonce ne peut pas aboutir.",
-  "listing_detail_closed_abandoned_own": "Vous n'avez pas envoyé votre part d'un échange accepté, donc cette annonce a été fermée.",
   "listing_detail_you_give_summary": "choisis parmi vos objekts",
   "listing_detail_you_get_summary": "de {poster}",
   "listing_detail_summary_ranges": [
@@ -911,7 +884,7 @@
   "listing_confirm_title": "Confirmer l'échange",
   "listing_confirm_submit": "Confirmer",
   "listing_confirm_lead": "Vous acceptez l'annonce de {#user}{poster}{/user}. Vérifiez chaque numéro de série : c'est exactement ce que vous allez envoyer et recevoir.",
-  "listing_confirm_deadline": "Vous aurez tous les deux {#hours}48 heures{/hours}, jusqu'au {#time}{date}{/time}, pour envoyer dans l'app COSMO. Envoyez votre part à {#user}{poster}{/user} ; le côté qui n'a pas envoyé d'ici là est marqué comme abandonné.",
+  "listing_confirm_deadline": "Vous aurez tous les deux {#hours}48 heures{/hours}, jusqu'au {#time}{date}{/time}, pour envoyer dans l'app COSMO. Envoyez votre part à {#user}{poster}{/user} ; si rien n'a été envoyé d'ici là, l'échange est fermé.",
   "listing_confirm_deadline_short": "48 heures pour envoyer, jusqu'au {#time}{date}{/time}",
   "listing_confirm_updated_title": "{poster} a modifié cette annonce",
   "listing_confirm_updated_body": "Vérifiez les changements.",
@@ -1517,9 +1490,9 @@
   "admin_dispute_complete_title": "Terminer cet échange ?",
   "admin_dispute_complete_hint": "Termine l'échange comme réussi et clôt l'annonce comme pourvue. Les objekts non envoyés restent non envoyés.",
   "admin_dispute_cancel": "Annuler l'échange",
-  "admin_dispute_cancel_hint": "Met fin à l'échange sans marque d'abandon. L'annonce rouvre si l'auteur détient toujours les objekts, sinon elle est rompue. L'annonce d'un auteur banni est retirée.",
+  "admin_dispute_cancel_hint": "Met fin à l'échange. L'annonce rouvre si l'auteur détient toujours les objekts, sinon elle est rompue. L'annonce d'un auteur banni est retirée.",
   "admin_dispute_complete_hint_offer": "Termine l'échange comme réussi. Les objekts non envoyés restent non envoyés.",
-  "admin_dispute_cancel_hint_offer": "Met fin à l'échange sans marque d'abandon.",
+  "admin_dispute_cancel_hint_offer": "Met fin à l'échange.",
   "admin_dispute_extended": "Délai prolongé",
   "admin_dispute_completed": "Échange terminé",
   "admin_dispute_cancelled": "Échange annulé",

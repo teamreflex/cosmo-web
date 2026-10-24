@@ -523,7 +523,7 @@
   "trade_page_item_not_sent": "未发送",
   "trade_page_not_seen": "尚未检测到",
   "trade_page_view_transfer": "查看转移",
-  "trade_page_deadline_note": "截止时间以每笔转移在 COSMO App 中实际发生的时间为准，而不是 {appName} 检测到的时间。如果时间耗尽时仍有转移未完成，仍有 Objekt 未发送的一方会被记一次弃单。",
+  "trade_page_deadline_note": "截止时间以每笔转移在 COSMO App 中实际发生的时间为准，而不是 {appName} 检测到的时间。如果已有 Objekt 发送后时间耗尽，工作人员会审核此交换；如果什么都没发送，交换将关闭。",
   "trade_page_send": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
@@ -570,28 +570,7 @@
   "trade_page_cancelled_them": "{name} 取消了此交换。",
   "trade_page_cancelled_staff": "{appName} 工作人员取消了此交换。",
   "trade_page_not_reversed": "{appName} 不会退回已发送的 Objekt。",
-  "trade_page_timed_out_both": "时间已耗尽，你们双方仍有未发送的 Objekt。",
-  "trade_page_timed_out_you": "时间已耗尽，你仍有未发送的 Objekt。",
-  "trade_page_timed_out_them": "时间已耗尽，{name} 仍有未发送的 Objekt。",
-  "trade_page_owed_you": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=other": "你仍有 {count} 张 Objekt 未发送。"
-      }
-    }
-  ],
-  "trade_page_owed_them": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=other": "{name} 仍有 {count} 张 Objekt 未发送。"
-      }
-    }
-  ],
-  "trade_page_abandoned_note": "仍有 Objekt 未发送的一方会被记一次弃单。",
+  "trade_page_timed_out": "时间已耗尽，双方均未发送任何 Objekt，因此此交换已关闭。",
   "trade_page_view_listing": "查看挂单",
   "trade_page_moved_yours_title": "{#b}{objekt}{/b} 已离开你的账号。",
   "trade_page_moved_yours_body": "此交换只认这一张，除非它回到你的账号，否则无法通过此交换送达 {name}。",
@@ -617,9 +596,7 @@
   "trade_page_event_disputed_staff": "{appName} 工作人员已暂停此交换以进行审核。",
   "trade_page_event_disputed_deadline": "期限已过但仍有 Objekt 未送出，{appName} 工作人员已暂停此交换以进行审核。",
   "trade_page_event_extended": "{appName} 工作人员将你们双方的截止时间延长至 {#time}{when}{/time}。",
-  "trade_page_event_timed_out_both": "时间已耗尽，你们双方仍有未发送的 Objekt。",
-  "trade_page_event_timed_out_you": "时间已耗尽，你仍有未发送的 Objekt。",
-  "trade_page_event_timed_out_them": "时间已耗尽，{#b}{name}{/b} 仍有未发送的 Objekt。",
+  "trade_page_event_timed_out": "时间已耗尽，双方均未发送任何 Objekt。",
   "trade_page_event_moved_yours": "{#b}{objekt}{/b} 已离开你的账号。",
   "trade_page_event_moved_theirs": "{#b}{objekt}{/b} 已离开 {#b}{name}{/b} 的账号。",
   "trade_page_event_untransferable": "{#b}{objekt}{/b} 已无法转移。",
@@ -754,7 +731,6 @@
   "trade_page_problem_staff_body": "{sender} 已无法通过此交换将其发送给 {receiver}。",
   "trade_page_disputed_body_staff": "计时已暂停，任何一方都无法取消；转移仍然有效。工作人员可在此取消，或在举报中处理此交换。",
   "trade_page_disputed_body_staff_paused": "计时已暂停，任何一方都无法取消；转移仍然有效。工作人员可在此取消，或在举报中处理此交换。",
-  "trade_page_timed_out_both_staff": "时间已耗尽，双方仍有未发送的 Objekt。",
   "trade_page_event_accepted_staff": "{#b}{claimer}{/b} 接受了 {#b}{poster}{/b} 的挂单。",
   "trade_page_event_extended_staff": "{appName} 工作人员将双方的截止时间延长至 {#time}{when}{/time}。",
   "listing_detail_title": "交换挂单",
@@ -856,10 +832,9 @@
   "listing_detail_closed_withdrawn": "{poster} 已关闭此挂单。",
   "listing_detail_closed_broken": "提供的某张 Objekt 已离开 {poster} 的账号或无法转移，因此此挂单无法继续。",
   "listing_detail_closed_removed": "已被 {appName} 工作人员移除。",
-  "listing_detail_closed_abandoned": "{poster} 未在已接受的交换中发送自己的 Objekt，因此此挂单已关闭。",
+  "listing_detail_closed_timed_out": "其交换在双方发送任何 Objekt 之前已超时，因此此挂单已关闭。",
   "listing_detail_closed_withdrawn_own": "你已关闭此挂单。",
   "listing_detail_closed_broken_own": "你提供的某张 Objekt 已离开你的账号或无法转移，因此此挂单无法继续。",
-  "listing_detail_closed_abandoned_own": "你未在已接受的交换中发送自己的 Objekt，因此此挂单已关闭。",
   "listing_detail_you_give_summary": "从你持有的 Objekt 中选择",
   "listing_detail_you_get_summary": "来自 {poster}",
   "listing_detail_summary_ranges": [
@@ -885,7 +860,7 @@
   "listing_confirm_title": "确认交换",
   "listing_confirm_submit": "确认",
   "listing_confirm_lead": "你正在接受 {#user}{poster}{/user} 的挂单。请核对每个序号：这正是你将发送和收到的内容。",
-  "listing_confirm_deadline": "你们双方有 {#hours}48 小时{/hours}（截至 {#time}{date}{/time}）在 COSMO App 中发送。请将你的 Objekt 发送给 {#user}{poster}{/user}；届时仍未发送的一方将被记为弃单。",
+  "listing_confirm_deadline": "你们双方有 {#hours}48 小时{/hours}（截至 {#time}{date}{/time}）在 COSMO App 中发送。请将你的 Objekt 发送给 {#user}{poster}{/user}；如果届时仍未发送任何 Objekt，交换将关闭。",
   "listing_confirm_deadline_short": "48 小时内发送，截至 {#time}{date}{/time}",
   "listing_confirm_updated_title": "{poster} 更改了此挂单",
   "listing_confirm_updated_body": "请查看更改内容。",
@@ -1483,9 +1458,9 @@
   "admin_dispute_complete_title": "完成此交换？",
   "admin_dispute_complete_hint": "将交换以已完成结束，挂单随之成交。未发送的 Objekt 保持未发送。",
   "admin_dispute_cancel": "取消交换",
-  "admin_dispute_cancel_hint": "结束交换，不记任何弃单。如果发布者仍持有这些 Objekt，挂单会重新开放，否则挂单失效。被封禁的发布者的挂单将被移除。",
+  "admin_dispute_cancel_hint": "结束交换。如果发布者仍持有这些 Objekt，挂单会重新开放，否则挂单失效。被封禁的发布者的挂单将被移除。",
   "admin_dispute_complete_hint_offer": "将交换以已完成结束。未发送的 Objekt 保持未发送。",
-  "admin_dispute_cancel_hint_offer": "结束交换，不记任何弃单。",
+  "admin_dispute_cancel_hint_offer": "结束交换。",
   "admin_dispute_extended": "截止时间已延长",
   "admin_dispute_completed": "交换已完成",
   "admin_dispute_cancelled": "交换已取消",

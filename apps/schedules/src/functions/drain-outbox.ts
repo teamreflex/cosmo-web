@@ -394,8 +394,7 @@ const applyTrades = (tx: WebTx, rows: readonly OutboxRow[]) =>
       (trade) => (trade.state.status === "completed" ? "completed" : "pending"),
     );
     for (const { trade, state } of completed) {
-      // a completed trade fills its listing, which reads no holdings
-      const ended = yield* endTrade(tx, trade, state, locked, new Map());
+      const ended = yield* endTrade(tx, trade, state, locked);
       events.push(ended.event);
       notifications.push(...ended.notifications);
     }

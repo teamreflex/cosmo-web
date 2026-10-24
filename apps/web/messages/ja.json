@@ -523,7 +523,7 @@
   "trade_page_item_not_sent": "未送信",
   "trade_page_not_seen": "未確認",
   "trade_page_view_transfer": "送信を表示",
-  "trade_page_deadline_note": "期限はCOSMOアプリで各送信が行われた時刻で判断され、{appName}が検知した時刻ではありません。送信が足りないまま時間切れになると、まだオブジェクトを送っていなかった側に放棄の記録が付きます。",
+  "trade_page_deadline_note": "期限はCOSMOアプリで各送信が行われた時刻で判断され、{appName}が検知した時刻ではありません。何か送られた後に時間切れになるとスタッフがトレードを確認し、何も送られていなければトレードは終了します。",
   "trade_page_send": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
@@ -568,28 +568,7 @@
   "trade_page_cancelled_them": "{name}がこの取引をキャンセルしました。",
   "trade_page_cancelled_staff": "{appName}スタッフがこの取引をキャンセルしました。",
   "trade_page_not_reversed": "{appName}はすでに送られたものを戻しません。",
-  "trade_page_timed_out_both": "双方ともオブジェクトを送り終えないまま時間切れになりました。",
-  "trade_page_timed_out_you": "あなたがオブジェクトを送り終えないまま時間切れになりました。",
-  "trade_page_timed_out_them": "{name}がオブジェクトを送り終えないまま時間切れになりました。",
-  "trade_page_owed_you": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=other": "あなたはまだ{count}個のオブジェクトを送っていませんでした。"
-      }
-    }
-  ],
-  "trade_page_owed_them": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=other": "{name}はまだ{count}個のオブジェクトを送っていませんでした。"
-      }
-    }
-  ],
-  "trade_page_abandoned_note": "送り終えていなかった側には放棄の記録が付きます。",
+  "trade_page_timed_out": "何も送られないまま時間切れになったため、このトレードは終了しました。",
   "trade_page_view_listing": "出品を見る",
   "trade_page_moved_yours_title": "{#b}{objekt}{/b}があなたのアカウントから移動しました。",
   "trade_page_moved_yours_body": "この取引ではその1枚だけがカウントされるため、あなたのアカウントに戻らない限り{name}には届きません。",
@@ -615,9 +594,7 @@
   "trade_page_event_disputed_staff": "{appName}スタッフが確認のため取引を一時停止しました。",
   "trade_page_event_disputed_deadline": "未送付のオブジェクトがあるまま期限が過ぎたため、{appName}スタッフが確認のため取引を一時停止しました。",
   "trade_page_event_extended": "{appName}スタッフが期限を{#time}{when}{/time}まで延長しました。",
-  "trade_page_event_timed_out_both": "双方ともオブジェクトを送り終えないまま時間切れになりました。",
-  "trade_page_event_timed_out_you": "あなたがオブジェクトを送り終えないまま時間切れになりました。",
-  "trade_page_event_timed_out_them": "{#b}{name}{/b}がオブジェクトを送り終えないまま時間切れになりました。",
+  "trade_page_event_timed_out": "何も送られないまま時間切れになりました。",
   "trade_page_event_moved_yours": "{#b}{objekt}{/b}があなたのアカウントから移動しました。",
   "trade_page_event_moved_theirs": "{#b}{objekt}{/b}が{#b}{name}{/b}のアカウントから移動しました。",
   "trade_page_event_untransferable": "{#b}{objekt}{/b}は送信できなくなりました。",
@@ -752,7 +729,6 @@
   "trade_page_problem_staff_body": "{sender}はこの取引でこれを{receiver}に送ることはもうできません。",
   "trade_page_disputed_body_staff": "タイマーは停止中で、どちらの当事者もキャンセルできません。送信は引き続きカウントされます。スタッフはここでキャンセルするか、通報から解決できます。",
   "trade_page_disputed_body_staff_paused": "タイマーは停止中で、どちらの当事者もキャンセルできません。送信は引き続きカウントされます。スタッフはここでキャンセルするか、通報から解決できます。",
-  "trade_page_timed_out_both_staff": "双方ともオブジェクトを送り終えないまま時間切れになりました。",
   "trade_page_event_accepted_staff": "{#b}{claimer}{/b}が{#b}{poster}{/b}の出品を承諾しました。",
   "trade_page_event_extended_staff": "{appName}スタッフが双方の期限を{#time}{when}{/time}まで延長しました。",
   "listing_detail_title": "トレード出品",
@@ -854,10 +830,9 @@
   "listing_detail_closed_withdrawn": "{poster}がこの出品を終了しました。",
   "listing_detail_closed_broken": "出品されたオブジェクトが{poster}のアカウントから移動したか、送信できなくなったため、この出品は進められません。",
   "listing_detail_closed_removed": "{appName}スタッフによって削除されました。",
-  "listing_detail_closed_abandoned": "{poster}が承諾されたトレードで自分の分を送らなかったため、この出品は終了しました。",
+  "listing_detail_closed_timed_out": "トレードでどちらも何も送らないまま時間切れになったため、この出品は終了しました。",
   "listing_detail_closed_withdrawn_own": "この出品を終了しました。",
   "listing_detail_closed_broken_own": "出品したオブジェクトがあなたのアカウントから移動したか、送信できなくなったため、この出品は進められません。",
-  "listing_detail_closed_abandoned_own": "承諾されたトレードであなたの分を送らなかったため、この出品は終了しました。",
   "listing_detail_you_give_summary": "所持品から選択",
   "listing_detail_you_get_summary": "{poster}から",
   "listing_detail_summary_ranges": [
@@ -883,7 +858,7 @@
   "listing_confirm_title": "トレードを確定",
   "listing_confirm_submit": "確定",
   "listing_confirm_lead": "{#user}{poster}{/user}の出品を承諾します。すべてのシリアルを確認してください。これが実際に送るものと受け取るものです。",
-  "listing_confirm_deadline": "お互いに{#hours}48時間{/hours}、{#time}{date}{/time}までにCOSMOアプリで送ってください。あなたの分は{#user}{poster}{/user}に送ります。期限までに送らなかった側は放棄とみなされます。",
+  "listing_confirm_deadline": "お互いに{#hours}48時間{/hours}、{#time}{date}{/time}までにCOSMOアプリで送ってください。あなたの分は{#user}{poster}{/user}に送ります。期限までに何も送られなければ、トレードは終了します。",
   "listing_confirm_deadline_short": "送信期限は48時間、{#time}{date}{/time}まで",
   "listing_confirm_updated_title": "{poster}がこの出品を変更しました",
   "listing_confirm_updated_body": "変更内容を確認してください。",
@@ -1481,9 +1456,9 @@
   "admin_dispute_complete_title": "この取引を完了しますか？",
   "admin_dispute_complete_hint": "取引を完了として終了し、出品を成立にします。送られていないオブジェクトは未送信のままです。",
   "admin_dispute_cancel": "取引をキャンセル",
-  "admin_dispute_cancel_hint": "放棄の記録を付けずに取引を終了します。出品者がまだオブジェクトを持っていれば出品は再開し、持っていなければ無効になります。利用停止中の出品者の出品は削除されます。",
+  "admin_dispute_cancel_hint": "取引を終了します。出品者がまだオブジェクトを持っていれば出品は再開し、持っていなければ無効になります。利用停止中の出品者の出品は削除されます。",
   "admin_dispute_complete_hint_offer": "取引を完了として終了します。送られていないオブジェクトは未送信のままです。",
-  "admin_dispute_cancel_hint_offer": "放棄の記録を付けずに取引を終了します。",
+  "admin_dispute_cancel_hint_offer": "取引を終了します。",
   "admin_dispute_extended": "期限を延長しました",
   "admin_dispute_completed": "取引を完了しました",
   "admin_dispute_cancelled": "取引をキャンセルしました",

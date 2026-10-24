@@ -940,14 +940,7 @@ function StatePanel({
         />
       );
     case "timed_out":
-      return (
-        <TimedOutAlert
-          trade={trade}
-          side={side}
-          onLeave={onLeave}
-          abandoned={state.abandonedBy}
-        />
-      );
+      return <TimedOutAlert trade={trade} side={side} onLeave={onLeave} />;
     default:
       return null;
   }
@@ -1066,22 +1059,16 @@ function DisputedAlert({
   );
 }
 
-/**
- * How many objekts each side still owed when time ran out, which earns the
- * abandoned mark, and the way back to the listing.
- */
+// that time ran out with nothing sent, and the way back to the listing
 function TimedOutAlert({
   trade,
   side,
   onLeave,
-  abandoned,
 }: {
   trade: Trade;
   side: TradeSide | null;
   onLeave?: (feedbackWindow: FeedbackWindow) => void;
-  abandoned: TradeSide[];
 }) {
-  const appName = env.VITE_APP_NAME;
   const listing =
     trade.listingId === null ? undefined : (
       <ViewListingLink
@@ -1091,44 +1078,10 @@ function TimedOutAlert({
         )}
       />
     );
-  const owed = (sender: TradeSide) =>
-    trade.items.filter(
-      (item) => item.sender === sender && item.status !== "sent",
-    ).length;
   return (
     <Alert variant="warning">
       <IconHourglassEmpty />
-      <AlertTitle>
-        {abandoned.length > 1
-          ? side === null
-            ? m.trade_page_timed_out_both_staff()
-            : m.trade_page_timed_out_both()
-          : side !== null && abandoned.includes(side)
-            ? m.trade_page_timed_out_you()
-            : m.trade_page_timed_out_them({
-                name: partyName(
-                  trade.parties[abandoned.includes("from") ? "from" : "to"],
-                ),
-              })}
-      </AlertTitle>
-      <AlertDescription className="flex flex-col gap-1 text-pretty [&_p:not(:last-child)]:mb-0">
-        <p>
-          {abandoned
-            .map((sender) =>
-              sender === side
-                ? m.trade_page_owed_you({ count: owed(sender) })
-                : m.trade_page_owed_them({
-                    count: owed(sender),
-                    name: partyName(trade.parties[sender]),
-                  }),
-            )
-            .join(" ")}{" "}
-          {m.trade_page_abandoned_note()}
-        </p>
-        {trade.items.some((item) => item.status === "sent") && (
-          <p>{m.trade_page_not_reversed({ appName })}</p>
-        )}
-      </AlertDescription>
+      <AlertTitle>{m.trade_page_timed_out()}</AlertTitle>
       {side === null || onLeave === undefined ? (
         listing
       ) : (

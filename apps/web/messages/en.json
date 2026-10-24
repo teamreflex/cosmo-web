@@ -530,7 +530,7 @@
   "trade_page_item_not_sent": "Not sent",
   "trade_page_not_seen": "not seen yet",
   "trade_page_view_transfer": "View the transfer",
-  "trade_page_deadline_note": "The deadline goes by when each transfer happened in the COSMO app, not when {appName} noticed it. If time runs out with transfers missing, whoever still had objekts to send gets an abandoned mark.",
+  "trade_page_deadline_note": "The deadline goes by when each transfer happened in the COSMO app, not when {appName} noticed it. If time runs out after something was sent, staff review the trade; if nothing was sent, it closes.",
   "trade_page_send": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
@@ -579,30 +579,7 @@
   "trade_page_cancelled_them": "{name} cancelled this trade.",
   "trade_page_cancelled_staff": "{appName} staff cancelled this trade.",
   "trade_page_not_reversed": "{appName} doesn't move back what was already sent.",
-  "trade_page_timed_out_both": "Time ran out with you both still owing objekts.",
-  "trade_page_timed_out_you": "Time ran out with you still owing objekts.",
-  "trade_page_timed_out_them": "Time ran out with {name} still owing objekts.",
-  "trade_page_owed_you": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=one": "You still owed 1 objekt.",
-        "countPlural=other": "You still owed {count} objekts."
-      }
-    }
-  ],
-  "trade_page_owed_them": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=one": "{name} still owed 1 objekt.",
-        "countPlural=other": "{name} still owed {count} objekts."
-      }
-    }
-  ],
-  "trade_page_abandoned_note": "Whoever still owed objekts gets an abandoned mark.",
+  "trade_page_timed_out": "Time ran out before anything was sent, so this trade closed.",
   "trade_page_view_listing": "View listing",
   "trade_page_moved_yours_title": "{#b}{objekt}{/b} left your account.",
   "trade_page_moved_yours_body": "This trade only counts that copy, so it can't reach {name} unless it comes back to your account.",
@@ -628,9 +605,7 @@
   "trade_page_event_disputed_staff": "{appName} staff paused the trade for review.",
   "trade_page_event_disputed_deadline": "The deadline passed with objekts still owed, so {appName} staff paused the trade for review.",
   "trade_page_event_extended": "{appName} staff gave you both until {#time}{when}{/time}.",
-  "trade_page_event_timed_out_both": "Time ran out with you both still owing objekts.",
-  "trade_page_event_timed_out_you": "Time ran out with you still owing objekts.",
-  "trade_page_event_timed_out_them": "Time ran out with {#b}{name}{/b} still owing objekts.",
+  "trade_page_event_timed_out": "Time ran out before anything was sent.",
   "trade_page_event_moved_yours": "{#b}{objekt}{/b} left your account.",
   "trade_page_event_moved_theirs": "{#b}{objekt}{/b} left {#b}{name}{/b}'s account.",
   "trade_page_event_untransferable": "{#b}{objekt}{/b} can no longer be transferred.",
@@ -765,7 +740,6 @@
   "trade_page_problem_staff_body": "{sender} can't send it to {receiver} through this trade any more.",
   "trade_page_disputed_body_staff": "The timer is paused and neither party can cancel; transfers still count. Staff cancel it here, or settle it from the report.",
   "trade_page_disputed_body_staff_paused": "The timer is paused and neither party can cancel; transfers still count. Staff cancel it here, or settle it from the report.",
-  "trade_page_timed_out_both_staff": "Time ran out with both parties still owing objekts.",
   "trade_page_event_accepted_staff": "{#b}{claimer}{/b} accepted {#b}{poster}{/b}'s listing.",
   "trade_page_event_extended_staff": "{appName} staff gave both parties until {#time}{when}{/time}.",
   "listing_detail_title": "Trade listing",
@@ -871,10 +845,9 @@
   "listing_detail_closed_withdrawn": "{poster} closed this listing.",
   "listing_detail_closed_broken": "An offered objekt left {poster}'s account or can't be transferred, so this listing can't go ahead.",
   "listing_detail_closed_removed": "Removed by {appName} staff.",
-  "listing_detail_closed_abandoned": "{poster} didn't send their side of an accepted trade, so this listing closed.",
+  "listing_detail_closed_timed_out": "Its trade ran out of time before either side sent anything, so this listing closed.",
   "listing_detail_closed_withdrawn_own": "You closed this listing.",
   "listing_detail_closed_broken_own": "An offered objekt left your account or can't be transferred, so this listing can't go ahead.",
-  "listing_detail_closed_abandoned_own": "You didn't send your side of an accepted trade, so this listing closed.",
   "listing_detail_you_give_summary": "picked from what you own",
   "listing_detail_you_get_summary": "from {poster}",
   "listing_detail_summary_ranges": [
@@ -902,7 +875,7 @@
   "listing_confirm_title": "Confirm trade",
   "listing_confirm_submit": "Confirm",
   "listing_confirm_lead": "You're accepting {#user}{poster}{/user}'s listing. Check every serial: this is exactly what you'll send and receive.",
-  "listing_confirm_deadline": "You'll both have {#hours}48 hours{/hours}, until {#time}{date}{/time}, to send in the COSMO app. Send yours to {#user}{poster}{/user}; a side that hasn't sent by then is marked abandoned.",
+  "listing_confirm_deadline": "You'll both have {#hours}48 hours{/hours}, until {#time}{date}{/time}, to send in the COSMO app. Send yours to {#user}{poster}{/user}; if nothing has been sent by then, the trade closes.",
   "listing_confirm_deadline_short": "48 hours to send, until {#time}{date}{/time}",
   "listing_confirm_updated_title": "{poster} changed this listing",
   "listing_confirm_updated_body": "Review the changes.",
@@ -1508,9 +1481,9 @@
   "admin_dispute_complete_title": "Complete this trade?",
   "admin_dispute_complete_hint": "Ends the trade as completed and fills the listing. Objekts that weren't sent stay unsent.",
   "admin_dispute_cancel": "Cancel trade",
-  "admin_dispute_cancel_hint": "Ends the trade with no abandoned marks. The listing reopens if the poster still holds the objekts, otherwise it breaks. A banned poster's listing is removed.",
+  "admin_dispute_cancel_hint": "Ends the trade. The listing reopens if the poster still holds the objekts, otherwise it breaks. A banned poster's listing is removed.",
   "admin_dispute_complete_hint_offer": "Ends the trade as completed. Objekts that weren't sent stay unsent.",
-  "admin_dispute_cancel_hint_offer": "Ends the trade with no abandoned marks.",
+  "admin_dispute_cancel_hint_offer": "Ends the trade.",
   "admin_dispute_extended": "Deadline extended",
   "admin_dispute_completed": "Trade completed",
   "admin_dispute_cancelled": "Trade cancelled",

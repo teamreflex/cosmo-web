@@ -2,8 +2,8 @@ import type { TradeStatus } from "@apollo/database/web/types";
 import { describe, expect, test } from "bun:test";
 import {
   averageStars,
-  type FeedbackOpening,
   feedbackDaysLeft,
+  type FeedbackOpening,
   feedbackOpening,
   feedbackRole,
   feedbackScored,
@@ -33,8 +33,6 @@ function trade(
   switch (status) {
     case "cancelled":
       return { status, cancelledBy: "from", items };
-    case "timed_out":
-      return { status, abandonedBy: ["to"], items };
     default:
       return { status, items };
   }

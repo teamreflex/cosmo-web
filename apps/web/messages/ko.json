@@ -523,7 +523,7 @@
   "trade_page_item_not_sent": "보내지 않음",
   "trade_page_not_seen": "아직 확인되지 않음",
   "trade_page_view_transfer": "전송 보기",
-  "trade_page_deadline_note": "마감은 {appName}이(가) 확인한 시점이 아니라 COSMO 앱에서 각 전송이 일어난 시점을 기준으로 합니다. 전송이 남은 채 시간이 다 되면, 아직 보낼 오브젝트가 남은 쪽에 포기 기록이 남습니다.",
+  "trade_page_deadline_note": "마감은 {appName}이(가) 확인한 시점이 아니라 COSMO 앱에서 각 전송이 일어난 시점을 기준으로 합니다. 무언가 보낸 뒤 시간이 다 되면 스태프가 교환을 검토하고, 아무것도 보내지 않았다면 교환이 종료됩니다.",
   "trade_page_send": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
@@ -568,28 +568,7 @@
   "trade_page_cancelled_them": "{name}님이 이 교환을 취소했습니다.",
   "trade_page_cancelled_staff": "{appName} 스태프가 이 교환을 취소했습니다.",
   "trade_page_not_reversed": "{appName}는 이미 보낸 것을 되돌리지 않습니다.",
-  "trade_page_timed_out_both": "두 사람 모두 보낼 오브젝트가 남은 채 시간이 다 되었습니다.",
-  "trade_page_timed_out_you": "보낼 오브젝트가 남은 채 시간이 다 되었습니다.",
-  "trade_page_timed_out_them": "{name}님이 보낼 오브젝트가 남은 채 시간이 다 되었습니다.",
-  "trade_page_owed_you": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=other": "아직 오브젝트 {count}개를 보내지 않았습니다."
-      }
-    }
-  ],
-  "trade_page_owed_them": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=other": "{name}님은 아직 오브젝트 {count}개를 보내지 않았습니다."
-      }
-    }
-  ],
-  "trade_page_abandoned_note": "보낼 오브젝트가 남았던 쪽에는 포기 기록이 남습니다.",
+  "trade_page_timed_out": "아무것도 보내지 않은 채 시간이 다 되어 이 교환이 종료되었습니다.",
   "trade_page_view_listing": "등록글 보기",
   "trade_page_moved_yours_title": "{#b}{objekt}{/b}이(가) 내 계정에서 나갔습니다.",
   "trade_page_moved_yours_body": "이 교환은 그 오브젝트만 인정하므로, 내 계정으로 돌아오지 않으면 {name}님에게 보낼 수 없습니다.",
@@ -615,9 +594,7 @@
   "trade_page_event_disputed_staff": "{appName} 스태프가 검토를 위해 교환을 일시 정지했습니다.",
   "trade_page_event_disputed_deadline": "보내지 않은 오브젝트가 남은 채 기한이 지나 {appName} 스태프가 검토를 위해 교환을 일시 정지했습니다.",
   "trade_page_event_extended": "{appName} 스태프가 기한을 {#time}{when}{/time}까지 연장했습니다.",
-  "trade_page_event_timed_out_both": "두 사람 모두 보낼 오브젝트가 남은 채 시간이 다 되었습니다.",
-  "trade_page_event_timed_out_you": "보낼 오브젝트가 남은 채 시간이 다 되었습니다.",
-  "trade_page_event_timed_out_them": "{#b}{name}{/b}님이 보낼 오브젝트가 남은 채 시간이 다 되었습니다.",
+  "trade_page_event_timed_out": "아무것도 보내지 않은 채 시간이 다 되었습니다.",
   "trade_page_event_moved_yours": "{#b}{objekt}{/b}이(가) 내 계정에서 나갔습니다.",
   "trade_page_event_moved_theirs": "{#b}{objekt}{/b}이(가) {#b}{name}{/b}님의 계정에서 나갔습니다.",
   "trade_page_event_untransferable": "{#b}{objekt}{/b}은(는) 더 이상 전송할 수 없습니다.",
@@ -752,7 +729,6 @@
   "trade_page_problem_staff_body": "{sender}님은 이 교환으로 더 이상 {receiver}님에게 이것을 보낼 수 없습니다.",
   "trade_page_disputed_body_staff": "타이머가 멈춰 있고 어느 쪽도 취소할 수 없습니다. 전송은 그대로 인정됩니다. 스태프는 여기서 취소하거나 신고에서 처리할 수 있습니다.",
   "trade_page_disputed_body_staff_paused": "타이머가 멈춰 있고 어느 쪽도 취소할 수 없습니다. 전송은 그대로 인정됩니다. 스태프는 여기서 취소하거나 신고에서 처리할 수 있습니다.",
-  "trade_page_timed_out_both_staff": "두 사람 모두 보낼 오브젝트가 남은 채 시간이 다 되었습니다.",
   "trade_page_event_accepted_staff": "{#b}{claimer}{/b}님이 {#b}{poster}{/b}님의 등록글을 수락했습니다.",
   "trade_page_event_extended_staff": "{appName} 스태프가 두 사람의 기한을 {#time}{when}{/time}까지 연장했습니다.",
   "listing_detail_title": "교환 글",
@@ -854,10 +830,9 @@
   "listing_detail_closed_withdrawn": "{poster}님이 이 교환 글을 마감했습니다.",
   "listing_detail_closed_broken": "제시된 오브젝트가 {poster}님의 계정에서 나갔거나 전송할 수 없게 되어 이 교환 글은 진행할 수 없습니다.",
   "listing_detail_closed_removed": "{appName} 스태프가 삭제했습니다.",
-  "listing_detail_closed_abandoned": "{poster}님이 수락된 교환에서 자기 몫을 보내지 않아 이 교환 글이 마감되었습니다.",
+  "listing_detail_closed_timed_out": "교환에서 양쪽 모두 아무것도 보내지 않은 채 시간이 다 되어 이 교환 글이 마감되었습니다.",
   "listing_detail_closed_withdrawn_own": "이 교환 글을 마감했습니다.",
   "listing_detail_closed_broken_own": "제시한 오브젝트가 내 계정에서 나갔거나 전송할 수 없게 되어 이 교환 글은 진행할 수 없습니다.",
-  "listing_detail_closed_abandoned_own": "수락된 교환에서 내 몫을 보내지 않아 이 교환 글이 마감되었습니다.",
   "listing_detail_you_give_summary": "보유한 오브젝트에서 선택",
   "listing_detail_you_get_summary": "{poster}님에게서",
   "listing_detail_summary_ranges": [
@@ -883,7 +858,7 @@
   "listing_confirm_title": "교환 확정",
   "listing_confirm_submit": "확인",
   "listing_confirm_lead": "{#user}{poster}{/user}님의 교환 글을 수락합니다. 모든 시리얼을 확인하세요. 실제로 보내고 받을 내용입니다.",
-  "listing_confirm_deadline": "두 사람 모두 {#hours}48시간{/hours} 안에, {#time}{date}{/time}까지 COSMO 앱에서 보내야 합니다. 내 몫은 {#user}{poster}{/user}님에게 보내세요. 그때까지 보내지 않은 쪽은 포기한 것으로 표시됩니다.",
+  "listing_confirm_deadline": "두 사람 모두 {#hours}48시간{/hours} 안에, {#time}{date}{/time}까지 COSMO 앱에서 보내야 합니다. 내 몫은 {#user}{poster}{/user}님에게 보내세요. 그때까지 아무것도 보내지 않으면 교환이 종료됩니다.",
   "listing_confirm_deadline_short": "48시간 안에 보내기, {#time}{date}{/time}까지",
   "listing_confirm_updated_title": "{poster}님이 이 교환 글을 수정했습니다",
   "listing_confirm_updated_body": "변경 사항을 확인하세요.",
@@ -1481,9 +1456,9 @@
   "admin_dispute_complete_title": "이 교환을 완료할까요?",
   "admin_dispute_complete_hint": "교환을 완료로 종료하고 등록글을 성사 처리합니다. 보내지 않은 오브젝트는 보내지 않은 상태로 남습니다.",
   "admin_dispute_cancel": "교환 취소",
-  "admin_dispute_cancel_hint": "포기 표시 없이 교환을 종료합니다. 작성자가 아직 오브젝트를 가지고 있으면 등록글이 다시 열리고, 아니면 무효가 됩니다. 정지된 작성자의 등록글은 삭제됩니다.",
+  "admin_dispute_cancel_hint": "교환을 종료합니다. 작성자가 아직 오브젝트를 가지고 있으면 등록글이 다시 열리고, 아니면 무효가 됩니다. 정지된 작성자의 등록글은 삭제됩니다.",
   "admin_dispute_complete_hint_offer": "교환을 완료로 종료합니다. 보내지 않은 오브젝트는 보내지 않은 상태로 남습니다.",
-  "admin_dispute_cancel_hint_offer": "포기 표시 없이 교환을 종료합니다.",
+  "admin_dispute_cancel_hint_offer": "교환을 종료합니다.",
   "admin_dispute_extended": "기한을 연장했습니다",
   "admin_dispute_completed": "교환을 완료했습니다",
   "admin_dispute_cancelled": "교환을 취소했습니다",

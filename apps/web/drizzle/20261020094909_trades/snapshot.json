@@ -350,8 +350,7 @@
         "n|enum|public.trade_offer_kind",
         "n|enum|public.trade_offer_status",
         "n|enum|public.listing_offer_mode",
-        "n|enum|public.trade_canceller",
-        "n|enum|public.trade_side"
+        "n|enum|public.trade_canceller"
       ]
     },
     {
@@ -1344,7 +1343,6 @@
           "filled",
           "broken",
           "removed",
-          "abandoned",
           "pending",
           "accepted",
           "disputed",
@@ -2846,22 +2844,6 @@
       "row": {
         "schema": "public",
         "table": "trade_offers",
-        "name": "abandoned_by",
-        "type": "trade_side",
-        "typeSchema": "public",
-        "notNull": false,
-        "dimensions": 1,
-        "default": null,
-        "generated": null,
-        "identity": null,
-        "entityType": "columns"
-      }
-    },
-    {
-      "op": "create",
-      "row": {
-        "schema": "public",
-        "table": "trade_offers",
         "name": "dispute_report_id",
         "type": "uuid",
         "typeSchema": null,
@@ -4098,7 +4080,7 @@
         "schema": "public",
         "table": "trade_offers",
         "name": "trade_offers_status_chk",
-        "value": "CASE \"kind\" WHEN 'listing' THEN \"status\" IN ('open', 'claimed', 'filled', 'withdrawn', 'broken', 'removed', 'abandoned') ELSE \"status\" IN ('pending', 'accepted', 'disputed', 'completed', 'cancelled', 'timed_out', 'declined', 'withdrawn', 'countered', 'expired', 'stale') END",
+        "value": "CASE \"kind\" WHEN 'listing' THEN \"status\" IN ('open', 'claimed', 'filled', 'withdrawn', 'broken', 'removed', 'timed_out') ELSE \"status\" IN ('pending', 'accepted', 'disputed', 'completed', 'cancelled', 'timed_out', 'declined', 'withdrawn', 'countered', 'expired', 'stale') END",
         "entityType": "checks"
       }
     },
@@ -4148,7 +4130,7 @@
         "schema": "public",
         "table": "trade_offers",
         "name": "trade_offers_ended_chk",
-        "value": "(\"status\" IN ('filled', 'withdrawn', 'expired', 'broken', 'removed', 'abandoned', 'completed', 'cancelled', 'timed_out', 'declined', 'countered', 'stale')) = (\"ended_at\" IS NOT NULL)",
+        "value": "(\"status\" IN ('filled', 'withdrawn', 'expired', 'broken', 'removed', 'completed', 'cancelled', 'timed_out', 'declined', 'countered', 'stale')) = (\"ended_at\" IS NOT NULL)",
         "entityType": "checks"
       }
     },
@@ -4159,16 +4141,6 @@
         "table": "trade_offers",
         "name": "trade_offers_cancelled_chk",
         "value": "(\"status\" = 'cancelled') = (\"cancelled_by\" IS NOT NULL)",
-        "entityType": "checks"
-      }
-    },
-    {
-      "op": "create",
-      "row": {
-        "schema": "public",
-        "table": "trade_offers",
-        "name": "trade_offers_abandoned_chk",
-        "value": "CASE WHEN \"status\" = 'timed_out' THEN coalesce(cardinality(\"abandoned_by\"), 0) BETWEEN 1 AND 2 ELSE \"abandoned_by\" IS NULL END",
         "entityType": "checks"
       }
     },

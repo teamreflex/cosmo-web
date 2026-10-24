@@ -45,7 +45,8 @@ export function ClosedStatus({ listing, state }: Props) {
 
 /**
  * The alert under the header once a listing has ended some other way:
- * broken by the poster's side, removed by staff, or abandoned mid-trade.
+ * broken by the poster's side, removed by staff, or closed when its trade
+ * timed out.
  */
 export function ClosedAlert({
   listing,
@@ -61,7 +62,7 @@ export function ClosedAlert({
     >
       {state.status === "removed" ? (
         <IconX />
-      ) : state.status === "abandoned" ? (
+      ) : state.status === "timed_out" ? (
         <IconHourglassEmpty />
       ) : (
         <IconAlertTriangle />
@@ -150,10 +151,8 @@ function ClosedText({ listing, state }: Props) {
         : m.listing_detail_closed_broken({ poster });
     case "removed":
       return m.listing_detail_closed_removed({ appName: env.VITE_APP_NAME });
-    case "abandoned":
-      return own
-        ? m.listing_detail_closed_abandoned_own()
-        : m.listing_detail_closed_abandoned({ poster });
+    case "timed_out":
+      return m.listing_detail_closed_timed_out();
     default:
       return state satisfies never;
   }

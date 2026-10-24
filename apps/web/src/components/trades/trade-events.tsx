@@ -98,23 +98,7 @@ export function describeEvent(
         />
       );
     case "timed_out":
-      return event.abandoned.length > 1 ? (
-        side === null ? (
-          m.trade_page_timed_out_both_staff()
-        ) : (
-          m.trade_page_event_timed_out_both()
-        )
-      ) : side !== null && event.abandoned.includes(side) ? (
-        m.trade_page_event_timed_out_you()
-      ) : (
-        <ParaglideMessage
-          message={m.trade_page_event_timed_out_them}
-          inputs={{
-            name: nameOf(event.abandoned.includes("from") ? "from" : "to"),
-          }}
-          markup={bold}
-        />
-      );
+      return m.trade_page_event_timed_out();
     case "token_moved":
     case "token_untransferable": {
       const item = trade.items.find(({ tokenId }) => tokenId === event.tokenId);

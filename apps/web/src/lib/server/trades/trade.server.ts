@@ -137,7 +137,6 @@ export async function lockTrade(tx: WebTx, tradeId: string) {
       expiresAt: tradeOffers.expiresAt,
       endedAt: tradeOffers.endedAt,
       cancelledBy: tradeOffers.cancelledBy,
-      abandonedBy: tradeOffers.abandonedBy,
       disputeReportId: tradeOffers.disputeReportId,
       now: sql<Date>`now()`.mapWith(tradeOffers.endedAt),
     })
@@ -212,7 +211,7 @@ export async function lockPartyTrade(
 
 /**
  * Whether the trade's deadline has passed the drain's watermark, after which
- * a party can't cancel or dispute it and dodge the timers' abandoned mark.
+ * a party can't cancel or dispute it, since the timers end it instead.
  */
 export async function isDue(tx: WebTx, trade: LockedTrade) {
   return (
@@ -357,12 +356,12 @@ export async function endTrade(
     .orderBy(asc(tradeOffers.id))
     .for("no key update");
   for (const [listingId, tokenIds] of listings) {
-    let event = outcome;
-    if (event === "release") {
-      event = holdsAll(tokenIds, tokens, trade.fromAddress)
-        ? "reopen"
-        : "break";
-    }
+    const event =
+      outcome !== "release"
+        ? outcome
+        : holdsAll(tokenIds, tokens, trade.fromAddress)
+          ? "reopen"
+          : "break";
 
     const { from, to } = listingTransition(event);
     await tx

@@ -6,7 +6,7 @@ CREATE TYPE "trade_canceller" AS ENUM('from', 'to', 'staff');--> statement-break
 CREATE TYPE "trade_item_kind" AS ENUM('objekt', 'payment');--> statement-breakpoint
 CREATE TYPE "trade_message_kind" AS ENUM('text', 'event');--> statement-breakpoint
 CREATE TYPE "trade_offer_kind" AS ENUM('listing', 'trade');--> statement-breakpoint
-CREATE TYPE "trade_offer_status" AS ENUM('open', 'claimed', 'filled', 'broken', 'removed', 'abandoned', 'pending', 'accepted', 'disputed', 'completed', 'cancelled', 'timed_out', 'declined', 'countered', 'stale', 'withdrawn', 'expired');--> statement-breakpoint
+CREATE TYPE "trade_offer_status" AS ENUM('open', 'claimed', 'filled', 'broken', 'removed', 'pending', 'accepted', 'disputed', 'completed', 'cancelled', 'timed_out', 'declined', 'countered', 'stale', 'withdrawn', 'expired');--> statement-breakpoint
 CREATE TYPE "trade_side" AS ENUM('from', 'to');--> statement-breakpoint
 CREATE TYPE "trade_want_kind" AS ENUM('exact', 'range', 'payment');--> statement-breakpoint
 ALTER TYPE "notification_type" ADD VALUE 'listing_claimed';--> statement-breakpoint
@@ -140,7 +140,6 @@ CREATE TABLE "trade_offers" (
 	"classes" varchar(8)[] DEFAULT '{}'::varchar(8)[] NOT NULL,
 	"on_offlines" varchar(16)[] DEFAULT '{}'::varchar(16)[] NOT NULL,
 	"cancelled_by" "trade_canceller",
-	"abandoned_by" "trade_side"[],
 	"dispute_report_id" uuid,
 	"note" varchar(500),
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
@@ -148,14 +147,13 @@ CREATE TABLE "trade_offers" (
 	"expires_at" timestamp with time zone,
 	"accepted_at" timestamp with time zone,
 	"ended_at" timestamp with time zone,
-	CONSTRAINT "trade_offers_status_chk" CHECK (CASE "kind" WHEN 'listing' THEN "status" IN ('open', 'claimed', 'filled', 'withdrawn', 'broken', 'removed', 'abandoned') ELSE "status" IN ('pending', 'accepted', 'disputed', 'completed', 'cancelled', 'timed_out', 'declined', 'withdrawn', 'countered', 'expired', 'stale') END),
+	CONSTRAINT "trade_offers_status_chk" CHECK (CASE "kind" WHEN 'listing' THEN "status" IN ('open', 'claimed', 'filled', 'withdrawn', 'broken', 'removed', 'timed_out') ELSE "status" IN ('pending', 'accepted', 'disputed', 'completed', 'cancelled', 'timed_out', 'declined', 'withdrawn', 'countered', 'expired', 'stale') END),
 	CONSTRAINT "trade_offers_listing_chk" CHECK ("kind" = 'trade' OR num_nulls("to_user_id", "to_address", "parent_id", "deadline_at", "accepted_at", "expires_at") = 6),
 	CONSTRAINT "trade_offers_trade_chk" CHECK ("kind" = 'listing' OR ("to_address" IS NOT NULL AND "offers" IS NULL AND "note" IS NULL)),
 	CONSTRAINT "trade_offers_accepted_chk" CHECK ("status" NOT IN ('accepted', 'disputed', 'completed', 'timed_out') OR ("deadline_at" IS NOT NULL AND "accepted_at" IS NOT NULL)),
 	CONSTRAINT "trade_offers_pending_chk" CHECK ("status" <> 'pending' OR "expires_at" IS NOT NULL),
-	CONSTRAINT "trade_offers_ended_chk" CHECK (("status" IN ('filled', 'withdrawn', 'expired', 'broken', 'removed', 'abandoned', 'completed', 'cancelled', 'timed_out', 'declined', 'countered', 'stale')) = ("ended_at" IS NOT NULL)),
+	CONSTRAINT "trade_offers_ended_chk" CHECK (("status" IN ('filled', 'withdrawn', 'expired', 'broken', 'removed', 'completed', 'cancelled', 'timed_out', 'declined', 'countered', 'stale')) = ("ended_at" IS NOT NULL)),
 	CONSTRAINT "trade_offers_cancelled_chk" CHECK (("status" = 'cancelled') = ("cancelled_by" IS NOT NULL)),
-	CONSTRAINT "trade_offers_abandoned_chk" CHECK (CASE WHEN "status" = 'timed_out' THEN coalesce(cardinality("abandoned_by"), 0) BETWEEN 1 AND 2 ELSE "abandoned_by" IS NULL END),
 	CONSTRAINT "trade_offers_disputed_chk" CHECK ("status" <> 'disputed' OR "dispute_report_id" IS NOT NULL)
 );
 --> statement-breakpoint

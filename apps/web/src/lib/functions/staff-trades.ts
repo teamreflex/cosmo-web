@@ -37,10 +37,9 @@ export const $staffCompleteTrade = createServerFn({ method: "POST" })
   });
 
 /**
- * Cancel an accepted or disputed trade without abandoned marks. The listing
- * reopens if the poster can still offer it, breaks if not, and is removed
- * when the poster is banned. Both parties are told; for a disputed trade,
- * that the dispute was resolved.
+ * Cancel an accepted or disputed trade. The listing reopens if the poster
+ * still holds it, breaks if not, and is removed when the poster is banned.
+ * Both parties are told; for a disputed trade, that the dispute was resolved.
  */
 export const $staffCancelTrade = createServerFn({ method: "POST" })
   .middleware([staffMiddleware({ trade: ["cancel-any"] })])

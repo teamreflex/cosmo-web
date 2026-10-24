@@ -20,8 +20,7 @@ export type TokenRefusal = {
 };
 
 export type ListingWriteResult =
-  | { kind: "saved"; listingId: string }
-  | TokenRefusal;
+  { kind: "saved"; listingId: string } | TokenRefusal;
 
 /**
  * A want row as stored, parsed into its kind's shape. The table's CHECK
@@ -158,7 +157,7 @@ export const listingStateSchema = z.discriminatedUnion("status", [
     counterparty: z.string().nullable(),
   }),
   z.object({
-    status: z.enum(["withdrawn", "broken", "removed", "abandoned"]),
+    status: z.enum(["withdrawn", "broken", "removed", "timed_out"]),
     endedAt: z.date(),
   }),
 ]);

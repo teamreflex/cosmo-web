@@ -523,7 +523,7 @@
   "trade_page_item_not_sent": "未傳送",
   "trade_page_not_seen": "尚未偵測到",
   "trade_page_view_transfer": "查看傳送",
-  "trade_page_deadline_note": "期限是以每筆傳送在 COSMO App 中實際發生的時間為準，而不是 {appName} 偵測到的時間。如果時間到了仍有傳送未完成，仍有 Objekt 未傳送的一方會被記一次棄單。",
+  "trade_page_deadline_note": "期限是以每筆傳送在 COSMO App 中實際發生的時間為準，而不是 {appName} 偵測到的時間。如果已有 Objekt 傳送後時間到了，工作人員會審核這筆交換；如果什麼都沒傳送，交換會關閉。",
   "trade_page_send": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
@@ -570,28 +570,7 @@
   "trade_page_cancelled_them": "{name} 取消了這筆交換。",
   "trade_page_cancelled_staff": "{appName} 工作人員取消了這筆交換。",
   "trade_page_not_reversed": "{appName} 不會退回已傳送的 Objekt。",
-  "trade_page_timed_out_both": "時間已到，你們雙方仍有未傳送的 Objekt。",
-  "trade_page_timed_out_you": "時間已到，你仍有未傳送的 Objekt。",
-  "trade_page_timed_out_them": "時間已到，{name} 仍有未傳送的 Objekt。",
-  "trade_page_owed_you": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=other": "你仍有 {count} 張 Objekt 未傳送。"
-      }
-    }
-  ],
-  "trade_page_owed_them": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=other": "{name} 仍有 {count} 張 Objekt 未傳送。"
-      }
-    }
-  ],
-  "trade_page_abandoned_note": "仍有 Objekt 未傳送的一方會被記一次棄單。",
+  "trade_page_timed_out": "時間已到，雙方都未傳送任何 Objekt，因此這筆交換已關閉。",
   "trade_page_view_listing": "查看刊登",
   "trade_page_moved_yours_title": "{#b}{objekt}{/b} 已離開你的帳號。",
   "trade_page_moved_yours_body": "這筆交換只認這一張，除非它回到你的帳號，否則無法透過這筆交換送達 {name}。",
@@ -617,9 +596,7 @@
   "trade_page_event_disputed_staff": "{appName} 工作人員已暫停這筆交換以進行審查。",
   "trade_page_event_disputed_deadline": "期限已過但仍有 Objekt 未送出，{appName} 工作人員已暫停這筆交換以進行審查。",
   "trade_page_event_extended": "{appName} 工作人員將你們雙方的期限延長至 {#time}{when}{/time}。",
-  "trade_page_event_timed_out_both": "時間已到，你們雙方仍有未傳送的 Objekt。",
-  "trade_page_event_timed_out_you": "時間已到，你仍有未傳送的 Objekt。",
-  "trade_page_event_timed_out_them": "時間已到，{#b}{name}{/b} 仍有未傳送的 Objekt。",
+  "trade_page_event_timed_out": "時間已到，雙方都未傳送任何 Objekt。",
   "trade_page_event_moved_yours": "{#b}{objekt}{/b} 已離開你的帳號。",
   "trade_page_event_moved_theirs": "{#b}{objekt}{/b} 已離開 {#b}{name}{/b} 的帳號。",
   "trade_page_event_untransferable": "{#b}{objekt}{/b} 已無法傳送。",
@@ -754,7 +731,6 @@
   "trade_page_problem_staff_body": "{sender} 已無法透過這筆交換將其傳送給 {receiver}。",
   "trade_page_disputed_body_staff": "計時已暫停，任何一方都無法取消；傳送仍然有效。工作人員可在此取消，或在檢舉中處理這筆交換。",
   "trade_page_disputed_body_staff_paused": "計時已暫停，任何一方都無法取消；傳送仍然有效。工作人員可在此取消，或在檢舉中處理這筆交換。",
-  "trade_page_timed_out_both_staff": "時間已到，雙方仍有未傳送的 Objekt。",
   "trade_page_event_accepted_staff": "{#b}{claimer}{/b} 接受了 {#b}{poster}{/b} 的刊登。",
   "trade_page_event_extended_staff": "{appName} 工作人員將雙方的期限延長至 {#time}{when}{/time}。",
   "listing_detail_title": "交換刊登",
@@ -856,10 +832,9 @@
   "listing_detail_closed_withdrawn": "{poster} 已關閉這則刊登。",
   "listing_detail_closed_broken": "提供的某張 Objekt 已離開 {poster} 的帳號或無法傳送，因此這則刊登無法繼續。",
   "listing_detail_closed_removed": "已被 {appName} 工作人員移除。",
-  "listing_detail_closed_abandoned": "{poster} 未在已接受的交換中傳送自己的 Objekt，因此這則刊登已關閉。",
+  "listing_detail_closed_timed_out": "其交換在雙方傳送任何 Objekt 之前已逾時，因此這則刊登已關閉。",
   "listing_detail_closed_withdrawn_own": "你已關閉這則刊登。",
   "listing_detail_closed_broken_own": "你提供的某張 Objekt 已離開你的帳號或無法傳送，因此這則刊登無法繼續。",
-  "listing_detail_closed_abandoned_own": "你未在已接受的交換中傳送自己的 Objekt，因此這則刊登已關閉。",
   "listing_detail_you_give_summary": "從你持有的 Objekt 中選擇",
   "listing_detail_you_get_summary": "來自 {poster}",
   "listing_detail_summary_ranges": [
@@ -885,7 +860,7 @@
   "listing_confirm_title": "確認交換",
   "listing_confirm_submit": "確認",
   "listing_confirm_lead": "你正在接受 {#user}{poster}{/user} 的刊登。請核對每個序號：這就是你將傳送和收到的內容。",
-  "listing_confirm_deadline": "你們雙方有 {#hours}48 小時{/hours}（至 {#time}{date}{/time} 為止）可在 COSMO App 中傳送。請將你的 Objekt 傳送給 {#user}{poster}{/user}；屆時仍未傳送的一方會被記為棄單。",
+  "listing_confirm_deadline": "你們雙方有 {#hours}48 小時{/hours}（至 {#time}{date}{/time} 為止）可在 COSMO App 中傳送。請將你的 Objekt 傳送給 {#user}{poster}{/user}；如果屆時仍未傳送任何 Objekt，交換會關閉。",
   "listing_confirm_deadline_short": "48 小時內傳送，至 {#time}{date}{/time} 為止",
   "listing_confirm_updated_title": "{poster} 變更了這則刊登",
   "listing_confirm_updated_body": "請查看變更內容。",
@@ -1483,9 +1458,9 @@
   "admin_dispute_complete_title": "要完成這筆交換嗎？",
   "admin_dispute_complete_hint": "將交換以已完成結束，刊登隨之成交。未傳送的 Objekt 維持未傳送。",
   "admin_dispute_cancel": "取消交換",
-  "admin_dispute_cancel_hint": "結束交換，不記任何棄單。如果刊登者仍持有這些 Objekt，刊登會重新開放，否則刊登失效。遭停權刊登者的刊登會被移除。",
+  "admin_dispute_cancel_hint": "結束交換。如果刊登者仍持有這些 Objekt，刊登會重新開放，否則刊登失效。遭停權刊登者的刊登會被移除。",
   "admin_dispute_complete_hint_offer": "將交換以已完成結束。未傳送的 Objekt 維持未傳送。",
-  "admin_dispute_cancel_hint_offer": "結束交換，不記任何棄單。",
+  "admin_dispute_cancel_hint_offer": "結束交換。",
   "admin_dispute_extended": "期限已延長",
   "admin_dispute_completed": "交換已完成",
   "admin_dispute_cancelled": "交換已取消",

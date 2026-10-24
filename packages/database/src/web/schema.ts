@@ -28,16 +28,11 @@ import { user } from "../auth";
 import { citext, createdAt, createdTimestamp } from "../custom";
 import {
   type CosmoGravityType,
-  type CosmoPollType,
-  type EventTypeKey,
-  type StaffAuditAction,
-  type StaffAuditDetail,
-  type StaffAuditTargetType,
-  type StoredReportReason,
-  type TradeEvent,
   cosmoLinkEvents,
   cosmoLinkReasons,
+  type CosmoPollType,
   endedStatuses,
+  type EventTypeKey,
   feedbackRatings,
   feedbackRoles,
   listingOfferModes,
@@ -46,7 +41,12 @@ import {
   paymentMethods,
   reportStatuses,
   reportTargetTypes,
+  type StaffAuditAction,
+  type StaffAuditDetail,
+  type StaffAuditTargetType,
+  type StoredReportReason,
   tradeCancellers,
+  type TradeEvent,
   tradeItemKinds,
   tradeMessageKinds,
   tradeOfferKinds,
@@ -702,7 +702,6 @@ export const tradeOffers = pgTable(
       .notNull()
       .default([]),
     cancelledBy: tradeCanceller("cancelled_by"),
-    abandonedBy: tradeSide("abandoned_by").array(),
     disputeReportId: uuid("dispute_report_id").references(() => reports.id, {
       onDelete: "set null",
     }),
@@ -789,10 +788,6 @@ export const tradeOffers = pgTable(
     check(
       "trade_offers_cancelled_chk",
       sql`(${t.status} = 'cancelled') = (${t.cancelledBy} IS NOT NULL)`,
-    ),
-    check(
-      "trade_offers_abandoned_chk",
-      sql`CASE WHEN ${t.status} = 'timed_out' THEN coalesce(cardinality(${t.abandonedBy}), 0) BETWEEN 1 AND 2 ELSE ${t.abandonedBy} IS NULL END`,
     ),
     check(
       "trade_offers_disputed_chk",

@@ -15,16 +15,16 @@ import {
   validOnlineTypes,
 } from "@apollo/cosmo/types/common";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
-import { heldTokenRefusal, type TokenFlags } from "@apollo/trades/holdings";
 import {
   rangeSummaryColumns,
-  toUiArtist,
   totalWanted,
+  toUiArtist,
 } from "@apollo/trades/composer";
+import { heldTokenRefusal, type TokenFlags } from "@apollo/trades/holdings";
 import {
+  hasBidiControl,
   type ObjektAttributes,
   type RangeFilter,
-  hasBidiControl,
 } from "@apollo/trades/range";
 import { isAddress, shortAddress } from "@apollo/util";
 
@@ -372,7 +372,7 @@ export function offerBlock(objekt: CosmoObjekt, flags: TokenFlags) {
 
 /**
  * Whether a listing ended the way its poster means one to, traded or
- * withdrawn, rather than broken, removed or abandoned.
+ * withdrawn, rather than broken, removed or timed out.
  */
 export function endedNormally(
   state: ClosedListingState,

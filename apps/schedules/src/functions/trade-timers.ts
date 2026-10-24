@@ -6,7 +6,6 @@ import {
   lockLiveTrades,
   lockUsers,
   publishTradeUpdates,
-  readListingTokens,
   type TradeEventRow,
   type TradeNotification,
 } from "@/trades";
@@ -175,8 +174,6 @@ export const tradeTimersTask = {
           ),
         );
 
-        const tokens = yield* readListingTokens(trades);
-
         const notifications: TradeNotification[] = [];
         const events: TradeEventRow[] = [];
         let completed = 0;
@@ -195,13 +192,7 @@ export const tradeTimersTask = {
             notifications.push(...frozen.notifications);
             continue;
           }
-          const ended = yield* endTrade(
-            tx,
-            trade,
-            result.trade,
-            locked,
-            tokens,
-          );
+          const ended = yield* endTrade(tx, trade, result.trade, locked);
           if (result.trade.status === "completed") completed++;
           events.push(ended.event);
           notifications.push(...ended.notifications);

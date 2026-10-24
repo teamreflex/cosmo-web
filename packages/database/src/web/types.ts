@@ -359,7 +359,6 @@ export const tradeOfferStatuses = [
   "filled",
   "broken",
   "removed",
-  "abandoned",
   "pending",
   "accepted",
   "disputed",
@@ -378,7 +377,7 @@ export type TradeOfferStatus = (typeof tradeOfferStatuses)[number];
  * A listing is open until claimed, and filled when its trade completes.
  * Listings don't expire. One ends early when the poster withdraws it, an
  * offered token leaves the poster or turns untransferable (broken), staff
- * remove it, or the poster abandons a claim.
+ * remove it, or its claim's trade times out with nothing sent.
  */
 export const listingStatuses = [
   "open",
@@ -387,7 +386,7 @@ export const listingStatuses = [
   "withdrawn",
   "broken",
   "removed",
-  "abandoned",
+  "timed_out",
 ] as const satisfies readonly TradeOfferStatus[];
 export type ListingStatus = (typeof listingStatuses)[number];
 
@@ -438,7 +437,6 @@ export const endedStatuses = [
   "expired",
   "broken",
   "removed",
-  "abandoned",
   "completed",
   "cancelled",
   "timed_out",
@@ -530,7 +528,7 @@ export type TradeEvent =
   // the deadline passed with something sent and something still owed
   | { type: "disputed"; by: "deadline"; reportId: string }
   | { type: "deadline_extended"; deadlineAt: string; note: string | null }
-  | { type: "timed_out"; abandoned: TradeSide[] }
+  | { type: "timed_out" }
   | { type: "token_moved"; tokenId: number }
   | { type: "token_untransferable"; tokenId: number }
   | { type: "message_removed"; messageId: number }
