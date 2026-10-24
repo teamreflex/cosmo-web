@@ -4,8 +4,8 @@ import {
   bool,
   bytes32,
   string,
-  uint256,
   uint64,
+  uint256,
 } from "@subsquid/evm-codec";
 import { event, indexed } from "../abi.support.js";
 import type { EventParams as EParams } from "../abi.support.js";

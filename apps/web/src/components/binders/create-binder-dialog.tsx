@@ -25,11 +25,11 @@ import {
 } from "@/lib/queries/binders";
 import {
   type BinderDetail,
-  type BinderLayout,
-  DEFAULT_BINDER_COLOUR,
   binderGrid,
+  type BinderLayout,
   binderLayoutLabel,
   binderLayouts,
+  DEFAULT_BINDER_COLOUR,
   fullHexColour,
 } from "@/lib/universal/binders";
 import {

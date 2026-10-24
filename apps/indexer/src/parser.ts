@@ -1,5 +1,4 @@
-import { addr } from "@apollo/util";
-import { Addresses } from "@apollo/util";
+import { addr, Addresses } from "@apollo/util";
 import type { BlockData } from "@subsquid/evm-processor";
 import { randomUUID } from "crypto";
 import * as ABI_COMO from "./abi/como";

@@ -8,9 +8,9 @@ import {
 import {
   claimBlocks,
   collectionKind,
+  type CollectionObjekts,
   estimateSerials,
   findRange,
-  type CollectionObjekts,
   type Reservation,
   type ReservedRange,
   type SerialUpdate,

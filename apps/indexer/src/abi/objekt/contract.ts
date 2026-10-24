@@ -1,5 +1,8 @@
 import { ContractBase } from "../abi.support.js";
 import {
+  approvalWhitelists,
+  balanceOf,
+  blacklists,
   DEFAULT_ADMIN_ROLE,
   ERROR_BLACKLISTED_MSG_SENDER,
   ERROR_CANNOT_TRANSFER_EXTERNALLY,
@@ -10,18 +13,14 @@ import {
   ERROR_NOT_MINTER,
   ERROR_ONLY_OWNER,
   ERROR_SENDER_NOT_ADMIN,
-  MINTER_ROLE,
-  OPERATOR_ROLE,
-  UPGRADE_INTERFACE_VERSION,
-  approvalWhitelists,
-  balanceOf,
-  blacklists,
   getApproved,
   getRoleAdmin,
   hasRole,
   isApprovedForAll,
   isObjektTransferable,
+  MINTER_ROLE,
   name,
+  OPERATOR_ROLE,
   ownerOf,
   proxiableUUID,
   supportsInterface,
@@ -30,6 +29,7 @@ import {
   tokenOfOwnerByIndex,
   tokenURI,
   totalSupply,
+  UPGRADE_INTERFACE_VERSION,
 } from "./functions.js";
 import type {
   ApprovalWhitelistsParams,

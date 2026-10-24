@@ -6,8 +6,8 @@ import { consumeRateLimit } from "@/lib/server/rate-limit.server";
 import { getRequestSignal } from "@/lib/server/request.server";
 import { queryTicketSchema } from "@/lib/universal/schema/cosmo";
 import {
-  scrapeCollectionMediaSchema,
   type ScrapeCandidate,
+  scrapeCollectionMediaSchema,
 } from "@/lib/universal/schema/share-data";
 import { runCosmo } from "@apollo/cosmo/runtime";
 import { fetchObjektSummaries } from "@apollo/cosmo/server/collection";

@@ -13,7 +13,7 @@ import {
   activeGravitiesQuery,
   paginatedGravitiesQuery,
 } from "@/lib/queries/gravity";
-import { useSuspenseQuery, noop } from "@tanstack/react-query";
+import { noop, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/gravity/")({

@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useTheme, type Theme } from "@/hooks/use-theme";
+import { type Theme, useTheme } from "@/hooks/use-theme";
 import { m } from "@/i18n/messages";
 import { getLocale, locales, setLocale } from "@/i18n/runtime";
 import { formatError } from "@/lib/client/errors";

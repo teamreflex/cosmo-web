@@ -7,8 +7,9 @@
       },
       "formatter": [
         {
-          "language_server": {
-            "name": "oxfmt"
+          "external": {
+            "command": "bun",
+            "arguments": ["fmt", "--stdin-filepath", "{buffer_path}"]
           }
         }
       ]
@@ -20,8 +21,9 @@
       },
       "formatter": [
         {
-          "language_server": {
-            "name": "oxfmt"
+          "external": {
+            "command": "bun",
+            "arguments": ["fmt", "--stdin-filepath", "{buffer_path}"]
           }
         },
         {
@@ -36,8 +38,9 @@
       },
       "formatter": [
         {
-          "language_server": {
-            "name": "oxfmt"
+          "external": {
+            "command": "bun",
+            "arguments": ["fmt", "--stdin-filepath", "{buffer_path}"]
           }
         }
       ]
@@ -49,8 +52,9 @@
       },
       "formatter": [
         {
-          "language_server": {
-            "name": "oxfmt"
+          "external": {
+            "command": "bun",
+            "arguments": ["fmt", "--stdin-filepath", "{buffer_path}"]
           }
         }
       ]
@@ -62,22 +66,24 @@
       },
       "formatter": [
         {
-          "language_server": {
-            "name": "oxfmt"
+          "external": {
+            "command": "bun",
+            "arguments": ["fmt", "--stdin-filepath", "{buffer_path}"]
           }
         }
       ]
     },
     "TypeScript": {
-      "language_servers": ["vtsls", "oxlint", "oxfmt", "tailwindcss-language-server"],
+      "language_servers": ["vtsls", "oxlint", "tailwindcss-language-server"],
       "format_on_save": "on",
       "prettier": {
         "allowed": false
       },
       "formatter": [
         {
-          "language_server": {
-            "name": "oxfmt"
+          "external": {
+            "command": "bun",
+            "arguments": ["fmt", "--stdin-filepath", "{buffer_path}"]
           }
         },
         {
@@ -86,15 +92,16 @@
       ]
     },
     "TSX": {
-      "language_servers": ["vtsls", "oxlint", "oxfmt", "tailwindcss-language-server"],
+      "language_servers": ["vtsls", "oxlint", "tailwindcss-language-server"],
       "format_on_save": "on",
       "prettier": {
         "allowed": false
       },
       "formatter": [
         {
-          "language_server": {
-            "name": "oxfmt"
+          "external": {
+            "command": "bun",
+            "arguments": ["fmt", "--stdin-filepath", "{buffer_path}"]
           }
         },
         {
@@ -109,8 +116,9 @@
       },
       "formatter": [
         {
-          "language_server": {
-            "name": "oxfmt"
+          "external": {
+            "command": "bun",
+            "arguments": ["fmt", "--stdin-filepath", "{buffer_path}"]
           }
         }
       ]
@@ -147,14 +155,6 @@
           "fixKind": "safe_fix",
           "typeAware": true,
           "unusedDisableDirectives": "deny"
-        }
-      }
-    },
-    "oxfmt": {
-      "initialization_options": {
-        "settings": {
-          "fmt.configPath": null,
-          "run": "onSave"
         }
       }
     }

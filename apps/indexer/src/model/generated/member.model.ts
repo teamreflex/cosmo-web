@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryColumn, Index } from "typeorm";
+import { Column, Entity, Index, PrimaryColumn } from "typeorm";
 
 // reference table synced by apps/schedules (canonical member sort order), read
 // by apps/web. the processor never reads or writes it.

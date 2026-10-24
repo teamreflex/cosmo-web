@@ -7,7 +7,7 @@ import type {
   ObjektMetadata,
   PriceStats,
 } from "@/lib/universal/objekts";
-import { Addresses, addr } from "@apollo/util";
+import { addr, Addresses } from "@apollo/util";
 import { createFileRoute } from "@tanstack/react-router";
 import { eq, sql } from "drizzle-orm";
 

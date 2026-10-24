@@ -1,4 +1,4 @@
-import { UserStateContext, type UserState } from "@/hooks/use-user-state";
+import { type UserState, UserStateContext } from "@/hooks/use-user-state";
 import type { PropsWithChildren } from "react";
 
 type UserStateProviderProps = PropsWithChildren<UserState>;

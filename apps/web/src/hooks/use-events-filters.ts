@@ -53,6 +53,5 @@ export type EventsFilters = {
 
 export type SetEventsFilters = (
   input:
-    | Partial<EventsFilters>
-    | ((prev: EventsFilters) => Partial<EventsFilters>),
+    Partial<EventsFilters> | ((prev: EventsFilters) => Partial<EventsFilters>),
 ) => void;

@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryColumn, Index } from "typeorm";
+import { Column, Entity, Index, PrimaryColumn } from "typeorm";
 import * as marshal from "./marshal";
 
 @Entity()

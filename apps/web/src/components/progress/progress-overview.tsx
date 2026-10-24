@@ -15,7 +15,7 @@ import type {
 import { cn } from "@/lib/utils";
 import { IconArrowRight, IconRefresh } from "@tabler/icons-react";
 import { useSuspenseQueries } from "@tanstack/react-query";
-import { Link, getRouteApi } from "@tanstack/react-router";
+import { getRouteApi, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { useErrorBoundary } from "react-error-boundary";
 import { Button } from "../ui/button";

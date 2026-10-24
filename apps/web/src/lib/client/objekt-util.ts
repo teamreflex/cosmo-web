@@ -10,12 +10,7 @@ import {
 } from "@apollo/image";
 
 export type Hoverable =
-  | "select"
-  | "lock"
-  | "list"
-  | "binder"
-  | "pin"
-  | NonTransferableReason;
+  "select" | "lock" | "list" | "binder" | "pin" | NonTransferableReason;
 
 /**
  * Replaces the 4x or original suffix from an imagedelivery URL. Other hosts

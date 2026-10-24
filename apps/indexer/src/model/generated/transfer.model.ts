@@ -1,9 +1,9 @@
 import {
-  Entity,
   Column,
-  PrimaryColumn,
+  Entity,
   Index,
   ManyToOne,
+  PrimaryColumn,
   type Relation,
 } from "typeorm";
 import { Collection } from "./collection.model";

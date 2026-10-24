@@ -3,7 +3,7 @@ import type {
   SetEventsFilters,
 } from "@/hooks/use-events-filters";
 import { m } from "@/i18n/messages";
-import { eventTypes, type EventTypeKey } from "@apollo/database/web/types";
+import { type EventTypeKey, eventTypes } from "@apollo/database/web/types";
 import FilterChip from "../collection/filter-chip";
 import SingleSelectList, {
   type SingleSelectOption,

@@ -1,4 +1,4 @@
-import { ThemeProviderContext, type Theme } from "@/hooks/use-theme";
+import { type Theme, ThemeProviderContext } from "@/hooks/use-theme";
 import { ScriptOnce } from "@tanstack/react-router";
 import { useEffect, useEffectEvent, useMemo, useState } from "react";
 

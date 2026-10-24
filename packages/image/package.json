@@ -15,8 +15,8 @@
     "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
     "test": "bun test",
     "image:mirror": "bun --env-file=../../.env --env-file=../../.env.local scripts/mirror.ts",
-    "typecheck": "tsc --pretty --noEmit",
-    "format": "oxfmt ."
+    "typecheck": "bun check",
+    "format": "bun fmt"
   },
   "dependencies": {
     "effect": "catalog:"

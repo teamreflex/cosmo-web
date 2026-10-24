@@ -1,9 +1,9 @@
 import {
-  Entity,
   Column,
-  PrimaryColumn,
+  Entity,
   Index,
   OneToMany,
+  PrimaryColumn,
   type Relation,
 } from "typeorm";
 import { Objekt } from "./objekt.model";

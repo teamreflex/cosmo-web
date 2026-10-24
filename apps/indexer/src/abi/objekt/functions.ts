@@ -3,8 +3,8 @@ import {
   array,
   bool,
   bytes,
-  bytes32,
   bytes4,
+  bytes32,
   string,
   uint256,
 } from "@subsquid/evm-codec";

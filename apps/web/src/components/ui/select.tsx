@@ -1,10 +1,10 @@
 import { cn } from "@/lib/utils";
 import { Select as SelectPrimitive } from "@base-ui/react/select";
 import {
-  IconSelector,
   IconCheck,
-  IconChevronUp,
   IconChevronDown,
+  IconChevronUp,
+  IconSelector,
 } from "@tabler/icons-react";
 import * as React from "react";
 

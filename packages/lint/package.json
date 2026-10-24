@@ -5,7 +5,6 @@
   "private": true,
   "exports": {
     "./oxlint.config": "./oxlint.config.ts",
-    "./oxfmt.config": "./oxfmt.config.ts",
     "./anti-slop": "./anti-slop/index.ts"
   },
   "devDependencies": {

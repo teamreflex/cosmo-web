@@ -21,9 +21,9 @@ import { IconFileUnknown, IconRefresh } from "@tabler/icons-react";
 import { noop } from "@tanstack/react-query";
 import type { QueryClient } from "@tanstack/react-query";
 import {
+  createRootRouteWithContext,
   HeadContent,
   Scripts,
-  createRootRouteWithContext,
 } from "@tanstack/react-router";
 import React from "react";
 import { Toaster } from "sonner";

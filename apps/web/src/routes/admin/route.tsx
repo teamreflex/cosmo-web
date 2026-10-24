@@ -12,7 +12,7 @@ import { currentAccountQuery } from "@/lib/queries/core";
 import { reportCountsQuery } from "@/lib/queries/reports";
 import { can } from "@apollo/auth";
 import { noop } from "@tanstack/react-query";
-import { Outlet, createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: async ({ context }) => {

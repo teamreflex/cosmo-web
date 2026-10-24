@@ -4,8 +4,11 @@ import LockObjekt from "@/components/objekt/overlay/lock-button";
 import PinObjekt from "@/components/objekt/overlay/pin-button";
 import { useMetadataDialog } from "@/hooks/use-metadata-dialog";
 import { tokenKey, useObjektSelection } from "@/hooks/use-objekt-selection";
-import { useLockedObjekt, usePinnedObjekt } from "@/hooks/use-profile";
-import { useProfileContext } from "@/hooks/use-profile";
+import {
+  useLockedObjekt,
+  usePinnedObjekt,
+  useProfileContext,
+} from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
 import { reasonLabel } from "@/lib/client/objekt-util";
 import { objektQuery } from "@/lib/queries/objekt-queries";
