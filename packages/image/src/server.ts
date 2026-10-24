@@ -1,10 +1,6 @@
 import type { S3Client } from "bun";
 import { Duration, Effect, Schedule } from "effect";
-import {
-  HttpClient,
-  HttpClientError,
-  HttpClientRequest,
-} from "effect/unstable/http";
+import { HttpClient, HttpClientError, HttpClientRequest } from "effect/http";
 import { createHash } from "node:crypto";
 import { ImageFetchError, ImageProcessError, ImageStoreError } from "./errors";
 import {

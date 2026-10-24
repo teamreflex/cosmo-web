@@ -2,7 +2,7 @@ import { env } from "@/lib/env/server";
 import { TradeNotificationsQueue } from "@apollo/queue";
 import { BunRedis } from "@effect/platform-bun";
 import { Layer, ManagedRuntime } from "effect";
-import { RateLimiter } from "effect/unstable/persistence";
+import { RateLimiter } from "effect/persistence";
 
 /**
  * Shared Effect runtime for server-side services.

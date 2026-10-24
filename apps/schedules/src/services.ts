@@ -1,6 +1,6 @@
 import { BunServices } from "@effect/platform-bun";
 import { Layer } from "effect";
-import { FetchHttpClient } from "effect/unstable/http";
+import { FetchHttpClient } from "effect/http";
 import { CosmoKey } from "./cosmo-key";
 import { DatabaseWeb } from "./db";
 import { DatabaseIndexer } from "./db-indexer";

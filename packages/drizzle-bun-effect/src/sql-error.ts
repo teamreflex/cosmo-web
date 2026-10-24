@@ -12,7 +12,7 @@ import {
   StatementTimeoutError,
   UniqueViolation,
   UnknownError,
-} from "effect/unstable/sql/SqlError";
+} from "effect/sql/SqlError";
 
 const SQLSTATE = /^[0-9A-Z]{5}$/;
 

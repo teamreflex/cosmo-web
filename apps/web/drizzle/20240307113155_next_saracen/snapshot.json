@@ -1,28 +1,339 @@
 {
+  "type": "base",
+  "version": "9",
+  "dialect": "postgres",
   "id": "f4767a6f-9b99-4b24-b21d-f0a3e481e355",
   "prevIds": [
     "00000000-0000-0000-0000-000000000000"
   ],
-  "version": "8",
-  "dialect": "postgres",
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "list_entries"
+      ],
+      "writes": [
+        "s|tbl|public.list_entries",
+        "n|tbl|public.list_entries",
+        "e|tbl|public.list_entries",
+        "n|rel|public.list_entries",
+        "n|type|public.list_entries",
+        "n|rel|public.list_entries_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "lists"
+      ],
+      "writes": [
+        "s|tbl|public.lists",
+        "n|tbl|public.lists",
+        "e|tbl|public.lists",
+        "n|rel|public.lists",
+        "n|type|public.lists",
+        "n|rel|public.lists_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "locked_objekts"
+      ],
+      "writes": [
+        "s|tbl|public.locked_objekts",
+        "n|tbl|public.locked_objekts",
+        "e|tbl|public.locked_objekts",
+        "n|rel|public.locked_objekts",
+        "n|type|public.locked_objekts",
+        "n|rel|public.locked_objekts_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "profiles"
+      ],
+      "writes": [
+        "s|tbl|public.profiles",
+        "n|tbl|public.profiles",
+        "e|tbl|public.profiles",
+        "n|rel|public.profiles",
+        "n|type|public.profiles",
+        "n|rel|public.profiles_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "list_entries",
+        "list_entries_list_idx"
+      ],
+      "writes": [
+        "s|idx|public.list_entries_list_idx",
+        "n|idx|public.list_entries_list_idx",
+        "e|idx|public.list_entries_list_idx",
+        "n|rel|public.list_entries_list_idx"
+      ],
+      "reads": [
+        "n|tbl|public.list_entries",
+        "n|sch|public",
+        "n|col|public.list_entries.list_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "lists",
+        "lists_address_idx"
+      ],
+      "writes": [
+        "s|idx|public.lists_address_idx",
+        "n|idx|public.lists_address_idx",
+        "e|idx|public.lists_address_idx",
+        "n|rel|public.lists_address_idx"
+      ],
+      "reads": [
+        "n|tbl|public.lists",
+        "n|sch|public",
+        "n|col|public.lists.user_address"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "lists",
+        "lists_slug_idx"
+      ],
+      "writes": [
+        "s|idx|public.lists_slug_idx",
+        "n|idx|public.lists_slug_idx",
+        "e|idx|public.lists_slug_idx",
+        "n|rel|public.lists_slug_idx"
+      ],
+      "reads": [
+        "n|tbl|public.lists",
+        "n|sch|public",
+        "n|col|public.lists.slug"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "locked_objekts",
+        "address_token_idx"
+      ],
+      "writes": [
+        "s|idx|public.address_token_idx",
+        "n|idx|public.address_token_idx",
+        "e|idx|public.address_token_idx",
+        "n|rel|public.address_token_idx"
+      ],
+      "reads": [
+        "n|tbl|public.locked_objekts",
+        "n|sch|public",
+        "n|col|public.locked_objekts.user_address",
+        "n|col|public.locked_objekts.tokenId"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "profiles",
+        "profiles_address_idx"
+      ],
+      "writes": [
+        "s|idx|public.profiles_address_idx",
+        "n|idx|public.profiles_address_idx",
+        "e|idx|public.profiles_address_idx",
+        "n|rel|public.profiles_address_idx"
+      ],
+      "reads": [
+        "n|tbl|public.profiles",
+        "n|sch|public",
+        "n|col|public.profiles.user_address"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "profiles",
+        "profiles_cosmo_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.profiles_cosmo_id_idx",
+        "n|idx|public.profiles_cosmo_id_idx",
+        "e|idx|public.profiles_cosmo_id_idx",
+        "n|rel|public.profiles_cosmo_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.profiles",
+        "n|sch|public",
+        "n|col|public.profiles.cosmo_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "profiles",
+        "profiles_nickname_idx"
+      ],
+      "writes": [
+        "s|idx|public.profiles_nickname_idx",
+        "n|idx|public.profiles_nickname_idx",
+        "e|idx|public.profiles_nickname_idx",
+        "n|rel|public.profiles_nickname_idx"
+      ],
+      "reads": [
+        "n|tbl|public.profiles",
+        "n|sch|public",
+        "n|col|public.profiles.nickname"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "profiles",
+        "profiles_priv_nickname_idx"
+      ],
+      "writes": [
+        "s|idx|public.profiles_priv_nickname_idx",
+        "n|idx|public.profiles_priv_nickname_idx",
+        "e|idx|public.profiles_priv_nickname_idx",
+        "n|rel|public.profiles_priv_nickname_idx"
+      ],
+      "reads": [
+        "n|tbl|public.profiles",
+        "n|sch|public",
+        "n|col|public.profiles.privacy_nickname"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "profiles",
+        "profiles_priv_objekts_idx"
+      ],
+      "writes": [
+        "s|idx|public.profiles_priv_objekts_idx",
+        "n|idx|public.profiles_priv_objekts_idx",
+        "e|idx|public.profiles_priv_objekts_idx",
+        "n|rel|public.profiles_priv_objekts_idx"
+      ],
+      "reads": [
+        "n|tbl|public.profiles",
+        "n|sch|public",
+        "n|col|public.profiles.privacy_objekts"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "profiles",
+        "profiles_priv_como_idx"
+      ],
+      "writes": [
+        "s|idx|public.profiles_priv_como_idx",
+        "n|idx|public.profiles_priv_como_idx",
+        "e|idx|public.profiles_priv_como_idx",
+        "n|rel|public.profiles_priv_como_idx"
+      ],
+      "reads": [
+        "n|tbl|public.profiles",
+        "n|sch|public",
+        "n|col|public.profiles.privacy_como"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "profiles",
+        "profiles_priv_trades_idx"
+      ],
+      "writes": [
+        "s|idx|public.profiles_priv_trades_idx",
+        "n|idx|public.profiles_priv_trades_idx",
+        "e|idx|public.profiles_priv_trades_idx",
+        "n|rel|public.profiles_priv_trades_idx"
+      ],
+      "reads": [
+        "n|tbl|public.profiles",
+        "n|sch|public",
+        "n|col|public.profiles.privacy_trades"
+      ]
+    }
+  ],
   "ddl": [
     {
-      "isRlsEnabled": false,
-      "name": "list_entries",
       "schema": "public",
+      "name": "list_entries",
+      "isRlsEnabled": false,
       "entityType": "tables"
     },
     {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "list_entries_pkey",
       "schema": "public",
-      "table": "list_entries",
-      "entityType": "pks"
+      "name": "lists",
+      "isRlsEnabled": false,
+      "entityType": "tables"
     },
     {
+      "schema": "public",
+      "name": "locked_objekts",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "name": "profiles",
+      "isRlsEnabled": false,
+      "entityType": "tables"
+    },
+    {
+      "schema": "public",
+      "table": "list_entries",
+      "name": "id",
       "type": "serial",
       "typeSchema": null,
       "notNull": true,
@@ -30,12 +341,12 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "id",
-      "schema": "public",
-      "table": "list_entries",
       "entityType": "columns"
     },
     {
+      "schema": "public",
+      "table": "list_entries",
+      "name": "list_id",
       "type": "integer",
       "typeSchema": null,
       "notNull": true,
@@ -43,12 +354,12 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "list_id",
-      "schema": "public",
-      "table": "list_entries",
       "entityType": "columns"
     },
     {
+      "schema": "public",
+      "table": "list_entries",
+      "name": "collection_id",
       "type": "varchar(36)",
       "typeSchema": null,
       "notNull": true,
@@ -56,12 +367,246 @@
       "default": null,
       "generated": null,
       "identity": null,
-      "name": "collection_id",
-      "schema": "public",
-      "table": "list_entries",
       "entityType": "columns"
     },
     {
+      "schema": "public",
+      "table": "lists",
+      "name": "id",
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "lists",
+      "name": "user_address",
+      "type": "citext",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "lists",
+      "name": "name",
+      "type": "varchar(24)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "lists",
+      "name": "slug",
+      "type": "citext",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "locked_objekts",
+      "name": "id",
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "locked_objekts",
+      "name": "user_address",
+      "type": "citext",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "locked_objekts",
+      "name": "tokenId",
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "locked_objekts",
+      "name": "locked",
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "profiles",
+      "name": "id",
+      "type": "serial",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "profiles",
+      "name": "user_address",
+      "type": "citext",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "profiles",
+      "name": "cosmo_id",
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "profiles",
+      "name": "nickname",
+      "type": "citext",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "profiles",
+      "name": "artist",
+      "type": "varchar(24)",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": null,
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "profiles",
+      "name": "privacy_nickname",
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "false",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "profiles",
+      "name": "privacy_objekts",
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "false",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "profiles",
+      "name": "privacy_como",
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "false",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "profiles",
+      "name": "privacy_trades",
+      "type": "boolean",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "false",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "profiles",
+      "name": "grid_columns",
+      "type": "integer",
+      "typeSchema": null,
+      "notNull": true,
+      "dimensions": 0,
+      "default": "5",
+      "generated": null,
+      "identity": null,
+      "entityType": "columns"
+    },
+    {
+      "schema": "public",
+      "table": "list_entries",
+      "name": "list_entries_list_idx",
       "nameExplicit": true,
       "columns": [
         {
@@ -77,80 +622,12 @@
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "list_entries_list_idx",
-      "schema": "public",
-      "table": "list_entries",
       "entityType": "indexes"
     },
     {
-      "isRlsEnabled": false,
-      "name": "lists",
-      "schema": "public",
-      "entityType": "tables"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "lists_pkey",
       "schema": "public",
       "table": "lists",
-      "entityType": "pks"
-    },
-    {
-      "type": "serial",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "schema": "public",
-      "table": "lists",
-      "entityType": "columns"
-    },
-    {
-      "type": "citext",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "user_address",
-      "schema": "public",
-      "table": "lists",
-      "entityType": "columns"
-    },
-    {
-      "type": "varchar(24)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "name",
-      "schema": "public",
-      "table": "lists",
-      "entityType": "columns"
-    },
-    {
-      "type": "citext",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "slug",
-      "schema": "public",
-      "table": "lists",
-      "entityType": "columns"
-    },
-    {
+      "name": "lists_address_idx",
       "nameExplicit": true,
       "columns": [
         {
@@ -166,12 +643,12 @@
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "lists_address_idx",
-      "schema": "public",
-      "table": "lists",
       "entityType": "indexes"
     },
     {
+      "schema": "public",
+      "table": "lists",
+      "name": "lists_slug_idx",
       "nameExplicit": true,
       "columns": [
         {
@@ -187,80 +664,12 @@
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "lists_slug_idx",
-      "schema": "public",
-      "table": "lists",
       "entityType": "indexes"
     },
     {
-      "isRlsEnabled": false,
-      "name": "locked_objekts",
-      "schema": "public",
-      "entityType": "tables"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "locked_objekts_pkey",
       "schema": "public",
       "table": "locked_objekts",
-      "entityType": "pks"
-    },
-    {
-      "type": "serial",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "schema": "public",
-      "table": "locked_objekts",
-      "entityType": "columns"
-    },
-    {
-      "type": "citext",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "user_address",
-      "schema": "public",
-      "table": "locked_objekts",
-      "entityType": "columns"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "tokenId",
-      "schema": "public",
-      "table": "locked_objekts",
-      "entityType": "columns"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "locked",
-      "schema": "public",
-      "table": "locked_objekts",
-      "entityType": "columns"
-    },
-    {
+      "name": "address_token_idx",
       "nameExplicit": true,
       "columns": [
         {
@@ -283,158 +692,12 @@
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "address_token_idx",
-      "schema": "public",
-      "table": "locked_objekts",
       "entityType": "indexes"
     },
     {
-      "isRlsEnabled": false,
-      "name": "profiles",
-      "schema": "public",
-      "entityType": "tables"
-    },
-    {
-      "columns": [
-        "id"
-      ],
-      "nameExplicit": false,
-      "name": "profiles_pkey",
       "schema": "public",
       "table": "profiles",
-      "entityType": "pks"
-    },
-    {
-      "type": "serial",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "id",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "columns"
-    },
-    {
-      "type": "citext",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "user_address",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "columns"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "cosmo_id",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "columns"
-    },
-    {
-      "type": "citext",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "nickname",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "columns"
-    },
-    {
-      "type": "varchar(24)",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": null,
-      "generated": null,
-      "identity": null,
-      "name": "artist",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "columns"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "false",
-      "generated": null,
-      "identity": null,
-      "name": "privacy_nickname",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "columns"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "false",
-      "generated": null,
-      "identity": null,
-      "name": "privacy_objekts",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "columns"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "false",
-      "generated": null,
-      "identity": null,
-      "name": "privacy_como",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "columns"
-    },
-    {
-      "type": "boolean",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "false",
-      "generated": null,
-      "identity": null,
-      "name": "privacy_trades",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "columns"
-    },
-    {
-      "type": "integer",
-      "typeSchema": null,
-      "notNull": true,
-      "dimensions": 0,
-      "default": "5",
-      "generated": null,
-      "identity": null,
-      "name": "grid_columns",
-      "schema": "public",
-      "table": "profiles",
-      "entityType": "columns"
-    },
-    {
+      "name": "profiles_address_idx",
       "nameExplicit": true,
       "columns": [
         {
@@ -450,12 +713,12 @@
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "profiles_address_idx",
-      "schema": "public",
-      "table": "profiles",
       "entityType": "indexes"
     },
     {
+      "schema": "public",
+      "table": "profiles",
+      "name": "profiles_cosmo_id_idx",
       "nameExplicit": true,
       "columns": [
         {
@@ -471,12 +734,12 @@
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "profiles_cosmo_id_idx",
-      "schema": "public",
-      "table": "profiles",
       "entityType": "indexes"
     },
     {
+      "schema": "public",
+      "table": "profiles",
+      "name": "profiles_nickname_idx",
       "nameExplicit": true,
       "columns": [
         {
@@ -492,12 +755,12 @@
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "profiles_nickname_idx",
-      "schema": "public",
-      "table": "profiles",
       "entityType": "indexes"
     },
     {
+      "schema": "public",
+      "table": "profiles",
+      "name": "profiles_priv_nickname_idx",
       "nameExplicit": true,
       "columns": [
         {
@@ -513,12 +776,12 @@
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "profiles_priv_nickname_idx",
-      "schema": "public",
-      "table": "profiles",
       "entityType": "indexes"
     },
     {
+      "schema": "public",
+      "table": "profiles",
+      "name": "profiles_priv_objekts_idx",
       "nameExplicit": true,
       "columns": [
         {
@@ -534,12 +797,12 @@
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "profiles_priv_objekts_idx",
-      "schema": "public",
-      "table": "profiles",
       "entityType": "indexes"
     },
     {
+      "schema": "public",
+      "table": "profiles",
+      "name": "profiles_priv_como_idx",
       "nameExplicit": true,
       "columns": [
         {
@@ -555,12 +818,12 @@
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "profiles_priv_como_idx",
-      "schema": "public",
-      "table": "profiles",
       "entityType": "indexes"
     },
     {
+      "schema": "public",
+      "table": "profiles",
+      "name": "profiles_priv_trades_idx",
       "nameExplicit": true,
       "columns": [
         {
@@ -576,11 +839,47 @@
       "with": "",
       "method": "btree",
       "concurrently": false,
-      "name": "profiles_priv_trades_idx",
+      "entityType": "indexes"
+    },
+    {
+      "schema": "public",
+      "table": "list_entries",
+      "name": "list_entries_pkey",
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "lists",
+      "name": "lists_pkey",
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
+      "schema": "public",
+      "table": "locked_objekts",
+      "name": "locked_objekts_pkey",
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "entityType": "pks"
+    },
+    {
       "schema": "public",
       "table": "profiles",
-      "entityType": "indexes"
+      "name": "profiles_pkey",
+      "columns": [
+        "id"
+      ],
+      "nameExplicit": false,
+      "entityType": "pks"
     }
-  ],
-  "renames": []
+  ]
 }

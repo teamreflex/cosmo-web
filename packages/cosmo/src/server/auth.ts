@@ -1,5 +1,5 @@
 import { Effect } from "effect";
-import { HttpBody } from "effect/unstable/http";
+import { HttpBody } from "effect/http";
 import { RefreshResponseSchema } from "../schema/auth";
 import { encrypt, EncryptionError } from "./encryption";
 import { cosmoClient, decodeBody } from "./http";

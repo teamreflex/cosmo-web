@@ -62,7 +62,11 @@ export const make = <TRelations extends AnyRelations = EmptyRelations>(
     const session = new BunSQLEffectSession<
       BunSQLEffectQueryResultHKT,
       TRelations
-    >(config.client, dialect, config.relations, { logger, cache });
+    >(config.client, dialect, config.relations, {
+      logger,
+      cache,
+      paramsInErrors: config.paramsInErrors,
+    });
     const db = new BunSQLEffectDatabase<TRelations>(
       dialect,
       session,

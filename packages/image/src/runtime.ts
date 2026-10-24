@@ -1,5 +1,5 @@
 import { Cause, type Effect, Exit, ManagedRuntime } from "effect";
-import { FetchHttpClient, type HttpClient } from "effect/unstable/http";
+import { FetchHttpClient, type HttpClient } from "effect/http";
 
 const runtime = ManagedRuntime.make(FetchHttpClient.layer);
 

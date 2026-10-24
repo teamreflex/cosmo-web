@@ -8,7 +8,10 @@ import {
   sql,
 } from "drizzle-orm";
 import type { EffectCacheShape } from "drizzle-orm/cache/core/cache-effect";
-import type { WithCacheConfig } from "drizzle-orm/cache/core/types";
+import type {
+  QueryMetadata,
+  WithCacheConfig,
+} from "drizzle-orm/cache/core/types";
 import type {
   EffectDrizzleQueryError,
   EffectLoggerShape,
@@ -28,7 +31,7 @@ import {
 import * as Effect from "effect/Effect";
 import * as Exit from "effect/Exit";
 import * as Semaphore from "effect/Semaphore";
-import { SqlError } from "effect/unstable/sql/SqlError";
+import { SqlError } from "effect/sql/SqlError";
 import { classifyPgError } from "./sql-error";
 
 export interface BunSQLEffectQueryHKT extends QueryEffectHKTBase {
@@ -43,6 +46,7 @@ export interface BunSQLEffectQueryResultHKT extends PgQueryResultHKT {
 export interface BunSQLEffectSessionOptions {
   logger: EffectLoggerShape;
   cache: EffectCacheShape;
+  paramsInErrors: boolean | undefined;
 }
 
 /**
@@ -96,15 +100,12 @@ export class BunSQLEffectSession<
     _name: string | boolean,
     // oxlint-disable-next-line anti-slop/no-unknown-returns -- drizzle's session contract; the mapper is untyped upstream
     mapper?: (rows: unknown[]) => unknown,
-    queryMetadata?: {
-      type: "select" | "update" | "delete" | "insert";
-      tables: string[];
-    },
+    queryMetadata?: QueryMetadata,
     cacheConfig?: WithCacheConfig,
   ): PgEffectPreparedQuery<T, BunSQLEffectQueryHKT> {
     const client = this.client;
     // failures become SqlError here and drizzle's own machinery wraps them in
-    // EffectDrizzleQueryError (with query text + params), matching effect-postgres
+    // EffectDrizzleQueryError (query text, plus params with paramsInErrors), matching effect-postgres
     const executor = (params?: unknown[]) =>
       Effect.tryPromise({
         try: (signal) => {
@@ -133,6 +134,7 @@ export class BunSQLEffectSession<
       this.options.cache,
       queryMetadata,
       cacheConfig,
+      this.options.paramsInErrors,
     );
   }
 

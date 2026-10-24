@@ -1,5 +1,5 @@
 import { Effect } from "effect";
-import { Redis } from "effect/unstable/persistence";
+import { Redis } from "effect/persistence";
 import type { ScheduledTask } from "../task";
 
 /**

@@ -1,6 +1,6 @@
 import { DatabaseWeb } from "@/db";
 import { DatabaseIndexer } from "@/db-indexer";
-import { parseOutboxRow, planBatch, type BatchPlan } from "@/outbox";
+import { type BatchPlan, parseOutboxRow, planBatch } from "@/outbox";
 import { listEventOutbox } from "@apollo/database/indexer/schema";
 import {
   binderEntries,
@@ -12,7 +12,7 @@ import {
 import { pinCacheKey } from "@apollo/util-server";
 import { and, eq, gt, inArray, lt, lte, max, sql } from "drizzle-orm";
 import { Data, Effect } from "effect";
-import { Redis } from "effect/unstable/persistence";
+import { Redis } from "effect/persistence";
 import type { ScheduledTask } from "../task";
 
 const BATCH_SIZE = 1000;

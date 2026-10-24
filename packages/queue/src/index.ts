@@ -1,5 +1,5 @@
 import { Context, Layer, Schema } from "effect";
-import { PersistedQueue } from "effect/unstable/persistence";
+import { PersistedQueue } from "effect/persistence";
 
 /**
  * The Redis store behind every queue: the web app offers jobs and the

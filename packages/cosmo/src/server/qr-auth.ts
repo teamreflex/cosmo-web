@@ -1,5 +1,5 @@
 import { Effect } from "effect";
-import { Cookies, HttpBody } from "effect/unstable/http";
+import { Cookies, HttpBody } from "effect/http";
 import puppeteer from "puppeteer-core";
 import { AuthTicketSchema, QueryTicketSchema } from "../schema/qr-auth";
 import { cosmoShopClient, decodeBody } from "./http";
