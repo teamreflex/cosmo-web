@@ -42,7 +42,7 @@ export default function FilterSearch() {
         placeholder={m.common_search_placeholder()}
         value={query ?? ""}
         onChange={(e) => set(e.currentTarget.value || undefined)}
-        className="h-full w-full grow bg-transparent text-xs outline-none placeholder:text-muted-foreground"
+        className="h-full w-full grow bg-transparent text-xs outline-none placeholder:text-xs placeholder:text-muted-foreground any-pointer-coarse:text-base"
         maxLength={32}
       />
 

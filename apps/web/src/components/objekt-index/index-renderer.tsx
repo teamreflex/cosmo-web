@@ -45,7 +45,7 @@ export default function IndexRenderer(props: Props) {
         </div>
 
         {authenticated && (
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto hidden items-center gap-2 sm:flex">
             <Suspense
               fallback={
                 <Button

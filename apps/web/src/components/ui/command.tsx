@@ -50,7 +50,10 @@ function CommandDialog({
         <DialogDescription>{description}</DialogDescription>
       </DialogHeader>
       <DialogContent
-        className={cn("overflow-hidden rounded-xl! p-0", className)}
+        className={cn(
+          "top-[10dvh] translate-y-0 overflow-hidden rounded-xl! p-0",
+          className,
+        )}
         showCloseButton={showCloseButton}
       >
         {children}
@@ -72,7 +75,7 @@ function CommandInput({ className, onClose, ...props }: CommandInputProps) {
         <CommandPrimitive.Input
           data-slot="command-input"
           className={cn(
-            "w-full text-[16px] outline-hidden disabled:cursor-not-allowed disabled:opacity-50 sm:text-sm",
+            "w-full text-sm outline-hidden disabled:cursor-not-allowed disabled:opacity-50 any-pointer-coarse:text-base",
             className,
           )}
           {...props}

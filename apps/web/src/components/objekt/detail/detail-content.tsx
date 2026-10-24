@@ -30,8 +30,12 @@ export default function DetailContent({ collection, tokens }: Props) {
   const lockedSet = useMemo(() => new Set(lockedObjekts), [lockedObjekts]);
 
   return (
+    /**
+     * --objekt-width shrinks the card on short viewports to leave room for the
+     * serial list, and the desktop card column is sized around it.
+     */
     <div
-      className="grid min-h-0 flex-1 data-[desktop=false]:grid-cols-1 data-[desktop=false]:grid-rows-[auto_1fr] data-[desktop=true]:grid-cols-[minmax(280px,380px)_1fr] data-[desktop=true]:overflow-hidden"
+      className="grid min-h-0 flex-1 [--objekt-width:min(220px,calc(40dvh*(var(--aspect-photocard))))] data-[desktop=false]:grid-cols-1 data-[desktop=false]:grid-rows-[auto_1fr] data-[desktop=true]:grid-cols-[calc(var(--objekt-width)+6rem)_1fr] data-[desktop=true]:overflow-hidden sm:[--objekt-width:min(280px,calc(50dvh*(var(--aspect-photocard))))]"
       data-desktop={isDesktop}
     >
       <ObjektGradient
@@ -39,7 +43,7 @@ export default function DetailContent({ collection, tokens }: Props) {
         className="flex flex-col items-center justify-center gap-4 border-border p-4 data-[desktop=false]:-mt-10 data-[desktop=false]:border-b data-[desktop=false]:pt-14 data-[desktop=true]:border-r data-[desktop=true]:p-6"
         data-desktop={isDesktop}
       >
-        <div className="w-full max-w-[220px] sm:max-w-[280px]">
+        <div className="w-full max-w-(--objekt-width)">
           <FlippableObjekt collection={collection}>
             <ObjektSidebar collection={collection} />
           </FlippableObjekt>
