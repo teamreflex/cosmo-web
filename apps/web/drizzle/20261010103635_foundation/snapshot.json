@@ -1,0 +1,1824 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "6213a753-a256-48fd-a207-475dcb7d1056",
+  "prevIds": [
+    "b8ec81a9-905b-41bf-9fb0-1c563a14c6b4"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "cosmo_link_event"
+      ],
+      "writes": [
+        "s|enum|public.cosmo_link_event",
+        "n|enum|public.cosmo_link_event",
+        "e|enum|public.cosmo_link_event",
+        "n|type|public.cosmo_link_event"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "cosmo_link_reason"
+      ],
+      "writes": [
+        "s|enum|public.cosmo_link_reason",
+        "n|enum|public.cosmo_link_reason",
+        "e|enum|public.cosmo_link_reason",
+        "n|type|public.cosmo_link_reason"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "report_status"
+      ],
+      "writes": [
+        "s|enum|public.report_status",
+        "n|enum|public.report_status",
+        "e|enum|public.report_status",
+        "n|type|public.report_status"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "report_target_type"
+      ],
+      "writes": [
+        "s|enum|public.report_target_type",
+        "n|enum|public.report_target_type",
+        "e|enum|public.report_target_type",
+        "n|type|public.report_target_type"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "user_role"
+      ],
+      "writes": [
+        "s|enum|public.user_role",
+        "n|enum|public.user_role",
+        "e|enum|public.user_role",
+        "n|type|public.user_role"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "collection_price_history"
+      ],
+      "writes": [
+        "s|tbl|public.collection_price_history",
+        "n|tbl|public.collection_price_history",
+        "e|tbl|public.collection_price_history",
+        "n|rel|public.collection_price_history",
+        "n|type|public.collection_price_history",
+        "n|rel|public.collection_price_history_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "cosmo_link_audit"
+      ],
+      "writes": [
+        "s|tbl|public.cosmo_link_audit",
+        "n|tbl|public.cosmo_link_audit",
+        "e|tbl|public.cosmo_link_audit",
+        "n|rel|public.cosmo_link_audit",
+        "n|type|public.cosmo_link_audit",
+        "n|rel|public.cosmo_link_audit_pkey"
+      ],
+      "reads": [
+        "n|sch|public",
+        "n|enum|public.cosmo_link_event",
+        "n|enum|public.cosmo_link_reason"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "reports"
+      ],
+      "writes": [
+        "s|tbl|public.reports",
+        "n|tbl|public.reports",
+        "e|tbl|public.reports",
+        "n|rel|public.reports",
+        "n|type|public.reports",
+        "n|rel|public.reports_pkey"
+      ],
+      "reads": [
+        "n|sch|public",
+        "n|enum|public.report_target_type",
+        "n|enum|public.report_status"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "staff_audit"
+      ],
+      "writes": [
+        "s|tbl|public.staff_audit",
+        "n|tbl|public.staff_audit",
+        "e|tbl|public.staff_audit",
+        "n|rel|public.staff_audit",
+        "n|type|public.staff_audit",
+        "n|rel|public.staff_audit_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "drop_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "fx_rates",
+        "fx_rates_currency_idx"
+      ],
+      "writes": [
+        "s|idx|public.fx_rates_currency_idx",
+        "n|idx|public.fx_rates_currency_idx",
+        "e|idx|public.fx_rates_currency_idx",
+        "n|rel|public.fx_rates_currency_idx"
+      ],
+      "reads": [
+        "e|tbl|public.fx_rates",
+        "n|sch|public",
+        "e|col|public.fx_rates.currency"
+      ],
+      "sharedWrites": []
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "list_drain_cursor",
+        "chain_time"
+      ],
+      "writes": [
+        "s|col|public.list_drain_cursor.chain_time",
+        "n|col|public.list_drain_cursor.chain_time",
+        "e|col|public.list_drain_cursor.chain_time"
+      ],
+      "reads": [
+        "n|tbl|public.list_drain_cursor",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "session",
+        "impersonated_by"
+      ],
+      "writes": [
+        "s|col|public.session.impersonated_by",
+        "n|col|public.session.impersonated_by",
+        "e|col|public.session.impersonated_by"
+      ],
+      "reads": [
+        "n|tbl|public.session",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "user",
+        "currency"
+      ],
+      "writes": [
+        "s|col|public.user.currency",
+        "n|col|public.user.currency",
+        "e|col|public.user.currency"
+      ],
+      "reads": [
+        "n|tbl|public.user",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "user",
+        "role"
+      ],
+      "writes": [
+        "s|col|public.user.role",
+        "n|col|public.user.role",
+        "e|col|public.user.role"
+      ],
+      "reads": [
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|enum|public.user_role"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "user",
+        "banned"
+      ],
+      "writes": [
+        "s|col|public.user.banned",
+        "n|col|public.user.banned",
+        "e|col|public.user.banned"
+      ],
+      "reads": [
+        "n|tbl|public.user",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "user",
+        "ban_reason"
+      ],
+      "writes": [
+        "s|col|public.user.ban_reason",
+        "n|col|public.user.ban_reason",
+        "e|col|public.user.ban_reason"
+      ],
+      "reads": [
+        "n|tbl|public.user",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "user",
+        "ban_expires"
+      ],
+      "writes": [
+        "s|col|public.user.ban_expires",
+        "n|col|public.user.ban_expires",
+        "e|col|public.user.ban_expires"
+      ],
+      "reads": [
+        "n|tbl|public.user",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "cosmo_account",
+        "cosmo_account_user_id_unique_idx"
+      ],
+      "writes": [
+        "s|idx|public.cosmo_account_user_id_unique_idx",
+        "n|idx|public.cosmo_account_user_id_unique_idx",
+        "e|idx|public.cosmo_account_user_id_unique_idx",
+        "n|rel|public.cosmo_account_user_id_unique_idx"
+      ],
+      "reads": [
+        "n|tbl|public.cosmo_account",
+        "n|sch|public",
+        "n|col|public.cosmo_account.user_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "cosmo_link_audit",
+        "cosmo_link_audit_cosmo_account_idx"
+      ],
+      "writes": [
+        "s|idx|public.cosmo_link_audit_cosmo_account_idx",
+        "n|idx|public.cosmo_link_audit_cosmo_account_idx",
+        "e|idx|public.cosmo_link_audit_cosmo_account_idx",
+        "n|rel|public.cosmo_link_audit_cosmo_account_idx"
+      ],
+      "reads": [
+        "n|tbl|public.cosmo_link_audit",
+        "n|sch|public",
+        "n|col|public.cosmo_link_audit.cosmo_account_id",
+        "n|col|public.cosmo_link_audit.id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "cosmo_link_audit",
+        "cosmo_link_audit_user_idx"
+      ],
+      "writes": [
+        "s|idx|public.cosmo_link_audit_user_idx",
+        "n|idx|public.cosmo_link_audit_user_idx",
+        "e|idx|public.cosmo_link_audit_user_idx",
+        "n|rel|public.cosmo_link_audit_user_idx"
+      ],
+      "reads": [
+        "n|tbl|public.cosmo_link_audit",
+        "n|sch|public",
+        "n|col|public.cosmo_link_audit.user_id",
+        "n|col|public.cosmo_link_audit.id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "fx_rates",
+        "fx_rates_currency_date_idx"
+      ],
+      "writes": [
+        "s|idx|public.fx_rates_currency_date_idx",
+        "n|idx|public.fx_rates_currency_date_idx",
+        "e|idx|public.fx_rates_currency_date_idx",
+        "n|rel|public.fx_rates_currency_date_idx"
+      ],
+      "reads": [
+        "n|tbl|public.fx_rates",
+        "n|sch|public",
+        "n|col|public.fx_rates.currency",
+        "n|col|public.fx_rates.date"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "reports",
+        "reports_open_reporter_target_idx"
+      ],
+      "writes": [
+        "s|idx|public.reports_open_reporter_target_idx",
+        "n|idx|public.reports_open_reporter_target_idx",
+        "e|idx|public.reports_open_reporter_target_idx",
+        "n|rel|public.reports_open_reporter_target_idx"
+      ],
+      "reads": [
+        "n|tbl|public.reports",
+        "n|sch|public",
+        "n|col|public.reports.reporter_id",
+        "n|col|public.reports.target_type",
+        "n|col|public.reports.target_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "reports",
+        "reports_status_created_idx"
+      ],
+      "writes": [
+        "s|idx|public.reports_status_created_idx",
+        "n|idx|public.reports_status_created_idx",
+        "e|idx|public.reports_status_created_idx",
+        "n|rel|public.reports_status_created_idx"
+      ],
+      "reads": [
+        "n|tbl|public.reports",
+        "n|sch|public",
+        "n|col|public.reports.status",
+        "n|col|public.reports.created_at",
+        "n|col|public.reports.id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "reports",
+        "reports_target_idx"
+      ],
+      "writes": [
+        "s|idx|public.reports_target_idx",
+        "n|idx|public.reports_target_idx",
+        "e|idx|public.reports_target_idx",
+        "n|rel|public.reports_target_idx"
+      ],
+      "reads": [
+        "n|tbl|public.reports",
+        "n|sch|public",
+        "n|col|public.reports.target_type",
+        "n|col|public.reports.target_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "staff_audit",
+        "staff_audit_staff_idx"
+      ],
+      "writes": [
+        "s|idx|public.staff_audit_staff_idx",
+        "n|idx|public.staff_audit_staff_idx",
+        "e|idx|public.staff_audit_staff_idx",
+        "n|rel|public.staff_audit_staff_idx"
+      ],
+      "reads": [
+        "n|tbl|public.staff_audit",
+        "n|sch|public",
+        "n|col|public.staff_audit.staff_id",
+        "n|col|public.staff_audit.id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "staff_audit",
+        "staff_audit_action_idx"
+      ],
+      "writes": [
+        "s|idx|public.staff_audit_action_idx",
+        "n|idx|public.staff_audit_action_idx",
+        "e|idx|public.staff_audit_action_idx",
+        "n|rel|public.staff_audit_action_idx"
+      ],
+      "reads": [
+        "n|tbl|public.staff_audit",
+        "n|sch|public",
+        "n|col|public.staff_audit.action",
+        "n|col|public.staff_audit.id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "staff_audit",
+        "staff_audit_report_idx"
+      ],
+      "writes": [
+        "s|idx|public.staff_audit_report_idx",
+        "n|idx|public.staff_audit_report_idx",
+        "e|idx|public.staff_audit_report_idx",
+        "n|rel|public.staff_audit_report_idx"
+      ],
+      "reads": [
+        "n|tbl|public.staff_audit",
+        "n|sch|public",
+        "n|col|public.staff_audit.report_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "staff_audit",
+        "staff_audit_target_idx"
+      ],
+      "writes": [
+        "s|idx|public.staff_audit_target_idx",
+        "n|idx|public.staff_audit_target_idx",
+        "e|idx|public.staff_audit_target_idx",
+        "n|rel|public.staff_audit_target_idx"
+      ],
+      "reads": [
+        "n|tbl|public.staff_audit",
+        "n|sch|public",
+        "n|col|public.staff_audit.target_type",
+        "n|col|public.staff_audit.target_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "cosmo_link_audit"
+      ],
+      "writes": [
+        "s|fk|public.cosmo_link_audit.cosmo_link_audit_cosmo_account_id_cosmo_account_id_fkey",
+        "n|fk|public.cosmo_link_audit.cosmo_link_audit_cosmo_account_id_cosmo_account_id_fkey",
+        "e|fk|public.cosmo_link_audit.cosmo_link_audit_cosmo_account_id_cosmo_account_id_fkey",
+        "n|con|public.cosmo_link_audit.cosmo_link_audit_cosmo_account_id_cosmo_account_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.cosmo_link_audit",
+        "n|sch|public",
+        "n|tbl|public.cosmo_account",
+        "n|sch|public",
+        "n|col|public.cosmo_link_audit.cosmo_account_id",
+        "n|col|public.cosmo_account.id",
+        "e|uniqueness|public.cosmo_account.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "reports"
+      ],
+      "writes": [
+        "s|fk|public.reports.reports_reporter_id_user_id_fkey",
+        "n|fk|public.reports.reports_reporter_id_user_id_fkey",
+        "e|fk|public.reports.reports_reporter_id_user_id_fkey",
+        "n|con|public.reports.reports_reporter_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.reports",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.reports.reporter_id",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "reports"
+      ],
+      "writes": [
+        "s|fk|public.reports.reports_resolved_by_user_id_fkey",
+        "n|fk|public.reports.reports_resolved_by_user_id_fkey",
+        "e|fk|public.reports.reports_resolved_by_user_id_fkey",
+        "n|con|public.reports.reports_resolved_by_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.reports",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.reports.resolved_by",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "staff_audit"
+      ],
+      "writes": [
+        "s|fk|public.staff_audit.staff_audit_report_id_reports_id_fkey",
+        "n|fk|public.staff_audit.staff_audit_report_id_reports_id_fkey",
+        "e|fk|public.staff_audit.staff_audit_report_id_reports_id_fkey",
+        "n|con|public.staff_audit.staff_audit_report_id_reports_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.staff_audit",
+        "n|sch|public",
+        "n|tbl|public.reports",
+        "n|sch|public",
+        "n|col|public.staff_audit.report_id",
+        "n|col|public.reports.id",
+        "e|uniqueness|public.reports.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "collection_price_history",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "cosmo_link_audit",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "reports",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "staff_audit",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "cosmo_link_event",
+        "values": [
+          "linked",
+          "unlinked"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "cosmo_link_reason",
+        "values": [
+          "verified",
+          "account-deleted"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "report_status",
+        "values": [
+          "open",
+          "escalated",
+          "resolved",
+          "dismissed"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "report_target_type",
+        "values": [
+          "user",
+          "message",
+          "feedback",
+          "trade"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "user_role",
+        "values": [
+          "user",
+          "moderator",
+          "admin"
+        ],
+        "entityType": "enums"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "collection_price_history",
+        "name": "collection_id",
+        "type": "varchar(36)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "collection_price_history",
+        "name": "date",
+        "type": "date",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "collection_price_history",
+        "name": "floor_usd",
+        "type": "real",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "collection_price_history",
+        "name": "median_usd",
+        "type": "real",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "collection_price_history",
+        "name": "listing_count",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "cosmo_link_audit",
+        "name": "id",
+        "type": "serial",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "cosmo_link_audit",
+        "name": "created_at",
+        "type": "timestamp",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "cosmo_link_audit",
+        "name": "cosmo_account_id",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "cosmo_link_audit",
+        "name": "user_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "cosmo_link_audit",
+        "name": "event",
+        "type": "cosmo_link_event",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "cosmo_link_audit",
+        "name": "reason",
+        "type": "cosmo_link_reason",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "list_drain_cursor",
+        "name": "chain_time",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "reports",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "reports",
+        "name": "created_at",
+        "type": "timestamp",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "reports",
+        "name": "reporter_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "reports",
+        "name": "target_type",
+        "type": "report_target_type",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "reports",
+        "name": "target_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "reports",
+        "name": "reason",
+        "type": "varchar(32)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "reports",
+        "name": "note",
+        "type": "varchar(1000)",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "reports",
+        "name": "status",
+        "type": "report_status",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'open'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "reports",
+        "name": "resolved_by",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "reports",
+        "name": "resolved_at",
+        "type": "timestamp",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "session",
+        "name": "impersonated_by",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "staff_audit",
+        "name": "id",
+        "type": "serial",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "staff_audit",
+        "name": "created_at",
+        "type": "timestamp",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "staff_audit",
+        "name": "staff_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "staff_audit",
+        "name": "action",
+        "type": "varchar(48)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "staff_audit",
+        "name": "target_type",
+        "type": "varchar(16)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "staff_audit",
+        "name": "target_id",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "staff_audit",
+        "name": "report_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "staff_audit",
+        "name": "detail",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "user",
+        "name": "currency",
+        "type": "varchar(3)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'USD'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "user",
+        "name": "role",
+        "type": "user_role",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'user'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "user",
+        "name": "banned",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "user",
+        "name": "ban_reason",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "user",
+        "name": "ban_expires",
+        "type": "timestamp",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "cosmo_account",
+        "name": "cosmo_account_user_id_unique_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "user_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "cosmo_link_audit",
+        "name": "cosmo_link_audit_cosmo_account_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "cosmo_account_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "cosmo_link_audit",
+        "name": "cosmo_link_audit_user_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "user_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "fx_rates",
+        "name": "fx_rates_currency_date_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "currency",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "date",
+            "isExpression": false,
+            "asc": false,
+            "nullsFirst": true,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "reports",
+        "name": "reports_open_reporter_target_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "reporter_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "target_type",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "target_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": "\"status\" IN ('open', 'escalated')",
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "reports",
+        "name": "reports_status_created_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "status",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "created_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "reports",
+        "name": "reports_target_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "target_type",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "target_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "staff_audit",
+        "name": "staff_audit_staff_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "staff_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "staff_audit",
+        "name": "staff_audit_action_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "action",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "staff_audit",
+        "name": "staff_audit_report_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "report_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "staff_audit",
+        "name": "staff_audit_target_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "target_type",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "target_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "cosmo_link_audit",
+        "name": "cosmo_link_audit_cosmo_account_id_cosmo_account_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "cosmo_account_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "cosmo_account",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "reports",
+        "name": "reports_reporter_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "reporter_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "reports",
+        "name": "reports_resolved_by_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "resolved_by"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "staff_audit",
+        "name": "staff_audit_report_id_reports_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "report_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "reports",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "SET NULL",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "collection_price_history",
+        "name": "collection_price_history_pkey",
+        "columns": [
+          "collection_id",
+          "date"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "cosmo_link_audit",
+        "name": "cosmo_link_audit_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "reports",
+        "name": "reports_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "staff_audit",
+        "name": "staff_audit_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "cosmo_link_audit",
+        "name": "cosmo_link_audit_event_chk",
+        "value": "(\"reason\" <> 'verified' OR \"event\" = 'linked') AND (\"reason\" <> 'account-deleted' OR \"event\" = 'unlinked')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "reports",
+        "name": "reports_resolved_chk",
+        "value": "(\"status\" IN ('resolved', 'dismissed')) = (\"resolved_at\" IS NOT NULL)",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"fx_rates_currency_idx\"]"
+    }
+  ]
+}

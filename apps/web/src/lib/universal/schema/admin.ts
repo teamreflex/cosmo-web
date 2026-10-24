@@ -47,3 +47,10 @@ export const bandUrlInputSchema = z
   .pipe(bandUrlRowSchema.array());
 
 export type BandUrlRow = z.infer<typeof bandUrlRowSchema>;
+
+/**
+ * A prefix search in the admin panel's account pickers.
+ */
+export const adminSearchSchema = z.object({
+  query: z.string().min(3),
+});

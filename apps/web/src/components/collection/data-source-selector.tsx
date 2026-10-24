@@ -10,6 +10,7 @@ import {
 import { getSources } from "./data-sources";
 
 type Props = {
+  id?: string;
   name: string;
   value?: CollectionDataSource;
   defaultValue?: CollectionDataSource;
@@ -29,7 +30,7 @@ export function DataSourceSelector(props: Props) {
         if (value !== null) props.onValueChange?.(value);
       }}
     >
-      <SelectTrigger className="w-36 **:data-icon:size-5">
+      <SelectTrigger id={props.id} className="w-36 **:data-icon:size-5">
         <SelectValue>
           {(value: CollectionDataSource | null) => {
             const source = sources.find((source) => source.value === value);

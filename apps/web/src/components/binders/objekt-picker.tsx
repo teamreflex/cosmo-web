@@ -132,7 +132,7 @@ export default function ObjektPicker({
           aria-controls={panelId}
           onClick={() => setPanelOpen((open) => !open)}
           className={cn(
-            "inline-flex h-[34px] shrink-0 items-center gap-1.5 rounded-md border border-border bg-card px-2.5 text-[13px] font-semibold transition-colors hover:bg-muted",
+            "inline-flex h-[34px] shrink-0 items-center gap-1.5 rounded-md border border-border bg-card px-2.5 text-sm font-semibold transition-colors hover:bg-muted",
             panelOpen &&
               "border-cosmo bg-cosmo/15 text-cosmo hover:bg-cosmo/20 dark:text-cosmo-text",
           )}
@@ -140,7 +140,7 @@ export default function ObjektPicker({
           <IconAdjustmentsHorizontal className="size-4" />
           {m.common_filters()}
           {count > 0 && (
-            <span className="grid h-[18px] min-w-[18px] place-items-center rounded-full bg-cosmo px-1.5 text-[11px] text-white tabular-nums">
+            <span className="grid h-[18px] min-w-[18px] place-items-center rounded-full bg-cosmo px-1.5 text-xxs text-white tabular-nums">
               {count}
             </span>
           )}
@@ -241,7 +241,7 @@ function PickerSection({
 }: PickerSectionProps) {
   return (
     <>
-      <div className="flex items-center gap-2 px-3 pb-2 text-[11px] text-muted-foreground">
+      <div className="flex items-center gap-2 px-3 pb-2 text-xs text-muted-foreground">
         <span>{status}</span>
         <span className="ml-auto">
           {m.binder_picker_sort({ sort: sortLabel(sort).toLowerCase() })}
@@ -413,7 +413,7 @@ function ArtistOption({ value, label }: { value: string; label: string }) {
       value={value}
       nativeButton
       render={<button type="button" />}
-      className="min-w-0 flex-auto truncate rounded-[5px] px-1.5 text-[13px] font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-cosmo data-checked:bg-cosmo data-checked:text-white"
+      className="min-w-0 flex-auto truncate rounded-[5px] px-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-cosmo data-checked:bg-cosmo data-checked:text-white"
     >
       {label}
     </Radio.Root>

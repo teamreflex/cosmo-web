@@ -1,23 +1,18 @@
+import { requireStaffPage } from "@/components/admin/common";
+import AdminNoAccess from "@/components/admin/no-access";
 import ConfirmSerialCard from "@/components/admin/serials/confirm-serial-card";
 import SerialConfirmationsTable from "@/components/admin/serials/serial-confirmations-table";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
-import { currentAccountQuery } from "@/lib/queries/core";
 import { serialConfirmationsQuery } from "@/lib/queries/serials";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Suspense } from "react";
 
 export const Route = createFileRoute("/admin/serials")({
   staleTime: Infinity,
-  beforeLoad: async ({ context }) => {
-    const user = await context.queryClient.query({
-      ...currentAccountQuery,
-      staleTime: "static",
-    });
-    if (!user?.user.isAdmin) {
-      throw redirect({ to: "/" });
-    }
-  },
+  beforeLoad: ({ context }) =>
+    requireStaffPage(context.role, { site: ["manage"] }),
+  notFoundComponent: AdminNoAccess,
   loader: async ({ context }) => {
     await context.queryClient.query({
       ...serialConfirmationsQuery,

@@ -53,7 +53,7 @@ function Balance({
         <ArtistIcon artist={artist.name} />
         <span>{artist.title}</span>
       </div>
-      <span className="font-mono text-[15px] font-semibold tabular-nums">
+      <span className="font-mono text-base font-semibold tabular-nums">
         {balance?.amount.toLocaleString() ?? "0"}
       </span>
     </div>

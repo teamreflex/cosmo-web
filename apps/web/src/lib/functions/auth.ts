@@ -1,8 +1,13 @@
 import { auth } from "@/lib/server/auth.server";
-import { linkAccount } from "@/lib/server/cosmo-accounts.server";
+import {
+  getCosmoAddress,
+  linkOwnerColumns,
+  linkVerifiedAccount,
+} from "@/lib/server/cosmo-accounts.server";
+import { db } from "@/lib/server/db";
 import { getCosmoKey } from "@/lib/server/encryption.server";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
-import { importObjektLists } from "@/lib/server/objekts/lists.server";
+import { assertSupportedCurrency } from "@/lib/server/objekts/fx.server";
 import { getProxiedToken } from "@/lib/server/proxied-token.server";
 import { getRequestSignal } from "@/lib/server/request.server";
 import {
@@ -16,6 +21,7 @@ import {
   generateVerificationCodeSchema,
   verifyCosmoBioSchema,
 } from "@/lib/universal/schema/cosmo";
+import { cosmoLinkRefusal } from "@apollo/auth/guard";
 import { runCosmo } from "@apollo/cosmo/runtime";
 import { fetchUserProfile } from "@apollo/cosmo/server/user";
 import { createServerFn } from "@tanstack/react-start";
@@ -27,24 +33,54 @@ import { getRequestHeaders } from "@tanstack/react-start/server";
 export const $updateSettings = createServerFn({ method: "POST" })
   .middleware([authenticatedMiddleware])
   .validator(settingsSchema)
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    // a stored code that lost its rate mustn't block saving other settings
+    if (data.currency !== context.session.user.currency) {
+      await assertSupportedCurrency(data.currency);
+    }
     await auth.api.updateUser({
       headers: getRequestHeaders(),
       body: {
         gridColumns: data.gridColumns,
         collectionMode: data.collectionMode,
+        currency: data.currency,
       },
     });
   });
 
 /**
- * Generate a verification code for linking a COSMO account via bio.
+ * Generate a verification code for linking a COSMO account via bio. Refuses
+ * early when the caller or the picked address is already linked; the checks
+ * after the bio in `$verifyCosmoBio` are the authoritative ones.
  */
 export const $generateVerificationCode = createServerFn({ method: "POST" })
   .middleware([authenticatedMiddleware])
   .validator(generateVerificationCodeSchema)
   .handler(async ({ data, context }) => {
-    const code = await storeVerification(context.session.user.id, {
+    const userId = context.session.user.id;
+    // the caller's own link and the picked address's link, in one read
+    const accounts = await db.query.cosmoAccounts.findMany({
+      where: { OR: [{ userId }, { address: data.address }] },
+      columns: { userId: true, address: true },
+      with: { user: { columns: linkOwnerColumns } },
+    });
+
+    if (accounts.some((account) => account.userId === userId)) {
+      throw new ExpectedError("cosmo_already_linked");
+    }
+
+    const owner = accounts.find((account) => account.address === data.address);
+    const refusal = cosmoLinkRefusal({
+      callerId: userId,
+      owner: owner?.user ?? null,
+      now: new Date(),
+    });
+    // a ban is only revealed after the bio check
+    if (refusal !== null) {
+      throw new ExpectedError("account_linked_elsewhere");
+    }
+
+    const code = await storeVerification(userId, {
       userId: data.userId,
       artistId: data.artistId,
     });
@@ -59,8 +95,14 @@ export const $verifyCosmoBio = createServerFn({ method: "POST" })
   .middleware([authenticatedMiddleware])
   .validator(verifyCosmoBioSchema)
   .handler(async ({ data, context }) => {
+    const userId = context.session.user.id;
+
+    if ((await getCosmoAddress(db, userId)).kind === "linked") {
+      throw new ExpectedError("cosmo_already_linked");
+    }
+
     // get the stored verification data
-    const stored = await getVerification(context.session.user.id);
+    const stored = await getVerification(userId);
     if (!stored) {
       throw new ExpectedError("EXPIRED");
     }
@@ -88,18 +130,11 @@ export const $verifyCosmoBio = createServerFn({ method: "POST" })
       throw new ExpectedError("NOT_FOUND");
     }
 
-    // link the account
-    const account = await linkAccount({
+    await linkVerifiedAccount(userId, {
       address: profile.address,
       username: profile.nickname,
       cosmoId: profile.id,
-      userId: context.session.user.id,
-      polygonAddress: null,
     });
 
-    // clear the verification code
-    await clearVerification(context.session.user.id);
-
-    // import any existing objekt lists
-    await importObjektLists(context.session.user.id, account.address);
+    await clearVerification(userId);
   });

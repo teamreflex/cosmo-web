@@ -1,8 +1,9 @@
-import { auth, toPublicUser } from "@/lib/server/auth.server";
+import { auth, toCurrentUser, toPublicUser } from "@/lib/server/auth.server";
 import { remember } from "@/lib/server/cache.server";
 import { fetchCookie, putCookie } from "@/lib/server/cookies.server";
 import {
   fetchFullAccount,
+  getCosmoAddress,
   toPublicCosmo,
 } from "@/lib/server/cosmo-accounts.server";
 import { db } from "@/lib/server/db";
@@ -12,8 +13,9 @@ import {
   fetchUniqueSeasons,
 } from "@/lib/server/objekts/filter-data.server";
 import { getRequestSignal } from "@/lib/server/request.server";
-import type { PublicUser } from "@/lib/universal/auth";
+import type { CurrentUser, PublicUser } from "@/lib/universal/auth";
 import type { FullAccount, PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import type { Role } from "@apollo/auth";
 import type { ObjektList } from "@apollo/database/web/types";
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
@@ -54,10 +56,13 @@ export const $fetchFilterData = createServerFn({ method: "GET" }).handler(() =>
   }),
 );
 
-type GetAccount = {
-  user: PublicUser;
+export type GetAccount = {
+  user: CurrentUser;
+  role: Role;
   cosmo: PublicCosmo | undefined;
   objektLists: ObjektList[];
+  // USD-per-unit rate of the user's display currency, null when unrecorded
+  fxRateToUsd: number | null;
 };
 
 /**
@@ -74,11 +79,16 @@ export const $fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
       return null;
     }
 
+    const userId = session.session.userId;
     const result = await db.query.user.findFirst({
-      where: { id: session.session.userId },
+      where: { id: userId },
       with: {
-        cosmoAccount: true,
         objektLists: true,
+        fxRates: {
+          columns: { rateToUsd: true },
+          orderBy: { date: "desc" },
+          limit: 1,
+        },
       },
     });
 
@@ -87,21 +97,14 @@ export const $fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
       return null;
     }
 
-    // no cosmo account, just return the user
-    const { cosmoAccount, objektLists, ...user } = result;
-    if (!cosmoAccount) {
-      return {
-        user: toPublicUser(user),
-        cosmo: undefined,
-        objektLists,
-      };
-    }
-
-    // return the user and cosmo account
+    const link = await getCosmoAddress(db, userId);
+    const { objektLists, fxRates, ...user } = result;
     return {
-      cosmo: toPublicCosmo(cosmoAccount),
-      user: toPublicUser(user),
+      user: toCurrentUser(user),
+      role: user.role,
+      cosmo: link.kind === "linked" ? toPublicCosmo(link) : undefined,
       objektLists,
+      fxRateToUsd: fxRates[0]?.rateToUsd ?? null,
     };
   },
 );

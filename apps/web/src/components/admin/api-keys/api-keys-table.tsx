@@ -1,3 +1,4 @@
+import StaffUserName from "@/components/admin/staff-user-name";
 import { Badge } from "@/components/ui/badge";
 import {
   Table,
@@ -7,11 +8,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Timestamp } from "@/components/ui/timestamp";
 import { m } from "@/i18n/messages";
 import { apiKeysQuery } from "@/lib/queries/api-keys";
 import type { AdminApiKey } from "@/lib/universal/api-keys";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
 import DeleteApiKey from "./delete-api-key";
 import EditApiKeyDialog from "./edit-api-key-dialog";
 
@@ -51,7 +52,9 @@ export default function ApiKeysTable() {
           {data.map((key) => (
             <TableRow key={key.id}>
               <TableCell className="font-medium">{key.name ?? "—"}</TableCell>
-              <TableCell>{key.owner.username ?? "—"}</TableCell>
+              <TableCell>
+                <StaffUserName user={key.owner} />
+              </TableCell>
               <TableCell className="font-mono text-xs text-muted-foreground">
                 {keyPreview(key)}
               </TableCell>
@@ -66,11 +69,21 @@ export default function ApiKeysTable() {
                 {key.requestCount}
               </TableCell>
               <TableCell>
-                {key.expiresAt
-                  ? format(key.expiresAt, "MMM d, yyyy")
-                  : m.admin_api_key_expiry_never()}
+                {key.expiresAt ? (
+                  <Timestamp
+                    date={key.expiresAt}
+                    format={{ dateStyle: "medium" }}
+                  />
+                ) : (
+                  m.admin_api_key_expiry_never()
+                )}
               </TableCell>
-              <TableCell>{format(key.createdAt, "MMM d, yyyy")}</TableCell>
+              <TableCell>
+                <Timestamp
+                  date={key.createdAt}
+                  format={{ dateStyle: "medium" }}
+                />
+              </TableCell>
               <TableCell>
                 <div className="flex justify-end gap-1">
                   <EditApiKeyDialog apiKey={key} />

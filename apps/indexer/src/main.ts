@@ -143,6 +143,7 @@ processor.run(db, async (ctx) => {
         const outboxRows = userTransfers.map(
           (t) =>
             new ListEventOutbox({
+              type: "transfer",
               transferId: t.id,
               fromAddress: t.from,
               toAddress: t.to,
@@ -151,6 +152,7 @@ processor.run(db, async (ctx) => {
               collectionId: t.collection.slug,
               tokenId: t.tokenId,
               timestamp: new Date(t.timestamp),
+              hash: t.hash,
             }),
         );
         await ctx.store.insert(outboxRows);
@@ -329,7 +331,8 @@ async function handleObjekt(
 }
 
 /**
- * Update a batch of transferability updates.
+ * Update a batch of transferability updates, recording each applied update in
+ * the outbox so the web drain sees the serial change.
  */
 async function handleTransferabilityUpdates(
   ctx: ProcessorContext<Store>,
@@ -337,13 +340,25 @@ async function handleTransferabilityUpdates(
 ) {
   const objekts = await ctx.store.find(Objekt, {
     where: { id: In(updates.map((u) => u.tokenId)) },
+    relations: { collection: true },
   });
   const objektsById = new Map(objekts.map((o) => [o.id, o] as const));
+  const outboxRows: ListEventOutbox[] = [];
 
   for (const update of updates) {
     const objekt = objektsById.get(update.tokenId);
     if (objekt) {
       objekt.transferable = update.transferable;
+      outboxRows.push(
+        new ListEventOutbox({
+          type: "transferability",
+          transferable: update.transferable,
+          collectionId: objekt.collection.slug,
+          tokenId: update.tokenId,
+          timestamp: new Date(update.timestamp),
+          hash: update.hash,
+        }),
+      );
     } else {
       ctx.log.error(
         `Unable to find objekt ${update.tokenId} for transferability update`,
@@ -353,6 +368,10 @@ async function handleTransferabilityUpdates(
 
   if (objekts.length > 0) {
     await ctx.store.upsert(objekts);
+  }
+
+  if (outboxRows.length > 0) {
+    await ctx.store.insert(outboxRows);
   }
 }
 

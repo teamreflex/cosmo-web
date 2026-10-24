@@ -13,6 +13,7 @@ import UserAvatar from "@/components/profile/user-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
+import { defineHead } from "@/lib/meta";
 import { tokenBalancesQuery } from "@/lib/queries/como";
 import { currentAccountQuery, targetAccountQuery } from "@/lib/queries/core";
 import { pinsQuery } from "@/lib/queries/profile";
@@ -61,6 +62,14 @@ export const Route = createFileRoute("/@{$username}")({
 
     return { account, target };
   },
+  /**
+   * Titles the not-found state, which this layout renders in place of any
+   * child route.
+   */
+  head: ({ match }) =>
+    match.status === "notFound"
+      ? defineHead({ title: m.error_not_found_title() })
+      : {},
 });
 
 function RouteComponent() {

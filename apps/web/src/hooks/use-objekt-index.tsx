@@ -46,8 +46,8 @@ export function useObjektIndex() {
         const total = data.pages[0]?.total ?? 0;
         return (
           <div className="flex items-center gap-2">
-            <IconCards className="size-4" />
-            <p className="text-xxs tracking-[0.14em] text-muted-foreground sm:text-xs">
+            <IconCards className="size-4 max-sm:hidden" />
+            <p className="text-xxs tracking-widest text-muted-foreground sm:text-xs">
               {total.toLocaleString("en")}
             </p>
           </div>
@@ -66,8 +66,8 @@ export function useObjektIndex() {
       const total = data.pages[0]?.total ?? 0;
       return (
         <div className="flex items-center gap-2">
-          <IconCards className="size-4" />
-          <p className="text-xxs tracking-[0.14em] text-muted-foreground sm:text-xs">
+          <IconCards className="size-4 max-sm:hidden" />
+          <p className="text-xxs tracking-widest text-muted-foreground sm:text-xs">
             {total.toLocaleString("en")}
           </p>
         </div>

@@ -1,0 +1,96 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "5e5f5aaf-c61e-40bc-b06e-22eb82205637",
+  "prevIds": [
+    "e027633f-9d64-418f-83e7-b85f912349cc"
+  ],
+  "footprints": [
+    {
+      "statementType": "drop_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "notifications"
+      ],
+      "writes": [
+        "s|tbl|public.notifications",
+        "n|tbl|public.notifications",
+        "e|tbl|public.notifications",
+        "n|rel|public.notifications",
+        "n|type|public.notifications"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "drop_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "notification_type"
+      ],
+      "writes": [
+        "s|enum|public.notification_type",
+        "n|enum|public.notification_type",
+        "e|enum|public.notification_type",
+        "n|type|public.notification_type"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "drop",
+      "key": "tables\u0000[\"public\",\"notifications\"]"
+    },
+    {
+      "op": "drop",
+      "key": "enums\u0000[\"public\",\"notification_type\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"notifications\",\"id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"notifications\",\"created_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"notifications\",\"user_id\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"notifications\",\"type\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"notifications\",\"payload\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"notifications\",\"read_at\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"notifications_user_unread_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "indexes\u0000[\"public\",\"notifications_list_match_dedup_idx\"]"
+    },
+    {
+      "op": "drop",
+      "key": "fks\u0000[\"public\",\"notifications\",\"notifications_user_id_user_id_fkey\"]"
+    },
+    {
+      "op": "drop",
+      "key": "pks\u0000[\"public\",\"notifications\",\"notifications_pkey\"]"
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import { DataSourceSelector } from "@/components/collection/data-source-selector";
+import CurrencySelect from "@/components/misc/currency-select";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,9 +19,10 @@ import {
 import { type Theme, useTheme } from "@/hooks/use-theme";
 import { m } from "@/i18n/messages";
 import { getLocale, locales, setLocale } from "@/i18n/runtime";
+import { formatError } from "@/lib/client/errors";
 import { $updateSettings } from "@/lib/functions/auth";
 import { currentAccountQuery } from "@/lib/queries/core";
-import type { PublicUser } from "@/lib/universal/auth";
+import type { CurrentUser } from "@/lib/universal/auth";
 import { localeNames } from "@/lib/universal/locales";
 import { settingsSchema } from "@/lib/universal/schema/auth";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
@@ -35,7 +37,7 @@ import { Field, FieldContent, FieldError, FieldLabel } from "../ui/field";
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  user: PublicUser;
+  user: CurrentUser;
 };
 
 export default function SettingsDialog({ open, onOpenChange, user }: Props) {
@@ -67,6 +69,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
     defaultValues: {
       gridColumns: user.gridColumns,
       collectionMode: user.collectionMode,
+      currency: user.currency,
     },
   });
 
@@ -82,8 +85,8 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
           });
           await router.invalidate();
         },
-        onError() {
-          toast.error(m.toast_metadata_update_failed());
+        onError(error) {
+          toast.error(formatError(error));
         },
       },
     );
@@ -105,7 +108,9 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
           {/* language */}
           <Field orientation="horizontal">
             <FieldContent>
-              <FieldLabel>{m.settings_language()}</FieldLabel>
+              <FieldLabel htmlFor="settings-language">
+                {m.settings_language()}
+              </FieldLabel>
               <p className="text-xs opacity-80">
                 {m.settings_language_description()}
               </p>
@@ -120,7 +125,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
                 if (value !== null && value !== locale) void setLocale(value);
               }}
             >
-              <SelectTrigger className="w-36">
+              <SelectTrigger id="settings-language" className="w-36">
                 <SelectValue placeholder={m.settings_language()} />
               </SelectTrigger>
               <SelectContent align="end">
@@ -136,7 +141,9 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
           {/* theme */}
           <Field orientation="horizontal">
             <FieldContent>
-              <FieldLabel>{m.settings_theme()}</FieldLabel>
+              <FieldLabel htmlFor="settings-theme">
+                {m.settings_theme()}
+              </FieldLabel>
               <p className="text-xs opacity-80">
                 {m.settings_theme_description()}
               </p>
@@ -150,7 +157,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
                 if (value !== null) setTheme(value);
               }}
             >
-              <SelectTrigger className="w-36">
+              <SelectTrigger id="settings-theme" className="w-36">
                 <SelectValue placeholder={m.settings_theme()} />
               </SelectTrigger>
               <SelectContent align="end">
@@ -170,7 +177,9 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
             render={({ field, fieldState }) => (
               <Field orientation="horizontal" data-invalid={fieldState.invalid}>
                 <FieldContent>
-                  <FieldLabel>{m.settings_objekt_columns()}</FieldLabel>
+                  <FieldLabel htmlFor="settings-columns">
+                    {m.settings_objekt_columns()}
+                  </FieldLabel>
                   <p className="text-xs opacity-80">
                     {m.settings_objekt_columns_description()}
                   </p>
@@ -184,7 +193,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
                   }}
                   defaultValue={field.value.toString()}
                 >
-                  <SelectTrigger className="w-36">
+                  <SelectTrigger id="settings-columns" className="w-36">
                     <SelectValue placeholder={m.settings_objekt_columns()} />
                   </SelectTrigger>
                   <SelectContent>
@@ -200,6 +209,33 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
             )}
           />
 
+          {/* display currency */}
+          <Controller
+            control={form.control}
+            name="currency"
+            render={({ field, fieldState }) => (
+              <Field orientation="horizontal" data-invalid={fieldState.invalid}>
+                <FieldContent>
+                  <FieldLabel htmlFor="settings-currency">
+                    {m.settings_currency()}
+                  </FieldLabel>
+                  <p className="text-xs opacity-80">
+                    {m.settings_currency_description()}
+                  </p>
+                </FieldContent>
+
+                <CurrencySelect
+                  id="settings-currency"
+                  name="currency"
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  className="w-36"
+                />
+                <FieldError errors={[fieldState.error]} />
+              </Field>
+            )}
+          />
+
           {/* collection mode */}
           <Controller
             control={form.control}
@@ -207,13 +243,16 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
             render={({ field, fieldState }) => (
               <Field orientation="horizontal" data-invalid={fieldState.invalid}>
                 <FieldContent>
-                  <FieldLabel>{m.settings_collection_mode()}</FieldLabel>
+                  <FieldLabel htmlFor="settings-collection-mode">
+                    {m.settings_collection_mode()}
+                  </FieldLabel>
                   <p className="text-xs opacity-80">
                     {m.settings_collection_mode_description()}
                   </p>
                 </FieldContent>
 
                 <DataSourceSelector
+                  id="settings-collection-mode"
                   name="collectionMode"
                   onValueChange={field.onChange}
                   defaultValue={field.value}

@@ -1,6 +1,6 @@
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
-import { adminMiddleware } from "@/lib/server/middlewares";
+import { staffMiddleware } from "@/lib/server/middlewares";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import {
   confirmSerialSchema,
@@ -20,7 +20,7 @@ import { desc, eq, sql } from "drizzle-orm";
  * serial so staff can see whether the indexer has applied it yet.
  */
 export const $listSerialConfirmations = createServerFn({ method: "GET" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .handler(async () => {
     const rows = await indexer
       .select({
@@ -76,7 +76,7 @@ export const $listSerialConfirmations = createServerFn({ method: "GET" })
  * the confirmation differs from the stored serial.
  */
 export const $confirmSerial = createServerFn({ method: "POST" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(confirmSerialSchema)
   .handler(async ({ data, context }) => {
     const objekt = await indexer.query.objekts.findFirst({
@@ -109,7 +109,7 @@ export const $confirmSerial = createServerFn({ method: "POST" })
  * apps/schedules next recomputes its collection.
  */
 export const $deleteSerialConfirmation = createServerFn({ method: "POST" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(deleteSerialConfirmationSchema)
   .handler(async ({ data }) => {
     const [deleted] = await indexer

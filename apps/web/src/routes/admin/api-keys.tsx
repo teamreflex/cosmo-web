@@ -1,23 +1,18 @@
 import ApiKeysTable from "@/components/admin/api-keys/api-keys-table";
 import CreateApiKeyDialog from "@/components/admin/api-keys/create-api-key-dialog";
+import { requireStaffPage } from "@/components/admin/common";
+import AdminNoAccess from "@/components/admin/no-access";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { apiKeysQuery } from "@/lib/queries/api-keys";
-import { currentAccountQuery } from "@/lib/queries/core";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Suspense } from "react";
 
 export const Route = createFileRoute("/admin/api-keys")({
   staleTime: Infinity,
-  beforeLoad: async ({ context }) => {
-    const user = await context.queryClient.query({
-      ...currentAccountQuery,
-      staleTime: "static",
-    });
-    if (!user?.user.isAdmin) {
-      throw redirect({ to: "/" });
-    }
-  },
+  beforeLoad: ({ context }) =>
+    requireStaffPage(context.role, { site: ["manage"] }),
+  notFoundComponent: AdminNoAccess,
   loader: async ({ context }) => {
     await context.queryClient.query({ ...apiKeysQuery, staleTime: "static" });
   },

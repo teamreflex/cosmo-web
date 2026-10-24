@@ -20,7 +20,7 @@ A platform for exploring objekts & gravities from [MODHAUS](https://www.mod-haus
 
 - `apps/web`: Core TanStack Start web app deployed at [apollo.cafe](https://apollo.cafe)
 - `apps/indexer`: Subsquid blockchain indexer for cataloging Modhaus objekt collections
-- `apps/schedules`: Functions for executing scheduled tasks
+- `apps/schedules`: Scheduled tasks and queue workers
 - `apps/typesense`: Dockerfile for building Typesense with `curl` available
 - `apps/typesense-import`: Sync new objekt collections to the Typesense database
 - `apps/proxy`: mitmproxy addons for intercepting COSMO app traffic
@@ -28,6 +28,7 @@ A platform for exploring objekts & gravities from [MODHAUS](https://www.mod-haus
 - `packages/database`: `drizzle-orm` schemas for both databases
 - `packages/drizzle-bun-effect`: Effect service for Bun.SQL, derived from `drizzle-orm/effect-postgres`
 - `packages/lint`: Shared oxlint config
+- `packages/queue`: Shared queue definitions
 - `packages/typescript`: Shared tsconfig.json file
 - `packages/util`: Shared utility functions
 

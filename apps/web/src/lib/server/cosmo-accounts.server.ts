@@ -1,14 +1,41 @@
+import { cosmoLinkRefusal } from "@apollo/auth/guard";
+import type { CosmoLinkOwner, CosmoLinkRefusal } from "@apollo/auth/guard";
 import { CosmoApiError, CosmoDecodeError } from "@apollo/cosmo/errors";
 import { runCosmo } from "@apollo/cosmo/runtime";
 import { fetchByNickname } from "@apollo/cosmo/server/user";
 import type { CosmoSearchResult } from "@apollo/cosmo/types/user";
-import { cosmoAccounts } from "@apollo/database/web/schema";
+import * as authSchema from "@apollo/database/auth";
+import { cosmoAccounts, cosmoLinkAudit } from "@apollo/database/web/schema";
 import type { CosmoAccount } from "@apollo/database/web/types";
 import { addr, isAddress } from "@apollo/util";
-import { like, sql } from "drizzle-orm";
-import type { FullAccount, PublicCosmo } from "../universal/cosmo-accounts";
+import { eq, isNull, like, sql } from "drizzle-orm";
+import type {
+  CosmoLink,
+  FullAccount,
+  PublicCosmo,
+} from "../universal/cosmo-accounts";
+import type { AccountErrorCode } from "../universal/errors/accounts";
+import { ExpectedError } from "../universal/errors/expected";
 import { toPublicUser } from "./auth.server";
-import { db } from "./db";
+import { db, type DbOrTx, type WebTx } from "./db";
+import { importObjektLists } from "./objekts/lists.server";
+import { isPostgresError } from "./util.server";
+
+/**
+ * The one place to read a user's linked COSMO address. The address keeps its
+ * stored case, so compare it against indexer rows with isEqual() or addr().
+ */
+export async function getCosmoAddress(
+  executor: DbOrTx,
+  userId: string,
+): Promise<CosmoLink> {
+  const cosmo = await executor.query.cosmoAccounts.findFirst({
+    where: { userId },
+    columns: { address: true, username: true },
+  });
+
+  return cosmo ? { kind: "linked", ...cosmo } : { kind: "none" };
+}
 
 /**
  * Fetch a full account from the database.
@@ -52,10 +79,6 @@ export async function fetchFullAccount(
     return {
       cosmo: {
         ...toPublicCosmo({
-          id: 0,
-          cosmoId: null,
-          polygonAddress: null,
-          userId: null,
           username: identifier.substring(0, 6),
           address: identifier,
         }),
@@ -96,28 +119,136 @@ export async function fetchFullAccount(
 }
 
 /**
- * Upsert a COSMO account into the database and link it to a user.
- * Used when verifying ownership of a COSMO account.
+ * A change to which user a COSMO account is linked to, as the link history
+ * records it.
  */
-export async function linkAccount(account: Omit<CosmoAccount, "id">) {
-  const [result] = await db
-    .insert(cosmoAccounts)
-    .values(account)
-    .onConflictDoUpdate({
-      target: cosmoAccounts.address,
-      set: {
-        username: account.username,
-        cosmoId: account.cosmoId,
+export type CosmoLinkChange = { cosmoAccountId: number; userId: string } & (
+  | { event: "linked"; reason: "verified" }
+  | { event: "unlinked"; reason: "account-deleted" }
+);
+
+/**
+ * Append to the link history, in the transaction that changes the link.
+ */
+export async function recordCosmoLinkChanges(
+  tx: WebTx,
+  changes: [CosmoLinkChange, ...CosmoLinkChange[]],
+) {
+  await tx.insert(cosmoLinkAudit).values(changes);
+}
+
+/**
+ * Upsert a COSMO account into the database, link it to a user and record the
+ * link. Used when verifying ownership of a COSMO account. The upsert only
+ * takes an unlinked address, and the unique user_id index refuses a second
+ * link for the same user.
+ */
+export async function linkAccount(
+  tx: WebTx,
+  account: Omit<CosmoAccount, "id" | "userId"> & { userId: string },
+) {
+  try {
+    const [result] = await tx
+      .insert(cosmoAccounts)
+      .values(account)
+      .onConflictDoUpdate({
+        target: cosmoAccounts.address,
+        set: {
+          username: account.username,
+          cosmoId: account.cosmoId,
+          userId: account.userId,
+        },
+        setWhere: isNull(cosmoAccounts.userId),
+      })
+      .returning();
+
+    if (!result) {
+      // held by another user, or by the caller after a concurrent link
+      const holder = await tx.query.cosmoAccounts.findFirst({
+        where: { address: account.address },
+        columns: { userId: true },
+      });
+      throw new ExpectedError(
+        holder?.userId === account.userId
+          ? "cosmo_already_linked"
+          : "account_linked_elsewhere",
+      );
+    }
+
+    await recordCosmoLinkChanges(tx, [
+      {
+        cosmoAccountId: result.id,
         userId: account.userId,
+        event: "linked",
+        reason: "verified",
       },
-    })
-    .returning();
+    ]);
 
-  if (!result) {
-    throw new Error("Failed to link COSMO account");
+    return result;
+  } catch (error) {
+    if (isPostgresError(error, "23505")) {
+      throw new ExpectedError("cosmo_already_linked");
+    }
+    throw error;
   }
+}
 
-  return result;
+/**
+ * The owner columns `cosmoLinkRefusal` reads.
+ */
+export const linkOwnerColumns = {
+  id: true,
+  banned: true,
+  banExpires: true,
+} satisfies Record<keyof CosmoLinkOwner, true>;
+
+const linkRefusalErrors = {
+  "linked-elsewhere": "account_linked_elsewhere",
+  banned: "cosmo_account_banned",
+} satisfies Record<CosmoLinkRefusal, AccountErrorCode>;
+
+/**
+ * Link a COSMO account to a user who has proven they control it through its
+ * bio, and copy the address's legacy lists onto them. Having proven control,
+ * the user may learn that the address belongs to a banned user.
+ */
+export async function linkVerifiedAccount(
+  userId: string,
+  account: Pick<CosmoAccount, "address" | "username" | "cosmoId">,
+) {
+  await db.transaction(async (tx) => {
+    // lock the caller's row, so an account deletion can't run alongside the link
+    const [caller] = await tx
+      .select({ id: authSchema.user.id })
+      .from(authSchema.user)
+      .where(eq(authSchema.user.id, userId))
+      .for("share");
+    if (!caller) {
+      throw new ExpectedError("not_signed_in");
+    }
+
+    const owner = await tx.query.cosmoAccounts.findFirst({
+      where: { address: account.address },
+      columns: {},
+      with: { user: { columns: linkOwnerColumns } },
+    });
+    const refusal = cosmoLinkRefusal({
+      callerId: userId,
+      owner: owner?.user ?? null,
+      now: new Date(),
+    });
+    if (refusal !== null) {
+      throw new ExpectedError(linkRefusalErrors[refusal]);
+    }
+
+    const linked = await linkAccount(tx, {
+      ...account,
+      userId,
+      polygonAddress: null,
+    });
+
+    await importObjektLists(tx, userId, linked.address);
+  });
 }
 
 type PartialAccount = Omit<CosmoAccount, "id" | "cosmoId" | "userId">;
@@ -244,9 +375,11 @@ export async function fetchKnownPolygonAddresses(addresses: string[]) {
  * Safely convert a COSMO account object for public use.
  */
 export function toPublicCosmo(cosmo: undefined): undefined;
-export function toPublicCosmo(cosmo: CosmoAccount): PublicCosmo;
 export function toPublicCosmo(
-  cosmo: CosmoAccount | undefined,
+  cosmo: Pick<CosmoAccount, "username" | "address">,
+): PublicCosmo;
+export function toPublicCosmo(
+  cosmo: Pick<CosmoAccount, "username" | "address"> | undefined,
 ): PublicCosmo | undefined {
   if (!cosmo) {
     return undefined;

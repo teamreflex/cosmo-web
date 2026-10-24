@@ -1,5 +1,5 @@
 import { indexer } from "@/lib/server/db/indexer";
-import { adminMiddleware } from "@/lib/server/middlewares";
+import { staffMiddleware } from "@/lib/server/middlewares";
 import { bandUrlRowSchema } from "@/lib/universal/schema/admin";
 import { collections } from "@apollo/database/indexer/schema";
 import { createServerFn } from "@tanstack/react-start";
@@ -9,7 +9,7 @@ import { sql } from "drizzle-orm";
  * Update collections with band URLs.
  */
 export const $saveBandUrls = createServerFn({ method: "POST" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(bandUrlRowSchema.array())
   .handler(async ({ data }) => {
     if (data.length === 0) return true;

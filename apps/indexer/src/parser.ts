@@ -232,6 +232,8 @@ export function parseRevealFunction(tx: Transaction): RevealFunction[] {
 export type TransferabilityUpdate = {
   tokenId: string;
   transferable: boolean;
+  hash: string;
+  timestamp: number;
 };
 
 /**
@@ -246,6 +248,8 @@ export function parseTransferabilityUpdate(
     return tokenIds.map((tokenId) => ({
       tokenId: tokenId.toString(),
       transferable: transferable,
+      hash: tx.hash,
+      timestamp: tx.block.timestamp,
     }));
   } catch (err) {
     return [];

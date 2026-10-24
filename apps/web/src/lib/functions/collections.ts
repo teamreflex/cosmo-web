@@ -1,6 +1,6 @@
 import { $fetchFilterData } from "@/lib/functions/core";
 import { indexer } from "@/lib/server/db/indexer";
-import { adminMiddleware } from "@/lib/server/middlewares";
+import { staffMiddleware } from "@/lib/server/middlewares";
 import {
   generateCollectionMediaKey,
   getPresignedUploadUrl,
@@ -29,7 +29,7 @@ const LATEST_PER_PAGE = 24;
  * rather than cursored since admins flip back and forth between pages.
  */
 export const $fetchLatestCollections = createServerFn({ method: "GET" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(z.object({ page: z.number().int().min(0) }))
   .handler(async ({ data }) => {
     const rows = await indexer.query.collections.findMany({
@@ -49,7 +49,7 @@ export const $fetchLatestCollections = createServerFn({ method: "GET" })
  * Fetch a single collection by its slug for the admin editor.
  */
 export const $fetchCollectionBySlug = createServerFn({ method: "GET" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(z.object({ slug: z.string().min(1) }))
   .handler(async ({ data }) => {
     const collection = await indexer.query.collections.findFirst({
@@ -64,7 +64,7 @@ export const $fetchCollectionBySlug = createServerFn({ method: "GET" })
  * only the fields the v3 endpoint reliably provides for the editor to apply.
  */
 export const $refetchCollectionFromCosmo = createServerFn({ method: "POST" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(z.object({ id: z.uuid() }))
   .handler(async ({ data }) => {
     const objekt = await indexer.query.objekts.findFirst({
@@ -101,7 +101,7 @@ export const $refetchCollectionFromCosmo = createServerFn({ method: "POST" })
  * untouched; season/class are validated against the chosen artist.
  */
 export const $updateCollection = createServerFn({ method: "POST" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(updateCollectionSchema)
   .handler(async ({ data }) => {
     const artist = data.artist.toLowerCase();
@@ -152,7 +152,7 @@ export const $updateCollection = createServerFn({ method: "POST" })
  * Rewrites every file, so it also repairs a partial mirror.
  */
 export const $recacheCollectionImages = createServerFn({ method: "POST" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(z.object({ id: z.uuid() }))
   .handler(async ({ data }) => {
     const collection = await indexer.query.collections.findFirst({
@@ -215,7 +215,7 @@ export const $recacheCollectionImages = createServerFn({ method: "POST" })
  * derived from the slug + artist + class (Motion → mco/, Double → dco/).
  */
 export const $getCollectionMediaUploadUrl = createServerFn({ method: "POST" })
-  .middleware([adminMiddleware])
+  .middleware([staffMiddleware({ site: ["manage"] })])
   .validator(
     z.object({
       slug: z.string().min(1),

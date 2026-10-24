@@ -8,14 +8,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Field, FieldError } from "@/components/ui/field";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
+import { formatError } from "@/lib/client/errors";
 import { env } from "@/lib/env/client";
 import {
   $generateVerificationCode,
   $verifyCosmoBio,
 } from "@/lib/functions/auth";
 import { artistsQuery, currentAccountQuery } from "@/lib/queries/core";
+import { isAccountErrorCode } from "@/lib/universal/errors/accounts";
 import { artistColors, cn, track } from "@/lib/utils";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
 import type { CosmoPublicUser } from "@apollo/cosmo/types/user";
@@ -232,7 +235,7 @@ type SearchStepProps = {
 
 function SearchStep({ artistId, onContinue }: SearchStepProps) {
   const [selected, setSelected] = useState<CosmoPublicUser | null>(null);
-  const { mutate, isPending } = useMutation({
+  const { mutate, isPending, error, reset } = useMutation({
     mutationFn: $generateVerificationCode,
   });
 
@@ -244,6 +247,7 @@ function SearchStep({ artistId, onContinue }: SearchStepProps) {
         data: {
           userId: selected.id,
           artistId,
+          address: selected.address,
         },
       },
       {
@@ -260,11 +264,18 @@ function SearchStep({ artistId, onContinue }: SearchStepProps) {
         {m.link_cosmo_search_account()}
       </p>
 
-      <CosmoUserCombobox
-        artistId={artistId}
-        value={selected}
-        onChange={setSelected}
-      />
+      <Field data-invalid={error !== null}>
+        <CosmoUserCombobox
+          artistId={artistId}
+          value={selected}
+          onChange={(user) => {
+            reset();
+            setSelected(user);
+          }}
+          invalid={error !== null}
+        />
+        {error !== null && <FieldError>{formatError(error)}</FieldError>}
+      </Field>
 
       <Button
         className="mx-auto w-fit"
@@ -297,6 +308,8 @@ function CodeStep({ code, onSuccess, onBack }: CodeStepProps) {
   });
 
   const isNotFound = error?.message === "NOT_FOUND";
+  // account refusals are final, so checking the bio again can't help
+  const isRefused = error !== null && isAccountErrorCode(error.message);
 
   function handleCopy() {
     void navigator.clipboard.writeText(code);
@@ -354,15 +367,21 @@ function CodeStep({ code, onSuccess, onBack }: CodeStepProps) {
         </p>
       )}
 
+      {error !== null && !isNotFound && (
+        <FieldError className="text-center">{formatError(error)}</FieldError>
+      )}
+
       <div className="flex gap-2">
-        {isNotFound && (
+        {error !== null && (
           <Button variant="outline" onClick={onBack}>
             {m.common_back()}
           </Button>
         )}
-        <Button onClick={handleVerify}>
-          {isNotFound ? m.link_cosmo_check_again() : m.link_cosmo_check()}
-        </Button>
+        {!isRefused && (
+          <Button onClick={handleVerify}>
+            {error === null ? m.link_cosmo_check() : m.link_cosmo_check_again()}
+          </Button>
+        )}
       </div>
     </div>
   );

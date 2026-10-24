@@ -11,6 +11,7 @@ import { recomputeSerialsTask } from "./functions/recompute-serials";
 import { syncCollectionPriceStatsTask } from "./functions/sync-collection-price-stats";
 import { syncFxRatesTask } from "./functions/sync-fx-rates";
 import { syncGravitiesTask } from "./functions/sync-gravities";
+import { syncMarketStatsTask } from "./functions/sync-market-stats";
 import { syncMembersTask } from "./functions/sync-members";
 import type { ProxiedToken } from "./proxied-token";
 
@@ -38,6 +39,7 @@ export const SCHEDULED_TASKS: ScheduledTask[] = [
   syncFxRatesTask,
   syncCollectionPriceStatsTask,
   syncMembersTask,
+  syncMarketStatsTask,
   recomputeSerialsTask,
   applySerialConfirmationsTask,
 ];

@@ -65,12 +65,12 @@ export default function FilterDataSource({
                 <div className="shrink-0">{source.icon}</div>
                 <div className="flex min-w-0 flex-col">
                   <span className="font-medium">{source.label}</span>
-                  <span className="font-mono text-xxs text-muted-foreground">
+                  <span className="text-xxs text-muted-foreground">
                     {source.subtitle}
                   </span>
                 </div>
                 {selected && (
-                  <span className="ml-auto font-mono text-[11px] text-cosmo">
+                  <span className="ml-auto font-mono text-xs text-cosmo">
                     ●
                   </span>
                 )}

@@ -1,13 +1,11 @@
 import { clearTag } from "@/lib/server/cache.server";
-import type { db } from "@/lib/server/db";
+import type { WebTx } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import type { BinderPreviewImage } from "@/lib/universal/binders";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import { binders } from "@apollo/database/web/schema";
 import { pinCacheKey } from "@apollo/util-server";
 import { and, eq } from "drizzle-orm";
-
-type WebTx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 
 /**
  * Lock a binder row for the rest of the transaction, so concurrent writes

@@ -147,8 +147,6 @@ export default function GridEditionRow(props: Props) {
         <div className="flex flex-wrap items-center gap-2">
           {props.isOwner && (
             <AddMissingMenu
-              member={props.member}
-              season={props.season}
               deficits={deficits}
               label={
                 extraGrids === 0

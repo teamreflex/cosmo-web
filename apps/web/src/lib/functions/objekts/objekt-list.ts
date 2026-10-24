@@ -15,6 +15,11 @@ import {
   withOnlineType,
   withSeason,
 } from "@/lib/server/objekts/filters.server";
+import { fetchLatestFxRate } from "@/lib/server/objekts/fx.server";
+import {
+  fetchMarketStats,
+  isFloorPrice,
+} from "@/lib/server/objekts/market.server";
 import { objektListBackendSchema } from "@/lib/universal/parsers";
 import {
   type IndexSort,
@@ -35,8 +40,8 @@ export type ObjektListItem = Collection & {
   entryTokenId: string | null;
   entrySerial: number | null;
   entryCreatedAt: string;
-  medianPriceUsd: number | null;
-  listingCount: number;
+  // a priced sale serial at its collection's market floor
+  entryAtFloor: boolean;
 };
 
 type FetchObjektListEntries = {
@@ -50,7 +55,8 @@ type FetchObjektListEntries = {
  * Fetch list entries joined with their indexer collection (and serial, when
  * the entry is keyed to a specific token). Each entry produces its own card,
  * so a have list with multiple serials of the same collection renders one
- * card per serial.
+ * card per serial. Sale list serials are flagged when they're at the market
+ * floor of their collection.
  */
 export const $fetchObjektListEntries = createServerFn({ method: "GET" })
   .validator(
@@ -59,27 +65,24 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
     }),
   )
   .handler(async ({ data }): Promise<FetchObjektListEntries> => {
-    const entries = await db.query.objektListEntries.findMany({
-      where: { objektListId: data.objektListId },
-      columns: {
-        id: true,
-        collectionId: true,
-        tokenId: true,
-        quantity: true,
-        price: true,
-        createdAt: true,
-      },
+    const list = await db.query.objektLists.findFirst({
+      where: { id: data.objektListId },
+      columns: { type: true, currency: true },
       with: {
-        priceStats: {
+        entries: {
           columns: {
-            medianPriceUsd: true,
-            listingCount: true,
+            id: true,
+            collectionId: true,
+            tokenId: true,
+            quantity: true,
+            price: true,
+            createdAt: true,
           },
         },
       },
     });
 
-    if (entries.length === 0) {
+    if (list === undefined || list.entries.length === 0) {
       return {
         total: 0,
         hasNext: false,
@@ -89,25 +92,37 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
     }
 
     const start = data.page * LIMIT;
-    const rows = await fetchListPage(entries, data, start);
+    // only sale lists whose currency has a rate can sit at the market floor
+    const [rows, rateToUsd] = await Promise.all([
+      fetchListPage(list.entries, data, start),
+      list.type === "sale" && list.currency !== null
+        ? fetchLatestFxRate(list.currency)
+        : null,
+    ]);
 
-    const entriesById = new Map(entries.map((e) => [e.id, e]));
-    const items: ObjektListItem[] = [];
-    for (const row of rows) {
+    const entriesById = new Map(list.entries.map((e) => [e.id, e]));
+    const page = rows.flatMap((row) => {
       const entry = entriesById.get(row.entryId);
-      if (!entry) continue;
-      items.push({
-        ...row.collection,
-        id: entry.id,
-        entryQuantity: entry.quantity,
-        entryPrice: entry.price,
-        entryTokenId: entry.tokenId,
-        entrySerial: row.serial,
-        entryCreatedAt: entry.createdAt.toISOString(),
-        medianPriceUsd: entry.priceStats?.medianPriceUsd ?? null,
-        listingCount: entry.priceStats?.listingCount ?? 0,
-      });
-    }
+      return entry === undefined ? [] : [{ row, entry }];
+    });
+    const floors =
+      rateToUsd === null
+        ? new Set<string>()
+        : await fetchFloors(
+            page.map(({ entry }) => entry),
+            rateToUsd,
+          );
+
+    const items = page.map(({ row, entry }): ObjektListItem => ({
+      ...row.collection,
+      id: entry.id,
+      entryQuantity: entry.quantity,
+      entryPrice: entry.price,
+      entryTokenId: entry.tokenId,
+      entrySerial: row.serial,
+      entryCreatedAt: entry.createdAt.toISOString(),
+      entryAtFloor: floors.has(entry.id),
+    }));
 
     const total = rows[0]?.total ?? 0;
     const hasNext = start + LIMIT < total;
@@ -119,6 +134,30 @@ export const $fetchObjektListEntries = createServerFn({ method: "GET" })
       objekts: items,
     };
   });
+
+/**
+ * Ids of a page of sale list entries whose priced serials sit at their
+ * collection's market floor, given the list currency's USD rate.
+ */
+async function fetchFloors(
+  entries: Pick<ObjektListEntry, "id" | "collectionId" | "tokenId" | "price">[],
+  rateToUsd: number,
+) {
+  const priced = entries.flatMap((e) =>
+    e.tokenId !== null && e.price !== null ? [{ ...e, price: e.price }] : [],
+  );
+  const stats = await fetchMarketStats([
+    ...new Set(priced.map((e) => e.collectionId)),
+  ]);
+
+  return new Set(
+    priced
+      .filter((e) =>
+        isFloorPrice(e.price * rateToUsd, stats.get(e.collectionId)),
+      )
+      .map((e) => e.id),
+  );
+}
 
 /**
  * Fetch one page of list entries from the indexer. Entries live in the web

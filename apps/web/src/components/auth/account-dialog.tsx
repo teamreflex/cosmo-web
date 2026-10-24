@@ -7,6 +7,7 @@ import {
 } from "@/components/ui/dialog";
 import { m } from "@/i18n/messages";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import { shortAddress } from "@apollo/util";
 import { Suspense } from "react";
 import { Separator } from "../ui/separator";
 import { Skeleton } from "../ui/skeleton";
@@ -24,13 +25,13 @@ type Props = {
 export default function AccountDialog({ open, onOpenChange, cosmo }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl">
+      <DialogContent className="max-h-[calc(100dvh-2rem)] grid-rows-[auto_minmax(0,1fr)] sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>{m.common_account()}</DialogTitle>
           <DialogDescription>{m.account_description()}</DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-col gap-2">
+        <div className="-mx-6 flex min-h-0 flex-col gap-4 overflow-y-auto px-6">
           <Suspense fallback={<Skeleton className="h-[211px] w-full" />}>
             <Profile />
           </Suspense>
@@ -52,24 +53,29 @@ export default function AccountDialog({ open, onOpenChange, cosmo }: Props) {
             </Suspense>
           </div>
 
-          <Separator className="mb-2" />
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              {cosmo === undefined ? (
-                <LinkCosmo />
-              ) : (
-                <div className="flex items-center gap-2">
-                  <img
-                    className="aspect-square size-5 rounded-full"
-                    src="/cosmo.webp"
-                    alt={m.common_cosmo()}
-                  />
-                  <p className="text-sm">{cosmo.username}</p>
+          <Separator />
+
+          <div className="flex items-center gap-2.5">
+            {cosmo === undefined ? (
+              <LinkCosmo />
+            ) : (
+              <>
+                <img
+                  className="size-7 shrink-0 rounded-sm"
+                  src="/cosmo.webp"
+                  alt={m.common_cosmo()}
+                />
+                <div className="flex min-w-0 flex-col">
+                  <span className="truncate font-medium">{cosmo.username}</span>
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {shortAddress(cosmo.address)}
+                  </span>
                 </div>
-              )}
-            </div>
-            <DeleteAccount />
+              </>
+            )}
           </div>
+
+          <DeleteAccount />
         </div>
       </DialogContent>
     </Dialog>

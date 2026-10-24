@@ -1,24 +1,20 @@
+import { requireStaffPage } from "@/components/admin/common";
 import CreateEra from "@/components/admin/eras/create-era-dialog";
 import ErasGrid from "@/components/admin/eras/eras-grid";
+import AdminNoAccess from "@/components/admin/no-access";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
-import { artistsQuery, currentAccountQuery } from "@/lib/queries/core";
+import { artistsQuery } from "@/lib/queries/core";
 import { adminErasInfiniteQuery } from "@/lib/queries/events";
 import { noop } from "@tanstack/react-query";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { Suspense } from "react";
 
 export const Route = createFileRoute("/admin/eras")({
   staleTime: Infinity,
-  beforeLoad: async ({ context }) => {
-    const user = await context.queryClient.query({
-      ...currentAccountQuery,
-      staleTime: "static",
-    });
-    if (!user?.user.isAdmin) {
-      throw redirect({ to: "/" });
-    }
-  },
+  beforeLoad: ({ context }) =>
+    requireStaffPage(context.role, { site: ["manage"] }),
+  notFoundComponent: AdminNoAccess,
   loader: async ({ context }) => {
     void context.queryClient
       .infiniteQuery(adminErasInfiniteQuery())

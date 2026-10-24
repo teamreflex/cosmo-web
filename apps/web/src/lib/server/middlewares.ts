@@ -1,7 +1,10 @@
 import { ExpectedError } from "@/lib/universal/errors/expected";
+import { can, parseRole } from "@apollo/auth";
+import type { Permissions } from "@apollo/auth";
 import { createMiddleware } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 import { auth } from "./auth.server";
+import { getCosmoAddress } from "./cosmo-accounts.server";
 import { db } from "./db";
 
 /**
@@ -44,34 +47,38 @@ export const authenticatedMiddleware = createMiddleware({ type: "function" })
 export const cosmoMiddleware = createMiddleware({ type: "function" })
   .middleware([authenticatedMiddleware])
   .server(async ({ next, context }) => {
-    // fetch the user's cosmo account
-    const cosmo = await db.query.cosmoAccounts.findFirst({
-      where: { userId: context.session.user.id },
-    });
-
-    if (!cosmo) {
+    const link = await getCosmoAddress(db, context.session.user.id);
+    if (link.kind === "none") {
       throw new ExpectedError("cosmo_not_linked");
     }
 
     return next({
       context: {
         ...context,
-        cosmo,
+        cosmo: { address: link.address, username: link.username },
       },
     });
   });
 
 /**
- * Ensures the user is an admin.
+ * Ensures the user's staff role holds every requested permission. Staff don't
+ * need a linked COSMO account; chain `cosmoMiddleware` after it when the
+ * handler reads one.
  */
-export const adminMiddleware = createMiddleware({ type: "function" })
-  .middleware([cosmoMiddleware])
-  .server(async ({ next, context }) => {
-    if (context.session.user.isAdmin !== true) {
-      throw new ExpectedError("not_admin");
-    }
+export function staffMiddleware(permissions: Permissions) {
+  return createMiddleware({ type: "function" })
+    .middleware([authenticatedMiddleware])
+    .server(async ({ next, context }) => {
+      const role = parseRole(context.session.user.role);
+      if (!can(role, permissions)) {
+        throw new ExpectedError("forbidden");
+      }
 
-    return next({
-      context,
+      return next({
+        context: {
+          ...context,
+          role,
+        },
+      });
     });
-  });
+}

@@ -1,20 +1,15 @@
 import InsertBands from "@/components/admin/bands/insert-bands";
+import { requireStaffPage } from "@/components/admin/common";
+import AdminNoAccess from "@/components/admin/no-access";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
-import { currentAccountQuery } from "@/lib/queries/core";
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/admin/bands")({
   staleTime: Infinity,
-  beforeLoad: async ({ context }) => {
-    const user = await context.queryClient.query({
-      ...currentAccountQuery,
-      staleTime: "static",
-    });
-    if (!user?.user.isAdmin) {
-      throw redirect({ to: "/" });
-    }
-  },
+  beforeLoad: ({ context }) =>
+    requireStaffPage(context.role, { site: ["manage"] }),
+  notFoundComponent: AdminNoAccess,
   head: () =>
     defineHead({ title: m.admin_bands_title(), canonical: "/admin/bands" }),
   component: RouteComponent,

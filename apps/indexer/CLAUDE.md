@@ -146,9 +146,17 @@ Before each chunk's collection upsert, `mirrorImages` (`src/images.ts`) mirrors 
 
 `collection_stats` holds each collection's `objekt_count` (every objekt row, spun included) and `spun_count` (rows owned by `Addresses.SPIN`) for apps/web's mint-count sorts. Triggers on `objekt` maintain it (migration `1791327933173-Data.js`): inserts and deletes adjust both counts, and owner changes to or from spin adjust `spun_count`. The processor never reads or writes it, so hot-block rollbacks and hand-run repairs to `objekt` stay counted without any TypeScript changes. A collection's row exists only while it has objekts.
 
+`collection_market_stats` holds the floor (USD), listing count and latest listing time of each collection's priced sale listings, keyed by `collection_id` (migration `1791627703101-Data.js`). apps/schedules' `sync-market-stats` owns it: every minute it upserts changed rows from the web DB and deletes the rows of collections no longer listed, so a row exists only while its collection is listed. apps/web's `/market` inner-joins it to `collection` to filter, sort and page in one query, with one index per sort. The processor never touches it.
+
 ### Serial Numbering
 
 COSMO stopped returning serials at the v1 metadata cutoff, so `src/serials.ts` sets the serial of each objekt minted after it before the chunk's upsert, using `@apollo/serial-estimation` (see the serials section of `docs/cosmo.md`). A digital mint above its collection's cached top takes the next serial; anything else is estimated from its whole collection plus the chunk's new objekts. The new objekts take the result, and so do a digital collection's stored objekts whose serial it changed, because a late mint shifts every one above it. Those are written through the store (so a hot-block rollback restores them) and set on the chunk's own buffered instances, whose upsert would otherwise write the old serial back. Stored physicals are never renumbered here: `apps/schedules` recomputes collections daily and applies confirmed serials. It also maintains `serial_reservation`: an online mint 20 or more ids above the highest so far opens a range, and a late online mint below it splits the range it lands in, so the table matches what the backfill computes from every mint. The reads go through the store's `EntityManager` with raw SQL, because `Store` can't select single columns or scan id ranges.
+
+### List Event Outbox
+
+`list_event_outbox` feeds apps/schedules' `drain-outbox` (migration `1791627703101-Data.js` adds `type`, `transferable` and `hash`; the same migration creates `collection_market_stats`). The processor appends a `transfer` row for every transfer except mints, with `transfer_id`, `from_address` and `to_address`, and a `transferability` row for every token a `batchUpdateObjektTransferability` call updates, with the new `transferable` flag. Both carry the collection slug, token id, block timestamp and transaction hash. A `NOT VALID` check enforces each type's columns on new rows without scanning old ones. The processor only appends (the drain purges drained rows once they are a week old), and ids follow processing order: within one batch, every transfer row precedes every transferability row.
+
+The processor runs with `supportHotBlocks`, so it writes rows for blocks that aren't final yet. A hot-block rollback doesn't remove them: the change log records each insert by entity id, and a bigserial row has no id until the insert has run.
 
 ## Key Files
 
