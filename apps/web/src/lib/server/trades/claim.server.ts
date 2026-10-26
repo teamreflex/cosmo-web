@@ -1,24 +1,26 @@
 import { isBanActive } from "@apollo/auth/guard";
 import { tradeOfferItems, tradeOffers } from "@apollo/database/web/schema";
-import { bumpUpdatedAt } from "@apollo/database/web/sql";
 import type {
   NewTradeOfferItem,
   TradeOfferStatus,
 } from "@apollo/database/web/types";
+import { scaleWants } from "@apollo/trades/allocate";
 import { validateAssignment } from "@apollo/trades/assignment";
 import { claimCap } from "@apollo/trades/caps";
-import { listingTransition } from "@apollo/trades/lifecycle";
 import type { ClaimListingInput } from "@apollo/trades/listing";
 import { CLAIM_WINDOW } from "@apollo/trades/timers";
 import { isEqual } from "@apollo/util";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import type * as z from "zod";
 import type { AuthErrorCode } from "../../universal/errors/auth";
 import { ExpectedError } from "../../universal/errors/expected";
-import type { TradeErrorCode } from "../../universal/errors/trades";
+import type {
+  ListingPickRefusal,
+  TradeErrorCode,
+} from "../../universal/errors/trades";
 import {
-  type StoredWant,
   storedObjektItemSchema,
+  type StoredWant,
   storedWantSchema,
   toTradeWant,
 } from "../../universal/trade-listings";
@@ -53,16 +55,25 @@ function refuse(code: TradeErrorCode | AuthErrorCode): never {
 }
 
 /**
+ * Refuses a claim whose pick of the poster's objekts includes one they
+ * can't give right now, naming it, so the picker can drop it.
+ */
+function refusePick(tokenId: number): never {
+  throw new ExpectedError("listing_pick_unavailable", {
+    tokenId,
+  } satisfies ListingPickRefusal);
+}
+
+/**
  * Why a listing can't be claimed on the terms the claimer saw, judged on
- * its status first: a claimed or closed listing says so even when the
- * claimer's view is also stale.
+ * its status first: a closed listing says so even when the claimer's view
+ * is also stale.
  */
 function statusRefusal(
   listing: { status: TradeOfferStatus; updatedAt: Date } | undefined,
   seen: Date,
 ): TradeErrorCode | null {
   if (!listing) return "listing_not_found";
-  if (listing.status === "claimed") return "already_claimed";
   if (listing.status !== "open") return "listing_closed";
   return listing.updatedAt.getTime() === seen.getTime()
     ? null
@@ -81,20 +92,23 @@ type Preflight = {
     id: string;
     fromUserId: string | null;
     fromAddress: string;
-    items: z.output<typeof storedObjektItemSchema>[];
+    picked: z.output<typeof storedObjektItemSchema>[];
     wants: StoredWant[];
   };
   poster: PosterFacts;
+  pickedStates: ReadonlyMap<number, TokenState>;
   submitted: number[];
   claimerStates: ReadonlyMap<number, TokenState>;
 };
 
 /**
  * The checks that need no lock, in claim precedence: the listing, its
- * status and the claimer's view of it, the poster's side, then the
- * submitted tokens. Assignment is checked on every submitted token's
- * indexer values whoever owns it, so a misfit row is refused the same way
- * however the tokens are held.
+ * status and the claimer's view of it, the poster's account, the poster's
+ * objekts the claim picked, then the claimer's tokens. The picks must be
+ * `units` units of the pool, each one the poster can give now. Assignment
+ * is checked against the want rows scaled to the units, on every submitted
+ * token's indexer values whoever owns it, so a misfit row is refused the
+ * same way however the tokens are held.
  */
 export async function preflightClaim(
   actor: ListingActor,
@@ -107,10 +121,11 @@ export async function preflightClaim(
       status: true,
       fromUserId: true,
       fromAddress: true,
+      unitSize: true,
       updatedAt: true,
     },
     with: {
-      items: { orderBy: { id: "asc" } },
+      items: { where: { leftAt: { isNull: true } }, orderBy: { id: "asc" } },
       wants: { orderBy: { id: "asc" } },
       fromUser: {
         columns: { banned: true, banExpires: true },
@@ -127,29 +142,53 @@ export async function preflightClaim(
   }
   const stale = statusRefusal(row, input.seen);
   if (stale) refuse(stale);
+  // trade_offers_unit_size_chk: every listing has a unit size
+  if (row.unitSize === null) throw new Error(`listing ${row.id} has no unit`);
 
-  const listing = {
-    id: row.id,
-    fromUserId: row.fromUserId,
-    fromAddress: row.fromAddress,
-    items: row.items.map((item) => storedObjektItemSchema.parse(item)),
-    wants: row.wants.map((want) => storedWantSchema.parse(want)),
-  };
-  const tokenIds = listing.items.map((item) => item.tokenId);
+  const wants = row.wants.map((want) => storedWantSchema.parse(want));
   const poster: PosterFacts = {
-    tokenIds,
-    wantKinds: listing.wants.map((want) => want.kind),
-    holdings: await readTokenStates(listing.fromAddress, tokenIds),
+    wantKinds: wants.map((want) => want.kind),
     poster: row.fromUser && toPosterAccount(row.fromUser),
   };
-  if (posterRefusal(poster, listing.fromAddress)) {
-    // a claim or edit committed since the status read is the better answer
-    const [now] = await listingStatus(db, listing.id);
-    refuse(statusRefusal(now, input.seen) ?? "listing_unavailable");
+  // a commit since the status read is the better answer to a refused pick
+  const refuseAfterRecheck = async (refusal: () => never) => {
+    const [now] = await listingStatus(db, row.id);
+    const changed = statusRefusal(now, input.seen);
+    if (changed) refuse(changed);
+    refusal();
+  };
+  if (posterRefusal(poster, row.fromAddress)) {
+    await refuseAfterRecheck(() => refuse("listing_unavailable"));
+  }
+
+  const pool = new Map(
+    row.items.map((item) => {
+      const parsed = storedObjektItemSchema.parse(item);
+      return [parsed.tokenId, parsed];
+    }),
+  );
+  const picked = input.picked.flatMap((tokenId) => pool.get(tokenId) ?? []);
+  if (
+    picked.length !== input.picked.length ||
+    picked.length !== input.units * row.unitSize
+  ) {
+    refuse("claim_assignment_invalid");
   }
 
   const submitted = input.rows.flat();
-  const claimerStates = await readIndexerTokens(submitted);
+  const [pickedHoldings, claimerStates] = await Promise.all([
+    readTokenStates(row.fromAddress, input.picked),
+    readIndexerTokens(submitted),
+  ]);
+  const unavailable = firstRefusal(
+    input.picked,
+    pickedHoldings,
+    row.fromAddress,
+  );
+  if (unavailable) {
+    await refuseAfterRecheck(() => refusePick(unavailable.tokenId));
+  }
+
   const states = [...claimerStates.values()];
   const missing = states.find((state) => state.kind === "missing");
   if (missing) {
@@ -160,7 +199,10 @@ export async function preflightClaim(
   );
   // posterRefusal has refused payment rows, so every want is an objekt row
   const assignment = validateAssignment(
-    listing.wants.flatMap((want) => toTradeWant(want) ?? []),
+    scaleWants(
+      wants.flatMap((want) => toTradeWant(want) ?? []),
+      input.units,
+    ),
     input.rows,
     new Map(found.map((state) => [state.tokenId, state.attributes])),
   );
@@ -173,30 +215,62 @@ export async function preflightClaim(
     actor.address,
   );
   if (unflagged) refuseToken(unflagged);
-  return { listing, poster, submitted, claimerStates };
+  return {
+    listing: {
+      id: row.id,
+      fromUserId: row.fromUserId,
+      fromAddress: row.fromAddress,
+      picked,
+      wants,
+    },
+    poster,
+    pickedStates: pickedHoldings.states,
+    submitted,
+    claimerStates,
+  };
 }
 
 /**
  * Re-judges the poster's side on what can change under the lock: their
  * account, ban and link, as the lock read them, and the locks and live
- * trades on the offered tokens. The indexer values come from the preflight.
+ * trades on the picked objekts. The indexer values come from the preflight.
  */
 async function recheckPoster(
   tx: WebTx,
-  { listing, poster }: Preflight,
+  { listing, poster, pickedStates }: Preflight,
   account: PosterAccount | null,
 ) {
-  const flags = await readWebTokenFlags(
-    tx,
+  if (posterRefusal({ ...poster, poster: account }, listing.fromAddress)) {
+    refuse("listing_unavailable");
+  }
+  const tokenIds = listing.picked.map(({ tokenId }) => tokenId);
+  const flags = await readWebTokenFlags(tx, listing.fromAddress, tokenIds);
+  const unavailable = firstRefusal(
+    tokenIds,
+    { states: pickedStates, ...flags },
     listing.fromAddress,
-    poster.tokenIds,
   );
-  const facts = {
-    ...poster,
-    holdings: { states: poster.holdings.states, ...flags },
-    poster: account,
-  };
-  if (posterRefusal(facts, listing.fromAddress)) refuse("listing_unavailable");
+  if (unavailable) refusePick(unavailable.tokenId);
+}
+
+/**
+ * Whether the claimer already has a live trade from the listing: its
+ * poster's items keep the listing's id, and only a live trade's are live.
+ */
+async function hasLiveClaim(tx: WebTx, listingId: string, userId: string) {
+  const [claim] = await tx
+    .select({ id: tradeOffers.id })
+    .from(tradeOfferItems)
+    .innerJoin(tradeOffers, eq(tradeOffers.id, tradeOfferItems.offerId))
+    .where(
+      and(
+        eq(tradeOfferItems.listingId, listingId),
+        eq(tradeOfferItems.live, true),
+        eq(tradeOffers.toUserId, userId),
+      ),
+    )
+    .limit(1);
+  return claim !== undefined;
 }
 
 /**
@@ -204,12 +278,15 @@ async function recheckPoster(
  * deadlock against a crossed claim or interleave with a deletion or ban,
  * and the claimer's parallel claims queue for the cap, which their linked
  * address's feedback score sets, and reads their COSMO links under the
- * locks. Then claims the listing behind its status and `updated_at` guard,
- * which takes the listing's row lock: a claim or edit that committed while
- * this one waited leaves no row to update, and the re-read says which. Then
- * repeats every check that could have changed; a refusal rolls the claim
- * back. Returns the claimer's COSMO address as stored, which the trade
- * pins, and the poster's locked row, missing when the listing has no
+ * locks. Then locks the listing row behind its status and `updated_at`
+ * guard without changing it, so claims on one listing queue behind each
+ * other and an edit or a drop: one that committed while this one waited
+ * leaves no row to lock, and the re-read says which. A claim racing a trade
+ * from another listing for the same token is caught by the live-token index
+ * on insert. Then repeats every check that could have changed, refusing a
+ * claimer who already has a live trade from the listing; a refusal rolls
+ * the claim back. Returns the claimer's COSMO address as stored, which the
+ * trade pins, and the poster's locked row, missing when the listing has no
  * poster.
  */
 export async function lockAndRecheck(
@@ -231,19 +308,18 @@ export async function lockAndRecheck(
   const posterLink = poster && links.get(poster.id);
   const claimerAddress = links.get(actor.userId)?.address;
 
-  const { from, to } = listingTransition("claim");
-  const [claimed] = await tx
-    .update(tradeOffers)
-    .set({ status: to, updatedAt: bumpUpdatedAt })
+  const [locked] = await tx
+    .select({ id: tradeOffers.id })
+    .from(tradeOffers)
     .where(
       and(
         eq(tradeOffers.id, listing.id),
-        inArray(tradeOffers.status, [...from]),
+        eq(tradeOffers.status, "open"),
         eq(tradeOffers.updatedAt, input.seen),
       ),
     )
-    .returning({ id: tradeOffers.id });
-  if (!claimed) {
+    .for("no key update");
+  if (!locked) {
     const [row] = await listingStatus(tx, listing.id);
     refuse(statusRefusal(row, input.seen) ?? "listing_updated");
   }
@@ -266,6 +342,9 @@ export async function lockAndRecheck(
   if (claimerAddress === undefined || !isEqual(claimerAddress, actor.address)) {
     refuse("cosmo_not_linked");
   }
+  if (await hasLiveClaim(tx, listing.id, actor.userId)) {
+    refuse("listing_claim_exists");
+  }
   const standing = await claimStanding(tx, actor.userId);
   if (standing.active >= claimCap(standing)) refuse("claim_cap_reached");
 
@@ -280,10 +359,11 @@ export async function lockAndRecheck(
 }
 
 /**
- * Creates the accepted trade for the claimed listing with both addresses
- * pinned and the fixed claim window, and copies both sides' tokens into it
- * as live items. The poster's keep the listing's id. Starts the trade's
- * timeline and tells the poster what to send.
+ * Creates the accepted trade for the claim with both addresses pinned and
+ * the fixed claim window, and copies the poster's picked objekts and the
+ * claimer's tokens into it as live items. The poster's keep the listing's
+ * id. The listing itself doesn't change. Starts the trade's timeline and
+ * tells the poster what to send.
  */
 export async function insertTrade(
   tx: WebTx,
@@ -308,7 +388,7 @@ export async function insertTrade(
 
   await refuseLiveClash(
     tx.insert(tradeOfferItems).values(
-      listing.items.map(
+      listing.picked.map(
         ({ tokenId, attributes }) =>
           ({
             offerId: trade.id,
@@ -321,7 +401,7 @@ export async function insertTrade(
           }) satisfies NewTradeOfferItem,
       ),
     ),
-    "listing_unavailable",
+    "listing_pick_unavailable",
   );
   await refuseLiveClash(
     tx.insert(tradeOfferItems).values(

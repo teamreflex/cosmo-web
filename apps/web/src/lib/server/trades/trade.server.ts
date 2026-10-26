@@ -9,17 +9,16 @@ import {
   tradeOffers,
   user,
 } from "@apollo/database/web/schema";
-import { bumpUpdatedAt } from "@apollo/database/web/sql";
+import { bumpUpdatedAt, listingPoolState } from "@apollo/database/web/sql";
 import type {
   DisputeReason,
   NewTradeNotification,
   TradeEvent as StoredTradeEvent,
   TradeSide,
 } from "@apollo/database/web/types";
-import { holdsAll } from "@apollo/trades/holdings";
 import {
   endedTradeColumns,
-  listingEventAfter,
+  listingClosing,
   listingTransition,
   type PartyActionRefusal,
   type TradeEvent,
@@ -29,7 +28,7 @@ import {
   transition,
 } from "@apollo/trades/lifecycle";
 import { DRAIN_CURSOR_NAME, isTimedOut } from "@apollo/trades/timers";
-import { and, asc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import type { PgUpdateSetSource } from "drizzle-orm/pg-core";
 import { ExpectedError } from "../../universal/errors/expected";
 import type {
@@ -38,7 +37,6 @@ import type {
 } from "../../universal/errors/trades";
 import { db, type DbOrTx, type WebTx } from "../db";
 import { isPostgresError } from "../util.server";
-import type { TokenState } from "./holdings.server";
 import { refusePoster } from "./listings.server";
 
 export function refuseTrade(code: TradeErrorCode): never {
@@ -311,22 +309,17 @@ export async function updateLockedTrade(
 }
 
 /**
- * Ends a locked trade in the state a transition returned: its row, its
- * items' reservations, and its listing's outcome (listingEventAfter). A
- * released listing reopens when the poster still holds every token and can
- * transfer it (holdsAll), even one they locked meanwhile: `tokens` are the
- * indexer's states for the trade's tokens, which a caller that may release
- * reads before its transaction, so the transaction never waits on the
- * indexer.
- * `users` are the parties the caller locked; the poster has no row once
- * their account is gone.
+ * Ends a locked trade in the state a transition returned: its row and its
+ * items' reservations, then the listings its poster's objekts came from,
+ * locked in id order. A completed trade's objekts leave each listing's
+ * pool, since they were given, and stay on it as history (`left_at`); a
+ * cancelled one's are free in the pool again. Each listing then closes if its pool can no longer make a unit
+ * (closeSpentListings).
  */
 export async function endTrade(
   tx: WebTx,
   trade: LockedTrade,
   next: TradeState,
-  users: readonly LockedUser[],
-  tokens: ReadonlyMap<number, TokenState>,
 ) {
   await updateLockedTrade(tx, trade, {
     ...endedTradeColumns(next),
@@ -342,39 +335,75 @@ export async function endTrade(
       ),
     );
 
-  const poster = users.find((row) => row.id === trade.fromUserId);
-  const outcome = listingEventAfter(next, {
-    banned: poster !== undefined && isBanActive(poster),
-  });
   const listings = tradeListings(trade.items);
-  if (outcome === undefined || listings.size === 0) return;
-
+  if (listings.size === 0) return;
   await tx
     .select({ id: tradeOffers.id })
     .from(tradeOffers)
     .where(inArray(tradeOffers.id, [...listings.keys()]))
     .orderBy(asc(tradeOffers.id))
     .for("no key update");
-  for (const [listingId, tokenIds] of listings) {
-    const event =
-      outcome !== "release"
-        ? outcome
-        : holdsAll(tokenIds, tokens, trade.fromAddress)
-          ? "reopen"
-          : "break";
+  if (next.status === "completed") {
+    await tx
+      .update(tradeOfferItems)
+      .set({ leftAt: sql`now()` })
+      .where(
+        and(
+          or(
+            ...[...listings].map(([listingId, tokenIds]) =>
+              and(
+                eq(tradeOfferItems.offerId, listingId),
+                inArray(tradeOfferItems.tokenId, tokenIds),
+              ),
+            ),
+          ),
+          isNull(tradeOfferItems.leftAt),
+        ),
+      );
+  }
+  await closeSpentListings(tx, [...listings.keys()]);
+}
 
+/**
+ * Closes the open listings among `listingIds` whose pool can no longer make
+ * a unit and that have no live trade left (listingClosing): filled when one
+ * of their trades completed, else broken. The caller holds their locks.
+ */
+async function closeSpentListings(tx: WebTx, listingIds: readonly string[]) {
+  const listings = await tx
+    .select({
+      id: tradeOffers.id,
+      unitSize: tradeOffers.unitSize,
+      ...listingPoolState,
+    })
+    .from(tradeOffers)
+    .where(
+      and(
+        inArray(tradeOffers.id, [...listingIds]),
+        eq(tradeOffers.kind, "listing"),
+        eq(tradeOffers.status, "open"),
+      ),
+    );
+  const closing = Map.groupBy(
+    listings.flatMap(({ id, unitSize, ...state }) => {
+      // trade_offers_unit_size_chk: every listing has a unit size
+      if (unitSize === null) throw new Error(`listing ${id} has no unit`);
+      const event = listingClosing({ unitSize, ...state });
+      return event === null ? [] : [{ id, event }];
+    }),
+    ({ event }) => event,
+  );
+  for (const [event, closed] of closing) {
     const { from, to } = listingTransition(event);
     await tx
       .update(tradeOffers)
-      .set({
-        status: to,
-        endedAt: event === "reopen" ? null : sql`now()`,
-        updatedAt: bumpUpdatedAt,
-      })
+      .set({ status: to, endedAt: sql`now()`, updatedAt: bumpUpdatedAt })
       .where(
         and(
-          eq(tradeOffers.id, listingId),
-          eq(tradeOffers.kind, "listing"),
+          inArray(
+            tradeOffers.id,
+            closed.map(({ id }) => id),
+          ),
           inArray(tradeOffers.status, [...from]),
         ),
       );

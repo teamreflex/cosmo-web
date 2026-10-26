@@ -9,7 +9,6 @@ import { describe, expect, test } from "bun:test";
 import {
   listingClosing,
   type ListingEvent,
-  listingEventAfter,
   listingTransition,
   needsYou,
   type OfferEvent,
@@ -644,74 +643,51 @@ describe("needsYou (UNIT-05)", () => {
 
 describe("listingClosing", () => {
   test.each([
-    ["a pool of exactly one unit stays open", 2, 2, false, null],
-    ["a pool of several units stays open", 5, 2, true, null],
-    ["a pool short of a unit closes broken", 1, 2, false, "break"],
-    ["an empty pool closes broken", 0, 1, false, "break"],
+    ["a pool of exactly one unit stays open", 2, 2, false, false, null],
+    ["a pool of several units stays open", 5, 2, false, true, null],
+    ["a pool short of a unit closes broken", 1, 2, false, false, "break"],
+    ["an empty pool closes broken", 0, 1, false, false, "break"],
     [
       "a pool short of a unit after a completion closes filled",
       1,
       2,
+      false,
       true,
       "fill",
     ],
-    ["an empty pool after a completion closes filled", 0, 1, true, "fill"],
-  ] satisfies [string, number, number, boolean, "fill" | "break" | null][])(
-    "%s",
-    (_, pool, unitSize, completed, expected) => {
-      expect(listingClosing({ pool, unitSize, completed })).toBe(expected);
-    },
-  );
-});
-
-describe("listingEventAfter", () => {
-  const posters = [{ banned: false }, { banned: true }];
-
-  test("a completed trade fills the listing, banned poster or not (LIFE-19)", () => {
-    for (const poster of posters) {
-      expect(
-        listingEventAfter(trade("completed", sixObjekts(true)), poster),
-      ).toBe("fill");
-    }
-  });
-
-  /**
-   * Only a release needs the poster's holdings, which the caller reads to
-   * reopen or break the listing.
-   */
-  describe("after a cancel, by any side (LIFE-20)", () => {
-    test.each([
-      [{ banned: false }, "release"],
-      [{ banned: true }, "remove"],
-    ] satisfies [{ banned: boolean }, ListingEvent | "release"][])(
-      "%o",
-      (poster, expected) => {
-        for (const cancelledBy of ["from", "to", "staff"] as const) {
-          expect(
-            listingEventAfter(
-              { status: "cancelled", cancelledBy, items: purchase },
-              poster,
-            ),
-          ).toBe(expected);
-        }
-      },
-    );
-  });
-
-  test("a time out closes the listing, or removes a banned poster's (LIFE-21)", () => {
-    const state = trade("timed_out", sixObjekts());
-    expect(listingEventAfter(state, { banned: false })).toBe("time_out");
-    expect(listingEventAfter(state, { banned: true })).toBe("remove");
-  });
-
-  test("a live or pending trade leaves the listing alone (LIFE-22)", () => {
-    for (const status of ["accepted", "disputed", "pending"] as const) {
-      for (const poster of posters) {
-        expect(listingEventAfter(trade(status, purchase), poster)).toBe(
-          undefined,
-        );
-      }
-    }
+    [
+      "an empty pool after a completion closes filled",
+      0,
+      1,
+      false,
+      true,
+      "fill",
+    ],
+    [
+      "a pool short of a unit stays open while a trade is live",
+      0,
+      3,
+      true,
+      false,
+      null,
+    ],
+    [
+      "a pool short of a unit after a completion stays open while another trade is live",
+      0,
+      1,
+      true,
+      true,
+      null,
+    ],
+  ] satisfies [
+    string,
+    number,
+    number,
+    boolean,
+    boolean,
+    "fill" | "break" | null,
+  ][])("%s", (_, pool, unitSize, live, completed, expected) => {
+    expect(listingClosing({ pool, unitSize, live, completed })).toBe(expected);
   });
 });
 
@@ -763,13 +739,10 @@ describe("tradeState", () => {
  * Each listing event and the statuses it leaves from.
  */
 const listingAllowed: [ListingEvent, ListingStatus[], ListingStatus][] = [
-  ["claim", ["open"], "claimed"],
-  ["reopen", ["claimed"], "open"],
-  ["fill", ["claimed"], "filled"],
+  ["fill", ["open"], "filled"],
   ["withdraw", ["open"], "withdrawn"],
-  ["break", ["open", "claimed"], "broken"],
-  ["remove", ["open", "claimed"], "removed"],
-  ["time_out", ["claimed"], "timed_out"],
+  ["break", ["open"], "broken"],
+  ["remove", ["open"], "removed"],
 ];
 
 describe("transitionListing: every event from every status (LIFE-18)", () => {

@@ -8,7 +8,16 @@ import type {
   TradeOfferItem,
 } from "@apollo/database/web/types";
 import { rangeColumns } from "@apollo/trades/range";
-import { and, arrayOverlaps, eq, exists, inArray, or, sql } from "drizzle-orm";
+import {
+  and,
+  arrayOverlaps,
+  eq,
+  exists,
+  inArray,
+  isNull,
+  or,
+  sql,
+} from "drizzle-orm";
 import { QueryBuilder } from "drizzle-orm/pg-core";
 import { Objekt } from "../../universal/objekt-conversion";
 import type { ListingFeedInput } from "../../universal/schema/listing-feed";
@@ -73,6 +82,7 @@ function offeringConditions(side: FeedSide, artists: string[]) {
 
   const item = and(
     eq(tradeOfferItems.offerId, tradeOffers.id),
+    isNull(tradeOfferItems.leftAt),
     ...columns.map(({ column, values }) =>
       inArray(offeredColumns[column].item, values),
     ),

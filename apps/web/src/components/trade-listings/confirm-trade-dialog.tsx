@@ -4,11 +4,7 @@ import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { type ClaimFailure, claimFailure } from "@/lib/client/errors/trades";
 import { formatSerial, getObjektFrontImageUrl } from "@/lib/client/objekt-util";
-import {
-  objektName,
-  pickShown,
-  posterName,
-} from "@/lib/client/trade-listings";
+import { objektName, pickShown, posterName } from "@/lib/client/trade-listings";
 import { env } from "@/lib/env/client";
 import { $claimListing } from "@/lib/functions/trade-listings";
 import { tradesKey } from "@/lib/queries/trades";
@@ -106,6 +102,9 @@ export default function ConfirmTradeDialog({
         data: {
           listingId: listing.id,
           seen: viewer.updatedAt,
+          // one unit of the whole pool, until the picker can choose units
+          units: 1,
+          picked: listing.items.map(({ tokenId }) => tokenId),
           rows: assignment,
         },
       }),

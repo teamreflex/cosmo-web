@@ -192,7 +192,7 @@ export const tradeTimersTask = {
             notifications.push(...frozen.notifications);
             continue;
           }
-          const ended = yield* endTrade(tx, trade, result.trade, locked);
+          const ended = yield* endTrade(tx, trade, result.trade);
           if (result.trade.status === "completed") completed++;
           events.push(ended.event);
           notifications.push(...ended.notifications);

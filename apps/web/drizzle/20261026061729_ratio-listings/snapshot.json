@@ -2,7 +2,7 @@
   "type": "diff",
   "version": "9",
   "dialect": "postgres",
-  "id": "f4a8e130-645b-475f-83a5-42d5f51d6cfb",
+  "id": "7bccf38e-9c39-469c-a557-9686e088930b",
   "prevIds": [
     "c585280b-0daa-4a07-85c7-a2d8a3166e88"
   ],
@@ -45,6 +45,24 @@
       "statementTarget": [
         "column",
         "public",
+        "trade_offer_items",
+        "left_at"
+      ],
+      "writes": [
+        "s|col|public.trade_offer_items.left_at",
+        "n|col|public.trade_offer_items.left_at",
+        "e|col|public.trade_offer_items.left_at"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offer_items",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
         "trade_offers",
         "unit_size"
       ],
@@ -79,6 +97,27 @@
         "n|col|public.trade_listing_want_options.want_id",
         "n|col|public.trade_listing_wants.id",
         "e|uniqueness|public.trade_listing_wants.id"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_offer_items"
+      ],
+      "writes": [
+        "s|ck|public.trade_offer_items.trade_offer_items_left_chk",
+        "n|ck|public.trade_offer_items.trade_offer_items_left_chk",
+        "e|ck|public.trade_offer_items.trade_offer_items_left_chk",
+        "n|con|public.trade_offer_items.trade_offer_items_left_chk"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offer_items",
+        "n|sch|public",
+        "n|col|public.trade_offer_items.left_at",
+        "n|col|public.trade_offer_items.listing_id",
+        "n|col|public.trade_offer_items.live"
       ]
     },
     {
@@ -274,6 +313,22 @@
       "op": "create",
       "row": {
         "schema": "public",
+        "table": "trade_offer_items",
+        "name": "left_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
         "table": "trade_offers",
         "name": "unit_size",
         "type": "smallint",
@@ -318,6 +373,16 @@
         ],
         "nameExplicit": false,
         "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offer_items",
+        "name": "trade_offer_items_left_chk",
+        "value": "\"left_at\" IS NULL OR (\"listing_id\" IS NULL AND NOT \"live\")",
+        "entityType": "checks"
       }
     },
     {

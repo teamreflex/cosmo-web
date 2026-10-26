@@ -558,7 +558,13 @@ describe("listingIdSchema (SCH-23)", () => {
 
 describe("claimListingInputSchema", () => {
   const seen = new Date("2026-10-11T12:00:00.123Z");
-  const claim = { listingId: LISTING_ID, seen, rows: [[1], [2, 3]] };
+  const claim = {
+    listingId: LISTING_ID,
+    seen,
+    units: 1,
+    picked: [100],
+    rows: [[1], [2, 3]],
+  };
 
   test("accepts the row and total caps", () => {
     const full = Array.from({ length: MAX_PER_ROW }, (_, i) => i + 1);
@@ -612,6 +618,20 @@ describe("claimListingInputSchema", () => {
         ],
       },
       `rows: A claim can give at most ${MAX_TOTAL_WANTED} objekts`,
+    ],
+    ["no units", { units: 0 }, "units: *"],
+    ["fractional units", { units: 1.5 }, "units: *"],
+    ["units past the offer cap", { units: MAX_OFFERED + 1 }, "units: *"],
+    ["nothing picked", { picked: [] }, "picked: *"],
+    [
+      "picks past the offer cap",
+      { picked: Array.from({ length: MAX_OFFERED + 1 }, (_, i) => 100 + i) },
+      "picked: *",
+    ],
+    [
+      "an objekt picked twice",
+      { picked: [100, 101, 100] },
+      "picked: Each objekt can only be picked once",
     ],
   ])("refuses %s", (_, override, issue) => {
     expectIssue(

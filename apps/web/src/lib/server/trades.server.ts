@@ -111,7 +111,7 @@ export async function closeOpenOffers(
   );
   const withdraw = offerTransition("withdraw");
   const decline = offerTransition("decline");
-  // only open listings: a claimed one's trade is live, which a deletion waits for and a ban disputes
+  // only open listings; their live trades carry on, which a deletion waits for and a ban disputes
   const sent = and(
     eq(tradeOffers.fromUserId, userId),
     or(

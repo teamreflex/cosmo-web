@@ -16,8 +16,8 @@ export const CLAIM_CAP_TIERS = [1, 5, 15, 30, 60] as const;
 export const CLAIM_CAP_CEILING = CLAIM_CAP_BASE + CLAIM_CAP_TIERS.length;
 
 /**
- * How many listings a user may have claimed at once. Open listings aren't
- * capped. A new account may hold the base, and each tier its score reaches
+ * How many live trades from listings a user may hold at once, one per
+ * claim. Open listings aren't capped. A new account may hold the base, and each tier its score reaches
  * adds one, so the first positive rating raises it and a negative score never
  * lowers it.
  */

@@ -6,7 +6,7 @@ import {
   tradeOffers,
   user,
 } from "@apollo/database/web/schema";
-import { bumpUpdatedAt } from "@apollo/database/web/sql";
+import { bumpUpdatedAt, listingPoolState } from "@apollo/database/web/sql";
 import type {
   NewTradeNotification,
   TradeEvent as StoredTradeEvent,
@@ -21,15 +21,14 @@ import {
 } from "@apollo/trades/events";
 import {
   endedTradeColumns,
-  type ListingEvent,
-  listingEventAfter,
+  listingClosing,
   listingTransition,
   tradeListings,
   type TradeState,
   tradeState,
   waitingSide,
 } from "@apollo/trades/lifecycle";
-import { and, asc, eq, inArray, type SQL, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, or, type SQL, sql } from "drizzle-orm";
 import type { EffectDrizzleQueryError } from "drizzle-orm/effect-core";
 import { Effect } from "effect";
 import { Redis } from "effect/persistence";
@@ -187,16 +186,18 @@ function tradeEnding(next: TradeState): TradeEnding | undefined {
 
 /**
  * Ends a locked trade that completed or timed out: its row, its items'
- * reservations, and each listing it came from (listingEventAfter), locked in
- * id order before their guarded updates. `locked` is lockUsers' map, which
- * says whether the poster is banned.
- * Returns the trade's timeline event and both parties' notifications.
+ * reservations, and each listing its poster's objekts came from, locked in
+ * id order. A completed trade's objekts leave each listing's pool, since
+ * they were given, and stay on it as history (`left_at`); a timed-out
+ * one's are free in the pool again. Each
+ * listing then closes if its pool can no longer make a unit
+ * (closeSpentListings). Returns the trade's timeline event and both
+ * parties' notifications.
  */
 export const endTrade = Effect.fn("endTrade")(function* (
   tx: WebTx,
   trade: LiveTrade,
   next: TradeState,
-  locked: ReadonlyMap<string, boolean>,
 ) {
   const ending = tradeEnding(next);
   if (ending === undefined) {
@@ -228,17 +229,27 @@ export const endTrade = Effect.fn("endTrade")(function* (
     );
 
   const listings = tradeListings(trade.items);
-  const outcome = listingEventAfter(next, {
-    banned: trade.fromUserId !== null && locked.get(trade.fromUserId) === true,
-  });
-  // only a cancel releases a listing, and the drain and timers never cancel
-  if (outcome === "release") {
-    return yield* Effect.die(
-      `trade ${trade.id} can't release its listing here`,
-    );
-  }
-  if (outcome !== undefined && listings.size > 0) {
-    yield* updateListings(tx, [...listings.keys()], outcome);
+  if (listings.size > 0) {
+    yield* lockListings(tx, [...listings.keys()]);
+    if (next.status === "completed") {
+      yield* tx
+        .update(tradeOfferItems)
+        .set({ leftAt: sql`now()` })
+        .where(
+          and(
+            or(
+              ...[...listings].map(([listingId, tokenIds]) =>
+                and(
+                  eq(tradeOfferItems.offerId, listingId),
+                  inArray(tradeOfferItems.tokenId, tokenIds),
+                ),
+              ),
+            ),
+            isNull(tradeOfferItems.leftAt),
+          ),
+        );
+    }
+    yield* closeSpentListings(tx, [...listings.keys()]);
   }
 
   return {
@@ -256,31 +267,78 @@ export const endTrade = Effect.fn("endTrade")(function* (
 });
 
 /**
- * Moves the listings an ended trade came from to its outcome, which ends
- * them, locking them in id order first.
+ * Locks the open listings among the ids `FOR NO KEY UPDATE` in id order,
+ * after the trades (docs/auth.md), and returns them with their posters.
  */
-const updateListings = Effect.fn("updateListings")(function* (
+export const lockListings = Effect.fn("lockListings")(function* (
   tx: WebTx,
-  listingIds: string[],
-  outcome: Exclude<ListingEvent, "reopen">,
+  listingIds: readonly string[],
 ) {
-  yield* tx
-    .select({ id: tradeOffers.id })
+  return yield* tx
+    .select({ id: tradeOffers.id, fromUserId: tradeOffers.fromUserId })
     .from(tradeOffers)
-    .where(inArray(tradeOffers.id, listingIds))
-    .orderBy(asc(tradeOffers.id))
-    .for("no key update");
-  const { from, to } = listingTransition(outcome);
-  yield* tx
-    .update(tradeOffers)
-    .set({ status: to, endedAt: sql`now()`, updatedAt: bumpUpdatedAt })
     .where(
       and(
-        inArray(tradeOffers.id, listingIds),
+        inArray(tradeOffers.id, [...listingIds]),
         eq(tradeOffers.kind, "listing"),
-        inArray(tradeOffers.status, [...from]),
+        eq(tradeOffers.status, "open"),
+      ),
+    )
+    .orderBy(asc(tradeOffers.id))
+    .for("no key update");
+});
+
+/**
+ * Closes the open listings among `listingIds` whose pool can no longer make
+ * a unit and that have no live trade left (listingClosing): filled when one
+ * of their trades completed, else broken. The caller holds their locks.
+ * Returns the closed listings, each with its poster and how it closed.
+ */
+export const closeSpentListings = Effect.fn("closeSpentListings")(function* (
+  tx: WebTx,
+  listingIds: readonly string[],
+) {
+  if (listingIds.length === 0) return [];
+  const listings = yield* tx
+    .select({
+      id: tradeOffers.id,
+      fromUserId: tradeOffers.fromUserId,
+      unitSize: tradeOffers.unitSize,
+      ...listingPoolState,
+    })
+    .from(tradeOffers)
+    .where(
+      and(
+        inArray(tradeOffers.id, [...listingIds]),
+        eq(tradeOffers.kind, "listing"),
+        eq(tradeOffers.status, "open"),
       ),
     );
+  const closed = [];
+  for (const { id, fromUserId, unitSize, ...state } of listings) {
+    // trade_offers_unit_size_chk: every listing has a unit size
+    if (unitSize === null) {
+      return yield* Effect.die(`listing ${id} has no unit`);
+    }
+    const event = listingClosing({ unitSize, ...state });
+    if (event !== null) closed.push({ id, fromUserId, event });
+  }
+  for (const [event, rows] of Map.groupBy(closed, ({ event }) => event)) {
+    const { from, to } = listingTransition(event);
+    yield* tx
+      .update(tradeOffers)
+      .set({ status: to, endedAt: sql`now()`, updatedAt: bumpUpdatedAt })
+      .where(
+        and(
+          inArray(
+            tradeOffers.id,
+            rows.map(({ id }) => id),
+          ),
+          inArray(tradeOffers.status, [...from]),
+        ),
+      );
+  }
+  return closed;
 });
 
 /**

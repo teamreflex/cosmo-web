@@ -103,7 +103,6 @@ export function listingRefusal(
   listing: { status: TradeOfferStatus } | undefined,
 ): TradeErrorCode | null {
   if (!listing) return "listing_not_found";
-  if (listing.status === "claimed") return "listing_claimed";
   return listing.status === "open" ? null : "listing_closed";
 }
 

@@ -388,33 +388,23 @@ export function offerTransition(event: OfferEvent) {
 }
 
 export type ListingEvent =
-  // a trade was created from the listing
-  | "claim"
-  // the claim ended with the tokens still with the poster
-  | "reopen"
-  // the claim's trade completed
+  // the pool ran short of a unit after one of its trades completed
   | "fill"
   | "withdraw"
-  // an offered token left the poster or turned untransferable
+  // the pool ran short of a unit with none of its trades completed
   | "break"
   // staff removed it, or its poster was banned
-  | "remove"
-  // the claim's trade timed out with nothing sent
-  | "time_out";
+  | "remove";
 
 /**
- * Which statuses each listing event leaves from, and where it goes. A
- * claimed listing doesn't check its tokens itself; its trade does, and the
- * listing follows the trade's outcome.
+ * Which statuses each listing event leaves from, and where it goes. Only an
+ * open listing moves: claims start trades beside it rather than moving it.
  */
 const listingTransitions = {
-  claim: { from: ["open"], to: "claimed" },
-  reopen: { from: ["claimed"], to: "open" },
-  fill: { from: ["claimed"], to: "filled" },
+  fill: { from: ["open"], to: "filled" },
   withdraw: { from: ["open"], to: "withdrawn" },
-  break: { from: ["open", "claimed"], to: "broken" },
-  remove: { from: ["open", "claimed"], to: "removed" },
-  time_out: { from: ["claimed"], to: "timed_out" },
+  break: { from: ["open"], to: "broken" },
+  remove: { from: ["open"], to: "removed" },
 } as const satisfies Record<
   ListingEvent,
   { from: readonly ListingStatus[]; to: ListingStatus }
@@ -445,41 +435,21 @@ export function listingTransition(event: ListingEvent): {
 }
 
 /**
- * How a listing closes once objekts leave its pool, or null while the pool
- * still holds a unit: filled when any of its trades completed, else broken.
- * Completion and the drain's dropping of moved objekts both apply it.
+ * How an open listing closes once its pool can't make a unit, or null while
+ * it can, or while one of its trades is live, since that trade's outcome
+ * decides how it ends: filled when any of its trades completed, else broken.
+ * A live trade's objekts count toward the pool until it completes, and one
+ * that left the poster on its way to the claimer has already been dropped.
+ * Applied after a trade ends and after the drain drops departed objekts.
  */
 export function listingClosing(listing: {
   pool: number;
   unitSize: number;
+  live: boolean;
   completed: boolean;
 }): Extract<ListingEvent, "fill" | "break"> | null {
-  if (listing.pool >= listing.unitSize) return null;
+  if (listing.pool >= listing.unitSize || listing.live) return null;
   return listing.completed ? "fill" : "break";
-}
-
-/**
- * What happens to a claimed listing when its trade ends. A completed trade
- * fills it. Otherwise a banned poster's listing is removed, a timed-out
- * trade closes it, since neither side acted in time, and a cancelled one
- * releases it back to the poster: the caller reopens it if the poster still
- * holds every token, else breaks it. Only a release depends on the poster's holdings, so callers read them
- * only then. Live trades leave it alone.
- */
-export function listingEventAfter(
-  trade: TradeState,
-  poster: { banned: boolean },
-): Exclude<ListingEvent, "reopen"> | "release" | undefined {
-  switch (trade.status) {
-    case "completed":
-      return "fill";
-    case "cancelled":
-      return poster.banned ? "remove" : "release";
-    case "timed_out":
-      return poster.banned ? "remove" : "time_out";
-    default:
-      return undefined;
-  }
 }
 
 /**
@@ -493,8 +463,8 @@ export function endedTradeColumns(trade: TradeState) {
 }
 
 /**
- * The listings a trade's items came from, each with the tokens it offered,
- * which the listing's outcome applies to when the trade ends.
+ * The listings a trade's items came from, each with the tokens it took from
+ * that listing's pool, which a completion removes from the pool.
  */
 export function tradeListings(
   items: readonly Pick<TradeOfferItem, "listingId" | "tokenId">[],

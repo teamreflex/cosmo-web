@@ -39,6 +39,7 @@ import {
   refusePoster,
 } from "@/lib/server/trades/listings.server";
 import {
+  deliverableTokens,
   posterLinkColumns,
   posterRefusal,
   toPosterAccount,
@@ -70,7 +71,7 @@ import {
 import { rangeFilterSchema } from "@apollo/trades/range";
 import { isEqual } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, inArray, or, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, or, sql } from "drizzle-orm";
 
 /**
  * Post a trade listing from the caller's linked address. A token the poster
@@ -120,10 +121,11 @@ export const $postListing = createServerFn({ method: "POST" })
 
 /**
  * Replace the terms of the caller's open listing: the arrays, the pinned
- * address, the note, its items and its wants. Refusals follow a fixed
- * order: the poster, then the listing (missing or not theirs, claimed,
- * closed), then the wants, then the offered tokens. `created_at` never
- * changes, so the listing keeps its place in the feed.
+ * address, the unit size, the note, its items and its wants. Refusals
+ * follow a fixed order: the poster, then the listing (missing or not
+ * theirs, closed), then the wants, then the offered tokens. Its live trades
+ * keep their own copies of the objekts they took, whatever the edit drops.
+ * `created_at` never changes, so the listing keeps its place in the feed.
  */
 export const $editListing = createServerFn({ method: "POST" })
   .validator(editListingInputSchema)
@@ -165,7 +167,12 @@ export const $editListing = createServerFn({ method: "POST" })
         .where(eq(tradeOffers.id, data.listingId));
       await tx
         .delete(tradeOfferItems)
-        .where(eq(tradeOfferItems.offerId, data.listingId));
+        .where(
+          and(
+            eq(tradeOfferItems.offerId, data.listingId),
+            isNull(tradeOfferItems.leftAt),
+          ),
+        );
       await tx
         .delete(tradeListingWants)
         .where(eq(tradeListingWants.listingId, data.listingId));
@@ -175,9 +182,9 @@ export const $editListing = createServerFn({ method: "POST" })
   });
 
 /**
- * Close the caller's open listing. Anyone else's listing, and any trade
- * row, is not found whatever its status; the poster's own claimed or closed
- * listing says which.
+ * Close the caller's open listing; its live trades carry on. Anyone else's
+ * listing, and any trade row, is not found whatever its status; the
+ * poster's own closed listing says so.
  */
 export const $withdrawListing = createServerFn({ method: "POST" })
   .validator(listingIdInputSchema)
@@ -207,11 +214,13 @@ export const $withdrawListing = createServerFn({ method: "POST" })
   });
 
 /**
- * Accept a listing with the tokens the claimer picked, one list per want
- * row, as of the listing's `updated_at` they saw: exactly one trade per
- * listing, whoever else is accepting it. Every refusal is an ExpectedError
- * and writes nothing. The order they're checked in is fixed, so the same
- * request always gets the same answer.
+ * Accept some units of a listing: the poster's objekts the claimer picked
+ * from the pool and the tokens they give, one list per want row, as of the
+ * listing's `updated_at` they saw. Each claim is its own trade, and claims
+ * on one listing run side by side as long as they pick different objekts;
+ * a claimer holds one live trade per listing. Every refusal is an
+ * ExpectedError and writes nothing. The order they're checked in is fixed,
+ * so the same request always gets the same answer.
  */
 export const $claimListing = createServerFn({ method: "POST" })
   .validator(claimListingInputSchema)
@@ -333,9 +342,10 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
         note: true,
         fromUserId: true,
         fromAddress: true,
+        unitSize: true,
       },
       with: {
-        items: { orderBy: { id: "asc" } },
+        items: { where: { leftAt: { isNull: true } }, orderBy: { id: "asc" } },
         wants: { orderBy: { id: "asc" } },
         fromUser: { with: { cosmoAccount: posterLinkColumns } },
         fromCosmo: { columns: { username: true } },
@@ -352,8 +362,11 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
       { state },
     ] = await Promise.all([hydrateListings([row]), readListingState(row)]);
     if (!listing) return null;
+    // trade_offers_unit_size_chk: every listing has a unit size
+    if (row.unitSize === null) throw new Error(`listing ${row.id} has no unit`);
+    const { unitSize } = row;
     const tokenIds = listing.items.map((item) => item.tokenId);
-    // a claimed listing's trade runs on as agreed, so only an open one is judged
+    // only an open listing can be claimed, so only an open one is judged
     const flags =
       state.status === "open"
         ? await readWebTokenFlags(db, listing.fromAddress, tokenIds)
@@ -371,15 +384,15 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
       state,
       blocked:
         flags !== null &&
-        posterRefusal(
+        (posterRefusal(
           {
-            tokenIds,
             wantKinds: listing.wants.map((want) => want.kind),
-            holdings: { states, ...flags },
             poster: listing.fromUser && toPosterAccount(listing.fromUser),
           },
           listing.fromAddress,
-        ) !== null,
+        ) !== null ||
+          deliverableTokens(tokenIds, { states, ...flags }, listing.fromAddress)
+            .length < unitSize),
     };
   });
 

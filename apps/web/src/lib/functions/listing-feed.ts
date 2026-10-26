@@ -55,7 +55,7 @@ export const $fetchListingFeed = createServerFn({ method: "GET" })
         fromAddress: true,
       },
       with: {
-        items: { orderBy: { id: "asc" } },
+        items: { where: { leftAt: { isNull: true } }, orderBy: { id: "asc" } },
         wants: { orderBy: { id: "asc" } },
         fromUser: true,
         fromCosmo: { columns: { username: true } },

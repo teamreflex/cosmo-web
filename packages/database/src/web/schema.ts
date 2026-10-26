@@ -815,9 +815,12 @@ export const tradeOffers = pgTable(
  * disputed trade's tokens, so a token can be in one such trade at a time,
  * and a pool token with a live copy can't be picked by another claim.
  * Tokens copy their collection's indexer values verbatim, like the listing
- * arrays. An edit, or the drain dropping a token that left the poster,
- * updates the listing row in the same transaction. Claims and completions
- * don't, since the tokens they touch were already out of the free pool.
+ * arrays. A pool token given in a completed trade, or gone from the poster,
+ * is marked with `left_at` rather than deleted, so the listing keeps what it
+ * offered; an edit replaces only the tokens still in the pool. An edit, or
+ * the drain dropping a token that left the poster, updates the listing row
+ * in the same transaction. Claims and completions don't, since the tokens
+ * they touch were already out of the free pool.
  */
 export const tradeOfferItems = pgTable(
   "trade_offer_items",
@@ -849,6 +852,12 @@ export const tradeOfferItems = pgTable(
     txHash: varchar("tx_hash", { length: 66 }),
     markedPaidAt: tradeTimestamp("marked_paid_at"),
     confirmedAt: tradeTimestamp("confirmed_at"),
+    /**
+     * When a pool token left its listing's pool: given in one of the
+     * listing's completed trades, or gone from the poster. The row stays as
+     * the listing's history, and every read of the pool skips it.
+     */
+    leftAt: tradeTimestamp("left_at"),
   },
   (t) => [
     // one live trade per token, which also reserves a listing's picked tokens
@@ -866,6 +875,11 @@ export const tradeOfferItems = pgTable(
     check(
       "trade_offer_items_transfer_chk",
       sql`(${t.transferredAt} IS NULL) = (${t.txHash} IS NULL)`,
+    ),
+    // only a listing's own pool rows leave, which have no listing_id and are never live
+    check(
+      "trade_offer_items_left_chk",
+      sql`${t.leftAt} IS NULL OR (${t.listingId} IS NULL AND NOT ${t.live})`,
     ),
   ],
 );

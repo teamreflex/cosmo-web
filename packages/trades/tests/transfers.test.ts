@@ -204,6 +204,7 @@ describe.each([
     ).toEqual({
       trades: new Map(),
       breaks: new Map([["offer-1", { tokenId: 201, reason: "moved" }]]),
+      departed: new Map([["offer-1", [201]]]),
     });
   });
 });
@@ -285,6 +286,7 @@ describe("foldTransfers", () => {
         ],
       ]),
       breaks: new Map(),
+      departed: new Map(),
     });
   });
 
@@ -305,6 +307,7 @@ describe("foldTransfers", () => {
         ],
       ]),
       breaks: new Map(),
+      departed: new Map(),
     });
   });
 
@@ -318,6 +321,7 @@ describe("foldTransfers", () => {
         ],
       ]),
       breaks: new Map(),
+      departed: new Map(),
     });
   });
 
@@ -330,6 +334,7 @@ describe("foldTransfers", () => {
     ).toEqual({
       trades: new Map(),
       breaks: new Map([["listing-1", { tokenId: 201, reason: "moved" }]]),
+      departed: new Map([["listing-1", [201, 202]]]),
     });
   });
 
@@ -366,6 +371,7 @@ describe("foldTransfers", () => {
         ],
       ]),
       breaks: new Map([["listing-2", { tokenId: 201, reason: "moved" }]]),
+      departed: new Map([["listing-2", [201]]]),
     });
   });
 
@@ -375,7 +381,7 @@ describe("foldTransfers", () => {
         [move(201, OUTSIDER, KAIRU, 1), move(201, TRADER_B, OUTSIDER, 2)],
         expected(owed(201), offeredBy(201, "listing-1")),
       ),
-    ).toEqual({ trades: new Map(), breaks: new Map() });
+    ).toEqual({ trades: new Map(), breaks: new Map(), departed: new Map() });
   });
 
   describe("transferability (FOLD-08)", () => {
@@ -398,6 +404,7 @@ describe("foldTransfers", () => {
         breaks: new Map([
           ["listing-1", { tokenId: 202, reason: "untransferable" }],
         ]),
+        departed: new Map([["listing-1", [202]]]),
       });
     });
 
@@ -407,7 +414,7 @@ describe("foldTransfers", () => {
           [lock(201, true), lock(202, true), lock(203, true)],
           items,
         ),
-      ).toEqual({ trades: new Map(), breaks: new Map() });
+      ).toEqual({ trades: new Map(), breaks: new Map(), departed: new Map() });
     });
   });
 
@@ -438,6 +445,7 @@ describe("foldTransfers", () => {
           ],
         ]),
         breaks: new Map(),
+        departed: new Map(),
       });
     });
 
@@ -447,7 +455,7 @@ describe("foldTransfers", () => {
           [move(201, TRADER_B, KAIRU, 1), move(202, KAIRU, TRADER_B, 2)],
           items,
         ),
-      ).toEqual({ trades: new Map(), breaks: new Map() });
+      ).toEqual({ trades: new Map(), breaks: new Map(), departed: new Map() });
     });
 
     test("the claimer sending to another of their own addresses is a move", () => {
@@ -456,6 +464,7 @@ describe("foldTransfers", () => {
       ).toEqual({
         trades: new Map([["trade-1", [{ type: "token_moved", tokenId: 202 }]]]),
         breaks: new Map(),
+        departed: new Map(),
       });
     });
   });
@@ -504,6 +513,7 @@ describe("foldTransfers", () => {
     ).toEqual({
       trades: new Map(),
       breaks: new Map([["offer-1", { tokenId: 201, reason: "moved" }]]),
+      departed: new Map([["offer-1", [201]]]),
     });
   });
 
@@ -533,7 +543,7 @@ describe("foldTransfers", () => {
   test("leaves rows for tokens nobody expects alone", () => {
     expect(
       foldTransfers([move(999, KAIRU, OUTSIDER)], expected(owed(201))),
-    ).toEqual({ trades: new Map(), breaks: new Map() });
+    ).toEqual({ trades: new Map(), breaks: new Map(), departed: new Map() });
   });
 });
 

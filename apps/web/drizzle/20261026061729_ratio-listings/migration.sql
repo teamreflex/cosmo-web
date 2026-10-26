@@ -10,12 +10,14 @@ CREATE TABLE "trade_listing_want_options" (
 	CONSTRAINT "trade_listing_want_options_pkey" PRIMARY KEY("want_id","slug")
 );
 --> statement-breakpoint
+ALTER TABLE "trade_offer_items" ADD COLUMN "left_at" timestamp with time zone;--> statement-breakpoint
 ALTER TABLE "trade_offers" ADD COLUMN "unit_size" smallint;--> statement-breakpoint
 -- existing listings keep "all for all": one unit is every objekt they offer, and at least one, for listings left with none
 UPDATE "trade_offers" AS "o" SET "unit_size" = greatest((SELECT count(*) FROM "trade_offer_items" AS "i" WHERE "i"."offer_id" = "o"."id" AND "i"."kind" = 'objekt'), 1) WHERE "o"."kind" = 'listing';--> statement-breakpoint
 -- claims leave their listing open; a claimed listing's trade keeps its items live
 UPDATE "trade_offers" SET "status" = 'open' WHERE "kind" = 'listing' AND "status" = 'claimed';--> statement-breakpoint
 ALTER TABLE "trade_listing_want_options" ADD CONSTRAINT "trade_listing_want_options_want_id_trade_listing_wants_id_fkey" FOREIGN KEY ("want_id") REFERENCES "trade_listing_wants"("id") ON DELETE CASCADE;--> statement-breakpoint
+ALTER TABLE "trade_offer_items" ADD CONSTRAINT "trade_offer_items_left_chk" CHECK ("left_at" IS NULL OR ("listing_id" IS NULL AND NOT "live"));--> statement-breakpoint
 ALTER TABLE "trade_offers" ADD CONSTRAINT "trade_offers_unit_size_chk" CHECK (CASE "kind" WHEN 'listing' THEN coalesce("unit_size", 0) > 0 ELSE "unit_size" IS NULL END);--> statement-breakpoint
 ALTER TABLE "trade_listing_wants" DROP CONSTRAINT "trade_listing_wants_shape_chk", ADD CONSTRAINT "trade_listing_wants_shape_chk" CHECK (CASE "kind"
         WHEN 'exact' THEN coalesce("count", 0) > 0 AND num_nulls("slug", "artist", "member", "season", "class", "on_offline") = 0 AND num_nonnulls("artists", "members", "seasons", "classes", "on_offlines", "amount", "currency") = 0

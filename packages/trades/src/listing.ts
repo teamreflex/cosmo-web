@@ -201,17 +201,26 @@ export const editListingInputSchema = withListingRules(
 export type EditListingInput = z.output<typeof editListingInputSchema>;
 
 /**
- * Accept: one token list per want row as the picker showed them, and the
- * listing's `updated_at` as the claimer saw it.
+ * Accept: how many units the claim takes, the poster's objekts it picked
+ * from the pool (units times the unit size), one token list per want row as
+ * the picker showed them (each row's count times the units), and the
+ * listing's `updated_at` as the claimer saw it. The row and total caps bound
+ * one claim.
  */
 export const claimListingInputSchema = z
   .strictObject({
     listingId: listingIdSchema,
     seen: z.date(),
+    units: z.int().min(1).max(MAX_OFFERED),
+    picked: z.array(tokenIdSchema).min(1).max(MAX_OFFERED),
     rows: z
       .array(z.array(tokenIdSchema).min(1).max(MAX_PER_ROW))
       .min(1)
       .max(MAX_WANT_ROWS),
+  })
+  .refine(({ picked }) => isDistinct(picked), {
+    message: "Each objekt can only be picked once",
+    path: ["picked"],
   })
   .refine(({ rows }) => rows.flat().length <= MAX_TOTAL_WANTED, {
     message: `A claim can give at most ${MAX_TOTAL_WANTED} objekts`,

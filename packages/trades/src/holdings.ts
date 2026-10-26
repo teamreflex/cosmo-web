@@ -62,28 +62,6 @@ export function heldTokenRefusal(
 }
 
 /**
- * Whether the address still holds every token and can transfer it, which
- * decides if a released listing reopens or breaks. A lock doesn't break it,
- * since COSMO ignores Apollo's locks: the reopened listing shows as blocked
- * to claimers until the poster unlocks the token. A token missing from
- * `states` counts as not owned.
- */
-export function holdsAll(
-  tokenIds: readonly number[],
-  states: ReadonlyMap<number, TokenOwnership>,
-  address: string,
-) {
-  return tokenIds.every((tokenId) => {
-    const state = states.get(tokenId);
-    return (
-      state?.kind === "found" &&
-      state.owner === addr(address) &&
-      state.transferable
-    );
-  });
-}
-
-/**
  * A token's ownership with its serial, once the indexer knows it.
  */
 export type SerialOwnership =

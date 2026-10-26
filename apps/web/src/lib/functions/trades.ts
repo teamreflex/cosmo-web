@@ -342,8 +342,8 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
  * Cancel an accepted trade the caller is part of, while nothing has been
  * sent or marked paid and its deadline hasn't passed the drain's watermark.
  * A token already in its receiver's account counts as sent before the
- * drain records it. The listing reopens if the poster can still offer it,
- * else it breaks, and the other party is notified.
+ * drain records it. The poster's objekts are free in the listing's pool
+ * again, and the other party is notified.
  */
 export const $cancelTrade = createServerFn({ method: "POST" })
   .validator(tradeIdInputSchema)
@@ -387,7 +387,7 @@ export const $cancelTrade = createServerFn({ method: "POST" })
       );
       if (!result.ok) refuseTrade(partyRefusals[result.reason]);
 
-      await endTrade(tx, trade, result.trade, users, tokens);
+      await endTrade(tx, trade, result.trade);
       await insertTradeEvent(tx, trade.id, { type: "cancelled", by });
       await notifyUsers(
         tx,

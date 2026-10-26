@@ -5,9 +5,9 @@ export const tradeErrorCodes = [
   "listing_not_found",
   "listing_own",
   "listing_closed",
-  "listing_claimed",
-  "already_claimed",
   "listing_updated",
+  "listing_pick_unavailable",
+  "listing_claim_exists",
   "listing_unavailable",
   "listing_want_unknown",
   "listing_range_empty",
@@ -45,6 +45,16 @@ export const claimTokenRefusalSchema = z.object({
 });
 
 export type ClaimTokenRefusal = z.output<typeof claimTokenRefusalSchema>;
+
+/**
+ * The data a `listing_pick_unavailable` refusal carries when the server can
+ * tell which of the poster's objekts the claim picked is no longer free to
+ * give. One another claim made live during the claim's own insert goes
+ * unnamed.
+ */
+export const listingPickRefusalSchema = z.object({ tokenId: z.int() });
+
+export type ListingPickRefusal = z.output<typeof listingPickRefusalSchema>;
 
 /**
  * The data an `offer_unavailable` refusal carries when it was one of the

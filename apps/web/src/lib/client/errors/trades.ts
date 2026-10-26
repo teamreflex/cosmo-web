@@ -27,12 +27,12 @@ export function formatTradeError(error: unknown): string | null {
       return m.trade_error_listing_own();
     case "listing_closed":
       return m.trade_error_listing_closed();
-    case "listing_claimed":
-      return m.trade_error_listing_claimed();
-    case "already_claimed":
-      return m.trade_error_already_claimed();
     case "listing_updated":
       return m.trade_error_listing_updated();
+    case "listing_pick_unavailable":
+      return m.trade_error_listing_pick_unavailable();
+    case "listing_claim_exists":
+      return m.trade_error_listing_claim_exists();
     case "listing_unavailable":
       return m.trade_error_listing_unavailable();
     case "listing_want_unknown":
@@ -161,7 +161,8 @@ export function claimFailure(error: unknown): ClaimFailure | null {
   switch (error.message) {
     case "listing_updated":
       return { kind: "updated" };
-    case "already_claimed":
+    // a bundle takes the whole pool, so a pick another claim took means it lost the race
+    case "listing_pick_unavailable":
       return { kind: "claimed" };
     case "claim_token_unavailable": {
       const parsed =
