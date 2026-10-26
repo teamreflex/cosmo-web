@@ -36,9 +36,32 @@ const QuietHangUp = HttpRouter.middleware((httpEffect) =>
 ).layer;
 
 /**
+ * A response that was sent is logged at debug, which isn't printed at the
+ * default minimum level, in place of the request logger's info line. Failures
+ * still reach the request logger.
+ */
+const DebugResponseLog = HttpRouter.middleware(
+  (httpEffect) =>
+    Effect.gen(function* () {
+      const response = yield* httpEffect;
+      const { method, url } = yield* HttpServerRequest.HttpServerRequest;
+      yield* Effect.logDebug("Sent HTTP response").pipe(
+        Effect.annotateLogs({
+          "http.method": method,
+          "http.url": url,
+          "http.status": response.status,
+        }),
+      );
+      return yield* HttpMiddleware.withLoggerDisabled(Effect.succeed(response));
+    }),
+  { global: true },
+);
+
+/**
  * Chat's HTTP routes: the RPC websocket at /rpc, JSON over the socket and
- * behind the Origin check, and /health. main.ts serves them; the socket
- * test serves them on a random port.
+ * behind the Origin check, and /health. Any other path is a bot probing and
+ * gets a 404. main.ts serves them; the socket test serves them on a random
+ * port.
  */
 export const ChatRoutes = Layer.mergeAll(
   RpcServer.layerHttp({
@@ -47,4 +70,6 @@ export const ChatRoutes = Layer.mergeAll(
     protocol: "websocket",
   }).pipe(Layer.provide([OriginCheck, QuietHangUp])),
   HttpRouter.add("GET", "/health", HttpServerResponse.text("ok")),
+  HttpRouter.add("*", "*", HttpServerResponse.empty({ status: 404 })),
+  DebugResponseLog,
 ).pipe(Layer.provide(RpcSerialization.layerJson));
