@@ -63,12 +63,12 @@ type Props = {
  * side. From md the first line is offering → asking and the second the
  * type, age and poster; from lg each sits in its header's column.
  *
- * Offscreen rows skip layout and paint, so a long scroll stays smooth;
- * their height is estimated until first rendered.
+ * No `content-visibility: auto` here: WebKit never painted rows that first
+ * laid out under the market notice's scroll lock.
  */
 export default function ListingFeedRow({ row }: Props) {
   return (
-    <li className="transition-colors [contain-intrinsic-size:auto_11rem] [content-visibility:auto] md:border-t md:border-border/60 md:[contain-intrinsic-size:auto_5rem] md:first:border-t-0 md:hover:bg-secondary/50">
+    <li className="transition-colors md:border-t md:border-border/60 md:first:border-t-0 md:hover:bg-secondary/50">
       <Link
         to="/market/listing/$id"
         params={{ id: row.id }}
