@@ -16,6 +16,8 @@ RUN bun run --filter chat build
 
 FROM base AS runner
 WORKDIR /app
+# coolify's healthcheck needs curl or wget, busybox is static and acts as wget by name
+COPY --from=busybox:1.37-musl /bin/busybox /usr/local/bin/wget
 COPY --from=builder /app/apps/chat/dist ./dist
 COPY --from=builder /app/apps/chat/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
