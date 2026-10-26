@@ -32,8 +32,7 @@ export type ChatTrade = {
  * report or dispute that lets them in.
  */
 export type ChatAccess =
-  | { kind: "party"; side: TradeSide }
-  | { kind: "staff"; reportId: string };
+  { kind: "party"; side: TradeSide } | { kind: "staff"; reportId: string };
 
 // a conversation opens once an offer is accepted and stays readable after it ends
 const chatStatuses: readonly TradeOfferStatus[] = [

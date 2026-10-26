@@ -3,7 +3,7 @@ import { defineConfig } from "oxlint";
 
 export default defineConfig({
   extends: [baseConfig],
-  plugins: ["typescript", "react", "import", "unicorn"],
+  plugins: ["typescript", "react", "import", "unicorn", "jest"],
   jsPlugins: [
     "eslint-plugin-drizzle",
     "@tanstack/eslint-plugin-query",

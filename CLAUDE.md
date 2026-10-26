@@ -45,12 +45,8 @@ Detailed conventions live in `docs/`. Read the relevant file **before** working 
 - The project uses [oxlint](https://oxc.rs/docs/guide/usage/linter.html) instead of eslint, and [`bun fmt`](https://bun.com/docs/format) instead of Prettier. Do not manually use eslint or Prettier.
 - `bun fmt` is configured by the `[fmt]` section of the root `bunfig.toml`, including `ignorePatterns` for generated files and an `apps/web/**` override for Tailwind class sorting. `bun fmt` has no language server: Zed formats on save through `bun fmt --stdin-filepath`, and VS Code has no format-on-save.
 - `.githooks/pre-commit` runs `bun fmt --staged`, which formats staged files and restages them. It blocks the commit when a staged file needs formatting but also has unstaged changes (stage the rest or `git stash --keep-index`), or when a staged file has a syntax error. The root `prepare` script points `core.hooksPath` at `.githooks` on `bun install`.
-- oxlint `extends` **overwrites** the `plugins` array (no merge). The shared base config (`packages/lint`) intentionally omits `react`; `apps/web` enables it and must therefore repeat the full plugin set `["typescript", "react", "import", "unicorn"]` — trimming it to `["react"]` silently drops the rest.
+- oxlint `extends` **overwrites** the `plugins` array (no merge). The shared base config (`packages/lint`) intentionally omits `react`; `apps/web` enables it and must therefore repeat the full plugin set `["typescript", "react", "import", "unicorn", "jest"]` — trimming it to `["react"]` silently drops the rest.
 - Typecheck scripts run `bun check`, which reports exactly what `tsc` reports for the TypeScript 7 version built into the installed Bun (`bun -p process.versions.typescript`). Keep the root catalog's `typescript` on that same version: the editor (`js/ts.tsdk.path`) and `apps/indexer`'s `build` (`tsc -p tsconfig.build.json`, for the TypeORM decorator emit via `experimentalDecorators` + metadata) still use it. TS7 has no compiler API — don't introduce tooling that imports `typescript` and calls `createProgram()`/`emit()`.
-
-### Deployment
-
-- Production runs on Railway, where every environment variable change triggers a redeploy. Rename, remove or newly require a variable in three steps: add the new variable (the running code ignores it), deploy code that reads it, then remove the old variable once nothing reads it. An optional variable whose default reproduces production behaviour needs no steps. Dev-only files (`docker-compose.yml`, `.env.example`) can change freely.
 
 ### Project Structure
 
