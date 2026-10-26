@@ -28,6 +28,8 @@ export const ac = createAccessControl(statement);
 
 export const roles = {
   user: ac.newRole({}),
+  // market access alone, for people trying the market before it opens to everyone
+  tester: ac.newRole({ market: statement.market }),
   moderator: ac.newRole({
     market: statement.market,
     trade: statement.trade,
@@ -58,6 +60,7 @@ export const marketAccess = { market: ["access"] } satisfies Permissions;
 
 export const roleNames = [
   "user",
+  "tester",
   "moderator",
   "admin",
 ] as const satisfies readonly Role[];

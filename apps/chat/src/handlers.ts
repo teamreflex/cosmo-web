@@ -72,15 +72,19 @@ export const HandlersLive = ChatRpcs.toLayer(
         ),
       );
 
+    // staff writing from a report's page pass it, so their access names that report
     const readAccess = Effect.fn("chat/readAccess")(function* (
       viewer: ChatViewer,
       tradeId: string,
+      reportId: string | null = null,
     ) {
       const trade = yield* unavailable(store.trade(tradeId));
       if (trade === null) {
         return yield* new ChatNotFound();
       }
-      const openReport = yield* unavailable(store.openReport(tradeId));
+      const openReport = yield* unavailable(
+        store.openReport(tradeId, reportId),
+      );
       const access = yield* canJoinChat(viewer, trade, openReport);
       return { trade, access };
     });
@@ -175,10 +179,14 @@ export const HandlersLive = ChatRpcs.toLayer(
           }),
         ),
 
-      Send: ({ tradeId, body }) =>
+      Send: ({ tradeId, body, reportId }) =>
         Effect.gen(function* () {
           const viewer = yield* CurrentUser;
-          const { trade, access } = yield* readAccess(viewer, tradeId);
+          const { trade, access } = yield* readAccess(
+            viewer,
+            tradeId,
+            reportId,
+          );
           const as = yield* canSendChat(viewer, access, trade);
           yield* consume(`chat:send:${viewer.userId}`, 10, "10 seconds");
 
@@ -240,23 +248,25 @@ export const HandlersLive = ChatRpcs.toLayer(
           return { reportId };
         }),
 
-      Remove: ({ messageId }) =>
+      Remove: ({ messageId, reportId }) =>
         Effect.gen(function* () {
           const viewer = yield* CurrentUser;
           const row = yield* unavailable(store.row(messageId));
           if (row === null || row.kind === "event") {
             return yield* new MessageNotFound();
           }
-          const { access } = yield* readAccess(viewer, row.tradeId).pipe(
-            Effect.catchTag("ChatNotFound", () => new MessageNotFound()),
-          );
-          const reportId = yield* canRemoveMessage(viewer, access);
+          const { access } = yield* readAccess(
+            viewer,
+            row.tradeId,
+            reportId,
+          ).pipe(Effect.catchTag("ChatNotFound", () => new MessageNotFound()));
+          const accessReportId = yield* canRemoveMessage(viewer, access);
           yield* unavailable(
             store.removeMessage({
               messageId,
               tradeId: row.tradeId,
               staffId: viewer.userId,
-              reportId,
+              reportId: accessReportId,
             }),
           );
           yield* channels.changed(row.tradeId);

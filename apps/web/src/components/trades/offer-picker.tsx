@@ -6,10 +6,12 @@ import type { OfferSerials } from "@/lib/universal/trades";
 import { cn } from "@/lib/utils";
 import { MAX_OFFERED } from "@apollo/trades/caps";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
+import { IconRefresh } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { PickerCardFace } from "../objekt-picker/picker-grid";
 import SelectableCard from "../trade-listings/selectable-card";
+import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import {
   type OfferCard,
@@ -249,6 +251,20 @@ export function OfferColumnsSkeleton() {
           <Skeleton className="aspect-photocard w-full rounded-photocard" />
         </div>
       ))}
+    </div>
+  );
+}
+
+// the copies behind an offer's cards failed to load
+export function OfferColumnsError({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <p className="text-sm text-muted-foreground">
+        {m.list_matches_serials_error()}
+      </p>
+      <Button variant="outline" size="sm" onClick={onRetry}>
+        <IconRefresh /> {m.common_retry()}
+      </Button>
     </div>
   );
 }

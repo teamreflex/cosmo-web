@@ -9,7 +9,6 @@ import { refusePoster } from "@/lib/server/trades/listings.server";
 import {
   insertOffer,
   preflightOffer,
-  readOfferSerials,
   recheckOffer,
 } from "@/lib/server/trades/offer.server";
 import {
@@ -28,10 +27,8 @@ import type { AuthErrorCode } from "@/lib/universal/errors/auth";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import {
   endOfferInputSchema,
-  offerSerialsInputSchema,
   tradeIdInputSchema,
 } from "@/lib/universal/schema/trades";
-import type { OfferSerials } from "@/lib/universal/trades";
 import { tradeOfferItems } from "@apollo/database/web/schema";
 import type { TradeSide } from "@apollo/database/web/types";
 import {
@@ -41,22 +38,6 @@ import {
 import { CLAIM_WINDOW } from "@apollo/trades/timers";
 import { createServerFn } from "@tanstack/react-start";
 import { eq, sql } from "drizzle-orm";
-
-/**
- * The copy of each collection a Trade Matches offer to the partner would
- * trade (readOfferSerials). $sendOffer re-checks whatever changes after
- * this.
- */
-export const $fetchOfferSerials = createServerFn({ method: "GET" })
-  .validator(offerSerialsInputSchema)
-  .middleware([cosmoMiddleware])
-  .handler(({ data, context }): Promise<OfferSerials> =>
-    readOfferSerials(
-      { userId: context.session.user.id, address: context.cosmo.address },
-      data.partnerId,
-      data,
-    ),
-  );
 
 /**
  * Send a direct offer from Trade Matches: the caller's `give` tokens for the

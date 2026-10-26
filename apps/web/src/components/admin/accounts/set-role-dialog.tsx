@@ -132,8 +132,10 @@ function AccountRole({ account, onDone }: AccountRoleProps) {
     );
   }
 
+  // a stale lookup refetches underneath the form, so remount it to start from the fresh role
   return (
     <RoleForm
+      key={target.role}
       username={staffUserText({ kind: "cosmo", username: account.nickname })}
       target={target}
       onDone={onDone}

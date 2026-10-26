@@ -114,17 +114,19 @@ export function memoryStoreLayer(state: MemoryState) {
     session: (sessionId) =>
       Effect.sync(() => state.sessions.get(sessionId) ?? null),
     trade: (tradeId) => Effect.sync(() => state.trades.get(tradeId) ?? null),
-    openReport: (tradeId) =>
+    openReport: (tradeId, preferredId) =>
       Effect.sync(() => {
-        const report = state.reports.find(
+        const open = state.reports.filter(
           (each) =>
             isOpen(each) &&
             ((each.targetType === "trade" && each.targetId === tradeId) ||
               (each.targetType === "message" &&
                 state.copies.get(each.id)?.tradeId === tradeId)),
         );
+        const report = open.find((each) => each.id === preferredId) ?? open[0];
         return report?.id ?? null;
       }),
+
     rowsAfter: (tradeId, afterId, limit) =>
       Effect.sync(() =>
         state.rows

@@ -775,7 +775,7 @@ export const tradeOffers = pgTable(
     ),
     check(
       "trade_offers_accepted_chk",
-      sql`${t.status} NOT IN ('accepted', 'disputed', 'completed', 'timed_out') OR (${t.deadlineAt} IS NOT NULL AND ${t.acceptedAt} IS NOT NULL)`,
+      sql`${t.kind} = 'listing' OR ${t.status} NOT IN ('accepted', 'disputed', 'completed', 'timed_out') OR (${t.deadlineAt} IS NOT NULL AND ${t.acceptedAt} IS NOT NULL)`,
     ),
     check(
       "trade_offers_pending_chk",

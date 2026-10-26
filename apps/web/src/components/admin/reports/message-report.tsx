@@ -9,7 +9,7 @@ import type {
   AdminReportDetail,
   ReportTargetMessage,
 } from "@/lib/universal/reports";
-import { useAtomSet, useAtomValue } from "@effect/atom-react";
+import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Exit, Redacted } from "effect";
@@ -29,6 +29,7 @@ type Props = {
  */
 export default function MessageReport({ report, message }: Props) {
   const result = useAtomValue(reportedMessageAtom(report.id));
+  const retry = useAtomRefresh(reportedMessageAtom(report.id));
   const open = report.status === "open" || report.status === "escalated";
 
   return (
@@ -41,9 +42,19 @@ export default function MessageReport({ report, message }: Props) {
           {Redacted.value(result.value.body)}
         </blockquote>
       ) : AsyncResult.isFailure(result) ? (
-        <p className="text-sm text-muted-foreground">
-          {m.admin_reports_message_unavailable()}
-        </p>
+        <div className="flex items-center gap-3">
+          <p className="flex-1 text-sm text-muted-foreground">
+            {m.admin_reports_message_unavailable()}
+          </p>
+          <Button
+            variant="outline"
+            size="xs"
+            disabled={result.waiting}
+            onClick={retry}
+          >
+            {m.chat_try_again()}
+          </Button>
+        </div>
       ) : (
         <Skeleton className="h-12 rounded-md" />
       )}
@@ -52,10 +63,15 @@ export default function MessageReport({ report, message }: Props) {
           {m.admin_reports_message_removed()}
         </p>
       ) : (
-        open && <RemoveMessage messageId={message.id} />
+        open && <RemoveMessage messageId={message.id} reportId={report.id} />
       )}
       {message.trade !== null && (
-        <ChatPanel trade={message.trade} side={null} className="h-96" />
+        <ChatPanel
+          trade={message.trade}
+          side={null}
+          reportId={report.id}
+          className="h-96"
+        />
       )}
     </>
   );
@@ -65,7 +81,13 @@ export default function MessageReport({ report, message }: Props) {
  * Blanks the message in the chat and posts a staff event there. The report
  * stays open until staff resolve it.
  */
-function RemoveMessage({ messageId }: { messageId: number }) {
+function RemoveMessage({
+  messageId,
+  reportId,
+}: {
+  messageId: number;
+  reportId: string;
+}) {
   const hasPermission = useHasPermission();
   const queryClient = useQueryClient();
   const remove = useAtomSet(ChatClient.mutation("Remove"), {
@@ -77,7 +99,8 @@ function RemoveMessage({ messageId }: { messageId: number }) {
 
   function handleRemove() {
     startTransition(async () => {
-      const exit = await remove({ payload: { messageId } });
+      const exit = await remove({ payload: { messageId, reportId } });
+
       if (Exit.isSuccess(exit)) {
         toast.success(m.admin_reports_message_removed_toast());
         await queryClient.invalidateQueries(adminReportsQueryFilter);

@@ -72,8 +72,16 @@ export const Join = Rpc.make("Join", {
   stream: true,
 });
 
+/**
+ * Staff writing from a report's page pass its id, so the message is audited
+ * under that report while it's open on the trade.
+ */
 export const Send = Rpc.make("Send", {
-  payload: { tradeId: TradeId, body: MessageBody },
+  payload: {
+    tradeId: TradeId,
+    body: MessageBody,
+    reportId: Schema.optionalKey(ReportId),
+  },
   success: Schema.Struct({ messageId: MessageId }),
   error: Schema.Union([
     ChatNotFound,
@@ -102,9 +110,10 @@ export const Report = Rpc.make("Report", {
   ]),
 });
 
-// staff remove a message from a trade whose chat they may read
+// staff remove a message from a trade whose chat they may read, audited as Send is
 export const Remove = Rpc.make("Remove", {
-  payload: { messageId: MessageId },
+  payload: { messageId: MessageId, reportId: Schema.optionalKey(ReportId) },
+
   error: Schema.Union([
     MessageNotFound,
     Forbidden,

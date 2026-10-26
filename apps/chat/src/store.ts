@@ -14,10 +14,11 @@ import type {
   MessageReportReason,
   TradeEvent,
 } from "@apollo/database/web/types";
-import { DatabaseWeb } from "@apollo/services/database-web";
+import { DatabaseWeb, type WebTx } from "@apollo/services/database-web";
 import {
   and,
   asc,
+  desc,
   eq,
   exists,
   gt,
@@ -105,9 +106,13 @@ export class ChatStore extends Context.Service<
     readonly trade: (tradeId: string) => Store<StoredTrade | null>;
     /**
      * An open or escalated report on the trade (a dispute) or on one of its
-     * messages: what lets staff read the chat.
+     * messages: what lets staff read the chat. `preferredId` wins while it's
+     * one of them (the report staff act from), else the oldest.
      */
-    readonly openReport: (tradeId: string) => Store<string | null>;
+    readonly openReport: (
+      tradeId: string,
+      preferredId: string | null,
+    ) => Store<string | null>;
     readonly rowsAfter: (
       tradeId: string,
       afterId: number,
@@ -187,6 +192,17 @@ function toStoredRow({ event, byStaff, staffName, ...row }: Row): StoredRow {
   return { ...row, kind: "text", staff: byStaff ? { name: staffName } : null };
 }
 
+/**
+ * Locks the trade row the way web and schedules writes do before they add
+ * timeline events, so writes to one trade's messages run one at a time.
+ */
+const lockTrade = (tx: WebTx, tradeId: string) =>
+  tx
+    .select({ id: tradeOffers.id })
+    .from(tradeOffers)
+    .where(eq(tradeOffers.id, tradeId))
+    .for("no key update");
+
 const failed = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
   effect.pipe(
     Effect.tapError((error) =>
@@ -248,7 +264,7 @@ function makeDrizzleStore(db: DatabaseWeb["Service"]): ChatStore["Service"] {
           failed,
         ),
 
-    openReport: (tradeId) =>
+    openReport: (tradeId, preferredId) =>
       db
         .select({ id: reports.id })
         .from(reports)
@@ -277,7 +293,10 @@ function makeDrizzleStore(db: DatabaseWeb["Service"]): ChatStore["Service"] {
             ),
           ),
         )
-        .orderBy(asc(reports.createdAt))
+        .orderBy(
+          desc(sql`${reports.id} = ${preferredId}`),
+          asc(reports.createdAt),
+        )
         .limit(1)
         .pipe(
           Effect.map(([row]) => row?.id ?? null),
@@ -311,6 +330,20 @@ function makeDrizzleStore(db: DatabaseWeb["Service"]): ChatStore["Service"] {
       db
         .transaction((tx) =>
           Effect.gen(function* () {
+            /**
+             * Users before the trade (docs/auth.md, Lock order), for the
+             * notifications' foreign keys. Every writer of a trade's messages
+             * holds its trade row, so ids commit in order and a live stream
+             * reading past its last id never skips one. A recipient whose
+             * account was deleted since the trade was read is skipped.
+             */
+            const present = yield* tx
+              .select({ id: user.id })
+              .from(user)
+              .where(inArray(user.id, [senderId, ...recipientIds]))
+              .orderBy(asc(user.id))
+              .for("key share");
+            yield* lockTrade(tx, tradeId);
             const [inserted] = yield* tx
               .insert(tradeMessages)
               .values({
@@ -323,7 +356,9 @@ function makeDrizzleStore(db: DatabaseWeb["Service"]): ChatStore["Service"] {
               .returning({ id: tradeMessages.id });
             const messageId = inserted?.id ?? 0;
             for (const recipientId of recipientIds) {
+              if (!present.some((row) => row.id === recipientId)) continue;
               const unread = yield* tx
+
                 .select({ id: notifications.id })
                 .from(notifications)
                 .where(
@@ -406,6 +441,7 @@ function makeDrizzleStore(db: DatabaseWeb["Service"]): ChatStore["Service"] {
       db
         .transaction((tx) =>
           Effect.gen(function* () {
+            yield* lockTrade(tx, tradeId);
             const removed = yield* tx
               .update(tradeMessages)
               .set({ body: null, removedAt: new Date() })

@@ -1,5 +1,7 @@
-import { $fetchCounterMatches } from "@/lib/functions/lists";
-import { $fetchOfferSerials } from "@/lib/functions/trade-offers";
+import {
+  $fetchCounterMatches,
+  $fetchOfferSerials,
+} from "@/lib/functions/lists";
 import { $fetchMyTrades, $fetchTrade } from "@/lib/functions/trades";
 import type { MyTradesCursor, MyTradesTab } from "@/lib/universal/trades";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
@@ -25,18 +27,14 @@ export const tradeQuery = (id: string) =>
   });
 
 /**
- * The copies a direct offer to the partner would trade, for the
- * collections each side would give.
+ * The copies a direct offer to a Trade Matches partner would trade, for
+ * the collections each side would give.
  */
-export const offerSerialsQuery = (
-  partnerId: string,
-  give: string[],
-  get: string[],
-) =>
+export const offerSerialsQuery = (listId: string, partnerId: string) =>
   queryOptions({
-    queryKey: [...tradesKey, "offer-serials", partnerId, { give, get }],
+    queryKey: [...tradesKey, "offer-serials", listId, partnerId],
     queryFn: ({ signal }) =>
-      $fetchOfferSerials({ signal, data: { partnerId, give, get } }),
+      $fetchOfferSerials({ signal, data: { listId, partnerId } }),
     staleTime: 1000 * 60,
   });
 

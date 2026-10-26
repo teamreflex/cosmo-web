@@ -13,7 +13,12 @@ import { ErrorBoundary } from "react-error-boundary";
 import TradeSheet from "../trade-listings/trade-sheet";
 import { Button } from "../ui/button";
 import { Spinner } from "../ui/spinner";
-import { OfferBar, OfferColumns, OfferColumnsSkeleton } from "./offer-picker";
+import {
+  OfferBar,
+  OfferColumns,
+  OfferColumnsError,
+  OfferColumnsSkeleton,
+} from "./offer-picker";
 import {
   dropToken,
   type OfferCard,
@@ -131,7 +136,9 @@ export default function CounterOfferSheet({
       }
       closeDisabled={send.isPending}
       open={open}
-      onOpenChange={onOpenChange}
+      onOpenChange={(next) => {
+        if (!send.isPending) onOpenChange(next);
+      }}
       onOpenChangeComplete={(next) => {
         if (!next) setPicks(original);
       }}
@@ -150,10 +157,8 @@ export default function CounterOfferSheet({
           {({ reset }) => (
             <ErrorBoundary
               onReset={reset}
-              fallbackRender={() => (
-                <p className="text-sm text-muted-foreground">
-                  {m.list_matches_serials_error()}
-                </p>
+              fallbackRender={({ resetErrorBoundary }) => (
+                <OfferColumnsError onRetry={resetErrorBoundary} />
               )}
             >
               <Suspense fallback={<OfferColumnsSkeleton />}>

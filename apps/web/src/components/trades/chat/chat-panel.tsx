@@ -109,6 +109,8 @@ type Props = {
   trade: TradeView;
   // the viewer's side, or null for staff
   side: TradeSide | null;
+  // the report page staff read it from, which their messages are audited under
+  reportId?: string;
   // a message from the other party or staff arrived after the history
   onIncoming?: () => void;
   className?: string;
@@ -124,6 +126,7 @@ type Props = {
 export default function ChatPanel({
   trade,
   side,
+  reportId,
   onIncoming,
   className,
 }: Props) {
@@ -209,6 +212,7 @@ export default function ChatPanel({
             <Conversation
               trade={trade}
               side={side}
+              reportId={reportId}
               canSend={canSend}
               items={conversation.items}
             />
@@ -292,12 +296,15 @@ function ConnectionBanner({
 function Conversation({
   trade,
   side,
+  reportId,
   canSend,
   items,
 }: {
   trade: TradeView;
   side: TradeSide | null;
+  reportId: string | undefined;
   canSend: boolean;
+
   items: Conversation["items"];
 }) {
   const [reporting, setReporting] = useState<ChatMessage | null>(null);
@@ -338,7 +345,11 @@ function Conversation({
           <LatestButton items={items} side={side} />
         </MessageScroller>
         {canSend ? (
-          <Composer tradeId={trade.id} staff={side === null} />
+          <Composer
+            tradeId={trade.id}
+            staff={side === null}
+            reportId={reportId}
+          />
         ) : (
           <ReadOnlyNote trade={trade} side={side} />
         )}
@@ -632,7 +643,15 @@ const COUNTER_FROM = MAX_MESSAGE_LENGTH * 0.9;
  * the limit nears. Staff are reminded that both parties read what they
  * write.
  */
-function Composer({ tradeId, staff }: { tradeId: string; staff: boolean }) {
+function Composer({
+  tradeId,
+  staff,
+  reportId,
+}: {
+  tradeId: string;
+  staff: boolean;
+  reportId: string | undefined;
+}) {
   const label = staff ? m.chat_composer_staff() : m.chat_composer_label();
   const id = useId();
   const queryClient = useQueryClient();
@@ -649,7 +668,11 @@ function Composer({ tradeId, staff }: { tradeId: string; staff: boolean }) {
     if (body === "" || tooLong || pending) return;
     startTransition(async () => {
       const exit = await send({
-        payload: { tradeId, body: Redacted.make(body) },
+        payload: {
+          tradeId,
+          body: Redacted.make(body),
+          ...(reportId !== undefined && { reportId }),
+        },
       });
       if (Exit.isSuccess(exit)) {
         setText("");

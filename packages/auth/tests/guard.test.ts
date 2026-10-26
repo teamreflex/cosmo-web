@@ -142,8 +142,11 @@ describe("isDemotion", () => {
    * Written out by hand so a new role has to take a place in the ranking.
    */
   const demotions = [
+    ["tester", "user"],
     ["moderator", "user"],
+    ["moderator", "tester"],
     ["admin", "user"],
+    ["admin", "tester"],
     ["admin", "moderator"],
   ] satisfies [Role, Role][];
 

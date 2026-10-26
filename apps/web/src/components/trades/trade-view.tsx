@@ -138,6 +138,8 @@ function PartyView({
     cancel: cancel.ok,
     dispute: partyAction(trade.state, { type: "dispute", by: side }, facts).ok,
   };
+  // an action the trade no longer offers closes its dialog for good
+  if (dialog !== null && !offered[dialog]) setDialog(null);
   const bar = copyName !== null || offered.cancel || offered.dispute;
   // Copy takes its own row in the phone bar when Cancel and Dispute join it
   const barRows = copyName !== null && offered.cancel ? 2 : 1;
@@ -216,7 +218,7 @@ function PartyView({
         listingId={trade.listingId}
         side={side}
         name={partyName(counterparty)}
-        open={dialog === "cancel" && offered.cancel}
+        open={dialog === "cancel"}
         onOpenChange={(open) => setDialog(open ? "cancel" : null)}
       />
       <OpenDisputeDialog
@@ -224,7 +226,7 @@ function PartyView({
         listingId={trade.listingId}
         deadline={trade.deadlineAt}
         hasPayment={trade.items.some((item) => item.kind === "payment")}
-        open={dialog === "dispute" && offered.dispute}
+        open={dialog === "dispute"}
         onOpenChange={(open) => setDialog(open ? "dispute" : null)}
       />
     </>
@@ -329,6 +331,8 @@ function StaffView({
   const canCancel = hasPermission({ trade: ["cancel-any"] });
   const cancellable =
     canCancel && transition(trade.state, { type: "staff_cancel" }).ok;
+  // once the trade can't be cancelled, the dialog closes for good
+  if (cancelOpen && !cancellable) setCancelOpen(false);
 
   return (
     <>
@@ -379,7 +383,7 @@ function StaffView({
           tradeId={trade.id}
           listingId={trade.listingId}
           reportId={report?.id ?? null}
-          open={cancelOpen && cancellable}
+          open={cancelOpen}
           onOpenChange={setCancelOpen}
         />
       )}

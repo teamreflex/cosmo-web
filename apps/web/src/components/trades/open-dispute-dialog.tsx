@@ -69,19 +69,11 @@ export default function OpenDisputeDialog({
     mutationFn: $openDispute,
     onSuccess: () => {
       toast.success(m.trade_page_dispute_opened());
-      handleOpenChange(false);
+      onOpenChange(false);
     },
     onError: (error) => toast.error(formatError(error)),
     onSettled: invalidateTrade,
   });
-
-  function handleOpenChange(next: boolean) {
-    onOpenChange(next);
-    if (!next) {
-      form.reset();
-      mutation.reset();
-    }
-  }
 
   const reasonItems = disputeReasons
     .filter((reason) => hasPayment || reason !== "payment_not_received")
@@ -92,7 +84,13 @@ export default function OpenDisputeDialog({
       open={open}
       // the dispute can't be called back, so the dialog waits for its answer
       onOpenChange={(next) => {
-        if (!mutation.isPending) handleOpenChange(next);
+        if (!mutation.isPending) onOpenChange(next);
+      }}
+      // however it closed, the trade page included, the next dispute starts empty
+      onOpenChangeComplete={(next) => {
+        if (next) return;
+        form.reset();
+        mutation.reset();
       }}
     >
       <DialogContent>

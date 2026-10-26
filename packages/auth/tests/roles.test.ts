@@ -6,11 +6,11 @@ import {
   adminPluginOptions,
   can,
   parseRole,
+  type Permissions,
+  type Role,
   roleNames,
   roles,
   statement,
-  type Permissions,
-  type Role,
 } from "../src/index";
 
 /**
@@ -32,67 +32,67 @@ const auth = betterAuth({
 const rows = [
   {
     permissions: { market: ["access"] },
-    expected: { user: false, moderator: true, admin: true },
+    expected: { user: false, tester: true, moderator: true, admin: true },
   },
   {
     permissions: { trade: ["read-any"] },
-    expected: { user: false, moderator: true, admin: true },
+    expected: { user: false, tester: false, moderator: true, admin: true },
   },
   {
     permissions: { trade: ["cancel-any"] },
-    expected: { user: false, moderator: true, admin: true },
+    expected: { user: false, tester: false, moderator: true, admin: true },
   },
   {
     permissions: { trade: ["resolve-dispute"] },
-    expected: { user: false, moderator: true, admin: true },
+    expected: { user: false, tester: false, moderator: true, admin: true },
   },
   {
     permissions: { trade: ["remove-message"] },
-    expected: { user: false, moderator: true, admin: true },
+    expected: { user: false, tester: false, moderator: true, admin: true },
   },
   {
     permissions: { trade: ["message"] },
-    expected: { user: false, moderator: true, admin: true },
+    expected: { user: false, tester: false, moderator: true, admin: true },
   },
   {
     permissions: { listing: ["remove-any"] },
-    expected: { user: false, moderator: true, admin: true },
+    expected: { user: false, tester: false, moderator: true, admin: true },
   },
   {
     permissions: { feedback: ["remove-any"] },
-    expected: { user: false, moderator: true, admin: true },
+    expected: { user: false, tester: false, moderator: true, admin: true },
   },
   {
     permissions: { report: ["read"] },
-    expected: { user: false, moderator: true, admin: true },
+    expected: { user: false, tester: false, moderator: true, admin: true },
   },
   {
     permissions: { report: ["resolve"] },
-    expected: { user: false, moderator: true, admin: true },
+    expected: { user: false, tester: false, moderator: true, admin: true },
   },
   {
     permissions: { report: ["escalate"] },
-    expected: { user: false, moderator: true, admin: true },
+    expected: { user: false, tester: false, moderator: true, admin: true },
   },
   {
     permissions: { user: ["ban"] },
-    expected: { user: false, moderator: false, admin: true },
+    expected: { user: false, tester: false, moderator: false, admin: true },
   },
   {
     permissions: { user: ["set-role"] },
-    expected: { user: false, moderator: false, admin: true },
+    expected: { user: false, tester: false, moderator: false, admin: true },
   },
   {
     permissions: { site: ["manage"] },
-    expected: { user: false, moderator: false, admin: true },
+    expected: { user: false, tester: false, moderator: false, admin: true },
   },
   {
     permissions: { audit: ["read"] },
-    expected: { user: false, moderator: false, admin: true },
+    expected: { user: false, tester: false, moderator: false, admin: true },
   },
   {
     permissions: { cosmo: ["history"] },
-    expected: { user: false, moderator: false, admin: true },
+    expected: { user: false, tester: false, moderator: false, admin: true },
   },
 ] satisfies readonly {
   permissions: Permissions;

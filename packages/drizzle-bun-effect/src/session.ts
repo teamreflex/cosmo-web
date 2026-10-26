@@ -113,7 +113,18 @@ export class BunSQLEffectSession<
             mode === "arrays"
               ? client.unsafe<unknown>(query.sql, params).values()
               : client.unsafe<unknown>(query.sql, params);
-          signal.addEventListener("abort", () => q.cancel(), { once: true });
+          /**
+           * An interrupted fiber no longer awaits the query, so its rejection
+           * from the cancel is handled here; unhandled, Bun exits the process.
+           */
+          signal.addEventListener(
+            "abort",
+            () => {
+              q.catch(() => {});
+              void q.cancel();
+            },
+            { once: true },
+          );
           return q;
         },
         catch: (cause) =>

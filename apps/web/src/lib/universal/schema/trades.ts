@@ -53,16 +53,11 @@ export const myTradesInputSchema = z.strictObject({
   cursor: myTradesCursorSchema.optional(),
 });
 
-// the most collections a side of one offer-serials request may name
+// the most collections a side of one offer's serials are read for
 export const MAX_OFFER_SERIAL_SLUGS = 200;
 
-/**
- * The collections Trade Matches shows for one partner, up to
- * MAX_OFFER_SERIAL_SLUGS a side: the caller's (`give`) and the partner's
- * (`get`).
- */
+// a Trade Matches partner, as matched against the caller's anchor list
 export const offerSerialsInputSchema = z.strictObject({
+  listId: z.uuid(),
   partnerId: z.string().min(1),
-  give: z.array(z.string().min(1)).max(MAX_OFFER_SERIAL_SLUGS),
-  get: z.array(z.string().min(1)).max(MAX_OFFER_SERIAL_SLUGS),
 });

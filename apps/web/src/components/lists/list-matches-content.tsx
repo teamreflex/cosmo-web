@@ -3,7 +3,6 @@ import { listMatchesQuery } from "@/lib/queries/objekt-queries";
 import { offerSerialsQuery } from "@/lib/queries/trades";
 import type { TradePartner } from "@/lib/universal/lists";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import { MAX_OFFER_SERIAL_SLUGS } from "@/lib/universal/schema/trades";
 import { cn } from "@/lib/utils";
 import {
   IconArrowsExchange,
@@ -20,6 +19,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import UserAvatar from "../profile/user-avatar";
 import {
   OfferColumns,
+  OfferColumnsError,
   OfferColumnsSkeleton,
   type OfferSelection,
 } from "../trades/offer-picker";
@@ -84,14 +84,13 @@ export default function ListMatchesContent({
                   {({ reset }) => (
                     <ErrorBoundary
                       onReset={reset}
-                      fallbackRender={() => (
-                        <p className="text-sm text-muted-foreground">
-                          {m.list_matches_serials_error()}
-                        </p>
+                      fallbackRender={({ resetErrorBoundary }) => (
+                        <OfferColumnsError onRetry={resetErrorBoundary} />
                       )}
                     >
                       <Suspense fallback={<OfferColumnsSkeleton />}>
                         <PartnerOffer
+                          listId={id}
                           listName={name}
                           partner={partner}
                           collections={data.collections}
@@ -185,19 +184,13 @@ type PartnerMatchesProps = {
  * so the viewer can pick them into an offer.
  */
 function PartnerOffer({
+  listId,
   picks,
   onToggle,
   ...props
-}: PartnerMatchesProps & Omit<OfferSelection, "serials">) {
-  // a list has no cap, so past the request's cap a collection shows as unavailable
-  const give = [
-    ...new Set(props.partner.matches.flatMap((match) => match.iHaveTheyWant)),
-  ].slice(0, MAX_OFFER_SERIAL_SLUGS);
-  const get = [
-    ...new Set(props.partner.matches.flatMap((match) => match.theyHaveIWant)),
-  ].slice(0, MAX_OFFER_SERIAL_SLUGS);
+}: PartnerMatchesProps & Omit<OfferSelection, "serials"> & { listId: string }) {
   const { data: serials } = useSuspenseQuery(
-    offerSerialsQuery(props.partner.userId, give, get),
+    offerSerialsQuery(listId, props.partner.userId),
   );
 
   return <PartnerMatches {...props} selection={{ serials, picks, onToggle }} />;

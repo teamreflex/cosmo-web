@@ -12,7 +12,12 @@ import {
 import { citext } from "./custom";
 
 // mirrors the roles in @apollo/auth
-export const userRole = pgEnum("user_role", ["user", "moderator", "admin"]);
+export const userRole = pgEnum("user_role", [
+  "user",
+  "tester",
+  "moderator",
+  "admin",
+]);
 
 export const user = pgTable(
   "user",

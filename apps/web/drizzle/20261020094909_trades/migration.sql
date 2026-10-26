@@ -1,3 +1,4 @@
+ALTER TYPE "user_role" ADD VALUE 'tester' BEFORE 'moderator';--> statement-breakpoint
 CREATE TYPE "feedback_rating" AS ENUM('positive', 'neutral', 'negative');--> statement-breakpoint
 CREATE TYPE "feedback_role" AS ENUM('buyer', 'seller', 'trader');--> statement-breakpoint
 CREATE TYPE "listing_offer_mode" AS ENUM('price_or_offer', 'price_only', 'offer_only');--> statement-breakpoint
@@ -150,7 +151,7 @@ CREATE TABLE "trade_offers" (
 	CONSTRAINT "trade_offers_status_chk" CHECK (CASE "kind" WHEN 'listing' THEN "status" IN ('open', 'claimed', 'filled', 'withdrawn', 'broken', 'removed', 'timed_out') ELSE "status" IN ('pending', 'accepted', 'disputed', 'completed', 'cancelled', 'timed_out', 'declined', 'withdrawn', 'countered', 'expired', 'stale') END),
 	CONSTRAINT "trade_offers_listing_chk" CHECK ("kind" = 'trade' OR num_nulls("to_user_id", "to_address", "parent_id", "deadline_at", "accepted_at", "expires_at") = 6),
 	CONSTRAINT "trade_offers_trade_chk" CHECK ("kind" = 'listing' OR ("to_address" IS NOT NULL AND "offers" IS NULL AND "note" IS NULL)),
-	CONSTRAINT "trade_offers_accepted_chk" CHECK ("status" NOT IN ('accepted', 'disputed', 'completed', 'timed_out') OR ("deadline_at" IS NOT NULL AND "accepted_at" IS NOT NULL)),
+	CONSTRAINT "trade_offers_accepted_chk" CHECK ("kind" = 'listing' OR "status" NOT IN ('accepted', 'disputed', 'completed', 'timed_out') OR ("deadline_at" IS NOT NULL AND "accepted_at" IS NOT NULL)),
 	CONSTRAINT "trade_offers_pending_chk" CHECK ("status" <> 'pending' OR "expires_at" IS NOT NULL),
 	CONSTRAINT "trade_offers_ended_chk" CHECK (("status" IN ('filled', 'withdrawn', 'expired', 'broken', 'removed', 'completed', 'cancelled', 'timed_out', 'declined', 'countered', 'stale')) = ("ended_at" IS NOT NULL)),
 	CONSTRAINT "trade_offers_cancelled_chk" CHECK (("status" = 'cancelled') = ("cancelled_by" IS NOT NULL)),

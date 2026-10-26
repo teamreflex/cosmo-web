@@ -8,6 +8,20 @@
   ],
   "footprints": [
     {
+      "statementType": "alter_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "user_role"
+      ],
+      "writes": [
+        "s|enum|public.user_role"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
       "statementType": "create_enum",
       "statementTarget": [
         "enum",
@@ -1151,6 +1165,18 @@
     }
   ],
   "deltas": [
+    {
+      "op": "alter",
+      "key": "enums\u0000[\"public\",\"user_role\"]",
+      "set": {
+        "values": [
+          "user",
+          "tester",
+          "moderator",
+          "admin"
+        ]
+      }
+    },
     {
       "op": "create",
       "row": {
@@ -4110,7 +4136,7 @@
         "schema": "public",
         "table": "trade_offers",
         "name": "trade_offers_accepted_chk",
-        "value": "\"status\" NOT IN ('accepted', 'disputed', 'completed', 'timed_out') OR (\"deadline_at\" IS NOT NULL AND \"accepted_at\" IS NOT NULL)",
+        "value": "\"kind\" = 'listing' OR \"status\" NOT IN ('accepted', 'disputed', 'completed', 'timed_out') OR (\"deadline_at\" IS NOT NULL AND \"accepted_at\" IS NOT NULL)",
         "entityType": "checks"
       }
     },

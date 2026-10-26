@@ -172,6 +172,69 @@ describe("staff", () => {
     );
   });
 
+  test("staff acting from a report are audited under it, else the oldest", async () => {
+    const state = world();
+    await run(
+      state,
+      signer,
+      Effect.gen(function* () {
+        const alice = yield* client(token("alice"));
+        const bob = yield* client(token("bob"));
+        const mod = yield* client(token("mod"));
+        const first = yield* alice.Send({
+          tradeId: TRADE,
+          body: Redacted.make("rude"),
+        });
+        const second = yield* alice.Send({
+          tradeId: TRADE,
+          body: Redacted.make("ruder"),
+        });
+        const older = yield* bob.Report({
+          messageId: first.messageId,
+          reason: "harassment",
+        });
+        const newer = yield* bob.Report({
+          messageId: second.messageId,
+          reason: "harassment",
+        });
+
+        yield* mod.Remove({
+          messageId: second.messageId,
+          reportId: newer.reportId,
+        });
+        const fromReport = yield* mod.Send({
+          tradeId: TRADE,
+          body: Redacted.make("please stop"),
+          reportId: newer.reportId,
+        });
+        const fromTrade = yield* mod.Send({
+          tradeId: TRADE,
+          body: Redacted.make("noted"),
+        });
+        expect(state.audit).toEqual([
+          {
+            staffId: "mod",
+            action: "trade:remove-message",
+            targetId: String(second.messageId),
+            reportId: newer.reportId,
+          },
+          {
+            staffId: "mod",
+            action: "trade:message",
+            targetId: String(fromReport.messageId),
+            reportId: newer.reportId,
+          },
+          {
+            staffId: "mod",
+            action: "trade:message",
+            targetId: String(fromTrade.messageId),
+            reportId: older.reportId,
+          },
+        ]);
+      }),
+    );
+  });
+
   test("only staff who read reports read a report's copy", async () => {
     await run(
       world(),

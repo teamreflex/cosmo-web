@@ -47,8 +47,10 @@ import {
 } from "@/lib/universal/schema/objekt-list";
 import {
   MAX_OFFER_SERIAL_SLUGS,
+  offerSerialsInputSchema,
   tradeIdInputSchema,
 } from "@/lib/universal/schema/trades";
+import type { OfferSerials } from "@/lib/universal/trades";
 import { createSlug } from "@/lib/utils";
 import { can, marketAccess, parseRole } from "@apollo/auth";
 import { isBanActive } from "@apollo/auth/guard";
@@ -860,34 +862,7 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
   .middleware([authenticatedMiddleware])
   .handler(async ({ data, context }): Promise<TradePartnersResponse> => {
     const userId = context.session.session.userId;
-
-    const myList = await db.query.objektLists.findFirst({
-      where: { id: data.listId, userId },
-      columns: {
-        id: true,
-        type: true,
-        userId: true,
-        linkedWantListId: true,
-      },
-      with: {
-        linkingHaveList: { columns: { id: true } },
-      },
-    });
-    if (!myList || (myList.type !== "have" && myList.type !== "want")) {
-      throw new ExpectedError("not_live_list");
-    }
-
-    /**
-     * My side of the trade pair: the anchor and the list it's paired with,
-     * so partner matches are pair against pair.
-     */
-    const [myWantListId, myHaveListId] =
-      myList.type === "want"
-        ? [myList.id, myList.linkingHaveList?.id ?? null]
-        : [myList.linkedWantListId, myList.id];
-    if (myWantListId === null || myHaveListId === null) {
-      throw new ExpectedError("anchor_not_trade_active");
-    }
+    const anchor = await readAnchorPair(data.listId, userId);
 
     /**
      * Every other user's trade pair: a discoverable have list and the
@@ -895,13 +870,13 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
      */
     const h = alias(objektLists, "h");
     const w = alias(objektLists, "w");
-    const theyHaveIWant = sharedCollections(h.id, myWantListId);
-    const iHaveTheyWant = sharedCollections(w.id, myHaveListId);
+    const theyHaveIWant = sharedCollections(h.id, anchor.wantListId);
+    const iHaveTheyWant = sharedCollections(w.id, anchor.haveListId);
     // the anchor's side ranks the pairs and names the partner list shown
     const ranking = {
       want: { list: h, first: theyHaveIWant, second: iHaveTheyWant },
       have: { list: w, first: iHaveTheyWant, second: theyHaveIWant },
-    }[myList.type];
+    }[anchor.type];
 
     const matches: PartnerMatchRow[] = await db
       .select({
@@ -1004,6 +979,90 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
 
     return { partners, collections };
   });
+
+/**
+ * The copy of each collection a Trade Matches offer to one partner would
+ * trade (readOfferSerials): the collections the anchor's trade pair shares
+ * with each of the partner's discoverable ones, read here rather than sent,
+ * so the request stays small however long the lists are. $sendOffer
+ * re-checks whatever changes after this.
+ */
+export const $fetchOfferSerials = createServerFn({ method: "GET" })
+  .validator(offerSerialsInputSchema)
+  .middleware([cosmoMiddleware])
+  .handler(async ({ data, context }): Promise<OfferSerials> => {
+    const userId = context.session.session.userId;
+    const anchor = await readAnchorPair(data.listId, userId);
+
+    // the partner's pairs, ranked as Trade Matches ranks them
+    const h = alias(objektLists, "h");
+    const w = alias(objektLists, "w");
+    const theyHaveIWant = sharedCollections(h.id, anchor.wantListId);
+    const iHaveTheyWant = sharedCollections(w.id, anchor.haveListId);
+    const [first, second] =
+      anchor.type === "want"
+        ? [theyHaveIWant, iHaveTheyWant]
+        : [iHaveTheyWant, theyHaveIWant];
+    const pairs = await db
+      .select({ give: iHaveTheyWant, get: theyHaveIWant })
+      .from(h)
+      .innerJoin(w, tradePair(h, w))
+      .where(
+        and(
+          eq(h.userId, data.partnerId),
+          sql`cardinality(${theyHaveIWant}) > 0`,
+          sql`cardinality(${iHaveTheyWant}) > 0`,
+        ),
+      )
+      .orderBy(
+        sql`cardinality(${first}) desc`,
+        sql`cardinality(${second}) desc`,
+        h.id,
+      );
+
+    // a list has no cap, so past it a collection shows as unavailable
+    const side = (key: "give" | "get") =>
+      [...new Set(pairs.flatMap((pair) => pair[key]))].slice(
+        0,
+        MAX_OFFER_SERIAL_SLUGS,
+      );
+    return readOfferSerials(
+      { userId, address: context.cosmo.address },
+      data.partnerId,
+      { give: side("give"), get: side("get") },
+    );
+  });
+
+/**
+ * The caller's trade pair that a Trade Matches anchor list belongs to: the
+ * anchor and the list it's paired with, so partner matches are pair against
+ * pair.
+ */
+async function readAnchorPair(listId: string, userId: string) {
+  const myList = await db.query.objektLists.findFirst({
+    where: { id: listId, userId },
+    columns: {
+      id: true,
+      type: true,
+      userId: true,
+      linkedWantListId: true,
+    },
+    with: {
+      linkingHaveList: { columns: { id: true } },
+    },
+  });
+  if (!myList || (myList.type !== "have" && myList.type !== "want")) {
+    throw new ExpectedError("not_live_list");
+  }
+  const [wantListId, haveListId] =
+    myList.type === "want"
+      ? [myList.id, myList.linkingHaveList?.id ?? null]
+      : [myList.linkedWantListId, myList.id];
+  if (wantListId === null || haveListId === null) {
+    throw new ExpectedError("anchor_not_trade_active");
+  }
+  return { type: myList.type, wantListId, haveListId };
+}
 
 /**
  * What the recipient of a pending offer could put in a counter: the
