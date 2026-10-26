@@ -2198,19 +2198,27 @@
   "market_listings_empty_filtered_body": "Try fewer filters to see every open listing.",
   "market_listings_error": "Couldn't load listings.",
   "market_notice_title": "Before you trade",
-  "market_notice_transfers": "{appName} never handles your objekts. It only matches traders and records each trade; both sides send their own objekts in the COSMO app.",
-  "market_notice_modhaus": "{appName} isn't associated with MODHAUS, but scams are reported to them.",
-  "market_notice_caps": [
+  "market_notice_description": "Three things to know about how the market works.",
+  "market_notice_transfers_title": "You send your own objekts",
+  "market_notice_transfers": "{appName} never handles your objekts. It only matches traders and records each trade. Both sides send their own objekts in the COSMO app.",
+  "market_notice_caps_title": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
       "selectors": ["countPlural"],
       "match": {
-        "countPlural=one": "A new account can accept {count} listing at a time. The limit rises by one at feedback scores of {tiers}, up to {ceiling}.",
-        "countPlural=other": "A new account can accept {count} listings at a time. The limit rises by one at feedback scores of {tiers}, up to {ceiling}."
+        "countPlural=one": "Accept up to {count} listing at a time",
+        "countPlural=other": "Accept up to {count} listings at a time"
       }
     }
   ],
-  "market_notice_staff": "Staff are spread across timezones and can't answer around the clock, so replies can take a while.",
+  "market_notice_caps": "Your limit rises by one as your feedback score grows, up to {ceiling}.",
+  "market_notice_caps_chart": "Listing limit by feedback score: {start} to start, then {tiers}",
+  "market_notice_caps_chart_tier": "{cap} at {score}",
+  "market_notice_caps_start": "Start",
+  "market_notice_caps_score": "Feedback score",
+  "market_notice_caps_limit": "Listings at a time",
+  "market_notice_staff_title": "Staff replies can take a while",
+  "market_notice_staff": "Staff are spread across timezones and can't answer around the clock.",
   "market_notice_accept": "Accept",
   "listing_composer_new": "New Listing",
   "listing_composer_title_create": "New Listing",

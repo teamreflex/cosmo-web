@@ -2159,18 +2159,26 @@
   "market_listings_empty_filtered_body": "フィルターを減らして、すべての出品を表示してください。",
   "market_listings_error": "出品を読み込めませんでした。",
   "market_notice_title": "トレードの前に",
-  "market_notice_transfers": "{appName}がオブジェクトを扱うことはありません。トレード相手を見つけて取引を記録するだけで、オブジェクトはそれぞれがCOSMOアプリで送ります。",
-  "market_notice_modhaus": "{appName}はMODHAUSとは関係ありませんが、詐欺はMODHAUSに報告されます。",
-  "market_notice_caps": [
+  "market_notice_description": "マーケットの仕組みについて知っておきたい3つのこと。",
+  "market_notice_transfers_title": "オブジェクトは自分で送ります",
+  "market_notice_transfers": "{appName}がオブジェクトを扱うことはありません。トレード相手を見つけて取引を記録するだけです。オブジェクトはそれぞれがCOSMOアプリで送ります。",
+  "market_notice_caps_title": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
       "selectors": ["countPlural"],
       "match": {
-        "countPlural=other": "新しいアカウントが同時に承諾できる出品は{count}件までです。評価スコアが{tiers}に達するごとに1件ずつ増え、最大{ceiling}件になります。"
+        "countPlural=other": "同時に承諾できる出品は{count}件まで"
       }
     }
   ],
-  "market_notice_staff": "スタッフは複数のタイムゾーンにいるため、24時間いつでもすぐに対応できるわけではありません。返信に時間がかかる場合があります。",
+  "market_notice_caps": "評価スコアが上がるにつれて上限が1件ずつ増え、最大{ceiling}件になります。",
+  "market_notice_caps_chart": "評価スコア別の出品上限：最初は{start}件、{tiers}",
+  "market_notice_caps_chart_tier": "スコア{score}で{cap}件",
+  "market_notice_caps_start": "最初",
+  "market_notice_caps_score": "評価スコア",
+  "market_notice_caps_limit": "同時に承諾できる件数",
+  "market_notice_staff_title": "スタッフの返信には時間がかかることがあります",
+  "market_notice_staff": "スタッフは複数のタイムゾーンにいるため、24時間いつでも対応できるわけではありません。",
   "market_notice_accept": "同意する",
   "listing_composer_new": "新規出品",
   "listing_composer_title_create": "新規出品",

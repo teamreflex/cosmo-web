@@ -2161,18 +2161,26 @@
   "market_listings_empty_filtered_body": "請減少篩選條件，以查看所有開放中的刊登。",
   "market_listings_error": "無法載入刊登。",
   "market_notice_title": "交換前須知",
-  "market_notice_transfers": "{appName} 從不經手你的 Objekt。它只負責媒合交換雙方並記錄交換，雙方各自在 COSMO App 中傳送自己的 Objekt。",
-  "market_notice_modhaus": "{appName} 與 MODHAUS 無關，但會向 MODHAUS 檢舉詐騙行為。",
-  "market_notice_caps": [
+  "market_notice_description": "關於市場如何運作，有三件事需要了解。",
+  "market_notice_transfers_title": "Objekt 由你自己傳送",
+  "market_notice_transfers": "{appName} 從不經手你的 Objekt。它只負責媒合交換雙方並記錄交換。雙方各自在 COSMO App 中傳送自己的 Objekt。",
+  "market_notice_caps_title": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
       "selectors": ["countPlural"],
       "match": {
-        "countPlural=other": "新帳號最多可同時接受 {count} 筆刊登。評價分數每達到 {tiers} 中的一級，上限就增加 1 筆，最多 {ceiling} 筆。"
+        "countPlural=other": "最多可同時接受 {count} 筆刊登"
       }
     }
   ],
-  "market_notice_staff": "工作人員分布在不同時區，無法全天候即時回覆，回覆可能需要一些時間。",
+  "market_notice_caps": "隨著評價分數提高，上限每次增加 1 筆，最多 {ceiling} 筆。",
+  "market_notice_caps_chart": "依評價分數的刊登上限：初始 {start} 筆，{tiers}",
+  "market_notice_caps_chart_tier": "{score} 分時 {cap} 筆",
+  "market_notice_caps_start": "初始",
+  "market_notice_caps_score": "評價分數",
+  "market_notice_caps_limit": "可同時接受",
+  "market_notice_staff_title": "工作人員的回覆可能需要一些時間",
+  "market_notice_staff": "工作人員分布在不同時區，無法全天候即時回覆。",
   "market_notice_accept": "同意",
   "listing_composer_new": "新增刊登",
   "listing_composer_title_create": "新增刊登",

@@ -2161,18 +2161,26 @@
   "market_listings_empty_filtered_body": "请减少筛选条件，以查看所有开放中的挂单。",
   "market_listings_error": "无法加载挂单。",
   "market_notice_title": "交换前须知",
-  "market_notice_transfers": "{appName} 从不经手你的 Objekt。它只负责匹配交换双方并记录交换，双方各自在 COSMO App 中发送自己的 Objekt。",
-  "market_notice_modhaus": "{appName} 与 MODHAUS 无关，但会向 MODHAUS 举报诈骗行为。",
-  "market_notice_caps": [
+  "market_notice_description": "关于市场如何运作，有三件事需要了解。",
+  "market_notice_transfers_title": "Objekt 由你自己发送",
+  "market_notice_transfers": "{appName} 从不经手你的 Objekt。它只负责匹配交换双方并记录交换。双方各自在 COSMO App 中发送自己的 Objekt。",
+  "market_notice_caps_title": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
       "selectors": ["countPlural"],
       "match": {
-        "countPlural=other": "新账号最多可同时接受 {count} 笔挂单。评价得分每达到 {tiers} 中的一档，上限就增加 1 笔，最多 {ceiling} 笔。"
+        "countPlural=other": "最多可同时接受 {count} 笔挂单"
       }
     }
   ],
-  "market_notice_staff": "工作人员分布在不同时区，无法全天候即时回复，回复可能需要一些时间。",
+  "market_notice_caps": "随着评价得分提高，上限每次增加 1 笔，最多 {ceiling} 笔。",
+  "market_notice_caps_chart": "按评价得分的挂单上限：初始 {start} 笔，{tiers}",
+  "market_notice_caps_chart_tier": "{score} 分时 {cap} 笔",
+  "market_notice_caps_start": "初始",
+  "market_notice_caps_score": "评价得分",
+  "market_notice_caps_limit": "可同时接受",
+  "market_notice_staff_title": "工作人员的回复可能需要一些时间",
+  "market_notice_staff": "工作人员分布在不同时区，无法全天候即时回复。",
   "market_notice_accept": "同意",
   "listing_composer_new": "新建挂单",
   "listing_composer_title_create": "新建挂单",

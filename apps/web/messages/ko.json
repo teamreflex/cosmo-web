@@ -2159,18 +2159,26 @@
   "market_listings_empty_filtered_body": "필터를 줄여서 모든 글을 확인해 보세요.",
   "market_listings_error": "교환 글을 불러오지 못했어요.",
   "market_notice_title": "교환하기 전에",
-  "market_notice_transfers": "{appName}는 오브젝트를 직접 다루지 않습니다. 교환 상대를 연결하고 교환을 기록할 뿐이며, 오브젝트는 각자 COSMO 앱에서 보냅니다.",
-  "market_notice_modhaus": "{appName}는 모드하우스와 관련이 없지만, 사기는 모드하우스에 신고됩니다.",
-  "market_notice_caps": [
+  "market_notice_description": "마켓 이용 전에 알아 두어야 할 세 가지입니다.",
+  "market_notice_transfers_title": "오브젝트는 직접 보냅니다",
+  "market_notice_transfers": "{appName}는 오브젝트를 직접 다루지 않습니다. 교환 상대를 연결하고 교환을 기록할 뿐입니다. 오브젝트는 각자 COSMO 앱에서 보냅니다.",
+  "market_notice_caps_title": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
       "selectors": ["countPlural"],
       "match": {
-        "countPlural=other": "새 계정은 교환 글을 동시에 {count}건까지 수락할 수 있습니다. 평가 점수가 {tiers}에 도달할 때마다 1건씩 늘어나 최대 {ceiling}건이 됩니다."
+        "countPlural=other": "교환 글은 동시에 {count}건까지 수락할 수 있습니다"
       }
     }
   ],
-  "market_notice_staff": "스태프가 여러 시간대에 있어 언제든 바로 답변할 수는 없습니다. 답변에 시간이 걸릴 수 있습니다.",
+  "market_notice_caps": "평가 점수가 오를수록 한도가 1건씩 늘어나 최대 {ceiling}건이 됩니다.",
+  "market_notice_caps_chart": "평가 점수별 수락 한도: 처음 {start}건, {tiers}",
+  "market_notice_caps_chart_tier": "{score}점에 {cap}건",
+  "market_notice_caps_start": "처음",
+  "market_notice_caps_score": "평가 점수",
+  "market_notice_caps_limit": "동시 수락 한도",
+  "market_notice_staff_title": "스태프 답변에 시간이 걸릴 수 있습니다",
+  "market_notice_staff": "스태프가 여러 시간대에 있어 언제든 바로 답변할 수는 없습니다.",
   "market_notice_accept": "동의",
   "listing_composer_new": "새 교환 글",
   "listing_composer_title_create": "새 교환 글",

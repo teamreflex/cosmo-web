@@ -2207,19 +2207,27 @@
   "market_listings_empty_filtered_body": "Retirez des filtres pour voir toutes les annonces ouvertes.",
   "market_listings_error": "Impossible de charger les annonces.",
   "market_notice_title": "Avant d'échanger",
-  "market_notice_transfers": "{appName} ne manipule jamais vos objekts. Il met seulement les gens en relation et enregistre chaque échange ; chaque partie envoie elle-même ses objekts dans l'app COSMO.",
-  "market_notice_modhaus": "{appName} n'est pas affilié à MODHAUS, mais les arnaques lui sont signalées.",
-  "market_notice_caps": [
+  "market_notice_description": "Trois choses à savoir sur le fonctionnement du marché.",
+  "market_notice_transfers_title": "Vous envoyez vous-même vos objekts",
+  "market_notice_transfers": "{appName} ne manipule jamais vos objekts. Il met seulement les gens en relation et enregistre chaque échange. Chaque partie envoie elle-même ses objekts dans l'app COSMO.",
+  "market_notice_caps_title": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
       "selectors": ["countPlural"],
       "match": {
-        "countPlural=one": "Un nouveau compte peut accepter {count} annonce à la fois. La limite augmente d'une unité aux scores d'évaluation de {tiers}, jusqu'à {ceiling}.",
-        "countPlural=other": "Un nouveau compte peut accepter {count} annonces à la fois. La limite augmente d'une unité aux scores d'évaluation de {tiers}, jusqu'à {ceiling}."
+        "countPlural=one": "Acceptez jusqu'à {count} annonce à la fois",
+        "countPlural=other": "Acceptez jusqu'à {count} annonces à la fois"
       }
     }
   ],
-  "market_notice_staff": "L'équipe est répartie sur plusieurs fuseaux horaires et ne peut pas répondre à toute heure ; les réponses peuvent donc prendre du temps.",
+  "market_notice_caps": "Votre limite augmente d'une unité à mesure que votre score d'évaluation progresse, jusqu'à {ceiling}.",
+  "market_notice_caps_chart": "Limite d'annonces selon le score d'évaluation : {start} au départ, puis {tiers}",
+  "market_notice_caps_chart_tier": "{cap} à {score}",
+  "market_notice_caps_start": "Départ",
+  "market_notice_caps_score": "Score d'évaluation",
+  "market_notice_caps_limit": "Annonces à la fois",
+  "market_notice_staff_title": "Les réponses de l'équipe peuvent prendre du temps",
+  "market_notice_staff": "L'équipe est répartie sur plusieurs fuseaux horaires et ne peut pas répondre à toute heure.",
   "market_notice_accept": "Accepter",
   "listing_composer_new": "Nouvelle annonce",
   "listing_composer_title_create": "Nouvelle annonce",
