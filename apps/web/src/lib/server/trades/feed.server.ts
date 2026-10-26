@@ -5,6 +5,7 @@ import {
 } from "@apollo/database/web/schema";
 import type {
   TradeListingWant,
+  TradeListingWantOption,
   TradeOfferItem,
 } from "@apollo/database/web/types";
 import { rangeColumns } from "@apollo/trades/range";
@@ -193,9 +194,21 @@ export function feedItem(
 }
 
 /**
+ * A listing's want rows as storedWantSchema reads them, for a relational
+ * query: in posted (id) order, each choice row with its collections.
+ */
+export const storedWants = {
+  orderBy: { id: "asc" },
+  with: { options: { orderBy: { slug: "asc" } } },
+} as const;
+
+/**
  * A listing's stored items and wants, as the relational query reads them.
  */
-type StoredParts = { items: TradeOfferItem[]; wants: TradeListingWant[] };
+type StoredParts = {
+  items: TradeOfferItem[];
+  wants: (TradeListingWant & { options: TradeListingWantOption[] })[];
+};
 
 /**
  * Parses each listing's stored items and wants and fills in what the

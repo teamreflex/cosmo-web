@@ -31,7 +31,11 @@ import {
 import { bumpUpdatedAt } from "@apollo/database/web/sql";
 import type { TradeSide } from "@apollo/database/web/types";
 import { DatabaseWeb, type WebTx } from "@apollo/services/database-web";
-import { offerTransition, transition } from "@apollo/trades/lifecycle";
+import {
+  offerTransition,
+  proposerId,
+  transition,
+} from "@apollo/trades/lifecycle";
 import { DRAIN_CURSOR_NAME } from "@apollo/trades/timers";
 import {
   type ChainRow,
@@ -286,12 +290,14 @@ const applyPlan = (tx: WebTx, plan: BatchPlan) =>
  * untransferable posts an event on its live trade without notifying anyone,
  * breaks each open listing offering it with a `listing_closed` notification
  * to its poster, and turns each pending offer holding it stale with an event
- * and an `offer_stale` notification to its sender. A transfer whose
+ * and an `offer_stale` notification to its proposer. A transfer whose
  * `transfer` row is gone was rolled back with a hot block, so it doesn't
  * count here.
  *
- * Locks, after the cursor: every user it may notify `FOR KEY SHARE`, then the
- * live trades, then the pending offers, then listings (docs/auth.md). The
+ * Locks, after the cursor: both parties of every live trade and pending
+ * offer holding its tokens and the poster of every such listing, which
+ * covers everyone it may notify, `FOR KEY SHARE`, then the live trades,
+ * then the pending offers, then listings (docs/auth.md). The
  * candidate read before them is unlocked; a trade that ended since is dropped
  * by its lock, and an offer accepted since keeps its status, since breaks
  * only touch pending offers and open listings.
@@ -341,11 +347,10 @@ const applyTrades = (tx: WebTx, rows: readonly OutboxRow[]) =>
       };
     }
 
+    // listings have no `to`, so a listing locks only its poster
     const locked = yield* lockUsers(
       tx,
-      candidates.flatMap((item) =>
-        item.live ? [item.fromUserId, item.toUserId] : [item.fromUserId],
-      ),
+      candidates.flatMap((item) => [item.fromUserId, item.toUserId]),
     );
     const trades = yield* lockLiveTrades(tx, [
       ...new Set(candidates.flatMap((item) => (item.live ? item.offerId : []))),
@@ -555,7 +560,7 @@ function recordChainEvents(
  * history, `left_at`), locking the offers, then
  * the listings, each in id order (docs/auth.md). A stale offer gets a
  * timeline event naming the token and whether it moved or turned
- * untransferable, and its sender hears of it. A listing that dropped a token
+ * untransferable, and its proposer hears of it. A listing that dropped a token
  * moves its `updated_at`, so a claim picked from the pool before is
  * refused, then closes if its pool can no longer make a unit
  * (closeSpentListings); a broken one's poster hears which token closed it.
@@ -595,7 +600,12 @@ const breakOffers = (
           eq(tradeOffers.status, from),
         ),
       )
-      .returning({ id: tradeOffers.id, fromUserId: tradeOffers.fromUserId });
+      .returning({
+        id: tradeOffers.id,
+        fromUserId: tradeOffers.fromUserId,
+        toUserId: tradeOffers.toUserId,
+        proposedBy: tradeOffers.proposedBy,
+      });
 
     if (listingIds.length > 0) {
       yield* tx
@@ -626,10 +636,12 @@ const breakOffers = (
       ({ event }) => event === "break",
     );
 
-    // the token that broke each stale offer, for its event and its sender
-    const stale = offers.flatMap(({ id, fromUserId }) => {
-      const broke = breaks.get(id);
-      return broke === undefined ? [] : [{ id, fromUserId, ...broke }];
+    // the token that broke each stale offer, for its event and its proposer
+    const stale = offers.flatMap((offer) => {
+      const broke = breaks.get(offer.id);
+      return broke === undefined
+        ? []
+        : [{ id: offer.id, userId: proposerId(offer), ...broke }];
     });
     return {
       events: stale.map(({ id, tokenId, reason }): TradeEventRow => ({
@@ -637,9 +649,9 @@ const breakOffers = (
         event: { type: "stale", tokenId, reason },
       })),
       notifications: [
-        ...stale.map(({ id, fromUserId, tokenId }): TradeNotification => ({
+        ...stale.map(({ id, userId, tokenId }): TradeNotification => ({
           type: "offer_stale",
-          userId: fromUserId,
+          userId,
           offerId: id,
           actorId: null,
           tokenId,

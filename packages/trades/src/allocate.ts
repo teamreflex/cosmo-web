@@ -152,3 +152,75 @@ export function allocateUnits(
     allocation,
   };
 }
+
+/**
+ * How many units a pick of `picked` pool objekts takes, or null when it
+ * isn't a whole number of units of `unitSize`.
+ */
+export function unitsOf(picked: number, unitSize: number) {
+  return picked > 0 && picked % unitSize === 0 ? picked / unitSize : null;
+}
+
+/**
+ * Whether the tokens fill the wants exactly: every want gets its count and
+ * every token, each one once, goes to a want. No wants are never filled,
+ * since a listing always asks for something. An offer on a listing doesn't
+ * store which row each of its tokens was for, so accepting it allocates them
+ * afresh.
+ */
+export function fillsExactly(
+  wants: readonly TradeWant[],
+  tokens: readonly InventoryObjekt[],
+) {
+  return (
+    wants.length > 0 &&
+    new Set(tokens.map((token) => token.tokenId)).size === tokens.length &&
+    wants.reduce((sum, want) => sum + want.count, 0) === tokens.length &&
+    isFullyAllocated(allocate(wants, tokens))
+  );
+}
+
+/**
+ * A claimer's token on an offer as the indexer reads it when the offer is
+ * accepted: its collection values, or missing when the indexer doesn't know
+ * the id.
+ */
+export type OfferedToken =
+  { kind: "missing"; tokenId: number } | ({ kind: "found" } & InventoryObjekt);
+
+/**
+ * Why an offer on a listing no longer fits the listing as it is now, or
+ * null when it does, which accepting it requires: every pick is still in
+ * the pool, the picks make a whole number of units of the current unit
+ * size (unitsOf), and the claimer's tokens fill the current want rows
+ * scaled to those units exactly (fillsExactly), else the terms changed. A
+ * claimer token the indexer doesn't know is the claimer's to answer for,
+ * so it is named rather than read as the terms changing.
+ */
+export function listingOfferRefusal(
+  offer: { picks: readonly number[]; given: readonly OfferedToken[] },
+  listing: {
+    pool: ReadonlySet<number>;
+    unitSize: number;
+    wants: readonly TradeWant[];
+  },
+):
+  | { reason: "terms_changed" }
+  | { reason: "token_missing"; tokenId: number }
+  | null {
+  const units = unitsOf(offer.picks.length, listing.unitSize);
+  if (
+    units === null ||
+    !offer.picks.every((tokenId) => listing.pool.has(tokenId))
+  ) {
+    return { reason: "terms_changed" };
+  }
+  const missing = offer.given.find((token) => token.kind === "missing");
+  if (missing) return { reason: "token_missing", tokenId: missing.tokenId };
+  return fillsExactly(
+    scaleWants(listing.wants, units),
+    offer.given.flatMap((token) => (token.kind === "found" ? [token] : [])),
+  )
+    ? null
+    : { reason: "terms_changed" };
+}

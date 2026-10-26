@@ -234,11 +234,11 @@ function PartyView({
 }
 
 /**
- * A direct offer as one of its parties sees it before it's accepted. Its
- * recipient can decline, counter or accept it and its sender can withdraw
- * it, each only where the server would allow it, in the phone bar below
- * tablet width. Once it ended there, a countered offer's phone bar leads to
- * the counter.
+ * An offer as one of its parties sees it before it's accepted. The side
+ * that didn't propose it can decline, counter or accept it and its
+ * proposer can withdraw it, each only where the server would allow it, in
+ * the phone bar below tablet width. Once it ended there, a countered
+ * offer's phone bar leads to the counter.
  */
 function OfferView({ trade, side }: { trade: OfferTrade; side: TradeSide }) {
   const [dialog, setDialog] = useState<OfferButton | null>(null);
@@ -674,13 +674,50 @@ const steppedStatuses: TradeStatus[] = [
 ];
 
 /**
+ * The first step's title for the viewer. The side that didn't set the
+ * terms accepts them: an offer's other side, or a listing's claimer, since
+ * its poster (`from`) set a claim's terms. A pending offer waits on them,
+ * and an accepted trade says who accepted whose offer or listing.
+ */
+function acceptStepTitle(trade: Trade, side: TradeSide | null) {
+  const proposer = trade.proposedBy ?? "from";
+  const accepter = otherSide(proposer);
+  const sender = partyName(trade.parties[proposer]);
+  const recipient = partyName(trade.parties[accepter]);
+  const listing = trade.proposedBy === null;
+
+  if (trade.state.status === "pending") {
+    return side === accepter
+      ? m.trade_page_step_offer_you()
+      : m.trade_page_step_offer_them({ name: recipient });
+  }
+  if (side === null) {
+    return listing
+      ? m.trade_page_step_accepted_staff({ claimer: recipient, poster: sender })
+      : m.trade_page_step_accepted_offer_staff({ sender, recipient });
+  }
+  if (side === accepter) {
+    return (
+      listing
+        ? m.trade_page_step_accepted_you
+        : m.trade_page_step_accepted_offer_you
+    )({ name: sender });
+  }
+  return (
+    listing
+      ? m.trade_page_step_accepted_them
+      : m.trade_page_step_accepted_offer_them
+  )({ name: recipient });
+}
+
+/**
  * Accept, both send, complete, with a segment per transfer in the middle
  * step, or one bar once segments would be too thin to read. A pending offer
- * is on the first step, which its recipient takes by accepting it. Phones
- * show only the step the trade is on, with how long a pending offer's
- * second step will take. A trade or offer that ended without completing has
- * no steps left to show. A dispute staff opened by banning a party reads as
- * a neutral pause, as its alert does.
+ * is on the first step, which the side that didn't propose it takes by
+ * accepting it. Phones show only the step the trade is on, with how long a
+ * pending offer's second step will take. A trade or offer that ended
+ * without completing has no steps left to show. A dispute staff opened by
+ * banning a party reads as a neutral pause, as its alert does.
  */
 function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
   const { status } = trade.state;
@@ -692,24 +729,6 @@ function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
     trade.dispute?.event.by === "staff" ||
     trade.dispute?.event.by === "deadline";
   const seen = trade.items.filter((item) => item.status === "sent").length;
-  const sender = partyName(trade.parties.from);
-  const recipient = partyName(trade.parties.to);
-  // the recipient always accepts, which for a listing is its claimer
-  const accepted =
-    trade.listingId === null
-      ? {
-          to: m.trade_page_step_accepted_offer_you({ name: sender }),
-          from: m.trade_page_step_accepted_offer_them({ name: recipient }),
-          staff: m.trade_page_step_accepted_offer_staff({ sender, recipient }),
-        }
-      : {
-          to: m.trade_page_step_accepted_you({ name: sender }),
-          from: m.trade_page_step_accepted_them({ name: recipient }),
-          staff: m.trade_page_step_accepted_staff({
-            claimer: recipient,
-            poster: sender,
-          }),
-        };
   const steps: {
     tone: keyof typeof stepTones;
     eyebrow: string;
@@ -719,15 +738,12 @@ function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
       ? {
           tone: "current",
           eyebrow: m.trade_page_step({ step: 1 }),
-          title:
-            side === "to"
-              ? m.trade_page_step_offer_you()
-              : m.trade_page_step_offer_them({ name: recipient }),
+          title: acceptStepTitle(trade, side),
         }
       : {
           tone: "done",
           eyebrow: m.trade_page_step_done({ step: 1 }),
-          title: accepted[side ?? "staff"],
+          title: acceptStepTitle(trade, side),
         },
     {
       tone: completed

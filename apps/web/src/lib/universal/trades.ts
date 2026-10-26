@@ -1,9 +1,10 @@
-import type {
-  OfferCloser,
-  ReportStatus,
-  TradeEvent,
-  TradeItemKind,
-  TradeSide,
+import {
+  type OfferCloser,
+  offerClosers,
+  type ReportStatus,
+  type TradeEvent,
+  type TradeItemKind,
+  type TradeSide,
 } from "@apollo/database/web/types";
 import type { SerialPick } from "@apollo/trades/holdings";
 import type { TradeState } from "@apollo/trades/lifecycle";
@@ -61,18 +62,33 @@ export type TradeDispute = {
   event: Extract<TradeEvent, { type: "disputed" }>;
 };
 
+// whether a ban, an account deletion or the listing closing ended an offer, rather than a party
+export function isOfferCloser(by: TradeSide | OfferCloser): by is OfferCloser {
+  return offerClosers.some((closer) => closer === by);
+}
+
+// what closed an offer when a ban, an account deletion or its listing closing ended it, rather than a party
+export function offerCloser(event: TradeEvent | null): OfferCloser | null {
+  return (event?.type === "declined" || event?.type === "withdrawn") &&
+    isOfferCloser(event.by)
+    ? event.by
+    : null;
+}
+
 /**
- * Where a trade is. A direct offer is on its `offer` stage until its
- * recipient accepts it, with when it expires, what closed it when a ban or
- * an account deletion did rather than a party, and, once countered, the
- * counter's id, whether it still waits for an answer and the objekts it
- * swaps in. Anything accepted is on its `trade` stage, where
- * `deadlinePassed` says the deadline has passed the drain's watermark, so
- * the parties can no longer act.
+ * Where a trade is. An offer is on its `offer` stage until the side that
+ * didn't propose it accepts it, with the side that proposed it, when it
+ * expires, what closed it when a ban, an account deletion or its listing
+ * closing did rather than a party, and, once countered, the counter's id, whether it still waits for
+ * an answer and the objekts it swaps in. Anything accepted is on its `trade`
+ * stage, with the side that proposed it when it started as an offer (null
+ * for a claim), where `deadlinePassed` says the deadline has passed the
+ * drain's watermark, so the parties can no longer act.
  */
 export type TradeStage =
   | {
       stage: "offer";
+      proposedBy: TradeSide;
       expiresAt: Date;
       closer: OfferCloser | null;
       counter: {
@@ -81,7 +97,12 @@ export type TradeStage =
         items: TradeNamedItem[];
       } | null;
     }
-  | { stage: "trade"; deadlineAt: Date; deadlinePassed: boolean };
+  | {
+      stage: "trade";
+      proposedBy: TradeSide | null;
+      deadlineAt: Date;
+      deadlinePassed: boolean;
+    };
 
 /**
  * A trade as its page shows it. `parentId` is the offer a counter answers.
@@ -126,8 +147,8 @@ export type MyTradeSide = {
  * accepted trade's deadline, or until then the offer's expiry. `needsYou`
  * says the viewer has an offer to answer, or an accepted trade whose
  * deadline hasn't passed the drain's watermark and on which they still owe
- * something. `closer` says what ended the offer when a ban or an account
- * deletion did, rather than a party.
+ * something. `closer` says what ended the offer when a ban, an account
+ * deletion or its listing closing did, rather than a party.
  */
 export type MyTradeRow = {
   id: string;

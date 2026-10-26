@@ -659,12 +659,18 @@ const tradeTimestamp = (name: string) =>
   timestamp(name, { mode: "date", withTimezone: true });
 
 /**
- * Listings and the trades they turn into, plus direct offers, which are
- * trades that start pending. `from` is the poster or the offer's sender, and
- * `to` the claimer, buyer or recipient; a listing has no `to`. Both addresses
+ * Listings and the trades they turn into, plus offers, which are trades that
+ * start pending. `from` is the poster or a direct offer's sender, and `to`
+ * the claimer, buyer or recipient; a listing has no `to`. Both addresses
  * are pinned when the row is created or accepted, and the drain compares
  * transfers against them. Parties are set null when their account is
  * deleted, which live trades block.
+ *
+ * `proposed_by` is the side that proposed a trade that started as an offer
+ * (a direct offer or a counter, both from `from`, or an offer on a listing,
+ * from its claimer `to`), kept once the offer ends: the proposer may
+ * withdraw it and the other side answers it. A listing and a claim, which
+ * starts accepted, leave it null.
  *
  * A listing offers a pool of objekts in units: `unit_size` of them for its
  * want rows at their counts. Each claim takes some number of units and
@@ -708,6 +714,7 @@ export const tradeOffers = pgTable(
       .notNull()
       .default([]),
     cancelledBy: tradeCanceller("cancelled_by"),
+    proposedBy: tradeSide("proposed_by"),
     disputeReportId: uuid("dispute_report_id").references(() => reports.id, {
       onDelete: "set null",
     }),
@@ -728,7 +735,7 @@ export const tradeOffers = pgTable(
       .notNull()
       .defaultNow()
       .$onUpdate(() => new Date()),
-    // a pending direct offer's answer window; listings don't expire
+    // a pending offer's answer window; listings don't expire
     expiresAt: tradeTimestamp("expires_at"),
     acceptedAt: tradeTimestamp("accepted_at"),
     endedAt: tradeTimestamp("ended_at"),
@@ -790,6 +797,10 @@ export const tradeOffers = pgTable(
     check(
       "trade_offers_pending_chk",
       sql`${t.status} <> 'pending' OR ${t.expiresAt} IS NOT NULL`,
+    ),
+    check(
+      "trade_offers_proposed_chk",
+      sql`(${t.status} <> 'pending' OR ${t.proposedBy} IS NOT NULL) AND (${t.kind} = 'trade' OR ${t.proposedBy} IS NULL)`,
     ),
     check(
       "trade_offers_ended_chk",

@@ -4,6 +4,7 @@ import {
   type TradeSide,
   type TradeStatus,
   tradeStatuses,
+  type TradeWantKind,
 } from "@apollo/database/web/types";
 import { describe, expect, test } from "bun:test";
 import {
@@ -15,12 +16,16 @@ import {
   offerTransition,
   owingSides,
   partyAction,
+  proposerId,
+  sideUserId,
+  takesOffers,
   type TradeEvent,
   type TradeItemState,
   type TradeState,
   tradeState,
   transition,
   transitionListing,
+  type TransitionRefusal,
   waitingSide,
 } from "../src/lifecycle";
 
@@ -35,16 +40,28 @@ function payment(
   return { kind: "payment", sender, markedPaid, confirmed };
 }
 
+// a pending trade here is a direct offer, which `from` proposes; listingOffer() builds the other kind
 function trade(
   status: TradeStatus,
   items: readonly TradeItemState[],
 ): TradeState {
   switch (status) {
+    case "pending":
+      return directOffer(items);
     case "cancelled":
       return { status, cancelledBy: "from", items };
     default:
       return { status, items };
   }
+}
+
+function directOffer(items: readonly TradeItemState[]): TradeState {
+  return { status: "pending", proposedBy: "from", fromListing: false, items };
+}
+
+// an offer on a listing, which its claimer (`to`) proposes to the poster
+function listingOffer(items: readonly TradeItemState[]): TradeState {
+  return { status: "pending", proposedBy: "to", fromListing: true, items };
 }
 
 function statusAfter(state: TradeState, event: TradeEvent) {
@@ -113,6 +130,83 @@ describe("transition: every event from every status", () => {
       });
     });
   }
+});
+
+/**
+ * An offer on a listing is pending too, but its claimer (`to`) proposed it:
+ * the poster answers it and can't counter it, the claimer withdraws it,
+ * and every other event refuses it as any pending trade.
+ */
+describe("transition: every event on a pending offer on a listing", () => {
+  const answers: [TradeEvent, TradeStatus | TransitionRefusal][] = [
+    [{ type: "accept", by: "from" }, "accepted"],
+    [{ type: "decline", by: "from" }, "declined"],
+    [{ type: "counter", by: "from" }, "listing_offer"],
+    [{ type: "withdraw", by: "to" }, "withdrawn"],
+  ];
+  const answered = new Set(answers.map(([event]) => event.type));
+  const others = allowed.flatMap(
+    ([event]): [TradeEvent, TransitionRefusal][] =>
+      answered.has(event.type) ? [] : [[event, "wrong_status"]],
+  );
+
+  test.each([...answers, ...others])("%o gives %s", (event, expected) => {
+    expect(statusAfter(listingOffer(purchase), event)).toBe(expected);
+  });
+});
+
+/**
+ * Every answer to a pending offer by each side: a direct offer, which `from`
+ * proposes, and an offer on a listing, which its claimer (`to`) proposes to
+ * the poster and which can't be countered.
+ */
+describe("transition: answering an offer", () => {
+  const items = [objekt("from"), objekt("to")];
+  const direct = directOffer(items);
+  const onListing = listingOffer(items);
+
+  test.each([
+    ["accept", "to", "accepted"],
+    ["accept", "from", "wrong_party"],
+    ["decline", "to", "declined"],
+    ["decline", "from", "wrong_party"],
+    ["counter", "to", "countered"],
+    ["counter", "from", "wrong_party"],
+    ["withdraw", "from", "withdrawn"],
+    ["withdraw", "to", "wrong_party"],
+  ] satisfies [OfferEvent, TradeSide, TradeStatus | TransitionRefusal][])(
+    "a direct offer: %s by %s gives %s",
+    (type, by, expected) => {
+      expect(statusAfter(direct, { type, by })).toBe(expected);
+    },
+  );
+
+  test.each([
+    ["accept", "from", "accepted"],
+    ["accept", "to", "wrong_party"],
+    ["decline", "from", "declined"],
+    ["decline", "to", "wrong_party"],
+    ["counter", "from", "listing_offer"],
+    ["counter", "to", "wrong_party"],
+    ["withdraw", "to", "withdrawn"],
+    ["withdraw", "from", "wrong_party"],
+  ] satisfies [OfferEvent, TradeSide, TradeStatus | TransitionRefusal][])(
+    "an offer on a listing: %s by %s gives %s",
+    (type, by, expected) => {
+      expect(statusAfter(onListing, { type, by })).toBe(expected);
+    },
+  );
+
+  test("an answered offer leaves its proposer behind", () => {
+    expect(apply(onListing, { type: "accept", by: "from" })).toEqual({
+      status: "accepted",
+      items,
+    });
+    expect(apply(direct, { type: "withdraw", by: "from" })).toEqual({
+      status: "withdrawn",
+      items,
+    });
+  });
 });
 
 describe("transition: parties", () => {
@@ -586,6 +680,37 @@ describe("waitingSide", () => {
   );
 });
 
+describe("sideUserId and proposerId", () => {
+  const row = {
+    id: "3f2a9c1e-7d4b-4e8a-9b6c-1a2b3c4d5e6f",
+    fromUserId: "poster",
+    toUserId: "claimer",
+  };
+
+  test("each side names its own user", () => {
+    expect(sideUserId(row, "from")).toBe("poster");
+    expect(sideUserId(row, "to")).toBe("claimer");
+  });
+
+  test("a side whose account is gone names no one", () => {
+    expect(sideUserId({ ...row, toUserId: null }, "to")).toBeNull();
+    expect(sideUserId({ ...row, toUserId: null }, "from")).toBe("poster");
+  });
+
+  test("the proposer is the user on the side that proposed", () => {
+    expect(proposerId({ ...row, proposedBy: "from" })).toBe("poster");
+    expect(proposerId({ ...row, proposedBy: "to" })).toBe("claimer");
+  });
+
+  test("a proposer whose account is gone is no one", () => {
+    expect(proposerId({ ...row, toUserId: null, proposedBy: "to" })).toBeNull();
+  });
+
+  test("throws on a row without a proposer", () => {
+    expect(() => proposerId({ ...row, proposedBy: null })).toThrow();
+  });
+});
+
 describe("needsYou (UNIT-05)", () => {
   const partial = [objekt("from", true), objekt("from"), objekt("to", true)];
   const running = { deadlinePassed: false };
@@ -613,14 +738,14 @@ describe("needsYou (UNIT-05)", () => {
     }
   });
 
-  test("a pending offer needs only its recipient, whatever the facts (UNIT-06)", () => {
+  test("a pending offer needs only the side that didn't propose it, whatever the facts (UNIT-06)", () => {
     for (const deadlinePassed of [false, true]) {
-      expect(
-        needsYou(trade("pending", sixObjekts()), "to", { deadlinePassed }),
-      ).toBe(true);
-      expect(
-        needsYou(trade("pending", sixObjekts()), "from", { deadlinePassed }),
-      ).toBe(false);
+      const direct = directOffer(sixObjekts());
+      expect(needsYou(direct, "to", { deadlinePassed })).toBe(true);
+      expect(needsYou(direct, "from", { deadlinePassed })).toBe(false);
+      const onListing = listingOffer(sixObjekts());
+      expect(needsYou(onListing, "from", { deadlinePassed })).toBe(true);
+      expect(needsYou(onListing, "to", { deadlinePassed })).toBe(false);
     }
   });
 
@@ -691,17 +816,43 @@ describe("listingClosing", () => {
   });
 });
 
+describe("takesOffers", () => {
+  test.each([
+    ["exact rows are claimed", ["exact"], false],
+    ['"any of" rows are claimed', ["choice"], false],
+    [
+      'exact and "any of" rows together are claimed',
+      ["exact", "choice"],
+      false,
+    ],
+    ["a range row takes offers", ["range"], true],
+    [
+      "a range row among others takes offers",
+      ["exact", "range", "choice"],
+      true,
+    ],
+    ["a payment row doesn't take offers", ["exact", "payment"], false],
+  ] satisfies [string, TradeWantKind[], boolean][])(
+    "%s",
+    (_, kinds, expected) => {
+      expect(takesOffers(kinds.map((kind) => ({ kind })))).toBe(expected);
+    },
+  );
+});
+
 describe("tradeState", () => {
   const unsent = {
+    listingId: null,
     transferredAt: null,
     markedPaidAt: null,
     confirmedAt: null,
   };
   const at = new Date("2026-10-12T12:00:00Z");
+  const listingId = "8c1f0d0e-6b8e-4a59-9a43-3f0c2a1e5d10";
 
   test("reads items in order, by what their timestamps say", () => {
     expect(
-      tradeState({ status: "accepted", cancelledBy: null }, [
+      tradeState({ status: "accepted", cancelledBy: null, proposedBy: null }, [
         { kind: "objekt", sender: "from", ...unsent, transferredAt: at },
         { kind: "objekt", sender: "to", ...unsent },
         { kind: "payment", sender: "to", ...unsent, markedPaidAt: at },
@@ -720,19 +871,72 @@ describe("tradeState", () => {
 
   test("carries who cancelled", () => {
     expect(
-      tradeState({ status: "cancelled", cancelledBy: "staff" }, []),
+      tradeState(
+        { status: "cancelled", cancelledBy: "staff", proposedBy: null },
+        [],
+      ),
     ).toEqual({ status: "cancelled", cancelledBy: "staff", items: [] });
   });
 
+  test("a pending direct offer carries its proposer and no listing", () => {
+    expect(
+      tradeState({ status: "pending", cancelledBy: null, proposedBy: "from" }, [
+        { kind: "objekt", sender: "from", ...unsent },
+        { kind: "objekt", sender: "to", ...unsent },
+      ]),
+    ).toEqual(directOffer([objekt("from"), objekt("to")]));
+  });
+
+  test("a pending offer with any item from a listing offers on that listing", () => {
+    expect(
+      tradeState({ status: "pending", cancelledBy: null, proposedBy: "to" }, [
+        { kind: "objekt", sender: "from", ...unsent, listingId },
+        { kind: "objekt", sender: "to", ...unsent },
+      ]),
+    ).toEqual(listingOffer([objekt("from"), objekt("to")]));
+  });
+
+  test("only a pending trade carries its proposer", () => {
+    expect(
+      tradeState(
+        { status: "declined", cancelledBy: null, proposedBy: "from" },
+        [{ kind: "objekt", sender: "from", ...unsent }],
+      ),
+    ).toEqual({ status: "declined", items: [objekt("from")] });
+  });
+
   test.each([
-    ["a listing status", { status: "claimed", cancelledBy: null }],
-    ["a cancel without a side", { status: "cancelled", cancelledBy: null }],
+    [
+      "a listing status",
+      { status: "claimed", cancelledBy: null, proposedBy: null },
+    ],
+    [
+      "a cancel without a side",
+      { status: "cancelled", cancelledBy: null, proposedBy: null },
+    ],
+    [
+      "a pending trade without a proposer",
+      { status: "pending", cancelledBy: null, proposedBy: null },
+    ],
+    [
+      "a pending trade `to` proposed off a listing",
+      { status: "pending", cancelledBy: null, proposedBy: "to" },
+    ],
   ] satisfies [string, Parameters<typeof tradeState>[0]][])(
     "throws on %s",
     (_, row) => {
       expect(() => tradeState(row, [])).toThrow();
     },
   );
+
+  test("throws on a pending trade `from` proposed on a listing", () => {
+    expect(() =>
+      tradeState({ status: "pending", cancelledBy: null, proposedBy: "from" }, [
+        { kind: "objekt", sender: "from", ...unsent, listingId },
+        { kind: "objekt", sender: "to", ...unsent },
+      ]),
+    ).toThrow();
+  });
 });
 
 /**
@@ -786,6 +990,18 @@ describe("offerTransition", () => {
       const { from, to } = offerTransition(event.type);
       expect(from).toBe("pending");
       expect(statusAfter(trade(from, purchase), event)).toBe(to);
+    },
+  );
+
+  test.each([
+    [{ type: "accept", by: "from" }],
+    [{ type: "decline", by: "from" }],
+    [{ type: "withdraw", by: "to" }],
+  ] satisfies [TradeEvent & { type: OfferEvent }][])(
+    "agrees with transition on an offer on a listing for %o",
+    (event) => {
+      const { to } = offerTransition(event.type);
+      expect(statusAfter(listingOffer(purchase), event)).toBe(to);
     },
   );
 

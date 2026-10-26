@@ -168,11 +168,11 @@ export async function recheckOffer(
 }
 
 /**
- * Creates a pending offer from the actor, under `parentId` when it counters
- * one, with both addresses pinned and its 72 hours counted on the
- * database's clock. `give` is sent by `from` and `get` by `to`, and none of
- * it is live until the offer is accepted. Starts its timeline and returns
- * its id.
+ * Creates a pending offer the actor proposes as its `from` side, under
+ * `parentId` when it counters one, with both addresses pinned and its 72
+ * hours counted on the database's clock. `give` is sent by `from` and `get`
+ * by `to`, and none of it is live until the offer is accepted. Starts its
+ * timeline and returns its id.
  */
 export async function insertOffer(
   tx: WebTx,
@@ -191,6 +191,7 @@ export async function insertOffer(
       fromAddress,
       toAddress,
       parentId,
+      proposedBy: "from",
       expiresAt: sql`now() + make_interval(secs => ${OFFER_WINDOW / 1000})`,
     })
     .returning({ id: tradeOffers.id });

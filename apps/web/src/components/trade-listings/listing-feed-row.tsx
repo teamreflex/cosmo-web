@@ -406,6 +406,8 @@ function WantThumbs({ wants }: { wants: ListingFeedWant[] }) {
                 ),
               },
             ];
+          // an "any of" row isn't pictured yet
+          case "choice":
           case "payment":
             return [];
         }

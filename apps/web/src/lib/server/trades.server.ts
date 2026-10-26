@@ -12,8 +12,14 @@ import { bumpUpdatedAt } from "@apollo/database/web/sql";
 import {
   liveTradeStatuses,
   type NewNotification,
+  type TradeSide,
 } from "@apollo/database/web/types";
-import { listingTransition, offerTransition } from "@apollo/trades/lifecycle";
+import {
+  listingTransition,
+  offerTransition,
+  otherSide,
+  proposerId,
+} from "@apollo/trades/lifecycle";
 import { and, asc, eq, or, sql } from "drizzle-orm";
 import type { DbOrTx, WebTx } from "./db";
 import type { LockedUser } from "./trades/trade.server";
@@ -25,6 +31,25 @@ export function tradeParty(userId: string) {
   return or(
     eq(tradeOffers.fromUserId, userId),
     eq(tradeOffers.toUserId, userId),
+  );
+}
+
+/**
+ * The trade started as an offer the user proposed (`proposer`), or as one
+ * their other party proposed to them (`answerer`). Claims match neither.
+ */
+export function offerParty(userId: string, role: "proposer" | "answerer") {
+  const proposedBy = (side: TradeSide) =>
+    role === "proposer" ? side : otherSide(side);
+  return or(
+    and(
+      eq(tradeOffers.fromUserId, userId),
+      eq(tradeOffers.proposedBy, proposedBy("from")),
+    ),
+    and(
+      eq(tradeOffers.toUserId, userId),
+      eq(tradeOffers.proposedBy, proposedBy("to")),
+    ),
   );
 }
 
@@ -90,11 +115,11 @@ export async function liveTradesBlocker(
 }
 
 /**
- * Close the user's open listings, withdraw the direct offers they sent and
- * decline the offers they received, putting each offer's ending on its
+ * Close the user's open listings, withdraw the pending offers they proposed
+ * and decline the ones proposed to them, putting each offer's ending on its
  * timeline, which names the deletion or the ban that closed them rather
  * than a party. Deleting the account withdraws the listings and tells no
- * one; a ban removes the listings and tells the sender of each declined
+ * one; a ban removes the listings and tells the proposer of each declined
  * offer, whose row the ban holds locked in `notify`. The pending offers,
  * then the listings, are locked in id order first (docs/auth.md), as the
  * outbox drain locks them to turn offers stale and break listings, since a
@@ -112,15 +137,20 @@ export async function closeOpenOffers(
   const withdraw = offerTransition("withdraw");
   const decline = offerTransition("decline");
   // only open listings; their live trades carry on, which a deletion waits for and a ban disputes
-  const sent = and(
-    eq(tradeOffers.fromUserId, userId),
-    or(
-      and(eq(tradeOffers.kind, "listing"), eq(tradeOffers.status, "open")),
-      and(eq(tradeOffers.kind, "trade"), eq(tradeOffers.status, withdraw.from)),
+  const sent = or(
+    and(
+      eq(tradeOffers.fromUserId, userId),
+      eq(tradeOffers.kind, "listing"),
+      eq(tradeOffers.status, "open"),
+    ),
+    and(
+      offerParty(userId, "proposer"),
+      eq(tradeOffers.kind, "trade"),
+      eq(tradeOffers.status, withdraw.from),
     ),
   );
   const received = and(
-    eq(tradeOffers.toUserId, userId),
+    offerParty(userId, "answerer"),
     eq(tradeOffers.kind, "trade"),
     eq(tradeOffers.status, decline.from),
   );
@@ -162,7 +192,12 @@ export async function closeOpenOffers(
     .update(tradeOffers)
     .set({ status: decline.to, endedAt: sql`now()`, updatedAt: bumpUpdatedAt })
     .where(received)
-    .returning({ id: tradeOffers.id, fromUserId: tradeOffers.fromUserId });
+    .returning({
+      id: tradeOffers.id,
+      fromUserId: tradeOffers.fromUserId,
+      toUserId: tradeOffers.toUserId,
+      proposedBy: tradeOffers.proposedBy,
+    });
 
   // each offer's ending on its timeline, put down to the ban or the deletion
   const events = [
@@ -186,17 +221,17 @@ export async function closeOpenOffers(
   ];
   if (events.length > 0) await tx.insert(tradeMessages).values(events);
 
-  // a ban's declines tell their senders, without naming who was banned, skipping a banned sender
+  // a ban's declines tell their proposers, without naming who was banned, skipping a banned proposer
   const told =
     closer.by === "staff"
-      ? declined.flatMap(({ id, fromUserId }) =>
+      ? declined.flatMap((offer) =>
           closer.notify.flatMap((row): NewNotification[] =>
-            row.id === fromUserId && !isBanActive(row)
+            row.id === proposerId(offer) && !isBanActive(row)
               ? [
                   {
                     type: "offer_declined",
                     userId: row.id,
-                    offerId: id,
+                    offerId: offer.id,
                     actorId: null,
                     tokenId: null,
                   },

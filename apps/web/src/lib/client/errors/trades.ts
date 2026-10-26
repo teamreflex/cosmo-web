@@ -61,6 +61,8 @@ export function formatTradeError(error: unknown): string | null {
       return m.trade_error_offer_own();
     case "offer_unavailable":
       return m.trade_error_offer_unavailable();
+    case "offer_claimer_at_cap":
+      return m.trade_error_offer_claimer_at_cap();
     case "offer_expired":
       return m.trade_error_offer_expired();
     default:

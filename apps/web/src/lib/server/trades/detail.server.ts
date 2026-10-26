@@ -89,8 +89,10 @@ export async function claimStanding(
 /**
  * The trade a listing led to, with the COSMO username behind the claimer's
  * pinned address: a claimed listing's live trade, or an ended listing's
- * latest trade. A claim's trade keeps the listing's id on the poster's
- * items, and a listing has at most one live trade.
+ * latest trade. A trade from the listing, a claim or an offer on it, keeps
+ * the listing's id on the poster's items, and only one that was accepted
+ * counts, so an offer that was declined, withdrawn, expired or went stale
+ * never names its claimer. A listing has at most one live trade.
  */
 async function readListingTrade(listing: {
   id: string;
@@ -111,6 +113,7 @@ async function readListingTrade(listing: {
     .where(
       and(
         eq(tradeOffers.kind, "trade"),
+        isNotNull(tradeOffers.acceptedAt),
         listing.status === "claimed"
           ? inArray(tradeOffers.status, [...liveTradeStatuses])
           : undefined,

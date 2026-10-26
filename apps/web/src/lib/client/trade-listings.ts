@@ -196,6 +196,8 @@ export function wantLabel(want: ListingFeedWant) {
       return objektName(want.collection, want.objekt);
     case "range":
       return rangeLabel(want.filter);
+    case "choice":
+      return want.options.map((option) => objektName(null, option)).join(" / ");
     case "payment":
       return `${want.amount} ${want.currency}`;
   }
@@ -382,8 +384,9 @@ export function endedNormally(
 
 /**
  * The collections a want row's picker is held to: an exact row's one
- * collection, which its artist, member, season and number pin, or a
- * range's columns.
+ * collection, which its artist, member, season and number pin, a range's
+ * columns, or every value of an "any of" row's collections, since a scope
+ * can't pair them up and the claim's check narrows the picks.
  */
 export function wantScope(
   want: Exclude<ListingFeedWant, { kind: "payment" }>,
@@ -397,6 +400,23 @@ export function wantScope(
       class: filter.class,
       onOffline: filter.on_offline,
       collectionNo: [],
+    };
+  }
+  if (want.kind === "choice") {
+    const values = (pick: (option: ObjektAttributes) => string) => [
+      ...new Set(want.options.map(pick)),
+    ];
+    return {
+      artist: values((option) => option.artist).flatMap(
+        (artist) => toUiArtist(artist) ?? [],
+      ),
+      member: values((option) => option.member),
+      season: values((option) => option.season),
+      class: values((option) => option.class),
+      onOffline: validOnlineTypes.filter((type) =>
+        want.options.some((option) => option.onOffline === type),
+      ),
+      collectionNo: values((option) => collectionNumber(null, option)),
     };
   }
   const { objekt } = want;

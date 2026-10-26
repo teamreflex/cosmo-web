@@ -7,6 +7,7 @@ import {
   type TradeOfferItem,
   type TradeSide,
   type TradeStatus,
+  type TradeWantKind,
 } from "@apollo/database/web/types";
 
 export type TradeItemState =
@@ -20,12 +21,16 @@ export type TradeItemState =
 
 /**
  * A trade's status and what each of its items has done, which is all a
- * transition needs. A cancelled trade carries who cancelled it, matching the
- * table's check.
+ * transition needs. A pending offer is a direct offer or a counter, which
+ * `from` proposes, or an offer on a listing, which its claimer `to`
+ * proposes, and a cancelled trade carries who cancelled it, matching the
+ * table's checks.
  */
 export type TradeState = (
+  | { status: "pending"; proposedBy: "from"; fromListing: false }
+  | { status: "pending"; proposedBy: "to"; fromListing: true }
   | { status: "cancelled"; cancelledBy: TradeCanceller }
-  | { status: Exclude<TradeStatus, "cancelled"> }
+  | { status: Exclude<TradeStatus, "pending" | "cancelled"> }
 ) & { items: readonly TradeItemState[] };
 
 /**
@@ -33,11 +38,11 @@ export type TradeState = (
  * in `items`. The rest come from the drain, the timers or staff.
  */
 export type TradeEvent =
-  // the recipient answers a pending direct offer
+  // the side that didn't propose a pending offer answers it
   | { type: "accept"; by: TradeSide }
   | { type: "decline"; by: TradeSide }
   | { type: "counter"; by: TradeSide }
-  // the sender takes back a pending direct offer
+  // the proposer takes back a pending offer
   | { type: "withdraw"; by: TradeSide }
   // the drain saw a token reach its receiver
   | { type: "transfer"; item: number }
@@ -66,7 +71,9 @@ export type TransitionRefusal =
   // the item already did what the event says
   | "already_done"
   // the item doesn't exist or is the wrong kind for the event
-  | "no_such_item";
+  | "no_such_item"
+  // an offer on a listing is accepted or declined, never countered
+  | "listing_offer";
 
 export type TransitionResult =
   { ok: true; trade: TradeState } | { ok: false; reason: TransitionRefusal };
@@ -79,14 +86,15 @@ const refuse = (reason: TransitionRefusal): TransitionResult => ({
 /**
  * Move a trade through its lifecycle, or say why the event can't happen.
  *
- * A direct offer starts pending and the recipient accepts, declines or
- * counters it; a trade from a listing starts accepted. Once accepted, either
- * party may cancel only while nothing has been sent or marked paid; after
- * that, a dispute is the only way out. A dispute freezes the deadline, mark
- * paid and cancelling. Transfers and confirmations are still recorded while
- * disputed, but only staff complete, cancel or extend a disputed trade. An
- * accepted trade completes once every token has arrived and every payment is
- * confirmed, which an extend checks too.
+ * An offer starts pending: the side that didn't propose it accepts, declines
+ * or counters it, unless it offers on a listing, which can't be countered,
+ * and the proposer may withdraw it. A listing claim starts accepted. Once
+ * accepted, either party may cancel only while nothing has been sent or
+ * marked paid; after that, a dispute is the only way out. A dispute freezes
+ * the deadline, mark paid and cancelling. Transfers and confirmations are
+ * still recorded while disputed, but only staff complete, cancel or extend a
+ * disputed trade. An accepted trade completes once every token has arrived
+ * and every payment is confirmed, which an extend checks too.
  */
 export function transition(
   trade: TradeState,
@@ -142,19 +150,26 @@ type EventOf<TType extends TradeEvent["type"]> = Extract<
 >;
 
 /**
- * A party's answer to a pending direct offer: the recipient accepts,
- * declines or counters it, or the sender withdraws it.
+ * A party's answer to a pending offer: the side that didn't propose it
+ * accepts, declines or counters it, or the proposer withdraws it. An offer on
+ * a listing can't be countered.
  */
 function answerOffer(
-  { status, items }: TradeState,
+  trade: TradeState,
   event: EventOf<"accept" | "decline" | "counter" | "withdraw">,
 ): TransitionResult {
   const { from, to } = offerTransition(event.type);
-  if (status !== from) return refuse("wrong_status");
-  if (event.by !== (event.type === "withdraw" ? "from" : "to")) {
+  if (trade.status !== from) return refuse("wrong_status");
+  if (
+    event.by !==
+    (event.type === "withdraw" ? trade.proposedBy : otherSide(trade.proposedBy))
+  ) {
     return refuse("wrong_party");
   }
-  return { ok: true, trade: { status: to, items } };
+  if (event.type === "counter" && trade.fromListing) {
+    return refuse("listing_offer");
+  }
+  return { ok: true, trade: { status: to, items: trade.items } };
 }
 
 /**
@@ -328,11 +343,35 @@ export function otherSide(side: TradeSide): TradeSide {
   return side === "from" ? "to" : "from";
 }
 
+// the user on the trade's side, or null once their account is gone
+export function sideUserId(
+  trade: Pick<TradeOffer, "fromUserId" | "toUserId">,
+  side: TradeSide,
+) {
+  return side === "from" ? trade.fromUserId : trade.toUserId;
+}
+
 /**
- * Whether the side has to act: the recipient of a pending offer answers it,
- * and a side still owing something on an accepted trade sends or pays. Once
- * an accepted trade's deadline has passed the drain's watermark a transfer
- * can't count, so nothing more is asked. Nothing else needs anyone.
+ * The user who proposed a trade that started as an offer, or null once
+ * their account is gone. Throws on a row without a proposer, which only a
+ * claim or a listing is (trade_offers_proposed_chk), so callers pass the
+ * offers they read as pending.
+ */
+export function proposerId(
+  row: Pick<TradeOffer, "id" | "fromUserId" | "toUserId" | "proposedBy">,
+) {
+  if (row.proposedBy === null) {
+    throw new Error(`offer ${row.id} has no proposed_by`);
+  }
+  return sideUserId(row, row.proposedBy);
+}
+
+/**
+ * Whether the side has to act: the side that didn't propose a pending offer
+ * answers it, and a side still owing something on an accepted trade sends
+ * or pays. Once an accepted trade's deadline has passed the drain's
+ * watermark a transfer can't count, so nothing more is asked. Nothing else
+ * needs anyone.
  */
 export function needsYou(
   state: TradeState,
@@ -341,7 +380,7 @@ export function needsYou(
 ) {
   switch (state.status) {
     case "pending":
-      return side === "to";
+      return side !== state.proposedBy;
     case "accepted":
       return !facts.deadlinePassed && owingSides(state.items).includes(side);
     default:
@@ -453,6 +492,16 @@ export function listingClosing(listing: {
 }
 
 /**
+ * Whether a listing takes offers, which its poster accepts or declines,
+ * rather than claims that start a trade at once: any range row makes it
+ * one, since a range matches many serials and only the poster knows which
+ * they meant. Exact and "any of" rows name their collections.
+ */
+export function takesOffers(wants: readonly { kind: TradeWantKind }[]) {
+  return wants.some((want) => want.kind === "range");
+}
+
+/**
  * The columns a trade's row takes when it ends in this state.
  */
 export function endedTradeColumns(trade: TradeState) {
@@ -485,13 +534,21 @@ export function tradeListings(
 
 /**
  * Read a trade and its items, in id order, into the state transitions take.
- * Throws on a listing or on a row the table's checks forbid.
+ * A pending offer offers on a listing when any of its items came from one.
+ * Throws on a listing, on a row the table's checks forbid, and on a pending
+ * offer that is neither a direct offer `from` proposed nor an offer on a
+ * listing its claimer `to` proposed.
  */
 export function tradeState(
-  row: Pick<TradeOffer, "status" | "cancelledBy">,
+  row: Pick<TradeOffer, "status" | "cancelledBy" | "proposedBy">,
   rows: readonly Pick<
     TradeOfferItem,
-    "kind" | "sender" | "transferredAt" | "markedPaidAt" | "confirmedAt"
+    | "kind"
+    | "sender"
+    | "listingId"
+    | "transferredAt"
+    | "markedPaidAt"
+    | "confirmedAt"
   >[],
 ): TradeState {
   const items = rows.map((item): TradeItemState =>
@@ -515,7 +572,18 @@ export function tradeState(
         throw new Error("cancelled trade without cancelled_by");
       }
       return { status: row.status, cancelledBy: row.cancelledBy, items };
-    case "pending":
+    case "pending": {
+      const fromListing = rows.some((item) => item.listingId !== null);
+      if (row.proposedBy === "from" && !fromListing) {
+        return { status: row.status, proposedBy: "from", fromListing, items };
+      }
+      if (row.proposedBy === "to" && fromListing) {
+        return { status: row.status, proposedBy: "to", fromListing, items };
+      }
+      throw new Error(
+        `pending trade proposed by ${row.proposedBy ?? "nobody"} ${fromListing ? "on" : "off"} a listing`,
+      );
+    }
     case "accepted":
     case "disputed":
     case "completed":

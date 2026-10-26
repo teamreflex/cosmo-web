@@ -30,6 +30,7 @@ import {
 import { DRAIN_CURSOR_NAME, isTimedOut } from "@apollo/trades/timers";
 import { and, asc, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import type { PgUpdateSetSource } from "drizzle-orm/pg-core";
+import type { AuthErrorCode } from "../../universal/errors/auth";
 import { ExpectedError } from "../../universal/errors/expected";
 import type {
   ClaimTokenRefusal,
@@ -37,7 +38,6 @@ import type {
 } from "../../universal/errors/trades";
 import { db, type DbOrTx, type WebTx } from "../db";
 import { isPostgresError } from "../util.server";
-import { refusePoster } from "./listings.server";
 
 export function refuseTrade(code: TradeErrorCode): never {
   throw new ExpectedError(code);
@@ -49,6 +49,18 @@ export function refuseTrade(code: TradeErrorCode): never {
  */
 export function refuseToken({ tokenId, reason }: ClaimTokenRefusal): never {
   throw new ExpectedError("claim_token_unavailable", { tokenId, reason });
+}
+
+// refuses a user whose account is gone or banned
+export function refusePoster<
+  T extends { banned: boolean; banExpires: Date | null },
+>(row: T | undefined): asserts row is T {
+  if (!row) {
+    throw new ExpectedError("not_signed_in" satisfies AuthErrorCode);
+  }
+  if (isBanActive(row)) {
+    throw new ExpectedError("forbidden" satisfies AuthErrorCode);
+  }
 }
 
 /**
@@ -135,6 +147,7 @@ export async function lockTrade(tx: WebTx, tradeId: string) {
       expiresAt: tradeOffers.expiresAt,
       endedAt: tradeOffers.endedAt,
       cancelledBy: tradeOffers.cancelledBy,
+      proposedBy: tradeOffers.proposedBy,
       disputeReportId: tradeOffers.disputeReportId,
       now: sql<Date>`now()`.mapWith(tradeOffers.endedAt),
     })
@@ -163,8 +176,10 @@ export async function lockTrade(tx: WebTx, tradeId: string) {
 export type LockedTrade = Awaited<ReturnType<typeof lockTrade>>;
 
 /**
- * The trade's parties and token ids, read without a lock, when the caller
- * is one of them. Anything else, a listing included, is not found.
+ * The trade's parties, token ids and the listing its poster's items came
+ * from (null for a direct offer), read without a lock, when the caller is
+ * one of them. A trade's items never change. Anything else, a listing
+ * included, is not found.
  */
 export async function partyTrade(userId: string, tradeId: string) {
   const trade = await db.query.tradeOffers.findFirst({
@@ -174,14 +189,20 @@ export async function partyTrade(userId: string, tradeId: string) {
       OR: [{ fromUserId: userId }, { toUserId: userId }],
     },
     columns: { fromUserId: true, toUserId: true },
-    with: { items: { columns: { tokenId: true } } },
+    with: { items: { columns: { tokenId: true, listingId: true } } },
   });
   if (!trade) refuseTrade("trade_not_found");
   return {
     fromUserId: trade.fromUserId,
     toUserId: trade.toUserId,
     tokenIds: trade.items.flatMap((item) => item.tokenId ?? []),
+    listingId: tradeListingId(trade.items),
   };
+}
+
+// the listing a trade came from, a claim or an offer on it, which every item from its pool names
+export function tradeListingId(items: readonly { listingId: string | null }[]) {
+  return items.find((item) => item.listingId !== null)?.listingId ?? null;
 }
 
 /**
@@ -219,8 +240,9 @@ export async function isDue(tx: WebTx, trade: LockedTrade) {
 }
 
 /**
- * What a refused cancel or dispute answers. The refusals a cancel or
- * dispute can't reach read as the trade having changed.
+ * What a refused party action answers. The refusals a cancel or dispute
+ * can't reach read as the trade having changed, and a counter to an offer
+ * on a listing as the offer being unavailable to counter.
  */
 export const partyRefusals = {
   wrong_status: "trade_status_changed",
@@ -229,6 +251,7 @@ export const partyRefusals = {
   wrong_party: "trade_status_changed",
   already_done: "trade_status_changed",
   no_such_item: "trade_status_changed",
+  listing_offer: "offer_unavailable",
 } as const satisfies Record<PartyActionRefusal, TradeErrorCode>;
 
 /**

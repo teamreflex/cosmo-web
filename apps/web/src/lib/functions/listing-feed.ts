@@ -4,6 +4,7 @@ import { feedbackRepColumns } from "@/lib/server/feedback.server";
 import {
   hydrateListings,
   listingFeedWhere,
+  storedWants,
 } from "@/lib/server/trades/feed.server";
 import { toFeedbackRep } from "@/lib/universal/feedback";
 import {
@@ -56,7 +57,7 @@ export const $fetchListingFeed = createServerFn({ method: "GET" })
       },
       with: {
         items: { where: { leftAt: { isNull: true } }, orderBy: { id: "asc" } },
-        wants: { orderBy: { id: "asc" } },
+        wants: storedWants,
         fromUser: true,
         fromCosmo: { columns: { username: true } },
         fromStats: { columns: feedbackRepColumns },

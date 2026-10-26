@@ -22,6 +22,7 @@ export const tradeErrorCodes = [
   "trade_party_banned",
   "offer_own",
   "offer_unavailable",
+  "offer_claimer_at_cap",
   "offer_expired",
 ] as const;
 

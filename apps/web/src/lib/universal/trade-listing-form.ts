@@ -55,6 +55,14 @@ export function listingToFormValues(
           return [{ kind: "exact", slug: want.objekt.slug, count: want.count }];
         case "range":
           return [{ kind: "range", filter: want.filter, count: want.count }];
+        case "choice":
+          return [
+            {
+              kind: "choice",
+              slugs: want.options.map((option) => option.slug),
+              count: want.count,
+            },
+          ];
         case "payment":
           return [];
       }

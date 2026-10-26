@@ -68,7 +68,13 @@ export const lockUsers = Effect.fn("lockUsers")(function* (
  */
 export type LiveTrade = Pick<
   TradeOffer,
-  "id" | "status" | "fromUserId" | "toUserId" | "fromAddress" | "cancelledBy"
+  | "id"
+  | "status"
+  | "fromUserId"
+  | "toUserId"
+  | "fromAddress"
+  | "cancelledBy"
+  | "proposedBy"
 > & {
   toAddress: string;
   items: Pick<
@@ -109,6 +115,7 @@ export const lockLiveTrades = Effect.fn("lockLiveTrades")(function* (
       fromAddress: tradeOffers.fromAddress,
       toAddress: tradeOffers.toAddress,
       cancelledBy: tradeOffers.cancelledBy,
+      proposedBy: tradeOffers.proposedBy,
     })
     .from(tradeOffers)
     .where(

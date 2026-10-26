@@ -18,7 +18,7 @@ import {
   readCandidateSide,
   readListingState,
 } from "@/lib/server/trades/detail.server";
-import { hydrateListings } from "@/lib/server/trades/feed.server";
+import { hydrateListings, storedWants } from "@/lib/server/trades/feed.server";
 import {
   countRangeMatches,
   readTokenStates,
@@ -27,16 +27,18 @@ import {
 } from "@/lib/server/trades/holdings.server";
 import {
   checkTerms,
+  endListingOffers,
   insertTerms,
   listingArrays,
+  listingOffers,
   listingRefusal,
   lockLinkedPoster,
+  lockListingOffers,
   lockPoster,
   ownListing,
   posterRow,
   recheckTokens,
   refuseEdit,
-  refusePoster,
 } from "@/lib/server/trades/listings.server";
 import {
   deliverableTokens,
@@ -44,6 +46,7 @@ import {
   posterRefusal,
   toPosterAccount,
 } from "@/lib/server/trades/poster.server";
+import { refusePoster } from "@/lib/server/trades/trade.server";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import { toFeedbackRep } from "@/lib/universal/feedback";
 import {
@@ -96,7 +99,7 @@ export const $postListing = createServerFn({ method: "POST" })
     if (terms.kind === "token_unavailable") return terms;
 
     return db.transaction(async (tx): Promise<ListingWriteResult> => {
-      const address = await lockLinkedPoster(tx, actor);
+      const { address } = await lockLinkedPoster(tx, actor);
       const refusal = await recheckTokens(tx, address, terms);
       if (refusal) return refusal;
 
@@ -124,8 +127,12 @@ export const $postListing = createServerFn({ method: "POST" })
  * address, the unit size, the note, its items and its wants. Refusals
  * follow a fixed order: the poster, then the listing (missing or not
  * theirs, closed), then the wants, then the offered tokens. Its live trades
- * keep their own copies of the objekts they took, whatever the edit drops.
- * `created_at` never changes, so the listing keeps its place in the feed.
+ * keep their own copies of the objekts they took, whatever the edit drops,
+ * but its pending offers were made on the old terms, so they turn stale and
+ * their claimers hear of it. They are locked before the listing
+ * (docs/auth.md), so one sent after they were read refuses the edit with
+ * `listing_updated`. `created_at` never changes, so the listing keeps its
+ * place in the feed.
  */
 export const $editListing = createServerFn({ method: "POST" })
   .validator(editListingInputSchema)
@@ -143,48 +150,79 @@ export const $editListing = createServerFn({ method: "POST" })
 
     refusePoster((await posterRow(db, actor.userId))[0]);
     refuseEdit((await ownListing(db, actor.userId, data.listingId))[0]);
-    const terms = await checkTerms(actor.address, data);
+    const terms = await checkTerms(actor.address, data, data.listingId);
     if (terms.kind === "token_unavailable") return terms;
+    const seen = await listingOffers(db, actor.userId, data.listingId);
 
-    return db.transaction(async (tx): Promise<ListingWriteResult> => {
-      const address = await lockLinkedPoster(tx, actor);
-      const [listing] = await ownListing(tx, actor.userId, data.listingId).for(
-        "update",
-      );
-      refuseEdit(listing);
-      const refusal = await recheckTokens(tx, address, terms);
-      if (refusal) return refusal;
-
-      await tx
-        .update(tradeOffers)
-        .set({
-          ...listingArrays(terms.offered),
-          fromAddress: address,
-          unitSize: data.unitSize,
-          note: data.note,
-          updatedAt: bumpUpdatedAt,
-        })
-        .where(eq(tradeOffers.id, data.listingId));
-      await tx
-        .delete(tradeOfferItems)
-        .where(
-          and(
-            eq(tradeOfferItems.offerId, data.listingId),
-            isNull(tradeOfferItems.leftAt),
-          ),
+    const { result, ended } = await db.transaction(
+      async (tx): Promise<{ result: ListingWriteResult; ended: string[] }> => {
+        // the poster and the claimers, then the offers, then the listing
+        const { address, users } = await lockLinkedPoster(
+          tx,
+          actor,
+          seen.map((offer) => offer.toUserId),
         );
-      await tx
-        .delete(tradeListingWants)
-        .where(eq(tradeListingWants.listingId, data.listingId));
-      await insertTerms(tx, data.listingId, terms);
-      return { kind: "saved", listingId: data.listingId };
-    });
+        const offers = await lockListingOffers(tx, seen);
+        const [listing] = await ownListing(
+          tx,
+          actor.userId,
+          data.listingId,
+        ).for("update");
+        refuseEdit(listing);
+        const locked = new Set(offers.map((offer) => offer.id));
+        const now = await listingOffers(tx, actor.userId, data.listingId);
+        if (now.some((offer) => !locked.has(offer.id))) {
+          throw new ExpectedError("listing_updated");
+        }
+        const refusal = await recheckTokens(tx, address, terms);
+        if (refusal) return { result: refusal, ended: [] };
+
+        await tx
+          .update(tradeOffers)
+          .set({
+            ...listingArrays(terms.offered),
+            fromAddress: address,
+            unitSize: data.unitSize,
+            note: data.note,
+            updatedAt: bumpUpdatedAt,
+          })
+          .where(eq(tradeOffers.id, data.listingId));
+        await tx
+          .delete(tradeOfferItems)
+          .where(
+            and(
+              eq(tradeOfferItems.offerId, data.listingId),
+              isNull(tradeOfferItems.leftAt),
+            ),
+          );
+        await tx
+          .delete(tradeListingWants)
+          .where(eq(tradeListingWants.listingId, data.listingId));
+        await insertTerms(tx, data.listingId, terms);
+        return {
+          result: { kind: "saved", listingId: data.listingId },
+          ended: await endListingOffers(
+            tx,
+            actor.userId,
+            offers,
+            users,
+            "edit",
+          ),
+        };
+      },
+    );
+    await publishTradeUpdates(ended);
+    return result;
   });
 
 /**
- * Close the caller's open listing; its live trades carry on. Anyone else's
- * listing, and any trade row, is not found whatever its status; the
- * poster's own closed listing says so.
+ * Close the caller's open listing; its live trades carry on, and its
+ * pending offers are declined with the listing named as what closed them,
+ * which their claimers hear. The offers are locked before the listing
+ * (docs/auth.md); one sent after they were read is left for trade-timers,
+ * which declines the offers on closed listings. Anyone else's listing, and
+ * any trade row, is not found whatever its status; the poster's own closed
+ * listing says so.
  */
 export const $withdrawListing = createServerFn({ method: "POST" })
   .validator(listingIdInputSchema)
@@ -192,8 +230,15 @@ export const $withdrawListing = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const userId = context.session.user.id;
     const { from, to } = listingTransition("withdraw");
-    await db.transaction(async (tx) => {
-      await lockPoster(tx, userId);
+    const seen = await listingOffers(db, userId, data.listingId);
+    const ended = await db.transaction(async (tx) => {
+      // the poster and the claimers, then the offers, then the listing
+      const users = await lockPoster(
+        tx,
+        userId,
+        seen.map((offer) => offer.toUserId),
+      );
+      const offers = await lockListingOffers(tx, seen);
       const [withdrawn] = await tx
         .update(tradeOffers)
         .set({ status: to, endedAt: sql`now()`, updatedAt: bumpUpdatedAt })
@@ -206,11 +251,14 @@ export const $withdrawListing = createServerFn({ method: "POST" })
           ),
         )
         .returning({ id: tradeOffers.id });
-      if (withdrawn) return;
+      if (withdrawn) {
+        return endListingOffers(tx, userId, offers, users, "withdraw");
+      }
 
       const [listing] = await ownListing(tx, userId, data.listingId);
       throw new ExpectedError(listingRefusal(listing) ?? "listing_closed");
     });
+    await publishTradeUpdates(ended);
   });
 
 /**
@@ -218,9 +266,14 @@ export const $withdrawListing = createServerFn({ method: "POST" })
  * from the pool and the tokens they give, one list per want row, as of the
  * listing's `updated_at` they saw. Each claim is its own trade, and claims
  * on one listing run side by side as long as they pick different objekts;
- * a claimer holds one live trade per listing. Every refusal is an
+ * a claimer holds one live trade per listing. A listing with a range row
+ * takes offers instead (takesOffers): the same request, checked the same
+ * way except for the claim cap, sends the poster a pending offer that
+ * reserves nothing and that they accept or decline, and a claimer holds one
+ * live trade or pending offer per listing. Every refusal is an
  * ExpectedError and writes nothing. The order they're checked in is fixed,
- * so the same request always gets the same answer.
+ * so the same request always gets the same answer. Returns the trade's id
+ * and whether it is a pending offer.
  */
 export const $claimListing = createServerFn({ method: "POST" })
   .validator(claimListingInputSchema)
@@ -346,7 +399,7 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
       },
       with: {
         items: { where: { leftAt: { isNull: true } }, orderBy: { id: "asc" } },
-        wants: { orderBy: { id: "asc" } },
+        wants: storedWants,
         fromUser: { with: { cosmoAccount: posterLinkColumns } },
         fromCosmo: { columns: { username: true } },
         fromStats: { columns: feedbackRepColumns },
@@ -418,7 +471,7 @@ export const $fetchTradeListingViewer = createServerFn({ method: "GET" })
         endedAt: true,
       },
       with: {
-        wants: { orderBy: { id: "asc" } },
+        wants: storedWants,
       },
     });
     if (!listing) return null;

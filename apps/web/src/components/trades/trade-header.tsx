@@ -32,8 +32,9 @@ type Props = {
 
 /**
  * The page title, a pill when the trade started as a direct offer, who it's
- * between, its sender first, and where it stands: the time left to answer
- * an offer, which its recipient reads as waiting for them, or to finish,
+ * between, its `from` side (the poster or the offer's sender) first, and
+ * where it stands: the time left to answer an offer, which the side that
+ * didn't propose it reads as waiting for them, or to finish,
  * the time left when a dispute paused it, or how it ended. From tablet
  * width it sticks under the navbar. On phones the parties and the status
  * share a line under the title.

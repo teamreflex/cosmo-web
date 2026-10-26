@@ -6,11 +6,9 @@ import { feedItem, readIndexed } from "@/lib/server/trades/feed.server";
 import { readIndexerTokens } from "@/lib/server/trades/holdings.server";
 import {
   deadlinePassed,
-  offerCloser,
   readTradeView,
   toPartyName,
   tradeDispute,
-  tradeListingId,
   watermarkExtra,
 } from "@/lib/server/trades/trade-view.server";
 import {
@@ -23,6 +21,7 @@ import {
   partyRefusals,
   partyTrade,
   refuseTrade,
+  tradeListingId,
 } from "@/lib/server/trades/trade.server";
 import {
   myTradesInputSchema,
@@ -30,11 +29,12 @@ import {
   tradeIdInputSchema,
 } from "@/lib/universal/schema/trades";
 import { storedObjektItemSchema } from "@/lib/universal/trade-listings";
-import type {
-  MyTradeSide,
-  MyTradesPage,
-  TradeView,
-  TradeViewer,
+import {
+  type MyTradeSide,
+  type MyTradesPage,
+  offerCloser,
+  type TradeView,
+  type TradeViewer,
 } from "@/lib/universal/trades";
 import { can, parseRole } from "@apollo/auth";
 import {
@@ -139,6 +139,7 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
         status: tradeOffers.status,
         fromUserId: tradeOffers.fromUserId,
         cancelledBy: tradeOffers.cancelledBy,
+        proposedBy: tradeOffers.proposedBy,
         deadlineAt: tradeOffers.deadlineAt,
         expiresAt: tradeOffers.expiresAt,
         endedAt: tradeOffers.endedAt,
@@ -230,6 +231,7 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
           status: page.status,
           fromUserId: page.fromUserId,
           cancelledBy: page.cancelledBy,
+          proposedBy: page.proposedBy,
           deadlineAt: page.deadlineAt,
           expiresAt: page.expiresAt,
           endedAt: page.endedAt,

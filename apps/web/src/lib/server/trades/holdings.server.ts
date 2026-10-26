@@ -6,7 +6,17 @@ import { orderInventory } from "@apollo/trades/inventory";
 import type { ListingInput } from "@apollo/trades/listing";
 import type { ObjektAttributes, RangeFilter } from "@apollo/trades/range";
 import { addr } from "@apollo/util";
-import { and, eq, inArray, lte, notInArray, or, sql } from "drizzle-orm";
+import {
+  and,
+  eq,
+  inArray,
+  isNull,
+  lte,
+  ne,
+  notInArray,
+  or,
+  sql,
+} from "drizzle-orm";
 import { ExpectedError } from "../../universal/errors/expected";
 import type { TradeErrorCode } from "../../universal/errors/trades";
 import type { TokenRefusal } from "../../universal/trade-listings";
@@ -78,27 +88,32 @@ export async function readIndexerTokens(
 
 /**
  * Reads every token's indexer state, plus the address's locks and the live
- * trade items among them, without locking anything.
+ * trade items among them, without locking anything. Live items of trades
+ * from `editedListing` don't count, as readWebTokenFlags says.
  */
 export async function readTokenStates(
   address: string,
   tokenIds: readonly number[],
+  editedListing?: string,
 ): Promise<TokenHoldings> {
   const [states, flags] = await Promise.all([
     readIndexerTokens(tokenIds),
-    readWebTokenFlags(db, address, tokenIds),
+    readWebTokenFlags(db, address, tokenIds, editedListing),
   ]);
   return { states, ...flags };
 }
 
 /**
  * Reads the address's locks and the live trade items among the tokens, in
- * one statement. Safe inside a transaction.
+ * one statement. Safe inside a transaction. An edit passes its listing as
+ * `editedListing`, so an objekt live in one of the listing's own trades can
+ * stay in its pool, where it's free again if that trade is cancelled.
  */
 export async function readWebTokenFlags(
   executor: DbOrTx,
   address: string,
   tokenIds: readonly number[],
+  editedListing?: string,
 ): Promise<TokenFlags> {
   const rows = await executor
     .select({
@@ -124,6 +139,12 @@ export async function readWebTokenFlags(
           and(
             eq(tradeOfferItems.live, true),
             inArray(tradeOfferItems.tokenId, [...tokenIds]),
+            editedListing === undefined
+              ? undefined
+              : or(
+                  isNull(tradeOfferItems.listingId),
+                  ne(tradeOfferItems.listingId, editedListing),
+                ),
           ),
         ),
     );

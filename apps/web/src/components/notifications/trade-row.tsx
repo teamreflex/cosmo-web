@@ -241,7 +241,11 @@ function describeTrade(notification: TradeItem, username: string) {
     case "offer_received":
       return (
         <ParaglideMessage
-          message={m.notification_offer_received}
+          message={
+            notification.fromListing
+              ? m.notification_offer_received_listing
+              : m.notification_offer_received
+          }
           inputs={{
             username,
             offered: notification.objekts.length,
@@ -253,14 +257,27 @@ function describeTrade(notification: TradeItem, username: string) {
     case "offer_accepted":
       return (
         <ParaglideMessage
-          message={m.notification_offer_accepted}
+          message={
+            notification.fromListing
+              ? m.notification_offer_accepted_listing
+              : m.notification_offer_accepted
+          }
           inputs={{ username }}
           markup={bold}
         />
       );
-    // staff close the offers a banned user received, never saying who was banned
+    /**
+     * Staff close the offers a banned user received, never saying who was
+     * banned, and an offer on a listing closes with the listing.
+     */
     case "offer_declined":
-      return staff ? (
+      return notification.closer === "listing" ? (
+        <ParaglideMessage
+          message={m.notification_offer_declined_listing_closed}
+          inputs={{ username }}
+          markup={bold}
+        />
+      ) : staff ? (
         <ParaglideMessage
           message={m.notification_offer_declined_staff}
           inputs={{ appName, username }}
@@ -268,7 +285,11 @@ function describeTrade(notification: TradeItem, username: string) {
         />
       ) : (
         <ParaglideMessage
-          message={m.notification_offer_declined}
+          message={
+            notification.fromListing
+              ? m.notification_offer_declined_listing
+              : m.notification_offer_declined
+          }
           inputs={{ username }}
           markup={bold}
         />
@@ -284,17 +305,27 @@ function describeTrade(notification: TradeItem, username: string) {
     case "offer_expired":
       return (
         <ParaglideMessage
-          message={m.notification_offer_expired}
+          message={
+            notification.fromListing
+              ? m.notification_offer_expired_listing
+              : m.notification_offer_expired
+          }
           inputs={{ username }}
           markup={bold}
         />
       );
+    // an offer goes stale without a token when the poster edits the listing it was on
     case "offer_stale":
-      // only the offer's sender (`from`) is told, so `from` is their own objekt
-      return (
+      return notification.token === null ? (
+        <ParaglideMessage
+          message={m.notification_offer_stale_edited}
+          inputs={{ username }}
+          markup={bold}
+        />
+      ) : (
         <ParaglideMessage
           message={
-            notification.tokenSender === "from"
+            notification.tokenYours
               ? m.notification_offer_stale_yours
               : m.notification_offer_stale_theirs
           }

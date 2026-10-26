@@ -19,7 +19,7 @@ import {
   tradePair,
 } from "@/lib/server/objekts/lists.server";
 import { readOfferSerials } from "@/lib/server/trades/offer.server";
-import { refuseTrade } from "@/lib/server/trades/trade.server";
+import { refuseTrade, tradeListingId } from "@/lib/server/trades/trade.server";
 import type { PublicUser } from "@/lib/universal/auth";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import type {
@@ -1070,7 +1070,8 @@ async function readAnchorPair(listId: string, userId: string) {
  * the sender's discoverable ones, as Trade Matches pairs them, after the
  * offer's own, with the copy behind each as Trade Matches picks it. A
  * hidden list of the sender's never shows. Anyone but the recipient of a
- * pending offer gets not found.
+ * pending direct offer or counter gets not found, and an offer on a
+ * listing, which can't be countered, is unavailable.
  */
 export const $fetchCounterMatches = createServerFn({ method: "GET" })
   .validator(tradeIdInputSchema)
@@ -1087,9 +1088,12 @@ export const $fetchCounterMatches = createServerFn({ method: "GET" })
         toUserId: userId,
       },
       columns: { fromUserId: true },
-      with: { items: { columns: { sender: true, slug: true } } },
+      with: {
+        items: { columns: { sender: true, slug: true, listingId: true } },
+      },
     });
     if (!trade?.fromUserId) refuseTrade("trade_not_found");
+    if (tradeListingId(trade.items) !== null) refuseTrade("offer_unavailable");
 
     // the caller's trade pairs against each of the sender's discoverable ones
     const mh = alias(objektLists, "mh");

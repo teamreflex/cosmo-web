@@ -1,0 +1,79 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "e420289f-ce7a-49d4-9918-c135b2acb211",
+  "prevIds": [
+    "7bccf38e-9c39-469c-a557-9686e088930b"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "trade_offers",
+        "proposed_by"
+      ],
+      "writes": [
+        "s|col|public.trade_offers.proposed_by",
+        "n|col|public.trade_offers.proposed_by",
+        "e|col|public.trade_offers.proposed_by"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|enum|public.trade_side"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_offers"
+      ],
+      "writes": [
+        "s|ck|public.trade_offers.trade_offers_proposed_chk",
+        "n|ck|public.trade_offers.trade_offers_proposed_chk",
+        "e|ck|public.trade_offers.trade_offers_proposed_chk",
+        "n|con|public.trade_offers.trade_offers_proposed_chk"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|col|public.trade_offers.status",
+        "n|col|public.trade_offers.proposed_by",
+        "n|col|public.trade_offers.kind"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "proposed_by",
+        "type": "trade_side",
+        "typeSchema": "public",
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "trade_offers_proposed_chk",
+        "value": "(\"status\" <> 'pending' OR \"proposed_by\" IS NOT NULL) AND (\"kind\" = 'trade' OR \"proposed_by\" IS NULL)",
+        "entityType": "checks"
+      }
+    }
+  ]
+}

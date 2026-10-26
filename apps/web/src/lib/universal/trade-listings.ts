@@ -22,23 +22,25 @@ export type TokenRefusal = {
 export type ListingWriteResult =
   { kind: "saved"; listingId: string } | TokenRefusal;
 
+// the collection values an exact row, a choice row's option and an objekt item copy
+const collectionValues = {
+  slug: z.string(),
+  artist: z.string(),
+  member: z.string(),
+  season: z.string(),
+  class: z.string(),
+  onOffline: z.string(),
+};
+
 /**
- * A want row as stored, parsed into its kind's shape. The table's CHECK
- * keeps every kind's columns filled, so a parse failure means the schema
- * and this parser have drifted apart.
+ * A want row as stored, parsed into its kind's shape, with a choice row's
+ * collections read alongside it (`options`, in slug order). The table's
+ * CHECK keeps every kind's columns filled, so a parse failure means the
+ * schema and this parser have drifted apart.
  */
 export const storedWantSchema = z.discriminatedUnion("kind", [
   z
-    .object({
-      kind: z.literal("exact"),
-      count: z.int(),
-      slug: z.string(),
-      artist: z.string(),
-      member: z.string(),
-      season: z.string(),
-      class: z.string(),
-      onOffline: z.string(),
-    })
+    .object({ kind: z.literal("exact"), count: z.int(), ...collectionValues })
     .transform(({ kind, count, ...objekt }) => ({ kind, count, objekt })),
   z
     .object({
@@ -62,6 +64,11 @@ export const storedWantSchema = z.discriminatedUnion("kind", [
       } satisfies RangeFilter,
     })),
   z.object({
+    kind: z.literal("choice"),
+    count: z.int(),
+    options: z.array(z.object(collectionValues)),
+  }),
+  z.object({
     kind: z.literal("payment"),
     amount: z.string(),
     currency: z.string(),
@@ -80,6 +87,12 @@ export function toTradeWant(want: StoredWant): TradeWant | null {
       return { kind: "exact", slug: want.objekt.slug, count: want.count };
     case "range":
       return { kind: "range", filter: want.filter, count: want.count };
+    case "choice":
+      return {
+        kind: "choice",
+        slugs: want.options.map((option) => option.slug),
+        count: want.count,
+      };
     case "payment":
       return null;
   }
@@ -89,15 +102,7 @@ export function toTradeWant(want: StoredWant): TradeWant | null {
  * An objekt item as stored, with the collection values it copied.
  */
 export const storedObjektItemSchema = z
-  .object({
-    tokenId: z.int(),
-    slug: z.string(),
-    artist: z.string(),
-    member: z.string(),
-    season: z.string(),
-    class: z.string(),
-    onOffline: z.string(),
-  })
+  .object({ tokenId: z.int(), ...collectionValues })
   .transform(({ tokenId, ...attributes }) => ({ tokenId, attributes }));
 
 /**

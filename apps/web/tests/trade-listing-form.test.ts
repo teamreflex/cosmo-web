@@ -26,7 +26,8 @@ const attributes = (slug: string, member: string, artist = "artms") => ({
 
 /**
  * A stored listing as the detail payload carries it: one offered objekt, a
- * tripleS range, an exact row and a payment row only SQL can insert.
+ * tripleS range, an exact row, an "any of" row and a payment row only SQL
+ * can insert.
  */
 const listing = {
   id: "0b7d6f1e-6a43-4c55-9d3e-2f1b4c8a9e10",
@@ -57,6 +58,14 @@ const listing = {
       objekt: attributes("atom02-kimlip-201z", "KimLip"),
       collection: null,
     },
+    {
+      kind: "choice",
+      count: 2,
+      options: [
+        attributes("atom02-haseul-201z", "HaSeul"),
+        attributes("atom02-jinsoul-201z", "JinSoul"),
+      ],
+    },
     { kind: "payment", amount: "25.00", currency: "NZD" },
   ],
 } satisfies Pick<TradeListing, "id" | "items" | "wants" | "note">;
@@ -80,6 +89,11 @@ describe("composer prefill (CMP-04)", () => {
           },
         },
         { kind: "exact", slug: "atom02-kimlip-201z", count: 1 },
+        {
+          kind: "choice",
+          slugs: ["atom02-haseul-201z", "atom02-jinsoul-201z"],
+          count: 2,
+        },
       ],
       note: "serials under 1000",
     });
@@ -110,6 +124,11 @@ describe("composer prefill (CMP-04)", () => {
             },
           },
           { kind: "exact", slug: "atom02-kimlip-201z", count: 1 },
+          {
+            kind: "choice",
+            slugs: ["atom02-haseul-201z", "atom02-jinsoul-201z"],
+            count: 2,
+          },
         ],
         note: "serials under 1000",
       },
