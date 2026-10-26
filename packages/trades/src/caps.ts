@@ -41,3 +41,6 @@ export const MAX_TOTAL_WANTED = 30;
 
 // the longest note a listing can carry, matching its column
 export const MAX_NOTE_LENGTH = 500;
+
+// the most collections one "any of" want row can name
+export const MAX_CHOICE_OPTIONS = 10;

@@ -15,7 +15,7 @@ import {
 import type { ListingInput } from "@apollo/trades/listing";
 import { IconPlus } from "@tabler/icons-react";
 import { useState } from "react";
-import { type UseFormReturn, useFieldArray, useWatch } from "react-hook-form";
+import { useFieldArray, type UseFormReturn, useWatch } from "react-hook-form";
 import { Button } from "../ui/button";
 import { FieldError } from "../ui/field";
 import ComposerExactRow from "./composer-exact-row";
@@ -100,31 +100,39 @@ export default function ComposerWantRows({
             />
           );
 
-          return want.kind === "exact" ? (
-            <ComposerExactRow
-              key={field.id}
-              position={index + 1}
-              count={want.count}
-              slug={want.slug}
-              shown={display.collections.get(want.slug)}
-              stepper={stepper}
-              onRemove={() => remove(index)}
-            />
-          ) : (
-            <ComposerRangeRow
-              key={field.id}
-              position={index + 1}
-              count={want.count}
-              filter={want.filter}
-              error={
-                form.getFieldState(`wants.${index}.filter`, formState).error
-                  ?.message
-              }
-              stepper={stepper}
-              onChange={(filter) => setWant(index, { ...want, filter })}
-              onRemove={() => remove(index)}
-            />
-          );
+          switch (want.kind) {
+            case "exact":
+              return (
+                <ComposerExactRow
+                  key={field.id}
+                  position={index + 1}
+                  count={want.count}
+                  slug={want.slug}
+                  shown={display.collections.get(want.slug)}
+                  stepper={stepper}
+                  onRemove={() => remove(index)}
+                />
+              );
+            case "range":
+              return (
+                <ComposerRangeRow
+                  key={field.id}
+                  position={index + 1}
+                  count={want.count}
+                  filter={want.filter}
+                  error={
+                    form.getFieldState(`wants.${index}.filter`, formState).error
+                      ?.message
+                  }
+                  stepper={stepper}
+                  onChange={(filter) => setWant(index, { ...want, filter })}
+                  onRemove={() => remove(index)}
+                />
+              );
+            // the composer can't add a choice row yet
+            case "choice":
+              return null;
+          }
         })}
 
         {searching && (

@@ -106,6 +106,7 @@ export const $postListing = createServerFn({ method: "POST" })
           status: "open",
           fromUserId: actor.userId,
           fromAddress: address,
+          unitSize: data.unitSize,
           note: data.note,
           ...listingArrays(terms.offered),
         })
@@ -157,6 +158,7 @@ export const $editListing = createServerFn({ method: "POST" })
         .set({
           ...listingArrays(terms.offered),
           fromAddress: address,
+          unitSize: data.unitSize,
           note: data.note,
           updatedAt: bumpUpdatedAt,
         })

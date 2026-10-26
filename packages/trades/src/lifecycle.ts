@@ -445,6 +445,20 @@ export function listingTransition(event: ListingEvent): {
 }
 
 /**
+ * How a listing closes once objekts leave its pool, or null while the pool
+ * still holds a unit: filled when any of its trades completed, else broken.
+ * Completion and the drain's dropping of moved objekts both apply it.
+ */
+export function listingClosing(listing: {
+  pool: number;
+  unitSize: number;
+  completed: boolean;
+}): Extract<ListingEvent, "fill" | "break"> | null {
+  if (listing.pool >= listing.unitSize) return null;
+  return listing.completed ? "fill" : "break";
+}
+
+/**
  * What happens to a claimed listing when its trade ends. A completed trade
  * fills it. Otherwise a banned poster's listing is removed, a timed-out
  * trade closes it, since neither side acted in time, and a cancelled one

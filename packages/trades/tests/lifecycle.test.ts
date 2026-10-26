@@ -7,6 +7,7 @@ import {
 } from "@apollo/database/web/types";
 import { describe, expect, test } from "bun:test";
 import {
+  listingClosing,
   type ListingEvent,
   listingEventAfter,
   listingTransition,
@@ -639,6 +640,28 @@ describe("needsYou (UNIT-05)", () => {
       expect(needsYou(trade(status, sixObjekts()), side, running)).toBe(false);
     }
   });
+});
+
+describe("listingClosing", () => {
+  test.each([
+    ["a pool of exactly one unit stays open", 2, 2, false, null],
+    ["a pool of several units stays open", 5, 2, true, null],
+    ["a pool short of a unit closes broken", 1, 2, false, "break"],
+    ["an empty pool closes broken", 0, 1, false, "break"],
+    [
+      "a pool short of a unit after a completion closes filled",
+      1,
+      2,
+      true,
+      "fill",
+    ],
+    ["an empty pool after a completion closes filled", 0, 1, true, "fill"],
+  ] satisfies [string, number, number, boolean, "fill" | "break" | null][])(
+    "%s",
+    (_, pool, unitSize, completed, expected) => {
+      expect(listingClosing({ pool, unitSize, completed })).toBe(expected);
+    },
+  );
 });
 
 describe("listingEventAfter", () => {

@@ -40,6 +40,10 @@ function exact(count: number, slug: string): TradeWant {
   return { kind: "exact", count, slug };
 }
 
+function choice(count: number, slugs: string[]): TradeWant {
+  return { kind: "choice", count, slugs };
+}
+
 function range(
   count: number,
   filter: Parameters<typeof rangeFilterSchema.parse>[0],
@@ -391,6 +395,16 @@ describe("fitsWant (FIT-01)", () => {
       "empty columns beside one narrowed column",
       range(1, { season: ["Atom02"], member: [] }),
       true,
+    ],
+    [
+      "a choice row naming the slug",
+      choice(1, ["atom02-kimlip-201z", heejin.slug]),
+      true,
+    ],
+    [
+      "a choice row without the slug",
+      choice(1, ["atom02-kimlip-201z", "atom02-heejin-102z"]),
+      false,
     ],
   ] satisfies [string, TradeWant, boolean][])("%s", (_, want, fits) => {
     expect(fitsWant(want, heejin)).toBe(fits);

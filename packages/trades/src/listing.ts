@@ -1,6 +1,7 @@
 import * as z from "zod";
 import type { TradeWant } from "./allocate";
 import {
+  MAX_CHOICE_OPTIONS,
   MAX_NOTE_LENGTH,
   MAX_OFFERED,
   MAX_PER_ROW,
@@ -38,15 +39,34 @@ const countSchema = z
   .min(1, "A row needs at least one objekt")
   .max(MAX_PER_ROW, `A row can ask for at most ${MAX_PER_ROW} objekts`);
 
+const isDistinct = (keys: readonly (string | number)[]) =>
+  new Set(keys).size === keys.length;
+
+const slugSchema = pgText().trim().toLowerCase().min(1).max(255);
+
 const wantSchema = z.discriminatedUnion("kind", [
   z.strictObject({
     kind: z.literal("exact"),
-    slug: pgText().trim().toLowerCase().min(1).max(255),
+    slug: slugSchema,
     count: countSchema,
   }),
   z.strictObject({
     kind: z.literal("range"),
     filter: rangeFilterSchema,
+    count: countSchema,
+  }),
+  z.strictObject({
+    kind: z.literal("choice"),
+    slugs: z
+      .array(slugSchema)
+      .min(2, 'An "any of" row needs at least two collections')
+      .max(
+        MAX_CHOICE_OPTIONS,
+        `An "any of" row can name at most ${MAX_CHOICE_OPTIONS} collections`,
+      )
+      .refine(isDistinct, {
+        message: 'Each collection can only be in an "any of" row once',
+      }),
     count: countSchema,
   }),
 ]);
@@ -56,6 +76,12 @@ const listingFields = {
     .array(z.strictObject({ tokenId: tokenIdSchema }))
     .min(1, "Offer at least one objekt")
     .max(MAX_OFFERED, `A listing can offer at most ${MAX_OFFERED} objekts`),
+  // the offered objekts one unit takes; every one of them when left out
+  unitSize: z
+    .int()
+    .min(1, "A unit needs at least one objekt")
+    .max(MAX_OFFERED)
+    .optional(),
   wants: z
     .array(wantSchema)
     .min(1, "Ask for at least one objekt")
@@ -66,9 +92,6 @@ const listingFields = {
     .nullish()
     .transform((note) => note || null),
 };
-
-const isDistinct = (keys: readonly (string | number)[]) =>
-  new Set(keys).size === keys.length;
 
 /**
  * Whether no two range rows cover the same collections, comparing each
@@ -88,13 +111,15 @@ export function rangesDistinct(filters: readonly RangeFilter[]) {
 
 type ListingTerms = {
   offered: readonly { tokenId: number }[];
+  unitSize?: number | undefined;
   wants: readonly TradeWant[];
 };
 
 /**
  * The rules a listing's terms follow whether it's posted or edited: no
- * token offered twice, no row repeated (the composer merges repeats into
- * one row's count), and a bounded total.
+ * token offered twice, a unit no bigger than the pool, no row repeated (the
+ * composer merges repeats into one row's count), and a bounded total for
+ * one unit. A listing without a unit size offers every objekt as one unit.
  */
 function withListingRules<TSchema extends z.ZodType<ListingTerms>>(
   schema: TSchema,
@@ -103,6 +128,14 @@ function withListingRules<TSchema extends z.ZodType<ListingTerms>>(
     .refine(
       ({ offered }) => isDistinct(offered.map(({ tokenId }) => tokenId)),
       { message: "Each objekt can only be offered once", path: ["offered"] },
+    )
+    .refine(
+      ({ offered, unitSize }) =>
+        unitSize === undefined || unitSize <= offered.length,
+      {
+        message: "A unit can't take more objekts than the listing offers",
+        path: ["unitSize"],
+      },
     )
     .refine(
       ({ wants }) =>
@@ -124,10 +157,32 @@ function withListingRules<TSchema extends z.ZodType<ListingTerms>>(
         path: ["wants"],
       },
     )
+    .refine(
+      ({ wants }) =>
+        isDistinct(
+          wants.flatMap((want) =>
+            want.kind === "choice"
+              ? [
+                  want.slugs
+                    .toSorted((a, b) => (a < b ? -1 : Number(a > b)))
+                    .join(" "),
+                ]
+              : [],
+          ),
+        ),
+      {
+        message: "Each set of collections can only be asked for once",
+        path: ["wants"],
+      },
+    )
     .refine(({ wants }) => totalWanted(wants) <= MAX_TOTAL_WANTED, {
       message: `A listing can ask for at most ${MAX_TOTAL_WANTED} objekts in total`,
       path: ["wants"],
-    });
+    })
+    .transform((terms) => ({
+      ...terms,
+      unitSize: terms.unitSize ?? terms.offered.length,
+    }));
 }
 
 // the composer's offered objekts, checked before Post or Save

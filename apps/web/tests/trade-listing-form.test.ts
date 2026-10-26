@@ -96,6 +96,7 @@ describe("composer prefill (CMP-04)", () => {
       data: {
         listingId: listing.id,
         offered: [{ tokenId: 4021 }],
+        unitSize: 1,
         wants: [
           {
             kind: "range",
@@ -130,6 +131,7 @@ describe("composer prefill (CMP-04)", () => {
       kind: "create",
       data: {
         offered: [{ tokenId: 9 }],
+        unitSize: 1,
         wants: [{ kind: "exact", slug: "atom02-kimlip-201z", count: 2 }],
         note: null,
       },

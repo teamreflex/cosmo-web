@@ -189,24 +189,40 @@ export function countRangeMatches(filter: RangeFilter) {
 }
 
 /**
- * A posted want with exact rows resolved to their collection's indexer
- * values.
+ * A posted want with exact and choice rows resolved to their collections'
+ * indexer values.
  */
 export type ResolvedWant =
   | { kind: "exact"; count: number; objekt: ObjektAttributes }
-  | { kind: "range"; count: number; filter: RangeFilter };
+  | { kind: "range"; count: number; filter: RangeFilter }
+  | { kind: "choice"; count: number; options: ObjektAttributes[] };
 
 /**
- * Resolves exact rows to their collection and checks every range matches at
- * least one, so a listing can't ask for something nobody could give. The
- * first bad row, in posted order, decides the refusal.
+ * The collections the wants name: an exact row's, and every one a choice
+ * row offers.
+ */
+function wantSlugs(wants: readonly TradeWant[]) {
+  return wants.flatMap((want) => {
+    switch (want.kind) {
+      case "exact":
+        return [want.slug];
+      case "range":
+        return [];
+      case "choice":
+        return want.slugs;
+    }
+  });
+}
+
+/**
+ * Resolves exact and choice rows to their collections and checks every
+ * range matches at least one, so a listing can't ask for something nobody
+ * could give. The first bad row, in posted order, decides the refusal.
  */
 export async function resolveWants(
   wants: ListingInput["wants"],
 ): Promise<ResolvedWant[]> {
-  const slugs = wants.flatMap((want) =>
-    want.kind === "exact" ? [want.slug] : [],
-  );
+  const slugs = wantSlugs(wants);
   const ranges = wants.flatMap((want, index) =>
     want.kind === "range" ? [{ index, filter: want.filter }] : [],
   );
@@ -240,18 +256,31 @@ export async function resolveWants(
   const rangeCounts = new Map(
     ranges.map(({ index }, position) => [index, matched?.counts[position]]),
   );
-  return wants.map((want, index): ResolvedWant => {
-    if (want.kind === "range") {
-      if (rangeCounts.get(index) === 0) {
-        throw new ExpectedError("listing_range_empty" satisfies TradeErrorCode);
-      }
-      return want;
-    }
-    const objekt = bySlug.get(want.slug);
+  const known = (slug: string) => {
+    const objekt = bySlug.get(slug);
     if (!objekt) {
       throw new ExpectedError("listing_want_unknown" satisfies TradeErrorCode);
     }
-    return { kind: "exact", count: want.count, objekt };
+    return objekt;
+  };
+  return wants.map((want, index): ResolvedWant => {
+    switch (want.kind) {
+      case "exact":
+        return { kind: "exact", count: want.count, objekt: known(want.slug) };
+      case "range":
+        if (rangeCounts.get(index) === 0) {
+          throw new ExpectedError(
+            "listing_range_empty" satisfies TradeErrorCode,
+          );
+        }
+        return want;
+      case "choice":
+        return {
+          kind: "choice",
+          count: want.count,
+          options: want.slugs.map(known),
+        };
+    }
   });
 }
 
@@ -266,9 +295,7 @@ export async function unusableTokens(
   address: string,
   wants: readonly TradeWant[],
 ): Promise<TokenFlags> {
-  const slugs = wants.flatMap((want) =>
-    want.kind === "exact" ? [want.slug] : [],
-  );
+  const slugs = wantSlugs(wants);
   const rows = await db
     .select({
       tokenId: sql<number | null>`${lockedObjekts.tokenId}`.as("token_id"),
@@ -348,9 +375,7 @@ export async function readCandidates(
   if (wants.length === 0) return [];
   const { locked, live } = unusable ?? (await unusableTokens(address, wants));
   const excluded = [...locked, ...live].map(String);
-  const slugs = wants.flatMap((want) =>
-    want.kind === "exact" ? [want.slug] : [],
-  );
+  const slugs = wantSlugs(wants);
   const usable = indexer.$with("usable").as(
     indexer
       .select({

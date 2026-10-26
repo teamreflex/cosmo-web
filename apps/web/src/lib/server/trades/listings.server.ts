@@ -1,5 +1,6 @@
 import { isBanActive } from "@apollo/auth/guard";
 import {
+  tradeListingWantOptions,
   tradeListingWants,
   tradeOfferItems,
   tradeOffers,
@@ -24,8 +25,8 @@ import {
   firstRefusal,
   readTokenStates,
   readWebTokenFlags,
-  resolveWants,
   type ResolvedWant,
+  resolveWants,
   type TokenHoldings,
 } from "./holdings.server";
 
@@ -198,12 +199,15 @@ function wantRow(listingId: string, want: ResolvedWant): NewTradeListingWant {
         classes: want.filter.class,
         onOfflines: want.filter.on_offline,
       };
+    case "choice":
+      return { listingId, kind: "choice", count: want.count };
   }
 }
 
 /**
  * Inserts the listing's own items, never live and with no `listing_id`,
- * then its wants in one statement, so id order is the posted order.
+ * then its wants in one statement, so id order is the posted order, then
+ * the collections of its choice rows.
  */
 export async function insertTerms(
   tx: WebTx,
@@ -222,7 +226,18 @@ export async function insertTerms(
         }) satisfies NewTradeOfferItem,
     ),
   );
-  await tx
+  const inserted = await tx
     .insert(tradeListingWants)
-    .values(terms.wants.map((want) => wantRow(listingId, want)));
+    .values(terms.wants.map((want) => wantRow(listingId, want)))
+    .returning({ id: tradeListingWants.id });
+  const ids = inserted.map(({ id }) => id).toSorted((a, b) => a - b);
+  const options = terms.wants.flatMap((want, index) => {
+    const wantId = ids[index];
+    return want.kind === "choice" && wantId !== undefined
+      ? want.options.map((objekt) => ({ wantId, ...objekt }))
+      : [];
+  });
+  if (options.length) {
+    await tx.insert(tradeListingWantOptions).values(options);
+  }
 }

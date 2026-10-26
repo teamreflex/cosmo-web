@@ -19,6 +19,7 @@ import type {
   reports,
   staffAudit,
   tradeFeedback,
+  tradeListingWantOptions,
   tradeListingWants,
   tradeMessages,
   tradeOfferItems,
@@ -144,6 +145,8 @@ export type TradeOfferItem = typeof tradeOfferItems.$inferSelect;
 export type TradeListingWant = typeof tradeListingWants.$inferSelect;
 export type NewTradeOfferItem = typeof tradeOfferItems.$inferInsert;
 export type NewTradeListingWant = typeof tradeListingWants.$inferInsert;
+export type NewTradeListingWantOption =
+  typeof tradeListingWantOptions.$inferInsert;
 export type TradeMessage = typeof tradeMessages.$inferSelect;
 export type ReportMessage = typeof reportMessages.$inferSelect;
 export type TradeFeedback = typeof tradeFeedback.$inferSelect;
@@ -374,10 +377,12 @@ export const tradeOfferStatuses = [
 export type TradeOfferStatus = (typeof tradeOfferStatuses)[number];
 
 /**
- * A listing is open until claimed, and filled when its trade completes.
- * Listings don't expire. One ends early when the poster withdraws it, an
- * offered token leaves the poster or turns untransferable (broken), staff
- * remove it, or its claim's trade times out with nothing sent.
+ * A listing stays open while its pool holds at least one unit, whatever its
+ * trades are doing, and listings don't expire. Once the pool falls below a
+ * unit it's filled if any of its trades completed, else broken. It also
+ * ends when the poster withdraws it or staff remove it. Nothing writes
+ * `claimed` or `timed_out` to a listing; they're kept for listings that
+ * ended that way before listings had units.
  */
 export const listingStatuses = [
   "open",
@@ -463,7 +468,7 @@ export type TradeCanceller = (typeof tradeCancellers)[number];
 export const tradeItemKinds = ["objekt", "payment"] as const;
 export type TradeItemKind = (typeof tradeItemKinds)[number];
 
-export const tradeWantKinds = ["exact", "range", "payment"] as const;
+export const tradeWantKinds = ["exact", "range", "payment", "choice"] as const;
 export type TradeWantKind = (typeof tradeWantKinds)[number];
 
 export const tradeMessageKinds = ["text", "event"] as const;
