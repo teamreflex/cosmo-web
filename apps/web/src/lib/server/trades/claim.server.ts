@@ -442,7 +442,7 @@ export async function readListingTerms(listingId: string) {
  * Re-judges an offer on a listing that its poster is accepting, under the
  * users' and the offer's locks, as a claim would be judged: locks the
  * listing row `FOR NO KEY UPDATE` while it's still open, after the offer
- * (docs/auth.md), reads its pool, the parties' links, both sides' locks
+ * (docs/locking.md), reads its pool, the parties' links, both sides' locks
  * and live trades and the claimer's claim cap, which accepting counts
  * toward, then refuses as offerRefusal() decides, the order the listing
  * page shows. The indexer states of both sides' tokens come from before

@@ -138,7 +138,7 @@ export const $postListing = createServerFn({ method: "POST" })
  * keep their own copies of the objekts they took, whatever the edit drops,
  * but its pending offers were made on the old terms, so they turn stale and
  * their claimers hear of it. They are locked before the listing
- * (docs/auth.md), so one sent after they were read refuses the edit with
+ * (docs/locking.md), so one sent after they were read refuses the edit with
  * `listing_updated`. `created_at` never changes, so the listing keeps its
  * place in the feed.
  */
@@ -227,7 +227,7 @@ export const $editListing = createServerFn({ method: "POST" })
  * Close the caller's open listing; its live trades carry on, and its
  * pending offers are declined with the listing named as what closed them,
  * which their claimers hear. The offers are locked before the listing
- * (docs/auth.md); one sent after they were read is left for trade-timers,
+ * (docs/locking.md); one sent after they were read is left for trade-timers,
  * which declines the offers on closed listings. Anyone else's listing, and
  * any trade row, is not found whatever its status; the poster's own closed
  * listing says so.

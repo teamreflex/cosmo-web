@@ -297,7 +297,7 @@ const applyPlan = (tx: WebTx, plan: BatchPlan) =>
  * Locks, after the cursor: both parties of every live trade and pending
  * offer holding its tokens and the poster of every such listing, which
  * covers everyone it may notify, `FOR KEY SHARE`, then the live trades,
- * then the pending offers, then listings (docs/auth.md). The
+ * then the pending offers, then listings (docs/locking.md). The
  * candidate read before them is unlocked; a trade that ended since is dropped
  * by its lock, and an offer accepted since keeps its status, since breaks
  * only touch pending offers and open listings.
@@ -576,7 +576,7 @@ function recordChainEvents(
  * untransferable, and drop every such token from the pools of the open
  * listings offering it, live in a trade or not (it stays on the listing as
  * history, `left_at`), locking the offers, then
- * the listings, each in id order (docs/auth.md). A stale offer gets a
+ * the listings, each in id order (docs/locking.md). A stale offer gets a
  * timeline event naming the token and whether it moved or turned
  * untransferable, and its proposer hears of it. A listing that dropped a token
  * moves its `updated_at`, so a claim picked from the pool before is

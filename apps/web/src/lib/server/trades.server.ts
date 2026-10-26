@@ -121,7 +121,7 @@ export async function liveTradesBlocker(
  * than a party. Deleting the account withdraws the listings and tells no
  * one; a ban removes the listings and tells the proposer of each declined
  * offer, whose row the ban holds locked in `notify`. The pending offers,
- * then the listings, are locked in id order first (docs/auth.md), as the
+ * then the listings, are locked in id order first (docs/locking.md), as the
  * outbox drain locks them to turn offers stale and break listings, since a
  * multi-row update locks in scan order. Accepted and disputed trades are
  * left alone: they block deletion, and a ban disputes them first.

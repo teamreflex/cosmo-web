@@ -43,7 +43,7 @@ const banActive = sql<boolean>`(${user.banned} and (${user.banExpires} is null o
 /**
  * Locks every user a trade write may notify `FOR KEY SHARE`, in one
  * statement ordered by id, before any trade or listing row (the lock order in
- * docs/auth.md). An account deletion locks its user `FOR UPDATE` before
+ * docs/locking.md). An account deletion locks its user `FOR UPDATE` before
  * updating their listings, so it now waits for this transaction or makes it
  * wait, instead of deadlocking on a notification's foreign key. Maps each
  * user whose account still exists to whether they're banned.
@@ -276,7 +276,7 @@ export const endTrade = Effect.fn("endTrade")(function* (
 
 /**
  * Locks the open listings among the ids `FOR NO KEY UPDATE` in id order,
- * after the trades (docs/auth.md), and returns them with their posters.
+ * after the trades (docs/locking.md), and returns them with their posters.
  */
 export const lockListings = Effect.fn("lockListings")(function* (
   tx: WebTx,

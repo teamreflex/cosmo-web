@@ -1,91 +1,69 @@
-This is a Turborepo monorepo for the Apollo project.
+Apollo is a Bun and Turborepo monorepo; [`README.md`](README.md) lists what each app and package is.
 
 ## Documentation
 
-Detailed conventions live in `docs/`. Read the relevant file **before** working in that area:
+Read the file for an area **before** working in it. Each app and package also has its own `README.md` or `CLAUDE.md`.
 
-| When you're working on…                                                                            | Read                                     |
-| -------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| Database queries, schema, migrations, derived/projection types (`apps/web`, `packages/database`)   | [`docs/database.md`](docs/database.md)   |
-| Routes, loaders, data fetching, server functions, import protection (`apps/web`)                   | [`docs/tanstack.md`](docs/tanstack.md)   |
-| Components, forms, Tailwind/styling, i18n strings (`apps/web`)                                     | [`docs/frontend.md`](docs/frontend.md)   |
-| Throwing/handling errors, `ExpectedError`, Sentry filtering (`apps/web`)                           | [`docs/errors.md`](docs/errors.md)       |
-| Better Auth, staff roles, bans, COSMO links, account deletion, lock order, API keys (`apps/web`)   | [`docs/auth.md`](docs/auth.md)           |
-| Writing or running tests (`bun test`), what earns a test                                           | [`docs/testing.md`](docs/testing.md)     |
-| COSMO domain concepts: collections, objekts, serials, grids, COMO, gravity polls                   | [`docs/cosmo.md`](docs/cosmo.md)         |
-| Listings, trades, direct and listing offers, the drain and timers, feedback, chat, the market gate | [`docs/trades.md`](docs/trades.md)       |
-| Looking up library documentation (TanStack, Drizzle, Effect, …)                                    | [`docs/libraries.md`](docs/libraries.md) |
+| When you're working on…                                                                                                                  | Read                                                 |
+| ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| Turbo tasks, local services and `DEV_*` flags, env vars, lint, format, TypeScript 7, Effect conventions, Redis keys, rate limits, Sentry | [`docs/tooling.md`](docs/tooling.md)                 |
+| Looking up library documentation (TanStack, Drizzle, Effect, …)                                                                          | [`docs/libraries.md`](docs/libraries.md)             |
+| Writing or running tests (`bun test`), what earns a test                                                                                 | [`docs/testing.md`](docs/testing.md)                 |
+| Queries, schema, the two databases, cross-database ids, derived types (`apps/web`, `packages/database`)                                  | [`docs/database.md`](docs/database.md)               |
+| Migrations for either database, backfills, hand-applied autovacuum settings                                                              | [`docs/migrations.md`](docs/migrations.md)           |
+| Lock order, row locks, deadlocks between writers                                                                                         | [`docs/locking.md`](docs/locking.md)                 |
+| Better Auth, sign-in, staff roles and permissions, bans, user events, chat tokens, API keys, display currency                            | [`docs/auth.md`](docs/auth.md)                       |
+| COSMO links and verification, what others see of a user, staff names, account deletion                                                   | [`docs/accounts.md`](docs/accounts.md)               |
+| Reports, disputes, message reports, staff audit                                                                                          | [`docs/moderation.md`](docs/moderation.md)           |
+| Routes, loaders, server functions, middleware, invalidation, import protection (`apps/web`)                                              | [`docs/tanstack.md`](docs/tanstack.md)               |
+| Components, forms, Tailwind/styling, i18n strings (`apps/web`)                                                                           | [`docs/frontend.md`](docs/frontend.md)               |
+| Throwing/handling errors, `ExpectedError`, error boundaries, Sentry filtering (`apps/web`)                                               | [`docs/errors.md`](docs/errors.md)                   |
+| COSMO domain concepts: collections, objekts, serials, grids, COMO, gravity polls                                                         | [`docs/cosmo.md`](docs/cosmo.md)                     |
+| Listings, the composer, feed and listing page, trades, offers, the drain's decisions, timers, feedback, the market gate                  | [`docs/trades/overview.md`](docs/trades/overview.md) |
 
-## Development
+## Commands
 
-### Core Commands
+- `turbo dev`, `turbo build`, `turbo lint`, `turbo lint:fix`, `turbo format`, `turbo typecheck`, `turbo test`: run the task in every workspace.
+- `--filter <workspace>` runs it in one, e.g. `turbo typecheck --filter web` or `turbo test --filter @apollo/trades`.
+- `--ui stream` replaces the default TUI with one plain stream; use it in non-interactive sessions.
+- `turbo i18n` compiles the web app's messages into `apps/web/src/i18n`, which typecheck needs.
+- `turbo db:generate --filter web` and `turbo db:migrate --filter web` generate and apply web database migrations; see [`docs/migrations.md`](docs/migrations.md).
+- `turbo db:seed --filter web` and `turbo db:seed:staff --filter web` seed local data and staff accounts.
 
-- `turbo dev` - Start development server
-- `turbo build` - Build the entire monorepo
-- `turbo lint` - Run linting across all packages
-- `turbo lint:fix` - Fix lint issues automatically
-- `turbo format` - Format code across all packages
-- `turbo typecheck` - TypeScript type checking for all packages
-- `turbo test` - Run tests across all packages
+## Workflow
 
-### Turborepo
+- Use Bun, never npm or pnpm.
+- Lint and typecheck are enough to verify a change; don't run `build` or `dev` for that.
+- Check a workspace's `package.json` before adding a package.
+- Add a package with `bun add <pkg> --filter <workspace>`, or `bun add <pkg> --catalog` for the root catalog. A root `bun add` without either lands in the root `package.json`.
+- Editing a `.ts` or `.tsx` file runs `bun fmt` and `oxlint --type-aware --fix` on it and returns any lint errors, so re-read a file before editing it again.
+- Use oxlint and `bun fmt`, never eslint or Prettier.
+- Fix an `anti-slop/*` lint error by parsing input at its boundary, not by suppressing it; see [`packages/lint`](packages/lint/README.md).
+- TypeScript 7 has no compiler API: don't add tooling that imports `typescript`.
 
-- This is a [Bun](https://bun.sh/) monorepo. Do not use npm/pnpm.
-- Use `turbo <command>` to run commands across packages
-- You can append a turbo command with `--filter <package>` to run the command for only one app/package.
-  - For example, typecheck only the web app: `turbo typecheck --filter web`, or only the util package: `turbo typecheck --filter @apollo/util`
-- Turbo handles dependency management and parallel execution
-- By default Turborepo will run in TUI mode. Use the `--ui stream` flag to disable this and get the outputs from all packages as a single stream.
+## Project context
 
-### Workflow
+Apollo is a blockchain explorer for MODHAUS' COSMO app: it tracks objekts (digital collectibles) and gravities (votes) from on-chain data, and the indexer is the source of truth for who owns what. Domain concepts are in [`docs/cosmo.md`](docs/cosmo.md).
 
-- Linting and type checking is sufficient, you do not need to run the build or dev commands to test your work.
-- When dealing with new packages, always check `package.json` to see if it has already been installed.
-- When installing packages with `bun add` from the root, pass `--filter <workspace>` to target a workspace (e.g., `bun add package-name --filter web`). Running `bun add` from the root without `--filter` adds the package to the root `package.json`. Use `bun add package-name --catalog` to add a package to the root catalog instead.
-- The project uses [oxlint](https://oxc.rs/docs/guide/usage/linter.html) instead of eslint, and [`bun fmt`](https://bun.com/docs/format) instead of Prettier. Do not manually use eslint or Prettier.
-- `bun fmt` is configured by the `[fmt]` section of the root `bunfig.toml`, including `ignorePatterns` for generated files and an `apps/web/**` override for Tailwind class sorting. `bun fmt` has no language server: Zed formats on save through `bun fmt --stdin-filepath`, and VS Code has no format-on-save.
-- `.githooks/pre-commit` runs `bun fmt --staged`, which formats staged files and restages them. It blocks the commit when a staged file needs formatting but also has unstaged changes (stage the rest or `git stash --keep-index`), or when a staged file has a syntax error. The root `prepare` script points `core.hooksPath` at `.githooks` on `bun install`.
-- oxlint `extends` **overwrites** the `plugins` array (no merge). The shared base config (`packages/lint`) intentionally omits `react`; `apps/web` enables it and must therefore repeat the full plugin set `["typescript", "react", "import", "unicorn", "jest"]` — trimming it to `["react"]` silently drops the rest.
-- Typecheck scripts run `bun check`, which reports exactly what `tsc` reports for the TypeScript 7 version built into the installed Bun (`bun -p process.versions.typescript`). Keep the root catalog's `typescript` on that same version: the editor (`js/ts.tsdk.path`) and `apps/indexer`'s `build` (`tsc -p tsconfig.build.json`, for the TypeORM decorator emit via `experimentalDecorators` + metadata) still use it. TS7 has no compiler API — don't introduce tooling that imports `typescript` and calls `createProgram()`/`emit()`.
+Users never sign in to COSMO through Apollo. A database table holds the access and refresh tokens of one dummy COSMO account, and Apollo proxies only these authenticated APIs through it:
 
-### Project Structure
-
-#### Apps
-
-- `apps/web`: Core TanStack Start web app
-- `apps/indexer`: Subsquid blockchain indexer for cataloging Modhaus objekt collections
-- `apps/schedules`: Scheduled tasks and queue workers
-- `apps/chat`: Trade chat over Effect RPC on a websocket, with encrypted messages
-- `apps/typesense`: Dockerfile for building Typesense with `curl` available
-- `apps/typesense-import`: Sync new objekt collections to the Typesense database
-- `apps/proxy`: mitmproxy addons for intercepting COSMO app traffic
-
-#### Packages
-
-- `packages/auth`: Staff roles (Better Auth access control), the account guards (protected accounts, self-demotion, COSMO links) and the user-events contract
-- `packages/chat`: The chat RPC protocol, its errors and access policy, shared by apps/chat and the web app
-- `packages/cosmo`: COSMO related types and API functions
-- `packages/database`: `drizzle-orm` schemas for both databases
-- `packages/drizzle-bun-effect`: Effect service for Bun.SQL, derived from `drizzle-orm/effect-postgres`
-- `packages/image`: Mirrors COSMO objekt images into R2, shared by the indexer and the web app
-- `packages/lint`: Shared oxlint config
-- `packages/queue`: Redis-backed job queues (Effect `PersistedQueue`) the web app offers to and the schedules app takes from
-- `packages/serial-estimation`: Estimates the serials of objekts minted after COSMO's v1 metadata cutoff, used by the indexer and its backfill
-- `packages/services`: Effect layers shared by the Effect apps: the pooled web DB client (`DatabaseWeb`, `WebTx`) and the Redis client
-- `packages/trades`: Pure trade logic shared by the web and schedules apps: the listing and trade lifecycle, the holdings allocator, the drain's transfer decisions, timers and caps
-- `packages/typescript`: Shared tsconfig.json file
-- `packages/util`: Shared utility functions
-- `packages/util-server`: Shared server-only utilities (Redis cache keys, crypto)
-
-## Project Context
-
-Apollo is a blockchain explorer for MODHAUS' COSMO app objekts and gravities. The platform tracks digital collectibles (objekts) and voting systems (gravities) via on-chain data.
-
-We do not provide authenticated access to COSMO APIs by allowing users to login with their own accounts. We have a database table containing access and refresh tokens for a dummy account that allows us to proxy authenticated access to specific APIs required for operation. These APIs are:
-
-- fetching artist + member information
+- fetching artist and member information
 - fetching gravity polls for candidate lists
-- providing user search
-- verifying user account ownership by reading profiles
+- user search
+- verifying account ownership by reading profiles
 
-Domain concepts — collections, objekts, serials, grids, COMO and gravity polls — are in [`docs/cosmo.md`](docs/cosmo.md).
+The one exception is share-data: a user scans a COSMO QR code so Apollo can read objekt media it lacks from their collection. That session lives only for the one server call and is never stored.
+
+## Editing docs and CLAUDE.md files
+
+- Docs describe the system, not the changes made to it. When code changes, rewrite the copy for that part of the system so it reads as if it had always worked this way. Never append a sentence explaining what changed or how it differs from before: no "now", "no longer", "previously", "the old X", "also" tacked onto an existing point, dates or PR references.
+- If a change makes a section harder to follow, restructure the section instead of adding qualifiers to it.
+- One home per fact. Before adding anything, search `docs/` and every `CLAUDE.md` and `README.md` for it. If it exists, fix it there and link to it; never restate it.
+- Document only what an agent can't get from the code in a few minutes: invariants, orderings, contracts between apps, gotchas with their why, and where to start for a kind of change. Don't document what `ls`, the type checker, a function's docblock or a library's own docs already say.
+- Put a fact in the layer that owns it: `README.md` is the overview for people, root `CLAUDE.md` is the router and the repo-wide rules, an app or package `CLAUDE.md` holds the rules for that directory, `docs/` is reference by topic. Link from the other layers.
+- A section is a heading, at most one lead sentence, then bullets, a table or a diagram. A bullet is one fact and at most one "because". No paragraph over three sentences. Prose is never hard-wrapped: one paragraph is one line.
+- Use a table for anything that is "X per Y", a fenced ASCII diagram for a flow, an order or a state machine, and a numbered list for a procedure. Diagrams use plain ASCII (`| v + - >`), fit in 100 columns, name real identifiers, and stay under 30 lines.
+- Length follows the content. A long file is fine when every section is quick to scan; what isn't fine is a section that only grows. When a `docs/` file covers topics an agent would load separately, split it into a `docs/<topic>/` folder with an `overview.md`.
+- Point at code with a `path` or a `symbol()` name, never a line number.
+- A doc that disagrees with the code is a bug: fix it in the same change as the code, and delete what the change made wrong.
+- No changelogs, no "known issues" lists that are really TODOs, no inventories of files or columns.

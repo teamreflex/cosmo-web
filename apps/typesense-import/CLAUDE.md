@@ -1,27 +1,46 @@
-# Typesense Import
+# typesense-import
 
-Effect-TS service that continuously syncs new objekt collections from the indexer database into Typesense, powering fuzzy objekt search in the web app.
+Rules for changing the importer. The flow, environment and local setup are in [`README.md`](README.md).
 
-## Flow
+## The contract with apps/web
 
-1. **Setup** (startup, idempotent — safe to re-run): create the search-only API key, the collection schema, and the synonym sets (`src/setup.ts`).
-2. **Import loop** (`src/main.ts`, repeats every `LOOP_INTERVAL` ms): fetch collections created after the last-seen timestamp (an in-memory `Ref`, so a restart re-imports from scratch — harmless because imports upsert), plus any whose `unobtainable` flag changed since the last successful tick (it's flipped by hand long after `createdAt`, so the watermark alone never sees it), enrich them, and bulk-upsert into Typesense in chunks of 500. The watermark only advances after a fully successful upsert, so a failed tick re-fetches and re-upserts the whole batch on the next tick.
+`apps/web/src/lib/client/typesense.ts` queries the `collections` collection from the browser and the server with the search-only key. Every field it names must be declared in `setupTypesenseCollection()` with the right flags:
 
-Two databases are involved: collections and member sort order come from the **indexer** DB, descriptions from the **metadata** (web) DB. They are separate Postgres instances, so the join happens in memory on `collection.slug`.
+| Web uses it in | Fields                                                         | Needs in `src/setup.ts`              |
+| -------------- | -------------------------------------------------------------- | ------------------------------------ |
+| `query_by`     | `member`, `description`, `season`, `shortCode`, `collectionNo` | `index: true`, string                |
+| `filter_by`    | `artist`, `member`, `season`, `class`, `collectionNo`          | `index: true`                        |
+| `sort_by`      | `createdAt`, `collectionNo`, `memberSortOrder`                 | numeric, or `sort: true` on a string |
 
-## Domain semantics
+- A renamed or de-indexed field fails at query time in the browser, not at type-check time.
+- Fields web only displays, such as image URLs, are `index: false`.
+- Web types a hit as `IndexedObjekt`, the indexer `Collection` row, so documents keep every column under its own name. A hit's `createdAt` is epoch milliseconds, not the row's timestamp string.
+- Typesense leaves out optional fields whose value is null. `toIndexedObjekt()` in web restores the image versions to null; a new optional field that web reads needs the same.
+- Documents spread every indexer `collection` column (`...c` in `src/main.ts`), so a column the schema doesn't declare is still stored, unindexed.
 
-- `shortCode` (`src/collections.ts`): compact searchable code — season letter repeated by season number, plus collection number. Atom01 101Z → `a101z`, Atom02 101Z → `aa101z`, Binary01 → `b101z`. The `idntt` artist keeps its raw `collectionNo` as-is.
-- `edition` (`src/collections.ts`): First class only — 101–108 → `1st`, 109–116 → `2nd`, 117–120 → `3rd`. Supports grid edition filtering.
-- Synonyms (`src/synonyms.ts`) let unit names and abbreviations match members, e.g. `oec` → KimLip, JinSoul, Choerry. Three dictionaries: units, member abbreviations, class abbreviations.
+## Schema changes
+
+- `setupTypesenseCollection()` drops and recreates the collection when the existing one fails its `upToDate` check, a hardcoded list of fields.
+- Add each new field to that check, or a running Typesense never gets it.
+- Recreating deletes every document. The first tick after boot refills them, because the watermark starts empty, and search is incomplete until it finishes.
+
+## Synonyms
+
+- `setupTypesenseSynonyms()` upserts one synonym per entry of the `units`, `members` and `classes` dictionaries in `src/synonyms.ts`.
+- Synonyms are upserted by id and never deleted, so removing a dictionary entry leaves its synonym in Typesense until the collection is recreated.
+- A new entry in an existing dictionary needs no setup change. A new dictionary needs its own loop in `setupTypesenseSynonyms()`.
 
 ## Conventions
 
-- Standard Effect patterns: `Context.Service` classes with a `make:` effect and a hand-written `static readonly layer` (`Layer.effect(this, this.make)` + `Layer.provide` for dependencies), provided via `Layer.mergeAll`; config read where it is consumed via `Config` inside each service's `make` (secrets use `Config.Redacted`); non-Effect promises (Typesense) wrapped in `Effect.tryPromise` with per-failure-mode `Data.TaggedError` classes. The `Indexer`/`Metadata` services are drizzle's Effect API via `@apollo/drizzle-bun-effect` (a scoped Bun `SQL` client), so DB queries are yielded directly and fail with drizzle's typed errors. Use context7 for Effect API docs.
-- Failure handling: each import-loop tick is wrapped in `Effect.catchCause` — a transient failure logs its cause, the watermark stays put, and the batch is retried on the next tick. Setup effects have no such wrapper and stay fatal at boot.
-- Typesense schema fields are either indexed (searchable/facetable) or display-only (`index: false`) — image URLs and the like should not be indexed.
+- Services follow the shared Effect conventions in [`docs/tooling.md`](../../docs/tooling.md).
+- Typesense calls are wrapped in `Effect.tryPromise` with one `Data.TaggedError` per failure mode.
+- Only the import tick is wrapped in `Effect.catchCause`. Setup stays unwrapped so a broken Typesense fails the boot.
 
-## Common changes
+## Where to start
 
-- **New Typesense field:** add it to the schema in `src/setup.ts` and to the enrichment mapping in `src/main.ts`; computed fields get a helper in `src/collections.ts`. Schema changes only apply to newly created collections — an existing Typesense collection must be dropped or altered manually.
-- **New synonym:** add to the right dictionary in `src/synonyms.ts`; only a new _category_ needs setup logic in `src/setup.ts`.
+- New field:
+  1. Declare it in `setupTypesenseCollection()` in `src/setup.ts`.
+  2. Add it to the `upToDate` check.
+  3. A computed field gets a helper in `src/collections.ts` and an entry on the `zipped` document in `src/main.ts`.
+  4. If web queries or reads it, update `apps/web/src/lib/client/typesense.ts`.
+- `shortCode` and `edition` rules: the examples on `getShortCode()` and `getEdition()` in `src/collections.ts`.

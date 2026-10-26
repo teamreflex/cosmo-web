@@ -81,7 +81,7 @@ export const tradeTimersTask = {
         ? []
         : yield* db.transaction((tx) =>
             Effect.gen(function* () {
-              // users, then the offers in id order (docs/auth.md)
+              // users, then the offers in id order (docs/locking.md)
               const locked = yield* lockUsers(
                 tx,
                 dueExpiry.flatMap((offer) => [
@@ -174,7 +174,7 @@ export const tradeTimersTask = {
         ? []
         : yield* db.transaction((tx) =>
             Effect.gen(function* () {
-              // users, then the offers in id order (docs/auth.md); a listing never reopens, so it needs no lock
+              // users, then the offers in id order (docs/locking.md); a listing never reopens, so it needs no lock
               const locked = yield* lockUsers(
                 tx,
                 dueDecline.flatMap((offer) => [

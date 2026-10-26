@@ -625,15 +625,8 @@ export async function readListingViewer(
     };
   }
 
-  /**
-   * A claimer's latest trade from the listing is their live one or pending
-   * offer, if any. Their standing is only needed when there is neither, but
-   * reading it alongside saves a round trip for every candidate.
-   */
-  const [trade, { address, ...standing }] = await Promise.all([
-    readClaimerTrade(listing.id, viewerId),
-    claimStanding(db, viewerId),
-  ]);
+  // a claimer's latest trade from the listing is their live one or pending offer, if any
+  const trade = await readClaimerTrade(listing.id, viewerId);
   if (trade?.status === "pending" && trade.expiresAt !== null) {
     return {
       role: "offerer",
@@ -654,6 +647,7 @@ export async function readListingViewer(
     };
   }
 
+  const { address, ...standing } = await claimStanding(db, viewerId);
   if (address === null) return { role: "unlinked" };
   // the listing's `stop` says whether the pool or the poster's account stops a claim
   return {

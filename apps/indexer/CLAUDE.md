@@ -1,199 +1,188 @@
-# Indexer App
+# apps/indexer
 
-This is a [Subsquid SDK](https://docs.sqd.ai/sdk/overview/) application for indexing Modhaus objekts on the Abstract blockchain. It processes and saves:
+A Subsquid `EvmBatchProcessor` that follows MODHAUS' objekt, COMO and gravity contracts on Abstract and writes the indexer database, which is the source of truth for ownership. [README.md](README.md) has the overview and how to run it, [`docs/cosmo.md`](../../docs/cosmo.md) the domain concepts, and [`docs/database.md`](../../docs/database.md) how other apps read this database.
 
-- every objekt collection type
-- every unique objekt NFT
-- every ownership change/transfer
-- every COMO token balance change
-- every gravity vote
+## Data sources
 
-## Technology Stack
+Every source is subscribed from `COSMO_START_BLOCK` in `src/processor.ts`, decoded in `src/parser.ts` and handled in `src/main.ts`.
 
-- **Subsquid SDK** - EVM blockchain indexing framework
-- **TypeORM** - Database ORM with manual model management
-- **Bun** - Package manager and runtime (>= 1.4)
-- **PostgreSQL** - Primary database
+| Source                                                | Kind              | Becomes                                                   |
+| ----------------------------------------------------- | ----------------- | --------------------------------------------------------- |
+| `Addresses.OBJEKT` `Transfer`                         | log               | `transfer`, `objekt`, `collection`, outbox `transfer` row |
+| `Addresses.OBJEKT` `batchUpdateObjektTransferability` | transaction input | `objekt.transferable`, outbox `transferability` row       |
+| `Addresses.COMO` `TransferSingle` / `TransferBatch`   | log               | `como_balance`                                            |
+| `Addresses.GRAVITY` `Voted`                           | log               | `vote` with `candidate_id` null                           |
+| `Addresses.GRAVITY` `reveal`                          | transaction input | `vote.candidate_id`                                       |
 
-## Development Workflow
+- A log or input that fails to decode is skipped silently by the parser.
+- Addresses are lowercased with `addr()` at parse time; never store a raw address.
 
-### Making Schema Changes
+## Feature flags
 
-When adding or modifying entities, follow this exact workflow:
+- `ENABLE_OBJEKTS` gates transfers, transferability and COMO balances. `ENABLE_GRAVITY` gates votes and reveals.
+- The processor subscribes to every source and advances its height whatever the flags say, so blocks processed with a flag off are never revisited for that data.
 
-1. **Update GraphQL Schema:** Edit `schema.graphql` with new entities/fields
-2. **Update TypeORM Model:** Manually edit corresponding file in `src/model/generated/`
-3. **Create Migration:** Write a manual migration in `db/migrations/` following naming convention: `{timestamp}-Data.js`
-4. **Sync Drizzle Schema:** Update corresponding schema in `/packages/database/src/indexer/schema.ts`
-5. **Verify Changes:** Run `turbo typecheck` and `turbo lint`
+## A batch
 
-### Migration Guidelines
-
-Do not run `sqd`, `subsquid-commands`, or `squid-*` commands — they wipe the migrations directory and generate broken models. Migrations are written by hand, never generated:
-
-- Follow naming convention: `{timestamp}-Data.js`
-- Include both `up()` and `down()` methods
-- Test migrations locally before committing
-- Include a short comment detailing what the change is for (ie: what does a new index seek to improve)
-
-### Online DDL
-
-The Subsquid migration runner hard-codes `transaction: 'all'`, so `CONCURRENTLY` DDL cannot run through migrations. Run any DDL manually, then ship an idempotent `IF [NOT] EXISTS` migration as the record.
-
-## Core Patterns & Conventions
-
-### Address Normalization
-
-Always normalize addresses to lowercase using the `addr()` utility:
-
-```typescript
-import { addr } from "@apollo/util";
-
-const normalized = addr(rawAddress); // converts to lowercase
-```
-
-### UUID Generation
-
-Use Node's built-in crypto for unique IDs:
-
-```typescript
-import { randomUUID } from "node:crypto";
-
-new Transfer({ id: randomUUID(), ... });
-```
-
-### Batch Processing
-
-Use the `chunk()` utility for parallel processing:
-
-```typescript
-import { chunk } from "@apollo/util";
-
-await chunk(items, env.COSMO_PARALLEL_COUNT, async (chunk) => {
-  const results = await Promise.allSettled(chunk.map(process));
-  // handle results
-});
-```
-
-### Buffer Pattern
-
-Reduce database queries by maintaining in-memory Maps:
-
-```typescript
-const buffer = new Map<string, Entity>();
-
-// Check buffer before DB
-let entity = buffer.get(key);
-if (!entity) {
-  entity = await ctx.store.get(Entity, { where: { key } });
-  if (entity) buffer.set(key, entity);
-}
-```
-
-### Upsert Strategy
-
-Always use upsert to handle both new and existing records:
-
-```typescript
-await ctx.store.upsert(Array.from(buffer.values()));
-```
-
-### Error Handling
-
-A batch commits and the processor advances past its blocks, so anything skipped inside one is lost permanently — a skipped transfer is never written, and its objekt keeps the owner from its previous transfer with nothing to correct it later. Let the failure escape instead: Subsquid rolls the batch back, exits, and reprocesses the same blocks on restart, so nothing is lost but time. Settle every call before throwing so the log can name what failed and how many — one bad item and the API being down look identical in a crash loop otherwise.
-
-```typescript
-const results = await Promise.allSettled(
-  items.map((item) => fetchWithRetry(item.id)),
-);
-
-const failed: string[] = [];
-for (const [index, item] of items.entries()) {
-  const result = results[index];
-  if (result?.status === "fulfilled") {
-    // use result.value
-  } else {
-    failed.push(item.id);
-  }
-}
-
-if (failed.length > 0) {
-  ctx.log.error(
-    `failed for ${failed.length}/${items.length}: ${failed.join(", ")}`,
-  );
-
-  const error = new Error("fetch failed", { cause: firstRejection });
-  Sentry.captureException(error, {
-    level: "fatal",
-    fingerprint: ["indexer-metadata-fetch-failed"],
-    tags: { failure: "metadata" },
-    extra: { failed, chunkSize: items.length },
-  });
-  await Sentry.flush(2000);
-  throw error;
-}
-```
-
-Retry generously before giving up (`fetchMetadataV3` in `@apollo/cosmo` allows 5 minutes), because throwing costs a re-fetch of every item in the batch. Log-and-continue is only for work whose absence leaves no wrong row behind, such as a transferability update whose objekt does not exist.
-
-Pin a fixed `fingerprint` and carry the real rejection as `cause`: one issue accumulates every failed batch whatever COSMO returned, so an event-frequency alert counts batches instead of splitting across error shapes. Flush before throwing — Subsquid exits on the way out and drops queued events. Sentry only initializes when `SENTRY_DSN` is set, so local runs report nothing.
-
-### Image Mirroring
-
-Before each chunk's collection upsert, `mirrorImages` (`src/images.ts`) mirrors the front and back image of every collection whose `frontImageVersion`/`backImageVersion` doesn't match a hash of its source URL into R2 via `@apollo/image` (see its README), four at a time, and sets the version on the batch's own instances.
-
-### Collection Stats
-
-`collection_stats` holds each collection's `objekt_count` (every objekt row, spun included) and `spun_count` (rows owned by `Addresses.SPIN`) for apps/web's mint-count sorts. Triggers on `objekt` maintain it (migration `1791327933173-Data.js`): inserts and deletes adjust both counts, and owner changes to or from spin adjust `spun_count`. The processor never reads or writes it, so hot-block rollbacks and hand-run repairs to `objekt` stay counted without any TypeScript changes. A collection's row exists only while it has objekts.
-
-`collection_market_stats` holds the USD floor, listing count and latest listing time of each listed collection. apps/schedules' `sync-market-stats` owns it, syncing from the web DB every minute, and apps/web's `/market` joins it to `collection` to filter, sort and page in one query. The processor never touches it.
-
-### Serial Numbering
-
-COSMO stopped returning serials at the v1 metadata cutoff, so `src/serials.ts` sets the serial of each objekt minted after it before the chunk's upsert, using `@apollo/serial-estimation` (see the serials section of `docs/cosmo.md`). A digital mint above its collection's cached top takes the next serial; anything else is estimated from its whole collection plus the chunk's new objekts. The new objekts take the result, and so do a digital collection's stored objekts whose serial it changed, because a late mint shifts every one above it. Those are written through the store (so a hot-block rollback restores them) and set on the chunk's own buffered instances, whose upsert would otherwise write the old serial back. Stored physicals are never renumbered here: `apps/schedules` recomputes collections daily and applies confirmed serials. It also maintains `serial_reservation`: an online mint 20 or more ids above the highest so far opens a range, and a late online mint below it splits the range it lands in, so the table matches what the backfill computes from every mint. The reads go through the store's `EntityManager` with raw SQL, because `Store` can't select single columns or scan id ranges.
-
-### List Event Outbox
-
-`list_event_outbox` feeds apps/schedules' `drain-outbox`, which clears list entries, pins and binder slots and settles trades from it (see `docs/trades.md`). The processor only appends: a `transfer` row for every transfer except mints, and a `transferability` row for every token a `batchUpdateObjektTransferability` call updates. Ids follow processing order, so within one batch every transfer row precedes every transferability row. A `NOT VALID` check enforces each type's columns on new rows without scanning old ones.
-
-The processor runs with `supportHotBlocks`, and a hot-block rollback doesn't remove outbox rows: the change log records each insert by entity id, and a bigserial row has no id until the insert has run. The drain detects this through the row's `transfer_id`.
-
-## Key Files
-
-- `schema.graphql` — source of truth for entity definitions; TypeORM entities in `src/model/generated/` are manually kept in sync with it (do not regenerate)
-- `src/processor.ts` — Subsquid processor configuration; `src/parser.ts` — event parsing; `src/main.ts` — business logic
-- `src/abi/` — auto-generated contract interfaces (objekt = ERC-721 NFT, como = ERC-1155 token, gravity = voting)
-- `db/migrations/` — manual migrations only
-
-Entity fields and relations are defined in `schema.graphql` and mirrored in `packages/database/src/indexer/schema.ts` — read those directly rather than relying on prose.
-
-## Important Gotchas
-
-1. **Runtime:** Bun (>= 1.4) for build and production. `bun run start` applies `db/migrations` before starting the processor
-2. **`@subsquid/http-client` patch:** `patches/@subsquid%2Fhttp-client@1.8.1.patch` removes the hard-coded `compress: true` fetch option, which Bun's native fetch treats as "gzip the request body" and JSON-RPC endpoints reject with `-32700 parse error`. The patch is version-pinned and must be re-created when bumping the package
-3. **UUID Type:** Uses `varchar(36)` instead of PostgreSQL `uuid` type due to Subsquid casting limitations
-4. **Address Normalization:** Always use `addr()` - never store raw addresses
-5. **GraphQL Server:** Not actively used - schema only defines entity structure
-6. **Keep Drizzle in Sync:** All model changes must be reflected in `/packages/database/src/indexer/schema.ts`
-7. **Bun Compatibility:** `glob`, `lru-cache`, and `path-scurry` are direct dependencies only to pin Bun-compatible versions over the transitive ones — nothing imports them, so keep them when pruning unused dependencies
-8. **Relation properties use `Relation<T>`:** the model files import each other circularly and the build emits ESM, so a bare class type in `emitDecoratorMetadata` output throws a TDZ `ReferenceError` at startup
-9. **Autovacuum reloptions are mostly live-only:** `objekt`, `transfer`, `collection`, `collection_owner` and `list_event_outbox` have per-table autovacuum settings applied directly in production (not in any migration) because the default thresholds let the visibility map go stale under the constant owner-rewrite churn; `progress_leaderboard` gets its settings from its own migration. All of them are recorded under "Current VACUUM settings" in `docs/database.md` — re-apply the live-only ones by hand after any from-scratch database rebuild.
-10. **Leaderboard triggers:** statement-level triggers on `objekt` and a row trigger on `collection` keep `collection_owner` and `progress_leaderboard` current, and statement-level triggers on `progress_leaderboard` keep `progress_histogram` (owners per count, for ranks) in step with it (migration `1792234623962`), so every objekt write, including hot-block rollbacks, runs through them. For a full reindex from the start block, disable the triggers, reindex, then truncate all three tables and re-run the migration's backfill. `collection.unobtainable` is set by hand and `handleCollection` must never assign it; a hot-block rollback restores Subsquid's pre-block row snapshot, so a flag flipped while a block touching that collection is still unfinalized can be reverted.
-
-## Processing Flow
+Everything in a batch runs in one Subsquid transaction and commits together with the new height.
 
 ```
-Blockchain Events
-    ↓
-parser.ts (parseBlocks)
-    ↓
-main.ts (business logic)
-    ├── Buffer entities in Maps
-    ├── Fetch metadata in batches
-    ├── Handle errors gracefully
-    └── Upsert to database
-    ↓
-TypeORM Store
-    ↓
-PostgreSQL Database
+  Abstract RPC --> EvmBatchProcessor: blocks since the last height
+                          |
+  parseBlocks        transfers | transferability | como | votes | reveals
+                          |
+  [ENABLE_OBJEKTS]        v
+  startSerialBatch   batch starts <= last height? hot-block rollback: clear tops, frontier
+  +-- per chunk of COSMO_PARALLEL_COUNT transfers -------------------------------+
+  |  fetch v3 metadata for every transfer (retries up to 5 min)                  |
+  |    any failure -> Sentry fatal, flush, THROW: the batch rolls back, the      |
+  |                   process exits, the same blocks are redone on restart       |
+  |  handleCollection  load by slug, create or refresh from metadata             |
+  |  handleObjekt      new: serial 0, transferable true / known: owner, received |
+  |  numberNewObjekts  serial_reservation, estimates, renumber stored digital    |
+  |  mirrorImages      R2; a failure never fails the batch                       |
+  |  upsert collection -> objekt -> transfer                                     |
+  |  insert list_event_outbox  type=transfer, mints excluded                     |
+  +------------------------------------------------------------------------------+
+                          |
+  transferability    set objekt.transferable, insert outbox type=transferability
+  COMO balances      chunks of 2000; from -= value, to += value; skip Addresses.*
+                          |
+  [ENABLE_GRAVITY]        v
+  votes              one vote row per Voted log
+  reveals            reveal offset + i = position in the poll's (block_number,
+                     log_index) order; only fills a null candidate_id
+                          |
+                          v
+  commit: rows + height; objekt triggers update collection_stats and the leaderboard
 ```
+
+## Metadata
+
+- Every transfer fetches `/bff/v3/objekts/nft-metadata/{id}`, not only mints, because collections are discovered and refreshed from metadata. A COSMO outage halts all indexing, plain ownership changes included.
+- `normalizeV3` in `packages/cosmo` maps v3 into the v1 shape, and v3 lacks several fields:
+
+| Field                 | Stored from v3        | Consequence                                                                          |
+| --------------------- | --------------------- | ------------------------------------------------------------------------------------ |
+| `objekt.serial`       | `0`                   | `numberNewObjekts` estimates it for objekts minted after the cutoff                  |
+| `objekt.transferable` | `true`                | the real value arrives only with a later `batchUpdateObjektTransferability` call     |
+| `backImage`           | `""`                  | `handleCollection` keeps a stored back image; a v3-era collection has none to mirror |
+| `contract`            | zero address          | new collections carry no contract address                                            |
+| `textColor`           | `#000000`             | set once on create; staff can correct it                                             |
+| `accentColor`         | the background colour | set once on create; staff can correct it                                             |
+
+## Writes and the store
+
+- `ctx.store.upsert` writes every mapped column of the instance. An edit made by someone else between the processor's load and its upsert is overwritten, and image mirroring can stretch that window to minutes.
+- Outbox rows are `insert`ed, never upserted, because Postgres generates their bigserial id.
+- `collection`, `transfer`, `como_balance` and `vote` ids are `randomUUID()` stored as `varchar(36)`, because Subsquid casts ids to text and a `uuid` column breaks. `objekt.id` is the token id as varchar.
+- The chunk buffers (`Map`s in `main.ts`) let repeated tokens and collections in one chunk see each other's changes before the upsert.
+
+Who writes each `collection` column decides whether an edit survives:
+
+| Columns                                                                                                               | Written by                                                                                   |
+| --------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `season`, `member`, `artist`, `collection_no`, `class`, `como_amount`, `on_offline`, `thumbnail_image`, `front_image` | the processor, from metadata on every transfer: a staff edit lasts until the next transfer   |
+| `back_image`                                                                                                          | the processor, only when metadata has one                                                    |
+| `contract`, `created_at`, `collection_id`, `slug`, `text_color`, `background_color`, `accent_color`                   | the processor on create only; staff edit the colours at `/admin/collections`                 |
+| `front_image_version`, `back_image_version`                                                                           | `mirrorImages`, and staff re-mirrors at `/admin/collections`                                 |
+| `unobtainable`, `has_audio`, `front_media`, `band_image_url`                                                          | staff only (`/admin/collections`, `/admin/bands`); `handleCollection` must never assign them |
+
+## Hot-block rollbacks
+
+Blocks newer than `RPC_FINALITY` are hot, and Subsquid restores its pre-block snapshot of every entity they touched when the chain reorganises.
+
+| Written by                                                                  | On rollback                                                                 |
+| --------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| store upserts of `objekt`, `collection`, `transfer`, `como_balance`, `vote` | restored, including serials `renumberStored` wrote through the store        |
+| a hand edit to a row a hot block touched                                    | reverted to the snapshot                                                    |
+| trigger tables (`collection_stats`, `collection_owner`, `progress_*`)       | stay correct, because the restore's writes fire the triggers                |
+| `list_event_outbox` inserts                                                 | not removed: the change log keys inserts by id and a bigserial has none yet |
+| `serial_reservation` (raw SQL)                                              | not reverted                                                                |
+| `tops` and `frontier` in `src/serials.ts`                                   | cleared by `startSerialBatch`                                               |
+| R2 images                                                                   | kept; harmless, because objects are keyed by a hash of the source URL       |
+
+The drain spots a rolled-back transfer by its missing `transfer` row (see [`docs/trades/drain.md`](../../docs/trades/drain.md)).
+
+## Errors
+
+- Never skip or log-and-continue on work whose absence leaves a wrong row, because a committed batch is never reprocessed: a skipped transfer leaves its objekt with a stale owner for good.
+- Throwing is safe: Subsquid rolls the batch back, exits, and redoes the same blocks on restart.
+- Before throwing, settle every call (`Promise.allSettled`) and log `failed/total` with the ids, so one bad item and a COSMO outage can be told apart.
+- Capture one Sentry event with a fixed `fingerprint` and the first rejection as `cause`, so every failed batch lands in one issue and alerts count batches.
+- `await Sentry.flush(2000)` before the throw, because Subsquid exits on the way out and drops queued events.
+- Log-and-continue is only for work that leaves nothing wrong behind: a transferability update for an unknown objekt, and image mirroring.
+- Sentry initialises only when `SENTRY_DSN` is set (`src/instrument.ts`).
+
+## Image mirroring
+
+`mirrorImages` (`src/images.ts`) mirrors each side of a chunk's collections through `@apollo/image` (see [its README](../../packages/image/README.md)) before the collection upsert.
+
+- A side is mirrored when its source URL is non-empty and its stored version differs from `objektImageRef(...).version`.
+- Four mirrors run at a time, each capped at 60 seconds, and success sets the version on the instance the upsert writes.
+- A failure is logged and sent to Sentry (fingerprint `indexer-image-mirror-failed`); it never fails the batch.
+- A broken source image gets a one-hour cooldown. Any other failure opens a five-minute breaker that skips all mirroring. Both live in memory only.
+- A null version makes readers fall back to COSMO's URL.
+
+## Serial numbering
+
+`numberNewObjekts` (`src/serials.ts`) numbers each chunk's new objekts with `@apollo/serial-estimation`. The model is in [`docs/cosmo.md`](../../docs/cosmo.md#serials).
+
+- Digital mints update `serial_reservation` first: a jump of `RESERVATION_MIN_GAP` or more above `frontier` opens a range, and a late mint below it splits the stored range it lands in.
+- Only objekts minted after `SERIAL_CUTOFF` get a serial. A digital mint above its collection's cached top counts on from it; anything else is estimated from the whole collection.
+- A late digital mint shifts every stored objekt above it. `renumberStored` writes those through the store in token-id order, the order apps/schedules writes in, so overlapping row locks can't deadlock.
+- Renumbered serials are also set on the chunk's buffered instances, because the chunk's upsert would otherwise write the old serial back.
+- Stored physicals and coupon sets are never renumbered here; apps/schedules' `recompute-serials` repairs them.
+- Reads use the store's `EntityManager` (`ctx.store["em"]()`) with raw SQL, because `Store` can't select single columns or scan id ranges.
+- `objekt.id` is varchar, so token-id ranges are queried per digit count (`tokenIdRanges()`); only ids of equal length compare in numeric order as text.
+- `loadReservations` is one of three copies of the reservation loader; [`packages/serial-estimation/README.md`](../../packages/serial-estimation/README.md) lists them. Change all three together.
+
+## Outbox
+
+`list_event_outbox` feeds apps/schedules' `drain-outbox` (see [`apps/schedules/CLAUDE.md`](../schedules/CLAUDE.md)).
+
+- The processor only appends: a `transfer` row for every transfer except mints, and a `transferability` row for every known token a transferability call updated.
+- `collection_id` holds the collection slug, not its UUID, so the drain matches it directly against the web DB's `objekt_list_entries.collection_id`.
+- Ids follow processing order: within a batch, every transfer row precedes every transferability row, whatever the on-chain order.
+- `CHK_list_event_outbox_type` is `NOT VALID`: it checks each type's columns on new rows without scanning old ones.
+
+## Trigger-maintained tables
+
+The processor never writes these; triggers on `objekt` and `collection` do.
+
+| Table                                                            | Migration       | Holds                                                                    |
+| ---------------------------------------------------------------- | --------------- | ------------------------------------------------------------------------ |
+| `collection_stats`                                               | `1791327933173` | objekt and spun counts per collection; a row exists while it has objekts |
+| `collection_owner`, `progress_leaderboard`, `progress_histogram` | `1792234623962` | copies per owner, progress counts and the rank histogram                 |
+
+- The leaderboard tables exclude the `Welcome` and `Zero` classes, unobtainable collections and `Addresses.SPIN`.
+- A change to a collection's member, season, `on_offline`, class or `unobtainable` moves its owners' counts.
+- For a full reindex from the start block: disable the leaderboard triggers, reindex, truncate the three tables, then re-run the backfill in migration `1792234623962`.
+- `collection_market_stats` and `member` belong to apps/schedules (`sync-market-stats`, `sync-members`).
+
+## Schema changes
+
+1. Edit the TypeORM model in `src/model/generated/`.
+2. Write a migration in `db/migrations/` named `{timestamp}-Data.js`, with `up()`, `down()` and a short comment saying why (what an index speeds up, what a column is for).
+3. Mirror the change in `packages/database/src/indexer/schema.ts`, which apps/web, apps/schedules and the serial-estimation scripts read through Drizzle.
+4. Update `schema.graphql` to match the models.
+5. Run `turbo typecheck` and `turbo lint`.
+
+- Never run the `commands.json` generators: `migration:generate` depends on `migration:clean`, which deletes `db/migrations`, and `codegen` overwrites the hand-written models. `squid-typeorm-migration apply` is safe; `bun run start` runs it.
+- Relation properties are typed `Relation<T>`, because the models import each other circularly and the ESM build's decorator metadata otherwise throws a TDZ `ReferenceError` at startup.
+- The runner applies every pending migration in one transaction, so `CONCURRENTLY` and long backfills run by hand first and the migration ships as an idempotent record ([`docs/migrations.md`](../../docs/migrations.md#one-transaction-per-release)); `1792234623962` shows the pattern.
+- Some per-table autovacuum settings are applied by hand, not by migrations; [`docs/migrations.md`](../../docs/migrations.md) records them.
+
+## Runtime quirks
+
+- The root `patches/@subsquid%2Fhttp-client@1.8.1.patch` removes `compress: true`, which Bun's fetch reads as "gzip the request body" and RPC nodes reject with `-32700`. Re-create it when bumping the package.
+- `glob`, `lru-cache` and `path-scurry` are direct dependencies only to pin Bun-compatible versions; nothing imports them, so keep them when pruning.
+- `bun run build` uses `tsc -p tsconfig.build.json`, because the TypeORM models need decorator metadata emit.
+- `DB_NAME`, `DB_READ_USER` and `DB_READ_PASS` are required by `src/env.ts` but never read.
+
+## Where to start
+
+- New on-chain source: subscription in `src/processor.ts`, decoder in `src/parser.ts`, handler in `src/main.ts`, then the schema change steps.
+- New collection column from metadata: `normalizeV3` in `packages/cosmo`, `handleCollection`, then the schema change steps.
+- Serial rule change, coupon set or claim block: [`packages/serial-estimation/README.md`](../../packages/serial-estimation/README.md).
+- Mark a collection unobtainable: [`docs/cosmo.md`](../../docs/cosmo.md#unobtainable-collections).

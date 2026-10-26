@@ -94,7 +94,7 @@ type ListingOffer = { id: string; toUserId: string | null };
  * The pending offers on the poster's listing in id order: their poster's
  * items keep the listing's id. An edit or a withdrawal reads them before
  * its transaction, to lock their claimers with the poster and then the
- * offers before the listing (docs/auth.md), and an edit again once it holds
+ * offers before the listing (docs/locking.md), and an edit again once it holds
  * the listing, after which no new one can be sent.
  */
 export function listingOffers(
@@ -119,7 +119,7 @@ export function listingOffers(
 
 /**
  * Locks the offers among `offers` that are still pending, in id order,
- * after the users and before the listing (docs/auth.md), and returns them.
+ * after the users and before the listing (docs/locking.md), and returns them.
  * One accepted or ended since the unlocked read is left to its trade.
  */
 export async function lockListingOffers(

@@ -15,7 +15,7 @@ export const posterLinkColumns = {
  * poster is gone (null) or banned, or their COSMO link (`cosmoAccount`,
  * read with posterLinkColumns) no longer matches `fromAddress`. The listing
  * page disables Accept on the same verdict that refuses the claim, and on
- * too few free objekts (poolAvailability()).
+ * too few free objekts (listingStop()).
  */
 export function posterBlocked(
   wants: readonly { kind: TradeWantKind }[],

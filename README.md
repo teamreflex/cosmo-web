@@ -74,6 +74,7 @@ turbo db:migrate --filter web
 - [Tailwind v4](https://tailwindcss.com/)
 - [shadcn/ui](https://ui.shadcn.com/docs)
 - [Drizzle ORM](https://orm.drizzle.team/)
+- [Effect](https://effect.website/)
 - [Subsquid](https://subsquid.io/)
 - [Typesense](https://typesense.org/)
 
