@@ -61,12 +61,12 @@ export default function ComposerOffered({
               key={tokenId}
               className="flex w-[84px] flex-col gap-1.5 md:w-30"
             >
-              <OfferedTile
+              <RemovableTile
                 shown={shown}
                 refusal={refusals.get(tokenId)}
                 onRemove={() => onRemove(tokenId)}
               />
-              {shown !== undefined && <OfferedCaption shown={shown} />}
+              {shown !== undefined && <TileCaption shown={shown} />}
             </li>
           );
         })}
@@ -108,11 +108,11 @@ export default function ComposerOffered({
 }
 
 /**
- * The objekt's member and number on one line and its season and serial
- * under it, a size smaller on phones, so a narrow tile never breaks either
- * in two.
+ * Under a RemovableTile, the member and number on one line and the season,
+ * with an objekt's serial, under it, a size smaller on phones, so a narrow
+ * tile never breaks either in two.
  */
-export function OfferedCaption({ shown }: { shown: ComposerShown }) {
+export function TileCaption({ shown }: { shown: ComposerShown }) {
   const { collection } = shown;
 
   return (
@@ -136,10 +136,11 @@ export function OfferedCaption({ shown }: { shown: ComposerShown }) {
 }
 
 /**
- * A picked objekt's card with a control that takes it out, and why it
- * can't be traded any more when it can't.
+ * A card with a control that takes it out: an offered objekt, a claim's
+ * pick or a collection an "any of" row names. An objekt that can't be
+ * traded any more says why.
  */
-export function OfferedTile({
+export function RemovableTile({
   shown,
   refusal,
   onRemove,

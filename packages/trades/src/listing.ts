@@ -79,7 +79,7 @@ const listingFields = {
   // the offered objekts one unit takes; every one of them when left out
   unitSize: z
     .int()
-    .min(1, "A unit needs at least one objekt")
+    .min(1, "Each trade needs at least one of the offered objekts")
     .max(MAX_OFFERED)
     .optional(),
   wants: z
@@ -109,6 +109,17 @@ export function rangesDistinct(filters: readonly RangeFilter[]) {
   );
 }
 
+/**
+ * Whether no two "any of" rows name the same collections, in any order.
+ */
+export function choicesDistinct(slugSets: readonly (readonly string[])[]) {
+  return isDistinct(
+    slugSets.map((slugs) =>
+      slugs.toSorted((a, b) => (a < b ? -1 : Number(a > b))).join(" "),
+    ),
+  );
+}
+
 type ListingTerms = {
   offered: readonly { tokenId: number }[];
   unitSize?: number | undefined;
@@ -133,7 +144,7 @@ function withListingRules<TSchema extends z.ZodType<ListingTerms>>(
       ({ offered, unitSize }) =>
         unitSize === undefined || unitSize <= offered.length,
       {
-        message: "A unit can't take more objekts than the listing offers",
+        message: "A trade can't take more objekts than the listing offers",
         path: ["unitSize"],
       },
     )
@@ -159,16 +170,8 @@ function withListingRules<TSchema extends z.ZodType<ListingTerms>>(
     )
     .refine(
       ({ wants }) =>
-        isDistinct(
-          wants.flatMap((want) =>
-            want.kind === "choice"
-              ? [
-                  want.slugs
-                    .toSorted((a, b) => (a < b ? -1 : Number(a > b)))
-                    .join(" "),
-                ]
-              : [],
-          ),
+        choicesDistinct(
+          wants.flatMap((want) => (want.kind === "choice" ? [want.slugs] : [])),
         ),
       {
         message: "Each set of collections can only be asked for once",

@@ -1,4 +1,5 @@
 import { m } from "@/i18n/messages";
+import { cn } from "@/lib/utils";
 import { IconMinus, IconPlus } from "@tabler/icons-react";
 import { useId } from "react";
 import { Button } from "../ui/button";
@@ -8,54 +9,86 @@ type Props = {
   canDecrement: boolean;
   canIncrement: boolean;
   onStep: (delta: number) => void;
+  /** "lg" is the Ratio control's, whose number is the strip's headline */
+  size?: keyof typeof sizes;
+  /** what the group and its buttons are called, a want row's count when left out */
+  labels?: { group: string; fewer: string; more: string };
+  valueClassName?: string;
 };
 
+const sizes = {
+  sm: {
+    group: "h-9 rounded-sm px-1 max-md:h-10",
+    button: "icon-xs",
+    buttonClassName: "text-muted-foreground max-md:size-8",
+    value: "min-w-4 text-sm",
+  },
+  lg: {
+    group: "rounded-md bg-background p-0.5",
+    button: "icon",
+    buttonClassName: "touch-manipulation max-md:size-11",
+    value: "min-w-9 text-2xl",
+  },
+} as const;
+
 /**
- * How many objekts a want row asks for, between two buttons. The caps
- * disable the buttons rather than the number moving past them.
+ * A number between two buttons: how many objekts a want row asks for, or
+ * the poster's side of the ratio. The caps disable the buttons rather than
+ * the number moving past them.
  */
 export default function ComposerStepper({
   value,
   canDecrement,
   canIncrement,
   onStep,
+  size = "sm",
+  labels,
+  valueClassName,
 }: Props) {
   const labelId = useId();
+  const variant = sizes[size];
 
   return (
     <span
       role="group"
       aria-labelledby={labelId}
-      className="inline-flex h-9 shrink-0 items-center gap-1 rounded-sm border border-border px-1 max-md:h-10"
+      className={cn(
+        "inline-flex shrink-0 items-center gap-1 border border-border",
+        variant.group,
+      )}
     >
       <span id={labelId} className="sr-only">
-        {m.listing_composer_count()}
+        {labels?.group ?? m.listing_composer_count()}
       </span>
       <Button
         type="button"
         variant="ghost"
-        size="icon-xs"
-        aria-label={m.listing_composer_fewer()}
+        size={variant.button}
+        aria-label={labels?.fewer ?? m.listing_composer_fewer()}
         disabled={!canDecrement}
         onClick={() => onStep(-1)}
-        className="text-muted-foreground max-md:size-8"
+        className={variant.buttonClassName}
       >
         <IconMinus />
       </Button>
       <output
         aria-live="polite"
-        className="min-w-4 text-center font-mono text-sm font-bold tabular-nums"
+        className={cn(
+          "text-center font-mono font-bold tabular-nums",
+          variant.value,
+          valueClassName,
+        )}
       >
         {value}
       </output>
       <Button
         type="button"
         variant="ghost"
-        size="icon-xs"
-        aria-label={m.listing_composer_more()}
+        size={variant.button}
+        aria-label={labels?.more ?? m.listing_composer_more()}
         disabled={!canIncrement}
         onClick={() => onStep(1)}
-        className="text-muted-foreground max-md:size-8"
+        className={variant.buttonClassName}
       >
         <IconPlus />
       </Button>

@@ -250,12 +250,12 @@ const refused = [
   [
     "a unit size of 0",
     { offered, unitSize: 0, wants },
-    "unitSize: A unit needs at least one objekt",
+    "unitSize: Each trade needs at least one of the offered objekts",
   ],
   [
     "a unit bigger than the pool",
     { offered: tokens(3), unitSize: 4, wants },
-    "unitSize: A unit can't take more objekts than the listing offers",
+    "unitSize: A trade can't take more objekts than the listing offers",
   ],
   [
     "a fractional unit size",

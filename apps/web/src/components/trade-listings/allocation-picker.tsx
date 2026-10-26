@@ -13,7 +13,7 @@ import { takesOffers } from "@apollo/trades/lifecycle";
 import { IconCircleCheck, IconPlus } from "@tabler/icons-react";
 import { Fragment, type ReactNode, useState } from "react";
 import { Skeleton } from "../ui/skeleton";
-import { OfferedCaption, OfferedTile } from "./composer-offered";
+import { RemovableTile, TileCaption } from "./composer-offered";
 import { RangeBadges } from "./range-want";
 import RowPicker from "./row-picker";
 import SideHeading, { SideHeadingSkeleton } from "./side-heading";
@@ -251,12 +251,12 @@ function WantRow({ row, count, side, picked, onPick, onRemove }: WantRowProps) {
         const shown = pickShown(pick);
         return (
           <li key={pick.tokenId} className={slotClass}>
-            <OfferedTile
+            <RemovableTile
               shown={shown}
               refusal={undefined}
               onRemove={() => onRemove(pick)}
             />
-            <OfferedCaption shown={shown} />
+            <TileCaption shown={shown} />
           </li>
         );
       })}

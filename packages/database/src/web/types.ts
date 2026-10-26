@@ -383,8 +383,9 @@ export type TradeOfferStatus = (typeof tradeOfferStatuses)[number];
  * trades are doing, and listings don't expire. Once the pool falls below a
  * unit it's filled if any of its trades completed, else broken. It also
  * ends when the poster withdraws it or staff remove it. Nothing writes
- * `claimed` or `timed_out` to a listing; they're kept for listings that
- * ended that way before listings had units.
+ * `claimed` or `timed_out` to a listing: no listing holds `claimed`, and
+ * `timed_out` marks older listings that closed when their one trade timed
+ * out.
  */
 export const listingStatuses = [
   "open",

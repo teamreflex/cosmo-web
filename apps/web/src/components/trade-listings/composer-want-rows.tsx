@@ -18,6 +18,7 @@ import { useState } from "react";
 import { useFieldArray, type UseFormReturn, useWatch } from "react-hook-form";
 import { Button } from "../ui/button";
 import { FieldError } from "../ui/field";
+import ComposerChoiceRow from "./composer-choice-row";
 import ComposerExactRow from "./composer-exact-row";
 import ComposerExactSearch from "./composer-exact-search";
 import ComposerRangeRow from "./composer-range-row";
@@ -31,8 +32,9 @@ type Props = {
 
 /**
  * What the poster asks for in return: exact rows for copies of one
- * collection and range rows for any objekts matching some values, in the
- * order they're added.
+ * collection, "any of" rows for any mix of a few named collections and
+ * range rows for any objekts matching some values, in the order they're
+ * added.
  */
 export default function ComposerWantRows({
   form,
@@ -47,6 +49,7 @@ export default function ComposerWantRows({
   const wants = useWatch({ control, name: "wants" });
   const [searching, setSearching] = useState(false);
   const roomForRow = canAddWant(wants);
+  const firstRange = wants.findIndex((want) => want.kind === "range");
   const validate = formState.isSubmitted;
 
   function setWant(index: number, want: ListingFormWant) {
@@ -125,13 +128,25 @@ export default function ComposerWantRows({
                       ?.message
                   }
                   stepper={stepper}
+                  offersNote={index === firstRange}
                   onChange={(filter) => setWant(index, { ...want, filter })}
                   onRemove={() => remove(index)}
                 />
               );
-            // the composer can't add a choice row yet
             case "choice":
-              return null;
+              return (
+                <ComposerChoiceRow
+                  key={field.id}
+                  position={index + 1}
+                  count={want.count}
+                  slugs={want.slugs}
+                  collections={display.collections}
+                  stepper={stepper}
+                  onChange={(slugs) => setWant(index, { ...want, slugs })}
+                  onCollection={onCollection}
+                  onRemove={() => remove(index)}
+                />
+              );
           }
         })}
 
@@ -142,7 +157,7 @@ export default function ComposerWantRows({
           />
         )}
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button
             type="button"
             variant="ghost"
@@ -154,6 +169,17 @@ export default function ComposerWantRows({
           >
             <IconPlus />
             {m.listing_composer_add_exact()}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            disabled={!roomForRow}
+            onClick={() => append({ kind: "choice", slugs: [], count: 1 })}
+            className="border border-dashed border-input max-md:h-10 max-md:flex-1"
+          >
+            <IconPlus />
+            {m.listing_composer_add_choice()}
           </Button>
           <Button
             type="button"

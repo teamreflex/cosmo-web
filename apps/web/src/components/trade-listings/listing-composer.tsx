@@ -23,14 +23,21 @@ import {
   composerBlock,
   type ComposerMode,
   emptyListingForm,
+  followUnitSize,
+  formUnitSize,
   formValuesToInput,
   type ListingFormValues,
   type ListingSubmission,
   listingToFormValues,
+  stepUnitSize,
 } from "@/lib/universal/trade-listing-form";
 import type { TokenRefusalReason } from "@/lib/universal/trade-listings";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
-import { MAX_NOTE_LENGTH, MAX_OFFERED } from "@apollo/trades/caps";
+import {
+  MAX_CHOICE_OPTIONS,
+  MAX_NOTE_LENGTH,
+  MAX_OFFERED,
+} from "@apollo/trades/caps";
 import { totalWanted } from "@apollo/trades/composer";
 import {
   type ListingInput,
@@ -70,6 +77,7 @@ import { Field, FieldError, FieldLabel } from "../ui/field";
 import { Spinner } from "../ui/spinner";
 import { Textarea } from "../ui/textarea";
 import ComposerOffered from "./composer-offered";
+import ComposerRatio from "./composer-ratio";
 import ComposerWantRows from "./composer-want-rows";
 import TradePicker from "./trade-picker";
 import TradeSheet from "./trade-sheet";
@@ -84,9 +92,10 @@ type Props = {
 
 /**
  * Posts a trade listing, or replaces the terms of the poster's open one: the
- * objekts it offers, the rows it asks for and a note. A centred dialog on
- * desktop and a tall bottom drawer on phones; the form lives above that
- * switch, so crossing the breakpoint keeps everything entered.
+ * objekts it offers, the rows it asks for, the ratio between them and a
+ * note. A centred dialog on desktop and a tall bottom drawer on phones; the
+ * form lives above that switch, so crossing the breakpoint keeps everything
+ * entered.
  */
 export default function ListingComposer({
   mode,
@@ -174,8 +183,7 @@ export default function ListingComposer({
       // the listing moved on while the dialog was open, so its terms are gone
       if (
         mode.kind === "edit" &&
-        (error.message === "listing_claimed" ||
-          error.message === "listing_closed" ||
+        (error.message === "listing_closed" ||
           error.message === "listing_not_found")
       ) {
         onOpenChange(false);
@@ -213,20 +221,26 @@ export default function ListingComposer({
     setDisplay(initialDisplay());
   }
 
-  function toggleOffered(objekt: CosmoObjekt) {
-    const tokenId = Number(objekt.tokenId);
-    const offered = form.getValues("offered");
+  // a bundle keeps taking the whole pool, and a ratio is held to a smaller one
+  function setOffered(offered: ListingFormValues["offered"]) {
     const options = {
       shouldDirty: true,
       shouldValidate: form.formState.isSubmitted,
     };
+    form.setValue(
+      "unitSize",
+      followUnitSize(form.getValues("unitSize"), offered.length),
+      options,
+    );
+    form.setValue("offered", offered, options);
+  }
+
+  function toggleOffered(objekt: CosmoObjekt) {
+    const tokenId = Number(objekt.tokenId);
+    const offered = form.getValues("offered");
 
     if (offered.some((item) => item.tokenId === tokenId)) {
-      form.setValue(
-        "offered",
-        offered.filter((item) => item.tokenId !== tokenId),
-        options,
-      );
+      setOffered(offered.filter((item) => item.tokenId !== tokenId));
       return;
     }
     if (offered.length >= MAX_OFFERED) return;
@@ -239,7 +253,7 @@ export default function ListingComposer({
         serial: token.serial,
       }),
     }));
-    form.setValue("offered", [...offered, { tokenId }], options);
+    setOffered([...offered, { tokenId }]);
   }
 
   function submit(values: ListingInput) {
@@ -277,6 +291,7 @@ export default function ListingComposer({
                   display={display}
                   editedListing={editedListing}
                   onAdd={() => setView("picker")}
+                  onChange={setOffered}
                 />
               </div>
               <ComposerWantRows
@@ -293,6 +308,7 @@ export default function ListingComposer({
                 }
               />
             </div>
+            <RatioStrip form={form} />
             <NoteStrip form={form} />
           </div>
           <ComposerFooter
@@ -393,10 +409,12 @@ function OfferedSection({
   display,
   editedListing,
   onAdd,
+  onChange,
 }: FormProps & {
   display: ComposerDisplay;
   editedListing: string | undefined;
   onAdd: () => void;
+  onChange: (offered: ListingFormValues["offered"]) => void;
 }) {
   const offered = useWatch({ control: form.control, name: "offered" });
   const tokenIds = offered.map((item) => item.tokenId);
@@ -413,11 +431,36 @@ function OfferedSection({
       error={form.formState.errors.offered?.message}
       onAdd={onAdd}
       onRemove={(tokenId) =>
-        form.setValue(
-          "offered",
-          offered.filter((item) => item.tokenId !== tokenId),
-          { shouldDirty: true, shouldValidate: form.formState.isSubmitted },
-        )
+        onChange(offered.filter((item) => item.tokenId !== tokenId))
+      }
+    />
+  );
+}
+
+/**
+ * The ratio, once the want rows ask for something and there are two or
+ * more objekts to split it over, or an edit's ratio takes more than the
+ * pool holds, so the poster can lower it.
+ */
+function RatioStrip({ form }: FormProps) {
+  const [offered, unitSize, wants] = useWatch({
+    control: form.control,
+    name: ["offered", "unitSize", "wants"],
+  });
+  const wanted = totalWanted(wants);
+  const over = unitSize !== undefined && unitSize > offered.length;
+
+  return wanted === 0 || (offered.length < 2 && !over) ? null : (
+    <ComposerRatio
+      unitSize={formUnitSize({ offered, unitSize })}
+      bundle={unitSize === undefined}
+      offered={offered.length}
+      wanted={wanted}
+      onChange={(next) =>
+        form.setValue("unitSize", stepUnitSize(next, offered.length), {
+          shouldDirty: true,
+          shouldValidate: form.formState.isSubmitted,
+        })
       }
     />
   );
@@ -517,8 +560,9 @@ function NoteStrip({ form }: FormProps) {
 }
 
 /**
- * The trade at a glance, why posting is held back when it is, and the
- * buttons. On phones the footer stays pinned under the scrolling form.
+ * One trade at a glance, the ratio's two sides, why posting is held back
+ * when it is, and the buttons. On phones the footer stays pinned under the
+ * scrolling form.
  */
 function ComposerFooter({
   form,
@@ -527,9 +571,9 @@ function ComposerFooter({
   cancel,
 }: FormProps & { mode: ComposerMode; pending: boolean; cancel: ReactNode }) {
   const reasonId = useId();
-  const [offered, wants, note] = useWatch({
+  const [offered, unitSize, wants, note] = useWatch({
     control: form.control,
-    name: ["offered", "wants", "note"],
+    name: ["offered", "unitSize", "wants", "note"],
   });
   const tokenIds = offered.map((item) => item.tokenId);
   // the offered section asks the server; this reads the answer it cached
@@ -559,17 +603,21 @@ function ComposerFooter({
       offered: offered.length,
       refused: tokenIds.filter((tokenId) => refusals?.has(tokenId)).length,
       wants,
+      unitSize,
       rangeMatches,
       rangesRepeat: !rangesDistinct(ranges),
       note: note ?? "",
     }),
+    { unitSize: formUnitSize({ offered, unitSize }), offered: offered.length },
   );
 
   return (
     <div className="flex shrink-0 flex-col gap-2 border-t border-border bg-background/95 px-4 pt-2.5 pb-[calc(1rem+env(safe-area-inset-bottom))] md:flex-row md:flex-wrap md:items-center md:gap-x-3 md:px-5 md:py-3.5">
       <span className="text-center text-xs text-muted-foreground tabular-nums md:text-left">
         {m.listing_composer_footer({
-          offered: m.listing_composer_footer_offered({ count: offered.length }),
+          offered: m.listing_composer_footer_offered({
+            count: formUnitSize({ offered, unitSize }),
+          }),
           wanted: m.listing_composer_footer_wanted({
             count: totalWanted(wants),
           }),
@@ -601,7 +649,10 @@ function ComposerFooter({
   );
 }
 
-function blockedReason(block: ReturnType<typeof composerBlock>) {
+function blockedReason(
+  block: ReturnType<typeof composerBlock>,
+  ratio: { unitSize: number; offered: number },
+) {
   switch (block) {
     case "offered":
       return m.listing_composer_reason_offered();
@@ -619,6 +670,16 @@ function blockedReason(block: ReturnType<typeof composerBlock>) {
       return m.trade_error_listing_range_empty();
     case "range_repeated":
       return m.listing_composer_reason_range_repeated();
+    case "choice":
+      return m.listing_composer_reason_choice();
+    case "choice_too_many":
+      return m.listing_composer_choice_full({ max: MAX_CHOICE_OPTIONS });
+    case "choice_duplicate":
+      return m.listing_composer_reason_choice_duplicate();
+    case "choice_repeated":
+      return m.listing_composer_reason_choice_repeated();
+    case "ratio":
+      return m.listing_composer_reason_ratio(ratio);
     case "note":
       return m.listing_composer_reason_note({ max: MAX_NOTE_LENGTH });
     case null:

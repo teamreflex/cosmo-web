@@ -260,8 +260,9 @@ export function rangeArtist(filter: RangeFilter): ValidArtist | null {
 }
 
 /**
- * How the composer shows an offered objekt or an exact row's collection. It
- * sits beside the form's values, which carry only token ids and slugs.
+ * How the composer shows an offered objekt or a collection an exact or "any
+ * of" row names. It sits beside the form's values, which carry only token
+ * ids and slugs.
  */
 export type ComposerShown = {
   name: string;
@@ -295,9 +296,10 @@ export function listingComposerDisplay(listing: TradeListing): ComposerDisplay {
       ]),
     ),
     collections: new Map(
-      listing.wants.flatMap((want): [string, ComposerShown][] =>
-        want.kind === "exact"
-          ? [
+      listing.wants.flatMap((want): [string, ComposerShown][] => {
+        switch (want.kind) {
+          case "exact":
+            return [
               [
                 want.objekt.slug,
                 {
@@ -306,9 +308,21 @@ export function listingComposerDisplay(listing: TradeListing): ComposerDisplay {
                   collection: want.collection,
                 },
               ],
-            ]
-          : [],
-      ),
+            ];
+          case "choice":
+            return want.options.map((option) => [
+              option.slug,
+              {
+                name: objektName(option.collection, option),
+                serial: null,
+                collection: option.collection,
+              },
+            ]);
+          case "range":
+          case "payment":
+            return [];
+        }
+      }),
     ),
   };
 }
