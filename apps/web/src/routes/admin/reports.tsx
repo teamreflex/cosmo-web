@@ -1,4 +1,3 @@
-import { requireStaffPage } from "@/components/admin/common";
 import AdminNoAccess from "@/components/admin/no-access";
 import ReportDetail from "@/components/admin/reports/report-detail";
 import ReportQueue from "@/components/admin/reports/report-queue";
@@ -12,6 +11,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { requirePermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
 import { reportStatusLabel, reportTargetTypeLabel } from "@/lib/client/reports";
 import { defineHead } from "@/lib/meta";
@@ -44,7 +44,7 @@ export const Route = createFileRoute("/admin/reports")({
     countsFilters: { targetType: deps.type } satisfies ReportCountsInput,
   }),
   beforeLoad: ({ context }) =>
-    requireStaffPage(context.role, { report: ["read"] }),
+    requirePermission(context.role, [{ report: ["read"] }]),
   notFoundComponent: AdminNoAccess,
   loader: async ({ context }) => {
     await Promise.all([

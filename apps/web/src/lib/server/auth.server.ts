@@ -7,11 +7,13 @@ import { GRID_COLUMNS } from "@apollo/util";
 import type { CollectionDataSource } from "@apollo/util";
 import { apiKey } from "@better-auth/api-key";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
+import { captureException } from "@sentry/bun";
 import type { BetterAuthPlugin } from "better-auth";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { parseSessionOutput, parseUserOutput } from "better-auth/db";
 import { betterAuth } from "better-auth/minimal";
 import { admin } from "better-auth/plugins/admin";
+import { jwt } from "better-auth/plugins/jwt";
 import { username } from "better-auth/plugins/username";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { createCipheriv, randomBytes } from "node:crypto";
@@ -20,6 +22,7 @@ import { settingsSchema } from "../universal/schema/auth";
 import { DEFAULT_CURRENCY } from "../universal/schema/currency";
 import { db } from "./db";
 import { sendPasswordResetEmail, sendVerificationEmail } from "./mail.server";
+import { publishUserEvent } from "./user-events.server";
 
 /**
  * Drops `currency` from client sign-up and update-user requests, since it needs
@@ -74,6 +77,24 @@ export const auth = betterAuth({
       startingCharactersConfig: { charactersLength: 13 },
     }),
     admin(adminPluginOptions),
+    /**
+     * Issues the short-lived tokens apps/chat verifies against /api/auth/jwks.
+     * They carry only the user (`sub`) and session (`sid`) ids; chat reads the
+     * session, ban and role from the database itself.
+     */
+    jwt({
+      disableSettingJwtHeader: true,
+      jwks: { keyPairConfig: { alg: "EdDSA", crv: "Ed25519" } },
+      jwt: {
+        issuer: baseUrl(),
+        audience: clientEnv.env.VITE_CHAT_URL
+          ? new URL(clientEnv.env.VITE_CHAT_URL).origin
+          : baseUrl(),
+        // a number would be read as an absolute exp
+        expirationTime: `${serverEnv.env.CHAT_TOKEN_LIFETIME_SECONDS}s`,
+        definePayload: ({ session }) => ({ sid: session.id }),
+      },
+    }),
     serverOnlyCurrency(),
     tanstackStartCookies(),
   ],
@@ -115,10 +136,29 @@ export const auth = betterAuth({
     },
   },
 
-  /**
-   * Encrypt OAuth access and refresh tokens.
-   */
   databaseHooks: {
+    session: {
+      delete: {
+        /**
+         * Tells apps/chat to close the user's sockets whenever a live session
+         * ends: sign-out, revoked sessions, a password change and a ban. An
+         * expired row is skipped, since chat refuses its session anyway. A
+         * Redis failure is reported rather than thrown, because the session is
+         * already gone and the chat token's lifetime bounds any open stream.
+         */
+        async after(session) {
+          if (session.expiresAt > new Date()) {
+            await publishUserEvent({
+              type: "disconnect",
+              userId: session.userId,
+            }).catch(captureException);
+          }
+        },
+      },
+    },
+    /**
+     * Encrypt OAuth access and refresh tokens.
+     */
     account: {
       create: {
         async before(account) {
@@ -349,7 +389,7 @@ export const auth = betterAuth({
 });
 
 // should not be used in client code
-type ServerUser = (typeof auth.$Infer.Session)["user"];
+export type ServerUser = (typeof auth.$Infer.Session)["user"];
 
 const ALGORITHM = "aes-256-gcm";
 const AUTH_TAG_LENGTH = 16;

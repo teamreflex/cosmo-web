@@ -7,9 +7,12 @@ import { drizzle } from "drizzle-orm/bun-sql";
 const PASSWORD = "password";
 
 /**
- * Staff and member accounts for local QA. Direct inserts bypass the admin
- * plugin's defaultRole, so every role is set explicitly. The moderator has no
- * COSMO link; the member owns a web-only profile so it can be reported.
+ * Staff, member and trader accounts for local QA. Direct inserts bypass the
+ * admin plugin's defaultRole, so every role is set explicitly. The moderator
+ * has no COSMO link; the member owns a web-only profile so it can be
+ * reported. Traders B and C are linked to addresses that own thousands of
+ * transferable ARTMS Atom01 and Atom02 objekts in the local indexer, so
+ * listings and ranges can be satisfied.
  */
 const SEED_USERS = [
   {
@@ -36,6 +39,22 @@ const SEED_USERS = [
     displayUsername: "SeedMember",
     role: "user",
   },
+  {
+    id: "seed-trader-b",
+    name: "Seed Trader B",
+    email: "trader-b@seed.invalid",
+    username: "seedtraderb",
+    displayUsername: "SeedTraderB",
+    role: "user",
+  },
+  {
+    id: "seed-trader-c",
+    name: "Seed Trader C",
+    email: "trader-c@seed.invalid",
+    username: "seedtraderc",
+    displayUsername: "SeedTraderC",
+    role: "user",
+  },
 ] satisfies readonly {
   id: string;
   name: string;
@@ -45,11 +64,27 @@ const SEED_USERS = [
   role: Role;
 }[];
 
-const SEED_MEMBER_PROFILE = {
-  address: "0x5eed000000000000000000000000000000000001",
-  username: "SeedMember",
-  userId: "seed-member",
-};
+/**
+ * COSMO links. An address already in `cosmo_account` keeps its username and
+ * only gains the link.
+ */
+const SEED_PROFILES = [
+  {
+    address: "0x5eed000000000000000000000000000000000001",
+    username: "SeedMember",
+    userId: "seed-member",
+  },
+  {
+    address: "0x3b47852fce1936960591ae0845705f6f8e865e7c",
+    username: "SeedTraderB",
+    userId: "seed-trader-b",
+  },
+  {
+    address: "0x144ff722eac2ab8389af89807d91f1d872b2cd11",
+    username: "SeedTraderC",
+    userId: "seed-trader-c",
+  },
+];
 
 async function seedStaff() {
   const { DATABASE_URL } = process.env;
@@ -60,7 +95,7 @@ async function seedStaff() {
   const client = new SQL({ url: DATABASE_URL });
   const db = drizzle({ client });
 
-  console.log("Seeding staff accounts (web DB only)...");
+  console.log("Seeding QA accounts (web DB only)...");
 
   const now = new Date();
   const password = await hashPassword(PASSWORD);
@@ -101,29 +136,29 @@ async function seedStaff() {
       console.log(`  ${fields.email} (${fields.role})`);
     }
 
-    await tx
-      .insert(webSchema.cosmoAccounts)
-      .values(SEED_MEMBER_PROFILE)
-      .onConflictDoUpdate({
-        target: webSchema.cosmoAccounts.address,
-        set: {
-          username: SEED_MEMBER_PROFILE.username,
-          userId: SEED_MEMBER_PROFILE.userId,
-        },
-      });
-    console.log(
-      `  @${SEED_MEMBER_PROFILE.username} (${SEED_MEMBER_PROFILE.address})`,
-    );
+    for (const profile of SEED_PROFILES) {
+      const [linked] = await tx
+        .insert(webSchema.cosmoAccounts)
+        .values(profile)
+        .onConflictDoUpdate({
+          target: webSchema.cosmoAccounts.address,
+          set: { userId: profile.userId },
+        })
+        .returning({ username: webSchema.cosmoAccounts.username });
+      console.log(
+        `  @${linked?.username ?? profile.username} (${profile.address}) → ${profile.userId}`,
+      );
+    }
   });
 
   await client.close();
 
-  console.log(`\nStaff seed complete. Every account's password: ${PASSWORD}`);
+  console.log(`\nQA seed complete. Every account's password: ${PASSWORD}`);
 }
 
 seedStaff()
   .then(() => process.exit(0))
   .catch((err) => {
-    console.error("Staff seed failed:", err);
+    console.error("QA seed failed:", err);
     process.exit(1);
   });

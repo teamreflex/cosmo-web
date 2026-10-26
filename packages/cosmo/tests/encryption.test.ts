@@ -2,7 +2,7 @@ import { describe, expect, it } from "bun:test";
 import { decrypt, encrypt } from "../src/server/encryption";
 
 // 32 bytes of 0x07, base64-encoded — fixed key for deterministic tests
-export const TEST_KEY = "BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc=";
+const TEST_KEY = "BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc=";
 
 describe("encrypt/decrypt", () => {
   it("roundtrips a payload", () => {

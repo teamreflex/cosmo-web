@@ -10,6 +10,7 @@ export const authErrorCodes = [
   "protected_user",
   "self_ban",
   "self_demotion",
+  "ban_trade_party",
 ] as const;
 
 export type AuthErrorCode = (typeof authErrorCodes)[number];

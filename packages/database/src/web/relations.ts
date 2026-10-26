@@ -201,6 +201,11 @@ export const relations = defineRelations(schema, (r) => ({
       from: r.reports.resolvedBy,
       to: r.user.id,
     }),
+    // a chat message report's copy of the message
+    messageCopy: r.one.reportMessages({
+      from: r.reports.id,
+      to: r.reportMessages.reportId,
+    }),
   },
   staffAudit: {
     staff: r.one.user({
@@ -210,6 +215,94 @@ export const relations = defineRelations(schema, (r) => ({
     report: r.one.reports({
       from: r.staffAudit.reportId,
       to: r.reports.id,
+    }),
+  },
+  // #endregion
+
+  // #region Trades
+  tradeOffers: {
+    items: r.many.tradeOfferItems({
+      from: r.tradeOffers.id,
+      to: r.tradeOfferItems.offerId,
+    }),
+    wants: r.many.tradeListingWants(),
+    messages: r.many.tradeMessages(),
+    feedback: r.many.tradeFeedback(),
+    fromUser: r.one.user({
+      from: r.tradeOffers.fromUserId,
+      to: r.user.id,
+    }),
+    toUser: r.one.user({
+      from: r.tradeOffers.toUserId,
+      to: r.user.id,
+    }),
+    // the COSMO accounts behind the pinned addresses
+    fromCosmo: r.one.cosmoAccounts({
+      from: r.tradeOffers.fromAddress,
+      to: r.cosmoAccounts.address,
+    }),
+    toCosmo: r.one.cosmoAccounts({
+      from: r.tradeOffers.toAddress,
+      to: r.cosmoAccounts.address,
+    }),
+    // received feedback of the pinned addresses
+    fromStats: r.one.userFeedbackStats({
+      from: r.tradeOffers.fromAddress,
+      to: r.userFeedbackStats.address,
+    }),
+    toStats: r.one.userFeedbackStats({
+      from: r.tradeOffers.toAddress,
+      to: r.userFeedbackStats.address,
+    }),
+    // the report a dispute or a party's ban froze the trade under
+    disputeReport: r.one.reports({
+      from: r.tradeOffers.disputeReportId,
+      to: r.reports.id,
+    }),
+  },
+  tradeOfferItems: {
+    offer: r.one.tradeOffers({
+      from: r.tradeOfferItems.offerId,
+      to: r.tradeOffers.id,
+      optional: false,
+    }),
+  },
+  tradeListingWants: {
+    listing: r.one.tradeOffers({
+      from: r.tradeListingWants.listingId,
+      to: r.tradeOffers.id,
+      optional: false,
+    }),
+  },
+  tradeMessages: {
+    trade: r.one.tradeOffers({
+      from: r.tradeMessages.tradeId,
+      to: r.tradeOffers.id,
+      optional: false,
+    }),
+  },
+  tradeFeedback: {
+    trade: r.one.tradeOffers({
+      from: r.tradeFeedback.tradeId,
+      to: r.tradeOffers.id,
+      optional: false,
+    }),
+    fromUser: r.one.user({
+      from: r.tradeFeedback.fromUserId,
+      to: r.user.id,
+    }),
+    toUser: r.one.user({
+      from: r.tradeFeedback.toUserId,
+      to: r.user.id,
+    }),
+    // the COSMO account and received feedback of the rater's pinned address
+    fromCosmo: r.one.cosmoAccounts({
+      from: r.tradeFeedback.fromAddress,
+      to: r.cosmoAccounts.address,
+    }),
+    fromStats: r.one.userFeedbackStats({
+      from: r.tradeFeedback.fromAddress,
+      to: r.userFeedbackStats.address,
     }),
   },
   // #endregion

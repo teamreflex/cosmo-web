@@ -11,6 +11,8 @@ import { useState } from "react";
 type Props = {
   label: string;
   valueLabel?: string;
+  /** shown before the value, such as an artist's logo */
+  valueIcon?: ReactNode;
   count?: number;
   active?: boolean;
   width?: number;
@@ -21,6 +23,7 @@ type Props = {
 export default function FilterChip({
   label,
   valueLabel,
+  valueIcon,
   count,
   active,
   width = 240,
@@ -50,6 +53,7 @@ export default function FilterChip({
                 : "border-border text-muted-foreground",
             )}
           >
+            {valueIcon}
             <span>{valueLabel}</span>
             {count !== undefined && count > 0 && (
               <span className="flex h-4 min-w-4 items-center justify-center rounded-sm bg-cosmo px-1 text-xxs font-bold text-white tabular-nums">
@@ -67,7 +71,7 @@ export default function FilterChip({
       </PopoverTrigger>
       <PopoverContent
         align={align}
-        className="rounded-sm p-0"
+        className="max-w-(--available-width) rounded-sm p-0"
         style={{ width }}
       >
         {/* oxlint-disable-next-line anti-slop/no-runtime-typeof -- narrowing the render-prop union */}

@@ -12,7 +12,9 @@ import { m } from "@/i18n/messages";
 import type { CurrentUser } from "@/lib/universal/auth";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { DISCORD_URL } from "@/lib/utils";
+import { marketAccess } from "@apollo/auth";
 import {
+  IconArrowsExchange,
   IconBrandDiscord,
   IconInfoCircle,
   IconLogout,
@@ -20,7 +22,7 @@ import {
   IconTool,
   IconUserCog,
 } from "@tabler/icons-react";
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { useState } from "react";
 import { ADMIN_SHELL_PERMISSIONS } from "../admin/common";
 import AboutDialog from "../navbar/about";
@@ -43,7 +45,15 @@ export default function UserDropdown({
   const { artistList, selectedIds } = useArtists();
   const hasPermission = useHasPermission();
   const [openSettings, setOpenSettings] = useState(false);
-  const [openAccount, setOpenAccount] = useState(false);
+  /**
+   * Remembering where the account dialog was opened closes it on any
+   * navigation, such as a deletion blocker's link to its trade.
+   */
+  const pathname = useLocation({ select: (location) => location.pathname });
+  const [accountOpenedOn, setAccountOpenedOn] = useState<string | null>(null);
+  if (accountOpenedOn !== null && accountOpenedOn !== pathname) {
+    setAccountOpenedOn(null);
+  }
   const [openAbout, setOpenAbout] = useState(false);
 
   return (
@@ -54,13 +64,13 @@ export default function UserDropdown({
         user={user}
       />
       <AccountDialog
-        open={openAccount}
-        onOpenChange={setOpenAccount}
+        open={accountOpenedOn !== null}
+        onOpenChange={(open) => setAccountOpenedOn(open ? pathname : null)}
         cosmo={cosmo}
       />
       <AboutDialog open={openAbout} onOpenChange={setOpenAbout} />
 
-      <DropdownMenuTrigger className="group outline-hidden">
+      <DropdownMenuTrigger className="group relative outline-hidden">
         <UserAvatar
           className="h-8 w-8 shadow-sm **:p-1"
           username={user.username ?? "Apollo"}
@@ -81,7 +91,7 @@ export default function UserDropdown({
         <DropdownMenuSeparator />
 
         <DropdownMenuItem
-          onClick={() => setOpenAccount(true)}
+          onClick={() => setAccountOpenedOn(pathname)}
           className="cursor-pointer"
         >
           <IconUserCog className="h-4 w-4" />
@@ -95,6 +105,16 @@ export default function UserDropdown({
           <IconTool className="h-4 w-4" />
           <span>{m.user_dropdown_settings()}</span>
         </DropdownMenuItem>
+
+        {hasPermission(marketAccess) && (
+          <DropdownMenuItem
+            className="cursor-pointer"
+            render={<Link to="/market/trades" />}
+          >
+            <IconArrowsExchange className="h-4 w-4" />
+            <span>{m.my_trades_title()}</span>
+          </DropdownMenuItem>
+        )}
 
         {hasPermission(ADMIN_SHELL_PERMISSIONS) && (
           <div className="contents">

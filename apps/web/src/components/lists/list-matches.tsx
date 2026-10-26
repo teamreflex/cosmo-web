@@ -1,26 +1,31 @@
-import { useMediaQuery } from "@/hooks/use-media-query";
+import { useHasPermission } from "@/hooks/use-has-permission";
+import { useSendOffer } from "@/hooks/use-send-offer";
 import { m } from "@/i18n/messages";
+import { $sendOffer } from "@/lib/functions/trade-offers";
+import { listMatchesQuery } from "@/lib/queries/objekt-queries";
+import type { TradePartner } from "@/lib/universal/lists";
 import { cn } from "@/lib/utils";
+import { marketAccess } from "@apollo/auth";
 import type { ObjektList } from "@apollo/database/web/types";
-import { IconUsers, IconX } from "@tabler/icons-react";
-import { QueryErrorResetBoundary } from "@tanstack/react-query";
+import { ParaglideMessage } from "@inlang/paraglide-js-react";
+import { IconHeartBroken, IconRefresh, IconUsers } from "@tabler/icons-react";
+import {
+  QueryErrorResetBoundary,
+  useSuspenseQuery,
+} from "@tanstack/react-query";
 import { Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
+import TradeSheet from "../trade-listings/trade-sheet";
+import { OfferBar } from "../trades/offer-picker";
+import {
+  dropToken,
+  type OfferPicks,
+  offerTones,
+  pickedTokenIds,
+  togglePick,
+} from "../trades/offer-picks";
 import { Button } from "../ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-  DialogTrigger,
-} from "../ui/dialog";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerTitle,
-  DrawerTrigger,
-} from "../ui/drawer";
+import { Spinner } from "../ui/spinner";
 import ListMatchesContent, {
   ListMatchesSkeleton,
 } from "./list-matches-content";
@@ -29,91 +34,166 @@ type Props = {
   list: ObjektList;
 };
 
+/**
+ * The people whose trade lists pair with this one, each opening to the
+ * collections either side would give. When both have market access,
+ * picking cards on both sides builds a direct offer to that person, sent
+ * from the bar under them.
+ */
 export default function ListMatches({ list }: Props) {
   const [open, setOpen] = useState(false);
-  const isDesktop = useMediaQuery();
-
-  const trigger = (
-    <Button variant="outline" size="sm">
-      <IconUsers />
-      {m.list_matches_title()}
-    </Button>
-  );
-
-  const body = (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <div className="flex shrink-0 items-center gap-2 border-b border-border px-4 py-3 sm:px-5">
-        <span className="font-cosmo text-sm font-black tracking-widest uppercase">
-          {m.list_matches_title()}
-        </span>
-        <div className="ml-auto flex items-center gap-2">
-          <span
-            id="list-matches-count"
-            className={cn(
-              "truncate font-mono text-xs",
-              list.type === "have" ? "text-teal-500" : "text-amber-500",
-            )}
-          />
-
-          <Button variant="ghost" size="icon-sm" onClick={() => setOpen(false)}>
-            <IconX />
-            <span className="sr-only">Close</span>
-          </Button>
-        </div>
-      </div>
-      <div className="min-h-0 flex-1 overflow-auto p-4">
-        <QueryErrorResetBoundary>
-          {({ reset }) => (
-            <ErrorBoundary
-              onReset={reset}
-              fallbackRender={() => (
-                <p className="text-sm text-muted-foreground">
-                  {m.list_matches_empty()}
-                </p>
-              )}
-            >
-              <Suspense fallback={<ListMatchesSkeleton />}>
-                <ListMatchesContent id={list.id} name={list.name} />
-              </Suspense>
-            </ErrorBoundary>
-          )}
-        </QueryErrorResetBoundary>
-      </div>
-    </div>
-  );
-
-  if (isDesktop) {
-    return (
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogTrigger render={trigger} />
-        <DialogContent
-          showCloseButton={false}
-          className="grid h-[50dvh] w-[calc(100%-2rem)] grid-rows-[1fr] gap-0 overflow-hidden rounded-md p-0 sm:max-w-[min(900px,calc(100%-4rem))]"
-        >
-          <div className="sr-only">
-            <DialogTitle>{m.list_matches_title()}</DialogTitle>
-            <DialogDescription>
-              {m.list_matches_description({ listName: list.name })}
-            </DialogDescription>
-          </div>
-          {body}
-        </DialogContent>
-      </Dialog>
-    );
-  }
+  // the open partner and the copies picked from them, reset when another opens
+  const [offer, setOffer] = useState<
+    ({ partner: TradePartner } & OfferPicks) | null
+  >(null);
+  const canOffer = useHasPermission()(marketAccess);
+  const send = useSendOffer({
+    mutationFn: $sendOffer,
+    picks: offer,
+    sent: m.list_matches_offer_sent,
+    onRefusedToken: (tokenId) =>
+      setOffer((prev) => (prev === null ? null : dropToken(prev, tokenId))),
+  });
 
   return (
-    <Drawer open={open} onOpenChange={setOpen}>
-      <DrawerTrigger render={trigger} />
-      <DrawerContent className="h-[92dvh] gap-0 rounded-t-md p-0">
-        <div className="sr-only">
-          <DrawerTitle>{m.list_matches_title()}</DrawerTitle>
-          <DrawerDescription>
-            {m.list_matches_description({ listName: list.name })}
-          </DrawerDescription>
+    <>
+      <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
+        <IconUsers />
+        {m.list_matches_title()}
+      </Button>
+      <TradeSheet
+        title={m.list_matches_title()}
+        aside={
+          // the count shares the content's request, and shows once it lands
+          <ErrorBoundary fallback={null}>
+            <Suspense fallback={null}>
+              <MatchCount list={list} />
+            </Suspense>
+          </ErrorBoundary>
+        }
+        footer={
+          offer === null ||
+          !canOffer ||
+          !offer.partner.offerable ? undefined : (
+            <OfferBar
+              eyebrow={
+                <ParaglideMessage
+                  message={m.list_matches_offer_to}
+                  inputs={{ name: offer.partner.username }}
+                  markup={{
+                    // the eyebrow is uppercase, but a username keeps its case
+                    user: ({ children }) => (
+                      <span className="normal-case">{children}</span>
+                    ),
+                  }}
+                />
+              }
+              give={offer.give.size}
+              get={offer.get.size}
+              help={m.list_matches_offer_help()}
+            >
+              <Button
+                variant="outline"
+                className="max-md:h-11"
+                disabled={
+                  send.isPending ||
+                  (offer.give.size === 0 && offer.get.size === 0)
+                }
+                onClick={() =>
+                  setOffer({
+                    partner: offer.partner,
+                    give: new Map(),
+                    get: new Map(),
+                  })
+                }
+              >
+                {m.list_matches_offer_clear()}
+              </Button>
+              <Button
+                variant="cosmo"
+                className="max-md:h-11 max-md:flex-1"
+                disabled={
+                  offer.give.size === 0 ||
+                  offer.get.size === 0 ||
+                  send.isPending
+                }
+                onClick={() =>
+                  send.send({
+                    toUserId: offer.partner.userId,
+                    ...pickedTokenIds(offer),
+                  })
+                }
+              >
+                {send.isPending && <Spinner />}
+                {m.list_matches_offer_send()}
+              </Button>
+            </OfferBar>
+          )
+        }
+        open={open}
+        onOpenChange={setOpen}
+        onOpenChangeComplete={(next) => {
+          if (!next) setOffer(null);
+        }}
+      >
+        <div className="min-h-0 flex-1 overflow-auto px-2 py-3 sm:p-4">
+          <QueryErrorResetBoundary>
+            {({ reset }) => (
+              <ErrorBoundary
+                onReset={reset}
+                fallbackRender={({ resetErrorBoundary }) => (
+                  <div className="flex flex-col items-center gap-2 py-12">
+                    <IconHeartBroken className="size-12" />
+                    <p className="text-sm">{m.list_matches_error()}</p>
+                    <Button variant="outline" onClick={resetErrorBoundary}>
+                      <IconRefresh /> {m.common_retry()}
+                    </Button>
+                  </div>
+                )}
+              >
+                <Suspense fallback={<ListMatchesSkeleton />}>
+                  <ListMatchesContent
+                    id={list.id}
+                    name={list.name}
+                    offer={offer}
+                    onExpand={(partner) =>
+                      setOffer((prev) =>
+                        prev?.partner.userId === partner.userId
+                          ? null
+                          : { partner, give: new Map(), get: new Map() },
+                      )
+                    }
+                    onToggle={
+                      canOffer
+                        ? (side, card) =>
+                            setOffer((prev) =>
+                              prev === null
+                                ? prev
+                                : togglePick(prev, side, card),
+                            )
+                        : null
+                    }
+                  />
+                </Suspense>
+              </ErrorBoundary>
+            )}
+          </QueryErrorResetBoundary>
         </div>
-        {body}
-      </DrawerContent>
-    </Drawer>
+      </TradeSheet>
+    </>
+  );
+}
+
+function MatchCount({ list }: Props) {
+  const { data } = useSuspenseQuery(listMatchesQuery(list.id));
+  return (
+    <span
+      className={cn(
+        "truncate text-xs tabular-nums",
+        list.type === "have" ? offerTones.give.text : offerTones.get.text,
+      )}
+    >
+      {m.list_matches_count_label({ count: data.partners.length })}
+    </span>
   );
 }

@@ -1,15 +1,20 @@
 import {
+  type ValidArtist,
   validArtists,
+  type ValidOnlineType,
   validOnlineTypes,
   validSorts,
 } from "@apollo/cosmo/types/common";
+import { toUiArtist } from "@apollo/trades/composer";
+import { listingTypes } from "@apollo/trades/listing";
 import * as z from "zod";
 import { marketListedWindows, marketSorts } from "./market";
+import {
+  feedColumnValues,
+  type ListingFeedSide,
+  MAX_FILTER_VALUES,
+} from "./schema/listing-feed";
 import { spinOutcomes, transferTypes } from "./transfers";
-
-// cap on distinct filter values parsed from a URL; anything longer hits HTTP
-// limits anyway, and this guards against oversized IN clauses
-const MAX_FILTER_VALUES = 12;
 
 /**
  * Array filters serialize to comma-separated values in the URL (e.g.
@@ -27,6 +32,17 @@ export function castToArray<TSchema extends z.ZodType>(schema: TSchema) {
   }, z.array(schema));
 }
 
+// one artist in any casing
+const artistValue = z
+  .string()
+  .transform(
+    (v) => validArtists.find((a) => a.toLowerCase() === v.toLowerCase()) ?? v,
+  )
+  .pipe(z.enum(validArtists));
+
+// an artist, or null when it isn't one
+const artistParam = artistValue.nullish().catch(null);
+
 /**
  * Base schema for querying objekts.
  */
@@ -36,14 +52,7 @@ export const cosmoSchema = z.object({
   class: castToArray(z.string()).nullish(),
   on_offline: castToArray(z.enum(validOnlineTypes)).catch([]).nullish(),
   member: castToArray(z.string()).nullish(),
-  artist: z
-    .string()
-    .transform(
-      (v) => validArtists.find((a) => a.toLowerCase() === v.toLowerCase()) ?? v,
-    )
-    .pipe(z.enum(validArtists))
-    .nullish()
-    .catch(null),
+  artist: artistParam,
   transferable: z.coerce.boolean().nullish(),
   gridable: z.coerce.boolean().nullish(),
   collectionNo: castToArray(z.string()).nullish(),
@@ -135,6 +144,115 @@ export const objektListBackendSchema = cosmoSchema
     page: z.coerce.number().int().nonnegative().default(0),
     artists: z.string().array().default([]),
   });
+
+/**
+ * One Listings feed filter column. A value too long for the trade tables, or
+ * an invalid one, drops the column instead of throwing. The router splits
+ * on commas after decoding, so `a%2Cb` reads as two values. Dropped keys are
+ * undefined rather than null, so the router leaves them out of the URL
+ * instead of writing `?season=null`.
+ */
+const feedColumn = <TSchema extends z.ZodType<string>>(schema: TSchema) =>
+  castToArray(schema)
+    .nullish()
+    .transform((values) => values ?? undefined)
+    .catch(undefined);
+
+const feedArtistParam = artistValue.optional().catch(undefined);
+
+/**
+ * Listings feed frontend. The unprefixed keys narrow what a listing offers,
+ * like the other objekt filters, and the `want_` keys narrow its want rows.
+ */
+export const listingFeedFrontendSchema = z
+  .object({
+    season: feedColumn(feedColumnValues.season),
+    class: feedColumn(feedColumnValues.class),
+    on_offline: feedColumn(feedColumnValues.on_offline),
+    member: feedColumn(feedColumnValues.member),
+    artist: feedArtistParam,
+    want_season: feedColumn(feedColumnValues.season),
+    want_class: feedColumn(feedColumnValues.class),
+    want_on_offline: feedColumn(feedColumnValues.on_offline),
+    want_member: feedColumn(feedColumnValues.member),
+    want_artist: feedArtistParam,
+    type: z.enum(listingTypes).optional().catch(undefined),
+  })
+  .partial();
+
+export type ListingFeedSearch = z.infer<typeof listingFeedFrontendSchema>;
+
+type FeedSideSearch = {
+  season: readonly string[] | null | undefined;
+  member: readonly string[] | null | undefined;
+  class: readonly string[] | null | undefined;
+  on_offline: readonly ValidOnlineType[] | null | undefined;
+  artist: ValidArtist | null | undefined;
+};
+
+const sorted = <T extends string>(values: readonly T[]) =>
+  [...new Set(values)].toSorted();
+
+/**
+ * Only the narrowed columns, each deduped and sorted with the artist
+ * lowercased, so equal filters give equal query keys.
+ */
+function feedSide(search: FeedSideSearch) {
+  const side: ListingFeedSide = {};
+  if (search.season?.length) side.season = sorted(search.season);
+  if (search.member?.length) side.member = sorted(search.member);
+  if (search.class?.length) side.class = sorted(search.class);
+  if (search.on_offline?.length) side.on_offline = sorted(search.on_offline);
+  if (search.artist) side.artist = [search.artist.toLowerCase()];
+  return side;
+}
+
+/**
+ * The Listings feed's filters as the server takes them.
+ */
+export function normalizeListingFeedFilters(search: ListingFeedSearch) {
+  return {
+    filters: {
+      offering: feedSide({
+        season: search.season,
+        member: search.member,
+        class: search.class,
+        on_offline: search.on_offline,
+        artist: search.artist,
+      }),
+      lookingFor: feedSide({
+        season: search.want_season,
+        member: search.want_member,
+        class: search.want_class,
+        on_offline: search.want_on_offline,
+        artist: search.want_artist,
+      }),
+    },
+    type: search.type ?? null,
+  };
+}
+
+/**
+ * The navbar's artist selection as the feed takes it. The cookie holds
+ * whatever COSMO lists, so ids that aren't valid artists drop instead of
+ * failing the request.
+ */
+export function normalizeFeedArtists(selectedArtists: readonly string[]) {
+  return sorted(
+    selectedArtists.flatMap(
+      (artist) => toUiArtist(artist)?.toLowerCase() ?? [],
+    ),
+  );
+}
+
+/**
+ * How many feed filter columns narrow either side, for the phone's
+ * "Filters (n)" button.
+ */
+export function countActiveListingFilters(search: ListingFeedSearch) {
+  const { offering, lookingFor } = normalizeListingFeedFilters(search).filters;
+  return Object.keys(offering).length + Object.keys(lookingFor).length;
+}
 
 // transfers frontend
 export const transfersFrontendSchema = cosmoSchema
@@ -232,4 +350,20 @@ export function normalizeFilters(data: z.infer<typeof cosmoSchema>) {
     gridable: data.gridable,
     collectionNo: data.collectionNo,
   };
+}
+
+/**
+ * Sanitize and validate a UUID string.
+ * Discord users will accidentally apply formatting to URLs, resulting in an ID of something like `8043b748-011c-4705-a0a1-eb9d261970ff**`
+ * This will error when sent to Postgres, so we need to sanitize it.
+ * Lowercases so the result matches ids as Postgres returns them — query cache keys built from both must agree.
+ */
+export function sanitizeUuid(uuid: string): string | null {
+  const schema = z
+    .string()
+    .transform((val) => val.slice(0, 36).toLowerCase())
+    .pipe(z.uuid());
+
+  const result = schema.safeParse(uuid);
+  return result.success ? result.data : null;
 }

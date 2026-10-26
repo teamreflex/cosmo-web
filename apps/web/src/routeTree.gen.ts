@@ -12,10 +12,12 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AtChar123usernameChar125RouteRouteImport } from './routes/@{$username}/route'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
+import { Route as MarketRouteRouteImport } from './routes/market/route'
 import { Route as ShareDataRouteImport } from './routes/share-data'
 import { Route as TermsPrivacyRouteImport } from './routes/terms-privacy'
 import { Route as AtChar123usernameChar125IndexRouteImport } from './routes/@{$username}/index'
 import { Route as AtChar123usernameChar125ComoRouteImport } from './routes/@{$username}/como'
+import { Route as AtChar123usernameChar125FeedbackRouteImport } from './routes/@{$username}/feedback'
 import { Route as AtChar123usernameChar125GridRouteImport } from './routes/@{$username}/grid'
 import { Route as AtChar123usernameChar125ProgressRouteImport } from './routes/@{$username}/progress'
 import { Route as AtChar123usernameChar125TradesRouteImport } from './routes/@{$username}/trades'
@@ -38,13 +40,17 @@ import { Route as EventsSlugRouteImport } from './routes/events/$slug'
 import { Route as GravityIndexRouteImport } from './routes/gravity/index'
 import { Route as ListIdRouteImport } from './routes/list/$id'
 import { Route as MarketIndexRouteImport } from './routes/market/index'
+import { Route as MarketCollectionsRouteImport } from './routes/market/collections'
+import { Route as MarketTradesRouteImport } from './routes/market/trades'
 import { Route as ObjektsIndexRouteImport } from './routes/objekts/index'
 import { Route as ObjektsStatsRouteImport } from './routes/objekts/stats'
+import { Route as TradeIdRouteImport } from './routes/trade/$id'
 import { Route as AtChar123usernameChar125BinderSlugRouteImport } from './routes/@{$username}/binder.$slug'
 import { Route as AtChar123usernameChar125ListSlugRouteImport } from './routes/@{$username}/list.$slug'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiUserByAddressesRouteImport } from './routes/api/user/by-addresses'
 import { Route as GravityArtistIdRouteImport } from './routes/gravity/$artist/$id'
+import { Route as MarketListingIdRouteImport } from './routes/market/listing.$id'
 import { Route as ApiGravityPollIdAggregatedRouteImport } from './routes/api/gravity/$pollId.aggregated'
 import { Route as ApiObjektListForUserIdentifierRouteImport } from './routes/api/objekt-list/for-user.$identifier'
 import { Route as ApiObjektsBySlugSlugRouteImport } from './routes/api/objekts/by-slug.$slug'
@@ -71,6 +77,11 @@ const AdminRouteRoute = AdminRouteRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MarketRouteRoute = MarketRouteRouteImport.update({
+  id: '/market',
+  path: '/market',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ShareDataRoute = ShareDataRouteImport.update({
   id: '/share-data',
   path: '/share-data',
@@ -91,6 +102,12 @@ const AtChar123usernameChar125ComoRoute =
   AtChar123usernameChar125ComoRouteImport.update({
     id: '/como',
     path: '/como',
+    getParentRoute: () => AtChar123usernameChar125RouteRoute,
+  } as any)
+const AtChar123usernameChar125FeedbackRoute =
+  AtChar123usernameChar125FeedbackRouteImport.update({
+    id: '/feedback',
+    path: '/feedback',
     getParentRoute: () => AtChar123usernameChar125RouteRoute,
   } as any)
 const AtChar123usernameChar125GridRoute =
@@ -202,9 +219,19 @@ const ListIdRoute = ListIdRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const MarketIndexRoute = MarketIndexRouteImport.update({
-  id: '/market/',
-  path: '/market/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => MarketRouteRoute,
+} as any)
+const MarketCollectionsRoute = MarketCollectionsRouteImport.update({
+  id: '/collections',
+  path: '/collections',
+  getParentRoute: () => MarketRouteRoute,
+} as any)
+const MarketTradesRoute = MarketTradesRouteImport.update({
+  id: '/trades',
+  path: '/trades',
+  getParentRoute: () => MarketRouteRoute,
 } as any)
 const ObjektsIndexRoute = ObjektsIndexRouteImport.update({
   id: '/objekts/',
@@ -214,6 +241,11 @@ const ObjektsIndexRoute = ObjektsIndexRouteImport.update({
 const ObjektsStatsRoute = ObjektsStatsRouteImport.update({
   id: '/objekts/stats',
   path: '/objekts/stats',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TradeIdRoute = TradeIdRouteImport.update({
+  id: '/trade/$id',
+  path: '/trade/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AtChar123usernameChar125BinderSlugRoute =
@@ -242,6 +274,11 @@ const GravityArtistIdRoute = GravityArtistIdRouteImport.update({
   id: '/gravity/$artist/$id',
   path: '/gravity/$artist/$id',
   getParentRoute: () => rootRouteImport,
+} as any)
+const MarketListingIdRoute = MarketListingIdRouteImport.update({
+  id: '/listing/$id',
+  path: '/listing/$id',
+  getParentRoute: () => MarketRouteRoute,
 } as any)
 const ApiGravityPollIdAggregatedRoute =
   ApiGravityPollIdAggregatedRouteImport.update({
@@ -299,9 +336,11 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/@{$username}': typeof AtChar123usernameChar125RouteRouteWithChildren
   '/admin': typeof AdminRouteRouteWithChildren
+  '/market': typeof MarketRouteRouteWithChildren
   '/share-data': typeof ShareDataRoute
   '/terms-privacy': typeof TermsPrivacyRoute
   '/@{$username}/como': typeof AtChar123usernameChar125ComoRoute
+  '/@{$username}/feedback': typeof AtChar123usernameChar125FeedbackRoute
   '/@{$username}/grid': typeof AtChar123usernameChar125GridRoute
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
@@ -320,7 +359,10 @@ export interface FileRoutesByFullPath {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
+  '/market/collections': typeof MarketCollectionsRoute
+  '/market/trades': typeof MarketTradesRoute
   '/objekts/stats': typeof ObjektsStatsRoute
+  '/trade/$id': typeof TradeIdRoute
   '/@{$username}/': typeof AtChar123usernameChar125IndexRoute
   '/admin/': typeof AdminIndexRoute
   '/events/': typeof EventsIndexRoute
@@ -332,6 +374,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
+  '/market/listing/$id': typeof MarketListingIdRoute
   '/api/gravity/$pollId/aggregated': typeof ApiGravityPollIdAggregatedRoute
   '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
   '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
@@ -347,6 +390,7 @@ export interface FileRoutesByTo {
   '/share-data': typeof ShareDataRoute
   '/terms-privacy': typeof TermsPrivacyRoute
   '/@{$username}/como': typeof AtChar123usernameChar125ComoRoute
+  '/@{$username}/feedback': typeof AtChar123usernameChar125FeedbackRoute
   '/@{$username}/grid': typeof AtChar123usernameChar125GridRoute
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
@@ -365,7 +409,10 @@ export interface FileRoutesByTo {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
+  '/market/collections': typeof MarketCollectionsRoute
+  '/market/trades': typeof MarketTradesRoute
   '/objekts/stats': typeof ObjektsStatsRoute
+  '/trade/$id': typeof TradeIdRoute
   '/@{$username}': typeof AtChar123usernameChar125IndexRoute
   '/admin': typeof AdminIndexRoute
   '/events': typeof EventsIndexRoute
@@ -377,6 +424,7 @@ export interface FileRoutesByTo {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
+  '/market/listing/$id': typeof MarketListingIdRoute
   '/api/gravity/$pollId/aggregated': typeof ApiGravityPollIdAggregatedRoute
   '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
   '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
@@ -392,9 +440,11 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/@{$username}': typeof AtChar123usernameChar125RouteRouteWithChildren
   '/admin': typeof AdminRouteRouteWithChildren
+  '/market': typeof MarketRouteRouteWithChildren
   '/share-data': typeof ShareDataRoute
   '/terms-privacy': typeof TermsPrivacyRoute
   '/@{$username}/como': typeof AtChar123usernameChar125ComoRoute
+  '/@{$username}/feedback': typeof AtChar123usernameChar125FeedbackRoute
   '/@{$username}/grid': typeof AtChar123usernameChar125GridRoute
   '/@{$username}/progress': typeof AtChar123usernameChar125ProgressRoute
   '/@{$username}/trades': typeof AtChar123usernameChar125TradesRoute
@@ -413,7 +463,10 @@ export interface FileRoutesById {
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
+  '/market/collections': typeof MarketCollectionsRoute
+  '/market/trades': typeof MarketTradesRoute
   '/objekts/stats': typeof ObjektsStatsRoute
+  '/trade/$id': typeof TradeIdRoute
   '/@{$username}/': typeof AtChar123usernameChar125IndexRoute
   '/admin/': typeof AdminIndexRoute
   '/events/': typeof EventsIndexRoute
@@ -425,6 +478,7 @@ export interface FileRoutesById {
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/user/by-addresses': typeof ApiUserByAddressesRoute
   '/gravity/$artist/$id': typeof GravityArtistIdRoute
+  '/market/listing/$id': typeof MarketListingIdRoute
   '/api/gravity/$pollId/aggregated': typeof ApiGravityPollIdAggregatedRoute
   '/api/objekt-list/for-user/$identifier': typeof ApiObjektListForUserIdentifierRoute
   '/api/objekts/by-slug/$slug': typeof ApiObjektsBySlugSlugRoute
@@ -441,9 +495,11 @@ export interface FileRouteTypes {
     | '/'
     | '/@{$username}'
     | '/admin'
+    | '/market'
     | '/share-data'
     | '/terms-privacy'
     | '/@{$username}/como'
+    | '/@{$username}/feedback'
     | '/@{$username}/grid'
     | '/@{$username}/progress'
     | '/@{$username}/trades'
@@ -462,7 +518,10 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/events/$slug'
     | '/list/$id'
+    | '/market/collections'
+    | '/market/trades'
     | '/objekts/stats'
+    | '/trade/$id'
     | '/@{$username}/'
     | '/admin/'
     | '/events/'
@@ -474,6 +533,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
+    | '/market/listing/$id'
     | '/api/gravity/$pollId/aggregated'
     | '/api/objekt-list/for-user/$identifier'
     | '/api/objekts/by-slug/$slug'
@@ -489,6 +549,7 @@ export interface FileRouteTypes {
     | '/share-data'
     | '/terms-privacy'
     | '/@{$username}/como'
+    | '/@{$username}/feedback'
     | '/@{$username}/grid'
     | '/@{$username}/progress'
     | '/@{$username}/trades'
@@ -507,7 +568,10 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/events/$slug'
     | '/list/$id'
+    | '/market/collections'
+    | '/market/trades'
     | '/objekts/stats'
+    | '/trade/$id'
     | '/@{$username}'
     | '/admin'
     | '/events'
@@ -519,6 +583,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
+    | '/market/listing/$id'
     | '/api/gravity/$pollId/aggregated'
     | '/api/objekt-list/for-user/$identifier'
     | '/api/objekts/by-slug/$slug'
@@ -533,9 +598,11 @@ export interface FileRouteTypes {
     | '/'
     | '/@{$username}'
     | '/admin'
+    | '/market'
     | '/share-data'
     | '/terms-privacy'
     | '/@{$username}/como'
+    | '/@{$username}/feedback'
     | '/@{$username}/grid'
     | '/@{$username}/progress'
     | '/@{$username}/trades'
@@ -554,7 +621,10 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
     | '/events/$slug'
     | '/list/$id'
+    | '/market/collections'
+    | '/market/trades'
     | '/objekts/stats'
+    | '/trade/$id'
     | '/@{$username}/'
     | '/admin/'
     | '/events/'
@@ -566,6 +636,7 @@ export interface FileRouteTypes {
     | '/api/auth/$'
     | '/api/user/by-addresses'
     | '/gravity/$artist/$id'
+    | '/market/listing/$id'
     | '/api/gravity/$pollId/aggregated'
     | '/api/objekt-list/for-user/$identifier'
     | '/api/objekts/by-slug/$slug'
@@ -581,6 +652,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AtChar123usernameChar125RouteRoute: typeof AtChar123usernameChar125RouteRouteWithChildren
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
+  MarketRouteRoute: typeof MarketRouteRouteWithChildren
   ShareDataRoute: typeof ShareDataRoute
   TermsPrivacyRoute: typeof TermsPrivacyRoute
   AuthDeleteAccountRoute: typeof AuthDeleteAccountRoute
@@ -588,9 +660,9 @@ export interface RootRouteChildren {
   EventsSlugRoute: typeof EventsSlugRoute
   ListIdRoute: typeof ListIdRoute
   ObjektsStatsRoute: typeof ObjektsStatsRoute
+  TradeIdRoute: typeof TradeIdRoute
   EventsIndexRoute: typeof EventsIndexRoute
   GravityIndexRoute: typeof GravityIndexRoute
-  MarketIndexRoute: typeof MarketIndexRoute
   ObjektsIndexRoute: typeof ObjektsIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   ApiUserByAddressesRoute: typeof ApiUserByAddressesRoute
@@ -629,6 +701,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/market': {
+      id: '/market'
+      path: '/market'
+      fullPath: '/market'
+      preLoaderRoute: typeof MarketRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/share-data': {
       id: '/share-data'
       path: '/share-data'
@@ -655,6 +734,13 @@ declare module '@tanstack/react-router' {
       path: '/como'
       fullPath: '/@{$username}/como'
       preLoaderRoute: typeof AtChar123usernameChar125ComoRouteImport
+      parentRoute: typeof AtChar123usernameChar125RouteRoute
+    }
+    '/@{$username}/feedback': {
+      id: '/@{$username}/feedback'
+      path: '/feedback'
+      fullPath: '/@{$username}/feedback'
+      preLoaderRoute: typeof AtChar123usernameChar125FeedbackRouteImport
       parentRoute: typeof AtChar123usernameChar125RouteRoute
     }
     '/@{$username}/grid': {
@@ -806,10 +892,24 @@ declare module '@tanstack/react-router' {
     }
     '/market/': {
       id: '/market/'
-      path: '/market'
+      path: '/'
       fullPath: '/market/'
       preLoaderRoute: typeof MarketIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof MarketRouteRoute
+    }
+    '/market/collections': {
+      id: '/market/collections'
+      path: '/collections'
+      fullPath: '/market/collections'
+      preLoaderRoute: typeof MarketCollectionsRouteImport
+      parentRoute: typeof MarketRouteRoute
+    }
+    '/market/trades': {
+      id: '/market/trades'
+      path: '/trades'
+      fullPath: '/market/trades'
+      preLoaderRoute: typeof MarketTradesRouteImport
+      parentRoute: typeof MarketRouteRoute
     }
     '/objekts/': {
       id: '/objekts/'
@@ -823,6 +923,13 @@ declare module '@tanstack/react-router' {
       path: '/objekts/stats'
       fullPath: '/objekts/stats'
       preLoaderRoute: typeof ObjektsStatsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/trade/$id': {
+      id: '/trade/$id'
+      path: '/trade/$id'
+      fullPath: '/trade/$id'
+      preLoaderRoute: typeof TradeIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/@{$username}/binder/$slug': {
@@ -859,6 +966,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/gravity/$artist/$id'
       preLoaderRoute: typeof GravityArtistIdRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/market/listing/$id': {
+      id: '/market/listing/$id'
+      path: '/listing/$id'
+      fullPath: '/market/listing/$id'
+      preLoaderRoute: typeof MarketListingIdRouteImport
+      parentRoute: typeof MarketRouteRoute
     }
     '/api/gravity/$pollId/aggregated': {
       id: '/api/gravity/$pollId/aggregated'
@@ -928,6 +1042,7 @@ declare module '@tanstack/react-router' {
 
 interface AtChar123usernameChar125RouteRouteChildren {
   AtChar123usernameChar125ComoRoute: typeof AtChar123usernameChar125ComoRoute
+  AtChar123usernameChar125FeedbackRoute: typeof AtChar123usernameChar125FeedbackRoute
   AtChar123usernameChar125GridRoute: typeof AtChar123usernameChar125GridRoute
   AtChar123usernameChar125ProgressRoute: typeof AtChar123usernameChar125ProgressRoute
   AtChar123usernameChar125TradesRoute: typeof AtChar123usernameChar125TradesRoute
@@ -939,6 +1054,8 @@ interface AtChar123usernameChar125RouteRouteChildren {
 const AtChar123usernameChar125RouteRouteChildren: AtChar123usernameChar125RouteRouteChildren =
   {
     AtChar123usernameChar125ComoRoute: AtChar123usernameChar125ComoRoute,
+    AtChar123usernameChar125FeedbackRoute:
+      AtChar123usernameChar125FeedbackRoute,
     AtChar123usernameChar125GridRoute: AtChar123usernameChar125GridRoute,
     AtChar123usernameChar125ProgressRoute:
       AtChar123usernameChar125ProgressRoute,
@@ -989,11 +1106,30 @@ const AdminRouteRouteWithChildren = AdminRouteRoute._addFileChildren(
   AdminRouteRouteChildren,
 )
 
+interface MarketRouteRouteChildren {
+  MarketCollectionsRoute: typeof MarketCollectionsRoute
+  MarketTradesRoute: typeof MarketTradesRoute
+  MarketIndexRoute: typeof MarketIndexRoute
+  MarketListingIdRoute: typeof MarketListingIdRoute
+}
+
+const MarketRouteRouteChildren: MarketRouteRouteChildren = {
+  MarketCollectionsRoute: MarketCollectionsRoute,
+  MarketTradesRoute: MarketTradesRoute,
+  MarketIndexRoute: MarketIndexRoute,
+  MarketListingIdRoute: MarketListingIdRoute,
+}
+
+const MarketRouteRouteWithChildren = MarketRouteRoute._addFileChildren(
+  MarketRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AtChar123usernameChar125RouteRoute:
     AtChar123usernameChar125RouteRouteWithChildren,
   AdminRouteRoute: AdminRouteRouteWithChildren,
+  MarketRouteRoute: MarketRouteRouteWithChildren,
   ShareDataRoute: ShareDataRoute,
   TermsPrivacyRoute: TermsPrivacyRoute,
   AuthDeleteAccountRoute: AuthDeleteAccountRoute,
@@ -1001,9 +1137,9 @@ const rootRouteChildren: RootRouteChildren = {
   EventsSlugRoute: EventsSlugRoute,
   ListIdRoute: ListIdRoute,
   ObjektsStatsRoute: ObjektsStatsRoute,
+  TradeIdRoute: TradeIdRoute,
   EventsIndexRoute: EventsIndexRoute,
   GravityIndexRoute: GravityIndexRoute,
-  MarketIndexRoute: MarketIndexRoute,
   ObjektsIndexRoute: ObjektsIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   ApiUserByAddressesRoute: ApiUserByAddressesRoute,

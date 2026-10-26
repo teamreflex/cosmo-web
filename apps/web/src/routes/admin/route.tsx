@@ -38,7 +38,8 @@ function RouteComponent() {
   return (
     <SidebarProvider>
       <AdminSidebar className="top-14! h-[calc(100dvh-3.5rem)]!" />
-      <SidebarInset className="pb-2">
+      {/* lets the page shrink beside the sidebar, so wide content wraps instead of widening it */}
+      <SidebarInset className="min-w-0 pb-2">
         <header className="flex h-12 w-full shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="-ml-1 max-md:size-10" />
           <Separator orientation="vertical" className="my-3 mr-2 h-auto" />

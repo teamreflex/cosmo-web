@@ -16,8 +16,13 @@ type Props = {
 };
 
 export default function GravityList({ selectedArtists, artists }: Props) {
-  const { data, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useSuspenseInfiniteQuery(paginatedGravitiesQuery(selectedArtists));
+  const {
+    data,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+    isFetchNextPageError,
+  } = useSuspenseInfiniteQuery(paginatedGravitiesQuery(selectedArtists));
 
   const allGravities = data.pages.flatMap((page) => page.gravities);
 
@@ -47,6 +52,7 @@ export default function GravityList({ selectedArtists, artists }: Props) {
         status="success"
         hasNextPage={hasNextPage}
         isFetchingNextPage={isFetchingNextPage}
+        isFetchNextPageError={isFetchNextPageError}
         fetchNextPage={fetchNextPage}
       />
     </>

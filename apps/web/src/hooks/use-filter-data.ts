@@ -2,9 +2,17 @@ import { filterDataQuery } from "@/lib/queries/core";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useArtists } from "./use-artists";
 
-export function useFilterData() {
+type Options = {
+  /**
+   * Lists every artist's values rather than only the navbar's selection.
+   */
+  allArtists?: boolean;
+};
+
+export function useFilterData({ allArtists = false }: Options = {}) {
   const { data } = useSuspenseQuery(filterDataQuery);
   const { getArtist, selectedIds } = useArtists();
+  const shown = allArtists ? [] : selectedIds;
 
   const seasonsData = data.seasons
     .flatMap(({ artistId, seasons }) => {
@@ -12,8 +20,8 @@ export function useFilterData() {
       return artist ? [{ artist, seasons }] : [];
     })
     .filter(({ artist }) => {
-      if (selectedIds.length === 0) return true;
-      return selectedIds.includes(artist.id);
+      if (shown.length === 0) return true;
+      return shown.includes(artist.id);
     })
     .sort((a, b) => a.artist.comoTokenId - b.artist.comoTokenId);
 
@@ -23,8 +31,8 @@ export function useFilterData() {
       return artist ? [{ artist, classes }] : [];
     })
     .filter(({ artist }) => {
-      if (selectedIds.length === 0) return true;
-      return selectedIds.includes(artist.id);
+      if (shown.length === 0) return true;
+      return shown.includes(artist.id);
     })
     .sort((a, b) => a.artist.comoTokenId - b.artist.comoTokenId);
 

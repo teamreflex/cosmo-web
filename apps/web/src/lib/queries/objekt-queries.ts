@@ -326,3 +326,17 @@ export function listMatchesQuery(listId: string) {
     staleTime: 1000 * 60,
   });
 }
+
+/**
+ * Collections matching a free-text search, for picking one exact collection.
+ */
+export function collectionSearchQuery(query: string) {
+  return queryOptions({
+    queryKey: ["collection-search", query],
+    queryFn: async () => {
+      const { searchCollections } = await import("@/lib/client/typesense");
+      return searchCollections(query);
+    },
+    staleTime: 1000 * 60 * 5,
+  });
+}

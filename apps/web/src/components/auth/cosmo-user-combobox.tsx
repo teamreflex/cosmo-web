@@ -13,6 +13,7 @@ import { useRef, useState } from "react";
 import { useDebounceValue } from "usehooks-ts";
 
 type Props = {
+  id?: string;
   artistId: ValidArtist;
   value: CosmoPublicUser | null;
   onChange: (user: CosmoPublicUser | null) => void;
@@ -20,6 +21,7 @@ type Props = {
 };
 
 export default function CosmoUserCombobox({
+  id,
   artistId,
   value,
   onChange,
@@ -29,7 +31,7 @@ export default function CosmoUserCombobox({
   const [debouncedQuery] = useDebounceValue(query, 500);
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  // a picked result swaps the search for the user, whose Cancel takes focus
+  // a picked result swaps the search for the user, whose Clear takes focus
   const picked = useRef(false);
   const resultsOpen = open && debouncedQuery.length > 0;
 
@@ -83,7 +85,7 @@ export default function CosmoUserCombobox({
           onClick={handleClear}
           className="text-xs text-muted-foreground hover:text-foreground"
         >
-          {m.common_cancel()}
+          {m.user_search_clear()}
         </button>
       </div>
     );
@@ -92,6 +94,7 @@ export default function CosmoUserCombobox({
   return (
     <Popover open={resultsOpen} onOpenChange={setOpen}>
       <Input
+        id={id}
         ref={inputRef}
         placeholder={m.user_search_placeholder()}
         value={query}

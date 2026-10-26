@@ -1,9 +1,13 @@
 import type { StaffUser } from "@/lib/universal/staff-users";
+import type { TradeView } from "@/lib/universal/trades";
 import type { Role } from "@apollo/auth";
 import type {
-  ReportReason,
+  FeedbackRating,
+  FeedbackRole,
   ReportStatus,
   ReportTargetType,
+  StoredReportReason,
+  TradeSide,
 } from "@apollo/database/web/types";
 
 /**
@@ -17,30 +21,51 @@ export const openReportStatuses = [
 export type OpenReportStatus = (typeof openReportStatuses)[number];
 
 /**
- * What a queue row shows of the reported thing; null when it no longer
- * exists or its account is deleted. Later phases add messages, feedback and
- * trades.
+ * What a queue row shows of the reported thing: a user, the trade a dispute
+ * is about with its parties, a chat message's sender and trade, or a
+ * rating's sign with who left it on whom. Each user is null once their
+ * account is deleted, a trade or rating once it is gone, and a message once
+ * its report's copy is.
  */
-export type AdminReportRowTarget = {
-  type: "user";
-  user: StaffUser | null;
-};
+export type AdminReportRowTarget =
+  | { type: "user"; user: StaffUser | null }
+  | {
+      type: "trade";
+      trade: {
+        id: string;
+        from: StaffUser | null;
+        to: StaffUser | null;
+      } | null;
+    }
+  | {
+      type: "message";
+      message: { tradeId: string; sender: StaffUser | null } | null;
+    }
+  | {
+      type: "feedback";
+      feedback: {
+        rating: FeedbackRating;
+        author: StaffUser | null;
+        rated: StaffUser | null;
+      } | null;
+    };
 
 /**
- * The target types the staff queue can be filtered by; later phases add
- * theirs as their reports arrive.
+ * The target types the staff queue can be filtered by, one per row target.
  */
 export const reportTargetTypeFilters = [
   "user",
-] as const satisfies readonly (ReportTargetType &
-  AdminReportRowTarget["type"])[];
+  "trade",
+  "message",
+  "feedback",
+] as const satisfies readonly ReportTargetType[];
 
 /**
  * The reporter is null once their account is deleted.
  */
 export type AdminReportRow = {
   id: string;
-  reason: ReportReason;
+  reason: StoredReportReason;
   createdAt: Date;
   reporter: StaffUser | null;
   target: AdminReportRowTarget;
@@ -57,12 +82,67 @@ export type ReportTargetUser = StaffUser & {
   role: Role;
   ban: { until: Date | null } | null;
   protected: boolean | null;
+  /** Accepted and disputed trades, which a ban leaves on hold for staff. */
+  liveTradeCount: number;
 };
 
-export type AdminReportDetailTarget = {
-  type: "user";
-  user: ReportTargetUser | null;
+/**
+ * A disputed trade's party as staff see them, and whether a ban is in force
+ * on them; null once their account is deleted.
+ */
+export type ReportTradeParty = StaffUser & { banActive: boolean };
+
+/**
+ * The trade a dispute is about. `current` says the report is still the
+ * trade's dispute, which staff settle by completing, cancelling or extending
+ * the trade.
+ */
+export type ReportTargetTrade = {
+  view: TradeView;
+  from: ReportTradeParty | null;
+  to: ReportTradeParty | null;
+  current: boolean;
 };
+
+/**
+ * A reported chat message as the web app knows it: never its text, which
+ * staff read from the report's own copy through chat. `sender` is the user
+ * staff can ban; `side` places them in the trade, which is null once gone.
+ */
+export type ReportTargetMessage = {
+  id: number;
+  sentAt: Date;
+  side: TradeSide | null;
+  sender: ReportTargetUser | null;
+  // staff removed it from the chat since it was reported
+  removed: boolean;
+  trade: TradeView | null;
+};
+
+/**
+ * A reported rating as staff see it, removed or not. A ban from its report
+ * bans its `author`. Either user is null once their account is deleted.
+ * `role` is the author's role on the trade.
+ */
+export type ReportTargetFeedback = {
+  id: string;
+  tradeId: string;
+  rating: FeedbackRating;
+  role: FeedbackRole;
+  comment: string | null;
+  communication: number | null;
+  speed: number | null;
+  createdAt: Date;
+  removed: boolean;
+  author: ReportTargetUser | null;
+  rated: StaffUser | null;
+};
+
+export type AdminReportDetailTarget =
+  | { type: "user"; user: ReportTargetUser | null }
+  | { type: "trade"; trade: ReportTargetTrade | null }
+  | { type: "message"; message: ReportTargetMessage | null }
+  | { type: "feedback"; feedback: ReportTargetFeedback | null };
 
 /**
  * Closed reports carry who closed them and when; the resolver is null once
@@ -76,9 +156,26 @@ export type ReportOutcome =
       resolver: StaffUser | null;
     };
 
+/**
+ * Who a ban from this report bans: the reported user, a reported message's
+ * sender, or a reported rating's author.
+ */
+export function reportedUser(target: AdminReportDetailTarget) {
+  switch (target.type) {
+    case "user":
+      return target.user;
+    case "message":
+      return target.message?.sender ?? null;
+    case "feedback":
+      return target.feedback?.author ?? null;
+    case "trade":
+      return null;
+  }
+}
+
 export type AdminReportDetail = ReportOutcome & {
   id: string;
-  reason: ReportReason;
+  reason: StoredReportReason;
   note: string | null;
   createdAt: Date;
   reporter: StaffUser | null;

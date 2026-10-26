@@ -17,6 +17,13 @@ export const env = createEnv({
     BETTER_AUTH_SECRET: z.string().min(1),
     // comma-separated email domains; accounts with a verified email on one can't be banned, unbanned or re-roled
     PROTECTED_EMAIL_DOMAINS: z.string().optional().transform(parseEmailDomains),
+    // lifetime of the chat tokens /api/auth/token issues, in seconds
+    CHAT_TOKEN_LIFETIME_SECONDS: z.coerce
+      .number()
+      .int()
+      .min(30)
+      .max(900)
+      .default(300),
     // discord oauth
     DISCORD_CLIENT_ID: z.string().min(1),
     DISCORD_CLIENT_SECRET: z.string().min(1),
@@ -53,6 +60,7 @@ export const env = createEnv({
     ABSTRACT_RPC: process.env.ABSTRACT_RPC,
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
     PROTECTED_EMAIL_DOMAINS: process.env.PROTECTED_EMAIL_DOMAINS,
+    CHAT_TOKEN_LIFETIME_SECONDS: process.env.CHAT_TOKEN_LIFETIME_SECONDS,
     DISCORD_CLIENT_ID: process.env.DISCORD_CLIENT_ID,
     DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
     TWITTER_CLIENT_ID: process.env.TWITTER_CLIENT_ID,

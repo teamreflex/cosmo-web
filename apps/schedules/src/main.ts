@@ -1,10 +1,9 @@
 import { cleanupLayer } from "@apollo/queue";
+import { redisLayer } from "@apollo/services/redis";
 import { BunRuntime } from "@effect/platform-bun";
 import { Effect, Layer } from "effect";
-import { DatabaseWeb } from "./db";
 import { tradeNotificationsWorker } from "./queues/trade-notifications";
-import { redisLayer } from "./redis";
-import { servicesLayer } from "./services";
+import { servicesLayer, webDatabaseLayer } from "./services";
 import { createResilientTask, SCHEDULED_TASKS } from "./task";
 
 /**
@@ -14,7 +13,7 @@ import { createResilientTask, SCHEDULED_TASKS } from "./task";
 const queueWorkers = Layer.mergeAll(
   tradeNotificationsWorker,
   cleanupLayer,
-).pipe(Layer.provide([DatabaseWeb.layer, redisLayer]));
+).pipe(Layer.provide([webDatabaseLayer, redisLayer]));
 
 const main = Effect.gen(function* () {
   yield* Effect.logInfo("Starting scheduled tasks...");

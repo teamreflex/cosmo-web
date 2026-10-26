@@ -9,8 +9,13 @@ const route = getRouteApi("/admin/events");
 
 export default function EventsGrid() {
   const { artists } = route.useLoaderData();
-  const { data, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useSuspenseInfiniteQuery(adminEventsQuery());
+  const {
+    data,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+    isFetchNextPageError,
+  } = useSuspenseInfiniteQuery(adminEventsQuery());
 
   const eventsList = data.pages.flatMap((page) => page.events);
 
@@ -38,6 +43,7 @@ export default function EventsGrid() {
         status="success"
         hasNextPage={hasNextPage}
         isFetchingNextPage={isFetchingNextPage}
+        isFetchNextPageError={isFetchNextPageError}
         fetchNextPage={fetchNextPage}
       />
     </>

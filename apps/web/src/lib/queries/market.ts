@@ -1,10 +1,11 @@
+import { $fetchMarketNoticeAccepted } from "@/lib/functions/market-notice";
 import { $fetchMarket } from "@/lib/functions/objekts/market";
 import { type MarketCursor, toFloorBounds } from "@/lib/universal/market";
 import {
   type marketFrontendSchema,
   normalizeMarketFilters,
 } from "@/lib/universal/parsers";
-import { infiniteQueryOptions } from "@tanstack/react-query";
+import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import type { z } from "zod";
 
 export function marketQuery(
@@ -34,3 +35,15 @@ export function marketQuery(
  * infers its page param from it.
  */
 const firstPage: MarketCursor | undefined = undefined;
+
+/**
+ * Whether this browser has accepted the market notice. Read once from its
+ * cookie, then set directly when the notice is accepted.
+ */
+export const marketNoticeQuery = queryOptions({
+  queryKey: ["market-notice"],
+  queryFn: ({ signal }) => $fetchMarketNoticeAccepted({ signal }),
+  staleTime: Infinity,
+  refetchOnWindowFocus: false,
+  refetchOnMount: false,
+});

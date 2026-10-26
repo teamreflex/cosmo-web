@@ -1,0 +1,44 @@
+diff --git a/dist/BunRedis.js b/dist/BunRedis.js
+index 481a6906b3a190381705b5a51b9c073966fe8e31..ea2b0b6037e3d38689c2e274010eb6bd51d17679 100644
+--- a/dist/BunRedis.js
++++ b/dist/BunRedis.js
+@@ -56,7 +56,7 @@ const make = /*#__PURE__*/Effect.fnUntraced(function* (options) {
+             });
+             return subscriber;
+           } catch (cause) {
+-            subscriber.onclose = null;
++            subscriber.onclose = () => {};
+             subscriber.close();
+             throw cause;
+           }
+@@ -65,7 +65,7 @@ const make = /*#__PURE__*/Effect.fnUntraced(function* (options) {
+           cause
+         })
+       }), subscriber => Effect.sync(() => {
+-        subscriber.onclose = null;
++        subscriber.onclose = () => {};
+         subscriber.close();
+       }));
+       return Deferred.await(terminal);
+diff --git a/src/BunRedis.ts b/src/BunRedis.ts
+index dd17ea7850b4d2b7736a109966c479a6f204a4e8..c64431250dc970cbc11ad183e783883f81805474 100644
+--- a/src/BunRedis.ts
++++ b/src/BunRedis.ts
+@@ -72,7 +72,7 @@ const make = Effect.fnUntraced(function*(
+               })
+               return subscriber
+             } catch (cause) {
+-              subscriber.onclose = null
++              subscriber.onclose = () => {}
+               subscriber.close()
+               throw cause
+             }
+@@ -81,7 +81,7 @@ const make = Effect.fnUntraced(function*(
+         }),
+         (subscriber) =>
+           Effect.sync(() => {
+-            subscriber.onclose = null
++            subscriber.onclose = () => {}
+             subscriber.close()
+           })
+       )

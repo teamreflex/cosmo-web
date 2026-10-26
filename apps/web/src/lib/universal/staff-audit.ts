@@ -8,7 +8,8 @@ import type {
 /**
  * What an audit row acted on. A target user and an API key's owner are null
  * once that account is deleted. An API key's name and enabled state are as
- * they were when the action ran.
+ * they were when the action ran. A trade is named by its id only, and a
+ * rating by its id and its trade.
  */
 export type AdminAuditTarget =
   | { type: "user"; id: string; user: StaffUser | null }
@@ -20,15 +21,20 @@ export type AdminAuditTarget =
       owner: StaffUser | null;
       enabled: boolean;
     }
-  | { type: "collection"; slug: string };
+  | { type: "collection"; slug: string }
+  | { type: "trade"; id: string }
+  | { type: "message"; id: string; tradeId: string }
+  | { type: "feedback"; id: string; tradeId: string };
 
 /**
  * The parts of an audit row's stored detail that the log shows, with roles
- * parsed. A null `expiresIn` is a permanent ban.
+ * parsed. A null `expiresIn` is a permanent ban, and `deadlineAt` is the
+ * deadline a trade extension gave.
  */
 export type AdminAuditDetail =
   | { kind: "ban"; expiresIn: number | null }
-  | { kind: "set-role"; from: Role; to: Role };
+  | { kind: "set-role"; from: Role; to: Role }
+  | { kind: "trade-extend"; deadlineAt: Date; hours: number };
 
 /**
  * `report` is the linked report, with its current status so a link to it

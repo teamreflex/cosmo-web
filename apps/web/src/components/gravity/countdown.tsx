@@ -1,9 +1,7 @@
 import { m } from "@/i18n/messages";
 import { cn, type PropsWithClassName } from "@/lib/utils";
-import { ClientOnly } from "@tanstack/react-router";
-import { intervalToDuration, isFuture } from "date-fns";
-import { useState } from "react";
-import { useInterval } from "usehooks-ts";
+import { intervalToDuration } from "date-fns";
+import { Ticker } from "../misc/countdown";
 import { Badge } from "../ui/badge";
 import { Skeleton } from "../ui/skeleton";
 
@@ -14,67 +12,46 @@ export default function Countdown({
   gravityEndDate,
 }: Props) {
   return (
-    <ClientOnly fallback={<CountdownSkeleton className={className} />}>
-      <CountdownInner
-        className={className}
-        pollStartDate={pollStartDate}
-        pollEndDate={pollEndDate}
-        gravityEndDate={gravityEndDate}
-      />
-    </ClientOnly>
-  );
-}
+    <Ticker fallback={<CountdownSkeleton className={className} />}>
+      {(now) => {
+        const state = getCountdownState(
+          now,
+          pollStartDate,
+          pollEndDate,
+          gravityEndDate,
+        );
+        const variant =
+          state.type === "starts_in"
+            ? "gravity-starts"
+            : state.type === "voting_ends"
+              ? "gravity-voting"
+              : "gravity-counting";
 
-function CountdownInner({
-  className,
-  pollStartDate,
-  pollEndDate,
-  gravityEndDate,
-}: Props) {
-  const [state, setState] = useState(() =>
-    getCountdownState(pollStartDate, pollEndDate, gravityEndDate),
-  );
-  const [timeLeft, setTimeLeft] = useState(() =>
-    state.type === "counting" ? null : calculateTimeLeft(state.target),
-  );
-
-  useInterval(() => {
-    const newState = getCountdownState(
-      pollStartDate,
-      pollEndDate,
-      gravityEndDate,
-    );
-    setState(newState);
-    if (newState.type !== "counting") {
-      setTimeLeft(calculateTimeLeft(newState.target));
-    }
-  }, 1000);
-
-  const variant =
-    state.type === "starts_in"
-      ? "gravity-starts"
-      : state.type === "voting_ends"
-        ? "gravity-voting"
-        : "gravity-counting";
-
-  return (
-    <Badge variant={variant} className={cn("gap-1.5", className)}>
-      {state.type === "starts_in" && (
-        <>
-          <span className="font-semibold">{m.gravity_starts_in()}</span>
-          <span className="font-mono">{timeLeft}</span>
-        </>
-      )}
-      {state.type === "voting_ends" && (
-        <>
-          <span className="font-semibold">{m.gravity_voting_ends()}</span>
-          <span className="font-mono">{timeLeft}</span>
-        </>
-      )}
-      {state.type === "counting" && (
-        <span className="font-semibold">{m.gravity_counting()}</span>
-      )}
-    </Badge>
+        return (
+          <Badge variant={variant} className={cn("gap-1.5", className)}>
+            {state.type === "starts_in" && (
+              <>
+                <span className="font-semibold">{m.gravity_starts_in()}</span>
+                <span className="font-mono">
+                  {calculateTimeLeft(now, state.target)}
+                </span>
+              </>
+            )}
+            {state.type === "voting_ends" && (
+              <>
+                <span className="font-semibold">{m.gravity_voting_ends()}</span>
+                <span className="font-mono">
+                  {calculateTimeLeft(now, state.target)}
+                </span>
+              </>
+            )}
+            {state.type === "counting" && (
+              <span className="font-semibold">{m.gravity_counting()}</span>
+            )}
+          </Badge>
+        );
+      }}
+    </Ticker>
   );
 }
 
@@ -94,22 +71,23 @@ type CountdownState =
   | { type: "counting" };
 
 function getCountdownState(
+  now: Date,
   pollStartDate: Date,
   pollEndDate: Date | null,
   gravityEndDate: Date,
 ): CountdownState {
   // If voting hasn't started yet
-  if (isFuture(pollStartDate)) {
+  if (pollStartDate > now) {
     return { type: "starts_in", target: pollStartDate };
   }
 
   // If poll end is in the future
-  if (pollEndDate && isFuture(pollEndDate)) {
+  if (pollEndDate && pollEndDate > now) {
     return { type: "voting_ends", target: pollEndDate };
   }
 
   // Poll ended but gravity still ongoing
-  if (isFuture(gravityEndDate)) {
+  if (gravityEndDate > now) {
     return { type: "counting" };
   }
 
@@ -117,8 +95,7 @@ function getCountdownState(
   return { type: "counting" };
 }
 
-function calculateTimeLeft(endDate: Date) {
-  const now = new Date();
+function calculateTimeLeft(now: Date, endDate: Date) {
   if (endDate <= now) {
     return "00:00:00";
   }

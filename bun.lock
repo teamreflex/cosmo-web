@@ -16,6 +16,29 @@
         "typescript": "catalog:",
       },
     },
+    "apps/chat": {
+      "name": "chat",
+      "version": "1.0.0",
+      "dependencies": {
+        "@apollo/auth": "workspace:*",
+        "@apollo/chat": "workspace:*",
+        "@apollo/database": "workspace:*",
+        "@apollo/services": "workspace:*",
+        "@apollo/trades": "workspace:*",
+        "@effect/platform-bun": "catalog:",
+        "drizzle-orm": "catalog:",
+        "effect": "catalog:",
+        "jose": "catalog:",
+      },
+      "devDependencies": {
+        "@apollo/lint": "workspace:*",
+        "@apollo/typescript": "workspace:*",
+        "@effect/eslint-plugin": "catalog:",
+        "@effect/language-service": "catalog:",
+        "@types/bun": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
     "apps/indexer": {
       "name": "indexer",
       "version": "1.0.0",
@@ -63,6 +86,8 @@
         "@apollo/drizzle-bun-effect": "workspace:*",
         "@apollo/queue": "workspace:*",
         "@apollo/serial-estimation": "workspace:*",
+        "@apollo/services": "workspace:*",
+        "@apollo/trades": "workspace:*",
         "@apollo/util": "workspace:*",
         "@apollo/util-server": "workspace:*",
         "@effect/platform-bun": "catalog:",
@@ -106,10 +131,12 @@
       "version": "1.0.0",
       "dependencies": {
         "@apollo/auth": "workspace:*",
+        "@apollo/chat": "workspace:*",
         "@apollo/cosmo": "workspace:*",
         "@apollo/database": "workspace:*",
         "@apollo/image": "workspace:*",
         "@apollo/queue": "workspace:*",
+        "@apollo/trades": "workspace:*",
         "@apollo/util": "workspace:*",
         "@apollo/util-server": "workspace:*",
         "@aws-sdk/client-ses": "^3.1152.0",
@@ -119,6 +146,7 @@
         "@dnd-kit/core": "^6.3.1",
         "@dnd-kit/sortable": "^10.0.0",
         "@dnd-kit/utilities": "^3.2.2",
+        "@effect/atom-react": "catalog:",
         "@effect/platform-bun": "catalog:",
         "@fontsource-variable/dm-sans": "^5.3.0",
         "@fontsource-variable/jetbrains-mono": "^5.3.0",
@@ -126,6 +154,7 @@
         "@inlang/paraglide-js-react": "^1.0.3",
         "@sentry/bun": "catalog:",
         "@sentry/tanstackstart-react": "^11.8.0",
+        "@shadcn/react": "^0.3.1",
         "@t3-oss/env-core": "^0.13.11",
         "@tabler/icons-react": "^3.49.0",
         "@tanstack/react-query": "^5.104.3",
@@ -202,6 +231,24 @@
       "devDependencies": {
         "@apollo/lint": "workspace:*",
         "@apollo/typescript": "workspace:*",
+        "@types/bun": "catalog:",
+        "turbo": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
+    "packages/chat": {
+      "name": "@apollo/chat",
+      "version": "0.0.0",
+      "dependencies": {
+        "@apollo/auth": "workspace:*",
+        "@apollo/database": "workspace:*",
+        "effect": "catalog:",
+      },
+      "devDependencies": {
+        "@apollo/lint": "workspace:*",
+        "@apollo/typescript": "workspace:*",
+        "@effect/eslint-plugin": "catalog:",
+        "@effect/language-service": "catalog:",
         "@types/bun": "catalog:",
         "turbo": "catalog:",
         "typescript": "catalog:",
@@ -304,6 +351,42 @@
         "zod": "catalog:",
       },
     },
+    "packages/services": {
+      "name": "@apollo/services",
+      "version": "0.0.0",
+      "dependencies": {
+        "@apollo/database": "workspace:*",
+        "@apollo/drizzle-bun-effect": "workspace:*",
+        "@effect/platform-bun": "catalog:",
+        "effect": "catalog:",
+      },
+      "devDependencies": {
+        "@apollo/lint": "workspace:*",
+        "@apollo/typescript": "workspace:*",
+        "@effect/eslint-plugin": "catalog:",
+        "@effect/language-service": "catalog:",
+        "@types/bun": "catalog:",
+        "turbo": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
+    "packages/trades": {
+      "name": "@apollo/trades",
+      "version": "0.0.0",
+      "dependencies": {
+        "@apollo/cosmo": "workspace:*",
+        "@apollo/database": "workspace:*",
+        "@apollo/util": "workspace:*",
+        "zod": "catalog:",
+      },
+      "devDependencies": {
+        "@apollo/lint": "workspace:*",
+        "@apollo/typescript": "workspace:*",
+        "@types/bun": "catalog:",
+        "turbo": "catalog:",
+        "typescript": "catalog:",
+      },
+    },
     "packages/typescript": {
       "name": "@apollo/typescript",
       "version": "0.0.0",
@@ -332,10 +415,12 @@
   },
   "patchedDependencies": {
     "@subsquid/http-client@1.8.1": "patches/@subsquid%2Fhttp-client@1.8.1.patch",
+    "@effect/platform-bun@4.0.6": "patches/@effect%2Fplatform-bun@4.0.6.patch",
   },
   "catalog": {
     "@better-auth/api-key": "1.6.33",
     "@better-auth/drizzle-adapter": "1.6.33",
+    "@effect/atom-react": "4.0.6",
     "@effect/build-utils": "^0.8.9",
     "@effect/eslint-plugin": "^0.3.2",
     "@effect/language-service": "^0.87.5",
@@ -358,6 +443,8 @@
 
     "@apollo/auth": ["@apollo/auth@workspace:packages/auth"],
 
+    "@apollo/chat": ["@apollo/chat@workspace:packages/chat"],
+
     "@apollo/cosmo": ["@apollo/cosmo@workspace:packages/cosmo"],
 
     "@apollo/database": ["@apollo/database@workspace:packages/database"],
@@ -373,6 +460,10 @@
     "@apollo/queue": ["@apollo/queue@workspace:packages/queue"],
 
     "@apollo/serial-estimation": ["@apollo/serial-estimation@workspace:packages/serial-estimation"],
+
+    "@apollo/services": ["@apollo/services@workspace:packages/services"],
+
+    "@apollo/trades": ["@apollo/trades@workspace:packages/trades"],
 
     "@apollo/typescript": ["@apollo/typescript@workspace:packages/typescript"],
 
@@ -563,6 +654,8 @@
     "@dprint/formatter": ["@dprint/formatter@0.4.1", "", {}, "sha512-IB/GXdlMOvi0UhQQ9mcY15Fxcrc2JPadmo6tqefCNV0bptFq7YBpggzpqYXldBXDa04CbKJ+rDwO2eNRPE2+/g=="],
 
     "@dprint/typescript": ["@dprint/typescript@0.91.8", "", {}, "sha512-tuKn4leCPItox1O4uunHcQF0QllDCvPWklnNQIh2PiWWVtRAGltJJnM4Cwj5AciplosD1Hiz7vAY3ew3crLb3A=="],
+
+    "@effect/atom-react": ["@effect/atom-react@4.0.6", "", { "peerDependencies": { "effect": "^4.0.6", "react": ">=19.0.0 <20.0.0", "scheduler": ">=0.25.0 <0.29.0" } }, "sha512-DpbuEdaJl+2/GW4KkrKtRD8YVPT+I29bh/TFE7JCGkB4YNiHWNE5q69EagDeK/QXi4RlSb+iR+rNGkORJ9qB/A=="],
 
     "@effect/build-utils": ["@effect/build-utils@0.8.9", "", { "dependencies": { "micromatch": "^4.0.8", "pkg-entry-points": "^1.1.1" }, "bin": { "build-utils": "main.js" } }, "sha512-wzunjr8pyNjghLueo5ePQD7vaM3qeO2H/jF57hNYbQM/rxfipBWYKukoqWyp04qGZ+V86FyOHb8zD5+PMZvH2A=="],
 
@@ -1057,6 +1150,8 @@
     "@sentry/tanstackstart-react": ["@sentry/tanstackstart-react@11.8.0", "", { "dependencies": { "@opentelemetry/api": "^1.9.1", "@sentry/browser-utils": "11.8.0", "@sentry/bundler-plugins": "11.8.0", "@sentry/conventions": "^0.27.0", "@sentry/core": "11.8.0", "@sentry/node": "11.8.0", "@sentry/react": "11.8.0", "@sentry/server-runtime-injection": "11.8.0", "@sentry/server-utils": "11.8.0" } }, "sha512-ixlZ9gWCjPrYOGPqz/FuHPXEtjeVcBPlmko84Gq3ACljAR1eqzvQYwSaGd8FtOwNvUGI4ZvizI7+t7lSWsn9Xw=="],
 
     "@sentry/vite-plugin": ["@sentry/vite-plugin@11.8.0", "", { "dependencies": { "@sentry/bundler-plugins": "11.8.0" } }, "sha512-E5zzLcoU1G0APvE6v/4N5wYO4q5veOI4N2DpEeIAhOPmrxMsv2ty9d0wK2TA3C+ewqg+Uv61S84kuhtcC6JhHw=="],
+
+    "@shadcn/react": ["@shadcn/react@0.3.1", "", { "peerDependencies": { "@types/react": ">=19", "react": ">=19" }, "optionalPeers": ["@types/react", "react"] }, "sha512-2gOR0HDMtWeRsCZfNDaU0YDFdgH3zsDQ6lz67Fv/y/qjY9y+R8kJqAn6q56phqv7/zHi0wqURjntrNO9zL7vnQ=="],
 
     "@shadcn/registry": ["@shadcn/registry@0.2.0", "", { "dependencies": { "@babel/core": "^7.28.0", "@babel/parser": "^7.28.0", "@babel/plugin-transform-typescript": "^7.28.0", "@babel/preset-typescript": "^7.27.1", "@dotenvx/dotenvx": "^1.48.4", "cn": "^0.2.4", "code-block-writer": "^13.0.3", "deepmerge": "^4.3.1", "execa": "^9.6.0", "fast-glob": "^3.3.3", "fs-extra": "^11.3.1", "fuzzysort": "^3.1.0", "kleur": "^4.1.5", "ora": "^8.2.0", "postcss": "^8.5.23", "prompts": "^2.4.2", "recast": "^0.23.11", "socks": "^2.8.8", "stringify-object": "^5.0.0", "tsconfig-paths": "^4.2.0", "type-fest": "^4.41.0", "undici": "^7.29.1", "zod": "^4.2.0" } }, "sha512-m3TeqU/+av2kgOLfESHkWzsmhuQuY4NXZd5Y1Rd4lzy4IX3JJ5+k2mYfkq6OT8oMuk2W4GQPAkO7+CC7KlpSbw=="],
 
@@ -1603,6 +1698,8 @@
     "ce-la-react": ["ce-la-react@0.3.2", "", { "peerDependencies": { "react": ">=17.0.0" } }, "sha512-QJ6k4lOD/btI08xG8jBPxRCGXvCnusGGkTsiXk0u3NqUu/W+BXRnFD4PYjwtqh8AWmGa5LDbGk0fLQsqr0nSMA=="],
 
     "chalk": ["chalk@5.6.2", "", {}, "sha512-7NzBL0rN6fMUW+f7A6Io4h40qQlG+xGmtMxfbnH/K7TAtt8JQWVQK+6g0UXKMeVJoyV5EkkNsErQ8pVD3bLHbA=="],
+
+    "chat": ["chat@workspace:apps/chat"],
 
     "chokidar": ["chokidar@5.0.0", "", { "dependencies": { "readdirp": "^5.0.0" } }, "sha512-TQMmc3w+5AxjpL8iIiwebF73dRDF4fBIieAqGn9RGCWaEVwQ6Fb2cGe31Yns0RRIzii5goJ1Y7xbMwo1TxMplw=="],
 

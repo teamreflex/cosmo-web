@@ -1,12 +1,6 @@
-import type { CosmoMemberBFF } from "@apollo/cosmo/types/artists";
-import type { CosmoPollChoices } from "@apollo/cosmo/types/gravity";
 import { describe, expect, it } from "bun:test";
 import type { RevealBatch } from "../src/lib/client/gravity/reveals";
-import {
-  buildSlotModel,
-  candidateLabel,
-  rankSlots,
-} from "../src/lib/client/gravity/slots";
+import { buildSlotModel, rankSlots } from "../src/lib/client/gravity/slots";
 import {
   combinationPoll,
   singlePoll,
@@ -19,23 +13,6 @@ const pollTotal = 46;
 
 function names(candidates: { name: string }[]) {
   return candidates.map((candidate) => candidate.name);
-}
-
-function member(name: string, alias: string): CosmoMemberBFF {
-  return {
-    id: 1,
-    name,
-    units: "",
-    alias,
-    profileImageUrl: "",
-    backgroundImageUrl: "",
-    order: 1,
-    createdAt: "",
-    updatedAt: "",
-    mainObjektImageUrl: null,
-    artistId: "idntt",
-    primaryColorHex: "",
-  };
 }
 
 describe("buildSlotModel", () => {
@@ -116,82 +93,6 @@ describe("buildSlotModel", () => {
     expect(slot?.candidates.map((candidate) => candidate.candidateIds)).toEqual(
       [[0], [1], [2]],
     );
-  });
-
-  it("splits a unit poll's pairing into its members", () => {
-    const [slot] = buildSlotModel(unitPoll, []).slots;
-
-    expect(slot?.candidates[0]?.members).toEqual([
-      {
-        name: "HeeJin",
-        imageUrl: "https://static.cosmo.fans/member-heejin.png",
-      },
-      {
-        name: "HaSeul",
-        imageUrl: "https://static.cosmo.fans/member-haseul.png",
-      },
-    ]);
-  });
-
-  it("names a pairing's members from the alias COSMO titles them by", () => {
-    // idntt titles pairings by alias, and keys the member images the same way
-    const aliased = {
-      ...unitPoll,
-      pollViewMetadata: {
-        ...unitPoll.pollViewMetadata,
-        selectedContent: [
-          {
-            choiceId: "id1·id2",
-            content: {
-              type: "image",
-              imageUrl: "https://static.cosmo.fans/id1-id2.png",
-              title: "id1·id2",
-              description: "",
-            },
-          },
-        ],
-        memberImages: {
-          id1: "https://static.cosmo.fans/member-id1.png",
-          id2: "https://static.cosmo.fans/member-id2.png",
-        },
-      },
-    } satisfies CosmoPollChoices;
-    const [slot] = buildSlotModel(aliased, [
-      member("DoHun", "id1"),
-      member("HeeJu", "id2"),
-    ]).slots;
-
-    expect(slot?.candidates[0]?.members).toEqual([
-      { name: "DoHun", imageUrl: "https://static.cosmo.fans/member-id1.png" },
-      { name: "HeeJu", imageUrl: "https://static.cosmo.fans/member-id2.png" },
-    ]);
-    expect(slot?.candidates.map(candidateLabel)).toEqual(["DoHun + HeeJu"]);
-  });
-
-  it("reads a pairing as its members and everything else as its title", () => {
-    const [unit] = buildSlotModel(unitPoll, []).slots;
-    const [single] = buildSlotModel(singlePoll, []).slots;
-
-    expect(unit?.candidates.map(candidateLabel)).toEqual([
-      "HeeJin + HaSeul",
-      "HeeJin + KimLip",
-      "HaSeul + KimLip",
-    ]);
-    expect(single?.candidates.map(candidateLabel)).toEqual([
-      "Song A",
-      "Song B",
-      "Song C",
-    ]);
-  });
-
-  it("leaves a single poll's candidates without pairing members", () => {
-    const [slot] = buildSlotModel(singlePoll, []).slots;
-
-    expect(slot?.candidates.map((candidate) => candidate.members)).toEqual([
-      [],
-      [],
-      [],
-    ]);
   });
 
   it("refuses a combination poll whose metadata skips a choice", () => {

@@ -1,4 +1,3 @@
-import { DatabaseWeb } from "@/db";
 import { ProxiedToken } from "@/proxied-token";
 import { fetchAllArtists } from "@apollo/cosmo/server/artists";
 import { fetchGravities, fetchPoll } from "@apollo/cosmo/server/gravity";
@@ -8,6 +7,7 @@ import {
   gravityPollCandidates,
   gravityPolls,
 } from "@apollo/database/web/schema";
+import { DatabaseWeb } from "@apollo/services/database-web";
 import { eq } from "drizzle-orm";
 import { Data, Effect } from "effect";
 import type { ScheduledTask } from "../task";

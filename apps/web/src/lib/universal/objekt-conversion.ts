@@ -266,6 +266,14 @@ const artistMap = new Map([
   ["idntt", "idntt"],
 ]);
 
+/**
+ * An artist's display name ("ARTMS") from its id in any casing, or the id
+ * itself when it isn't a known artist.
+ */
+export function artistName(artist: string) {
+  return artistMap.get(artist.toLowerCase()) ?? artist;
+}
+
 const onOfflineMap = new Map<string, "online" | "offline">([
   ["Z", "online"],
   ["A", "offline"],

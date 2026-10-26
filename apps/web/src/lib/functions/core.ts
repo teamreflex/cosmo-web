@@ -3,7 +3,6 @@ import { remember } from "@/lib/server/cache.server";
 import { fetchCookie, putCookie } from "@/lib/server/cookies.server";
 import {
   fetchFullAccount,
-  getCosmoAddress,
   toPublicCosmo,
 } from "@/lib/server/cosmo-accounts.server";
 import { db } from "@/lib/server/db";
@@ -79,10 +78,10 @@ export const $fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
       return null;
     }
 
-    const userId = session.session.userId;
     const result = await db.query.user.findFirst({
-      where: { id: userId },
+      where: { id: session.session.userId },
       with: {
+        cosmoAccount: { columns: { address: true, username: true } },
         objektLists: true,
         fxRates: {
           columns: { rateToUsd: true },
@@ -97,12 +96,11 @@ export const $fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
       return null;
     }
 
-    const link = await getCosmoAddress(db, userId);
-    const { objektLists, fxRates, ...user } = result;
+    const { cosmoAccount, objektLists, fxRates, ...user } = result;
     return {
       user: toCurrentUser(user),
       role: user.role,
-      cosmo: link.kind === "linked" ? toPublicCosmo(link) : undefined,
+      cosmo: cosmoAccount ? toPublicCosmo(cosmoAccount) : undefined,
       objektLists,
       fxRateToUsd: fxRates[0]?.rateToUsd ?? null,
     };

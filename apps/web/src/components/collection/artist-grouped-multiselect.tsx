@@ -14,7 +14,12 @@ type Group = {
 
 type Props = {
   groups: Group[];
+  /**
+   * A selection counts only under this artist, unless `anyArtist` is set,
+   * for values that already name one artist (members).
+   */
   activeArtist: string | undefined;
+  anyArtist?: boolean;
   selected: string[];
   onToggle: (artistId: string, item: string, checked: boolean) => void;
   onClear?: () => void;
@@ -24,6 +29,7 @@ type Props = {
 export default function ArtistGroupedMultiSelect({
   groups,
   activeArtist,
+  anyArtist = false,
   selected,
   onToggle,
   onClear,
@@ -31,7 +37,12 @@ export default function ArtistGroupedMultiSelect({
 }: Props) {
   return (
     <div>
-      <div className="grid grid-cols-3 border-b border-border">
+      <div
+        className={cn(
+          "grid border-b border-border",
+          groups.length === 1 ? "grid-cols-1" : "grid-cols-3",
+        )}
+      >
         {groups.map((group) => (
           <div
             key={group.artist.id}
@@ -50,7 +61,8 @@ export default function ArtistGroupedMultiSelect({
             <div className="flex flex-col px-1 pb-2">
               {group.items.map((item) => {
                 const on =
-                  activeArtist === group.artist.id && selected.includes(item);
+                  (anyArtist || activeArtist === group.artist.id) &&
+                  selected.includes(item);
                 return (
                   <button
                     key={item}

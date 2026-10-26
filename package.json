@@ -34,6 +34,7 @@
   "catalog": {
     "@better-auth/api-key": "1.6.33",
     "@better-auth/drizzle-adapter": "1.6.33",
+    "@effect/atom-react": "4.0.6",
     "@effect/build-utils": "^0.8.9",
     "@effect/eslint-plugin": "^0.3.2",
     "@effect/language-service": "^0.87.5",
@@ -52,6 +53,7 @@
     "zod": "^4.6.7"
   },
   "patchedDependencies": {
-    "@subsquid/http-client@1.8.1": "patches/@subsquid%2Fhttp-client@1.8.1.patch"
+    "@subsquid/http-client@1.8.1": "patches/@subsquid%2Fhttp-client@1.8.1.patch",
+    "@effect/platform-bun@4.0.6": "patches/@effect%2Fplatform-bun@4.0.6.patch"
   }
 }

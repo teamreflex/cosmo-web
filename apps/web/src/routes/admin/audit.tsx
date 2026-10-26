@@ -1,9 +1,9 @@
 import AuditFilters from "@/components/admin/audit/audit-filters";
 import AuditLog from "@/components/admin/audit/audit-log";
-import { requireStaffPage } from "@/components/admin/common";
 import AdminNoAccess from "@/components/admin/no-access";
 import StaffRoleMeta from "@/components/admin/staff-role-meta";
 import { Skeleton } from "@/components/ui/skeleton";
+import { requirePermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { auditStaffQuery, staffAuditQuery } from "@/lib/queries/staff-audit";
@@ -26,7 +26,7 @@ export const Route = createFileRoute("/admin/audit")({
     } satisfies StaffAuditFilters,
   }),
   beforeLoad: ({ context }) =>
-    requireStaffPage(context.role, { audit: ["read"] }),
+    requirePermission(context.role, [{ audit: ["read"] }]),
   notFoundComponent: AdminNoAccess,
   loader: async ({ context }) => {
     await Promise.all([

@@ -40,7 +40,7 @@ import type { Coordinates } from "@dnd-kit/utilities";
 import { useRef, useState } from "react";
 import type { ReactNode, RefObject } from "react";
 import { PageThumbnail, PocketSleeve } from "./binder-page";
-import type { PickerDragData } from "./picker-grid";
+import type { PickerDragData } from "./binder-picker-card";
 
 /**
  * Touch drags rearrange pockets, and pages too where the page strip sits

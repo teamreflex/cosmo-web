@@ -1,6 +1,9 @@
 import { m } from "@/i18n/messages";
 import type { AdminReportRowTarget, BanLength } from "@/lib/universal/reports";
-import type { ReportReason, ReportStatus } from "@apollo/database/web/types";
+import type {
+  ReportStatus,
+  StoredReportReason,
+} from "@apollo/database/web/types";
 
 const reasonLabels = {
   scam: m.report_reason_scam,
@@ -8,12 +11,21 @@ const reasonLabels = {
   impersonation: m.report_reason_impersonation,
   spam: m.report_reason_spam,
   other: m.report_reason_other,
-} satisfies Record<ReportReason, () => string>;
+  not_responding: m.report_reason_not_responding,
+  objekt_not_received: m.report_reason_objekt_not_received,
+  payment_not_received: m.report_reason_payment_not_received,
+  off_terms: m.report_reason_off_terms,
+  off_platform_payment: m.report_reason_off_platform_payment,
+  party_banned: m.report_reason_party_banned,
+  deadline_passed: m.report_reason_deadline_passed,
+  retaliation: m.report_reason_retaliation,
+  personal_info: m.report_reason_personal_info,
+} satisfies Record<StoredReportReason, () => string>;
 
 /**
- * Maps a report reason to its localized label.
+ * Maps a report reason, a dispute's included, to its localized label.
  */
-export function reportReasonLabel(reason: ReportReason): string {
+export function reportReasonLabel(reason: StoredReportReason): string {
   return reasonLabels[reason]();
 }
 
@@ -35,6 +47,9 @@ type QueueTargetType = AdminReportRowTarget["type"];
 
 const targetTypeLabels = {
   user: m.admin_reports_type_user,
+  trade: m.admin_reports_type_trade,
+  message: m.admin_reports_type_message,
+  feedback: m.admin_reports_type_feedback,
 } satisfies Record<QueueTargetType, () => string>;
 
 /**

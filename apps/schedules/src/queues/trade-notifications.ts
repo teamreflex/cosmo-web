@@ -1,10 +1,10 @@
-import { DatabaseWeb } from "@/db";
 import { insertNotifications } from "@/notifications";
 import { objektListEntries, objektLists } from "@apollo/database/web/schema";
 import {
   TradeNotificationsQueue,
   type TradeNotificationsJob,
 } from "@apollo/queue";
+import { DatabaseWeb } from "@apollo/services/database-web";
 import { and, eq, exists, inArray, isNotNull, ne } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 import { Effect, Layer } from "effect";
@@ -191,22 +191,22 @@ function tradeActive(
  * A list or account deleted before the job ran would otherwise fail every
  * insert on a foreign key, retry and end up in the failed list.
  */
-const isSourceListTradeActive = Effect.fn("isSourceListTradeActive")(
-  function* (job: TradeNotificationsJob) {
-    const db = yield* DatabaseWeb;
-    const rows = yield* db
-      .select({ id: objektLists.id })
-      .from(objektLists)
-      .where(
-        and(
-          eq(objektLists.id, job.sourceListId),
-          eq(objektLists.userId, job.sourceUserId),
-          tradeActive(db, job.side),
-        ),
-      );
-    return rows.length > 0;
-  },
-);
+const isSourceListTradeActive = Effect.fn("isSourceListTradeActive")(function* (
+  job: TradeNotificationsJob,
+) {
+  const db = yield* DatabaseWeb;
+  const rows = yield* db
+    .select({ id: objektLists.id })
+    .from(objektLists)
+    .where(
+      and(
+        eq(objektLists.id, job.sourceListId),
+        eq(objektLists.userId, job.sourceUserId),
+        tradeActive(db, job.side),
+      ),
+    );
+  return rows.length > 0;
+});
 
 /**
  * Distinct collections across the user's trade-active lists of one side.

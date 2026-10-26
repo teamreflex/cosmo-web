@@ -24,6 +24,8 @@ const badgeVariants = cva(
         twitter: "bg-twitter text-white hover:bg-twitter/90",
         discord: "bg-discord text-white hover:bg-discord/90",
         cosmo: "bg-cosmo text-white hover:bg-cosmo/90",
+        staff:
+          "h-auto rounded-sm border-orange-500/40 bg-orange-500/10 px-1.5 py-0.5 text-xxs font-medium tracking-widest text-orange-700 uppercase dark:border-orange-400/40 dark:text-orange-300",
         // list types
         "list-have": "border-transparent bg-teal-200 text-teal-800!",
         "list-want": "border-transparent bg-amber-200 text-amber-800!",

@@ -12,6 +12,8 @@ import {
   notificationsListQuery,
   unreadNotificationsQuery,
 } from "./notifications";
+import { tradeListingViewerKey } from "./trade-listings";
+import { tradesKey } from "./trades";
 
 /**
  * Fetch the filter data.
@@ -37,16 +39,19 @@ export const currentAccountQuery = queryOptions({
 
 /**
  * Removes the staff data (every query keyed under "admin"), the viewer's
- * account-deletion check and their notifications, whose answers depend on who
- * is signed in although their keys don't name them. Sign-in, sign-out and
- * account deletion call it so the next account on the tab never reads the
- * previous one's cache.
+ * account-deletion check, their notifications, their side of trade
+ * listings and their trades, whose answers depend on who is signed in
+ * although their keys don't name them. Sign-in, sign-out and account
+ * deletion call it so the next account on the tab never reads the previous
+ * one's cache.
  */
 export function removeViewerQueries(queryClient: QueryClient) {
   queryClient.removeQueries({ queryKey: ["admin"] });
   queryClient.removeQueries({ queryKey: accountDeletionQuery.queryKey });
   queryClient.removeQueries({ queryKey: notificationsListQuery.queryKey });
   queryClient.removeQueries({ queryKey: unreadNotificationsQuery.queryKey });
+  queryClient.removeQueries({ queryKey: tradeListingViewerKey });
+  queryClient.removeQueries({ queryKey: tradesKey });
 }
 
 /**

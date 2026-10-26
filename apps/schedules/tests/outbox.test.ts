@@ -9,6 +9,8 @@ import {
 
 const ALICE = "0x000000000000000000000000000000000000aaaa";
 const BOB = "0x000000000000000000000000000000000000bbbb";
+const TRANSFER_ID = "0d4c2f7e-5b1a-4c8e-9f3d-2a6b7c8d9e0f";
+const HASH = "0xabc";
 const BASE = Date.parse("2026-10-10T12:00:00Z");
 
 function at(minute: number) {
@@ -20,6 +22,7 @@ function transfer(id: number, tokenId: string, minute: number): OutboxRow {
     type: "transfer",
     id: BigInt(id),
     tokenId,
+    hash: HASH,
     from: ALICE,
     to: BOB,
     timestamp: at(minute),
@@ -46,30 +49,62 @@ function raw(overrides: Partial<RawOutboxRow>): RawOutboxRow {
     id: 1n,
     type: "transfer",
     tokenId: "100",
+    transferId: TRANSFER_ID,
     fromAddress: ALICE,
     toAddress: BOB,
     transferable: null,
     timestamp: at(0),
+    hash: HASH,
     ...overrides,
   };
 }
 
 describe("parseOutboxRow", () => {
-  it("parses a transfer row", () => {
-    expect(parseOutboxRow(raw({}))).toEqual(transfer(1, "100", 0));
+  // OUT-01
+  it("parses a transfer row with the hash of its indexer transfer row", () => {
+    expect(parseOutboxRow(raw({}))).toEqual({
+      type: "transfer",
+      id: 1n,
+      tokenId: "100",
+      hash: HASH,
+      from: ALICE,
+      to: BOB,
+      timestamp: at(0),
+    });
   });
 
-  it("parses a transferability row", () => {
+  it("parses a transfer whose transfer row was rolled back without a hash", () => {
+    expect(parseOutboxRow(raw({ hash: null }))).toMatchObject({
+      type: "transfer",
+      hash: null,
+    });
+  });
+
+  // OUT-01
+  it("parses a transferability row, which has no transfer row", () => {
     expect(
       parseOutboxRow(
         raw({
           type: "transferability",
+          transferId: null,
           fromAddress: null,
           toAddress: null,
           transferable: false,
+          hash: null,
         }),
       ),
-    ).toEqual(transferability(1, "100", 0));
+    ).toEqual({
+      type: "transferability",
+      id: 1n,
+      tokenId: "100",
+      transferable: false,
+      timestamp: at(0),
+    });
+  });
+
+  // OUT-02
+  it("rejects a transfer row without a transfer id", () => {
+    expect(parseOutboxRow(raw({ transferId: null }))).toBeUndefined();
   });
 
   it("rejects a transfer row without addresses", () => {
@@ -80,7 +115,12 @@ describe("parseOutboxRow", () => {
   it("rejects a transferability row without a flag", () => {
     expect(
       parseOutboxRow(
-        raw({ type: "transferability", fromAddress: null, toAddress: null }),
+        raw({
+          type: "transferability",
+          transferId: null,
+          fromAddress: null,
+          toAddress: null,
+        }),
       ),
     ).toBeUndefined();
   });

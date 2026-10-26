@@ -1,3 +1,5 @@
+import { roleNames } from "@apollo/auth";
+import { isAddress } from "@apollo/util";
 import * as z from "zod";
 import { banUserSchema } from "./reports";
 
@@ -17,3 +19,14 @@ export const unbanUserInputSchema = z.object({
 
 export type BanUserInput = z.infer<typeof banUserInputSchema>;
 export type UnbanUserInput = z.infer<typeof unbanUserInputSchema>;
+
+export const setRoleInputSchema = z.object({
+  userId: z.string().min(1),
+  role: z.enum(roleNames),
+});
+
+export type SetRoleInput = z.infer<typeof setRoleInputSchema>;
+
+export const roleUserInputSchema = z.object({
+  address: z.string().refine(isAddress),
+});

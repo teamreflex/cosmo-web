@@ -2,8 +2,8 @@ import ClearArtistsCard from "@/components/admin/cache/clear-artists-card";
 import ClearFilterDataCard from "@/components/admin/cache/clear-filter-data-card";
 import ClearPinsCard from "@/components/admin/cache/clear-pins-card";
 import UpdateCosmoKeyCard from "@/components/admin/cache/update-cosmo-key-card";
-import { requireStaffPage } from "@/components/admin/common";
 import AdminNoAccess from "@/components/admin/no-access";
+import { requirePermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { createFileRoute } from "@tanstack/react-router";
@@ -11,7 +11,7 @@ import { createFileRoute } from "@tanstack/react-router";
 export const Route = createFileRoute("/admin/cache")({
   staleTime: Infinity,
   beforeLoad: ({ context }) =>
-    requireStaffPage(context.role, { site: ["manage"] }),
+    requirePermission(context.role, [{ site: ["manage"] }]),
   notFoundComponent: AdminNoAccess,
   head: () =>
     defineHead({ title: m.admin_cache_title(), canonical: "/admin/cache" }),

@@ -1,7 +1,7 @@
-import { requireStaffPage } from "@/components/admin/common";
 import CreateEra from "@/components/admin/eras/create-era-dialog";
 import ErasGrid from "@/components/admin/eras/eras-grid";
 import AdminNoAccess from "@/components/admin/no-access";
+import { requirePermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { artistsQuery } from "@/lib/queries/core";
@@ -13,7 +13,7 @@ import { Suspense } from "react";
 export const Route = createFileRoute("/admin/eras")({
   staleTime: Infinity,
   beforeLoad: ({ context }) =>
-    requireStaffPage(context.role, { site: ["manage"] }),
+    requirePermission(context.role, [{ site: ["manage"] }]),
   notFoundComponent: AdminNoAccess,
   loader: async ({ context }) => {
     void context.queryClient

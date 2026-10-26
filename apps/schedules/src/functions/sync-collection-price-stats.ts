@@ -1,4 +1,3 @@
-import { DatabaseWeb } from "@/db";
 import {
   collectionPriceHistory,
   collectionPriceStats,
@@ -6,6 +5,7 @@ import {
   objektListEntries,
   objektLists,
 } from "@apollo/database/web/schema";
+import { DatabaseWeb } from "@apollo/services/database-web";
 import { and, count, desc, eq, isNotNull, notExists, sql } from "drizzle-orm";
 import { Effect } from "effect";
 import type { ScheduledTask } from "../task";

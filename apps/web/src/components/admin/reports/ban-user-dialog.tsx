@@ -115,6 +115,10 @@ export default function BanUserDialog({
       : m.admin_ban_effect_resolve_others({
           count: report.otherOpenReportCount,
         }),
+    ...(user.liveTradeCount > 0
+      ? [m.admin_ban_effect_hold_trades({ count: user.liveTradeCount })]
+      : []),
+    m.admin_ban_effect_close_offers(),
     m.admin_ban_effect_audit(),
   ];
 

@@ -146,7 +146,7 @@ Before each chunk's collection upsert, `mirrorImages` (`src/images.ts`) mirrors 
 
 `collection_stats` holds each collection's `objekt_count` (every objekt row, spun included) and `spun_count` (rows owned by `Addresses.SPIN`) for apps/web's mint-count sorts. Triggers on `objekt` maintain it (migration `1791327933173-Data.js`): inserts and deletes adjust both counts, and owner changes to or from spin adjust `spun_count`. The processor never reads or writes it, so hot-block rollbacks and hand-run repairs to `objekt` stay counted without any TypeScript changes. A collection's row exists only while it has objekts.
 
-`collection_market_stats` holds the floor (USD), listing count and latest listing time of each collection's priced sale listings, keyed by `collection_id` (migration `1791627703101-Data.js`). apps/schedules' `sync-market-stats` owns it: every minute it upserts changed rows from the web DB and deletes the rows of collections no longer listed, so a row exists only while its collection is listed. apps/web's `/market` inner-joins it to `collection` to filter, sort and page in one query, with one index per sort. The processor never touches it.
+`collection_market_stats` holds the USD floor, listing count and latest listing time of each listed collection. apps/schedules' `sync-market-stats` owns it, syncing from the web DB every minute, and apps/web's `/market` joins it to `collection` to filter, sort and page in one query. The processor never touches it.
 
 ### Serial Numbering
 
@@ -154,9 +154,9 @@ COSMO stopped returning serials at the v1 metadata cutoff, so `src/serials.ts` s
 
 ### List Event Outbox
 
-`list_event_outbox` feeds apps/schedules' `drain-outbox` (migration `1791627703101-Data.js` adds `type`, `transferable` and `hash`; the same migration creates `collection_market_stats`). The processor appends a `transfer` row for every transfer except mints, with `transfer_id`, `from_address` and `to_address`, and a `transferability` row for every token a `batchUpdateObjektTransferability` call updates, with the new `transferable` flag. Both carry the collection slug, token id, block timestamp and transaction hash. A `NOT VALID` check enforces each type's columns on new rows without scanning old ones. The processor only appends (the drain purges drained rows once they are a week old), and ids follow processing order: within one batch, every transfer row precedes every transferability row.
+`list_event_outbox` feeds apps/schedules' `drain-outbox`, which clears list entries, pins and binder slots and settles trades from it (see `docs/trades.md`). The processor only appends: a `transfer` row for every transfer except mints, and a `transferability` row for every token a `batchUpdateObjektTransferability` call updates. Ids follow processing order, so within one batch every transfer row precedes every transferability row. A `NOT VALID` check enforces each type's columns on new rows without scanning old ones.
 
-The processor runs with `supportHotBlocks`, so it writes rows for blocks that aren't final yet. A hot-block rollback doesn't remove them: the change log records each insert by entity id, and a bigserial row has no id until the insert has run.
+The processor runs with `supportHotBlocks`, and a hot-block rollback doesn't remove outbox rows: the change log records each insert by entity id, and a bigserial row has no id until the insert has run. The drain detects this through the row's `transfer_id`.
 
 ## Key Files
 

@@ -29,7 +29,7 @@ type Props<T, TQueryKey extends QueryKey> = {
 /**
  * Searches staff-side records, such as users or linked COSMO accounts, once
  * at least 3 characters are typed, and shows the picked one as a chip with a
- * Cancel that clears it.
+ * Clear button that unpicks it.
  */
 export default function UserCombobox<T, TQueryKey extends QueryKey>({
   id,
@@ -47,7 +47,7 @@ export default function UserCombobox<T, TQueryKey extends QueryKey>({
   const [debouncedQuery] = useDebounceValue(query, 500);
   const [open, setOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
-  // a picked result swaps the search for the item, whose Cancel takes focus
+  // a picked result swaps the search for the item, whose Clear takes focus
   const picked = useRef(false);
   const enabled = debouncedQuery.length >= 3;
   const resultsOpen = open && enabled;
@@ -91,7 +91,7 @@ export default function UserCombobox<T, TQueryKey extends QueryKey>({
           onClick={handleClear}
           className="text-xs text-muted-foreground hover:text-foreground"
         >
-          {m.common_cancel()}
+          {m.user_search_clear()}
         </button>
       </div>
     );

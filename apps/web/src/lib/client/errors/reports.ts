@@ -24,6 +24,8 @@ export function formatReportError(error: unknown): string | null {
       return m.report_error_report_about_you();
     case "report_status_changed":
       return m.report_error_report_status_changed();
+    case "report_trade_dispute":
+      return m.report_error_report_trade_dispute();
     default:
       error.message satisfies never;
       return null;

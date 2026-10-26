@@ -13,7 +13,7 @@ import { Link } from "@tanstack/react-router";
 
 /**
  * What an admin page shows a staff member whose role can't use it, inside the
- * admin shell. `requireStaffPage` sends them here.
+ * admin shell. `requirePermission` sends them here.
  */
 export default function AdminNoAccess() {
   return (

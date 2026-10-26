@@ -2,13 +2,17 @@ import type { listEventOutbox } from "@apollo/database/indexer/schema";
 
 /**
  * One `list_event_outbox` row, narrowed by type. The indexer's check
- * constraint guarantees each type's columns, so every row parses.
+ * constraint guarantees each type's columns, so every row parses. A
+ * transfer carries the hash of the indexer `transfer` row it names, or null
+ * when that row is gone: the processor runs with hot blocks, so the transfer
+ * was rolled back.
  */
 export type OutboxRow =
   | {
       type: "transfer";
       id: bigint;
       tokenId: string;
+      hash: string | null;
       from: string;
       to: string;
       timestamp: Date;
@@ -26,11 +30,12 @@ export type RawOutboxRow = Pick<
   | "id"
   | "type"
   | "tokenId"
+  | "transferId"
   | "fromAddress"
   | "toAddress"
   | "transferable"
   | "timestamp"
->;
+> & { hash: string | null };
 
 /**
  * Narrow a raw row, or return undefined when its columns don't match its
@@ -40,12 +45,15 @@ export function parseOutboxRow(row: RawOutboxRow): OutboxRow | undefined {
   const { id, tokenId, timestamp } = row;
   switch (row.type) {
     case "transfer":
-      return row.fromAddress === null || row.toAddress === null
+      return row.transferId === null ||
+        row.fromAddress === null ||
+        row.toAddress === null
         ? undefined
         : {
             type: "transfer",
             id,
             tokenId,
+            hash: row.hash,
             from: row.fromAddress,
             to: row.toAddress,
             timestamp,

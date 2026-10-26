@@ -256,6 +256,33 @@ services:
     networks:
       - apollo-network
 
+  # trade chat websocket on :3001; the web app runs on the host, so its jwks goes through host.docker.internal
+  chat:
+    build:
+      context: .
+      dockerfile: apps/chat/Dockerfile
+    restart: on-failure
+    ports:
+      - "3001:3001"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      - PORT=3001
+      - WEB_DATABASE_URL=postgresql://postgres:postgres@pgbouncer-web:5432/web
+      - REDIS_URL=redis://valkey:6379
+      - MESSAGE_KEY
+      - AUTH_JWKS_URL=http://host.docker.internal:${PORT:-3000}/api/auth/jwks
+      - AUTH_ISSUER
+      - AUTH_AUDIENCE
+      - ALLOWED_ORIGINS
+    depends_on:
+      pgbouncer-web:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+    networks:
+      - apollo-network
+
   # browserless.io
   browserless:
     image: ghcr.io/browserless/chromium:latest

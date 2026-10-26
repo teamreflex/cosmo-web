@@ -5,8 +5,13 @@ import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import EraCard from "./era-card";
 
 export default function ErasGrid() {
-  const { data, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useSuspenseInfiniteQuery(adminErasInfiniteQuery());
+  const {
+    data,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+    isFetchNextPageError,
+  } = useSuspenseInfiniteQuery(adminErasInfiniteQuery());
 
   const erasList = data.pages.flatMap((page) => page.eras);
 
@@ -30,6 +35,7 @@ export default function ErasGrid() {
         status="success"
         hasNextPage={hasNextPage}
         isFetchingNextPage={isFetchingNextPage}
+        isFetchNextPageError={isFetchNextPageError}
         fetchNextPage={fetchNextPage}
       />
     </>

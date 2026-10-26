@@ -1,10 +1,11 @@
+import type { DatabaseWeb } from "@apollo/services/database-web";
 import { Cron, Duration, Effect, Schedule } from "effect";
 import type { HttpClient } from "effect/http";
 import type { Redis } from "effect/persistence";
-import type { DatabaseWeb } from "./db";
 import type { DatabaseIndexer } from "./db-indexer";
 import type { Exchangerate } from "./exchangerate";
 import { applySerialConfirmationsTask } from "./functions/apply-serial-confirmations";
+import { chatRetentionTask } from "./functions/chat-retention";
 import { clearObjektStatsTask } from "./functions/clear-objekt-stats";
 import { drainOutboxTask } from "./functions/drain-outbox";
 import { recomputeSerialsTask } from "./functions/recompute-serials";
@@ -13,6 +14,7 @@ import { syncFxRatesTask } from "./functions/sync-fx-rates";
 import { syncGravitiesTask } from "./functions/sync-gravities";
 import { syncMarketStatsTask } from "./functions/sync-market-stats";
 import { syncMembersTask } from "./functions/sync-members";
+import { tradeTimersTask } from "./functions/trade-timers";
 import type { ProxiedToken } from "./proxied-token";
 
 export interface ScheduledTask<TSuccess = void, TFailure = unknown> {
@@ -36,12 +38,14 @@ export const SCHEDULED_TASKS: ScheduledTask[] = [
   clearObjektStatsTask,
   syncGravitiesTask,
   drainOutboxTask,
+  tradeTimersTask,
   syncFxRatesTask,
   syncCollectionPriceStatsTask,
   syncMembersTask,
   syncMarketStatsTask,
   recomputeSerialsTask,
   applySerialConfirmationsTask,
+  chatRetentionTask,
 ];
 
 /**

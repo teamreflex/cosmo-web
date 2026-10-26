@@ -25,10 +25,13 @@ export const useElementSize = <T extends HTMLElement = HTMLDivElement>(
     height: 0,
   });
 
-  const updateSize = useCallback(() => {
-    const element = ref.current;
-    if (element) {
-      const { width, height } = element.getBoundingClientRect();
+  /**
+   * Layout sizes rather than getBoundingClientRect, which would include a
+   * transform such as a dialog's zoom-in and keep that size once it ends,
+   * since a transform never fires the observer.
+   */
+  const setMeasured = useCallback(
+    (width: number, height: number) => {
       setSize((previous) => {
         const nextWidth = trackWidth ? width : previous.width;
         const nextHeight = trackHeight ? height : previous.height;
@@ -39,26 +42,23 @@ export const useElementSize = <T extends HTMLElement = HTMLDivElement>(
 
         return { width: nextWidth, height: nextHeight };
       });
-    }
-  }, [trackHeight, trackWidth]);
+    },
+    [trackHeight, trackWidth],
+  );
 
   useIsomorphicLayoutEffect(() => {
-    updateSize();
+    const element = ref.current;
+    if (!element) return;
+    setMeasured(element.offsetWidth, element.offsetHeight);
 
-    const resizeObserver = new ResizeObserver(() => {
-      updateSize();
+    const resizeObserver = new ResizeObserver(([entry]) => {
+      const box = entry?.borderBoxSize[0];
+      if (box) setMeasured(box.inlineSize, box.blockSize);
     });
+    resizeObserver.observe(element);
 
-    if (ref.current) {
-      resizeObserver.observe(ref.current);
-    }
-
-    return () => {
-      if (ref.current) {
-        resizeObserver.unobserve(ref.current);
-      }
-    };
-  }, [trackHeight, trackWidth, updateSize]);
+    return () => resizeObserver.disconnect();
+  }, [setMeasured]);
 
   return [ref, size];
 };

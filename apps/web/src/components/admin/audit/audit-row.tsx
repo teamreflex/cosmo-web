@@ -38,6 +38,13 @@ const actionTones = {
   "api-key:update": "text-destructive",
   "api-key:delete": "text-destructive",
   "metadata:update": "text-foreground",
+  "trade:dispute": "text-foreground",
+  "trade:complete": "text-foreground",
+  "trade:cancel": "text-foreground",
+  "trade:extend": "text-foreground",
+  "trade:remove-message": "text-destructive",
+  "trade:message": "text-foreground",
+  "feedback:remove": "text-destructive",
 } satisfies Record<StaffAuditAction, string>;
 
 type Props = {
@@ -140,20 +147,20 @@ export default function AuditRow({ row }: Props) {
         role="cell"
         className="font-mono text-xs whitespace-nowrap text-muted-foreground tabular-nums [grid-area:when] @md:pt-0.5 @4xl:pt-0"
       >
-        <Timestamp
-          date={row.createdAt}
-          format={{
-            month: "short",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-            hourCycle: "h23",
-          }}
-        />
+        <Timestamp date={row.createdAt} format={auditTimeFormat} />
       </div>
     </div>
   );
 }
+
+// a day and a 24-hour time, short enough for the row's last column
+const auditTimeFormat = {
+  month: "short",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+} satisfies Intl.DateTimeFormatOptions;
 
 function AuditTarget({ row }: Props) {
   switch (row.target.type) {
@@ -180,15 +187,7 @@ function AuditTarget({ row }: Props) {
               {detailNote(row.detail)}
             </span>
           )}
-          {row.report !== null && (
-            <Link
-              to="/admin/reports"
-              search={{ status: row.report.status, report: row.report.id }}
-              className="text-xs text-cosmo hover:underline dark:text-cosmo-text"
-            >
-              {m.admin_audit_report_link({ id: shortId(row.report.id) })}
-            </Link>
-          )}
+          {row.report !== null && <ReportLink report={row.report} />}
         </>
       );
     }
@@ -258,7 +257,94 @@ function AuditTarget({ row }: Props) {
           </span>
         </>
       );
+    case "trade":
+      return (
+        <>
+          <span>{m.admin_audit_target_trade()}</span>
+          <Link
+            to="/trade/$id"
+            params={{ id: row.target.id }}
+            className="font-mono text-xs text-cosmo hover:underline dark:text-cosmo-text"
+          >
+            {shortId(row.target.id)}
+          </Link>
+          {row.detail !== null && (
+            <span className="text-xs text-muted-foreground">
+              {detailNote(row.detail)}
+            </span>
+          )}
+          {row.report !== null && <ReportLink report={row.report} />}
+        </>
+      );
+    case "message":
+      return (
+        <TradeContentTarget
+          label={m.admin_audit_target_message()}
+          id={`#${row.target.id}`}
+          tradeId={row.target.tradeId}
+          report={row.report}
+        />
+      );
+    case "feedback":
+      return (
+        <TradeContentTarget
+          label={m.admin_audit_target_feedback_rating()}
+          id={shortId(row.target.id)}
+          tradeId={row.target.tradeId}
+          report={row.report}
+        />
+      );
   }
+}
+
+/**
+ * A message or rating, by its id and the trade it's in.
+ */
+function TradeContentTarget({
+  label,
+  id,
+  tradeId,
+  report,
+}: {
+  label: string;
+  id: string;
+  tradeId: string;
+  report: AdminAuditRow["report"];
+}) {
+  return (
+    <>
+      <span>{label}</span>
+      <span className="font-mono text-xs text-muted-foreground">{id}</span>
+      <Link
+        to="/trade/$id"
+        params={{ id: tradeId }}
+        className="text-xs text-cosmo hover:underline dark:text-cosmo-text"
+      >
+        {m.admin_audit_note_in_trade({ id: shortId(tradeId) })}
+      </Link>
+      {report !== null && <ReportLink report={report} />}
+    </>
+  );
+}
+
+/**
+ * The report a user, trade, message or feedback action was taken from,
+ * opened in the queue.
+ */
+function ReportLink({
+  report,
+}: {
+  report: NonNullable<AdminAuditRow["report"]>;
+}) {
+  return (
+    <Link
+      to="/admin/reports"
+      search={{ status: report.status, report: report.id }}
+      className="text-xs text-cosmo hover:underline dark:text-cosmo-text"
+    >
+      {m.admin_audit_report_link({ id: shortId(report.id) })}
+    </Link>
+  );
 }
 
 function detailNote(detail: AdminAuditDetail) {
@@ -267,6 +353,14 @@ function detailNote(detail: AdminAuditDetail) {
       return auditBanLength(detail.expiresIn);
     case "set-role":
       return `${roleLabel(detail.from)} → ${roleLabel(detail.to)}`;
+    case "trade-extend":
+      return (
+        <>
+          {m.admin_audit_note_trade_extend({ hours: detail.hours })}
+          {" → "}
+          <Timestamp date={detail.deadlineAt} format={auditTimeFormat} />
+        </>
+      );
   }
 }
 

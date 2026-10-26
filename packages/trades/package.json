@@ -1,0 +1,42 @@
+{
+  "name": "@apollo/trades",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    "./allocate": "./src/allocate.ts",
+    "./assignment": "./src/assignment.ts",
+    "./caps": "./src/caps.ts",
+    "./composer": "./src/composer.ts",
+    "./events": "./src/events.ts",
+    "./feedback": "./src/feedback.ts",
+    "./holdings": "./src/holdings.ts",
+    "./inventory": "./src/inventory.ts",
+    "./lifecycle": "./src/lifecycle.ts",
+    "./listing": "./src/listing.ts",
+    "./range": "./src/range.ts",
+    "./timers": "./src/timers.ts",
+    "./transfers": "./src/transfers.ts"
+  },
+  "scripts": {
+    "lint": "bun --bun oxlint --type-aware --type-check",
+    "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
+    "test": "bun test",
+    "typecheck": "tsc --pretty --noEmit",
+    "format": "oxfmt ."
+  },
+  "dependencies": {
+    "@apollo/cosmo": "workspace:*",
+    "@apollo/database": "workspace:*",
+    "@apollo/util": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@apollo/lint": "workspace:*",
+    "@apollo/typescript": "workspace:*",
+    "@types/bun": "catalog:",
+    "turbo": "catalog:",
+    "typescript": "catalog:"
+  }
+}

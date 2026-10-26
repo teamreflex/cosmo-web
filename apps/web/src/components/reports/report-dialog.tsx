@@ -18,22 +18,19 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { m } from "@/i18n/messages";
-import { formatError } from "@/lib/client/errors";
 import { reportReasonLabel } from "@/lib/client/reports";
 import { env } from "@/lib/env/client";
-import { $createReport } from "@/lib/functions/reports";
-import { isRateLimitErrorCode } from "@/lib/universal/errors/rate-limit";
+import { reportNoteSchema } from "@/lib/universal/schema/reports";
 import {
-  type CreateReport,
-  createReportSchema,
-} from "@/lib/universal/schema/reports";
-import { reportReasons } from "@apollo/database/web/types";
+  reportReasons,
+  type StoredReportReason,
+} from "@apollo/database/web/types";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconLoader2 } from "@tabler/icons-react";
-import { useMutation } from "@tanstack/react-query";
-import { useId } from "react";
+import { type ReactNode, useId, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { toast } from "sonner";
+import * as z from "zod";
+import { useCreateReport } from "./use-create-report";
 
 type Props = {
   target: {
@@ -45,101 +42,143 @@ type Props = {
   onOpenChange: (open: boolean) => void;
 };
 
+/**
+ * Reports a profile to moderators.
+ */
 export default function ReportDialog({ target, open, onOpenChange }: Props) {
+  const report = useCreateReport(onOpenChange);
+
+  return (
+    <ReportFormDialog
+      title={m.report_user({ username: target.label })}
+      description={m.report_dialog_description({
+        appName: env.VITE_APP_NAME,
+        username: target.label,
+      })}
+      reasons={reportReasons}
+      pending={report.pending}
+      onSubmit={({ reason, note }) =>
+        report.send({
+          targetType: target.targetType,
+          targetId: target.targetId,
+          reason,
+          note,
+        })
+      }
+      open={open}
+      onOpenChange={report.onOpenChange}
+    />
+  );
+}
+
+/**
+ * What is being reported, quoted above the report form under who wrote it.
+ */
+export function ReportQuote({
+  by,
+  children,
+}: {
+  by: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <blockquote className="flex flex-col gap-1 rounded-md border border-border bg-muted/50 px-3 py-2 text-sm">
+      <span className="text-xs text-muted-foreground">{by}</span>
+      {children}
+    </blockquote>
+  );
+}
+
+type FormProps<Reason extends StoredReportReason> = {
+  title: string;
+  description: ReactNode;
+  /** what is being reported, quoted above the form */
+  quote?: ReactNode;
+  /** the reasons to pick from, the first picked to begin with */
+  reasons: readonly [Reason, ...Reason[]];
+  /** the submit label, "Send report" by default */
+  submitLabel?: string;
+  pending: boolean;
+  onSubmit: (values: { reason: Reason; note: string | undefined }) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+};
+
+/**
+ * The report form: a reason, an optional note and what is being reported.
+ * The caller sends it and closes the dialog once it went through.
+ */
+export function ReportFormDialog<Reason extends StoredReportReason>({
+  title,
+  description,
+  quote,
+  reasons,
+  submitLabel,
+  pending,
+  onSubmit,
+  open,
+  onOpenChange,
+}: FormProps<Reason>) {
   const reasonId = useId();
   const noteId = useId();
 
+  // the reason lives outside the form, which can't type a generic enum field
+  const [reason, setReason] = useState<Reason>(reasons[0]);
   const form = useForm({
-    resolver: standardSchemaResolver(createReportSchema),
-    defaultValues: {
-      targetType: target.targetType,
-      targetId: target.targetId,
-      reason: "scam",
-      note: undefined,
-    },
+    resolver: standardSchemaResolver(z.object({ note: reportNoteSchema })),
+    defaultValues: { note: "" },
   });
 
-  const mutation = useMutation({
-    mutationFn: $createReport,
-    onSuccess: () => {
-      toast.success(m.report_sent());
-      handleOpenChange(false);
-    },
-    onError: (error) => {
-      if (error instanceof Error && isRateLimitErrorCode(error.message)) {
-        toast.error(m.report_rate_limited_title(), {
-          description: m.report_rate_limited_description(),
-        });
-        return;
-      }
-
-      toast.error(formatError(error));
-    },
-  });
-
-  function handleOpenChange(next: boolean) {
-    onOpenChange(next);
-    if (!next) {
-      form.reset();
-      mutation.reset();
-    }
-  }
-
-  function handleSubmit(data: CreateReport) {
-    mutation.mutate({ data });
-  }
-
-  const reasonItems = reportReasons.map((reason) => ({
+  const reasonItems = reasons.map((reason) => ({
     value: reason,
     label: reportReasonLabel(reason),
   }));
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+      // however it closed, the next report starts empty
+      onOpenChangeComplete={(next) => {
+        if (next) return;
+        form.reset();
+        setReason(reasons[0]);
+      }}
+    >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>{m.report_user({ username: target.label })}</DialogTitle>
-          <DialogDescription>
-            {m.report_dialog_description({
-              appName: env.VITE_APP_NAME,
-              username: target.label,
-            })}
-          </DialogDescription>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
+        {quote}
         <form
-          onSubmit={form.handleSubmit(handleSubmit)}
+          onSubmit={form.handleSubmit(({ note }) => onSubmit({ reason, note }))}
           className="flex flex-col gap-4"
         >
-          <Controller
-            control={form.control}
-            name="reason"
-            render={({ field }) => (
-              <Field>
-                <FieldLabel htmlFor={reasonId}>{m.report_reason()}</FieldLabel>
-                <Select
-                  items={reasonItems}
-                  value={field.value}
-                  onValueChange={(value) => {
-                    if (value !== null) field.onChange(value);
-                  }}
-                >
-                  <SelectTrigger
-                    id={reasonId}
-                    className="w-full max-sm:data-[size=default]:h-10"
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {reasonItems.map((item) => (
-                      <SelectItem key={item.value} value={item.value}>
-                        {item.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </Field>
-            )}
-          />
+          <Field>
+            <FieldLabel htmlFor={reasonId}>{m.report_reason()}</FieldLabel>
+            <Select
+              items={reasonItems}
+              value={reason}
+              onValueChange={(value) => {
+                if (value !== null) setReason(value);
+              }}
+            >
+              <SelectTrigger
+                id={reasonId}
+                className="w-full max-sm:data-[size=default]:h-10"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {reasonItems.map((item) => (
+                  <SelectItem key={item.value} value={item.value}>
+                    {item.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </Field>
           <Controller
             control={form.control}
             name="note"
@@ -155,7 +194,7 @@ export default function ReportDialog({ target, open, onOpenChange }: Props) {
                   id={noteId}
                   rows={3}
                   maxLength={1000}
-                  className="resize-none"
+                  className="max-h-40 resize-none"
                   aria-invalid={fieldState.invalid}
                   {...field}
                   value={field.value ?? ""}
@@ -180,10 +219,10 @@ export default function ReportDialog({ target, open, onOpenChange }: Props) {
               type="submit"
               variant="destructive"
               className="max-sm:h-11"
-              disabled={mutation.isPending}
+              disabled={pending}
             >
-              <span>{m.report_send()}</span>
-              {mutation.isPending && <IconLoader2 className="animate-spin" />}
+              <span>{submitLabel ?? m.report_send()}</span>
+              {pending && <IconLoader2 className="animate-spin" />}
             </Button>
           </DialogFooter>
         </form>

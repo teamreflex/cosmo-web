@@ -29,7 +29,7 @@ import {
   useSuspenseQuery,
 } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { Suspense, useState } from "react";
+import { type ReactElement, Suspense, useState } from "react";
 import { toast } from "sonner";
 import CosmoUserCombobox from "./cosmo-user-combobox";
 
@@ -44,19 +44,31 @@ type WizardState =
       user: CosmoPublicUser;
     };
 
-export default function LinkCosmo() {
+type Props = {
+  /**
+   * The button that opens the wizard, in place of the Link COSMO account
+   * button.
+   */
+  trigger?: ReactElement;
+};
+
+export default function LinkCosmo({ trigger }: Props) {
   const [open, setOpen] = useState(false);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button variant="cosmo" />}>
-        <img
-          src="/cosmo.webp"
-          alt={m.common_cosmo()}
-          className="aspect-square size-5 rounded-full"
-        />
-        <span>{m.link_cosmo_title()}</span>
-      </DialogTrigger>
+      {trigger === undefined ? (
+        <DialogTrigger render={<Button variant="cosmo" />}>
+          <img
+            src="/cosmo.webp"
+            alt={m.common_cosmo()}
+            className="aspect-square size-5 rounded-full"
+          />
+          <span>{m.link_cosmo_title()}</span>
+        </DialogTrigger>
+      ) : (
+        <DialogTrigger render={trigger} />
+      )}
 
       <DialogContent className="focus-visible:outline-none">
         <DialogHeader>

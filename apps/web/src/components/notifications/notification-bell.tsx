@@ -1,37 +1,37 @@
+import { useHasPermission } from "@/hooks/use-has-permission";
 import { useMarkNotificationsRead } from "@/hooks/use-mark-notifications-read";
 import { m } from "@/i18n/messages";
-import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import {
   notificationsListQuery,
   unreadNotificationsQuery,
 } from "@/lib/queries/notifications";
 import {
   groupNotifications,
-  type NotificationCollection,
   type NotificationListItem,
 } from "@/lib/universal/notifications";
+import { marketAccess } from "@apollo/auth";
 import {
-  IconArrowsExchange,
   IconBell,
   IconChecks,
   IconLoader2,
+  IconRefresh,
 } from "@tabler/icons-react";
 import {
-  useInfiniteQuery,
-  useQuery,
+  QueryErrorResetBoundary,
   useQueryClient,
+  useSuspenseInfiniteQuery,
+  useSuspenseQuery,
 } from "@tanstack/react-query";
-import { Link, linkOptions, useLocation } from "@tanstack/react-router";
-import { type ReactNode, useState } from "react";
+import { Link, useLocation } from "@tanstack/react-router";
+import { Suspense, useState } from "react";
+import { ErrorBoundary } from "react-error-boundary";
 import { useOnInView } from "react-intersection-observer";
-import UserAvatar from "../profile/user-avatar";
-import { Button } from "../ui/button";
+import { Button, buttonVariants } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { ScrollArea } from "../ui/scroll-area";
 import { Skeleton } from "../ui/skeleton";
-import { Timestamp } from "../ui/timestamp";
-
-const MAX_THUMBNAILS = 5;
+import ListMatchRow from "./list-match-row";
+import TradeRow from "./trade-row";
 
 export default function NotificationBell() {
   // remembering where the popover was opened closes it on any navigation
@@ -39,23 +39,14 @@ export default function NotificationBell() {
   const [openedOn, setOpenedOn] = useState<string | null>(null);
   const open = openedOn === pathname;
   const queryClient = useQueryClient();
-  const unread = useQuery(unreadNotificationsQuery);
-  const list = useInfiniteQuery({ ...notificationsListQuery, enabled: open });
-  const markRead = useMarkNotificationsRead();
-
-  const count = unread.data ?? 0;
-  const bursts = groupNotifications(
-    list.data?.pages.flatMap((page) => page.rows) ?? [],
-  );
-  const fresh = bursts.filter((n) => n.unread);
-  const earlier = bursts.filter((n) => !n.unread);
+  const hasPermission = useHasPermission();
 
   return (
     <Popover
       open={open}
       onOpenChange={(open) => {
         setOpenedOn(open ? pathname : null);
-        // the list refetches on open, so the badge catches up with it
+        // the list refetches on open, so the badge and count catch up with it
         if (open) {
           void queryClient.invalidateQueries({
             queryKey: unreadNotificationsQuery.queryKey,
@@ -64,87 +55,120 @@ export default function NotificationBell() {
       }}
     >
       <PopoverTrigger
-        render={
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={
-              count > 0
-                ? m.notification_bell_label_unread({ count })
-                : m.notification_bell_label()
-            }
-            className="relative"
-          />
-        }
+        render={<Button variant="ghost" size="icon" className="relative" />}
       >
-        <IconBell className="size-6" />
-        {count > 0 && (
-          <div
-            aria-hidden
-            className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-cosmo px-1 text-xs font-semibold text-white tabular-nums ring-2 ring-background"
-          >
-            {count > 99 ? "99+" : count}
-          </div>
-        )}
+        <IconBell aria-hidden className="size-6" />
+        <ErrorBoundary fallback={<BellLabel count={0} />}>
+          <Suspense fallback={<BellLabel count={0} />}>
+            <UnreadLabel />
+          </Suspense>
+        </ErrorBoundary>
       </PopoverTrigger>
       <PopoverContent
         align="end"
         className="w-96 max-w-[calc(100vw-1rem)] gap-0 p-0"
       >
-        <header className="flex h-12 items-center justify-between border-b pr-2 pl-3.5">
-          <h4 className="text-sm font-semibold">
+        <header className="flex h-12 items-center gap-1 border-b pr-2 pl-3.5">
+          <h4 className="mr-auto text-sm font-semibold">
             {m.notification_bell_label()}
           </h4>
 
-          {count > 0 && (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={m.notification_mark_all_read()}
-              title={m.notification_mark_all_read()}
-              onClick={() => markRead.mutate({ all: true })}
-              disabled={markRead.isPending}
+          {hasPermission(marketAccess) && (
+            <Link
+              to="/market/trades"
+              // already on My trades, the path doesn't change to close it
+              onClick={() => setOpenedOn(null)}
+              className={buttonVariants({ variant: "ghost", size: "sm" })}
             >
-              <IconChecks />
-            </Button>
+              {m.my_trades_title()}
+            </Link>
           )}
+
+          <ErrorBoundary fallback={null}>
+            <Suspense fallback={null}>
+              <MarkAllRead />
+            </Suspense>
+          </ErrorBoundary>
         </header>
 
         {/* a flex column lets the viewport shrink to the max height and scroll */}
         <ScrollArea className="flex max-h-[28rem] flex-col">
-          {list.isPending && (
-            <div className="flex flex-col gap-2 px-3.5 py-3">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-14 rounded-md" />
-              ))}
-            </div>
-          )}
-          {list.isSuccess && bursts.length === 0 && (
-            <p className="px-3.5 py-4 text-sm text-muted-foreground">
-              {m.notification_empty()}
-            </p>
-          )}
-          <NotificationSection
-            title={m.notification_section_new()}
-            notifications={fresh}
-            onOpen={(n) => markRead.mutate({ ids: n.ids })}
-          />
-          <NotificationSection
-            title={m.notification_section_earlier()}
-            notifications={earlier}
-          />
-          {list.hasNextPage && (
-            <div className="flex justify-center border-t p-1.5">
-              {list.isFetching ? (
-                <IconLoader2 className="my-1.5 size-5 animate-spin text-muted-foreground" />
-              ) : (
-                <LoadOlder onLoad={() => void list.fetchNextPage()} />
-              )}
-            </div>
-          )}
+          <QueryErrorResetBoundary>
+            {({ reset }) => (
+              <ErrorBoundary
+                onReset={reset}
+                fallbackRender={({ resetErrorBoundary }) => (
+                  <div className="flex flex-col items-center gap-2 px-3.5 py-6">
+                    <p className="text-sm text-muted-foreground">
+                      {m.notification_error()}
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={resetErrorBoundary}
+                    >
+                      <IconRefresh /> {m.common_retry()}
+                    </Button>
+                  </div>
+                )}
+              >
+                <Suspense
+                  fallback={
+                    <div className="flex flex-col gap-2 px-3.5 py-3">
+                      {Array.from({ length: 3 }).map((_, i) => (
+                        <Skeleton key={i} className="h-14 rounded-md" />
+                      ))}
+                    </div>
+                  }
+                >
+                  <NotificationList />
+                </Suspense>
+              </ErrorBoundary>
+            )}
+          </QueryErrorResetBoundary>
         </ScrollArea>
       </PopoverContent>
     </Popover>
+  );
+}
+
+/**
+ * The loaded notifications, unread ones first. The list mounts with the
+ * open popover and refetches its loaded pages each time.
+ */
+function NotificationList() {
+  const list = useSuspenseInfiniteQuery(notificationsListQuery);
+  const markRead = useMarkNotificationsRead();
+  const bursts = groupNotifications(
+    list.data.pages.flatMap((page) => page.rows),
+  );
+
+  return (
+    <>
+      {bursts.length === 0 && (
+        <p className="px-3.5 py-4 text-sm text-muted-foreground">
+          {m.notification_empty()}
+        </p>
+      )}
+      <NotificationSection
+        title={m.notification_section_new()}
+        notifications={bursts.filter((n) => n.unread)}
+        onOpen={(n) => markRead.mutate({ ids: n.ids })}
+      />
+      <NotificationSection
+        title={m.notification_section_earlier()}
+        notifications={bursts.filter((n) => !n.unread)}
+      />
+      {list.hasNextPage && (
+        <div className="flex justify-center border-t p-1.5">
+          {list.isFetching ? (
+            <IconLoader2 className="my-1.5 size-5 animate-spin text-muted-foreground" />
+          ) : (
+            <LoadOlder onLoad={() => void list.fetchNextPage()} />
+          )}
+        </div>
+      )}
+    </>
   );
 }
 
@@ -197,19 +221,6 @@ function NotificationSection({
   );
 }
 
-/**
- * The actor's list, linked under their profile when they have one, the same
- * place `/list/$id` would redirect to.
- */
-function listLink({ actor, list }: NotificationListItem) {
-  return actor.username === null
-    ? linkOptions({ to: "/list/$id", params: { id: list.id } })
-    : linkOptions({
-        to: "/@{$username}/list/$slug",
-        params: { username: actor.username, slug: list.slug },
-      });
-}
-
 function NotificationRow({
   notification,
   onOpen,
@@ -217,150 +228,56 @@ function NotificationRow({
   notification: NotificationListItem;
   onOpen: () => void;
 }) {
-  const username = notification.actor.username ?? m.notification_unknown_user();
-  const [first] = notification.collections;
-  const single = notification.itemCount === 1 ? first : undefined;
-  const { text, emphasis } = describe(notification, username, single);
-
-  return (
-    <Link
-      {...listLink(notification)}
-      onClick={onOpen}
-      data-unread={notification.unread}
-      className="relative flex gap-3 py-3 pr-8 pl-3.5 transition-colors hover:bg-accent data-[unread=true]:bg-accent/40 data-[unread=true]:hover:bg-accent"
-    >
-      <div className="relative h-fit shrink-0">
-        <UserAvatar
-          variant="square"
-          username={username}
-          className="size-8 text-sm"
-        />
-        <span className="absolute -right-1.5 -bottom-1.5 flex size-4.5 items-center justify-center rounded-full border-2 border-popover bg-blue-400 text-blue-950">
-          <IconArrowsExchange className="size-2.5" stroke={3} />
-        </span>
-      </div>
-
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
-        <p className="text-sm wrap-anywhere text-foreground/80">
-          {emphasize(text, emphasis)}
-        </p>
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Timestamp date={notification.lastAt} relative="narrow" />
-        </div>
-        {single === undefined && (
-          <Thumbnails
-            collections={notification.collections}
-            itemCount={notification.itemCount}
-          />
-        )}
-      </div>
-
-      {single !== undefined && <Thumbnail collection={single} />}
-      {notification.unread && (
-        <span className="absolute top-4.5 right-3.5 size-2 rounded-full bg-foreground" />
-      )}
-    </Link>
+  return notification.kind === "list_match" ? (
+    <ListMatchRow notification={notification} onOpen={onOpen} />
+  ) : (
+    <TradeRow notification={notification} onOpen={onOpen} />
   );
 }
 
-type RowDescription = {
-  text: string;
-  // parts of the sentence to bold
-  emphasis: string[];
-};
-
-/**
- * The row's sentence for each notification type.
- */
-function describe(
-  notification: NotificationListItem,
-  username: string,
-  single: NotificationCollection | undefined,
-): RowDescription {
-  const count = notification.itemCount;
-
-  switch (notification.type) {
-    case "trade_have": {
-      const subject =
-        single?.name ?? m.notification_trade_have_items({ count });
-      return {
-        text: single
-          ? m.notification_trade_have_one({ username, collection: subject })
-          : m.notification_trade_have_many({ username, items: subject }),
-        emphasis: [username, subject],
-      };
-    }
-    case "trade_want": {
-      const subject =
-        single?.name ?? m.notification_trade_want_items({ count });
-      return {
-        text: single
-          ? m.notification_trade_want_one({ username, collection: subject })
-          : m.notification_trade_want_many({ username, items: subject }),
-        emphasis: [username, subject],
-      };
-    }
-    default:
-      notification.type satisfies never;
-      return { text: "", emphasis: [] };
-  }
-}
-
-function Thumbnails({
-  collections,
-  itemCount,
-}: {
-  collections: NotificationCollection[];
-  itemCount: number;
-}) {
-  const shown = collections.slice(0, MAX_THUMBNAILS);
-  const more = itemCount - shown.length;
-
-  return (
-    <div className="mt-1.5 flex gap-1.5">
-      {shown.map((collection) => (
-        <Thumbnail key={collection.slug} collection={collection} />
-      ))}
-      {more > 0 && (
-        <span className="flex aspect-photocard w-8.5 items-center justify-center rounded-[3px] bg-secondary text-xs font-semibold text-muted-foreground">
-          +{more}
-        </span>
-      )}
-    </div>
-  );
-}
-
-function Thumbnail({ collection }: { collection: NotificationCollection }) {
-  return (
-    <img
-      src={getObjektFrontImageUrl(collection, "xs")}
-      alt={collection.name}
-      decoding="async"
-      className="aspect-photocard w-8.5 shrink-0 rounded-[3px] bg-secondary object-cover"
-    />
-  );
+function UnreadLabel() {
+  const { data: count } = useSuspenseQuery(unreadNotificationsQuery);
+  return <BellLabel count={count} />;
 }
 
 /**
- * Bold each part where the translated sentence placed it.
+ * The bell's name, with its unread count, and the count as a badge.
  */
-function emphasize(text: string, parts: string[]) {
-  const nodes: ReactNode[] = [];
-  let rest = text;
-  const ordered = parts
-    .filter((part) => part !== "")
-    .toSorted((a, b) => text.indexOf(a) - text.indexOf(b));
-  for (const part of ordered) {
-    const at = rest.indexOf(part);
-    if (at === -1) continue;
-    nodes.push(
-      rest.slice(0, at),
-      <b key={nodes.length} className="font-semibold text-foreground">
-        {part}
-      </b>,
-    );
-    rest = rest.slice(at + part.length);
-  }
-  nodes.push(rest);
-  return nodes;
+function BellLabel({ count }: { count: number }) {
+  return count > 0 ? (
+    <>
+      <span className="sr-only">
+        {m.notification_bell_label_unread({ count })}
+      </span>
+      <span
+        aria-hidden
+        className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-cosmo px-1 text-xs font-semibold text-white tabular-nums ring-2 ring-background"
+      >
+        {count > 99 ? "99+" : count}
+      </span>
+    </>
+  ) : (
+    <span className="sr-only">{m.notification_bell_label()}</span>
+  );
+}
+
+// shown while anything is unread
+function MarkAllRead() {
+  const { data: count } = useSuspenseQuery(unreadNotificationsQuery);
+  const markRead = useMarkNotificationsRead();
+
+  return (
+    count > 0 && (
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        aria-label={m.notification_mark_all_read()}
+        title={m.notification_mark_all_read()}
+        onClick={() => markRead.mutate({ all: true })}
+        disabled={markRead.isPending}
+      >
+        <IconChecks />
+      </Button>
+    )
+  );
 }

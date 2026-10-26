@@ -94,6 +94,16 @@ function buildContentSecurityPolicy(): (nonce?: string) => string {
     }
   }
 
+  // the trade chat's websocket
+  const chatUrl = process.env.VITE_CHAT_URL;
+  if (chatUrl) {
+    try {
+      connectSrc.push(new URL(chatUrl).origin);
+    } catch {
+      log.warning("VITE_CHAT_URL is not a valid URL, omitted from CSP");
+    }
+  }
+
   // presigned uploads go straight from the browser to the bucket
   const r2Endpoint = process.env.R2_ENDPOINT;
   if (r2Endpoint) {

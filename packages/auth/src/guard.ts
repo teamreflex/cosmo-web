@@ -7,8 +7,9 @@ import type { Role } from "./index";
  */
 const roleRanks = {
   user: 0,
-  moderator: 1,
-  admin: 2,
+  tester: 1,
+  moderator: 2,
+  admin: 3,
 } as const satisfies Record<Role, number>;
 
 /**
@@ -83,9 +84,7 @@ export function isBanActive(
  * A staff change to an account's access or role.
  */
 export type UserChange =
-  | { kind: "ban" }
-  | { kind: "unban" }
-  | { kind: "set-role"; role: Role };
+  { kind: "ban" } | { kind: "unban" } | { kind: "set-role"; role: Role };
 
 export type UserChangeRefusal = "protected-user" | "self-ban" | "self-demotion";
 

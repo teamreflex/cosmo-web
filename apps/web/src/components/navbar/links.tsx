@@ -1,7 +1,9 @@
 import { useArtists } from "@/hooks/use-artists";
+import { useHasPermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { cn } from "@/lib/utils";
+import { marketAccess } from "@apollo/auth";
 import {
   IconArchive,
   IconCards,
@@ -9,6 +11,7 @@ import {
   IconFolderOpen,
   IconMenu2,
   IconPackage,
+  IconTag,
 } from "@tabler/icons-react";
 import { Link, useLocation } from "@tanstack/react-router";
 import { Button } from "../ui/button";
@@ -60,20 +63,34 @@ type AuthLinksProps = {
 };
 
 /**
- * Auth-gated desktop links — currently the user's own profile.
+ * Desktop links that depend on the account: the market for roles that can
+ * open it, and the user's own profile.
  */
 export function DesktopAuthLinks({ cosmo }: AuthLinksProps) {
   const pathname = useLocation({ select: (location) => location.pathname });
+  const market = useHasPermission()(marketAccess);
 
-  if (!cosmo) return null;
+  if (!market && !cosmo) return null;
 
   return (
     <div className="hidden items-center gap-1 lg:flex">
-      <LinkButton
-        href={`/@${cosmo.username}`}
-        active={pathname.startsWith(`/@${cosmo.username}`)}
-        name={m.nav_profile()}
-      />
+      {market && (
+        <LinkButton
+          href="/market"
+          // trades are part of the market
+          active={
+            pathname.startsWith("/market") || pathname.startsWith("/trade/")
+          }
+          name={m.market_header()}
+        />
+      )}
+      {cosmo && (
+        <LinkButton
+          href={`/@${cosmo.username}`}
+          active={pathname.startsWith(`/@${cosmo.username}`)}
+          name={m.nav_profile()}
+        />
+      )}
     </div>
   );
 }
@@ -112,6 +129,7 @@ export function MobileMenu(props: MobileMenuProps) {
 function MobileMenuItems(props: MobileMenuProps) {
   const pathname = useLocation({ select: (location) => location.pathname });
   const { artistList, selectedIds } = useArtists();
+  const hasPermission = useHasPermission();
 
   return (
     <div className="contents">
@@ -122,7 +140,8 @@ function MobileMenuItems(props: MobileMenuProps) {
         <IconCards
           className={cn(
             "h-4 w-4 shrink-0 fill-transparent transition-all",
-            (pathname === "/" || pathname === "/objekts") && "fill-white/50",
+            (pathname === "/" || pathname === "/objekts") &&
+              "fill-foreground/50",
           )}
         />
         <span>{m.objekts_header()}</span>
@@ -135,7 +154,7 @@ function MobileMenuItems(props: MobileMenuProps) {
         <IconChartBar
           className={cn(
             "h-4 w-4 shrink-0 fill-transparent transition-all",
-            pathname === "/objekts/stats" && "fill-white/50",
+            pathname === "/objekts/stats" && "fill-foreground/50",
           )}
         />
         <span>{m.nav_objekt_stats()}</span>
@@ -147,7 +166,7 @@ function MobileMenuItems(props: MobileMenuProps) {
         <IconFolderOpen
           className={cn(
             "h-4 w-4 shrink-0 fill-transparent transition-all",
-            pathname === "/events" && "fill-white/50",
+            pathname === "/events" && "fill-foreground/50",
           )}
         />
         <span>{m.events_header()}</span>
@@ -160,11 +179,28 @@ function MobileMenuItems(props: MobileMenuProps) {
         <IconArchive
           className={cn(
             "h-4 w-4 shrink-0 fill-transparent transition-all",
-            pathname.startsWith("/gravity") && "fill-white/50",
+            pathname.startsWith("/gravity") && "fill-foreground/50",
           )}
         />
         <span>{m.gravity_header()}</span>
       </DropdownMenuItem>
+
+      {/* market */}
+      {hasPermission(marketAccess) && (
+        <DropdownMenuItem
+          render={<Link to="/market" aria-label={m.market_header()} />}
+        >
+          <IconTag
+            className={cn(
+              "h-4 w-4 shrink-0 fill-transparent transition-all",
+              (pathname.startsWith("/market") ||
+                pathname.startsWith("/trade/")) &&
+                "fill-foreground/50",
+            )}
+          />
+          <span>{m.market_header()}</span>
+        </DropdownMenuItem>
+      )}
 
       {props.cosmo && (
         <DropdownMenuItem
@@ -179,7 +215,7 @@ function MobileMenuItems(props: MobileMenuProps) {
           <IconPackage
             className={cn(
               "h-4 w-4 shrink-0 fill-transparent transition-all",
-              pathname === `/@${props.cosmo.username}` && "fill-white/50",
+              pathname === `/@${props.cosmo.username}` && "fill-foreground/50",
             )}
           />
           <span>{m.nav_profile()}</span>

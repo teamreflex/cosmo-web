@@ -18,6 +18,20 @@ type IndexedDocument = Omit<
 > &
   Partial<Pick<IndexedObjekt, "frontImageVersion" | "backImageVersion">>;
 
+/**
+ * A search hit as the objekt it indexes, with the image versions Typesense
+ * left out restored as null.
+ */
+function toIndexedObjekt(hit: { document: object }): IndexedObjekt {
+  // SAFETY: the typesense collection stores IndexedObjekt documents
+  const document = hit.document as IndexedDocument;
+  return {
+    ...document,
+    frontImageVersion: document.frontImageVersion ?? null,
+    backImageVersion: document.backImageVersion ?? null,
+  };
+}
+
 const PER_PAGE = 30;
 
 const typesense = new SearchClient({
@@ -73,18 +87,29 @@ export async function getTypesenseResults({
 
   return {
     total: result.found,
-    objekts: hits.map((hit) => {
-      // SAFETY: the typesense collection stores IndexedObjekt documents
-      const document = hit.document as IndexedDocument;
-      return {
-        ...document,
-        frontImageVersion: document.frontImageVersion ?? null,
-        backImageVersion: document.backImageVersion ?? null,
-      };
-    }),
+    objekts: hits.map(toIndexedObjekt),
     hasNext,
     nextStartAfter,
   } satisfies ObjektResponse<IndexedObjekt>;
+}
+
+/**
+ * Collections matching a free-text search such as "KimLip 201Z", best
+ * match first. Unlike the index search it reads collection numbers.
+ */
+export async function searchCollections(query: string) {
+  const result = await typesense.collections("collections").documents().search(
+    {
+      q: query,
+      query_by: "member,collectionNo,season,shortCode,description",
+      query_by_weights: "3,3,2,1,1",
+      sort_by: "_text_match:desc,createdAt:desc",
+      per_page: 20,
+    },
+    { cacheSearchResultsForSeconds: 60 },
+  );
+
+  return (result.hits ?? []).map(toIndexedObjekt);
 }
 
 /**

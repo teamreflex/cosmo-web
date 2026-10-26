@@ -9,8 +9,10 @@ import {
   TwitterBadge,
 } from "@/components/profile/profile-badges";
 import ProfileTabs from "@/components/profile/profile-tabs";
+import ReportButton from "@/components/profile/report-button";
 import UserAvatar from "@/components/profile/user-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useHasPermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
 import { defineHead } from "@/lib/meta";
@@ -22,6 +24,7 @@ import { profileFrontendSchema } from "@/lib/universal/parsers";
 import { BinderViewerProvider } from "@/providers/binder-viewer-provider";
 import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
+import { marketAccess } from "@apollo/auth";
 import { Addresses, isEqual } from "@apollo/util";
 import { IconAlertCircle } from "@tabler/icons-react";
 import { noop } from "@tanstack/react-query";
@@ -74,6 +77,7 @@ export const Route = createFileRoute("/@{$username}")({
 
 function RouteComponent() {
   const { account, target } = Route.useLoaderData();
+  const hasPermission = useHasPermission();
 
   const isAuthenticated = account?.cosmo?.address === target.cosmo.address;
 
@@ -126,6 +130,15 @@ function RouteComponent() {
 
                     <div className="flex items-center gap-0.5">
                       <CopyAddressButton address={target.cosmo.address} />
+                      {account &&
+                        target.user &&
+                        account.user.id !== target.user.id &&
+                        hasPermission(marketAccess) && (
+                          <ReportButton
+                            userId={target.user.id}
+                            username={target.cosmo.username}
+                          />
+                        )}
                       {/* content gets portaled in */}
                       <div
                         className="flex items-center empty:hidden"
