@@ -1,4 +1,4 @@
-import { type ObjektAttributes, type RangeFilter, matchesRange } from "./range";
+import { matchesRange, type ObjektAttributes, type RangeFilter } from "./range";
 
 /**
  * One row of a listing's trade side: a number of copies of one collection,

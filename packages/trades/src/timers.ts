@@ -21,8 +21,8 @@ export const DRAIN_CURSOR_NAME = "outbox-drain";
 // how many days a trade's chat messages outlive the trade's end
 export const CHAT_RETENTION_DAYS = 14;
 
-// how many days after a trade ends its parties can rate each other
-export const FEEDBACK_WINDOW_DAYS = 30;
+// how many days after a trade ends its parties can rate each other, closing as its chat is blanked
+export const FEEDBACK_WINDOW_DAYS = CHAT_RETENTION_DAYS;
 
 // the new deadlines staff can give a disputed trade, in hours
 export const EXTEND_HOURS = [24, 48, 72] as const;

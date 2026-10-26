@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { allocate, isFullyAllocated } from "../src/allocate";
 import { orderInventory } from "../src/inventory";
 import { rangeFilterSchema } from "../src/range";
-import { type GeneratedObjekt, generateCase, seeded } from "./generate";
+import { generateCase, type GeneratedObjekt, seeded } from "./generate";
 
 /**
  * Copies of one collection with the given serials, ranked the way the

@@ -1,4 +1,4 @@
-import { type TradeWant, fitsWant } from "./allocate";
+import { fitsWant, type TradeWant } from "./allocate";
 import type { ObjektAttributes } from "./range";
 
 export type AssignmentResult =

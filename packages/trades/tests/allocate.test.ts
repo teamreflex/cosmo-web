@@ -1,9 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import {
-  type InventoryObjekt,
-  type TradeWant,
   allocate,
+  type InventoryObjekt,
   isFullyAllocated,
+  type TradeWant,
 } from "../src/allocate";
 import type { RangeFilter } from "../src/range";
 

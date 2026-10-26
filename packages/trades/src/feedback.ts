@@ -48,7 +48,7 @@ export function feedbackScored(state: TradeState): boolean {
 
 /**
  * Whether one party of a trade may rate the other now. The window to rate
- * stays open until 30 days after the trade ended, and while it's open a
+ * stays open for FEEDBACK_WINDOW_DAYS after the trade ended, and while it's open a
  * counterparty whose account is gone can't be rated. An open window says how
  * and when the trade ended.
  */

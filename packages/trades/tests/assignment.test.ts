@@ -1,10 +1,10 @@
 import { describe, expect, test } from "bun:test";
 import {
-  type InventoryObjekt,
-  type TradeWant,
   allocate,
   fitsWant,
+  type InventoryObjekt,
   isFullyAllocated,
+  type TradeWant,
 } from "../src/allocate";
 import { validateAssignment } from "../src/assignment";
 import { orderInventory } from "../src/inventory";

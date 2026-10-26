@@ -40,7 +40,7 @@ function trade(
 
 const endedAt = new Date("2026-10-01T12:00:00Z");
 const at = (offset: number) => new Date(endedAt.getTime() + offset);
-const closesAt = at(30 * DAY);
+const closesAt = at(14 * DAY);
 
 // whether the trade can be rated a day after it ended, by a party whose counterparty still exists
 function opening(state: TradeState) {
@@ -190,7 +190,7 @@ describe("feedback window", () => {
   const window = (now: Date, counterpartExists = true) =>
     feedbackOpening({ state: completed, endedAt, now, counterpartExists });
 
-  test("closes exactly 30 days after the trade ended (WIN-02)", () => {
+  test("closes exactly 14 days after the trade ended (WIN-02)", () => {
     const open = {
       status: "open",
       ended: "completed",
@@ -198,12 +198,12 @@ describe("feedback window", () => {
       closesAt,
     } satisfies FeedbackOpening;
     expect(window(endedAt)).toEqual(open);
-    expect(window(at(30 * DAY - 1))).toEqual(open);
-    expect(window(at(30 * DAY))).toEqual({
+    expect(window(at(14 * DAY - 1))).toEqual(open);
+    expect(window(at(14 * DAY))).toEqual({
       status: "closed",
       closedAt: closesAt,
     });
-    expect(window(at(30 * DAY + 1))).toEqual({
+    expect(window(at(14 * DAY + 1))).toEqual({
       status: "closed",
       closedAt: closesAt,
     });
@@ -211,20 +211,20 @@ describe("feedback window", () => {
 
   test("a counterparty whose account is gone can't be rated while it's open", () => {
     expect(window(at(DAY), false)).toEqual({ status: "counterpart_gone" });
-    expect(window(at(30 * DAY), false)).toEqual({
+    expect(window(at(14 * DAY), false)).toEqual({
       status: "closed",
       closedAt: closesAt,
     });
   });
 
   test.each([
-    ["the moment it ended", 0, 30],
-    ["a minute after it ended", MINUTE, 29],
-    ["a day after it ended", DAY, 29],
-    ["a day and a minute after it ended", DAY + MINUTE, 28],
-    ["half a day before it closes", 29 * DAY + 12 * HOUR, 0],
-    ["an hour before it closes", 29 * DAY + 23 * HOUR, 0],
-    ["a day after it closed", 31 * DAY, 0],
+    ["the moment it ended", 0, 14],
+    ["a minute after it ended", MINUTE, 13],
+    ["a day after it ended", DAY, 13],
+    ["a day and a minute after it ended", DAY + MINUTE, 12],
+    ["half a day before it closes", 13 * DAY + 12 * HOUR, 0],
+    ["an hour before it closes", 13 * DAY + 23 * HOUR, 0],
+    ["a day after it closed", 15 * DAY, 0],
   ])("counts whole days left %s (WIN-03)", (_, offset, days) => {
     expect(feedbackDaysLeft(closesAt, at(offset))).toBe(days);
   });
