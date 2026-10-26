@@ -1,4 +1,3 @@
-import { isBanActive } from "@apollo/auth/guard";
 import { tradeOfferItems, tradeOffers } from "@apollo/database/web/schema";
 import {
   type NewTradeOfferItem,
@@ -51,6 +50,7 @@ import {
   toPosterAccount,
 } from "./poster.server";
 import {
+  claimerLink,
   insertTradeEvent,
   type LockedTrade,
   type LockedUser,
@@ -199,10 +199,7 @@ export async function preflightClaim(
   }
 
   const submitted = input.rows.flat();
-  const [pickedHoldings, claimerStates] = await Promise.all([
-    readTokenStates(row.fromAddress, input.picked),
-    readIndexerTokens(submitted),
-  ]);
+  const pickedHoldings = await readTokenStates(row.fromAddress, input.picked);
   const unavailable = firstRefusal(
     input.picked,
     pickedHoldings,
@@ -211,6 +208,7 @@ export async function preflightClaim(
   if (unavailable) {
     await refuseAfterRecheck(() => refusePick(unavailable.tokenId));
   }
+  const claimerStates = await readIndexerTokens(submitted);
 
   const states = [...claimerStates.values()];
   const missing = states.find((state) => state.kind === "missing");
@@ -288,24 +286,6 @@ function lockedPoster(
         link:
           link === undefined ? { kind: "none" } : { kind: "linked", ...link },
       };
-}
-
-/**
- * The claimer's COSMO address as stored, as their locked row and the link
- * read under its lock have it, or why they can't take part: an active ban,
- * or a link that moved away from the address they're held to.
- */
-function claimerLink(
-  claimer: LockedUser,
-  linked: string | undefined,
-  address: string,
-):
-  | { kind: "linked"; address: string }
-  | { kind: "refused"; refusal: "forbidden" | "cosmo_not_linked" } {
-  if (isBanActive(claimer)) return { kind: "refused", refusal: "forbidden" };
-  return linked === undefined || !isEqual(linked, address)
-    ? { kind: "refused", refusal: "cosmo_not_linked" }
-    : { kind: "linked", address: linked };
 }
 
 /**
@@ -556,8 +536,7 @@ export async function readListingTerms(listingId: string) {
  * counts toward, and that their tokens are still theirs to give. The
  * indexer states of both sides' tokens come from before the transaction.
  * A refusal about the claimer's side never says what, as with direct
- * offers, except the cap (`offer_claimer_at_cap`), so the poster knows the
- * offer can be accepted once the claimer finishes a trade.
+ * offers, so the poster can't learn the claimer's link, ban or cap.
  */
 export async function recheckListingOffer(
   tx: WebTx,
@@ -629,17 +608,17 @@ export async function recheckListingOffer(
   if (pick?.reason === "live") refusePick(pick.tokenId);
   if (pick) refuseToken(pick);
 
-  // the claimer's side, never saying why but for the cap, which they clear by finishing a trade
+  // the claimer's side, never saying why
   const claimer = users.find((row) => row.id === trade.toUserId);
   if (
     !claimer ||
     trade.toAddress === null ||
     claimerLink(claimer, links.get(claimer.id)?.address, trade.toAddress)
-      .kind === "refused"
+      .kind === "refused" ||
+    (await atClaimCap(tx, claimer.id))
   ) {
     refuse("offer_unavailable");
   }
-  if (await atClaimCap(tx, claimer.id)) refuse("offer_claimer_at_cap");
   const token = await lockedRefusal(tx, trade.toAddress, given, tokens);
   if (token) refuseClaimerToken(token.tokenId);
 }

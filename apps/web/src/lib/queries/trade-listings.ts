@@ -39,33 +39,44 @@ export const tradeListingViewerQuery = (id: string, updatedAt: Date) =>
 
 /**
  * The viewer's locked tokens and the tokens in their live trades, which the
- * composer greys out. Keyed under the viewer prefix, so it goes with the
- * account that read it.
+ * composer greys out; editing a listing names it, so the objekts live in its
+ * own trades stay pickable. Keyed under the viewer prefix, so it goes with
+ * the account that read it.
  */
-export const tradeTokenStatesQuery = queryOptions({
-  queryKey: [...tradeListingViewerKey, "token-states"],
-  queryFn: ({ signal }) => $fetchTradeTokenStates({ signal }),
-  select: ({ locked, live }) => ({
-    locked: new Set(locked),
-    live: new Set(live),
-  }),
-  staleTime: 1000 * 30,
-});
+export const tradeTokenStatesQuery = (editedListing?: string) =>
+  queryOptions({
+    queryKey: [...tradeListingViewerKey, "token-states", editedListing ?? null],
+    queryFn: ({ signal }) =>
+      $fetchTradeTokenStates({ signal, data: { listingId: editedListing } }),
+    select: ({ locked, live }) => ({
+      locked: new Set(locked),
+      live: new Set(live),
+    }),
+    staleTime: 1000 * 30,
+  });
 
 /**
  * Why the viewer couldn't offer each of these objekts right now, by token
- * id; tokens they can offer are left out. Keyed under the viewer prefix,
- * since the answer depends on whose objekts they are.
+ * id; tokens they can offer are left out. Editing a listing names it, so its
+ * own trades don't refuse its objekts. Keyed under the viewer prefix, since
+ * the answer depends on whose objekts they are.
  */
-export const offeredTokenRefusalsQuery = (tokenIds: readonly number[]) =>
+export const offeredTokenRefusalsQuery = (
+  tokenIds: readonly number[],
+  editedListing?: string,
+) =>
   queryOptions({
     queryKey: [
       ...tradeListingViewerKey,
       "offered-refusals",
       tokenIds.toSorted((a, b) => a - b),
+      editedListing ?? null,
     ],
     queryFn: ({ signal }) =>
-      $fetchOfferedTokenRefusals({ signal, data: { tokenIds: [...tokenIds] } }),
+      $fetchOfferedTokenRefusals({
+        signal,
+        data: { tokenIds: [...tokenIds], listingId: editedListing },
+      }),
     select: (refusals) =>
       new Map(refusals.map((refusal) => [refusal.tokenId, refusal.reason])),
     staleTime: 1000 * 30,

@@ -5,7 +5,7 @@ import { type TokenFlags, tokenRefusal } from "@apollo/trades/holdings";
 import { orderInventory } from "@apollo/trades/inventory";
 import type { ListingInput } from "@apollo/trades/listing";
 import type { ObjektAttributes, RangeFilter } from "@apollo/trades/range";
-import { addr } from "@apollo/util";
+import { addr, isEqual } from "@apollo/util";
 import {
   and,
   eq,
@@ -156,6 +156,59 @@ export async function readWebTokenFlags(
       rows.flatMap((row) => (row.flag === "live" ? [row.tokenId] : [])),
     ),
   };
+}
+
+/**
+ * The locks the addresses hold on the tokens and the tokens' live trade
+ * items, in one statement, for judging several addresses' tokens at once:
+ * the returned function gives readWebTokenFlags' answer for one of them.
+ * Naming the addresses lets the locks probe address_token_idx.
+ */
+export async function readSharedTokenFlags(
+  executor: DbOrTx,
+  tokenIds: readonly number[],
+  addresses: readonly string[],
+) {
+  const rows = await executor
+    .select({
+      tokenId: sql<number>`${lockedObjekts.tokenId}`.as("token_id"),
+      address: sql<string | null>`${lockedObjekts.address}`.as("address"),
+    })
+    .from(lockedObjekts)
+    .where(
+      and(
+        eq(lockedObjekts.locked, true),
+        inArray(lockedObjekts.address, [...addresses]),
+        inArray(lockedObjekts.tokenId, [...tokenIds]),
+      ),
+    )
+    .unionAll(
+      executor
+        .select({
+          tokenId: sql<number>`${tradeOfferItems.tokenId}`.as("token_id"),
+          address: sql<string | null>`null`.as("address"),
+        })
+        .from(tradeOfferItems)
+        .where(
+          and(
+            eq(tradeOfferItems.live, true),
+            inArray(tradeOfferItems.tokenId, [...tokenIds]),
+          ),
+        ),
+    );
+  const live = new Set(
+    rows.flatMap((row) => (row.address === null ? [row.tokenId] : [])),
+  );
+  return (address: string): TokenFlags => ({
+    locked: new Set(
+      rows.flatMap((row) =>
+        row.address !== null && isEqual(row.address, address)
+          ? [row.tokenId]
+          : [],
+      ),
+    ),
+    live,
+  });
 }
 
 /**

@@ -395,7 +395,6 @@
   "trade_error_trade_party_banned": "당사자가 정지된 상태라 교환을 연장할 수 없습니다. 대신 완료하거나 취소하세요.",
   "trade_error_offer_own": "자신에게는 제안을 보낼 수 없습니다.",
   "trade_error_offer_unavailable": "지금은 이 제안을 진행할 수 없습니다.",
-  "trade_error_offer_claimer_at_cap": "상대방의 진행 중인 교환이 지금 한도에 도달했습니다. 상대방이 하나를 완료하면 수락할 수 있습니다.",
   "trade_error_offer_expired": "이 제안은 만료되었습니다. 대기 중인 제안은 보낸 지 72시간이 지나면 만료됩니다.",
   "feedback_error_feedback_not_eligible": "이 교환은 평가할 수 없습니다.",
   "feedback_error_feedback_window_closed": "이 교환의 평가 기간이 끝났습니다.",
@@ -663,6 +662,7 @@
   "trade_page_offer_waiting_counter_you": "{name}님에게 보낸 역제안: {give}개 대 {get}개",
   "trade_page_offer_waiting_counter_staff": "{sender}님이 {recipient}님에게 보낸 역제안: {give}개 대 {get}개",
   "trade_page_offer_waiting_meta": "{#time}{sent}{/time}에 보냄 · 상대가 수락, 거절 또는 역제안할 수 있음 · {#countdown}{left}{/countdown} 후 만료",
+  "trade_page_offer_listing_waiting_meta": "{#time}{sent}{/time}에 보냄 · 상대가 수락 또는 거절할 수 있음 · {#countdown}{left}{/countdown} 후 만료",
   "trade_page_offer_counter_them": "{#b}{name}{/b}님이 {#link}내 제안{/link}에 이 제안으로 답했습니다.",
   "trade_page_offer_counter_of": "{#link}{name}님의 제안{/link}에 대한 역제안입니다.",
   "trade_page_offer_accept": "수락",
@@ -785,7 +785,7 @@
   "listing_detail_incomplete_footer": "수락하려면 각 줄에서 요구하는 수만큼 오브젝트를 고르세요.",
   "listing_detail_blocked_body": "작성자 쪽 문제로 교환할 수 없습니다. 예를 들어 제시한 오브젝트가 잠겼거나 계정에서 옮겨졌을 수 있습니다. 해결되면 수락할 수 있습니다.",
   "listing_detail_accept": "수락",
-  "listing_detail_accept_footer": "수락하면 이 시리얼을 다시 확인하고 48시간 동안 교환 글을 확보해 둡니다. 두 사람 모두 순서와 상관없이 COSMO 앱에서 보내면 됩니다. 모든 전송이 완료되면 {appName}에서 완료로 표시합니다.",
+  "listing_detail_accept_footer": "수락하면 이 시리얼을 다시 확인하고 48시간 동안 확보해 둡니다. 두 사람 모두 순서와 상관없이 COSMO 앱에서 보내면 됩니다. 모든 전송이 완료되면 {appName}에서 완료로 표시합니다.",
   "listing_detail_short_footer": "조건에 맞는 오브젝트가 부족해 이 교환 글을 수락할 수 없습니다.",
   "listing_detail_hold": "48시간 동안 확보됩니다",
   "listing_detail_accepted": "교환을 수락했습니다. COSMO 앱에서 오브젝트를 보내세요.",
@@ -806,17 +806,15 @@
   "listing_detail_cap_over_title": "진행 중인 교환이 {active}건입니다. 지금은 계정이 동시에 {cap}건까지 진행할 수 있습니다.",
   "listing_detail_cap_over_body": "{count}건을 완료하면 다른 교환 글을 수락할 수 있습니다.",
   "listing_detail_cap_grows": "긍정 평가를 받을수록 한도가 늘어납니다.",
-  "listing_detail_lost_race_title": "다른 사람이 조금 먼저 수락했습니다.",
-  "listing_detail_lost_race_body": "내 오브젝트는 아무것도 확보되지 않았습니다. 그 교환이 완료되지 않으면 교환 글이 다시 열립니다.",
+  "listing_detail_lost_race_title": "고른 오브젝트가 조금 먼저 다른 교환에 들어갔습니다.",
+  "listing_detail_lost_race_body": "내 오브젝트는 아무것도 확보되지 않았습니다. 다른 것을 골라 계속하세요. 그 교환이 완료되지 않으면 다시 고를 수 있습니다.",
   "listing_detail_updated_title": "수락하기 전에 이 교환 글이 수정되었습니다.",
   "listing_detail_updated_body": "새 조건을 확인하고 다시 선택하세요.",
   "listing_detail_status_open": "진행 중",
-  "listing_detail_status_claimed": "수락됨",
   "listing_detail_status_filled": "교환 완료",
   "listing_detail_status_withdrawn": "철회됨",
   "listing_detail_status_closed": "마감",
   "listing_detail_status_removed": "삭제됨",
-  "listing_detail_claimer_title": "내가 수락한 교환 글",
   "listing_detail_claim_disputed": "모더레이터가 살펴보는 동안 교환이 일시 정지됩니다. 그동안 보낸 전송도 그대로 인정됩니다.",
   "listing_detail_time_left": "{#time}{left}{/time} 남음",
   "listing_detail_claimer_body": [
@@ -828,12 +826,8 @@
       }
     }
   ],
-  "listing_detail_poster_claimed": "{#user}{username}{/user}님이 수락 · {#time}{left}{/time} 남음",
-  "listing_detail_poster_claimed_someone": "다른 사람이 수락 · {#time}{left}{/time} 남음",
-  "listing_detail_poster_claimed_untimed": "{#user}{username}{/user}님이 수락",
-  "listing_detail_poster_claimed_someone_untimed": "다른 사람이 수락",
   "listing_detail_go_to_trade": "교환으로 이동",
-  "listing_detail_poster_claimed_body": "이후는 교환에 따라 정해집니다. 완료되면 교환 글이 성사되고, 취소되면 오브젝트를 아직 가지고 있는 한 다시 열립니다. 아무것도 보내지 않은 채 기한이 지나면 교환 글이 마감됩니다.",
+  "listing_detail_view_offer": "제안 보기",
   "listing_detail_withdraw": "철회",
   "listing_detail_withdraw_title": "이 교환 글을 철회할까요?",
   "listing_detail_withdraw_description": "마켓에서 바로 내려가며, 이후에는 아무도 수락할 수 없습니다.",
@@ -842,6 +836,15 @@
   "listing_detail_closed_filled": "{#user}{username}{/user}님과 교환했습니다.",
   "listing_detail_view_trade": "교환 보기",
   "listing_detail_closed_filled_unknown": "교환했습니다.",
+  "listing_detail_closed_filled_trades": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}번의 교환으로 완료되었습니다."
+      }
+    }
+  ],
   "listing_detail_closed_withdrawn": "{poster}님이 이 교환 글을 마감했습니다.",
   "listing_detail_closed_broken": "제시된 오브젝트가 {poster}님의 계정에서 나갔거나 전송할 수 없게 되어 이 교환 글은 진행할 수 없습니다.",
   "listing_detail_closed_removed": "{appName} 스태프가 삭제했습니다.",
@@ -878,7 +881,6 @@
   "listing_confirm_updated_title": "{poster}님이 이 교환 글을 수정했습니다",
   "listing_confirm_updated_body": "변경 사항을 확인하세요.",
   "listing_confirm_review": "확인하기",
-  "listing_confirm_claimed_title": "다른 사람이 먼저 수락했습니다",
   "listing_confirm_token_title": "{objekt} {#serial}{serial}{/serial}은(는) 교환할 수 없습니다",
   "listing_confirm_token_not_owned": "내 계정에서 나갔습니다. 다른 복사본으로 바꾸세요.",
   "listing_confirm_token_untransferable": "COSMO에서 전송할 수 없습니다. 다른 복사본으로 바꾸세요.",
@@ -2160,6 +2162,7 @@
   "market_listings_filter_artist": "아티스트",
   "market_listings_filter_member": "멤버",
   "market_listings_any_artist": "모든 아티스트",
+  "market_listings_range_matches": "{count}× 조건에 맞는 것 아무거나",
   "market_listings_column_type": "종류",
   "market_listings_column_offering": "제시",
   "market_listings_column_asking": "요청",
@@ -2171,6 +2174,16 @@
       "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "오브젝트 {count}개"
+      }
+    }
+  ],
+  "market_listings_ratio": "{give} 대 {get}",
+  "market_listings_available": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}개 교환 가능"
       }
     }
   ],
@@ -2318,8 +2331,115 @@
   "listing_composer_discard_confirm": "버리기",
   "listing_detail_you_give_total": "주는 것 · {count}",
   "listing_detail_poster_blocked_title": "지금은 아무도 이 교환 글을 수락할 수 없습니다.",
-  "listing_detail_poster_blocked_body": "제시한 오브젝트 중 하나가 잠겼거나, 전송할 수 없거나, 다른 교환 중이거나, 계정에서 옮겨졌습니다.",
+  "listing_detail_poster_blocked_body": "제시한 오브젝트 중 하나가 잠겼거나, 전송할 수 없거나, 계정에서 옮겨졌습니다.",
   "listing_detail_poster_blocked_fix": "교환 글을 수정해 다른 것을 제시하거나 막고 있는 원인을 해결하세요.",
+  "listing_detail_pill_traded": "교환 완료",
+  "listing_detail_pill_moved": "이동됨",
+  "listing_detail_units_title": "몇 번 교환할까요?",
+  "listing_detail_units_caption": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{ratio}, 최대 {count}번"
+      }
+    }
+  ],
+  "listing_detail_units_fewer": "한 번 덜 교환",
+  "listing_detail_units_more": "한 번 더 교환",
+  "listing_detail_units_get": "받는 수 {count}",
+  "listing_detail_units_give": "주는 수 {count}",
+  "listing_detail_pool_offers_help": "다른 사람도 같은 오브젝트에 제안할 수 있습니다. {poster}님이 먼저 수락한 사람이 받습니다.",
+  "listing_detail_you_give_offer_summary": "시리얼은 직접 선택",
+  "listing_detail_offer_footer": "제안을 보내도 아무것도 확보되지 않습니다. {poster}님이 수락하면 {appName}에서 모든 시리얼을 다시 확인하고, 48시간 안에 보내는 교환이 시작됩니다.",
+  "listing_detail_send_offer": "제안 보내기",
+  "listing_detail_offer_sent": "{poster}님에게 제안을 보냈습니다",
+  "listing_detail_offer_hold": "{poster}님이 수락하기 전까지는 아무것도 확보되지 않습니다",
+  "listing_detail_incomplete_offered": "올라온 오브젝트 중 {count}개를 고르세요.",
+  "listing_detail_claimer_trading": "{poster}님과 교환 중입니다",
+  "listing_detail_claimer_size": "이 교환 글에서 {#ratio}{ratio}{/ratio}.",
+  "listing_detail_claimer_more": "이 교환이 끝나면 이 교환 글에서 더 가져갈 수 있습니다.",
+  "listing_detail_offerer_waiting": "{poster}님의 답을 기다리는 중",
+  "listing_detail_offerer_wait": "기다리는 동안에는 아무것도 확보되지 않습니다. 이 제안에 답이 오거나 철회하기 전까지는 이 교환 글에 다른 제안을 보낼 수 없습니다.",
+  "listing_detail_offer_pick_taken_title": "{objekt}이(가) 다른 사람에게 갔습니다",
+  "listing_detail_offer_pick_taken_body": "다른 교환에 들어가서 {poster}님이 내 제안을 수락할 수 없습니다. 제안을 철회하고 다른 것을 골라 다시 보내세요.",
+  "listing_detail_offer_declined_title": "{poster}님이 내 제안을 거절했습니다",
+  "listing_detail_offer_again": "아래에서 고른 것을 바꿔 다른 제안을 보낼 수 있습니다.",
+  "listing_detail_offer_expired_title": "제안이 만료되었습니다",
+  "listing_detail_offer_expired_body": "{poster}님이 {hours}시간 안에 답하지 않았습니다. 다른 제안을 보낼 수 있습니다.",
+  "listing_detail_offer_stale_title": "제안을 진행할 수 없습니다",
+  "listing_detail_offer_stale_body": "교환 글이 바뀌었거나 그 안의 오브젝트가 옮겨져서 제안이 끝났습니다. 다른 제안을 보낼 수 있습니다.",
+  "listing_offer_step_answer": "{#user}{poster}{/user}님이 이 시리얼을 확인하고 수락하거나 거절합니다. 그동안에는 아무것도 확보되지 않습니다.",
+  "listing_offer_step_expiry": "{#time}{date}{/time}까지 답이 없으면 제안이 만료됩니다.",
+  "listing_offer_step_window": "수락되면 두 사람 모두 {hours}시간 안에 COSMO 앱에서 보내면 됩니다.",
+  "listing_confirm_pick_title": "{objekt} {#serial}{serial}{/serial}이(가) 다른 사람에게 갔습니다",
+  "listing_confirm_pick_unknown": "고른 오브젝트가 다른 사람에게 갔습니다",
+  "listing_confirm_pick_body": "조금 먼저 다른 교환에 들어갔습니다. 내 오브젝트는 아무것도 확보되지 않았습니다. 다른 것을 골라 다시 시도하세요.",
+  "listing_poster_tabs": "내 리스팅",
+  "listing_poster_tab_listing": "리스팅",
+  "listing_poster_tab_offers": "제안",
+  "listing_poster_tab_trades": "교환",
+  "listing_detail_you_offer": "내가 주는 것 · {count}",
+  "listing_detail_you_look_for": "내가 찾는 것 · {count}",
+  "listing_detail_wants_per": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "내 것 {count}개마다"
+      }
+    }
+  ],
+  "listing_poster_pool_in_trades": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}개 교환 중"
+      }
+    }
+  ],
+  "listing_poster_pool_traded": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}개 교환 완료"
+      }
+    }
+  ],
+  "listing_poster_pool_gone": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}개 없음"
+      }
+    }
+  ],
+  "listing_poster_pool_blocked": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}개 교환 불가"
+      }
+    }
+  ],
+  "listing_detail_pill_gone": "없음",
+  "listing_poster_note_available": "교환 가능",
+  "listing_poster_note_with": "{name}님과 교환 중",
+  "listing_poster_note_other_trade": "다른 교환에 들어가 있음",
+  "listing_poster_note_traded_to": "{name}님과 교환함",
+  "listing_poster_note_gone": "내 계정에서 나감",
+  "listing_poster_note_blocked": "지금은 아무도 고를 수 없음",
+  "listing_poster_offers_help": "상대가 보낼 시리얼을 직접 고르기 때문에, 이 리스팅에는 내가 수락하거나 거절하는 제안이 들어옵니다.",
+  "listing_poster_offer_they_send": "상대가 보내는 것",
+  "listing_poster_offer_you_send": "내가 보내는 것",
+  "listing_poster_offers_empty": "아직 제안이 없습니다",
+  "listing_poster_offers_empty_body": "누군가 이 리스팅에 제안을 보내면 여기에 표시되고, 수락하거나 거절할 수 있습니다.",
+  "listing_poster_trades_empty": "아직 교환이 없습니다",
+  "listing_poster_trades_empty_body": "이 리스팅에서 시작된 교환은 시작부터 끝날 때까지 여기에 표시됩니다.",
   "my_trades_title": "내 거래",
   "my_trades_tabs": "표시할 거래",
   "my_trades_tab_active": "진행 중",
@@ -2449,5 +2569,38 @@
   "feedback_page_no_account": "아직 {appName} 회원이 아닙니다",
   "feedback_page_no_account_body": "{name}님은 {appName}에서 교환한 적이 없어 표시할 평가가 없습니다.",
   "feedback_page_no_match": "일치하는 평가가 없습니다",
-  "feedback_page_no_match_body": "이 필터에 맞는 평가가 없습니다."
+  "feedback_page_no_match_body": "이 필터에 맞는 평가가 없습니다.",
+  "listing_detail_busy_title": "제시된 것이 모두 지금 교환 중입니다",
+  "listing_detail_busy_body": "그 교환 중 하나가 끝나면 다시 확인해 주세요.",
+  "listing_poster_busy_title": "제시한 것이 모두 지금 교환 중입니다",
+  "listing_poster_busy_body": "그 교환 중 하나가 끝날 때까지 아무도 이 리스팅을 수락할 수 없습니다. 고칠 것은 없습니다.",
+  "listing_detail_offerer_expired": "{poster}님이 기한 안에 답하지 않아 곧 종료됩니다. 1분 정도 후에 다른 제안을 보낼 수 있습니다.",
+  "listing_detail_pill_unavailable": "사용 불가",
+  "listing_poster_pill_sent": "보냄",
+  "listing_poster_note_sent_to": "{name}님에게 보냄",
+  "listing_poster_pool_sent": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}개 보냄"
+      }
+    }
+  ],
+  "listing_want_any_of_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "컬렉션 {count}개 중 아무거나"
+      }
+    }
+  ],
+  "listing_detail_summary_choices": "아무거나 {count}개",
+  "listing_poster_refusal_pick_live": "이 제안에 포함된 내 오브젝트 중 하나가 지금 다른 교환 중이라 거절만 할 수 있습니다.",
+  "listing_poster_refusal_pick_elsewhere": "{objekt} #{serial}이(가) 지금 다른 교환 중이라 이 제안은 거절만 할 수 있습니다.",
+  "listing_poster_refusal_pick_with": "{objekt} #{serial}이(가) 지금 {name}님과의 교환 중이라 이 제안은 거절만 할 수 있습니다.",
+  "listing_poster_refusal_pick_unavailable": "이 제안에 포함된 내 오브젝트 중 하나를 지금 교환할 수 없어 거절만 할 수 있습니다.",
+  "listing_poster_yours": "내 리스팅",
+  "listing_detail_updated_at": "{#time}{when}{/time} 업데이트"
 }

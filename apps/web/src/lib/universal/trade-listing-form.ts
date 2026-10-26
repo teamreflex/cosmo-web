@@ -8,7 +8,7 @@ import type {
 import { collapseWholeGroup, MAX_RANGE_VALUES } from "@apollo/trades/range";
 import type { z } from "zod";
 import type { cosmoSchema } from "./parsers";
-import type { TradeListing } from "./trade-listings";
+import { hasRatio, poolItems, type TradeListing } from "./trade-listings";
 
 /**
  * The composer's form: the posting input as the composer edits it, before
@@ -41,14 +41,21 @@ export const emptyListingForm: ListingFormValues = {
 };
 
 /**
- * A listing's current terms as the composer's starting values. Payment rows
- * can't be posted from the composer, so they aren't carried into it.
+ * A listing's current terms as the composer's starting values: its pool, not
+ * the objekts that left it, its ratio's unit size, and its rows. A bundle
+ * carries no unit size, so it stays everything for everything however the
+ * edit changes the pool. Payment rows can't be posted from the composer, so
+ * they aren't carried into it.
  */
 export function listingToFormValues(
-  listing: Pick<TradeListing, "items" | "wants" | "note">,
+  listing: Pick<TradeListing, "items" | "wants" | "note" | "unitSize">,
 ): ListingFormValues {
   return {
-    offered: listing.items.map(({ tokenId }) => ({ tokenId })),
+    offered: poolItems(listing).map(({ tokenId }) => ({ tokenId })),
+    // TODO: carrying unitSize is a stopgap until the composer's Ratio control (phase 5)
+    unitSize: hasRatio(listing.unitSize, listing.items.length)
+      ? listing.unitSize
+      : undefined,
     wants: listing.wants.flatMap((want): ListingFormWant[] => {
       switch (want.kind) {
         case "exact":

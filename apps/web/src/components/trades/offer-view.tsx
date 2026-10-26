@@ -184,7 +184,12 @@ export function OfferStrip({
         </p>
         <p className="text-xs text-muted-foreground">
           <ParaglideMessage
-            message={m.trade_page_offer_waiting_meta}
+            message={
+              // an offer on a listing, which its poster answers, can't be countered
+              trade.proposedBy === "to"
+                ? m.trade_page_offer_listing_waiting_meta
+                : m.trade_page_offer_waiting_meta
+            }
             inputs={{ sent: "", left: "" }}
             markup={{
               time: () => (

@@ -28,6 +28,7 @@ import {
   transition,
 } from "@apollo/trades/lifecycle";
 import { DRAIN_CURSOR_NAME, isTimedOut } from "@apollo/trades/timers";
+import { isEqual } from "@apollo/util";
 import { and, asc, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import type { PgUpdateSetSource } from "drizzle-orm/pg-core";
 import type { AuthErrorCode } from "../../universal/errors/auth";
@@ -71,6 +72,24 @@ export type LockedUser = {
   banned: boolean;
   banExpires: Date | null;
 };
+
+/**
+ * The claimer's COSMO address as stored, as their locked row and the link
+ * read under its lock have it, or why they can't take part: an active ban,
+ * or a link that moved away from the address they're held to.
+ */
+export function claimerLink(
+  claimer: Pick<LockedUser, "banned" | "banExpires">,
+  linked: string | undefined,
+  address: string,
+):
+  | { kind: "linked"; address: string }
+  | { kind: "refused"; refusal: "forbidden" | "cosmo_not_linked" } {
+  if (isBanActive(claimer)) return { kind: "refused", refusal: "forbidden" };
+  return linked === undefined || !isEqual(linked, address)
+    ? { kind: "refused", refusal: "cosmo_not_linked" }
+    : { kind: "linked", address: linked };
+}
 
 /**
  * Locks the rows of the users a trade write involves, `FOR SHARE` unless

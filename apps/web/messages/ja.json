@@ -395,7 +395,6 @@
   "trade_error_trade_party_banned": "当事者が利用停止中のため、取引を延長できません。代わりに完了するかキャンセルしてください。",
   "trade_error_offer_own": "自分自身にオファーを送ることはできません。",
   "trade_error_offer_unavailable": "このオファーは現在進めることができません。",
-  "trade_error_offer_claimer_at_cap": "相手は現在、進行中のトレードが上限に達しています。相手がいずれかを完了すると承諾できます。",
   "trade_error_offer_expired": "このオファーは期限切れです。保留中のオファーは送信から72時間で期限切れになります。",
   "feedback_error_feedback_not_eligible": "この取引は評価できません。",
   "feedback_error_feedback_window_closed": "この取引の評価期間は終了しました。",
@@ -663,6 +662,7 @@
   "trade_page_offer_waiting_counter_you": "{name}へのカウンターオファー：{give}対{get}",
   "trade_page_offer_waiting_counter_staff": "{sender}から{recipient}へのカウンターオファー：{give}対{get}",
   "trade_page_offer_waiting_meta": "{#time}{sent}{/time}に送信 · 相手は承諾、辞退、カウンターができます · 残り{#countdown}{left}{/countdown}で期限切れ",
+  "trade_page_offer_listing_waiting_meta": "{#time}{sent}{/time}に送信 · 相手は承諾または辞退ができます · 残り{#countdown}{left}{/countdown}で期限切れ",
   "trade_page_offer_counter_them": "{#b}{name}{/b}が{#link}あなたのオファー{/link}にこのオファーで応えました。",
   "trade_page_offer_counter_of": "{#link}{name}のオファー{/link}へのカウンターです。",
   "trade_page_offer_accept": "承諾",
@@ -785,7 +785,7 @@
   "listing_detail_incomplete_footer": "承諾するには、各行で求められている数のオブジェクトを選んでください。",
   "listing_detail_blocked_body": "出品者側の問題で取引できません。たとえば、出品中のオブジェクトがロックされたか、アカウントから移動されています。解決すれば承諾できます。",
   "listing_detail_accept": "承諾",
-  "listing_detail_accept_footer": "承諾するとシリアルを再確認し、この出品を48時間確保します。お互いにCOSMOアプリで順不同で送ってください。すべての送信が完了すると、{appName}が完了にします。",
+  "listing_detail_accept_footer": "承諾するとシリアルを再確認し、これらを48時間確保します。お互いにCOSMOアプリで順不同で送ってください。すべての送信が完了すると、{appName}が完了にします。",
   "listing_detail_short_footer": "条件に合うオブジェクトが足りないため、この出品を承諾できません。",
   "listing_detail_hold": "48時間確保されます",
   "listing_detail_accepted": "トレードを承諾しました。COSMOアプリでオブジェクトを送ってください。",
@@ -806,17 +806,15 @@
   "listing_detail_cap_over_title": "進行中のトレードが{active}件あります。現在、同時に進められるのは{cap}件までです。",
   "listing_detail_cap_over_body": "{count}件完了すると、別の出品を承諾できます。",
   "listing_detail_cap_grows": "好評価が増えると上限も上がります。",
-  "listing_detail_lost_race_title": "あなたより少し前に他のユーザーが承諾しました。",
-  "listing_detail_lost_race_body": "あなたのオブジェクトは何も確保されていません。そのトレードが完了しなければ、出品は再開されます。",
+  "listing_detail_lost_race_title": "あなたより少し前に、選んだオブジェクトが別のトレードに使われました。",
+  "listing_detail_lost_race_body": "あなたのオブジェクトは何も確保されていません。別のものを選んで続けてください。そのトレードが完了しなければ、また選べるようになります。",
   "listing_detail_updated_title": "承諾する前にこの出品が変更されました。",
   "listing_detail_updated_body": "新しい条件を確認して、もう一度選んでください。",
   "listing_detail_status_open": "受付中",
-  "listing_detail_status_claimed": "承諾済み",
   "listing_detail_status_filled": "成立",
   "listing_detail_status_withdrawn": "取り下げ",
   "listing_detail_status_closed": "終了",
   "listing_detail_status_removed": "削除",
-  "listing_detail_claimer_title": "あなたが承諾しました",
   "listing_detail_claim_disputed": "モデレーターが確認している間、取引は一時停止しています。その間の送信もカウントされます。",
   "listing_detail_time_left": "残り{#time}{left}{/time}",
   "listing_detail_claimer_body": [
@@ -828,12 +826,8 @@
       }
     }
   ],
-  "listing_detail_poster_claimed": "{#user}{username}{/user}が承諾 · 残り{#time}{left}{/time}",
-  "listing_detail_poster_claimed_someone": "他のユーザーが承諾 · 残り{#time}{left}{/time}",
-  "listing_detail_poster_claimed_untimed": "{#user}{username}{/user}が承諾",
-  "listing_detail_poster_claimed_someone_untimed": "他のユーザーが承諾",
   "listing_detail_go_to_trade": "取引へ移動",
-  "listing_detail_poster_claimed_body": "この先はトレード次第です。完了すれば出品は成立し、キャンセルになればオブジェクトをまだ持っている限り再開されます。何も送られないまま時間切れになると、出品は終了します。",
+  "listing_detail_view_offer": "オファーを見る",
   "listing_detail_withdraw": "取り下げ",
   "listing_detail_withdraw_title": "この出品を取り下げますか？",
   "listing_detail_withdraw_description": "すぐにマーケットから消え、誰も承諾できなくなります。",
@@ -842,6 +836,15 @@
   "listing_detail_closed_filled": "{#user}{username}{/user}とトレードしました。",
   "listing_detail_view_trade": "取引を見る",
   "listing_detail_closed_filled_unknown": "トレードしました。",
+  "listing_detail_closed_filled_trades": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}回のトレードで完了しました。"
+      }
+    }
+  ],
   "listing_detail_closed_withdrawn": "{poster}がこの出品を終了しました。",
   "listing_detail_closed_broken": "出品されたオブジェクトが{poster}のアカウントから移動したか、送信できなくなったため、この出品は進められません。",
   "listing_detail_closed_removed": "{appName}スタッフによって削除されました。",
@@ -878,7 +881,6 @@
   "listing_confirm_updated_title": "{poster}がこの出品を変更しました",
   "listing_confirm_updated_body": "変更内容を確認してください。",
   "listing_confirm_review": "確認する",
-  "listing_confirm_claimed_title": "他のユーザーが先に承諾しました",
   "listing_confirm_token_title": "{objekt} {#serial}{serial}{/serial}はトレードできません",
   "listing_confirm_token_not_owned": "あなたのアカウントから移動しています。別のコピーと入れ替えてください。",
   "listing_confirm_token_untransferable": "COSMOで譲渡できません。別のコピーと入れ替えてください。",
@@ -2160,6 +2162,7 @@
   "market_listings_filter_artist": "アーティスト",
   "market_listings_filter_member": "メンバー",
   "market_listings_any_artist": "すべてのアーティスト",
+  "market_listings_range_matches": "{count}× 条件に合うものから",
   "market_listings_column_type": "種類",
   "market_listings_column_offering": "出品",
   "market_listings_column_asking": "求めるもの",
@@ -2171,6 +2174,16 @@
       "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "{count}個のオブジェクト"
+      }
+    }
+  ],
+  "market_listings_ratio": "{give}対{get}",
+  "market_listings_available": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}個交換可能"
       }
     }
   ],
@@ -2318,8 +2331,115 @@
   "listing_composer_discard_confirm": "破棄",
   "listing_detail_you_give_total": "渡す · {count}",
   "listing_detail_poster_blocked_title": "現在、誰もこの出品を承諾できません。",
-  "listing_detail_poster_blocked_body": "出品したオブジェクトのいずれかがロックされているか、譲渡できないか、別のトレード中か、アカウントから移動しています。",
+  "listing_detail_poster_blocked_body": "出品したオブジェクトのいずれかがロックされているか、譲渡できないか、アカウントから移動しています。",
   "listing_detail_poster_blocked_fix": "出品を編集して別のものを出すか、原因を解決してください。",
+  "listing_detail_pill_traded": "トレード済み",
+  "listing_detail_pill_moved": "移動済み",
+  "listing_detail_units_title": "何回分？",
+  "listing_detail_units_caption": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{ratio}、最大{count}回"
+      }
+    }
+  ],
+  "listing_detail_units_fewer": "1回分減らす",
+  "listing_detail_units_more": "1回分増やす",
+  "listing_detail_units_get": "受け取る {count}",
+  "listing_detail_units_give": "渡す {count}",
+  "listing_detail_pool_offers_help": "同じオブジェクトに他の人もオファーできます。{poster}が先に承諾した人が受け取ります。",
+  "listing_detail_you_give_offer_summary": "シリアルはあなたが選択",
+  "listing_detail_offer_footer": "オファーを送っても何も確保されません。{poster}が承諾すると、{appName}がすべてのシリアルを再確認し、48時間以内に送るトレードが始まります。",
+  "listing_detail_send_offer": "オファーを送る",
+  "listing_detail_offer_sent": "{poster}にオファーを送りました",
+  "listing_detail_offer_hold": "{poster}が承諾するまで何も確保されません",
+  "listing_detail_incomplete_offered": "出品されているオブジェクトから{count}個選んでください。",
+  "listing_detail_claimer_trading": "{poster}とトレード中です",
+  "listing_detail_claimer_size": "この出品から{#ratio}{ratio}{/ratio}。",
+  "listing_detail_claimer_more": "このトレードが終わると、この出品からさらにトレードできます。",
+  "listing_detail_offerer_waiting": "{poster}の返事を待っています",
+  "listing_detail_offerer_wait": "待っている間は何も確保されません。このオファーに返事があるか取り下げるまで、この出品に別のオファーは送れません。",
+  "listing_detail_offer_pick_taken_title": "{objekt}は他の人に渡りました",
+  "listing_detail_offer_pick_taken_body": "別のトレードに使われたため、{poster}はあなたのオファーを承諾できません。取り下げてから別のものを選び、もう一度送ってください。",
+  "listing_detail_offer_declined_title": "{poster}があなたのオファーを辞退しました",
+  "listing_detail_offer_again": "下で選択を変えて、別のオファーを送れます。",
+  "listing_detail_offer_expired_title": "オファーの期限が切れました",
+  "listing_detail_offer_expired_body": "{poster}が{hours}時間以内に返事をしませんでした。別のオファーを送れます。",
+  "listing_detail_offer_stale_title": "オファーを進められなくなりました",
+  "listing_detail_offer_stale_body": "出品が変更されたか、その中のオブジェクトが移動したため、オファーは終了しました。別のオファーを送れます。",
+  "listing_offer_step_answer": "{#user}{poster}{/user}がこれらのシリアルを確認し、承諾または辞退します。その間は何も確保されません。",
+  "listing_offer_step_expiry": "{#time}{date}{/time}までに返事がなければ、オファーは期限切れになります。",
+  "listing_offer_step_window": "承諾されると、お互いに{hours}時間以内にCOSMOアプリで送ります。",
+  "listing_confirm_pick_title": "{objekt} {#serial}{serial}{/serial}は他の人に渡りました",
+  "listing_confirm_pick_unknown": "選んだオブジェクトが他の人に渡りました",
+  "listing_confirm_pick_body": "あなたより少し前に別のトレードに使われました。あなたのものは何も確保されていません。別のものを選んで、もう一度お試しください。",
+  "listing_poster_tabs": "あなたの出品",
+  "listing_poster_tab_listing": "出品",
+  "listing_poster_tab_offers": "オファー",
+  "listing_poster_tab_trades": "トレード",
+  "listing_detail_you_offer": "あなたが出すもの · {count}",
+  "listing_detail_you_look_for": "あなたが求めるもの · {count}",
+  "listing_detail_wants_per": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "あなたの{count}個ごとに"
+      }
+    }
+  ],
+  "listing_poster_pool_in_trades": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}個トレード中"
+      }
+    }
+  ],
+  "listing_poster_pool_traded": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}個トレード済み"
+      }
+    }
+  ],
+  "listing_poster_pool_gone": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}個手元にない"
+      }
+    }
+  ],
+  "listing_poster_pool_blocked": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}個交換不可"
+      }
+    }
+  ],
+  "listing_detail_pill_gone": "手元にない",
+  "listing_poster_note_available": "交換可能",
+  "listing_poster_note_with": "{name}とトレード中",
+  "listing_poster_note_other_trade": "別のトレード中",
+  "listing_poster_note_traded_to": "{name}にトレード済み",
+  "listing_poster_note_gone": "あなたのアカウントから移動しました",
+  "listing_poster_note_blocked": "今は誰も選べません",
+  "listing_poster_offers_help": "相手が送るシリアルを自分で選ぶため、この出品にはあなたが承諾または辞退するオファーが届きます。",
+  "listing_poster_offer_they_send": "相手が送るもの",
+  "listing_poster_offer_you_send": "あなたが送るもの",
+  "listing_poster_offers_empty": "まだオファーはありません",
+  "listing_poster_offers_empty_body": "この出品にオファーが届くと、ここに表示されます。承諾するか辞退するかを選べます。",
+  "listing_poster_trades_empty": "まだトレードはありません",
+  "listing_poster_trades_empty_body": "この出品からのトレードは、始まってから終わるまでここに表示されます。",
   "my_trades_title": "マイトレード",
   "my_trades_tabs": "表示するトレード",
   "my_trades_tab_active": "進行中",
@@ -2449,5 +2569,38 @@
   "feedback_page_no_account": "まだ{appName}を利用していません",
   "feedback_page_no_account_body": "{name}は{appName}で取引していないため、表示する評価はありません。",
   "feedback_page_no_match": "該当する評価はありません",
-  "feedback_page_no_match_body": "この条件に一致する評価はありません。"
+  "feedback_page_no_match_body": "この条件に一致する評価はありません。",
+  "listing_detail_busy_title": "出品中のものはすべて現在トレード中です",
+  "listing_detail_busy_body": "どれかのトレードが終わったら、また見に来てください。",
+  "listing_poster_busy_title": "出品したものはすべて現在トレード中です",
+  "listing_poster_busy_body": "どれかのトレードが終わるまで、この出品は誰も受けられません。直すことは何もありません。",
+  "listing_detail_offerer_expired": "{poster}が期限内に返事をしなかったため、まもなく終了します。1分ほどで別のオファーを送れます。",
+  "listing_detail_pill_unavailable": "利用不可",
+  "listing_poster_pill_sent": "送付済み",
+  "listing_poster_note_sent_to": "{name}に送付済み",
+  "listing_poster_pool_sent": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}個送付済み"
+      }
+    }
+  ],
+  "listing_want_any_of_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count}件のコレクションのいずれか"
+      }
+    }
+  ],
+  "listing_detail_summary_choices": "いずれか{count}件",
+  "listing_poster_refusal_pick_live": "このオファーのあなたのオブジェクトのひとつが別のトレード中のため、辞退することしかできません。",
+  "listing_poster_refusal_pick_elsewhere": "{objekt} #{serial}は別のトレード中のため、このオファーは辞退することしかできません。",
+  "listing_poster_refusal_pick_with": "{objekt} #{serial}は{name}とのトレード中のため、このオファーは辞退することしかできません。",
+  "listing_poster_refusal_pick_unavailable": "このオファーのあなたのオブジェクトのひとつが現在トレードできないため、辞退することしかできません。",
+  "listing_poster_yours": "あなたの出品",
+  "listing_detail_updated_at": "{#time}{when}{/time}に更新"
 }

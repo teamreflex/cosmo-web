@@ -197,7 +197,8 @@ export function OfferedTile({
           .filter((part) => part !== null)
           .join(", ")}
         onClick={onRemove}
-        className="absolute top-1 left-1 rounded-full bg-background/90 shadow-sm"
+        // a 44px hit area around the 24px button, for touch
+        className="absolute top-1 left-1 rounded-full bg-background/90 shadow-sm after:absolute after:-inset-2.5"
       >
         <IconX />
       </Button>

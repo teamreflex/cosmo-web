@@ -1,22 +1,22 @@
-import { useArtists } from "@/hooks/use-artists";
 import { m } from "@/i18n/messages";
 import { formatSerial, getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import {
   askingTitle,
+  listingRatio,
   objektName,
   offeredMembers,
   offeredNames,
   posterName,
-  rangeCaption,
   wantLabel,
   wantsCaption,
   wantsSummary,
 } from "@/lib/client/trade-listings";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import type {
-  ListingFeedItem,
-  ListingFeedRow as Row,
-  ListingFeedWant,
+import {
+  hasRatio,
+  type ListingFeedItem,
+  type ListingFeedRow as Row,
+  type ListingFeedWant,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
 import { IconArrowRight, IconArrowsRightLeft } from "@tabler/icons-react";
@@ -29,10 +29,10 @@ import { Timestamp } from "../ui/timestamp";
 import { RangeTile } from "./range-want";
 
 /**
- * From lg: type, offering, arrow, asking, from.
+ * From lg: type, offering, arrow or ratio, asking, from.
  */
 const columns =
-  "lg:grid-cols-[96px_minmax(0,1.25fr)_20px_minmax(0,1.4fr)_170px]";
+  "lg:grid-cols-[96px_minmax(0,1.25fr)_56px_minmax(0,1.4fr)_170px]";
 
 export function ListingFeedHeader() {
   return (
@@ -61,12 +61,16 @@ type Props = {
  * two tinted halves either side of a dashed seam, then the poster and age.
  * Each half stacks its images over its words, and from sm sets them side by
  * side. From md the first line is offering → asking and the second the
- * type, age and poster; from lg each sits in its header's column.
+ * type, age and poster; from lg each sits in its header's column. A
+ * listing with a ratio (hasRatio()) shows it in place of the arrow, and
+ * how many of its objekts are free; a bundle, whose one trade takes
+ * everything it offers, keeps the arrow.
  *
  * No `content-visibility: auto` here: WebKit never painted rows that first
  * laid out under the market notice's scroll lock.
  */
 export default function ListingFeedRow({ row }: Props) {
+  const ratio = hasRatio(row.unitSize, row.posted) ? listingRatio(row) : null;
   return (
     <li className="transition-colors md:border-t md:border-border/60 md:first:border-t-0 md:hover:bg-secondary/50">
       <Link
@@ -84,17 +88,33 @@ export default function ListingFeedRow({ row }: Props) {
           thumbs={<Thumbs items={row.items} />}
           className="col-start-1 max-md:bg-teal-700/5 lg:col-start-2 max-md:dark:bg-teal-500/5"
         >
-          <OfferingCaption items={row.items} />
+          <OfferingCaption
+            items={row.items}
+            free={ratio === null ? null : row.free}
+          />
         </Half>
 
-        <span
-          aria-hidden
-          className="relative col-start-2 row-start-1 text-muted-foreground max-md:border-l max-md:border-dashed lg:col-start-3"
-        >
-          <span className="absolute top-13 left-0 z-5 flex size-6 -translate-1/2 items-center justify-center rounded-full border bg-card sm:top-1/2 md:hidden">
-            <IconArrowsRightLeft className="size-3.5" />
-          </span>
-          <IconArrowRight className="size-4 max-md:hidden" />
+        <span className="relative col-start-2 row-start-1 text-muted-foreground max-md:border-l max-md:border-dashed md:flex md:justify-center lg:col-start-3">
+          {ratio === null ? (
+            <>
+              <span
+                aria-hidden
+                className="absolute top-13 left-0 z-5 flex size-6 -translate-1/2 items-center justify-center rounded-full border bg-card sm:top-1/2 md:hidden"
+              >
+                <IconArrowsRightLeft className="size-3.5" />
+              </span>
+              <IconArrowRight aria-hidden className="size-4 max-md:hidden" />
+            </>
+          ) : (
+            <span className="absolute top-13 left-0 z-5 -translate-1/2 rounded-full border bg-card px-1.5 py-0.5 font-mono text-xxs font-medium whitespace-nowrap text-cosmo tabular-nums sm:top-1/2 md:static md:translate-0 md:border-0 md:bg-cosmo/15 md:px-2 md:text-xs dark:text-cosmo-text">
+              <span aria-hidden>
+                {ratio.give} : {ratio.get}
+              </span>
+              <span className="sr-only">
+                {m.market_listings_ratio({ give: ratio.give, get: ratio.get })}
+              </span>
+            </span>
+          )}
         </span>
 
         <Half
@@ -177,11 +197,23 @@ export function Half({
 
 /**
  * One offered objekt reads as its name and serial; several as a count over
- * their seasons and members on a phone, and their names from md.
+ * their seasons and members on a phone, and their names from md. A listing
+ * that trades part of its pool at a time leads that line with how many are
+ * free (`free`).
  */
-export function OfferingCaption({ items }: { items: ListingFeedItem[] }) {
+export function OfferingCaption({
+  items,
+  free = null,
+}: {
+  items: ListingFeedItem[];
+  free?: number | null;
+}) {
   const [first] = items;
   if (first === undefined) return null;
+  const available =
+    free === null ? null : m.market_listings_available({ count: free });
+  const detail = (text: string) =>
+    available === null ? text : `${available} · ${text}`;
 
   return items.length === 1 ? (
     <>
@@ -197,16 +229,21 @@ export function OfferingCaption({ items }: { items: ListingFeedItem[] }) {
       <SlipTitle>
         {m.market_listings_objekts({ count: items.length })}
       </SlipTitle>
-      <SlipDetail className="md:hidden">{offeredMembers(items)}</SlipDetail>
-      <SlipDetail className="max-md:hidden">{offeredNames(items)}</SlipDetail>
+      <SlipDetail className="md:hidden">
+        {detail(offeredMembers(items))}
+      </SlipDetail>
+      <SlipDetail className="max-md:hidden">
+        {detail(offeredNames(items))}
+      </SlipDetail>
     </>
   );
 }
 
 /**
  * Titled as `askingTitle` says, over every row in posted order. On a phone
- * one exact row or payment reads as its name alone, its count on the image;
- * one range as its caption; several rows drop each "1×".
+ * one exact row, "any of" row or payment reads as its name alone, its count
+ * on the image, and one range as how many matches it takes, "1× any
+ * match", on every width; several rows drop each "1×".
  */
 function AskingCaption({ wants }: { wants: ListingFeedWant[] }) {
   const [only] = wants;
@@ -226,32 +263,16 @@ function AskingCaption({ wants }: { wants: ListingFeedWant[] }) {
     );
   }
 
-  if (only.kind !== "range") {
-    return (
-      <>
-        <SlipTitle clamp>{wantLabel(only)}</SlipTitle>
-        {summary}
-      </>
-    );
-  }
-
-  const caption = rangeCaption(only.filter);
   return (
     <>
-      <SlipTitle clamp className="md:hidden">
-        {caption.title}
-      </SlipTitle>
-      <SlipTitle className="max-md:hidden">{askingTitle(wants)}</SlipTitle>
-      {only.filter.member.length > 1 ? (
-        <MemberFaces
-          names={only.filter.member}
-          tags={caption.tags}
-          detail={caption.detail}
-        />
+      <SlipTitle clamp>{askingTitle(wants)}</SlipTitle>
+      {only.kind === "range" ? (
+        <SlipDetail className="">
+          {m.market_listings_range_matches({ count: only.count })}
+        </SlipDetail>
       ) : (
-        <SlipDetail className="md:hidden">{caption.detail}</SlipDetail>
+        summary
       )}
-      {summary}
     </>
   );
 }
@@ -261,11 +282,9 @@ function AskingCaption({ wants }: { wants: ListingFeedWant[] }) {
  */
 function SlipTitle({
   clamp = false,
-  className,
   children,
 }: {
   clamp?: boolean;
-  className?: string;
   children: ReactNode;
 }) {
   return (
@@ -274,7 +293,6 @@ function SlipTitle({
       className={cn(
         "font-semibold",
         clamp ? "max-md:line-clamp-2 md:truncate" : "truncate",
-        className,
       )}
     >
       {children}
@@ -300,64 +318,6 @@ function SlipDetail({
   );
 }
 
-const maxFaces = 5;
-
-/**
- * A range's members as overlapping faces, then its class and on/offline,
- * on a phone. A member the artists list doesn't know shows by name instead.
- */
-function MemberFaces({
-  names,
-  tags,
-  detail,
-}: {
-  names: string[];
-  tags: string;
-  detail: string;
-}) {
-  const { getMember } = useArtists();
-  const members = names.flatMap((name) => {
-    const member = getMember(name);
-    return member === undefined ? [] : [member];
-  });
-  if (members.length < names.length) {
-    return <SlipDetail className="md:hidden">{detail}</SlipDetail>;
-  }
-
-  return (
-    <span
-      title={detail}
-      className="flex min-w-0 items-center gap-1.5 md:hidden"
-    >
-      <span className="sr-only">{detail}</span>
-      <span aria-hidden className="flex shrink-0 items-center">
-        {members.slice(0, maxFaces).map((member, i) => (
-          <img
-            key={member.id}
-            src={member.profileImageUrl}
-            alt=""
-            className={cn(
-              "size-4.5 shrink-0 rounded-full bg-muted ring-2 ring-card",
-              i > 0 && "-ml-1.5",
-            )}
-          />
-        ))}
-      </span>
-      <span aria-hidden className="truncate text-xs text-muted-foreground">
-        {members.length > maxFaces && (
-          <>
-            <span className="font-mono tabular-nums">
-              +{members.length - maxFaces}
-            </span>
-            {tags !== "" && " · "}
-          </>
-        )}
-        {tags}
-      </span>
-    </span>
-  );
-}
-
 const thumbSize = "w-13 sm:w-11 md:w-9";
 
 /**
@@ -367,7 +327,7 @@ export function Thumbs({ items }: { items: ListingFeedItem[] }) {
   return (
     <Stack
       thumbs={items.map((item) => ({
-        key: item.tokenId,
+        key: `${item.tokenId}`,
         thumb: <CollectionThumb collection={item.collection} />,
       }))}
     />
@@ -375,9 +335,10 @@ export function Thumbs({ items }: { items: ListingFeedItem[] }) {
 }
 
 /**
- * Up to three want rows, stacked: an exact row's collection, or a range's
- * tile in its group's colour, each with its count on a phone when it asks
- * for more than one. A payment row has no picture.
+ * Up to three pictures of the want rows, stacked: an exact row's
+ * collection, a range's tile in its group's colour, or each of a choice
+ * row's collections, a row's first picture carrying its count on a phone
+ * when it asks for more than one. A payment row has no picture.
  */
 function WantThumbs({ wants }: { wants: ListingFeedWant[] }) {
   return (
@@ -387,7 +348,7 @@ function WantThumbs({ wants }: { wants: ListingFeedWant[] }) {
           case "exact":
             return [
               {
-                key: index,
+                key: `${index}`,
                 count: want.count,
                 thumb: <CollectionThumb collection={want.collection} />,
               },
@@ -395,7 +356,7 @@ function WantThumbs({ wants }: { wants: ListingFeedWant[] }) {
           case "range":
             return [
               {
-                key: index,
+                key: `${index}`,
                 count: want.count,
                 thumb: (
                   <RangeTile
@@ -406,8 +367,12 @@ function WantThumbs({ wants }: { wants: ListingFeedWant[] }) {
                 ),
               },
             ];
-          // an "any of" row isn't pictured yet
           case "choice":
+            return want.options.map((option, position) => ({
+              key: `${index}:${position}`,
+              count: position === 0 ? want.count : 1,
+              thumb: <CollectionThumb collection={option.collection} />,
+            }));
           case "payment":
             return [];
         }
@@ -419,7 +384,7 @@ function WantThumbs({ wants }: { wants: ListingFeedWant[] }) {
 function Stack({
   thumbs,
 }: {
-  thumbs: { key: number; thumb: ReactNode; count?: number }[];
+  thumbs: { key: string; thumb: ReactNode; count?: number }[];
 }) {
   return (
     <span className="isolate flex shrink-0 items-center">

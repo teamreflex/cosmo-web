@@ -28,7 +28,7 @@ type Props = {
 
 /**
  * The header's status once a listing has ended normally: how it ended, and
- * below it when, with a link to its trade for the trade's parties.
+ * below it when, with a link to the viewer's latest trade from it.
  */
 export function ClosedStatus({ listing, state }: Props) {
   return (
@@ -45,8 +45,8 @@ export function ClosedStatus({ listing, state }: Props) {
 
 /**
  * The alert under the header once a listing has ended some other way:
- * broken by the poster's side, removed by staff, or closed when its trade
- * timed out.
+ * broken by the poster's side, removed by staff, or timed out, closed
+ * with the one trade it ever made.
  */
 export function ClosedAlert({
   listing,
@@ -78,8 +78,8 @@ export function ClosedAlert({
 }
 
 /**
- * When the listing ended, and for the parties to its latest trade a link to
- * it, once the server confirms the viewer is one.
+ * When the listing ended, and for a viewer who was a party to one of its
+ * trades a link to the latest, once the server confirms they were.
  */
 function ClosedMeta({ listing, state }: Props) {
   const { data: account } = useSuspenseQuery(currentAccountQuery);
@@ -122,6 +122,9 @@ function ClosedText({ listing, state }: Props) {
 
   switch (state.status) {
     case "filled":
+      if (state.trades > 1) {
+        return m.listing_detail_closed_filled_trades({ count: state.trades });
+      }
       return state.counterparty === null ? (
         m.listing_detail_closed_filled_unknown()
       ) : (

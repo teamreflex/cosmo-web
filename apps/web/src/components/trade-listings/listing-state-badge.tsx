@@ -16,8 +16,6 @@ export default function ListingStateBadge({
       return (
         <Badge variant="secondary">{m.listing_detail_status_open()}</Badge>
       );
-    case "claimed":
-      return <Badge>{m.listing_detail_status_claimed()}</Badge>;
     case "filled":
       return (
         <Badge className={tones.ok}>{m.listing_detail_status_filled()}</Badge>

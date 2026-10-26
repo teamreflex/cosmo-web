@@ -1,14 +1,21 @@
 import { m } from "@/i18n/messages";
+import { objektName } from "@/lib/client/trade-listings";
 import { env } from "@/lib/env/client";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import {
   type ClaimTokenRefusal,
   claimTokenRefusalSchema,
   isTradeErrorCode,
+  listingPickRefusalSchema,
   type OfferPartnerTokenRefusal,
   offerPartnerTokenRefusalSchema,
 } from "@/lib/universal/errors/trades";
-import type { TokenRefusalReason } from "@/lib/universal/trade-listings";
+import {
+  type ListingFeedItem,
+  type OfferRefusal,
+  refusedOfferToken,
+  type TokenRefusalReason,
+} from "@/lib/universal/trade-listings";
 
 /**
  * Maps a trade error code to a localized message, or null when the error is
@@ -61,8 +68,6 @@ export function formatTradeError(error: unknown): string | null {
       return m.trade_error_offer_own();
     case "offer_unavailable":
       return m.trade_error_offer_unavailable();
-    case "offer_claimer_at_cap":
-      return m.trade_error_offer_claimer_at_cap();
     case "offer_expired":
       return m.trade_error_offer_expired();
     default:
@@ -144,13 +149,14 @@ export function offerTokenRefusal(error: unknown): OfferTokenRefusal | null {
 }
 
 /**
- * A refused claim the confirm dialog answers in place: the listing changed
- * since the viewer read it, someone else claimed it first, or a picked token
- * can't be given (named when the server could tell which).
+ * A refused claim or offer the confirm dialog answers in place: the listing
+ * changed since the viewer read it, another trade took one of the pool
+ * objekts they picked, or one of their own tokens can't be given (each
+ * named when the server could tell which).
  */
 export type ClaimFailure =
   | { kind: "updated" }
-  | { kind: "claimed" }
+  | { kind: "pick"; tokenId: number | null }
   | { kind: "token"; refusal: ClaimTokenRefusal | null };
 
 /**
@@ -163,9 +169,16 @@ export function claimFailure(error: unknown): ClaimFailure | null {
   switch (error.message) {
     case "listing_updated":
       return { kind: "updated" };
-    // a bundle takes the whole pool, so a pick another claim took means it lost the race
-    case "listing_pick_unavailable":
-      return { kind: "claimed" };
+    case "listing_pick_unavailable": {
+      const parsed =
+        error instanceof ExpectedError
+          ? listingPickRefusalSchema.safeParse(error.data)
+          : null;
+      return {
+        kind: "pick",
+        tokenId: parsed?.success ? parsed.data.tokenId : null,
+      };
+    }
     case "claim_token_unavailable": {
       const parsed =
         error instanceof ExpectedError
@@ -175,5 +188,53 @@ export function claimFailure(error: unknown): ClaimFailure | null {
     }
     default:
       return null;
+  }
+}
+
+/**
+ * Why the poster can't accept an offer on their listing right now, in the
+ * words `$acceptOffer` would refuse it with, told to the poster and naming
+ * the objekt the refusal names when the offer shows its serial
+ * (refusedOfferToken()): one of their picks that's in another trade, which
+ * names the claimer of `holder`'s trade from the listing when that trade
+ * holds it, or that they can't give, or one of the claimer's, without why.
+ */
+export function formatOfferRefusal(
+  refusal: OfferRefusal,
+  offer: { picks: ListingFeedItem[]; given: ListingFeedItem[] },
+  holder: string | null,
+) {
+  const item = refusedOfferToken(refusal, offer);
+  const token =
+    item === null
+      ? null
+      : {
+          objekt: objektName(item.collection, item.attributes),
+          serial: item.serial,
+        };
+
+  switch (refusal.code) {
+    case "offer_expired":
+      return m.trade_error_offer_expired();
+    case "listing_updated":
+      return m.trade_error_listing_updated();
+    case "cosmo_not_linked":
+      return m.auth_error_cosmo_required();
+    case "offer_unavailable":
+      return token === null
+        ? m.trade_error_offer_unavailable()
+        : formatPartnerTokenRefusal(token);
+    case "listing_pick_unavailable":
+      if (token === null) return m.listing_poster_refusal_pick_live();
+      return holder === null
+        ? m.listing_poster_refusal_pick_elsewhere(tokenInputs(token))
+        : m.listing_poster_refusal_pick_with({
+            ...tokenInputs(token),
+            name: holder,
+          });
+    case "claim_token_unavailable":
+      return token === null
+        ? m.listing_poster_refusal_pick_unavailable()
+        : formatTokenRefusal(refusal.reason, token);
   }
 }

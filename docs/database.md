@@ -8,6 +8,8 @@ The project uses Drizzle ORM and the Bun SQL Postgres driver, with two connectio
   - Postgres connection for querying the blockchain indexer for objekt data.
   - tables are defined in `packages/database/src/indexer/schema.ts` — read it rather than relying on prose
 
+Queries against one database run one after another, never in `Promise.all` or any other concurrency: concurrent queries each take a connection from the pool and contend on the same server, for little gain. A single read of each database may run in parallel (one `db` and one `indexer` read, as `readTokenStates()` does); anything more runs in turn.
+
 `turbo db:generate` generates migration files.
 
 ## Derived & Projection Types

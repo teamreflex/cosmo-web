@@ -101,7 +101,7 @@ function ViewerListing({
   /**
    * The viewer query refetches on every mount while the listing keeps its
    * cache for 30 seconds, so the viewer can describe a newer listing than
-   * the page shows: one claimed, edited or gone since. Refetch it to match.
+   * the page shows: one edited or gone since. Refetch it to match.
    */
   const stale = viewer === null || listingIsStale(viewer, listing);
   useEffect(() => {
@@ -135,12 +135,8 @@ function publicRole(
   switch (panel.kind) {
     case "closed":
       return { role: "closed", state: panel.state };
-    case "onlooker":
-      return { role: "onlooker" };
     case "signed_out":
       return { role: "signed_out" };
-    case "poster_open":
-      return { role: "poster", claim: null };
     case "unlinked":
       return { role: "unlinked" };
   }
@@ -156,23 +152,32 @@ function viewerRole(listing: TradeListing, viewer: ListingViewer): ListingRole {
     case "closed":
       return { role: "loading" };
     case "poster":
-      return { role: "poster", claim: viewer.claim };
+      return { role: "poster", offers: viewer.offers, trades: viewer.trades };
     case "claimer":
       return {
         role: "claimer",
         deadlineAt: viewer.deadlineAt,
         tradeId: viewer.tradeId,
+        size: viewer.size,
       };
-    case "onlooker":
-      return { role: "onlooker" };
+    case "offerer":
+      return {
+        role: "offerer",
+        expiresAt: viewer.expiresAt,
+        tradeId: viewer.tradeId,
+        picks: viewer.picks,
+        given: viewer.given,
+      };
     case "candidate": {
-      switch (candidatePanel(listing, viewer)) {
+      const panel = candidatePanel(listing, viewer);
+      switch (panel) {
         case "picker":
           return { role: "picker", viewer };
         case "cap":
           return { role: "refused", reason: "cap", claims: viewer.claims };
         case "blocked":
-          return { role: "refused", reason: "blocked" };
+        case "busy":
+          return { role: "refused", reason: panel };
       }
     }
   }
@@ -189,12 +194,11 @@ function listingIsStale(viewer: ListingViewer, listing: TradeListing) {
     case "unlinked":
       return false;
     case "closed":
-      return status === "open" || status === "claimed";
+      return status === "open";
     case "poster":
-      return status !== (viewer.claim === null ? "open" : "claimed");
     case "claimer":
-    case "onlooker":
-      return status !== "claimed";
+    case "offerer":
+      return status !== "open";
     case "candidate":
       return (
         status !== "open" ||

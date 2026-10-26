@@ -1,26 +1,31 @@
 import { useInvalidateListing } from "@/hooks/use-invalidate-listing";
-import type { PickerRow } from "@/hooks/use-listing-picks";
+import type { ConfirmSnapshot, PickerRow } from "@/hooks/use-listing-picks";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { type ClaimFailure, claimFailure } from "@/lib/client/errors/trades";
 import { formatSerial, getObjektFrontImageUrl } from "@/lib/client/objekt-util";
-import { objektName, pickShown, posterName } from "@/lib/client/trade-listings";
+import {
+  objektName,
+  pickShown,
+  posterName,
+  wantLabel,
+} from "@/lib/client/trade-listings";
 import { env } from "@/lib/env/client";
 import { $claimListing } from "@/lib/functions/trade-listings";
 import { tradesKey } from "@/lib/queries/trades";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import type {
-  ListingPick,
-  ListingViewer,
-  TokenRefusalReason,
-  TradeListing,
+import {
+  type ListingViewer,
+  poolItems,
+  type TokenRefusalReason,
+  type TradeListing,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
+import { CLAIM_WINDOW } from "@apollo/trades/timers";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import {
   IconAlertTriangle,
   IconClock,
-  IconInfoCircle,
   IconRefresh,
   IconX,
 } from "@tabler/icons-react";
@@ -44,15 +49,6 @@ import { ExactBadges, RangeBadges } from "./range-want";
 
 type Candidate = Extract<ListingViewer, { role: "candidate" }>;
 
-/**
- * What Accept froze for the dialog: the picks, one list per want row, and
- * when the trade would have to finish if it were claimed then.
- */
-export type ConfirmSnapshot = {
-  picked: ListingPick[][];
-  deadlineAt: Date;
-};
-
 type Props = {
   listing: TradeListing;
   viewer: Candidate;
@@ -61,6 +57,8 @@ type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onNotice: (notice: Notice | null) => void;
+  /** drops a pool pick the server said another trade took */
+  onPickTaken: (tokenId: number) => void;
 };
 
 /**
@@ -74,12 +72,14 @@ type Shown = {
 };
 
 /**
- * Confirms a claim on exactly the serials Accept froze: what the viewer
- * gives, grouped by the want row each one fills, and what they get, with
- * the deadline and who to send to. Confirm claims that list against the
- * listing version the picks were made on, then opens the trade. A changed
- * listing, a lost race or an unusable serial answer here; closing after one
- * refetches what it makes stale.
+ * Confirms a claim, or an offer on a listing that takes them, on exactly
+ * the serials Accept froze: what the viewer gives, grouped by the want row
+ * each one fills, and the pool objekts they get, with the deadline and who
+ * to send to, or for an offer what happens next. Confirm sends them with
+ * the units against the listing version the picks were made on, then
+ * opens the trade or the offer. A changed listing, a pick another trade
+ * took or an unusable serial answer here; closing after one refetches what
+ * it makes stale.
  */
 export default function ConfirmTradeDialog({
   listing,
@@ -89,29 +89,35 @@ export default function ConfirmTradeDialog({
   open,
   onOpenChange,
   onNotice,
+  onPickTaken,
 }: Props) {
   const invalidate = useInvalidateListing(listing.id);
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [failure, setFailure] = useState<ClaimFailure | null>(null);
   const confirming = useRef(false);
+  const poster = posterName(listing);
+  const offers = snapshot?.takesOffers ?? false;
 
   const claim = useMutation({
-    mutationFn: (assignment: number[][]) =>
+    mutationFn: (frozen: ConfirmSnapshot) =>
       $claimListing({
         data: {
           listingId: listing.id,
           seen: viewer.updatedAt,
-          // one unit of the whole pool, until the picker can choose units
-          units: 1,
-          picked: listing.items.map(({ tokenId }) => tokenId),
-          rows: assignment,
+          units: frozen.units,
+          picked: frozen.offered,
+          rows: frozen.picked.map((picks) => picks.map((pick) => pick.tokenId)),
         },
       }),
-    onSuccess: async ({ tradeId }) => {
-      toast.success(m.listing_detail_accepted());
+    onSuccess: async ({ tradeId, pending }) => {
+      toast.success(
+        pending
+          ? m.listing_detail_offer_sent({ poster })
+          : m.listing_detail_accepted(),
+      );
       void queryClient.invalidateQueries({ queryKey: tradesKey });
-      // the claimer's next step is on the trade, and Back finds the listing claimed
+      // the next step is on the trade or the offer, and Back finds the listing as it is now
       await navigate({ to: "/trade/$id", params: { id: tradeId } });
       await invalidate();
     },
@@ -136,7 +142,8 @@ export default function ConfirmTradeDialog({
         onNotice("updated");
         void invalidate();
         break;
-      case "claimed":
+      case "pick":
+        if (failure.tokenId !== null) onPickTaken(failure.tokenId);
         onNotice("lost_race");
         void invalidate();
         break;
@@ -148,7 +155,19 @@ export default function ConfirmTradeDialog({
 
   const give = (snapshot?.picked ?? []).map((picks) => picks.map(pickShown));
   const giveCount = give.reduce((total, tokens) => total + tokens.length, 0);
-  const poster = posterName(listing);
+  const offered = new Set(snapshot?.offered);
+  const get = poolItems(listing).flatMap((item): Shown[] =>
+    offered.has(item.tokenId)
+      ? [
+          {
+            tokenId: item.tokenId,
+            name: objektName(item.collection, item.attributes),
+            serial: item.serial,
+            collection: item.collection,
+          },
+        ]
+      : [],
+  );
 
   return (
     <Dialog
@@ -170,7 +189,7 @@ export default function ConfirmTradeDialog({
       >
         <header className="flex shrink-0 items-center gap-2 border-b border-border px-5 py-3">
           <DialogTitle className="font-cosmo text-sm font-black tracking-widest uppercase">
-            {m.listing_confirm_title()}
+            {offers ? m.listing_detail_send_offer() : m.listing_confirm_title()}
           </DialogTitle>
           <DialogClose
             disabled={claim.isPending}
@@ -190,17 +209,19 @@ export default function ConfirmTradeDialog({
         {failure === null ? (
           <>
             <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-5 py-4">
-              <DialogDescription className="text-foreground">
-                <ParaglideMessage
-                  message={m.listing_confirm_lead}
-                  inputs={{ poster }}
-                  markup={{
-                    user: ({ children }) => (
-                      <span className="font-semibold">{children}</span>
-                    ),
-                  }}
-                />
-              </DialogDescription>
+              {!offers && (
+                <DialogDescription className="text-foreground">
+                  <ParaglideMessage
+                    message={m.listing_confirm_lead}
+                    inputs={{ poster }}
+                    markup={{
+                      user: ({ children }) => (
+                        <span className="font-semibold">{children}</span>
+                      ),
+                    }}
+                  />
+                </DialogDescription>
+              )}
 
               <section className="flex flex-col gap-2">
                 <Eyebrow tone="have">
@@ -209,7 +230,7 @@ export default function ConfirmTradeDialog({
                 {rows.map((row, index) => (
                   <Group
                     key={index}
-                    head={groupHead(row)}
+                    head={groupHead(row, snapshot?.counts[index] ?? 0)}
                     tokens={give[index] ?? []}
                   />
                 ))}
@@ -217,50 +238,44 @@ export default function ConfirmTradeDialog({
 
               <section className="flex flex-col gap-2">
                 <Eyebrow tone="want">
-                  {m.listing_detail_you_get({ count: listing.items.length })}
+                  {m.listing_detail_you_get({ count: get.length })}
                 </Eyebrow>
-                <Group
-                  tokens={listing.items.map((item) => ({
-                    tokenId: item.tokenId,
-                    name: objektName(item.collection, item.attributes),
-                    serial: item.serial,
-                    collection: item.collection,
-                  }))}
-                />
+                <Group tokens={get} />
               </section>
 
-              {snapshot !== null && (
-                <p className="grid grid-cols-[1rem_minmax(0,1fr)] gap-2.5 rounded-lg bg-muted/50 px-3 py-2.5 text-sm leading-relaxed max-sm:hidden">
-                  <IconClock className="mt-0.5 size-4 text-muted-foreground" />
-                  <span>
-                    <ParaglideMessage
-                      message={m.listing_confirm_deadline}
-                      inputs={{ date: "", poster }}
-                      markup={{
-                        hours: ({ children }) => (
-                          <span className="font-semibold">{children}</span>
-                        ),
-                        time: () => (
-                          <Deadline deadlineAt={snapshot.deadlineAt} />
-                        ),
-                        user: ({ children }) => (
-                          <span className="font-semibold">{children}</span>
-                        ),
-                      }}
-                    />
-                  </span>
-                </p>
-              )}
+              {snapshot !== null &&
+                (offers ? (
+                  <OfferSteps poster={poster} expiresAt={snapshot.endsAt} />
+                ) : (
+                  <p className="grid grid-cols-[1rem_minmax(0,1fr)] gap-2.5 rounded-lg bg-muted/50 px-3 py-2.5 text-sm leading-relaxed max-sm:hidden">
+                    <IconClock className="mt-0.5 size-4 text-muted-foreground" />
+                    <span>
+                      <ParaglideMessage
+                        message={m.listing_confirm_deadline}
+                        inputs={{ date: "", poster }}
+                        markup={{
+                          hours: ({ children }) => (
+                            <span className="font-semibold">{children}</span>
+                          ),
+                          time: () => <Deadline deadlineAt={snapshot.endsAt} />,
+                          user: ({ children }) => (
+                            <span className="font-semibold">{children}</span>
+                          ),
+                        }}
+                      />
+                    </span>
+                  </p>
+                ))}
             </div>
 
             <footer className="flex shrink-0 flex-col gap-2 border-t border-border bg-muted/30 px-5 py-3">
-              {snapshot !== null && (
+              {snapshot !== null && !offers && (
                 <p className="text-xs text-muted-foreground sm:hidden">
                   <ParaglideMessage
                     message={m.listing_confirm_deadline_short}
                     inputs={{ date: "" }}
                     markup={{
-                      time: () => <Deadline deadlineAt={snapshot.deadlineAt} />,
+                      time: () => <Deadline deadlineAt={snapshot.endsAt} />,
                     }}
                   />
                 </p>
@@ -281,23 +296,15 @@ export default function ConfirmTradeDialog({
                     if (snapshot === null || confirming.current) return;
                     confirming.current = true;
                     onNotice(null);
-                    claim.mutate(
-                      snapshot.picked.map((picks) =>
-                        picks.map((pick) => pick.tokenId),
-                      ),
-                    );
+                    claim.mutate(snapshot);
                   }}
                 >
-                  {claim.isPending ? (
-                    <>
-                      <span className="invisible">
-                        {m.listing_confirm_submit()}
-                      </span>
-                      <Spinner className="absolute" />
-                    </>
-                  ) : (
-                    m.listing_confirm_submit()
-                  )}
+                  <span className={cn(claim.isPending && "invisible")}>
+                    {offers
+                      ? m.listing_detail_send_offer()
+                      : m.listing_confirm_submit()}
+                  </span>
+                  {claim.isPending && <Spinner className="absolute" />}
                 </Button>
               </div>
             </footer>
@@ -308,25 +315,16 @@ export default function ConfirmTradeDialog({
               <FailureAlert
                 failure={failure}
                 poster={poster}
-                tokens={give.flat()}
+                give={give.flat()}
+                get={get}
               />
             </div>
             <footer className="flex shrink-0 justify-end gap-2 border-t border-border bg-muted/30 px-5 py-3">
-              {failure.kind === "claimed" ? (
-                <Button
-                  variant="outline"
-                  className="max-sm:h-11"
-                  onClick={close}
-                >
-                  {m.common_close()}
-                </Button>
-              ) : (
-                <Button className="px-4 max-sm:h-11" onClick={close}>
-                  {failure.kind === "updated"
-                    ? m.listing_confirm_review()
-                    : m.listing_confirm_back_to_picker()}
-                </Button>
-              )}
+              <Button className="px-4 max-sm:h-11" onClick={close}>
+                {failure.kind === "updated"
+                  ? m.listing_confirm_review()
+                  : m.listing_confirm_back_to_picker()}
+              </Button>
             </footer>
           </>
         )}
@@ -336,22 +334,70 @@ export default function ConfirmTradeDialog({
 }
 
 /**
- * A want row as the page heads it: badges for a range, or the collection's
- * name for an exact row.
+ * What sending the offer starts: the poster answers it, it expires if they
+ * don't by then, and accepting it gives both sides the trade's window.
  */
-function groupHead({ want }: PickerRow) {
+function OfferSteps({
+  poster,
+  expiresAt,
+}: {
+  poster: string;
+  expiresAt: Date;
+}) {
+  const steps = [
+    // the first step says what sending does, so it describes the dialog
+    <DialogDescription
+      key="answer"
+      render={<span />}
+      className="text-sm text-foreground"
+    >
+      <ParaglideMessage
+        message={m.listing_offer_step_answer}
+        inputs={{ poster }}
+        markup={{
+          user: ({ children }) => (
+            <span className="font-semibold">{children}</span>
+          ),
+        }}
+      />
+    </DialogDescription>,
+    <ParaglideMessage
+      key="expiry"
+      message={m.listing_offer_step_expiry}
+      inputs={{ date: "" }}
+      markup={{ time: () => <Deadline deadlineAt={expiresAt} /> }}
+    />,
+    m.listing_offer_step_window({ hours: CLAIM_WINDOW / 3_600_000 }),
+  ];
+  return (
+    <ol className="flex flex-col gap-2.5 rounded-lg bg-muted/50 px-3 py-3 text-sm leading-relaxed">
+      {steps.map((step, index) => (
+        <li
+          key={index}
+          className="grid grid-cols-[1.25rem_minmax(0,1fr)] gap-2.5"
+        >
+          <span className="grid size-5 place-items-center rounded-full border border-border font-mono text-xxs tabular-nums">
+            {index + 1}
+          </span>
+          <span>{step}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+/**
+ * A want row as the page heads it at the claim's count: badges for a
+ * range, or the collection's name for an exact row, or how many
+ * collections an "any of" row takes.
+ */
+function groupHead({ want }: PickerRow, count: number) {
   switch (want.kind) {
     case "range":
-      return (
-        <RangeBadges count={want.count} filter={want.filter} matches={false} />
-      );
+      return <RangeBadges count={count} filter={want.filter} matches={false} />;
     case "exact":
-      return (
-        <ExactBadges
-          count={want.count}
-          name={objektName(want.collection, want.objekt)}
-        />
-      );
+    case "choice":
+      return <ExactBadges count={count} name={wantLabel(want)} />;
     case "payment":
       return undefined;
   }
@@ -438,16 +484,19 @@ function Deadline({ deadlineAt }: { deadlineAt: Date }) {
 }
 
 /**
- * Why the claim didn't go through, in place of the list.
+ * Why the claim or offer didn't go through, in place of the list, naming
+ * the objekt from what the viewer gives or gets when the server said which.
  */
 function FailureAlert({
   failure,
   poster,
-  tokens,
+  give,
+  get,
 }: {
   failure: ClaimFailure;
   poster: string;
-  tokens: Shown[];
+  give: Shown[];
+  get: Shown[];
 }) {
   switch (failure.kind) {
     case "updated":
@@ -460,19 +509,39 @@ function FailureAlert({
           </AlertDescription>
         </Alert>
       );
-    case "claimed":
+    case "pick": {
+      const token = get.find((shown) => shown.tokenId === failure.tokenId);
       return (
-        <Alert>
-          <IconInfoCircle />
-          <AlertTitle>{m.listing_confirm_claimed_title()}</AlertTitle>
+        <Alert variant="warning">
+          <IconAlertTriangle />
+          <AlertTitle>
+            {token === undefined || token.serial === null ? (
+              m.listing_confirm_pick_unknown()
+            ) : (
+              <ParaglideMessage
+                message={m.listing_confirm_pick_title}
+                inputs={{
+                  objekt: token.name,
+                  serial: formatSerial(token.serial),
+                }}
+                markup={{
+                  serial: ({ children }) => (
+                    <span className="font-mono tabular-nums">{children}</span>
+                  ),
+                }}
+              />
+            )}
+          </AlertTitle>
+          <AlertDescription>{m.listing_confirm_pick_body()}</AlertDescription>
         </Alert>
       );
+    }
     case "token": {
       const { refusal } = failure;
       const token =
         refusal === null
           ? undefined
-          : tokens.find((shown) => shown.tokenId === refusal.tokenId);
+          : give.find((shown) => shown.tokenId === refusal.tokenId);
       return (
         <Alert variant="warning">
           <IconAlertTriangle />

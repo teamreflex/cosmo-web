@@ -15,19 +15,33 @@ import {
   tradeListingViewerQuery,
 } from "@/lib/queries/trade-listings";
 import { sanitizeUuid } from "@/lib/universal/parsers";
-import { publicListingPanel } from "@/lib/universal/trade-listings";
+import {
+  listingSearchDefaults,
+  listingSearchSchema,
+  poolItems,
+  publicListingPanel,
+} from "@/lib/universal/trade-listings";
 import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
 import { IconHeartBroken } from "@tabler/icons-react";
 import { noop } from "@tanstack/react-query";
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  notFound,
+  stripSearchParams,
+} from "@tanstack/react-router";
 
 export const Route = createFileRoute("/market/listing/$id")({
   component: RouteComponent,
   pendingComponent: PendingComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
+  // the poster's open tab; Listing stays out of the URL, so the canonical address is the bare page
+  validateSearch: listingSearchSchema,
+  search: {
+    middlewares: [stripSearchParams(listingSearchDefaults)],
+  },
   loader: async ({ context, params, preload }) => {
     // discord users sometimes paste formatting onto the end of the URL
     const id = sanitizeUuid(params.id);
@@ -54,10 +68,16 @@ export const Route = createFileRoute("/market/listing/$id")({
     );
 
     // the poster's blocked listing names the objekts that block it
-    if (panel.kind === "poster_open" && listing.blocked && account?.cosmo) {
+    if (
+      listing.stop === "blocked" &&
+      account?.cosmo &&
+      listing.poster?.id === account.user.id
+    ) {
       void context.queryClient
         .query(
-          offeredTokenRefusalsQuery(listing.items.map((item) => item.tokenId)),
+          offeredTokenRefusalsQuery(
+            poolItems(listing).map((item) => item.tokenId),
+          ),
         )
         .catch(noop);
     }

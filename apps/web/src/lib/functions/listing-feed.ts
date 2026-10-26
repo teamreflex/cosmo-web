@@ -2,8 +2,10 @@ import { toPublicUser } from "@/lib/server/auth.server";
 import { db } from "@/lib/server/db";
 import { feedbackRepColumns } from "@/lib/server/feedback.server";
 import {
+  freePoolCount,
   hydrateListings,
   listingFeedWhere,
+  postedCount,
   storedWants,
 } from "@/lib/server/trades/feed.server";
 import { toFeedbackRep } from "@/lib/universal/feedback";
@@ -21,10 +23,12 @@ const PAGE_SIZE = 30;
 
 /**
  * One page of the Listings feed: open listings, newest first, keyset-paged
- * on the listing id. The cursor is the previous page's last id, looked up
- * whatever it is now, so a listing claimed, edited or withdrawn between
- * pages still marks the place, and the position never goes through a JS
- * Date. The page reads one row past its size to say whether there's more.
+ * on the listing id, each with its unit size and how many of its pool
+ * objekts are free, counted for the page's rows only. The cursor is
+ * the previous page's last id, looked up whatever it is now, so a listing
+ * claimed from, edited or withdrawn between pages still marks the place,
+ * and the position never goes through a JS Date. The page reads one row
+ * past its size to say whether there's more.
  */
 export const $fetchListingFeed = createServerFn({ method: "GET" })
   .validator(listingFeedInputSchema)
@@ -54,6 +58,11 @@ export const $fetchListingFeed = createServerFn({ method: "GET" })
         createdAt: true,
         fromUserId: true,
         fromAddress: true,
+        unitSize: true,
+      },
+      extras: {
+        free: (t) => freePoolCount(t),
+        posted: (t) => postedCount(t.id),
       },
       with: {
         items: { where: { leftAt: { isNull: true } }, orderBy: { id: "asc" } },
@@ -69,15 +78,24 @@ export const $fetchListingFeed = createServerFn({ method: "GET" })
     const { listings } = await hydrateListings(page);
 
     return {
-      rows: listings.map((listing) => ({
-        id: listing.id,
-        createdAt: listing.createdAt,
-        poster: listing.fromUser && toPublicUser(listing.fromUser),
-        cosmoUsername: listing.fromCosmo?.username ?? null,
-        rep: listing.fromUser && toFeedbackRep(listing.fromStats),
-        items: listing.items,
-        wants: listing.wants,
-      })),
+      rows: listings.map((listing) => {
+        // trade_offers_unit_size_chk: every listing has a unit size
+        if (listing.unitSize === null) {
+          throw new Error(`listing ${listing.id} has no unit`);
+        }
+        return {
+          id: listing.id,
+          createdAt: listing.createdAt,
+          poster: listing.fromUser && toPublicUser(listing.fromUser),
+          cosmoUsername: listing.fromCosmo?.username ?? null,
+          rep: listing.fromUser && toFeedbackRep(listing.fromStats),
+          items: listing.items,
+          wants: listing.wants,
+          unitSize: listing.unitSize,
+          posted: listing.posted,
+          free: listing.free,
+        };
+      }),
       nextCursor: rows.length > PAGE_SIZE ? page.at(-1)?.id : undefined,
     };
   });

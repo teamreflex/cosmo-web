@@ -185,9 +185,22 @@ function withListingRules<TSchema extends z.ZodType<ListingTerms>>(
     }));
 }
 
-// the composer's offered objekts, checked before Post or Save
+/**
+ * The composer's offered objekts, checked before Post or Save. An edit names
+ * its listing, so objekts live in the listing's own trades pass, as Save
+ * lets them.
+ */
 export const offeredTokensInputSchema = z.strictObject({
   tokenIds: z.array(tokenIdSchema).min(1).max(MAX_OFFERED),
+  listingId: listingIdSchema.optional(),
+});
+
+/**
+ * The composer's greyed-out tokens: an edit names its listing, so the
+ * objekts live in its own trades stay pickable.
+ */
+export const tradeTokenStatesInputSchema = z.strictObject({
+  listingId: listingIdSchema.optional(),
 });
 
 export const listingInputSchema = withListingRules(

@@ -25,19 +25,30 @@ const attributes = (slug: string, member: string, artist = "artms") => ({
 });
 
 /**
- * A stored listing as the detail payload carries it: one offered objekt, a
- * tripleS range, an exact row, an "any of" row and a payment row only SQL
- * can insert.
+/**
+ * A stored listing as the detail payload carries it: a ratio of one objekt
+ * at a time, with one offered objekt and one that left the pool, a tripleS
+ * range, an exact row, an "any of" row and a payment row only SQL can
+ * insert.
  */
 const listing = {
   id: "0b7d6f1e-6a43-4c55-9d3e-2f1b4c8a9e10",
   note: "serials under 1000",
+  unitSize: 1,
   items: [
     {
       tokenId: 4021,
       serial: 217,
       attributes: attributes("atom02-heejin-201z", "HeeJin"),
       collection: null,
+      availability: { kind: "free" },
+    },
+    {
+      tokenId: 3990,
+      serial: 41,
+      attributes: attributes("atom02-heejin-202z", "HeeJin"),
+      collection: null,
+      availability: { kind: "traded", at: new Date(0) },
     },
   ],
   wants: [
@@ -62,13 +73,13 @@ const listing = {
       kind: "choice",
       count: 2,
       options: [
-        attributes("atom02-haseul-201z", "HaSeul"),
-        attributes("atom02-jinsoul-201z", "JinSoul"),
+        { ...attributes("atom02-haseul-201z", "HaSeul"), collection: null },
+        { ...attributes("atom02-jinsoul-201z", "JinSoul"), collection: null },
       ],
     },
     { kind: "payment", amount: "25.00", currency: "NZD" },
   ],
-} satisfies Pick<TradeListing, "id" | "items" | "wants" | "note">;
+} satisfies Pick<TradeListing, "id" | "items" | "wants" | "note" | "unitSize">;
 
 describe("composer prefill (CMP-04)", () => {
   const values = listingToFormValues(listing);
@@ -76,6 +87,7 @@ describe("composer prefill (CMP-04)", () => {
   test("the stored terms become the form's values", () => {
     expect(values).toEqual({
       offered: [{ tokenId: 4021 }],
+      unitSize: 1,
       wants: [
         {
           kind: "range",
@@ -133,6 +145,33 @@ describe("composer prefill (CMP-04)", () => {
         note: "serials under 1000",
       },
     });
+  });
+
+  test("editing a ratio listing keeps its unit size as the pool grows", () => {
+    const edited = listingInputSchema.parse({
+      ...values,
+      offered: [...values.offered, { tokenId: 5000 }, { tokenId: 5001 }],
+    });
+    expect(edited.unitSize).toBe(1);
+  });
+
+  test("editing a bundle carries no unit size, so it stays a bundle", () => {
+    const bundle = {
+      ...listing,
+      unitSize: 2,
+      items: listing.items.map((item) => ({
+        ...item,
+        availability: { kind: "free" as const },
+      })),
+    };
+    const form = listingToFormValues(bundle);
+    expect(form.unitSize).toBeUndefined();
+    expect(
+      listingInputSchema.parse({
+        ...form,
+        offered: [...form.offered, { tokenId: 5000 }],
+      }).unitSize,
+    ).toBe(3);
   });
 
   test("a blank note posts as no note, and create sends no id", () => {
@@ -208,5 +247,5 @@ const fillers = {
   cosmoUsername: null,
   rep: null,
   state: { status: "open" },
-  blocked: false,
-} satisfies Omit<TradeListing, "id" | "items" | "wants" | "note">;
+  stop: null,
+} satisfies Omit<TradeListing, "id" | "items" | "wants" | "note" | "unitSize">;

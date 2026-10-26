@@ -305,6 +305,7 @@ function OfferView({ trade, side }: { trade: OfferTrade; side: TradeSide }) {
             items={trade.items}
             action={action}
             name={partyName(trade.parties[otherSide(side)])}
+            listingId={trade.listingId}
             open={dialog === action}
             onOpenChange={(open) => setDialog(open ? action : null)}
           />

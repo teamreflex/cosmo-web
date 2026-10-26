@@ -2,8 +2,9 @@ import { useInvalidateTrade } from "@/hooks/use-invalidate-trade";
 import { m } from "@/i18n/messages";
 import { formatOfferError } from "@/lib/client/trades";
 import { $acceptOffer, $endOffer } from "@/lib/functions/trade-offers";
-import type { TradeItemView } from "@/lib/universal/trades";
+import type { TradeNamedItem } from "@/lib/universal/trades";
 import { useMutation } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { useRef } from "react";
 import { toast } from "sonner";
 import {
@@ -57,10 +58,14 @@ const copies = {
 type Props = {
   tradeId: string;
   /** the offer's items, which name a token the server refused */
-  items: TradeItemView[];
+  items: TradeNamedItem[];
   action: OfferAction;
   /** the other party's name */
   name: string;
+  /** the listing the offer is on, which the answer also refetches */
+  listingId?: string | null;
+  /** an offer accepted away from its trade page links to its trade */
+  linkTrade?: boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
@@ -76,10 +81,13 @@ export default function OfferActionDialog({
   items,
   action,
   name,
+  listingId = null,
+  linkTrade = false,
   open,
   onOpenChange,
 }: Props) {
-  const invalidateTrade = useInvalidateTrade(null);
+  const invalidateTrade = useInvalidateTrade(listingId);
+  const navigate = useNavigate();
   const copy = copies[action];
   // a second click before the first re-renders the button disabled sends nothing
   const submitting = useRef(false);
@@ -89,7 +97,18 @@ export default function OfferActionDialog({
         ? $acceptOffer({ data: { tradeId } })
         : $endOffer({ data: { tradeId, action } }),
     onSuccess: () => {
-      toast.success(copy.done());
+      toast.success(
+        copy.done(),
+        action === "accept" && linkTrade
+          ? {
+              action: {
+                label: m.listing_detail_go_to_trade(),
+                onClick: () =>
+                  void navigate({ to: "/trade/$id", params: { id: tradeId } }),
+              },
+            }
+          : undefined,
+      );
       onOpenChange(false);
     },
     onError: (error) => {

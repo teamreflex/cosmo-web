@@ -395,7 +395,6 @@
   "trade_error_trade_party_banned": "有参与方已被封禁，因此无法延长此交换。请改为完成或取消交换。",
   "trade_error_offer_own": "你不能向自己发送报价。",
   "trade_error_offer_unavailable": "此报价目前无法继续。",
-  "trade_error_offer_claimer_at_cap": "对方进行中的交换目前已达上限。待对方完成一笔后，你即可接受。",
   "trade_error_offer_expired": "此报价已过期。待处理的报价会在发送 72 小时后过期。",
   "feedback_error_feedback_not_eligible": "此交换无法评价。",
   "feedback_error_feedback_window_closed": "此交换的评价期已结束。",
@@ -665,6 +664,7 @@
   "trade_page_offer_waiting_counter_you": "你给 {name} 的还价：{give} 换 {get}",
   "trade_page_offer_waiting_counter_staff": "{sender} 给 {recipient} 的还价：{give} 换 {get}",
   "trade_page_offer_waiting_meta": "发送于 {#time}{sent}{/time} · 对方可以接受、拒绝或还价 · {#countdown}{left}{/countdown} 后过期",
+  "trade_page_offer_listing_waiting_meta": "发送于 {#time}{sent}{/time} · 对方可以接受或拒绝 · {#countdown}{left}{/countdown} 后过期",
   "trade_page_offer_counter_them": "{#b}{name}{/b} 以此报价回应了{#link}你的报价{/link}。",
   "trade_page_offer_counter_of": "这是对{#link}{name} 的报价{/link}的还价。",
   "trade_page_offer_accept": "接受",
@@ -787,7 +787,7 @@
   "listing_detail_incomplete_footer": "请按每行要求的数量选择 Objekt 后再接受。",
   "listing_detail_blocked_body": "发布者那边的问题导致交换无法进行，例如提供的 Objekt 已被锁定或已离开其账号。问题解决后你即可接受。",
   "listing_detail_accept": "接受",
-  "listing_detail_accept_footer": "接受时会再次检查这些序号，并为你保留此挂单 48 小时。双方都在 COSMO App 中发送，顺序不限。所有转移完成后，{appName} 会将其标记为已完成。",
+  "listing_detail_accept_footer": "接受时会再次检查这些序号，并为你保留它们 48 小时。双方都在 COSMO App 中发送，顺序不限。所有转移完成后，{appName} 会将其标记为已完成。",
   "listing_detail_short_footer": "你没有足够的符合条件的 Objekt 来接受此挂单。",
   "listing_detail_hold": "为你保留 48 小时",
   "listing_detail_accepted": "已接受交换。请在 COSMO App 中发送你的 Objekt。",
@@ -808,17 +808,15 @@
   "listing_detail_cap_over_title": "你有 {active} 笔交换正在进行。你的账号目前最多可同时进行 {cap} 笔。",
   "listing_detail_cap_over_body": "完成其中 {count} 笔后即可接受新的挂单。",
   "listing_detail_cap_grows": "随着你获得更多好评，上限会逐步提高。",
-  "listing_detail_lost_race_title": "有人比你早一步接受了此挂单。",
-  "listing_detail_lost_race_body": "你的任何 Objekt 都没有被保留。如果对方的交换未能完成，此挂单会重新开放。",
+  "listing_detail_lost_race_title": "你选的一张 Objekt 比你早一步被另一笔交换占用。",
+  "listing_detail_lost_race_body": "你的任何 Objekt 都没有被保留。请另选一张继续；如果对方的交换未能完成，它会重新可选。",
   "listing_detail_updated_title": "此挂单在你接受前已更改。",
   "listing_detail_updated_body": "请查看新的条件并重新选择。",
   "listing_detail_status_open": "开放中",
-  "listing_detail_status_claimed": "已被接受",
   "listing_detail_status_filled": "已成交",
   "listing_detail_status_withdrawn": "已撤下",
   "listing_detail_status_closed": "已关闭",
   "listing_detail_status_removed": "已移除",
-  "listing_detail_claimer_title": "你已接受此挂单",
   "listing_detail_claim_disputed": "版主查看期间，此交换已暂停。你进行的转移仍然有效。",
   "listing_detail_time_left": "剩余 {#time}{left}{/time}",
   "listing_detail_claimer_body": [
@@ -830,12 +828,8 @@
       }
     }
   ],
-  "listing_detail_poster_claimed": "{#user}{username}{/user} 已接受 · 剩余 {#time}{left}{/time}",
-  "listing_detail_poster_claimed_someone": "有人已接受 · 剩余 {#time}{left}{/time}",
-  "listing_detail_poster_claimed_untimed": "{#user}{username}{/user} 已接受",
-  "listing_detail_poster_claimed_someone_untimed": "有人已接受",
   "listing_detail_go_to_trade": "前往交换",
-  "listing_detail_poster_claimed_body": "接下来取决于这笔交换：完成后挂单即成交；取消时，只要你仍持有这些 Objekt，挂单就会重新开放。如果在发送任何 Objekt 之前时间已耗尽，挂单将关闭。",
+  "listing_detail_view_offer": "查看报价",
   "listing_detail_withdraw": "撤下",
   "listing_detail_withdraw_title": "撤下此挂单？",
   "listing_detail_withdraw_description": "挂单会立即从市场下架，之后任何人都无法接受。",
@@ -844,6 +838,15 @@
   "listing_detail_closed_filled": "已与 {#user}{username}{/user} 完成交换。",
   "listing_detail_view_trade": "查看交换",
   "listing_detail_closed_filled_unknown": "已完成交换。",
+  "listing_detail_closed_filled_trades": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "已通过 {count} 次交换完成。"
+      }
+    }
+  ],
   "listing_detail_closed_withdrawn": "{poster} 已关闭此挂单。",
   "listing_detail_closed_broken": "提供的某张 Objekt 已离开 {poster} 的账号或无法转移，因此此挂单无法继续。",
   "listing_detail_closed_removed": "已被 {appName} 工作人员移除。",
@@ -880,7 +883,6 @@
   "listing_confirm_updated_title": "{poster} 更改了此挂单",
   "listing_confirm_updated_body": "请查看更改内容。",
   "listing_confirm_review": "查看",
-  "listing_confirm_claimed_title": "其他人已抢先接受",
   "listing_confirm_token_title": "{objekt} {#serial}{serial}{/serial} 无法交换",
   "listing_confirm_token_not_owned": "它已离开你的账号。请换成另一张。",
   "listing_confirm_token_untransferable": "COSMO 不允许转移它。请换成另一张。",
@@ -2162,6 +2164,7 @@
   "market_listings_filter_artist": "艺人",
   "market_listings_filter_member": "成员",
   "market_listings_any_artist": "任意艺人",
+  "market_listings_range_matches": "{count}× 任一符合条件的",
   "market_listings_column_type": "类型",
   "market_listings_column_offering": "提供",
   "market_listings_column_asking": "想要",
@@ -2173,6 +2176,16 @@
       "selectors": ["countPlural"],
       "match": {
         "countPlural=other": "{count} 张 Objekt"
+      }
+    }
+  ],
+  "market_listings_ratio": "{give} 换 {get}",
+  "market_listings_available": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 张可换"
       }
     }
   ],
@@ -2320,8 +2333,115 @@
   "listing_composer_discard_confirm": "放弃",
   "listing_detail_you_give_total": "你给出 · {count}",
   "listing_detail_poster_blocked_title": "目前没有人能接受此挂单。",
-  "listing_detail_poster_blocked_body": "你提供的某张 Objekt 已被锁定、无法转移、在另一笔交换中，或已离开你的账号。",
+  "listing_detail_poster_blocked_body": "你提供的某张 Objekt 已被锁定、无法转移，或已离开你的账号。",
   "listing_detail_poster_blocked_fix": "编辑挂单以提供其他 Objekt，或解决导致无法交换的问题。",
+  "listing_detail_pill_traded": "已交换",
+  "listing_detail_pill_moved": "已转出",
+  "listing_detail_units_title": "换几次？",
+  "listing_detail_units_caption": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{ratio}，最多 {count} 次"
+      }
+    }
+  ],
+  "listing_detail_units_fewer": "少换一次",
+  "listing_detail_units_more": "多换一次",
+  "listing_detail_units_get": "你得到 {count}",
+  "listing_detail_units_give": "你给出 {count}",
+  "listing_detail_pool_offers_help": "其他人也可以对同样的 Objekt 报价。{poster} 先接受谁的报价，就归谁。",
+  "listing_detail_you_give_offer_summary": "序号由你选择",
+  "listing_detail_offer_footer": "发出报价不会保留任何东西。如果 {poster} 接受，{appName} 会再次检查每个序号，交换随即开始，双方有 48 小时发送。",
+  "listing_detail_send_offer": "发出报价",
+  "listing_detail_offer_sent": "已向 {poster} 发出报价",
+  "listing_detail_offer_hold": "{poster} 接受之前不会保留任何东西",
+  "listing_detail_incomplete_offered": "请从挂单的 Objekt 中选择 {count} 张。",
+  "listing_detail_claimer_trading": "你正在与 {poster} 交换",
+  "listing_detail_claimer_size": "来自此挂单的 {#ratio}{ratio}{/ratio}。",
+  "listing_detail_claimer_more": "这次交换结束后，你可以从此挂单再换。",
+  "listing_detail_offerer_waiting": "等待 {poster} 回复",
+  "listing_detail_offerer_wait": "等待期间不会保留任何东西。在这份报价得到回复或被撤回之前，你不能对此挂单再发出报价。",
+  "listing_detail_offer_pick_taken_title": "{objekt} 已归别人",
+  "listing_detail_offer_pick_taken_body": "它已被另一笔交换占用，所以 {poster} 无法接受你的报价。撤回报价后可另选一张再发出。",
+  "listing_detail_offer_declined_title": "{poster} 拒绝了你的报价",
+  "listing_detail_offer_again": "你可以在下方修改选择，再发出一份报价。",
+  "listing_detail_offer_expired_title": "你的报价已过期",
+  "listing_detail_offer_expired_body": "{poster} 未在 {hours} 小时内回复。你可以再发出一份报价。",
+  "listing_detail_offer_stale_title": "你的报价无法继续",
+  "listing_detail_offer_stale_body": "挂单已更改，或其中的 Objekt 已转移，所以报价已结束。你可以再发出一份报价。",
+  "listing_offer_step_answer": "{#user}{poster}{/user} 会看到这些序号并选择接受或拒绝。在此期间不会保留任何东西。",
+  "listing_offer_step_expiry": "如果对方在 {#time}{date}{/time} 前没有回复，报价就会过期。",
+  "listing_offer_step_window": "接受后，双方有 {hours} 小时在 COSMO App 中发送。",
+  "listing_confirm_pick_title": "{objekt} {#serial}{serial}{/serial} 已归别人",
+  "listing_confirm_pick_unknown": "你选的一张 Objekt 已归别人",
+  "listing_confirm_pick_body": "它比你早一步被另一笔交换占用。你的任何 Objekt 都没有被保留；请另选一张后重试。",
+  "listing_poster_tabs": "你的挂单",
+  "listing_poster_tab_listing": "挂单",
+  "listing_poster_tab_offers": "报价",
+  "listing_poster_tab_trades": "交换",
+  "listing_detail_you_offer": "你提供 · {count}",
+  "listing_detail_you_look_for": "你在寻找 · {count}",
+  "listing_detail_wants_per": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "你每出 {count} 张"
+      }
+    }
+  ],
+  "listing_poster_pool_in_trades": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 张交换中"
+      }
+    }
+  ],
+  "listing_poster_pool_traded": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 张已换出"
+      }
+    }
+  ],
+  "listing_poster_pool_gone": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 张已不在"
+      }
+    }
+  ],
+  "listing_poster_pool_blocked": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 张不可换"
+      }
+    }
+  ],
+  "listing_detail_pill_gone": "已不在",
+  "listing_poster_note_available": "可换",
+  "listing_poster_note_with": "与 {name} 交换中",
+  "listing_poster_note_other_trade": "在另一笔交换中",
+  "listing_poster_note_traded_to": "已换给 {name}",
+  "listing_poster_note_gone": "已离开你的账号",
+  "listing_poster_note_blocked": "目前没人能选",
+  "listing_poster_offers_help": "对方会自己挑选要发送的符合条件的序号，所以这条挂单收到的是由你接受或拒绝的报价。",
+  "listing_poster_offer_they_send": "对方发送",
+  "listing_poster_offer_you_send": "你发送",
+  "listing_poster_offers_empty": "还没有报价",
+  "listing_poster_offers_empty_body": "有人对这条挂单发出报价后，会显示在这里，由你接受或拒绝。",
+  "listing_poster_trades_empty": "还没有交换",
+  "listing_poster_trades_empty_body": "这条挂单的交换从开始到结束都会显示在这里。",
   "my_trades_title": "我的交换",
   "my_trades_tabs": "交换分类",
   "my_trades_tab_active": "进行中",
@@ -2451,5 +2571,38 @@
   "feedback_page_no_account": "尚未加入 {appName}",
   "feedback_page_no_account_body": "{name} 尚未在 {appName} 上进行过交换，因此没有可显示的评价。",
   "feedback_page_no_match": "没有符合条件的评价",
-  "feedback_page_no_match_body": "没有符合这些筛选条件的评价。"
+  "feedback_page_no_match_body": "没有符合这些筛选条件的评价。",
+  "listing_detail_busy_title": "提供的 Objekt 目前都在交换中",
+  "listing_detail_busy_body": "等其中一笔交换结束后再来看看。",
+  "listing_poster_busy_title": "你提供的 Objekt 目前都在交换中",
+  "listing_poster_busy_body": "在其中一笔交换结束前，没人能接这条挂单。无需做任何处理。",
+  "listing_detail_offerer_expired": "{poster} 未在期限内回复，报价即将关闭。大约一分钟后你可以再发出一份。",
+  "listing_detail_pill_unavailable": "不可用",
+  "listing_poster_pill_sent": "已发送",
+  "listing_poster_note_sent_to": "已发送给 {name}",
+  "listing_poster_pool_sent": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 张已发送"
+      }
+    }
+  ],
+  "listing_want_any_of_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{count} 个卡款中任选"
+      }
+    }
+  ],
+  "listing_detail_summary_choices": "{count} 个任选",
+  "listing_poster_refusal_pick_live": "这份报价中你的某张 Objekt 现在在另一笔交换中，因此只能拒绝。",
+  "listing_poster_refusal_pick_elsewhere": "{objekt} #{serial} 现在在另一笔交换中，因此这份报价只能拒绝。",
+  "listing_poster_refusal_pick_with": "{objekt} #{serial} 现在在你与 {name} 的交换中，因此这份报价只能拒绝。",
+  "listing_poster_refusal_pick_unavailable": "这份报价中你的某张 Objekt 目前无法交换，因此只能拒绝。",
+  "listing_poster_yours": "你的挂单",
+  "listing_detail_updated_at": "更新于 {#time}{when}{/time}"
 }

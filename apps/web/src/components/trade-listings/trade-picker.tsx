@@ -24,6 +24,8 @@ type Props = {
   full: boolean;
   /** copies picked for a listing's other rows, which this one can't take */
   elsewhere?: ReadonlySet<number>;
+  /** the listing being edited, whose own trades don't grey its objekts */
+  editedListing?: string;
   /** what a picked card's pill says, when it has one */
   pickedLabel: string | null;
   onToggle: (objekt: CosmoObjekt) => void;
@@ -75,10 +77,13 @@ function PickerWithStates({
   picked,
   full,
   elsewhere,
+  editedListing,
   pickedLabel,
   onToggle,
 }: Omit<Props, "heading" | "onDone">) {
-  const { data: states } = useSuspenseQuery(tradeTokenStatesQuery);
+  const { data: states } = useSuspenseQuery(
+    tradeTokenStatesQuery(editedListing),
+  );
   const toggle = useEventCallback(onToggle);
 
   return (

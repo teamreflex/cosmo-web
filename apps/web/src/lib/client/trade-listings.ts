@@ -6,6 +6,8 @@ import type {
   ClosedListingState,
   ListingFeedWant,
   ListingPick,
+  PoolAvailability,
+  PoolStanding,
   TokenRefusalReason,
   TradeListing,
 } from "@/lib/universal/trade-listings";
@@ -137,32 +139,6 @@ export function rangeLabel(filter: RangeFilter) {
 }
 
 /**
- * A range want as the phone card captions it: the group and seasons as its
- * title, "ARTMS · Atom02", then the members (or any member), class and
- * on/offline, "Any member · First". `tags` is that second line without the
- * members, for when the card shows them as faces.
- */
-export function rangeCaption(filter: RangeFilter) {
-  const title = joinColumns([filter.artist.map(artistName), filter.season]);
-  const tags = joinColumns([
-    filter.class,
-    filter.on_offline.map(onOfflineLabel),
-  ]);
-  return {
-    title: title === "" ? m.market_listings_any_artist() : title,
-    detail: [
-      filter.member.length === 0
-        ? m.listing_detail_range_any_member()
-        : joinColumns([filter.member]),
-      tags,
-    ]
-      .filter((part) => part !== "")
-      .join("\u00a0· "),
-    tags,
-  };
-}
-
-/**
  * Range columns as one line, as `rangeLabel` describes.
  */
 function joinColumns(columns: readonly (readonly string[])[]) {
@@ -188,7 +164,9 @@ export function onOfflineLabel(value: string) {
 }
 
 /**
- * What a want row asks for, without its count.
+ * What a want row asks for, without its count. An "any of" row reads as
+ * how many collections it takes, "Any of 4 collections", leaving which
+ * they are to the cards under it.
  */
 export function wantLabel(want: ListingFeedWant) {
   switch (want.kind) {
@@ -197,7 +175,7 @@ export function wantLabel(want: ListingFeedWant) {
     case "range":
       return rangeLabel(want.filter);
     case "choice":
-      return want.options.map((option) => objektName(null, option)).join(" / ");
+      return m.listing_want_any_of_count({ count: want.options.length });
     case "payment":
       return `${want.amount} ${want.currency}`;
   }
@@ -234,13 +212,13 @@ export function wantsSummary(wants: readonly ListingFeedWant[]) {
 }
 
 /**
- * What a feed row's Asking column is titled: the collection's or payment's
- * name when it asks for one exact objekt or a payment alone, else how many
- * objekts it asks for, as Offering titles several.
+ * What a feed row's Asking column is titled: its one row as wantLabel()
+ * reads it, a range by its narrowed values, "Atom02 · KimLip · First", else
+ * how many objekts its rows ask for, as Offering titles several.
  */
 export function askingTitle(wants: readonly ListingFeedWant[]) {
   const [only] = wants;
-  if (only !== undefined && wants.length === 1 && only.kind !== "range") {
+  if (only !== undefined && wants.length === 1) {
     return wantLabel(only);
   }
   return m.market_listings_objekts({ count: wantedObjektCount(wants) });
@@ -248,17 +226,19 @@ export function askingTitle(wants: readonly ListingFeedWant[]) {
 
 /**
  * How many rows of each kind a listing asks for, as the Looking for heading
- * sums them up: "1 range · 1 exact".
+ * sums them up: "1 range · 1 exact · 1 any of".
  */
 export function wantKindsSummary(wants: readonly ListingFeedWant[]) {
   const count = (kind: ListingFeedWant["kind"]) =>
     wants.filter((want) => want.kind === kind).length;
   const ranges = count("range");
   const exact = count("exact");
+  const choices = count("choice");
   const payments = count("payment");
   return [
     ranges > 0 && m.listing_detail_summary_ranges({ count: ranges }),
     exact > 0 && m.listing_detail_summary_exact({ count: exact }),
+    choices > 0 && m.listing_detail_summary_choices({ count: choices }),
     payments > 0 && m.listing_detail_summary_payments({ count: payments }),
   ]
     .filter((part) => part !== false)
@@ -361,6 +341,42 @@ export function refusalLabel(reason: TokenRefusalReason) {
 }
 
 /**
+ * Why a listing's objekt can't be picked, as its card names it, or null
+ * when it's free.
+ */
+export function availabilityLabel(availability: PoolAvailability) {
+  switch (availability.kind) {
+    case "free":
+      return null;
+    case "in_trade":
+      return m.listing_composer_pill_live();
+    case "traded":
+      return m.listing_detail_pill_traded();
+    case "blocked":
+      switch (availability.reason) {
+        case "moved":
+          return m.listing_detail_pill_moved();
+        case "untransferable":
+          return m.listing_composer_pill_untransferable();
+        case "locked":
+          return m.common_locked();
+      }
+  }
+}
+
+/**
+ * How many objekts one trade from the listing swaps on each side: its unit
+ * size for the want rows' total, "1 : 5". A bundle's unit is its whole
+ * pool.
+ */
+export function listingRatio(listing: {
+  unitSize: number;
+  wants: readonly ListingFeedWant[];
+}) {
+  return { give: listing.unitSize, get: wantedObjektCount(listing.wants) };
+}
+
+/**
  * Why an objekt in the viewer's own collection can't be offered or given,
  * as its card names it: the reason posting and accepting would give.
  */
@@ -374,7 +390,8 @@ export function offerBlock(objekt: CosmoObjekt, flags: TokenFlags) {
 
 /**
  * Whether a listing ended the way its poster means one to, traded or
- * withdrawn, rather than broken, removed or timed out.
+ * withdrawn, rather than broken, removed or timed out (closed with the one
+ * trade it ever made).
  */
 export function endedNormally(
   state: ClosedListingState,
@@ -462,4 +479,95 @@ export function pickShown(
     serial: pick.serial,
     collection: pick.collection,
   };
+}
+
+/**
+ * What the card of an objekt on the poster's own listing says, or null
+ * when it's free: a live trade or one that took it, that it left their
+ * account, or why they can't give it now.
+ */
+export function standingLabel(standing: PoolStanding) {
+  switch (standing.kind) {
+    case "free":
+      return null;
+    case "in_trade":
+      return m.listing_composer_pill_live();
+    case "sent":
+      return m.listing_poster_pill_sent();
+    case "traded":
+      return m.listing_detail_pill_traded();
+    case "gone":
+      return m.listing_detail_pill_gone();
+    case "blocked":
+      return availabilityLabel(standing);
+  }
+}
+
+/**
+ * The line under that card's name: "Available", who the live trade holding
+ * it is with, who it was sent or traded to, or that it left the poster's
+ * account.
+ */
+export function standingNote(standing: PoolStanding) {
+  switch (standing.kind) {
+    case "free":
+      return m.listing_poster_note_available();
+    case "in_trade":
+      return standing.claimer === null
+        ? m.listing_poster_note_other_trade()
+        : m.listing_poster_note_with({
+            name: posterName({
+              poster: standing.claimer.user,
+              cosmoUsername: standing.claimer.cosmoUsername,
+            }),
+          });
+    case "sent":
+      return m.listing_poster_note_sent_to({
+        name: posterName({
+          poster: standing.claimer.user,
+          cosmoUsername: standing.claimer.cosmoUsername,
+        }),
+      });
+    case "traded":
+      return m.listing_poster_note_traded_to({
+        name: posterName({
+          poster: standing.claimer.user,
+          cosmoUsername: standing.claimer.cosmoUsername,
+        }),
+      });
+    case "gone":
+      return m.listing_poster_note_gone();
+    case "blocked":
+      return m.listing_poster_note_blocked();
+  }
+}
+
+/**
+ * How a listing's objekts stand, as the heading over them sums them up:
+ * "3 available · 2 in trades · 1 sent · 2 traded · 1 gone", leaving out
+ * what none are. The poster reads their standings (PoolStanding), anyone
+ * else the pool's availability, whose kinds are among them.
+ */
+export function standingsSummary(
+  standings: readonly { kind: PoolStanding["kind"] }[],
+) {
+  const parts = [
+    { kind: "free", message: m.market_listings_available },
+    { kind: "in_trade", message: m.listing_poster_pool_in_trades },
+    { kind: "sent", message: m.listing_poster_pool_sent },
+    { kind: "traded", message: m.listing_poster_pool_traded },
+    { kind: "gone", message: m.listing_poster_pool_gone },
+    { kind: "blocked", message: m.listing_poster_pool_blocked },
+  ] satisfies {
+    kind: PoolStanding["kind"];
+    message: (inputs: { count: number }) => string;
+  }[];
+  return parts
+    .flatMap(({ kind, message }) => {
+      const count = standings.filter(
+        (standing) => standing.kind === kind,
+      ).length;
+      return count > 0 ? [message({ count })] : [];
+    })
+    .join(" · ");
 }

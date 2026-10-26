@@ -96,9 +96,8 @@ export default function ListingComposer({
 }: Props) {
   const isDesktop = useMediaQuery();
   const queryClient = useQueryClient();
-  const invalidateListings = useInvalidateListing(
-    mode.kind === "edit" ? mode.listing.id : undefined,
-  );
+  const editedListing = mode.kind === "edit" ? mode.listing.id : undefined;
+  const invalidateListings = useInvalidateListing(editedListing);
   const navigate = useNavigate();
   const initialValues = () =>
     mode.kind === "edit" ? listingToFormValues(mode.listing) : emptyListingForm;
@@ -264,6 +263,7 @@ export default function ListingComposer({
         <PickerView
           form={form}
           address={address}
+          editedListing={editedListing}
           onToggle={toggleOffered}
           onBack={() => setView("form")}
         />
@@ -275,6 +275,7 @@ export default function ListingComposer({
                 <OfferedSection
                   form={form}
                   display={display}
+                  editedListing={editedListing}
                   onAdd={() => setView("picker")}
                 />
               </div>
@@ -390,12 +391,17 @@ type FormProps = {
 function OfferedSection({
   form,
   display,
+  editedListing,
   onAdd,
-}: FormProps & { display: ComposerDisplay; onAdd: () => void }) {
+}: FormProps & {
+  display: ComposerDisplay;
+  editedListing: string | undefined;
+  onAdd: () => void;
+}) {
   const offered = useWatch({ control: form.control, name: "offered" });
   const tokenIds = offered.map((item) => item.tokenId);
   const { data: refusals } = useQuery({
-    ...offeredTokenRefusalsQuery(tokenIds),
+    ...offeredTokenRefusalsQuery(tokenIds, editedListing),
     enabled: tokenIds.length > 0,
   });
 
@@ -422,10 +428,12 @@ const noRefusals: ReadonlyMap<number, TokenRefusalReason> = new Map();
 function PickerView({
   form,
   address,
+  editedListing,
   onToggle,
   onBack,
 }: FormProps & {
   address: string;
+  editedListing: string | undefined;
   onToggle: (objekt: CosmoObjekt) => void;
   onBack: () => void;
 }) {
@@ -447,6 +455,7 @@ function PickerView({
       }
       picked={new Set(offered.map((item) => item.tokenId))}
       full={offered.length >= MAX_OFFERED}
+      editedListing={editedListing}
       pickedLabel={m.listing_composer_pill_offering()}
       onToggle={onToggle}
       onDone={onBack}
@@ -525,7 +534,10 @@ function ComposerFooter({
   const tokenIds = offered.map((item) => item.tokenId);
   // the offered section asks the server; this reads the answer it cached
   const { data: refusals } = useQuery({
-    ...offeredTokenRefusalsQuery(tokenIds),
+    ...offeredTokenRefusalsQuery(
+      tokenIds,
+      mode.kind === "edit" ? mode.listing.id : undefined,
+    ),
     enabled: tokenIds.length > 0,
   });
   // the range rows as the schema reads them, so repeats compare as the server does

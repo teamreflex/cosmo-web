@@ -1,11 +1,7 @@
 import type { PickerRow, Picks } from "@/hooks/use-listing-picks";
 import { m } from "@/i18n/messages";
 import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
-import {
-  formatCount,
-  pickShown,
-  wantScope,
-} from "@/lib/client/trade-listings";
+import { formatCount, pickShown, wantScope } from "@/lib/client/trade-listings";
 import { env } from "@/lib/env/client";
 import type {
   CandidateRow,
@@ -13,6 +9,7 @@ import type {
   ListingViewer,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
+import { takesOffers } from "@apollo/trades/lifecycle";
 import { IconCircleCheck, IconPlus } from "@tabler/icons-react";
 import { Fragment, type ReactNode, useState } from "react";
 import { Skeleton } from "../ui/skeleton";
@@ -33,37 +30,47 @@ type Props = {
   address: string | undefined;
   rows: PickerRow[];
   picks: Picks;
+  /** the poster as the page names them */
+  poster: string;
 };
 
 /**
- * What the viewer would give, one panel of slots per want row, filled from
- * the server's picks. Removing a pick empties its slot, and an empty slot
- * opens the viewer's collection held to that row. Accept lives in the page
- * header, which says whether the picks fit.
+ * What the viewer would give, one panel of slots per want row at the
+ * claim's size, filled from the server's picks. Removing a pick empties its
+ * slot, and an empty slot opens the viewer's collection held to that row.
+ * Accept, or Send offer, lives in the page header, which says whether the
+ * picks fit.
  */
 export default function AllocationPicker({
   viewer,
   address,
   rows,
   picks,
+  poster,
 }: Props) {
   const [picking, setPicking] = useState<number | null>(null);
-  const { picked, total } = picks;
+  const { picked } = picks;
 
   return (
     <section className="flex min-w-0 flex-col gap-3.5">
       <SideHeading
         tone="have"
-        title={m.listing_detail_you_give_total({ count: total })}
-        summary={m.listing_detail_you_give_summary()}
+        title={m.listing_detail_you_give_total({ count: picks.giveTotal })}
+        summary={
+          picks.takesOffers
+            ? m.listing_detail_you_give_offer_summary()
+            : m.listing_detail_you_give_summary()
+        }
       />
 
       {rows.map((row, index) => {
         const rowPicks = picked[index] ?? [];
+        const count = picks.wants[index]?.count ?? 0;
         return (
           <Fragment key={index}>
             <WantRow
               row={row}
+              count={count}
               side={viewer.rows[index]}
               picked={rowPicks}
               onPick={() => setPicking(index)}
@@ -72,9 +79,9 @@ export default function AllocationPicker({
             {address !== undefined && row.want.kind !== "payment" && (
               <RowPicker
                 address={address}
-                label={<RowLabel row={row} />}
+                label={<RowLabel row={row} count={count} />}
                 scope={wantScope(row.want)}
-                count={row.trade.count}
+                count={count}
                 picked={rowPicks}
                 elsewhere={
                   new Set(
@@ -94,9 +101,7 @@ export default function AllocationPicker({
         );
       })}
 
-      <p className="text-xs leading-relaxed text-muted-foreground">
-        {m.listing_detail_accept_footer({ appName: env.VITE_APP_NAME })}
-      </p>
+      <PickerFooter offers={picks.takesOffers} poster={poster} />
     </section>
   );
 }
@@ -106,7 +111,13 @@ export default function AllocationPicker({
  * label and footer around placeholder slots, so nothing grows when the
  * picks arrive.
  */
-export function AllocationPickerSkeleton({ rows }: { rows: PickerRow[] }) {
+export function AllocationPickerSkeleton({
+  rows,
+  poster,
+}: {
+  rows: PickerRow[];
+  poster: string;
+}) {
   return (
     <section className="flex min-w-0 flex-col gap-3.5">
       <SideHeadingSkeleton />
@@ -114,7 +125,7 @@ export function AllocationPickerSkeleton({ rows }: { rows: PickerRow[] }) {
       {rows.map((row, index) => (
         <RowFrame
           key={index}
-          header={<RowLabel row={row} />}
+          header={<RowLabel row={row} count={row.trade.count} />}
           footer={<Skeleton className="ml-auto h-4 w-20" />}
         >
           {Array.from({ length: row.trade.count }, (_, slot) => (
@@ -127,25 +138,39 @@ export function AllocationPickerSkeleton({ rows }: { rows: PickerRow[] }) {
         </RowFrame>
       ))}
 
-      <p className="text-xs leading-relaxed text-muted-foreground">
-        {m.listing_detail_accept_footer({ appName: env.VITE_APP_NAME })}
-      </p>
+      <PickerFooter
+        offers={takesOffers(rows.map((row) => row.trade))}
+        poster={poster}
+      />
     </section>
+  );
+}
+
+/**
+ * What accepting does, or what sending an offer does on a listing that
+ * takes offers.
+ */
+function PickerFooter({ offers, poster }: { offers: boolean; poster: string }) {
+  return (
+    <p className="text-xs leading-relaxed text-muted-foreground">
+      {offers
+        ? m.listing_detail_offer_footer({ poster, appName: env.VITE_APP_NAME })
+        : m.listing_detail_accept_footer({ appName: env.VITE_APP_NAME })}
+    </p>
   );
 }
 
 // a slot, as wide as the composer's offered objekts
 const slotClass = "@container flex w-[84px] flex-col gap-1.5 md:w-30";
 
-function RowLabel({ row }: { row: PickerRow }) {
+// a want row as the picker heads it, at the claim's count
+function RowLabel({ row, count }: { row: PickerRow; count: number }) {
   return row.want.kind === "range" ? (
-    <RangeBadges
-      count={row.want.count}
-      filter={row.want.filter}
-      matches={false}
-    />
+    <RangeBadges count={count} filter={row.want.filter} matches={false} />
   ) : (
-    <WantLabel want={row.want} />
+    <WantLabel
+      want={row.want.kind === "payment" ? row.want : { ...row.want, count }}
+    />
   );
 }
 
@@ -175,6 +200,8 @@ function RowFrame({
 
 type WantRowProps = {
   row: PickerRow;
+  // how many the row asks for at the claim's size
+  count: number;
   side: CandidateRow | undefined;
   picked: ListingPick[];
   onPick: () => void;
@@ -185,8 +212,7 @@ type WantRowProps = {
  * A want row's slots: its picks, then a slot that opens the picker for each
  * copy still to pick, then a dashed one for each the viewer is short.
  */
-function WantRow({ row, side, picked, onPick, onRemove }: WantRowProps) {
-  const { count } = row.trade;
+function WantRow({ row, count, side, picked, onPick, onRemove }: WantRowProps) {
   const owned = side?.owned ?? 0;
   const missing = side?.missing ?? 0;
   const short = Math.min(missing, count - picked.length);
@@ -195,7 +221,7 @@ function WantRow({ row, side, picked, onPick, onRemove }: WantRowProps) {
     <RowFrame
       header={
         <>
-          <RowLabel row={row} />
+          <RowLabel row={row} count={count} />
           <span
             className={cn(
               "flex items-center gap-1.5 text-xs md:ml-auto",

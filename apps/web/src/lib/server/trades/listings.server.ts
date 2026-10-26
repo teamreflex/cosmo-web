@@ -22,7 +22,7 @@ import { ExpectedError } from "../../universal/errors/expected";
 import type { TradeErrorCode } from "../../universal/errors/trades";
 import type { TokenRefusal } from "../../universal/trade-listings";
 import { getCosmoAddress } from "../cosmo-accounts.server";
-import type { DbOrTx, WebTx } from "../db";
+import { db, type DbOrTx, type WebTx } from "../db";
 import {
   firstRefusal,
   readTokenStates,
@@ -220,6 +220,21 @@ export function ownListing(
         eq(tradeOffers.fromUserId, userId),
       ),
     );
+}
+
+/**
+ * The listing a composer read names as the one it edits, once it's the
+ * caller's, so the read can exempt its own trades as Save does. Someone
+ * else's listing is not found.
+ */
+export async function editedListing(
+  userId: string,
+  listingId: string | undefined,
+) {
+  if (listingId === undefined) return undefined;
+  const [listing] = await ownListing(db, userId, listingId);
+  if (!listing) throw new ExpectedError("listing_not_found");
+  return listingId;
 }
 
 export function listingRefusal(
