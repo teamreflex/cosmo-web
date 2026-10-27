@@ -100,7 +100,8 @@ A listing offers a pool of the poster's tokens in units, and stays open while th
 - The poster's trades come from one query (`readListingTrades()`): each with when it was accepted and the pool tokens it took, a live one with what the poster still has to send and whether it waits on them, a disputed one with the dispute that froze it.
 - A candidate gets the most units they can take (`allocateUnits()`, bounded by the free pool, the caps and their holdings), and per want row how many matching objekts they own and how many it is short.
 - A candidate also gets how their latest offer on the listing ended when the poster or the listing ended it (`endedOffer()`: declined, expired or stale), which the page shows over the picker. One read of their latest trade on the listing finds that and any live trade or pending offer.
-- The picker starts every want row empty and the viewer fills it from their collection; stepping the units down trims each row's picks to its new count. A refetch keeps both sides' picks unless the terms or the most units changed, and drops a pool pick that's no longer free.
+- The picker starts with nothing picked: the viewer fills each want row from their collection and, on a listing with a ratio, picks which pool objekts they get; a bundle takes its whole pool. Stepping the units down trims both sides' picks to the new count, and a refetch keeps them unless the terms or the most units changed, dropping a pool pick that's no longer free.
+- A short want row shows what it still needs greyed out, the wanted objekt or every collection an "any of" row takes, while a range row crosses out its short slots. An exact row's open slots show its objekt dimmed.
 - Only a candidate's read touches holdings, and the claim cap only stops a listing that claims at once.
 
 ## The poster's tabs

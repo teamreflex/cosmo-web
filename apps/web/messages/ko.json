@@ -781,6 +781,7 @@
   "listing_detail_picked": "{count}개 중 {picked}개 선택",
   "listing_detail_card_other_row": "다른 줄에서 선택됨",
   "listing_detail_slot_pick": "오브젝트 고르기",
+  "listing_detail_slot_short": "줄 오브젝트 없음",
   "listing_detail_picker_title": "줄 것 고르기",
   "listing_detail_incomplete_footer": "수락하려면 각 줄에서 요구하는 수만큼 오브젝트를 고르세요.",
   "listing_detail_blocked_body": "작성자 쪽 문제로 교환할 수 없습니다. 예를 들어 제시한 오브젝트가 잠겼거나 계정에서 옮겨졌을 수 있습니다. 해결되면 수락할 수 있습니다.",

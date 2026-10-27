@@ -1,5 +1,6 @@
 import { useObjektBands } from "@/hooks/use-objekt-bands";
 import { m } from "@/i18n/messages";
+import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type { PropsWithClassName } from "@/lib/utils";
 import { cn } from "@/lib/utils";
@@ -136,6 +137,50 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
         </div>
       </div>
     </Fragment>
+  );
+}
+
+type ObjektCardFaceProps = PropsWithClassName<{
+  collection: Objekt.Collection;
+  serial?: number;
+  /** whether it's in the first screenful, which loads eagerly */
+  priority?: boolean;
+}>;
+
+/**
+ * An objekt's card face: the plain front image with the collection number
+ * and serial down its band, which idntt art doesn't print, in the
+ * collection's colours. The card around it gives it its shape and its
+ * accessible name; past the first screenful an image loads as it nears the
+ * viewport.
+ */
+export function ObjektCardFace({
+  collection,
+  serial,
+  priority = false,
+  className,
+}: ObjektCardFaceProps) {
+  return (
+    <span
+      aria-hidden
+      style={{
+        "--objekt-background-color": collection.backgroundColor,
+        "--objekt-text-color": collection.textColor,
+      }}
+      className={cn("relative block", className)}
+    >
+      <img
+        src={getObjektFrontImageUrl(collection, "xs")}
+        alt=""
+        width={291}
+        height={450}
+        decoding="async"
+        fetchPriority={priority ? "high" : "auto"}
+        loading={priority ? "eager" : "lazy"}
+        className="w-full"
+      />
+      <ObjektSidebar collection={collection} serial={serial} />
+    </span>
   );
 }
 

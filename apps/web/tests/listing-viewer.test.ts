@@ -19,7 +19,6 @@ import {
   listingStop,
   type ListingTrade,
   liveHolder,
-  offeredForUnits,
   type OfferRefusal,
   offerRefusal,
   offerRefusalError,
@@ -116,27 +115,6 @@ describe("pool availability", () => {
 });
 
 describe("picking from the pool", () => {
-  test("a claim starts from the first free objekts, in pool order", () => {
-    expect(offeredForUnits([], [3, 5, 6, 8], 2)).toEqual([3, 5]);
-  });
-
-  test("more units keep the viewer's picks and add the next free ones", () => {
-    expect(offeredForUnits([6, 3], [3, 5, 6, 8], 3)).toEqual([6, 3, 5]);
-  });
-
-  test("fewer units keep the earliest picks", () => {
-    expect(offeredForUnits([8, 3, 6], [3, 5, 6, 8], 2)).toEqual([8, 3]);
-  });
-
-  test("a pick that's no longer free gives its place to a free one", () => {
-    expect(offeredForUnits([5, 8], [3, 6, 8], 2)).toEqual([8, 3]);
-  });
-
-  test("more than the free pool takes all of it, and none takes nothing", () => {
-    expect(offeredForUnits([6], [3, 6], 4)).toEqual([6, 3]);
-    expect(offeredForUnits([6, 3], [3, 6], 0)).toEqual([]);
-  });
-
   test("a tap takes a pick out, adds one while there's room, or swaps out the earliest", () => {
     expect(toggleOffered([3, 5], 5, 2)).toEqual([3]);
     expect(toggleOffered([3], 6, 2)).toEqual([3, 6]);

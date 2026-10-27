@@ -1,12 +1,12 @@
 import { m } from "@/i18n/messages";
 import { formatTokenRefusal } from "@/lib/client/errors/trades";
-import { formatSerial, getObjektFrontImageUrl } from "@/lib/client/objekt-util";
+import { formatSerial } from "@/lib/client/objekt-util";
 import { type ComposerShown, refusalLabel } from "@/lib/client/trade-listings";
 import type { TokenRefusalReason } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
 import { MAX_OFFERED } from "@apollo/trades/caps";
 import { IconPlus, IconX } from "@tabler/icons-react";
-import { ObjektSidebar } from "../objekt/common";
+import { ObjektCardFace } from "../objekt/common";
 import { Button } from "../ui/button";
 import { FieldError } from "../ui/field";
 import { OfferPill } from "./selectable-card";
@@ -154,29 +154,13 @@ export function RemovableTile({
 
   return (
     <div className="@container relative">
-      <div
-        style={
-          collection === null
-            ? undefined
-            : {
-                "--objekt-background-color": collection.backgroundColor,
-                "--objekt-text-color": collection.textColor,
-              }
-        }
-        className="relative aspect-photocard w-full overflow-hidden rounded-photocard bg-muted"
-      >
+      <div className="relative aspect-photocard w-full overflow-hidden rounded-photocard bg-muted">
         {collection !== null && (
-          <span className={cn("block", reason !== null && "opacity-60")}>
-            <img
-              src={getObjektFrontImageUrl(collection, "xs")}
-              alt=""
-              className="w-full"
-            />
-            <ObjektSidebar
-              collection={collection}
-              serial={shown?.serial ?? undefined}
-            />
-          </span>
+          <ObjektCardFace
+            collection={collection}
+            serial={shown?.serial ?? undefined}
+            className={cn(reason !== null && "opacity-60")}
+          />
         )}
         {reason !== null && <OfferPill tone="refused">{reason}</OfferPill>}
       </div>

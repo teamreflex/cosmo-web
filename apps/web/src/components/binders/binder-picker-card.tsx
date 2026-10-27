@@ -1,5 +1,5 @@
 import { pickerCardLabel } from "@/components/objekt-picker/picker-filters";
-import { PickerCardFace } from "@/components/objekt-picker/picker-grid";
+import { ObjektCardFace } from "@/components/objekt/common";
 import { m } from "@/i18n/messages";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
@@ -67,7 +67,7 @@ const BinderPickerCard = memo(function BinderPickerCard({
           isDragging && "opacity-40",
         )}
       >
-        <PickerCardFace
+        <ObjektCardFace
           collection={collection}
           serial={token.serial}
           priority={priority}

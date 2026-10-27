@@ -783,6 +783,7 @@
   "listing_detail_picked": "已選 {picked} / {count}",
   "listing_detail_card_other_row": "已用於其他列",
   "listing_detail_slot_pick": "選擇 Objekt",
+  "listing_detail_slot_short": "沒有可給的 Objekt",
   "listing_detail_picker_title": "選擇你要給出的 Objekt",
   "listing_detail_incomplete_footer": "請依每列要求的數量選擇 Objekt 後再接受。",
   "listing_detail_blocked_body": "刊登者那邊的狀況導致交換無法進行，例如提供的 Objekt 已被鎖定或已離開其帳號。問題解決後你就可以接受。",

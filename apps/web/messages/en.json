@@ -794,6 +794,7 @@
   "listing_detail_picked": "{picked} of {count} picked",
   "listing_detail_card_other_row": "picked for another row",
   "listing_detail_slot_pick": "Pick an objekt",
+  "listing_detail_slot_short": "None to give",
   "listing_detail_picker_title": "Pick what you give",
   "listing_detail_incomplete_footer": "Pick as many objekts as each row asks for to accept.",
   "listing_detail_blocked_body": "Something on the poster's side is stopping trades, such as an offered objekt that's been locked or has left their account. You can accept once that's sorted.",

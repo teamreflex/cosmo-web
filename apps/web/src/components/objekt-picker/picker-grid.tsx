@@ -1,9 +1,6 @@
-import { ObjektSidebar } from "@/components/objekt/common";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useElementSize } from "@/hooks/use-element-size";
 import { useGridElementVirtualizer } from "@/hooks/use-grid-virtualizer";
-import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
-import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import { useLayoutEffect } from "react";
 import type { ReactNode, RefObject } from "react";
@@ -98,39 +95,6 @@ export default function PickerGrid({
           );
         })}
     </div>
-  );
-}
-
-type PickerCardFaceProps = {
-  collection: Objekt.Collection;
-  serial: number | undefined;
-  priority: boolean;
-};
-
-/**
- * A picker card's face: the plain front image with the collection number
- * and serial down its band. Cards put it inside their own button. Past the
- * first screenful (`priority`) an image loads as it nears the viewport.
- */
-export function PickerCardFace({
-  collection,
-  serial,
-  priority,
-}: PickerCardFaceProps) {
-  return (
-    <>
-      <img
-        src={getObjektFrontImageUrl(collection, "xs")}
-        alt=""
-        width={291}
-        height={450}
-        decoding="async"
-        fetchPriority={priority ? "high" : "auto"}
-        loading={priority ? "eager" : "lazy"}
-        className="w-full"
-      />
-      <ObjektSidebar collection={collection} serial={serial} />
-    </>
   );
 }
 

@@ -794,6 +794,7 @@
   "listing_detail_picked": "{picked} sur {count} choisis",
   "listing_detail_card_other_row": "choisi pour une autre ligne",
   "listing_detail_slot_pick": "Choisir un objekt",
+  "listing_detail_slot_short": "Aucun à donner",
   "listing_detail_picker_title": "Choisir ce que vous donnez",
   "listing_detail_incomplete_footer": "Choisissez autant d'objekts que chaque ligne en demande pour accepter.",
   "listing_detail_blocked_body": "Un souci du côté de l'auteur bloque les échanges, par exemple un objekt proposé qui a été verrouillé ou qui a quitté son compte. Vous pourrez accepter une fois le problème réglé.",

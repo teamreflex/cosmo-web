@@ -783,6 +783,7 @@
   "listing_detail_picked": "已选 {picked} / {count}",
   "listing_detail_card_other_row": "已用于其他行",
   "listing_detail_slot_pick": "选择 Objekt",
+  "listing_detail_slot_short": "没有可给的 Objekt",
   "listing_detail_picker_title": "选择你要给出的 Objekt",
   "listing_detail_incomplete_footer": "请按每行要求的数量选择 Objekt 后再接受。",
   "listing_detail_blocked_body": "发布者那边的问题导致交换无法进行，例如提供的 Objekt 已被锁定或已离开其账号。问题解决后你即可接受。",

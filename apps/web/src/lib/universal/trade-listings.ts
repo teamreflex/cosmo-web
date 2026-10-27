@@ -665,23 +665,6 @@ export function candidatePanel(
 }
 
 /**
- * The pool objekts a claim of `count` takes: the viewer's own picks that
- * are still free, up to `count`, then the first free ones they haven't
- * picked, in pool order. `free` is the pool's free objekts in pool order.
- */
-export function offeredForUnits(
-  picked: readonly number[],
-  free: readonly number[],
-  count: number,
-) {
-  const kept = picked.filter((tokenId) => free.includes(tokenId));
-  return [...kept, ...free.filter((tokenId) => !kept.includes(tokenId))].slice(
-    0,
-    count,
-  );
-}
-
-/**
  * Picking a pool objekt, or taking it back: a picked one comes out, and
  * one more goes in while there's room, else it takes the place of the
  * earliest pick, so a tap swaps which objekt the viewer gets.

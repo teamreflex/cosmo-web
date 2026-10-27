@@ -1,16 +1,17 @@
 import type { PickerRow, Picks } from "@/hooks/use-listing-picks";
 import { m } from "@/i18n/messages";
-import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import { formatCount, pickShown, wantScope } from "@/lib/client/trade-listings";
 import { env } from "@/lib/env/client";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type {
   Candidate,
   CandidateRow,
   ListingPick,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
-import { IconCircleCheck, IconPlus } from "@tabler/icons-react";
+import { IconCircleCheck, IconPlus, IconX } from "@tabler/icons-react";
 import { Fragment, type ReactNode, useState } from "react";
+import { ObjektCardFace } from "../objekt/common";
 import { RemovableTile, TileCaption } from "./composer-offered";
 import { RangeBadges } from "./range-want";
 import RowPicker from "./row-picker";
@@ -212,34 +213,76 @@ function WantRow({ row, count, side, picked, onPick, onRemove }: WantRowProps) {
       })}
       {Array.from({ length: count - picked.length - short }, (_, slot) => (
         <li key={`open-${slot}`} className={slotClass}>
-          <button
-            type="button"
-            onClick={onPick}
-            className="flex aspect-photocard w-full flex-col items-center justify-center gap-1.5 rounded-photocard border border-dashed border-input p-2 text-center text-xs font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground focus-visible:outline-2 focus-visible:outline-cosmo"
-          >
-            <IconPlus className="size-4" />
-            {m.listing_detail_slot_pick()}
-          </button>
+          <PickSlot
+            collection={row.want.kind === "exact" ? row.want.collection : null}
+            onPick={onPick}
+          />
         </li>
       ))}
-      {/* what the viewer doesn't own: the wanted objekt greyed out, or a blank card for a range */}
-      {Array.from({ length: short }, (_, slot) => (
-        <li key={`short-${slot}`} className={slotClass}>
-          {row.want.kind === "exact" && row.want.collection !== null ? (
-            <img
-              src={getObjektFrontImageUrl(row.want.collection, "xs")}
-              alt=""
-              width={291}
-              height={450}
-              loading="lazy"
-              decoding="async"
-              className="aspect-photocard w-full rounded-photocard opacity-30 grayscale"
-            />
-          ) : (
-            <div className="aspect-photocard rounded-photocard border border-dashed border-teal-500/40" />
-          )}
-        </li>
-      ))}
+      {/* what the viewer doesn't own: the wanted objekt, or every collection an "any of" row takes */}
+      {short > 0 && row.want.kind === "choice"
+        ? row.want.options.map((option) => (
+            <li key={`short-${option.slug}`} className={slotClass}>
+              <MissingCard collection={option.collection} />
+            </li>
+          ))
+        : Array.from({ length: short }, (_, slot) => (
+            <li key={`short-${slot}`} className={slotClass}>
+              <MissingCard
+                collection={
+                  row.want.kind === "exact" ? row.want.collection : null
+                }
+              />
+            </li>
+          ))}
     </RowFrame>
+  );
+}
+
+// a slot that opens the picker, dimming the wanted objekt when the row names one
+function PickSlot({
+  collection,
+  onPick,
+}: {
+  collection: Objekt.Collection | null;
+  onPick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onPick}
+      className={cn(
+        "group relative flex aspect-photocard w-full flex-col items-center justify-center gap-1.5 overflow-hidden rounded-photocard border border-dashed border-input p-2 text-center text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:outline-cosmo",
+        collection === null
+          ? "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+          : "text-white",
+      )}
+    >
+      {collection !== null && (
+        <>
+          <ObjektCardFace
+            collection={collection}
+            className="absolute inset-0"
+          />
+          <span className="absolute inset-0 bg-black/55 transition-colors group-hover:bg-black/35" />
+        </>
+      )}
+      <IconPlus className="relative size-4" />
+      <span className="relative">{m.listing_detail_slot_pick()}</span>
+    </button>
+  );
+}
+
+// a wanted collection greyed out, or a crossed-out slot for a range
+function MissingCard({ collection }: { collection: Objekt.Collection | null }) {
+  return collection === null ? (
+    <div className="flex aspect-photocard w-full flex-col items-center justify-center gap-1.5 rounded-photocard border border-dashed border-input p-2 text-center text-xs font-medium text-muted-foreground">
+      <IconX className="size-4" />
+      {m.listing_detail_slot_short()}
+    </div>
+  ) : (
+    <span className="block aspect-photocard w-full overflow-hidden rounded-photocard opacity-30 grayscale">
+      <ObjektCardFace collection={collection} />
+    </span>
   );
 }

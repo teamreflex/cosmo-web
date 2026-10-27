@@ -781,6 +781,7 @@
   "listing_detail_picked": "{count}個中{picked}個を選択",
   "listing_detail_card_other_row": "別の行で選択済み",
   "listing_detail_slot_pick": "オブジェクトを選ぶ",
+  "listing_detail_slot_short": "渡せるオブジェクトなし",
   "listing_detail_picker_title": "渡すものを選ぶ",
   "listing_detail_incomplete_footer": "承諾するには、各行で求められている数のオブジェクトを選んでください。",
   "listing_detail_blocked_body": "出品者側の問題で取引できません。たとえば、出品中のオブジェクトがロックされたか、アカウントから移動されています。解決すれば承諾できます。",

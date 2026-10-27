@@ -9,7 +9,7 @@ import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconRefresh } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { ReactNode } from "react";
-import { PickerCardFace } from "../objekt-picker/picker-grid";
+import { ObjektCardFace } from "../objekt/common";
 import SelectableCard from "../trade-listings/selectable-card";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
@@ -169,11 +169,7 @@ function CollectionCard({
         style={{ "--objekt-background-color": collection.backgroundColor }}
         className="relative block aspect-photocard w-full cursor-pointer overflow-hidden rounded-photocard bg-secondary outline-2 -outline-offset-2 outline-transparent transition-[outline-color] duration-150 hover:outline-(--objekt-background-color) focus-visible:outline-offset-2 focus-visible:outline-cosmo"
       >
-        <PickerCardFace
-          collection={collection}
-          serial={undefined}
-          priority={priority}
-        />
+        <ObjektCardFace collection={collection} priority={priority} />
       </button>
     </div>
   );

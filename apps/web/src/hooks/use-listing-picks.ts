@@ -3,7 +3,6 @@ import {
   type Candidate,
   type ListingFeedWant,
   type ListingPick,
-  offeredForUnits,
   toggleOffered,
   type TradeListing,
 } from "@/lib/universal/trade-listings";
@@ -51,15 +50,20 @@ export function useListingPicks(
   );
   const [state, setState] = useState(() => ({
     units: 1,
-    offered: offeredForUnits([], free, unitSize),
+    offered: Array.of<number>(),
     picked: rows.map((): ListingPick[] => []),
   }));
   if (viewer === null) return null;
 
   const { units, picked } = state;
-  const offered = state.offered.filter((tokenId) => free.includes(tokenId));
-  const scaled = scaleWants(wants, units);
+  const ratio = listingRatio(listing, listing.items.length);
   const offeredCount = unitSize * units;
+  // a bundle takes its whole pool, so only a ratio's pool picks are the viewer's to make
+  const offered =
+    ratio === null
+      ? free.slice(0, offeredCount)
+      : state.offered.filter((tokenId) => free.includes(tokenId));
+  const scaled = scaleWants(wants, units);
   const giveTotal = totalWanted(scaled);
   const update = (next: (current: typeof state) => Partial<typeof state>) =>
     setState((current) => ({ ...current, ...next(current) }));
@@ -68,7 +72,7 @@ export function useListingPicks(
     units,
     // the most the viewer can take; the stepper starts at one even when they can't fill it
     maxUnits: Math.max(viewer.units, 1),
-    ratio: listingRatio(listing, listing.items.length),
+    ratio,
     freeCount: free.length,
     takesOffers: offers,
     offered,
@@ -102,7 +106,9 @@ export function useListingPicks(
       const clamped = Math.min(Math.max(next, 1), Math.max(viewer.units, 1));
       update((current) => ({
         units: clamped,
-        offered: offeredForUnits(current.offered, free, unitSize * clamped),
+        offered: current.offered
+          .filter((tokenId) => free.includes(tokenId))
+          .slice(0, unitSize * clamped),
         picked: current.picked.map((picks, index) =>
           picks.slice(0, (wants[index]?.count ?? 0) * clamped),
         ),

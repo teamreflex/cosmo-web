@@ -1,4 +1,4 @@
-import { PickerCardFace } from "@/components/objekt-picker/picker-grid";
+import { ObjektCardFace } from "@/components/objekt/common";
 import { formatSerial } from "@/lib/client/objekt-util";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
@@ -64,18 +64,15 @@ export default function SelectableCard({
           picked && "outline-foreground hover:outline-foreground",
         )}
       >
-        <span
+        <ObjektCardFace
+          collection={collection}
+          serial={serial}
+          priority={priority}
           className={cn(
-            "block transition-opacity",
+            "transition-opacity",
             unpickable ? "opacity-40" : !picked && faded && "opacity-60",
           )}
-        >
-          <PickerCardFace
-            collection={collection}
-            serial={serial}
-            priority={priority}
-          />
-        </span>
+        />
 
         {picked && (
           <span className="absolute top-[4cqw] left-[4cqw] grid size-5 place-items-center rounded-full bg-foreground text-background">
