@@ -1089,6 +1089,7 @@
   "notification_trade_dispute_resolved_cancelled": "A moderator resolved the dispute on your trade with {#b}{username}{/b}: cancelled",
   "notification_trade_deadline_extended": "A moderator gave your trade with {#b}{username}{/b} more time",
   "notification_listing_closed": "Your listing closed: {#b}{objekt}{/b} is no longer available",
+  "notification_listing_closed_too_few": "Your listing closed: there aren't enough objekts left for another trade",
   "notification_trade_message": "New messages from {#b}{username}{/b}",
   "notification_trade_message_staff": "{appName} staff member {#b}{staff}{/b} wrote in your trade with {#b}{username}{/b}",
   "notification_trade_message_staff_unnamed": "{appName} staff wrote in your trade with {#b}{username}{/b}",

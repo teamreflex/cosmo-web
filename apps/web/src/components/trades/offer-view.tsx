@@ -1,10 +1,10 @@
 import { m } from "@/i18n/messages";
-import { itemName, partyName, tradeTimeFormat } from "@/lib/client/trades";
+import { partyName } from "@/lib/client/trade-listings";
+import { itemName, offerRoles, tradeTimeFormat } from "@/lib/client/trades";
 import { env } from "@/lib/env/client";
 import type { TradeView } from "@/lib/universal/trades";
 import { cn } from "@/lib/utils";
 import type { TradeSide } from "@apollo/database/web/types";
-import { otherSide } from "@apollo/trades/lifecycle";
 import { CLAIM_WINDOW, OFFER_WINDOW } from "@apollo/trades/timers";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import {
@@ -105,8 +105,7 @@ export function OfferStrip({
   /** the viewer's actions, or nothing when none apply */
   children?: ReactNode;
 }) {
-  const answeredBy = otherSide(trade.proposedBy);
-  const recipient = partyName(trade.parties[answeredBy]);
+  const { proposedBy, answeredBy, sender, recipient } = offerRoles(trade);
   // a counter names the offer it answers, and links back to it
   const { parentId } = trade;
   const parent =
@@ -118,12 +117,7 @@ export function OfferStrip({
               ? m.trade_page_offer_counter_them
               : m.trade_page_offer_counter_of
           }
-          inputs={{
-            name:
-              side === answeredBy
-                ? partyName(trade.parties[trade.proposedBy])
-                : recipient,
-          }}
+          inputs={{ name: side === answeredBy ? sender : recipient }}
           markup={{
             ...bold,
             link: ({ children: label }) => (
@@ -159,15 +153,14 @@ export function OfferStrip({
   }
 
   const counts = {
-    give: trade.items.filter((item) => item.sender === trade.proposedBy).length,
+    give: trade.items.filter((item) => item.sender === proposedBy).length,
     get: trade.items.filter((item) => item.sender === answeredBy).length,
   };
-  const sender = partyName(trade.parties[trade.proposedBy]);
   return (
     <div className="flex flex-wrap items-center gap-3 border-t border-amber-500/40 bg-amber-500/10 px-4 py-3">
       <div className="flex min-w-0 flex-[1_1_18rem] flex-col gap-0.5 text-sm wrap-anywhere">
         <p className="font-medium">
-          {side === trade.proposedBy
+          {side === proposedBy
             ? (parentId === null
                 ? m.trade_page_offer_waiting_you
                 : m.trade_page_offer_waiting_counter_you)({
@@ -186,7 +179,7 @@ export function OfferStrip({
           <ParaglideMessage
             message={
               // an offer on a listing, which its poster answers, can't be countered
-              trade.proposedBy === "to"
+              proposedBy === "to"
                 ? m.trade_page_offer_listing_waiting_meta
                 : m.trade_page_offer_waiting_meta
             }
@@ -225,9 +218,7 @@ export function OfferEndedAlert({
   trade: OfferTrade;
   side: TradeSide | null;
 }) {
-  const answeredBy = otherSide(trade.proposedBy);
-  const sender = partyName(trade.parties[trade.proposedBy]);
-  const recipient = partyName(trade.parties[answeredBy]);
+  const { proposedBy, answeredBy, sender, recipient } = offerRoles(trade);
 
   if (trade.closer !== null) {
     return (
@@ -251,7 +242,7 @@ export function OfferEndedAlert({
         <Alert>
           <IconX />
           <AlertTitle>
-            {side === trade.proposedBy
+            {side === proposedBy
               ? m.trade_page_offer_declined_them({ name: recipient })
               : side === answeredBy
                 ? m.trade_page_offer_declined_you({ name: sender })
@@ -268,7 +259,7 @@ export function OfferEndedAlert({
         <Alert>
           <IconArrowBackUp />
           <AlertTitle>
-            {side === trade.proposedBy
+            {side === proposedBy
               ? m.trade_page_offer_withdrawn_you()
               : m.trade_page_offer_withdrawn_them({ name: sender })}
           </AlertTitle>
@@ -412,8 +403,7 @@ function CounteredAlert({
   side: TradeSide | null;
 }) {
   const { counter } = trade;
-  const answeredBy = otherSide(trade.proposedBy);
-  const recipient = partyName(trade.parties[answeredBy]);
+  const { proposedBy, answeredBy, sender, recipient } = offerRoles(trade);
   const offered = new Set(trade.items.map((item) => item.tokenId));
   const countered = new Set(counter?.items.map((item) => item.tokenId));
   const added = (counter?.items ?? [])
@@ -446,12 +436,10 @@ function CounteredAlert({
         {/* once the counter is answered or ended, its own page says how */}
         {counter !== null && !counter.pending
           ? m.trade_page_offer_countered_note_answered()
-          : side === trade.proposedBy
+          : side === proposedBy
             ? m.trade_page_offer_countered_note_you()
             : side === answeredBy
-              ? m.trade_page_offer_countered_note_them({
-                  name: partyName(trade.parties[trade.proposedBy]),
-                })
+              ? m.trade_page_offer_countered_note_them({ name: sender })
               : m.trade_page_offer_countered_note_staff()}
       </AlertDescription>
       {counter !== null && (

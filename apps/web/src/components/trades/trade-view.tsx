@@ -2,9 +2,10 @@ import { useHasPermission } from "@/hooks/use-has-permission";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { m } from "@/i18n/messages";
 import { reportReasonLabel } from "@/lib/client/reports";
+import { partyName } from "@/lib/client/trade-listings";
 import {
   itemName,
-  partyName,
+  offerRoles,
   partyRole,
   tradeTimeFormat,
 } from "@/lib/client/trades";
@@ -681,14 +682,11 @@ const steppedStatuses: TradeStatus[] = [
  * and an accepted trade says who accepted whose offer or listing.
  */
 function acceptStepTitle(trade: Trade, side: TradeSide | null) {
-  const proposer = trade.proposedBy ?? "from";
-  const accepter = otherSide(proposer);
-  const sender = partyName(trade.parties[proposer]);
-  const recipient = partyName(trade.parties[accepter]);
+  const { answeredBy, sender, recipient } = offerRoles(trade);
   const listing = trade.proposedBy === null;
 
   if (trade.state.status === "pending") {
-    return side === accepter
+    return side === answeredBy
       ? m.trade_page_step_offer_you()
       : m.trade_page_step_offer_them({ name: recipient });
   }
@@ -697,7 +695,7 @@ function acceptStepTitle(trade: Trade, side: TradeSide | null) {
       ? m.trade_page_step_accepted_staff({ claimer: recipient, poster: sender })
       : m.trade_page_step_accepted_offer_staff({ sender, recipient });
   }
-  if (side === accepter) {
+  if (side === answeredBy) {
     return (
       listing
         ? m.trade_page_step_accepted_you

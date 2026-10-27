@@ -10,7 +10,7 @@ import {
 } from "@apollo/database/web/schema";
 import type { NewTradeOfferItem } from "@apollo/database/web/types";
 import type { TradeWant } from "@apollo/trades/allocate";
-import { pickSerials } from "@apollo/trades/holdings";
+import { firstRefusal, pickSerials } from "@apollo/trades/holdings";
 import { OFFER_WINDOW } from "@apollo/trades/timers";
 import { isEqual } from "@apollo/util";
 import { and, eq, exists, inArray, isNotNull, or, sql } from "drizzle-orm";
@@ -21,7 +21,6 @@ import type { OfferSerials } from "../../universal/trades";
 import { db, type WebTx } from "../db";
 import { tradePair } from "../objekts/lists.server";
 import {
-  firstRefusal,
   readCandidates,
   readIndexerTokens,
   readWebTokenFlags,

@@ -1066,6 +1066,7 @@
   "notification_trade_dispute_resolved_cancelled": "모더레이터가 {#b}{username}{/b}님과의 교환 이의를 해결했습니다: 취소",
   "notification_trade_deadline_extended": "모더레이터가 {#b}{username}{/b}님과의 교환 시간을 연장했습니다",
   "notification_listing_closed": "교환 글이 종료되었습니다: {#b}{objekt}{/b}을(를) 더 이상 사용할 수 없습니다",
+  "notification_listing_closed_too_few": "교환 글이 종료되었습니다: 다음 교환에 필요한 오브젝트가 부족합니다",
   "notification_trade_message": "{#b}{username}{/b}님의 새 메시지가 있습니다",
   "notification_trade_message_staff": "{appName} 스태프 {#b}{staff}{/b}님이 {#b}{username}{/b}님과의 교환에 메시지를 남겼습니다",
   "notification_trade_message_staff_unnamed": "{appName} 스태프가 {#b}{username}{/b}님과의 교환에 메시지를 남겼습니다",

@@ -15,20 +15,27 @@ import {
 } from "@/lib/server/trades/claim.server";
 import {
   claimStanding,
+  endedOffer,
+  listingStateExtras,
   offerSides,
   readCandidateSide,
-  readEndedOffer,
-  readListingState,
-  readListingTrades,
+  readClaimerTrade,
+  readLatestAcceptedTrade,
   readPosterSide,
+  toListingState,
   tradeSize,
 } from "@/lib/server/trades/detail.server";
-import { hydrateListings, storedWants } from "@/lib/server/trades/feed.server";
+import {
+  hydrateListings,
+  poolFlags,
+  poolItemExtras,
+  storedWants,
+} from "@/lib/server/trades/feed.server";
 import {
   countRangeMatches,
+  liveItem,
+  readIndexerTokens,
   readTokenStates,
-  readWebTokenFlags,
-  tokenRefusals,
 } from "@/lib/server/trades/holdings.server";
 import {
   checkTerms,
@@ -47,9 +54,8 @@ import {
   refuseEdit,
 } from "@/lib/server/trades/listings.server";
 import {
+  posterBlocked,
   posterLinkColumns,
-  posterRefusal,
-  toPosterAccount,
 } from "@/lib/server/trades/poster.server";
 import { refusePoster } from "@/lib/server/trades/trade.server";
 import { ExpectedError } from "@/lib/universal/errors/expected";
@@ -72,8 +78,9 @@ import {
 } from "@apollo/database/web/schema";
 import { bumpUpdatedAt } from "@apollo/database/web/sql";
 import { openTradeStatuses } from "@apollo/database/web/types";
-import { claimCap } from "@apollo/trades/caps";
-import { listingTransition, takesOffers } from "@apollo/trades/lifecycle";
+import { claimCap, MAX_WANT_ROWS } from "@apollo/trades/caps";
+import { tokenRefusals } from "@apollo/trades/holdings";
+import { listingTransition, listingUnitSize } from "@apollo/trades/lifecycle";
 import {
   claimListingInputSchema,
   editListingInputSchema,
@@ -85,7 +92,8 @@ import {
 import { rangeFilterSchema } from "@apollo/trades/range";
 import { isEqual } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, inArray, isNull, ne, or, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, or, sql } from "drizzle-orm";
+import * as z from "zod";
 
 /**
  * Post a trade listing from the caller's linked address. A token the poster
@@ -314,10 +322,11 @@ export const $claimListing = createServerFn({ method: "POST" })
   });
 
 /**
- * How many collections a range row matches, for the composer's preview.
+ * How many collections each range row matches, in the rows' order, for the
+ * composer's preview and the listing page, in one indexer statement.
  */
-export const $fetchRangeMatchCount = createServerFn({ method: "GET" })
-  .validator(rangeFilterSchema)
+export const $fetchRangeMatchCounts = createServerFn({ method: "GET" })
+  .validator(z.array(rangeFilterSchema).min(1).max(MAX_WANT_ROWS))
   .handler(({ data }) => countRangeMatches(data));
 
 /**
@@ -354,17 +363,11 @@ export const $fetchTradeTokenStates = createServerFn({ method: "GET" })
           .innerJoin(tradeOffers, eq(tradeOfferItems.offerId, tradeOffers.id))
           .where(
             and(
-              eq(tradeOfferItems.live, true),
+              liveItem(edited),
               or(
                 eq(tradeOffers.fromAddress, address),
                 eq(tradeOffers.toAddress, address),
               ),
-              edited === undefined
-                ? undefined
-                : or(
-                    isNull(tradeOfferItems.listingId),
-                    ne(tradeOfferItems.listingId, edited),
-                  ),
             ),
           ),
       )
@@ -405,7 +408,9 @@ export const $fetchOfferedTokenRefusals = createServerFn({ method: "GET" })
  * A listing's public detail, or null when the id isn't a listing: every
  * objekt it has offered with where it stands, the pool's and the ones that
  * left it. It never names who holds a claim: no claimer id, address or
- * tokens, only that an objekt is in a trade.
+ * tokens, only that an objekt is in a trade. One statement reads the
+ * listing, its pool's flags and a filled one's state, then one indexer
+ * statement its objekts.
  */
 export const $fetchTradeListing = createServerFn({ method: "GET" })
   .validator(listingIdInputSchema)
@@ -423,8 +428,9 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
         fromAddress: true,
         unitSize: true,
       },
+      extras: listingStateExtras,
       with: {
-        items: { orderBy: { id: "asc" } },
+        items: { orderBy: { id: "asc" }, extras: poolItemExtras },
         wants: storedWants,
         fromUser: { with: { cosmoAccount: posterLinkColumns } },
         fromCosmo: { columns: { username: true } },
@@ -432,29 +438,37 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
       },
     });
     if (!row) return null;
-    // trade_offers_unit_size_chk: every listing has a unit size
-    if (row.unitSize === null) throw new Error(`listing ${row.id} has no unit`);
+    const unitSize = listingUnitSize(row);
 
     const {
       listings: [listing],
       states,
     } = await hydrateListings([row]);
     if (!listing) return null;
-    const state = await readListingState(row);
-    const flags = await readWebTokenFlags(
-      db,
-      row.fromAddress,
-      row.items.flatMap((item) => item.tokenId ?? []),
+    const state = toListingState(row);
+    const flags = poolFlags(row.items);
+    // an objekt that left and was offered again shows once, as its latest row
+    const latest = new Map(
+      listing.items.map((item, index) => [item.tokenId, index]),
     );
-    const items = listing.items.map((item, index): ListingItem => ({
-      ...item,
-      availability: poolAvailability(
-        { tokenId: item.tokenId, leftAt: row.items[index]?.leftAt ?? null },
-        states.get(item.tokenId),
-        listing.fromAddress,
-        flags,
-      ),
-    }));
+    const items = listing.items.flatMap((item, index): ListingItem[] =>
+      latest.get(item.tokenId) === index
+        ? [
+            {
+              ...item,
+              availability: poolAvailability(
+                {
+                  tokenId: item.tokenId,
+                  leftAt: row.items[index]?.leftAt ?? null,
+                },
+                states.get(item.tokenId),
+                listing.fromAddress,
+                flags,
+              ),
+            },
+          ]
+        : [],
+    );
     return {
       id: listing.id,
       createdAt: listing.createdAt,
@@ -463,7 +477,7 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
       poster: listing.fromUser && toPublicUser(listing.fromUser),
       cosmoUsername: listing.fromCosmo?.username ?? null,
       rep: listing.fromUser && toFeedbackRep(listing.fromStats),
-      unitSize: row.unitSize,
+      unitSize,
       items,
       wants: listing.wants,
       state,
@@ -472,14 +486,12 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
         state.status === "open"
           ? listingStop(
               items,
-              row.unitSize,
-              posterRefusal(
-                {
-                  wantKinds: listing.wants.map((want) => want.kind),
-                  poster: listing.fromUser && toPosterAccount(listing.fromUser),
-                },
+              unitSize,
+              posterBlocked(
+                listing.wants,
+                listing.fromUser,
                 listing.fromAddress,
-              ) !== null,
+              ),
             )
           : null,
     };
@@ -509,7 +521,11 @@ export const $fetchTradeListingViewer = createServerFn({ method: "GET" })
         updatedAt: true,
       },
       with: {
-        items: { where: { leftAt: { isNull: true } }, orderBy: { id: "asc" } },
+        items: {
+          where: { leftAt: { isNull: true } },
+          orderBy: { id: "asc" },
+          extras: poolItemExtras,
+        },
         wants: storedWants,
         fromUser: {
           columns: { banned: true, banExpires: true },
@@ -520,11 +536,7 @@ export const $fetchTradeListingViewer = createServerFn({ method: "GET" })
     if (!listing) return null;
     const viewerId = context.session?.user.id;
     if (viewerId === undefined) return { role: "anonymous" };
-    // trade_offers_unit_size_chk: every listing has a unit size
-    if (listing.unitSize === null) {
-      throw new Error(`listing ${listing.id} has no unit`);
-    }
-    const { unitSize } = listing;
+    const unitSize = listingUnitSize(listing);
     const own = listing.fromUserId === viewerId;
     const wants = listing.wants.map((want) => storedWantSchema.parse(want));
     const pool = listing.items.map(
@@ -532,13 +544,12 @@ export const $fetchTradeListingViewer = createServerFn({ method: "GET" })
     );
 
     if (listing.status !== "open") {
-      const trades = await readListingTrades(
-        listing.id,
-        own ? undefined : viewerId,
-      );
       return {
         role: "closed",
-        tradeId: trades.find((trade) => trade.status !== "pending")?.id ?? null,
+        tradeId: await readLatestAcceptedTrade(
+          listing.id,
+          own ? undefined : viewerId,
+        ),
       };
     }
     if (own) {
@@ -550,22 +561,17 @@ export const $fetchTradeListingViewer = createServerFn({ method: "GET" })
           unitSize,
           wants,
           pool,
-          posterRefused:
-            posterRefusal(
-              {
-                wantKinds: wants.map((want) => want.kind),
-                poster: listing.fromUser && toPosterAccount(listing.fromUser),
-              },
-              listing.fromAddress,
-            ) !== null,
+          posterRefused: posterBlocked(
+            wants,
+            listing.fromUser,
+            listing.fromAddress,
+          ),
         })),
       };
     }
 
-    // a claimer holds one live trade or pending offer per listing
-    const [trade] = (await readListingTrades(listing.id, viewerId)).filter(
-      (row) => openTradeStatuses.some((status) => status === row.status),
-    );
+    // a claimer's latest trade from the listing is their live one or pending offer, if any
+    const trade = await readClaimerTrade(listing.id, viewerId);
     if (trade?.status === "pending" && trade.expiresAt !== null) {
       return {
         role: "offerer",
@@ -574,7 +580,10 @@ export const $fetchTradeListingViewer = createServerFn({ method: "GET" })
         ...(await offerSides(trade)),
       };
     }
-    if (trade !== undefined) {
+    if (
+      trade !== undefined &&
+      openTradeStatuses.some((status) => status === trade.status)
+    ) {
       return {
         role: "claimer",
         tradeId: trade.id,
@@ -583,25 +592,26 @@ export const $fetchTradeListingViewer = createServerFn({ method: "GET" })
       };
     }
 
-    const { address, ...standing } = await claimStanding(db, viewerId);
+    const [{ address, ...standing }, states] = await Promise.all([
+      claimStanding(db, viewerId),
+      readIndexerTokens(pool),
+    ]);
     if (address === null) return { role: "unlinked" };
-    const endedOffer = await readEndedOffer(listing.id, viewerId);
 
-    const holdings = await readTokenStates(listing.fromAddress, pool);
+    const flags = poolFlags(listing.items);
     const availability = pool.map((tokenId) => ({
       tokenId,
       availability: poolAvailability(
         { tokenId, leftAt: null },
-        holdings.states.get(tokenId),
+        states.get(tokenId),
         listing.fromAddress,
-        holdings,
+        flags,
       ),
     }));
-    // whether the poster's account stops a claim is $fetchTradeListing's `blocked`
+    // whether the poster's account stops a claim is $fetchTradeListing's `stop`
     return {
       role: "candidate",
       updatedAt: listing.updatedAt,
-      takesOffers: takesOffers(wants),
       pool: availability,
       ...(await readCandidateSide(address, wants, {
         free: availability.filter((item) => item.availability.kind === "free")
@@ -610,6 +620,6 @@ export const $fetchTradeListingViewer = createServerFn({ method: "GET" })
       })),
       claims: { active: standing.active, cap: claimCap(standing) },
       ownAddress: isEqual(address, listing.fromAddress),
-      endedOffer,
+      endedOffer: trade === undefined ? null : endedOffer(trade.status),
     };
   });

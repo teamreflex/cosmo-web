@@ -1,34 +1,41 @@
 import { validOnlineTypes } from "@apollo/cosmo/types/common";
+import { liveTradeStatuses } from "@apollo/database/web/types";
 import {
   listingOfferRefusal,
   type OfferedToken,
   type TradeWant,
 } from "@apollo/trades/allocate";
 import {
+  firstRefusal,
   type TokenFlags,
+  type TokenOwnership,
+  type TokenRefusal,
   tokenRefusal,
   type TokenRefusalReason,
 } from "@apollo/trades/holdings";
+import { takesOffers } from "@apollo/trades/lifecycle";
 import type { ObjektAttributes, RangeFilter } from "@apollo/trades/range";
 import * as z from "zod";
 import type { PublicUser } from "./auth";
 import type { AuthErrorCode } from "./errors/auth";
-import type { TradeErrorCode } from "./errors/trades";
+import { ExpectedError } from "./errors/expected";
+import type {
+  ClaimTokenRefusal,
+  ListingPickRefusal,
+  OfferPartnerTokenRefusal,
+  TradeErrorCode,
+} from "./errors/trades";
 import type { FeedbackRep } from "./feedback";
 import type { Objekt } from "./objekt-conversion";
+import type { TradeDispute, TradeParty } from "./trades";
 
-export type { TokenRefusalReason } from "@apollo/trades/holdings";
+export type { TokenRefusal, TokenRefusalReason } from "@apollo/trades/holdings";
 
 /**
- * A posting or edit refused over one offered token, returned rather than
- * thrown so the composer can name the objekt and serial.
+ * A posting or edit is refused over one offered token (TokenRefusal) by
+ * returning it rather than throwing, so the composer can name the objekt
+ * and serial.
  */
-export type TokenRefusal = {
-  kind: "token_unavailable";
-  tokenId: number;
-  reason: TokenRefusalReason;
-};
-
 export type ListingWriteResult =
   { kind: "saved"; listingId: string } | TokenRefusal;
 
@@ -88,10 +95,12 @@ export const storedWantSchema = z.discriminatedUnion("kind", [
 export type StoredWant = z.output<typeof storedWantSchema>;
 
 /**
- * A stored want as allocation and the assignment check read it, or null
- * for a payment row, which no objekt fills.
+ * A stored want objekts fill, as allocation and the assignment check read
+ * it.
  */
-export function toTradeWant(want: StoredWant): TradeWant | null {
+export function toTradeWant(
+  want: Exclude<StoredWant, { kind: "payment" }>,
+): TradeWant {
   switch (want.kind) {
     case "exact":
       return { kind: "exact", slug: want.objekt.slug, count: want.count };
@@ -103,9 +112,16 @@ export function toTradeWant(want: StoredWant): TradeWant | null {
         slugs: want.options.map((option) => option.slug),
         count: want.count,
       };
-    case "payment":
-      return null;
   }
+}
+
+/**
+ * The want rows objekts fill, in order, leaving out payment rows.
+ */
+export function tradeWants(wants: readonly StoredWant[]) {
+  return wants.flatMap((want) =>
+    want.kind === "payment" ? [] : [toTradeWant(want)],
+  );
 }
 
 /**
@@ -228,14 +244,10 @@ export type PoolAvailability =
  * reads: missing when the indexer doesn't know the id.
  */
 type IndexedToken =
-  | { kind: "missing"; tokenId: number }
-  | {
-      kind: "found";
-      tokenId: number;
-      owner: string;
-      transferable: boolean;
+  | Extract<TokenOwnership, { kind: "missing" }>
+  | (Extract<TokenOwnership, { kind: "found" }> & {
       attributes: ObjektAttributes;
-    };
+    });
 
 /**
  * Where a listing's objekt stands (PoolAvailability): a row with `leftAt`
@@ -278,7 +290,7 @@ export type ListingItem = ListingFeedItem & { availability: PoolAvailability };
 /**
  * What stops every claim on an open listing right now:
  * - `blocked`: a fault on the poster's side. Their account or terms refuse
- *   any claim (posterRefusal()), or fewer than a trade's worth of the pool
+ *   any claim (posterBlocked()), or fewer than a trade's worth of the pool
  *   is free or in a trade, the rest locked, moved or untransferable.
  * - `busy`: nothing is wrong, but trades hold so much of the pool that no
  *   trade's worth is free until one of them ends.
@@ -359,21 +371,10 @@ export type CandidateRow = {
 };
 
 /**
- * The claimer on one of the poster's trades or offers: their Apollo user,
- * null once their account is deleted, the COSMO username behind the
- * address the trade pinned, and that address's rating.
+ * How many objekts each side of a trade from a listing sends, the poster's
+ * first: "2 for 3". A listing's own ratio counts one unit.
  */
-export type ListingCounterparty = {
-  user: PublicUser | null;
-  cosmoUsername: string | null;
-  rep: FeedbackRep | null;
-};
-
-/**
- * How many objekts each side of a trade from a listing sends: `from` the
- * poster's picks from the pool, `to` the claimer's, "2 for 2".
- */
-export type ListingTradeSize = { from: number; to: number };
+export type TradeRatio = { give: number; get: number };
 
 /**
  * Why the poster can't accept an offer on their listing right now, as the
@@ -395,14 +396,10 @@ export type OfferRefusal =
     };
 
 /**
- * Why accepting the offer would be refused right now, judged in
- * `$acceptOffer`'s order (recheckListingOffer() in claim.server.ts), or null
- * when it would go through: expired; no longer fitting the listing's pool,
- * unit size and rows (listingOfferRefusal), where a claimer token the
- * indexer lost is named; the poster's account; a pick the poster can't
- * give, live elsewhere or otherwise; the claimer's link to the pinned
- * address, ban or claim cap, never saying which; then a claimer token
- * they can't give, named but not why.
+ * Why accepting the offer would be refused right now, or null when it would
+ * go through, judged in `$acceptOffer`'s order and with its codes
+ * (recheckListingOffer() in claim.server.ts). A refusal over the claimer's
+ * side never says whether their link, ban or cap stopped it.
  */
 export function offerRefusal(
   offer: {
@@ -446,30 +443,60 @@ export function offerRefusal(
   if (misfit) return { code: "listing_updated" };
   if (listing.posterRefused) return { code: "cosmo_not_linked" };
 
-  const refused = (
-    tokenIds: readonly number[],
-    address: string,
-    flags: TokenFlags,
-  ) =>
-    tokenIds.flatMap((tokenId) => {
-      const reason = tokenRefusal(
-        tokens.states.get(tokenId) ?? { kind: "missing", tokenId },
-        address,
-        flags,
-      );
-      return reason === null ? [] : [{ tokenId, reason }];
-    })[0];
-  const pick = refused(offer.picks, listing.fromAddress, tokens.poster);
+  const pick = firstRefusal(
+    offer.picks,
+    { states: tokens.states, ...tokens.poster },
+    listing.fromAddress,
+  );
   if (pick?.reason === "live") {
     return { code: "listing_pick_unavailable", tokenId: pick.tokenId };
   }
-  if (pick) return { code: "claim_token_unavailable", ...pick };
+  if (pick) {
+    return {
+      code: "claim_token_unavailable",
+      tokenId: pick.tokenId,
+      reason: pick.reason,
+    };
+  }
 
   if (!claimer.linked || claimer.atCap) {
     return { code: "offer_unavailable", tokenId: null };
   }
-  const token = refused(offer.given, claimer.address, tokens.claimer);
+  const token = firstRefusal(
+    offer.given,
+    { states: tokens.states, ...tokens.claimer },
+    claimer.address,
+  );
   return token ? { code: "offer_unavailable", tokenId: token.tokenId } : null;
+}
+
+/**
+ * The error `$acceptOffer` throws for a refusal, carrying the token it
+ * names. A refusal over the claimer's side names their token but never
+ * why, as with direct offers.
+ */
+export function offerRefusalError(refusal: OfferRefusal): ExpectedError {
+  switch (refusal.code) {
+    case "offer_expired":
+    case "listing_updated":
+    case "cosmo_not_linked":
+      return new ExpectedError(refusal.code);
+    case "offer_unavailable":
+      return refusal.tokenId === null
+        ? new ExpectedError(refusal.code)
+        : new ExpectedError(refusal.code, {
+            tokenId: refusal.tokenId,
+          } satisfies OfferPartnerTokenRefusal);
+    case "listing_pick_unavailable":
+      return new ExpectedError(refusal.code, {
+        tokenId: refusal.tokenId,
+      } satisfies ListingPickRefusal);
+    case "claim_token_unavailable":
+      return new ExpectedError(refusal.code, {
+        tokenId: refusal.tokenId,
+        reason: refusal.reason,
+      } satisfies ClaimTokenRefusal);
+  }
 }
 
 /**
@@ -510,8 +537,7 @@ export function refusedOfferToken(
  */
 export type ListingOfferSummary = {
   tradeId: string;
-  claimer: ListingCounterparty;
-  size: ListingTradeSize;
+  claimer: TradeParty;
   picks: ListingFeedItem[];
   given: ListingFeedItem[];
   expiresAt: Date;
@@ -519,27 +545,43 @@ export type ListingOfferSummary = {
 };
 
 /**
- * A trade a claim or an accepted offer started from the poster's listing,
- * when it was accepted, and the pool objekts it took:
- * - `accepted`: live, with its deadline, how many of the poster's objekts
- *   are still to send, and whether it waits on the poster (needsYou() in
- *   lifecycle.ts, as My trades says it);
- * - `disputed`: frozen with the time its deadline had left when the
- *   dispute opened, `paused` when staff or the deadline froze it rather
- *   than a party's dispute;
- * - finished, with when it ended.
+ * A trade a claim or an accepted offer started from the poster's listing:
+ * the pool objekts it took, how many the claimer gives, and where it stands
+ * as My trades says it (needsYou() for an accepted one).
  */
 export type ListingTrade = {
   tradeId: string;
-  claimer: ListingCounterparty;
-  size: ListingTradeSize;
+  claimer: TradeParty;
   acceptedAt: Date;
   tokenIds: number[];
+  givenCount: number;
 } & (
   | { status: "accepted"; deadlineAt: Date; toSend: number; needsYou: boolean }
-  | { status: "disputed"; paused: boolean; deadlineAt: Date; pausedAt: Date }
+  | { status: "disputed"; deadlineAt: Date; dispute: TradeDispute | null }
   | { status: "completed" | "cancelled" | "timed_out"; endedAt: Date }
 );
+
+/**
+ * Whether a trade from the listing is live: accepted, or frozen by a
+ * dispute.
+ */
+export function isLiveTrade(
+  trade: ListingTrade,
+): trade is Extract<
+  ListingTrade,
+  { status: (typeof liveTradeStatuses)[number] }
+> {
+  return liveTradeStatuses.some((status) => status === trade.status);
+}
+
+/**
+ * The listing's live trade that holds the pool objekt, if any.
+ */
+export function liveHolder(tokenId: number, trades: readonly ListingTrade[]) {
+  return trades.find(
+    (trade) => isLiveTrade(trade) && trade.tokenIds.includes(tokenId),
+  );
+}
 
 /**
  * How the viewer's latest offer on a listing ended without a trade, when
@@ -550,26 +592,13 @@ export type ListingTrade = {
 export type EndedOfferStatus = "declined" | "expired" | "stale";
 
 /**
- * What the listing page shows the signed-in viewer in place of Accept.
- * - `poster`: their own open listing, with its pending offers and every
- *   trade it started, newest first.
- * - `claimer`: a viewer with a live trade from the listing, its deadline
- *   null while it's disputed.
- * - `offerer`: a viewer with a pending offer on the listing, with the pool
- *   objekts it picked and the viewer's it gives.
- * - `closed`: the listing ended; the public payload says how. `tradeId` is
- *   the latest trade from it the viewer was a party to.
- * - `candidate`: anyone else on an open listing, with the most units they
- *   can take (`units`, 0 when they can't fill one), their side of each want
- *   row allocated at that many units (one unit's when it's 0, which shows
- *   what's short), each pool objekt as it stands, whether the listing
- *   takes offers rather than claims, the viewer's claim count and whether
- *   their linked address is the one the listing offers from
- *   (`ownAddress`). `endedOffer` says how their latest trade from the
- *   listing ended when it was an offer the poster or the listing ended,
- *   else null. Whether the poster's account stops any claim is the
- *   listing's `blocked`. `updatedAt` is the listing version all of it was
- *   read against, which Accept sends back.
+ * What the listing page shows the signed-in viewer in place of Accept: the
+ * poster's offers and trades, the viewer's own live trade (`claimer`, its
+ * deadline null while disputed) or pending offer (`offerer`), or for anyone
+ * else (`candidate`) the most units they can take, 0 when they can't fill
+ * one, with their picks at that size and what limits them. `updatedAt` is
+ * the listing version a candidate's answer was read against, which Accept
+ * sends back; the poster's side stopping claims is the listing's `stop`.
  */
 export type ListingViewer =
   | { role: "anonymous" }
@@ -580,7 +609,7 @@ export type ListingViewer =
       role: "claimer";
       tradeId: string;
       deadlineAt: Date | null;
-      size: ListingTradeSize;
+      size: TradeRatio;
     }
   | {
       role: "offerer";
@@ -593,7 +622,6 @@ export type ListingViewer =
       role: "candidate";
       updatedAt: Date;
       units: number;
-      takesOffers: boolean;
       pool: { tokenId: number; availability: PoolAvailability }[];
       rows: CandidateRow[];
       claims: { active: number; cap: number };
@@ -601,7 +629,7 @@ export type ListingViewer =
       endedOffer: EndedOfferStatus | null;
     };
 
-type Candidate = Extract<ListingViewer, { role: "candidate" }>;
+export type Candidate = Extract<ListingViewer, { role: "candidate" }>;
 
 /**
  * What the listing page shows before asking the server about the viewer:
@@ -611,21 +639,21 @@ type Candidate = Extract<ListingViewer, { role: "candidate" }>;
  * sees their own listing.
  */
 export type PublicListingPanel =
-  | { kind: "closed"; state: ClosedListingState }
-  | { kind: "signed_out" }
-  | { kind: "unlinked" }
-  | { kind: "viewer" };
+  | { role: "closed"; state: ClosedListingState }
+  | { role: "signed_out" }
+  | { role: "unlinked" }
+  | { role: "viewer" };
 
 export function publicListingPanel(
   listing: { state: ListingState; poster: { id: string } | null },
   viewer: { userId: string; linked: boolean } | null,
 ): PublicListingPanel {
   const { state } = listing;
-  if (state.status !== "open") return { kind: "closed", state };
-  if (viewer === null) return { kind: "signed_out" };
+  if (state.status !== "open") return { role: "closed", state };
+  if (viewer === null) return { role: "signed_out" };
   return viewer.linked || listing.poster?.id === viewer.userId
-    ? { kind: "viewer" }
-    : { kind: "unlinked" };
+    ? { role: "viewer" }
+    : { role: "unlinked" };
 }
 
 /**
@@ -643,9 +671,12 @@ export function candidatePanel(
     stop: ListingStop | null;
     unitSize: number;
   },
-  viewer: Pick<Candidate, "claims" | "ownAddress" | "takesOffers" | "pool">,
+  viewer: Pick<Candidate, "claims" | "ownAddress" | "pool">,
 ) {
-  if (!viewer.takesOffers && viewer.claims.active >= viewer.claims.cap) {
+  if (
+    !takesOffers(listing.wants) &&
+    viewer.claims.active >= viewer.claims.cap
+  ) {
     return "cap";
   }
   const stop = listingStop(viewer.pool, listing.unitSize, false);
@@ -752,9 +783,9 @@ export function takenPick<TPick extends { tokenId: number }>(
  */
 export type PoolStanding =
   | { kind: "free" }
-  | { kind: "in_trade"; claimer: ListingCounterparty | null }
-  | { kind: "sent"; claimer: ListingCounterparty }
-  | { kind: "traded"; claimer: ListingCounterparty }
+  | { kind: "in_trade"; claimer: TradeParty | null }
+  | { kind: "sent"; claimer: TradeParty }
+  | { kind: "traded"; claimer: TradeParty }
   | { kind: "gone" }
   | { kind: "blocked"; reason: PoolBlockReason };
 
@@ -769,9 +800,6 @@ export function poolStanding(
   item: Pick<ListingItem, "tokenId" | "availability">,
   trades: readonly ListingTrade[],
 ): PoolStanding {
-  const holding = trades.filter((trade) =>
-    trade.tokenIds.includes(item.tokenId),
-  );
   const { availability } = item;
   switch (availability.kind) {
     case "free":
@@ -780,16 +808,13 @@ export function poolStanding(
     case "in_trade":
       return {
         kind: "in_trade",
-        claimer:
-          holding.find(
-            (trade) =>
-              trade.status === "accepted" || trade.status === "disputed",
-          )?.claimer ?? null,
+        claimer: liveHolder(item.tokenId, trades)?.claimer ?? null,
       };
     case "traded": {
       const left = availability.at.getTime();
-      const trade = holding.find(
+      const trade = trades.find(
         (held) =>
+          held.tokenIds.includes(item.tokenId) &&
           held.acceptedAt.getTime() <= left &&
           !("endedAt" in held && held.endedAt.getTime() < left),
       );
@@ -839,12 +864,7 @@ export function posterTabCounts(
   if (listing.takesOffers || viewer.offers.length > 0) {
     tabs.push({ tab: "offers", count: viewer.offers.length });
   }
-  tabs.push({
-    tab: "trades",
-    count: viewer.trades.filter(
-      (trade) => trade.status === "accepted" || trade.status === "disputed",
-    ).length,
-  });
+  tabs.push({ tab: "trades", count: viewer.trades.filter(isLiveTrade).length });
   return tabs;
 }
 
@@ -868,15 +888,10 @@ export function shownPosterTab(
 export type WantsHeading = "you_look_for" | "looking_for";
 
 /**
- * Which answer the listing page's picker starts its picks from: the terms
- * it was read against, the most units the viewer can take, and per row the
- * copies the viewer owns and the server's picks. A refetch with the same
- * answer keeps the viewer's picks on both sides, including one that only
- * sees another trade take or free a pool objekt, since the picker only
- * keeps the pool picks that are still free; a change in what the viewer
- * owns, another account or new terms start again from the server's
- * picks. A hand-picked copy that became unavailable is left to Accept,
- * which checks every copy again.
+ * Which answer the listing page's picker starts its picks from. A refetch
+ * that only sees another trade take or free a pool objekt keeps the
+ * viewer's picks, since the picker drops pool picks that aren't free; new
+ * terms or a change in what the viewer owns start over.
  */
 export function pickerVersion(
   viewer: Pick<Candidate, "updatedAt" | "units" | "rows">,

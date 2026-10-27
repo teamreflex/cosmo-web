@@ -1,6 +1,7 @@
 import { m } from "@/i18n/messages";
-import type { TradeItemView, TradePartyName } from "@/lib/universal/trades";
+import type { TradeItemView, TradeView } from "@/lib/universal/trades";
 import type { TradeSide } from "@apollo/database/web/types";
+import { otherSide } from "@apollo/trades/lifecycle";
 import { formatError } from "./errors";
 import {
   formatPartnerTokenRefusal,
@@ -8,14 +9,22 @@ import {
   offerTokenRefusal,
 } from "./errors/trades";
 import { formatSerial } from "./objekt-util";
-import { objektName, posterName } from "./trade-listings";
+import { objektName, partyName } from "./trade-listings";
 
 /**
- * A party as the trade page names them: their COSMO username, else their
- * Apollo username, else "Deleted user".
+ * Who an offer is between, each named: the side that proposed it and the
+ * side that answers it. A claim, which nobody proposed, reads as its poster
+ * (`from`) setting the terms its claimer accepts.
  */
-export function partyName(party: TradePartyName) {
-  return posterName({ poster: party.user, cosmoUsername: party.cosmoUsername });
+export function offerRoles(trade: Pick<TradeView, "proposedBy" | "parties">) {
+  const proposedBy = trade.proposedBy ?? "from";
+  const answeredBy = otherSide(proposedBy);
+  return {
+    proposedBy,
+    answeredBy,
+    sender: partyName(trade.parties[proposedBy]),
+    recipient: partyName(trade.parties[answeredBy]),
+  };
 }
 
 /**

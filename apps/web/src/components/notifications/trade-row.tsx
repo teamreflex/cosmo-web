@@ -230,8 +230,11 @@ function describeTrade(notification: TradeItem, username: string) {
           markup={bold}
         />
       );
+    // a listing closes without a token when a trade ending left too few objekts for another
     case "listing_closed":
-      return (
+      return notification.token === null ? (
+        m.notification_listing_closed_too_few()
+      ) : (
         <ParaglideMessage
           message={m.notification_listing_closed}
           inputs={{ objekt: tokenName(notification.token) }}

@@ -4,12 +4,11 @@ import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import { formatCount, pickShown, wantScope } from "@/lib/client/trade-listings";
 import { env } from "@/lib/env/client";
 import type {
+  Candidate,
   CandidateRow,
   ListingPick,
-  ListingViewer,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
-import { takesOffers } from "@apollo/trades/lifecycle";
 import { IconCircleCheck, IconPlus } from "@tabler/icons-react";
 import { Fragment, type ReactNode, useState } from "react";
 import { Skeleton } from "../ui/skeleton";
@@ -18,8 +17,6 @@ import { RangeBadges } from "./range-want";
 import RowPicker from "./row-picker";
 import SideHeading, { SideHeadingSkeleton } from "./side-heading";
 import WantLabel from "./want-label";
-
-type Candidate = Extract<ListingViewer, { role: "candidate" }>;
 
 type Props = {
   viewer: Candidate;
@@ -76,7 +73,7 @@ export default function AllocationPicker({
               onPick={() => setPicking(index)}
               onRemove={(pick) => picks.toggle(index, pick)}
             />
-            {address !== undefined && row.want.kind !== "payment" && (
+            {address !== undefined && (
               <RowPicker
                 address={address}
                 label={<RowLabel row={row} count={count} />}
@@ -113,9 +110,11 @@ export default function AllocationPicker({
  */
 export function AllocationPickerSkeleton({
   rows,
+  offers,
   poster,
 }: {
   rows: PickerRow[];
+  offers: boolean;
   poster: string;
 }) {
   return (
@@ -138,10 +137,7 @@ export function AllocationPickerSkeleton({
         </RowFrame>
       ))}
 
-      <PickerFooter
-        offers={takesOffers(rows.map((row) => row.trade))}
-        poster={poster}
-      />
+      <PickerFooter offers={offers} poster={poster} />
     </section>
   );
 }
@@ -168,9 +164,7 @@ function RowLabel({ row, count }: { row: PickerRow; count: number }) {
   return row.want.kind === "range" ? (
     <RangeBadges count={count} filter={row.want.filter} matches={false} />
   ) : (
-    <WantLabel
-      want={row.want.kind === "payment" ? row.want : { ...row.want, count }}
-    />
+    <WantLabel want={{ ...row.want, count }} />
   );
 }
 

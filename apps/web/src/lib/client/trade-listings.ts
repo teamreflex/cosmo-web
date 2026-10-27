@@ -2,15 +2,18 @@ import type { PickerScope } from "@/components/objekt-picker/picker-filters";
 import { m } from "@/i18n/messages";
 import { getLocale } from "@/i18n/runtime";
 import { artistName, Objekt } from "@/lib/universal/objekt-conversion";
-import type {
-  ClosedListingState,
-  ListingFeedWant,
-  ListingPick,
-  PoolAvailability,
-  PoolStanding,
-  TokenRefusalReason,
-  TradeListing,
+import {
+  type ClosedListingState,
+  hasRatio,
+  type ListingFeedWant,
+  type ListingPick,
+  type PoolAvailability,
+  type PoolStanding,
+  type TokenRefusalReason,
+  type TradeListing,
+  type TradeRatio,
 } from "@/lib/universal/trade-listings";
+import type { TradePartyName } from "@/lib/universal/trades";
 import {
   type ValidArtist,
   validArtists,
@@ -39,6 +42,13 @@ export function posterName(
 ) {
   const name = listing.cosmoUsername ?? listing.poster?.username;
   return name === undefined ? m.common_deleted_user() : `@${accountName(name)}`;
+}
+
+/**
+ * A party as the trade page names them, as posterName() names a poster.
+ */
+export function partyName(party: TradePartyName) {
+  return posterName({ poster: party.user, cosmoUsername: party.cosmoUsername });
 }
 
 // a COSMO account without a nickname goes by its address
@@ -380,14 +390,17 @@ export function availabilityLabel(availability: PoolAvailability) {
 
 /**
  * How many objekts one trade from the listing swaps on each side: its unit
- * size for the want rows' total, "1 : 5". A bundle's unit is its whole
- * pool.
+ * size for the want rows' total, "1 : 5". Null for a bundle (hasRatio(),
+ * against the `posted` objekts it has ever offered), whose one trade takes
+ * everything.
  */
-export function listingRatio(listing: {
-  unitSize: number;
-  wants: readonly ListingFeedWant[];
-}) {
-  return { give: listing.unitSize, get: wantedObjektCount(listing.wants) };
+export function listingRatio(
+  listing: { unitSize: number; wants: readonly ListingFeedWant[] },
+  posted: number,
+): TradeRatio | null {
+  return hasRatio(listing.unitSize, posted)
+    ? { give: listing.unitSize, get: wantedObjektCount(listing.wants) }
+    : null;
 }
 
 /**
@@ -529,25 +542,14 @@ export function standingNote(standing: PoolStanding) {
     case "in_trade":
       return standing.claimer === null
         ? m.listing_poster_note_other_trade()
-        : m.listing_poster_note_with({
-            name: posterName({
-              poster: standing.claimer.user,
-              cosmoUsername: standing.claimer.cosmoUsername,
-            }),
-          });
+        : m.listing_poster_note_with({ name: partyName(standing.claimer) });
     case "sent":
       return m.listing_poster_note_sent_to({
-        name: posterName({
-          poster: standing.claimer.user,
-          cosmoUsername: standing.claimer.cosmoUsername,
-        }),
+        name: partyName(standing.claimer),
       });
     case "traded":
       return m.listing_poster_note_traded_to({
-        name: posterName({
-          poster: standing.claimer.user,
-          cosmoUsername: standing.claimer.cosmoUsername,
-        }),
+        name: partyName(standing.claimer),
       });
     case "gone":
       return m.listing_poster_note_gone();

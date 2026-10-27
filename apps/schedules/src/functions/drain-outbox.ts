@@ -396,16 +396,34 @@ const applyTrades = (tx: WebTx, rows: readonly OutboxRow[]) =>
       ...recorded.flatMap((trade) => trade.events),
       ...broken.events,
     ];
-    const notifications = [...broken.notifications];
     const { completed = [], pending = [] } = Object.groupBy(
       recorded,
       (trade) => (trade.state.status === "completed" ? "completed" : "pending"),
     );
+    const endedNotifications: TradeNotification[] = [];
+    const listingIds = new Set(broken.listingIds);
     for (const { trade, state } of completed) {
       const ended = yield* endTrade(tx, trade, state);
       events.push(ended.event);
-      notifications.push(...ended.notifications);
+      endedNotifications.push(...ended.notifications);
+      for (const id of ended.listingIds) listingIds.add(id);
     }
+
+    /**
+     * Every listing that dropped a token or gave one closes once, with all
+     * of the batch's trades ended; a broken one's poster hears which token
+     * closed it. A completed trade's listing can only fill.
+     */
+    const closed = yield* closeSpentListings(
+      tx,
+      [...listingIds],
+      folded.breaks,
+    );
+    const notifications = [
+      ...broken.notifications,
+      ...closed.notifications,
+      ...endedNotifications,
+    ];
     if (pending.length > 0) {
       yield* tx
         .update(tradeOffers)
@@ -427,7 +445,7 @@ const applyTrades = (tx: WebTx, rows: readonly OutboxRow[]) =>
       ],
       transferred: arrivals.length,
       completed: completed.length,
-      broken: broken.listings,
+      broken: closed.broken,
       stale: broken.events.length,
     };
   });
@@ -562,9 +580,8 @@ function recordChainEvents(
  * timeline event naming the token and whether it moved or turned
  * untransferable, and its proposer hears of it. A listing that dropped a token
  * moves its `updated_at`, so a claim picked from the pool before is
- * refused, then closes if its pool can no longer make a unit
- * (closeSpentListings); a broken one's poster hears which token closed it.
- * An offer accepted since the unlocked read is left to its trade.
+ * refused; returned, the caller closes it once the batch's trades have
+ * ended. An offer accepted since the unlocked read is left to its trade.
  */
 const breakOffers = (
   tx: WebTx,
@@ -572,7 +589,7 @@ const breakOffers = (
 ) =>
   Effect.gen(function* () {
     if (breaks.size === 0) {
-      return { events: [], notifications: [], listings: 0 };
+      return { events: [], notifications: [], listingIds: [] };
     }
     const offerIds = [...breaks.keys()];
     yield* tx
@@ -632,9 +649,6 @@ const breakOffers = (
         .set({ updatedAt: bumpUpdatedAt })
         .where(inArray(tradeOffers.id, listingIds));
     }
-    const broken = (yield* closeSpentListings(tx, listingIds)).filter(
-      ({ event }) => event === "break",
-    );
 
     // the token that broke each stale offer, for its event and its proposer
     const stale = offers.flatMap((offer) => {
@@ -648,30 +662,16 @@ const breakOffers = (
         tradeId: id,
         event: { type: "stale", tokenId, reason },
       })),
-      notifications: [
-        ...stale.map(({ id, userId, tokenId }): TradeNotification => ({
+      notifications: stale.map(
+        ({ id, userId, tokenId }): TradeNotification => ({
           type: "offer_stale",
           userId,
           offerId: id,
           actorId: null,
           tokenId,
-        })),
-        ...broken.flatMap(({ id, fromUserId }): TradeNotification[] => {
-          const broke = breaks.get(id);
-          return broke === undefined
-            ? []
-            : [
-                {
-                  type: "listing_closed",
-                  userId: fromUserId,
-                  offerId: id,
-                  actorId: null,
-                  tokenId: broke.tokenId,
-                },
-              ];
         }),
-      ],
-      listings: broken.length,
+      ),
+      listingIds,
     };
   });
 

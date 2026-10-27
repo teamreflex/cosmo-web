@@ -12,11 +12,10 @@ import {
   wantsSummary,
 } from "@/lib/client/trade-listings";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import {
-  hasRatio,
-  type ListingFeedItem,
-  type ListingFeedRow as Row,
-  type ListingFeedWant,
+import type {
+  ListingFeedItem,
+  ListingFeedRow as Row,
+  ListingFeedWant,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
 import { IconArrowRight, IconArrowsRightLeft } from "@tabler/icons-react";
@@ -26,6 +25,7 @@ import FeedbackBadge from "../feedback/feedback-badge";
 import UserAvatar from "../profile/user-avatar";
 import { Badge } from "../ui/badge";
 import { Timestamp } from "../ui/timestamp";
+import { RatioText } from "./listing-header";
 import { RangeTile } from "./range-want";
 
 /**
@@ -57,20 +57,15 @@ type Props = {
 };
 
 /**
- * Below md a row is a trade slip: what it offers and what it asks for in
- * two tinted halves either side of a dashed seam, then the poster and age.
- * Each half stacks its images over its words, and from sm sets them side by
- * side. From md the first line is offering → asking and the second the
- * type, age and poster; from lg each sits in its header's column. A
- * listing with a ratio (hasRatio()) shows it in place of the arrow, and
- * how many of its objekts are free; a bundle, whose one trade takes
- * everything it offers, keeps the arrow.
+ * A listing in the feed: a two-halved trade slip below md, one line from
+ * md and the header's columns from lg. A ratio (listingRatio()) replaces
+ * the arrow and counts the free objekts; a bundle keeps the arrow.
  *
  * No `content-visibility: auto` here: WebKit never painted rows that first
  * laid out under the market notice's scroll lock.
  */
 export default function ListingFeedRow({ row }: Props) {
-  const ratio = hasRatio(row.unitSize, row.posted) ? listingRatio(row) : null;
+  const ratio = listingRatio(row, row.posted);
   return (
     <li className="transition-colors md:border-t md:border-border/60 md:first:border-t-0 md:hover:bg-secondary/50">
       <Link
@@ -107,12 +102,7 @@ export default function ListingFeedRow({ row }: Props) {
             </>
           ) : (
             <span className="absolute top-13 left-0 z-5 -translate-1/2 rounded-full border bg-card px-1.5 py-0.5 font-mono text-xxs font-medium whitespace-nowrap text-cosmo tabular-nums sm:top-1/2 md:static md:translate-0 md:border-0 md:bg-cosmo/15 md:px-2 md:text-xs dark:text-cosmo-text">
-              <span aria-hidden>
-                {ratio.give} : {ratio.get}
-              </span>
-              <span className="sr-only">
-                {m.market_listings_ratio({ give: ratio.give, get: ratio.get })}
-              </span>
+              <RatioText ratio={ratio} />
             </span>
           )}
         </span>

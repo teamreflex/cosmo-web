@@ -15,6 +15,7 @@ import {
 } from "@/lib/universal/schema/listing-feed";
 import type { ListingFeedPage } from "@/lib/universal/trade-listings";
 import { tradeOffers } from "@apollo/database/web/schema";
+import { listingUnitSize } from "@apollo/trades/lifecycle";
 import { createServerFn } from "@tanstack/react-start";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
@@ -78,24 +79,18 @@ export const $fetchListingFeed = createServerFn({ method: "GET" })
     const { listings } = await hydrateListings(page);
 
     return {
-      rows: listings.map((listing) => {
-        // trade_offers_unit_size_chk: every listing has a unit size
-        if (listing.unitSize === null) {
-          throw new Error(`listing ${listing.id} has no unit`);
-        }
-        return {
-          id: listing.id,
-          createdAt: listing.createdAt,
-          poster: listing.fromUser && toPublicUser(listing.fromUser),
-          cosmoUsername: listing.fromCosmo?.username ?? null,
-          rep: listing.fromUser && toFeedbackRep(listing.fromStats),
-          items: listing.items,
-          wants: listing.wants,
-          unitSize: listing.unitSize,
-          posted: listing.posted,
-          free: listing.free,
-        };
-      }),
+      rows: listings.map((listing) => ({
+        id: listing.id,
+        createdAt: listing.createdAt,
+        poster: listing.fromUser && toPublicUser(listing.fromUser),
+        cosmoUsername: listing.fromCosmo?.username ?? null,
+        rep: listing.fromUser && toFeedbackRep(listing.fromStats),
+        items: listing.items,
+        wants: listing.wants,
+        unitSize: listingUnitSize(listing),
+        posted: listing.posted,
+        free: listing.free,
+      })),
       nextCursor: rows.length > PAGE_SIZE ? page.at(-1)?.id : undefined,
     };
   });

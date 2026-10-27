@@ -10,13 +10,10 @@ import { m } from "@/i18n/messages";
 import { endedNormally, posterName } from "@/lib/client/trade-listings";
 import { env } from "@/lib/env/client";
 import {
-  type ClosedListingState,
+  type Candidate,
   hasRatio,
-  type ListingFeedItem,
-  type ListingOfferSummary,
-  type ListingTrade,
-  type ListingTradeSize,
   type ListingViewer,
+  type PublicListingPanel,
   toTradeWant,
   type TradeListing,
 } from "@/lib/universal/trade-listings";
@@ -59,46 +56,19 @@ import { UnitCounts } from "./listing-units";
 import { WantList } from "./want-label";
 import WithdrawListingDialog from "./withdraw-listing-dialog";
 
-type Candidate = Extract<ListingViewer, { role: "candidate" }>;
-
 /**
- * Who is looking at the listing, as the page needs it.
- * - `loading` / `error`: the server hasn't named a signed-in viewer's role.
- * - `poster`: their own open listing, with its pending offers and trades.
- * - `claimer`: a viewer with a live trade from the listing.
- * - `offerer`: a viewer with a pending offer on the listing.
- * - `picker`: an open listing the viewer can accept or send an offer on,
- *   picking how many times over and what both sides give.
- * - `refused`: an open listing the viewer can't accept: they're at their
- *   claim cap, the poster's side stops every claim, or trades hold the
- *   pool until one ends (ListingStop).
+ * Who is looking at the listing, as the page needs it: the public panel or
+ * the server's answer (`loading` / `error` until it comes), and for anyone
+ * else `picker`, or `refused` when their cap, the poster's side or busy
+ * trades stop Accept (ListingStop).
  */
 export type ListingRole =
   | { role: "loading" }
   | { role: "error" }
-  | { role: "closed"; state: ClosedListingState }
-  | { role: "signed_out" }
-  | { role: "unlinked" }
-  | { role: "poster"; offers: ListingOfferSummary[]; trades: ListingTrade[] }
-  | {
-      role: "claimer";
-      deadlineAt: Date | null;
-      tradeId: string;
-      size: ListingTradeSize;
-    }
-  | {
-      role: "offerer";
-      expiresAt: Date;
-      tradeId: string;
-      picks: ListingFeedItem[];
-      given: ListingFeedItem[];
-    }
+  | Exclude<PublicListingPanel, { role: "viewer" }>
+  | Extract<ListingViewer, { role: "poster" | "claimer" | "offerer" }>
   | { role: "picker"; viewer: Candidate }
-  | {
-      role: "refused";
-      reason: "cap";
-      claims: Extract<ListingViewer, { role: "candidate" }>["claims"];
-    }
+  | { role: "refused"; reason: "cap"; claims: Candidate["claims"] }
   | { role: "refused"; reason: "blocked" }
   | { role: "refused"; reason: "busy" };
 
@@ -115,14 +85,9 @@ type Props = {
 type Dialog = "edit" | "withdraw" | "confirm";
 
 /**
- * The listing page, the same for every viewer: the header with its status
- * and actions, alerts under it, what the listing offers beside what it asks
- * for, and the phone action bar. The role only decides what fills them:
- * Edit and Withdraw for the poster, with tabs for the listing, its offers
- * and its trades, the trade or offer for a viewer with one, Accept (or Send
- * offer, on a listing that takes offers) for anyone else signed in, and for
- * a viewer picking, how many times over above the pool they pick from
- * beside what they give.
+ * The listing page, the same for every viewer: the header, alerts under it,
+ * what the listing offers beside what it asks for, and the phone action
+ * bar. The role only decides what fills them.
  */
 export default function ListingView({
   listing,
@@ -137,16 +102,16 @@ export default function ListingView({
   const [dialog, setDialog] = useState<Dialog | null>(null);
   const [snapshot, setSnapshot] = useState<ConfirmSnapshot | null>(null);
   const invalidateListing = useInvalidateListing(listing.id);
-  const rows = listing.wants.flatMap((want): PickerRow[] => {
-    const trade = toTradeWant(want);
-    return trade === null ? [] : [{ want, trade }];
-  });
+  const rows = listing.wants.flatMap((want): PickerRow[] =>
+    want.kind === "payment" ? [] : [{ want, trade: toTradeWant(want) }],
+  );
+  const offers = takesOffers(listing.wants);
   const picks = useListingPicks(
     listing,
     role.role === "picker" ? role.viewer : null,
     rows,
+    offers,
   );
-  const offers = takesOffers(listing.wants);
   const poster = usePosterSections(
     role.role === "poster" ? role : null,
     offers,
@@ -219,7 +184,11 @@ export default function ListingView({
       picks={picks}
       wants={
         role.role === "loading" ? (
-          <AllocationPickerSkeleton rows={rows} poster={posterName(listing)} />
+          <AllocationPickerSkeleton
+            rows={rows}
+            offers={offers}
+            poster={posterName(listing)}
+          />
         ) : role.role === "picker" && picks !== null ? (
           <AllocationPicker
             viewer={role.viewer}
@@ -256,6 +225,7 @@ export default function ListingView({
           listing={listing}
           viewer={role.viewer}
           rows={rows}
+          offers={offers}
           snapshot={snapshot}
           onNotice={onNotice}
           onPickTaken={picks.dropOffered}
@@ -630,12 +600,12 @@ function PickerBar({
     <>
       <span className="flex min-w-0 shrink-0 flex-col gap-0.5">
         <PickProgress picks={picks} />
-        {!picks.bundle && <UnitCounts picks={picks} className="gap-3" />}
+        {picks.ratio !== null && <UnitCounts picks={picks} className="gap-3" />}
         <span
           id={reasonId}
           className={cn(
             "text-xs text-muted-foreground",
-            (!picks.valid || !picks.bundle) && "sr-only",
+            (!picks.valid || picks.ratio !== null) && "sr-only",
           )}
         >
           {pickReason(picks, listing)}

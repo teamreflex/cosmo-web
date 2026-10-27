@@ -35,17 +35,10 @@ type Props = {
 };
 
 /**
- * What the listing offers: headed "You get" in the want colour for a viewer
- * on their own side of the trade, "You offer" for its poster, who also
- * reads how each objekt stands and who has it, or "Offering" in the have
- * colour as the feed and the composer show it. A single objekt sits beside
- * its name below desktop width and above it on desktop; several make a
- * strip of small cards on phones, a compact block on tablets and a grid on
- * desktop. Cards are at most 180px wide. "You get" counts the pool the
- * viewer takes; the other headings count every objekt shown and sum up how
- * they stand. Objekts that can't be picked, the ones that left the pool
- * included, are dimmed with why. A viewer choosing which pool objekts they
- * get picks them from a grid instead.
+ * What the listing offers, headed "You get" for a viewer on their own side
+ * of the trade, "You offer" for its poster with how each objekt stands and
+ * who has it, or "Offering". Objekts that can't be picked are dimmed with
+ * why; a viewer choosing which pool objekts they get picks from a grid.
  */
 export default function YouGet({
   listing,
@@ -56,23 +49,19 @@ export default function YouGet({
   const poster = heading === "you_offer";
   const shown = listing.items.map((item) => {
     const standing = poster ? poolStanding(item, trades) : null;
-    return standing === null
-      ? {
-          item,
-          standing,
-          label: availabilityLabel(item.availability),
-          note: null,
-        }
-      : {
-          item,
-          standing,
-          label: standingLabel(standing),
-          note: standingNote(standing),
-        };
+    return {
+      item,
+      standing,
+      label:
+        standing === null
+          ? availabilityLabel(item.availability)
+          : standingLabel(standing),
+      note: standing === null ? null : standingNote(standing),
+    };
   });
   const [single] = shown;
 
-  if (picks !== null && !picks.bundle) {
+  if (picks !== null && picks.ratio !== null) {
     return <PoolPicker listing={listing} picks={picks} />;
   }
   return (

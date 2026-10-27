@@ -15,7 +15,7 @@ import { $claimListing } from "@/lib/functions/trade-listings";
 import { tradesKey } from "@/lib/queries/trades";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import {
-  type ListingViewer,
+  type Candidate,
   poolItems,
   type TokenRefusalReason,
   type TradeListing,
@@ -46,13 +46,14 @@ import { Spinner } from "../ui/spinner";
 import { Timestamp } from "../ui/timestamp";
 import type { Notice } from "./listing-status";
 import { ExactBadges, RangeBadges } from "./range-want";
-
-type Candidate = Extract<ListingViewer, { role: "candidate" }>;
+import { Eyebrow } from "./side-heading";
 
 type Props = {
   listing: TradeListing;
   viewer: Candidate;
   rows: PickerRow[];
+  /** whether it sends an offer, as on a listing with a range row */
+  offers: boolean;
   snapshot: ConfirmSnapshot | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -73,18 +74,15 @@ type Shown = {
 
 /**
  * Confirms a claim, or an offer on a listing that takes them, on exactly
- * the serials Accept froze: what the viewer gives, grouped by the want row
- * each one fills, and the pool objekts they get, with the deadline and who
- * to send to, or for an offer what happens next. Confirm sends them with
- * the units against the listing version the picks were made on, then
- * opens the trade or the offer. A changed listing, a pick another trade
- * took or an unusable serial answer here; closing after one refetches what
- * it makes stale.
+ * the picks Accept froze, sent against the listing version they were made
+ * on. A changed listing, a taken pick or an unusable serial answers here,
+ * and closing after one refetches what it made stale.
  */
 export default function ConfirmTradeDialog({
   listing,
   viewer,
   rows,
+  offers,
   snapshot,
   open,
   onOpenChange,
@@ -97,7 +95,6 @@ export default function ConfirmTradeDialog({
   const [failure, setFailure] = useState<ClaimFailure | null>(null);
   const confirming = useRef(false);
   const poster = posterName(listing);
-  const offers = snapshot?.takesOffers ?? false;
 
   const claim = useMutation({
     mutationFn: (frozen: ConfirmSnapshot) =>
@@ -230,7 +227,10 @@ export default function ConfirmTradeDialog({
                 {rows.map((row, index) => (
                   <Group
                     key={index}
-                    head={groupHead(row, snapshot?.counts[index] ?? 0)}
+                    head={groupHead(
+                      row,
+                      (snapshot?.units ?? 0) * row.trade.count,
+                    )}
                     tokens={give[index] ?? []}
                   />
                 ))}
@@ -398,30 +398,7 @@ function groupHead({ want }: PickerRow, count: number) {
     case "exact":
     case "choice":
       return <ExactBadges count={count} name={wantLabel(want)} />;
-    case "payment":
-      return undefined;
   }
-}
-
-function Eyebrow({
-  tone,
-  children,
-}: {
-  tone: "have" | "want";
-  children: ReactNode;
-}) {
-  return (
-    <span
-      className={cn(
-        "text-xxs font-medium tracking-widest uppercase",
-        tone === "have"
-          ? "text-teal-700 dark:text-teal-500"
-          : "text-amber-700 dark:text-amber-500",
-      )}
-    >
-      {children}
-    </span>
-  );
 }
 
 /**
@@ -515,22 +492,11 @@ function FailureAlert({
         <Alert variant="warning">
           <IconAlertTriangle />
           <AlertTitle>
-            {token === undefined || token.serial === null ? (
-              m.listing_confirm_pick_unknown()
-            ) : (
-              <ParaglideMessage
-                message={m.listing_confirm_pick_title}
-                inputs={{
-                  objekt: token.name,
-                  serial: formatSerial(token.serial),
-                }}
-                markup={{
-                  serial: ({ children }) => (
-                    <span className="font-mono tabular-nums">{children}</span>
-                  ),
-                }}
-              />
-            )}
+            <TokenTitle
+              token={token}
+              message={m.listing_confirm_pick_title}
+              unknown={m.listing_confirm_pick_unknown()}
+            />
           </AlertTitle>
           <AlertDescription>{m.listing_confirm_pick_body()}</AlertDescription>
         </Alert>
@@ -546,22 +512,11 @@ function FailureAlert({
         <Alert variant="warning">
           <IconAlertTriangle />
           <AlertTitle>
-            {token === undefined || token.serial === null ? (
-              m.trade_error_claim_token_unavailable()
-            ) : (
-              <ParaglideMessage
-                message={m.listing_confirm_token_title}
-                inputs={{
-                  objekt: token.name,
-                  serial: formatSerial(token.serial),
-                }}
-                markup={{
-                  serial: ({ children }) => (
-                    <span className="font-mono tabular-nums">{children}</span>
-                  ),
-                }}
-              />
-            )}
+            <TokenTitle
+              token={token}
+              message={m.listing_confirm_token_title}
+              unknown={m.trade_error_claim_token_unavailable()}
+            />
           </AlertTitle>
           <AlertDescription>
             {token === undefined || refusal === null
@@ -572,6 +527,34 @@ function FailureAlert({
       );
     }
   }
+}
+
+/**
+ * A failure's title naming the objekt and serial it's about, or `unknown`
+ * when the dialog can't tell which.
+ */
+function TokenTitle({
+  token,
+  message,
+  unknown,
+}: {
+  token: Shown | undefined;
+  message:
+    typeof m.listing_confirm_pick_title | typeof m.listing_confirm_token_title;
+  unknown: string;
+}) {
+  if (token === undefined || token.serial === null) return unknown;
+  return (
+    <ParaglideMessage
+      message={message}
+      inputs={{ objekt: token.name, serial: formatSerial(token.serial) }}
+      markup={{
+        serial: ({ children }) => (
+          <span className="font-mono tabular-nums">{children}</span>
+        ),
+      }}
+    />
+  );
 }
 
 function tokenReason(reason: TokenRefusalReason) {

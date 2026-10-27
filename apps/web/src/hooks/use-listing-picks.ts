@@ -1,8 +1,8 @@
+import { listingRatio } from "@/lib/client/trade-listings";
 import {
-  hasRatio,
+  type Candidate,
   type ListingFeedWant,
   type ListingPick,
-  type ListingViewer,
   offeredForUnits,
   picksForUnits,
   toggleOffered,
@@ -14,17 +14,14 @@ import { totalWanted } from "@apollo/trades/composer";
 import { CLAIM_WINDOW, OFFER_WINDOW } from "@apollo/trades/timers";
 import { useState } from "react";
 
-type Candidate = Extract<ListingViewer, { role: "candidate" }>;
-
 export type PickerRow = {
-  want: ListingFeedWant;
+  want: Exclude<ListingFeedWant, { kind: "payment" }>;
   trade: TradeWant;
 };
 
 /**
  * What Accept froze for the confirm dialog: how many units, the pool
- * objekts the viewer gets, their picks, one list per want row, how many
- * each row asks for at that size, whether it sends an offer, and when the
+ * objekts the viewer gets, their picks, one list per want row, and when the
  * trade would have to finish if it were claimed then, or the offer expire
  * if sent then.
  */
@@ -32,25 +29,21 @@ export type ConfirmSnapshot = {
   units: number;
   offered: number[];
   picked: ListingPick[][];
-  counts: number[];
-  takesOffers: boolean;
   endsAt: Date;
 };
 
 /**
  * The viewer's claim as they build it: how many units, the pool objekts
- * they get (`offered`, the first free ones to start with, and only those
- * still free as the viewer's answer refetches) and their picks for each
- * want row (the server's allocation trimmed to that many units), and what
- * it adds up to: whether both sides fit the listing exactly, and how many
- * objekts the viewer is short of filling it. A bundle's unit is its whole
- * pool, so it has no units or pool picks to choose. Null unless the viewer
- * is picking.
+ * they get, their picks per want row, and whether it all fits. A bundle
+ * (no `ratio`) takes its whole pool, so it has no units or pool picks to
+ * choose. Null unless the viewer is picking.
  */
 export function useListingPicks(
-  listing: Pick<TradeListing, "unitSize" | "items">,
+  listing: Pick<TradeListing, "unitSize" | "items" | "wants">,
   viewer: Candidate | null,
   rows: PickerRow[],
+  // whether Accept sends an offer, as on a listing with a range row
+  offers: boolean,
 ) {
   const { unitSize } = listing;
   const wants = rows.map((row) => row.trade);
@@ -77,10 +70,10 @@ export function useListingPicks(
     units,
     // the most the viewer can take; the stepper starts at one even when they can't fill it
     maxUnits: Math.max(viewer.units, 1),
-    bundle: !hasRatio(unitSize, listing.items.length),
+    ratio: listingRatio(listing, listing.items.length),
     freeCount: free.length,
     pool: viewer.pool,
-    takesOffers: viewer.takesOffers,
+    takesOffers: offers,
     offered,
     offeredCount,
     picked,
@@ -102,11 +95,7 @@ export function useListingPicks(
       units,
       offered,
       picked,
-      counts: scaled.map((want) => want.count),
-      takesOffers: viewer.takesOffers,
-      endsAt: new Date(
-        Date.now() + (viewer.takesOffers ? OFFER_WINDOW : CLAIM_WINDOW),
-      ),
+      endsAt: new Date(Date.now() + (offers ? OFFER_WINDOW : CLAIM_WINDOW)),
     }),
     /**
      * Takes that many units: the pool picks and each want row keep what

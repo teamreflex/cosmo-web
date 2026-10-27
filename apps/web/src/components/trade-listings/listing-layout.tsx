@@ -107,8 +107,8 @@ export default function ListingLayout({
               {listing.note}
             </p>
           )}
-          {picks !== null && !picks.bundle && (
-            <ListingUnits listing={listing} picks={picks} />
+          {picks !== null && picks.ratio !== null && (
+            <ListingUnits ratio={picks.ratio} picks={picks} />
           )}
           <YouGet
             listing={listing}

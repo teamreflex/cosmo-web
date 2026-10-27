@@ -11,16 +11,17 @@ import {
   listingClosing,
   type ListingEvent,
   listingTransition,
+  listingUnitSize,
   needsYou,
   type OfferEvent,
   offerTransition,
   owingSides,
   partyAction,
   proposerId,
-  sideUserId,
   takesOffers,
   type TradeEvent,
   type TradeItemState,
+  tradeListingId,
   type TradeState,
   tradeState,
   transition,
@@ -56,12 +57,12 @@ function trade(
 }
 
 function directOffer(items: readonly TradeItemState[]): TradeState {
-  return { status: "pending", proposedBy: "from", fromListing: false, items };
+  return { status: "pending", proposedBy: "from", items };
 }
 
 // an offer on a listing, which its claimer (`to`) proposes to the poster
 function listingOffer(items: readonly TradeItemState[]): TradeState {
-  return { status: "pending", proposedBy: "to", fromListing: true, items };
+  return { status: "pending", proposedBy: "to", items };
 }
 
 function statusAfter(state: TradeState, event: TradeEvent) {
@@ -680,22 +681,12 @@ describe("waitingSide", () => {
   );
 });
 
-describe("sideUserId and proposerId", () => {
+describe("proposerId", () => {
   const row = {
     id: "3f2a9c1e-7d4b-4e8a-9b6c-1a2b3c4d5e6f",
     fromUserId: "poster",
     toUserId: "claimer",
   };
-
-  test("each side names its own user", () => {
-    expect(sideUserId(row, "from")).toBe("poster");
-    expect(sideUserId(row, "to")).toBe("claimer");
-  });
-
-  test("a side whose account is gone names no one", () => {
-    expect(sideUserId({ ...row, toUserId: null }, "to")).toBeNull();
-    expect(sideUserId({ ...row, toUserId: null }, "from")).toBe("poster");
-  });
 
   test("the proposer is the user on the side that proposed", () => {
     expect(proposerId({ ...row, proposedBy: "from" })).toBe("poster");
@@ -704,10 +695,39 @@ describe("sideUserId and proposerId", () => {
 
   test("a proposer whose account is gone is no one", () => {
     expect(proposerId({ ...row, toUserId: null, proposedBy: "to" })).toBeNull();
+    expect(proposerId({ ...row, toUserId: null, proposedBy: "from" })).toBe(
+      "poster",
+    );
   });
 
   test("throws on a row without a proposer", () => {
     expect(() => proposerId({ ...row, proposedBy: null })).toThrow();
+  });
+});
+
+describe("listingUnitSize", () => {
+  const id = "3f2a9c1e-7d4b-4e8a-9b6c-1a2b3c4d5e6f";
+
+  test("reads a listing's unit size", () => {
+    expect(listingUnitSize({ id, unitSize: 2 })).toBe(2);
+  });
+
+  test("throws on a row without one", () => {
+    expect(() => listingUnitSize({ id, unitSize: null })).toThrow();
+  });
+});
+
+describe("tradeListingId", () => {
+  const listingId = "8c1f0d0e-6b8e-4a59-9a43-3f0c2a1e5d10";
+
+  test("names the listing any item came from", () => {
+    expect(
+      tradeListingId([{ listingId: null }, { listingId }, { listingId }]),
+    ).toBe(listingId);
+  });
+
+  test("a direct offer came from no listing", () => {
+    expect(tradeListingId([{ listingId: null }])).toBeNull();
   });
 });
 

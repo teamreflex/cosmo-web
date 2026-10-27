@@ -1,6 +1,7 @@
 import { useSendOffer } from "@/hooks/use-send-offer";
 import { m } from "@/i18n/messages";
-import { itemName, partyName } from "@/lib/client/trades";
+import { partyName } from "@/lib/client/trade-listings";
+import { itemName } from "@/lib/client/trades";
 import { $counterOffer } from "@/lib/functions/trade-offers";
 import { counterMatchesQuery } from "@/lib/queries/trades";
 import type { TradeSide } from "@apollo/database/web/types";

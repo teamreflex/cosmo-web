@@ -128,7 +128,7 @@ export const $counterOffer = createServerFn({ method: "POST" })
 
       // the counter starts its own 72 hours, and the original ends pointing at it
       const id = await insertOffer(tx, actor, preflight, checked, trade.id);
-      await endTrade(tx, trade, next);
+      await endTrade(tx, trade, next, users);
       await insertTradeEvent(tx, trade.id, {
         type: "countered",
         counterId: id,
@@ -256,7 +256,7 @@ export const $endOffer = createServerFn({ method: "POST" })
       );
       const next = answerOffer(trade, { type: data.action, by });
 
-      await endTrade(tx, trade, next);
+      await endTrade(tx, trade, next, users);
       if (data.action === "withdraw") {
         await insertTradeEvent(tx, trade.id, { type: "withdrawn", by });
         return;

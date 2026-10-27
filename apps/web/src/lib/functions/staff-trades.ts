@@ -51,7 +51,7 @@ export const $staffCancelTrade = createServerFn({ method: "POST" })
       data,
       { type: "staff_cancel" },
       async (tx, trade, users, next) => {
-        await endTrade(tx, trade, next);
+        await endTrade(tx, trade, next, users);
         await insertTradeEvent(tx, trade.id, {
           type: "cancelled",
           by: "staff",

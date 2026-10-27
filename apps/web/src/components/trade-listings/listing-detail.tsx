@@ -7,7 +7,6 @@ import {
   candidatePanel,
   type ListingViewer,
   pickerVersion,
-  type PublicListingPanel,
   publicListingPanel,
   type TradeListing,
 } from "@/lib/universal/trade-listings";
@@ -46,14 +45,8 @@ export default function ListingDetail({ id }: Props) {
     },
   );
 
-  if (panel.kind !== "viewer") {
-    return (
-      <ListingView
-        listing={listing}
-        role={publicRole(panel)}
-        address={address}
-      />
-    );
+  if (panel.role !== "viewer") {
+    return <ListingView listing={listing} role={panel} address={address} />;
   }
   return (
     <ErrorBoundary
@@ -129,45 +122,18 @@ function ViewerListing({
   );
 }
 
-function publicRole(
-  panel: Exclude<PublicListingPanel, { kind: "viewer" }>,
-): ListingRole {
-  switch (panel.kind) {
-    case "closed":
-      return { role: "closed", state: panel.state };
-    case "signed_out":
-      return { role: "signed_out" };
-    case "unlinked":
-      return { role: "unlinked" };
-  }
-}
-
 function viewerRole(listing: TradeListing, viewer: ListingViewer): ListingRole {
   switch (viewer.role) {
     case "anonymous":
       return { role: "signed_out" };
-    case "unlinked":
-      return { role: "unlinked" };
     // the listing ended since the page read it; the refetch shows how
     case "closed":
       return { role: "loading" };
+    case "unlinked":
     case "poster":
-      return { role: "poster", offers: viewer.offers, trades: viewer.trades };
     case "claimer":
-      return {
-        role: "claimer",
-        deadlineAt: viewer.deadlineAt,
-        tradeId: viewer.tradeId,
-        size: viewer.size,
-      };
     case "offerer":
-      return {
-        role: "offerer",
-        expiresAt: viewer.expiresAt,
-        tradeId: viewer.tradeId,
-        picks: viewer.picks,
-        given: viewer.given,
-      };
+      return viewer;
     case "candidate": {
       const panel = candidatePanel(listing, viewer);
       switch (panel) {

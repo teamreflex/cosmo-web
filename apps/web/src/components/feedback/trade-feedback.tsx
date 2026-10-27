@@ -1,5 +1,5 @@
 import { m } from "@/i18n/messages";
-import { partyName } from "@/lib/client/trades";
+import { partyName } from "@/lib/client/trade-listings";
 import type { FeedbackEntryView } from "@/lib/universal/feedback";
 import type { TradeView } from "@/lib/universal/trades";
 import type { TradeSide } from "@apollo/database/web/types";

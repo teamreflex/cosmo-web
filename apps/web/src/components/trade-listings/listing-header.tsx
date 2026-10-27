@@ -1,6 +1,6 @@
 import { m } from "@/i18n/messages";
 import { listingRatio } from "@/lib/client/trade-listings";
-import { hasRatio, type TradeListing } from "@/lib/universal/trade-listings";
+import type { TradeListing, TradeRatio } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import type { ReactNode } from "react";
@@ -39,9 +39,7 @@ export default function ListingHeader({
   tabs,
   own = false,
 }: Props) {
-  const ratio = hasRatio(listing.unitSize, listing.items.length)
-    ? listingRatio(listing)
-    : null;
+  const ratio = listingRatio(listing, listing.items.length);
   /**
    * An edit, or the drain dropping an objekt that left the poster, moves
    * `updated_at`. Posting sets it beside `created_at`, which keeps its
@@ -84,12 +82,7 @@ export default function ListingHeader({
                 variant="ghost"
                 className="bg-cosmo/15 font-mono text-cosmo tabular-nums hover:bg-cosmo/15 dark:text-cosmo-text"
               >
-                <span aria-hidden>
-                  {ratio.give} : {ratio.get}
-                </span>
-                <span className="sr-only">
-                  {m.market_listings_ratio(ratio)}
-                </span>
+                <RatioText ratio={ratio} />
               </Badge>
             )}
           </div>
@@ -155,6 +148,20 @@ export default function ListingHeader({
         <div className="container no-scrollbar overflow-x-auto">{tabs}</div>
       )}
     </div>
+  );
+}
+
+/**
+ * A ratio as a pill shows it, "1 : 5", read out as "1 for 5".
+ */
+export function RatioText({ ratio }: { ratio: TradeRatio }) {
+  return (
+    <>
+      <span aria-hidden>
+        {ratio.give} : {ratio.get}
+      </span>
+      <span className="sr-only">{m.market_listings_ratio(ratio)}</span>
+    </>
   );
 }
 

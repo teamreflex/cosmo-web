@@ -19,7 +19,7 @@ import {
   tradePair,
 } from "@/lib/server/objekts/lists.server";
 import { readOfferSerials } from "@/lib/server/trades/offer.server";
-import { refuseTrade, tradeListingId } from "@/lib/server/trades/trade.server";
+import { refuseTrade } from "@/lib/server/trades/trade.server";
 import type { PublicUser } from "@/lib/universal/auth";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import type {
@@ -56,6 +56,7 @@ import { can, marketAccess, parseRole } from "@apollo/auth";
 import { isBanActive } from "@apollo/auth/guard";
 import { objektListEntries, objektLists } from "@apollo/database/web/schema";
 import type { ObjektListEntry, TradeSide } from "@apollo/database/web/types";
+import { tradeListingId } from "@apollo/trades/lifecycle";
 import { redirect } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, inArray, ne, sql, type SQLWrapper } from "drizzle-orm";

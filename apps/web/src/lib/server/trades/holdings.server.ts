@@ -1,7 +1,7 @@
 import { collections, objekts } from "@apollo/database/indexer/schema";
 import { lockedObjekts, tradeOfferItems } from "@apollo/database/web/schema";
 import type { TradeWant } from "@apollo/trades/allocate";
-import { type TokenFlags, tokenRefusal } from "@apollo/trades/holdings";
+import type { TokenFlags } from "@apollo/trades/holdings";
 import { orderInventory } from "@apollo/trades/inventory";
 import type { ListingInput } from "@apollo/trades/listing";
 import type { ObjektAttributes, RangeFilter } from "@apollo/trades/range";
@@ -19,7 +19,6 @@ import {
 } from "drizzle-orm";
 import { ExpectedError } from "../../universal/errors/expected";
 import type { TradeErrorCode } from "../../universal/errors/trades";
-import type { TokenRefusal } from "../../universal/trade-listings";
 import { db, type DbOrTx } from "../db";
 import { indexer } from "../db/indexer";
 import {
@@ -50,6 +49,31 @@ export type TokenHoldings = TokenFlags & {
 };
 
 /**
+ * Each token's state from the indexer rows read for it, by token id, with
+ * every id no row names missing.
+ */
+export function toTokenStates(
+  tokenIds: readonly number[],
+  rows: readonly {
+    id: string;
+    owner: string;
+    serial: number;
+    transferable: boolean;
+    attributes: ObjektAttributes;
+  }[],
+): ReadonlyMap<number, TokenState> {
+  const found = new Map(rows.map((row) => [Number(row.id), row]));
+  return new Map(
+    tokenIds.map((tokenId): [number, TokenState] => {
+      const row = found.get(tokenId);
+      if (!row) return [tokenId, { kind: "missing", tokenId }];
+      const { id: _, ...state } = row;
+      return [tokenId, { kind: "found", tokenId, ...state }];
+    }),
+  );
+}
+
+/**
  * Reads every token's indexer state, whoever owns it.
  */
 export async function readIndexerTokens(
@@ -61,35 +85,25 @@ export async function readIndexerTokens(
       owner: objekts.owner,
       serial: objekts.serial,
       transferable: objekts.transferable,
-      slug: collections.slug,
-      artist: collections.artist,
-      member: collections.member,
-      season: collections.season,
-      class: collections.class,
-      onOffline: collections.onOffline,
+      attributes: {
+        slug: collections.slug,
+        artist: collections.artist,
+        member: collections.member,
+        season: collections.season,
+        class: collections.class,
+        onOffline: collections.onOffline,
+      },
     })
     .from(objekts)
     .innerJoin(collections, eq(objekts.collectionId, collections.id))
     .where(inArray(objekts.id, tokenIds.map(String)));
-
-  const found = new Map(rows.map((row) => [Number(row.id), row]));
-  return new Map(
-    tokenIds.map((tokenId): [number, TokenState] => {
-      const row = found.get(tokenId);
-      if (!row) return [tokenId, { kind: "missing", tokenId }];
-      const { id: _, owner, serial, transferable, ...attributes } = row;
-      return [
-        tokenId,
-        { kind: "found", tokenId, attributes, serial, owner, transferable },
-      ];
-    }),
-  );
+  return toTokenStates(tokenIds, rows);
 }
 
 /**
  * Reads every token's indexer state, plus the address's locks and the live
  * trade items among them, without locking anything. Live items of trades
- * from `editedListing` don't count, as readWebTokenFlags says.
+ * from `editedListing` don't count, as liveItem() says.
  */
 export async function readTokenStates(
   address: string,
@@ -104,10 +118,27 @@ export async function readTokenStates(
 }
 
 /**
- * Reads the address's locks and the live trade items among the tokens, in
- * one statement. Safe inside a transaction. An edit passes its listing as
- * `editedListing`, so an objekt live in one of the listing's own trades can
- * stay in its pool, where it's free again if that trade is cancelled.
+ * The live trade items that hold a token back from being offered. An edit
+ * passes its listing as `editedListing`, so an objekt live in one of the
+ * listing's own trades can stay in its pool, where it's free again if that
+ * trade is cancelled.
+ */
+export function liveItem(editedListing?: string) {
+  return and(
+    eq(tradeOfferItems.live, true),
+    editedListing === undefined
+      ? undefined
+      : or(
+          isNull(tradeOfferItems.listingId),
+          ne(tradeOfferItems.listingId, editedListing),
+        ),
+  );
+}
+
+/**
+ * The address's locks and the live trade items among the tokens, in one
+ * statement, as readSharedTokenFlags() reads them. Safe inside a
+ * transaction.
  */
 export async function readWebTokenFlags(
   executor: DbOrTx,
@@ -115,60 +146,31 @@ export async function readWebTokenFlags(
   tokenIds: readonly number[],
   editedListing?: string,
 ): Promise<TokenFlags> {
-  const rows = await executor
-    .select({
-      tokenId: sql<number>`${lockedObjekts.tokenId}`.as("token_id"),
-      flag: sql<"locked" | "live">`'locked'`.as("flag"),
-    })
-    .from(lockedObjekts)
-    .where(
-      and(
-        eq(lockedObjekts.address, address),
-        eq(lockedObjekts.locked, true),
-        inArray(lockedObjekts.tokenId, [...tokenIds]),
-      ),
-    )
-    .unionAll(
-      executor
-        .select({
-          tokenId: sql<number>`${tradeOfferItems.tokenId}`.as("token_id"),
-          flag: sql<"locked" | "live">`'live'`.as("flag"),
-        })
-        .from(tradeOfferItems)
-        .where(
-          and(
-            eq(tradeOfferItems.live, true),
-            inArray(tradeOfferItems.tokenId, [...tokenIds]),
-            editedListing === undefined
-              ? undefined
-              : or(
-                  isNull(tradeOfferItems.listingId),
-                  ne(tradeOfferItems.listingId, editedListing),
-                ),
-          ),
-        ),
-    );
-  return {
-    locked: new Set(
-      rows.flatMap((row) => (row.flag === "locked" ? [row.tokenId] : [])),
-    ),
-    live: new Set(
-      rows.flatMap((row) => (row.flag === "live" ? [row.tokenId] : [])),
-    ),
-  };
+  const flagsFor = await readSharedTokenFlags(
+    executor,
+    tokenIds,
+    [address],
+    editedListing,
+  );
+  return flagsFor(address);
 }
 
 /**
  * The locks the addresses hold on the tokens and the tokens' live trade
- * items, in one statement, for judging several addresses' tokens at once:
- * the returned function gives readWebTokenFlags' answer for one of them.
- * Naming the addresses lets the locks probe address_token_idx.
+ * items (liveItem()), in one statement, for judging several addresses'
+ * tokens at once: the returned function gives one address's flags. Naming
+ * the addresses lets the locks probe address_token_idx. Safe inside a
+ * transaction. No tokens reads nothing.
  */
 export async function readSharedTokenFlags(
   executor: DbOrTx,
   tokenIds: readonly number[],
   addresses: readonly string[],
-) {
+  editedListing?: string,
+): Promise<(address: string) => TokenFlags> {
+  if (tokenIds.length === 0) {
+    return () => ({ locked: new Set(), live: new Set() });
+  }
   const rows = await executor
     .select({
       tokenId: sql<number>`${lockedObjekts.tokenId}`.as("token_id"),
@@ -191,7 +193,7 @@ export async function readSharedTokenFlags(
         .from(tradeOfferItems)
         .where(
           and(
-            eq(tradeOfferItems.live, true),
+            liveItem(editedListing),
             inArray(tradeOfferItems.tokenId, [...tokenIds]),
           ),
         ),
@@ -212,37 +214,6 @@ export async function readSharedTokenFlags(
 }
 
 /**
- * Every refused token, in the order the tokens were submitted.
- */
-export function tokenRefusals(
-  tokenIds: readonly number[],
-  holdings: TokenHoldings,
-  address: string,
-): TokenRefusal[] {
-  return tokenIds.flatMap((tokenId) => {
-    const state = holdings.states.get(tokenId) ?? {
-      kind: "missing",
-      tokenId,
-    };
-    const reason = tokenRefusal(state, address, holdings);
-    return reason === null
-      ? []
-      : [{ kind: "token_unavailable", tokenId, reason }];
-  });
-}
-
-/**
- * The first refused token, in the order the tokens were submitted.
- */
-export function firstRefusal(
-  tokenIds: readonly number[],
-  holdings: TokenHoldings,
-  address: string,
-): TokenRefusal | null {
-  return tokenRefusals(tokenIds, holdings, address)[0] ?? null;
-}
-
-/**
  * The objekt-index conditions for the collections a range covers.
  */
 function rangeConditions(filter: RangeFilter) {
@@ -256,10 +227,24 @@ function rangeConditions(filter: RangeFilter) {
 }
 
 /**
- * How many collections a range matches, using the objekt index's filters.
+ * How many collections each range matches, in the filters' order, using the
+ * objekt index's filters, in one pass over the collections.
  */
-export function countRangeMatches(filter: RangeFilter) {
-  return indexer.$count(collections, rangeConditions(filter));
+export async function countRangeMatches(
+  filters: readonly RangeFilter[],
+): Promise<number[]> {
+  if (filters.length === 0) return [];
+  const [row] = await indexer
+    .select({
+      counts: sql<number[]>`array[${sql.join(
+        filters.map(
+          (filter) => sql`count(*) filter (where ${rangeConditions(filter)})`,
+        ),
+        sql`, `,
+      )}]::int[]`,
+    })
+    .from(collections);
+  return row?.counts ?? [];
 }
 
 /**
@@ -311,24 +296,11 @@ export async function resolveWants(
     })
     .from(collections)
     .where(inArray(collections.slug, slugs));
-  // every range row's match count in one pass over the collections
-  const [matched] = ranges.length
-    ? await indexer
-        .select({
-          counts: sql<number[]>`array[${sql.join(
-            ranges.map(
-              ({ filter }) =>
-                sql`count(*) filter (where ${rangeConditions(filter)})`,
-            ),
-            sql`, `,
-          )}]::int[]`,
-        })
-        .from(collections)
-    : [{ counts: [] }];
+  const counts = await countRangeMatches(ranges.map(({ filter }) => filter));
 
   const bySlug = new Map(rows.map((row) => [row.slug, row]));
   const rangeCounts = new Map(
-    ranges.map(({ index }, position) => [index, matched?.counts[position]]),
+    ranges.map(({ index }, position) => [index, counts[position]]),
   );
   const known = (slug: string) => {
     const objekt = bySlug.get(slug);

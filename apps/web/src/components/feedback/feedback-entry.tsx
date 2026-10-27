@@ -1,6 +1,6 @@
 import { m } from "@/i18n/messages";
 import { formatScore, ratedRoleLabels } from "@/lib/client/feedback";
-import { partyName } from "@/lib/client/trades";
+import { partyName } from "@/lib/client/trade-listings";
 import { feedbackKey } from "@/lib/queries/feedback";
 import type { FeedbackProfileEntry } from "@/lib/universal/feedback";
 import { isEqual } from "@apollo/util";

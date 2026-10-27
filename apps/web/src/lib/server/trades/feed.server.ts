@@ -1,3 +1,4 @@
+import { collections, objekts } from "@apollo/database/indexer/schema";
 import {
   lockedObjekts,
   tradeListingWantOptions,
@@ -10,12 +11,14 @@ import type {
   TradeListingWantOption,
   TradeOfferItem,
 } from "@apollo/database/web/types";
+import type { TokenFlags } from "@apollo/trades/holdings";
 import { rangeColumns } from "@apollo/trades/range";
 import {
   and,
   type AnyColumn,
   arrayOverlaps,
   count,
+  countDistinct,
   eq,
   exists,
   inArray,
@@ -34,7 +37,7 @@ import {
   storedWantSchema,
 } from "../../universal/trade-listings";
 import { indexer } from "../db/indexer";
-import { readIndexerTokens, type TokenState } from "./holdings.server";
+import { type TokenState, toTokenStates } from "./holdings.server";
 
 const qb = new QueryBuilder();
 
@@ -181,13 +184,34 @@ function lookingForConditions(side: FeedSide) {
 
 const liveCopy = alias(tradeOfferItems, "live_copy");
 
+// a live copy of the token in any trade, probing trade_offer_items_live_token_idx, whose WHERE the bare `live` matches
+function liveCopyOf(tokenId: AnyColumn) {
+  return qb
+    .select({ id: liveCopy.id })
+    .from(liveCopy)
+    .where(and(eq(liveCopy.tokenId, tokenId), sql`${liveCopy.live}`));
+}
+
+// the address's lock on the token, probing address_token_idx
+function lockOf(address: AnyColumn, tokenId: AnyColumn) {
+  return qb
+    .select({ id: lockedObjekts.id })
+    .from(lockedObjekts)
+    .where(
+      and(
+        eq(lockedObjekts.address, address),
+        eq(lockedObjekts.tokenId, tokenId),
+        eq(lockedObjekts.locked, true),
+      ),
+    );
+}
+
 /**
  * How many of the listing's pool objekts are free, as an int: no live trade
  * holds them and the poster hasn't locked them. At most MAX_OFFERED pool
- * rows, each probing trade_offer_items_live_token_idx, whose WHERE the bare
- * `live` matches, and address_token_idx, so it's selected for the rows a
- * page returns and never filters on. `listing` is the listing's columns,
- * aliased or not.
+ * rows, each probing both indexes, so it's selected for the rows a page
+ * returns and never filters on. `listing` is the listing's columns, aliased
+ * or not.
  */
 export function freePoolCount(listing: {
   id: AnyColumn;
@@ -200,41 +224,67 @@ export function freePoolCount(listing: {
       and(
         eq(tradeOfferItems.offerId, listing.id),
         isNull(tradeOfferItems.leftAt),
-        notExists(
-          qb
-            .select({ id: liveCopy.id })
-            .from(liveCopy)
-            .where(
-              and(
-                eq(liveCopy.tokenId, tradeOfferItems.tokenId),
-                sql`${liveCopy.live}`,
-              ),
-            ),
-        ),
-        notExists(
-          qb
-            .select({ id: lockedObjekts.id })
-            .from(lockedObjekts)
-            .where(
-              and(
-                eq(lockedObjekts.address, listing.fromAddress),
-                eq(lockedObjekts.tokenId, tradeOfferItems.tokenId),
-                eq(lockedObjekts.locked, true),
-              ),
-            ),
-        ),
+        notExists(liveCopyOf(tradeOfferItems.tokenId)),
+        notExists(lockOf(listing.fromAddress, tradeOfferItems.tokenId)),
       ),
     )})::int`.mapWith(Number);
 }
 
+const itemListing = alias(tradeOffers, "item_listing");
+
+/**
+ * Relational extras on a listing's items saying what holds each back
+ * beside the indexer, as freePoolCount() judges it: a live copy of its
+ * token in any trade (`inTrade`), and a lock on it by the listing's address
+ * (`locked`). Only a pool item (`left_at` null) is judged; one that left
+ * reads false.
+ */
+export const poolItemExtras = {
+  inTrade: (t: { tokenId: AnyColumn; leftAt: AnyColumn }) =>
+    sql<boolean>`(${t.leftAt} is null and ${exists(liveCopyOf(t.tokenId))})`.mapWith(
+      Boolean,
+    ),
+  locked: (t: { tokenId: AnyColumn; offerId: AnyColumn; leftAt: AnyColumn }) =>
+    sql<boolean>`(${t.leftAt} is null and ${exists(
+      qb
+        .select({ id: itemListing.id })
+        .from(itemListing)
+        .where(
+          and(
+            eq(itemListing.id, t.offerId),
+            exists(lockOf(itemListing.fromAddress, t.tokenId)),
+          ),
+        ),
+    )})`.mapWith(Boolean),
+};
+
+/**
+ * The flags of a listing's items read with poolItemExtras.
+ */
+export function poolFlags(
+  items: readonly {
+    tokenId: number | null;
+    inTrade: boolean;
+    locked: boolean;
+  }[],
+): TokenFlags {
+  const flagged = (flag: "inTrade" | "locked") =>
+    new Set(
+      items.flatMap((item) =>
+        item[flag] && item.tokenId !== null ? [item.tokenId] : [],
+      ),
+    );
+  return { locked: flagged("locked"), live: flagged("inTrade") };
+}
+
 /**
  * How many objekts the listing has ever offered, the pool and the ones
- * that left it, as an int (hasRatio()). `listingId` is the listing's id
- * column, aliased or not.
+ * that left it, each once, as an int (hasRatio()). `listingId` is the
+ * listing's id column, aliased or not.
  */
 export function postedCount(listingId: AnyColumn) {
   return sql<number>`(${qb
-    .select({ posted: count() })
+    .select({ posted: countDistinct(tradeOfferItems.tokenId) })
     .from(tradeOfferItems)
     .where(eq(tradeOfferItems.offerId, listingId))})::int`.mapWith(Number);
 }
@@ -259,22 +309,59 @@ export function listingFeedWhere(
 /**
  * The indexer's collections for every slug the page names, and the state
  * of each of its tokens: the serial to show, and the owner and
- * transferability that decide whether it can still be given.
+ * transferability that decide whether it can still be given. One
+ * statement joins the tokens onto their collections, so `slugs` must name
+ * every token's collection; a token outside them reads as missing.
  */
 export async function readIndexed(slugs: string[], tokenIds: number[]) {
-  const collectionRows = slugs.length
-    ? await indexer.query.collections.findMany({
-        where: { slug: { in: slugs } },
-      })
+  const rows = slugs.length
+    ? await indexer
+        .select({
+          collection: collections,
+          objekt: {
+            id: objekts.id,
+            owner: objekts.owner,
+            serial: objekts.serial,
+            transferable: objekts.transferable,
+          },
+        })
+        .from(collections)
+        .leftJoin(
+          objekts,
+          and(
+            eq(objekts.collectionId, collections.id),
+            inArray(objekts.id, tokenIds.map(String)),
+          ),
+        )
+        .where(inArray(collections.slug, slugs))
     : [];
-  const states = tokenIds.length
-    ? await readIndexerTokens(tokenIds)
-    : new Map<number, TokenState>();
   return {
     collections: new Map(
-      collectionRows.map((row) => [row.slug, Objekt.fromIndexer(row)]),
+      rows.map(({ collection }) => [
+        collection.slug,
+        Objekt.fromIndexer(collection),
+      ]),
     ),
-    states,
+    states: toTokenStates(
+      tokenIds,
+      rows.flatMap(({ collection, objekt }) =>
+        objekt === null
+          ? []
+          : [
+              {
+                ...objekt,
+                attributes: {
+                  slug: collection.slug,
+                  artist: collection.artist,
+                  member: collection.member,
+                  season: collection.season,
+                  class: collection.class,
+                  onOffline: collection.onOffline,
+                },
+              },
+            ],
+      ),
+    ),
   };
 }
 

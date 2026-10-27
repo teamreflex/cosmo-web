@@ -1068,6 +1068,7 @@
   "notification_trade_dispute_resolved_cancelled": "版主已處理你與 {#b}{username}{/b} 的交換爭議：已取消",
   "notification_trade_deadline_extended": "版主延長了你與 {#b}{username}{/b} 的交換時間",
   "notification_listing_closed": "你的刊登已關閉：{#b}{objekt}{/b} 已無法提供",
+  "notification_listing_closed_too_few": "你的刊登已關閉：剩餘的 objekt 不足以再進行一次交換",
   "notification_trade_message": "來自 {#b}{username}{/b} 的新訊息",
   "notification_trade_message_staff": "{appName} 工作人員 {#b}{staff}{/b} 在你與 {#b}{username}{/b} 的交換中留言",
   "notification_trade_message_staff_unnamed": "{appName} 工作人員在你與 {#b}{username}{/b} 的交換中留言",

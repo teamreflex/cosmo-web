@@ -15,20 +15,22 @@ import {
 } from "../src/lib/client/trade-listings";
 import type { Objekt } from "../src/lib/universal/objekt-conversion";
 import {
+  type Candidate,
   candidatePanel,
   type CandidateRow,
   hasRatio,
-  type ListingCounterparty,
+  isLiveTrade,
   type ListingFeedItem,
   type ListingItem,
   type ListingOfferSummary,
   type ListingPick,
   listingStop,
   type ListingTrade,
-  type ListingViewer,
+  liveHolder,
   offeredForUnits,
   type OfferRefusal,
   offerRefusal,
+  offerRefusalError,
   pickerVersion,
   picksForUnits,
   type PoolAvailability,
@@ -41,6 +43,7 @@ import {
   takenPick,
   toggleOffered,
 } from "../src/lib/universal/trade-listings";
+import type { TradeParty } from "../src/lib/universal/trades";
 
 const poster = "0x00000000000000000000000000000000000000aa";
 const claimer = "0x00000000000000000000000000000000000000bb";
@@ -476,13 +479,55 @@ describe("whether the poster can accept an offer", () => {
   });
 });
 
-type Candidate = Extract<ListingViewer, { role: "candidate" }>;
+describe("the error a refused accept throws", () => {
+  const thrown = (refusal: OfferRefusal) => {
+    const error = offerRefusalError(refusal);
+    return { code: error.message, data: error.data };
+  };
+
+  test("a refusal naming nothing carries no data", () => {
+    for (const code of [
+      "offer_expired",
+      "listing_updated",
+      "cosmo_not_linked",
+    ] as const) {
+      expect(thrown({ code })).toEqual({ code, data: undefined });
+    }
+    expect(thrown({ code: "offer_unavailable", tokenId: null })).toEqual({
+      code: "offer_unavailable",
+      data: undefined,
+    });
+  });
+
+  test("the claimer's token is named without why", () => {
+    expect(thrown({ code: "offer_unavailable", tokenId: 10 })).toEqual({
+      code: "offer_unavailable",
+      data: { tokenId: 10 },
+    });
+  });
+
+  test("the poster's pick is named, with why unless it's live elsewhere", () => {
+    expect(thrown({ code: "listing_pick_unavailable", tokenId: 1 })).toEqual({
+      code: "listing_pick_unavailable",
+      data: { tokenId: 1 },
+    });
+    expect(
+      thrown({
+        code: "claim_token_unavailable",
+        tokenId: 1,
+        reason: "untransferable",
+      }),
+    ).toEqual({
+      code: "claim_token_unavailable",
+      data: { tokenId: 1, reason: "untransferable" },
+    });
+  });
+});
 
 const candidate = (overrides: Partial<Candidate> = {}): Candidate => ({
   role: "candidate",
   updatedAt: new Date(0),
   units: 1,
-  takesOffers: false,
   pool: [
     { tokenId: 1, availability: { kind: "free" } },
     { tokenId: 2, availability: { kind: "in_trade" } },
@@ -546,6 +591,8 @@ describe("what a candidate sees", () => {
     stop: null,
     unitSize: 1,
   };
+  // a range row makes the listing take offers
+  const offers = { ...listing, wants: [{ kind: "range" as const }] };
 
   test("the picker while a unit of the pool is free", () => {
     expect(candidatePanel(listing, candidate())).toBe("picker");
@@ -589,24 +636,17 @@ describe("what a candidate sees", () => {
   });
 
   test("the cap stops claims but not offers", () => {
-    const capped = { claims: { active: 3, cap: 3 } };
-    expect(candidatePanel(listing, candidate(capped))).toBe("cap");
-    expect(
-      candidatePanel(listing, candidate({ ...capped, takesOffers: true })),
-    ).toBe("picker");
+    const capped = candidate({ claims: { active: 3, cap: 3 } });
+    expect(candidatePanel(listing, capped)).toBe("cap");
+    expect(candidatePanel(offers, capped)).toBe("picker");
   });
 
   test("the cap is said before the poster's side", () => {
-    const capped = { claims: { active: 3, cap: 3 } };
-    expect(
-      candidatePanel({ ...listing, stop: "blocked" }, candidate(capped)),
-    ).toBe("cap");
-    expect(
-      candidatePanel(
-        { ...listing, stop: "blocked" },
-        candidate({ ...capped, takesOffers: true }),
-      ),
-    ).toBe("blocked");
+    const capped = candidate({ claims: { active: 3, cap: 3 } });
+    expect(candidatePanel({ ...listing, stop: "blocked" }, capped)).toBe("cap");
+    expect(candidatePanel({ ...offers, stop: "blocked" }, capped)).toBe(
+      "blocked",
+    );
   });
 });
 
@@ -663,31 +703,31 @@ describe("the public panel", () => {
   const open = { state: { status: "open" as const }, poster: { id: "p" } };
 
   test("signed out and unlinked viewers need no server answer", () => {
-    expect(publicListingPanel(open, null)).toEqual({ kind: "signed_out" });
+    expect(publicListingPanel(open, null)).toEqual({ role: "signed_out" });
     expect(publicListingPanel(open, { userId: "v", linked: false })).toEqual({
-      kind: "unlinked",
+      role: "unlinked",
     });
   });
 
   test("the server names a linked viewer's role, and an unlinked poster's", () => {
     expect(publicListingPanel(open, { userId: "v", linked: true })).toEqual({
-      kind: "viewer",
+      role: "viewer",
     });
     expect(publicListingPanel(open, { userId: "p", linked: false })).toEqual({
-      kind: "viewer",
+      role: "viewer",
     });
   });
 
   test("a closed listing says how it ended", () => {
     const state = { status: "withdrawn" as const, endedAt: new Date(0) };
     expect(publicListingPanel({ ...open, state }, null)).toEqual({
-      kind: "closed",
+      role: "closed",
       state,
     });
   });
 });
 
-const counterparty = (name: string): ListingCounterparty => ({
+const counterparty = (name: string): TradeParty => ({
   user: null,
   cosmoUsername: name,
   rep: null,
@@ -706,9 +746,9 @@ const trade = (
   const base = {
     tradeId: name,
     claimer: counterparty(name),
-    size: { from: tokenIds.length, to: tokenIds.length },
     acceptedAt: new Date(acceptedAt),
     tokenIds,
+    givenCount: tokenIds.length,
   };
   switch (status) {
     case "accepted":
@@ -723,9 +763,8 @@ const trade = (
       return {
         ...base,
         status,
-        paused: false,
         deadlineAt: new Date(0),
-        pausedAt: new Date(0),
+        dispute: null,
       };
     default:
       return { ...base, status, endedAt: new Date(endedAt) };
@@ -806,6 +845,24 @@ describe("where the poster's objekts stand", () => {
   });
 });
 
+describe("the live trade holding a pool objekt", () => {
+  test("an accepted or disputed trade holds its objekts", () => {
+    const trades = [
+      trade("accepted", "minji", [1]),
+      trade("disputed", "soo", [2, 3]),
+    ];
+    expect(liveHolder(1, trades)?.tradeId).toBe("minji");
+    expect(liveHolder(3, trades)?.tradeId).toBe("soo");
+  });
+
+  test("a finished trade holds nothing", () => {
+    for (const status of ["completed", "cancelled", "timed_out"] as const) {
+      expect(isLiveTrade(trade(status, "minji", [1]))).toBe(false);
+      expect(liveHolder(1, [trade(status, "minji", [1])])).toBeUndefined();
+    }
+  });
+});
+
 describe("the objekt a refused offer names", () => {
   const item = (tokenId: number, serial: number | null): ListingFeedItem => ({
     tokenId,
@@ -858,7 +915,6 @@ describe("the poster's tabs", () => {
     offers: Array.from({ length: offers }, (): ListingOfferSummary => ({
       tradeId: "o",
       claimer: counterparty("x"),
-      size: { from: 1, to: 1 },
       picks: [],
       given: [],
       expiresAt: new Date(0),

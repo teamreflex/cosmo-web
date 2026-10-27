@@ -1,6 +1,6 @@
 import {
   $fetchOfferedTokenRefusals,
-  $fetchRangeMatchCount,
+  $fetchRangeMatchCounts,
   $fetchTradeListing,
   $fetchTradeListingViewer,
   $fetchTradeTokenStates,
@@ -82,12 +82,41 @@ export const offeredTokenRefusalsQuery = (
     staleTime: 1000 * 30,
   });
 
+// the count for the filter at `index`, of the counts fetched for every filter in order
+function matchCount(counts: readonly number[], index: number) {
+  const count = counts[index];
+  if (count === undefined) throw new Error(`no match count for range ${index}`);
+  return count;
+}
+
 /**
- * How many collections a composer range row covers.
+ * How many collections a range row covers.
  */
 export const rangeMatchCountQuery = (filter: RangeFilter) =>
   queryOptions({
     queryKey: ["trade-range-matches", filter],
-    queryFn: ({ signal }) => $fetchRangeMatchCount({ signal, data: filter }),
+    queryFn: async ({ signal }) => {
+      const counts = await $fetchRangeMatchCounts({ signal, data: [filter] });
+      return matchCount(counts, 0);
+    },
     staleTime: 1000 * 60 * 5,
   });
+
+/**
+ * rangeMatchCountQuery for each of a listing's range rows, under the same
+ * keys. Fetches started together share one request for every row; once it
+ * settles, a retry or refetch makes a new one.
+ */
+export function rangeMatchCountQueries(filters: readonly RangeFilter[]) {
+  let request: Promise<number[]> | undefined;
+  return filters.map((filter, index) => ({
+    ...rangeMatchCountQuery(filter),
+    queryFn: async () => {
+      request ??= $fetchRangeMatchCounts({ data: [...filters] }).finally(() => {
+        request = undefined;
+      });
+      const counts = await request;
+      return matchCount(counts, index);
+    },
+  }));
+}

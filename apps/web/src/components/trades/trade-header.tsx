@@ -1,5 +1,6 @@
 import { m } from "@/i18n/messages";
-import { partyName, tradeTimeFormat } from "@/lib/client/trades";
+import { partyName } from "@/lib/client/trade-listings";
+import { tradeTimeFormat } from "@/lib/client/trades";
 import type {
   TradeParty,
   TradePartyName,

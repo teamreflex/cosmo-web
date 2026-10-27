@@ -31,7 +31,7 @@ The same transaction then applies the batch to the trade tables (`applyTrades`; 
 - **Arrivals:** a transfer to an item's receiver at the trade's pinned address marks the item sent, from whichever wallet, and a trade with nothing left owed completes. A disputed trade still records transfers, but only staff complete it.
 - **Pending offers:** a token that moves elsewhere or turns untransferable is posted on its live trade and turns pending offers holding it `stale`. Each gets a `stale` event naming the token and whether it moved or turned untransferable, and an `offer_stale` notification to its proposer (`proposed_by`).
 - **Listing pools:** a token leaving its poster for anywhere (its own trade's claimer included), or turning untransferable, is dropped from the pool of every open listing offering it, which moves the listing's `updated_at`.
-- **Closing listings:** a listing whose pool can then no longer make a unit, with none of its trades live, closes by `listingClosing()`, and a broken one sends `listing_closed` to its poster. A completed trade takes its tokens out of its listing's pool and closes the listing by the same rule.
+- **Closing listings:** a listing whose pool can then no longer make a unit, with none of its trades live, closes by `listingClosing()`, and a broken one sends `listing_closed` to its poster naming the token that left. A completed trade takes its tokens out of its listing's pool and closes the listing by the same rule. Each listing the batch touched is judged once, after every trade the batch completes has ended.
 - **Rolled-back transfers:** a row whose indexer `transfer` was rolled back (the processor runs with hot blocks) still clears the token but is skipped for trades.
 - **Publishing:** touched trades are published on `trade-events` after the commit.
 
@@ -62,7 +62,7 @@ Locally the processor stays off and chain activity is simulated against the inde
 
 ### trade-timers
 
-`trade-timers` runs every minute in three transactions, in this order: offer expiry, offers on closed listings, then trade deadlines. Each pass handles up to 100 rows a run, so a backlog clears at 100 a minute, and writes its due-row query with a literal `kind`/`status` predicate so a partial index serves it.
+`trade-timers` runs every minute in three passes, in this order: offer expiry, offers on closed listings, then trade deadlines, each in its own transaction. The two offer passes scan for due offers before opening theirs, so a pass with nothing due opens none. Each pass handles up to 100 rows a run, so a backlog clears at 100 a minute, and writes its due-row query with a literal `kind`/`status` predicate so a partial index serves it.
 
 #### Offer expiry
 
@@ -96,6 +96,8 @@ It ends accepted trades whose `deadline_at` is at or before the drain's watermar
 - one nobody owes anything on completes;
 - one where something was sent and something is still owed is disputed: `disputeAtDeadline` files a `deadline_passed` report naming the side that sent everything it owed (`waitingSide`), or no one when both sent part, and notifies both parties with `trade_disputed`;
 - one where nothing was sent times out, which leaves its tokens free in its listing's pool.
+
+Once the due trades have ended, each listing they came from closes by `listingClosing()` (`closeSpentListings`), and one that breaks, because the drain dropped pool tokens while its trade was live, sends `listing_closed` to its poster naming no token. The poster is the trade's `from` party, already locked.
 
 Neither the drain nor the timers read holdings from the indexer. It locks the cursor `FOR SHARE`, so it waits for a drain batch in flight, and its due-trade query is served by the partial `trade_offers_deadline_idx`. It logs an error when the watermark is null or trails the clock by more than 10 minutes, since then nothing times out on time.
 

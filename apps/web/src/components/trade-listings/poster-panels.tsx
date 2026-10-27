@@ -1,14 +1,15 @@
 import { m } from "@/i18n/messages";
 import { formatOfferRefusal } from "@/lib/client/errors/trades";
-import { partyName } from "@/lib/client/trades";
+import { partyName } from "@/lib/client/trade-listings";
 import {
+  isLiveTrade,
   type ListingFeedItem,
   type ListingOfferSummary,
   type ListingTrade,
+  liveHolder,
   type PosterTab,
   posterTabs,
 } from "@/lib/universal/trade-listings";
-import { cn } from "@/lib/utils";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import {
   IconAlertTriangle,
@@ -20,6 +21,7 @@ import { getRouteApi, Link } from "@tanstack/react-router";
 import { type ReactNode, useId, useState } from "react";
 import FeedbackBadge from "../feedback/feedback-badge";
 import Countdown from "../misc/countdown";
+import { DisputeBadge, NextStepBadge, PausedTime } from "../trades/my-trades";
 import OfferActionDialog, {
   type OfferAction,
 } from "../trades/offer-action-dialog";
@@ -36,9 +38,9 @@ import {
 } from "../ui/empty";
 import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
 import { Timestamp } from "../ui/timestamp";
-import { StateCard } from "./listing-status";
+import { StateCard, TimeLeft } from "./listing-status";
 import ObjektStrip from "./objekt-strip";
-import { tones } from "./state-tones";
+import { Eyebrow } from "./side-heading";
 
 const route = getRouteApi("/market/listing/$id");
 
@@ -153,12 +155,8 @@ function OfferCard({
   const refusedToken =
     refusal !== null && "tokenId" in refusal ? refusal.tokenId : null;
   // the live trade from the listing that holds the pick a refusal names
-  const holding = trades.find(
-    (trade) =>
-      (trade.status === "accepted" || trade.status === "disputed") &&
-      refusedToken !== null &&
-      trade.tokenIds.includes(refusedToken),
-  );
+  const holding =
+    refusedToken === null ? undefined : liveHolder(refusedToken, trades);
   const holder = holding === undefined ? null : partyName(holding.claimer);
   const items = [...offer.picks, ...offer.given].map((item) => ({
     tokenId: item.tokenId,
@@ -179,8 +177,8 @@ function OfferCard({
           )}
           <Badge variant="secondary" className="font-mono tabular-nums">
             {m.market_listings_ratio({
-              give: offer.size.from,
-              get: offer.size.to,
+              give: offer.picks.length,
+              get: offer.given.length,
             })}
           </Badge>
         </>
@@ -271,16 +269,7 @@ function OfferSide({
 }) {
   return (
     <div className="flex min-w-0 flex-col gap-2">
-      <span
-        className={cn(
-          "text-xxs font-medium tracking-widest uppercase",
-          tone === "have"
-            ? "text-teal-700 dark:text-teal-500"
-            : "text-amber-700 dark:text-amber-500",
-        )}
-      >
-        {title}
-      </span>
+      <Eyebrow tone={tone}>{title}</Eyebrow>
       <ObjektStrip items={items} captions dimmed={dimmed} />
     </div>
   );
@@ -291,12 +280,8 @@ function OfferSide({
  * opening its trade.
  */
 export function PosterTrades({ trades }: { trades: ListingTrade[] }) {
-  const live = trades.filter(
-    (trade) => trade.status === "accepted" || trade.status === "disputed",
-  );
-  const finished = trades.filter(
-    (trade) => trade.status !== "accepted" && trade.status !== "disputed",
-  );
+  const live = trades.filter(isLiveTrade);
+  const finished = trades.filter((trade) => !isLiveTrade(trade));
 
   if (trades.length === 0) {
     return (
@@ -365,8 +350,8 @@ function TradeRow({ trade }: { trade: ListingTrade }) {
       </span>
       <span className="font-mono text-xs text-muted-foreground tabular-nums">
         {m.market_listings_ratio({
-          give: trade.size.from,
-          get: trade.size.to,
+          give: trade.tokenIds.length,
+          get: trade.givenCount,
         })}
       </span>
       <TradeState trade={trade} name={partyName(trade.claimer)} />
@@ -396,57 +381,22 @@ function TradeState({
     case "accepted":
       return (
         <>
-          {trade.needsYou ? (
-            <Badge className={tones.cosmo}>
-              {m.my_trades_next_send({ count: trade.toSend })}
-            </Badge>
-          ) : (
-            // a long name gives way, so the verb stays
-            <Badge
-              className={cn(tones.muted, "max-w-full")}
-              title={m.my_trades_next_them({ name })}
-            >
-              <ParaglideMessage
-                message={m.my_trades_next_them}
-                inputs={{ name }}
-                markup={{
-                  user: ({ children }) => (
-                    <span className="min-w-0 truncate">{children}</span>
-                  ),
-                }}
-              />
-            </Badge>
-          )}
+          <NextStepBadge
+            needsYou={trade.needsYou}
+            toSend={trade.toSend}
+            name={name}
+          />
           <span className="ms-auto text-xs text-muted-foreground tabular-nums">
-            <ParaglideMessage
-              message={m.listing_detail_time_left}
-              inputs={{ left: "" }}
-              markup={{ time: () => <Countdown deadline={trade.deadlineAt} /> }}
-            />
+            <TimeLeft deadline={trade.deadlineAt} />
           </span>
         </>
       );
     case "disputed":
       return (
         <>
-          {trade.paused ? (
-            <Badge className={tones.muted}>{m.my_trades_next_paused()}</Badge>
-          ) : (
-            <Badge className={tones.bad}>{m.my_trades_next_dispute()}</Badge>
-          )}
+          <DisputeBadge dispute={trade.dispute} />
           <span className="ms-auto text-xs text-muted-foreground tabular-nums">
-            <ParaglideMessage
-              message={m.trade_page_paused}
-              inputs={{ left: "" }}
-              markup={{
-                time: () => (
-                  <Countdown
-                    deadline={trade.deadlineAt}
-                    pausedAt={trade.pausedAt}
-                  />
-                ),
-              }}
-            />
+            <PausedTime deadline={trade.deadlineAt} dispute={trade.dispute} />
           </span>
         </>
       );

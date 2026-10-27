@@ -13,6 +13,7 @@ type Props = {
   size?: keyof typeof sizes;
   /** what the group and its buttons are called, a want row's count when left out */
   labels?: { group: string; fewer: string; more: string };
+  className?: string;
   valueClassName?: string;
 };
 
@@ -43,6 +44,7 @@ export default function ComposerStepper({
   onStep,
   size = "sm",
   labels,
+  className,
   valueClassName,
 }: Props) {
   const labelId = useId();
@@ -55,6 +57,7 @@ export default function ComposerStepper({
       className={cn(
         "inline-flex shrink-0 items-center gap-1 border border-border",
         variant.group,
+        className,
       )}
     >
       <span id={labelId} className="sr-only">

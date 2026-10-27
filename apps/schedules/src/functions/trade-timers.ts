@@ -1,4 +1,5 @@
 import {
+  closeSpentListings,
   disputeAtDeadline,
   endTrade,
   insertTradeEvents,
@@ -57,176 +58,183 @@ export const tradeTimersTask = {
   effect: Effect.gen(function* () {
     const db = yield* DatabaseWeb;
 
-    const expired = yield* db.transaction((tx) =>
-      Effect.gen(function* () {
-        // the literal kind and status let trade_offers_expiry_idx serve this
-        const due = yield* tx
-          .select({
-            id: tradeOffers.id,
-            fromUserId: tradeOffers.fromUserId,
-            toUserId: tradeOffers.toUserId,
-          })
-          .from(tradeOffers)
-          .where(
-            and(
-              sql`${tradeOffers.kind} = 'trade' AND ${tradeOffers.status} = 'pending'`,
-              lte(tradeOffers.expiresAt, sql`now()`),
-            ),
-          )
-          .orderBy(asc(tradeOffers.expiresAt), asc(tradeOffers.id))
-          .limit(BATCH_SIZE);
-        if (due.length === 0) return [];
+    // the literal kind and status let trade_offers_expiry_idx serve both scans
+    const pendingOffer = sql`${tradeOffers.kind} = 'trade' AND ${tradeOffers.status} = 'pending'`;
 
-        // users, then the offers in id order (docs/auth.md)
-        const locked = yield* lockUsers(
-          tx,
-          due.flatMap((offer) => [offer.fromUserId, offer.toUserId]),
-        );
-        const ids = due.map((offer) => offer.id);
-        yield* tx
-          .select({ id: tradeOffers.id })
-          .from(tradeOffers)
-          .where(inArray(tradeOffers.id, ids))
-          .orderBy(asc(tradeOffers.id))
-          .for("no key update");
+    /**
+     * Each pass scans for due offers before opening its transaction, so a
+     * minute with nothing due opens none; its update re-checks each offer
+     * under the lock.
+     */
+    const dueExpiry = yield* db
+      .select({
+        id: tradeOffers.id,
+        fromUserId: tradeOffers.fromUserId,
+        toUserId: tradeOffers.toUserId,
+      })
+      .from(tradeOffers)
+      .where(and(pendingOffer, lte(tradeOffers.expiresAt, sql`now()`)))
+      .orderBy(asc(tradeOffers.expiresAt), asc(tradeOffers.id))
+      .limit(BATCH_SIZE);
+    const expired =
+      dueExpiry.length === 0
+        ? []
+        : yield* db.transaction((tx) =>
+            Effect.gen(function* () {
+              // users, then the offers in id order (docs/auth.md)
+              const locked = yield* lockUsers(
+                tx,
+                dueExpiry.flatMap((offer) => [
+                  offer.fromUserId,
+                  offer.toUserId,
+                ]),
+              );
+              const ids = dueExpiry.map((offer) => offer.id);
+              yield* tx
+                .select({ id: tradeOffers.id })
+                .from(tradeOffers)
+                .where(inArray(tradeOffers.id, ids))
+                .orderBy(asc(tradeOffers.id))
+                .for("no key update");
 
-        // an offer accepted, answered or withdrawn since the scan is left alone
-        const { from, to } = offerTransition("expire");
-        const offers = yield* tx
-          .update(tradeOffers)
-          .set({
-            status: to,
-            endedAt: sql`now()`,
-            updatedAt: bumpUpdatedAt,
-          })
-          .where(
-            and(
-              inArray(tradeOffers.id, ids),
-              eq(tradeOffers.status, from),
-              lte(tradeOffers.expiresAt, sql`now()`),
-            ),
-          )
-          .returning({
-            id: tradeOffers.id,
-            fromUserId: tradeOffers.fromUserId,
-            toUserId: tradeOffers.toUserId,
-            proposedBy: tradeOffers.proposedBy,
-          });
+              // an offer accepted, answered or withdrawn since the scan is left alone
+              const { from, to } = offerTransition("expire");
+              const offers = yield* tx
+                .update(tradeOffers)
+                .set({
+                  status: to,
+                  endedAt: sql`now()`,
+                  updatedAt: bumpUpdatedAt,
+                })
+                .where(
+                  and(
+                    inArray(tradeOffers.id, ids),
+                    eq(tradeOffers.status, from),
+                    lte(tradeOffers.expiresAt, sql`now()`),
+                  ),
+                )
+                .returning({
+                  id: tradeOffers.id,
+                  fromUserId: tradeOffers.fromUserId,
+                  toUserId: tradeOffers.toUserId,
+                  proposedBy: tradeOffers.proposedBy,
+                });
 
-        // only the proposer hears that their offer expired
-        yield* insertTradeEvents(
-          tx,
-          offers.map(({ id }) => ({ tradeId: id, event: { type: "expired" } })),
-        );
-        yield* insertTradeNotifications(
-          tx,
-          locked,
-          offers.map((offer): TradeNotification => ({
-            type: "offer_expired",
-            userId: proposerId(offer),
-            offerId: offer.id,
-            actorId: null,
-            tokenId: null,
-          })),
-        );
-        return offers.map(({ id }) => id);
-      }),
-    );
+              // only the proposer hears that their offer expired
+              yield* insertTradeEvents(
+                tx,
+                offers.map(({ id }) => ({
+                  tradeId: id,
+                  event: { type: "expired" },
+                })),
+              );
+              yield* insertTradeNotifications(
+                tx,
+                locked,
+                offers.map((offer): TradeNotification => ({
+                  type: "offer_expired",
+                  userId: proposerId(offer),
+                  offerId: offer.id,
+                  actorId: null,
+                  tokenId: null,
+                })),
+              );
+              return offers.map(({ id }) => id);
+            }),
+          );
     yield* publishTradeUpdates(expired);
     yield* Effect.logInfo(`Expired ${expired.length} pending offers`);
 
-    const declined = yield* db.transaction((tx) =>
-      Effect.gen(function* () {
-        // the literal kind and status let trade_offers_expiry_idx find the pending offers
-        const listing = alias(tradeOffers, "listing");
-        const closedListing = (offerId: SQLWrapper) =>
-          exists(
-            tx
-              .select({ id: tradeOfferItems.id })
-              .from(tradeOfferItems)
-              .innerJoin(listing, eq(listing.id, tradeOfferItems.listingId))
-              .where(
-                and(
-                  eq(tradeOfferItems.offerId, offerId),
-                  ne(listing.status, "open"),
-                ),
-              ),
+    const listing = alias(tradeOffers, "listing");
+    const closedListing = (offerId: SQLWrapper) =>
+      exists(
+        db
+          .select({ id: tradeOfferItems.id })
+          .from(tradeOfferItems)
+          .innerJoin(listing, eq(listing.id, tradeOfferItems.listingId))
+          .where(
+            and(
+              eq(tradeOfferItems.offerId, offerId),
+              ne(listing.status, "open"),
+            ),
+          ),
+      );
+    const dueDecline = yield* db
+      .select({
+        id: tradeOffers.id,
+        fromUserId: tradeOffers.fromUserId,
+        toUserId: tradeOffers.toUserId,
+      })
+      .from(tradeOffers)
+      .where(and(pendingOffer, closedListing(tradeOffers.id)))
+      .orderBy(asc(tradeOffers.id))
+      .limit(BATCH_SIZE);
+    const declined =
+      dueDecline.length === 0
+        ? []
+        : yield* db.transaction((tx) =>
+            Effect.gen(function* () {
+              // users, then the offers in id order (docs/auth.md); a listing never reopens, so it needs no lock
+              const locked = yield* lockUsers(
+                tx,
+                dueDecline.flatMap((offer) => [
+                  offer.fromUserId,
+                  offer.toUserId,
+                ]),
+              );
+              const ids = dueDecline.map((offer) => offer.id);
+              yield* tx
+                .select({ id: tradeOffers.id })
+                .from(tradeOffers)
+                .where(inArray(tradeOffers.id, ids))
+                .orderBy(asc(tradeOffers.id))
+                .for("no key update");
+
+              // an offer accepted, answered or withdrawn since the scan is left alone
+              const { from, to } = offerTransition("decline");
+              const offers = yield* tx
+                .update(tradeOffers)
+                .set({
+                  status: to,
+                  endedAt: sql`now()`,
+                  updatedAt: bumpUpdatedAt,
+                })
+                .where(
+                  and(
+                    inArray(tradeOffers.id, ids),
+                    eq(tradeOffers.status, from),
+                    closedListing(tradeOffers.id),
+                  ),
+                )
+                .returning({
+                  id: tradeOffers.id,
+                  fromUserId: tradeOffers.fromUserId,
+                  toUserId: tradeOffers.toUserId,
+                  proposedBy: tradeOffers.proposedBy,
+                });
+
+              // the claimer who proposed each offer hears that the listing closed
+              yield* insertTradeEvents(
+                tx,
+                offers.map(({ id }) => ({
+                  tradeId: id,
+                  event: { type: "declined", by: "listing" },
+                })),
+              );
+              yield* insertTradeNotifications(
+                tx,
+                locked,
+                offers.map((offer): TradeNotification => ({
+                  type: "offer_declined",
+                  userId: proposerId(offer),
+                  offerId: offer.id,
+                  actorId: null,
+                  tokenId: null,
+                })),
+              );
+              return offers.map(({ id }) => id);
+            }),
           );
-        const due = yield* tx
-          .select({
-            id: tradeOffers.id,
-            fromUserId: tradeOffers.fromUserId,
-            toUserId: tradeOffers.toUserId,
-          })
-          .from(tradeOffers)
-          .where(
-            and(
-              sql`${tradeOffers.kind} = 'trade' AND ${tradeOffers.status} = 'pending'`,
-              closedListing(tradeOffers.id),
-            ),
-          )
-          .orderBy(asc(tradeOffers.id))
-          .limit(BATCH_SIZE);
-        if (due.length === 0) return [];
-
-        // users, then the offers in id order (docs/auth.md); a listing never reopens, so it needs no lock
-        const locked = yield* lockUsers(
-          tx,
-          due.flatMap((offer) => [offer.fromUserId, offer.toUserId]),
-        );
-        const ids = due.map((offer) => offer.id);
-        yield* tx
-          .select({ id: tradeOffers.id })
-          .from(tradeOffers)
-          .where(inArray(tradeOffers.id, ids))
-          .orderBy(asc(tradeOffers.id))
-          .for("no key update");
-
-        // an offer accepted, answered or withdrawn since the scan is left alone
-        const { from, to } = offerTransition("decline");
-        const offers = yield* tx
-          .update(tradeOffers)
-          .set({
-            status: to,
-            endedAt: sql`now()`,
-            updatedAt: bumpUpdatedAt,
-          })
-          .where(
-            and(
-              inArray(tradeOffers.id, ids),
-              eq(tradeOffers.status, from),
-              closedListing(tradeOffers.id),
-            ),
-          )
-          .returning({
-            id: tradeOffers.id,
-            fromUserId: tradeOffers.fromUserId,
-            toUserId: tradeOffers.toUserId,
-            proposedBy: tradeOffers.proposedBy,
-          });
-
-        // the claimer who proposed each offer hears that the listing closed
-        yield* insertTradeEvents(
-          tx,
-          offers.map(({ id }) => ({
-            tradeId: id,
-            event: { type: "declined", by: "listing" },
-          })),
-        );
-        yield* insertTradeNotifications(
-          tx,
-          locked,
-          offers.map((offer): TradeNotification => ({
-            type: "offer_declined",
-            userId: proposerId(offer),
-            offerId: offer.id,
-            actorId: null,
-            tokenId: null,
-          })),
-        );
-        return offers.map(({ id }) => id);
-      }),
-    );
     yield* publishTradeUpdates(declined);
     yield* Effect.logInfo(
       `Declined ${declined.length} pending offers on closed listings`,
@@ -295,6 +303,7 @@ export const tradeTimersTask = {
 
         const notifications: TradeNotification[] = [];
         const events: TradeEventRow[] = [];
+        const listingIds = new Set<string>();
         let completed = 0;
         let disputed = 0;
         for (const trade of trades) {
@@ -315,9 +324,18 @@ export const tradeTimersTask = {
           if (result.trade.status === "completed") completed++;
           events.push(ended.event);
           notifications.push(...ended.notifications);
+          for (const id of ended.listingIds) listingIds.add(id);
         }
+        /**
+         * Each listing closes once its due trades have all ended. Its poster
+         * is the trades' `from` party, locked above.
+         */
+        const closed = yield* closeSpentListings(tx, [...listingIds]);
         yield* insertTradeEvents(tx, events);
-        yield* insertTradeNotifications(tx, locked, notifications);
+        yield* insertTradeNotifications(tx, locked, [
+          ...notifications,
+          ...closed.notifications,
+        ]);
 
         return {
           chainTime,

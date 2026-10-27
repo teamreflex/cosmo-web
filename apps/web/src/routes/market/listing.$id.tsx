@@ -10,7 +10,7 @@ import { defineHead } from "@/lib/meta";
 import { currentAccountQuery } from "@/lib/queries/core";
 import {
   offeredTokenRefusalsQuery,
-  rangeMatchCountQuery,
+  rangeMatchCountQueries,
   tradeListingQuery,
   tradeListingViewerQuery,
 } from "@/lib/queries/trade-listings";
@@ -81,12 +81,12 @@ export const Route = createFileRoute("/market/listing/$id")({
         )
         .catch(noop);
     }
-    for (const want of listing.wants) {
-      if (want.kind === "range") {
-        void context.queryClient
-          .query(rangeMatchCountQuery(want.filter))
-          .catch(noop);
-      }
+    for (const query of rangeMatchCountQueries(
+      listing.wants.flatMap((want) =>
+        want.kind === "range" ? [want.filter] : [],
+      ),
+    )) {
+      void context.queryClient.query(query).catch(noop);
     }
 
     /**
@@ -97,7 +97,7 @@ export const Route = createFileRoute("/market/listing/$id")({
      */
     if (
       !preload &&
-      (panel.kind === "viewer" || (panel.kind === "closed" && account))
+      (panel.role === "viewer" || (panel.role === "closed" && account))
     ) {
       await context.queryClient
         .query(tradeListingViewerQuery(id, listing.updatedAt))

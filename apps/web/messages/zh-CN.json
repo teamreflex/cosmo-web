@@ -1068,6 +1068,7 @@
   "notification_trade_dispute_resolved_cancelled": "版主已处理你与 {#b}{username}{/b} 的交换争议：已取消",
   "notification_trade_deadline_extended": "版主为你与 {#b}{username}{/b} 的交换延长了时间",
   "notification_listing_closed": "你的挂单已关闭：{#b}{objekt}{/b} 已不再可用",
+  "notification_listing_closed_too_few": "你的挂单已关闭：剩余的 objekt 不足以再进行一次交换",
   "notification_trade_message": "来自 {#b}{username}{/b} 的新消息",
   "notification_trade_message_staff": "{appName} 工作人员 {#b}{staff}{/b} 在你与 {#b}{username}{/b} 的交换中留言",
   "notification_trade_message_staff_unnamed": "{appName} 工作人员在你与 {#b}{username}{/b} 的交换中留言",

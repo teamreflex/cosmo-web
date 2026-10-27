@@ -6,6 +6,8 @@ import {
 } from "@apollo/database/web/schema";
 import {
   liveTradeStatuses,
+  openTradeStatuses,
+  type TradeOfferItem,
   type TradeOfferStatus,
 } from "@apollo/database/web/types";
 import { allocateUnits, fitsWant } from "@apollo/trades/allocate";
@@ -17,6 +19,7 @@ import {
 import { needsYou, tradeState } from "@apollo/trades/lifecycle";
 import {
   and,
+  type AnyColumn,
   count,
   desc,
   EmptyFilter,
@@ -26,30 +29,33 @@ import {
   isNotNull,
   sql,
 } from "drizzle-orm";
-import { QueryBuilder } from "drizzle-orm/pg-core";
-import { toFeedbackRep } from "../../universal/feedback";
+import { alias, QueryBuilder } from "drizzle-orm/pg-core";
 import { Objekt } from "../../universal/objekt-conversion";
 import {
   type CandidateRow,
-  type ListingCounterparty,
+  type EndedOfferStatus,
   type ListingOfferSummary,
   type ListingPick,
   listingStateSchema,
   type ListingTrade,
-  type ListingTradeSize,
   offerRefusal,
   storedObjektItemSchema,
   type StoredWant,
-  toTradeWant,
+  type TradeRatio,
+  tradeWants,
 } from "../../universal/trade-listings";
-import { toPublicUser } from "../auth.server";
 import { db, type DbOrTx } from "../db";
 import { indexer } from "../db/indexer";
 import { feedbackRepColumns } from "../feedback.server";
 import { feedItem, readIndexed } from "./feed.server";
 import { readCandidates, readSharedTokenFlags } from "./holdings.server";
 import { posterLinkColumns } from "./poster.server";
-import { deadlinePassed, watermarkExtra } from "./trade-view.server";
+import {
+  deadlinePassed,
+  toTradeParty,
+  tradeDispute,
+  watermarkExtra,
+} from "./trade-view.server";
 import { claimerLink } from "./trade.server";
 
 const qb = new QueryBuilder();
@@ -75,16 +81,28 @@ const openClaim = and(
   ),
 );
 
+const listingClaim = alias(tradeOffers, "listing_claim");
+
 /**
  * What a user's claim cap is judged on, in one statement: their linked COSMO
  * `address` (null when unlinked), how many claims they hold open, and the
  * feedback score of their linked address, or 0 before its first scored
- * rating.
+ * rating. A claim passes its listing, which adds whether the user already
+ * has a trade from it under way (`claimsListing`): a live claim, or an offer
+ * on it still waiting for the poster, whose poster's items keep the
+ * listing's id.
  */
 export async function claimStanding(
   executor: DbOrTx,
   userId: string,
-): Promise<ClaimStats & { address: string | null; active: number }> {
+  listingId?: string,
+): Promise<
+  ClaimStats & {
+    address: string | null;
+    active: number;
+    claimsListing: boolean;
+  }
+> {
   const link = qb
     .select({ address: cosmoAccounts.address })
     .from(cosmoAccounts)
@@ -97,6 +115,25 @@ export async function claimStanding(
         .select({ score: userFeedbackStats.score })
         .from(userFeedbackStats)
         .where(inArray(userFeedbackStats.address, link))}), 0)`.mapWith(Number),
+      claimsListing:
+        listingId === undefined
+          ? sql<boolean>`false`
+          : exists(
+              qb
+                .select({ id: listingClaim.id })
+                .from(tradeOfferItems)
+                .innerJoin(
+                  listingClaim,
+                  eq(listingClaim.id, tradeOfferItems.offerId),
+                )
+                .where(
+                  and(
+                    eq(tradeOfferItems.listingId, listingId),
+                    eq(listingClaim.toUserId, userId),
+                    inArray(listingClaim.status, [...openTradeStatuses]),
+                  ),
+                ),
+            ).mapWith(Boolean),
     })
     .from(tradeOffers)
     .where(and(eq(tradeOffers.toUserId, userId), openClaim));
@@ -104,6 +141,7 @@ export async function claimStanding(
     address: row?.address ?? null,
     active: row?.active ?? 0,
     score: row?.score ?? 0,
+    claimsListing: row?.claimsListing ?? false,
   };
 }
 
@@ -112,7 +150,7 @@ export async function claimStanding(
  * as claimStanding() judges one, in one grouped statement. A user with no
  * open claim is under any cap, so they don't need a row.
  */
-async function atClaimCap(userIds: readonly string[]) {
+async function claimersAtCap(userIds: readonly string[]) {
   if (userIds.length === 0) return new Set<string>();
   const rows = await db
     .select({
@@ -137,55 +175,66 @@ async function atClaimCap(userIds: readonly string[]) {
   );
 }
 
-// a trade from the listing, which keeps the listing's id on the poster's items
-function fromListing(listingId: string) {
-  return qb
-    .select({ id: tradeOfferItems.id })
-    .from(tradeOfferItems)
-    .where(
-      and(
-        eq(tradeOfferItems.offerId, tradeOffers.id),
-        eq(tradeOfferItems.listingId, listingId),
-      ),
-    );
+const listingTrade = alias(tradeOffers, "listing_trade");
+
+// the listing's completed trades, each keeping the listing's id on the poster's items
+function completedFromListing(listingId: AnyColumn) {
+  return and(
+    eq(listingTrade.kind, "trade"),
+    eq(listingTrade.status, "completed"),
+    exists(
+      qb
+        .select({ id: tradeOfferItems.id })
+        .from(tradeOfferItems)
+        .where(
+          and(
+            eq(tradeOfferItems.offerId, listingTrade.id),
+            eq(tradeOfferItems.listingId, listingId),
+          ),
+        ),
+    ),
+  );
 }
 
 /**
- * The listing's state. A filled one counts its completed trades and names
- * the COSMO account behind the latest one's claimer address.
+ * Relational extras that read what a filled listing's state names: how many
+ * of its trades completed and the COSMO account behind the latest one's
+ * claimer address. Only a filled listing runs them; any other reads 0 and
+ * null.
  */
-export async function readListingState(listing: {
-  id: string;
+export const listingStateExtras = {
+  completedTrades: (t: { id: AnyColumn; status: AnyColumn }) =>
+    sql<number>`coalesce(case when ${t.status} = 'filled' then (${qb
+      .select({ trades: count() })
+      .from(listingTrade)
+      .where(completedFromListing(t.id))}) end, 0)::int`.mapWith(Number),
+  completedBy: (t: { id: AnyColumn; status: AnyColumn }) =>
+    sql<string | null>`case when ${t.status} = 'filled' then (${qb
+      .select({ username: cosmoAccounts.username })
+      .from(listingTrade)
+      .leftJoin(
+        cosmoAccounts,
+        eq(cosmoAccounts.address, listingTrade.toAddress),
+      )
+      .where(completedFromListing(t.id))
+      .orderBy(desc(listingTrade.endedAt), desc(listingTrade.id))
+      .limit(1)}) end`,
+};
+
+/**
+ * The listing's state, from its row read with listingStateExtras.
+ */
+export function toListingState(listing: {
   status: TradeOfferStatus;
   endedAt: Date | null;
+  completedTrades: number;
+  completedBy: string | null;
 }) {
-  const [completed] =
-    listing.status === "filled"
-      ? await db
-          .select({
-            trades: sql<number>`(count(*) over ())::int`.mapWith(Number),
-            username: cosmoAccounts.username,
-          })
-          .from(tradeOffers)
-          .leftJoin(
-            cosmoAccounts,
-            eq(cosmoAccounts.address, tradeOffers.toAddress),
-          )
-          .where(
-            and(
-              eq(tradeOffers.kind, "trade"),
-              eq(tradeOffers.status, "completed"),
-              exists(fromListing(listing.id)),
-            ),
-          )
-          .orderBy(desc(tradeOffers.endedAt), desc(tradeOffers.id))
-          .limit(1)
-      : [];
   return listingStateSchema.parse({
     status: listing.status,
     endedAt: listing.endedAt,
-    counterparty: completed?.username ?? null,
-    trades: completed?.trades ?? 0,
+    counterparty: listing.completedBy,
+    trades: listing.completedTrades,
   });
 }
 
@@ -197,13 +246,12 @@ export async function readListingState(listing: {
  * COSMO link, the COSMO account behind the address it pinned and that
  * address's rating. A disputed one comes with the event that froze it, and
  * each with the drain's watermark, which says whether an accepted one's
- * deadline has passed. `claimerId` narrows them to one claimer's.
+ * deadline has passed.
  */
-export function readListingTrades(listingId: string, claimerId?: string) {
+function readListingTrades(listingId: string) {
   return db.query.tradeOffers.findMany({
     where: {
       kind: "trade",
-      toUserId: claimerId ?? EmptyFilter,
       OR: [{ status: "pending" }, { acceptedAt: { isNotNull: true } }],
       items: { listingId },
     },
@@ -241,8 +289,60 @@ export function readListingTrades(listingId: string, claimerId?: string) {
 
 type ListingTradeRow = Awaited<ReturnType<typeof readListingTrades>>[number];
 
+/**
+ * The latest trade from the listing that got under way, so a closed listing
+ * can link to it: the viewer's own, or anyone's for its poster
+ * (`claimerId` undefined).
+ */
+export async function readLatestAcceptedTrade(
+  listingId: string,
+  claimerId: string | undefined,
+) {
+  const trade = await db.query.tradeOffers.findFirst({
+    where: {
+      kind: "trade",
+      toUserId: claimerId ?? EmptyFilter,
+      acceptedAt: { isNotNull: true },
+      items: { listingId },
+    },
+    columns: { id: true },
+    orderBy: { createdAt: "desc", id: "desc" },
+  });
+  return trade?.id ?? null;
+}
+
+/**
+ * The claimer's latest trade from the listing, with its items in id order.
+ * A claimer holds at most one live trade or pending offer per listing and
+ * can't start another beside it, so an open one is always their latest.
+ */
+export function readClaimerTrade(listingId: string, claimerId: string) {
+  return db.query.tradeOffers.findFirst({
+    where: { kind: "trade", toUserId: claimerId, items: { listingId } },
+    columns: { id: true, status: true, deadlineAt: true, expiresAt: true },
+    with: { items: { orderBy: { id: "asc" } } },
+    orderBy: { createdAt: "desc", id: "desc" },
+  });
+}
+
+/**
+ * How a claimer's latest trade from the listing ended when it was an offer
+ * the poster or the listing ended (EndedOfferStatus), else null: one they
+ * withdrew needs no word, and any later trade replaces it.
+ */
+export function endedOffer(status: TradeOfferStatus): EndedOfferStatus | null {
+  switch (status) {
+    case "declined":
+    case "expired":
+    case "stale":
+      return status;
+    default:
+      return null;
+  }
+}
+
 // the poster's items and the claimer's on a trade from the listing, in id order
-function tradeSides(row: ListingTradeRow) {
+function tradeSides(row: { items: readonly TradeOfferItem[] }) {
   const side = (sender: "from" | "to") =>
     row.items.flatMap((item) =>
       item.sender === sender ? [storedObjektItemSchema.parse(item)] : [],
@@ -253,9 +353,11 @@ function tradeSides(row: ListingTradeRow) {
 /**
  * How many objekts each side of a trade from the listing sends.
  */
-export function tradeSize(row: ListingTradeRow): ListingTradeSize {
+export function tradeSize(row: {
+  items: readonly TradeOfferItem[];
+}): TradeRatio {
   const { from, to } = tradeSides(row);
-  return { from: from.length, to: to.length };
+  return { give: from.length, get: to.length };
 }
 
 /**
@@ -263,7 +365,7 @@ export function tradeSize(row: ListingTradeRow): ListingTradeSize {
  * pool objekts it picked and the claimer's it gives, with their serials and
  * collections.
  */
-export async function offerSides(row: ListingTradeRow) {
+export async function offerSides(row: { items: readonly TradeOfferItem[] }) {
   const { from, to } = tradeSides(row);
   const items = [...from, ...to];
   const indexed = await readIndexed(
@@ -276,33 +378,8 @@ export async function offerSides(row: ListingTradeRow) {
   };
 }
 
-/**
- * How the claimer's latest trade from the listing ended when it was an
- * offer the poster or the listing ended (EndedOfferStatus), else null: one
- * they withdrew needs no word, and any later trade replaces it.
- */
-export async function readEndedOffer(listingId: string, claimerId: string) {
-  const latest = await db.query.tradeOffers.findFirst({
-    where: { kind: "trade", toUserId: claimerId, items: { listingId } },
-    columns: { status: true },
-    orderBy: { createdAt: "desc", id: "desc" },
-  });
-  switch (latest?.status) {
-    case "declined":
-    case "expired":
-    case "stale":
-      return latest.status;
-    default:
-      return null;
-  }
-}
-
-function counterparty(row: ListingTradeRow): ListingCounterparty {
-  return {
-    user: row.toUser && toPublicUser(row.toUser),
-    cosmoUsername: row.toCosmo?.username ?? null,
-    rep: row.toUser && toFeedbackRep(row.toStats),
-  };
+function claimer(row: ListingTradeRow) {
+  return toTradeParty(row.toUserId, row.toUser, row.toCosmo, row.toStats);
 }
 
 /**
@@ -350,11 +427,11 @@ export async function readPosterSide(listing: {
     listing.fromAddress,
     ...pending.map(({ toAddress }) => toAddress),
   ]);
-  const atCap = await atClaimCap([
+  const atCap = await claimersAtCap([
     ...new Set(pending.flatMap(({ row }) => row.toUserId ?? [])),
   ]);
   const pool = new Set(listing.pool);
-  const wants = listing.wants.flatMap((want) => toTradeWant(want) ?? []);
+  const wants = tradeWants(listing.wants);
   const now = new Date();
 
   return {
@@ -364,8 +441,7 @@ export async function readPosterSide(listing: {
         const given = sides.to.map((item) => item.tokenId);
         return {
           tradeId: row.id,
-          claimer: counterparty(row),
-          size: { from: picks.length, to: given.length },
+          claimer: claimer(row),
           picks: sides.from.map((item) => feedItem(item, indexed)),
           given: sides.to.map((item) => feedItem(item, indexed)),
           expiresAt,
@@ -399,12 +475,13 @@ export async function readPosterSide(listing: {
       if (row.acceptedAt === null) {
         throw new Error(`trade ${row.id} was never accepted`);
       }
+      const { from, to } = tradeSides(row);
       const trade = {
         tradeId: row.id,
-        claimer: counterparty(row),
-        size: tradeSize(row),
+        claimer: claimer(row),
         acceptedAt: row.acceptedAt,
-        tokenIds: tradeSides(row).from.map((item) => item.tokenId),
+        tokenIds: from.map((item) => item.tokenId),
+        givenCount: to.length,
       };
       switch (row.status) {
         case "accepted": {
@@ -439,19 +516,12 @@ export async function readPosterSide(listing: {
           if (row.deadlineAt === null) {
             throw new Error(`trade ${row.id} has no deadline`);
           }
-          // a pause by a ban or a passed deadline reads as neutral, as on My trades
-          const [dispute] = row.messages;
           return [
             {
               ...trade,
               status: row.status,
-              paused:
-                dispute?.event?.type === "disputed" &&
-                (dispute.event.by === "staff" ||
-                  dispute.event.by === "deadline"),
               deadlineAt: row.deadlineAt,
-              // the timer stopped when the dispute opened, as My trades holds it
-              pausedAt: dispute?.createdAt ?? row.deadlineAt,
+              dispute: tradeDispute(tradeState(row, row.items), row.messages),
             },
           ];
         }
@@ -477,16 +547,15 @@ export async function readPosterSide(listing: {
  * the copies the allocation at that size picks for it, one unit's when
  * they can't fill one. The allocation runs here, since one copy can fit
  * two rows, but only its picks leave, so the answer stays as small as the
- * listing whatever the viewer holds. A payment row (not claimable until
- * sales) takes nothing and leaves `blocked` to say so.
+ * listing whatever the viewer holds. The rows are the ones objekts fill
+ * (tradeWants()); a listing with a payment row never reaches the picker.
  */
 export async function readCandidateSide(
   address: string,
   wants: StoredWant[],
   pool: { free: number; unitSize: number },
 ): Promise<{ units: number; rows: CandidateRow[] }> {
-  const tradeWants = wants.map(toTradeWant);
-  const claimable = tradeWants.flatMap((want) => (want ? [want] : []));
+  const claimable = tradeWants(wants);
   // no claim takes more than MAX_TOTAL_WANTED copies, of one collection or all
   const inventory = await readCandidates(address, claimable, MAX_TOTAL_WANTED);
 
@@ -519,18 +588,20 @@ export async function readCandidateSide(
     ).map((row) => [row.id, Objekt.fromIndexer(row)]),
   );
 
-  const allocated = allocation.values();
   return {
     units,
-    rows: tradeWants.map((want): CandidateRow => {
-      const row = want && allocated.next().value;
-      if (!want || !row) return { owned: 0, missing: 0, picks: [] };
+    rows: claimable.map((want, index): CandidateRow => {
+      // allocate() answers every want, in order
+      const { tokenIds, missing } = allocation[index] ?? {
+        tokenIds: [],
+        missing: want.count,
+      };
       return {
         owned: [...owned.values()]
           .filter((collection) => fitsWant(want, collection))
           .reduce((total, collection) => total + collection.owned, 0),
-        missing: row.missing,
-        picks: row.tokenIds.flatMap((tokenId): ListingPick[] => {
+        missing,
+        picks: tokenIds.flatMap((tokenId): ListingPick[] => {
           const copy = copies.get(tokenId);
           const collection = copy && collections.get(copy.collectionId);
           return copy && collection

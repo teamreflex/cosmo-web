@@ -12,9 +12,10 @@ import type {
   NewTradeOfferItem,
   TradeOfferStatus,
 } from "@apollo/database/web/types";
+import type { InventoryObjekt } from "@apollo/trades/allocate";
+import { firstRefusal } from "@apollo/trades/holdings";
 import { offerTransition } from "@apollo/trades/lifecycle";
 import type { ListingInput } from "@apollo/trades/listing";
-import type { ObjektAttributes } from "@apollo/trades/range";
 import { isEqual } from "@apollo/util";
 import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import type { AuthErrorCode } from "../../universal/errors/auth";
@@ -24,7 +25,6 @@ import type { TokenRefusal } from "../../universal/trade-listings";
 import { getCosmoAddress } from "../cosmo-accounts.server";
 import { db, type DbOrTx, type WebTx } from "../db";
 import {
-  firstRefusal,
   readTokenStates,
   readWebTokenFlags,
   type ResolvedWant,
@@ -34,7 +34,7 @@ import {
 import {
   type LockedUser,
   lockParties,
-  notifyUsers,
+  notifyEach,
   refusePoster,
 } from "./trade.server";
 
@@ -186,18 +186,26 @@ export async function endListingOffers(
           : { type: "declined", by: "listing" },
     })),
   );
-  for (const offer of ended) {
-    await notifyUsers(
-      tx,
-      users.filter((row) => row.id === offer.toUserId),
-      {
-        type: ending === "edit" ? "offer_stale" : "offer_declined",
-        offerId: offer.id,
-        actorId: posterId,
-        tokenId: null,
-      },
-    );
-  }
+  await notifyEach(
+    tx,
+    ended.flatMap((offer) =>
+      users.flatMap((recipient) =>
+        recipient.id === offer.toUserId
+          ? [
+              {
+                recipient,
+                notification: {
+                  type: ending === "edit" ? "offer_stale" : "offer_declined",
+                  offerId: offer.id,
+                  actorId: posterId,
+                  tokenId: null,
+                },
+              },
+            ]
+          : [],
+      ),
+    ),
+  );
   return ended.map(({ id }) => id);
 }
 
@@ -249,13 +257,11 @@ export function refuseEdit(listing: { status: TradeOfferStatus } | undefined) {
   if (refusal !== null) throw new ExpectedError(refusal);
 }
 
-type OfferedToken = ObjektAttributes & { tokenId: number };
-
 type CheckedTerms = {
   kind: "checked";
   tokenIds: number[];
   holdings: TokenHoldings;
-  offered: OfferedToken[];
+  offered: InventoryObjekt[];
   wants: ResolvedWant[];
   editedListing: string | undefined;
 };
@@ -319,7 +325,7 @@ const distinct = (values: string[]) => [...new Set(values)];
 /**
  * The listing-level arrays: every value any offered objekt has, deduped.
  */
-export function listingArrays(offered: OfferedToken[]) {
+export function listingArrays(offered: InventoryObjekt[]) {
   return {
     slugs: distinct(offered.map((token) => token.slug)),
     artists: distinct(offered.map((token) => token.artist)),

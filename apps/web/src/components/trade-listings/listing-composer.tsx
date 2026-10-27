@@ -314,6 +314,7 @@ export default function ListingComposer({
           <ComposerFooter
             form={form}
             mode={mode}
+            editedListing={editedListing}
             pending={mutation.isPending}
             cancel={
               isDesktop ? (
@@ -416,18 +417,16 @@ function OfferedSection({
   onAdd: () => void;
   onChange: (offered: ListingFormValues["offered"]) => void;
 }) {
-  const offered = useWatch({ control: form.control, name: "offered" });
-  const tokenIds = offered.map((item) => item.tokenId);
-  const { data: refusals } = useQuery({
-    ...offeredTokenRefusalsQuery(tokenIds, editedListing),
-    enabled: tokenIds.length > 0,
-  });
+  const { offered, tokenIds, refusals } = useOfferedRefusals(
+    form,
+    editedListing,
+  );
 
   return (
     <ComposerOffered
       tokenIds={tokenIds}
       tokens={display.tokens}
-      refusals={refusals ?? noRefusals}
+      refusals={refusals}
       error={form.formState.errors.offered?.message}
       onAdd={onAdd}
       onRemove={(tokenId) =>
@@ -467,6 +466,23 @@ function RatioStrip({ form }: FormProps) {
 }
 
 const noRefusals: ReadonlyMap<number, TokenRefusalReason> = new Map();
+
+/**
+ * The offered objekts and why the server refuses any of them, which the
+ * offered section asks for and the footer reads from the same cache.
+ */
+function useOfferedRefusals(
+  form: FormProps["form"],
+  editedListing: string | undefined,
+) {
+  const offered = useWatch({ control: form.control, name: "offered" });
+  const tokenIds = offered.map((item) => item.tokenId);
+  const { data: refusals = noRefusals } = useQuery({
+    ...offeredTokenRefusalsQuery(tokenIds, editedListing),
+    enabled: tokenIds.length > 0,
+  });
+  return { offered, tokenIds, refusals };
+}
 
 function PickerView({
   form,
@@ -567,23 +583,24 @@ function NoteStrip({ form }: FormProps) {
 function ComposerFooter({
   form,
   mode,
+  editedListing,
   pending,
   cancel,
-}: FormProps & { mode: ComposerMode; pending: boolean; cancel: ReactNode }) {
+}: FormProps & {
+  mode: ComposerMode;
+  editedListing: string | undefined;
+  pending: boolean;
+  cancel: ReactNode;
+}) {
   const reasonId = useId();
-  const [offered, unitSize, wants, note] = useWatch({
+  const [unitSize, wants, note] = useWatch({
     control: form.control,
-    name: ["offered", "unitSize", "wants", "note"],
+    name: ["unitSize", "wants", "note"],
   });
-  const tokenIds = offered.map((item) => item.tokenId);
-  // the offered section asks the server; this reads the answer it cached
-  const { data: refusals } = useQuery({
-    ...offeredTokenRefusalsQuery(
-      tokenIds,
-      mode.kind === "edit" ? mode.listing.id : undefined,
-    ),
-    enabled: tokenIds.length > 0,
-  });
+  const { offered, tokenIds, refusals } = useOfferedRefusals(
+    form,
+    editedListing,
+  );
   // the range rows as the schema reads them, so repeats compare as the server does
   const ranges = wants.flatMap((want) => {
     if (want.kind !== "range") return [];
@@ -601,7 +618,7 @@ function ComposerFooter({
   const reason = blockedReason(
     composerBlock({
       offered: offered.length,
-      refused: tokenIds.filter((tokenId) => refusals?.has(tokenId)).length,
+      refused: tokenIds.filter((tokenId) => refusals.has(tokenId)).length,
       wants,
       unitSize,
       rangeMatches,

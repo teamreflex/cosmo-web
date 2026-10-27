@@ -1,8 +1,9 @@
 import { m } from "@/i18n/messages";
 import { reportReasonLabel } from "@/lib/client/reports";
+import { partyName } from "@/lib/client/trade-listings";
 import {
   itemName,
-  partyName,
+  offerRoles,
   tradeTimeFormat,
   txUrl,
 } from "@/lib/client/trades";
@@ -39,7 +40,7 @@ export function describeEvent(
     case "accepted":
       // an offer, one on a listing included, is accepted by the side that didn't propose it
       if (trade.proposedBy !== null) {
-        return describeOfferEvent(trade, trade.proposedBy, side, event);
+        return describeOfferEvent(trade, side, event);
       }
       // a claim, which its claimer accepted on the poster's terms
       return side === null ? (
@@ -146,7 +147,7 @@ export function describeEvent(
       // only a trade that started as an offer writes these
       return trade.proposedBy === null
         ? null
-        : describeOfferEvent(trade, trade.proposedBy, side, event);
+        : describeOfferEvent(trade, side, event);
   }
 }
 
@@ -172,21 +173,18 @@ function closedEvent(by: OfferCloser) {
 }
 
 /**
- * An offer's step 0, which `proposedBy` proposes and the other side
- * answers, and how it ended unaccepted, which a ban's closing puts down to
- * staff without naming who was banned, an account deletion's to the
- * deletion, and a listing's closing to the listing. An offer on a listing
- * says so where that reads differently.
+ * An offer's step 0, which one side proposes and the other answers, and
+ * how it ended unaccepted, which a ban's closing puts down to staff without
+ * naming who was banned, an account deletion's to the deletion, and a
+ * listing's closing to the listing. An offer on a listing says so where
+ * that reads differently.
  */
 function describeOfferEvent(
   trade: TradeView,
-  proposedBy: TradeSide,
   side: TradeSide | null,
   event: OfferEvent | { type: "accepted" },
 ): ReactNode {
-  const answeredBy = otherSide(proposedBy);
-  const sender = partyName(trade.parties[proposedBy]);
-  const recipient = partyName(trade.parties[answeredBy]);
+  const { proposedBy, answeredBy, sender, recipient } = offerRoles(trade);
   const onListing = trade.listingId !== null;
   const linkTo =
     (id: string) =>

@@ -26,9 +26,23 @@ import {
   tradeOffers,
   user,
 } from "@apollo/database/web/schema";
-import type { NotificationType, TradeSide } from "@apollo/database/web/types";
+import type {
+  NotificationType,
+  TradeEvent,
+  TradeSide,
+} from "@apollo/database/web/types";
 import { createServerFn } from "@tanstack/react-start";
-import { and, asc, desc, eq, inArray, isNull, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  exists,
+  inArray,
+  isNotNull,
+  isNull,
+  sql,
+} from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
 const PAGE_SIZE = 30;
@@ -101,6 +115,35 @@ export const $listNotifications = createServerFn({ method: "GET" })
         offerProposedBy: tradeOffers.proposedBy,
         counterpartyId,
         counterpartyUsername: counterparty.username,
+        // whether an offer or a claim was on a listing, which its poster's items name
+        fromListing: sql<boolean>`(${inArray(notifications.type, [
+          ...offerNotificationTypes,
+          "listing_claimed",
+        ])} and ${exists(
+          db
+            .select({ id: tradeOfferItems.id })
+            .from(tradeOfferItems)
+            .where(
+              and(
+                eq(tradeOfferItems.offerId, tradeOffers.id),
+                isNotNull(tradeOfferItems.listingId),
+              ),
+            ),
+        )})`.mapWith(Boolean),
+        // what closed a declined offer when a party didn't, from its declined event
+        declined:
+          sql<TradeEvent | null>`case when ${notifications.type} = 'offer_declined' then (${db
+            .select({ event: tradeMessages.event })
+            .from(tradeMessages)
+            .where(
+              and(
+                eq(tradeMessages.tradeId, tradeOffers.id),
+                eq(tradeMessages.kind, "event"),
+                sql`${tradeMessages.event}->>'type' = 'declined'`,
+              ),
+            )
+            .orderBy(desc(tradeMessages.id))
+            .limit(1)}) end`.mapWith(tradeMessages.event),
       })
       .from(notifications)
       .leftJoin(objektLists, eq(objektLists.id, notifications.listId))
@@ -122,9 +165,8 @@ export const $listNotifications = createServerFn({ method: "GET" })
     /**
      * The objekts of claimed trades and offers, in posted order: a claim and
      * a received offer show what the side that set the terms sends, by offer
-     * id (an offer's proposer, or a claim's poster, `from`), a stale offer
-     * says whose objekt moved, and every offer says whether it was on a
-     * listing.
+     * id (an offer's proposer, or a claim's poster, `from`), and a stale
+     * offer says whose objekt moved.
      */
     const sendsShown = new Map(
       rows.flatMap((r): [string, TradeSide][] =>
@@ -137,9 +179,7 @@ export const $listNotifications = createServerFn({ method: "GET" })
     const itemOfferIds = [
       ...sendsShown.keys(),
       ...rows.flatMap((r) =>
-        r.offerId !== null && offerNotificationTypes.has(r.type)
-          ? [r.offerId]
-          : [],
+        r.offerId !== null && r.type === "offer_stale" ? [r.offerId] : [],
       ),
     ];
     const offerItems =
@@ -150,7 +190,6 @@ export const $listNotifications = createServerFn({ method: "GET" })
               offerId: tradeOfferItems.offerId,
               sender: tradeOfferItems.sender,
               tokenId: tradeOfferItems.tokenId,
-              listingId: tradeOfferItems.listingId,
             })
             .from(tradeOfferItems)
             .where(
@@ -161,29 +200,6 @@ export const $listNotifications = createServerFn({ method: "GET" })
             )
             .orderBy(asc(tradeOfferItems.id));
     const itemsByOffer = Map.groupBy(offerItems, (i) => i.offerId);
-
-    // what closed each declined offer when a party didn't, from its declined event
-    const declinedIds = rows.flatMap((r) =>
-      r.offerId !== null && r.type === "offer_declined" ? [r.offerId] : [],
-    );
-    const closers = new Map(
-      (declinedIds.length === 0
-        ? []
-        : await db
-            .select({
-              tradeId: tradeMessages.tradeId,
-              event: tradeMessages.event,
-            })
-            .from(tradeMessages)
-            .where(
-              and(
-                inArray(tradeMessages.tradeId, declinedIds),
-                eq(tradeMessages.kind, "event"),
-                sql`${tradeMessages.event}->>'type' = 'declined'`,
-              ),
-            )
-      ).map(({ tradeId, event }) => [tradeId, offerCloser(event)]),
-    );
 
     const slugs = [
       ...new Set(
@@ -289,8 +305,8 @@ export const $listNotifications = createServerFn({ method: "GET" })
                   },
             offer: { id: row.offerId, status: row.offerStatus },
             token: row.tokenId === null ? null : toToken(row.tokenId),
-            fromListing: items.some((i) => i.listingId !== null),
-            closer: closers.get(row.offerId) ?? null,
+            fromListing: row.fromListing,
+            closer: offerCloser(row.declined),
             // only an offer's proposer hears it went stale
             tokenYours:
               row.type === "offer_stale" &&

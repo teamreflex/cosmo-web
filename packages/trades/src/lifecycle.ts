@@ -23,12 +23,11 @@ export type TradeItemState =
  * A trade's status and what each of its items has done, which is all a
  * transition needs. A pending offer is a direct offer or a counter, which
  * `from` proposes, or an offer on a listing, which its claimer `to`
- * proposes, and a cancelled trade carries who cancelled it, matching the
- * table's checks.
+ * proposes (tradeState() holds the two together), and a cancelled trade
+ * carries who cancelled it, matching the table's checks.
  */
 export type TradeState = (
-  | { status: "pending"; proposedBy: "from"; fromListing: false }
-  | { status: "pending"; proposedBy: "to"; fromListing: true }
+  | { status: "pending"; proposedBy: TradeSide }
   | { status: "cancelled"; cancelledBy: TradeCanceller }
   | { status: Exclude<TradeStatus, "pending" | "cancelled"> }
 ) & { items: readonly TradeItemState[] };
@@ -166,7 +165,8 @@ function answerOffer(
   ) {
     return refuse("wrong_party");
   }
-  if (event.type === "counter" && trade.fromListing) {
+  // only an offer on a listing is proposed by its claimer
+  if (event.type === "counter" && trade.proposedBy === "to") {
     return refuse("listing_offer");
   }
   return { ok: true, trade: { status: to, items: trade.items } };
@@ -343,14 +343,6 @@ export function otherSide(side: TradeSide): TradeSide {
   return side === "from" ? "to" : "from";
 }
 
-// the user on the trade's side, or null once their account is gone
-export function sideUserId(
-  trade: Pick<TradeOffer, "fromUserId" | "toUserId">,
-  side: TradeSide,
-) {
-  return side === "from" ? trade.fromUserId : trade.toUserId;
-}
-
 /**
  * The user who proposed a trade that started as an offer, or null once
  * their account is gone. Throws on a row without a proposer, which only a
@@ -363,7 +355,18 @@ export function proposerId(
   if (row.proposedBy === null) {
     throw new Error(`offer ${row.id} has no proposed_by`);
   }
-  return sideUserId(row, row.proposedBy);
+  return row.proposedBy === "from" ? row.fromUserId : row.toUserId;
+}
+
+/**
+ * A listing's unit size. Throws on a row without one, which only a trade
+ * is (trade_offers_unit_size_chk), so callers pass listings.
+ */
+export function listingUnitSize(row: Pick<TradeOffer, "id" | "unitSize">) {
+  if (row.unitSize === null) {
+    throw new Error(`listing ${row.id} has no unit`);
+  }
+  return row.unitSize;
 }
 
 /**
@@ -533,6 +536,16 @@ export function tradeListings(
 }
 
 /**
+ * The listing a trade came from, a claim or an offer on it, which every
+ * item from its pool names, or null for a direct offer.
+ */
+export function tradeListingId(
+  items: readonly Pick<TradeOfferItem, "listingId">[],
+) {
+  return items.find((item) => item.listingId !== null)?.listingId ?? null;
+}
+
+/**
  * Read a trade and its items, in id order, into the state transitions take.
  * A pending offer offers on a listing when any of its items came from one.
  * Throws on a listing, on a row the table's checks forbid, and on a pending
@@ -573,12 +586,12 @@ export function tradeState(
       }
       return { status: row.status, cancelledBy: row.cancelledBy, items };
     case "pending": {
-      const fromListing = rows.some((item) => item.listingId !== null);
-      if (row.proposedBy === "from" && !fromListing) {
-        return { status: row.status, proposedBy: "from", fromListing, items };
-      }
-      if (row.proposedBy === "to" && fromListing) {
-        return { status: row.status, proposedBy: "to", fromListing, items };
+      const fromListing = tradeListingId(rows) !== null;
+      if (
+        (row.proposedBy === "from" && !fromListing) ||
+        (row.proposedBy === "to" && fromListing)
+      ) {
+        return { status: row.status, proposedBy: row.proposedBy, items };
       }
       throw new Error(
         `pending trade proposed by ${row.proposedBy ?? "nobody"} ${fromListing ? "on" : "off"} a listing`,

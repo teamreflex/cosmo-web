@@ -98,7 +98,7 @@ export async function completeAsStaff(
   next: TradeState,
   note: string | null,
 ) {
-  await endTrade(tx, trade, next);
+  await endTrade(tx, trade, next, users);
   await insertTradeEvent(tx, trade.id, {
     type: "completed",
     by: "staff",

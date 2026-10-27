@@ -1098,6 +1098,7 @@
   "notification_trade_dispute_resolved_cancelled": "Un modérateur a résolu le litige sur votre échange avec {#b}{username}{/b} : annulé",
   "notification_trade_deadline_extended": "Un modérateur a accordé plus de temps à votre échange avec {#b}{username}{/b}",
   "notification_listing_closed": "Votre annonce est fermée : {#b}{objekt}{/b} n'est plus disponible",
+  "notification_listing_closed_too_few": "Votre annonce est fermée : il ne reste plus assez d'objekts pour un autre échange",
   "notification_trade_message": "Nouveaux messages de {#b}{username}{/b}",
   "notification_trade_message_staff": "{#b}{staff}{/b}, de l'équipe {appName}, a écrit dans votre échange avec {#b}{username}{/b}",
   "notification_trade_message_staff_unnamed": "L'équipe {appName} a écrit dans votre échange avec {#b}{username}{/b}",

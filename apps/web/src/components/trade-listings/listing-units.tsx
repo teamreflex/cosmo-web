@@ -1,14 +1,11 @@
 import type { Picks } from "@/hooks/use-listing-picks";
 import { m } from "@/i18n/messages";
-import { listingRatio } from "@/lib/client/trade-listings";
-import type { TradeListing } from "@/lib/universal/trade-listings";
+import type { TradeRatio } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
-import { IconMinus, IconPlus } from "@tabler/icons-react";
-import { useId } from "react";
-import { Button } from "../ui/button";
+import ComposerStepper from "./composer-stepper";
 
 type Props = {
-  listing: TradeListing;
+  ratio: TradeRatio;
   picks: Picks;
 };
 
@@ -17,57 +14,41 @@ type Props = {
  * to 5 times", stepped between one and the most they can take, with what
  * each side then counts. Phones leave the counts to the bottom bar.
  */
-export default function ListingUnits({ listing, picks }: Props) {
-  const labelId = useId();
-  const ratio = m.market_listings_ratio(listingRatio(listing));
-  const available = m.market_listings_available({ count: picks.freeCount });
+export default function ListingUnits({ ratio, picks }: Props) {
+  const ratioText = m.market_listings_ratio(ratio);
+  const caption =
+    picks.short > 0
+      ? ratioText
+      : m.listing_detail_units_caption({
+          ratio: ratioText,
+          count: picks.maxUnits,
+        });
 
   return (
     <div className="flex flex-wrap items-center gap-x-5 gap-y-3 rounded-lg border border-border bg-card px-4 py-3 md:py-3.5 lg:col-span-full">
       <div className="flex min-w-0 flex-1 basis-56 flex-col gap-0.5 text-sm">
-        <span id={labelId} className="font-semibold">
+        {/* the stepper's group label reads it out */}
+        <span aria-hidden className="font-semibold">
           {m.listing_detail_units_title()}
         </span>
         <span className="text-muted-foreground">
-          {picks.short > 0
-            ? `${ratio} · ${available}`
-            : `${m.listing_detail_units_caption({ ratio, count: picks.maxUnits })} · ${available}`}
+          {`${caption} · ${m.market_listings_available({ count: picks.freeCount })}`}
         </span>
       </div>
-      <div
-        role="group"
-        aria-labelledby={labelId}
-        className="inline-flex items-center gap-1 rounded-md border border-border p-0.5"
-      >
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          aria-label={m.listing_detail_units_fewer()}
-          disabled={picks.units <= 1}
-          onClick={() => picks.setUnits(picks.units - 1)}
-          className="touch-manipulation max-md:size-11"
-        >
-          <IconMinus />
-        </Button>
-        <output
-          aria-live="polite"
-          className="min-w-10 text-center font-mono text-lg tabular-nums"
-        >
-          {picks.units}
-        </output>
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          aria-label={m.listing_detail_units_more()}
-          disabled={picks.units >= picks.maxUnits}
-          onClick={() => picks.setUnits(picks.units + 1)}
-          className="touch-manipulation max-md:size-11"
-        >
-          <IconPlus />
-        </Button>
-      </div>
+      <ComposerStepper
+        size="lg"
+        value={picks.units}
+        canDecrement={picks.units > 1}
+        canIncrement={picks.units < picks.maxUnits}
+        labels={{
+          group: m.listing_detail_units_title(),
+          fewer: m.listing_detail_units_fewer(),
+          more: m.listing_detail_units_more(),
+        }}
+        className="bg-transparent"
+        valueClassName="min-w-10 text-lg font-normal"
+        onStep={(delta) => picks.setUnits(picks.units + delta)}
+      />
       <UnitCounts picks={picks} className="max-md:hidden" />
     </div>
   );

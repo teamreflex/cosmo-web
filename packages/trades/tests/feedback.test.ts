@@ -32,7 +32,7 @@ function trade(
 ): TradeState {
   switch (status) {
     case "pending":
-      return { status, proposedBy: "from", fromListing: false, items };
+      return { status, proposedBy: "from", items };
     case "cancelled":
       return { status, cancelledBy: "from", items };
     default:

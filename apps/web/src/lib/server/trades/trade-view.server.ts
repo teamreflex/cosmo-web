@@ -11,6 +11,7 @@ import type {
 } from "@apollo/database/web/types";
 import {
   isOpenTrade,
+  tradeListingId,
   type TradeState,
   tradeState,
 } from "@apollo/trades/lifecycle";
@@ -36,7 +37,6 @@ import { type ServerUser, toPublicUser } from "../auth.server";
 import { db } from "../db";
 import { feedbackRepColumns } from "../feedback.server";
 import { readIndexed } from "./feed.server";
-import { tradeListingId } from "./trade.server";
 
 /**
  * The drain's watermark as a scalar subquery, so a trade read gets it in
@@ -51,7 +51,7 @@ export const watermarkExtra = () =>
  * One side as a trade shows it. A deleted party's pinned address may since
  * belong to someone else, so neither its name nor its rating is shown.
  */
-function toTradeParty(
+export function toTradeParty(
   userId: string | null,
   user: ServerUser | null,
   cosmo: { username: string } | null,

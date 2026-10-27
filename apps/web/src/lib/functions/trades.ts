@@ -21,7 +21,6 @@ import {
   partyRefusals,
   partyTrade,
   refuseTrade,
-  tradeListingId,
 } from "@/lib/server/trades/trade.server";
 import {
   myTradesInputSchema,
@@ -49,7 +48,12 @@ import {
   openTradeStatuses,
   type TradeSide,
 } from "@apollo/database/web/types";
-import { needsYou, partyAction, tradeState } from "@apollo/trades/lifecycle";
+import {
+  needsYou,
+  partyAction,
+  tradeListingId,
+  tradeState,
+} from "@apollo/trades/lifecycle";
 import { itemStatus } from "@apollo/trades/transfers";
 import { createServerFn } from "@tanstack/react-start";
 import {
@@ -389,7 +393,7 @@ export const $cancelTrade = createServerFn({ method: "POST" })
       );
       if (!result.ok) refuseTrade(partyRefusals[result.reason]);
 
-      await endTrade(tx, trade, result.trade);
+      await endTrade(tx, trade, result.trade, users);
       await insertTradeEvent(tx, trade.id, { type: "cancelled", by });
       await notifyUsers(
         tx,

@@ -23,6 +23,7 @@ import {
   endedTradeColumns,
   listingClosing,
   listingTransition,
+  listingUnitSize,
   tradeListings,
   type TradeState,
   tradeState,
@@ -196,10 +197,10 @@ function tradeEnding(next: TradeState): TradeEnding | undefined {
  * reservations, and each listing its poster's objekts came from, locked in
  * id order. A completed trade's objekts leave each listing's pool, since
  * they were given, and stay on it as history (`left_at`); a timed-out
- * one's are free in the pool again. Each
- * listing then closes if its pool can no longer make a unit
- * (closeSpentListings). Returns the trade's timeline event and both
- * parties' notifications.
+ * one's are free in the pool again. Returns the trade's timeline event,
+ * both parties' notifications and the listings, which the caller closes
+ * once its batch has ended every trade (closeSpentListings), since one
+ * live trade from a listing keeps it open.
  */
 export const endTrade = Effect.fn("endTrade")(function* (
   tx: WebTx,
@@ -256,11 +257,11 @@ export const endTrade = Effect.fn("endTrade")(function* (
           ),
         );
     }
-    yield* closeSpentListings(tx, [...listings.keys()]);
   }
 
   return {
     event: { tradeId: trade.id, event: ending.event } satisfies TradeEventRow,
+    listingIds: [...listings.keys()],
     notifications: [trade.fromUserId, trade.toUserId].map(
       (userId): TradeNotification => ({
         type: ending.type,
@@ -298,14 +299,17 @@ export const lockListings = Effect.fn("lockListings")(function* (
 /**
  * Closes the open listings among `listingIds` whose pool can no longer make
  * a unit and that have no live trade left (listingClosing): filled when one
- * of their trades completed, else broken. The caller holds their locks.
- * Returns the closed listings, each with its poster and how it closed.
+ * of their trades completed, else broken. The caller holds their locks and
+ * their posters'. Returns how many broke and a `listing_closed` notification
+ * to each broken one's poster, naming the token `departed` says left its
+ * pool, or none when no single token broke it.
  */
 export const closeSpentListings = Effect.fn("closeSpentListings")(function* (
   tx: WebTx,
   listingIds: readonly string[],
+  departed: ReadonlyMap<string, { tokenId: number }> = new Map(),
 ) {
-  if (listingIds.length === 0) return [];
+  if (listingIds.length === 0) return { broken: 0, notifications: [] };
   const listings = yield* tx
     .select({
       id: tradeOffers.id,
@@ -321,15 +325,15 @@ export const closeSpentListings = Effect.fn("closeSpentListings")(function* (
         eq(tradeOffers.status, "open"),
       ),
     );
-  const closed = [];
-  for (const { id, fromUserId, unitSize, ...state } of listings) {
-    // trade_offers_unit_size_chk: every listing has a unit size
-    if (unitSize === null) {
-      return yield* Effect.die(`listing ${id} has no unit`);
-    }
-    const event = listingClosing({ unitSize, ...state });
-    if (event !== null) closed.push({ id, fromUserId, event });
-  }
+  const closed = listings.flatMap((listing) => {
+    const event = listingClosing({
+      ...listing,
+      unitSize: listingUnitSize(listing),
+    });
+    return event === null
+      ? []
+      : [{ id: listing.id, fromUserId: listing.fromUserId, event }];
+  });
   for (const [event, rows] of Map.groupBy(closed, ({ event }) => event)) {
     const { from, to } = listingTransition(event);
     yield* tx
@@ -345,7 +349,17 @@ export const closeSpentListings = Effect.fn("closeSpentListings")(function* (
         ),
       );
   }
-  return closed;
+  const broken = closed.filter(({ event }) => event === "break");
+  return {
+    broken: broken.length,
+    notifications: broken.map(({ id, fromUserId }): TradeNotification => ({
+      type: "listing_closed",
+      userId: fromUserId,
+      offerId: id,
+      actorId: null,
+      tokenId: departed.get(id)?.tokenId ?? null,
+    })),
+  };
 });
 
 /**

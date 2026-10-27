@@ -6,10 +6,10 @@ import { offeredTokenRefusalsQuery } from "@/lib/queries/trade-listings";
 import {
   type EndedOfferStatus,
   type ListingFeedItem,
-  type ListingTradeSize,
   poolItems,
   takenPick,
   type TradeListing,
+  type TradeRatio,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
 import { OFFER_WINDOW } from "@apollo/trades/timers";
@@ -117,7 +117,7 @@ export function StateCard({
 /**
  * How long a trade or an offer has left, "31h 12m left".
  */
-function TimeLeft({ deadline }: { deadline: Date }) {
+export function TimeLeft({ deadline }: { deadline: Date }) {
   return (
     <ParaglideMessage
       message={m.listing_detail_time_left}
@@ -141,7 +141,7 @@ export function ClaimerCard({
   listing: TradeListing;
   tradeId: string;
   deadlineAt: Date | null;
-  size: ListingTradeSize;
+  size: TradeRatio;
 }) {
   const poster = posterName(listing);
 
@@ -164,7 +164,7 @@ export function ClaimerCard({
           <ParaglideMessage
             message={m.listing_detail_claimer_size}
             inputs={{
-              ratio: m.market_listings_ratio({ give: size.from, get: size.to }),
+              ratio: m.market_listings_ratio(size),
             }}
             markup={{
               ratio: ({ children }) => (
@@ -175,7 +175,7 @@ export function ClaimerCard({
           {deadlineAt === null
             ? m.listing_detail_claim_disputed()
             : m.listing_detail_claimer_body({
-                count: size.to,
+                count: size.get,
                 poster,
                 appName: env.VITE_APP_NAME,
               })}

@@ -1066,6 +1066,7 @@
   "notification_trade_dispute_resolved_cancelled": "モデレーターが{#b}{username}{/b}との取引の異議を解決しました：キャンセル",
   "notification_trade_deadline_extended": "モデレーターが{#b}{username}{/b}との取引の期限を延長しました",
   "notification_listing_closed": "出品が終了しました：{#b}{objekt}{/b}は利用できなくなりました",
+  "notification_listing_closed_too_few": "出品が終了しました：次の取引に必要なオブジェクトが足りなくなりました",
   "notification_trade_message": "{#b}{username}{/b}から新しいメッセージがあります",
   "notification_trade_message_staff": "{appName}スタッフの{#b}{staff}{/b}が{#b}{username}{/b}との取引にメッセージを送りました",
   "notification_trade_message_staff_unnamed": "{appName}スタッフが{#b}{username}{/b}との取引にメッセージを送りました",

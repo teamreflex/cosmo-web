@@ -43,11 +43,14 @@ import {
   type Conversation,
   noConversation,
 } from "@/lib/client/chat-conversation";
-import { accountName, formatCount } from "@/lib/client/trade-listings";
+import {
+  accountName,
+  formatCount,
+  partyName,
+} from "@/lib/client/trade-listings";
 import {
   chatDayFormat,
   chatTimeFormat,
-  partyName,
   tradeTimeFormat,
 } from "@/lib/client/trades";
 import { env } from "@/lib/env/client";

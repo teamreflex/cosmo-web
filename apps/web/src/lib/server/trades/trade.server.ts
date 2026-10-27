@@ -20,8 +20,10 @@ import {
   endedTradeColumns,
   listingClosing,
   listingTransition,
+  listingUnitSize,
   type PartyActionRefusal,
   type TradeEvent,
+  tradeListingId,
   tradeListings,
   type TradeState,
   tradeState,
@@ -219,11 +221,6 @@ export async function partyTrade(userId: string, tradeId: string) {
   };
 }
 
-// the listing a trade came from, a claim or an offer on it, which every item from its pool names
-export function tradeListingId(items: readonly { listingId: string | null }[]) {
-  return items.find((item) => item.listingId !== null)?.listingId ?? null;
-}
-
 /**
  * Locks a party action's users, `FOR SHARE` unless the action starts a live
  * trade or creates one, then its trade, refusing a caller whose account is
@@ -356,12 +353,14 @@ export async function updateLockedTrade(
  * locked in id order. A completed trade's objekts leave each listing's
  * pool, since they were given, and stay on it as history (`left_at`); a
  * cancelled one's are free in the pool again. Each listing then closes if its pool can no longer make a unit
- * (closeSpentListings).
+ * (closeSpentListings). `users` are the parties the caller locked, the
+ * poster among them.
  */
 export async function endTrade(
   tx: WebTx,
   trade: LockedTrade,
   next: TradeState,
+  users: readonly LockedUser[],
 ) {
   await updateLockedTrade(tx, trade, {
     ...endedTradeColumns(next),
@@ -403,18 +402,25 @@ export async function endTrade(
         ),
       );
   }
-  await closeSpentListings(tx, [...listings.keys()]);
+  await closeSpentListings(tx, [...listings.keys()], users);
 }
 
 /**
  * Closes the open listings among `listingIds` whose pool can no longer make
  * a unit and that have no live trade left (listingClosing): filled when one
- * of their trades completed, else broken. The caller holds their locks.
+ * of their trades completed, else broken. The caller holds their locks and
+ * their posters', among `users`. A broken one's poster hears
+ * `listing_closed`, naming no token, since no single one broke it.
  */
-async function closeSpentListings(tx: WebTx, listingIds: readonly string[]) {
+async function closeSpentListings(
+  tx: WebTx,
+  listingIds: readonly string[],
+  users: readonly LockedUser[],
+) {
   const listings = await tx
     .select({
       id: tradeOffers.id,
+      fromUserId: tradeOffers.fromUserId,
       unitSize: tradeOffers.unitSize,
       ...listingPoolState,
     })
@@ -427,11 +433,14 @@ async function closeSpentListings(tx: WebTx, listingIds: readonly string[]) {
       ),
     );
   const closing = Map.groupBy(
-    listings.flatMap(({ id, unitSize, ...state }) => {
-      // trade_offers_unit_size_chk: every listing has a unit size
-      if (unitSize === null) throw new Error(`listing ${id} has no unit`);
-      const event = listingClosing({ unitSize, ...state });
-      return event === null ? [] : [{ id, event }];
+    listings.flatMap((listing) => {
+      const event = listingClosing({
+        ...listing,
+        unitSize: listingUnitSize(listing),
+      });
+      return event === null
+        ? []
+        : [{ id: listing.id, fromUserId: listing.fromUserId, event }];
     }),
     ({ event }) => event,
   );
@@ -450,6 +459,25 @@ async function closeSpentListings(tx: WebTx, listingIds: readonly string[]) {
         ),
       );
   }
+  await notifyEach(
+    tx,
+    (closing.get("break") ?? []).flatMap(({ id, fromUserId }) => {
+      const recipient = users.find((row) => row.id === fromUserId);
+      return recipient === undefined
+        ? []
+        : [
+            {
+              recipient,
+              notification: {
+                type: "listing_closed",
+                offerId: id,
+                actorId: null,
+                tokenId: null,
+              } satisfies NewTradeNotification,
+            },
+          ];
+    }),
+  );
 }
 
 /**
@@ -525,12 +553,29 @@ export async function insertTradeEvent(
  * active ban. The recipients are rows the caller has locked, so the ban
  * can't change before commit.
  */
-export async function notifyUsers(
+export function notifyUsers(
   tx: WebTx,
   recipients: readonly LockedUser[],
   notification: NewTradeNotification,
 ) {
-  const values = recipients.flatMap((recipient) =>
+  return notifyEach(
+    tx,
+    recipients.map((recipient) => ({ recipient, notification })),
+  );
+}
+
+/**
+ * Inserts notifications that differ per recipient in one statement, as
+ * notifyUsers() does one.
+ */
+export async function notifyEach(
+  tx: WebTx,
+  notices: readonly {
+    recipient: LockedUser;
+    notification: NewTradeNotification;
+  }[],
+) {
+  const values = notices.flatMap(({ recipient, notification }) =>
     isBanActive(recipient) ? [] : [{ ...notification, userId: recipient.id }],
   );
   if (values.length > 0) await tx.insert(notifications).values(values);
