@@ -6,7 +6,7 @@ import {
   tradeOffers,
   user,
 } from "@apollo/database/web/schema";
-import { bumpUpdatedAt } from "@apollo/database/web/sql";
+import { bumpUpdatedAt, listingPoolState } from "@apollo/database/web/sql";
 import type {
   NewTradeNotification,
   TradeEvent as StoredTradeEvent,
@@ -21,15 +21,15 @@ import {
 } from "@apollo/trades/events";
 import {
   endedTradeColumns,
-  type ListingEvent,
-  listingEventAfter,
+  listingClosing,
   listingTransition,
+  listingUnitSize,
   tradeListings,
   type TradeState,
   tradeState,
   waitingSide,
 } from "@apollo/trades/lifecycle";
-import { and, asc, eq, inArray, type SQL, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, or, type SQL, sql } from "drizzle-orm";
 import type { EffectDrizzleQueryError } from "drizzle-orm/effect-core";
 import { Effect } from "effect";
 import { Redis } from "effect/persistence";
@@ -43,7 +43,7 @@ const banActive = sql<boolean>`(${user.banned} and (${user.banExpires} is null o
 /**
  * Locks every user a trade write may notify `FOR KEY SHARE`, in one
  * statement ordered by id, before any trade or listing row (the lock order in
- * docs/auth.md). An account deletion locks its user `FOR UPDATE` before
+ * docs/locking.md). An account deletion locks its user `FOR UPDATE` before
  * updating their listings, so it now waits for this transaction or makes it
  * wait, instead of deadlocking on a notification's foreign key. Maps each
  * user whose account still exists to whether they're banned.
@@ -69,7 +69,13 @@ export const lockUsers = Effect.fn("lockUsers")(function* (
  */
 export type LiveTrade = Pick<
   TradeOffer,
-  "id" | "status" | "fromUserId" | "toUserId" | "fromAddress" | "cancelledBy"
+  | "id"
+  | "status"
+  | "fromUserId"
+  | "toUserId"
+  | "fromAddress"
+  | "cancelledBy"
+  | "proposedBy"
 > & {
   toAddress: string;
   items: Pick<
@@ -110,6 +116,7 @@ export const lockLiveTrades = Effect.fn("lockLiveTrades")(function* (
       fromAddress: tradeOffers.fromAddress,
       toAddress: tradeOffers.toAddress,
       cancelledBy: tradeOffers.cancelledBy,
+      proposedBy: tradeOffers.proposedBy,
     })
     .from(tradeOffers)
     .where(
@@ -187,16 +194,18 @@ function tradeEnding(next: TradeState): TradeEnding | undefined {
 
 /**
  * Ends a locked trade that completed or timed out: its row, its items'
- * reservations, and each listing it came from (listingEventAfter), locked in
- * id order before their guarded updates. `locked` is lockUsers' map, which
- * says whether the poster is banned.
- * Returns the trade's timeline event and both parties' notifications.
+ * reservations, and each listing its poster's objekts came from, locked in
+ * id order. A completed trade's objekts leave each listing's pool, since
+ * they were given, and stay on it as history (`left_at`); a timed-out
+ * one's are free in the pool again. Returns the trade's timeline event,
+ * both parties' notifications and the listings, which the caller closes
+ * once its batch has ended every trade (closeSpentListings), since one
+ * live trade from a listing keeps it open.
  */
 export const endTrade = Effect.fn("endTrade")(function* (
   tx: WebTx,
   trade: LiveTrade,
   next: TradeState,
-  locked: ReadonlyMap<string, boolean>,
 ) {
   const ending = tradeEnding(next);
   if (ending === undefined) {
@@ -228,21 +237,31 @@ export const endTrade = Effect.fn("endTrade")(function* (
     );
 
   const listings = tradeListings(trade.items);
-  const outcome = listingEventAfter(next, {
-    banned: trade.fromUserId !== null && locked.get(trade.fromUserId) === true,
-  });
-  // only a cancel releases a listing, and the drain and timers never cancel
-  if (outcome === "release") {
-    return yield* Effect.die(
-      `trade ${trade.id} can't release its listing here`,
-    );
-  }
-  if (outcome !== undefined && listings.size > 0) {
-    yield* updateListings(tx, [...listings.keys()], outcome);
+  if (listings.size > 0) {
+    yield* lockListings(tx, [...listings.keys()]);
+    if (next.status === "completed") {
+      yield* tx
+        .update(tradeOfferItems)
+        .set({ leftAt: sql`now()` })
+        .where(
+          and(
+            or(
+              ...[...listings].map(([listingId, tokenIds]) =>
+                and(
+                  eq(tradeOfferItems.offerId, listingId),
+                  inArray(tradeOfferItems.tokenId, tokenIds),
+                ),
+              ),
+            ),
+            isNull(tradeOfferItems.leftAt),
+          ),
+        );
+    }
   }
 
   return {
     event: { tradeId: trade.id, event: ending.event } satisfies TradeEventRow,
+    listingIds: [...listings.keys()],
     notifications: [trade.fromUserId, trade.toUserId].map(
       (userId): TradeNotification => ({
         type: ending.type,
@@ -256,31 +275,91 @@ export const endTrade = Effect.fn("endTrade")(function* (
 });
 
 /**
- * Moves the listings an ended trade came from to its outcome, which ends
- * them, locking them in id order first.
+ * Locks the open listings among the ids `FOR NO KEY UPDATE` in id order,
+ * after the trades (docs/locking.md), and returns them with their posters.
  */
-const updateListings = Effect.fn("updateListings")(function* (
+export const lockListings = Effect.fn("lockListings")(function* (
   tx: WebTx,
-  listingIds: string[],
-  outcome: Exclude<ListingEvent, "reopen">,
+  listingIds: readonly string[],
 ) {
-  yield* tx
-    .select({ id: tradeOffers.id })
+  return yield* tx
+    .select({ id: tradeOffers.id, fromUserId: tradeOffers.fromUserId })
     .from(tradeOffers)
-    .where(inArray(tradeOffers.id, listingIds))
-    .orderBy(asc(tradeOffers.id))
-    .for("no key update");
-  const { from, to } = listingTransition(outcome);
-  yield* tx
-    .update(tradeOffers)
-    .set({ status: to, endedAt: sql`now()`, updatedAt: bumpUpdatedAt })
     .where(
       and(
-        inArray(tradeOffers.id, listingIds),
+        inArray(tradeOffers.id, [...listingIds]),
         eq(tradeOffers.kind, "listing"),
-        inArray(tradeOffers.status, [...from]),
+        eq(tradeOffers.status, "open"),
+      ),
+    )
+    .orderBy(asc(tradeOffers.id))
+    .for("no key update");
+});
+
+/**
+ * Closes the open listings among `listingIds` whose pool can no longer make
+ * a unit and that have no live trade left (listingClosing): filled when one
+ * of their trades completed, else broken. The caller holds their locks and
+ * their posters'. Returns how many broke and a `listing_closed` notification
+ * to each broken one's poster, naming the token `departed` says left its
+ * pool, or none when no single token broke it.
+ */
+export const closeSpentListings = Effect.fn("closeSpentListings")(function* (
+  tx: WebTx,
+  listingIds: readonly string[],
+  departed: ReadonlyMap<string, { tokenId: number }> = new Map(),
+) {
+  if (listingIds.length === 0) return { broken: 0, notifications: [] };
+  const listings = yield* tx
+    .select({
+      id: tradeOffers.id,
+      fromUserId: tradeOffers.fromUserId,
+      unitSize: tradeOffers.unitSize,
+      ...listingPoolState,
+    })
+    .from(tradeOffers)
+    .where(
+      and(
+        inArray(tradeOffers.id, [...listingIds]),
+        eq(tradeOffers.kind, "listing"),
+        eq(tradeOffers.status, "open"),
       ),
     );
+  const closed = listings.flatMap((listing) => {
+    const event = listingClosing({
+      ...listing,
+      unitSize: listingUnitSize(listing),
+    });
+    return event === null
+      ? []
+      : [{ id: listing.id, fromUserId: listing.fromUserId, event }];
+  });
+  for (const [event, rows] of Map.groupBy(closed, ({ event }) => event)) {
+    const { from, to } = listingTransition(event);
+    yield* tx
+      .update(tradeOffers)
+      .set({ status: to, endedAt: sql`now()`, updatedAt: bumpUpdatedAt })
+      .where(
+        and(
+          inArray(
+            tradeOffers.id,
+            rows.map(({ id }) => id),
+          ),
+          inArray(tradeOffers.status, [...from]),
+        ),
+      );
+  }
+  const broken = closed.filter(({ event }) => event === "break");
+  return {
+    broken: broken.length,
+    notifications: broken.map(({ id, fromUserId }): TradeNotification => ({
+      type: "listing_closed",
+      userId: fromUserId,
+      offerId: id,
+      actorId: null,
+      tokenId: departed.get(id)?.tokenId ?? null,
+    })),
+  };
 });
 
 /**

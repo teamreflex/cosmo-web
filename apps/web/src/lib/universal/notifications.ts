@@ -2,10 +2,10 @@ import {
   type ListMatchNotificationType,
   listMatchNotificationTypes,
   type NotificationType,
+  type OfferCloser,
   type TradeNotificationType,
-  type TradeOfferStatus,
-  type TradeSide,
   tradeNotificationTypes,
+  type TradeOfferStatus,
 } from "@apollo/database/web/types";
 
 export function isListMatchNotification(
@@ -55,9 +55,11 @@ export type TradeActor =
  * staff acted unnamed or the system did. `counterparty` is the recipient's other
  * party, null on a listing or once their account is gone. `offer` is the
  * trade, or the listing for listing_closed. `objekts` is what the poster of
- * a listing_claimed or the sender of an offer_received sends, and `asked`
- * how many objekts that offer asks for in return. `tokenSender` is the side
- * whose objekt `token` is on offer_stale.
+ * a listing_claimed or the proposer of an offer_received sends, and `asked`
+ * how many objekts that offer asks for in return. `tokenYours` says the
+ * objekt `token` on offer_stale is the recipient's own. `fromListing` says
+ * an offer was on a listing, and `closer` what closed a declined one when
+ * a party didn't: a ban, or the listing closing.
  */
 type TradeNotificationFields = {
   kind: "trade";
@@ -67,7 +69,9 @@ type TradeNotificationFields = {
   counterparty: NotificationUser | null;
   offer: { id: string; status: TradeOfferStatus };
   token: NotificationToken | null;
-  tokenSender: TradeSide | null;
+  tokenYours: boolean;
+  fromListing: boolean;
+  closer: OfferCloser | null;
   objekts: NotificationToken[];
   asked: number;
 };

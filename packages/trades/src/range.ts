@@ -3,7 +3,9 @@ import * as z from "zod";
 
 /**
  * The most values one column of a range can hold: a bound on the request,
- * above every artist's whole roster together and every season.
+ * above every artist's whole roster together and every season. A poster can
+ * exceed it with collection numbers; the composer refuses that through
+ * `rangeOverCap()`.
  */
 export const MAX_RANGE_VALUES = 64;
 
@@ -63,6 +65,7 @@ export const rangeFilterSchema = z
         .transform((artist) => artist.toLowerCase()),
     ),
     member: column(columnValue(32)),
+    collectionNo: column(columnValue(8).toUpperCase()),
     season: column(columnValue(32)),
     class: column(columnValue(8)),
     on_offline: column(z.enum(validOnlineTypes)),
@@ -76,6 +79,7 @@ export type RangeFilter = z.infer<typeof rangeFilterSchema>;
 export const rangeColumns = [
   "artist",
   "member",
+  "collectionNo",
   "season",
   "class",
   "on_offline",
@@ -119,11 +123,17 @@ export type ObjektAttributes = {
 };
 
 /**
+ * The indexer values matching reads: the copied ones plus the collection
+ * number, which staff can edit, so listings match it live and never copy it.
+ */
+export type IndexedAttributes = ObjektAttributes & { collectionNo: string };
+
+/**
  * Whether the objekt is in the range: every narrowed column holds its value.
  */
 export function matchesRange(
   filter: RangeFilter,
-  objekt: Omit<ObjektAttributes, "slug">,
+  objekt: Omit<IndexedAttributes, "slug">,
 ) {
   const holds = (values: readonly string[], value: string) =>
     values.length === 0 || values.includes(value);
@@ -131,6 +141,7 @@ export function matchesRange(
   return (
     holds(filter.artist, objekt.artist) &&
     holds(filter.member, objekt.member) &&
+    holds(filter.collectionNo, objekt.collectionNo) &&
     holds(filter.season, objekt.season) &&
     holds(filter.class, objekt.class) &&
     holds(filter.on_offline, objekt.onOffline)

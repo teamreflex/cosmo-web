@@ -17,7 +17,8 @@ import {
   type RangeFilter,
   rangeFilterSchema,
 } from "@apollo/trades/range";
-import { IconChevronDown, IconX } from "@tabler/icons-react";
+import { ParaglideMessage } from "@inlang/paraglide-js-react";
+import { IconChevronDown, IconInfoCircle, IconX } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import {
   type ReactNode,
@@ -33,6 +34,7 @@ import ClassFilter from "../collection/filter-class";
 import FilterMemberChip from "../collection/filter-member-chip";
 import OnlineFilter from "../collection/filter-online";
 import SeasonFilter from "../collection/filter-season";
+import CollectionFilter from "../objekt-index/collection-filter";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
@@ -44,6 +46,8 @@ type Props = {
   filter: RangeFormFilter;
   error: string | undefined;
   stepper: ReactNode;
+  /** whether the row carries the note that ranges take offers, which the first one does */
+  offersNote: boolean;
   onChange: (filter: RangeFormFilter) => void;
   onRemove: () => void;
 };
@@ -51,7 +55,9 @@ type Props = {
 /**
  * A want row for any objekts in a range, which starts open. Open, it shows
  * the filter chips; collapsed, only the values that narrow it. Both show the
- * summary and how many collections the range covers.
+ * summary and how many collections the range covers. The first range row
+ * also says that a listing with a range takes offers rather than trading at
+ * once, across its foot.
  */
 export default function ComposerRangeRow({
   position,
@@ -59,6 +65,7 @@ export default function ComposerRangeRow({
   filter,
   error,
   stepper,
+  offersNote,
   onChange,
   onRemove,
 }: Props) {
@@ -81,113 +88,141 @@ export default function ComposerRangeRow({
     );
 
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-amber-500/35 bg-background p-3 md:p-3.5">
-      {/* below sm the count and its words drop under the badge and buttons */}
-      <div className="flex flex-wrap items-center gap-2 md:gap-2.5">
-        <Badge variant="outline">{m.listing_detail_kind_range()}</Badge>
-        <span className="flex min-w-0 flex-1 items-center gap-2 max-sm:order-last max-sm:basis-full md:gap-2.5">
-          {stepper}
-          <span className="min-w-0 text-sm leading-tight">
-            {m.listing_composer_matching({ count })}
-          </span>
-        </span>
-        <span className="flex shrink-0 items-center max-sm:ml-auto">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            aria-expanded={expanded}
-            aria-controls={chipsId}
-            aria-label={
-              expanded
-                ? m.listing_composer_range_collapse()
-                : m.listing_composer_range_edit()
-            }
-            onClick={() => setExpanded((open) => !open)}
-            className="text-muted-foreground"
-          >
-            <IconChevronDown
-              className={cn("transition-transform", expanded && "rotate-180")}
-            />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            aria-label={m.listing_composer_remove_row({
-              position,
-              row: `${summary.count} ${summary.label || m.listing_detail_kind_range()}`,
-            })}
-            onClick={onRemove}
-            className="text-muted-foreground"
-          >
-            <IconX />
-          </Button>
-        </span>
-      </div>
-
-      {expanded && (
-        <div id={chipsId} className="flex flex-wrap gap-2">
-          <ErrorBoundary fallback={<ChipsSkeleton />}>
-            <Suspense fallback={<ChipsSkeleton />}>
-              <FilterArtistChip
-                artist={chips.artist}
-                onChange={setFilters}
-                allArtists
-                unsetLabel={m.filter_value_any()}
-              />
-              <FilterMemberChip
-                members={chips.member}
-                artist={chips.artist}
-                onChange={setFilters}
-                allArtists
-                scopeToArtist
-                unsetLabel={m.filter_value_any()}
-              />
-              <SeasonFilter
-                seasons={chips.season}
-                artist={chips.artist}
-                onChange={setFilters}
-                allArtists
-                scopeToArtist
-                unsetLabel={m.filter_value_any()}
-              />
-              <ClassFilter
-                classes={chips.class}
-                artist={chips.artist}
-                onChange={setFilters}
-                allArtists
-                scopeToArtist
-                unsetLabel={m.filter_value_any()}
-              />
-              <OnlineFilter
-                onOffline={chips.on_offline}
-                onChange={setFilters}
-                label={m.filter_type()}
-                unsetLabel={m.filter_value_any()}
-              />
-            </Suspense>
-          </ErrorBoundary>
-        </div>
-      )}
-
-      <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm">
-        {/* one run of text, so a wrapped line never starts on a separator */}
-        <span className="min-w-0 break-words">
-          {summary.label.length > 0 && (
-            <span dir="auto" className="font-semibold">
-              <span className="font-mono tabular-nums">{summary.count}</span>{" "}
-              {summary.label}
+    <div className="flex flex-col rounded-lg border border-amber-500/35 bg-background">
+      <div className="flex flex-col gap-3 p-3 md:p-3.5">
+        {/* below sm the count and its words drop under the badge and buttons */}
+        <div className="flex flex-wrap items-center gap-2 md:gap-2.5">
+          <Badge variant="outline">{m.listing_detail_kind_range()}</Badge>
+          <span className="flex min-w-0 flex-1 items-center gap-2 max-sm:order-last max-sm:basis-full md:gap-2.5">
+            {stepper}
+            <span className="min-w-0 text-sm leading-tight">
+              {m.listing_composer_matching({ count })}
             </span>
-          )}
-          <MatchCount filter={filter} separated={summary.label.length > 0} />
-        </span>
-        {!expanded && <NarrowedBadges filter={filter} />}
+          </span>
+          <span className="flex shrink-0 items-center max-sm:ml-auto">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              aria-expanded={expanded}
+              aria-controls={chipsId}
+              aria-label={
+                expanded
+                  ? m.listing_composer_range_collapse()
+                  : m.listing_composer_range_edit()
+              }
+              onClick={() => setExpanded((open) => !open)}
+              className="text-muted-foreground"
+            >
+              <IconChevronDown
+                className={cn("transition-transform", expanded && "rotate-180")}
+              />
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              aria-label={m.listing_composer_remove_row({
+                position,
+                row: `${summary.count} ${summary.label || m.listing_detail_kind_range()}`,
+              })}
+              onClick={onRemove}
+              className="text-muted-foreground"
+            >
+              <IconX />
+            </Button>
+          </span>
+        </div>
+
+        {expanded && (
+          <div id={chipsId} className="flex flex-wrap gap-2">
+            <ErrorBoundary fallback={<ChipsSkeleton />}>
+              <Suspense fallback={<ChipsSkeleton />}>
+                <FilterArtistChip
+                  artist={chips.artist}
+                  onChange={setFilters}
+                  allArtists
+                  unsetLabel={m.filter_value_any()}
+                />
+                <FilterMemberChip
+                  members={chips.member}
+                  artist={chips.artist}
+                  onChange={setFilters}
+                  allArtists
+                  scopeToArtist
+                  unsetLabel={m.filter_value_any()}
+                />
+                <CollectionFilter
+                  collections={chips.collectionNo}
+                  onChange={setFilters}
+                  unsetLabel={m.filter_value_any()}
+                />
+                <SeasonFilter
+                  seasons={chips.season}
+                  artist={chips.artist}
+                  onChange={setFilters}
+                  allArtists
+                  scopeToArtist
+                  unsetLabel={m.filter_value_any()}
+                />
+                <ClassFilter
+                  classes={chips.class}
+                  artist={chips.artist}
+                  onChange={setFilters}
+                  allArtists
+                  scopeToArtist
+                  unsetLabel={m.filter_value_any()}
+                />
+                <OnlineFilter
+                  onOffline={chips.on_offline}
+                  onChange={setFilters}
+                  label={m.filter_type()}
+                  unsetLabel={m.filter_value_any()}
+                />
+              </Suspense>
+            </ErrorBoundary>
+          </div>
+        )}
+
+        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm">
+          {/* one run of text, so a wrapped line never starts on a separator */}
+          <span className="min-w-0 break-words">
+            {summary.label.length > 0 && (
+              <span dir="auto" className="font-semibold">
+                <span className="font-mono tabular-nums">{summary.count}</span>{" "}
+                {summary.label}
+              </span>
+            )}
+            <MatchCount filter={filter} separated={summary.label.length > 0} />
+          </span>
+          {!expanded && <NarrowedBadges filter={filter} />}
+        </div>
+
+        {shownError !== undefined && (
+          <p role="alert" className="text-sm text-destructive">
+            {shownError}
+          </p>
+        )}
       </div>
 
-      {shownError !== undefined && (
-        <p role="alert" className="text-sm text-destructive">
-          {shownError}
+      {offersNote && (
+        <p className="flex gap-2.5 rounded-b-lg border-t border-blue-500/30 bg-blue-500/5 px-3 py-2.5 text-sm leading-relaxed text-muted-foreground md:px-3.5">
+          <IconInfoCircle
+            aria-hidden
+            className="mt-0.5 size-4 shrink-0 text-blue-600 dark:text-blue-400"
+          />
+          <span>
+            <ParaglideMessage
+              message={m.listing_composer_range_offers}
+              markup={{
+                b: ({ children }) => (
+                  <strong className="font-semibold text-foreground">
+                    {children}
+                  </strong>
+                ),
+              }}
+            />
+          </span>
         </p>
       )}
     </div>
@@ -274,6 +309,7 @@ function NarrowedBadges({ filter }: { filter: RangeFormFilter }) {
   const columns = [
     [m.market_listings_filter_artist(), (filter.artist ?? []).map(artistName)],
     [m.market_listings_filter_member(), filter.member ?? []],
+    [m.filter_collections(), filter.collectionNo ?? []],
     [m.common_season(), filter.season ?? []],
     [m.common_class(), filter.class ?? []],
     [m.filter_type(), (filter.on_offline ?? []).map(onOfflineLabel)],
@@ -299,7 +335,7 @@ function NarrowedBadges({ filter }: { filter: RangeFormFilter }) {
 }
 
 function ChipsSkeleton() {
-  return Array.from({ length: 5 }, (_, i) => (
+  return Array.from({ length: 6 }, (_, i) => (
     <Skeleton key={i} className="h-8 w-24" />
   ));
 }

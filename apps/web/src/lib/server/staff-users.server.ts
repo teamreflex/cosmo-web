@@ -1,7 +1,11 @@
 import { env } from "@/lib/env/server";
 import { db, type WebTx } from "@/lib/server/db";
 import { recordStaffAudit } from "@/lib/server/staff-audit.server";
-import { closeOpenOffers, tradeParty } from "@/lib/server/trades.server";
+import {
+  closeOpenOffers,
+  offerParty,
+  tradeParty,
+} from "@/lib/server/trades.server";
 import {
   disputeTrade,
   lockParties,
@@ -154,7 +158,7 @@ export async function banAndSweep(
             and(eq(tradeOffers.status, "accepted"), tradeParty(userId)),
             and(
               eq(tradeOffers.status, "pending"),
-              eq(tradeOffers.toUserId, userId),
+              offerParty(userId, "answerer"),
             ),
           ),
         ),

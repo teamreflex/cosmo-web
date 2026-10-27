@@ -27,6 +27,6 @@ How to find current documentation for libraries used in this repo. Prefer these 
 
 ## Everything else
 
-Effect, Tailwind v4, Typesense, Paraglide JS, TypeORM, react-hook-form, and anything not listed above: use the context7 MCP (`resolve-library-id` → `query-docs`). oxlint docs live at https://oxc.rs.
+Effect, Tailwind v4, Typesense, Paraglide JS, TypeORM, react-hook-form, and anything not listed above: use the context7 MCP (`resolve-library-id` → `query-docs`). oxlint docs live at https://oxc.rs, except the `anti-slop/*` rules: they are a local plugin, documented in [`packages/lint/README.md`](../packages/lint/README.md).
 
 The repo runs Effect v4 (`effect@4.x`, pinned in the root catalog); `@effect/platform`'s HTTP, SQL and persistence modules live at `effect/http`, `effect/sql` and `effect/persistence`. Make sure lookups return v4 APIs.

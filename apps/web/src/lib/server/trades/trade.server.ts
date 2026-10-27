@@ -9,28 +9,31 @@ import {
   tradeOffers,
   user,
 } from "@apollo/database/web/schema";
-import { bumpUpdatedAt } from "@apollo/database/web/sql";
+import { bumpUpdatedAt, listingPoolState } from "@apollo/database/web/sql";
 import type {
   DisputeReason,
   NewTradeNotification,
   TradeEvent as StoredTradeEvent,
   TradeSide,
 } from "@apollo/database/web/types";
-import { holdsAll } from "@apollo/trades/holdings";
 import {
   endedTradeColumns,
-  listingEventAfter,
+  listingClosing,
   listingTransition,
+  listingUnitSize,
   type PartyActionRefusal,
   type TradeEvent,
+  tradeListingId,
   tradeListings,
   type TradeState,
   tradeState,
   transition,
 } from "@apollo/trades/lifecycle";
 import { DRAIN_CURSOR_NAME, isTimedOut } from "@apollo/trades/timers";
-import { and, asc, eq, inArray, sql } from "drizzle-orm";
+import { isEqual } from "@apollo/util";
+import { and, asc, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import type { PgUpdateSetSource } from "drizzle-orm/pg-core";
+import type { AuthErrorCode } from "../../universal/errors/auth";
 import { ExpectedError } from "../../universal/errors/expected";
 import type {
   ClaimTokenRefusal,
@@ -38,8 +41,6 @@ import type {
 } from "../../universal/errors/trades";
 import { db, type DbOrTx, type WebTx } from "../db";
 import { isPostgresError } from "../util.server";
-import type { TokenState } from "./holdings.server";
-import { refusePoster } from "./listings.server";
 
 export function refuseTrade(code: TradeErrorCode): never {
   throw new ExpectedError(code);
@@ -53,6 +54,18 @@ export function refuseToken({ tokenId, reason }: ClaimTokenRefusal): never {
   throw new ExpectedError("claim_token_unavailable", { tokenId, reason });
 }
 
+// refuses a user whose account is gone or banned
+export function refusePoster<
+  T extends { banned: boolean; banExpires: Date | null },
+>(row: T | undefined): asserts row is T {
+  if (!row) {
+    throw new ExpectedError("not_signed_in" satisfies AuthErrorCode);
+  }
+  if (isBanActive(row)) {
+    throw new ExpectedError("forbidden" satisfies AuthErrorCode);
+  }
+}
+
 /**
  * A user row a trade write has locked, with what the ban check reads.
  */
@@ -61,6 +74,24 @@ export type LockedUser = {
   banned: boolean;
   banExpires: Date | null;
 };
+
+/**
+ * The claimer's COSMO address as stored, as their locked row and the link
+ * read under its lock have it, or why they can't take part: an active ban,
+ * or a link that moved away from the address they're held to.
+ */
+export function claimerLink(
+  claimer: Pick<LockedUser, "banned" | "banExpires">,
+  linked: string | undefined,
+  address: string,
+):
+  | { kind: "linked"; address: string }
+  | { kind: "refused"; refusal: "forbidden" | "cosmo_not_linked" } {
+  if (isBanActive(claimer)) return { kind: "refused", refusal: "forbidden" };
+  return linked === undefined || !isEqual(linked, address)
+    ? { kind: "refused", refusal: "cosmo_not_linked" }
+    : { kind: "linked", address: linked };
+}
 
 /**
  * Locks the rows of the users a trade write involves, `FOR SHARE` unless
@@ -137,6 +168,7 @@ export async function lockTrade(tx: WebTx, tradeId: string) {
       expiresAt: tradeOffers.expiresAt,
       endedAt: tradeOffers.endedAt,
       cancelledBy: tradeOffers.cancelledBy,
+      proposedBy: tradeOffers.proposedBy,
       disputeReportId: tradeOffers.disputeReportId,
       now: sql<Date>`now()`.mapWith(tradeOffers.endedAt),
     })
@@ -165,8 +197,10 @@ export async function lockTrade(tx: WebTx, tradeId: string) {
 export type LockedTrade = Awaited<ReturnType<typeof lockTrade>>;
 
 /**
- * The trade's parties and token ids, read without a lock, when the caller
- * is one of them. Anything else, a listing included, is not found.
+ * The trade's parties, token ids and the listing its poster's items came
+ * from (null for a direct offer), read without a lock, when the caller is
+ * one of them. A trade's items never change. Anything else, a listing
+ * included, is not found.
  */
 export async function partyTrade(userId: string, tradeId: string) {
   const trade = await db.query.tradeOffers.findFirst({
@@ -176,13 +210,14 @@ export async function partyTrade(userId: string, tradeId: string) {
       OR: [{ fromUserId: userId }, { toUserId: userId }],
     },
     columns: { fromUserId: true, toUserId: true },
-    with: { items: { columns: { tokenId: true } } },
+    with: { items: { columns: { tokenId: true, listingId: true } } },
   });
   if (!trade) refuseTrade("trade_not_found");
   return {
     fromUserId: trade.fromUserId,
     toUserId: trade.toUserId,
     tokenIds: trade.items.flatMap((item) => item.tokenId ?? []),
+    listingId: tradeListingId(trade.items),
   };
 }
 
@@ -221,8 +256,9 @@ export async function isDue(tx: WebTx, trade: LockedTrade) {
 }
 
 /**
- * What a refused cancel or dispute answers. The refusals a cancel or
- * dispute can't reach read as the trade having changed.
+ * What a refused party action answers. The refusals a cancel or dispute
+ * can't reach read as the trade having changed, and a counter to an offer
+ * on a listing as the offer being unavailable to counter.
  */
 export const partyRefusals = {
   wrong_status: "trade_status_changed",
@@ -231,6 +267,7 @@ export const partyRefusals = {
   wrong_party: "trade_status_changed",
   already_done: "trade_status_changed",
   no_such_item: "trade_status_changed",
+  listing_offer: "offer_unavailable",
 } as const satisfies Record<PartyActionRefusal, TradeErrorCode>;
 
 /**
@@ -311,22 +348,19 @@ export async function updateLockedTrade(
 }
 
 /**
- * Ends a locked trade in the state a transition returned: its row, its
- * items' reservations, and its listing's outcome (listingEventAfter). A
- * released listing reopens when the poster still holds every token and can
- * transfer it (holdsAll), even one they locked meanwhile: `tokens` are the
- * indexer's states for the trade's tokens, which a caller that may release
- * reads before its transaction, so the transaction never waits on the
- * indexer.
- * `users` are the parties the caller locked; the poster has no row once
- * their account is gone.
+ * Ends a locked trade in the state a transition returned: its row and its
+ * items' reservations, then the listings its poster's objekts came from,
+ * locked in id order. A completed trade's objekts leave each listing's
+ * pool, since they were given, and stay on it as history (`left_at`); a
+ * cancelled one's are free in the pool again. Each listing then closes if its pool can no longer make a unit
+ * (closeSpentListings). `users` are the parties the caller locked, the
+ * poster among them.
  */
 export async function endTrade(
   tx: WebTx,
   trade: LockedTrade,
   next: TradeState,
   users: readonly LockedUser[],
-  tokens: ReadonlyMap<number, TokenState>,
 ) {
   await updateLockedTrade(tx, trade, {
     ...endedTradeColumns(next),
@@ -342,43 +376,108 @@ export async function endTrade(
       ),
     );
 
-  const poster = users.find((row) => row.id === trade.fromUserId);
-  const outcome = listingEventAfter(next, {
-    banned: poster !== undefined && isBanActive(poster),
-  });
   const listings = tradeListings(trade.items);
-  if (outcome === undefined || listings.size === 0) return;
-
+  if (listings.size === 0) return;
   await tx
     .select({ id: tradeOffers.id })
     .from(tradeOffers)
     .where(inArray(tradeOffers.id, [...listings.keys()]))
     .orderBy(asc(tradeOffers.id))
     .for("no key update");
-  for (const [listingId, tokenIds] of listings) {
-    const event =
-      outcome !== "release"
-        ? outcome
-        : holdsAll(tokenIds, tokens, trade.fromAddress)
-          ? "reopen"
-          : "break";
+  if (next.status === "completed") {
+    await tx
+      .update(tradeOfferItems)
+      .set({ leftAt: sql`now()` })
+      .where(
+        and(
+          or(
+            ...[...listings].map(([listingId, tokenIds]) =>
+              and(
+                eq(tradeOfferItems.offerId, listingId),
+                inArray(tradeOfferItems.tokenId, tokenIds),
+              ),
+            ),
+          ),
+          isNull(tradeOfferItems.leftAt),
+        ),
+      );
+  }
+  await closeSpentListings(tx, [...listings.keys()], users);
+}
 
+/**
+ * Closes the open listings among `listingIds` whose pool can no longer make
+ * a unit and that have no live trade left (listingClosing): filled when one
+ * of their trades completed, else broken. The caller holds their locks and
+ * their posters', among `users`. A broken one's poster hears
+ * `listing_closed`, naming no token, since no single one broke it.
+ */
+async function closeSpentListings(
+  tx: WebTx,
+  listingIds: readonly string[],
+  users: readonly LockedUser[],
+) {
+  const listings = await tx
+    .select({
+      id: tradeOffers.id,
+      fromUserId: tradeOffers.fromUserId,
+      unitSize: tradeOffers.unitSize,
+      ...listingPoolState,
+    })
+    .from(tradeOffers)
+    .where(
+      and(
+        inArray(tradeOffers.id, [...listingIds]),
+        eq(tradeOffers.kind, "listing"),
+        eq(tradeOffers.status, "open"),
+      ),
+    );
+  const closing = Map.groupBy(
+    listings.flatMap((listing) => {
+      const event = listingClosing({
+        ...listing,
+        unitSize: listingUnitSize(listing),
+      });
+      return event === null
+        ? []
+        : [{ id: listing.id, fromUserId: listing.fromUserId, event }];
+    }),
+    ({ event }) => event,
+  );
+  for (const [event, closed] of closing) {
     const { from, to } = listingTransition(event);
     await tx
       .update(tradeOffers)
-      .set({
-        status: to,
-        endedAt: event === "reopen" ? null : sql`now()`,
-        updatedAt: bumpUpdatedAt,
-      })
+      .set({ status: to, endedAt: sql`now()`, updatedAt: bumpUpdatedAt })
       .where(
         and(
-          eq(tradeOffers.id, listingId),
-          eq(tradeOffers.kind, "listing"),
+          inArray(
+            tradeOffers.id,
+            closed.map(({ id }) => id),
+          ),
           inArray(tradeOffers.status, [...from]),
         ),
       );
   }
+  await notifyEach(
+    tx,
+    (closing.get("break") ?? []).flatMap(({ id, fromUserId }) => {
+      const recipient = users.find((row) => row.id === fromUserId);
+      return recipient === undefined
+        ? []
+        : [
+            {
+              recipient,
+              notification: {
+                type: "listing_closed",
+                offerId: id,
+                actorId: null,
+                tokenId: null,
+              } satisfies NewTradeNotification,
+            },
+          ];
+    }),
+  );
 }
 
 /**
@@ -454,12 +553,29 @@ export async function insertTradeEvent(
  * active ban. The recipients are rows the caller has locked, so the ban
  * can't change before commit.
  */
-export async function notifyUsers(
+export function notifyUsers(
   tx: WebTx,
   recipients: readonly LockedUser[],
   notification: NewTradeNotification,
 ) {
-  const values = recipients.flatMap((recipient) =>
+  return notifyEach(
+    tx,
+    recipients.map((recipient) => ({ recipient, notification })),
+  );
+}
+
+/**
+ * Inserts notifications that differ per recipient in one statement, as
+ * notifyUsers() does one.
+ */
+export async function notifyEach(
+  tx: WebTx,
+  notices: readonly {
+    recipient: LockedUser;
+    notification: NewTradeNotification;
+  }[],
+) {
+  const values = notices.flatMap(({ recipient, notification }) =>
     isBanActive(recipient) ? [] : [{ ...notification, userId: recipient.id }],
   );
   if (values.length > 0) await tx.insert(notifications).values(values);

@@ -11,32 +11,54 @@ type Props = {
 
 /**
  * Heads one half of the listing page: a coloured label over a 2px rule in
- * the same colour, with a short summary at the far end.
+ * the same colour, with a short summary at the far end. The label stays on
+ * one line; a summary too long to sit beside it wraps onto its own lines.
  */
 export default function SideHeading({ tone, title, summary }: Props) {
   return (
     <div
       className={cn(
-        "flex items-baseline gap-2 border-b-2 pb-2.5",
+        "flex flex-wrap items-baseline gap-x-2 gap-y-1 border-b-2 pb-2.5",
         tone === "have" ? "border-teal-500/45" : "border-amber-500/45",
       )}
     >
-      <span
-        className={cn(
-          "text-xxs font-medium tracking-widest uppercase",
-          tone === "have"
-            ? "text-teal-700 dark:text-teal-500"
-            : "text-amber-700 dark:text-amber-500",
-        )}
-      >
+      <Eyebrow tone={tone} className="whitespace-nowrap">
         {title}
-      </span>
+      </Eyebrow>
       {summary !== undefined && (
-        <span className="ms-auto min-w-0 truncate text-xs text-muted-foreground">
+        <span className="ms-auto min-w-0 text-xs text-muted-foreground">
           {summary}
         </span>
       )}
     </div>
+  );
+}
+
+/**
+ * A small uppercase label in its side's colour: teal for what's given,
+ * amber for what's asked for or got.
+ */
+export function Eyebrow({
+  tone,
+  className,
+  children,
+}: {
+  tone: "have" | "want";
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <span
+      className={cn(
+        "text-xxs font-medium tracking-widest uppercase",
+        tone === "have"
+          ? "text-teal-700 dark:text-teal-500"
+          : "text-amber-700 dark:text-amber-500",
+        className,
+      )}
+    >
+      {children}
+    </span>
   );
 }
 

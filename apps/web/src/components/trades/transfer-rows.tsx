@@ -1,11 +1,7 @@
 import { m } from "@/i18n/messages";
 import { formatSerial, getObjektFrontImageUrl } from "@/lib/client/objekt-util";
-import {
-  itemLabel,
-  partyName,
-  tradeTimeFormat,
-  txUrl,
-} from "@/lib/client/trades";
+import { partyName } from "@/lib/client/trade-listings";
+import { itemLabel, tradeTimeFormat, txUrl } from "@/lib/client/trades";
 import { env } from "@/lib/env/client";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type { TradeItemView, TradeView } from "@/lib/universal/trades";

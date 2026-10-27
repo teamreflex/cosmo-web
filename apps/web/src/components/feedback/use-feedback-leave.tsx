@@ -1,4 +1,4 @@
-import { partyName } from "@/lib/client/trades";
+import { partyName } from "@/lib/client/trade-listings";
 import type { TradeView } from "@/lib/universal/trades";
 import type { TradeSide } from "@apollo/database/web/types";
 import { otherSide } from "@apollo/trades/lifecycle";

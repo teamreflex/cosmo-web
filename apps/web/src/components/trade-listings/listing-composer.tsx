@@ -1,4 +1,5 @@
 import { useArtists } from "@/hooks/use-artists";
+import { useDismissNotice } from "@/hooks/use-dismiss-notice";
 import { useInvalidateListing } from "@/hooks/use-invalidate-listing";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { m } from "@/i18n/messages";
@@ -11,11 +12,12 @@ import {
   listingComposerDisplay,
 } from "@/lib/client/trade-listings";
 import { $editListing, $postListing } from "@/lib/functions/trade-listings";
+import { dismissedNoticesQuery } from "@/lib/queries/market";
 import {
   offeredTokenRefusalsQuery,
   rangeMatchCountQuery,
+  tradeListingKey,
   tradeListingQuery,
-  tradeListingViewerKey,
 } from "@/lib/queries/trade-listings";
 import { isRateLimitErrorCode } from "@/lib/universal/errors/rate-limit";
 import { Objekt } from "@/lib/universal/objekt-conversion";
@@ -23,15 +25,23 @@ import {
   composerBlock,
   type ComposerMode,
   emptyListingForm,
+  followUnitSize,
+  formUnitSize,
   formValuesToInput,
   type ListingFormValues,
   type ListingSubmission,
   listingToFormValues,
+  stepUnitSize,
 } from "@/lib/universal/trade-listing-form";
 import type { TokenRefusalReason } from "@/lib/universal/trade-listings";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
-import { MAX_NOTE_LENGTH, MAX_OFFERED } from "@apollo/trades/caps";
+import {
+  MAX_CHOICE_OPTIONS,
+  MAX_NOTE_LENGTH,
+  MAX_OFFERED,
+} from "@apollo/trades/caps";
 import { totalWanted } from "@apollo/trades/composer";
+import { takesOffers } from "@apollo/trades/lifecycle";
 import {
   type ListingInput,
   listingInputSchema,
@@ -45,6 +55,7 @@ import {
   useQueries,
   useQuery,
   useQueryClient,
+  useSuspenseQuery,
 } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { type ReactNode, useId, useRef, useState } from "react";
@@ -70,6 +81,8 @@ import { Field, FieldError, FieldLabel } from "../ui/field";
 import { Spinner } from "../ui/spinner";
 import { Textarea } from "../ui/textarea";
 import ComposerOffered from "./composer-offered";
+import ComposerRangeConfirm from "./composer-range-confirm";
+import ComposerRatio from "./composer-ratio";
 import ComposerWantRows from "./composer-want-rows";
 import TradePicker from "./trade-picker";
 import TradeSheet from "./trade-sheet";
@@ -84,9 +97,10 @@ type Props = {
 
 /**
  * Posts a trade listing, or replaces the terms of the poster's open one: the
- * objekts it offers, the rows it asks for and a note. A centred dialog on
- * desktop and a tall bottom drawer on phones; the form lives above that
- * switch, so crossing the breakpoint keeps everything entered.
+ * objekts it offers, the rows it asks for, the ratio between them and a
+ * note. A centred dialog on desktop and a tall bottom drawer on phones; the
+ * form lives above that switch, so crossing the breakpoint keeps everything
+ * entered.
  */
 export default function ListingComposer({
   mode,
@@ -96,9 +110,8 @@ export default function ListingComposer({
 }: Props) {
   const isDesktop = useMediaQuery();
   const queryClient = useQueryClient();
-  const invalidateListings = useInvalidateListing(
-    mode.kind === "edit" ? mode.listing.id : undefined,
-  );
+  const editedListing = mode.kind === "edit" ? mode.listing.id : undefined;
+  const invalidateListings = useInvalidateListing();
   const navigate = useNavigate();
   const initialValues = () =>
     mode.kind === "edit" ? listingToFormValues(mode.listing) : emptyListingForm;
@@ -115,10 +128,16 @@ export default function ListingComposer({
   const [view, setView] = useState<"form" | "picker">("form");
   const [display, setDisplay] = useState<ComposerDisplay>(initialDisplay);
   const [discarding, setDiscarding] = useState(false);
+  // a submission waiting for the poster to confirm the listing takes offers
+  const [held, setHeld] = useState<ListingSubmission | null>(null);
   // read during render so the form keeps it current for requestClose
   const { isDirty } = form.formState;
-  // a double click submits once, even before the pending state renders
+  // a double click posts once, even before the pending state renders
   const submitting = useRef(false);
+  const { data: rangeNoticeDismissed } = useSuspenseQuery({
+    ...dismissedNoticesQuery,
+    select: (dismissed) => dismissed["range-offers-notice"],
+  });
   const { artistList } = useArtists();
   // each artist's members, keyed as ranges store artists
   const rosters = new Map(
@@ -142,7 +161,7 @@ export default function ListingComposer({
         });
         form.setError("offered", { message });
         toast.error(message);
-        void queryClient.invalidateQueries({ queryKey: tradeListingViewerKey });
+        void queryClient.invalidateQueries({ queryKey: tradeListingKey });
         return;
       }
 
@@ -175,8 +194,7 @@ export default function ListingComposer({
       // the listing moved on while the dialog was open, so its terms are gone
       if (
         mode.kind === "edit" &&
-        (error.message === "listing_claimed" ||
-          error.message === "listing_closed" ||
+        (error.message === "listing_closed" ||
           error.message === "listing_not_found")
       ) {
         onOpenChange(false);
@@ -187,6 +205,7 @@ export default function ListingComposer({
       submitting.current = false;
     },
   });
+  const dismissRangeNotice = useDismissNotice("range-offers-notice");
 
   /**
    * Escape, a click outside, a swipe, Close and Cancel all land here: a
@@ -214,20 +233,26 @@ export default function ListingComposer({
     setDisplay(initialDisplay());
   }
 
-  function toggleOffered(objekt: CosmoObjekt) {
-    const tokenId = Number(objekt.tokenId);
-    const offered = form.getValues("offered");
+  // a bundle keeps taking the whole pool, and a ratio is held to a smaller one
+  function setOffered(offered: ListingFormValues["offered"]) {
     const options = {
       shouldDirty: true,
       shouldValidate: form.formState.isSubmitted,
     };
+    form.setValue(
+      "unitSize",
+      followUnitSize(form.getValues("unitSize"), offered.length),
+      options,
+    );
+    form.setValue("offered", offered, options);
+  }
+
+  function toggleOffered(objekt: CosmoObjekt) {
+    const tokenId = Number(objekt.tokenId);
+    const offered = form.getValues("offered");
 
     if (offered.some((item) => item.tokenId === tokenId)) {
-      form.setValue(
-        "offered",
-        offered.filter((item) => item.tokenId !== tokenId),
-        options,
-      );
+      setOffered(offered.filter((item) => item.tokenId !== tokenId));
       return;
     }
     if (offered.length >= MAX_OFFERED) return;
@@ -240,13 +265,34 @@ export default function ListingComposer({
         serial: token.serial,
       }),
     }));
-    form.setValue("offered", [...offered, { tokenId }], options);
+    setOffered([...offered, { tokenId }]);
+  }
+
+  function post(submission: ListingSubmission) {
+    if (submitting.current) return;
+    submitting.current = true;
+    mutation.mutate(submission);
   }
 
   function submit(values: ListingInput) {
-    if (submitting.current) return;
-    submitting.current = true;
-    mutation.mutate(formValuesToInput(values, mode, rosters));
+    const submission = formValuesToInput(values, mode, rosters);
+    // confirm first when this post makes the listing start taking offers
+    if (
+      !rangeNoticeDismissed &&
+      takesOffers(submission.data.wants) &&
+      (mode.kind === "create" || !takesOffers(mode.listing.wants))
+    ) {
+      setHeld(submission);
+    } else {
+      post(submission);
+    }
+  }
+
+  function confirmRange(dismiss: boolean) {
+    if (held === null) return;
+    setHeld(null);
+    if (dismiss) dismissRangeNotice.mutate();
+    post(held);
   }
 
   const title =
@@ -264,6 +310,7 @@ export default function ListingComposer({
         <PickerView
           form={form}
           address={address}
+          editedListing={editedListing}
           onToggle={toggleOffered}
           onBack={() => setView("form")}
         />
@@ -275,7 +322,9 @@ export default function ListingComposer({
                 <OfferedSection
                   form={form}
                   display={display}
+                  editedListing={editedListing}
                   onAdd={() => setView("picker")}
+                  onChange={setOffered}
                 />
               </div>
               <ComposerWantRows
@@ -292,11 +341,13 @@ export default function ListingComposer({
                 }
               />
             </div>
+            <RatioStrip form={form} />
             <NoteStrip form={form} />
           </div>
           <ComposerFooter
             form={form}
             mode={mode}
+            editedListing={editedListing}
             pending={mutation.isPending}
             cancel={
               isDesktop ? (
@@ -319,6 +370,12 @@ export default function ListingComposer({
         pending={mutation.isPending}
         onOpenChange={setDiscarding}
         onDiscard={() => onOpenChange(false)}
+      />
+      <ComposerRangeConfirm
+        mode={mode}
+        open={held !== null}
+        onOpenChange={() => setHeld(null)}
+        onContinue={confirmRange}
       />
     </form>
   );
@@ -390,28 +447,58 @@ type FormProps = {
 function OfferedSection({
   form,
   display,
+  editedListing,
   onAdd,
-}: FormProps & { display: ComposerDisplay; onAdd: () => void }) {
-  const offered = useWatch({ control: form.control, name: "offered" });
-  const tokenIds = offered.map((item) => item.tokenId);
-  const { data: refusals } = useQuery({
-    ...offeredTokenRefusalsQuery(tokenIds),
-    enabled: tokenIds.length > 0,
-  });
+  onChange,
+}: FormProps & {
+  display: ComposerDisplay;
+  editedListing: string | undefined;
+  onAdd: () => void;
+  onChange: (offered: ListingFormValues["offered"]) => void;
+}) {
+  const { offered, tokenIds, refusals } = useOfferedRefusals(
+    form,
+    editedListing,
+  );
 
   return (
     <ComposerOffered
       tokenIds={tokenIds}
       tokens={display.tokens}
-      refusals={refusals ?? noRefusals}
+      refusals={refusals}
       error={form.formState.errors.offered?.message}
       onAdd={onAdd}
       onRemove={(tokenId) =>
-        form.setValue(
-          "offered",
-          offered.filter((item) => item.tokenId !== tokenId),
-          { shouldDirty: true, shouldValidate: form.formState.isSubmitted },
-        )
+        onChange(offered.filter((item) => item.tokenId !== tokenId))
+      }
+    />
+  );
+}
+
+/**
+ * The ratio, once the want rows ask for something and there are two or
+ * more objekts to split it over, or an edit's ratio takes more than the
+ * pool holds, so the poster can lower it.
+ */
+function RatioStrip({ form }: FormProps) {
+  const [offered, unitSize, wants] = useWatch({
+    control: form.control,
+    name: ["offered", "unitSize", "wants"],
+  });
+  const wanted = totalWanted(wants);
+  const over = unitSize !== undefined && unitSize > offered.length;
+
+  return wanted === 0 || (offered.length < 2 && !over) ? null : (
+    <ComposerRatio
+      unitSize={formUnitSize({ offered, unitSize })}
+      bundle={unitSize === undefined}
+      offered={offered.length}
+      wanted={wanted}
+      onChange={(next) =>
+        form.setValue("unitSize", stepUnitSize(next, offered.length), {
+          shouldDirty: true,
+          shouldValidate: form.formState.isSubmitted,
+        })
       }
     />
   );
@@ -419,13 +506,32 @@ function OfferedSection({
 
 const noRefusals: ReadonlyMap<number, TokenRefusalReason> = new Map();
 
+/**
+ * The offered objekts and why the server refuses any of them, which the
+ * offered section asks for and the footer reads from the same cache.
+ */
+function useOfferedRefusals(
+  form: FormProps["form"],
+  editedListing: string | undefined,
+) {
+  const offered = useWatch({ control: form.control, name: "offered" });
+  const tokenIds = offered.map((item) => item.tokenId);
+  const { data: refusals = noRefusals } = useQuery({
+    ...offeredTokenRefusalsQuery(tokenIds, editedListing),
+    enabled: tokenIds.length > 0,
+  });
+  return { offered, tokenIds, refusals };
+}
+
 function PickerView({
   form,
   address,
+  editedListing,
   onToggle,
   onBack,
 }: FormProps & {
   address: string;
+  editedListing: string | undefined;
   onToggle: (objekt: CosmoObjekt) => void;
   onBack: () => void;
 }) {
@@ -447,6 +553,7 @@ function PickerView({
       }
       picked={new Set(offered.map((item) => item.tokenId))}
       full={offered.length >= MAX_OFFERED}
+      editedListing={editedListing}
       pickedLabel={m.listing_composer_pill_offering()}
       onToggle={onToggle}
       onDone={onBack}
@@ -508,26 +615,31 @@ function NoteStrip({ form }: FormProps) {
 }
 
 /**
- * The trade at a glance, why posting is held back when it is, and the
- * buttons. On phones the footer stays pinned under the scrolling form.
+ * One trade at a glance, the ratio's two sides, why posting is held back
+ * when it is, and the buttons. On phones the footer stays pinned under the
+ * scrolling form.
  */
 function ComposerFooter({
   form,
   mode,
+  editedListing,
   pending,
   cancel,
-}: FormProps & { mode: ComposerMode; pending: boolean; cancel: ReactNode }) {
+}: FormProps & {
+  mode: ComposerMode;
+  editedListing: string | undefined;
+  pending: boolean;
+  cancel: ReactNode;
+}) {
   const reasonId = useId();
-  const [offered, wants, note] = useWatch({
+  const [unitSize, wants, note] = useWatch({
     control: form.control,
-    name: ["offered", "wants", "note"],
+    name: ["unitSize", "wants", "note"],
   });
-  const tokenIds = offered.map((item) => item.tokenId);
-  // the offered section asks the server; this reads the answer it cached
-  const { data: refusals } = useQuery({
-    ...offeredTokenRefusalsQuery(tokenIds),
-    enabled: tokenIds.length > 0,
-  });
+  const { offered, tokenIds, refusals } = useOfferedRefusals(
+    form,
+    editedListing,
+  );
   // the range rows as the schema reads them, so repeats compare as the server does
   const ranges = wants.flatMap((want) => {
     if (want.kind !== "range") return [];
@@ -545,19 +657,23 @@ function ComposerFooter({
   const reason = blockedReason(
     composerBlock({
       offered: offered.length,
-      refused: tokenIds.filter((tokenId) => refusals?.has(tokenId)).length,
+      refused: tokenIds.filter((tokenId) => refusals.has(tokenId)).length,
       wants,
+      unitSize,
       rangeMatches,
       rangesRepeat: !rangesDistinct(ranges),
       note: note ?? "",
     }),
+    { unitSize: formUnitSize({ offered, unitSize }), offered: offered.length },
   );
 
   return (
     <div className="flex shrink-0 flex-col gap-2 border-t border-border bg-background/95 px-4 pt-2.5 pb-[calc(1rem+env(safe-area-inset-bottom))] md:flex-row md:flex-wrap md:items-center md:gap-x-3 md:px-5 md:py-3.5">
       <span className="text-center text-xs text-muted-foreground tabular-nums md:text-left">
         {m.listing_composer_footer({
-          offered: m.listing_composer_footer_offered({ count: offered.length }),
+          offered: m.listing_composer_footer_offered({
+            count: formUnitSize({ offered, unitSize }),
+          }),
           wanted: m.listing_composer_footer_wanted({
             count: totalWanted(wants),
           }),
@@ -589,7 +705,10 @@ function ComposerFooter({
   );
 }
 
-function blockedReason(block: ReturnType<typeof composerBlock>) {
+function blockedReason(
+  block: ReturnType<typeof composerBlock>,
+  ratio: { unitSize: number; offered: number },
+) {
   switch (block) {
     case "offered":
       return m.listing_composer_reason_offered();
@@ -607,6 +726,16 @@ function blockedReason(block: ReturnType<typeof composerBlock>) {
       return m.trade_error_listing_range_empty();
     case "range_repeated":
       return m.listing_composer_reason_range_repeated();
+    case "choice":
+      return m.listing_composer_reason_choice();
+    case "choice_too_many":
+      return m.listing_composer_choice_full({ max: MAX_CHOICE_OPTIONS });
+    case "choice_duplicate":
+      return m.listing_composer_reason_choice_duplicate();
+    case "choice_repeated":
+      return m.listing_composer_reason_choice_repeated();
+    case "ratio":
+      return m.listing_composer_reason_ratio(ratio);
     case "note":
       return m.listing_composer_reason_note({ max: MAX_NOTE_LENGTH });
     case null:

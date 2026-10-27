@@ -31,6 +31,8 @@ function trade(
   items: readonly TradeItemState[],
 ): TradeState {
   switch (status) {
+    case "pending":
+      return { status, proposedBy: "from", items };
     case "cancelled":
       return { status, cancelledBy: "from", items };
     default:

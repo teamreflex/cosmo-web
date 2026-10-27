@@ -6,10 +6,12 @@ import {
   planBatch,
 } from "@/outbox";
 import {
+  closeSpentListings,
   endTrade,
   insertTradeEvents,
   insertTradeNotifications,
   type LiveTrade,
+  lockListings,
   lockLiveTrades,
   lockUsers,
   publishTradeUpdates,
@@ -29,7 +31,11 @@ import {
 import { bumpUpdatedAt } from "@apollo/database/web/sql";
 import type { TradeSide } from "@apollo/database/web/types";
 import { DatabaseWeb, type WebTx } from "@apollo/services/database-web";
-import { offerTransition, transition } from "@apollo/trades/lifecycle";
+import {
+  offerTransition,
+  proposerId,
+  transition,
+} from "@apollo/trades/lifecycle";
 import { DRAIN_CURSOR_NAME } from "@apollo/trades/timers";
 import {
   type ChainRow,
@@ -284,15 +290,17 @@ const applyPlan = (tx: WebTx, plan: BatchPlan) =>
  * untransferable posts an event on its live trade without notifying anyone,
  * breaks each open listing offering it with a `listing_closed` notification
  * to its poster, and turns each pending offer holding it stale with an event
- * and an `offer_stale` notification to its sender. A transfer whose
+ * and an `offer_stale` notification to its proposer. A transfer whose
  * `transfer` row is gone was rolled back with a hot block, so it doesn't
  * count here.
  *
- * Locks, after the cursor: every user it may notify `FOR KEY SHARE`, then the
- * live trades, then the pending offers, then listings (docs/auth.md). The
+ * Locks, after the cursor: both parties of every live trade and pending
+ * offer holding its tokens and the poster of every such listing, which
+ * covers everyone it may notify, `FOR KEY SHARE`, then the live trades,
+ * then the pending offers, then listings (docs/locking.md). The
  * candidate read before them is unlocked; a trade that ended since is dropped
- * by its lock, and an offer accepted or a listing claimed since keeps its
- * status, since breaks only touch pending offers and open listings.
+ * by its lock, and an offer accepted since keeps its status, since breaks
+ * only touch pending offers and open listings.
  */
 const applyTrades = (tx: WebTx, rows: readonly OutboxRow[]) =>
   Effect.gen(function* () {
@@ -320,6 +328,7 @@ const applyTrades = (tx: WebTx, rows: readonly OutboxRow[]) =>
             and(
               eq(tradeOffers.kind, "listing"),
               eq(tradeOffers.status, "open"),
+              isNull(tradeOfferItems.leftAt),
             ),
             and(
               eq(tradeOffers.kind, "trade"),
@@ -338,11 +347,10 @@ const applyTrades = (tx: WebTx, rows: readonly OutboxRow[]) =>
       };
     }
 
+    // listings have no `to`, so a listing locks only its poster
     const locked = yield* lockUsers(
       tx,
-      candidates.flatMap((item) =>
-        item.live ? [item.fromUserId, item.toUserId] : [item.fromUserId],
-      ),
+      candidates.flatMap((item) => [item.fromUserId, item.toUserId]),
     );
     const trades = yield* lockLiveTrades(tx, [
       ...new Set(candidates.flatMap((item) => (item.live ? item.offerId : []))),
@@ -383,21 +391,39 @@ const applyTrades = (tx: WebTx, rows: readonly OutboxRow[]) =>
     }
 
     // pending offers and open listings, before completions lock their listings
-    const broken = yield* breakOffers(tx, folded.breaks);
+    const broken = yield* breakOffers(tx, folded);
     const events = [
       ...recorded.flatMap((trade) => trade.events),
       ...broken.events,
     ];
-    const notifications = [...broken.notifications];
     const { completed = [], pending = [] } = Object.groupBy(
       recorded,
       (trade) => (trade.state.status === "completed" ? "completed" : "pending"),
     );
+    const endedNotifications: TradeNotification[] = [];
+    const listingIds = new Set(broken.listingIds);
     for (const { trade, state } of completed) {
-      const ended = yield* endTrade(tx, trade, state, locked);
+      const ended = yield* endTrade(tx, trade, state);
       events.push(ended.event);
-      notifications.push(...ended.notifications);
+      endedNotifications.push(...ended.notifications);
+      for (const id of ended.listingIds) listingIds.add(id);
     }
+
+    /**
+     * Every listing that dropped a token or gave one closes once, with all
+     * of the batch's trades ended; a broken one's poster hears which token
+     * closed it. A completed trade's listing can only fill.
+     */
+    const closed = yield* closeSpentListings(
+      tx,
+      [...listingIds],
+      folded.breaks,
+    );
+    const notifications = [
+      ...broken.notifications,
+      ...closed.notifications,
+      ...endedNotifications,
+    ];
     if (pending.length > 0) {
       yield* tx
         .update(tradeOffers)
@@ -419,7 +445,7 @@ const applyTrades = (tx: WebTx, rows: readonly OutboxRow[]) =>
       ],
       transferred: arrivals.length,
       completed: completed.length,
-      broken: broken.listings,
+      broken: closed.broken,
       stale: broken.events.length,
     };
   });
@@ -546,38 +572,39 @@ function recordChainEvents(
 }
 
 /**
- * Turn stale the pending offers and break the open listings whose token left
- * its holder or turned untransferable, locking the offers, then the listings,
- * each in id order (docs/auth.md). A stale offer gets a timeline event naming
- * the token and whether it moved or turned untransferable, and its sender
- * hears of it; each broken listing's poster hears which token closed it. An
- * offer accepted or a listing claimed since the unlocked read is left to its
- * trade.
+ * Turn stale the pending offers whose token left its holder or turned
+ * untransferable, and drop every such token from the pools of the open
+ * listings offering it, live in a trade or not (it stays on the listing as
+ * history, `left_at`), locking the offers, then
+ * the listings, each in id order (docs/locking.md). A stale offer gets a
+ * timeline event naming the token and whether it moved or turned
+ * untransferable, and its proposer hears of it. A listing that dropped a token
+ * moves its `updated_at`, so a claim picked from the pool before is
+ * refused; returned, the caller closes it once the batch's trades have
+ * ended. An offer accepted since the unlocked read is left to its trade.
  */
 const breakOffers = (
   tx: WebTx,
-  breaks: ReturnType<typeof foldTransfers>["breaks"],
+  { breaks, departed }: ReturnType<typeof foldTransfers>,
 ) =>
   Effect.gen(function* () {
     if (breaks.size === 0) {
-      return { events: [], notifications: [], listings: 0 };
+      return { events: [], notifications: [], listingIds: [] };
     }
     const offerIds = [...breaks.keys()];
-    const lock = (kind: "trade" | "listing", status: "pending" | "open") =>
-      tx
-        .select({ id: tradeOffers.id })
-        .from(tradeOffers)
-        .where(
-          and(
-            inArray(tradeOffers.id, offerIds),
-            eq(tradeOffers.kind, kind),
-            eq(tradeOffers.status, status),
-          ),
-        )
-        .orderBy(asc(tradeOffers.id))
-        .for("no key update");
-    yield* lock("trade", "pending");
-    yield* lock("listing", "open");
+    yield* tx
+      .select({ id: tradeOffers.id })
+      .from(tradeOffers)
+      .where(
+        and(
+          inArray(tradeOffers.id, offerIds),
+          eq(tradeOffers.kind, "trade"),
+          eq(tradeOffers.status, "pending"),
+        ),
+      )
+      .orderBy(asc(tradeOffers.id))
+      .for("no key update");
+    const listingIds = (yield* lockListings(tx, offerIds)).map(({ id }) => id);
 
     const { from, to } = offerTransition("go_stale");
     const offers = yield* tx
@@ -590,53 +617,61 @@ const breakOffers = (
           eq(tradeOffers.status, from),
         ),
       )
-      .returning({ id: tradeOffers.id, fromUserId: tradeOffers.fromUserId });
-    const listings = yield* tx
-      .update(tradeOffers)
-      .set({ status: "broken", endedAt: sql`now()`, updatedAt: bumpUpdatedAt })
-      .where(
-        and(
-          inArray(tradeOffers.id, offerIds),
-          eq(tradeOffers.kind, "listing"),
-          eq(tradeOffers.status, "open"),
-        ),
-      )
-      .returning({ id: tradeOffers.id, fromUserId: tradeOffers.fromUserId });
+      .returning({
+        id: tradeOffers.id,
+        fromUserId: tradeOffers.fromUserId,
+        toUserId: tradeOffers.toUserId,
+        proposedBy: tradeOffers.proposedBy,
+      });
 
-    // the token that broke each stale offer, for its event and its sender
-    const stale = offers.flatMap(({ id, fromUserId }) => {
-      const broke = breaks.get(id);
-      return broke === undefined ? [] : [{ id, fromUserId, ...broke }];
+    if (listingIds.length > 0) {
+      yield* tx
+        .update(tradeOfferItems)
+        .set({ leftAt: sql`now()` })
+        .where(
+          and(
+            or(
+              ...listingIds.map((listingId) =>
+                and(
+                  eq(tradeOfferItems.offerId, listingId),
+                  inArray(
+                    tradeOfferItems.tokenId,
+                    departed.get(listingId) ?? [],
+                  ),
+                ),
+              ),
+            ),
+            isNull(tradeOfferItems.leftAt),
+          ),
+        );
+      yield* tx
+        .update(tradeOffers)
+        .set({ updatedAt: bumpUpdatedAt })
+        .where(inArray(tradeOffers.id, listingIds));
+    }
+
+    // the token that broke each stale offer, for its event and its proposer
+    const stale = offers.flatMap((offer) => {
+      const broke = breaks.get(offer.id);
+      return broke === undefined
+        ? []
+        : [{ id: offer.id, userId: proposerId(offer), ...broke }];
     });
     return {
       events: stale.map(({ id, tokenId, reason }): TradeEventRow => ({
         tradeId: id,
         event: { type: "stale", tokenId, reason },
       })),
-      notifications: [
-        ...stale.map(({ id, fromUserId, tokenId }): TradeNotification => ({
+      notifications: stale.map(
+        ({ id, userId, tokenId }): TradeNotification => ({
           type: "offer_stale",
-          userId: fromUserId,
+          userId,
           offerId: id,
           actorId: null,
           tokenId,
-        })),
-        ...listings.flatMap(({ id, fromUserId }): TradeNotification[] => {
-          const broke = breaks.get(id);
-          return broke === undefined
-            ? []
-            : [
-                {
-                  type: "listing_closed",
-                  userId: fromUserId,
-                  offerId: id,
-                  actorId: null,
-                  tokenId: broke.tokenId,
-                },
-              ];
         }),
-      ],
-      listings: listings.length,
+      ),
+      listingIds,
     };
   });
 

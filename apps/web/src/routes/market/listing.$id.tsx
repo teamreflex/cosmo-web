@@ -10,30 +10,44 @@ import { defineHead } from "@/lib/meta";
 import { currentAccountQuery } from "@/lib/queries/core";
 import {
   offeredTokenRefusalsQuery,
-  rangeMatchCountQuery,
+  rangeMatchCountQueries,
   tradeListingQuery,
-  tradeListingViewerQuery,
 } from "@/lib/queries/trade-listings";
 import { sanitizeUuid } from "@/lib/universal/parsers";
-import { publicListingPanel } from "@/lib/universal/trade-listings";
+import {
+  listingSearchDefaults,
+  listingSearchSchema,
+  poolItems,
+} from "@/lib/universal/trade-listings";
 import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
 import { ProfileProvider } from "@/providers/profile-provider";
 import { UserStateProvider } from "@/providers/user-state-provider";
 import { IconHeartBroken } from "@tabler/icons-react";
 import { noop } from "@tanstack/react-query";
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  notFound,
+  stripSearchParams,
+} from "@tanstack/react-router";
 
 export const Route = createFileRoute("/market/listing/$id")({
   component: RouteComponent,
   pendingComponent: PendingComponent,
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
-  loader: async ({ context, params, preload }) => {
+  // the poster's open tab; Listing stays out of the URL, so the canonical address is the bare page
+  validateSearch: listingSearchSchema,
+  search: {
+    middlewares: [stripSearchParams(listingSearchDefaults)],
+  },
+  // a hover never loads the page, since a candidate's answer reads their holdings
+  preload: false,
+  loader: async ({ context, params }) => {
     // discord users sometimes paste formatting onto the end of the URL
     const id = sanitizeUuid(params.id);
     if (!id) throw notFound();
 
-    const [account, listing] = await Promise.all([
+    const [account, page] = await Promise.all([
       context.queryClient.query({
         ...currentAccountQuery,
         staleTime: "static",
@@ -43,45 +57,29 @@ export const Route = createFileRoute("/market/listing/$id")({
         staleTime: "static",
       }),
     ]);
-    if (!listing) throw notFound();
-
-    const panel = publicListingPanel(
-      listing,
-      account && {
-        userId: account.user.id,
-        linked: account.cosmo !== undefined,
-      },
-    );
+    if (!page) throw notFound();
+    const { listing, viewer } = page;
 
     // the poster's blocked listing names the objekts that block it
-    if (panel.kind === "poster_open" && listing.blocked && account?.cosmo) {
+    if (
+      listing.stop === "blocked" &&
+      account?.cosmo &&
+      viewer.role === "poster"
+    ) {
       void context.queryClient
         .query(
-          offeredTokenRefusalsQuery(listing.items.map((item) => item.tokenId)),
+          offeredTokenRefusalsQuery(
+            poolItems(listing).map((item) => item.tokenId),
+          ),
         )
         .catch(noop);
     }
-    for (const want of listing.wants) {
-      if (want.kind === "range") {
-        void context.queryClient
-          .query(rangeMatchCountQuery(want.filter))
-          .catch(noop);
-      }
-    }
-
-    /**
-     * The viewer's side is awaited, so a navigation paints the listing once
-     * instead of filling it in; a failed read is left to its error state. It
-     * reads the viewer's holdings, so hovering a link never fetches it. An
-     * ended listing asks only whether the viewer was a party to its trade.
-     */
-    if (
-      !preload &&
-      (panel.kind === "viewer" || (panel.kind === "closed" && account))
-    ) {
-      await context.queryClient
-        .query(tradeListingViewerQuery(id, listing.updatedAt))
-        .catch(noop);
+    for (const query of rangeMatchCountQueries(
+      listing.wants.flatMap((want) =>
+        want.kind === "range" ? [want.filter] : [],
+      ),
+    )) {
+      void context.queryClient.query(query).catch(noop);
     }
 
     return { id, account };

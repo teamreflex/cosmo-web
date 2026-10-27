@@ -45,6 +45,9 @@ const feedSideSchema = z.strictObject({
 
 export type ListingFeedSide = z.input<typeof feedSideSchema>;
 
+// the columns either side of the feed narrows on
+export const feedColumns = feedSideSchema.keyof().options;
+
 /**
  * One page of the Listings feed. Offering narrows on the objekts a listing
  * offers and Looking for on its want rows; `artists` is the navbar's

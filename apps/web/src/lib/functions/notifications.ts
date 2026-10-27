@@ -16,19 +16,46 @@ import {
   listNotificationsSchema,
   markNotificationsReadSchema,
 } from "@/lib/universal/schema/notifications";
+import { offerCloser } from "@/lib/universal/trades";
 import {
   cosmoAccounts,
   notifications,
   objektLists,
+  tradeMessages,
   tradeOfferItems,
   tradeOffers,
   user,
 } from "@apollo/database/web/schema";
+import type {
+  NotificationType,
+  TradeEvent,
+  TradeSide,
+} from "@apollo/database/web/types";
 import { createServerFn } from "@tanstack/react-start";
-import { and, asc, desc, eq, inArray, isNull, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  exists,
+  inArray,
+  isNotNull,
+  isNull,
+  sql,
+} from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
 
 const PAGE_SIZE = 30;
+
+// the notifications about an offer, which say whether it was on a listing
+const offerNotificationTypes = new Set<NotificationType>([
+  "offer_received",
+  "offer_accepted",
+  "offer_declined",
+  "offer_countered",
+  "offer_expired",
+  "offer_stale",
+]);
 
 /**
  * An actor who isn't the recipient's counterparty is a staff member who
@@ -85,8 +112,38 @@ export const $listNotifications = createServerFn({ method: "GET" })
         tokenId: notifications.tokenId,
         offerId: tradeOffers.id,
         offerStatus: tradeOffers.status,
+        offerProposedBy: tradeOffers.proposedBy,
         counterpartyId,
         counterpartyUsername: counterparty.username,
+        // whether an offer or a claim was on a listing, which its poster's items name
+        fromListing: sql<boolean>`(${inArray(notifications.type, [
+          ...offerNotificationTypes,
+          "listing_claimed",
+        ])} and ${exists(
+          db
+            .select({ id: tradeOfferItems.id })
+            .from(tradeOfferItems)
+            .where(
+              and(
+                eq(tradeOfferItems.offerId, tradeOffers.id),
+                isNotNull(tradeOfferItems.listingId),
+              ),
+            ),
+        )})`.mapWith(Boolean),
+        // what closed a declined offer when a party didn't, from its declined event
+        declined:
+          sql<TradeEvent | null>`case when ${notifications.type} = 'offer_declined' then (${db
+            .select({ event: tradeMessages.event })
+            .from(tradeMessages)
+            .where(
+              and(
+                eq(tradeMessages.tradeId, tradeOffers.id),
+                eq(tradeMessages.kind, "event"),
+                sql`${tradeMessages.event}->>'type' = 'declined'`,
+              ),
+            )
+            .orderBy(desc(tradeMessages.id))
+            .limit(1)}) end`.mapWith(tradeMessages.event),
       })
       .from(notifications)
       .leftJoin(objektLists, eq(objektLists.id, notifications.listId))
@@ -106,20 +163,21 @@ export const $listNotifications = createServerFn({ method: "GET" })
       .limit(PAGE_SIZE);
 
     /**
-     * The objekts of claimed trades, received offers and stale offers, in
-     * posted order: the first two show what their `from` side sends, and a
-     * stale offer says whose objekt moved.
+     * The objekts of claimed trades and offers, in posted order: a claim and
+     * a received offer show what the side that set the terms sends, by offer
+     * id (an offer's proposer, or a claim's poster, `from`), and a stale
+     * offer says whose objekt moved.
      */
-    const sendsShown = new Set(
-      rows.flatMap((r) =>
+    const sendsShown = new Map(
+      rows.flatMap((r): [string, TradeSide][] =>
         r.offerId !== null &&
         (r.type === "listing_claimed" || r.type === "offer_received")
-          ? [r.offerId]
+          ? [[r.offerId, r.offerProposedBy ?? "from"]]
           : [],
       ),
     );
     const itemOfferIds = [
-      ...sendsShown,
+      ...sendsShown.keys(),
       ...rows.flatMap((r) =>
         r.offerId !== null && r.type === "offer_stale" ? [r.offerId] : [],
       ),
@@ -152,7 +210,7 @@ export const $listNotifications = createServerFn({ method: "GET" })
       ...new Set([
         ...rows.flatMap((r) => (r.tokenId === null ? [] : [r.tokenId])),
         ...offerItems.flatMap((i) =>
-          i.sender === "from" && i.tokenId !== null && sendsShown.has(i.offerId)
+          i.tokenId !== null && i.sender === sendsShown.get(i.offerId)
             ? [i.tokenId]
             : [],
         ),
@@ -229,6 +287,7 @@ export const $listNotifications = createServerFn({ method: "GET" })
           return [];
         }
         const items = itemsByOffer.get(row.offerId) ?? [];
+        const shown = sendsShown.get(row.offerId);
         return [
           {
             kind: "trade",
@@ -246,21 +305,24 @@ export const $listNotifications = createServerFn({ method: "GET" })
                   },
             offer: { id: row.offerId, status: row.offerStatus },
             token: row.tokenId === null ? null : toToken(row.tokenId),
-            tokenSender:
-              row.type === "offer_stale"
-                ? (items.find((i) => i.tokenId === row.tokenId)?.sender ?? null)
-                : null,
+            fromListing: row.fromListing,
+            closer: offerCloser(row.declined),
+            // only an offer's proposer hears it went stale
+            tokenYours:
+              row.type === "offer_stale" &&
+              items.find((i) => i.tokenId === row.tokenId)?.sender ===
+                row.offerProposedBy,
             objekts:
-              row.type === "listing_claimed" || row.type === "offer_received"
-                ? items.flatMap((i) =>
-                    i.sender === "from" && i.tokenId !== null
+              shown === undefined
+                ? []
+                : items.flatMap((i) =>
+                    i.sender === shown && i.tokenId !== null
                       ? [toToken(i.tokenId)]
                       : [],
-                  )
-                : [],
+                  ),
             asked:
-              row.type === "offer_received"
-                ? items.filter((i) => i.sender === "to").length
+              row.type === "offer_received" && shown !== undefined
+                ? items.filter((i) => i.sender !== shown).length
                 : 0,
           },
         ];

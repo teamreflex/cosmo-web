@@ -381,8 +381,8 @@
   "trade_error_listing_not_found": "This listing couldn't be found.",
   "trade_error_listing_own": "You can't accept your own listing.",
   "trade_error_listing_closed": "This listing is closed.",
-  "trade_error_listing_claimed": "Someone has accepted this listing, so it can't be changed.",
-  "trade_error_already_claimed": "Someone else accepted this listing first.",
+  "trade_error_listing_pick_unavailable": "An objekt you picked from this listing is no longer available.",
+  "trade_error_listing_claim_exists": "You already have a trade or an offer on this listing. Wait for it to end before trading on it again.",
   "trade_error_listing_updated": "This listing was updated. Check the new terms before accepting.",
   "trade_error_listing_unavailable": "This listing can't be accepted right now.",
   "trade_error_listing_want_unknown": "One of the objekts you're looking for doesn't exist.",
@@ -615,12 +615,18 @@
   "trade_page_event_offered_you": "You sent {#b}{recipient}{/b} an offer.",
   "trade_page_event_offered_them": "{#b}{sender}{/b} sent you an offer.",
   "trade_page_event_offered_staff": "{#b}{sender}{/b} sent {#b}{recipient}{/b} an offer.",
+  "trade_page_event_offered_listing_you": "You sent {#b}{recipient}{/b} an offer on their listing.",
+  "trade_page_event_offered_listing_them": "{#b}{sender}{/b} sent you an offer on your listing.",
+  "trade_page_event_offered_listing_staff": "{#b}{sender}{/b} sent {#b}{recipient}{/b} an offer on their listing.",
   "trade_page_event_counter_offered_you": "You sent {#b}{recipient}{/b} a counter to {#link}their offer{/link}.",
   "trade_page_event_counter_offered_them": "{#b}{sender}{/b} sent you a counter to {#link}your offer{/link}.",
   "trade_page_event_counter_offered_staff": "{#b}{sender}{/b} sent {#b}{recipient}{/b} a counter to {#link}their offer{/link}.",
   "trade_page_event_accepted_offer_you": "You accepted {#b}{sender}{/b}'s offer.",
   "trade_page_event_accepted_offer_them": "{#b}{recipient}{/b} accepted your offer.",
   "trade_page_event_accepted_offer_staff": "{#b}{recipient}{/b} accepted {#b}{sender}{/b}'s offer.",
+  "trade_page_event_accepted_listing_offer_you": "You accepted {#b}{sender}{/b}'s offer on your listing.",
+  "trade_page_event_accepted_listing_offer_them": "{#b}{recipient}{/b} accepted your offer on their listing.",
+  "trade_page_event_accepted_listing_offer_staff": "{#b}{recipient}{/b} accepted {#b}{sender}{/b}'s offer on their listing.",
   "trade_page_event_declined_you": "You declined {#b}{sender}{/b}'s offer.",
   "trade_page_event_declined_them": "{#b}{recipient}{/b} declined your offer.",
   "trade_page_event_declined_staff": "{#b}{recipient}{/b} declined {#b}{sender}{/b}'s offer.",
@@ -628,6 +634,7 @@
   "trade_page_event_withdrawn_them": "{#b}{sender}{/b} withdrew the offer.",
   "trade_page_event_closed_staff": "{appName} staff closed the offer.",
   "trade_page_event_closed_deletion": "The offer closed because an account in it was deleted.",
+  "trade_page_event_closed_listing": "The offer closed because the listing closed.",
   "trade_page_event_countered_you": "You countered {#b}{sender}{/b}'s offer with {#link}a new offer{/link}.",
   "trade_page_event_countered_them": "{#b}{recipient}{/b} countered your offer with {#link}a new offer{/link}.",
   "trade_page_event_countered_staff": "{#b}{recipient}{/b} countered {#b}{sender}{/b}'s offer with {#link}a new offer{/link}.",
@@ -636,6 +643,8 @@
   "trade_page_event_stale_yours": "{#b}{objekt}{/b} left your account, so the offer can't go ahead.",
   "trade_page_event_stale_theirs": "{#b}{objekt}{/b} left {#b}{name}{/b}'s account, so the offer can't go ahead.",
   "trade_page_event_stale_untransferable": "{#b}{objekt}{/b} can no longer be transferred, so the offer can't go ahead.",
+  "trade_page_event_stale_edited_you": "You changed the listing, so the offer can't go ahead.",
+  "trade_page_event_stale_edited_them": "{#b}{name}{/b} changed their listing, so the offer can't go ahead.",
   "trade_page_direct_offer": "Direct offer",
   "trade_page_offer_time_left": "Expires in {#time}{left}{/time}",
   "trade_page_offer_waiting_for_you": "Waiting for you",
@@ -664,6 +673,7 @@
   "trade_page_offer_waiting_counter_you": "Your counter to {name}: {give} for {get}",
   "trade_page_offer_waiting_counter_staff": "{sender}'s counter to {recipient}: {give} for {get}",
   "trade_page_offer_waiting_meta": "Sent {#time}{sent}{/time} · they can accept, decline or counter · expires in {#countdown}{left}{/countdown}",
+  "trade_page_offer_listing_waiting_meta": "Sent {#time}{sent}{/time} · they can accept or decline · expires in {#countdown}{left}{/countdown}",
   "trade_page_offer_counter_them": "{#b}{name}{/b} countered {#link}your offer{/link} with this one.",
   "trade_page_offer_counter_of": "This counters {#link}{name}'s offer{/link}.",
   "trade_page_offer_accept": "Accept",
@@ -683,12 +693,14 @@
   "trade_page_offer_declined_staff": "{recipient} declined {sender}'s offer",
   "trade_page_offer_nothing_sent": "Nothing was sent.",
   "trade_page_offer_new_from_matches": "You can send a new offer from Trade Matches.",
+  "trade_page_offer_new_from_listing": "You can send a new offer from {#link}the listing{/link}.",
   "trade_page_offer_withdrawn_you": "You withdrew this offer",
   "trade_page_offer_withdrawn_them": "{name} withdrew this offer",
   "trade_page_offer_withdrawn_before_you": "Withdrawn before you answered.",
   "trade_page_offer_withdrawn_before_them": "Withdrawn before {name} answered.",
   "trade_page_offer_closed_staff": "{appName} staff closed this offer",
   "trade_page_offer_closed_deletion": "This offer closed because an account in it was deleted",
+  "trade_page_offer_closed_listing": "This offer closed because the listing closed",
   "trade_page_offer_countered_you_swap": "You countered: {added} instead of {removed}",
   "trade_page_offer_countered_you": "You countered this offer",
   "trade_page_offer_countered_them_swap": "{name} countered: {added} instead of {removed}",
@@ -715,13 +727,16 @@
   "trade_page_offer_stale_theirs": "{objekt} left {name}'s account",
   "trade_page_offer_stale_untransferable": "{objekt} can no longer be transferred",
   "trade_page_offer_stale_unknown": "An offered objekt moved",
+  "trade_page_offer_stale_edited_you": "You changed the listing",
+  "trade_page_offer_stale_edited_them": "{name} changed their listing",
   "trade_page_offer_stale_note": "The offer can't go ahead without it, so it has closed.",
+  "trade_page_offer_stale_edited_note": "The offer was made on the listing's earlier terms, so it has closed.",
   "trade_page_cancel": "Cancel trade",
   "trade_page_cancel_keep": "Keep trade",
   "trade_page_cancel_title": "Cancel this trade?",
   "trade_page_cancel_description": "Neither of you has sent anything yet.",
-  "trade_page_cancel_description_poster": "Neither of you has sent anything yet. Your listing opens again for anyone to accept if you still hold its objekts.",
-  "trade_page_cancel_description_claimer": "Neither of you has sent anything yet. {name}'s listing opens again for anyone to accept if they still hold its objekts.",
+  "trade_page_cancel_description_poster": "Neither of you has sent anything yet. If your listing is still open, the objekts you'd give in this trade become available on it again.",
+  "trade_page_cancel_description_claimer": "Neither of you has sent anything yet. If {name}'s listing is still open, the objekts they'd give in this trade become available on it again.",
   "trade_page_cancelled_toast": "Trade cancelled",
   "trade_page_deadline_passed_short": "Deadline passed",
   "trade_page_dispute_open": "Open dispute",
@@ -742,11 +757,10 @@
   "trade_page_disputed_body_staff_paused": "The timer is paused and neither party can cancel; transfers still count. Staff cancel it here, or settle it from the report.",
   "trade_page_event_accepted_staff": "{#b}{claimer}{/b} accepted {#b}{poster}{/b}'s listing.",
   "trade_page_event_extended_staff": "{appName} staff gave both parties until {#time}{when}{/time}.",
-  "listing_detail_title": "Trade listing",
+  "listing_detail_title": "Trade",
   "listing_detail_kind_trade": "Trade",
   "listing_detail_posted": "posted {#time}{when}{/time}",
   "listing_detail_error": "Couldn't load this listing.",
-  "listing_detail_viewer_error": "Couldn't load your side of this listing.",
   "listing_detail_you_get": "You get · {count}",
   "listing_detail_offering": "Offering · {count}",
   "listing_detail_looking_for": "Looking for · {count}",
@@ -763,6 +777,7 @@
   ],
   "listing_detail_kind_exact": "Exact",
   "listing_detail_kind_range": "Range",
+  "listing_detail_kind_choice": "Any of",
   "listing_detail_kind_payment": "Payment",
   "listing_detail_owned_exact": "you own {count}",
   "listing_detail_owned_range": [
@@ -783,9 +798,9 @@
   "listing_detail_incomplete_footer": "Pick as many objekts as each row asks for to accept.",
   "listing_detail_blocked_body": "Something on the poster's side is stopping trades, such as an offered objekt that's been locked or has left their account. You can accept once that's sorted.",
   "listing_detail_accept": "Accept",
-  "listing_detail_accept_footer": "Accepting checks these serials again and holds the listing for you for 48 hours. Both of you send in the COSMO app, in any order. {appName} marks it complete once every transfer goes through.",
+  "listing_detail_accept_footer": "Accepting checks these serials again and holds them for you for 48 hours. Both of you send in the COSMO app, in any order. {appName} marks it complete once every transfer goes through.",
   "listing_detail_short_footer": "You don't own enough matching objekts to accept this listing.",
-  "listing_detail_hold": "Holds it for you for 48 hours",
+  "listing_detail_hold": "Holds them for you for 48 hours",
   "listing_detail_accepted": "Trade accepted. Send your objekts in the COSMO app.",
   "listing_detail_signed_out": "Sign in to see which of your objekts match and to accept.",
   "listing_detail_unlinked_title": "Link your COSMO account to trade.",
@@ -805,17 +820,15 @@
   "listing_detail_cap_over_title": "You have {active} trades in progress. Your account can run {cap} at once right now.",
   "listing_detail_cap_over_body": "Finish {count} of them to accept another.",
   "listing_detail_cap_grows": "The limit grows as you collect positive feedback.",
-  "listing_detail_lost_race_title": "Someone accepted this a moment before you.",
-  "listing_detail_lost_race_body": "Nothing of yours was reserved. If their trade doesn't finish, the listing opens again.",
+  "listing_detail_lost_race_title": "Another trade took an objekt you picked a moment before you.",
+  "listing_detail_lost_race_body": "Nothing of yours was held. Pick another to go on; if their trade doesn't finish, it's free again.",
   "listing_detail_updated_title": "This listing changed before you accepted.",
   "listing_detail_updated_body": "Check the new terms and pick again.",
   "listing_detail_status_open": "Open",
-  "listing_detail_status_claimed": "Claimed",
   "listing_detail_status_filled": "Filled",
   "listing_detail_status_withdrawn": "Withdrawn",
   "listing_detail_status_closed": "Closed",
   "listing_detail_status_removed": "Removed",
-  "listing_detail_claimer_title": "You accepted this",
   "listing_detail_claim_disputed": "The trade is paused while a moderator looks at it. Transfers you make still count.",
   "listing_detail_time_left": "{#time}{left}{/time} left",
   "listing_detail_claimer_body": [
@@ -828,12 +841,8 @@
       }
     }
   ],
-  "listing_detail_poster_claimed": "{#user}{username}{/user} accepted · {#time}{left}{/time} left",
-  "listing_detail_poster_claimed_someone": "Someone accepted · {#time}{left}{/time} left",
-  "listing_detail_poster_claimed_untimed": "{#user}{username}{/user} accepted",
-  "listing_detail_poster_claimed_someone_untimed": "Someone accepted",
   "listing_detail_go_to_trade": "Go to trade",
-  "listing_detail_poster_claimed_body": "The trade decides what happens next: completing it fills this listing, and cancelling it opens the listing again as long as you still hold its objekts. If time runs out before anything is sent, the listing closes.",
+  "listing_detail_view_offer": "View offer",
   "listing_detail_withdraw": "Withdraw",
   "listing_detail_withdraw_title": "Withdraw this listing?",
   "listing_detail_withdraw_description": "It leaves the market straight away, and nobody can accept it after this.",
@@ -842,13 +851,23 @@
   "listing_detail_closed_filled": "Traded to {#user}{username}{/user}.",
   "listing_detail_view_trade": "View trade",
   "listing_detail_closed_filled_unknown": "Traded.",
+  "listing_detail_closed_filled_trades": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Traded in {count} trade.",
+        "countPlural=other": "Traded in {count} trades."
+      }
+    }
+  ],
   "listing_detail_closed_withdrawn": "{poster} closed this listing.",
   "listing_detail_closed_broken": "An offered objekt left {poster}'s account or can't be transferred, so this listing can't go ahead.",
   "listing_detail_closed_removed": "Removed by {appName} staff.",
   "listing_detail_closed_timed_out": "Its trade ran out of time before either side sent anything, so this listing closed.",
   "listing_detail_closed_withdrawn_own": "You closed this listing.",
   "listing_detail_closed_broken_own": "An offered objekt left your account or can't be transferred, so this listing can't go ahead.",
-  "listing_detail_you_give_summary": "picked from what you own",
+  "listing_detail_you_give_summary": "pick from what you own",
   "listing_detail_you_get_summary": "from {poster}",
   "listing_detail_summary_ranges": [
     {
@@ -880,7 +899,6 @@
   "listing_confirm_updated_title": "{poster} changed this listing",
   "listing_confirm_updated_body": "Review the changes.",
   "listing_confirm_review": "Review",
-  "listing_confirm_claimed_title": "Someone else accepted first",
   "listing_confirm_token_title": "{objekt} {#serial}{serial}{/serial} can't be traded",
   "listing_confirm_token_not_owned": "It's left your account. Swap it for another copy.",
   "listing_confirm_token_untransferable": "COSMO won't transfer it. Swap it for another copy.",
@@ -1070,18 +1088,25 @@
   "notification_trade_dispute_resolved_cancelled": "A moderator resolved the dispute on your trade with {#b}{username}{/b}: cancelled",
   "notification_trade_deadline_extended": "A moderator gave your trade with {#b}{username}{/b} more time",
   "notification_listing_closed": "Your listing closed: {#b}{objekt}{/b} is no longer available",
+  "notification_listing_closed_too_few": "Your listing closed: there aren't enough objekts left for another trade",
   "notification_trade_message": "New messages from {#b}{username}{/b}",
   "notification_trade_message_staff": "{appName} staff member {#b}{staff}{/b} wrote in your trade with {#b}{username}{/b}",
   "notification_trade_message_staff_unnamed": "{appName} staff wrote in your trade with {#b}{username}{/b}",
   "notification_feedback_received": "{#b}{username}{/b} rated you",
   "notification_offer_received": "{#b}{username}{/b} sent you an offer: {offered} for {asked}",
+  "notification_offer_received_listing": "{#b}{username}{/b} sent you an offer on your listing: {offered} for {asked}",
   "notification_offer_accepted": "{#b}{username}{/b} accepted your offer. Send your objekts within 48 hours.",
+  "notification_offer_accepted_listing": "{#b}{username}{/b} accepted your offer on their listing. Send your objekts within 48 hours.",
   "notification_offer_declined": "{#b}{username}{/b} declined your offer",
   "notification_offer_declined_staff": "{appName} staff closed your offer to {#b}{username}{/b}",
+  "notification_offer_declined_listing": "{#b}{username}{/b} declined your offer on their listing",
+  "notification_offer_declined_listing_closed": "{#b}{username}{/b}'s listing closed, so your offer on it closed too",
   "notification_offer_countered": "{#b}{username}{/b} countered your offer",
   "notification_offer_expired": "Your offer to {#b}{username}{/b} expired before they answered",
+  "notification_offer_expired_listing": "Your offer on {#b}{username}{/b}'s listing expired before they answered",
   "notification_offer_stale_yours": "Your offer to {#b}{username}{/b} can't go ahead: your {#b}{objekt}{/b} is no longer available",
   "notification_offer_stale_theirs": "Your offer to {#b}{username}{/b} can't go ahead: their {#b}{objekt}{/b} is no longer available",
+  "notification_offer_stale_edited": "Your offer on {#b}{username}{/b}'s listing can't go ahead: they changed the listing",
   "_comment_help": "Help dialog content",
   "help_como_title": "COMO Calendar",
   "help_como_description": "Help information for COMO calendar",
@@ -1480,9 +1505,9 @@
   "admin_dispute_extend_banned": "A party is banned, so this trade can't go back to the parties. Complete or cancel it.",
   "admin_dispute_complete": "Complete trade",
   "admin_dispute_complete_title": "Complete this trade?",
-  "admin_dispute_complete_hint": "Ends the trade as completed and fills the listing. Objekts that weren't sent stay unsent.",
+  "admin_dispute_complete_hint": "Ends the trade as completed, and the poster's objekts in it leave the listing. Objekts that weren't sent stay unsent.",
   "admin_dispute_cancel": "Cancel trade",
-  "admin_dispute_cancel_hint": "Ends the trade. The listing reopens if the poster still holds the objekts, otherwise it breaks. A banned poster's listing is removed.",
+  "admin_dispute_cancel_hint": "Ends the trade. If the listing is still open, the poster's objekts in it that weren't sent are free on it again; ones already sent have left it. A listing that can no longer make a trade closes. A banned poster's listing is removed.",
   "admin_dispute_complete_hint_offer": "Ends the trade as completed. Objekts that weren't sent stay unsent.",
   "admin_dispute_cancel_hint_offer": "Ends the trade.",
   "admin_dispute_extended": "Deadline extended",
@@ -2177,6 +2202,7 @@
   "market_listings_filter_artist": "Artist",
   "market_listings_filter_member": "Member",
   "market_listings_any_artist": "Any artist",
+  "market_listings_range_matches": "{count}× any match",
   "market_listings_column_type": "Type",
   "market_listings_column_offering": "Offering",
   "market_listings_column_asking": "Asking",
@@ -2189,6 +2215,17 @@
       "match": {
         "countPlural=one": "{count} objekt",
         "countPlural=other": "{count} objekts"
+      }
+    }
+  ],
+  "market_listings_ratio": "{give} for {get}",
+  "market_listings_available": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} available",
+        "countPlural=other": "{count} available"
       }
     }
   ],
@@ -2342,11 +2379,167 @@
   "listing_composer_discard_description": "What you've entered here will be lost.",
   "listing_composer_discard_keep": "Keep editing",
   "listing_composer_discard_confirm": "Discard",
+  "listing_composer_add_choice": "Any of",
+  "listing_composer_choice_help": "any mix of these, copies included",
+  "listing_composer_choice_add": "Add",
+  "listing_composer_choice_full": "An “Any of” row can name at most {max} collections.",
+  "listing_composer_reason_choice": "Each “Any of” row needs at least two collections.",
+  "listing_composer_reason_choice_repeated": "Each set of collections can only be asked for once.",
+  "listing_composer_reason_choice_duplicate": "Each collection can only be in an “Any of” row once.",
+  "listing_composer_reason_ratio": "Each trade takes {unitSize} of your objekts but you're offering {offered}. Lower the ratio or add more.",
+  "listing_composer_choice_add_label": "Add a collection",
+  "listing_composer_search_picked": "Added. Select it to remove it.",
+  "listing_composer_range_offers": "With a range, people send you offers instead of trading straight away, so you choose which objekts you'll take. Want specific collections? Use {#b}Any of{/b} instead.",
+  "listing_composer_range_confirm_title": "This listing takes offers",
+  "listing_composer_range_confirm_description": "A range matches many objekts, so people can't trade on this listing straight away.",
+  "listing_composer_range_confirm_choose_title": "You choose",
+  "listing_composer_range_confirm_choose": "Each person picks the objekts they'll send and makes you an offer. You accept or decline each one.",
+  "listing_composer_range_confirm_overlap_title": "Offers can overlap",
+  "listing_composer_range_confirm_overlap": "Nothing is reserved, so several offers may want the same objekts of yours. Once you accept one, the others that need those objekts can't be accepted. Offers expire after {hours} hours.",
+  "listing_composer_range_confirm_edit_title": "Editing closes offers",
+  "listing_composer_range_confirm_edit": "Saving changes to the listing closes its pending offers, and people have to offer again.",
+  "listing_composer_range_confirm_dismiss": "Don't show this again",
+  "listing_composer_range_confirm_create": "Create listing",
+  "listing_composer_range_confirm_save": "Save changes",
+  "listing_composer_ratio": "Ratio",
+  "listing_composer_ratio_label": "Your objekts in each trade",
+  "listing_composer_ratio_fewer": "Offer fewer in each trade",
+  "listing_composer_ratio_more": "Offer more in each trade",
+  "listing_composer_ratio_each": "Each trade is {#b}{give}{/b} of the objekts you're offering for {#b}{get}{/b} of what you're looking for.",
+  "listing_composer_ratio_times": [
+    {
+      "declarations": [
+        "input count",
+        "input offered",
+        "input wanted",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "With {offered} offered, people can trade once, choosing which of yours they get. Set it to {offered} : {wanted} to trade everything in one go.",
+        "countPlural=other": "With {offered} offered, people can trade up to {count} times, choosing which of yours they get. Set it to {offered} : {wanted} to trade everything in one go."
+      }
+    }
+  ],
+  "listing_composer_ratio_bundle": "People trade all {offered} in one go. Lower it to let them trade a few at a time, choosing which of yours they get.",
+  "listing_composer_ratio_held": "Each trade takes all {offered} for now. Step it up once more to keep taking all of them as you add more.",
   "listing_detail_you_give_total": "You give · {count}",
   "listing_detail_poster_blocked_title": "Nobody can accept this listing right now.",
-  "listing_detail_poster_blocked_body": "One of the objekts you offer is locked, can't be transferred, is in another trade or has left your account.",
+  "listing_detail_poster_blocked_body": "One of the objekts you offer is locked, can't be transferred or has left your account.",
   "listing_detail_poster_blocked_fix": "Edit the listing to offer something else, or fix what's stopping it.",
-  "my_trades_title": "My trades",
+  "listing_detail_pill_traded": "Traded",
+  "listing_detail_pill_moved": "Moved",
+  "listing_detail_units_title": "How many?",
+  "listing_detail_units_caption": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{ratio}, once",
+        "countPlural=other": "{ratio}, up to {count} times"
+      }
+    }
+  ],
+  "listing_detail_units_fewer": "Trade one fewer",
+  "listing_detail_units_more": "Trade one more",
+  "listing_detail_units_get": "you get {count}",
+  "listing_detail_units_give": "you give {count}",
+  "listing_detail_pool_offers_help": "Others may offer for the same objekts. Whoever {poster} accepts first gets them.",
+  "listing_detail_offer_footer": "Sending an offer holds nothing. If {poster} accepts, {appName} checks every serial again and the trade starts with 48 hours to send.",
+  "listing_detail_send_offer": "Send offer",
+  "listing_detail_offer_sent": "Offer sent to {poster}",
+  "listing_detail_offer_hold": "Nothing is held until {poster} accepts",
+  "listing_detail_incomplete_offered": "Pick {count} of the objekts on offer.",
+  "listing_detail_claimer_trading": "You're trading with {poster}",
+  "listing_detail_claimer_size": "{#ratio}{ratio}{/ratio} from this listing.",
+  "listing_detail_claimer_more": "You can take more from this listing once this trade ends.",
+  "listing_detail_offerer_waiting": "Waiting for {poster}",
+  "listing_detail_offerer_wait": "Nothing is held while you wait. You can't send another offer on this listing until this one is answered or withdrawn.",
+  "listing_detail_offer_pick_taken_title": "{objekt} went to someone else",
+  "listing_detail_offer_pick_taken_body": "Another trade took it, so {poster} can't accept your offer. Withdraw it to pick another and send again.",
+  "listing_detail_offer_declined_title": "{poster} declined your offer",
+  "listing_detail_offer_again": "You can change your picks below and send another.",
+  "listing_detail_offer_expired_title": "Your offer expired",
+  "listing_detail_offer_expired_body": "{poster} didn't answer within {hours} hours. You can send another.",
+  "listing_detail_offer_stale_title": "Your offer can't go ahead",
+  "listing_detail_offer_stale_body": "The listing changed or an objekt in it moved, so the offer ended. You can send another.",
+  "listing_offer_step_answer": "{#user}{poster}{/user} sees these serials and accepts or declines. Nothing is held meanwhile.",
+  "listing_offer_step_expiry": "If they don't answer by {#time}{date}{/time}, the offer expires.",
+  "listing_offer_step_window": "Once accepted, you both have {hours} hours to send in the COSMO app.",
+  "listing_confirm_pick_title": "{objekt} {#serial}{serial}{/serial} went to someone else",
+  "listing_confirm_pick_unknown": "An objekt you picked went to someone else",
+  "listing_confirm_pick_body": "Another trade took it a moment before yours. Nothing of yours was held; pick another and try again.",
+  "listing_poster_tabs": "Your listing",
+  "listing_poster_tab_listing": "Listing",
+  "listing_poster_tab_offers": "Offers",
+  "listing_poster_tab_trades": "Trades",
+  "listing_detail_you_offer": "You offer · {count}",
+  "listing_detail_you_look_for": "You're looking for · {count}",
+  "listing_detail_wants_per": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "for every {count} of yours",
+        "countPlural=other": "for every {count} of yours"
+      }
+    }
+  ],
+  "listing_poster_pool_in_trades": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} in a trade",
+        "countPlural=other": "{count} in trades"
+      }
+    }
+  ],
+  "listing_poster_pool_traded": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} traded",
+        "countPlural=other": "{count} traded"
+      }
+    }
+  ],
+  "listing_poster_pool_gone": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} gone",
+        "countPlural=other": "{count} gone"
+      }
+    }
+  ],
+  "listing_poster_pool_blocked": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} unavailable",
+        "countPlural=other": "{count} unavailable"
+      }
+    }
+  ],
+  "listing_detail_pill_gone": "Gone",
+  "listing_poster_note_available": "Available",
+  "listing_poster_note_with": "With {name}",
+  "listing_poster_note_other_trade": "In another trade",
+  "listing_poster_note_traded_to": "Traded to {name}",
+  "listing_poster_note_gone": "Left your account",
+  "listing_poster_note_blocked": "Nobody can pick it now",
+  "listing_poster_offers_help": "People choose which matching serials to send, so this listing takes offers you accept or decline.",
+  "listing_poster_offer_they_send": "They send",
+  "listing_poster_offer_you_send": "You send",
+  "listing_poster_offers_empty": "No offers yet",
+  "listing_poster_offers_empty_body": "When someone sends an offer on this listing, it shows up here for you to accept or decline.",
+  "listing_poster_trades_empty": "No trades yet",
+  "listing_poster_trades_empty_body": "Trades from this listing show up here, from the moment they start until they end.",
+  "my_trades_title": "My Trades",
   "my_trades_tabs": "Which trades",
   "my_trades_tab_active": "Active",
   "my_trades_tab_finished": "Finished",
@@ -2477,5 +2670,39 @@
   "feedback_page_no_account": "Not on {appName} yet",
   "feedback_page_no_account_body": "{name} hasn't traded on {appName}, so there's no feedback to show.",
   "feedback_page_no_match": "No matching feedback",
-  "feedback_page_no_match_body": "No ratings match these filters."
+  "feedback_page_no_match_body": "No ratings match these filters.",
+  "listing_detail_busy_title": "Everything on offer is in a trade right now",
+  "listing_detail_busy_body": "Check back when one of those trades ends.",
+  "listing_poster_busy_title": "Everything you offer is in a trade right now",
+  "listing_poster_busy_body": "Nobody can take this listing until one of those trades ends. There's nothing to fix.",
+  "listing_detail_offerer_expired": "{poster} didn't answer in time, so it's closing. You can send another in a minute.",
+  "listing_poster_pill_sent": "Sent",
+  "listing_poster_note_sent_to": "Sent to {name}",
+  "listing_poster_pool_sent": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} sent",
+        "countPlural=other": "{count} sent"
+      }
+    }
+  ],
+  "listing_want_any_of_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Any of {count} collection",
+        "countPlural=other": "Any of {count} collections"
+      }
+    }
+  ],
+  "listing_detail_summary_choices": "{count} any of",
+  "listing_poster_refusal_pick_live": "One of your objekts in this offer is in another trade now, so it can only be declined.",
+  "listing_poster_refusal_pick_elsewhere": "{objekt} #{serial} is in another trade now, so this offer can only be declined.",
+  "listing_poster_refusal_pick_with": "{objekt} #{serial} is in your trade with {name} now, so this offer can only be declined.",
+  "listing_poster_refusal_pick_unavailable": "One of your objekts in this offer can't be traded right now, so it can only be declined.",
+  "listing_poster_yours": "Your listing",
+  "listing_detail_updated_at": "updated {#time}{when}{/time}"
 }

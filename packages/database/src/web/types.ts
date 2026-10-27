@@ -19,6 +19,7 @@ import type {
   reports,
   staffAudit,
   tradeFeedback,
+  tradeListingWantOptions,
   tradeListingWants,
   tradeMessages,
   tradeOfferItems,
@@ -142,8 +143,12 @@ export type CosmoLinkAudit = typeof cosmoLinkAudit.$inferSelect;
 export type TradeOffer = typeof tradeOffers.$inferSelect;
 export type TradeOfferItem = typeof tradeOfferItems.$inferSelect;
 export type TradeListingWant = typeof tradeListingWants.$inferSelect;
+export type TradeListingWantOption =
+  typeof tradeListingWantOptions.$inferSelect;
 export type NewTradeOfferItem = typeof tradeOfferItems.$inferInsert;
 export type NewTradeListingWant = typeof tradeListingWants.$inferInsert;
+export type NewTradeListingWantOption =
+  typeof tradeListingWantOptions.$inferInsert;
 export type TradeMessage = typeof tradeMessages.$inferSelect;
 export type ReportMessage = typeof reportMessages.$inferSelect;
 export type TradeFeedback = typeof tradeFeedback.$inferSelect;
@@ -374,10 +379,13 @@ export const tradeOfferStatuses = [
 export type TradeOfferStatus = (typeof tradeOfferStatuses)[number];
 
 /**
- * A listing is open until claimed, and filled when its trade completes.
- * Listings don't expire. One ends early when the poster withdraws it, an
- * offered token leaves the poster or turns untransferable (broken), staff
- * remove it, or its claim's trade times out with nothing sent.
+ * A listing stays open while its pool holds at least one unit, whatever its
+ * trades are doing, and listings don't expire. Once the pool falls below a
+ * unit it's filled if any of its trades completed, else broken. It also
+ * ends when the poster withdraws it or staff remove it. Nothing writes
+ * `claimed` or `timed_out` to a listing: no listing holds `claimed`, and
+ * `timed_out` marks older listings that closed when their one trade timed
+ * out.
  */
 export const listingStatuses = [
   "open",
@@ -391,8 +399,10 @@ export const listingStatuses = [
 export type ListingStatus = (typeof listingStatuses)[number];
 
 /**
- * A direct offer is pending until the recipient answers it; a trade from a
- * listing starts accepted. `stale` is a pending offer whose token moved.
+ * An offer is pending until the side that didn't propose it answers it: a
+ * direct offer or a counter, or an offer on a listing that takes offers; a
+ * claim on any other listing starts accepted. `stale` is a pending offer
+ * whose token moved or whose listing was edited.
  */
 export const tradeStatuses = [
   "pending",
@@ -449,8 +459,12 @@ export const endedStatuses = [
 export const tradeSides = ["from", "to"] as const;
 export type TradeSide = (typeof tradeSides)[number];
 
-// what closed a pending offer for a party: staff banning them, or their account being deleted
-export const offerClosers = ["staff", "deletion"] as const;
+// what closed a pending offer for a party rather than the party: staff banning them, or their account being deleted
+export const accountClosers = ["staff", "deletion"] as const;
+export type AccountCloser = (typeof accountClosers)[number];
+
+// what closed a pending offer rather than a party: a ban or a deletion, or the listing it offered on closing, which only declines it
+export const offerClosers = [...accountClosers, "listing"] as const;
 export type OfferCloser = (typeof offerClosers)[number];
 
 // why a pending offer went stale: an offered token left its holder, or can't be transferred
@@ -463,7 +477,7 @@ export type TradeCanceller = (typeof tradeCancellers)[number];
 export const tradeItemKinds = ["objekt", "payment"] as const;
 export type TradeItemKind = (typeof tradeItemKinds)[number];
 
-export const tradeWantKinds = ["exact", "range", "payment"] as const;
+export const tradeWantKinds = ["exact", "range", "payment", "choice"] as const;
 export type TradeWantKind = (typeof tradeWantKinds)[number];
 
 export const tradeMessageKinds = ["text", "event"] as const;
@@ -536,19 +550,21 @@ export type TradeEvent =
   | OfferEvent;
 
 /**
- * The events only a direct offer writes: its sending, and how it ended
+ * The events only an offer writes: its proposing, and how it ended
  * unaccepted. Accepting one writes `accepted`, as a listing claim does.
  */
 export type OfferEvent =
-  // a direct offer was sent
+  // an offer was proposed, by the trade's `proposed_by` side
   | { type: "offered" }
-  // the recipient turned the offer down, or it closed when they were banned or deleted their account
-  | { type: "declined"; by: "to" | OfferCloser }
-  // the sender took the offer back before an answer, or it closed when they were banned or deleted their account
-  | { type: "withdrawn"; by: "from" | OfferCloser }
-  // the recipient answered with the counter offer `counterId`
+  // the side that didn't propose turned the offer down, or it closed when they were banned or deleted their account, or with the listing it offered on
+  | { type: "declined"; by: TradeSide | OfferCloser }
+  // the proposer took the offer back before an answer, or it closed when they were banned or deleted their account
+  | { type: "withdrawn"; by: TradeSide | AccountCloser }
+  // the side that didn't propose answered with the counter offer `counterId`
   | { type: "countered"; counterId: string }
   // nobody answered within the offer's 72 hours
   | { type: "expired" }
   // an offered token left its holder or turned untransferable before the offer was accepted
-  | { type: "stale"; tokenId: number; reason: StaleReason };
+  | { type: "stale"; tokenId: number; reason: StaleReason }
+  // the poster edited the listing the offer was on, so its terms no longer hold
+  | { type: "stale"; reason: "edited" };

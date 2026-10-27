@@ -1,10 +1,11 @@
 import { m } from "@/i18n/messages";
-import { partyName } from "@/lib/client/trades";
+import { partyName } from "@/lib/client/trade-listings";
 import { myTradesQuery } from "@/lib/queries/trades";
 import {
   type MyTradeRow,
   type MyTradesTab,
   myTradesTabs,
+  type TradeDispute,
 } from "@/lib/universal/trades";
 import { cn } from "@/lib/utils";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
@@ -232,37 +233,15 @@ function Status({ row }: { row: MyTradeRow }) {
         <Badge className={tones.muted}>{m.my_trades_next_reply()}</Badge>
       );
     case "accepted":
-      return row.needsYou ? (
-        <Badge className={tones.cosmo}>
-          {m.my_trades_next_send({
-            count: row.send.items.length - row.send.sent,
-          })}
-        </Badge>
-      ) : (
-        // a long name gives way, so the verb stays
-        <Badge
-          className={cn(tones.muted, "max-w-full")}
-          title={m.my_trades_next_them({ name: partyName(row.counterparty) })}
-        >
-          <ParaglideMessage
-            message={m.my_trades_next_them}
-            inputs={{ name: partyName(row.counterparty) }}
-            markup={{
-              user: ({ children }) => (
-                <span className="min-w-0 truncate">{children}</span>
-              ),
-            }}
-          />
-        </Badge>
+      return (
+        <NextStepBadge
+          needsYou={row.needsYou}
+          toSend={row.send.items.length - row.send.sent}
+          name={partyName(row.counterparty)}
+        />
       );
-    // a pause by a ban or a passed deadline reads as neutral, as on the trade page
     case "disputed":
-      return row.dispute?.event.by === "staff" ||
-        row.dispute?.event.by === "deadline" ? (
-        <Badge className={tones.muted}>{m.my_trades_next_paused()}</Badge>
-      ) : (
-        <Badge className={tones.bad}>{m.my_trades_next_dispute()}</Badge>
-      );
+      return <DisputeBadge dispute={row.dispute} />;
     case "completed":
     case "cancelled":
     case "timed_out":
@@ -294,20 +273,7 @@ function Time({ row }: { row: MyTradeRow }) {
         />
       );
     case "disputed":
-      return (
-        <ParaglideMessage
-          message={m.trade_page_paused}
-          inputs={{ left: "" }}
-          markup={{
-            time: () => (
-              <Countdown
-                deadline={row.dueAt}
-                pausedAt={row.dispute?.at ?? row.dueAt}
-              />
-            ),
-          }}
-        />
-      );
+      return <PausedTime deadline={row.dueAt} dispute={row.dispute} />;
     default:
       return (
         row.endedAt !== null && (
@@ -319,6 +285,72 @@ function Time({ row }: { row: MyTradeRow }) {
         )
       );
   }
+}
+
+/**
+ * What a live trade waits on: the viewer sending what they still owe, or
+ * the other party, named.
+ */
+export function NextStepBadge({
+  needsYou,
+  toSend,
+  name,
+}: {
+  needsYou: boolean;
+  toSend: number;
+  name: string;
+}) {
+  return needsYou ? (
+    <Badge className={tones.cosmo}>
+      {m.my_trades_next_send({ count: toSend })}
+    </Badge>
+  ) : (
+    // a long name gives way, so the verb stays
+    <Badge
+      className={cn(tones.muted, "max-w-full")}
+      title={m.my_trades_next_them({ name })}
+    >
+      <ParaglideMessage
+        message={m.my_trades_next_them}
+        inputs={{ name }}
+        markup={{
+          user: ({ children }) => (
+            <span className="min-w-0 truncate">{children}</span>
+          ),
+        }}
+      />
+    </Badge>
+  );
+}
+
+// a pause by a ban or a passed deadline reads as neutral, as on the trade page
+export function DisputeBadge({ dispute }: { dispute: TradeDispute | null }) {
+  return dispute?.event.by === "staff" || dispute?.event.by === "deadline" ? (
+    <Badge className={tones.muted}>{m.my_trades_next_paused()}</Badge>
+  ) : (
+    <Badge className={tones.bad}>{m.my_trades_next_dispute()}</Badge>
+  );
+}
+
+// the time a disputed trade's deadline had left when the dispute froze it
+export function PausedTime({
+  deadline,
+  dispute,
+}: {
+  deadline: Date;
+  dispute: TradeDispute | null;
+}) {
+  return (
+    <ParaglideMessage
+      message={m.trade_page_paused}
+      inputs={{ left: "" }}
+      markup={{
+        time: () => (
+          <Countdown deadline={deadline} pausedAt={dispute?.at ?? deadline} />
+        ),
+      }}
+    />
+  );
 }
 
 function MyTradesEmpty({ tab }: { tab: MyTradesTab }) {

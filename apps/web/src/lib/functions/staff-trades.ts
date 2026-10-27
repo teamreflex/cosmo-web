@@ -37,8 +37,8 @@ export const $staffCompleteTrade = createServerFn({ method: "POST" })
   });
 
 /**
- * Cancel an accepted or disputed trade. The listing reopens if the poster
- * still holds it, breaks if not, and is removed when the poster is banned.
+ * Cancel an accepted or disputed trade. The poster's objekts are free in
+ * the listing's pool again, which closes it if they no longer make a unit.
  * Both parties are told; for a disputed trade, that the dispute was resolved.
  */
 export const $staffCancelTrade = createServerFn({ method: "POST" })
@@ -50,8 +50,8 @@ export const $staffCancelTrade = createServerFn({ method: "POST" })
       staffId,
       data,
       { type: "staff_cancel" },
-      async (tx, trade, users, next, tokens) => {
-        await endTrade(tx, trade, next, users, tokens);
+      async (tx, trade, users, next) => {
+        await endTrade(tx, trade, next, users);
         await insertTradeEvent(tx, trade.id, {
           type: "cancelled",
           by: "staff",

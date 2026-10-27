@@ -1,13 +1,14 @@
 import { m } from "@/i18n/messages";
 import { reportReasonLabel } from "@/lib/client/reports";
+import { partyName } from "@/lib/client/trade-listings";
 import {
   itemName,
-  partyName,
+  offerRoles,
   tradeTimeFormat,
   txUrl,
 } from "@/lib/client/trades";
 import { env } from "@/lib/env/client";
-import type { TradeView } from "@/lib/universal/trades";
+import { isOfferCloser, type TradeView } from "@/lib/universal/trades";
 import type {
   OfferCloser,
   OfferEvent,
@@ -37,10 +38,11 @@ export function describeEvent(
 
   switch (event.type) {
     case "accepted":
-      if (trade.listingId === null) {
+      // an offer, one on a listing included, is accepted by the side that didn't propose it
+      if (trade.proposedBy !== null) {
         return describeOfferEvent(trade, side, event);
       }
-      // the claimer is always the side that accepts a listing
+      // a claim, which its claimer accepted on the poster's terms
       return side === null ? (
         <ParaglideMessage
           message={m.trade_page_event_accepted_staff}
@@ -142,23 +144,48 @@ export function describeEvent(
     case "payment_confirmed":
       return null;
     default:
-      return describeOfferEvent(trade, side, event);
+      // only a trade that started as an offer writes these
+      return trade.proposedBy === null
+        ? null
+        : describeOfferEvent(trade, side, event);
   }
 }
 
 /**
- * A direct offer's step 0, which the sender (`from`) sends and the
- * recipient (`to`) answers, and how it ended unaccepted, which a ban's
- * closing puts down to staff without naming who was banned, and an account
- * deletion's to the deletion.
+ * Which wording the viewer reads: `you` on `actor`'s side, `them` on its
+ * other party's, and `staff`, which names both parties, for staff.
+ */
+function viewer(side: TradeSide | null, actor: TradeSide) {
+  if (side === null) return "staff";
+  return side === actor ? "you" : "them";
+}
+
+// an ending a ban, an account deletion or the listing closing caused, which names neither party
+function closedEvent(by: OfferCloser) {
+  switch (by) {
+    case "staff":
+      return m.trade_page_event_closed_staff({ appName: env.VITE_APP_NAME });
+    case "deletion":
+      return m.trade_page_event_closed_deletion();
+    case "listing":
+      return m.trade_page_event_closed_listing();
+  }
+}
+
+/**
+ * An offer's step 0, which one side proposes and the other answers, and
+ * how it ended unaccepted, which a ban's closing puts down to staff without
+ * naming who was banned, an account deletion's to the deletion, and a
+ * listing's closing to the listing. An offer on a listing says so where
+ * that reads differently.
  */
 function describeOfferEvent(
   trade: TradeView,
   side: TradeSide | null,
   event: OfferEvent | { type: "accepted" },
 ): ReactNode {
-  const sender = partyName(trade.parties.from);
-  const recipient = partyName(trade.parties.to);
+  const { proposedBy, answeredBy, sender, recipient } = offerRoles(trade);
+  const onListing = trade.listingId !== null;
   const linkTo =
     (id: string) =>
     ({ children }: { children?: ReactNode }) => (
@@ -170,11 +197,6 @@ function describeOfferEvent(
         {children}
       </Link>
     );
-  // an ending a ban or an account deletion closed, which names neither party
-  const closedEvent = (by: OfferCloser) =>
-    by === "staff"
-      ? m.trade_page_event_closed_staff({ appName: env.VITE_APP_NAME })
-      : m.trade_page_event_closed_deletion();
 
   switch (event.type) {
     case "offered":
@@ -182,11 +204,17 @@ function describeOfferEvent(
       return trade.parentId === null ? (
         <ParaglideMessage
           message={
-            side === null
-              ? m.trade_page_event_offered_staff
-              : side === "from"
-                ? m.trade_page_event_offered_you
-                : m.trade_page_event_offered_them
+            (onListing
+              ? {
+                  you: m.trade_page_event_offered_listing_you,
+                  them: m.trade_page_event_offered_listing_them,
+                  staff: m.trade_page_event_offered_listing_staff,
+                }
+              : {
+                  you: m.trade_page_event_offered_you,
+                  them: m.trade_page_event_offered_them,
+                  staff: m.trade_page_event_offered_staff,
+                })[viewer(side, proposedBy)]
           }
           inputs={{ sender, recipient }}
           markup={bold}
@@ -194,11 +222,11 @@ function describeOfferEvent(
       ) : (
         <ParaglideMessage
           message={
-            side === null
-              ? m.trade_page_event_counter_offered_staff
-              : side === "from"
-                ? m.trade_page_event_counter_offered_you
-                : m.trade_page_event_counter_offered_them
+            {
+              you: m.trade_page_event_counter_offered_you,
+              them: m.trade_page_event_counter_offered_them,
+              staff: m.trade_page_event_counter_offered_staff,
+            }[viewer(side, proposedBy)]
           }
           inputs={{ sender, recipient }}
           markup={{ ...bold, link: linkTo(trade.parentId) }}
@@ -208,34 +236,40 @@ function describeOfferEvent(
       return (
         <ParaglideMessage
           message={
-            side === null
-              ? m.trade_page_event_accepted_offer_staff
-              : side === "to"
-                ? m.trade_page_event_accepted_offer_you
-                : m.trade_page_event_accepted_offer_them
+            (onListing
+              ? {
+                  you: m.trade_page_event_accepted_listing_offer_you,
+                  them: m.trade_page_event_accepted_listing_offer_them,
+                  staff: m.trade_page_event_accepted_listing_offer_staff,
+                }
+              : {
+                  you: m.trade_page_event_accepted_offer_you,
+                  them: m.trade_page_event_accepted_offer_them,
+                  staff: m.trade_page_event_accepted_offer_staff,
+                })[viewer(side, answeredBy)]
           }
           inputs={{ sender, recipient }}
           markup={bold}
         />
       );
     case "declined":
-      if (event.by !== "to") return closedEvent(event.by);
+      if (isOfferCloser(event.by)) return closedEvent(event.by);
       return (
         <ParaglideMessage
           message={
-            side === null
-              ? m.trade_page_event_declined_staff
-              : side === "to"
-                ? m.trade_page_event_declined_you
-                : m.trade_page_event_declined_them
+            {
+              you: m.trade_page_event_declined_you,
+              them: m.trade_page_event_declined_them,
+              staff: m.trade_page_event_declined_staff,
+            }[viewer(side, event.by)]
           }
           inputs={{ sender, recipient }}
           markup={bold}
         />
       );
     case "withdrawn":
-      if (event.by !== "from") return closedEvent(event.by);
-      return side === "from" ? (
+      if (isOfferCloser(event.by)) return closedEvent(event.by);
+      return side === event.by ? (
         m.trade_page_event_withdrawn_you()
       ) : (
         <ParaglideMessage
@@ -248,18 +282,18 @@ function describeOfferEvent(
       return (
         <ParaglideMessage
           message={
-            side === null
-              ? m.trade_page_event_countered_staff
-              : side === "to"
-                ? m.trade_page_event_countered_you
-                : m.trade_page_event_countered_them
+            {
+              you: m.trade_page_event_countered_you,
+              them: m.trade_page_event_countered_them,
+              staff: m.trade_page_event_countered_staff,
+            }[viewer(side, answeredBy)]
           }
           inputs={{ sender, recipient }}
           markup={{ ...bold, link: linkTo(event.counterId) }}
         />
       );
     case "expired":
-      return side === "to" ? (
+      return side === answeredBy ? (
         m.trade_page_event_expired_you()
       ) : (
         <ParaglideMessage
@@ -268,35 +302,58 @@ function describeOfferEvent(
           markup={bold}
         />
       );
-    case "stale": {
-      const item = trade.items.find(({ tokenId }) => tokenId === event.tokenId);
-      if (item === undefined) return null;
-      return event.reason === "untransferable" ? (
-        <ParaglideMessage
-          message={m.trade_page_event_stale_untransferable}
-          inputs={{ objekt: itemName(item) }}
-          markup={bold}
-        />
-      ) : item.sender === side ? (
-        <ParaglideMessage
-          message={m.trade_page_event_stale_yours}
-          inputs={{ objekt: itemName(item) }}
-          markup={bold}
-        />
-      ) : (
-        <ParaglideMessage
-          message={m.trade_page_event_stale_theirs}
-          inputs={{
-            objekt: itemName(item),
-            name: partyName(trade.parties[item.sender]),
-          }}
-          markup={bold}
-        />
-      );
-    }
+    case "stale":
+      return describeStale(trade, side, event);
     default:
       return event satisfies never;
   }
+}
+
+/**
+ * Why an offer went stale: the poster edited the listing it was on, which
+ * is always their (`from`) side, or an offered objekt left its holder or
+ * turned untransferable.
+ */
+function describeStale(
+  trade: TradeView,
+  side: TradeSide | null,
+  event: Extract<OfferEvent, { type: "stale" }>,
+): ReactNode {
+  if (event.reason === "edited") {
+    return side === "from" ? (
+      m.trade_page_event_stale_edited_you()
+    ) : (
+      <ParaglideMessage
+        message={m.trade_page_event_stale_edited_them}
+        inputs={{ name: partyName(trade.parties.from) }}
+        markup={bold}
+      />
+    );
+  }
+  const item = trade.items.find(({ tokenId }) => tokenId === event.tokenId);
+  if (item === undefined) return null;
+  return event.reason === "untransferable" ? (
+    <ParaglideMessage
+      message={m.trade_page_event_stale_untransferable}
+      inputs={{ objekt: itemName(item) }}
+      markup={bold}
+    />
+  ) : item.sender === side ? (
+    <ParaglideMessage
+      message={m.trade_page_event_stale_yours}
+      inputs={{ objekt: itemName(item) }}
+      markup={bold}
+    />
+  ) : (
+    <ParaglideMessage
+      message={m.trade_page_event_stale_theirs}
+      inputs={{
+        objekt: itemName(item),
+        name: partyName(trade.parties[item.sender]),
+      }}
+      markup={bold}
+    />
+  );
 }
 
 /**

@@ -381,8 +381,8 @@
   "trade_error_listing_not_found": "Cette annonce est introuvable.",
   "trade_error_listing_own": "Vous ne pouvez pas accepter votre propre annonce.",
   "trade_error_listing_closed": "Cette annonce est fermée.",
-  "trade_error_listing_claimed": "Quelqu'un a accepté cette annonce, elle ne peut donc plus être modifiée.",
-  "trade_error_already_claimed": "Quelqu'un d'autre a accepté cette annonce en premier.",
+  "trade_error_listing_pick_unavailable": "Un des objekts que vous avez choisis dans cette annonce n'est plus disponible.",
+  "trade_error_listing_claim_exists": "Vous avez déjà un échange ou une offre en cours sur cette annonce. Attendez qu'il se termine avant d'échanger à nouveau.",
   "trade_error_listing_updated": "Cette annonce a été modifiée. Vérifiez les nouvelles conditions avant d'accepter.",
   "trade_error_listing_unavailable": "Cette annonce ne peut pas être acceptée pour le moment.",
   "trade_error_listing_want_unknown": "L'un des objekts que vous recherchez n'existe pas.",
@@ -615,12 +615,18 @@
   "trade_page_event_offered_you": "Vous avez envoyé une offre à {#b}{recipient}{/b}.",
   "trade_page_event_offered_them": "{#b}{sender}{/b} vous a envoyé une offre.",
   "trade_page_event_offered_staff": "{#b}{sender}{/b} a envoyé une offre à {#b}{recipient}{/b}.",
+  "trade_page_event_offered_listing_you": "Vous avez envoyé une offre à {#b}{recipient}{/b} sur son annonce.",
+  "trade_page_event_offered_listing_them": "{#b}{sender}{/b} vous a envoyé une offre sur votre annonce.",
+  "trade_page_event_offered_listing_staff": "{#b}{sender}{/b} a envoyé une offre à {#b}{recipient}{/b} sur son annonce.",
   "trade_page_event_counter_offered_you": "Vous avez envoyé à {#b}{recipient}{/b} une contre-offre à {#link}son offre{/link}.",
   "trade_page_event_counter_offered_them": "{#b}{sender}{/b} vous a envoyé une contre-offre à {#link}votre offre{/link}.",
   "trade_page_event_counter_offered_staff": "{#b}{sender}{/b} a envoyé à {#b}{recipient}{/b} une contre-offre à {#link}son offre{/link}.",
   "trade_page_event_accepted_offer_you": "Vous avez accepté l'offre de {#b}{sender}{/b}.",
   "trade_page_event_accepted_offer_them": "{#b}{recipient}{/b} a accepté votre offre.",
   "trade_page_event_accepted_offer_staff": "{#b}{recipient}{/b} a accepté l'offre de {#b}{sender}{/b}.",
+  "trade_page_event_accepted_listing_offer_you": "Vous avez accepté l'offre de {#b}{sender}{/b} sur votre annonce.",
+  "trade_page_event_accepted_listing_offer_them": "{#b}{recipient}{/b} a accepté votre offre sur son annonce.",
+  "trade_page_event_accepted_listing_offer_staff": "{#b}{recipient}{/b} a accepté l'offre de {#b}{sender}{/b} sur son annonce.",
   "trade_page_event_declined_you": "Vous avez refusé l'offre de {#b}{sender}{/b}.",
   "trade_page_event_declined_them": "{#b}{recipient}{/b} a refusé votre offre.",
   "trade_page_event_declined_staff": "{#b}{recipient}{/b} a refusé l'offre de {#b}{sender}{/b}.",
@@ -628,6 +634,7 @@
   "trade_page_event_withdrawn_them": "{#b}{sender}{/b} a retiré l'offre.",
   "trade_page_event_closed_staff": "L'équipe {appName} a clos l'offre.",
   "trade_page_event_closed_deletion": "L'offre a été close car un compte qui y participait a été supprimé.",
+  "trade_page_event_closed_listing": "L'offre a été close car l'annonce a été fermée.",
   "trade_page_event_countered_you": "Vous avez répondu à l'offre de {#b}{sender}{/b} par {#link}une contre-offre{/link}.",
   "trade_page_event_countered_them": "{#b}{recipient}{/b} a répondu à votre offre par {#link}une contre-offre{/link}.",
   "trade_page_event_countered_staff": "{#b}{recipient}{/b} a répondu à l'offre de {#b}{sender}{/b} par {#link}une contre-offre{/link}.",
@@ -636,6 +643,8 @@
   "trade_page_event_stale_yours": "{#b}{objekt}{/b} a quitté votre compte, l'offre ne peut donc pas aboutir.",
   "trade_page_event_stale_theirs": "{#b}{objekt}{/b} a quitté le compte de {#b}{name}{/b}, l'offre ne peut donc pas aboutir.",
   "trade_page_event_stale_untransferable": "{#b}{objekt}{/b} ne peut plus être transféré, l'offre ne peut donc pas aboutir.",
+  "trade_page_event_stale_edited_you": "Vous avez modifié l'annonce, l'offre ne peut donc pas aboutir.",
+  "trade_page_event_stale_edited_them": "{#b}{name}{/b} a modifié son annonce, l'offre ne peut donc pas aboutir.",
   "trade_page_direct_offer": "Offre directe",
   "trade_page_offer_time_left": "Expire dans {#time}{left}{/time}",
   "trade_page_offer_waiting_for_you": "En attente de votre réponse",
@@ -664,6 +673,7 @@
   "trade_page_offer_waiting_counter_you": "Votre contre-offre à {name} : {give} contre {get}",
   "trade_page_offer_waiting_counter_staff": "Contre-offre de {sender} à {recipient} : {give} contre {get}",
   "trade_page_offer_waiting_meta": "Envoyée le {#time}{sent}{/time} · la personne peut accepter, refuser ou faire une contre-offre · expire dans {#countdown}{left}{/countdown}",
+  "trade_page_offer_listing_waiting_meta": "Envoyée le {#time}{sent}{/time} · la personne peut accepter ou refuser · expire dans {#countdown}{left}{/countdown}",
   "trade_page_offer_counter_them": "{#b}{name}{/b} a répondu à {#link}votre offre{/link} par celle-ci.",
   "trade_page_offer_counter_of": "Ceci répond à {#link}l'offre de {name}{/link}.",
   "trade_page_offer_accept": "Accepter",
@@ -683,12 +693,14 @@
   "trade_page_offer_declined_staff": "{recipient} a refusé l'offre de {sender}",
   "trade_page_offer_nothing_sent": "Rien n'a été envoyé.",
   "trade_page_offer_new_from_matches": "Vous pouvez envoyer une nouvelle offre depuis les Correspondances d'échange.",
+  "trade_page_offer_new_from_listing": "Vous pouvez envoyer une nouvelle offre depuis {#link}l'annonce{/link}.",
   "trade_page_offer_withdrawn_you": "Vous avez retiré cette offre",
   "trade_page_offer_withdrawn_them": "{name} a retiré cette offre",
   "trade_page_offer_withdrawn_before_you": "Retirée avant votre réponse.",
   "trade_page_offer_withdrawn_before_them": "Retirée avant la réponse de {name}.",
   "trade_page_offer_closed_staff": "L'équipe {appName} a clos cette offre",
   "trade_page_offer_closed_deletion": "Cette offre a été close car un compte qui y participait a été supprimé",
+  "trade_page_offer_closed_listing": "Cette offre a été close car l'annonce a été fermée",
   "trade_page_offer_countered_you_swap": "Votre contre-offre : {added} au lieu de {removed}",
   "trade_page_offer_countered_you": "Vous avez fait une contre-offre",
   "trade_page_offer_countered_them_swap": "Contre-offre de {name} : {added} au lieu de {removed}",
@@ -715,13 +727,16 @@
   "trade_page_offer_stale_theirs": "{objekt} a quitté le compte de {name}",
   "trade_page_offer_stale_untransferable": "{objekt} ne peut plus être transféré",
   "trade_page_offer_stale_unknown": "Un objekt de l'offre a été déplacé",
+  "trade_page_offer_stale_edited_you": "Vous avez modifié l'annonce",
+  "trade_page_offer_stale_edited_them": "{name} a modifié son annonce",
   "trade_page_offer_stale_note": "L'offre ne peut pas aboutir sans lui, elle est donc close.",
+  "trade_page_offer_stale_edited_note": "L'offre portait sur les anciennes conditions de l'annonce, elle est donc close.",
   "trade_page_cancel": "Annuler l'échange",
   "trade_page_cancel_keep": "Garder l'échange",
   "trade_page_cancel_title": "Annuler cet échange ?",
   "trade_page_cancel_description": "Aucun de vous deux n'a encore rien envoyé.",
-  "trade_page_cancel_description_poster": "Aucun de vous deux n'a encore rien envoyé. Votre annonce sera de nouveau ouverte à tous si vous détenez toujours ses objekts.",
-  "trade_page_cancel_description_claimer": "Aucun de vous deux n'a encore rien envoyé. L'annonce de {name} sera de nouveau ouverte à tous si cette personne détient toujours ses objekts.",
+  "trade_page_cancel_description_poster": "Aucun de vous deux n'a encore rien envoyé. Si votre annonce est toujours ouverte, les objekts que vous donneriez dans cet échange y redeviennent disponibles.",
+  "trade_page_cancel_description_claimer": "Aucun de vous deux n'a encore rien envoyé. Si l'annonce de {name} est toujours ouverte, les objekts que cette personne donnerait dans cet échange y redeviennent disponibles.",
   "trade_page_cancelled_toast": "Échange annulé",
   "trade_page_deadline_passed_short": "Délai dépassé",
   "trade_page_dispute_open": "Ouvrir un litige",
@@ -746,7 +761,6 @@
   "listing_detail_kind_trade": "Échange",
   "listing_detail_posted": "publiée {#time}{when}{/time}",
   "listing_detail_error": "Impossible de charger cette annonce.",
-  "listing_detail_viewer_error": "Impossible de charger votre partie de cette annonce.",
   "listing_detail_you_get": "Vous recevez · {count}",
   "listing_detail_offering": "Propose · {count}",
   "listing_detail_looking_for": "Recherche · {count}",
@@ -763,6 +777,7 @@
   ],
   "listing_detail_kind_exact": "Exact",
   "listing_detail_kind_range": "Plage",
+  "listing_detail_kind_choice": "Au choix",
   "listing_detail_kind_payment": "Paiement",
   "listing_detail_owned_exact": "vous en avez {count}",
   "listing_detail_owned_range": [
@@ -783,9 +798,9 @@
   "listing_detail_incomplete_footer": "Choisissez autant d'objekts que chaque ligne en demande pour accepter.",
   "listing_detail_blocked_body": "Un souci du côté de l'auteur bloque les échanges, par exemple un objekt proposé qui a été verrouillé ou qui a quitté son compte. Vous pourrez accepter une fois le problème réglé.",
   "listing_detail_accept": "Accepter",
-  "listing_detail_accept_footer": "Accepter revérifie ces numéros de série et vous réserve l'annonce pendant 48 heures. Vous envoyez chacun vos objekts dans l'app COSMO, dans n'importe quel ordre. {appName} marque l'échange comme terminé dès que tous les transferts sont passés.",
+  "listing_detail_accept_footer": "Accepter revérifie ces numéros de série et vous les réserve pendant 48 heures. Vous envoyez chacun vos objekts dans l'app COSMO, dans n'importe quel ordre. {appName} marque l'échange comme terminé dès que tous les transferts sont passés.",
   "listing_detail_short_footer": "Vous n'avez pas assez d'objekts correspondants pour accepter cette annonce.",
-  "listing_detail_hold": "Vous est réservée pendant 48 heures",
+  "listing_detail_hold": "Vous sont réservés pendant 48 heures",
   "listing_detail_accepted": "Échange accepté. Envoyez vos objekts dans l'app COSMO.",
   "listing_detail_signed_out": "Connectez-vous pour voir lesquels de vos objekts correspondent et pour accepter.",
   "listing_detail_unlinked_title": "Liez votre compte COSMO pour échanger.",
@@ -805,17 +820,15 @@
   "listing_detail_cap_over_title": "Vous avez {active} échanges en cours. Votre compte peut en mener {cap} à la fois pour le moment.",
   "listing_detail_cap_over_body": "Terminez-en {count} pour en accepter un autre.",
   "listing_detail_cap_grows": "La limite augmente à mesure que vous recevez des évaluations positives.",
-  "listing_detail_lost_race_title": "Quelqu'un a accepté cette annonce juste avant vous.",
-  "listing_detail_lost_race_body": "Rien de ce qui vous appartient n'a été réservé. Si son échange n'aboutit pas, l'annonce rouvre.",
+  "listing_detail_lost_race_title": "Un autre échange a pris un objekt que vous aviez choisi, juste avant vous.",
+  "listing_detail_lost_race_body": "Rien de ce qui vous appartient n'a été réservé. Choisissez-en un autre pour continuer ; si cet échange n'aboutit pas, il redevient disponible.",
   "listing_detail_updated_title": "Cette annonce a changé avant que vous acceptiez.",
   "listing_detail_updated_body": "Vérifiez les nouvelles conditions et choisissez à nouveau.",
   "listing_detail_status_open": "Ouverte",
-  "listing_detail_status_claimed": "Acceptée",
   "listing_detail_status_filled": "Conclue",
   "listing_detail_status_withdrawn": "Retirée",
   "listing_detail_status_closed": "Fermée",
   "listing_detail_status_removed": "Supprimée",
-  "listing_detail_claimer_title": "Vous avez accepté cette annonce",
   "listing_detail_claim_disputed": "L'échange est en pause pendant qu'un modérateur l'examine. Les transferts que vous faites comptent toujours.",
   "listing_detail_time_left": "il reste {#time}{left}{/time}",
   "listing_detail_claimer_body": [
@@ -828,12 +841,8 @@
       }
     }
   ],
-  "listing_detail_poster_claimed": "{#user}{username}{/user} a accepté · il reste {#time}{left}{/time}",
-  "listing_detail_poster_claimed_someone": "Quelqu'un a accepté · il reste {#time}{left}{/time}",
-  "listing_detail_poster_claimed_untimed": "{#user}{username}{/user} a accepté",
-  "listing_detail_poster_claimed_someone_untimed": "Quelqu'un a accepté",
   "listing_detail_go_to_trade": "Aller à l'échange",
-  "listing_detail_poster_claimed_body": "L'échange décide de la suite : s'il aboutit, l'annonce est conclue ; s'il est annulé, elle rouvre tant que vous détenez encore ses objekts. Si le temps s'écoule avant le moindre envoi, l'annonce est fermée.",
+  "listing_detail_view_offer": "Voir l'offre",
   "listing_detail_withdraw": "Retirer",
   "listing_detail_withdraw_title": "Retirer cette annonce ?",
   "listing_detail_withdraw_description": "Elle quitte le marché immédiatement, et personne ne pourra plus l'accepter.",
@@ -842,13 +851,23 @@
   "listing_detail_closed_filled": "Échangée avec {#user}{username}{/user}.",
   "listing_detail_view_trade": "Voir l'échange",
   "listing_detail_closed_filled_unknown": "Échangée.",
+  "listing_detail_closed_filled_trades": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Échangée en {count} échange.",
+        "countPlural=other": "Échangée en {count} échanges."
+      }
+    }
+  ],
   "listing_detail_closed_withdrawn": "{poster} a fermé cette annonce.",
   "listing_detail_closed_broken": "Un objekt proposé a quitté le compte de {poster} ou ne peut pas être transféré, donc cette annonce ne peut pas aboutir.",
   "listing_detail_closed_removed": "Supprimée par l'équipe {appName}.",
   "listing_detail_closed_timed_out": "Son échange a expiré avant que l'une ou l'autre partie n'envoie quoi que ce soit, donc cette annonce a été fermée.",
   "listing_detail_closed_withdrawn_own": "Vous avez fermé cette annonce.",
   "listing_detail_closed_broken_own": "Un objekt proposé a quitté votre compte ou ne peut pas être transféré, donc cette annonce ne peut pas aboutir.",
-  "listing_detail_you_give_summary": "choisis parmi vos objekts",
+  "listing_detail_you_give_summary": "à choisir parmi vos objekts",
   "listing_detail_you_get_summary": "de {poster}",
   "listing_detail_summary_ranges": [
     {
@@ -889,7 +908,6 @@
   "listing_confirm_updated_title": "{poster} a modifié cette annonce",
   "listing_confirm_updated_body": "Vérifiez les changements.",
   "listing_confirm_review": "Vérifier",
-  "listing_confirm_claimed_title": "Quelqu'un d'autre a accepté en premier",
   "listing_confirm_token_title": "{objekt} {#serial}{serial}{/serial} ne peut pas être échangé",
   "listing_confirm_token_not_owned": "Il a quitté votre compte. Remplacez-le par un autre exemplaire.",
   "listing_confirm_token_untransferable": "COSMO ne le transfère pas. Remplacez-le par un autre exemplaire.",
@@ -1079,18 +1097,25 @@
   "notification_trade_dispute_resolved_cancelled": "Un modérateur a résolu le litige sur votre échange avec {#b}{username}{/b} : annulé",
   "notification_trade_deadline_extended": "Un modérateur a accordé plus de temps à votre échange avec {#b}{username}{/b}",
   "notification_listing_closed": "Votre annonce est fermée : {#b}{objekt}{/b} n'est plus disponible",
+  "notification_listing_closed_too_few": "Votre annonce est fermée : il ne reste plus assez d'objekts pour un autre échange",
   "notification_trade_message": "Nouveaux messages de {#b}{username}{/b}",
   "notification_trade_message_staff": "{#b}{staff}{/b}, de l'équipe {appName}, a écrit dans votre échange avec {#b}{username}{/b}",
   "notification_trade_message_staff_unnamed": "L'équipe {appName} a écrit dans votre échange avec {#b}{username}{/b}",
   "notification_feedback_received": "{#b}{username}{/b} vous a évalué",
   "notification_offer_received": "{#b}{username}{/b} vous a envoyé une offre : {offered} contre {asked}",
+  "notification_offer_received_listing": "{#b}{username}{/b} vous a envoyé une offre sur votre annonce : {offered} contre {asked}",
   "notification_offer_accepted": "{#b}{username}{/b} a accepté votre offre. Envoyez vos objekts sous 48 heures.",
+  "notification_offer_accepted_listing": "{#b}{username}{/b} a accepté votre offre sur son annonce. Envoyez vos objekts sous 48 heures.",
   "notification_offer_declined": "{#b}{username}{/b} a refusé votre offre",
   "notification_offer_declined_staff": "L'équipe {appName} a clos votre offre à {#b}{username}{/b}",
+  "notification_offer_declined_listing": "{#b}{username}{/b} a refusé votre offre sur son annonce",
+  "notification_offer_declined_listing_closed": "L'annonce de {#b}{username}{/b} est fermée, votre offre est donc close aussi",
   "notification_offer_countered": "{#b}{username}{/b} a répondu à votre offre par une contre-offre",
   "notification_offer_expired": "Votre offre à {#b}{username}{/b} a expiré sans réponse",
+  "notification_offer_expired_listing": "Votre offre sur l'annonce de {#b}{username}{/b} a expiré sans réponse",
   "notification_offer_stale_yours": "Votre offre à {#b}{username}{/b} ne peut pas aboutir : votre {#b}{objekt}{/b} n'est plus disponible",
   "notification_offer_stale_theirs": "Votre offre à {#b}{username}{/b} ne peut pas aboutir : son {#b}{objekt}{/b} n'est plus disponible",
+  "notification_offer_stale_edited": "Votre offre sur l'annonce de {#b}{username}{/b} ne peut pas aboutir : l'annonce a été modifiée",
   "_comment_help": "Help dialog content",
   "help_como_title": "Calendrier de COMO",
   "help_como_description": "Aide pour le calendrier de COMO",
@@ -1489,9 +1514,9 @@
   "admin_dispute_extend_banned": "Un participant est banni : l'échange ne peut pas être rendu aux participants. Terminez-le ou annulez-le.",
   "admin_dispute_complete": "Terminer l'échange",
   "admin_dispute_complete_title": "Terminer cet échange ?",
-  "admin_dispute_complete_hint": "Termine l'échange comme réussi et clôt l'annonce comme pourvue. Les objekts non envoyés restent non envoyés.",
+  "admin_dispute_complete_hint": "Termine l'échange comme réussi, et les objekts de l'auteur qu'il contient quittent l'annonce. Les objekts non envoyés restent non envoyés.",
   "admin_dispute_cancel": "Annuler l'échange",
-  "admin_dispute_cancel_hint": "Met fin à l'échange. L'annonce rouvre si l'auteur détient toujours les objekts, sinon elle est rompue. L'annonce d'un auteur banni est retirée.",
+  "admin_dispute_cancel_hint": "Met fin à l'échange. Si l'annonce est toujours ouverte, les objekts de l'auteur qu'il contient et qui n'ont pas été envoyés y redeviennent disponibles ; ceux déjà envoyés l'ont quittée. Une annonce qui ne peut plus faire d'échange est fermée. L'annonce d'un auteur banni est retirée.",
   "admin_dispute_complete_hint_offer": "Termine l'échange comme réussi. Les objekts non envoyés restent non envoyés.",
   "admin_dispute_cancel_hint_offer": "Met fin à l'échange.",
   "admin_dispute_extended": "Délai prolongé",
@@ -2186,6 +2211,7 @@
   "market_listings_filter_artist": "Artiste",
   "market_listings_filter_member": "Membre",
   "market_listings_any_artist": "Tous les artistes",
+  "market_listings_range_matches": "{count}× au choix parmi les correspondances",
   "market_listings_column_type": "Type",
   "market_listings_column_offering": "Propose",
   "market_listings_column_asking": "Demande",
@@ -2198,6 +2224,17 @@
       "match": {
         "countPlural=one": "{count} objekt",
         "countPlural=other": "{count} objekts"
+      }
+    }
+  ],
+  "market_listings_ratio": "{give} contre {get}",
+  "market_listings_available": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} disponible",
+        "countPlural=other": "{count} disponibles"
       }
     }
   ],
@@ -2351,10 +2388,166 @@
   "listing_composer_discard_description": "Ce que vous avez saisi ici sera perdu.",
   "listing_composer_discard_keep": "Continuer",
   "listing_composer_discard_confirm": "Abandonner",
+  "listing_composer_add_choice": "Au choix",
+  "listing_composer_choice_help": "n'importe quel mélange de celles-ci, doublons compris",
+  "listing_composer_choice_add": "Ajouter",
+  "listing_composer_choice_full": "Une ligne « Au choix » peut contenir au plus {max} collections.",
+  "listing_composer_reason_choice": "Chaque ligne « Au choix » doit contenir au moins deux collections.",
+  "listing_composer_reason_choice_repeated": "Chaque ensemble de collections ne peut être demandé qu'une fois.",
+  "listing_composer_reason_choice_duplicate": "Chaque collection ne peut figurer qu'une fois dans une ligne « Au choix ».",
+  "listing_composer_reason_ratio": "Chaque échange prend {unitSize} de vos objekts, mais vous n'en proposez que {offered}. Baissez le ratio ou ajoutez-en.",
+  "listing_composer_choice_add_label": "Ajouter une collection",
+  "listing_composer_search_picked": "Ajoutée. Sélectionnez-la pour la retirer.",
+  "listing_composer_range_offers": "Avec une plage, les gens vous envoient des offres au lieu d'échanger tout de suite, et vous choisissez les objekts que vous acceptez. Vous voulez des collections précises ? Utilisez plutôt {#b}Au choix{/b}.",
+  "listing_composer_range_confirm_title": "Cette annonce reçoit des offres",
+  "listing_composer_range_confirm_description": "Une plage correspond à de nombreux objekts, donc personne ne peut échanger sur cette annonce tout de suite.",
+  "listing_composer_range_confirm_choose_title": "C'est vous qui choisissez",
+  "listing_composer_range_confirm_choose": "Chaque personne choisit les objekts qu'elle enverra et vous fait une offre. Vous acceptez ou refusez chacune.",
+  "listing_composer_range_confirm_overlap_title": "Les offres peuvent se chevaucher",
+  "listing_composer_range_confirm_overlap": "Rien n'est réservé : plusieurs offres peuvent viser les mêmes objekts parmi les vôtres. Dès que vous en acceptez une, celles qui ont besoin de ces objekts ne peuvent plus être acceptées. Les offres expirent après {hours} heures.",
+  "listing_composer_range_confirm_edit_title": "Modifier ferme les offres",
+  "listing_composer_range_confirm_edit": "Enregistrer des modifications ferme les offres en attente de l'annonce, et il faut refaire une offre.",
+  "listing_composer_range_confirm_dismiss": "Ne plus afficher",
+  "listing_composer_range_confirm_create": "Créer l'annonce",
+  "listing_composer_range_confirm_save": "Enregistrer les modifications",
+  "listing_composer_ratio": "Ratio",
+  "listing_composer_ratio_label": "Vos objekts dans chaque échange",
+  "listing_composer_ratio_fewer": "Proposer moins dans chaque échange",
+  "listing_composer_ratio_more": "Proposer plus dans chaque échange",
+  "listing_composer_ratio_each": "Chaque échange, c'est {#b}{give}{/b} des objekts que vous proposez contre {#b}{get}{/b} de ce que vous recherchez.",
+  "listing_composer_ratio_times": [
+    {
+      "declarations": [
+        "input count",
+        "input offered",
+        "input wanted",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Avec {offered} objekts proposés, les gens peuvent échanger une fois, en choisissant lesquels des vôtres ils reçoivent. Réglez-le sur {offered} : {wanted} pour tout échanger d'un coup.",
+        "countPlural=other": "Avec {offered} objekts proposés, les gens peuvent échanger jusqu'à {count} fois, en choisissant lesquels des vôtres ils reçoivent. Réglez-le sur {offered} : {wanted} pour tout échanger d'un coup."
+      }
+    }
+  ],
+  "listing_composer_ratio_bundle": "Les gens échangent les {offered} d'un coup. Baissez-le pour qu'ils en échangent quelques-uns à la fois, en choisissant lesquels des vôtres ils reçoivent.",
+  "listing_composer_ratio_held": "Chaque échange prend les {offered} pour l'instant. Augmentez-le encore une fois pour qu'il les prenne toutes à mesure que vous en ajoutez.",
   "listing_detail_you_give_total": "Vous donnez · {count}",
   "listing_detail_poster_blocked_title": "Personne ne peut accepter cette annonce pour le moment.",
-  "listing_detail_poster_blocked_body": "L'un des objekts que vous proposez est verrouillé, n'est pas transférable, est dans un autre échange ou a quitté votre compte.",
+  "listing_detail_poster_blocked_body": "L'un des objekts que vous proposez est verrouillé, n'est pas transférable ou a quitté votre compte.",
   "listing_detail_poster_blocked_fix": "Modifiez l'annonce pour proposer autre chose, ou réglez ce qui la bloque.",
+  "listing_detail_pill_traded": "Échangé",
+  "listing_detail_pill_moved": "Déplacé",
+  "listing_detail_units_title": "Combien ?",
+  "listing_detail_units_caption": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{ratio}, une fois",
+        "countPlural=other": "{ratio}, jusqu'à {count} fois"
+      }
+    }
+  ],
+  "listing_detail_units_fewer": "Échanger une fois de moins",
+  "listing_detail_units_more": "Échanger une fois de plus",
+  "listing_detail_units_get": "vous recevez {count}",
+  "listing_detail_units_give": "vous donnez {count}",
+  "listing_detail_pool_offers_help": "D'autres peuvent faire une offre pour les mêmes objekts. Ils iront à celui dont {poster} accepte l'offre en premier.",
+  "listing_detail_offer_footer": "Envoyer une offre ne réserve rien. Si {poster} l'accepte, {appName} revérifie chaque numéro de série et l'échange commence, avec 48 heures pour envoyer.",
+  "listing_detail_send_offer": "Envoyer l'offre",
+  "listing_detail_offer_sent": "Offre envoyée à {poster}",
+  "listing_detail_offer_hold": "Rien n'est réservé tant que {poster} n'accepte pas",
+  "listing_detail_incomplete_offered": "Choisissez {count} des objekts proposés.",
+  "listing_detail_claimer_trading": "Vous échangez avec {poster}",
+  "listing_detail_claimer_size": "{#ratio}{ratio}{/ratio} via cette annonce.",
+  "listing_detail_claimer_more": "Vous pourrez en prendre davantage sur cette annonce une fois cet échange terminé.",
+  "listing_detail_offerer_waiting": "En attente de {poster}",
+  "listing_detail_offerer_wait": "Rien n'est réservé pendant l'attente. Vous ne pouvez pas envoyer d'autre offre sur cette annonce tant que celle-ci n'a pas reçu de réponse ou n'a pas été retirée.",
+  "listing_detail_offer_pick_taken_title": "{objekt} est parti à quelqu'un d'autre",
+  "listing_detail_offer_pick_taken_body": "Un autre échange l'a pris, donc {poster} ne peut pas accepter votre offre. Retirez-la pour en choisir un autre et renvoyer une offre.",
+  "listing_detail_offer_declined_title": "{poster} a refusé votre offre",
+  "listing_detail_offer_again": "Vous pouvez modifier vos choix ci-dessous et en envoyer une autre.",
+  "listing_detail_offer_expired_title": "Votre offre a expiré",
+  "listing_detail_offer_expired_body": "{poster} n'a pas répondu dans les {hours} heures. Vous pouvez en envoyer une autre.",
+  "listing_detail_offer_stale_title": "Votre offre ne peut pas aboutir",
+  "listing_detail_offer_stale_body": "L'annonce a changé ou l'un de ses objekts a bougé, donc l'offre a pris fin. Vous pouvez en envoyer une autre.",
+  "listing_offer_step_answer": "{#user}{poster}{/user} voit ces numéros de série et accepte ou refuse. Rien n'est réservé entre-temps.",
+  "listing_offer_step_expiry": "Sans réponse avant le {#time}{date}{/time}, l'offre expire.",
+  "listing_offer_step_window": "Une fois l'offre acceptée, vous avez tous les deux {hours} heures pour envoyer dans l'app COSMO.",
+  "listing_confirm_pick_title": "{objekt} {#serial}{serial}{/serial} est parti à quelqu'un d'autre",
+  "listing_confirm_pick_unknown": "Un objekt que vous avez choisi est parti à quelqu'un d'autre",
+  "listing_confirm_pick_body": "Un autre échange l'a pris juste avant le vôtre. Rien de ce qui vous appartient n'a été réservé ; choisissez-en un autre et réessayez.",
+  "listing_poster_tabs": "Votre annonce",
+  "listing_poster_tab_listing": "Annonce",
+  "listing_poster_tab_offers": "Offres",
+  "listing_poster_tab_trades": "Échanges",
+  "listing_detail_you_offer": "Vous proposez · {count}",
+  "listing_detail_you_look_for": "Vous recherchez · {count}",
+  "listing_detail_wants_per": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "pour chaque {count} des vôtres",
+        "countPlural=other": "pour chaque lot de {count} des vôtres"
+      }
+    }
+  ],
+  "listing_poster_pool_in_trades": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} dans un échange",
+        "countPlural=other": "{count} dans des échanges"
+      }
+    }
+  ],
+  "listing_poster_pool_traded": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} échangé",
+        "countPlural=other": "{count} échangés"
+      }
+    }
+  ],
+  "listing_poster_pool_gone": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} parti",
+        "countPlural=other": "{count} partis"
+      }
+    }
+  ],
+  "listing_poster_pool_blocked": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} indisponible",
+        "countPlural=other": "{count} indisponibles"
+      }
+    }
+  ],
+  "listing_detail_pill_gone": "Parti",
+  "listing_poster_note_available": "Disponible",
+  "listing_poster_note_with": "Avec {name}",
+  "listing_poster_note_other_trade": "Dans un autre échange",
+  "listing_poster_note_traded_to": "Échangé avec {name}",
+  "listing_poster_note_gone": "A quitté votre compte",
+  "listing_poster_note_blocked": "Personne ne peut le choisir pour l'instant",
+  "listing_poster_offers_help": "Chacun choisit les numéros de série correspondants qu'il envoie, donc cette annonce reçoit des offres que vous acceptez ou refusez.",
+  "listing_poster_offer_they_send": "Ils envoient",
+  "listing_poster_offer_you_send": "Vous envoyez",
+  "listing_poster_offers_empty": "Aucune offre pour l'instant",
+  "listing_poster_offers_empty_body": "Quand quelqu'un envoie une offre sur cette annonce, elle apparaît ici pour que vous l'acceptiez ou la refusiez.",
+  "listing_poster_trades_empty": "Aucun échange pour l'instant",
+  "listing_poster_trades_empty_body": "Les échanges issus de cette annonce apparaissent ici, de leur début jusqu'à leur fin.",
   "my_trades_title": "Mes échanges",
   "my_trades_tabs": "Quels échanges",
   "my_trades_tab_active": "En cours",
@@ -2486,5 +2679,48 @@
   "feedback_page_no_account": "Pas encore sur {appName}",
   "feedback_page_no_account_body": "{name} n'a pas encore échangé sur {appName}, il n'y a donc aucune évaluation à afficher.",
   "feedback_page_no_match": "Aucune évaluation correspondante",
-  "feedback_page_no_match_body": "Aucune évaluation ne correspond à ces filtres."
+  "feedback_page_no_match_body": "Aucune évaluation ne correspond à ces filtres.",
+  "listing_detail_busy_title": "Tout ce qui est proposé est dans un échange en ce moment",
+  "listing_detail_busy_body": "Revenez quand l'un de ces échanges sera terminé.",
+  "listing_poster_busy_title": "Tout ce que vous proposez est dans un échange en ce moment",
+  "listing_poster_busy_body": "Personne ne peut prendre cette annonce avant la fin de l'un de ces échanges. Il n'y a rien à corriger.",
+  "listing_detail_offerer_expired": "{poster} n'a pas répondu à temps, elle va donc se fermer. Vous pourrez en envoyer une autre dans une minute.",
+  "listing_poster_pill_sent": "Envoyé",
+  "listing_poster_note_sent_to": "Envoyé à {name}",
+  "listing_poster_pool_sent": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} envoyé",
+        "countPlural=other": "{count} envoyés"
+      }
+    }
+  ],
+  "listing_want_any_of_count": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "Au choix parmi {count} collection",
+        "countPlural=other": "Au choix parmi {count} collections"
+      }
+    }
+  ],
+  "listing_detail_summary_choices": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "{count} au choix",
+        "countPlural=other": "{count} au choix"
+      }
+    }
+  ],
+  "listing_poster_refusal_pick_live": "L'un de vos objekts dans cette offre est maintenant dans un autre échange, elle ne peut donc qu'être refusée.",
+  "listing_poster_refusal_pick_elsewhere": "{objekt} #{serial} est maintenant dans un autre échange, cette offre ne peut donc qu'être refusée.",
+  "listing_poster_refusal_pick_with": "{objekt} #{serial} est maintenant dans votre échange avec {name}, cette offre ne peut donc qu'être refusée.",
+  "listing_poster_refusal_pick_unavailable": "L'un de vos objekts dans cette offre ne peut pas être échangé pour le moment, elle ne peut donc qu'être refusée.",
+  "listing_poster_yours": "Votre annonce",
+  "listing_detail_updated_at": "mise à jour {#time}{when}{/time}"
 }

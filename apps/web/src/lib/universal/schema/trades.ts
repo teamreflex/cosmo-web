@@ -14,7 +14,7 @@ export const tradeIdInputSchema = z.strictObject({
   tradeId: z.uuid(),
 });
 
-// the recipient declines a pending offer, or its sender withdraws it
+// the side that didn't propose a pending offer declines it, or its proposer withdraws it
 export const endOfferInputSchema = tradeIdInputSchema.extend({
   action: z.enum(["decline", "withdraw"]),
 });

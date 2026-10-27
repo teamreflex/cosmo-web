@@ -659,12 +659,22 @@ const tradeTimestamp = (name: string) =>
   timestamp(name, { mode: "date", withTimezone: true });
 
 /**
- * Listings and the trades they turn into, plus direct offers, which are
- * trades that start pending. `from` is the poster or the offer's sender, and
- * `to` the claimer, buyer or recipient; a listing has no `to`. Both addresses
+ * Listings and the trades they turn into, plus offers, which are trades that
+ * start pending. `from` is the poster or a direct offer's sender, and `to`
+ * the claimer, buyer or recipient; a listing has no `to`. Both addresses
  * are pinned when the row is created or accepted, and the drain compares
  * transfers against them. Parties are set null when their account is
  * deleted, which live trades block.
+ *
+ * `proposed_by` is the side that proposed a trade that started as an offer
+ * (a direct offer or a counter, both from `from`, or an offer on a listing,
+ * from its claimer `to`), kept once the offer ends: the proposer may
+ * withdraw it and the other side answers it. A listing and a claim, which
+ * starts accepted, leave it null.
+ *
+ * A listing offers a pool of objekts in units: `unit_size` of them for its
+ * want rows at their counts. Each claim takes some number of units and
+ * becomes its own trade, so one listing can have several live trades.
  *
  * The collection arrays copy the indexer's values verbatim for every objekt a
  * listing offers, so the feed's filters run without crossing databases.
@@ -692,6 +702,8 @@ export const tradeOffers = pgTable(
     deadlineAt: tradeTimestamp("deadline_at"),
     // listings with a payment side
     offers: listingOfferMode("offers"),
+    // the pool objekts one unit of a listing takes; null on trades
+    unitSize: smallint("unit_size"),
     slugs: varchar("slugs", { length: 255 }).array().notNull().default([]),
     artists: varchar("artists", { length: 32 }).array().notNull().default([]),
     seasons: varchar("seasons", { length: 32 }).array().notNull().default([]),
@@ -702,6 +714,7 @@ export const tradeOffers = pgTable(
       .notNull()
       .default([]),
     cancelledBy: tradeCanceller("cancelled_by"),
+    proposedBy: tradeSide("proposed_by"),
     disputeReportId: uuid("dispute_report_id").references(() => reports.id, {
       onDelete: "set null",
     }),
@@ -722,7 +735,7 @@ export const tradeOffers = pgTable(
       .notNull()
       .defaultNow()
       .$onUpdate(() => new Date()),
-    // a pending direct offer's answer window; listings don't expire
+    // a pending offer's answer window; listings don't expire
     expiresAt: tradeTimestamp("expires_at"),
     acceptedAt: tradeTimestamp("accepted_at"),
     endedAt: tradeTimestamp("ended_at"),
@@ -770,6 +783,10 @@ export const tradeOffers = pgTable(
       sql`${t.kind} = 'trade' OR num_nulls(${t.toUserId}, ${t.toAddress}, ${t.parentId}, ${t.deadlineAt}, ${t.acceptedAt}, ${t.expiresAt}) = 6`,
     ),
     check(
+      "trade_offers_unit_size_chk",
+      sql`CASE ${t.kind} WHEN 'listing' THEN coalesce(${t.unitSize}, 0) > 0 ELSE ${t.unitSize} IS NULL END`,
+    ),
+    check(
       "trade_offers_trade_chk",
       sql`${t.kind} = 'listing' OR (${t.toAddress} IS NOT NULL AND ${t.offers} IS NULL AND ${t.note} IS NULL)`,
     ),
@@ -780,6 +797,10 @@ export const tradeOffers = pgTable(
     check(
       "trade_offers_pending_chk",
       sql`${t.status} <> 'pending' OR ${t.expiresAt} IS NOT NULL`,
+    ),
+    check(
+      "trade_offers_proposed_chk",
+      sql`(${t.status} <> 'pending' OR ${t.proposedBy} IS NOT NULL) AND (${t.kind} = 'trade' OR ${t.proposedBy} IS NULL)`,
     ),
     check(
       "trade_offers_ended_chk",
@@ -798,12 +819,19 @@ export const tradeOffers = pgTable(
 
 /**
  * Everything a listing or trade moves: tokens and payments, each sent by
- * one side. A listing's own tokens are copied into its trade, keeping
- * `listing_id`. `live` is set in the same statement as every status change
- * and is only ever true on an accepted or disputed trade's tokens, so a
- * token can be in one such trade at a time. Tokens copy their collection's
- * indexer values verbatim, like the listing arrays. Any change to a listing's
- * items updates the listing row in the same transaction.
+ * one side. A listing's own tokens are its pool; a claim copies the ones it
+ * picked into its trade, keeping `listing_id`, and the trade's copies stay
+ * as they are when the listing is edited. `live` is set in the same
+ * statement as every status change and is only ever true on an accepted or
+ * disputed trade's tokens, so a token can be in one such trade at a time,
+ * and a pool token with a live copy can't be picked by another claim.
+ * Tokens copy their collection's indexer values verbatim, like the listing
+ * arrays. A pool token given in a completed trade, or gone from the poster,
+ * is marked with `left_at` rather than deleted, so the listing keeps what it
+ * offered; an edit replaces only the tokens still in the pool. An edit, or
+ * the drain dropping a token that left the poster, updates the listing row
+ * in the same transaction. Claims and completions don't, since the tokens
+ * they touch were already out of the free pool.
  */
 export const tradeOfferItems = pgTable(
   "trade_offer_items",
@@ -835,9 +863,15 @@ export const tradeOfferItems = pgTable(
     txHash: varchar("tx_hash", { length: 66 }),
     markedPaidAt: tradeTimestamp("marked_paid_at"),
     confirmedAt: tradeTimestamp("confirmed_at"),
+    /**
+     * When a pool token left its listing's pool: given in one of the
+     * listing's completed trades, or gone from the poster. The row stays as
+     * the listing's history, and every read of the pool skips it.
+     */
+    leftAt: tradeTimestamp("left_at"),
   },
   (t) => [
-    // one accepted trade per token, which also makes a listing claimable once
+    // one live trade per token, which also reserves a listing's picked tokens
     uniqueIndex("trade_offer_items_live_token_idx")
       .on(t.tokenId)
       .where(sql`${t.live}`),
@@ -853,16 +887,24 @@ export const tradeOfferItems = pgTable(
       "trade_offer_items_transfer_chk",
       sql`(${t.transferredAt} IS NULL) = (${t.txHash} IS NULL)`,
     ),
+    // only a listing's own pool rows leave, which have no listing_id and are never live
+    check(
+      "trade_offer_items_left_chk",
+      sql`${t.leftAt} IS NULL OR (${t.listingId} IS NULL AND NOT ${t.live})`,
+    ),
   ],
 );
 
 /**
- * What a listing asks for. Exact rows name a collection and copy its indexer
- * values, range rows hold one array per column where an empty array matches
- * any value, and the payment row prices the listing. The trade side is every
- * exact and range row, all required. A listing's wants are inserted
- * together and replaced together on edit, so id order is the posted order.
- * Any change to them updates the listing row in the same transaction.
+ * What one unit of a listing asks for. Exact rows name a collection and copy
+ * its indexer values, range rows hold one array per column where an empty
+ * array matches any value, choice rows name their collections in
+ * `trade_listing_want_options`, and the payment row prices the listing. The
+ * trade side is every exact, range and choice row, all required, with each
+ * count multiplied by the units a claim takes. A listing's wants are
+ * inserted together and replaced together on edit, so id order is the
+ * posted order. Any change to them updates the listing row in the same
+ * transaction.
  */
 export const tradeListingWants = pgTable(
   "trade_listing_wants",
@@ -884,6 +926,10 @@ export const tradeListingWants = pgTable(
     seasons: varchar("seasons", { length: 32 }).array(),
     classes: varchar("classes", { length: 8 }).array(),
     onOfflines: varchar("on_offlines", { length: 16 }).array(),
+    collectionNos: varchar("collection_nos", { length: 8 })
+      .array()
+      .notNull()
+      .default([]),
     amount: numeric("amount", { precision: 14, scale: 2 }),
     currency: varchar("currency", { length: 3 }),
   },
@@ -899,10 +945,33 @@ export const tradeListingWants = pgTable(
       sql`CASE ${t.kind}
         WHEN 'exact' THEN coalesce(${t.count}, 0) > 0 AND num_nulls(${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}) = 0 AND num_nonnulls(${t.artists}, ${t.members}, ${t.seasons}, ${t.classes}, ${t.onOfflines}, ${t.amount}, ${t.currency}) = 0
         WHEN 'range' THEN coalesce(${t.count}, 0) > 0 AND num_nulls(${t.artists}, ${t.members}, ${t.seasons}, ${t.classes}, ${t.onOfflines}) = 0 AND num_nonnulls(${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}, ${t.amount}, ${t.currency}) = 0
+        WHEN 'choice' THEN coalesce(${t.count}, 0) > 0 AND num_nonnulls(${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}, ${t.artists}, ${t.members}, ${t.seasons}, ${t.classes}, ${t.onOfflines}, ${t.amount}, ${t.currency}) = 0
         ELSE coalesce(${t.amount}, 0) > 0 AND ${t.currency} IS NOT NULL AND num_nonnulls(${t.count}, ${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}, ${t.artists}, ${t.members}, ${t.seasons}, ${t.classes}, ${t.onOfflines}) = 0
       END`,
     ),
   ],
+);
+
+/**
+ * The collections a choice row accepts, any mix of them up to its count.
+ * Each copies the collection's indexer values like an exact row, so the
+ * feed's Looking for filter runs without crossing databases. They're
+ * inserted and replaced with their row.
+ */
+export const tradeListingWantOptions = pgTable(
+  "trade_listing_want_options",
+  {
+    wantId: bigint("want_id", { mode: "number" })
+      .notNull()
+      .references(() => tradeListingWants.id, { onDelete: "cascade" }),
+    slug: varchar("slug", { length: 255 }).notNull(),
+    artist: varchar("artist", { length: 32 }).notNull(),
+    member: varchar("member", { length: 32 }).notNull(),
+    season: varchar("season", { length: 32 }).notNull(),
+    class: varchar("class", { length: 8 }).notNull(),
+    onOffline: varchar("on_offline", { length: 16 }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.wantId, t.slug] })],
 );
 
 /**

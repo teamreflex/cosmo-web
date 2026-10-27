@@ -39,8 +39,9 @@ export const offerSerialsQuery = (listId: string, partnerId: string) =>
   });
 
 /**
- * What the recipient of a pending offer could put in a counter to it, with
- * the copy behind each collection.
+ * What the recipient of a pending direct offer or counter could put in a
+ * counter to it, with the copy behind each collection. An offer on a listing
+ * can't be countered.
  */
 export const counterMatchesQuery = (tradeId: string) =>
   queryOptions({

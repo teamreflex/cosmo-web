@@ -1,4 +1,5 @@
 import {
+  accountClosers,
   disputeReasons,
   offerClosers,
   staleReasons,
@@ -100,11 +101,11 @@ const KnownTradeEvent = Schema.Union([
   Schema.Struct({ type: Schema.Literal("offered") }),
   Schema.Struct({
     type: Schema.Literal("declined"),
-    by: Schema.Literals(["to", ...offerClosers]),
+    by: Schema.Literals([...tradeSides, ...offerClosers]),
   }),
   Schema.Struct({
     type: Schema.Literal("withdrawn"),
-    by: Schema.Literals(["from", ...offerClosers]),
+    by: Schema.Literals([...tradeSides, ...accountClosers]),
   }),
   Schema.Struct({
     type: Schema.Literal("countered"),
@@ -115,6 +116,10 @@ const KnownTradeEvent = Schema.Union([
     type: Schema.Literal("stale"),
     tokenId: Schema.Int,
     reason: Schema.Literals(staleReasons),
+  }),
+  Schema.Struct({
+    type: Schema.Literal("stale"),
+    reason: Schema.Literal("edited"),
   }),
 ]);
 

@@ -30,7 +30,7 @@ describe("ExpectedError serialization", () => {
 
   test("leaves an error without data without it", () => {
     const error = fromSerializable(
-      toSerializable(new ExpectedError("already_claimed")),
+      toSerializable(new ExpectedError("listing_claim_exists")),
     );
     expect(error.data).toBeUndefined();
   });

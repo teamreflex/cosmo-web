@@ -132,9 +132,9 @@ type SummaryLabels = {
 
 /**
  * A range row's narrowed columns in the order every surface names them:
- * season, artist, member, class, then on/offline, so "Atom02 · ARTMS ·
- * First" reads the same in the composer, the feed and the listing page.
- * Empty columns are left out.
+ * season, artist, member, collection number, class, then on/offline, so
+ * "Atom02 · ARTMS · First" reads the same in the composer, the feed and the
+ * listing page. Empty columns are left out.
  */
 export function rangeSummaryColumns(
   filter: ComposerRange,
@@ -144,6 +144,7 @@ export function rangeSummaryColumns(
     filter.season ?? [],
     (filter.artist ?? []).map(labels.artist),
     filter.member ?? [],
+    filter.collectionNo ?? [],
     filter.class ?? [],
     (filter.on_offline ?? []).map(labels.onOffline),
   ].filter((values) => values.length > 0);

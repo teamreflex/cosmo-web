@@ -331,7 +331,7 @@ function makeDrizzleStore(db: DatabaseWeb["Service"]): ChatStore["Service"] {
         .transaction((tx) =>
           Effect.gen(function* () {
             /**
-             * Users before the trade (docs/auth.md, Lock order), for the
+             * Users before the trade (docs/locking.md), for the
              * notifications' foreign keys. Every writer of a trade's messages
              * holds its trade row, so ids commit in order and a live stream
              * reading past its last id never skips one. A recipient whose

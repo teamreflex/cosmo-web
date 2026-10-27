@@ -18,16 +18,23 @@ import {
 import { Spinner } from "../ui/spinner";
 
 type Props = {
+  /** the collections an "any of" row already names, checked in the results */
+  picked?: ReadonlySet<string>;
   onPick: (collection: Objekt.Collection) => void;
   onClose: () => void;
 };
 
 /**
- * Finds one collection for an exact row by searching every collection, as
- * the objekt index's search does. Picking one adds it, or raises the count
- * of the row that already asks for it.
+ * Finds one collection by searching every collection, as the objekt index's
+ * search does. For an exact row, picking one adds it or raises the count of
+ * the row that already asks for it; for an "any of" row, it adds the
+ * collection to the row or takes it out.
  */
-export default function ComposerExactSearch({ onPick, onClose }: Props) {
+export default function ComposerExactSearch({
+  picked,
+  onPick,
+  onClose,
+}: Props) {
   const [query, setQuery] = useState("");
   const [settled] = useDebounceValue(query.trim(), 250);
   const search = useQuery({
@@ -82,29 +89,39 @@ export default function ComposerExactSearch({ onPick, onClose }: Props) {
           <>
             <CommandEmpty>{m.listing_composer_search_empty()}</CommandEmpty>
             <CommandGroup>
-              {results.map((collection) => (
-                <CommandItem
-                  key={collection.slug}
-                  value={collection.slug}
-                  onSelect={() => onPick(collection)}
-                  className="gap-3"
-                >
-                  <img
-                    src={getObjektFrontImageUrl(collection, "xs")}
-                    alt=""
-                    className="h-9 w-6 shrink-0 rounded-[2px] bg-muted object-cover"
-                  />
-                  <span className="flex min-w-0 flex-col">
-                    <span className="truncate font-medium">
-                      {collection.season} {collection.member}{" "}
-                      {collection.collectionNo}
+              {results.map((collection) => {
+                const isPicked = picked?.has(collection.slug) ?? false;
+                return (
+                  <CommandItem
+                    key={collection.slug}
+                    value={collection.slug}
+                    data-checked={isPicked}
+                    onSelect={() => onPick(collection)}
+                    className="gap-3"
+                  >
+                    <img
+                      src={getObjektFrontImageUrl(collection, "xs")}
+                      alt=""
+                      className="h-9 w-6 shrink-0 rounded-[2px] bg-muted object-cover"
+                    />
+                    <span className="flex min-w-0 flex-col">
+                      <span className="truncate font-medium">
+                        {collection.season} {collection.member}{" "}
+                        {collection.collectionNo}
+                      </span>
+                      <span className="truncate text-xs text-muted-foreground">
+                        {collection.artistName} · {collection.class}
+                      </span>
                     </span>
-                    <span className="truncate text-xs text-muted-foreground">
-                      {collection.artistName} · {collection.class}
-                    </span>
-                  </span>
-                </CommandItem>
-              ))}
+                    {/* cmdk's aria-selected marks the highlighted option, so the picked state is read out */}
+                    {isPicked && (
+                      <span className="sr-only">
+                        {m.listing_composer_search_picked()}
+                      </span>
+                    )}
+                  </CommandItem>
+                );
+              })}
             </CommandGroup>
           </>
         )}

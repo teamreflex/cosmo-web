@@ -7,6 +7,7 @@ import {
   type TradeOfferItem,
   type TradeSide,
   type TradeStatus,
+  type TradeWantKind,
 } from "@apollo/database/web/types";
 
 export type TradeItemState =
@@ -20,12 +21,15 @@ export type TradeItemState =
 
 /**
  * A trade's status and what each of its items has done, which is all a
- * transition needs. A cancelled trade carries who cancelled it, matching the
- * table's check.
+ * transition needs. A pending offer is a direct offer or a counter, which
+ * `from` proposes, or an offer on a listing, which its claimer `to`
+ * proposes (tradeState() holds the two together), and a cancelled trade
+ * carries who cancelled it, matching the table's checks.
  */
 export type TradeState = (
+  | { status: "pending"; proposedBy: TradeSide }
   | { status: "cancelled"; cancelledBy: TradeCanceller }
-  | { status: Exclude<TradeStatus, "cancelled"> }
+  | { status: Exclude<TradeStatus, "pending" | "cancelled"> }
 ) & { items: readonly TradeItemState[] };
 
 /**
@@ -33,11 +37,11 @@ export type TradeState = (
  * in `items`. The rest come from the drain, the timers or staff.
  */
 export type TradeEvent =
-  // the recipient answers a pending direct offer
+  // the side that didn't propose a pending offer answers it
   | { type: "accept"; by: TradeSide }
   | { type: "decline"; by: TradeSide }
   | { type: "counter"; by: TradeSide }
-  // the sender takes back a pending direct offer
+  // the proposer takes back a pending offer
   | { type: "withdraw"; by: TradeSide }
   // the drain saw a token reach its receiver
   | { type: "transfer"; item: number }
@@ -66,7 +70,9 @@ export type TransitionRefusal =
   // the item already did what the event says
   | "already_done"
   // the item doesn't exist or is the wrong kind for the event
-  | "no_such_item";
+  | "no_such_item"
+  // an offer on a listing is accepted or declined, never countered
+  | "listing_offer";
 
 export type TransitionResult =
   { ok: true; trade: TradeState } | { ok: false; reason: TransitionRefusal };
@@ -79,14 +85,15 @@ const refuse = (reason: TransitionRefusal): TransitionResult => ({
 /**
  * Move a trade through its lifecycle, or say why the event can't happen.
  *
- * A direct offer starts pending and the recipient accepts, declines or
- * counters it; a trade from a listing starts accepted. Once accepted, either
- * party may cancel only while nothing has been sent or marked paid; after
- * that, a dispute is the only way out. A dispute freezes the deadline, mark
- * paid and cancelling. Transfers and confirmations are still recorded while
- * disputed, but only staff complete, cancel or extend a disputed trade. An
- * accepted trade completes once every token has arrived and every payment is
- * confirmed, which an extend checks too.
+ * An offer starts pending: the side that didn't propose it accepts, declines
+ * or counters it, unless it offers on a listing, which can't be countered,
+ * and the proposer may withdraw it. A listing claim starts accepted. Once
+ * accepted, either party may cancel only while nothing has been sent or
+ * marked paid; after that, a dispute is the only way out. A dispute freezes
+ * the deadline, mark paid and cancelling. Transfers and confirmations are
+ * still recorded while disputed, but only staff complete, cancel or extend a
+ * disputed trade. An accepted trade completes once every token has arrived
+ * and every payment is confirmed, which an extend checks too.
  */
 export function transition(
   trade: TradeState,
@@ -142,19 +149,27 @@ type EventOf<TType extends TradeEvent["type"]> = Extract<
 >;
 
 /**
- * A party's answer to a pending direct offer: the recipient accepts,
- * declines or counters it, or the sender withdraws it.
+ * A party's answer to a pending offer: the side that didn't propose it
+ * accepts, declines or counters it, or the proposer withdraws it. An offer on
+ * a listing can't be countered.
  */
 function answerOffer(
-  { status, items }: TradeState,
+  trade: TradeState,
   event: EventOf<"accept" | "decline" | "counter" | "withdraw">,
 ): TransitionResult {
   const { from, to } = offerTransition(event.type);
-  if (status !== from) return refuse("wrong_status");
-  if (event.by !== (event.type === "withdraw" ? "from" : "to")) {
+  if (trade.status !== from) return refuse("wrong_status");
+  if (
+    event.by !==
+    (event.type === "withdraw" ? trade.proposedBy : otherSide(trade.proposedBy))
+  ) {
     return refuse("wrong_party");
   }
-  return { ok: true, trade: { status: to, items } };
+  // only an offer on a listing is proposed by its claimer
+  if (event.type === "counter" && trade.proposedBy === "to") {
+    return refuse("listing_offer");
+  }
+  return { ok: true, trade: { status: to, items: trade.items } };
 }
 
 /**
@@ -329,10 +344,37 @@ export function otherSide(side: TradeSide): TradeSide {
 }
 
 /**
- * Whether the side has to act: the recipient of a pending offer answers it,
- * and a side still owing something on an accepted trade sends or pays. Once
- * an accepted trade's deadline has passed the drain's watermark a transfer
- * can't count, so nothing more is asked. Nothing else needs anyone.
+ * The user who proposed a trade that started as an offer, or null once
+ * their account is gone. Throws on a row without a proposer, which only a
+ * claim or a listing is (trade_offers_proposed_chk), so callers pass the
+ * offers they read as pending.
+ */
+export function proposerId(
+  row: Pick<TradeOffer, "id" | "fromUserId" | "toUserId" | "proposedBy">,
+) {
+  if (row.proposedBy === null) {
+    throw new Error(`offer ${row.id} has no proposed_by`);
+  }
+  return row.proposedBy === "from" ? row.fromUserId : row.toUserId;
+}
+
+/**
+ * A listing's unit size. Throws on a row without one, which only a trade
+ * is (trade_offers_unit_size_chk), so callers pass listings.
+ */
+export function listingUnitSize(row: Pick<TradeOffer, "id" | "unitSize">) {
+  if (row.unitSize === null) {
+    throw new Error(`listing ${row.id} has no unit`);
+  }
+  return row.unitSize;
+}
+
+/**
+ * Whether the side has to act: the side that didn't propose a pending offer
+ * answers it, and a side still owing something on an accepted trade sends
+ * or pays. Once an accepted trade's deadline has passed the drain's
+ * watermark a transfer can't count, so nothing more is asked. Nothing else
+ * needs anyone.
  */
 export function needsYou(
   state: TradeState,
@@ -341,7 +383,7 @@ export function needsYou(
 ) {
   switch (state.status) {
     case "pending":
-      return side === "to";
+      return side !== state.proposedBy;
     case "accepted":
       return !facts.deadlinePassed && owingSides(state.items).includes(side);
     default:
@@ -388,33 +430,23 @@ export function offerTransition(event: OfferEvent) {
 }
 
 export type ListingEvent =
-  // a trade was created from the listing
-  | "claim"
-  // the claim ended with the tokens still with the poster
-  | "reopen"
-  // the claim's trade completed
+  // the pool ran short of a unit after one of its trades completed
   | "fill"
   | "withdraw"
-  // an offered token left the poster or turned untransferable
+  // the pool ran short of a unit with none of its trades completed
   | "break"
   // staff removed it, or its poster was banned
-  | "remove"
-  // the claim's trade timed out with nothing sent
-  | "time_out";
+  | "remove";
 
 /**
- * Which statuses each listing event leaves from, and where it goes. A
- * claimed listing doesn't check its tokens itself; its trade does, and the
- * listing follows the trade's outcome.
+ * Which statuses each listing event leaves from, and where it goes. Only an
+ * open listing moves: claims start trades beside it rather than moving it.
  */
 const listingTransitions = {
-  claim: { from: ["open"], to: "claimed" },
-  reopen: { from: ["claimed"], to: "open" },
-  fill: { from: ["claimed"], to: "filled" },
+  fill: { from: ["open"], to: "filled" },
   withdraw: { from: ["open"], to: "withdrawn" },
-  break: { from: ["open", "claimed"], to: "broken" },
-  remove: { from: ["open", "claimed"], to: "removed" },
-  time_out: { from: ["claimed"], to: "timed_out" },
+  break: { from: ["open"], to: "broken" },
+  remove: { from: ["open"], to: "removed" },
 } as const satisfies Record<
   ListingEvent,
   { from: readonly ListingStatus[]; to: ListingStatus }
@@ -445,27 +477,31 @@ export function listingTransition(event: ListingEvent): {
 }
 
 /**
- * What happens to a claimed listing when its trade ends. A completed trade
- * fills it. Otherwise a banned poster's listing is removed, a timed-out
- * trade closes it, since neither side acted in time, and a cancelled one
- * releases it back to the poster: the caller reopens it if the poster still
- * holds every token, else breaks it. Only a release depends on the poster's holdings, so callers read them
- * only then. Live trades leave it alone.
+ * How an open listing closes once its pool can't make a unit, or null while
+ * it can, or while one of its trades is live, since that trade's outcome
+ * decides how it ends: filled when any of its trades completed, else broken.
+ * A live trade's objekts count toward the pool until it completes, and one
+ * that left the poster on its way to the claimer has already been dropped.
+ * Applied after a trade ends and after the drain drops departed objekts.
  */
-export function listingEventAfter(
-  trade: TradeState,
-  poster: { banned: boolean },
-): Exclude<ListingEvent, "reopen"> | "release" | undefined {
-  switch (trade.status) {
-    case "completed":
-      return "fill";
-    case "cancelled":
-      return poster.banned ? "remove" : "release";
-    case "timed_out":
-      return poster.banned ? "remove" : "time_out";
-    default:
-      return undefined;
-  }
+export function listingClosing(listing: {
+  pool: number;
+  unitSize: number;
+  live: boolean;
+  completed: boolean;
+}): Extract<ListingEvent, "fill" | "break"> | null {
+  if (listing.pool >= listing.unitSize || listing.live) return null;
+  return listing.completed ? "fill" : "break";
+}
+
+/**
+ * Whether a listing takes offers, which its poster accepts or declines,
+ * rather than claims that start a trade at once: any range row makes it
+ * one, since a range matches many serials and only the poster knows which
+ * they meant. Exact and "any of" rows name their collections.
+ */
+export function takesOffers(wants: readonly { kind: TradeWantKind }[]) {
+  return wants.some((want) => want.kind === "range");
 }
 
 /**
@@ -479,8 +515,8 @@ export function endedTradeColumns(trade: TradeState) {
 }
 
 /**
- * The listings a trade's items came from, each with the tokens it offered,
- * which the listing's outcome applies to when the trade ends.
+ * The listings a trade's items came from, each with the tokens it took from
+ * that listing's pool, which a completion removes from the pool.
  */
 export function tradeListings(
   items: readonly Pick<TradeOfferItem, "listingId" | "tokenId">[],
@@ -500,14 +536,32 @@ export function tradeListings(
 }
 
 /**
+ * The listing a trade came from, a claim or an offer on it, which every
+ * item from its pool names, or null for a direct offer.
+ */
+export function tradeListingId(
+  items: readonly Pick<TradeOfferItem, "listingId">[],
+) {
+  return items.find((item) => item.listingId !== null)?.listingId ?? null;
+}
+
+/**
  * Read a trade and its items, in id order, into the state transitions take.
- * Throws on a listing or on a row the table's checks forbid.
+ * A pending offer offers on a listing when any of its items came from one.
+ * Throws on a listing, on a row the table's checks forbid, and on a pending
+ * offer that is neither a direct offer `from` proposed nor an offer on a
+ * listing its claimer `to` proposed.
  */
 export function tradeState(
-  row: Pick<TradeOffer, "status" | "cancelledBy">,
+  row: Pick<TradeOffer, "status" | "cancelledBy" | "proposedBy">,
   rows: readonly Pick<
     TradeOfferItem,
-    "kind" | "sender" | "transferredAt" | "markedPaidAt" | "confirmedAt"
+    | "kind"
+    | "sender"
+    | "listingId"
+    | "transferredAt"
+    | "markedPaidAt"
+    | "confirmedAt"
   >[],
 ): TradeState {
   const items = rows.map((item): TradeItemState =>
@@ -531,7 +585,18 @@ export function tradeState(
         throw new Error("cancelled trade without cancelled_by");
       }
       return { status: row.status, cancelledBy: row.cancelledBy, items };
-    case "pending":
+    case "pending": {
+      const fromListing = tradeListingId(rows) !== null;
+      if (
+        (row.proposedBy === "from" && !fromListing) ||
+        (row.proposedBy === "to" && fromListing)
+      ) {
+        return { status: row.status, proposedBy: row.proposedBy, items };
+      }
+      throw new Error(
+        `pending trade proposed by ${row.proposedBy ?? "nobody"} ${fromListing ? "on" : "off"} a listing`,
+      );
+    }
     case "accepted":
     case "disputed":
     case "completed":

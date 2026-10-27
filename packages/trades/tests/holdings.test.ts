@@ -1,10 +1,11 @@
 import { describe, expect, test } from "bun:test";
 import {
-  holdsAll,
+  firstRefusal,
   pickSerials,
   type SerialOwnership,
   type SerialPick,
   type TokenFlags,
+  tokenRefusals,
 } from "../src/holdings";
 
 const ME = "0x000000000000000000000000000000000000000a";
@@ -191,20 +192,31 @@ describe("pickSerials (UNIT-10)", () => {
   });
 });
 
-describe("holdsAll", () => {
-  const states = new Map([found(1, 10), found(2, 20)]);
+describe("tokenRefusals and firstRefusal", () => {
+  const states = new Map([
+    found(1, 5),
+    found(2, 6, { owner: OTHER }),
+    found(3, 7, { transferable: false }),
+    found(4, 8),
+  ]);
+  const flags: TokenFlags = { locked: new Set([4]), live: new Set() };
 
-  test("holds every token it owns and can transfer, whatever the address's case", () => {
-    expect(holdsAll([1, 2], states, ME.toUpperCase())).toBe(true);
+  test("names every refused token and why, in submitted order", () => {
+    expect(tokenRefusals([4, 1, 2, 3, 9], { states, ...flags }, ME)).toEqual([
+      { kind: "token_unavailable", tokenId: 4, reason: "locked" },
+      { kind: "token_unavailable", tokenId: 2, reason: "not_owned" },
+      { kind: "token_unavailable", tokenId: 3, reason: "untransferable" },
+      // a token the states don't hold reads as missing
+      { kind: "token_unavailable", tokenId: 9, reason: "not_owned" },
+    ]);
   });
 
-  test("a token gone elsewhere, untransferable or unknown breaks it", () => {
-    expect(holdsAll([1], new Map([found(1, 10, { owner: OTHER })]), ME)).toBe(
-      false,
-    );
-    expect(
-      holdsAll([1], new Map([found(1, 10, { transferable: false })]), ME),
-    ).toBe(false);
-    expect(holdsAll([1, 3], states, ME)).toBe(false);
+  test("the first refusal is the earliest submitted", () => {
+    expect(firstRefusal([1, 3, 2], { states, ...flags }, ME)).toEqual({
+      kind: "token_unavailable",
+      tokenId: 3,
+      reason: "untransferable",
+    });
+    expect(firstRefusal([1], { states, ...flags }, ME)).toBeNull();
   });
 });

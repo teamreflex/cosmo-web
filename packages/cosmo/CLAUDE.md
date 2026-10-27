@@ -1,29 +1,56 @@
-# COSMO Package
+# @apollo/cosmo
 
-Types and API functions for the COSMO app's private APIs. One Effect-native API surface:
+Rules for changing the COSMO client. The client policy, credential and QR login diagrams are in [`README.md`](README.md).
 
-- `src/server/` — Effect functions, imported via `@apollo/cosmo/server/*`. HTTP via the `HttpClient` from `effect/http`, responses validated with `Schema` at the boundary. Effect apps (`apps/schedules`) compose these directly into their own runtimes.
-- `src/runtime.ts` (`@apollo/cosmo/runtime`) — exports `runCosmo(effect, signal?)`, a module-level `ManagedRuntime` over `FetchHttpClient.layer` for promise-based apps (`apps/web`, `apps/indexer`): `await runCosmo(fetchX(args), signal)`. It uses `runPromiseExit` + `Cause.squash` so the original tagged error instance is thrown rather than a `FiberFailure` wrapper.
+## Auth per endpoint
 
-Failures are the tagged error classes from `src/errors.ts` (`@apollo/cosmo/errors`): `CosmoApiError` (HTTP, carries `url` and `status`), `CosmoDecodeError` (schema mismatch, carries `url`), plus `EncryptionError` (crypto). Raw `HttpClientError`/`SchemaError` never escape the package — mapping happens once in `src/server/http.ts` (`withCosmoErrors` on the clients, applied outside retry so the retry predicate sees raw errors, and the `decodeBody` helper). Consumers should not re-wrap these errors; add context with spans or log messages instead.
+| Auth                  | Endpoints                                                                                                                     | Credential                                                                             |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `bearer(accessToken)` | `fetchArtists`, `fetchArtist`, `fetchAllArtists`, `fetchGravities`, `fetchGravity`, `fetchPoll`, `search`, `fetchUserProfile` | The dummy account's token from `getProxiedToken()` (web) or `ProxiedToken` (schedules) |
+| `user-session` cookie | `fetchObjektSummaries`                                                                                                        | The session `certifyTicket` grants during the QR login, never stored                   |
+| None                  | `fetchByNickname`, `fetchMetadataV3`, `refreshV3`, `exchangeLoginTicket`, `queryTicket`, `certifyTicket`                      | -                                                                                      |
 
-## Client policies (`src/server/http.ts`)
+## Errors
 
-- `cosmoClient` / `cosmoShopClient`: 10s timeout, one retry after 300ms on transport errors and [408, 425, 429, 500, 502, 503, 504]. 499 is excluded deliberately so client cancellations don't loop.
-- `cosmoNoRetryClient`: for endpoints where failure is meaningful (`fetchByNickname`, where a 404 means "no such user").
-- `metadataClient`: no timeout, one immediate retry, and its retry list adds 409 to the shared statuses.
+- `withCosmoErrors` maps `HttpClientError` to `CosmoApiError` and sits outside the retry, because the retry predicate needs the raw error. A new client keeps that order.
+- `decodeBody` maps `SchemaError` to `CosmoDecodeError`. Decode every response body with it.
+- `fetchUserProfile` maps errors by hand, because it decrypts the body before decoding it.
+- `CosmoApiError.status` is undefined when no response arrived.
+- Consumers branch on the error but never re-wrap it, e.g. `fetchCachedGravity()` in `apps/web` turns a 404 into `notFound()`. Add context with spans or logs.
+- `refreshV3` and `fetchUserProfile` can also fail with `EncryptionError`, a plain `Error` subclass in `src/server/encryption.ts` that `@apollo/cosmo/errors` doesn't export.
+- The metadata fetchers can also fail with Effect's `TimeoutError`.
 
-## Quirks
+## Retries
 
-- `fetchGravity` fails like any other function; swallowing the failure is a caller concern (`apps/web` wraps it in `runCosmo(...).catch(() => null)`).
-- `refreshV3` AES-encrypts its body (`text/plain` + `x-cosmo-encrypted: 1`); `fetchUserProfile` AES-decrypts the response. Key handling in `src/server/encryption.ts` (pure functions, no Effect).
-- `certifyTicket` returns `{ status, cookies }` — callers read the granted `user-session` cookie.
-- `getRecaptchaToken` drives a headless browser (puppeteer); it is a plain promise function, not part of the Effect surface — call it with `await`, not `runCosmo`.
+- Retry is a one-way client transformation, so a client without it starts from `cosmoApiBase`, as `cosmoNoRetryClient` does.
+- Use `cosmoNoRetryClient` where a failure is the answer: `fetchByNickname` reads a 404 as "no such user".
+- The metadata fetchers retry for up to 5 minutes, because COSMO has no metadata for the first seconds after a mint and the indexer can't skip a token.
+- A UI caller of a metadata fetcher passes the request signal, so a cancelled request stops the retry (`apps/web/src/lib/functions/collections.ts` does).
 
-## Constraints
+## Gotchas
 
-- The response schemas in `src/schema/*` are the single source of truth for response shapes. The public types in `src/types/*` derive from them via `typeof XSchema.Type` (type-only imports, so they erase at emit and add no runtime `effect` dependency for consumers) — never hand-sync a schema and a type. `Schema.mutable(Schema.Array(...))` is required because the public types use mutable arrays. Note that derived types have readonly properties — decoded COSMO data is not meant to be mutated in place; build new objects instead.
+- Metadata comes from `fetchMetadataV3`. `normalizeV3` maps it into the v1-shaped `CosmoObjektMetadataV1` and fills the fields v3 lacks with placeholders, listed in [`apps/indexer/CLAUDE.md`](../../apps/indexer/CLAUDE.md).
+- `normalizeV3` throws a plain `Error` when a trait is missing.
+- The AES key is an argument, never module state, because staff rotate it from the admin cache page. Where callers read it is in the README's Credentials diagram.
+- The AES wire format is `base64(iv16 ++ AES-256-CBC ciphertext)`, pinned by `tests/encryption.test.ts`.
+- `getRecaptchaToken` is a plain async function, not an Effect: call it with `await`, not `runCosmo`.
+- `getRecaptchaToken` connects to a running browser over CDP (`endpoint`, which `apps/web` fills from `CDP_ENDPOINT`) instead of launching one, so locally it needs the `browserless` docker-compose service.
+- `certifyTicket` returns `{ status, cookies }`; the session is `cookies["user-session"]`.
+- `fetchObjektSummaries` returns at most the newest 30 collections, so pass `seasons` for large classes such as Double.
+
+## Types
+
+- `src/schema/*` is the source of truth for response shapes. `src/types/*` derive from it via `typeof XSchema.Type`; never hand-write a response type.
+- The type files import schemas with `import type`, so consumers of the types get no runtime `effect` dependency.
+- Arrays are `Schema.mutable(Schema.Array(...))` because the public types use mutable arrays. Object properties stay readonly: build new objects instead of mutating decoded data.
+- `validArtists` in `src/types/common.ts` is the canonical artist id list, and `ValidArtistSchema` derives from it.
 
 ## Tests
 
-`bun test` runs one suite, `tests/encryption.test.ts`, which pins the AES wire format with a known vector. The HTTP functions have no tests: a mocked COSMO response can only restate what the schema already says, so check endpoint or client-policy changes against the real API. `runCosmo` in `src/runtime.ts` is likewise unexercised; review it by hand when touching it.
+`bun test` runs only `tests/encryption.test.ts`. HTTP functions have no tests by design ([`docs/testing.md`](../../docs/testing.md)), so check endpoint and client changes against the real API.
+
+## Where to start
+
+- New endpoint: a schema in `src/schema/<area>.ts`, its derived type in `src/types/<area>.ts`, and an `Effect.fn("Cosmo.<name>")` in `src/server/<area>.ts`. Pick the client deliberately: api or shop, retry or not.
+- Timeouts and retries: `src/server/http.ts`. The 5-minute metadata window is in `src/server/metadata.ts`.
+- Token refresh: `getProxiedToken()` in `apps/web/src/lib/server/proxied-token.server.ts` and `ProxiedToken` in `apps/schedules/src/proxied-token.ts` implement the same logic separately; change both.

@@ -1,0 +1,47 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "33c342bf-d841-4d2c-abaa-51cc11b44df1",
+  "prevIds": [
+    "e420289f-ce7a-49d4-9918-c135b2acb211"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "trade_listing_wants",
+        "collection_nos"
+      ],
+      "writes": [
+        "s|col|public.trade_listing_wants.collection_nos",
+        "n|col|public.trade_listing_wants.collection_nos",
+        "e|col|public.trade_listing_wants.collection_nos"
+      ],
+      "reads": [
+        "n|tbl|public.trade_listing_wants",
+        "n|sch|public"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_wants",
+        "name": "collection_nos",
+        "type": "varchar(8)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 1,
+        "default": "'{}'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    }
+  ]
+}

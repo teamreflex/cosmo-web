@@ -10,8 +10,8 @@ import { Clock, Context, Effect, Layer, Option, Schema } from "effect";
 import {
   createRemoteJWKSet,
   errors,
-  type JWTVerifyGetKey,
   jwtVerify,
+  type JWTVerifyGetKey,
 } from "jose";
 import { ChatConfig } from "./config";
 import { Disconnects } from "./disconnects";

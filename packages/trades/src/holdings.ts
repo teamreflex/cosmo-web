@@ -62,25 +62,45 @@ export function heldTokenRefusal(
 }
 
 /**
- * Whether the address still holds every token and can transfer it, which
- * decides if a released listing reopens or breaks. A lock doesn't break it,
- * since COSMO ignores Apollo's locks: the reopened listing shows as blocked
- * to claimers until the poster unlocks the token. A token missing from
- * `states` counts as not owned.
+ * A token the address can't offer, and why, returned rather than thrown so
+ * a caller can name the objekt and serial.
  */
-export function holdsAll(
+export type TokenRefusal = {
+  kind: "token_unavailable";
+  tokenId: number;
+  reason: TokenRefusalReason;
+};
+
+/**
+ * Every refused token, in the order the tokens were submitted. A token
+ * `states` doesn't hold reads as missing.
+ */
+export function tokenRefusals(
   tokenIds: readonly number[],
-  states: ReadonlyMap<number, TokenOwnership>,
+  holdings: TokenFlags & { states: ReadonlyMap<number, TokenOwnership> },
   address: string,
-) {
-  return tokenIds.every((tokenId) => {
-    const state = states.get(tokenId);
-    return (
-      state?.kind === "found" &&
-      state.owner === addr(address) &&
-      state.transferable
+): TokenRefusal[] {
+  return tokenIds.flatMap((tokenId) => {
+    const reason = tokenRefusal(
+      holdings.states.get(tokenId) ?? { kind: "missing", tokenId },
+      address,
+      holdings,
     );
+    return reason === null
+      ? []
+      : [{ kind: "token_unavailable", tokenId, reason }];
   });
+}
+
+/**
+ * The first refused token, in the order the tokens were submitted.
+ */
+export function firstRefusal(
+  tokenIds: readonly number[],
+  holdings: TokenFlags & { states: ReadonlyMap<number, TokenOwnership> },
+  address: string,
+): TokenRefusal | null {
+  return tokenRefusals(tokenIds, holdings, address)[0] ?? null;
 }
 
 /**

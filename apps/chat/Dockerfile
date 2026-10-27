@@ -1,9 +1,9 @@
-FROM oven/bun:1.4.2-slim AS base
+FROM oven/bun:1.4.4-slim AS base
 
 FROM base AS pruner
 WORKDIR /app
 COPY . .
-RUN bun install -g turbo@2.11.4
+RUN bun install -g turbo@2.11.9
 RUN turbo prune chat --docker
 
 FROM base AS builder

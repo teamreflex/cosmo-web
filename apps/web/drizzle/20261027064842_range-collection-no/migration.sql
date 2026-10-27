@@ -1,0 +1,1 @@
+ALTER TABLE "trade_listing_wants" ADD COLUMN "collection_nos" varchar(8)[] DEFAULT '{}'::varchar(8)[] NOT NULL;

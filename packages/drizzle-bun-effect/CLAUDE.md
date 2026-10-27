@@ -1,26 +1,47 @@
 # @apollo/drizzle-bun-effect
 
-A vendored drizzle-orm Effect driver backed by Bun's native `SQL` client. It exists because drizzle 1.0 only ships Effect flavors for `@effect/sql-pg` (effect-postgres), mysql2, and sqlite-bun — there is no bun-sql flavor — and Effect declined to ship an `@effect/sql-pg-bun` package (Effect-TS/effect#5230, closed stale). It lets the repo run a single Postgres driver stack (Bun SQL) across the web app and the Effect services instead of carrying `pg`/`@effect/sql-pg` alongside it.
+A vendored drizzle-orm Effect driver on Bun's native `SQL` client, modelled on `drizzle-orm/effect-postgres`. `README.md` says why it exists and shows usage.
 
 ## API
 
-`make({ client, relations, codecs?, jit?, logger?, cache?, paramsInErrors? })` returns `Effect<BunSQLEffectDatabase<TRelations> & { $client: SQL }>`. Unlike effect-postgres's `make`, it requires no services: the Bun `SQL` client is passed in directly, and logger/cache default to drizzle's no-op implementations (`EffectLogger.make` / `EffectCache.make`). Codecs default to drizzle's own `bunSqlPgCodecs` — the same decoding the web app's promise driver (`drizzle-orm/bun-sql`) uses, so timestamptz/bigint modes match.
+- `make()` needs no services: the Bun `SQL` client is passed in, and the logger and cache default to drizzle's no-op `EffectLogger.make` and `EffectCache.make`.
+- Codecs default to drizzle's `bunSqlPgCodecs`, the decoding the web app's promise driver (`drizzle-orm/bun-sql`) uses, so timestamp and bigint values come back the same in every app.
 
-Error surface matches effect-postgres exactly: queries fail with `EffectDrizzleQueryError` (carrying the query text, plus its params when `paramsInErrors` is set; the underlying failure is a `SqlError` in its cause), transactions add `SqlError` to the error channel, and `tx.rollback()` fails with `EffectTransactionRollbackError`. `src/sql-error.ts` classifies Bun `SQL.PostgresError` values into the same `SqlErrorReason` taxonomy `@effect/sql-pg` uses (SQLSTATE from `PostgresError.errno`, Bun `ERR_POSTGRES_*` codes for client-side failures).
+## Errors
 
-Transactions reserve a dedicated connection (`sql.reserve()`) and run explicit `begin`/`commit`/`rollback`: commit only on success, rollback on failure and interruption (the user effect runs inside `Effect.uninterruptibleMask` + `restore`), and the reserved connection is released via `Effect.ensuring` — unless the rollback itself failed, in which case the connection is destroyed (`close`) instead of pooled, since it may be stuck inside an aborted transaction. Nested transactions use `savepoint spN` / `release savepoint` / `rollback to savepoint` on the same reserved connection and are serialized by a per-transaction semaphore (mirroring `@effect/sql`'s `makeWithTransaction`) so concurrent sibling savepoints cannot interleave.
+- A query fails with `EffectDrizzleQueryError`, which carries the query text (and its params when `paramsInErrors` is set) and has a `SqlError` in its cause.
+- A transaction adds `SqlError` to the error channel, and `tx.rollback()` fails with `EffectTransactionRollbackError`.
+- `classifyPgError()` (`src/sql-error.ts`) maps Bun `SQL.PostgresError` values onto `@effect/sql-pg`'s `SqlErrorReason` classes: the SQLSTATE from `errno` for server errors, the Bun `ERR_POSTGRES_*` code for client-side failures.
 
-Known divergences from effect-postgres (all deliberate): a failed COMMIT surfaces as a typed `SqlError` rather than upstream's defect; client-side connection/auth failures classify as `ConnectionError`/`AuthenticationError` where `@effect/sql-pg` yields `UnknownError` (ours is more informative — server-error SQLSTATE mapping is identical); and `db.execute` (raw mode) returns Bun's rows array, which matches the _declared_ type, where effect-postgres actually returns pg's `Result` object at runtime despite declaring an array — code poking `.rows`/`.rowCount` off raw results behaves differently.
+## Transactions
+
+- A top-level transaction reserves a whole pooled connection (`reserve()`) and runs explicit `begin`, `commit` and `rollback`.
+- While it is open, a query through `db` instead of `tx` needs a second connection, so on a pool of one it waits forever ([`apps/schedules/CLAUDE.md`](../../apps/schedules/CLAUDE.md) has the consequences).
+- It commits only on success and rolls back on failure and on interruption.
+- If the rollback itself fails, the connection is closed instead of returned to the pool, because it may be stuck inside an aborted transaction.
+- Nested transactions are savepoints on the same connection, serialized by a per-transaction semaphore so sibling savepoints can't interleave.
+- An interrupted query is cancelled, and the cancel's rejection is swallowed, because an unhandled rejection makes Bun exit.
+
+## Divergences from effect-postgres
+
+All three are deliberate.
+
+- A failed `COMMIT` is a typed `SqlError`, where upstream dies with a defect.
+- Client-side connection and auth failures classify as `ConnectionError` and `AuthenticationError`, where `@effect/sql-pg` gives `UnknownError`. Server SQLSTATE mapping is identical.
+- `db.execute` returns Bun's rows array, matching the declared type. effect-postgres returns pg's `Result` object at runtime, so code reading `.rows` or `.rowCount` behaves differently.
 
 ## Maintenance surface
 
-The driver reaches into drizzle internals that are exported (`exports: "./*"`) but not part of the documented API. On any drizzle-orm bump — and definitely at drizzle 1.0 stable — re-verify these against `drizzle-orm/effect-postgres/{driver,session}.js`:
+The driver imports drizzle internals that are exported (`exports: "./*"`) but not documented. On every drizzle-orm bump, re-check them against `drizzle-orm/effect-postgres/{driver,session}.js`:
 
-- `drizzle-orm/pg-core/effect` — `PgEffectDatabase`, `PgEffectSession`, `PgEffectPreparedQuery` (the injected-executor contract), `PgEffectTransaction`, `EffectDrizzlePgConfig`
-- `drizzle-orm/effect-core` — `EffectLogger`, `EffectLoggerShape`, `QueryEffectHKTBase`, `EffectDrizzleQueryError`
-- `drizzle-orm/cache/core/cache-effect` — `EffectCache`, `EffectCacheShape`
-- `drizzle-orm/cache/core/types` — `QueryMetadata`, `WithCacheConfig`
-- `drizzle-orm/bun-sql/postgres/codecs` — `bunSqlPgCodecs`
-- `effect/sql/SqlError` — `SqlError` and the reason classes (also used by drizzle's own effect-postgres types)
+- `drizzle-orm/pg-core/effect`: `PgEffectDatabase`, `PgEffectSession`, `PgEffectPreparedQuery` (the injected-executor contract), `PgEffectTransaction`, `EffectDrizzlePgConfig`
+- `drizzle-orm/effect-core`: `EffectLogger`, `EffectLoggerShape`, `QueryEffectHKTBase`, `EffectDrizzleQueryError`
+- `drizzle-orm/cache/core/cache-effect`: `EffectCache`, `EffectCacheShape`
+- `drizzle-orm/cache/core/types`: `QueryMetadata`, `WithCacheConfig`
+- `drizzle-orm/bun-sql/postgres/codecs`: `bunSqlPgCodecs`
+- `effect/sql/SqlError`: `SqlError` and the reason classes, which drizzle's own effect-postgres types also use
 
-Two upstream internals are reimplemented rather than imported because they're stripped from the public types: `PgEffectTransaction.getTransactionConfigStatements` (rebuilt as `transactionConfigStatements` in `src/session.ts`) and `jitCompatCheck` (reduced to `config.jit === true`; Bun always supports the `Function` constructor it probes for). If upstream changes transaction-config SQL generation, update the copy.
+Two upstream internals are stripped from the public types, so they are re-implemented here. Re-check both too:
+
+- `PgEffectTransaction.getTransactionConfigStatements`, copied as `transactionConfigStatements()` in `src/session.ts`. Update the copy if upstream changes how it generates transaction-config SQL.
+- `jitCompatCheck`, reduced to `config.jit === true`, because Bun always supports the `Function` constructor it probes for.

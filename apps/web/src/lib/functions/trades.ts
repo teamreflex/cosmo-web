@@ -6,11 +6,9 @@ import { feedItem, readIndexed } from "@/lib/server/trades/feed.server";
 import { readIndexerTokens } from "@/lib/server/trades/holdings.server";
 import {
   deadlinePassed,
-  offerCloser,
   readTradeView,
   toPartyName,
   tradeDispute,
-  tradeListingId,
   watermarkExtra,
 } from "@/lib/server/trades/trade-view.server";
 import {
@@ -30,11 +28,12 @@ import {
   tradeIdInputSchema,
 } from "@/lib/universal/schema/trades";
 import { storedObjektItemSchema } from "@/lib/universal/trade-listings";
-import type {
-  MyTradeSide,
-  MyTradesPage,
-  TradeView,
-  TradeViewer,
+import {
+  type MyTradeSide,
+  type MyTradesPage,
+  offerCloser,
+  type TradeView,
+  type TradeViewer,
 } from "@/lib/universal/trades";
 import { can, parseRole } from "@apollo/auth";
 import {
@@ -49,7 +48,12 @@ import {
   openTradeStatuses,
   type TradeSide,
 } from "@apollo/database/web/types";
-import { needsYou, partyAction, tradeState } from "@apollo/trades/lifecycle";
+import {
+  needsYou,
+  partyAction,
+  tradeListingId,
+  tradeState,
+} from "@apollo/trades/lifecycle";
 import { itemStatus } from "@apollo/trades/transfers";
 import { createServerFn } from "@tanstack/react-start";
 import {
@@ -139,6 +143,7 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
         status: tradeOffers.status,
         fromUserId: tradeOffers.fromUserId,
         cancelledBy: tradeOffers.cancelledBy,
+        proposedBy: tradeOffers.proposedBy,
         deadlineAt: tradeOffers.deadlineAt,
         expiresAt: tradeOffers.expiresAt,
         endedAt: tradeOffers.endedAt,
@@ -230,6 +235,7 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
           status: page.status,
           fromUserId: page.fromUserId,
           cancelledBy: page.cancelledBy,
+          proposedBy: page.proposedBy,
           deadlineAt: page.deadlineAt,
           expiresAt: page.expiresAt,
           endedAt: page.endedAt,
@@ -342,8 +348,8 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
  * Cancel an accepted trade the caller is part of, while nothing has been
  * sent or marked paid and its deadline hasn't passed the drain's watermark.
  * A token already in its receiver's account counts as sent before the
- * drain records it. The listing reopens if the poster can still offer it,
- * else it breaks, and the other party is notified.
+ * drain records it. The poster's objekts are free in the listing's pool
+ * again, and the other party is notified.
  */
 export const $cancelTrade = createServerFn({ method: "POST" })
   .validator(tradeIdInputSchema)
@@ -387,7 +393,7 @@ export const $cancelTrade = createServerFn({ method: "POST" })
       );
       if (!result.ok) refuseTrade(partyRefusals[result.reason]);
 
-      await endTrade(tx, trade, result.trade, users, tokens);
+      await endTrade(tx, trade, result.trade, users);
       await insertTradeEvent(tx, trade.id, { type: "cancelled", by });
       await notifyUsers(
         tx,

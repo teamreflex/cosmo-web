@@ -10,8 +10,8 @@
     "lint": "bun --bun oxlint --type-aware --type-check",
     "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
     "test": "bun test",
-    "typecheck": "tsc --pretty --noEmit",
-    "format": "oxfmt ."
+    "typecheck": "bun check",
+    "format": "bun fmt"
   },
   "dependencies": {
     "@apollo/auth": "workspace:*",

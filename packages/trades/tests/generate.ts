@@ -1,5 +1,4 @@
-import type { InventoryObjekt, TradeWant } from "../src/allocate";
-import type { RankedCandidate } from "../src/inventory";
+import type { TradeWant } from "../src/allocate";
 import { rangeFilterSchema } from "../src/range";
 
 /**
@@ -33,11 +32,10 @@ const classes = ["First", "Double"];
 const onOfflines = ["online", "offline"] as const;
 const artists = ["artms", "tripleS"] as const;
 
-export type GeneratedObjekt = InventoryObjekt & RankedCandidate;
-
 /**
- * A random listing's trade side and a random inventory of copies, ranked
- * within each collection the way the candidate query ranks them.
+ * A random listing's trade side, mixing exact, range and choice rows, and a
+ * random inventory of copies, ranked within each collection the way the
+ * candidate query ranks them.
  */
 export function generateCase(random: Random) {
   const collections = Array.from({ length: random.int(1, 6) }, () => {
@@ -50,6 +48,7 @@ export function generateCase(random: Random) {
       slug: `${artist}-${season}-${member}-${objektClass}-${onOffline}`.toLowerCase(),
       artist,
       member,
+      collectionNo: "101Z",
       season,
       class: objektClass,
       onOffline,
@@ -65,25 +64,33 @@ export function generateCase(random: Random) {
       serial: random.int(0, 20),
     })),
   );
-  const inventory: GeneratedObjekt[] = unranked.map((objekt) => {
-    const copies = unranked
-      .filter((other) => other.slug === objekt.slug)
-      .toSorted((a, b) => b.serial - a.serial || a.tokenId - b.tokenId);
-    return {
-      ...objekt,
-      rank: copies.indexOf(objekt) + 1,
-      owned: copies.length,
-    };
-  });
+  const inventory = unranked.map((objekt) => ({
+    ...objekt,
+    rank:
+      unranked
+        .filter((other) => other.slug === objekt.slug)
+        .toSorted((a, b) => b.serial - a.serial || a.tokenId - b.tokenId)
+        .indexOf(objekt) + 1,
+  }));
 
   const wants: TradeWant[] = [];
   for (let row = random.int(1, 4); row > 0; row--) {
-    if (random.int(0, 1) === 0) {
+    const kind = random.pick(["exact", "range", "choice"] as const);
+    if (kind === "exact") {
       const slug = random.pick(collections).slug;
       if (wants.some((want) => want.kind === "exact" && want.slug === slug)) {
         continue;
       }
       wants.push({ kind: "exact", slug, count: random.int(1, 4) });
+      continue;
+    }
+    if (kind === "choice") {
+      const slugs = [
+        ...new Set(random.some(collections).map(({ slug }) => slug)),
+      ];
+      if (slugs.length >= 2) {
+        wants.push({ kind: "choice", slugs, count: random.int(1, 4) });
+      }
       continue;
     }
     const filter = rangeFilterSchema.safeParse({

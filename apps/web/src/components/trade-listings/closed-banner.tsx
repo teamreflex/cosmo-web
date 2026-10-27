@@ -2,7 +2,6 @@ import { m } from "@/i18n/messages";
 import { posterName } from "@/lib/client/trade-listings";
 import { env } from "@/lib/env/client";
 import { currentAccountQuery } from "@/lib/queries/core";
-import { tradeListingViewerQuery } from "@/lib/queries/trade-listings";
 import type {
   ClosedListingState,
   TradeListing,
@@ -15,8 +14,6 @@ import {
 } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { Suspense } from "react";
-import { ErrorBoundary } from "react-error-boundary";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Timestamp } from "../ui/timestamp";
 import { Status } from "./listing-status";
@@ -24,20 +21,22 @@ import { Status } from "./listing-status";
 type Props = {
   listing: TradeListing;
   state: ClosedListingState;
+  /** the viewer's latest trade from the listing, if they were a party to one */
+  tradeId: string | null;
 };
 
 /**
  * The header's status once a listing has ended normally: how it ended, and
- * below it when, with a link to its trade for the trade's parties.
+ * below it when, with a link to the viewer's latest trade from it.
  */
-export function ClosedStatus({ listing, state }: Props) {
+export function ClosedStatus({ listing, state, tradeId }: Props) {
   return (
     <Status>
       <p>
         <ClosedText listing={listing} state={state} />
       </p>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground md:justify-end">
-        <ClosedMeta listing={listing} state={state} />
+        <ClosedMeta state={state} tradeId={tradeId} />
       </div>
     </Status>
   );
@@ -45,14 +44,14 @@ export function ClosedStatus({ listing, state }: Props) {
 
 /**
  * The alert under the header once a listing has ended some other way:
- * broken by the poster's side, removed by staff, or closed when its trade
- * timed out.
+ * broken by the poster's side, removed by staff, or timed out, closed
+ * with the one trade it ever made.
  */
 export function ClosedAlert({
   listing,
   state,
-}: {
-  listing: TradeListing;
+  tradeId,
+}: Props & {
   state: Exclude<ClosedListingState, { status: "filled" | "withdrawn" }>;
 }) {
   return (
@@ -71,50 +70,34 @@ export function ClosedAlert({
         <ClosedText listing={listing} state={state} />
       </AlertTitle>
       <AlertDescription className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <ClosedMeta listing={listing} state={state} />
+        <ClosedMeta state={state} tradeId={tradeId} />
       </AlertDescription>
     </Alert>
   );
 }
 
 /**
- * When the listing ended, and for the parties to its latest trade a link to
- * it, once the server confirms the viewer is one.
+ * When the listing ended, and for a viewer who was a party to one of its
+ * trades a link to the latest.
  */
-function ClosedMeta({ listing, state }: Props) {
-  const { data: account } = useSuspenseQuery(currentAccountQuery);
-
+function ClosedMeta({ state, tradeId }: Omit<Props, "listing">) {
   return (
     <>
       <Timestamp date={state.endedAt} format={{ dateStyle: "medium" }} />
-      {account !== null && (
-        <ErrorBoundary fallback={null}>
-          <Suspense fallback={null}>
-            <TradeLink listing={listing} />
-          </Suspense>
-        </ErrorBoundary>
+      {tradeId !== null && (
+        <Link
+          to="/trade/$id"
+          params={{ id: tradeId }}
+          className="font-medium text-cosmo underline-offset-4 hover:underline dark:text-cosmo-text"
+        >
+          {m.listing_detail_view_trade()}
+        </Link>
       )}
     </>
   );
 }
 
-function TradeLink({ listing }: { listing: TradeListing }) {
-  const { data: viewer } = useSuspenseQuery(
-    tradeListingViewerQuery(listing.id, listing.updatedAt),
-  );
-
-  return viewer?.role === "closed" && viewer.tradeId !== null ? (
-    <Link
-      to="/trade/$id"
-      params={{ id: viewer.tradeId }}
-      className="font-medium text-cosmo underline-offset-4 hover:underline dark:text-cosmo-text"
-    >
-      {m.listing_detail_view_trade()}
-    </Link>
-  ) : null;
-}
-
-function ClosedText({ listing, state }: Props) {
+function ClosedText({ listing, state }: Pick<Props, "listing" | "state">) {
   const { data: account } = useSuspenseQuery(currentAccountQuery);
   const poster = posterName(listing);
   // the poster reads about their own listing in the second person
@@ -122,6 +105,9 @@ function ClosedText({ listing, state }: Props) {
 
   switch (state.status) {
     case "filled":
+      if (state.trades > 1) {
+        return m.listing_detail_closed_filled_trades({ count: state.trades });
+      }
       return state.counterparty === null ? (
         m.listing_detail_closed_filled_unknown()
       ) : (

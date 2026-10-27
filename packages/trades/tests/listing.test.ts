@@ -1,6 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import type * as z from "zod";
 import {
+  MAX_CHOICE_OPTIONS,
   MAX_OFFERED,
   MAX_PER_ROW,
   MAX_TOTAL_WANTED,
@@ -31,6 +32,11 @@ const range = (filter: Record<string, string[]>, count = 1) => ({
   filter,
   count,
 });
+const choice = (slugs: string[], count = 1) => ({
+  kind: "choice" as const,
+  slugs,
+  count,
+});
 const tokens = (count: number) =>
   Array.from({ length: count }, (_, i) => ({ tokenId: i + 1 }));
 const slugs = (count: number) =>
@@ -38,9 +44,12 @@ const slugs = (count: number) =>
 
 const offered = [{ tokenId: 1 }];
 const wants = [exact(KIMLIP)];
+const HEEJIN = "atom02-heejin-201z";
+const HASEUL = "atom02-haseul-201z";
 const emptyFilter: RangeFilter = {
   artist: [],
   member: [],
+  collectionNo: [],
   season: [],
   class: [],
   on_offline: [],
@@ -239,19 +248,89 @@ const refused = [
     { offered, wants, note: "hi\u0000there" },
     "note: Text can't contain a NUL byte",
   ],
+  [
+    "a unit size of 0",
+    { offered, unitSize: 0, wants },
+    "unitSize: Each trade needs at least one of the offered objekts",
+  ],
+  [
+    "a unit bigger than the pool",
+    { offered: tokens(3), unitSize: 4, wants },
+    "unitSize: A trade can't take more objekts than the listing offers",
+  ],
+  [
+    "a fractional unit size",
+    { offered: tokens(3), unitSize: 1.5, wants },
+    "unitSize: *",
+  ],
+  [
+    "a choice row of one collection",
+    { offered, wants: [choice([KIMLIP])] },
+    'wants.0.slugs: An "any of" row needs at least two collections',
+  ],
+  [
+    "a choice row past the option cap",
+    {
+      offered,
+      wants: [
+        choice(
+          Array.from(
+            { length: MAX_CHOICE_OPTIONS + 1 },
+            (_, i) => `atom02-heejin-${100 + i}z`,
+          ),
+        ),
+      ],
+    },
+    `wants.0.slugs: An "any of" row can name at most ${MAX_CHOICE_OPTIONS} collections`,
+  ],
+  [
+    "a choice row naming a collection twice in two casings",
+    { offered, wants: [choice([KIMLIP, HEEJIN, ` ${KIMLIP.toUpperCase()}`])] },
+    'wants.0.slugs: Each collection can only be in an "any of" row once',
+  ],
+  [
+    "two choice rows with the same collections in another order",
+    {
+      offered,
+      wants: [choice([KIMLIP, HEEJIN]), choice([HEEJIN, KIMLIP], 2)],
+    },
+    "wants: Each set of collections can only be asked for once",
+  ],
+  [
+    "a choice count past the row cap",
+    { offered, wants: [choice([KIMLIP, HEEJIN], MAX_PER_ROW + 1)] },
+    `wants.0.count: A row can ask for at most ${MAX_PER_ROW} objekts`,
+  ],
+  [
+    "a choice row's count taking the total past its cap",
+    {
+      offered,
+      wants: [
+        exact(KIMLIP, MAX_PER_ROW),
+        choice([HEEJIN, HASEUL], MAX_TOTAL_WANTED - MAX_PER_ROW + 1),
+      ],
+    },
+    `wants: A listing can ask for at most ${MAX_TOTAL_WANTED} objekts in total`,
+  ],
 ] as const;
 
 /**
- * Terms every schema accepts, and what they parse to.
+ * Terms every schema accepts, and what they parse to. An output without a
+ * unit size has the default: every offered objekt in one unit.
  */
 const accepted: [
   name: string,
   input: {
     offered: { tokenId: number }[];
-    wants: (ReturnType<typeof exact> | ReturnType<typeof range>)[];
+    unitSize?: number;
+    wants: (
+      | ReturnType<typeof exact>
+      | ReturnType<typeof range>
+      | ReturnType<typeof choice>
+    )[];
     note?: string | null;
   },
-  output: ListingInput,
+  output: Omit<ListingInput, "unitSize"> & { unitSize?: number },
 ][] = [
   [
     "the minimal listing (SCH-01)",
@@ -361,6 +440,67 @@ const accepted: [
     { offered, wants, note: ` ${"n".repeat(500)} ` },
     { offered, wants, note: "n".repeat(500) },
   ],
+  [
+    "a unit of one from a pool of three",
+    { offered: tokens(3), unitSize: 1, wants },
+    { offered: tokens(3), unitSize: 1, wants, note: null },
+  ],
+  [
+    "a unit of the whole pool",
+    { offered: tokens(3), unitSize: 3, wants },
+    { offered: tokens(3), unitSize: 3, wants, note: null },
+  ],
+  [
+    "a trimmed, lowercased choice row",
+    { offered, wants: [choice([` ${KIMLIP.toUpperCase()}`, HEEJIN], 2)] },
+    { offered, wants: [choice([KIMLIP, HEEJIN], 2)], note: null },
+  ],
+  [
+    "the option cap in one choice row",
+    {
+      offered,
+      wants: [
+        choice(
+          Array.from(
+            { length: MAX_CHOICE_OPTIONS },
+            (_, i) => `atom02-heejin-${100 + i}z`,
+          ),
+        ),
+      ],
+    },
+    {
+      offered,
+      wants: [
+        choice(
+          Array.from(
+            { length: MAX_CHOICE_OPTIONS },
+            (_, i) => `atom02-heejin-${100 + i}z`,
+          ),
+        ),
+      ],
+      note: null,
+    },
+  ],
+  [
+    "choice rows that overlap, beside an exact row of a shared collection",
+    {
+      offered,
+      wants: [
+        exact(KIMLIP),
+        choice([KIMLIP, HEEJIN]),
+        choice([KIMLIP, HEEJIN, HASEUL]),
+      ],
+    },
+    {
+      offered,
+      wants: [
+        exact(KIMLIP),
+        choice([KIMLIP, HEEJIN]),
+        choice([KIMLIP, HEEJIN, HASEUL]),
+      ],
+      note: null,
+    },
+  ],
 ];
 
 describe.each(termSchemas)("%s", (_, schema, extra) => {
@@ -371,13 +511,14 @@ describe.each(termSchemas)("%s", (_, schema, extra) => {
   test.each(accepted)("accepts %s", (_, input, output) => {
     expect(schema.safeParse({ ...extra, ...input })).toEqual({
       success: true,
-      data: { ...extra, ...output },
+      data: { ...extra, unitSize: input.offered.length, ...output },
     });
   });
 
   test.each([
     ["artist", { artist: ["artms"] }],
     ["member", { member: ["HeeJin"] }],
+    ["collectionNo", { collectionNo: ["364Z"] }],
     ["season", { season: ["Atom02"] }],
     ["class", { class: ["First"] }],
     ["on_offline", { on_offline: ["online"] }],
@@ -419,7 +560,13 @@ describe("listingIdSchema (SCH-23)", () => {
 
 describe("claimListingInputSchema", () => {
   const seen = new Date("2026-10-11T12:00:00.123Z");
-  const claim = { listingId: LISTING_ID, seen, rows: [[1], [2, 3]] };
+  const claim = {
+    listingId: LISTING_ID,
+    seen,
+    units: 1,
+    picked: [100],
+    rows: [[1], [2, 3]],
+  };
 
   test("accepts the row and total caps", () => {
     const full = Array.from({ length: MAX_PER_ROW }, (_, i) => i + 1);
@@ -473,6 +620,20 @@ describe("claimListingInputSchema", () => {
         ],
       },
       `rows: A claim can give at most ${MAX_TOTAL_WANTED} objekts`,
+    ],
+    ["no units", { units: 0 }, "units: *"],
+    ["fractional units", { units: 1.5 }, "units: *"],
+    ["units past the offer cap", { units: MAX_OFFERED + 1 }, "units: *"],
+    ["nothing picked", { picked: [] }, "picked: *"],
+    [
+      "picks past the offer cap",
+      { picked: Array.from({ length: MAX_OFFERED + 1 }, (_, i) => 100 + i) },
+      "picked: *",
+    ],
+    [
+      "an objekt picked twice",
+      { picked: [100, 101, 100] },
+      "picked: Each objekt can only be picked once",
     ],
   ])("refuses %s", (_, override, issue) => {
     expectIssue(

@@ -14,41 +14,51 @@ import {
   preflightClaim,
 } from "@/lib/server/trades/claim.server";
 import {
-  claimStanding,
-  readCandidateSide,
-  readListingState,
+  listingStateExtras,
+  readListingViewer,
+  toListingState,
 } from "@/lib/server/trades/detail.server";
-import { hydrateListings } from "@/lib/server/trades/feed.server";
+import {
+  hydrateListings,
+  poolFlags,
+  poolItemExtras,
+  storedWants,
+} from "@/lib/server/trades/feed.server";
 import {
   countRangeMatches,
+  liveItem,
   readTokenStates,
-  readWebTokenFlags,
-  tokenRefusals,
 } from "@/lib/server/trades/holdings.server";
 import {
   checkTerms,
+  editedListing,
+  endListingOffers,
   insertTerms,
   listingArrays,
+  listingOffers,
   listingRefusal,
   lockLinkedPoster,
+  lockListingOffers,
   lockPoster,
   ownListing,
   posterRow,
   recheckTokens,
   refuseEdit,
-  refusePoster,
 } from "@/lib/server/trades/listings.server";
 import {
+  posterBlocked,
   posterLinkColumns,
-  posterRefusal,
-  toPosterAccount,
 } from "@/lib/server/trades/poster.server";
+import { refusePoster } from "@/lib/server/trades/trade.server";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import { toFeedbackRep } from "@/lib/universal/feedback";
 import {
+  type ListingItem,
+  listingStop,
   type ListingViewer,
   type ListingWriteResult,
-  storedWantSchema,
+  poolAvailability,
+  poolItems,
   type TradeListing,
 } from "@/lib/universal/trade-listings";
 import {
@@ -58,19 +68,21 @@ import {
   tradeOffers,
 } from "@apollo/database/web/schema";
 import { bumpUpdatedAt } from "@apollo/database/web/sql";
-import { claimCap } from "@apollo/trades/caps";
-import { listingTransition } from "@apollo/trades/lifecycle";
+import { MAX_WANT_ROWS } from "@apollo/trades/caps";
+import { tokenRefusals } from "@apollo/trades/holdings";
+import { listingTransition, listingUnitSize } from "@apollo/trades/lifecycle";
 import {
   claimListingInputSchema,
   editListingInputSchema,
   listingIdInputSchema,
   listingInputSchema,
   offeredTokensInputSchema,
+  tradeTokenStatesInputSchema,
 } from "@apollo/trades/listing";
 import { rangeFilterSchema } from "@apollo/trades/range";
-import { isEqual } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, inArray, or, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, or, sql } from "drizzle-orm";
+import * as z from "zod";
 
 /**
  * Post a trade listing from the caller's linked address. A token the poster
@@ -95,7 +107,7 @@ export const $postListing = createServerFn({ method: "POST" })
     if (terms.kind === "token_unavailable") return terms;
 
     return db.transaction(async (tx): Promise<ListingWriteResult> => {
-      const address = await lockLinkedPoster(tx, actor);
+      const { address } = await lockLinkedPoster(tx, actor);
       const refusal = await recheckTokens(tx, address, terms);
       if (refusal) return refusal;
 
@@ -106,6 +118,7 @@ export const $postListing = createServerFn({ method: "POST" })
           status: "open",
           fromUserId: actor.userId,
           fromAddress: address,
+          unitSize: data.unitSize,
           note: data.note,
           ...listingArrays(terms.offered),
         })
@@ -119,10 +132,15 @@ export const $postListing = createServerFn({ method: "POST" })
 
 /**
  * Replace the terms of the caller's open listing: the arrays, the pinned
- * address, the note, its items and its wants. Refusals follow a fixed
- * order: the poster, then the listing (missing or not theirs, claimed,
- * closed), then the wants, then the offered tokens. `created_at` never
- * changes, so the listing keeps its place in the feed.
+ * address, the unit size, the note, its items and its wants. Refusals
+ * follow a fixed order: the poster, then the listing (missing or not
+ * theirs, closed), then the wants, then the offered tokens. Its live trades
+ * keep their own copies of the objekts they took, whatever the edit drops,
+ * but its pending offers were made on the old terms, so they turn stale and
+ * their claimers hear of it. They are locked before the listing
+ * (docs/locking.md), so one sent after they were read refuses the edit with
+ * `listing_updated`. `created_at` never changes, so the listing keeps its
+ * place in the feed.
  */
 export const $editListing = createServerFn({ method: "POST" })
   .validator(editListingInputSchema)
@@ -140,42 +158,79 @@ export const $editListing = createServerFn({ method: "POST" })
 
     refusePoster((await posterRow(db, actor.userId))[0]);
     refuseEdit((await ownListing(db, actor.userId, data.listingId))[0]);
-    const terms = await checkTerms(actor.address, data);
+    const terms = await checkTerms(actor.address, data, data.listingId);
     if (terms.kind === "token_unavailable") return terms;
+    const seen = await listingOffers(db, actor.userId, data.listingId);
 
-    return db.transaction(async (tx): Promise<ListingWriteResult> => {
-      const address = await lockLinkedPoster(tx, actor);
-      const [listing] = await ownListing(tx, actor.userId, data.listingId).for(
-        "update",
-      );
-      refuseEdit(listing);
-      const refusal = await recheckTokens(tx, address, terms);
-      if (refusal) return refusal;
+    const { result, ended } = await db.transaction(
+      async (tx): Promise<{ result: ListingWriteResult; ended: string[] }> => {
+        // the poster and the claimers, then the offers, then the listing
+        const { address, users } = await lockLinkedPoster(
+          tx,
+          actor,
+          seen.map((offer) => offer.toUserId),
+        );
+        const offers = await lockListingOffers(tx, seen);
+        const [listing] = await ownListing(
+          tx,
+          actor.userId,
+          data.listingId,
+        ).for("update");
+        refuseEdit(listing);
+        const locked = new Set(offers.map((offer) => offer.id));
+        const now = await listingOffers(tx, actor.userId, data.listingId);
+        if (now.some((offer) => !locked.has(offer.id))) {
+          throw new ExpectedError("listing_updated");
+        }
+        const refusal = await recheckTokens(tx, address, terms);
+        if (refusal) return { result: refusal, ended: [] };
 
-      await tx
-        .update(tradeOffers)
-        .set({
-          ...listingArrays(terms.offered),
-          fromAddress: address,
-          note: data.note,
-          updatedAt: bumpUpdatedAt,
-        })
-        .where(eq(tradeOffers.id, data.listingId));
-      await tx
-        .delete(tradeOfferItems)
-        .where(eq(tradeOfferItems.offerId, data.listingId));
-      await tx
-        .delete(tradeListingWants)
-        .where(eq(tradeListingWants.listingId, data.listingId));
-      await insertTerms(tx, data.listingId, terms);
-      return { kind: "saved", listingId: data.listingId };
-    });
+        await tx
+          .update(tradeOffers)
+          .set({
+            ...listingArrays(terms.offered),
+            fromAddress: address,
+            unitSize: data.unitSize,
+            note: data.note,
+            updatedAt: bumpUpdatedAt,
+          })
+          .where(eq(tradeOffers.id, data.listingId));
+        await tx
+          .delete(tradeOfferItems)
+          .where(
+            and(
+              eq(tradeOfferItems.offerId, data.listingId),
+              isNull(tradeOfferItems.leftAt),
+            ),
+          );
+        await tx
+          .delete(tradeListingWants)
+          .where(eq(tradeListingWants.listingId, data.listingId));
+        await insertTerms(tx, data.listingId, terms);
+        return {
+          result: { kind: "saved", listingId: data.listingId },
+          ended: await endListingOffers(
+            tx,
+            actor.userId,
+            offers,
+            users,
+            "edit",
+          ),
+        };
+      },
+    );
+    await publishTradeUpdates(ended);
+    return result;
   });
 
 /**
- * Close the caller's open listing. Anyone else's listing, and any trade
- * row, is not found whatever its status; the poster's own claimed or closed
- * listing says which.
+ * Close the caller's open listing; its live trades carry on, and its
+ * pending offers are declined with the listing named as what closed them,
+ * which their claimers hear. The offers are locked before the listing
+ * (docs/locking.md); one sent after they were read is left for trade-timers,
+ * which declines the offers on closed listings. Anyone else's listing, and
+ * any trade row, is not found whatever its status; the poster's own closed
+ * listing says so.
  */
 export const $withdrawListing = createServerFn({ method: "POST" })
   .validator(listingIdInputSchema)
@@ -183,8 +238,15 @@ export const $withdrawListing = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const userId = context.session.user.id;
     const { from, to } = listingTransition("withdraw");
-    await db.transaction(async (tx) => {
-      await lockPoster(tx, userId);
+    const seen = await listingOffers(db, userId, data.listingId);
+    const ended = await db.transaction(async (tx) => {
+      // the poster and the claimers, then the offers, then the listing
+      const users = await lockPoster(
+        tx,
+        userId,
+        seen.map((offer) => offer.toUserId),
+      );
+      const offers = await lockListingOffers(tx, seen);
       const [withdrawn] = await tx
         .update(tradeOffers)
         .set({ status: to, endedAt: sql`now()`, updatedAt: bumpUpdatedAt })
@@ -197,19 +259,29 @@ export const $withdrawListing = createServerFn({ method: "POST" })
           ),
         )
         .returning({ id: tradeOffers.id });
-      if (withdrawn) return;
+      if (withdrawn) {
+        return endListingOffers(tx, userId, offers, users, "withdraw");
+      }
 
       const [listing] = await ownListing(tx, userId, data.listingId);
       throw new ExpectedError(listingRefusal(listing) ?? "listing_closed");
     });
+    await publishTradeUpdates(ended);
   });
 
 /**
- * Accept a listing with the tokens the claimer picked, one list per want
- * row, as of the listing's `updated_at` they saw: exactly one trade per
- * listing, whoever else is accepting it. Every refusal is an ExpectedError
- * and writes nothing. The order they're checked in is fixed, so the same
- * request always gets the same answer.
+ * Accept some units of a listing: the poster's objekts the claimer picked
+ * from the pool and the tokens they give, one list per want row, as of the
+ * listing's `updated_at` they saw. Each claim is its own trade, and claims
+ * on one listing run side by side as long as they pick different objekts;
+ * a claimer holds one live trade per listing. A listing with a range row
+ * takes offers instead (takesOffers): the same request, checked the same
+ * way except for the claim cap, sends the poster a pending offer that
+ * reserves nothing and that they accept or decline, and a claimer holds one
+ * live trade or pending offer per listing. Every refusal is an
+ * ExpectedError and writes nothing. The order they're checked in is fixed,
+ * so the same request always gets the same answer. Returns the trade's id
+ * and whether it is a pending offer.
  */
 export const $claimListing = createServerFn({ method: "POST" })
   .validator(claimListingInputSchema)
@@ -239,21 +311,25 @@ export const $claimListing = createServerFn({ method: "POST" })
   });
 
 /**
- * How many collections a range row matches, for the composer's preview.
+ * How many collections each range row matches, in the rows' order, for the
+ * composer's preview and the listing page, in one indexer statement.
  */
-export const $fetchRangeMatchCount = createServerFn({ method: "GET" })
-  .validator(rangeFilterSchema)
+export const $fetchRangeMatchCounts = createServerFn({ method: "GET" })
+  .validator(z.array(rangeFilterSchema).min(1).max(MAX_WANT_ROWS))
   .handler(({ data }) => countRangeMatches(data));
 
 /**
  * The caller's locked tokens and the tokens in their live trades, which the
  * composer greys out. Tokens in open listings aren't live, so they stay
- * pickable.
+ * pickable, and so do those live in the trades of the listing being edited,
+ * which Save keeps.
  */
 export const $fetchTradeTokenStates = createServerFn({ method: "GET" })
+  .validator(tradeTokenStatesInputSchema)
   .middleware([cosmoMiddleware])
-  .handler(async ({ context }) => {
+  .handler(async ({ data, context }) => {
     const { address } = context.cosmo;
+    const edited = await editedListing(context.session.user.id, data.listingId);
     // the caller's locks and live trade tokens, in one statement
     const rows = await db
       .select({
@@ -276,7 +352,7 @@ export const $fetchTradeTokenStates = createServerFn({ method: "GET" })
           .innerJoin(tradeOffers, eq(tradeOfferItems.offerId, tradeOffers.id))
           .where(
             and(
-              eq(tradeOfferItems.live, true),
+              liveItem(edited),
               or(
                 eq(tradeOffers.fromAddress, address),
                 eq(tradeOffers.toAddress, address),
@@ -299,7 +375,8 @@ export const $fetchTradeTokenStates = createServerFn({ method: "GET" })
 /**
  * Which of the objekts the caller offers they couldn't offer right now, and
  * why, so the composer and their own listing flag them before Post or Save
- * refuses them.
+ * refuses them. An edit names its listing, which exempts the listing's own
+ * trades as Save does.
  */
 export const $fetchOfferedTokenRefusals = createServerFn({ method: "GET" })
   .validator(offeredTokensInputSchema)
@@ -307,157 +384,124 @@ export const $fetchOfferedTokenRefusals = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) =>
     tokenRefusals(
       data.tokenIds,
-      await readTokenStates(context.cosmo.address, data.tokenIds),
+      await readTokenStates(
+        context.cosmo.address,
+        data.tokenIds,
+        await editedListing(context.session.user.id, data.listingId),
+      ),
       context.cosmo.address,
     ),
   );
 
 /**
- * A listing's public detail, or null when the id isn't a listing. It never
- * names who holds a claim: no claimer id, address or tokens, only the
- * deadline.
+ * A listing's public detail and the session's side of it, or null when the
+ * id isn't a listing. One statement reads the listing, its pool's flags and
+ * a filled one's state, one indexer statement its objekts, then the
+ * viewer's own reads, whose candidate takes its free count from the public
+ * items. The public half never names who holds a claim: no claimer id,
+ * address or tokens, only that an objekt is in a trade.
  */
 export const $fetchTradeListing = createServerFn({ method: "GET" })
   .validator(listingIdInputSchema)
-  .handler(async ({ data }): Promise<TradeListing | null> => {
-    const row = await db.query.tradeOffers.findFirst({
-      where: { id: data.listingId, kind: "listing" },
-      columns: {
-        id: true,
-        status: true,
-        createdAt: true,
-        updatedAt: true,
-        endedAt: true,
-        note: true,
-        fromUserId: true,
-        fromAddress: true,
-      },
-      with: {
-        items: { orderBy: { id: "asc" } },
-        wants: { orderBy: { id: "asc" } },
-        fromUser: { with: { cosmoAccount: posterLinkColumns } },
-        fromCosmo: { columns: { username: true } },
-        fromStats: { columns: feedbackRepColumns },
-      },
-    });
-    if (!row) return null;
+  .middleware([authMiddleware])
+  .handler(
+    async ({
+      data,
+      context,
+    }): Promise<{ listing: TradeListing; viewer: ListingViewer } | null> => {
+      const row = await db.query.tradeOffers.findFirst({
+        where: { id: data.listingId, kind: "listing" },
+        columns: {
+          id: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+          endedAt: true,
+          note: true,
+          fromUserId: true,
+          fromAddress: true,
+          unitSize: true,
+        },
+        extras: listingStateExtras,
+        with: {
+          items: { orderBy: { id: "asc" }, extras: poolItemExtras },
+          wants: storedWants,
+          fromUser: { with: { cosmoAccount: posterLinkColumns } },
+          fromCosmo: { columns: { username: true } },
+          fromStats: { columns: feedbackRepColumns },
+        },
+      });
+      if (!row) return null;
+      const unitSize = listingUnitSize(row);
 
-    const [
-      {
+      const {
         listings: [listing],
         states,
-      },
-      { state },
-    ] = await Promise.all([hydrateListings([row]), readListingState(row)]);
-    if (!listing) return null;
-    const tokenIds = listing.items.map((item) => item.tokenId);
-    // a claimed listing's trade runs on as agreed, so only an open one is judged
-    const flags =
-      state.status === "open"
-        ? await readWebTokenFlags(db, listing.fromAddress, tokenIds)
-        : null;
-    return {
-      id: listing.id,
-      createdAt: listing.createdAt,
-      updatedAt: listing.updatedAt,
-      note: listing.note,
-      poster: listing.fromUser && toPublicUser(listing.fromUser),
-      cosmoUsername: listing.fromCosmo?.username ?? null,
-      rep: listing.fromUser && toFeedbackRep(listing.fromStats),
-      items: listing.items,
-      wants: listing.wants,
-      state,
-      blocked:
-        flags !== null &&
-        posterRefusal(
+      } = await hydrateListings([row]);
+      if (!listing) return null;
+      const state = toListingState(row);
+      const flags = poolFlags(row.items);
+      // an objekt that left and was offered again shows once, as its latest row
+      const latest = new Map(
+        listing.items.map((item, index) => [item.tokenId, index]),
+      );
+      const items = listing.items.flatMap((item, index): ListingItem[] =>
+        latest.get(item.tokenId) === index
+          ? [
+              {
+                ...item,
+                availability: poolAvailability(
+                  {
+                    tokenId: item.tokenId,
+                    leftAt: row.items[index]?.leftAt ?? null,
+                  },
+                  states.get(item.tokenId),
+                  listing.fromAddress,
+                  flags,
+                ),
+              },
+            ]
+          : [],
+      );
+      const posterRefused = posterBlocked(
+        listing.wants,
+        listing.fromUser,
+        listing.fromAddress,
+      );
+      return {
+        listing: {
+          id: listing.id,
+          createdAt: listing.createdAt,
+          updatedAt: listing.updatedAt,
+          note: listing.note,
+          poster: listing.fromUser && toPublicUser(listing.fromUser),
+          cosmoUsername: listing.fromCosmo?.username ?? null,
+          rep: listing.fromUser && toFeedbackRep(listing.fromStats),
+          unitSize,
+          items,
+          wants: listing.wants,
+          state,
+          // only an open listing can be claimed, so only an open one is judged
+          stop:
+            state.status === "open"
+              ? listingStop(items, unitSize, posterRefused)
+              : null,
+        },
+        viewer: await readListingViewer(
           {
-            tokenIds,
-            wantKinds: listing.wants.map((want) => want.kind),
-            holdings: { states, ...flags },
-            poster: listing.fromUser && toPosterAccount(listing.fromUser),
+            id: row.id,
+            status: row.status,
+            fromUserId: row.fromUserId,
+            fromAddress: row.fromAddress,
+            unitSize,
+            wants: listing.wants,
+            pool: poolItems({ items }).map((item) => item.tokenId),
+            free: items.filter((item) => item.availability.kind === "free")
+              .length,
+            posterRefused,
           },
-          listing.fromAddress,
-        ) !== null,
-    };
-  });
-
-/**
- * The signed-in viewer's side of a listing, shown in place of Accept, or
- * null when the id isn't a listing. Always the session's own view; signed
- * out, it's anonymous. Only the listing's parties learn its trade's id.
- * Only an open listing's candidates are read: closed and claimed listings
- * and the poster's own never touch the viewer's holdings or the poster's.
- */
-export const $fetchTradeListingViewer = createServerFn({ method: "GET" })
-  .validator(listingIdInputSchema)
-  .middleware([authMiddleware])
-  .handler(async ({ data, context }): Promise<ListingViewer | null> => {
-    const listing = await db.query.tradeOffers.findFirst({
-      where: { id: data.listingId, kind: "listing" },
-      columns: {
-        id: true,
-        status: true,
-        fromUserId: true,
-        fromAddress: true,
-        updatedAt: true,
-        endedAt: true,
-      },
-      with: {
-        wants: { orderBy: { id: "asc" } },
-      },
-    });
-    if (!listing) return null;
-    const viewerId = context.session?.user.id;
-    if (viewerId === undefined) return { role: "anonymous" };
-
-    const { state, trade } = await readListingState(listing);
-    if (state.status !== "open" && state.status !== "claimed") {
-      return {
-        role: "closed",
-        tradeId:
-          trade?.fromUserId === viewerId || trade?.toUserId === viewerId
-            ? trade.id
-            : null,
+          context.session?.user.id,
+        ),
       };
-    }
-
-    if (listing.fromUserId === viewerId) {
-      return {
-        role: "poster",
-        claim:
-          state.status === "claimed" && trade !== undefined
-            ? {
-                tradeId: trade.id,
-                username: trade.username,
-                deadlineAt: state.deadlineAt,
-              }
-            : null,
-      };
-    }
-    if (state.status === "claimed" && trade?.toUserId === viewerId) {
-      return {
-        role: "claimer",
-        deadlineAt: state.deadlineAt,
-        tradeId: trade.id,
-      };
-    }
-
-    if (state.status === "claimed") {
-      return { role: "onlooker" };
-    }
-
-    const { address, ...standing } = await claimStanding(db, viewerId);
-    if (address === null) return { role: "unlinked" };
-
-    // whether the poster's side stops a claim is $fetchTradeListing's `blocked`
-    return {
-      role: "candidate",
-      updatedAt: listing.updatedAt,
-      rows: await readCandidateSide(
-        address,
-        listing.wants.map((want) => storedWantSchema.parse(want)),
-      ),
-      claims: { active: standing.active, cap: claimCap(standing) },
-      ownAddress: isEqual(address, listing.fromAddress),
-    };
-  });
+    },
+  );

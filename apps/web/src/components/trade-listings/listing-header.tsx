@@ -1,5 +1,7 @@
 import { m } from "@/i18n/messages";
-import type { TradeListing } from "@/lib/universal/trade-listings";
+import { listingRatio } from "@/lib/client/trade-listings";
+import type { TradeListing, TradeRatio } from "@/lib/universal/trade-listings";
+import { cn } from "@/lib/utils";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import type { ReactNode } from "react";
 import FeedbackBadge from "../feedback/feedback-badge";
@@ -15,15 +17,36 @@ type Props = {
   status?: ReactNode;
   /** what the viewer can do, from tablet width; phones show it in the bottom bar */
   actions?: ReactNode;
+  /** the poster's tabs, along the header's foot */
+  tabs?: ReactNode;
+  /** the viewer posted it, so the line under the name says so in place of their rating */
+  own?: boolean;
 };
 
 /**
- * Who posted the listing, as the page's heading, with its kind and state
- * and, under them, the poster's ratings and when they posted, with the
- * viewer's status and actions at the far end. From tablet width it sticks
- * under the navbar, so Accept stays in reach while the viewer picks.
+ * Who posted the listing, as the page's heading, with its kind, state and
+ * ratio and, under them, the poster's ratings and when they posted (on
+ * their own listing, that it's theirs, when they posted and when it last
+ * changed), with the viewer's status and actions at the far end. Phones
+ * drop the kind beside a ratio, to leave the name room. The poster's tabs
+ * run along its foot. From tablet width it sticks under the navbar, so
+ * Accept and the tabs stay in reach.
  */
-export default function ListingHeader({ listing, status, actions }: Props) {
+export default function ListingHeader({
+  listing,
+  status,
+  actions,
+  tabs,
+  own = false,
+}: Props) {
+  const ratio = listingRatio(listing, listing.items.length);
+  /**
+   * An edit, or the drain dropping an objekt that left the poster, moves
+   * `updated_at`. Posting sets it beside `created_at`, which keeps its
+   * microseconds where `updated_at` rounds to the millisecond, so the two
+   * can differ by a millisecond on a listing nothing has changed since.
+   */
+  const updated = listing.updatedAt.getTime() - listing.createdAt.getTime() > 1;
   const party = {
     user: listing.poster,
     cosmoUsername: listing.cosmoUsername,
@@ -44,22 +67,43 @@ export default function ListingHeader({ listing, status, actions }: Props) {
             <PartyLink party={party} />
           </h1>
           <div className="col-start-3 row-start-1 row-end-3 flex gap-1.5 md:row-end-2">
-            <Badge variant="outline" className="text-muted-foreground">
+            <Badge
+              variant="outline"
+              className={cn(
+                "text-muted-foreground",
+                ratio !== null && "max-md:hidden",
+              )}
+            >
               {m.listing_detail_kind_trade()}
             </Badge>
             <ListingStateBadge status={listing.state.status} />
+            {ratio !== null && (
+              <Badge
+                variant="ghost"
+                className="bg-cosmo/15 font-mono text-cosmo tabular-nums hover:bg-cosmo/15 dark:text-cosmo-text"
+              >
+                <RatioText ratio={ratio} />
+              </Badge>
+            )}
           </div>
           <p className="col-start-2 row-start-2 text-xs text-muted-foreground md:col-end-4 md:text-sm">
-            {listing.poster !== null && (
+            {own ? (
               <>
-                <FeedbackBadge
-                  variant="full"
-                  rep={listing.rep}
-                  narrow
-                  className="md:text-sm"
-                />
+                {m.listing_poster_yours()}
                 {"\u00a0· "}
               </>
+            ) : (
+              listing.poster !== null && (
+                <>
+                  <FeedbackBadge
+                    variant="full"
+                    rep={listing.rep}
+                    narrow
+                    className="md:text-sm"
+                  />
+                  {"\u00a0· "}
+                </>
+              )
             )}
             <Timestamp
               date={listing.createdAt}
@@ -77,6 +121,20 @@ export default function ListingHeader({ listing, status, actions }: Props) {
                 }}
               />
             </span>
+            {own && updated && (
+              <span className="max-md:hidden">
+                {" · "}
+                <ParaglideMessage
+                  message={m.listing_detail_updated_at}
+                  inputs={{ when: "" }}
+                  markup={{
+                    time: () => (
+                      <Timestamp date={listing.updatedAt} relative="long" />
+                    ),
+                  }}
+                />
+              </span>
+            )}
           </p>
         </div>
         <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-3 max-md:*:mt-3 md:ml-auto">
@@ -86,7 +144,24 @@ export default function ListingHeader({ listing, status, actions }: Props) {
           )}
         </div>
       </div>
+      {tabs !== undefined && (
+        <div className="container no-scrollbar overflow-x-auto">{tabs}</div>
+      )}
     </div>
+  );
+}
+
+/**
+ * A ratio as a pill shows it, "1 : 5", read out as "1 for 5".
+ */
+export function RatioText({ ratio }: { ratio: TradeRatio }) {
+  return (
+    <>
+      <span aria-hidden>
+        {ratio.give} : {ratio.get}
+      </span>
+      <span className="sr-only">{m.market_listings_ratio(ratio)}</span>
+    </>
   );
 }
 

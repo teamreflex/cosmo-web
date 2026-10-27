@@ -5,13 +5,13 @@ import {
   tradeOffers,
 } from "@apollo/database/web/schema";
 import type {
-  OfferCloser,
   ReportStatus,
   TradeEvent,
   TradeSide,
 } from "@apollo/database/web/types";
 import {
   isOpenTrade,
+  tradeListingId,
   type TradeState,
   tradeState,
 } from "@apollo/trades/lifecycle";
@@ -23,14 +23,15 @@ import {
   tradeFeedbackView,
   type VisibleFeedbackRow,
 } from "../../universal/feedback";
-import type {
-  TradeDispute,
-  TradeItemView,
-  TradeNamedItem,
-  TradeParty,
-  TradePartyName,
-  TradeStage,
-  TradeView,
+import {
+  offerCloser,
+  type TradeDispute,
+  type TradeItemView,
+  type TradeNamedItem,
+  type TradeParty,
+  type TradePartyName,
+  type TradeStage,
+  type TradeView,
 } from "../../universal/trades";
 import { type ServerUser, toPublicUser } from "../auth.server";
 import { db } from "../db";
@@ -50,7 +51,7 @@ export const watermarkExtra = () =>
  * One side as a trade shows it. A deleted party's pinned address may since
  * belong to someone else, so neither its name nor its rating is shown.
  */
-function toTradeParty(
+export function toTradeParty(
   userId: string | null,
   user: ServerUser | null,
   cosmo: { username: string } | null,
@@ -69,11 +70,6 @@ export function toPartyName(
   return userId === null || user === null
     ? { user: null, cosmoUsername: null }
     : { user: toPublicUser(user), cosmoUsername: cosmo?.username ?? null };
-}
-
-// the listing a trade was claimed from, which every listing item names
-export function tradeListingId(items: { listingId: string | null }[]) {
-  return items.find((item) => item.listingId !== null)?.listingId ?? null;
 }
 
 /**
@@ -101,15 +97,6 @@ export function tradeDispute(
     if (event?.type === "disputed") return { at: createdAt, event };
   }
   return null;
-}
-
-// what closed an offer when a ban or an account deletion ended it, rather than a party
-export function offerCloser(event: TradeEvent | null): OfferCloser | null {
-  return (event?.type === "declined" || event?.type === "withdrawn") &&
-    event.by !== "to" &&
-    event.by !== "from"
-    ? event.by
-    : null;
 }
 
 // what a party's trade page reads of each rating
@@ -164,6 +151,7 @@ export async function readTradeView(
       fromAddress: true,
       toAddress: true,
       cancelledBy: true,
+      proposedBy: true,
       deadlineAt: true,
       expiresAt: true,
       endedAt: true,
@@ -291,12 +279,14 @@ export async function readTradeView(
   if (row.deadlineAt !== null) {
     stage = {
       stage: "trade",
+      proposedBy: row.proposedBy,
       deadlineAt: row.deadlineAt,
       deadlinePassed: deadlinePassed(state, row.deadlineAt, row.watermark),
     };
-  } else if (row.expiresAt !== null) {
+  } else if (row.expiresAt !== null && row.proposedBy !== null) {
     stage = {
       stage: "offer",
+      proposedBy: row.proposedBy,
       expiresAt: row.expiresAt,
       closer:
         events
@@ -312,7 +302,7 @@ export async function readTradeView(
             },
     };
   } else {
-    throw new Error("offer without an expiry");
+    throw new Error("offer without an expiry or a proposer");
   }
 
   const trade: TradeView = {

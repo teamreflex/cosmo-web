@@ -1,82 +1,111 @@
 import {
   $fetchOfferedTokenRefusals,
-  $fetchRangeMatchCount,
+  $fetchRangeMatchCounts,
   $fetchTradeListing,
-  $fetchTradeListingViewer,
   $fetchTradeTokenStates,
 } from "@/lib/functions/trade-listings";
 import type { RangeFilter } from "@apollo/trades/range";
 import { queryOptions } from "@tanstack/react-query";
 
-// every listing detail, for invalidating after a listing changes
+/**
+ * Every listing-page query. Their answers depend on who is signed in, so
+ * removeViewerQueries clears the prefix on account changes, and listing
+ * actions invalidate it.
+ */
 export const tradeListingKey = ["trade-listing"] as const;
 
 /**
- * Every viewer-specific listing query. Their answers depend on who is
- * signed in, so removeViewerQueries clears the prefix on account changes.
+ * The listing page: the public listing and the viewer's side of it in one
+ * answer.
  */
-export const tradeListingViewerKey = ["trade-listing-viewer"] as const;
-
 export const tradeListingQuery = (id: string) =>
   queryOptions({
-    queryKey: [...tradeListingKey, id],
+    queryKey: [...tradeListingKey, "detail", id],
     queryFn: ({ signal }) =>
       $fetchTradeListing({ signal, data: { listingId: id } }),
     staleTime: 1000 * 30,
   });
 
 /**
- * The viewer's side of the listing as of `updatedAt`, so new terms always
- * fetch a fresh allocation.
+ * The viewer's locked tokens and the tokens in their live trades, which the
+ * composer greys out; editing a listing names it, so the objekts live in its
+ * own trades stay pickable. Keyed under tradeListingKey, so it goes with
+ * the account that read it.
  */
-export const tradeListingViewerQuery = (id: string, updatedAt: Date) =>
+export const tradeTokenStatesQuery = (editedListing?: string) =>
   queryOptions({
-    queryKey: [...tradeListingViewerKey, id, updatedAt.toISOString()],
+    queryKey: [...tradeListingKey, "token-states", editedListing ?? null],
     queryFn: ({ signal }) =>
-      $fetchTradeListingViewer({ signal, data: { listingId: id } }),
-    staleTime: 0,
+      $fetchTradeTokenStates({ signal, data: { listingId: editedListing } }),
+    select: ({ locked, live }) => ({
+      locked: new Set(locked),
+      live: new Set(live),
+    }),
+    staleTime: 1000 * 30,
   });
 
 /**
- * The viewer's locked tokens and the tokens in their live trades, which the
- * composer greys out. Keyed under the viewer prefix, so it goes with the
- * account that read it.
- */
-export const tradeTokenStatesQuery = queryOptions({
-  queryKey: [...tradeListingViewerKey, "token-states"],
-  queryFn: ({ signal }) => $fetchTradeTokenStates({ signal }),
-  select: ({ locked, live }) => ({
-    locked: new Set(locked),
-    live: new Set(live),
-  }),
-  staleTime: 1000 * 30,
-});
-
-/**
  * Why the viewer couldn't offer each of these objekts right now, by token
- * id; tokens they can offer are left out. Keyed under the viewer prefix,
- * since the answer depends on whose objekts they are.
+ * id; tokens they can offer are left out. Editing a listing names it, so its
+ * own trades don't refuse its objekts. Keyed under tradeListingKey, since
+ * the answer depends on whose objekts they are.
  */
-export const offeredTokenRefusalsQuery = (tokenIds: readonly number[]) =>
+export const offeredTokenRefusalsQuery = (
+  tokenIds: readonly number[],
+  editedListing?: string,
+) =>
   queryOptions({
     queryKey: [
-      ...tradeListingViewerKey,
+      ...tradeListingKey,
       "offered-refusals",
       tokenIds.toSorted((a, b) => a - b),
+      editedListing ?? null,
     ],
     queryFn: ({ signal }) =>
-      $fetchOfferedTokenRefusals({ signal, data: { tokenIds: [...tokenIds] } }),
+      $fetchOfferedTokenRefusals({
+        signal,
+        data: { tokenIds: [...tokenIds], listingId: editedListing },
+      }),
     select: (refusals) =>
       new Map(refusals.map((refusal) => [refusal.tokenId, refusal.reason])),
     staleTime: 1000 * 30,
   });
 
+// the count for the filter at `index`, of the counts fetched for every filter in order
+function matchCount(counts: readonly number[], index: number) {
+  const count = counts[index];
+  if (count === undefined) throw new Error(`no match count for range ${index}`);
+  return count;
+}
+
 /**
- * How many collections a composer range row covers.
+ * How many collections a range row covers.
  */
 export const rangeMatchCountQuery = (filter: RangeFilter) =>
   queryOptions({
     queryKey: ["trade-range-matches", filter],
-    queryFn: ({ signal }) => $fetchRangeMatchCount({ signal, data: filter }),
+    queryFn: async ({ signal }) => {
+      const counts = await $fetchRangeMatchCounts({ signal, data: [filter] });
+      return matchCount(counts, 0);
+    },
     staleTime: 1000 * 60 * 5,
   });
+
+/**
+ * rangeMatchCountQuery for each of a listing's range rows, under the same
+ * keys. Fetches started together share one request for every row; once it
+ * settles, a retry or refetch makes a new one.
+ */
+export function rangeMatchCountQueries(filters: readonly RangeFilter[]) {
+  let request: Promise<number[]> | undefined;
+  return filters.map((filter, index) => ({
+    ...rangeMatchCountQuery(filter),
+    queryFn: async () => {
+      request ??= $fetchRangeMatchCounts({ data: [...filters] }).finally(() => {
+        request = undefined;
+      });
+      const counts = await request;
+      return matchCount(counts, index);
+    },
+  }));
+}

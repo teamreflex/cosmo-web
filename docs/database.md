@@ -1,287 +1,129 @@
-# Database
+# Databases
 
-The project uses Drizzle ORM and the Bun SQL Postgres driver, with two connections:
+Apollo runs two separate Postgres databases, so no query joins them and no transaction spans them.
 
-- `import { db } from "@/lib/server/db"`
-  - Postgres connection for general user data
-- `import { indexer } from "@/lib/server/db/indexer"`
-  - Postgres connection for querying the blockchain indexer for objekt data.
-  - tables are defined in `packages/database/src/indexer/schema.ts` — read it rather than relying on prose
+## The two databases
 
-`turbo db:generate` generates migration files.
+|                | Indexer DB                                                                                                                                         | Web DB                                                                                      |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Holds          | chain data (collections, objekts, transfers, votes, COMO balances), `list_event_outbox`, and tables derived from them (stats, owners, leaderboard) | users and everything they create: accounts, COSMO links, lists, binders, trades, reports, … |
+| DDL lives in   | apps/indexer: `schema.graphql`, the TypeORM models and the hand-written `db/migrations/*.js`                                                       | `packages/database/src/web/schema.ts` and `src/auth.ts`                                     |
+| Drizzle schema | `packages/database/src/indexer/schema.ts`, a hand-kept mirror that only types queries                                                              | `packages/database/src/web/schema.ts`                                                       |
+| Migrations     | [docs/migrations.md](migrations.md)                                                                                                                | [docs/migrations.md](migrations.md)                                                         |
 
-## Derived & Projection Types
+What each `@apollo/database` subpath exports: [packages/database/README.md](../packages/database/README.md). The trade tables: [docs/trades/data-model.md](trades/data-model.md).
 
-Types that derive directly from a Drizzle schema are stored alongside the schemas in the `@apollo/database` package and inferred via `typeof schema.$inferSelect` / `$inferInsert`:
+## How apps connect
 
-```ts
-import { type CosmoAccount, type User } from "@apollo/database";
-import { type Collection, type Objekt } from "@apollo/database/indexer";
-```
+| App                                   | Web DB client                                              | Indexer DB client                                                 | Pool               |
+| ------------------------------------- | ---------------------------------------------------------- | ----------------------------------------------------------------- | ------------------ |
+| apps/web                              | `db` in `@/lib/server/db` (`DATABASE_URL`)                 | `indexer` in `@/lib/server/db/indexer` (`INDEXER_DATABASE_URL`)   | 15 web, 25 indexer |
+| apps/web drizzle-kit and `migrate.ts` | `DATABASE_URL_UNPOOLED`                                    | -                                                                 | 1                  |
+| apps/schedules                        | `DatabaseWeb` from `@apollo/services` (`WEB_DATABASE_URL`) | `DatabaseIndexer` in `src/db-indexer.ts` (`INDEXER_DATABASE_URL`) | 1 each             |
+| apps/chat                             | `DatabaseWeb`                                              | -                                                                 | 10                 |
+| apps/typesense-import                 | `Metadata` in `src/db/metadata.ts` (`WEB_DATABASE_URL`)    | `Indexer` in `src/db/indexer.ts` (`INDEXER_DATABASE_URL`)         | 1 each             |
+| apps/indexer                          | -                                                          | TypeORM store (`DB_URL`)                                          |                    |
 
-New **projection / joined / UI** types — anything shaped for the app rather than 1:1 with a table — go in `apps/web/src/lib/universal/`, **not** in the database package (`packages/database/src/web/types.ts`).
+- apps/web uses the promise driver `drizzle-orm/bun-sql`. The Effect apps use [`@apollo/drizzle-bun-effect`](../packages/drizzle-bun-effect/README.md).
+- Every client sets `application_name` on its URL, so its connections are named in `pg_stat_activity`.
+- A one-connection client can't query through the pool inside its own transaction; the rule is in the Effect conventions of [docs/tooling.md](tooling.md).
+- Locally the pooled URLs go through pgbouncer in transaction mode and the unpooled one straight to Postgres ([docs/tooling.md](tooling.md) lists the ports). Bun SQL prepares every statement, and pgbouncer's `MAX_PREPARED_STATEMENTS` is what lets that work under transaction pooling.
 
-### Adding indexer columns that flow to the UI
+## Who writes what
 
-When a new indexer `collection` column needs to reach the UI's objekt types, declare it on the cosmo types (`ObjektBaseFields` and `BFFCollectionGroupCollection` in `packages/cosmo/src/types/objekts.ts`) rather than defaulting it in converters. `mapLegacyObjekt` synthesizes a `CosmoObjekt` from indexer data via spread, so the field is already structurally present at runtime — declaring it just makes TS reflect that, letting the converters in `objekt-conversion.ts` read it without casts or hardcoded defaults. `IndexedObjekt` (Drizzle infer) picks up new columns automatically. Don't mistake the cosmo types for "upstream API only" — they're the shared shape across all objekt sources.
+| Writer                                                     | Indexer DB                                                                                                                    | Web DB                                                                         |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| apps/indexer processor                                     | chain tables and `serial_reservation`; appends to `list_event_outbox`                                                         | -                                                                              |
+| triggers on `objekt`, `collection`, `progress_leaderboard` | `collection_stats`, `collection_owner`, `progress_leaderboard`, `progress_histogram`                                          | -                                                                              |
+| apps/web                                                   | collection fields (staff edits, share-data media), `serial_confirmation`                                                      | everything                                                                     |
+| apps/schedules                                             | `member`, `collection_market_stats`, `objekt.serial`, purge of drained outbox rows                                            | the outbox drain, trade timers, notifications, price and FX stats, gravities   |
+| apps/chat                                                  | -                                                                                                                             | `trade_messages`, `report_messages`, `reports`, `notifications`, `staff_audit` |
+| scripts, run by hand                                       | `packages/image/scripts/mirror.ts`, `packages/serial-estimation/scripts/*`, `apps/schedules/scripts/simulate.ts` (local only) | -                                                                              |
 
-## Immutable Collection Keys
+- apps/typesense-import only reads.
+- The processor never writes the trigger-kept tables. Reindexing around the triggers is in [apps/indexer/CLAUDE.md](../apps/indexer/CLAUDE.md).
+- Who writes serials, and when: [docs/cosmo.md](cosmo.md).
 
-`collection.slug` and `collection.collectionId` are immutable lookup keys (`collectionId = "<Season> <Member> <CollectionNo>"`, `slug = slugifyObjekt(collectionId)`). Never recompute them when editing a collection — even if the fields they derive from change — as they are the stable join/lookup keys for the web app and the processor's upsert logic. Update handlers persist only the explicitly editable fields; derived media keys reuse the row's existing slug.
+## Crossing the databases
 
-## Timestamp Columns
+- A web server function that touches both reads the indexer first, then opens the web transaction and routes every web call through `tx`. A web transaction held open across an indexer round trip only holds its locks longer.
+- `drain-outbox` is the exception: it locks `list_drain_cursor` inside its web transaction and then reads the outbox past it, because the cursor lock is what makes each batch apply exactly once ([apps/schedules/CLAUDE.md](../apps/schedules/CLAUDE.md)).
+- Trade rows copy the indexer's collection values (`slug`, `artist`, `member`, `season`, `class`, `on_offline`), so the trade feed filters without crossing databases.
+- `member` and `collection_market_stats` live in the indexer DB although apps/schedules writes them, so the web app's member and market sorts join them to `collection` in one query.
 
-Use `mode: "date"`, never `mode: "string"`. `bun:sql` returns `Date` objects; `mode: "string"` emits a zoneless, space-separated string that breaks older Safari and throws on `undefined`. `mode` is a JS-only concern — changing it requires no migration.
+## Identifiers across the databases
 
-## Relational Query Builder (v2)
+The same idea has different names and types in each database, and using the wrong one matches nothing, with no error.
 
-The project uses Drizzle ORM 1.0's relational query builder. For most queries, use the relational API:
+| Concept         | Indexer DB                                                                                                                                    | Web DB                                                                                                                                                                               |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Collection key  | `collection.id`, a uuid string, which every `collection_id` column holds except `list_event_outbox`'s                                         | `collection_id` columns hold the slug (`objekt_list_entries`, `collection_data`, `notifications`, `collection_price_stats`, `collection_price_history`); trade tables call it `slug` |
+| Collection name | `collection.collection_id` is `"<Season> <Member> <CollectionNo>"`; `collection.slug` is `slugifyObjekt(collection_id)`                       | -                                                                                                                                                                                    |
+| Objekt token id | text in `objekt.id`, `list_event_outbox.token_id` and `serial_confirmation.token_id`; integer in `transfer.token_id` and `serial_reservation` | integer everywhere (`pins`, `binder_entries`, `locked_objekts`, `trade_offer_items`, `notifications`) except text in `objekt_list_entries.token_id`                                  |
+| Address         | lowercase `varchar`, lowercased with `addr()` on write                                                                                        | `citext`: compares case-insensitively, but keeps the case it was stored with                                                                                                         |
 
-```ts
-const profile = await db.query.cosmoAccounts.findFirst({
+- `list_event_outbox.collection_id` holds the slug, so the drain can match it against `objekt_list_entries.collection_id` directly.
+- Convert token ids at the boundary: `String(tokenId)` into an indexer query, `Number(row.id)` out of one (`readIndexerTokens()` in `apps/web/src/lib/server/trades/holdings.server.ts`).
+- Trade inputs cap token ids at 2^31 - 1 (`tokenIdSchema` in `packages/trades/src/listing.ts`), the integer columns' limit.
+- Compare a web address with an indexer address through `addr()` or `isEqual()` from `@apollo/util`, because `===` fails on case.
+- `vote.token_id` and `como_balance.token_id` are gravity and COMO token ids, unrelated to objekt ids.
+- `collection.slug` and `collection.collection_id` never change, because web rows, the processor's upsert and the R2 media keys all look collections up by them. Collection edit handlers (`$updateCollection`) write only the editable fields.
+
+## Where types and shared SQL go
+
+- `@apollo/database/web/types` holds what follows from the schema: inferred row types, the `as const` lists that enums and `$type<>()` columns are built from, the jsonb payload unions (`TradeEvent`, `StaffAuditDetail`), and `NewNotification`, the insert shape `notifications_subject_chk` allows.
+- Types shaped for the app (projections, joined rows, UI types) go in `apps/web/src/lib/universal/`.
+- `@apollo/database/web/sql` holds SQL fragments that apps/web and apps/schedules must compute identically: `bumpUpdatedAt` and `listingPoolState` ([docs/trades/data-model.md](trades/data-model.md)).
+
+## Querying
+
+The repo runs Drizzle 1.0 with the relational query builder v2. For the full operator list, use the Drizzle llms.txt in [docs/libraries.md](libraries.md).
+
+- Read with `db.query.<table>.findMany()` / `findFirst()` and their `where`, `with` and `columns`.
+- Relational `where` takes the object syntax (`{ col: value }`, `{ col: { gte, in, ilike } }`, `AND`/`OR`/`NOT`, `RAW`). `eq()`, `and()` and the other builder functions belong to `db.select()`, and relational `where` rejects them.
+- An explicit `undefined` anywhere in `where` throws at runtime, and the types don't catch it. `in: []` matches nothing. Write optional filters with `EmptyFilter` from `drizzle-orm`:
+
+  ```ts
   where: {
-    username: "username",
-  },
-  with: {
-    lists: true,
-  },
-});
-```
+    userId: userId ?? EmptyFilter,
+    status: statuses.length ? { in: statuses } : EmptyFilter,
+    RAW: before ? (t) => sql`${t.id} < ${before}` : EmptyFilter,
+  }
+  ```
 
-The relational query builder's `where` takes the object-based filter syntax below. The `eq()` / `and()` / `or()` builder functions and the `(table, { eq }) => ...` callback form belong to the select query builder and are rejected by the relational API.
+- Prefix search on user input: `ilike: prefixPattern(query)` (`apps/web/src/lib/server/util.server.ts`) escapes `%` and `_`.
+- Queries against one database run one after another, never in `Promise.all`, because concurrent queries each take a pooled connection and contend on the same server for little gain. One `db` read and one `indexer` read may run in parallel, as `readTokenStates()` does.
+- Use `db.select()` for joins, aggregates and CTEs. Write raw `sql` only where Drizzle has no builder (`array_agg`, `CASE`, `jsonb_to_recordset`).
+- Bind arrays with `inArray()` or `arrayOverlaps()`, never by joining values into SQL text.
+- A query meant to use a partial index writes the index's predicate as literal SQL, not bound parameters, because a generic plan can't prove the index's `WHERE` from a parameter. `openListing` in `apps/web/src/lib/server/trades/feed.server.ts` is the pattern.
+- Postgres returns `count`, `sum` and window functions as `bigint`, which bun:sql hands back as a JS `BigInt`. `JSON.stringify` throws on it, and the `sql<number>` annotation converts nothing. Write ``sql<number>`count(*)::int`.mapWith(Number)`` or use Drizzle's `count()` / `$count()`.
+- `mode: "bigint"` columns (`list_event_outbox.id`, `list_drain_cursor.seq`) return a real `BigInt` and must stay out of anything serialized.
+- Turn an expected constraint violation into an outcome with `isPostgresError(error, "23505", "<index name>")` (`util.server.ts`), as a claim racing for a token does in `trade.server.ts`.
+- Hot indexer queries carry `.comment({ fn: "<function name>" })`, so they're named in the database's query statistics. Other queries don't need one.
 
-Drizzle throws on an explicit `undefined` filter value (including `where: undefined`) and the types don't catch it, so write an optional scalar filter as `column: value ?? EmptyFilter`, an optional RAW as ``RAW: cond ? (t) => sql`...` : EmptyFilter``, and an optional array filter as `column: arr.length ? { in: arr } : EmptyFilter`, because `in: []` matches nothing.
+## Schema conventions (web DB)
 
-### Available Filters
-
-The `where` clause accepts an object with the following operators:
-
-```ts
-// Top-level operators
-where: {
-  OR: [],        // Array of filter objects
-  AND: [],       // Array of filter objects
-  NOT: {},       // Single filter object
-  RAW: (table) => sql`${table.id} = 1`,  // Raw SQL escape hatch
-
-  // Filter by relations
-  [relation]: {
-    // Nested filter object for related table
-  },
-
-  // Filter by columns
-  [column]: {
-    // Logical operators
-    OR: [],
-    AND: [],
-    NOT: {},
-
-    // Comparison operators
-    eq: 1,              // equals
-    ne: 1,              // not equals
-    gt: 1,              // greater than
-    gte: 1,             // greater than or equal
-    lt: 1,              // less than
-    lte: 1,             // less than or equal
-
-    // Array/set operators
-    in: [1, 2, 3],      // in array
-    notIn: [1, 2, 3],   // not in array
-
-    // String operators
-    like: "pattern",    // SQL LIKE
-    ilike: "pattern",   // case-insensitive LIKE
-    notLike: "pattern",
-    notIlike: "pattern",
-
-    // Null operators
-    isNull: true,
-    isNotNull: true,
-
-    // Array column operators (for PostgreSQL arrays)
-    arrayOverlaps: [1, 2],   // overlaps with array
-    arrayContained: [1, 2],  // is contained by array
-    arrayContains: [1, 2],   // contains array
-  },
-}
-```
-
-### Examples
-
-```ts
-// Simple equality (shorthand)
-const user = await db.query.users.findFirst({
-  where: { id: 1 }, // Shorthand for { id: { eq: 1 } }
-});
-
-// Simple equality (explicit)
-const user = await db.query.users.findFirst({
-  where: { id: { eq: 1 } },
-});
-
-// Multiple conditions (implicit AND)
-const users = await db.query.users.findMany({
-  where: {
-    age: { gte: 18 },
-    status: { eq: "active" },
-  },
-});
-
-// OR conditions
-const users = await db.query.users.findMany({
-  where: {
-    OR: [{ age: { lt: 18 } }, { status: { eq: "inactive" } }],
-  },
-});
-
-// Complex nested conditions
-const users = await db.query.users.findMany({
-  where: {
-    AND: [
-      { age: { gte: 18 } },
-      {
-        OR: [{ status: { eq: "active" } }, { verified: { eq: true } }],
-      },
-    ],
-  },
-});
-
-// Filter by relations
-// Get users who have at least one published post
-const users = await db.query.users.findMany({
-  where: {
-    posts: {
-      published: { eq: true },
-    },
-  },
-  with: {
-    posts: true,
-  },
-});
-
-// Combine main table filter with relation filter
-// Get users with id > 10 who have posts starting with 'Hello'
-const users = await db.query.users.findMany({
-  where: {
-    id: { gt: 10 },
-    posts: {
-      content: { like: "Hello%" },
-    },
-  },
-});
-
-// NOT operator
-const users = await db.query.users.findMany({
-  where: {
-    NOT: {
-      status: { eq: "banned" },
-    },
-  },
-});
-
-// Prefix search on user input; prefixPattern() (lib/server/util.server.ts) escapes the query's % and _
-const users = await db.query.users.findMany({
-  where: {
-    username: { ilike: prefixPattern(query) },
-  },
-});
-
-// Array operators (PostgreSQL)
-const collections = await db.query.collections.findMany({
-  where: {
-    tags: { arrayContains: ["featured"] },
-  },
-});
-```
-
-## Query Builder (for complex queries)
-
-For complex queries with multiple joins, aggregations, or custom SQL, use the query builder:
-
-```ts
-const cosmo = await db
-  .select()
-  .from(cosmoAccounts)
-  .leftJoin(objektLists, eq(profiles.userId, lists.userId))
-  .where(eq(cosmoAccounts.username, "username"));
-```
-
-The query builder is where `eq()`, `and()`, `or()` and the other builder functions are used.
-
-Do not write raw SQL in `sql` template tags unless absolutely necessary due to the lack of Drizzle function. Things like `array_agg()`, `CASE ... WHEN` statements etc.
-
-Bun SQL prepares every statement, and a generic plan can't prove a partial index's `WHERE` from a bound parameter, so a query meant to use a partial index writes that predicate as a literal matching the index (`` sql`${t.kind} = 'listing' AND ${t.status} = 'open'` ``, as the trade feed does), not `eq(t.kind, kind)`. Array filters bind through `arrayOverlaps()` and `inArray()`, which encode the values as one array parameter or one parameter each, never by joining values into SQL text.
-
-## Counts & Aggregates
-
-Postgres returns `COUNT`, `SUM`, and window functions (`count(*) over()`, `row_number()`, …) as `bigint`, and bun:sql hands `bigint` back as a JS `BigInt`. `JSON.stringify` throws on `BigInt`, so any such value reaching a `Response.json` route or a `createServerFn` return 500s with `cannot serialize BigInt` — the `sql<number>` annotation is compile-time only and does not coerce. Cast and map every raw aggregate: ``sql<number>`count(*)::int`.mapWith(Number)``. Drizzle's `count()` / `db.$count()` helpers and `bigint` columns declared `mode: "number"` are already safe; `mode: "bigint"` columns return a real `BigInt` and must stay out of serialized payloads.
-
-## Migrations
-
-- Put CHECK constraints in the Drizzle **schema**, not in hand-edited SQL.
-- A descending index column needs `.desc().nullsFirst()`. Drizzle's bare `.desc()` emits `DESC NULLS LAST`, which Postgres can't use for a plain `ORDER BY col DESC` (that means `NULLS FIRST`), even on a `NOT NULL` column, so the planner falls back to another index or a sort. `fx_rates_currency_date_idx` is declared this way.
-- `db:migrate` and production's `migrate.ts` apply **every pending migration in one transaction** (both end in drizzle-orm's `migrate()`, which wraps them all in one `db.transaction`). Neither `--> statement-breakpoint` nor a separate migration file starts a new one. So, within one release:
-  - A new enum value can't be used by any migration: Postgres refuses a value added by `ADD VALUE` until its transaction commits.
-  - A failing check (a `DO $$ … RAISE EXCEPTION … $$` block) rolls back every pending migration, and the new container exits before starting the server.
-  - A lock taken on a hot table (`user`, `session`, `cosmo_account`) is held until the whole release commits, stalling the previous image's queries on it. That includes `ALTER TABLE`, index builds, a new foreign key to it (`SHARE ROW EXCLUSIVE`, which blocks writes) and dropping a foreign key to it (`ACCESS EXCLUSIVE`, which blocks reads too). Rehearse a release's migrate time on a restored baseline.
-- Scripts live in `apps/web`: `db:generate` (author), `db:check` (validate the migration chain), `db:migrate` (apply locally — production containers run `migrate.ts`, the same drizzle-orm migrator, on start), `db:push` (dev-only direct schema sync, no files), `db:upgrade` (`drizzle-kit up`, converts snapshots written by an older drizzle-kit — `generate`/`check` refuse them until it runs). Migrations use the drizzle-kit 1.0 per-directory format: `drizzle/<ts>_<name>/` with a `migration.sql` and an incremental `snapshot.json`. The first migration's snapshot holds the full schema (`"type": "base"`); every later one holds only the changes from its parent (`"type": "diff"`) plus statement footprints that drizzle-kit uses to check whether migrations from different branches can both apply. drizzle-kit rebuilds the schema by replaying the chain, so never hand-edit or delete a migration folder — it breaks every migration after it.
-- **Data backfills** (`UPDATE`, one-shot fixes) can't be generated by drizzle. Scaffold an empty migration with `bun run db:generate --custom --name <name>`, then write the SQL by hand. Folders apply in timestamp order, so a hand-written check that must run before a generated migration (such as a duplicate check ahead of a new unique index) is scaffolded before the schema edit, and is re-scaffolded the same way when migrations are consolidated.
-- **Running `generate`/`check` non-interactively** (agents, CI): pass `--output json` for a machine-readable envelope (e.g. `{"status":"no_changes"}`, `{"status":"ok"}`) instead of the TUI. When `generate` hits a decision it can't infer — a column/table rename vs drop+add, or a `confirm_data_loss` destructive change — `--output json` emits a `missing_hints` envelope describing what's needed rather than blocking on a prompt; answer up front with `--hints '[...]'` or `--hints-file <path>` and re-run. `db:migrate` has no such flags and needs no hints.
+- New timestamp columns use `mode: "date"`, because string mode returns a zoneless string that breaks older Safari. `mode` only affects JS, so changing it needs no migration, but it changes every consumer's type.
+- `createdAt` and `createdTimestamp()` from `@apollo/database/custom` make `timestamp` columns without a time zone, holding UTC. Trades, notifications and `list_drain_cursor` use `timestamptz`.
+- Raw SQL that reads a zoneless column as an instant converts it with `at time zone 'utc'`, as `sync-market-stats` does.
+- CHECK constraints live in the Drizzle schema, never in hand-written SQL, because drizzle-kit only knows what the snapshot holds. Several encode a per-row state machine (`trade_offers_*_chk`, `notifications_subject_chk`, `trade_listing_wants_shape_chk`).
+- A check that lists enum values inlines them with `sqlValues()`, because drizzle-kit can't parameterise a check.
+- Enum values come from the `as const` lists in `web/types.ts`. Append new values at the end, so the migration is a plain `ADD VALUE`. When the value can be used is in [docs/migrations.md](migrations.md).
+- A descending index column needs `.desc().nullsFirst()`. Bare `.desc()` emits `DESC NULLS LAST`, which a plain `ORDER BY col DESC` can't use (`fx_rates_currency_date_idx`).
+- `cosmo_account_username_change_trigger` (migration `20250805153212_bizarre_roughhouse`) appends to `cosmo_account_changes` on a username change. drizzle-kit doesn't know it exists.
+- How a foreign key to `user.id` behaves on account deletion is in [docs/accounts.md](accounts.md).
 
 ## Append-only audit tables
 
-`staff_audit` and `cosmo_link_audit` are only ever inserted into, and must outlive the accounts they name. Deleting an account deletes the user row, so their user columns (`staff_audit.staff_id` and `cosmo_link_audit.user_id`) are plain text ids with no foreign key, with relations declared in `relations.ts` without a constraint; a missing user reads back as null. Order their rows by `id`, not `created_at`: `defaultNow()` is the transaction's start time, so every row one transaction writes shares a timestamp.
+- `staff_audit` and `cosmo_link_audit` are only ever inserted into, and must outlive the accounts they name.
+- Their user columns are plain text ids with no foreign key. The relation is declared only in `relations.ts`, and a deleted user reads back as null.
+- Order their rows by `id`, because `defaultNow()` is the transaction's start time and every row one transaction writes shares a `created_at`.
+- `report_messages` and `user_feedback_stats` also skip the user foreign key, so the evidence and the stats survive deletion.
 
-## Trade tables
+## Where to start
 
-`trade_offers`, `trade_offer_items`, `trade_listing_wants`, `trade_messages`, `trade_feedback` and `user_feedback_stats` are mapped in `docs/trades.md`, including the `token_id` boundary (an integer in the web database, text in the indexer) and the payment columns that nothing writes.
-
-## Current VACUUM settings
-
-```sql
-ALTER TABLE objekt SET (
-  autovacuum_vacuum_scale_factor = 0,
-  autovacuum_vacuum_threshold = 100000,
-  autovacuum_vacuum_insert_scale_factor = 0,
-  autovacuum_vacuum_insert_threshold = 100000,
-  autovacuum_analyze_scale_factor = 0,
-  autovacuum_analyze_threshold = 50000,
-  autovacuum_vacuum_cost_delay = 0
-);
-
-ALTER TABLE transfer SET (
-  autovacuum_vacuum_scale_factor = 0,
-  autovacuum_vacuum_threshold = 100000,
-  autovacuum_vacuum_insert_scale_factor = 0,
-  autovacuum_vacuum_insert_threshold = 100000,
-  autovacuum_analyze_scale_factor = 0,
-  autovacuum_analyze_threshold = 50000,
-  autovacuum_vacuum_cost_delay = 0
-);
-
-ALTER TABLE collection SET (
-  autovacuum_vacuum_scale_factor = 0.01,
-  autovacuum_analyze_scale_factor = 0.01
-);
-
-ALTER TABLE list_event_outbox SET (
-  autovacuum_vacuum_scale_factor = 0,
-  autovacuum_vacuum_threshold = 500,
-  autovacuum_analyze_scale_factor = 0,
-  autovacuum_analyze_threshold = 500
-);
-
-ALTER TABLE collection_owner SET (
-  autovacuum_vacuum_scale_factor = 0,
-  autovacuum_vacuum_threshold = 10000,
-  autovacuum_vacuum_insert_scale_factor = 0,
-  autovacuum_vacuum_insert_threshold = 10000
-);
-
-ALTER TABLE progress_leaderboard SET (
-  autovacuum_vacuum_scale_factor = 0,
-  autovacuum_vacuum_threshold = 10000,
-  autovacuum_vacuum_insert_scale_factor = 0,
-  autovacuum_vacuum_insert_threshold = 10000
-);
-```
+- New web table or column: edit `web/schema.ts`, add relations to `web/relations.ts` and the row type to `web/types.ts`, then generate the migration ([docs/migrations.md](migrations.md)).
+- New enum value: append it to its list in `web/types.ts`.
+- New indexer column: the procedure is under "Schema changes" in [apps/indexer/CLAUDE.md](../apps/indexer/CLAUDE.md).
+- An indexer column that reaches the UI: declare it on `ObjektBaseFields` and `BFFCollectionGroupCollection` (`packages/cosmo/src/types/objekts.ts`) instead of defaulting it in the converters. That is enough because `mapLegacyObjekt()` spreads indexer rows into a `CosmoObjekt`, and `IndexedObjekt` is the inferred indexer `Collection`.
+- A query that crosses databases: read the indexer first, convert token ids and slugs at the boundary, then open the web transaction.

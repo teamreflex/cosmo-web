@@ -2,8 +2,11 @@ import { toPublicUser } from "@/lib/server/auth.server";
 import { db } from "@/lib/server/db";
 import { feedbackRepColumns } from "@/lib/server/feedback.server";
 import {
+  freePoolCount,
   hydrateListings,
   listingFeedWhere,
+  postedCount,
+  storedWants,
 } from "@/lib/server/trades/feed.server";
 import { toFeedbackRep } from "@/lib/universal/feedback";
 import {
@@ -12,6 +15,7 @@ import {
 } from "@/lib/universal/schema/listing-feed";
 import type { ListingFeedPage } from "@/lib/universal/trade-listings";
 import { tradeOffers } from "@apollo/database/web/schema";
+import { listingUnitSize } from "@apollo/trades/lifecycle";
 import { createServerFn } from "@tanstack/react-start";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
@@ -20,10 +24,12 @@ const PAGE_SIZE = 30;
 
 /**
  * One page of the Listings feed: open listings, newest first, keyset-paged
- * on the listing id. The cursor is the previous page's last id, looked up
- * whatever it is now, so a listing claimed, edited or withdrawn between
- * pages still marks the place, and the position never goes through a JS
- * Date. The page reads one row past its size to say whether there's more.
+ * on the listing id, each with its unit size and how many of its pool
+ * objekts are free, counted for the page's rows only. The cursor is
+ * the previous page's last id, looked up whatever it is now, so a listing
+ * claimed from, edited or withdrawn between pages still marks the place,
+ * and the position never goes through a JS Date. The page reads one row
+ * past its size to say whether there's more.
  */
 export const $fetchListingFeed = createServerFn({ method: "GET" })
   .validator(listingFeedInputSchema)
@@ -53,10 +59,15 @@ export const $fetchListingFeed = createServerFn({ method: "GET" })
         createdAt: true,
         fromUserId: true,
         fromAddress: true,
+        unitSize: true,
+      },
+      extras: {
+        free: (t) => freePoolCount(t),
+        posted: (t) => postedCount(t.id),
       },
       with: {
-        items: { orderBy: { id: "asc" } },
-        wants: { orderBy: { id: "asc" } },
+        items: { where: { leftAt: { isNull: true } }, orderBy: { id: "asc" } },
+        wants: storedWants,
         fromUser: true,
         fromCosmo: { columns: { username: true } },
         fromStats: { columns: feedbackRepColumns },
@@ -76,6 +87,9 @@ export const $fetchListingFeed = createServerFn({ method: "GET" })
         rep: listing.fromUser && toFeedbackRep(listing.fromStats),
         items: listing.items,
         wants: listing.wants,
+        unitSize: listingUnitSize(listing),
+        posted: listing.posted,
+        free: listing.free,
       })),
       nextCursor: rows.length > PAGE_SIZE ? page.at(-1)?.id : undefined,
     };

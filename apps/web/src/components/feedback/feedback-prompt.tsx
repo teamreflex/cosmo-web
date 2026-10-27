@@ -1,5 +1,6 @@
 import { m } from "@/i18n/messages";
-import { partyName, tradeTimeFormat } from "@/lib/client/trades";
+import { partyName } from "@/lib/client/trade-listings";
+import { tradeTimeFormat } from "@/lib/client/trades";
 import type { TradeView } from "@/lib/universal/trades";
 import { cn } from "@/lib/utils";
 import type { TradeSide } from "@apollo/database/web/types";

@@ -117,8 +117,9 @@ export type TradeChainEvent =
  * Decide a drain batch's rows in order, keyed by token. An item that arrives
  * counts as transferred for the rows after it, so a token passed on in the
  * same batch is recorded once and isn't reported as moved. Each trade's
- * events keep row order, and each listing or pending offer breaks once, on
- * the first token that breaks it, with why it did.
+ * events keep row order. Each listing or pending offer breaks once, on the
+ * first token that breaks it, with why it did, and `departed` holds every
+ * token that left each one, which a listing drops from its pool.
  */
 export function foldTransfers(
   rows: readonly ChainRow[],
@@ -127,6 +128,7 @@ export function foldTransfers(
   const arrived = new Set<number>();
   const trades = new Map<string, TradeChainEvent[]>();
   const breaks = new Map<string, { tokenId: number; reason: StaleReason }>();
+  const departed = new Map<string, Set<number>>();
   const post = (tradeId: string, event: TradeChainEvent) => {
     const events = trades.get(tradeId);
     if (events === undefined) trades.set(tradeId, [event]);
@@ -156,21 +158,34 @@ export function foldTransfers(
             tokenId: row.tokenId,
           });
           break;
-        case "breaks":
+        case "breaks": {
           if (!breaks.has(decision.offerId)) {
             breaks.set(decision.offerId, {
               tokenId: row.tokenId,
               reason: decision.reason,
             });
           }
+          const tokens = departed.get(decision.offerId);
+          if (tokens === undefined) {
+            departed.set(decision.offerId, new Set([row.tokenId]));
+          } else {
+            tokens.add(row.tokenId);
+          }
           break;
+        }
         case "ignore":
           break;
       }
     }
   }
 
-  return { trades, breaks };
+  return {
+    trades,
+    breaks,
+    departed: new Map(
+      [...departed].map(([offerId, tokens]) => [offerId, [...tokens]]),
+    ),
+  };
 }
 
 /**

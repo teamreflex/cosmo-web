@@ -126,6 +126,11 @@ export function RangeBadges({ count, filter, matches = true }: BadgesProps) {
               );
             })
           )}
+          {filter.collectionNo.map((value) => (
+            <Chip key={value} className="font-mono">
+              {value}
+            </Chip>
+          ))}
           {filter.class.map((value) => (
             <Chip key={value}>{value}</Chip>
           ))}

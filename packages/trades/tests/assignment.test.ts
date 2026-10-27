@@ -7,14 +7,13 @@ import {
   type TradeWant,
 } from "../src/allocate";
 import { validateAssignment } from "../src/assignment";
-import { orderInventory } from "../src/inventory";
-import { type ObjektAttributes, rangeFilterSchema } from "../src/range";
+import { type IndexedAttributes, rangeFilterSchema } from "../src/range";
 import { generateCase, seeded } from "./generate";
 
 let nextTokenId = 1;
 
 function objekt(
-  overrides: Partial<ObjektAttributes> & { season: string; member: string },
+  overrides: Partial<IndexedAttributes> & { season: string; member: string },
 ): InventoryObjekt {
   const attributes = {
     artist: "artms",
@@ -30,6 +29,7 @@ function objekt(
       `${attributes.season}-${attributes.member}-${attributes.collectionNo}`.toLowerCase(),
     artist: attributes.artist,
     member: attributes.member,
+    collectionNo: attributes.collectionNo,
     season: attributes.season,
     class: attributes.class,
     onOffline: attributes.onOffline,
@@ -38,6 +38,10 @@ function objekt(
 
 function exact(count: number, slug: string): TradeWant {
   return { kind: "exact", count, slug };
+}
+
+function choice(count: number, slugs: string[]): TradeWant {
+  return { kind: "choice", count, slugs };
 }
 
 function range(
@@ -207,17 +211,20 @@ describe("validateAssignment", () => {
       ["season", { season: "Binary01" }],
       ["class", { class: "Double" }],
       ["on_offline", { onOffline: "offline" }],
-    ] satisfies [string, Partial<ObjektAttributes>][])("%s", (_, overrides) => {
-      const misfit = objekt({ ...base, ...overrides });
-      expect(
-        validateAssignment([want], [ids(misfit)], attributesOf(misfit)),
-      ).toEqual({
-        ok: false,
-        reason: "misfit",
-        row: 0,
-        tokenId: misfit.tokenId,
-      });
-    });
+    ] satisfies [string, Partial<IndexedAttributes>][])(
+      "%s",
+      (_, overrides) => {
+        const misfit = objekt({ ...base, ...overrides });
+        expect(
+          validateAssignment([want], [ids(misfit)], attributesOf(misfit)),
+        ).toEqual({
+          ok: false,
+          reason: "misfit",
+          row: 0,
+          tokenId: misfit.tokenId,
+        });
+      },
+    );
   });
 
   test("lets empty range columns take anything (ASN-11)", () => {
@@ -356,7 +363,7 @@ describe("allocate and validateAssignment agree (ASN-16)", () => {
     for (let run = 0; run < 3000; run++) {
       const { wants, inventory } = generateCase(random);
       if (wants.length === 0) continue;
-      const allocation = allocate(wants, orderInventory(inventory));
+      const allocation = allocate(wants, inventory);
       if (!isFullyAllocated(allocation)) continue;
       full++;
       expect(
@@ -381,6 +388,12 @@ describe("fitsWant (FIT-01)", () => {
     ["another artist", range(1, { artist: ["tripleS"] }), false],
     ["a matching member", range(1, { member: ["HeeJin", "KimLip"] }), true],
     ["another member", range(1, { member: ["KimLip"] }), false],
+    [
+      "a matching collection number",
+      range(1, { collectionNo: ["101Z"] }),
+      true,
+    ],
+    ["another collection number", range(1, { collectionNo: ["102Z"] }), false],
     ["a matching season", range(1, { season: ["Atom02"] }), true],
     ["another season", range(1, { season: ["Atom01"] }), false],
     ["a matching class", range(1, { class: ["First"] }), true],
@@ -391,6 +404,16 @@ describe("fitsWant (FIT-01)", () => {
       "empty columns beside one narrowed column",
       range(1, { season: ["Atom02"], member: [] }),
       true,
+    ],
+    [
+      "a choice row naming the slug",
+      choice(1, ["atom02-kimlip-201z", heejin.slug]),
+      true,
+    ],
+    [
+      "a choice row without the slug",
+      choice(1, ["atom02-kimlip-201z", "atom02-heejin-102z"]),
+      false,
     ],
   ] satisfies [string, TradeWant, boolean][])("%s", (_, want, fits) => {
     expect(fitsWant(want, heejin)).toBe(fits);

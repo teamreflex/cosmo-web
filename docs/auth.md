@@ -1,110 +1,230 @@
-# Auth — Better Auth
+# Auth
 
-The web app uses Better Auth with Discord/Twitter OAuth. Config lives in `apps/web/src/lib/server/auth.server.ts`; the auth tables are hand-tuned in the drizzle schema files.
+Better Auth runs inside apps/web at `/api/auth/*`, configured in `apps/web/src/lib/server/auth.server.ts`. COSMO links, public users and account deletion are in [`accounts.md`](accounts.md); reports and the staff audit log are in [`moderation.md`](moderation.md).
+
+## Better Auth setup
+
+- Users sign in with email and password, Discord or X. Sign-up sends a verification email but doesn't require it (`requireEmailVerification: false`).
+- `better-auth`, `@better-auth/api-key` and `@better-auth/drizzle-adapter` are pinned to one version in the root catalog. Upgrade them together.
+- No cookie cache is configured, so every request reads `role`, `banned` and `ban_expires` from the user row. A role change or a ban applies from the user's next request.
+- `session.freshAge: 0` turns off Better Auth's own fresh-session checks. Account deletion's freshness rule is Apollo's own ([`accounts.md`](accounts.md#account-deletion)).
+- `trustedOrigins` holds only `baseUrl()`. A POST that carries cookies must send a matching `Origin` header, or it fails with `MISSING_OR_NULL_ORIGIN` or `INVALID_ORIGIN`.
+- OAuth access and refresh tokens are encrypted on write with AES-256-GCM, keyed by `BETTER_AUTH_SECRET` read as hex. Nothing in the repo decrypts them. The secret's format is in [`tooling.md`](tooling.md).
+- The browser client (`lib/client/auth.ts`) has no admin or api-key plugin. Staff work goes through server functions.
+
+| Plugin                         | Used for                                                                      |
+| ------------------------------ | ----------------------------------------------------------------------------- |
+| `username`                     | Apollo usernames, 3 to 20 letters and digits                                  |
+| `admin(adminPluginOptions)`    | role and ban columns, the sign-in refusal for banned users, `unbanUser`       |
+| `@better-auth/api-key`         | keys for the public API routes ([API keys](#api-keys))                        |
+| `jwt`                          | chat tokens ([Chat tokens](#chat-tokens))                                     |
+| `server-only-currency` (local) | keeps `currency` out of client writes ([Display currency](#display-currency)) |
+| `tanstackStartCookies`         | sets cookies from server functions                                            |
+
+`hooks.before` 404s two plugin route families when they are called over HTTP:
+
+| Path         | Refused when                          | Why                                                                                                  |
+| ------------ | ------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `/api-key/*` | `ctx.request` or `ctx.headers` is set | the plugin serves every signed-in user; only header-less server calls may manage keys                |
+| `/admin/*`   | `ctx.request` is set                  | server functions call the plugin with the caller's headers, so testing headers would refuse them too |
+
+### Social sign-in can change the email
+
+- Discord and X run with `overrideUserInfoOnSignIn`, and account linking runs with `allowDifferentEmails`. A sign-in can overwrite `email` and `email_verified`, which decide [account protection](#protected-accounts).
+- An X account with no confirmed email stores the X username as the email. Such an account has no deliverable email.
+- Both behaviours are deliberate.
 
 ## Schema generation
 
-`bunx @better-auth/cli generate` **clobbers** the hand-tuned auth schema (citext columns, custom indexes, the current relations API). When a plugin adds tables or columns: regenerate → `git restore` the schema file → transplant only the new tables and columns, re-adding FKs and `mode: "date"` timestamps by hand.
+The Better Auth tables and the `user_role` enum live in `packages/database/src/auth.ts`, which is hand-tuned: citext usernames, custom indexes, `mode: "date"` timestamps. `bun run auth:generate` (apps/web) writes straight over it.
 
-The admin plugin's columns (`user.role`, `banned`, `ban_reason`, `ban_expires`, `session.impersonated_by`) were transplanted this way. `role` is the `user_role` pg enum, `NOT NULL DEFAULT 'user'`, which rejects Better Auth's comma-joined multi-role form. Its values are declared in `@apollo/database` and mirror `@apollo/auth`'s roles; the staff seed writes a `Role` into the column, so the two can't drift without a compile error.
+When a plugin adds tables or columns:
 
-`user.is_admin` is unused and will be dropped. Drizzle selects every declared column on each session lookup, so remove `isAdmin` from the TS schema one release before the migration that drops it, or the image still serving during that deploy fails every authenticated request.
+1. Run `bun run auth:generate`.
+2. Note the new tables and columns, then `git restore packages/database/src/auth.ts`.
+3. Copy in only the new tables and columns by hand, re-adding foreign keys and `mode: "date"` timestamps.
+4. Generate a migration ([`migrations.md`](migrations.md)).
 
-## Staff roles and permissions
+- `user.role` is the `user_role` pg enum, `NOT NULL DEFAULT 'user'`. It rejects Better Auth's comma-joined multi-role form.
+- The enum's values mirror `roleNames` in `@apollo/auth`. `apps/web/scripts/seed-staff.ts` types its rows with `Role`, so the two can't drift without a compile error.
+- Drizzle selects every declared auth column on each session lookup. Dropping a column follows the two-release procedure in [`migrations.md`](migrations.md).
 
-- `@apollo/auth` holds the access-control `statement`, the `user`, `tester`, `moderator` and `admin` roles, `can(role, permissions)`, `parseRole()` and `adminPluginOptions`. Testers hold market access alone, for people trying the market while it's gated; moderators add the trade, listing, feedback and report actions; admins hold everything. Each role holds every permission of the roles ranked below it (`roleRanks` in `src/guard.ts`). Its tests check every role against every action through both `can()` and the plugin's `userHasPermission`.
-- Never set `adminUserIds`: it bypasses every permission check. Impersonation and session management are absent from the statement, so no role can impersonate or revoke sessions.
-- Better Auth types the session's `user.role` as `string`. Narrow it with `parseRole()` wherever it arrives from Better Auth or jsonb; rows read through Drizzle are already typed by the enum.
-- Server functions gate staff work with `staffMiddleware(permissions)` (`lib/server/middlewares.ts`), which throws `ExpectedError("forbidden")` and adds `role` to the context. Staff don't need a COSMO link; chain `cosmoMiddleware` after it only when the function writes the caller's address.
-- The role reaches the client only on the current-account payload (`GetAccount.role`), never on `PublicUser`, which also shapes other people's profiles. `useHasPermission()` checks it on the client.
-- Admin pages call `requirePermission(context.role, anyOf)` (`hooks/use-has-permission.ts`) in `beforeLoad`. It throws `notFound()` rather than an error, because SSR answers route errors with a 500, and the page's `notFoundComponent` shows the no-access state. The server functions behind the page still check on their own.
-- `hooks.before` in `auth.server.ts` 404s every browser call to the plugin's `/admin/*` routes. It tests `ctx.request` alone, which only router calls carry: server functions must pass headers, so a headers test would refuse them too.
-- Admins change roles with `$setRole` (`lib/functions/staff-users.ts`, `user: ["set-role"]`) from the role card on `/admin/accounts`, rather than through the plugin. The card finds the account through COSMO's user search and reads the user who linked its address with `$fetchRoleUser`; an address nobody has linked has no role to change. `$setRole` is refused through `guardUserChange()` like a ban, locks the user row, writes the role and a `user:set-role` audit row with the old and new role in one transaction, and publishes `role-changed` after it commits, which closes the user's chat sockets. There is no session cookie cache, so every session lookup reads the role from the user row and the change applies from the user's next request; their open tabs keep the old role's UI until they reload, while the server already refuses them.
-- The trade system is gated by `market: ["access"]` (`marketAccess` in `@apollo/auth`), held by testers, moderators and admins, with signed-out visitors counted as `user`. The gate covers pages and entry points only, and the trade system's server functions are not gated. `/market/*` (through `routes/market/route.tsx`), `/trade/$id` and `/@{$username}/feedback` call `requireMarketAccess()` in `beforeLoad`, which shows the site's 404 rather than the page's own not-found state, and the links into them check `useHasPermission()(marketAccess)`. Trade Matches on a list still shows the matches without access, but its cards can't be picked into a direct offer. Launching the market is adding `market: statement.market` to the `user` role and setting `user: true` on the `market` row of `packages/auth/tests/roles.test.ts`; removing both again is the kill switch, but only while no one outside staff has a live trade (see `docs/trades.md`).
-- A report about a staff member, about a trade they are a party to, or about a rating they left or received, is hidden from them whatever their role, so they never learn who reported them. `lib/server/reports.server.ts` filters these in the database query, and the detail and actions refuse them with `report_about_you`.
-- A trade report is a dispute. Staff settle it by completing, cancelling or extending the trade (`lib/functions/staff-trades.ts`), which resolves the trade's open reports in the same transaction; the generic resolve and dismiss refuse it (`report_trade_dispute`), since a closed dispute would leave its trade frozen. Each staff trade action carries the `reportId` it was taken from and is refused with `trade_status_changed` once the trade is no longer under that report, so a stale page can't act.
-- A feedback report is about the rating, which its rater can't report. A ban from it bans the rater, and both the ban and removing the rating resolve every open report on the rating.
+## Roles and permissions
 
-## Staff names
+Roles and the access-control `statement` are defined once in `packages/auth/src/index.ts` ([`packages/auth/README.md`](../packages/auth/README.md)). Each role holds every permission of the roles ranked below it.
 
-Staff surfaces name a user by their COSMO username, their public identity, through `staffUser()` (`lib/server/staff-users.server.ts`), which falls back to the Apollo username for a user without a link. `StaffUserName` renders it, marking an Apollo name with a "No COSMO" tag since the two namespaces can overlap; text-only places use `staffUserText()`. Where a user's current COSMO account may not be the one a row describes (the link history), staff see the Apollo username and an id prefix instead.
+| Permission                                                              | user | tester | moderator | admin |
+| ----------------------------------------------------------------------- | ---- | ------ | --------- | ----- |
+| `market: access`                                                        |      | x      | x         | x     |
+| `trade: read-any, cancel-any, resolve-dispute, remove-message, message` |      |        | x         | x     |
+| `listing: remove-any`, `feedback: remove-any`                           |      |        | x         | x     |
+| `report: read, resolve, escalate`                                       |      |        | x         | x     |
+| `user: ban, set-role`                                                   |      |        |           | x     |
+| `site: manage`, `audit: read`, `cosmo: history`                         |      |        |           | x     |
 
-## Staff audit and user events
+- Testers exist so people can try the market while it is gated. The gate, its launch step and its kill switch are in [`trades/feedback.md`](trades/feedback.md).
+- Signed-out visitors are checked as `user`.
+- Never set `adminUserIds` in `adminPluginOptions`, because it bypasses every permission check.
+- Impersonation and session management are absent from the statement, so no role can be granted them. apps/chat also refuses impersonated sessions.
+- Better Auth types `session.user.role` as `string`. Narrow it with `parseRole()`, which maps unknown and comma-joined values to `"user"`. Rows read through Drizzle are already typed by the enum.
+- The role travels only in the viewer's own payloads (`GetAccount.role`, Better Auth's `get-session`), never on `PublicUser`.
 
-- `recordStaffAudit()` (`lib/server/staff-audit.server.ts`) takes a `DbOrTx`, so the audit row commits in the same transaction as the change it records. `report:read` rows are deduplicated per staff member and report for 10 minutes; every other entry is an `UndeduplicatedAuditEntry`.
-- **Adding an action:** `staff_audit.action` and `target_type` are `varchar` columns typed by `staffAuditActions` and `staffAuditTargetTypes` in `@apollo/database/web/types`, so it needs no migration. Add it to `UndeduplicatedAuditEntry` and `toAuditRow()`, give it a tone in `audit-row.tsx` and a label in `lib/client/staff-audit.ts` (all six locales).
-- Bans and unbans publish on the Redis `user-events` channel with `publishUserEvent()` after their audit row commits. The channel name and the `UserEvent` union live in `@apollo/auth/events`.
-- `user-events` also carries `{ type: "disconnect", userId }` when a session ends, so apps/chat ends that user's streams. `databaseHooks.session.delete.after` publishes it per deleted session row (sign-out, revoked sessions, password changes, a ban's `deleteUserSessions()`), skipping rows already expired. A Redis failure there goes to Sentry rather than throwing, since the session is already gone; the chat token's lifetime bounds a stream that misses it. Account deletion removes sessions through the user row's foreign key, which Better Auth's hooks never see, so `deleteAccount()` publishes `disconnect` itself after its transaction commits.
-- Staff holding `trade: ["read-any"]` open any trade they aren't a party to read-only at `/trade/$id`. Trade reads aren't audited.
-- Staff holding `trade: ["message"]` (`staffMessaging` in `@apollo/chat/policy`, held by moderators and admins) write to both parties in a trade's chat while they can read it under an open report or dispute, ended trades included. apps/chat audits each message as `trade:message` in the transaction that stores it, under the report that let them in.
+## Where permissions are checked
+
+The server function check is the authoritative one. Route guards and UI checks only decide what to show.
+
+```
+  browser             apps/web
+  -------             ------------------------------------------------------------
+  navigate -------->  route beforeLoad
+                        /admin layout  can(role, ADMIN_SHELL_PERMISSIONS)  else redirect /
+                        admin page     requirePermission(anyOf)            else notFound()
+                        market pages   requireMarketAccess()               else site 404
+  render ---------->  useHasPermission()(perms)
+                        role from GetAccount; hides links, protects nothing
+
+  server fn ------->  authenticatedMiddleware   session + user row
+                      staffMiddleware(perms)    parseRole + can(), else "forbidden"
+                      guardUserChange()         ban, unban, set role only
+
+  /api/auth/* ----->  hooks.before              /admin/*, /api-key/* -> 404
+```
+
+- Gate a staff server function with `staffMiddleware(permissions)` (`lib/server/middlewares.ts`). It adds `role` to the context.
+- Staff don't need a COSMO link. Chain `cosmoMiddleware` after `staffMiddleware` only when the handler needs the caller's address.
+- How `requirePermission()` and `requireMarketAccess()` gate routes is in [`tanstack.md`](tanstack.md#gating).
+- `ADMIN_SHELL_PERMISSIONS` (`components/admin/common.ts`) is `report: read`, so testers never see the admin shell.
+
+## Staff changes to accounts
+
+Ban, unban and set role each run `guardUserChange()` (`lib/server/staff-users.server.ts`) before anything else. It loads the target (`user_not_found`) and applies `userChangeRefusal()` from `@apollo/auth/guard`:
+
+| Refusal          | When                                                                            |
+| ---------------- | ------------------------------------------------------------------------------- |
+| `protected_user` | the target is a [protected account](#protected-accounts), whoever the caller is |
+| `self_ban`       | the caller bans themselves (unbanning themselves is allowed)                    |
+| `self_demotion`  | the caller lowers their own role (same or higher is allowed)                    |
+
+A new staff action that changes an account's access runs `guardUserChange()` too. The guard runs before the admin plugin is called, because the plugin's own refusals aren't `ExpectedError`s.
+
+### Protected accounts
+
+- `PROTECTED_EMAIL_DOMAINS` is an optional comma-separated list of email domains. Matching is exact and case-insensitive: `team-reflex.com` matches neither `sub.team-reflex.com` nor `evil-team-reflex.com`.
+- An account is protected when its email is on a listed domain and `email_verified` is true. Only a verified email counts, because sign-up doesn't require verification and anyone could otherwise register a protected address.
+- Protection follows the account's current email, which a [social sign-in can overwrite](#social-sign-in-can-change-the-email).
+- `protectionFor()` returns null for roles without `user: ban`, so nobody without ban rights can map out which accounts are protected. The report detail's `protected` flag uses it.
+
+### Ban
+
+`$banUser` (`lib/functions/staff-users.ts`) writes the ban itself instead of calling the plugin, so the ban and its trade sweep commit in one transaction (`banAndSweep()`).
+
+```
+  $banUser (user: ban)
+    guardUserChange: protected_user | self_ban
+    +-- one transaction ---------------------------------------------------------+
+    | lock the user + every counterparty to notify FOR NO KEY UPDATE, id order   |
+    | re-read trades and offers (one may have landed while the ban waited)       |
+    | the acting admin has a live trade with the user?   -> ban_trade_party      |
+    | user: banned, ban_reason, ban_expires (null = permanent)                   |
+    | sweep trades, listings and offers (docs/trades/lifecycle.md)               |
+    | staff_audit user:ban; resolve open reports on the linked target            |
+    +----------------------------------------------------------------------------+
+    after commit
+      deleteUserSessions -> session.delete.after per live session -> disconnect
+      publish banned ----------------------------------------------> user-events
+      publish each disputed trade ---------------------------------> trade-events
+
+  next sign-in   ban active -> BANNED_USER
+                 ban lapsed -> the plugin clears banned (no audit row, no event)
+```
+
+- Treat a ban as active only when `isBanActive()` (`@apollo/auth/guard`) holds, never on `banned` alone.
+- `ban_trade_party` exists because the ban would put the admin's own trade on hold under a dispute they filed. Another admin bans the user instead.
+- Sessions are deleted after the commit. If that step fails, the user stays signed in until banned again.
+- The ban reason is staff-only. The banned user only ever sees the generic `BANNED_USER` message.
+- Which reports a ban resolves is in [`moderation.md`](moderation.md).
+
+### Unban
+
+- `$unbanUser` calls the plugin's `auth.api.unbanUser` with the request headers.
+- Its audit row ([`moderation.md`](moderation.md)) and then the `unbanned` event follow the plugin call.
+
+### Set role
+
+- Admins find the account on `/admin/accounts` through COSMO's user search. `$fetchRoleUser` maps the address to the user who linked it; an address nobody has linked has no role to change.
+- `$setRole` locks the user row `FOR NO KEY UPDATE` and reads the current role. An unchanged role is a no-op.
+- The role and a `user:set-role` audit row with `{ from, to }` commit together. `role-changed` is published after the commit.
+- Open tabs keep the old role's UI until they reload, while the server already enforces the new role.
+
+## User events
+
+Changes that must end a user's chat streams are published as JSON on the Redis channel `user-events`. The channel name and the `UserEvent` union are in `@apollo/auth/events`; the subscriber side is drawn in [`apps/chat/README.md`](../apps/chat/README.md).
+
+| Publisher (apps/web)                                                          | Event          | apps/chat                  |
+| ----------------------------------------------------------------------------- | -------------- | -------------------------- |
+| `databaseHooks.session.delete.after`, per deleted session that hadn't expired | `disconnect`   | ends the user's open calls |
+| `deleteAccount()`                                                             | `disconnect`   | ends the user's open calls |
+| `$banUser`                                                                    | `banned`       | ends the user's open calls |
+| `$setRole`, when the role changed                                             | `role-changed` | ends the user's open calls |
+| `$unbanUser`                                                                  | `unbanned`     | ignores it                 |
+
+- Publish only after the change commits.
+- The session hook covers sign-out, revoked sessions, password changes and a ban's `deleteUserSessions()`. A Redis failure there goes to Sentry rather than throwing, because the session is already gone.
+- A user row's foreign key cascade deletes sessions without Better Auth's hooks seeing it. Code that deletes sessions that way publishes `disconnect` itself, as `deleteAccount()` does.
+- If chat misses an event while it resubscribes, the chat token's lifetime bounds how long a stream outlives it.
 
 ## Chat tokens
 
-- apps/chat authenticates with short-lived JWTs from Better Auth's `jwt` plugin. The browser fetches one from `GET /api/auth/token` with its session cookie (`authClient.token()`) and sends it on every chat call; chat verifies it against `GET /api/auth/jwks` and reads the session, ban and role from the database itself.
-- The plugin runs with `disableSettingJwtHeader`, so `get-session` never sends a `set-auth-jwt` header. Keys are Ed25519, stored in the `jwks` table with the private key encrypted under `BETTER_AUTH_SECRET`. Rotating `BETTER_AUTH_SECRET` makes the stored keys undecryptable and `/token` fails, so clear the `jwks` rows when you rotate it.
-- The payload carries `sub` (the user id) and `sid` (the session id), never the role, with `aud` set to the origin of `VITE_CHAT_URL`. `CHAT_TOKEN_LIFETIME_SECONDS` (30 to 900, default 300) is passed to the plugin as a duration string, because a number would be read as an absolute `exp`.
-- `/api/auth/token` responses carry `Cache-Control: no-store`, which keeps tokens out of the browser cache and Cloudflare's /api cache rule. The chat origin isn't a trusted origin: chat never calls Better Auth with cookies.
-- `VITE_CHAT_URL` is the chat websocket origin (`ws:` or `wss:`, no path); unset turns chat off. It is in `apps/web/turbo.json`'s build env, so a cached build isn't reused across chat URLs.
+apps/chat verifies short-lived JWTs from the `jwt` plugin. The chat side (verification, the session, ban and role read) is in [`apps/chat/README.md`](../apps/chat/README.md).
 
-## Protected accounts and self-demotion
-
-- `PROTECTED_EMAIL_DOMAINS` is an optional comma-separated list of email domains, matched exactly and case-insensitively (`team-reflex.com` matches neither `evil-team-reflex.com` nor `sub.team-reflex.com`).
-- Nobody, admins included, can ban, unban or change the role of an account whose email is **verified** and on a listed domain. Only a verified email counts, because email sign-up doesn't require verification, so anyone could otherwise register a protected address and become unbannable. Nobody can ban themselves or lower their own role.
-- `userChangeRefusal()` in `@apollo/auth/guard` decides this; `guardUserChange()` (`lib/server/staff-users.server.ts`) applies it before the plugin is called. `staffMiddleware` refuses callers without `user: ["ban"]` first, and the report detail's `protected` flag is computed on the server and is null for everyone else, so nobody without the permission can learn which accounts are protected.
-- Protection follows the account's current `email` and `email_verified`. Discord and X are configured with `overrideUserInfoOnSignIn` and `allowDifferentEmails`, so a sign-in can overwrite both, and an X account with no confirmed email stores the username as the email, which silently drops protection. Both behaviours are deliberate.
-
-## Bans
-
-- A ban deletes the user's sessions, and the plugin's `session.create.before` hook refuses new sign-ins (`BANNED_USER`). The sessions are deleted after the ban commits, so if that step fails the user stays signed in until banned again.
-- The ban reason is staff-only: the banned user only ever sees the generic banned message.
-- Ban lengths are lazy: `banned` stays true after `ban_expires` passes, until the next sign-in attempt clears it, with no audit row or event. Treat a ban as active only when `isBanActive()` (`@apollo/auth/guard`) holds. A permanent ban writes `ban_expires` as null, so a lapsed earlier expiry can't lift it.
-- `$banUser` writes the ban itself rather than through the plugin, because it commits in one transaction with the trade sweep (`banAndSweep()` in `lib/server/staff-users.server.ts`): each of the user's accepted trades is disputed under a `party_banned` report, so its timer stops and staff decide it, and their open listings and pending offers are closed: each offer's timeline says staff closed it without naming who was banned, and the sender of each offer the banned user received gets an `offer_declined` notification saying staff closed their offer to that user, without saying why. The sweep reads the trades and offers again once it holds the user's lock, so one accepted or sent while the ban waited is swept too. An admin with a live trade with the user is refused (`ban_trade_party`), since the ban would put their own trade on hold under a dispute they filed; another admin bans them. A ban started from a report resolves, in the same transaction, every open report on that report's target: the user's profile, the reported chat message or the reported rating. Their other open reports stay in the queue, so staff can still act on them (removing a message, say).
-
-## COSMO accounts
-
-- A user links at most one COSMO account and a COSMO account belongs to at most one user (`cosmo_account.address` and `user_id` are both unique; the `user_id` index is NULLS DISTINCT, so unlinked cached rows don't collide). Users can't unlink; deleting the account unlinks it.
-- `linkAccount()` (`lib/server/cosmo-accounts.server.ts`) is an upsert that only applies while the row's `user_id` is null. The link wizard's first check (`$generateVerificationCode`) is advisory; the checks in `$verifyCosmoBio` after the bio check are authoritative, and the conditional upsert backstops races between them.
-- An address owned by an actively banned user is refused with `cosmo_account_banned`, but only after the bio check, so ban status is told only to someone who has proven control of the account; everyone else gets `account_linked_elsewhere`.
-- Read a user's linked address with `getCosmoAddress(executor, userId)`, or through the user's `cosmoAccount` relation when the same query already loads the user row (`$fetchCurrentAccount`, a listing poster's account). Either keeps the stored case, because the client compares it with `===` against the profile's address; compare it against lowercase indexer rows with `isEqual()` or `addr()`. Reads keyed by address, or that only show a username beside a user, join `cosmo_account` directly.
-- A link never moves between users. Someone who lost access to the Apollo account their COSMO account is linked to asks staff to delete that account, which unlinks the address, then links it to their new account through the bio. An address held by a banned account stays with it.
-- Received feedback is keyed by COSMO address, not by user: `trade_feedback` copies both pinned trade addresses and `user_feedback_stats` is keyed by address, so a rating follows the address it was left on. Deleting an account and relinking the same COSMO account brings its history back, negatives included.
-- `cosmo_link_audit` is an append-only history with a row for every link and unlink, giving a trail from a COSMO account to every Apollo account that has linked it. Every change to `cosmo_account.user_id` appends its rows through `recordCosmoLinkChanges()` in the same transaction; a new way to change a link adds a reason and does the same. Admins read it on `/admin/accounts` (`cosmo: ["history"]`).
-
-## Lock order
-
-Two transactions taking the same locks in opposite orders deadlock, and Postgres aborts one with `40P01`. Every write that locks more than one kind of row follows one order:
-
-1. User rows, several in one statement ordered by id. Account deletion takes `FOR UPDATE`; linking, posting or editing a listing, and actions on an existing trade (both parties) take `FOR SHARE`; anything created with a counterparty (a claim, a direct offer, a counter) and accepting a direct offer take `FOR NO KEY UPDATE` on both users, because `FOR SHARE` can't serialise one user's parallel claims, and it conflicts with the `FOR SHARE` linking takes, so neither link can change between the write's check and its commit; schedules' drain and `trade-timers` take `FOR KEY SHARE` on everyone they will notify. Web trade writes lock their parties through `lockParties()` (`lib/server/trades/trade.server.ts`); the ones that check a COSMO link (a claim, a direct offer, a counter, an accept) then read it in a second statement with `readLockedLinks()`: a lock that waited on a relink re-reads only the locked row, so a link joined into the locking statement would be the one from before the wait.
-2. `cosmo_account` rows.
-3. Trade rows, then listing rows, each kind locked by one `ORDER BY id` select before its guarded update, since a multi-row `UPDATE` locks in scan order. Trades and listings are never locked in one mixed statement: `closeOpenOffers()` (a ban or an account deletion) and the drain's `breakOffers` lock the pending offers, then the open listings, and the drain turns offers stale before its completed trades lock their listings. `trade-timers` expires pending offers in a transaction of its own, taking `FOR KEY SHARE` on both parties before it locks the offers.
-4. `trade_feedback` rows, then the rated address's `user_feedback_stats` row. A write touches one stats row, through one atomic upsert (`addFeedbackStats()` in `lib/server/feedback.server.ts`), so stats rows need no order among themselves. Stats rows have no foreign key, so no stats write waits on a user row.
-
-Locking users first is what keeps trade writes and the drain from deadlocking with an account deletion, which locks the user and then updates their listings, while a notification insert takes `FOR KEY SHARE` on its recipient through the foreign key. A write whose user row is gone by the time it locks refuses, as linking does.
-
-## Account deletion
-
-- `$deleteAccount` is the only way to delete an account; Better Auth's `user.deleteUser` is off. It takes a `DeletionProof`: the token from an emailed link, or, only for an account without a deliverable email (X sign-ins without a confirmed email), a session created within the last 10 minutes. Freshness counts from `session.created_at`, so refreshing a session doesn't renew it.
-- The emailed link lands on a page that deletes only when its button POSTs the token, so mail link scanners and restored tabs can't delete an account. Requesting a new link invalidates the earlier ones.
-- `deleteAccount()` (`lib/server/account-deletion.server.ts`) locks the user row `FOR UPDATE` and refuses an actively banned user, because deleting frees the COSMO account and would let them carry it to a fresh account. The check runs under the row lock, which a ban waits on, so a ban that lands after the email went out still refuses.
-- `purgeAccount()` unlinks the COSMO account (which is what frees the address, since `user_id` has no foreign key), deletes the address's pins, locked objekts and legacy lists, closes the user's open listings and offers (each offer's timeline says an account was deleted rather than that a party declined or withdrew it, and no one is notified), and deletes the user row; the foreign keys do the rest.
-- Ratings outlive both parties: `trade_feedback.from_user_id` and `to_user_id` are `SET NULL`, and the address's `user_feedback_stats` row stays, since it belongs to the address (see COSMO accounts).
-- Every foreign key to `user.id` is `ON DELETE CASCADE` or `SET NULL`, so the delete can't fail on a leftover reference. A new table that references a user picks one of those, or keeps a plain id when its rows must outlive the user (see `docs/database.md`, Append-only audit tables).
-- **Adding a blocker:** append a check to `blockerChecks` in `account-deletion.server.ts` and extend the `DeletionBlocker` union in `lib/universal/account-deletion.ts`. Blocked results are returned rather than thrown, so the UI can list them.
-- `/api/og/profile/*` is cached at the CDN for 24 hours, so a card showing the deleted user's pins can outlive the deletion until it expires or is purged by hand.
-- Staff surfaces show a user who is gone as "Deleted user"; pages built from COSMO and chain data keep showing the COSMO username, which belongs to the COSMO account.
+- The browser fetches a token from `GET /api/auth/token` with its session cookie. Public keys are served at `/api/auth/jwks`.
+- Keys are Ed25519. The payload carries `sub` (user id) and `sid` (session id), never the role.
+- `aud` is the origin of `VITE_CHAT_URL` (or `baseUrl()` when unset) and `iss` is `baseUrl()`.
+- `expirationTime` is the duration string `` `${CHAT_TOKEN_LIFETIME_SECONDS}s` ``, because the plugin reads a number as an absolute `exp`.
+- Private keys sit in the `jwks` table, encrypted under `BETTER_AUTH_SECRET`. Rotating the secret makes them undecryptable and `/token` fails, so clear the `jwks` rows when you rotate it.
+- `/api/auth/token` responses carry `Cache-Control: no-store` (`routes/api/auth/$.ts`), so no cache between the browser and the server keeps a token.
+- The chat origin isn't a trusted origin, because chat never calls Better Auth with cookies.
 
 ## Display currency
 
-`user.currency` is a Better Auth `additionalField` with `input: true`, but only `$updateSettings` may write it, because the supported-currency check is async and Better Auth field validators must be synchronous (`input: false` would refuse the field from server calls too). The `server-only-currency` plugin in `auth.server.ts` strips `currency` from router calls to `/update-user` and `/sign-up/email`; `$updateSettings` checks the code with `assertSupportedCurrency()` and then calls `auth.api.updateUser` with headers but no request, which the plugin lets through. Only the signed-in user's own payload carries the currency, since it hints at their country.
+`user.currency` hints at the user's country, so only the signed-in user's own payload carries it ([`accounts.md`](accounts.md#public-users)).
 
-## API Keys (admin-administered)
+- It is an `additionalField` with `input: true`, but only `$updateSettings` may write it. The supported-currency check is async, and Better Auth field validators must be synchronous.
+- `input: false` would refuse the field from server calls too, so the `server-only-currency` plugin strips `currency` from router calls to `/update-user` and `/sign-up/email` instead.
+- `$updateSettings` checks the code with `assertSupportedCurrency()`, then calls `auth.api.updateUser` with headers but no request, which the plugin lets through.
 
-- The `@better-auth/api-key` **server plugin mounts `/api/auth/api-key/*` for all logged-in users** — the client plugin is only typed sugar, omitting it protects nothing, and there is no built-in role gate. `hooks.before` in `auth.server.ts` therefore 404s the HTTP routes: `ctx.path?.startsWith("/api-key/") && (ctx.request || ctx.headers)`. Optional chaining on `ctx.path` is required — server-only endpoints have no path.
-- Admin operations run in server fns gated by `staffMiddleware({ site: ["manage"] })`: **create** via `auth.api.createApiKey({ body: { userId, ... } })` with NO `headers` (passing headers flips to client mode and ignores `userId`); **list/update/delete** via direct Drizzle on the `apikey` table (the plugin's own endpoints are session-self-scoped).
-- Keep `@better-auth/api-key` in version lockstep with `better-auth`; both are pinned in the root catalog.
-- `rateLimit: { enabled: false }` on the plugin is deliberate — the default (10 verifications/day per key) would silently break polling consumers of the public API routes.
-- Public API routes authenticate via `verifyRequestApiKey` (`lib/server/api-key.server.ts`): reads `Authorization` (optional `Bearer` prefix) or `x-api-key`, then calls the server-only `auth.api.verifyApiKey` — which has no HTTP path, so it's unaffected by the route block.
+## API keys
 
-## Testing
+Admins issue keys for the public API routes (`routes/api/user/*`, `routes/api/v1/user/search.ts`). The admin functions are in `lib/functions/api-keys.ts`, gated by `site: manage`.
 
-Better Auth refuses a POST that carries cookies unless its `Origin` header matches `trustedOrigins`, which holds only `baseUrl()` (from `VITE_BASE_URL`). curl calls to `/api/auth/*` with a cookie jar must send a matching `Origin` header: without one they fail with `MISSING_OR_NULL_ORIGIN`, and with another origin they fail with `INVALID_ORIGIN`.
+- The plugin's HTTP routes are blocked in `hooks.before` ([Better Auth setup](#better-auth-setup)); leaving the client plugin out of `lib/client/auth.ts` protects nothing on its own.
+- Create a key with `auth.api.createApiKey({ body: { userId, ... } })` and no headers. Headers switch the plugin to client mode, which ignores `userId`, and `hooks.before` would 404 the call anyway.
+- List, update and delete keys with Drizzle on the `apikey` table, because the plugin's own endpoints are scoped to the caller's session. The owner column is `reference_id`.
+- `rateLimit: { enabled: false }` is deliberate. The plugin's default of 10 verifications per day per key would break polling consumers.
+- `enableSessionForAPIKeys` is off. `verifyRequestApiKey()` (`lib/server/api-key.server.ts`) returns a boolean, so a key carries no identity or permissions into the route.
+- `verifyRequestApiKey()` reads `Authorization` (with an optional `Bearer` prefix) or `x-api-key`. It calls `auth.api.verifyApiKey`, a server-only endpoint with no HTTP path, so the route block doesn't affect it.
+
+## Lock order
+
+The lock order every multi-row write follows is in [`locking.md`](locking.md).
+
+## Testing locally
+
+- `turbo test --filter @apollo/auth` runs the role table and the guard tests.
+- `bun run db:seed:staff` (apps/web) seeds an admin, a moderator, a member and two traders. Every password is `password` and every email is verified. Each run resets ban state.
+- The seeded traders get COSMO links inserted directly, without `cosmo_link_audit` rows. There is no tester account.
+- curl calls to `/api/auth/*` with a cookie jar must send `Origin` set to the origin of `VITE_BASE_URL`.
+
+## Adding a role or permission
+
+A new action:
+
+1. Add it to `statement` in `packages/auth/src/index.ts` and grant it to roles.
+2. Add a row to the hand-written table in `packages/auth/tests/roles.test.ts`.
+
+A new role:
+
+1. Add it to `roles`, `roleNames` and `roleRanks` (`src/guard.ts`). Keep each rank holding everything the ranks below it hold, because `isDemotion()` relies on it.
+2. Add the value to the `user_role` enum in `packages/database/src/auth.ts` and generate a migration.
+3. Add its label to `lib/client/roles.ts` in all six locales.
+4. Add its column to the role table in `roles.test.ts`.
