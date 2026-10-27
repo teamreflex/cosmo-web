@@ -12,7 +12,6 @@ import type {
   TradeOfferItem,
 } from "@apollo/database/web/types";
 import type { TokenFlags } from "@apollo/trades/holdings";
-import { rangeColumns } from "@apollo/trades/range";
 import {
   and,
   type AnyColumn,
@@ -88,9 +87,18 @@ const wantColumns = {
 
 type FeedSide = ListingFeedInput["filters"]["offering"];
 
+// rangeColumns without the collection number, which Looking for doesn't filter on
+const feedColumns = [
+  "artist",
+  "member",
+  "season",
+  "class",
+  "on_offline",
+] as const satisfies readonly (keyof FeedSide)[];
+
 // the narrowed columns of one side; an empty column doesn't narrow
 function narrowed(side: FeedSide) {
-  return rangeColumns.flatMap((column) => {
+  return feedColumns.flatMap((column) => {
     const values = side[column] ?? [];
     return values.length ? [{ column, values }] : [];
   });
@@ -354,6 +362,7 @@ export async function readIndexed(slugs: string[], tokenIds: number[]) {
                   slug: collection.slug,
                   artist: collection.artist,
                   member: collection.member,
+                  collectionNo: collection.collectionNo,
                   season: collection.season,
                   class: collection.class,
                   onOffline: collection.onOffline,

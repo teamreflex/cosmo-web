@@ -443,7 +443,7 @@ export function wantScope(
       season: filter.season,
       class: filter.class,
       onOffline: filter.on_offline,
-      collectionNo: [],
+      collectionNo: filter.collectionNo,
     };
   }
   if (want.kind === "choice") {
@@ -488,6 +488,7 @@ export function listingPick(objekt: CosmoObjekt): ListingPick {
       slug: collection.slug,
       artist: collection.artist,
       member: collection.member,
+      collectionNo: collection.collectionNo,
       season: collection.season,
       class: collection.class,
       onOffline: collection.onOffline,

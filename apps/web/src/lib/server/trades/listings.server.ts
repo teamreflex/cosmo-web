@@ -347,6 +347,7 @@ function wantRow(listingId: string, want: ResolvedWant): NewTradeListingWant {
         count: want.count,
         artists: want.filter.artist,
         members: want.filter.member,
+        collectionNos: want.filter.collectionNo,
         seasons: want.filter.season,
         classes: want.filter.class,
         onOfflines: want.filter.on_offline,

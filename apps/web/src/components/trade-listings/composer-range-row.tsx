@@ -34,6 +34,7 @@ import ClassFilter from "../collection/filter-class";
 import FilterMemberChip from "../collection/filter-member-chip";
 import OnlineFilter from "../collection/filter-online";
 import SeasonFilter from "../collection/filter-season";
+import CollectionFilter from "../objekt-index/collection-filter";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
@@ -149,6 +150,11 @@ export default function ComposerRangeRow({
                   onChange={setFilters}
                   allArtists
                   scopeToArtist
+                  unsetLabel={m.filter_value_any()}
+                />
+                <CollectionFilter
+                  collections={chips.collectionNo}
+                  onChange={setFilters}
                   unsetLabel={m.filter_value_any()}
                 />
                 <SeasonFilter
@@ -303,6 +309,7 @@ function NarrowedBadges({ filter }: { filter: RangeFormFilter }) {
   const columns = [
     [m.market_listings_filter_artist(), (filter.artist ?? []).map(artistName)],
     [m.market_listings_filter_member(), filter.member ?? []],
+    [m.filter_collections(), filter.collectionNo ?? []],
     [m.common_season(), filter.season ?? []],
     [m.common_class(), filter.class ?? []],
     [m.filter_type(), (filter.on_offline ?? []).map(onOfflineLabel)],
@@ -328,7 +335,7 @@ function NarrowedBadges({ filter }: { filter: RangeFormFilter }) {
 }
 
 function ChipsSkeleton() {
-  return Array.from({ length: 5 }, (_, i) => (
+  return Array.from({ length: 6 }, (_, i) => (
     <Skeleton key={i} className="h-8 w-24" />
   ));
 }

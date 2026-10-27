@@ -139,7 +139,7 @@ export function formValuesToInput(
 
 type ChipFilters = Pick<
   z.infer<typeof cosmoSchema>,
-  "artist" | "member" | "season" | "class" | "on_offline"
+  "artist" | "member" | "collectionNo" | "season" | "class" | "on_offline"
 >;
 
 /**
@@ -151,6 +151,7 @@ export function rangeToChipFilters(filter: RangeFormFilter): ChipFilters {
   return {
     artist: artist === undefined ? null : (toUiArtist(artist) ?? null),
     member: filter.member ?? [],
+    collectionNo: filter.collectionNo ?? [],
     season: filter.season ?? [],
     class: filter.class ?? [],
     on_offline: filter.on_offline ?? [],
@@ -171,6 +172,9 @@ export function applyChipUpdate(
   return {
     ...next,
     ...("member" in update && { member: update.member ?? [] }),
+    ...("collectionNo" in update && {
+      collectionNo: update.collectionNo ?? [],
+    }),
     ...("season" in update && { season: update.season ?? [] }),
     ...("class" in update && { class: update.class ?? [] }),
     ...("on_offline" in update && { on_offline: update.on_offline ?? [] }),

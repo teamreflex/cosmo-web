@@ -3,7 +3,11 @@ import { lockedObjekts, tradeOfferItems } from "@apollo/database/web/schema";
 import type { TradeWant } from "@apollo/trades/allocate";
 import type { TokenFlags } from "@apollo/trades/holdings";
 import type { ListingInput } from "@apollo/trades/listing";
-import type { ObjektAttributes, RangeFilter } from "@apollo/trades/range";
+import type {
+  IndexedAttributes,
+  ObjektAttributes,
+  RangeFilter,
+} from "@apollo/trades/range";
 import { addr, isEqual } from "@apollo/util";
 import {
   and,
@@ -22,6 +26,7 @@ import { db, type DbOrTx } from "../db";
 import { indexer } from "../db/indexer";
 import {
   withClass,
+  withCollections,
   withMember,
   withOnlineType,
   withSeason,
@@ -37,7 +42,7 @@ export type TokenState =
   | {
       kind: "found";
       tokenId: number;
-      attributes: ObjektAttributes;
+      attributes: IndexedAttributes;
       serial: number;
       owner: string;
       transferable: boolean;
@@ -58,7 +63,7 @@ export function toTokenStates(
     owner: string;
     serial: number;
     transferable: boolean;
-    attributes: ObjektAttributes;
+    attributes: IndexedAttributes;
   }[],
 ): ReadonlyMap<number, TokenState> {
   const found = new Map(rows.map((row) => [Number(row.id), row]));
@@ -88,6 +93,7 @@ export async function readIndexerTokens(
         slug: collections.slug,
         artist: collections.artist,
         member: collections.member,
+        collectionNo: collections.collectionNo,
         season: collections.season,
         class: collections.class,
         onOffline: collections.onOffline,
@@ -219,6 +225,7 @@ function rangeConditions(filter: RangeFilter) {
   return and(
     ...withSelectedArtists(filter.artist),
     ...withMember(filter.member),
+    ...withCollections(filter.collectionNo),
     ...withSeason(filter.season),
     ...withClass(filter.class),
     ...withOnlineType(filter.on_offline),
@@ -430,6 +437,7 @@ export async function readCandidates(
         slug: collections.slug,
         artist: collections.artist,
         member: collections.member,
+        collectionNo: collections.collectionNo,
         season: collections.season,
         class: collections.class,
         onOffline: collections.onOffline,

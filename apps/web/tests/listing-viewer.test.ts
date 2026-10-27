@@ -58,7 +58,11 @@ const held = (
   tokenId,
   owner,
   transferable,
-  attributes: attributes(slug),
+  // a slug ends with its collection number, lowercased
+  attributes: {
+    ...attributes(slug),
+    collectionNo: slug.slice(slug.lastIndexOf("-") + 1).toUpperCase(),
+  },
 });
 
 describe("pool availability", () => {
@@ -758,6 +762,7 @@ describe("a feed row's asking title", () => {
     filter: {
       artist: [],
       member: [],
+      collectionNo: [],
       season: [],
       class: [],
       on_offline: [],

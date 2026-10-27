@@ -926,6 +926,10 @@ export const tradeListingWants = pgTable(
     seasons: varchar("seasons", { length: 32 }).array(),
     classes: varchar("classes", { length: 8 }).array(),
     onOfflines: varchar("on_offlines", { length: 16 }).array(),
+    collectionNos: varchar("collection_nos", { length: 8 })
+      .array()
+      .notNull()
+      .default([]),
     amount: numeric("amount", { precision: 14, scale: 2 }),
     currency: varchar("currency", { length: 3 }),
   },

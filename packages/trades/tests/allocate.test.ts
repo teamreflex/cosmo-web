@@ -28,6 +28,7 @@ function objekt(
     slug: `${season}-${member}-${collectionNo}`.toLowerCase(),
     artist: "artms",
     member,
+    collectionNo,
     season,
     class: collectionNo.startsWith("1") ? "First" : "Double",
     onOffline: collectionNo.endsWith("Z") ? "online" : "offline",
@@ -42,6 +43,7 @@ function range(count: number, filter: Partial<RangeFilter>): TradeWant {
     filter: {
       artist: [],
       member: [],
+      collectionNo: [],
       season: [],
       class: [],
       on_offline: [],

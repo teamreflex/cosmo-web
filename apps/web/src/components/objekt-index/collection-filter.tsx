@@ -16,6 +16,10 @@ import {
 type Props = {
   collections: CosmoFilters["collectionNo"];
   onChange: SetCosmoFilters;
+  /**
+   * What the chip reads with nothing picked, in place of "all".
+   */
+  unsetLabel?: string;
 };
 
 export default function CollectionFilter(props: Props) {
@@ -37,7 +41,7 @@ export default function CollectionFilter(props: Props) {
   const first = value[0];
   const valueLabel =
     first === undefined
-      ? m.filter_value_all()
+      ? (props.unsetLabel ?? m.filter_value_all())
       : value.length === 1
         ? first
         : m.filter_value_multiple();

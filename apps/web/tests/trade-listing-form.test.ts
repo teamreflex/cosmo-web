@@ -62,6 +62,7 @@ const listing = {
       filter: {
         artist: ["triples"],
         member: [],
+        collectionNo: ["101Z"],
         season: ["Atom01", "Binary01"],
         class: ["First"],
         on_offline: [],
@@ -99,6 +100,7 @@ describe("composer prefill (CMP-04)", () => {
           filter: {
             artist: ["triples"],
             member: [],
+            collectionNo: ["101Z"],
             season: ["Atom01", "Binary01"],
             class: ["First"],
             on_offline: [],
@@ -134,6 +136,7 @@ describe("composer prefill (CMP-04)", () => {
             filter: {
               artist: ["triples"],
               member: [],
+              collectionNo: ["101Z"],
               season: ["Atom01", "Binary01"],
               class: ["First"],
               on_offline: [],

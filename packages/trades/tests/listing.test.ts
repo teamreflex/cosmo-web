@@ -49,6 +49,7 @@ const HASEUL = "atom02-haseul-201z";
 const emptyFilter: RangeFilter = {
   artist: [],
   member: [],
+  collectionNo: [],
   season: [],
   class: [],
   on_offline: [],
@@ -517,6 +518,7 @@ describe.each(termSchemas)("%s", (_, schema, extra) => {
   test.each([
     ["artist", { artist: ["artms"] }],
     ["member", { member: ["HeeJin"] }],
+    ["collectionNo", { collectionNo: ["364Z"] }],
     ["season", { season: ["Atom02"] }],
     ["class", { class: ["First"] }],
     ["on_offline", { on_offline: ["online"] }],

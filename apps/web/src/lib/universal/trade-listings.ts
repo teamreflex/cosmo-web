@@ -14,7 +14,11 @@ import {
   type TokenRefusalReason,
 } from "@apollo/trades/holdings";
 import { takesOffers } from "@apollo/trades/lifecycle";
-import type { ObjektAttributes, RangeFilter } from "@apollo/trades/range";
+import type {
+  IndexedAttributes,
+  ObjektAttributes,
+  RangeFilter,
+} from "@apollo/trades/range";
 import * as z from "zod";
 import type { PublicUser } from "./auth";
 import type { AuthErrorCode } from "./errors/auth";
@@ -68,6 +72,7 @@ export const storedWantSchema = z.discriminatedUnion("kind", [
       seasons: z.array(z.string()),
       classes: z.array(z.string()),
       onOfflines: z.array(z.enum(validOnlineTypes)),
+      collectionNos: z.array(z.string()),
     })
     .transform(({ kind, count, ...range }) => ({
       kind,
@@ -75,6 +80,7 @@ export const storedWantSchema = z.discriminatedUnion("kind", [
       filter: {
         artist: range.artists,
         member: range.members,
+        collectionNo: range.collectionNos,
         season: range.seasons,
         class: range.classes,
         on_offline: range.onOfflines,
@@ -246,7 +252,7 @@ export type PoolAvailability =
 type IndexedToken =
   | Extract<TokenOwnership, { kind: "missing" }>
   | (Extract<TokenOwnership, { kind: "found" }> & {
-      attributes: ObjektAttributes;
+      attributes: IndexedAttributes;
     });
 
 /**
@@ -355,7 +361,7 @@ export function poolItems<
 export type ListingPick = {
   tokenId: number;
   serial: number;
-  attributes: ObjektAttributes;
+  attributes: IndexedAttributes;
   collection: Objekt.Collection;
 };
 

@@ -1,5 +1,9 @@
 import { MAX_PER_ROW, MAX_TOTAL_WANTED } from "./caps";
-import { matchesRange, type ObjektAttributes, type RangeFilter } from "./range";
+import {
+  type IndexedAttributes,
+  matchesRange,
+  type RangeFilter,
+} from "./range";
 
 /**
  * One row of a listing's trade side: a number of copies of one collection,
@@ -11,13 +15,13 @@ export type TradeWant =
   | { kind: "range"; filter: RangeFilter; count: number }
   | { kind: "choice"; slugs: readonly string[]; count: number };
 
-export type InventoryObjekt = ObjektAttributes & { tokenId: number };
+export type InventoryObjekt = IndexedAttributes & { tokenId: number };
 
 /**
  * Whether the objekt can fill the want: the same collection for an exact
  * row, inside the range, or one of the choice row's collections.
  */
-export function fitsWant(want: TradeWant, objekt: ObjektAttributes) {
+export function fitsWant(want: TradeWant, objekt: IndexedAttributes) {
   switch (want.kind) {
     case "exact":
       return objekt.slug === want.slug;

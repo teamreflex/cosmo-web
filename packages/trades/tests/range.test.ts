@@ -12,6 +12,7 @@ describe("rangeFilterSchema", () => {
     expect(rangeFilterSchema.parse({ season: ["Atom02"] })).toEqual({
       artist: [],
       member: [],
+      collectionNo: [],
       season: ["Atom02"],
       class: [],
       on_offline: [],
@@ -30,6 +31,12 @@ describe("rangeFilterSchema", () => {
       rangeFilterSchema.parse({ member: ["HeeJin", "HeeJin", "KimLip"] })
         .member,
     ).toEqual(["HeeJin", "KimLip"]);
+  });
+
+  test("stores collection numbers uppercase, once each", () => {
+    expect(
+      rangeFilterSchema.parse({ collectionNo: ["364z", "364Z"] }).collectionNo,
+    ).toEqual(["364Z"]);
   });
 
   test.each([
@@ -61,6 +68,7 @@ describe("matchesRange", () => {
   const heejin = {
     artist: "artms",
     member: "HeeJin",
+    collectionNo: "201Z",
     season: "Atom02",
     class: "First",
     onOffline: "online",
@@ -78,6 +86,11 @@ describe("matchesRange", () => {
   test("columns are ANDed", () => {
     expect(matchesRange(filter, { ...heejin, class: "Double" })).toBe(false);
     expect(matchesRange(filter, { ...heejin, season: "Cream01" })).toBe(false);
+    const numbered = { ...filter, collectionNo: ["202Z"] };
+    expect(matchesRange(numbered, heejin)).toBe(false);
+    expect(matchesRange(numbered, { ...heejin, collectionNo: "202Z" })).toBe(
+      true,
+    );
   });
 
   test("compares values verbatim", () => {

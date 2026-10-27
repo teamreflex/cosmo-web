@@ -48,6 +48,7 @@ export function generateCase(random: Random) {
       slug: `${artist}-${season}-${member}-${objektClass}-${onOffline}`.toLowerCase(),
       artist,
       member,
+      collectionNo: "101Z",
       season,
       class: objektClass,
       onOffline,

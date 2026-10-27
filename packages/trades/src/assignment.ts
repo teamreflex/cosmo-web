@@ -1,5 +1,5 @@
 import { fitsWant, type TradeWant } from "./allocate";
-import type { ObjektAttributes } from "./range";
+import type { IndexedAttributes } from "./range";
 
 export type AssignmentResult =
   | { ok: true }
@@ -22,7 +22,7 @@ export type AssignmentResult =
 export function validateAssignment(
   wants: readonly TradeWant[],
   rows: readonly (readonly number[])[],
-  attributes: ReadonlyMap<number, ObjektAttributes>,
+  attributes: ReadonlyMap<number, IndexedAttributes>,
 ): AssignmentResult {
   if (wants.length === 0) return { ok: false, reason: "no_wants" };
   if (rows.length !== wants.length) {
