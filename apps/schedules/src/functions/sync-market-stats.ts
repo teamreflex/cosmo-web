@@ -29,27 +29,31 @@ export const syncMarketStatsTask = {
 
     // an empty fx_rates would drop every collection from the aggregate and
     // empty the market, so skip the run instead
-    const fxRateCount = yield* webDb.$count(fxRates);
-    if (fxRateCount === 0) {
+    const [anyRate] = yield* webDb
+      .select({ currency: fxRates.currency })
+      .from(fxRates)
+      .limit(1);
+    if (anyRate === undefined) {
       yield* Effect.logWarning("Skipping market stats: fx_rates is empty");
       return;
     }
 
-    const latestRates = webDb.$with("latest_rates").as(
-      webDb
-        .selectDistinctOn([fxRates.currency], {
-          currency: fxRates.currency,
-          rateToUsd: fxRates.rateToUsd,
-        })
-        .from(fxRates)
-        .orderBy(fxRates.currency, desc(fxRates.date)),
-    );
+    // one index probe per list currency, rather than reading the whole rate history
+    const rate = webDb
+      .select({ rateToUsd: fxRates.rateToUsd })
+      .from(fxRates)
+      .where(eq(fxRates.currency, objektLists.currency))
+      .orderBy(desc(fxRates.date))
+      .limit(1)
+      .as("rate");
+
+    // grouping needs no linguistic order, and sorting by the default collation costs several times more
+    const slug = sql<string>`${objektListEntries.collectionId} collate "C"`;
 
     const stats = yield* webDb
-      .with(latestRates)
       .select({
-        slug: objektListEntries.collectionId,
-        floorUsd: sql<number>`min(${objektListEntries.price} * ${latestRates.rateToUsd})::real`,
+        slug,
+        floorUsd: sql<number>`min(${objektListEntries.price} * ${rate.rateToUsd})::real`,
         listingCount: sql<number>`count(*)::int`.mapWith(Number),
         // created_at is a UTC timestamp without a zone
         lastListedAt: sql<Date>`max(${objektListEntries.createdAt}) at time zone 'utc'`,
@@ -59,7 +63,7 @@ export const syncMarketStatsTask = {
         objektLists,
         eq(objektLists.id, objektListEntries.objektListId),
       )
-      .innerJoin(latestRates, eq(latestRates.currency, objektLists.currency))
+      .crossJoinLateral(rate)
       .where(
         and(
           eq(objektLists.type, "sale"),
@@ -67,7 +71,7 @@ export const syncMarketStatsTask = {
           isNotNull(objektListEntries.price),
         ),
       )
-      .groupBy(objektListEntries.collectionId);
+      .groupBy(slug);
 
     /**
      * The aggregate travels as one jsonb parameter, keyed by collection id

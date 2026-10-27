@@ -19,7 +19,7 @@ import { ExpectedError } from "../universal/errors/expected";
 import { toPublicUser } from "./auth.server";
 import { db, type DbOrTx, type WebTx } from "./db";
 import { importObjektLists } from "./objekts/lists.server";
-import { isPostgresError } from "./util.server";
+import { isPostgresError, prefixPattern } from "./util.server";
 
 /**
  * The one place to read a user's linked COSMO address. The address keeps its
@@ -255,7 +255,8 @@ type PartialAccount = Omit<CosmoAccount, "id" | "cosmoId" | "userId">;
 
 /**
  * Upsert COSMO accounts into the database without linking it to a user.
- * Used when caching profiles from `/@:username` and search results.
+ * Used when caching profiles from `/@:username` and search results, so most
+ * rows already exist and only a renamed account is rewritten.
  */
 export async function cacheAccounts(accounts: PartialAccount[]) {
   // deduplicate accounts by address to prevent constraint violations
@@ -265,10 +266,10 @@ export async function cacheAccounts(accounts: PartialAccount[]) {
   }, new Map<string, PartialAccount>());
 
   if (uniqueAccounts.size === 0) {
-    return [];
+    return;
   }
 
-  return await db
+  await db
     .insert(cosmoAccounts)
     .values(Array.from(uniqueAccounts.values()))
     .onConflictDoUpdate({
@@ -276,8 +277,9 @@ export async function cacheAccounts(accounts: PartialAccount[]) {
       set: {
         username: sql.raw(`excluded.${cosmoAccounts.username.name}`),
       },
-    })
-    .returning();
+      // compared as text, because citext would treat a change of case as no change
+      setWhere: sql`${cosmoAccounts.username}::text is distinct from excluded.username::text`,
+    });
 }
 
 /**
@@ -298,7 +300,13 @@ export async function searchCosmoAccounts(
       address: cosmoAccounts.address,
     })
     .from(cosmoAccounts)
-    .where(like(cosmoAccounts.username, `${query}%`))
+    // matches cosmo_account_username_prefix_idx, keeping citext's case-insensitive match
+    .where(
+      like(
+        sql`lower(${cosmoAccounts.username}::text)`,
+        sql`lower(${prefixPattern(query)})`,
+      ),
+    )
     .limit(100);
 
   return {

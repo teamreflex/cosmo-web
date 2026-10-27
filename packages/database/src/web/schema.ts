@@ -103,8 +103,13 @@ export const cosmoAccounts = pgTable(
     index("cosmo_account_cosmo_id_idx").on(t.cosmoId),
     uniqueIndex("cosmo_account_username_address_idx").on(t.username, t.address),
     uniqueIndex("cosmo_account_user_id_unique_idx").on(t.userId),
-    // covered by the unique index; dropped in the follow-up release with user.is_admin
-    index("cosmo_account_user_id_idx").on(t.userId),
+    /**
+     * Serves searchCosmoAccounts' prefix search. LIKE on citext can't use a
+     * btree, and text_pattern_ops orders bytewise so a prefix is a range scan.
+     */
+    index("cosmo_account_username_prefix_idx").on(
+      sql`lower(${t.username}::text) text_pattern_ops`,
+    ),
   ],
 );
 
@@ -169,6 +174,10 @@ export const pins = pgTable(
     index("pins_token_id_idx").on(t.tokenId),
     index("pins_address_position_idx").on(t.address, t.position),
     uniqueIndex("pins_address_binder_idx").on(t.address, t.binderId),
+    // binder deletes cascade to their pins, and the pin cache keys they bust are read by binder
+    index("pins_binder_id_idx")
+      .on(t.binderId)
+      .where(sql`${t.binderId} IS NOT NULL`),
     check(
       "pins_target_chk",
       sql`num_nonnulls(${t.tokenId}, ${t.binderId}) = 1`,
@@ -235,6 +244,10 @@ export const objektListEntries = pgTable(
       t.createdAt,
     ),
     index("objekt_list_entries_collection_id_idx").on(t.collectionId),
+    // covers the market and price stats aggregates, which read only priced listings
+    index("objekt_list_entries_priced_idx")
+      .on(t.objektListId, t.collectionId, t.price, t.createdAt)
+      .where(sql`${t.tokenId} IS NOT NULL AND ${t.price} IS NOT NULL`),
     uniqueIndex("objekt_list_entries_token_list_unique_idx")
       .on(t.tokenId, t.objektListId)
       .where(sql`${t.tokenId} IS NOT NULL`),

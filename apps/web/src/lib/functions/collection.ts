@@ -138,84 +138,101 @@ export const $reorderPins = createServerFn({ method: "POST" })
   )
   .middleware([cosmoMiddleware])
   .handler(async ({ data, context }) => {
-    // the user's pins numbered 1..n by current display order
-    const ordered = db.$with("ordered").as(
-      db
-        .select({
-          id: pins.id,
-          idx: sql<number>`row_number() over (order by ${pins.position}, ${pins.id})`.as(
-            "idx",
-          ),
-        })
+    const updated = await db.transaction(async (tx) => {
+      /**
+       * A multi-row UPDATE locks in scan order, so two reorders in flight for
+       * the same user could deadlock. Locking every pin of the address in id
+       * order first serialises them, and the update then reads the committed order.
+       */
+      await tx
+        .select({ id: pins.id })
         .from(pins)
-        .where(eq(pins.address, context.cosmo.address)),
-    );
+        .where(eq(pins.address, context.cosmo.address))
+        .orderBy(pins.id)
+        .for("no key update");
 
-    /**
-     * Where the dragged pin and its drop target currently sit; null if either isn't one of the user's pins.
-     */
-    const anchors = db.$with("anchors").as(
-      db
-        .select({
-          fromIdx:
-            sql<number>`max(${ordered.idx}) filter (where ${ordered.id} = ${data.pinId})`.as(
-              "from_idx",
+      // the user's pins numbered 1..n by current display order
+      const ordered = tx.$with("ordered").as(
+        tx
+          .select({
+            id: pins.id,
+            idx: sql<number>`row_number() over (order by ${pins.position}, ${pins.id})`.as(
+              "idx",
             ),
-          toIdx:
-            sql<number>`max(${ordered.idx}) filter (where ${ordered.id} = ${data.overPinId})`.as(
-              "to_idx",
-            ),
-        })
-        .from(ordered),
-    );
+          })
+          .from(pins)
+          .where(eq(pins.address, context.cosmo.address)),
+      );
 
-    /**
-     * Sort key for the new order: the dragged pin lands half a step past the
-     * anchor (after it when moving down, before it when moving up, matching
-     * arrayMove), everything else keeps its index. Empty when an anchor is
-     * missing so the update below touches nothing.
-     */
-    const keyed = db.$with("keyed").as(
-      db
-        .select({
-          id: ordered.id,
-          sortKey: sql<number>`case
+      /**
+       * Where the dragged pin and its drop target currently sit; null if either isn't one of the user's pins.
+       */
+      const anchors = tx.$with("anchors").as(
+        tx
+          .select({
+            fromIdx:
+              sql<number>`max(${ordered.idx}) filter (where ${ordered.id} = ${data.pinId})`.as(
+                "from_idx",
+              ),
+            toIdx:
+              sql<number>`max(${ordered.idx}) filter (where ${ordered.id} = ${data.overPinId})`.as(
+                "to_idx",
+              ),
+          })
+          .from(ordered),
+      );
+
+      /**
+       * Sort key for the new order: the dragged pin lands half a step past the
+       * anchor (after it when moving down, before it when moving up, matching
+       * arrayMove), everything else keeps its index. Empty when an anchor is
+       * missing so the update below touches nothing.
+       */
+      const keyed = tx.$with("keyed").as(
+        tx
+          .select({
+            id: ordered.id,
+            sortKey: sql<number>`case
             when ${ordered.id} = ${data.pinId}
             then ${anchors.toIdx} + (case when ${anchors.toIdx} > ${anchors.fromIdx} then 0.5 else -0.5 end)
             else ${ordered.idx}
           end`.as("sort_key"),
-        })
-        .from(ordered)
-        .crossJoin(anchors)
-        .where(and(isNotNull(anchors.fromIdx), isNotNull(anchors.toIdx))),
-    );
+          })
+          .from(ordered)
+          .crossJoin(anchors)
+          .where(and(isNotNull(anchors.fromIdx), isNotNull(anchors.toIdx))),
+      );
 
-    /**
-     * Contiguous 0-based positions, which also heals the gaps and negative
-     * values that pinning (prepend) and unpinning leave behind.
-     */
-    const renumbered = db.$with("renumbered").as(
-      db
-        .select({
-          id: keyed.id,
-          position:
-            sql<number>`(row_number() over (order by ${keyed.sortKey}) - 1)::int`.as(
-              "position",
-            ),
-        })
-        .from(keyed),
-    );
+      /**
+       * Contiguous 0-based positions, which also heals the gaps and negative
+       * values that pinning (prepend) and unpinning leave behind.
+       */
+      const renumbered = tx.$with("renumbered").as(
+        tx
+          .select({
+            id: keyed.id,
+            position:
+              sql<number>`(row_number() over (order by ${keyed.sortKey}) - 1)::int`.as(
+                "position",
+              ),
+          })
+          .from(keyed),
+      );
 
-    // only rows whose position actually changes are written
-    const updated = await db
-      .with(ordered, anchors, keyed, renumbered)
-      .update(pins)
-      .set({ position: sql`${renumbered.position}` })
-      .from(renumbered)
-      .where(
-        and(eq(pins.id, renumbered.id), ne(pins.position, renumbered.position)),
-      )
-      .returning({ id: pins.id });
+      // only rows whose position actually changes are written
+      return await tx
+        .with(ordered, anchors, keyed, renumbered)
+        .update(pins)
+        .set({ position: sql`${renumbered.position}` })
+        .from(renumbered)
+        .where(
+          and(
+            eq(pins.id, renumbered.id),
+            ne(pins.position, renumbered.position),
+          ),
+        )
+        .returning({ id: pins.id });
+    });
 
     if (updated.length === 0) return false;
 

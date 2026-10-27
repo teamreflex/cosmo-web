@@ -26,9 +26,12 @@ export const syncCollectionPriceStatsTask = {
 
     // if FX rates are empty, skip this run instead of evicting
     // every row in collection_price_stats. protects against a long FX outage.
-    const fxRateCount = yield* db.$count(fxRates);
+    const [anyRate] = yield* db
+      .select({ currency: fxRates.currency })
+      .from(fxRates)
+      .limit(1);
 
-    if (fxRateCount === 0) {
+    if (anyRate === undefined) {
       yield* Effect.logWarning("Skipping price stats: fx_rates is empty");
       return;
     }
@@ -37,22 +40,21 @@ export const syncCollectionPriceStatsTask = {
 
     yield* db.transaction((tx) =>
       Effect.gen(function* () {
-        const latestRates = tx.$with("latest_rates").as(
-          tx
-            .selectDistinctOn([fxRates.currency], {
-              currency: fxRates.currency,
-              rateToUsd: fxRates.rateToUsd,
-            })
-            .from(fxRates)
-            .orderBy(fxRates.currency, desc(fxRates.date)),
-        );
+        // one index probe per list currency, rather than reading the whole rate history
+        const rate = tx
+          .select({ rateToUsd: fxRates.rateToUsd })
+          .from(fxRates)
+          .where(eq(fxRates.currency, objektLists.currency))
+          .orderBy(desc(fxRates.date))
+          .limit(1)
+          .as("rate");
 
         const priced = tx.$with("priced").as(
           tx
             .select({
               collectionId: objektListEntries.collectionId,
               priceUsd:
-                sql<number>`(${objektListEntries.price} * ${latestRates.rateToUsd})::real`.as(
+                sql<number>`(${objektListEntries.price} * ${rate.rateToUsd})::real`.as(
                   "price_usd",
                 ),
             })
@@ -61,10 +63,7 @@ export const syncCollectionPriceStatsTask = {
               objektLists,
               eq(objektLists.id, objektListEntries.objektListId),
             )
-            .innerJoin(
-              latestRates,
-              eq(latestRates.currency, objektLists.currency),
-            )
+            .crossJoinLateral(rate)
             .where(
               and(
                 isNotNull(objektListEntries.price),
@@ -95,7 +94,7 @@ export const syncCollectionPriceStatsTask = {
         );
 
         yield* tx
-          .with(latestRates, priced, agg)
+          .with(priced, agg)
           .insert(collectionPriceStats)
           .select(
             tx
@@ -120,35 +119,29 @@ export const syncCollectionPriceStatsTask = {
             },
           });
 
-        yield* tx
-          .with(latestRates)
-          .delete(collectionPriceStats)
-          .where(
-            notExists(
-              tx
-                .select({ one: sql`1` })
-                .from(objektListEntries)
-                .innerJoin(
-                  objektLists,
-                  eq(objektLists.id, objektListEntries.objektListId),
-                )
-                .innerJoin(
-                  latestRates,
-                  eq(latestRates.currency, objektLists.currency),
-                )
-                .where(
-                  and(
-                    eq(
-                      objektListEntries.collectionId,
-                      collectionPriceStats.collectionId,
-                    ),
-                    isNotNull(objektListEntries.price),
-                    isNotNull(objektListEntries.tokenId),
-                    isNotNull(objektLists.currency),
+        yield* tx.delete(collectionPriceStats).where(
+          notExists(
+            tx
+              .select({ one: sql`1` })
+              .from(objektListEntries)
+              .innerJoin(
+                objektLists,
+                eq(objektLists.id, objektListEntries.objektListId),
+              )
+              .crossJoinLateral(rate)
+              .where(
+                and(
+                  eq(
+                    objektListEntries.collectionId,
+                    collectionPriceStats.collectionId,
                   ),
+                  isNotNull(objektListEntries.price),
+                  isNotNull(objektListEntries.tokenId),
+                  isNotNull(objektLists.currency),
                 ),
-            ),
-          );
+              ),
+          ),
+        );
 
         yield* tx
           .insert(collectionPriceHistory)
