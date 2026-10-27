@@ -72,8 +72,8 @@ export default function TradeRow({
     <Link
       to={closed ? "/market/listing/$id" : "/trade/$id"}
       params={{ id: offer.id }}
-      // a hover never fetches, since the click refetches a trade and a listing reads the viewer's holdings
-      preload={false}
+      // the click refetches the trade, so a hover preload would fetch it twice
+      preload={closed ? undefined : false}
       onClick={() => {
         onOpen();
         if (!closed) {

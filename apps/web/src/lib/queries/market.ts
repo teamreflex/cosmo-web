@@ -1,7 +1,4 @@
-import {
-  $fetchMarketNoticeAccepted,
-  $fetchRangeOffersNoticeDismissed,
-} from "@/lib/functions/market-notice";
+import { $fetchDismissedNotices } from "@/lib/functions/market-notice";
 import { $fetchMarket } from "@/lib/functions/objekts/market";
 import { type MarketCursor, toFloorBounds } from "@/lib/universal/market";
 import {
@@ -40,26 +37,11 @@ export function marketQuery(
 const firstPage: MarketCursor | undefined = undefined;
 
 /**
- * Whether this browser has accepted the market notice. Read once from its
- * cookie, then set directly when the notice is accepted.
+ * Which of the market's notices this browser has dismissed. Read once from
+ * their cookies, then set directly when one is dismissed.
  */
-export const marketNoticeQuery = queryOptions({
-  queryKey: ["market-notice"],
-  queryFn: ({ signal }) => $fetchMarketNoticeAccepted({ signal }),
+export const dismissedNoticesQuery = queryOptions({
+  queryKey: ["dismissed-notices"],
+  queryFn: ({ signal }) => $fetchDismissedNotices({ signal }),
   staleTime: Infinity,
-  refetchOnWindowFocus: false,
-  refetchOnMount: false,
-});
-
-/**
- * Whether this browser chose not to see the listing composer's range
- * confirmation again. Read once from its cookie, then set directly when it
- * is dismissed.
- */
-export const rangeOffersNoticeQuery = queryOptions({
-  queryKey: ["range-offers-notice"],
-  queryFn: ({ signal }) => $fetchRangeOffersNoticeDismissed({ signal }),
-  staleTime: Infinity,
-  refetchOnWindowFocus: false,
-  refetchOnMount: false,
 });

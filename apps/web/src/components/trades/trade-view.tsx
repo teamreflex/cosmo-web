@@ -1128,7 +1128,6 @@ function ViewListingLink({
     <Link
       to="/market/listing/$id"
       params={{ id: listingId }}
-      preload={false}
       className={cn(
         buttonVariants({ variant: "outline", size: "sm" }),
         "w-fit no-underline!",

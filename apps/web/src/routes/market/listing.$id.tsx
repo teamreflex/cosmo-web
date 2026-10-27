@@ -40,7 +40,8 @@ export const Route = createFileRoute("/market/listing/$id")({
   search: {
     middlewares: [stripSearchParams(listingSearchDefaults)],
   },
-  // links to the page pass preload={false}, since a candidate's answer reads their holdings
+  // a hover never loads the page, since a candidate's answer reads their holdings
+  preload: false,
   loader: async ({ context, params }) => {
     // discord users sometimes paste formatting onto the end of the URL
     const id = sanitizeUuid(params.id);

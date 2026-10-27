@@ -376,7 +376,6 @@ function NewOfferNote({
               <Link
                 to="/market/listing/$id"
                 params={{ id: listingId }}
-                preload={false}
                 className="text-cosmo hover:underline dark:text-cosmo-text"
               >
                 {children}

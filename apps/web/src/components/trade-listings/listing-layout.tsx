@@ -28,7 +28,7 @@ type Props = {
   /** full-width alerts under the header, such as a lost race */
   notice?: ReactNode;
   /** how the offering half is headed */
-  offered?: OfferedHeading;
+  offered: OfferedHeading;
   /**
    * the viewer's claim while they pick: how many times over, above both
    * halves, and the pool objekts the offering half picks
@@ -57,7 +57,7 @@ export default function ListingLayout({
   bar,
   poster = null,
   notice,
-  offered = "offering",
+  offered,
   picks = null,
   wants = <WantList wants={listing.wants} />,
   closed = false,

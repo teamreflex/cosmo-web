@@ -71,7 +71,6 @@ export default function ListingFeedRow({ row }: Props) {
       <Link
         to="/market/listing/$id"
         params={{ id: row.id }}
-        preload={false}
         className={cn(
           "grid grid-cols-[minmax(0,1fr)_0_minmax(0,1fr)] text-sm outline-none md:grid-cols-[minmax(0,1.2fr)_16px_minmax(0,1.4fr)] md:items-center md:gap-x-3.5 md:gap-y-2.5 md:px-4 md:py-3 md:focus-visible:bg-secondary/50",
           columns,

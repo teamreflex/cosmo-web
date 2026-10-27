@@ -1,4 +1,38 @@
+import {
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import type { ReactNode } from "react";
+
+/**
+ * A notice dialog's body: its title and description over the points, which
+ * scroll when the screen is short, then the footer.
+ */
+export function NoticeDialogContent({
+  title,
+  description,
+  footer,
+  children,
+}: {
+  title: string;
+  description: string;
+  footer: ReactNode;
+  /** the NoticePoints */
+  children: ReactNode;
+}) {
+  return (
+    <AlertDialogContent className="max-h-[calc(100dvh-2rem)] grid-rows-[auto_minmax(0,1fr)_auto] gap-5 data-[size=default]:max-w-[calc(100%-2rem)] data-[size=default]:sm:max-w-120">
+      <AlertDialogHeader className="place-items-start text-left">
+        <AlertDialogTitle>{title}</AlertDialogTitle>
+        <AlertDialogDescription>{description}</AlertDialogDescription>
+      </AlertDialogHeader>
+      <ul className="flex flex-col gap-4 overflow-y-auto">{children}</ul>
+      {footer}
+    </AlertDialogContent>
+  );
+}
 
 type Props = {
   icon: ReactNode;

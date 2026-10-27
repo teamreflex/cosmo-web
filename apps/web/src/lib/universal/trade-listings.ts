@@ -829,12 +829,3 @@ export function shownPosterTab(
  * "Looking for" for everyone else. The picker heads its rows itself.
  */
 export type WantsHeading = "you_look_for" | "looking_for";
-
-/**
- * Which answer the listing page's picker starts its picks from. A refetch
- * keeps the viewer's picks, dropping pool picks that aren't free; new
- * terms or a different most units start over.
- */
-export function pickerVersion(updatedAt: Date, units: number) {
-  return `${updatedAt.toISOString()}:${units}`;
-}

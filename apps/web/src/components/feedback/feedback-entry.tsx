@@ -198,7 +198,6 @@ function EntryMeta({ entry }: { entry: FeedbackProfileEntry }) {
         <Link
           to="/market/listing/$id"
           params={{ id: entry.listingId }}
-          preload={false}
           className="font-medium text-foreground hover:underline"
         >
           {m.trade_page_view_listing()}

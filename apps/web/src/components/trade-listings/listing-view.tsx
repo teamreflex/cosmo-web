@@ -60,7 +60,7 @@ import WithdrawListingDialog from "./withdraw-listing-dialog";
  * (ListingStop).
  */
 export type ListingRole =
-  | { role: "closed"; state: ClosedListingState }
+  | { role: "closed"; state: ClosedListingState; tradeId: string | null }
   | { role: "signed_out" }
   | { role: "unlinked" }
   | Extract<ListingViewer, { role: "poster" | "claimer" | "offerer" }>
@@ -75,8 +75,8 @@ type Props = {
   /** the viewer's linked COSMO address, which editing a listing needs */
   address: string | undefined;
   /** why the page changed under the viewer's last Accept */
-  notice?: Notice | null;
-  onNotice?: (notice: Notice | null) => void;
+  notice: Notice | null;
+  onNotice: (notice: Notice | null) => void;
 };
 
 type Dialog = "edit" | "withdraw" | "confirm";
@@ -90,8 +90,8 @@ export default function ListingView({
   listing,
   role,
   address,
-  notice = null,
-  onNotice = () => {},
+  notice,
+  onNotice,
 }: Props) {
   const reasonId = useId();
   const detailId = useId();
@@ -161,7 +161,11 @@ export default function ListingView({
       }
       status={
         role.role === "closed" && endedNormally(role.state) ? (
-          <ClosedStatus listing={listing} state={role.state} />
+          <ClosedStatus
+            listing={listing}
+            state={role.state}
+            tradeId={role.tradeId}
+          />
         ) : undefined
       }
       actions={actions()}
@@ -315,7 +319,11 @@ function RoleAlert({ listing, role, picks, reasonId, detailId }: AlertProps) {
     case "closed":
       return (
         !endedNormally(role.state) && (
-          <ClosedAlert listing={listing} state={role.state} />
+          <ClosedAlert
+            listing={listing}
+            state={role.state}
+            tradeId={role.tradeId}
+          />
         )
       );
     case "signed_out":

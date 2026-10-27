@@ -2,7 +2,6 @@ import { m } from "@/i18n/messages";
 import { posterName } from "@/lib/client/trade-listings";
 import { env } from "@/lib/env/client";
 import { currentAccountQuery } from "@/lib/queries/core";
-import { tradeListingQuery } from "@/lib/queries/trade-listings";
 import type {
   ClosedListingState,
   TradeListing,
@@ -22,20 +21,22 @@ import { Status } from "./listing-status";
 type Props = {
   listing: TradeListing;
   state: ClosedListingState;
+  /** the viewer's latest trade from the listing, if they were a party to one */
+  tradeId: string | null;
 };
 
 /**
  * The header's status once a listing has ended normally: how it ended, and
  * below it when, with a link to the viewer's latest trade from it.
  */
-export function ClosedStatus({ listing, state }: Props) {
+export function ClosedStatus({ listing, state, tradeId }: Props) {
   return (
     <Status>
       <p>
         <ClosedText listing={listing} state={state} />
       </p>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground md:justify-end">
-        <ClosedMeta listing={listing} state={state} />
+        <ClosedMeta state={state} tradeId={tradeId} />
       </div>
     </Status>
   );
@@ -49,8 +50,8 @@ export function ClosedStatus({ listing, state }: Props) {
 export function ClosedAlert({
   listing,
   state,
-}: {
-  listing: TradeListing;
+  tradeId,
+}: Props & {
   state: Exclude<ClosedListingState, { status: "filled" | "withdrawn" }>;
 }) {
   return (
@@ -69,7 +70,7 @@ export function ClosedAlert({
         <ClosedText listing={listing} state={state} />
       </AlertTitle>
       <AlertDescription className="flex flex-wrap items-center gap-x-3 gap-y-1">
-        <ClosedMeta listing={listing} state={state} />
+        <ClosedMeta state={state} tradeId={tradeId} />
       </AlertDescription>
     </Alert>
   );
@@ -79,19 +80,14 @@ export function ClosedAlert({
  * When the listing ended, and for a viewer who was a party to one of its
  * trades a link to the latest.
  */
-function ClosedMeta({ listing, state }: Props) {
-  const { data: viewer } = useSuspenseQuery({
-    ...tradeListingQuery(listing.id),
-    select: (page) => page?.viewer,
-  });
-
+function ClosedMeta({ state, tradeId }: Omit<Props, "listing">) {
   return (
     <>
       <Timestamp date={state.endedAt} format={{ dateStyle: "medium" }} />
-      {viewer?.role === "closed" && viewer.tradeId !== null && (
+      {tradeId !== null && (
         <Link
           to="/trade/$id"
-          params={{ id: viewer.tradeId }}
+          params={{ id: tradeId }}
           className="font-medium text-cosmo underline-offset-4 hover:underline dark:text-cosmo-text"
         >
           {m.listing_detail_view_trade()}
@@ -101,7 +97,7 @@ function ClosedMeta({ listing, state }: Props) {
   );
 }
 
-function ClosedText({ listing, state }: Props) {
+function ClosedText({ listing, state }: Pick<Props, "listing" | "state">) {
   const { data: account } = useSuspenseQuery(currentAccountQuery);
   const poster = posterName(listing);
   // the poster reads about their own listing in the second person

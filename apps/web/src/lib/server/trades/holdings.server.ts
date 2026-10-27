@@ -11,6 +11,7 @@ import type {
 import { addr, isEqual } from "@apollo/util";
 import {
   and,
+  type AnyColumn,
   eq,
   inArray,
   isNull,
@@ -52,6 +53,17 @@ export type TokenHoldings = TokenFlags & {
   states: ReadonlyMap<number, TokenState>;
 };
 
+// the collection values a want row is checked against, as the indexer stores them
+const indexedAttributeColumns = {
+  slug: collections.slug,
+  artist: collections.artist,
+  member: collections.member,
+  collectionNo: collections.collectionNo,
+  season: collections.season,
+  class: collections.class,
+  onOffline: collections.onOffline,
+} satisfies Record<keyof IndexedAttributes, AnyColumn>;
+
 /**
  * Each token's state from the indexer rows read for it, by token id, with
  * every id no row names missing.
@@ -89,15 +101,7 @@ export async function readIndexerTokens(
       owner: objekts.owner,
       serial: objekts.serial,
       transferable: objekts.transferable,
-      attributes: {
-        slug: collections.slug,
-        artist: collections.artist,
-        member: collections.member,
-        collectionNo: collections.collectionNo,
-        season: collections.season,
-        class: collections.class,
-        onOffline: collections.onOffline,
-      },
+      attributes: indexedAttributeColumns,
     })
     .from(objekts)
     .innerJoin(collections, eq(objekts.collectionId, collections.id))
@@ -434,13 +438,7 @@ export async function readCandidates(
         tokenId: objekts.id,
         serial: objekts.serial,
         collectionId: objekts.collectionId,
-        slug: collections.slug,
-        artist: collections.artist,
-        member: collections.member,
-        collectionNo: collections.collectionNo,
-        season: collections.season,
-        class: collections.class,
-        onOffline: collections.onOffline,
+        ...indexedAttributeColumns,
         owned:
           sql<number>`count(*) over (partition by ${objekts.collectionId})::int`
             .mapWith(Number)

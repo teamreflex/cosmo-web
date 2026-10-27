@@ -7,8 +7,6 @@ import {
 import {
   liveTradeStatuses,
   openTradeStatuses,
-  type TradeListingWant,
-  type TradeListingWantOption,
   type TradeOfferItem,
   type TradeOfferStatus,
 } from "@apollo/database/web/types";
@@ -18,11 +16,7 @@ import {
   type ClaimStats,
   MAX_TOTAL_WANTED,
 } from "@apollo/trades/caps";
-import {
-  listingUnitSize,
-  needsYou,
-  tradeState,
-} from "@apollo/trades/lifecycle";
+import { needsYou, tradeState } from "@apollo/trades/lifecycle";
 import { isEqual } from "@apollo/util";
 import {
   and,
@@ -47,7 +41,6 @@ import {
   offerRefusal,
   storedObjektItemSchema,
   type StoredWant,
-  storedWantSchema,
   type TradeRatio,
   tradeWants,
 } from "../../universal/trade-listings";
@@ -55,7 +48,7 @@ import { db, type DbOrTx } from "../db";
 import { feedbackRepColumns } from "../feedback.server";
 import { feedItem, readIndexed } from "./feed.server";
 import { readCandidates, readSharedTokenFlags } from "./holdings.server";
-import { posterBlocked, posterLinkColumns } from "./poster.server";
+import { posterLinkColumns } from "./poster.server";
 import {
   deadlinePassed,
   toTradeParty,
@@ -602,24 +595,19 @@ export async function readListingViewer(
     status: TradeOfferStatus;
     fromUserId: string | null;
     fromAddress: string;
-    unitSize: number | null;
-    items: readonly TradeOfferItem[];
-    wants: readonly (TradeListingWant & {
-      options: TradeListingWantOption[];
-    })[];
-    fromUser: {
-      banned: boolean;
-      banExpires: Date | null;
-      cosmoAccount: { address: string } | null;
-    } | null;
+    unitSize: number;
+    wants: StoredWant[];
+    /** the pool's objekts that haven't left it */
+    pool: readonly number[];
+    /** how many of them are free to claim */
+    free: number;
+    /** whether the poster's account or terms refuse any claim (posterBlocked()) */
+    posterRefused: boolean;
   },
   viewerId: string | undefined,
-  free: number,
 ): Promise<ListingViewer> {
   if (viewerId === undefined) return { role: "anonymous" };
-  const unitSize = listingUnitSize(listing);
   const own = listing.fromUserId === viewerId;
-  const wants = listing.wants.map((want) => storedWantSchema.parse(want));
 
   if (listing.status !== "open") {
     return {
@@ -633,27 +621,19 @@ export async function readListingViewer(
   if (own) {
     return {
       role: "poster",
-      ...(await readPosterSide({
-        id: listing.id,
-        fromAddress: listing.fromAddress,
-        unitSize,
-        wants,
-        pool: listing.items.flatMap((item) =>
-          item.leftAt === null
-            ? [storedObjektItemSchema.parse(item).tokenId]
-            : [],
-        ),
-        posterRefused: posterBlocked(
-          wants,
-          listing.fromUser,
-          listing.fromAddress,
-        ),
-      })),
+      ...(await readPosterSide(listing)),
     };
   }
 
-  // a claimer's latest trade from the listing is their live one or pending offer, if any
-  const trade = await readClaimerTrade(listing.id, viewerId);
+  /**
+   * A claimer's latest trade from the listing is their live one or pending
+   * offer, if any. Their standing is only needed when there is neither, but
+   * reading it alongside saves a round trip for every candidate.
+   */
+  const [trade, { address, ...standing }] = await Promise.all([
+    readClaimerTrade(listing.id, viewerId),
+    claimStanding(db, viewerId),
+  ]);
   if (trade?.status === "pending" && trade.expiresAt !== null) {
     return {
       role: "offerer",
@@ -674,12 +654,14 @@ export async function readListingViewer(
     };
   }
 
-  const { address, ...standing } = await claimStanding(db, viewerId);
   if (address === null) return { role: "unlinked" };
   // the listing's `stop` says whether the pool or the poster's account stops a claim
   return {
     role: "candidate",
-    ...(await readCandidateSide(address, wants, { free, unitSize })),
+    ...(await readCandidateSide(address, listing.wants, {
+      free: listing.free,
+      unitSize: listing.unitSize,
+    })),
     claims: { active: standing.active, cap: claimCap(standing) },
     ownAddress: isEqual(address, listing.fromAddress),
     endedOffer: trade === undefined ? null : endedOffer(trade.status),

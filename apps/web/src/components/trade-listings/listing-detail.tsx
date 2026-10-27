@@ -3,7 +3,6 @@ import { tradeListingQuery } from "@/lib/queries/trade-listings";
 import {
   candidatePanel,
   type ListingViewer,
-  pickerVersion,
   type TradeListing,
 } from "@/lib/universal/trade-listings";
 import { useSuspenseQueries } from "@tanstack/react-query";
@@ -18,62 +17,47 @@ type Props = {
 
 /**
  * A trade listing. A closed listing shows how it ended; an open one shows
- * the viewer's role as the server's answer names it.
+ * the viewer's role as the server's answer names it. A lost race or a
+ * changed listing stays on the page as a strip under the header, whatever
+ * the refetch turns the page into.
  */
 export default function ListingDetail({ id }: Props) {
   const [{ data: page }, { data: account }] = useSuspenseQueries({
     queries: [tradeListingQuery(id), currentAccountQuery],
   });
+  const [notice, setNotice] = useState<Notice | null>(null);
   if (page === null) throw notFound();
 
   const { listing, viewer } = page;
-  const address = account?.cosmo?.address;
-  if (listing.state.status !== "open") {
-    return (
-      <ListingView
-        listing={listing}
-        role={{ role: "closed", state: listing.state }}
-        address={address}
-      />
-    );
-  }
-  return <ViewerListing listing={listing} viewer={viewer} address={address} />;
-}
-
-/**
- * An open listing as its viewer sees it. A lost race or a changed listing
- * stays on the page as a strip under the header, whatever the refetch turns
- * the page into.
- */
-function ViewerListing({
-  listing,
-  viewer,
-  address,
-}: {
-  listing: TradeListing;
-  viewer: ListingViewer;
-  address: string | undefined;
-}) {
-  const [notice, setNotice] = useState<Notice | null>(null);
-  const role = viewerRole(listing, viewer);
+  const role = listingRole(listing, viewer);
   return (
     <ListingView
       // new terms or a different most units start the picks over
       key={
         role.role === "picker"
-          ? pickerVersion(listing.updatedAt, role.viewer.units)
+          ? `${listing.updatedAt.toISOString()}:${role.viewer.units}`
           : role.role
       }
       listing={listing}
       role={role}
-      address={address}
+      address={account?.cosmo?.address}
       notice={notice}
       onNotice={setNotice}
     />
   );
 }
 
-function viewerRole(listing: TradeListing, viewer: ListingViewer): ListingRole {
+function listingRole(
+  listing: TradeListing,
+  viewer: ListingViewer,
+): ListingRole {
+  if (listing.state.status !== "open") {
+    return {
+      role: "closed",
+      state: listing.state,
+      tradeId: viewer.role === "closed" ? viewer.tradeId : null,
+    };
+  }
   switch (viewer.role) {
     case "anonymous":
       return { role: "signed_out" };

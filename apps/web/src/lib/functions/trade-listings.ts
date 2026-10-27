@@ -58,6 +58,7 @@ import {
   type ListingViewer,
   type ListingWriteResult,
   poolAvailability,
+  poolItems,
   type TradeListing,
 } from "@/lib/universal/trade-listings";
 import {
@@ -462,6 +463,11 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
             ]
           : [],
       );
+      const posterRefused = posterBlocked(
+        listing.wants,
+        listing.fromUser,
+        listing.fromAddress,
+      );
       return {
         listing: {
           id: listing.id,
@@ -478,21 +484,23 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
           // only an open listing can be claimed, so only an open one is judged
           stop:
             state.status === "open"
-              ? listingStop(
-                  items,
-                  unitSize,
-                  posterBlocked(
-                    listing.wants,
-                    listing.fromUser,
-                    listing.fromAddress,
-                  ),
-                )
+              ? listingStop(items, unitSize, posterRefused)
               : null,
         },
         viewer: await readListingViewer(
-          row,
+          {
+            id: row.id,
+            status: row.status,
+            fromUserId: row.fromUserId,
+            fromAddress: row.fromAddress,
+            unitSize,
+            wants: listing.wants,
+            pool: poolItems({ items }).map((item) => item.tokenId),
+            free: items.filter((item) => item.availability.kind === "free")
+              .length,
+            posterRefused,
+          },
           context.session?.user.id,
-          items.filter((item) => item.availability.kind === "free").length,
         ),
       };
     },

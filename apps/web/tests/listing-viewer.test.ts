@@ -23,7 +23,6 @@ import {
   type OfferRefusal,
   offerRefusal,
   offerRefusalError,
-  pickerVersion,
   type PoolAvailability,
   poolAvailability,
   poolStanding,
@@ -461,19 +460,6 @@ describe("what a candidate sees", () => {
     expect(candidatePanel({ ...offers, stop: "blocked" }, capped)).toBe(
       "blocked",
     );
-  });
-});
-
-describe("when the picker starts over", () => {
-  const base = pickerVersion(new Date(0), 1);
-
-  test("the same answer keeps the picks", () => {
-    expect(pickerVersion(new Date(0), 1)).toBe(base);
-  });
-
-  test("new terms or the most units start over", () => {
-    expect(pickerVersion(new Date(1), 1)).not.toBe(base);
-    expect(pickerVersion(new Date(0), 2)).not.toBe(base);
   });
 });
 

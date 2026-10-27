@@ -28,7 +28,10 @@ import {
 } from "drizzle-orm";
 import { alias, QueryBuilder } from "drizzle-orm/pg-core";
 import { Objekt } from "../../universal/objekt-conversion";
-import type { ListingFeedInput } from "../../universal/schema/listing-feed";
+import {
+  feedColumns,
+  type ListingFeedInput,
+} from "../../universal/schema/listing-feed";
 import {
   type ListingFeedItem,
   type ListingFeedWant,
@@ -86,15 +89,6 @@ const wantColumns = {
 };
 
 type FeedSide = ListingFeedInput["filters"]["offering"];
-
-// rangeColumns without the collection number, which Looking for doesn't filter on
-const feedColumns = [
-  "artist",
-  "member",
-  "season",
-  "class",
-  "on_offline",
-] as const satisfies readonly (keyof FeedSide)[];
 
 // the narrowed columns of one side; an empty column doesn't narrow
 function narrowed(side: FeedSide) {

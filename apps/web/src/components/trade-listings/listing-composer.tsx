@@ -1,4 +1,5 @@
 import { useArtists } from "@/hooks/use-artists";
+import { useDismissNotice } from "@/hooks/use-dismiss-notice";
 import { useInvalidateListing } from "@/hooks/use-invalidate-listing";
 import { useMediaQuery } from "@/hooks/use-media-query";
 import { m } from "@/i18n/messages";
@@ -10,9 +11,8 @@ import {
   emptyComposerDisplay,
   listingComposerDisplay,
 } from "@/lib/client/trade-listings";
-import { $dismissRangeOffersNotice } from "@/lib/functions/market-notice";
 import { $editListing, $postListing } from "@/lib/functions/trade-listings";
-import { rangeOffersNoticeQuery } from "@/lib/queries/market";
+import { dismissedNoticesQuery } from "@/lib/queries/market";
 import {
   offeredTokenRefusalsQuery,
   rangeMatchCountQuery,
@@ -134,9 +134,10 @@ export default function ListingComposer({
   const { isDirty } = form.formState;
   // a double click posts once, even before the pending state renders
   const submitting = useRef(false);
-  const { data: rangeNoticeDismissed } = useSuspenseQuery(
-    rangeOffersNoticeQuery,
-  );
+  const { data: rangeNoticeDismissed } = useSuspenseQuery({
+    ...dismissedNoticesQuery,
+    select: (dismissed) => dismissed["range-offers-notice"],
+  });
   const { artistList } = useArtists();
   // each artist's members, keyed as ranges store artists
   const rosters = new Map(
@@ -204,12 +205,7 @@ export default function ListingComposer({
       submitting.current = false;
     },
   });
-  const dismissRangeNotice = useMutation({
-    mutationFn: () => $dismissRangeOffersNotice(),
-    onSuccess: () =>
-      queryClient.setQueryData(rangeOffersNoticeQuery.queryKey, true),
-    onError: (error) => toast.error(formatError(error)),
-  });
+  const dismissRangeNotice = useDismissNotice("range-offers-notice");
 
   /**
    * Escape, a click outside, a swipe, Close and Cancel all land here: a
