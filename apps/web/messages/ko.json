@@ -2340,7 +2340,7 @@
   "listing_composer_reason_ratio": "교환 한 번에 내 오브젝트 {unitSize}개가 필요한데 {offered}개만 제시했어요. 비율을 낮추거나 오브젝트를 더 추가하세요.",
   "listing_composer_choice_add_label": "컬렉션 추가",
   "listing_composer_search_picked": "추가됨. 선택하면 빠집니다.",
-  "listing_composer_range_offers": "범위로 요청하면 바로 교환되지 않고 제안을 받게 되어, 받을 시리얼을 직접 고를 수 있어요. 특정 컬렉션을 원하면 대신 {#b}아무거나{/b}를 쓰세요.",
+  "listing_composer_range_offers": "범위로 요청하면 바로 교환되지 않고 제안을 받게 되어, 받을 오브젝트를 직접 고를 수 있어요. 특정 컬렉션을 원하면 대신 {#b}아무거나{/b}를 쓰세요.",
   "listing_composer_range_confirm_title": "이 교환 글은 제안을 받아요",
   "listing_composer_range_confirm_description": "범위는 여러 오브젝트에 해당해서 이 교환 글로 바로 교환할 수 없어요.",
   "listing_composer_range_confirm_choose_title": "직접 골라요",

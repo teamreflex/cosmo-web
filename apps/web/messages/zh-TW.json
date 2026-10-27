@@ -2342,7 +2342,7 @@
   "listing_composer_reason_ratio": "每次交換需要你的 {unitSize} 張 Objekt，但你只提供了 {offered} 張。請調低比例或新增更多。",
   "listing_composer_choice_add_label": "新增卡款",
   "listing_composer_search_picked": "已新增，再次選擇可移除。",
-  "listing_composer_range_offers": "使用範圍時，對方會向你送出報價，而不是直接交換，由你決定接受哪些序號。想要指定的卡款？請改用{#b}任選{/b}。",
+  "listing_composer_range_offers": "使用範圍時，對方會向你送出報價，而不是直接交換，由你決定接受哪些 Objekt。想要指定的卡款？請改用{#b}任選{/b}。",
   "listing_composer_range_confirm_title": "這則刊登接受報價",
   "listing_composer_range_confirm_description": "範圍會符合許多 Objekt，所以對方無法直接與這則刊登交換。",
   "listing_composer_range_confirm_choose_title": "由你決定",
