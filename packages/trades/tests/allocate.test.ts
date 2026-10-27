@@ -13,6 +13,7 @@ import {
 } from "../src/allocate";
 import { MAX_PER_ROW, MAX_TOTAL_WANTED } from "../src/caps";
 import type { RangeFilter } from "../src/range";
+import { generateCase, seeded } from "./generate";
 
 let nextTokenId = 1;
 
@@ -240,6 +241,28 @@ describe("allocate", () => {
       { tokenIds: [haseul.tokenId], missing: 0 },
       { tokenIds: [heejin.tokenId, kimlip.tokenId], missing: 0 },
     ]);
+  });
+});
+
+describe("capping copies per collection (ALC-03)", () => {
+  test("never changes the allocation's outcome", () => {
+    const random = seeded(8);
+    let capped = 0;
+    for (let run = 0; run < 3000; run++) {
+      const { wants, inventory } = generateCase(random);
+      const n = wants.reduce((sum, want) => sum + want.count, 0);
+      const full = allocate(wants, inventory);
+      const cappedInventory = inventory.filter(({ rank }) => rank <= n);
+      if (cappedInventory.length < inventory.length) capped++;
+      const bounded = allocate(wants, cappedInventory);
+
+      expect(isFullyAllocated(bounded)).toBe(isFullyAllocated(full));
+      expect(bounded.map(({ missing }) => missing)).toEqual(
+        full.map(({ missing }) => missing),
+      );
+    }
+    // the cap has to bite often enough for the property to mean something
+    expect(capped).toBeGreaterThan(300);
   });
 });
 

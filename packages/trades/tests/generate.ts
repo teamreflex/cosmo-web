@@ -1,5 +1,4 @@
-import type { InventoryObjekt, TradeWant } from "../src/allocate";
-import type { RankedCandidate } from "../src/inventory";
+import type { TradeWant } from "../src/allocate";
 import { rangeFilterSchema } from "../src/range";
 
 /**
@@ -33,8 +32,6 @@ const classes = ["First", "Double"];
 const onOfflines = ["online", "offline"] as const;
 const artists = ["artms", "tripleS"] as const;
 
-export type GeneratedObjekt = InventoryObjekt & RankedCandidate;
-
 /**
  * A random listing's trade side, mixing exact, range and choice rows, and a
  * random inventory of copies, ranked within each collection the way the
@@ -66,16 +63,14 @@ export function generateCase(random: Random) {
       serial: random.int(0, 20),
     })),
   );
-  const inventory: GeneratedObjekt[] = unranked.map((objekt) => {
-    const copies = unranked
-      .filter((other) => other.slug === objekt.slug)
-      .toSorted((a, b) => b.serial - a.serial || a.tokenId - b.tokenId);
-    return {
-      ...objekt,
-      rank: copies.indexOf(objekt) + 1,
-      owned: copies.length,
-    };
-  });
+  const inventory = unranked.map((objekt) => ({
+    ...objekt,
+    rank:
+      unranked
+        .filter((other) => other.slug === objekt.slug)
+        .toSorted((a, b) => b.serial - a.serial || a.tokenId - b.tokenId)
+        .indexOf(objekt) + 1,
+  }));
 
   const wants: TradeWant[] = [];
   for (let row = random.int(1, 4); row > 0; row--) {

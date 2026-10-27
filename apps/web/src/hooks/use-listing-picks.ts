@@ -4,7 +4,6 @@ import {
   type ListingFeedWant,
   type ListingPick,
   offeredForUnits,
-  picksForUnits,
   toggleOffered,
   type TradeListing,
 } from "@/lib/universal/trade-listings";
@@ -54,7 +53,7 @@ export function useListingPicks(
   const [state, setState] = useState(() => ({
     units: 1,
     offered: offeredForUnits([], free, unitSize),
-    picked: viewer === null ? [] : picksForUnits(viewer.rows, wants, 1),
+    picked: rows.map((): ListingPick[] => []),
   }));
   if (viewer === null) return null;
 
@@ -99,14 +98,16 @@ export function useListingPicks(
     }),
     /**
      * Takes that many units: the pool picks and each want row keep what
-     * they can, and a row with room tops up from the server's picks.
+     * they can.
      */
     setUnits: (next: number) => {
       const clamped = Math.min(Math.max(next, 1), Math.max(viewer.units, 1));
       update((current) => ({
         units: clamped,
         offered: offeredForUnits(current.offered, free, unitSize * clamped),
-        picked: picksForUnits(viewer.rows, wants, clamped, current.picked),
+        picked: current.picked.map((picks, index) =>
+          picks.slice(0, (wants[index]?.count ?? 0) * clamped),
+        ),
       }));
     },
     toggleOffered: (tokenId: number) =>

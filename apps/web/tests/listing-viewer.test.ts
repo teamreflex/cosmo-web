@@ -1,9 +1,4 @@
-import {
-  allocateUnits,
-  scaleWants,
-  type TradeWant,
-} from "@apollo/trades/allocate";
-import { validateAssignment } from "@apollo/trades/assignment";
+import type { TradeWant } from "@apollo/trades/allocate";
 import type { TokenFlags } from "@apollo/trades/holdings";
 import type { ObjektAttributes, RangeFilter } from "@apollo/trades/range";
 import { describe, expect, test } from "bun:test";
@@ -13,17 +8,14 @@ import {
   wantKindsSummary,
   wantLabel,
 } from "../src/lib/client/trade-listings";
-import type { Objekt } from "../src/lib/universal/objekt-conversion";
 import {
   type Candidate,
   candidatePanel,
-  type CandidateRow,
   hasRatio,
   isLiveTrade,
   type ListingFeedItem,
   type ListingItem,
   type ListingOfferSummary,
-  type ListingPick,
   listingStop,
   type ListingTrade,
   liveHolder,
@@ -32,7 +24,6 @@ import {
   offerRefusal,
   offerRefusalError,
   pickerVersion,
-  picksForUnits,
   type PoolAvailability,
   poolAvailability,
   poolStanding,
@@ -119,167 +110,6 @@ describe("pool availability", () => {
     expect(
       blocked(held(1, poster), { locked: new Set([1]), live: new Set() }),
     ).toEqual({ kind: "blocked", reason: "locked" });
-  });
-});
-
-// a collection as the indexer would give it
-const collectionOf = (slug: string, member: string): Objekt.Collection => ({
-  id: slug,
-  artist: "artms",
-  member,
-  season: "Atom02",
-  class: "First",
-  collectionNo: slug.split("-").at(-1) ?? "",
-  collectionId: slug,
-  frontImage: "",
-  backImage: "",
-  frontImageVersion: null,
-  backImageVersion: null,
-  backgroundColor: "#000000",
-  textColor: "#ffffff",
-  bandImageUrl: null,
-  frontMedia: null,
-  hasAudio: false,
-  slug,
-  artistName: "ARTMS",
-  onOffline: "online",
-});
-
-describe("picks for fewer units", () => {
-  const pick = (
-    tokenId: number,
-    slug: string,
-    member: string,
-  ): ListingPick => ({
-    tokenId,
-    serial: tokenId,
-    attributes: attributes(slug, member),
-    collection: collectionOf(slug, member),
-  });
-
-  test("trimming the most units' allocation still fills every smaller claim", () => {
-    const wants: TradeWant[] = [
-      {
-        kind: "choice",
-        count: 1,
-        slugs: ["atom02-kimlip-101z", "atom02-kimlip-102z"],
-      },
-      {
-        kind: "range",
-        count: 2,
-        filter: {
-          artist: [],
-          member: ["HaSeul"],
-          season: [],
-          class: [],
-          on_offline: [],
-        },
-      },
-    ];
-    const inventory = [
-      { tokenId: 1, ...attributes("atom02-kimlip-101z", "KimLip") },
-      { tokenId: 2, ...attributes("atom02-kimlip-102z", "KimLip") },
-      { tokenId: 3, ...attributes("atom02-kimlip-101z", "KimLip") },
-      ...[4, 5, 6, 7, 8, 9].map((tokenId) => ({
-        tokenId,
-        ...attributes(`atom02-haseul-10${tokenId}z`, "HaSeul"),
-      })),
-    ];
-    const { units, allocation } = allocateUnits(wants, inventory, {
-      free: 8,
-      unitSize: 1,
-    });
-    expect(units).toBe(3);
-
-    const byId = new Map(inventory.map((objekt) => [objekt.tokenId, objekt]));
-    const rows: CandidateRow[] = allocation.map((row) => ({
-      owned: 0,
-      missing: row.missing,
-      picks: row.tokenIds.flatMap((tokenId) => {
-        const objekt = byId.get(tokenId);
-        return objekt ? [pick(tokenId, objekt.slug, objekt.member)] : [];
-      }),
-    }));
-    for (const smaller of [1, 2, 3]) {
-      const trimmed = picksForUnits(rows, wants, smaller);
-      expect(trimmed.map((picks) => picks.length)).toEqual([
-        smaller,
-        2 * smaller,
-      ]);
-      expect(
-        validateAssignment(
-          scaleWants(wants, smaller),
-          trimmed.map((picks) => picks.map((one) => one.tokenId)),
-          new Map(inventory.map((objekt) => [objekt.tokenId, objekt])),
-        ),
-      ).toEqual({ ok: true });
-    }
-  });
-
-  test("a row the server couldn't fill keeps what it has", () => {
-    const rows: CandidateRow[] = [
-      {
-        owned: 1,
-        missing: 1,
-        picks: [pick(1, "atom02-kimlip-101z", "KimLip")],
-      },
-    ];
-    expect(picksForUnits(rows, [{ count: 2 }], 1)[0]).toHaveLength(1);
-  });
-
-  describe("from the viewer's own picks", () => {
-    const kimlip = (tokenId: number) =>
-      pick(tokenId, `atom02-kimlip-10${tokenId}z`, "KimLip");
-    const haseul = (tokenId: number) =>
-      pick(tokenId, `atom02-haseul-10${tokenId}z`, "HaSeul");
-    // the server's allocation at three units: one KimLip and two HaSeul each
-    const rows: CandidateRow[] = [
-      { owned: 4, missing: 0, picks: [kimlip(1), kimlip(2), kimlip(3)] },
-      {
-        owned: 7,
-        missing: 0,
-        picks: [4, 5, 6, 7, 8, 9].map(haseul),
-      },
-    ];
-    const wants = [{ count: 1 }, { count: 2 }];
-    const ids = (picked: ListingPick[][]) =>
-      picked.map((picks) => picks.map((one) => one.tokenId));
-
-    test("more units keep each row's hand-picked serials and top up from the server's", () => {
-      expect(
-        ids(picksForUnits(rows, wants, 2, [[kimlip(9)], [haseul(8)]])),
-      ).toEqual([
-        [9, 1],
-        [8, 4, 5, 6],
-      ]);
-    });
-
-    test("fewer units keep each row's first picks", () => {
-      expect(
-        ids(
-          picksForUnits(rows, wants, 1, [
-            [kimlip(3), kimlip(1)],
-            [haseul(9), haseul(7), haseul(5), haseul(4)],
-          ]),
-        ),
-      ).toEqual([[3], [9, 7]]);
-    });
-
-    test("a top-up skips a server pick another row already holds", () => {
-      // the second row holds the server's first KimLip, so the first tops up past it
-      expect(
-        ids(picksForUnits(rows, wants, 2, [[], [haseul(4), kimlip(1)]])),
-      ).toEqual([
-        [2, 3],
-        [4, 1, 5, 6],
-      ]);
-    });
-
-    test("no picks of their own is the server's allocation trimmed", () => {
-      expect(picksForUnits(rows, wants, 2, [])).toEqual(
-        picksForUnits(rows, wants, 2),
-      );
-    });
   });
 });
 
@@ -532,7 +362,7 @@ const candidate = (overrides: Partial<Candidate> = {}): Candidate => ({
     { tokenId: 1, availability: { kind: "free" } },
     { tokenId: 2, availability: { kind: "in_trade" } },
   ],
-  rows: [{ owned: 1, missing: 0, picks: [] }],
+  rows: [{ owned: 1, missing: 0 }],
   claims: { active: 0, cap: 3 },
   ownAddress: false,
   endedOffer: null,
@@ -657,7 +487,7 @@ describe("when the picker starts over", () => {
     expect(pickerVersion(candidate())).toBe(base);
   });
 
-  test("another trade taking or freeing a pool objekt keeps them", () => {
+  test("another trade taking or freeing a pool objekt, or what the viewer owns changing, keeps them", () => {
     expect(
       pickerVersion(
         candidate({
@@ -668,34 +498,14 @@ describe("when the picker starts over", () => {
         }),
       ),
     ).toBe(base);
+    expect(pickerVersion(candidate({ rows: [{ owned: 2, missing: 1 }] }))).toBe(
+      base,
+    );
   });
 
-  test("new terms, the most units or the viewer's copies start over", () => {
+  test("new terms or the most units start over", () => {
     expect(pickerVersion(candidate({ updatedAt: new Date(1) }))).not.toBe(base);
     expect(pickerVersion(candidate({ units: 2 }))).not.toBe(base);
-    expect(
-      pickerVersion(candidate({ rows: [{ owned: 2, missing: 0, picks: [] }] })),
-    ).not.toBe(base);
-    expect(
-      pickerVersion(
-        candidate({
-          rows: [
-            {
-              owned: 1,
-              missing: 0,
-              picks: [
-                {
-                  tokenId: 7,
-                  serial: 7,
-                  attributes: attributes("atom02-heejin-101z"),
-                  collection: collectionOf("atom02-heejin-101z", "HeeJin"),
-                },
-              ],
-            },
-          ],
-        }),
-      ),
-    ).not.toBe(base);
   });
 });
 

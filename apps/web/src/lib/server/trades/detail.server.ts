@@ -30,12 +30,10 @@ import {
   sql,
 } from "drizzle-orm";
 import { alias, QueryBuilder } from "drizzle-orm/pg-core";
-import { Objekt } from "../../universal/objekt-conversion";
 import {
   type CandidateRow,
   type EndedOfferStatus,
   type ListingOfferSummary,
-  type ListingPick,
   listingStateSchema,
   type ListingTrade,
   offerRefusal,
@@ -45,7 +43,6 @@ import {
   tradeWants,
 } from "../../universal/trade-listings";
 import { db, type DbOrTx } from "../db";
-import { indexer } from "../db/indexer";
 import { feedbackRepColumns } from "../feedback.server";
 import { feedItem, readIndexed } from "./feed.server";
 import { readCandidates, readSharedTokenFlags } from "./holdings.server";
@@ -543,12 +540,12 @@ export async function readPosterSide(listing: {
  * The candidate's side of an open listing: the most units they can take,
  * bounded by the free pool, the claim caps and what they hold
  * (allocateUnits), and per want row how many usable copies of the
- * collections it fits they own before the cap, how many it is short, and
- * the copies the allocation at that size picks for it, one unit's when
- * they can't fill one. The allocation runs here, since one copy can fit
- * two rows, but only its picks leave, so the answer stays as small as the
- * listing whatever the viewer holds. The rows are the ones objekts fill
- * (tradeWants()); a listing with a payment row never reaches the picker.
+ * collections it fits they own before the cap and how many it is short at
+ * that size, one unit's when they can't fill one. The allocation runs here,
+ * since one copy can fit two rows, but only its counts leave, so the answer
+ * stays as small as the listing whatever the viewer holds. The rows are the
+ * ones objekts fill (tradeWants()); a listing with a payment row never
+ * reaches the picker.
  */
 export async function readCandidateSide(
   address: string,
@@ -558,8 +555,6 @@ export async function readCandidateSide(
   const claimable = tradeWants(wants);
   // no claim takes more than MAX_TOTAL_WANTED copies, of one collection or all
   const inventory = await readCandidates(address, claimable, MAX_TOTAL_WANTED);
-
-  const copies = new Map(inventory.map((copy) => [copy.tokenId, copy]));
   const { units, allocation } = allocateUnits(
     claimable,
     inventory.map((copy) => ({ tokenId: copy.tokenId, ...copy.attributes })),
@@ -572,50 +567,15 @@ export async function readCandidateSide(
       { ...copy.attributes, owned: copy.owned },
     ]),
   );
-  const picked = new Set(
-    allocation.flatMap((row) =>
-      row.tokenIds.flatMap(
-        (tokenId) => copies.get(tokenId)?.collectionId ?? [],
-      ),
-    ),
-  );
-  const collections = new Map(
-    (picked.size
-      ? await indexer.query.collections.findMany({
-          where: { id: { in: [...picked] } },
-        })
-      : []
-    ).map((row) => [row.id, Objekt.fromIndexer(row)]),
-  );
 
   return {
     units,
-    rows: claimable.map((want, index): CandidateRow => {
+    rows: claimable.map((want, index): CandidateRow => ({
+      owned: [...owned.values()]
+        .filter((collection) => fitsWant(want, collection))
+        .reduce((total, collection) => total + collection.owned, 0),
       // allocate() answers every want, in order
-      const { tokenIds, missing } = allocation[index] ?? {
-        tokenIds: [],
-        missing: want.count,
-      };
-      return {
-        owned: [...owned.values()]
-          .filter((collection) => fitsWant(want, collection))
-          .reduce((total, collection) => total + collection.owned, 0),
-        missing,
-        picks: tokenIds.flatMap((tokenId): ListingPick[] => {
-          const copy = copies.get(tokenId);
-          const collection = copy && collections.get(copy.collectionId);
-          return copy && collection
-            ? [
-                {
-                  tokenId,
-                  serial: copy.serial,
-                  attributes: copy.attributes,
-                  collection,
-                },
-              ]
-            : [];
-        }),
-      };
-    }),
+      missing: allocation[index]?.missing ?? want.count,
+    })),
   };
 }

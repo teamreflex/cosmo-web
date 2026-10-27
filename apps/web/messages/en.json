@@ -868,7 +868,7 @@
   "listing_detail_closed_timed_out": "Its trade ran out of time before either side sent anything, so this listing closed.",
   "listing_detail_closed_withdrawn_own": "You closed this listing.",
   "listing_detail_closed_broken_own": "An offered objekt left your account or can't be transferred, so this listing can't go ahead.",
-  "listing_detail_you_give_summary": "picked from what you own",
+  "listing_detail_you_give_summary": "pick from what you own",
   "listing_detail_you_get_summary": "from {poster}",
   "listing_detail_summary_ranges": [
     {
@@ -2435,7 +2435,6 @@
   "listing_detail_units_get": "you get {count}",
   "listing_detail_units_give": "you give {count}",
   "listing_detail_pool_offers_help": "Others may offer for the same objekts. Whoever {poster} accepts first gets them.",
-  "listing_detail_you_give_offer_summary": "you choose the serials",
   "listing_detail_offer_footer": "Sending an offer holds nothing. If {poster} accepts, {appName} checks every serial again and the trade starts with 48 hours to send.",
   "listing_detail_send_offer": "Send offer",
   "listing_detail_offer_sent": "Offer sent to {poster}",

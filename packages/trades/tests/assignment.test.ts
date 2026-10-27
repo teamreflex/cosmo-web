@@ -7,7 +7,6 @@ import {
   type TradeWant,
 } from "../src/allocate";
 import { validateAssignment } from "../src/assignment";
-import { orderInventory } from "../src/inventory";
 import { type ObjektAttributes, rangeFilterSchema } from "../src/range";
 import { generateCase, seeded } from "./generate";
 
@@ -360,7 +359,7 @@ describe("allocate and validateAssignment agree (ASN-16)", () => {
     for (let run = 0; run < 3000; run++) {
       const { wants, inventory } = generateCase(random);
       if (wants.length === 0) continue;
-      const allocation = allocate(wants, orderInventory(inventory));
+      const allocation = allocate(wants, inventory);
       if (!isFullyAllocated(allocation)) continue;
       full++;
       expect(

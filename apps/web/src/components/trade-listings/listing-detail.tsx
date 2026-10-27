@@ -111,7 +111,7 @@ function ViewerListing({
       : viewerRole(listing, viewer);
   return (
     <ListingView
-      // new terms or a different set of copies start the picks over
+      // new terms or a different most units start the picks over
       key={role.role === "picker" ? pickerVersion(role.viewer) : role.role}
       listing={listing}
       role={role}

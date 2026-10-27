@@ -33,10 +33,10 @@ type Props = {
 
 /**
  * What the viewer would give, one panel of slots per want row at the
- * claim's size, filled from the server's picks. Removing a pick empties its
- * slot, and an empty slot opens the viewer's collection held to that row.
- * Accept, or Send offer, lives in the page header, which says whether the
- * picks fit.
+ * claim's size, which the viewer fills from their own collection. Removing a
+ * pick empties its slot, and an empty slot opens the viewer's collection
+ * held to that row. Accept, or Send offer, lives in the page header, which
+ * says whether the picks fit.
  */
 export default function AllocationPicker({
   viewer,
@@ -53,11 +53,7 @@ export default function AllocationPicker({
       <SideHeading
         tone="have"
         title={m.listing_detail_you_give_total({ count: picks.giveTotal })}
-        summary={
-          picks.takesOffers
-            ? m.listing_detail_you_give_offer_summary()
-            : m.listing_detail_you_give_summary()
-        }
+        summary={m.listing_detail_you_give_summary()}
       />
 
       {rows.map((row, index) => {
@@ -106,7 +102,7 @@ export default function AllocationPicker({
 /**
  * The picker's shape while the viewer's objekts load: each row's frame,
  * label and footer around placeholder slots, so nothing grows when the
- * picks arrive.
+ * viewer's side arrives.
  */
 export function AllocationPickerSkeleton({
   rows,

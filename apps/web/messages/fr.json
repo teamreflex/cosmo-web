@@ -868,7 +868,7 @@
   "listing_detail_closed_timed_out": "Son échange a expiré avant que l'une ou l'autre partie n'envoie quoi que ce soit, donc cette annonce a été fermée.",
   "listing_detail_closed_withdrawn_own": "Vous avez fermé cette annonce.",
   "listing_detail_closed_broken_own": "Un objekt proposé a quitté votre compte ou ne peut pas être transféré, donc cette annonce ne peut pas aboutir.",
-  "listing_detail_you_give_summary": "choisis parmi vos objekts",
+  "listing_detail_you_give_summary": "à choisir parmi vos objekts",
   "listing_detail_you_get_summary": "de {poster}",
   "listing_detail_summary_ranges": [
     {
@@ -2444,7 +2444,6 @@
   "listing_detail_units_get": "vous recevez {count}",
   "listing_detail_units_give": "vous donnez {count}",
   "listing_detail_pool_offers_help": "D'autres peuvent faire une offre pour les mêmes objekts. Ils iront à celui dont {poster} accepte l'offre en premier.",
-  "listing_detail_you_give_offer_summary": "vous choisissez les numéros de série",
   "listing_detail_offer_footer": "Envoyer une offre ne réserve rien. Si {poster} l'accepte, {appName} revérifie chaque numéro de série et l'échange commence, avec 48 heures pour envoyer.",
   "listing_detail_send_offer": "Envoyer l'offre",
   "listing_detail_offer_sent": "Offre envoyée à {poster}",

@@ -2386,7 +2386,6 @@
   "listing_detail_units_get": "你得到 {count}",
   "listing_detail_units_give": "你給出 {count}",
   "listing_detail_pool_offers_help": "其他人也可以對同樣的 Objekt 報價。{poster} 先接受誰的報價，就歸誰。",
-  "listing_detail_you_give_offer_summary": "序號由你選擇",
   "listing_detail_offer_footer": "送出報價不會保留任何東西。如果 {poster} 接受，{appName} 會再次檢查每個序號，交換隨即開始，雙方有 48 小時傳送。",
   "listing_detail_send_offer": "送出報價",
   "listing_detail_offer_sent": "已向 {poster} 送出報價",

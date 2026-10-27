@@ -2384,7 +2384,6 @@
   "listing_detail_units_get": "受け取る {count}",
   "listing_detail_units_give": "渡す {count}",
   "listing_detail_pool_offers_help": "同じオブジェクトに他の人もオファーできます。{poster}が先に承諾した人が受け取ります。",
-  "listing_detail_you_give_offer_summary": "シリアルはあなたが選択",
   "listing_detail_offer_footer": "オファーを送っても何も確保されません。{poster}が承諾すると、{appName}がすべてのシリアルを再確認し、48時間以内に送るトレードが始まります。",
   "listing_detail_send_offer": "オファーを送る",
   "listing_detail_offer_sent": "{poster}にオファーを送りました",

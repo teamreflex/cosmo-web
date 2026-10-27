@@ -12,7 +12,6 @@
     "./events": "./src/events.ts",
     "./feedback": "./src/feedback.ts",
     "./holdings": "./src/holdings.ts",
-    "./inventory": "./src/inventory.ts",
     "./lifecycle": "./src/lifecycle.ts",
     "./listing": "./src/listing.ts",
     "./range": "./src/range.ts",

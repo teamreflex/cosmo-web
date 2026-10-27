@@ -361,13 +361,12 @@ export type ListingPick = {
 
 /**
  * The viewer's side of one want row: how many usable copies of the
- * collections it fits they own, how many it is short once every row draws
- * on them, and the copies the server's allocation picked for it.
+ * collections it fits they own and how many it is short once every row
+ * draws on them.
  */
 export type CandidateRow = {
   owned: number;
   missing: number;
-  picks: ListingPick[];
 };
 
 /**
@@ -596,9 +595,10 @@ export type EndedOfferStatus = "declined" | "expired" | "stale";
  * poster's offers and trades, the viewer's own live trade (`claimer`, its
  * deadline null while disputed) or pending offer (`offerer`), or for anyone
  * else (`candidate`) the most units they can take, 0 when they can't fill
- * one, with their picks at that size and what limits them. `updatedAt` is
- * the listing version a candidate's answer was read against, which Accept
- * sends back; the poster's side stopping claims is the listing's `stop`.
+ * one, with how many matching objekts they own and are short per want row,
+ * and what limits them. `updatedAt` is the listing version a candidate's
+ * answer was read against, which Accept sends back; the poster's side
+ * stopping claims is the listing's `stop`.
  */
 export type ListingViewer =
   | { role: "anonymous" }
@@ -689,36 +689,6 @@ export function candidatePanel(
     return "blocked";
   }
   return stop === "busy" ? "busy" : "picker";
-}
-
-/**
- * Each want row's picks for a claim of `units`: the viewer's `current`
- * picks for the row, in order, up to its count × units, topped up from the
- * server's picks for it that no row already holds. Starting from no picks,
- * that's the server's allocation trimmed: the server allocates at the most
- * units the viewer can fill, and a subset of a full allocation still fills
- * a smaller claim, since every pick fits its row whatever else is picked.
- * `wants` are the rows the picks are for, unscaled.
- */
-export function picksForUnits(
-  rows: readonly CandidateRow[],
-  wants: readonly { count: number }[],
-  units: number,
-  current: readonly (readonly ListingPick[])[] = [],
-): ListingPick[][] {
-  const kept = rows.map((row, index) => {
-    const count = (wants[index]?.count ?? 0) * units;
-    return { row, count, picks: (current[index] ?? []).slice(0, count) };
-  });
-  const held = new Set(
-    kept.flatMap(({ picks }) => picks.map((pick) => pick.tokenId)),
-  );
-  return kept.map(({ row, count, picks }) => [
-    ...picks,
-    ...row.picks
-      .filter((pick) => !held.has(pick.tokenId))
-      .slice(0, count - picks.length),
-  ]);
 }
 
 /**
@@ -889,17 +859,9 @@ export type WantsHeading = "you_look_for" | "looking_for";
 
 /**
  * Which answer the listing page's picker starts its picks from. A refetch
- * that only sees another trade take or free a pool objekt keeps the
- * viewer's picks, since the picker drops pool picks that aren't free; new
- * terms or a change in what the viewer owns start over.
+ * keeps the viewer's picks, dropping pool picks that aren't free; new
+ * terms or a different most units start over.
  */
-export function pickerVersion(
-  viewer: Pick<Candidate, "updatedAt" | "units" | "rows">,
-) {
-  return `${viewer.updatedAt.toISOString()}:${viewer.units}:${viewer.rows
-    .map(
-      (row) =>
-        `${row.owned}/${row.picks.map((pick) => pick.tokenId).join(",")}`,
-    )
-    .join(";")}`;
+export function pickerVersion(viewer: Pick<Candidate, "updatedAt" | "units">) {
+  return `${viewer.updatedAt.toISOString()}:${viewer.units}`;
 }

@@ -2,7 +2,6 @@ import { collections, objekts } from "@apollo/database/indexer/schema";
 import { lockedObjekts, tradeOfferItems } from "@apollo/database/web/schema";
 import type { TradeWant } from "@apollo/trades/allocate";
 import type { TokenFlags } from "@apollo/trades/holdings";
-import { orderInventory } from "@apollo/trades/inventory";
 import type { ListingInput } from "@apollo/trades/listing";
 import type { ObjektAttributes, RangeFilter } from "@apollo/trades/range";
 import { addr, isEqual } from "@apollo/util";
@@ -402,15 +401,15 @@ function itemRangeConditions(filter: RangeFilter) {
 }
 
 /**
- * The address's usable copies of every collection the wants could take, in
- * the order allocation should spend them (orderInventory). Usable means
- * transferable, not locked and not in a live trade; those are dropped
- * before counting, so `owned` is every usable copy. Copies of a collection
- * are interchangeable to every row and no allocation uses more than `n`
- * (the listing's total wanted count), so only the top `n` of each
+ * The address's usable copies of every collection the wants could take.
+ * Usable means transferable, not locked and not in a live trade; those are
+ * dropped before counting, so `owned` is every usable copy. Copies of a
+ * collection are interchangeable to every row and no allocation uses more
+ * than `n` (the listing's total wanted count), so only the top `n` of each
  * collection by serial (highest first) come back, which bounds the read for
- * big holders without changing the allocation. A caller that has read
- * unusableTokens() for these wants, or for more, passes them as `unusable`.
+ * big holders without changing what the allocation fills. A caller that has
+ * read unusableTokens() for these wants, or for more, passes them as
+ * `unusable`.
  */
 export async function readCandidates(
   address: string,
@@ -459,22 +458,23 @@ export async function readCandidates(
         ),
       ),
   );
-  const rows = await indexer
-    .with(usable)
-    .select()
-    .from(usable)
-    .where(lte(usable.rank, n));
-
-  return orderInventory(
-    rows.map(
-      ({ tokenId, serial, collectionId, owned, rank, ...attributes }) => ({
+  return (
+    (
+      await indexer
+        .with(usable)
+        .select()
+        .from(usable)
+        .where(lte(usable.rank, n))
+        // a stable order keeps each row's short count the same across refetches
+        .orderBy(usable.collectionId, usable.rank)
+    ).map(
+      ({ tokenId, serial, collectionId, owned, rank: _, ...attributes }) => ({
         tokenId: Number(tokenId),
         serial,
         collectionId,
         owned,
-        rank,
         attributes,
       }),
-    ),
+    )
   );
 }
