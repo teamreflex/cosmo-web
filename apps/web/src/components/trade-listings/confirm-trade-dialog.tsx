@@ -15,7 +15,6 @@ import { $claimListing } from "@/lib/functions/trade-listings";
 import { tradesKey } from "@/lib/queries/trades";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import {
-  type Candidate,
   poolItems,
   type TokenRefusalReason,
   type TradeListing,
@@ -50,7 +49,6 @@ import { Eyebrow } from "./side-heading";
 
 type Props = {
   listing: TradeListing;
-  viewer: Candidate;
   rows: PickerRow[];
   /** whether it sends an offer, as on a listing with a range row */
   offers: boolean;
@@ -80,7 +78,6 @@ type Shown = {
  */
 export default function ConfirmTradeDialog({
   listing,
-  viewer,
   rows,
   offers,
   snapshot,
@@ -89,7 +86,7 @@ export default function ConfirmTradeDialog({
   onNotice,
   onPickTaken,
 }: Props) {
-  const invalidate = useInvalidateListing(listing.id);
+  const invalidate = useInvalidateListing();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [failure, setFailure] = useState<ClaimFailure | null>(null);
@@ -101,7 +98,7 @@ export default function ConfirmTradeDialog({
       $claimListing({
         data: {
           listingId: listing.id,
-          seen: viewer.updatedAt,
+          seen: listing.updatedAt,
           units: frozen.units,
           picked: frozen.offered,
           rows: frozen.picked.map((picks) => picks.map((pick) => pick.tokenId)),

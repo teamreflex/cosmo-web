@@ -761,7 +761,6 @@
   "listing_detail_kind_trade": "Trade",
   "listing_detail_posted": "posted {#time}{when}{/time}",
   "listing_detail_error": "Couldn't load this listing.",
-  "listing_detail_viewer_error": "Couldn't load your side of this listing.",
   "listing_detail_you_get": "You get · {count}",
   "listing_detail_offering": "Offering · {count}",
   "listing_detail_looking_for": "Looking for · {count}",
@@ -2666,7 +2665,6 @@
   "listing_poster_busy_title": "Everything you offer is in a trade right now",
   "listing_poster_busy_body": "Nobody can take this listing until one of those trades ends. There's nothing to fix.",
   "listing_detail_offerer_expired": "{poster} didn't answer in time, so it's closing. You can send another in a minute.",
-  "listing_detail_pill_unavailable": "Unavailable",
   "listing_poster_pill_sent": "Sent",
   "listing_poster_note_sent_to": "Sent to {name}",
   "listing_poster_pool_sent": [

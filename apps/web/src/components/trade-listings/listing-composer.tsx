@@ -14,8 +14,8 @@ import { $editListing, $postListing } from "@/lib/functions/trade-listings";
 import {
   offeredTokenRefusalsQuery,
   rangeMatchCountQuery,
+  tradeListingKey,
   tradeListingQuery,
-  tradeListingViewerKey,
 } from "@/lib/queries/trade-listings";
 import { isRateLimitErrorCode } from "@/lib/universal/errors/rate-limit";
 import { Objekt } from "@/lib/universal/objekt-conversion";
@@ -106,7 +106,7 @@ export default function ListingComposer({
   const isDesktop = useMediaQuery();
   const queryClient = useQueryClient();
   const editedListing = mode.kind === "edit" ? mode.listing.id : undefined;
-  const invalidateListings = useInvalidateListing(editedListing);
+  const invalidateListings = useInvalidateListing();
   const navigate = useNavigate();
   const initialValues = () =>
     mode.kind === "edit" ? listingToFormValues(mode.listing) : emptyListingForm;
@@ -150,7 +150,7 @@ export default function ListingComposer({
         });
         form.setError("offered", { message });
         toast.error(message);
-        void queryClient.invalidateQueries({ queryKey: tradeListingViewerKey });
+        void queryClient.invalidateQueries({ queryKey: tradeListingKey });
         return;
       }
 

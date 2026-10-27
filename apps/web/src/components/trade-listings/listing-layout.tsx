@@ -27,8 +27,8 @@ type Props = {
   poster?: PosterSections | null;
   /** full-width alerts under the header, such as a lost race */
   notice?: ReactNode;
-  /** how the offering half is headed; null while the viewer's role loads */
-  offered?: OfferedHeading | null;
+  /** how the offering half is headed */
+  offered?: OfferedHeading;
   /**
    * the viewer's claim while they pick: how many times over, above both
    * halves, and the pool objekts the offering half picks

@@ -20,14 +20,13 @@ import { cn } from "@/lib/utils";
 import { ObjektSidebar } from "../objekt/common";
 import ExpandableObjekt from "../objekt/objekt-expandable";
 import SelectableCard, { OfferPill } from "./selectable-card";
-import SideHeading, { SideHeadingSkeleton } from "./side-heading";
+import SideHeading from "./side-heading";
 
 export type OfferedHeading = "you_get" | "offering" | "you_offer";
 
 type Props = {
   listing: TradeListing;
-  /** null while the server names a signed-in viewer's role */
-  heading: OfferedHeading | null;
+  heading: OfferedHeading;
   /** the viewer's claim, whose pool picks the cards toggle unless it's a bundle */
   picks?: Picks | null;
   /** the poster's trades from the listing, which name who has each objekt under "You offer" */
@@ -66,9 +65,7 @@ export default function YouGet({
   }
   return (
     <section className="flex min-w-0 flex-col gap-4">
-      {heading === null ? (
-        <SideHeadingSkeleton />
-      ) : poster ? (
+      {poster ? (
         <SideHeading
           tone="have"
           title={m.listing_detail_you_offer({ count: shown.length })}
@@ -134,14 +131,6 @@ function PoolPicker({
   picks: Picks;
 }) {
   const picked = new Set(picks.offered);
-  /**
-   * The viewer's read of the pool is fresher than the listing's cached one:
-   * an objekt it no longer has left the pool since, given in a trade or
-   * gone from the poster, so it's unavailable whichever it was.
-   */
-  const fresh = new Map(
-    picks.pool.map(({ tokenId, availability }) => [tokenId, availability]),
-  );
 
   return (
     <section className="flex min-w-0 flex-col gap-4">
@@ -155,14 +144,7 @@ function PoolPicker({
       />
       <ul className="grid grid-cols-3 gap-x-2.5 gap-y-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-[repeat(auto-fill,minmax(120px,1fr))] lg:gap-4">
         {listing.items.map((item, index) => {
-          const fresher =
-            item.availability.kind === "traded"
-              ? item.availability
-              : fresh.get(item.tokenId);
-          const unavailable =
-            fresher === undefined
-              ? m.listing_detail_pill_unavailable()
-              : availabilityLabel(fresher);
+          const unavailable = availabilityLabel(item.availability);
           return (
             <li
               // a token can leave the pool and come back in an edit

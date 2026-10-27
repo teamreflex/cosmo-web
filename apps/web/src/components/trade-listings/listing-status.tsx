@@ -367,17 +367,8 @@ export function EndedOfferAlert({
   }
 }
 
-export function StatusSkeleton() {
-  return (
-    <Status>
-      <Skeleton className="h-5 w-48" />
-      <Skeleton className="h-3.5 w-64" />
-    </Status>
-  );
-}
-
 /**
- * The asking half while the viewer's side of the listing loads.
+ * The asking half while the listing loads.
  */
 export function WantsSkeleton() {
   return (

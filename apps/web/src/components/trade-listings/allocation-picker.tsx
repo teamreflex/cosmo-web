@@ -11,11 +11,10 @@ import type {
 import { cn } from "@/lib/utils";
 import { IconCircleCheck, IconPlus } from "@tabler/icons-react";
 import { Fragment, type ReactNode, useState } from "react";
-import { Skeleton } from "../ui/skeleton";
 import { RemovableTile, TileCaption } from "./composer-offered";
 import { RangeBadges } from "./range-want";
 import RowPicker from "./row-picker";
-import SideHeading, { SideHeadingSkeleton } from "./side-heading";
+import SideHeading from "./side-heading";
 import WantLabel from "./want-label";
 
 type Props = {
@@ -95,45 +94,6 @@ export default function AllocationPicker({
       })}
 
       <PickerFooter offers={picks.takesOffers} poster={poster} />
-    </section>
-  );
-}
-
-/**
- * The picker's shape while the viewer's objekts load: each row's frame,
- * label and footer around placeholder slots, so nothing grows when the
- * viewer's side arrives.
- */
-export function AllocationPickerSkeleton({
-  rows,
-  offers,
-  poster,
-}: {
-  rows: PickerRow[];
-  offers: boolean;
-  poster: string;
-}) {
-  return (
-    <section className="flex min-w-0 flex-col gap-3.5">
-      <SideHeadingSkeleton />
-
-      {rows.map((row, index) => (
-        <RowFrame
-          key={index}
-          header={<RowLabel row={row} count={row.trade.count} />}
-          footer={<Skeleton className="ml-auto h-4 w-20" />}
-        >
-          {Array.from({ length: row.trade.count }, (_, slot) => (
-            <li key={slot} className={slotClass}>
-              <Skeleton className="aspect-photocard w-full rounded-photocard" />
-              <Skeleton className="h-3.5 w-3/4" />
-              <Skeleton className="h-3 w-1/2" />
-            </li>
-          ))}
-        </RowFrame>
-      ))}
-
-      <PickerFooter offers={offers} poster={poster} />
     </section>
   );
 }

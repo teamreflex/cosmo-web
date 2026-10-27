@@ -750,7 +750,6 @@
   "listing_detail_kind_trade": "교환",
   "listing_detail_posted": "{#time}{when}{/time} 게시",
   "listing_detail_error": "이 교환 글을 불러올 수 없습니다.",
-  "listing_detail_viewer_error": "이 교환 글의 내 정보를 불러올 수 없습니다.",
   "listing_detail_you_get": "받는 것 · {count}",
   "listing_detail_offering": "제시 · {count}",
   "listing_detail_looking_for": "찾는 것 · {count}",
@@ -2608,7 +2607,6 @@
   "listing_poster_busy_title": "제시한 것이 모두 지금 교환 중입니다",
   "listing_poster_busy_body": "그 교환 중 하나가 끝날 때까지 아무도 이 리스팅을 수락할 수 없습니다. 고칠 것은 없습니다.",
   "listing_detail_offerer_expired": "{poster}님이 기한 안에 답하지 않아 곧 종료됩니다. 1분 정도 후에 다른 제안을 보낼 수 있습니다.",
-  "listing_detail_pill_unavailable": "사용 불가",
   "listing_poster_pill_sent": "보냄",
   "listing_poster_note_sent_to": "{name}님에게 보냄",
   "listing_poster_pool_sent": [

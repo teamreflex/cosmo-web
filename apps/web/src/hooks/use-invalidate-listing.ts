@@ -1,25 +1,17 @@
 import { marketListingsKey } from "@/lib/queries/listing-feed";
-import {
-  tradeListingKey,
-  tradeListingQuery,
-  tradeListingViewerKey,
-} from "@/lib/queries/trade-listings";
+import { tradeListingKey } from "@/lib/queries/trade-listings";
 import { useQueryClient } from "@tanstack/react-query";
 
 /**
- * Refetches everything a change to a listing can touch: its detail (every
- * detail without an id), every viewer-side answer and the Listings feed.
+ * Refetches everything a change to a listing can touch: every listing-page
+ * query and the Listings feed.
  */
-export function useInvalidateListing(id?: string) {
+export function useInvalidateListing() {
   const queryClient = useQueryClient();
 
   return () =>
     Promise.all([
-      queryClient.invalidateQueries({
-        queryKey:
-          id === undefined ? tradeListingKey : tradeListingQuery(id).queryKey,
-      }),
-      queryClient.invalidateQueries({ queryKey: tradeListingViewerKey }),
+      queryClient.invalidateQueries({ queryKey: tradeListingKey }),
       queryClient.invalidateQueries({ queryKey: marketListingsKey }),
     ]);
 }

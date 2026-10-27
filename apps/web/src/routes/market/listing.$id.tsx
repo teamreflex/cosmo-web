@@ -12,14 +12,12 @@ import {
   offeredTokenRefusalsQuery,
   rangeMatchCountQueries,
   tradeListingQuery,
-  tradeListingViewerQuery,
 } from "@/lib/queries/trade-listings";
 import { sanitizeUuid } from "@/lib/universal/parsers";
 import {
   listingSearchDefaults,
   listingSearchSchema,
   poolItems,
-  publicListingPanel,
 } from "@/lib/universal/trade-listings";
 import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
 import { ProfileProvider } from "@/providers/profile-provider";
@@ -42,12 +40,13 @@ export const Route = createFileRoute("/market/listing/$id")({
   search: {
     middlewares: [stripSearchParams(listingSearchDefaults)],
   },
-  loader: async ({ context, params, preload }) => {
+  // links to the page pass preload={false}, since a candidate's answer reads their holdings
+  loader: async ({ context, params }) => {
     // discord users sometimes paste formatting onto the end of the URL
     const id = sanitizeUuid(params.id);
     if (!id) throw notFound();
 
-    const [account, listing] = await Promise.all([
+    const [account, page] = await Promise.all([
       context.queryClient.query({
         ...currentAccountQuery,
         staleTime: "static",
@@ -57,21 +56,14 @@ export const Route = createFileRoute("/market/listing/$id")({
         staleTime: "static",
       }),
     ]);
-    if (!listing) throw notFound();
-
-    const panel = publicListingPanel(
-      listing,
-      account && {
-        userId: account.user.id,
-        linked: account.cosmo !== undefined,
-      },
-    );
+    if (!page) throw notFound();
+    const { listing, viewer } = page;
 
     // the poster's blocked listing names the objekts that block it
     if (
       listing.stop === "blocked" &&
       account?.cosmo &&
-      listing.poster?.id === account.user.id
+      viewer.role === "poster"
     ) {
       void context.queryClient
         .query(
@@ -87,21 +79,6 @@ export const Route = createFileRoute("/market/listing/$id")({
       ),
     )) {
       void context.queryClient.query(query).catch(noop);
-    }
-
-    /**
-     * The viewer's side is awaited, so a navigation paints the listing once
-     * instead of filling it in; a failed read is left to its error state. It
-     * reads the viewer's holdings, so hovering a link never fetches it. An
-     * ended listing asks only whether the viewer was a party to its trade.
-     */
-    if (
-      !preload &&
-      (panel.role === "viewer" || (panel.role === "closed" && account))
-    ) {
-      await context.queryClient
-        .query(tradeListingViewerQuery(id, listing.updatedAt))
-        .catch(noop);
     }
 
     return { id, account };

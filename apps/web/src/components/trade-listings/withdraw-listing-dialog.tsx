@@ -31,7 +31,7 @@ export default function WithdrawListingDialog({
   open,
   onOpenChange,
 }: Props) {
-  const invalidate = useInvalidateListing(listingId);
+  const invalidate = useInvalidateListing();
   const mutation = useMutation({
     mutationFn: () => $withdrawListing({ data: { listingId } }),
     onSuccess: () => {

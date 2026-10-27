@@ -46,10 +46,9 @@ export function useListingPicks(
 ) {
   const { unitSize } = listing;
   const wants = rows.map((row) => row.trade);
-  const free =
-    viewer?.pool.flatMap(({ tokenId, availability }) =>
-      availability.kind === "free" ? [tokenId] : [],
-    ) ?? [];
+  const free = listing.items.flatMap((item) =>
+    item.availability.kind === "free" ? [item.tokenId] : [],
+  );
   const [state, setState] = useState(() => ({
     units: 1,
     offered: offeredForUnits([], free, unitSize),
@@ -71,7 +70,6 @@ export function useListingPicks(
     maxUnits: Math.max(viewer.units, 1),
     ratio: listingRatio(listing, listing.items.length),
     freeCount: free.length,
-    pool: viewer.pool,
     takesOffers: offers,
     offered,
     offeredCount,

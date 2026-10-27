@@ -14,16 +14,9 @@ import {
   preflightClaim,
 } from "@/lib/server/trades/claim.server";
 import {
-  claimStanding,
-  endedOffer,
   listingStateExtras,
-  offerSides,
-  readCandidateSide,
-  readClaimerTrade,
-  readLatestAcceptedTrade,
-  readPosterSide,
+  readListingViewer,
   toListingState,
-  tradeSize,
 } from "@/lib/server/trades/detail.server";
 import {
   hydrateListings,
@@ -34,7 +27,6 @@ import {
 import {
   countRangeMatches,
   liveItem,
-  readIndexerTokens,
   readTokenStates,
 } from "@/lib/server/trades/holdings.server";
 import {
@@ -66,8 +58,6 @@ import {
   type ListingViewer,
   type ListingWriteResult,
   poolAvailability,
-  storedObjektItemSchema,
-  storedWantSchema,
   type TradeListing,
 } from "@/lib/universal/trade-listings";
 import {
@@ -77,8 +67,7 @@ import {
   tradeOffers,
 } from "@apollo/database/web/schema";
 import { bumpUpdatedAt } from "@apollo/database/web/sql";
-import { openTradeStatuses } from "@apollo/database/web/types";
-import { claimCap, MAX_WANT_ROWS } from "@apollo/trades/caps";
+import { MAX_WANT_ROWS } from "@apollo/trades/caps";
 import { tokenRefusals } from "@apollo/trades/holdings";
 import { listingTransition, listingUnitSize } from "@apollo/trades/lifecycle";
 import {
@@ -90,7 +79,6 @@ import {
   tradeTokenStatesInputSchema,
 } from "@apollo/trades/listing";
 import { rangeFilterSchema } from "@apollo/trades/range";
-import { isEqual } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import * as z from "zod";
@@ -405,221 +393,107 @@ export const $fetchOfferedTokenRefusals = createServerFn({ method: "GET" })
   );
 
 /**
- * A listing's public detail, or null when the id isn't a listing: every
- * objekt it has offered with where it stands, the pool's and the ones that
- * left it. It never names who holds a claim: no claimer id, address or
- * tokens, only that an objekt is in a trade. One statement reads the
- * listing, its pool's flags and a filled one's state, then one indexer
- * statement its objekts.
+ * A listing's public detail and the session's side of it, or null when the
+ * id isn't a listing. One statement reads the listing, its pool's flags and
+ * a filled one's state, one indexer statement its objekts, then the
+ * viewer's own reads, whose candidate takes its free count from the public
+ * items. The public half never names who holds a claim: no claimer id,
+ * address or tokens, only that an objekt is in a trade.
  */
 export const $fetchTradeListing = createServerFn({ method: "GET" })
   .validator(listingIdInputSchema)
-  .handler(async ({ data }): Promise<TradeListing | null> => {
-    const row = await db.query.tradeOffers.findFirst({
-      where: { id: data.listingId, kind: "listing" },
-      columns: {
-        id: true,
-        status: true,
-        createdAt: true,
-        updatedAt: true,
-        endedAt: true,
-        note: true,
-        fromUserId: true,
-        fromAddress: true,
-        unitSize: true,
-      },
-      extras: listingStateExtras,
-      with: {
-        items: { orderBy: { id: "asc" }, extras: poolItemExtras },
-        wants: storedWants,
-        fromUser: { with: { cosmoAccount: posterLinkColumns } },
-        fromCosmo: { columns: { username: true } },
-        fromStats: { columns: feedbackRepColumns },
-      },
-    });
-    if (!row) return null;
-    const unitSize = listingUnitSize(row);
-
-    const {
-      listings: [listing],
-      states,
-    } = await hydrateListings([row]);
-    if (!listing) return null;
-    const state = toListingState(row);
-    const flags = poolFlags(row.items);
-    // an objekt that left and was offered again shows once, as its latest row
-    const latest = new Map(
-      listing.items.map((item, index) => [item.tokenId, index]),
-    );
-    const items = listing.items.flatMap((item, index): ListingItem[] =>
-      latest.get(item.tokenId) === index
-        ? [
-            {
-              ...item,
-              availability: poolAvailability(
-                {
-                  tokenId: item.tokenId,
-                  leftAt: row.items[index]?.leftAt ?? null,
-                },
-                states.get(item.tokenId),
-                listing.fromAddress,
-                flags,
-              ),
-            },
-          ]
-        : [],
-    );
-    return {
-      id: listing.id,
-      createdAt: listing.createdAt,
-      updatedAt: listing.updatedAt,
-      note: listing.note,
-      poster: listing.fromUser && toPublicUser(listing.fromUser),
-      cosmoUsername: listing.fromCosmo?.username ?? null,
-      rep: listing.fromUser && toFeedbackRep(listing.fromStats),
-      unitSize,
-      items,
-      wants: listing.wants,
-      state,
-      // only an open listing can be claimed, so only an open one is judged
-      stop:
-        state.status === "open"
-          ? listingStop(
-              items,
-              unitSize,
-              posterBlocked(
-                listing.wants,
-                listing.fromUser,
-                listing.fromAddress,
-              ),
-            )
-          : null,
-    };
-  });
-
-/**
- * The signed-in viewer's side of a listing, shown in place of Accept, or
- * null when the id isn't a listing. Always the session's own view; signed
- * out, it's anonymous. Only the listing's parties learn its trades' ids.
- * The poster of an open listing gets its offers and trades; a viewer with
- * a live trade or a pending offer from it gets that; anyone else is a
- * candidate. Only an open listing's candidates are read: closed listings
- * and the poster's own never touch the viewer's holdings.
- */
-export const $fetchTradeListingViewer = createServerFn({ method: "GET" })
-  .validator(listingIdInputSchema)
   .middleware([authMiddleware])
-  .handler(async ({ data, context }): Promise<ListingViewer | null> => {
-    const listing = await db.query.tradeOffers.findFirst({
-      where: { id: data.listingId, kind: "listing" },
-      columns: {
-        id: true,
-        status: true,
-        fromUserId: true,
-        fromAddress: true,
-        unitSize: true,
-        updatedAt: true,
-      },
-      with: {
-        items: {
-          where: { leftAt: { isNull: true } },
-          orderBy: { id: "asc" },
-          extras: poolItemExtras,
+  .handler(
+    async ({
+      data,
+      context,
+    }): Promise<{ listing: TradeListing; viewer: ListingViewer } | null> => {
+      const row = await db.query.tradeOffers.findFirst({
+        where: { id: data.listingId, kind: "listing" },
+        columns: {
+          id: true,
+          status: true,
+          createdAt: true,
+          updatedAt: true,
+          endedAt: true,
+          note: true,
+          fromUserId: true,
+          fromAddress: true,
+          unitSize: true,
         },
-        wants: storedWants,
-        fromUser: {
-          columns: { banned: true, banExpires: true },
-          with: { cosmoAccount: posterLinkColumns },
+        extras: listingStateExtras,
+        with: {
+          items: { orderBy: { id: "asc" }, extras: poolItemExtras },
+          wants: storedWants,
+          fromUser: { with: { cosmoAccount: posterLinkColumns } },
+          fromCosmo: { columns: { username: true } },
+          fromStats: { columns: feedbackRepColumns },
         },
-      },
-    });
-    if (!listing) return null;
-    const viewerId = context.session?.user.id;
-    if (viewerId === undefined) return { role: "anonymous" };
-    const unitSize = listingUnitSize(listing);
-    const own = listing.fromUserId === viewerId;
-    const wants = listing.wants.map((want) => storedWantSchema.parse(want));
-    const pool = listing.items.map(
-      (item) => storedObjektItemSchema.parse(item).tokenId,
-    );
+      });
+      if (!row) return null;
+      const unitSize = listingUnitSize(row);
 
-    if (listing.status !== "open") {
+      const {
+        listings: [listing],
+        states,
+      } = await hydrateListings([row]);
+      if (!listing) return null;
+      const state = toListingState(row);
+      const flags = poolFlags(row.items);
+      // an objekt that left and was offered again shows once, as its latest row
+      const latest = new Map(
+        listing.items.map((item, index) => [item.tokenId, index]),
+      );
+      const items = listing.items.flatMap((item, index): ListingItem[] =>
+        latest.get(item.tokenId) === index
+          ? [
+              {
+                ...item,
+                availability: poolAvailability(
+                  {
+                    tokenId: item.tokenId,
+                    leftAt: row.items[index]?.leftAt ?? null,
+                  },
+                  states.get(item.tokenId),
+                  listing.fromAddress,
+                  flags,
+                ),
+              },
+            ]
+          : [],
+      );
       return {
-        role: "closed",
-        tradeId: await readLatestAcceptedTrade(
-          listing.id,
-          own ? undefined : viewerId,
+        listing: {
+          id: listing.id,
+          createdAt: listing.createdAt,
+          updatedAt: listing.updatedAt,
+          note: listing.note,
+          poster: listing.fromUser && toPublicUser(listing.fromUser),
+          cosmoUsername: listing.fromCosmo?.username ?? null,
+          rep: listing.fromUser && toFeedbackRep(listing.fromStats),
+          unitSize,
+          items,
+          wants: listing.wants,
+          state,
+          // only an open listing can be claimed, so only an open one is judged
+          stop:
+            state.status === "open"
+              ? listingStop(
+                  items,
+                  unitSize,
+                  posterBlocked(
+                    listing.wants,
+                    listing.fromUser,
+                    listing.fromAddress,
+                  ),
+                )
+              : null,
+        },
+        viewer: await readListingViewer(
+          row,
+          context.session?.user.id,
+          items.filter((item) => item.availability.kind === "free").length,
         ),
       };
-    }
-    if (own) {
-      return {
-        role: "poster",
-        ...(await readPosterSide({
-          id: listing.id,
-          fromAddress: listing.fromAddress,
-          unitSize,
-          wants,
-          pool,
-          posterRefused: posterBlocked(
-            wants,
-            listing.fromUser,
-            listing.fromAddress,
-          ),
-        })),
-      };
-    }
-
-    // a claimer's latest trade from the listing is their live one or pending offer, if any
-    const trade = await readClaimerTrade(listing.id, viewerId);
-    if (trade?.status === "pending" && trade.expiresAt !== null) {
-      return {
-        role: "offerer",
-        tradeId: trade.id,
-        expiresAt: trade.expiresAt,
-        ...(await offerSides(trade)),
-      };
-    }
-    if (
-      trade !== undefined &&
-      openTradeStatuses.some((status) => status === trade.status)
-    ) {
-      return {
-        role: "claimer",
-        tradeId: trade.id,
-        deadlineAt: trade.status === "disputed" ? null : trade.deadlineAt,
-        size: tradeSize(trade),
-      };
-    }
-
-    const [{ address, ...standing }, states] = await Promise.all([
-      claimStanding(db, viewerId),
-      readIndexerTokens(pool),
-    ]);
-    if (address === null) return { role: "unlinked" };
-
-    const flags = poolFlags(listing.items);
-    const availability = pool.map((tokenId) => ({
-      tokenId,
-      availability: poolAvailability(
-        { tokenId, leftAt: null },
-        states.get(tokenId),
-        listing.fromAddress,
-        flags,
-      ),
-    }));
-    // whether the poster's account stops a claim is $fetchTradeListing's `stop`
-    return {
-      role: "candidate",
-      updatedAt: listing.updatedAt,
-      pool: availability,
-      ...(await readCandidateSide(address, wants, {
-        free: availability.filter((item) => item.availability.kind === "free")
-          .length,
-        unitSize,
-      })),
-      claims: { active: standing.active, cap: claimCap(standing) },
-      ownAddress: isEqual(address, listing.fromAddress),
-      endedOffer: trade === undefined ? null : endedOffer(trade.status),
-    };
-  });
+    },
+  );

@@ -28,7 +28,6 @@ import {
   poolAvailability,
   poolStanding,
   posterTabCounts,
-  publicListingPanel,
   refusedOfferToken,
   shownPosterTab,
   takenPick,
@@ -356,12 +355,7 @@ describe("the error a refused accept throws", () => {
 
 const candidate = (overrides: Partial<Candidate> = {}): Candidate => ({
   role: "candidate",
-  updatedAt: new Date(0),
   units: 1,
-  pool: [
-    { tokenId: 1, availability: { kind: "free" } },
-    { tokenId: 2, availability: { kind: "in_trade" } },
-  ],
   rows: [{ owned: 1, missing: 0 }],
   claims: { active: 0, cap: 3 },
   ownAddress: false,
@@ -419,7 +413,6 @@ describe("what a candidate sees", () => {
   const listing = {
     wants: [{ kind: "exact" as const }],
     stop: null,
-    unitSize: 1,
   };
   // a range row makes the listing take offers
   const offers = { ...listing, wants: [{ kind: "range" as const }] };
@@ -429,11 +422,8 @@ describe("what a candidate sees", () => {
   });
 
   test("a pool all in trades is busy until one ends", () => {
-    expect(candidatePanel({ ...listing, unitSize: 2 }, candidate())).toBe(
-      "busy",
-    );
     expect(candidatePanel({ ...listing, stop: "busy" }, candidate())).toBe(
-      "picker",
+      "busy",
     );
   });
 
@@ -441,16 +431,6 @@ describe("what a candidate sees", () => {
     expect(candidatePanel({ ...listing, stop: "blocked" }, candidate())).toBe(
       "blocked",
     );
-    expect(
-      candidatePanel(
-        listing,
-        candidate({
-          pool: [
-            { tokenId: 1, availability: { kind: "blocked", reason: "moved" } },
-          ],
-        }),
-      ),
-    ).toBe("blocked");
     expect(
       candidatePanel(
         { ...listing, wants: [{ kind: "exact" }, { kind: "payment" }] },
@@ -481,59 +461,15 @@ describe("what a candidate sees", () => {
 });
 
 describe("when the picker starts over", () => {
-  const base = pickerVersion(candidate());
+  const base = pickerVersion(new Date(0), 1);
 
   test("the same answer keeps the picks", () => {
-    expect(pickerVersion(candidate())).toBe(base);
-  });
-
-  test("another trade taking or freeing a pool objekt, or what the viewer owns changing, keeps them", () => {
-    expect(
-      pickerVersion(
-        candidate({
-          pool: [
-            { tokenId: 1, availability: { kind: "free" } },
-            { tokenId: 2, availability: { kind: "free" } },
-          ],
-        }),
-      ),
-    ).toBe(base);
-    expect(pickerVersion(candidate({ rows: [{ owned: 2, missing: 1 }] }))).toBe(
-      base,
-    );
+    expect(pickerVersion(new Date(0), 1)).toBe(base);
   });
 
   test("new terms or the most units start over", () => {
-    expect(pickerVersion(candidate({ updatedAt: new Date(1) }))).not.toBe(base);
-    expect(pickerVersion(candidate({ units: 2 }))).not.toBe(base);
-  });
-});
-
-describe("the public panel", () => {
-  const open = { state: { status: "open" as const }, poster: { id: "p" } };
-
-  test("signed out and unlinked viewers need no server answer", () => {
-    expect(publicListingPanel(open, null)).toEqual({ role: "signed_out" });
-    expect(publicListingPanel(open, { userId: "v", linked: false })).toEqual({
-      role: "unlinked",
-    });
-  });
-
-  test("the server names a linked viewer's role, and an unlinked poster's", () => {
-    expect(publicListingPanel(open, { userId: "v", linked: true })).toEqual({
-      role: "viewer",
-    });
-    expect(publicListingPanel(open, { userId: "p", linked: false })).toEqual({
-      role: "viewer",
-    });
-  });
-
-  test("a closed listing says how it ended", () => {
-    const state = { status: "withdrawn" as const, endedAt: new Date(0) };
-    expect(publicListingPanel({ ...open, state }, null)).toEqual({
-      role: "closed",
-      state,
-    });
+    expect(pickerVersion(new Date(1), 1)).not.toBe(base);
+    expect(pickerVersion(new Date(0), 2)).not.toBe(base);
   });
 });
 

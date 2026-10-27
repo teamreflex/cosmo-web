@@ -752,7 +752,6 @@
   "listing_detail_kind_trade": "交換",
   "listing_detail_posted": "刊登於 {#time}{when}{/time}",
   "listing_detail_error": "無法載入這則刊登。",
-  "listing_detail_viewer_error": "無法載入你在這則刊登中的部分。",
   "listing_detail_you_get": "你獲得 · {count}",
   "listing_detail_offering": "提供 · {count}",
   "listing_detail_looking_for": "徵求 · {count}",
@@ -2610,7 +2609,6 @@
   "listing_poster_busy_title": "你提供的 Objekt 目前都在交換中",
   "listing_poster_busy_body": "在其中一筆交換結束前，沒有人能接這則刊登。不需要做任何處理。",
   "listing_detail_offerer_expired": "{poster} 未在期限內回覆，報價即將關閉。大約一分鐘後你可以再送出一份。",
-  "listing_detail_pill_unavailable": "無法使用",
   "listing_poster_pill_sent": "已送出",
   "listing_poster_note_sent_to": "已送給 {name}",
   "listing_poster_pool_sent": [

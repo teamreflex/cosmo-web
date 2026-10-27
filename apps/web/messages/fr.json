@@ -761,7 +761,6 @@
   "listing_detail_kind_trade": "Échange",
   "listing_detail_posted": "publiée {#time}{when}{/time}",
   "listing_detail_error": "Impossible de charger cette annonce.",
-  "listing_detail_viewer_error": "Impossible de charger votre partie de cette annonce.",
   "listing_detail_you_get": "Vous recevez · {count}",
   "listing_detail_offering": "Propose · {count}",
   "listing_detail_looking_for": "Recherche · {count}",
@@ -2675,7 +2674,6 @@
   "listing_poster_busy_title": "Tout ce que vous proposez est dans un échange en ce moment",
   "listing_poster_busy_body": "Personne ne peut prendre cette annonce avant la fin de l'un de ces échanges. Il n'y a rien à corriger.",
   "listing_detail_offerer_expired": "{poster} n'a pas répondu à temps, elle va donc se fermer. Vous pourrez en envoyer une autre dans une minute.",
-  "listing_detail_pill_unavailable": "Indisponible",
   "listing_poster_pill_sent": "Envoyé",
   "listing_poster_note_sent_to": "Envoyé à {name}",
   "listing_poster_pool_sent": [

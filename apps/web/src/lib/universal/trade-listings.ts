@@ -596,9 +596,8 @@ export type EndedOfferStatus = "declined" | "expired" | "stale";
  * deadline null while disputed) or pending offer (`offerer`), or for anyone
  * else (`candidate`) the most units they can take, 0 when they can't fill
  * one, with how many matching objekts they own and are short per want row,
- * and what limits them. `updatedAt` is the listing version a candidate's
- * answer was read against, which Accept sends back; the poster's side
- * stopping claims is the listing's `stop`.
+ * and what limits them; the poster's side stopping claims is the listing's
+ * `stop`.
  */
 export type ListingViewer =
   | { role: "anonymous" }
@@ -620,9 +619,7 @@ export type ListingViewer =
     }
   | {
       role: "candidate";
-      updatedAt: Date;
       units: number;
-      pool: { tokenId: number; availability: PoolAvailability }[];
       rows: CandidateRow[];
       claims: { active: number; cap: number };
       ownAddress: boolean;
@@ -632,46 +629,18 @@ export type ListingViewer =
 export type Candidate = Extract<ListingViewer, { role: "candidate" }>;
 
 /**
- * What the listing page shows before asking the server about the viewer:
- * how a closed listing ended, or for an open one a signed-out or unlinked
- * viewer's prompt. Everyone else may be its poster, a claimer or an
- * offerer, so the server decides (`viewer`); an unlinked poster still
- * sees their own listing.
- */
-export type PublicListingPanel =
-  | { role: "closed"; state: ClosedListingState }
-  | { role: "signed_out" }
-  | { role: "unlinked" }
-  | { role: "viewer" };
-
-export function publicListingPanel(
-  listing: { state: ListingState; poster: { id: string } | null },
-  viewer: { userId: string; linked: boolean } | null,
-): PublicListingPanel {
-  const { state } = listing;
-  if (state.status !== "open") return { role: "closed", state };
-  if (viewer === null) return { role: "signed_out" };
-  return viewer.linked || listing.poster?.id === viewer.userId
-    ? { role: "viewer" }
-    : { role: "unlinked" };
-}
-
-/**
  * What a candidate sees in place of Accept: the claim cap, which only
  * claims count against (an offer is checked against it once accepted);
  * the poster's side stopping any claim (ListingStop's `blocked`, their own
  * address, or a payment row, which can't be met until sales arrive); the
- * pool all in trades for now (`busy`); or the picker. The viewer's read
- * of the pool is fresher than the listing's, so it decides whether trades
- * hold too much of it.
+ * pool all in trades for now (`busy`); or the picker.
  */
 export function candidatePanel(
   listing: {
     wants: readonly { kind: StoredWant["kind"] }[];
     stop: ListingStop | null;
-    unitSize: number;
   },
-  viewer: Pick<Candidate, "claims" | "ownAddress" | "pool">,
+  viewer: Pick<Candidate, "claims" | "ownAddress">,
 ) {
   if (
     !takesOffers(listing.wants) &&
@@ -679,16 +648,14 @@ export function candidatePanel(
   ) {
     return "cap";
   }
-  const stop = listingStop(viewer.pool, listing.unitSize, false);
   if (
     listing.stop === "blocked" ||
-    stop === "blocked" ||
     viewer.ownAddress ||
     listing.wants.some((want) => want.kind === "payment")
   ) {
     return "blocked";
   }
-  return stop === "busy" ? "busy" : "picker";
+  return listing.stop === "busy" ? "busy" : "picker";
 }
 
 /**
@@ -862,6 +829,6 @@ export type WantsHeading = "you_look_for" | "looking_for";
  * keeps the viewer's picks, dropping pool picks that aren't free; new
  * terms or a different most units start over.
  */
-export function pickerVersion(viewer: Pick<Candidate, "updatedAt" | "units">) {
-  return `${viewer.updatedAt.toISOString()}:${viewer.units}`;
+export function pickerVersion(updatedAt: Date, units: number) {
+  return `${updatedAt.toISOString()}:${units}`;
 }

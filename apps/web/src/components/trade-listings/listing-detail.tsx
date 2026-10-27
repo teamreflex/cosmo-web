@@ -1,23 +1,14 @@
 import { currentAccountQuery } from "@/lib/queries/core";
-import {
-  tradeListingQuery,
-  tradeListingViewerQuery,
-} from "@/lib/queries/trade-listings";
+import { tradeListingQuery } from "@/lib/queries/trade-listings";
 import {
   candidatePanel,
   type ListingViewer,
   pickerVersion,
-  publicListingPanel,
   type TradeListing,
 } from "@/lib/universal/trade-listings";
-import {
-  useQueryClient,
-  useSuspenseQueries,
-  useSuspenseQuery,
-} from "@tanstack/react-query";
+import { useSuspenseQueries } from "@tanstack/react-query";
 import { notFound } from "@tanstack/react-router";
-import { Suspense, useEffect, useState } from "react";
-import { ErrorBoundary } from "react-error-boundary";
+import { useState } from "react";
 import type { Notice } from "./listing-status";
 import ListingView, { type ListingRole } from "./listing-view";
 
@@ -26,93 +17,53 @@ type Props = {
 };
 
 /**
- * A trade listing. Where the public listing settles the viewer's role on
- * its own, the page renders straight away; otherwise the server names it,
- * and until then the page shows everything but what depends on it.
+ * A trade listing. A closed listing shows how it ended; an open one shows
+ * the viewer's role as the server's answer names it.
  */
 export default function ListingDetail({ id }: Props) {
-  const [{ data: listing }, { data: account }] = useSuspenseQueries({
+  const [{ data: page }, { data: account }] = useSuspenseQueries({
     queries: [tradeListingQuery(id), currentAccountQuery],
   });
-  if (listing === null) throw notFound();
+  if (page === null) throw notFound();
 
+  const { listing, viewer } = page;
   const address = account?.cosmo?.address;
-  const panel = publicListingPanel(
-    listing,
-    account && {
-      userId: account.user.id,
-      linked: account.cosmo !== undefined,
-    },
-  );
-
-  if (panel.role !== "viewer") {
-    return <ListingView listing={listing} role={panel} address={address} />;
+  if (listing.state.status !== "open") {
+    return (
+      <ListingView
+        listing={listing}
+        role={{ role: "closed", state: listing.state }}
+        address={address}
+      />
+    );
   }
-  return (
-    <ErrorBoundary
-      fallback={
-        <ListingView
-          listing={listing}
-          role={{ role: "error" }}
-          address={address}
-        />
-      }
-    >
-      <Suspense
-        fallback={
-          <ListingView
-            listing={listing}
-            role={{ role: "loading" }}
-            address={address}
-          />
-        }
-      >
-        <ViewerListing listing={listing} address={address} />
-      </Suspense>
-    </ErrorBoundary>
-  );
+  return <ViewerListing listing={listing} viewer={viewer} address={address} />;
 }
 
 /**
- * The page for a viewer whose role the server names. A lost race or a
- * changed listing stays on the page as a strip under the header, whatever
- * the refetch turns the page into.
+ * An open listing as its viewer sees it. A lost race or a changed listing
+ * stays on the page as a strip under the header, whatever the refetch turns
+ * the page into.
  */
 function ViewerListing({
   listing,
+  viewer,
   address,
 }: {
   listing: TradeListing;
+  viewer: ListingViewer;
   address: string | undefined;
 }) {
-  const { data: viewer } = useSuspenseQuery(
-    tradeListingViewerQuery(listing.id, listing.updatedAt),
-  );
-  const queryClient = useQueryClient();
   const [notice, setNotice] = useState<Notice | null>(null);
-
-  /**
-   * The viewer query refetches on every mount while the listing keeps its
-   * cache for 30 seconds, so the viewer can describe a newer listing than
-   * the page shows: one edited or gone since. Refetch it to match.
-   */
-  const stale = viewer === null || listingIsStale(viewer, listing);
-  useEffect(() => {
-    if (stale) {
-      void queryClient.invalidateQueries({
-        queryKey: tradeListingQuery(listing.id).queryKey,
-      });
-    }
-  }, [stale, viewer, queryClient, listing.id]);
-
-  const role: ListingRole =
-    viewer === null || stale
-      ? { role: "loading" }
-      : viewerRole(listing, viewer);
+  const role = viewerRole(listing, viewer);
   return (
     <ListingView
       // new terms or a different most units start the picks over
-      key={role.role === "picker" ? pickerVersion(role.viewer) : role.role}
+      key={
+        role.role === "picker"
+          ? pickerVersion(listing.updatedAt, role.viewer.units)
+          : role.role
+      }
       listing={listing}
       role={role}
       address={address}
@@ -126,9 +77,11 @@ function viewerRole(listing: TradeListing, viewer: ListingViewer): ListingRole {
   switch (viewer.role) {
     case "anonymous":
       return { role: "signed_out" };
-    // the listing ended since the page read it; the refetch shows how
+    // one read of the listing row answers both halves
     case "closed":
-      return { role: "loading" };
+      throw new Error(
+        `listing ${listing.id} is open but its viewer read it closed`,
+      );
     case "unlinked":
     case "poster":
     case "claimer":
@@ -146,29 +99,5 @@ function viewerRole(listing: TradeListing, viewer: ListingViewer): ListingRole {
           return { role: "refused", reason: panel };
       }
     }
-  }
-}
-
-/**
- * Whether the viewer's answer describes a newer listing than the public
- * one the page rendered, so the page should refetch it.
- */
-function listingIsStale(viewer: ListingViewer, listing: TradeListing) {
-  const status = listing.state.status;
-  switch (viewer.role) {
-    case "anonymous":
-    case "unlinked":
-      return false;
-    case "closed":
-      return status === "open";
-    case "poster":
-    case "claimer":
-    case "offerer":
-      return status !== "open";
-    case "candidate":
-      return (
-        status !== "open" ||
-        viewer.updatedAt.getTime() !== listing.updatedAt.getTime()
-      );
   }
 }

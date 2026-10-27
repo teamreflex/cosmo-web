@@ -11,9 +11,9 @@ import { endedNormally, posterName } from "@/lib/client/trade-listings";
 import { env } from "@/lib/env/client";
 import {
   type Candidate,
+  type ClosedListingState,
   hasRatio,
   type ListingViewer,
-  type PublicListingPanel,
   toTradeWant,
   type TradeListing,
 } from "@/lib/universal/trade-listings";
@@ -35,9 +35,7 @@ import LinkCosmo from "../auth/link-cosmo";
 import SignIn from "../auth/sign-in";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Button, buttonVariants } from "../ui/button";
-import AllocationPicker, {
-  AllocationPickerSkeleton,
-} from "./allocation-picker";
+import AllocationPicker from "./allocation-picker";
 import { ClosedAlert, ClosedStatus } from "./closed-banner";
 import ConfirmTradeDialog from "./confirm-trade-dialog";
 import ListingComposer from "./listing-composer";
@@ -50,22 +48,21 @@ import {
   type Notice,
   NoticeStrip,
   OffererCard,
-  StatusSkeleton,
 } from "./listing-status";
 import { UnitCounts } from "./listing-units";
 import { WantList } from "./want-label";
 import WithdrawListingDialog from "./withdraw-listing-dialog";
 
 /**
- * Who is looking at the listing, as the page needs it: the public panel or
- * the server's answer (`loading` / `error` until it comes), and for anyone
- * else `picker`, or `refused` when their cap, the poster's side or busy
- * trades stop Accept (ListingStop).
+ * Who is looking at the listing, as the page needs it: how a closed listing
+ * ended, the server's answer, and for anyone else `picker`, or `refused`
+ * when their cap, the poster's side or busy trades stop Accept
+ * (ListingStop).
  */
 export type ListingRole =
-  | { role: "loading" }
-  | { role: "error" }
-  | Exclude<PublicListingPanel, { role: "viewer" }>
+  | { role: "closed"; state: ClosedListingState }
+  | { role: "signed_out" }
+  | { role: "unlinked" }
   | Extract<ListingViewer, { role: "poster" | "claimer" | "offerer" }>
   | { role: "picker"; viewer: Candidate }
   | { role: "refused"; reason: "cap"; claims: Candidate["claims"] }
@@ -101,7 +98,7 @@ export default function ListingView({
   const barReasonId = useId();
   const [dialog, setDialog] = useState<Dialog | null>(null);
   const [snapshot, setSnapshot] = useState<ConfirmSnapshot | null>(null);
-  const invalidateListing = useInvalidateListing(listing.id);
+  const invalidateListing = useInvalidateListing();
   const rows = listing.wants.flatMap((want): PickerRow[] =>
     want.kind === "payment" ? [] : [{ want, trade: toTradeWant(want) }],
   );
@@ -163,9 +160,7 @@ export default function ListingView({
         </>
       }
       status={
-        role.role === "loading" ? (
-          <StatusSkeleton />
-        ) : role.role === "closed" && endedNormally(role.state) ? (
+        role.role === "closed" && endedNormally(role.state) ? (
           <ClosedStatus listing={listing} state={role.state} />
         ) : undefined
       }
@@ -183,13 +178,7 @@ export default function ListingView({
       offered={offeredHeading(role)}
       picks={picks}
       wants={
-        role.role === "loading" ? (
-          <AllocationPickerSkeleton
-            rows={rows}
-            offers={offers}
-            poster={posterName(listing)}
-          />
-        ) : role.role === "picker" && picks !== null ? (
+        role.role === "picker" && picks !== null ? (
           <AllocationPicker
             viewer={role.viewer}
             address={address}
@@ -223,7 +212,6 @@ export default function ListingView({
       {role.role === "picker" && picks !== null && (
         <ConfirmTradeDialog
           listing={listing}
-          viewer={role.viewer}
           rows={rows}
           offers={offers}
           snapshot={snapshot}
@@ -254,15 +242,12 @@ function hasActions(role: ListingRole) {
 }
 
 /**
- * "You get" heads the offered half for a viewer picking what they take;
- * while the role loads the heading waits rather than guess. A claimer's
- * trade is on its card, so the halves under it show the listing as
- * anyone else reads it.
+ * "You get" heads the offered half for a viewer picking what they take. A
+ * claimer's trade is on its card, so the halves under it show the listing
+ * as anyone else reads it.
  */
 function offeredHeading(role: ListingRole) {
   switch (role.role) {
-    case "loading":
-      return null;
     case "picker":
       return "you_get";
     case "poster":
@@ -327,13 +312,6 @@ type AlertProps = {
  */
 function RoleAlert({ listing, role, picks, reasonId, detailId }: AlertProps) {
   switch (role.role) {
-    case "error":
-      return (
-        <Alert variant="destructive">
-          <IconAlertTriangle />
-          <AlertTitle>{m.listing_detail_viewer_error()}</AlertTitle>
-        </Alert>
-      );
     case "closed":
       return (
         !endedNormally(role.state) && (

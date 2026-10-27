@@ -7,6 +7,8 @@ import {
 import {
   liveTradeStatuses,
   openTradeStatuses,
+  type TradeListingWant,
+  type TradeListingWantOption,
   type TradeOfferItem,
   type TradeOfferStatus,
 } from "@apollo/database/web/types";
@@ -16,7 +18,12 @@ import {
   type ClaimStats,
   MAX_TOTAL_WANTED,
 } from "@apollo/trades/caps";
-import { needsYou, tradeState } from "@apollo/trades/lifecycle";
+import {
+  listingUnitSize,
+  needsYou,
+  tradeState,
+} from "@apollo/trades/lifecycle";
+import { isEqual } from "@apollo/util";
 import {
   and,
   type AnyColumn,
@@ -36,9 +43,11 @@ import {
   type ListingOfferSummary,
   listingStateSchema,
   type ListingTrade,
+  type ListingViewer,
   offerRefusal,
   storedObjektItemSchema,
   type StoredWant,
+  storedWantSchema,
   type TradeRatio,
   tradeWants,
 } from "../../universal/trade-listings";
@@ -46,7 +55,7 @@ import { db, type DbOrTx } from "../db";
 import { feedbackRepColumns } from "../feedback.server";
 import { feedItem, readIndexed } from "./feed.server";
 import { readCandidates, readSharedTokenFlags } from "./holdings.server";
-import { posterLinkColumns } from "./poster.server";
+import { posterBlocked, posterLinkColumns } from "./poster.server";
 import {
   deadlinePassed,
   toTradeParty,
@@ -291,7 +300,7 @@ type ListingTradeRow = Awaited<ReturnType<typeof readListingTrades>>[number];
  * can link to it: the viewer's own, or anyone's for its poster
  * (`claimerId` undefined).
  */
-export async function readLatestAcceptedTrade(
+async function readLatestAcceptedTrade(
   listingId: string,
   claimerId: string | undefined,
 ) {
@@ -313,7 +322,7 @@ export async function readLatestAcceptedTrade(
  * A claimer holds at most one live trade or pending offer per listing and
  * can't start another beside it, so an open one is always their latest.
  */
-export function readClaimerTrade(listingId: string, claimerId: string) {
+function readClaimerTrade(listingId: string, claimerId: string) {
   return db.query.tradeOffers.findFirst({
     where: { kind: "trade", toUserId: claimerId, items: { listingId } },
     columns: { id: true, status: true, deadlineAt: true, expiresAt: true },
@@ -327,7 +336,7 @@ export function readClaimerTrade(listingId: string, claimerId: string) {
  * the poster or the listing ended (EndedOfferStatus), else null: one they
  * withdrew needs no word, and any later trade replaces it.
  */
-export function endedOffer(status: TradeOfferStatus): EndedOfferStatus | null {
+function endedOffer(status: TradeOfferStatus): EndedOfferStatus | null {
   switch (status) {
     case "declined":
     case "expired":
@@ -350,9 +359,7 @@ function tradeSides(row: { items: readonly TradeOfferItem[] }) {
 /**
  * How many objekts each side of a trade from the listing sends.
  */
-export function tradeSize(row: {
-  items: readonly TradeOfferItem[];
-}): TradeRatio {
+function tradeSize(row: { items: readonly TradeOfferItem[] }): TradeRatio {
   const { from, to } = tradeSides(row);
   return { give: from.length, get: to.length };
 }
@@ -362,7 +369,7 @@ export function tradeSize(row: {
  * pool objekts it picked and the claimer's it gives, with their serials and
  * collections.
  */
-export async function offerSides(row: { items: readonly TradeOfferItem[] }) {
+async function offerSides(row: { items: readonly TradeOfferItem[] }) {
   const { from, to } = tradeSides(row);
   const items = [...from, ...to];
   const indexed = await readIndexed(
@@ -386,7 +393,7 @@ function claimer(row: ListingTradeRow) {
  * read once for the page, for every offer's tokens, and the claimers' caps
  * in one statement.
  */
-export async function readPosterSide(listing: {
+async function readPosterSide(listing: {
   id: string;
   fromAddress: string;
   unitSize: number;
@@ -547,7 +554,7 @@ export async function readPosterSide(listing: {
  * ones objekts fill (tradeWants()); a listing with a payment row never
  * reaches the picker.
  */
-export async function readCandidateSide(
+async function readCandidateSide(
   address: string,
   wants: StoredWant[],
   pool: { free: number; unitSize: number },
@@ -577,5 +584,104 @@ export async function readCandidateSide(
       // allocate() answers every want, in order
       missing: allocation[index]?.missing ?? want.count,
     })),
+  };
+}
+
+/**
+ * The signed-in viewer's side of a listing, shown in place of Accept.
+ * Always the session's own view; signed out, it's anonymous. Only the
+ * listing's parties learn its trades' ids. The poster of an open listing
+ * gets its offers and trades; a viewer with a live trade or a pending offer
+ * from it gets that; anyone else is a candidate, judged against the `free`
+ * objekts of the pool. Only an open listing's candidates are read: closed
+ * listings and the poster's own never touch the viewer's holdings.
+ */
+export async function readListingViewer(
+  listing: {
+    id: string;
+    status: TradeOfferStatus;
+    fromUserId: string | null;
+    fromAddress: string;
+    unitSize: number | null;
+    items: readonly TradeOfferItem[];
+    wants: readonly (TradeListingWant & {
+      options: TradeListingWantOption[];
+    })[];
+    fromUser: {
+      banned: boolean;
+      banExpires: Date | null;
+      cosmoAccount: { address: string } | null;
+    } | null;
+  },
+  viewerId: string | undefined,
+  free: number,
+): Promise<ListingViewer> {
+  if (viewerId === undefined) return { role: "anonymous" };
+  const unitSize = listingUnitSize(listing);
+  const own = listing.fromUserId === viewerId;
+  const wants = listing.wants.map((want) => storedWantSchema.parse(want));
+
+  if (listing.status !== "open") {
+    return {
+      role: "closed",
+      tradeId: await readLatestAcceptedTrade(
+        listing.id,
+        own ? undefined : viewerId,
+      ),
+    };
+  }
+  if (own) {
+    return {
+      role: "poster",
+      ...(await readPosterSide({
+        id: listing.id,
+        fromAddress: listing.fromAddress,
+        unitSize,
+        wants,
+        pool: listing.items.flatMap((item) =>
+          item.leftAt === null
+            ? [storedObjektItemSchema.parse(item).tokenId]
+            : [],
+        ),
+        posterRefused: posterBlocked(
+          wants,
+          listing.fromUser,
+          listing.fromAddress,
+        ),
+      })),
+    };
+  }
+
+  // a claimer's latest trade from the listing is their live one or pending offer, if any
+  const trade = await readClaimerTrade(listing.id, viewerId);
+  if (trade?.status === "pending" && trade.expiresAt !== null) {
+    return {
+      role: "offerer",
+      tradeId: trade.id,
+      expiresAt: trade.expiresAt,
+      ...(await offerSides(trade)),
+    };
+  }
+  if (
+    trade !== undefined &&
+    openTradeStatuses.some((status) => status === trade.status)
+  ) {
+    return {
+      role: "claimer",
+      tradeId: trade.id,
+      deadlineAt: trade.status === "disputed" ? null : trade.deadlineAt,
+      size: tradeSize(trade),
+    };
+  }
+
+  const { address, ...standing } = await claimStanding(db, viewerId);
+  if (address === null) return { role: "unlinked" };
+  // the listing's `stop` says whether the pool or the poster's account stops a claim
+  return {
+    role: "candidate",
+    ...(await readCandidateSide(address, wants, { free, unitSize })),
+    claims: { active: standing.active, cap: claimCap(standing) },
+    ownAddress: isEqual(address, listing.fromAddress),
+    endedOffer: trade === undefined ? null : endedOffer(trade.status),
   };
 }

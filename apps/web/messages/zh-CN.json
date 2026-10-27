@@ -752,7 +752,6 @@
   "listing_detail_kind_trade": "交换",
   "listing_detail_posted": "发布于 {#time}{when}{/time}",
   "listing_detail_error": "无法加载此挂单。",
-  "listing_detail_viewer_error": "无法加载你在此挂单中的部分。",
   "listing_detail_you_get": "你获得 · {count}",
   "listing_detail_offering": "提供 · {count}",
   "listing_detail_looking_for": "寻找 · {count}",
@@ -2610,7 +2609,6 @@
   "listing_poster_busy_title": "你提供的 Objekt 目前都在交换中",
   "listing_poster_busy_body": "在其中一笔交换结束前，没人能接这条挂单。无需做任何处理。",
   "listing_detail_offerer_expired": "{poster} 未在期限内回复，报价即将关闭。大约一分钟后你可以再发出一份。",
-  "listing_detail_pill_unavailable": "不可用",
   "listing_poster_pill_sent": "已发送",
   "listing_poster_note_sent_to": "已发送给 {name}",
   "listing_poster_pool_sent": [

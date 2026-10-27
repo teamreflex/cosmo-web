@@ -750,7 +750,6 @@
   "listing_detail_kind_trade": "トレード",
   "listing_detail_posted": "{#time}{when}{/time}に投稿",
   "listing_detail_error": "この出品を読み込めませんでした。",
-  "listing_detail_viewer_error": "この出品のあなた側の情報を読み込めませんでした。",
   "listing_detail_you_get": "受け取る · {count}",
   "listing_detail_offering": "出品 · {count}",
   "listing_detail_looking_for": "求めているもの · {count}",
@@ -2608,7 +2607,6 @@
   "listing_poster_busy_title": "出品したものはすべて現在トレード中です",
   "listing_poster_busy_body": "どれかのトレードが終わるまで、この出品は誰も受けられません。直すことは何もありません。",
   "listing_detail_offerer_expired": "{poster}が期限内に返事をしなかったため、まもなく終了します。1分ほどで別のオファーを送れます。",
-  "listing_detail_pill_unavailable": "利用不可",
   "listing_poster_pill_sent": "送付済み",
   "listing_poster_note_sent_to": "{name}に送付済み",
   "listing_poster_pool_sent": [

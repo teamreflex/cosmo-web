@@ -2,7 +2,7 @@ import { m } from "@/i18n/messages";
 import { posterName } from "@/lib/client/trade-listings";
 import { env } from "@/lib/env/client";
 import { currentAccountQuery } from "@/lib/queries/core";
-import { tradeListingViewerQuery } from "@/lib/queries/trade-listings";
+import { tradeListingQuery } from "@/lib/queries/trade-listings";
 import type {
   ClosedListingState,
   TradeListing,
@@ -15,8 +15,6 @@ import {
 } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { Suspense } from "react";
-import { ErrorBoundary } from "react-error-boundary";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Timestamp } from "../ui/timestamp";
 import { Status } from "./listing-status";
@@ -79,39 +77,28 @@ export function ClosedAlert({
 
 /**
  * When the listing ended, and for a viewer who was a party to one of its
- * trades a link to the latest, once the server confirms they were.
+ * trades a link to the latest.
  */
 function ClosedMeta({ listing, state }: Props) {
-  const { data: account } = useSuspenseQuery(currentAccountQuery);
+  const { data: viewer } = useSuspenseQuery({
+    ...tradeListingQuery(listing.id),
+    select: (page) => page?.viewer,
+  });
 
   return (
     <>
       <Timestamp date={state.endedAt} format={{ dateStyle: "medium" }} />
-      {account !== null && (
-        <ErrorBoundary fallback={null}>
-          <Suspense fallback={null}>
-            <TradeLink listing={listing} />
-          </Suspense>
-        </ErrorBoundary>
+      {viewer?.role === "closed" && viewer.tradeId !== null && (
+        <Link
+          to="/trade/$id"
+          params={{ id: viewer.tradeId }}
+          className="font-medium text-cosmo underline-offset-4 hover:underline dark:text-cosmo-text"
+        >
+          {m.listing_detail_view_trade()}
+        </Link>
       )}
     </>
   );
-}
-
-function TradeLink({ listing }: { listing: TradeListing }) {
-  const { data: viewer } = useSuspenseQuery(
-    tradeListingViewerQuery(listing.id, listing.updatedAt),
-  );
-
-  return viewer?.role === "closed" && viewer.tradeId !== null ? (
-    <Link
-      to="/trade/$id"
-      params={{ id: viewer.tradeId }}
-      className="font-medium text-cosmo underline-offset-4 hover:underline dark:text-cosmo-text"
-    >
-      {m.listing_detail_view_trade()}
-    </Link>
-  ) : null;
 }
 
 function ClosedText({ listing, state }: Props) {
