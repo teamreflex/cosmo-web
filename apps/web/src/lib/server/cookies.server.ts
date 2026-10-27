@@ -1,6 +1,6 @@
 import { getCookie, setCookie } from "@tanstack/react-start/server";
 
-type CookieKey = "artists" | "market-notice";
+type CookieKey = "artists" | "market-notice" | "range-offers-notice";
 
 /**
  * Read the value from a cookie.

@@ -10,7 +10,9 @@ import {
   emptyComposerDisplay,
   listingComposerDisplay,
 } from "@/lib/client/trade-listings";
+import { $dismissRangeOffersNotice } from "@/lib/functions/market-notice";
 import { $editListing, $postListing } from "@/lib/functions/trade-listings";
+import { rangeOffersNoticeQuery } from "@/lib/queries/market";
 import {
   offeredTokenRefusalsQuery,
   rangeMatchCountQuery,
@@ -39,6 +41,7 @@ import {
   MAX_OFFERED,
 } from "@apollo/trades/caps";
 import { totalWanted } from "@apollo/trades/composer";
+import { takesOffers } from "@apollo/trades/lifecycle";
 import {
   type ListingInput,
   listingInputSchema,
@@ -52,6 +55,7 @@ import {
   useQueries,
   useQuery,
   useQueryClient,
+  useSuspenseQuery,
 } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { type ReactNode, useId, useRef, useState } from "react";
@@ -77,6 +81,7 @@ import { Field, FieldError, FieldLabel } from "../ui/field";
 import { Spinner } from "../ui/spinner";
 import { Textarea } from "../ui/textarea";
 import ComposerOffered from "./composer-offered";
+import ComposerRangeConfirm from "./composer-range-confirm";
 import ComposerRatio from "./composer-ratio";
 import ComposerWantRows from "./composer-want-rows";
 import TradePicker from "./trade-picker";
@@ -123,10 +128,15 @@ export default function ListingComposer({
   const [view, setView] = useState<"form" | "picker">("form");
   const [display, setDisplay] = useState<ComposerDisplay>(initialDisplay);
   const [discarding, setDiscarding] = useState(false);
+  // a submission waiting for the poster to confirm the listing takes offers
+  const [held, setHeld] = useState<ListingSubmission | null>(null);
   // read during render so the form keeps it current for requestClose
   const { isDirty } = form.formState;
-  // a double click submits once, even before the pending state renders
+  // a double click posts once, even before the pending state renders
   const submitting = useRef(false);
+  const { data: rangeNoticeDismissed } = useSuspenseQuery(
+    rangeOffersNoticeQuery,
+  );
   const { artistList } = useArtists();
   // each artist's members, keyed as ranges store artists
   const rosters = new Map(
@@ -194,6 +204,12 @@ export default function ListingComposer({
       submitting.current = false;
     },
   });
+  const dismissRangeNotice = useMutation({
+    mutationFn: () => $dismissRangeOffersNotice(),
+    onSuccess: () =>
+      queryClient.setQueryData(rangeOffersNoticeQuery.queryKey, true),
+    onError: (error) => toast.error(formatError(error)),
+  });
 
   /**
    * Escape, a click outside, a swipe, Close and Cancel all land here: a
@@ -256,10 +272,31 @@ export default function ListingComposer({
     setOffered([...offered, { tokenId }]);
   }
 
-  function submit(values: ListingInput) {
+  function post(submission: ListingSubmission) {
     if (submitting.current) return;
     submitting.current = true;
-    mutation.mutate(formValuesToInput(values, mode, rosters));
+    mutation.mutate(submission);
+  }
+
+  function submit(values: ListingInput) {
+    const submission = formValuesToInput(values, mode, rosters);
+    // confirm first when this post makes the listing start taking offers
+    if (
+      !rangeNoticeDismissed &&
+      takesOffers(submission.data.wants) &&
+      (mode.kind === "create" || !takesOffers(mode.listing.wants))
+    ) {
+      setHeld(submission);
+    } else {
+      post(submission);
+    }
+  }
+
+  function confirmRange(dismiss: boolean) {
+    if (held === null) return;
+    setHeld(null);
+    if (dismiss) dismissRangeNotice.mutate();
+    post(held);
   }
 
   const title =
@@ -337,6 +374,12 @@ export default function ListingComposer({
         pending={mutation.isPending}
         onOpenChange={setDiscarding}
         onDiscard={() => onOpenChange(false)}
+      />
+      <ComposerRangeConfirm
+        mode={mode}
+        open={held !== null}
+        onOpenChange={() => setHeld(null)}
+        onContinue={confirmRange}
       />
     </form>
   );

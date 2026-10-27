@@ -1,4 +1,7 @@
-import { $fetchMarketNoticeAccepted } from "@/lib/functions/market-notice";
+import {
+  $fetchMarketNoticeAccepted,
+  $fetchRangeOffersNoticeDismissed,
+} from "@/lib/functions/market-notice";
 import { $fetchMarket } from "@/lib/functions/objekts/market";
 import { type MarketCursor, toFloorBounds } from "@/lib/universal/market";
 import {
@@ -43,6 +46,19 @@ const firstPage: MarketCursor | undefined = undefined;
 export const marketNoticeQuery = queryOptions({
   queryKey: ["market-notice"],
   queryFn: ({ signal }) => $fetchMarketNoticeAccepted({ signal }),
+  staleTime: Infinity,
+  refetchOnWindowFocus: false,
+  refetchOnMount: false,
+});
+
+/**
+ * Whether this browser chose not to see the listing composer's range
+ * confirmation again. Read once from its cookie, then set directly when it
+ * is dismissed.
+ */
+export const rangeOffersNoticeQuery = queryOptions({
+  queryKey: ["range-offers-notice"],
+  queryFn: ({ signal }) => $fetchRangeOffersNoticeDismissed({ signal }),
   staleTime: Infinity,
   refetchOnWindowFocus: false,
   refetchOnMount: false,
