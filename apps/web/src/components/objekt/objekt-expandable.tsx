@@ -1,3 +1,4 @@
+import { useImageLoaded } from "@/hooks/use-image-loaded";
 import { useMetadataDialog } from "@/hooks/use-metadata-dialog";
 import { useObjektImage } from "@/hooks/use-objekt-image";
 import { useObjektSelection } from "@/hooks/use-objekt-selection";
@@ -7,7 +8,6 @@ import { objektMetadataQuery, objektQuery } from "@/lib/queries/objekt-queries";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
 import { noop, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useState } from "react";
 import type { PropsWithChildren } from "react";
 import { useShallow } from "zustand/react/shallow";
 
@@ -72,26 +72,19 @@ type FrontImageProps = {
   collection: Objekt.Collection;
   setActive?: (slug: string | undefined) => void;
   onClick?: () => void;
-  priority?: boolean;
-  eager?: boolean;
+  priority: boolean;
+  eager: boolean;
 };
 
 function FrontImage(props: FrontImageProps) {
-  const [isLoaded, setIsLoaded] = useState(props.eager ?? false);
+  // a priority image skips the fade, so it paints before hydration
+  const { isLoaded, checkDecoded, onLoad } = useImageLoaded(
+    props.eager || props.priority,
+  );
   const queryClient = useQueryClient();
   const { open } = useMetadataDialog();
 
   const imageProps = useObjektImage(props.collection);
-
-  /**
-   * Mark already-decoded images as loaded on mount so cached re-mounts,
-   * (e.g. a virtualized cell scrolling back into view) skip the opacity-0 fade.
-   */
-  const handleImageRef = useCallback((node: HTMLImageElement | null) => {
-    if (node?.complete && node.naturalWidth > 0) {
-      setIsLoaded(true);
-    }
-  }, []);
 
   function prefetch() {
     // warm the image the detail sheet shows
@@ -125,11 +118,11 @@ function FrontImage(props: FrontImageProps) {
 
   return (
     <img
-      ref={handleImageRef}
+      ref={checkDecoded}
       role="button"
       aria-label={m.aria_view_objekt()}
       onMouseOver={prefetch}
-      onLoad={() => setIsLoaded(true)}
+      onLoad={onLoad}
       onClick={handleClick}
       className={cn(
         "w-full transition-opacity",

@@ -5,6 +5,11 @@ import { useProfileContext } from "./use-profile";
 import { useUserState } from "./use-user-state";
 
 /**
+ * Columns an objekt grid has below the `md` breakpoint, whatever the user's setting.
+ */
+export const MOBILE_GRID_COLUMNS = 3;
+
+/**
  * Optimized hook for getting the grid columns.
  */
 export function useGridColumns() {
@@ -20,5 +25,5 @@ export function useGridColumns() {
     ? isCurrent
       ? user.gridColumns
       : (target?.user?.gridColumns ?? user?.gridColumns ?? GRID_COLUMNS)
-    : 3;
+    : MOBILE_GRID_COLUMNS;
 }

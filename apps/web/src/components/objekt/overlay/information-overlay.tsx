@@ -2,7 +2,8 @@ import { m } from "@/i18n/messages";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { IconMaximize } from "@tabler/icons-react";
 import { format } from "date-fns";
-import { useMemo, useState } from "react";
+import { Suspense, use, useState } from "react";
+import { browser } from "react-dom";
 import {
   CornerOverlay,
   OverlayIcon,
@@ -16,15 +17,6 @@ type Props = {
 
 export default function InformationOverlay(props: Props) {
   const [open, setOpen] = useState(false);
-
-  // safari 15 doesn't like to parse the date string for some reason
-  const formatted = useMemo(() => {
-    try {
-      return format(new Date(props.token.acquiredAt), "dd/MM/yy h:mmaa");
-    } catch (error) {
-      return props.token.acquiredAt;
-    }
-  }, [props.token.acquiredAt]);
 
   return (
     <CornerOverlay
@@ -51,9 +43,28 @@ export default function InformationOverlay(props: Props) {
 
         <div className="flex flex-col text-xs">
           <span className="font-semibold">{m.common_received()}</span>
-          <span>{formatted}</span>
+          <span>
+            <Suspense fallback={null}>
+              <ReceivedAt acquiredAt={props.token.acquiredAt} />
+            </Suspense>
+          </span>
         </div>
       </div>
     </CornerOverlay>
   );
+}
+
+/**
+ * When the token was received, in the viewer's timezone, which the server
+ * doesn't know.
+ */
+function ReceivedAt(props: { acquiredAt: string }) {
+  use(browser("The received date is formatted in the viewer's timezone."));
+
+  // safari 15 doesn't like to parse the date string for some reason
+  try {
+    return format(new Date(props.acquiredAt), "dd/MM/yy h:mmaa");
+  } catch {
+    return props.acquiredAt;
+  }
 }

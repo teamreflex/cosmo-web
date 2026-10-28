@@ -1,3 +1,4 @@
+import { useImageLoaded } from "@/hooks/use-image-loaded";
 import { useMetadataDialog } from "@/hooks/use-metadata-dialog";
 import { useObjektImage } from "@/hooks/use-objekt-image";
 import { tokenKey, useObjektSelection } from "@/hooks/use-objekt-selection";
@@ -9,8 +10,8 @@ import { cn } from "@/lib/utils";
 import type { BFFCollectionGroup } from "@apollo/cosmo/types/objekts";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { flushSync } from "react-dom";
+import { Suspense, use, useMemo, useState } from "react";
+import { browser, flushSync } from "react-dom";
 import { useShallow } from "zustand/react/shallow";
 import { ObjektCount, ObjektNewIndicator, ObjektSidebar } from "./common";
 import DetailContent from "./detail/detail-content";
@@ -39,16 +40,12 @@ export default function GroupedObjekt({
     ),
   );
 
-  // capture mount time once rather than reading Date.now() during render
-  const [now] = useState(() => Date.now());
-
   const collection = Objekt.fromCollectionGroup({
     collection: group.collection,
   });
-  const hasNew = group.objekts.some((o) => {
-    const acquiredAt = new Date(o.inventory.acquiredAt);
-    return now - acquiredAt.getTime() < 24 * 60 * 60 * 1000;
-  });
+  const lastAcquiredAt = Math.max(
+    ...group.objekts.map((o) => new Date(o.inventory.acquiredAt).getTime()),
+  );
 
   return (
     <Detail
@@ -56,7 +53,7 @@ export default function GroupedObjekt({
       group={group}
       showLocked={showLocked}
       hasSelected={hasSelected}
-      hasNew={hasNew}
+      lastAcquiredAt={lastAcquiredAt}
       priority={priority}
     />
   );
@@ -67,7 +64,8 @@ type DetailProps = {
   group: BFFCollectionGroup;
   showLocked: boolean;
   hasSelected: boolean;
-  hasNew: boolean;
+  /** when the most recent copy in the group was received, in ms */
+  lastAcquiredAt: number;
   priority: boolean;
 };
 
@@ -76,7 +74,7 @@ function Detail({
   group,
   showLocked,
   hasSelected,
-  hasNew,
+  lastAcquiredAt,
   priority,
 }: DetailProps) {
   const [open, setOpen] = useState(false);
@@ -96,7 +94,7 @@ function Detail({
         collection={collection}
         count={group.count}
         hasSelected={hasSelected}
-        hasNew={hasNew}
+        lastAcquiredAt={lastAcquiredAt}
         onIntent={() => setMounted(true)}
         onClick={() => {
           // a click with no hover before it still mounts the dialog closed, so its enter transition runs
@@ -124,7 +122,8 @@ type RootObjektProps = {
   collection: Objekt.Collection;
   count: number;
   hasSelected: boolean;
-  hasNew: boolean;
+  /** when the most recent copy in the group was received, in ms */
+  lastAcquiredAt: number;
   /** the pointer reached the card, so the detail dialog should get ready */
   onIntent: () => void;
   onClick: () => void;
@@ -135,12 +134,13 @@ function RootObjekt({
   collection,
   count,
   hasSelected,
-  hasNew,
+  lastAcquiredAt,
   onIntent,
   onClick,
   priority = false,
 }: RootObjektProps) {
-  const [isLoaded, setIsLoaded] = useState(false);
+  // a priority image skips the fade, so it paints before hydration
+  const { isLoaded, checkDecoded, onLoad } = useImageLoaded(priority);
 
   const imageProps = useObjektImage(collection);
 
@@ -166,8 +166,9 @@ function RootObjekt({
         )}
       >
         <img
+          ref={checkDecoded}
           onPointerOver={prefetch}
-          onLoad={() => setIsLoaded(true)}
+          onLoad={onLoad}
           onClick={onClick}
           className={cn(
             "w-full transition-opacity",
@@ -185,7 +186,7 @@ function RootObjekt({
         <RootObjektOverlay
           collection={collection}
           count={count}
-          hasNew={hasNew}
+          lastAcquiredAt={lastAcquiredAt}
         />
       </div>
     </div>
@@ -195,13 +196,14 @@ function RootObjekt({
 type RootObjektOverlayProps = {
   collection: Objekt.Collection;
   count: number;
-  hasNew: boolean;
+  /** when the most recent copy in the group was received, in ms */
+  lastAcquiredAt: number;
 };
 
 function RootObjektOverlay({
   collection,
   count,
-  hasNew,
+  lastAcquiredAt,
 }: RootObjektOverlayProps) {
   const { open } = useMetadataDialog();
   const queryClient = useQueryClient();
@@ -229,8 +231,25 @@ function RootObjektOverlay({
       </CornerOverlay>
 
       <ObjektCount count={count}>
-        {hasNew && <ObjektNewIndicator />}
+        <Suspense fallback={null}>
+          <GroupNewIndicator lastAcquiredAt={lastAcquiredAt} />
+        </Suspense>
       </ObjektCount>
     </div>
+  );
+}
+
+/**
+ * The new badge, shown when a copy in the group was received in the last
+ * day. That depends on the current time, which the server's clock can
+ * disagree with, so only the browser renders it.
+ */
+function GroupNewIndicator(props: { lastAcquiredAt: number }) {
+  use(browser("Whether a group is new depends on the viewer's clock."));
+  // capture mount time once rather than reading Date.now() during render
+  const [now] = useState(() => Date.now());
+
+  return (
+    now - props.lastAcquiredAt < 24 * 60 * 60 * 1000 && <ObjektNewIndicator />
   );
 }

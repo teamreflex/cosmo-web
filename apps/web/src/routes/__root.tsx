@@ -81,6 +81,11 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         dark: "#09090b",
       },
       links: [
+        // mirrored objekt images
+        {
+          rel: "preconnect",
+          href: env.VITE_CDN_URL,
+        },
         // objekt images
         {
           rel: "preconnect",

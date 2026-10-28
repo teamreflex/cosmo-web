@@ -1,12 +1,10 @@
-import { MediaQueryContext } from "@/hooks/use-media-query";
+import { MediaQueryContext, MOBILE_BREAKPOINT } from "@/hooks/use-media-query";
 import { useSyncExternalStore } from "react";
 import type { ReactNode } from "react";
 
 type ProviderProps = {
   children: ReactNode;
 };
-
-const MOBILE_BREAKPOINT = 768; // tailwind's sm breakpoint
 
 function subscribe(callback: () => void) {
   const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);

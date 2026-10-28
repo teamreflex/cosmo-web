@@ -1,5 +1,7 @@
 import { createContext, useContext } from "react";
 
+export const MOBILE_BREAKPOINT = 768; // tailwind's md breakpoint
+
 type ContextProps = {
   isDesktop: boolean;
 };

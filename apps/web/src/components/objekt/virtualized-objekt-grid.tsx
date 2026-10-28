@@ -1,6 +1,9 @@
 import { useElementSize } from "@/hooks/use-element-size";
+import { MOBILE_GRID_COLUMNS } from "@/hooks/use-grid-columns";
 import { useGridVirtualizer } from "@/hooks/use-grid-virtualizer";
-import { ObjektCellWidthContext } from "@/hooks/use-objekt-image";
+import { UnmeasuredGridContext } from "@/hooks/use-image-loaded";
+import { MOBILE_BREAKPOINT } from "@/hooks/use-media-query";
+import { ObjektImageSizesContext } from "@/hooks/use-objekt-image";
 import type { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 import { useObjektResponse } from "@/hooks/use-objekt-response";
 import { tokenKey } from "@/hooks/use-objekt-selection";
@@ -35,6 +38,8 @@ const GAP = 16;
 // horizontal breathing room so card outlines aren't clipped at the grid edges
 const SIDE = 2;
 const ASPECT_RATIO = 8.5 / 5.5;
+// rows rendered as a plain CSS grid before the grid is measured, which includes the server render
+const UNMEASURED_ROWS = 3;
 // how far outside the pin block its reorder outline sits, and its corner radius
 const OUTLINE_PAD = 8;
 const OUTLINE_RADIUS = 16;
@@ -200,86 +205,104 @@ function ObjektGrid<
   const reorderable = onReorderPins !== undefined && authenticated;
   const sortable = reorderable && !hidePins && pins.length > 1;
 
+  /**
+   * Until the cell size is known the estimated row height is ~0, so the
+   * virtualizer would mount every cell at once. The first rows lay out as a
+   * CSS grid instead, which is also what the server renders, so their images
+   * load before hydration. Cells keep their keys when the virtualizer takes
+   * over, so their images aren't re-created.
+   */
+  const measured = laneWidth > 0;
+  const placed: PlacedCell[] = measured
+    ? virtualList.map((virtualItem) => ({
+        index: virtualItem.index,
+        position: {
+          top: virtualItem.start - scrollMargin,
+          left: SIDE + virtualItem.lane * (laneWidth + GAP),
+        },
+      }))
+    : cells
+        .slice(0, gridColumns * UNMEASURED_ROWS)
+        .map((_, index) => ({ index, position: null }));
+
   const renderGridBody = (slot: PinReorderSlot | null) => (
     <div
-      className="relative w-full"
-      style={{
-        height: `${totalSize}px`,
-      }}
+      style={
+        measured
+          ? { height: `${totalSize}px` }
+          : { "--grid-columns": gridColumns }
+      }
+      className={cn(
+        "w-full",
+        measured
+          ? "relative"
+          : // gap and padding match GAP and SIDE
+            "grid grid-cols-3 gap-4 px-0.5 md:grid-cols-[repeat(var(--grid-columns),minmax(0,1fr))]",
+      )}
     >
-      {/* wait for measurement: until the cell size is known the estimated
-          row height is ~0, so the virtualizer would mount every cell at
-          once instead of windowing */}
-      {laneWidth > 0 &&
-        virtualList.map((virtualItem) => {
-          const cell = cells[virtualItem.index];
-          if (!cell) return null;
+      {placed.map(({ index, position }) => {
+        const cell = cells[index];
+        if (!cell) return null;
 
-          const baseY = virtualItem.start - scrollMargin;
-          const left = SIDE + virtualItem.lane * (laneWidth + GAP);
-          const style = {
-            transform: `translateY(${baseY}px)`,
-            left: `${left}px`,
-            width: `${laneWidth}px`,
-          };
+        const virtualized =
+          position === null
+            ? {}
+            : {
+                "data-index": index,
+                ref: measureElement,
+                style: {
+                  transform: `translateY(${position.top}px)`,
+                  left: `${position.left}px`,
+                  width: `${laneWidth}px`,
+                },
+                className: "absolute top-0",
+              };
 
-          // render pin
-          if (cell.type === "pin") {
-            // sortable pins position via `top` so dnd-kit owns `transform`
-            if (slot !== null) {
-              return (
-                <slot.SortablePinCell
-                  key={`pin-${cell.item.pinId}`}
-                  pin={cell.item}
-                  index={virtualItem.index}
-                  top={baseY}
-                  left={left}
-                  width={laneWidth}
-                  measureElement={measureElement}
-                >
-                  <PinCard pin={cell.item} authenticated={authenticated} />
-                </slot.SortablePinCell>
-              );
-            }
-
+        // render pin
+        if (cell.type === "pin") {
+          // sortable pins position via `top` so dnd-kit owns `transform`
+          if (slot !== null && position !== null) {
             return (
-              <div
+              <slot.SortablePinCell
                 key={`pin-${cell.item.pinId}`}
-                data-index={virtualItem.index}
-                ref={measureElement}
-                style={style}
-                className="absolute top-0"
+                pin={cell.item}
+                index={index}
+                top={position.top}
+                left={position.left}
+                width={laneWidth}
+                measureElement={measureElement}
               >
-                <PinCard pin={cell.item} authenticated={authenticated} link />
-              </div>
+                <PinCard pin={cell.item} authenticated={authenticated} />
+              </slot.SortablePinCell>
             );
           }
 
-          // render non-pin items
-          const id = getObjektId(cell.item);
-          // SAFETY: base props plus itemComponentProps satisfy TItemProps
-          const itemProps = {
-            item: cell.item,
-            id,
-            isPin: false,
-            priority: virtualItem.index < gridColumns * 4,
-            ...itemComponentProps,
-          } as BaseItemComponentProps<TItem> & TItemProps;
-
           return (
-            <div
-              key={id}
-              data-index={virtualItem.index}
-              ref={measureElement}
-              style={style}
-              className="absolute top-0"
-            >
-              <ItemComponent {...itemProps} />
+            <div key={`pin-${cell.item.pinId}`} {...virtualized}>
+              <PinCard pin={cell.item} authenticated={authenticated} link />
             </div>
           );
-        })}
+        }
 
-      {slot !== null && laneWidth > 0 && (
+        // render non-pin items
+        const id = getObjektId(cell.item);
+        // SAFETY: base props plus itemComponentProps satisfy TItemProps
+        const itemProps = {
+          item: cell.item,
+          id,
+          isPin: false,
+          priority: index < gridColumns,
+          ...itemComponentProps,
+        } as BaseItemComponentProps<TItem> & TItemProps;
+
+        return (
+          <div key={id} {...virtualized}>
+            <ItemComponent {...itemProps} />
+          </div>
+        );
+      })}
+
+      {slot !== null && measured && (
         <PinBlockOutline
           visible={slot.activePin !== null}
           pinCount={pins.length}
@@ -294,24 +317,24 @@ function ObjektGrid<
   return (
     <>
       <div className="w-full py-2" ref={containerRef}>
-        <ObjektCellWidthContext
-          value={laneWidth > 0 ? Math.ceil(laneWidth) : null}
-        >
-          {reorderable ? (
-            <PinReorder
-              pins={pins}
-              sortable={sortable}
-              onReorderPins={onReorderPins}
-              renderOverlay={(pin) => (
-                <PinCard pin={pin} authenticated={authenticated} eager />
-              )}
-            >
-              {renderGridBody}
-            </PinReorder>
-          ) : (
-            renderGridBody(null)
-          )}
-        </ObjektCellWidthContext>
+        <ObjektImageSizesContext value={cellImageSizes(gridColumns)}>
+          <UnmeasuredGridContext value={!measured}>
+            {reorderable ? (
+              <PinReorder
+                pins={pins}
+                sortable={sortable}
+                onReorderPins={onReorderPins}
+                renderOverlay={(pin) => (
+                  <PinCard pin={pin} authenticated={authenticated} eager />
+                )}
+              >
+                {renderGridBody}
+              </PinReorder>
+            ) : (
+              renderGridBody(null)
+            )}
+          </UnmeasuredGridContext>
+        </ObjektImageSizesContext>
       </div>
 
       {showTotal && (
@@ -331,6 +354,43 @@ function ObjektGrid<
       </Portal>
     </>
   );
+}
+
+type PlacedCell = {
+  index: number;
+  /** offset inside the grid body once measured, null while it's a CSS grid */
+  position: { top: number; left: number } | null;
+};
+
+/**
+ * Width of a `container` from each viewport width up: Tailwind caps it at
+ * every breakpoint, and layout.css caps the widest at 1400px.
+ */
+const CONTAINER_WIDTHS = [
+  { from: 0, width: "100vw" },
+  { from: 640, width: "640px" },
+  { from: 768, width: "768px" },
+  { from: 1024, width: "1024px" },
+  { from: 1280, width: "1280px" },
+  { from: 1536, width: "1400px" },
+];
+
+/**
+ * `sizes` for a cell's image from the column count alone, so it's the same
+ * before and after the grid is measured and the browser never swaps
+ * renditions. Assumes the grid fills a `container`, which has 1rem padding
+ * either side.
+ */
+function cellImageSizes(gridColumns: number) {
+  return CONTAINER_WIDTHS.map(({ from, width }, i) => {
+    const columns =
+      from < MOBILE_BREAKPOINT ? MOBILE_GRID_COLUMNS : gridColumns;
+    const cell = `calc((${width} - 2rem - ${SIDE * 2 + GAP * (columns - 1)}px) / ${columns})`;
+    const next = CONTAINER_WIDTHS[i + 1];
+    return next === undefined
+      ? cell
+      : `(max-width: ${next.from - 1}px) ${cell}`;
+  }).join(", ");
 }
 
 type PinCardProps = {
