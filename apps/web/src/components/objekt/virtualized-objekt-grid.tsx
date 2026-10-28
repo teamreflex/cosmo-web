@@ -4,45 +4,18 @@ import { ObjektCellWidthContext } from "@/hooks/use-objekt-image";
 import type { ObjektResponseOptions } from "@/hooks/use-objekt-response";
 import { useObjektResponse } from "@/hooks/use-objekt-response";
 import { tokenKey } from "@/hooks/use-objekt-selection";
-import { useOpenBinder } from "@/hooks/use-open-binder";
 import type { PinMove } from "@/hooks/use-pin-reorder";
 import { m } from "@/i18n/messages";
-import type { BinderPreview, ProfilePin } from "@/lib/universal/binders";
+import { lazyWithPreload } from "@/lib/lazy";
+import type { ProfilePin } from "@/lib/universal/binders";
 import { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
-import {
-  closestCenter,
-  defaultDropAnimationSideEffects,
-  DndContext,
-  DragOverlay,
-  KeyboardSensor,
-  MouseSensor,
-  TouchSensor,
-  useSensor,
-  useSensors,
-} from "@dnd-kit/core";
-import type {
-  Announcements,
-  DragEndEvent,
-  DragStartEvent,
-  DropAnimation,
-  ScreenReaderInstructions,
-  UniqueIdentifier,
-} from "@dnd-kit/core";
-import {
-  rectSortingStrategy,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 import { IconHeartBroken, IconRefresh } from "@tabler/icons-react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import type { DefaultError, QueryKey } from "@tanstack/react-query";
-import type { Virtualizer } from "@tanstack/react-virtual";
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
-import type { ComponentType, KeyboardEvent, MouseEvent } from "react";
+import { Suspense, useEffect, useMemo } from "react";
+import type { ComponentType } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import BinderCover from "../binders/binder-cover";
 import BinderPinOverlay from "../binders/binder-pin-toggle";
@@ -53,6 +26,9 @@ import Portal from "../portal";
 import { Button } from "../ui/button";
 import ExpandableObjekt from "./objekt-expandable";
 import ObjektGridSkeleton from "./objekt-grid-skeleton";
+import type { PinReorderSlot } from "./pin-reorder";
+
+const PinReorder = lazyWithPreload(() => import("./pin-reorder"));
 
 // gap in pixels between grid cells, both horizontally and vertically
 const GAP = 16;
@@ -62,40 +38,6 @@ const ASPECT_RATIO = 8.5 / 5.5;
 // how far outside the pin block its reorder outline sits, and its corner radius
 const OUTLINE_PAD = 8;
 const OUTLINE_RADIUS = 16;
-// a pin drag activates after this hold (ms) within the movement tolerance (px)
-const PIN_DRAG_DELAY = 200;
-const PIN_DRAG_TOLERANCE = 8;
-
-/**
- * Drop animation for a released pin. Position glide, untilt, and unscale all
- * ride one keyframe set on the overlay so they land together — a separate tilt
- * animation drifts out of sync with the move. Start and end always differ (the
- * rotation), so dnd-kit plays the glide even for a zero-distance drop instead of
- * snapping. The tilt/scale values mirror the `pin-pickup` keyframe's end.
- */
-const pinDropAnimation: DropAnimation = {
-  keyframes: ({ transform }) => [
-    {
-      transform: `${CSS.Transform.toString(transform.initial)} rotate(5deg) scale(1.05)`,
-    },
-    {
-      transform: `${CSS.Transform.toString(transform.final)} rotate(0deg) scale(1)`,
-    },
-  ],
-  sideEffects: (params) => {
-    // the inner wrapper holds the drag tilt via CSS; clear it so the
-    // overlay-level keyframes own the untilt rather than compounding with it
-    const tilt = params.dragOverlay.node.querySelector("[data-pin-pickup]");
-    if (tilt instanceof HTMLElement) {
-      tilt.style.animation = "none";
-      tilt.style.transform = "none";
-    }
-    return defaultDropAnimationSideEffects({
-      styles: { active: { opacity: "0" } },
-    })(params);
-  },
-};
-
 export type ObjektRowItem<T> =
   | {
       type: "pin";
@@ -151,6 +93,14 @@ export default function VirtualizedObjektGrid<
   TQueryKey extends QueryKey = QueryKey,
   TPageParam = number,
 >(props: Props<TResponse, TItem, TItemProps, TError, TQueryKey, TPageParam>) {
+  /**
+   * A grid its viewer can reorder suspends on `PinReorder` as well as its query, so start dnd-kit's download
+   * beside the query rather than after it.
+   */
+  if (props.onReorderPins !== undefined && props.authenticated) {
+    PinReorder.preload();
+  }
+
   return (
     <div className="flex w-full flex-col items-center">
       <QueryErrorResetBoundary>
@@ -243,98 +193,14 @@ function ObjektGrid<
    * Drag-and-drop pin reordering. `reorderable` is stable for a mounted grid
    * (own-profile + handler provided), so the DnD providers never mount/unmount
    * and the non-pin item cells are never forced to remount when filters toggle.
-   * `sortable` additionally requires visible pins to actually drag.
+   * `sortable` additionally requires visible pins to actually drag. dnd-kit
+   * loads with `PinReorder` only for a grid its viewer can reorder, which
+   * shows the grid skeleton until both it and the query are ready.
    */
-  const sensors = useSensors(
-    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
-    useSensor(TouchSensor, {
-      activationConstraint: {
-        delay: PIN_DRAG_DELAY,
-        tolerance: PIN_DRAG_TOLERANCE,
-      },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
-  );
-  const [activePin, setActivePin] = useState<ProfilePin | null>(null);
-
   const reorderable = onReorderPins !== undefined && authenticated;
   const sortable = reorderable && !hidePins && pins.length > 1;
-  const pinIds = useMemo(
-    () => (sortable ? pins.map((pin) => pin.pinId) : []),
-    [pins, sortable],
-  );
 
-  const handleDragStart = useCallback(
-    (event: DragStartEvent) => {
-      setActivePin(pins.find((pin) => pin.pinId === event.active.id) ?? null);
-    },
-    [pins],
-  );
-
-  const handleDragEnd = useCallback(
-    (event: DragEndEvent) => {
-      setActivePin(null);
-      const { active, over } = event;
-      if (!over || active.id === over.id) return;
-      // both ids must be pins; items from the main grid aren't sortable
-      if (
-        !pinIds.includes(Number(active.id)) ||
-        !pinIds.includes(Number(over.id))
-      ) {
-        return;
-      }
-      onReorderPins?.({
-        pinId: Number(active.id),
-        overPinId: Number(over.id),
-      });
-    },
-    [pinIds, onReorderPins],
-  );
-
-  const handleDragCancel = useCallback(() => setActivePin(null), []);
-
-  const announcements = useMemo<Announcements>(() => {
-    const name = (id: UniqueIdentifier) => {
-      const pin = pins.find((p) => p.pinId === id);
-      if (pin === undefined) return "";
-      return pin.kind === "objekt"
-        ? pin.objekt.collectionId
-        : m.pin_reorder_binder({ name: pin.binder.name });
-    };
-    const position = (id: UniqueIdentifier) => ({
-      position: pinIds.indexOf(Number(id)) + 1,
-      total: pinIds.length,
-    });
-
-    return {
-      onDragStart: ({ active }) =>
-        m.pin_reorder_picked_up({
-          name: name(active.id),
-          ...position(active.id),
-        }),
-      onDragOver: ({ active, over }) =>
-        over
-          ? m.pin_reorder_over({ name: name(active.id), ...position(over.id) })
-          : undefined,
-      onDragEnd: ({ active, over }) =>
-        over
-          ? m.pin_reorder_dropped({
-              name: name(active.id),
-              ...position(over.id),
-            })
-          : undefined,
-      onDragCancel: () => m.pin_reorder_cancelled(),
-    };
-  }, [pins, pinIds]);
-
-  const screenReaderInstructions = useMemo<ScreenReaderInstructions>(
-    () => ({ draggable: m.pin_reorder_instructions() }),
-    [],
-  );
-
-  const gridBody = (
+  const renderGridBody = (slot: PinReorderSlot | null) => (
     <div
       className="relative w-full"
       style={{
@@ -360,18 +226,19 @@ function ObjektGrid<
           // render pin
           if (cell.type === "pin") {
             // sortable pins position via `top` so dnd-kit owns `transform`
-            if (sortable) {
+            if (slot !== null) {
               return (
-                <SortablePinCell
+                <slot.SortablePinCell
                   key={`pin-${cell.item.pinId}`}
                   pin={cell.item}
                   index={virtualItem.index}
                   top={baseY}
                   left={left}
                   width={laneWidth}
-                  authenticated={authenticated}
                   measureElement={measureElement}
-                />
+                >
+                  <PinCard pin={cell.item} authenticated={authenticated} />
+                </slot.SortablePinCell>
               );
             }
 
@@ -412,9 +279,9 @@ function ObjektGrid<
           );
         })}
 
-      {sortable && laneWidth > 0 && (
+      {slot !== null && laneWidth > 0 && (
         <PinBlockOutline
-          visible={activePin !== null}
+          visible={slot.activePin !== null}
           pinCount={pins.length}
           gridColumns={gridColumns}
           laneWidth={laneWidth}
@@ -431,41 +298,18 @@ function ObjektGrid<
           value={laneWidth > 0 ? Math.ceil(laneWidth) : null}
         >
           {reorderable ? (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragStart={handleDragStart}
-              onDragEnd={handleDragEnd}
-              onDragCancel={handleDragCancel}
-              accessibility={{ announcements, screenReaderInstructions }}
+            <PinReorder
+              pins={pins}
+              sortable={sortable}
+              onReorderPins={onReorderPins}
+              renderOverlay={(pin) => (
+                <PinCard pin={pin} authenticated={authenticated} eager />
+              )}
             >
-              <SortableContext items={pinIds} strategy={rectSortingStrategy}>
-                {gridBody}
-              </SortableContext>
-              <DragOverlay
-                className="cursor-grabbing! **:cursor-grabbing!"
-                dropAnimation={pinDropAnimation}
-              >
-                {activePin ? (
-                  /**
-                   * The outer wrapper stays untilted so dnd-kit measures an
-                   * upright box for the drop delta (a rotated box is shifted by
-                   * the tilt); the tilt/scale live on the inner wrapper.
-                   */
-                  <div className="drop-shadow-xl">
-                    <div data-pin-pickup className="animate-pin-pickup">
-                      <PinCard
-                        pin={activePin}
-                        authenticated={authenticated}
-                        eager
-                      />
-                    </div>
-                  </div>
-                ) : null}
-              </DragOverlay>
-            </DndContext>
+              {renderGridBody}
+            </PinReorder>
           ) : (
-            gridBody
+            renderGridBody(null)
           )}
         </ObjektCellWidthContext>
       </div>
@@ -565,101 +409,6 @@ function PinObjektCard({
         isPin={true}
       />
     </ExpandableObjekt>
-  );
-}
-
-type SortablePinCellProps = {
-  pin: ProfilePin;
-  index: number;
-  top: number;
-  left: number;
-  width: number;
-  authenticated: boolean;
-  measureElement: Virtualizer<Window, Element>["measureElement"];
-};
-
-/**
- * A pin cell wired into dnd-kit's sortable context. It positions its base
- * offset via `top`/`left` so `transform` stays free for the drag/sort
- * animation, and merges the sortable node ref with the virtualizer's
- * measurement ref. `touch-action: manipulation` keeps page scroll working
- * since the touch sensor long-presses rather than claiming the gesture. A
- * binder pin opens the viewer from the cell itself, on click or Enter, since
- * a link inside would fight the drag.
- */
-function SortablePinCell({
-  pin,
-  index,
-  top,
-  left,
-  width,
-  authenticated,
-  measureElement,
-}: SortablePinCellProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    setActivatorNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id: pin.pinId });
-  const { open, prefetch } = useOpenBinder();
-
-  // only keys pressed on the cell itself pick it up, not on buttons inside it
-  const setRefs = useCallback(
-    (node: HTMLDivElement | null) => {
-      setNodeRef(node);
-      setActivatorNodeRef(node);
-      measureElement(node);
-    },
-    [setNodeRef, setActivatorNodeRef, measureElement],
-  );
-
-  const binder = pin.kind === "binder" ? pin.binder : undefined;
-
-  function openBinder(target: BinderPreview, cell: HTMLDivElement) {
-    // the cover lifts inside the cell on hover, so the flight starts from it
-    const cover = cell.firstElementChild;
-    open(target, cell, cover instanceof HTMLElement ? cover : cell);
-  }
-
-  return (
-    <div
-      ref={setRefs}
-      data-index={index}
-      style={{
-        top: `${top}px`,
-        left: `${left}px`,
-        width: `${width}px`,
-        transform: CSS.Transform.toString(transform),
-        transition,
-        opacity: isDragging ? 0 : 1,
-        touchAction: "manipulation",
-      }}
-      className="absolute cursor-pointer rounded-photocard outline-none"
-      {...attributes}
-      {...listeners}
-      {...(binder && {
-        "aria-label": m.binder_viewer_open({ name: binder.name }),
-        onClick: (event: MouseEvent<HTMLDivElement>) =>
-          openBinder(binder, event.currentTarget),
-        onKeyDown: (event: KeyboardEvent<HTMLDivElement>) => {
-          // mid keyboard drag, Enter drops the pin rather than opening it
-          if (event.key === "Enter" && !isDragging) {
-            event.preventDefault();
-            openBinder(binder, event.currentTarget);
-          } else {
-            listeners?.onKeyDown?.(event);
-          }
-        },
-        onPointerEnter: () => prefetch(binder),
-        onFocus: () => prefetch(binder),
-      })}
-    >
-      <PinCard pin={pin} authenticated={authenticated} />
-    </div>
   );
 }
 

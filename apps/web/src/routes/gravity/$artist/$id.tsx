@@ -7,17 +7,18 @@ import GravitySkeleton from "@/components/gravity/gravity-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
 import { $fetchGravityDetails } from "@/lib/functions/gravity";
+import { lazyWithPreload } from "@/lib/lazy";
 import { defineHead } from "@/lib/meta";
 import { gravityPollDetailsQuery } from "@/lib/queries/gravity";
 import { IconAlertTriangle, IconHeartBroken } from "@tabler/icons-react";
 import { noop } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import * as z from "zod";
 
 // the chart pulls in recharts, so it stays out of the route bundle
-const GravityLiveChart = lazy(
+const GravityLiveChart = lazyWithPreload(
   () => import("@/components/gravity/gravity-live-chart"),
 );
 

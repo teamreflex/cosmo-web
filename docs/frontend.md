@@ -35,6 +35,17 @@ Base UI behaviours that bite:
 - `<Hydrated fallback={...}>` (`components/hydrated.tsx`) is the component form.
 - A component that reads a sibling DOM node on its first render (`components/portal.tsx`) keeps a `useEffect` + `setState` mount gate instead, because after a client navigation `useHydrated()` is already true before the target exists. Disable `react/set-state-in-effect` on that line.
 
+## Code splitting
+
+The shell and every route file's loader load on every page ([tanstack.md](tanstack.md#routes) covers route files), so a heavy library only a few places use loads when it's shown. Dialogs and other UI load with their page.
+
+- Lazy-load a dependency that is large and rarely on screen: a chart behind a tab (the pricing panel in `components/objekt/metadata/metadata.tsx`), dnd-kit only for a grid its viewer can reorder (`components/objekt/pin-reorder.tsx`), a video player.
+- Lazy components use `lazyWithPreload()` from `lib/lazy.ts` rather than `React.lazy()`, because it reloads the page once when a deploy removed the chunk, as route chunks do. Call `.preload()` from the trigger's `onPointerEnter` and `onFocus` so the chunk is usually ready when it opens.
+- A popover or tab keeps its root mounted and lazy-loads only its body, inside `<Suspense fallback={<LazyFallback />}>`, so Base UI's enter transition still runs (`components/notifications/notification-bell.tsx`).
+- A dialog rendered once per grid card mounts on the first sign of intent, a `mounted` latch set on hover or tap, so a grid doesn't mount a dialog root per card (`components/objekt/objekt-collection-group.tsx`). It mounts closed, so its enter transition still runs.
+- Server-rendered content never starts hidden behind a JS animation such as motion's `initial={{ opacity: 0 }}`, which keeps it invisible until hydration. Use a CSS entrance (`animate-in fade-in-0`) instead (`components/events/event-header.tsx`).
+- The client build puts every module the entry statically imports into two chunks (`codeSplitting` in `vite.config.mts`), except the browser Sentry SDK ([tooling.md](tooling.md#sentry)). Libraries go in `vendor`, which keeps its hash across deploys unless a dependency changes, app code starts or stops using a library export, or a module in `vendor` imports from `app` (why TanStack Start's client packages stay in `app`).
+
 ## Client state
 
 - Filters and other shareable view state live in URL search params ([tanstack.md](tanstack.md#routes)).

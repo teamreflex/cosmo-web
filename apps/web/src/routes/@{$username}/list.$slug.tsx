@@ -1,6 +1,7 @@
 import FiltersContainer from "@/components/collection/filters-container";
 import { Error } from "@/components/error-boundary";
-import ListHeader, { ListHeaderSkeleton } from "@/components/lists/list-header";
+import ListHeader from "@/components/lists/list-header";
+import ListHeaderSkeleton from "@/components/lists/list-header-skeleton";
 import ListMatches from "@/components/lists/list-matches";
 import ListRenderer from "@/components/lists/list-renderer";
 import Overlay from "@/components/misc/overlay";

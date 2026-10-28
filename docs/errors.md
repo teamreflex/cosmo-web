@@ -30,7 +30,7 @@ How `apps/web` throws, shows and reports errors.
         +-- loader or render ---> route errorComponent or a component ErrorBoundary
                                   <Error message={m.page_error()} />, or null
 
-  router.tsx beforeSend (client SDK) drops isExpectedError, 90% of "Failed to fetch"
+  lib/client/sentry.ts beforeSend (client SDK) drops isExpectedError, 90% of "Failed to fetch"
   and "Load failed", events with no in_app frame, and the sentry-noise.ts patterns
 ```
 

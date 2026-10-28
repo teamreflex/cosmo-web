@@ -10,13 +10,14 @@ import {
   type MetadataDialogTarget,
 } from "@/hooks/use-metadata-dialog";
 import { useObjektSerial } from "@/hooks/use-objekt-serial";
+import { lazyWithPreload } from "@/lib/lazy";
 import { IconLoader2 } from "@tabler/icons-react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
-import { lazy, Suspense, useCallback, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
-const MetadataContent = lazy(
+const MetadataContent = lazyWithPreload(
   () => import("@/components/objekt/metadata/metadata-content"),
 );
 

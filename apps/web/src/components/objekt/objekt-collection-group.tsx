@@ -10,6 +10,7 @@ import type { BFFCollectionGroup } from "@apollo/cosmo/types/objekts";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
+import { flushSync } from "react-dom";
 import { useShallow } from "zustand/react/shallow";
 import { ObjektCount, ObjektNewIndicator, ObjektSidebar } from "./common";
 import DetailContent from "./detail/detail-content";
@@ -79,6 +80,7 @@ function Detail({
   priority,
 }: DetailProps) {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const tokens = useMemo(
     () =>
@@ -95,18 +97,25 @@ function Detail({
         count={group.count}
         hasSelected={hasSelected}
         hasNew={hasNew}
-        onClick={() => setOpen(true)}
+        onIntent={() => setMounted(true)}
+        onClick={() => {
+          // a click with no hover before it still mounts the dialog closed, so its enter transition runs
+          flushSync(() => setMounted(true));
+          setOpen(true);
+        }}
         priority={priority}
       />
 
-      <DetailDialog
-        title={collection.collectionId}
-        description={m.objekt_group_select()}
-        open={open}
-        onOpenChange={setOpen}
-      >
-        <DetailContent collection={collection} tokens={tokens} />
-      </DetailDialog>
+      {mounted && (
+        <DetailDialog
+          title={collection.collectionId}
+          description={m.objekt_group_select()}
+          open={open}
+          onOpenChange={setOpen}
+        >
+          <DetailContent collection={collection} tokens={tokens} />
+        </DetailDialog>
+      )}
     </>
   );
 }
@@ -116,6 +125,8 @@ type RootObjektProps = {
   count: number;
   hasSelected: boolean;
   hasNew: boolean;
+  /** the pointer reached the card, so the detail dialog should get ready */
+  onIntent: () => void;
   onClick: () => void;
   priority?: boolean;
 };
@@ -125,6 +136,7 @@ function RootObjekt({
   count,
   hasSelected,
   hasNew,
+  onIntent,
   onClick,
   priority = false,
 }: RootObjektProps) {
@@ -133,7 +145,8 @@ function RootObjekt({
   const imageProps = useObjektImage(collection);
 
   function prefetch() {
-    // warm the image the detail sheet shows
+    // warm the image the detail sheet shows, and mount its dialog
+    onIntent();
     const img = new Image();
     img.src = getObjektFrontImageUrl(collection, "grid");
   }
@@ -153,7 +166,7 @@ function RootObjekt({
         )}
       >
         <img
-          onMouseOver={prefetch}
+          onPointerOver={prefetch}
           onLoad={() => setIsLoaded(true)}
           onClick={onClick}
           className={cn(

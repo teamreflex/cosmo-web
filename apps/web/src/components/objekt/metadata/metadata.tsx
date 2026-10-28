@@ -1,12 +1,24 @@
 import { StatCell } from "@/components/ui/stat-cell";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { m } from "@/i18n/messages";
-import { objektMetadataQuery } from "@/lib/queries/objekt-queries";
+import { lazyWithPreload } from "@/lib/lazy";
+import {
+  objektMetadataQuery,
+  objektPriceHistoryQuery,
+} from "@/lib/queries/objekt-queries";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { defaultPriceHistoryRange } from "@/lib/universal/objekts";
+import { noop, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { Suspense } from "react";
+import LazyFallback from "../../lazy-fallback";
 import type { ObjektMetadataTab } from "./common";
-import PricingPanel from "./pricing-panel";
 import SerialsPanel from "./serials-panel";
+
+/**
+ * Tab panels mount only while active, so the price chart (and recharts with it) downloads when the pricing tab is
+ * first hovered or opened.
+ */
+const PricingPanel = lazyWithPreload(() => import("./pricing-panel"));
 
 type Props = {
   objekt: Objekt.Collection;
@@ -16,6 +28,17 @@ type Props = {
 
 export default function Metadata(props: Props) {
   const { data } = useSuspenseQuery(objektMetadataQuery(props.objekt.slug));
+  const queryClient = useQueryClient();
+
+  // the chart's chunk and its data load side by side rather than one after the other
+  function preloadPricing() {
+    PricingPanel.preload();
+    queryClient
+      .query(
+        objektPriceHistoryQuery(props.objekt.slug, defaultPriceHistoryRange),
+      )
+      .catch(noop);
+  }
 
   const total = Number(data.total).toLocaleString();
   const description =
@@ -57,7 +80,11 @@ export default function Metadata(props: Props) {
             {m.objekt_metadata_serials()}
           </TabsTrigger>
           {!data.unobtainable && (
-            <TabsTrigger value="pricing">
+            <TabsTrigger
+              value="pricing"
+              onPointerEnter={preloadPricing}
+              onFocus={preloadPricing}
+            >
               {m.objekt_metadata_pricing_tab()}
             </TabsTrigger>
           )}
@@ -75,7 +102,13 @@ export default function Metadata(props: Props) {
 
         {!data.unobtainable && (
           <TabsContent value="pricing">
-            <PricingPanel slug={props.objekt.slug} data={data.priceStats} />
+            <Suspense
+              fallback={
+                <LazyFallback className="h-56 border-b border-border" />
+              }
+            >
+              <PricingPanel slug={props.objekt.slug} data={data.priceStats} />
+            </Suspense>
           </TabsContent>
         )}
       </Tabs>

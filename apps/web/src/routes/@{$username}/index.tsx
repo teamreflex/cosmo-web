@@ -6,6 +6,7 @@ import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
 import BatchSelectionBar from "@/components/profile/batch-selection-bar";
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useUserState } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { currentAccountQuery, selectedArtistsQuery } from "@/lib/queries/core";
@@ -129,6 +130,7 @@ function RouteComponent() {
   // list actions only ever run on the viewer's own profile, so they read the viewer's lists
   const { data: account } = useSuspenseQuery(currentAccountQuery);
   const objektLists = account?.objektLists ?? [];
+  const { cosmo } = useUserState();
 
   return (
     <ProfileProvider
@@ -147,7 +149,10 @@ function RouteComponent() {
         <ToggleObjektBands />
       </Overlay>
 
-      <BatchSelectionBar objektLists={objektLists} />
+      {/* only the owner can select, the same rule as useAuthenticated() */}
+      {cosmo?.address === target.cosmo.address && (
+        <BatchSelectionBar objektLists={objektLists} />
+      )}
     </ProfileProvider>
   );
 }

@@ -33,14 +33,14 @@ How `apps/web` uses TanStack Start, Router and Query. Library APIs are in their 
 
 ## Process wiring
 
-| File                    | What it sets up                                                                                                                                               |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/start.ts`          | Sentry request and function middleware, CSRF middleware for server functions only, the `ExpectedError` serialization adapter                                  |
-| `src/server.ts`         | The server entry: Paraglide's locale middleware wrapped in Sentry's fetch wrapper                                                                             |
-| `src/router.tsx`        | `getRouter()`: the `QueryClient` (default `staleTime` 5 min), router defaults, CSV `stringifySearch`, the CSP nonce, client Sentry, the SSR-query integration |
-| `src/routes/__root.tsx` | `staleTime: Infinity`, so its loader reruns only on `router.invalidate()`; prefetches the account, artists, filter data and notice                            |
-| `main.ts`               | The production server (`bun run start`, `turbo preview`): static files, `/health`, the per-request CSP                                                        |
-| `vite.config.mts`       | Plugin order and the client import-protection deny list; imports both env schemas so a bad env fails the build                                                |
+| File                    | What it sets up                                                                                                                                                                |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/start.ts`          | Sentry request and function middleware, CSRF middleware for server functions only, the `ExpectedError` serialization adapter                                                   |
+| `src/server.ts`         | The server entry: Paraglide's locale middleware wrapped in Sentry's fetch wrapper                                                                                              |
+| `src/router.tsx`        | `getRouter()`: the `QueryClient` (default `staleTime` 5 min), router defaults, CSV `stringifySearch`, the CSP nonce, a lazy import of client Sentry, the SSR-query integration |
+| `src/routes/__root.tsx` | `staleTime: Infinity`, so its loader reruns only on `router.invalidate()`; prefetches the account, artists, filter data and notice                                             |
+| `main.ts`               | The production server (`bun run start`, `turbo preview`): static files, `/health`, the per-request CSP                                                                         |
+| `vite.config.mts`       | Plugin order, route code splitting, the client's chunk groups and import-protection deny list; imports both env schemas so a bad env fails the build                           |
 
 - `defaultPreloadStaleTime: 0` because Query is the caching authority; the router never serves its own cached loader result.
 - `handleRedirects: true` lets a `redirect()` thrown inside a query or mutation navigate.
@@ -51,6 +51,8 @@ How `apps/web` uses TanStack Start, Router and Query. Library APIs are in their 
 
 - File names: `$id` for params, `@{$username}` for the profile prefix, `route.tsx` for a layout. Page-local components (`RouteComponent`, `PendingComponent`, `ErrorComponent`, `NotFoundComponent`) sit at the bottom of the route file. `routes/market/trades.tsx` is a typical route.
 - `src/routeTree.gen.ts` is generated; never edit it.
+- The router plugin splits a route's `component`, `errorComponent` and `notFoundComponent` into lazy chunks. Everything else in a route file (`validateSearch`, `loader`, `head`, `beforeLoad` and `pendingComponent`, so a skeleton shows the moment a navigation starts) and what it imports ships in the `app` chunk every page downloads. Keep those imports to queries, schemas, helpers and skeletons.
+- A module imported by both the entry and a lazy chunk ships whole in the entry, along with what it imports. So a route's skeleton lives in its own file (`listing-feed-skeleton.tsx`), never in the page component's module, or it drags the whole page into `app`.
 - `validateSearch` uses Zod with `.default().catch()`, so a bad URL falls back instead of erroring. Shared parsers are in `lib/universal/parsers.ts`.
 - Filters live in the URL, not component state (`hooks/use-cosmo-filters.ts`). Arrays serialise as CSV (`?member=HeeJin,SeoYeon`) through `stringifySearch()`, and each field's `castToArray()` splits them back.
 - `head` uses `defineHead()` from `lib/meta.ts` (title, canonical, `denyRobots`, embeds).

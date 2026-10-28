@@ -3,7 +3,6 @@ import { useUpdatePins } from "@/hooks/use-profile-pins";
 import { m } from "@/i18n/messages";
 import { $reorderPins } from "@/lib/functions/collection";
 import { track } from "@/lib/utils";
-import { arrayMove } from "@dnd-kit/sortable";
 import { useMutation } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { toast } from "sonner";
@@ -44,4 +43,13 @@ export function usePinReorder() {
   });
 
   return useCallback((move: PinMove) => mutation.mutate(move), [mutation]);
+}
+
+/**
+ * `arrayMove()` from `@dnd-kit/sortable`, copied so the profile route doesn't pull in dnd-kit for every viewer.
+ */
+function arrayMove<T>(array: T[], from: number, to: number) {
+  const next = array.slice();
+  next.splice(to < 0 ? next.length + to : to, 0, ...next.splice(from, 1));
+  return next;
 }

@@ -17,10 +17,10 @@ import { TransfersFilters } from "../collection/filter-contexts/transfers-filter
 import FiltersContainer from "../collection/filters-container";
 import { InfiniteQueryNext } from "../infinite-query-pending";
 import Portal from "../portal";
-import SkeletonGradient from "../skeleton/skeleton-overlay";
 import { Button } from "../ui/button";
-import { Skeleton } from "../ui/skeleton";
-import TransferRow, { TransferHeader } from "./transfer-row";
+import TransferHeader from "./transfer-header";
+import TransferRow from "./transfer-row";
+import TransfersSkeleton from "./transfers-skeleton";
 
 type Props = {
   cosmo: PublicCosmo;
@@ -149,22 +149,6 @@ function Transfers({ address, filters }: TransfersProps) {
           fetchNextPage={query.fetchNextPage}
         />
       </Portal>
-    </div>
-  );
-}
-
-export function TransfersSkeleton() {
-  return (
-    <div className="relative">
-      <SkeletonGradient />
-
-      <div className="relative flex w-full flex-col overflow-clip rounded-lg border bg-card text-sm">
-        <TransferHeader />
-
-        {Array.from({ length: 10 }).map((_, i) => (
-          <Skeleton key={i} className="h-19 w-full rounded-none border-t" />
-        ))}
-      </div>
     </div>
   );
 }

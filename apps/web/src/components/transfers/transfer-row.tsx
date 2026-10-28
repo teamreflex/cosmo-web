@@ -32,39 +32,7 @@ import { Badge } from "../ui/badge";
 import { Collapse } from "../ui/collapse";
 import { Timestamp } from "../ui/timestamp";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
-
-/**
- * Desktop columns: when, out, arrow, in, outcome, with, chevron. Narrower
- * screens put out → in on the first line and everything else on the second.
- */
-const grid =
-  "grid grid-cols-[minmax(0,1fr)_18px_minmax(0,1fr)] gap-x-2 lg:grid-cols-[136px_minmax(0,1fr)_28px_minmax(0,1fr)_168px_176px_20px] lg:gap-x-4";
-
-export function TransferHeader() {
-  return (
-    <div
-      aria-hidden
-      className={cn(
-        grid,
-        "sticky top-14 z-20 hidden border-b bg-card/90 px-4 py-2 text-xs font-medium tracking-wide text-muted-foreground backdrop-blur-lg lg:grid",
-      )}
-    >
-      <span>{m.transfer_when_header()}</span>
-      <span className="flex items-center gap-1">
-        <IconArrowUpRight className="size-3" />
-        {m.transfer_out_header()}
-      </span>
-      <span />
-      <span className="flex items-center gap-1">
-        <IconArrowDownLeft className="size-3" />
-        {m.transfer_in_header()}
-      </span>
-      <span>{m.transfer_outcome_header()}</span>
-      <span>{m.transfer_with_header()}</span>
-      <span />
-    </div>
-  );
-}
+import { transferGrid } from "./transfer-columns";
 
 type Props = {
   row: Row;
@@ -85,7 +53,7 @@ export default function TransferRow({ row }: Props) {
     >
       <div
         className={cn(
-          grid,
+          transferGrid,
           "relative items-center gap-y-2.5 px-3.5 py-3 text-sm sm:px-4 lg:py-2.5",
         )}
       >
@@ -654,7 +622,7 @@ function Details({ transfers }: { transfers: DetailTransfer[] }) {
           <li
             key={objekt.transfer.id}
             className={cn(
-              grid,
+              transferGrid,
               "items-center border-b border-border/40 px-2 py-1.5 last:border-b-0 max-lg:grid-cols-[88px_minmax(0,1fr)]",
             )}
           >

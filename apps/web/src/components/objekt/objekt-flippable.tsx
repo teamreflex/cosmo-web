@@ -4,14 +4,15 @@ import {
   getObjektBackImageUrl,
   getObjektFrontImageUrl,
 } from "@/lib/client/objekt-util";
+import { lazyWithPreload } from "@/lib/lazy";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { IconPhotoX } from "@tabler/icons-react";
-import { Fragment, lazy, Suspense, useState } from "react";
+import { Fragment, Suspense, useState } from "react";
 import type { PropsWithChildren } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import ObjektAudio from "./objekt-audio";
 
-const ObjektVideo = lazy(() => import("./objekt-video"));
+const ObjektVideo = lazyWithPreload(() => import("./objekt-video"));
 
 type Props = PropsWithChildren<{
   collection: Objekt.Collection;

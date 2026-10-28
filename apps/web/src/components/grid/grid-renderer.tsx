@@ -1,6 +1,6 @@
+import GridLedgerSkeleton from "@/components/grid/grid-ledger-skeleton";
 import GridLedgerView from "@/components/grid/grid-ledger-view";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useArtists } from "@/hooks/use-artists";
 import { useGridFilters } from "@/hooks/use-grid-filters";
 import { m } from "@/i18n/messages";
@@ -67,30 +67,6 @@ export default function GridRenderer(props: Props) {
           </QueryErrorResetBoundary>
         )}
       </div>
-    </div>
-  );
-}
-
-export function GridLedgerSkeleton({ detail }: { detail: boolean }) {
-  if (detail) {
-    return (
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center gap-2">
-          <Skeleton className="size-8 rounded-full" />
-          <Skeleton className="h-8 w-40" />
-        </div>
-        {Array.from({ length: 3 }).map((_, i) => (
-          <Skeleton key={i} className="h-40" />
-        ))}
-      </div>
-    );
-  }
-
-  return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-      {Array.from({ length: 8 }).map((_, i) => (
-        <Skeleton key={i} className="h-24" />
-      ))}
     </div>
   );
 }

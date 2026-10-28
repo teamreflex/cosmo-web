@@ -1,9 +1,9 @@
 import { Error } from "@/components/error-boundary";
 import MarketNotice from "@/components/market/market-notice";
 import ListingDetail from "@/components/trade-listings/listing-detail";
-import { ListingHeaderSkeleton } from "@/components/trade-listings/listing-header";
-import { WantsSkeleton } from "@/components/trade-listings/listing-status";
+import ListingHeaderSkeleton from "@/components/trade-listings/listing-header-skeleton";
 import { SideHeadingSkeleton } from "@/components/trade-listings/side-heading";
+import WantsSkeleton from "@/components/trade-listings/wants-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";

@@ -26,6 +26,40 @@ export default defineConfig({
       },
     },
   },
+  environments: {
+    client: {
+      build: {
+        rolldownOptions: {
+          output: {
+            codeSplitting: {
+              // split vendor and shared app code out into two separate chunks
+              groups: [
+                {
+                  name: "vendor",
+                  tags: ["$initial"],
+                  test: (id) =>
+                    /[\\/]node_modules[\\/]/.test(id) &&
+                    !/[\\/]@sentry[\\/]/.test(id) &&
+                    !/[\\/]@tanstack[\\/](react-)?start(-client)?(-core)?[\\/]/.test(
+                      id,
+                    ),
+                  includeDependenciesRecursively: false,
+                  priority: 2,
+                },
+                {
+                  name: "app",
+                  tags: ["$initial"],
+                  test: (id) => !/[\\/]@sentry[\\/]/.test(id),
+                  includeDependenciesRecursively: false,
+                  priority: 1,
+                },
+              ],
+            },
+          },
+        },
+      },
+    },
+  },
   ssr: {
     external: ["bun"],
   },

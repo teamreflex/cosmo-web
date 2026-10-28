@@ -38,9 +38,7 @@ import Countdown, { Ticker } from "../misc/countdown";
 import OfferActionDialog from "../trades/offer-action-dialog";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Button, buttonVariants } from "../ui/button";
-import { Skeleton } from "../ui/skeleton";
 import ObjektStrip from "./objekt-strip";
-import { SideHeadingSkeleton } from "./side-heading";
 
 /**
  * The header's status: a line saying where the listing stands, and below it
@@ -365,19 +363,6 @@ export function EndedOfferAlert({
         </Alert>
       );
   }
-}
-
-/**
- * The asking half while the listing loads.
- */
-export function WantsSkeleton() {
-  return (
-    <div className="flex flex-col gap-4">
-      <SideHeadingSkeleton />
-      <Skeleton className="h-28 w-full rounded-lg" />
-      <Skeleton className="h-28 w-full rounded-lg" />
-    </div>
-  );
 }
 
 /**

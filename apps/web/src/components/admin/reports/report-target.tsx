@@ -14,6 +14,7 @@ import { roleLabel } from "@/lib/client/roles";
 import { partyRole, tradeTimeFormat } from "@/lib/client/trades";
 import { env } from "@/lib/env/client";
 import { $unbanUser } from "@/lib/functions/staff-users";
+import { lazyWithPreload } from "@/lib/lazy";
 import { adminReportsQueryFilter } from "@/lib/queries/reports";
 import type {
   AdminReportDetail,
@@ -26,7 +27,7 @@ import { staffUserText } from "@/lib/universal/staff-users";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 import { toast } from "sonner";
 import FeedbackReport from "./feedback-report";
 import { nameInput } from "./name-input";
@@ -60,7 +61,7 @@ export default function ReportTarget({ report }: Props) {
 }
 
 // chat's client and Effect download only with a message report
-const MessageReport = lazy(() => import("./message-report"));
+const MessageReport = lazyWithPreload(() => import("./message-report"));
 
 /**
  * The reported message: who sent it in which trade, its text from the

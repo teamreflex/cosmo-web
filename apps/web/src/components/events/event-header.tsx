@@ -8,7 +8,6 @@ import {
   IconCalendarEvent,
   IconPhoto,
 } from "@tabler/icons-react";
-import { motion } from "motion/react";
 import { Timestamp } from "../ui/timestamp";
 import EventTypeBadge from "./event-type-badge";
 
@@ -50,12 +49,8 @@ export default function EventHeader({ event }: EventHeaderProps) {
 
       {/* inner content */}
       <div className="relative z-10 flex flex-col gap-4 px-4 py-8 md:container">
-        <motion.div
-          className="flex max-h-32 flex-col gap-4 md:max-h-48 md:flex-row md:items-end md:gap-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.4, 0.0, 0.2, 1] }}
-        >
+        {/* a CSS entrance, so the server-rendered header shows before hydration */}
+        <div className="flex max-h-32 animate-in flex-col gap-4 duration-500 ease-in-out fade-in-0 slide-in-from-bottom-[1.25rem] motion-reduce:animate-none md:max-h-48 md:flex-row md:items-end md:gap-6">
           {/* event/era image */}
           <div className="mx-auto shrink-0 drop-shadow-lg md:mx-0">
             {imageUrl ? (
@@ -171,7 +166,7 @@ export default function EventHeader({ event }: EventHeaderProps) {
               </p>
             )}
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   );

@@ -25,32 +25,9 @@ import FeedbackBadge from "../feedback/feedback-badge";
 import UserAvatar from "../profile/user-avatar";
 import { Badge } from "../ui/badge";
 import { Timestamp } from "../ui/timestamp";
+import { listingFeedColumns } from "./listing-feed-columns";
 import { RatioText } from "./listing-header";
 import { RangeTile } from "./range-want";
-
-/**
- * From lg: type, offering, arrow or ratio, asking, from.
- */
-const columns =
-  "lg:grid-cols-[96px_minmax(0,1.25fr)_56px_minmax(0,1.4fr)_170px]";
-
-export function ListingFeedHeader() {
-  return (
-    <div
-      aria-hidden
-      className={cn(
-        "sticky top-14 z-20 hidden gap-x-3.5 border-b bg-card/90 px-4 py-2 text-xs font-medium tracking-wide text-muted-foreground backdrop-blur-lg lg:grid",
-        columns,
-      )}
-    >
-      <span>{m.market_listings_column_type()}</span>
-      <span>{m.market_listings_column_offering()}</span>
-      <span />
-      <span>{m.market_listings_column_asking()}</span>
-      <span>{m.market_listings_column_from()}</span>
-    </div>
-  );
-}
 
 type Props = {
   row: Row;
@@ -73,7 +50,7 @@ export default function ListingFeedRow({ row }: Props) {
         params={{ id: row.id }}
         className={cn(
           "grid grid-cols-[minmax(0,1fr)_0_minmax(0,1fr)] text-sm outline-none md:grid-cols-[minmax(0,1.2fr)_16px_minmax(0,1.4fr)] md:items-center md:gap-x-3.5 md:gap-y-2.5 md:px-4 md:py-3 md:focus-visible:bg-secondary/50",
-          columns,
+          listingFeedColumns,
           "max-md:overflow-hidden max-md:rounded-[10px] max-md:border max-md:bg-card max-md:hover:bg-secondary max-md:focus-visible:border-ring max-md:focus-visible:bg-secondary",
         )}
       >

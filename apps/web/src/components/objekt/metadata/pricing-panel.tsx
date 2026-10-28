@@ -1,3 +1,4 @@
+import LazyFallback from "@/components/lazy-fallback";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Timestamp } from "@/components/ui/timestamp";
 import { useHydrated } from "@/hooks/use-hydrated";
@@ -5,13 +6,13 @@ import { m } from "@/i18n/messages";
 import { formatDay } from "@/lib/client/time";
 import { objektPriceHistoryQuery } from "@/lib/queries/objekt-queries";
 import {
+  defaultPriceHistoryRange,
   type PriceHistoryRange,
   type PriceStats,
   SPARSE_PRICE_HISTORY,
 } from "@/lib/universal/objekts";
 import { cn } from "@/lib/utils";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
-import { IconLoader2 } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense, useState, useTransition } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -27,18 +28,16 @@ type Props = {
  * note when the collection has never been priced.
  */
 export default function PricingPanel({ slug, data }: Props) {
-  const [range, setRange] = useState<PriceHistoryRange>("30d");
+  const [range, setRange] = useState<PriceHistoryRange>(
+    defaultPriceHistoryRange,
+  );
   // keeps the current range on screen while the next one loads
   const [pending, startTransition] = useTransition();
 
   return (
     <ErrorBoundary fallback={<Footer stats={data} since={null} />}>
       <Suspense
-        fallback={
-          <div className="flex h-56 items-center justify-center border-b border-border">
-            <IconLoader2 className="size-6 animate-spin text-muted-foreground" />
-          </div>
-        }
+        fallback={<LazyFallback className="h-56 border-b border-border" />}
       >
         <Pricing
           slug={slug}

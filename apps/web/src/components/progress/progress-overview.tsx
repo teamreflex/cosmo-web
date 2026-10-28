@@ -1,5 +1,3 @@
-import SkeletonGradient from "@/components/skeleton/skeleton-overlay";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useArtists } from "@/hooks/use-artists";
 import { useProgressFilters } from "@/hooks/use-progress-filters";
 import { m } from "@/i18n/messages";
@@ -19,11 +17,10 @@ import { getRouteApi, Link } from "@tanstack/react-router";
 import { useMemo } from "react";
 import { useErrorBoundary } from "react-error-boundary";
 import { Button } from "../ui/button";
+import { TOP_MEMBERS } from "./common";
 import MemberAvatar from "./member-avatar";
 
 const route = getRouteApi("/@{$username}");
-
-const TOP_MEMBERS = 5;
 
 type Props = {
   address: string;
@@ -261,23 +258,6 @@ function mergeStats(stats: ArtistStats[]) {
     seasons: merge((stat) => stat.seasons),
     classes: merge((stat) => stat.classes),
   };
-}
-
-export function ProgressOverviewSkeleton() {
-  return (
-    <div className="relative flex flex-col gap-8">
-      <SkeletonGradient />
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-        {Array.from({ length: TOP_MEMBERS }).map((_, i) => (
-          <Skeleton key={i} className="h-16 rounded-xl sm:h-52" />
-        ))}
-      </div>
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Skeleton className="h-96 rounded-xl" />
-        <Skeleton className="h-96 rounded-xl" />
-      </div>
-    </div>
-  );
 }
 
 export function ProgressOverviewError() {

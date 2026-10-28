@@ -7,7 +7,6 @@ import type { ReactNode } from "react";
 import FeedbackBadge from "../feedback/feedback-badge";
 import { PartyAvatar, PartyLink } from "../trades/trade-header";
 import { Badge } from "../ui/badge";
-import { Skeleton } from "../ui/skeleton";
 import { Timestamp } from "../ui/timestamp";
 import ListingStateBadge from "./listing-state-badge";
 
@@ -162,22 +161,5 @@ export function RatioText({ ratio }: { ratio: TradeRatio }) {
       </span>
       <span className="sr-only">{m.market_listings_ratio(ratio)}</span>
     </>
-  );
-}
-
-export function ListingHeaderSkeleton() {
-  return (
-    <div className="border-b border-border">
-      <div className="container flex flex-wrap items-center gap-x-8 gap-y-3 py-3 md:py-3.5">
-        <div className="flex min-w-0 flex-1 basis-105 items-center gap-3 md:gap-4">
-          <Skeleton className="size-9 shrink-0 rounded-full md:size-10" />
-          <div className="flex flex-col gap-1.5">
-            <Skeleton className="h-5 w-32" />
-            <Skeleton className="h-3.5 w-48" />
-          </div>
-        </div>
-        <Skeleton className="h-10 w-full max-w-80 rounded-md" />
-      </div>
-    </div>
   );
 }

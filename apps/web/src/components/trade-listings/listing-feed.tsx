@@ -20,7 +20,6 @@ import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { InfiniteQueryNext } from "../infinite-query-pending";
 import Portal from "../portal";
-import SkeletonGradient from "../skeleton/skeleton-overlay";
 import { Button } from "../ui/button";
 import {
   Empty,
@@ -31,7 +30,9 @@ import {
   EmptyTitle,
 } from "../ui/empty";
 import { Skeleton } from "../ui/skeleton";
-import ListingFeedRow, { ListingFeedHeader } from "./listing-feed-row";
+import ListingFeedHeader from "./listing-feed-header";
+import ListingFeedRow from "./listing-feed-row";
+import ListingFeedSkeleton from "./listing-feed-skeleton";
 
 type Props<TQueryKey extends QueryKey> = {
   options: UseSuspenseInfiniteQueryOptions<
@@ -178,24 +179,6 @@ function Count<TQueryKey extends QueryKey>({
             : m.market_listings_open_count({ count, formatted })}
         </span>
       </p>
-    </div>
-  );
-}
-
-export function ListingFeedSkeleton() {
-  return (
-    <div className="relative">
-      <SkeletonGradient />
-
-      <div className="relative flex flex-col gap-2.5 md:gap-0 md:overflow-clip md:rounded-lg md:border md:bg-card">
-        <ListingFeedHeader />
-        {Array.from({ length: 8 }).map((_, i) => (
-          <Skeleton
-            key={i}
-            className="h-44 w-full rounded-[10px] sm:h-29 md:h-23 md:rounded-none md:border-t md:first:border-t-0 lg:h-16"
-          />
-        ))}
-      </div>
     </div>
   );
 }

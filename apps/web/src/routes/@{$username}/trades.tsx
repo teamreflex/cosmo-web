@@ -1,9 +1,8 @@
 import FiltersContainer from "@/components/collection/filters-container";
 import Overlay from "@/components/misc/overlay";
 import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
-import TransfersRenderer, {
-  TransfersSkeleton,
-} from "@/components/transfers/transfers-renderer";
+import TransfersRenderer from "@/components/transfers/transfers-renderer";
+import TransfersSkeleton from "@/components/transfers/transfers-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";

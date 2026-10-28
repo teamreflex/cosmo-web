@@ -17,7 +17,8 @@ export default function EventsBackground({ event }: EventsBackgroundProps) {
     event?.dominantColor || event?.era.dominantColor || null;
 
   return (
-    <AnimatePresence>
+    // the server-rendered background shows at first paint; later changes crossfade
+    <AnimatePresence initial={false}>
       {event && (
         <motion.div
           key={event.id}

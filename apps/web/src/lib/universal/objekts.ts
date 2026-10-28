@@ -50,6 +50,8 @@ export type ObjektMetadata = {
 
 export const priceHistoryRanges = ["7d", "30d", "90d", "all"] as const;
 export type PriceHistoryRange = (typeof priceHistoryRanges)[number];
+// the range the pricing tab opens on
+export const defaultPriceHistoryRange: PriceHistoryRange = "30d";
 
 export const priceHistoryRangeDays = {
   "7d": 7,

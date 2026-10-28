@@ -166,11 +166,12 @@ Web limits are fixed windows consumed through `consumeRateLimit()` in `apps/web/
 | Runtime                                                | Initialised in                                 | Configured by                                                   |
 | ------------------------------------------------------ | ---------------------------------------------- | --------------------------------------------------------------- |
 | web server                                             | `apps/web/instrument.ts`, preloaded by `start` | `VITE_SENTRY_DSN`                                               |
-| web browser                                            | `apps/web/src/router.tsx`                      | `VITE_SENTRY_DSN`                                               |
+| web browser                                            | `apps/web/src/lib/client/sentry.ts`            | `VITE_SENTRY_DSN`                                               |
 | web build                                              | `sentryVitePlugin` in `vite.config.mts`        | uploads hidden source maps only when `SENTRY_AUTH_TOKEN` is set |
 | `apps/indexer`                                         | `apps/indexer/src/instrument.ts`               | `SENTRY_DSN` (`INDEXER_SENTRY_DSN` through Compose)             |
 | `apps/chat`, `apps/schedules`, `apps/typesense-import` | none                                           | failures go to the logs                                         |
 
 - An empty or missing DSN reports nothing, so local runs stay silent.
+- `getRouter()` imports the browser init lazily, so the SDK downloads beside hydration instead of in the entry chunk; errors thrown before it loads go unreported.
 - Both web inits send no user info, cookies, bodies or IP headers, and tracing is off.
 - What each web runtime drops is in [`docs/errors.md`](errors.md); the indexer's fingerprint and flush rules are in [`apps/indexer/CLAUDE.md`](../apps/indexer/CLAUDE.md).

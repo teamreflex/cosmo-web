@@ -10,6 +10,8 @@ import { motion } from "motion/react";
 type EventCardLargeProps = {
   event: EventWithEra;
   isActive?: boolean;
+  /** on screen at first paint, so its images load eagerly */
+  priority?: boolean;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
 };
@@ -20,6 +22,7 @@ export default function EventCardLarge(props: EventCardLargeProps) {
   const eraImageUrl =
     props.event.era.imageUrl || props.event.era.spotifyAlbumArt;
   const eventImageUrl = props.event.imageUrl || eraImageUrl;
+  const loading = props.priority ? undefined : "lazy";
 
   return (
     <Link
@@ -45,6 +48,7 @@ export default function EventCardLarge(props: EventCardLargeProps) {
                 <img
                   src={eventImageUrl}
                   alt={props.event.name}
+                  loading={loading}
                   className="size-full object-cover transition-transform group-hover:scale-105"
                 />
               ) : (
@@ -102,6 +106,7 @@ export default function EventCardLarge(props: EventCardLargeProps) {
                     <img
                       src={eraImageUrl}
                       alt={props.event.era.name}
+                      loading={loading}
                       className="size-3.5 rounded-xs"
                     />
                   )}

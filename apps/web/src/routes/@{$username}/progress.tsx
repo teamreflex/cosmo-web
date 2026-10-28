@@ -2,8 +2,8 @@ import Portal from "@/components/portal";
 import HelpDialog from "@/components/progress/help-dialog";
 import ProgressOverview, {
   ProgressOverviewError,
-  ProgressOverviewSkeleton,
 } from "@/components/progress/progress-overview";
+import ProgressOverviewSkeleton from "@/components/progress/progress-overview-skeleton";
 import ProgressRenderer from "@/components/progress/progress-renderer";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";

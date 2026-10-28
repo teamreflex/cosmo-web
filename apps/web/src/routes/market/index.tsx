@@ -6,9 +6,9 @@ import Overlay from "@/components/misc/overlay";
 import ScrollToTop from "@/components/misc/overlay/scroll-to-top";
 import ListingFeed, {
   ListingFeedCount,
-  ListingFeedSkeleton,
 } from "@/components/trade-listings/listing-feed";
 import ListingFeedFilters from "@/components/trade-listings/listing-feed-filters";
+import ListingFeedSkeleton from "@/components/trade-listings/listing-feed-skeleton";
 import NewListingButton from "@/components/trade-listings/new-listing-button";
 import MyTradesButton from "@/components/trades/my-trades-button";
 import { Skeleton } from "@/components/ui/skeleton";

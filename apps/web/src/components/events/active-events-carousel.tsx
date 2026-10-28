@@ -78,6 +78,8 @@ export default function ActiveEventsCarousel({
               <EventCardLarge
                 event={event}
                 isActive={index === activeIndex}
+                // the most slides that fit at once (four, from lg)
+                priority={index < 4}
                 onMouseEnter={() => onHoverChange(event)}
                 onMouseLeave={() => onHoverChange(null)}
               />

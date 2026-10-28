@@ -1,7 +1,6 @@
 import { Error } from "@/components/error-boundary";
-import GridRenderer, {
-  GridLedgerSkeleton,
-} from "@/components/grid/grid-renderer";
+import GridLedgerSkeleton from "@/components/grid/grid-ledger-skeleton";
+import GridRenderer from "@/components/grid/grid-renderer";
 import HelpDialog from "@/components/grid/help-dialog";
 import Portal from "@/components/portal";
 import { findArtistForMember } from "@/hooks/use-artists";

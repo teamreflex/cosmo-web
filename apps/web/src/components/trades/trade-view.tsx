@@ -10,6 +10,7 @@ import {
   tradeTimeFormat,
 } from "@/lib/client/trades";
 import { env } from "@/lib/env/client";
+import { lazyWithPreload } from "@/lib/lazy";
 import type {
   TradeParty,
   TradeView as Trade,
@@ -36,7 +37,7 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import { lazy, type ReactNode, Suspense, useState } from "react";
+import { type ReactNode, Suspense, useState } from "react";
 import { toast } from "sonner";
 import { useCopyToClipboard } from "usehooks-ts";
 import FeedbackBadge from "../feedback/feedback-badge";
@@ -394,7 +395,7 @@ function StaffView({
 }
 
 // Effect and the RPC client download only with the panel
-const ChatPanel = lazy(() => import("./chat/chat-panel"));
+const ChatPanel = lazyWithPreload(() => import("./chat/chat-panel"));
 
 const chatHeight = "h-[min(40rem,calc(100dvh-12rem))] min-h-96";
 

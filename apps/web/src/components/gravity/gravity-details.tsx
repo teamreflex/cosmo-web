@@ -1,13 +1,14 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { lazyWithPreload } from "@/lib/lazy";
 import { cn } from "@/lib/utils";
 import type {
   CosmoOngoingGravity,
   CosmoPastGravity,
 } from "@apollo/cosmo/types/gravity";
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 
 // the player is only needed by bodies that carry a video, so it stays out of the route bundle
-const ReactPlayer = lazy(() => import("react-player"));
+const ReactPlayer = lazyWithPreload(() => import("react-player"));
 
 type Gravity = CosmoOngoingGravity | CosmoPastGravity;
 type BodyItem = Gravity["body"][number];
