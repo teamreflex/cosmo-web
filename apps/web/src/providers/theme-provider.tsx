@@ -1,6 +1,6 @@
 import { type Theme, ThemeProviderContext } from "@/hooks/use-theme";
 import { ScriptOnce } from "@tanstack/react-router";
-import { useEffect, useEffectEvent, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const MEDIA = "(prefers-color-scheme: dark)";
 
@@ -10,83 +10,83 @@ type ThemeProviderProps = {
   storageKey?: string;
 };
 
-// references:
-// https://ui.shadcn.com/docs/dark-mode/vite
-// https://github.com/pacocoursey/next-themes/blob/main/next-themes/src/index.tsx
+/**
+ * Runs before hydration so the first paint already has the right class.
+ * It resolves the theme the same way as `parseTheme()` and `applyTheme()`.
+ */
+function getThemeScript(storageKey: string, defaultTheme: Theme) {
+  const key = JSON.stringify(storageKey);
+  const fallback = JSON.stringify(defaultTheme);
+
+  return `(function(){try{var t=localStorage.getItem(${key});if(t!=='light'&&t!=='dark'&&t!=='system'){t=${fallback}}var d=matchMedia('${MEDIA}').matches;var r=t==='system'?(d?'dark':'light'):t;var e=document.documentElement;e.classList.add(r);e.style.colorScheme=r}catch(e){}})();`;
+}
+
+function parseTheme(value: string | null): Theme | null {
+  return value === "light" || value === "dark" || value === "system"
+    ? value
+    : null;
+}
+
+function applyTheme(theme: Theme) {
+  const root = document.documentElement;
+  const resolved =
+    theme === "system"
+      ? window.matchMedia(MEDIA).matches
+        ? "dark"
+        : "light"
+      : theme;
+
+  root.classList.remove("light", "dark");
+  root.classList.add(resolved);
+  root.style.colorScheme = resolved;
+}
+
+/**
+ * Based on https://ui.shadcn.com/docs/dark-mode/tanstack-start.
+ * The server can't read localStorage, so `theme` starts as `defaultTheme` and
+ * picks up the stored value after mount; `getThemeScript()` covers the gap.
+ */
 export function ThemeProvider({
   children,
   defaultTheme = "system",
   storageKey = "theme",
-  ...props
 }: ThemeProviderProps) {
-  // SAFETY: the storage key is only ever written with Theme values
-  const [theme, setTheme] = useState<Theme>(
-    () =>
-      // oxlint-disable-next-line anti-slop/no-runtime-typeof -- SSR environment detection
-      (typeof window !== "undefined"
-        ? (localStorage.getItem(storageKey) as Theme)
-        : null) || defaultTheme,
-  );
+  const [theme, setThemeState] = useState<Theme>(defaultTheme);
+  const [mounted, setMounted] = useState(false);
 
-  const handleMediaQuery = useEffectEvent(
-    (e: MediaQueryListEvent | MediaQueryList) => {
-      if (theme !== "system") return;
-      const root = window.document.documentElement;
-      const targetTheme = e.matches ? "dark" : "light";
-      if (!root.classList.contains(targetTheme)) {
-        root.classList.remove("light", "dark");
-        root.classList.add(targetTheme);
-      }
-    },
-  );
-
-  // Listen for system preference changes
   useEffect(() => {
+    // oxlint-disable-next-line react/set-state-in-effect -- localStorage is only readable after mount
+    setThemeState(parseTheme(localStorage.getItem(storageKey)) ?? defaultTheme);
+    setMounted(true);
+  }, [defaultTheme, storageKey]);
+
+  useEffect(() => {
+    if (mounted) applyTheme(theme);
+  }, [theme, mounted]);
+
+  useEffect(() => {
+    if (!mounted || theme !== "system") return;
+
     const media = window.matchMedia(MEDIA);
-
-    media.addEventListener("change", handleMediaQuery);
-    handleMediaQuery(media);
-
-    return () => media.removeEventListener("change", handleMediaQuery);
-  }, []);
-
-  useEffect(() => {
-    const root = window.document.documentElement;
-
-    let targetTheme: string;
-
-    if (theme === "system") {
-      localStorage.removeItem(storageKey);
-      targetTheme = window.matchMedia(MEDIA).matches ? "dark" : "light";
-    } else {
-      localStorage.setItem(storageKey, theme);
-      targetTheme = theme;
-    }
-
-    // Only update if the target theme is not already applied
-    if (!root.classList.contains(targetTheme)) {
-      root.classList.remove("light", "dark");
-      root.classList.add(targetTheme);
-    }
-  }, [theme, storageKey]);
+    const onChange = () => applyTheme("system");
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, [theme, mounted]);
 
   const value = useMemo(
     () => ({
       theme,
-      setTheme,
+      setTheme: (next: Theme) => {
+        localStorage.setItem(storageKey, next);
+        setThemeState(next);
+      },
     }),
-    [theme],
+    [theme, storageKey],
   );
 
   return (
-    <ThemeProviderContext {...props} value={value}>
-      <ScriptOnce>
-        {/* Apply theme early to avoid FOUC */}
-        {`document.documentElement.classList.toggle(
-            'dark',
-            localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)
-            )`}
-      </ScriptOnce>
+    <ThemeProviderContext value={value}>
+      <ScriptOnce>{getThemeScript(storageKey, defaultTheme)}</ScriptOnce>
       {children}
     </ThemeProviderContext>
   );
