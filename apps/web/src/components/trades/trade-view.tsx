@@ -1,5 +1,4 @@
 import { useHasPermission } from "@/hooks/use-has-permission";
-import { useHydrated } from "@/hooks/use-hydrated";
 import { m } from "@/i18n/messages";
 import { reportReasonLabel } from "@/lib/client/reports";
 import { partyName } from "@/lib/client/trade-listings";
@@ -37,7 +36,14 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
-import { type ReactNode, Suspense, useState } from "react";
+import {
+  type ComponentProps,
+  type ReactNode,
+  Suspense,
+  use,
+  useState,
+} from "react";
+import { browser } from "react-dom";
 import { toast } from "sonner";
 import { useCopyToClipboard } from "usehooks-ts";
 import FeedbackBadge from "../feedback/feedback-badge";
@@ -397,6 +403,15 @@ function StaffView({
 // Effect and the RPC client download only with the panel
 const ChatPanel = lazyWithPreload(() => import("./chat/chat-panel"));
 
+/**
+ * The server never renders the panel, whose client would dial chat, so it
+ * bails out before the lazy chunk loads.
+ */
+function BrowserChatPanel(props: ComponentProps<typeof ChatPanel>) {
+  use(browser("The chat panel connects to chat from the browser."));
+  return <ChatPanel {...props} />;
+}
+
 const chatHeight = "h-[min(40rem,calc(100dvh-12rem))] min-h-96";
 
 // below laptop width the page splits into transfers and the chat
@@ -433,7 +448,6 @@ function TradeLayout({
   // chat runs where the web app knows its URL, and opens once an offer is accepted
   const chat = env.VITE_CHAT_URL !== undefined && trade.stage === "trade";
   const chatTab = chat && tab === "chat";
-  const hydrated = useHydrated();
   const chatSkeleton = (
     <Skeleton className={cn(chatHeight, !chatTab && "max-lg:hidden")} />
   );
@@ -524,22 +538,18 @@ function TradeLayout({
                 <TradeTimeline trade={trade} side={side} />
               )}
             </div>
-            {chat &&
-              // the server never renders the panel, whose client would dial chat
-              (hydrated ? (
-                <Suspense fallback={chatSkeleton}>
-                  <ChatPanel
-                    trade={trade}
-                    side={side}
-                    className={cn(chatHeight, !chatTab && "max-lg:hidden")}
-                    onIncoming={() => {
-                      if (!chatTab) setUnread((total) => total + 1);
-                    }}
-                  />
-                </Suspense>
-              ) : (
-                chatSkeleton
-              ))}
+            {chat && (
+              <Suspense fallback={chatSkeleton}>
+                <BrowserChatPanel
+                  trade={trade}
+                  side={side}
+                  className={cn(chatHeight, !chatTab && "max-lg:hidden")}
+                  onIncoming={() => {
+                    if (!chatTab) setUnread((total) => total + 1);
+                  }}
+                />
+              </Suspense>
+            )}
           </aside>
         </div>
       </div>

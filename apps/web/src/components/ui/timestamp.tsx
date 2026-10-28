@@ -1,9 +1,10 @@
-import { useHydrated } from "@/hooks/use-hydrated";
 import { getLocale } from "@/i18n/runtime";
 import { formatRelative } from "@/lib/client/time";
 import type { PropsWithClassName } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { format as formatDate } from "date-fns";
+import { Suspense, use } from "react";
+import { browser } from "react-dom";
 
 /**
  * Either a date-fns `format` pattern, `Intl.DateTimeFormat` options for a
@@ -22,31 +23,35 @@ type Props = PropsWithClassName<
   )
 >;
 
-export function Timestamp({
-  date,
-  format,
-  relative,
-  className,
-  showTime,
-}: Props) {
-  // defer to client render to avoid hydration mismatch from timezone differences
-  const hydrated = useHydrated();
-  if (!hydrated) {
-    /**
-     * A span one line tall, top-aligned and in the timestamp's own text
-     * size, so it takes the same space as the text it stands in for and can
-     * sit inside a paragraph.
-     */
-    return (
-      <span
-        aria-hidden
-        className={cn(
-          "inline-block h-[1lh] w-20 animate-pulse rounded-full bg-muted align-top",
-          className,
-        )}
-      />
-    );
-  }
+export function Timestamp(props: Props) {
+  return (
+    <Suspense
+      fallback={
+        /**
+         * A span one line tall, top-aligned and in the timestamp's own text
+         * size, so it takes the same space as the text it stands in for and
+         * can sit inside a paragraph.
+         */
+        <span
+          aria-hidden
+          className={cn(
+            "inline-block h-[1lh] w-20 animate-pulse rounded-full bg-muted align-top",
+            props.className,
+          )}
+        />
+      }
+    >
+      <TimestampText {...props} />
+    </Suspense>
+  );
+}
+
+/**
+ * The formatted date, which only the browser renders: it's in the viewer's
+ * timezone, or relative to the viewer's clock.
+ */
+function TimestampText({ date, format, relative, className, showTime }: Props) {
+  use(browser("Timestamps render in the viewer's timezone."));
 
   return (
     <time dateTime={date.toISOString()} className={cn(className)}>

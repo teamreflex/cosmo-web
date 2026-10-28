@@ -9,7 +9,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useGravityDetails } from "@/hooks/use-gravity-details";
-import { useHydrated } from "@/hooks/use-hydrated";
 import { m } from "@/i18n/messages";
 import type { ChoiceStyle } from "@/lib/client/gravity/colors";
 import type {
@@ -29,7 +28,15 @@ import {
 import { format } from "date-fns";
 import { AnimatePresence } from "motion/react";
 import * as motion from "motion/react-client";
-import { type ReactNode, Suspense, useEffect, useMemo, useState } from "react";
+import {
+  type ReactNode,
+  Suspense,
+  use,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { browser } from "react-dom";
 import * as z from "zod";
 import { ComoAmount } from "./como-share";
 import GravityDetails from "./gravity-details";
@@ -375,11 +382,15 @@ function ChoiceAvatar({
  * When a vote was cast, in the viewer's timezone.
  */
 function VoteTime({ date }: { date: Date }) {
-  const hydrated = useHydrated();
+  return (
+    <Suspense fallback={<Skeleton className="h-7 w-12 shrink-0 rounded-md" />}>
+      <VoteTimeText date={date} />
+    </Suspense>
+  );
+}
 
-  if (!hydrated) {
-    return <Skeleton className="h-7 w-12 shrink-0 rounded-md" />;
-  }
+function VoteTimeText({ date }: { date: Date }) {
+  use(browser("Vote times render in the viewer's timezone."));
 
   return (
     <span className="flex w-12 shrink-0 flex-col font-mono text-xxs leading-tight text-muted-foreground">

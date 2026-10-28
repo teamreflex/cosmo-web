@@ -1,6 +1,6 @@
-import Hydrated from "@/components/hydrated";
 import { Button } from "@/components/ui/button";
 import { IconLanguage } from "@tabler/icons-react";
+import { ClientOnly } from "@tanstack/react-router";
 import ArtistSelectbox from "../navbar/artist-selectbox";
 import GuestSettings from "../navbar/guest-settings";
 import SignIn from "./sign-in";
@@ -9,7 +9,7 @@ export default function StateGuest() {
   return (
     <div className="flex items-center gap-2">
       <div className="hidden md:contents">
-        <Hydrated
+        <ClientOnly
           fallback={
             <Button variant="ghost" size="icon" disabled>
               <IconLanguage className="size-6" />
@@ -17,7 +17,7 @@ export default function StateGuest() {
           }
         >
           <GuestSettings />
-        </Hydrated>
+        </ClientOnly>
       </div>
 
       <SignIn />

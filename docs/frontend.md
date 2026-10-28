@@ -31,8 +31,14 @@ Base UI behaviours that bite:
 
 ## Hydration
 
-- `useHydrated()` (`hooks/use-hydrated.ts`) is false only during SSR and the hydration render, and true on the very first render after a client navigation. Use it to guard output that differs between server and client, such as timestamps and locale formatting.
-- `<Hydrated fallback={...}>` (`components/hydrated.tsx`) is the component form.
+Output that differs between server and browser, such as the viewer's timezone or clock, renders only in the browser. Pick the gate by what it wraps:
+
+- A leaf component calls `use(browser(reason))` from `react-dom` inside its own `<Suspense fallback>` (`components/ui/timestamp.tsx`), and so does a wrapper in front of a lazy component that must not load on the server (`BrowserChatPanel` in `components/trades/trade-view.tsx`). The server sends the fallback and React renders the leaf while hydrating.
+- Without that tight `<Suspense>`, `browser()` bails out to the nearest boundary above, which can drop a whole section from the server HTML.
+- Inline JSX uses TanStack Router's `<ClientOnly fallback>` (`components/lists/list-header.tsx`). Its children are still built on the server, so keep them cheap.
+- `useHydrated()` (`hooks/use-hydrated.ts`) is only for values that aren't JSX, such as a string a chart library draws (`components/gravity/timeline-chart.tsx`). It re-renders its whole component after hydration, so call it in the smallest one.
+- `browser()` bailouts go to `onBrowserBailout`, not `onError`, so they never reach Sentry.
+- Dialog and sheet contents never render on the server, because Base UI mounts portals in the browser, so they need no gate.
 - A component that reads a sibling DOM node on its first render (`components/portal.tsx`) keeps a `useEffect` + `setState` mount gate instead, because after a client navigation `useHydrated()` is already true before the target exists. Disable `react/set-state-in-effect` on that line.
 
 ## Code splitting

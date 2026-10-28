@@ -1,5 +1,4 @@
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useHydrated } from "@/hooks/use-hydrated";
 import type { PollStatus } from "@/lib/client/gravity/util";
 import { getPollStatus } from "@/lib/client/gravity/util";
 import { cn } from "@/lib/utils";
@@ -9,7 +8,7 @@ import type {
   CosmoPollFinalized,
   CosmoPollUpcoming,
 } from "@apollo/cosmo/types/gravity";
-import { getRouteApi } from "@tanstack/react-router";
+import { ClientOnly, getRouteApi } from "@tanstack/react-router";
 import { format } from "date-fns";
 
 const route = getRouteApi("/gravity/$artist/$id");
@@ -29,9 +28,6 @@ type Props = {
 
 export default function GravityPollTabs(props: Props) {
   const navigate = route.useNavigate();
-  // poll status is relative to the current time, so it settles after hydration
-  const hydrated = useHydrated();
-
   // a single-poll gravity is just the page itself
   if (props.polls.length < 2) {
     return null;
@@ -61,16 +57,19 @@ export default function GravityPollTabs(props: Props) {
                 className="min-w-24 flex-col gap-0 px-3"
               >
                 <span className="flex items-center gap-1.5">
-                  <StatusDot
-                    status={hydrated ? statuses.get(poll.cosmoId) : undefined}
-                  />
+                  {/* the status is relative to the viewer's clock */}
+                  <ClientOnly fallback={<StatusDot status={undefined} />}>
+                    <StatusDot status={statuses.get(poll.cosmoId)} />
+                  </ClientOnly>
                   {poll.title}
                 </span>
-                {/* a non-breaking space holds the line so titles never shift */}
+                {/* the date is in the viewer's timezone; a non-breaking space holds the line so titles never shift */}
                 <span className="font-mono text-xxs leading-4 text-muted-foreground">
-                  {hydrated && poll.startDate !== null
-                    ? format(poll.startDate, "MMM d")
-                    : " "}
+                  <ClientOnly fallback=" ">
+                    {poll.startDate !== null
+                      ? format(poll.startDate, "MMM d")
+                      : " "}
+                  </ClientOnly>
                 </span>
               </TabsTrigger>
             ))}

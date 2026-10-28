@@ -1,13 +1,11 @@
-import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useHydrated } from "@/hooks/use-hydrated";
 import { m } from "@/i18n/messages";
 import { formatDay } from "@/lib/client/time";
 import {
   type PriceHistory as PriceHistoryData,
   type PriceHistoryRange,
-  type PriceStats,
   priceHistoryRanges,
+  type PriceStats,
 } from "@/lib/universal/objekts";
 import { cn, type PropsWithClassName } from "@/lib/utils";
 import type { ReactNode } from "react";
@@ -45,8 +43,6 @@ export default function PriceHistory({
   onRangeChange,
   locked,
 }: Props) {
-  // Intl date output can differ between the server runtime and the browser
-  const hydrated = useHydrated();
   const { points } = history;
   const first = points[0];
   // matches the stat boxes, which show the current listings
@@ -69,15 +65,11 @@ export default function PriceHistory({
               points.length > 1 && (
                 <>
                   <PriceDelta from={first.floorUsd} to={floor} />
-                  {hydrated ? (
-                    <span className="text-xxs whitespace-nowrap text-muted-foreground">
-                      {m.objekt_metadata_history_vs({
-                        date: formatDay(first.date),
-                      })}
-                    </span>
-                  ) : (
-                    <Skeleton className="h-3 w-16 rounded-full" />
-                  )}
+                  <span className="text-xxs whitespace-nowrap text-muted-foreground">
+                    {m.objekt_metadata_history_vs({
+                      date: formatDay(first.date),
+                    })}
+                  </span>
                 </>
               )}
           </div>

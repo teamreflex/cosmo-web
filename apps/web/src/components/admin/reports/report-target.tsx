@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Timestamp } from "@/components/ui/timestamp";
 import { useHasPermission } from "@/hooks/use-has-permission";
-import { useHydrated } from "@/hooks/use-hydrated";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { roleLabel } from "@/lib/client/roles";
@@ -27,7 +26,8 @@ import { staffUserText } from "@/lib/universal/staff-users";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Suspense } from "react";
+import { type ComponentProps, Suspense, use } from "react";
+import { browser } from "react-dom";
 import { toast } from "sonner";
 import FeedbackReport from "./feedback-report";
 import { nameInput } from "./name-input";
@@ -64,6 +64,15 @@ export default function ReportTarget({ report }: Props) {
 const MessageReport = lazyWithPreload(() => import("./message-report"));
 
 /**
+ * The server never renders the report, whose client would dial chat, so it
+ * bails out before the lazy chunk loads.
+ */
+function BrowserMessageReport(props: ComponentProps<typeof MessageReport>) {
+  use(browser("The message report connects to chat from the browser."));
+  return <MessageReport {...props} />;
+}
+
+/**
  * The reported message: who sent it in which trade, its text from the
  * report's own copy, and the trade's chat, which chat lets staff read while
  * the report is open.
@@ -75,7 +84,6 @@ function MessageTarget({
   report: AdminReportDetail;
   message: ReportTargetMessage | null;
 }) {
-  const hydrated = useHydrated();
   if (message === null) {
     return (
       <p className="px-4 py-3.5 text-sm text-muted-foreground">
@@ -107,13 +115,10 @@ function MessageTarget({
         <p className="text-sm text-muted-foreground">
           {m.admin_reports_message_unavailable()}
         </p>
-      ) : hydrated ? (
-        <Suspense fallback={<Skeleton className="h-24 rounded-md" />}>
-          <MessageReport report={report} message={message} />
-        </Suspense>
       ) : (
-        // the server never renders it, since its client would dial chat
-        <Skeleton className="h-24 rounded-md" />
+        <Suspense fallback={<Skeleton className="h-24 rounded-md" />}>
+          <BrowserMessageReport report={report} message={message} />
+        </Suspense>
       )}
     </div>
   );

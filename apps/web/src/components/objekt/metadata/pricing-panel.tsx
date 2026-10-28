@@ -1,7 +1,5 @@
 import LazyFallback from "@/components/lazy-fallback";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Timestamp } from "@/components/ui/timestamp";
-import { useHydrated } from "@/hooks/use-hydrated";
 import { m } from "@/i18n/messages";
 import { formatDay } from "@/lib/client/time";
 import { objektPriceHistoryQuery } from "@/lib/queries/objekt-queries";
@@ -113,23 +111,18 @@ function Footer({
   stats: PriceStats | null;
   since: string | null;
 }) {
-  const hydrated = useHydrated();
-
   return (
     <div className="flex flex-col gap-0.5 px-4 py-2 text-xs text-muted-foreground">
       <span>{m.objekt_metadata_pricing_source()}</span>
       {(since !== null || stats !== null) && (
         <span className="flex flex-wrap items-center gap-x-1.5">
-          {since !== null &&
-            (hydrated ? (
-              <span>
-                {m.objekt_metadata_history_tracking_since({
-                  date: formatDay(since),
-                })}
-              </span>
-            ) : (
-              <Skeleton className="h-3 w-24 rounded-full" />
-            ))}
+          {since !== null && (
+            <span>
+              {m.objekt_metadata_history_tracking_since({
+                date: formatDay(since),
+              })}
+            </span>
+          )}
           {since !== null && stats !== null && <span aria-hidden>·</span>}
           {stats !== null && <UpdatedAt date={stats.updatedAt} />}
         </span>
