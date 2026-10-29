@@ -1,5 +1,6 @@
 import { m } from "@/i18n/messages";
 import { formatCount } from "@/lib/client/trade-listings";
+import type { ListingFeedCursor } from "@/lib/universal/schema/listing-feed";
 import type { ListingFeedPage } from "@/lib/universal/trade-listings";
 import {
   IconArrowsExchange,
@@ -40,7 +41,7 @@ type Props<TQueryKey extends QueryKey> = {
     DefaultError,
     InfiniteData<ListingFeedPage>,
     TQueryKey,
-    string | undefined
+    ListingFeedCursor | undefined
   >;
   /** whether any filter or the navbar's artists narrow the feed */
   filtered: boolean;

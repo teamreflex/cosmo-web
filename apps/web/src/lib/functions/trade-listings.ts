@@ -80,6 +80,7 @@ import {
   tradeTokenStatesInputSchema,
 } from "@apollo/trades/listing";
 import { rangeFilterSchema } from "@apollo/trades/range";
+import { BUMP_COOLDOWN } from "@apollo/trades/timers";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import * as z from "zod";
@@ -139,7 +140,7 @@ export const $postListing = createServerFn({ method: "POST" })
  * but its pending offers were made on the old terms, so they turn stale and
  * their claimers hear of it. They are locked before the listing
  * (docs/locking.md), so one sent after they were read refuses the edit with
- * `listing_updated`. `created_at` never changes, so the listing keeps its
+ * `listing_updated`. `bumped_at` never changes, so the listing keeps its
  * place in the feed.
  */
 export const $editListing = createServerFn({ method: "POST" })
@@ -267,6 +268,40 @@ export const $withdrawListing = createServerFn({ method: "POST" })
       throw new ExpectedError(listingRefusal(listing) ?? "listing_closed");
     });
     await publishTradeUpdates(ended);
+  });
+
+/**
+ * Move the caller's open listing to the top of the feed, at most once per
+ * BUMP_COOLDOWN since it was posted or last bumped, judged by the
+ * database's clock. Anyone else's listing, and any trade row, is not found
+ * whatever its status; the poster's own closed listing says so.
+ */
+export const $bumpListing = createServerFn({ method: "POST" })
+  .validator(listingIdInputSchema)
+  .middleware([authenticatedMiddleware])
+  .handler(async ({ data, context }) => {
+    const userId = context.session.user.id;
+    const [bumped] = await db
+      .update(tradeOffers)
+      .set({
+        bumpedAt: sql`now()`,
+        // a bump changes nothing a claim judges, so claims made on the listing as it was still land
+        updatedAt: sql`${tradeOffers.updatedAt}`,
+      })
+      .where(
+        and(
+          eq(tradeOffers.id, data.listingId),
+          eq(tradeOffers.kind, "listing"),
+          eq(tradeOffers.fromUserId, userId),
+          eq(tradeOffers.status, "open"),
+          sql`${tradeOffers.bumpedAt} <= now() - make_interval(secs => ${BUMP_COOLDOWN / 1000})`,
+        ),
+      )
+      .returning({ id: tradeOffers.id });
+    if (bumped) return;
+
+    const [listing] = await ownListing(db, userId, data.listingId);
+    throw new ExpectedError(listingRefusal(listing) ?? "listing_bump_too_soon");
   });
 
 /**
@@ -416,6 +451,7 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
           status: true,
           createdAt: true,
           updatedAt: true,
+          bumpedAt: true,
           endedAt: true,
           note: true,
           fromUserId: true,
@@ -473,6 +509,7 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
           id: listing.id,
           createdAt: listing.createdAt,
           updatedAt: listing.updatedAt,
+          bumpedAt: listing.bumpedAt,
           note: listing.note,
           poster: listing.fromUser && toPublicUser(listing.fromUser),
           cosmoUsername: listing.fromCosmo?.username ?? null,

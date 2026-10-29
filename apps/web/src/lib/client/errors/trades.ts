@@ -46,6 +46,8 @@ export function formatTradeError(error: unknown): string | null {
       return m.trade_error_listing_want_unknown();
     case "listing_range_empty":
       return m.trade_error_listing_range_empty();
+    case "listing_bump_too_soon":
+      return m.trade_error_listing_bump_too_soon();
     case "claim_cap_reached":
       return m.trade_error_claim_cap_reached();
     case "claim_assignment_invalid":

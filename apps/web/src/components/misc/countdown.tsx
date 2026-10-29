@@ -1,4 +1,5 @@
 import { m } from "@/i18n/messages";
+import { timeLeft } from "@/lib/client/time";
 import { cn, type PropsWithClassName } from "@/lib/utils";
 import { ClientOnly } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
@@ -27,18 +28,6 @@ function TickerInner({ children }: Pick<TickerProps, "children">) {
   const [now, setNow] = useState(() => new Date());
   useInterval(() => setNow(new Date()), 1000);
   return children(now);
-}
-
-/**
- * Hours and minutes from `now` until `deadline`, a part minute counting as
- * one so it only reads zero once the deadline has passed.
- */
-function timeLeft(now: Date, deadline: Date) {
-  const minutes = Math.max(
-    0,
-    Math.ceil((deadline.getTime() - now.getTime()) / 60_000),
-  );
-  return { hours: Math.floor(minutes / 60), minutes: minutes % 60 };
 }
 
 /**

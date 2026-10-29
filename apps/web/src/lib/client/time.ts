@@ -44,3 +44,15 @@ function relativeUnit(
   if (abs < 86400) return [Math.round(diffSeconds / 3600), "hour"];
   return [Math.round(diffSeconds / 86400), "day"];
 }
+
+/**
+ * Hours and minutes from `now` until `deadline`, a part minute counting as
+ * one so it only reads zero once the deadline has passed.
+ */
+export function timeLeft(now: Date, deadline: Date) {
+  const minutes = Math.max(
+    0,
+    Math.ceil((deadline.getTime() - now.getTime()) / 60_000),
+  );
+  return { hours: Math.floor(minutes / 60), minutes: minutes % 60 };
+}

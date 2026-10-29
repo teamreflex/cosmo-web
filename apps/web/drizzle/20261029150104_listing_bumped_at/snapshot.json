@@ -1,0 +1,92 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "5c051824-2a8b-4bcf-9d52-96afd17a523c",
+  "prevIds": [
+    "2659c90b-61e1-4ba9-a47f-a7034424881f"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "trade_offers",
+        "bumped_at"
+      ],
+      "writes": [
+        "s|col|public.trade_offers.bumped_at",
+        "n|col|public.trade_offers.bumped_at",
+        "e|col|public.trade_offers.bumped_at"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offers",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "recreate_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "trade_offers",
+        "trade_offers_feed_idx"
+      ],
+      "writes": [
+        "s|idx|public.trade_offers_feed_idx",
+        "n|idx|public.trade_offers_feed_idx",
+        "e|idx|public.trade_offers_feed_idx",
+        "n|rel|public.trade_offers_feed_idx"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|col|public.trade_offers.bumped_at",
+        "n|col|public.trade_offers.id"
+      ],
+      "sharedWrites": [],
+      "sqlHash": "ee6d1bbb193c1e67"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "bumped_at",
+        "type": "timestamp(3) with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "indexes\u0000[\"public\",\"trade_offers_feed_idx\"]",
+      "set": {
+        "columns": [
+          {
+            "value": "bumped_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ]
+      }
+    }
+  ]
+}

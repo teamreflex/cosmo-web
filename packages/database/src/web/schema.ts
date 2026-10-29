@@ -734,11 +734,25 @@ export const tradeOffers = pgTable(
     note: varchar("note", { length: 500 }),
     createdAt: tradeTimestamp("created_at").notNull().defaultNow(),
     /**
-     * Moves on every update, so accepting can refuse a listing that changed
-     * after the claimer opened it. Listing writes set it from the database
-     * clock, never less than a millisecond past the old value, so it strictly
-     * increases; `$onUpdate` covers every other writer. Millisecond
-     * precision, so the value survives a round trip through a JS Date.
+     * A listing's place in the feed: when it was posted or last bumped by its
+     * poster, at most once per BUMP_COOLDOWN. Millisecond precision, so the
+     * feed's cursor survives a round trip through a JS Date. Meaningless on
+     * trades, which keep their insert time.
+     */
+    bumpedAt: timestamp("bumped_at", {
+      mode: "date",
+      withTimezone: true,
+      precision: 3,
+    })
+      .notNull()
+      .defaultNow(),
+    /**
+     * Moves on every update but a bump, so accepting can refuse a listing
+     * that changed after the claimer opened it. Listing writes set it from
+     * the database clock, never less than a millisecond past the old value,
+     * so it strictly increases; `$onUpdate` covers every other writer.
+     * Millisecond precision, so the value survives a round trip through a JS
+     * Date.
      */
     updatedAt: timestamp("updated_at", {
       mode: "date",
@@ -754,9 +768,9 @@ export const tradeOffers = pgTable(
     endedAt: tradeTimestamp("ended_at"),
   },
   (t) => [
-    // the feed, a backward scan for `order by created_at desc, id desc`
+    // the feed, a backward scan for `order by bumped_at desc, id desc`
     index("trade_offers_feed_idx")
-      .on(t.createdAt, t.id)
+      .on(t.bumpedAt, t.id)
       .where(sql`${t.kind} = 'listing' AND ${t.status} = 'open'`),
     /**
      * Offering narrows on any subset of these offered-objekt columns before

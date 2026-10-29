@@ -31,6 +31,7 @@ import type {
 } from "./errors/trades";
 import type { FeedbackRep } from "./feedback";
 import type { Objekt } from "./objekt-conversion";
+import type { ListingFeedCursor } from "./schema/listing-feed";
 import type { TradeDispute, TradeParty } from "./trades";
 
 export type { TokenRefusal, TokenRefusalReason } from "@apollo/trades/holdings";
@@ -196,7 +197,7 @@ export function hasRatio(unitSize: number, posted: number) {
 
 export type ListingFeedPage = {
   rows: ListingFeedRow[];
-  nextCursor: string | undefined;
+  nextCursor: ListingFeedCursor | undefined;
 };
 
 /**
@@ -333,6 +334,8 @@ export type TradeListing<TPoster = PublicUser> = {
   id: string;
   createdAt: Date;
   updatedAt: Date;
+  // its place in the feed: when it was posted or last bumped
+  bumpedAt: Date;
   note: string | null;
   poster: TPoster | null;
   cosmoUsername: string | null;

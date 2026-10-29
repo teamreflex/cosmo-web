@@ -7,6 +7,7 @@ import {
   normalizeFeedArtists,
   normalizeListingFeedFilters,
 } from "@/lib/universal/parsers";
+import type { ListingFeedCursor } from "@/lib/universal/schema/listing-feed";
 import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 
 // every Listings feed query, for invalidating after a listing changes
@@ -55,4 +56,4 @@ export function listingFeedTotalQuery(
  * The first page has no cursor. Typed as the cursor union so the query
  * infers its page param from it.
  */
-const firstPage: string | undefined = undefined;
+const firstPage: ListingFeedCursor | undefined = undefined;

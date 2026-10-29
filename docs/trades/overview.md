@@ -69,14 +69,14 @@ Apollo matches people who want to swap objekts and records each swap, but never 
 
 ## Files in this folder
 
-| File                           | Read it when you change                                                                                                        |
-| ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
-| [data-model.md](data-model.md) | the trade tables, sides, items, wants, units, `updated_at`                                                                     |
-| [listings.md](listings.md)     | posting, editing, withdrawing or closing a listing, the composer, the feed, the listing page, claims, offers on range listings |
-| [offers.md](offers.md)         | direct offers, counters, offer windows, what a refusal may reveal                                                              |
-| [lifecycle.md](lifecycle.md)   | trade statuses, party actions, ending a trade, timers' decisions, disputes, bans                                               |
-| [drain.md](drain.md)           | what an on-chain transfer means for a trade, listing or offer                                                                  |
-| [feedback.md](feedback.md)     | claim caps, listing limits, rate limits, ratings, the market gate and notices                                                  |
+| File                           | Read it when you change                                                                                                                 |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| [data-model.md](data-model.md) | the trade tables, sides, items, wants, units, `updated_at`                                                                              |
+| [listings.md](listings.md)     | posting, editing, bumping, withdrawing or closing a listing, the composer, the feed, the listing page, claims, offers on range listings |
+| [offers.md](offers.md)         | direct offers, counters, offer windows, what a refusal may reveal                                                                       |
+| [lifecycle.md](lifecycle.md)   | trade statuses, party actions, ending a trade, timers' decisions, disputes, bans                                                        |
+| [drain.md](drain.md)           | what an on-chain transfer means for a trade, listing or offer                                                                           |
+| [feedback.md](feedback.md)     | claim caps, listing limits, rate limits, ratings, the market gate and notices                                                           |
 
 ## Where to start
 

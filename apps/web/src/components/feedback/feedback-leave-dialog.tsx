@@ -30,7 +30,7 @@ import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconInfoCircle, IconLoader2, IconLock } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";
-import { useId, useRef } from "react";
+import { useId, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { bold } from "../notifications/row-utils";
@@ -84,6 +84,7 @@ export default function FeedbackLeaveDialog({
   const formId = useId();
   const commentId = useId();
   const firstRating = useRef<HTMLElement>(null);
+  const [openedAt] = useState(() => new Date());
   const invalidateTrade = useInvalidateTrade(trade.listingId);
 
   const form = useForm({
@@ -121,7 +122,7 @@ export default function FeedbackLeaveDialog({
       aside={
         <span className="text-xs text-muted-foreground tabular-nums">
           {m.feedback_days_left({
-            count: feedbackDaysLeft(feedbackWindow.closesAt, new Date()),
+            count: feedbackDaysLeft(feedbackWindow.closesAt, openedAt),
           })}
         </span>
       }

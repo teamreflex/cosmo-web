@@ -15,6 +15,9 @@ export const CLAIM_WINDOW = 48 * 60 * 60 * 1000;
 // how long a pending offer, direct or on a listing, waits for an answer, judged by the database's clock
 export const OFFER_WINDOW = 72 * 60 * 60 * 1000;
 
+// how long after a listing is posted or bumped its poster must wait to bump it again, judged by the database's clock
+export const BUMP_COOLDOWN = 24 * 60 * 60 * 1000;
+
 // the drain's row in `list_drain_cursor`, whose `chain_time` is the watermark
 export const DRAIN_CURSOR_NAME = "outbox-drain";
 

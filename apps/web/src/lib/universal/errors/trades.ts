@@ -11,6 +11,7 @@ export const tradeErrorCodes = [
   "listing_unavailable",
   "listing_want_unknown",
   "listing_range_empty",
+  "listing_bump_too_soon",
   "claim_cap_reached",
   "claim_assignment_invalid",
   "claim_token_unavailable",

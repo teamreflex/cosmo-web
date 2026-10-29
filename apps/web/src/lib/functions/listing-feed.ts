@@ -17,25 +17,24 @@ import type { ListingFeedPage } from "@/lib/universal/trade-listings";
 import { tradeOffers } from "@apollo/database/web/schema";
 import { listingUnitSize } from "@apollo/trades/lifecycle";
 import { createServerFn } from "@tanstack/react-start";
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
-import { alias } from "drizzle-orm/pg-core";
+import { and, desc, inArray, sql } from "drizzle-orm";
 
 const PAGE_SIZE = 30;
 
 /**
- * One page of the Listings feed: open listings, newest first, keyset-paged
- * on the listing id, each with its unit size and how many of its pool
- * objekts are free, counted for the page's rows only. The cursor is
- * the previous page's last id, looked up whatever it is now, so a listing
- * claimed from, edited or withdrawn between pages still marks the place,
- * and the position never goes through a JS Date. The page reads one row
- * past its size to say whether there's more.
+ * One page of the Listings feed: open listings, most recently posted or
+ * bumped first, keyset-paged on `(bumped_at, id)`, each with its unit size
+ * and how many of its pool objekts are free, counted for the page's rows
+ * only. The cursor is the previous page's last place as that page read it,
+ * so a listing bumped, claimed from, edited or withdrawn between pages
+ * still marks the place; a bumped one moves to the top of a refetch rather
+ * than repeating. The page reads one row past its size to say whether
+ * there's more.
  */
 export const $fetchListingFeed = createServerFn({ method: "GET" })
   .validator(listingFeedInputSchema)
   .handler(async ({ data }): Promise<ListingFeedPage> => {
     const where = listingFeedWhere(data);
-    const cursorRow = alias(tradeOffers, "cursor_row");
     const pageIds = db
       .select({ id: tradeOffers.id })
       .from(tradeOffers)
@@ -44,19 +43,20 @@ export const $fetchListingFeed = createServerFn({ method: "GET" })
           ? where
           : and(
               where,
-              sql`(${tradeOffers.createdAt}, ${tradeOffers.id}) < (${db
-                .select({ createdAt: cursorRow.createdAt, id: cursorRow.id })
-                .from(cursorRow)
-                .where(eq(cursorRow.id, data.cursor))})`,
+              sql`(${tradeOffers.bumpedAt}, ${tradeOffers.id}) < (${sql.param(
+                data.cursor.bumpedAt,
+                tradeOffers.bumpedAt,
+              )}, ${data.cursor.id})`,
             ),
       )
-      .orderBy(desc(tradeOffers.createdAt), desc(tradeOffers.id))
+      .orderBy(desc(tradeOffers.bumpedAt), desc(tradeOffers.id))
       .limit(PAGE_SIZE + 1);
     const rows = await db.query.tradeOffers.findMany({
       where: { RAW: (t) => inArray(t.id, pageIds) },
       columns: {
         id: true,
         createdAt: true,
+        bumpedAt: true,
         fromUserId: true,
         fromAddress: true,
         unitSize: true,
@@ -72,9 +72,10 @@ export const $fetchListingFeed = createServerFn({ method: "GET" })
         fromCosmo: { columns: { username: true } },
         fromStats: { columns: feedbackRepColumns },
       },
-      orderBy: { createdAt: "desc", id: "desc" },
+      orderBy: { bumpedAt: "desc", id: "desc" },
     });
     const page = rows.slice(0, PAGE_SIZE);
+    const last = rows.length > PAGE_SIZE ? page.at(-1) : undefined;
 
     const { listings } = await hydrateListings(page);
 
@@ -91,7 +92,7 @@ export const $fetchListingFeed = createServerFn({ method: "GET" })
         posted: listing.posted,
         free: listing.free,
       })),
-      nextCursor: rows.length > PAGE_SIZE ? page.at(-1)?.id : undefined,
+      nextCursor: last && { bumpedAt: last.bumpedAt, id: last.id },
     };
   });
 

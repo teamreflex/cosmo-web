@@ -36,6 +36,7 @@ import SignIn from "../auth/sign-in";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Button, buttonVariants } from "../ui/button";
 import AllocationPicker from "./allocation-picker";
+import BumpListingButton from "./bump-listing-button";
 import { ClosedAlert, ClosedStatus } from "./closed-banner";
 import ConfirmTradeDialog from "./confirm-trade-dialog";
 import ListingComposer from "./listing-composer";
@@ -128,6 +129,7 @@ export default function ListingView({
   const actions = (className?: string, describedBy = reasonId) =>
     hasActions(role) ? (
       <RoleActions
+        listing={listing}
         role={role}
         address={address}
         picks={picks}
@@ -456,6 +458,7 @@ function RoleAlert({ listing, role, picks, reasonId, detailId }: AlertProps) {
 }
 
 type ActionsProps = {
+  listing: TradeListing;
   role: ListingRole;
   address: string | undefined;
   picks: Picks | null;
@@ -471,12 +474,13 @@ type ActionsProps = {
 };
 
 /**
- * What the viewer can do: sign in, link a COSMO account, edit or withdraw
+ * What the viewer can do: sign in, link a COSMO account, edit, bump or withdraw
  * their own open listing, or accept someone else's, or send its poster an
  * offer when it takes offers. A disabled Accept is described by why and
  * stays in the tab order.
  */
 function RoleActions({
+  listing,
   role,
   address,
   picks,
@@ -525,6 +529,11 @@ function RoleActions({
               {m.listing_composer_edit()}
             </Button>
           )}
+          <BumpListingButton
+            listingId={listing.id}
+            bumpedAt={listing.bumpedAt}
+            className={className}
+          />
           <Button
             variant="destructive"
             className={className}

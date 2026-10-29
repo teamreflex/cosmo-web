@@ -43,13 +43,21 @@ A listing offers a pool of the poster's tokens in units, and stays open while th
 - **Post** (`$postListing`): `checkTerms()` resolves the wants and checks every offered token against the indexer before the transaction. The transaction locks the poster, re-checks the tokens for locks and live trades (`recheckTokens()`) and inserts the listing, its pool rows and its wants.
 - A token the poster can't offer comes back as a `token_unavailable` result naming it, not as a thrown error, so the composer can show the serial.
 - A token may sit in several open listings at once. Only a live trade reserves it.
-- **Edit** (`$editListing`): replaces the listing arrays, pinned address, unit size, note, the pool rows still in the pool and the wants in one transaction. `created_at` never changes, so the listing keeps its place in the feed.
+- **Edit** (`$editListing`): replaces the listing arrays, pinned address, unit size, note, the pool rows still in the pool and the wants in one transaction. It leaves `bumped_at` alone, so the listing keeps its place in the feed.
 - An edit leaves its live trades alone, since they hold their own copies. It may keep a token that is live in one of the listing's own trades (`readWebTokenFlags()` with `editedListing`).
 - The composer's reads, `$fetchOfferedTokenRefusals` and `$fetchTradeTokenStates`, take the edited listing too once the server confirms it is the caller's, so neither flags nor greys out what Save would keep.
 - An edit turns the listing's pending offers `stale` (event `{ type: "stale", reason: "edited" }`, `offer_stale` to each claimer). An offer sent after the edit read them refuses the edit with `listing_updated`.
 - **Withdraw** (`$withdrawListing`): `open -> withdrawn`. Its pending offers are declined `by: "listing"` with `offer_declined` to each claimer, and its live trades carry on. An offer sent after the withdrawal read them is left for `trade-timers` to decline.
 - A ban or an account deletion closes the poster's listings in the same transaction (see [lifecycle.md](lifecycle.md#bans-and-account-deletion)).
-- A listing's `updated_at` moves on an edit, a drain drop and every status change. Claims, offers and completions leave it alone, since the tokens they touch were already out of the free pool.
+- A listing's `updated_at` moves on an edit, a drain drop and every status change. Claims, offers and completions leave it alone, since the tokens they touch were already out of the free pool, and so does a bump, which changes no terms.
+
+## Bumping
+
+`$bumpListing` sets an open listing's `bumped_at` to the database clock, which moves it to the top of the feed.
+
+- Only the poster can bump, at most once per `BUMP_COOLDOWN` (24 h) since the listing was posted or last bumped, so a new listing can't be bumped on its first day. The guard is in the `UPDATE`'s `WHERE`, so two bumps racing land once and the other is refused `listing_bump_too_soon`.
+- A bump keeps `updated_at` as it was (it sets the column to itself to skip `$onUpdate`), so a claim made on the listing as the claimer saw it still lands.
+- The page's Bump button (`bump-listing-button.tsx`) is disabled until the cooldown ends on the browser's clock, counting down to it, and renders disabled on the server and during hydration. A browser clock ahead of the database's gets the refusal as a toast.
 
 ## The composer
 
@@ -68,8 +76,9 @@ A listing offers a pool of the poster's tokens in units, and stays open while th
 
 ## The feed
 
-`$fetchListingFeed` (`lib/server/trades/feed.server.ts`) shows every open listing the filters match, however much of its pool live trades hold; a listing leaves it once it closes.
+`$fetchListingFeed` (`lib/server/trades/feed.server.ts`) shows every open listing the filters match, however much of its pool live trades hold, latest `bumped_at` first; a listing leaves it once it closes.
 
+- Pages are keyset-paged on `(bumped_at, id)` through `trade_offers_feed_idx`. The cursor carries the last row's values as its page read them rather than its id, because a bump between pages would move a looked-up cursor row to the top and repeat the feed.
 - Each row counts its pool's free objekts: no live copy and no lock by the poster (`freePoolCount()`, at most `MAX_OFFERED` pool rows per listing, each probing `trade_offer_items_live_token_idx` and `address_token_idx`).
 - The count is selected for the page's rows only, never filtered on, so neither the page nor its total (`$fetchListingFeedTotal`) runs it for every open listing.
 - It reads only the web database, so a free token the poster has since moved still counts until the drain drops it. A lock never reaches the drain, so a locked token stays in the pool, blocked, until the poster unlocks it or edits it out.
@@ -106,7 +115,7 @@ A listing offers a pool of the poster's tokens in units, and stays open while th
 
 ## The poster's tabs
 
-The poster's own open listing has Listing, Offers and Trades tabs (`components/trade-listings/poster-panels.tsx`), the open one in the `tab` search param (`listingSearchSchema`), left out of the URL for Listing. The header keeps Edit and Withdraw on every tab and says the listing is theirs, when they posted it and when it last changed.
+The poster's own open listing has Listing, Offers and Trades tabs (`components/trade-listings/poster-panels.tsx`), the open one in the `tab` search param (`listingSearchSchema`), left out of the URL for Listing. The header keeps Edit, Bump and Withdraw on every tab and says the listing is theirs, when they posted it and when it last changed.
 
 | Tab     | Shows                                                                                                                                                            |
 | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |

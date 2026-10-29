@@ -450,6 +450,7 @@ const block = ({
 const fillers = {
   createdAt: new Date(0),
   updatedAt: new Date(0),
+  bumpedAt: new Date(0),
   poster: null,
   cosmoUsername: null,
   rep: null,

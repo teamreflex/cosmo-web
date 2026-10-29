@@ -48,6 +48,14 @@ export type ListingFeedSide = z.input<typeof feedSideSchema>;
 // the columns either side of the feed narrows on
 export const feedColumns = feedSideSchema.keyof().options;
 
+// where the previous page of the feed ended: its last listing's place as that page read it
+export const listingFeedCursorSchema = z.strictObject({
+  bumpedAt: z.date(),
+  id: listingIdSchema,
+});
+
+export type ListingFeedCursor = z.infer<typeof listingFeedCursorSchema>;
+
 /**
  * One page of the Listings feed. Offering narrows on the objekts a listing
  * offers and Looking for on its want rows; `artists` is the navbar's
@@ -61,7 +69,7 @@ export const listingFeedInputSchema = z.strictObject({
   }),
   type: z.enum(listingTypes).nullable(),
   artists: z.array(feedArtistSchema).max(validArtists.length),
-  cursor: listingIdSchema.optional(),
+  cursor: listingFeedCursorSchema.optional(),
 });
 
 export type ListingFeedInput = z.infer<typeof listingFeedInputSchema>;
