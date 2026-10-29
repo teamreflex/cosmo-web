@@ -4,7 +4,7 @@ FROM oven/bun:1.4.4-slim AS bun
 FROM bun AS pruner
 WORKDIR /app
 COPY . .
-RUN bunx turbo@2.11.9 prune web --docker
+RUN bunx turbo@2.11.10 prune web --docker
 
 # stage 2: build
 FROM bun AS builder

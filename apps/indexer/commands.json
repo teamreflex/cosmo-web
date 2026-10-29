@@ -60,24 +60,6 @@
       "cmd": ["bun", "lib/main.js"],
       "hidden": true
     },
-    "serve": {
-      "description": "Start the GraphQL API server",
-      "cmd": ["squid-graphql-server"]
-    },
-    "serve:prod": {
-      "description": "Start the GraphQL API server with caching and limits",
-      "cmd": [
-        "squid-graphql-server",
-        "--dumb-cache",
-        "in-memory",
-        "--dumb-cache-ttl",
-        "1000",
-        "--dumb-cache-size",
-        "100",
-        "--dumb-cache-max-age",
-        "1000"
-      ]
-    },
     "check-updates": {
       "cmd": [
         "npx",

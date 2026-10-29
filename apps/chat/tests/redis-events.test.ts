@@ -38,6 +38,7 @@ function fakeRedis() {
           (deliver) =>
             Effect.sync(() => subscribers.get(channel)?.delete(deliver)),
         ).pipe(Effect.as(Effect.never)),
+      connect: Effect.die("unused"),
     }),
   );
   return { layer, publish };
