@@ -8,7 +8,7 @@ Rules for changing the COSMO client. The client policy, credential and QR login 
 | --------------------- | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | `bearer(accessToken)` | `fetchArtists`, `fetchArtist`, `fetchAllArtists`, `fetchGravities`, `fetchGravity`, `fetchPoll`, `search`, `fetchUserProfile` | The dummy account's token from `getProxiedToken()` (web) or `ProxiedToken` (schedules) |
 | `user-session` cookie | `fetchObjektSummaries`                                                                                                        | The session `certifyTicket` grants during the QR login, never stored                   |
-| None                  | `fetchByNickname`, `fetchMetadataV3`, `refreshV3`, `exchangeLoginTicket`, `queryTicket`, `certifyTicket`                      | -                                                                                      |
+| None                  | `fetchByNickname`, `fetchLiveVote`, `fetchMetadataV3`, `refreshV3`, `exchangeLoginTicket`, `queryTicket`, `certifyTicket`     | -                                                                                      |
 
 ## Errors
 
@@ -23,7 +23,7 @@ Rules for changing the COSMO client. The client policy, credential and QR login 
 ## Retries
 
 - Retry is a one-way client transformation, so a client without it starts from `cosmoApiBase`, as `cosmoNoRetryClient` does.
-- Use `cosmoNoRetryClient` where a failure is the answer: `fetchByNickname` reads a 404 as "no such user".
+- Use `cosmoNoRetryClient` where a failure is the answer: `fetchByNickname` reads a 404 as "no such user", `fetchLiveVote` as "no live totals for this poll".
 - The metadata fetchers retry for up to 5 minutes, because COSMO has no metadata for the first seconds after a mint and the indexer can't skip a token.
 - A UI caller of a metadata fetcher passes the request signal, so a cancelled request stops the retry (`apps/web/src/lib/functions/collections.ts` does).
 

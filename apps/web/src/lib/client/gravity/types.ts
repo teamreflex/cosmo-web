@@ -9,6 +9,20 @@ export type UseRevealsOptions = {
 
 export type LiveStatus = "upcoming" | "voting" | "live" | "finalized";
 
+/**
+ * COSMO's running totals for a poll. Only fetched while voting is open, and
+ * opt-in per poll, so an unpublished poll stays sealed until counting.
+ */
+export type LiveVoteState =
+  | { status: "closed" }
+  | { status: "loading" }
+  | { status: "unpublished" }
+  | {
+      status: "published";
+      /** COMO per candidate id, indexed by candidate id. */
+      comoPerCandidate: number[];
+    };
+
 export type UseRevealsResult = {
   liveStatus: LiveStatus;
   isRefreshing: boolean;

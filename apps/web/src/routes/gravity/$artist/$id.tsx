@@ -9,7 +9,7 @@ import { m } from "@/i18n/messages";
 import { $fetchGravityDetails } from "@/lib/functions/gravity";
 import { lazyWithPreload } from "@/lib/lazy";
 import { defineHead } from "@/lib/meta";
-import { gravityPollDetailsQuery } from "@/lib/queries/gravity";
+import { gravityPollDetailsQuery, liveVoteQuery } from "@/lib/queries/gravity";
 import { IconAlertTriangle, IconHeartBroken } from "@tabler/icons-react";
 import { noop } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
@@ -47,9 +47,21 @@ export const Route = createFileRoute("/gravity/$artist/$id")({
       });
 
     // a poll param that doesn't belong to this gravity falls back to the default
-    const pollId =
-      polls.find((poll) => poll.cosmoId === deps.poll)?.cosmoId ??
-      defaultPollId;
+    const poll =
+      polls.find((poll) => poll.cosmoId === deps.poll) ??
+      polls.find((poll) => poll.cosmoId === defaultPollId);
+    const pollId = poll?.cosmoId ?? defaultPollId;
+
+    // live totals decide what the race shows while voting, so they load alongside the page
+    const now = new Date();
+    if (
+      poll?.startDate &&
+      poll.endDate &&
+      poll.startDate <= now &&
+      now < poll.endDate
+    ) {
+      void context.queryClient.query(liveVoteQuery(pollId)).catch(noop);
+    }
 
     /**
      * prefetch poll details (candidates etc) for the selected poll only.

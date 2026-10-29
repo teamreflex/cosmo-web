@@ -3,10 +3,15 @@ import {
   type GravityPollDetailsParams,
   gravityPollDetailsQuery,
   gravityVoteDataQuery,
+  liveVoteQuery,
 } from "@/lib/queries/gravity";
 import type { CosmoMemberBFF } from "@apollo/cosmo/types/artists";
 import type { CosmoPollChoices } from "@apollo/cosmo/types/gravity";
-import { useInfiniteQuery, useSuspenseQueries } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useQuery,
+  useSuspenseQueries,
+} from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
 import type { ChartLine } from "./colors";
 import { findLatestBatch, sumComoPerCandidate } from "./reveals";
@@ -24,6 +29,7 @@ import type {
   AggregatedTopUser,
   AggregatedTopVote,
   LiveStatus,
+  LiveVoteState,
   Reveal,
   RevealedSegments,
   UseRevealsOptions,
@@ -200,6 +206,45 @@ export function useReveals(params: UseRevealsOptions): UseRevealsResult {
     topVotes: topVotesWithReveals,
     topUsers: topUsersWithReveals,
   } satisfies UseRevealsResult;
+}
+
+/**
+ * COSMO's running totals, polled while voting is open.
+ */
+export function useLiveVote(
+  poll: CosmoPollChoices,
+  voting: boolean,
+): LiveVoteState {
+  const { data, status } = useQuery({
+    ...liveVoteQuery(poll.id),
+    enabled: voting,
+  });
+
+  return useMemo((): LiveVoteState => {
+    if (!voting) {
+      return { status: "closed" };
+    }
+    if (status === "pending") {
+      return { status: "loading" };
+    }
+    // a failed fetch keeps the poll sealed rather than erroring the page
+    if (!data) {
+      return { status: "unpublished" };
+    }
+    const totals = new Map(
+      data.candidates.map((candidate) => [
+        candidate.choiceId,
+        candidate.totalComo,
+      ]),
+    );
+    return {
+      status: "published",
+      // candidate ids are indexes into the poll's choices
+      comoPerCandidate: poll.choices.map(
+        (choice) => totals.get(choice.id) ?? 0,
+      ),
+    };
+  }, [voting, status, data, poll.choices]);
 }
 
 /**

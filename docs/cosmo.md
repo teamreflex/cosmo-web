@@ -166,6 +166,7 @@ Each objekt grants COMO by class. For tripleS and ARTMS, Premier and Special obj
 Gravity events are polls where users place COMO on candidates, such as the next song to release or the members of a sub-unit.
 
 - A vote is a `Voted` log on the gravity contract. Its candidate stays hidden until COSMO calls `reveal`.
+- COSMO can publish a poll's running per-choice totals while voting is open (`fetchLiveVote()`), keyed by `choices[].id`. It's opt-in per poll, and the rest answer 404.
 - A `reveal` call carries a poll, a list of candidates and an offset: entry `i` is the candidate of the poll's vote at position `offset + i`, in on-chain order.
 - A gravity contains one or more polls. Multi-day "grand" gravities (e.g. Two Big WAVes) have one poll per day.
 - The contract has no notion of slots or pairings: every poll is a flat candidate list, so multi-pick formats enumerate each pairing as its own candidate (`HeeJin·HaSeul`, `HeeJin·KimLip`, ...).

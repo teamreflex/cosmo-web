@@ -2,10 +2,11 @@ import { Effect } from "effect";
 import {
   GravityListSchema,
   GravityResponseSchema,
+  LiveVoteSchema,
   PollDetailResponseSchema,
 } from "../schema/gravity";
 import type { ValidArtist } from "../types/common";
-import { bearer, cosmoClient, decodeBody } from "./http";
+import { bearer, cosmoClient, cosmoNoRetryClient, decodeBody } from "./http";
 
 /**
  * Fetch the list of gravities for the given artist.
@@ -49,4 +50,17 @@ export const fetchPoll = Effect.fn("Cosmo.fetchPoll")(function* (
     .get(`/bff/v3/polls/${pollId}`, { headers: bearer(token) })
     .pipe(Effect.flatMap(decodeBody(PollDetailResponseSchema)));
   return response.pollDetail;
+});
+
+/**
+ * Fetch a poll's running per-choice totals. Unauthenticated, and a 404 means
+ * COSMO hasn't published live totals for the poll.
+ */
+export const fetchLiveVote = Effect.fn("Cosmo.fetchLiveVote")(function* (
+  pollId: number,
+) {
+  const client = yield* cosmoNoRetryClient;
+  return yield* client
+    .get(`/bff/v4/gravity-polls/${pollId}/live-vote`)
+    .pipe(Effect.flatMap(decodeBody(LiveVoteSchema)));
 });

@@ -35,15 +35,22 @@ export default function VotingPanel(props: Props) {
         </div>
       </div>
 
-      <div className="relative">
-        <div className="flex flex-col px-3">
-          {Array.from({ length: SEALED_ROWS }, (_, index) => (
-            <SealedRow key={index} index={index} />
-          ))}
-        </div>
+      <SealedRows />
+    </div>
+  );
+}
 
-        <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-transparent to-background" />
+/** An outline of the race, dissolving into the page. Also stands in while live totals load. */
+export function SealedRows() {
+  return (
+    <div className="relative">
+      <div className="flex flex-col px-3">
+        {Array.from({ length: SEALED_ROWS }, (_, index) => (
+          <SealedRow key={index} index={index} />
+        ))}
       </div>
+
+      <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-transparent to-background" />
     </div>
   );
 }

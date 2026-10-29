@@ -5,6 +5,7 @@ import { ofetch } from "ofetch";
 import {
   $fetchActiveGravities,
   $fetchCachedPoll,
+  $fetchLiveVote,
   $fetchPaginatedGravities,
   $fetchRecentVotes,
 } from "../functions/gravity";
@@ -82,4 +83,13 @@ export const gravityVoteDataQuery = (pollId: number) =>
       const end = new Date(endDate).getTime();
       return now >= start && now < end + 60_000 ? VOTING_POLL_INTERVAL : false;
     },
+  });
+
+const LIVE_VOTE_POLL_INTERVAL = 15_000;
+
+export const liveVoteQuery = (pollId: number) =>
+  queryOptions({
+    queryKey: ["gravity", "live-vote", pollId],
+    queryFn: ({ signal }) => $fetchLiveVote({ signal, data: { pollId } }),
+    refetchInterval: LIVE_VOTE_POLL_INTERVAL,
   });

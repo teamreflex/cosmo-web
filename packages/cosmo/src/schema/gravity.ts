@@ -381,3 +381,28 @@ export const PollChoicesSchema = Schema.Union([
 export const PollDetailResponseSchema = Schema.Struct({
   pollDetail: PollChoicesSchema,
 });
+
+/**
+ * Running per-choice totals while a poll is open. COSMO publishes these per
+ * poll, so most polls answer 404.
+ */
+export const LiveVoteSchema = Schema.Struct({
+  gravityId: Schema.Number,
+  pollId: Schema.Number,
+  updatedAt: Schema.String,
+  totalComo: Schema.Number,
+  totalParticipants: Schema.Number,
+  candidates: Schema.mutable(
+    Schema.Array(
+      Schema.Struct({
+        // matches the poll's `choices[].id`
+        choiceId: Schema.String,
+        title: Schema.String,
+        imageUrl: Schema.String,
+        totalComo: Schema.Number,
+        revealedComo: Schema.Number,
+        rank: Schema.Number,
+      }),
+    ),
+  ),
+});

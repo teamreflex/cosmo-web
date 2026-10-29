@@ -1,5 +1,6 @@
 import type {
   GravitySchema,
+  LiveVoteSchema,
   PastGravitySchema,
   PollChoicesSchema,
   PollFinalizedSchema,
@@ -27,3 +28,5 @@ export type PollSelectedContentImage =
   typeof PollViewSelectedContentSchema.Type;
 
 export type CosmoPollChoices = typeof PollChoicesSchema.Type;
+
+export type CosmoLiveVote = typeof LiveVoteSchema.Type;

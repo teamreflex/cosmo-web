@@ -8,14 +8,23 @@ import { getProxiedToken } from "@/lib/server/proxied-token.server";
 import { getRequestSignal } from "@/lib/server/request.server";
 import { CosmoApiError } from "@apollo/cosmo/errors";
 import { runCosmo } from "@apollo/cosmo/runtime";
-import { GravitySchema, PollChoicesSchema } from "@apollo/cosmo/schema/gravity";
-import { fetchGravity, fetchPoll } from "@apollo/cosmo/server/gravity";
+import {
+  GravitySchema,
+  LiveVoteSchema,
+  PollChoicesSchema,
+} from "@apollo/cosmo/schema/gravity";
+import {
+  fetchGravity,
+  fetchLiveVote,
+  fetchPoll,
+} from "@apollo/cosmo/server/gravity";
 import { gravities, gravityPolls } from "@apollo/database/web/schema";
 import { addr } from "@apollo/util";
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { isBefore } from "date-fns";
 import { and, asc, desc, eq, getColumns, gte, inArray, lt } from "drizzle-orm";
+import { Schema } from "effect";
 import * as z from "zod";
 import { $fetchArtists } from "./artists";
 
@@ -244,6 +253,32 @@ export const $fetchCachedPoll = createServerFn({ method: "GET" })
       isBefore(info.endDate, Date.now()) ? 60 * 60 * 24 * 30 : 60 * 60,
       fn,
       PollChoicesSchema,
+    );
+  });
+
+/**
+ * Fetch a poll's running per-choice totals while voting is open, or null when
+ * COSMO hasn't published them. Cached briefly so every viewer shares one
+ * COSMO request.
+ */
+export const $fetchLiveVote = createServerFn({ method: "GET" })
+  .validator(z.object({ pollId: z.number().int().positive() }))
+  .handler(async ({ data }) => {
+    const signal = getRequestSignal();
+    return await remember(
+      `gravity-live-vote:${data.pollId}`,
+      10,
+      async () => {
+        try {
+          return await runCosmo(fetchLiveVote(data.pollId), signal);
+        } catch (err) {
+          if (err instanceof CosmoApiError && err.status === 404) {
+            return null;
+          }
+          throw err;
+        }
+      },
+      Schema.NullOr(LiveVoteSchema),
     );
   });
 

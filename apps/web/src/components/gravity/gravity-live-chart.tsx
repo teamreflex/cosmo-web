@@ -9,6 +9,7 @@ import {
 import {
   useChartSeries,
   useGravityData,
+  useLiveVote,
   usePollSlots,
   useReveals,
   useSlotRankings,
@@ -27,7 +28,7 @@ import Countdown from "./countdown";
 import GravityRail from "./gravity-rail";
 import type { TrajectoryLine } from "./timeline-chart";
 import TimelineChart from "./timeline-chart";
-import VotingPanel from "./voting-panel";
+import VotingPanel, { SealedRows } from "./voting-panel";
 
 export type Props = {
   artist: CosmoArtistWithMembersBFF;
@@ -49,10 +50,20 @@ export default function AbstractLiveChart(props: Props) {
     aggregated,
   });
 
+  // picks stay sealed on-chain until the poll closes
+  const voting =
+    reveals.liveStatus === "upcoming" || reveals.liveStatus === "voting";
+  // COSMO publishes running totals for some polls, which race in place of the sealed panel
+  const liveVote = useLiveVote(poll, reveals.liveStatus === "voting");
+  const sealed =
+    reveals.liveStatus === "upcoming" || liveVote.status === "unpublished";
+
   const slots = usePollSlots(poll, props.artist.artistMembers);
   const rankings = useSlotRankings(
     slots,
-    reveals.comoPerCandidate,
+    liveVote.status === "published"
+      ? liveVote.comoPerCandidate
+      : reveals.comoPerCandidate,
     reveals.latestBatch,
   );
 
@@ -70,10 +81,6 @@ export default function AbstractLiveChart(props: Props) {
     () => buildTrajectoryLines(groups, series),
     [groups, series],
   );
-
-  // picks stay sealed until the poll closes, so no candidate has data yet
-  const sealed =
-    reveals.liveStatus === "upcoming" || reveals.liveStatus === "voting";
 
   return (
     <div className="flex w-full flex-col gap-2">
@@ -110,7 +117,9 @@ export default function AbstractLiveChart(props: Props) {
 
       {/* the rail is wide enough for its three tabs in every locale */}
       <div className="grid items-start gap-2 lg:grid-cols-[minmax(0,1fr)_384px]">
-        {sealed ? (
+        {liveVote.status === "loading" ? (
+          <SealedRows />
+        ) : sealed ? (
           <VotingPanel countingStartsAt={poll.endDate} />
         ) : (
           <CandidateBreakdown
@@ -125,7 +134,7 @@ export default function AbstractLiveChart(props: Props) {
           topUsers={reveals.topUsers}
           topVotes={reveals.topVotes}
           choices={choices}
-          recentVotesPollId={sealed ? poll.id : undefined}
+          recentVotesPollId={voting ? poll.id : undefined}
         />
       </div>
     </div>
