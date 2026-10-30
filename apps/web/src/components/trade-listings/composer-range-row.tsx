@@ -88,7 +88,7 @@ export default function ComposerRangeRow({
     );
 
   return (
-    <div className="flex flex-col rounded-lg border border-amber-500/35 bg-background">
+    <div className="flex flex-col rounded-lg border border-border bg-background">
       <div className="flex flex-col gap-3 p-3 md:p-3.5">
         {/* below sm the count and its words drop under the badge and buttons */}
         <div className="flex flex-wrap items-center gap-2 md:gap-2.5">
