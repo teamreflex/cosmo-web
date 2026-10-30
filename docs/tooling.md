@@ -62,6 +62,7 @@ How the monorepo is wired, run locally, linted, formatted and type-checked, plus
 - `DATABASE_URL` goes through pgbouncer; `DATABASE_URL_UNPOOLED` is the direct connection drizzle-kit and the migrator need.
 - `COSMO_KEY` is only the fallback: the live COSMO encryption key is the `cosmo-key` Redis key (see below).
 - `VITE_CHAT_URL` unset turns chat off in the web app.
+- `VITE_UMAMI_SCRIPT_INTEGRITY` is the SRI hash of the script at `VITE_UMAMI_SCRIPT_URL`. Each umami release ships a different script, so recompute the hash and rebuild web whenever umami is upgraded. If the hash is stale, browsers refuse to run the script and analytics stop with no visible error. Get the new value with `curl -s <script url> | openssl dgst -sha384 -binary | openssl base64 -A` and prefix it with `sha384-`.
 
 `.env.example` names some variables for Compose, which renames them for the container:
 

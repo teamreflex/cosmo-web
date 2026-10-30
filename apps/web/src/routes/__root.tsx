@@ -140,20 +140,20 @@ export const Route = createRootRouteWithContext<RouterContext>()({
         { rel: "icon", href: "/favicon.ico" },
       ],
     }),
-  scripts: () => {
-    const scripts = [];
-
-    // umami analytics
-    if (env.VITE_UMAMI_ID && env.VITE_UMAMI_SCRIPT_URL) {
-      scripts.push({
-        src: env.VITE_UMAMI_SCRIPT_URL,
-        defer: true,
-        "data-website-id": env.VITE_UMAMI_ID,
-      });
-    }
-
-    return scripts;
-  },
+  // umami analytics
+  scripts: () =>
+    env.VITE_UMAMI_ID && env.VITE_UMAMI_SCRIPT_URL
+      ? [
+          {
+            src: env.VITE_UMAMI_SCRIPT_URL,
+            defer: true,
+            integrity: env.VITE_UMAMI_SCRIPT_INTEGRITY,
+            // integrity is only checked on a CORS request
+            crossOrigin: "anonymous",
+            "data-website-id": env.VITE_UMAMI_ID,
+          },
+        ]
+      : [],
 });
 
 function ShellComponent({ children }: { children: React.ReactNode }) {

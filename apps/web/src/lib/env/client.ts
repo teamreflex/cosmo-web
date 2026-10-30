@@ -15,6 +15,11 @@ export const env = createEnv({
     // umami analytics
     VITE_UMAMI_ID: z.string().optional(),
     VITE_UMAMI_SCRIPT_URL: z.url().optional(),
+    // subresource integrity hash of the umami script, e.g. sha384-...
+    VITE_UMAMI_SCRIPT_INTEGRITY: z
+      .string()
+      .regex(/^sha(256|384|512)-[A-Za-z0-9+/]+={0,2}$/)
+      .optional(),
     // sentry
     VITE_SENTRY_DSN: z.string().optional(),
     // typesense
