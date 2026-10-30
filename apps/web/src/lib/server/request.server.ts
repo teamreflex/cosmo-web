@@ -13,14 +13,10 @@ export function getRequestSignal(): AbortSignal | undefined {
 }
 
 /**
- * Client IP for rate-limit keying. Header order matches Better Auth's
- * `ipAddressHeaders`: Cloudflare's header first, then the standard proxy one.
+ * Client IP for rate-limit keying, read from the same header as Better Auth's
+ * `ipAddressHeaders`. `x-forwarded-for` is ignored because a client can spoof it.
  */
 export function getClientIp(): string {
   const headers = getRequestHeaders();
-  return (
-    headers.get("cf-connecting-ip") ??
-    headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    "unknown"
-  );
+  return headers.get("cf-connecting-ip") ?? "unknown";
 }

@@ -321,7 +321,7 @@ export const auth = betterAuth({
   },
   advanced: {
     ipAddress: {
-      ipAddressHeaders: ["cf-connecting-ip", "x-forwarded-for"],
+      ipAddressHeaders: ["cf-connecting-ip"],
     },
     cookiePrefix: "apollo",
   },
