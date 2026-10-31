@@ -69,12 +69,12 @@ Anyone with market access and a linked COSMO account can make up to three plain 
 
 The market has two dismissable notices, each remembered per browser in an httpOnly cookie of its name (`lib/functions/market-notice.ts`).
 
-| Notice                | Shown                                                                                                                                                         | Dismissed by                    |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
-| `market-notice`       | an alert dialog on `/market`, `/market/collections` and listing pages until the visitor accepts it, signed out or not (`components/market/market-notice.tsx`) | Accept                          |
-| `range-offers-notice` | the composer's dialog before a listing starts taking offers ([listings.md](listings.md#the-composer))                                                         | its "Don't show this again" box |
+| Notice                | Shown                                                                                                                                                                                       | Dismissed by                     |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| `market-notice`       | a stepped guide to trading in an alert dialog on `/market`, `/market/collections` and listing pages until the visitor accepts it, signed out or not (`components/market/market-notice.tsx`) | "Start trading" on its last step |
+| `range-offers-notice` | the composer's dialog before a listing starts taking offers ([listings.md](listings.md#the-composer))                                                                                       | its "Don't show this again" box  |
 
 - `$dismissNotice` sets the notice's cookie to its version in `NOTICE_VERSIONS` for a year (`useDismissNotice()` in `hooks/use-dismiss-notice.ts`).
 - The `/market` route reads every notice cookie on the server in one call (`$fetchDismissedNotices`, `dismissedNoticesQuery`), so SSR renders the dialog open or closed without a flash.
 - Bumping a notice's version in `NOTICE_VERSIONS` shows it to everyone again.
-- The market notice's claim-cap copy reads `CLAIM_CAP_BASE`, `CLAIM_CAP_TIERS` and `CLAIM_CAP_CEILING`, so it can't drift from `claimCap()`.
+- The market notice's numbers come from `CLAIM_CAP_BASE`, `CLAIM_CAP_TIERS`, `CLAIM_CAP_CEILING`, `CLAIM_WINDOW` and `FEEDBACK_WINDOW_DAYS`, so its copy can't drift from the rules it describes.

@@ -12,7 +12,7 @@ export type Notice = z.infer<typeof noticeSchema>;
 
 // bump a notice's version to show it again to everyone who dismissed an older one
 const NOTICE_VERSIONS = {
-  "market-notice": 1,
+  "market-notice": 2,
   "range-offers-notice": 1,
 } satisfies Record<Notice, number>;
 // a year, in seconds
