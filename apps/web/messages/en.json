@@ -1188,6 +1188,8 @@
   "error_try_again": "Try Again",
   "error_unknown": "An unknown error occurred",
   "error_rate_limited": "Too many requests, please try again in a moment.",
+  "error_market_invite_unavailable": "This user can't be invited.",
+  "error_market_invites_exhausted": "You've used all your invites.",
   "error_not_found_title": "User not found",
   "error_not_found_description": "User could not be found in {appName} or COSMO.",
   "error_objekt_not_found": "Objekt not found",
@@ -2545,6 +2547,21 @@
   "listing_poster_trades_empty": "No trades yet",
   "listing_poster_trades_empty_body": "Trades from this listing show up here, from the moment they start until they end.",
   "my_trades_title": "My Trades",
+  "market_invite_button": "Invite",
+  "market_invite_title": "Invite a tester",
+  "market_invite_description": "Give someone you know early access to the market. They need an {appName} account linked to their COSMO profile.",
+  "market_invite_user": "User",
+  "market_invite_success": "{username} can now use the market",
+  "market_invite_left": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=one": "You have {count} invite left.",
+        "countPlural=other": "You have {count} invites left."
+      }
+    }
+  ],
   "my_trades_tabs": "Which trades",
   "my_trades_tab_active": "Active",
   "my_trades_tab_finished": "Finished",

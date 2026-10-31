@@ -1167,6 +1167,8 @@
   "error_try_again": "再試一次",
   "error_unknown": "發生未知錯誤",
   "error_rate_limited": "請求次數過多，請稍後再試。",
+  "error_market_invite_unavailable": "無法邀請此使用者。",
+  "error_market_invites_exhausted": "你的邀請已全部用完。",
   "error_not_found_title": "找不到使用者",
   "error_not_found_description": "在 {appName} 和 COSMO 中都找不到這位使用者。",
   "error_objekt_not_found": "找不到 Objekt",
@@ -2491,6 +2493,20 @@
   "listing_poster_trades_empty": "還沒有交換",
   "listing_poster_trades_empty_body": "這則刊登的交換從開始到結束都會顯示在這裡。",
   "my_trades_title": "我的交換",
+  "market_invite_button": "邀請",
+  "market_invite_title": "邀請測試員",
+  "market_invite_description": "讓你認識的人提前使用市集。對方的 COSMO 個人檔案需要連結 {appName} 帳號。",
+  "market_invite_user": "使用者",
+  "market_invite_success": "{username} 現在可以使用市集了",
+  "market_invite_left": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "剩餘 {count} 個邀請"
+      }
+    }
+  ],
   "my_trades_tabs": "交換分類",
   "my_trades_tab_active": "進行中",
   "my_trades_tab_finished": "已結束",

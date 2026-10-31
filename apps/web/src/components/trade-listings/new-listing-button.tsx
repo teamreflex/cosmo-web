@@ -11,16 +11,21 @@ import ListingComposer from "./listing-composer";
 
 /**
  * Opens the composer for a new listing. Posting needs an account with a
- * linked COSMO profile, so the same button signs in or links first.
+ * linked COSMO profile, so the same button signs in or links first. Phones
+ * get an icon.
  */
 export default function NewListingButton() {
   const { data: account } = useSuspenseQuery(currentAccountQuery);
   const href = useLocation({ select: (location) => location.href });
   const [open, setOpen] = useState(false);
   const button = (
-    <Button size="sm" className="max-md:h-9">
+    <Button
+      size="sm"
+      aria-label={m.listing_composer_new()}
+      className="max-md:size-9 max-md:px-0"
+    >
       <IconPlus />
-      {m.listing_composer_new()}
+      <span className="max-md:hidden">{m.listing_composer_new()}</span>
     </Button>
   );
 
@@ -33,9 +38,14 @@ export default function NewListingButton() {
 
   return (
     <>
-      <Button size="sm" className="max-md:h-9" onClick={() => setOpen(true)}>
+      <Button
+        size="sm"
+        aria-label={m.listing_composer_new()}
+        className="max-md:size-9 max-md:px-0"
+        onClick={() => setOpen(true)}
+      >
         <IconPlus />
-        {m.listing_composer_new()}
+        <span className="max-md:hidden">{m.listing_composer_new()}</span>
       </Button>
       <ListingComposer
         mode={{ kind: "create" }}

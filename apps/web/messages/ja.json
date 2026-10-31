@@ -1165,6 +1165,8 @@
   "error_try_again": "再試行",
   "error_unknown": "不明なエラーが発生しました",
   "error_rate_limited": "リクエストが多すぎます。しばらくしてからもう一度お試しください。",
+  "error_market_invite_unavailable": "このユーザーは招待できません。",
+  "error_market_invites_exhausted": "招待をすべて使い切りました。",
   "error_not_found_title": "ユーザーが見つかりません",
   "error_not_found_description": "このユーザーは{appName}またはCOSMOに存在しません。",
   "error_objekt_not_found": "Objektが見つかりません",
@@ -2489,6 +2491,20 @@
   "listing_poster_trades_empty": "まだトレードはありません",
   "listing_poster_trades_empty_body": "この出品からのトレードは、始まってから終わるまでここに表示されます。",
   "my_trades_title": "マイトレード",
+  "market_invite_button": "招待",
+  "market_invite_title": "テスターを招待",
+  "market_invite_description": "知り合いにマーケットを先行して使えるようにします。相手のCOSMOプロフィールに{appName}アカウントが連携されている必要があります。",
+  "market_invite_user": "ユーザー",
+  "market_invite_success": "{username}さんがマーケットを使えるようになりました",
+  "market_invite_left": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "残りの招待：{count}件"
+      }
+    }
+  ],
   "my_trades_tabs": "表示するトレード",
   "my_trades_tab_active": "進行中",
   "my_trades_tab_finished": "終了",

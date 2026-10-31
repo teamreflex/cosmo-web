@@ -18,6 +18,11 @@ type Props = {
   value: CosmoPublicUser | null;
   onChange: (user: CosmoPublicUser | null) => void;
   invalid?: boolean;
+  /**
+   * Focuses the search on mount, for a dialog whose content mounts after it
+   * has already picked where focus goes.
+   */
+  autoFocus?: boolean;
 };
 
 export default function CosmoUserCombobox({
@@ -26,6 +31,7 @@ export default function CosmoUserCombobox({
   value,
   onChange,
   invalid,
+  autoFocus,
 }: Props) {
   const [query, setQuery] = useState("");
   const [debouncedQuery] = useDebounceValue(query, 500);
@@ -96,6 +102,7 @@ export default function CosmoUserCombobox({
       <Input
         id={id}
         ref={inputRef}
+        autoFocus={autoFocus}
         placeholder={m.user_search_placeholder()}
         value={query}
         onChange={(e) => {

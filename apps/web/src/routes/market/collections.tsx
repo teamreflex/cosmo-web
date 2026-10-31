@@ -86,8 +86,8 @@ function PendingComponent() {
         total={<ObjektTotalSlot />}
         actions={
           <>
+            <Skeleton className="size-9 md:h-8 md:w-24" />
             <Skeleton className="size-9 md:h-8 md:w-28" />
-            <Skeleton className="h-8 w-28" />
           </>
         }
       >

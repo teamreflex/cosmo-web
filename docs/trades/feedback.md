@@ -42,12 +42,25 @@ The limits on posting, editing, claiming, cancelling, disputing and rating are i
 - A tester holds market access and nothing else, so people trying the market before launch see it as a plain user will.
 - The gate covers pages and entry points only. `/market/*` (through `routes/market/route.tsx`), `/trade/$id` and `/@{$username}/feedback` call `requireMarketAccess()` in `beforeLoad` and 404 without it.
 - Links into the market (the navbar, the user menu, the notification bell, the profile report button, offer picking in Trade Matches) check `useHasPermission()(marketAccess)`.
-- The server functions aren't gated, with one exception: a direct offer or counter only goes to someone with market access, since they couldn't open it to answer. Trade Matches still lists them, marked not `offerable`, and `preflightOffer()` refuses them `offer_unavailable`.
+- The trade server functions aren't gated, with one exception: a direct offer or counter only goes to someone with market access, since they couldn't open it to answer. Trade Matches still lists them, marked not `offerable`, and `preflightOffer()` refuses them `offer_unavailable`.
+
+## Invites
+
+Anyone with market access and a linked COSMO account can make up to three plain users testers, from the Invite button on `/market` (`$inviteToMarket`, `functions/market-invites.ts`).
+
+- Invitees can invite too, so the number of testers isn't bounded, and demoting a tester leaves the testers they invited in place.
+- Each inviter's invitees are a Redis set, `market-invites:<userId>`, that expires on 2027-01-01, so nothing is stored in Postgres and nothing needs cleaning up after launch. A missing set means no invites used, so invites also close on that date.
+- The slot is reserved after the invitee's row is locked and checked, so a parallel invite of the same user waits and then finds a tester. `reserveInvite()` checks the limit and adds the invitee in one Lua script, so parallel invites of different users can't both take the last slot.
+- A failed role update releases the slot inside the transaction. A failed commit after that leaks it, because Redis can't join the transaction.
+- An invitee already in the inviter's set has been demoted by staff since, so re-inviting them is refused rather than undoing that.
+- Every refusal for the invitee (no linked account, not a plain `user`, banned, already invited) is `market_invite_unavailable`, so the dialog never reveals a role or a ban. An inviter with none left gets `market_invites_exhausted` before the invitee is looked up.
+- No `role-changed` event is published, because gaining market access ends nothing the invitee had open. No staff audit row is written either; the Redis set is the only record of who invited whom.
 
 ## Launch and kill switch
 
 1. Add `market: statement.market` to the `user` role in `packages/auth/src/index.ts`.
 2. Set `user: true` on the `market` row of `packages/auth/tests/roles.test.ts`.
+3. Delete `InviteButton` and its skeleton from `routes/market/index.tsx`, `formatMarketInviteError()` from the `formatError()` chain, the `market-invites` modules (component, function, query, server, schema, both error files), the `market_invite_*` and `error_market_invite*` messages, the [Invites](#invites) section, and the rows in `docs/tooling.md` and `docs/locking.md` that name `$inviteToMarket`.
 
 - There is no database step.
 - Removing it again is a safe kill switch only while no one outside staff has a live trade. After that, plain users can't open their trades or chat while the deadlines keep running, so their trades time out or are disputed; staff cancel the live trades from their trade pages instead.

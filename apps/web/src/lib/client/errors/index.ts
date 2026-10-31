@@ -4,6 +4,7 @@ import { formatBinderError } from "./binders";
 import { formatCollectionError } from "./collections";
 import { formatFeedbackError } from "./feedback";
 import { type Context, formatListError } from "./lists";
+import { formatMarketInviteError } from "./market-invites";
 import { formatRateLimitError } from "./rate-limit";
 import { formatReportError } from "./reports";
 import { formatSerialError } from "./serials";
@@ -16,6 +17,7 @@ export {
   formatCollectionError,
   formatFeedbackError,
   formatListError,
+  formatMarketInviteError,
   formatRateLimitError,
   formatReportError,
   formatSerialError,
@@ -24,8 +26,8 @@ export {
 
 /**
  * Localizes any expected error code (list/binder/auth/collection/report/
- * account/serial/trade/feedback), falling back to the raw message for
- * genuine errors.
+ * account/serial/trade/feedback/market invite), falling back to the raw
+ * message for genuine errors.
  */
 // oxlint-disable-next-line anti-slop/no-unknown-parameters -- boundary parser; caught errors are genuinely unknown
 export function formatError(error: unknown, context: Context = {}): string {
@@ -38,6 +40,7 @@ export function formatError(error: unknown, context: Context = {}): string {
     formatAccountError(error) ??
     formatTradeError(error) ??
     formatFeedbackError(error) ??
+    formatMarketInviteError(error) ??
     formatRateLimitError(error) ??
     formatSerialError(error);
 

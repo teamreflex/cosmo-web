@@ -62,7 +62,7 @@ Roles and the access-control `statement` are defined once in `packages/auth/src/
 | `user: ban, set-role`                                                   |      |        |           | x     |
 | `site: manage`, `audit: read`, `cosmo: history`                         |      |        |           | x     |
 
-- Testers exist so people can try the market while it is gated. The gate, its launch step and its kill switch are in [`trades/feedback.md`](trades/feedback.md).
+- Testers exist so people can try the market while it is gated. The gate, invites, the launch step and the kill switch are in [`trades/feedback.md`](trades/feedback.md).
 - Signed-out visitors are checked as `user`.
 - Never set `adminUserIds` in `adminPluginOptions`, because it bypasses every permission check.
 - Impersonation and session management are absent from the statement, so no role can be granted them. apps/chat also refuses impersonated sessions.

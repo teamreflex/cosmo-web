@@ -137,6 +137,7 @@ Keys and channels that more than one app touches, or that have a rule attached:
 | `objekt-stats`          | cache, 2 hours             | web                                                | web                           | schedules' `clear-objekt-stats` deletes it hourly                              |
 | `cosmo:verify:<userId>` | value, 5 min               | web                                                | web                           | the pending COSMO link verification code                                       |
 | `notice`                | value, no TTL              | staff                                              | web                           | the navbar notice                                                              |
+| `market-invites:<user>` | set, expires 2027-01-01    | web `$inviteToMarket`                              | web                           | the users the inviter made testers ([invites](trades/feedback.md#invites))     |
 | rate-limit buckets      | Effect `RateLimiter` store | web, chat                                          | web, chat                     | see [Rate limits](#rate-limits)                                                |
 
 - Every other key is a web-only read-through cache made by `remember()` in `apps/web/src/lib/server/cache.server.ts`; `rg "remember\("` lists them.
@@ -158,6 +159,7 @@ Web limits are fixed windows consumed through `consumeRateLimit()` in `apps/web/
 | `feedback-remove:<staff>` | 30 / 10 min | `$removeFeedback` (staff)                                        |
 | `report:<user>`           | 5 / 10 min  | `$createReport`, and chat's `Report`: one shared budget          |
 | `account-deletion:<user>` | 3 / 1 hour  | `$requestAccountDeletion`                                        |
+| `market-invite:<user>`    | 10 / 10 min | `$inviteToMarket`                                                |
 | `user-search:<ip>`        | 15 / 1 min  | `$searchUsers`                                                   |
 | `qr-recaptcha:<user>`     | 5 / 1 min   | `$fetchQrTicket`, because each call drives a browserless session |
 | `qr-ticket:<user>`        | 60 / 1 min  | `$queryQrTicket`                                                 |

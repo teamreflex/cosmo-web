@@ -1167,6 +1167,8 @@
   "error_try_again": "重试",
   "error_unknown": "发生未知错误",
   "error_rate_limited": "请求过于频繁，请稍后再试。",
+  "error_market_invite_unavailable": "无法邀请此用户。",
+  "error_market_invites_exhausted": "你的邀请已全部用完。",
   "error_not_found_title": "未找到用户",
   "error_not_found_description": "在 {appName} 和 COSMO 中均未找到该用户。",
   "error_objekt_not_found": "未找到 Objekt",
@@ -2491,6 +2493,20 @@
   "listing_poster_trades_empty": "还没有交换",
   "listing_poster_trades_empty_body": "这条挂单的交换从开始到结束都会显示在这里。",
   "my_trades_title": "我的交换",
+  "market_invite_button": "邀请",
+  "market_invite_title": "邀请测试员",
+  "market_invite_description": "让你认识的人提前使用市场。对方的 COSMO 资料需要关联 {appName} 账号。",
+  "market_invite_user": "用户",
+  "market_invite_success": "{username} 现在可以使用市场了",
+  "market_invite_left": [
+    {
+      "declarations": ["input count", "local countPlural = count: plural"],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "剩余 {count} 个邀请"
+      }
+    }
+  ],
   "my_trades_tabs": "交换分类",
   "my_trades_tab_active": "进行中",
   "my_trades_tab_finished": "已结束",
