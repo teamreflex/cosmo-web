@@ -26,23 +26,27 @@ How the monorepo is wired, run locally, linted, formatted and type-checked, plus
 
 `//#services` is `dotenv -c -- ./start.sh`: with `DEV_SERVICES=true` it runs `docker compose up` for the services below, otherwise it sleeps so `turbo dev` still works without Docker.
 
-| Service             | Host port | Started by      | Notes                                                                                    |
-| ------------------- | --------- | --------------- | ---------------------------------------------------------------------------------------- |
-| `postgres-web`      | 5435      | always          | direct connection, for drizzle-kit (`DATABASE_URL_UNPOOLED`)                             |
-| `pgbouncer-web`     | 5433      | always          | transaction pooling, for the app (`DATABASE_URL`)                                        |
-| `postgres-indexer`  | 5434      | always          | direct connection                                                                        |
-| `pgbouncer-indexer` | 5432      | always          | transaction pooling (`INDEXER_DATABASE_URL`)                                             |
-| `valkey`            | 6379      | always          | Redis                                                                                    |
-| `s3proxy`           | 9000      | always          | stands in for R2; bucket `apollo`, public at `localhost:9000/apollo`, no auth, CORS open |
-| `browserless`       | 5000      | always          | Chromium over CDP for the share-data reCAPTCHA (`CDP_ENDPOINT`)                          |
-| `typesense`         | 8108      | `DEV_TYPESENSE` | CORS allows only `http://localhost:3000`                                                 |
-| `processor`         | none      | `DEV_PROCESSOR` | `apps/indexer`; applies the indexer migrations on boot, connects to Postgres directly    |
-| `import-server`     | none      | `DEV_IMPORTER`  | `apps/typesense-import`                                                                  |
-| `schedules`         | none      | `DEV_SCHEDULES` | `apps/schedules`                                                                         |
-| `chat`              | 3001      | `DEV_CHAT`      | `apps/chat`; reaches the host's JWKS through `host.docker.internal`                      |
+| Service             | Host port | Started by      | Notes                                                                                   |
+| ------------------- | --------- | --------------- | --------------------------------------------------------------------------------------- |
+| `postgres-web`      | 5435      | always          | direct connection, for drizzle-kit (`DATABASE_URL_UNPOOLED`)                            |
+| `pgbouncer-web`     | 5433      | always          | transaction pooling, for the app (`DATABASE_URL`)                                       |
+| `postgres-indexer`  | 5434      | always          | direct connection                                                                       |
+| `pgbouncer-indexer` | 5432      | always          | transaction pooling (`INDEXER_DATABASE_URL`)                                            |
+| `valkey`            | 6379      | always          | Redis                                                                                   |
+| `floci`             | 9000      | always          | stands in for R2 and SES; bucket `apollo`, public at `localhost:9000/apollo`, CORS open |
+| `mailpit`           | 8025      | always          | browser inbox for every email floci captures                                            |
+| `browserless`       | 5000      | always          | Chromium over CDP for the share-data reCAPTCHA (`CDP_ENDPOINT`)                         |
+| `typesense`         | 8108      | `DEV_TYPESENSE` | CORS allows only `http://localhost:3000`                                                |
+| `processor`         | none      | `DEV_PROCESSOR` | `apps/indexer`; applies the indexer migrations on boot, connects to Postgres directly   |
+| `import-server`     | none      | `DEV_IMPORTER`  | `apps/typesense-import`                                                                 |
+| `schedules`         | none      | `DEV_SCHEDULES` | `apps/schedules`                                                                        |
+| `chat`              | 3001      | `DEV_CHAT`      | `apps/chat`; reaches the host's JWKS through `host.docker.internal`                     |
 
 - The web app always runs on the host.
 - Containers get their database, Redis and R2 URLs from `docker-compose.yml`, not from `.env`.
+- `docker/floci/ready.sh` runs on every floci boot: it creates the bucket and verifies `MAIL_SES_FROM` in `MAIL_SES_REGION`, because SES refuses mail from unverified senders and identities are per region.
+- The web app sends mail into floci only when `MAIL_SES_ENDPOINT` points at it, otherwise to real SES. Floci keeps a copy at `localhost:9000/_aws/ses` and relays it to mailpit; a failed relay is only logged, so mail missing from mailpit is still in floci.
+- Don't turn on `FLOCI_SERVICES_S3_ENFORCE_AUTH`, because it makes the anonymous reads behind `VITE_CDN_URL` need a bucket policy.
 
 ## Environment variables
 

@@ -3,6 +3,8 @@ import { env as serverEnv } from "@/lib/env/server";
 import { SES } from "@aws-sdk/client-ses";
 
 const ses = new SES({
+  // set locally to send into the floci docker service instead of real SES
+  endpoint: serverEnv.MAIL_SES_ENDPOINT,
   region: serverEnv.MAIL_SES_REGION,
   credentials: {
     accessKeyId: serverEnv.MAIL_SES_ACCESS_KEY,

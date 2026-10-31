@@ -134,25 +134,45 @@ services:
     networks:
       - apollo-network
 
-  # s3-compatible stand-in for cloudflare r2, serving the bucket publicly at localhost:9000/apollo
-  s3proxy:
-    image: andrewgaul/s3proxy:4.1.1
+  # aws emulator standing in for cloudflare r2 and ses, serving the bucket publicly at localhost:9000/apollo
+  floci:
+    # compat variant ships the aws cli that docker/floci/ready.sh uses
+    image: floci/floci:2.4.0-compat
     restart: on-failure
     ports:
-      - "9000:80"
+      - "9000:4566"
     deploy:
       resources:
         limits:
           memory: 512m
-    # buckets are directories under /data
-    command: sh -c "mkdir -p /data/apollo && exec /opt/s3proxy/run-docker-container.sh"
     environment:
-      # objects need to be publicly readable like the r2 custom domain, which s3proxy only allows without auth
-      - S3PROXY_AUTHORIZATION=none
+      # hybrid serves from memory and flushes to /app/data, so state survives restarts
+      - FLOCI_STORAGE_MODE=hybrid
+      # bun's S3Client signs r2's "auto" region, which floci otherwise refuses
+      - FLOCI_PARTITIONS_ALLOW_UNKNOWN_REGIONS=true
       # presigned uploads come straight from the browser
-      - S3PROXY_CORS_ALLOW_ALL=true
+      - EXTRA_CORS_ALLOWED_ORIGINS=*
+      - MAIL_SES_FROM=${MAIL_SES_FROM}
+      - MAIL_SES_REGION=${MAIL_SES_REGION}
+      # every captured email is also relayed to mailpit's inbox
+      - FLOCI_SERVICES_SES_SMTP_HOST=mailpit
+      - FLOCI_SERVICES_SES_SMTP_PORT=1025
     volumes:
-      - s3proxy-data:/data
+      - floci-data:/app/data
+      - ./docker/floci/ready.sh:/etc/floci/init/ready.d/apollo.sh:ro
+    networks:
+      - apollo-network
+
+  # browser inbox for the mail floci captures, at localhost:8025
+  mailpit:
+    image: axllent/mailpit:v1.31.6
+    restart: on-failure
+    ports:
+      - "8025:8025"
+    deploy:
+      resources:
+        limits:
+          memory: 128m
     networks:
       - apollo-network
 
@@ -176,7 +196,7 @@ services:
       - ENABLE_GRAVITY=${INDEXER_ENABLE_GRAVITY}
       - COSMO_PARALLEL_COUNT=${INDEXER_COSMO_PARALLEL_COUNT}
       - SENTRY_DSN=${INDEXER_SENTRY_DSN}
-      - R2_ENDPOINT=http://s3proxy
+      - R2_ENDPOINT=http://floci:4566
       - R2_BUCKET=apollo
       - R2_ACCESS_KEY=local
       - R2_SECRET_KEY=local
@@ -184,7 +204,7 @@ services:
       # indexer shouldn't go through pgbouncer
       postgres-indexer:
         condition: service_healthy
-      s3proxy:
+      floci:
         condition: service_healthy
     networks:
       - apollo-network
@@ -306,4 +326,4 @@ volumes:
   postgres-indexer-data:
   typesense-data:
   valkey-data:
-  s3proxy-data:
+  floci-data:
