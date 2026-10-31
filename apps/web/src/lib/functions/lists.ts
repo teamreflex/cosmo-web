@@ -13,10 +13,10 @@ import {
   fetchLatestFxRate,
 } from "@/lib/server/objekts/fx.server";
 import {
-  assertOwnsTokensMulti,
   assertUserOwnsList,
   queueTradeNotifications,
   tradePair,
+  withOwnedTokenSlugs,
 } from "@/lib/server/objekts/lists.server";
 import { readOfferSerials } from "@/lib/server/trades/offer.server";
 import { refuseTrade } from "@/lib/server/trades/trade.server";
@@ -188,12 +188,15 @@ export const $getObjektListWithUser = createServerFn({ method: "GET" })
 
     const { user, ...listData } = list;
     const { cosmoAccount, ...userRow } = user;
+    const owner = toPublicUser(userRow);
 
     return {
       ...listData,
       fxRateToUsd,
-      user: toPublicUser(userRow),
-      userDisplay: userRow.displayUsername ?? userRow.name,
+      user: owner,
+      // an OAuth-only account has no username, and its provider name is only public beside its socials
+      userDisplay:
+        owner.username ?? (owner.showSocials ? userRow.name : undefined),
       cosmoUsername: cosmoAccount?.username,
     };
   });
@@ -580,12 +583,9 @@ export const $addObjektsToSaleList = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const userId = context.session.user.id;
 
-    await assertOwnsTokensMulti(
+    const entries = await withOwnedTokenSlugs(
       context.cosmo.address,
-      data.entries.map((e) => ({
-        tokenId: e.tokenId,
-        collectionId: e.collectionId,
-      })),
+      data.entries,
     );
 
     const verifiedAt = new Date().toISOString();
@@ -606,7 +606,7 @@ export const $addObjektsToSaleList = createServerFn({ method: "POST" })
       const inserted = await tx
         .insert(objektListEntries)
         .values(
-          data.entries.map((entry) => ({
+          entries.map((entry) => ({
             objektListId: data.objektListId,
             collectionId: entry.slug,
             tokenId: entry.tokenId,
@@ -636,12 +636,9 @@ export const $addObjektsToHaveList = createServerFn({ method: "POST" })
     const userId = context.session.user.id;
 
     // verify ownership against the indexer first
-    await assertOwnsTokensMulti(
+    const owned = await withOwnedTokenSlugs(
       context.cosmo.address,
-      data.objekts.map((o) => ({
-        tokenId: o.tokenId,
-        collectionId: o.collectionId,
-      })),
+      data.objekts,
     );
 
     const verifiedAt = new Date().toISOString();
@@ -662,7 +659,7 @@ export const $addObjektsToHaveList = createServerFn({ method: "POST" })
       const inserted = await tx
         .insert(objektListEntries)
         .values(
-          data.objekts.map((o) => ({
+          owned.map((o) => ({
             objektListId: data.objektListId,
             collectionId: o.slug,
             tokenId: o.tokenId,

@@ -101,8 +101,6 @@ export const addObjektsToHaveListSchema = z.object({
   objekts: z
     .array(
       z.object({
-        slug: z.string(),
-        collectionId: z.uuid(),
         tokenId: z.string(),
       }),
     )
@@ -132,9 +130,6 @@ export const addObjektsToSaleListSchema = z.object({
   entries: z
     .array(
       z.object({
-        slug: z.string(),
-        collectionId: z.uuid(),
-        collectionName: z.string(),
         tokenId: z.string(),
         price: salePriceSchema,
       }),

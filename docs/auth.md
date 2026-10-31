@@ -12,14 +12,14 @@ Better Auth runs inside apps/web at `/api/auth/*`, configured in `apps/web/src/l
 - OAuth access and refresh tokens are encrypted on write with AES-256-GCM, keyed by `BETTER_AUTH_SECRET` read as hex. Nothing in the repo decrypts them. The secret's format is in [`tooling.md`](tooling.md).
 - The browser client (`lib/client/auth.ts`) has no admin or api-key plugin. Staff work goes through server functions.
 
-| Plugin                         | Used for                                                                      |
-| ------------------------------ | ----------------------------------------------------------------------------- |
-| `username`                     | Apollo usernames, 3 to 20 letters and digits                                  |
-| `admin(adminPluginOptions)`    | role and ban columns, the sign-in refusal for banned users, `unbanUser`       |
-| `@better-auth/api-key`         | keys for the public API routes ([API keys](#api-keys))                        |
-| `jwt`                          | chat tokens ([Chat tokens](#chat-tokens))                                     |
-| `server-only-currency` (local) | keeps `currency` out of client writes ([Display currency](#display-currency)) |
-| `tanstackStartCookies`         | sets cookies from server functions                                            |
+| Plugin                            | Used for                                                                                                                |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `username`                        | Apollo usernames, 3 to 20 letters and digits                                                                            |
+| `admin(adminPluginOptions)`       | role and ban columns, the sign-in refusal for banned users, `unbanUser`                                                 |
+| `@better-auth/api-key`            | keys for the public API routes ([API keys](#api-keys))                                                                  |
+| `jwt`                             | chat tokens ([Chat tokens](#chat-tokens))                                                                               |
+| `server-only-user-fields` (local) | keeps `currency` and `displayUsername` out of client writes ([Client-written user fields](#client-written-user-fields)) |
+| `tanstackStartCookies`            | sets cookies from server functions                                                                                      |
 
 `hooks.before` 404s two plugin route families when they are called over HTTP:
 
@@ -33,6 +33,14 @@ Better Auth runs inside apps/web at `/api/auth/*`, configured in `apps/web/src/l
 - Discord and X run with `overrideUserInfoOnSignIn`, and account linking runs with `allowDifferentEmails`. A sign-in can overwrite `email` and `email_verified`, which decide [account protection](#protected-accounts).
 - An X account with no confirmed email stores the X username as the email. Such an account has no deliverable email.
 - Both behaviours are deliberate.
+
+### Client-written user fields
+
+Better Auth's `/update-user` and `/sign-up/email` accept every user field marked `input: true`, so any signed-in user can write those fields directly, bypassing the UI.
+
+- `discord` and `twitter` are `input: false`. Only `mapProfileToUser` fills them, from the OAuth profile, so a handle shown on a profile or listing belongs to an account the user signed in with.
+- The `username` plugin validates `displayUsername` only when a `displayUsernameValidator` is set. The `server-only-user-fields` plugin drops any `displayUsername` a client sends and copies the validated `username` into it instead.
+- `currency` follows its own rule ([Display currency](#display-currency)).
 
 ## Schema generation
 
@@ -190,7 +198,7 @@ apps/chat verifies short-lived JWTs from the `jwt` plugin. The chat side (verifi
 `user.currency` hints at the user's country, so only the signed-in user's own payload carries it ([`accounts.md`](accounts.md#public-users)).
 
 - It is an `additionalField` with `input: true`, but only `$updateSettings` may write it. The supported-currency check is async, and Better Auth field validators must be synchronous.
-- `input: false` would refuse the field from server calls too, so the `server-only-currency` plugin strips `currency` from router calls to `/update-user` and `/sign-up/email` instead.
+- `input: false` would refuse the field from server calls too, so the `server-only-user-fields` plugin strips `currency` from router calls to `/update-user` and `/sign-up/email` instead.
 - `$updateSettings` checks the code with `assertSupportedCurrency()`, then calls `auth.api.updateUser` with headers but no request, which the plugin lets through.
 
 ## API keys

@@ -210,11 +210,7 @@ function HaveItem({ list, selected, onDone }: ItemProps) {
       $addObjektsToHaveList({
         data: {
           objektListId: list.id,
-          objekts: eligible.map((s) => ({
-            slug: s.collection.slug,
-            collectionId: s.collection.id,
-            tokenId: String(s.token.tokenId),
-          })),
+          objekts: eligible.map((s) => ({ tokenId: String(s.token.tokenId) })),
         },
       }),
   );

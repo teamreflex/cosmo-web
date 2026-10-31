@@ -18,20 +18,24 @@ import { username } from "better-auth/plugins/username";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { createCipheriv, randomBytes } from "node:crypto";
 import type { CurrentUser, PublicUser } from "../universal/auth";
-import { settingsSchema } from "../universal/schema/auth";
+import { settingsSchema, updateUsernameSchema } from "../universal/schema/auth";
 import { DEFAULT_CURRENCY } from "../universal/schema/currency";
 import { db } from "./db";
 import { sendPasswordResetEmail, sendVerificationEmail } from "./mail.server";
 import { publishUserEvent } from "./user-events.server";
 
 /**
- * Drops `currency` from client sign-up and update-user requests, since it needs
- * an FX rate check that a synchronous field validator can't run. $updateSettings
- * checks it and calls `auth.api.updateUser` directly, which has no `request`.
+ * Guards user fields that clients may not set directly on sign-up and
+ * update-user requests:
+ * - `currency` needs an FX rate check that a synchronous field validator can't
+ *   run. $updateSettings checks it and calls `auth.api.updateUser` directly,
+ *   which has no `request`.
+ * - `displayUsername` skips the username plugin's validation and uniqueness
+ *   check, so it always mirrors the validated `username` instead.
  */
-function serverOnlyCurrency() {
+function serverOnlyUserFields() {
   return {
-    id: "server-only-currency",
+    id: "server-only-user-fields",
     hooks: {
       before: [
         {
@@ -40,6 +44,12 @@ function serverOnlyCurrency() {
             (ctx.path === "/update-user" || ctx.path === "/sign-up/email"),
           handler: createAuthMiddleware(async (ctx) => {
             delete ctx.body?.currency;
+            delete ctx.body?.displayUsername;
+            // an invalid username is refused by the username plugin's own hook
+            const parsed = updateUsernameSchema.safeParse(ctx.body);
+            if (parsed.success && parsed.data.username !== undefined) {
+              ctx.body.displayUsername = parsed.data.username;
+            }
           }),
         },
       ],
@@ -95,7 +105,7 @@ export const auth = betterAuth({
         definePayload: ({ session }) => ({ sid: session.id }),
       },
     }),
-    serverOnlyCurrency(),
+    serverOnlyUserFields(),
     tanstackStartCookies(),
   ],
 
@@ -357,18 +367,19 @@ export const auth = betterAuth({
         // oxlint-disable-next-line anti-slop/no-shape-in-symbol-names -- zod's field accessor
         validator: { input: settingsSchema.shape.currency },
       },
+      // filled only from the OAuth profile in `mapProfileToUser`
       discord: {
         type: "string",
         required: false,
         defaultValue: null,
-        input: true,
+        input: false,
         returned: true,
       },
       twitter: {
         type: "string",
         required: false,
         defaultValue: null,
-        input: true,
+        input: false,
         returned: true,
       },
       showSocials: {

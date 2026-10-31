@@ -179,11 +179,7 @@ function HaveBody({ list, sections, onClose }: HaveBodyProps) {
           objekts: sections.flatMap((section) =>
             section.serials
               .filter((s) => selected.has(s.tokenId))
-              .map((s) => ({
-                slug: section.collection.slug,
-                collectionId: section.collection.id,
-                tokenId: s.tokenId,
-              })),
+              .map((s) => ({ tokenId: s.tokenId })),
           ),
         },
       }),
@@ -282,15 +278,7 @@ function SaleBody({
       section.serials.flatMap((serial, j) => {
         const row = data.rows[section.startIndex + j];
         if (row === undefined || !row.selected) return [];
-        return [
-          {
-            slug: section.collection.slug,
-            collectionId: section.collection.id,
-            collectionName: section.collection.collectionId,
-            tokenId: serial.tokenId,
-            price: row.price,
-          },
-        ];
+        return [{ tokenId: serial.tokenId, price: row.price }];
       }),
     );
 

@@ -61,6 +61,9 @@ Keyed per user in Redis, inline in `src/handlers.ts`.
 | `Report`                    | `report:<user>`    | 5 per 10 min  | before any lookup; the same budget as the web app's `$createReport` |
 | `Remove`, `ReportedMessage` | none               |               |                                                                     |
 
+- `OpenStreams` (`src/open-streams.ts`) also caps each user at `MAX_OPEN_STREAMS` open `Join` streams, refusing more with `RateLimited`, because every open stream re-reads the database on each signal for its trade. The count is in process, like the channels.
+- `main.ts` caps a websocket frame at 64 KB, because frames are parsed before `ChatAuth` runs.
+
 ## Where to start
 
 | Change                       | Files                                                                                                                                                                     |

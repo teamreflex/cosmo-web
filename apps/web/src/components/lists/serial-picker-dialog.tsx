@@ -27,7 +27,6 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   list: ObjektList;
   collectionName: string;
-  slug: string;
   collectionId: string;
 };
 
@@ -36,7 +35,6 @@ export default function SerialPickerDialog({
   onOpenChange,
   list,
   collectionName,
-  slug,
   collectionId,
 }: Props) {
   return (
@@ -61,7 +59,6 @@ export default function SerialPickerDialog({
           <SerialPickerBody
             list={list}
             collectionName={collectionName}
-            slug={slug}
             collectionId={collectionId}
             onClose={() => onOpenChange(false)}
           />
@@ -74,7 +71,6 @@ export default function SerialPickerDialog({
 type BodyProps = {
   list: ObjektList;
   collectionName: string;
-  slug: string;
   collectionId: string;
   onClose: () => void;
 };
@@ -82,7 +78,6 @@ type BodyProps = {
 function SerialPickerBody({
   list,
   collectionName,
-  slug,
   collectionId,
   onClose,
 }: BodyProps) {
@@ -99,11 +94,7 @@ function SerialPickerBody({
     $addObjektsToHaveList({
       data: {
         objektListId: list.id,
-        objekts: Array.from(selected).map((tokenId) => ({
-          slug,
-          collectionId,
-          tokenId,
-        })),
+        objekts: Array.from(selected).map((tokenId) => ({ tokenId })),
       },
     }),
   );

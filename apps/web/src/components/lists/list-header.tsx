@@ -13,7 +13,7 @@ import UpdateList from "./update-list";
 
 type Props = {
   list: ObjektList;
-  ownerName: string;
+  ownerName: string | undefined;
   owner: PublicUser | undefined;
   isOwner: boolean;
   extras?: ReactNode;
