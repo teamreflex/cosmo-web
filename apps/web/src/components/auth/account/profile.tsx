@@ -6,11 +6,13 @@ import {
 } from "@/components/ui/accordion";
 import { listAccountsQuery, sessionQuery } from "@/hooks/use-account";
 import { m } from "@/i18n/messages";
+import { hasDeliverableEmail } from "@/lib/universal/auth";
 import { useSuspenseQueries } from "@tanstack/react-query";
 import UpdateEmail from "./update-email";
 import UpdatePassword from "./update-password";
 import UpdateSocial from "./update-social";
 import UpdateUsername from "./update-username";
+import { EmailStatusBadge, SendVerificationEmail } from "./verify-email";
 
 export default function Profile() {
   const [{ data: accounts }, { data: user }] = useSuspenseQueries({
@@ -23,6 +25,8 @@ export default function Profile() {
 
   const hasCredentialAccount =
     accounts.findIndex((account) => account.providerId === "credential") !== -1;
+  // a Twitter username stored in place of an email can't be verified
+  const canVerify = hasDeliverableEmail(user.email);
 
   return (
     <Accordion>
@@ -36,9 +40,17 @@ export default function Profile() {
 
       {/* email */}
       <AccordionItem value="email">
-        <AccordionTrigger>{m.account_profile_email()}</AccordionTrigger>
+        <AccordionTrigger>
+          <span className="flex items-center gap-2">
+            {m.account_profile_email()}
+            {canVerify && <EmailStatusBadge verified={user.emailVerified} />}
+          </span>
+        </AccordionTrigger>
         <AccordionContent>
           <UpdateEmail email={user.email} />
+          {canVerify && !user.emailVerified && (
+            <SendVerificationEmail email={user.email} />
+          )}
         </AccordionContent>
       </AccordionItem>
 

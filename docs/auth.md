@@ -12,14 +12,14 @@ Better Auth runs inside apps/web at `/api/auth/*`, configured in `apps/web/src/l
 - OAuth access and refresh tokens are encrypted on write with AES-256-GCM, keyed by `BETTER_AUTH_SECRET` read as hex. Nothing in the repo decrypts them. The secret's format is in [`tooling.md`](tooling.md).
 - The browser client (`lib/client/auth.ts`) has no admin or api-key plugin. Staff work goes through server functions.
 
-| Plugin                            | Used for                                                                                                                |
-| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `username`                        | Apollo usernames, 3 to 20 letters and digits                                                                            |
-| `admin(adminPluginOptions)`       | role and ban columns, the sign-in refusal for banned users, `unbanUser`                                                 |
-| `@better-auth/api-key`            | keys for the public API routes ([API keys](#api-keys))                                                                  |
-| `jwt`                             | chat tokens ([Chat tokens](#chat-tokens))                                                                               |
-| `server-only-user-fields` (local) | keeps `currency` and `displayUsername` out of client writes ([Client-written user fields](#client-written-user-fields)) |
-| `tanstackStartCookies`            | sets cookies from server functions                                                                                      |
+| Plugin                            | Used for                                                                                                                                      |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `username`                        | Apollo usernames, 3 to 20 letters and digits                                                                                                  |
+| `admin(adminPluginOptions)`       | role and ban columns, the sign-in refusal for banned users, `unbanUser`                                                                       |
+| `@better-auth/api-key`            | keys for the public API routes ([API keys](#api-keys))                                                                                        |
+| `jwt`                             | chat tokens ([Chat tokens](#chat-tokens))                                                                                                     |
+| `server-only-user-fields` (local) | keeps `currency`, `displayUsername`, `discord` and `twitter` out of client writes ([Client-written user fields](#client-written-user-fields)) |
+| `tanstackStartCookies`            | sets cookies from server functions                                                                                                            |
 
 `hooks.before` 404s two plugin route families when they are called over HTTP:
 
@@ -30,15 +30,16 @@ Better Auth runs inside apps/web at `/api/auth/*`, configured in `apps/web/src/l
 
 ### Social sign-in can change the email
 
-- Discord and X run with `overrideUserInfoOnSignIn`, and account linking runs with `allowDifferentEmails`. A sign-in can overwrite `email` and `email_verified`, which decide [account protection](#protected-accounts).
-- An X account with no confirmed email stores the X username as the email. Such an account has no deliverable email.
-- Both behaviours are deliberate.
+- Discord and Twitter run with `overrideUserInfoOnSignIn`, and account linking runs with `allowDifferentEmails`. A sign-in can overwrite `email` and `email_verified`, which decide [account protection](#protected-accounts). This is deliberate.
+- Better Auth's Twitter provider falls back to the Twitter username when the account has no confirmed email. The `user` create and update `databaseHooks` refuse any email that `hasDeliverableEmail()` rejects, so that sign-up fails, and so does a sign-in that would write the username back over an older account.
+- Older accounts made before that rule still hold a Twitter username as their email. They have no deliverable email, and can sign in with Twitter again once their Twitter email is confirmed, which the sign-in then writes.
+- The hook's `APIError` carries `EMAIL_REQUIRED_ERROR` as both `code` and `message`, because the OAuth callback redirects with the message on sign-up and the code on sign-in. Social sign-in and linking pass `errorCallbackURL: "/auth/error"`, which explains the code.
 
 ### Client-written user fields
 
 Better Auth's `/update-user` and `/sign-up/email` accept every user field marked `input: true`, so any signed-in user can write those fields directly, bypassing the UI.
 
-- `discord` and `twitter` are `input: false`. Only `mapProfileToUser` fills them, from the OAuth profile, so a handle shown on a profile or listing belongs to an account the user signed in with.
+- `discord` and `twitter` come only from `mapProfileToUser`, so a handle shown on a profile or listing belongs to an account the user signed in with. The `server-only-user-fields` plugin drops them from client requests. They can't be `input: false`, because Better Auth also drops `input: false` fields from `mapProfileToUser`.
 - The `username` plugin validates `displayUsername` only when a `displayUsernameValidator` is set. The `server-only-user-fields` plugin drops any `displayUsername` a client sends and copies the validated `username` into it instead.
 - `currency` follows its own rule ([Display currency](#display-currency)).
 

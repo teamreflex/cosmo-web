@@ -34,6 +34,7 @@ import { Route as AdminNoticeRouteImport } from './routes/admin/notice'
 import { Route as AdminReportsRouteImport } from './routes/admin/reports'
 import { Route as AdminSerialsRouteImport } from './routes/admin/serials'
 import { Route as AuthDeleteAccountRouteImport } from './routes/auth/delete-account'
+import { Route as AuthErrorRouteImport } from './routes/auth/error'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
 import { Route as EventsIndexRouteImport } from './routes/events/index'
 import { Route as EventsSlugRouteImport } from './routes/events/$slug'
@@ -191,6 +192,11 @@ const AdminSerialsRoute = AdminSerialsRouteImport.update({
 const AuthDeleteAccountRoute = AuthDeleteAccountRouteImport.update({
   id: '/auth/delete-account',
   path: '/auth/delete-account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthErrorRoute = AuthErrorRouteImport.update({
+  id: '/auth/error',
+  path: '/auth/error',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
@@ -356,6 +362,7 @@ export interface FileRoutesByFullPath {
   '/admin/reports': typeof AdminReportsRoute
   '/admin/serials': typeof AdminSerialsRoute
   '/auth/delete-account': typeof AuthDeleteAccountRoute
+  '/auth/error': typeof AuthErrorRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
@@ -406,6 +413,7 @@ export interface FileRoutesByTo {
   '/admin/reports': typeof AdminReportsRoute
   '/admin/serials': typeof AdminSerialsRoute
   '/auth/delete-account': typeof AuthDeleteAccountRoute
+  '/auth/error': typeof AuthErrorRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
@@ -460,6 +468,7 @@ export interface FileRoutesById {
   '/admin/reports': typeof AdminReportsRoute
   '/admin/serials': typeof AdminSerialsRoute
   '/auth/delete-account': typeof AuthDeleteAccountRoute
+  '/auth/error': typeof AuthErrorRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
@@ -515,6 +524,7 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/serials'
     | '/auth/delete-account'
+    | '/auth/error'
     | '/auth/reset-password'
     | '/events/$slug'
     | '/list/$id'
@@ -565,6 +575,7 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/serials'
     | '/auth/delete-account'
+    | '/auth/error'
     | '/auth/reset-password'
     | '/events/$slug'
     | '/list/$id'
@@ -618,6 +629,7 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/serials'
     | '/auth/delete-account'
+    | '/auth/error'
     | '/auth/reset-password'
     | '/events/$slug'
     | '/list/$id'
@@ -656,6 +668,7 @@ export interface RootRouteChildren {
   ShareDataRoute: typeof ShareDataRoute
   TermsPrivacyRoute: typeof TermsPrivacyRoute
   AuthDeleteAccountRoute: typeof AuthDeleteAccountRoute
+  AuthErrorRoute: typeof AuthErrorRoute
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   EventsSlugRoute: typeof EventsSlugRoute
   ListIdRoute: typeof ListIdRoute
@@ -853,6 +866,13 @@ declare module '@tanstack/react-router' {
       path: '/auth/delete-account'
       fullPath: '/auth/delete-account'
       preLoaderRoute: typeof AuthDeleteAccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/error': {
+      id: '/auth/error'
+      path: '/auth/error'
+      fullPath: '/auth/error'
+      preLoaderRoute: typeof AuthErrorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/reset-password': {
@@ -1133,6 +1153,7 @@ const rootRouteChildren: RootRouteChildren = {
   ShareDataRoute: ShareDataRoute,
   TermsPrivacyRoute: TermsPrivacyRoute,
   AuthDeleteAccountRoute: AuthDeleteAccountRoute,
+  AuthErrorRoute: AuthErrorRoute,
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   EventsSlugRoute: EventsSlugRoute,
   ListIdRoute: ListIdRoute,

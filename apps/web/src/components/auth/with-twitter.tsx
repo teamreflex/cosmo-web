@@ -17,6 +17,7 @@ export default function SignInWithTwitter({ callbackURL }: Props) {
       await authClient.signIn.social({
         provider: "twitter",
         callbackURL,
+        errorCallbackURL: "/auth/error",
         fetchOptions: {
           onSuccess: () => {
             track("sign-in");

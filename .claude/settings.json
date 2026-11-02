@@ -41,7 +41,6 @@
     ]
   },
   "enabledPlugins": {
-    "typescript-lsp@claude-plugins-official": true,
     "agent-browser@agent-browser": true,
     "planetscale@planetscale": true
   },

@@ -1,4 +1,4 @@
-import * as z from "zod";
+import { hasDeliverableEmail } from "./auth";
 import type { AccountErrorCode } from "./errors/accounts";
 import type { DeletionProof } from "./schema/account";
 
@@ -35,8 +35,7 @@ export type DeleteAccountResult = DeletionBlocked | { status: "deleted" };
 export type DeletionStep = "send-email" | "delete" | "sign-in-again";
 
 export type DeletionAvailability =
-  | DeletionBlocked
-  | { status: "allowed"; step: DeletionStep };
+  DeletionBlocked | { status: "allowed"; step: DeletionStep };
 
 /**
  * How long after signing in a session can delete an account that has no
@@ -51,14 +50,6 @@ export const FRESH_SESSION_MINUTES = 10;
  */
 export function isFreshSession(createdAt: Date, now: Date) {
   return now.getTime() - createdAt.getTime() < FRESH_SESSION_MINUTES * 60_000;
-}
-
-/**
- * X sign-ins without a confirmed email store the X username as the email,
- * which can't receive the confirmation link.
- */
-export function hasDeliverableEmail(email: string) {
-  return z.email().safeParse(email).success;
 }
 
 export function deletionStep(

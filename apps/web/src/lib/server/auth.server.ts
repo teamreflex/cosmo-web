@@ -17,7 +17,12 @@ import { jwt } from "better-auth/plugins/jwt";
 import { username } from "better-auth/plugins/username";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { createCipheriv, randomBytes } from "node:crypto";
-import type { CurrentUser, PublicUser } from "../universal/auth";
+import {
+  type CurrentUser,
+  EMAIL_REQUIRED_ERROR,
+  hasDeliverableEmail,
+  type PublicUser,
+} from "../universal/auth";
 import { settingsSchema, updateUsernameSchema } from "../universal/schema/auth";
 import { DEFAULT_CURRENCY } from "../universal/schema/currency";
 import { db } from "./db";
@@ -32,6 +37,10 @@ import { publishUserEvent } from "./user-events.server";
  *   which has no `request`.
  * - `displayUsername` skips the username plugin's validation and uniqueness
  *   check, so it always mirrors the validated `username` instead.
+ * - `discord` and `twitter` come only from the OAuth profile, so a handle on a
+ *   profile belongs to an account the user signed in with. They stay
+ *   `input: true` because Better Auth drops `input: false` fields from
+ *   `mapProfileToUser` too.
  */
 function serverOnlyUserFields() {
   return {
@@ -45,6 +54,8 @@ function serverOnlyUserFields() {
           handler: createAuthMiddleware(async (ctx) => {
             delete ctx.body?.currency;
             delete ctx.body?.displayUsername;
+            delete ctx.body?.discord;
+            delete ctx.body?.twitter;
             // an invalid username is refused by the username plugin's own hook
             const parsed = updateUsernameSchema.safeParse(ctx.body);
             if (parsed.success && parsed.data.username !== undefined) {
@@ -55,6 +66,19 @@ function serverOnlyUserFields() {
       ],
     },
   } satisfies BetterAuthPlugin;
+}
+
+/**
+ * The OAuth callback redirects with the error's `message` when a sign-up fails
+ * and its `code` when a sign-in does, so both carry the same value.
+ */
+function refuseUndeliverableEmail(email: string) {
+  if (!hasDeliverableEmail(email)) {
+    throw APIError.from("BAD_REQUEST", {
+      code: EMAIL_REQUIRED_ERROR,
+      message: EMAIL_REQUIRED_ERROR,
+    });
+  }
 }
 
 /**
@@ -147,6 +171,26 @@ export const auth = betterAuth({
   },
 
   databaseHooks: {
+    /**
+     * Twitter falls back to the username when an account has no confirmed
+     * email. Refusing that write turns the sign-up away, and through
+     * `overrideUserInfoOnSignIn` refuses the sign-in of an older account that
+     * still holds a username until its Twitter email is confirmed.
+     */
+    user: {
+      create: {
+        async before(user) {
+          refuseUndeliverableEmail(user.email);
+        },
+      },
+      update: {
+        async before(user) {
+          if (user.email !== undefined) {
+            refuseUndeliverableEmail(user.email);
+          }
+        },
+      },
+    },
     session: {
       delete: {
         /**
@@ -367,19 +411,19 @@ export const auth = betterAuth({
         // oxlint-disable-next-line anti-slop/no-shape-in-symbol-names -- zod's field accessor
         validator: { input: settingsSchema.shape.currency },
       },
-      // filled only from the OAuth profile in `mapProfileToUser`
+      // filled only from the OAuth profile; see `serverOnlyUserFields()`
       discord: {
         type: "string",
         required: false,
         defaultValue: null,
-        input: false,
+        input: true,
         returned: true,
       },
       twitter: {
         type: "string",
         required: false,
         defaultValue: null,
-        input: false,
+        input: true,
         returned: true,
       },
       showSocials: {

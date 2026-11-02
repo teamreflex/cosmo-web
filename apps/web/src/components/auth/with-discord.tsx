@@ -17,6 +17,7 @@ export default function SignInWithDiscord({ callbackURL }: Props) {
       await authClient.signIn.social({
         provider: "discord",
         callbackURL,
+        errorCallbackURL: "/auth/error",
         fetchOptions: {
           onSuccess: () => {
             track("sign-in");

@@ -56,6 +56,7 @@ export function useLinkAccount(provider: Provider) {
     mutationFn: async () => {
       const result = await authClient.linkSocial({
         provider: provider,
+        errorCallbackURL: "/auth/error",
       });
       if (result.error) {
         throw new Error(getAuthErrorMessage(result.error));

@@ -7,14 +7,12 @@ import { db } from "@/lib/server/db";
 import { sendAccountDeletionEmail } from "@/lib/server/mail.server";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import { consumeRateLimit } from "@/lib/server/rate-limit.server";
-import {
-  deletionStep,
-  hasDeliverableEmail,
-} from "@/lib/universal/account-deletion";
+import { deletionStep } from "@/lib/universal/account-deletion";
 import type {
   DeletionAvailability,
   RequestDeletionResult,
 } from "@/lib/universal/account-deletion";
+import { hasDeliverableEmail } from "@/lib/universal/auth";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import { deletionProofSchema } from "@/lib/universal/schema/account";
 import { baseUrl } from "@/lib/utils";
