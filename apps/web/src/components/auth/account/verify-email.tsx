@@ -19,6 +19,7 @@ import {
   IconCircleCheck,
   IconLoader2,
   IconMail,
+  IconMailCheck,
 } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
@@ -26,12 +27,12 @@ import { toast } from "sonner";
 
 export function EmailStatusBadge({ verified }: { verified: boolean }) {
   return verified ? (
-    <Badge variant="outline">
-      <IconCircleCheck className="text-green-500" />
+    <Badge variant="success">
+      <IconCircleCheck />
       {m.account_profile_email_verified()}
     </Badge>
   ) : (
-    <Badge variant="destructive">
+    <Badge variant="warning">
       <IconAlertCircle />
       {m.account_profile_email_unverified()}
     </Badge>
@@ -50,28 +51,37 @@ export function SendVerificationEmail({ email }: { email: string }) {
     },
     onSuccess: () => {
       setOpen(false);
-      toast.success(m.account_profile_email_verify_sent({ email }));
     },
     onError: (error) => {
       toast.error(formatError(error));
     },
   });
 
+  if (mutation.isSuccess) {
+    return (
+      <div
+        role="status"
+        className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-border bg-muted px-3.5 py-3"
+      >
+        <IconMailCheck className="size-4.5 shrink-0 text-green-700 dark:text-green-400" />
+        <p className="min-w-0 flex-1 basis-56 text-sm">
+          {m.account_profile_email_verify_sent({ email })}
+        </p>
+        <Button variant="ghost" size="sm" onClick={() => mutation.reset()}>
+          {m.account_profile_email_verify_resend()}
+        </Button>
+      </div>
+    );
+  }
+
   return (
-    <div className="mt-2 flex flex-col gap-2 px-1 sm:flex-row sm:items-center sm:justify-between">
-      <span className="text-sm text-muted-foreground">
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-amber-600/25 bg-amber-500/5 px-3.5 py-3 dark:border-amber-400/25 dark:bg-amber-400/5">
+      <IconAlertCircle className="size-4.5 shrink-0 text-amber-700 dark:text-amber-400" />
+      <p className="min-w-0 flex-1 basis-56 text-sm">
         {m.account_profile_email_unverified_description()}
-      </span>
+      </p>
       <AlertDialog open={open} onOpenChange={setOpen}>
-        <AlertDialogTrigger
-          render={
-            <Button
-              variant="outline"
-              size="sm"
-              className="self-start sm:self-auto"
-            />
-          }
-        >
+        <AlertDialogTrigger render={<Button variant="outline" size="sm" />}>
           <IconMail />
           <span>{m.account_profile_email_verify()}</span>
         </AlertDialogTrigger>

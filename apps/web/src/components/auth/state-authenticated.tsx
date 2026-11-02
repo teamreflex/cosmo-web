@@ -1,16 +1,14 @@
 import { authClient } from "@/lib/client/auth";
 import type { CurrentUser } from "@/lib/universal/auth";
-import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";
 import UserDropdown from "./user-dropdown";
 
 type Props = {
   user: CurrentUser;
-  cosmo?: PublicCosmo;
 };
 
-export default function StateAuthenticated({ user, cosmo }: Props) {
+export default function StateAuthenticated({ user }: Props) {
   const mutation = useMutation({
     mutationFn: async () => {
       await authClient.signOut();
@@ -27,5 +25,5 @@ export default function StateAuthenticated({ user, cosmo }: Props) {
     return <IconLoader2 className="animate-spin" />;
   }
 
-  return <UserDropdown onSignOut={mutation.mutate} user={user} cosmo={cosmo} />;
+  return <UserDropdown onSignOut={mutation.mutate} user={user} />;
 }

@@ -10,7 +10,6 @@ import { useArtists } from "@/hooks/use-artists";
 import { useHasPermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
 import type { CurrentUser } from "@/lib/universal/auth";
-import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { DISCORD_URL } from "@/lib/utils";
 import { marketAccess } from "@apollo/auth";
 import {
@@ -22,52 +21,25 @@ import {
   IconTool,
   IconUserCog,
 } from "@tabler/icons-react";
-import { Link, useLocation } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { ADMIN_SHELL_PERMISSIONS } from "../admin/common";
 import AboutDialog from "../navbar/about";
 import { ArtistItem } from "../navbar/artist-selectbox";
 import UserAvatar from "../profile/user-avatar";
-import AccountDialog from "./account-dialog";
-import SettingsDialog from "./settings-dialog";
 
 type UserDropdownProps = {
   user: CurrentUser;
-  cosmo?: PublicCosmo;
   onSignOut: () => void;
 };
 
-export default function UserDropdown({
-  user,
-  cosmo,
-  onSignOut,
-}: UserDropdownProps) {
+export default function UserDropdown({ user, onSignOut }: UserDropdownProps) {
   const { artistList, selectedIds } = useArtists();
   const hasPermission = useHasPermission();
-  const [openSettings, setOpenSettings] = useState(false);
-  /**
-   * Remembering where the account dialog was opened closes it on any
-   * navigation, such as a deletion blocker's link to its trade.
-   */
-  const pathname = useLocation({ select: (location) => location.pathname });
-  const [accountOpenedOn, setAccountOpenedOn] = useState<string | null>(null);
-  if (accountOpenedOn !== null && accountOpenedOn !== pathname) {
-    setAccountOpenedOn(null);
-  }
   const [openAbout, setOpenAbout] = useState(false);
 
   return (
     <DropdownMenu>
-      <SettingsDialog
-        open={openSettings}
-        onOpenChange={setOpenSettings}
-        user={user}
-      />
-      <AccountDialog
-        open={accountOpenedOn !== null}
-        onOpenChange={(open) => setAccountOpenedOn(open ? pathname : null)}
-        cosmo={cosmo}
-      />
       <AboutDialog open={openAbout} onOpenChange={setOpenAbout} />
 
       <DropdownMenuTrigger className="group relative outline-hidden">
@@ -91,16 +63,16 @@ export default function UserDropdown({
         <DropdownMenuSeparator />
 
         <DropdownMenuItem
-          onClick={() => setAccountOpenedOn(pathname)}
           className="cursor-pointer"
+          render={<Link to="/account" />}
         >
           <IconUserCog className="h-4 w-4" />
           <span>{m.common_account()}</span>
         </DropdownMenuItem>
 
         <DropdownMenuItem
-          onClick={() => setOpenSettings(true)}
           className="cursor-pointer"
+          render={<Link to="/account" hash="preferences" />}
         >
           <IconTool className="h-4 w-4" />
           <span>{m.user_dropdown_settings()}</span>

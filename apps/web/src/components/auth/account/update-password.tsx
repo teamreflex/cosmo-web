@@ -51,7 +51,7 @@ export default function UpdatePassword() {
   return (
     <form
       onSubmit={form.handleSubmit(handleSubmit)}
-      className="flex w-full flex-col gap-2 p-1"
+      className="flex w-full flex-col gap-2"
     >
       <Controller
         control={form.control}
