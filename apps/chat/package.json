@@ -21,8 +21,7 @@
     "@apollo/trades": "workspace:*",
     "@effect/platform-bun": "catalog:",
     "drizzle-orm": "catalog:",
-    "effect": "catalog:",
-    "jose": "catalog:"
+    "effect": "catalog:"
   },
   "devDependencies": {
     "@apollo/lint": "workspace:*",

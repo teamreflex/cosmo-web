@@ -72,7 +72,6 @@
     "embla-carousel-react": "^8.6.0",
     "fast-average-color-node": "^4.0.0",
     "input-otp": "^1.5.0",
-    "jose": "catalog:",
     "motion": "^14.7.1",
     "ofetch": "catalog:",
     "qrcode.react": "^4.2.0",

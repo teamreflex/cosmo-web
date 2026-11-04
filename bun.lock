@@ -28,7 +28,6 @@
         "@effect/platform-bun": "catalog:",
         "drizzle-orm": "catalog:",
         "effect": "catalog:",
-        "jose": "catalog:",
       },
       "devDependencies": {
         "@apollo/lint": "workspace:*",
@@ -95,7 +94,6 @@
         "@effect/platform-bun": "catalog:",
         "drizzle-orm": "catalog:",
         "effect": "catalog:",
-        "jose": "catalog:",
         "react": "19.3.1",
       },
       "devDependencies": {
@@ -179,7 +177,6 @@
         "embla-carousel-react": "^8.6.0",
         "fast-average-color-node": "^4.0.0",
         "input-otp": "^1.5.0",
-        "jose": "catalog:",
         "motion": "^14.7.1",
         "ofetch": "catalog:",
         "qrcode.react": "^4.2.0",
@@ -440,25 +437,25 @@
     },
   },
   "patchedDependencies": {
+    "@effect/platform-bun@4.1.2": "patches/@effect%2Fplatform-bun@4.1.2.patch",
     "@subsquid/http-client@1.8.1": "patches/@subsquid%2Fhttp-client@1.8.1.patch",
-    "@effect/platform-bun@4.0.7": "patches/@effect%2Fplatform-bun@4.0.7.patch",
+    "effect@4.1.2": "patches/effect@4.1.2.patch",
   },
   "catalog": {
     "@better-auth/api-key": "1.7.15",
     "@better-auth/drizzle-adapter": "1.7.15",
-    "@effect/atom-react": "4.0.7",
+    "@effect/atom-react": "4.1.2",
     "@effect/build-utils": "^0.8.9",
     "@effect/eslint-plugin": "^0.3.2",
     "@effect/language-service": "^0.87.5",
-    "@effect/platform-bun": "4.0.7",
+    "@effect/platform-bun": "4.1.2",
     "@sentry/bun": "^11.9.0",
     "@types/bun": "1.4.4",
     "auth": "1.7.15",
     "better-auth": "1.7.15",
     "drizzle-kit": "1.0.0-rc.5",
     "drizzle-orm": "1.0.0-rc.5",
-    "effect": "4.0.7",
-    "jose": "^6.2.13",
+    "effect": "4.1.2",
     "ofetch": "^1.5.1",
     "turbo": "2.11.10",
     "typescript": "7.0.2",
@@ -706,7 +703,7 @@
 
     "@dprint/typescript": ["@dprint/typescript@0.91.8", "", {}, "sha512-tuKn4leCPItox1O4uunHcQF0QllDCvPWklnNQIh2PiWWVtRAGltJJnM4Cwj5AciplosD1Hiz7vAY3ew3crLb3A=="],
 
-    "@effect/atom-react": ["@effect/atom-react@4.0.7", "", { "peerDependencies": { "effect": "^4.0.7", "react": ">=19.0.0 <20.0.0", "scheduler": ">=0.25.0 <0.29.0" } }, "sha512-9jQFhzl4lL79XmhTr4uHHZtDU2/Z9sBe7YpKZwc9/a6bGuO2DbmynJ4i+M97OIgOAqYjZVsiiNAXj2aeVbCSJg=="],
+    "@effect/atom-react": ["@effect/atom-react@4.1.2", "", { "peerDependencies": { "effect": "^4.1.2", "react": ">=19.0.0 <20.0.0", "scheduler": ">=0.25.0 <0.29.0" } }, "sha512-XRAm4lks2kzNFQIz9QTGKR02CaDTR9VJNRXDjDAR8OzM15ybrK4YkB7OlFZ9U+hxXe3DXJZx7RU1/xI2Em2PGQ=="],
 
     "@effect/build-utils": ["@effect/build-utils@0.8.9", "", { "dependencies": { "micromatch": "^4.0.8", "pkg-entry-points": "^1.1.1" }, "bin": { "build-utils": "main.js" } }, "sha512-wzunjr8pyNjghLueo5ePQD7vaM3qeO2H/jF57hNYbQM/rxfipBWYKukoqWyp04qGZ+V86FyOHb8zD5+PMZvH2A=="],
 
@@ -714,9 +711,9 @@
 
     "@effect/language-service": ["@effect/language-service@0.87.5", "", { "bin": { "effect-language-service": "cli.js" } }, "sha512-np/zJgk71/PyHxtoqyUKLYcpQhoRBI+L6+1Z0ILk35JSQ/lvXzwlwOwddYZLDkeC4bdF2ukKekqKlla/F88R5w=="],
 
-    "@effect/platform-bun": ["@effect/platform-bun@4.0.7", "", { "dependencies": { "@effect/platform-node-shared": "^4.0.7" }, "peerDependencies": { "effect": "^4.0.7" } }, "sha512-73cS+KQQ2rZEjuXgDLiDHe6uuF7Zu3VnHXW2QmFaVqY3CIfAt5t53KOkppXHE2F2oY+i6/P9cCb5357Mec7TAw=="],
+    "@effect/platform-bun": ["@effect/platform-bun@4.1.2", "", { "dependencies": { "@effect/platform-node-shared": "4.1.2" }, "peerDependencies": { "effect": "^4.1.2" } }, "sha512-waEAa84CITqjctgw9VdhlL9PyXRHICG3KAWTFRDPUE2XL/pfMPhO7V9oFdfx22dbAhhUzV+MHs0d9hnmy/DQ7w=="],
 
-    "@effect/platform-node-shared": ["@effect/platform-node-shared@4.0.7", "", { "dependencies": { "@types/ws": "^8.18.2", "ws": "^8.22.0" }, "peerDependencies": { "effect": "^4.0.7" } }, "sha512-uCeBJ00hliKQsb7gMfvyEXUL1XmUKQcRzKi1X8ISG0UxTDMAdPRigOyKDnKxUTxE5PoT4kxLHQvOxo6U405FGg=="],
+    "@effect/platform-node-shared": ["@effect/platform-node-shared@4.1.2", "", { "dependencies": { "@types/ws": "^8.18.2", "ws": "^8.22.1" }, "peerDependencies": { "effect": "^4.1.2" } }, "sha512-wSwl9A/G1hcVvF8nLI+YfB3EyOIDvWS6+lsTZBkmgDnPBL7m8YWZF+1HD+mdEsb52SUGfukip46Q3gRwSdk3QA=="],
 
     "@emnapi/core": ["@emnapi/core@1.11.1", "", { "dependencies": { "@emnapi/wasi-threads": "1.2.2", "tslib": "^2.4.0" } }, "sha512-RSvbQmHzdKzNsLYa/wHrbc3KN4sYLKAdPZxqiM2HATqv/SBk2/ENSHpvXGaLOMcsAyz0poEGqkmmKYG3OWiJEQ=="],
 
@@ -2008,7 +2005,7 @@
 
     "ee-first": ["ee-first@1.1.1", "", {}, "sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow=="],
 
-    "effect": ["effect@4.0.7", "", {}, "sha512-47CiUzNAmeLr40pDT9vKMxxtB8o3bdpZEKU4IUM3fVxsK2GYzPsV7fQoZP0I41A308BZd71nMxqJ0KRh3s9u2g=="],
+    "effect": ["effect@4.1.2", "", {}, "sha512-d3Oah1WyKxFLFh19yWheS5IXIVaITzxZ71JkE1rkUozq/6EcJSU5nPk5bF2QrSygZ3SQoiNQB8TsxFriyMeMaQ=="],
 
     "electron-to-chromium": ["electron-to-chromium@1.5.458", "", {}, "sha512-/hIH2gRSmxrf4/X4Nw/t/Wc8PVS22l8/3HnWjWTWsTOM5dsnMUPZF/+u+yr3LqweNuTBJE1rq6qAQzKkZVwMfA=="],
 
@@ -3091,6 +3088,8 @@
     "@dotenvx/dotenvx/picomatch": ["picomatch@4.0.5", "", {}, "sha512-RvwwcruNjI1ncT5xRakeyS9Lf8lcItv34KD+aif+VH9kduAyfYBipGh12274xtenIPZ119/R9BdTBa8gAwSh0A=="],
 
     "@dotenvx/dotenvx/which": ["which@4.0.0", "", { "dependencies": { "isexe": "^3.1.1" }, "bin": { "node-which": "bin/which.js" } }, "sha512-GlaYyEb07DPxYCKhKzplCWBJtvxZcZMrL+4UkrTSJHHPyZU4mYYTv3qaOe77H7EODLSSopAUFAc6W8U4yqvscg=="],
+
+    "@effect/platform-node-shared/ws": ["ws@8.22.1", "", { "peerDependencies": { "bufferutil": "^4.0.1", "utf-8-validate": ">=5.0.2" }, "optionalPeers": ["bufferutil", "utf-8-validate"] }, "sha512-oyL6OPYme/CmiFvNuGzeoxCJ4nOrZE2O1FwM9MWM1AsGri6nLXB2pg+lNA8aLeXMSav0J6eIVS1j6vUPzUtK9g=="],
 
     "@eslint-community/eslint-utils/eslint-visitor-keys": ["eslint-visitor-keys@3.4.3", "", {}, "sha512-wpc+LXeiyiisxPlEkUzU6svyS1frIO3Mgxj1fdy7Pm8Ygzguax2N3Fa/D/ag1WqbOprdI+uY6wMUl8/a2G+iag=="],
 

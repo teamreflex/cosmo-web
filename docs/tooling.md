@@ -6,7 +6,14 @@ How the monorepo is wired, run locally, linted, formatted and type-checked, plus
 
 - Workspaces are `apps/*` and `packages/*`. Shared versions live in the root `catalog`, and workspaces depend on them as `catalog:`.
 - `better-auth`, `@better-auth/api-key` and `@better-auth/drizzle-adapter` are pinned to one version in the catalog; bump them together.
-- `patchedDependencies` patch `@subsquid/http-client` and `@effect/platform-bun` from `patches/`. A patch is keyed by version, so bumping either package means regenerating its patch.
+- `patchedDependencies` patch packages from `patches/`. A patch is keyed by version, so bumping a patched package means regenerating its patch with `bun patch <pkg>` and `bun patch --commit <path>`; `effect` and `@effect/platform-bun` are pinned in the catalog for that reason.
+
+| Package                 | The patch                                                                                                                                                                                                                                     |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@subsquid/http-client` | removes `compress: true`; why is in [`apps/indexer/CLAUDE.md`](../apps/indexer/CLAUDE.md)                                                                                                                                                     |
+| `@effect/platform-bun`  | `BunRedis` gives a closing subscriber a no-op `onclose` instead of `null`                                                                                                                                                                     |
+| `effect`                | `Jwks.makeRemote` accepts `http:` key-set URLs as well as `https:`, because chat fetches the web app's JWKS over the private network (`AUTH_JWKS_URL`); the response must still come from that exact URL with a 200, so a redirect is refused |
+
 - `bunfig.toml` `[install]`:
   - `linker = "isolated"`: a workspace can only import packages its own `package.json` declares.
   - `minimumReleaseAge` is one day, so a version published less than a day ago won't install (`@types/bun` and `bun-types` are exempt).

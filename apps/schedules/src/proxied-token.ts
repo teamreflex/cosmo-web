@@ -1,8 +1,8 @@
 import { refreshV3 } from "@apollo/cosmo/server/auth";
 import { cosmoTokens } from "@apollo/database/web/schema";
 import { DatabaseWeb } from "@apollo/services/database-web";
-import { Clock, Context, Data, Effect, Layer } from "effect";
-import { decodeJwt } from "jose";
+import { Clock, Context, Data, Effect, Layer, Schema } from "effect";
+import { Jwt } from "effect/jose";
 import { CosmoKey } from "./cosmo-key";
 
 export class ProxiedToken extends Context.Service<ProxiedToken>()(
@@ -26,19 +26,11 @@ export class ProxiedToken extends Context.Service<ProxiedToken>()(
 
         const nowMillis = yield* Clock.currentTimeMillis;
 
-        const isAccessTokenValid = validateExpiry(
-          latestToken.accessToken,
-          nowMillis,
-        );
-        if (isAccessTokenValid) {
+        if (yield* validateExpiry(latestToken.accessToken, nowMillis)) {
           return { accessToken: latestToken.accessToken };
         }
 
-        const isRefreshTokenValid = validateExpiry(
-          latestToken.refreshToken,
-          nowMillis,
-        );
-        if (!isRefreshTokenValid) {
+        if (!(yield* validateExpiry(latestToken.refreshToken, nowMillis))) {
           return yield* new TokenRefreshError({
             cause: "Refresh token expired",
           });
@@ -73,16 +65,17 @@ export class ProxiedToken extends Context.Service<ProxiedToken>()(
   );
 }
 
+const Expiry = Schema.Struct({ exp: Schema.Number });
+
 /**
  * Validate JWT expiry by checking the exp claim.
  */
-function validateExpiry(token: string, nowMillis: number): boolean {
-  try {
-    const claims = decodeJwt(token);
-    return claims.exp !== undefined && claims.exp > nowMillis / 1000;
-  } catch {
-    return false;
-  }
+function validateExpiry(token: string, nowMillis: number) {
+  return Jwt.decodeUnverified(token).pipe(
+    Effect.flatMap(({ claims }) => Schema.decodeUnknownEffect(Expiry)(claims)),
+    Effect.map(({ exp }) => exp > nowMillis / 1000),
+    Effect.orElseSucceed(() => false),
+  );
 }
 
 /**

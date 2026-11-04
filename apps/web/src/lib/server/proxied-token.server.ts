@@ -2,7 +2,8 @@ import { runCosmo } from "@apollo/cosmo/runtime";
 import { refreshV3 } from "@apollo/cosmo/server/auth";
 import { cosmoTokens } from "@apollo/database/web/schema";
 import type { CosmoToken } from "@apollo/database/web/types";
-import { decodeJwt } from "jose";
+import { Effect, Schema } from "effect";
+import { Jwt } from "effect/jose";
 import { db } from "./db";
 import { getCosmoKey } from "./encryption.server";
 
@@ -59,16 +60,18 @@ export async function getProxiedToken(
   return newToken;
 }
 
+const Expiry = Schema.Struct({ exp: Schema.Number });
+
 /**
  * Validate JWT expiry by checking the exp claim.
  */
 function validateExpiry(token: string): boolean {
-  try {
-    const claims = decodeJwt(token);
-    return claims.exp !== undefined && claims.exp > Date.now() / 1000;
-  } catch {
-    return false;
-  }
+  return Jwt.decodeUnverified(token).pipe(
+    Effect.flatMap(({ claims }) => Schema.decodeUnknownEffect(Expiry)(claims)),
+    Effect.map(({ exp }) => exp > Date.now() / 1000),
+    Effect.orElseSucceed(() => false),
+    Effect.runSync,
+  );
 }
 
 /**

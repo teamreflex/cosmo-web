@@ -31,7 +31,6 @@
     "@effect/platform-bun": "catalog:",
     "drizzle-orm": "catalog:",
     "effect": "catalog:",
-    "jose": "catalog:",
     "react": "19.3.1"
   },
   "devDependencies": {

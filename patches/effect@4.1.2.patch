@@ -1,0 +1,29 @@
+diff --git a/dist/jose/Jwks.js b/dist/jose/Jwks.js
+index 628c56591e30c976ce1fec65c064aab4946d0c38..1c4e3e0a709377bfb8b4f77315dd83738a5eceda 100644
+--- a/dist/jose/Jwks.js
++++ b/dist/jose/Jwks.js
+@@ -174,7 +174,7 @@ const readUrl = input => {
+   } catch {
+     url = undefined;
+   }
+-  return url !== undefined && url.protocol === "https:" && url.username === "" && url.password === "" && url.hash === "" ? Effect.succeed(url) : invalidArgument("url must be an HTTPS URL without credentials or a fragment");
++  return url !== undefined && (url.protocol === "https:" || url.protocol === "http:") && url.username === "" && url.password === "" && url.hash === "" ? Effect.succeed(url) : invalidArgument("url must be an HTTP or HTTPS URL without credentials or a fragment");
+ };
+ /**
+  * Builds a `Jwks` service for a remote key set, using the `HttpClient`
+diff --git a/src/jose/Jwks.ts b/src/jose/Jwks.ts
+index e03c64a1318ba416c0ed34998ca378bfce56c93a..fd25ff535404dbb9e7f0e002166b1f1d66c24667 100644
+--- a/src/jose/Jwks.ts
++++ b/src/jose/Jwks.ts
+@@ -256,9 +256,9 @@ const readUrl = (input: string) => {
+   } catch {
+     url = undefined
+   }
+-  return url !== undefined && url.protocol === "https:" && url.username === "" && url.password === "" && url.hash === ""
++  return url !== undefined && (url.protocol === "https:" || url.protocol === "http:") && url.username === "" && url.password === "" && url.hash === ""
+     ? Effect.succeed(url)
+-    : invalidArgument("url must be an HTTPS URL without credentials or a fragment")
++    : invalidArgument("url must be an HTTP or HTTPS URL without credentials or a fragment")
+ }
+ 
+ /**

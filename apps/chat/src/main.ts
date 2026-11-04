@@ -15,7 +15,7 @@ import { ChatStore } from "./store";
 const Services = Layer.mergeAll(
   ChatStore.layer,
   MessageCipher.layer,
-  TokenVerifier.layer,
+  TokenVerifier.layerRemote,
   RateLimiter.layer,
 ).pipe(
   Layer.provideMerge(ChatConfig.layer),

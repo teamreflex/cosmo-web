@@ -1,8 +1,10 @@
 import { beforeAll, describe, expect, test } from "bun:test";
 import { Effect, Redacted, Stream } from "effect";
-import { SignJWT, UnsecuredJWT } from "jose";
+import { Mac, SecureRandom } from "effect/crypto";
+import { Jwk } from "effect/jose";
 import {
   AUDIENCE,
+  type Claims,
   client,
   ISSUER,
   makeSigner,
@@ -11,6 +13,7 @@ import {
   run,
   seed,
   sessionOf,
+  sign,
   type Signer,
   TEST_NOW,
   TRADE,
@@ -54,6 +57,31 @@ const claims = (sub: string) => ({
   exp: iat + 300,
 });
 
+const base64url = (value: Claims | Jwk.PublicJwk) =>
+  Buffer.from(JSON.stringify(value)).toString("base64url");
+
+// a token with `alg: none` and no signature, which no verifier should accept
+const unsecured = (payload: Claims) =>
+  `${base64url({ alg: "none", typ: "JWT" })}.${base64url(payload)}.`;
+
+/**
+ * The algorithm-confusion attack: HS256 keyed with the published public
+ * JWK, so a verifier that trusts the token's `alg` checks it as a MAC.
+ */
+const publicKeyAsSecret = (signer: Signer) =>
+  Jwk.importSecret(
+    Redacted.make<Jwk.SecretJwk>({
+      kty: "oct",
+      kid: signer.kid,
+      k: base64url(signer.publicJwk),
+    }),
+    "HS256",
+  ).pipe(
+    Effect.provide(Mac.layerWebCrypto),
+    Effect.provide(SecureRandom.layerWebCrypto),
+    Effect.runPromise,
+  );
+
 describe("ChatAuth refuses forged and stale tokens", () => {
   test("a valid token passes", async () => {
     expect(await send(world(), await mint(signer, { sub: "alice" }))).toBe(
@@ -64,13 +92,10 @@ describe("ChatAuth refuses forged and stale tokens", () => {
   test.each([
     ["no token", async () => null],
     ["garbage", async () => "not-a-jwt"],
-    ["alg none", async () => new UnsecuredJWT(claims("alice")).encode()],
+    ["alg none", async () => unsecured(claims("alice"))],
     [
       "HS256 signed with the public key as the secret",
-      async () =>
-        new SignJWT(claims("alice"))
-          .setProtectedHeader({ alg: "HS256", kid: signer.kid })
-          .sign(new TextEncoder().encode(JSON.stringify(signer.jwks.keys[0]))),
+      async () => sign(await publicKeyAsSecret(signer), claims("alice")),
     ],
     [
       "a key the JWKS doesn't list",
