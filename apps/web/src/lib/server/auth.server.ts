@@ -69,14 +69,14 @@ function serverOnlyUserFields() {
 }
 
 /**
- * The OAuth callback redirects with the error's `message` when a sign-up fails
- * and its `code` when a sign-in does, so both carry the same value.
+ * A refused OAuth sign-up or sign-in redirects to its error callback URL with
+ * the `code` as `error`, which `/auth/error` explains.
  */
 function refuseUndeliverableEmail(email: string) {
   if (!hasDeliverableEmail(email)) {
     throw APIError.from("BAD_REQUEST", {
       code: EMAIL_REQUIRED_ERROR,
-      message: EMAIL_REQUIRED_ERROR,
+      message: "A deliverable email address is required",
     });
   }
 }
@@ -172,8 +172,8 @@ export const auth = betterAuth({
 
   databaseHooks: {
     /**
-     * Twitter falls back to the username when an account has no confirmed
-     * email. Refusing that write turns the sign-up away, and through
+     * Twitter gives an account with no confirmed email a placeholder
+     * address. Refusing that write turns the sign-up away, and through
      * `overrideUserInfoOnSignIn` refuses the sign-in of an older account that
      * still holds a username until its Twitter email is confirmed.
      */

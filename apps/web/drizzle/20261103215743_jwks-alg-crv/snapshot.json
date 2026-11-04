@@ -1,0 +1,81 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "f156751a-6d67-4257-8047-b26c9c24b7aa",
+  "prevIds": [
+    "5c051824-2a8b-4bcf-9d52-96afd17a523c"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "jwks",
+        "alg"
+      ],
+      "writes": [
+        "s|col|public.jwks.alg",
+        "n|col|public.jwks.alg",
+        "e|col|public.jwks.alg"
+      ],
+      "reads": [
+        "n|tbl|public.jwks",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "jwks",
+        "crv"
+      ],
+      "writes": [
+        "s|col|public.jwks.crv",
+        "n|col|public.jwks.crv",
+        "e|col|public.jwks.crv"
+      ],
+      "reads": [
+        "n|tbl|public.jwks",
+        "n|sch|public"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "jwks",
+        "name": "alg",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "jwks",
+        "name": "crv",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    }
+  ]
+}

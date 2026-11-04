@@ -160,4 +160,6 @@ export const jwks = pgTable("jwks", {
   privateKey: text("private_key").notNull(),
   createdAt: timestamp("created_at", { mode: "date" }).notNull(),
   expiresAt: timestamp("expires_at", { mode: "date" }),
+  alg: text("alg"),
+  crv: text("crv"),
 });

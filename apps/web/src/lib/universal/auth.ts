@@ -23,12 +23,16 @@ export type CurrentUser = PublicUser & {
 };
 
 /**
- * Twitter falls back to the username when an account has no confirmed email.
- * Sign-ins that would write one are refused, but older accounts still hold a
- * username, which can't receive mail.
+ * Better Auth gives a Twitter account with no confirmed email a placeholder
+ * under the reserved `.invalid` TLD (`<id>@twitter.placeholder.invalid`).
+ * Sign-ins that would write one are refused, but older accounts still hold
+ * the Twitter username it used to fall back to. Neither can receive mail.
  */
 export function hasDeliverableEmail(email: string) {
-  return z.email().safeParse(email).success;
+  return (
+    z.email().safeParse(email).success &&
+    !email.toLowerCase().endsWith(".invalid")
+  );
 }
 
 /**

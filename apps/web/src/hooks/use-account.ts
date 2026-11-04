@@ -1,5 +1,11 @@
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
-import { queryOptions, useMutation } from "@tanstack/react-query";
+import { formatError } from "@/lib/client/errors";
+import {
+  queryOptions,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
+import { toast } from "sonner";
 
 export type Provider = "twitter" | "discord";
 
@@ -40,13 +46,19 @@ export type LinkedAccount = {
 };
 
 export function useUnlinkAccount(account: LinkedAccount) {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async () => {
-      const result = await authClient.unlinkAccount(account);
+      const result = await authClient.unlinkAccount({ accountId: account.id });
       if (result.error) {
         throw new Error(getAuthErrorMessage(result.error));
       }
       return result.data;
+    },
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: listAccountsQuery.queryKey }),
+    onError: (error) => {
+      toast.error(formatError(error));
     },
   });
 }

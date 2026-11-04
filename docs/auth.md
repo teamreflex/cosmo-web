@@ -31,9 +31,9 @@ Better Auth runs inside apps/web at `/api/auth/*`, configured in `apps/web/src/l
 ### Social sign-in can change the email
 
 - Discord and Twitter run with `overrideUserInfoOnSignIn`, and account linking runs with `allowDifferentEmails`. A sign-in can overwrite `email` and `email_verified`, which decide [account protection](#protected-accounts). This is deliberate.
-- Better Auth's Twitter provider falls back to the Twitter username when the account has no confirmed email. The `user` create and update `databaseHooks` refuse any email that `hasDeliverableEmail()` rejects, so that sign-up fails, and so does a sign-in that would write the username back over an older account.
-- Older accounts made before that rule still hold a Twitter username as their email. They have no deliverable email, and can sign in with Twitter again once their Twitter email is confirmed, which the sign-in then writes.
-- The hook's `APIError` carries `EMAIL_REQUIRED_ERROR` as both `code` and `message`, because the OAuth callback redirects with the message on sign-up and the code on sign-in. Social sign-in and linking pass `errorCallbackURL: "/auth/error"`, which explains the code.
+- Better Auth's Twitter provider gives an account with no confirmed email a placeholder, `<id>@twitter.placeholder.invalid`, which passes `z.email()`. `hasDeliverableEmail()` refuses the `.invalid` TLD, and the `user` create and update `databaseHooks` refuse any email it rejects, so that sign-up fails, and so does a sign-in that would write the placeholder over an existing account.
+- Older accounts still hold the Twitter username the provider used to fall back to. They have no deliverable email, and can sign in with Twitter again once their Twitter email is confirmed, which the sign-in then writes.
+- A refused OAuth sign-up or sign-in redirects with the hook's `APIError` code (`EMAIL_REQUIRED_ERROR`) as `error`. Social sign-in and linking pass `errorCallbackURL: "/auth/error"`, which explains the code.
 
 ### Client-written user fields
 
