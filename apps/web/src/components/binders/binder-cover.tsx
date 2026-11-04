@@ -1,4 +1,3 @@
-import { getObjektFrontImageRef } from "@/lib/client/objekt-util";
 import { env } from "@/lib/env/client";
 import {
   type BinderArtwork,
@@ -8,7 +7,7 @@ import {
   COLLAGE_SIZE,
 } from "@/lib/universal/binders";
 import { cn } from "@/lib/utils";
-import { objektImageUrl } from "@apollo/image";
+import { objektFrontImageRef, objektImageUrl } from "@apollo/image";
 
 type Props = {
   binder: Pick<BinderPreview, "name" | "colour" | "artwork">;
@@ -111,7 +110,7 @@ function CoverObjekt({
   fill: boolean;
   className?: string;
 }) {
-  const ref = getObjektFrontImageRef(image);
+  const ref = objektFrontImageRef(image);
 
   return (
     <img

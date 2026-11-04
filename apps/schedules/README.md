@@ -35,6 +35,7 @@ Scheduled tasks and the workers for the web app's job queues, in one Effect proc
 | ----------------------------- | ------------------------------- | ------------------------------------------------------------------------------------------- |
 | `drain-outbox`                | Every minute                    | Applies indexed transfers to lists, pins, binders and trades                                |
 | `trade-timers`                | Every minute                    | Expires pending offers, declines offers on closed listings, ends trades past their deadline |
+| `send-notification-emails`    | Every minute                    | Emails users about trade and offer notifications they haven't read                          |
 | `sync-market-stats`           | Every minute                    | Copies each listed collection's floor and listing count for `/market`                       |
 | `apply-serial-confirmations`  | Every 5 minutes                 | Re-estimates collections whose staff-confirmed serials don't match yet                      |
 | `sync-gravities`              | Every 30 minutes                | Stores new gravities and their poll candidates from COSMO                                   |
@@ -53,19 +54,25 @@ Scheduled tasks and the workers for the web app's job queues, in one Effect proc
 
 ## Environment
 
-Every variable is required at boot; a missing one stops every task.
+A missing required variable stops every task at boot. The mail variables are required only while `NOTIFICATION_EMAILS` is true, so set them before turning it on.
 
-| Variable               | Used for                                                        |
-| ---------------------- | --------------------------------------------------------------- |
-| `WEB_DATABASE_URL`     | the web database                                                |
-| `INDEXER_DATABASE_URL` | the indexer database                                            |
-| `REDIS_URL`            | job queues, caches and the `trade-events` channel               |
-| `COSMO_KEY`            | the COSMO encryption key, used while Redis holds no `cosmo-key` |
-| `EXCHANGERATE_API_KEY` | `sync-fx-rates`                                                 |
+| Variable                                                                         | Used for                                                                          |
+| -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `WEB_DATABASE_URL`                                                               | the web database                                                                  |
+| `INDEXER_DATABASE_URL`                                                           | the indexer database                                                              |
+| `REDIS_URL`                                                                      | job queues, caches and the `trade-events` channel                                 |
+| `COSMO_KEY`                                                                      | the COSMO encryption key, used while Redis holds no `cosmo-key`                   |
+| `EXCHANGERATE_API_KEY`                                                           | `sync-fx-rates`                                                                   |
+| `MAIL_SES_REGION`, `MAIL_SES_FROM`, `MAIL_SES_ACCESS_KEY`, `MAIL_SES_SECRET_KEY` | mail: SES, through `Mailer`; the same values the web app sends with               |
+| `MAIL_SES_ENDPOINT`                                                              | mail, optional: floci locally; unset sends through real SES                       |
+| `APP_NAME`                                                                       | mail: the sender name and email header, the web app's `VITE_APP_NAME`             |
+| `BASE_URL`                                                                       | mail: the web app's origin with its scheme, for links and the logo in emails      |
+| `CDN_URL`                                                                        | mail: the objekt image CDN, the web app's `VITE_CDN_URL`, for the cards in emails |
+| `NOTIFICATION_EMAILS`                                                            | whether `send-notification-emails` mails anyone: `true` or `false` (the default)  |
 
 ## Running
 
 - `turbo dev --filter schedules` runs it in watch mode, with the docker services.
 - `bun run task <name>` runs one task once and exits.
 - `bun run simulate` writes fake chain activity for the drain; see [`CLAUDE.md`](CLAUDE.md#simulating-the-chain).
-- `bun test` runs the outbox planner's tests.
+- `bun test` runs the pure planners' tests: the outbox drain's and the notification emails'.

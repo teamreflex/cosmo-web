@@ -54,6 +54,60 @@ export function objektImageUrl(
 }
 
 /**
+ * Replaces the 4x or original suffix from an imagedelivery URL. Other hosts
+ * have no variants and pass through unchanged.
+ */
+function replaceUrlSize(url: string, size: "2x" | "thumbnail" = "2x") {
+  return url.replace(/4x|original$/i, size);
+}
+
+/**
+ * Stand-ins for each size before a collection is mirrored: imagedelivery's own
+ * variants where it has them, otherwise COSMO's full-size image.
+ */
+const COSMO_FALLBACKS = {
+  xs: (url) => replaceUrlSize(url, "thumbnail"),
+  thumbnail: (url) => replaceUrlSize(url),
+  grid: (url) => url,
+  original: (url) => url,
+} satisfies Record<ObjektImageName, (url: string) => string>;
+
+/**
+ * Mirror location of a collection's front image, or null until it's mirrored.
+ */
+export function objektFrontImageRef(collection: {
+  slug: string;
+  frontImageVersion: string | null;
+}): ObjektImageRef | null {
+  return collection.frontImageVersion === null
+    ? null
+    : {
+        side: "front",
+        slug: collection.slug,
+        version: collection.frontImageVersion,
+      };
+}
+
+/**
+ * Front image URL at the given size, from our CDN once mirrored and from COSMO
+ * until then.
+ */
+export function objektFrontImageUrl(
+  cdnUrl: string,
+  collection: {
+    slug: string;
+    frontImage: string;
+    frontImageVersion: string | null;
+  },
+  name: ObjektImageName,
+) {
+  const ref = objektFrontImageRef(collection);
+  return ref === null
+    ? COSMO_FALLBACKS[name](collection.frontImage)
+    : objektImageUrl(cdnUrl, ref, name);
+}
+
+/**
  * `srcset` offering resized renditions at their target widths. `grid` is
  * declared at 1200w even when the source was narrower and never upscaled,
  * which only nudges the browser towards it slightly early.

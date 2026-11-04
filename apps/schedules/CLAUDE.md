@@ -12,14 +12,15 @@ One long-running Bun process, built with Effect, that runs Apollo's cron tasks a
 
 All of them are merged into `servicesLayer` (`src/services.ts`), which `main.ts` and `src/run-task.ts` both provide.
 
-| Service                | From                            | What to know                                                                                           |
-| ---------------------- | ------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `DatabaseWeb`, `WebTx` | `@apollo/services/database-web` | built once as `webDatabaseLayer`, with one connection                                                  |
-| `DatabaseIndexer`      | `src/db-indexer.ts`             | one connection                                                                                         |
-| `Redis.Redis`          | `@apollo/services/redis`        | queues, caches and `trade-events`                                                                      |
-| `ProxiedToken`         | `src/proxied-token.ts`          | the newest `cosmo_tokens` row; an expired access JWT is refreshed through `refreshV3()` into a new row |
-| `CosmoKey`             | `src/cosmo-key.ts`              | the Redis `cosmo-key` value set from the admin cache page, else `COSMO_KEY`                            |
-| `Exchangerate`         | `src/exchangerate.ts`           | its errors drop the HTTP client error, because the request URL embeds the API key                      |
+| Service                | From                            | What to know                                                                                                                                                                                                                                                                           |
+| ---------------------- | ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DatabaseWeb`, `WebTx` | `@apollo/services/database-web` | built once as `webDatabaseLayer`, with one connection                                                                                                                                                                                                                                  |
+| `DatabaseIndexer`      | `src/db-indexer.ts`             | one connection                                                                                                                                                                                                                                                                         |
+| `Redis.Redis`          | `@apollo/services/redis`        | queues, caches and `trade-events`                                                                                                                                                                                                                                                      |
+| `ProxiedToken`         | `src/proxied-token.ts`          | the newest `cosmo_tokens` row; an expired access JWT is refreshed through `refreshV3()` into a new row                                                                                                                                                                                 |
+| `CosmoKey`             | `src/cosmo-key.ts`              | the Redis `cosmo-key` value set from the admin cache page, else `COSMO_KEY`                                                                                                                                                                                                            |
+| `Exchangerate`         | `src/exchangerate.ts`           | its errors drop the HTTP client error, because the request URL embeds the API key                                                                                                                                                                                                      |
+| `Mailer`               | `src/mailer.ts`                 | whether `NOTIFICATION_EMAILS` is on; while it is, also `send()` through `@apollo/mail`, the `config` templates render with, `appUrl()` for links and `cdnUrl` for objekt images. Never `send()` inside a web transaction, because it would hold the one connection through an SES call |
 
 A task that needs a new service adds it to the closed requirement union of `ScheduledTask` in `src/task.ts` and to `servicesLayer`.
 
@@ -46,6 +47,7 @@ A task that needs a new service adds it to the closed requirement union of `Sche
 | ----------------------------- | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `drain-outbox`                | indexer → web, Redis                    | see [drain-outbox](#drain-outbox)                                                                                                                                                                                                                          |
 | `trade-timers`                | web, Redis                              | see [trade-timers](#trade-timers)                                                                                                                                                                                                                          |
+| `send-notification-emails`    | web, Redis, SES                         | see [docs/trades/notification-emails.md](../../docs/trades/notification-emails.md)                                                                                                                                                                         |
 | `sync-market-stats`           | web → indexer `collection_market_stats` | skips the run while `fx_rates` is empty, because an empty rate table would empty `/market`; unchanged rows are not rewritten                                                                                                                               |
 | `apply-serial-confirmations`  | indexer                                 | re-estimates every collection holding a `serial_confirmation` its objekt doesn't match yet                                                                                                                                                                 |
 | `sync-gravities`              | COSMO → web                             | only inserts gravities not stored yet and never updates stored ones; a failed poll fetch skips the rest of that artist, a failed insert skips that gravity                                                                                                 |
@@ -162,7 +164,7 @@ A task that needs a new service adds it to the closed requirement union of `Sche
 ## Running locally
 
 - `turbo dev --filter schedules` runs it in watch mode and starts the docker services. `bun run dev` here does the same without them.
-- Stop every other copy (dev, or the compose `schedules` service that `DEV_SCHEDULES=true` starts) before `bun run task drain-outbox` or `bun run task trade-timers`, or that copy picks up the rows first.
+- Stop every other copy (dev, or the compose `schedules` service that `DEV_SCHEDULES=true` starts) before `bun run task drain-outbox`, `trade-timers` or `send-notification-emails`, or that copy picks up the rows first.
 - `bun test` covers only the pure planner (`tests/outbox.test.ts`). The drain's DB paths are checked by simulating the chain; its trade decisions are tested in `packages/trades` (`turbo test --filter @apollo/trades`).
 
 ### Simulating the chain
@@ -191,3 +193,4 @@ Move a deadline behind the watermark or an expiry into the past, then `bun run t
 - What the drain does to trades: `packages/trades/src/transfers.ts` first, then `applyTrades()` and `breakOffers()` in `src/functions/drain-outbox.ts`.
 - Timer behaviour: `src/functions/trade-timers.ts`, `transition()` and `offerTransition()` in `packages/trades/src/lifecycle.ts`, and `src/trades.ts`.
 - New background job from the web app: `packages/queue`, then `src/queues/`.
+- Who gets a notification email and what it says: `planEmails()` in `src/notification-emails.ts` (pure), with the wording and layout in `@apollo/mail`; the claim, release and send are in `src/functions/send-notification-emails.tsx` ([docs/trades/notification-emails.md](../../docs/trades/notification-emails.md)).

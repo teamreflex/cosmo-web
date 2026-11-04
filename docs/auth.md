@@ -4,7 +4,7 @@ Better Auth runs inside apps/web at `/api/auth/*`, configured in `apps/web/src/l
 
 ## Better Auth setup
 
-- Users sign in with email and password, Discord or X. Sign-up sends a verification email but doesn't require it (`requireEmailVerification: false`).
+- Users sign in with email and password, Discord or X. Sign-up sends a verification email but doesn't require it (`requireEmailVerification: false`); only a verified address gets [notification emails](trades/notification-emails.md#who-is-mailed).
 - `better-auth`, `@better-auth/api-key` and `@better-auth/drizzle-adapter` are pinned to one version in the root catalog. Upgrade them together.
 - No cookie cache is configured, so every request reads `role`, `banned` and `ban_expires` from the user row. A role change or a ban applies from the user's next request.
 - `session.freshAge: 0` turns off Better Auth's own fresh-session checks. Account deletion's freshness rule is Apollo's own ([`accounts.md`](accounts.md#account-deletion)).
@@ -33,7 +33,7 @@ Better Auth runs inside apps/web at `/api/auth/*`, configured in `apps/web/src/l
 - Discord and Twitter run with `overrideUserInfoOnSignIn`, and account linking runs with `allowDifferentEmails`. A sign-in can overwrite `email` and `email_verified`, which decide [account protection](#protected-accounts). This is deliberate.
 - Better Auth's Twitter provider gives an account with no confirmed email a placeholder, `<id>@twitter.placeholder.invalid`, which passes `z.email()`. `hasDeliverableEmail()` refuses the `.invalid` TLD, and the `user` create and update `databaseHooks` refuse any email it rejects, so that sign-up fails, and so does a sign-in that would write the placeholder over an existing account.
 - Older accounts still hold the Twitter username the provider used to fall back to. They have no deliverable email, and can sign in with Twitter again once their Twitter email is confirmed, which the sign-in then writes.
-- A refused OAuth sign-up or sign-in redirects with the hook's `APIError` code (`EMAIL_REQUIRED_ERROR`) as `error`. Social sign-in and linking pass `errorCallbackURL: "/auth/error"`, which explains the code.
+- A refused OAuth sign-up or sign-in redirects with a code as `error`: the hook's `APIError` code (`EMAIL_REQUIRED_ERROR`), or Better Auth's own `email_not_found` when Discord returns no email. Social sign-in and linking pass `errorCallbackURL: "/auth/error"`, whose `describeError()` explains each code.
 
 ### Client-written user fields
 
@@ -42,6 +42,7 @@ Better Auth's `/update-user` and `/sign-up/email` accept every user field marked
 - `discord` and `twitter` come only from `mapProfileToUser`, so a handle shown on a profile or listing belongs to an account the user signed in with. The `server-only-user-fields` plugin drops them from client requests. They can't be `input: false`, because Better Auth also drops `input: false` fields from `mapProfileToUser`.
 - The `username` plugin validates `displayUsername` only when a `displayUsernameValidator` is set. The `server-only-user-fields` plugin drops any `displayUsername` a client sends and copies the validated `username` into it instead.
 - `currency` follows its own rule ([Display currency](#display-currency)).
+- `emailNotifications`, the email opt-out mask, stays client-writable, so its validator (`emailNotificationsSchema` in `@apollo/trades/notifications`) admits only masks of defined bits.
 
 ## Schema generation
 

@@ -2,13 +2,13 @@ import { m } from "@/i18n/messages";
 import type { TradeItemView, TradeView } from "@/lib/universal/trades";
 import type { TradeSide } from "@apollo/database/web/types";
 import { otherSide } from "@apollo/trades/lifecycle";
+import { formatSerial } from "@apollo/util";
 import { formatError } from "./errors";
 import {
   formatPartnerTokenRefusal,
   formatTokenRefusal,
   offerTokenRefusal,
 } from "./errors/trades";
-import { formatSerial } from "./objekt-util";
 import { objektName, partyName } from "./trade-listings";
 
 /**

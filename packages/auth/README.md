@@ -1,6 +1,6 @@
 # @apollo/auth
 
-Staff roles, the account guards and the user-events contract, shared by apps/web, apps/chat and packages/chat. It is pure code with no I/O; its only dependency is Better Auth's access-control helpers.
+Staff roles, the account guards and the user-events contract, shared by apps/web, apps/chat, apps/schedules and packages/chat. It is pure code with no I/O; its only dependency is Better Auth's access-control helpers.
 
 | Import                | Holds                                                                                                                                               |
 | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -10,7 +10,7 @@ Staff roles, the account guards and the user-events contract, shared by apps/web
 
 - What each role holds, where checks run and how to add a role or permission are in [`docs/auth.md`](../../docs/auth.md).
 - How the guards are applied to bans, role changes and COSMO links is in [`docs/auth.md`](../../docs/auth.md#staff-changes-to-accounts) and [`docs/accounts.md`](../../docs/accounts.md#cosmo-links).
-- apps/schedules doesn't depend on this package. It mirrors `isBanActive()` in SQL (`banActive` in `apps/schedules/src/trades.ts`), so a change to the ban rule changes both.
+- apps/schedules mirrors `isBanActive()` in SQL (`banActive` in `apps/schedules/src/trades.ts`) for its locking reads, so a change to the ban rule changes both.
 
 ## Tests
 

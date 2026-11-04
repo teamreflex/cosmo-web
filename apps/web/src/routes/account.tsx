@@ -1,6 +1,7 @@
 import { AccountSection } from "@/components/auth/account/account-section";
 import DeleteAccount from "@/components/auth/account/delete-account";
 import LinkedAccounts from "@/components/auth/account/linked-accounts";
+import NotificationsSection from "@/components/auth/account/notifications";
 import PreferencesSection from "@/components/auth/account/preferences";
 import ProfileSection from "@/components/auth/account/profile";
 import LinkCosmo from "@/components/auth/link-cosmo";
@@ -15,6 +16,7 @@ import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { shortAddress } from "@apollo/util";
 import {
   IconAdjustmentsHorizontal,
+  IconBell,
   IconLink,
   IconLock,
   IconTrash,
@@ -101,6 +103,8 @@ function RouteComponent() {
 
           <PreferencesSection user={account.user} />
 
+          <NotificationsSection user={account.user} />
+
           <section
             id="delete"
             aria-labelledby="delete-title"
@@ -131,6 +135,11 @@ function SectionMenu() {
       id: "preferences",
       label: m.account_section_preferences(),
       icon: IconAdjustmentsHorizontal,
+    },
+    {
+      id: "notifications",
+      label: m.account_section_notifications(),
+      icon: IconBell,
     },
   ];
 

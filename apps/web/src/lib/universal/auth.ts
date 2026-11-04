@@ -20,6 +20,8 @@ export type PublicUser = {
  */
 export type CurrentUser = PublicUser & {
   currency: string;
+  // opt-out bitmask over EMAIL_NOTIFICATION_BITS in @apollo/trades/notifications
+  emailNotifications: number;
 };
 
 /**

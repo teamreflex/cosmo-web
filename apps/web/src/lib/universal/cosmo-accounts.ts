@@ -15,8 +15,7 @@ export type PublicAccount = {
  * A user's linked COSMO account, as `getCosmoAddress` reads it.
  */
 export type CosmoLink =
-  | { kind: "linked"; address: string; username: string }
-  | { kind: "none" };
+  { kind: "linked"; address: string; username: string } | { kind: "none" };
 
 export type FullAccount = {
   cosmo: PublicCosmo;

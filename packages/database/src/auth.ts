@@ -45,6 +45,8 @@ export const user = pgTable(
     showSocials: boolean("show_socials").notNull().default(false),
     // display currency (ISO 4217): USD or a code with an fx_rates row
     currency: varchar("currency", { length: 3 }).notNull().default("USD"),
+    // opt-out bitmask over EMAIL_NOTIFICATION_BITS in @apollo/trades/notifications
+    emailNotifications: integer("email_notifications").notNull().default(0),
     // admin plugin
     role: userRole("role").notNull().default("user"),
     banned: boolean("banned").notNull().default(false),

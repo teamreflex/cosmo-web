@@ -2,8 +2,8 @@ import { sanitizeMessage } from "@apollo/chat/sanitize";
 import {
   type EndedTradeStatus,
   type FeedbackRating,
-  type FeedbackRole,
   feedbackRatings,
+  type FeedbackRole,
   feedbackRoles,
   type TradeFeedback,
   type TradeSide,

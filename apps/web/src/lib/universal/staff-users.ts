@@ -6,8 +6,7 @@ import type { Role } from "@apollo/auth";
  * namespaces can overlap, so the kind travels with the name.
  */
 export type StaffUser =
-  | { kind: "cosmo"; username: string }
-  | { kind: "apollo"; username: string };
+  { kind: "cosmo"; username: string } | { kind: "apollo"; username: string };
 
 /**
  * A staff user's name where only text fits, such as a toast or a combobox

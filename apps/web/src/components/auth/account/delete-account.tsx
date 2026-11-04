@@ -21,8 +21,8 @@ import { accountDeletionQuery } from "@/lib/queries/account";
 import { currentAccountQuery, removeViewerQueries } from "@/lib/queries/core";
 import {
   type DeletionBlocker,
-  FRESH_SESSION_MINUTES,
   deletionBlockerCount,
+  FRESH_SESSION_MINUTES,
 } from "@/lib/universal/account-deletion";
 import type { AccountErrorCode } from "@/lib/universal/errors/accounts";
 import { isExpectedError } from "@/lib/universal/errors/expected";

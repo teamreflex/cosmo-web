@@ -1,6 +1,5 @@
 import type { Picks } from "@/hooks/use-listing-picks";
 import { m } from "@/i18n/messages";
-import { formatSerial } from "@/lib/client/objekt-util";
 import {
   availabilityLabel,
   objektName,
@@ -17,6 +16,7 @@ import {
   type TradeListing,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
+import { formatSerial } from "@apollo/util";
 import { ObjektSidebar } from "../objekt/common";
 import ExpandableObjekt from "../objekt/objekt-expandable";
 import SelectableCard, { OfferPill } from "./selectable-card";

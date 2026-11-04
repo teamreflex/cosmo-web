@@ -60,6 +60,9 @@ function describeError(error: string | undefined) {
   switch (error) {
     case EMAIL_REQUIRED_ERROR:
       return m.auth_sign_in_error_email_required();
+    // Better Auth's own code for a provider that returned no email (Discord)
+    case "email_not_found":
+      return m.auth_sign_in_error_email_not_found();
     case "BANNED_USER":
       return m.auth_error_banned();
     default:

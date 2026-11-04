@@ -109,3 +109,17 @@ export function slugify(text: string): string {
 export function memberSortOrder(artistIndex: number, memberOrder: number) {
   return (artistIndex + 1) * 1000 + memberOrder;
 }
+
+/**
+ * A serial as COSMO prints it, e.g. #00217.
+ */
+export function formatSerial(serial: number) {
+  return `#${serial.toString().padStart(5, "0")}`;
+}
+
+/**
+ * A COSMO account without a nickname goes by its address, shown shortened.
+ */
+export function accountName(name: string) {
+  return isAddress(name) ? shortAddress(name) : name;
+}

@@ -43,11 +43,7 @@ import {
   type Conversation,
   noConversation,
 } from "@/lib/client/chat-conversation";
-import {
-  accountName,
-  formatCount,
-  partyName,
-} from "@/lib/client/trade-listings";
+import { formatCount, partyName } from "@/lib/client/trade-listings";
 import {
   chatDayFormat,
   chatTimeFormat,
@@ -73,6 +69,7 @@ import {
 } from "@apollo/database/web/types";
 import { otherSide } from "@apollo/trades/lifecycle";
 import { CHAT_RETENTION_DAYS } from "@apollo/trades/timers";
+import { accountName } from "@apollo/util";
 import { useAtomRefresh, useAtomSet, useAtomValue } from "@effect/atom-react";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import {

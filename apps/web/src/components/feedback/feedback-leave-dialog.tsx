@@ -2,7 +2,6 @@ import { useInvalidateTrade } from "@/hooks/use-invalidate-trade";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { ratingStyles, roleLabels } from "@/lib/client/feedback";
-import { formatSerial } from "@/lib/client/objekt-util";
 import { formatCount } from "@/lib/client/trade-listings";
 import { itemLabel, tradeTimeFormat } from "@/lib/client/trades";
 import { $leaveFeedback } from "@/lib/functions/feedback";
@@ -25,7 +24,7 @@ import {
   feedbackScored,
 } from "@apollo/trades/feedback";
 import { otherSide } from "@apollo/trades/lifecycle";
-import { textLength } from "@apollo/util";
+import { formatSerial, textLength } from "@apollo/util";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconInfoCircle, IconLoader2, IconLock } from "@tabler/icons-react";

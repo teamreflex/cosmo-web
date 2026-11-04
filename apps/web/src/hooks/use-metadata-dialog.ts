@@ -6,8 +6,7 @@ import { createContext, useContext } from "react";
  * the serials tab, and a tab opens that tab directly.
  */
 export type MetadataDialogTarget =
-  | { type: "serial"; serial: number }
-  | { type: "tab"; tab: ObjektMetadataTab };
+  { type: "serial"; serial: number } | { type: "tab"; tab: ObjektMetadataTab };
 
 export type MetadataDialogContextValue = {
   open: (slug: string, target?: MetadataDialogTarget) => void;

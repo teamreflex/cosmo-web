@@ -4,26 +4,13 @@ import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type { ValidSort } from "@apollo/cosmo/types/common";
 import type { NonTransferableReason } from "@apollo/cosmo/types/objekts";
 import {
+  objektFrontImageUrl,
   type ObjektImageName,
-  type ObjektImageRef,
   objektImageUrl,
 } from "@apollo/image";
 
 export type Hoverable =
   "select" | "lock" | "list" | "binder" | "pin" | NonTransferableReason;
-
-/**
- * Replaces the 4x or original suffix from an imagedelivery URL. Other hosts
- * have no variants and pass through unchanged.
- */
-function replaceUrlSize(url: string, size: "2x" | "thumbnail" = "2x") {
-  return url.replace(/4x|original$/i, size);
-}
-
-type FrontImageSource = Pick<
-  Objekt.Collection,
-  "slug" | "frontImage" | "frontImageVersion"
->;
 
 type BackImageSource = Pick<
   Objekt.Collection,
@@ -31,43 +18,17 @@ type BackImageSource = Pick<
 >;
 
 /**
- * Stand-ins for each size before a collection is mirrored: imagedelivery's own
- * variants where it has them, otherwise COSMO's full-size image.
- */
-const COSMO_FALLBACKS = {
-  xs: (url) => replaceUrlSize(url, "thumbnail"),
-  thumbnail: (url) => replaceUrlSize(url),
-  grid: (url) => url,
-  original: (url) => url,
-} satisfies Record<ObjektImageName, (url: string) => string>;
-
-/**
- * Mirror location of a collection's front image, or null until it's mirrored.
- */
-export function getObjektFrontImageRef(
-  collection: Pick<Objekt.Collection, "slug" | "frontImageVersion">,
-): ObjektImageRef | null {
-  return collection.frontImageVersion === null
-    ? null
-    : {
-        side: "front",
-        slug: collection.slug,
-        version: collection.frontImageVersion,
-      };
-}
-
-/**
  * Front image URL at the given size, from our CDN once mirrored and from COSMO
  * until then.
  */
 export function getObjektFrontImageUrl(
-  collection: FrontImageSource,
+  collection: Pick<
+    Objekt.Collection,
+    "slug" | "frontImage" | "frontImageVersion"
+  >,
   name: ObjektImageName,
 ) {
-  const ref = getObjektFrontImageRef(collection);
-  return ref === null
-    ? COSMO_FALLBACKS[name](collection.frontImage)
-    : objektImageUrl(env.VITE_CDN_URL, ref, name);
+  return objektFrontImageUrl(env.VITE_CDN_URL, collection, name);
 }
 
 /**
@@ -86,13 +47,6 @@ export function getObjektBackImageUrl(collection: BackImageSource) {
         },
         "original",
       );
-}
-
-/**
- * A serial as COSMO prints it, "#00217".
- */
-export function formatSerial(serial: number) {
-  return `#${serial.toString().padStart(5, "0")}`;
 }
 
 /**

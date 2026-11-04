@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { selectionKey, useObjektSelection } from "@/hooks/use-objekt-selection";
 import { m } from "@/i18n/messages";
 import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
+import { formatSerial } from "@apollo/util";
 import { IconX } from "@tabler/icons-react";
 
 /**
@@ -47,7 +48,7 @@ export default function BatchSelectionPopover() {
                     </span>
                     {s.type === "token" && (
                       <span className="font-mono text-xxs text-muted-foreground tabular-nums">
-                        #{s.token.serial.toString().padStart(5, "0")}
+                        {formatSerial(s.token.serial)}
                       </span>
                     )}
                   </div>

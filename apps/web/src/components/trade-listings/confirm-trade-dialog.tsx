@@ -3,7 +3,7 @@ import type { ConfirmSnapshot, PickerRow } from "@/hooks/use-listing-picks";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { type ClaimFailure, claimFailure } from "@/lib/client/errors/trades";
-import { formatSerial, getObjektFrontImageUrl } from "@/lib/client/objekt-util";
+import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import {
   objektName,
   pickShown,
@@ -21,6 +21,7 @@ import {
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
 import { CLAIM_WINDOW } from "@apollo/trades/timers";
+import { formatSerial } from "@apollo/util";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import {
   IconAlertTriangle,

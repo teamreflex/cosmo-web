@@ -1,4 +1,4 @@
-import { CONTACT_ICONS, type Contact } from "@/lib/client/contacts";
+import { type Contact, CONTACT_ICONS } from "@/lib/client/contacts";
 import { cn } from "@/lib/utils";
 
 /**

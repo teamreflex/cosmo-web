@@ -336,6 +336,8 @@ export const notifications = pgTable(
     }),
     // the token a token event or a closed listing is about
     tokenId: integer("token_id"),
+    // when send-notification-emails claimed the row, whether or not it mailed it
+    emailedAt: timestamp("emailed_at", { mode: "date", withTimezone: true }),
   },
   (t) => [
     /**
@@ -347,6 +349,10 @@ export const notifications = pgTable(
     index("notifications_user_unread_idx")
       .on(t.userId, t.createdAt)
       .where(isNull(t.readAt)),
+    // send-notification-emails scans only the rows it hasn't claimed
+    index("notifications_email_pending_idx")
+      .on(t.createdAt)
+      .where(isNull(t.emailedAt)),
     /**
      * An actor re-adding a collection never notifies the same user twice.
      * Leading with the actor serves the cascade when their account is deleted.

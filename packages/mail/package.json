@@ -1,0 +1,34 @@
+{
+  "name": "@apollo/mail",
+  "version": "0.0.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "dev": "email dev --dir src/emails --port 3003",
+    "lint": "bun --bun oxlint --type-aware --type-check",
+    "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
+    "typecheck": "bun check",
+    "format": "bun fmt"
+  },
+  "dependencies": {
+    "@apollo/util": "workspace:*",
+    "@aws-sdk/client-ses": "^3.1158.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-email": "6.11.6"
+  },
+  "devDependencies": {
+    "@apollo/lint": "workspace:*",
+    "@apollo/typescript": "workspace:*",
+    "@react-email/ui": "6.11.6",
+    "@types/bun": "catalog:",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "turbo": "catalog:",
+    "typescript": "catalog:"
+  }
+}

@@ -9,12 +9,14 @@ import { chatRetentionTask } from "./functions/chat-retention";
 import { clearObjektStatsTask } from "./functions/clear-objekt-stats";
 import { drainOutboxTask } from "./functions/drain-outbox";
 import { recomputeSerialsTask } from "./functions/recompute-serials";
+import { sendNotificationEmailsTask } from "./functions/send-notification-emails";
 import { syncCollectionPriceStatsTask } from "./functions/sync-collection-price-stats";
 import { syncFxRatesTask } from "./functions/sync-fx-rates";
 import { syncGravitiesTask } from "./functions/sync-gravities";
 import { syncMarketStatsTask } from "./functions/sync-market-stats";
 import { syncMembersTask } from "./functions/sync-members";
 import { tradeTimersTask } from "./functions/trade-timers";
+import type { Mailer } from "./mailer";
 import type { ProxiedToken } from "./proxied-token";
 
 export interface ScheduledTask<TSuccess = void, TFailure = unknown> {
@@ -30,6 +32,7 @@ export interface ScheduledTask<TSuccess = void, TFailure = unknown> {
     | DatabaseIndexer
     | ProxiedToken
     | Exchangerate
+    | Mailer
     | HttpClient.HttpClient
   >;
 }
@@ -39,6 +42,7 @@ export const SCHEDULED_TASKS: ScheduledTask[] = [
   syncGravitiesTask,
   drainOutboxTask,
   tradeTimersTask,
+  sendNotificationEmailsTask,
   syncFxRatesTask,
   syncCollectionPriceStatsTask,
   syncMembersTask,

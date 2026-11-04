@@ -35,8 +35,8 @@ import { Effect } from "effect";
 import { Redis } from "effect/persistence";
 
 /**
- * The user row has an active ban: isBanActive in @apollo/auth/guard, which
- * this app doesn't depend on.
+ * The user row has an active ban: the SQL mirror of isBanActive in
+ * @apollo/auth/guard, for filtering inside a locking read.
  */
 const banActive = sql<boolean>`(${user.banned} and (${user.banExpires} is null or ${user.banExpires} > now()))`;
 

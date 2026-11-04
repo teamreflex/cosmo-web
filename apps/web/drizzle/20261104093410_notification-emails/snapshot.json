@@ -1,0 +1,125 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "4669882b-2bea-4918-91b9-d38013c8b3d3",
+  "prevIds": [
+    "f156751a-6d67-4257-8047-b26c9c24b7aa"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "notifications",
+        "emailed_at"
+      ],
+      "writes": [
+        "s|col|public.notifications.emailed_at",
+        "n|col|public.notifications.emailed_at",
+        "e|col|public.notifications.emailed_at"
+      ],
+      "reads": [
+        "n|tbl|public.notifications",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "user",
+        "email_notifications"
+      ],
+      "writes": [
+        "s|col|public.user.email_notifications",
+        "n|col|public.user.email_notifications",
+        "e|col|public.user.email_notifications"
+      ],
+      "reads": [
+        "n|tbl|public.user",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "notifications",
+        "notifications_email_pending_idx"
+      ],
+      "writes": [
+        "s|idx|public.notifications_email_pending_idx",
+        "n|idx|public.notifications_email_pending_idx",
+        "e|idx|public.notifications_email_pending_idx",
+        "n|rel|public.notifications_email_pending_idx"
+      ],
+      "reads": [
+        "n|tbl|public.notifications",
+        "n|sch|public",
+        "n|col|public.notifications.created_at"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notifications",
+        "name": "emailed_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "user",
+        "name": "email_notifications",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "0",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "notifications",
+        "name": "notifications_email_pending_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "created_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": "(\"emailed_at\" is null)",
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    }
+  ]
+}

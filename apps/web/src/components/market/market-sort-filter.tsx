@@ -1,8 +1,8 @@
 import { m } from "@/i18n/messages";
 import {
   DEFAULT_MARKET_SORT,
-  marketSorts,
   type MarketSort,
+  marketSorts,
 } from "@/lib/universal/market";
 import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import FilterChip from "../collection/filter-chip";

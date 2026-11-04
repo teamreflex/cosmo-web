@@ -3,6 +3,7 @@ import * as serverEnv from "@/lib/env/server";
 import { baseUrl } from "@/lib/utils";
 import { adminPluginOptions } from "@apollo/auth";
 import * as authSchema from "@apollo/database/auth";
+import { emailNotificationsSchema } from "@apollo/trades/notifications";
 import { GRID_COLUMNS } from "@apollo/util";
 import type { CollectionDataSource } from "@apollo/util";
 import { apiKey } from "@better-auth/api-key";
@@ -411,6 +412,15 @@ export const auth = betterAuth({
         // oxlint-disable-next-line anti-slop/no-shape-in-symbol-names -- zod's field accessor
         validator: { input: settingsSchema.shape.currency },
       },
+      // clients may write it directly, so the validator admits only defined bits
+      emailNotifications: {
+        type: "number",
+        required: false,
+        defaultValue: 0,
+        input: true,
+        returned: true,
+        validator: { input: emailNotificationsSchema },
+      },
       // filled only from the OAuth profile; see `serverOnlyUserFields()`
       discord: {
         type: "string",
@@ -501,5 +511,9 @@ export function toPublicUser(
  * Convert the signed-in user for their own account payload.
  */
 export function toCurrentUser(user: ServerUser): CurrentUser {
-  return { ...toPublicUser(user), currency: user.currency ?? DEFAULT_CURRENCY };
+  return {
+    ...toPublicUser(user),
+    currency: user.currency ?? DEFAULT_CURRENCY,
+    emailNotifications: user.emailNotifications ?? 0,
+  };
 }

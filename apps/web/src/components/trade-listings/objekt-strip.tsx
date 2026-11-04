@@ -1,7 +1,8 @@
-import { formatSerial, getObjektFrontImageUrl } from "@/lib/client/objekt-util";
+import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import { objektName } from "@/lib/client/trade-listings";
 import type { ListingFeedItem } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
+import { formatSerial } from "@apollo/util";
 
 type Props = {
   items: ListingFeedItem[];

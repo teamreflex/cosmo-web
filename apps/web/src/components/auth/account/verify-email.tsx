@@ -39,7 +39,16 @@ export function EmailStatusBadge({ verified }: { verified: boolean }) {
   );
 }
 
-export function SendVerificationEmail({ email }: { email: string }) {
+type SendVerificationEmailProps = {
+  email: string;
+  // why the user should verify, shown beside the button
+  description?: string;
+};
+
+export function SendVerificationEmail({
+  email,
+  description = m.account_profile_email_unverified_description(),
+}: SendVerificationEmailProps) {
   const [open, setOpen] = useState(false);
   const mutation = useMutation({
     mutationFn: async () => {
@@ -77,9 +86,7 @@ export function SendVerificationEmail({ email }: { email: string }) {
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-2 rounded-lg border border-amber-600/25 bg-amber-500/5 px-3.5 py-3 dark:border-amber-400/25 dark:bg-amber-400/5">
       <IconAlertCircle className="size-4.5 shrink-0 text-amber-700 dark:text-amber-400" />
-      <p className="min-w-0 flex-1 basis-56 text-sm">
-        {m.account_profile_email_unverified_description()}
-      </p>
+      <p className="min-w-0 flex-1 basis-56 text-sm">{description}</p>
       <AlertDialog open={open} onOpenChange={setOpen}>
         <AlertDialogTrigger render={<Button variant="outline" size="sm" />}>
           <IconMail />

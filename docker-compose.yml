@@ -266,12 +266,25 @@ services:
       - REDIS_URL=redis://valkey:6379
       - EXCHANGERATE_API_KEY=${EXCHANGERATE_API_KEY}
       - COSMO_KEY
+      - APP_NAME=${VITE_APP_NAME}
+      # links in emails open in the host's browser
+      - BASE_URL
+      - CDN_URL=${VITE_CDN_URL}
+      # always floci, so the container never holds real ses credentials
+      - MAIL_SES_ENDPOINT=http://floci:4566
+      - MAIL_SES_REGION=${MAIL_SES_REGION}
+      - MAIL_SES_FROM=${MAIL_SES_FROM}
+      - MAIL_SES_ACCESS_KEY=local
+      - MAIL_SES_SECRET_KEY=local
+      - NOTIFICATION_EMAILS=${NOTIFICATION_EMAILS:-false}
     depends_on:
       pgbouncer-web:
         condition: service_healthy
       pgbouncer-indexer:
         condition: service_healthy
       valkey:
+        condition: service_healthy
+      floci:
         condition: service_healthy
     networks:
       - apollo-network

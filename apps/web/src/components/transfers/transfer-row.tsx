@@ -8,7 +8,7 @@ import type {
   TransferRow as Row,
 } from "@/lib/universal/transfers";
 import { cn } from "@/lib/utils";
-import { Addresses } from "@apollo/util";
+import { Addresses, formatSerial } from "@apollo/util";
 import {
   IconArrowDownLeft,
   IconArrowsLeftRight,
@@ -191,10 +191,8 @@ function collectionName(objekt: TransferObjekt) {
   return objekt.collection?.collectionId ?? m.transfer_unknown();
 }
 
-function formatSerial(objekt: TransferObjekt) {
-  return objekt.serial === null
-    ? null
-    : `#${objekt.serial.toString().padStart(5, "0")}`;
+function serialLabel(objekt: TransferObjekt) {
+  return objekt.serial === null ? null : formatSerial(objekt.serial);
 }
 
 /**
@@ -212,7 +210,7 @@ function Side({
   const [first] = objekts;
   if (!first) return null;
   const multi = objekts.length > 1;
-  const serial = formatSerial(first);
+  const serial = serialLabel(first);
 
   return (
     <>
@@ -660,7 +658,7 @@ function DetailCard({
   objekt: TransferObjekt;
   label: ReactNode;
 }) {
-  const serial = formatSerial(objekt);
+  const serial = serialLabel(objekt);
   return (
     <span className="flex min-w-0 items-center gap-2.5">
       <Thumbnail objekt={objekt} size="sm" />

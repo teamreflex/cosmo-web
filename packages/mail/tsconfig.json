@@ -1,0 +1,14 @@
+{
+  "extends": "@apollo/typescript/tsconfig.bun.json",
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": ["node_modules", ".turbo"],
+
+  "compilerOptions": {
+    "lib": ["ESNext"],
+    "jsx": "react-jsx",
+    "types": ["bun"],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
+}

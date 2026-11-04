@@ -16,6 +16,7 @@ import { objektQuery } from "@/lib/queries/objekt-queries";
 import type { CollectionListing } from "@/lib/universal/listings";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn, formatPrice } from "@/lib/utils";
+import { formatSerial } from "@apollo/util";
 import { IconArrowRight, IconList } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -48,10 +49,7 @@ export default function ListingRow({
   const { open } = useMetadataDialog();
   const own = listing.seller.id === viewerId;
   const contacts = own ? [] : resolveContacts(listing.seller);
-  const serial =
-    listing.serial === null
-      ? "—"
-      : `#${listing.serial.toString().padStart(5, "0")}`;
+  const serial = listing.serial === null ? "—" : formatSerial(listing.serial);
 
   function openMetadata() {
     queryClient.setQueryData(objektQuery(collection.slug).queryKey, collection);
