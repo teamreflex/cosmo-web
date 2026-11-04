@@ -7,11 +7,10 @@ import { emailNotificationsSchema } from "@apollo/trades/notifications";
 import { GRID_COLUMNS } from "@apollo/util";
 import type { CollectionDataSource } from "@apollo/util";
 import { apiKey } from "@better-auth/api-key";
-import { drizzleAdapter } from "@better-auth/drizzle-adapter";
+import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { captureException } from "@sentry/bun";
 import type { BetterAuthPlugin } from "better-auth";
 import { APIError, createAuthMiddleware } from "better-auth/api";
-import { parseSessionOutput, parseUserOutput } from "better-auth/db";
 import { betterAuth } from "better-auth/minimal";
 import { admin } from "better-auth/plugins/admin";
 import { jwt } from "better-auth/plugins/jwt";
@@ -94,6 +93,7 @@ export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: authSchema,
+    transaction: true,
   }),
   plugins: [
     username({
@@ -303,44 +303,6 @@ export const auth = betterAuth({
       if (ctx.path?.startsWith("/admin/") && ctx.request) {
         throw new APIError("NOT_FOUND");
       }
-
-      /**
-       * Override the internal adapter to return the session and user in one query.
-       */
-      if (ctx.path === "/get-session") {
-        return {
-          context: {
-            ...ctx,
-            context: {
-              ...ctx.context,
-              internalAdapter: {
-                ...ctx.context.internalAdapter,
-                findSession: async (token: string) => {
-                  const result = await db.query.session.findFirst({
-                    where: { token },
-                    with: {
-                      user: true,
-                    },
-                  });
-                  if (!result) {
-                    return null;
-                  }
-
-                  const { user, ...session } = result;
-                  if (!user) {
-                    return null;
-                  }
-
-                  return {
-                    session: parseSessionOutput(ctx.context.options, session),
-                    user: parseUserOutput(ctx.context.options, user),
-                  };
-                },
-              },
-            },
-          },
-        };
-      }
     }),
   },
 
@@ -375,6 +337,8 @@ export const auth = betterAuth({
     },
   },
   advanced: {
+    // session lookups read the user in the same query; see docs/auth.md
+    database: { joins: true },
     ipAddress: {
       ipAddressHeaders: ["cf-connecting-ip"],
     },
