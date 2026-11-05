@@ -3,35 +3,48 @@ import * as serverEnv from "@/lib/env/server";
 import { baseUrl } from "@/lib/utils";
 import { adminPluginOptions } from "@apollo/auth";
 import * as authSchema from "@apollo/database/auth";
+import { emailNotificationsSchema } from "@apollo/trades/notifications";
 import { GRID_COLUMNS } from "@apollo/util";
 import type { CollectionDataSource } from "@apollo/util";
 import { apiKey } from "@better-auth/api-key";
-import { drizzleAdapter } from "@better-auth/drizzle-adapter";
+import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { captureException } from "@sentry/bun";
 import type { BetterAuthPlugin } from "better-auth";
 import { APIError, createAuthMiddleware } from "better-auth/api";
-import { parseSessionOutput, parseUserOutput } from "better-auth/db";
 import { betterAuth } from "better-auth/minimal";
 import { admin } from "better-auth/plugins/admin";
 import { jwt } from "better-auth/plugins/jwt";
 import { username } from "better-auth/plugins/username";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { createCipheriv, randomBytes } from "node:crypto";
-import type { CurrentUser, PublicUser } from "../universal/auth";
-import { settingsSchema } from "../universal/schema/auth";
+import {
+  type CurrentUser,
+  EMAIL_REQUIRED_ERROR,
+  hasDeliverableEmail,
+  type PublicUser,
+} from "../universal/auth";
+import { settingsSchema, updateUsernameSchema } from "../universal/schema/auth";
 import { DEFAULT_CURRENCY } from "../universal/schema/currency";
 import { db } from "./db";
 import { sendPasswordResetEmail, sendVerificationEmail } from "./mail.server";
 import { publishUserEvent } from "./user-events.server";
 
 /**
- * Drops `currency` from client sign-up and update-user requests, since it needs
- * an FX rate check that a synchronous field validator can't run. $updateSettings
- * checks it and calls `auth.api.updateUser` directly, which has no `request`.
+ * Guards user fields that clients may not set directly on sign-up and
+ * update-user requests:
+ * - `currency` needs an FX rate check that a synchronous field validator can't
+ *   run. $updateSettings checks it and calls `auth.api.updateUser` directly,
+ *   which has no `request`.
+ * - `displayUsername` skips the username plugin's validation and uniqueness
+ *   check, so it always mirrors the validated `username` instead.
+ * - `discord` and `twitter` come only from the OAuth profile, so a handle on a
+ *   profile belongs to an account the user signed in with. They stay
+ *   `input: true` because Better Auth drops `input: false` fields from
+ *   `mapProfileToUser` too.
  */
-function serverOnlyCurrency() {
+function serverOnlyUserFields() {
   return {
-    id: "server-only-currency",
+    id: "server-only-user-fields",
     hooks: {
       before: [
         {
@@ -40,11 +53,32 @@ function serverOnlyCurrency() {
             (ctx.path === "/update-user" || ctx.path === "/sign-up/email"),
           handler: createAuthMiddleware(async (ctx) => {
             delete ctx.body?.currency;
+            delete ctx.body?.displayUsername;
+            delete ctx.body?.discord;
+            delete ctx.body?.twitter;
+            // an invalid username is refused by the username plugin's own hook
+            const parsed = updateUsernameSchema.safeParse(ctx.body);
+            if (parsed.success && parsed.data.username !== undefined) {
+              ctx.body.displayUsername = parsed.data.username;
+            }
           }),
         },
       ],
     },
   } satisfies BetterAuthPlugin;
+}
+
+/**
+ * A refused OAuth sign-up or sign-in redirects to its error callback URL with
+ * the `code` as `error`, which `/auth/error` explains.
+ */
+function refuseUndeliverableEmail(email: string) {
+  if (!hasDeliverableEmail(email)) {
+    throw APIError.from("BAD_REQUEST", {
+      code: EMAIL_REQUIRED_ERROR,
+      message: "A deliverable email address is required",
+    });
+  }
 }
 
 /**
@@ -59,6 +93,7 @@ export const auth = betterAuth({
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: authSchema,
+    transaction: true,
   }),
   plugins: [
     username({
@@ -95,7 +130,7 @@ export const auth = betterAuth({
         definePayload: ({ session }) => ({ sid: session.id }),
       },
     }),
-    serverOnlyCurrency(),
+    serverOnlyUserFields(),
     tanstackStartCookies(),
   ],
 
@@ -137,6 +172,26 @@ export const auth = betterAuth({
   },
 
   databaseHooks: {
+    /**
+     * Twitter gives an account with no confirmed email a placeholder
+     * address. Refusing that write turns the sign-up away, and through
+     * `overrideUserInfoOnSignIn` refuses the sign-in of an older account that
+     * still holds a username until its Twitter email is confirmed.
+     */
+    user: {
+      create: {
+        async before(user) {
+          refuseUndeliverableEmail(user.email);
+        },
+      },
+      update: {
+        async before(user) {
+          if (user.email !== undefined) {
+            refuseUndeliverableEmail(user.email);
+          }
+        },
+      },
+    },
     session: {
       delete: {
         /**
@@ -248,44 +303,6 @@ export const auth = betterAuth({
       if (ctx.path?.startsWith("/admin/") && ctx.request) {
         throw new APIError("NOT_FOUND");
       }
-
-      /**
-       * Override the internal adapter to return the session and user in one query.
-       */
-      if (ctx.path === "/get-session") {
-        return {
-          context: {
-            ...ctx,
-            context: {
-              ...ctx.context,
-              internalAdapter: {
-                ...ctx.context.internalAdapter,
-                findSession: async (token: string) => {
-                  const result = await db.query.session.findFirst({
-                    where: { token },
-                    with: {
-                      user: true,
-                    },
-                  });
-                  if (!result) {
-                    return null;
-                  }
-
-                  const { user, ...session } = result;
-                  if (!user) {
-                    return null;
-                  }
-
-                  return {
-                    session: parseSessionOutput(ctx.context.options, session),
-                    user: parseUserOutput(ctx.context.options, user),
-                  };
-                },
-              },
-            },
-          },
-        };
-      }
     }),
   },
 
@@ -320,6 +337,8 @@ export const auth = betterAuth({
     },
   },
   advanced: {
+    // session lookups read the user in the same query; see docs/auth.md
+    database: { joins: true },
     ipAddress: {
       ipAddressHeaders: ["cf-connecting-ip"],
     },
@@ -357,6 +376,16 @@ export const auth = betterAuth({
         // oxlint-disable-next-line anti-slop/no-shape-in-symbol-names -- zod's field accessor
         validator: { input: settingsSchema.shape.currency },
       },
+      // clients may write it directly, so the validator admits only defined bits
+      emailNotifications: {
+        type: "number",
+        required: false,
+        defaultValue: 0,
+        input: true,
+        returned: true,
+        validator: { input: emailNotificationsSchema },
+      },
+      // filled only from the OAuth profile; see `serverOnlyUserFields()`
       discord: {
         type: "string",
         required: false,
@@ -446,5 +475,9 @@ export function toPublicUser(
  * Convert the signed-in user for their own account payload.
  */
 export function toCurrentUser(user: ServerUser): CurrentUser {
-  return { ...toPublicUser(user), currency: user.currency ?? DEFAULT_CURRENCY };
+  return {
+    ...toPublicUser(user),
+    currency: user.currency ?? DEFAULT_CURRENCY,
+    emailNotifications: user.emailNotifications ?? 0,
+  };
 }

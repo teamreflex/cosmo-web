@@ -4,22 +4,23 @@ Apollo is a Bun and Turborepo monorepo; [`README.md`](README.md) lists what each
 
 Read the file for an area **before** working in it. Each app and package also has its own `README.md` or `CLAUDE.md`.
 
-| When you're working on…                                                                                                                  | Read                                                 |
-| ---------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| Turbo tasks, local services and `DEV_*` flags, env vars, lint, format, TypeScript 7, Effect conventions, Redis keys, rate limits, Sentry | [`docs/tooling.md`](docs/tooling.md)                 |
-| Looking up library documentation (TanStack, Drizzle, Effect, …)                                                                          | [`docs/libraries.md`](docs/libraries.md)             |
-| Writing or running tests (`bun test`), what earns a test                                                                                 | [`docs/testing.md`](docs/testing.md)                 |
-| Queries, schema, the two databases, cross-database ids, derived types (`apps/web`, `packages/database`)                                  | [`docs/database.md`](docs/database.md)               |
-| Migrations for either database, backfills, hand-applied autovacuum settings                                                              | [`docs/migrations.md`](docs/migrations.md)           |
-| Lock order, row locks, deadlocks between writers                                                                                         | [`docs/locking.md`](docs/locking.md)                 |
-| Better Auth, sign-in, staff roles and permissions, bans, user events, chat tokens, API keys, display currency                            | [`docs/auth.md`](docs/auth.md)                       |
-| COSMO links and verification, what others see of a user, staff names, account deletion                                                   | [`docs/accounts.md`](docs/accounts.md)               |
-| Reports, disputes, message reports, staff audit                                                                                          | [`docs/moderation.md`](docs/moderation.md)           |
-| Routes, loaders, server functions, middleware, invalidation, import protection (`apps/web`)                                              | [`docs/tanstack.md`](docs/tanstack.md)               |
-| Components, forms, Tailwind/styling, i18n strings (`apps/web`)                                                                           | [`docs/frontend.md`](docs/frontend.md)               |
-| Throwing/handling errors, `ExpectedError`, error boundaries, Sentry filtering (`apps/web`)                                               | [`docs/errors.md`](docs/errors.md)                   |
-| COSMO domain concepts: collections, objekts, serials, grids, COMO, gravity polls                                                         | [`docs/cosmo.md`](docs/cosmo.md)                     |
-| Listings, the composer, feed and listing page, trades, offers, the drain's decisions, timers, feedback, the market gate                  | [`docs/trades/overview.md`](docs/trades/overview.md) |
+| When you're working on…                                                                                                                  | Read                                                                       |
+| ---------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Turbo tasks, local services and `DEV_*` flags, env vars, lint, format, TypeScript 7, Effect conventions, Redis keys, rate limits, Sentry | [`docs/tooling.md`](docs/tooling.md)                                       |
+| Looking up library documentation (TanStack, Drizzle, Effect, …)                                                                          | [`docs/libraries.md`](docs/libraries.md)                                   |
+| Writing or running tests (`bun test`), what earns a test                                                                                 | [`docs/testing.md`](docs/testing.md)                                       |
+| Queries, schema, the two databases, cross-database ids, derived types (`apps/web`, `packages/database`)                                  | [`docs/database.md`](docs/database.md)                                     |
+| Migrations for either database, backfills, hand-applied autovacuum settings                                                              | [`docs/migrations.md`](docs/migrations.md)                                 |
+| Lock order, row locks, deadlocks between writers                                                                                         | [`docs/locking.md`](docs/locking.md)                                       |
+| Better Auth, sign-in, staff roles and permissions, bans, user events, chat tokens, API keys, display currency                            | [`docs/auth.md`](docs/auth.md)                                             |
+| COSMO links and verification, what others see of a user, staff names, account deletion                                                   | [`docs/accounts.md`](docs/accounts.md)                                     |
+| Reports, disputes, message reports, staff audit                                                                                          | [`docs/moderation.md`](docs/moderation.md)                                 |
+| Routes, loaders, server functions, middleware, invalidation, import protection (`apps/web`)                                              | [`docs/tanstack.md`](docs/tanstack.md)                                     |
+| Components, forms, Tailwind/styling, i18n strings (`apps/web`)                                                                           | [`docs/frontend.md`](docs/frontend.md)                                     |
+| Throwing/handling errors, `ExpectedError`, error boundaries, Sentry filtering (`apps/web`)                                               | [`docs/errors.md`](docs/errors.md)                                         |
+| COSMO domain concepts: collections, objekts, serials, grids, COMO, gravity polls                                                         | [`docs/cosmo.md`](docs/cosmo.md)                                           |
+| Listings, the composer, feed and listing page, trades, offers, the drain's decisions, timers, feedback, the market gate                  | [`docs/trades/overview.md`](docs/trades/overview.md)                       |
+| Which notifications are emailed, opt-out bits, the email task's outbox claim and cooldown, the `NOTIFICATION_EMAILS` flag                | [`docs/trades/notification-emails.md`](docs/trades/notification-emails.md) |
 
 ## Commands
 

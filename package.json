@@ -32,20 +32,20 @@
   },
   "packageManager": "bun@1.4.4",
   "catalog": {
-    "@better-auth/api-key": "1.6.33",
-    "@better-auth/drizzle-adapter": "1.6.33",
-    "@effect/atom-react": "4.0.7",
+    "@better-auth/api-key": "1.7.16",
+    "@better-auth/drizzle-adapter": "1.7.16",
+    "@effect/atom-react": "4.1.2",
     "@effect/build-utils": "^0.8.9",
     "@effect/eslint-plugin": "^0.3.2",
     "@effect/language-service": "^0.87.5",
-    "@effect/platform-bun": "4.0.7",
+    "@effect/platform-bun": "4.1.2",
     "@sentry/bun": "^11.9.0",
     "@types/bun": "1.4.4",
-    "better-auth": "1.6.33",
+    "auth": "1.7.16",
+    "better-auth": "1.7.16",
     "drizzle-kit": "1.0.0-rc.5",
     "drizzle-orm": "1.0.0-rc.5",
-    "effect": "4.0.7",
-    "jose": "^6.2.13",
+    "effect": "4.1.2",
     "ofetch": "^1.5.1",
     "turbo": "2.11.10",
     "typesense": "^2.1.0",
@@ -54,6 +54,7 @@
   },
   "patchedDependencies": {
     "@subsquid/http-client@1.8.1": "patches/@subsquid%2Fhttp-client@1.8.1.patch",
-    "@effect/platform-bun@4.0.7": "patches/@effect%2Fplatform-bun@4.0.7.patch"
+    "@effect/platform-bun@4.1.2": "patches/@effect%2Fplatform-bun@4.1.2.patch",
+    "effect@4.1.2": "patches/effect@4.1.2.patch"
   }
 }

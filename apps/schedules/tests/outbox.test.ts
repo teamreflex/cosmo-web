@@ -1,9 +1,9 @@
 import { describe, expect, it } from "bun:test";
 import {
   decideRow,
+  type OutboxRow,
   parseOutboxRow,
   planBatch,
-  type OutboxRow,
   type RawOutboxRow,
 } from "../src/outbox";
 

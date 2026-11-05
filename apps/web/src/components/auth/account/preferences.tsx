@@ -1,14 +1,7 @@
 import { DataSourceSelector } from "@/components/collection/data-source-selector";
 import CurrencySelect from "@/components/misc/currency-select";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { FieldError } from "@/components/ui/field";
 import {
   Select,
   SelectContent,
@@ -32,15 +25,17 @@ import { useRouter } from "@tanstack/react-router";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
-import { Field, FieldContent, FieldError, FieldLabel } from "../ui/field";
+import { AccountRow, AccountSection } from "./account-section";
 
 type Props = {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
   user: CurrentUser;
 };
 
-export default function SettingsDialog({ open, onOpenChange, user }: Props) {
+/**
+ * Language and theme apply as soon as they're picked; the account-backed
+ * settings save together.
+ */
+export default function PreferencesSection({ user }: Props) {
   const { theme, setTheme } = useTheme();
   const queryClient = useQueryClient();
   const router = useRouter();
@@ -79,7 +74,7 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
       {
         async onSuccess() {
           toast.success(m.auth_settings_updated());
-          onOpenChange(false);
+          form.reset(data);
           await queryClient.invalidateQueries({
             queryKey: currentAccountQuery.queryKey,
           });
@@ -93,98 +88,78 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-xl">
-        <DialogHeader>
-          <DialogTitle>{m.settings_title()}</DialogTitle>
-          <DialogDescription>{m.settings_description()}</DialogDescription>
-        </DialogHeader>
-
-        <form
-          id="settings-form"
-          onSubmit={form.handleSubmit(handleSubmit)}
-          className="flex flex-col gap-4"
+    <AccountSection
+      id="preferences"
+      title={m.account_section_preferences()}
+      description={m.settings_description()}
+    >
+      <AccountRow
+        label={
+          <label htmlFor="settings-language">{m.settings_language()}</label>
+        }
+        description={m.settings_language_description()}
+      >
+        <Select
+          name="language"
+          items={languageItems}
+          defaultValue={locale}
+          // re-picking the current language would reload the page for nothing
+          onValueChange={(value) => {
+            if (value !== null && value !== locale) void setLocale(value);
+          }}
         >
-          {/* language */}
-          <Field orientation="horizontal">
-            <FieldContent>
-              <FieldLabel htmlFor="settings-language">
-                {m.settings_language()}
-              </FieldLabel>
-              <p className="text-xs opacity-80">
-                {m.settings_language_description()}
-              </p>
-            </FieldContent>
+          <SelectTrigger id="settings-language" className="w-full sm:w-56">
+            <SelectValue placeholder={m.settings_language()} />
+          </SelectTrigger>
+          <SelectContent>
+            {languageItems.map((item) => (
+              <SelectItem key={item.value} value={item.value}>
+                <span lang={item.value}>{item.label}</span>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </AccountRow>
 
-            <Select
-              name="language"
-              items={languageItems}
-              defaultValue={locale}
-              // re-picking the current language would reload the page for nothing
-              onValueChange={(value) => {
-                if (value !== null && value !== locale) void setLocale(value);
-              }}
-            >
-              <SelectTrigger id="settings-language" className="w-36">
-                <SelectValue placeholder={m.settings_language()} />
-              </SelectTrigger>
-              <SelectContent align="end">
-                {languageItems.map((item) => (
-                  <SelectItem key={item.value} value={item.value}>
-                    <span lang={item.value}>{item.label}</span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
+      <AccountRow
+        label={<label htmlFor="settings-theme">{m.settings_theme()}</label>}
+        description={m.settings_theme_description()}
+      >
+        <Select
+          name="theme"
+          items={themeItems}
+          defaultValue={theme}
+          onValueChange={(value) => {
+            if (value !== null) setTheme(value);
+          }}
+        >
+          <SelectTrigger id="settings-theme" className="w-full sm:w-56">
+            <SelectValue placeholder={m.settings_theme()} />
+          </SelectTrigger>
+          <SelectContent>
+            {themeItems.map((item) => (
+              <SelectItem key={item.value} value={item.value}>
+                {item.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </AccountRow>
 
-          {/* theme */}
-          <Field orientation="horizontal">
-            <FieldContent>
-              <FieldLabel htmlFor="settings-theme">
-                {m.settings_theme()}
-              </FieldLabel>
-              <p className="text-xs opacity-80">
-                {m.settings_theme_description()}
-              </p>
-            </FieldContent>
-
-            <Select
-              name="theme"
-              items={themeItems}
-              defaultValue={theme}
-              onValueChange={(value) => {
-                if (value !== null) setTheme(value);
-              }}
-            >
-              <SelectTrigger id="settings-theme" className="w-36">
-                <SelectValue placeholder={m.settings_theme()} />
-              </SelectTrigger>
-              <SelectContent align="end">
-                {themeItems.map((item) => (
-                  <SelectItem key={item.value} value={item.value}>
-                    {item.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </Field>
-
-          {/* grid column size */}
+      <form id="settings-form" onSubmit={form.handleSubmit(handleSubmit)}>
+        <div className="divide-y divide-border">
           <Controller
             control={form.control}
             name="gridColumns"
             render={({ field, fieldState }) => (
-              <Field orientation="horizontal" data-invalid={fieldState.invalid}>
-                <FieldContent>
-                  <FieldLabel htmlFor="settings-columns">
+              <AccountRow
+                label={
+                  <label htmlFor="settings-columns">
                     {m.settings_objekt_columns()}
-                  </FieldLabel>
-                  <p className="text-xs opacity-80">
-                    {m.settings_objekt_columns_description()}
-                  </p>
-                </FieldContent>
-
+                  </label>
+                }
+                description={m.settings_objekt_columns_description()}
+              >
                 <Select
                   name="gridColumns"
                   items={columnItems}
@@ -193,7 +168,10 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
                   }}
                   defaultValue={field.value.toString()}
                 >
-                  <SelectTrigger id="settings-columns" className="w-36">
+                  <SelectTrigger
+                    id="settings-columns"
+                    className="w-full sm:w-56"
+                  >
                     <SelectValue placeholder={m.settings_objekt_columns()} />
                   </SelectTrigger>
                   <SelectContent>
@@ -205,52 +183,46 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
                   </SelectContent>
                 </Select>
                 <FieldError errors={[fieldState.error]} />
-              </Field>
+              </AccountRow>
             )}
           />
 
-          {/* display currency */}
           <Controller
             control={form.control}
             name="currency"
             render={({ field, fieldState }) => (
-              <Field orientation="horizontal" data-invalid={fieldState.invalid}>
-                <FieldContent>
-                  <FieldLabel htmlFor="settings-currency">
+              <AccountRow
+                label={
+                  <label htmlFor="settings-currency">
                     {m.settings_currency()}
-                  </FieldLabel>
-                  <p className="text-xs opacity-80">
-                    {m.settings_currency_description()}
-                  </p>
-                </FieldContent>
-
+                  </label>
+                }
+                description={m.settings_currency_description()}
+              >
                 <CurrencySelect
                   id="settings-currency"
                   name="currency"
                   value={field.value}
                   onValueChange={field.onChange}
-                  className="w-36"
+                  className="w-full sm:w-56"
                 />
                 <FieldError errors={[fieldState.error]} />
-              </Field>
+              </AccountRow>
             )}
           />
 
-          {/* collection mode */}
           <Controller
             control={form.control}
             name="collectionMode"
             render={({ field, fieldState }) => (
-              <Field orientation="horizontal" data-invalid={fieldState.invalid}>
-                <FieldContent>
-                  <FieldLabel htmlFor="settings-collection-mode">
+              <AccountRow
+                label={
+                  <label htmlFor="settings-collection-mode">
                     {m.settings_collection_mode()}
-                  </FieldLabel>
-                  <p className="text-xs opacity-80">
-                    {m.settings_collection_mode_description()}
-                  </p>
-                </FieldContent>
-
+                  </label>
+                }
+                description={m.settings_collection_mode_description()}
+              >
                 <DataSourceSelector
                   id="settings-collection-mode"
                   name="collectionMode"
@@ -258,24 +230,23 @@ export default function SettingsDialog({ open, onOpenChange, user }: Props) {
                   defaultValue={field.value}
                 />
                 <FieldError errors={[fieldState.error]} />
-              </Field>
+              </AccountRow>
             )}
           />
-        </form>
+        </div>
 
-        <DialogFooter className="flex-row justify-end gap-2">
+        <div className="flex justify-end border-t border-border px-4 py-4 sm:px-6">
           <Button
-            form="settings-form"
             type="submit"
-            disabled={mutation.isPending}
+            disabled={mutation.isPending || !form.formState.isDirty}
           >
             <span>{m.common_save()}</span>
             {mutation.isPending && (
               <IconLoader2 className="h-4 w-4 animate-spin" />
             )}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </div>
+      </form>
+    </AccountSection>
   );
 }

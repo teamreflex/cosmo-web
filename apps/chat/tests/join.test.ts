@@ -1,8 +1,9 @@
 import { beforeAll, describe, expect, test } from "bun:test";
-import { Effect, Option, Redacted, Stream } from "effect";
+import { Effect, Fiber, Option, Redacted, Stream } from "effect";
 import { TestClock } from "effect/testing";
 import { TradeChannels } from "../src/channels";
 import { Disconnects } from "../src/disconnects";
+import { MAX_OPEN_STREAMS } from "../src/open-streams";
 import {
   client,
   collect,
@@ -190,6 +191,46 @@ describe("Join", () => {
         yield* a.Send({ tradeId: TRADE, body: Redacted.make("still here") });
         const [item] = yield* other.take(1);
         expect(item && body(item)).toBe("still here");
+      }),
+    );
+  });
+
+  test("refuses a user's Join past the open-stream cap until one of theirs ends", async () => {
+    const state = world();
+    const [alice, bob] = await Promise.all([
+      mint(signer, { sub: "alice" }),
+      mint(signer, { sub: "bob" }),
+    ]);
+    await run(
+      state,
+      signer,
+      Effect.gen(function* () {
+        const a = yield* client(alice);
+        const b = yield* client(bob);
+        yield* a.Send({ tradeId: TRADE, body: Redacted.make("ready") });
+
+        const first = yield* collect(a.Join({ tradeId: TRADE }));
+        const rest = yield* Effect.forEach(
+          Array.from({ length: MAX_OPEN_STREAMS - 1 }),
+          () => collect(a.Join({ tradeId: TRADE })),
+        );
+        // a delivered item means each stream holds its slot
+        for (const stream of [first, ...rest]) {
+          yield* stream.take(1);
+        }
+
+        const refused = yield* collect(a.Join({ tradeId: TRADE }));
+        expect(yield* refused.failure).toMatchObject({ _tag: "RateLimited" });
+
+        const other = yield* collect(b.Join({ tradeId: TRADE }));
+        const [seen] = yield* other.take(1);
+        expect(seen && body(seen)).toBe("ready");
+
+        yield* Fiber.interrupt(first.fiber);
+        yield* settle;
+        const again = yield* collect(a.Join({ tradeId: TRADE }));
+        const [item] = yield* again.take(1);
+        expect(item && body(item)).toBe("ready");
       }),
     );
   });

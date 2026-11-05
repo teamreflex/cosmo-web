@@ -78,9 +78,6 @@ function BatchSaleBody({ list, currency, onClose }: BodyProps) {
     defaultValues: {
       objektListId: list.id,
       entries: eligible.map((s) => ({
-        slug: s.collection.slug,
-        collectionId: s.collection.id,
-        collectionName: s.collection.collectionId,
         tokenId: String(s.token.tokenId),
         price: null,
       })),

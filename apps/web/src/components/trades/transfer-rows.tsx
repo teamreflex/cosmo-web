@@ -1,5 +1,5 @@
 import { m } from "@/i18n/messages";
-import { formatSerial, getObjektFrontImageUrl } from "@/lib/client/objekt-util";
+import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import { partyName } from "@/lib/client/trade-listings";
 import { itemLabel, tradeTimeFormat, txUrl } from "@/lib/client/trades";
 import { env } from "@/lib/env/client";
@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import type { TradeSide } from "@apollo/database/web/types";
 import { otherSide } from "@apollo/trades/lifecycle";
 import type { TradeItemStatus } from "@apollo/trades/transfers";
+import { formatSerial } from "@apollo/util";
 import { IconExternalLink, IconLock } from "@tabler/icons-react";
 import { type ReactNode, useState } from "react";
 import { tones } from "../trade-listings/state-tones";

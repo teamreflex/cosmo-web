@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AtChar123usernameChar125RouteRouteImport } from './routes/@{$username}/route'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as AdminRouteRouteImport } from './routes/admin/route'
 import { Route as MarketRouteRouteImport } from './routes/market/route'
 import { Route as ShareDataRouteImport } from './routes/share-data'
@@ -34,6 +35,7 @@ import { Route as AdminNoticeRouteImport } from './routes/admin/notice'
 import { Route as AdminReportsRouteImport } from './routes/admin/reports'
 import { Route as AdminSerialsRouteImport } from './routes/admin/serials'
 import { Route as AuthDeleteAccountRouteImport } from './routes/auth/delete-account'
+import { Route as AuthErrorRouteImport } from './routes/auth/error'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
 import { Route as EventsIndexRouteImport } from './routes/events/index'
 import { Route as EventsSlugRouteImport } from './routes/events/$slug'
@@ -72,6 +74,11 @@ const AtChar123usernameChar125RouteRoute =
     path: '/@{$username}',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRouteRoute = AdminRouteRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -191,6 +198,11 @@ const AdminSerialsRoute = AdminSerialsRouteImport.update({
 const AuthDeleteAccountRoute = AuthDeleteAccountRouteImport.update({
   id: '/auth/delete-account',
   path: '/auth/delete-account',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthErrorRoute = AuthErrorRouteImport.update({
+  id: '/auth/error',
+  path: '/auth/error',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
@@ -337,6 +349,7 @@ export interface FileRoutesByFullPath {
   '/@{$username}': typeof AtChar123usernameChar125RouteRouteWithChildren
   '/admin': typeof AdminRouteRouteWithChildren
   '/market': typeof MarketRouteRouteWithChildren
+  '/account': typeof AccountRoute
   '/share-data': typeof ShareDataRoute
   '/terms-privacy': typeof TermsPrivacyRoute
   '/@{$username}/como': typeof AtChar123usernameChar125ComoRoute
@@ -356,6 +369,7 @@ export interface FileRoutesByFullPath {
   '/admin/reports': typeof AdminReportsRoute
   '/admin/serials': typeof AdminSerialsRoute
   '/auth/delete-account': typeof AuthDeleteAccountRoute
+  '/auth/error': typeof AuthErrorRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
@@ -387,6 +401,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/share-data': typeof ShareDataRoute
   '/terms-privacy': typeof TermsPrivacyRoute
   '/@{$username}/como': typeof AtChar123usernameChar125ComoRoute
@@ -406,6 +421,7 @@ export interface FileRoutesByTo {
   '/admin/reports': typeof AdminReportsRoute
   '/admin/serials': typeof AdminSerialsRoute
   '/auth/delete-account': typeof AuthDeleteAccountRoute
+  '/auth/error': typeof AuthErrorRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
@@ -441,6 +457,7 @@ export interface FileRoutesById {
   '/@{$username}': typeof AtChar123usernameChar125RouteRouteWithChildren
   '/admin': typeof AdminRouteRouteWithChildren
   '/market': typeof MarketRouteRouteWithChildren
+  '/account': typeof AccountRoute
   '/share-data': typeof ShareDataRoute
   '/terms-privacy': typeof TermsPrivacyRoute
   '/@{$username}/como': typeof AtChar123usernameChar125ComoRoute
@@ -460,6 +477,7 @@ export interface FileRoutesById {
   '/admin/reports': typeof AdminReportsRoute
   '/admin/serials': typeof AdminSerialsRoute
   '/auth/delete-account': typeof AuthDeleteAccountRoute
+  '/auth/error': typeof AuthErrorRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
   '/events/$slug': typeof EventsSlugRoute
   '/list/$id': typeof ListIdRoute
@@ -496,6 +514,7 @@ export interface FileRouteTypes {
     | '/@{$username}'
     | '/admin'
     | '/market'
+    | '/account'
     | '/share-data'
     | '/terms-privacy'
     | '/@{$username}/como'
@@ -515,6 +534,7 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/serials'
     | '/auth/delete-account'
+    | '/auth/error'
     | '/auth/reset-password'
     | '/events/$slug'
     | '/list/$id'
@@ -546,6 +566,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/account'
     | '/share-data'
     | '/terms-privacy'
     | '/@{$username}/como'
@@ -565,6 +586,7 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/serials'
     | '/auth/delete-account'
+    | '/auth/error'
     | '/auth/reset-password'
     | '/events/$slug'
     | '/list/$id'
@@ -599,6 +621,7 @@ export interface FileRouteTypes {
     | '/@{$username}'
     | '/admin'
     | '/market'
+    | '/account'
     | '/share-data'
     | '/terms-privacy'
     | '/@{$username}/como'
@@ -618,6 +641,7 @@ export interface FileRouteTypes {
     | '/admin/reports'
     | '/admin/serials'
     | '/auth/delete-account'
+    | '/auth/error'
     | '/auth/reset-password'
     | '/events/$slug'
     | '/list/$id'
@@ -653,9 +677,11 @@ export interface RootRouteChildren {
   AtChar123usernameChar125RouteRoute: typeof AtChar123usernameChar125RouteRouteWithChildren
   AdminRouteRoute: typeof AdminRouteRouteWithChildren
   MarketRouteRoute: typeof MarketRouteRouteWithChildren
+  AccountRoute: typeof AccountRoute
   ShareDataRoute: typeof ShareDataRoute
   TermsPrivacyRoute: typeof TermsPrivacyRoute
   AuthDeleteAccountRoute: typeof AuthDeleteAccountRoute
+  AuthErrorRoute: typeof AuthErrorRoute
   AuthResetPasswordRoute: typeof AuthResetPasswordRoute
   EventsSlugRoute: typeof EventsSlugRoute
   ListIdRoute: typeof ListIdRoute
@@ -692,6 +718,13 @@ declare module '@tanstack/react-router' {
       path: '/@{$username}'
       fullPath: '/@{$username}'
       preLoaderRoute: typeof AtChar123usernameChar125RouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin': {
@@ -853,6 +886,13 @@ declare module '@tanstack/react-router' {
       path: '/auth/delete-account'
       fullPath: '/auth/delete-account'
       preLoaderRoute: typeof AuthDeleteAccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/error': {
+      id: '/auth/error'
+      path: '/auth/error'
+      fullPath: '/auth/error'
+      preLoaderRoute: typeof AuthErrorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth/reset-password': {
@@ -1130,9 +1170,11 @@ const rootRouteChildren: RootRouteChildren = {
     AtChar123usernameChar125RouteRouteWithChildren,
   AdminRouteRoute: AdminRouteRouteWithChildren,
   MarketRouteRoute: MarketRouteRouteWithChildren,
+  AccountRoute: AccountRoute,
   ShareDataRoute: ShareDataRoute,
   TermsPrivacyRoute: TermsPrivacyRoute,
   AuthDeleteAccountRoute: AuthDeleteAccountRoute,
+  AuthErrorRoute: AuthErrorRoute,
   AuthResetPasswordRoute: AuthResetPasswordRoute,
   EventsSlugRoute: EventsSlugRoute,
   ListIdRoute: ListIdRoute,

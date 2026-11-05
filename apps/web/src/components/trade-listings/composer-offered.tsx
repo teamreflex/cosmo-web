@@ -1,10 +1,10 @@
 import { m } from "@/i18n/messages";
 import { formatTokenRefusal } from "@/lib/client/errors/trades";
-import { formatSerial } from "@/lib/client/objekt-util";
 import { type ComposerShown, refusalLabel } from "@/lib/client/trade-listings";
 import type { TokenRefusalReason } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
 import { MAX_OFFERED } from "@apollo/trades/caps";
+import { formatSerial } from "@apollo/util";
 import { IconPlus, IconX } from "@tabler/icons-react";
 import { ObjektCardFace } from "../objekt/common";
 import { Button } from "../ui/button";

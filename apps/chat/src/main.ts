@@ -15,7 +15,7 @@ import { ChatStore } from "./store";
 const Services = Layer.mergeAll(
   ChatStore.layer,
   MessageCipher.layer,
-  TokenVerifier.layer,
+  TokenVerifier.layerRemote,
   RateLimiter.layer,
 ).pipe(
   Layer.provideMerge(ChatConfig.layer),
@@ -35,6 +35,11 @@ const Main = HttpRouter.serve(ChatRoutes).pipe(
        * its own, so waiting for it only delays every client's rejoin.
        */
       disablePreemptiveShutdown: Config.succeed(true),
+      /**
+       * Bun's default is 16 MB, and a frame is parsed before ChatAuth runs.
+       * The largest real call, a 1000-character message, is a few kilobytes.
+       */
+      websocket: Config.succeed({ maxPayloadLength: 64 * 1024 }),
     }),
   ),
 );

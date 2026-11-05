@@ -10,21 +10,17 @@ import {
   Layer,
   Option,
   Queue,
+  Redacted,
+  type Schema,
   type Scope,
   Stream,
 } from "effect";
+import { Mac, SecureRandom, Signature } from "effect/crypto";
 import { Headers } from "effect/http";
+import { Jwk, Jwks, Jws } from "effect/jose";
 import { RateLimiter } from "effect/persistence";
 import { RpcMiddleware, RpcTest } from "effect/rpc";
 import { TestClock } from "effect/testing";
-import {
-  createLocalJWKSet,
-  exportJWK,
-  generateKeyPair,
-  type JSONWebKeySet,
-  type JWTPayload,
-  SignJWT,
-} from "jose";
 import { TokenVerifier } from "../src/auth";
 import { MessageCipher } from "../src/cipher";
 import { ChatConfig } from "../src/config";
@@ -52,21 +48,41 @@ const configLayer = ConfigProvider.layer(
   }),
 );
 
-export type Signer = { kid: string; key: CryptoKey; jwks: JSONWebKeySet };
+const cryptoLayer = Layer.mergeAll(
+  Signature.layerWebCrypto,
+  Mac.layerWebCrypto,
+).pipe(Layer.provide(SecureRandom.layerWebCrypto));
 
-// a signing key and the JWKS publishing it, as the web app's jwt plugin keeps them
-export async function makeSigner(): Promise<Signer> {
-  const { publicKey, privateKey } = await generateKeyPair("EdDSA", {
-    crv: "Ed25519",
-    extractable: true,
-  });
+export type Signer = {
+  kid: string;
+  key: Jwk.PrivateKey;
+  publicJwk: Jwk.PublicJwk;
+};
+
+// a signing key and the public JWK the JWKS lists for it, as the web app's jwt plugin keeps them
+export function makeSigner(): Promise<Signer> {
   const kid = crypto.randomUUID();
-  const jwk = await exportJWK(publicKey);
-  return {
-    kid,
-    key: privateKey,
-    jwks: { keys: [{ ...jwk, kid, alg: "EdDSA" }] },
-  };
+  return Effect.gen(function* () {
+    const pair = yield* Jwk.generateKeyPair({ algorithm: "EdDSA", kid });
+    return {
+      kid,
+      key: yield* Jwk.importPrivate(pair.privateKey, "EdDSA"),
+      publicJwk: pair.publicKey,
+    };
+  }).pipe(Effect.provide(cryptoLayer), Effect.runPromise);
+}
+
+export type Claims = Record<string, Schema.Json | undefined>;
+
+// `claims` as a compact JWS under `key`, with `typ: JWT`; undefined claims are left out
+export function sign(key: Jwk.SigningKey, claims: Claims) {
+  return Jws.sign(new TextEncoder().encode(JSON.stringify(claims)), key, {
+    typ: "JWT",
+  }).pipe(
+    Effect.map(Redacted.value),
+    Effect.provide(cryptoLayer),
+    Effect.runPromise,
+  );
 }
 
 /**
@@ -76,10 +92,10 @@ export async function makeSigner(): Promise<Signer> {
  */
 export function mint(
   signer: Signer,
-  options: { sub: string; sid?: string; iat?: number; claims?: JWTPayload },
+  options: { sub: string; sid?: string; iat?: number; claims?: Claims },
 ) {
   const iat = Math.floor((options.iat ?? TEST_NOW) / 1000);
-  return new SignJWT({
+  return sign(signer.key, {
     sub: options.sub,
     sid: options.sid ?? sessionOf(options.sub),
     iss: ISSUER,
@@ -87,9 +103,7 @@ export function mint(
     iat,
     exp: iat + 300,
     ...options.claims,
-  })
-    .setProtectedHeader({ alg: "EdDSA", kid: signer.kid, typ: "JWT" })
-    .sign(signer.key);
+  });
 }
 
 export function sessionOf(userId: string) {
@@ -151,7 +165,9 @@ export function serverLayer(state: MemoryState, signer: Signer) {
       Layer.mergeAll(
         memoryStoreLayer(state),
         MessageCipher.layerTest,
-        TokenVerifier.layerWith(createLocalJWKSet(signer.jwks)),
+        TokenVerifier.layer.pipe(
+          Layer.provide(Jwks.layerLocal({ keys: [signer.publicJwk] })),
+        ),
         RateLimiter.layer.pipe(Layer.provide(RateLimiter.layerStoreMemory)),
       ),
     ),
@@ -162,8 +178,10 @@ export function serverLayer(state: MemoryState, signer: Signer) {
 
 /**
  * Runs a test program against the server with the TestClock at TEST_NOW.
- * `around` (a logger, say) is in place before the server is built, so its
- * fibers see it too.
+ * The clock is set before the server is built, because setting it later
+ * would replay every per-minute sweep of the memory rate limiter since the
+ * epoch. `around` (a logger, say) is in place before the server is built,
+ * so its fibers see it too.
  */
 export function run<A, E>(
   state: MemoryState,
@@ -177,9 +195,9 @@ export function run<A, E>(
 ) {
   return Effect.runPromise(
     TestClock.setTime(TEST_NOW).pipe(
-      Effect.andThen(program),
-      Effect.scoped,
-      Effect.provide(serverLayer(state, signer)),
+      Effect.andThen(
+        program.pipe(Effect.scoped, Effect.provide(serverLayer(state, signer))),
+      ),
       Effect.provide(Layer.merge(TestClock.layer(), around)),
     ),
   );
@@ -252,7 +270,7 @@ export function outcome<A, E extends { readonly _tag: string }, R>(
   );
 }
 
-// lets forked fibers and promise-backed work (jose, Web Crypto) settle
+// lets forked fibers and promise-backed work (Web Crypto) settle
 export const settle = Effect.promise(
   () => new Promise((resolve) => setTimeout(resolve, 5)),
 );

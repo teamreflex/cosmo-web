@@ -1,8 +1,8 @@
 import { describe, expect, test } from "bun:test";
 import {
-  FRESH_SESSION_MINUTES,
   deletionProofRefusal,
   deletionStep,
+  FRESH_SESSION_MINUTES,
   isFreshSession,
 } from "../src/lib/universal/account-deletion";
 import type { DeletionStep } from "../src/lib/universal/account-deletion";

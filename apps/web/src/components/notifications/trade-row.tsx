@@ -1,12 +1,11 @@
 import { m } from "@/i18n/messages";
-import { formatSerial } from "@/lib/client/objekt-util";
-import { accountName } from "@/lib/client/trade-listings";
 import { env } from "@/lib/env/client";
 import { tradeQuery, tradesKey } from "@/lib/queries/trades";
 import type {
   NotificationListItem,
   NotificationToken,
 } from "@/lib/universal/notifications";
+import { accountName, formatSerial } from "@apollo/util";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { IconTagOff } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";

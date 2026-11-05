@@ -13,7 +13,7 @@ import { mirrorObjektImage } from "../src/server";
 /**
  * Mirrors every collection's front and back image from the indexer database
  * into the bucket at R2_ENDPOINT and points its version column at the mirror,
- * for setting up a fresh environment against the s3proxy docker service.
+ * for setting up a fresh environment against the floci docker service.
  * Images whose marker already exists are skipped, so re-running resumes and
  * retries failures.
  *

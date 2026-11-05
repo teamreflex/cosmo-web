@@ -1,5 +1,4 @@
 import { ObjektSidebar } from "@/components/objekt/common";
-import { getObjektFrontImageRef } from "@/lib/client/objekt-util";
 import { env } from "@/lib/env/client";
 import { binderGrid } from "@/lib/universal/binders";
 import type {
@@ -8,7 +7,7 @@ import type {
   BinderPocketEntry,
 } from "@/lib/universal/binders";
 import { cn } from "@/lib/utils";
-import { objektImageUrl } from "@apollo/image";
+import { objektFrontImageRef, objektImageUrl } from "@apollo/image";
 import { slugifyObjekt } from "@apollo/util";
 import type { ComponentProps } from "react";
 
@@ -145,7 +144,7 @@ function PocketObjekt({
   priority: boolean;
 }) {
   const [artist] = objekt.artists;
-  const ref = getObjektFrontImageRef({
+  const ref = objektFrontImageRef({
     slug: slugifyObjekt(objekt.collectionId),
     frontImageVersion: objekt.frontImageVersion,
   });

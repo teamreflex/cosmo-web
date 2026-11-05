@@ -93,7 +93,6 @@ export default function AddToList({
                   list,
                   collectionName,
                   slug,
-                  collectionId,
                   onDone: () => setOpen(false),
                   onClick: (kind: ClickType) => handleClick(list, kind),
                 };
@@ -130,7 +129,6 @@ export default function AddToList({
           }}
           objektListId={saleListPending.id}
           listName={saleListPending.name}
-          slug={slug}
           collectionName={collectionName}
           collectionId={collectionId}
           currency={saleListPending.currency}
@@ -144,7 +142,6 @@ export default function AddToList({
             if (!open) setSerialPickerPending(undefined);
           }}
           list={serialPickerPending}
-          slug={slug}
           collectionName={collectionName}
           collectionId={collectionId}
         />
@@ -157,7 +154,6 @@ type ListItemBaseProps = {
   list: ObjektList;
   collectionName: string;
   slug: string;
-  collectionId: string;
   onDone: () => void;
   onClick: (kind: ClickType) => void;
 };
@@ -215,13 +211,7 @@ function HaveListItem(props: HaveListItemProps) {
     return $addObjektsToHaveList({
       data: {
         objektListId: props.list.id,
-        objekts: [
-          {
-            slug: props.slug,
-            collectionId: props.collectionId,
-            tokenId: String(props.tokenId),
-          },
-        ],
+        objekts: [{ tokenId: String(props.tokenId) }],
       },
     });
   });

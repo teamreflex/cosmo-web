@@ -2,8 +2,8 @@
 
 # check if we should run dev services
 if [ "${DEV_SERVICES}" = "true" ]; then
-  # always start what the web app needs: both databases, valkey, s3proxy and browserless
-  SERVICES="postgres-web pgbouncer-web postgres-indexer pgbouncer-indexer valkey s3proxy browserless"
+  # always start what the web app needs: both databases, valkey, floci, mailpit and browserless
+  SERVICES="postgres-web pgbouncer-web postgres-indexer pgbouncer-indexer valkey floci mailpit browserless"
 
   # conditionally add services based on flags
   if [ "${DEV_TYPESENSE}" = "true" ]; then

@@ -1,10 +1,7 @@
-import {
-  getObjektFrontImageRef,
-  getObjektFrontImageUrl,
-} from "@/lib/client/objekt-util";
+import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import { env } from "@/lib/env/client";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import { objektImageSrcSet } from "@apollo/image";
+import { objektFrontImageRef, objektImageSrcSet } from "@apollo/image";
 import { createContext, use } from "react";
 
 /**
@@ -26,7 +23,7 @@ export function useObjektImage(
   >,
 ) {
   const sizes = use(ObjektImageSizesContext);
-  const ref = getObjektFrontImageRef(collection);
+  const ref = objektFrontImageRef(collection);
   const responsive = ref !== null && sizes !== null;
 
   return {

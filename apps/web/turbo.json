@@ -20,6 +20,7 @@
         "MAIL_SES_FROM",
         "MAIL_SES_ACCESS_KEY",
         "MAIL_SES_SECRET_KEY",
+        "MAIL_SES_ENDPOINT",
         "COSMO_RECAPTCHA_KEY",
         "CDP_ENDPOINT",
         "REDIS_URL",
@@ -38,12 +39,12 @@
       "cache": false
     },
     "dev": {
-      "with": ["//#services"],
+      "with": ["//#services", "@apollo/mail#dev"],
       "persistent": true,
       "cache": false
     },
     "preview": {
-      "with": ["//#services"],
+      "with": ["//#services", "@apollo/mail#dev"],
       "persistent": true,
       "cache": false
     },

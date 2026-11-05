@@ -1,7 +1,7 @@
 import { ObjektCardFace } from "@/components/objekt/common";
-import { formatSerial } from "@/lib/client/objekt-util";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
+import { formatSerial } from "@apollo/util";
 import { IconCheck } from "@tabler/icons-react";
 
 type Props = {

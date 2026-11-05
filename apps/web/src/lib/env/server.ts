@@ -35,6 +35,7 @@ export const env = createEnv({
     MAIL_SES_FROM: z.string().min(1),
     MAIL_SES_ACCESS_KEY: z.string().min(1),
     MAIL_SES_SECRET_KEY: z.string().min(1),
+    MAIL_SES_ENDPOINT: z.url().optional(),
     // browserless cdp
     COSMO_RECAPTCHA_KEY: z.string().min(1),
     COSMO_KEY: z.string().min(1),
@@ -69,6 +70,7 @@ export const env = createEnv({
     MAIL_SES_FROM: process.env.MAIL_SES_FROM,
     MAIL_SES_ACCESS_KEY: process.env.MAIL_SES_ACCESS_KEY,
     MAIL_SES_SECRET_KEY: process.env.MAIL_SES_SECRET_KEY,
+    MAIL_SES_ENDPOINT: process.env.MAIL_SES_ENDPOINT,
     COSMO_RECAPTCHA_KEY: process.env.COSMO_RECAPTCHA_KEY,
     COSMO_KEY: process.env.COSMO_KEY,
     CDP_ENDPOINT: process.env.CDP_ENDPOINT,

@@ -15,7 +15,6 @@ import {
   useHasPermission,
 } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
-import { accountName } from "@/lib/client/trade-listings";
 import { env } from "@/lib/env/client";
 import { defineHead } from "@/lib/meta";
 import { currentAccountQuery } from "@/lib/queries/core";
@@ -28,6 +27,7 @@ import {
   feedbackSearchDefaults,
   feedbackSearchSchema,
 } from "@/lib/universal/feedback";
+import { accountName } from "@apollo/util";
 import { IconStar, IconUserQuestion } from "@tabler/icons-react";
 import { noop, useSuspenseQueries } from "@tanstack/react-query";
 import { createFileRoute, stripSearchParams } from "@tanstack/react-router";

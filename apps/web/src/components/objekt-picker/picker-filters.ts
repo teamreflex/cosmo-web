@@ -1,5 +1,4 @@
 import { m } from "@/i18n/messages";
-import { formatSerial } from "@/lib/client/objekt-util";
 import type { NeighbourSuggestion } from "@/lib/universal/binders";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type { userCollectionFrontendSchema } from "@/lib/universal/parsers";
@@ -8,6 +7,7 @@ import type {
   ValidOnlineType,
   ValidSort,
 } from "@apollo/cosmo/types/common";
+import { formatSerial } from "@apollo/util";
 import type { z } from "zod";
 
 /**

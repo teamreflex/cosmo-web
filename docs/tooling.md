@@ -6,7 +6,14 @@ How the monorepo is wired, run locally, linted, formatted and type-checked, plus
 
 - Workspaces are `apps/*` and `packages/*`. Shared versions live in the root `catalog`, and workspaces depend on them as `catalog:`.
 - `better-auth`, `@better-auth/api-key` and `@better-auth/drizzle-adapter` are pinned to one version in the catalog; bump them together.
-- `patchedDependencies` patch `@subsquid/http-client` and `@effect/platform-bun` from `patches/`. A patch is keyed by version, so bumping either package means regenerating its patch.
+- `patchedDependencies` patch packages from `patches/`. A patch is keyed by version, so bumping a patched package means regenerating its patch with `bun patch <pkg>` and `bun patch --commit <path>`; `effect` and `@effect/platform-bun` are pinned in the catalog for that reason.
+
+| Package                 | The patch                                                                                                                                                                                                                                     |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@subsquid/http-client` | removes `compress: true`; why is in [`apps/indexer/CLAUDE.md`](../apps/indexer/CLAUDE.md)                                                                                                                                                     |
+| `@effect/platform-bun`  | `BunRedis` gives a closing subscriber a no-op `onclose` instead of `null`                                                                                                                                                                     |
+| `effect`                | `Jwks.makeRemote` accepts `http:` key-set URLs as well as `https:`, because chat fetches the web app's JWKS over the private network (`AUTH_JWKS_URL`); the response must still come from that exact URL with a 200, so a redirect is refused |
+
 - `bunfig.toml` `[install]`:
   - `linker = "isolated"`: a workspace can only import packages its own `package.json` declares.
   - `minimumReleaseAge` is one day, so a version published less than a day ago won't install (`@types/bun` and `bun-types` are exempt).
@@ -17,7 +24,8 @@ How the monorepo is wired, run locally, linted, formatted and type-checked, plus
 | `typecheck`, `test`                                | `^typecheck`. Neither runs `i18n`; web's own typecheck needs `turbo i18n` first ([frontend.md](frontend.md#i18n)) |
 | `lint`, `format`                                   | `^lint`, `^format`                                                                                                |
 | `dev` in web, chat, schedules and typesense-import | `with: ["//#services"]`, so each also starts the Docker services                                                  |
-| `start`, `preview` in web                          | `with: ["//#services"]`                                                                                           |
+| `start` in web                                     | `with: ["//#services"]`                                                                                           |
+| `dev`, `preview` in web                            | also `@apollo/mail#dev`, the react-email preview server on port 3003                                              |
 | `db:seed`, `db:seed:staff`                         | `//#services`                                                                                                     |
 
 - Run an Effect app either on the host (`turbo dev --filter <app>`) or in Docker through its `DEV_*` flag, never both, because two copies would run the same tasks and consumers.
@@ -26,37 +34,41 @@ How the monorepo is wired, run locally, linted, formatted and type-checked, plus
 
 `//#services` is `dotenv -c -- ./start.sh`: with `DEV_SERVICES=true` it runs `docker compose up` for the services below, otherwise it sleeps so `turbo dev` still works without Docker.
 
-| Service             | Host port | Started by      | Notes                                                                                    |
-| ------------------- | --------- | --------------- | ---------------------------------------------------------------------------------------- |
-| `postgres-web`      | 5435      | always          | direct connection, for drizzle-kit (`DATABASE_URL_UNPOOLED`)                             |
-| `pgbouncer-web`     | 5433      | always          | transaction pooling, for the app (`DATABASE_URL`)                                        |
-| `postgres-indexer`  | 5434      | always          | direct connection                                                                        |
-| `pgbouncer-indexer` | 5432      | always          | transaction pooling (`INDEXER_DATABASE_URL`)                                             |
-| `valkey`            | 6379      | always          | Redis                                                                                    |
-| `s3proxy`           | 9000      | always          | stands in for R2; bucket `apollo`, public at `localhost:9000/apollo`, no auth, CORS open |
-| `browserless`       | 5000      | always          | Chromium over CDP for the share-data reCAPTCHA (`CDP_ENDPOINT`)                          |
-| `typesense`         | 8108      | `DEV_TYPESENSE` | CORS allows only `http://localhost:3000`                                                 |
-| `processor`         | none      | `DEV_PROCESSOR` | `apps/indexer`; applies the indexer migrations on boot, connects to Postgres directly    |
-| `import-server`     | none      | `DEV_IMPORTER`  | `apps/typesense-import`                                                                  |
-| `schedules`         | none      | `DEV_SCHEDULES` | `apps/schedules`                                                                         |
-| `chat`              | 3001      | `DEV_CHAT`      | `apps/chat`; reaches the host's JWKS through `host.docker.internal`                      |
+| Service             | Host port | Started by      | Notes                                                                                   |
+| ------------------- | --------- | --------------- | --------------------------------------------------------------------------------------- |
+| `postgres-web`      | 5435      | always          | direct connection, for drizzle-kit (`DATABASE_URL_UNPOOLED`)                            |
+| `pgbouncer-web`     | 5433      | always          | transaction pooling, for the app (`DATABASE_URL`)                                       |
+| `postgres-indexer`  | 5434      | always          | direct connection                                                                       |
+| `pgbouncer-indexer` | 5432      | always          | transaction pooling (`INDEXER_DATABASE_URL`)                                            |
+| `valkey`            | 6379      | always          | Redis                                                                                   |
+| `floci`             | 9000      | always          | stands in for R2 and SES; bucket `apollo`, public at `localhost:9000/apollo`, CORS open |
+| `mailpit`           | 8025      | always          | browser inbox for every email floci captures                                            |
+| `browserless`       | 5000      | always          | Chromium over CDP for the share-data reCAPTCHA (`CDP_ENDPOINT`)                         |
+| `typesense`         | 8108      | `DEV_TYPESENSE` | CORS allows only `http://localhost:3000`                                                |
+| `processor`         | none      | `DEV_PROCESSOR` | `apps/indexer`; applies the indexer migrations on boot, connects to Postgres directly   |
+| `import-server`     | none      | `DEV_IMPORTER`  | `apps/typesense-import`                                                                 |
+| `schedules`         | none      | `DEV_SCHEDULES` | `apps/schedules`                                                                        |
+| `chat`              | 3001      | `DEV_CHAT`      | `apps/chat`; reaches the host's JWKS through `host.docker.internal`                     |
 
 - The web app always runs on the host.
 - Containers get their database, Redis and R2 URLs from `docker-compose.yml`, not from `.env`.
+- `docker/floci/ready.sh` runs on every floci boot: it creates the bucket and verifies `MAIL_SES_FROM` in `MAIL_SES_REGION`, because SES refuses mail from unverified senders and identities are per region.
+- Web and schedules send mail (`@apollo/mail`) into floci only when `MAIL_SES_ENDPOINT` points at it, otherwise to real SES. The compose `schedules` service is always pointed at floci with dummy credentials. Floci keeps a copy at `localhost:9000/_aws/ses` and relays it to mailpit; a failed relay is only logged, so mail missing from mailpit is still in floci.
+- Don't turn on `FLOCI_SERVICES_S3_ENFORCE_AUTH`, because it makes the anonymous reads behind `VITE_CDN_URL` need a bucket policy.
 
 ## Environment variables
 
 `.env.example` is the inventory. Host processes read the root `.env` then `.env.local` through each workspace's script (`--env-file`, or `bun run env` in web), never from code.
 
-| App                                       | Validated by                                | Notes                                                                                               |
-| ----------------------------------------- | ------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `apps/web` server                         | `apps/web/src/lib/env/server.ts`, at import | an empty string counts as unset; every required variable must be non-empty                          |
-| `apps/web` browser                        | `apps/web/src/lib/env/client.ts`            | `VITE_*` only, inlined by Vite at build time: restart dev or rebuild after a change                 |
-| `apps/chat`                               | `Config` in each service's `make`           | rules in [`apps/chat/CLAUDE.md`](../apps/chat/CLAUDE.md#running-locally)                            |
-| `apps/schedules`                          | `Config` in each service's `make`           | `WEB_DATABASE_URL`, `INDEXER_DATABASE_URL`, `REDIS_URL`, `COSMO_KEY`, `EXCHANGERATE_API_KEY`        |
-| `apps/typesense-import`                   | `Config` in each service's `make`           | `LOOP_INTERVAL` in ms, default 10 minutes; on the host nothing sets it, so it ticks at the default  |
-| `apps/indexer`                            | `apps/indexer/src/env.ts`                   | `DB_URL`, `RPC_*`, `ENABLE_OBJEKTS`, `ENABLE_GRAVITY`, `COSMO_PARALLEL_COUNT`, `R2_*`, `SENTRY_DSN` |
-| `image:mirror`, serial-estimation scripts | zod at the top of each script               | `INDEXER_DATABASE_URL`, plus `R2_*` for the mirror                                                  |
+| App                                       | Validated by                                | Notes                                                                                                         |
+| ----------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `apps/web` server                         | `apps/web/src/lib/env/server.ts`, at import | an empty string counts as unset; every required variable must be non-empty                                    |
+| `apps/web` browser                        | `apps/web/src/lib/env/client.ts`            | `VITE_*` only, inlined by Vite at build time: restart dev or rebuild after a change                           |
+| `apps/chat`                               | `Config` in each service's `make`           | rules in [`apps/chat/CLAUDE.md`](../apps/chat/CLAUDE.md#running-locally)                                      |
+| `apps/schedules`                          | `Config` in each service's `make`           | the list, and which are optional, is in [`apps/schedules/README.md`](../apps/schedules/README.md#environment) |
+| `apps/typesense-import`                   | `Config` in each service's `make`           | `LOOP_INTERVAL` in ms, default 10 minutes; on the host nothing sets it, so it ticks at the default            |
+| `apps/indexer`                            | `apps/indexer/src/env.ts`                   | `DB_URL`, `RPC_*`, `ENABLE_OBJEKTS`, `ENABLE_GRAVITY`, `COSMO_PARALLEL_COUNT`, `R2_*`, `SENTRY_DSN`           |
+| `image:mirror`, serial-estimation scripts | zod at the top of each script               | `INDEXER_DATABASE_URL`, plus `R2_*` for the mirror                                                            |
 
 - `BETTER_AUTH_SECRET` must be 64 hex characters, because it is also the AES-256-GCM key for OAuth tokens at rest (`encryptToken()` in `auth.server.ts`). Changing it makes stored OAuth tokens unreadable.
 - `DATABASE_URL` goes through pgbouncer; `DATABASE_URL_UNPOOLED` is the direct connection drizzle-kit and the migrator need.
@@ -127,18 +139,19 @@ Keep these versions in step when bumping Bun, TypeScript or turbo:
 
 Keys and channels that more than one app touches, or that have a rule attached:
 
-| Key or channel          | Kind                       | Written by                                         | Read by                       | Rule                                                                           |
-| ----------------------- | -------------------------- | -------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------------------ |
-| `trade-events`          | pub/sub                    | web and schedules, after their transaction commits | chat                          | `TRADE_EVENTS_CHANNEL`, `tradeUpdateMessage()` in `@apollo/trades`             |
-| `user-events`           | pub/sub                    | web (`publishUserEvent()`)                         | chat                          | the `UserEvent` union in `@apollo/auth/events`                                 |
-| `trade-notifications`   | job queue                  | web offers                                         | schedules takes               | `@apollo/queue`; only schedules runs the cleanup layer                         |
-| `pins:v3:<md5>`         | cache, 1 day               | web `$fetchPins`                                   | web; schedules' drain deletes | always build it with `pinCacheKey()` (`@apollo/util-server`)                   |
-| `cosmo-key`             | value, no TTL              | staff, from the admin page                         | web, schedules                | falls back to `COSMO_KEY`; never cache it in a module, because staff rotate it |
-| `objekt-stats`          | cache, 2 hours             | web                                                | web                           | schedules' `clear-objekt-stats` deletes it hourly                              |
-| `cosmo:verify:<userId>` | value, 5 min               | web                                                | web                           | the pending COSMO link verification code                                       |
-| `notice`                | value, no TTL              | staff                                              | web                           | the navbar notice                                                              |
-| `market-invites:<user>` | set, expires 2027-01-01    | web `$inviteToMarket`                              | web                           | the users the inviter made testers ([invites](trades/feedback.md#invites))     |
-| rate-limit buckets      | Effect `RateLimiter` store | web, chat                                          | web, chat                     | see [Rate limits](#rate-limits)                                                |
+| Key or channel                         | Kind                       | Written by                                                | Read by                       | Rule                                                                                                |
+| -------------------------------------- | -------------------------- | --------------------------------------------------------- | ----------------------------- | --------------------------------------------------------------------------------------------------- |
+| `trade-events`                         | pub/sub                    | web and schedules, after their transaction commits        | chat                          | `TRADE_EVENTS_CHANNEL`, `tradeUpdateMessage()` in `@apollo/trades`                                  |
+| `user-events`                          | pub/sub                    | web (`publishUserEvent()`)                                | chat                          | the `UserEvent` union in `@apollo/auth/events`                                                      |
+| `trade-notifications`                  | job queue                  | web offers                                                | schedules takes               | `@apollo/queue`; only schedules runs the cleanup layer                                              |
+| `pins:v3:<md5>`                        | cache, 1 day               | web `$fetchPins`                                          | web; schedules' drain deletes | always build it with `pinCacheKey()` (`@apollo/util-server`)                                        |
+| `cosmo-key`                            | value, no TTL              | staff, from the admin page                                | web, schedules                | falls back to `COSMO_KEY`; never cache it in a module, because staff rotate it                      |
+| `objekt-stats`                         | cache, 2 hours             | web                                                       | web                           | schedules' `clear-objekt-stats` deletes it hourly                                                   |
+| `cosmo:verify:<userId>`                | value, 5 min               | web                                                       | web                           | the pending COSMO link verification code                                                            |
+| `notification-email-cooldown:<userId>` | value, 10 min              | schedules' `send-notification-emails`, after a sent email | schedules                     | while it exists the user's rows stay unclaimed ([cooldown](trades/notification-emails.md#cooldown)) |
+| `notice`                               | value, no TTL              | staff                                                     | web                           | the navbar notice                                                                                   |
+| `market-invites:<user>`                | set, expires 2027-01-01    | web `$inviteToMarket`                                     | web                           | the users the inviter made testers ([invites](trades/feedback.md#invites))                          |
+| rate-limit buckets                     | Effect `RateLimiter` store | web, chat                                                 | web, chat                     | see [Rate limits](#rate-limits)                                                                     |
 
 - Every other key is a web-only read-through cache made by `remember()` in `apps/web/src/lib/server/cache.server.ts`; `rg "remember\("` lists them.
 - `remember()` lowercases its key and `clearTag()` doesn't, so a key you clear must already be lowercase.

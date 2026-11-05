@@ -1,7 +1,12 @@
 {
   "extends": "@apollo/typescript/tsconfig.bun.json",
 
-  "include": ["src/**/*.ts", "tests/**/*.ts", "scripts/**/*.ts"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "tests/**/*.ts",
+    "scripts/**/*.ts"
+  ],
   "exclude": ["node_modules", ".turbo", "dist"],
 
   "compilerOptions": {
@@ -20,6 +25,8 @@
 
     // Effect-TS specific
     "exactOptionalPropertyTypes": true,
+    // @apollo/mail's templates are TSX
+    "jsx": "react-jsx",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "types": [],

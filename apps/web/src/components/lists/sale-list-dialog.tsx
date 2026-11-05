@@ -44,7 +44,6 @@ type Props = {
   onOpenChange: (open: boolean) => void;
   objektListId: string;
   listName: string;
-  slug: string;
   collectionName: string;
   collectionId: string;
   currency: string;
@@ -55,7 +54,6 @@ export default function SaleListDialog({
   onOpenChange,
   objektListId,
   listName,
-  slug,
   collectionName,
   collectionId,
   currency,
@@ -82,7 +80,6 @@ export default function SaleListDialog({
           <SaleListBody
             objektListId={objektListId}
             listName={listName}
-            slug={slug}
             collectionName={collectionName}
             collectionId={collectionId}
             currency={currency}
@@ -97,7 +94,6 @@ export default function SaleListDialog({
 type BodyProps = {
   objektListId: string;
   listName: string;
-  slug: string;
   collectionName: string;
   collectionId: string;
   currency: string;
@@ -107,7 +103,6 @@ type BodyProps = {
 function SaleListBody({
   objektListId,
   listName,
-  slug,
   collectionName,
   collectionId,
   currency,
@@ -145,15 +140,7 @@ function SaleListBody({
     const entries = owned.flatMap((serial, i) => {
       const row = data.rows[i];
       if (row === undefined || !row.selected) return [];
-      return [
-        {
-          slug,
-          collectionId,
-          collectionName,
-          tokenId: serial.tokenId,
-          price: row.price,
-        },
-      ];
+      return [{ tokenId: serial.tokenId, price: row.price }];
     });
 
     if (entries.length === 0) return;

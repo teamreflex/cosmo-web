@@ -4,13 +4,14 @@ import type { PublicUser } from "@/lib/universal/auth";
 import ContactChip from "./contact-chip";
 
 type Props = {
-  ownerName: string;
+  // undefined only when the owner's name isn't public, which also hides their contacts
+  ownerName: string | undefined;
   user: PublicUser | undefined;
 };
 
 export default function ListContacts({ ownerName, user }: Props) {
   const contacts = resolveContacts(user);
-  if (contacts.length === 0) return null;
+  if (contacts.length === 0 || ownerName === undefined) return null;
 
   return (
     <div className="flex flex-col gap-2">

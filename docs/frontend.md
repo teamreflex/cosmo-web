@@ -20,7 +20,7 @@ The UI is shadcn/ui in the `base-vega` style on [Base UI](https://base-ui.com/),
 Base UI behaviours that bite:
 
 - Enter transitions run only when `open` changes after mount. Keep overlays mounted and drive `open`, rather than mounting them open.
-- Select's `onValueChange` fires when the current value is re-picked, so guard side effects. The settings dialog's language Select skips the current locale, because `setLocale` reloads the page.
+- Select's `onValueChange` fires when the current value is re-picked, so guard side effects. The account page's language Select skips the current locale, because `setLocale` reloads the page.
 - `AlertDialogAction` is a Close part. Call `event.preventBaseUIHandler()` in `onClick` to keep the dialog open while a mutation runs.
 - `Radio.Root` renders a `<span>` unless given `nativeButton` and `render={<button />}`.
 - An open popover inserts hidden focus-guard spans (`data-base-ui-focus-guard`) and an `aria-owns` span beside its trigger. `:first-child`-style selectors on the trigger's parent must skip them (`components/ui/button-group.tsx`).

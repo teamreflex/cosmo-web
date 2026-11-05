@@ -3,10 +3,10 @@ import { formatCount } from "@/lib/client/trade-listings";
 import type { FeedbackRoleFilter } from "@/lib/universal/feedback";
 import type { FeedbackRating, FeedbackRole } from "@apollo/database/web/types";
 import {
+  type Icon as TablerIcon,
   IconCircleDot,
   IconCircleMinus,
   IconCirclePlus,
-  type Icon as TablerIcon,
 } from "@tabler/icons-react";
 
 // each rating's icon and the colours it is drawn in

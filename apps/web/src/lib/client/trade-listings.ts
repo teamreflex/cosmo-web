@@ -31,7 +31,7 @@ import {
   type ObjektAttributes,
   type RangeFilter,
 } from "@apollo/trades/range";
-import { isAddress, shortAddress } from "@apollo/util";
+import { accountName } from "@apollo/util";
 
 /**
  * The poster as the listing page names them: their COSMO username, else
@@ -49,11 +49,6 @@ export function posterName(
  */
 export function partyName(party: TradePartyName) {
   return posterName({ poster: party.user, cosmoUsername: party.cosmoUsername });
-}
-
-// a COSMO account without a nickname goes by its address
-export function accountName(name: string) {
-  return isAddress(name) ? shortAddress(name) : name;
 }
 
 /**

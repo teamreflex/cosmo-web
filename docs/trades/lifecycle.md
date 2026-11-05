@@ -56,6 +56,7 @@
 - Notifications skip recipients with an active ban, and every recipient's user row is locked in that transaction, because the notification's foreign key takes `FOR KEY SHARE` on it ([docs/locking.md](../locking.md)).
 - After the commit, the writer publishes the trade's id on Redis `trade-events` (`publishTradeUpdates()`), and apps/chat re-reads the trade for open trade pages. Publishing before the commit would show stale state.
 - In apps/schedules, notifications go in through `insertTradeNotifications` inside the transaction, because the web client there has one connection ([apps/schedules/CLAUDE.md](../../apps/schedules/CLAUDE.md)).
+- No writer sends email. `send-notification-emails` reads the committed rows a minute later ([notification-emails.md](notification-emails.md)).
 
 ## Timers' decisions
 

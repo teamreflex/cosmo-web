@@ -4,22 +4,24 @@ Better Auth runs inside apps/web at `/api/auth/*`, configured in `apps/web/src/l
 
 ## Better Auth setup
 
-- Users sign in with email and password, Discord or X. Sign-up sends a verification email but doesn't require it (`requireEmailVerification: false`).
+- Users sign in with email and password, Discord or X. Sign-up sends a verification email but doesn't require it (`requireEmailVerification: false`); only a verified address gets [notification emails](trades/notification-emails.md#who-is-mailed).
 - `better-auth`, `@better-auth/api-key` and `@better-auth/drizzle-adapter` are pinned to one version in the root catalog. Upgrade them together.
+- The adapter comes from `@better-auth/drizzle-adapter/relations-v2` with `advanced.database.joins: true`, so a session lookup reads its user in the same query. Keep the two together: the default entry point builds relations v1 queries, which throw against the `defineRelations` schema once joins are on.
+- The adapter runs with `transaction: true`, so email sign-up, OAuth user and account creation, and a password change with session revocation each commit as one transaction. `databaseHooks` `after` callbacks run once it commits. A hook that queries `db` directly reads outside it and can't see that transaction's uncommitted writes.
 - No cookie cache is configured, so every request reads `role`, `banned` and `ban_expires` from the user row. A role change or a ban applies from the user's next request.
 - `session.freshAge: 0` turns off Better Auth's own fresh-session checks. Account deletion's freshness rule is Apollo's own ([`accounts.md`](accounts.md#account-deletion)).
 - `trustedOrigins` holds only `baseUrl()`. A POST that carries cookies must send a matching `Origin` header, or it fails with `MISSING_OR_NULL_ORIGIN` or `INVALID_ORIGIN`.
 - OAuth access and refresh tokens are encrypted on write with AES-256-GCM, keyed by `BETTER_AUTH_SECRET` read as hex. Nothing in the repo decrypts them. The secret's format is in [`tooling.md`](tooling.md).
 - The browser client (`lib/client/auth.ts`) has no admin or api-key plugin. Staff work goes through server functions.
 
-| Plugin                         | Used for                                                                      |
-| ------------------------------ | ----------------------------------------------------------------------------- |
-| `username`                     | Apollo usernames, 3 to 20 letters and digits                                  |
-| `admin(adminPluginOptions)`    | role and ban columns, the sign-in refusal for banned users, `unbanUser`       |
-| `@better-auth/api-key`         | keys for the public API routes ([API keys](#api-keys))                        |
-| `jwt`                          | chat tokens ([Chat tokens](#chat-tokens))                                     |
-| `server-only-currency` (local) | keeps `currency` out of client writes ([Display currency](#display-currency)) |
-| `tanstackStartCookies`         | sets cookies from server functions                                            |
+| Plugin                            | Used for                                                                                                                                      |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `username`                        | Apollo usernames, 3 to 20 letters and digits                                                                                                  |
+| `admin(adminPluginOptions)`       | role and ban columns, the sign-in refusal for banned users, `unbanUser`                                                                       |
+| `@better-auth/api-key`            | keys for the public API routes ([API keys](#api-keys))                                                                                        |
+| `jwt`                             | chat tokens ([Chat tokens](#chat-tokens))                                                                                                     |
+| `server-only-user-fields` (local) | keeps `currency`, `displayUsername`, `discord` and `twitter` out of client writes ([Client-written user fields](#client-written-user-fields)) |
+| `tanstackStartCookies`            | sets cookies from server functions                                                                                                            |
 
 `hooks.before` 404s two plugin route families when they are called over HTTP:
 
@@ -30,9 +32,19 @@ Better Auth runs inside apps/web at `/api/auth/*`, configured in `apps/web/src/l
 
 ### Social sign-in can change the email
 
-- Discord and X run with `overrideUserInfoOnSignIn`, and account linking runs with `allowDifferentEmails`. A sign-in can overwrite `email` and `email_verified`, which decide [account protection](#protected-accounts).
-- An X account with no confirmed email stores the X username as the email. Such an account has no deliverable email.
-- Both behaviours are deliberate.
+- Discord and Twitter run with `overrideUserInfoOnSignIn`, and account linking runs with `allowDifferentEmails`. A sign-in can overwrite `email` and `email_verified`, which decide [account protection](#protected-accounts). This is deliberate.
+- Better Auth's Twitter provider gives an account with no confirmed email a placeholder, `<id>@twitter.placeholder.invalid`, which passes `z.email()`. `hasDeliverableEmail()` refuses the `.invalid` TLD, and the `user` create and update `databaseHooks` refuse any email it rejects, so that sign-up fails, and so does a sign-in that would write the placeholder over an existing account.
+- Older accounts still hold the Twitter username the provider used to fall back to. They have no deliverable email, and can sign in with Twitter again once their Twitter email is confirmed, which the sign-in then writes.
+- A refused OAuth sign-up or sign-in redirects with a code as `error`: the hook's `APIError` code (`EMAIL_REQUIRED_ERROR`), or Better Auth's own `email_not_found` when Discord returns no email. Social sign-in and linking pass `errorCallbackURL: "/auth/error"`, whose `describeError()` explains each code.
+
+### Client-written user fields
+
+Better Auth's `/update-user` and `/sign-up/email` accept every user field marked `input: true`, so any signed-in user can write those fields directly, bypassing the UI.
+
+- `discord` and `twitter` come only from `mapProfileToUser`, so a handle shown on a profile or listing belongs to an account the user signed in with. The `server-only-user-fields` plugin drops them from client requests. They can't be `input: false`, because Better Auth also drops `input: false` fields from `mapProfileToUser`.
+- The `username` plugin validates `displayUsername` only when a `displayUsernameValidator` is set. The `server-only-user-fields` plugin drops any `displayUsername` a client sends and copies the validated `username` into it instead.
+- `currency` follows its own rule ([Display currency](#display-currency)).
+- `emailNotifications`, the email opt-out mask, stays client-writable, so its validator (`emailNotificationsSchema` in `@apollo/trades/notifications`) admits only masks of defined bits.
 
 ## Schema generation
 
@@ -190,7 +202,7 @@ apps/chat verifies short-lived JWTs from the `jwt` plugin. The chat side (verifi
 `user.currency` hints at the user's country, so only the signed-in user's own payload carries it ([`accounts.md`](accounts.md#public-users)).
 
 - It is an `additionalField` with `input: true`, but only `$updateSettings` may write it. The supported-currency check is async, and Better Auth field validators must be synchronous.
-- `input: false` would refuse the field from server calls too, so the `server-only-currency` plugin strips `currency` from router calls to `/update-user` and `/sign-up/email` instead.
+- `input: false` would refuse the field from server calls too, so the `server-only-user-fields` plugin strips `currency` from router calls to `/update-user` and `/sign-up/email` instead.
 - `$updateSettings` checks the code with `assertSupportedCurrency()`, then calls `auth.api.updateUser` with headers but no request, which the plugin lets through.
 
 ## API keys

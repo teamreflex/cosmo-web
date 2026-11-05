@@ -1,5 +1,5 @@
 import { m } from "@/i18n/messages";
-import { formatSerial, getObjektFrontImageUrl } from "@/lib/client/objekt-util";
+import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import {
   askingTitle,
   listingRatio,
@@ -18,6 +18,7 @@ import type {
   ListingFeedWant,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
+import { formatSerial } from "@apollo/util";
 import { IconArrowRight, IconArrowsRightLeft } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";

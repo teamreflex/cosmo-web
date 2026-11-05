@@ -14,12 +14,14 @@ import {
   Unauthorized,
 } from "@apollo/chat/errors";
 import { ChatAuth, ChatRpcs } from "@apollo/chat/protocol";
-import { Clock, Effect, Layer, Stream } from "effect";
+import { Clock, Effect, Layer, Schema, Stream } from "effect";
 import { Headers } from "effect/http";
+import { Jwt } from "effect/jose";
 import { Atom, AtomRpc } from "effect/reactivity";
 import { RpcClient, RpcMiddleware, RpcSerialization } from "effect/rpc";
 import { Socket } from "effect/socket";
-import { decodeJwt } from "jose";
+
+const TokenLifetime = Schema.Struct({ iat: Schema.Int, exp: Schema.Int });
 
 /**
  * The viewer's chat token, shared by every call and reused until 80% of
@@ -40,7 +42,12 @@ const currentToken = Effect.gen(function* () {
       ? new Unauthorized()
       : new ChatUnavailable();
   }
-  const { iat = 0, exp = 0 } = decodeJwt(data.token);
+  const { iat, exp } = yield* Jwt.decodeUnverified(data.token).pipe(
+    Effect.flatMap(({ claims }) =>
+      Schema.decodeUnknownEffect(TokenLifetime)(claims),
+    ),
+    Effect.orDie,
+  );
   cachedToken = { token: data.token, refreshAt: now + (exp - iat) * 800 };
   return data.token;
 });

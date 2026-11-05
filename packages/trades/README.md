@@ -4,20 +4,21 @@ The trade system's pure rules, shared by `apps/web` and `apps/schedules`: no dat
 
 ## Modules
 
-| Export         | Holds                                                                                                                                                         |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `./lifecycle`  | `transition()`, `partyAction()`, the offer and listing transition maps, `listingClosing()`, `takesOffers()`, `tradeState()`, `tradeListingId()`, `needsYou()` |
-| `./transfers`  | the drain's per-row decisions (`decideTransfer()`, `foldTransfers()`) and `itemStatus()`                                                                      |
-| `./allocate`   | fitting tokens to want rows (`allocate()`, `allocateUnits()`, `fillsExactly()`, `listingOfferRefusal()`)                                                      |
-| `./assignment` | `validateAssignment()`, which checks a claimer's per-row token lists                                                                                          |
-| `./holdings`   | why a token can't be offered (`tokenRefusal()`, `tokenRefusals()`, `firstRefusal()`) and `pickSerials()`                                                      |
-| `./listing`    | the Zod input schemas for listings, claims, offers and counters                                                                                               |
-| `./range`      | the range filter schema, `matchesRange()` and `collapseWholeGroup()`                                                                                          |
-| `./composer`   | the listing composer's row helpers                                                                                                                            |
-| `./timers`     | windows, `isTimedOut()`, `extendedDeadline()`, `DRAIN_CURSOR_NAME`                                                                                            |
-| `./caps`       | the claim cap and listing limits                                                                                                                              |
-| `./feedback`   | who may rate a trade, whether a rating is scored, star averages                                                                                               |
-| `./events`     | the Redis `trade-events` channel and its message                                                                                                              |
+| Export            | Holds                                                                                                                                                         |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `./lifecycle`     | `transition()`, `partyAction()`, the offer and listing transition maps, `listingClosing()`, `takesOffers()`, `tradeState()`, `tradeListingId()`, `needsYou()` |
+| `./transfers`     | the drain's per-row decisions (`decideTransfer()`, `foldTransfers()`) and `itemStatus()`                                                                      |
+| `./allocate`      | fitting tokens to want rows (`allocate()`, `allocateUnits()`, `fillsExactly()`, `listingOfferRefusal()`)                                                      |
+| `./assignment`    | `validateAssignment()`, which checks a claimer's per-row token lists                                                                                          |
+| `./holdings`      | why a token can't be offered (`tokenRefusal()`, `tokenRefusals()`, `firstRefusal()`) and `pickSerials()`                                                      |
+| `./listing`       | the Zod input schemas for listings, claims, offers and counters                                                                                               |
+| `./notifications` | which notification types are emailed, their opt-out bits in `user.email_notifications` and the account page's categories                                      |
+| `./range`         | the range filter schema, `matchesRange()` and `collapseWholeGroup()`                                                                                          |
+| `./composer`      | the listing composer's row helpers                                                                                                                            |
+| `./timers`        | windows, `isTimedOut()`, `extendedDeadline()`, `DRAIN_CURSOR_NAME`                                                                                            |
+| `./caps`          | the claim cap and listing limits                                                                                                                              |
+| `./feedback`      | who may rate a trade, whether a rating is scored, star averages                                                                                               |
+| `./events`        | the Redis `trade-events` channel and its message                                                                                                              |
 
 ## Contracts between apps
 

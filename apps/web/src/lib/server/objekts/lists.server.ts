@@ -1,7 +1,7 @@
 import { indexer } from "@/lib/server/db/indexer";
 import { ExpectedError } from "@/lib/universal/errors/expected";
 import { numberLegacyListCopies } from "@/lib/universal/lists";
-import { objekts } from "@apollo/database/indexer/schema";
+import { collections, objekts } from "@apollo/database/indexer/schema";
 import { objektListEntries, objektLists } from "@apollo/database/web/schema";
 import {
   type TradeNotificationsJob,
@@ -89,35 +89,38 @@ export async function assertUserOwnsList(
 }
 
 /**
- * Throws unless every (tokenId, collectionId) pair is owned by `address` and
- * transferable. Tokens may span collections, so a single indexer round-trip
- * fetches the owned set and each pair is checked against the id->collectionId
- * map it builds.
+ * Throws unless every token is owned by `address` and transferable, and
+ * returns the entries with their collection slug from the indexer. Entries
+ * must be keyed by this slug rather than one from the client, or a user could
+ * list a cheap token under a rare collection.
  */
-export async function assertOwnsTokensMulti(
+export async function withOwnedTokenSlugs<T extends { tokenId: string }>(
   address: string,
-  tokens: { tokenId: string; collectionId: string }[],
-): Promise<void> {
+  entries: T[],
+): Promise<(T & { slug: string })[]> {
   const owned = await indexer
-    .select({ id: objekts.id, collectionId: objekts.collectionId })
+    .select({ id: objekts.id, slug: collections.slug })
     .from(objekts)
+    .innerJoin(collections, eq(objekts.collectionId, collections.id))
     .where(
       and(
         inArray(
           objekts.id,
-          tokens.map((t) => t.tokenId),
+          entries.map((e) => e.tokenId),
         ),
         eq(objekts.owner, address.toLowerCase()),
         eq(objekts.transferable, true),
       ),
     );
 
-  const collectionByTokenId = new Map(owned.map((o) => [o.id, o.collectionId]));
-  for (const token of tokens) {
-    if (collectionByTokenId.get(token.tokenId) !== token.collectionId) {
+  const slugByTokenId = new Map(owned.map((o) => [o.id, o.slug]));
+  return entries.map((entry) => {
+    const slug = slugByTokenId.get(entry.tokenId);
+    if (slug === undefined) {
       throw new ExpectedError("not_owned");
     }
-  }
+    return { ...entry, slug };
+  });
 }
 
 /**

@@ -21,6 +21,7 @@ import { Duration, Effect, Ref, Stream } from "effect";
 import { RateLimiter } from "effect/persistence";
 import { TradeChannels } from "./channels";
 import { MessageCipher } from "./cipher";
+import { OpenStreams } from "./open-streams";
 import { ChatStore, type StoredRow, type StoredTrade } from "./store";
 
 // rows read per query when a stream catches up
@@ -59,6 +60,7 @@ export const HandlersLive = ChatRpcs.toLayer(
     const store = yield* ChatStore;
     const cipher = yield* MessageCipher;
     const channels = yield* TradeChannels;
+    const openStreams = yield* OpenStreams;
     const limiter = yield* RateLimiter.RateLimiter;
 
     const consume = (key: string, limit: number, window: Duration.Input) =>
@@ -158,6 +160,7 @@ export const HandlersLive = ChatRpcs.toLayer(
           Effect.gen(function* () {
             const viewer = yield* CurrentUser;
             yield* consume(`chat:join:${viewer.userId}`, 60, "1 minute");
+            yield* openStreams.hold(viewer.userId);
             const { trade } = yield* readAccess(viewer, tradeId);
 
             const signals = yield* channels.subscribe(tradeId);

@@ -61,6 +61,9 @@ Keyed per user in Redis, inline in `src/handlers.ts`.
 | `Report`                    | `report:<user>`    | 5 per 10 min  | before any lookup; the same budget as the web app's `$createReport` |
 | `Remove`, `ReportedMessage` | none               |               |                                                                     |
 
+- `OpenStreams` (`src/open-streams.ts`) also caps each user at `MAX_OPEN_STREAMS` open `Join` streams, refusing more with `RateLimited`, because every open stream re-reads the database on each signal for its trade. The count is in process, like the channels.
+- `main.ts` caps a websocket frame at 64 KB, because frames are parsed before `ChatAuth` runs.
+
 ## Where to start
 
 | Change                       | Files                                                                                                                                                                     |
@@ -81,6 +84,7 @@ Keyed per user in Redis, inline in `src/handlers.ts`.
 | `messages.test.ts`     | ciphertext only, AAD binding, isolation between trades, the send limit, report refusals                         |
 | `staff.test.ts`        | staff access through reports, audit under the right report, `Remove`, staff messages                            |
 | `tokens.test.ts`       | forged, expired, banned and impersonated tokens; the role comes from the database                               |
+| `remote-keys.test.ts`  | the live key-set layer over http on a random port, which needs the `effect` patch; redirects and misses refused |
 | `redis-events.test.ts` | trade updates signal, user events end calls                                                                     |
 | `socket.test.ts`       | the real routes on a random port and the real clock: the Origin check, and dates and error tags crossing JSON   |
 

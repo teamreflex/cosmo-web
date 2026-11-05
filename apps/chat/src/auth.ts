@@ -6,13 +6,10 @@ import {
   Unauthorized,
 } from "@apollo/chat/errors";
 import { ChatAuth, CurrentUser } from "@apollo/chat/protocol";
-import { Clock, Context, Effect, Layer, Option, Schema } from "effect";
-import {
-  createRemoteJWKSet,
-  errors,
-  jwtVerify,
-  type JWTVerifyGetKey,
-} from "jose";
+import { Clock, Context, Effect, Layer, Schema } from "effect";
+import { SecureRandom, Signature } from "effect/crypto";
+import { FetchHttpClient } from "effect/http";
+import { type JoseError, Jwks, Jwt } from "effect/jose";
 import { ChatConfig } from "./config";
 import { Disconnects } from "./disconnects";
 import { ChatStore } from "./store";
@@ -23,61 +20,73 @@ const Claims = Schema.Struct({
   exp: Schema.Int,
 });
 
-const decodeClaims = Schema.decodeUnknownOption(Claims);
+// an unreachable key set is ChatUnavailable, never access
+function refusal({ reason }: JoseError.JoseError) {
+  if (reason._tag === "KeySetUnavailable") {
+    return new ChatUnavailable();
+  }
+  return reason._tag === "ClaimValidationFailed" && reason.reason === "expired"
+    ? new TokenExpired()
+    : new Unauthorized();
+}
 
 /**
  * Verifies the tokens the web app's jwt plugin signs: EdDSA only, the
  * issuer and audience always checked, expiry judged at the Effect Clock's
- * instant. A JWKS that can't be reached is ChatUnavailable, never access.
+ * instant, keys resolved from the Jwks service.
  */
 export class TokenVerifier extends Context.Service<TokenVerifier>()(
   "chat/TokenVerifier",
   {
-    make: (keys: JWTVerifyGetKey) =>
-      Effect.gen(function* () {
-        const { issuer, audience } = yield* ChatConfig;
-        return {
-          verify: Effect.fn("TokenVerifier.verify")(function* (token: string) {
-            const now = yield* Clock.currentTimeMillis;
-            const { payload } = yield* Effect.tryPromise({
-              try: () =>
-                jwtVerify(token, keys, {
-                  algorithms: ["EdDSA"],
-                  issuer,
-                  audience,
-                  currentDate: new Date(now),
-                }),
-              catch: (error) => {
-                if (error instanceof errors.JWTExpired) {
-                  return new TokenExpired();
-                }
-                return error instanceof errors.JOSEError &&
-                  !(error instanceof errors.JWKSTimeout)
-                  ? new Unauthorized()
-                  : new ChatUnavailable();
-              },
-            });
-            const claims = decodeClaims(payload);
-            if (Option.isNone(claims)) {
-              return yield* new Unauthorized();
-            }
-            return claims.value;
-          }),
-        };
-      }),
+    make: Effect.gen(function* () {
+      const { issuer, audience } = yield* ChatConfig;
+      const context = yield* Effect.context<Jwks.Jwks | Signature.Signature>();
+      return {
+        verify: Effect.fn("TokenVerifier.verify")(function* (token: string) {
+          const { claims } = yield* Jwt.verifyWithKeySet(Claims, token, {
+            algorithms: ["EdDSA"],
+            issuer,
+            audience,
+          }).pipe(
+            Effect.provideContext(context),
+            Effect.catchTags({
+              JoseError: (error) => Effect.fail(refusal(error)),
+              SchemaError: () => Effect.fail(new Unauthorized()),
+            }),
+          );
+          return claims;
+        }),
+      };
+    }),
   },
 ) {
-  // the JWKS from AUTH_JWKS_URL only, never from the token's issuer or headers
-  static readonly layer = Layer.effect(
-    this,
-    Effect.gen(function* () {
-      const { jwksUrl } = yield* ChatConfig;
-      return yield* TokenVerifier.make(createRemoteJWKSet(jwksUrl));
-    }),
+  static readonly layer = Layer.effect(this, this.make).pipe(
+    Layer.provide(
+      Signature.layerWebCrypto.pipe(Layer.provide(SecureRandom.layerWebCrypto)),
+    ),
   );
 
-  static readonly layerWith = (keys: JWTVerifyGetKey) =>
-    Layer.effect(this, this.make(keys));
+  /**
+   * The JWKS from AUTH_JWKS_URL only, never from the token's issuer or
+   * headers. Redirects are refused, so the keys come from that URL alone.
+   */
+  static readonly layerRemote = this.layer.pipe(
+    Layer.provide(
+      Layer.unwrap(
+        Effect.gen(function* () {
+          const { jwksUrl } = yield* ChatConfig;
+          return Jwks.layerRemote({ url: jwksUrl.href });
+        }),
+      ),
+    ),
+    Layer.provide(
+      FetchHttpClient.layer.pipe(
+        Layer.provide(
+          Layer.succeed(FetchHttpClient.RequestInit, { redirect: "manual" }),
+        ),
+      ),
+    ),
+  );
 }
 
 const BEARER = /^Bearer (\S+)$/;

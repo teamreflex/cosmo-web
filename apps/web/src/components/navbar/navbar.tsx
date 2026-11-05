@@ -62,11 +62,7 @@ function RightCluster() {
     <>
       {data && <NotificationBell />}
       <MobileMenu signedIn={data !== null} cosmo={data?.cosmo} />
-      {!data ? (
-        <StateGuest />
-      ) : (
-        <StateAuthenticated user={data.user} cosmo={data.cosmo} />
-      )}
+      {!data ? <StateGuest /> : <StateAuthenticated user={data.user} />}
     </>
   );
 }

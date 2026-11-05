@@ -1,6 +1,6 @@
 # @apollo/image
 
-Mirrors COSMO objekt images into our R2 bucket: the untouched source bytes for archival, a full-size WebP, and resized WebP renditions for small surfaces. Served from `cdn.apollo.cafe`, and locally from the `s3proxy` service in `docker-compose.yml`.
+Mirrors COSMO objekt images into our R2 bucket: the untouched source bytes for archival, a full-size WebP, and resized WebP renditions for small surfaces. Served from `cdn.apollo.cafe`, and locally from the `floci` service in `docker-compose.yml`.
 
 | Entry                   | Contents                                                                             |
 | ----------------------- | ------------------------------------------------------------------------------------ |
@@ -102,7 +102,7 @@ mirrorObjektImage(bucket, { side, slug, sourceUrl, force? })
 
 `turbo image:mirror` fills the bucket for a new environment. It mirrors the front and back image of every collection in the indexer database, then saves each version to `front_image_version`/`back_image_version` where it changed.
 
-- It reads `INDEXER_DATABASE_URL`, `R2_ENDPOINT`, `R2_BUCKET`, `R2_ACCESS_KEY` and `R2_SECRET_KEY` from the root `.env` and `.env.local`. Check they point at s3proxy before running it.
+- It reads `INDEXER_DATABASE_URL`, `R2_ENDPOINT`, `R2_BUCKET`, `R2_ACCESS_KEY` and `R2_SECRET_KEY` from the root `.env` and `.env.local`. Check they point at floci before running it.
 - Images whose marker is already in the bucket are skipped, so a re-run resumes and retries failures. A run over a complete bucket takes seconds.
 - A version is only saved while the row still has the source URL it mirrored, so an image the indexer replaced mid-run keeps the indexer's version.
 - Options go after `--`, e.g. `turbo image:mirror -- --concurrency 16 --limit 20`.
