@@ -4,8 +4,8 @@ import type {
 } from "@/hooks/use-events-filters";
 import { useFilterData } from "@/hooks/use-filter-data";
 import { m } from "@/i18n/messages";
-import type { ValidArtist } from "@apollo/cosmo/types/common";
 import ArtistGroupedMultiSelect from "../collection/artist-grouped-multiselect";
+import type { ArtistValueToggle } from "../collection/artist-value-toggle";
 import FilterChip from "../collection/filter-chip";
 
 type Props = {
@@ -22,24 +22,19 @@ export default function EventsSeasonFilter({
   const { seasons: seasonsData } = useFilterData();
   const value = seasons ?? [];
 
-  function handleChange(artistId: string, season: string, checked: boolean) {
+  function handleChange(change: ArtistValueToggle) {
     onChange((prev) => {
-      if (prev.artist !== artistId) {
+      if (prev.artist !== change.artist) {
         return {
-          // SAFETY: artist ids come from the fetched artist list
-          artist: artistId as ValidArtist,
-          season: [season],
+          artist: change.artist,
+          season: [change.value],
           era: undefined,
         };
       }
 
-      const newSeasons = checked
-        ? [...(prev.season ?? []), season]
-        : (prev.season ?? []).filter((s) => s !== season);
-
       return {
-        artist: newSeasons.length > 0 ? artistId : undefined,
-        season: newSeasons.length > 0 ? newSeasons : undefined,
+        artist: change.values.length > 0 ? change.artist : undefined,
+        season: change.values.length > 0 ? change.values : undefined,
       };
     });
   }
@@ -73,7 +68,7 @@ export default function EventsSeasonFilter({
           },
           items: s.seasons,
         }))}
-        activeArtist={artist ?? undefined}
+        checkedUnder={artist ? [artist] : []}
         selected={value}
         onToggle={handleChange}
         onClear={handleClear}

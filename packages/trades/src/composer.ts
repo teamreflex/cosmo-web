@@ -92,20 +92,80 @@ export function canStep(
   return stepCount(wants, index, delta) !== wants[index]?.count;
 }
 
+type ArtistColumn = "member" | "season" | "class";
+
 /**
- * Sets a range row's artist, or clears it for any artist. Members, seasons
- * and classes belong to one artist, so changing it clears them.
+ * Each artist's members, and the seasons and classes its collections use,
+ * keyed lowercase as ranges store artists.
  */
-export function setRangeArtist<TRange extends ComposerRange>(
+export type ArtistValues = ReadonlyMap<
+  string,
+  Readonly<Record<ArtistColumn, readonly string[]>>
+>;
+
+/**
+ * Sets a range row's artists, or clears them for any artist. Adding one
+ * keeps every other column, so the row only widens. Removing one drops the
+ * members, seasons and classes it has that no remaining artist has, since
+ * they could no longer match. Clearing them keeps every value, which then
+ * narrows any artist.
+ */
+export function setRangeArtists<TRange extends ComposerRange>(
   filter: TRange,
-  artist: string | null,
+  artists: readonly string[],
+  values: ArtistValues,
 ): TRange {
-  const next = artist === null ? [] : [toStoredArtist(artist)];
+  const next = [...new Set(artists.map(toStoredArtist))];
   const current = (filter.artist ?? []).map(toStoredArtist);
-  if (current.length === next.length && current[0] === next[0]) {
+  if (
+    next.length === current.length &&
+    next.every((artist) => current.includes(artist))
+  ) {
     return filter;
   }
-  return { ...filter, artist: next, member: [], season: [], class: [] };
+
+  const removed = current.filter((artist) => !next.includes(artist));
+  if (next.length === 0 || removed.length === 0) {
+    return { ...filter, artist: next };
+  }
+
+  const held = (from: readonly string[], column: ArtistColumn) =>
+    new Set(from.flatMap((artist) => values.get(artist)?.[column] ?? []));
+  const prune = (column: ArtistColumn) => {
+    const dropped = held(removed, column);
+    const kept = held(next, column);
+    return (filter[column] ?? []).filter(
+      (value) => kept.has(value) || !dropped.has(value),
+    );
+  };
+  return {
+    ...filter,
+    artist: next,
+    member: prune("member"),
+    season: prune("season"),
+    class: prune("class"),
+  };
+}
+
+/**
+ * Whether a range names members but one of its artists has none of them,
+ * so that artist adds nothing: columns are AND'd, and a member belongs to
+ * one artist. `rosters` maps each artist, lowercase as a range stores it, to
+ * its members.
+ */
+export function rangeArtistUnused(
+  { artist = [], member = [] }: ComposerRange,
+  rosters: ReadonlyMap<string, readonly string[]>,
+) {
+  return (
+    member.length > 0 &&
+    artist.some(
+      (name) =>
+        !rosters
+          .get(toStoredArtist(name))
+          ?.some((roster) => member.includes(roster)),
+    )
+  );
 }
 
 /**

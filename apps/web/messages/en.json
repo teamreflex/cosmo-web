@@ -2410,6 +2410,7 @@
   "listing_composer_reason_wants": "Add at least one objekt you're looking for.",
   "listing_composer_reason_range": "Each range needs at least one value.",
   "listing_composer_reason_range_too_many": "A range can pick at most {max} values in each filter.",
+  "listing_composer_reason_range_artist_unused": "Pick at least one member from each artist.",
   "listing_composer_reason_refused": "An objekt you're offering can't be traded right now.",
   "listing_composer_reason_note": "Keep the note to {max} characters or fewer.",
   "listing_composer_reason_range_repeated": "Each range can only be asked for once.",

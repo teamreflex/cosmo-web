@@ -2365,6 +2365,7 @@
   "listing_composer_reason_wants": "請至少加入一張你徵求的 Objekt。",
   "listing_composer_reason_range": "每個範圍至少需要一個值。",
   "listing_composer_reason_range_too_many": "範圍的每個篩選條件最多可選 {max} 個值。",
+  "listing_composer_reason_range_artist_unused": "請為每個藝人至少選擇一名成員。",
   "listing_composer_reason_refused": "你提供的某張 Objekt 目前無法交換。",
   "listing_composer_reason_note": "備註不得超過 {max} 個字元。",
   "listing_composer_reason_range_repeated": "每個範圍只能請求一次。",

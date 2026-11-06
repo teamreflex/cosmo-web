@@ -1,65 +1,43 @@
-import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
+import type { CosmoFilters } from "@/hooks/use-cosmo-filters";
 import { useFilterData } from "@/hooks/use-filter-data";
 import { m } from "@/i18n/messages";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
 import ArtistGroupedMultiSelect from "./artist-grouped-multiselect";
+import type { ArtistValueToggle } from "./artist-value-toggle";
 import FilterChip from "./filter-chip";
 
 type Props = {
   seasons: CosmoFilters["season"];
-  artist: CosmoFilters["artist"];
-  onChange: SetCosmoFilters;
-  allArtists?: boolean;
   /**
-   * An Artist chip sits beside this one, so a chosen artist lists only its
-   * own values instead of switching artists.
+   * The artists the picked seasons apply to, none meaning any. A season is
+   * stored by name alone, so it shows checked under each of them.
    */
-  scopeToArtist?: boolean;
+  artists: readonly ValidArtist[];
+  /**
+   * An Artist chip sits beside this one, so only `artists`' groups are
+   * listed, or every artist's with none.
+   */
+  scoped: boolean;
+  onToggle: (change: ArtistValueToggle) => void;
+  onClear: () => void;
+  allArtists?: boolean;
   /**
    * What the chip reads with nothing picked, in place of "all".
    */
   unsetLabel?: string;
 };
 
+/**
+ * Seasons grouped by artist. The chip only reports what was toggled; how
+ * that moves the artist is up to whoever holds the filters.
+ */
 export default function SeasonFilter(props: Props) {
   const { seasons } = useFilterData({ allArtists: props.allArtists });
   const value = props.seasons ?? [];
   const groups =
-    props.scopeToArtist && props.artist
-      ? seasons.filter((s) => s.artist.id === props.artist)
+    props.scoped && props.artists.length > 0
+      ? seasons.filter((s) => props.artists.some((a) => a === s.artist.id))
       : seasons;
-
-  function handleChange(artist: string, season: string, checked: boolean) {
-    props.onChange((prev) => {
-      if (prev.artist !== artist) {
-        return {
-          // SAFETY: artist ids come from the fetched artist list
-          artist: artist as ValidArtist,
-          season: [season],
-          // like the Artist chip, a new artist clears the values it owns
-          ...(props.scopeToArtist && { member: undefined, class: undefined }),
-        };
-      }
-
-      const newFilters = checked
-        ? [...(prev.season ?? []), season]
-        : (prev.season ?? []).filter((f) => f !== season);
-      const next = newFilters.length > 0 ? newFilters : undefined;
-
-      // beside an Artist chip, the artist stays chosen without a season
-      return props.scopeToArtist
-        ? { season: next }
-        : { artist: next ? artist : undefined, season: next };
-    });
-  }
-
-  function handleClear() {
-    props.onChange(
-      props.scopeToArtist
-        ? { season: undefined }
-        : { artist: undefined, season: undefined },
-    );
-  }
 
   const valueLabel =
     value.length === 0
@@ -85,10 +63,10 @@ export default function SeasonFilter(props: Props) {
           },
           items: s.seasons,
         }))}
-        activeArtist={props.artist ?? undefined}
+        checkedUnder={props.artists}
         selected={value}
-        onToggle={handleChange}
-        onClear={handleClear}
+        onToggle={props.onToggle}
+        onClear={props.onClear}
         selectedCount={value.length}
       />
     </FilterChip>

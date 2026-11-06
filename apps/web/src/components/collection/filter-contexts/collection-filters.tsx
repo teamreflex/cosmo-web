@@ -1,3 +1,4 @@
+import { singleArtistChip } from "@/components/collection/artist-value-toggle";
 import { Skeleton } from "@/components/ui/skeleton";
 import { type CosmoFilters, useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { collectionSorts, profileSorts } from "@/lib/universal/sorts";
@@ -69,8 +70,7 @@ export default function CollectionFilters({
         >
           <SeasonFilter
             seasons={filters.season}
-            artist={filters.artist}
-            onChange={setFilters}
+            {...singleArtistChip("season", filters.artist, setFilters)}
           />
         </Suspense>
       </ErrorBoundary>
@@ -87,8 +87,7 @@ export default function CollectionFilters({
         >
           <ClassFilter
             classes={filters.class}
-            artist={filters.artist}
-            onChange={setFilters}
+            {...singleArtistChip("class", filters.artist, setFilters)}
           />
         </Suspense>
       </ErrorBoundary>

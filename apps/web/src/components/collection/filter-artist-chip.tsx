@@ -1,6 +1,7 @@
 import { useArtists } from "@/hooks/use-artists";
 import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { m } from "@/i18n/messages";
+import { cn } from "@/lib/utils";
 import { validArtists } from "@apollo/cosmo/types/common";
 import FilterChip from "./filter-chip";
 import SingleSelectList, {
@@ -81,6 +82,18 @@ export default function ArtistFilterChip({
   );
 }
 
-function ArtistLogo({ src }: { src: string }) {
-  return <img src={src} alt="" className="size-4 shrink-0 rounded-full" />;
+export function ArtistLogo({
+  src,
+  className,
+}: {
+  src: string;
+  className?: string;
+}) {
+  return (
+    <img
+      src={src}
+      alt=""
+      className={cn("size-4 shrink-0 rounded-full", className)}
+    />
+  );
 }

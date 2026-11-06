@@ -8,6 +8,7 @@ import {
 import { rangeMatchCountQuery } from "@/lib/queries/trade-listings";
 import { getSeasonColor } from "@/lib/universal/seasons";
 import { artistColors, cn } from "@/lib/utils";
+import { toUiArtist } from "@apollo/trades/composer";
 import type { RangeFilter } from "@apollo/trades/range";
 import { IconCards } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -68,29 +69,34 @@ type BadgesProps = {
 };
 
 /**
- * A range want as a row of badges: the count, then the group, each season,
+ * A range want as a row of badges: the count, then each group, each season,
  * each member (or any member), class and on/offline, and how many
  * collections it covers.
  */
 export function RangeBadges({ count, filter, matches = true }: BadgesProps) {
   const { getArtist, getMember } = useArtists();
-  const artist = rangeArtist(filter);
-  const group = artist === null ? undefined : getArtist(artist);
+  const groups = filter.artist.flatMap((stored) => {
+    const artist = toUiArtist(stored);
+    if (artist === undefined) return [];
+    const group = getArtist(artist);
+    return group === undefined ? [] : [{ artist, group }];
+  });
 
   return (
     <div className="flex min-w-0 flex-auto flex-wrap items-center gap-x-3 gap-y-2">
       <div className="flex min-w-0 flex-1 basis-72 items-start gap-3">
         <WantCount count={count} />
         <ul className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
-          {group !== undefined && artist !== null && (
+          {groups.map(({ artist, group }) => (
             <Chip
+              key={artist}
               image={group.logoImageUrl}
               style={{ "--tint": artistColors[artist] }}
               className="border-(--tint)/60"
             >
               {group.title}
             </Chip>
-          )}
+          ))}
           {filter.season.map((season) => {
             const color = getSeasonColor(season);
             return (

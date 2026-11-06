@@ -1,22 +1,24 @@
 import { useArtists } from "@/hooks/use-artists";
-import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
+import type { CosmoFilters } from "@/hooks/use-cosmo-filters";
 import { m } from "@/i18n/messages";
+import type { ValidArtist } from "@apollo/cosmo/types/common";
 import ArtistGroupedMultiSelect from "./artist-grouped-multiselect";
+import type { ArtistValueToggle } from "./artist-value-toggle";
 import FilterChip from "./filter-chip";
 
 type Props = {
   members: CosmoFilters["member"];
-  artist: CosmoFilters["artist"];
-  onChange: SetCosmoFilters;
+  /**
+   * The artists chosen in the Artist chip beside this one, none meaning any.
+   * Only their members are listed, or every artist's with none.
+   */
+  artists: readonly ValidArtist[];
+  onToggle: (change: ArtistValueToggle) => void;
+  onClear: () => void;
   /**
    * Lists every artist's members rather than only the navbar's selection.
    */
   allArtists?: boolean;
-  /**
-   * An Artist chip sits beside this one, so a chosen artist lists only its
-   * own members.
-   */
-  scopeToArtist?: boolean;
   /**
    * What the chip reads with nothing picked, in place of "all".
    */
@@ -25,32 +27,18 @@ type Props = {
 
 /**
  * Members grouped by artist. A member names their artist, so several can be
- * picked across artists; picking one outside the chosen artist clears it.
+ * picked across artists, and each shows checked in their own group.
  */
 export default function MemberFilterChip(props: Props) {
   const { artistList, selected } = useArtists();
   const artists = (props.allArtists ? artistList : selected)
     .filter(
       (artist) =>
-        !props.scopeToArtist || !props.artist || artist.id === props.artist,
+        props.artists.length === 0 ||
+        props.artists.some((a) => a === artist.id),
     )
     .toSorted((a, b) => a.comoTokenId - b.comoTokenId);
   const value = props.members ?? [];
-
-  function handleToggle(artistId: string, member: string, checked: boolean) {
-    props.onChange((prev) => {
-      const next = checked
-        ? [...(prev.member ?? []), member]
-        : (prev.member ?? []).filter((name) => name !== member);
-      return {
-        member: next.length > 0 ? next : undefined,
-        artist:
-          checked && prev.artist != null && prev.artist !== artistId
-            ? undefined
-            : prev.artist,
-      };
-    });
-  }
 
   const valueLabel =
     value.length === 0
@@ -77,11 +65,10 @@ export default function MemberFilterChip(props: Props) {
             },
             items: artist.artistMembers.map((member) => member.name),
           }))}
-          activeArtist={props.artist ?? undefined}
-          anyArtist
+          checkedUnder={[]}
           selected={value}
-          onToggle={handleToggle}
-          onClear={() => props.onChange({ member: undefined })}
+          onToggle={props.onToggle}
+          onClear={props.onClear}
           selectedCount={value.length}
         />
       </div>

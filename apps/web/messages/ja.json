@@ -2363,6 +2363,7 @@
   "listing_composer_reason_wants": "求めるオブジェクトを1つ以上追加してください。",
   "listing_composer_reason_range": "各範囲には値が1つ以上必要です。",
   "listing_composer_reason_range_too_many": "範囲では各フィルターで最大{max}個まで選べます。",
+  "listing_composer_reason_range_artist_unused": "アーティストごとにメンバーを1人以上選んでください。",
   "listing_composer_reason_refused": "出品するオブジェクトの中に、今はトレードできないものがあります。",
   "listing_composer_reason_note": "メモは{max}文字以内にしてください。",
   "listing_composer_reason_range_repeated": "同じ範囲は一度しか指定できません。",

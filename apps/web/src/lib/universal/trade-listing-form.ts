@@ -1,5 +1,11 @@
+import type { ValidArtist } from "@apollo/cosmo/types/common";
 import { MAX_CHOICE_OPTIONS, MAX_NOTE_LENGTH } from "@apollo/trades/caps";
-import { setRangeArtist, toUiArtist } from "@apollo/trades/composer";
+import {
+  type ArtistValues,
+  rangeArtistUnused,
+  setRangeArtists,
+  toUiArtist,
+} from "@apollo/trades/composer";
 import {
   choicesDistinct,
   type EditListingInput,
@@ -137,19 +143,24 @@ export function formValuesToInput(
     : { kind: "edit", data: { ...terms, listingId: mode.listing.id } };
 }
 
-type ChipFilters = Pick<
+type ChipColumns = Pick<
   z.infer<typeof cosmoSchema>,
-  "artist" | "member" | "collectionNo" | "season" | "class" | "on_offline"
+  "member" | "collectionNo" | "season" | "class" | "on_offline"
 >;
 
 /**
- * A range row in the shape the objekt filter chips read, with the stored
- * artist turned back into the pickers' id ("triples" reads "tripleS").
+ * A range row in the shape its filter chips read, with the stored artists
+ * turned back into the pickers' ids ("triples" reads "tripleS"). They sit in
+ * `artists`, apart from the objekt filters' single `artist`, so a chip
+ * sharing those filters' setter can't narrow the row to one artist.
  */
-export function rangeToChipFilters(filter: RangeFormFilter): ChipFilters {
-  const [artist] = filter.artist ?? [];
+export type RangeChipFilters = ChipColumns & { artists: ValidArtist[] };
+
+export function rangeToChipFilters(filter: RangeFormFilter): RangeChipFilters {
   return {
-    artist: artist === undefined ? null : (toUiArtist(artist) ?? null),
+    artists: (filter.artist ?? []).flatMap(
+      (artist) => toUiArtist(artist) ?? [],
+    ),
     member: filter.member ?? [],
     collectionNo: filter.collectionNo ?? [],
     season: filter.season ?? [],
@@ -160,14 +171,19 @@ export function rangeToChipFilters(filter: RangeFormFilter): ChipFilters {
 
 /**
  * A filter chip's change applied to a range row. Only the columns the
- * change names move, and a new artist clears the columns that belong to it.
+ * change names move. New artists go through setRangeArtists() first, with
+ * `values` saying what each artist has, so a removed artist takes its
+ * values with it.
  */
 export function applyChipUpdate(
   filter: RangeFormFilter,
-  update: Partial<ChipFilters>,
+  update: Partial<RangeChipFilters>,
+  values: ArtistValues,
 ): RangeFormFilter {
   const next =
-    "artist" in update ? setRangeArtist(filter, update.artist ?? null) : filter;
+    update.artists === undefined
+      ? filter
+      : setRangeArtists(filter, update.artists, values);
 
   return {
     ...next,
@@ -205,10 +221,12 @@ export function rangeOverCap(filter: RangeFormFilter) {
  * how many collections the range rows cover, where known: a range that
  * covers none can't be posted, and one still being counted doesn't hold
  * Post back. `rangesRepeat` holds when two range rows cover the same
- * collections. "Any of" rows follow the schema's rules: two to
- * MAX_CHOICE_OPTIONS collections each, none named twice in a row, and no
- * two rows naming the same ones. `unitSize` is the form's, which an edit
- * prefills unchanged even when the pool has fallen below it.
+ * collections. A range narrowing members needs one of each of its artists'
+ * members (rangeArtistUnused(), against `rosters`). "Any of" rows follow
+ * the schema's rules: two to MAX_CHOICE_OPTIONS collections each, none
+ * named twice in a row, and no two rows naming the same ones. `unitSize` is
+ * the form's, which an edit prefills unchanged even when the pool has
+ * fallen below it.
  */
 export function composerBlock({
   offered,
@@ -217,6 +235,7 @@ export function composerBlock({
   unitSize,
   rangeMatches,
   rangesRepeat,
+  rosters,
   note,
 }: {
   offered: number;
@@ -225,20 +244,19 @@ export function composerBlock({
   unitSize: number | undefined;
   rangeMatches: readonly (number | undefined)[];
   rangesRepeat: boolean;
+  rosters: ReadonlyMap<string, readonly string[]>;
   note: string;
 }) {
   if (offered === 0) return "offered";
   if (refused > 0) return "refused";
   if (wants.length === 0) return "wants";
-  if (
-    wants.some((want) => want.kind === "range" && !rangeIsNarrowed(want.filter))
-  ) {
-    return "range";
-  }
-  if (
-    wants.some((want) => want.kind === "range" && rangeOverCap(want.filter))
-  ) {
-    return "range_too_many";
+  const ranges = wants.flatMap((want) =>
+    want.kind === "range" ? [want.filter] : [],
+  );
+  if (!ranges.every(rangeIsNarrowed)) return "range";
+  if (ranges.some(rangeOverCap)) return "range_too_many";
+  if (ranges.some((filter) => rangeArtistUnused(filter, rosters))) {
+    return "range_artist_unused";
   }
   if (rangeMatches.includes(0)) return "range_empty";
   if (rangesRepeat) return "range_repeated";

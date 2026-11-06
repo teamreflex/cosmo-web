@@ -347,6 +347,7 @@ export default function ListingComposer({
           <ComposerFooter
             form={form}
             mode={mode}
+            rosters={rosters}
             editedListing={editedListing}
             pending={mutation.isPending}
             cancel={
@@ -622,11 +623,13 @@ function NoteStrip({ form }: FormProps) {
 function ComposerFooter({
   form,
   mode,
+  rosters,
   editedListing,
   pending,
   cancel,
 }: FormProps & {
   mode: ComposerMode;
+  rosters: ReadonlyMap<string, readonly string[]>;
   editedListing: string | undefined;
   pending: boolean;
   cancel: ReactNode;
@@ -662,6 +665,7 @@ function ComposerFooter({
       unitSize,
       rangeMatches,
       rangesRepeat: !rangesDistinct(ranges),
+      rosters,
       note: note ?? "",
     }),
     { unitSize: formUnitSize({ offered, unitSize }), offered: offered.length },
@@ -722,6 +726,8 @@ function blockedReason(
       return m.listing_composer_reason_range_too_many({
         max: MAX_RANGE_VALUES,
       });
+    case "range_artist_unused":
+      return m.listing_composer_reason_range_artist_unused();
     case "range_empty":
       return m.trade_error_listing_range_empty();
     case "range_repeated":

@@ -1,8 +1,10 @@
 import { MAX_CHOICE_OPTIONS } from "@apollo/trades/caps";
+import type { ArtistValues } from "@apollo/trades/composer";
 import { listingInputSchema } from "@apollo/trades/listing";
 import { MAX_RANGE_VALUES } from "@apollo/trades/range";
 import { describe, expect, test } from "bun:test";
 import {
+  applyChipUpdate,
   composerBlock,
   emptyListingForm,
   followUnitSize,
@@ -10,6 +12,8 @@ import {
   formValuesToInput,
   type ListingFormValues,
   listingToFormValues,
+  type RangeFormFilter,
+  rangeToChipFilters,
   stepUnitSize,
 } from "../src/lib/universal/trade-listing-form";
 import type { TradeListing } from "../src/lib/universal/trade-listings";
@@ -422,9 +426,149 @@ describe("range rows on submit", () => {
         unitSize: undefined,
         rangeMatches: [],
         rangesRepeat: false,
+        rosters,
         note: "",
       }),
     ).toBe("range_too_many");
+  });
+});
+
+describe("range rows with several artists", () => {
+  // each artist's values, as the range row's chips read them
+  const values: ArtistValues = new Map([
+    [
+      "artms",
+      {
+        member: rosters.get("artms") ?? [],
+        season: ["Atom01", "Binary01"],
+        class: ["First", "Special"],
+      },
+    ],
+    [
+      "triples",
+      {
+        member: rosters.get("triples") ?? [],
+        season: ["Atom01", "Binary01", "Cream01"],
+        class: ["First", "Double", "Special"],
+      },
+    ],
+  ]);
+  const filter = {
+    artist: ["triples", "artms"],
+    member: [],
+    collectionNo: [],
+    season: ["Cream01"],
+    class: ["First"],
+    on_offline: [],
+  };
+
+  test("the chips read every artist, in the pickers' ids", () => {
+    expect(rangeToChipFilters(filter)).toEqual({
+      artists: ["tripleS", "artms"],
+      member: [],
+      collectionNo: [],
+      season: ["Cream01"],
+      class: ["First"],
+      on_offline: [],
+    });
+  });
+
+  test("the chips' own filters apply back unchanged", () => {
+    expect(applyChipUpdate(filter, rangeToChipFilters(filter), values)).toEqual(
+      filter,
+    );
+  });
+
+  test("adding an artist keeps the row's other values", () => {
+    expect(
+      applyChipUpdate(
+        { ...filter, artist: ["triples"] },
+        { artists: ["tripleS", "artms"] },
+        values,
+      ),
+    ).toEqual(filter);
+  });
+
+  test("removing an artist drops the values only it has", () => {
+    expect(
+      applyChipUpdate(
+        { ...filter, member: ["SeoYeon", "JinSoul"] },
+        { artists: ["artms"] },
+        values,
+      ),
+    ).toEqual({
+      ...filter,
+      artist: ["artms"],
+      member: ["JinSoul"],
+      season: [],
+    });
+  });
+
+  test("a season picked under an artist that isn't picked adds that artist", () => {
+    expect(
+      applyChipUpdate(
+        { class: ["First"] },
+        { season: ["Atom01"], artists: ["tripleS"] },
+        values,
+      ),
+    ).toEqual({ artist: ["triples"], season: ["Atom01"], class: ["First"] });
+  });
+
+  test("a season picked under a picked artist changes only the season", () => {
+    expect(
+      applyChipUpdate(
+        filter,
+        { season: ["Cream01", "Atom01"], artists: undefined },
+        values,
+      ),
+    ).toEqual({ ...filter, season: ["Cream01", "Atom01"] });
+  });
+
+  test("tripleS or ARTMS First posts as both artists", () => {
+    const submission = formValuesToInput(
+      listingInputSchema.parse({
+        offered: [{ tokenId: 9 }],
+        wants: [
+          {
+            kind: "range",
+            count: 1,
+            filter: { artist: ["triples", "artms"], class: ["First"] },
+          },
+        ],
+        note: "",
+      }),
+      { kind: "create" },
+      rosters,
+    );
+    expect(submission.data.wants[0]).toMatchObject({
+      filter: { artist: ["triples", "artms"], member: [], class: ["First"] },
+    });
+  });
+
+  test("an artist none of the row's members belong to holds Post back", () => {
+    const blockRange = (range: RangeFormFilter) =>
+      block({
+        offered: offered(1),
+        wants: [{ kind: "range", count: 1, filter: range }],
+      });
+    expect(
+      blockRange({ artist: ["triples", "artms"], member: ["JinSoul"] }),
+    ).toBe("range_artist_unused");
+    expect(blockRange({ artist: ["artms"], member: ["SeoYeon"] })).toBe(
+      "range_artist_unused",
+    );
+    expect(
+      blockRange({
+        artist: ["triples", "artms"],
+        member: ["JinSoul", "JiWoo"],
+      }),
+    ).toBeNull();
+    // with any artist, the members name theirs
+    expect(blockRange({ member: ["JinSoul", "JiWoo"] })).toBeNull();
+    // seasons an artist lacks just match nothing from it
+    expect(
+      blockRange({ artist: ["triples", "artms"], season: ["Cream01"] }),
+    ).toBeNull();
   });
 });
 
@@ -444,6 +588,7 @@ const block = ({
     unitSize,
     rangeMatches: [],
     rangesRepeat: false,
+    rosters,
     note: "",
   });
 

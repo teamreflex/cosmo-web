@@ -1,3 +1,4 @@
+import { singleArtistChip } from "@/components/collection/artist-value-toggle";
 import type { PropsWithFilters } from "@/hooks/use-cosmo-filters";
 import {
   offeringKeys,
@@ -125,28 +126,30 @@ function SideChips({
       <Suspended width="w-[104px]">
         <FilterMemberChip
           members={filters.member}
-          artist={filters.artist}
-          onChange={setFilters}
+          artists={filters.artist ? [filters.artist] : []}
+          onToggle={({ values }) =>
+            setFilters({ member: values.length > 0 ? values : undefined })
+          }
+          onClear={() => setFilters({ member: undefined })}
           allArtists={allArtists}
-          scopeToArtist
         />
       </Suspended>
       <Suspended width="w-[119px]">
         <SeasonFilter
           seasons={filters.season}
-          artist={filters.artist}
-          onChange={setFilters}
+          {...singleArtistChip("season", filters.artist, setFilters, {
+            scoped: true,
+          })}
           allArtists={allArtists}
-          scopeToArtist
         />
       </Suspended>
       <Suspended width="w-[108px]">
         <ClassFilter
           classes={filters.class}
-          artist={filters.artist}
-          onChange={setFilters}
+          {...singleArtistChip("class", filters.artist, setFilters, {
+            scoped: true,
+          })}
           allArtists={allArtists}
-          scopeToArtist
         />
       </Suspended>
       <OnlineFilter

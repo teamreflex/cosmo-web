@@ -1,5 +1,8 @@
 import { m } from "@/i18n/messages";
 import { cn } from "@/lib/utils";
+import { validArtists } from "@apollo/cosmo/types/common";
+import type { ReactNode } from "react";
+import type { ArtistValueToggle } from "./artist-value-toggle";
 
 type ArtistInfo = {
   id: string;
@@ -15,21 +18,19 @@ type Group = {
 type Props = {
   groups: Group[];
   /**
-   * A selection counts only under this artist, unless `anyArtist` is set,
-   * for values that already name one artist (members).
+   * The artists a selection counts under, so it shows checked in their
+   * groups; none means every group.
    */
-  activeArtist: string | undefined;
-  anyArtist?: boolean;
+  checkedUnder: readonly string[];
   selected: string[];
-  onToggle: (artistId: string, item: string, checked: boolean) => void;
+  onToggle: (change: ArtistValueToggle) => void;
   onClear?: () => void;
   selectedCount: number;
 };
 
 export default function ArtistGroupedMultiSelect({
   groups,
-  activeArtist,
-  anyArtist = false,
+  checkedUnder,
   selected,
   onToggle,
   onClear,
@@ -61,36 +62,29 @@ export default function ArtistGroupedMultiSelect({
             <div className="flex flex-col px-1 pb-2">
               {group.items.map((item) => {
                 const on =
-                  (anyArtist || activeArtist === group.artist.id) &&
+                  (checkedUnder.length === 0 ||
+                    checkedUnder.includes(group.artist.id)) &&
                   selected.includes(item);
                 return (
-                  <button
+                  <CheckRow
                     key={item}
-                    type="button"
-                    aria-pressed={on}
-                    onClick={() => onToggle(group.artist.id, item, !on)}
-                    className="flex w-full items-center gap-2 rounded-sm px-1.5 py-1 text-left text-xs transition-colors hover:bg-accent"
+                    checked={on}
+                    onClick={() => {
+                      const artist = validArtists.find(
+                        (id) => id === group.artist.id,
+                      );
+                      if (artist === undefined) return;
+                      onToggle({
+                        artist,
+                        value: item,
+                        values: on
+                          ? selected.filter((value) => value !== item)
+                          : [...selected, item],
+                      });
+                    }}
                   >
-                    <span
-                      className={cn(
-                        "flex size-3.5 shrink-0 items-center justify-center rounded-sm border",
-                        on
-                          ? "border-cosmo bg-cosmo"
-                          : "border-border bg-transparent",
-                      )}
-                    >
-                      {on && (
-                        <span className="text-xxs font-bold text-white">✓</span>
-                      )}
-                    </span>
-                    <span
-                      className={cn(
-                        on ? "text-foreground" : "text-muted-foreground",
-                      )}
-                    >
-                      {item}
-                    </span>
-                  </button>
+                    {item}
+                  </CheckRow>
                 );
               })}
             </div>
@@ -115,5 +109,44 @@ export default function ArtistGroupedMultiSelect({
         )}
       </div>
     </div>
+  );
+}
+
+/**
+ * One value in a multi-select list, with its checkbox before the label.
+ */
+export function CheckRow({
+  checked,
+  onClick,
+  children,
+}: {
+  checked: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={checked}
+      onClick={onClick}
+      className="flex w-full items-center gap-2 rounded-sm px-1.5 py-1 text-left text-xs transition-colors hover:bg-accent"
+    >
+      <span
+        className={cn(
+          "flex size-3.5 shrink-0 items-center justify-center rounded-sm border",
+          checked ? "border-cosmo bg-cosmo" : "border-border bg-transparent",
+        )}
+      >
+        {checked && <span className="text-xxs font-bold text-white">✓</span>}
+      </span>
+      <span
+        className={cn(
+          "flex min-w-0 items-center gap-1.5",
+          checked ? "text-foreground" : "text-muted-foreground",
+        )}
+      >
+        {children}
+      </span>
+    </button>
   );
 }

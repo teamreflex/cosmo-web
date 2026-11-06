@@ -1,17 +1,20 @@
+import { useArtists } from "@/hooks/use-artists";
 import type { SetCosmoFilters } from "@/hooks/use-cosmo-filters";
+import { useFilterData } from "@/hooks/use-filter-data";
 import { m } from "@/i18n/messages";
 import { formatCount, onOfflineLabel } from "@/lib/client/trade-listings";
 import { rangeMatchCountQuery } from "@/lib/queries/trade-listings";
 import { artistName } from "@/lib/universal/objekt-conversion";
 import {
   applyChipUpdate,
+  type RangeChipFilters,
   type RangeFormFilter,
   rangeIsNarrowed,
   rangeOverCap,
   rangeToChipFilters,
 } from "@/lib/universal/trade-listing-form";
 import { cn } from "@/lib/utils";
-import { wantSummaryParts } from "@apollo/trades/composer";
+import { type ArtistValues, wantSummaryParts } from "@apollo/trades/composer";
 import {
   MAX_RANGE_VALUES,
   type RangeFilter,
@@ -29,7 +32,7 @@ import {
 } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { useDebounceValue } from "usehooks-ts";
-import FilterArtistChip from "../collection/filter-artist-chip";
+import type { ArtistValueToggle } from "../collection/artist-value-toggle";
 import ClassFilter from "../collection/filter-class";
 import FilterMemberChip from "../collection/filter-member-chip";
 import OnlineFilter from "../collection/filter-online";
@@ -38,6 +41,7 @@ import CollectionFilter from "../objekt-index/collection-filter";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
+import RangeArtistChip from "./range-artist-chip";
 
 type Props = {
   /** the row's place among the wants, from 1, naming its remove button */
@@ -71,7 +75,6 @@ export default function ComposerRangeRow({
 }: Props) {
   const [expanded, setExpanded] = useState(true);
   const chipsId = useId();
-  const chips = rangeToChipFilters(filter);
   const summary = wantSummaryParts(
     { count, filter },
     { artist: artistName, onOffline: onOfflineLabel },
@@ -81,11 +84,6 @@ export default function ComposerRangeRow({
   const shownError = rangeOverCap(filter)
     ? m.listing_composer_reason_range_too_many({ max: MAX_RANGE_VALUES })
     : error;
-
-  const setFilters: SetCosmoFilters = (input) =>
-    onChange(
-      applyChipUpdate(filter, input instanceof Function ? input(chips) : input),
-    );
 
   return (
     <div className="flex flex-col rounded-lg border border-border bg-background">
@@ -138,47 +136,7 @@ export default function ComposerRangeRow({
           <div id={chipsId} className="flex flex-wrap gap-2">
             <ErrorBoundary fallback={<ChipsSkeleton />}>
               <Suspense fallback={<ChipsSkeleton />}>
-                <FilterArtistChip
-                  artist={chips.artist}
-                  onChange={setFilters}
-                  allArtists
-                  unsetLabel={m.filter_value_any()}
-                />
-                <FilterMemberChip
-                  members={chips.member}
-                  artist={chips.artist}
-                  onChange={setFilters}
-                  allArtists
-                  scopeToArtist
-                  unsetLabel={m.filter_value_any()}
-                />
-                <CollectionFilter
-                  collections={chips.collectionNo}
-                  onChange={setFilters}
-                  unsetLabel={m.filter_value_any()}
-                />
-                <SeasonFilter
-                  seasons={chips.season}
-                  artist={chips.artist}
-                  onChange={setFilters}
-                  allArtists
-                  scopeToArtist
-                  unsetLabel={m.filter_value_any()}
-                />
-                <ClassFilter
-                  classes={chips.class}
-                  artist={chips.artist}
-                  onChange={setFilters}
-                  allArtists
-                  scopeToArtist
-                  unsetLabel={m.filter_value_any()}
-                />
-                <OnlineFilter
-                  onOffline={chips.on_offline}
-                  onChange={setFilters}
-                  label={m.filter_type()}
-                  unsetLabel={m.filter_value_any()}
-                />
+                <RangeChips filter={filter} onChange={onChange} />
               </Suspense>
             </ErrorBoundary>
           </div>
@@ -226,6 +184,93 @@ export default function ComposerRangeRow({
         </p>
       )}
     </div>
+  );
+}
+
+/**
+ * The row's filter chips. Artists come from the range's own multi-select
+ * chip, and the member, season and class chips list only the picked
+ * artists' values.
+ */
+function RangeChips({
+  filter,
+  onChange,
+}: {
+  filter: RangeFormFilter;
+  onChange: (filter: RangeFormFilter) => void;
+}) {
+  const { artistList } = useArtists();
+  const { seasons, classes } = useFilterData({ allArtists: true });
+  // what each artist has, keyed as ranges store artists, so removing one drops its values
+  const values: ArtistValues = new Map(
+    artistList.map((artist) => [
+      artist.id.toLowerCase(),
+      {
+        member: artist.artistMembers.map((member) => member.name),
+        season: seasons.find((s) => s.artist.id === artist.id)?.seasons ?? [],
+        class: classes.find((c) => c.artist.id === artist.id)?.classes ?? [],
+      },
+    ]),
+  );
+  const chips = rangeToChipFilters(filter);
+  const update = (change: Partial<RangeChipFilters>) =>
+    onChange(applyChipUpdate(filter, change, values));
+  const setColumns: SetCosmoFilters = (input) =>
+    update(input instanceof Function ? input(chips) : input);
+  // a season or class picked under an artist the row hasn't picked adds that artist
+  const adding = ({ artist, value, values }: ArtistValueToggle) =>
+    values.includes(value) && !chips.artists.includes(artist)
+      ? { artists: [...chips.artists, artist] }
+      : {};
+
+  return (
+    <>
+      <RangeArtistChip
+        artists={chips.artists}
+        onChange={(artists) => update({ artists })}
+      />
+      <FilterMemberChip
+        members={chips.member}
+        artists={chips.artists}
+        onToggle={({ values }) => update({ member: values })}
+        onClear={() => update({ member: [] })}
+        allArtists
+        unsetLabel={m.filter_value_any()}
+      />
+      <CollectionFilter
+        collections={chips.collectionNo}
+        onChange={setColumns}
+        unsetLabel={m.filter_value_any()}
+      />
+      <SeasonFilter
+        seasons={chips.season}
+        artists={chips.artists}
+        scoped
+        onToggle={(change) =>
+          update({ season: change.values, ...adding(change) })
+        }
+        onClear={() => update({ season: [] })}
+        allArtists
+        unsetLabel={m.filter_value_any()}
+      />
+      <ClassFilter
+        classes={chips.class}
+        artists={chips.artists}
+        scoped
+        onToggle={(change) =>
+          update({ class: change.values, ...adding(change) })
+        }
+        onClear={() => update({ class: [] })}
+        allArtists
+        unsetLabel={m.filter_value_any()}
+      />
+      <OnlineFilter
+        onOffline={chips.on_offline}
+        onChange={setColumns}
+        label={m.filter_type()}
+        unsetLabel={m.filter_value_any()}
+      />
+    </>
   );
 }
 

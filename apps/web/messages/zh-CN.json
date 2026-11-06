@@ -2365,6 +2365,7 @@
   "listing_composer_reason_wants": "请至少添加一张你寻找的 Objekt。",
   "listing_composer_reason_range": "每个范围至少需要一个值。",
   "listing_composer_reason_range_too_many": "范围的每个筛选条件最多可选 {max} 个值。",
+  "listing_composer_reason_range_artist_unused": "请为每个艺人至少选择一名成员。",
   "listing_composer_reason_refused": "你提供的某张 Objekt 目前无法交换。",
   "listing_composer_reason_note": "备注不能超过 {max} 个字符。",
   "listing_composer_reason_range_repeated": "每个范围只能请求一次。",

@@ -1,3 +1,4 @@
+import { singleArtistChip } from "@/components/collection/artist-value-toggle";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import type { SpinOutcome, TransferType } from "@/lib/universal/transfers";
@@ -35,8 +36,7 @@ export function TransfersFilters(props: Props) {
         >
           <SeasonFilter
             seasons={filters.season}
-            artist={filters.artist}
-            onChange={setFilters}
+            {...singleArtistChip("season", filters.artist, setFilters)}
           />
         </Suspense>
       </ErrorBoundary>
@@ -52,8 +52,7 @@ export function TransfersFilters(props: Props) {
         >
           <ClassFilter
             classes={filters.class}
-            artist={filters.artist}
-            onChange={setFilters}
+            {...singleArtistChip("class", filters.artist, setFilters)}
           />
         </Suspense>
       </ErrorBoundary>

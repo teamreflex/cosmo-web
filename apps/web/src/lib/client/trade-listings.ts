@@ -251,8 +251,8 @@ export function wantKindsSummary(wants: readonly ListingFeedWant[]) {
 }
 
 /**
- * The one artist a range narrows to, which its tile and badges show; null
- * when it takes any artist or several.
+ * The one artist a range narrows to, whose colour and logo its tile shows;
+ * null when it takes any artist or several.
  */
 export function rangeArtist(filter: RangeFilter): ValidArtist | null {
   const [only] = filter.artist;

@@ -2419,6 +2419,7 @@
   "listing_composer_reason_wants": "Ajoutez au moins un objekt que vous recherchez.",
   "listing_composer_reason_range": "Chaque plage doit avoir au moins une valeur.",
   "listing_composer_reason_range_too_many": "Une plage peut choisir au plus {max} valeurs par filtre.",
+  "listing_composer_reason_range_artist_unused": "Choisissez au moins un membre par artiste.",
   "listing_composer_reason_refused": "Un objekt que vous proposez ne peut pas être échangé pour le moment.",
   "listing_composer_reason_note": "La note doit faire {max} caractères au maximum.",
   "listing_composer_reason_range_repeated": "Chaque plage ne peut être demandée qu'une fois.",

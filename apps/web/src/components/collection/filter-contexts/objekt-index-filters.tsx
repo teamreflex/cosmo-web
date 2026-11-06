@@ -1,3 +1,4 @@
+import { singleArtistChip } from "@/components/collection/artist-value-toggle";
 import CollectionFilter from "@/components/objekt-index/collection-filter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { type CosmoFilters, useCosmoFilters } from "@/hooks/use-cosmo-filters";
@@ -56,8 +57,7 @@ export default function ObjektIndexFilters({ search = false }: Props) {
         >
           <SeasonFilter
             seasons={filters.season}
-            artist={filters.artist}
-            onChange={setFilters}
+            {...singleArtistChip("season", filters.artist, setFilters)}
           />
         </Suspense>
       </ErrorBoundary>
@@ -89,8 +89,7 @@ export default function ObjektIndexFilters({ search = false }: Props) {
         >
           <ClassFilter
             classes={filters.class}
-            artist={filters.artist}
-            onChange={setFilters}
+            {...singleArtistChip("class", filters.artist, setFilters)}
           />
         </Suspense>
       </ErrorBoundary>

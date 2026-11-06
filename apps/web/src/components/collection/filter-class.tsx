@@ -1,66 +1,44 @@
-import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
+import type { CosmoFilters } from "@/hooks/use-cosmo-filters";
 import { useFilterData } from "@/hooks/use-filter-data";
 import { m } from "@/i18n/messages";
 import { classSort } from "@/lib/utils";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
 import ArtistGroupedMultiSelect from "./artist-grouped-multiselect";
+import type { ArtistValueToggle } from "./artist-value-toggle";
 import FilterChip from "./filter-chip";
 
 type Props = {
   classes: CosmoFilters["class"];
-  artist: CosmoFilters["artist"];
-  onChange: SetCosmoFilters;
-  allArtists?: boolean;
   /**
-   * An Artist chip sits beside this one, so a chosen artist lists only its
-   * own values instead of switching artists.
+   * The artists the picked classes apply to, none meaning any. A class is
+   * stored by name alone, so it shows checked under each of them.
    */
-  scopeToArtist?: boolean;
+  artists: readonly ValidArtist[];
+  /**
+   * An Artist chip sits beside this one, so only `artists`' groups are
+   * listed, or every artist's with none.
+   */
+  scoped: boolean;
+  onToggle: (change: ArtistValueToggle) => void;
+  onClear: () => void;
+  allArtists?: boolean;
   /**
    * What the chip reads with nothing picked, in place of "all".
    */
   unsetLabel?: string;
 };
 
+/**
+ * Classes grouped by artist. The chip only reports what was toggled; how
+ * that moves the artist is up to whoever holds the filters.
+ */
 export default function ClassFilter(props: Props) {
   const { classes } = useFilterData({ allArtists: props.allArtists });
   const value = props.classes ?? [];
   const groups =
-    props.scopeToArtist && props.artist
-      ? classes.filter((c) => c.artist.id === props.artist)
+    props.scoped && props.artists.length > 0
+      ? classes.filter((c) => props.artists.some((a) => a === c.artist.id))
       : classes;
-
-  function handleChange(artistId: string, className: string, checked: boolean) {
-    props.onChange((prev) => {
-      if (prev.artist !== artistId) {
-        return {
-          // SAFETY: artist ids come from the fetched artist list
-          artist: artistId as ValidArtist,
-          class: [className],
-          // like the Artist chip, a new artist clears the values it owns
-          ...(props.scopeToArtist && { member: undefined, season: undefined }),
-        };
-      }
-
-      const newFilters = checked
-        ? [...(prev.class ?? []), className]
-        : (prev.class ?? []).filter((f) => f !== className);
-      const next = newFilters.length > 0 ? newFilters : undefined;
-
-      // beside an Artist chip, the artist stays chosen without a class
-      return props.scopeToArtist
-        ? { class: next }
-        : { artist: next ? artistId : undefined, class: next };
-    });
-  }
-
-  function handleClear() {
-    props.onChange(
-      props.scopeToArtist
-        ? { class: undefined }
-        : { artist: undefined, class: undefined },
-    );
-  }
 
   const valueLabel =
     value.length === 0
@@ -86,10 +64,10 @@ export default function ClassFilter(props: Props) {
           },
           items: [...c.classes].sort((a, b) => classSort(a, b, c.artist.id)),
         }))}
-        activeArtist={props.artist ?? undefined}
+        checkedUnder={props.artists}
         selected={value}
-        onToggle={handleChange}
-        onClear={handleClear}
+        onToggle={props.onToggle}
+        onClear={props.onClear}
         selectedCount={value.length}
       />
     </FilterChip>
