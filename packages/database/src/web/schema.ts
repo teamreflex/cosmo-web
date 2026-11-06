@@ -930,8 +930,8 @@ export const tradeOfferItems = pgTable(
 
 /**
  * What one unit of a listing asks for. Exact rows name a collection and copy
- * its indexer values, range rows hold one array per column where an empty
- * array matches any value, choice rows name their collections in
+ * its indexer values, range rows hold their ranges in
+ * `trade_listing_want_ranges`, choice rows name their collections in
  * `trade_listing_want_options`, and the payment row prices the listing. The
  * trade side is every exact, range and choice row, all required, with each
  * count multiplied by the units a claim takes. A listing's wants are
@@ -954,15 +954,6 @@ export const tradeListingWants = pgTable(
     season: varchar("season", { length: 32 }),
     class: varchar("class", { length: 8 }),
     onOffline: varchar("on_offline", { length: 16 }),
-    artists: varchar("artists", { length: 32 }).array(),
-    members: varchar("members", { length: 32 }).array(),
-    seasons: varchar("seasons", { length: 32 }).array(),
-    classes: varchar("classes", { length: 8 }).array(),
-    onOfflines: varchar("on_offlines", { length: 16 }).array(),
-    collectionNos: varchar("collection_nos", { length: 8 })
-      .array()
-      .notNull()
-      .default([]),
     amount: numeric("amount", { precision: 14, scale: 2 }),
     currency: varchar("currency", { length: 3 }),
   },
@@ -976,13 +967,44 @@ export const tradeListingWants = pgTable(
     check(
       "trade_listing_wants_shape_chk",
       sql`CASE ${t.kind}
-        WHEN 'exact' THEN coalesce(${t.count}, 0) > 0 AND num_nulls(${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}) = 0 AND num_nonnulls(${t.artists}, ${t.members}, ${t.seasons}, ${t.classes}, ${t.onOfflines}, ${t.amount}, ${t.currency}) = 0
-        WHEN 'range' THEN coalesce(${t.count}, 0) > 0 AND num_nulls(${t.artists}, ${t.members}, ${t.seasons}, ${t.classes}, ${t.onOfflines}) = 0 AND num_nonnulls(${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}, ${t.amount}, ${t.currency}) = 0
-        WHEN 'choice' THEN coalesce(${t.count}, 0) > 0 AND num_nonnulls(${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}, ${t.artists}, ${t.members}, ${t.seasons}, ${t.classes}, ${t.onOfflines}, ${t.amount}, ${t.currency}) = 0
-        ELSE coalesce(${t.amount}, 0) > 0 AND ${t.currency} IS NOT NULL AND num_nonnulls(${t.count}, ${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}, ${t.artists}, ${t.members}, ${t.seasons}, ${t.classes}, ${t.onOfflines}) = 0
+        WHEN 'exact' THEN coalesce(${t.count}, 0) > 0 AND num_nulls(${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}) = 0 AND num_nonnulls(${t.amount}, ${t.currency}) = 0
+        WHEN 'range' THEN coalesce(${t.count}, 0) > 0 AND num_nonnulls(${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}, ${t.amount}, ${t.currency}) = 0
+        WHEN 'choice' THEN coalesce(${t.count}, 0) > 0 AND num_nonnulls(${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}, ${t.amount}, ${t.currency}) = 0
+        ELSE coalesce(${t.amount}, 0) > 0 AND ${t.currency} IS NOT NULL AND num_nonnulls(${t.count}, ${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}) = 0
       END`,
     ),
   ],
+);
+
+/**
+ * The ranges of a range row, in the order the poster added them. An objekt
+ * fits the row when some range matches it, and a range matches when every
+ * column holds the objekt's value, where an empty array matches any value.
+ * At least one range per row and one narrowed column per range is enforced
+ * by the input schemas, since a CHECK can't span tables. They're inserted
+ * and replaced with their row.
+ */
+export const tradeListingWantRanges = pgTable(
+  "trade_listing_want_ranges",
+  {
+    wantId: bigint("want_id", { mode: "number" })
+      .notNull()
+      .references(() => tradeListingWants.id, { onDelete: "cascade" }),
+    position: smallint("position").notNull(),
+    artists: varchar("artists", { length: 32 }).array().notNull().default([]),
+    members: varchar("members", { length: 32 }).array().notNull().default([]),
+    seasons: varchar("seasons", { length: 32 }).array().notNull().default([]),
+    classes: varchar("classes", { length: 8 }).array().notNull().default([]),
+    onOfflines: varchar("on_offlines", { length: 16 })
+      .array()
+      .notNull()
+      .default([]),
+    collectionNos: varchar("collection_nos", { length: 8 })
+      .array()
+      .notNull()
+      .default([]),
+  },
+  (t) => [primaryKey({ columns: [t.wantId, t.position] })],
 );
 
 /**

@@ -1,5 +1,5 @@
 import type { TradeWant } from "../src/allocate";
-import { rangeFilterSchema } from "../src/range";
+import { MAX_RANGE_CLAUSES, rangesSchema } from "../src/range";
 
 /**
  * A small seeded PRNG (mulberry32), so property runs are reproducible.
@@ -93,17 +93,19 @@ export function generateCase(random: Random) {
       }
       continue;
     }
-    const filter = rangeFilterSchema.safeParse({
-      artist: random.some(artists),
-      member: random.some(members),
-      season: random.some(seasons),
-      class: random.some(classes),
-      on_offline: random.some(onOfflines),
-    });
-    if (filter.success) {
+    const ranges = rangesSchema.safeParse(
+      Array.from({ length: random.int(1, MAX_RANGE_CLAUSES) }, () => ({
+        artist: random.some(artists),
+        member: random.some(members),
+        season: random.some(seasons),
+        class: random.some(classes),
+        on_offline: random.some(onOfflines),
+      })),
+    );
+    if (ranges.success) {
       wants.push({
         kind: "range",
-        filter: filter.data,
+        ranges: ranges.data,
         count: random.int(1, 5),
       });
     }

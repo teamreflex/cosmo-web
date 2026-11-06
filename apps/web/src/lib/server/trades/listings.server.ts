@@ -1,5 +1,6 @@
 import {
   tradeListingWantOptions,
+  tradeListingWantRanges,
   tradeListingWants,
   tradeMessages,
   tradeOfferItems,
@@ -9,6 +10,7 @@ import {
 import { bumpUpdatedAt } from "@apollo/database/web/sql";
 import type {
   NewTradeListingWant,
+  NewTradeListingWantRange,
   NewTradeOfferItem,
   TradeOfferStatus,
 } from "@apollo/database/web/types";
@@ -341,26 +343,15 @@ function wantRow(listingId: string, want: ResolvedWant): NewTradeListingWant {
     case "exact":
       return { listingId, kind: "exact", count: want.count, ...want.objekt };
     case "range":
-      return {
-        listingId,
-        kind: "range",
-        count: want.count,
-        artists: want.filter.artist,
-        members: want.filter.member,
-        collectionNos: want.filter.collectionNo,
-        seasons: want.filter.season,
-        classes: want.filter.class,
-        onOfflines: want.filter.on_offline,
-      };
     case "choice":
-      return { listingId, kind: "choice", count: want.count };
+      return { listingId, kind: want.kind, count: want.count };
   }
 }
 
 /**
  * Inserts the listing's own items, never live and with no `listing_id`,
  * then its wants in one statement, so id order is the posted order, then
- * the collections of its choice rows.
+ * the collections of its choice rows and the ranges of its range rows.
  */
 export async function insertTerms(
   tx: WebTx,
@@ -390,7 +381,28 @@ export async function insertTerms(
       ? want.options.map((objekt) => ({ wantId, ...objekt }))
       : [];
   });
+  const ranges = terms.wants.flatMap((want, index) => {
+    const wantId = ids[index];
+    return want.kind === "range" && wantId !== undefined
+      ? want.ranges.map(
+          (filter, position) =>
+            ({
+              wantId,
+              position,
+              artists: filter.artist,
+              members: filter.member,
+              collectionNos: filter.collectionNo,
+              seasons: filter.season,
+              classes: filter.class,
+              onOfflines: filter.on_offline,
+            }) satisfies NewTradeListingWantRange,
+        )
+      : [];
+  });
   if (options.length) {
     await tx.insert(tradeListingWantOptions).values(options);
+  }
+  if (ranges.length) {
+    await tx.insert(tradeListingWantRanges).values(ranges);
   }
 }

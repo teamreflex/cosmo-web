@@ -392,7 +392,7 @@ function OfferSteps({
 function groupHead({ want }: PickerRow, count: number) {
   switch (want.kind) {
     case "range":
-      return <RangeBadges count={count} filter={want.filter} matches={false} />;
+      return <RangeBadges count={count} ranges={want.ranges} matches={false} />;
     case "exact":
     case "choice":
       return <ExactBadges count={count} name={wantLabel(want)} />;

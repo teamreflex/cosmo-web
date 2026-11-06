@@ -17,7 +17,11 @@ import {
   offeredTokensInputSchema,
   offerInputSchema,
 } from "../src/listing";
-import { MAX_RANGE_VALUES, type RangeFilter } from "../src/range";
+import {
+  MAX_RANGE_CLAUSES,
+  MAX_RANGE_VALUES,
+  type RangeFilter,
+} from "../src/range";
 
 const LISTING_ID = "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11";
 const KIMLIP = "atom02-kimlip-201z";
@@ -27,11 +31,13 @@ const exact = (slug: string, count = 1) => ({
   slug,
   count,
 });
-const range = (filter: Record<string, string[]>, count = 1) => ({
+const ranges = (filters: Record<string, string[]>[], count = 1) => ({
   kind: "range" as const,
-  filter,
+  ranges: filters,
   count,
 });
+const range = (filter: Record<string, string[]>, count = 1) =>
+  ranges([filter], count);
 const choice = (slugs: string[], count = 1) => ({
   kind: "choice" as const,
   slugs,
@@ -58,7 +64,7 @@ const emptyFilter: RangeFilter = {
 // a range row as the schemas output it, with unnarrowed columns empty
 const stored = (filter: Partial<RangeFilter>, count = 1) => ({
   kind: "range" as const,
-  filter: { ...emptyFilter, ...filter },
+  ranges: [{ ...emptyFilter, ...filter }],
   count,
 });
 
@@ -181,12 +187,12 @@ const refused = [
   [
     "a range with no columns (SCH-11)",
     { offered, wants: [range({})] },
-    "wants.0.filter: A range needs at least one value",
+    "wants.0.ranges.0: A range needs at least one value",
   ],
   [
     "a range with only empty columns (SCH-11)",
     { offered, wants: [range(emptyFilter)] },
-    "wants.0.filter: A range needs at least one value",
+    "wants.0.ranges.0: A range needs at least one value",
   ],
   [
     "a season past the column cap in one range (SCH-13)",
@@ -201,7 +207,7 @@ const refused = [
         }),
       ],
     },
-    "wants.0.filter.season: *",
+    "wants.0.ranges.0.season: *",
   ],
   [
     "a 501-character note (SCH-15)",
@@ -234,9 +240,52 @@ const refused = [
     ": *",
   ],
   [
+    "a range row with no ranges",
+    { offered, wants: [ranges([])] },
+    "wants.0.ranges: A range row needs at least one range",
+  ],
+  [
+    "a range row past the range cap",
+    {
+      offered,
+      wants: [
+        ranges(
+          Array.from({ length: MAX_RANGE_CLAUSES + 1 }, (_, i) => ({
+            season: [`S${i}`],
+          })),
+        ),
+      ],
+    },
+    `wants.0.ranges: A range row can hold at most ${MAX_RANGE_CLAUSES} ranges`,
+  ],
+  [
+    "the same range twice in one row, once deduped and unordered",
+    {
+      offered,
+      wants: [
+        ranges([
+          { artist: ["ARTMS"], season: ["Atom02", "Binary01"] },
+          { season: ["Binary01", "Atom02"], artist: ["artms"] },
+        ]),
+      ],
+    },
+    "wants.0.ranges: Each range can only be in a row once",
+  ],
+  [
+    "two rows with the same ranges in another order",
+    {
+      offered,
+      wants: [
+        ranges([{ season: ["Atom02"] }, { class: ["First"] }]),
+        ranges([{ class: ["First"] }, { season: ["Atom02"] }]),
+      ],
+    },
+    "wants: Each range can only be asked for once",
+  ],
+  [
     "a NUL byte in a range member (SCH-24)",
     { offered, wants: [range({ member: ["\u0000"] })] },
-    "wants.0.filter.member.0: Text can't contain a NUL byte",
+    "wants.0.ranges.0.member.0: Text can't contain a NUL byte",
   ],
   [
     "a NUL byte in an exact slug (SCH-24)",
@@ -416,6 +465,31 @@ const accepted: [
       wants: [
         stored({ season: ["Atom02"] }),
         stored({ season: ["Atom02"], class: ["First"] }),
+      ],
+      note: null,
+    },
+  ],
+  [
+    "rows whose sets of ranges overlap",
+    {
+      offered,
+      wants: [
+        ranges([{ season: ["Atom02"] }, { class: ["First"] }]),
+        ranges([{ season: ["Atom02"] }]),
+      ],
+    },
+    {
+      offered,
+      wants: [
+        {
+          kind: "range",
+          ranges: [
+            { ...emptyFilter, season: ["Atom02"] },
+            { ...emptyFilter, class: ["First"] },
+          ],
+          count: 1,
+        },
+        stored({ season: ["Atom02"] }),
       ],
       note: null,
     },

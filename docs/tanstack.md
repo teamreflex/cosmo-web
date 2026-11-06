@@ -89,7 +89,7 @@ A prefetch only helps when the component subscribes with exactly the key the loa
 
 ## Server functions
 
-- Every `createServerFn` lives in `lib/functions/`, is named `$verbNoun`, and is GET for reads and POST for writes.
+- Every `createServerFn` lives in `lib/functions/`, is named `$verbNoun`, and is GET for reads and POST for writes. A read whose input can outgrow a URL is POST too, because a GET carries its input in the query string (`$fetchRangeMatchCounts`).
 - Written as `createServerFn({ method }).middleware([...]).validator(schema).handler(...)`. Existing files mix the order of `.middleware` and `.validator`; leave them be.
 - Validators are Zod 4. A shared schema lives in `lib/universal/schema/`, exports the schema and its inferred type, and doubles as the form's resolver ([frontend.md](frontend.md#forms)). Small reads use an inline `z.object`.
 - Server-only helpers go in a companion `lib/server/<domain>.server.ts` (see [module boundary](#client-and-server-module-boundary)).

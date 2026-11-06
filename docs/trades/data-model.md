@@ -41,15 +41,17 @@ The trade tables live in `packages/database/src/web/schema.ts` under `#region Tr
 
 ## Wants (`trade_listing_wants`)
 
-| Kind      | Matches                                                                                 | Stored as                                                                       |
-| --------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `exact`   | `count` copies of one collection                                                        | the collection's values on the row                                              |
-| `range`   | `count` objekts where every narrowed column holds the objekt's value (`matchesRange()`) | one array per column; an empty array matches anything, at least one is narrowed |
-| `choice`  | `count` objekts in any mix of 2 to 10 named collections                                 | the collections in `trade_listing_want_options`                                 |
-| `payment` | dormant (see below)                                                                     | `amount` and `currency`                                                         |
+| Kind      | Matches                                                                                                                               | Stored as                                                                                                                                       |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `exact`   | `count` copies of one collection                                                                                                      | the collection's values on the row                                                                                                              |
+| `range`   | `count` objekts where some range matches, and a range matches when every narrowed column holds the objekt's value (`matchesRanges()`) | 1 to `MAX_RANGE_CLAUSES` ranges in `trade_listing_want_ranges`, one array per column; an empty array matches anything, at least one is narrowed |
+| `choice`  | `count` objekts in any mix of 2 to 10 named collections                                                                               | the collections in `trade_listing_want_options`                                                                                                 |
+| `payment` | dormant (see below)                                                                                                                   | `amount` and `currency`                                                                                                                         |
 
 - Wants are inserted together and replaced together, so id order is the posted order.
-- A range row may narrow `collection_nos`. It is matched against the indexer's current collection number, because staff can edit it, so items never copy it.
+- A range row's ranges are ordered by `position` and may overlap: an objekt fits the row once however many of them match it, so its match count is the union.
+- At least one range per row is the input schemas' rule (`rangesSchema`), because a CHECK can't span the two tables.
+- A range may narrow `collection_nos` in `trade_listing_want_ranges`. It is matched against the indexer's current collection number, because staff can edit it, so items never copy it.
 - Wanting a specific serial is left to the listing's note.
 
 ## Units

@@ -11,11 +11,24 @@ import {
   type EditListingInput,
   type ListingInput,
   type listingInputSchema,
+  rangesDistinct,
 } from "@apollo/trades/listing";
-import { collapseWholeGroup, MAX_RANGE_VALUES } from "@apollo/trades/range";
+import {
+  collapseWholeGroup,
+  MAX_RANGE_VALUES,
+  type RangeFilter,
+  rangeFilterSchema,
+  rangeKey,
+  rangesSchema,
+} from "@apollo/trades/range";
 import type { z } from "zod";
 import type { cosmoSchema } from "./parsers";
-import { hasRatio, poolItems, type TradeListing } from "./trade-listings";
+import {
+  hasRatio,
+  poolItems,
+  type RangeMatchCounts,
+  type TradeListing,
+} from "./trade-listings";
 
 /**
  * The composer's form: the posting input as the composer edits it, before
@@ -26,10 +39,11 @@ export type ListingFormValues = z.input<typeof listingInputSchema>;
 
 export type ListingFormWant = ListingFormValues["wants"][number];
 
+// one range of a range row, as the row's chips edit it
 export type RangeFormFilter = Extract<
   ListingFormWant,
   { kind: "range" }
->["filter"];
+>["ranges"][number];
 
 /**
  * Whether the composer posts a new listing or replaces an open one's terms.
@@ -72,7 +86,7 @@ export function listingToFormValues(
         case "exact":
           return [{ kind: "exact", slug: want.objekt.slug, count: want.count }];
         case "range":
-          return [{ kind: "range", filter: want.filter, count: want.count }];
+          return [{ kind: "range", ranges: want.ranges, count: want.count }];
         case "choice":
           return [
             {
@@ -121,9 +135,9 @@ export function stepUnitSize(next: number, offered: number) {
 
 /**
  * What the composer sends once the schema has checked its values: new
- * terms, or the same terms for the listing being edited. A range row
- * naming one artist's whole roster goes as that artist (collapseWholeGroup),
- * after the picking, so picking more members afterwards never runs into it.
+ * terms, or the same terms for the listing being edited. A range naming
+ * one artist's whole roster goes as that artist (collapseWholeGroup), after
+ * the picking, so picking more members afterwards never runs into it.
  */
 export function formValuesToInput(
   values: ListingInput,
@@ -134,7 +148,12 @@ export function formValuesToInput(
     ...values,
     wants: values.wants.map((want) =>
       want.kind === "range"
-        ? { ...want, filter: collapseWholeGroup(want.filter, rosters) }
+        ? {
+            ...want,
+            ranges: want.ranges.map((filter) =>
+              collapseWholeGroup(filter, rosters),
+            ),
+          }
         : want,
     ),
   };
@@ -149,7 +168,7 @@ type ChipColumns = Pick<
 >;
 
 /**
- * A range row in the shape its filter chips read, with the stored artists
+ * A range in the shape its filter chips read, with the stored artists
  * turned back into the pickers' ids ("triples" reads "tripleS"). They sit in
  * `artists`, apart from the objekt filters' single `artist`, so a chip
  * sharing those filters' setter can't narrow the row to one artist.
@@ -170,7 +189,7 @@ export function rangeToChipFilters(filter: RangeFormFilter): RangeChipFilters {
 }
 
 /**
- * A filter chip's change applied to a range row. Only the columns the
+ * A filter chip's change applied to a range. Only the columns the
  * change names move. New artists go through setRangeArtists() first, with
  * `values` saying what each artist has, so a removed artist takes its
  * values with it.
@@ -198,15 +217,14 @@ export function applyChipUpdate(
 }
 
 /**
- * Whether a range row narrows at least one column, which the schema
- * requires.
+ * Whether a range narrows at least one column, which the schema requires.
  */
 export function rangeIsNarrowed(filter: RangeFormFilter) {
   return Object.values(filter).some((values) => values.length > 0);
 }
 
 /**
- * Whether a column of a range row holds more values than the schema takes.
+ * Whether a column of a range holds more values than the schema takes.
  */
 export function rangeOverCap(filter: RangeFormFilter) {
   return Object.values(filter).some(
@@ -215,18 +233,47 @@ export function rangeOverCap(filter: RangeFormFilter) {
 }
 
 /**
+ * A range row's ranges as the schema reads them, which its match count is
+ * keyed by, or null while the schema refuses them.
+ */
+export function parsedRanges(ranges: readonly RangeFormFilter[]) {
+  const parsed = rangesSchema.safeParse(ranges);
+  return parsed.success ? parsed.data : null;
+}
+
+/**
+ * Each range row's ranges as the server compares them: parsed by the
+ * schema, then collapsed with `rosters` as formValuesToInput() sends them,
+ * so a whole roster and its artist read as the same range. A range the
+ * schema refuses is left out, since composerBlock() holds Post back for it
+ * first.
+ */
+function sentRanges(
+  rows: readonly (readonly RangeFormFilter[])[],
+  rosters: ReadonlyMap<string, readonly string[]>,
+): RangeFilter[][] {
+  return rows.map((ranges) =>
+    ranges.flatMap((filter) => {
+      const parsed = rangeFilterSchema.safeParse(filter);
+      return parsed.success ? [collapseWholeGroup(parsed.data, rosters)] : [];
+    }),
+  );
+}
+
+/**
  * Why the composer holds Post and Save back, for what it can tell before
  * the server refuses it, in the order the form reads. `refused` counts the
- * offered objekts the poster can't offer right now. `rangeMatches` holds
- * how many collections the range rows cover, where known: a range that
- * covers none can't be posted, and one still being counted doesn't hold
- * Post back. `rangesRepeat` holds when two range rows cover the same
- * collections. A range narrowing members needs one of each of its artists'
- * members (rangeArtistUnused(), against `rosters`). "Any of" rows follow
- * the schema's rules: two to MAX_CHOICE_OPTIONS collections each, none
- * named twice in a row, and no two rows naming the same ones. `unitSize` is
- * the form's, which an edit prefills unchanged even when the pool has
- * fallen below it.
+ * offered objekts the poster can't offer right now. Each range of a range
+ * row follows the schema's rules, and one narrowing members needs one of
+ * each of its artists' members (rangeArtistUnused(), against `rosters`).
+ * `rangeMatches` holds how many collections the range rows cover, where
+ * known: a range that covers none can't be posted, and a row still being
+ * counted doesn't hold Post back. Ranges are compared as they'll be sent
+ * (sentRanges()): no row holds one range twice, and no two rows hold the
+ * same ranges. "Any of" rows follow the schema's rules: two to
+ * MAX_CHOICE_OPTIONS collections each, none named twice in a row, and no
+ * two rows naming the same ones. `unitSize` is the form's, which an edit
+ * prefills unchanged even when the pool has fallen below it.
  */
 export function composerBlock({
   offered,
@@ -234,7 +281,6 @@ export function composerBlock({
   wants,
   unitSize,
   rangeMatches,
-  rangesRepeat,
   rosters,
   note,
 }: {
@@ -242,24 +288,30 @@ export function composerBlock({
   refused: number;
   wants: ListingFormValues["wants"];
   unitSize: number | undefined;
-  rangeMatches: readonly (number | undefined)[];
-  rangesRepeat: boolean;
+  rangeMatches: readonly (RangeMatchCounts | undefined)[];
   rosters: ReadonlyMap<string, readonly string[]>;
   note: string;
 }) {
   if (offered === 0) return "offered";
   if (refused > 0) return "refused";
   if (wants.length === 0) return "wants";
-  const ranges = wants.flatMap((want) =>
-    want.kind === "range" ? [want.filter] : [],
+  const rows = wants.flatMap((want) =>
+    want.kind === "range" ? [want.ranges] : [],
   );
+  const ranges = rows.flat();
   if (!ranges.every(rangeIsNarrowed)) return "range";
   if (ranges.some(rangeOverCap)) return "range_too_many";
   if (ranges.some((filter) => rangeArtistUnused(filter, rosters))) {
     return "range_artist_unused";
   }
-  if (rangeMatches.includes(0)) return "range_empty";
-  if (rangesRepeat) return "range_repeated";
+  if (rangeMatches.some((counts) => counts?.perRange.includes(0))) {
+    return "range_empty";
+  }
+  const sent = sentRanges(rows, rosters);
+  if (sent.some((row) => new Set(row.map(rangeKey)).size < row.length)) {
+    return "range_duplicate";
+  }
+  if (!rangesDistinct(sent)) return "range_repeated";
   const choices = wants.flatMap((want) =>
     want.kind === "choice" ? [want.slugs] : [],
   );

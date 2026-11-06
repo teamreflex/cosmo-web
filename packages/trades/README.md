@@ -13,7 +13,7 @@ The trade system's pure rules, shared by `apps/web` and `apps/schedules`: no dat
 | `./holdings`      | why a token can't be offered (`tokenRefusal()`, `tokenRefusals()`, `firstRefusal()`) and `pickSerials()`                                                      |
 | `./listing`       | the Zod input schemas for listings, claims, offers and counters                                                                                               |
 | `./notifications` | which notification types are emailed, their opt-out bits in `user.email_notifications` and the account page's categories                                      |
-| `./range`         | the range filter schema, `matchesRange()` and `collapseWholeGroup()`                                                                                          |
+| `./range`         | the range filter and range row schemas, `matchesRange()`, `matchesRanges()` and `collapseWholeGroup()`                                                        |
 | `./composer`      | the listing composer's row helpers                                                                                                                            |
 | `./timers`        | windows, `isTimedOut()`, `extendedDeadline()`, `DRAIN_CURSOR_NAME`                                                                                            |
 | `./caps`          | the claim cap and listing limits                                                                                                                              |

@@ -23,6 +23,7 @@ import {
 } from "drizzle-orm";
 import { ExpectedError } from "../../universal/errors/expected";
 import type { TradeErrorCode } from "../../universal/errors/trades";
+import type { RangeMatchCounts } from "../../universal/trade-listings";
 import { db, type DbOrTx } from "../db";
 import { indexer } from "../db/indexer";
 import {
@@ -237,24 +238,34 @@ function rangeConditions(filter: RangeFilter) {
 }
 
 /**
- * How many collections each range matches, in the filters' order, using the
- * objekt index's filters, in one pass over the collections.
+ * How many collections each range row matches, in the rows' order, using
+ * the objekt index's filters, in one pass over the collections: the row's
+ * `total`, which counts a collection in several of its ranges once, and
+ * each range's own count in `perRange`.
  */
 export async function countRangeMatches(
-  filters: readonly RangeFilter[],
-): Promise<number[]> {
-  if (filters.length === 0) return [];
+  rows: readonly (readonly RangeFilter[])[],
+): Promise<RangeMatchCounts[]> {
+  if (rows.length === 0) return [];
   const [row] = await indexer
     .select({
       counts: sql<number[]>`array[${sql.join(
-        filters.map(
-          (filter) => sql`count(*) filter (where ${rangeConditions(filter)})`,
-        ),
+        rows
+          .flatMap((ranges) => [
+            or(...ranges.map(rangeConditions)),
+            ...ranges.map(rangeConditions),
+          ])
+          .map((where) => sql`count(*) filter (where ${where})`),
         sql`, `,
       )}]::int[]`,
     })
     .from(collections);
-  return row?.counts ?? [];
+  const counts = [...(row?.counts ?? [])];
+  return rows.map((ranges) => {
+    const [total, ...perRange] = counts.splice(0, ranges.length + 1);
+    if (total === undefined) throw new Error("missing range match counts");
+    return { total, perRange };
+  });
 }
 
 /**
@@ -263,7 +274,7 @@ export async function countRangeMatches(
  */
 export type ResolvedWant =
   | { kind: "exact"; count: number; objekt: ObjektAttributes }
-  | { kind: "range"; count: number; filter: RangeFilter }
+  | { kind: "range"; count: number; ranges: RangeFilter[] }
   | { kind: "choice"; count: number; options: ObjektAttributes[] };
 
 /**
@@ -285,15 +296,16 @@ function wantSlugs(wants: readonly TradeWant[]) {
 
 /**
  * Resolves exact and choice rows to their collections and checks every
- * range matches at least one, so a listing can't ask for something nobody
- * could give. The first bad row, in posted order, decides the refusal.
+ * range of every range row matches at least one, so a listing can't ask for
+ * something nobody could give, nor hide a dead range behind a live one.
+ * The first bad row, in posted order, decides the refusal.
  */
 export async function resolveWants(
   wants: ListingInput["wants"],
 ): Promise<ResolvedWant[]> {
   const slugs = wantSlugs(wants);
   const ranges = wants.flatMap((want, index) =>
-    want.kind === "range" ? [{ index, filter: want.filter }] : [],
+    want.kind === "range" ? [{ index, ranges: want.ranges }] : [],
   );
   const rows = await indexer
     .select({
@@ -306,7 +318,7 @@ export async function resolveWants(
     })
     .from(collections)
     .where(inArray(collections.slug, slugs));
-  const counts = await countRangeMatches(ranges.map(({ filter }) => filter));
+  const counts = await countRangeMatches(ranges.map((row) => row.ranges));
 
   const bySlug = new Map(rows.map((row) => [row.slug, row]));
   const rangeCounts = new Map(
@@ -324,7 +336,7 @@ export async function resolveWants(
       case "exact":
         return { kind: "exact", count: want.count, objekt: known(want.slug) };
       case "range":
-        if (rangeCounts.get(index) === 0) {
+        if (rangeCounts.get(index)?.perRange.includes(0)) {
           throw new ExpectedError(
             "listing_range_empty" satisfies TradeErrorCode,
           );
@@ -376,7 +388,9 @@ export async function unusableTokens(
             or(
               slugs.length ? inArray(tradeOfferItems.slug, slugs) : undefined,
               ...wants.flatMap((want) =>
-                want.kind === "range" ? [itemRangeConditions(want.filter)] : [],
+                want.kind === "range"
+                  ? want.ranges.map(itemRangeConditions)
+                  : [],
               ),
             ),
           ),
@@ -458,7 +472,7 @@ export async function readCandidates(
           or(
             slugs.length ? inArray(collections.slug, slugs) : undefined,
             ...wants.flatMap((want) =>
-              want.kind === "range" ? [rangeConditions(want.filter)] : [],
+              want.kind === "range" ? want.ranges.map(rangeConditions) : [],
             ),
           ),
         ),

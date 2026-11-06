@@ -20,6 +20,7 @@ import type {
   staffAudit,
   tradeFeedback,
   tradeListingWantOptions,
+  tradeListingWantRanges,
   tradeListingWants,
   tradeMessages,
   tradeOfferItems,
@@ -147,6 +148,9 @@ export type TradeListingWantOption =
   typeof tradeListingWantOptions.$inferSelect;
 export type NewTradeOfferItem = typeof tradeOfferItems.$inferInsert;
 export type NewTradeListingWant = typeof tradeListingWants.$inferInsert;
+export type TradeListingWantRange = typeof tradeListingWantRanges.$inferSelect;
+export type NewTradeListingWantRange =
+  typeof tradeListingWantRanges.$inferInsert;
 export type NewTradeListingWantOption =
   typeof tradeListingWantOptions.$inferInsert;
 export type TradeMessage = typeof tradeMessages.$inferSelect;

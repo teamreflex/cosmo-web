@@ -79,7 +79,7 @@ import {
   offeredTokensInputSchema,
   tradeTokenStatesInputSchema,
 } from "@apollo/trades/listing";
-import { rangeFilterSchema } from "@apollo/trades/range";
+import { rangesSchema } from "@apollo/trades/range";
 import { BUMP_COOLDOWN } from "@apollo/trades/timers";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, inArray, isNull, or, sql } from "drizzle-orm";
@@ -346,11 +346,13 @@ export const $claimListing = createServerFn({ method: "POST" })
   });
 
 /**
- * How many collections each range row matches, in the rows' order, for the
- * composer's preview and the listing page, in one indexer statement.
+ * How many collections each range row matches, in total and per range, in
+ * the rows' order, for the composer's preview and the listing page, in one
+ * indexer statement. POST although it only reads, because a listing's rows can
+ * hold more values than fit in a URL.
  */
-export const $fetchRangeMatchCounts = createServerFn({ method: "GET" })
-  .validator(z.array(rangeFilterSchema).min(1).max(MAX_WANT_ROWS))
+export const $fetchRangeMatchCounts = createServerFn({ method: "POST" })
+  .validator(z.array(rangesSchema).min(1).max(MAX_WANT_ROWS))
   .handler(({ data }) => countRangeMatches(data));
 
 /**

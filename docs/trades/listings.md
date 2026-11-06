@@ -40,7 +40,7 @@ A listing offers a pool of the poster's tokens in units, and stays open while th
 
 ## Posting, editing, withdrawing
 
-- **Post** (`$postListing`): `checkTerms()` resolves the wants and checks every offered token against the indexer before the transaction. The transaction locks the poster, re-checks the tokens for locks and live trades (`recheckTokens()`) and inserts the listing, its pool rows and its wants.
+- **Post** (`$postListing`): `checkTerms()` resolves the wants and checks every offered token against the indexer before the transaction. It refuses `listing_range_empty` when any one range matches no collection, so a dead range can't hide behind a live one in its row. The transaction locks the poster, re-checks the tokens for locks and live trades (`recheckTokens()`) and inserts the listing, its pool rows and its wants.
 - A token the poster can't offer comes back as a `token_unavailable` result naming it, not as a thrown error, so the composer can show the serial.
 - A token may sit in several open listings at once. Only a live trade reserves it.
 - **Edit** (`$editListing`): replaces the listing arrays, pinned address, unit size, note, the pool rows still in the pool and the wants in one transaction. It leaves `bumped_at` alone, so the listing keeps its place in the feed.
@@ -69,10 +69,16 @@ A listing offers a pool of the poster's tokens in units, and stays open while th
 - An edit prefills the pool, the listing's own live objekts included and the tokens that left it not, and the unit size only when the listing has a ratio (`hasRatio()`, `listingToFormValues()`).
 - An edit's unit size isn't held to the pool, because tokens sent in a live trade leave the pool while that trade keeps the listing open. When the pool holds less than a trade takes, the Ratio control shows and Save waits for the poster to lower the ratio or add objekts.
 - An "any of" row is filled through the collection search exact rows use, its collections shown as removable cards, with a count.
-- A range row can pick several artists and matches an objekt from any of them. Its member, season and class chips list only the picked artists' values; adding an artist keeps the row's values and removing one drops those no remaining artist has (`setRangeArtists()`). Members that leave a picked artist with none of its own hold Post back (`range_artist_unused` in `composerBlock()`), since that artist would add nothing.
+- A range row holds 1 to `MAX_RANGE_CLAUSES` ranges, each with its own chips and "or" between them, and matches an objekt that any of them matches.
+- "Add selection" adds a range up to the cap, and every range but a lone one has a remove button.
+- A range that matches no collection is marked under its own chips.
+- The row's summary and match count cover every range, counting a collection in several ranges once.
+- A poster needs another range only when one range would match too much: `tripleS · Atom02 · (First or Double)` is one range, while `SeoYeon · Atom02 · First` or `SeoYeon · Binary02 · Double` is two.
+- A range can pick several artists and matches an objekt from any of them. Its member, season and class chips list only the picked artists' values; adding an artist keeps the range's values and removing one drops those no remaining artist has (`setRangeArtists()`). Members that leave a picked artist with none of its own hold Post back (`range_artist_unused` in `composerBlock()`), since that artist would add nothing.
 - The first range row carries a note that the listing will take offers, so the poster picks the objekts, and points to "any of" for specific collections.
 - A Post or Save that makes a listing start taking offers (a new one with a range row, or an edit that adds the first) opens a dialog explaining offers first (`composer-range-confirm.tsx`). Back returns to the form, where the poster can make the row an "any of" instead, and its "Don't show this again" box dismisses the `range-offers-notice` ([feedback.md](feedback.md#notices)).
-- The footer holds Post and Save back with a translated reason for what the schema refuses (`composerBlock()`): an "any of" row with fewer than two or more than `MAX_CHOICE_OPTIONS` collections or one collection twice, two rows naming the same set (`choicesDistinct()`), a unit size over the pool. Every row's count goes into the total the steppers keep under `MAX_TOTAL_WANTED`.
+- The footer holds Post and Save back with a translated reason for what the schema refuses (`composerBlock()`): a range with nothing narrowed or a column over `MAX_RANGE_VALUES`, a range that matches no collection, one range twice in a row, two range rows holding the same ranges (`rangesDistinct()`), an "any of" row with fewer than two or more than `MAX_CHOICE_OPTIONS` collections or one collection twice, two rows naming the same set (`choicesDistinct()`), a unit size over the pool. Every row's count goes into the total the steppers keep under `MAX_TOTAL_WANTED`.
+- Ranges are compared as Post sends them: a range naming one artist's whole roster is sent as that artist (`collapseWholeGroup()`), so the footer collapses each range with the rosters before comparing, and `tripleS` beside `tripleS` with all its members is held back as a repeat.
 - A collection the indexer doesn't know is refused by the server with `listing_want_unknown`.
 
 ## The feed
@@ -85,7 +91,8 @@ A listing offers a pool of the poster's tokens in units, and stays open while th
 - It reads only the web database, so a free token the poster has since moved still counts until the drain drops it. A lock never reaches the drain, so a locked token stays in the pool, blocked, until the poster unlocks it or edits it out.
 - Each row carries its unit size, its free count (which may be 0) and how many objekts the listing has ever offered. A row with a ratio ([data-model.md](data-model.md#units)) shows it, unit size to the want rows' total, in place of the arrow, with how many objekts are free; a bundle keeps the arrow.
 - Choice rows show their collections' thumbnails and read "Any of 4 collections".
-- The "Looking for" filter matches a want row holding every narrowed value: an exact row's copied values, a range's columns (empty matches any value), or one of a choice row's collections in `trade_listing_want_options`, so a member of one collection and the season of another don't add up.
+- The "Looking for" filter matches a want row holding every narrowed value: an exact row's copied values, one of a range row's ranges in `trade_listing_want_ranges` (an empty column matches any value), or one of a choice row's collections in `trade_listing_want_options`, so the member of one range or collection and the season of another don't add up.
+- A range row reads as its ranges joined by "or", and its tile takes an artist's colour and logo only when every range names that one artist (`rangeArtist()`).
 
 ## The listing page
 
@@ -111,6 +118,7 @@ A listing offers a pool of the poster's tokens in units, and stays open while th
 - A candidate gets the most units they can take (`allocateUnits()`, bounded by the free pool, the caps and their holdings), and per want row how many matching objekts they own and how many it is short.
 - A candidate also gets how their latest offer on the listing ended when the poster or the listing ended it (`endedOffer()`: declined, expired or stale), which the page shows over the picker. One read of their latest trade on the listing finds that and any live trade or pending offer.
 - The picker starts with nothing picked: the viewer fills each want row from their collection and, on a listing with a ratio, picks which pool objekts they get; a bundle takes its whole pool. Stepping the units down trims both sides' picks to the new count, and a refetch keeps them unless the terms or the most units changed, dropping a pool pick that's no longer free.
+- A row's picker is held to one scope (`wantScope()`), which can't pair values up, so for a range row with several ranges or an "any of" row it lists objekts the row doesn't take. Those show greyed out, and `useListingPicks().toggle()` refuses a pick that fails `fitsWant()`.
 - A short want row shows what it still needs greyed out, the wanted objekt or every collection an "any of" row takes, while a range row crosses out its short slots. An exact row's open slots show its objekt dimmed.
 - Only a candidate's read touches holdings, and the claim cap only stops a listing that claims at once.
 

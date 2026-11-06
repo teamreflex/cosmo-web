@@ -19,6 +19,7 @@ Windows and caps are constants in `packages/trades/src/timers.ts` and `caps.ts`;
 | objekts per unit, and per claim | `MAX_TOTAL_WANTED`   | 30              |
 | collections in a choice row     | `MAX_CHOICE_OPTIONS` | 10 (at least 2) |
 | values in one range column      | `MAX_RANGE_VALUES`   | 64              |
+| ranges in one range row         | `MAX_RANGE_CLAUSES`  | 4 (at least 1)  |
 | note length                     | `MAX_NOTE_LENGTH`    | 500             |
 
 ## Rate limits

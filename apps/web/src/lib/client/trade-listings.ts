@@ -128,19 +128,23 @@ export function formatCount(count: number) {
 }
 
 /**
- * A range row's narrowed values, "Atom02 · ARTMS · First". Several values in
- * one column read "Atom02 / Binary01". Posting refuses bidi controls, and a
- * stored value holding one sits in its own isolate, so it can't reorder the
- * values beside it. A non-breaking space before each "·" keeps it off the
- * start of a wrapped line.
+ * A range row's narrowed values, "Atom02 · ARTMS · First", each range's
+ * joined by "or". Several values in one column read "Atom02 / Binary01".
+ * Posting refuses bidi controls, and a stored value holding one sits in its
+ * own isolate, so it can't reorder the values beside it. A non-breaking
+ * space before each "·" keeps it off the start of a wrapped line.
  */
-export function rangeLabel(filter: RangeFilter) {
-  return joinColumns(
-    rangeSummaryColumns(filter, {
-      artist: artistName,
-      onOffline: onOfflineLabel,
-    }),
-  );
+export function rangeLabel(ranges: readonly RangeFilter[]) {
+  return ranges
+    .map((filter) =>
+      joinColumns(
+        rangeSummaryColumns(filter, {
+          artist: artistName,
+          onOffline: onOfflineLabel,
+        }),
+      ),
+    )
+    .join(` ${m.listing_range_or()} `);
 }
 
 /**
@@ -178,7 +182,7 @@ export function wantLabel(want: ListingFeedWant) {
     case "exact":
       return objektName(want.collection, want.objekt);
     case "range":
-      return rangeLabel(want.filter);
+      return rangeLabel(want.ranges);
     case "choice":
       return m.listing_want_any_of_count({ count: want.options.length });
     case "payment":
@@ -251,12 +255,22 @@ export function wantKindsSummary(wants: readonly ListingFeedWant[]) {
 }
 
 /**
- * The one artist a range narrows to, whose colour and logo its tile shows;
- * null when it takes any artist or several.
+ * The one artist a range row narrows to, whose colour and logo its tile
+ * shows: every range names that artist alone. Null when a range takes any
+ * artist or several, or two ranges name different ones.
  */
-export function rangeArtist(filter: RangeFilter): ValidArtist | null {
-  const [only] = filter.artist;
-  if (only === undefined || filter.artist.length > 1) return null;
+export function rangeArtist(
+  ranges: readonly RangeFilter[],
+): ValidArtist | null {
+  const artists = new Set(ranges.flatMap((filter) => filter.artist));
+  const [only] = artists;
+  if (
+    only === undefined ||
+    artists.size > 1 ||
+    ranges.some((filter) => filter.artist.length === 0)
+  ) {
+    return null;
+  }
   return (
     validArtists.find(
       (artist) => artist.toLowerCase() === only.toLowerCase(),
@@ -423,22 +437,31 @@ export function endedNormally(
 
 /**
  * The collections a want row's picker is held to: an exact row's one
- * collection, which its artist, member, season and number pin, a range's
- * columns, or every value of an "any of" row's collections, since a scope
- * can't pair them up and the claim's check narrows the picks.
+ * collection, which its artist, member, season and number pin, or every
+ * value of a range row's ranges or an "any of" row's collections, since a
+ * scope can't pair them up. A range row's column is open when any of its
+ * ranges leaves it open. The scope can be wider than the row, so picks are
+ * checked against the row itself (fitsWant()).
  */
 export function wantScope(
   want: Exclude<ListingFeedWant, { kind: "payment" }>,
 ): PickerScope {
   if (want.kind === "range") {
-    const { filter } = want;
+    const values = <TValue extends string>(
+      pick: (filter: RangeFilter) => readonly TValue[],
+    ) =>
+      want.ranges.some((filter) => pick(filter).length === 0)
+        ? []
+        : [...new Set(want.ranges.flatMap(pick))];
     return {
-      artist: filter.artist.flatMap((artist) => toUiArtist(artist) ?? []),
-      member: filter.member,
-      season: filter.season,
-      class: filter.class,
-      onOffline: filter.on_offline,
-      collectionNo: filter.collectionNo,
+      artist: values((filter) => filter.artist).flatMap(
+        (artist) => toUiArtist(artist) ?? [],
+      ),
+      member: values((filter) => filter.member),
+      season: values((filter) => filter.season),
+      class: values((filter) => filter.class),
+      onOffline: values((filter) => filter.on_offline),
+      collectionNo: values((filter) => filter.collectionNo),
     };
   }
   if (want.kind === "choice") {

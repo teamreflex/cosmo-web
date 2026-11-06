@@ -723,15 +723,17 @@ describe("a feed row's asking title", () => {
   const range = (filter: Partial<RangeFilter>, count = 1) => ({
     kind: "range" as const,
     count,
-    filter: {
-      artist: [],
-      member: [],
-      collectionNo: [],
-      season: [],
-      class: [],
-      on_offline: [],
-      ...filter,
-    },
+    ranges: [
+      {
+        artist: [],
+        member: [],
+        collectionNo: [],
+        season: [],
+        class: [],
+        on_offline: [],
+        ...filter,
+      },
+    ],
   });
 
   test("one range reads as its narrowed values", () => {

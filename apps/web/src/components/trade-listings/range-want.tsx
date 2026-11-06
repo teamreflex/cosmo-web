@@ -12,12 +12,12 @@ import { toUiArtist } from "@apollo/trades/composer";
 import type { RangeFilter } from "@apollo/trades/range";
 import { IconCards } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { type CSSProperties, type ReactNode, Suspense } from "react";
+import { type CSSProperties, Fragment, type ReactNode, Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Skeleton } from "../ui/skeleton";
 
 type TileProps = {
-  filter: RangeFilter;
+  ranges: readonly RangeFilter[];
   /** the range as text, which names the tile */
   label: string;
   className?: string;
@@ -25,12 +25,12 @@ type TileProps = {
 
 /**
  * A range want in a thumbnail stack: a card-shaped tile, dashed and tinted
- * in its group's colour, with the group's logo in the middle. A range open
- * to any artist, or several, gets a neutral tile.
+ * in its group's colour, with the group's logo in the middle. A row open to
+ * any artist, or to several across its ranges, gets a neutral tile.
  */
-export function RangeTile({ filter, label, className }: TileProps) {
+export function RangeTile({ ranges, label, className }: TileProps) {
   const { getArtist } = useArtists();
-  const artist = rangeArtist(filter);
+  const artist = rangeArtist(ranges);
 
   return (
     <span
@@ -63,17 +63,49 @@ export function RangeTile({ filter, label, className }: TileProps) {
 
 type BadgesProps = {
   count: number;
-  filter: RangeFilter;
-  /** shows how many collections the range covers, at the row's end */
+  ranges: readonly RangeFilter[];
+  /** shows how many collections the row covers, at the row's end */
   matches?: boolean;
 };
 
 /**
- * A range want as a row of badges: the count, then each group, each season,
- * each member (or any member), class and on/offline, and how many
- * collections it covers.
+ * A range want as rows of badges: the count, then each range's badges, "or"
+ * between them, and how many collections the row covers.
  */
-export function RangeBadges({ count, filter, matches = true }: BadgesProps) {
+export function RangeBadges({ count, ranges, matches = true }: BadgesProps) {
+  return (
+    <div className="flex min-w-0 flex-auto flex-wrap items-center gap-x-3 gap-y-2">
+      <div className="flex min-w-0 flex-1 basis-72 items-start gap-3">
+        <WantCount count={count} />
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+          {ranges.map((filter, index) => (
+            <Fragment key={index}>
+              {index > 0 && (
+                <span className="text-xxs font-medium tracking-widest text-muted-foreground uppercase">
+                  {m.listing_range_or()}
+                </span>
+              )}
+              <RangeChips filter={filter} />
+            </Fragment>
+          ))}
+        </div>
+      </div>
+      {matches && (
+        <ErrorBoundary fallback={null}>
+          <Suspense fallback={<Skeleton className="h-4 w-28" />}>
+            <MatchCount ranges={ranges} />
+          </Suspense>
+        </ErrorBoundary>
+      )}
+    </div>
+  );
+}
+
+/**
+ * One range's badges: each group, each season, each member (or any
+ * member), collection number, class and on/offline.
+ */
+function RangeChips({ filter }: { filter: RangeFilter }) {
   const { getArtist, getMember } = useArtists();
   const groups = filter.artist.flatMap((stored) => {
     const artist = toUiArtist(stored);
@@ -83,76 +115,64 @@ export function RangeBadges({ count, filter, matches = true }: BadgesProps) {
   });
 
   return (
-    <div className="flex min-w-0 flex-auto flex-wrap items-center gap-x-3 gap-y-2">
-      <div className="flex min-w-0 flex-1 basis-72 items-start gap-3">
-        <WantCount count={count} />
-        <ul className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
-          {groups.map(({ artist, group }) => (
-            <Chip
-              key={artist}
-              image={group.logoImageUrl}
-              style={{ "--tint": artistColors[artist] }}
-              className="border-(--tint)/60"
-            >
-              {group.title}
-            </Chip>
-          ))}
-          {filter.season.map((season) => {
-            const color = getSeasonColor(season);
-            return (
-              <Chip key={season}>
-                {color !== null && (
-                  <span
-                    style={{ backgroundColor: color }}
-                    className="size-2.5 shrink-0 rounded-full"
-                  />
-                )}
-                {season}
-              </Chip>
-            );
-          })}
-          {filter.member.length === 0 ? (
-            <Chip className="text-muted-foreground">
-              {m.listing_detail_range_any_member()}
-            </Chip>
+    <ul className="flex min-w-0 flex-wrap items-center gap-1.5">
+      {groups.map(({ artist, group }) => (
+        <Chip
+          key={artist}
+          image={group.logoImageUrl}
+          style={{ "--tint": artistColors[artist] }}
+          className="border-(--tint)/60"
+        >
+          {group.title}
+        </Chip>
+      ))}
+      {filter.season.map((season) => {
+        const color = getSeasonColor(season);
+        return (
+          <Chip key={season}>
+            {color !== null && (
+              <span
+                style={{ backgroundColor: color }}
+                className="size-2.5 shrink-0 rounded-full"
+              />
+            )}
+            {season}
+          </Chip>
+        );
+      })}
+      {filter.member.length === 0 ? (
+        <Chip className="text-muted-foreground">
+          {m.listing_detail_range_any_member()}
+        </Chip>
+      ) : (
+        filter.member.map((name) => {
+          const member = getMember(name);
+          return member === undefined ? (
+            <Chip key={name}>{name}</Chip>
           ) : (
-            filter.member.map((name) => {
-              const member = getMember(name);
-              return member === undefined ? (
-                <Chip key={name}>{name}</Chip>
-              ) : (
-                <Chip
-                  key={name}
-                  image={member.profileImageUrl}
-                  style={{ "--tint": member.primaryColorHex }}
-                  className="border-(--tint)/60 bg-[color-mix(in_oklch,var(--tint)_14%,var(--color-card))]"
-                >
-                  {member.name}
-                </Chip>
-              );
-            })
-          )}
-          {filter.collectionNo.map((value) => (
-            <Chip key={value} className="font-mono">
-              {value}
+            <Chip
+              key={name}
+              image={member.profileImageUrl}
+              style={{ "--tint": member.primaryColorHex }}
+              className="border-(--tint)/60 bg-[color-mix(in_oklch,var(--tint)_14%,var(--color-card))]"
+            >
+              {member.name}
             </Chip>
-          ))}
-          {filter.class.map((value) => (
-            <Chip key={value}>{value}</Chip>
-          ))}
-          {filter.on_offline.map((value) => (
-            <Chip key={value}>{onOfflineLabel(value)}</Chip>
-          ))}
-        </ul>
-      </div>
-      {matches && (
-        <ErrorBoundary fallback={null}>
-          <Suspense fallback={<Skeleton className="h-4 w-28" />}>
-            <MatchCount filter={filter} />
-          </Suspense>
-        </ErrorBoundary>
+          );
+        })
       )}
-    </div>
+      {filter.collectionNo.map((value) => (
+        <Chip key={value} className="font-mono">
+          {value}
+        </Chip>
+      ))}
+      {filter.class.map((value) => (
+        <Chip key={value}>{value}</Chip>
+      ))}
+      {filter.on_offline.map((value) => (
+        <Chip key={value}>{onOfflineLabel(value)}</Chip>
+      ))}
+    </ul>
   );
 }
 
@@ -209,18 +229,18 @@ function Chip({
 }
 
 /**
- * How many collections the range covers, the composer's count read again.
+ * How many collections the row covers, the composer's count read again.
  */
-function MatchCount({ filter }: { filter: RangeFilter }) {
-  const { data } = useSuspenseQuery(rangeMatchCountQuery(filter));
+function MatchCount({ ranges }: { ranges: readonly RangeFilter[] }) {
+  const { data } = useSuspenseQuery(rangeMatchCountQuery(ranges));
 
   return (
     <span className="text-xs text-muted-foreground tabular-nums">
-      {data === 0
+      {data.total === 0
         ? m.listing_composer_range_no_matches()
         : m.listing_detail_range_any_of({
-            count: data,
-            formatted: formatCount(data),
+            count: data.total,
+            formatted: formatCount(data.total),
           })}
     </span>
   );

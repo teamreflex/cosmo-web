@@ -10,6 +10,13 @@ import * as z from "zod";
 export const MAX_RANGE_VALUES = 64;
 
 /**
+ * The most ranges one range row can hold, OR'd together: one per artist
+ * plus a spare. Past it, a poster's combinations rarely fit one row anyway,
+ * and it bounds the request and the queries a row adds conditions to.
+ */
+export const MAX_RANGE_CLAUSES = 4;
+
+/**
  * Text bound for a Postgres text parameter, which can't carry a NUL byte,
  * so those are refused before they reach it.
  */
@@ -86,6 +93,33 @@ export const rangeColumns = [
 ] as const satisfies readonly (keyof RangeFilter)[];
 
 /**
+ * A key equal for two ranges that cover the same collections, comparing
+ * each column's values in any order.
+ */
+export function rangeKey(filter: RangeFilter) {
+  return JSON.stringify(
+    rangeColumns.map((column) =>
+      filter[column].toSorted((a, b) => (a < b ? -1 : Number(a > b))),
+    ),
+  );
+}
+
+/**
+ * A range row's ranges, OR'd: an objekt fits the row when some range
+ * matches it. Two equal ranges would add nothing, so they're refused.
+ */
+export const rangesSchema = z
+  .array(rangeFilterSchema)
+  .min(1, "A range row needs at least one range")
+  .max(
+    MAX_RANGE_CLAUSES,
+    `A range row can hold at most ${MAX_RANGE_CLAUSES} ranges`,
+  )
+  .refine((ranges) => new Set(ranges.map(rangeKey)).size === ranges.length, {
+    message: "Each range can only be in a row once",
+  });
+
+/**
  * A range whose members are one artist's whole roster and nothing else,
  * stored as that artist instead, so it reads as the group. Members of
  * several artists stay members: columns are AND'd, so an artist beside
@@ -146,4 +180,15 @@ export function matchesRange(
     holds(filter.class, objekt.class) &&
     holds(filter.on_offline, objekt.onOffline)
   );
+}
+
+/**
+ * Whether the objekt fits a range row: some range matches it. Ranges may
+ * overlap, which is harmless, since this is a yes or no per objekt.
+ */
+export function matchesRanges(
+  ranges: readonly RangeFilter[],
+  objekt: Omit<IndexedAttributes, "slug">,
+) {
+  return ranges.some((filter) => matchesRange(filter, objekt));
 }

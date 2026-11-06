@@ -1,0 +1,401 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "4ec5572c-b35d-4425-b43b-bb13f21728fd",
+  "prevIds": [
+    "4669882b-2bea-4918-91b9-d38013c8b3d3"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_listing_want_ranges"
+      ],
+      "writes": [
+        "s|tbl|public.trade_listing_want_ranges",
+        "n|tbl|public.trade_listing_want_ranges",
+        "e|tbl|public.trade_listing_want_ranges",
+        "n|rel|public.trade_listing_want_ranges",
+        "n|type|public.trade_listing_want_ranges",
+        "n|rel|public.trade_listing_want_ranges_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "trade_listing_wants",
+        "artists"
+      ],
+      "writes": [
+        "s|col|public.trade_listing_wants.artists",
+        "n|col|public.trade_listing_wants.artists",
+        "e|col|public.trade_listing_wants.artists"
+      ],
+      "reads": [
+        "n|tbl|public.trade_listing_wants",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "trade_listing_wants",
+        "members"
+      ],
+      "writes": [
+        "s|col|public.trade_listing_wants.members",
+        "n|col|public.trade_listing_wants.members",
+        "e|col|public.trade_listing_wants.members"
+      ],
+      "reads": [
+        "n|tbl|public.trade_listing_wants",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "trade_listing_wants",
+        "seasons"
+      ],
+      "writes": [
+        "s|col|public.trade_listing_wants.seasons",
+        "n|col|public.trade_listing_wants.seasons",
+        "e|col|public.trade_listing_wants.seasons"
+      ],
+      "reads": [
+        "n|tbl|public.trade_listing_wants",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "trade_listing_wants",
+        "classes"
+      ],
+      "writes": [
+        "s|col|public.trade_listing_wants.classes",
+        "n|col|public.trade_listing_wants.classes",
+        "e|col|public.trade_listing_wants.classes"
+      ],
+      "reads": [
+        "n|tbl|public.trade_listing_wants",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "trade_listing_wants",
+        "on_offlines"
+      ],
+      "writes": [
+        "s|col|public.trade_listing_wants.on_offlines",
+        "n|col|public.trade_listing_wants.on_offlines",
+        "e|col|public.trade_listing_wants.on_offlines"
+      ],
+      "reads": [
+        "n|tbl|public.trade_listing_wants",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "trade_listing_wants",
+        "collection_nos"
+      ],
+      "writes": [
+        "s|col|public.trade_listing_wants.collection_nos",
+        "n|col|public.trade_listing_wants.collection_nos",
+        "e|col|public.trade_listing_wants.collection_nos"
+      ],
+      "reads": [
+        "n|tbl|public.trade_listing_wants",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_listing_want_ranges"
+      ],
+      "writes": [
+        "s|fk|public.trade_listing_want_ranges.trade_listing_want_ranges_want_id_trade_listing_wants_id_fkey",
+        "n|fk|public.trade_listing_want_ranges.trade_listing_want_ranges_want_id_trade_listing_wants_id_fkey",
+        "e|fk|public.trade_listing_want_ranges.trade_listing_want_ranges_want_id_trade_listing_wants_id_fkey",
+        "n|con|public.trade_listing_want_ranges.trade_listing_want_ranges_want_id_trade_listing_wants_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.trade_listing_want_ranges",
+        "n|sch|public",
+        "n|tbl|public.trade_listing_wants",
+        "n|sch|public",
+        "n|col|public.trade_listing_want_ranges.want_id",
+        "n|col|public.trade_listing_wants.id",
+        "e|uniqueness|public.trade_listing_wants.id"
+      ]
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_listing_wants"
+      ],
+      "writes": [
+        "s|ck|public.trade_listing_wants.trade_listing_wants_shape_chk"
+      ],
+      "reads": [
+        "n|tbl|public.trade_listing_wants",
+        "n|sch|public",
+        "n|col|public.trade_listing_wants.kind",
+        "n|col|public.trade_listing_wants.count",
+        "n|col|public.trade_listing_wants.slug",
+        "n|col|public.trade_listing_wants.artist",
+        "n|col|public.trade_listing_wants.member",
+        "n|col|public.trade_listing_wants.season",
+        "n|col|public.trade_listing_wants.class",
+        "n|col|public.trade_listing_wants.on_offline",
+        "n|col|public.trade_listing_wants.amount",
+        "n|col|public.trade_listing_wants.currency",
+        "e|col|public.trade_listing_wants.kind",
+        "e|col|public.trade_listing_wants.count",
+        "e|col|public.trade_listing_wants.slug",
+        "e|col|public.trade_listing_wants.artist",
+        "e|col|public.trade_listing_wants.member",
+        "e|col|public.trade_listing_wants.season",
+        "e|col|public.trade_listing_wants.class",
+        "e|col|public.trade_listing_wants.on_offline",
+        "e|col|public.trade_listing_wants.amount",
+        "e|col|public.trade_listing_wants.currency"
+      ],
+      "sqlHash": "d256cf957eed4d12"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "trade_listing_want_ranges",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_want_ranges",
+        "name": "want_id",
+        "type": "bigint",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_want_ranges",
+        "name": "position",
+        "type": "smallint",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_want_ranges",
+        "name": "artists",
+        "type": "varchar(32)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 1,
+        "default": "'{}'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_want_ranges",
+        "name": "members",
+        "type": "varchar(32)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 1,
+        "default": "'{}'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_want_ranges",
+        "name": "seasons",
+        "type": "varchar(32)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 1,
+        "default": "'{}'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_want_ranges",
+        "name": "classes",
+        "type": "varchar(8)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 1,
+        "default": "'{}'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_want_ranges",
+        "name": "on_offlines",
+        "type": "varchar(16)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 1,
+        "default": "'{}'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_want_ranges",
+        "name": "collection_nos",
+        "type": "varchar(8)",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 1,
+        "default": "'{}'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_want_ranges",
+        "name": "trade_listing_want_ranges_want_id_trade_listing_wants_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "want_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "trade_listing_wants",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_want_ranges",
+        "name": "trade_listing_want_ranges_pkey",
+        "columns": [
+          "want_id",
+          "position"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"trade_listing_wants\",\"artists\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"trade_listing_wants\",\"members\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"trade_listing_wants\",\"seasons\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"trade_listing_wants\",\"classes\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"trade_listing_wants\",\"on_offlines\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"trade_listing_wants\",\"collection_nos\"]"
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"public\",\"trade_listing_wants\",\"trade_listing_wants_shape_chk\"]",
+      "set": {
+        "value": "CASE \"kind\"\n        WHEN 'exact' THEN coalesce(\"count\", 0) > 0 AND num_nulls(\"slug\", \"artist\", \"member\", \"season\", \"class\", \"on_offline\") = 0 AND num_nonnulls(\"amount\", \"currency\") = 0\n        WHEN 'range' THEN coalesce(\"count\", 0) > 0 AND num_nonnulls(\"slug\", \"artist\", \"member\", \"season\", \"class\", \"on_offline\", \"amount\", \"currency\") = 0\n        WHEN 'choice' THEN coalesce(\"count\", 0) > 0 AND num_nonnulls(\"slug\", \"artist\", \"member\", \"season\", \"class\", \"on_offline\", \"amount\", \"currency\") = 0\n        ELSE coalesce(\"amount\", 0) > 0 AND \"currency\" IS NOT NULL AND num_nonnulls(\"count\", \"slug\", \"artist\", \"member\", \"season\", \"class\", \"on_offline\") = 0\n      END"
+      }
+    }
+  ]
+}

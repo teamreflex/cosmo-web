@@ -2,6 +2,7 @@ import { collections, objekts } from "@apollo/database/indexer/schema";
 import {
   lockedObjekts,
   tradeListingWantOptions,
+  tradeListingWantRanges,
   tradeListingWants,
   tradeOfferItems,
   tradeOffers,
@@ -9,6 +10,7 @@ import {
 import type {
   TradeListingWant,
   TradeListingWantOption,
+  TradeListingWantRange,
   TradeOfferItem,
 } from "@apollo/database/web/types";
 import type { TokenFlags } from "@apollo/trades/holdings";
@@ -63,27 +65,27 @@ const offeredColumns = {
 const wantColumns = {
   season: {
     exact: tradeListingWants.season,
-    range: tradeListingWants.seasons,
+    range: tradeListingWantRanges.seasons,
     option: tradeListingWantOptions.season,
   },
   member: {
     exact: tradeListingWants.member,
-    range: tradeListingWants.members,
+    range: tradeListingWantRanges.members,
     option: tradeListingWantOptions.member,
   },
   class: {
     exact: tradeListingWants.class,
-    range: tradeListingWants.classes,
+    range: tradeListingWantRanges.classes,
     option: tradeListingWantOptions.class,
   },
   on_offline: {
     exact: tradeListingWants.onOffline,
-    range: tradeListingWants.onOfflines,
+    range: tradeListingWantRanges.onOfflines,
     option: tradeListingWantOptions.onOffline,
   },
   artist: {
     exact: tradeListingWants.artist,
-    range: tradeListingWants.artists,
+    range: tradeListingWantRanges.artists,
     option: tradeListingWantOptions.artist,
   },
 };
@@ -130,10 +132,11 @@ function offeringConditions(side: FeedSide, artists: string[]) {
 
 /**
  * Looking for: some single want row holds every narrowed value. Exact rows
- * match on their copied values; a range column matches when it's empty
- * (any value) or shares one; a choice row matches when one of its
- * collections holds them all, so a member of one collection and the season
- * of another don't add up. The payment row never matches.
+ * match on their copied values; a range row matches when one of its ranges
+ * holds them all, where a column holds a value when it's empty (any value)
+ * or shares one; a choice row matches when one of its collections holds
+ * them all. So the season of one range or collection and the member of
+ * another don't add up. The payment row never matches.
  */
 function lookingForConditions(side: FeedSide) {
   const columns = narrowed(side);
@@ -147,10 +150,20 @@ function lookingForConditions(side: FeedSide) {
   );
   const range = and(
     eq(tradeListingWants.kind, "range"),
-    ...columns.map(({ column, values }) => {
-      const stored = wantColumns[column].range;
-      return or(sql`${stored} = '{}'`, arrayOverlaps(stored, values));
-    }),
+    exists(
+      qb
+        .select({ position: tradeListingWantRanges.position })
+        .from(tradeListingWantRanges)
+        .where(
+          and(
+            eq(tradeListingWantRanges.wantId, tradeListingWants.id),
+            ...columns.map(({ column, values }) => {
+              const stored = wantColumns[column].range;
+              return or(sql`${stored} = '{}'`, arrayOverlaps(stored, values));
+            }),
+          ),
+        ),
+    ),
   );
   const choice = and(
     eq(tradeListingWants.kind, "choice"),
@@ -386,11 +399,15 @@ export function feedItem(
 
 /**
  * A listing's want rows as storedWantSchema reads them, for a relational
- * query: in posted (id) order, each choice row with its collections.
+ * query: in posted (id) order, each choice row with its collections and
+ * each range row with its ranges.
  */
 export const storedWants = {
   orderBy: { id: "asc" },
-  with: { options: { orderBy: { slug: "asc" } } },
+  with: {
+    options: { orderBy: { slug: "asc" } },
+    ranges: { orderBy: { position: "asc" } },
+  },
 } as const;
 
 /**
@@ -398,7 +415,10 @@ export const storedWants = {
  */
 type StoredParts = {
   items: TradeOfferItem[];
-  wants: (TradeListingWant & { options: TradeListingWantOption[] })[];
+  wants: (TradeListingWant & {
+    options: TradeListingWantOption[];
+    ranges: TradeListingWantRange[];
+  })[];
 };
 
 /**

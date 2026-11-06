@@ -103,7 +103,7 @@ export function WantList({
           {rows.map((want, index) => (
             <li key={index} className="px-4 py-3">
               {want.kind === "range" ? (
-                <RangeBadges count={want.count} filter={want.filter} />
+                <RangeBadges count={want.count} ranges={want.ranges} />
               ) : (
                 <WantLabel want={want} />
               )}

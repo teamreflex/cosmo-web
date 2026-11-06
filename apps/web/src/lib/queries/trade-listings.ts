@@ -4,6 +4,7 @@ import {
   $fetchTradeListing,
   $fetchTradeTokenStates,
 } from "@/lib/functions/trade-listings";
+import type { RangeMatchCounts } from "@/lib/universal/trade-listings";
 import type { RangeFilter } from "@apollo/trades/range";
 import { queryOptions } from "@tanstack/react-query";
 
@@ -71,21 +72,26 @@ export const offeredTokenRefusalsQuery = (
     staleTime: 1000 * 30,
   });
 
-// the count for the filter at `index`, of the counts fetched for every filter in order
-function matchCount(counts: readonly number[], index: number) {
+// the counts for the row at `index`, of the counts fetched for every row in order
+function matchCount(counts: readonly RangeMatchCounts[], index: number) {
   const count = counts[index];
   if (count === undefined) throw new Error(`no match count for range ${index}`);
   return count;
 }
 
 /**
- * How many collections a range row covers.
+ * How many collections a range row covers, in total and per range. It's
+ * keyed by the row's whole set of ranges, so a row costs one indexer query
+ * however many ranges it holds.
  */
-export const rangeMatchCountQuery = (filter: RangeFilter) =>
+export const rangeMatchCountQuery = (ranges: readonly RangeFilter[]) =>
   queryOptions({
-    queryKey: ["trade-range-matches", filter],
+    queryKey: ["trade-range-matches", ranges],
     queryFn: async ({ signal }) => {
-      const counts = await $fetchRangeMatchCounts({ signal, data: [filter] });
+      const counts = await $fetchRangeMatchCounts({
+        signal,
+        data: [[...ranges]],
+      });
       return matchCount(counts, 0);
     },
     staleTime: 1000 * 60 * 5,
@@ -96,12 +102,16 @@ export const rangeMatchCountQuery = (filter: RangeFilter) =>
  * keys. Fetches started together share one request for every row; once it
  * settles, a retry or refetch makes a new one.
  */
-export function rangeMatchCountQueries(filters: readonly RangeFilter[]) {
-  let request: Promise<number[]> | undefined;
-  return filters.map((filter, index) => ({
-    ...rangeMatchCountQuery(filter),
+export function rangeMatchCountQueries(
+  rows: readonly (readonly RangeFilter[])[],
+) {
+  let request: Promise<RangeMatchCounts[]> | undefined;
+  return rows.map((ranges, index) => ({
+    ...rangeMatchCountQuery(ranges),
     queryFn: async () => {
-      request ??= $fetchRangeMatchCounts({ data: [...filters] }).finally(() => {
+      request ??= $fetchRangeMatchCounts({
+        data: rows.map((row) => [...row]),
+      }).finally(() => {
         request = undefined;
       });
       const counts = await request;

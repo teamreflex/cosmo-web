@@ -2,6 +2,7 @@ import { describe, expect, test } from "bun:test";
 import {
   collapseWholeGroup,
   matchesRange,
+  matchesRanges,
   MAX_RANGE_VALUES,
   type RangeFilter,
   rangeFilterSchema,
@@ -96,6 +97,49 @@ describe("matchesRange", () => {
   test("compares values verbatim", () => {
     const members = rangeFilterSchema.parse({ member: ["heejin"] });
     expect(matchesRange(members, heejin)).toBe(false);
+  });
+});
+
+describe("matchesRanges", () => {
+  const seoyeon = {
+    artist: "triples",
+    member: "SeoYeon",
+    collectionNo: "101Z",
+    season: "Atom02",
+    class: "First",
+    onOffline: "online",
+  };
+  const atom = rangeFilterSchema.parse({
+    artist: ["triples"],
+    season: ["Atom02"],
+  });
+  const ever = rangeFilterSchema.parse({
+    artist: ["artms"],
+    season: ["Ever01"],
+  });
+
+  test("one range reads as matchesRange", () => {
+    for (const objekt of [seoyeon, { ...seoyeon, season: "Ever01" }]) {
+      expect(matchesRanges([atom], objekt)).toBe(matchesRange(atom, objekt));
+    }
+  });
+
+  test("an objekt fits when some range matches it", () => {
+    expect(matchesRanges([atom, ever], seoyeon)).toBe(true);
+    expect(
+      matchesRanges([atom, ever], {
+        ...seoyeon,
+        artist: "artms",
+        member: "HeeJin",
+        season: "Ever01",
+      }),
+    ).toBe(true);
+  });
+
+  test("values from different ranges don't add up", () => {
+    expect(matchesRanges([atom, ever], { ...seoyeon, season: "Ever01" })).toBe(
+      false,
+    );
   });
 });
 

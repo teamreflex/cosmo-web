@@ -63,14 +63,16 @@ const listing = {
     {
       kind: "range",
       count: 5,
-      filter: {
-        artist: ["triples"],
-        member: [],
-        collectionNo: ["101Z"],
-        season: ["Atom01", "Binary01"],
-        class: ["First"],
-        on_offline: [],
-      },
+      ranges: [
+        {
+          artist: ["triples"],
+          member: [],
+          collectionNo: ["101Z"],
+          season: ["Atom01", "Binary01"],
+          class: ["First"],
+          on_offline: [],
+        },
+      ],
     },
     {
       kind: "exact",
@@ -101,14 +103,16 @@ describe("composer prefill (CMP-04)", () => {
         {
           kind: "range",
           count: 5,
-          filter: {
-            artist: ["triples"],
-            member: [],
-            collectionNo: ["101Z"],
-            season: ["Atom01", "Binary01"],
-            class: ["First"],
-            on_offline: [],
-          },
+          ranges: [
+            {
+              artist: ["triples"],
+              member: [],
+              collectionNo: ["101Z"],
+              season: ["Atom01", "Binary01"],
+              class: ["First"],
+              on_offline: [],
+            },
+          ],
         },
         { kind: "exact", slug: "atom02-kimlip-201z", count: 1 },
         {
@@ -137,14 +141,16 @@ describe("composer prefill (CMP-04)", () => {
           {
             kind: "range",
             count: 5,
-            filter: {
-              artist: ["triples"],
-              member: [],
-              collectionNo: ["101Z"],
-              season: ["Atom01", "Binary01"],
-              class: ["First"],
-              on_offline: [],
-            },
+            ranges: [
+              {
+                artist: ["triples"],
+                member: [],
+                collectionNo: ["101Z"],
+                season: ["Atom01", "Binary01"],
+                class: ["First"],
+                on_offline: [],
+              },
+            ],
           },
           { kind: "exact", slug: "atom02-kimlip-201z", count: 1 },
           {
@@ -394,7 +400,7 @@ describe("range rows on submit", () => {
     formValuesToInput(
       listingInputSchema.parse({
         offered: [{ tokenId: 9 }],
-        wants: [{ kind: "range", count: 1, filter: { member } }],
+        wants: [{ kind: "range", count: 1, ranges: [{ member }] }],
         note: "",
       }),
       { kind: "create" },
@@ -403,13 +409,13 @@ describe("range rows on submit", () => {
 
   test("a whole group posts as its artist", () => {
     expect(submit(artms)).toMatchObject({
-      filter: { artist: ["artms"], member: [] },
+      ranges: [{ artist: ["artms"], member: [] }],
     });
   });
 
   test("a whole group with another group's member posts every member", () => {
     expect(submit([...artms, "SeoYeon"])).toMatchObject({
-      filter: { artist: [], member: [...artms, "SeoYeon"] },
+      ranges: [{ artist: [], member: [...artms, "SeoYeon"] }],
     });
   });
 
@@ -422,10 +428,9 @@ describe("range rows on submit", () => {
       composerBlock({
         offered: 1,
         refused: 0,
-        wants: [{ kind: "range", count: 1, filter: { member } }],
+        wants: [{ kind: "range", count: 1, ranges: [{ member }] }],
         unitSize: undefined,
         rangeMatches: [],
-        rangesRepeat: false,
         rosters,
         note: "",
       }),
@@ -532,7 +537,7 @@ describe("range rows with several artists", () => {
           {
             kind: "range",
             count: 1,
-            filter: { artist: ["triples", "artms"], class: ["First"] },
+            ranges: [{ artist: ["triples", "artms"], class: ["First"] }],
           },
         ],
         note: "",
@@ -541,7 +546,7 @@ describe("range rows with several artists", () => {
       rosters,
     );
     expect(submission.data.wants[0]).toMatchObject({
-      filter: { artist: ["triples", "artms"], member: [], class: ["First"] },
+      ranges: [{ artist: ["triples", "artms"], member: [], class: ["First"] }],
     });
   });
 
@@ -549,7 +554,7 @@ describe("range rows with several artists", () => {
     const blockRange = (range: RangeFormFilter) =>
       block({
         offered: offered(1),
-        wants: [{ kind: "range", count: 1, filter: range }],
+        wants: [{ kind: "range", count: 1, ranges: [range] }],
       });
     expect(
       blockRange({ artist: ["triples", "artms"], member: ["JinSoul"] }),
@@ -587,7 +592,6 @@ const block = ({
     wants,
     unitSize,
     rangeMatches: [],
-    rangesRepeat: false,
     rosters,
     note: "",
   });

@@ -36,11 +36,14 @@ function objekt(
   };
 }
 
-function range(count: number, filter: Partial<RangeFilter>): TradeWant {
+function ranges(
+  count: number,
+  filters: readonly Partial<RangeFilter>[],
+): TradeWant {
   return {
     kind: "range",
     count,
-    filter: {
+    ranges: filters.map((filter) => ({
       artist: [],
       member: [],
       collectionNo: [],
@@ -48,8 +51,12 @@ function range(count: number, filter: Partial<RangeFilter>): TradeWant {
       class: [],
       on_offline: [],
       ...filter,
-    },
+    })),
   };
+}
+
+function range(count: number, filter: Partial<RangeFilter>): TradeWant {
+  return ranges(count, [filter]);
 }
 
 function exact(count: number, slug: string): TradeWant {
@@ -162,6 +169,30 @@ describe("allocate", () => {
       { tokenIds: [], missing: 3 },
     ]);
     expect(isFullyAllocated(allocation)).toBe(false);
+  });
+
+  test("a row takes an objekt that fits only its second range", () => {
+    const heejin = objekt("Atom01", "HeeJin", "101Z");
+    const kimlip = objekt("Binary01", "KimLip", "201Z");
+    const wants = [
+      ranges(2, [
+        { season: ["Atom01"] },
+        { member: ["KimLip"], class: ["Double"] },
+      ]),
+    ];
+
+    expect(allocate(wants, [heejin, kimlip])).toEqual([
+      { tokenIds: [heejin.tokenId, kimlip.tokenId], missing: 0 },
+    ]);
+  });
+
+  test("overlapping ranges count an objekt once", () => {
+    const heejin = objekt("Atom01", "HeeJin", "101Z");
+    const wants = [ranges(2, [{ season: ["Atom01"] }, { member: ["HeeJin"] }])];
+
+    expect(allocate(wants, [heejin])).toEqual([
+      { tokenIds: [heejin.tokenId], missing: 1 },
+    ]);
   });
 
   test("never gives one token to two rows", () => {

@@ -31,6 +31,7 @@ import {
   type ListingFormValues,
   type ListingSubmission,
   listingToFormValues,
+  parsedRanges,
   stepUnitSize,
 } from "@/lib/universal/trade-listing-form";
 import type { TokenRefusalReason } from "@/lib/universal/trade-listings";
@@ -42,12 +43,8 @@ import {
 } from "@apollo/trades/caps";
 import { totalWanted } from "@apollo/trades/composer";
 import { takesOffers } from "@apollo/trades/lifecycle";
-import {
-  type ListingInput,
-  listingInputSchema,
-  rangesDistinct,
-} from "@apollo/trades/listing";
-import { MAX_RANGE_VALUES, rangeFilterSchema } from "@apollo/trades/range";
+import { type ListingInput, listingInputSchema } from "@apollo/trades/listing";
+import { MAX_RANGE_VALUES } from "@apollo/trades/range";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconArrowLeft } from "@tabler/icons-react";
 import {
@@ -643,18 +640,14 @@ function ComposerFooter({
     form,
     editedListing,
   );
-  // the range rows as the schema reads them, so repeats compare as the server does
-  const ranges = wants.flatMap((want) => {
-    if (want.kind !== "range") return [];
-    const parsed = rangeFilterSchema.safeParse(want.filter);
-    return parsed.success ? [parsed.data] : [];
-  });
-  // the range rows count their own matches; this reads the counts they cached
+  // the range rows count their own matches, keyed as the schema reads them; this reads the counts they cached
   const rangeMatches = useQueries({
-    queries: ranges.map((filter) => ({
-      ...rangeMatchCountQuery(filter),
-      enabled: false,
-    })),
+    queries: wants.flatMap((want) => {
+      const ranges = want.kind === "range" ? parsedRanges(want.ranges) : null;
+      return ranges === null
+        ? []
+        : [{ ...rangeMatchCountQuery(ranges), enabled: false }];
+    }),
     combine: (results) => results.map((result) => result.data),
   });
   const reason = blockedReason(
@@ -664,7 +657,6 @@ function ComposerFooter({
       wants,
       unitSize,
       rangeMatches,
-      rangesRepeat: !rangesDistinct(ranges),
       rosters,
       note: note ?? "",
     }),
@@ -730,6 +722,8 @@ function blockedReason(
       return m.listing_composer_reason_range_artist_unused();
     case "range_empty":
       return m.trade_error_listing_range_empty();
+    case "range_duplicate":
+      return m.listing_composer_reason_range_duplicate();
     case "range_repeated":
       return m.listing_composer_reason_range_repeated();
     case "choice":

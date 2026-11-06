@@ -9,12 +9,7 @@ import {
   MAX_WANT_ROWS,
 } from "./caps";
 import { totalWanted } from "./composer";
-import {
-  pgText,
-  rangeColumns,
-  type RangeFilter,
-  rangeFilterSchema,
-} from "./range";
+import { pgText, type RangeFilter, rangeKey, rangesSchema } from "./range";
 
 // the listing types the feed can show; sales add theirs in a later phase
 export const listingTypes = ["trade"] as const;
@@ -52,7 +47,7 @@ const wantSchema = z.discriminatedUnion("kind", [
   }),
   z.strictObject({
     kind: z.literal("range"),
-    filter: rangeFilterSchema,
+    ranges: rangesSchema,
     count: countSchema,
   }),
   z.strictObject({
@@ -94,16 +89,14 @@ const listingFields = {
 };
 
 /**
- * Whether no two range rows cover the same collections, comparing each
- * column's values in any order.
+ * Whether no two range rows hold the same ranges, comparing each row's set
+ * of ranges in any order. Rows whose ranges merely overlap are distinct.
  */
-export function rangesDistinct(filters: readonly RangeFilter[]) {
+export function rangesDistinct(rows: readonly (readonly RangeFilter[])[]) {
   return isDistinct(
-    filters.map((filter) =>
+    rows.map((ranges) =>
       JSON.stringify(
-        rangeColumns.map((column) =>
-          filter[column].toSorted((a, b) => (a < b ? -1 : Number(a > b))),
-        ),
+        ranges.map(rangeKey).toSorted((a, b) => (a < b ? -1 : Number(a > b))),
       ),
     ),
   );
@@ -161,7 +154,7 @@ function withListingRules<TSchema extends z.ZodType<ListingTerms>>(
     .refine(
       ({ wants }) =>
         rangesDistinct(
-          wants.flatMap((want) => (want.kind === "range" ? [want.filter] : [])),
+          wants.flatMap((want) => (want.kind === "range" ? [want.ranges] : [])),
         ),
       {
         message: "Each range can only be asked for once",

@@ -6,7 +6,7 @@ import {
   toggleOffered,
   type TradeListing,
 } from "@/lib/universal/trade-listings";
-import { scaleWants, type TradeWant } from "@apollo/trades/allocate";
+import { fitsWant, scaleWants, type TradeWant } from "@apollo/trades/allocate";
 import { validateAssignment } from "@apollo/trades/assignment";
 import { totalWanted } from "@apollo/trades/composer";
 import { CLAIM_WINDOW, OFFER_WINDOW } from "@apollo/trades/timers";
@@ -67,6 +67,10 @@ export function useListingPicks(
   const giveTotal = totalWanted(scaled);
   const update = (next: (current: typeof state) => Partial<typeof state>) =>
     setState((current) => ({ ...current, ...next(current) }));
+  const fits = (row: number, pick: ListingPick) => {
+    const want = wants[row];
+    return want !== undefined && fitsWant(want, pick.attributes);
+  };
 
   return {
     units,
@@ -128,7 +132,14 @@ export function useListingPicks(
         offered: current.offered.filter((shown) => shown !== tokenId),
       })),
     /**
-     * Takes a copy out of the row, or adds it while the row has room.
+     * Whether the copy can fill the row. The picker's scope can be wider
+     * than the row, as for a range row's several ranges, so it greys out
+     * what the row can't take.
+     */
+    fits,
+    /**
+     * Takes a copy out of the row, or adds it while the row has room and it
+     * fits the row.
      */
     toggle: (row: number, pick: ListingPick) =>
       update((current) => ({
@@ -138,7 +149,9 @@ export function useListingPicks(
             return picks.filter((shown) => shown.tokenId !== pick.tokenId);
           }
           const count = (wants[row]?.count ?? 0) * current.units;
-          return picks.length < count ? [...picks, pick] : picks;
+          return picks.length < count && fits(row, pick)
+            ? [...picks, pick]
+            : picks;
         }),
       })),
   };

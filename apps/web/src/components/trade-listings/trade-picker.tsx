@@ -24,6 +24,8 @@ type Props = {
   full: boolean;
   /** copies picked for a listing's other rows, which this one can't take */
   elsewhere?: ReadonlySet<number>;
+  /** whether an objekt can fill the want row, which the scope alone may not narrow to */
+  fits?: (objekt: CosmoObjekt) => boolean;
   /** the listing being edited, whose own trades don't grey its objekts */
   editedListing?: string;
   /** what a picked card's pill says, when it has one */
@@ -77,6 +79,7 @@ function PickerWithStates({
   picked,
   full,
   elsewhere,
+  fits,
   editedListing,
   pickedLabel,
   onToggle,
@@ -101,7 +104,9 @@ function PickerWithStates({
             blocked={
               elsewhere?.has(tokenId)
                 ? m.listing_detail_card_other_row()
-                : offerBlock(objekt, states)
+                : fits?.(objekt) === false
+                  ? m.listing_detail_card_misfit()
+                  : offerBlock(objekt, states)
             }
             full={full}
             pickedLabel={pickedLabel}

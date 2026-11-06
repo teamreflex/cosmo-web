@@ -191,7 +191,7 @@ type SummaryLabels = {
 };
 
 /**
- * A range row's narrowed columns in the order every surface names them:
+ * One range's narrowed columns in the order every surface names them:
  * season, artist, member, collection number, class, then on/offline, so
  * "Atom02 · ARTMS · First" reads the same in the composer, the feed and the
  * listing page. Empty columns are left out.
@@ -211,19 +211,25 @@ export function rangeSummaryColumns(
 }
 
 /**
- * A range row as the composer sums it up: its count, "5×", and its narrowed
- * values, "Atom02 · ARTMS · First". Several values in one column read
- * "Atom02 / Binary01". A non-breaking space before each "·" keeps it off
- * the start of a wrapped line.
+ * A range row as the composer sums it up: its count, "5×", and each
+ * range's narrowed values, "Atom02 · ARTMS · First", joined by the
+ * translated `or`. Several values in one column read "Atom02 / Binary01".
+ * A range with nothing narrowed yet is left out. A non-breaking space
+ * before each "·" keeps it off the start of a wrapped line.
  */
 export function wantSummaryParts(
-  want: { count: number; filter: ComposerRange },
-  labels: SummaryLabels,
+  want: { count: number; ranges: readonly ComposerRange[] },
+  labels: SummaryLabels & { or: string },
 ) {
   return {
     count: `${want.count}×`,
-    label: rangeSummaryColumns(want.filter, labels)
-      .map((values) => values.join(" / "))
-      .join("\u00a0· "),
+    label: want.ranges
+      .map((filter) =>
+        rangeSummaryColumns(filter, labels)
+          .map((values) => values.join(" / "))
+          .join(" · "),
+      )
+      .filter((label) => label.length > 0)
+      .join(` ${labels.or} `),
   };
 }

@@ -1,32 +1,32 @@
 import { MAX_PER_ROW, MAX_TOTAL_WANTED } from "./caps";
 import {
   type IndexedAttributes,
-  matchesRange,
+  matchesRanges,
   type RangeFilter,
 } from "./range";
 
 /**
  * One row of a listing's trade side: a number of copies of one collection,
- * a number of distinct objekts anywhere in a range, or a number of objekts
- * in any mix of a set of collections.
+ * a number of distinct objekts each in any of its ranges, or a number of
+ * objekts in any mix of a set of collections.
  */
 export type TradeWant =
   | { kind: "exact"; slug: string; count: number }
-  | { kind: "range"; filter: RangeFilter; count: number }
+  | { kind: "range"; ranges: readonly RangeFilter[]; count: number }
   | { kind: "choice"; slugs: readonly string[]; count: number };
 
 export type InventoryObjekt = IndexedAttributes & { tokenId: number };
 
 /**
  * Whether the objekt can fill the want: the same collection for an exact
- * row, inside the range, or one of the choice row's collections.
+ * row, inside one of the ranges, or one of the choice row's collections.
  */
 export function fitsWant(want: TradeWant, objekt: IndexedAttributes) {
   switch (want.kind) {
     case "exact":
       return objekt.slug === want.slug;
     case "range":
-      return matchesRange(want.filter, objekt);
+      return matchesRanges(want.ranges, objekt);
     case "choice":
       return want.slugs.includes(objekt.slug);
   }

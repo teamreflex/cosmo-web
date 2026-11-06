@@ -48,7 +48,7 @@ function range(
   count: number,
   filter: Parameters<typeof rangeFilterSchema.parse>[0],
 ): TradeWant {
-  return { kind: "range", count, filter: rangeFilterSchema.parse(filter) };
+  return { kind: "range", count, ranges: [rangeFilterSchema.parse(filter)] };
 }
 
 function attributesOf(...objekts: readonly InventoryObjekt[]) {

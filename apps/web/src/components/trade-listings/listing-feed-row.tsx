@@ -327,7 +327,7 @@ function WantThumbs({ wants }: { wants: ListingFeedWant[] }) {
                 count: want.count,
                 thumb: (
                   <RangeTile
-                    filter={want.filter}
+                    ranges={want.ranges}
                     label={wantLabel(want)}
                     className={thumbSize}
                   />

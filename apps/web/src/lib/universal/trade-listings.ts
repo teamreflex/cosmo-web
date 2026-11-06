@@ -55,38 +55,46 @@ const collectionValues = {
 };
 
 /**
- * A want row as stored, parsed into its kind's shape, with a choice row's
- * collections read alongside it (`options`, in slug order). The table's
- * CHECK keeps every kind's columns filled, so a parse failure means the
- * schema and this parser have drifted apart.
+ * One range of a range row as stored, in the shape matching reads.
  */
-export const storedWantSchema = z.discriminatedUnion("kind", [
-  z
-    .object({ kind: z.literal("exact"), count: z.int(), ...collectionValues })
-    .transform(({ kind, count, ...objekt }) => ({ kind, count, objekt })),
-  z
-    .object({
-      kind: z.literal("range"),
-      count: z.int(),
-      artists: z.array(z.string()),
-      members: z.array(z.string()),
-      seasons: z.array(z.string()),
-      classes: z.array(z.string()),
-      onOfflines: z.array(z.enum(validOnlineTypes)),
-      collectionNos: z.array(z.string()),
-    })
-    .transform(({ kind, count, ...range }) => ({
-      kind,
-      count,
-      filter: {
+const storedRangeSchema = z
+  .object({
+    artists: z.array(z.string()),
+    members: z.array(z.string()),
+    seasons: z.array(z.string()),
+    classes: z.array(z.string()),
+    onOfflines: z.array(z.enum(validOnlineTypes)),
+    collectionNos: z.array(z.string()),
+  })
+  .transform(
+    (range) =>
+      ({
         artist: range.artists,
         member: range.members,
         collectionNo: range.collectionNos,
         season: range.seasons,
         class: range.classes,
         on_offline: range.onOfflines,
-      } satisfies RangeFilter,
-    })),
+      }) satisfies RangeFilter,
+  );
+
+/**
+ * A want row as stored, parsed into its kind's shape, with a choice row's
+ * collections (`options`, in slug order) and a range row's ranges
+ * (`ranges`, in position order) read alongside it. The table's CHECK keeps
+ * every kind's columns filled and the input schemas give every range row a
+ * range, so a parse failure means the schema and this parser have drifted
+ * apart.
+ */
+export const storedWantSchema = z.discriminatedUnion("kind", [
+  z
+    .object({ kind: z.literal("exact"), count: z.int(), ...collectionValues })
+    .transform(({ kind, count, ...objekt }) => ({ kind, count, objekt })),
+  z.object({
+    kind: z.literal("range"),
+    count: z.int(),
+    ranges: z.array(storedRangeSchema).min(1),
+  }),
   z.object({
     kind: z.literal("choice"),
     count: z.int(),
@@ -102,6 +110,13 @@ export const storedWantSchema = z.discriminatedUnion("kind", [
 export type StoredWant = z.output<typeof storedWantSchema>;
 
 /**
+ * How many collections a range row covers: `total` counts each collection
+ * once however many of its ranges match it, and `perRange` holds each
+ * range's own count, in the row's order.
+ */
+export type RangeMatchCounts = { total: number; perRange: number[] };
+
+/**
  * A stored want objekts fill, as allocation and the assignment check read
  * it.
  */
@@ -112,7 +127,7 @@ export function toTradeWant(
     case "exact":
       return { kind: "exact", slug: want.objekt.slug, count: want.count };
     case "range":
-      return { kind: "range", filter: want.filter, count: want.count };
+      return { kind: "range", ranges: want.ranges, count: want.count };
     case "choice":
       return {
         kind: "choice",

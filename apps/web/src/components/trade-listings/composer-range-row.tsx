@@ -7,6 +7,7 @@ import { rangeMatchCountQuery } from "@/lib/queries/trade-listings";
 import { artistName } from "@/lib/universal/objekt-conversion";
 import {
   applyChipUpdate,
+  parsedRanges,
   type RangeChipFilters,
   type RangeFormFilter,
   rangeIsNarrowed,
@@ -16,13 +17,18 @@ import {
 import { cn } from "@/lib/utils";
 import { type ArtistValues, wantSummaryParts } from "@apollo/trades/composer";
 import {
+  MAX_RANGE_CLAUSES,
   MAX_RANGE_VALUES,
   type RangeFilter,
-  rangeFilterSchema,
 } from "@apollo/trades/range";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
-import { IconChevronDown, IconInfoCircle, IconX } from "@tabler/icons-react";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import {
+  IconChevronDown,
+  IconInfoCircle,
+  IconPlus,
+  IconX,
+} from "@tabler/icons-react";
+import { useQueries, useSuspenseQuery } from "@tanstack/react-query";
 import {
   type ReactNode,
   Suspense,
@@ -43,31 +49,40 @@ import { Button } from "../ui/button";
 import { Skeleton } from "../ui/skeleton";
 import RangeArtistChip from "./range-artist-chip";
 
+// whether two parsed rows hold the same ranges in the same order
+const sameRanges = (a: RangeFilter[] | null, b: RangeFilter[] | null) =>
+  JSON.stringify(a) === JSON.stringify(b);
+
 type Props = {
   /** the row's place among the wants, from 1, naming its remove button */
   position: number;
   count: number;
-  filter: RangeFormFilter;
+  ranges: RangeFormFilter[];
+  /** the schema's issue on the row's ranges as a whole */
   error: string | undefined;
+  /** the schema's issue on each range, in the row's order */
+  rangeErrors: (string | undefined)[];
   stepper: ReactNode;
   /** whether the row carries the note that ranges take offers, which the first one does */
   offersNote: boolean;
-  onChange: (filter: RangeFormFilter) => void;
+  onChange: (ranges: RangeFormFilter[]) => void;
   onRemove: () => void;
 };
 
 /**
- * A want row for any objekts in a range, which starts open. Open, it shows
- * the filter chips; collapsed, only the values that narrow it. Both show the
- * summary and how many collections the range covers. The first range row
- * also says that a listing with a range takes offers rather than trading at
- * once, across its foot.
+ * A want row for any objekts in some of its ranges, which starts open. Open,
+ * it shows each range's filter chips, "or" between them, and a button that
+ * adds another range; collapsed, only the values that narrow each range.
+ * Both show the summary, how many collections the row covers, and which
+ * range covers none. The first range row also says that a listing with a
+ * range takes offers rather than trading at once, across its foot.
  */
 export default function ComposerRangeRow({
   position,
   count,
-  filter,
+  ranges,
   error,
+  rangeErrors,
   stepper,
   offersNote,
   onChange,
@@ -76,14 +91,48 @@ export default function ComposerRangeRow({
   const [expanded, setExpanded] = useState(true);
   const chipsId = useId();
   const summary = wantSummaryParts(
-    { count, filter },
-    { artist: artistName, onOffline: onOfflineLabel },
+    { count, ranges },
+    { artist: artistName, onOffline: onOfflineLabel, or: m.listing_range_or() },
   );
+  const parsed = parsedRanges(ranges);
+  const [settled] = useDebounceValue<RangeFilter[] | null>(parsed, 300, {
+    equalityFn: sameRanges,
+  });
+  // the last count stays up while the next one loads
+  const shown = useDeferredValue(settled);
+  /**
+   * Each range's own count, read from what the row's count fetched. It's
+   * left out until the counted ranges are the row's current ones, since a
+   * removed range would shift the counts onto the wrong ranges.
+   */
+  const perRange = useQueries({
+    queries: (shown === null || !sameRanges(shown, parsed) ? [] : [shown]).map(
+      (ranges) => ({
+        ...rangeMatchCountQuery(ranges),
+        enabled: false,
+      }),
+    ),
+    combine: (results) => results[0]?.data?.perRange,
+  });
 
   // the schema files an over-full column's issue on the column, which `error` doesn't carry
-  const shownError = rangeOverCap(filter)
+  const shownError = ranges.some(rangeOverCap)
     ? m.listing_composer_reason_range_too_many({ max: MAX_RANGE_VALUES })
     : error;
+  const clause = (index: number, body: ReactNode) => (
+    <Clause
+      key={index}
+      index={index}
+      body={body}
+      empty={perRange?.[index] === 0}
+      error={rangeErrors[index]}
+      onRemove={
+        expanded && ranges.length > 1
+          ? () => onChange(ranges.filter((_, i) => i !== index))
+          : undefined
+      }
+    />
+  );
 
   return (
     <div className="flex flex-col rounded-lg border border-border bg-background">
@@ -132,29 +181,61 @@ export default function ComposerRangeRow({
           </span>
         </div>
 
-        {expanded && (
-          <div id={chipsId} className="flex flex-wrap gap-2">
-            <ErrorBoundary fallback={<ChipsSkeleton />}>
-              <Suspense fallback={<ChipsSkeleton />}>
-                <RangeChips filter={filter} onChange={onChange} />
+        <div id={chipsId} className="flex flex-col gap-2">
+          {expanded ? (
+            <ErrorBoundary fallback={<ChipsSkeleton ranges={ranges.length} />}>
+              <Suspense fallback={<ChipsSkeleton ranges={ranges.length} />}>
+                <RangeEditors
+                  ranges={ranges}
+                  clause={clause}
+                  onChange={onChange}
+                />
               </Suspense>
             </ErrorBoundary>
-          </div>
-        )}
-
-        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-sm">
-          {/* one run of text, so a wrapped line never starts on a separator */}
-          <span className="min-w-0 break-words">
-            {summary.label.length > 0 && (
-              <span dir="auto" className="font-semibold">
-                <span className="font-mono tabular-nums">{summary.count}</span>{" "}
-                {summary.label}
-              </span>
-            )}
-            <MatchCount filter={filter} separated={summary.label.length > 0} />
-          </span>
-          {!expanded && <NarrowedBadges filter={filter} />}
+          ) : (
+            ranges.map((filter, index) =>
+              clause(index, <NarrowedBadges filter={filter} />),
+            )
+          )}
+          {expanded && (
+            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={ranges.length >= MAX_RANGE_CLAUSES}
+                onClick={() => onChange([...ranges, {}])}
+                className="border border-dashed border-input max-md:h-10"
+              >
+                <IconPlus />
+                {m.listing_composer_range_add_selection()}
+              </Button>
+              {ranges.length >= MAX_RANGE_CLAUSES && (
+                <span className="text-xs text-muted-foreground">
+                  {m.listing_composer_range_or_full({
+                    max: MAX_RANGE_CLAUSES,
+                  })}
+                </span>
+              )}
+            </div>
+          )}
         </div>
+
+        {/* one run of text, so a wrapped line never starts on a separator */}
+        <span className="min-w-0 text-sm break-words">
+          {summary.label.length > 0 && (
+            <span dir="auto" className="font-semibold">
+              <span className="font-mono tabular-nums">{summary.count}</span>{" "}
+              {summary.label}
+            </span>
+          )}
+          <MatchCount
+            ranges={ranges}
+            parsed={parsed}
+            shown={shown}
+            separated={summary.label.length > 0}
+          />
+        </span>
 
         {shownError !== undefined && (
           <p role="alert" className="text-sm text-destructive">
@@ -188,20 +269,79 @@ export default function ComposerRangeRow({
 }
 
 /**
- * The row's filter chips. Artists come from the range's own multi-select
- * chip, and the member, season and class chips list only the picked
- * artists' values.
+ * One range of the row: "or" above every range but the first, its chips or
+ * badges, a remove button while the row has another range, and a line of
+ * its own when it covers no collection or the schema refuses it.
  */
-function RangeChips({
-  filter,
+function Clause({
+  index,
+  body,
+  empty,
+  error,
+  onRemove,
+}: {
+  index: number;
+  body: ReactNode;
+  empty: boolean;
+  error: string | undefined;
+  onRemove: (() => void) | undefined;
+}) {
+  return (
+    <>
+      {index > 0 && (
+        <div className="flex items-center gap-2 text-xxs font-medium tracking-widest text-muted-foreground uppercase">
+          <span aria-hidden className="h-px flex-1 bg-border" />
+          {m.listing_range_or()}
+          <span aria-hidden className="h-px flex-1 bg-border" />
+        </div>
+      )}
+      <div className="flex items-start gap-2">
+        <div className="flex min-w-0 flex-1 flex-wrap gap-2">{body}</div>
+        {onRemove !== undefined && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label={m.listing_composer_range_remove({
+              position: index + 1,
+            })}
+            onClick={onRemove}
+            className="shrink-0 text-muted-foreground"
+          >
+            <IconX />
+          </Button>
+        )}
+      </div>
+      {empty && (
+        <p className="text-xs text-amber-700 dark:text-amber-500">
+          {m.listing_composer_range_no_matches()}
+        </p>
+      )}
+      {error !== undefined && (
+        <p role="alert" className="text-xs text-destructive">
+          {error}
+        </p>
+      )}
+    </>
+  );
+}
+
+/**
+ * Every range's filter chips, sharing what each artist has, so removing an
+ * artist from one range drops the values only it had.
+ */
+function RangeEditors({
+  ranges,
+  clause,
   onChange,
 }: {
-  filter: RangeFormFilter;
-  onChange: (filter: RangeFormFilter) => void;
+  ranges: RangeFormFilter[];
+  clause: (index: number, body: ReactNode) => ReactNode;
+  onChange: (ranges: RangeFormFilter[]) => void;
 }) {
   const { artistList } = useArtists();
   const { seasons, classes } = useFilterData({ allArtists: true });
-  // what each artist has, keyed as ranges store artists, so removing one drops its values
+  // what each artist has, keyed as ranges store artists
   const values: ArtistValues = new Map(
     artistList.map((artist) => [
       artist.id.toLowerCase(),
@@ -212,12 +352,41 @@ function RangeChips({
       },
     ]),
   );
+
+  return ranges.map((filter, index) =>
+    clause(
+      index,
+      <RangeChips
+        filter={filter}
+        values={values}
+        onChange={(next) =>
+          onChange(ranges.map((range, i) => (i === index ? next : range)))
+        }
+      />,
+    ),
+  );
+}
+
+/**
+ * One range's filter chips. Artists come from the range's own multi-select
+ * chip, and the member, season and class chips list only the picked
+ * artists' values.
+ */
+function RangeChips({
+  filter,
+  values,
+  onChange,
+}: {
+  filter: RangeFormFilter;
+  values: ArtistValues;
+  onChange: (filter: RangeFormFilter) => void;
+}) {
   const chips = rangeToChipFilters(filter);
   const update = (change: Partial<RangeChipFilters>) =>
     onChange(applyChipUpdate(filter, change, values));
   const setColumns: SetCosmoFilters = (input) =>
     update(input instanceof Function ? input(chips) : input);
-  // a season or class picked under an artist the row hasn't picked adds that artist
+  // a season or class picked under an artist the range hasn't picked adds that artist
   const adding = ({ artist, value, values }: ArtistValueToggle) =>
     values.includes(value) && !chips.artists.includes(artist)
       ? { artists: [...chips.artists, artist] }
@@ -275,26 +444,22 @@ function RangeChips({
 }
 
 /**
- * How many collections the range covers, once the chips settle. A range
- * that covers none can't be posted, so that reads as a warning. After the
- * summary, a non-breaking space keeps the separator off the start of a
- * wrapped line.
+ * How many collections the row covers, once the chips settle, counting a
+ * collection in several ranges once. A row that covers none can't be
+ * posted, so that reads as a warning. After the summary, a non-breaking
+ * space keeps the separator off the start of a wrapped line.
  */
 function MatchCount({
-  filter,
+  ranges,
+  parsed,
+  shown,
   separated,
 }: {
-  filter: RangeFormFilter;
+  ranges: readonly RangeFormFilter[];
+  parsed: RangeFilter[] | null;
+  shown: RangeFilter[] | null;
   separated: boolean;
 }) {
-  const parsed = rangeFilterSchema.safeParse(filter);
-  const [settled] = useDebounceValue<RangeFilter | null>(
-    parsed.success ? parsed.data : null,
-    300,
-    { equalityFn: (a, b) => JSON.stringify(a) === JSON.stringify(b) },
-  );
-  // the last count stays up while the next one loads
-  const shown = useDeferredValue(settled);
   const gap = separated ? " " : "";
   const skeleton = (
     <>
@@ -303,9 +468,9 @@ function MatchCount({
     </>
   );
 
-  if (!parsed.success) {
-    // a narrowed range the schema refuses says why in the row's error
-    return rangeIsNarrowed(filter) ? null : (
+  if (parsed === null) {
+    // ranges the schema refuses for another reason say why in the row's error or the footer
+    return ranges.every(rangeIsNarrowed) ? null : (
       <span className="text-xs text-muted-foreground">
         {gap}
         {m.listing_composer_range_empty()}
@@ -316,39 +481,40 @@ function MatchCount({
   return (
     <ErrorBoundary fallback={null} resetKeys={[shown]}>
       <Suspense fallback={skeleton}>
-        <SettledCount filter={shown} separated={separated} />
+        <SettledCount ranges={shown} separated={separated} />
       </Suspense>
     </ErrorBoundary>
   );
 }
 
 function SettledCount({
-  filter,
+  ranges,
   separated,
 }: {
-  filter: RangeFilter;
+  ranges: RangeFilter[];
   separated: boolean;
 }) {
-  const { data } = useSuspenseQuery(rangeMatchCountQuery(filter));
+  const { data } = useSuspenseQuery(rangeMatchCountQuery(ranges));
 
-  return data === 0 ? (
+  return data.total === 0 ? (
     <span className="text-xs text-amber-700 dark:text-amber-500">
       {separated && " "}
       {m.listing_composer_range_no_matches()}
     </span>
   ) : (
     <span className="text-xs text-muted-foreground tabular-nums">
-      {separated && "\u00a0· "}
+      {separated && " · "}
       {m.listing_composer_range_matches({
-        count: data,
-        formatted: formatCount(data),
+        count: data.total,
+        formatted: formatCount(data.total),
       })}
     </span>
   );
 }
 
 /**
- * The narrowed columns as "Season · Atom02" badges, for a collapsed row.
+ * One range's narrowed columns as "Season · Atom02" badges, for a
+ * collapsed row.
  */
 function NarrowedBadges({ filter }: { filter: RangeFormFilter }) {
   const columns = [
@@ -379,8 +545,12 @@ function NarrowedBadges({ filter }: { filter: RangeFormFilter }) {
     });
 }
 
-function ChipsSkeleton() {
-  return Array.from({ length: 6 }, (_, i) => (
-    <Skeleton key={i} className="h-8 w-24" />
+function ChipsSkeleton({ ranges }: { ranges: number }) {
+  return Array.from({ length: ranges }, (_, range) => (
+    <div key={range} className="flex flex-wrap gap-2">
+      {Array.from({ length: 6 }, (_, i) => (
+        <Skeleton key={i} className="h-8 w-24" />
+      ))}
+    </div>
   ));
 }

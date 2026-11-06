@@ -274,10 +274,18 @@ export const relations = defineRelations(schema, (r) => ({
       optional: false,
     }),
     options: r.many.tradeListingWantOptions(),
+    ranges: r.many.tradeListingWantRanges(),
   },
   tradeListingWantOptions: {
     want: r.one.tradeListingWants({
       from: r.tradeListingWantOptions.wantId,
+      to: r.tradeListingWants.id,
+      optional: false,
+    }),
+  },
+  tradeListingWantRanges: {
+    want: r.one.tradeListingWants({
+      from: r.tradeListingWantRanges.wantId,
       to: r.tradeListingWants.id,
       optional: false,
     }),

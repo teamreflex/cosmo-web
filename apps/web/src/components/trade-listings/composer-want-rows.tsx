@@ -122,14 +122,21 @@ export default function ComposerWantRows({
                   key={field.id}
                   position={index + 1}
                   count={want.count}
-                  filter={want.filter}
+                  ranges={want.ranges}
                   error={
-                    form.getFieldState(`wants.${index}.filter`, formState).error
+                    form.getFieldState(`wants.${index}.ranges`, formState).error
                       ?.message
                   }
+                  rangeErrors={want.ranges.map(
+                    (_, range) =>
+                      form.getFieldState(
+                        `wants.${index}.ranges.${range}`,
+                        formState,
+                      ).error?.message,
+                  )}
                   stepper={stepper}
                   offersNote={index === firstRange}
-                  onChange={(filter) => setWant(index, { ...want, filter })}
+                  onChange={(ranges) => setWant(index, { ...want, ranges })}
                   onRemove={() => remove(index)}
                 />
               );
@@ -186,7 +193,7 @@ export default function ComposerWantRows({
             variant="ghost"
             size="sm"
             disabled={!roomForRow}
-            onClick={() => append({ kind: "range", filter: {}, count: 1 })}
+            onClick={() => append({ kind: "range", ranges: [{}], count: 1 })}
             className="border border-dashed border-input max-md:h-10 max-md:flex-1"
           >
             <IconPlus />

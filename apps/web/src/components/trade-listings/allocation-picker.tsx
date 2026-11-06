@@ -85,6 +85,7 @@ export default function AllocationPicker({
                     ),
                   )
                 }
+                fits={(pick) => picks.fits(index, pick)}
                 open={picking === index}
                 onOpenChange={(open) => setPicking(open ? index : null)}
                 onToggle={(pick) => picks.toggle(index, pick)}
@@ -119,7 +120,7 @@ const slotClass = "@container flex w-[84px] flex-col gap-1.5 md:w-30";
 // a want row as the picker heads it, at the claim's count
 function RowLabel({ row, count }: { row: PickerRow; count: number }) {
   return row.want.kind === "range" ? (
-    <RangeBadges count={count} filter={row.want.filter} matches={false} />
+    <RangeBadges count={count} ranges={row.want.ranges} matches={false} />
   ) : (
     <WantLabel want={{ ...row.want, count }} />
   );

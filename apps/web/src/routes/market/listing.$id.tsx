@@ -76,7 +76,7 @@ export const Route = createFileRoute("/market/listing/$id")({
     }
     for (const query of rangeMatchCountQueries(
       listing.wants.flatMap((want) =>
-        want.kind === "range" ? [want.filter] : [],
+        want.kind === "range" ? [want.ranges] : [],
       ),
     )) {
       void context.queryClient.query(query).catch(noop);
