@@ -24,10 +24,10 @@
     "@subsquid/typeorm-store": "^1.9.2",
     "@subsquid/util-internal": "^3.3.1",
     "ethers": "^6.17.0",
-    "glob": "^13.0.6",
+    "glob": "^14.0.3",
     "lru-cache": "^11.5.3",
     "ofetch": "catalog:",
-    "path-scurry": "^2.0.2",
+    "path-scurry": "^3.0.0",
     "typeorm": "^0.3.31",
     "zod": "catalog:"
   },
