@@ -373,6 +373,12 @@ export function poolItems<
 }
 
 /**
+ * The collections a want row takes, as fitsWant() matches them: any a range
+ * row's `ranges` cover, or the ones an exact or "any of" row's `slugs` name.
+ */
+export type WantMatch = { ranges: RangeFilter[]; slugs: string[] };
+
+/**
  * A copy the viewer picked to give, with the collection values the picks
  * are checked against each want row and the collection its card shows.
  */

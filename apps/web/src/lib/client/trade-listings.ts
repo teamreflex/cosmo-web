@@ -436,12 +436,12 @@ export function endedNormally(
 }
 
 /**
- * The collections a want row's picker is held to: an exact row's one
- * collection, which its artist, member, season and number pin, or every
- * value of a range row's ranges or an "any of" row's collections, since a
- * scope can't pair them up. A range row's column is open when any of its
- * ranges leaves it open. The scope can be wider than the row, so picks are
- * checked against the row itself (fitsWant()).
+ * The collections a want row's picker is held to, matched as fitsWant()
+ * matches them: a range row's ranges, or an exact or "any of" row's
+ * collections by slug. The columns shape the filter panel and artist switch,
+ * and the artists also narrow the query. They hold every value of the row's
+ * ranges or collections, and a range row's column is open when any of its
+ * ranges leaves it open.
  */
 export function wantScope(
   want: Exclude<ListingFeedWant, { kind: "payment" }>,
@@ -461,7 +461,7 @@ export function wantScope(
       season: values((filter) => filter.season),
       class: values((filter) => filter.class),
       onOffline: values((filter) => filter.on_offline),
-      collectionNo: values((filter) => filter.collectionNo),
+      match: { ranges: want.ranges, slugs: [] },
     };
   }
   if (want.kind === "choice") {
@@ -478,7 +478,7 @@ export function wantScope(
       onOffline: validOnlineTypes.filter((type) =>
         want.options.some((option) => option.onOffline === type),
       ),
-      collectionNo: values((option) => collectionNumber(null, option)),
+      match: { ranges: [], slugs: want.options.map((option) => option.slug) },
     };
   }
   const { objekt } = want;
@@ -489,7 +489,7 @@ export function wantScope(
     season: [objekt.season],
     class: [objekt.class],
     onOffline: validOnlineTypes.filter((type) => type === objekt.onOffline),
-    collectionNo: [collectionNumber(want.collection, objekt)],
+    match: { ranges: [], slugs: [objekt.slug] },
   };
 }
 

@@ -26,14 +26,7 @@ import type { TradeErrorCode } from "../../universal/errors/trades";
 import type { RangeMatchCounts } from "../../universal/trade-listings";
 import { db, type DbOrTx } from "../db";
 import { indexer } from "../db/indexer";
-import {
-  withClass,
-  withCollections,
-  withMember,
-  withOnlineType,
-  withSeason,
-  withSelectedArtists,
-} from "../objekts/filters.server";
+import { withRange, withWantMatch } from "../objekts/filters.server";
 
 /**
  * A token as the indexer has it, whoever owns it, or missing when the
@@ -224,20 +217,6 @@ export async function readSharedTokenFlags(
 }
 
 /**
- * The objekt-index conditions for the collections a range covers.
- */
-function rangeConditions(filter: RangeFilter) {
-  return and(
-    ...withSelectedArtists(filter.artist),
-    ...withMember(filter.member),
-    ...withCollections(filter.collectionNo),
-    ...withSeason(filter.season),
-    ...withClass(filter.class),
-    ...withOnlineType(filter.on_offline),
-  );
-}
-
-/**
  * How many collections each range row matches, in the rows' order, using
  * the objekt index's filters, in one pass over the collections: the row's
  * `total`, which counts a collection in several of its ranges once, and
@@ -252,8 +231,8 @@ export async function countRangeMatches(
       counts: sql<number[]>`array[${sql.join(
         rows
           .flatMap((ranges) => [
-            or(...ranges.map(rangeConditions)),
-            ...ranges.map(rangeConditions),
+            or(...ranges.map(withRange)),
+            ...ranges.map(withRange),
           ])
           .map((where) => sql`count(*) filter (where ${where})`),
         sql`, `,
@@ -407,7 +386,7 @@ export async function unusableTokens(
 
 /**
  * A range's conditions on a trade item's copied collection values, as
- * rangeConditions() puts them on the indexer's collections.
+ * withRange() puts them on the indexer's collections.
  */
 function itemRangeConditions(filter: RangeFilter) {
   return and(
@@ -469,11 +448,9 @@ export async function readCandidates(
           eq(objekts.owner, addr(address)),
           eq(objekts.transferable, true),
           excluded.length ? notInArray(objekts.id, excluded) : undefined,
-          or(
-            slugs.length ? inArray(collections.slug, slugs) : undefined,
-            ...wants.flatMap((want) =>
-              want.kind === "range" ? want.ranges.map(rangeConditions) : [],
-            ),
+          ...withWantMatch(
+            wants.flatMap((want) => (want.kind === "range" ? want.ranges : [])),
+            slugs,
           ),
         ),
       ),

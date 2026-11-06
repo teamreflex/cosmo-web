@@ -7,6 +7,7 @@ import {
   standingsSummary,
   wantKindsSummary,
   wantLabel,
+  wantScope,
 } from "../src/lib/client/trade-listings";
 import {
   type Candidate,
@@ -771,5 +772,55 @@ describe("how a listing's objekts stand", () => {
         { kind: "traded" },
       ]),
     ).toBe("1 available · 1 in a trade · 2 traded");
+  });
+});
+
+describe("what a want row's picker lists", () => {
+  test("an exact or any-of row names its collections by slug", () => {
+    expect(
+      wantScope({
+        kind: "exact",
+        count: 1,
+        objekt: attributes("atom02-heejin-101z"),
+        collection: null,
+      }).match,
+    ).toEqual({ ranges: [], slugs: ["atom02-heejin-101z"] });
+    expect(
+      wantScope({
+        kind: "choice",
+        count: 1,
+        options: [
+          { ...attributes("atom02-heejin-101z"), collection: null },
+          { ...attributes("atom02-kimlip-102z", "KimLip"), collection: null },
+        ],
+      }).match,
+    ).toEqual({
+      ranges: [],
+      slugs: ["atom02-heejin-101z", "atom02-kimlip-102z"],
+    });
+  });
+
+  test("a range row's ranges stay apart", () => {
+    const empty = {
+      artist: [],
+      member: [],
+      collectionNo: [],
+      season: [],
+      class: [],
+      on_offline: [],
+    };
+    const ranges: RangeFilter[] = [
+      { ...empty, member: ["SeoYeon"], season: ["Atom02"], class: ["First"] },
+      {
+        ...empty,
+        member: ["SeoYeon"],
+        season: ["Binary02"],
+        class: ["Double"],
+      },
+    ];
+    expect(wantScope({ kind: "range", count: 1, ranges }).match).toEqual({
+      ranges,
+      slugs: [],
+    });
   });
 });

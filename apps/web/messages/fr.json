@@ -2430,7 +2430,6 @@
   "listing_composer_range_or_full": "Une ligne de plages peut contenir au plus {max} plages.",
   "listing_composer_range_remove": "Supprimer la plage {position}",
   "listing_range_or": "ou",
-  "listing_detail_card_misfit": "ne correspond pas à cette ligne",
   "listing_composer_post": "Créer",
   "listing_composer_save": "Enregistrer",
   "listing_composer_posted": "Annonce publiée",

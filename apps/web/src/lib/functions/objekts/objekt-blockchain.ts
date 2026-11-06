@@ -20,6 +20,7 @@ import {
   withSelectedArtists,
   withSpinMonth,
   withTransferable,
+  withWantMatch,
 } from "@/lib/server/objekts/filters.server";
 import { userCollectionBackendSchema } from "@/lib/universal/parsers";
 import {
@@ -28,9 +29,12 @@ import {
   supportedSort,
 } from "@/lib/universal/sorts";
 import { isMemberSort, isMintSort } from "@apollo/cosmo/types/common";
+import { MAX_CHOICE_OPTIONS } from "@apollo/trades/caps";
+import { slugSchema } from "@apollo/trades/listing";
+import { MAX_RANGE_CLAUSES, rangeFilterSchema } from "@apollo/trades/range";
 import { Addresses, isEqual } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
-import { and, eq, gt, lt, lte, sql } from "drizzle-orm";
+import { and, eq, gt, lt, lte, type SQL, sql } from "drizzle-orm";
 import * as z from "zod";
 import { mapLegacyObjekt } from "./common";
 
@@ -54,26 +58,56 @@ type InputData = z.infer<typeof schema>;
  */
 export const $fetchObjektsBlockchain = createServerFn({ method: "GET" })
   .validator(schema)
-  .handler(async ({ data }) => {
-    const isSpin = isEqual(data.address, Addresses.SPIN);
-    const owner = data.address.toLowerCase();
+  .handler(({ data }) => fetchPage(data, collectionFilters(data)));
 
-    // the client only reads `total` from page 0, so skip the count elsewhere
-    const total = isSpin || data.page > 0 ? 0 : await fetchCount(owner, data);
-    const results = await fetchObjekts(data, owner, isSpin);
+/**
+ * Fetch a user's objekts that a want row takes, with given filters narrowing
+ * inside it: those any of its `ranges` covers, or the collections its `slugs`
+ * name, as fitsWant() matches them. POST, since the row can outgrow a URL.
+ */
+export const $fetchRangeFilterObjekts = createServerFn({ method: "POST" })
+  .validator(
+    schema
+      .extend({
+        ranges: z.array(rangeFilterSchema).max(MAX_RANGE_CLAUSES).default([]),
+        slugs: z.array(slugSchema).max(MAX_CHOICE_OPTIONS).default([]),
+      })
+      .refine((data) => data.ranges.length > 0 || data.slugs.length > 0, {
+        message: "A want row needs a range or a collection",
+      }),
+  )
+  .handler(({ data }) =>
+    fetchPage(data, [
+      ...collectionFilters(data),
+      ...withWantMatch(data.ranges, data.slugs),
+    ]),
+  );
 
-    const hasNext = results.length === PER_PAGE;
-    const nextStartAfter = hasNext ? data.page + 1 : undefined;
+/**
+ * One page of the owner's objekts under the collection `conditions`, with
+ * the total on page 0.
+ */
+async function fetchPage(data: InputData, conditions: (SQL | undefined)[]) {
+  const isSpin = isEqual(data.address, Addresses.SPIN);
+  const owner = data.address.toLowerCase();
 
-    return {
-      total,
-      hasNext,
-      nextStartAfter,
-      objekts: results.map((row) =>
-        mapLegacyObjekt(row.objekts, row.collections),
-      ),
-    };
-  });
+  // the client only reads `total` from page 0, so skip the count elsewhere
+  const total =
+    isSpin || data.page > 0 ? 0 : await fetchCount(owner, data, conditions);
+  const results = await fetchObjekts(data, owner, isSpin, conditions);
+
+  const hasNext = results.length === PER_PAGE;
+  const nextStartAfter = hasNext ? data.page + 1 : undefined;
+
+  return {
+    total,
+    hasNext,
+    nextStartAfter,
+    objekts: results.map((row) =>
+      mapLegacyObjekt(row.objekts, row.collections),
+    ),
+  };
+}
 
 type QueryResult = {
   objekts: Objekt;
@@ -91,6 +125,7 @@ async function fetchObjekts(
   data: InputData,
   owner: string,
   isSpin: boolean,
+  conditions: (SQL | undefined)[],
 ): Promise<QueryResult[]> {
   /**
    * Serial sorts on the spin account cause catastrophic query plans (the
@@ -103,7 +138,7 @@ async function fetchObjekts(
     isSpin ? collectionSorts : profileSorts,
   );
   if (isRankedSort(sort)) {
-    return await fetchRankedObjekts(data, owner, sort);
+    return await fetchRankedObjekts(data, owner, sort, conditions);
   }
 
   let idsQuery = indexer
@@ -113,7 +148,7 @@ async function fetchObjekts(
     .where(
       and(
         eq(objekts.owner, owner),
-        ...collectionFilters(data),
+        ...conditions,
         ...withTransferable(data.transferable),
         ...withSpinMonth(isSpin, objekts.receivedAt),
       ),
@@ -152,8 +187,8 @@ async function fetchRankedObjekts(
   data: InputData,
   owner: string,
   sort: RankedSort,
+  conditions: (SQL | undefined)[],
 ): Promise<QueryResult[]> {
-  const conditions = collectionFilters(data);
   const start = data.page * PER_PAGE;
   const end = start + PER_PAGE;
 
@@ -247,9 +282,11 @@ async function fetchRankedObjekts(
 /**
  * Fetch the count of objekts from the database.
  */
-async function fetchCount(owner: string, filters: InputData): Promise<number> {
-  const collectionConditions = collectionFilters(filters);
-
+async function fetchCount(
+  owner: string,
+  filters: InputData,
+  collectionConditions: (SQL | undefined)[],
+): Promise<number> {
   let query = indexer
     .select({ count: sql<number>`count(*)` })
     .from(objekts)

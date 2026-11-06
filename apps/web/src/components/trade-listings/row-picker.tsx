@@ -17,8 +17,6 @@ type Props = {
   picked: readonly ListingPick[];
   /** copies picked for the other rows, which this one can't take */
   elsewhere: ReadonlySet<number>;
-  /** whether a copy can fill the row, which the scope alone may not narrow to */
-  fits: (pick: ListingPick) => boolean;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onToggle: (pick: ListingPick) => void;
@@ -35,7 +33,6 @@ export default function RowPicker({
   count,
   picked,
   elsewhere,
-  fits,
   open,
   onOpenChange,
   onToggle,
@@ -53,7 +50,6 @@ export default function RowPicker({
         picked={new Set(picked.map((pick) => pick.tokenId))}
         full={picked.length >= count}
         elsewhere={elsewhere}
-        fits={(objekt) => fits(listingPick(objekt))}
         pickedLabel={null}
         onToggle={(objekt) => onToggle(listingPick(objekt))}
         onDone={() => onOpenChange(false)}

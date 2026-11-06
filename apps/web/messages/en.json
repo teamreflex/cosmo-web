@@ -2421,7 +2421,6 @@
   "listing_composer_range_or_full": "A range row can hold at most {max} ranges.",
   "listing_composer_range_remove": "Remove range {position}",
   "listing_range_or": "or",
-  "listing_detail_card_misfit": "doesn't fit this row",
   "listing_composer_post": "Create",
   "listing_composer_save": "Save",
   "listing_composer_posted": "Listing posted",

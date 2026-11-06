@@ -6,7 +6,18 @@ import {
   type ValidOnlineType,
   type ValidSort,
 } from "@apollo/cosmo/types/common";
-import { asc, between, desc, eq, gte, inArray, sql } from "drizzle-orm";
+import type { RangeFilter } from "@apollo/trades/range";
+import {
+  and,
+  asc,
+  between,
+  desc,
+  eq,
+  gte,
+  inArray,
+  or,
+  sql,
+} from "drizzle-orm";
 import type { PgColumn, PgSelect } from "drizzle-orm/pg-core";
 import {
   collections,
@@ -184,6 +195,37 @@ export function withCollections(selected: string[] | null | undefined) {
   return selected && selected.length > 0
     ? [inArray(collections.collectionNo, selected)]
     : [];
+}
+
+/**
+ * Filter to the collections a range covers: every narrowed column holds the
+ * collection's value, as matchesRange() checks an objekt.
+ */
+export function withRange(filter: RangeFilter) {
+  return and(
+    ...withSelectedArtists(filter.artist),
+    ...withMember(filter.member),
+    ...withCollections(filter.collectionNo),
+    ...withSeason(filter.season),
+    ...withClass(filter.class),
+    ...withOnlineType(filter.on_offline),
+  );
+}
+
+/**
+ * Filter to the collections a want row takes, as fitsWant() matches them:
+ * those any of its ranges covers, or the ones its slugs name.
+ */
+export function withWantMatch(
+  ranges: readonly RangeFilter[],
+  slugs: readonly string[],
+) {
+  return [
+    or(
+      ...ranges.map(withRange),
+      slugs.length > 0 ? inArray(collections.slug, [...slugs]) : undefined,
+    ),
+  ];
 }
 
 /**

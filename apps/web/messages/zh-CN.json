@@ -2376,7 +2376,6 @@
   "listing_composer_range_or_full": "每个范围行最多可包含 {max} 个范围。",
   "listing_composer_range_remove": "移除第 {position} 个范围",
   "listing_range_or": "或",
-  "listing_detail_card_misfit": "不符合此行",
   "listing_composer_post": "发布",
   "listing_composer_save": "保存",
   "listing_composer_posted": "挂单已发布",

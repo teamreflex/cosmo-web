@@ -37,7 +37,7 @@ const countSchema = z
 const isDistinct = (keys: readonly (string | number)[]) =>
   new Set(keys).size === keys.length;
 
-const slugSchema = pgText().trim().toLowerCase().min(1).max(255);
+export const slugSchema = pgText().trim().toLowerCase().min(1).max(255);
 
 const wantSchema = z.discriminatedUnion("kind", [
   z.strictObject({

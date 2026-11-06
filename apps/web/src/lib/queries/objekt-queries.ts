@@ -1,6 +1,9 @@
 import { ObjektNotFoundError } from "@/lib/client/objekt-util";
 import { $findTradePartnersForList } from "@/lib/functions/lists";
-import { $fetchObjektsBlockchain } from "@/lib/functions/objekts/objekt-blockchain";
+import {
+  $fetchObjektsBlockchain,
+  $fetchRangeFilterObjekts,
+} from "@/lib/functions/objekts/objekt-blockchain";
 import {
   $fetchObjektsBlockchainGroups,
   PER_PAGE as BLOCKCHAIN_GROUPS_PER_PAGE,
@@ -22,6 +25,7 @@ import { type FetchError, ofetch } from "ofetch";
 import type { z } from "zod";
 import type { Objekt } from "../universal/objekt-conversion";
 import type { ObjektMetadata, PriceHistoryRange } from "../universal/objekts";
+import type { WantMatch } from "../universal/trade-listings";
 import { baseUrl } from "../utils";
 
 /**
@@ -159,6 +163,46 @@ export function userCollectionBlockchainQuery(
         signal,
         data: {
           ...searchParams,
+          address,
+          page: pageParam,
+          artists: selectedArtists,
+        },
+      });
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => lastPage?.nextStartAfter,
+    staleTime: 1000 * 60 * 5,
+    refetchOnMount: false,
+  });
+}
+
+/**
+ * User collection held to a listing's want row, for its picker. Keyed under
+ * "collection" beside the profile's pages without sharing them.
+ */
+export function rangeFilterObjektsQuery(
+  address: string,
+  searchParams: z.infer<typeof userCollectionFrontendSchema>,
+  selectedArtists: string[],
+  match: WantMatch,
+) {
+  return infiniteQueryOptions({
+    queryKey: [
+      "collection",
+      "range-filter",
+      address,
+      {
+        ...normalizeFilters(searchParams),
+        artists: selectedArtists,
+        ...match,
+      },
+    ],
+    queryFn: ({ signal, pageParam }) => {
+      return $fetchRangeFilterObjekts({
+        signal,
+        data: {
+          ...searchParams,
+          ...match,
           address,
           page: pageParam,
           artists: selectedArtists,

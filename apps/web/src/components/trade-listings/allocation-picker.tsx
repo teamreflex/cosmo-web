@@ -85,7 +85,6 @@ export default function AllocationPicker({
                     ),
                   )
                 }
-                fits={(pick) => picks.fits(index, pick)}
                 open={picking === index}
                 onOpenChange={(open) => setPicking(open ? index : null)}
                 onToggle={(pick) => picks.toggle(index, pick)}
