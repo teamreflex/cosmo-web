@@ -1742,6 +1742,8 @@
   "filter_sort_recently_listed_sub": "新しい出品順 →",
   "filter_type": "タイプ",
   "filter_action": "アクション",
+  "filter_user": "ユーザー",
+  "filter_user_clear": "ユーザーフィルターをクリア",
   "filter_online_any": "すべて",
   "filter_online_any_sub": "フィジカル + デジタル",
   "filter_online_physical_sub": "印刷版",

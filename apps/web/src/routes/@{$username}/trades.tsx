@@ -55,7 +55,8 @@ function RouteComponent() {
 
   return (
     <section className="flex flex-col">
-      <TransfersRenderer cosmo={cosmo} />
+      {/* a user filter picked on one profile doesn't carry to the next */}
+      <TransfersRenderer key={cosmo.address} cosmo={cosmo} />
 
       <Overlay>
         <ScrollToTop />

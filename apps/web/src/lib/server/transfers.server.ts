@@ -247,7 +247,11 @@ async function walk(
   limit: number,
 ): Promise<Candidate[]> {
   const where = [...extra, ...cursorFilter(cursor)];
-  const [first, second] = branchConditions(address, type).map((condition) =>
+  const [first, second] = branchConditions(
+    address,
+    type,
+    params.counterparty,
+  ).map((condition) =>
     walkQuery(params, condition, where)
       .orderBy(desc(transfers.timestamp), desc(transfers.id))
       .limit(limit),
@@ -261,21 +265,31 @@ async function walk(
 }
 
 /**
- * The owner's index each branch walks, and what it keeps.
+ * The owner's index each branch walks, and what it keeps. A counterparty
+ * filters on the other side's address, which the index includes.
  */
-function branchConditions(address: string, type: TransferType) {
-  const sent = and(
+function branchConditions(
+  address: string,
+  type: TransferType,
+  counterparty: Payload["counterparty"],
+) {
+  const outgoing = and(
     eq(transfers.from, address),
+    counterparty ? eq(transfers.to, counterparty) : undefined,
+  );
+  const incoming = and(
+    eq(transfers.to, address),
+    counterparty ? eq(transfers.from, counterparty) : undefined,
+  );
+  const sent = and(
+    outgoing,
     sql`${transfers.to} not in (${NULL_ADDRESS}, ${SPIN_ADDRESS})`,
   );
-  const received = and(
-    eq(transfers.to, address),
-    ne(transfers.from, NULL_ADDRESS),
-  );
+  const received = and(incoming, ne(transfers.from, NULL_ADDRESS));
 
   switch (type) {
     case "all":
-      return [eq(transfers.from, address), eq(transfers.to, address)];
+      return [outgoing, incoming];
     case "trade":
       return [sent, received];
     case "sent":
@@ -283,9 +297,9 @@ function branchConditions(address: string, type: TransferType) {
     case "received":
       return [received];
     case "mint":
-      return [and(eq(transfers.from, NULL_ADDRESS), eq(transfers.to, address))];
+      return [and(eq(transfers.from, NULL_ADDRESS), incoming)];
     case "spin":
-      return [and(eq(transfers.from, address), eq(transfers.to, SPIN_ADDRESS))];
+      return [and(outgoing, eq(transfers.to, SPIN_ADDRESS))];
   }
 }
 

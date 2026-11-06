@@ -2,6 +2,7 @@ import { singleArtistChip } from "@/components/collection/artist-value-toggle";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import type { SpinOutcome, TransferType } from "@/lib/universal/transfers";
+import type { CosmoPublicUser } from "@apollo/cosmo/types/user";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import ClassFilter from "../filter-class";
@@ -9,12 +10,15 @@ import OnlineFilter from "../filter-online";
 import SeasonFilter from "../filter-season";
 import SpinOutcomeFilter from "../filter-spin-outcome";
 import TransferTypeFilter from "../filter-transfer-type";
+import TransferUserFilter from "../filter-transfer-user";
 
 type Props = {
   type: TransferType;
   setType: (type: TransferType) => void;
   outcome: SpinOutcome | undefined;
   setOutcome: (outcome: SpinOutcome | undefined) => void;
+  counterparty: CosmoPublicUser | null;
+  setCounterparty: (user: CosmoPublicUser | null) => void;
 };
 
 /**
@@ -56,7 +60,15 @@ export function TransfersFilters(props: Props) {
           />
         </Suspense>
       </ErrorBoundary>
-      <TransferTypeFilter type={props.type} setType={props.setType} />
+      <TransferUserFilter
+        user={props.counterparty}
+        setUser={props.setCounterparty}
+      />
+      <TransferTypeFilter
+        type={props.type}
+        setType={props.setType}
+        hasCounterparty={props.counterparty !== null}
+      />
       {props.type === "spin" && (
         <SpinOutcomeFilter
           outcome={props.outcome}

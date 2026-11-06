@@ -10,6 +10,13 @@ export const transferTypes = [
 ] as const;
 export type TransferType = (typeof transferTypes)[number];
 
+/**
+ * Mints and spins have no other user, so a user filter can't apply to them.
+ */
+export function typeHasCounterparty(type: TransferType) {
+  return type !== "mint" && type !== "spin";
+}
+
 export const spinOutcomes = ["success", "fail", "pending"] as const;
 export type SpinOutcome = (typeof spinOutcomes)[number];
 

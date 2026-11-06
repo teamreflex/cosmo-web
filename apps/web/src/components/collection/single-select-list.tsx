@@ -6,6 +6,7 @@ export type SingleSelectOption<T extends string> = {
   sublabel?: string;
   /** shown before the label, such as an artist's logo */
   icon?: ReactNode;
+  disabled?: boolean;
 };
 
 type Props<T extends string> = {
@@ -30,11 +31,12 @@ export default function SingleSelectList<T extends string>({
             key={option.value}
             type="button"
             aria-pressed={selected}
+            disabled={option.disabled}
             onClick={() => {
               onChange(option.value);
               close?.();
             }}
-            className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-xs text-foreground transition-colors hover:bg-accent"
+            className="flex w-full items-center justify-between gap-3 px-3 py-2 text-left text-xs text-foreground transition-colors not-disabled:hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
           >
             <div className="flex items-center gap-2">
               {option.icon}

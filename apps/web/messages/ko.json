@@ -1742,6 +1742,8 @@
   "filter_sort_recently_listed_sub": "최근 등록 순 →",
   "filter_type": "유형",
   "filter_action": "액션",
+  "filter_user": "사용자",
+  "filter_user_clear": "사용자 필터 지우기",
   "filter_online_any": "전체",
   "filter_online_any_sub": "피지컬 + 디지털",
   "filter_online_physical_sub": "실물 복사본",

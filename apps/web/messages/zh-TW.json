@@ -1744,6 +1744,8 @@
   "filter_sort_recently_listed_sub": "最新刊登優先 →",
   "filter_type": "類型",
   "filter_action": "動作",
+  "filter_user": "使用者",
+  "filter_user_clear": "清除使用者篩選",
   "filter_online_any": "不限",
   "filter_online_any_sub": "實體 + 數位",
   "filter_online_physical_sub": "實體印刷卡",

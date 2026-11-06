@@ -7,6 +7,10 @@ import { cn } from "@/lib/utils";
 import { IconChevronDown } from "@tabler/icons-react";
 import type { ReactNode } from "react";
 import { useState } from "react";
+import {
+  filterChipClassName,
+  filterChipValueClassName,
+} from "./filter-chip-styles";
 
 type Props = {
   label: string;
@@ -35,24 +39,12 @@ export default function FilterChip({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger
-        className={cn(
-          "inline-flex h-8 items-center gap-2 rounded-sm border bg-transparent px-2.5 text-xs font-medium transition-colors hover:bg-accent",
-          active
-            ? "border-cosmo/80 bg-cosmo/10 text-foreground"
-            : "border-border text-foreground",
-        )}
+        className={filterChipClassName(active)}
         data-active={active || undefined}
       >
         <span>{label}</span>
         {valueLabel && (
-          <span
-            className={cn(
-              "-my-1 flex items-center gap-1.5 border-l pl-2 text-xs",
-              active
-                ? "border-cosmo/40 text-foreground"
-                : "border-border text-muted-foreground",
-            )}
-          >
+          <span className={filterChipValueClassName(active)}>
             {valueIcon}
             <span>{valueLabel}</span>
             {count !== undefined && count > 0 && (

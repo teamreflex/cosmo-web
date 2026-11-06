@@ -1,5 +1,8 @@
 import { m } from "@/i18n/messages";
-import type { TransferType } from "@/lib/universal/transfers";
+import {
+  type TransferType,
+  typeHasCounterparty,
+} from "@/lib/universal/transfers";
 import FilterChip from "./filter-chip";
 import SingleSelectList, {
   type SingleSelectOption,
@@ -8,16 +11,29 @@ import SingleSelectList, {
 type Props = {
   type: TransferType;
   setType: (type: TransferType) => void;
+  hasCounterparty: boolean;
 };
 
-export default function TransferTypeFilter({ type, setType }: Props) {
-  const options: SingleSelectOption<TransferType>[] = [
-    { value: "all", label: m.filter_type_all() },
-    { value: "trade", label: m.filter_type_trade() },
-    { value: "sent", label: m.filter_type_sent() },
-    { value: "received", label: m.common_received() },
-    { value: "mint", label: m.filter_type_mints() },
-    { value: "spin", label: m.filter_type_spin() },
+export default function TransferTypeFilter({
+  type,
+  setType,
+  hasCounterparty,
+}: Props) {
+  const option = (
+    value: TransferType,
+    label: string,
+  ): SingleSelectOption<TransferType> => ({
+    value,
+    label,
+    disabled: hasCounterparty && !typeHasCounterparty(value),
+  });
+  const options = [
+    option("all", m.filter_type_all()),
+    option("trade", m.filter_type_trade()),
+    option("sent", m.filter_type_sent()),
+    option("received", m.common_received()),
+    option("mint", m.filter_type_mints()),
+    option("spin", m.filter_type_spin()),
   ];
 
   const valueLabel =

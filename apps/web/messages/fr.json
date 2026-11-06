@@ -1780,6 +1780,8 @@
   "filter_sort_recently_listed_sub": "annonces récentes d'abord →",
   "filter_type": "Type",
   "filter_action": "Action",
+  "filter_user": "Utilisateur",
+  "filter_user_clear": "Effacer le filtre utilisateur",
   "filter_online_any": "Tout",
   "filter_online_any_sub": "physique + digital",
   "filter_online_physical_sub": "copies physiques",

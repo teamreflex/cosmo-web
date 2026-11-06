@@ -5,7 +5,12 @@ import { m } from "@/i18n/messages";
 import { groupByDay } from "@/lib/client/transfer-days";
 import { transfersQuery } from "@/lib/queries/objekt-queries";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
-import type { SpinOutcome, TransferType } from "@/lib/universal/transfers";
+import {
+  type SpinOutcome,
+  type TransferType,
+  typeHasCounterparty,
+} from "@/lib/universal/transfers";
+import type { CosmoPublicUser } from "@apollo/cosmo/types/user";
 import { IconHeartBroken, IconRefresh } from "@tabler/icons-react";
 import {
   QueryErrorResetBoundary,
@@ -43,6 +48,17 @@ export default function TransfersRenderer({ cosmo }: Props) {
     setFilters((prev) => ({ ...prev, outcome: value }));
   }
 
+  // kept out of the URL for now
+  const [counterparty, setCounterparty] = useState<CosmoPublicUser | null>(
+    null,
+  );
+  function selectCounterparty(user: CosmoPublicUser | null) {
+    setCounterparty(user);
+    if (user && !typeHasCounterparty(type)) {
+      setType("all");
+    }
+  }
+
   return (
     <div className="flex flex-col">
       <FiltersContainer>
@@ -51,6 +67,8 @@ export default function TransfersRenderer({ cosmo }: Props) {
           setType={setType}
           outcome={filters.outcome ?? undefined}
           setOutcome={setOutcome}
+          counterparty={counterparty}
+          setCounterparty={selectCounterparty}
         />
       </FiltersContainer>
 
@@ -73,7 +91,11 @@ export default function TransfersRenderer({ cosmo }: Props) {
                 )}
               >
                 <Suspense fallback={<TransfersSkeleton />}>
-                  <Transfers address={cosmo.address} filters={filters} />
+                  <Transfers
+                    address={cosmo.address}
+                    filters={filters}
+                    counterparty={counterparty?.address}
+                  />
                 </Suspense>
               </ErrorBoundary>
             )}
@@ -87,6 +109,7 @@ export default function TransfersRenderer({ cosmo }: Props) {
 type TransfersProps = {
   address: string;
   filters: TransferFilters;
+  counterparty: string | undefined;
 };
 
 /**
@@ -96,11 +119,11 @@ type TransfersProps = {
 const DAY_HEADER_PX = 37;
 const ROW_PX = 77;
 
-function Transfers({ address, filters }: TransfersProps) {
+function Transfers({ address, filters, counterparty }: TransfersProps) {
   const { selectedIds } = useArtists();
   const [now] = useState(() => Date.now());
   const query = useSuspenseInfiniteQuery(
-    transfersQuery(address, filters, selectedIds),
+    transfersQuery(address, filters, selectedIds, counterparty),
   );
 
   const rows = [

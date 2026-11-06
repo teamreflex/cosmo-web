@@ -1744,6 +1744,8 @@
   "filter_sort_recently_listed_sub": "最新挂单优先 →",
   "filter_type": "类型",
   "filter_action": "操作",
+  "filter_user": "用户",
+  "filter_user_clear": "清除用户筛选",
   "filter_online_any": "不限",
   "filter_online_any_sub": "实体 + 数字",
   "filter_online_physical_sub": "实体印刷卡",

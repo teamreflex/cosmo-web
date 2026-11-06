@@ -1771,6 +1771,8 @@
   "filter_sort_recently_listed_sub": "newest listings first →",
   "filter_type": "Type",
   "filter_action": "Action",
+  "filter_user": "User",
+  "filter_user_clear": "Clear user filter",
   "filter_online_any": "Any",
   "filter_online_any_sub": "physical + digital",
   "filter_online_physical_sub": "printed copies",

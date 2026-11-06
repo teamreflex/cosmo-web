@@ -221,6 +221,7 @@ export function transfersQuery(
   address: string,
   searchParams: z.infer<typeof transfersFrontendSchema>,
   selectedArtists: string[],
+  counterparty?: string,
 ) {
   return infiniteQueryOptions({
     queryKey: [
@@ -231,6 +232,7 @@ export function transfersQuery(
         type: searchParams.type,
         outcome: searchParams.outcome,
         artists: selectedArtists,
+        counterparty,
       },
     ],
     queryFn: ({ signal, pageParam }) => {
@@ -239,6 +241,7 @@ export function transfersQuery(
         data: {
           ...searchParams,
           address,
+          counterparty,
           cursor: pageParam,
           artists: selectedArtists,
         },

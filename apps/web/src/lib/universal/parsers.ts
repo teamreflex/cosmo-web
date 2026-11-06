@@ -7,6 +7,7 @@ import {
 } from "@apollo/cosmo/types/common";
 import { toUiArtist } from "@apollo/trades/composer";
 import { listingTypes } from "@apollo/trades/listing";
+import { isAddress } from "@apollo/util";
 import * as z from "zod";
 import { marketListedWindows, marketSorts } from "./market";
 import {
@@ -280,6 +281,12 @@ export const transfersBackendSchema = cosmoSchema
   })
   .extend({
     address: z.string(),
+    /** only transfers between `address` and this one */
+    counterparty: z
+      .string()
+      .refine(isAddress)
+      .transform((address) => address.toLowerCase())
+      .nullish(),
     cursor: z.string().nullish(),
     type: z.enum(transferTypes).nullish().default("all"),
     outcome: z.enum(spinOutcomes).nullish(),
