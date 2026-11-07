@@ -11,7 +11,8 @@ import type {
 import { cn } from "@/lib/utils";
 import { IconCircleCheck, IconPlus, IconX } from "@tabler/icons-react";
 import { Fragment, type ReactNode, useState } from "react";
-import { ObjektCardFace } from "../objekt/common";
+import { ObjektCardFace, ObjektSidebar } from "../objekt/common";
+import ExpandableObjekt from "../objekt/objekt-expandable";
 import { RemovableTile, TileCaption } from "./composer-offered";
 import { RangeBadges } from "./range-want";
 import RowPicker from "./row-picker";
@@ -273,7 +274,11 @@ function PickSlot({
   );
 }
 
-// a wanted collection greyed out, or a crossed-out slot for a range
+/**
+ * A wanted collection greyed out, which still opens its objekt dialog so
+ * the viewer can look up what they don't own, or a crossed-out slot for a
+ * range.
+ */
 function MissingCard({ collection }: { collection: Objekt.Collection | null }) {
   return collection === null ? (
     <div className="flex aspect-photocard w-full flex-col items-center justify-center gap-1.5 rounded-photocard border border-dashed border-input p-2 text-center text-xs font-medium text-muted-foreground">
@@ -281,8 +286,10 @@ function MissingCard({ collection }: { collection: Objekt.Collection | null }) {
       {m.listing_detail_slot_short()}
     </div>
   ) : (
-    <span className="block aspect-photocard w-full overflow-hidden rounded-photocard opacity-30 grayscale">
-      <ObjektCardFace collection={collection} />
-    </span>
+    <div className="opacity-30 grayscale">
+      <ExpandableObjekt collection={collection}>
+        <ObjektSidebar collection={collection} />
+      </ExpandableObjekt>
+    </div>
   );
 }
