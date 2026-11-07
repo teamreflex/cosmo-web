@@ -62,6 +62,8 @@ export default defineConfig({
   },
   ssr: {
     external: ["bun"],
+    // fix tailwind import for react-email
+    noExternal: ["tailwindcss"],
   },
   optimizeDeps: {
     exclude: ["bun"],
