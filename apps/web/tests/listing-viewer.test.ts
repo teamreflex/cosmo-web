@@ -7,7 +7,7 @@ import {
   standingsSummary,
   wantKindsSummary,
   wantLabel,
-  wantScope,
+  wantMatch,
 } from "../src/lib/client/trade-listings";
 import {
   type Candidate,
@@ -778,22 +778,22 @@ describe("how a listing's objekts stand", () => {
 describe("what a want row's picker lists", () => {
   test("an exact or any-of row names its collections by slug", () => {
     expect(
-      wantScope({
+      wantMatch({
         kind: "exact",
         count: 1,
         objekt: attributes("atom02-heejin-101z"),
         collection: null,
-      }).match,
+      }),
     ).toEqual({ ranges: [], slugs: ["atom02-heejin-101z"] });
     expect(
-      wantScope({
+      wantMatch({
         kind: "choice",
         count: 1,
         options: [
           { ...attributes("atom02-heejin-101z"), collection: null },
           { ...attributes("atom02-kimlip-102z", "KimLip"), collection: null },
         ],
-      }).match,
+      }),
     ).toEqual({
       ranges: [],
       slugs: ["atom02-heejin-101z", "atom02-kimlip-102z"],
@@ -818,7 +818,7 @@ describe("what a want row's picker lists", () => {
         class: ["Double"],
       },
     ];
-    expect(wantScope({ kind: "range", count: 1, ranges }).match).toEqual({
+    expect(wantMatch({ kind: "range", count: 1, ranges })).toEqual({
       ranges,
       slugs: [],
     });

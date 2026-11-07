@@ -2,7 +2,6 @@ import { m } from "@/i18n/messages";
 import type { NeighbourSuggestion } from "@/lib/universal/binders";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type { userCollectionFrontendSchema } from "@/lib/universal/parsers";
-import type { WantMatch } from "@/lib/universal/trade-listings";
 import type {
   ValidArtist,
   ValidOnlineType,
@@ -28,10 +27,9 @@ export type PickerFilters = {
 };
 
 /**
- * The collections a picker is held to, such as a listing's want row, which
- * `match` names; the viewer's own filters narrow inside it. Each column lists
- * the values the row allows, and an empty column allows any, so the filter
- * panel and artist switch offer only those.
+ * The values a picker's filter panel and artist switch offer, such as a
+ * listing's want row's. Each column lists the values it allows, and an
+ * empty column allows any.
  */
 export type PickerScope = {
   artist: ValidArtist[];
@@ -39,7 +37,6 @@ export type PickerScope = {
   season: string[];
   class: string[];
   onOffline: ValidOnlineType[];
-  match: WantMatch;
 };
 
 export type ArtistScopedKey = "member" | "season" | "class";

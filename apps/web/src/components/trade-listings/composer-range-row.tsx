@@ -100,18 +100,12 @@ export default function ComposerRangeRow({
   });
   // the last count stays up while the next one loads
   const shown = useDeferredValue(settled);
-  /**
-   * Each range's own count, read from what the row's count fetched. It's
-   * left out until the counted ranges are the row's current ones, since a
-   * removed range would shift the counts onto the wrong ranges.
-   */
+  // each range's own count, read from what the row's count fetched for these ranges
   const perRange = useQueries({
-    queries: (shown === null || !sameRanges(shown, parsed) ? [] : [shown]).map(
-      (ranges) => ({
-        ...rangeMatchCountQuery(ranges),
-        enabled: false,
-      }),
-    ),
+    queries: (parsed === null ? [] : [parsed]).map((current) => ({
+      ...rangeMatchCountQuery(current),
+      enabled: false,
+    })),
     combine: (results) => results[0]?.data?.perRange,
   });
 

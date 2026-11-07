@@ -123,3 +123,10 @@ export function formatSerial(serial: number) {
 export function accountName(name: string) {
   return isAddress(name) ? shortAddress(name) : name;
 }
+
+/**
+ * Whether no key appears twice.
+ */
+export function isDistinct(keys: readonly (string | number)[]) {
+  return new Set(keys).size === keys.length;
+}

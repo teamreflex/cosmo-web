@@ -1,6 +1,6 @@
 import type { PickerRow, Picks } from "@/hooks/use-listing-picks";
 import { m } from "@/i18n/messages";
-import { formatCount, pickShown, wantScope } from "@/lib/client/trade-listings";
+import { formatCount, pickShown } from "@/lib/client/trade-listings";
 import { env } from "@/lib/env/client";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type {
@@ -73,7 +73,7 @@ export default function AllocationPicker({
               <RowPicker
                 address={address}
                 label={<RowLabel row={row} count={count} />}
-                scope={wantScope(row.want)}
+                want={row.want}
                 count={count}
                 picked={rowPicks}
                 elsewhere={

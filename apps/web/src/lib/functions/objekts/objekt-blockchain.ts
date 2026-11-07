@@ -69,8 +69,8 @@ export const $fetchRangeFilterObjekts = createServerFn({ method: "POST" })
   .validator(
     schema
       .extend({
-        ranges: z.array(rangeFilterSchema).max(MAX_RANGE_CLAUSES).default([]),
-        slugs: z.array(slugSchema).max(MAX_CHOICE_OPTIONS).default([]),
+        ranges: z.array(rangeFilterSchema).max(MAX_RANGE_CLAUSES),
+        slugs: z.array(slugSchema).max(MAX_CHOICE_OPTIONS),
       })
       .refine((data) => data.ranges.length > 0 || data.slugs.length > 0, {
         message: "A want row needs a range or a collection",
@@ -79,7 +79,7 @@ export const $fetchRangeFilterObjekts = createServerFn({ method: "POST" })
   .handler(({ data }) =>
     fetchPage(data, [
       ...collectionFilters(data),
-      ...withWantMatch(data.ranges, data.slugs),
+      withWantMatch(data.ranges, data.slugs),
     ]),
   );
 

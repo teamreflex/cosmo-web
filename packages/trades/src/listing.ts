@@ -1,3 +1,4 @@
+import { isDistinct } from "@apollo/util";
 import * as z from "zod";
 import type { TradeWant } from "./allocate";
 import {
@@ -33,9 +34,6 @@ const countSchema = z
   .int()
   .min(1, "A row needs at least one objekt")
   .max(MAX_PER_ROW, `A row can ask for at most ${MAX_PER_ROW} objekts`);
-
-const isDistinct = (keys: readonly (string | number)[]) =>
-  new Set(keys).size === keys.length;
 
 export const slugSchema = pgText().trim().toLowerCase().min(1).max(255);
 

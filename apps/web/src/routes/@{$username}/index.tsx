@@ -35,7 +35,7 @@ export const Route = createFileRoute("/@{$username}/")({
   component: RouteComponent,
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
-  loader: async ({ context, deps }) => {
+  loader: async ({ context, deps, cause }) => {
     const [account, target, , selected] = await Promise.all([
       context.queryClient.query({
         ...currentAccountQuery,
@@ -54,6 +54,9 @@ export const Route = createFileRoute("/@{$username}/")({
         staleTime: "static",
       }),
     ]);
+
+    // prevent filter changes prefetching the user's default collection mode
+    if (cause === "stay") return { target };
 
     // serial sorts only exist on the blockchain data source, so the component
     // falls back to it regardless of collection mode (see use-filters.ts)

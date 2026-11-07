@@ -226,22 +226,26 @@ export async function countRangeMatches(
   rows: readonly (readonly RangeFilter[])[],
 ): Promise<RangeMatchCounts[]> {
   if (rows.length === 0) return [];
+  const conditions = rows.map((ranges) => ranges.map(withRange));
   const [row] = await indexer
     .select({
       counts: sql<number[]>`array[${sql.join(
-        rows
-          .flatMap((ranges) => [
-            or(...ranges.map(withRange)),
-            ...ranges.map(withRange),
-          ])
+        conditions
+          // a single range's own count is its row's total
+          .flatMap((wheres) =>
+            wheres.length > 1 ? [or(...wheres), ...wheres] : wheres,
+          )
           .map((where) => sql`count(*) filter (where ${where})`),
         sql`, `,
       )}]::int[]`,
     })
     .from(collections);
-  const counts = [...(row?.counts ?? [])];
-  return rows.map((ranges) => {
-    const [total, ...perRange] = counts.splice(0, ranges.length + 1);
+  // Bun returns an int[] as an Int32Array, which slices into more of them
+  const counts = Array.from(row?.counts ?? []);
+  let offset = 0;
+  return conditions.map((wheres) => {
+    const total = wheres.length > 1 ? counts[offset++] : counts[offset];
+    const perRange = counts.slice(offset, (offset += wheres.length));
     if (total === undefined) throw new Error("missing range match counts");
     return { total, perRange };
   });
@@ -448,7 +452,7 @@ export async function readCandidates(
           eq(objekts.owner, addr(address)),
           eq(objekts.transferable, true),
           excluded.length ? notInArray(objekts.id, excluded) : undefined,
-          ...withWantMatch(
+          withWantMatch(
             wants.flatMap((want) => (want.kind === "range" ? want.ranges : [])),
             slugs,
           ),

@@ -1,7 +1,10 @@
-import type { PickerScope } from "@/components/objekt-picker/picker-filters";
 import { m } from "@/i18n/messages";
-import { listingPick } from "@/lib/client/trade-listings";
-import type { ListingPick } from "@/lib/universal/trade-listings";
+import { listingPick, wantMatch, wantScope } from "@/lib/client/trade-listings";
+import { rangeFilterObjektsQuery } from "@/lib/queries/objekt-queries";
+import type {
+  ListingFeedWant,
+  ListingPick,
+} from "@/lib/universal/trade-listings";
 import type { ReactNode } from "react";
 import TradePicker from "./trade-picker";
 import TradeSheet from "./trade-sheet";
@@ -11,7 +14,7 @@ type Props = {
   address: string;
   /** the want row as the page heads it */
   label: ReactNode;
-  scope: PickerScope;
+  want: Exclude<ListingFeedWant, { kind: "payment" }>;
   count: number;
   /** the row's picks */
   picked: readonly ListingPick[];
@@ -29,7 +32,7 @@ type Props = {
 export default function RowPicker({
   address,
   label,
-  scope,
+  want,
   count,
   picked,
   elsewhere,
@@ -46,7 +49,10 @@ export default function RowPicker({
       <TradePicker
         address={address}
         heading={<div className="min-w-0 text-sm">{label}</div>}
-        scope={scope}
+        scope={wantScope(want)}
+        collectionQuery={(filters) =>
+          rangeFilterObjektsQuery(address, filters, wantMatch(want))
+        }
         picked={new Set(picked.map((pick) => pick.tokenId))}
         full={picked.length >= count}
         elsewhere={elsewhere}

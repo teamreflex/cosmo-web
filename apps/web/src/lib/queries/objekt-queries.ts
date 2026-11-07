@@ -148,48 +148,59 @@ export function userCollectionBlockchainQuery(
   searchParams: z.infer<typeof userCollectionFrontendSchema>,
   selectedArtists: string[],
 ) {
-  return infiniteQueryOptions({
-    queryKey: [
-      "collection",
-      "blockchain",
-      address,
-      {
-        ...normalizeFilters(searchParams),
-        artists: selectedArtists,
-      },
-    ],
-    queryFn: ({ signal, pageParam }) => {
-      return $fetchObjektsBlockchain({
-        signal,
-        data: {
-          ...searchParams,
-          address,
-          page: pageParam,
-          artists: selectedArtists,
-        },
-      });
-    },
-    initialPageParam: 0,
-    getNextPageParam: (lastPage) => lastPage?.nextStartAfter,
-    staleTime: 1000 * 60 * 5,
-    refetchOnMount: false,
-  });
+  return collectionPagesQuery(
+    "blockchain",
+    address,
+    searchParams,
+    selectedArtists,
+    (signal, data) => $fetchObjektsBlockchain({ signal, data }),
+  );
 }
 
 /**
  * User collection held to a listing's want row, for its picker. Keyed under
- * "collection" beside the profile's pages without sharing them.
+ * "collection" beside the profile's pages without sharing them. It sends no
+ * artists, since the row's match already holds the results to its own.
  */
 export function rangeFilterObjektsQuery(
   address: string,
   searchParams: z.infer<typeof userCollectionFrontendSchema>,
-  selectedArtists: string[],
   match: WantMatch,
+) {
+  return collectionPagesQuery(
+    "range-filter",
+    address,
+    searchParams,
+    [],
+    (signal, data) =>
+      $fetchRangeFilterObjekts({ signal, data: { ...data, ...match } }),
+    match,
+  );
+}
+
+/**
+ * The infinite query every paged user collection source shares, so each
+ * returns the same options type. `match` joins the key when there is one.
+ */
+function collectionPagesQuery(
+  source: "blockchain" | "range-filter",
+  address: string,
+  searchParams: z.infer<typeof userCollectionFrontendSchema>,
+  selectedArtists: string[],
+  fetchPage: (
+    signal: AbortSignal,
+    data: z.infer<typeof userCollectionFrontendSchema> & {
+      address: string;
+      page: number;
+      artists: string[];
+    },
+  ) => ReturnType<typeof $fetchObjektsBlockchain>,
+  match?: WantMatch,
 ) {
   return infiniteQueryOptions({
     queryKey: [
       "collection",
-      "range-filter",
+      source,
       address,
       {
         ...normalizeFilters(searchParams),
@@ -197,18 +208,13 @@ export function rangeFilterObjektsQuery(
         ...match,
       },
     ],
-    queryFn: ({ signal, pageParam }) => {
-      return $fetchRangeFilterObjekts({
-        signal,
-        data: {
-          ...searchParams,
-          ...match,
-          address,
-          page: pageParam,
-          artists: selectedArtists,
-        },
-      });
-    },
+    queryFn: ({ signal, pageParam }) =>
+      fetchPage(signal, {
+        ...searchParams,
+        address,
+        page: pageParam,
+        artists: selectedArtists,
+      }),
     initialPageParam: 0,
     getNextPageParam: (lastPage) => lastPage?.nextStartAfter,
     staleTime: 1000 * 60 * 5,

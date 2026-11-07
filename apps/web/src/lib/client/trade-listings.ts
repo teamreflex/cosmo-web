@@ -12,13 +12,10 @@ import {
   type TokenRefusalReason,
   type TradeListing,
   type TradeRatio,
+  type WantMatch,
 } from "@/lib/universal/trade-listings";
 import type { TradePartyName } from "@/lib/universal/trades";
-import {
-  type ValidArtist,
-  validArtists,
-  validOnlineTypes,
-} from "@apollo/cosmo/types/common";
+import { type ValidArtist, validOnlineTypes } from "@apollo/cosmo/types/common";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import {
   rangeSummaryColumns,
@@ -262,20 +259,10 @@ export function wantKindsSummary(wants: readonly ListingFeedWant[]) {
 export function rangeArtist(
   ranges: readonly RangeFilter[],
 ): ValidArtist | null {
-  const artists = new Set(ranges.flatMap((filter) => filter.artist));
-  const [only] = artists;
-  if (
-    only === undefined ||
-    artists.size > 1 ||
-    ranges.some((filter) => filter.artist.length === 0)
-  ) {
-    return null;
-  }
-  return (
-    validArtists.find(
-      (artist) => artist.toLowerCase() === only.toLowerCase(),
-    ) ?? null
-  );
+  const [only, ...others] = rangesColumn(ranges, (filter) => filter.artist);
+  return only === undefined || others.length > 0
+    ? null
+    : (toUiArtist(only) ?? null);
 }
 
 /**
@@ -436,12 +423,23 @@ export function endedNormally(
 }
 
 /**
- * The collections a want row's picker is held to, matched as fitsWant()
- * matches them: a range row's ranges, or an exact or "any of" row's
- * collections by slug. The columns shape the filter panel and artist switch,
- * and the artists also narrow the query. They hold every value of the row's
- * ranges or collections, and a range row's column is open when any of its
- * ranges leaves it open.
+ * Every value the ranges allow in one column, or none when a range leaves
+ * the column open, since the ranges together then allow any value.
+ */
+function rangesColumn<TValue extends string>(
+  ranges: readonly RangeFilter[],
+  pick: (filter: RangeFilter) => readonly TValue[],
+): TValue[] {
+  return ranges.some((filter) => pick(filter).length === 0)
+    ? []
+    : [...new Set(ranges.flatMap(pick))];
+}
+
+/**
+ * The values a want row's picker offers in its filter panel and artist
+ * switch: every value of the row's ranges or collections, with a range
+ * row's column open when any of its ranges leaves it open. What the picker
+ * lists comes from wantMatch().
  */
 export function wantScope(
   want: Exclude<ListingFeedWant, { kind: "payment" }>,
@@ -449,10 +447,7 @@ export function wantScope(
   if (want.kind === "range") {
     const values = <TValue extends string>(
       pick: (filter: RangeFilter) => readonly TValue[],
-    ) =>
-      want.ranges.some((filter) => pick(filter).length === 0)
-        ? []
-        : [...new Set(want.ranges.flatMap(pick))];
+    ) => rangesColumn(want.ranges, pick);
     return {
       artist: values((filter) => filter.artist).flatMap(
         (artist) => toUiArtist(artist) ?? [],
@@ -461,7 +456,6 @@ export function wantScope(
       season: values((filter) => filter.season),
       class: values((filter) => filter.class),
       onOffline: values((filter) => filter.on_offline),
-      match: { ranges: want.ranges, slugs: [] },
     };
   }
   if (want.kind === "choice") {
@@ -478,7 +472,6 @@ export function wantScope(
       onOffline: validOnlineTypes.filter((type) =>
         want.options.some((option) => option.onOffline === type),
       ),
-      match: { ranges: [], slugs: want.options.map((option) => option.slug) },
     };
   }
   const { objekt } = want;
@@ -489,8 +482,24 @@ export function wantScope(
     season: [objekt.season],
     class: [objekt.class],
     onOffline: validOnlineTypes.filter((type) => type === objekt.onOffline),
-    match: { ranges: [], slugs: [objekt.slug] },
   };
+}
+
+/**
+ * The collections a want row takes, as fitsWant() matches them: a range
+ * row's ranges, or an exact or "any of" row's collections by slug.
+ */
+export function wantMatch(
+  want: Exclude<ListingFeedWant, { kind: "payment" }>,
+): WantMatch {
+  switch (want.kind) {
+    case "range":
+      return { ranges: want.ranges, slugs: [] };
+    case "choice":
+      return { ranges: [], slugs: want.options.map((option) => option.slug) };
+    case "exact":
+      return { ranges: [], slugs: [want.objekt.slug] };
+  }
 }
 
 /**

@@ -1,4 +1,5 @@
 import { validArtists, validOnlineTypes } from "@apollo/cosmo/types/common";
+import { isDistinct } from "@apollo/util";
 import * as z from "zod";
 
 /**
@@ -98,9 +99,11 @@ export const rangeColumns = [
  */
 export function rangeKey(filter: RangeFilter) {
   return JSON.stringify(
-    rangeColumns.map((column) =>
-      filter[column].toSorted((a, b) => (a < b ? -1 : Number(a > b))),
-    ),
+    rangeColumns.map((column) => {
+      // read as plain strings, which sort by code unit without a comparator
+      const values: readonly string[] = filter[column];
+      return values.toSorted();
+    }),
   );
 }
 
@@ -115,7 +118,7 @@ export const rangesSchema = z
     MAX_RANGE_CLAUSES,
     `A range row can hold at most ${MAX_RANGE_CLAUSES} ranges`,
   )
-  .refine((ranges) => new Set(ranges.map(rangeKey)).size === ranges.length, {
+  .refine((ranges) => isDistinct(ranges.map(rangeKey)), {
     message: "Each range can only be in a row once",
   });
 

@@ -21,6 +21,7 @@ import {
   rangeKey,
   rangesSchema,
 } from "@apollo/trades/range";
+import { isDistinct } from "@apollo/util";
 import type { z } from "zod";
 import type { cosmoSchema } from "./parsers";
 import {
@@ -150,9 +151,7 @@ export function formValuesToInput(
       want.kind === "range"
         ? {
             ...want,
-            ranges: want.ranges.map((filter) =>
-              collapseWholeGroup(filter, rosters),
-            ),
+            ranges: collapseRanges(want.ranges, rosters),
           }
         : want,
     ),
@@ -242,22 +241,14 @@ export function parsedRanges(ranges: readonly RangeFormFilter[]) {
 }
 
 /**
- * Each range row's ranges as the server compares them: parsed by the
- * schema, then collapsed with `rosters` as formValuesToInput() sends them,
- * so a whole roster and its artist read as the same range. A range the
- * schema refuses is left out, since composerBlock() holds Post back for it
- * first.
+ * The ranges as they're sent: one naming an artist's whole roster goes as
+ * that artist (collapseWholeGroup()), so the two read as the same range.
  */
-function sentRanges(
-  rows: readonly (readonly RangeFormFilter[])[],
+function collapseRanges(
+  ranges: readonly RangeFilter[],
   rosters: ReadonlyMap<string, readonly string[]>,
-): RangeFilter[][] {
-  return rows.map((ranges) =>
-    ranges.flatMap((filter) => {
-      const parsed = rangeFilterSchema.safeParse(filter);
-      return parsed.success ? [collapseWholeGroup(parsed.data, rosters)] : [];
-    }),
-  );
+) {
+  return ranges.map((filter) => collapseWholeGroup(filter, rosters));
 }
 
 /**
@@ -269,7 +260,7 @@ function sentRanges(
  * `rangeMatches` holds how many collections the range rows cover, where
  * known: a range that covers none can't be posted, and a row still being
  * counted doesn't hold Post back. Ranges are compared as they'll be sent
- * (sentRanges()): no row holds one range twice, and no two rows hold the
+ * (collapseRanges()): no row holds one range twice, and no two rows hold the
  * same ranges. "Any of" rows follow the schema's rules: two to
  * MAX_CHOICE_OPTIONS collections each, none named twice in a row, and no
  * two rows naming the same ones. `unitSize` is the form's, which an edit
@@ -307,8 +298,17 @@ export function composerBlock({
   if (rangeMatches.some((counts) => counts?.perRange.includes(0))) {
     return "range_empty";
   }
-  const sent = sentRanges(rows, rosters);
-  if (sent.some((row) => new Set(row.map(rangeKey)).size < row.length)) {
+  // each row's ranges as they'll be sent, leaving out any the schema refuses
+  const sent = rows.map((row) =>
+    collapseRanges(
+      row.flatMap((filter) => {
+        const parsed = rangeFilterSchema.safeParse(filter);
+        return parsed.success ? [parsed.data] : [];
+      }),
+      rosters,
+    ),
+  );
+  if (sent.some((row) => !isDistinct(row.map(rangeKey)))) {
     return "range_duplicate";
   }
   if (!rangesDistinct(sent)) return "range_repeated";

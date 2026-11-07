@@ -3,11 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useArtists } from "@/hooks/use-artists";
 import { m } from "@/i18n/messages";
 import { sortLabel } from "@/lib/client/objekt-util";
-import type { $fetchObjektsBlockchain } from "@/lib/functions/objekts/objekt-blockchain";
-import {
-  rangeFilterObjektsQuery,
-  userCollectionBlockchainQuery,
-} from "@/lib/queries/objekt-queries";
+import { userCollectionBlockchainQuery } from "@/lib/queries/objekt-queries";
 import type { NeighbourSuggestion } from "@/lib/universal/binders";
 import { getSeasonColor } from "@/lib/universal/seasons";
 import { cn } from "@/lib/utils";
@@ -23,10 +19,8 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import {
-  type InfiniteData,
   QueryErrorResetBoundary,
   useSuspenseInfiniteQuery,
-  type UseSuspenseInfiniteQueryResult,
 } from "@tanstack/react-query";
 import {
   Suspense,
@@ -74,12 +68,25 @@ type Props = {
   /** filters proposed from the selected pocket's neighbours */
   suggestion?: NeighbourSuggestion | null;
   /**
-   * The collections the picker is held to, such as a listing's want row,
-   * in place of the navbar's artists.
+   * The values the filter panel and artist switch offer, such as a listing's
+   * want row's, in place of the navbar's artists.
    */
   scope?: PickerScope | null;
+  /**
+   * The query that lists the collection under the picker's filters, in place
+   * of the profile's, such as one held to a listing's want row.
+   */
+  collectionQuery?: CollectionQuery;
   className?: string;
 };
+
+/**
+ * Infinite-query options listing a collection under the picker's filters,
+ * shaped as the profile's query.
+ */
+export type CollectionQuery = (
+  filters: ReturnType<typeof toCollectionFilters>,
+) => ReturnType<typeof userCollectionBlockchainQuery>;
 
 export type PickerCardRenderer = ComponentProps<
   typeof PickerGrid
@@ -88,10 +95,9 @@ export type PickerCardRenderer = ComponentProps<
 /**
  * Picks objekts from an address's collection, for a binder or a listing.
  * The artist switch stays in the top bar and everything else sits behind a
- * Filters panel. The filters are local state. Without a scope, the same
- * collection query the profile runs backs the grid; a want row's scope uses
- * $fetchRangeFilterObjekts instead. It fills whatever box it's given, at least
- * three columns wide.
+ * Filters panel. The filters are local state, and the same collection query
+ * the profile runs backs the grid unless the caller passes its own. It fills
+ * whatever box it's given, at least three columns wide.
  */
 export default function ObjektPicker({
   address,
@@ -100,6 +106,7 @@ export default function ObjektPicker({
   inBinderTokenIds,
   suggestion = null,
   scope = null,
+  collectionQuery,
   className,
 }: Props) {
   const listedArtists = useListedArtists(scope);
@@ -210,7 +217,7 @@ export default function ObjektPicker({
               <PickerCollection
                 address={address}
                 filters={loadedFilters}
-                scope={scope}
+                collectionQuery={collectionQuery}
                 stale={loadedFilters !== filters}
                 scrollRef={scrollRef}
                 inBinderTokenIds={inBinderTokenIds}
@@ -300,7 +307,7 @@ type PickerCollectionProps = {
   address: string;
   /** the filters the results are loaded for */
   filters: PickerFilters;
-  scope: PickerScope | null;
+  collectionQuery: CollectionQuery | undefined;
   /** newer filters are loading, so these results are on their way out */
   stale: boolean;
   scrollRef: RefObject<HTMLDivElement | null>;
@@ -313,62 +320,14 @@ type PickerCollectionProps = {
 };
 
 /**
- * The owner's collection under the loaded filters. A scoped picker loads a
- * want row's objekts from their own query; an unscoped one runs the
- * profile's, so it shares the profile's cached pages.
+ * The owner's collection under the loaded filters: the count, then an empty
+ * state or the grid with its next-page trigger. Results stay up, faded, while
+ * newer filters load.
  */
-function PickerCollection({ scope, ...props }: PickerCollectionProps) {
-  return scope === null ? (
-    <ProfilePickerResults {...props} />
-  ) : (
-    <WantRowPickerResults scope={scope} {...props} />
-  );
-}
-
-type PickerQueryProps = Omit<PickerCollectionProps, "scope">;
-
-function ProfilePickerResults({ address, ...props }: PickerQueryProps) {
-  const { selectedIds } = useArtists();
-  const query = useSuspenseInfiniteQuery(
-    userCollectionBlockchainQuery(
-      address,
-      toCollectionFilters(props.filters),
-      selectedIds,
-    ),
-  );
-  return <PickerResults query={query} {...props} />;
-}
-
-function WantRowPickerResults({
+function PickerCollection({
   address,
-  scope,
-  ...props
-}: PickerQueryProps & { scope: PickerScope }) {
-  const query = useSuspenseInfiniteQuery(
-    rangeFilterObjektsQuery(
-      address,
-      toCollectionFilters(props.filters),
-      // a scope names its own artists, so the navbar's can't empty or widen it
-      scope.artist,
-      scope.match,
-    ),
-  );
-  return <PickerResults query={query} {...props} />;
-}
-
-type PickerResultsProps = Omit<PickerQueryProps, "address"> & {
-  query: UseSuspenseInfiniteQueryResult<
-    InfiniteData<Awaited<ReturnType<typeof $fetchObjektsBlockchain>>>
-  >;
-};
-
-/**
- * The loaded pages: the count, then an empty state or the grid with its
- * next-page trigger. Results stay up, faded, while newer filters load.
- */
-function PickerResults({
-  query,
   filters,
+  collectionQuery,
   stale,
   scrollRef,
   inBinderTokenIds,
@@ -376,7 +335,14 @@ function PickerResults({
   panelOpen,
   panel,
   ...grid
-}: PickerResultsProps) {
+}: PickerCollectionProps) {
+  const { selectedIds } = useArtists();
+  const collectionFilters = toCollectionFilters(filters);
+  const query = useSuspenseInfiniteQuery(
+    collectionQuery?.(collectionFilters) ??
+      userCollectionBlockchainQuery(address, collectionFilters, selectedIds),
+  );
+
   const loaded = query.data.pages.flatMap((page) => page.objekts);
   const objekts = hasClientFilters(filters)
     ? loaded.filter((objekt) => {

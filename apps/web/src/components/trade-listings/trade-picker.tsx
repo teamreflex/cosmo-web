@@ -1,4 +1,6 @@
-import ObjektPicker from "@/components/objekt-picker/objekt-picker";
+import ObjektPicker, {
+  type CollectionQuery,
+} from "@/components/objekt-picker/objekt-picker";
 import type { PickerScope } from "@/components/objekt-picker/picker-filters";
 import { PickerGridSkeleton } from "@/components/objekt-picker/picker-grid";
 import { useMediaQuery } from "@/hooks/use-media-query";
@@ -17,8 +19,10 @@ type Props = {
   address: string;
   /** what heads the picker beside Done */
   heading: ReactNode;
-  /** the want row the collection is held to, when there is one */
+  /** the want row's values the filters offer, when there is one */
   scope?: PickerScope;
+  /** the query listing what the want row takes, when there is one */
+  collectionQuery?: CollectionQuery;
   picked: ReadonlySet<number>;
   /** as many objekts are picked as fit, so only removing works */
   full: boolean;
@@ -74,6 +78,7 @@ export default function TradePicker({
 function PickerWithStates({
   address,
   scope,
+  collectionQuery,
   picked,
   full,
   elsewhere,
@@ -91,6 +96,7 @@ function PickerWithStates({
       address={address}
       lockedTokenIds={states.locked}
       scope={scope}
+      collectionQuery={collectionQuery}
       className="min-h-0 flex-1"
       renderCard={(objekt, { priority }) => {
         const tokenId = Number(objekt.tokenId);

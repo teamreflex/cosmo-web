@@ -59,37 +59,43 @@ export function isRankedSort(sort: ValidSort): sort is RankedSort {
 }
 
 /**
- * Sorting for user collections.
+ * Sorting for user collections. Every sort ends on objekts.id, because copies
+ * of one collection tie on its columns and OFFSET paging would otherwise
+ * repeat or skip them.
  */
 export function withCollectionSort<T extends PgSelect>(
   qb: T,
   sort: Exclude<ValidSort, RankedSort>,
 ) {
+  return qb.orderBy(...collectionSortKeys(sort), asc(objekts.id));
+}
+
+function collectionSortKeys(sort: Exclude<ValidSort, RankedSort>) {
   switch (sort) {
     case "newest":
-      return qb.orderBy(desc(objekts.receivedAt), asc(objekts.id));
+      return [desc(objekts.receivedAt)];
     case "oldest":
-      return qb.orderBy(asc(objekts.receivedAt), asc(objekts.id));
+      return [asc(objekts.receivedAt)];
     case "noAscending":
-      return qb.orderBy(asc(collections.collectionNo), asc(collections.id));
+      return [asc(collections.collectionNo), asc(collections.id)];
     case "noDescending":
-      return qb.orderBy(desc(collections.collectionNo), asc(collections.id));
+      return [desc(collections.collectionNo), asc(collections.id)];
     case "serialAsc":
-      return qb.orderBy(asc(objekts.serial), asc(objekts.id));
+      return [asc(objekts.serial)];
     case "serialDesc":
-      return qb.orderBy(desc(objekts.serial), asc(objekts.id));
+      return [desc(objekts.serial)];
     case "memberAsc":
-      return qb.orderBy(
+      return [
         sql`${members.sortOrder} asc nulls last`,
         desc(collections.createdAt),
         asc(collections.id),
-      );
+      ];
     case "memberDesc":
-      return qb.orderBy(
+      return [
         sql`${members.sortOrder} desc nulls last`,
         desc(collections.createdAt),
         asc(collections.id),
-      );
+      ];
   }
 }
 
@@ -220,12 +226,10 @@ export function withWantMatch(
   ranges: readonly RangeFilter[],
   slugs: readonly string[],
 ) {
-  return [
-    or(
-      ...ranges.map(withRange),
-      slugs.length > 0 ? inArray(collections.slug, [...slugs]) : undefined,
-    ),
-  ];
+  return or(
+    ...ranges.map(withRange),
+    slugs.length > 0 ? inArray(collections.slug, [...slugs]) : undefined,
+  );
 }
 
 /**
