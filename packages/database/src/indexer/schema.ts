@@ -25,6 +25,15 @@ export const subsquidStatus = subsquidSchema.table("status", {
   nonce: integer("nonce"),
 });
 
+/**
+ * Blocks the processor has applied but not yet finalized.
+ * `status.height` trails the newest of them by `RPC_FINALITY` blocks.
+ */
+export const subsquidHotBlocks = subsquidSchema.table("hot_block", {
+  height: integer("height").primaryKey(),
+  hash: text("hash").notNull(),
+});
+
 export const collections = pgTable("collection", {
   id: uuid("id").primaryKey(),
   contract: varchar("contract", { length: 42 }).notNull(),

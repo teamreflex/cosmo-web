@@ -37,6 +37,7 @@ Scheduled tasks and the workers for the web app's job queues, in one Effect proc
 | `trade-timers`                | Every minute                    | Expires pending offers, declines offers on closed listings, ends trades past their deadline |
 | `send-notification-emails`    | Every minute                    | Emails users about trade and offer notifications they haven't read                          |
 | `sync-market-stats`           | Every minute                    | Copies each listed collection's floor and listing count for `/market`                       |
+| `sync-processor-head`         | Every minute                    | Stores the timestamp of the newest indexed block for the web app's system status            |
 | `apply-serial-confirmations`  | Every 5 minutes                 | Re-estimates collections whose staff-confirmed serials don't match yet                      |
 | `sync-gravities`              | Every 30 minutes                | Stores new gravities and their poll candidates from COSMO                                   |
 | `clear-objekt-stats`          | Hourly, on the hour             | Clears the cached objekt stats                                                              |
@@ -60,6 +61,7 @@ A missing required variable stops every task at boot. The mail variables are req
 | -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
 | `WEB_DATABASE_URL`                                                               | the web database                                                                  |
 | `INDEXER_DATABASE_URL`                                                           | the indexer database                                                              |
+| `ABSTRACT_RPC`                                                                   | the Abstract RPC, for `sync-processor-head`                                       |
 | `REDIS_URL`                                                                      | job queues, caches and the `trade-events` channel                                 |
 | `COSMO_KEY`                                                                      | the COSMO encryption key, used while Redis holds no `cosmo-key`                   |
 | `EXCHANGERATE_API_KEY`                                                           | `sync-fx-rates`                                                                   |

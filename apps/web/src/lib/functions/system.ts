@@ -1,34 +1,32 @@
-import { remember } from "@/lib/server/cache.server";
-import { fetchBlockTimestamp, runAbstract } from "@/lib/server/http.server";
-import { getRequestSignal } from "@/lib/server/request.server";
-import { fetchProcessorHeight } from "@/lib/server/system.server";
+import { redis } from "@/lib/server/cache.server";
 import type { SystemStatus } from "@/lib/universal/system";
+import { processorHeadKey } from "@apollo/util-server";
 import { createServerFn } from "@tanstack/react-start";
 import { differenceInMinutes } from "date-fns";
 
 /**
- * Calculate status from the age of the indexer's latest block.
+ * Calculate status from the age of the newest block the indexer has applied,
+ * which schedules' `sync-processor-head` stores every minute.
  * - within 30 minutes: normal
  * - within 60 minutes: degraded
  * - more than 60 minutes: down
+ * `processor` is null while no head is stored, which means that task stopped.
  */
 export const $fetchSystemStatus = createServerFn().handler(async () => {
-  const signal = getRequestSignal();
-  return await remember(`system-status:v2`, 60 * 2, async () => {
-    const timestamp = await runAbstract(
-      fetchBlockTimestamp(await fetchProcessorHeight()),
-      signal,
-    );
+  const stored = await redis.get(processorHeadKey);
+  const timestamp = new Date(stored ?? Number.NaN);
+  if (Number.isNaN(timestamp.getTime())) {
+    return { processor: null };
+  }
 
-    const age = differenceInMinutes(new Date(), timestamp);
-    const status: SystemStatus =
-      age < 30 ? "normal" : age < 60 ? "degraded" : "down";
+  const age = differenceInMinutes(new Date(), timestamp);
+  const status: SystemStatus =
+    age < 30 ? "normal" : age < 60 ? "degraded" : "down";
 
-    return {
-      processor: {
-        status,
-        timestamp: timestamp.toISOString(),
-      },
-    };
-  });
+  return {
+    processor: {
+      status,
+      timestamp: timestamp.toISOString(),
+    },
+  };
 });

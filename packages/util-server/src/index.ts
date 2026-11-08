@@ -16,3 +16,10 @@ export function pinCacheKey(value: string) {
  * Redis cache key for the operator-rotatable COSMO encryption key.
  */
 export const cosmoKeyCacheKey = "cosmo-key";
+
+/**
+ * Redis key holding the ISO timestamp of the newest block the indexer has
+ * applied. Schedules' `sync-processor-head` writes it every minute and the
+ * web app's system status reads it.
+ */
+export const processorHeadKey = "processor-head";

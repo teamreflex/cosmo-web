@@ -2,6 +2,7 @@ import type { DatabaseWeb } from "@apollo/services/database-web";
 import { Cron, Duration, Effect, Schedule } from "effect";
 import type { HttpClient } from "effect/http";
 import type { Redis } from "effect/persistence";
+import type { Abstract } from "./abstract";
 import type { DatabaseIndexer } from "./db-indexer";
 import type { Exchangerate } from "./exchangerate";
 import { applySerialConfirmationsTask } from "./functions/apply-serial-confirmations";
@@ -15,6 +16,7 @@ import { syncFxRatesTask } from "./functions/sync-fx-rates";
 import { syncGravitiesTask } from "./functions/sync-gravities";
 import { syncMarketStatsTask } from "./functions/sync-market-stats";
 import { syncMembersTask } from "./functions/sync-members";
+import { syncProcessorHeadTask } from "./functions/sync-processor-head";
 import { tradeTimersTask } from "./functions/trade-timers";
 import type { Mailer } from "./mailer";
 import type { ProxiedToken } from "./proxied-token";
@@ -34,6 +36,7 @@ export interface ScheduledTask<TSuccess = void, TFailure = unknown> {
     | Exchangerate
     | Mailer
     | HttpClient.HttpClient
+    | Abstract
   >;
 }
 
@@ -50,6 +53,7 @@ export const SCHEDULED_TASKS: ScheduledTask[] = [
   recomputeSerialsTask,
   applySerialConfirmationsTask,
   chatRetentionTask,
+  syncProcessorHeadTask,
 ];
 
 /**

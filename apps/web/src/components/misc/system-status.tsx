@@ -33,6 +33,10 @@ function SystemStatusPopover() {
     data: { processor },
   } = useSuspenseQuery(systemStatusQuery);
 
+  if (processor === null) {
+    return <ErrorFallback />;
+  }
+
   return (
     <Popover>
       <PopoverTrigger

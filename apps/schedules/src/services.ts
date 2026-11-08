@@ -3,6 +3,7 @@ import { redisLayer } from "@apollo/services/redis";
 import { BunServices } from "@effect/platform-bun";
 import { Layer } from "effect";
 import { FetchHttpClient } from "effect/http";
+import { Abstract } from "./abstract";
 import { CosmoKey } from "./cosmo-key";
 import { DatabaseIndexer } from "./db-indexer";
 import { Exchangerate } from "./exchangerate";
@@ -30,5 +31,6 @@ export const servicesLayer = Layer.mergeAll(
   CosmoKey.layer,
   Exchangerate.layer,
   Mailer.layer,
+  Abstract.layer,
   redisLayer,
 ).pipe(Layer.provideMerge(webDatabaseLayer));

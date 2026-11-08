@@ -11,8 +11,6 @@ export const env = createEnv({
     INDEXER_DATABASE_URL: z.url(),
     // redis
     REDIS_URL: z.url(),
-    // abstract rpc endpoint
-    ABSTRACT_RPC: z.url(),
     // better auth
     BETTER_AUTH_SECRET: z.string().min(1),
     // comma-separated email domains; accounts with a verified email on one can't be banned, unbanned or re-roled
@@ -58,7 +56,6 @@ export const env = createEnv({
     DATABASE_URL_UNPOOLED: process.env.DATABASE_URL_UNPOOLED,
     INDEXER_DATABASE_URL: process.env.INDEXER_DATABASE_URL,
     REDIS_URL: process.env.REDIS_URL,
-    ABSTRACT_RPC: process.env.ABSTRACT_RPC,
     BETTER_AUTH_SECRET: process.env.BETTER_AUTH_SECRET,
     PROTECTED_EMAIL_DOMAINS: process.env.PROTECTED_EMAIL_DOMAINS,
     CHAT_TOKEN_LIFETIME_SECONDS: process.env.CHAT_TOKEN_LIFETIME_SECONDS,
