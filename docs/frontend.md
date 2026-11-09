@@ -43,7 +43,7 @@ Output that differs between server and browser, such as the viewer's timezone or
 
 ## Code splitting
 
-The shell and every route file's loader load on every page ([tanstack.md](tanstack.md#routes) covers route files), so a heavy library only a few places use loads when it's shown. Dialogs and other UI load with their page.
+The shell and every route file's loader ship to every page ([tanstack.md](tanstack.md#routes) covers route files), so a heavy library that only a few places use is lazy-loaded when it is shown, while ordinary dialogs and UI load with their page.
 
 - Lazy-load a dependency that is large and rarely on screen: a chart behind a tab (the pricing panel in `components/objekt/metadata/metadata.tsx`), dnd-kit only for a grid its viewer can reorder (`components/objekt/pin-reorder.tsx`), a video player.
 - Lazy components use `lazyWithPreload()` from `lib/lazy.ts` rather than `React.lazy()`, because it reloads the page once when a deploy removed the chunk, as route chunks do. Call `.preload()` from the trigger's `onPointerEnter` and `onFocus` so the chunk is usually ready when it opens.

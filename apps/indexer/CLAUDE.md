@@ -92,15 +92,15 @@ Who writes each `collection` column decides whether an edit survives:
 
 Blocks newer than `RPC_FINALITY` are hot, and Subsquid restores its pre-block snapshot of every entity they touched when the chain reorganises.
 
-| Written by                                                                  | On rollback                                                                 |
-| --------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| store upserts of `objekt`, `collection`, `transfer`, `como_balance`, `vote` | restored, including serials `renumberStored` wrote through the store        |
-| a hand edit to a row a hot block touched                                    | reverted to the snapshot                                                    |
-| trigger tables (`collection_stats`, `collection_owner`, `progress_*`)       | stay correct, because the restore's writes fire the triggers                |
-| `list_event_outbox` inserts                                                 | not removed: the change log keys inserts by id and a bigserial has none yet |
-| `serial_reservation` (raw SQL)                                              | not reverted                                                                |
-| `tops` and `frontier` in `src/serials.ts`                                   | cleared by `startSerialBatch`                                               |
-| R2 images                                                                   | kept; harmless, because objects are keyed by a hash of the source URL       |
+| Written by                                                                  | On rollback                                                                                                                          |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| store upserts of `objekt`, `collection`, `transfer`, `como_balance`, `vote` | restored, including serials `renumberStored` wrote through the store                                                                 |
+| a hand edit to a row a hot block touched                                    | reverted to the snapshot                                                                                                             |
+| trigger tables (`collection_stats`, `collection_owner`, `progress_*`)       | stay correct, because the restore's writes fire the triggers                                                                         |
+| `list_event_outbox` inserts                                                 | not removed: Subsquid's hot-block change log records an insert by entity id, and a bigserial row has no id until Postgres assigns it |
+| `serial_reservation` (raw SQL)                                              | not reverted                                                                                                                         |
+| `tops` and `frontier` in `src/serials.ts`                                   | cleared by `startSerialBatch`                                                                                                        |
+| R2 images                                                                   | kept; harmless, because objects are keyed by a hash of the source URL                                                                |
 
 The drain spots a rolled-back transfer by its missing `transfer` row (see [`docs/trades/drain.md`](../../docs/trades/drain.md)).
 
@@ -142,7 +142,7 @@ The drain spots a rolled-back transfer by its missing `transfer` row (see [`docs
 `list_event_outbox` feeds apps/schedules' `drain-outbox` (see [`apps/schedules/CLAUDE.md`](../schedules/CLAUDE.md)).
 
 - The processor only appends: a `transfer` row for every transfer except mints, and a `transferability` row for every known token a transferability call updated.
-- `collection_id` holds the collection slug, not its UUID, so the drain matches it directly against the web DB's `objekt_list_entries.collection_id`.
+- `collection_id` holds the collection slug, not its UUID. The drain doesn't read it: it clears list entries and pins by token id.
 - Ids follow processing order: within a batch, every transfer row precedes every transferability row, whatever the on-chain order.
 - `CHK_list_event_outbox_type` is `NOT VALID`: it checks each type's columns on new rows without scanning old ones.
 
@@ -168,7 +168,8 @@ The processor never writes these; triggers on `objekt` and `collection` do.
 4. Update `schema.graphql` to match the models.
 5. Run `turbo typecheck` and `turbo lint`.
 
-- Never run the `commands.json` generators: `migration:generate` depends on `migration:clean`, which deletes `db/migrations`, and `codegen` overwrites the hand-written models. `squid-typeorm-migration apply` is safe; `bun run start` runs it.
+- Never run the `commands.json` generators: `migration:generate` depends on `migration:clean`, which deletes `db/migrations`, and `codegen` overwrites the hand-written models. `squid-typeorm-migration apply` is safe; `bun run start` runs it, which is also how a fresh local indexer database gets its schema.
+- Add check constraints on big tables as `NOT VALID`, which holds for new rows without scanning old ones (`1791627703101-Data.js`).
 - Relation properties are typed `Relation<T>`, because the models import each other circularly and the ESM build's decorator metadata otherwise throws a TDZ `ReferenceError` at startup.
 - The runner applies every pending migration in one transaction, so `CONCURRENTLY` and long backfills run by hand first and the migration ships as an idempotent record ([`docs/migrations.md`](../../docs/migrations.md#one-transaction-per-release)); `1792234623962` shows the pattern.
 - Some per-table autovacuum settings are applied by hand, not by migrations; [`docs/migrations.md`](../../docs/migrations.md) records them.

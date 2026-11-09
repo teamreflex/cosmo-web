@@ -11,7 +11,7 @@ The SES sender and the react-email templates shared by apps/web (auth emails) an
 
 - Each email is its own template in `src/emails`: the preview server renders its default export with its `PreviewProps`, and the app that sends it renders the same component, with the subject written beside the send. React escapes every prop, so they can carry usernames.
 - Each notification type's wording is in `itemLine()` and `itemDetail()` (`src/emails/_components/notification-items.tsx`); a new type fails to compile until both cover it. The subject is the item's line unless `itemSubject()` (`src/subject.ts`) words it differently.
-- The package never reads env. Each app builds `MailConfig` from its own schema: `apps/web/src/lib/env/server.ts`, and `Mailer` (`apps/schedules/src/mailer.ts`) through `Config`.
+- The package never reads env. Each app builds `MailConfig` itself: apps/web in `apps/web/src/lib/server/mail.server.tsx`, and apps/schedules in `Mailer` (`apps/schedules/src/mailer.ts`) through `Config`.
 - `endpoint` points at floci locally and is left unset in production, where mail goes to real SES ([`docs/tooling.md`](../../docs/tooling.md#local-services)).
 - The logo is a PNG at apps/web's `public/email/logo.png`, which both apps pass as an absolute `logoUrl`, because Gmail and Outlook render no SVG and strip `data:` images. `src/emails/static/logo.png` links to it for the preview server.
 - Templates use react-email's `Tailwind` with hex colors, because most mail clients can't parse Tailwind's default oklch palette.

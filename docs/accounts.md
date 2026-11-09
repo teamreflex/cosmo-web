@@ -22,7 +22,7 @@ An Apollo account is a Better Auth user ([`auth.md`](auth.md)) that may link one
 
 ### Verification flow
 
-The first check is advisory; the checks after the bio check are authoritative, and the conditional upsert backstops races between them.
+`$generateVerificationCode` checks the links only to refuse early; the checks that decide run in `$verifyCosmoBio` after the bio check, and its upsert only takes an unlinked address, so two users verifying one account at once can't both link it.
 
 ```
   link wizard                  apps/web                           Redis / COSMO
@@ -48,7 +48,7 @@ The first check is advisory; the checks after the bio check are authoritative, a
   router.invalidate() <- ok -
 ```
 
-- The linked address is `profile.address` from COSMO. The client's `address` is used only for the advisory check.
+- The linked address is `profile.address` from COSMO. The client's `address` is used only for the early check in `$generateVerificationCode`.
 - The profile is fetched through the dummy account's token ([`packages/cosmo/README.md`](../packages/cosmo/README.md#credentials)).
 - A ban is revealed (`cosmo_account_banned`) only after the bio check, to someone who has proven control of the account. Every earlier refusal says `account_linked_elsewhere`.
 - An upsert that loses a race refuses with `cosmo_already_linked` or `account_linked_elsewhere`, and a unique violation on `user_id` maps to `cosmo_already_linked`.
@@ -58,7 +58,7 @@ The first check is advisory; the checks after the bio check are authoritative, a
 
 - Read a user's address with `getCosmoAddress(executor, userId)`, or through the user's `cosmoAccount` relation when the query already loads the user row.
 - The address keeps the case it was stored with. The column is citext, and the client compares it with `===` against profile addresses.
-- Compare it with lowercase indexer rows through `isEqual()` or `addr()`.
+- Compare it with lowercase indexer rows through `isEqual()` or `addr()` from `@apollo/util`.
 
 ## Public users
 
@@ -124,6 +124,6 @@ The first check is advisory; the checks after the bio check are authoritative, a
 ### Adding a blocker
 
 1. Append a check to `blockerChecks` in `lib/server/account-deletion.server.ts`. Checks run in order and can share the caller's transaction.
-2. Extend the `DeletionBlocker` union in `lib/universal/account-deletion.ts`, then fix `deletionBlockerCount()` and the dialog rows the type checker points at.
+2. Turn `DeletionBlocker` in `lib/universal/account-deletion.ts` into a union on `kind` (it has only `live-trades`) and add the new variant, then fix `deletionBlockerCount()` and the dialog rows the type checker points at.
 
 Blocked results are returned, not thrown, so the UI can list every blocker.

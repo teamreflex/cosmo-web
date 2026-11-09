@@ -15,20 +15,20 @@ Estimates the serials of objekts minted after `SERIAL_CUTOFF`, when COSMO's meta
 
 - `turbo test --filter @apollo/serial-estimation` runs `bun test` over JSON fixtures of real collections in `tests/fixtures/`.
 - A test hides real serials with `hideSerials()` as if minted after the cutoff, then checks the estimate against them.
-- Export a new fixture with `bun scripts/export-fixture.ts <slug> [maxTokenId]`; serials after the cutoff are written as 0, because the database only holds our own estimates for them.
+- Export a new fixture with `export-fixture.ts` ([Scripts](#scripts)).
 
 ## Scripts
 
 Run from this directory with `INDEXER_DATABASE_URL` set. The large scans stream through `psql`, which must be installed.
 
-| Script                                      | Does                                                                                                                                            |
-| ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `bun scripts/accuracy.ts [cutoff] [minGap]` | hides serials after a pretend cutoff, estimates them and reports accuracy; read-only                                                            |
-| `bun scripts/claim-blocks.ts`               | finds candidate claim blocks in digital collections; read-only                                                                                  |
-| `bun scripts/export-fixture.ts <slug>`      | writes a collection to `tests/fixtures/<slug>.json`                                                                                             |
-| `bun scripts/backfill.ts reservations`      | adds every reserved range between digital mints to `serial_reservation`; keeps stored ones                                                      |
-| `bun scripts/backfill.ts confirmations`     | inserts the real serials known before `/admin/serials` existed                                                                                  |
-| `bun scripts/backfill.ts serials`           | estimates every collection with an objekt minted after the cutoff and writes the changed serials; resumable (`--dry-run`, `--batch`, `--pause`) |
+| Script                                              | Does                                                                                                                                                |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bun scripts/accuracy.ts [cutoff] [minGap]`         | hides serials after a pretend cutoff, estimates them and reports accuracy; read-only                                                                |
+| `bun scripts/claim-blocks.ts`                       | finds candidate claim blocks in digital collections; read-only                                                                                      |
+| `bun scripts/export-fixture.ts <slug> [maxTokenId]` | writes a collection to `tests/fixtures/<slug>.json`, with serials after the cutoff as 0, because the database only holds our own estimates for them |
+| `bun scripts/backfill.ts reservations`              | adds every reserved range between digital mints to `serial_reservation`; keeps stored ones                                                          |
+| `bun scripts/backfill.ts confirmations`             | inserts the real serials known before `/admin/serials` existed                                                                                      |
+| `bun scripts/backfill.ts serials`                   | estimates every collection with an objekt minted after the cutoff and writes the changed serials; resumable (`--dry-run`, `--batch`, `--pause`)     |
 
 ## Changing the rules
 

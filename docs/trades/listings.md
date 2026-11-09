@@ -101,7 +101,7 @@ A listing offers a pool of the poster's tokens in units, and stays open while th
 - Every listing-page query sits under `tradeListingKey`, which `removeViewerQueries()` removes on an account change. The route sets `preload: false`, since a candidate's answer reads their holdings.
 - `listing` is public and never names a claimer. It carries the unit size and every objekt the listing has offered, the ones that left the pool included, each once (one offered again after it left shows as its latest row).
 - Each objekt says where it stands (`poolAvailability()`): `free`, `in_trade` (a live copy, whoever holds it now), `traded` (`left_at` set, with when, shown dimmed) or `blocked` (moved, untransferable or locked).
-- Its `stop` says what stops every claim on an open listing right now (`listingStop()`), and the page disables Accept on either. `blocked` is a fault on the poster's side: `posterBlocked()` holds, or less than a unit is free or in a trade. `busy` means a unit is there but trades hold so much of it that less than a unit is free, which the page shows everyone as a note to wait.
+- Its `stop` says what stops every claim on an open listing right now (`listingStop()`), and the page disables Accept on either. `blocked` is a fault on the poster's side: `posterBlocked()` holds, or the pool's free and in-trade objekts together come to less than a unit (the rest locked, moved or untransferable). `busy` means a unit is there but trades hold so much of it that less than a unit is free, which the page shows everyone as a note to wait.
 - A filled listing names the COSMO account behind its latest completed trade and counts its completed trades.
 
 | `viewer` role        | Who                                                   | Carries                                                                                                                               |
@@ -115,13 +115,14 @@ A listing offers a pool of the poster's tokens in units, and stays open while th
 
 - The poster's offers each carry the claimer, both sides' tokens with serials, the expiry and whether it can be accepted now (`offerRefusal()`, in `$acceptOffer`'s order and with its codes). The page reads the indexer once, the claimers' caps in one grouped statement and the locks by address.
 - The poster's trades come from one query (`readListingTrades()`): each with when it was accepted and the pool tokens it took, a live one with what the poster still has to send and whether it waits on them, a disputed one with the dispute that froze it.
-- A candidate gets the most units they can take (`allocateUnits()`, bounded by the free pool, the caps and their holdings), and per want row how many matching objekts they own and how many it is short.
+- A candidate gets the most units they can take (`allocateUnits()`, bounded by the free pool, `MAX_PER_ROW`, `MAX_TOTAL_WANTED` and their holdings), and per want row how many matching objekts they own and how many it is short.
 - A candidate also gets how their latest offer on the listing ended when the poster or the listing ended it (`endedOffer()`: declined, expired or stale), which the page shows over the picker. One read of their latest trade on the listing finds that and any live trade or pending offer.
 - The picker starts with nothing picked: the viewer fills each want row from their collection and, on a listing with a ratio, picks which pool objekts they get; a bundle takes its whole pool. Stepping the units down trims both sides' picks to the new count, and a refetch keeps them unless the terms or the most units changed, dropping a pool pick that's no longer free.
 - A row's picker lists only the objekts that fit the row, matched as `fitsWant()` and the holdings reads (`readCandidates()`) match them: a range row's ranges by their columns, an exact or "any of" row's collections by slug. `RowPicker` hands `ObjektPicker` a `rangeFilterObjektsQuery` built from `wantMatch()`, and `$fetchRangeFilterObjekts` ORs the ranges and slugs (`withWantMatch()`) under the viewer's own filters, with no navbar artists. `wantScope()` only shapes the filter panel and artist switch.
 - `useListingPicks().toggle()` refuses a pick that fails `fitsWant()`, the rule the server checks, as a guard behind the picker.
 - A short want row shows what it still needs greyed out, the wanted objekt or every collection an "any of" row takes, while a range row crosses out its short slots. An exact row's open slots show its objekt dimmed.
-- Only a candidate's read touches holdings, and the claim cap only stops a listing that claims at once.
+- Only a candidate's read touches holdings.
+- A candidate who has reached their claim cap sees a notice with their count and cap in place of the picker (`candidatePanel()`), but only on a listing that claims at once. A listing that takes offers still shows the picker, because an offer is checked against the cap when the poster accepts it ([feedback.md](feedback.md#claim-cap)).
 
 ## The poster's tabs
 
@@ -134,7 +135,7 @@ The poster's own open listing has Listing, Offers and Trades tabs (`components/t
 | Trades  | the live trades, each saying where it stands as My trades does, then the finished ones, each opening its trade page                                              |
 
 - `poolStanding()` reads free, in a live trade from the listing (naming its claimer) or from elsewhere, sent (already sent in a live trade from the listing, so the drain marks it leaving the pool), traded (naming who it went to), gone (it left the pool in no trade, so it left the poster's account) or blocked with its reason.
-- A token that left the pool went in the newest trade holding it that was accepted by then and hadn't ended before, so one traded, offered again in an edit and then moved is gone.
+- For a token that left the pool, `poolStanding()` looks for the newest trade that holds it and was live when it left: one that is still live reads as sent, a completed one as traded, and anything else as gone. So a token traded once, offered again in an edit and then moved out of the account reads as gone.
 - Accept and Decline go through the trade page's offer dialog. An offer `offerRefusal()` refuses says why in `$acceptOffer`'s words told to the poster (`formatOfferRefusal()`), naming the claimer of the listing's own trade that holds a pick, and can only be declined.
 - Offers counts the pending offers and Trades the live trades (`posterTabCounts()`); a tab the listing no longer has falls back to Listing (`shownPosterTab()`).
 
@@ -149,7 +150,7 @@ The poster's own open listing has Listing, Offers and Trades tabs (`components/t
 Refusals are checked in a fixed order, so the same request always gets the same answer:
 
 1. `listing_not_found`, then `listing_own`, then `listing_closed` or `listing_updated` against the `updated_at` the claimer saw.
-2. `listing_unavailable` when `posterBlocked()` stops any claim: a payment want, the poster gone or banned, or their link no longer matching `from_address`.
+2. `listing_unavailable` when `posterBlocked()` (`lib/server/trades/poster.server.ts`) stops any claim: a payment want, the poster gone or banned, or their link no longer matching `from_address`.
 3. `claim_assignment_invalid` when a pick isn't in the pool or the picks aren't a whole number of units.
 4. `listing_pick_unavailable { tokenId }` for a pick the poster can't give now.
 5. `claim_token_unavailable { tokenId, reason: "not_owned" }` for a claimer token the indexer doesn't know.
@@ -167,7 +168,7 @@ Refusals are checked in a fixed order, so the same request always gets the same 
 A listing with any range row takes offers instead of claims (`takesOffers()`), because a range matches many serials and only the poster knows which they meant.
 
 - The same `$claimListing` request, through the same checks and locks except the claim cap, creates a `pending` trade with `proposed_by = to`, `expires_at = now() + OFFER_WINDOW` (72 h), nothing live, an `offered` event and `offer_received` to the poster. It returns `{ tradeId, pending: true }`.
-- The decision is made from the wants as preflight read them. The lock's `updated_at` guard guarantees they haven't changed since.
+- Whether the listing takes offers is decided from the wants as `preflightClaim()` read them; the lock's `updated_at` guard guarantees they haven't changed since.
 - Nothing is reserved, so several offers on one listing may pick the same tokens.
 - The poster accepts or declines it and the claimer may withdraw it, through the offer functions ([offers.md](offers.md)). It can't be countered.
 

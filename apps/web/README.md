@@ -40,7 +40,7 @@ From the repo root, after the setup in the root [README](../../README.md):
 | Topic                                                                       | File                                                     |
 | --------------------------------------------------------------------------- | -------------------------------------------------------- |
 | Routes, loaders, server functions, invalidation, the client/server boundary | [docs/tanstack.md](../../docs/tanstack.md)               |
-| Components, Base UI, forms, Tailwind, i18n                                  | [docs/frontend.md](../../docs/frontend.md)               |
+| Components, Base UI, hydration, code splitting, forms, Tailwind, i18n       | [docs/frontend.md](../../docs/frontend.md)               |
 | `ExpectedError`, display, Sentry                                            | [docs/errors.md](../../docs/errors.md)                   |
 | Queries and schema                                                          | [docs/database.md](../../docs/database.md)               |
 | Sign-in, roles, permissions                                                 | [docs/auth.md](../../docs/auth.md)                       |

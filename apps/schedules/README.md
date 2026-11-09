@@ -77,4 +77,4 @@ A missing required variable stops every task at boot. The mail variables are req
 - `turbo dev --filter schedules` runs it in watch mode, with the docker services.
 - `bun run task <name>` runs one task once and exits.
 - `bun run simulate` writes fake chain activity for the drain; see [`CLAUDE.md`](CLAUDE.md#simulating-the-chain).
-- `bun test` runs the pure planners' tests: the outbox drain's and the notification emails'.
+- `bun test` runs the outbox planner's tests (`tests/outbox.test.ts`); the drain's trade decisions are tested in `packages/trades`.

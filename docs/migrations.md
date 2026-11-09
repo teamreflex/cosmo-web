@@ -38,7 +38,7 @@ drizzle-orm's `migrate()` and the Subsquid runner both wrap everything pending i
 ## Web DB
 
 1. Edit `packages/database/src/web/schema.ts`. Better Auth tables have their own procedure under "Schema generation" in [docs/auth.md](auth.md).
-2. From `apps/web`, run `bun run env -- drizzle-kit generate --name <name>`. Plain `db:generate` (and `db:push`) don't load the root `.env`, and `drizzle.config.ts` throws without `DATABASE_URL_UNPOOLED`.
+2. From `apps/web`, run `bun run db:generate --name <name>`.
 3. Read the generated `migration.sql` for hot-table locks, enum values used in the same release, and data loss.
 4. Add any backfill `UPDATE`s to the generated `migration.sql` before committing it.
 5. Run `bun run db:check`, then `bun run db:migrate` to apply it locally.
@@ -57,8 +57,6 @@ Remove the column from the TS schema one release before the migration that drops
 
 The procedure (models, migration, Drizzle mirror, `schema.graphql`) and the generator commands never to run are under "Schema changes" in [apps/indexer/CLAUDE.md](../apps/indexer/CLAUDE.md).
 
-- `squid-typeorm-migration apply` is safe: the processor's start script runs it, which is also how a fresh local indexer database gets its schema.
-- Add check constraints on big tables as `NOT VALID`, which holds for new rows without scanning old ones (`1791627703101-Data.js`).
 - The Drizzle mirror only types queries. Its index list is incomplete and some column types differ from the DDL (`uuid()` where the table has `varchar(36)`), so read the migrations for the real DDL.
 - A column that reaches the UI also follows "Where to start" in [docs/database.md](database.md).
 

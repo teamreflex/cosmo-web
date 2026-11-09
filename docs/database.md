@@ -62,7 +62,6 @@ The same idea has different names and types in each database, and using the wron
 | Objekt token id | text in `objekt.id`, `list_event_outbox.token_id` and `serial_confirmation.token_id`; integer in `transfer.token_id` and `serial_reservation` | integer everywhere (`pins`, `binder_entries`, `locked_objekts`, `trade_offer_items`, `notifications`) except text in `objekt_list_entries.token_id`                                  |
 | Address         | lowercase `varchar`, lowercased with `addr()` on write                                                                                        | `citext`: compares case-insensitively, but keeps the case it was stored with                                                                                                         |
 
-- `list_event_outbox.collection_id` holds the slug, so the drain can match it against `objekt_list_entries.collection_id` directly.
 - Convert token ids at the boundary: `String(tokenId)` into an indexer query, `Number(row.id)` out of one (`readIndexerTokens()` in `apps/web/src/lib/server/trades/holdings.server.ts`).
 - Trade inputs cap token ids at 2^31 - 1 (`tokenIdSchema` in `packages/trades/src/listing.ts`), the integer columns' limit.
 - Compare a web address with an indexer address through `addr()` or `isEqual()` from `@apollo/util`, because `===` fails on case.
@@ -118,7 +117,19 @@ The repo runs Drizzle 1.0 with the relational query builder v2. For the full ope
 - `staff_audit` and `cosmo_link_audit` are only ever inserted into, and must outlive the accounts they name.
 - Their user columns are plain text ids with no foreign key. The relation is declared only in `relations.ts`, and a deleted user reads back as null.
 - Order their rows by `id`, because `defaultNow()` is the transaction's start time and every row one transaction writes shares a `created_at`.
-- `report_messages` and `user_feedback_stats` also skip the user foreign key, so the evidence and the stats survive deletion.
+- `report_messages` also skips the user foreign key, and `user_feedback_stats` is keyed by COSMO address with no user column, so the evidence and the stats survive deletion.
+
+## Benchmarking queries
+
+To time a query cold without restarting the shared Postgres container, empty Postgres's buffers and the OS page cache first.
+
+1. Empty Postgres's buffers: `create extension if not exists pg_buffercache;`, then `checkpoint; select pg_buffercache_evict(bufferid) from pg_buffercache where relfilenode is not null;`.
+2. Empty the OS page cache: `docker run --rm --privileged --entrypoint sh postgres:17.6-alpine -c 'sync; echo 3 > /proc/sys/vm/drop_caches'`. `docker exec --privileged` into the running container doesn't work, because `/proc/sys` stays read-only there.
+3. Run the query with `EXPLAIN (ANALYZE, BUFFERS)`.
+
+- Compare buffer hits and reads as well as execution time, because fast local disks can hide slow I/O.
+- Bun SQL caches prepared statements by query text, so Postgres may switch to a generic plan after five runs. apps/web and apps/schedules hit those generic plans too, so time their queries as they are. The processor's TypeORM plans every call with its parameters, so to time a processor query, run `set plan_cache_mode = force_custom_plan` on a direct connection first.
+- Try scratch tables and column changes in a throwaway schema and clean up with `DROP SCHEMA … CASCADE`, because `DROP COLUMN` on a real table leaves the dropped column in the table's definition.
 
 ## Where to start
 

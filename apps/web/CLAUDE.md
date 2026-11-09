@@ -33,6 +33,6 @@ The TanStack Start web app. The overview is in [README.md](README.md); conventio
 - **New refusal:** the checklist in [errors.md](../../docs/errors.md#adding-an-expected-error).
 - **New staff or market page:** gate it in `beforeLoad` with `requirePermission()` or `requireMarketAccess()` ([tanstack.md](../../docs/tanstack.md#gating)).
 - **New query that depends on the viewer:** put it under a prefix `removeViewerQueries()` clears ([tanstack.md](../../docs/tanstack.md#mutations-and-invalidation)).
-- **New external image, script or API origin:** add it to `buildContentSecurityPolicy()` in `main.ts`.
+- **New external image, script or API origin:** add it to `buildContentSecurityPolicy()` in `main.ts` ([tanstack.md](../../docs/tanstack.md#process-wiring)).
 - **New env var:** add it to `lib/env/server.ts`, or `lib/env/client.ts` with a `VITE_` prefix for the browser ([tooling.md](../../docs/tooling.md)).
 - **New shadcn component:** the shadcn CLI from `apps/web` ([libraries.md](../../docs/libraries.md)), keeping it on Base UI.

@@ -9,18 +9,23 @@ Read the file for an area **before** working in it. Each app and package also ha
 | Turbo tasks, local services and `DEV_*` flags, env vars, lint, format, TypeScript 7, Effect conventions, Redis keys, rate limits, Sentry | [`docs/tooling.md`](docs/tooling.md)                                       |
 | Looking up library documentation (TanStack, Drizzle, Effect, …)                                                                          | [`docs/libraries.md`](docs/libraries.md)                                   |
 | Writing or running tests (`bun test`), what earns a test                                                                                 | [`docs/testing.md`](docs/testing.md)                                       |
+| Checking a change in the browser with agent-browser: builds, emulation, drag and drop, measuring performance                             | [`docs/browser-testing.md`](docs/browser-testing.md)                       |
 | Queries, schema, the two databases, cross-database ids, derived types (`apps/web`, `packages/database`)                                  | [`docs/database.md`](docs/database.md)                                     |
 | Migrations for either database, backfills, hand-applied autovacuum settings                                                              | [`docs/migrations.md`](docs/migrations.md)                                 |
 | Lock order, row locks, deadlocks between writers                                                                                         | [`docs/locking.md`](docs/locking.md)                                       |
 | Better Auth, sign-in, staff roles and permissions, bans, user events, chat tokens, API keys, display currency                            | [`docs/auth.md`](docs/auth.md)                                             |
 | COSMO links and verification, what others see of a user, staff names, account deletion                                                   | [`docs/accounts.md`](docs/accounts.md)                                     |
-| Reports, disputes, message reports, staff audit                                                                                          | [`docs/moderation.md`](docs/moderation.md)                                 |
+| Reports, disputes, message reports, the `/admin` content tools, staff audit                                                              | [`docs/moderation.md`](docs/moderation.md)                                 |
 | Routes, loaders, server functions, middleware, invalidation, import protection (`apps/web`)                                              | [`docs/tanstack.md`](docs/tanstack.md)                                     |
-| Components, forms, Tailwind/styling, i18n strings (`apps/web`)                                                                           | [`docs/frontend.md`](docs/frontend.md)                                     |
+| Components, Base UI gotchas, hydration gates, code splitting, forms, Tailwind/styling, i18n strings (`apps/web`)                         | [`docs/frontend.md`](docs/frontend.md)                                     |
 | Throwing/handling errors, `ExpectedError`, error boundaries, Sentry filtering (`apps/web`)                                               | [`docs/errors.md`](docs/errors.md)                                         |
 | COSMO domain concepts: collections, objekts, serials, grids, COMO, gravity polls                                                         | [`docs/cosmo.md`](docs/cosmo.md)                                           |
 | Listings, the composer, feed and listing page, trades, offers, the drain's decisions, timers, feedback, the market gate                  | [`docs/trades/overview.md`](docs/trades/overview.md)                       |
 | Which notifications are emailed, opt-out bits, the email task's outbox claim and cooldown, the `NOTIFICATION_EMAILS` flag                | [`docs/trades/notification-emails.md`](docs/trades/notification-emails.md) |
+| Cron tasks, job queues, the outbox drain's mechanics, trade timers                                                                       | [`apps/schedules/CLAUDE.md`](apps/schedules/CLAUDE.md)                     |
+| The indexer processor: batches, metadata, serial numbering, hot-block rollbacks, indexer schema changes                                  | [`apps/indexer/CLAUDE.md`](apps/indexer/CLAUDE.md)                         |
+| The chat server: access, message ordering, encryption, rate limits                                                                       | [`apps/chat/CLAUDE.md`](apps/chat/CLAUDE.md)                               |
+| Typesense fields, synonyms and the importer                                                                                              | [`apps/typesense-import/CLAUDE.md`](apps/typesense-import/CLAUDE.md)       |
 
 ## Commands
 
@@ -41,6 +46,7 @@ Read the file for an area **before** working in it. Each app and package also ha
 - Use oxlint and `bun fmt`, never eslint or Prettier.
 - Fix an `anti-slop/*` lint error by parsing input at its boundary, not by suppressing it; see [`packages/lint`](packages/lint/README.md).
 - TypeScript 7 has no compiler API: don't add tooling that imports `typescript`.
+- Code comments describe what the code does, never the code it replaced or the refactor that produced it.
 
 ## Project context
 
@@ -68,3 +74,4 @@ The one exception is share-data: a user scans a COSMO QR code so Apollo can read
 - Point at code with a `path` or a `symbol()` name, never a line number.
 - A doc that disagrees with the code is a bug: fix it in the same change as the code, and delete what the change made wrong.
 - No changelogs, no "known issues" lists that are really TODOs, no inventories of files or columns.
+- Leave production out: no hosting provider, servers, network layout or deploy pipeline, because the repo is public. Local development setup is fine.

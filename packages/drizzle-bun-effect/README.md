@@ -2,7 +2,7 @@
 
 A drizzle-orm Effect driver backed by Bun's native `SQL` client. drizzle 1.0 ships Effect drivers only for `@effect/sql-pg` (node-postgres), mysql2 and sqlite-bun, and Effect declined an `sql-pg-bun` package ([Effect-TS/effect#5230](https://github.com/Effect-TS/effect/issues/5230)). This driver lets the Effect apps use the same Postgres driver as the web app: Bun SQL.
 
-`@apollo/services` builds the web DB service on it, and `apps/schedules` its indexer DB service. Its error surface, transaction behaviour and the drizzle internals it depends on are in [`CLAUDE.md`](CLAUDE.md).
+Which apps build their database services on it is in [docs/database.md](../../docs/database.md#how-apps-connect). Its error surface, transaction behaviour and the drizzle internals it depends on are in [`CLAUDE.md`](CLAUDE.md).
 
 ## Usage
 

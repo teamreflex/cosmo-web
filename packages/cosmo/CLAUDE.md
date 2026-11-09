@@ -8,7 +8,7 @@ Rules for changing the COSMO client. The client policy, credential and QR login 
 | --------------------- | ----------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
 | `bearer(accessToken)` | `fetchArtists`, `fetchArtist`, `fetchAllArtists`, `fetchGravities`, `fetchGravity`, `fetchPoll`, `search`, `fetchUserProfile` | The dummy account's token from `getProxiedToken()` (web) or `ProxiedToken` (schedules) |
 | `user-session` cookie | `fetchObjektSummaries`                                                                                                        | The session `certifyTicket` grants during the QR login, never stored                   |
-| None                  | `fetchByNickname`, `fetchMetadataV3`, `refreshV3`, `exchangeLoginTicket`, `queryTicket`, `certifyTicket`                      | -                                                                                      |
+| None                  | `fetchByNickname`, `fetchMetadataV1`, `fetchMetadataV3`, `refreshV3`, `exchangeLoginTicket`, `queryTicket`, `certifyTicket`   | -                                                                                      |
 
 ## Errors
 

@@ -51,7 +51,7 @@ How `apps/web` uses TanStack Start, Router and Query. Library APIs are in their 
 
 - File names: `$id` for params, `@{$username}` for the profile prefix, `route.tsx` for a layout. Page-local components (`RouteComponent`, `PendingComponent`, `ErrorComponent`, `NotFoundComponent`) sit at the bottom of the route file. `routes/market/trades.tsx` is a typical route.
 - `src/routeTree.gen.ts` is generated; never edit it.
-- The router plugin splits a route's `component`, `errorComponent` and `notFoundComponent` into lazy chunks. Everything else in a route file (`validateSearch`, `loader`, `head`, `beforeLoad` and `pendingComponent`, so a skeleton shows the moment a navigation starts) and what it imports ships in the `app` chunk every page downloads. Keep those imports to queries, schemas, helpers and skeletons.
+- The router plugin splits a route's `component`, `errorComponent` and `notFoundComponent` into lazy chunks. Everything else in a route file (`validateSearch`, `loader`, `head`, `beforeLoad`, `pendingComponent`) and what it imports ships in the `app` chunk every page downloads, so those parts should import only queries, schemas, helpers and skeletons. `pendingComponent` stays in `app` so a skeleton shows the moment a navigation starts.
 - A module imported by both the entry and a lazy chunk ships whole in the entry, along with what it imports. So a route's skeleton lives in its own file (`listing-feed-skeleton.tsx`), never in the page component's module, or it drags the whole page into `app`.
 - `validateSearch` uses Zod with `.default().catch()`, so a bad URL falls back instead of erroring. Shared parsers are in `lib/universal/parsers.ts`.
 - Filters live in the URL, not component state (`hooks/use-cosmo-filters.ts`). Arrays serialise as CSV (`?member=HeeJin,SeoYeon`) through `stringifySearch()`, and each field's `castToArray()` splits them back.
@@ -116,6 +116,7 @@ A prefetch only helps when the component subscribes with exactly the key the loa
 
 - `routes/api/**` are HTTP routes declared with `server: { handlers: { GET } }`.
 - They parse params with Zod, return `Response.json`, and set caching through `cacheHeaders()`.
+- The `s-maxage` from `cacheHeaders()` does nothing on a new route until the CDN has a cache rule for that path.
 - Partner endpoints authenticate with `verifyRequestApiKey()` ([auth.md](auth.md)).
 
 ## Mutations and invalidation
@@ -144,7 +145,7 @@ A prefetch only helps when the component subscribes with exactly the key the loa
            onSuccess      invalidateQueries, not awaited
 ```
 
-- `router.invalidate()` reruns loaders, but a loader's `query()` returns cached data unless it is stale. It never refetches a `staleTime: Infinity` or `"static"` query, so invalidate the query itself.
+- `router.invalidate()` reruns loaders, but a loader's `query()` returns cached data unless it is stale, and a `staleTime: Infinity` or `"static"` query never goes stale, so invalidate the query itself.
 - The optimistic `onSuccess` doesn't await its invalidation, because the next change in the scope would wait on the refetch.
 - `removeViewerQueries()` (`lib/queries/core.ts`) removes every query whose answer depends on the viewer although its key doesn't name them. A new query like that goes under one of its prefixes or into the function, because one tab reuses the `QueryClient` across sign-ins.
 

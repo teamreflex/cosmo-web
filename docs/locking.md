@@ -11,8 +11,8 @@ Every web-database transaction that locks more than one kind of row takes them i
   1  user rows            one statement, ORDER BY id, strength per writer (table below)
          |                web: lockParties()   schedules: lockUsers()
          v
-  2  cosmo_account        written only by linking and account deletion; trade writes
-         |                read the link in a second statement (readLockedLinks())
+  2  cosmo_account        written by linking and account deletion, after they lock the
+         |                user; trade writes read the link without a lock (readLockedLinks())
          v
   3  trade rows           live trades, then pending offers, ORDER BY id
          |
@@ -61,7 +61,8 @@ A writer skips the steps it doesn't touch. A claim, for example, locks users, th
 3. Read them again. Counterparties of a trade or offer that committed while the ban waited are locked in a second statement.
 4. Lock the accepted trades one at a time in id order, then `closeOpenOffers()` locks the pending offers, then the open listings.
 
-Step 3 is the one place users are locked outside id order. Its users can only come from writes that committed during the wait, because nothing new with the banned user can commit before the ban does. If one of them is meanwhile mid-write with the banned user, Postgres aborts one of the two transactions with `40P01`.
+- Step 3 is the one place users are locked outside id order. Its users can only come from writes that committed while step 2 waited, because once the ban holds the user's row, no new write with that user can commit.
+- One of those users may start another write with the banned user before step 3 locks them. That write holds their row and waits on the banned user while step 3 waits on them, so Postgres aborts one of the two with `40P01`.
 
 ## Who follows it
 

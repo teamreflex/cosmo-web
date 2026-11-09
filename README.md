@@ -36,6 +36,7 @@ A platform for exploring objekts & gravities from [MODHAUS](https://www.mod-haus
 - `packages/lint`: Shared oxlint config
 - `packages/mail`: The SES sender and react-email templates shared by the web and schedules apps
 - `packages/queue`: Redis-backed job queues between the web and schedules apps
+- `packages/serial-estimation`: Estimates serials for objekts minted after COSMO stopped publishing them
 - `packages/services`: Effect layers shared by the Effect apps (web database, Redis)
 - `packages/trades`: Trade and listing rules shared by the web and schedules apps
 - `packages/typescript`: Shared tsconfig.json file

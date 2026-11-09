@@ -6,7 +6,7 @@ Tests are `bun test` suites in each workspace's `tests/` directory.
 
 - Everything: `turbo test`. One workspace: `turbo test --filter web` (or `--filter @apollo/trades`).
 - One file: `bun test tests/grid.test.ts` from the workspace directory. `bun test <substring>` runs every file whose path contains it.
-- `turbo test` depends on `^typecheck`, not on `i18n`. The web tests import no compiled messages, so they run without `turbo i18n`. Typecheck does need it ([frontend.md](frontend.md#i18n)).
+- The web tests import no compiled messages, so `turbo test` runs without `turbo i18n` ([tooling.md](tooling.md#monorepo)).
 
 ## What earns a test
 
@@ -17,7 +17,7 @@ A test guards pure logic that is easy to break and hard to notice in the browser
 - There are no database or server-function integration tests, and no mocked COSMO or HTTP responses.
 - `apps/chat` is the exception: it is pure Effect, so its suite drives the real handlers over an in-memory store ([apps/chat/CLAUDE.md](../apps/chat/CLAUDE.md)).
 - `apps/web/tests/messages.test.ts` is a catalog test: it fails when a locale's keys differ from English or a plural uses categories the locale lacks.
-- Anything a person sees on the page (copy, layout, which panel renders, formatting) is checked by running the app ([tooling.md](tooling.md)), not by a test.
+- Anything a person sees on the page (copy, layout, which panel renders, formatting) is checked by running the app ([browser-testing.md](browser-testing.md)), not by a test.
 
 ## Rules
 

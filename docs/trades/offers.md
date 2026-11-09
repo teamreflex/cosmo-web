@@ -38,7 +38,7 @@ An offer is a trade that starts `pending` and reserves nothing until it is accep
 - A counter to an offer on a listing is refused `offer_unavailable` before any indexer work, and `transition()` refuses it too (`listing_offer`).
 - Accepting a direct offer (`$acceptOffer`) re-checks that both parties are still linked to the pinned addresses and both sides' tokens, then moves it to `accepted` with the claim window (`CLAIM_WINDOW`, 48 h) and makes every item live.
 - `$endOffer` declines (the answerer) or withdraws (the proposer). The timeline's `declined` and `withdrawn` events name the side that acted.
-- Offers have no cap and no rate limit. An offer on a listing counts toward the claimer's claim cap once it is accepted ([feedback.md](feedback.md)).
+- Offers have no cap and no rate limit. When an offer on a listing starts counting toward the claim cap is in [feedback.md](feedback.md#claim-cap).
 
 ## Windows
 

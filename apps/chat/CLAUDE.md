@@ -75,7 +75,7 @@ Keyed per user in Redis, inline in `src/handlers.ts`.
 
 ## Tests
 
-`bun test` runs in memory: `tests/memory-store.ts` is a Map-backed `ChatStore`, and `tests/harness.ts` signs tokens with a local EdDSA key, uses a random message key, a memory rate limiter and the `TestClock`. It seeds alice, bob, carol and dave, a moderator and an admin, and one trade between alice and bob. Nothing opens a database or Redis.
+`bun test` runs in memory: `tests/memory-store.ts` is a Map-backed `ChatStore`, and `tests/harness.ts` signs tokens with a local EdDSA key, uses a random message key, a memory rate limiter and the `TestClock`. It seeds alice, bob, carol and dave, a moderator and an admin, a trade between alice and bob, and another between carol and dave. Nothing opens a database or Redis.
 
 | Suite                  | Proves                                                                                                          |
 | ---------------------- | --------------------------------------------------------------------------------------------------------------- |

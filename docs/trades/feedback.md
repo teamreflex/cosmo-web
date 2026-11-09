@@ -1,6 +1,6 @@
 # Caps, feedback and the market gate
 
-Windows and caps are constants in `packages/trades/src/timers.ts` and `caps.ts`; read them from there, since the market notice and the composer do.
+Windows are constants in `packages/trades/src/timers.ts`, caps and listing limits in `caps.ts`, and range limits in `range.ts`; read them from there, since the market notice and the composer do.
 
 ## Claim cap
 

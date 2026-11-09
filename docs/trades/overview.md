@@ -17,7 +17,7 @@ Apollo matches people who want to swap objekts and records each swap, but never 
     |                                         |
     | no                                      | yes
     | listing_claimed -> poster               v
-    |                          trade: pending   proposed_by = to
+    |                          trade: pending   proposed_by = to (the claimer)
     |                          expires_at = now() + 72h, nothing live
     |                          offer_received -> poster
     |                                         |
@@ -92,5 +92,5 @@ Apollo matches people who want to swap objekts and records each swap, but never 
 
 ## Testing locally
 
-- `turbo test --filter @apollo/trades` runs the pure rules. Property tests draw from the seeded PRNG in `tests/generate.ts`, so a failing seed reproduces.
+- `turbo test --filter @apollo/trades` runs the pure rules ([packages/trades](../../packages/trades/README.md#tests)).
 - `bun run simulate` in `apps/schedules` fakes transfers and transferability changes against the local indexer DB, and `bun run task drain-outbox` or `bun run task trade-timers` applies them once (see [apps/schedules/CLAUDE.md](../../apps/schedules/CLAUDE.md)).

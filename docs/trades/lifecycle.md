@@ -67,7 +67,7 @@
 - `transition(time_out)` completes a trade nobody owes anything on.
 - It times out a trade where nothing was sent. The picks stay in the listing's pool.
 - It disputes a trade where something was sent and something is still owed, since a side may be out of pocket (`disputeAtDeadline`). The `deadline_passed` report names as reporter the side that sent everything it owed (`waitingSide()`), or nobody when both sent part.
-- Once the due trades have ended, each listing they came from closes by `listingClosing()`. One that breaks, because the drain dropped pool tokens while its trade was live, sends `listing_closed` to its poster naming no token.
+- Once the due trades have ended, `closeSpentListings` judges each listing they came from ([listings.md](listings.md#listing-lifecycle)).
 - A pending offer expires on `now()` instead ([offers.md](offers.md#windows)).
 - Pending offers on a listing that is no longer open are declined `by: "listing"`. A fill or break closes a listing without locking its offers, so this pass cleans up after it, and `$acceptOffer` refuses such an offer `listing_closed` until then.
 
@@ -78,7 +78,7 @@ Staff act through `lib/functions/staff-trades.ts` and `actOnTrade()` in `lib/ser
 - Staff can't act on their own trades (`trade_own`).
 - Each action names the dispute report it was taken from (none for an undisputed trade), and is refused `trade_status_changed` if `dispute_report_id` has changed since.
 - Each action resolves the trade's open reports and writes a staff audit row in the same transaction. How trade reports relate to other reports is in [docs/moderation.md](../moderation.md).
-- `$staffCancelTrade` cancels any accepted or disputed trade. The trade page's dialog requires a note, while the server accepts none.
+- `$staffCancelTrade` cancels any accepted or disputed trade. The trade page's dialog requires a note, but the server also accepts a cancel without one.
 - `$staffCompleteTrade` completes a disputed trade whatever its items have done.
 - `$staffExtendTradeDeadline` gives a disputed trade a new deadline from `extendedDeadline()`: the time it had left when it was last frozen, plus 24, 48 or 72 hours. It returns to `accepted` with `dispute_report_id` cleared.
 - An extend completes the trade instead when everything has arrived. Otherwise it is refused `trade_party_banned` while a party is banned, because they couldn't sign in to finish it.
@@ -95,9 +95,8 @@ Staff act through `lib/functions/staff-trades.ts` and `actOnTrade()` in `lib/ser
 | pending offers they proposed    | `withdrawn` by staff                                                             | `withdrawn` by deletion                    |
 | pending offers proposed to them | `declined` by staff, the proposer told without saying why                        | `declined` by deletion, nobody told        |
 
-- Both run `closeOpenOffers()` in their own transaction.
-- A ban is refused `ban_trade_party` while the acting admin has a live trade with the user.
-- The ban's own mechanics are in [docs/auth.md](../auth.md), and deletion's in [docs/accounts.md](../accounts.md).
+- Both run `closeOpenOffers()` inside the ban's or the deletion's transaction, after the users are locked.
+- How a ban works, and when it is refused `ban_trade_party`, is in [docs/auth.md](../auth.md#ban). How deletion works is in [docs/accounts.md](../accounts.md#account-deletion).
 
 ## Item status and "needs you"
 

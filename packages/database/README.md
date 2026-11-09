@@ -8,7 +8,7 @@ Drizzle schemas, relations and row types for Apollo's two Postgres databases, sh
 | `@apollo/database/web/relations`     | relational query builder definitions, passed to `drizzle({ client, relations })`                                               |
 | `@apollo/database/web/types`         | row types, the value lists enums are built from, jsonb payload unions                                                          |
 | `@apollo/database/web/sql`           | SQL fragments apps/web and apps/schedules must compute identically                                                             |
-| `@apollo/database/auth`              | Better Auth tables and the `user_role` enum, written by `auth:generate` ([docs/auth.md](../../docs/auth.md))                   |
+| `@apollo/database/auth`              | hand-tuned Better Auth tables and the `user_role` enum ([docs/auth.md](../../docs/auth.md#schema-generation))                  |
 | `@apollo/database/custom`            | the `citext` column type and the `createdAt` / `createdTimestamp()` helpers                                                    |
 | `@apollo/database/indexer/schema`    | a hand-kept mirror of the indexer DDL, for typing queries only                                                                 |
 | `@apollo/database/indexer/relations` | relational query builder definitions for the indexer                                                                           |

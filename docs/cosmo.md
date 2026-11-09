@@ -127,7 +127,7 @@ Accuracy, measured by hiding real serials after a pretend cutoff (`packages/seri
 
 ## Grids
 
-A `grid` is collecting all 8 (or 4) First class objekts of a member, per season and then per edition.
+A `grid` is collecting all 8 (or 4) First class objekts of a member, per season and then per edition. The rules per artist are in `apps/web/src/lib/universal/grid.ts`.
 
 - 1st edition: First class 101-108 and Special class 201 and 202.
 - 2nd edition: First class 109-116 and Special class 203 and 204.
@@ -136,6 +136,7 @@ A `grid` is collecting all 8 (or 4) First class objekts of a member, per season 
 - A grid completed with physical (A) objekts grants a Z Special class, never an A one.
 - Untransferable or unsendable objekts can't complete a grid.
 - Exceptions: tripleS Atom01 2nd edition Specials are 216 and 217, and 3rd edition Specials are 218 and 219.
+- idntt grids take Basic class objekts instead of First, have only a 1st edition, and grant 301 or 302. idntt also has a unit tier at collection number 401, which the grid page tracks separately.
 
 ## COMO
 

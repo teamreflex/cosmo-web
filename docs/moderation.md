@@ -6,12 +6,12 @@ Reports, the staff tools under `/admin` and the staff audit log. Roles, permissi
 
 One `reports` table holds every report. `target_type` says what was reported, and `target_id` is a plain text id with no foreign key.
 
-| Target     | Filed by                                                                                        | `target_id`           | Reasons                                             |
-| ---------- | ----------------------------------------------------------------------------------------------- | --------------------- | --------------------------------------------------- |
-| `user`     | `$createReport` from a profile                                                                  | the user's id         | `reportReasons`                                     |
-| `feedback` | `$createReport` from a rating                                                                   | the rating's id       | `feedbackReportReasons`                             |
-| `message`  | chat's `Report` RPC                                                                             | the chat message's id | `messageReportReasons`                              |
-| `trade`    | a dispute: a party (`$openDispute`), a ban (`party_banned`) or trade-timers (`deadline_passed`) | the trade's id        | `disputeReasons`, `party_banned`, `deadline_passed` |
+| Target     | Filed by                                                                                                          | `target_id`           | Reasons                                             |
+| ---------- | ----------------------------------------------------------------------------------------------------------------- | --------------------- | --------------------------------------------------- |
+| `user`     | `$createReport` from a profile                                                                                    | the user's id         | `reportReasons`                                     |
+| `feedback` | `$createReport` from a rating                                                                                     | the rating's id       | `feedbackReportReasons`                             |
+| `message`  | chat's `Report` RPC                                                                                               | the chat message's id | `messageReportReasons`                              |
+| `trade`    | a dispute: a party (`$openDispute`), a ban (`party_banned`) or apps/schedules' `trade-timers` (`deadline_passed`) | the trade's id        | `disputeReasons`, `party_banned`, `deadline_passed` |
 
 - The reason lists are in `@apollo/database/web/types`. `reason` is a `varchar` typed by `StoredReportReason`, so a new reason needs no migration, only a label in `apps/web/src/lib/client/reports.ts`.
 - `report_target_type` and `report_status` are Postgres enums, so a new target or status needs a migration ([`migrations.md`](migrations.md)).
@@ -63,7 +63,7 @@ One `reports` table holds every report. `target_type` says what was reported, an
 - A hidden id answers `report_about_you` when the report is about the caller, else `report_not_found`.
 - The address check covers a staff member who deleted their account and relinked the same COSMO account, because trades and ratings keep their pinned addresses.
 - Staff can't act on their own trades or ratings either: `actOnTrade()` and `$removeFeedback` refuse `trade_own`.
-- Chat's `ReportedMessage` refuses only the copy of a message the caller sent. The web hides the whole report first, so the report page never asks for the rest.
+- The web hides a report about the caller's own message first, so the report page never asks chat for it; chat's own `ReportedMessage` rule is in [apps/chat/README.md](../apps/chat/README.md#who-may-do-what).
 
 ### Disputes
 

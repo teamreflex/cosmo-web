@@ -5,7 +5,7 @@ Better Auth runs inside apps/web at `/api/auth/*`, configured in `apps/web/src/l
 ## Better Auth setup
 
 - Users sign in with email and password, Discord or X. Sign-up sends a verification email but doesn't require it (`requireEmailVerification: false`); only a verified address gets [notification emails](trades/notification-emails.md#who-is-mailed).
-- `better-auth`, `@better-auth/api-key` and `@better-auth/drizzle-adapter` are pinned to one version in the root catalog. Upgrade them together.
+- The Better Auth packages share one pinned version ([tooling.md](tooling.md#monorepo)).
 - The adapter comes from `@better-auth/drizzle-adapter/relations-v2` with `advanced.database.joins: true`, so a session lookup reads its user in the same query. Keep the two together: the default entry point builds relations v1 queries, which throw against the `defineRelations` schema once joins are on.
 - The adapter runs with `transaction: true`, so email sign-up, OAuth user and account creation, and a password change with session revocation each commit as one transaction. `databaseHooks` `after` callbacks run once it commits. A hook that queries `db` directly reads outside it and can't see that transaction's uncommitted writes.
 - No cookie cache is configured, so every request reads `role`, `banned` and `ban_expires` from the user row. A role change or a ban applies from the user's next request.
@@ -34,7 +34,7 @@ Better Auth runs inside apps/web at `/api/auth/*`, configured in `apps/web/src/l
 
 - Discord and Twitter run with `overrideUserInfoOnSignIn`, and account linking runs with `allowDifferentEmails`. A sign-in can overwrite `email` and `email_verified`, which decide [account protection](#protected-accounts). This is deliberate.
 - Better Auth's Twitter provider gives an account with no confirmed email a placeholder, `<id>@twitter.placeholder.invalid`, which passes `z.email()`. `hasDeliverableEmail()` refuses the `.invalid` TLD, and the `user` create and update `databaseHooks` refuse any email it rejects, so that sign-up fails, and so does a sign-in that would write the placeholder over an existing account.
-- Older accounts still hold the Twitter username the provider used to fall back to. They have no deliverable email, and can sign in with Twitter again once their Twitter email is confirmed, which the sign-in then writes.
+- An account whose `email` holds a bare Twitter username has no deliverable email. It can sign in with Twitter again once its Twitter email is confirmed, which the sign-in then writes.
 - A refused OAuth sign-up or sign-in redirects with a code as `error`: the hook's `APIError` code (`EMAIL_REQUIRED_ERROR`), or Better Auth's own `email_not_found` when Discord returns no email. Social sign-in and linking pass `errorCallbackURL: "/auth/error"`, whose `describeError()` explains each code.
 
 ### Client-written user fields
@@ -224,7 +224,8 @@ The lock order every multi-row write follows is in [`locking.md`](locking.md).
 
 - `turbo test --filter @apollo/auth` runs the role table and the guard tests.
 - `bun run db:seed:staff` (apps/web) seeds an admin, a moderator, a member and two traders. Every password is `password` and every email is verified. Each run resets ban state.
-- The seeded traders get COSMO links inserted directly, without `cosmo_link_audit` rows. There is no tester account.
+- The seeded member and traders get COSMO links inserted directly, without `cosmo_link_audit` rows; the admin and the moderator have none.
+- No `tester` account is seeded. To reach the [market](trades/feedback.md#market-gate) without staff permissions, set a seeded trader's `role` to `tester`, then set it back to `user` when done.
 - curl calls to `/api/auth/*` with a cookie jar must send `Origin` set to the origin of `VITE_BASE_URL`.
 
 ## Adding a role or permission

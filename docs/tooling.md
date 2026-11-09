@@ -5,7 +5,7 @@ How the monorepo is wired, run locally, linted, formatted and type-checked, plus
 ## Monorepo
 
 - Workspaces are `apps/*` and `packages/*`. Shared versions live in the root `catalog`, and workspaces depend on them as `catalog:`.
-- `better-auth`, `@better-auth/api-key` and `@better-auth/drizzle-adapter` are pinned to one version in the catalog; bump them together.
+- `better-auth`, `@better-auth/api-key`, `@better-auth/drizzle-adapter` and the `auth` CLI are pinned to one version in the catalog; bump them together.
 - `patchedDependencies` patch packages from `patches/`. A patch is keyed by version, so bumping a patched package means regenerating its patch with `bun patch <pkg>` and `bun patch --commit <path>`; `effect` and `@effect/platform-bun` are pinned in the catalog for that reason.
 
 | Package                 | The patch                                                                                                                                                                                                                                     |
@@ -52,6 +52,7 @@ How the monorepo is wired, run locally, linted, formatted and type-checked, plus
 
 - The web app always runs on the host.
 - Containers get their database, Redis and R2 URLs from `docker-compose.yml`, not from `.env`.
+- Never run a session `SET` through pgbouncer, because in transaction mode it stays on the shared server connection and every later client inherits it. For read-only checks, connect to Postgres directly with `PGOPTIONS='-c default_transaction_read_only=on'`, or wrap the queries in `BEGIN READ ONLY; … ROLLBACK;`.
 - `docker/floci/ready.sh` runs on every floci boot: it creates the bucket and verifies `MAIL_SES_FROM` in `MAIL_SES_REGION`, because SES refuses mail from unverified senders and identities are per region.
 - Web and schedules send mail (`@apollo/mail`) into floci only when `MAIL_SES_ENDPOINT` points at it, otherwise to real SES. The compose `schedules` service is always pointed at floci with dummy credentials. Floci keeps a copy at `localhost:9000/_aws/ses` and relays it to mailpit; a failed relay is only logged, so mail missing from mailpit is still in floci.
 - Don't turn on `FLOCI_SERVICES_S3_ENFORCE_AUTH`, because it makes the anonymous reads behind `VITE_CDN_URL` need a bucket policy.
@@ -60,15 +61,15 @@ How the monorepo is wired, run locally, linted, formatted and type-checked, plus
 
 `.env.example` is the inventory. Host processes read the root `.env` then `.env.local` through each workspace's script (`--env-file`, or `bun run env` in web), never from code.
 
-| App                                       | Validated by                                | Notes                                                                                                         |
-| ----------------------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| `apps/web` server                         | `apps/web/src/lib/env/server.ts`, at import | an empty string counts as unset; every required variable must be non-empty                                    |
-| `apps/web` browser                        | `apps/web/src/lib/env/client.ts`            | `VITE_*` only, inlined by Vite at build time: restart dev or rebuild after a change                           |
-| `apps/chat`                               | `Config` in each service's `make`           | rules in [`apps/chat/CLAUDE.md`](../apps/chat/CLAUDE.md#running-locally)                                      |
-| `apps/schedules`                          | `Config` in each service's `make`           | the list, and which are optional, is in [`apps/schedules/README.md`](../apps/schedules/README.md#environment) |
-| `apps/typesense-import`                   | `Config` in each service's `make`           | `LOOP_INTERVAL` in ms, default 10 minutes; on the host nothing sets it, so it ticks at the default            |
-| `apps/indexer`                            | `apps/indexer/src/env.ts`                   | `DB_URL`, `RPC_*`, `ENABLE_OBJEKTS`, `ENABLE_GRAVITY`, `COSMO_PARALLEL_COUNT`, `R2_*`, `SENTRY_DSN`           |
-| `image:mirror`, serial-estimation scripts | zod at the top of each script               | `INDEXER_DATABASE_URL`, plus `R2_*` for the mirror                                                            |
+| App                                       | Validated by                                | Notes                                                                                                                            |
+| ----------------------------------------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/web` server                         | `apps/web/src/lib/env/server.ts`, at import | an empty string counts as unset; every required variable must be non-empty                                                       |
+| `apps/web` browser                        | `apps/web/src/lib/env/client.ts`            | `VITE_*` only, inlined by Vite at build time: restart dev or rebuild after a change                                              |
+| `apps/chat`                               | `Config` in each service's `make`           | rules in [`apps/chat/CLAUDE.md`](../apps/chat/CLAUDE.md#running-locally)                                                         |
+| `apps/schedules`                          | `Config` in each service's `make`           | the list, and which are optional, is in [`apps/schedules/README.md`](../apps/schedules/README.md#environment)                    |
+| `apps/typesense-import`                   | `Config` in each service's `make`           | `LOOP_INTERVAL` in ms, default 10 minutes; on the host nothing sets it, so it ticks at the default                               |
+| `apps/indexer`                            | `apps/indexer/src/env.ts`                   | `DB_URL`, `DB_NAME`, `DB_READ_USER`, `DB_READ_PASS`, `RPC_*`, `ENABLE_OBJEKTS`, `ENABLE_GRAVITY`, `COSMO_PARALLEL_COUNT`, `R2_*` |
+| `image:mirror`, serial-estimation scripts | zod at the top of each script               | `INDEXER_DATABASE_URL`, plus `R2_*` for the mirror                                                                               |
 
 - `BETTER_AUTH_SECRET` must be 64 hex characters, because it is also the AES-256-GCM key for OAuth tokens at rest (`encryptToken()` in `auth.server.ts`). Changing it makes stored OAuth tokens unreadable.
 - `DATABASE_URL` goes through pgbouncer; `DATABASE_URL_UNPOOLED` is the direct connection drizzle-kit and the migrator need.
@@ -139,22 +140,22 @@ Keep these versions in step when bumping Bun, TypeScript or turbo:
 
 Keys and channels that more than one app touches, or that have a rule attached:
 
-| Key or channel                         | Kind                       | Written by                                                | Read by                       | Rule                                                                                                |
-| -------------------------------------- | -------------------------- | --------------------------------------------------------- | ----------------------------- | --------------------------------------------------------------------------------------------------- |
-| `trade-events`                         | pub/sub                    | web and schedules, after their transaction commits        | chat                          | `TRADE_EVENTS_CHANNEL`, `tradeUpdateMessage()` in `@apollo/trades`                                  |
-| `user-events`                          | pub/sub                    | web (`publishUserEvent()`)                                | chat                          | the `UserEvent` union in `@apollo/auth/events`                                                      |
-| `trade-notifications`                  | job queue                  | web offers                                                | schedules takes               | `@apollo/queue`; only schedules runs the cleanup layer                                              |
-| `pins:v3:<md5>`                        | cache, 1 day               | web `$fetchPins`                                          | web; schedules' drain deletes | always build it with `pinCacheKey()` (`@apollo/util-server`)                                        |
-| `cosmo-key`                            | value, no TTL              | staff, from the admin page                                | web, schedules                | falls back to `COSMO_KEY`; never cache it in a module, because staff rotate it                      |
-| `objekt-stats`                         | cache, 2 hours             | web                                                       | web                           | schedules' `clear-objekt-stats` deletes it hourly                                                   |
-| `processor-head`                       | value, 5 min               | schedules' `sync-processor-head`, every minute            | web system status             | the newest indexed block's ISO timestamp; `processorHeadKey` (`@apollo/util-server`)                |
-| `cosmo:verify:<userId>`                | value, 5 min               | web                                                       | web                           | the pending COSMO link verification code                                                            |
-| `notification-email-cooldown:<userId>` | value, 10 min              | schedules' `send-notification-emails`, after a sent email | schedules                     | while it exists the user's rows stay unclaimed ([cooldown](trades/notification-emails.md#cooldown)) |
-| `notice`                               | value, no TTL              | staff                                                     | web                           | the navbar notice                                                                                   |
-| `market-invites:<user>`                | set, expires 2027-01-01    | web `$inviteToMarket`                                     | web                           | the users the inviter made testers ([invites](trades/feedback.md#invites))                          |
-| rate-limit buckets                     | Effect `RateLimiter` store | web, chat                                                 | web, chat                     | see [Rate limits](#rate-limits)                                                                     |
+| Key or channel                         | Kind                       | Written by                                                | Read by                       | Rule                                                                                                                                                            |
+| -------------------------------------- | -------------------------- | --------------------------------------------------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `trade-events`                         | pub/sub                    | web and schedules, after their transaction commits        | chat                          | `TRADE_EVENTS_CHANNEL`, `tradeUpdateMessage()` in `@apollo/trades`                                                                                              |
+| `user-events`                          | pub/sub                    | web (`publishUserEvent()`)                                | chat                          | the `UserEvent` union in `@apollo/auth/events`                                                                                                                  |
+| `trade-notifications`                  | job queue                  | web offers                                                | schedules takes               | `@apollo/queue`; only schedules runs the cleanup layer                                                                                                          |
+| `pins:v3:<md5>`                        | cache, 1 day               | web `$fetchPins`                                          | web; schedules' drain deletes | always build it with `pinCacheKey()` (`@apollo/util-server`)                                                                                                    |
+| `cosmo-key`                            | value, no TTL              | staff, from the admin page                                | web, schedules                | falls back to `COSMO_KEY`; never cache it in a module, because staff rotate it                                                                                  |
+| `objekt-stats`                         | cache, 2 hours             | web                                                       | web                           | schedules' `clear-objekt-stats` deletes it hourly; each app writes the key out itself (web in `apps/web/src/lib/functions/stats.ts`), so rename both or neither |
+| `processor-head`                       | value, 5 min               | schedules' `sync-processor-head`, every minute            | web system status             | the newest indexed block's ISO timestamp; `processorHeadKey` (`@apollo/util-server`); the web status read goes unavailable 5 min after the task stops           |
+| `cosmo:verify:<userId>`                | value, 5 min               | web                                                       | web                           | the pending COSMO link verification code                                                                                                                        |
+| `notification-email-cooldown:<userId>` | value, 10 min              | schedules' `send-notification-emails`, after a sent email | schedules                     | while it exists the user's rows stay unclaimed ([cooldown](trades/notification-emails.md#cooldown))                                                             |
+| `notice`                               | value, no TTL              | staff                                                     | web                           | the navbar notice                                                                                                                                               |
+| `market-invites:<user>`                | set, expires 2027-01-01    | web `$inviteToMarket`                                     | web                           | the users the inviter made testers ([invites](trades/feedback.md#invites))                                                                                      |
+| rate-limit buckets                     | Effect `RateLimiter` store | web, chat                                                 | web, chat                     | see [Rate limits](#rate-limits)                                                                                                                                 |
 
-- Every other key is a web-only read-through cache made by `remember()` in `apps/web/src/lib/server/cache.server.ts`; `rg "remember\("` lists them.
+- Every other key is web-only: `spotify:access_token` (`apps/web/src/lib/server/events/spotify.server.ts`), and read-through caches made by `remember()` in `apps/web/src/lib/server/cache.server.ts`, which `rg "remember\("` lists.
 - `remember()` lowercases its key and `clearTag()` doesn't, so a key you clear must already be lowercase.
 - When a cached value's type changes, bump the version in its key (`pins:v3`, `grid-catalog:v3`) or pass `remember()` a schema, so old entries are treated as misses.
 
