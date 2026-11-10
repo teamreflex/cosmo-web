@@ -173,7 +173,11 @@ Gravity events are polls where users place COMO on candidates, such as the next 
 - A combination poll (`combination-poll`) makes two picks per vote, one per slot. The vote's COMO counts once in every slot, so each slot's column sums to the poll total.
 - A unit poll (`unit-poll`) races the pairings directly. COSMO reports it in the single-poll shape (plain `choices`, `selectedContent`, `votedChoice` results) plus a `memberImages` alias-to-card map, with no slot metadata. The member roster is a separate request.
 - Every combination poll so far ran on Polygon and is fully revealed, so live reveal handling has only ever run against single polls.
-- Votes before 2025-04-18 are Polygon-era and live in the web database's `polygon_votes`, all finalized. Later votes are Abstract-era and live in the indexer's `vote`.
+- Every chain's votes live in the indexer's `vote`, each row marked with its `chain`. Polygon polls are all finished.
+- A Polygon vote's `from` is the voter's Abstract address when COSMO re-minted the account's objekts on Abstract, and the Polygon address otherwise. 896 voters were never re-minted.
+- A Polygon vote with a null `candidate_id` was never revealed and never will be, so Polygon summaries leave those votes out.
+- tripleS poll 59 (`Quaterfinal #1`) has 20 such votes, because the operator revealed positions 2721-2740 twice and the contract counted itself done. Apollo's total for it is 29 COMO below the on-chain result.
+- 44 Polygon polls in `vote` match no COSMO poll: they are MODHAUS' test polls, and nothing reads them.
 - COSMO doesn't say which chain a poll ran on, so it follows from when its gravity ended (`chainAt()` in `@apollo/util`).
 - A poll's rows in `vote` are found by `(chain, token_id, poll_id)`, because poll ids restart per chain and, on Polygon, per artist (`indexedPoll()` in `apps/web/src/lib/server/gravity.server.ts`).
 - On Abstract, the on-chain poll id is COSMO's poll id.

@@ -6,28 +6,15 @@ import type {
   FinalizedReveals,
 } from "@/lib/client/gravity/types";
 import { $fetchArtists } from "@/lib/functions/artists";
-import { polygonVotes } from "@apollo/database/web/schema";
 import { addr, type Chain, chainAt } from "@apollo/util";
 import { notFound } from "@tanstack/react-router";
 import { addMinutes, startOfHour } from "date-fns";
 import { and, asc, count, desc, eq, isNotNull, sql } from "drizzle-orm";
 import { remember } from "./cache.server";
-import {
-  fetchKnownAddresses,
-  fetchKnownPolygonAddresses,
-} from "./cosmo-accounts.server";
+import { fetchKnownAddresses } from "./cosmo-accounts.server";
 import { db } from "./db";
 import { indexer } from "./db/indexer";
 import { votes } from "./db/indexer/schema";
-
-/**
- * Polygon governor contract per artist. Polygon poll ids restart per contract,
- * so both are needed to identify a poll.
- */
-const POLYGON_CONTRACTS = new Map([
-  ["triples", "0xc3e5ad11ae2f00c740e74b81f134426a3331d950"],
-  ["artms", "0x8466e6e218f0fe438ac8f403f684451d20e59ee3"],
-]);
 
 const TOP_VOTE_COUNT = 50;
 const TOP_USER_COUNT = 25;
@@ -156,15 +143,16 @@ export async function fetchIndexedPoll(cosmoPollId: number) {
 export async function fetchAggregatedGravityData(
   poll: PollSource,
 ): Promise<AggregatedGravityData> {
-  const isPolygon = chainAt(poll.gravity.endDate) === "polygon";
-  // the polygon archive never changes, so its summary is shared across every edge and SSR render
-  const summary = isPolygon
-    ? await remember(
-        `polygon-poll-summary:v1:${poll.cosmoId}`,
-        60 * 60 * 24 * 30,
-        () => summarizePolygonPoll(poll),
-      )
-    : await summarizeIndexedPoll(await indexedPoll(poll));
+  const summarize = async () => summarizeIndexedPoll(await indexedPoll(poll));
+  // a Polygon poll never changes, so its summary is shared across every edge and SSR render
+  const summary =
+    chainAt(poll.gravity.endDate) === "polygon"
+      ? await remember(
+          `polygon-poll-summary:v2:${poll.cosmoId}`,
+          60 * 60 * 24 * 30,
+          summarize,
+        )
+      : await summarize();
 
   const chartData = chartSegments(poll.startDate, poll.endDate);
   const segmentIndexes = new Map(
@@ -207,9 +195,7 @@ export async function fetchAggregatedGravityData(
   }
 
   // fetch usernames for those addresses only
-  const addressMap = isPolygon
-    ? await fetchKnownPolygonAddresses(Array.from(addresses))
-    : await fetchKnownAddresses(Array.from(addresses));
+  const addressMap = await fetchKnownAddresses(Array.from(addresses));
 
   return {
     chartData,
@@ -245,10 +231,15 @@ async function summarizeIndexedPoll(
       Number,
     );
   const como = sql<number>`sum(${votes.amount})::bigint`.mapWith(Number);
+  /**
+   * A few Polygon votes were never revealed on-chain. Polygon polls are
+   * finished, so counting them would read as a poll still being revealed.
+   */
   const inPoll = and(
     eq(votes.chain, poll.chain),
     eq(votes.tokenId, poll.tokenId),
     eq(votes.pollId, poll.pollId),
+    poll.chain === "polygon" ? isNotNull(votes.candidateId) : undefined,
   );
 
   // one snapshot, so a response built as the last reveal lands can't pair
@@ -317,98 +308,6 @@ async function summarizeIndexedPoll(
     },
     { isolationLevel: "repeatable read", accessMode: "read only" },
   );
-}
-
-/**
- * Summarize a Polygon poll from the web database archive.
- */
-async function summarizePolygonPoll(
-  poll: PollSource,
-): Promise<PollVoteSummary> {
-  const contract = POLYGON_CONTRACTS.get(poll.gravity.artist.toLowerCase());
-  if (contract === undefined) {
-    throw new Error(
-      `No polygon contract for artist "${poll.gravity.artist}" (poll ${poll.cosmoId})`,
-    );
-  }
-
-  const bucket =
-    sql<number>`(extract(epoch from date_bin('30 minutes', ${polygonVotes.createdAt}, timestamp '2000-01-01')) * 1000)::bigint`.mapWith(
-      Number,
-    );
-  const como = sql<number>`sum(${polygonVotes.amount})::bigint`.mapWith(Number);
-
-  // a handful of archive rows were never revealed on-chain; polygon polls are
-  // immutably finalized, so keeping them would read as a poll still counting
-  const inPoll = and(
-    eq(polygonVotes.contract, contract),
-    eq(polygonVotes.pollId, polygonPollId(poll)),
-    isNotNull(polygonVotes.candidateId),
-  );
-
-  const topVoters = db
-    .select({ address: polygonVotes.address })
-    .from(polygonVotes)
-    .where(inPoll)
-    .groupBy(polygonVotes.address)
-    .orderBy(desc(como), asc(polygonVotes.address))
-    .limit(TOP_USER_COUNT)
-    .as("top_voters");
-
-  // the archive never changes, so separate snapshots can't disagree
-  const rollup = await db
-    .select({
-      candidateId: polygonVotes.candidateId,
-      bucket,
-      voteCount: count(),
-      como,
-    })
-    .from(polygonVotes)
-    .where(inPoll)
-    .groupBy(polygonVotes.candidateId, bucket);
-  const topVotes = await db
-    .select({
-      id: polygonVotes.id,
-      voter: polygonVotes.address,
-      amount: polygonVotes.amount,
-      candidateId: polygonVotes.candidateId,
-      blockNumber: polygonVotes.blockNumber,
-    })
-    .from(polygonVotes)
-    .where(inPoll)
-    .orderBy(
-      desc(polygonVotes.amount),
-      asc(polygonVotes.blockNumber),
-      asc(polygonVotes.index),
-      asc(polygonVotes.id),
-    )
-    .limit(TOP_VOTE_COUNT);
-  const topVoterVotes = await db
-    .select({
-      id: polygonVotes.id,
-      address: polygonVotes.address,
-      amount: polygonVotes.amount,
-      candidateId: polygonVotes.candidateId,
-      createdAt: polygonVotes.createdAt,
-    })
-    .from(polygonVotes)
-    .innerJoin(topVoters, eq(polygonVotes.address, topVoters.address))
-    .where(inPoll)
-    .orderBy(
-      asc(polygonVotes.blockNumber),
-      asc(polygonVotes.index),
-      asc(polygonVotes.id),
-    );
-
-  return {
-    rollup,
-    topVotes: topVotes.map((vote) => ({ ...vote, id: vote.id.toString() })),
-    topVoterVotes: topVoterVotes.map((vote) => ({
-      ...vote,
-      id: vote.id.toString(),
-      createdAt: vote.createdAt.toISOString(),
-    })),
-  };
 }
 
 /**
