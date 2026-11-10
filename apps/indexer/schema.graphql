@@ -62,10 +62,10 @@ type Vote @entity {
   id: ID! # uuid, varchar(36)
   from: String! @index
   createdAt: DateTime! @index
-  tokenId: Int! @index # COMO token id the vote spent
+  tokenId: Int! # COMO token id the vote spent
   pollId: Int! @index
   amount: BigInt! @index
-  blockNumber: Int! @index
+  blockNumber: Int!
   logIndex: Int!
   hash: String!
   candidateId: Int # null until the poll's reveal

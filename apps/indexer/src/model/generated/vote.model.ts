@@ -2,6 +2,9 @@ import { Column, Entity, Index, PrimaryColumn } from "typeorm";
 import * as marshal from "./marshal";
 
 @Entity()
+@Index("idx_vote_revealed", ["pollId", "blockNumber"], {
+  where: '"candidate_id" IS NOT NULL',
+})
 export class Vote {
   constructor(props?: Partial<Vote>) {
     Object.assign(this, props);
@@ -22,7 +25,6 @@ export class Vote {
   @Column("timestamp with time zone", { nullable: false })
   createdAt!: Date;
 
-  @Index()
   @Column("int4", { nullable: false })
   tokenId!: number;
 
@@ -37,7 +39,6 @@ export class Vote {
   })
   amount!: bigint;
 
-  @Index()
   @Column("int4", { nullable: false })
   blockNumber!: number;
 
