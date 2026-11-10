@@ -44,6 +44,25 @@ export const Addresses = {
 };
 
 /**
+ * Chains COSMO has run on, oldest first.
+ */
+export const chains = ["polygon", "abstract", "base"] as const;
+export type Chain = (typeof chains)[number];
+
+/**
+ * When COSMO moved from Polygon to Abstract: the first Abstract transfer
+ * that wasn't a mint.
+ */
+export const ABSTRACT_START = new Date("2025-04-18T11:24:00Z");
+
+/**
+ * The chain COSMO ran on at a point in time.
+ */
+export function chainAt(timestamp: Date | string | number): Chain {
+  return new Date(timestamp) < ABSTRACT_START ? "polygon" : "abstract";
+}
+
+/**
  * Chunk an array into chunks of a given size.
  */
 export async function chunk<T>(

@@ -17,6 +17,7 @@ Every source is subscribed from `COSMO_START_BLOCK` in `src/processor.ts`, decod
 
 - A log or input that fails to decode is skipped silently by the parser.
 - Addresses are lowercased with `addr()` at parse time; never store a raw address.
+- `vote` holds the votes of every chain COSMO has run on, and poll ids restart per chain. The processor writes `CHAIN` (`src/processor.ts`) on its votes and reveals only that chain's rows.
 
 ## Feature flags
 

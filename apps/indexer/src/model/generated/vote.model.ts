@@ -1,8 +1,10 @@
+import { type Chain, chains } from "@apollo/util";
 import { Column, Entity, Index, PrimaryColumn } from "typeorm";
 import * as marshal from "./marshal";
 
 @Entity()
-@Index("idx_vote_revealed", ["pollId", "blockNumber"], {
+@Index("idx_vote_poll", ["chain", "tokenId", "pollId"])
+@Index("idx_vote_revealed", ["chain", "tokenId", "pollId", "blockNumber"], {
   where: '"candidate_id" IS NOT NULL',
 })
 export class Vote {
@@ -16,6 +18,16 @@ export class Vote {
     length: 36,
   })
   id!: string;
+
+  // the chain poll_id, block_number and hash belong to
+  @Column({
+    type: "enum",
+    enum: chains,
+    enumName: "chain",
+    default: "abstract",
+    nullable: false,
+  })
+  chain!: Chain;
 
   @Index()
   @Column("text", { nullable: false })

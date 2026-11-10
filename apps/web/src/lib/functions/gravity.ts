@@ -4,6 +4,7 @@ import { remember } from "@/lib/server/cache.server";
 import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts.server";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
+import { fetchIndexedPoll } from "@/lib/server/gravity.server";
 import { getProxiedToken } from "@/lib/server/proxied-token.server";
 import { getRequestSignal } from "@/lib/server/request.server";
 import { CosmoApiError } from "@apollo/cosmo/errors";
@@ -259,6 +260,7 @@ export const $fetchRevealedVotes = createServerFn({ method: "GET" })
     }),
   )
   .handler(async ({ data }) => {
+    const poll = await fetchIndexedPoll(data.pollId);
     const votes = await indexer.query.votes.findMany({
       columns: {
         id: true,
@@ -268,7 +270,7 @@ export const $fetchRevealedVotes = createServerFn({ method: "GET" })
         amount: true,
       },
       where: {
-        pollId: data.pollId,
+        ...poll,
         candidateId: { isNotNull: true },
         ...(data.cursor !== undefined && {
           blockNumber: { gt: data.cursor },
@@ -318,9 +320,7 @@ export const $fetchRecentVotes = createServerFn({ method: "GET" })
             createdAt: true,
             amount: true,
           },
-          where: {
-            pollId: data.pollId,
-          },
+          where: await fetchIndexedPoll(data.pollId),
           orderBy: {
             createdAt: "desc",
           },

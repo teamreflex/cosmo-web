@@ -1,4 +1,4 @@
-import { Addresses } from "@apollo/util";
+import { Addresses, type Chain } from "@apollo/util";
 import {
   type BlockHeader,
   type DataHandlerContext,
@@ -13,6 +13,9 @@ import * as ABI_OBJEKT from "./abi/objekt";
 import { env } from "./env";
 
 const COSMO_START_BLOCK = 6363806;
+
+// the chain the contracts below are on, stored on every vote
+export const CHAIN: Chain = "abstract";
 
 // oxlint-disable-next-line no-console -- startup banner logs before the squid logger exists
 console.log(

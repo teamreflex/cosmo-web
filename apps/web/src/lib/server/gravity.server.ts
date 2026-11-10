@@ -5,9 +5,11 @@ import type {
   ChartSegment,
   FinalizedReveals,
 } from "@/lib/client/gravity/types";
+import { $fetchArtists } from "@/lib/functions/artists";
 import { polygonVotes } from "@apollo/database/web/schema";
-import { addr } from "@apollo/util";
-import { addMinutes, isBefore, startOfHour } from "date-fns";
+import { addr, type Chain, chainAt } from "@apollo/util";
+import { notFound } from "@tanstack/react-router";
+import { addMinutes, startOfHour } from "date-fns";
 import { and, asc, count, desc, eq, isNotNull, sql } from "drizzle-orm";
 import { remember } from "./cache.server";
 import {
@@ -17,12 +19,6 @@ import {
 import { db } from "./db";
 import { indexer } from "./db/indexer";
 import { votes } from "./db/indexer/schema";
-
-/**
- * COSMO moved gravity voting from Polygon to Abstract on this date. Votes for
- * everything before it live in the `polygon_votes` archive, everything after in the indexer.
- */
-const ABSTRACT_MIGRATION_DATE = "2025-04-18";
 
 /**
  * Polygon governor contract per artist. Polygon poll ids restart per contract,
@@ -49,6 +45,18 @@ export type PollSource = {
     artist: string;
     endDate: Date;
   };
+};
+
+/**
+ * Where a poll's votes are in the indexer's `vote` table. Poll ids restart
+ * per chain, and on Polygon per artist, so all three are needed.
+ */
+export type IndexedPoll = {
+  chain: Chain;
+  /** the artist's COMO token id */
+  tokenId: number;
+  /** the poll's id on that chain */
+  pollId: number;
 };
 
 /**
@@ -92,10 +100,53 @@ type PollVoteSummary = {
 };
 
 /**
- * Whether a gravity ran on Polygon, based on when it ended.
+ * Locate a poll's votes. COSMO doesn't say which chain a poll ran on, so it
+ * follows from when the gravity ended.
  */
-export function isPolygonGravity(gravityEndDate: Date) {
-  return isBefore(gravityEndDate, ABSTRACT_MIGRATION_DATE);
+export async function indexedPoll(
+  poll: Pick<PollSource, "cosmoId" | "pollIdOnChain" | "gravity">,
+): Promise<IndexedPoll> {
+  const { artists } = await $fetchArtists();
+  const artist = artists[poll.gravity.artist.toLowerCase()];
+  if (artist === undefined) {
+    throw new Error(
+      `No artist "${poll.gravity.artist}" for poll ${poll.cosmoId}`,
+    );
+  }
+
+  const chain = chainAt(poll.gravity.endDate);
+  return {
+    chain,
+    tokenId: artist.comoTokenId,
+    pollId: chain === "polygon" ? polygonPollId(poll) : poll.cosmoId,
+  };
+}
+
+/**
+ * Locate a poll's votes from its cosmo id alone. A poll never moves, so the
+ * answer is cached for the functions clients poll.
+ */
+export async function fetchIndexedPoll(cosmoPollId: number) {
+  return await remember(
+    `gravity-indexed-poll:v1:${cosmoPollId}`,
+    60 * 60 * 24,
+    async () => {
+      const poll = await db.query.gravityPolls.findFirst({
+        where: { cosmoId: cosmoPollId },
+        columns: { cosmoId: true, pollIdOnChain: true },
+        with: {
+          gravity: {
+            columns: { cosmoId: true, artist: true, endDate: true },
+          },
+        },
+      });
+      if (poll === undefined) {
+        throw notFound();
+      }
+
+      return await indexedPoll(poll);
+    },
+  );
 }
 
 /**
@@ -105,7 +156,7 @@ export function isPolygonGravity(gravityEndDate: Date) {
 export async function fetchAggregatedGravityData(
   poll: PollSource,
 ): Promise<AggregatedGravityData> {
-  const isPolygon = isPolygonGravity(poll.gravity.endDate);
+  const isPolygon = chainAt(poll.gravity.endDate) === "polygon";
   // the polygon archive never changes, so its summary is shared across every edge and SSR render
   const summary = isPolygon
     ? await remember(
@@ -113,7 +164,7 @@ export async function fetchAggregatedGravityData(
         60 * 60 * 24 * 30,
         () => summarizePolygonPoll(poll),
       )
-    : await summarizeAbstractPoll(poll.cosmoId);
+    : await summarizeIndexedPoll(await indexedPoll(poll));
 
   const chartData = chartSegments(poll.startDate, poll.endDate);
   const segmentIndexes = new Map(
@@ -184,16 +235,21 @@ export async function fetchAggregatedGravityData(
 }
 
 /**
- * Summarize an Abstract poll from the indexer, where the on-chain poll id is
- * the cosmo poll id.
+ * Summarize a poll from the indexer.
  */
-async function summarizeAbstractPoll(pollId: number): Promise<PollVoteSummary> {
+async function summarizeIndexedPoll(
+  poll: IndexedPoll,
+): Promise<PollVoteSummary> {
   const bucket =
     sql<number>`(extract(epoch from date_bin('30 minutes', ${votes.createdAt}, timestamptz '2000-01-01')) * 1000)::bigint`.mapWith(
       Number,
     );
   const como = sql<number>`sum(${votes.amount})::bigint`.mapWith(Number);
-  const inPoll = eq(votes.pollId, pollId);
+  const inPoll = and(
+    eq(votes.chain, poll.chain),
+    eq(votes.tokenId, poll.tokenId),
+    eq(votes.pollId, poll.pollId),
+  );
 
   // one snapshot, so a response built as the last reveal lands can't pair
   // finalized totals with unrevealed top votes
@@ -450,7 +506,9 @@ function groupTopUsers(votes: TopVoterVote[]) {
  * once COSMO stopped reusing the cosmo poll id on-chain, after gravity 11.
  * The polls of gravity 2 sit one behind their cosmo ids.
  */
-function polygonPollId(poll: PollSource) {
+function polygonPollId(
+  poll: Pick<PollSource, "cosmoId" | "pollIdOnChain" | "gravity">,
+) {
   if (poll.gravity.cosmoId === 2) {
     return poll.cosmoId - 1;
   }

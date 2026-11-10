@@ -1,9 +1,7 @@
 import { cacheHeaders } from "@/lib/server/cache.server";
 import { db } from "@/lib/server/db";
-import {
-  fetchAggregatedGravityData,
-  isPolygonGravity,
-} from "@/lib/server/gravity.server";
+import { fetchAggregatedGravityData } from "@/lib/server/gravity.server";
+import { chainAt } from "@apollo/util";
 import { createFileRoute } from "@tanstack/react-router";
 import { isPast } from "date-fns";
 import * as z from "zod";
@@ -67,9 +65,10 @@ export const Route = createFileRoute("/api/gravity/$pollId/aggregated")({
          */
         const headers = isPast(poll.gravity.endDate)
           ? cacheHeaders({
-              cdn: isPolygonGravity(poll.gravity.endDate)
-                ? 60 * 60 * 24 * 30
-                : 60 * 60 * 24 * 7,
+              cdn:
+                chainAt(poll.gravity.endDate) === "polygon"
+                  ? 60 * 60 * 24 * 30
+                  : 60 * 60 * 24 * 7,
               tags: ["gravity", `gravity:${pollId}`],
             })
           : cacheHeaders({
