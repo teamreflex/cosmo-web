@@ -1,3 +1,4 @@
+import { chains } from "@apollo/util";
 import {
   bigint,
   bigserial,
@@ -6,6 +7,7 @@ import {
   integer,
   jsonb,
   numeric,
+  pgEnum,
   pgSchema,
   pgTable,
   primaryKey,
@@ -141,16 +143,20 @@ export const listEventOutbox = pgTable(
   (t) => [index("idx_list_event_outbox_created_at").on(t.createdAt)],
 );
 
+export const chain = pgEnum("chain", chains);
+
 export const votes = pgTable("vote", {
-  id: uuid("id").primaryKey(),
-  from: varchar("from", { length: 42 }).notNull(),
+  id: varchar("id", { length: 36 }).primaryKey(),
+  // the chain poll_id, block_number and hash belong to
+  chain: chain("chain").notNull().default("abstract"),
+  from: text("from").notNull(),
   createdAt: timestamp("created_at", {
     mode: "string",
     withTimezone: true,
   }).notNull(),
   tokenId: integer("token_id").notNull(),
   pollId: integer("poll_id").notNull(),
-  amount: bigint("amount", { mode: "number" }).notNull(),
+  amount: numeric("amount", { mode: "number" }).notNull(),
   blockNumber: integer("block_number").notNull(),
   logIndex: integer("log_index").notNull(),
   hash: text("hash").notNull(),

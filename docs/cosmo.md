@@ -174,6 +174,8 @@ Gravity events are polls where users place COMO on candidates, such as the next 
 - A unit poll (`unit-poll`) races the pairings directly. COSMO reports it in the single-poll shape (plain `choices`, `selectedContent`, `votedChoice` results) plus a `memberImages` alias-to-card map, with no slot metadata. The member roster is a separate request.
 - Every combination poll so far ran on Polygon and is fully revealed, so live reveal handling has only ever run against single polls.
 - Votes before 2025-04-18 are Polygon-era and live in the web database's `polygon_votes`, all finalized. Later votes are Abstract-era and live in the indexer's `vote`.
+- COSMO doesn't say which chain a poll ran on, so it follows from when its gravity ended (`chainAt()` in `@apollo/util`).
+- A poll's rows in `vote` are found by `(chain, token_id, poll_id)`, because poll ids restart per chain and, on Polygon, per artist (`indexedPoll()` in `apps/web/src/lib/server/gravity.server.ts`).
 - On Abstract, the on-chain poll id is COSMO's poll id.
 - On Polygon, the on-chain id differs: gravity 2 uses COSMO's id minus 1, gravities up to 11 use COSMO's id, and later gravities use `pollIdOnChain` (`polygonPollId()` in `apps/web/src/lib/server/gravity.server.ts`).
 - Gravities are always posted within a day or two of their start; far-future poll dates never occur.

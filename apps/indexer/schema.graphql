@@ -58,14 +58,21 @@ type ComoBalance @entity {
   amount: BigInt! @index
 }
 
+enum Chain {
+  polygon
+  abstract
+  base
+}
+
 type Vote @entity {
   id: ID! # uuid, varchar(36)
+  chain: Chain! # the chain pollId, blockNumber and hash belong to
   from: String! @index
   createdAt: DateTime! @index
-  tokenId: Int! @index # COMO token id the vote spent
+  tokenId: Int! # COMO token id the vote spent
   pollId: Int! @index
   amount: BigInt! @index
-  blockNumber: Int! @index
+  blockNumber: Int!
   logIndex: Int!
   hash: String!
   candidateId: Int # null until the poll's reveal

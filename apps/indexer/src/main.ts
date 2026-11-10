@@ -26,7 +26,7 @@ import {
   type TransferabilityUpdate,
   type VoteEvent,
 } from "./parser";
-import { processor, type ProcessorContext } from "./processor";
+import { CHAIN, processor, type ProcessorContext } from "./processor";
 import { numberNewObjekts, startSerialBatch } from "./serials";
 import { readTransferability } from "./transferability";
 
@@ -476,6 +476,7 @@ async function getBalance(
 function handleVoteCreation(event: VoteEvent) {
   return new Vote({
     id: randomUUID(),
+    chain: CHAIN,
     from: event.from,
     createdAt: new Date(event.timestamp),
     tokenId: event.tokenId,
@@ -507,9 +508,9 @@ async function handleReveals(
   for (const [key, pollReveals] of grouped) {
     const [tokenId, pollId] = key.split("-").map(Number);
 
-    // Get all votes for this poll, ordered by position (blockNumber, logIndex)
+    // every vote of this chain's poll, ordered by position (blockNumber, logIndex)
     const votes = await ctx.store.find(Vote, {
-      where: { tokenId, pollId },
+      where: { chain: CHAIN, tokenId, pollId },
       order: { blockNumber: "ASC", logIndex: "ASC" },
     });
 
