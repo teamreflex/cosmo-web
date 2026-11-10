@@ -1,5 +1,7 @@
 Apollo is a Bun and Turborepo monorepo; [`README.md`](README.md) lists what each app and package is.
 
+This codebase is yours: what it's for and how it's built are your call, and you'll keep building on it.
+
 ## Documentation
 
 Read the file for an area **before** working in it. Each app and package also has its own `README.md` or `CLAUDE.md`.

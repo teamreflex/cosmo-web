@@ -36,7 +36,7 @@ An `objekt` is one NFT on the Abstract chain. Every objekt in a collection has i
 - "Spin" is an in-app gacha that can swap a First or Double class objekt for a Special or Premier one.
 - Spun objekts are transferred to `Addresses.SPIN`, a sink with no outgoing transfers. They stay real rows owned by that address, not deletions.
 - `objekt.minted_at` is the time of whichever transfer created the row, not necessarily the mint. Check for a transfer from `0x0` before treating it as mint evidence.
-- `objekt.transferable` is false when COSMO won't let the owner send it, e.g. a First class objekt locked by a completed grid. COSMO's v3 metadata always reports `true`, so the real value only arrives with a `batchUpdateObjektTransferability` call.
+- `objekt.transferable` is false when COSMO won't let the owner send it, e.g. a First class objekt locked by a completed grid. An objekt can also be minted untransferable. No event or metadata carries the flag, so the indexer reads it from the objekt contract ([`apps/indexer/CLAUDE.md`](../apps/indexer/CLAUDE.md#transferability)).
 - Trades only take transferable objekts, because every trade settles through transfers the parties make in COSMO (see [`docs/trades/overview.md`](trades/overview.md)).
 - A token id below the first Abstract-native mint (9,419,276) doesn't mean the objekt was minted on Polygon. Physicals keep the id reserved when they were printed, so Atom02 A objekts carry 8-9M ids yet were scanned on Abstract in late 2025.
 - To split Polygon-range ids, use `on_offline`: online ones were minted on Polygon, offline ones need checking on-chain.

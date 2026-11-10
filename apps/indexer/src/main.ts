@@ -1,4 +1,9 @@
-import type { CosmoObjektMetadataV1 } from "@apollo/cosmo/types/metadata";
+import { runCosmo } from "@apollo/cosmo/runtime";
+import { fetchMetadataV3 } from "@apollo/cosmo/server/metadata";
+import {
+  type CosmoObjektMetadataV1,
+  normalizeV3,
+} from "@apollo/cosmo/types/metadata";
 import { addr, Addresses, chunk, slugifyObjekt } from "@apollo/util";
 import * as Sentry from "@sentry/bun";
 import { type Store, TypeormDatabase } from "@subsquid/typeorm-store";
@@ -6,7 +11,6 @@ import { randomUUID } from "crypto";
 import { In } from "typeorm";
 import { env } from "./env";
 import { mirrorImages } from "./images";
-import { fetchMetadataWithRetryV3 } from "./metadata";
 import {
   Collection,
   ComoBalance,
@@ -24,6 +28,7 @@ import {
 } from "./parser";
 import { processor, type ProcessorContext } from "./processor";
 import { numberNewObjekts, startSerialBatch } from "./serials";
+import { readTransferability } from "./transferability";
 
 const db = new TypeormDatabase({ supportHotBlocks: true });
 
@@ -45,9 +50,24 @@ processor.run(db, async (ctx) => {
       const objektBatch = new Map<string, Objekt>();
       const createdObjekts: { objekt: Objekt; collection: Collection }[] = [];
 
-      const results = await Promise.allSettled(
-        chunk.map((transfer) => fetchMetadataWithRetryV3(transfer.tokenId)),
+      // kick off metadata fetching
+      const metadataResults = Promise.allSettled(
+        chunk.map((transfer) =>
+          runCosmo(fetchMetadataV3(transfer.tokenId)).then((m) =>
+            normalizeV3(m, transfer.tokenId),
+          ),
+        ),
       );
+
+      // read the minted tokens' transferability from the objekt contract
+      const transferableResults = await readTransferability(
+        ctx,
+        chunk
+          .filter((transfer) => transfer.from === Addresses.NULL)
+          .map((transfer) => transfer.tokenId),
+      );
+
+      const results = await metadataResults;
 
       const metadataBatch = [];
       const failedTokenIds: string[] = [];
@@ -97,6 +117,7 @@ processor.run(db, async (ctx) => {
         const { objekt, created } = await handleObjekt(
           ctx,
           metadata,
+          transferableResults,
           objektBatch,
           transfer,
         );
@@ -298,6 +319,7 @@ async function handleCollection(
 async function handleObjekt(
   ctx: ProcessorContext<Store>,
   metadata: CosmoObjektMetadataV1,
+  minted: ReadonlyMap<string, boolean>,
   buffer: Map<string, Objekt>,
   transfer: Transfer,
 ) {
@@ -316,6 +338,12 @@ async function handleObjekt(
     return { objekt, created: false };
   }
 
+  // an unknown token's first transfer is its mint, which is what was read
+  const transferable = minted.get(transfer.tokenId);
+  if (transferable === undefined) {
+    throw new Error(`objekt ${transfer.tokenId} is unknown but was not minted`);
+  }
+
   // otherwise create it; numberNewObjekts replaces v3's serial 0 after the cutoff
   return {
     objekt: new Objekt({
@@ -324,7 +352,7 @@ async function handleObjekt(
       receivedAt: new Date(transfer.timestamp),
       owner: addr(transfer.to),
       serial: metadata.objekt.objektNo,
-      transferable: metadata.objekt.transferable,
+      transferable,
     }),
     created: true,
   };

@@ -9,6 +9,7 @@ Every source is subscribed from `COSMO_START_BLOCK` in `src/processor.ts`, decod
 | Source                                                | Kind              | Becomes                                                   |
 | ----------------------------------------------------- | ----------------- | --------------------------------------------------------- |
 | `Addresses.OBJEKT` `Transfer`                         | log               | `transfer`, `objekt`, `collection`, outbox `transfer` row |
+| `Addresses.OBJEKT` `isObjektTransferable`             | contract read     | `objekt.transferable` of a minted objekt                  |
 | `Addresses.OBJEKT` `batchUpdateObjektTransferability` | transaction input | `objekt.transferable`, outbox `transferability` row       |
 | `Addresses.COMO` `TransferSingle` / `TransferBatch`   | log               | `como_balance`                                            |
 | `Addresses.GRAVITY` `Voted`                           | log               | `vote` with `candidate_id` null                           |
@@ -34,11 +35,12 @@ Everything in a batch runs in one Subsquid transaction and commits together with
   [ENABLE_OBJEKTS]        v
   startSerialBatch   batch starts <= last height? hot-block rollback: clear tops, frontier
   +-- per chunk of COSMO_PARALLEL_COUNT transfers -------------------------------+
-  |  fetch v3 metadata for every transfer (retries up to 5 min)                  |
+  |  fetch v3 metadata for every transfer (retries up to 5 min); meanwhile       |
+  |  read isObjektTransferable for the mints at the batch's last block           |
   |    any failure -> Sentry fatal, flush, THROW: the batch rolls back, the      |
   |                   process exits, the same blocks are redone on restart       |
   |  handleCollection  load by slug, create or refresh from metadata             |
-  |  handleObjekt      new: serial 0, transferable true / known: owner, received |
+  |  handleObjekt      new: serial 0, read transferable / known: owner, received |
   |  numberNewObjekts  serial_reservation, estimates, renumber stored digital    |
   |  mirrorImages      R2; a failure never fails the batch                       |
   |  upsert collection -> objekt -> transfer                                     |
@@ -62,14 +64,31 @@ Everything in a batch runs in one Subsquid transaction and commits together with
 - Every transfer fetches `/bff/v3/objekts/nft-metadata/{id}`, not only mints, because collections are discovered and refreshed from metadata. A COSMO outage halts all indexing, plain ownership changes included.
 - `normalizeV3` in `packages/cosmo` maps v3 into the v1 shape, and v3 lacks several fields:
 
-| Field                 | Stored from v3        | Consequence                                                                          |
-| --------------------- | --------------------- | ------------------------------------------------------------------------------------ |
-| `objekt.serial`       | `0`                   | `numberNewObjekts` estimates it for objekts minted after the cutoff                  |
-| `objekt.transferable` | `true`                | the real value arrives only with a later `batchUpdateObjektTransferability` call     |
-| `backImage`           | `""`                  | `handleCollection` keeps a stored back image; a v3-era collection has none to mirror |
-| `contract`            | zero address          | new collections carry no contract address                                            |
-| `textColor`           | `#000000`             | set once on create; staff can correct it                                             |
-| `accentColor`         | the background colour | set once on create; staff can correct it                                             |
+| Field                 | Stored from v3        | Consequence                                                                             |
+| --------------------- | --------------------- | --------------------------------------------------------------------------------------- |
+| `objekt.serial`       | `0`                   | `numberNewObjekts` estimates it for objekts minted after the cutoff                     |
+| `objekt.transferable` | never                 | v3 has no such field; the objekt contract is read ([Transferability](#transferability)) |
+| `backImage`           | `""`                  | `handleCollection` keeps a stored back image; a v3-era collection has none to mirror    |
+| `contract`            | zero address          | new collections carry no contract address                                               |
+| `textColor`           | `#000000`             | set once on create; staff can correct it                                                |
+| `accentColor`         | the background colour | set once on create; staff can correct it                                                |
+
+## Transferability
+
+The objekt contract sets `isObjektTransferable` at mint and changes it through `batchUpdateObjektTransferability`. Neither emits an event, and metadata doesn't carry the flag.
+
+| Objekt               | `transferable` comes from                                                                   |
+| -------------------- | ------------------------------------------------------------------------------------------- |
+| minted in this chunk | `readTransferability` (`src/transferability.ts`): `isObjektTransferable` through Multicall3 |
+| already stored       | `handleTransferabilityUpdates`, from the input of each `batchUpdateObjektTransferability`   |
+
+- The read is pinned to the batch's last block, because a batch applies its transferability updates after its transfers: the state at that block is what the batch commits, even when a mint and an update to the same token share a batch.
+- It is pinned by block hash with `requireCanonical`, so a hot block is never answered from another fork.
+- It runs while the chunk's metadata is fetched, so it adds no round trip to the chunk.
+- A chunk's mints go in one `eth_call`, so `COSMO_PARALLEL_COUNT` bounds its size; 500 calls in one `aggregate3` is known to work.
+- `handleObjekt` throws on a token the store doesn't know whose transfer isn't a mint, because a token's first transfer is its mint and nothing else was read.
+- A stored objekt is never re-read, because one locked after its mint doesn't transfer again and so never reaches a chunk: only the transaction input reports a lock.
+- A failed read throws under the [error rules](#errors), with the Sentry fingerprint `indexer-transferability-read-failed`. It is not retried here, because the processor's RPC client already retries connection errors and rate limits.
 
 ## Writes and the store
 
