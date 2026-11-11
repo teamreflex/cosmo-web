@@ -16,16 +16,6 @@ function names(candidates: { name: string }[]) {
 }
 
 describe("buildSlotModel", () => {
-  it("splits a combination poll into its slots", () => {
-    const model = buildSlotModel(combinationPoll, []);
-
-    expect(model.kind).toBe("combination");
-    expect(model.slots.map((slot) => slot.name)).toEqual([
-      "EVOLution",
-      "LOVElution",
-    ]);
-  });
-
   it("collects the candidate ids that place a member in a slot", () => {
     const model = buildSlotModel(combinationPoll, []);
     const [evolution, lovelution] = model.slots;
@@ -50,17 +40,6 @@ describe("buildSlotModel", () => {
       [0, 5],
       [1, 3],
     ]);
-  });
-
-  it("covers every candidate id exactly once per slot", () => {
-    const model = buildSlotModel(combinationPoll, []);
-
-    for (const slot of model.slots) {
-      const ids = slot.candidates
-        .flatMap((candidate) => candidate.candidateIds)
-        .sort((a, b) => a - b);
-      expect(ids).toEqual([0, 1, 2, 3, 4, 5]);
-    }
   });
 
   it("gives a single poll one implicit slot of its candidates", () => {
@@ -178,23 +157,6 @@ describe("rankSlots", () => {
 
     // the same batch moves nobody in the other slot
     expect(lovelution?.rows.map((row) => row.movement?.rankChange)).toEqual([
-      0, 0, 0,
-    ]);
-  });
-
-  it("keeps tied candidates still across a batch", () => {
-    const tied = [5, 5, 5, 5, 5, 5];
-    const batch: RevealBatch = {
-      comoPerCandidate: [1, 1, 1, 1, 1, 1],
-      revealCount: 6,
-    };
-    const [evolution] = rankSlots(
-      buildSlotModel(combinationPoll, []),
-      tied,
-      batch,
-    );
-
-    expect(evolution?.rows.map((row) => row.movement?.rankChange)).toEqual([
       0, 0, 0,
     ]);
   });

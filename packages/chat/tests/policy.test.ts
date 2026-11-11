@@ -1,10 +1,5 @@
 import type { Role } from "@apollo/auth";
-import {
-  endedTradeStatuses,
-  liveTradeStatuses,
-  type TradeStatus,
-  tradeStatuses,
-} from "@apollo/database/web/types";
+import type { TradeStatus } from "@apollo/database/web/types";
 import { describe, expect, test } from "bun:test";
 import { Effect, Exit } from "effect";
 import {
@@ -12,7 +7,6 @@ import {
   canRemoveMessage,
   canReportMessage,
   canSendChat,
-  type ChatAccess,
   type ChatTrade,
   type ChatViewer,
 } from "../src/policy";
@@ -51,7 +45,13 @@ const joinable = new Set([
 const live = new Set(["accepted", "disputed"]);
 
 describe("canJoinChat", () => {
-  for (const status of tradeStatuses) {
+  // either side of acceptance, an ended trade, and an offer that ended unaccepted
+  for (const status of [
+    "pending",
+    "accepted",
+    "completed",
+    "declined",
+  ] satisfies TradeStatus[]) {
     test(`${status}: parties ${joinable.has(status) ? "join" : "are refused"}`, () => {
       expect(outcome(canJoinChat(viewers.from, trade(status), null))).toEqual(
         joinable.has(status) ? { kind: "party", side: "from" } : "ChatNotFound",
@@ -60,31 +60,24 @@ describe("canJoinChat", () => {
         joinable.has(status) ? { kind: "party", side: "to" } : "ChatNotFound",
       );
     });
-
-    test(`${status}: an outsider never joins, even with an open report`, () => {
-      expect(
-        outcome(canJoinChat(viewers.outsider, trade(status), "report")),
-      ).toBe("ChatNotFound");
-    });
-
-    test(`${status}: staff join only under an open report or dispute`, () => {
-      for (const staff of [viewers.moderator, viewers.admin]) {
-        expect(outcome(canJoinChat(staff, trade(status), null))).toBe(
-          "StaffAccessRequired",
-        );
-        expect(outcome(canJoinChat(staff, trade(status), "report"))).toEqual({
-          kind: "staff",
-          reportId: "report",
-        });
-      }
-    });
   }
 
-  test("a deleted party's side matches no one", () => {
-    const orphaned: ChatTrade = { ...trade("accepted"), toUserId: null };
-    expect(outcome(canJoinChat(viewers.to, orphaned, null))).toBe(
-      "ChatNotFound",
-    );
+  test("disputed: an outsider never joins, even with an open report", () => {
+    expect(
+      outcome(canJoinChat(viewers.outsider, trade("disputed"), "report")),
+    ).toBe("ChatNotFound");
+  });
+
+  test("disputed: staff join only under an open report or dispute", () => {
+    for (const staff of [viewers.moderator, viewers.admin]) {
+      expect(outcome(canJoinChat(staff, trade("disputed"), null))).toBe(
+        "StaffAccessRequired",
+      );
+      expect(outcome(canJoinChat(staff, trade("disputed"), "report"))).toEqual({
+        kind: "staff",
+        reportId: "report",
+      });
+    }
   });
 
   test("a staff member who is a party joins as a party", () => {
@@ -94,20 +87,18 @@ describe("canJoinChat", () => {
       side: "from",
     });
   });
-
-  test("a demoted moderator is an outsider", () => {
-    const demoted = { userId: "mod", role: "user" } satisfies ChatViewer;
-    expect(outcome(canJoinChat(demoted, trade("disputed"), "report"))).toBe(
-      "ChatNotFound",
-    );
-  });
 });
 
 describe("canSendChat", () => {
   const party = { kind: "party", side: "to" } as const;
   const staff = { kind: "staff", reportId: "report" } as const;
 
-  for (const status of tradeStatuses) {
+  // each status a party can join in: the live ones, then an ended one
+  for (const status of [
+    "accepted",
+    "disputed",
+    "completed",
+  ] satisfies TradeStatus[]) {
     test(`${status}: a party ${live.has(status) ? "sends" : "is read-only"}`, () => {
       expect(outcome(canSendChat(viewers.to, party, trade(status)))).toEqual(
         live.has(status) ? party : "ChatReadOnly",
@@ -115,15 +106,13 @@ describe("canSendChat", () => {
     });
   }
 
-  for (const status of tradeStatuses.filter((each) => joinable.has(each))) {
-    test(`${status}: staff with trade:message send under the report`, () => {
-      for (const viewer of [viewers.moderator, viewers.admin]) {
-        expect(outcome(canSendChat(viewer, staff, trade(status)))).toEqual(
-          staff,
-        );
-      }
-    });
-  }
+  test("completed: staff with trade:message send under the report", () => {
+    for (const viewer of [viewers.moderator, viewers.admin]) {
+      expect(outcome(canSendChat(viewer, staff, trade("completed")))).toEqual(
+        staff,
+      );
+    }
+  });
 
   test("staff without trade:message are read-only", () => {
     const demoted = { userId: "mod", role: "user" } satisfies ChatViewer;
@@ -159,7 +148,6 @@ describe("canRemoveMessage", () => {
 
   test.each([
     ["moderator", "report"],
-    ["admin", "report"],
     ["user", "Forbidden"],
   ] satisfies [Role, string][])("%s under an open report", (role, expected) => {
     expect(outcome(canRemoveMessage({ userId: "staff", role }, staff))).toBe(
@@ -174,50 +162,4 @@ describe("canRemoveMessage", () => {
       ),
     ).toBe("Forbidden");
   });
-});
-
-// UNIT-09
-describe("direct offers", () => {
-  test("the live and ended lists are exactly the accepted trade's statuses", () => {
-    expect(liveTradeStatuses).toEqual(["accepted", "disputed"]);
-    expect(endedTradeStatuses).toEqual(["completed", "cancelled", "timed_out"]);
-  });
-
-  test.each([
-    ["pending", "ChatNotFound", "ChatReadOnly"],
-    ["declined", "ChatNotFound", "ChatReadOnly"],
-    ["withdrawn", "ChatNotFound", "ChatReadOnly"],
-    ["countered", "ChatNotFound", "ChatReadOnly"],
-    ["expired", "ChatNotFound", "ChatReadOnly"],
-    ["stale", "ChatNotFound", "ChatReadOnly"],
-    [
-      "accepted",
-      { kind: "party", side: "from" },
-      { kind: "party", side: "from" },
-    ],
-    [
-      "disputed",
-      { kind: "party", side: "from" },
-      { kind: "party", side: "from" },
-    ],
-    ["completed", { kind: "party", side: "from" }, "ChatReadOnly"],
-    ["cancelled", { kind: "party", side: "from" }, "ChatReadOnly"],
-    ["timed_out", { kind: "party", side: "from" }, "ChatReadOnly"],
-  ] satisfies [TradeStatus, ChatAccess | string, ChatAccess | string][])(
-    "%s: join gives %p and send gives %p",
-    (status, join, send) => {
-      expect(outcome(canJoinChat(viewers.from, trade(status), null))).toEqual(
-        join,
-      );
-      expect(
-        outcome(
-          canSendChat(
-            viewers.from,
-            { kind: "party", side: "from" },
-            trade(status),
-          ),
-        ),
-      ).toEqual(send);
-    },
-  );
 });

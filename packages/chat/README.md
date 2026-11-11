@@ -28,4 +28,4 @@ Every RPC runs behind the `ChatAuth` middleware, so any call can also fail with 
 
 ## Tests
 
-`bun test` covers the policy (`tests/policy.test.ts`, across every trade status) and `MessageBody` and sanitising (`tests/body.test.ts`).
+`bun test` covers the policy (`tests/policy.test.ts`, one status per class the policy tells apart) and `MessageBody` and sanitising (`tests/body.test.ts`).

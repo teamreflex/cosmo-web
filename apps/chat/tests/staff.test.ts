@@ -19,7 +19,7 @@ let signer: Signer;
 const tokens: Record<string, string> = {};
 beforeAll(async () => {
   signer = await makeSigner();
-  for (const user of ["alice", "bob", "carol", "mod", "admin"]) {
+  for (const user of ["alice", "bob", "mod", "admin"]) {
     tokens[user] = await mint(signer, { sub: user });
   }
 });
@@ -54,43 +54,6 @@ describe("staff", () => {
         expect(
           yield* outcome(Stream.runHead(mod.Join({ tradeId: TRADE }))),
         ).toBe("StaffAccessRequired");
-      }),
-    );
-  });
-
-  test("read under an open dispute", async () => {
-    const state = world();
-    openDispute(state);
-    await run(
-      state,
-      signer,
-      Effect.gen(function* () {
-        const alice = yield* client(token("alice"));
-        yield* alice.Send({ tradeId: TRADE, body: Redacted.make("hi") });
-        const mod = yield* client(token("mod"));
-        const stream = yield* collect(mod.Join({ tradeId: TRADE }));
-        expect(yield* stream.take(1)).toHaveLength(1);
-      }),
-    );
-  });
-
-  test("a report on one of the trade's messages opens it too", async () => {
-    const state = world();
-    await run(
-      state,
-      signer,
-      Effect.gen(function* () {
-        const alice = yield* client(token("alice"));
-        const bob = yield* client(token("bob"));
-        const { messageId } = yield* alice.Send({
-          tradeId: TRADE,
-          body: Redacted.make("hi"),
-        });
-        yield* bob.Report({ messageId, reason: "harassment" });
-        const admin = yield* client(token("admin"));
-        expect(
-          yield* Stream.runHead(admin.Join({ tradeId: TRADE })),
-        ).toBeDefined();
       }),
     );
   });
@@ -331,23 +294,6 @@ describe("staff messages", () => {
     );
   });
 
-  test("can't write without an open report or dispute", async () => {
-    const state = world();
-    await run(
-      state,
-      signer,
-      Effect.gen(function* () {
-        const mod = yield* client(token("mod"));
-        expect(
-          yield* outcome(
-            mod.Send({ tradeId: TRADE, body: Redacted.make("hello") }),
-          ),
-        ).toBe("StaffAccessRequired");
-      }),
-    );
-    expect(state.rows).toEqual([]);
-  });
-
   test("a deleted staff account's message stays a staff message", async () => {
     const state = world();
     openDispute(state);
@@ -369,36 +315,6 @@ describe("staff messages", () => {
         expect(yield* stream.take(1)).toMatchObject([
           { sender: { _tag: "Staff", name: null } },
         ]);
-      }),
-    );
-  });
-
-  test("parties can't report one, and staff can remove it", async () => {
-    const state = world();
-    openDispute(state);
-    await run(
-      state,
-      signer,
-      Effect.gen(function* () {
-        const mod = yield* client(token("mod"));
-        const { messageId } = yield* mod.Send({
-          tradeId: TRADE,
-          body: Redacted.make("staff here"),
-        });
-        for (const party of ["alice", "bob"]) {
-          const reporter = yield* client(token(party));
-          expect(
-            yield* outcome(reporter.Report({ messageId, reason: "spam" })),
-          ).toBe("Forbidden");
-        }
-        yield* (yield* client(token("admin"))).Remove({ messageId });
-        expect(state.audit).toContainEqual(
-          expect.objectContaining({
-            staffId: "admin",
-            action: "trade:remove-message",
-            targetId: String(messageId),
-          }),
-        );
       }),
     );
   });

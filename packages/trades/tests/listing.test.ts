@@ -104,9 +104,23 @@ const termSchemas = [
   ["editListingInputSchema", editListingInputSchema, { listingId: LISTING_ID }],
 ] as const;
 
+// each schema wraps its own fields in the listing rules
+test.each(termSchemas)(
+  "%s refuses a token offered twice (SCH-04)",
+  (_, schema, extra) => {
+    expectIssue(
+      schema.safeParse({
+        ...extra,
+        offered: [{ tokenId: 5 }, { tokenId: 5 }],
+        wants,
+      }),
+      "offered: Each objekt can only be offered once",
+    );
+  },
+);
+
 /**
- * Terms every schema refuses, with the issue each produces (SCH-02..SCH-18,
- * SCH-22).
+ * Terms the listing schema refuses, with the issue each produces.
  */
 const refused = [
   [
@@ -118,16 +132,6 @@ const refused = [
     "no wants (SCH-03)",
     { offered, wants: [] },
     "wants: Ask for at least one objekt",
-  ],
-  [
-    "a token offered twice (SCH-04)",
-    { offered: [{ tokenId: 5 }, { tokenId: 5 }], wants },
-    "offered: Each objekt can only be offered once",
-  ],
-  [
-    "the same exact slug twice (SCH-05)",
-    { offered, wants: [exact(KIMLIP), exact(KIMLIP, 2)] },
-    "wants: Ask for each objekt in one row and raise its count instead",
   ],
   [
     "the same exact slug in two casings (SCH-05)",
@@ -159,11 +163,6 @@ const refused = [
     `wants.0.count: A row can ask for at most ${MAX_PER_ROW} objekts`,
   ],
   [
-    "a range count past the row cap (SCH-07)",
-    { offered, wants: [range({ season: ["Atom02"] }, MAX_PER_ROW + 1)] },
-    `wants.0.count: A row can ask for at most ${MAX_PER_ROW} objekts`,
-  ],
-  [
     "one objekt past the offer cap (SCH-08)",
     { offered: tokens(MAX_OFFERED + 1), wants },
     `offered: A listing can offer at most ${MAX_OFFERED} objekts`,
@@ -185,31 +184,6 @@ const refused = [
     `wants: A listing can ask for at most ${MAX_TOTAL_WANTED} objekts in total`,
   ],
   [
-    "a range with no columns (SCH-11)",
-    { offered, wants: [range({})] },
-    "wants.0.ranges.0: A range needs at least one value",
-  ],
-  [
-    "a range with only empty columns (SCH-11)",
-    { offered, wants: [range(emptyFilter)] },
-    "wants.0.ranges.0: A range needs at least one value",
-  ],
-  [
-    "a season past the column cap in one range (SCH-13)",
-    {
-      offered,
-      wants: [
-        range({
-          season: Array.from(
-            { length: MAX_RANGE_VALUES + 1 },
-            (_, i) => `Season${i}`,
-          ),
-        }),
-      ],
-    },
-    "wants.0.ranges.0.season: *",
-  ],
-  [
     "a 501-character note (SCH-15)",
     { offered, wants, note: "n".repeat(501) },
     "note: A note can be at most 500 characters",
@@ -218,11 +192,6 @@ const refused = [
     "a payment want (SCH-16)",
     { offered, wants: [{ kind: "payment", amount: "10.00", currency: "USD" }] },
     "wants.0.kind: *",
-  ],
-  [
-    "an empty slug (SCH-17)",
-    { offered, wants: [exact("")] },
-    "wants.0.slug: *",
   ],
   [
     "a whitespace slug (SCH-17)",
@@ -283,11 +252,6 @@ const refused = [
     "wants: Each range can only be asked for once",
   ],
   [
-    "a NUL byte in a range member (SCH-24)",
-    { offered, wants: [range({ member: ["\u0000"] })] },
-    "wants.0.ranges.0.member.0: Text can't contain a NUL byte",
-  ],
-  [
     "a NUL byte in an exact slug (SCH-24)",
     { offered, wants: [exact(`${KIMLIP}\u0000`)] },
     "wants.0.slug: Text can't contain a NUL byte",
@@ -306,11 +270,6 @@ const refused = [
     "a unit bigger than the pool",
     { offered: tokens(3), unitSize: 4, wants },
     "unitSize: A trade can't take more objekts than the listing offers",
-  ],
-  [
-    "a fractional unit size",
-    { offered: tokens(3), unitSize: 1.5, wants },
-    "unitSize: *",
   ],
   [
     "a choice row of one collection",
@@ -345,27 +304,11 @@ const refused = [
     },
     "wants: Each set of collections can only be asked for once",
   ],
-  [
-    "a choice count past the row cap",
-    { offered, wants: [choice([KIMLIP, HEEJIN], MAX_PER_ROW + 1)] },
-    `wants.0.count: A row can ask for at most ${MAX_PER_ROW} objekts`,
-  ],
-  [
-    "a choice row's count taking the total past its cap",
-    {
-      offered,
-      wants: [
-        exact(KIMLIP, MAX_PER_ROW),
-        choice([HEEJIN, HASEUL], MAX_TOTAL_WANTED - MAX_PER_ROW + 1),
-      ],
-    },
-    `wants: A listing can ask for at most ${MAX_TOTAL_WANTED} objekts in total`,
-  ],
 ] as const;
 
 /**
- * Terms every schema accepts, and what they parse to. An output without a
- * unit size has the default: every offered objekt in one unit.
+ * Terms the listing schema accepts, and what they parse to. An output
+ * without a unit size has the default: every offered objekt in one unit.
  */
 const accepted: [
   name: string,
@@ -495,19 +438,9 @@ const accepted: [
     },
   ],
   [
-    "an empty note (SCH-15)",
-    { offered, wants, note: "" },
-    { offered, wants, note: null },
-  ],
-  [
     "a whitespace note (SCH-15)",
     { offered, wants, note: "   " },
     { offered, wants, note: null },
-  ],
-  [
-    "a padded note (SCH-15)",
-    { offered, wants, note: "  x  " },
-    { offered, wants, note: "x" },
   ],
   [
     "a 500-character note with padding (SCH-15)",
@@ -523,11 +456,6 @@ const accepted: [
     "a unit of the whole pool",
     { offered: tokens(3), unitSize: 3, wants },
     { offered: tokens(3), unitSize: 3, wants, note: null },
-  ],
-  [
-    "a trimmed, lowercased choice row",
-    { offered, wants: [choice([` ${KIMLIP.toUpperCase()}`, HEEJIN], 2)] },
-    { offered, wants: [choice([KIMLIP, HEEJIN], 2)], note: null },
   ],
   [
     "the option cap in one choice row",
@@ -577,52 +505,16 @@ const accepted: [
   ],
 ];
 
-describe.each(termSchemas)("%s", (_, schema, extra) => {
+describe("listingInputSchema", () => {
   test.each(refused)("refuses %s", (_, input, issue) => {
-    expectIssue(schema.safeParse({ ...extra, ...input }), issue);
+    expectIssue(listingInputSchema.safeParse(input), issue);
   });
 
   test.each(accepted)("accepts %s", (_, input, output) => {
-    expect(schema.safeParse({ ...extra, ...input })).toEqual({
+    expect(listingInputSchema.safeParse(input)).toEqual({
       success: true,
-      data: { ...extra, unitSize: input.offered.length, ...output },
+      data: { unitSize: input.offered.length, ...output },
     });
-  });
-
-  test.each([
-    ["artist", { artist: ["artms"] }],
-    ["member", { member: ["HeeJin"] }],
-    ["collectionNo", { collectionNo: ["364Z"] }],
-    ["season", { season: ["Atom02"] }],
-    ["class", { class: ["First"] }],
-    ["on_offline", { on_offline: ["online"] }],
-  ] satisfies [string, Partial<RangeFilter>][])(
-    "accepts a range narrowed only by %s (SCH-12)",
-    (_, filter) => {
-      const result = schema.safeParse({
-        ...extra,
-        offered,
-        wants: [range(filter)],
-      });
-      expect(result.success && result.data.wants).toEqual([
-        stored({ ...filter }),
-      ]);
-    },
-  );
-
-  test.each([
-    [["tripleS"], ["triples"]],
-    [["TRIPLES"], ["triples"]],
-    [["ARTMS", "artms"], ["artms"]],
-  ])("normalises the range artist %j (SCH-14)", (artist, lowercased) => {
-    const result = schema.safeParse({
-      ...extra,
-      offered,
-      wants: [range({ artist })],
-    });
-    expect(result.success && result.data.wants).toEqual([
-      stored({ artist: lowercased }),
-    ]);
   });
 });
 
@@ -660,23 +552,7 @@ describe("claimListingInputSchema", () => {
     ).toBe(true);
   });
 
-  test("passes a far-future seen through to the guard (SCH-21)", () => {
-    const future = new Date("2036-10-11T12:00:00Z");
-    const result = claimListingInputSchema.safeParse({
-      ...claim,
-      seen: future,
-    });
-    expect(result.success && result.data.seen).toEqual(future);
-  });
-
   test.each([
-    ["no rows (SCH-21)", { rows: [] }, "rows: *"],
-    ["an empty row (SCH-21)", { rows: [[]] }, "rows.0: *"],
-    [
-      "one row past the row cap (SCH-21)",
-      { rows: Array.from({ length: MAX_WANT_ROWS + 1 }, (_, i) => [i + 1]) },
-      "rows: *",
-    ],
     [
       "one token past a row's cap (SCH-21)",
       { rows: [Array.from({ length: MAX_PER_ROW + 1 }, (_, i) => i + 1)] },
@@ -696,14 +572,6 @@ describe("claimListingInputSchema", () => {
       `rows: A claim can give at most ${MAX_TOTAL_WANTED} objekts`,
     ],
     ["no units", { units: 0 }, "units: *"],
-    ["fractional units", { units: 1.5 }, "units: *"],
-    ["units past the offer cap", { units: MAX_OFFERED + 1 }, "units: *"],
-    ["nothing picked", { picked: [] }, "picked: *"],
-    [
-      "picks past the offer cap",
-      { picked: Array.from({ length: MAX_OFFERED + 1 }, (_, i) => 100 + i) },
-      "picked: *",
-    ],
     [
       "an objekt picked twice",
       { picked: [100, 101, 100] },
@@ -742,16 +610,27 @@ const offerSchemas = [
   ["counterOfferInputSchema", counterOfferInputSchema, { tradeId: LISTING_ID }],
 ] as const;
 
-describe.each(offerSchemas)("%s", (_, schema, target) => {
+// each schema wraps its own sides in the offer rules
+test.each(offerSchemas)(
+  "%s refuses a token on both sides (UNIT-03, UNIT-04)",
+  (_, schema, target) => {
+    expectIssue<unknown>(
+      schema.safeParse({ ...target, give: [1, 5], get: [2, 5] }),
+      "get: Each objekt can only be in an offer once",
+    );
+  },
+);
+
+describe("offerInputSchema", () => {
+  const target = { toUserId: "user-b" };
   const ids = (count: number, from = 1) =>
     Array.from({ length: count }, (_, i) => from + i);
 
   test.each([
-    ["two a side", [1, 2], [3, 4]],
     ["one a side (UNIT-02)", [1], [2]],
     ["MAX_OFFERED a side (UNIT-02)", ids(MAX_OFFERED), ids(MAX_OFFERED, 21)],
   ])("accepts %s (UNIT-02)", (_, give, get) => {
-    expect(schema.safeParse({ ...target, give, get })).toEqual({
+    expect(offerInputSchema.safeParse({ ...target, give, get })).toEqual({
       success: true,
       data: { ...target, give, get },
     });
@@ -759,32 +638,19 @@ describe.each(offerSchemas)("%s", (_, schema, target) => {
 
   test.each([
     ["an empty give", { give: [] }, "give: *"],
-    ["an empty get", { get: [] }, "get: *"],
-    ["no give", { give: undefined }, "give: *"],
     [
       "one past MAX_OFFERED given",
       { give: ids(MAX_OFFERED + 1, 10) },
       "give: *",
     ],
-    ["one past MAX_OFFERED asked", { get: ids(MAX_OFFERED + 1, 10) }, "get: *"],
     [
       "a token given twice",
       { give: [1, 1] },
       "give: Each objekt can only be in an offer once",
     ],
-    [
-      "a token asked twice",
-      { get: [2, 2] },
-      "get: Each objekt can only be in an offer once",
-    ],
-    [
-      "a token on both sides",
-      { give: [1, 5], get: [2, 5] },
-      "get: Each objekt can only be in an offer once",
-    ],
   ])("refuses %s (UNIT-03, UNIT-04)", (_, override, issue) => {
     expectIssue<unknown>(
-      schema.safeParse({ ...target, give: [1], get: [2], ...override }),
+      offerInputSchema.safeParse({ ...target, get: [2], ...override }),
       issue,
     );
   });

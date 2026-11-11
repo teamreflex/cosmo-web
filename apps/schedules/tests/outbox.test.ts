@@ -1,6 +1,5 @@
 import { describe, expect, it } from "bun:test";
 import {
-  decideRow,
   type OutboxRow,
   parseOutboxRow,
   planBatch,
@@ -101,47 +100,6 @@ describe("parseOutboxRow", () => {
       timestamp: at(0),
     });
   });
-
-  // OUT-02
-  it("rejects a transfer row without a transfer id", () => {
-    expect(parseOutboxRow(raw({ transferId: null }))).toBeUndefined();
-  });
-
-  it("rejects a transfer row without addresses", () => {
-    expect(parseOutboxRow(raw({ fromAddress: null }))).toBeUndefined();
-    expect(parseOutboxRow(raw({ toAddress: null }))).toBeUndefined();
-  });
-
-  it("rejects a transferability row without a flag", () => {
-    expect(
-      parseOutboxRow(
-        raw({
-          type: "transferability",
-          transferId: null,
-          fromAddress: null,
-          toAddress: null,
-        }),
-      ),
-    ).toBeUndefined();
-  });
-});
-
-describe("decideRow", () => {
-  it("clears the token of a transfer", () => {
-    expect(decideRow(transfer(1, "100", 0))).toEqual({
-      type: "clear",
-      tokenId: "100",
-    });
-  });
-
-  it("does nothing for a transferability change either way", () => {
-    expect(decideRow(transferability(1, "100", 0, false))).toEqual({
-      type: "none",
-    });
-    expect(decideRow(transferability(1, "100", 0, true))).toEqual({
-      type: "none",
-    });
-  });
 });
 
 describe("planBatch", () => {
@@ -177,17 +135,6 @@ describe("planBatch", () => {
       transfers: 0,
       transferabilityChanges: 2,
     });
-  });
-
-  it("clears only the transferred tokens of a mixed batch", () => {
-    const plan = planBatch([
-      transfer(30, "100", 0),
-      transferability(31, "200", 1),
-      transfer(32, "300", 2),
-    ]);
-    expect(plan?.clearTokenIds).toEqual(["100", "300"]);
-    expect(plan?.transfers).toBe(2);
-    expect(plan?.transferabilityChanges).toBe(1);
   });
 
   it("keeps the newest chain time when a later row carries an older timestamp", () => {

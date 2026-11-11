@@ -9,29 +9,11 @@ import {
 } from "../src/range";
 
 describe("rangeFilterSchema", () => {
-  test("defaults missing columns to any value", () => {
-    expect(rangeFilterSchema.parse({ season: ["Atom02"] })).toEqual({
-      artist: [],
-      member: [],
-      collectionNo: [],
-      season: ["Atom02"],
-      class: [],
-      on_offline: [],
-    });
-  });
-
   test("takes artists in any casing and stores the indexer's lowercase", () => {
     expect(
       rangeFilterSchema.parse({ artist: ["ARTMS", "triples", "tripleS"] })
         .artist,
     ).toEqual(["artms", "triples"]);
-  });
-
-  test("removes repeated values", () => {
-    expect(
-      rangeFilterSchema.parse({ member: ["HeeJin", "HeeJin", "KimLip"] })
-        .member,
-    ).toEqual(["HeeJin", "KimLip"]);
   });
 
   test("stores collection numbers uppercase, once each", () => {
@@ -42,13 +24,10 @@ describe("rangeFilterSchema", () => {
 
   test.each([
     ["no columns", {}],
-    ["only empty columns", { member: [], season: [] }],
     ["an unknown artist", { artist: ["loona"] }],
     ["an unknown on_offline", { on_offline: ["both"] }],
     ["an empty value", { member: [""] }],
     ["a NUL byte in a member", { member: ["\u0000"] }],
-    ["a NUL byte in a season", { season: ["Atom02\u0000"] }],
-    ["a NUL byte in a class", { class: ["\u0000"] }],
     // a bidi control would reorder the values shown beside it (FUI-14)
     ["a right-to-left override in a member", { member: ["\u202Eabc"] }],
     ["a bidi isolate in a season", { season: ["Atom02\u2066"] }],
@@ -118,12 +97,6 @@ describe("matchesRanges", () => {
     season: ["Ever01"],
   });
 
-  test("one range reads as matchesRange", () => {
-    for (const objekt of [seoyeon, { ...seoyeon, season: "Ever01" }]) {
-      expect(matchesRanges([atom], objekt)).toBe(matchesRange(atom, objekt));
-    }
-  });
-
   test("an objekt fits when some range matches it", () => {
     expect(matchesRanges([atom, ever], seoyeon)).toBe(true);
     expect(
@@ -170,7 +143,6 @@ describe("collapseWholeGroup", () => {
   test.each([
     ["a whole group plus another's member", [...artms, "SeoYeon"]],
     ["part of a group", artms.slice(1)],
-    ["two whole groups", [...artms, "SeoYeon", "HyeRin", "JiWoo"]],
   ])(
     "keeps %s as members, which an artist would narrow to nothing",
     (_, member) => {

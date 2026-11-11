@@ -242,14 +242,3 @@ export function memoryStoreLayer(state: MemoryState) {
     Layer.succeed(Memory, state),
   );
 }
-
-// an event row, as the web app and schedules write them
-export function appendEvent(
-  state: MemoryState,
-  tradeId: string,
-  event: Extract<StoredRow, { kind: "event" }>["event"],
-) {
-  const id = state.nextId++;
-  state.rows.push({ kind: "event", id, tradeId, event, createdAt: new Date() });
-  return id;
-}

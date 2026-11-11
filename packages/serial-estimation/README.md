@@ -32,7 +32,7 @@ Run from this directory with `INDEXER_DATABASE_URL` set. The large scans stream 
 
 ## Changing the rules
 
-1. Change `src/`, and add a fixture plus a test for the case that motivated it.
+1. Change `src/`, and add a test for the case that motivated it. Export a new fixture only when no existing one walks that path.
 2. Run the tests, then `scripts/accuracy.ts` against a local copy of the indexer database to check nothing else got worse.
 3. If the loader changes, change all three copies.
 4. Stored serials change only when a collection is recomputed. apps/schedules recomputes collections with a recent mint or a pending confirmation; `scripts/backfill.ts serials` recomputes everything.

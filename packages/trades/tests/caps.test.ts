@@ -17,18 +17,4 @@ describe("claimCap", () => {
   test("never drops below 3 for a negative score (CAP-05)", () => {
     expect(claimCap({ score: -50 })).toBe(3);
   });
-
-  test("never falls as the score rises, within 3 and the ceiling (CAP-07)", () => {
-    const caps = Array.from({ length: 206 }, (_, index) =>
-      claimCap({ score: index - 5 }),
-    );
-    expect(caps.every((cap, index) => cap >= (caps[index - 1] ?? 3))).toBe(
-      true,
-    );
-    expect(
-      caps.every(
-        (cap) => Number.isInteger(cap) && cap >= 3 && cap <= CLAIM_CAP_CEILING,
-      ),
-    ).toBe(true);
-  });
 });

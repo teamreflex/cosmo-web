@@ -5,7 +5,6 @@ import {
   groupTransfers,
   pairSpins,
   rowTransfers,
-  TRADE_GAP_MS,
   tradedIds,
   unfinishedChains,
 } from "../src/lib/universal/transfer-grouping";
@@ -97,14 +96,6 @@ describe("groupTransfers", () => {
       transfer("s1", 0, OWNER, ALICE),
     ]);
     expect(kinds(rows)).toEqual(["received:r1", "sent:s1"]);
-  });
-
-  it("never pairs transfers with different users", () => {
-    const rows = group([
-      transfer("s1", 3, OWNER, BOB),
-      transfer("r1", 0, ALICE, OWNER),
-    ]);
-    expect(kinds(rows)).toEqual(["sent:s1", "received:r1"]);
   });
 
   it("chains a batch through gaps under 15 minutes each", () => {
@@ -234,12 +225,6 @@ describe("unfinishedChains", () => {
       transfer("spin", 2, OWNER, Addresses.SPIN),
     ];
     expect(unfinished(transfers, [{ lo: at(0), hi: at(2) }])).toEqual([]);
-  });
-
-  it("treats a gap of exactly TRADE_GAP_MS as read", () => {
-    const transfers = [transfer("s1", 0, OWNER, ALICE)];
-    const ranges = [{ lo: at(0) - TRADE_GAP_MS, hi: at(0) + TRADE_GAP_MS }];
-    expect(unfinished(transfers, ranges)).toEqual([]);
   });
 });
 

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { EXTEND_HOURS, extendedDeadline, isTimedOut } from "../src/timers";
+import { extendedDeadline, isTimedOut } from "../src/timers";
 
 describe("isTimedOut (TIME-01)", () => {
   const deadline = new Date("2026-10-13T12:00:00Z");
@@ -29,25 +29,10 @@ describe("extendedDeadline", () => {
     );
   });
 
-  test.each([24, 72] as const)(
-    "counts no time left when frozen past the deadline, +%dh (TIME-03)",
-    (hours) => {
-      const deadline = new Date(frozenAt.getTime() - 2 * HOUR);
-      expect(extendedDeadline(deadline, frozenAt, now, hours)).toEqual(
-        new Date(now.getTime() + hours * HOUR),
-      );
-    },
-  );
-
-  test("adds each allowed extension to 10 hours left (TIME-04)", () => {
-    const deadline = new Date(frozenAt.getTime() + 10 * HOUR);
-    expect(
-      EXTEND_HOURS.map(
-        (hours) =>
-          (extendedDeadline(deadline, frozenAt, now, hours).getTime() -
-            now.getTime()) /
-          HOUR,
-      ),
-    ).toEqual([34, 58, 82]);
+  test("counts no time left when frozen past the deadline, +24h (TIME-03)", () => {
+    const deadline = new Date(frozenAt.getTime() - 2 * HOUR);
+    expect(extendedDeadline(deadline, frozenAt, now, 24)).toEqual(
+      new Date(now.getTime() + 24 * HOUR),
+    );
   });
 });

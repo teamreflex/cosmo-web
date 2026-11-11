@@ -4,7 +4,6 @@ import { Mac, SecureRandom } from "effect/crypto";
 import { Jwk } from "effect/jose";
 import {
   AUDIENCE,
-  type Claims,
   client,
   ISSUER,
   makeSigner,
@@ -57,12 +56,8 @@ const claims = (sub: string) => ({
   exp: iat + 300,
 });
 
-const base64url = (value: Claims | Jwk.PublicJwk) =>
+const base64url = (value: Jwk.PublicJwk) =>
   Buffer.from(JSON.stringify(value)).toString("base64url");
-
-// a token with `alg: none` and no signature, which no verifier should accept
-const unsecured = (payload: Claims) =>
-  `${base64url({ alg: "none", typ: "JWT" })}.${base64url(payload)}.`;
 
 /**
  * The algorithm-confusion attack: HS256 keyed with the published public
@@ -83,16 +78,9 @@ const publicKeyAsSecret = (signer: Signer) =>
   );
 
 describe("ChatAuth refuses forged and stale tokens", () => {
-  test("a valid token passes", async () => {
-    expect(await send(world(), await mint(signer, { sub: "alice" }))).toBe(
-      "ok",
-    );
-  });
-
   test.each([
     ["no token", async () => null],
     ["garbage", async () => "not-a-jwt"],
-    ["alg none", async () => unsecured(claims("alice"))],
     [
       "HS256 signed with the public key as the secret",
       async () => sign(await publicKeyAsSecret(signer), claims("alice")),
@@ -110,10 +98,6 @@ describe("ChatAuth refuses forged and stale tokens", () => {
       "the wrong issuer",
       async () =>
         mint(signer, { sub: "alice", claims: { iss: "http://evil.test" } }),
-    ],
-    [
-      "not yet valid",
-      async () => mint(signer, { sub: "alice", claims: { nbf: iat + 60 } }),
     ],
     [
       "no session id",

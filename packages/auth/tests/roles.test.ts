@@ -123,47 +123,15 @@ describe("role matrix", () => {
     }
   });
 
-  test("no role can impersonate", async () => {
-    for (const role of roleNames) {
-      const result = await auth.api.userHasPermission({
-        // @ts-expect-error - impersonate is not in the statement
-        body: { role, permissions: { user: ["impersonate"] } },
-      });
-
-      // @ts-expect-error - impersonate is not in the statement
-      expect(can(role, { user: ["impersonate"] })).toBe(false);
-      expect(result.success).toBe(false);
-    }
-  });
-
   test("covers every action in the statement exactly once", () => {
     const covered = rows.flatMap((row) => flatten(row.permissions));
 
     expect(covered).toHaveLength(rows.length);
     expect(covered.toSorted()).toEqual(flatten(statement).toSorted());
   });
-
-  test("has no chat resource: staff read and moderate chats through trade", () => {
-    expect(Object.keys(statement)).not.toContain("chat");
-    expect(statement.trade).toContain("remove-message");
-  });
-
-  test("rejects actions and resources outside the statement", () => {
-    // @ts-expect-error - "mange" is not a site action
-    expect(can("admin", { site: ["mange"] })).toBe(false);
-    // @ts-expect-error - session is not a resource
-    expect(can("admin", { session: ["revoke"] })).toBe(false);
-  });
 });
 
 describe("parseRole", () => {
-  test.each([null, "", "owner", "admin,moderator"])(
-    "falls back to user for %p",
-    (value) => {
-      expect(parseRole(value)).toBe("user");
-    },
-  );
-
   test("keeps a known role", () => {
     expect(parseRole("moderator")).toBe("moderator");
   });

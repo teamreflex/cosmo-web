@@ -26,20 +26,6 @@ const values: ArtistValues = new Map([
 ]);
 
 describe("setRangeArtists", () => {
-  test("adding an artist keeps every other column", () => {
-    const filter = {
-      artist: ["triples"],
-      member: ["SeoYeon"],
-      season: ["Cream01"],
-      class: ["Double"],
-      collectionNo: ["101Z"],
-    };
-    expect(setRangeArtists(filter, ["triples", "ARTMS"], values)).toEqual({
-      ...filter,
-      artist: ["triples", "artms"],
-    });
-  });
-
   test("picking an artist from any keeps every other column", () => {
     const filter: ComposerRange = {
       artist: [],

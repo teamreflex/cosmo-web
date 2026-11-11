@@ -34,8 +34,7 @@ const artists = ["artms", "tripleS"] as const;
 
 /**
  * A random listing's trade side, mixing exact, range and choice rows, and a
- * random inventory of copies, ranked within each collection the way the
- * candidate query ranks them.
+ * random inventory of copies.
  */
 export function generateCase(random: Random) {
   const collections = Array.from({ length: random.int(1, 6) }, () => {
@@ -56,22 +55,12 @@ export function generateCase(random: Random) {
   });
 
   let tokenId = 1;
-  const unranked = collections.flatMap((collection) =>
+  const inventory = collections.flatMap((collection) =>
     Array.from({ length: random.int(0, 8) }, () => ({
       ...collection,
       tokenId: tokenId++,
-      // a narrow serial range, so ties break on token id
-      serial: random.int(0, 20),
     })),
   );
-  const inventory = unranked.map((objekt) => ({
-    ...objekt,
-    rank:
-      unranked
-        .filter((other) => other.slug === objekt.slug)
-        .toSorted((a, b) => b.serial - a.serial || a.tokenId - b.tokenId)
-        .indexOf(objekt) + 1,
-  }));
 
   const wants: TradeWant[] = [];
   for (let row = random.int(1, 4); row > 0; row--) {

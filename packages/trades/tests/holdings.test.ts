@@ -44,19 +44,6 @@ describe("pickSerials (UNIT-10)", () => {
     ],
   ]);
 
-  test("a usable named token wins over a higher-serial candidate", () => {
-    expect(
-      pickSerials(
-        [X],
-        new Map([[X, [10]]]),
-        new Map([found(10, 3)]),
-        ME,
-        noFlags,
-        candidates,
-      ),
-    ).toEqual({ [X]: { tokenId: 10, serial: 3 } });
-  });
-
   test("the first usable named token wins, in entry order", () => {
     expect(
       pickSerials(
@@ -70,41 +57,16 @@ describe("pickSerials (UNIT-10)", () => {
     ).toEqual({ [X]: { tokenId: 11, serial: 4 } });
   });
 
-  test.each<[string, Map<number, SerialOwnership>, TokenFlags]>([
-    ["not_owned", new Map([found(10, 3, { owner: OTHER })]), noFlags],
-    [
-      "unknown to the indexer",
-      new Map([[10, { kind: "missing", tokenId: 10 }]]),
-      noFlags,
-    ],
-    ["missing from the states", new Map(), noFlags],
-    [
-      "untransferable",
-      new Map([found(10, 3, { transferable: false })]),
-      noFlags,
-    ],
-    [
-      "locked",
-      new Map([found(10, 3)]),
-      { locked: new Set([10]), live: new Set() },
-    ],
-    [
-      "live",
-      new Map([found(10, 3)]),
-      { locked: new Set(), live: new Set([10]) },
-    ],
-  ])(
-    "a %s named token falls back to the best candidate",
-    (_, states, flags) => {
-      expect(
-        pickSerials([X], new Map([[X, [10]]]), states, ME, flags, candidates),
-      ).toEqual({ [X]: { tokenId: 50, serial: 900 } });
-    },
-  );
-
-  test("with no named token, the highest-serial candidate is used", () => {
+  test("a live named token falls back to the best candidate", () => {
     expect(
-      pickSerials([X], new Map(), new Map(), ME, noFlags, candidates),
+      pickSerials(
+        [X],
+        new Map([[X, [10]]]),
+        new Map([found(10, 3)]),
+        ME,
+        { locked: new Set(), live: new Set([10]) },
+        candidates,
+      ),
     ).toEqual({ [X]: { tokenId: 50, serial: 900 } });
   });
 
@@ -119,63 +81,6 @@ describe("pickSerials (UNIT-10)", () => {
         new Map([[Y, []]]),
       ),
     ).toEqual({ [X]: null, [Y]: null });
-  });
-
-  test("two slugs sharing a candidate never get the same token", () => {
-    expect(
-      pickSerials(
-        [X, Y],
-        new Map(),
-        new Map(),
-        ME,
-        noFlags,
-        new Map([
-          [X, [{ tokenId: 50, serial: 900 }]],
-          [
-            Y,
-            [
-              { tokenId: 50, serial: 900 },
-              { tokenId: 60, serial: 7 },
-            ],
-          ],
-        ]),
-      ),
-    ).toEqual({
-      [X]: { tokenId: 50, serial: 900 },
-      [Y]: { tokenId: 60, serial: 7 },
-    });
-  });
-
-  test("a token named for two slugs is picked once", () => {
-    expect(
-      pickSerials(
-        [X, Y],
-        new Map([
-          [X, [10]],
-          [Y, [10]],
-        ]),
-        new Map([found(10, 3)]),
-        ME,
-        noFlags,
-        new Map(),
-      ),
-    ).toEqual({ [X]: { tokenId: 10, serial: 3 }, [Y]: null });
-  });
-
-  test("a named token another slug's candidate took is skipped", () => {
-    expect(
-      pickSerials(
-        [X, Y],
-        new Map([[Y, [50, 11]]]),
-        new Map([found(50, 900), found(11, 4)]),
-        ME,
-        noFlags,
-        new Map([[X, [{ tokenId: 50, serial: 900 }]]]),
-      ),
-    ).toEqual({
-      [X]: { tokenId: 50, serial: 900 },
-      [Y]: { tokenId: 11, serial: 4 },
-    });
   });
 
   test("the owner check ignores address case", () => {

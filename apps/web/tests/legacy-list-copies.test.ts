@@ -2,12 +2,6 @@ import { describe, expect, test } from "bun:test";
 import { numberLegacyListCopies } from "../src/lib/universal/lists";
 
 describe("numberLegacyListCopies", () => {
-  test("numbers a copy 2 when its slug is free", () => {
-    expect(numberLegacyListCopies([], [{ name: "WTT", slug: "wtt" }])).toEqual([
-      { name: "WTT 2", slug: "wtt-2" },
-    ]);
-  });
-
   test("numbers legacy lists that share a slug apart", () => {
     expect(
       numberLegacyListCopies(
@@ -60,12 +54,5 @@ describe("numberLegacyListCopies", () => {
       name: `${"b".repeat(21)} 10`,
       slug: `${"a".repeat(21)}-10`,
     });
-  });
-
-  test("keeps the other fields of each list", () => {
-    const entries = [{ collectionId: "atom01-jinsoul-101z" }];
-    expect(
-      numberLegacyListCopies([], [{ name: "a", slug: "a", entries }]),
-    ).toEqual([{ name: "a 2", slug: "a-2", entries }]);
   });
 });

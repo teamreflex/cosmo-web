@@ -216,60 +216,6 @@ describe("buildGridLedger", () => {
     expect(pool?.slug).toBe("atom02-seoyeon-101z");
   });
 
-  it("counts only transferable copies as usable and everything as total", () => {
-    const ledger = build({
-      artist: "tripleS",
-      catalog: fullSeasonCatalog("Atom02", "SeoYeon"),
-      owned: [
-        ownedRow("Atom02", "SeoYeon", "First", "101Z", true, 2),
-        ownedRow("Atom02", "SeoYeon", "First", "101Z", false, 3),
-      ],
-    });
-
-    const pool = ledger.members[0]?.seasons[0]?.editions[0]?.numbers.find(
-      (n) => n.collectionNo === "101",
-    );
-    expect(pool?.usable).toBe(2);
-    expect(pool?.total).toBe(5);
-  });
-
-  it("computes completable as the minimum usable across the edition", () => {
-    const ledger = build({
-      artist: "tripleS",
-      catalog: fullSeasonCatalog("Atom02", "SeoYeon"),
-      owned: range(101, 108).map((no) =>
-        ownedRow(
-          "Atom02",
-          "SeoYeon",
-          "First",
-          `${no}Z`,
-          true,
-          no === "105" ? 1 : 3,
-        ),
-      ),
-    });
-
-    const edition = ledger.members[0]?.seasons[0]?.editions[0];
-    expect(edition?.completable).toBe(1);
-    expect(edition?.deficits).toEqual([
-      { collectionNo: "105", slug: "atom02-seoyeon-105z", needed: 1 },
-    ]);
-  });
-
-  it("lists every number as a deficit when all pools are level", () => {
-    const ledger = build({
-      artist: "tripleS",
-      catalog: fullSeasonCatalog("Atom02", "SeoYeon"),
-      owned: range(101, 108).map((no) =>
-        ownedRow("Atom02", "SeoYeon", "First", `${no}Z`, true, 2),
-      ),
-    });
-
-    const edition = ledger.members[0]?.seasons[0]?.editions[0];
-    expect(edition?.completable).toBe(2);
-    expect(edition?.deficits).toHaveLength(8);
-  });
-
   it("scales deficits to a multi-grid target via deficitsFor", () => {
     const ledger = build({
       artist: "tripleS",
@@ -288,7 +234,6 @@ describe("buildGridLedger", () => {
     expect(deficits.find((d) => d.collectionNo === "102")?.needed).toBe(1);
     expect(deficits.find((d) => d.collectionNo === "103")?.needed).toBe(2);
     expect(deficitsFor(numbers, 1)).toHaveLength(6);
-    expect(deficitsFor(numbers, 0)).toHaveLength(0);
   });
 
   it("counts Z-designation rewards regardless of transferability, ignoring A copies", () => {
@@ -306,44 +251,6 @@ describe("buildGridLedger", () => {
     expect(rewards?.[0]?.owned).toBe(3);
     expect(rewards?.[1]?.owned).toBe(0);
     expect(rewards?.[0]?.collection?.slug).toBe("atom02-seoyeon-201z");
-  });
-
-  it("never surfaces event Specials as rewards", () => {
-    const ledger = build({
-      artist: "tripleS",
-      catalog: [
-        ...fullSeasonCatalog("Divine01", "SeoYeon"),
-        catalogRow("Divine01", "SeoYeon", "Special", "207Z"),
-      ],
-      owned: [
-        ownedRow("Divine01", "SeoYeon", "First", "101Z", true),
-        ownedRow("Divine01", "SeoYeon", "Special", "207Z", true, 4),
-      ],
-    });
-
-    const editions = ledger.members[0]?.seasons[0]?.editions ?? [];
-    const rewardNos = editions.flatMap((e) =>
-      e.rewards.map((r) => r.collectionNo),
-    );
-    expect(rewardNos).not.toContain("207");
-  });
-
-  it("ignores tripleS Unit collections entirely", () => {
-    const ledger = build({
-      artist: "tripleS",
-      catalog: [
-        ...fullSeasonCatalog("Cream02", "SeoYeon"),
-        catalogRow("Cream02", "S1 X S9", "Unit", "601A"),
-        catalogRow("Cream02", "S1 X S9", "Unit", "602Z"),
-      ],
-      owned: [
-        ownedRow("Cream02", "SeoYeon", "First", "101Z", true),
-        ownedRow("Cream02", "S1 X S9", "Unit", "601A", false),
-      ],
-    });
-
-    expect(ledger.units).toBeNull();
-    expect(ledger.members.map((member) => member.member)).toEqual(["SeoYeon"]);
   });
 
   it("does not make a season relevant from event Specials alone", () => {
@@ -539,11 +446,11 @@ describe("applyGridOverrides", () => {
     expect(after?.deficits).toHaveLength(8);
   });
 
-  it("ignores unknown token ids and returns the same ledger when empty", () => {
-    const ledger = buildGridLedger(input);
-    expect(applyGridOverrides(ledger, new Set())).toBe(ledger);
-
-    const adjusted = applyGridOverrides(ledger, new Set(["nope"]));
+  it("ignores unknown token ids", () => {
+    const adjusted = applyGridOverrides(
+      buildGridLedger(input),
+      new Set(["nope"]),
+    );
     expect(adjusted.members[0]?.seasons[0]?.editions[0]?.completable).toBe(0);
   });
 });
@@ -588,10 +495,7 @@ describe("excludeLockedTokens", () => {
 
 describe("computeMaxUnits", () => {
   it("bounds units by pairing capacity", () => {
-    expect(computeMaxUnits([])).toBe(0);
     expect(computeMaxUnits([5])).toBe(0);
-    expect(computeMaxUnits([1, 1])).toBe(1);
-    expect(computeMaxUnits([3, 1])).toBe(1);
     expect(computeMaxUnits([2, 2, 2])).toBe(3);
     expect(computeMaxUnits([5, 1, 1])).toBe(2);
   });

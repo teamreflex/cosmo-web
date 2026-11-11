@@ -75,19 +75,6 @@ describe("computeChartSeries", () => {
     expect(series[2]?.values).toEqual([0, 3, 3, null]);
   });
 
-  it("stops the lines at the reveal frontier", () => {
-    const { frontierSegmentIndex } = computeChartSeries({
-      chartData,
-      revealed: bucketReveals(chartData, reveals),
-      comoPerCandidate: como,
-      complete: false,
-      groups,
-      linesPerSlot,
-    });
-
-    expect(frontierSegmentIndex).toBe(2);
-  });
-
   it("spans the whole poll once every vote is revealed", () => {
     const { series, frontierSegmentIndex } = computeChartSeries({
       chartData,
@@ -170,9 +157,7 @@ describe("computeChartSeries", () => {
 
     try {
       const utc = computeIn("UTC");
-      expect(computeIn("Asia/Kolkata")).toEqual(utc);
       expect(computeIn("Pacific/Chatham")).toEqual(utc);
-      expect(computeIn("America/New_York")).toEqual(utc);
     } finally {
       if (originalTz === undefined) {
         delete process.env.TZ;

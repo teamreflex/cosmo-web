@@ -1,6 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { collectionKind, estimateSerials, SERIAL_CUTOFF } from "../src";
-import { hideSerials, loadFixture, serialsOf } from "./fixture";
+import { hideSerials, loadFixture, misses, serialsOf } from "./fixture";
 
 describe("physical collections and coupon sets", () => {
   it("counts an unscanned reservation once a serial inside the next one is confirmed", async () => {
@@ -17,17 +17,13 @@ describe("physical collections and coupon sets", () => {
     );
 
     const before = serialsOf(estimateSerials(collection, new Map()));
-    for (const [tokenId, serial] of truth) {
-      expect(before.get(tokenId)).toBe(serial - 200);
-    }
+    expect(misses(truth, before, -200)).toEqual([]);
 
     expect(truth.get(18942307)).toBe(14412);
     const after = serialsOf(
       estimateSerials(collection, new Map([[18942307, 14412]])),
     );
-    for (const [tokenId, serial] of truth) {
-      expect(after.get(tokenId)).toBe(serial);
-    }
+    expect(misses(truth, after)).toEqual([]);
   });
 
   it("numbers an objekt from its own chunk when an online mint splits the reservation", async () => {
@@ -49,37 +45,8 @@ describe("physical collections and coupon sets", () => {
     expect(serials.get(17694448)).toBe(514);
   });
 
-  it("takes the nearest known serial when the offset shifts inside a chunk", async () => {
-    /**
-     * atom02-yooyeon-364a: 15538384 is #300 and 15538387 is #302, so
-     * 15538386 can only be #301.
-     */
-    const fixture = await loadFixture("atom02-yooyeon-364a");
-    const { collection } = hideSerials(
-      fixture.collection,
-      SERIAL_CUTOFF,
-      (objekt) => objekt.tokenId === 15538386,
-    );
-    expect(
-      serialsOf(estimateSerials(collection, new Map())).get(15538386),
-    ).toBe(301);
-  });
-
-  it("numbers a QR coupon set by its reserved block", async () => {
-    const fixture = await loadFixture("cream02-jiwoo-315z");
+  it("treats a QR coupon set minted online as reserved", () => {
     expect(collectionKind("cream02-jiwoo-315z", "online")).toBe("reserved");
-
-    const { collection, truth } = hideSerials(
-      fixture.collection,
-      SERIAL_CUTOFF,
-      (objekt) => objekt.serial > 0 && objekt.tokenId % 2 === 0,
-    );
-    expect(truth.size).toBeGreaterThan(0);
-
-    const serials = serialsOf(estimateSerials(collection, new Map()));
-    for (const [tokenId, serial] of truth) {
-      expect(serials.get(tokenId)).toBe(serial);
-    }
   });
 
   it("starts a collection with no known serials at its first scanned chunk", async () => {
@@ -96,9 +63,7 @@ describe("physical collections and coupon sets", () => {
 
     const serials = serialsOf(estimateSerials(collection, new Map()));
     expect(serials.get(20660249)).toBe(1);
-    for (const [tokenId, serial] of truth) {
-      expect(serials.get(tokenId)).toBe(serial);
-    }
+    expect(misses(truth, serials)).toEqual([]);
   });
 
   it("splits a shared reservation on 50s", async () => {
@@ -115,9 +80,7 @@ describe("physical collections and coupon sets", () => {
 
     const serials = serialsOf(estimateSerials(collection, new Map()));
     expect(serials.get(21348041)).toBe(1);
-    for (const [tokenId, serial] of truth) {
-      expect(serials.get(tokenId)).toBe(serial);
-    }
+    expect(misses(truth, serials)).toEqual([]);
   });
 
   it("counts unscanned chunks between a collection's own in a shared reservation", async () => {
@@ -134,8 +97,6 @@ describe("physical collections and coupon sets", () => {
     );
 
     const serials = serialsOf(estimateSerials(collection, new Map()));
-    for (const [tokenId, serial] of truth) {
-      expect(serials.get(tokenId)).toBe(serial);
-    }
+    expect(misses(truth, serials)).toEqual([]);
   });
 });

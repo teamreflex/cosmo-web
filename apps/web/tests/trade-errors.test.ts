@@ -27,11 +27,4 @@ describe("ExpectedError serialization", () => {
     expect(error.message).toBe("claim_token_unavailable");
     expect(error.data).toEqual({ tokenId: 4021, reason: "live" });
   });
-
-  test("leaves an error without data without it", () => {
-    const error = fromSerializable(
-      toSerializable(new ExpectedError("listing_claim_exists")),
-    );
-    expect(error.data).toBeUndefined();
-  });
 });

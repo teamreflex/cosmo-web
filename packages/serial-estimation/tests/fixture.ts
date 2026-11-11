@@ -46,3 +46,16 @@ export function serialsOf(
 ): Map<number, number> {
   return new Map(updates.map((update) => [update.tokenId, update.serial]));
 }
+
+/**
+ * The hidden objekts whose estimate is not their real serial plus `drift`.
+ */
+export function misses(
+  truth: ReadonlyMap<number, number>,
+  estimates: ReadonlyMap<number, number>,
+  drift = 0,
+): [number, number][] {
+  return [...truth].filter(
+    ([tokenId, serial]) => estimates.get(tokenId) !== serial + drift,
+  );
+}

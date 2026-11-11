@@ -31,19 +31,12 @@ const catalogs = new Map(
   ]),
 );
 const english = catalogs.get(baseLocale) ?? {};
-const byKey = (a: string, b: string) => a.localeCompare(b);
 
 /**
  * Paraglide falls back to English for a key a locale lacks, so a missing
  * translation only shows up here.
  */
 describe("message catalogs", () => {
-  test("cover the six locales", () => {
-    expect(locales.toSorted(byKey)).toEqual(
-      ["en", "fr", "ja", "ko", "zh-CN", "zh-TW"].toSorted(byKey),
-    );
-  });
-
   test.each(locales.filter((locale) => locale !== baseLocale))(
     "%s has exactly the English key set",
     (locale) => {

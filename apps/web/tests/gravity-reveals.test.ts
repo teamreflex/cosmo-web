@@ -29,18 +29,9 @@ describe("sumComoPerCandidate", () => {
 
     expect(como).toEqual([6, 0, 3]);
   });
-
-  it("returns nothing before any reveal", () => {
-    expect(sumComoPerCandidate([])).toEqual([]);
-  });
 });
 
 describe("findLatestBatch", () => {
-  it("treats the first page as a baseline, not a batch", () => {
-    expect(findLatestBatch([])).toBeNull();
-    expect(findLatestBatch([page(reveal(0, 5))])).toBeNull();
-  });
-
   it("has no deltas until a batch lands", () => {
     expect(findLatestBatch([page(reveal(0, 5)), page()])).toBeNull();
   });

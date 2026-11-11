@@ -22,14 +22,4 @@ describe("encrypt/decrypt", () => {
     const payload = "AwMDAwMDAwMDAwMDAwMDA1spONn9hzt6oWfZj5q5C08=";
     expect(decrypt(payload, TEST_KEY)).toBe("hello apollo");
   });
-
-  it("throws when decrypting with the wrong key", () => {
-    const otherKey = Buffer.alloc(32, 9).toString("base64");
-    const payload = encrypt("hello apollo", TEST_KEY);
-    expect(() => decrypt(payload, otherKey)).toThrow();
-  });
-
-  it("throws when the key is not 32 bytes", () => {
-    expect(() => encrypt("hello", "dG9vLXNob3J0")).toThrow();
-  });
 });

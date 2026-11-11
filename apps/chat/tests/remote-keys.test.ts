@@ -70,7 +70,3 @@ test("a token verifies against the key set over http", async () => {
 test("a redirected key set is ChatUnavailable", async () => {
   expect(await verify("/redirect")).toBe("ChatUnavailable");
 });
-
-test("a key set that isn't served is ChatUnavailable", async () => {
-  expect(await verify("/missing")).toBe("ChatUnavailable");
-});

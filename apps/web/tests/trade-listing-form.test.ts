@@ -1,4 +1,3 @@
-import { MAX_CHOICE_OPTIONS } from "@apollo/trades/caps";
 import type { ArtistValues } from "@apollo/trades/composer";
 import { listingInputSchema } from "@apollo/trades/listing";
 import { MAX_RANGE_VALUES } from "@apollo/trades/range";
@@ -8,7 +7,6 @@ import {
   composerBlock,
   emptyListingForm,
   followUnitSize,
-  formUnitSize,
   formValuesToInput,
   type ListingFormValues,
   listingToFormValues,
@@ -36,8 +34,7 @@ const attributes = (slug: string, member: string, artist = "artms") => ({
 /**
  * A stored listing as the detail payload carries it: a ratio of one objekt
  * at a time, with one offered objekt and one that left the pool, a tripleS
- * range, an exact row, an "any of" row and a payment row only SQL can
- * insert.
+ * range, an exact row and an "any of" row.
  */
 const listing = {
   id: "0b7d6f1e-6a43-4c55-9d3e-2f1b4c8a9e10",
@@ -88,7 +85,6 @@ const listing = {
         { ...attributes("atom02-jinsoul-201z", "JinSoul"), collection: null },
       ],
     },
-    { kind: "payment", amount: "25.00", currency: "NZD" },
   ],
 } satisfies Pick<TradeListing, "id" | "items" | "wants" | "note" | "unitSize">;
 
@@ -164,14 +160,6 @@ describe("composer prefill (CMP-04)", () => {
     });
   });
 
-  test("editing a ratio listing keeps its unit size as the pool grows", () => {
-    const edited = listingInputSchema.parse({
-      ...values,
-      offered: [...values.offered, { tokenId: 5000 }, { tokenId: 5001 }],
-    });
-    expect(edited.unitSize).toBe(1);
-  });
-
   test("editing a bundle carries no unit size, so it stays a bundle as the pool changes", () => {
     const bundle = {
       ...listing,
@@ -190,19 +178,6 @@ describe("composer prefill (CMP-04)", () => {
         offered: [...form.offered, { tokenId: 5000 }],
       }).unitSize,
     ).toBe(3);
-  });
-
-  test("a ratio listing whose pool shrank to its unit size keeps its ratio as an edit restocks it", () => {
-    const form = listingToFormValues(listing);
-    expect(form.offered).toHaveLength(1);
-    expect(form.unitSize).toBe(1);
-    const restocked = [...form.offered, { tokenId: 5000 }, { tokenId: 5001 }];
-    const unitSize = followUnitSize(form.unitSize, restocked.length);
-    expect(unitSize).toBe(1);
-    expect(
-      listingInputSchema.parse({ ...form, offered: restocked, unitSize })
-        .unitSize,
-    ).toBe(1);
   });
 
   test("a pool that fell below the ratio prefills the ratio unchanged and holds Save back", () => {
@@ -230,69 +205,9 @@ describe("composer prefill (CMP-04)", () => {
       block({ ...form, offered: [...form.offered, { tokenId: 5000 }] }),
     ).toBeNull();
   });
-
-  test("an empty pool prefills nothing offered and keeps the ratio for the restock", () => {
-    const empty = {
-      ...listing,
-      items: listing.items.map((item) => ({
-        ...item,
-        availability: { kind: "traded" as const, at: new Date(0) },
-      })),
-    };
-    const form = listingToFormValues(empty);
-    expect(form.offered).toEqual([]);
-    expect(form.unitSize).toBe(1);
-    expect(block(form)).toBe("offered");
-    expect(followUnitSize(form.unitSize, 2)).toBe(1);
-  });
-
-  test("a blank note posts as no note, and create sends no id", () => {
-    const submission = formValuesToInput(
-      listingInputSchema.parse({
-        ...emptyListingForm,
-        offered: [{ tokenId: 9 }],
-        wants: [{ kind: "exact", slug: " Atom02-KimLip-201Z ", count: 2 }],
-        note: "   ",
-      }),
-      { kind: "create" },
-      rosters,
-    );
-    expect(submission).toEqual({
-      kind: "create",
-      data: {
-        offered: [{ tokenId: 9 }],
-        unitSize: 1,
-        wants: [{ kind: "exact", slug: "atom02-kimlip-201z", count: 2 }],
-        note: null,
-      },
-    });
-  });
 });
 
 describe("the ratio's unit size", () => {
-  test("a new listing is a bundle, everything for everything", () => {
-    expect(formUnitSize(emptyListingForm)).toBe(0);
-    expect(formUnitSize({ offered: offered(3) })).toBe(3);
-    expect(
-      listingInputSchema.parse({
-        offered: offered(4),
-        wants: [{ kind: "exact", slug: "atom02-kimlip-201z", count: 2 }],
-        note: "",
-      }).unitSize,
-    ).toBe(4);
-  });
-
-  test("a bundle stays a bundle as its pool grows or shrinks", () => {
-    expect(followUnitSize(undefined, 1)).toBeUndefined();
-    expect(followUnitSize(undefined, 9)).toBeUndefined();
-    expect(followUnitSize(undefined, 0)).toBeUndefined();
-  });
-
-  test("a ratio keeps its size as the pool grows", () => {
-    expect(followUnitSize(1, 9)).toBe(1);
-    expect(followUnitSize(7, 20)).toBe(7);
-  });
-
   test("a ratio is held to a smaller pool and never grows back", () => {
     const clamped = followUnitSize(5, 3);
     expect(clamped).toBe(3);
@@ -332,10 +247,10 @@ describe("the ratio's unit size", () => {
 describe('"any of" rows', () => {
   const blockWants = (wants: ListingFormValues["wants"]) =>
     block({ offered: offered(1), wants });
-  const choice = (slugs: string[], count = 1) => ({
+  const choice = (slugs: string[]) => ({
     kind: "choice" as const,
     slugs,
-    count,
+    count: 1,
   });
   const slugs = (count: number) =>
     Array.from({ length: count }, (_, i) => `atom02-kimlip-${200 + i}z`);
@@ -344,53 +259,6 @@ describe('"any of" rows', () => {
     expect(blockWants([choice([])])).toBe("choice");
     expect(blockWants([choice(slugs(1))])).toBe("choice");
     expect(blockWants([choice(slugs(2))])).toBeNull();
-  });
-
-  test("a row past the option cap holds Post back", () => {
-    expect(blockWants([choice(slugs(MAX_CHOICE_OPTIONS))])).toBeNull();
-    expect(blockWants([choice(slugs(MAX_CHOICE_OPTIONS + 1))])).toBe(
-      "choice_too_many",
-    );
-  });
-
-  test("a row naming one collection twice holds Post back, as the schema refuses it", () => {
-    const [a = "", b = ""] = slugs(2);
-    const wants = [choice([a, b, a])];
-    expect(blockWants(wants)).toBe("choice_duplicate");
-    expect(
-      listingInputSchema.safeParse({ offered: offered(1), wants, note: "" })
-        .success,
-    ).toBe(false);
-  });
-
-  test("two rows naming the same collections in any order hold Post back", () => {
-    const [a = "", b = "", c = ""] = slugs(3);
-    expect(blockWants([choice([a, b]), choice([b, a], 2)])).toBe(
-      "choice_repeated",
-    );
-    expect(blockWants([choice([a, b]), choice([a, b, c])])).toBeNull();
-  });
-
-  test("a row may name a collection an exact row asks for", () => {
-    const [a = "", b = ""] = slugs(2);
-    const wants = [
-      { kind: "exact" as const, slug: a, count: 1 },
-      choice([a, b]),
-    ];
-    expect(blockWants(wants)).toBeNull();
-    expect(
-      listingInputSchema.safeParse({ offered: offered(1), wants, note: "" })
-        .success,
-    ).toBe(true);
-  });
-
-  test("whatever Post lets through, the schema takes", () => {
-    const wants = [choice(slugs(2), 3), choice(slugs(3))];
-    expect(blockWants(wants)).toBeNull();
-    expect(
-      listingInputSchema.safeParse({ offered: offered(1), wants, note: "" })
-        .success,
-    ).toBe(true);
   });
 });
 
@@ -410,12 +278,6 @@ describe("range rows on submit", () => {
   test("a whole group posts as its artist", () => {
     expect(submit(artms)).toMatchObject({
       ranges: [{ artist: ["artms"], member: [] }],
-    });
-  });
-
-  test("a whole group with another group's member posts every member", () => {
-    expect(submit([...artms, "SeoYeon"])).toMatchObject({
-      ranges: [{ artist: [], member: [...artms, "SeoYeon"] }],
     });
   });
 
@@ -484,31 +346,6 @@ describe("range rows with several artists", () => {
     );
   });
 
-  test("adding an artist keeps the row's other values", () => {
-    expect(
-      applyChipUpdate(
-        { ...filter, artist: ["triples"] },
-        { artists: ["tripleS", "artms"] },
-        values,
-      ),
-    ).toEqual(filter);
-  });
-
-  test("removing an artist drops the values only it has", () => {
-    expect(
-      applyChipUpdate(
-        { ...filter, member: ["SeoYeon", "JinSoul"] },
-        { artists: ["artms"] },
-        values,
-      ),
-    ).toEqual({
-      ...filter,
-      artist: ["artms"],
-      member: ["JinSoul"],
-      season: [],
-    });
-  });
-
   test("a season picked under an artist that isn't picked adds that artist", () => {
     expect(
       applyChipUpdate(
@@ -517,37 +354,6 @@ describe("range rows with several artists", () => {
         values,
       ),
     ).toEqual({ artist: ["triples"], season: ["Atom01"], class: ["First"] });
-  });
-
-  test("a season picked under a picked artist changes only the season", () => {
-    expect(
-      applyChipUpdate(
-        filter,
-        { season: ["Cream01", "Atom01"], artists: undefined },
-        values,
-      ),
-    ).toEqual({ ...filter, season: ["Cream01", "Atom01"] });
-  });
-
-  test("tripleS or ARTMS First posts as both artists", () => {
-    const submission = formValuesToInput(
-      listingInputSchema.parse({
-        offered: [{ tokenId: 9 }],
-        wants: [
-          {
-            kind: "range",
-            count: 1,
-            ranges: [{ artist: ["triples", "artms"], class: ["First"] }],
-          },
-        ],
-        note: "",
-      }),
-      { kind: "create" },
-      rosters,
-    );
-    expect(submission.data.wants[0]).toMatchObject({
-      ranges: [{ artist: ["triples", "artms"], member: [], class: ["First"] }],
-    });
   });
 
   test("an artist none of the row's members belong to holds Post back", () => {

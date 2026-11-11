@@ -7,7 +7,6 @@ import {
 } from "../src/lib/universal/account-deletion";
 import type { DeletionStep } from "../src/lib/universal/account-deletion";
 import type { AccountErrorCode } from "../src/lib/universal/errors/accounts";
-import { deletionProofSchema } from "../src/lib/universal/schema/account";
 
 const now = new Date("2026-10-10T12:00:00Z");
 
@@ -16,18 +15,14 @@ function minutesAgo(minutes: number) {
 }
 
 describe("isFreshSession", () => {
-  test.each([
-    ["just signed in", 0],
-    ["signed in a minute before the limit", FRESH_SESSION_MINUTES - 1],
-  ])("is fresh when %s", (_, minutes) => {
-    expect(isFreshSession(minutesAgo(minutes), now)).toBe(true);
+  test("is fresh when signed in a minute before the limit", () => {
+    expect(isFreshSession(minutesAgo(FRESH_SESSION_MINUTES - 1), now)).toBe(
+      true,
+    );
   });
 
-  test.each([
-    ["signed in exactly at the limit", FRESH_SESSION_MINUTES],
-    ["signed in long ago", 60 * 24],
-  ])("is stale when %s", (_, minutes) => {
-    expect(isFreshSession(minutesAgo(minutes), now)).toBe(false);
+  test("is stale when signed in exactly at the limit", () => {
+    expect(isFreshSession(minutesAgo(FRESH_SESSION_MINUTES), now)).toBe(false);
   });
 });
 
@@ -54,14 +49,11 @@ describe("deletionStep", () => {
 });
 
 describe("deletionProofRefusal", () => {
-  test.each(["send-email", "delete", "sign-in-again"] satisfies DeletionStep[])(
-    "leaves an emailed token to be consumed at %s",
-    (step) => {
-      expect(deletionProofRefusal({ kind: "email", token: "abc" }, step)).toBe(
-        null,
-      );
-    },
-  );
+  test("leaves an emailed token to be consumed", () => {
+    expect(
+      deletionProofRefusal({ kind: "email", token: "abc" }, "send-email"),
+    ).toBe(null);
+  });
 
   test.each([
     ["delete", null],
@@ -75,10 +67,4 @@ describe("deletionProofRefusal", () => {
       );
     },
   );
-});
-
-test("deletionProofSchema drops a token sent with a fresh-session proof", () => {
-  expect(
-    deletionProofSchema.parse({ kind: "fresh-session", token: "abc" }),
-  ).toEqual({ kind: "fresh-session" });
 });

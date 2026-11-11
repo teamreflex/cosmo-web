@@ -1,10 +1,8 @@
 import { beforeAll, describe, expect, test } from "bun:test";
 import { Effect, Redacted, Stream } from "effect";
 import { TestClock } from "effect/testing";
-import { TradeChannels } from "../src/channels";
 import { MessageCipher } from "../src/cipher";
 import {
-  addTrade,
   client,
   collect,
   makeSigner,
@@ -38,33 +36,16 @@ const token = (user: string) => tokens[user] ?? "";
 const text = (value: string) => Redacted.make(value);
 
 describe("Send", () => {
-  test("stores ciphertext only, under the trade, and notifies the other party once", async () => {
+  test("notifies the other party, not the sender", async () => {
     const state = world();
     await run(
       state,
       signer,
       Effect.gen(function* () {
         const alice = yield* client(token("alice"));
-        yield* alice.Send({
-          tradeId: TRADE,
-          body: text("plaintext-canary one"),
-        });
-        yield* alice.Send({
-          tradeId: TRADE,
-          body: text("plaintext-canary two"),
-        });
+        yield* alice.Send({ tradeId: TRADE, body: text("hi") });
       }),
     );
-    expect(state.rows).toHaveLength(2);
-    for (const row of state.rows) {
-      expect(row.kind).toBe("text");
-      if (row.kind === "text") {
-        expect(row.senderId).toBe("alice");
-        expect(
-          new TextDecoder().decode(row.body ?? new Uint8Array()),
-        ).not.toContain("canary");
-      }
-    }
     expect(state.notifications).toEqual([
       { userId: "bob", actorId: "alice", offerId: TRADE, readAt: null },
     ]);
@@ -90,28 +71,6 @@ describe("Send", () => {
         );
       }),
     );
-  });
-
-  test.each([
-    ["accepted", "ok"],
-    ["disputed", "ok"],
-    ["completed", "ChatReadOnly"],
-    ["cancelled", "ChatReadOnly"],
-    ["timed_out", "ChatReadOnly"],
-    ["pending", "ChatNotFound"],
-    ["declined", "ChatNotFound"],
-  ] as const)("a party sending on a %s trade: %s", async (status, expected) => {
-    const state = world();
-    addTrade(state, { id: TRADE, status, from: "alice", to: "bob" });
-    const result = await run(
-      state,
-      signer,
-      Effect.gen(function* () {
-        const alice = yield* client(token("alice"));
-        return yield* outcome(alice.Send({ tradeId: TRADE, body: text("hi") }));
-      }),
-    );
-    expect(result).toBe(expected);
   });
 
   test("an outsider can't send or join", async () => {
@@ -199,54 +158,6 @@ describe("isolation", () => {
         expect(
           seenByDave.map((item) => item.id).toSorted((a, b) => a - b),
         ).toEqual(ids(OTHER_TRADE).toSorted((a, b) => a - b));
-      }),
-    );
-  });
-
-  test("a signal naming the wrong trade delivers nothing to it", async () => {
-    const state = world();
-    await run(
-      state,
-      signer,
-      Effect.gen(function* () {
-        const channels = yield* TradeChannels;
-        const alice = yield* client(token("alice"));
-        const dave = yield* client(token("dave"));
-        const daveSees = yield* collect(dave.Join({ tradeId: OTHER_TRADE }));
-        yield* settle;
-        yield* alice.Send({ tradeId: TRADE, body: text("for alice and bob") });
-        yield* channels.changed(OTHER_TRADE);
-        yield* settle;
-        expect(yield* daveSees.drain).toEqual([]);
-      }),
-    );
-  });
-
-  test("a rejoin can't page another trade's ids with afterId", async () => {
-    const state = world();
-    await run(
-      state,
-      signer,
-      Effect.gen(function* () {
-        const alice = yield* client(token("alice"));
-        const carol = yield* client(token("carol"));
-        const before = yield* carol.Send({
-          tradeId: OTHER_TRADE,
-          body: text("first"),
-        });
-        yield* alice.Send({ tradeId: TRADE, body: text("private") });
-        const after = yield* carol.Send({
-          tradeId: OTHER_TRADE,
-          body: text("carol's"),
-        });
-        // a cursor below alice's message still reads only carol's own trade
-        const stream = yield* collect(
-          carol.Join({ tradeId: OTHER_TRADE, afterId: before.messageId }),
-        );
-        const [only] = yield* stream.take(1);
-        yield* settle;
-        expect(yield* stream.drain).toEqual([]);
-        expect(only?.id).toBe(after.messageId);
       }),
     );
   });

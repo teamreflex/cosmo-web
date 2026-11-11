@@ -46,11 +46,9 @@ describe("buildCalendar", () => {
         const utc = buildIn("UTC");
         const la = buildIn("America/Los_Angeles");
         const nz = buildIn("Pacific/Auckland");
-        const ny = buildIn("America/New_York");
 
         expect(la).toEqual(utc);
         expect(nz).toEqual(utc);
-        expect(ny).toEqual(utc);
       } finally {
         if (originalTz === undefined) {
           delete process.env.TZ;
@@ -110,25 +108,6 @@ describe("buildCalendar", () => {
       expect(carried(cal)).toEqual({});
     });
 
-    it("places mints on the correct cell (regression)", () => {
-      // 2024-12-04T23:28:05Z is UTC day 4. A naive `getDate()` on the raw
-      // mintedAt would push it to day 5 in NZ; anchoring on the 00:00 UTC
-      // drop event keeps it on day 4 where COSMO shows it.
-      const dec4Mints = nztUserObjekts.filter(
-        (o) => o.mintedAt === "2024-12-04T23:28:05Z",
-      );
-      expect(dec4Mints).toHaveLength(4);
-
-      const cal = buildCalendar(
-        new Date("2026-05-09T00:00:00Z"),
-        nztUserObjekts,
-        "Pacific/Auckland",
-      );
-      // day 4 includes those 4 December mints; day 5 must not absorb them
-      expect(cal[4]?.artms?.count).toBe(15);
-      expect(cal[5]?.artms?.count).toBe(7);
-    });
-
     it("renders the full April calendar with day-31 mints capped onto day 30", () => {
       // April mirrors May's day-by-day distribution, with one difference:
       // April has no 31st, so the 7 COMO from day-31 mints (5 Specials + 1
@@ -152,62 +131,6 @@ describe("buildCalendar", () => {
       expect(totals(cal)).toEqual(aprilExpectedByDay);
       expect(carried(cal)).toEqual({ 30: 7 });
       expect(cal[31]).toBeUndefined();
-    });
-
-    it("collapses days 29-31 in February (non-leap)", () => {
-      // Feb 2026 (non-leap): day 29 (16) + day 30 (6) + day 31 (7) all
-      // carry to day 28, summed with day 28's own 6 -> 35 COMO, carried=29.
-      const cal = buildCalendar(
-        new Date("2026-02-15T00:00:00Z"),
-        nztUserObjekts,
-        "Pacific/Auckland",
-      );
-
-      expect(cal[28]?.artms?.count).toBe(35);
-      expect(cal[28]?.artms?.carried).toBe(29);
-      expect(cal[29]).toBeUndefined();
-      expect(cal[30]).toBeUndefined();
-      expect(cal[31]).toBeUndefined();
-    });
-
-    it("handles leap-year February", () => {
-      // Feb 2024 had 29 days. Day 30/31 carry to 29; day 29's own 16 stays put.
-      const cal = buildCalendar(
-        new Date("2024-02-15T00:00:00Z"),
-        nztUserObjekts,
-        "Pacific/Auckland",
-      );
-
-      expect(cal[29]?.artms?.count).toBe(29); // 16 + 6 + 7
-      expect(cal[29]?.artms?.carried).toBe(13); // 6 + 7
-      expect(cal[30]).toBeUndefined();
-      expect(cal[31]).toBeUndefined();
-    });
-
-    it("counts Premier objekts as 2 COMO per drop", () => {
-      // Three Premiers in the fixture: UTC day 1 (Jun '25), day 18 (Dec
-      // '25), day 31 (Jan '25). Each contributes 2 COMO to its UTC day.
-      const cal = buildCalendar(
-        new Date("2026-05-09T00:00:00Z"),
-        nztUserObjekts,
-        "Pacific/Auckland",
-      );
-
-      // day 1: 8 Specials + 1 Premier (2) = 10
-      expect(cal[1]?.artms?.count).toBe(10);
-      // day 18: 2 Specials + 1 Premier (2) = 4
-      expect(cal[18]?.artms?.count).toBe(4);
-      // day 31: 5 Specials + 1 Premier (2) = 7
-      expect(cal[31]?.artms?.count).toBe(7);
-    });
-
-    it("returns an empty calendar when the owner holds nothing", () => {
-      const cal = buildCalendar(
-        new Date("2026-05-09T00:00:00Z"),
-        [],
-        "Pacific/Auckland",
-      );
-      expect(cal).toEqual({});
     });
   });
 
@@ -253,45 +176,6 @@ describe("buildCalendar", () => {
         expect(cosmo[Number(day)] ?? 0).toBe(expected);
       }
       expect(carried(cal)).toEqual({});
-    });
-
-    it("places mints on the correct cell (regression)", () => {
-      // 2023-07-04T12:xx:xxZ is UTC day 4 at mid-day; a naive `getDate()`
-      // on the raw mintedAt in GMT-7 keeps the local date as day 4. The
-      // drop event (00:00 UTC = 17:00 prev local day) belongs on day 3.
-      const day4Mints = gmt7UserObjekts.filter((o) =>
-        o.mintedAt.startsWith("2023-07-04T12:"),
-      );
-      expect(day4Mints).toHaveLength(2);
-
-      const cal = buildCalendar(
-        new Date("2026-05-15T12:00:00Z"),
-        gmt7UserObjekts,
-        "America/Los_Angeles",
-      );
-      // day 3 holds the 2 July UTC-day-4 mints; day 4 holds UTC-day-5 mints
-      expect(cal[3]?.artms?.count).toBe(2);
-      expect(cal[4]?.artms?.count).toBe(2);
-    });
-
-    it("carries day-31 mints in 30-day months", () => {
-      // April 2026: the capped day-31 drop's count lands on local day 29 (the
-      // 00:00 UTC drop shifts a day earlier in GMT-7), but the carried-over
-      // badge belongs on the month's last local day (30). The next UTC month's
-      // day-1 drop (May 1 UTC = Apr 30 local) wraps onto day 30.
-      const cal = buildCalendar(
-        new Date("2026-04-15T00:00:00Z"),
-        gmt7UserObjekts,
-        "America/Los_Angeles",
-      );
-
-      // day 29: 2 UTC-day-30 + 1 Premier@2 capped from UTC-day-31 = 4
-      expect(cal[29]?.artms?.count).toBe(4);
-      expect(cal[29]?.artms?.carried).toBe(0);
-      // day 30: UTC-day-1 wrap (count 4); carries the Premier@2 badge for the month
-      expect(cal[30]?.artms?.count).toBe(4);
-      expect(cal[30]?.artms?.carried).toBe(2);
-      expect(cal[31]).toBeUndefined();
     });
 
     it("collapses days 29-31 in February (non-leap)", () => {

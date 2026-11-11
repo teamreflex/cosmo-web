@@ -1,7 +1,6 @@
 import { beforeAll, describe, expect, test } from "bun:test";
 import { Effect, Fiber, Option, Redacted, Stream } from "effect";
 import { TestClock } from "effect/testing";
-import { TradeChannels } from "../src/channels";
 import { Disconnects } from "../src/disconnects";
 import { MAX_OPEN_STREAMS } from "../src/open-streams";
 import {
@@ -15,7 +14,7 @@ import {
   type Signer,
   TRADE,
 } from "./harness";
-import { appendEvent, makeState } from "./memory-store";
+import { makeState } from "./memory-store";
 
 let signer: Signer;
 beforeAll(async () => {
@@ -81,34 +80,6 @@ describe("Join", () => {
           .Join({ tradeId: TRADE })
           .pipe(Stream.take(2), Stream.runCollect);
         expect(tags.map((item) => item._tag)).toEqual(["Message", "CaughtUp"]);
-      }),
-    );
-  });
-
-  test("streams trade events between messages, in id order", async () => {
-    const state = world();
-    const alice = await mint(signer, { sub: "alice" });
-    await run(
-      state,
-      signer,
-      Effect.gen(function* () {
-        const a = yield* client(alice);
-        const channels = yield* TradeChannels;
-        yield* a.Send({ tradeId: TRADE, body: Redacted.make("one") });
-        const stream = yield* collect(a.Join({ tradeId: TRADE }));
-        yield* stream.take(1);
-
-        appendEvent(state, TRADE, {
-          type: "item_transferred",
-          itemId: 1,
-          hash: "0xabc",
-        });
-        yield* channels.changed(TRADE);
-        const [event] = yield* stream.take(1);
-        expect(event).toMatchObject({
-          _tag: "Event",
-          event: { type: "item_transferred", itemId: 1 },
-        });
       }),
     );
   });

@@ -1,6 +1,6 @@
 # @apollo/trades
 
-The trade system's pure rules, shared by `apps/web` and `apps/schedules`: no database, Redis or network access, so every rule is unit-tested here. How the system fits together is in [docs/trades/overview.md](../../docs/trades/overview.md).
+The trade system's pure rules, shared by `apps/web` and `apps/schedules`: no database, Redis or network access, so the rules production can reach are unit-tested here. How the system fits together is in [docs/trades/overview.md](../../docs/trades/overview.md).
 
 ## Modules
 
@@ -29,5 +29,5 @@ The trade system's pure rules, shared by `apps/web` and `apps/schedules`: no dat
 ## Tests
 
 - `turbo test --filter @apollo/trades` runs `tests/`.
-- Property tests draw inputs from `seeded()` in `tests/generate.ts`, a seeded PRNG, so a failing run reproduces from its seed.
+- The property test in `tests/assignment.test.ts` draws inputs from `seeded()` in `tests/generate.ts`, a seeded PRNG, so a failing run reproduces from its seed.
 - What earns a test is in [docs/testing.md](../../docs/testing.md).

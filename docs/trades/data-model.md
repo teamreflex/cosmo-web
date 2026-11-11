@@ -77,4 +77,5 @@ The trade tables live in `packages/database/src/web/schema.ts` under `#region Tr
 
 - The schema carries a payment side that nothing creates: the `payment` item and want kinds, `trade_offers.offers`, the `payment_method` enum, the `marked_paid` and `payment_confirmed` events, and their branches in `transition()`, `owingSides()`, `feedbackScored()` and `feedbackRole()`.
 - It is unreachable: the input schemas take only exact, range and choice wants and token ids, every insert writes `kind: "objekt"`, `posterBlocked()` refuses a listing with a payment want, and no server function runs `mark_paid` or `confirm_payment`.
+- Its branches have no tests, because nothing can reach them ([testing.md](../testing.md#one-test-per-rule)). Write them with the first code path that creates a payment.
 - Opening sales also needs a `user.payment_methods` column, buyer and seller notifications, an FX snapshot on the trade, and market price data on sale listings rather than sale lists (`sync-market-stats`).
