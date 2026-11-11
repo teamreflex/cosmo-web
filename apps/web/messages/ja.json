@@ -2402,7 +2402,6 @@
   "listing_composer_choice_full": "「いずれか」の行に指定できるコレクションは{max}件までです。",
   "listing_composer_reason_choice": "「いずれか」の行にはそれぞれコレクションが2件以上必要です。",
   "listing_composer_reason_choice_repeated": "同じコレクションの組み合わせは一度しか指定できません。",
-  "listing_composer_reason_choice_duplicate": "「いずれか」の行に同じコレクションは一度しか指定できません。",
   "listing_composer_reason_ratio": "1回のトレードであなたのオブジェクトを{unitSize}個使いますが、出品しているのは{offered}個です。比率を下げるか、オブジェクトを追加してください。",
   "listing_composer_choice_add_label": "コレクションを追加",
   "listing_composer_search_picked": "追加済み。選ぶと外します。",

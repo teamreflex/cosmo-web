@@ -316,7 +316,7 @@ export function isDone(item: TradeItemState) {
  * The sides with a token that hasn't arrived or a payment they haven't
  * marked paid, `from` first.
  */
-export function owingSides(items: readonly TradeItemState[]): TradeSide[] {
+function owingSides(items: readonly TradeItemState[]): TradeSide[] {
   const owes = (side: TradeSide) =>
     items.some(
       (item) =>
@@ -451,19 +451,6 @@ const listingTransitions = {
   ListingEvent,
   { from: readonly ListingStatus[]; to: ListingStatus }
 >;
-
-export type ListingTransitionResult =
-  { ok: true; status: ListingStatus } | { ok: false; reason: "wrong_status" };
-
-export function transitionListing(
-  status: ListingStatus,
-  event: ListingEvent,
-): ListingTransitionResult {
-  const { from, to } = listingTransitions[event];
-  return from.some((allowed) => allowed === status)
-    ? { ok: true, status: to }
-    : { ok: false, reason: "wrong_status" };
-}
 
 /**
  * The statuses an event leaves from and the one it moves to, for guarded

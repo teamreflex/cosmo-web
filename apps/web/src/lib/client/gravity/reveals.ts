@@ -24,10 +24,6 @@ export type RevealBatch = {
 export function sumComoPerCandidate(
   reveals: Pick<Reveal, "candidateId" | "amount">[],
 ): number[] {
-  if (reveals.length === 0) {
-    return [];
-  }
-
   const como: number[] = [];
   for (const reveal of reveals) {
     como[reveal.candidateId] = (como[reveal.candidateId] ?? 0) + reveal.amount;

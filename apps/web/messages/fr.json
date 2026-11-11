@@ -2459,7 +2459,6 @@
   "listing_composer_choice_full": "Une ligne « Au choix » peut contenir au plus {max} collections.",
   "listing_composer_reason_choice": "Chaque ligne « Au choix » doit contenir au moins deux collections.",
   "listing_composer_reason_choice_repeated": "Chaque ensemble de collections ne peut être demandé qu'une fois.",
-  "listing_composer_reason_choice_duplicate": "Chaque collection ne peut figurer qu'une fois dans une ligne « Au choix ».",
   "listing_composer_reason_ratio": "Chaque échange prend {unitSize} de vos objekts, mais vous n'en proposez que {offered}. Baissez le ratio ou ajoutez-en.",
   "listing_composer_choice_add_label": "Ajouter une collection",
   "listing_composer_search_picked": "Ajoutée. Sélectionnez-la pour la retirer.",

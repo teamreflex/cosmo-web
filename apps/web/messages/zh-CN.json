@@ -2404,7 +2404,6 @@
   "listing_composer_choice_full": "每个“任选”行最多可包含 {max} 个卡款。",
   "listing_composer_reason_choice": "每个“任选”行至少需要两个卡款。",
   "listing_composer_reason_choice_repeated": "每组卡款只能请求一次。",
-  "listing_composer_reason_choice_duplicate": "同一个卡款在“任选”行中只能出现一次。",
   "listing_composer_reason_ratio": "每次交换需要你的 {unitSize} 张 Objekt，但你只提供了 {offered} 张。请调低比例或添加更多。",
   "listing_composer_choice_add_label": "添加卡款",
   "listing_composer_search_picked": "已添加，再次选择可移除。",

@@ -23,7 +23,7 @@ export const FEEDBACK_TEXT_MAX = 280;
  * included, collapsed to one space, so an entry always reads as one line.
  */
 export function normalizeFeedbackText(text: string) {
-  return sanitizeMessage(text).replaceAll(/\s+/gu, " ").trim();
+  return sanitizeMessage(text).replaceAll(/\s+/gu, " ");
 }
 
 /**

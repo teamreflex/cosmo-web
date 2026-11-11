@@ -1,5 +1,5 @@
 import type { ValidArtist } from "@apollo/cosmo/types/common";
-import { MAX_CHOICE_OPTIONS, MAX_NOTE_LENGTH } from "@apollo/trades/caps";
+import { MAX_NOTE_LENGTH } from "@apollo/trades/caps";
 import {
   type ArtistValues,
   rangeArtistUnused,
@@ -261,10 +261,10 @@ function collapseRanges(
  * known: a range that covers none can't be posted, and a row still being
  * counted doesn't hold Post back. Ranges are compared as they'll be sent
  * (collapseRanges()): no row holds one range twice, and no two rows hold the
- * same ranges. "Any of" rows follow the schema's rules: two to
- * MAX_CHOICE_OPTIONS collections each, none named twice in a row, and no
- * two rows naming the same ones. `unitSize` is the form's, which an edit
- * prefills unchanged even when the pool has fallen below it.
+ * same ranges. An "any of" row needs two collections, and no two rows may
+ * name the same ones; the row itself stops at MAX_CHOICE_OPTIONS and never
+ * names one twice. `unitSize` is the form's, which an edit prefills
+ * unchanged even when the pool has fallen below it.
  */
 export function composerBlock({
   offered,
@@ -316,12 +316,6 @@ export function composerBlock({
     want.kind === "choice" ? [want.slugs] : [],
   );
   if (choices.some((slugs) => slugs.length < 2)) return "choice";
-  if (choices.some((slugs) => slugs.length > MAX_CHOICE_OPTIONS)) {
-    return "choice_too_many";
-  }
-  if (choices.some((slugs) => new Set(slugs).size < slugs.length)) {
-    return "choice_duplicate";
-  }
   if (!choicesDistinct(choices)) return "choice_repeated";
   if (unitSize !== undefined && unitSize > offered) return "ratio";
   if (note.trim().length > MAX_NOTE_LENGTH) return "note";

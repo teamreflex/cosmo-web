@@ -800,9 +800,10 @@ type Poster = Extract<ListingViewer, { role: "poster" }>;
 
 /**
  * The tabs on the poster's own listing, each with what it counts: Listing,
- * then Offers with the pending offers while the listing takes offers or
- * one is still pending, then Trades with the live trades, the ones still
- * waiting on someone. A count of 0 shows nothing.
+ * then Offers with the pending offers while the listing takes offers, then
+ * Trades with the live trades, the ones still waiting on someone. A count
+ * of 0 shows nothing. An edit turns pending offers stale, so a listing that
+ * stopped taking offers has none.
  */
 export function posterTabCounts(
   listing: { takesOffers: boolean },
@@ -811,7 +812,7 @@ export function posterTabCounts(
   const tabs: { tab: PosterTab; count: number }[] = [
     { tab: "listing", count: 0 },
   ];
-  if (listing.takesOffers || viewer.offers.length > 0) {
+  if (listing.takesOffers) {
     tabs.push({ tab: "offers", count: viewer.offers.length });
   }
   tabs.push({ tab: "trades", count: viewer.trades.filter(isLiveTrade).length });

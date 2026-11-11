@@ -2450,7 +2450,6 @@
   "listing_composer_choice_full": "An “Any of” row can name at most {max} collections.",
   "listing_composer_reason_choice": "Each “Any of” row needs at least two collections.",
   "listing_composer_reason_choice_repeated": "Each set of collections can only be asked for once.",
-  "listing_composer_reason_choice_duplicate": "Each collection can only be in an “Any of” row once.",
   "listing_composer_reason_ratio": "Each trade takes {unitSize} of your objekts but you're offering {offered}. Lower the ratio or add more.",
   "listing_composer_choice_add_label": "Add a collection",
   "listing_composer_search_picked": "Added. Select it to remove it.",

@@ -131,7 +131,7 @@ The poster's own open listing has Listing, Offers and Trades tabs (`components/t
 | Tab     | Shows                                                                                                                                                            |
 | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Listing | both sides, each objekt with how it stands and who has it (`poolStanding()`); on a listing with a ratio, the want rows say how many of the poster's they are for |
-| Offers  | while the listing takes offers or one is still pending: each offer's claimer and rating, its ratio, both sides with serials, its expiry                          |
+| Offers  | while the listing takes offers: each offer's claimer and rating, its ratio, both sides with serials, its expiry                                                  |
 | Trades  | the live trades, each saying where it stands as My trades does, then the finished ones, each opening its trade page                                              |
 
 - `poolStanding()` reads free, in a live trade from the listing (naming its claimer) or from elsewhere, sent (already sent in a live trade from the listing, so the drain marks it leaving the pool), traded (naming who it went to), gone (it left the pool in no trade, so it left the poster's account) or blocked with its reason.

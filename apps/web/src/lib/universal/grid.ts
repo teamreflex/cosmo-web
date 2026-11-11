@@ -667,8 +667,7 @@ function buildUnitLedgers(input: {
  */
 export function computeMaxUnits(capacities: number[]): number {
   const sum = capacities.reduce((acc, c) => acc + c, 0);
-  const max = Math.max(0, ...capacities);
-  return Math.max(0, Math.min(Math.floor(sum / 2), sum - max));
+  return Math.min(Math.floor(sum / 2), sum - Math.max(...capacities));
 }
 
 /**

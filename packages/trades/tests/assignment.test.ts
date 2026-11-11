@@ -79,7 +79,7 @@ describe("validateAssignment", () => {
         [ids(a), ids(b)],
         attributesOf(a, b),
       ),
-    ).toEqual({ ok: false, reason: "wrong_row_count" });
+    ).toBe(false);
   });
 
   test("refuses a row with too few tokens (ASN-04)", () => {
@@ -89,7 +89,7 @@ describe("validateAssignment", () => {
         [ids(kimlip), ids(...firsts.slice(0, 4))],
         planAttributes,
       ),
-    ).toEqual({ ok: false, reason: "row_count_mismatch", row: 1 });
+    ).toBe(false);
   });
 
   test("refuses a row with too many tokens (ASN-05)", () => {
@@ -104,7 +104,7 @@ describe("validateAssignment", () => {
         [ids(kimlip, second), ids(...firsts)],
         attributesOf(kimlip, second, ...firsts),
       ),
-    ).toEqual({ ok: false, reason: "row_count_mismatch", row: 0 });
+    ).toBe(false);
   });
 
   test("refuses a token repeated within a row (ASN-06)", () => {
@@ -114,12 +114,7 @@ describe("validateAssignment", () => {
         [[kimlip.tokenId, kimlip.tokenId]],
         planAttributes,
       ),
-    ).toEqual({
-      ok: false,
-      reason: "repeated_token",
-      row: 0,
-      tokenId: kimlip.tokenId,
-    });
+    ).toBe(false);
   });
 
   test("refuses a token repeated across rows (ASN-07)", () => {
@@ -129,12 +124,7 @@ describe("validateAssignment", () => {
         [ids(kimlip), ids(kimlip)],
         planAttributes,
       ),
-    ).toEqual({
-      ok: false,
-      reason: "repeated_token",
-      row: 1,
-      tokenId: kimlip.tokenId,
-    });
+    ).toBe(false);
   });
 
   test("refuses swapped rows even though the tokens could fit (ASN-12)", () => {
@@ -143,15 +133,8 @@ describe("validateAssignment", () => {
     const wants = [exact(1, a.slug), exact(1, b.slug)];
     const attributes = attributesOf(a, b);
 
-    expect(validateAssignment(wants, [ids(a), ids(b)], attributes)).toEqual({
-      ok: true,
-    });
-    expect(validateAssignment(wants, [ids(b), ids(a)], attributes)).toEqual({
-      ok: false,
-      reason: "misfit",
-      row: 0,
-      tokenId: b.tokenId,
-    });
+    expect(validateAssignment(wants, [ids(a), ids(b)], attributes)).toBe(true);
+    expect(validateAssignment(wants, [ids(b), ids(a)], attributes)).toBe(false);
   });
 });
 
@@ -171,7 +154,7 @@ describe("allocate and validateAssignment agree (ASN-16)", () => {
           allocation.map(({ tokenIds }) => tokenIds),
           new Map(inventory.map((o) => [o.tokenId, o])),
         ),
-      ).toEqual({ ok: true });
+      ).toBe(true);
     }
     expect(full).toBeGreaterThan(30);
   });

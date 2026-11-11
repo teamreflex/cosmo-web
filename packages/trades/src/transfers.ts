@@ -65,7 +65,7 @@ export type TransferDecision =
  * What one outbox row means for each item holding its token, in the same
  * order. Addresses compare case-insensitively.
  */
-export function decideTransfer(
+function decideTransfer(
   row: ChainRow,
   expectedItems: readonly ExpectedItem[],
 ): TransferDecision[] {

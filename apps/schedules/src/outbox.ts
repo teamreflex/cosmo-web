@@ -76,9 +76,9 @@ export function parseOutboxRow(row: RawOutboxRow): OutboxRow | undefined {
  * sender, so its list entries, pins and binder slot go. A transferability
  * change leaves them alone.
  */
-export type RowDecision = { type: "clear"; tokenId: string } | { type: "none" };
+type RowDecision = { type: "clear"; tokenId: string } | { type: "none" };
 
-export function decideRow(row: OutboxRow): RowDecision {
+function decideRow(row: OutboxRow): RowDecision {
   switch (row.type) {
     case "transfer":
       return { type: "clear", tokenId: row.tokenId };

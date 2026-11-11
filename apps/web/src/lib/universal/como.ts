@@ -37,15 +37,16 @@ export function buildCalendar(
   const displayedMonth = dateInZone.getMonth();
   const lastDayOfMonth = getUtcDaysInMonth(displayedYear, displayedMonth);
 
-  // the displayed local month can span up to two UTC months, so we check
-  // the previous, current, and next UTC months for drop events whose
-  // viewer-local day falls in the displayed month
-  const candidates = [-1, 0, 1].map((offset) => {
-    const m = displayedMonth + offset;
-    if (m < 0) return { year: displayedYear - 1, month: 11 };
-    if (m > 11) return { year: displayedYear + 1, month: 0 };
-    return { year: displayedYear, month: m };
-  });
+  /**
+   * A 00:00 UTC drop lands on its own local day or the one before, so the
+   * displayed local month takes drops from its UTC month and the next.
+   */
+  const candidates = [
+    { year: displayedYear, month: displayedMonth },
+    displayedMonth === 11
+      ? { year: displayedYear + 1, month: 0 }
+      : { year: displayedYear, month: displayedMonth + 1 },
+  ];
 
   for (const objekt of objekts) {
     const mintUtcDay = new Date(objekt.mintedAt).getUTCDate();

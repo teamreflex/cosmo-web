@@ -86,7 +86,7 @@ export function useListingPicks(
         scaled,
         picked.map((picks) => picks.map((pick) => pick.tokenId)),
         new Map(picked.flat().map((pick) => [pick.tokenId, pick.attributes])),
-      ).ok,
+      ),
     giveTotal,
     pickedCount:
       offered.length + picked.reduce((total, picks) => total + picks.length, 0),

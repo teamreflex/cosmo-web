@@ -36,11 +36,7 @@ import {
 } from "@/lib/universal/trade-listing-form";
 import type { TokenRefusalReason } from "@/lib/universal/trade-listings";
 import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
-import {
-  MAX_CHOICE_OPTIONS,
-  MAX_NOTE_LENGTH,
-  MAX_OFFERED,
-} from "@apollo/trades/caps";
+import { MAX_NOTE_LENGTH, MAX_OFFERED } from "@apollo/trades/caps";
 import { totalWanted } from "@apollo/trades/composer";
 import { takesOffers } from "@apollo/trades/lifecycle";
 import { type ListingInput, listingInputSchema } from "@apollo/trades/listing";
@@ -728,10 +724,6 @@ function blockedReason(
       return m.listing_composer_reason_range_repeated();
     case "choice":
       return m.listing_composer_reason_choice();
-    case "choice_too_many":
-      return m.listing_composer_choice_full({ max: MAX_CHOICE_OPTIONS });
-    case "choice_duplicate":
-      return m.listing_composer_reason_choice_duplicate();
     case "choice_repeated":
       return m.listing_composer_reason_choice_repeated();
     case "ratio":

@@ -7,7 +7,7 @@ The trade system's pure rules, shared by `apps/web` and `apps/schedules`: no dat
 | Export            | Holds                                                                                                                                                         |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `./lifecycle`     | `transition()`, `partyAction()`, the offer and listing transition maps, `listingClosing()`, `takesOffers()`, `tradeState()`, `tradeListingId()`, `needsYou()` |
-| `./transfers`     | the drain's per-row decisions (`decideTransfer()`, `foldTransfers()`) and `itemStatus()`                                                                      |
+| `./transfers`     | the drain's decisions for a batch of transfers (`foldTransfers()`) and `itemStatus()`                                                                         |
 | `./allocate`      | fitting tokens to want rows (`allocate()`, `allocateUnits()`, `fillsExactly()`, `listingOfferRefusal()`)                                                      |
 | `./assignment`    | `validateAssignment()`, which checks a claimer's per-row token lists                                                                                          |
 | `./holdings`      | why a token can't be offered (`tokenRefusal()`, `tokenRefusals()`, `firstRefusal()`) and `pickSerials()`                                                      |

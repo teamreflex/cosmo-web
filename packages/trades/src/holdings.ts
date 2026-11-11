@@ -119,7 +119,8 @@ export type SerialPick = { tokenId: number; serial: number };
  * The copy of each collection an offer would take from one address: the
  * first token the address's list entries name that it can still offer,
  * else its best usable copy (`candidates`, highest serial first), else null
- * when it has none to give. No token is picked for two collections.
+ * when it has none to give. List entries name a token under its own
+ * collection, so no token is picked for two.
  */
 export function pickSerials(
   slugs: readonly string[],
@@ -129,24 +130,18 @@ export function pickSerials(
   flags: TokenFlags,
   candidates: ReadonlyMap<string, readonly SerialPick[]>,
 ): Record<string, SerialPick | null> {
-  const used = new Set<number>();
   return Object.fromEntries(
-    slugs.map((slug) => {
-      const pick =
-        (named.get(slug) ?? []).flatMap((tokenId): SerialPick[] => {
-          const state = states.get(tokenId);
-          return state?.kind === "found" &&
-            !used.has(tokenId) &&
-            tokenRefusal(state, address, flags) === null
-            ? [{ tokenId, serial: state.serial }]
-            : [];
-        })[0] ??
-        (candidates.get(slug) ?? []).find(
-          ({ tokenId }) => !used.has(tokenId),
-        ) ??
-        null;
-      if (pick !== null) used.add(pick.tokenId);
-      return [slug, pick];
-    }),
+    slugs.map((slug) => [
+      slug,
+      (named.get(slug) ?? []).flatMap((tokenId): SerialPick[] => {
+        const state = states.get(tokenId);
+        return state?.kind === "found" &&
+          tokenRefusal(state, address, flags) === null
+          ? [{ tokenId, serial: state.serial }]
+          : [];
+      })[0] ??
+        candidates.get(slug)?.[0] ??
+        null,
+    ]),
   );
 }

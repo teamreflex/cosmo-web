@@ -204,12 +204,15 @@ export async function preflightClaim(
     state.kind === "found" ? [state] : [],
   );
   // posterBlocked has refused payment rows, so every want is an objekt row
-  const assignment = validateAssignment(
-    scaleWants(tradeWants(wants), input.units),
-    input.rows,
-    new Map(found.map((state) => [state.tokenId, state.attributes])),
-  );
-  if (!assignment.ok) refuse("claim_assignment_invalid");
+  if (
+    !validateAssignment(
+      scaleWants(tradeWants(wants), input.units),
+      input.rows,
+      new Map(found.map((state) => [state.tokenId, state.attributes])),
+    )
+  ) {
+    refuse("claim_assignment_invalid");
+  }
 
   // locks and live trades are read under the lock, after the account checks
   const unflagged = firstRefusal(
