@@ -1,8 +1,8 @@
 diff --git a/lib/client.js b/lib/client.js
-index 84c2e7a48fb7d0697e4f4d4659d17b2e8f9901ea..001e7c87c93cf2e5feb9b0cdca35690a8eb444a1 100644
+index 876ad9245d33a1e67fe4494da89b6a2f8df06245..847fac17c478ee38776dcfe15212ebaa70fcba3c 100644
 --- a/lib/client.js
 +++ b/lib/client.js
-@@ -119,7 +119,9 @@ class HttpClient {
+@@ -121,7 +121,9 @@ class HttpClient {
              headers: new request_1.nodeFetch.Headers(options.headers),
              url: this.getAbsUrl(url),
              signal: options.abort,

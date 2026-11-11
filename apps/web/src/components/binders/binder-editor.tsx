@@ -92,6 +92,14 @@ export default function BinderEditor({ binder, initialPage, owner }: Props) {
     return () => layout.removeEventListener("change", reveal);
   }, [sheetOpen, selected]);
 
+  function pocketButton(slot: number) {
+    return (
+      pageRef.current?.querySelector<HTMLElement>(
+        `[data-slot="${slot}"] > button`,
+      ) ?? null
+    );
+  }
+
   // stable, so a pocket only re-renders when its own contents or state change
   const tapPocket = useEventCallback(
     (slot: number, event: MouseEvent<HTMLButtonElement>) => {
@@ -113,14 +121,6 @@ export default function BinderEditor({ binder, initialPage, owner }: Props) {
   const setCover = useEventCallback((tokenId: number | null) =>
     editor.setCover(tokenId),
   );
-
-  function pocketButton(slot: number) {
-    return (
-      pageRef.current?.querySelector<HTMLElement>(
-        `[data-slot="${slot}"] > button`,
-      ) ?? null
-    );
-  }
 
   function closeSheet(focusSlot = selected) {
     setSheetOpen(false);

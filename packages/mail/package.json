@@ -16,15 +16,15 @@
   },
   "dependencies": {
     "@apollo/util": "workspace:*",
-    "@aws-sdk/client-ses": "^3.1158.0",
+    "@aws-sdk/client-ses": "^3.1164.0",
     "react": "19.3.1",
     "react-dom": "19.3.1",
-    "react-email": "6.11.6"
+    "react-email": "6.11.8"
   },
   "devDependencies": {
     "@apollo/lint": "workspace:*",
     "@apollo/typescript": "workspace:*",
-    "@react-email/ui": "6.11.6",
+    "@react-email/ui": "6.11.8",
     "@types/bun": "catalog:",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
