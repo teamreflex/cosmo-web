@@ -31,7 +31,8 @@
     "@effect/platform-bun": "catalog:",
     "drizzle-orm": "catalog:",
     "effect": "catalog:",
-    "react": "19.3.1"
+    "react": "19.3.1",
+    "typesense": "catalog:"
   },
   "devDependencies": {
     "@apollo/lint": "workspace:*",

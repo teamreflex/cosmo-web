@@ -21,7 +21,6 @@ What each `@apollo/database` subpath exports: [packages/database/README.md](../p
 | apps/web drizzle-kit and `migrate.ts` | `DATABASE_URL_UNPOOLED`                                    | -                                                                 | 1                  |
 | apps/schedules                        | `DatabaseWeb` from `@apollo/services` (`WEB_DATABASE_URL`) | `DatabaseIndexer` in `src/db-indexer.ts` (`INDEXER_DATABASE_URL`) | 1 each             |
 | apps/chat                             | `DatabaseWeb`                                              | -                                                                 | 10                 |
-| apps/typesense-import                 | `Metadata` in `src/db/metadata.ts` (`WEB_DATABASE_URL`)    | `Indexer` in `src/db/indexer.ts` (`INDEXER_DATABASE_URL`)         | 1 each             |
 | apps/indexer                          | -                                                          | TypeORM store (`DB_URL`)                                          |                    |
 
 - apps/web uses the promise driver `drizzle-orm/bun-sql`. The Effect apps use [`@apollo/drizzle-bun-effect`](../packages/drizzle-bun-effect/README.md).
@@ -40,7 +39,6 @@ What each `@apollo/database` subpath exports: [packages/database/README.md](../p
 | apps/chat                                                  | -                                                                                                                             | `trade_messages`, `report_messages`, `reports`, `notifications`, `staff_audit` |
 | scripts, run by hand                                       | `packages/image/scripts/mirror.ts`, `packages/serial-estimation/scripts/*`, `apps/schedules/scripts/simulate.ts` (local only) | -                                                                              |
 
-- apps/typesense-import only reads.
 - The processor never writes the trigger-kept tables. Reindexing around the triggers is in [apps/indexer/CLAUDE.md](../apps/indexer/CLAUDE.md).
 - Who writes serials, and when: [docs/cosmo.md](cosmo.md).
 

@@ -232,28 +232,6 @@ services:
     networks:
       - apollo-network
 
-  # typesense import server
-  import-server:
-    build:
-      context: .
-      dockerfile: apps/typesense-import/Dockerfile
-    restart: on-failure
-    environment:
-      - TYPESENSE_API_KEY=dev-local-key-do-not-use-in-production
-      - TYPESENSE_URL=http://typesense:8108
-      - LOOP_INTERVAL=${TYPESENSE_IMPORT_LOOP_INTERVAL}
-      - INDEXER_DATABASE_URL=postgresql://postgres:postgres@pgbouncer-indexer:5432/indexer
-      - WEB_DATABASE_URL=postgresql://postgres:postgres@pgbouncer-web:5432/web
-    depends_on:
-      typesense:
-        condition: service_healthy
-      pgbouncer-indexer:
-        condition: service_healthy
-      pgbouncer-web:
-        condition: service_healthy
-    networks:
-      - apollo-network
-
   # cron jobs
   schedules:
     build:
@@ -264,6 +242,8 @@ services:
       - WEB_DATABASE_URL=postgresql://postgres:postgres@pgbouncer-web:5432/web
       - INDEXER_DATABASE_URL=postgresql://postgres:postgres@pgbouncer-indexer:5432/indexer
       - REDIS_URL=redis://valkey:6379
+      - TYPESENSE_URL=http://typesense:8108
+      - TYPESENSE_API_KEY=dev-local-key-do-not-use-in-production
       - EXCHANGERATE_API_KEY=${EXCHANGERATE_API_KEY}
       - ABSTRACT_RPC
       - COSMO_KEY
@@ -286,6 +266,8 @@ services:
       valkey:
         condition: service_healthy
       floci:
+        condition: service_healthy
+      typesense:
         condition: service_healthy
     networks:
       - apollo-network

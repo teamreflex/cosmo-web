@@ -17,9 +17,11 @@ import { syncGravitiesTask } from "./functions/sync-gravities";
 import { syncMarketStatsTask } from "./functions/sync-market-stats";
 import { syncMembersTask } from "./functions/sync-members";
 import { syncProcessorHeadTask } from "./functions/sync-processor-head";
+import { syncTypesenseTask } from "./functions/sync-typesense";
 import { tradeTimersTask } from "./functions/trade-timers";
 import type { Mailer } from "./mailer";
 import type { ProxiedToken } from "./proxied-token";
+import type { Typesense } from "./typesense";
 
 export interface ScheduledTask<TSuccess = void, TFailure = unknown> {
   name: string;
@@ -37,6 +39,7 @@ export interface ScheduledTask<TSuccess = void, TFailure = unknown> {
     | Mailer
     | HttpClient.HttpClient
     | Abstract
+    | Typesense
   >;
 }
 
@@ -54,6 +57,7 @@ export const SCHEDULED_TASKS: ScheduledTask[] = [
   applySerialConfirmationsTask,
   chatRetentionTask,
   syncProcessorHeadTask,
+  syncTypesenseTask,
 ];
 
 /**

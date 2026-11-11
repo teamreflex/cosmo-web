@@ -9,6 +9,7 @@ import { DatabaseIndexer } from "./db-indexer";
 import { Exchangerate } from "./exchangerate";
 import { Mailer } from "./mailer";
 import { ProxiedToken } from "./proxied-token";
+import { Typesense } from "./typesense";
 
 /**
  * The app's only web DB layer. Layers memoize by reference, so every use
@@ -32,5 +33,6 @@ export const servicesLayer = Layer.mergeAll(
   Exchangerate.layer,
   Mailer.layer,
   Abstract.layer,
+  Typesense.layer,
   redisLayer,
 ).pipe(Layer.provideMerge(webDatabaseLayer));

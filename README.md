@@ -25,7 +25,6 @@ A platform for exploring objekts & gravities from [MODHAUS](https://www.mod-haus
 - `apps/schedules`: Scheduled tasks and queue workers
 - `apps/chat`: Trade chat over Effect RPC on a websocket, with encrypted messages
 - `apps/typesense`: Dockerfile for building Typesense with `curl` available
-- `apps/typesense-import`: Sync new objekt collections to the Typesense database
 - `apps/proxy`: mitmproxy addons for intercepting COSMO app traffic
 - `packages/auth`: Staff roles and permissions, and the account guards
 - `packages/chat`: The chat protocol and access policy

@@ -1,6 +1,6 @@
+import { Typesense } from "@/typesense";
 import { Data, Effect } from "effect";
 import { classes, members, units } from "./synonyms";
-import { Typesense } from "./typesense";
 
 export const COLLECTION_NAME = "collections";
 const KEY_DESCRIPTION = "frontend";
@@ -9,7 +9,7 @@ const KEY_DESCRIPTION = "frontend";
  * Creates a new frontend search API key if it doesn't exist
  */
 export const setupTypesenseApiKey = Effect.gen(function* () {
-  const typesense = yield* Typesense;
+  const { client: typesense } = yield* Typesense;
 
   const key = yield* Effect.tryPromise({
     try: async () => {
@@ -40,7 +40,7 @@ export const setupTypesenseApiKey = Effect.gen(function* () {
  * Creates the collection if it doesn't exist
  */
 export const setupTypesenseCollection = Effect.gen(function* () {
-  const typesense = yield* Typesense;
+  const { client: typesense } = yield* Typesense;
 
   const existing = yield* Effect.tryPromise({
     try: async () => {
@@ -187,7 +187,7 @@ export const setupTypesenseCollection = Effect.gen(function* () {
  * Example: "odd eye circle", "oec" all match to "KimLip", "JinSoul", "Choerry"
  */
 export const setupTypesenseSynonyms = Effect.gen(function* () {
-  const typesense = yield* Typesense;
+  const { client: typesense } = yield* Typesense;
 
   let count = 0;
 

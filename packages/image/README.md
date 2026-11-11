@@ -106,4 +106,4 @@ mirrorObjektImage(bucket, { side, slug, sourceUrl, force? })
 - Images whose marker is already in the bucket are skipped, so a re-run resumes and retries failures. A run over a complete bucket takes seconds.
 - A version is only saved while the row still has the source URL it mirrored, so an image the indexer replaced mid-run keeps the indexer's version.
 - Options go after `--`, e.g. `turbo image:mirror -- --concurrency 16 --limit 20`.
-- Run it before the Typesense importer's first import. Typesense documents keep the image versions they were imported with and the importer only picks up new collections, so search results would show COSMO's images for anything mirrored later.
+- Run it before the first `sync-typesense` run ([docs/search.md](../../docs/search.md)). Typesense documents keep the image versions they were imported with and the task only picks up new collections, so search results would show COSMO's images for anything mirrored later.

@@ -15,8 +15,7 @@ Along the way it fetches COSMO metadata for every transfer, mirrors collection i
 ## Who reads it
 
 - apps/web reads it through Drizzle for objekts, collections, COMO, gravity and serials, and staff edit collections and serial confirmations through `/admin`.
-- apps/schedules drains the outbox into the web database, recomputes serials, and syncs `member` and `collection_market_stats`.
-- apps/typesense-import imports new collections into Typesense.
+- apps/schedules drains the outbox into the web database, recomputes serials, syncs `member` and `collection_market_stats`, and copies collections into Typesense.
 
 ## Running locally
 

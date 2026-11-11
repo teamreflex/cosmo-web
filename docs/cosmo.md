@@ -26,7 +26,7 @@ About the number:
 - The categories: test collections, minting errors, the Zero class, and one-off event rewards (anniversary, streaming, burn and self-made events).
 - New collections are always inserted as obtainable; staff flag one by hand once it is known to be unobtainable.
 - Flag one at `/admin/collections`, or with `UPDATE collection SET unobtainable = true WHERE slug = '...'` on the indexer database.
-- Flipping the flag moves its owners' leaderboard counts (triggers on `collection`), and apps/typesense-import re-imports it on its next tick.
+- Flipping the flag moves its owners' leaderboard counts (triggers on `collection`), and `sync-typesense` re-imports it on its next run ([search.md](search.md)).
 - The database is the only list: `SELECT slug FROM collection WHERE unobtainable ORDER BY slug`.
 
 ## Objekts

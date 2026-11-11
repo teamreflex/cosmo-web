@@ -39,6 +39,7 @@ Scheduled tasks and the workers for the web app's job queues, in one Effect proc
 | `sync-market-stats`           | Every minute                    | Copies each listed collection's floor and listing count for `/market`                       |
 | `sync-processor-head`         | Every minute                    | Stores the timestamp of the newest indexed block for the web app's system status            |
 | `apply-serial-confirmations`  | Every 5 minutes                 | Re-estimates collections whose staff-confirmed serials don't match yet                      |
+| `sync-typesense`              | Every 5 minutes                 | Copies new collections and `unobtainable` flips into Typesense for objekt search            |
 | `sync-gravities`              | Every 30 minutes                | Stores new gravities and their poll candidates from COSMO                                   |
 | `clear-objekt-stats`          | Hourly, on the hour             | Clears the cached objekt stats                                                              |
 | `chat-retention`              | Hourly, at :15                  | Blanks chat messages 14 days after their trade ends                                         |
@@ -63,6 +64,8 @@ A missing required variable stops every task at boot. The mail variables are req
 | `INDEXER_DATABASE_URL`                                                           | the indexer database                                                              |
 | `ABSTRACT_RPC`                                                                   | the Abstract RPC, for `sync-processor-head`                                       |
 | `REDIS_URL`                                                                      | job queues, caches and the `trade-events` channel                                 |
+| `TYPESENSE_URL`                                                                  | the Typesense node, with its scheme and port, for `sync-typesense`                |
+| `TYPESENSE_API_KEY`                                                              | the Typesense admin key, which sets the collection up and imports into it         |
 | `COSMO_KEY`                                                                      | the COSMO encryption key, used while Redis holds no `cosmo-key`                   |
 | `EXCHANGERATE_API_KEY`                                                           | `sync-fx-rates`                                                                   |
 | `MAIL_SES_REGION`, `MAIL_SES_FROM`, `MAIL_SES_ACCESS_KEY`, `MAIL_SES_SECRET_KEY` | mail: SES, through `Mailer`; the same values the web app sends with               |

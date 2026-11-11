@@ -35,6 +35,27 @@ export const members = {
   s22: ["sullin"],
   s23: ["seoah"],
   s24: ["jiyeon"],
+  // idntt id numbers
+  id1: ["dohun"],
+  id2: ["heeju"],
+  id4: ["taein"],
+  id5: ["jaeyoung"],
+  id6: ["juho"],
+  id7: ["jiwoon"],
+  id8: ["hwanhee"],
+  id9: ["cheongmyeong"],
+  id10: ["towa"],
+  id11: ["kyuhyuk"],
+  id12: ["nuri"],
+  id13: ["seongjun"],
+  id14: ["yejoon"],
+  id15: ["gyeongbeen"],
+  id16: ["eunsoo"],
+  id17: ["giwoong"],
+  id18: ["jooheon"],
+  id19: ["gyungho"],
+  id20: ["eunchan"],
+  id21: ["eunsung"],
   // nicknames
   soda: ["dahyun"],
 };
@@ -162,6 +183,35 @@ export const units = {
     units: ["zenith"],
     members: ["JiWoo", "SooMin", "YuBin", "YeonJi", "JooBin", "HaYeon"],
   },
+  unevermet: {
+    units: ["unevermet"],
+    members: [
+      "DoHun",
+      "HeeJu",
+      "TaeIn",
+      "JaeYoung",
+      "JuHo",
+      "JiWoon",
+      "HwanHee",
+    ],
+  },
+  yesweare: {
+    units: ["yesweare"],
+    members: [
+      "CheongMyeong",
+      "Towa",
+      "KyuHyuk",
+      "NuRi",
+      "SeongJun",
+      "YeJoon",
+      "GyeongBeen",
+      "EunSoo",
+    ],
+  },
+  itsnotover: {
+    units: ["itsnotover"],
+    members: ["GiWoong", "JooHeon", "GyungHo", "EunChan", "EunSung"],
+  },
 } satisfies Record<string, SynonymList>;
 
 export const classes = {
@@ -173,6 +223,8 @@ export const classes = {
   pco: ["Premier"],
   bco: ["Basic"],
   eco: ["Event"],
+  mco: ["Motion"],
+  uco: ["Unit"],
 };
 
 export const misc = {

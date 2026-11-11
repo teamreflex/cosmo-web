@@ -27,7 +27,7 @@ Read the file for an area **before** working in it. Each app and package also ha
 | Cron tasks, job queues, the outbox drain's mechanics, trade timers                                                                       | [`apps/schedules/CLAUDE.md`](apps/schedules/CLAUDE.md)                     |
 | The indexer processor: batches, metadata, serial numbering, hot-block rollbacks, indexer schema changes                                  | [`apps/indexer/CLAUDE.md`](apps/indexer/CLAUDE.md)                         |
 | The chat server: access, message ordering, encryption, rate limits                                                                       | [`apps/chat/CLAUDE.md`](apps/chat/CLAUDE.md)                               |
-| Typesense fields, synonyms and the importer                                                                                              | [`apps/typesense-import/CLAUDE.md`](apps/typesense-import/CLAUDE.md)       |
+| Objekt search: Typesense fields, synonyms, the `sync-typesense` task                                                                     | [`docs/search.md`](docs/search.md)                                         |
 
 ## Commands
 

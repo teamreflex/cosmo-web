@@ -14,10 +14,6 @@ if [ "${DEV_SERVICES}" = "true" ]; then
     SERVICES="$SERVICES processor"
   fi
 
-  if [ "${DEV_IMPORTER}" = "true" ]; then
-    SERVICES="$SERVICES import-server"
-  fi
-
   if [ "${DEV_SCHEDULES}" = "true" ]; then
     SERVICES="$SERVICES schedules"
   fi
