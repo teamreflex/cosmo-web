@@ -130,8 +130,6 @@ export type ReportTargetFeedback = {
   rating: FeedbackRating;
   role: FeedbackRole;
   comment: string | null;
-  communication: number | null;
-  speed: number | null;
   createdAt: Date;
   removed: boolean;
   author: ReportTargetUser | null;

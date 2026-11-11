@@ -1,0 +1,81 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "1ed6af6b-dcdd-4b95-9aeb-dabd3a5e8c70",
+  "prevIds": [
+    "4ec5572c-b35d-4425-b43b-bb13f21728fd"
+  ],
+  "footprints": [
+    {
+      "statementType": "drop_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_feedback"
+      ],
+      "writes": [
+        "s|ck|public.trade_feedback.trade_feedback_stars_chk",
+        "n|ck|public.trade_feedback.trade_feedback_stars_chk",
+        "e|ck|public.trade_feedback.trade_feedback_stars_chk",
+        "n|con|public.trade_feedback.trade_feedback_stars_chk"
+      ],
+      "reads": [
+        "n|tbl|public.trade_feedback",
+        "n|sch|public",
+        "e|col|public.trade_feedback.communication",
+        "e|col|public.trade_feedback.speed"
+      ]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "trade_feedback",
+        "communication"
+      ],
+      "writes": [
+        "s|col|public.trade_feedback.communication",
+        "n|col|public.trade_feedback.communication",
+        "e|col|public.trade_feedback.communication"
+      ],
+      "reads": [
+        "n|tbl|public.trade_feedback",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "trade_feedback",
+        "speed"
+      ],
+      "writes": [
+        "s|col|public.trade_feedback.speed",
+        "n|col|public.trade_feedback.speed",
+        "e|col|public.trade_feedback.speed"
+      ],
+      "reads": [
+        "n|tbl|public.trade_feedback",
+        "n|sch|public"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"trade_feedback\",\"communication\"]"
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"trade_feedback\",\"speed\"]"
+    },
+    {
+      "op": "drop",
+      "key": "checks\u0000[\"public\",\"trade_feedback\",\"trade_feedback_stars_chk\"]"
+    }
+  ]
+}

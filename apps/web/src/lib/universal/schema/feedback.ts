@@ -24,15 +24,10 @@ const feedbackCommentSchema = z
   .nullish()
   .transform((text) => text || null);
 
-// an optional 1 to 5 star rating
-const starsSchema = z.int().min(1).max(5).nullish();
-
 export const leaveFeedbackSchema = z.object({
   tradeId: z.uuid(),
   rating: z.enum(feedbackRatings, { error: "Pick how it went" }),
   comment: feedbackCommentSchema,
-  communication: starsSchema,
-  speed: starsSchema,
 });
 
 /**

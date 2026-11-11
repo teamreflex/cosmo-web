@@ -17,7 +17,7 @@ The trade system's pure rules, shared by `apps/web` and `apps/schedules`: no dat
 | `./composer`      | the listing composer's row helpers                                                                                                                            |
 | `./timers`        | windows, `isTimedOut()`, `extendedDeadline()`, `DRAIN_CURSOR_NAME`                                                                                            |
 | `./caps`          | the claim cap and listing limits                                                                                                                              |
-| `./feedback`      | who may rate a trade, whether a rating is scored, star averages                                                                                               |
+| `./feedback`      | who may rate a trade, whether a rating is scored                                                                                                              |
 | `./events`        | the Redis `trade-events` channel and its message                                                                                                              |
 
 ## Contracts between apps

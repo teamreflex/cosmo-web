@@ -168,7 +168,7 @@ function PendingComponent() {
   return (
     <div className="container flex flex-col gap-4.5 pt-5 pb-10">
       <Skeleton className="h-5 w-28 max-md:hidden" />
-      {/* the score and ratings panels; the averages panel shows only for some */}
+      {/* the score and ratings panels */}
       <div className="flex flex-col gap-3.5 md:flex-row md:flex-wrap">
         <Skeleton className="h-32 rounded-lg md:flex-[1_1_240px]" />
         <Skeleton className="h-32 rounded-lg md:flex-[1_1_240px]" />

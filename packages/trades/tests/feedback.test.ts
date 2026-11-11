@@ -1,7 +1,6 @@
 import type { TradeStatus } from "@apollo/database/web/types";
 import { describe, expect, test } from "bun:test";
 import {
-  averageStars,
   feedbackDaysLeft,
   type FeedbackOpening,
   feedbackOpening,
@@ -178,12 +177,5 @@ describe("feedback roles", () => {
     const items = [objekt("from"), objekt("to")];
     expect(feedbackRole(items, "from")).toBe("trader");
     expect(feedbackRole(items, "to")).toBe("trader");
-  });
-});
-
-describe("averageStars", () => {
-  test("shows an average only from 10 starred ratings (SCORE-18)", () => {
-    expect(averageStars(9 * 5 - 1, 9)).toBeNull();
-    expect(averageStars(10 * 5 - 1, 10)).toBe(4.9);
   });
 });

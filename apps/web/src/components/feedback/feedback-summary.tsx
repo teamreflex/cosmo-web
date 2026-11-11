@@ -17,9 +17,9 @@ const eyebrow =
   "text-xxs font-medium tracking-widest text-muted-foreground uppercase";
 
 /**
- * The top of the feedback page: the score with the share positive, how many
- * of each rating the address received, and the star averages once enough
- * ratings back them. Panels sit side by side from md and stack on phones.
+ * The top of the feedback page: the score with the share positive, and how
+ * many of each rating the address received. Panels sit side by side from md
+ * and stack on phones.
  */
 export default function FeedbackSummary({ summary }: { summary: Summary }) {
   const locale = getLocale();
@@ -62,18 +62,6 @@ export default function FeedbackSummary({ summary }: { summary: Summary }) {
           </div>
         ))}
       </Panel>
-
-      {(summary.communication.average !== null ||
-        summary.speed.average !== null) && (
-        <Panel className="flex flex-col gap-2.5 p-4 md:flex-[1_1_260px] md:p-4.5">
-          <span className={eyebrow}>{m.feedback_page_detailed()}</span>
-          <Average
-            label={m.feedback_communication()}
-            {...summary.communication}
-          />
-          <Average label={m.feedback_speed()} {...summary.speed} />
-        </Panel>
-      )}
     </div>
   );
 }
@@ -103,39 +91,5 @@ function RatingLabel({ rating }: { rating: FeedbackRating }) {
       <style.icon aria-hidden className="size-4 shrink-0" />
       {style.label()}
     </span>
-  );
-}
-
-// an average star rating to one decimal, or a dash until enough back it
-function Average({
-  label,
-  average,
-  count,
-}: {
-  label: string;
-  average: number | null;
-  count: number;
-}) {
-  return (
-    <div className="flex justify-between gap-3 text-sm">
-      <span>{label}</span>
-      <span className="tabular-nums">
-        {average === null ? (
-          <span className="text-muted-foreground">–</span>
-        ) : (
-          <>
-            <span className="font-semibold text-amber-700 dark:text-amber-500">
-              {new Intl.NumberFormat(getLocale(), {
-                minimumFractionDigits: 1,
-                maximumFractionDigits: 1,
-              }).format(average)}
-            </span>{" "}
-            <span className="text-muted-foreground">
-              ({formatCount(count)})
-            </span>
-          </>
-        )}
-      </span>
-    </div>
   );
 }

@@ -1122,8 +1122,6 @@ export const tradeFeedback = pgTable(
     rating: feedbackRating("rating").notNull(),
     // null when the rater left no comment
     comment: varchar("comment", { length: 280 }),
-    communication: smallint("communication"),
-    speed: smallint("speed"),
     scored: boolean("scored").notNull(),
     createdAt: tradeTimestamp("created_at").notNull().defaultNow(),
     removedAt: tradeTimestamp("removed_at"),
@@ -1139,10 +1137,6 @@ export const tradeFeedback = pgTable(
     // serve the set-null cascades when an account is deleted
     index("trade_feedback_to_user_idx").on(t.toUserId),
     index("trade_feedback_from_user_idx").on(t.fromUserId),
-    check(
-      "trade_feedback_stars_chk",
-      sql`(${t.communication} IS NULL OR ${t.communication} BETWEEN 1 AND 5) AND (${t.speed} IS NULL OR ${t.speed} BETWEEN 1 AND 5)`,
-    ),
     check(
       "trade_feedback_addresses_chk",
       sql`${t.fromAddress} <> ${t.toAddress}`,

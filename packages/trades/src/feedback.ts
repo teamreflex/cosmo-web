@@ -112,13 +112,3 @@ const ratedRoles = {
 export function ratedRole(raterRole: FeedbackRole): FeedbackRole {
   return ratedRoles[raterRole];
 }
-
-// how many starred ratings an average needs before it shows
-const FEEDBACK_AVERAGES_MIN = 10;
-
-// an average star rating to one decimal, once enough ratings carry stars
-export function averageStars(sum: number, count: number) {
-  return count < FEEDBACK_AVERAGES_MIN
-    ? null
-    : Math.round((sum / count) * 10) / 10;
-}

@@ -79,8 +79,6 @@ export type FeedbackEntryView = {
   id: string;
   rating: FeedbackRating;
   comment: string | null;
-  communication: number | null;
-  speed: number | null;
   createdAt: Date;
   removed: boolean;
 };
@@ -119,14 +117,7 @@ export type TradeFeedbackView =
  */
 export type VisibleFeedbackRow = Pick<
   TradeFeedback,
-  | "id"
-  | "raterSide"
-  | "rating"
-  | "comment"
-  | "communication"
-  | "speed"
-  | "createdAt"
-  | "removedAt"
+  "id" | "raterSide" | "rating" | "comment" | "createdAt" | "removedAt"
 >;
 
 function toFeedbackEntry(row: VisibleFeedbackRow): FeedbackEntryView {
@@ -134,8 +125,6 @@ function toFeedbackEntry(row: VisibleFeedbackRow): FeedbackEntryView {
     id: row.id,
     rating: row.rating,
     comment: row.comment,
-    communication: row.communication,
-    speed: row.speed,
     createdAt: row.createdAt,
     removed: row.removedAt !== null,
   };
@@ -210,17 +199,14 @@ export const feedbackSearchDefaults = {
 /**
  * An address's received feedback as its feedback page shows it. `total` and
  * `counts` are its visible ratings, scored or not; `score` and `percent`
- * follow the scored ones alone. Each average is null until enough starred
- * ratings back it. `roles` counts the visible ratings by the role the
- * address was rated in.
+ * follow the scored ones alone. `roles` counts the visible ratings by the
+ * role the address was rated in.
  */
 export type FeedbackSummary = {
   total: number;
   score: number;
   percent: number | null;
   counts: Record<FeedbackRating, number>;
-  communication: { average: number | null; count: number };
-  speed: { average: number | null; count: number };
   roles: Record<FeedbackRole, number>;
 };
 
@@ -235,8 +221,6 @@ export type FeedbackProfileEntry = {
   id: string;
   rating: FeedbackRating;
   comment: string | null;
-  communication: number | null;
-  speed: number | null;
   role: FeedbackRole;
   scored: boolean;
   createdAt: Date;

@@ -63,8 +63,8 @@ export default function TradeFeedback({ trade, side }: Props) {
 }
 
 /**
- * One rating: its sign, who rated whom and when, any comment and its stars.
- * The counterparty's rating can be reported.
+ * One rating: its sign, who rated whom and when, and any comment. The
+ * counterparty's rating can be reported.
  */
 function FeedbackEntry({
   entry,

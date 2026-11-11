@@ -33,7 +33,6 @@ import {
   userFeedbackStats,
 } from "@apollo/database/web/schema";
 import {
-  averageStars,
   feedbackOpening,
   feedbackRole,
   feedbackScored,
@@ -109,8 +108,6 @@ export const $leaveFeedback = createServerFn({ method: "POST" })
           role: feedbackRole(trade.state.items, by),
           rating: data.rating,
           comment: data.comment,
-          communication: data.communication ?? null,
-          speed: data.speed ?? null,
           scored,
         })
         .onConflictDoNothing()
@@ -255,19 +252,9 @@ export const $removeFeedback = createServerFn({ method: "POST" })
 export const $fetchFeedbackSummary = createServerFn({ method: "GET" })
   .validator(feedbackSummaryInputSchema)
   .handler(async ({ data }): Promise<FeedbackSummary> => {
-    const { rating, role, scored, communication, speed } = tradeFeedback;
+    const { rating, role } = tradeFeedback;
     const count = (filter: SQL) =>
       sql<number>`count(*) filter (where ${filter})::int`.mapWith(Number);
-    // a rating that doesn't count leaves the star averages alone too
-    const stars = (column: typeof communication) => ({
-      sum: sql<number>`coalesce(sum(${column}) filter (where ${scored}), 0)::int`.mapWith(
-        Number,
-      ),
-      count:
-        sql<number>`count(${column}) filter (where ${scored})::int`.mapWith(
-          Number,
-        ),
-    });
     // the score and the share are the stats row's, of scored ratings alone
     const statsColumn = (column: AnyPgColumn) =>
       db
@@ -288,8 +275,6 @@ export const $fetchFeedbackSummary = createServerFn({ method: "GET" })
         percent: sql<
           number | null
         >`(${statsColumn(userFeedbackStats.percentPositive)})`,
-        communication: stars(communication),
-        speed: stars(speed),
         // the stored role is the rater's, the inverse of the one rated in
         buyer: count(eq(role, ratedRole("buyer"))),
         seller: count(eq(role, ratedRole("seller"))),
@@ -312,14 +297,6 @@ export const $fetchFeedbackSummary = createServerFn({ method: "GET" })
         positive: row.positive,
         neutral: row.neutral,
         negative: row.negative,
-      },
-      communication: {
-        average: averageStars(row.communication.sum, row.communication.count),
-        count: row.communication.count,
-      },
-      speed: {
-        average: averageStars(row.speed.sum, row.speed.count),
-        count: row.speed.count,
       },
       roles: { buyer: row.buyer, seller: row.seller, trader: row.trader },
     };
@@ -359,8 +336,6 @@ export const $fetchFeedbackEntries = createServerFn({ method: "GET" })
         id: true,
         rating: true,
         comment: true,
-        communication: true,
-        speed: true,
         role: true,
         scored: true,
         createdAt: true,
@@ -398,8 +373,6 @@ export const $fetchFeedbackEntries = createServerFn({ method: "GET" })
           id: row.id,
           rating: row.rating,
           comment: row.comment,
-          communication: row.communication,
-          speed: row.speed,
           role: ratedRole(row.role),
           scored: row.scored,
           createdAt: row.createdAt,

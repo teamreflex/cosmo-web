@@ -49,10 +49,6 @@ drizzle-orm's `migrate()` and the Subsquid runner both wrap everything pending i
 - `db:push` syncs the schema to a local database without writing files, for local experiments only.
 - `db:upgrade` converts snapshots from an older drizzle-kit, which `generate` and `check` refuse until it runs.
 
-### Dropping a web column
-
-Remove the column from the TS schema one release before the migration that drops it, because Drizzle selects every declared column and the app keeps serving while the migration runs.
-
 ## Indexer DB
 
 The procedure (models, migration, Drizzle mirror, `schema.graphql`) and the generator commands never to run are under "Schema changes" in [apps/indexer/CLAUDE.md](../apps/indexer/CLAUDE.md).

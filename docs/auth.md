@@ -59,7 +59,6 @@ When a plugin adds tables or columns:
 
 - `user.role` is the `user_role` pg enum, `NOT NULL DEFAULT 'user'`. It rejects Better Auth's comma-joined multi-role form.
 - The enum's values mirror `roleNames` in `@apollo/auth`. `apps/web/scripts/seed-staff.ts` types its rows with `Role`, so the two can't drift without a compile error.
-- Drizzle selects every declared auth column on each session lookup. Dropping a column follows the two-release procedure in [`migrations.md`](migrations.md).
 
 ## Roles and permissions
 

@@ -46,7 +46,6 @@ import {
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import { Timestamp } from "../ui/timestamp";
 import RatingIcon from "./rating-icon";
-import StarRating from "./star-rating";
 
 /**
  * The rating window the dialog opened on: how and when the trade ended, and
@@ -69,8 +68,8 @@ type Props = {
 
 /**
  * Rates the other party of a trade: positive, neutral or negative, with an
- * optional comment and stars. A centred dialog from tablet width and a
- * drawer below it, with Later and Submit pinned under the form.
+ * optional comment. A centred dialog from tablet width and a drawer below
+ * it, with Later and Submit pinned under the form.
  */
 export default function FeedbackLeaveDialog({
   trade,
@@ -91,8 +90,6 @@ export default function FeedbackLeaveDialog({
     defaultValues: {
       tradeId: trade.id,
       comment: "",
-      communication: null,
-      speed: null,
     },
   });
 
@@ -259,33 +256,6 @@ export default function FeedbackLeaveDialog({
             );
           }}
         />
-        <div className="flex flex-wrap gap-x-7 gap-y-4">
-          {(
-            [
-              ["communication", m.feedback_communication()],
-              ["speed", m.feedback_speed()],
-            ] as const
-          ).map(([key, label]) => (
-            <Controller
-              key={key}
-              control={form.control}
-              name={key}
-              render={({ field }) => (
-                <div className="flex flex-col gap-1.5">
-                  <span className="text-xxs font-medium tracking-widest text-muted-foreground uppercase">
-                    {m.feedback_optional({ label })}
-                  </span>
-                  <StarRating
-                    label={label}
-                    value={field.value ?? null}
-                    onChange={field.onChange}
-                    disabled={mutation.isPending}
-                  />
-                </div>
-              )}
-            />
-          ))}
-        </div>
         <div className="flex flex-col gap-2 rounded-md border border-dashed border-input px-3.5 py-3 text-sm text-muted-foreground [&:lang(ko)]:break-keep">
           {!feedbackScored(trade.state) && (
             <p className="flex items-start gap-3">

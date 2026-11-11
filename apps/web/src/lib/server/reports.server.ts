@@ -561,8 +561,6 @@ async function fetchDetailTarget(
           rating: true,
           role: true,
           comment: true,
-          communication: true,
-          speed: true,
           createdAt: true,
           removedAt: true,
         },
@@ -580,8 +578,6 @@ async function fetchDetailTarget(
           rating: row.rating,
           role: row.role,
           comment: row.comment,
-          communication: row.communication,
-          speed: row.speed,
           createdAt: row.createdAt,
           removed: row.removedAt !== null,
           author:

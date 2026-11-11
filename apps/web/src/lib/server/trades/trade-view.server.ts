@@ -105,8 +105,6 @@ const feedbackColumns = {
   raterSide: true,
   rating: true,
   comment: true,
-  communication: true,
-  speed: true,
   createdAt: true,
   removedAt: true,
 } as const satisfies Record<keyof VisibleFeedbackRow, true>;

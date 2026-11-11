@@ -24,7 +24,7 @@ type Props = {
 };
 
 /**
- * The reported rating: who left it on whom and when, its comment and stars,
+ * The reported rating: who left it on whom and when, and its comment,
  * marked once a moderator removed it, and its removal while the report is
  * open.
  */
