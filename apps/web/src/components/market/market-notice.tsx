@@ -25,7 +25,6 @@ import { CLAIM_CAP_BASE, CLAIM_CAP_CEILING } from "@apollo/trades/caps";
 import { CLAIM_WINDOW, FEEDBACK_WINDOW_DAYS } from "@apollo/trades/timers";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import {
-  IconClock,
   IconLock,
   IconMessageCircle,
   IconProgressCheck,
@@ -206,9 +205,6 @@ function TransfersStep({ active }: StepProps) {
       <StepText active={active} title={m.market_notice_transfers_title()}>
         <Body>{m.market_notice_transfers({ appName: env.VITE_APP_NAME })}</Body>
       </StepText>
-      <ul>
-        <Point icon={<IconClock />}>{m.market_notice_staff()}</Point>
-      </ul>
     </>
   );
 }

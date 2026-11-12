@@ -70,11 +70,7 @@ function RouteComponent() {
             <ProfileSection />
           </Suspense>
 
-          <AccountSection
-            id="sign-in"
-            title={m.account_section_sign_in()}
-            description={m.linked_accounts_resign_in_notice()}
-          >
+          <AccountSection id="sign-in" title={m.account_section_sign_in()}>
             <div className="px-4 py-4 sm:px-6">
               <Suspense
                 fallback={

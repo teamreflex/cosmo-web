@@ -62,13 +62,13 @@ export default function CancelTradeDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{m.trade_page_cancel_title()}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {listingId === null
-              ? m.trade_page_cancel_description()
-              : side === "from"
+          {listingId !== null && (
+            <AlertDialogDescription>
+              {side === "from"
                 ? m.trade_page_cancel_description_poster()
                 : m.trade_page_cancel_description_claimer({ name })}
-          </AlertDialogDescription>
+            </AlertDialogDescription>
+          )}
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel

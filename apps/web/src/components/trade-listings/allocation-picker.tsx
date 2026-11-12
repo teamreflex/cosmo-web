@@ -1,7 +1,6 @@
 import type { PickerRow, Picks } from "@/hooks/use-listing-picks";
 import { m } from "@/i18n/messages";
 import { formatCount, pickShown } from "@/lib/client/trade-listings";
-import { env } from "@/lib/env/client";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type {
   Candidate,
@@ -108,8 +107,8 @@ function PickerFooter({ offers, poster }: { offers: boolean; poster: string }) {
   return (
     <p className="text-xs leading-relaxed text-muted-foreground">
       {offers
-        ? m.listing_detail_offer_footer({ poster, appName: env.VITE_APP_NAME })
-        : m.listing_detail_accept_footer({ appName: env.VITE_APP_NAME })}
+        ? m.listing_detail_offer_footer({ poster })
+        : m.listing_detail_accept_footer()}
     </p>
   );
 }

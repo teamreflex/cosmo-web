@@ -72,14 +72,9 @@ export default function ComposerWantRows({
 
   return (
     <section className="flex flex-col gap-3 px-4 py-4 md:px-5">
-      <div className="flex flex-wrap items-baseline gap-x-2.5 gap-y-0.5">
-        <span className="text-xxs font-medium tracking-widest text-amber-700 uppercase dark:text-amber-500">
-          {m.listing_composer_looking_for()}
-        </span>
-        <span className="text-xs text-muted-foreground">
-          {m.listing_composer_looking_for_help()}
-        </span>
-      </div>
+      <span className="text-xxs font-medium tracking-widest text-amber-700 uppercase dark:text-amber-500">
+        {m.listing_composer_looking_for()}
+      </span>
 
       <div className="flex flex-col gap-2.5 rounded-lg border border-border bg-muted/40 p-3">
         <span className="text-xxs font-medium tracking-widest text-muted-foreground uppercase">

@@ -510,7 +510,7 @@ function TradeLayout({
             </TransferRows>
             {trade.state.status === "accepted" && (
               <p className="text-xs leading-relaxed text-muted-foreground">
-                {m.trade_page_deadline_note({ appName: env.VITE_APP_NAME })}
+                {m.trade_page_deadline_note()}
               </p>
             )}
           </div>
@@ -607,9 +607,7 @@ function ActionStrip({
                 : m.trade_page_send({ count: waiting, name })}
             </p>
           ) : (
-            arrived && (
-              <p>{m.trade_page_send_arrived({ appName: env.VITE_APP_NAME })}</p>
-            )
+            arrived && <p>{m.trade_page_send_arrived()}</p>
           ))}
       </div>
       {children}

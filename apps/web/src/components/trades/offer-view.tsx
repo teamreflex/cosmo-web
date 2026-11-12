@@ -231,7 +231,6 @@ export function OfferEndedAlert({
               ? m.trade_page_offer_closed_deletion()
               : m.trade_page_offer_closed_listing()}
         </AlertTitle>
-        <AlertDescription>{m.trade_page_offer_nothing_sent()}</AlertDescription>
       </Alert>
     );
   }
@@ -248,10 +247,11 @@ export function OfferEndedAlert({
                 ? m.trade_page_offer_declined_you({ name: sender })
                 : m.trade_page_offer_declined_staff({ sender, recipient })}
           </AlertTitle>
-          <AlertDescription className="flex flex-col gap-1 text-pretty [&_p:not(:last-child)]:mb-0">
-            <p>{m.trade_page_offer_nothing_sent()}</p>
-            <NewOfferNote trade={trade} side={side} />
-          </AlertDescription>
+          {side === proposedBy && (
+            <AlertDescription>
+              <NewOfferNote trade={trade} side={side} />
+            </AlertDescription>
+          )}
         </Alert>
       );
     case "withdrawn":

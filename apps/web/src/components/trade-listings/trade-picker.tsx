@@ -63,9 +63,6 @@ export default function TradePicker({
         <Button type="button" size="sm" onClick={onDone} className="ml-auto">
           {m.listing_composer_picker_done({ count: picked.size })}
         </Button>
-        <p className="w-full text-xs text-muted-foreground">
-          {m.listing_composer_picker_help()}
-        </p>
       </div>
 
       <Suspense fallback={<PickerFallback />}>

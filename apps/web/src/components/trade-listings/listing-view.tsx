@@ -8,7 +8,6 @@ import {
 import { usePosterSections } from "@/hooks/use-poster-sections";
 import { m } from "@/i18n/messages";
 import { endedNormally, posterName } from "@/lib/client/trade-listings";
-import { env } from "@/lib/env/client";
 import {
   type Candidate,
   type ClosedListingState,
@@ -193,7 +192,7 @@ export default function ListingView({
             poster={posterName(listing)}
           />
         ) : (
-          <ListingWants listing={listing} role={role} offers={offers} />
+          <ListingWants listing={listing} role={role} />
         )
       }
       closed={role.role === "closed"}
@@ -266,17 +265,14 @@ function offeredHeading(role: ListingRole) {
 /**
  * What the listing asks for, beside a viewer who isn't picking: "Looking
  * for", or "You're looking for" for the poster, who also reads how many of
- * theirs the rows are for on a listing with a ratio and, on one that takes
- * offers, why it does.
+ * theirs the rows are for on a listing with a ratio.
  */
 function ListingWants({
   listing,
   role,
-  offers,
 }: {
   listing: TradeListing;
   role: ListingRole;
-  offers: boolean;
 }) {
   if (role.role !== "poster") {
     return <WantList wants={listing.wants} />;
@@ -290,13 +286,7 @@ function ListingWants({
           ? m.listing_detail_wants_per({ count: listing.unitSize })
           : undefined
       }
-    >
-      {offers && (
-        <p className="text-xs leading-relaxed text-muted-foreground">
-          {m.listing_poster_offers_help()}
-        </p>
-      )}
-    </WantList>
+    />
   );
 }
 
@@ -340,9 +330,6 @@ function RoleAlert({ listing, role, picks, reasonId, detailId }: AlertProps) {
         <Alert role="status">
           <IconLink />
           <AlertTitle>{m.listing_detail_unlinked_title()}</AlertTitle>
-          <AlertDescription>
-            {m.listing_detail_unlinked_body({ appName: env.VITE_APP_NAME })}
-          </AlertDescription>
         </Alert>
       );
     case "poster":

@@ -63,11 +63,7 @@ export default function ComposerExactSearch({
         aria-label={m.listing_composer_search_placeholder()}
       />
       <CommandList className="max-h-64">
-        {settled.length === 0 ? (
-          <p className="px-3 py-4 text-center text-sm text-muted-foreground">
-            {m.listing_composer_search_hint()}
-          </p>
-        ) : search.isError ? (
+        {settled.length === 0 ? null : search.isError ? (
           <div className="flex flex-col items-center gap-2 px-3 py-4 text-center text-sm">
             <p role="alert" className="text-muted-foreground">
               {m.listing_composer_search_error()}

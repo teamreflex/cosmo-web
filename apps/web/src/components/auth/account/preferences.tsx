@@ -88,16 +88,11 @@ export default function PreferencesSection({ user }: Props) {
   }
 
   return (
-    <AccountSection
-      id="preferences"
-      title={m.account_section_preferences()}
-      description={m.settings_description()}
-    >
+    <AccountSection id="preferences" title={m.account_section_preferences()}>
       <AccountRow
         label={
           <label htmlFor="settings-language">{m.settings_language()}</label>
         }
-        description={m.settings_language_description()}
       >
         <Select
           name="language"
@@ -123,7 +118,6 @@ export default function PreferencesSection({ user }: Props) {
 
       <AccountRow
         label={<label htmlFor="settings-theme">{m.settings_theme()}</label>}
-        description={m.settings_theme_description()}
       >
         <Select
           name="theme"
@@ -158,7 +152,6 @@ export default function PreferencesSection({ user }: Props) {
                     {m.settings_objekt_columns()}
                   </label>
                 }
-                description={m.settings_objekt_columns_description()}
               >
                 <Select
                   name="gridColumns"
@@ -197,7 +190,6 @@ export default function PreferencesSection({ user }: Props) {
                     {m.settings_currency()}
                   </label>
                 }
-                description={m.settings_currency_description()}
               >
                 <CurrencySelect
                   id="settings-currency"
@@ -221,7 +213,6 @@ export default function PreferencesSection({ user }: Props) {
                     {m.settings_collection_mode()}
                   </label>
                 }
-                description={m.settings_collection_mode_description()}
               >
                 <DataSourceSelector
                   id="settings-collection-mode"

@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -100,7 +99,6 @@ export default function CreateBinderDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{m.binder_new()}</DialogTitle>
-          <DialogDescription>{m.binder_create_description()}</DialogDescription>
         </DialogHeader>
         {/* mounted per opening, so the form starts empty */}
         {open && <CreateBinderForm onCreated={handleCreated} />}
