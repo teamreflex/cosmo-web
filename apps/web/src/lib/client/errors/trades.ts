@@ -16,6 +16,7 @@ import {
   refusedOfferToken,
   type TokenRefusalReason,
 } from "@/lib/universal/trade-listings";
+import { padSerial } from "@apollo/util";
 
 /**
  * Maps a trade error code to a localized message, or null when the code is
@@ -116,7 +117,7 @@ export function formatPartnerTokenRefusal(token: {
 function tokenInputs(token: { objekt: string; serial: number }) {
   return {
     objekt: token.objekt,
-    serial: token.serial.toString().padStart(5, "0"),
+    serial: padSerial(token.serial),
   };
 }
 

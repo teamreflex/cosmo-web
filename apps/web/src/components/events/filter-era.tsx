@@ -27,26 +27,12 @@ export default function EventsEraFilter({ era, artist, onChange }: Props) {
       return true;
     });
 
-    const groups = new Map<
-      string,
-      { artist: (typeof artistList)[0]; eras: typeof eras }
-    >();
-
-    for (const e of filtered) {
-      const artistData = artistList.find((a) => a.id === e.artist);
-      if (!artistData) continue;
-
-      let group = groups.get(e.artist);
-      if (!group) {
-        group = { artist: artistData, eras: [] };
-        groups.set(e.artist, group);
-      }
-      group.eras.push(e);
-    }
-
-    return Array.from(groups.values()).sort(
-      (a, b) => a.artist.comoTokenId - b.artist.comoTokenId,
-    );
+    return artistList.flatMap((artistData) => {
+      const artistEras = filtered.filter((e) => e.artist === artistData.id);
+      return artistEras.length > 0
+        ? [{ artist: artistData, eras: artistEras }]
+        : [];
+    });
   }, [eras, artist, selectedIds, artistList]);
 
   const selectedEra = era ? eras.find((e) => e.id === era) : undefined;

@@ -84,6 +84,10 @@ export const artistsQuery = queryOptions({
 
     return {
       artists: data.artists,
+      // every artist list in the app derives from this one, so they all share its order
+      artistList: Object.values(data.artists).toSorted(
+        (a, b) => a.comoTokenId - b.comoTokenId,
+      ),
       members: memberMap,
     };
   },

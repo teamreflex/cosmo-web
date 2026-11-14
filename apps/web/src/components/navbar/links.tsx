@@ -226,15 +226,13 @@ function MobileMenuItems(props: MobileMenuProps) {
         <div className="contents">
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            {artistList
-              .sort((a, b) => a.comoTokenId - b.comoTokenId)
-              .map((artist) => (
-                <ArtistItem
-                  key={artist.id}
-                  artist={artist}
-                  isSelected={selectedIds.includes(artist.id)}
-                />
-              ))}
+            {artistList.map((artist) => (
+              <ArtistItem
+                key={artist.id}
+                artist={artist}
+                isSelected={selectedIds.includes(artist.id)}
+              />
+            ))}
           </DropdownMenuGroup>
         </div>
       )}

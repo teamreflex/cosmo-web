@@ -32,9 +32,7 @@ export default function ArtistFilterChip({
   unsetLabel = m.filter_value_all(),
 }: Props) {
   const { artistList, selected } = useArtists();
-  const artists = (allArtists ? artistList : selected).toSorted(
-    (a, b) => a.comoTokenId - b.comoTokenId,
-  );
+  const artists = allArtists ? artistList : selected;
   const current = artists.find((option) => option.id === artist);
 
   const options: SingleSelectOption<string>[] = [

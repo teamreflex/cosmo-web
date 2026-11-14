@@ -442,16 +442,14 @@ function ArtistSwitch({ artists, value, onChange }: ArtistSwitchProps) {
       className="flex h-[34px] min-w-0 flex-1 gap-0.5 rounded-md border border-border bg-card p-0.5"
     >
       <ArtistOption value={ALL_ARTISTS} label={m.binder_picker_all_artists()} />
-      {artists
-        .toSorted((a, b) => a.comoTokenId - b.comoTokenId)
-        .map((artist) => (
-          <ArtistOption
-            key={artist.id}
-            value={artist.id}
-            label={artist.title}
-            image={artist.logoImageUrl}
-          />
-        ))}
+      {artists.map((artist) => (
+        <ArtistOption
+          key={artist.id}
+          value={artist.id}
+          label={artist.title}
+          image={artist.logoImageUrl}
+        />
+      ))}
     </RadioGroup>
   );
 }

@@ -6,6 +6,7 @@ import type { PropsWithClassName } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { bands } from "@apollo/cosmo/bands";
 import { toUiArtist } from "@apollo/cosmo/types/common";
+import { formatSerial } from "@apollo/util";
 import { Fragment, useState } from "react";
 import type { ComponentProps, PropsWithChildren } from "react";
 import ArtistLogo from "./artist-logo";
@@ -87,9 +88,6 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
     useCustomBand,
   } = useBandDisplay(collection);
 
-  const paddedSerial =
-    serial === 0 ? "00000" : serial?.toString().padStart(5, "0");
-
   /**
    * sometimes the first element in the grid is a couple pixels smaller on the width, resulting in an offset number, not sure why.
    * using line-height works around it, as the background container is transparent so there's no resulting overflow.
@@ -133,7 +131,7 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
               >
                 <div className="flex items-center gap-2">
                   <span>{collection.collectionNo}</span>
-                  {paddedSerial && <span>#{paddedSerial}</span>}
+                  {serial !== undefined && <span>{formatSerial(serial)}</span>}
                 </div>
               </SidebarText>
               {artist !== undefined && <ArtistLogo artist={artist} />}

@@ -11,6 +11,7 @@ import { reasonLabel } from "@/lib/client/objekt-util";
 import { objektQuery } from "@/lib/queries/objekt-queries";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
+import { formatSerial } from "@apollo/util";
 import { IconArrowRight } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
@@ -47,8 +48,6 @@ export default function SerialTicket({
       return token.acquiredAt;
     }
   }, [token.acquiredAt]);
-
-  const paddedSerial = token.serial.toString().padStart(5, "0");
 
   const isTradable =
     token.transferable && token.nonTransferableReason === undefined;
@@ -93,7 +92,7 @@ export default function SerialTicket({
           {m.detail_sort_serial()}
         </div>
         <div className="font-mono text-sm font-bold tabular-nums sm:text-lg">
-          #{paddedSerial}
+          {formatSerial(token.serial)}
         </div>
       </div>
 

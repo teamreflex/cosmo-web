@@ -20,12 +20,12 @@ export const Route = createFileRoute("/admin/eras")({
       .infiniteQuery(adminErasInfiniteQuery())
       .catch(noop);
 
-    const { artists } = await context.queryClient.query({
+    const { artistList } = await context.queryClient.query({
       ...artistsQuery,
       staleTime: "static",
     });
 
-    return { artists: Object.values(artists) };
+    return { artists: artistList };
   },
   head: () =>
     defineHead({ title: m.admin_eras_title(), canonical: "/admin/eras" }),

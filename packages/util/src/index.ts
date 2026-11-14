@@ -129,10 +129,17 @@ export function memberSortOrder(artistIndex: number, memberOrder: number) {
 }
 
 /**
+ * A serial's digits, zero-padded to five, for text that supplies its own #.
+ */
+export function padSerial(serial: number) {
+  return serial.toString().padStart(5, "0");
+}
+
+/**
  * A serial as COSMO prints it, e.g. #00217.
  */
 export function formatSerial(serial: number) {
-  return `#${serial.toString().padStart(5, "0")}`;
+  return `#${padSerial(serial)}`;
 }
 
 /**

@@ -26,16 +26,13 @@ function withoutArtist(
 }
 
 export default function SelectStep({ candidates, onContinue }: Props) {
-  const { getArtist } = useArtists();
+  const { artistList } = useArtists();
 
   function availableArtists(type: ScrapeCandidate["type"]) {
     const ids = new Set(
       candidates.filter((c) => c.type === type).map((c) => c.artist),
     );
-    return [...ids]
-      .map((id) => getArtist(id))
-      .filter((artist) => artist !== undefined)
-      .sort((a, b) => a.comoTokenId - b.comoTokenId);
+    return artistList.filter((artist) => ids.has(artist.id.toLowerCase()));
   }
 
   const motionArtists = availableArtists("motion");

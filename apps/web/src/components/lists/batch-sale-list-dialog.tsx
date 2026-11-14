@@ -19,6 +19,7 @@ import { $addObjektsToSaleList } from "@/lib/functions/lists";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { addObjektsToSaleListSchema } from "@/lib/universal/schema/objekt-list";
 import type { ObjektList } from "@apollo/database/web/types";
+import { formatSerial } from "@apollo/util";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconLoader2 } from "@tabler/icons-react";
 import { type Control, useController, useForm } from "react-hook-form";
@@ -153,7 +154,6 @@ function BatchSaleRow({
     control,
     name: `entries.${index}.price`,
   });
-  const paddedSerial = token.serial.toString().padStart(5, "0");
 
   return (
     <div className="flex w-full items-center gap-3 border-b border-border px-4 py-3 last:border-b-0 sm:gap-4 sm:px-5">
@@ -169,7 +169,7 @@ function BatchSaleRow({
           {collection.collectionId}
         </span>
         <span className="font-mono text-xxs tracking-widest text-muted-foreground tabular-nums">
-          #{paddedSerial}
+          {formatSerial(token.serial)}
         </span>
       </div>
 
