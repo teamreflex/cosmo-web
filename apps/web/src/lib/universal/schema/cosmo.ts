@@ -16,7 +16,7 @@ export const userSearchSchema = z.object({
 });
 
 export const generateVerificationCodeSchema = z.object({
-  userId: z.number(),
+  userId: z.int().positive(),
   artistId: z.enum(validArtists),
   address: z.string().refine(isAddress),
 });

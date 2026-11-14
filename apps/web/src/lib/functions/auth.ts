@@ -9,6 +9,7 @@ import { getCosmoKey } from "@/lib/server/encryption.server";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import { assertSupportedCurrency } from "@/lib/server/objekts/fx.server";
 import { getProxiedToken } from "@/lib/server/proxied-token.server";
+import { consumeRateLimit } from "@/lib/server/rate-limit.server";
 import { getRequestSignal } from "@/lib/server/request.server";
 import {
   clearVerification,
@@ -24,6 +25,7 @@ import {
 import { cosmoLinkRefusal } from "@apollo/auth/guard";
 import { runCosmo } from "@apollo/cosmo/runtime";
 import { fetchUserProfile } from "@apollo/cosmo/server/user";
+import { isEqual } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 
@@ -58,6 +60,12 @@ export const $generateVerificationCode = createServerFn({ method: "POST" })
   .validator(generateVerificationCodeSchema)
   .handler(async ({ data, context }) => {
     const userId = context.session.user.id;
+    await consumeRateLimit({
+      key: `cosmo-link-code:${userId}`,
+      limit: 10,
+      window: "1 hour",
+    });
+
     // the caller's own link and the picked address's link, in one read
     const accounts = await db.query.cosmoAccounts.findMany({
       where: { OR: [{ userId }, { address: data.address }] },
@@ -69,7 +77,10 @@ export const $generateVerificationCode = createServerFn({ method: "POST" })
       throw new ExpectedError("cosmo_already_linked");
     }
 
-    const owner = accounts.find((account) => account.address === data.address);
+    // the wizard sends the address in COSMO's mixed case; stored ones are lowercase
+    const owner = accounts.find((account) =>
+      isEqual(account.address, data.address),
+    );
     const refusal = cosmoLinkRefusal({
       callerId: userId,
       owner: owner?.user ?? null,
@@ -79,6 +90,16 @@ export const $generateVerificationCode = createServerFn({ method: "POST" })
     if (refusal !== null) {
       throw new ExpectedError("account_linked_elsewhere");
     }
+
+    /**
+     * Counted per COSMO account too, since one person can hold many Apollo
+     * accounts. Callers refused above never spend it.
+     */
+    await consumeRateLimit({
+      key: `cosmo-link-target:${data.userId}`,
+      limit: 30,
+      window: "1 hour",
+    });
 
     const code = await storeVerification(userId, {
       userId: data.userId,
@@ -96,6 +117,11 @@ export const $verifyCosmoBio = createServerFn({ method: "POST" })
   .validator(verifyCosmoBioSchema)
   .handler(async ({ data, context }) => {
     const userId = context.session.user.id;
+    await consumeRateLimit({
+      key: `cosmo-link-verify:${userId}`,
+      limit: 10,
+      window: "10 minutes",
+    });
 
     if ((await getCosmoAddress(db, userId)).kind === "linked") {
       throw new ExpectedError("cosmo_already_linked");

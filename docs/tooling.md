@@ -28,7 +28,6 @@ How the monorepo is wired, run locally, linted, formatted and type-checked, plus
 | `dev`, `preview` in web          | also `@apollo/mail#dev`, the react-email preview server on port 3003                                              |
 | `db:seed`, `db:seed:staff`       | `//#services`                                                                                                     |
 
-- `.github/workflows/ci.yml` runs `turbo i18n`, then `turbo lint test`, on every pull request and push to `main`. It has no `typecheck` step because `lint` type-checks ([Lint](#lint)).
 - Run an Effect app either on the host (`turbo dev --filter <app>`) or in Docker through its `DEV_*` flag, never both, because two copies would run the same tasks and consumers.
 
 ## Local services
@@ -151,26 +150,33 @@ Keys and channels that more than one app touches, or that have a rule attached:
 - Every other key is web-only: `spotify:access_token` (`apps/web/src/lib/server/events/spotify.server.ts`), and read-through caches made by `remember()` in `apps/web/src/lib/server/cache.server.ts`, which `rg "remember\("` lists.
 - `remember()` lowercases its key and `clearTag()` doesn't, so a key you clear must already be lowercase.
 - When a cached value's type changes, bump the version in its key (`pins:v4`, `grid-catalog:v3`) or pass `remember()` a schema, so old entries are treated as misses.
+- A `remember()` callback returns `uncached(value)` to hand back a result without writing it. The pin cache does so for a username or address with no account, and the profile card for an address with no account and no objekts, because anonymous callers could otherwise fill Redis with one key per made-up input. An empty result for something real, such as an account with no pins, is still cached.
 
 ## Rate limits
 
-Web limits are fixed windows consumed through `consumeRateLimit()` in `apps/web/src/lib/server/rate-limit.server.ts`, which throws `ExpectedError("rate_limited")` once a window is spent. Chat's limits are in [`apps/chat/CLAUDE.md`](../apps/chat/CLAUDE.md#rate-limits).
+Web limits are fixed windows consumed through `consumeRateLimit()` in `apps/web/src/lib/server/rate-limit.server.ts`, which throws `ExpectedError("rate_limited")` once a window is spent. Better Auth routes consume theirs in `hooks.before` ([`auth.md`](auth.md#email-addresses)). Chat's limits are in [`apps/chat/CLAUDE.md`](../apps/chat/CLAUDE.md#rate-limits).
 
-| Key                       | Limit       | Consumed by                                                      |
-| ------------------------- | ----------- | ---------------------------------------------------------------- |
-| `listing-post:<user>`     | 10 / 10 min | `$postListing`                                                   |
-| `listing-edit:<user>`     | 20 / 10 min | `$editListing`                                                   |
-| `listing-claim:<user>`    | 10 / 10 min | `$claimListing`                                                  |
-| `trade-cancel:<user>`     | 10 / 10 min | `$cancelTrade`                                                   |
-| `trade-dispute:<user>`    | 5 / 10 min  | `$openDispute`                                                   |
-| `feedback:<user>`         | 10 / 10 min | `$leaveFeedback`                                                 |
-| `feedback-remove:<staff>` | 30 / 10 min | `$removeFeedback` (staff)                                        |
-| `report:<user>`           | 5 / 10 min  | `$createReport`, and chat's `Report`: one shared budget          |
-| `account-deletion:<user>` | 3 / 1 hour  | `$requestAccountDeletion`                                        |
-| `market-invite:<user>`    | 10 / 10 min | `$inviteToMarket`                                                |
-| `user-search:<ip>`        | 15 / 1 min  | `$searchUsers`                                                   |
-| `qr-recaptcha:<user>`     | 5 / 1 min   | `$fetchQrTicket`, because each call drives a browserless session |
-| `qr-ticket:<user>`        | 60 / 1 min  | `$queryQrTicket`                                                 |
+| Key                                 | Limit       | Consumed by                                                                                                            |
+| ----------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `listing-post:<user>`               | 10 / 10 min | `$postListing`                                                                                                         |
+| `listing-edit:<user>`               | 20 / 10 min | `$editListing`                                                                                                         |
+| `listing-claim:<user>`              | 10 / 10 min | `$claimListing`                                                                                                        |
+| `trade-cancel:<user>`               | 10 / 10 min | `$cancelTrade`                                                                                                         |
+| `trade-dispute:<user>`              | 5 / 10 min  | `$openDispute`                                                                                                         |
+| `feedback:<user>`                   | 10 / 10 min | `$leaveFeedback`                                                                                                       |
+| `feedback-remove:<staff>`           | 30 / 10 min | `$removeFeedback` (staff)                                                                                              |
+| `report:<user>`                     | 5 / 10 min  | `$createReport`, and chat's `Report`: one shared budget                                                                |
+| `account-deletion:<user>`           | 3 / 1 hour  | `$requestAccountDeletion`                                                                                              |
+| `cosmo-link-code:<user>`            | 10 / 1 hour | `$generateVerificationCode`                                                                                            |
+| `cosmo-link-target:<cosmo user id>` | 30 / 1 hour | `$generateVerificationCode`, for every caller it would not refuse anyway                                               |
+| `cosmo-link-verify:<user>`          | 10 / 10 min | `$verifyCosmoBio`, because each call can spend a COSMO request                                                         |
+| `change-email:<user>`               | 5 / 1 hour  | `POST /api/auth/change-email`, signed in                                                                               |
+| `verification-email:<user>`         | 5 / 1 hour  | `POST /api/auth/send-verification-email`, signed in                                                                    |
+| `verification-recipient:<email>`    | 10 / 1 hour | every verification mail to that address; a spent budget skips the send silently ([`auth.md`](auth.md#email-addresses)) |
+| `market-invite:<user>`              | 10 / 10 min | `$inviteToMarket`                                                                                                      |
+| `user-search:<ip>`                  | 15 / 1 min  | `$searchUsers`                                                                                                         |
+| `qr-recaptcha:<user>`               | 5 / 1 min   | `$fetchQrTicket`, because each call drives a browserless session                                                       |
+| `qr-ticket:<user>`                  | 60 / 1 min  | `$queryQrTicket`                                                                                                       |
 
 ## Sentry
 

@@ -17,7 +17,7 @@ import {
   type ChatViewer,
 } from "@apollo/chat/policy";
 import { ChatRpcs, CurrentUser } from "@apollo/chat/protocol";
-import { Duration, Effect, Ref, Stream } from "effect";
+import { Duration, Effect, Option, Ref, Stream } from "effect";
 import { RateLimiter } from "effect/persistence";
 import { TradeChannels } from "./channels";
 import { MessageCipher } from "./cipher";
@@ -25,7 +25,7 @@ import { OpenStreams } from "./open-streams";
 import { ChatStore, type StoredRow, type StoredTrade } from "./store";
 
 // rows read per query when a stream catches up
-const PAGE = 200;
+export const PAGE = 200;
 
 const unavailable = <A, E, R>(effect: Effect.Effect<A, E, R>) =>
   Effect.mapError(effect, () => new ChatUnavailable());
@@ -128,32 +128,14 @@ export const HandlersLive = ChatRpcs.toLayer(
       );
     };
 
-    // the rows after the stream's last id, oldest first, moving it forward
-    const readNew = (trade: StoredTrade, last: Ref.Ref<number>) =>
-      Effect.gen(function* () {
-        const items: ChatItem[] = [];
-        while (true) {
-          const rows = yield* unavailable(
-            store.rowsAfter(trade.id, yield* Ref.get(last), PAGE),
-          );
-          for (const row of rows) {
-            items.push(yield* toItem(trade, row));
-            yield* Ref.set(last, row.id);
-          }
-          if (rows.length < PAGE) {
-            return items;
-          }
-        }
-      });
-
     return ChatRpcs.of({
       /**
        * Subscribes to the trade's signals before reading history, so nothing
        * committed after the read is missed, and says when that history is
-       * all sent. Each signal re-checks access, so
-       * staff lose the chat when its last open report closes, and then reads
-       * the trade's own rows past the last id sent: an id is sent once, and
-       * only ever to a stream on its own trade.
+       * all sent. Each signal then reads the trade's own rows past the last
+       * id sent: an id is sent once, and only ever to a stream on its own
+       * trade. Every page is read under its own access check, so staff lose
+       * the chat when its last open report closes.
        */
       Join: ({ tradeId, afterId }) =>
         Stream.unwrap(
@@ -165,19 +147,37 @@ export const HandlersLive = ChatRpcs.toLayer(
 
             const signals = yield* channels.subscribe(tradeId);
             const last = yield* Ref.make(afterId ?? 0);
-            const catchUp = Stream.fromIterableEffect(readNew(trade, last));
-            const live = Stream.fromSubscription(signals).pipe(
-              Stream.flatMap(() =>
-                Stream.fromIterableEffect(
-                  readAccess(viewer, tradeId).pipe(
-                    Effect.flatMap((current) => readNew(current.trade, last)),
-                  ),
+            const recheck = readAccess(viewer, tradeId).pipe(
+              Effect.map((current) => current.trade),
+            );
+            /**
+             * The rows after `last`, oldest first, one page of PAGE rows per
+             * pull from downstream. A page is read for the trade `checked`
+             * yields: the first under the access check its caller made, each
+             * later one under a new check. `last` moves to a page's newest id
+             * before the page is emitted.
+             */
+            const readNew = (first: typeof recheck) =>
+              Stream.paginate(first, (checked) =>
+                Effect.gen(function* () {
+                  const current = yield* checked;
+                  const rows = yield* unavailable(
+                    store.rowsAfter(current.id, yield* Ref.get(last), PAGE),
+                  );
+                  yield* Ref.update(last, (id) => rows.at(-1)?.id ?? id);
+                  return [
+                    yield* Effect.forEach(rows, (row) => toItem(current, row)),
+                    rows.length < PAGE ? Option.none() : Option.some(recheck),
+                  ] as const;
+                }),
+              );
+            return readNew(Effect.succeed(trade)).pipe(
+              Stream.concat(Stream.make({ _tag: "CaughtUp" } as const)),
+              Stream.concat(
+                Stream.fromSubscription(signals).pipe(
+                  Stream.flatMap(() => readNew(recheck)),
                 ),
               ),
-            );
-            return catchUp.pipe(
-              Stream.concat(Stream.make({ _tag: "CaughtUp" } as const)),
-              Stream.concat(live),
             );
           }),
         ),

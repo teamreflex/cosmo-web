@@ -2,12 +2,14 @@ import { createHash } from "node:crypto";
 
 /**
  * Redis cache key for a user's pins.
- * Hashing the decoded username to avoid CJK characters. The prefix carries
- * the cached shape's version, so entries in an older shape expire unread.
+ * Hashing the decoded username to avoid CJK characters. Decoding comes before
+ * lowercasing so every spelling of a username that finds the same account,
+ * percent-encoded or in another case, shares one key. The prefix carries the
+ * cached shape's version, so entries in an older shape expire unread.
  */
 export function pinCacheKey(value: string) {
   const hash = createHash("md5")
-    .update(decodeURIComponent(value.toLowerCase()))
+    .update(decodeURIComponent(value).toLowerCase())
     .digest("hex");
   return `pins:v4:${hash}`;
 }

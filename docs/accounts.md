@@ -28,13 +28,16 @@ An Apollo account is a Better Auth user ([`auth.md`](auth.md)) that may link one
   link wizard                  apps/web                           Redis / COSMO
   -----------                  --------                           -------------
   pick artist, search COSMO
-  $generateVerificationCode -> caller linked?   -> cosmo_already_linked
-   {cosmo userId, artistId,    address held?    -> account_linked_elsewhere
-    address}                     (a ban is never revealed here)
+  $generateVerificationCode -> rate limit: caller
+   {cosmo userId, artistId,    caller linked?   -> cosmo_already_linked
+    address}                   address held?    -> account_linked_elsewhere
+                                 (a ban is never revealed here)
+                               rate limit: the COSMO user id
                                storeVerification ---------------> cosmo:verify:{uid}
                   <-- code --                                     5 min TTL
   user puts code in the bio
-  $verifyCosmoBio {code} ----> no stored code -> EXPIRED, mismatch -> INVALID
+  $verifyCosmoBio {code} ----> rate limit: caller
+                               no stored code -> EXPIRED, mismatch -> INVALID
                                fetchUserProfile(stored COSMO user id) -> COSMO API
                                bio lacks code (any case) -> NOT_FOUND
                                linkVerifiedAccount, one transaction:
@@ -48,6 +51,9 @@ An Apollo account is a Better Auth user ([`auth.md`](auth.md)) that may link one
   router.invalidate() <- ok -
 ```
 
+- Code requests are [rate-limited](tooling.md#rate-limits) per caller and per COSMO user id. The second budget bounds one person minting codes from many Apollo accounts until one already appears in someone else's bio.
+- The per-target budget is consumed only after the early refusals pass, so callers who are already linked, or who pick a held address, never spend it. Several unlinked accounts can still exhaust an unlinked target's hour and delay its owner; one account alone can't, because its own budget is smaller.
+- `$verifyCosmoBio` is limited per caller because each bio check spends a request on the dummy account's token.
 - The linked address is `profile.address` from COSMO. The client's `address` is used only for the early check in `$generateVerificationCode`.
 - The profile is fetched through the dummy account's token ([`packages/cosmo/README.md`](../packages/cosmo/README.md#credentials)).
 - A ban is revealed (`cosmo_account_banned`) only after the bio check, to someone who has proven control of the account. Every earlier refusal says `account_linked_elsewhere`.
@@ -64,7 +70,7 @@ An Apollo account is a Better Auth user ([`auth.md`](auth.md)) that may link one
 
 `PublicUser` is what other people may see of a user. It is brand-typed; build it with `toPublicUser()` (`lib/server/auth.server.ts`).
 
-- It leaves out the email, the role and the display currency. Discord and X names are included only when `showSocials` is on.
+- It leaves out the email, the role, the display currency and `image`, which for a Discord sign-in is an avatar URL holding the Discord account id. Discord and X names are included only when `showSocials` is on.
 - The viewer's own account goes through `toCurrentUser()`, which adds the currency. The role travels separately on `GetAccount`.
 - Load user rows with a relational query (`db.query.user`, or `cosmoAccounts` with `with: { user: true }`), then map each through `toPublicUser()`.
 - Don't select `discord` or `twitter` in an aggregating query or CTE, and don't hand-roll a SQL mask for them. Fetch the user rows in a separate relational query after the aggregation, so the `showSocials` rule stays in `toPublicUser()`.

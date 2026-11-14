@@ -48,7 +48,7 @@ export default function ProfileSection() {
         }
       >
         <div className="flex flex-col gap-3">
-          <UpdateEmail email={user.email} />
+          <UpdateEmail email={user.email} verified={user.emailVerified} />
           {canVerify && !user.emailVerified && (
             <SendVerificationEmail email={user.email} />
           )}

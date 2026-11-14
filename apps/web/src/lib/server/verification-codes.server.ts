@@ -24,11 +24,10 @@ function createKey(userId: string): string {
  */
 function generate(): string {
   const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-  let code = "";
-  for (let i = 0; i < 6; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return code;
+  // 256 is a multiple of the 32 symbols, so the modulo keeps the draw uniform
+  return Array.from(crypto.getRandomValues(new Uint8Array(6)), (byte) =>
+    chars.charAt(byte % chars.length),
+  ).join("");
 }
 
 /**

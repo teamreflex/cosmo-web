@@ -1,4 +1,5 @@
 import { db } from "@/lib/server/db";
+import { ExpectedError } from "@/lib/universal/errors/expected";
 import { eras, events } from "@apollo/database/web/schema";
 import { and, eq, ne } from "drizzle-orm";
 
@@ -14,7 +15,7 @@ export async function validateEraSlug(slug: string, excludeId?: string) {
   );
 
   if (count > 0) {
-    throw new Error(`An era with slug "${slug}" already exists`);
+    throw new ExpectedError("era_slug_taken");
   }
 }
 
@@ -30,6 +31,6 @@ export async function validateEventSlug(slug: string, excludeId?: string) {
   );
 
   if (count > 0) {
-    throw new Error(`An event with slug "${slug}" already exists`);
+    throw new ExpectedError("event_slug_taken");
   }
 }

@@ -14,7 +14,7 @@ Estimates the serials of objekts minted after `SERIAL_CUTOFF`, when COSMO's meta
 
 ## Tests
 
-- `turbo test --filter @apollo/serial-estimation` runs `bun test`. The estimator's tests read JSON fixtures of real collections in `tests/fixtures/`; `tests/reservations.test.ts` needs none.
+- `turbo test --filter @apollo/serial-estimation` runs `bun test`. The estimator's tests read JSON fixtures of real collections in `tests/fixtures/`.
 - An estimator test hides real serials with `hideSerials()` as if minted after the cutoff, then checks the estimate against them.
 - Export a new fixture with `export-fixture.ts` ([Scripts](#scripts)).
 

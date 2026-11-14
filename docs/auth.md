@@ -10,6 +10,7 @@ Better Auth runs inside apps/web at `/api/auth/*`, configured in `apps/web/src/l
 - The adapter runs with `transaction: true`, so email sign-up, OAuth user and account creation, and a password change with session revocation each commit as one transaction. `databaseHooks` `after` callbacks run once it commits. A hook that queries `db` directly reads outside it and can't see that transaction's uncommitted writes.
 - No cookie cache is configured, so every request reads `role`, `banned` and `ban_expires` from the user row. A role change or a ban applies from the user's next request.
 - `session.freshAge: 0` turns off Better Auth's own fresh-session checks. Account deletion's freshness rule is Apollo's own ([`accounts.md`](accounts.md#account-deletion)).
+- A password reset deletes every session of the account (`revokeSessionsOnPasswordReset`), so whoever held one must sign in with the new password. Linked social accounts stay linked.
 - `trustedOrigins` holds only `baseUrl()`. A POST that carries cookies must send a matching `Origin` header, or it fails with `MISSING_OR_NULL_ORIGIN` or `INVALID_ORIGIN`.
 - OAuth access and refresh tokens are encrypted on write with AES-256-GCM, keyed by `BETTER_AUTH_SECRET` read as hex. Nothing in the repo decrypts them. The secret's format is in [`tooling.md`](tooling.md).
 - The browser client (`lib/client/auth.ts`) has no admin or api-key plugin. Staff work goes through server functions.
@@ -23,12 +24,38 @@ Better Auth runs inside apps/web at `/api/auth/*`, configured in `apps/web/src/l
 | `server-only-user-fields` (local) | keeps `currency`, `displayUsername`, `discord` and `twitter` out of client writes ([Client-written user fields](#client-written-user-fields)) |
 | `tanstackStartCookies`            | sets cookies from server functions                                                                                                            |
 
-`hooks.before` 404s two plugin route families when they are called over HTTP:
+`hooks.before` 404s two plugin route families and limits signed-in calls to two routes that send mail. Verification mail has its own per-recipient cap ([Email addresses](#email-addresses)).
 
-| Path         | Refused when                          | Why                                                                                                  |
-| ------------ | ------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| `/api-key/*` | `ctx.request` or `ctx.headers` is set | the plugin serves every signed-in user; only header-less server calls may manage keys                |
-| `/admin/*`   | `ctx.request` is set                  | server functions call the plugin with the caller's headers, so testing headers would refuse them too |
+| Path                       | Applies when                          | Effect                         | Why                                                                                                  |
+| -------------------------- | ------------------------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| `/api-key/*`               | `ctx.request` or `ctx.headers` is set | 404                            | the plugin serves every signed-in user; only header-less server calls may manage keys                |
+| `/admin/*`                 | `ctx.request` is set                  | 404                            | server functions call the plugin with the caller's headers, so testing headers would refuse them too |
+| `/change-email`            | `ctx.request` is set, with a session  | [rate limit](#email-addresses) | Better Auth's own limit counts per IP and path, so it doesn't bound what one account requests        |
+| `/send-verification-email` | `ctx.request` is set, with a session  | [rate limit](#email-addresses) | same                                                                                                 |
+
+### Email addresses
+
+```
+  settings form            apps/web (/api/auth)                    mail
+  -------------            --------------------                    ----
+  POST /change-email --->  hooks.before: change-email:<user>
+                           new address already an account's?  ->   nothing sent, same 200
+                           email_verified?
+                             yes: sendChangeEmailConfirmation ---> current address
+                             no:  sendVerificationEmail ---------> new address *
+  confirmation link ---->  GET /verify-email (every time it is opened)
+                           sendVerificationEmail ----------------> new address *
+  verification link ---->  GET /verify-email
+                           email = new address, email_verified kept
+
+  * skipped once verification-recipient:<address> is spent
+```
+
+- A verified account confirms a change from its current address before the new address is mailed. The settings toast names the address that was mailed.
+- Both links are stateless JWTs signed with `BETTER_AUTH_SECRET`, valid for an hour and for any number of uses, bound to the user and to the address the account held when the change was requested.
+- `emailVerification.sendVerificationEmail` is the one callback every verification mail passes through: sign-up, a resend, a change of address and each opening of a confirmation link. It consumes `verification-recipient:<address>` and skips the send without throwing once that is spent, so no address gets more verification mail per window whichever route, account or IP asks, sign-up and link clicks still succeed, and the response doesn't show whether an address is known. A limiter store failure there goes to Sentry and sends nothing.
+- `consumeAuthRateLimit()` counts signed-in HTTP calls to `/change-email` and `/send-verification-email` per account, which bounds the confirmation mail to an account's current address and refuses a looping client before the silent cap hides its sends. The per-recipient budget is larger than both, so a single account's own requests are refused by these first. Signed-out calls have only Better Auth's per-IP limit and the per-recipient cap. Every budget is in [`tooling.md`](tooling.md#rate-limits).
+- A spent per-account budget is refused with status 429, as Better Auth's per-IP limiter refuses. `getAuthErrorMessage()` (`lib/client/auth.ts`) maps any 429 to the message a rate-limited server function shows. A limiter store failure refuses the call and goes to Sentry.
 
 ### Social sign-in can change the email
 
@@ -99,6 +126,7 @@ The server function check is the authoritative one. Route guards and UI checks o
                       guardUserChange()         ban, unban, set role only
 
   /api/auth/* ----->  hooks.before              /admin/*, /api-key/* -> 404
+                                                mail routes -> rate limit
 ```
 
 - Gate a staff server function with `staffMiddleware(permissions)` (`lib/server/middlewares.ts`). It adds `role` to the context.
@@ -180,7 +208,7 @@ Changes that must end a user's chat streams are published as JSON on the Redis c
 | `$unbanUser`                                                                  | `unbanned`     | ignores it                 |
 
 - Publish only after the change commits.
-- The session hook covers sign-out, revoked sessions, password changes and a ban's `deleteUserSessions()`. A Redis failure there goes to Sentry rather than throwing, because the session is already gone.
+- The session hook covers sign-out, revoked sessions, password changes and resets, and a ban's `deleteUserSessions()`. A Redis failure there goes to Sentry rather than throwing, because the session is already gone.
 - A user row's foreign key cascade deletes sessions without Better Auth's hooks seeing it. Code that deletes sessions that way publishes `disconnect` itself, as `deleteAccount()` does.
 - If chat misses an event while it resubscribes, the chat token's lifetime bounds how long a stream outlives it.
 

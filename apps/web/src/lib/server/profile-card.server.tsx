@@ -1,7 +1,7 @@
 import ProfileCardImage from "@/components/og/profile-card-image";
 import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import { $fetchPins } from "@/lib/functions/pins";
-import { remember } from "@/lib/server/cache.server";
+import { remember, uncached } from "@/lib/server/cache.server";
 import { fetchFullAccount } from "@/lib/server/cosmo-accounts.server";
 import { indexer } from "@/lib/server/db/indexer";
 import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
@@ -49,6 +49,8 @@ export async function fetchProfileCard(
   if (isEqual(address, Addresses.SPIN)) return undefined;
 
   const name = profileIdentifier(account.cosmo);
+  // an address without an account only earns cache keys once it has held an objekt
+  const known = !account.cosmo.isAddress;
   return {
     name,
     isAddress: isAddress(name),
@@ -56,7 +58,10 @@ export async function fetchProfileCard(
     objektCount: await remember(
       `objekt-count:v1:${address}`,
       60 * 60 * 24,
-      () => indexer.$count(objekts, eq(objekts.owner, address)),
+      async () => {
+        const count = await indexer.$count(objekts, eq(objekts.owner, address));
+        return count > 0 || known ? count : uncached(count);
+      },
     ),
     since: await remember(
       `first-transfer:v1:${address}`,
@@ -66,7 +71,8 @@ export async function fetchProfileCard(
           .select({ at: min(transfers.timestamp) })
           .from(transfers)
           .where(eq(transfers.to, address));
-        return row?.at ?? null;
+        const at = row?.at ?? null;
+        return at !== null || known ? at : uncached(at);
       },
     ),
   };

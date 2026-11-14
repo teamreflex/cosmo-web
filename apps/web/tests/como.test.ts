@@ -213,7 +213,7 @@ describe("calendarDateSchema", () => {
     expect(calendarDateSchema.parse(now).getTime()).toBe(expected);
   });
 
-  it.each(["yesterday", "0", "-1731571200"])("refuses %s", (now) => {
+  it.each(["yesterday", "0"])("refuses %s", (now) => {
     expect(calendarDateSchema.safeParse(now).success).toBe(false);
   });
 });

@@ -1,5 +1,5 @@
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
-import { formatError } from "@/lib/client/errors";
+import { formatError, LocalizedError } from "@/lib/client/errors";
 import {
   queryOptions,
   useMutation,
@@ -20,7 +20,7 @@ export const sessionQuery = queryOptions({
       },
     });
     if (result.error) {
-      throw new Error(getAuthErrorMessage(result.error));
+      throw new LocalizedError(getAuthErrorMessage(result.error));
     }
     return result.data?.user ?? null;
   },
@@ -35,7 +35,7 @@ export const listAccountsQuery = queryOptions({
       },
     });
     if (result.error) {
-      throw new Error(getAuthErrorMessage(result.error));
+      throw new LocalizedError(getAuthErrorMessage(result.error));
     }
     return result.data;
   },
@@ -58,7 +58,7 @@ export function useUnlinkAccount(account: LinkedAccount) {
     mutationFn: async () => {
       const result = await authClient.unlinkAccount({ accountId: account.id });
       if (result.error) {
-        throw new Error(getAuthErrorMessage(result.error));
+        throw new LocalizedError(getAuthErrorMessage(result.error));
       }
       return result.data;
     },
@@ -78,7 +78,7 @@ export function useLinkAccount(provider: Provider) {
         errorCallbackURL: "/auth/error",
       });
       if (result.error) {
-        throw new Error(getAuthErrorMessage(result.error));
+        throw new LocalizedError(getAuthErrorMessage(result.error));
       }
       return result.data;
     },

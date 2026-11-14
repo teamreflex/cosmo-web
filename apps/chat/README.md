@@ -124,7 +124,7 @@ Decided in `packages/chat/src/policy.ts`, from the trade and report rows the han
 - Anyone else, and any trade that isn't accepted or later, gets `ChatNotFound`, so a trade id can't be probed.
 - A staff member who is a party to the trade is treated as a party.
 - Parties are matched by user id, never by pinned address, so a deleted party's side matches no one.
-- A staff `Join` re-checks access on every signal. Resolving or dismissing a report publishes no signal, so a staff stream ends at the next signal for the trade or at its token's `exp`.
+- A staff `Join` re-checks access on every signal and before every page after the first of a read. Resolving or dismissing a report publishes no signal, so a staff stream ends at its next page, at the next signal for the trade or at its token's `exp`.
 - The report staff act under is the `reportId` a report page passes while it's open on the trade, else the trade's oldest open report.
 
 ## Report and review

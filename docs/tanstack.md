@@ -33,14 +33,14 @@ How `apps/web` uses TanStack Start, Router and Query. Library APIs are in their 
 
 ## Process wiring
 
-| File                    | What it sets up                                                                                                                                                                      |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `src/start.ts`          | Sentry request and function middleware, CSRF middleware for server functions only, the session request middleware, the `ExpectedError` serialization adapter                         |
-| `src/server.ts`         | The server entry: Paraglide's locale middleware wrapped in Sentry's fetch wrapper                                                                                                    |
-| `src/router.tsx`        | `getRouter()`: the `QueryClient` (default `staleTime` 5 min), router defaults, CSV `stringifySearch`, the CSP nonce, a lazy import of client Sentry, the SSR-query integration       |
-| `src/routes/__root.tsx` | `staleTime: Infinity`, so its loader reruns only on `router.invalidate()`; prefetches the account, artists, filter data, notice, system status and a signed-in viewer's unread count |
-| `main.ts`               | The production server (`bun run start`, `turbo preview`): static files, `/health`, the per-request CSP                                                                               |
-| `vite.config.mts`       | Plugin order, route code splitting, the client's chunk groups and import-protection deny list; imports both env schemas so a bad env fails the build                                 |
+| File                    | What it sets up                                                                                                                                                                                                              |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/start.ts`          | Sentry request and function middleware, the error-masking function middleware ([errors.md](errors.md)), CSRF middleware for server functions only, the session request middleware, the `ExpectedError` serialization adapter |
+| `src/server.ts`         | The server entry: Paraglide's locale middleware wrapped in Sentry's fetch wrapper                                                                                                                                            |
+| `src/router.tsx`        | `getRouter()`: the `QueryClient` (default `staleTime` 5 min), router defaults, CSV `stringifySearch`, the CSP nonce, a lazy import of client Sentry, the SSR-query integration                                               |
+| `src/routes/__root.tsx` | `staleTime: Infinity`, so its loader reruns only on `router.invalidate()`; prefetches the account, artists, filter data, notice, system status and a signed-in viewer's unread count                                         |
+| `main.ts`               | The production server (`bun run start`, `turbo preview`): static files, `/health`, the per-request CSP                                                                                                                       |
+| `vite.config.mts`       | Plugin order, route code splitting, the client's chunk groups and import-protection deny list; imports both env schemas so a bad env fails the build                                                                         |
 
 - `defaultPreloadStaleTime: 0` because Query is the caching authority; the router never serves its own cached loader result.
 - `handleRedirects: true` lets a `redirect()` thrown inside a query or mutation navigate.
@@ -110,12 +110,12 @@ A prefetch only helps when the component subscribes with exactly the key the loa
 - `sessionMiddleware` runs once per request from `start.ts`, so the server functions a page render calls in-process share one session lookup, and each browser call makes its own.
 - A function middleware that reads a request middleware's context lists it in `.middleware([...])`, because the context is only typed that way. Start skips a request middleware that already ran for the request, so the two share one context.
 
-| Helper                                                               | Use                                                                                        |
-| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
-| `remember(key, ttl, fn, schema?)` in `cache.server.ts`               | Redis cache; with an Effect `Schema`, a cached value that fails to decode counts as a miss |
-| `cacheHeaders({ cdn, browser, tags })` in `cache.server.ts`          | `Cache-Control` and `Cache-Tag` for API route responses                                    |
-| `consumeRateLimit({ key, limit, window })` in `rate-limit.server.ts` | Throws `ExpectedError("rate_limited")` once the window is spent                            |
-| `getRequestSignal()`, `getClientIp()` in `request.server.ts`         | The request's abort signal and the client IP for rate-limit keys                           |
+| Helper                                                               | Use                                                                                                                                                              |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `remember(key, ttl, fn, schema?)` in `cache.server.ts`               | Redis cache; with an Effect `Schema`, a cached value that fails to decode counts as a miss. A key built from caller input follows [tooling.md](tooling.md#redis) |
+| `cacheHeaders({ cdn, browser, tags })` in `cache.server.ts`          | `Cache-Control` and `Cache-Tag` for API route responses                                                                                                          |
+| `consumeRateLimit({ key, limit, window })` in `rate-limit.server.ts` | Throws `ExpectedError("rate_limited")` once the window is spent                                                                                                  |
+| `getRequestSignal()`, `getClientIp()` in `request.server.ts`         | The request's abort signal and the client IP for rate-limit keys                                                                                                 |
 
 ## API routes
 

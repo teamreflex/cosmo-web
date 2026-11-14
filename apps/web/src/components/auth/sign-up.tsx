@@ -1,6 +1,6 @@
 import { m } from "@/i18n/messages";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
-import { formatError } from "@/lib/client/errors";
+import { formatError, LocalizedError } from "@/lib/client/errors";
 import { signUpSchema } from "@/lib/universal/schema/auth";
 import { randomHandle, track } from "@/lib/utils";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
@@ -30,7 +30,7 @@ export default function SignUp({ onCancel }: Props) {
       });
 
       if (result.error) {
-        throw new Error(getAuthErrorMessage(result.error));
+        throw new LocalizedError(getAuthErrorMessage(result.error));
       }
       return result.data;
     },

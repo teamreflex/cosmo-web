@@ -10,6 +10,7 @@ export type {
 } from "./content";
 export type { RenderConfig } from "./emails/_components/layout";
 export { default as AccountDeletionEmail } from "./emails/account-deletion";
+export { default as EmailChangeEmail } from "./emails/email-change";
 export { default as NotificationEmail } from "./emails/notification";
 export { default as PasswordResetEmail } from "./emails/password-reset";
 export { default as VerifyEmail } from "./emails/verify-email";
