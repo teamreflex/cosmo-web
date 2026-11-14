@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useBatchAddToList } from "@/hooks/use-add-to-list";
+import { useAddToList } from "@/hooks/use-add-to-list";
 import { m } from "@/i18n/messages";
 import { $addObjektsToWantList } from "@/lib/functions/lists";
 import { currentAccountQuery } from "@/lib/queries/core";
@@ -70,7 +70,7 @@ export default function AddMissingMenu(props: Props) {
 }
 
 function WantListItem(props: Props & { list: ObjektList; onDone: () => void }) {
-  const mutation = useBatchAddToList(
+  const mutation = useAddToList(
     {
       list: props.list,
       attempted: props.deficits.length,

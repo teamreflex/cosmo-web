@@ -1,178 +1,35 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent } from "@/components/ui/popover";
+import UserCombobox from "@/components/user-combobox";
 import { m } from "@/i18n/messages";
-import { $searchUsers } from "@/lib/functions/user-search";
-import { isRateLimitErrorCode } from "@/lib/universal/errors/rate-limit";
-import { cn } from "@/lib/utils";
+import { cosmoUserSearchQuery } from "@/lib/queries/user-search";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
 import type { CosmoPublicUser } from "@apollo/cosmo/types/user";
-import { IconLoader2 } from "@tabler/icons-react";
-import { useQuery } from "@tanstack/react-query";
-import { useRef, useState } from "react";
-import { useDebounceValue } from "usehooks-ts";
 
 type Props = {
   id?: string;
+  // picks which of a user's profile images is shown
   artistId: ValidArtist;
   value: CosmoPublicUser | null;
   onChange: (user: CosmoPublicUser | null) => void;
   invalid?: boolean;
-  /**
-   * Focuses the search on mount, for a dialog whose content mounts after it
-   * has already picked where focus goes.
-   */
   autoFocus?: boolean;
 };
 
-export default function CosmoUserCombobox({
-  id,
-  artistId,
-  value,
-  onChange,
-  invalid,
-  autoFocus,
-}: Props) {
-  const [query, setQuery] = useState("");
-  const [debouncedQuery] = useDebounceValue(query, 500);
-  const [open, setOpen] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-  // a picked result swaps the search for the user, whose Clear takes focus
-  const picked = useRef(false);
-  const resultsOpen = open && debouncedQuery.length > 0;
-
-  const { status, data, error } = useQuery({
-    queryKey: ["cosmo-user-search", debouncedQuery],
-    queryFn: async () => {
-      const res = await $searchUsers({ data: { query: debouncedQuery } });
-      return res.results;
-    },
-    enabled: debouncedQuery.length > 0,
-    retry: false,
-  });
-
-  function handleSelect(user: CosmoPublicUser) {
-    picked.current = true;
-    onChange(user);
-    setQuery("");
-    setOpen(false);
-  }
-
-  function handleClear() {
-    onChange(null);
-    setQuery("");
-  }
-
-  function getProfileImage(user: CosmoPublicUser): string | undefined {
-    const profile = user.userProfiles.find((p) => p.artistId === artistId);
-    return profile?.image.thumbnail;
-  }
-
-  if (value) {
-    return (
-      <div
-        aria-invalid={invalid}
-        className="flex items-center gap-3 rounded-md border border-input bg-transparent px-3 py-2 text-foreground aria-invalid:border-destructive/60"
-      >
-        <Avatar className="size-8">
-          <AvatarImage src={getProfileImage(value)} alt={value.nickname} />
-          <AvatarFallback>
-            {value.nickname.charAt(0).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-        <span className="flex-1 text-sm font-medium">{value.nickname}</span>
-        <button
-          ref={(button) => {
-            if (button === null || !picked.current) return;
-            picked.current = false;
-            button.focus();
-          }}
-          type="button"
-          onClick={handleClear}
-          className="text-xs text-muted-foreground hover:text-foreground"
-        >
-          {m.user_search_clear()}
-        </button>
-      </div>
-    );
-  }
-
+/**
+ * Searches COSMO users by nickname from the first character typed.
+ */
+export default function CosmoUserCombobox({ artistId, ...props }: Props) {
   return (
-    <Popover open={resultsOpen} onOpenChange={setOpen}>
-      <Input
-        id={id}
-        ref={inputRef}
-        autoFocus={autoFocus}
-        placeholder={m.user_search_placeholder()}
-        value={query}
-        onChange={(e) => {
-          setQuery(e.currentTarget.value);
-          setOpen(true);
-        }}
-        onFocus={() => setOpen(true)}
-        onKeyDown={(event) => {
-          // closes the results rather than a dialog around them
-          if (event.key === "Escape" && resultsOpen) {
-            event.stopPropagation();
-            setOpen(false);
-          }
-        }}
-      />
-
-      <PopoverContent
-        anchor={inputRef}
-        className="w-(--anchor-width) overflow-hidden p-0"
-        initialFocus={false}
-        // the chosen user takes focus from the search it replaces
-        finalFocus={false}
-      >
-        {status === "pending" && debouncedQuery.length > 0 && (
-          <div className="flex items-center justify-center py-4">
-            <IconLoader2 className="size-5 animate-spin" />
-          </div>
-        )}
-
-        {status === "success" && data.length === 0 && (
-          <div className="py-4 text-center text-sm text-muted-foreground">
-            {m.user_search_no_results()}
-          </div>
-        )}
-
-        {status === "success" && data.length > 0 && (
-          <div className="max-h-64 overflow-y-auto">
-            {data.map((user) => (
-              <button
-                key={user.address}
-                type="button"
-                onClick={() => handleSelect(user)}
-                className={cn(
-                  "flex w-full items-center gap-3 px-3 py-2 text-left transition-colors",
-                  "hover:bg-accent focus:bg-accent focus:outline-none",
-                )}
-              >
-                <Avatar className="size-8">
-                  <AvatarImage
-                    src={getProfileImage(user)}
-                    alt={user.nickname}
-                  />
-                  <AvatarFallback>
-                    {user.nickname.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="text-sm">{user.nickname}</span>
-              </button>
-            ))}
-          </div>
-        )}
-
-        {status === "error" && (
-          <div className="py-4 text-center text-sm text-destructive">
-            {isRateLimitErrorCode(error.message)
-              ? m.error_rate_limited()
-              : m.user_search_error()}
-          </div>
-        )}
-      </PopoverContent>
-    </Popover>
+    <UserCombobox
+      {...props}
+      search={cosmoUserSearchQuery}
+      minLength={1}
+      getKey={(user) => user.address}
+      getLabel={(user) => user.nickname}
+      getInitial={(user) => user.nickname.charAt(0).toUpperCase()}
+      getImage={(user) =>
+        user.userProfiles.find((p) => p.artistId === artistId)?.image.thumbnail
+      }
+      placeholder={m.user_search_placeholder()}
+    />
   );
 }

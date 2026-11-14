@@ -1,4 +1,4 @@
-import CreateEvent from "@/components/admin/events/create-event-dialog";
+import EventDialog from "@/components/admin/events/event-dialog";
 import EventsGrid from "@/components/admin/events/events-grid";
 import AdminNoAccess from "@/components/admin/no-access";
 import { requirePermission } from "@/hooks/use-has-permission";
@@ -38,7 +38,7 @@ function RouteComponent() {
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-semibold">{m.admin_events_title()}</h1>
-          <CreateEvent />
+          <EventDialog />
         </div>
 
         <Suspense fallback={<div>{m.common_loading()}</div>}>

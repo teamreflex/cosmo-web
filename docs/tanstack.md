@@ -82,7 +82,7 @@ How `apps/web` uses TanStack Start, Router and Query. Library APIs are in their 
 
 A prefetch only helps when the component subscribes with exactly the key the loader fetched; any drift re-suspends on the client.
 
-- Build shared `queryOptions` once in the route's `context()` option and read them from the loader's `context` and `useRouteContext()`. `routes/@{$username}/route.tsx` (`targetAccountOptions`) and its `index.tsx` (`pinsOptions`) are the reference.
+- Build shared `queryOptions` once in the route's `context()` option and read them from the loader's `context` and `useRouteContext()`. `routes/@{$username}/route.tsx` is the reference: its `index.tsx` loader awaits `pinsOptions`, and `hooks/use-profile.ts` subscribes to the same object.
 - `context()` runs before `beforeLoad` and reruns only when params or deps change. It isn't serialized and child routes inherit it, so options holding functions are fine there.
 - `loaderDeps` lists only the search params the loader reads, because the loader reruns whenever deps change (`routes/@{$username}/index.tsx` strips `serial`, `locked` and `binder`).
 - Key by the route param, not by a value resolved from fetched data, because a profile opened by address resolves to a username and would split the cache. When a key must use resolved data, the component reads that value from loader data.

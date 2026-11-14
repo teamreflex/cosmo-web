@@ -1,7 +1,8 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent } from "@/components/ui/popover";
 import { m } from "@/i18n/messages";
+import { formatRateLimitError } from "@/lib/client/errors/rate-limit";
 import { cn } from "@/lib/utils";
 import { IconLoader2 } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
@@ -18,30 +19,41 @@ type Props<T, TQueryKey extends QueryKey> = {
   value: T | null;
   onChange: (item: T | null) => void;
   search: (query: string) => UseQueryOptions<T[], DefaultError, T[], TQueryKey>;
+  // the fewest characters the search accepts
+  minLength: number;
   getKey: (item: T) => string;
   getLabel: (item: T) => string;
   getSublabel?: (item: T) => string | null;
   getInitial: (item: T) => string;
+  // an item with no image, or one whose image fails to load, shows its initial
+  getImage?: (item: T) => string | undefined;
   placeholder: string;
   invalid?: boolean;
+  /**
+   * Focuses the search on mount, for a dialog whose content mounts after it
+   * has already picked where focus goes.
+   */
+  autoFocus?: boolean;
 };
 
 /**
- * Searches staff-side records, such as users or linked COSMO accounts, once
- * at least 3 characters are typed, and shows the picked one as a chip with a
- * Clear button that unpicks it.
+ * Searches for an account once `minLength` characters are typed, and shows
+ * the picked one as a chip with a Clear button that unpicks it.
  */
 export default function UserCombobox<T, TQueryKey extends QueryKey>({
   id,
   value,
   onChange,
   search,
+  minLength,
   getKey,
   getLabel,
   getSublabel,
   getInitial,
+  getImage,
   placeholder,
   invalid,
+  autoFocus,
 }: Props<T, TQueryKey>) {
   const [query, setQuery] = useState("");
   const [debouncedQuery] = useDebounceValue(query, 500);
@@ -49,10 +61,10 @@ export default function UserCombobox<T, TQueryKey extends QueryKey>({
   const inputRef = useRef<HTMLInputElement>(null);
   // a picked result swaps the search for the item, whose Clear takes focus
   const picked = useRef(false);
-  const enabled = debouncedQuery.length >= 3;
+  const enabled = debouncedQuery.length >= minLength;
   const resultsOpen = open && enabled;
 
-  const { status, data } = useQuery({
+  const { status, data, error } = useQuery({
     ...search(debouncedQuery),
     enabled,
   });
@@ -77,6 +89,7 @@ export default function UserCombobox<T, TQueryKey extends QueryKey>({
       >
         <ItemLabel
           initial={getInitial(value)}
+          image={getImage?.(value)}
           label={getLabel(value)}
           sublabel={getSublabel?.(value) ?? null}
           className="font-medium"
@@ -102,6 +115,7 @@ export default function UserCombobox<T, TQueryKey extends QueryKey>({
       <Input
         id={id}
         ref={inputRef}
+        autoFocus={autoFocus}
         placeholder={placeholder}
         value={query}
         aria-invalid={invalid}
@@ -152,6 +166,7 @@ export default function UserCombobox<T, TQueryKey extends QueryKey>({
               >
                 <ItemLabel
                   initial={getInitial(item)}
+                  image={getImage?.(item)}
                   label={getLabel(item)}
                   sublabel={getSublabel?.(item) ?? null}
                 />
@@ -162,7 +177,7 @@ export default function UserCombobox<T, TQueryKey extends QueryKey>({
 
         {status === "error" && (
           <div className="py-4 text-center text-sm text-destructive">
-            {m.user_search_error()}
+            {formatRateLimitError(error.message) ?? m.user_search_error()}
           </div>
         )}
       </PopoverContent>
@@ -172,15 +187,23 @@ export default function UserCombobox<T, TQueryKey extends QueryKey>({
 
 type ItemLabelProps = {
   initial: string;
+  image: string | undefined;
   label: string;
   sublabel: string | null;
   className?: string;
 };
 
-function ItemLabel({ initial, label, sublabel, className }: ItemLabelProps) {
+function ItemLabel({
+  initial,
+  image,
+  label,
+  sublabel,
+  className,
+}: ItemLabelProps) {
   return (
     <>
       <Avatar className="size-8">
+        {image !== undefined && <AvatarImage src={image} alt={label} />}
         <AvatarFallback>{initial}</AvatarFallback>
       </Avatar>
       <div className="flex min-w-0 flex-1 flex-col">

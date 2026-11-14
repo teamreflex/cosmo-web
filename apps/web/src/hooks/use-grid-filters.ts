@@ -1,8 +1,8 @@
 import { useArtists } from "@/hooks/use-artists";
+import { type FilterUpdate, resolveUpdate } from "@/lib/client/filters";
 import type { gridFrontendSchema } from "@/lib/universal/parsers";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { useCallback } from "react";
 import type { z } from "zod";
 
 export function useGridFilters() {
@@ -13,50 +13,33 @@ export function useGridFilters() {
   /**
    * Sets multiple filters at once and commits to the URL.
    */
-  const setFilters = useCallback(
-    (
-      input:
-        Partial<GridFilters> | ((prev: GridFilters) => Partial<GridFilters>),
-    ) => {
-      // oxlint-disable-next-line anti-slop/no-runtime-typeof -- narrowing the updater-function union, standard setState pattern
-      if (typeof input === "function") {
-        input = input(searchParams);
-      }
-
-      void navigate({
-        search: (prev) => ({
-          ...prev,
-          ...input,
-        }),
-        replace: true,
-      });
-    },
-    [navigate, searchParams],
-  );
+  const setFilters = (input: FilterUpdate<GridFilters>) => {
+    void navigate({
+      search: (prev) => ({
+        ...prev,
+        ...resolveUpdate(input, searchParams),
+      }),
+      replace: true,
+    });
+  };
 
   /**
    * Shared by the member filter and the ledger's member links.
    */
-  const setActiveMember = useCallback(
-    (member: string) => {
-      setFilters((prev) => ({
-        // deselecting a member falls back to their artist's overview
-        artist: prev.member === member ? getArtistForMember(member) : undefined,
-        member: prev.member === member ? undefined : member,
-      }));
-    },
-    [setFilters, getArtistForMember],
-  );
+  const setActiveMember = (member: string) => {
+    setFilters((prev) => ({
+      // deselecting a member falls back to their artist's overview
+      artist: prev.member === member ? getArtistForMember(member) : undefined,
+      member: prev.member === member ? undefined : member,
+    }));
+  };
 
-  const setActiveArtist = useCallback(
-    (artist: ValidArtist) => {
-      setFilters((prev) => ({
-        member: undefined,
-        artist: prev.artist === artist ? undefined : artist,
-      }));
-    },
-    [setFilters],
-  );
+  const setActiveArtist = (artist: ValidArtist) => {
+    setFilters((prev) => ({
+      member: undefined,
+      artist: prev.artist === artist ? undefined : artist,
+    }));
+  };
 
   return {
     filters: searchParams,

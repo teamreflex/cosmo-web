@@ -1,17 +1,12 @@
-import { useShallow } from "zustand/react/shallow";
-import { useProfileContext } from "./use-profile";
+import { useProfileTarget } from "./use-profile";
 import { useUserState } from "./use-user-state";
 
 /**
- * Optimized hook for checking if the target is the same as the account.
+ * Whether the profile on screen is the viewer's own.
  */
 export function useAuthenticated() {
   const { cosmo } = useUserState();
-  const target = useProfileContext(
-    useShallow((state) => state.target?.cosmo?.address),
-  );
+  const address = useProfileTarget((target) => target.cosmo.address);
 
-  return (
-    target !== undefined && cosmo !== undefined && target === cosmo.address
-  );
+  return cosmo !== undefined && address === cosmo.address;
 }

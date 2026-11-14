@@ -10,10 +10,11 @@ import {
   collectionKind,
   type CollectionObjekts,
   estimateSerials,
-  findRange,
   type Reservation,
-  type ReservedRange,
+  reservationSpans,
   type SerialUpdate,
+  tokenIdRanges,
+  toReservation,
 } from "@apollo/serial-estimation";
 import { and, eq, gt, gte, inArray, lt, lte, ne, or, sql } from "drizzle-orm";
 import { Duration, Effect } from "effect";
@@ -41,24 +42,20 @@ export const collectionColumns = {
 };
 
 /**
- * Objekt ids are varchar. Ids of equal length compare as text in numeric
- * order, so an inclusive token-id range becomes primary-key range scans, one
- * per digit count it spans, each guarded by length.
+ * Objekt ids are varchar, so an inclusive token-id range becomes primary-key
+ * range scans, one per digit count it spans (see `tokenIdRanges`), each
+ * guarded by length.
  */
 function tokenIdBetween(from: number, to: number) {
-  const spans = [];
-  for (let start = from; start <= to;) {
-    const end = Math.min(to, 10 ** String(start).length - 1);
-    spans.push(
+  return or(
+    ...tokenIdRanges(from, to).map((range) =>
       and(
-        gte(objekts.id, String(start)),
-        lte(objekts.id, String(end)),
-        eq(sql`length(${objekts.id})`, String(start).length),
+        gte(objekts.id, String(range.from)),
+        lte(objekts.id, String(range.to)),
+        eq(sql`length(${objekts.id})`, range.digits),
       ),
-    );
-    start = end + 1;
-  }
-  return or(...spans);
+    ),
+  );
 }
 
 /**
@@ -83,20 +80,10 @@ const loadReservations = Effect.fn("loadReservations")(function* (
     )
     .orderBy(serialReservations.lo);
 
-  // the collection's own span in each range it has objekts in
-  const spans = new Map<number, ReservedRange & { min: number; max: number }>();
-  for (const id of tokenIds) {
-    const range = findRange(ranges, id);
-    if (range !== undefined) {
-      const span = spans.get(range.lo) ?? { ...range, min: id, max: id };
-      span.min = Math.min(span.min, id);
-      span.max = Math.max(span.max, id);
-      spans.set(range.lo, span);
-    }
-  }
+  const spans = reservationSpans(ranges, tokenIds);
 
   // other collections' ids between its own
-  const inside = [...spans.values()]
+  const inside = spans
     .filter((span) => span.max - span.min > 1)
     .map((span) => tokenIdBetween(span.min + 1, span.max - 1));
   const between =
@@ -110,7 +97,7 @@ const loadReservations = Effect.fn("loadReservations")(function* (
           )).map((row) => row.tokenId);
 
   const reservations: Reservation[] = [];
-  for (const span of spans.values()) {
+  for (const span of spans) {
     // one id outside its span marks the range shared
     const outside = [
       span.min > span.lo + 1 && tokenIdBetween(span.lo + 1, span.min - 1),
@@ -124,13 +111,7 @@ const loadReservations = Effect.fn("loadReservations")(function* (
             .from(objekts)
             .where(and(ne(objekts.collectionId, collectionId), or(...outside)))
             .limit(1);
-    const foreign = between.filter((id) => id > span.min && id < span.max);
-    reservations.push({
-      lo: span.lo,
-      hi: span.hi,
-      shared: foreign.length > 0 || witness !== undefined,
-      foreign,
-    });
+    reservations.push(toReservation(span, between, witness !== undefined, []));
   }
   return reservations;
 });

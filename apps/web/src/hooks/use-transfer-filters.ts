@@ -1,6 +1,6 @@
+import { type FilterUpdate, resolveUpdate } from "@/lib/client/filters";
 import type { transfersFrontendSchema } from "@/lib/universal/parsers";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { useCallback } from "react";
 import type { z } from "zod";
 
 export function useTransferFilters() {
@@ -10,55 +10,20 @@ export function useTransferFilters() {
   /**
    * Sets multiple filters at once and commits to the URL.
    */
-  const setFilters = useCallback(
-    (
-      input:
-        | Partial<TransferFilters>
-        | ((prev: TransferFilters) => Partial<TransferFilters>),
-    ) => {
-      // oxlint-disable-next-line anti-slop/no-runtime-typeof -- narrowing the updater-function union, standard setState pattern
-      if (typeof input === "function") {
-        input = input(searchParams);
-      }
-
-      void navigate({
-        search: (prev) => ({
-          ...prev,
-          ...input,
-        }),
-        replace: true,
-      });
-    },
-    [navigate, searchParams],
-  );
-
-  /**
-   * Sets a single filter.
-   */
-  const setFilter = useCallback(
-    (
-      key: keyof TransferFilters,
-      value: TransferFilters[keyof TransferFilters],
-    ) => {
-      setFilters((prev) => ({ ...prev, [key]: value }));
-    },
-    [setFilters],
-  );
+  const setFilters = (input: FilterUpdate<TransferFilters>) => {
+    void navigate({
+      search: (prev) => ({
+        ...prev,
+        ...resolveUpdate(input, searchParams),
+      }),
+      replace: true,
+    });
+  };
 
   return {
     filters: searchParams,
     setFilters,
-    setFilter,
   };
 }
 
 export type TransferFilters = z.infer<typeof transfersFrontendSchema>;
-export type SetTransferFilters = (
-  input:
-    | Partial<TransferFilters>
-    | ((prev: TransferFilters) => Partial<TransferFilters>),
-) => void;
-export type SetTransferFilter<TKey extends keyof TransferFilters> = (
-  key: TKey,
-  value: TransferFilters[TKey],
-) => void;

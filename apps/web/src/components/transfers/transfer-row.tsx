@@ -365,7 +365,7 @@ function When({ row, details }: { row: Row; details: DetailTransfer[] }) {
         <>
           <Timestamp
             date={new Date(row.timestamp)}
-            format="h:mm:ss a"
+            format={{ timeStyle: "medium" }}
             className="whitespace-nowrap"
           />
           {row.kind === "spin" && row.outcome === "pending" && (
@@ -626,7 +626,7 @@ function Details({ transfers }: { transfers: DetailTransfer[] }) {
           >
             <Timestamp
               date={new Date(objekt.transfer.timestamp)}
-              format="h:mm:ss a"
+              format={{ timeStyle: "medium" }}
               className="font-mono text-xs whitespace-nowrap text-muted-foreground"
             />
             <div

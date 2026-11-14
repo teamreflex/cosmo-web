@@ -16,8 +16,6 @@ import { currentAccountQuery, selectedArtistsQuery } from "@/lib/queries/core";
 import { marketQuery } from "@/lib/queries/market";
 import { marketFrontendSchema } from "@/lib/universal/parsers";
 import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
-import { ProfileProvider } from "@/providers/profile-provider";
-import { UserStateProvider } from "@/providers/user-state-provider";
 import { noop } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
@@ -45,25 +43,17 @@ export const Route = createFileRoute("/market/collections")({
         marketQuery(deps.searchParams, selected, displayCurrency(account)),
       )
       .catch(noop);
-
-    return { account };
   },
   head: () =>
     defineHead({ title: m.market_header(), canonical: "/market/collections" }),
 });
 
 function RouteComponent() {
-  const { account } = Route.useLoaderData();
-
   return (
     <main className="relative flex w-full flex-col">
-      <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
-        <MetadataDialogProvider>
-          <ProfileProvider objektLists={account?.objektLists ?? []}>
-            <MarketRenderer />
-          </ProfileProvider>
-        </MetadataDialogProvider>
-      </UserStateProvider>
+      <MetadataDialogProvider>
+        <MarketRenderer />
+      </MetadataDialogProvider>
 
       <Overlay>
         <ScrollToTop />

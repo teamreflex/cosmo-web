@@ -20,8 +20,6 @@ import {
   poolItems,
 } from "@/lib/universal/trade-listings";
 import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
-import { ProfileProvider } from "@/providers/profile-provider";
-import { UserStateProvider } from "@/providers/user-state-provider";
 import { IconHeartBroken } from "@tabler/icons-react";
 import { noop } from "@tanstack/react-query";
 import {
@@ -82,7 +80,7 @@ export const Route = createFileRoute("/market/listing/$id")({
       void context.queryClient.query(query).catch(noop);
     }
 
-    return { id, account };
+    return { id };
   },
   head: ({ loaderData }) =>
     defineHead({
@@ -92,17 +90,13 @@ export const Route = createFileRoute("/market/listing/$id")({
 });
 
 function RouteComponent() {
-  const { id, account } = Route.useLoaderData();
+  const { id } = Route.useLoaderData();
 
   return (
     <main className="flex flex-col">
-      <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
-        <MetadataDialogProvider>
-          <ProfileProvider objektLists={account?.objektLists ?? []}>
-            <ListingDetail id={id} />
-          </ProfileProvider>
-        </MetadataDialogProvider>
-      </UserStateProvider>
+      <MetadataDialogProvider>
+        <ListingDetail id={id} />
+      </MetadataDialogProvider>
 
       <MarketNotice />
     </main>

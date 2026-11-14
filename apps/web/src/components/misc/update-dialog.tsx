@@ -5,10 +5,11 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { m } from "@/i18n/messages";
+import { getLocale } from "@/i18n/runtime";
 import { env } from "@/lib/env/client";
 import { DISCORD_URL } from "@/lib/utils";
 import { IconBrandDiscord, IconSpeakerphone } from "@tabler/icons-react";
-import { addDays, format, isWithinInterval, subDays } from "date-fns";
+import { addDays, isWithinInterval, subDays } from "date-fns";
 import { useState } from "react";
 import {
   AlertDialog,
@@ -60,7 +61,10 @@ export default function UpdateDialog() {
             {updates.map((update) => (
               <AccordionItem key={update.date} value={update.date}>
                 <AccordionTrigger>
-                  {format(update.date, "MMMM do y")}
+                  {new Intl.DateTimeFormat(getLocale(), {
+                    dateStyle: "long",
+                    timeZone: "UTC",
+                  }).format(new Date(update.date))}
                 </AccordionTrigger>
                 <AccordionContent>
                   <ul className="list-inside list-disc">

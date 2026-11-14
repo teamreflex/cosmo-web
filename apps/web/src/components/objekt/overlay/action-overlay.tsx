@@ -3,7 +3,7 @@ import AddToList from "@/components/lists/add-to-list";
 import PinObjekt from "@/components/objekt/overlay/pin-button";
 import { tokenKey, useObjektSelection } from "@/hooks/use-objekt-selection";
 import useOverlayHover from "@/hooks/use-overlay-hover";
-import { useProfileContext } from "@/hooks/use-profile";
+import { useObjektLists } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
 import { type Hoverable, reasonLabel } from "@/lib/client/objekt-util";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
@@ -142,7 +142,7 @@ function OwnerActions(props: {
   createHoverProps: CreateHoverProps;
 }) {
   const { collection, token, createHoverProps } = props;
-  const objektLists = useProfileContext((ctx) => ctx.objektLists);
+  const objektLists = useObjektLists();
 
   return (
     <Fragment>
@@ -157,9 +157,7 @@ function OwnerActions(props: {
       {!props.isPin && (
         <OverlayHoverTarget {...createHoverProps("list")}>
           <AddToList
-            collectionName={collection.collectionId}
-            slug={collection.slug}
-            collectionId={collection.id}
+            collection={collection}
             lists={objektLists}
             tokenId={token.tokenId}
           />

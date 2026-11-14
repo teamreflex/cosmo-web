@@ -3,18 +3,12 @@ import { $updateObjektListEntry } from "@/lib/functions/lists";
 import { objektListQueryFilter } from "@/lib/queries/objekt-queries";
 import { updateObjektListEntrySchema } from "@/lib/universal/schema/objekt-list";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useId } from "react";
-import {
-  Controller,
-  FormProvider,
-  useForm,
-  useFormState,
-} from "react-hook-form";
+import { Controller, FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
-import { Button } from "../ui/button";
+import SubmitButton from "../submit-button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { Field, FieldError, FieldLabel } from "../ui/field";
 import { Input } from "../ui/input";
@@ -141,21 +135,10 @@ export default function EditEntryDialog({
               )}
             />
 
-            <SubmitButton />
+            <SubmitButton label={m.common_save()} />
           </form>
         </FormProvider>
       </DialogContent>
     </Dialog>
-  );
-}
-
-function SubmitButton() {
-  const { isSubmitting } = useFormState();
-
-  return (
-    <Button type="submit" disabled={isSubmitting}>
-      <span>{m.common_save()}</span>
-      {isSubmitting && <IconLoader2 className="animate-spin" />}
-    </Button>
   );
 }

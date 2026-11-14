@@ -1,22 +1,35 @@
-import { useProfileContext } from "@/hooks/use-profile";
-import { useUpdatePins } from "@/hooks/use-profile-pins";
+import { useProfilePins } from "@/hooks/use-profile";
+import { usePinsCache } from "@/hooks/use-profile-pins";
 import { m } from "@/i18n/messages";
 import { $reorderPins } from "@/lib/functions/collection";
+import type { ProfilePin } from "@/lib/universal/binders";
 import { track } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { toast } from "sonner";
 
 export type PinMove = { pinId: number; overPinId: number };
 
 /**
- * Optimistically reorder the viewer's own pins and persist the new order.
- * Writes the store (the inline grid renders from it) and the pins query cache
- * the store follows, rolling both back on failure.
+ * The profile's pins for a grid its owner can reorder by dragging, and the
+ * handler for a drop. A drop writes the new order to the pins query at once
+ * and persists it, and a failed one puts the previous order back.
  */
 export function usePinReorder() {
-  const pins = useProfileContext((c) => c.pins);
-  const updatePins = useUpdatePins();
+  const queried = useProfilePins();
+  const cache = usePinsCache();
+  /**
+   * A dropped order and the query's array it was dropped over. The drop
+   * animation measures the cells in the commit that ends the drag, and the
+   * query's subscribers only hear of a cache write a task later. Setting
+   * this state re-renders the grid in that commit, with the dropped order
+   * standing in for as long as the query still hands back the old array.
+   */
+  const [dropped, setDropped] = useState<{
+    over: ProfilePin[];
+    order: ProfilePin[];
+  } | null>(null);
+  const pins = dropped?.over === queried ? dropped.order : queried;
 
   const mutation = useMutation({
     mutationFn: async (move: PinMove) => {
@@ -26,23 +39,34 @@ export function usePinReorder() {
       }
     },
     onMutate: ({ pinId, overPinId }) => {
-      const previous = pins;
       const reordered = arrayMove(
-        previous,
-        previous.findIndex((p) => p.pinId === pinId),
-        previous.findIndex((p) => p.pinId === overPinId),
+        pins,
+        pins.findIndex((p) => p.pinId === pinId),
+        pins.findIndex((p) => p.pinId === overPinId),
       );
-      updatePins(() => reordered);
-      return { previous };
+      setDropped({ over: queried, order: reordered });
+      cache.update(() => reordered);
+      return { previous: pins, reordered };
     },
     onError: (_e, _v, ctx) => {
-      if (ctx) updatePins(() => ctx.previous);
+      if (ctx) cache.update(() => ctx.previous);
       toast.error(m.toast_pin_reorder_error());
     },
     onSuccess: () => track("reorder-pins"),
+    // a later drop's order stays until its own reorder settles
+    onSettled: (_d, _e, _v, ctx) =>
+      setDropped((current) =>
+        current?.order === ctx?.reordered ? null : current,
+      ),
   });
 
-  return useCallback((move: PinMove) => mutation.mutate(move), [mutation]);
+  return {
+    pins,
+    onReorderPins: useCallback(
+      (move: PinMove) => mutation.mutate(move),
+      [mutation],
+    ),
+  };
 }
 
 /**

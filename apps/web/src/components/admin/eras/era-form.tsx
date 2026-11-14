@@ -1,4 +1,5 @@
 import SelectSpotifyAlbum from "@/components/admin/events/select-spotify-album";
+import AdminImageUpload from "@/components/admin/image-upload";
 import { DatePicker } from "@/components/ui/date-picker";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -16,7 +17,6 @@ import type { CreateEraInput } from "@/lib/universal/schema/events";
 import { slugify } from "@apollo/util";
 import { getRouteApi } from "@tanstack/react-router";
 import { Controller, useFormContext, useWatch } from "react-hook-form";
-import EraImageUpload from "./era-image-upload";
 import SpotifyAlbumDisplay from "./spotify-album-display";
 
 const route = getRouteApi("/admin/eras");
@@ -76,10 +76,15 @@ export default function EraForm(props: Props) {
       {!hasAlbum && (
         <Field>
           <FieldLabel>{m.admin_era_image()}</FieldLabel>
-          <EraImageUpload
+          <AdminImageUpload
             existingUrl={props.existingImageUrl}
             onFileSelect={props.onImageSelect}
             onClear={props.onImageClear}
+            alt="Era image preview"
+            selectLabel={m.admin_era_image_select()}
+            hint={m.admin_era_image_hint()}
+            invalidTypeError={m.admin_era_image_invalid_type()}
+            tooLargeError={m.admin_era_image_too_large()}
           />
         </Field>
       )}

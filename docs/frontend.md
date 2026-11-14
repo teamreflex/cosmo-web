@@ -7,6 +7,8 @@ Conventions for the React side of `apps/web`.
 - Files are `kebab-case.tsx`, grouped by domain under `components/<feature>/`.
 - A feature component is `export default function Name(props: Props)` with hooks first and sub-components below it. `components/ui/` and hooks use named exports.
 - `components/ui/` is vendored shadcn/ui and exempt from the anti-slop lint rules. Add a missing component with the shadcn CLI ([libraries.md](libraries.md)).
+- A dialog that confirms an irreversible mutation is a `ConfirmActionDialog` (`components/confirm-action-dialog.tsx`) handed the caller's `useMutation` result. It can't be closed while the mutation is pending, and a second click before the pending state renders sends nothing.
+- A `ConfirmActionDialog` caller's `mutationFn` closes over its props, so a caller that can be reused for another record is keyed by that record's id.
 
 ## UI stack and Base UI
 
@@ -21,7 +23,7 @@ Base UI behaviours that bite:
 
 - Enter transitions run only when `open` changes after mount. Keep overlays mounted and drive `open`, rather than mounting them open.
 - Select's `onValueChange` fires when the current value is re-picked, so guard side effects. The account page's language Select skips the current locale, because `setLocale` reloads the page.
-- `AlertDialogAction` is a Close part. Call `event.preventBaseUIHandler()` in `onClick` to keep the dialog open while a mutation runs.
+- `AlertDialogAction` is a Close part, so a click closes the dialog unless `onClick` calls `event.preventBaseUIHandler()`.
 - `Radio.Root` renders a `<span>` unless given `nativeButton` and `render={<button />}`.
 - An open popover inserts hidden focus-guard spans (`data-base-ui-focus-guard`) and an `aria-owns` span beside its trigger. `:first-child`-style selectors on the trigger's parent must skip them (`components/ui/button-group.tsx`).
 - Drawers dismiss on a fixed swipe rule (past half the height, or at least 0.5 px/ms). A swipe-dismissed drawer must close in the same `onOpenChange` call (reason `"swipe"`) or it springs back.
@@ -55,7 +57,8 @@ The shell and every route file's loader ship to every page ([tanstack.md](tansta
 ## Client state
 
 - Filters and other shareable view state live in URL search params ([tanstack.md](tanstack.md#routes)).
-- Per-page context lives in `providers/` (profile, binder viewer, metadata dialog, user state, theme, media query).
+- Per-page context lives in `providers/` (binder viewer, metadata dialog, theme, media query).
+- A profile's target account, pins and locks are read from their queries through `hooks/use-profile.ts`. Its hooks take the query options from the `/@{$username}` layout's route context, so they throw anywhere else.
 - `src/store.ts` is the one zustand store, for recent user searches.
 
 ## Forms

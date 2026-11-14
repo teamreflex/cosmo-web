@@ -6,7 +6,7 @@ import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
 import BatchSelectionBar from "@/components/profile/batch-selection-bar";
 import ProfileRenderer from "@/components/profile/profile-renderer";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useUserState } from "@/hooks/use-user-state";
+import { useObjektLists, useUserState } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
 import { defineHead } from "@/lib/meta";
 import { currentAccountQuery, selectedArtistsQuery } from "@/lib/queries/core";
@@ -14,7 +14,6 @@ import {
   userCollectionBlockchainGroupsQuery,
   userCollectionBlockchainQuery,
 } from "@/lib/queries/objekt-queries";
-import type { ProfilePin } from "@/lib/universal/binders";
 import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { userCollectionFrontendSchema } from "@/lib/universal/parsers";
 import {
@@ -22,10 +21,10 @@ import {
   PROFILE_CARD_WIDTH,
   profileCardPath,
 } from "@/lib/universal/profile-card";
-import { ProfileProvider } from "@/providers/profile-provider";
 import { Addresses, isEqual } from "@apollo/util";
-import { noop, useSuspenseQuery } from "@tanstack/react-query";
+import { noop } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+import { Fragment } from "react";
 
 export const Route = createFileRoute("/@{$username}/")({
   validateSearch: userCollectionFrontendSchema,
@@ -123,26 +122,15 @@ export const Route = createFileRoute("/@{$username}/")({
     }),
 });
 
-const noPins: ProfilePin[] = [];
-
 function RouteComponent() {
   const { target } = Route.useLoaderData();
-  const { pinsOptions } = Route.useRouteContext();
-  // followed rather than read once, since pins change from outside the grid
-  const { data: pins } = useSuspenseQuery(pinsOptions);
   // list actions only ever run on the viewer's own profile, so they read the viewer's lists
-  const { data: account } = useSuspenseQuery(currentAccountQuery);
-  const objektLists = account?.objektLists ?? [];
+  const objektLists = useObjektLists();
   const { cosmo } = useUserState();
 
   return (
-    <ProfileProvider
-      key={target.cosmo.address}
-      target={target}
-      pins={target.user ? pins : noPins}
-      lockedObjekts={target.user ? target.lockedObjekts : []}
-      objektLists={objektLists}
-    >
+    // keyed so the page's own state starts over on another profile
+    <Fragment key={target.cosmo.address}>
       <section className="flex flex-col">
         <ProfileRenderer targetCosmo={target.cosmo} />
       </section>
@@ -156,7 +144,7 @@ function RouteComponent() {
       {cosmo?.address === target.cosmo.address && (
         <BatchSelectionBar objektLists={objektLists} />
       )}
-    </ProfileProvider>
+    </Fragment>
   );
 }
 

@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useBatchAddToList } from "@/hooks/use-add-to-list";
+import { useAddToList } from "@/hooks/use-add-to-list";
 import {
   isTokenSelection,
   useObjektSelection,
@@ -84,7 +84,7 @@ function BatchSaleBody({ list, currency, onClose }: BodyProps) {
     },
   });
 
-  const mutation = useBatchAddToList(
+  const mutation = useAddToList(
     {
       list,
       attempted: eligible.length,

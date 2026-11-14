@@ -83,7 +83,7 @@ export default function ListHeader({
           {isOwner && (
             <>
               <UpdateList objektList={list} />
-              <DeleteList objektList={list} />
+              <DeleteList key={list.id} objektList={list} />
             </>
           )}
         </div>

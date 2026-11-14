@@ -1,11 +1,11 @@
 import { m } from "@/i18n/messages";
 import { useSearchStore } from "@/store";
-import type { CosmoPublicUser } from "@apollo/cosmo/types/user";
 import { IconSearch } from "@tabler/icons-react";
 import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import { Button } from "../ui/button";
 import { UserSearch } from "../user-search";
+import type { SearchedUser } from "../user-search";
 
 export default function NavbarSearch() {
   const recent = useSearchStore((state) => state.recentLookups);
@@ -13,12 +13,11 @@ export default function NavbarSearch() {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
 
-  function onSelect(user: CosmoPublicUser) {
+  function onSelect(user: SearchedUser) {
     setOpen(false);
     addRecent({
       nickname: user.nickname,
       address: user.address,
-      profileImageUrl: user.profileImageUrl,
     });
     void navigate({ to: `/@${user.nickname}` });
   }

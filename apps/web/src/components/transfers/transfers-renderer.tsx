@@ -10,7 +10,6 @@ import {
   type TransferType,
   typeHasCounterparty,
 } from "@/lib/universal/transfers";
-import type { CosmoPublicUser } from "@apollo/cosmo/types/user";
 import { IconHeartBroken, IconRefresh } from "@tabler/icons-react";
 import {
   QueryErrorResetBoundary,
@@ -23,6 +22,7 @@ import FiltersContainer from "../collection/filters-container";
 import { InfiniteQueryNext } from "../infinite-query-pending";
 import Portal from "../portal";
 import { Button } from "../ui/button";
+import type { SearchedUser } from "../user-search";
 import TransferHeader from "./transfer-header";
 import TransferRow from "./transfer-row";
 import TransfersSkeleton from "./transfers-skeleton";
@@ -49,10 +49,8 @@ export default function TransfersRenderer({ cosmo }: Props) {
   }
 
   // kept out of the URL for now
-  const [counterparty, setCounterparty] = useState<CosmoPublicUser | null>(
-    null,
-  );
-  function selectCounterparty(user: CosmoPublicUser | null) {
+  const [counterparty, setCounterparty] = useState<SearchedUser | null>(null);
+  function selectCounterparty(user: SearchedUser | null) {
     setCounterparty(user);
     if (user && !typeHasCounterparty(type)) {
       setType("all");

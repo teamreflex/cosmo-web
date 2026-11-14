@@ -1,4 +1,4 @@
-import { useProfileContext } from "@/hooks/use-profile";
+import { useProfileTarget } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
 import {
   progressLeaderboardQuery,
@@ -21,7 +21,7 @@ type Props = {
 };
 
 export default function ProgressLeaderboardContent(props: Props) {
-  const username = useProfileContext((state) => state.target?.cosmo?.username);
+  const username = useProfileTarget((target) => target.cosmo.username);
   const [{ data }, { data: rank }] = useSuspenseQueries({
     queries: [
       progressLeaderboardQuery(props.member, props.onlineType, props.season),

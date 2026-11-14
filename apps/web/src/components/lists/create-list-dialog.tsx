@@ -12,24 +12,14 @@ import { IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 import { useState } from "react";
-import {
-  Controller,
-  FormProvider,
-  useForm,
-  useFormContext,
-} from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 import {
-  createHaveListSchema,
-  createRegularListSchema,
-  createSaleListSchema,
-  createWantListSchema,
+  createObjektListSchema,
   type ListType,
   listTypes,
 } from "../../lib/universal/schema/objekt-list";
-import CurrencySelect from "../misc/currency-select";
-import Portal from "../portal";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -38,21 +28,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../ui/dialog";
-import { Field, FieldDescription, FieldError, FieldLabel } from "../ui/field";
-import { Input } from "../ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
-import { Switch } from "../ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { Textarea } from "../ui/textarea";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import ListFormFields from "./list-form-fields";
 
 const listTypeSchema = z.enum(listTypes);
+
+const description = {
+  regular: m.list_type_regular_description,
+  sale: m.list_type_sale_description,
+  have: m.list_type_have_description,
+  want: m.list_type_want_description,
+} satisfies Record<ListType, () => string>;
 
 type Props = {
   open: boolean;
@@ -93,9 +80,7 @@ export default function CreateListDialog(props: Props) {
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{m.list_create()}</DialogTitle>
-          <DialogDescription>
-            <span id="list-type-description" />
-          </DialogDescription>
+          <DialogDescription>{description[tab]()}</DialogDescription>
         </DialogHeader>
 
         <Tabs
@@ -113,30 +98,15 @@ export default function CreateListDialog(props: Props) {
             </LiveTypeTrigger>
           </TabsList>
 
-          <TabsContent value="regular">
-            <Portal to="#list-type-description">
-              {m.list_type_regular_description()}
-            </Portal>
-            <RegularForm onCreated={handleCreated} />
-          </TabsContent>
-          <TabsContent value="sale">
-            <Portal to="#list-type-description">
-              {m.list_type_sale_description()}
-            </Portal>
-            <SaleForm onCreated={handleCreated} />
-          </TabsContent>
-          <TabsContent value="have">
-            <Portal to="#list-type-description">
-              {m.list_type_have_description()}
-            </Portal>
-            <HaveForm allLists={props.objektLists} onCreated={handleCreated} />
-          </TabsContent>
-          <TabsContent value="want">
-            <Portal to="#list-type-description">
-              {m.list_type_want_description()}
-            </Portal>
-            <WantForm allLists={props.objektLists} onCreated={handleCreated} />
-          </TabsContent>
+          {listTypes.map((type) => (
+            <TabsContent key={type} value={type}>
+              <CreateListForm
+                type={type}
+                lists={props.objektLists}
+                onCreated={handleCreated}
+              />
+            </TabsContent>
+          ))}
         </Tabs>
       </DialogContent>
     </Dialog>
@@ -168,324 +138,64 @@ function LiveTypeTrigger({
 }
 
 type FormProps = {
+  type: ListType;
+  lists: ObjektList[];
   onCreated: (list: ObjektList) => void;
 };
 
-function RegularForm({ onCreated }: FormProps) {
-  const mutation = useMutation({
-    mutationFn: $createObjektList,
-    onError: (error) => {
-      toast.error(formatError(error));
-    },
-  });
-  const form = useForm({
-    resolver: standardSchemaResolver(createRegularListSchema),
-    defaultValues: {
-      type: "regular",
-      name: "",
-      description: undefined,
-    },
-  });
-
-  async function handleSubmit(data: z.infer<typeof createRegularListSchema>) {
-    const result = await mutation.mutateAsync({ data });
-    onCreated(result);
-  }
-
-  return (
-    <FormProvider {...form}>
-      <form
-        onSubmit={form.handleSubmit(handleSubmit)}
-        className="flex w-full flex-col gap-3"
-      >
-        <NameField placeholder={m.list_name_placeholder_regular()} />
-        <DescriptionField />
-        <SubmitButton isPending={mutation.isPending} />
-      </form>
-    </FormProvider>
-  );
-}
-
-function SaleForm({ onCreated }: FormProps) {
+function CreateListForm({ type, lists, onCreated }: FormProps) {
   const { currency } = useDisplayCurrency();
   const mutation = useMutation({
-    mutationFn: $createObjektList,
+    mutationFn: (data: z.infer<typeof createObjektListSchema>) =>
+      data.type === "have" || data.type === "want"
+        ? $createLiveList({ data })
+        : $createObjektList({ data }),
+    onSuccess: onCreated,
     onError: (error) => {
       toast.error(formatError(error));
     },
   });
   const form = useForm({
-    resolver: standardSchemaResolver(createSaleListSchema),
-    defaultValues: {
-      type: "sale",
-      name: "",
-      description: undefined,
-      currency,
-    },
+    resolver: standardSchemaResolver(createObjektListSchema),
+    defaultValues: (
+      {
+        regular: { type: "regular", name: "", description: undefined },
+        sale: { type: "sale", name: "", description: undefined, currency },
+        have: {
+          type: "have",
+          name: "",
+          description: undefined,
+          discoverable: false,
+          pairListId: null,
+        },
+        want: {
+          type: "want",
+          name: "",
+          description: undefined,
+          discoverable: false,
+          pairListId: null,
+        },
+      } satisfies {
+        [T in ListType]: Extract<
+          z.input<typeof createObjektListSchema>,
+          { type: T }
+        >;
+      }
+    )[type],
   });
-
-  async function handleSubmit(data: z.infer<typeof createSaleListSchema>) {
-    const result = await mutation.mutateAsync({ data });
-    onCreated(result);
-  }
 
   return (
     <FormProvider {...form}>
       <form
-        onSubmit={form.handleSubmit(handleSubmit)}
+        onSubmit={form.handleSubmit((data) => mutation.mutate(data))}
         className="flex w-full flex-col gap-3"
       >
-        <NameField placeholder={m.list_name_placeholder_sale()} />
-        <DescriptionField />
-        <CurrencyField />
-        <SubmitButton isPending={mutation.isPending} />
+        <ListFormFields type={type} lists={lists} />
+        <Button type="submit" disabled={mutation.isPending}>
+          <span>{m.common_create()}</span>
+          {mutation.isPending && <IconLoader2 className="animate-spin" />}
+        </Button>
       </form>
     </FormProvider>
-  );
-}
-
-type LiveFormProps = FormProps & {
-  allLists: ObjektList[];
-};
-
-function HaveForm({ allLists, onCreated }: LiveFormProps) {
-  const mutation = useMutation({
-    mutationFn: $createLiveList,
-    onError: (error) => {
-      toast.error(formatError(error));
-    },
-  });
-  const form = useForm({
-    resolver: standardSchemaResolver(createHaveListSchema),
-    defaultValues: {
-      type: "have",
-      name: "",
-      description: undefined,
-      discoverable: false,
-      pairListId: null,
-    },
-  });
-
-  async function handleSubmit(data: z.infer<typeof createHaveListSchema>) {
-    const result = await mutation.mutateAsync({ data });
-    onCreated(result);
-  }
-
-  const availableLists = allLists.filter(
-    (l) =>
-      l.type === "want" &&
-      !allLists.some(
-        (other) => other.type === "have" && other.linkedWantListId === l.id,
-      ),
-  );
-
-  return (
-    <FormProvider {...form}>
-      <form
-        onSubmit={form.handleSubmit(handleSubmit)}
-        className="flex w-full flex-col gap-3"
-      >
-        <NameField placeholder={m.list_name_placeholder_have()} />
-        <DescriptionField />
-        <DiscoverableField />
-        <PairField availableLists={availableLists} />
-        <SubmitButton isPending={mutation.isPending} />
-      </form>
-    </FormProvider>
-  );
-}
-
-function WantForm({ allLists, onCreated }: LiveFormProps) {
-  const mutation = useMutation({
-    mutationFn: $createLiveList,
-    onError: (error) => {
-      toast.error(formatError(error));
-    },
-  });
-  const form = useForm({
-    resolver: standardSchemaResolver(createWantListSchema),
-    defaultValues: {
-      type: "want",
-      name: "",
-      description: undefined,
-      discoverable: false,
-      pairListId: null,
-    },
-  });
-
-  async function handleSubmit(data: z.infer<typeof createWantListSchema>) {
-    const result = await mutation.mutateAsync({ data });
-    onCreated(result);
-  }
-
-  const availableLists = allLists.filter(
-    (l) => l.type === "have" && l.linkedWantListId === null,
-  );
-
-  return (
-    <FormProvider {...form}>
-      <form
-        onSubmit={form.handleSubmit(handleSubmit)}
-        className="flex w-full flex-col gap-3"
-      >
-        <NameField placeholder={m.list_name_placeholder_want()} />
-        <DescriptionField />
-        <DiscoverableField />
-        <PairField availableLists={availableLists} />
-        <SubmitButton isPending={mutation.isPending} />
-      </form>
-    </FormProvider>
-  );
-}
-
-function NameField({ placeholder }: { placeholder: string }) {
-  const form = useFormContext<{ name: string }>();
-  return (
-    <Controller
-      control={form.control}
-      name="name"
-      render={({ field, fieldState }) => (
-        <Field data-invalid={fieldState.invalid}>
-          <FieldLabel htmlFor="name">{m.list_name()}</FieldLabel>
-          <Input
-            id="name"
-            placeholder={placeholder}
-            data-1p-ignore
-            autoFocus
-            aria-invalid={fieldState.invalid}
-            {...field}
-          />
-          <FieldError errors={[fieldState.error]} />
-        </Field>
-      )}
-    />
-  );
-}
-
-function DescriptionField() {
-  const form = useFormContext<{ description?: string | null }>();
-  return (
-    <Controller
-      control={form.control}
-      name="description"
-      render={({ field, fieldState }) => (
-        <Field data-invalid={fieldState.invalid}>
-          <FieldLabel htmlFor="description">{m.list_description()}</FieldLabel>
-          <Textarea
-            id="description"
-            placeholder={m.list_description_placeholder()}
-            rows={3}
-            maxLength={500}
-            value={field.value ?? ""}
-            onChange={(e) =>
-              field.onChange(e.target.value === "" ? undefined : e.target.value)
-            }
-          />
-          <FieldDescription>
-            {m.list_description_public_notice()}
-          </FieldDescription>
-          <FieldError errors={[fieldState.error]} />
-        </Field>
-      )}
-    />
-  );
-}
-
-function CurrencyField() {
-  const form = useFormContext<{ currency?: string | null }>();
-  return (
-    <Controller
-      control={form.control}
-      name="currency"
-      render={({ field, fieldState }) => (
-        <Field data-invalid={fieldState.invalid}>
-          <FieldLabel htmlFor="currency">{m.list_currency()}</FieldLabel>
-          <CurrencySelect
-            id="currency"
-            name="currency"
-            value={field.value ?? null}
-            onValueChange={field.onChange}
-          />
-          <FieldDescription>{m.list_currency_description()}</FieldDescription>
-          <FieldError errors={[fieldState.error]} />
-        </Field>
-      )}
-    />
-  );
-}
-
-function DiscoverableField() {
-  const form = useFormContext<{ discoverable: boolean }>();
-  return (
-    <Controller
-      control={form.control}
-      name="discoverable"
-      render={({ field }) => (
-        <Field>
-          <div className="flex items-center justify-between">
-            <FieldLabel htmlFor="discoverable">
-              {m.list_discoverable()}
-            </FieldLabel>
-            <Switch
-              id="discoverable"
-              checked={field.value === true}
-              onCheckedChange={field.onChange}
-            />
-          </div>
-          <FieldDescription>
-            {m.list_discoverable_description()}
-          </FieldDescription>
-        </Field>
-      )}
-    />
-  );
-}
-
-function PairField({ availableLists }: { availableLists: ObjektList[] }) {
-  const form = useFormContext<{ pairListId: string | null }>();
-  const items = [
-    { value: "__unpaired__", label: m.list_pair_unpair() },
-    ...availableLists.map((l) => ({ value: l.id, label: l.name })),
-  ];
-  return (
-    <Controller
-      control={form.control}
-      name="pairListId"
-      render={({ field }) => (
-        <Field>
-          <FieldLabel>{m.list_pair_with()}</FieldLabel>
-          <Select
-            items={items}
-            value={field.value ?? "__unpaired__"}
-            onValueChange={(value) =>
-              field.onChange(value === "__unpaired__" ? null : value)
-            }
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {items.map((item) => (
-                <SelectItem key={item.value} value={item.value}>
-                  {item.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <FieldDescription>
-            {m.list_pair_required_for_matching()}
-          </FieldDescription>
-        </Field>
-      )}
-    />
-  );
-}
-
-function SubmitButton({ isPending }: { isPending: boolean }) {
-  return (
-    <Button type="submit" disabled={isPending}>
-      <span>{m.common_create()}</span>
-      {isPending && <IconLoader2 className="animate-spin" />}
-    </Button>
   );
 }

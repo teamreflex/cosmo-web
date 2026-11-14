@@ -1,4 +1,4 @@
-import CreateEra from "@/components/admin/eras/create-era-dialog";
+import EraDialog from "@/components/admin/eras/era-dialog";
 import ErasGrid from "@/components/admin/eras/eras-grid";
 import AdminNoAccess from "@/components/admin/no-access";
 import { requirePermission } from "@/hooks/use-has-permission";
@@ -38,7 +38,7 @@ function RouteComponent() {
     <section className="flex flex-col gap-4 px-4 py-2">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">{m.admin_eras_title()}</h1>
-        <CreateEra />
+        <EraDialog />
       </div>
 
       <Suspense fallback={<div>{m.common_loading()}</div>}>

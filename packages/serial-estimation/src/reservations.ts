@@ -1,4 +1,4 @@
-import type { ReservedRange } from "./types";
+import type { Reservation, ReservationSpan, ReservedRange } from "./types";
 
 /**
  * The smallest jump between consecutive online mints that counts as a
@@ -51,4 +51,91 @@ export function findRange<T extends ReservedRange>(
     }
   }
   return undefined;
+}
+
+/**
+ * What is left of a stored range once late mints land in it: the ranges
+ * between its bounds and the token ids inside it, which sit between the
+ * bounds in token-id order however late they were minted.
+ */
+export function splitReservation(
+  range: ReservedRange,
+  lateTokenIds: readonly number[],
+): ReservedRange[] {
+  return findReservations([
+    range.lo,
+    ...lateTokenIds
+      .filter((tokenId) => tokenId > range.lo && tokenId < range.hi)
+      .sort((a, b) => a - b),
+    range.hi,
+  ]);
+}
+
+/**
+ * An inclusive token-id range as one range per digit count it spans. Objekt
+ * ids are stored as text, and only ids of equal length compare as text in
+ * numeric order. A range that ends below its start holds nothing.
+ */
+export function tokenIdRanges(from: number, to: number) {
+  const ranges: { from: number; to: number; digits: number }[] = [];
+  for (let start = from; start <= to;) {
+    const digits = String(start).length;
+    const end = Math.min(to, 10 ** digits - 1);
+    ranges.push({ from: start, to: end, digits });
+    start = end + 1;
+  }
+  return ranges;
+}
+
+/**
+ * A collection's own span in each range (ordered by `lo`) it has objekts in,
+ * given its token ids. Ids outside every range are skipped, and spans come in
+ * the order the ids first reach their range.
+ */
+export function reservationSpans(
+  ranges: readonly ReservedRange[],
+  tokenIds: readonly number[],
+): ReservationSpan[] {
+  const spans = new Map<number, ReservationSpan>();
+  for (const tokenId of tokenIds) {
+    const range = findRange(ranges, tokenId);
+    if (range !== undefined) {
+      const span = spans.get(range.lo) ?? {
+        ...range,
+        min: tokenId,
+        max: tokenId,
+      };
+      span.min = Math.min(span.min, tokenId);
+      span.max = Math.max(span.max, tokenId);
+      spans.set(range.lo, span);
+    }
+  }
+  return [...spans.values()];
+}
+
+/**
+ * The span's range as its collection sees it (see `Reservation`). `between`
+ * holds the stored token ids of other collections between the collection's
+ * own in any of its spans, `witnessed` is whether another collection has a
+ * stored objekt in the range outside the span, and `pending` holds the token
+ * ids of other collections' objekts not stored yet.
+ */
+export function toReservation(
+  span: ReservationSpan,
+  between: readonly number[],
+  witnessed: boolean,
+  pending: readonly number[],
+): Reservation {
+  const foreign = [...between, ...pending].filter(
+    (tokenId) => tokenId > span.min && tokenId < span.max,
+  );
+  return {
+    lo: span.lo,
+    hi: span.hi,
+    shared:
+      foreign.length > 0 ||
+      witnessed ||
+      pending.some((tokenId) => tokenId > span.lo && tokenId < span.hi),
+    foreign,
+  };
 }

@@ -33,12 +33,7 @@ export function TopOverlay({ collection, objektLists }: TopOverlayProps) {
     <CornerOverlay corner="top-left" {...hoverContainerProps}>
       <OverlayActionRow>
         <OverlayHoverTarget {...createHoverProps("list")}>
-          <AddToList
-            collectionName={collection.collectionId}
-            slug={collection.slug}
-            collectionId={collection.id}
-            lists={objektLists}
-          />
+          <AddToList collection={collection} lists={objektLists} />
         </OverlayHoverTarget>
 
         <OverlayHoverTarget {...createHoverProps("select")}>

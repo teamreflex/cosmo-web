@@ -65,7 +65,7 @@ function SystemStatusPopover() {
           </div>
           <Timestamp
             date={new Date(processor.timestamp)}
-            format="MMM d, yyyy h:mm:ss a"
+            format={{ dateStyle: "medium", timeStyle: "medium" }}
             className="self-end text-xs text-muted-foreground"
           />
         </div>

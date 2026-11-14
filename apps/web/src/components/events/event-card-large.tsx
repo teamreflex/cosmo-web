@@ -78,15 +78,13 @@ export default function EventCardLarge(props: EventCardLargeProps) {
                     <IconCalendarEvent className="size-3.5 shrink-0" />
                     <Timestamp
                       date={props.event.startDate}
-                      format="MMM d, yyyy"
-                      showTime
+                      format={{ dateStyle: "medium", timeStyle: "short" }}
                     />
                     <span>~</span>
                     {props.event.endDate ? (
                       <Timestamp
                         date={props.event.endDate}
-                        format="MMM d, yyyy"
-                        showTime
+                        format={{ dateStyle: "medium", timeStyle: "short" }}
                       />
                     ) : (
                       <span className="italic">Present</span>

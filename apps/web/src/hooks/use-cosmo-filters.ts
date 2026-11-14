@@ -1,3 +1,4 @@
+import { type FilterUpdate, resolveUpdate } from "@/lib/client/filters";
 import { cosmoSchema } from "@/lib/universal/parsers";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import type { z } from "zod";
@@ -27,51 +28,25 @@ export function useCosmoFilters() {
   /**
    * Sets multiple filters at once and commits to the URL.
    */
-  const setFilters = (
-    input:
-      Partial<CosmoFilters> | ((prev: CosmoFilters) => Partial<CosmoFilters>),
-  ) => {
-    // oxlint-disable-next-line anti-slop/no-runtime-typeof -- narrowing the updater-function union, standard setState pattern
-    if (typeof input === "function") {
-      input = input(filters);
-    }
-
+  const setFilters = (input: FilterUpdate<CosmoFilters>) => {
     void navigate({
-      // @ts-ignore - this hook is used on different routes so we can't reliably type this
+      to: ".",
       search: (prev) => ({
         ...prev,
-        ...input,
+        ...resolveUpdate(input, filters),
       }),
       replace: true,
     });
   };
 
-  /**
-   * Sets a single filter.
-   */
-  const setFilter = (
-    key: keyof CosmoFilters,
-    value: CosmoFilters[keyof CosmoFilters],
-  ) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
-  };
-
   return {
     filters,
     setFilters,
-    setFilter,
   };
 }
 
 export type CosmoFilters = z.infer<typeof cosmoSchema>;
-export type SetCosmoFilters = (
-  input:
-    Partial<CosmoFilters> | ((prev: CosmoFilters) => Partial<CosmoFilters>),
-) => void;
-export type SetCosmoFilter<TKey extends keyof CosmoFilters> = (
-  key: TKey,
-  value: CosmoFilters[TKey],
-) => void;
+export type SetCosmoFilters = (input: FilterUpdate<CosmoFilters>) => void;
 
 export type PropsWithFilters = {
   filters: CosmoFilters;

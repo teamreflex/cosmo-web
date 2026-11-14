@@ -7,7 +7,7 @@ import { filtersAreDirty } from "@/hooks/use-filters";
 import { useGridColumns } from "@/hooks/use-grid-columns";
 import { objektOptions } from "@/hooks/use-objekt-response";
 import { usePinReorder } from "@/hooks/use-pin-reorder";
-import { useProfileContext } from "@/hooks/use-profile";
+import { useProfileLocks } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
 import { userCollectionBlockchainGroupsQuery } from "@/lib/queries/objekt-queries";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
@@ -22,13 +22,12 @@ type Props = {
 };
 
 export default function BlockchainGroups(props: Props) {
-  const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
-  const pins = useProfileContext((ctx) => ctx.pins);
+  const lockedObjekts = useProfileLocks();
+  const { pins, onReorderPins } = usePinReorder();
   const authenticated = useAuthenticated();
   const { filters } = useCosmoFilters();
   const { selectedIds } = useArtists();
   const gridColumns = useGridColumns();
-  const onReorderPins = usePinReorder();
 
   const usingFilters = filtersAreDirty(filters) || !props.showLocked;
 

@@ -1,4 +1,4 @@
-import { useProfileContext } from "@/hooks/use-profile";
+import { useProfileTarget } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
 import { cn } from "@/lib/utils";
 import type { CollectionDataSource } from "@apollo/util";
@@ -12,12 +12,10 @@ type Props = {
 };
 
 export default function FilterDataSource({ dataSource, setDataSource }: Props) {
-  const target = useProfileContext((state) => state.target);
+  const address = useProfileTarget((target) => target.cosmo.address);
 
   const sources = getSources();
-  const available = sources.filter((s) =>
-    s.isAvailable(target?.cosmo?.address),
-  );
+  const available = sources.filter((s) => s.isAvailable(address));
   const active = sources.find((s) => s.value === dataSource);
 
   return (

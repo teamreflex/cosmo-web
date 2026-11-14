@@ -14,8 +14,6 @@ import { defineHead } from "@/lib/meta";
 import { currentAccountQuery } from "@/lib/queries/core";
 import { eventBySlugQuery, eventObjektsQuery } from "@/lib/queries/events";
 import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
-import { ProfileProvider } from "@/providers/profile-provider";
-import { UserStateProvider } from "@/providers/user-state-provider";
 import { IconAlertCircle } from "@tabler/icons-react";
 import { noop } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
@@ -26,7 +24,7 @@ export const Route = createFileRoute("/events/$slug")({
       .infiniteQuery(eventObjektsQuery(params.slug))
       .catch(noop);
 
-    const [account, event] = await Promise.all([
+    const [, event] = await Promise.all([
       context.queryClient.query({
         ...currentAccountQuery,
         staleTime: "static",
@@ -37,7 +35,7 @@ export const Route = createFileRoute("/events/$slug")({
       }),
     ]);
 
-    return { account, event };
+    return { event };
   },
   component: RouteComponent,
   pendingComponent: PendingComponent,
@@ -51,7 +49,7 @@ export const Route = createFileRoute("/events/$slug")({
 });
 
 function RouteComponent() {
-  const { account, event } = Route.useLoaderData();
+  const { event } = Route.useLoaderData();
 
   return (
     <main className="flex flex-col">
@@ -60,13 +58,9 @@ function RouteComponent() {
 
       {/* Content - constrained */}
       <div className="container -mt-16 pb-4 md:-mt-42">
-        <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
-          <MetadataDialogProvider>
-            <ProfileProvider>
-              <EventRenderer slug={event.slug} />
-            </ProfileProvider>
-          </MetadataDialogProvider>
-        </UserStateProvider>
+        <MetadataDialogProvider>
+          <EventRenderer slug={event.slug} />
+        </MetadataDialogProvider>
       </div>
 
       <Overlay>

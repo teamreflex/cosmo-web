@@ -148,14 +148,14 @@ The drain spots a rolled-back transfer by its missing `transfer` row (see [`docs
 
 `numberNewObjekts` (`src/serials.ts`) numbers each chunk's new objekts with `@apollo/serial-estimation`. The model is in [`docs/cosmo.md`](../../docs/cosmo.md#serials).
 
-- Digital mints update `serial_reservation` first: a jump of `RESERVATION_MIN_GAP` or more above `frontier` opens a range, and a late mint below it splits the stored range it lands in.
+- Digital mints update `serial_reservation` first: a jump of `RESERVATION_MIN_GAP` or more above `frontier` opens a range, and a late mint below it splits the stored range it lands in (`splitReservation()`).
 - Only objekts minted after `SERIAL_CUTOFF` get a serial. A digital mint above its collection's cached top counts on from it; anything else is estimated from the whole collection.
 - A late digital mint shifts every stored objekt above it. `renumberStored` writes those through the store in token-id order, the order apps/schedules writes in, so overlapping row locks can't deadlock.
 - Renumbered serials are also set on the chunk's buffered instances, because the chunk's upsert would otherwise write the old serial back.
 - Stored physicals and coupon sets are never renumbered here; apps/schedules' `recompute-serials` repairs them.
 - Reads use the store's `EntityManager` (`ctx.store["em"]()`) with raw SQL, because `Store` can't select single columns or scan id ranges.
-- `objekt.id` is varchar, so token-id ranges are queried per digit count (`tokenIdRanges()`); only ids of equal length compare in numeric order as text.
-- `loadReservations` is one of three copies of the reservation loader; [`packages/serial-estimation/README.md`](../../packages/serial-estimation/README.md) lists them. Change all three together.
+- `objekt.id` is varchar, so `tokenIdCondition()` queries token-id ranges per digit count (`tokenIdRanges()`); only ids of equal length compare in numeric order as text.
+- `loadReservations` is one of three reservation loaders; [`packages/serial-estimation/README.md`](../../packages/serial-estimation/README.md) lists them and the steps they share.
 
 ## Outbox
 

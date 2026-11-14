@@ -23,23 +23,23 @@ const baseCreate = z.object({
   description: descriptionSchema.nullish(),
 });
 
-export const createRegularListSchema = baseCreate.extend({
+const createRegularListSchema = baseCreate.extend({
   type: z.literal("regular"),
 });
 
-export const createHaveListSchema = baseCreate.extend({
+const createHaveListSchema = baseCreate.extend({
   type: z.literal("have"),
   discoverable: z.boolean(),
   pairListId: z.uuid().nullable(),
 });
 
-export const createWantListSchema = baseCreate.extend({
+const createWantListSchema = baseCreate.extend({
   type: z.literal("want"),
   discoverable: z.boolean(),
   pairListId: z.uuid().nullable(),
 });
 
-export const createSaleListSchema = baseCreate.extend({
+const createSaleListSchema = baseCreate.extend({
   type: z.literal("sale"),
   currency: currencySchema,
 });
@@ -57,23 +57,23 @@ const baseUpdate = z.object({
   description: descriptionSchema.nullish(),
 });
 
-export const updateRegularListSchema = baseUpdate.extend({
+const updateRegularListSchema = baseUpdate.extend({
   type: z.literal("regular"),
 });
 
-export const updateHaveListSchema = baseUpdate.extend({
+const updateHaveListSchema = baseUpdate.extend({
   type: z.literal("have"),
   discoverable: z.boolean(),
   pairListId: z.uuid().nullable(),
 });
 
-export const updateWantListSchema = baseUpdate.extend({
+const updateWantListSchema = baseUpdate.extend({
   type: z.literal("want"),
   discoverable: z.boolean(),
   pairListId: z.uuid().nullable(),
 });
 
-export const updateSaleListSchema = baseUpdate.extend({
+const updateSaleListSchema = baseUpdate.extend({
   type: z.literal("sale"),
   currency: currencySchema,
 });

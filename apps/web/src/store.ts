@@ -8,7 +8,6 @@ import { persist } from "zustand/middleware";
 export type RecentUser = {
   nickname: string;
   address: string;
-  profileImageUrl: string;
 };
 
 interface SearchState {
@@ -28,10 +27,7 @@ export const useSearchStore = create<SearchState>()(
           if (currentIndex !== -1) {
             return state;
           }
-          if (current.length === 3) {
-            current.pop();
-          }
-          return { recentLookups: [lookup, ...current] };
+          return { recentLookups: [lookup, ...current].slice(0, 3) };
         }),
     }),
     {

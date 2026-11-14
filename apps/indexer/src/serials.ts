@@ -3,13 +3,15 @@ import {
   collectionKind,
   type CollectionObjekts,
   estimateSerials,
-  findRange,
   findReservations,
   type ObjektSerial,
   type Reservation,
-  type ReservedRange,
+  reservationSpans,
   SERIAL_CUTOFF,
   type SerialUpdate,
+  splitReservation,
+  tokenIdRanges,
+  toReservation,
 } from "@apollo/serial-estimation";
 import type { Store } from "@subsquid/typeorm-store";
 import { type EntityManager, In } from "typeorm";
@@ -92,22 +94,19 @@ const recentMintRows = z.array(
 /**
  * A SQL condition matching objekt ids in any of the inclusive token-id
  * ranges, with its parameters numbered from $2 after the collection id.
- * Objekt ids are varchar, and ids of equal length compare as text in numeric
- * order, so each range splits into primary-key range scans by digit count.
+ * Objekt ids are varchar, so each range becomes primary-key range scans, one
+ * per digit count it spans (see `tokenIdRanges`).
  */
-function tokenIdRanges(ranges: readonly { from: number; to: number }[]) {
+function tokenIdCondition(ranges: readonly { from: number; to: number }[]) {
   const clauses: string[] = [];
   const parameters: string[] = [];
-  for (const range of ranges) {
-    // split the range wherever the digit count changes
-    for (let start = range.from; start <= range.to;) {
-      const end = Math.min(range.to, 10 ** String(start).length - 1);
+  for (const { from, to } of ranges) {
+    for (const range of tokenIdRanges(from, to)) {
       const index = 2 + parameters.length;
       clauses.push(
-        `(o.id >= $${index} and o.id <= $${index + 1} and length(o.id) = ${String(start).length})`,
+        `(o.id >= $${index} and o.id <= $${index + 1} and length(o.id) = ${range.digits})`,
       );
-      parameters.push(String(start), String(end));
-      start = end + 1;
+      parameters.push(String(range.from), String(range.to));
     }
   }
   return { sql: clauses.join(" or "), parameters };
@@ -134,25 +133,11 @@ async function loadReservations(
     ),
   );
 
-  // the collection's own span in each range it has objekts in
-  const spans = new Map<number, ReservedRange & { min: number; max: number }>();
-  for (const tokenId of tokenIds) {
-    const range = findRange(ranges, tokenId);
-    if (range !== undefined) {
-      const span = spans.get(range.lo) ?? {
-        ...range,
-        min: tokenId,
-        max: tokenId,
-      };
-      span.min = Math.min(span.min, tokenId);
-      span.max = Math.max(span.max, tokenId);
-      spans.set(range.lo, span);
-    }
-  }
+  const spans = reservationSpans(ranges, tokenIds);
 
   // other collections' ids between its own
-  const inside = tokenIdRanges(
-    [...spans.values()]
+  const inside = tokenIdCondition(
+    spans
       .filter((span) => span.max - span.min > 1)
       .map((span) => ({ from: span.min + 1, to: span.max - 1 })),
   );
@@ -170,9 +155,9 @@ async function loadReservations(
           .map((row) => row.token_id);
 
   const reservations: Reservation[] = [];
-  for (const span of spans.values()) {
+  for (const span of spans) {
     // one id outside its span marks the range shared
-    const outside = tokenIdRanges([
+    const outside = tokenIdCondition([
       { from: span.lo + 1, to: span.min - 1 },
       { from: span.max + 1, to: span.hi - 1 },
     ]);
@@ -186,18 +171,9 @@ async function loadReservations(
               [collectionId, ...outside.parameters],
             ),
           );
-    const foreign = [...between, ...pending].filter(
-      (tokenId) => tokenId > span.min && tokenId < span.max,
+    reservations.push(
+      toReservation(span, between, witness !== undefined, pending),
     );
-    reservations.push({
-      lo: span.lo,
-      hi: span.hi,
-      shared:
-        foreign.length > 0 ||
-        witness !== undefined ||
-        pending.some((tokenId) => tokenId > span.lo && tokenId < span.hi),
-      foreign,
-    });
   }
   return reservations;
 }
@@ -441,15 +417,7 @@ async function updateReservations(
             [late],
           ),
         );
-  const remaining = split.flatMap((range) =>
-    findReservations([
-      range.lo,
-      ...late
-        .filter((tokenId) => tokenId > range.lo && tokenId < range.hi)
-        .sort((a, b) => a - b),
-      range.hi,
-    ]),
-  );
+  const remaining = split.flatMap((range) => splitReservation(range, late));
 
   // replace the split ranges, then add the new ones
   if (split.length > 0) {

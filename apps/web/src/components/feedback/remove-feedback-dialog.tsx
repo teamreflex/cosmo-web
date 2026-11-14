@@ -4,17 +4,7 @@ import { $removeFeedback } from "@/lib/functions/feedback";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "../ui/alert-dialog";
-import { Spinner } from "../ui/spinner";
+import ConfirmActionDialog from "../confirm-action-dialog";
 
 /**
  * Confirms removing a rating as a moderator, which can't be undone. It stays
@@ -47,52 +37,26 @@ export default function RemoveFeedbackDialog({
   });
 
   return (
-    <AlertDialog
+    <ConfirmActionDialog
       open={open}
-      onOpenChange={(next) => {
-        if (!next && !mutation.isPending) onClose();
-      }}
-    >
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>
-            {m.feedback_remove_rating_title()}
-          </AlertDialogTitle>
-          <AlertDialogDescription>
-            <ParaglideMessage
-              message={m.feedback_remove_rating_body}
-              inputs={{ name: ratedName }}
-              markup={{
-                // a handle such as @qa11-v2 would otherwise break at its hyphen
-                who: ({ children }) => (
-                  <bdi className="whitespace-nowrap">{children}</bdi>
-                ),
-              }}
-            />
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel
-            className="max-sm:h-11"
-            disabled={mutation.isPending}
-          >
-            {m.common_cancel()}
-          </AlertDialogCancel>
-          <AlertDialogAction
-            type="button"
-            variant="destructive"
-            className="max-sm:h-11"
-            onClick={(event) => {
-              event.preventBaseUIHandler();
-              mutation.mutate();
-            }}
-            disabled={mutation.isPending}
-          >
-            {mutation.isPending && <Spinner />}
-            {m.admin_reports_remove_rating()}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+      onOpenChange={onClose}
+      title={m.feedback_remove_rating_title()}
+      description={
+        <ParaglideMessage
+          message={m.feedback_remove_rating_body}
+          inputs={{ name: ratedName }}
+          markup={{
+            // a handle such as @qa11-v2 would otherwise break at its hyphen
+            who: ({ children }) => (
+              <bdi className="whitespace-nowrap">{children}</bdi>
+            ),
+          }}
+        />
+      }
+      confirmLabel={m.admin_reports_remove_rating()}
+      variant="destructive"
+      buttonClassName="max-sm:h-11"
+      mutation={mutation}
+    />
   );
 }

@@ -20,8 +20,6 @@ import {
   sanitizeUuid,
 } from "@/lib/universal/parsers";
 import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
-import { ProfileProvider } from "@/providers/profile-provider";
-import { UserStateProvider } from "@/providers/user-state-provider";
 import { IconHeartBroken } from "@tabler/icons-react";
 import { noop } from "@tanstack/react-query";
 import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
@@ -82,7 +80,6 @@ export const Route = createFileRoute("/list/$id")({
         display: userDisplay,
         user,
       },
-      account,
       isAuthenticated,
     };
   },
@@ -94,44 +91,37 @@ export const Route = createFileRoute("/list/$id")({
 });
 
 function RouteComponent() {
-  const { account, isAuthenticated, objektList, owner } = Route.useLoaderData();
+  const { isAuthenticated, objektList, owner } = Route.useLoaderData();
 
   return (
     <main className="flex flex-col">
-      <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
-        <MetadataDialogProvider>
-          <ProfileProvider>
-            <div className="border-b border-border">
-              <div className="container">
-                <ListHeader
-                  list={objektList}
-                  ownerName={owner.display}
-                  owner={owner.user}
-                  isOwner={isAuthenticated}
-                />
-              </div>
-            </div>
-
-            <TitleHeader title={m.list_title()}>
-              <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
-                <div className="md:pointer-events-auto">
-                  <CosmoMemberFilter />
-                </div>
-              </div>
-            </TitleHeader>
-
-            <ListRenderer
-              authenticated={isAuthenticated}
-              objektList={objektList}
+      <MetadataDialogProvider>
+        <div className="border-b border-border">
+          <div className="container">
+            <ListHeader
+              list={objektList}
+              ownerName={owner.display}
+              owner={owner.user}
+              isOwner={isAuthenticated}
             />
+          </div>
+        </div>
 
-            <Overlay>
-              <ScrollToTop />
-              <ToggleObjektBands />
-            </Overlay>
-          </ProfileProvider>
-        </MetadataDialogProvider>
-      </UserStateProvider>
+        <TitleHeader title={m.list_title()}>
+          <div className="ml-auto md:pointer-events-none md:absolute md:inset-0 md:ml-0 md:flex md:items-center md:justify-center">
+            <div className="md:pointer-events-auto">
+              <CosmoMemberFilter />
+            </div>
+          </div>
+        </TitleHeader>
+
+        <ListRenderer authenticated={isAuthenticated} objektList={objektList} />
+
+        <Overlay>
+          <ScrollToTop />
+          <ToggleObjektBands />
+        </Overlay>
+      </MetadataDialogProvider>
     </main>
   );
 }

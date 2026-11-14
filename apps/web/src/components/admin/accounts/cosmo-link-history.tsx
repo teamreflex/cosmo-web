@@ -1,17 +1,11 @@
+import LogPanel from "@/components/admin/log-panel";
 import StatusPill from "@/components/objekt/detail/status-pill";
 import UserAvatar from "@/components/profile/user-avatar";
 import { Button } from "@/components/ui/button";
-import {
-  Empty,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Timestamp } from "@/components/ui/timestamp";
 import { m } from "@/i18n/messages";
-import { getLocale } from "@/i18n/runtime";
 import { env } from "@/lib/env/client";
 import { cosmoLinkHistoryQuery } from "@/lib/queries/cosmo-link-history";
 import type { CosmoLinkHistoryEntry } from "@/lib/universal/cosmo-link-history";
@@ -21,7 +15,7 @@ import type {
   CosmoLinkReason,
 } from "@apollo/database/web/types";
 import { shortAddress } from "@apollo/util";
-import { IconHistory, IconLoader2, IconRefresh } from "@tabler/icons-react";
+import { IconHistory, IconRefresh } from "@tabler/icons-react";
 import {
   QueryErrorResetBoundary,
   useSuspenseInfiniteQuery,
@@ -136,59 +130,30 @@ function HistoryLog({ search, stale }: HistoryLogProps) {
   const { data, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useSuspenseInfiniteQuery(cosmoLinkHistoryQuery(search));
   const rows = data.pages.flatMap((page) => page.rows);
-  const numbers = new Intl.NumberFormat(getLocale());
 
   return (
-    <div
-      className={cn(
-        "@container overflow-hidden rounded-md border bg-card text-sm transition-opacity max-md:-mx-4 max-md:rounded-none max-md:border-x-0",
-        stale && "opacity-60",
-      )}
+    <LogPanel
+      className={cn("transition-opacity", stale && "opacity-60")}
+      emptyIcon={<IconHistory />}
+      emptyTitle={
+        search === undefined
+          ? m.admin_accounts_history_empty()
+          : m.admin_accounts_history_empty_search()
+      }
+      loaded={rows.length}
+      total={data.pages[0]?.total ?? rows.length}
+      showing={m.admin_accounts_history_showing}
+      olderLabel={m.admin_accounts_history_older()}
+      hasNextPage={hasNextPage}
+      isFetchingNextPage={isFetchingNextPage}
+      fetchNextPage={fetchNextPage}
     >
-      {rows.length === 0 ? (
-        <Empty className="p-8">
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <IconHistory />
-            </EmptyMedia>
-            <EmptyTitle className="text-base">
-              {search === undefined
-                ? m.admin_accounts_history_empty()
-                : m.admin_accounts_history_empty_search()}
-            </EmptyTitle>
-          </EmptyHeader>
-        </Empty>
-      ) : (
-        <>
-          <HistoryTable>
-            {rows.map((entry) => (
-              <HistoryRow key={entry.id} entry={entry} />
-            ))}
-          </HistoryTable>
-
-          <div className="flex items-center gap-2 px-4 py-2.5">
-            <span className="text-xs text-muted-foreground tabular-nums">
-              {m.admin_accounts_history_showing({
-                loaded: numbers.format(rows.length),
-                total: numbers.format(data.pages[0]?.total ?? rows.length),
-              })}
-            </span>
-            {hasNextPage && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="ml-auto"
-                onClick={() => void fetchNextPage()}
-                disabled={isFetchingNextPage}
-              >
-                <span>{m.admin_accounts_history_older()}</span>
-                {isFetchingNextPage && <IconLoader2 className="animate-spin" />}
-              </Button>
-            )}
-          </div>
-        </>
-      )}
-    </div>
+      <HistoryTable>
+        {rows.map((entry) => (
+          <HistoryRow key={entry.id} entry={entry} />
+        ))}
+      </HistoryTable>
+    </LogPanel>
   );
 }
 

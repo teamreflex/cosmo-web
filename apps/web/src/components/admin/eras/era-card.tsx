@@ -3,7 +3,7 @@ import { Timestamp } from "@/components/ui/timestamp";
 import { cn } from "@/lib/utils";
 import type { Era } from "@apollo/database/web/types";
 import { getRouteApi } from "@tanstack/react-router";
-import EditEraDialog from "./edit-era-dialog";
+import EraDialog from "./era-dialog";
 
 const route = getRouteApi("/admin/eras");
 
@@ -18,7 +18,7 @@ export default function EraCard({ era }: Props) {
   const imageUrl = era.spotifyAlbumArt || era.imageUrl;
 
   return (
-    <EditEraDialog era={era}>
+    <EraDialog era={era}>
       <Card className="cursor-pointer transition-colors hover:bg-accent">
         <CardContent className="flex flex-col gap-2">
           <div className="flex items-center gap-4">
@@ -54,19 +54,22 @@ export default function EraCard({ era }: Props) {
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <span className="font-semibold">Timeframe:</span>
             {era.startDate ? (
-              <Timestamp date={era.startDate} format="MMM d, yyyy" />
+              <Timestamp
+                date={era.startDate}
+                format={{ dateStyle: "medium" }}
+              />
             ) : (
               <span className="italic">unset</span>
             )}
             <span>~</span>
             {era.endDate ? (
-              <Timestamp date={era.endDate} format="MMM d, yyyy" />
+              <Timestamp date={era.endDate} format={{ dateStyle: "medium" }} />
             ) : (
               <span className="italic">unset</span>
             )}
           </div>
         </CardContent>
       </Card>
-    </EditEraDialog>
+    </EraDialog>
   );
 }

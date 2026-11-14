@@ -1,22 +1,11 @@
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { useProfileContext } from "@/hooks/use-profile";
+import ConfirmActionDialog from "@/components/confirm-action-dialog";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { $deleteObjektList } from "@/lib/functions/lists";
 import { currentAccountQuery } from "@/lib/queries/core";
 import { listShelfQuery } from "@/lib/queries/lists";
 import type { ObjektList } from "@apollo/database/web/types";
-import { IconLoader2, IconTrash } from "@tabler/icons-react";
+import { IconTrash } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -27,13 +16,11 @@ type Props = {
 };
 
 export default function DeleteList({ objektList }: Props) {
-  const target = useProfileContext((ctx) => ctx.target);
-  const removeObjektList = useProfileContext((state) => state.removeObjektList);
-  const addObjektList = useProfileContext((state) => state.addObjektList);
   const queryClient = useQueryClient();
   const shelfKey = listShelfQuery(objektList.userId).queryKey;
+  const deleteObjektList = useServerFn($deleteObjektList);
   const mutation = useMutation({
-    mutationFn: useServerFn($deleteObjektList),
+    mutationFn: () => deleteObjektList({ data: { id: objektList.id } }),
     onMutate: () => {
       toast.success(m.toast_list_deleted());
 
@@ -48,9 +35,6 @@ export default function DeleteList({ objektList }: Props) {
           : old,
       );
 
-      if (target) {
-        removeObjektList(objektList.id);
-      }
       queryClient.setQueryData(shelfKey, (old) =>
         old?.filter((list) => list.id !== objektList.id),
       );
@@ -64,53 +48,28 @@ export default function DeleteList({ objektList }: Props) {
           : old,
       );
 
-      if (target) {
-        addObjektList(objektList);
-      }
       // the shelf's previews weren't kept, so refetch rather than restore
       void queryClient.invalidateQueries({ queryKey: shelfKey });
     },
   });
 
   return (
-    <AlertDialog>
-      <AlertDialogTrigger
-        render={
-          <Button
-            variant="destructive"
-            size="icon-sm"
-            aria-label={m.aria_delete_list()}
-          />
-        }
-      >
-        <IconTrash />
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{m.list_delete_confirm()}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {m.list_delete_confirm_description({ listName: objektList.name })}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>{m.common_cancel()}</AlertDialogCancel>
-          <AlertDialogAction
-            type="button"
-            onClick={(event) => {
-              event.preventBaseUIHandler();
-              mutation.mutate({
-                data: {
-                  id: objektList.id,
-                },
-              });
-            }}
-            disabled={mutation.isPending}
-          >
-            <span>{m.common_delete()}</span>
-            {mutation.isPending && <IconLoader2 className="animate-spin" />}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmActionDialog
+      trigger={
+        <Button
+          variant="destructive"
+          size="icon-sm"
+          aria-label={m.aria_delete_list()}
+        >
+          <IconTrash />
+        </Button>
+      }
+      title={m.list_delete_confirm()}
+      description={m.list_delete_confirm_description({
+        listName: objektList.name,
+      })}
+      confirmLabel={m.common_delete()}
+      mutation={mutation}
+    />
   );
 }

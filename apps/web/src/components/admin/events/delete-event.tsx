@@ -1,18 +1,9 @@
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import ConfirmActionDialog from "@/components/confirm-action-dialog";
 import { Button } from "@/components/ui/button";
 import { m } from "@/i18n/messages";
 import { $deleteEvent } from "@/lib/functions/events";
 import { adminEventsQuery } from "@/lib/queries/events";
-import { IconLoader2, IconTrash } from "@tabler/icons-react";
+import { IconTrash } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -23,7 +14,7 @@ type Props = {
 export default function DeleteEvent({ eventId }: Props) {
   const queryClient = useQueryClient();
   const mutation = useMutation({
-    mutationFn: $deleteEvent,
+    mutationFn: () => $deleteEvent({ data: { id: eventId } }),
     onSuccess: async () => {
       toast.success(m.admin_event_deleted());
       await queryClient.invalidateQueries({
@@ -35,47 +26,25 @@ export default function DeleteEvent({ eventId }: Props) {
     },
   });
 
-  function handleDelete() {
-    mutation.mutate({ data: { id: eventId } });
-  }
-
   return (
-    <AlertDialog>
-      <AlertDialogTrigger
-        render={
-          <Button
-            type="button"
-            size="icon-xs"
-            variant="destructive"
-            disabled={mutation.isPending}
-            aria-label={m.aria_delete_event()}
-          />
-        }
-      >
-        <IconTrash className="size-4" />
-      </AlertDialogTrigger>
-      <AlertDialogContent size="sm">
-        <AlertDialogHeader>
-          <AlertDialogTitle>
-            {m.admin_event_delete_confirm_title()}
-          </AlertDialogTitle>
-          <AlertDialogDescription>
-            {m.admin_event_delete_confirm_description()}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>{m.common_cancel()}</AlertDialogCancel>
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={mutation.isPending}
-          >
-            <span>{m.common_delete()}</span>
-            {mutation.isPending && <IconLoader2 className="animate-spin" />}
-          </Button>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmActionDialog
+      trigger={
+        <Button
+          type="button"
+          size="icon-xs"
+          variant="destructive"
+          disabled={mutation.isPending}
+          aria-label={m.aria_delete_event()}
+        >
+          <IconTrash className="size-4" />
+        </Button>
+      }
+      size="sm"
+      title={m.admin_event_delete_confirm_title()}
+      description={m.admin_event_delete_confirm_description()}
+      confirmLabel={m.common_delete()}
+      variant="destructive"
+      mutation={mutation}
+    />
   );
 }

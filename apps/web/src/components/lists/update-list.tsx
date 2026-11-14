@@ -5,7 +5,7 @@ import { currentAccountQuery } from "@/lib/queries/core";
 import { listShelfQuery } from "@/lib/queries/lists";
 import type { ObjektList } from "@apollo/database/web/types";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
-import { IconAlertTriangle, IconEdit, IconLoader2 } from "@tabler/icons-react";
+import { IconEdit, IconLoader2 } from "@tabler/icons-react";
 import {
   useMutation,
   useQueryClient,
@@ -13,22 +13,13 @@ import {
 } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import {
-  Controller,
-  FormProvider,
-  useForm,
-  useFormContext,
-  useFormState,
-} from "react-hook-form";
+import { FormProvider, useForm } from "react-hook-form";
 import { toast } from "sonner";
 import type { z } from "zod";
 import {
-  updateHaveListSchema,
-  updateRegularListSchema,
-  updateSaleListSchema,
-  updateWantListSchema,
+  type ListType,
+  updateObjektListSchema,
 } from "../../lib/universal/schema/objekt-list";
-import CurrencySelect from "../misc/currency-select";
 import { Button } from "../ui/button";
 import {
   Dialog,
@@ -37,17 +28,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../ui/dialog";
-import { Field, FieldDescription, FieldError, FieldLabel } from "../ui/field";
-import { Input } from "../ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
-import { Switch } from "../ui/switch";
-import { Textarea } from "../ui/textarea";
+import ListFormFields from "./list-form-fields";
 
 type Props = {
   objektList: ObjektList;
@@ -57,8 +38,6 @@ export default function UpdateList({ objektList }: Props) {
   const [open, setOpen] = useState(false);
   const account = useSuspenseQuery(currentAccountQuery);
   const queryClient = useQueryClient();
-
-  const allLists = account.data?.objektLists ?? [];
 
   function handleSubmit() {
     void queryClient.invalidateQueries({
@@ -88,26 +67,11 @@ export default function UpdateList({ objektList }: Props) {
           <DialogTitle>{m.list_update()}</DialogTitle>
         </DialogHeader>
 
-        {objektList.type === "regular" && (
-          <RegularForm objektList={objektList} onSubmit={handleSubmit} />
-        )}
-        {objektList.type === "sale" && (
-          <SaleForm objektList={objektList} onSubmit={handleSubmit} />
-        )}
-        {objektList.type === "have" && (
-          <HaveForm
-            objektList={objektList}
-            allLists={allLists}
-            onSubmit={handleSubmit}
-          />
-        )}
-        {objektList.type === "want" && (
-          <WantForm
-            objektList={objektList}
-            allLists={allLists}
-            onSubmit={handleSubmit}
-          />
-        )}
+        <UpdateListForm
+          objektList={objektList}
+          lists={account.data?.objektLists ?? []}
+          onSubmit={handleSubmit}
+        />
       </DialogContent>
     </Dialog>
   );
@@ -115,343 +79,79 @@ export default function UpdateList({ objektList }: Props) {
 
 type FormProps = {
   objektList: ObjektList;
+  lists: ObjektList[];
   onSubmit: () => void;
 };
 
-function RegularForm({ objektList, onSubmit }: FormProps) {
+function UpdateListForm({ objektList, lists, onSubmit }: FormProps) {
+  const updateObjektList = useServerFn($updateObjektList);
+  const updateLiveList = useServerFn($updateLiveList);
   const mutation = useMutation({
-    mutationFn: useServerFn($updateObjektList),
+    mutationFn: (data: z.infer<typeof updateObjektListSchema>) =>
+      data.type === "have" || data.type === "want"
+        ? updateLiveList({ data })
+        : updateObjektList({ data }),
+    onSuccess: onSubmit,
     onError: (error) => {
       toast.error(formatError(error));
     },
   });
+  const shared = {
+    id: objektList.id,
+    name: objektList.name,
+    description: objektList.description ?? undefined,
+  };
   const form = useForm({
-    resolver: standardSchemaResolver(updateRegularListSchema),
-    defaultValues: {
-      type: "regular",
-      id: objektList.id,
-      name: objektList.name,
-      description: objektList.description ?? undefined,
-    },
+    resolver: standardSchemaResolver(updateObjektListSchema),
+    defaultValues: (
+      {
+        regular: { ...shared, type: "regular" },
+        sale: {
+          ...shared,
+          type: "sale",
+          currency: objektList.currency ?? "",
+        },
+        have: {
+          ...shared,
+          type: "have",
+          discoverable: objektList.discoverable,
+          pairListId: objektList.linkedWantListId,
+        },
+        // the have list holds the link, so a want list finds its pair through it
+        want: {
+          ...shared,
+          type: "want",
+          discoverable: objektList.discoverable,
+          pairListId:
+            lists.find(
+              (l) => l.type === "have" && l.linkedWantListId === objektList.id,
+            )?.id ?? null,
+        },
+      } satisfies {
+        [T in ListType]: Extract<
+          z.input<typeof updateObjektListSchema>,
+          { type: T }
+        >;
+      }
+    )[objektList.type],
   });
-
-  async function handleSubmit(data: z.infer<typeof updateRegularListSchema>) {
-    await mutation.mutateAsync({ data });
-    onSubmit();
-  }
 
   return (
     <FormProvider {...form}>
       <form
-        onSubmit={form.handleSubmit(handleSubmit)}
+        onSubmit={form.handleSubmit((data) => mutation.mutate(data))}
         className="flex w-full flex-col gap-3"
       >
-        <NameField placeholder={m.list_name_placeholder_regular()} />
-        <DescriptionField />
-        <SubmitButton />
+        <ListFormFields
+          type={objektList.type}
+          lists={lists}
+          listId={objektList.id}
+        />
+        <Button type="submit" disabled={mutation.isPending}>
+          <span>{m.common_save()}</span>
+          {mutation.isPending && <IconLoader2 className="animate-spin" />}
+        </Button>
       </form>
     </FormProvider>
-  );
-}
-
-function SaleForm({ objektList, onSubmit }: FormProps) {
-  const mutation = useMutation({
-    mutationFn: useServerFn($updateObjektList),
-    onError: (error) => {
-      toast.error(formatError(error));
-    },
-  });
-  const form = useForm({
-    resolver: standardSchemaResolver(updateSaleListSchema),
-    defaultValues: {
-      type: "sale",
-      id: objektList.id,
-      name: objektList.name,
-      description: objektList.description ?? undefined,
-      currency: objektList.currency ?? "",
-    },
-  });
-
-  async function handleSubmit(data: z.infer<typeof updateSaleListSchema>) {
-    await mutation.mutateAsync({ data });
-    onSubmit();
-  }
-
-  return (
-    <FormProvider {...form}>
-      <form
-        onSubmit={form.handleSubmit(handleSubmit)}
-        className="flex w-full flex-col gap-3"
-      >
-        <NameField placeholder={m.list_name_placeholder_sale()} />
-        <DescriptionField />
-        <CurrencyField />
-        <SubmitButton />
-      </form>
-    </FormProvider>
-  );
-}
-
-type LiveFormProps = FormProps & {
-  allLists: ObjektList[];
-};
-
-function HaveForm({ objektList, allLists, onSubmit }: LiveFormProps) {
-  const mutation = useMutation({
-    mutationFn: useServerFn($updateLiveList),
-    onError: (error) => {
-      toast.error(formatError(error));
-    },
-  });
-  const form = useForm({
-    resolver: standardSchemaResolver(updateHaveListSchema),
-    defaultValues: {
-      type: "have",
-      id: objektList.id,
-      name: objektList.name,
-      description: objektList.description ?? undefined,
-      discoverable: objektList.discoverable,
-      pairListId: objektList.linkedWantListId,
-    },
-  });
-
-  async function handleSubmit(data: z.infer<typeof updateHaveListSchema>) {
-    await mutation.mutateAsync({ data });
-    onSubmit();
-  }
-
-  const availableLists = allLists.filter(
-    (l) =>
-      l.type === "want" &&
-      !allLists.some(
-        (other) =>
-          other.type === "have" &&
-          other.id !== objektList.id &&
-          other.linkedWantListId === l.id,
-      ),
-  );
-
-  return (
-    <FormProvider {...form}>
-      <form
-        onSubmit={form.handleSubmit(handleSubmit)}
-        className="flex w-full flex-col gap-3"
-      >
-        <NameField placeholder={m.list_name_placeholder_have()} />
-        <DescriptionField />
-        <DiscoverableField />
-        <PairField availableLists={availableLists} />
-        <SubmitButton />
-      </form>
-    </FormProvider>
-  );
-}
-
-function WantForm({ objektList, allLists, onSubmit }: LiveFormProps) {
-  const mutation = useMutation({
-    mutationFn: useServerFn($updateLiveList),
-    onError: (error) => {
-      toast.error(formatError(error));
-    },
-  });
-  const currentHave = allLists.find(
-    (l) => l.type === "have" && l.linkedWantListId === objektList.id,
-  );
-  const form = useForm({
-    resolver: standardSchemaResolver(updateWantListSchema),
-    defaultValues: {
-      type: "want",
-      id: objektList.id,
-      name: objektList.name,
-      description: objektList.description ?? undefined,
-      discoverable: objektList.discoverable,
-      pairListId: currentHave?.id ?? null,
-    },
-  });
-
-  async function handleSubmit(data: z.infer<typeof updateWantListSchema>) {
-    await mutation.mutateAsync({ data });
-    onSubmit();
-  }
-
-  const availableLists = allLists.filter(
-    (l) =>
-      l.type === "have" &&
-      (l.linkedWantListId === null || l.linkedWantListId === objektList.id),
-  );
-
-  return (
-    <FormProvider {...form}>
-      <form
-        onSubmit={form.handleSubmit(handleSubmit)}
-        className="flex w-full flex-col gap-3"
-      >
-        <NameField placeholder={m.list_name_placeholder_want()} />
-        <DescriptionField />
-        <DiscoverableField />
-        <PairField availableLists={availableLists} />
-        <SubmitButton />
-      </form>
-    </FormProvider>
-  );
-}
-
-function NameField({ placeholder }: { placeholder: string }) {
-  const form = useFormContext<{ name: string }>();
-  return (
-    <Controller
-      control={form.control}
-      name="name"
-      render={({ field, fieldState }) => (
-        <Field data-invalid={fieldState.invalid}>
-          <FieldLabel htmlFor="name">{m.list_name()}</FieldLabel>
-          <Input
-            id="name"
-            placeholder={placeholder}
-            data-1p-ignore
-            autoFocus
-            aria-invalid={fieldState.invalid}
-            {...field}
-          />
-          <FieldError errors={[fieldState.error]} />
-        </Field>
-      )}
-    />
-  );
-}
-
-function DescriptionField() {
-  const form = useFormContext<{ description?: string | null }>();
-  return (
-    <Controller
-      control={form.control}
-      name="description"
-      render={({ field, fieldState }) => (
-        <Field data-invalid={fieldState.invalid}>
-          <FieldLabel htmlFor="description">{m.list_description()}</FieldLabel>
-          <Textarea
-            id="description"
-            placeholder={m.list_description_placeholder()}
-            rows={3}
-            maxLength={500}
-            value={field.value ?? ""}
-            onChange={(e) =>
-              field.onChange(e.target.value === "" ? undefined : e.target.value)
-            }
-          />
-          <FieldError errors={[fieldState.error]} />
-        </Field>
-      )}
-    />
-  );
-}
-
-function CurrencyField() {
-  const form = useFormContext<{ currency?: string | null }>();
-  return (
-    <Controller
-      control={form.control}
-      name="currency"
-      render={({ field, fieldState }) => (
-        <Field data-invalid={fieldState.invalid}>
-          <FieldLabel htmlFor="currency">{m.list_currency()}</FieldLabel>
-          <CurrencySelect
-            id="currency"
-            name="currency"
-            value={field.value ?? null}
-            onValueChange={field.onChange}
-          />
-          <FieldDescription>{m.list_currency_description()}</FieldDescription>
-          {fieldState.isDirty && (
-            <FieldDescription
-              role="status"
-              className="flex gap-1.5 text-amber-600 dark:text-amber-500"
-            >
-              <IconAlertTriangle className="mt-0.5 size-4 shrink-0" />
-              {m.list_currency_change_warning()}
-            </FieldDescription>
-          )}
-          <FieldError errors={[fieldState.error]} />
-        </Field>
-      )}
-    />
-  );
-}
-
-function DiscoverableField() {
-  const form = useFormContext<{ discoverable: boolean }>();
-  return (
-    <Controller
-      control={form.control}
-      name="discoverable"
-      render={({ field }) => (
-        <Field>
-          <div className="flex items-center justify-between">
-            <FieldLabel htmlFor="discoverable">
-              {m.list_discoverable()}
-            </FieldLabel>
-            <Switch
-              id="discoverable"
-              checked={field.value === true}
-              onCheckedChange={field.onChange}
-            />
-          </div>
-          <p className="text-xs text-muted-foreground">
-            {m.list_discoverable_description()}
-          </p>
-        </Field>
-      )}
-    />
-  );
-}
-
-function PairField({ availableLists }: { availableLists: ObjektList[] }) {
-  const form = useFormContext<{ pairListId: string | null }>();
-  const items = [
-    { value: "__unpaired__", label: m.list_pair_unpair() },
-    ...availableLists.map((l) => ({ value: l.id, label: l.name })),
-  ];
-  return (
-    <Controller
-      control={form.control}
-      name="pairListId"
-      render={({ field }) => (
-        <Field>
-          <FieldLabel>{m.list_pair_with()}</FieldLabel>
-          <Select
-            items={items}
-            value={field.value ?? "__unpaired__"}
-            onValueChange={(value) =>
-              field.onChange(value === "__unpaired__" ? null : value)
-            }
-          >
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {items.map((item) => (
-                <SelectItem key={item.value} value={item.value}>
-                  {item.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <p className="text-xs text-muted-foreground">
-            {m.list_pair_required_for_matching()}
-          </p>
-        </Field>
-      )}
-    />
-  );
-}
-
-function SubmitButton() {
-  const { isSubmitting } = useFormState();
-
-  return (
-    <Button type="submit" disabled={isSubmitting}>
-      <span>{m.common_save()}</span>
-      {isSubmitting && <IconLoader2 className="animate-spin" />}
-    </Button>
   );
 }
