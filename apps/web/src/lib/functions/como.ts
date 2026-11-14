@@ -2,7 +2,7 @@ import { remember } from "@/lib/server/cache.server";
 import { indexer } from "@/lib/server/db/indexer";
 import type { ComoBalance, ObjektWithCollection } from "@/lib/universal/como";
 import { collections, objekts } from "@apollo/database/indexer/schema";
-import { addr, Addresses, isEqual } from "@apollo/util";
+import { addr, Addresses, isAddress, isEqual } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, inArray, not, sql } from "drizzle-orm";
 import * as z from "zod";
@@ -44,7 +44,7 @@ export const $fetchObjektsWithComo = createServerFn({ method: "GET" })
  * Cached for 15 minutes.
  */
 export const $fetchTokenBalances = createServerFn({ method: "GET" })
-  .validator(z.object({ address: z.string() }))
+  .validator(z.object({ address: z.string().refine(isAddress) }))
   .handler(async ({ data }): Promise<ComoBalance[]> => {
     const owner = addr(data.address);
 

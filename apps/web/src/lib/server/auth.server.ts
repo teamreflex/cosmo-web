@@ -9,7 +9,11 @@ import { apiKey } from "@better-auth/api-key";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { captureException } from "@sentry/bun";
 import type { BetterAuthPlugin } from "better-auth";
-import { APIError, createAuthMiddleware } from "better-auth/api";
+import {
+  APIError,
+  createAuthMiddleware,
+  getSessionFromCtx,
+} from "better-auth/api";
 import { betterAuth } from "better-auth/minimal";
 import { admin } from "better-auth/plugins/admin";
 import { jwt } from "better-auth/plugins/jwt";
@@ -23,10 +27,17 @@ import {
   hasDeliverableEmail,
   type PublicUser,
 } from "../universal/auth";
+import { isExpectedError } from "../universal/errors/expected";
+import { isRateLimitErrorCode } from "../universal/errors/rate-limit";
 import { settingsSchema, updateUsernameSchema } from "../universal/schema/auth";
 import { DEFAULT_CURRENCY } from "../universal/schema/currency";
 import { db } from "./db";
-import { sendPasswordResetEmail, sendVerificationEmail } from "./mail.server";
+import {
+  sendEmailChangeConfirmation,
+  sendPasswordResetEmail,
+  sendVerificationEmail,
+} from "./mail.server";
+import { consumeRateLimit } from "./rate-limit.server";
 import { publishUserEvent } from "./user-events.server";
 
 /**
@@ -78,6 +89,29 @@ function refuseUndeliverableEmail(email: string) {
       code: EMAIL_REQUIRED_ERROR,
       message: "A deliverable email address is required",
     });
+  }
+}
+
+/**
+ * `consumeRateLimit()` for a Better Auth hook. A spent window is refused as a
+ * 429 `APIError`, which `getAuthErrorMessage()` maps to the rate limit
+ * message. A store failure refuses the request too, and is
+ * reported here because Better Auth answers it with a bare 500.
+ */
+async function consumeAuthRateLimit(
+  options: Parameters<typeof consumeRateLimit>[0],
+) {
+  try {
+    await consumeRateLimit(options);
+  } catch (error) {
+    if (isExpectedError(error) && isRateLimitErrorCode(error.message)) {
+      throw APIError.from("TOO_MANY_REQUESTS", {
+        code: error.message,
+        message: "Too many requests",
+      });
+    }
+    captureException(error);
+    throw error;
   }
 }
 
@@ -144,7 +178,27 @@ export const auth = betterAuth({
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
+    /**
+     * Every verification mail passes through here: sign-up, a resend, a
+     * change of address and each use of a change confirmation link, which
+     * stays valid for an hour. Past an address's budget the mail is skipped
+     * without failing the caller, so sign-up and link clicks still succeed
+     * and nothing reveals whether the address is known. A store failure is
+     * reported and sends nothing.
+     */
     sendVerificationEmail: async ({ user, url, token }) => {
+      try {
+        await consumeRateLimit({
+          key: `verification-recipient:${user.email.toLowerCase()}`,
+          limit: 10,
+          window: "1 hour",
+        });
+      } catch (error) {
+        if (!(isExpectedError(error) && isRateLimitErrorCode(error.message))) {
+          captureException(error);
+        }
+        return;
+      }
       await sendVerificationEmail({
         to: user.email,
         url: url,
@@ -162,6 +216,7 @@ export const auth = betterAuth({
     requireEmailVerification: false,
     minPasswordLength: 8,
     maxPasswordLength: 32,
+    revokeSessionsOnPasswordReset: true,
     sendResetPassword: async ({ user, url, token }) => {
       await sendPasswordResetEmail({
         to: user.email,
@@ -196,10 +251,11 @@ export const auth = betterAuth({
       delete: {
         /**
          * Tells apps/chat to close the user's sockets whenever a live session
-         * ends: sign-out, revoked sessions, a password change and a ban. An
-         * expired row is skipped, since chat refuses its session anyway. A
-         * Redis failure is reported rather than thrown, because the session is
-         * already gone and the chat token's lifetime bounds any open stream.
+         * ends: sign-out, revoked sessions, a password change or reset and a
+         * ban. An expired row is skipped, since chat refuses its session
+         * anyway. A Redis failure is reported rather than thrown, because the
+         * session is already gone and the chat token's lifetime bounds any
+         * open stream.
          */
         async after(session) {
           if (session.expiresAt > new Date()) {
@@ -303,6 +359,26 @@ export const auth = betterAuth({
       if (ctx.path?.startsWith("/admin/") && ctx.request) {
         throw new APIError("NOT_FOUND");
       }
+
+      /**
+       * Better Auth's own limit on these routes counts per IP, so signed-in
+       * calls count per account as well. Signed-out calls are left to the
+       * endpoint, and to the per-recipient cap in `sendVerificationEmail`.
+       */
+      if (
+        ctx.request &&
+        (ctx.path === "/change-email" ||
+          ctx.path === "/send-verification-email")
+      ) {
+        const session = await getSessionFromCtx(ctx);
+        if (session) {
+          await consumeAuthRateLimit({
+            key: `${ctx.path === "/change-email" ? "change-email" : "verification-email"}:${session.user.id}`,
+            limit: 5,
+            window: "1 hour",
+          });
+        }
+      }
     }),
   },
 
@@ -347,6 +423,15 @@ export const auth = betterAuth({
   user: {
     changeEmail: {
       enabled: true,
+      // a verified user confirms from their current address first
+      sendChangeEmailConfirmation: async ({ user, newEmail, url, token }) => {
+        await sendEmailChangeConfirmation({
+          to: user.email,
+          url: url,
+          token: token,
+          newEmail: newEmail,
+        });
+      },
     },
     additionalFields: {
       gridColumns: {
@@ -461,7 +546,6 @@ export function toPublicUser(
   return {
     id: user.id,
     username: user.displayUsername ?? undefined,
-    image: user.image ?? undefined,
     gridColumns: user.gridColumns ?? GRID_COLUMNS,
     collectionMode: collectionModeSchema.parse(user.collectionMode),
     social: {

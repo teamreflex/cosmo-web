@@ -1,4 +1,4 @@
-import { remember } from "@/lib/server/cache.server";
+import { remember, uncached } from "@/lib/server/cache.server";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import {
@@ -70,7 +70,10 @@ export const $fetchPins = createServerFn({ method: "GET" })
         },
       });
 
-      const rows = account?.pins ?? [];
+      // an identifier with no account gets no key; an account with no pins keeps its empty one
+      if (account === undefined) return uncached([]);
+
+      const rows = account.pins;
       if (rows.length === 0) return [];
 
       const tokenIds = pinTokenIds(rows);

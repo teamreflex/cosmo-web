@@ -4,6 +4,7 @@ import { baseUrl } from "@/lib/utils";
 import {
   AccountDeletionEmail,
   createMailer,
+  EmailChangeEmail,
   PasswordResetEmail,
   VerifyEmail,
 } from "@apollo/mail";
@@ -37,6 +38,21 @@ export async function sendVerificationEmail({ to, url }: EmailProps) {
     to,
     subject: `Verify your ${config.appName} email`,
     body: <VerifyEmail config={config} url={url} />,
+  });
+}
+
+/**
+ * Ask the user, at their current address, to confirm changing it to `newEmail`.
+ */
+export async function sendEmailChangeConfirmation({
+  to,
+  url,
+  newEmail,
+}: EmailProps & { newEmail: string }) {
+  await mailer.send({
+    to,
+    subject: `Confirm your new ${config.appName} email`,
+    body: <EmailChangeEmail config={config} url={url} newEmail={newEmail} />,
   });
 }
 

@@ -1,6 +1,12 @@
-import { ExpectedError } from "@/lib/universal/errors/expected";
+import { env } from "@/lib/env/client";
+import {
+  ExpectedError,
+  isExpectedError,
+} from "@/lib/universal/errors/expected";
+import { isMaskedError, MaskedError } from "@/lib/universal/errors/masked";
 import { can, parseRole } from "@apollo/auth";
 import type { Permissions } from "@apollo/auth";
+import { isNotFound, isRedirect } from "@tanstack/react-router";
 import { createMiddleware } from "@tanstack/react-start";
 import { auth } from "./auth.server";
 import { getCosmoAddress } from "./cosmo-accounts.server";
@@ -24,6 +30,37 @@ export const sessionMiddleware = createMiddleware({ type: "request" }).server(
     });
   },
 );
+
+/**
+ * Keeps a genuine failure's message on the server, because Start sends the
+ * message of anything a server function throws to the caller and a database
+ * error's message holds its SQL. Expected errors, redirects and notFound()
+ * are answers for the client and pass through; everything else leaves as a
+ * MaskedError. A server function called from another one arrives already
+ * masked and reported, so it passes through as it is. Listed before Sentry's
+ * function middleware in start.ts so Sentry reports the original first.
+ */
+export const errorMaskingMiddleware = createMiddleware({
+  type: "function",
+}).server(async ({ next }) => {
+  try {
+    return await next();
+  } catch (error) {
+    if (
+      isExpectedError(error) ||
+      isMaskedError(error) ||
+      isRedirect(error) ||
+      isNotFound(error)
+    ) {
+      throw error;
+    }
+    // without Sentry, as in local development, this is the failure's only trace
+    if (env.VITE_SENTRY_DSN === undefined) {
+      console.error("[server function]", error);
+    }
+    throw new MaskedError(error);
+  }
+});
 
 /**
  * Adds the current session to the context.

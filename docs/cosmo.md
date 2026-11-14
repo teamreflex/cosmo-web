@@ -19,11 +19,6 @@ About the number:
 - The first digit hints at the class: 1 is Welcome or First, 2 Special, 3 Double, 4 Premier.
 - Welcome class objekts are always 100Z.
 
-### Artists
-
-- `validArtists` in `packages/cosmo/src/types/common.ts` lists the artists the app knows; its filters, schemas and band maps are built from it.
-- An artist COSMO adds is left out of the fetched artist list, with a warning in the log, until its id is added to `validArtists`, so the navbar, filters and sync tasks keep working without it.
-
 ### Unobtainable collections
 
 `collection.unobtainable` marks collections nobody can obtain any more. They are left out of progress totals and the progress leaderboard.

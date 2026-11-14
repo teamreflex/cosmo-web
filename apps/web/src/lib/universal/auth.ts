@@ -4,7 +4,6 @@ import * as z from "zod";
 export type PublicUser = {
   id: string;
   username: string | undefined;
-  image: string | undefined;
   gridColumns: number;
   collectionMode: CollectionDataSource;
   social: {

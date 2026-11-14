@@ -200,7 +200,6 @@ The processor never writes these; triggers on `objekt` and `collection` do.
 - The root `patches/@subsquid%2Fhttp-client@1.9.0.patch` removes `compress: true`, which Bun's fetch reads as "gzip the request body" and RPC nodes reject with `-32700`. Re-create it when bumping the package.
 - `glob`, `lru-cache` and `path-scurry` are direct dependencies only to pin Bun-compatible versions; nothing imports them, so keep them when pruning.
 - `pg`, the driver TypeORM loads at startup, is installed only through the dev dependency `@subsquid/typeorm-codegen`, so keep that package when pruning.
-- `bun run typegen` regenerates `src/abi` from the contract ABIs in `abi/`.
 - `bun run build` uses `tsc -p tsconfig.build.json`, because the TypeORM models need decorator metadata emit.
 - `DB_NAME`, `DB_READ_USER` and `DB_READ_PASS` are required by `src/env.ts` but never read.
 

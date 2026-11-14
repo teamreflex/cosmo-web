@@ -9,7 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import { sessionQuery } from "@/hooks/use-account";
 import { m } from "@/i18n/messages";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
-import { formatError } from "@/lib/client/errors";
+import { formatError, LocalizedError } from "@/lib/client/errors";
 import { currentAccountQuery } from "@/lib/queries/core";
 import { hasDeliverableEmail } from "@/lib/universal/auth";
 import type { CurrentUser } from "@/lib/universal/auth";
@@ -70,7 +70,7 @@ function NotificationSwitches({ mask }: { mask: number }) {
     mutationFn: async (emailNotifications: number) => {
       const result = await authClient.updateUser({ emailNotifications });
       if (result.error) {
-        throw new Error(getAuthErrorMessage(result.error));
+        throw new LocalizedError(getAuthErrorMessage(result.error));
       }
     },
     onMutate: async (emailNotifications) => {

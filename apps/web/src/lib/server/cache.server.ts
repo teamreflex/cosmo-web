@@ -4,6 +4,17 @@ import { Exit, Schema } from "effect";
 
 export const redis = new RedisClient(env.REDIS_URL);
 
+class Uncached<T> {
+  constructor(readonly value: T) {}
+}
+
+/**
+ * Marks a `remember()` callback's result as one to return without caching.
+ */
+export function uncached<T>(value: T) {
+  return new Uncached(value);
+}
+
 /**
  * Get an item from the cache, or store the default value.
  * TTL is in seconds.
@@ -11,22 +22,26 @@ export const redis = new RedisClient(env.REDIS_URL);
  * When a schema is given, the cached value is decoded against it and a
  * mismatch is treated as a miss — values written before a schema change
  * self-heal into a recompute instead of being served in their old shape.
+ *
+ * A value the callback wraps in `uncached()` is returned without being
+ * written, so a key built from caller input is only stored once the input
+ * names something that exists.
  */
 export async function remember<T>(
   key: string,
   ttl: number,
-  callback: () => Promise<T>,
+  callback: () => Promise<T | Uncached<T>>,
 ): Promise<T>;
 export async function remember<S extends Schema.Constraint>(
   key: string,
   ttl: number,
-  callback: () => Promise<S["Type"]>,
+  callback: () => Promise<S["Type"] | Uncached<S["Type"]>>,
   schema: S,
 ): Promise<S["Type"]>;
 export async function remember<T>(
   key: string,
   ttl: number,
-  callback: () => Promise<T>,
+  callback: () => Promise<T | Uncached<T>>,
   schema?: Schema.Codec<T, unknown>,
 ): Promise<T> {
   key = key.toLowerCase();
@@ -47,6 +62,9 @@ export async function remember<T>(
   }
 
   const fresh = await callback();
+  if (fresh instanceof Uncached) {
+    return fresh.value;
+  }
   await redis.setex(key, ttl, JSON.stringify(fresh));
 
   return fresh;

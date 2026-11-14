@@ -14,6 +14,9 @@ Effect service serving the `ChatRpcs` group from `@apollo/chat/protocol` as a we
 - `ChatAuth` subscribes to the user's `Disconnects` before it reads the session, so a disconnect published during the read still ends the call.
 - `Join` subscribes to the trade's signal before it reads history, so a row committed in between is still delivered.
 - Signals carry no data: a woken stream re-reads its own trade's rows past its last id, so a dropped, coalesced or misdirected signal can't lose or leak a message.
+- `readNew()` in `src/handlers.ts` is a stream of `PAGE`-row pages, each read only after the client acknowledged the one before, so a `Join` holds one decrypted page however long the trade's history is. Never collect it into an array.
+- Every page is read under its own access check, because a client that withholds acknowledgements can hold a read open long after the check before it. The first page of the history uses the check `Join` made and the first page after a signal uses that signal's check; every later page runs `readAccess` again, and a refusal ends the stream with that error.
+- A `Join` runs one `readNew()` at a time: signals wait in the subscription until the history and `CaughtUp` are sent, and each wake-up drains its pages before the next signal is taken, because every read starts from the shared last id.
 - Every writer of `trade_messages` holds the trade row `FOR NO KEY UPDATE` before inserting, because `Join` reads by `id > last` and ids must commit in order. `Send` first locks the sender and recipients `FOR KEY SHARE` in id order, for the notifications' foreign keys; the full order is in [docs/locking.md](../../docs/locking.md).
 - A write that open streams must see calls `channels.changed(tradeId)` after its transaction. Chat runs as one instance and fans out in process; a second instance would need a Redis publish for `Send` and `Remove`.
 - Change `tests/memory-store.ts` with every change to `src/store.ts`.
@@ -77,16 +80,16 @@ Keyed per user in Redis, inline in `src/handlers.ts`.
 
 `bun test` runs in memory: `tests/memory-store.ts` is a Map-backed `ChatStore`, and `tests/harness.ts` signs tokens with a local EdDSA key, uses a random message key, a memory rate limiter and the `TestClock`. It seeds alice, bob, carol and dave, a moderator and an admin, a trade between alice and bob, and another between carol and dave. Nothing opens a database or Redis.
 
-| Suite                  | Proves                                                                                                          |
-| ---------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `canary.test.ts`       | a body appears only in the streams and replies that asked for it, never in logs, rows, notifications or reports |
-| `join.test.ts`         | history then `CaughtUp`, rejoin by `afterId` without gaps, `TokenExpired` at `exp`, disconnects                 |
-| `messages.test.ts`     | who a send notifies, AAD binding, isolation between trades, the send limit, report refusals                     |
-| `staff.test.ts`        | staff access through reports, audit under the right report, `Remove`, staff messages                            |
-| `tokens.test.ts`       | forged, expired, banned and impersonated tokens; the role comes from the database                               |
-| `remote-keys.test.ts`  | the live key-set layer over http on a random port, which needs the `effect` patch; a redirect refused           |
-| `redis-events.test.ts` | trade updates signal, user events end calls                                                                     |
-| `socket.test.ts`       | the real routes on a random port and the real clock: the Origin check, and dates and error tags crossing JSON   |
+| Suite                  | Proves                                                                                                                                                                  |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `canary.test.ts`       | a body appears only in the streams and replies that asked for it, never in logs, rows, notifications or reports                                                         |
+| `join.test.ts`         | history then `CaughtUp`, history read a page at a time and each page under its own access check, rejoin by `afterId` without gaps, `TokenExpired` at `exp`, disconnects |
+| `messages.test.ts`     | who a send notifies, AAD binding, isolation between trades, the send limit, report refusals                                                                             |
+| `staff.test.ts`        | staff access through reports, audit under the right report, `Remove`, staff messages                                                                                    |
+| `tokens.test.ts`       | forged, expired, banned and impersonated tokens; the role comes from the database                                                                                       |
+| `remote-keys.test.ts`  | the live key-set layer over http on a random port, which needs the `effect` patch; a redirect refused                                                                   |
+| `redis-events.test.ts` | trade updates signal, user events end calls                                                                                                                             |
+| `socket.test.ts`       | the real routes on a random port and the real clock: the Origin check, and dates and error tags crossing JSON                                                           |
 
 `RpcTest` skips the socket and JSON, which is why `socket.test.ts` exists.
 

@@ -57,6 +57,8 @@ export type MemoryState = {
   audit: MemoryAudit[];
   // trade_messages ids, shared by messages and events so they only grow
   nextId: number;
+  // how many times rowsAfter has run
+  pageReads: number;
 };
 
 export function makeState(): MemoryState {
@@ -70,6 +72,7 @@ export function makeState(): MemoryState {
     notifications: [],
     audit: [],
     nextId: 1,
+    pageReads: 0,
   };
 }
 
@@ -128,12 +131,13 @@ export function memoryStoreLayer(state: MemoryState) {
       }),
 
     rowsAfter: (tradeId, afterId, limit) =>
-      Effect.sync(() =>
-        state.rows
+      Effect.sync(() => {
+        state.pageReads++;
+        return state.rows
           .filter((row) => row.tradeId === tradeId && row.id > afterId)
           .slice(0, limit)
-          .map(toStoredRow),
-      ),
+          .map(toStoredRow);
+      }),
     row: (messageId) =>
       Effect.sync(() => {
         const row = state.rows.find((each) => each.id === messageId);

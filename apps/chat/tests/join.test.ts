@@ -2,19 +2,22 @@ import { beforeAll, describe, expect, test } from "bun:test";
 import { Effect, Fiber, Option, Redacted, Stream } from "effect";
 import { TestClock } from "effect/testing";
 import { Disconnects } from "../src/disconnects";
+import { PAGE } from "../src/handlers";
 import { MAX_OPEN_STREAMS } from "../src/open-streams";
 import {
   client,
   collect,
   makeSigner,
   mint,
+  outcome,
   run,
   seed,
   settle,
   type Signer,
+  TEST_NOW,
   TRADE,
 } from "./harness";
-import { makeState } from "./memory-store";
+import { makeState, type MemoryReport, type MemoryState } from "./memory-store";
 
 let signer: Signer;
 beforeAll(async () => {
@@ -25,6 +28,19 @@ function world() {
   const state = makeState();
   seed(state);
   return state;
+}
+
+// `count` timeline events on TRADE, as the web app writes them
+function addEvents(state: MemoryState, count: number) {
+  for (let index = 0; index < count; index++) {
+    state.rows.push({
+      kind: "event",
+      id: state.nextId++,
+      tradeId: TRADE,
+      event: { type: "accepted" },
+      createdAt: new Date(TEST_NOW),
+    });
+  }
 }
 
 const body = (item: { _tag: string; body?: unknown }) =>
@@ -80,6 +96,83 @@ describe("Join", () => {
           .Join({ tradeId: TRADE })
           .pipe(Stream.take(2), Stream.runCollect);
         expect(tags.map((item) => item._tag)).toEqual(["Message", "CaughtUp"]);
+      }),
+    );
+  });
+
+  test.each([2 * PAGE, 2 * PAGE + 1])(
+    "a history of %d rows arrives whole and in order before CaughtUp",
+    async (count) => {
+      const state = world();
+      addEvents(state, count);
+      const alice = await mint(signer, { sub: "alice" });
+      await run(
+        state,
+        signer,
+        Effect.gen(function* () {
+          const a = yield* client(alice);
+          const items = yield* a
+            .Join({ tradeId: TRADE })
+            .pipe(Stream.take(count + 1), Stream.runCollect);
+          expect(
+            items.map((item) => (item._tag === "CaughtUp" ? null : item.id)),
+          ).toEqual([...state.rows.map((row) => row.id), null]);
+        }),
+      );
+    },
+  );
+
+  test("reads the history a page at a time, as the client takes it", async () => {
+    const state = world();
+    addEvents(state, 3 * PAGE);
+    const alice = await mint(signer, { sub: "alice" });
+    await run(
+      state,
+      signer,
+      Effect.gen(function* () {
+        const a = yield* client(alice);
+        yield* Stream.runHead(a.Join({ tradeId: TRADE }));
+        yield* settle;
+        expect(state.pageReads).toBe(1);
+      }),
+    );
+  });
+
+  test("staff who lose access between pages get no later page", async () => {
+    const state = world();
+    addEvents(state, 2 * PAGE);
+    const report: MemoryReport = {
+      id: "dispute",
+      reporterId: "alice",
+      targetType: "trade",
+      targetId: TRADE,
+      status: "open",
+      reason: "not_responding",
+      note: null,
+    };
+    state.reports.push(report);
+    const mod = await mint(signer, { sub: "mod" });
+    await run(
+      state,
+      signer,
+      Effect.gen(function* () {
+        const m = yield* client(mod);
+        const ids: number[] = [];
+        // the report closes while the first page is still being taken
+        const ended = yield* outcome(
+          m.Join({ tradeId: TRADE }).pipe(
+            Stream.runForEach((item) =>
+              Effect.sync(() => {
+                report.status = "resolved";
+                if (item._tag !== "CaughtUp") {
+                  ids.push(item.id);
+                }
+              }),
+            ),
+          ),
+        );
+        expect(ended).toBe("StaffAccessRequired");
+        expect(ids).toEqual(state.rows.slice(0, PAGE).map((row) => row.id));
       }),
     );
   });

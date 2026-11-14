@@ -1,5 +1,6 @@
 import * as Sentry from "@sentry/bun";
 import { isExpectedError } from "./src/lib/universal/errors/expected";
+import { isMaskedError } from "./src/lib/universal/errors/masked";
 
 /**
  * Skip Start notFound() "errors".
@@ -46,6 +47,8 @@ if (process.env.VITE_SENTRY_DSN !== undefined) {
     beforeSend(event, hint) {
       if (
         isExpectedError(hint.originalException) ||
+        // stands in for a failure its server function already reported
+        isMaskedError(hint.originalException) ||
         isNotFoundSignal(hint.originalException) ||
         isRedirectSignal(hint.originalException)
       ) {

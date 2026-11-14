@@ -6,7 +6,7 @@ import {
 } from "@/components/ui/input-group";
 import { m } from "@/i18n/messages";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
-import { formatError } from "@/lib/client/errors";
+import { formatError, LocalizedError } from "@/lib/client/errors";
 import { updateEmailSchema } from "@/lib/universal/schema/auth";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconDeviceFloppy, IconLoader2 } from "@tabler/icons-react";
@@ -18,9 +18,11 @@ import type { z } from "zod";
 
 type Props = {
   email: string;
+  // a verified address confirms the change itself before the new one is mailed
+  verified: boolean;
 };
 
-export default function UpdateEmail({ email }: Props) {
+export default function UpdateEmail({ email, verified }: Props) {
   const router = useRouter();
   const mutation = useMutation({
     mutationFn: async (data: z.infer<typeof updateEmailSchema>) => {
@@ -28,7 +30,7 @@ export default function UpdateEmail({ email }: Props) {
         newEmail: data.email,
       });
       if (result.error) {
-        throw new Error(getAuthErrorMessage(result.error));
+        throw new LocalizedError(getAuthErrorMessage(result.error));
       }
       return result.data;
     },
@@ -44,7 +46,11 @@ export default function UpdateEmail({ email }: Props) {
   function handleSubmit(data: z.infer<typeof updateEmailSchema>) {
     mutation.mutate(data, {
       onSuccess: () => {
-        toast.success(m.auth_email_verification_sent());
+        toast.success(
+          verified
+            ? m.auth_email_change_confirmation_sent()
+            : m.auth_email_verification_sent(),
+        );
         void router.invalidate();
       },
       onError: (error) => {

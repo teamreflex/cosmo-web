@@ -2,12 +2,12 @@
 
 The SES sender and the react-email templates shared by apps/web (auth emails) and apps/schedules ([notification emails](../../docs/trades/notification-emails.md)), so every email Apollo sends comes from one sender with one look.
 
-| Export                                                      | Holds                                                                                          |
-| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `createMailer()`                                            | one SES client built from a `MailConfig`, and its `send()`, which renders and sends one `Mail` |
-| `VerifyEmail`, `PasswordResetEmail`, `AccountDeletionEmail` | the auth emails, each taking a `RenderConfig` and the link                                     |
-| `NotificationEmail`                                         | a notification email, taking a `RenderConfig`, its items and the opt-out link                  |
-| `notificationSubject()`                                     | a notification email's subject: its first item's, with "(+N more)"                             |
+| Export                                                                          | Holds                                                                                                     |
+| ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `createMailer()`                                                                | one SES client built from a `MailConfig`, and its `send()`, which renders and sends one `Mail`            |
+| `VerifyEmail`, `PasswordResetEmail`, `AccountDeletionEmail`, `EmailChangeEmail` | the auth emails, each taking a `RenderConfig` and the link; `EmailChangeEmail` also takes the new address |
+| `NotificationEmail`                                                             | a notification email, taking a `RenderConfig`, its items and the opt-out link                             |
+| `notificationSubject()`                                                         | a notification email's subject: its first item's, with "(+N more)"                                        |
 
 - Each email is its own template in `src/emails`: the preview server renders its default export with its `PreviewProps`, and the app that sends it renders the same component, with the subject written beside the send. React escapes every prop, so they can carry usernames.
 - Each notification type's wording is in `itemLine()` and `itemDetail()` (`src/emails/_components/notification-items.tsx`); a new type fails to compile until both cover it. The subject is the item's line unless `itemSubject()` (`src/subject.ts`) words it differently.

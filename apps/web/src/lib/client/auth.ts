@@ -23,12 +23,17 @@ export const authClient = createAuthClient({
 type ErrorInput = {
   code?: string | undefined;
   message?: string | undefined;
+  status?: number | undefined;
 };
 
 /**
  * Provides error messages for Better Auth errors.
  */
 export function getAuthErrorMessage(error: ErrorInput) {
+  // Better Auth's own per-IP limiter answers 429 with no code
+  if (error.status === 429) {
+    return m.error_rate_limited();
+  }
   if (error.code) {
     switch (error.code) {
       case "USERNAME_IS_ALREADY_TAKEN":

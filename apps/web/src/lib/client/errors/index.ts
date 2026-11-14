@@ -1,9 +1,12 @@
+import { m } from "@/i18n/messages";
 import { formatAccountError } from "./accounts";
 import { formatAuthError } from "./auth";
 import { formatBinderError } from "./binders";
 import { formatCollectionError } from "./collections";
+import { formatEventError } from "./events";
 import { formatFeedbackError } from "./feedback";
 import { type Context, formatListError } from "./lists";
+import { LocalizedError } from "./localized";
 import { formatMarketInviteError } from "./market-invites";
 import { formatRateLimitError } from "./rate-limit";
 import { formatReportError } from "./reports";
@@ -15,6 +18,7 @@ export {
   formatAuthError,
   formatBinderError,
   formatCollectionError,
+  formatEventError,
   formatFeedbackError,
   formatListError,
   formatMarketInviteError,
@@ -22,12 +26,13 @@ export {
   formatReportError,
   formatSerialError,
   formatTradeError,
+  LocalizedError,
 };
 
 /**
  * Localizes any expected error code (list/binder/auth/collection/report/
- * account/serial/trade/feedback/market invite), falling back to the raw
- * message for genuine errors.
+ * account/serial/trade/feedback/market invite/event). A `LocalizedError`
+ * shows its own message, and any other error shows a generic one.
  */
 export function formatError(error: Error, context: Context = {}): string {
   return (
@@ -40,8 +45,9 @@ export function formatError(error: Error, context: Context = {}): string {
     formatTradeError(error.message) ??
     formatFeedbackError(error.message) ??
     formatMarketInviteError(error.message) ??
+    formatEventError(error.message) ??
     formatRateLimitError(error.message) ??
     formatSerialError(error.message) ??
-    error.message
+    (error instanceof LocalizedError ? error.message : m.error_unknown())
   );
 }

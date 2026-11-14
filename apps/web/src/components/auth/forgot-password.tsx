@@ -1,6 +1,6 @@
 import { m } from "@/i18n/messages";
 import { authClient, getAuthErrorMessage } from "@/lib/client/auth";
-import { formatError } from "@/lib/client/errors";
+import { formatError, LocalizedError } from "@/lib/client/errors";
 import { forgotPasswordSchema } from "@/lib/universal/schema/auth";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconLoader2, IconMailCheck } from "@tabler/icons-react";
@@ -25,7 +25,7 @@ export default function ForgotPassword({ onCancel }: Props) {
       });
 
       if (result.error) {
-        throw new Error(getAuthErrorMessage(result.error));
+        throw new LocalizedError(getAuthErrorMessage(result.error));
       }
       return result.data;
     },
