@@ -83,7 +83,7 @@ Staff act through `lib/functions/staff-trades.ts` and `actOnTrade()` in `lib/ser
 - `$staffExtendTradeDeadline` gives a disputed trade a new deadline from `extendedDeadline()`: the time it had left when it was last frozen, plus 24, 48 or 72 hours. It returns to `accepted` with `dispute_report_id` cleared.
 - An extend completes the trade instead when everything has arrived. Otherwise it is refused `trade_party_banned` while a party is banned, because they couldn't sign in to finish it.
 - `/admin/reports` offers complete and extend to `resolve-dispute` holders, and cancel to `cancel-any` holders.
-- `listing: ["remove-any"]` is in the permission statement, but no server function checks it; banning the poster is the only way staff remove a listing.
+- Banning the poster is the only way staff remove a listing.
 
 ## Bans and account deletion
 

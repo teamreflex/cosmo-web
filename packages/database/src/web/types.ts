@@ -75,11 +75,8 @@ export const listMatchNotificationTypes = ["trade_have", "trade_want"] as const;
 export type ListMatchNotificationType =
   (typeof listMatchNotificationTypes)[number];
 
-/**
- * Events on a trade or listing the recipient is part of. Each value keeps one
- * meaning for good, since a row's copy is rebuilt from it on every read.
- */
-export const tradeNotificationTypes = [
+// the trade values the enum holds ahead of the retired ones
+const tradeTypesBeforeRetired = [
   "listing_claimed",
   "trade_completed",
   "trade_timed_out",
@@ -87,39 +84,20 @@ export const tradeNotificationTypes = [
   "trade_disputed",
   "trade_dispute_resolved",
   "trade_deadline_extended",
-  "listing_closed",
-  "trade_message",
-  "feedback_received",
-  "offer_received",
-  "offer_accepted",
-  "offer_declined",
-  "offer_countered",
-  "offer_expired",
-  "offer_stale",
 ] as const;
-export type TradeNotificationType = (typeof tradeNotificationTypes)[number];
 
 /**
  * Enum values nothing writes: a token in a trade moving elsewhere or turning
  * untransferable shows on the trade page instead. They stay in the enum until
- * the stack's migrations are consolidated (phase 16).
+ * a migration recreates it, because Postgres can't drop an enum value.
  */
 const retiredNotificationTypes = [
   "trade_token_moved",
   "trade_token_untransferable",
 ] as const;
 
-// in the enum's order; new values go at the end, so its migration is a plain ADD VALUE
-export const notificationTypes = [
-  ...listMatchNotificationTypes,
-  "listing_claimed",
-  "trade_completed",
-  "trade_timed_out",
-  "trade_cancelled",
-  "trade_disputed",
-  "trade_dispute_resolved",
-  "trade_deadline_extended",
-  ...retiredNotificationTypes,
+// the rest of the trade values, which end the enum, so a new one goes last here
+const tradeTypesAfterRetired = [
   "listing_closed",
   "trade_message",
   "feedback_received",
@@ -129,6 +107,24 @@ export const notificationTypes = [
   "offer_countered",
   "offer_expired",
   "offer_stale",
+] as const;
+
+/**
+ * Events on a trade or listing the recipient is part of. Each value keeps one
+ * meaning for good, since a row's copy is rebuilt from it on every read.
+ */
+export const tradeNotificationTypes = [
+  ...tradeTypesBeforeRetired,
+  ...tradeTypesAfterRetired,
+] as const;
+export type TradeNotificationType = (typeof tradeNotificationTypes)[number];
+
+// in the enum's order; new values go at the end, so its migration is a plain ADD VALUE
+export const notificationTypes = [
+  ...listMatchNotificationTypes,
+  ...tradeTypesBeforeRetired,
+  ...retiredNotificationTypes,
+  ...tradeTypesAfterRetired,
 ] as const;
 export type NotificationType = (typeof notificationTypes)[number];
 export type CosmoToken = typeof cosmoTokens.$inferSelect;

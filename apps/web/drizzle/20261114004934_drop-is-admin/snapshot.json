@@ -1,0 +1,35 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "f8adcfd8-877d-43fe-b982-8c1a2f7f6ded",
+  "prevIds": [
+    "3b69d897-eb80-44b1-80e0-2ebaf5f2f87e"
+  ],
+  "footprints": [
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "user",
+        "is_admin"
+      ],
+      "writes": [
+        "s|col|public.user.is_admin",
+        "n|col|public.user.is_admin",
+        "e|col|public.user.is_admin"
+      ],
+      "reads": [
+        "n|tbl|public.user",
+        "n|sch|public"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"user\",\"is_admin\"]"
+    }
+  ]
+}

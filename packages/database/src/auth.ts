@@ -34,7 +34,6 @@ export const user = pgTable(
     // custom fields
     username: citext("username").unique(),
     displayUsername: citext("display_username"),
-    isAdmin: boolean("is_admin").notNull().default(false),
     gridColumns: integer("grid_columns").notNull().default(GRID_COLUMNS),
     collectionMode: text("collection_mode")
       .notNull()

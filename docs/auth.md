@@ -68,7 +68,7 @@ Roles and the access-control `statement` are defined once in `packages/auth/src/
 | ----------------------------------------------------------------------- | ---- | ------ | --------- | ----- |
 | `market: access`                                                        |      | x      | x         | x     |
 | `trade: read-any, cancel-any, resolve-dispute, remove-message, message` |      |        | x         | x     |
-| `listing: remove-any`, `feedback: remove-any`                           |      |        | x         | x     |
+| `feedback: remove-any`                                                  |      |        | x         | x     |
 | `report: read, resolve, escalate`                                       |      |        | x         | x     |
 | `user: ban, set-role`                                                   |      |        |           | x     |
 | `site: manage`, `audit: read`, `cosmo: history`                         |      |        |           | x     |
