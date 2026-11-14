@@ -2,8 +2,6 @@ import { toPublicUser } from "@/lib/server/auth.server";
 import { getCosmoAddress } from "@/lib/server/cosmo-accounts.server";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
-import { collections, members } from "@/lib/server/db/indexer/schema";
-import type { Collection } from "@/lib/server/db/indexer/schema";
 import {
   authenticatedMiddleware,
   cosmoMiddleware,
@@ -54,6 +52,8 @@ import type { OfferSerials } from "@/lib/universal/trades";
 import { createSlug } from "@/lib/utils";
 import { can, marketAccess, parseRole } from "@apollo/auth";
 import { isBanActive } from "@apollo/auth/guard";
+import { collections, members } from "@apollo/database/indexer/schema";
+import type { Collection } from "@apollo/database/indexer/types";
 import { objektListEntries, objektLists } from "@apollo/database/web/schema";
 import type { ObjektListEntry, TradeSide } from "@apollo/database/web/types";
 import { tradeListingId } from "@apollo/trades/lifecycle";

@@ -1,7 +1,7 @@
 import { remember } from "@/lib/server/cache.server";
 import { indexer } from "@/lib/server/db/indexer";
-import { collections, objekts } from "@/lib/server/db/indexer/schema";
 import type { HourlyBreakdown, ObjektStats } from "@/lib/universal/stats";
+import { collections, objekts } from "@apollo/database/indexer/schema";
 import { createServerFn } from "@tanstack/react-start";
 import { and, count, eq, gte, lt, sql } from "drizzle-orm";
 

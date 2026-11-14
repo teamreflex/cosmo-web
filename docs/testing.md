@@ -16,7 +16,7 @@ A test guards pure logic that is easy to break and hard to notice in the browser
 - Tests import pure modules by relative path (`../src/lib/universal/...`) and need no database, server or network.
 - There are no database or server-function integration tests, and no mocked COSMO or HTTP responses.
 - `apps/chat` is the exception: it is pure Effect, so its suite drives the real handlers over an in-memory store ([apps/chat/CLAUDE.md](../apps/chat/CLAUDE.md)).
-- `apps/web/tests/messages.test.ts` is a catalog test: it fails when a locale's keys differ from English or a plural uses categories the locale lacks.
+- `apps/web/tests/messages.test.ts` is a catalog test: it fails when a locale's keys differ from English, a plural uses categories the locale lacks, or no file under `apps/web/src` calls an English key as `m.<key>`.
 - Anything a person sees on the page (copy, layout, which panel renders, formatting) is checked by running the app ([browser-testing.md](browser-testing.md)), not by a test.
 
 ## One test per rule

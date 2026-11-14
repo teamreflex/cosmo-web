@@ -1,4 +1,4 @@
-import type { Objekt as ObjektRow } from "@/lib/server/db/indexer/schema";
+import type { Objekt as ObjektRow } from "@apollo/database/indexer/types";
 import { slugifyObjekt } from "@apollo/util";
 
 export namespace Objekt {

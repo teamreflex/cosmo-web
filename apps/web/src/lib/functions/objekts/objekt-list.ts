@@ -1,13 +1,6 @@
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import {
-  collections,
-  collectionStats,
-  members,
-  objekts,
-} from "@/lib/server/db/indexer/schema";
-import type { Collection } from "@/lib/server/db/indexer/schema";
-import {
   mintOrder,
   withArtist,
   withClass,
@@ -27,6 +20,13 @@ import {
   supportedSort,
 } from "@/lib/universal/sorts";
 import { isMemberSort, isMintSort } from "@apollo/cosmo/types/common";
+import {
+  collections,
+  collectionStats,
+  members,
+  objekts,
+} from "@apollo/database/indexer/schema";
+import type { Collection } from "@apollo/database/indexer/types";
 import type { ObjektListEntry } from "@apollo/database/web/types";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, type SQL, sql } from "drizzle-orm";

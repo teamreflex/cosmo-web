@@ -1,4 +1,4 @@
-import { auth, toCurrentUser, toPublicUser } from "@/lib/server/auth.server";
+import { auth, toCurrentUser } from "@/lib/server/auth.server";
 import { remember } from "@/lib/server/cache.server";
 import { fetchCookie, putCookie } from "@/lib/server/cookies.server";
 import {
@@ -12,7 +12,7 @@ import {
   fetchUniqueSeasons,
 } from "@/lib/server/objekts/filter-data.server";
 import { getRequestSignal } from "@/lib/server/request.server";
-import type { CurrentUser, PublicUser } from "@/lib/universal/auth";
+import type { CurrentUser } from "@/lib/universal/auth";
 import type { FullAccount, PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { selectedArtistsSchema } from "@/lib/universal/schema/cosmo";
 import type { Role } from "@apollo/auth";
@@ -22,24 +22,6 @@ import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 import * as z from "zod";
-
-/**
- * Fetch the current session.
- */
-export const $fetchCurrentUser = createServerFn({ method: "GET" }).handler(
-  async (): Promise<PublicUser | null> => {
-    const headers = getRequestHeaders();
-    const session = await auth.api.getSession({
-      headers: headers,
-    });
-
-    if (!session) {
-      return null;
-    }
-
-    return toPublicUser(session.user);
-  },
-);
 
 export const FILTER_DATA_CACHE_KEY = "filter-data";
 

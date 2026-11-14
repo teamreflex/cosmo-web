@@ -102,7 +102,7 @@ Prices:
 Paraglide JS, with six locales (`en ko ja fr zh-CN zh-TW`) and `en` as the base.
 
 - Every user-visible string is an `m.key()` from `@/i18n/messages`, with the key added to all six `apps/web/messages/*.json` files.
-- Paraglide falls back to English at run time for a missing key, so only `tests/messages.test.ts` catches it. That test also fails a plural that uses categories the locale lacks.
+- Paraglide falls back to English at run time for a missing key, so only `tests/messages.test.ts` catches it. That test also fails a plural that uses categories the locale lacks, and a key no file under `src` names literally as `m.key`.
 - Plurals use a `countPlural` selector; copy the shape of an existing plural message.
 - A link inside a sentence is markup in every locale (`"ask in the {#link}{appName} Discord{/link}"`), rendered with `<ParaglideMessage message={m.key} inputs={...} markup={{ link: ... }} />` from `@inlang/paraglide-js-react`. Don't split the sentence into several messages, because translators need to move the link.
 - Markup names are type-checked, and calling `m.key()` directly returns the text with the markup stripped.

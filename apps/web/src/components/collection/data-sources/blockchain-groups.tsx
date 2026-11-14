@@ -51,7 +51,6 @@ export default function BlockchainGroups(props: Props) {
    * Query options
    */
   const options = objektOptions({
-    filtering: "remote",
     query: userCollectionBlockchainGroupsQuery(
       props.targetCosmo.address,
       filters,
@@ -80,7 +79,6 @@ export default function BlockchainGroups(props: Props) {
       hidePins={usingFilters}
       onReorderPins={onReorderPins}
       shouldRender={shouldRender}
-      showTotal
     />
   );
 }

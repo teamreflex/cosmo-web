@@ -9,6 +9,7 @@
     "lint": "bun --bun oxlint --type-aware --type-check",
     "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
     "typecheck": "bun check",
+    "typegen": "squid-evm-typegen src/abi ./abi/*.json && bun fmt src/abi",
     "format": "bun fmt"
   },
   "dependencies": {

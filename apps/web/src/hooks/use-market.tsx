@@ -17,7 +17,6 @@ export function useMarket() {
   const { selectedIds } = useArtists();
 
   return objektOptions({
-    filtering: "remote",
     query: marketQuery(searchParams, selectedIds, useDisplayCurrency()),
     calculateTotal: (data) => {
       const listings = data.pages[0]?.totals?.listings ?? 0;

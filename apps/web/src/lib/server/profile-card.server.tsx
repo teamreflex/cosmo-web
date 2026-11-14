@@ -4,11 +4,6 @@ import { $fetchPins } from "@/lib/functions/pins";
 import { remember } from "@/lib/server/cache.server";
 import { fetchFullAccount } from "@/lib/server/cosmo-accounts.server";
 import { indexer } from "@/lib/server/db/indexer";
-import {
-  collections,
-  objekts,
-  transfers,
-} from "@/lib/server/db/indexer/schema";
 import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import {
   cardSeed,
@@ -23,6 +18,11 @@ import type {
   ProfileCardObjekt,
 } from "@/lib/universal/profile-card";
 import halvar from "@/styles/fonts/HalvarBreit-Bd.woff2?inline";
+import {
+  collections,
+  objekts,
+  transfers,
+} from "@apollo/database/indexer/schema";
 import { addr, Addresses, isAddress, isEqual } from "@apollo/util";
 import dmSans from "@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2?inline";
 import jetbrainsMono from "@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2?inline";

@@ -1,5 +1,5 @@
 import { indexer } from "@/lib/server/db/indexer";
-import { objekts } from "@/lib/server/db/indexer/schema";
+import { objekts } from "@apollo/database/indexer/schema";
 import { inArray } from "drizzle-orm";
 
 /**

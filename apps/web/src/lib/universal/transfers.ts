@@ -1,4 +1,4 @@
-import type { Collection, Transfer } from "../server/db/indexer/schema";
+import type { Collection, Transfer } from "@apollo/database/indexer/types";
 
 export const transferTypes = [
   "all",

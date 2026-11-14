@@ -79,7 +79,6 @@ type Props<
   hidePins?: boolean;
   onReorderPins?: (move: PinMove) => void;
   shouldRender?: (objekt: TItem) => boolean;
-  showTotal?: boolean;
 
   // rendering
   ItemComponent: ComponentType<BaseItemComponentProps<TItem> & TItemProps>;
@@ -138,7 +137,6 @@ function ObjektGrid<
   hidePins = true,
   onReorderPins,
   shouldRender = () => true,
-  showTotal = false,
 
   // rendering
   ItemComponent,
@@ -336,11 +334,7 @@ function ObjektGrid<
         </ObjektImageSizesContext>
       </div>
 
-      {showTotal && (
-        <Portal to={options.totalPortalTarget ?? "#objekt-total"}>
-          {total}
-        </Portal>
-      )}
+      <Portal to={options.totalPortalTarget ?? "#objekt-total"}>{total}</Portal>
 
       <Portal to="#pagination">
         <InfiniteQueryNext

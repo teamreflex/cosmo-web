@@ -1,6 +1,5 @@
 import { remember } from "@/lib/server/cache.server";
 import { indexer } from "@/lib/server/db/indexer";
-import { collections, members, objekts } from "@/lib/server/db/indexer/schema";
 import type {
   GridCatalogRow,
   GridMemberRef,
@@ -9,6 +8,7 @@ import type {
 } from "@/lib/universal/grid";
 import { sourceClassFor } from "@/lib/universal/grid";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
+import { collections, members, objekts } from "@apollo/database/indexer/schema";
 import { and, count, eq, inArray } from "drizzle-orm";
 
 /**

@@ -89,7 +89,6 @@ export const collectionDataSources = [
   "blockchain-groups",
 ] as const;
 export type CollectionDataSource = (typeof collectionDataSources)[number];
-export type FilterType = "remote" | "local";
 
 /**
  * Slugify a string for objekt collection IDs.

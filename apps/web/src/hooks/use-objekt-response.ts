@@ -1,4 +1,3 @@
-import type { FilterType } from "@apollo/util";
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import type {
   DefaultError,
@@ -15,7 +14,6 @@ export type ObjektResponseOptions<
   TQueryKey extends QueryKey = QueryKey,
   TPageParam = number,
 > = {
-  filtering: FilterType;
   query: UnusedSkipTokenInfiniteOptions<
     TResponse,
     TError,

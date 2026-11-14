@@ -1,11 +1,11 @@
 import { indexer } from "@/lib/server/db/indexer";
-import type { Collection } from "@/lib/server/db/indexer/schema";
+import type { ValidOnlineType } from "@apollo/cosmo/types/common";
 import {
   collectionOwners,
   collections,
   progressLeaderboard,
-} from "@/lib/server/db/indexer/schema";
-import type { ValidOnlineType } from "@apollo/cosmo/types/common";
+} from "@apollo/database/indexer/schema";
+import type { Collection } from "@apollo/database/indexer/types";
 import { and, asc, desc, eq, notInArray } from "drizzle-orm";
 
 type FetchTotal = {

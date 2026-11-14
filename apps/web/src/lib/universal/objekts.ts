@@ -1,4 +1,4 @@
-import type { Collection, Transfer } from "@/lib/server/db/indexer/schema";
+import type { Collection, Transfer } from "@apollo/database/indexer/types";
 import type { Era, Event } from "@apollo/database/web/types";
 import type { CollectionDocument } from "./schema/search";
 

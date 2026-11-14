@@ -1,7 +1,6 @@
 import { decodeCursor, encodeCursor } from "@/lib/server/cursor.server";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
-import { collections, objekts } from "@/lib/server/db/indexer/schema";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import {
   isListMatchNotification,
@@ -17,6 +16,7 @@ import {
   markNotificationsReadSchema,
 } from "@/lib/universal/schema/notifications";
 import { offerCloser } from "@/lib/universal/trades";
+import { collections, objekts } from "@apollo/database/indexer/schema";
 import {
   cosmoAccounts,
   notifications,

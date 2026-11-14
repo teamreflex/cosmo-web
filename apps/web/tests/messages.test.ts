@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import * as z from "zod";
 
@@ -86,4 +86,29 @@ describe("message catalogs", () => {
       }
     },
   );
+
+  /**
+   * A key no source file calls is never shown, yet every locale keeps
+   * translating it. `src/i18n` is the compiled catalog, which names them all.
+   */
+  test("every English message is called as m.<key> under src", () => {
+    const called = new Set(
+      readdirSync(join(appDir, "src"), { recursive: true, encoding: "utf8" })
+        .filter((file) => /\.tsx?$/.test(file) && !file.startsWith("i18n/"))
+        .flatMap((file) =>
+          Array.from(
+            readFileSync(join(appDir, "src", file), "utf8").matchAll(
+              /\bm\.(\w+)/g,
+            ),
+            (match) => match[1],
+          ),
+        ),
+    );
+    expect(
+      Object.keys(english).filter(
+        (key) =>
+          key !== "$schema" && !key.startsWith("_comment_") && !called.has(key),
+      ),
+    ).toEqual([]);
+  });
 });

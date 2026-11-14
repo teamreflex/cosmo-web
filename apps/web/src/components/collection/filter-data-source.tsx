@@ -1,4 +1,3 @@
-import type { CosmoFilters, SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
 import { cn } from "@/lib/utils";
@@ -8,18 +7,11 @@ import { getSources } from "./data-sources";
 import FilterChip from "./filter-chip";
 
 type Props = {
-  filters: CosmoFilters;
-  setFilters: SetCosmoFilters;
   dataSource: CollectionDataSource;
   setDataSource: Dispatch<SetStateAction<CollectionDataSource>>;
 };
 
-export default function FilterDataSource({
-  filters,
-  setFilters,
-  dataSource,
-  setDataSource,
-}: Props) {
+export default function FilterDataSource({ dataSource, setDataSource }: Props) {
   const target = useProfileContext((state) => state.target);
 
   const sources = getSources();
@@ -27,17 +19,6 @@ export default function FilterDataSource({
     s.isAvailable(target?.cosmo?.address),
   );
   const active = sources.find((s) => s.value === dataSource);
-
-  function handleChange(source: CollectionDataSource) {
-    // blockchain sources don't support gridable
-    if (
-      (source === "blockchain" || source === "blockchain-groups") &&
-      filters.gridable
-    ) {
-      setFilters({ gridable: undefined });
-    }
-    setDataSource(source);
-  }
 
   return (
     <FilterChip
@@ -55,7 +36,7 @@ export default function FilterDataSource({
                 key={source.value}
                 type="button"
                 onClick={() => {
-                  handleChange(source.value);
+                  setDataSource(source.value);
                   close();
                 }}
                 className={cn(

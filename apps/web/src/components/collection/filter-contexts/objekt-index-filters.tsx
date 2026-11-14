@@ -40,7 +40,6 @@ export default function ObjektIndexFilters({ search = false }: Props) {
       season: undefined,
       on_offline: undefined,
       transferable: undefined,
-      gridable: undefined,
       collectionNo: undefined,
     });
   }

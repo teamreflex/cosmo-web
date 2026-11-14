@@ -85,7 +85,6 @@ function EventRenderer(props: EventRendererProps) {
   const gridColumns = useGridColumns();
 
   const options = objektOptions({
-    filtering: "remote",
     query: eventObjektsQuery(props.slug),
     calculateTotal: (data) => {
       const total = data.pages[0]?.total ?? 0;
@@ -105,7 +104,6 @@ function EventRenderer(props: EventRendererProps) {
       getObjektId={(objekt) => objekt.slug}
       authenticated={false}
       ItemComponent={EventGridItem}
-      showTotal
     />
   );
 }
