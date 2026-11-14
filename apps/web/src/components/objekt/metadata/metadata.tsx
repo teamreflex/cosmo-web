@@ -1,5 +1,9 @@
 import { StatCell } from "@/components/ui/stat-cell";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  type ObjektMetadataTab,
+  objektMetadataTabSchema,
+} from "@/hooks/use-metadata-dialog";
 import { m } from "@/i18n/messages";
 import { lazyWithPreload } from "@/lib/lazy";
 import {
@@ -11,7 +15,6 @@ import { defaultPriceHistoryRange } from "@/lib/universal/objekts";
 import { noop, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense } from "react";
 import LazyFallback from "../../lazy-fallback";
-import type { ObjektMetadataTab } from "./common";
 import SerialsPanel from "./serials-panel";
 
 /**
@@ -67,8 +70,9 @@ export default function Metadata(props: Props) {
       {/* tabs */}
       <Tabs
         value={props.tab}
-        // SAFETY: tab values are the ObjektMetadataTab variants
-        onValueChange={(value) => props.setTab(value as ObjektMetadataTab)}
+        onValueChange={(value) =>
+          props.setTab(objektMetadataTabSchema.parse(value))
+        }
         variant="navbar"
         className="flex flex-col gap-0"
       >

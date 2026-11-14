@@ -4,17 +4,16 @@ import { FRESH_SESSION_MINUTES } from "@/lib/universal/account-deletion";
 import { isAccountErrorCode } from "@/lib/universal/errors/accounts";
 
 /**
- * Maps an account error code to a localized message, or null when the error is
+ * Maps an account error code to a localized message, or null when the code is
  * not a known account error code.
  */
-// oxlint-disable-next-line anti-slop/no-unknown-parameters -- boundary parser; caught errors are genuinely unknown
-export function formatAccountError(error: unknown): string | null {
-  if (!(error instanceof Error) || !isAccountErrorCode(error.message)) {
+export function formatAccountError(code: string): string | null {
+  if (!isAccountErrorCode(code)) {
     return null;
   }
 
   const appName = env.VITE_APP_NAME;
-  switch (error.message) {
+  switch (code) {
     case "account_linked_elsewhere":
       return m.account_error_linked_elsewhere({ appName });
     case "cosmo_already_linked":
@@ -34,7 +33,7 @@ export function formatAccountError(error: unknown): string | null {
         minutes: FRESH_SESSION_MINUTES,
       });
     default:
-      error.message satisfies never;
+      code satisfies never;
       return null;
   }
 }

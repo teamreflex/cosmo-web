@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
-import { getSeasonKeys } from "@/hooks/use-filter-data";
 import { m } from "@/i18n/messages";
 import { $addCollectionsToEvent } from "@/lib/functions/events";
 import {
@@ -70,10 +69,9 @@ export default function AddCollectionsDialog({
   const memberAliases = Object.fromEntries(
     artist.artistMembers.map((m) => [m.name, m.alias]),
   );
-  const availableSeasons = getSeasonKeys(
+  const availableSeasons =
     filterData.seasons.find((s) => s.artistId === artist.id.toLowerCase())
-      ?.seasons ?? [],
-  );
+      ?.seasons ?? [];
 
   const expandedSlugs = useMemo(() => {
     if (

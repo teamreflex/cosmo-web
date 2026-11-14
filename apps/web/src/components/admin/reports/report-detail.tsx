@@ -82,7 +82,9 @@ export default function ReportDetail({ id }: Props) {
                   <IconFlagOff />
                 </EmptyMedia>
                 <EmptyTitle className="text-base">
-                  {formatError(error)}
+                  {error instanceof Error
+                    ? formatError(error)
+                    : m.error_unknown()}
                 </EmptyTitle>
               </EmptyHeader>
             </Empty>

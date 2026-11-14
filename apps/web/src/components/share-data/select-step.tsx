@@ -1,7 +1,6 @@
 import SeasonSelection from "@/components/season-selection";
 import { Button } from "@/components/ui/button";
 import { useArtists } from "@/hooks/use-artists";
-import { getSeasonKeys } from "@/hooks/use-filter-data";
 import { m } from "@/i18n/messages";
 import type {
   ScrapeCandidate,
@@ -160,7 +159,7 @@ export default function SelectStep({ candidates, onContinue }: Props) {
                     : m.share_data_seasons()}
                 </span>
                 <SeasonSelection
-                  seasons={getSeasonKeys(audioSeasons(artist.id))}
+                  seasons={audioSeasons(artist.id)}
                   value={audio[artist.id] ?? []}
                   onChange={(seasons) => setAudioSeasons(artist.id, seasons)}
                 />

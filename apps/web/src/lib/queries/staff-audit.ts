@@ -14,8 +14,7 @@ export function staffAuditQuery(filters: StaffAuditFilters) {
     queryKey: ["admin", "audit", filters],
     queryFn: ({ pageParam }) =>
       $fetchStaffAudit({ data: { ...filters, cursor: pageParam } }),
-    // SAFETY: cursor seed; widened for TanStack Query inference
-    initialPageParam: undefined as number | undefined,
+    initialPageParam: firstPage,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
     staleTime: 0,
   });
@@ -25,3 +24,9 @@ export const auditStaffQuery = queryOptions({
   queryKey: ["admin", "audit", "staff"],
   queryFn: () => $fetchAuditStaff(),
 });
+
+/**
+ * The first page has no cursor. Typed as the cursor union so the query
+ * infers its page param from it.
+ */
+const firstPage: number | undefined = undefined;

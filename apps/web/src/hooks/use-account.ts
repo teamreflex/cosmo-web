@@ -6,8 +6,10 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { toast } from "sonner";
+import * as z from "zod";
 
-export type Provider = "twitter" | "discord";
+export const providers = ["discord", "twitter"] as const;
+export type Provider = (typeof providers)[number];
 
 export const sessionQuery = queryOptions({
   queryKey: ["session"],
@@ -39,11 +41,16 @@ export const listAccountsQuery = queryOptions({
   },
 });
 
-export type LinkedAccount = {
-  id: string;
-  providerId: Provider;
-  accountId: string;
-};
+/**
+ * A social account the account page can list. The credential account and an
+ * account from a provider outside `providers` fail it.
+ */
+export const linkedAccountSchema = z.object({
+  id: z.string(),
+  providerId: z.enum(providers),
+  accountId: z.string(),
+});
+export type LinkedAccount = z.infer<typeof linkedAccountSchema>;
 
 export function useUnlinkAccount(account: LinkedAccount) {
   const queryClient = useQueryClient();

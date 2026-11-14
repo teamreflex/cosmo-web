@@ -9,11 +9,14 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { type Theme, useTheme } from "@/hooks/use-theme";
+import { useTheme } from "@/hooks/use-theme";
 import { m } from "@/i18n/messages";
-import { getLocale, locales, setLocale } from "@/i18n/runtime";
+import { assertIsLocale, getLocale, locales, setLocale } from "@/i18n/runtime";
 import { localeNames } from "@/lib/universal/locales";
 import { IconLanguage, IconMoon, IconSun } from "@tabler/icons-react";
+import * as z from "zod";
+
+const themeSchema = z.enum(["dark", "light"]);
 
 export default function GuestSettings() {
   return (
@@ -46,8 +49,7 @@ function ThemeSubmenu() {
       <DropdownMenuSubContent>
         <DropdownMenuRadioGroup
           value={theme}
-          // SAFETY: radio options only contain Theme values
-          onValueChange={(value) => setTheme(value as Theme)}
+          onValueChange={(value) => setTheme(themeSchema.parse(value))}
         >
           <DropdownMenuRadioItem value="dark" closeOnClick>
             <IconMoon className="size-4 shrink-0" />
@@ -67,8 +69,7 @@ function LanguageSubmenu() {
   const locale = getLocale();
 
   function handleLanguageChange(value: string) {
-    // SAFETY: radio options only contain valid locales
-    void setLocale(value as typeof locale);
+    void setLocale(assertIsLocale(value));
   }
 
   return (

@@ -1,10 +1,10 @@
+import type { ObjektMetadataTab } from "@/hooks/use-metadata-dialog";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Skeleton } from "../../ui/skeleton";
 import { MetadataDialogError } from "./common";
-import type { ObjektMetadataTab } from "./common";
 import Metadata from "./metadata";
 
 type Props = {

@@ -14,7 +14,7 @@ export default function EventsBackground({ event }: EventsBackgroundProps) {
     event?.era.spotifyAlbumArt ||
     null;
   const dominantColor =
-    event?.dominantColor || event?.era.dominantColor || null;
+    event?.dominantColor || event?.era.dominantColor || undefined;
 
   return (
     // the server-rendered background shows at first paint; later changes crossfade
@@ -31,8 +31,7 @@ export default function EventsBackground({ event }: EventsBackgroundProps) {
           {/* Dominant color gradient base */}
           <div
             className="absolute inset-0 bg-linear-to-b from-(--album-color) via-(--album-color)/70 to-(--album-color)/20"
-            // SAFETY: CSSProperties doesn't model custom --var properties
-            style={{ "--album-color": dominantColor } as React.CSSProperties}
+            style={{ "--album-color": dominantColor }}
           />
 
           {/* Blurred album art overlay */}

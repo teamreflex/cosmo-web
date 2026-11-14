@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
-import { getSeasonKeys } from "@/hooks/use-filter-data";
 import { m } from "@/i18n/messages";
+import { seasonBadgeVariant } from "@/lib/universal/seasons";
 import type { EventWithEra } from "@apollo/database/web/types";
 import {
   IconBrandDiscord,
@@ -173,17 +173,11 @@ export default function EventHeader({ event }: EventHeaderProps) {
 }
 
 function Seasons(props: { seasons: string[] }) {
-  const seasons = getSeasonKeys(props.seasons);
-
   return (
     <>
-      {seasons.map(({ key, name }) => (
-        <Badge
-          key={name}
-          // SAFETY: every season key has a season-* badge variant
-          variant={`season-${key}` as "season-atom"}
-        >
-          {name}
+      {props.seasons.map((season) => (
+        <Badge key={season} variant={seasonBadgeVariant(season)}>
+          {season}
         </Badge>
       ))}
     </>

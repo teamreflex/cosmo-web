@@ -3,16 +3,15 @@ import { MAX_BINDER_PAGES } from "@/lib/universal/binders";
 import { isBinderErrorCode } from "@/lib/universal/errors/binders";
 
 /**
- * Maps a binder error code to a localized message, or null when the error is
+ * Maps a binder error code to a localized message, or null when the code is
  * not a known binder error code.
  */
-// oxlint-disable-next-line anti-slop/no-unknown-parameters -- boundary parser; caught errors are genuinely unknown
-export function formatBinderError(error: unknown): string | null {
-  if (!(error instanceof Error) || !isBinderErrorCode(error.message)) {
+export function formatBinderError(code: string): string | null {
+  if (!isBinderErrorCode(code)) {
     return null;
   }
 
-  switch (error.message) {
+  switch (code) {
     case "binder_not_found":
       return m.binder_error_binder_not_found();
     case "binder_name_taken":
@@ -34,7 +33,7 @@ export function formatBinderError(error: unknown): string | null {
     case "objekt_not_owned":
       return m.binder_error_objekt_not_owned();
     default:
-      error.message satisfies never;
+      code satisfies never;
       return null;
   }
 }

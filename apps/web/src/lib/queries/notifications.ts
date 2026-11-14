@@ -19,10 +19,14 @@ export const unreadNotificationsQuery = queryOptions({
  */
 export const notificationsListQuery = infiniteQueryOptions({
   queryKey: ["notifications", "list"],
-  queryFn: ({ signal, pageParam }) =>
-    $listNotifications({ signal, data: { cursor: pageParam } }),
-  // SAFETY: cursor seed; widened for TanStack Query inference
-  initialPageParam: undefined as string | undefined,
+  queryFn: ({
+    signal,
+    pageParam,
+  }: {
+    signal: AbortSignal;
+    pageParam: string | undefined;
+  }) => $listNotifications({ signal, data: { cursor: pageParam } }),
+  initialPageParam: undefined,
   getNextPageParam: (lastPage) => lastPage.nextCursor,
   staleTime: 0,
 });

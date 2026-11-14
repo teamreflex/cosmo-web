@@ -41,15 +41,18 @@ const seasonConfig = {
 } as const;
 type Season = keyof typeof seasonConfig;
 
+function isSeason(name: string): name is Season {
+  return Object.hasOwn(seasonConfig, name);
+}
+
 /**
  * Extract the season name and number from a season string.
  */
 function extractSeason(season: string): [Season, number] | null {
   const match = season.match(/^([a-zA-Z]+)(\d+)?$/);
   if (!match) return null;
-  // SAFETY: membership is validated against seasonConfig on the next line
-  const name = match[1]?.toLowerCase() as Season;
-  if (!(name in seasonConfig)) return null;
+  const name = match[1]?.toLowerCase();
+  if (name === undefined || !isSeason(name)) return null;
   const num = match[2] ? parseInt(match[2], 10) : 0;
   return [name, num];
 }
@@ -60,6 +63,15 @@ function extractSeason(season: string): [Season, number] | null {
 export function getSeasonColor(season: string) {
   const match = extractSeason(season);
   return match ? seasonConfig[match[0]].color : null;
+}
+
+/**
+ * The badge variant in a season's color, or the outline variant for a season
+ * that has no color.
+ */
+export function seasonBadgeVariant(season: string) {
+  const match = extractSeason(season);
+  return match ? (`season-${match[0]}` as const) : "outline";
 }
 
 /**

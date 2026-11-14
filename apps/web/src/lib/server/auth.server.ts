@@ -4,8 +4,7 @@ import { baseUrl } from "@/lib/utils";
 import { adminPluginOptions } from "@apollo/auth";
 import * as authSchema from "@apollo/database/auth";
 import { emailNotificationsSchema } from "@apollo/trades/notifications";
-import { GRID_COLUMNS } from "@apollo/util";
-import type { CollectionDataSource } from "@apollo/util";
+import { collectionDataSources, GRID_COLUMNS } from "@apollo/util";
 import { apiKey } from "@better-auth/api-key";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter/relations-v2";
 import { captureException } from "@sentry/bun";
@@ -17,6 +16,7 @@ import { jwt } from "better-auth/plugins/jwt";
 import { username } from "better-auth/plugins/username";
 import { tanstackStartCookies } from "better-auth/tanstack-start";
 import { createCipheriv, randomBytes } from "node:crypto";
+import * as z from "zod";
 import {
   type CurrentUser,
   EMAIL_REQUIRED_ERROR,
@@ -441,6 +441,9 @@ function encryptToken(token: string, key: string) {
   );
 }
 
+// a stored mode outside the enum reads as the column's default
+const collectionModeSchema = z.enum(collectionDataSources).catch("blockchain");
+
 /**
  * Safely convert a user object for public use.
  */
@@ -460,9 +463,7 @@ export function toPublicUser(
     username: user.displayUsername ?? undefined,
     image: user.image ?? undefined,
     gridColumns: user.gridColumns ?? GRID_COLUMNS,
-    // SAFETY: the column only stores CollectionDataSource values
-    collectionMode: (user.collectionMode ??
-      "blockchain") as CollectionDataSource,
+    collectionMode: collectionModeSchema.parse(user.collectionMode),
     social: {
       discord: user.showSocials ? (user.discord ?? undefined) : undefined,
       twitter: user.showSocials ? (user.twitter ?? undefined) : undefined,

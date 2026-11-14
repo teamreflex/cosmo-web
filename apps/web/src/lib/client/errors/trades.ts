@@ -18,16 +18,15 @@ import {
 } from "@/lib/universal/trade-listings";
 
 /**
- * Maps a trade error code to a localized message, or null when the error is
+ * Maps a trade error code to a localized message, or null when the code is
  * not a known trade error code.
  */
-// oxlint-disable-next-line anti-slop/no-unknown-parameters -- boundary parser; caught errors are genuinely unknown
-export function formatTradeError(error: unknown): string | null {
-  if (!(error instanceof Error) || !isTradeErrorCode(error.message)) {
+export function formatTradeError(code: string): string | null {
+  if (!isTradeErrorCode(code)) {
     return null;
   }
 
-  switch (error.message) {
+  switch (code) {
     case "listing_not_found":
       return m.trade_error_listing_not_found();
     case "listing_own":
@@ -73,7 +72,7 @@ export function formatTradeError(error: unknown): string | null {
     case "offer_expired":
       return m.trade_error_offer_expired();
     default:
-      error.message satisfies never;
+      code satisfies never;
       return null;
   }
 }
@@ -133,8 +132,7 @@ export type OfferTokenRefusal =
  * Reads the token a refused offer, counter or accept names, or null when it
  * names none.
  */
-// oxlint-disable-next-line anti-slop/no-unknown-parameters -- boundary parser; caught errors are genuinely unknown
-export function offerTokenRefusal(error: unknown): OfferTokenRefusal | null {
+export function offerTokenRefusal(error: Error): OfferTokenRefusal | null {
   if (!(error instanceof ExpectedError)) return null;
   switch (error.message) {
     case "claim_token_unavailable": {
@@ -165,9 +163,7 @@ export type ClaimFailure =
  * Reads a failed claim into what the confirm dialog shows, or null for an
  * error it leaves to a toast.
  */
-// oxlint-disable-next-line anti-slop/no-unknown-parameters -- boundary parser; caught errors are genuinely unknown
-export function claimFailure(error: unknown): ClaimFailure | null {
-  if (!(error instanceof Error)) return null;
+export function claimFailure(error: Error): ClaimFailure | null {
   switch (error.message) {
     case "listing_updated":
       return { kind: "updated" };

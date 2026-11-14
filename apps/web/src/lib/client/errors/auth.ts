@@ -3,15 +3,14 @@ import { isAuthErrorCode } from "@/lib/universal/errors/auth";
 
 /**
  * Maps an auth/session error code to a localized message, or null when the
- * error is not a known auth error code.
+ * code is not a known auth error code.
  */
-// oxlint-disable-next-line anti-slop/no-unknown-parameters -- boundary parser; caught errors are genuinely unknown
-export function formatAuthError(error: unknown): string | null {
-  if (!(error instanceof Error) || !isAuthErrorCode(error.message)) {
+export function formatAuthError(code: string): string | null {
+  if (!isAuthErrorCode(code)) {
     return null;
   }
 
-  switch (error.message) {
+  switch (code) {
     case "not_signed_in":
       return m.auth_error_not_signed_in();
     case "cosmo_not_linked":
@@ -37,7 +36,7 @@ export function formatAuthError(error: unknown): string | null {
     case "ban_trade_party":
       return m.auth_error_ban_trade_party();
     default:
-      error.message satisfies never;
+      code satisfies never;
       return null;
   }
 }

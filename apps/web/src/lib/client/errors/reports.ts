@@ -2,16 +2,15 @@ import { m } from "@/i18n/messages";
 import { isReportErrorCode } from "@/lib/universal/errors/reports";
 
 /**
- * Maps a report error code to a localized message, or null when the error is
+ * Maps a report error code to a localized message, or null when the code is
  * not a known report error code.
  */
-// oxlint-disable-next-line anti-slop/no-unknown-parameters -- boundary parser; caught errors are genuinely unknown
-export function formatReportError(error: unknown): string | null {
-  if (!(error instanceof Error) || !isReportErrorCode(error.message)) {
+export function formatReportError(code: string): string | null {
+  if (!isReportErrorCode(code)) {
     return null;
   }
 
-  switch (error.message) {
+  switch (code) {
     case "report_already_open":
       return m.report_error_report_already_open();
     case "report_self":
@@ -27,7 +26,7 @@ export function formatReportError(error: unknown): string | null {
     case "report_trade_dispute":
       return m.report_error_report_trade_dispute();
     default:
-      error.message satisfies never;
+      code satisfies never;
       return null;
   }
 }

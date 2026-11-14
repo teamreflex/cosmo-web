@@ -10,9 +10,14 @@ export function cosmoLinkHistoryQuery(search: string | undefined) {
     queryKey: ["admin", "cosmo-link-history", { search }],
     queryFn: ({ signal, pageParam }) =>
       $fetchCosmoLinkHistory({ signal, data: { search, cursor: pageParam } }),
-    // SAFETY: cursor seed; widened for TanStack Query inference
-    initialPageParam: undefined as number | undefined,
+    initialPageParam: firstPage,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
     staleTime: 0,
   });
 }
+
+/**
+ * The first page has no cursor. Typed as the cursor union so the query
+ * infers its page param from it.
+ */
+const firstPage: number | undefined = undefined;
