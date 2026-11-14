@@ -1,36 +1,34 @@
 import { getCookie, setCookie } from "@tanstack/react-start/server";
+import type * as z from "zod";
 
 type CookieKey = "artists" | "market-notice" | "range-offers-notice";
 
 /**
- * Read the value from a cookie.
+ * Read a cookie's JSON value, or undefined when the cookie is unset or holds
+ * anything the schema refuses.
  */
-export function fetchCookie<T = string>(key: CookieKey) {
+export function fetchCookie<T>(key: CookieKey, schema: z.ZodType<T>) {
   const value = getCookie(key);
   if (!value) return undefined;
 
   try {
-    // SAFETY: putCookie writes non-string values as JSON-serialized T
-    return JSON.parse(value) as T;
+    return schema.parse(JSON.parse(value));
   } catch {
-    // SAFETY: non-JSON cookies are raw strings; T defaults to string
-    return value as T;
+    return undefined;
   }
 }
 
 type SetCookie = {
   key: CookieKey;
-  value: string | number | string[] | object;
+  value: number | string[];
   maxAge?: number;
 };
 
 /**
- * Save a new cookie.
+ * Save a cookie's value as JSON.
  */
 export function putCookie({ key, value, maxAge }: SetCookie) {
-  // oxlint-disable-next-line anti-slop/no-runtime-typeof -- narrowing the SetCookie value union, not unparsed input
-  const stringValue = typeof value === "string" ? value : JSON.stringify(value);
-  setCookie(key, stringValue, {
+  setCookie(key, JSON.stringify(value), {
     path: "/",
     maxAge: maxAge ?? 60 * 60 * 24 * 30, // 30 days
     sameSite: "lax",

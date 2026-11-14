@@ -214,22 +214,27 @@ export function planEmails(input: PlanInput) {
     return [{ ...row, offer, to: recipient.email }];
   });
 
-  return [...Map.groupBy(emailed, (row) => row.userId)].map(
-    ([userId, rows]): PlannedEmail => {
+  return [...Map.groupBy(emailed, (row) => row.userId)].flatMap(
+    ([userId, rows]): PlannedEmail[] => {
       // most urgent first, newest first within a type
       const sorted = rows.toSorted(
         (a, b) =>
           URGENCY[a.type] - URGENCY[b.type] ||
           b.createdAt.getTime() - a.createdAt.getTime(),
       );
-      // Map.groupBy never makes an empty group
-      const [first, ...rest] = sorted.map((row) => toItem(row, input));
-      return {
-        userId,
-        rowIds: sorted.map((row) => row.id),
-        to: sorted[0].to,
-        items: [first, ...rest],
-      };
+      const [first, ...rest] = sorted;
+      if (first === undefined) return [];
+      return [
+        {
+          userId,
+          rowIds: sorted.map((row) => row.id),
+          to: first.to,
+          items: [
+            toItem(first, input),
+            ...rest.map((row) => toItem(row, input)),
+          ],
+        },
+      ];
     },
   );
 }

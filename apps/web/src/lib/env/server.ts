@@ -12,7 +12,8 @@ export const env = createEnv({
     // redis
     REDIS_URL: z.url(),
     // better auth
-    BETTER_AUTH_SECRET: z.string().min(1),
+    // 64 hex characters: the AES-256-GCM key for OAuth tokens at rest
+    BETTER_AUTH_SECRET: z.string().regex(/^[0-9a-fA-F]{64}$/),
     // comma-separated email domains; accounts with a verified email on one can't be banned, unbanned or re-roled
     PROTECTED_EMAIL_DOMAINS: z.string().optional().transform(parseEmailDomains),
     // lifetime of the chat tokens /api/auth/token issues, in seconds

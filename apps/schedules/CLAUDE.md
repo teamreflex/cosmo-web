@@ -170,7 +170,7 @@ A task that needs a new service adds it to the closed requirement union of `Sche
 
 - `turbo dev --filter schedules` runs it in watch mode and starts the docker services. `bun run dev` here does the same without them.
 - Stop every other copy (dev, or the compose `schedules` service that `DEV_SCHEDULES=true` starts) before `bun run task drain-outbox`, `trade-timers` or `send-notification-emails`, or that copy picks up the rows first.
-- `bun test` covers only the pure planner (`tests/outbox.test.ts`). The drain's DB paths are checked by simulating the chain; its trade decisions are tested in `packages/trades` (`turbo test --filter @apollo/trades`).
+- `bun test` covers the pure planners: the drain's (`tests/outbox.test.ts`) and the notification emails' (`tests/notification-emails.test.ts`). The drain's DB paths are checked by simulating the chain; its trade decisions are tested in `packages/trades` (`turbo test --filter @apollo/trades`).
 
 ### Simulating the chain
 

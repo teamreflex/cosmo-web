@@ -6,31 +6,11 @@ import {
   supportedSort,
 } from "@/lib/universal/sorts";
 import { SearchClient } from "typesense";
-import type { IndexedObjekt, ObjektResponse } from "../universal/objekts";
-
-/**
- * Typesense leaves out optional fields whose value is null, so an unmirrored
- * collection comes back without its image versions.
- */
-type IndexedDocument = Omit<
-  IndexedObjekt,
-  "frontImageVersion" | "backImageVersion"
-> &
-  Partial<Pick<IndexedObjekt, "frontImageVersion" | "backImageVersion">>;
-
-/**
- * A search hit as the objekt it indexes, with the image versions Typesense
- * left out restored as null.
- */
-function toIndexedObjekt(hit: { document: object }): IndexedObjekt {
-  // SAFETY: the typesense collection stores IndexedObjekt documents
-  const document = hit.document as IndexedDocument;
-  return {
-    ...document,
-    frontImageVersion: document.frontImageVersion ?? null,
-    backImageVersion: document.backImageVersion ?? null,
-  };
-}
+import type { ObjektResponse } from "../universal/objekts";
+import {
+  type CollectionDocument,
+  collectionDocumentSchema,
+} from "../universal/schema/search";
 
 const PER_PAGE = 30;
 
@@ -87,10 +67,10 @@ export async function getTypesenseResults({
 
   return {
     total: result.found,
-    objekts: hits.map(toIndexedObjekt),
+    objekts: hits.map((hit) => collectionDocumentSchema.parse(hit.document)),
     hasNext,
     nextStartAfter,
-  } satisfies ObjektResponse<IndexedObjekt>;
+  } satisfies ObjektResponse<CollectionDocument>;
 }
 
 /**
@@ -109,7 +89,9 @@ export async function searchCollections(query: string) {
     { cacheSearchResultsForSeconds: 60 },
   );
 
-  return (result.hits ?? []).map(toIndexedObjekt);
+  return (result.hits ?? []).map((hit) =>
+    collectionDocumentSchema.parse(hit.document),
+  );
 }
 
 /**

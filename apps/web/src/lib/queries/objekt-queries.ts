@@ -24,9 +24,20 @@ import { infiniteQueryOptions, queryOptions } from "@tanstack/react-query";
 import { type FetchError, ofetch } from "ofetch";
 import type { z } from "zod";
 import type { Objekt } from "../universal/objekt-conversion";
-import type { ObjektMetadata, PriceHistoryRange } from "../universal/objekts";
+import type {
+  IndexedCollection,
+  ObjektMetadata,
+  ObjektResponse,
+  PriceHistoryRange,
+} from "../universal/objekts";
 import type { WantMatch } from "../universal/trade-listings";
 import { baseUrl } from "../utils";
+
+/**
+ * A page of the objekt index. Both index queries resolve to it, so the grid
+ * takes whichever one the search picks.
+ */
+type ObjektIndexPage = ObjektResponse<IndexedCollection>;
 
 /**
  * Object index: Searching via Typesense
@@ -46,7 +57,7 @@ export function objektIndexTypesenseQuery(
         artists: selectedArtists,
       },
     ],
-    queryFn: async ({ pageParam }) => {
+    queryFn: async ({ pageParam }): Promise<ObjektIndexPage> => {
       const { getTypesenseResults } = await import("@/lib/client/typesense");
       return getTypesenseResults({
         query: searchParams.search || "",
@@ -84,7 +95,7 @@ export function objektIndexBlockchainQuery(
         artists: selectedArtists,
       },
     ],
-    queryFn: ({ signal, pageParam }) => {
+    queryFn: ({ signal, pageParam }): Promise<ObjektIndexPage> => {
       return $fetchObjektsIndex({
         signal,
         data: {

@@ -1,6 +1,7 @@
 import { $fetchObjektsWithComo } from "@/lib/functions/como";
 import { verifyRequestApiKey } from "@/lib/server/api-key.server";
 import { buildCalendar } from "@/lib/universal/como";
+import { calendarDateSchema } from "@/lib/universal/schema/como";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/api/user/by-address/$address/como")({
@@ -18,21 +19,26 @@ export const Route = createFileRoute("/api/user/by-address/$address/como")({
         }
 
         const url = new URL(request.url);
-        const now = url.searchParams.get("now");
-        const tz = url.searchParams.get("tz") ?? "UTC";
-
-        // parse unix timestamp (supports both seconds and milliseconds)
-        const timestamp = now ? parseInt(now) : new Date().getTime();
-        const date = new Date(
-          timestamp < 10000000000 ? timestamp * 1000 : timestamp,
+        const date = calendarDateSchema.safeParse(
+          url.searchParams.get("now") || undefined,
         );
+        if (!date.success) {
+          return Response.json(
+            { error: "validation error", details: date.error.issues },
+            { status: 422 },
+          );
+        }
 
         const objekts = await $fetchObjektsWithComo({
           data: { address: params.address },
         });
-        const calendar = buildCalendar(date, objekts, tz);
-
-        return Response.json(calendar);
+        return Response.json(
+          buildCalendar(
+            date.data,
+            objekts,
+            url.searchParams.get("tz") ?? "UTC",
+          ),
+        );
       },
     },
   },

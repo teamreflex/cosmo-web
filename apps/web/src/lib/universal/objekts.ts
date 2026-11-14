@@ -4,11 +4,18 @@ import type {
   ObjektBaseFields,
 } from "@apollo/cosmo/types/objekts";
 import type { Era, Event } from "@apollo/database/web/types";
+import type { CollectionDocument } from "./schema/search";
 
 // alias the indexer type
 export type IndexedObjekt = Collection;
 
-type LegacyObjekt = ObjektBaseFields | CosmoObjekt | IndexedObjekt;
+/**
+ * A collection from either source the objekt index reads: an indexer row, or
+ * the row's search document.
+ */
+export type IndexedCollection = IndexedObjekt | CollectionDocument;
+
+type LegacyObjekt = ObjektBaseFields | CosmoObjekt | IndexedCollection;
 export type ObjektResponse<T extends LegacyObjekt> = {
   hasNext: boolean;
   total: number;

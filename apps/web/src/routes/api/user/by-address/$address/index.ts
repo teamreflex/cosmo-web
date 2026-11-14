@@ -3,6 +3,7 @@ import { $fetchArtistStatsByAddress } from "@/lib/functions/progress";
 import { verifyRequestApiKey } from "@/lib/server/api-key.server";
 import { db } from "@/lib/server/db";
 import { buildCalendar } from "@/lib/universal/como";
+import { calendarDateSchema } from "@/lib/universal/schema/como";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/api/user/by-address/$address/")({
@@ -20,13 +21,24 @@ export const Route = createFileRoute("/api/user/by-address/$address/")({
         }
 
         const url = new URL(request.url);
-        const now = url.searchParams.get("now");
-        const tz = url.searchParams.get("tz") ?? "UTC";
+        const date = calendarDateSchema.safeParse(
+          url.searchParams.get("now") || undefined,
+        );
+        if (!date.success) {
+          return Response.json(
+            { error: "validation error", details: date.error.issues },
+            { status: 422 },
+          );
+        }
 
         // one query per pool at a time: the web account beside the indexer calendar
         const [account, calendar] = await Promise.all([
           getCosmoAccount(params.address),
-          getCalendar(params.address, now, tz),
+          getCalendar(
+            params.address,
+            date.data,
+            url.searchParams.get("tz") ?? "UTC",
+          ),
         ]);
         return Response.json({
           account,
@@ -57,11 +69,7 @@ async function getCosmoAccount(address: string) {
 /**
  * Get the COMO calendar for a given address.
  */
-async function getCalendar(address: string, now: string | null, tz: string) {
-  // parse unix timestamp (supports both seconds and milliseconds)
-  const timestamp = now ? parseInt(now) : new Date().getTime();
-  const date = new Date(timestamp < 10000000000 ? timestamp * 1000 : timestamp);
-
+async function getCalendar(address: string, date: Date, tz: string) {
   const result = await $fetchObjektsWithComo({
     data: { address },
   });

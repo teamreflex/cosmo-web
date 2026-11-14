@@ -10,36 +10,11 @@
   "exclude": ["node_modules", ".turbo", "dist"],
 
   "compilerOptions": {
-    // Effect-TS build requirements
-    "noEmit": false,
-    "outDir": "dist",
-    // .ts-extension imports in workspace packages (required by the indexer's
-    // Node runtime); legal alongside emit thanks to the rewrite flag
-    "allowImportingTsExtensions": true,
-    "rewriteRelativeImportExtensions": true,
-    "composite": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "incremental": true,
-
-    // Effect-TS specific
-    "exactOptionalPropertyTypes": true,
+    "types": ["bun"],
     // @apollo/mail's templates are TSX
     "jsx": "react-jsx",
-    "emitDecoratorMetadata": true,
-    "experimentalDecorators": true,
-    "types": [],
-    "noImplicitReturns": false,
-    "noUnusedParameters": false,
-    "noUncheckedIndexedAccess": false,
-    "noEmitOnError": false,
-    "noErrorTruncation": false,
-    "forceConsistentCasingInFileNames": true,
-    "removeComments": false,
+    "exactOptionalPropertyTypes": true,
     "plugins": [{ "name": "@effect/language-service" }],
-
-    // Path aliases
     "paths": {
       "@/*": ["./src/*"]
     }

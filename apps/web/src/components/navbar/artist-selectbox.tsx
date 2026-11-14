@@ -3,6 +3,7 @@ import { m } from "@/i18n/messages";
 import { $setSelectedArtist } from "@/lib/functions/core";
 import { selectedArtistsQuery } from "@/lib/queries/core";
 import type { CosmoArtistBFF } from "@apollo/cosmo/types/artists";
+import type { ValidArtist } from "@apollo/cosmo/types/common";
 import { IconCheck, IconLoader2 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useId } from "react";
@@ -62,7 +63,7 @@ export function ArtistItem({ artist, isSelected }: ArtistItemProps) {
     mutationFn: $setSelectedArtist,
   });
 
-  function handleSelect(artistId: string) {
+  function handleSelect(artistId: ValidArtist) {
     mutation.mutate(
       { data: { artist: artistId } },
       {

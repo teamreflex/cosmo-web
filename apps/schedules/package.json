@@ -42,17 +42,5 @@
     "@types/bun": "catalog:",
     "@types/react": "19.3.0",
     "typescript": "catalog:"
-  },
-  "effect": {
-    "generateExports": {
-      "include": [
-        "**/*.ts"
-      ]
-    },
-    "generateIndex": {
-      "include": [
-        "**/*.ts"
-      ]
-    }
   }
 }

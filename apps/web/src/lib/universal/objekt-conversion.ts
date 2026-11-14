@@ -1,4 +1,4 @@
-import type { IndexedObjekt } from "@/lib/universal/objekts";
+import type { IndexedCollection } from "@/lib/universal/objekts";
 import type { ValidArtist } from "@apollo/cosmo/types/common";
 import type {
   BFFCollectionGroupCollection,
@@ -59,9 +59,10 @@ export namespace Objekt {
   };
 
   /**
-   * Converts a collection from the indexer to the common fields.
+   * Converts a collection from the indexer, or its search document, to the
+   * common fields.
    */
-  export function fromIndexer(objekt: IndexedObjekt): Objekt.Collection {
+  export function fromIndexer(objekt: IndexedCollection): Objekt.Collection {
     const collection = {
       id: objekt.id,
       // SAFETY: indexed artists lowercase to ValidArtist ids

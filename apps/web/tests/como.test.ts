@@ -1,5 +1,6 @@
 import { describe, expect, it } from "bun:test";
 import { buildCalendar } from "../src/lib/universal/como";
+import { calendarDateSchema } from "../src/lib/universal/schema/como";
 import { gmt7UserObjekts, nztUserObjekts } from "./fixtures/como-objekts";
 
 // Sums per-artist count across all days for a given calendar.
@@ -200,5 +201,19 @@ describe("buildCalendar", () => {
       expect(cal[30]).toBeUndefined();
       expect(cal[31]).toBeUndefined();
     });
+  });
+});
+
+describe("calendarDateSchema", () => {
+  it.each([
+    ["the last value read as seconds", "9999999999", 9999999999000],
+    ["the first value read as milliseconds", "10000000000", 10000000000],
+    ["seconds with a fraction", "1731571200.5", 1731571200500],
+  ])("reads %s", (_, now, expected) => {
+    expect(calendarDateSchema.parse(now).getTime()).toBe(expected);
+  });
+
+  it.each(["yesterday", "0", "-1731571200"])("refuses %s", (now) => {
+    expect(calendarDateSchema.safeParse(now).success).toBe(false);
   });
 });
