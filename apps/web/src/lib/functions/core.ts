@@ -14,7 +14,9 @@ import {
 import { getRequestSignal } from "@/lib/server/request.server";
 import type { CurrentUser, PublicUser } from "@/lib/universal/auth";
 import type { FullAccount, PublicCosmo } from "@/lib/universal/cosmo-accounts";
+import { selectedArtistsSchema } from "@/lib/universal/schema/cosmo";
 import type { Role } from "@apollo/auth";
+import { validArtists } from "@apollo/cosmo/types/common";
 import type { ObjektList } from "@apollo/database/web/types";
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
@@ -125,7 +127,7 @@ export const $fetchTargetAccount = createServerFn({ method: "GET" })
  */
 export const $fetchSelectedArtists = createServerFn({ method: "GET" }).handler(
   () => {
-    return fetchCookie<string[]>("artists") ?? [];
+    return fetchCookie("artists", selectedArtistsSchema) ?? [];
   },
 );
 
@@ -133,7 +135,7 @@ export const $fetchSelectedArtists = createServerFn({ method: "GET" }).handler(
  * Set the selected artists in a cookie.
  */
 export const $setSelectedArtist = createServerFn({ method: "POST" })
-  .validator(z.object({ artist: z.string() }))
+  .validator(z.object({ artist: z.enum(validArtists) }))
   .handler(async ({ data }) => {
     const artists = await $fetchSelectedArtists();
 

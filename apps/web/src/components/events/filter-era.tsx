@@ -22,7 +22,8 @@ export default function EventsEraFilter({ era, artist, onChange }: Props) {
   const groupedEras = useMemo(() => {
     const filtered = eras.filter((e) => {
       if (artist) return e.artist === artist;
-      if (selectedIds.length > 0) return selectedIds.includes(e.artist);
+      if (selectedIds.length > 0)
+        return selectedIds.some((id) => id === e.artist);
       return true;
     });
 

@@ -24,3 +24,11 @@ export const generateVerificationCodeSchema = z.object({
 export const verifyCosmoBioSchema = z.object({
   code: z.string().length(6),
 });
+
+/**
+ * The artists a visitor selected in the navbar, as their cookie stores them.
+ * An id the app doesn't know is dropped on its own, keeping the rest.
+ */
+export const selectedArtistsSchema = z
+  .array(z.string())
+  .transform((ids) => validArtists.filter((artist) => ids.includes(artist)));

@@ -25,7 +25,7 @@ export const $fetchDismissedNotices = createServerFn({
   method: "GET",
 }).handler(() => {
   const dismissed = (notice: Notice) =>
-    fetchCookie<number>(notice) === NOTICE_VERSIONS[notice];
+    fetchCookie(notice, z.number()) === NOTICE_VERSIONS[notice];
   return {
     "market-notice": dismissed("market-notice"),
     "range-offers-notice": dismissed("range-offers-notice"),

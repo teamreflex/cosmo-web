@@ -193,14 +193,14 @@ export const setupTypesenseSynonyms = Effect.gen(function* () {
 
   // units
   for (const [key, list] of Object.entries(units)) {
-    for (let i = 0; i < list.units.length; i++) {
+    for (const [i, root] of list.units.entries()) {
       yield* Effect.tryPromise({
         try: () =>
           typesense
             .collections(COLLECTION_NAME)
             .synonyms()
             .upsert(`${key}-${i}`, {
-              root: list.units[i],
+              root,
               synonyms: list.members,
             }),
         catch: (cause) => new UpsertSynonymError({ id: `${key}-${i}`, cause }),

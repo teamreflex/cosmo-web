@@ -10,7 +10,6 @@ import {
   endTrade,
   insertTradeEvents,
   insertTradeNotifications,
-  type LiveTrade,
   lockListings,
   lockLiveTrades,
   lockUsers,
@@ -29,19 +28,14 @@ import {
   tradeOffers,
 } from "@apollo/database/web/schema";
 import { bumpUpdatedAt } from "@apollo/database/web/sql";
-import type { TradeSide } from "@apollo/database/web/types";
 import { DatabaseWeb, type WebTx } from "@apollo/services/database-web";
-import {
-  offerTransition,
-  proposerId,
-  transition,
-} from "@apollo/trades/lifecycle";
+import { offerTransition, proposerId } from "@apollo/trades/lifecycle";
 import { DRAIN_CURSOR_NAME } from "@apollo/trades/timers";
 import {
-  type ChainRow,
-  type ExpectedItem,
+  expectedItems,
   foldTransfers,
-  type TradeChainEvent,
+  recordChainEvents,
+  toChainRow,
 } from "@apollo/trades/transfers";
 import { pinCacheKey } from "@apollo/util-server";
 import {
@@ -366,7 +360,7 @@ const applyTrades = (tx: WebTx, rows: readonly OutboxRow[]) =>
       const chainEvents = folded.trades.get(trade.id);
       return chainEvents === undefined
         ? []
-        : [recordChainEvents(trade, chainEvents)];
+        : [{ trade, ...recordChainEvents(trade, chainEvents) }];
     });
     const arrivals = recorded.flatMap((trade) => trade.arrivals);
     if (arrivals.length > 0) {
@@ -449,127 +443,6 @@ const applyTrades = (tx: WebTx, rows: readonly OutboxRow[]) =>
       stale: broken.events.length,
     };
   });
-
-/**
- * The trade rows holding each of a batch's tokens: live items wait to move
- * between their trade's pinned addresses, and offered ones (on an open
- * listing or a pending offer) stay with their holder.
- */
-function expectedItems(
-  trades: readonly LiveTrade[],
-  candidates: readonly {
-    tokenId: number | null;
-    sender: TradeSide;
-    live: boolean;
-    offerId: string;
-    fromAddress: string;
-    toAddress: string | null;
-  }[],
-) {
-  const expected = new Map<number, ExpectedItem[]>();
-  const add = (tokenId: number | null, item: ExpectedItem) => {
-    if (tokenId === null) return;
-    expected.set(tokenId, [...(expected.get(tokenId) ?? []), item]);
-  };
-  for (const trade of trades) {
-    for (const item of trade.items) {
-      if (!item.live) continue;
-      const [from, to] =
-        item.sender === "from"
-          ? [trade.fromAddress, trade.toAddress]
-          : [trade.toAddress, trade.fromAddress];
-      add(item.tokenId, {
-        kind: "live",
-        itemId: item.id,
-        tradeId: trade.id,
-        from,
-        to,
-        transferred: item.transferredAt !== null,
-      });
-    }
-  }
-  for (const item of candidates) {
-    const holder = item.sender === "from" ? item.fromAddress : item.toAddress;
-    if (item.live || holder === null) continue;
-    add(item.tokenId, { kind: "offered", offerId: item.offerId, from: holder });
-  }
-  return expected;
-}
-
-/**
- * An outbox row as foldTransfers reads it. A transfer that was rolled back
- * with a hot block has no hash and doesn't count.
- */
-function toChainRow(row: OutboxRow): ChainRow[] {
-  const tokenId = Number(row.tokenId);
-  if (row.type === "transferability") {
-    return [
-      {
-        type: "transferability",
-        tokenId,
-        transferable: row.transferable,
-        timestamp: row.timestamp,
-      },
-    ];
-  }
-  return row.hash === null
-    ? []
-    : [
-        {
-          type: "transfer",
-          tokenId,
-          from: row.from,
-          to: row.to,
-          timestamp: row.timestamp,
-          hash: row.hash,
-        },
-      ];
-}
-
-/**
- * One locked trade's events from a batch, in row order: each item that
- * arrived, and each token that moved elsewhere or turned untransferable,
- * which the trade page shows. Writes nothing; the caller applies every
- * trade's arrivals in one update and ends the trades left owing nothing.
- */
-function recordChainEvents(
-  trade: LiveTrade,
-  chainEvents: readonly TradeChainEvent[],
-) {
-  let state = trade.state;
-  const arrivals: { itemId: number; at: Date; hash: string }[] = [];
-  const events: TradeEventRow[] = [];
-  for (const event of chainEvents) {
-    if (event.type === "transferred") {
-      const result = transition(state, {
-        type: "transfer",
-        item: trade.items.findIndex((item) => item.id === event.itemId),
-      });
-      if (!result.ok) {
-        throw new Error(
-          `transfer of item ${event.itemId} refused on trade ${trade.id}: ${result.reason}`,
-        );
-      }
-      state = result.trade;
-      arrivals.push({ itemId: event.itemId, at: event.at, hash: event.hash });
-      events.push({
-        tradeId: trade.id,
-        event: {
-          type: "item_transferred",
-          itemId: event.itemId,
-          hash: event.hash,
-        },
-      });
-      continue;
-    }
-
-    events.push({
-      tradeId: trade.id,
-      event: { type: event.type, tokenId: event.tokenId },
-    });
-  }
-  return { trade, state, arrivals, events };
-}
 
 /**
  * Turn stale the pending offers whose token left its holder or turned

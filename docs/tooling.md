@@ -28,6 +28,7 @@ How the monorepo is wired, run locally, linted, formatted and type-checked, plus
 | `dev`, `preview` in web          | also `@apollo/mail#dev`, the react-email preview server on port 3003                                              |
 | `db:seed`, `db:seed:staff`       | `//#services`                                                                                                     |
 
+- `.github/workflows/ci.yml` runs `turbo i18n`, then `turbo lint test`, on every pull request and push to `main`. It has no `typecheck` step because `lint` type-checks ([Lint](#lint)).
 - Run an Effect app either on the host (`turbo dev --filter <app>`) or in Docker through its `DEV_*` flag, never both, because two copies would run the same tasks and consumers.
 
 ## Local services

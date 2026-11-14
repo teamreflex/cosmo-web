@@ -1,9 +1,13 @@
 import { describe, expect, test } from "bun:test";
+import { tradeState } from "../src/lifecycle";
 import {
   type ChainRow,
   type ExpectedItem,
+  expectedItems,
   foldTransfers,
   itemStatus,
+  recordChainEvents,
+  toChainRow,
 } from "../src/transfers";
 
 const KAIRU = "0x000000000000000000000000000000000000aaaa";
@@ -232,6 +236,147 @@ describe("foldTransfers", () => {
         ],
       ]),
     );
+  });
+});
+
+describe("expectedItems", () => {
+  const parties = { fromAddress: KAIRU, toAddress: TRADER_B };
+
+  test("a live item is owed by its sender's pinned address to the other party's", () => {
+    const items = [
+      { id: 1, sender: "from", tokenId: 201, live: true, transferredAt: null },
+      { id: 2, sender: "to", tokenId: 301, live: true, transferredAt: AT },
+    ] as const;
+
+    expect(
+      expectedItems(
+        [{ id: "trade-1", ...parties, items }],
+        items.map((item) => ({ ...item, offerId: "trade-1", ...parties })),
+      ),
+    ).toEqual(
+      new Map([
+        [
+          201,
+          [
+            {
+              kind: "live",
+              itemId: 1,
+              tradeId: "trade-1",
+              from: KAIRU,
+              to: TRADER_B,
+              transferred: false,
+            },
+          ],
+        ],
+        [
+          301,
+          [
+            {
+              kind: "live",
+              itemId: 2,
+              tradeId: "trade-1",
+              from: TRADER_B,
+              to: KAIRU,
+              transferred: true,
+            },
+          ],
+        ],
+      ]),
+    );
+  });
+
+  test("an offered item is held by its sender: a listing's poster, or either party of a pending offer", () => {
+    const offered = { live: false, ...parties } as const;
+
+    expect(
+      expectedItems(
+        [],
+        [
+          {
+            ...offered,
+            tokenId: 201,
+            sender: "from",
+            offerId: "listing-1",
+            toAddress: null,
+          },
+          { ...offered, tokenId: 201, sender: "from", offerId: "offer-1" },
+          { ...offered, tokenId: 301, sender: "to", offerId: "offer-1" },
+        ],
+      ),
+    ).toEqual(
+      new Map([
+        [
+          201,
+          [
+            { kind: "offered", offerId: "listing-1", from: KAIRU },
+            { kind: "offered", offerId: "offer-1", from: KAIRU },
+          ],
+        ],
+        [301, [{ kind: "offered", offerId: "offer-1", from: TRADER_B }]],
+      ]),
+    );
+  });
+});
+
+test("toChainRow skips a transfer whose indexer row was rolled back", () => {
+  const transfer = {
+    type: "transfer",
+    from: KAIRU,
+    to: TRADER_B,
+    timestamp: AT,
+  } as const;
+
+  expect(toChainRow({ ...transfer, tokenId: "201", hash: null })).toEqual([]);
+  expect(toChainRow({ ...transfer, tokenId: "201", hash: "0xabc" })).toEqual([
+    { ...transfer, tokenId: 201, hash: "0xabc" },
+  ]);
+});
+
+test("recordChainEvents marks the item an arrival names and keeps the batch's order", () => {
+  const item = {
+    kind: "objekt",
+    sender: "from",
+    listingId: null,
+    transferredAt: null,
+    markedPaidAt: null,
+    confirmedAt: null,
+  } as const;
+  const items = [
+    { ...item, id: 10 },
+    { ...item, id: 20, sender: "to" },
+  ] as const;
+
+  expect(
+    recordChainEvents(
+      {
+        id: "trade-1",
+        items,
+        state: tradeState(
+          { status: "accepted", cancelledBy: null, proposedBy: null },
+          items,
+        ),
+      },
+      [
+        { type: "token_moved", tokenId: 201 },
+        { type: "transferred", itemId: 20, at: AT, hash: "0xabc" },
+      ],
+    ),
+  ).toEqual({
+    state: {
+      status: "accepted",
+      items: [
+        { kind: "objekt", sender: "from", transferred: false },
+        { kind: "objekt", sender: "to", transferred: true },
+      ],
+    },
+    arrivals: [{ itemId: 20, at: AT, hash: "0xabc" }],
+    events: [
+      { tradeId: "trade-1", event: { type: "token_moved", tokenId: 201 } },
+      {
+        tradeId: "trade-1",
+        event: { type: "item_transferred", itemId: 20, hash: "0xabc" },
+      },
+    ],
   });
 });
 

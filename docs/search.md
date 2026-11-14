@@ -54,8 +54,9 @@ imported = some {        imported unchanged, so the retry and the
 
 - A renamed or de-indexed field fails at query time in the browser, not at type-check time.
 - Fields web only displays, such as image URLs, are `index: false`.
-- Web types a hit as `IndexedObjekt`, the indexer `Collection` row, so documents keep every column under its own name. A hit's `createdAt` is epoch milliseconds, not the row's timestamp string.
-- Typesense leaves out optional fields whose value is null. `toIndexedObjekt()` in web restores the image versions to null; a new optional field that web reads needs the same.
+- Web parses every hit with `collectionDocumentSchema` (`apps/web/src/lib/universal/schema/search.ts`), which lists each field it reads under the indexer column's name. A hit missing one fails the whole search, so documents keep every column under its own name.
+- A hit's `createdAt` is epoch milliseconds, not the row's timestamp string, so a parsed hit is a `CollectionDocument` and never an `IndexedObjekt`.
+- Typesense leaves out a field whose value is null, whether or not the collection declares it. The schema defaults the nullable fields to null; a new nullable field that web reads needs the same.
 - Documents spread every indexer `collection` column (`...c` in `apps/schedules/src/functions/sync-typesense.ts`), so a column the schema doesn't declare is still stored, unindexed.
 
 ## Schema changes
@@ -86,5 +87,5 @@ imported = some {        imported unchanged, so the retry and the
   1. Declare it in `setupTypesenseCollection()`.
   2. Add it to the `upToDate` check.
   3. A computed field gets a helper in `apps/schedules/src/search/collections.ts` and an entry on the document in `sync-typesense.ts`.
-  4. If web queries or reads it, update `apps/web/src/lib/client/typesense.ts`.
+  4. If web queries it, update `apps/web/src/lib/client/typesense.ts`. If web reads it from a hit, add it to `collectionDocumentSchema`.
 - `shortCode` and `edition` rules: the examples on `getShortCode()` and `getEdition()` in `apps/schedules/src/search/collections.ts`.

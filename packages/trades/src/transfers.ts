@@ -1,10 +1,16 @@
 import type {
   StaleReason,
+  TradeEvent as StoredTradeEvent,
   TradeSide,
   TradeStatus,
 } from "@apollo/database/web/types";
 import { addr } from "@apollo/util";
-import { isOpenTrade, otherSide } from "./lifecycle";
+import {
+  isOpenTrade,
+  otherSide,
+  type TradeState,
+  transition,
+} from "./lifecycle";
 
 /**
  * One outbox row as the drain reads it, with the token id parsed to the
@@ -67,9 +73,9 @@ export type TransferDecision =
  */
 function decideTransfer(
   row: ChainRow,
-  expectedItems: readonly ExpectedItem[],
+  items: readonly ExpectedItem[],
 ): TransferDecision[] {
-  return expectedItems.map((item) => decideItem(row, item));
+  return items.map((item) => decideItem(row, item));
 }
 
 function decideItem(row: ChainRow, item: ExpectedItem): TransferDecision {
@@ -186,6 +192,159 @@ export function foldTransfers(
       [...departed].map(([offerId, tokens]) => [offerId, [...tokens]]),
     ),
   };
+}
+
+/**
+ * The trade rows holding each of a batch's tokens: live items wait to move
+ * between their trade's pinned addresses, and offered ones (on an open
+ * listing or a pending offer) stay with their holder.
+ */
+export function expectedItems(
+  trades: readonly {
+    id: string;
+    fromAddress: string;
+    toAddress: string;
+    items: readonly {
+      id: number;
+      sender: TradeSide;
+      tokenId: number | null;
+      live: boolean;
+      transferredAt: Date | null;
+    }[];
+  }[],
+  candidates: readonly {
+    tokenId: number | null;
+    sender: TradeSide;
+    live: boolean;
+    offerId: string;
+    fromAddress: string;
+    toAddress: string | null;
+  }[],
+) {
+  const expected = new Map<number, ExpectedItem[]>();
+  const add = (tokenId: number | null, item: ExpectedItem) => {
+    if (tokenId === null) return;
+    expected.set(tokenId, [...(expected.get(tokenId) ?? []), item]);
+  };
+  for (const trade of trades) {
+    for (const item of trade.items) {
+      if (!item.live) continue;
+      const [from, to] =
+        item.sender === "from"
+          ? [trade.fromAddress, trade.toAddress]
+          : [trade.toAddress, trade.fromAddress];
+      add(item.tokenId, {
+        kind: "live",
+        itemId: item.id,
+        tradeId: trade.id,
+        from,
+        to,
+        transferred: item.transferredAt !== null,
+      });
+    }
+  }
+  for (const item of candidates) {
+    const holder = item.sender === "from" ? item.fromAddress : item.toAddress;
+    if (item.live || holder === null) continue;
+    add(item.tokenId, { kind: "offered", offerId: item.offerId, from: holder });
+  }
+  return expected;
+}
+
+/**
+ * An outbox row as foldTransfers reads it. A transfer that was rolled back
+ * with a hot block has no hash and doesn't count.
+ */
+export function toChainRow(
+  row:
+    | {
+        type: "transfer";
+        tokenId: string;
+        hash: string | null;
+        from: string;
+        to: string;
+        timestamp: Date;
+      }
+    | {
+        type: "transferability";
+        tokenId: string;
+        transferable: boolean;
+        timestamp: Date;
+      },
+): ChainRow[] {
+  const tokenId = Number(row.tokenId);
+  if (row.type === "transferability") {
+    return [
+      {
+        type: "transferability",
+        tokenId,
+        transferable: row.transferable,
+        timestamp: row.timestamp,
+      },
+    ];
+  }
+  return row.hash === null
+    ? []
+    : [
+        {
+          type: "transfer",
+          tokenId,
+          from: row.from,
+          to: row.to,
+          timestamp: row.timestamp,
+          hash: row.hash,
+        },
+      ];
+}
+
+/**
+ * One locked trade's events from a batch, in row order: each item that
+ * arrived, and each token that moved elsewhere or turned untransferable,
+ * which the trade page shows, with the state the arrivals leave the trade
+ * in. Writes nothing; the caller applies every trade's arrivals in one
+ * update and ends the trades left owing nothing.
+ */
+export function recordChainEvents(
+  trade: {
+    id: string;
+    state: TradeState;
+    items: readonly { id: number }[];
+  },
+  chainEvents: readonly TradeChainEvent[],
+) {
+  let state = trade.state;
+  const arrivals: { itemId: number; at: Date; hash: string }[] = [];
+  const events: { tradeId: string; event: StoredTradeEvent }[] = [];
+  for (const event of chainEvents) {
+    if (event.type === "transferred") {
+      const result = transition(state, {
+        type: "transfer",
+        item: trade.items.findIndex((item) => item.id === event.itemId),
+      });
+      if (!result.ok) {
+        throw new Error(
+          `transfer of item ${event.itemId} refused on trade ${trade.id}: ${result.reason}`,
+        );
+      }
+      state = result.trade;
+      arrivals.push({ itemId: event.itemId, at: event.at, hash: event.hash });
+      events.push({
+        tradeId: trade.id,
+        event: {
+          type: "item_transferred",
+          itemId: event.itemId,
+          hash: event.hash,
+        },
+      });
+      continue;
+    }
+
+    events.push({
+      tradeId: trade.id,
+      event: { type: event.type, tokenId: event.tokenId },
+    });
+  }
+  return { state, arrivals, events };
 }
 
 /**
