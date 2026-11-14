@@ -55,10 +55,6 @@ const rows = [
     expected: { user: false, tester: false, moderator: true, admin: true },
   },
   {
-    permissions: { listing: ["remove-any"] },
-    expected: { user: false, tester: false, moderator: true, admin: true },
-  },
-  {
     permissions: { feedback: ["remove-any"] },
     expected: { user: false, tester: false, moderator: true, admin: true },
   },

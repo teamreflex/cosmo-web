@@ -87,7 +87,7 @@ Apollo matches people who want to swap objekts and records each swap, but never 
 - **A listing's terms**: the schemas in `listing.ts`, shared by post and edit, and `checkTerms()` and `insertTerms()` in `lib/server/trades/listings.server.ts`.
 - **The listing page or feed**: `lib/server/trades/detail.server.ts` and `feed.server.ts` read, and the verdicts they share with the page are pure in `lib/universal/trade-listings.ts` (`apps/web/tests/listing-viewer.test.ts`). The composer's form rules are in `lib/universal/trade-listing-form.ts` (`tests/trade-listing-form.test.ts`).
 - **A timeline event**: the `TradeEvent` union in `packages/database/src/web/types.ts`, its schema in `packages/chat/src/items.ts`, its renderer in `components/trades/trade-events.tsx`, and its strings in all six locales.
-- **A notification type**: `tradeNotificationTypes` in `types.ts`, which is a pg enum, so it needs a migration (see [docs/migrations.md](../migrations.md)). It is bell-only until it gets a bit in `EMAIL_NOTIFICATION_BITS` ([notification-emails.md](notification-emails.md#who-is-mailed)).
+- **A notification type**: the end of `tradeTypesAfterRetired` in `types.ts`, which feeds `tradeNotificationTypes` and the `notification_type` pg enum, so it needs a migration (see [docs/migrations.md](../migrations.md)). It is bell-only until it gets a bit in `EMAIL_NOTIFICATION_BITS` ([notification-emails.md](notification-emails.md#who-is-mailed)).
 - **A refusal code**: `tradeErrorCodes` in `lib/universal/errors/trades.ts` and its message in `lib/client/errors/trades.ts`.
 
 ## Testing locally

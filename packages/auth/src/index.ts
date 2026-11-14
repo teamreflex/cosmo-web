@@ -15,7 +15,6 @@ export const statement = {
     "remove-message",
     "message",
   ],
-  listing: ["remove-any"],
   feedback: ["remove-any"],
   report: ["read", "resolve", "escalate"],
   user: ["ban", "set-role"],
@@ -33,7 +32,6 @@ export const roles = {
   moderator: ac.newRole({
     market: statement.market,
     trade: statement.trade,
-    listing: statement.listing,
     feedback: statement.feedback,
     report: statement.report,
   }),
