@@ -71,7 +71,9 @@ export const Route = createFileRoute("/gravity/$artist/$id")({
   head: ({ loaderData }) =>
     defineHead({
       title: loaderData?.gravity.title ?? m.gravity_header(),
-      canonical: `/gravity/${loaderData?.artist?.id}/${loaderData?.gravity.id}`,
+      canonical:
+        loaderData &&
+        `/gravity/${loaderData.artist.id}/${loaderData.gravity.id}`,
     }),
 });
 

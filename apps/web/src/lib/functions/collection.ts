@@ -21,21 +21,16 @@ export const $toggleObjektLock = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     // lock the objekt
     if (data.lock) {
-      try {
-        await db
-          .insert(lockedObjekts)
-          .values({
-            address: context.cosmo.address,
-            tokenId: data.tokenId,
-            locked: true,
-          })
-          .returning();
+      await db
+        .insert(lockedObjekts)
+        .values({
+          address: context.cosmo.address,
+          tokenId: data.tokenId,
+          locked: true,
+        })
+        .onConflictDoNothing();
 
-        return true;
-      } catch (error) {
-        console.error(error);
-        return false;
-      }
+      return true;
     }
 
     // unlock

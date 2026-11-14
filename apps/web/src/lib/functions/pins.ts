@@ -80,23 +80,19 @@ export const $fetchPins = createServerFn({ method: "GET" })
       if (rows.length === 0) return [];
 
       const tokenIds = pinTokenIds(rows);
-      try {
-        var results =
-          tokenIds.length === 0
-            ? []
-            : await indexer.query.objekts.findMany({
-                where: {
-                  id: {
-                    in: tokenIds.map(String),
-                  },
+      const results =
+        tokenIds.length === 0
+          ? []
+          : await indexer.query.objekts.findMany({
+              where: {
+                id: {
+                  in: tokenIds.map(String),
                 },
-                with: {
-                  collection: true,
-                },
-              });
-      } catch {
-        return [];
-      }
+              },
+              with: {
+                collection: true,
+              },
+            });
 
       return toProfilePins(
         rows,

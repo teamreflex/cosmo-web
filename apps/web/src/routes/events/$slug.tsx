@@ -46,7 +46,7 @@ export const Route = createFileRoute("/events/$slug")({
   head: ({ loaderData }) =>
     defineHead({
       title: loaderData?.event.name ?? m.events_header(),
-      canonical: `/events/${loaderData?.event.slug}`,
+      canonical: loaderData && `/events/${loaderData.event.slug}`,
     }),
 });
 

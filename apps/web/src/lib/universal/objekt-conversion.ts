@@ -122,7 +122,7 @@ export namespace Objekt {
         status: objekt.status,
         usedForGrid: objekt.usedForGrid,
         lenticularPairTokenId: objekt.lenticularPairTokenId
-          ? parseInt(objekt.tokenId)
+          ? parseInt(objekt.lenticularPairTokenId)
           : 0,
         acquiredAt: objekt.receivedAt,
         nonTransferableReason: objekt.nonTransferableReason,

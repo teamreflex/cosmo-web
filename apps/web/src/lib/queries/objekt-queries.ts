@@ -130,7 +130,7 @@ export function userCollectionBlockchainGroupsQuery(
         },
       });
     },
-    initialPageParam: 1,
+    initialPageParam: 0,
     getNextPageParam: (lastPage, _, lastPageParam) =>
       lastPage?.collections.length === BLOCKCHAIN_GROUPS_PER_PAGE
         ? lastPageParam + 1
