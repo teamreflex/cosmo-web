@@ -89,7 +89,7 @@ export const Route = createFileRoute("/list/$id")({
   head: ({ loaderData }) =>
     defineHead({
       title: loaderData?.objektList.name ?? m.objekt_list(),
-      canonical: `/list/${loaderData?.objektList.id}`,
+      canonical: loaderData && `/list/${loaderData.objektList.id}`,
     }),
 });
 

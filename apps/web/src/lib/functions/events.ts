@@ -566,6 +566,7 @@ export const $fetchEventObjekts = createServerFn({ method: "GET" })
       .from(collectionData)
       .innerJoin(events, eq(collectionData.eventId, events.id))
       .where(eq(events.slug, data.eventSlug))
+      .orderBy(asc(collectionData.id))
       .limit(60)
       .offset(data.cursor ?? 0);
 

@@ -11,7 +11,8 @@ const ContractsSchema = Schema.Struct({
 });
 
 export const CosmoArtistSchema = Schema.Struct({
-  name: ValidArtistSchema,
+  // a plain string, because COSMO can list an artist before the app knows it
+  name: Schema.String,
   title: Schema.String,
   fandomName: Schema.String,
   logoImageUrl: Schema.String,

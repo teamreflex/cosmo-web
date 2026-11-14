@@ -1,9 +1,11 @@
 import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
+import { formatError } from "@/lib/client/errors";
 import { $toggleObjektLock } from "@/lib/functions/collection";
 import { track } from "@/lib/utils";
 import { IconLoader2, IconLock, IconLockOpen } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { OverlayIcon, OverlayIconButton } from "./corner-overlay";
 
 type Props = {
@@ -19,6 +21,7 @@ export default function LockObjekt({ tokenId, isLocked }: Props) {
       track(`${isLocked ? "unlock" : "lock"}-objekt`);
       toggleLock(tokenId);
     },
+    onError: (error) => toast.error(formatError(error)),
   });
 
   function toggle() {

@@ -1,5 +1,4 @@
 import { Schema } from "effect";
-import { ValidArtistSchema } from "./common";
 
 export const CosmoByNicknameSchema = Schema.Struct({
   nickname: Schema.String,
@@ -8,9 +7,10 @@ export const CosmoByNicknameSchema = Schema.Struct({
   guid: Schema.String,
 });
 
+// plain strings, because a user can hold a profile for an artist the app doesn't know yet
 export const CosmoProfileSchema = Schema.Struct({
-  artistId: ValidArtistSchema,
-  artistName: ValidArtistSchema,
+  artistId: Schema.String,
+  artistName: Schema.String,
   image: Schema.Struct({
     original: Schema.String,
     thumbnail: Schema.String,

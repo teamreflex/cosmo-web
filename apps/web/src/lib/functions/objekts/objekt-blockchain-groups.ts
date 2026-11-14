@@ -143,7 +143,7 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
       return { collectionCount: 0, collections: [] };
     }
 
-    const offset = (data.page - 1) * PER_PAGE;
+    const offset = data.page * PER_PAGE;
     const sort = data.sort ?? "newest";
     const address = data.address.toLowerCase();
 

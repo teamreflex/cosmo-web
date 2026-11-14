@@ -3,19 +3,31 @@ import {
   CosmoArtistListSchema,
   CosmoArtistWithMembersBFFSchema,
 } from "../schema/artists";
-import type { ValidArtist } from "../types/common";
+import { type ValidArtist, validArtists } from "../types/common";
 import { bearer, cosmoClient, decodeBody } from "./http";
 
 /**
- * Fetch artists within COSMO.
+ * Fetch the artists within COSMO that the app knows. One it doesn't know yet
+ * is left out with a warning, so a new artist never fails the whole list.
  */
 export const fetchArtists = Effect.fn("Cosmo.fetchArtists")(function* (
   token: string,
 ) {
   const client = yield* cosmoClient;
-  return yield* client
+  const listed = yield* client
     .get("/bff/v3/artists", { headers: bearer(token) })
     .pipe(Effect.flatMap(decodeBody(CosmoArtistListSchema)));
+
+  const known = [];
+  for (const artist of listed) {
+    const name = validArtists.find((valid) => valid === artist.name);
+    if (name === undefined) {
+      yield* Effect.logWarning(`COSMO lists an unknown artist: ${artist.name}`);
+      continue;
+    }
+    known.push({ ...artist, name });
+  }
+  return known;
 });
 
 /**

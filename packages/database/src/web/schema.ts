@@ -156,7 +156,7 @@ export const lockedObjekts = pgTable(
     tokenId: integer("tokenId").notNull(),
     locked: boolean("locked").notNull(),
   },
-  (t) => [index("address_token_idx").on(t.address, t.tokenId)],
+  (t) => [uniqueIndex("address_token_idx").on(t.address, t.tokenId)],
 );
 
 export const pins = pgTable(

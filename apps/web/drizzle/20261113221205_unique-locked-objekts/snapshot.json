@@ -1,0 +1,43 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "3b69d897-eb80-44b1-80e0-2ebaf5f2f87e",
+  "prevIds": [
+    "56af70e9-ac25-4418-b6f2-9b790f732dd8"
+  ],
+  "footprints": [
+    {
+      "statementType": "recreate_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "locked_objekts",
+        "address_token_idx"
+      ],
+      "writes": [
+        "s|idx|public.address_token_idx",
+        "n|idx|public.address_token_idx",
+        "e|idx|public.address_token_idx",
+        "n|rel|public.address_token_idx"
+      ],
+      "reads": [
+        "n|tbl|public.locked_objekts",
+        "n|sch|public",
+        "n|col|public.locked_objekts.address",
+        "n|col|public.locked_objekts.tokenId"
+      ],
+      "sharedWrites": [],
+      "sqlHash": "1c05de35aa685159"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "alter",
+      "key": "indexes\u0000[\"public\",\"address_token_idx\"]",
+      "set": {
+        "isUnique": true
+      }
+    }
+  ]
+}
