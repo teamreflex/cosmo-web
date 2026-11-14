@@ -93,9 +93,15 @@ function GravityRow({ gravity, artist }: GravityRowProps) {
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
           <IconCalendarEvent className="size-4" />
           <div className="flex gap-1">
-            <Timestamp date={gravity.startDate} format="MMM d, yyyy" />
+            <Timestamp
+              date={gravity.startDate}
+              format={{ dateStyle: "medium" }}
+            />
             <span>~</span>
-            <Timestamp date={gravity.endDate} format="MMM d, yyyy" />
+            <Timestamp
+              date={gravity.endDate}
+              format={{ dateStyle: "medium" }}
+            />
           </div>
         </div>
 

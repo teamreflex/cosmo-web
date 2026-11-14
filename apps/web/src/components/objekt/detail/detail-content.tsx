@@ -1,6 +1,6 @@
 import { useAuthenticated } from "@/hooks/use-authenticated";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { useProfileContext } from "@/hooks/use-profile";
+import { useProfileLocks, useProfilePins } from "@/hooks/use-profile";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { useMemo } from "react";
 import ObjektPanel from "./objekt-panel";
@@ -14,8 +14,8 @@ type Props = {
 export default function DetailContent({ collection, tokens }: Props) {
   const authenticated = useAuthenticated();
   const isDesktop = useMediaQuery();
-  const pins = useProfileContext((ctx) => ctx.pins);
-  const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
+  const pins = useProfilePins();
+  const lockedObjekts = useProfileLocks();
 
   const pinSet = useMemo(
     () =>

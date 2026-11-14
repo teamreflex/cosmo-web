@@ -74,15 +74,13 @@ export default function EventHeader({ event }: EventHeaderProps) {
                   <IconCalendarEvent className="size-4" />
                   <Timestamp
                     date={event.startDate}
-                    format="MMM d, yyyy"
-                    showTime
+                    format={{ dateStyle: "medium", timeStyle: "short" }}
                   />
                   <span>~</span>
                   {event.endDate ? (
                     <Timestamp
                       date={event.endDate}
-                      format="MMM d, yyyy"
-                      showTime
+                      format={{ dateStyle: "medium", timeStyle: "short" }}
                     />
                   ) : (
                     <span className="italic">Present</span>

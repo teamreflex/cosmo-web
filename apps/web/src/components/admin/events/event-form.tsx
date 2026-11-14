@@ -1,4 +1,4 @@
-import EventImageUpload from "@/components/admin/events/event-image-upload";
+import AdminImageUpload from "@/components/admin/image-upload";
 import { Badge } from "@/components/ui/badge";
 import { DateTimePicker } from "@/components/ui/datetime-picker";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
@@ -239,13 +239,18 @@ export default function EventForm({
         render={({ field, fieldState }) => (
           <Field data-invalid={fieldState.invalid}>
             <FieldLabel htmlFor="imageUrl">{m.admin_event_image()}</FieldLabel>
-            <EventImageUpload
+            <AdminImageUpload
               existingUrl={field.value}
               onFileSelect={onImageSelect}
               onClear={() => {
                 field.onChange(null);
                 onImageClear();
               }}
+              alt="Event image preview"
+              selectLabel={m.admin_event_image_select()}
+              hint={m.admin_event_image_hint()}
+              invalidTypeError={m.admin_event_image_invalid_type()}
+              tooLargeError={m.admin_event_image_too_large()}
             />
             <FieldError errors={[fieldState.error]} />
           </Field>

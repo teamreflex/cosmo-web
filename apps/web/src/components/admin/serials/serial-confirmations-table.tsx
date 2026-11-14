@@ -70,8 +70,7 @@ export default function SerialConfirmationsTable() {
               <TableCell>
                 <Timestamp
                   date={row.confirmedAt}
-                  format="MMM d, yyyy"
-                  showTime
+                  format={{ dateStyle: "medium", timeStyle: "short" }}
                   className="whitespace-nowrap"
                 />
               </TableCell>

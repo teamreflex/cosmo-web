@@ -6,7 +6,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { m } from "@/i18n/messages";
-import { $searchUsers } from "@/lib/functions/user-search";
+import { cosmoUserSearchQuery } from "@/lib/queries/user-search";
 import { isRateLimitErrorCode } from "@/lib/universal/errors/rate-limit";
 import { cn } from "@/lib/utils";
 import type { RecentUser } from "@/store";
@@ -21,12 +21,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Command } from "./ui/command";
 import { DialogClose } from "./ui/dialog";
 
+export type SearchedUser = Pick<CosmoPublicUser, "nickname" | "address">;
+
 type Props = PropsWithChildren<{
   placeholder?: string;
   recent?: RecentUser[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSelect: (user: CosmoPublicUser) => void;
+  onSelect: (user: SearchedUser) => void;
 }>;
 
 export function UserSearch({
@@ -40,16 +42,16 @@ export function UserSearch({
   const [query, setQuery] = useState<string>("");
   const [debouncedQuery] = useDebounceValue<string>(query, 500);
   const queryIsAddress = isAddress(debouncedQuery);
-  const enableQuery = debouncedQuery.length > 0 && queryIsAddress === false;
+  /**
+   * An address is offered as typed, never searched, so it reads none of the
+   * results a combobox may have cached for it.
+   */
+  const searchQuery = queryIsAddress ? "" : debouncedQuery;
+  const enableQuery = searchQuery.length > 0;
 
   const { status, data, error, dataUpdatedAt } = useQuery({
-    queryKey: ["user-search", debouncedQuery],
-    queryFn: async () => {
-      const res = await $searchUsers({ data: { query: debouncedQuery } });
-      return res.results;
-    },
+    ...cosmoUserSearchQuery(searchQuery),
     enabled: enableQuery,
-    retry: false,
   });
 
   const showResults =
@@ -60,29 +62,9 @@ export function UserSearch({
     ? recent.filter((r) => !data.some((u) => u.nickname === r.nickname))
     : recent;
 
-  function selectResult(user: CosmoPublicUser) {
+  function select(user: SearchedUser) {
     setQuery("");
     onSelect(user);
-  }
-
-  function selectAddress(address: string) {
-    setQuery("");
-    onSelect({
-      id: 0,
-      nickname: address,
-      address,
-      profileImageUrl: "",
-      userProfiles: [],
-    });
-  }
-
-  function selectRecent(user: RecentUser) {
-    setQuery("");
-    onSelect({
-      id: 0,
-      ...user,
-      userProfiles: [],
-    });
   }
 
   function handleClose() {
@@ -140,7 +122,12 @@ export function UserSearch({
               <CommandGroup heading={m.user_search_results()}>
                 {queryIsAddress && (
                   <CommandItem
-                    onSelect={() => selectAddress(debouncedQuery)}
+                    onSelect={() =>
+                      select({
+                        nickname: debouncedQuery,
+                        address: debouncedQuery,
+                      })
+                    }
                     className="cursor-pointer"
                   >
                     {debouncedQuery}
@@ -152,7 +139,7 @@ export function UserSearch({
                   data.map((user) => (
                     <CommandItem
                       key={user.address}
-                      onSelect={() => selectResult(user)}
+                      onSelect={() => select(user)}
                       className="cursor-pointer gap-2"
                       value={user.nickname}
                     >
@@ -169,7 +156,7 @@ export function UserSearch({
                   <CommandItem
                     key={user.address}
                     className="cursor-pointer"
-                    onSelect={() => selectRecent(user)}
+                    onSelect={() => select(user)}
                     value={user.nickname}
                   >
                     {user.nickname}

@@ -5,17 +5,7 @@ import { $cancelTrade } from "@/lib/functions/trades";
 import type { TradeSide } from "@apollo/database/web/types";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "../ui/alert-dialog";
-import { Spinner } from "../ui/spinner";
+import ConfirmActionDialog from "../confirm-action-dialog";
 
 type Props = {
   tradeId: string;
@@ -52,46 +42,22 @@ export default function CancelTradeDialog({
   });
 
   return (
-    <AlertDialog
+    <ConfirmActionDialog
       open={open}
-      // a cancel can't be called back, so the dialog waits for its answer
-      onOpenChange={(next) => {
-        if (!mutation.isPending) onOpenChange(next);
-      }}
-    >
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{m.trade_page_cancel_title()}</AlertDialogTitle>
-          {listingId !== null && (
-            <AlertDialogDescription>
-              {side === "from"
-                ? m.trade_page_cancel_description_poster()
-                : m.trade_page_cancel_description_claimer({ name })}
-            </AlertDialogDescription>
-          )}
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel
-            className="max-sm:h-11"
-            disabled={mutation.isPending}
-          >
-            {m.trade_page_cancel_keep()}
-          </AlertDialogCancel>
-          <AlertDialogAction
-            type="button"
-            variant="destructive"
-            className="max-sm:h-11"
-            onClick={(event) => {
-              event.preventBaseUIHandler();
-              mutation.mutate();
-            }}
-            disabled={mutation.isPending}
-          >
-            {mutation.isPending && <Spinner />}
-            {m.trade_page_cancel()}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+      onOpenChange={onOpenChange}
+      title={m.trade_page_cancel_title()}
+      description={
+        listingId === null
+          ? undefined
+          : side === "from"
+            ? m.trade_page_cancel_description_poster()
+            : m.trade_page_cancel_description_claimer({ name })
+      }
+      cancelLabel={m.trade_page_cancel_keep()}
+      confirmLabel={m.trade_page_cancel()}
+      variant="destructive"
+      buttonClassName="max-sm:h-11"
+      mutation={mutation}
+    />
   );
 }

@@ -1,10 +1,10 @@
-import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { $toggleObjektLock } from "@/lib/functions/collection";
 import { track } from "@/lib/utils";
 import { IconLoader2, IconLock, IconLockOpen } from "@tabler/icons-react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { getRouteApi } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { OverlayIcon, OverlayIconButton } from "./corner-overlay";
 
@@ -13,13 +13,25 @@ type Props = {
   isLocked: boolean;
 };
 
+const route = getRouteApi("/@{$username}");
+
 export default function LockObjekt({ tokenId, isLocked }: Props) {
-  const toggleLock = useProfileContext((ctx) => ctx.toggleLock);
+  const queryClient = useQueryClient();
+  const targetAccountOptions = route.useRouteContext({
+    select: (context) => context.targetAccountOptions,
+  });
   const mutation = useMutation({
     mutationFn: $toggleObjektLock,
-    onSuccess: () => {
-      track(`${isLocked ? "unlock" : "lock"}-objekt`);
-      toggleLock(tokenId);
+    onSuccess: (_result, { data }) => {
+      track(`${data.lock ? "lock" : "unlock"}-objekt`);
+      queryClient.setQueryData(targetAccountOptions.queryKey, (target) => {
+        if (target === undefined) return target;
+        const others = target.lockedObjekts.filter((id) => id !== tokenId);
+        return {
+          ...target,
+          lockedObjekts: data.lock ? [...others, tokenId] : others,
+        };
+      });
     },
     onError: (error) => toast.error(formatError(error)),
   });

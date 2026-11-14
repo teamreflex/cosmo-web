@@ -5,19 +5,8 @@ import { $acceptOffer, $endOffer } from "@/lib/functions/trade-offers";
 import type { TradeNamedItem } from "@/lib/universal/trades";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { useRef } from "react";
 import { toast } from "sonner";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "../ui/alert-dialog";
-import { Spinner } from "../ui/spinner";
+import ConfirmActionDialog from "../confirm-action-dialog";
 
 // what a party can do with a pending offer from its page
 export type OfferAction = "accept" | "decline" | "withdraw";
@@ -89,8 +78,6 @@ export default function OfferActionDialog({
   const invalidateTrade = useInvalidateTrade(listingId);
   const navigate = useNavigate();
   const copy = copies[action];
-  // a second click before the first re-renders the button disabled sends nothing
-  const submitting = useRef(false);
   const mutation = useMutation({
     mutationFn: () =>
       action === "accept"
@@ -114,51 +101,20 @@ export default function OfferActionDialog({
     onError: (error) => {
       toast.error(formatOfferError(error, items));
     },
-    onSettled: () => {
-      submitting.current = false;
-      return invalidateTrade();
-    },
+    onSettled: invalidateTrade,
   });
 
   return (
-    <AlertDialog
+    <ConfirmActionDialog
       open={open}
-      // an answer can't be called back, so the dialog waits for it
-      onOpenChange={(next) => {
-        if (!mutation.isPending) onOpenChange(next);
-      }}
-    >
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{copy.title()}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {copy.description({ name })}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel
-            className="max-sm:h-11"
-            disabled={mutation.isPending}
-          >
-            {m.common_back()}
-          </AlertDialogCancel>
-          <AlertDialogAction
-            type="button"
-            variant={copy.variant}
-            className="max-sm:h-11"
-            onClick={(event) => {
-              event.preventBaseUIHandler();
-              if (submitting.current) return;
-              submitting.current = true;
-              mutation.mutate();
-            }}
-            disabled={mutation.isPending}
-          >
-            {mutation.isPending && <Spinner />}
-            {copy.confirm()}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+      onOpenChange={onOpenChange}
+      title={copy.title()}
+      description={copy.description({ name })}
+      cancelLabel={m.common_back()}
+      confirmLabel={copy.confirm()}
+      variant={copy.variant}
+      buttonClassName="max-sm:h-11"
+      mutation={mutation}
+    />
   );
 }

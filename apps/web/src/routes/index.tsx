@@ -14,8 +14,6 @@ import { currentAccountQuery, selectedArtistsQuery } from "@/lib/queries/core";
 import { objektIndexBlockchainQuery } from "@/lib/queries/objekt-queries";
 import { objektIndexFrontendSchema } from "@/lib/universal/parsers";
 import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
-import { ProfileProvider } from "@/providers/profile-provider";
-import { UserStateProvider } from "@/providers/user-state-provider";
 import { noop } from "@tanstack/react-query";
 import { createFileRoute, useLoaderData } from "@tanstack/react-router";
 
@@ -58,13 +56,9 @@ function RouteComponent() {
 
   return (
     <main className="relative flex w-full flex-col">
-      <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
-        <MetadataDialogProvider>
-          <ProfileProvider objektLists={account?.objektLists ?? []}>
-            <IndexRenderer objektLists={account?.objektLists ?? []} />
-          </ProfileProvider>
-        </MetadataDialogProvider>
-      </UserStateProvider>
+      <MetadataDialogProvider>
+        <IndexRenderer objektLists={account?.objektLists ?? []} />
+      </MetadataDialogProvider>
 
       <Overlay>
         <ScrollToTop />

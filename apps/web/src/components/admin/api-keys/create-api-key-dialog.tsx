@@ -1,4 +1,3 @@
-import UserCombobox from "@/components/admin/user-combobox";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,6 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import UserCombobox from "@/components/user-combobox";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { $createApiKey } from "@/lib/functions/api-keys";
@@ -159,6 +159,7 @@ export default function CreateApiKeyDialog() {
                       value={selectedUser}
                       onChange={handleSelectUser}
                       search={searchUsersQuery}
+                      minLength={3}
                       getKey={(user) => user.id}
                       getLabel={(user) => `@${user.cosmoUsername}`}
                       getInitial={(user) =>

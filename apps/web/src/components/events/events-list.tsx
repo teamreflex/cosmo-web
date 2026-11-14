@@ -114,11 +114,14 @@ function EventRow({ event, onPointerEnter }: EventRowProps) {
         <IconCalendarEvent className="size-4" />
         <div className="flex gap-1">
           {event.startDate && (
-            <Timestamp date={event.startDate} format="MMM d, yyyy" />
+            <Timestamp
+              date={event.startDate}
+              format={{ dateStyle: "medium" }}
+            />
           )}
           {event.startDate && <span>~</span>}
           {event.endDate ? (
-            <Timestamp date={event.endDate} format="MMM d, yyyy" />
+            <Timestamp date={event.endDate} format={{ dateStyle: "medium" }} />
           ) : (
             <span className="italic">Present</span>
           )}

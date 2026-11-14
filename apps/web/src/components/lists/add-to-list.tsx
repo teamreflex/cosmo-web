@@ -9,6 +9,7 @@ import {
   $addObjektsToList,
   $addObjektsToWantList,
 } from "@/lib/functions/lists";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type { ObjektList } from "@apollo/database/web/types";
 import { IconPlaylistAdd } from "@tabler/icons-react";
 import { useState } from "react";
@@ -22,14 +23,13 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { ScrollArea } from "../ui/scroll-area";
+import BatchSerialPickerDialog, {
+  type PickerMode,
+} from "./batch-serial-picker-dialog";
 import ListItemShell from "./list-item-shell";
-import SaleListDialog from "./sale-list-dialog";
-import SerialPickerDialog from "./serial-picker-dialog";
 
 type AddToListProps = {
-  collectionName: string;
-  slug: string;
-  collectionId: string;
+  collection: Objekt.Collection;
   lists: ObjektList[];
   tokenId?: number;
 };
@@ -37,25 +37,28 @@ type AddToListProps = {
 type ClickType = "direct" | "sale" | "serial-picker";
 
 export default function AddToList({
-  collectionName,
-  slug,
-  collectionId,
+  collection,
   lists,
   tokenId,
 }: AddToListProps) {
   const [open, setOpen] = useState(false);
-  const [saleListPending, setSaleListPending] = useState<ObjektList>();
-  const [serialPickerPending, setSerialPickerPending] = useState<ObjektList>();
+  const [pickerPending, setPickerPending] = useState<
+    { list: ObjektList } & PickerMode
+  >();
+  const collectionName = collection.collectionId;
 
   function handleClick(list: ObjektList, kind: ClickType) {
     switch (kind) {
       case "sale":
         setOpen(false);
-        setSaleListPending(list);
+        // objekt_lists_currency_type_chk gives every sale list a currency
+        if (list.currency !== null) {
+          setPickerPending({ list, mode: "sale", currency: list.currency });
+        }
         return;
       case "serial-picker":
         setOpen(false);
-        setSerialPickerPending(list);
+        setPickerPending({ list, mode: "have" });
         return;
       case "direct":
         return;
@@ -92,7 +95,7 @@ export default function AddToList({
                 const commonProps = {
                   list,
                   collectionName,
-                  slug,
+                  slug: collection.slug,
                   onDone: () => setOpen(false),
                   onClick: (kind: ClickType) => handleClick(list, kind),
                 };
@@ -121,29 +124,15 @@ export default function AddToList({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {saleListPending?.currency && (
-        <SaleListDialog
+      {pickerPending && (
+        <BatchSerialPickerDialog
+          {...pickerPending}
           open={true}
           onOpenChange={(open) => {
-            if (!open) setSaleListPending(undefined);
+            if (!open) setPickerPending(undefined);
           }}
-          objektListId={saleListPending.id}
-          listName={saleListPending.name}
-          collectionName={collectionName}
-          collectionId={collectionId}
-          currency={saleListPending.currency}
-        />
-      )}
-
-      {serialPickerPending && (
-        <SerialPickerDialog
-          open={true}
-          onOpenChange={(open) => {
-            if (!open) setSerialPickerPending(undefined);
-          }}
-          list={serialPickerPending}
-          collectionName={collectionName}
-          collectionId={collectionId}
+          title={`${pickerPending.mode === "sale" ? m.list_add_to_sale_list() : m.list_picker_select_serials()} — ${collectionName}`}
+          collection={collection}
         />
       )}
     </>

@@ -32,7 +32,7 @@ export default function RecentVotes(props: Props) {
             <div key={vote.id} className="flex h-8 items-center gap-2">
               <Timestamp
                 date={new Date(vote.createdAt)}
-                format="h:mm:ssaaa"
+                format={{ timeStyle: "medium" }}
                 className="shrink-0 font-mono text-xs text-muted-foreground"
               />
               <span className="min-w-0 flex-1 truncate text-sm">

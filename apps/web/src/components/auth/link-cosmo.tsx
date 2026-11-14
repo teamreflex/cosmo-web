@@ -99,6 +99,8 @@ function LinkCosmoWizard({ onClose }: LinkCosmoWizardProps) {
     void queryClient.invalidateQueries({
       queryKey: currentAccountQuery.queryKey,
     });
+    // a profile opened before the link cached its target without the user
+    queryClient.removeQueries({ queryKey: ["target-account"] });
     onClose();
   }
 

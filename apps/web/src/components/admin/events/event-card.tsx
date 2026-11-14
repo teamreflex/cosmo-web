@@ -6,7 +6,7 @@ import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import type { EventWithEra } from "@apollo/database/web/types";
 import AddCollectionsDialog from "./add-collections-dialog";
 import DeleteEvent from "./delete-event";
-import EditEventDialog from "./edit-event-dialog";
+import EventDialog from "./event-dialog";
 import ViewCollectionsDialog from "./view-collections-dialog";
 
 type Props = {
@@ -55,13 +55,16 @@ export default function EventCard({ event, artist }: Props) {
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <span className="font-semibold">Timeframe:</span>
           {event.startDate ? (
-            <Timestamp date={event.startDate} format="MMM d, yyyy" />
+            <Timestamp
+              date={event.startDate}
+              format={{ dateStyle: "medium" }}
+            />
           ) : (
             <span className="italic">unset</span>
           )}
           <span>~</span>
           {event.endDate ? (
-            <Timestamp date={event.endDate} format="MMM d, yyyy" />
+            <Timestamp date={event.endDate} format={{ dateStyle: "medium" }} />
           ) : (
             <span className="italic">unset</span>
           )}
@@ -78,7 +81,7 @@ export default function EventCard({ event, artist }: Props) {
               />
             )}
             <ViewCollectionsDialog eventId={event.id} eventName={event.name} />
-            <EditEventDialog event={event} />
+            <EventDialog event={event} />
             <DeleteEvent eventId={event.id} />
           </div>
         </div>

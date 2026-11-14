@@ -7,15 +7,25 @@ type Props = {
   existingUrl?: string | null;
   onFileSelect: (file: File | null) => void;
   onClear: () => void;
+  alt: string;
+  selectLabel: string;
+  hint: string;
+  invalidTypeError: string;
+  tooLargeError: string;
 };
 
 const MAX_SIZE = 1024 * 1024; // 1MB
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 
-export default function EventImageUpload({
+export default function AdminImageUpload({
   existingUrl,
   onFileSelect,
   onClear,
+  alt,
+  selectLabel,
+  hint,
+  invalidTypeError,
+  tooLargeError,
 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -41,12 +51,12 @@ export default function EventImageUpload({
     }
 
     if (!ACCEPTED_TYPES.includes(file.type)) {
-      setError(m.admin_event_image_invalid_type());
+      setError(invalidTypeError);
       return;
     }
 
     if (file.size > MAX_SIZE) {
-      setError(m.admin_event_image_too_large());
+      setError(tooLargeError);
       return;
     }
 
@@ -77,7 +87,7 @@ export default function EventImageUpload({
         <div className="relative inline-block">
           <img
             src={displayUrl}
-            alt="Event image preview"
+            alt={alt}
             className="size-24 rounded-md object-cover"
           />
           <Button
@@ -99,7 +109,7 @@ export default function EventImageUpload({
           onClick={() => inputRef.current?.click()}
         >
           <IconPhoto className="size-4" />
-          <span>{m.admin_event_image_select()}</span>
+          <span>{selectLabel}</span>
         </Button>
       )}
 
@@ -113,9 +123,7 @@ export default function EventImageUpload({
 
       {error && <p className="text-sm text-destructive">{error}</p>}
 
-      <p className="text-xs text-muted-foreground">
-        {m.admin_event_image_hint()}
-      </p>
+      <p className="text-xs text-muted-foreground">{hint}</p>
     </div>
   );
 }

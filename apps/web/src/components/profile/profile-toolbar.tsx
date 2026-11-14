@@ -3,7 +3,6 @@ import FeedbackRatingFilter from "@/components/feedback/feedback-rating-filter";
 import GridToolbar from "@/components/grid/grid-toolbar";
 import CosmoMemberFilter from "@/components/objekt/cosmo-member-filter";
 import ProgressToolbar from "@/components/progress/progress-toolbar";
-import TransfersMemberFilter from "@/components/transfers/transfers-member-filter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
 import { cn } from "@/lib/utils";
@@ -33,7 +32,7 @@ export default function ProfileToolbar({ address }: Props) {
     case "/@{$username}/trades":
       return (
         <Toolbar title={m.trades_title()}>
-          <TransfersMemberFilter />
+          <CosmoMemberFilter align="end" />
         </Toolbar>
       );
     case "/@{$username}/como":

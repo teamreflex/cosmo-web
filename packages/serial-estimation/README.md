@@ -8,13 +8,14 @@ Estimates the serials of objekts minted after `SERIAL_CUTOFF`, when COSMO's meta
 
 - `estimateSerials(collection, confirmations)` returns only the serials that differ from what is stored. Confirmations always win, and objekts minted before the cutoff keep their real serial.
 - `collectionKind(slug, onOffline)` picks the model: `reserved` for physicals and the `COUPON_SETS` in `src/kind.ts`, else `sequential`.
-- `findReservations()` turns ascending digital token ids into the reserved ranges between them (gaps of `RESERVATION_MIN_GAP` or more). `serial_reservation` must always equal its result over every digital mint so far.
-- Callers load a collection's objekts, confirmations and (for `reserved`) its reservations themselves. That loader exists in three copies: `apps/indexer/src/serials.ts`, `apps/schedules/src/functions/recompute-serials.ts` and `scripts/database.ts`. Change them together.
+- `findReservations()` turns ascending digital token ids into the reserved ranges between them (gaps of `RESERVATION_MIN_GAP` or more). `serial_reservation` must always equal its result over every digital mint so far, and `splitReservation()` keeps a stored range equal to it when a late mint lands inside.
+- Callers load a collection's objekts, confirmations and (for `reserved`) its reservations themselves. There are three loaders: `loadReservations` in `apps/indexer/src/serials.ts`, in `apps/schedules/src/functions/recompute-serials.ts` and in `scripts/database.ts`.
+- Each loader keeps its own queries and takes the steps between them from `src/reservations.ts`: `reservationSpans()` for the collection's span in each range, `tokenIdRanges()` for the id ranges to scan, and `toReservation()` for the result.
 
 ## Tests
 
-- `turbo test --filter @apollo/serial-estimation` runs `bun test` over JSON fixtures of real collections in `tests/fixtures/`.
-- A test hides real serials with `hideSerials()` as if minted after the cutoff, then checks the estimate against them.
+- `turbo test --filter @apollo/serial-estimation` runs `bun test`. The estimator's tests read JSON fixtures of real collections in `tests/fixtures/`; `tests/reservations.test.ts` needs none.
+- An estimator test hides real serials with `hideSerials()` as if minted after the cutoff, then checks the estimate against them.
 - Export a new fixture with `export-fixture.ts` ([Scripts](#scripts)).
 
 ## Scripts
@@ -34,7 +35,7 @@ Run from this directory with `INDEXER_DATABASE_URL` set. The large scans stream 
 
 1. Change `src/`, and add a test for the case that motivated it. Export a new fixture only when no existing one walks that path.
 2. Run the tests, then `scripts/accuracy.ts` against a local copy of the indexer database to check nothing else got worse.
-3. If the loader changes, change all three copies.
+3. If a rule needs the loaders to read something else, change the queries of all three ([Contract](#contract) lists them).
 4. Stored serials change only when a collection is recomputed. apps/schedules recomputes collections with a recent mint or a pending confirmation; `scripts/backfill.ts serials` recomputes everything.
 
 ## Coupon sets and claim blocks

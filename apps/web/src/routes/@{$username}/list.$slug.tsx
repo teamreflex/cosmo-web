@@ -16,8 +16,6 @@ import { currentAccountQuery, selectedArtistsQuery } from "@/lib/queries/core";
 import { objektListQuery } from "@/lib/queries/objekt-queries";
 import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { objektListFrontendSchema } from "@/lib/universal/parsers";
-import { ProfileProvider } from "@/providers/profile-provider";
-import { UserStateProvider } from "@/providers/user-state-provider";
 import { IconArrowsExchange, IconHeartBroken } from "@tabler/icons-react";
 import { noop } from "@tanstack/react-query";
 import {
@@ -83,7 +81,7 @@ export const Route = createFileRoute("/@{$username}/list/$slug")({
 
     const isAuthenticated = account?.user.id === objektList.userId;
 
-    return { account, target, isAuthenticated, objektList };
+    return { target, isAuthenticated, objektList };
   },
   head: ({ loaderData }) =>
     defineHead({
@@ -95,8 +93,7 @@ export const Route = createFileRoute("/@{$username}/list/$slug")({
 });
 
 function RouteComponent() {
-  const { account, target, isAuthenticated, objektList } =
-    Route.useLoaderData();
+  const { target, isAuthenticated, objektList } = Route.useLoaderData();
 
   // a have or want list is trade-active once it's paired with the other kind
   const { pairedList } = objektList;
@@ -129,28 +126,26 @@ function RouteComponent() {
   );
 
   return (
-    <UserStateProvider {...account}>
-      <ProfileProvider target={target} objektLists={account?.objektLists ?? []}>
-        <div className="border-b border-border">
-          <div className="container">
-            <ListHeader
-              list={objektList}
-              ownerName={target.cosmo.username}
-              owner={target.user}
-              isOwner={isAuthenticated}
-              extras={extras}
-            />
-          </div>
+    <>
+      <div className="border-b border-border">
+        <div className="container">
+          <ListHeader
+            list={objektList}
+            ownerName={target.cosmo.username}
+            owner={target.user}
+            isOwner={isAuthenticated}
+            extras={extras}
+          />
         </div>
+      </div>
 
-        <ListRenderer objektList={objektList} authenticated={isAuthenticated} />
+      <ListRenderer objektList={objektList} authenticated={isAuthenticated} />
 
-        <Overlay>
-          <ScrollToTop />
-          <ToggleObjektBands />
-        </Overlay>
-      </ProfileProvider>
-    </UserStateProvider>
+      <Overlay>
+        <ScrollToTop />
+        <ToggleObjektBands />
+      </Overlay>
+    </>
   );
 }
 

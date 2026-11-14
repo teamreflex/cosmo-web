@@ -1,7 +1,6 @@
 import { GRID_COLUMNS } from "@apollo/util";
-import { useShallow } from "zustand/react/shallow";
+import { useMatch } from "@tanstack/react-router";
 import { useMediaQuery } from "./use-media-query";
-import { useProfileContext } from "./use-profile";
 import { useUserState } from "./use-user-state";
 
 /**
@@ -10,16 +9,22 @@ import { useUserState } from "./use-user-state";
 export const MOBILE_GRID_COLUMNS = 3;
 
 /**
- * Optimized hook for getting the grid columns.
+ * Columns an objekt grid has: the setting of the profile's owner on a
+ * profile, and the viewer's own everywhere else.
  */
 export function useGridColumns() {
   const isDesktop = useMediaQuery();
   const { user, cosmo } = useUserState();
-  const target = useProfileContext(useShallow((state) => state.target));
+  // grids render off a profile too, where there is no target
+  const target = useMatch({
+    from: "/@{$username}",
+    shouldThrow: false,
+    select: (match) => match.loaderData?.target,
+  });
 
-  // workaround for zustand stores not getting updated on router.refresh()
+  // the target account is never refetched, so the viewer's own profile follows their account
   const isCurrent =
-    user !== undefined && target?.cosmo?.address === cosmo?.address;
+    user !== undefined && target?.cosmo.address === cosmo?.address;
 
   return isDesktop
     ? isCurrent

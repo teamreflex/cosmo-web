@@ -6,11 +6,6 @@ export type PublicCosmo = {
   isAddress: boolean;
 } & { __brand: "PublicCosmo" };
 
-export type PublicAccount = {
-  user: PublicUser;
-  cosmo: PublicCosmo;
-};
-
 /**
  * A user's linked COSMO account, as `getCosmoAddress` reads it.
  */

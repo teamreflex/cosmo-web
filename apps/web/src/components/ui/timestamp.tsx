@@ -2,24 +2,18 @@ import { getLocale } from "@/i18n/runtime";
 import { formatRelative } from "@/lib/client/time";
 import type { PropsWithClassName } from "@/lib/utils";
 import { cn } from "@/lib/utils";
-import { format as formatDate } from "date-fns";
 import { Suspense, use } from "react";
 import { browser } from "react-dom";
 
 /**
- * Either a date-fns `format` pattern, `Intl.DateTimeFormat` options for a
- * date in the app locale, or `relative` for the distance from now ("3 days
- * ago", or "3d ago" when narrow) in the app locale.
+ * Either `Intl.DateTimeFormat` options for a date in the app locale, or
+ * `relative` for the distance from now ("3 days ago", or "3d ago" when
+ * narrow) in the app locale.
  */
 type Props = PropsWithClassName<
   { date: Date } & (
-    | { format: string; showTime?: boolean; relative?: never }
-    | {
-        format: Intl.DateTimeFormatOptions;
-        showTime?: never;
-        relative?: never;
-      }
-    | { relative: "long" | "narrow"; format?: never; showTime?: never }
+    | { format: Intl.DateTimeFormatOptions; relative?: never }
+    | { relative: "long" | "narrow"; format?: never }
   )
 >;
 
@@ -50,25 +44,14 @@ export function Timestamp(props: Props) {
  * The formatted date, which only the browser renders: it's in the viewer's
  * timezone, or relative to the viewer's clock.
  */
-function TimestampText({ date, format, relative, className, showTime }: Props) {
+function TimestampText({ date, format, relative, className }: Props) {
   use(browser("Timestamps render in the viewer's timezone."));
 
   return (
     <time dateTime={date.toISOString()} className={cn(className)}>
       {relative === undefined
-        ? formatAbsolute(date, format, showTime)
+        ? new Intl.DateTimeFormat(getLocale(), format).format(date)
         : formatRelative(date, relative)}
     </time>
   );
-}
-
-function formatAbsolute(
-  date: Date,
-  format: string | Intl.DateTimeFormatOptions,
-  showTime: boolean | undefined,
-) {
-  if (typeof format === "string") {
-    return formatDate(date, showTime ? `${format} h:mm a` : format);
-  }
-  return new Intl.DateTimeFormat(getLocale(), format).format(date);
 }

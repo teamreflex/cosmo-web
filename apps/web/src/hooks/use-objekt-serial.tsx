@@ -1,12 +1,5 @@
+import { resolveUpdate } from "@/lib/client/filters";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-
-function resolveSerial(
-  next: number | undefined | ((prev: number | undefined) => number | undefined),
-  prev: number | undefined,
-) {
-  // oxlint-disable-next-line anti-slop/no-runtime-typeof -- narrowing the updater-function union, standard setState pattern
-  return typeof next === "function" ? next(prev) : next;
-}
 
 /**
  * Manages the objekt serial from within the metadata dialog.
@@ -27,10 +20,10 @@ export function useObjektSerial() {
       number | undefined | ((prev: number | undefined) => number | undefined),
   ) => {
     void navigate({
-      // @ts-ignore - this hook is used on different routes so we can't reliably type this
+      to: ".",
       search: (prev) => ({
         ...prev,
-        serial: resolveSerial(serial, prev.serial ?? undefined),
+        serial: resolveUpdate(serial, prev.serial ?? undefined),
       }),
       resetScroll: false,
       replace: true,

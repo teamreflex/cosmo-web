@@ -2,7 +2,7 @@ import AddMissingMenu from "@/components/grid/add-missing-menu";
 import IncludeTokensDialog from "@/components/grid/include-tokens-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useProfileContext } from "@/hooks/use-profile";
+import { useProfileLocks } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
 import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import type { EditionLedger } from "@/lib/universal/grid";
@@ -43,7 +43,7 @@ export default function GridEditionRow(props: Props) {
   // hold back locked copies from the count, view-local like overrides
   const [excludeLocked, setExcludeLocked] = useState(false);
 
-  const lockedObjekts = useProfileContext((ctx) => ctx.lockedObjekts);
+  const lockedObjekts = useProfileLocks();
   const lockedSet = useMemo(() => new Set(lockedObjekts), [lockedObjekts]);
   const lockedCandidates = lockedCountFor(props.edition, lockedSet);
 

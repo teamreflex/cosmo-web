@@ -4,11 +4,8 @@ import LockObjekt from "@/components/objekt/overlay/lock-button";
 import PinObjekt from "@/components/objekt/overlay/pin-button";
 import { useMetadataDialog } from "@/hooks/use-metadata-dialog";
 import { tokenKey, useObjektSelection } from "@/hooks/use-objekt-selection";
-import {
-  useLockedObjekt,
-  usePinnedObjekt,
-  useProfileContext,
-} from "@/hooks/use-profile";
+import { useLockedObjekt, usePinnedObjekt } from "@/hooks/use-profile";
+import { useObjektLists } from "@/hooks/use-user-state";
 import { m } from "@/i18n/messages";
 import { reasonLabel } from "@/lib/client/objekt-util";
 import { objektQuery } from "@/lib/queries/objekt-queries";
@@ -35,7 +32,7 @@ export default function SerialTicket({
 }: Props) {
   const isLocked = useLockedObjekt(token.tokenId);
   const isPinned = usePinnedObjekt(token.tokenId);
-  const objektLists = useProfileContext((ctx) => ctx.objektLists);
+  const objektLists = useObjektLists();
   const { open } = useMetadataDialog();
   const queryClient = useQueryClient();
   const isSelected = useObjektSelection(
@@ -138,9 +135,7 @@ export default function SerialTicket({
             isPinned={isPinned}
           />
           <AddToList
-            collectionName={collection.collectionId}
-            slug={collection.slug}
-            collectionId={collection.id}
+            collection={collection}
             lists={objektLists}
             tokenId={token.tokenId}
           />

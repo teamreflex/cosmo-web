@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
+import { uploadToPresignedUrl } from "@/lib/client/upload";
 import {
   $getCollectionMediaUploadUrl,
   $updateCollection,
@@ -84,26 +85,19 @@ export default function CollectionEditor({ collection }: Props) {
       }
 
       try {
-        const { uploadUrl, publicUrl } = await $getCollectionMediaUploadUrl({
-          data: {
-            slug: collection.slug,
-            artist: data.artist,
-            objektClass,
-            contentType: "video/mp4",
-            contentLength: stagedFile.size,
-          },
-        });
-
-        const res = await fetch(uploadUrl, {
-          method: "PUT",
-          body: stagedFile,
-          headers: { "Content-Type": "video/mp4" },
-        });
-        if (!res.ok) {
-          throw new Error("Upload failed");
-        }
-
-        frontMedia = publicUrl;
+        frontMedia = await uploadToPresignedUrl(
+          () =>
+            $getCollectionMediaUploadUrl({
+              data: {
+                slug: collection.slug,
+                artist: data.artist,
+                objektClass,
+                contentType: "video/mp4",
+                contentLength: stagedFile.size,
+              },
+            }),
+          stagedFile,
+        );
       } catch {
         toast.error(m.admin_collection_media_upload_failed());
         return;

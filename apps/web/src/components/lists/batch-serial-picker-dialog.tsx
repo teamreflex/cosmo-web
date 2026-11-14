@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useBatchAddToList } from "@/hooks/use-add-to-list";
+import { useAddToList } from "@/hooks/use-add-to-list";
 import { m } from "@/i18n/messages";
 import { getObjektFrontImageUrl, reasonLabel } from "@/lib/client/objekt-util";
 import {
@@ -32,7 +32,7 @@ import type { ObjektList } from "@apollo/database/web/types";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconCheck, IconLoader2 } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useState } from "react";
 import {
   type Control,
   useController,
@@ -43,37 +43,44 @@ import type { z } from "zod";
 
 type AddObjektsToSaleListInput = z.infer<typeof addObjektsToSaleListSchema>;
 
+// a sale list prices every serial it takes, so its mode carries the currency
+export type PickerMode = { mode: "have" } | { mode: "sale"; currency: string };
+
+/**
+ * What the picker adds. One collection is named by the title and the toasts,
+ * so its section draws no header. A selection of collections gets a header per
+ * section and toasts that count the serials added.
+ */
+type PickerSource =
+  | { collection: Objekt.Collection; collections?: never }
+  | { collections: Objekt.Collection[]; collection?: never };
+
 type Props = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  title: string;
   list: ObjektList;
-  mode: "have" | "sale";
-  currency?: string;
-  collections: Objekt.Collection[];
-};
+} & PickerMode &
+  PickerSource;
 
 /**
- * Batch serial picker for adding index collections to a have/sale list. The
- * user has selected collections (not owned serials), so this prompts them to
- * pick which copies they own per collection before adding.
+ * Serial picker for adding collections to a have/sale list. The list takes
+ * serials, so this prompts the user to pick which of the copies they own of
+ * each collection to add.
  */
 export default function BatchSerialPickerDialog({
   open,
   onOpenChange,
-  list,
-  mode,
-  currency,
-  collections,
+  title,
+  ...body
 }: Props) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
-          <DialogTitle>
-            {m.list_picker_select_serials()} — {list.name}
-          </DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
-            {m.list_picker_description({ listName: list.name })}
+            {m.list_picker_description({ listName: body.list.name })}
           </DialogDescription>
         </DialogHeader>
 
@@ -84,13 +91,7 @@ export default function BatchSerialPickerDialog({
             </div>
           }
         >
-          <PickerBody
-            list={list}
-            mode={mode}
-            currency={currency}
-            collections={collections}
-            onClose={() => onOpenChange(false)}
-          />
+          <PickerBody {...body} onClose={() => onOpenChange(false)} />
         </Suspense>
       </DialogContent>
     </Dialog>
@@ -105,17 +106,16 @@ type Section = {
 
 type BodyProps = {
   list: ObjektList;
-  mode: "have" | "sale";
-  currency?: string;
-  collections: Objekt.Collection[];
   onClose: () => void;
-};
+} & PickerMode &
+  PickerSource;
 
-function PickerBody({ list, mode, currency, collections, onClose }: BodyProps) {
-  const collectionIds = useMemo(
-    () => collections.map((c) => c.id),
-    [collections],
-  );
+function PickerBody({ list, onClose, ...picker }: BodyProps) {
+  const collections =
+    picker.collection === undefined ? picker.collections : [picker.collection];
+  const collectionName = picker.collection?.collectionId;
+
+  const collectionIds = collections.map((c) => c.id);
 
   const { data: owned } = useSuspenseQuery({
     queryKey: ["owned-serials", "batch", collectionIds],
@@ -123,18 +123,16 @@ function PickerBody({ list, mode, currency, collections, onClose }: BodyProps) {
   });
 
   // sections align to a flat row index so the sale form can address each row
-  const sections = useMemo(() => {
-    const withSerials = collections.map((collection) => ({
-      collection,
-      serials: owned[collection.id] ?? [],
-    }));
-    return withSerials.map((item, i) => ({
-      ...item,
-      startIndex: withSerials
-        .slice(0, i)
-        .reduce((n, prev) => n + prev.serials.length, 0),
-    }));
-  }, [collections, owned]);
+  const withSerials = collections.map((collection) => ({
+    collection,
+    serials: owned[collection.id] ?? [],
+  }));
+  const sections = withSerials.map((item, i) => ({
+    ...item,
+    startIndex: withSerials
+      .slice(0, i)
+      .reduce((n, prev) => n + prev.serials.length, 0),
+  }));
 
   const totalOwned = sections.reduce((n, s) => n + s.serials.length, 0);
 
@@ -146,11 +144,12 @@ function PickerBody({ list, mode, currency, collections, onClose }: BodyProps) {
     );
   }
 
-  if (mode === "sale" && currency) {
+  if (picker.mode === "sale") {
     return (
       <SaleBody
         list={list}
-        currency={currency}
+        currency={picker.currency}
+        collectionName={collectionName}
         sections={sections}
         totalRows={totalOwned}
         onClose={onClose}
@@ -158,20 +157,30 @@ function PickerBody({ list, mode, currency, collections, onClose }: BodyProps) {
     );
   }
 
-  return <HaveBody list={list} sections={sections} onClose={onClose} />;
+  return (
+    <HaveBody
+      list={list}
+      collectionName={collectionName}
+      sections={sections}
+      onClose={onClose}
+    />
+  );
 }
 
 type HaveBodyProps = {
   list: ObjektList;
+  collectionName: string | undefined;
   sections: Section[];
   onClose: () => void;
 };
 
-function HaveBody({ list, sections, onClose }: HaveBodyProps) {
+function HaveBody({ list, collectionName, sections, onClose }: HaveBodyProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  const mutation = useBatchAddToList(
-    { list, attempted: selected.size, onDone: onClose },
+  const mutation = useAddToList(
+    collectionName === undefined
+      ? { list, attempted: selected.size, onDone: onClose }
+      : { list, collectionName, onDone: onClose },
     () =>
       $addObjektsToHaveList({
         data: {
@@ -204,6 +213,7 @@ function HaveBody({ list, sections, onClose }: HaveBodyProps) {
             <CollectionSection
               key={section.collection.id}
               collection={section.collection}
+              showHeader={collectionName === undefined}
               isEmpty={section.serials.length === 0}
             >
               {section.serials.map((serial) => (
@@ -242,6 +252,7 @@ function HaveBody({ list, sections, onClose }: HaveBodyProps) {
 type SaleBodyProps = {
   list: ObjektList;
   currency: string;
+  collectionName: string | undefined;
   sections: Section[];
   totalRows: number;
   onClose: () => void;
@@ -250,6 +261,7 @@ type SaleBodyProps = {
 function SaleBody({
   list,
   currency,
+  collectionName,
   sections,
   totalRows,
   onClose,
@@ -268,8 +280,10 @@ function SaleBody({
   const selectedCount = rows.filter((row) => row.selected).length;
   const overLimit = selectedCount > MAX_OBJEKT_SELECTIONS;
 
-  const mutation = useBatchAddToList(
-    { list, attempted: selectedCount, onDone: onClose },
+  const mutation = useAddToList(
+    collectionName === undefined
+      ? { list, attempted: selectedCount, onDone: onClose }
+      : { list, collectionName, onDone: onClose },
     (data: AddObjektsToSaleListInput) => $addObjektsToSaleList({ data }),
   );
 
@@ -294,6 +308,7 @@ function SaleBody({
             <CollectionSection
               key={section.collection.id}
               collection={section.collection}
+              showHeader={collectionName === undefined}
               isEmpty={section.serials.length === 0}
             >
               {section.serials.map((serial, j) => (
@@ -331,28 +346,33 @@ function SaleBody({
 
 type CollectionSectionProps = {
   collection: Objekt.Collection;
+  // off when the dialog title already names the one collection
+  showHeader: boolean;
   isEmpty: boolean;
   children: React.ReactNode;
 };
 
 function CollectionSection({
   collection,
+  showHeader,
   isEmpty,
   children,
 }: CollectionSectionProps) {
   return (
     <div className="border-b border-border last:border-b-0">
-      <div className="flex items-center gap-3 bg-muted/40 px-4 py-2 sm:px-5">
-        <img
-          src={getObjektFrontImageUrl(collection, "xs")}
-          alt={collection.collectionId}
-          className="h-8 w-auto shrink-0 rounded-xs"
-          decoding="async"
-        />
-        <span className="truncate text-sm font-semibold">
-          {collection.collectionId}
-        </span>
-      </div>
+      {showHeader && (
+        <div className="flex items-center gap-3 bg-muted/40 px-4 py-2 sm:px-5">
+          <img
+            src={getObjektFrontImageUrl(collection, "xs")}
+            alt={collection.collectionId}
+            className="h-8 w-auto shrink-0 rounded-xs"
+            decoding="async"
+          />
+          <span className="truncate text-sm font-semibold">
+            {collection.collectionId}
+          </span>
+        </div>
+      )}
 
       {isEmpty ? (
         <p className="px-4 py-3 text-sm text-muted-foreground sm:px-5">

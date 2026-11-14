@@ -1,18 +1,18 @@
 import { m } from "@/i18n/messages";
 import { useSearchStore } from "@/store";
-import type { CosmoPublicUser } from "@apollo/cosmo/types/user";
 import { accountName } from "@apollo/util";
 import { IconChevronDown, IconX } from "@tabler/icons-react";
 import { useState } from "react";
 import { UserSearch } from "../user-search";
+import type { SearchedUser } from "../user-search";
 import {
   filterChipClassName,
   filterChipValueClassName,
 } from "./filter-chip-styles";
 
 type Props = {
-  user: CosmoPublicUser | null;
-  setUser: (user: CosmoPublicUser | null) => void;
+  user: SearchedUser | null;
+  setUser: (user: SearchedUser | null) => void;
 };
 
 /**
@@ -23,7 +23,7 @@ export default function TransferUserFilter({ user, setUser }: Props) {
   const [open, setOpen] = useState(false);
   const active = user !== null;
 
-  function onSelect(selected: CosmoPublicUser) {
+  function onSelect(selected: SearchedUser) {
     setOpen(false);
     setUser(selected);
   }

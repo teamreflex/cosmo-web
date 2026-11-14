@@ -1,3 +1,4 @@
+import ConfirmActionDialog from "@/components/confirm-action-dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,7 +12,6 @@ import {
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { $deleteBinder } from "@/lib/functions/binders";
-import { IconLoader2 } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";
 import { useRef } from "react";
 import { toast } from "sonner";
@@ -45,33 +45,15 @@ export function DeleteBinderDialog({
   });
 
   return (
-    <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>
-            {m.binder_editor_delete_confirm()}
-          </AlertDialogTitle>
-          <AlertDialogDescription>
-            {m.binder_editor_delete_description({ name })}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>{m.common_cancel()}</AlertDialogCancel>
-          <AlertDialogAction
-            type="button"
-            variant="destructive"
-            onClick={(event) => {
-              event.preventBaseUIHandler();
-              mutation.mutate();
-            }}
-            disabled={mutation.isPending}
-          >
-            {m.common_delete()}
-            {mutation.isPending && <IconLoader2 className="animate-spin" />}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+    <ConfirmActionDialog
+      open={open}
+      onOpenChange={onOpenChange}
+      title={m.binder_editor_delete_confirm()}
+      description={m.binder_editor_delete_description({ name })}
+      confirmLabel={m.common_delete()}
+      variant="destructive"
+      mutation={mutation}
+    />
   );
 }
 

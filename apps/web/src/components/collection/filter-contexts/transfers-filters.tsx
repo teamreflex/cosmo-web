@@ -1,8 +1,8 @@
 import { singleArtistChip } from "@/components/collection/artist-value-toggle";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { SearchedUser } from "@/components/user-search";
 import { useCosmoFilters } from "@/hooks/use-cosmo-filters";
 import type { SpinOutcome, TransferType } from "@/lib/universal/transfers";
-import type { CosmoPublicUser } from "@apollo/cosmo/types/user";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import ClassFilter from "../filter-class";
@@ -17,8 +17,8 @@ type Props = {
   setType: (type: TransferType) => void;
   outcome: SpinOutcome | undefined;
   setOutcome: (outcome: SpinOutcome | undefined) => void;
-  counterparty: CosmoPublicUser | null;
-  setCounterparty: (user: CosmoPublicUser | null) => void;
+  counterparty: SearchedUser | null;
+  setCounterparty: (user: SearchedUser | null) => void;
 };
 
 /**

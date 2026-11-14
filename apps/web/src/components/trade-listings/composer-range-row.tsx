@@ -2,6 +2,7 @@ import { useArtists } from "@/hooks/use-artists";
 import type { SetCosmoFilters } from "@/hooks/use-cosmo-filters";
 import { useFilterData } from "@/hooks/use-filter-data";
 import { m } from "@/i18n/messages";
+import { resolveUpdate } from "@/lib/client/filters";
 import { formatCount, onOfflineLabel } from "@/lib/client/trade-listings";
 import { rangeMatchCountQuery } from "@/lib/queries/trade-listings";
 import { artistName } from "@/lib/universal/objekt-conversion";
@@ -379,7 +380,7 @@ function RangeChips({
   const update = (change: Partial<RangeChipFilters>) =>
     onChange(applyChipUpdate(filter, change, values));
   const setColumns: SetCosmoFilters = (input) =>
-    update(input instanceof Function ? input(chips) : input);
+    update(resolveUpdate(input, chips));
   // a season or class picked under an artist the range hasn't picked adds that artist
   const adding = ({ artist, value, values }: ArtistValueToggle) =>
     values.includes(value) && !chips.artists.includes(artist)

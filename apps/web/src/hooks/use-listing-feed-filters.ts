@@ -3,6 +3,7 @@ import type {
   PropsWithFilters,
   SetCosmoFilters,
 } from "@/hooks/use-cosmo-filters";
+import { resolveUpdate } from "@/lib/client/filters";
 import {
   countActiveListingFilters,
   type ListingFeedSearch,
@@ -77,9 +78,11 @@ export function useFeedSideFilters(keys: SideKeys): PropsWithFilters {
   });
 
   const setFilters: SetCosmoFilters = (input) => {
-    const update = input instanceof Function ? input(filters) : input;
     void navigate({
-      search: (prev) => ({ ...prev, ...writeSide(keys, update) }),
+      search: (prev) => ({
+        ...prev,
+        ...writeSide(keys, resolveUpdate(input, filters)),
+      }),
       replace: true,
     });
   };

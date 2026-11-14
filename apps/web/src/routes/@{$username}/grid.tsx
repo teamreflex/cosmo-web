@@ -10,8 +10,6 @@ import { artistsQuery, currentAccountQuery } from "@/lib/queries/core";
 import { gridLedgerQuery } from "@/lib/queries/grid";
 import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { gridFrontendSchema } from "@/lib/universal/parsers";
-import { ProfileProvider } from "@/providers/profile-provider";
-import { UserStateProvider } from "@/providers/user-state-provider";
 import { noop } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
@@ -22,7 +20,7 @@ export const Route = createFileRoute("/@{$username}/grid")({
   validateSearch: gridFrontendSchema,
   loaderDeps: ({ search: { binder, ...searchParams } }) => ({ searchParams }),
   loader: async ({ context, deps }) => {
-    const [target, account] = await Promise.all([
+    const [target] = await Promise.all([
       context.queryClient.query({
         ...context.targetAccountOptions,
         staleTime: "static",
@@ -49,7 +47,7 @@ export const Route = createFileRoute("/@{$username}/grid")({
         .catch(noop);
     }
 
-    return { target, account };
+    return { target };
   },
   head: ({ loaderData }) =>
     defineHead({
@@ -64,22 +62,15 @@ export const Route = createFileRoute("/@{$username}/grid")({
 });
 
 function RouteComponent() {
-  const { target, account } = Route.useLoaderData();
+  const { target } = Route.useLoaderData();
 
   return (
-    <section className="flex flex-col">
-      <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
-        <ProfileProvider
-          key={target.cosmo.address}
-          target={target}
-          lockedObjekts={target.user ? target.lockedObjekts : []}
-        >
-          <GridRenderer address={target.cosmo.address} />
-          <Portal to="#help">
-            <HelpDialog />
-          </Portal>
-        </ProfileProvider>
-      </UserStateProvider>
+    // keyed so the page's own state starts over on another profile
+    <section key={target.cosmo.address} className="flex flex-col">
+      <GridRenderer address={target.cosmo.address} />
+      <Portal to="#help">
+        <HelpDialog />
+      </Portal>
     </section>
   );
 }

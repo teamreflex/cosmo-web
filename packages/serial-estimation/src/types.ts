@@ -18,6 +18,15 @@ export type ReservedRange = {
 };
 
 /**
+ * A reserved range one collection has objekts in, with the lowest and highest
+ * of its token ids there.
+ */
+export type ReservationSpan = ReservedRange & {
+  min: number;
+  max: number;
+};
+
+/**
  * A reserved range as one collection sees it. `shared` is whether another
  * collection has objekts anywhere in the range, and `foreign` holds their
  * token ids between the collection's own, the only ones that change which

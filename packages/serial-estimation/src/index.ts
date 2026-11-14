@@ -6,12 +6,17 @@ export {
   findRange,
   findReservations,
   RESERVATION_MIN_GAP,
+  reservationSpans,
+  splitReservation,
+  tokenIdRanges,
+  toReservation,
 } from "./reservations";
 export type {
   ClaimBlock,
   CollectionObjekts,
   ObjektSerial,
   Reservation,
+  ReservationSpan,
   ReservedRange,
   SerialUpdate,
 } from "./types";

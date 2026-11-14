@@ -1,15 +1,9 @@
-import { Button } from "@/components/ui/button";
-import {
-  Empty,
-  EmptyHeader,
-  EmptyMedia,
-  EmptyTitle,
-} from "@/components/ui/empty";
+import { LoadOlderButton, LogEmpty } from "@/components/admin/log-panel";
 import { m } from "@/i18n/messages";
 import { reportQueueQuery } from "@/lib/queries/reports";
 import type { ReportQueueFilters } from "@/lib/universal/schema/reports";
 import type { ReportStatus } from "@apollo/database/web/types";
-import { IconFlag, IconLoader2 } from "@tabler/icons-react";
+import { IconFlag } from "@tabler/icons-react";
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
 import ReportRow from "./report-row";
 
@@ -35,16 +29,7 @@ export default function ReportQueue({ filters }: Props) {
       className="min-w-0 grow basis-[360px] overflow-hidden rounded-md border bg-card max-md:-mx-4 max-md:rounded-none max-md:border-x-0"
     >
       {rows.length === 0 ? (
-        <Empty className="p-8">
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <IconFlag />
-            </EmptyMedia>
-            <EmptyTitle className="text-base">
-              {emptyTitles[filters.status]()}
-            </EmptyTitle>
-          </EmptyHeader>
-        </Empty>
+        <LogEmpty icon={<IconFlag />} title={emptyTitles[filters.status]()} />
       ) : (
         <div className="flex flex-col">
           {rows.map((row) => (
@@ -55,15 +40,11 @@ export default function ReportQueue({ filters }: Props) {
 
       {hasNextPage && (
         <div className="flex justify-center border-t border-border/60 p-3">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => void fetchNextPage()}
-            disabled={isFetchingNextPage}
-          >
-            <span>{m.admin_reports_load_more()}</span>
-            {isFetchingNextPage && <IconLoader2 className="animate-spin" />}
-          </Button>
+          <LoadOlderButton
+            label={m.admin_reports_load_more()}
+            isFetchingNextPage={isFetchingNextPage}
+            fetchNextPage={fetchNextPage}
+          />
         </div>
       )}
     </section>

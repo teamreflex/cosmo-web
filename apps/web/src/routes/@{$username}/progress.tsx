@@ -17,8 +17,6 @@ import {
 } from "@/lib/queries/progress";
 import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { progressFrontendSchema } from "@/lib/universal/parsers";
-import { ProfileProvider } from "@/providers/profile-provider";
-import { UserStateProvider } from "@/providers/user-state-provider";
 import { Addresses, isEqual } from "@apollo/util";
 import { noop } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
@@ -36,7 +34,7 @@ export const Route = createFileRoute("/@{$username}/progress")({
     leaderboard: search.leaderboard,
   }),
   loader: async ({ context, deps }) => {
-    const [target, account] = await Promise.all([
+    const [target] = await Promise.all([
       context.queryClient.query({
         ...context.targetAccountOptions,
         staleTime: "static",
@@ -49,7 +47,7 @@ export const Route = createFileRoute("/@{$username}/progress")({
 
     // SPIN's progress isn't supported, so there's nothing to fetch
     if (isEqual(target.cosmo.address, Addresses.SPIN)) {
-      return { target, account };
+      return { target };
     }
 
     void context.queryClient
@@ -96,7 +94,7 @@ export const Route = createFileRoute("/@{$username}/progress")({
       }
     }
 
-    return { target, account };
+    return { target };
   },
   head: ({ loaderData }) =>
     defineHead({
@@ -112,30 +110,26 @@ export const Route = createFileRoute("/@{$username}/progress")({
 });
 
 function RouteComponent() {
-  const { target, account } = Route.useLoaderData();
+  const { target } = Route.useLoaderData();
 
   return (
     <section className="flex flex-col">
-      <UserStateProvider user={account?.user} cosmo={account?.cosmo}>
-        <ProfileProvider target={target}>
-          {isEqual(target.cosmo.address, Addresses.SPIN) ? (
-            <p className="container py-12 text-center text-sm font-semibold text-muted-foreground">
-              {m.progress_spin_unsupported()}
-            </p>
-          ) : (
-            <ProgressRenderer address={target.cosmo.address}>
-              <ErrorBoundary fallback={<ProgressOverviewError />}>
-                <Suspense fallback={<ProgressOverviewSkeleton />}>
-                  <ProgressOverview address={target.cosmo.address} />
-                </Suspense>
-              </ErrorBoundary>
-            </ProgressRenderer>
-          )}
-          <Portal to="#help">
-            <HelpDialog />
-          </Portal>
-        </ProfileProvider>
-      </UserStateProvider>
+      {isEqual(target.cosmo.address, Addresses.SPIN) ? (
+        <p className="container py-12 text-center text-sm font-semibold text-muted-foreground">
+          {m.progress_spin_unsupported()}
+        </p>
+      ) : (
+        <ProgressRenderer address={target.cosmo.address}>
+          <ErrorBoundary fallback={<ProgressOverviewError />}>
+            <Suspense fallback={<ProgressOverviewSkeleton />}>
+              <ProgressOverview address={target.cosmo.address} />
+            </Suspense>
+          </ErrorBoundary>
+        </ProgressRenderer>
+      )}
+      <Portal to="#help">
+        <HelpDialog />
+      </Portal>
     </section>
   );
 }

@@ -1,4 +1,4 @@
-import { useBatchAddToList } from "@/hooks/use-add-to-list";
+import { useAddToList } from "@/hooks/use-add-to-list";
 import {
   isTokenSelection,
   type SelectedObjekt,
@@ -27,7 +27,9 @@ import {
 } from "../ui/dropdown-menu";
 import { ScrollArea } from "../ui/scroll-area";
 import BatchSaleListDialog from "./batch-sale-list-dialog";
-import BatchSerialPickerDialog from "./batch-serial-picker-dialog";
+import BatchSerialPickerDialog, {
+  type PickerMode,
+} from "./batch-serial-picker-dialog";
 import ListItemShell from "./list-item-shell";
 
 type Props = {
@@ -37,10 +39,9 @@ type Props = {
 export default function BatchAddToList({ lists }: Props) {
   const [open, setOpen] = useState(false);
   const [saleListPending, setSaleListPending] = useState<ObjektList>();
-  const [pickerPending, setPickerPending] = useState<{
-    list: ObjektList;
-    mode: "have" | "sale";
-  }>();
+  const [pickerPending, setPickerPending] = useState<
+    { list: ObjektList } & PickerMode
+  >();
   const selected = useObjektSelection((state) => state.selected);
 
   /**
@@ -116,10 +117,17 @@ export default function BatchAddToList({ lists }: Props) {
                         isPending={false}
                         onClick={() => {
                           setOpen(false);
-                          if (hasCollections) {
-                            setPickerPending({ list, mode: "sale" });
-                          } else {
+                          if (!hasCollections) {
                             setSaleListPending(list);
+                            return;
+                          }
+                          // objekt_lists_currency_type_chk gives every sale list a currency
+                          if (list.currency !== null) {
+                            setPickerPending({
+                              list,
+                              mode: "sale",
+                              currency: list.currency,
+                            });
                           }
                         }}
                       />
@@ -156,13 +164,12 @@ export default function BatchAddToList({ lists }: Props) {
 
       {pickerPending && (
         <BatchSerialPickerDialog
+          {...pickerPending}
           open={true}
           onOpenChange={(open) => {
             if (!open) setPickerPending(undefined);
           }}
-          list={pickerPending.list}
-          mode={pickerPending.mode}
-          currency={pickerPending.list.currency ?? undefined}
+          title={`${m.list_picker_select_serials()} — ${pickerPending.list.name}`}
           collections={collections}
         />
       )}
@@ -178,7 +185,7 @@ type ItemProps = {
 
 function RegularItem({ list, selected, onDone }: ItemProps) {
   const slugs = selected.map((s) => s.collection.slug);
-  const mutate = useBatchAddToList(
+  const mutate = useAddToList(
     { list, attempted: new Set(slugs).size, onDone },
     () =>
       $addObjektsToList({
@@ -199,7 +206,7 @@ function HaveItem({ list, selected, onDone }: ItemProps) {
   const eligible = selected
     .filter(isTokenSelection)
     .filter((s) => s.token.transferable);
-  const mutate = useBatchAddToList(
+  const mutate = useAddToList(
     {
       list,
       attempted: eligible.length,
@@ -241,7 +248,7 @@ type WantItemProps = {
 
 function WantItem({ list, collections, onDone }: WantItemProps) {
   // want lists stack quantity, so every collection counts as added
-  const mutate = useBatchAddToList(
+  const mutate = useAddToList(
     { list, attempted: collections.length, onDone },
     () =>
       $addObjektsToWantList({

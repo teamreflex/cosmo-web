@@ -4,17 +4,7 @@ import { formatError } from "@/lib/client/errors";
 import { $withdrawListing } from "@/lib/functions/trade-listings";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "../ui/alert-dialog";
-import { Spinner } from "../ui/spinner";
+import ConfirmActionDialog from "../confirm-action-dialog";
 
 type Props = {
   listingId: string;
@@ -43,40 +33,14 @@ export default function WithdrawListingDialog({
   });
 
   return (
-    <AlertDialog
+    <ConfirmActionDialog
       open={open}
-      // the withdraw can't be called back, so the dialog waits for its answer
-      onOpenChange={(next) => {
-        if (!mutation.isPending) onOpenChange(next);
-      }}
-    >
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>
-            {m.listing_detail_withdraw_title()}
-          </AlertDialogTitle>
-          <AlertDialogDescription>
-            {m.listing_detail_withdraw_description()}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={mutation.isPending}>
-            {m.common_cancel()}
-          </AlertDialogCancel>
-          <AlertDialogAction
-            type="button"
-            variant="destructive"
-            onClick={(event) => {
-              event.preventBaseUIHandler();
-              mutation.mutate();
-            }}
-            disabled={mutation.isPending}
-          >
-            {mutation.isPending && <Spinner />}
-            {m.listing_detail_withdraw_confirm()}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
+      onOpenChange={onOpenChange}
+      title={m.listing_detail_withdraw_title()}
+      description={m.listing_detail_withdraw_description()}
+      confirmLabel={m.listing_detail_withdraw_confirm()}
+      variant="destructive"
+      mutation={mutation}
+    />
   );
 }
