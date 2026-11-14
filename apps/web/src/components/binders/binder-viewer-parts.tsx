@@ -181,7 +181,7 @@ function PagePockets({
       </div>
     ) : (
       <ViewerPocket
-        key={`${page}-${slot}-${entry.objekt.tokenId}`}
+        key={`${page}-${slot}-${entry.objekt.objekt.tokenId}`}
         slot={slot}
         objekt={entry.objekt}
         priority={priority}
@@ -204,7 +204,7 @@ function ViewerPocket({ slot, objekt, priority, tabIndex }: ViewerPocketProps) {
 
   // the dialog fetches the collection itself, so only start the metadata request alongside it
   function handleClick() {
-    const slug = slugifyObjekt(objekt.collectionId);
+    const slug = slugifyObjekt(objekt.collection.collectionId);
     void queryClient.query(objektMetadataQuery(slug)).catch(noop);
     open(slug);
   }
@@ -217,7 +217,7 @@ function ViewerPocket({ slot, objekt, priority, tabIndex }: ViewerPocketProps) {
         tabIndex={tabIndex}
         aria-label={m.binder_editor_pocket_filled({
           pocket: slot + 1,
-          objekt: pocketObjektName(objekt),
+          objekt: pocketObjektName(objekt.collection),
         })}
         onClick={handleClick}
         className="block w-full rounded-photocard transition-transform duration-200 ease-out will-change-transform outline-none hover:-translate-y-0.5 focus-visible:shadow-[0_0_0_2px_var(--color-foreground)]"

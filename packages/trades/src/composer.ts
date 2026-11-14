@@ -1,4 +1,3 @@
-import { type ValidArtist, validArtists } from "@apollo/cosmo/types/common";
 import { MAX_PER_ROW, MAX_TOTAL_WANTED, MAX_WANT_ROWS } from "./caps";
 import type { rangeColumns } from "./range";
 
@@ -165,16 +164,6 @@ export function rangeArtistUnused(
           .get(toStoredArtist(name))
           ?.some((roster) => member.includes(roster)),
     )
-  );
-}
-
-/**
- * The artist id the app's pickers use for a stored (lowercase) artist,
- * such as "tripleS" for "triples".
- */
-export function toUiArtist(artist: string): ValidArtist | undefined {
-  return validArtists.find(
-    (valid) => valid.toLowerCase() === artist.toLowerCase(),
   );
 }
 

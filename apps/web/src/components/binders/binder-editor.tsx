@@ -9,8 +9,8 @@ import {
 } from "@/lib/queries/binders";
 import { binderGrid, isBinderPin } from "@/lib/universal/binders";
 import type { BinderDetail } from "@/lib/universal/binders";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
-import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import type { Binder } from "@apollo/database/web/types";
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
@@ -138,7 +138,7 @@ export default function BinderEditor({ binder, initialPage, owner }: Props) {
     if (event.key === "Escape" && sheetOpen) closeSheet();
   }
 
-  function pick(objekt: CosmoObjekt) {
+  function pick(objekt: Objekt.Objekt) {
     const filled = selected;
     if (editor.pick(objekt) !== null || filled === null) return;
     toast.success(m.binder_editor_page_full());
@@ -246,7 +246,7 @@ export default function BinderEditor({ binder, initialPage, owner }: Props) {
                       picking={sheetOpen}
                       isCover={
                         entry !== undefined &&
-                        Number(entry.objekt.tokenId) === binder.coverTokenId
+                        entry.objekt.objekt.tokenId === binder.coverTokenId
                       }
                       onSelect={tapPocket}
                       onClear={clearPocket}

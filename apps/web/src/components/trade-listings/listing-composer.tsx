@@ -20,7 +20,7 @@ import {
   tradeListingQuery,
 } from "@/lib/queries/trade-listings";
 import { isRateLimitErrorCode } from "@/lib/universal/errors/rate-limit";
-import { Objekt } from "@/lib/universal/objekt-conversion";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 import {
   composerBlock,
   type ComposerMode,
@@ -35,7 +35,6 @@ import {
   stepUnitSize,
 } from "@/lib/universal/trade-listing-form";
 import type { TokenRefusalReason } from "@/lib/universal/trade-listings";
-import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import { MAX_NOTE_LENGTH, MAX_OFFERED } from "@apollo/trades/caps";
 import { totalWanted } from "@apollo/trades/composer";
 import { takesOffers } from "@apollo/trades/lifecycle";
@@ -240,8 +239,8 @@ export default function ListingComposer({
     form.setValue("offered", offered, options);
   }
 
-  function toggleOffered(objekt: CosmoObjekt) {
-    const tokenId = Number(objekt.tokenId);
+  function toggleOffered({ collection, objekt: token }: Objekt.Objekt) {
+    const { tokenId } = token;
     const offered = form.getValues("offered");
 
     if (offered.some((item) => item.tokenId === tokenId)) {
@@ -250,7 +249,6 @@ export default function ListingComposer({
     }
     if (offered.length >= MAX_OFFERED) return;
 
-    const { collection, objekt: token } = Objekt.fromLegacy(objekt);
     setDisplay((current) => ({
       ...current,
       tokens: new Map(current.tokens).set(tokenId, {
@@ -526,7 +524,7 @@ function PickerView({
 }: FormProps & {
   address: string;
   editedListing: string | undefined;
-  onToggle: (objekt: CosmoObjekt) => void;
+  onToggle: (objekt: Objekt.Objekt) => void;
   onBack: () => void;
 }) {
   const offered = useWatch({ control: form.control, name: "offered" });

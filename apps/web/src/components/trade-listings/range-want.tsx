@@ -8,7 +8,7 @@ import {
 import { rangeMatchCountQuery } from "@/lib/queries/trade-listings";
 import { getSeasonColor } from "@/lib/universal/seasons";
 import { artistColors, cn } from "@/lib/utils";
-import { toUiArtist } from "@apollo/trades/composer";
+import { toUiArtist } from "@apollo/cosmo/types/common";
 import type { RangeFilter } from "@apollo/trades/range";
 import { IconCards } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";

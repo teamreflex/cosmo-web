@@ -285,7 +285,7 @@ function ArrangePocket({
           style={
             objekt === undefined
               ? undefined
-              : { backgroundColor: objekt.backgroundColor }
+              : { backgroundColor: objekt.collection.backgroundColor }
           }
           className="block aspect-photocard rounded-photocard bg-foreground/8"
         />
@@ -294,8 +294,8 @@ function ArrangePocket({
   }
 
   const ref = objektFrontImageRef({
-    slug: slugifyObjekt(objekt.collectionId),
-    frontImageVersion: objekt.frontImageVersion,
+    slug: slugifyObjekt(objekt.collection.collectionId),
+    frontImageVersion: objekt.collection.frontImageVersion,
   });
   return (
     <span className="@container">

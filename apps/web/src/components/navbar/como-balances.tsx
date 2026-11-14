@@ -50,7 +50,7 @@ function Balance({
   return (
     <div className="flex min-w-0 flex-col gap-0.5 px-4 first:pl-0 last:pr-0">
       <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <ArtistIcon artist={artist.name} />
+        <ArtistIcon artist={artist.id} />
         <span>{artist.title}</span>
       </div>
       <span className="font-mono text-base font-semibold tabular-nums">

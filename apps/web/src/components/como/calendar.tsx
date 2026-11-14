@@ -89,7 +89,7 @@ export default function ComoCalendar({ artists, transfers }: Props) {
                           </p>
 
                           <div className="flex items-center justify-center gap-2">
-                            <ArtistIcon artist={a.name} />
+                            <ArtistIcon artist={a.id} />
                             <span>
                               {calendar[day]?.[a.id.toLowerCase()]?.carried ??
                                 0}
@@ -101,7 +101,7 @@ export default function ComoCalendar({ artists, transfers }: Props) {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <ArtistIcon artist={a.name} />
+                    <ArtistIcon artist={a.id} />
                     <span>
                       {calendar[day]?.[a.id.toLowerCase()]?.count ?? 0}
                     </span>

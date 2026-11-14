@@ -51,7 +51,7 @@ export function useBinderMutations(options: Options) {
     options,
     ({ objekt, ...pocket }: PocketPosition & { objekt: BinderObjekt }) =>
       $placeObjekt({
-        data: { binderId, ...pocket, tokenId: Number(objekt.tokenId) },
+        data: { binderId, ...pocket, tokenId: objekt.objekt.tokenId },
       }),
     (binder, { objekt, ...pocket }) => withPlacedObjekt(binder, pocket, objekt),
   );

@@ -21,7 +21,7 @@ export default function DetailContent({ collection, tokens }: Props) {
     () =>
       new Set(
         pins.flatMap((pin) =>
-          pin.kind === "objekt" ? [Number(pin.objekt.tokenId)] : [],
+          pin.kind === "objekt" ? [pin.objekt.objekt.tokenId] : [],
         ),
       ),
     [pins],

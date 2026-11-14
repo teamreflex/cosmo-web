@@ -5,6 +5,7 @@ import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type { PropsWithClassName } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { bands } from "@apollo/cosmo/bands";
+import { toUiArtist } from "@apollo/cosmo/types/common";
 import { Fragment, useState } from "react";
 import type { ComponentProps, PropsWithChildren } from "react";
 import ArtistLogo from "./artist-logo";
@@ -52,9 +53,11 @@ function useBandDisplay(
   const { hidden } = useObjektBands();
   const [bandLoaded, setBandLoaded] = useState(false);
 
-  const useCustomBand = collection.artist === "idntt";
+  const artist = toUiArtist(collection.artist);
+  const useCustomBand = artist === "idntt";
   const bandImageUrl =
-    collection.bandImageUrl ?? bands[collection.artist]?.get(collection.class);
+    collection.bandImageUrl ??
+    (artist === undefined ? undefined : bands[artist].get(collection.class));
   const useBackground = useCustomBand && (!bandImageUrl || !bandLoaded);
   const showBand =
     // handle tripleS/ARTMS
@@ -63,6 +66,7 @@ function useBandDisplay(
     (!hidden && (useBackground || useCustomBand));
 
   return {
+    artist,
     bandImageUrl,
     bandLoaded,
     setBandLoaded,
@@ -74,6 +78,7 @@ function useBandDisplay(
 
 export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
   const {
+    artist,
     bandImageUrl,
     bandLoaded,
     setBandLoaded,
@@ -131,7 +136,7 @@ export function ObjektSidebar({ collection, serial }: ObjektSidebarProps) {
                   {paddedSerial && <span>#{paddedSerial}</span>}
                 </div>
               </SidebarText>
-              {useCustomBand && <ArtistLogo artist={collection.artist} />}
+              {artist !== undefined && <ArtistLogo artist={artist} />}
             </Fragment>
           )}
         </div>

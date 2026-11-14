@@ -2,13 +2,15 @@ import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
 import { collections, objekts } from "@/lib/server/db/indexer/schema";
 import { cosmoMiddleware } from "@/lib/server/middlewares";
+import {
+  type NonTransferableReason,
+  nonTransferableReason,
+} from "@/lib/universal/objekt-conversion";
 import { MAX_OBJEKT_SELECTIONS } from "@/lib/universal/schema/objekt-list";
-import type { NonTransferableReason } from "@apollo/cosmo/types/objekts";
 import { lockedObjekts } from "@apollo/database/web/schema";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, inArray } from "drizzle-orm";
 import * as z from "zod";
-import { nonTransferableReason } from "./common";
 
 export type OwnedSerial = {
   tokenId: string;

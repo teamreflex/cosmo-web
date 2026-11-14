@@ -1,25 +1,19 @@
 import { remember } from "@/lib/server/cache.server";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
-import type { Collection, Objekt } from "@/lib/server/db/indexer/schema";
 import {
   COLLAGE_SIZE,
   pinTokenIds,
   toProfilePins,
 } from "@/lib/universal/binders";
 import type { ProfilePin } from "@/lib/universal/binders";
-import type { ValidArtist } from "@apollo/cosmo/types/common";
-import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
+import { Objekt } from "@/lib/universal/objekt-conversion";
 import { binderEntries } from "@apollo/database/web/schema";
 import { isAddress } from "@apollo/util";
 import { pinCacheKey } from "@apollo/util-server";
 import { createServerFn } from "@tanstack/react-start";
 import { eq } from "drizzle-orm";
 import * as z from "zod";
-
-interface ObjektWithCollection extends Objekt {
-  collection: Collection;
-}
 
 /**
  * Fetch all pins for the given user, pinned objekts and pinned binders
@@ -97,30 +91,11 @@ export const $fetchPins = createServerFn({ method: "GET" })
       return toProfilePins(
         rows,
         new Map(
-          results.map((objekt) => [Number(objekt.id), normalizePin(objekt)]),
+          results.map((objekt) => [
+            Number(objekt.id),
+            Objekt.fromRow(objekt, objekt.collection),
+          ]),
         ),
       );
     });
   });
-
-/**
- * Normalize an objekt with collection into an owned objekt.
- */
-export function normalizePin(objekt: ObjektWithCollection): CosmoObjekt {
-  return {
-    ...objekt.collection,
-    status: "minted",
-    transferablebyDefault: true,
-    tokenAddress: objekt.collection.contract,
-    transferable: objekt.transferable,
-    usedForGrid: false,
-    lenticularPairTokenId: null,
-    mintedAt: objekt.mintedAt,
-    receivedAt: objekt.receivedAt,
-    tokenId: objekt.id.toString(),
-    objektNo: objekt.serial,
-    bandImageUrl: objekt.collection.bandImageUrl,
-    // SAFETY: the artist column only stores ValidArtist ids
-    artists: [objekt.collection.artist] as ValidArtist[],
-  };
-}

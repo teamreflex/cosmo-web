@@ -4,6 +4,16 @@ export const COSMO_ENDPOINT = "https://api.cosmo.fans";
 export const validArtists = ["artms", "tripleS", "idntt"] as const;
 export type ValidArtist = (typeof validArtists)[number];
 
+/**
+ * The artist id the app's pickers use for a stored (lowercase) artist,
+ * such as "tripleS" for "triples".
+ */
+export function toUiArtist(artist: string): ValidArtist | undefined {
+  return validArtists.find(
+    (valid) => valid.toLowerCase() === artist.toLowerCase(),
+  );
+}
+
 // sort values
 export const validSorts = [
   "newest",

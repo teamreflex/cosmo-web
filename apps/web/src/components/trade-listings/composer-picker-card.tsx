@@ -1,10 +1,9 @@
-import { Objekt } from "@/lib/universal/objekt-conversion";
-import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { memo } from "react";
 import SelectableCard from "./selectable-card";
 
 type Props = {
-  objekt: CosmoObjekt;
+  objekt: Objekt.Objekt;
   picked: boolean;
   /** why the objekt can't be picked, as its pill names it */
   blocked: string | null;
@@ -13,7 +12,7 @@ type Props = {
   /** what a picked objekt's pill says, when it has one */
   pickedLabel: string | null;
   priority: boolean;
-  onToggle: (objekt: CosmoObjekt) => void;
+  onToggle: (objekt: Objekt.Objekt) => void;
 };
 
 /**
@@ -30,11 +29,10 @@ const ComposerPickerCard = memo(function ComposerPickerCard({
   priority,
   onToggle,
 }: Props) {
-  const { collection, objekt: token } = Objekt.fromLegacy(objekt);
   return (
     <SelectableCard
-      collection={collection}
-      serial={token.serial}
+      collection={objekt.collection}
+      serial={objekt.objekt.serial}
       picked={picked}
       blocked={blocked}
       full={full}

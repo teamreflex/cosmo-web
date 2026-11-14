@@ -1,26 +1,25 @@
 import { pickerCardLabel } from "@/components/objekt-picker/picker-filters";
 import { ObjektCardFace } from "@/components/objekt/common";
 import { m } from "@/i18n/messages";
-import { Objekt } from "@/lib/universal/objekt-conversion";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
-import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import { useDraggable } from "@dnd-kit/core";
 import { IconLock } from "@tabler/icons-react";
 import { memo } from "react";
 
 type Props = {
-  objekt: CosmoObjekt;
+  objekt: Objekt.Objekt;
   inBinder: boolean;
   locked: boolean;
   priority: boolean;
-  onPick: (objekt: CosmoObjekt) => void;
+  onPick: (objekt: Objekt.Objekt) => void;
 };
 
 /**
  * What an objekt dragged out of the picker carries to the pocket it's dropped
  * on, under the `drag` key of its dnd-kit data.
  */
-export type PickerDragData = { kind: "objekt"; objekt: CosmoObjekt };
+export type PickerDragData = { kind: "objekt"; objekt: Objekt.Objekt };
 
 /**
  * One pickable objekt in the binder editor: the plain front image, dimmed
@@ -35,13 +34,13 @@ const BinderPickerCard = memo(function BinderPickerCard({
   priority,
   onPick,
 }: Props) {
+  const { collection, objekt: token } = objekt;
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
-    id: `objekt-${objekt.tokenId}`,
+    id: `objekt-${token.tokenId}`,
     data: {
       drag: { kind: "objekt", objekt } satisfies PickerDragData,
     },
   });
-  const { collection, objekt: token } = Objekt.fromLegacy(objekt);
 
   return (
     <div className="@container">

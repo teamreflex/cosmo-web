@@ -133,7 +133,7 @@ const EditorPocket = memo(function EditorPocket({
             label={m.binder_editor_use_as_cover()}
             pressed={isCover}
             onClick={() =>
-              onSetCover(isCover ? null : Number(entry.objekt.tokenId))
+              onSetCover(isCover ? null : entry.objekt.objekt.tokenId)
             }
           >
             <IconPhotoStar className="size-3.5" />
@@ -158,7 +158,7 @@ function pocketLabel(
   isCover: boolean,
 ) {
   if (entry === undefined) return m.binder_editor_pocket_empty({ pocket });
-  const objekt = pocketObjektName(entry.objekt);
+  const objekt = pocketObjektName(entry.objekt.collection);
   return isCover
     ? m.binder_editor_pocket_cover({ pocket, objekt })
     : m.binder_editor_pocket_filled({ pocket, objekt });

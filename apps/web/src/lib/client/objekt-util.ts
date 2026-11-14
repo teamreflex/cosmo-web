@@ -1,8 +1,10 @@
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
-import type { Objekt } from "@/lib/universal/objekt-conversion";
+import type {
+  NonTransferableReason,
+  Objekt,
+} from "@/lib/universal/objekt-conversion";
 import type { ValidSort } from "@apollo/cosmo/types/common";
-import type { NonTransferableReason } from "@apollo/cosmo/types/objekts";
 import {
   objektFrontImageUrl,
   type ObjektImageName,
@@ -79,16 +81,9 @@ export class ObjektNotFoundError extends Error {
  */
 export function reasonLabel(reason: NonTransferableReason): string {
   switch (reason) {
-    case "mint-pending":
-      return m.objekt_overlay_mint_pending();
     case "welcome-objekt":
       return m.objekt_overlay_welcome_reward();
-    case "used-for-grid":
-      return m.objekt_overlay_used_for_grid();
-    case "challenge-reward":
-      return m.objekt_overlay_event_reward();
     case "not-transferable":
-    default:
       return m.objekt_overlay_not_transferable();
   }
 }

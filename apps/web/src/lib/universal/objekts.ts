@@ -1,8 +1,4 @@
 import type { Collection, Transfer } from "@/lib/server/db/indexer/schema";
-import type {
-  CosmoObjekt,
-  ObjektBaseFields,
-} from "@apollo/cosmo/types/objekts";
 import type { Era, Event } from "@apollo/database/web/types";
 import type { CollectionDocument } from "./schema/search";
 
@@ -15,8 +11,7 @@ export type IndexedObjekt = Collection;
  */
 export type IndexedCollection = IndexedObjekt | CollectionDocument;
 
-type LegacyObjekt = ObjektBaseFields | CosmoObjekt | IndexedCollection;
-export type ObjektResponse<T extends LegacyObjekt> = {
+export type ObjektResponse<T extends IndexedCollection> = {
   hasNext: boolean;
   total: number;
   objekts: T[];

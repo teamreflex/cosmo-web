@@ -15,7 +15,7 @@ export default function ComoTotals({ address }: Props) {
     <div className="flex items-center gap-3">
       {artistList.map((artist) => (
         <div className="flex items-center gap-1" key={artist.name}>
-          <ArtistIcon artist={artist.name} />
+          <ArtistIcon artist={artist.id} />
           <span className="font-semibold tabular-nums">
             +
             {data

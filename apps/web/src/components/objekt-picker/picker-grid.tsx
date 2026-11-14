@@ -1,7 +1,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { useElementSize } from "@/hooks/use-element-size";
 import { useGridElementVirtualizer } from "@/hooks/use-grid-virtualizer";
-import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { useLayoutEffect } from "react";
 import type { ReactNode, RefObject } from "react";
 
@@ -20,14 +20,14 @@ function columnsFor(width: number) {
 }
 
 type Props = {
-  objekts: CosmoObjekt[];
+  objekts: Objekt.Objekt[];
   scrollElement: RefObject<HTMLDivElement | null>;
   /**
    * One objekt's card. `priority` marks the first screenful, whose images
    * load first.
    */
   renderCard: (
-    objekt: CosmoObjekt,
+    objekt: Objekt.Objekt,
     options: { priority: boolean },
   ) => ReactNode;
 };
@@ -82,7 +82,7 @@ export default function PickerGrid({
 
           return (
             <div
-              key={objekt.tokenId}
+              key={objekt.objekt.tokenId}
               className="absolute top-0"
               style={{
                 transform: `translateY(${item.start - scrollMargin}px)`,

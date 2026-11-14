@@ -11,7 +11,7 @@ import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
 import { userCollectionBlockchainQuery } from "@/lib/queries/objekt-queries";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
-import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { Addresses, isEqual } from "@apollo/util";
 import { useCallback } from "react";
 import { BlockchainGridItem } from "./blockchain-grid-item";
@@ -38,10 +38,10 @@ export default function Blockchain(props: Props) {
    * Determine if the objekt should be rendered
    */
   const shouldRender = useCallback(
-    (objekt: CosmoObjekt) => {
-      const isLocked = lockedObjekts.includes(parseInt(objekt.tokenId));
+    ({ objekt: { tokenId } }: Objekt.Objekt) => {
+      const isLocked = lockedObjekts.includes(tokenId);
       const isPinned = pins.some(
-        (pin) => pin.kind === "objekt" && pin.objekt.tokenId === objekt.tokenId,
+        (pin) => pin.kind === "objekt" && pin.objekt.objekt.tokenId === tokenId,
       );
 
       // hide objekt from list when it's pinned
@@ -83,7 +83,7 @@ export default function Blockchain(props: Props) {
     <VirtualizedObjektGrid
       options={options}
       gridColumns={gridColumns}
-      getObjektId={(item) => item.tokenId}
+      getObjektId={(item) => String(item.objekt.tokenId)}
       authenticated={authenticated}
       ItemComponent={BlockchainGridItem}
       itemComponentProps={{ authenticated }}

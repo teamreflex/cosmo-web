@@ -197,7 +197,7 @@ export default function EditorDndContext({
       return drag.kind === "page"
         ? m.binder_editor_drag_picked_up_page({ page: drag.page + 1 })
         : m.binder_editor_drag_picked_up({
-            objekt: pocketObjektName(drag.objekt),
+            objekt: pocketObjektName(drag.objekt.collection),
           });
     },
     onDragOver: ({ active, over }) => {
@@ -228,10 +228,10 @@ export default function EditorDndContext({
       if (drag === undefined) return m.binder_editor_drag_cancelled();
       if (page !== undefined) {
         // a full page says so in a toast
-        return pageDrop(editor.binder, page, drag.objekt.tokenId).kind ===
-          "pocket"
+        return pageDrop(editor.binder, page, drag.objekt.objekt.tokenId)
+          .kind === "pocket"
           ? m.binder_editor_drag_dropped_on_page({
-              objekt: pocketObjektName(drag.objekt),
+              objekt: pocketObjektName(drag.objekt.collection),
               page: page + 1,
             })
           : m.binder_editor_drag_cancelled();
@@ -240,7 +240,7 @@ export default function EditorDndContext({
         (drag.kind === "pocket" && slot === drag.slot)
         ? m.binder_editor_drag_cancelled()
         : m.binder_editor_drag_dropped({
-            objekt: pocketObjektName(drag.objekt),
+            objekt: pocketObjektName(drag.objekt.collection),
             pocket: slot + 1,
           });
     },

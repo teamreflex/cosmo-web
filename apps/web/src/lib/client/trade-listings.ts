@@ -1,7 +1,7 @@
 import type { PickerScope } from "@/components/objekt-picker/picker-filters";
 import { m } from "@/i18n/messages";
 import { getLocale } from "@/i18n/runtime";
-import { artistName, Objekt } from "@/lib/universal/objekt-conversion";
+import { artistName, type Objekt } from "@/lib/universal/objekt-conversion";
 import {
   type ClosedListingState,
   hasRatio,
@@ -15,13 +15,12 @@ import {
   type WantMatch,
 } from "@/lib/universal/trade-listings";
 import type { TradePartyName } from "@/lib/universal/trades";
-import { type ValidArtist, validOnlineTypes } from "@apollo/cosmo/types/common";
-import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import {
-  rangeSummaryColumns,
-  totalWanted,
   toUiArtist,
-} from "@apollo/trades/composer";
+  type ValidArtist,
+  validOnlineTypes,
+} from "@apollo/cosmo/types/common";
+import { rangeSummaryColumns, totalWanted } from "@apollo/trades/composer";
 import { heldTokenRefusal, type TokenFlags } from "@apollo/trades/holdings";
 import {
   hasBidiControl,
@@ -403,11 +402,11 @@ export function listingRatio(
  * Why an objekt in the viewer's own collection can't be offered or given,
  * as its card names it: the reason posting and accepting would give.
  */
-export function offerBlock(objekt: CosmoObjekt, flags: TokenFlags) {
-  const reason = heldTokenRefusal(
-    { tokenId: Number(objekt.tokenId), transferable: objekt.transferable },
-    flags,
-  );
+export function offerBlock(
+  token: Pick<Objekt.Token, "tokenId" | "transferable">,
+  flags: TokenFlags,
+) {
+  const reason = heldTokenRefusal(token, flags);
   return reason === null ? null : refusalLabel(reason);
 }
 
@@ -506,8 +505,10 @@ export function wantMatch(
  * An objekt from the viewer's collection as a pick for a want row, with the
  * indexer values the picks are checked against.
  */
-export function listingPick(objekt: CosmoObjekt): ListingPick {
-  const { collection, objekt: token } = Objekt.fromLegacy(objekt);
+export function listingPick({
+  collection,
+  objekt: token,
+}: Objekt.Objekt): ListingPick {
   return {
     tokenId: token.tokenId,
     serial: token.serial,

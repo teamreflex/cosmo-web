@@ -70,7 +70,7 @@ function UnpinButton(props: ButtonProps) {
         pins.filter(
           (pin) =>
             pin.kind !== "objekt" ||
-            Number(pin.objekt.tokenId) !== props.tokenId,
+            pin.objekt.objekt.tokenId !== props.tokenId,
         ),
       );
       toast.success(m.toast_unpinned({ collectionId: props.collectionId }));

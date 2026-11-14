@@ -10,7 +10,6 @@ import {
   transfers,
 } from "@/lib/server/db/indexer/schema";
 import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
-import { Objekt } from "@/lib/universal/objekt-conversion";
 import {
   cardSeed,
   placeCards,
@@ -85,11 +84,8 @@ async function fetchCardObjekts(
     pin.kind === "objekt"
       ? [
           {
-            tokenId: pin.objekt.tokenId,
-            image: getObjektFrontImageUrl(
-              Objekt.fromLegacy(pin.objekt).collection,
-              "thumbnail",
-            ),
+            tokenId: String(pin.objekt.objekt.tokenId),
+            image: getObjektFrontImageUrl(pin.objekt.collection, "thumbnail"),
           },
         ]
       : [],

@@ -88,7 +88,7 @@ export function PageThumbnail({
               style={
                 entry === undefined
                   ? undefined
-                  : { backgroundColor: entry.objekt.backgroundColor }
+                  : { backgroundColor: entry.objekt.collection.backgroundColor }
               }
               // ringed, so a dark objekt still reads as filled on a dark page
               className={cn(
@@ -137,23 +137,22 @@ export function PocketSleeve({
 }
 
 function PocketObjekt({
-  objekt,
+  objekt: { collection, objekt: token },
   priority,
 }: {
   objekt: BinderObjekt;
   priority: boolean;
 }) {
-  const [artist] = objekt.artists;
   const ref = objektFrontImageRef({
-    slug: slugifyObjekt(objekt.collectionId),
-    frontImageVersion: objekt.frontImageVersion,
+    slug: slugifyObjekt(collection.collectionId),
+    frontImageVersion: collection.frontImageVersion,
   });
 
   return (
     <div
       style={{
-        "--objekt-background-color": objekt.backgroundColor,
-        "--objekt-text-color": objekt.textColor,
+        "--objekt-background-color": collection.backgroundColor,
+        "--objekt-text-color": collection.textColor,
       }}
       className="absolute inset-0"
     >
@@ -161,19 +160,14 @@ function PocketObjekt({
         src={
           ref === null ? undefined : objektImageUrl(env.VITE_CDN_URL, ref, "xs")
         }
-        alt={objekt.collectionId}
+        alt={collection.collectionId}
         width={291}
         height={450}
         decoding="async"
         fetchPriority={priority ? "high" : "auto"}
         className="size-full object-cover"
       />
-      {artist !== undefined && (
-        <ObjektSidebar
-          collection={{ ...objekt, artist }}
-          serial={objekt.objektNo}
-        />
-      )}
+      <ObjektSidebar collection={collection} serial={token.serial} />
     </div>
   );
 }

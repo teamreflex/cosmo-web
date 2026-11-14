@@ -15,6 +15,7 @@ import {
   withSelectedArtists,
   withTransferable,
 } from "@/lib/server/objekts/filters.server";
+import { Objekt } from "@/lib/universal/objekt-conversion";
 import { userCollectionBackendSchema } from "@/lib/universal/parsers";
 import {
   isMemberSort,
@@ -22,16 +23,11 @@ import {
   type MintSort,
   type ValidSort,
 } from "@apollo/cosmo/types/common";
-import type {
-  BFFCollectionGroup,
-  BFFCollectionGroupResponse,
-} from "@apollo/cosmo/types/objekts";
 import { Addresses, isEqual } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
 import { and, asc, count, desc, eq, inArray, max, sql } from "drizzle-orm";
 import type { PgSelect } from "drizzle-orm/pg-core";
 import * as z from "zod";
-import { nonTransferableReason } from "./common";
 
 export const PER_PAGE = 30;
 
@@ -160,25 +156,21 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
     const collectionsResult = await indexer
       .select({
         id: collections.id,
-        collectionId: collections.collectionId,
-        season: collections.season,
-        collectionNo: collections.collectionNo,
-        class: collections.class,
-        member: collections.member,
         artist: collections.artist,
-        thumbnailImage: collections.thumbnailImage,
+        member: collections.member,
+        season: collections.season,
+        class: collections.class,
+        collectionNo: collections.collectionNo,
+        collectionId: collections.collectionId,
         frontImage: collections.frontImage,
         backImage: collections.backImage,
-        accentColor: collections.accentColor,
+        frontImageVersion: collections.frontImageVersion,
+        backImageVersion: collections.backImageVersion,
         backgroundColor: collections.backgroundColor,
         textColor: collections.textColor,
-        comoAmount: collections.comoAmount,
         bandImageUrl: collections.bandImageUrl,
         frontMedia: collections.frontMedia,
         hasAudio: collections.hasAudio,
-        frontImageVersion: collections.frontImageVersion,
-        backImageVersion: collections.backImageVersion,
-        createdAt: collections.createdAt,
       })
       .from(collections)
       .where(inArray(collections.id, collectionIds))
@@ -191,8 +183,6 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
         id: objekts.id,
         serial: objekts.serial,
         transferable: objekts.transferable,
-        owner: objekts.owner,
-        mintedAt: objekts.mintedAt,
         receivedAt: objekts.receivedAt,
       })
       .from(objekts)
@@ -217,72 +207,23 @@ export const $fetchObjektsBlockchainGroups = createServerFn({ method: "GET" })
     }
 
     // 5. build result in original sort order
-    const resultCollections: BFFCollectionGroup[] = [];
+    const resultCollections: Objekt.Group[] = [];
     for (const colId of collectionIds) {
       const col = collectionsMap.get(colId);
       if (!col) continue;
 
-      const colObjekts = objektsByCollection.get(colId) ?? [];
-      const mapped = colObjekts.map((obj) => ({
-        metadata: {
-          collectionId: col.collectionId,
-          objektNo: obj.serial,
-          tokenId: Number(obj.id),
-          transferable: obj.transferable,
-        },
-        inventory: {
-          objektId: Number(obj.id),
-          owner: obj.owner,
-          status: "minted" as const,
-          usedForGrid: false,
-          lenticularPairTokenId: 0,
-          mintedAt: obj.mintedAt,
-          acquiredAt: obj.receivedAt,
-          updatedAt: obj.receivedAt,
-        },
-        nonTransferableReason: nonTransferableReason(
-          col.class,
-          obj.transferable,
-        ),
-      }));
-
       resultCollections.push({
-        collection: {
-          id: col.id, // diverges from cosmo api
-          collectionId: col.collectionId,
-          season: col.season,
-          collectionNo: col.collectionNo,
-          class: col.class,
-          member: col.member,
-          // @ts-expect-error - can't pull artistMember from the indexer
-          artistMember: null,
-          artistName: col.artist,
-          thumbnailImage: col.thumbnailImage,
-          frontImage: col.frontImage,
-          backImage: col.backImage,
-          accentColor: col.accentColor,
-          backgroundColor: col.backgroundColor,
-          textColor: col.textColor,
-          comoAmount: col.comoAmount,
-          bandImageUrl: col.bandImageUrl,
-          frontMedia: col.frontMedia,
-          hasAudio: col.hasAudio,
-          frontImageVersion: col.frontImageVersion,
-          backImageVersion: col.backImageVersion,
-          transferableByDefault: true,
-          gridableByDefault: false,
-          createdAt: col.createdAt,
-          updatedAt: col.createdAt,
-        },
-        count: mapped.length,
-        objekts: mapped,
+        collection: Objekt.fromIndexer(col),
+        objekts: (objektsByCollection.get(colId) ?? []).map((obj) =>
+          Objekt.tokenFromRow(obj, col.class),
+        ),
       });
     }
 
     return {
       collectionCount: totalCount,
       collections: resultCollections,
-    } satisfies BFFCollectionGroupResponse;
+    };
   });
 
 /**

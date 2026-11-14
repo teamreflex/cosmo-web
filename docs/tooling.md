@@ -138,7 +138,7 @@ Keys and channels that more than one app touches, or that have a rule attached:
 | `trade-events`                         | pub/sub                    | web and schedules, after their transaction commits        | chat                          | `TRADE_EVENTS_CHANNEL`, `tradeUpdateMessage()` in `@apollo/trades`                                                                                              |
 | `user-events`                          | pub/sub                    | web (`publishUserEvent()`)                                | chat                          | the `UserEvent` union in `@apollo/auth/events`                                                                                                                  |
 | `trade-notifications`                  | job queue                  | web offers                                                | schedules takes               | `@apollo/queue`; only schedules runs the cleanup layer                                                                                                          |
-| `pins:v3:<md5>`                        | cache, 1 day               | web `$fetchPins`                                          | web; schedules' drain deletes | always build it with `pinCacheKey()` (`@apollo/util-server`)                                                                                                    |
+| `pins:v4:<md5>`                        | cache, 1 day               | web `$fetchPins`                                          | web; schedules' drain deletes | always build it with `pinCacheKey()` (`@apollo/util-server`)                                                                                                    |
 | `cosmo-key`                            | value, no TTL              | staff, from the admin page                                | web, schedules                | falls back to `COSMO_KEY`; never cache it in a module, because staff rotate it                                                                                  |
 | `objekt-stats`                         | cache, 2 hours             | web                                                       | web                           | schedules' `clear-objekt-stats` deletes it hourly; each app writes the key out itself (web in `apps/web/src/lib/functions/stats.ts`), so rename both or neither |
 | `processor-head`                       | value, 5 min               | schedules' `sync-processor-head`, every minute            | web system status             | the newest indexed block's ISO timestamp; `processorHeadKey` (`@apollo/util-server`); the web status read goes unavailable 5 min after the task stops           |
@@ -150,7 +150,7 @@ Keys and channels that more than one app touches, or that have a rule attached:
 
 - Every other key is web-only: `spotify:access_token` (`apps/web/src/lib/server/events/spotify.server.ts`), and read-through caches made by `remember()` in `apps/web/src/lib/server/cache.server.ts`, which `rg "remember\("` lists.
 - `remember()` lowercases its key and `clearTag()` doesn't, so a key you clear must already be lowercase.
-- When a cached value's type changes, bump the version in its key (`pins:v3`, `grid-catalog:v3`) or pass `remember()` a schema, so old entries are treated as misses.
+- When a cached value's type changes, bump the version in its key (`pins:v4`, `grid-catalog:v3`) or pass `remember()` a schema, so old entries are treated as misses.
 
 ## Rate limits
 
