@@ -197,8 +197,9 @@ type ArtistStepProps = {
 };
 
 function ArtistStep({ onContinue }: ArtistStepProps) {
-  const { data } = useSuspenseQuery(artistsQuery);
-  const artists = Object.values(data.artists);
+  const {
+    data: { artistList },
+  } = useSuspenseQuery(artistsQuery);
   const [selected, setSelected] = useState<ValidArtist | null>(null);
 
   return (
@@ -208,7 +209,7 @@ function ArtistStep({ onContinue }: ArtistStepProps) {
       </p>
 
       <div className="flex flex-col gap-2">
-        {artists.map((artist) => {
+        {artistList.map((artist) => {
           return (
             <button
               key={artist.id}

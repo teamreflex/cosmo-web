@@ -26,7 +26,7 @@ export function useArtists() {
   // should *always* exist, so no suspending
   const [
     {
-      data: { artists, members },
+      data: { artists, artistList, members },
     },
     { data: selectedIds },
   ] = useSuspenseQueries({
@@ -53,11 +53,6 @@ export function useArtists() {
   function getArtistForMember(memberName: string): ValidArtist | undefined {
     return findArtistForMember(artists, memberName);
   }
-
-  /**
-   * Get artists in array form.
-   */
-  const artistList = Object.values(artists);
 
   /**
    * Get the selected artists (or all if no selection)

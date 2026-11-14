@@ -11,35 +11,22 @@ type Options = {
 
 export function useFilterData({ allArtists = false }: Options = {}) {
   const { data } = useSuspenseQuery(filterDataQuery);
-  const { getArtist, selectedIds } = useArtists();
-  const shown = allArtists ? [] : selectedIds;
-
-  const seasonsData = data.seasons
-    .flatMap(({ artistId, seasons }) => {
-      const artist = getArtist(artistId);
-      return artist ? [{ artist, seasons }] : [];
-    })
-    .filter(({ artist }) => {
-      if (shown.length === 0) return true;
-      return shown.includes(artist.id);
-    })
-    .sort((a, b) => a.artist.comoTokenId - b.artist.comoTokenId);
-
-  const classesData = data.classes
-    .flatMap(({ artistId, classes }) => {
-      const artist = getArtist(artistId);
-      return artist ? [{ artist, classes }] : [];
-    })
-    .filter(({ artist }) => {
-      if (shown.length === 0) return true;
-      return shown.includes(artist.id);
-    })
-    .sort((a, b) => a.artist.comoTokenId - b.artist.comoTokenId);
+  const { artistList, selected } = useArtists();
+  const shown = allArtists ? artistList : selected;
 
   return {
     collections: data.collections,
-    seasons: seasonsData,
-    classes: classesData,
+    // the indexer names an artist by its lowercased id
+    seasons: shown.flatMap((artist) =>
+      data.seasons
+        .filter(({ artistId }) => artistId === artist.id.toLowerCase())
+        .map(({ seasons }) => ({ artist, seasons })),
+    ),
+    classes: shown.flatMap((artist) =>
+      data.classes
+        .filter(({ artistId }) => artistId === artist.id.toLowerCase())
+        .map(({ classes }) => ({ artist, classes })),
+    ),
   };
 }
 

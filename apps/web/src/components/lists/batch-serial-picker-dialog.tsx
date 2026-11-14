@@ -29,6 +29,7 @@ import {
 } from "@/lib/universal/schema/objekt-list";
 import { cn } from "@/lib/utils";
 import type { ObjektList } from "@apollo/database/web/types";
+import { formatSerial } from "@apollo/util";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconCheck, IconLoader2 } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -395,7 +396,6 @@ function HaveRow({ serial, isChecked, onToggle }: HaveRowProps) {
   const isTradable =
     serial.transferable && serial.nonTransferableReason === undefined;
   const disabled = !serial.transferable || serial.locked;
-  const paddedSerial = serial.serial.toString().padStart(5, "0");
 
   return (
     <button
@@ -409,7 +409,7 @@ function HaveRow({ serial, isChecked, onToggle }: HaveRowProps) {
           {m.detail_sort_serial()}
         </div>
         <div className="font-mono text-sm font-bold tabular-nums sm:text-lg">
-          #{paddedSerial}
+          {formatSerial(serial.serial)}
         </div>
       </div>
 
@@ -461,7 +461,6 @@ function SaleRow({ index, serial, currency, control }: SaleRowProps) {
   const isTradable =
     serial.transferable && serial.nonTransferableReason === undefined;
   const disabled = !serial.transferable || serial.locked;
-  const paddedSerial = serial.serial.toString().padStart(5, "0");
 
   function toggle() {
     if (disabled) return;
@@ -492,7 +491,7 @@ function SaleRow({ index, serial, currency, control }: SaleRowProps) {
           {m.detail_sort_serial()}
         </div>
         <div className="font-mono text-sm font-bold tabular-nums sm:text-lg">
-          #{paddedSerial}
+          {formatSerial(serial.serial)}
         </div>
       </div>
 

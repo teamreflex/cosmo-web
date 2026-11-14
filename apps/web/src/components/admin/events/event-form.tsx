@@ -11,6 +11,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { useArtists } from "@/hooks/use-artists";
 import type { FilterData } from "@/hooks/use-filter-data";
 import { m } from "@/i18n/messages";
 import { adminErasQuery } from "@/lib/queries/events";
@@ -38,6 +39,7 @@ export default function EventForm({
 }: EventFormProps) {
   const { data: eras } = useSuspenseQuery(adminErasQuery());
   const { artists, filterData } = route.useLoaderData();
+  const { artistList } = useArtists();
   const form = useFormContext<CreateEventInput>();
 
   const selectedArtist = useWatch({ control: form.control, name: "artist" });
@@ -47,7 +49,7 @@ export default function EventForm({
     ? eras.filter((era) => era.artist === selectedArtist)
     : eras;
 
-  const artistItems = Object.values(artists).map((artist) => ({
+  const artistItems = artistList.map((artist) => ({
     value: artist.id,
     label: (
       <>

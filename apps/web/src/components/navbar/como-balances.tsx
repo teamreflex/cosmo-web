@@ -18,15 +18,13 @@ export default function UserBalances(props: Props) {
 
   return (
     <>
-      {selected
-        .sort((a, b) => a.comoTokenId - b.comoTokenId)
-        .map((artist) => (
-          <Balance
-            key={artist.name}
-            artist={artist}
-            balance={balances.find((b) => b.id === artist.id)}
-          />
-        ))}
+      {selected.map((artist) => (
+        <Balance
+          key={artist.name}
+          artist={artist}
+          balance={balances.find((b) => b.id === artist.id)}
+        />
+      ))}
     </>
   );
 }

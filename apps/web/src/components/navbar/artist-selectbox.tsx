@@ -37,15 +37,13 @@ export default function ArtistSelectbox() {
         ))}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-fit">
-        {artistList
-          .sort((a, b) => a.comoTokenId - b.comoTokenId)
-          .map((artist) => (
-            <ArtistItem
-              key={artist.id}
-              artist={artist}
-              isSelected={selectedIds.includes(artist.id)}
-            />
-          ))}
+        {artistList.map((artist) => (
+          <ArtistItem
+            key={artist.id}
+            artist={artist}
+            isSelected={selectedIds.includes(artist.id)}
+          />
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );

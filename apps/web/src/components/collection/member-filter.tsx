@@ -108,18 +108,16 @@ export default function MemberFilter({
           )}
         />
 
-        {selected
-          .sort((a, b) => a.comoTokenId - b.comoTokenId)
-          .map((artist) => (
-            <ArtistTriggerButton
-              key={artist.id}
-              artist={artist}
-              activeArtist={activeArtist ?? null}
-              activeMembers={activeMembers}
-              isOpen={openArtistId === artist.id}
-              onOpen={() => handleOpen(artist.id)}
-            />
-          ))}
+        {selected.map((artist) => (
+          <ArtistTriggerButton
+            key={artist.id}
+            artist={artist}
+            activeArtist={activeArtist ?? null}
+            activeMembers={activeMembers}
+            isOpen={openArtistId === artist.id}
+            onOpen={() => handleOpen(artist.id)}
+          />
+        ))}
       </div>
 
       {displayArtist && (

@@ -31,13 +31,10 @@ type Props = {
  */
 export default function MemberFilterChip(props: Props) {
   const { artistList, selected } = useArtists();
-  const artists = (props.allArtists ? artistList : selected)
-    .filter(
-      (artist) =>
-        props.artists.length === 0 ||
-        props.artists.some((a) => a === artist.id),
-    )
-    .toSorted((a, b) => a.comoTokenId - b.comoTokenId);
+  const artists = (props.allArtists ? artistList : selected).filter(
+    (artist) =>
+      props.artists.length === 0 || props.artists.some((a) => a === artist.id),
+  );
   const value = props.members ?? [];
 
   const valueLabel =

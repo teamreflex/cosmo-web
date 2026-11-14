@@ -9,6 +9,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { m } from "@/i18n/messages";
 import type { EditionLedger } from "@/lib/universal/grid";
 import { cn } from "@/lib/utils";
+import { formatSerial } from "@apollo/util";
 import { IconCheck } from "@tabler/icons-react";
 
 type Props = {
@@ -79,8 +80,6 @@ function TokenRow(props: {
   isChecked: boolean;
   onToggle: () => void;
 }) {
-  const paddedSerial = props.serial.toString().padStart(5, "0");
-
   return (
     <button
       type="button"
@@ -96,7 +95,7 @@ function TokenRow(props: {
           {m.detail_sort_serial()}
         </div>
         <div className="font-mono text-sm font-bold tabular-nums">
-          #{paddedSerial}
+          {formatSerial(props.serial)}
         </div>
       </div>
 

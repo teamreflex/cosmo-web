@@ -5,7 +5,7 @@ import { useObjektSerial } from "@/hooks/use-objekt-serial";
 import { m } from "@/i18n/messages";
 import { objektSerialQuery } from "@/lib/queries/objekt-queries";
 import type { SerialTransfer } from "@/lib/universal/objekts";
-import { Addresses, isEqual } from "@apollo/util";
+import { Addresses, isEqual, padSerial } from "@apollo/util";
 import {
   IconChevronDown,
   IconChevronUp,
@@ -123,7 +123,7 @@ function Content(props: ContentProps) {
         <IconHeartBroken className="size-8" />
         <span className="text-sm font-medium">
           {m.objekt_serials_not_exist({
-            serial: props.serial.toString().padStart(5, "0"),
+            serial: padSerial(props.serial),
           })}
         </span>
       </div>

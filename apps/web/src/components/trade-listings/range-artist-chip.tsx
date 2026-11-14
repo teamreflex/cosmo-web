@@ -16,12 +16,10 @@ type Props = {
  */
 export default function RangeArtistChip({ artists, onChange }: Props) {
   const { artistList } = useArtists();
-  const options = artistList
-    .flatMap((option) => {
-      const id = validArtists.find((valid) => valid === option.id);
-      return id === undefined ? [] : [{ ...option, id }];
-    })
-    .toSorted((a, b) => a.comoTokenId - b.comoTokenId);
+  const options = artistList.flatMap((option) => {
+    const id = validArtists.find((valid) => valid === option.id);
+    return id === undefined ? [] : [{ ...option, id }];
+  });
   const picked = options.filter((option) => artists.includes(option.id));
 
   // the toggled artist flips and the rest stay, in the list's order so the summary reads the same however they were picked
