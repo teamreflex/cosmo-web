@@ -74,7 +74,7 @@ export function useBinderEditor({ binder, userId, initialPage }: Options) {
    * pocket after it.
    */
   function place(slot: number, objekt: BinderObjekt) {
-    if (pockets.get(slot)?.objekt.tokenId !== objekt.tokenId) {
+    if (pockets.get(slot)?.objekt.objekt.tokenId !== objekt.objekt.tokenId) {
       mutations.place({ page, slot, objekt });
     }
     return nextEmptySlot(
@@ -94,7 +94,7 @@ export function useBinderEditor({ binder, userId, initialPage }: Options) {
     select: setSelected,
     saving: mutations.pending,
     inBinderTokenIds: new Set(
-      binder.entries.map((entry) => Number(entry.objekt.tokenId)),
+      binder.entries.map((entry) => entry.objekt.objekt.tokenId),
     ),
     suggestion:
       selected === null
@@ -152,7 +152,7 @@ export function useBinderEditor({ binder, userId, initialPage }: Options) {
     moveToPage(slot: number, target: number) {
       const objekt = pockets.get(slot)?.objekt;
       if (objekt === undefined) return;
-      const drop = pageDrop(binder, target, objekt.tokenId);
+      const drop = pageDrop(binder, target, objekt.objekt.tokenId);
       if (drop.kind === "full") {
         toast.info(m.binder_editor_page_n_full({ page: target + 1 }));
       } else if (drop.kind === "pocket") {
@@ -167,7 +167,7 @@ export function useBinderEditor({ binder, userId, initialPage }: Options) {
      * page's thumbnail.
      */
     placeOnPage(target: number, objekt: BinderObjekt) {
-      const drop = pageDrop(binder, target, objekt.tokenId);
+      const drop = pageDrop(binder, target, objekt.objekt.tokenId);
       if (drop.kind === "full") {
         toast.info(m.binder_editor_page_n_full({ page: target + 1 }));
         return;

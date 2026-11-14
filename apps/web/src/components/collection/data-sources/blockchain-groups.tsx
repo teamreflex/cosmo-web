@@ -11,7 +11,7 @@ import { useProfileContext } from "@/hooks/use-profile";
 import { m } from "@/i18n/messages";
 import { userCollectionBlockchainGroupsQuery } from "@/lib/queries/objekt-queries";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
-import type { BFFCollectionGroup } from "@apollo/cosmo/types/objekts";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { useCallback } from "react";
 import { BlockchainGroupsGridItem } from "./blockchain-groups-grid-item";
 
@@ -36,10 +36,9 @@ export default function BlockchainGroups(props: Props) {
    * Determine if the group should be rendered
    */
   const shouldRender = useCallback(
-    (group: BFFCollectionGroup) => {
-      const tokenIds = group.objekts.map((objekt) => objekt.metadata.tokenId);
-      const allLocked = tokenIds.every((tokenId) =>
-        lockedObjekts.includes(tokenId),
+    (group: Objekt.Group) => {
+      const allLocked = group.objekts.every((objekt) =>
+        lockedObjekts.includes(objekt.tokenId),
       );
 
       // hide collection when all objekts are locked

@@ -345,13 +345,11 @@ function PickerCollection({
 
   const loaded = query.data.pages.flatMap((page) => page.objekts);
   const objekts = hasClientFilters(filters)
-    ? loaded.filter((objekt) => {
-        const tokenId = Number(objekt.tokenId);
-        return (
+    ? loaded.filter(
+        ({ objekt: { tokenId } }) =>
           !(filters.hideLocked && lockedTokenIds.has(tokenId)) &&
-          !(filters.notInBinder && inBinderTokenIds?.has(tokenId))
-        );
-      })
+          !(filters.notInBinder && inBinderTokenIds?.has(tokenId)),
+      )
     : loaded;
   /**
    * Locked and placed objekts are filtered here rather than by the query, so

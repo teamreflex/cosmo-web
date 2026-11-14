@@ -11,18 +11,19 @@ import {
 
 function objekt(tokenId: number): BinderObjekt {
   return {
-    tokenId: String(tokenId),
-    objektNo: tokenId,
-    collectionId: "Atom01 HeeJin 101Z",
-    collectionNo: "101Z",
-    member: "HeeJin",
-    artists: ["artms"],
-    season: "Atom01",
-    class: "First",
-    frontImageVersion: null,
-    backgroundColor: "#FFFFFF",
-    textColor: "#000000",
-    bandImageUrl: null,
+    collection: {
+      collectionId: "Atom01 HeeJin 101Z",
+      collectionNo: "101Z",
+      member: "HeeJin",
+      artist: "artms",
+      season: "Atom01",
+      class: "First",
+      frontImageVersion: null,
+      backgroundColor: "#FFFFFF",
+      textColor: "#000000",
+      bandImageUrl: null,
+    },
+    objekt: { tokenId, serial: tokenId },
   };
 }
 
@@ -55,7 +56,7 @@ function pockets(detail: BinderDetail) {
   return detail.entries.map((entry) => [
     entry.page,
     entry.slot,
-    Number(entry.objekt.tokenId),
+    entry.objekt.objekt.tokenId,
   ]);
 }
 

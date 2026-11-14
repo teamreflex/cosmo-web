@@ -5,12 +5,12 @@ import { cosmoMiddleware } from "@/lib/server/middlewares";
 import { frontPinPosition } from "@/lib/server/pins.server";
 import type { ProfilePin } from "@/lib/universal/binders";
 import { ExpectedError } from "@/lib/universal/errors/expected";
+import { Objekt } from "@/lib/universal/objekt-conversion";
 import { lockedObjekts, pins } from "@apollo/database/web/schema";
 import { pinCacheKey } from "@apollo/util-server";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, isNotNull, ne, sql } from "drizzle-orm";
 import * as z from "zod";
-import { normalizePin } from "./pins";
 
 /**
  * Toggle the lock on an objekt.
@@ -89,7 +89,11 @@ export const $pinObjekt = createServerFn({ method: "POST" })
       pinCacheKey(context.cosmo.username),
       pinCacheKey(context.cosmo.address),
     );
-    return { kind: "objekt", pinId: pin.id, objekt: normalizePin(objekt) };
+    return {
+      kind: "objekt",
+      pinId: pin.id,
+      objekt: Objekt.fromRow(objekt, objekt.collection),
+    };
   });
 
 /**

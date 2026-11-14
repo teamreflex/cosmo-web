@@ -1,10 +1,9 @@
-import type { ValidArtist } from "@apollo/cosmo/types/common";
+import { toUiArtist, type ValidArtist } from "@apollo/cosmo/types/common";
 import { MAX_NOTE_LENGTH } from "@apollo/trades/caps";
 import {
   type ArtistValues,
   rangeArtistUnused,
   setRangeArtists,
-  toUiArtist,
 } from "@apollo/trades/composer";
 import {
   choicesDistinct,

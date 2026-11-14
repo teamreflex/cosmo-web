@@ -1,9 +1,9 @@
-import type { BFFCollectionGroup } from "@apollo/cosmo/types/objekts";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { memo } from "react";
 import GroupedObjekt from "../../objekt/objekt-collection-group";
 
 type Props = {
-  item: BFFCollectionGroup;
+  item: Objekt.Group;
   id: string;
   priority: boolean;
   gridColumns: number;

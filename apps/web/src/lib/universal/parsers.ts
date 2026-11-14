@@ -1,11 +1,11 @@
 import {
+  toUiArtist,
   type ValidArtist,
   validArtists,
   type ValidOnlineType,
   validOnlineTypes,
   validSorts,
 } from "@apollo/cosmo/types/common";
-import { toUiArtist } from "@apollo/trades/composer";
 import { listingTypes } from "@apollo/trades/listing";
 import { isAddress } from "@apollo/util";
 import * as z from "zod";

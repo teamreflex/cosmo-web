@@ -5,9 +5,8 @@ import { tokenKey, useObjektSelection } from "@/hooks/use-objekt-selection";
 import { m } from "@/i18n/messages";
 import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import { objektQuery } from "@/lib/queries/objekt-queries";
-import { Objekt } from "@/lib/universal/objekt-conversion";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
-import type { BFFCollectionGroup } from "@apollo/cosmo/types/objekts";
 import { IconInfoCircle } from "@tabler/icons-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Suspense, use, useMemo, useState } from "react";
@@ -23,7 +22,7 @@ import {
 } from "./overlay/corner-overlay";
 
 interface Props {
-  group: BFFCollectionGroup;
+  group: Objekt.Group;
   gridColumns: number;
   showLocked: boolean;
   priority?: boolean;
@@ -36,20 +35,16 @@ export default function GroupedObjekt({
 }: Props) {
   const hasSelected = useObjektSelection(
     useShallow((state) =>
-      state.hasSelected(group.objekts.map((o) => tokenKey(o.metadata.tokenId))),
+      state.hasSelected(group.objekts.map((o) => tokenKey(o.tokenId))),
     ),
   );
 
-  const collection = Objekt.fromCollectionGroup({
-    collection: group.collection,
-  });
   const lastAcquiredAt = Math.max(
-    ...group.objekts.map((o) => new Date(o.inventory.acquiredAt).getTime()),
+    ...group.objekts.map((o) => new Date(o.acquiredAt).getTime()),
   );
 
   return (
     <Detail
-      collection={collection}
       group={group}
       showLocked={showLocked}
       hasSelected={hasSelected}
@@ -60,8 +55,7 @@ export default function GroupedObjekt({
 }
 
 type DetailProps = {
-  collection: Objekt.Collection;
-  group: BFFCollectionGroup;
+  group: Objekt.Group;
   showLocked: boolean;
   hasSelected: boolean;
   /** when the most recent copy in the group was received, in ms */
@@ -70,8 +64,7 @@ type DetailProps = {
 };
 
 function Detail({
-  collection,
-  group,
+  group: { collection, objekts },
   showLocked,
   hasSelected,
   lastAcquiredAt,
@@ -81,18 +74,15 @@ function Detail({
   const [mounted, setMounted] = useState(false);
 
   const tokens = useMemo(
-    () =>
-      group.objekts
-        .filter((o) => (o.nonTransferableReason ? showLocked : true))
-        .map((o) => Objekt.fromCollectionGroup({ objekt: o })),
-    [group.objekts, showLocked],
+    () => objekts.filter((o) => (o.nonTransferableReason ? showLocked : true)),
+    [objekts, showLocked],
   );
 
   return (
     <>
       <RootObjekt
         collection={collection}
-        count={group.count}
+        count={objekts.length}
         hasSelected={hasSelected}
         lastAcquiredAt={lastAcquiredAt}
         onIntent={() => setMounted(true)}

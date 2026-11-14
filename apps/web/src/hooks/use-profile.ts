@@ -43,8 +43,7 @@ export function usePinnedObjekt(tokenId: number) {
   return useProfileContext(
     useShallow((state) =>
       state.pins.some(
-        (pin) =>
-          pin.kind === "objekt" && Number(pin.objekt.tokenId) === tokenId,
+        (pin) => pin.kind === "objekt" && pin.objekt.objekt.tokenId === tokenId,
       ),
     ),
   );

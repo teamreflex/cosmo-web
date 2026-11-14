@@ -11,9 +11,8 @@ import type { PinMove } from "@/hooks/use-pin-reorder";
 import { m } from "@/i18n/messages";
 import { lazyWithPreload } from "@/lib/lazy";
 import type { ProfilePin } from "@/lib/universal/binders";
-import { Objekt } from "@/lib/universal/objekt-conversion";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
-import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import { IconHeartBroken, IconRefresh } from "@tabler/icons-react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import type { DefaultError, QueryKey } from "@tanstack/react-query";
@@ -444,15 +443,14 @@ function PinObjektCard({
   authenticated,
   eager,
 }: {
-  objekt: CosmoObjekt;
+  objekt: Objekt.Objekt;
   authenticated: boolean;
   eager: boolean;
 }) {
-  const legacyObjekt = Objekt.fromLegacy(objekt);
   return (
     <ExpandableObjekt
-      collection={legacyObjekt.collection}
-      selectionKey={tokenKey(parseInt(objekt.tokenId))}
+      collection={objekt.collection}
+      selectionKey={tokenKey(objekt.objekt.tokenId)}
       priority={true}
       eager={eager}
       /**
@@ -463,8 +461,8 @@ function PinObjektCard({
       className="select-none [-webkit-touch-callout:none]"
     >
       <LegacyOverlay
-        collection={legacyObjekt.collection}
-        token={legacyObjekt.objekt}
+        collection={objekt.collection}
+        token={objekt.objekt}
         authenticated={authenticated}
         isPin={true}
       />

@@ -12,7 +12,7 @@ type Props = {
   activeArtist?: string | null;
   activeMembers: string[];
   multiple?: boolean;
-  updateArtist: (artist: string) => void;
+  updateArtist: (artist: ValidArtist) => void;
   updateMember: (member: string) => void;
 };
 
@@ -154,8 +154,7 @@ function ArtistTriggerButton(props: ArtistTriggerButtonProps) {
     props.activeMembers.includes(m.name),
   );
   const isActive = props.isOpen || isArtistActive || isMemberActive;
-  // SAFETY: BFF artist names match the ValidArtist ids
-  const artistColor = artistColors[props.artist.name as ValidArtist];
+  const artistColor = artistColors[props.artist.id];
 
   function handlePointerDown(e: React.PointerEvent) {
     // prevent this from being detected as clicking outside
@@ -184,18 +183,17 @@ type ArtistPopoverContentProps = {
   activeMembers: string[];
   multiple: boolean;
   showArtists?: boolean;
-  onArtistSelect: (artist: string) => void;
+  onArtistSelect: (artist: ValidArtist) => void;
   onMemberSelect: (member: string) => void;
   onClose: () => void;
 };
 
 function ArtistPopoverContent(props: ArtistPopoverContentProps) {
   const isArtistActive = props.activeArtist === props.artist.id;
-  // SAFETY: BFF artist names match the ValidArtist ids
-  const artistColor = artistColors[props.artist.name as ValidArtist];
+  const artistColor = artistColors[props.artist.id];
 
-  function handleArtistSelect(artist: string) {
-    props.onArtistSelect(artist);
+  function handleArtistSelect() {
+    props.onArtistSelect(props.artist.id);
     props.onClose();
   }
 
@@ -224,7 +222,7 @@ function ArtistPopoverContent(props: ArtistPopoverContentProps) {
           image={props.artist.logoImageUrl}
           isActive={isArtistActive}
           color={artistColor}
-          onClick={() => handleArtistSelect(props.artist.name)}
+          onClick={handleArtistSelect}
           useLabel
         />
       )}

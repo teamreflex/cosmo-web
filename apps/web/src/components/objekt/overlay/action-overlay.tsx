@@ -10,10 +10,6 @@ import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
 import {
   type Icon as TablerIcon,
-  IconCloudDownload,
-  IconConfetti,
-  IconDevices,
-  IconGrid4x4,
   IconLock,
   IconMailOff,
   IconPin,
@@ -42,39 +38,6 @@ type Props = {
 
 type CreateHoverProps = ReturnType<typeof useOverlayHover>[1];
 
-type TokenTraits = {
-  usedForGrid: boolean;
-  isSendable: boolean;
-  showActions: boolean;
-};
-
-function deriveTraits({
-  token,
-  authenticated,
-  isLocked,
-  isPinned,
-  isPin,
-}: Props): TokenTraits {
-  // grouping uses nonTransferableReason = "challenge-reward" for gridded objekts
-  const usedForGrid =
-    token.usedForGrid || token.nonTransferableReason === "used-for-grid";
-
-  // some welcome objekts are sendable; all other objekts must carry no reason
-  const isSendable =
-    token.transferable &&
-    (token.nonTransferableReason === "welcome-objekt" ||
-      token.nonTransferableReason === undefined);
-
-  const showActions =
-    !token.transferable ||
-    usedForGrid ||
-    isLocked ||
-    (isPinned && isPin) ||
-    authenticated;
-
-  return { usedForGrid, isSendable, showActions };
-}
-
 type TokenStatus = {
   key: Hoverable;
   icon: TablerIcon;
@@ -82,60 +45,14 @@ type TokenStatus = {
 };
 
 /**
- * Statuses shown for the token, in render order. Multiple can apply at once
- * (e.g. used-for-grid + lenticular). "effect-objekt" and "bookmark-objekt"
- * never occur in API data, so they intentionally have no entries.
+ * The status shown for a token that can't be sent. A welcome objekt that can
+ * be sent carries its reason but shows nothing.
  */
-function tokenStatuses(
-  token: Objekt.Token,
-  { usedForGrid, isSendable }: TokenTraits,
-): TokenStatus[] {
+function tokenStatuses(token: Objekt.Token): TokenStatus[] {
   const reason = token.nonTransferableReason;
-  const statuses: TokenStatus[] = [];
-  if (reason === "not-transferable") {
-    statuses.push({
-      key: reason,
-      icon: IconMailOff,
-      label: () => reasonLabel(reason),
-    });
-  }
-  if (reason === "mint-pending") {
-    statuses.push({
-      key: reason,
-      icon: IconCloudDownload,
-      label: () => reasonLabel(reason),
-    });
-  }
-  if (!usedForGrid && reason === "challenge-reward") {
-    statuses.push({
-      key: reason,
-      icon: IconConfetti,
-      label: () => reasonLabel(reason),
-    });
-  }
-  if (!isSendable && reason === "welcome-objekt") {
-    statuses.push({
-      key: reason,
-      icon: IconMailOff,
-      label: () => reasonLabel(reason),
-    });
-  }
-  if (usedForGrid) {
-    statuses.push({
-      key: "used-for-grid",
-      icon: IconGrid4x4,
-      label: () => reasonLabel("used-for-grid"),
-    });
-  }
-  // used in lenticular, for some reason the nonTransferableReason isn't used here
-  if (token.lenticularPairTokenId !== 0) {
-    statuses.push({
-      key: "lenticular-objekt",
-      icon: IconDevices,
-      label: m.objekt_overlay_lenticular_pair,
-    });
-  }
-  return statuses;
+  return reason === undefined || token.transferable
+    ? []
+    : [{ key: reason, icon: IconMailOff, label: () => reasonLabel(reason) }];
 }
 
 export default function ActionOverlay(props: Props) {
@@ -146,14 +63,19 @@ export default function ActionOverlay(props: Props) {
   );
   const select = useObjektSelection((state) => state.select);
 
-  const traits = deriveTraits(props);
-  const statuses = tokenStatuses(token, traits);
+  const statuses = tokenStatuses(token);
 
   return (
     <CornerOverlay
       corner="top-left"
       {...hoverContainerProps}
-      className={cn(!traits.showActions && "hidden")}
+      className={cn(
+        token.transferable &&
+          !isLocked &&
+          !(isPinned && isPin) &&
+          !authenticated &&
+          "hidden",
+      )}
     >
       <OverlayActionRow>
         {authenticated ? (
@@ -163,7 +85,6 @@ export default function ActionOverlay(props: Props) {
             isLocked={isLocked}
             isPinned={isPinned}
             isPin={isPin}
-            isSendable={traits.isSendable}
             createHoverProps={createHoverProps}
           />
         ) : (
@@ -171,7 +92,6 @@ export default function ActionOverlay(props: Props) {
             isLocked={isLocked}
             isPinned={isPinned}
             isPin={isPin}
-            usedForGrid={traits.usedForGrid}
           />
         )}
 
@@ -219,7 +139,6 @@ function OwnerActions(props: {
   isLocked: boolean;
   isPinned: boolean;
   isPin: boolean;
-  isSendable: boolean;
   createHoverProps: CreateHoverProps;
 }) {
   const { collection, token, createHoverProps } = props;
@@ -256,7 +175,7 @@ function OwnerActions(props: {
         </OverlayHoverTarget>
       )}
 
-      {props.isSendable && !props.isPin && (
+      {token.transferable && !props.isPin && (
         <OverlayHoverTarget {...createHoverProps("lock")}>
           <LockObjekt tokenId={token.tokenId} isLocked={props.isLocked} />
         </OverlayHoverTarget>
@@ -270,14 +189,11 @@ function SpectatorIcons(props: {
   isLocked: boolean;
   isPinned: boolean;
   isPin: boolean;
-  usedForGrid: boolean;
 }) {
   return (
     <Fragment>
       {props.isPin && props.isPinned && <OverlayIcon icon={IconPin} />}
-      {!props.usedForGrid && !props.isPin && props.isLocked && (
-        <OverlayIcon icon={IconLock} />
-      )}
+      {!props.isPin && props.isLocked && <OverlayIcon icon={IconLock} />}
     </Fragment>
   );
 }

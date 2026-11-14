@@ -1,7 +1,7 @@
-import type { ValidArtist } from "@apollo/cosmo/types/common";
-import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
+import { toUiArtist, type ValidArtist } from "@apollo/cosmo/types/common";
 import type { Binder } from "@apollo/database/web/types";
 import { slugifyObjekt } from "@apollo/util";
+import type { Objekt } from "./objekt-conversion";
 
 export type BinderLayout = Binder["layout"];
 
@@ -141,11 +141,10 @@ export type BinderMenuItem = Pick<
 };
 
 export type BinderPreviewImage = Pick<
-  CosmoObjekt,
-  "collectionId" | "frontImageVersion"
+  Objekt.Collection,
+  "slug" | "collectionId" | "frontImageVersion"
 > & {
   tokenId: number;
-  slug: string;
 };
 
 /**
@@ -231,14 +230,15 @@ export function toBinderPreview(
 /**
  * The image a binder cover draws for an objekt.
  */
-export function previewImage(
-  objekt: Pick<CosmoObjekt, "tokenId" | "collectionId" | "frontImageVersion">,
-): BinderPreviewImage {
+export function previewImage({
+  collection,
+  objekt,
+}: BinderObjekt): BinderPreviewImage {
   return {
-    tokenId: Number(objekt.tokenId),
-    slug: slugifyObjekt(objekt.collectionId),
-    collectionId: objekt.collectionId,
-    frontImageVersion: objekt.frontImageVersion,
+    tokenId: objekt.tokenId,
+    slug: slugifyObjekt(collection.collectionId),
+    collectionId: collection.collectionId,
+    frontImageVersion: collection.frontImageVersion,
   };
 }
 
@@ -247,7 +247,7 @@ export function previewImage(
  * cover. Both carry the pin's own id, which orders and reorders them together.
  */
 export type ProfilePin =
-  | { kind: "objekt"; pinId: number; objekt: CosmoObjekt }
+  | { kind: "objekt"; pinId: number; objekt: Objekt.Objekt }
   | { kind: "binder"; pinId: number; binder: BinderPreview };
 
 /**
@@ -282,7 +282,7 @@ export function pinTokenIds(rows: readonly PinRow[]): number[] {
  */
 export function toProfilePins(
   rows: readonly PinRow[],
-  objekts: Map<number, CosmoObjekt>,
+  objekts: Map<number, Objekt.Objekt>,
 ): ProfilePin[] {
   const images = new Map(
     [...objekts].map(([tokenId, objekt]) => [tokenId, previewImage(objekt)]),
@@ -319,21 +319,22 @@ export function isBinderPin(binderId: string) {
  * objekt fits it, so a picker card goes into a pocket as it is. Images come
  * from the CDN only, so `frontImage` is left out.
  */
-export type BinderObjekt = Pick<
-  CosmoObjekt,
-  | "tokenId"
-  | "objektNo"
-  | "collectionId"
-  | "collectionNo"
-  | "member"
-  | "artists"
-  | "season"
-  | "class"
-  | "frontImageVersion"
-  | "backgroundColor"
-  | "textColor"
-  | "bandImageUrl"
->;
+export type BinderObjekt = {
+  collection: Pick<
+    Objekt.Collection,
+    | "collectionId"
+    | "collectionNo"
+    | "member"
+    | "artist"
+    | "season"
+    | "class"
+    | "frontImageVersion"
+    | "backgroundColor"
+    | "textColor"
+    | "bandImageUrl"
+  >;
+  objekt: Pick<Objekt.Token, "tokenId" | "serial">;
+};
 
 export type BinderPocketEntry = PocketPosition & {
   objekt: BinderObjekt;
@@ -368,7 +369,7 @@ export function pocketsByPage(entries: readonly BinderPocketEntry[]) {
 export function binderPreviewFromDetail(binder: BinderDetail): BinderPreview {
   const images = new Map(
     binder.entries.map(({ objekt }) => [
-      Number(objekt.tokenId),
+      objekt.objekt.tokenId,
       previewImage(objekt),
     ]),
   );
@@ -387,7 +388,7 @@ export function binderPreviewFromDetail(binder: BinderDetail): BinderPreview {
       binder.entries.map(({ page, slot, objekt }) => ({
         page,
         slot,
-        tokenId: Number(objekt.tokenId),
+        tokenId: objekt.objekt.tokenId,
       })),
       images,
     ),
@@ -397,10 +398,9 @@ export function binderPreviewFromDetail(binder: BinderDetail): BinderPreview {
 /**
  * The collection fields a neighbour suggestion compares.
  */
-export type SuggestionObjekt = Pick<
-  CosmoObjekt,
-  "artists" | "member" | "season" | "class"
->;
+export type SuggestionObjekt = {
+  collection: Pick<Objekt.Collection, "artist" | "member" | "season" | "class">;
+};
 
 /**
  * Picker filters proposed from the neighbouring pockets. `null` fields are
@@ -432,15 +432,20 @@ export function suggestFromNeighbours(
     )
     .toSorted((a, b) => a.slot - b.slot);
 
-  const [artist] = first?.objekt.artists ?? [];
-  if (first === undefined || artist === undefined) return null;
-  if (second !== undefined && second.objekt.artists[0] !== artist) {
+  if (first === undefined) return null;
+  const { collection } = first.objekt;
+  const artist = toUiArtist(collection.artist);
+  if (artist === undefined) return null;
+  if (
+    second !== undefined &&
+    second.objekt.collection.artist !== collection.artist
+  ) {
     return null;
   }
 
   const agreed = (key: "member" | "season" | "class") =>
-    second === undefined || second.objekt[key] === first.objekt[key]
-      ? first.objekt[key]
+    second === undefined || second.objekt.collection[key] === collection[key]
+      ? collection[key]
       : null;
 
   return {
@@ -488,11 +493,11 @@ export type PageDrop =
 export function pageDrop(
   binder: Pick<BinderDetail, "layout" | "entries">,
   page: number,
-  tokenId: string,
+  tokenId: number,
 ): PageDrop {
   if (
     binder.entries.some(
-      (entry) => entry.page === page && entry.objekt.tokenId === tokenId,
+      (entry) => entry.page === page && entry.objekt.objekt.tokenId === tokenId,
     )
   ) {
     return { kind: "stays" };
@@ -517,22 +522,23 @@ export function withPlacedObjekt(
   pocket: PocketPosition,
   objekt: BinderObjekt,
 ): BinderDetail {
+  const { tokenId } = objekt.objekt;
   const replaced = binder.entries.find(
     (entry) =>
-      samePocket(entry, pocket) && entry.objekt.tokenId !== objekt.tokenId,
+      samePocket(entry, pocket) && entry.objekt.objekt.tokenId !== tokenId,
   );
 
   return {
     ...binder,
     coverTokenId:
       replaced !== undefined &&
-      Number(replaced.objekt.tokenId) === binder.coverTokenId
+      replaced.objekt.objekt.tokenId === binder.coverTokenId
         ? null
         : binder.coverTokenId,
     entries: [
       ...binder.entries.filter(
         (entry) =>
-          !samePocket(entry, pocket) && entry.objekt.tokenId !== objekt.tokenId,
+          !samePocket(entry, pocket) && entry.objekt.objekt.tokenId !== tokenId,
       ),
       { page: pocket.page, slot: pocket.slot, objekt },
     ].toSorted(byPocket),
@@ -552,7 +558,7 @@ export function withClearedPocket(
     ...binder,
     coverTokenId:
       cleared !== undefined &&
-      Number(cleared.objekt.tokenId) === binder.coverTokenId
+      cleared.objekt.objekt.tokenId === binder.coverTokenId
         ? null
         : binder.coverTokenId,
     entries: binder.entries.filter((entry) => !samePocket(entry, pocket)),
@@ -595,7 +601,7 @@ export function withoutLastPage(binder: BinderDetail): BinderDetail {
     pageCount,
     entries,
     coverTokenId: entries.some(
-      (entry) => Number(entry.objekt.tokenId) === binder.coverTokenId,
+      (entry) => entry.objekt.objekt.tokenId === binder.coverTokenId,
     )
       ? binder.coverTokenId
       : null,
@@ -689,14 +695,20 @@ function mostCommon(values: string[]) {
  */
 export function binderColourPresets(
   entries: readonly {
-    objekt: Pick<CosmoObjekt, "backgroundColor" | "member">;
+    objekt: {
+      collection: Pick<Objekt.Collection, "backgroundColor" | "member">;
+    };
   }[],
   memberColour: (member: string) => string | undefined,
 ): string[] {
   const backgrounds = mostCommon(
-    entries.map((entry) => entry.objekt.backgroundColor.toLowerCase()),
+    entries.map((entry) =>
+      entry.objekt.collection.backgroundColor.toLowerCase(),
+    ),
   );
-  const members = mostCommon(entries.map((entry) => entry.objekt.member))
+  const members = mostCommon(
+    entries.map((entry) => entry.objekt.collection.member),
+  )
     .flatMap((member) => memberColour(member) ?? [])
     .map((colour) => colour.toLowerCase());
 
@@ -709,7 +721,7 @@ export function binderColourPresets(
  * How an objekt is named in pocket labels and announcements: "Choerry 112Z".
  */
 export function pocketObjektName(
-  objekt: Pick<CosmoObjekt, "member" | "collectionNo">,
+  collection: Pick<Objekt.Collection, "member" | "collectionNo">,
 ) {
-  return `${objekt.member} ${objekt.collectionNo}`;
+  return `${collection.member} ${collection.collectionNo}`;
 }

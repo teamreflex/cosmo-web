@@ -9,7 +9,7 @@ import type {
 } from "@/lib/universal/schema/share-data";
 import { cn } from "@/lib/utils";
 import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
-import type { ValidArtist } from "@apollo/cosmo/types/common";
+import { type ValidArtist, validArtists } from "@apollo/cosmo/types/common";
 import { useState } from "react";
 
 type Props = {
@@ -84,12 +84,12 @@ export default function SelectStep({ candidates, onContinue }: Props) {
   const selection: ScrapeSelection[] = [
     ...motion.map((artistId) => ({ type: "motion" as const, artistId })),
     ...band.map((artistId) => ({ type: "band" as const, artistId })),
-    ...Object.entries(audio).map(([artistId, seasons]) => ({
-      type: "audio" as const,
-      // SAFETY: audio state is keyed by ValidArtist
-      artistId: artistId as ValidArtist,
-      seasons,
-    })),
+    ...validArtists.flatMap((artistId) => {
+      const seasons = audio[artistId];
+      return seasons === undefined
+        ? []
+        : [{ type: "audio" as const, artistId, seasons }];
+    }),
   ];
 
   return (

@@ -23,11 +23,10 @@ export default function TransfersMemberFilter() {
   );
 
   const setActiveArtist = useCallback(
-    (artist: string) => {
+    (artist: ValidArtist) => {
       setFilters((prev) => ({
         member: undefined,
-        // SAFETY: callers pass artist ids from the artist list
-        artist: prev.artist === artist ? undefined : (artist as ValidArtist),
+        artist: prev.artist === artist ? undefined : artist,
       }));
     },
     [setFilters],

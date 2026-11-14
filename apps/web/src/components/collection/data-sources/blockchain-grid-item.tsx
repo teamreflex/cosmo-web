@@ -1,12 +1,11 @@
 import { tokenKey } from "@/hooks/use-objekt-selection";
-import { Objekt } from "@/lib/universal/objekt-conversion";
-import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
-import { memo, useMemo } from "react";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
+import { memo } from "react";
 import ExpandableObjekt from "../../objekt/objekt-expandable";
 import { LegacyOverlay } from "./common-legacy";
 
 type Props = {
-  item: CosmoObjekt;
+  item: Objekt.Objekt;
   id: string;
   isPin: boolean;
   priority: boolean;
@@ -20,17 +19,15 @@ export const BlockchainGridItem = memo(function BlockchainGridItem({
   priority,
   authenticated,
 }: Props) {
-  const objekt = useMemo(() => Objekt.fromLegacy(item), [item]);
-
   return (
     <ExpandableObjekt
-      collection={objekt.collection}
+      collection={item.collection}
       selectionKey={tokenKey(Number(id))}
       priority={priority}
     >
       <LegacyOverlay
-        collection={objekt.collection}
-        token={objekt.objekt}
+        collection={item.collection}
+        token={item.objekt}
         authenticated={authenticated}
         isPin={isPin}
       />

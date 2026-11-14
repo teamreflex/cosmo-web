@@ -149,7 +149,7 @@ export default function PinReorder({
       const pin = pins.find((p) => p.pinId === id);
       if (pin === undefined) return "";
       return pin.kind === "objekt"
-        ? pin.objekt.collectionId
+        ? pin.objekt.collection.collectionId
         : m.pin_reorder_binder({ name: pin.binder.name });
     };
     const position = (id: UniqueIdentifier) => ({

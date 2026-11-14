@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import type { BinderEditor } from "@/hooks/use-binder-editor";
 import { m } from "@/i18n/messages";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { cn } from "@/lib/utils";
-import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
 import { IconPhotoStar, IconX } from "@tabler/icons-react";
 import { useId, useRef } from "react";
 import type { KeyboardEvent, PointerEvent, RefObject } from "react";
@@ -24,7 +24,7 @@ type Props = {
   open: boolean;
   address: string;
   lockedTokenIds: ReadonlySet<number>;
-  onPick: (objekt: CosmoObjekt) => void;
+  onPick: (objekt: Objekt.Objekt) => void;
   onClose: () => void;
   onKeyDown: (event: KeyboardEvent<HTMLElement>) => void;
 };
@@ -57,7 +57,7 @@ export default function EditorPickerPanel({
   const selectedEntry =
     selected === null ? undefined : editor.pockets.get(selected);
   const selectedTokenId =
-    selectedEntry === undefined ? null : Number(selectedEntry.objekt.tokenId);
+    selectedEntry === undefined ? null : selectedEntry.objekt.objekt.tokenId;
   const selectedIsCover =
     selectedTokenId !== null && selectedTokenId === binder.coverTokenId;
 
@@ -180,7 +180,7 @@ export default function EditorPickerPanel({
         inBinderTokenIds={editor.inBinderTokenIds}
         suggestion={editor.suggestion}
         renderCard={(objekt, { priority }) => {
-          const tokenId = Number(objekt.tokenId);
+          const { tokenId } = objekt.objekt;
           return (
             <BinderPickerCard
               objekt={objekt}

@@ -1,5 +1,8 @@
 import { indexer } from "@/lib/server/db/indexer";
-import type { Collection, Objekt } from "@/lib/server/db/indexer/schema";
+import type {
+  Collection,
+  Objekt as ObjektRow,
+} from "@/lib/server/db/indexer/schema";
 import {
   collections,
   collectionStats,
@@ -22,6 +25,7 @@ import {
   withTransferable,
   withWantMatch,
 } from "@/lib/server/objekts/filters.server";
+import { Objekt } from "@/lib/universal/objekt-conversion";
 import { userCollectionBackendSchema } from "@/lib/universal/parsers";
 import {
   collectionSorts,
@@ -36,7 +40,6 @@ import { Addresses, isEqual } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, gt, lt, lte, type SQL, sql } from "drizzle-orm";
 import * as z from "zod";
-import { mapLegacyObjekt } from "./common";
 
 /**
  * this is a complete shitshow because the @cosmo-spin account doesn't get emptied,
@@ -103,14 +106,12 @@ async function fetchPage(data: InputData, conditions: (SQL | undefined)[]) {
     total,
     hasNext,
     nextStartAfter,
-    objekts: results.map((row) =>
-      mapLegacyObjekt(row.objekts, row.collections),
-    ),
+    objekts: results.map((row) => Objekt.fromRow(row.objekts, row.collections)),
   };
 }
 
 type QueryResult = {
-  objekts: Objekt;
+  objekts: ObjektRow;
   collections: Collection;
 };
 

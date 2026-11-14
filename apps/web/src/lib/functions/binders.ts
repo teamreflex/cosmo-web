@@ -28,6 +28,7 @@ import type {
   BinderPreview,
 } from "@/lib/universal/binders";
 import { ExpectedError } from "@/lib/universal/errors/expected";
+import { colorFixes } from "@/lib/universal/objekt-conversion";
 import {
   addToBinderSchema,
   binderIdSchema,
@@ -40,8 +41,8 @@ import {
   updateBinderSchema,
 } from "@/lib/universal/schema/binder";
 import { createSlug } from "@/lib/utils";
-import { validArtists } from "@apollo/cosmo/types/common";
 import { binderEntries, binders, pins } from "@apollo/database/web/schema";
+import { slugifyObjekt } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
 import { and, between, eq, gte, lt, or, sql } from "drizzle-orm";
 import * as z from "zod";
@@ -137,18 +138,16 @@ export const $fetchBinder = createServerFn({ method: "GET" })
     });
 
     const byTokenId = new Map<string, BinderObjekt>(
-      objekts.map(({ id, serial, collection: { artist, ...collection } }) => {
-        const valid = validArtists.find((option) => option === artist);
-        return [
-          id,
-          {
+      objekts.map(({ id, serial, collection }) => [
+        id,
+        {
+          collection: {
             ...collection,
-            tokenId: id,
-            objektNo: serial,
-            artists: valid === undefined ? [] : [valid],
+            ...colorFixes.get(slugifyObjekt(collection.collectionId)),
           },
-        ];
-      }),
+          objekt: { tokenId: Number(id), serial },
+        },
+      ]),
     );
 
     return {

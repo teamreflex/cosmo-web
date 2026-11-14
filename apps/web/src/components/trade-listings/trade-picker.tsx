@@ -7,7 +7,7 @@ import { useMediaQuery } from "@/hooks/use-media-query";
 import { m } from "@/i18n/messages";
 import { offerBlock } from "@/lib/client/trade-listings";
 import { tradeTokenStatesQuery } from "@/lib/queries/trade-listings";
-import type { CosmoObjekt } from "@apollo/cosmo/types/objekts";
+import type { Objekt } from "@/lib/universal/objekt-conversion";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { type ReactNode, Suspense } from "react";
 import { useEventCallback } from "usehooks-ts";
@@ -32,7 +32,7 @@ type Props = {
   editedListing?: string;
   /** what a picked card's pill says, when it has one */
   pickedLabel: string | null;
-  onToggle: (objekt: CosmoObjekt) => void;
+  onToggle: (objekt: Objekt.Objekt) => void;
   onDone: () => void;
 };
 
@@ -96,7 +96,7 @@ function PickerWithStates({
       collectionQuery={collectionQuery}
       className="min-h-0 flex-1"
       renderCard={(objekt, { priority }) => {
-        const tokenId = Number(objekt.tokenId);
+        const { tokenId } = objekt.objekt;
         return (
           <ComposerPickerCard
             objekt={objekt}
@@ -104,7 +104,7 @@ function PickerWithStates({
             blocked={
               elsewhere?.has(tokenId)
                 ? m.listing_detail_card_other_row()
-                : offerBlock(objekt, states)
+                : offerBlock(objekt.objekt, states)
             }
             full={full}
             pickedLabel={pickedLabel}

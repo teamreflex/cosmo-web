@@ -25,8 +25,7 @@ export default function EventsArtistFilter({ artist, onChange }: Props) {
   const options: SingleSelectOption<ArtistValue>[] = [
     { value: "all", label: m.filter_value_all() },
     ...artistList.map((a) => ({
-      // SAFETY: artist ids come from the fetched artist list
-      value: a.id as ValidArtist,
+      value: a.id,
       label: a.title,
     })),
   ];

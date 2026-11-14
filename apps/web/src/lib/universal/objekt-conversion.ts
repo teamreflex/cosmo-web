@@ -1,12 +1,4 @@
-import type { IndexedCollection } from "@/lib/universal/objekts";
-import type { ValidArtist } from "@apollo/cosmo/types/common";
-import type {
-  BFFCollectionGroupCollection,
-  BFFCollectionGroupObjekt,
-  CosmoObjekt,
-  NonTransferableReason,
-  ScannedObjekt,
-} from "@apollo/cosmo/types/objekts";
+import type { Objekt as ObjektRow } from "@/lib/server/db/indexer/schema";
 import { slugifyObjekt } from "@apollo/util";
 
 export namespace Objekt {
@@ -17,7 +9,8 @@ export namespace Objekt {
     // comes directly from metadata
     /** diverges from cosmo api */
     id: string;
-    artist: ValidArtist;
+    // the artist's id lowercased, as the indexer stores it
+    artist: string;
     member: string;
     season: string;
     class: string;
@@ -46,9 +39,6 @@ export namespace Objekt {
     serial: number;
     tokenId: number;
     transferable: boolean;
-    status: "minted" | "pending";
-    usedForGrid: boolean;
-    lenticularPairTokenId: number;
     acquiredAt: string;
     nonTransferableReason?: NonTransferableReason;
   };
@@ -59,14 +49,21 @@ export namespace Objekt {
   };
 
   /**
+   * Every copy of one collection that an address owns.
+   */
+  export type Group = {
+    collection: Collection;
+    objekts: Token[];
+  };
+
+  /**
    * Converts a collection from the indexer, or its search document, to the
    * common fields.
    */
-  export function fromIndexer(objekt: IndexedCollection): Objekt.Collection {
+  export function fromIndexer(objekt: CollectionFields): Objekt.Collection {
     const collection = {
       id: objekt.id,
-      // SAFETY: indexed artists lowercase to ValidArtist ids
-      artist: objekt.artist.toLowerCase() as ValidArtist,
+      artist: objekt.artist.toLowerCase(),
       member: objekt.member,
       season: objekt.season,
       class: objekt.class,
@@ -87,146 +84,69 @@ export namespace Objekt {
   }
 
   /**
-   * Converts an objekt from the Cosmo legacy endpoint to the common fields.
+   * Converts an objekt row from the indexer to the token fields. The class is
+   * its collection's.
    */
-  export function fromLegacy(objekt: CosmoObjekt): Objekt.Objekt {
-    const [artist] = objekt.artists;
-    if (artist === undefined) {
-      throw new Error(`objekt ${objekt.collectionId} has no artists`);
-    }
-
-    const collection = {
-      id: objekt.id,
-      artist,
-      member: objekt.member,
-      season: objekt.season,
-      class: objekt.class,
-      collectionNo: objekt.collectionNo,
-      collectionId: objekt.collectionId,
-      frontImage: objekt.frontImage,
-      backImage: objekt.backImage,
-      frontImageVersion: objekt.frontImageVersion,
-      backImageVersion: objekt.backImageVersion,
-      backgroundColor: objekt.backgroundColor,
-      textColor: objekt.textColor,
-      bandImageUrl: objekt.bandImageUrl,
-      frontMedia: objekt.frontMedia,
-      hasAudio: objekt.hasAudio,
-    };
-
+  export function tokenFromRow(
+    objekt: TokenRow,
+    className: string,
+  ): Objekt.Token {
     return {
-      collection: { ...collection, ...deriveExtras(collection) },
-      objekt: {
-        serial: objekt.objektNo,
-        tokenId: parseInt(objekt.tokenId),
-        transferable: objekt.transferable,
-        status: objekt.status,
-        usedForGrid: objekt.usedForGrid,
-        lenticularPairTokenId: objekt.lenticularPairTokenId
-          ? parseInt(objekt.lenticularPairTokenId)
-          : 0,
-        acquiredAt: objekt.receivedAt,
-        nonTransferableReason: objekt.nonTransferableReason,
-      },
+      serial: objekt.serial,
+      tokenId: Number(objekt.id),
+      transferable: objekt.transferable,
+      acquiredAt: objekt.receivedAt,
+      nonTransferableReason: nonTransferableReason(
+        className,
+        objekt.transferable,
+      ),
     };
   }
 
   /**
-   * Converts an objekt from the collection group to the common fields.
+   * Converts an objekt row and its collection row from the indexer to the
+   * common fields.
    */
-  export function fromCollectionGroup(opts: {
-    collection: BFFCollectionGroupCollection;
-    objekt: BFFCollectionGroupObjekt;
-  }): Objekt.Objekt;
-  export function fromCollectionGroup(opts: {
-    collection: BFFCollectionGroupCollection;
-  }): Objekt.Collection;
-  export function fromCollectionGroup(opts: {
-    objekt: BFFCollectionGroupObjekt;
-  }): Objekt.Token;
-  export function fromCollectionGroup(opts: {
-    collection?: BFFCollectionGroupCollection;
-    objekt?: BFFCollectionGroupObjekt;
-  }): Objekt.Collection | Objekt.Token | Objekt.Objekt {
-    // convert collection
-    let collection: Objekt.Collection | undefined;
-    if (opts.collection) {
-      const base = {
-        id: opts.collection.id,
-        // SAFETY: COSMO artist names are ValidArtist ids
-        artist: opts.collection.artistName as ValidArtist,
-        member: opts.collection.member,
-        season: opts.collection.season,
-        class: opts.collection.class,
-        collectionNo: opts.collection.collectionNo,
-        collectionId: opts.collection.collectionId,
-        frontImage: opts.collection.frontImage,
-        backImage: opts.collection.backImage,
-        frontImageVersion: opts.collection.frontImageVersion,
-        backImageVersion: opts.collection.backImageVersion,
-        backgroundColor: opts.collection.backgroundColor,
-        textColor: opts.collection.textColor,
-        bandImageUrl: opts.collection.bandImageUrl,
-        frontMedia: opts.collection.frontMedia,
-        hasAudio: opts.collection.hasAudio,
-      };
-      collection = { ...base, ...deriveExtras(base) };
-    }
-
-    // convert objekt
-    let objekt: Objekt.Token | undefined;
-    if (opts.objekt) {
-      objekt = {
-        serial: opts.objekt.metadata.objektNo,
-        tokenId: opts.objekt.metadata.tokenId,
-        transferable: opts.objekt.metadata.transferable,
-        status: opts.objekt.inventory.status,
-        usedForGrid: opts.objekt.inventory.usedForGrid,
-        lenticularPairTokenId: opts.objekt.inventory.lenticularPairTokenId,
-        acquiredAt: opts.objekt.inventory.acquiredAt,
-        nonTransferableReason: opts.objekt.nonTransferableReason,
-      };
-    }
-
-    if (collection && objekt) {
-      return { collection, objekt };
-    } else if (collection) {
-      return collection;
-    } else if (objekt) {
-      return objekt;
-    }
-
-    throw new Error("No collection or objekt provided");
-  }
-
-  /**
-   * Converts an objekt from a scan result to the common fields.
-   */
-  export function fromScanned({ objekt }: ScannedObjekt): Objekt.Collection {
-    const collection = {
-      // scan path is currently unused; placeholder id keeps the shape consistent
-      id: crypto.randomUUID(),
-      // SAFETY: scanned objekts always carry at least one ValidArtist
-      artist: objekt.artists[0] as ValidArtist,
-      member: objekt.member,
-      season: objekt.season,
-      class: objekt.class,
-      collectionNo: objekt.collectionNo,
-      collectionId: objekt.collectionId,
-      frontImage: objekt.frontImage,
-      backImage: objekt.backImage,
-      // scans come straight from COSMO, so nothing has been mirrored
-      frontImageVersion: null,
-      backImageVersion: null,
-      backgroundColor: objekt.backgroundColor,
-      textColor: objekt.textColor,
-      bandImageUrl: null,
-      frontMedia: null,
-      hasAudio: objekt.hasAudio,
+  export function fromRow(
+    objekt: TokenRow,
+    collection: CollectionFields,
+  ): Objekt.Objekt {
+    return {
+      collection: fromIndexer(collection),
+      objekt: tokenFromRow(objekt, collection.class),
     };
-
-    return { ...collection, ...deriveExtras(collection) };
   }
+}
+
+/**
+ * The fields of a collection that are stored, which an indexer row and its
+ * search document both hold.
+ */
+type CollectionFields = Omit<
+  Objekt.Collection,
+  "slug" | "artistName" | "onOffline"
+>;
+
+type TokenRow = Pick<
+  ObjektRow,
+  "id" | "serial" | "transferable" | "receivedAt"
+>;
+
+export type NonTransferableReason = "welcome-objekt" | "not-transferable";
+
+/**
+ * Why an objekt can't be sent, from its collection's class and the indexer's
+ * transferable flag. Undefined when it can.
+ */
+export function nonTransferableReason(
+  className: string,
+  transferable: boolean,
+): NonTransferableReason | undefined {
+  if (className === "Welcome") {
+    return "welcome-objekt";
+  }
+
+  return transferable === false ? "not-transferable" : undefined;
 }
 
 type DerivedExtras = Pick<
@@ -238,9 +158,7 @@ type DerivedExtras = Pick<
 /**
  * Derives extra fields from the objekt.
  */
-function deriveExtras(
-  objekt: Omit<Objekt.Collection, "slug" | "artistName" | "onOffline">,
-): DerivedExtras {
+function deriveExtras(objekt: CollectionFields): DerivedExtras {
   const slug = slugifyObjekt(objekt.collectionId);
 
   return {
@@ -288,7 +206,7 @@ type ColorFixes = Partial<
  * COSMO doesn't use the objekt background color,
  * so sometimes they're incorrect and need manually fixing.
  */
-const colorFixes = new Map<string, ColorFixes>([
+export const colorFixes = new Map<string, ColorFixes>([
   // Heejin <K> MMT POBs: fix text color
   ["atom01-heejin-322z", { textColor: "#FFFFFF" }],
   ["atom01-heejin-323z", { textColor: "#FFFFFF" }],
