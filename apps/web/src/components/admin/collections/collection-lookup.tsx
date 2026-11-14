@@ -11,13 +11,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useArtists } from "@/hooks/use-artists";
-import { getSeasonKeys } from "@/hooks/use-filter-data";
 import { m } from "@/i18n/messages";
 import { filterDataQuery } from "@/lib/queries/core";
 import {
   type CollectionLookupInput,
   collectionLookupSchema,
 } from "@/lib/universal/schema/collections";
+import { seasonBadgeVariant } from "@/lib/universal/seasons";
 import { slugifyObjekt } from "@apollo/util";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconSearch } from "@tabler/icons-react";
@@ -57,19 +57,12 @@ export default function CollectionLookup({ onLookup }: Props) {
     ),
   ];
   // artist is unknown at lookup time, so offer every artist's seasons
-  const seasonOptions = getSeasonKeys([
+  const seasonOptions = [
     ...new Set(filterData.seasons.flatMap((s) => s.seasons)),
-  ]);
-  const seasonItems = seasonOptions.map(({ key, name }) => ({
-    value: name,
-    label: (
-      <Badge
-        // SAFETY: every season key has a season-* badge variant
-        variant={`season-${key}` as "season-atom"}
-      >
-        {name}
-      </Badge>
-    ),
+  ];
+  const seasonItems = seasonOptions.map((season) => ({
+    value: season,
+    label: <Badge variant={seasonBadgeVariant(season)}>{season}</Badge>,
   }));
   const form = useForm({
     resolver: standardSchemaResolver(collectionLookupSchema),
@@ -95,8 +88,8 @@ export default function CollectionLookup({ onLookup }: Props) {
     // map the pasted season onto its canonical casing so the select shows it
     const season =
       seasonOptions.find(
-        (s) => s.name.toLowerCase() === parsed.season.toLowerCase(),
-      )?.name ?? parsed.season;
+        (s) => s.toLowerCase() === parsed.season.toLowerCase(),
+      ) ?? parsed.season;
     form.setValue("season", season);
     form.setValue("member", parsed.member);
     form.setValue("collectionNo", parsed.collectionNo);

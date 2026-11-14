@@ -26,8 +26,10 @@ export class ExpectedError extends Error {
  * Duck-typed marker check, robust to the preload-vs-bundle class duplication
  * that breaks `instanceof` (instrument.ts runs raw TS; server fns run bundled).
  */
-// oxlint-disable-next-line anti-slop/no-unknown-parameters -- boundary predicate; thrown values are genuinely unknown
-export function isExpectedError(value: unknown): boolean {
+export function isExpectedError(
+  // oxlint-disable-next-line anti-slop/no-unknown-parameters -- boundary predicate; thrown values are genuinely unknown
+  value: unknown,
+): value is Error & { expected: true } {
   return (
     value instanceof Error && "expected" in value && value.expected === true
   );

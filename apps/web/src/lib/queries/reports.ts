@@ -31,8 +31,7 @@ export function reportQueueQuery(filters: ReportQueueFilters) {
     queryKey: [...adminReportsQueryFilter.queryKey, "queue", filters],
     queryFn: ({ pageParam }) =>
       $fetchReportQueue({ data: { ...filters, cursor: pageParam } }),
-    // SAFETY: cursor seed; widened for TanStack Query inference
-    initialPageParam: undefined as string | undefined,
+    initialPageParam: firstPage,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
   });
 }
@@ -49,3 +48,9 @@ export function reportDetailQuery(id: string) {
     refetchOnWindowFocus: false,
   });
 }
+
+/**
+ * The first page has no cursor. Typed as the cursor union so the query
+ * infers its page param from it.
+ */
+const firstPage: string | undefined = undefined;

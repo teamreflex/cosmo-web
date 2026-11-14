@@ -308,8 +308,7 @@ export function transfersQuery(
         },
       });
     },
-    // SAFETY: cursor seed; widened for TanStack Query inference
-    initialPageParam: undefined as string | undefined,
+    initialPageParam: firstPage,
     getNextPageParam: (lastPage) => lastPage?.cursor,
     staleTime: 1000 * 60 * 5,
     refetchOnMount: false,
@@ -404,3 +403,9 @@ export function collectionSearchQuery(query: string) {
     staleTime: 1000 * 60 * 5,
   });
 }
+
+/**
+ * The first page has no cursor. Typed as the cursor union so the query
+ * infers its page param from it.
+ */
+const firstPage: string | undefined = undefined;

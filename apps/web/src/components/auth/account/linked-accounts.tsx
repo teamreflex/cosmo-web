@@ -6,7 +6,9 @@ import {
 } from "@/components/ui/tooltip";
 import type { LinkedAccount, Provider } from "@/hooks/use-account";
 import {
+  linkedAccountSchema,
   listAccountsQuery,
+  providers,
   useLinkAccount,
   useUnlinkAccount,
 } from "@/hooks/use-account";
@@ -23,13 +25,13 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 export default function LinkedAccounts() {
   const { data } = useSuspenseQuery(listAccountsQuery);
 
-  const oauthAccounts = data.filter(
-    (account) => account.providerId !== "credential",
-  );
-  const providers = getProviders();
-  const linkableProviders = Object.keys(providers).filter(
+  const oauthAccounts = data.flatMap((account) => {
+    const parsed = linkedAccountSchema.safeParse(account);
+    return parsed.success ? [parsed.data] : [];
+  });
+  const linkableProviders = providers.filter(
     (providerId) =>
-      !oauthAccounts.map((account) => account.providerId).includes(providerId),
+      !oauthAccounts.some((account) => account.providerId === providerId),
   );
 
   return (
@@ -37,22 +39,13 @@ export default function LinkedAccounts() {
       {oauthAccounts.map((account) => (
         <LinkedAccountItem
           key={account.id}
-          account={{
-            id: account.id,
-            // SAFETY: only the known OAuth providers can be linked
-            providerId: account.providerId as LinkedAccount["providerId"],
-            accountId: account.accountId,
-          }}
+          account={account}
           disabled={data.length === 1}
         />
       ))}
 
       {linkableProviders.map((providerId) => (
-        <LinkNewAccount
-          key={providerId}
-          // SAFETY: linkableProviders only lists the known OAuth providers
-          providerId={providerId as Provider}
-        />
+        <LinkNewAccount key={providerId} providerId={providerId} />
       ))}
     </div>
   );
@@ -66,8 +59,7 @@ type LinkedAccountItemProps = {
 function LinkedAccountItem(props: LinkedAccountItemProps) {
   const { mutate, status } = useUnlinkAccount(props.account);
 
-  const providers = getProviders();
-  const provider = providers[props.account.providerId];
+  const provider = getProviders()[props.account.providerId];
 
   return (
     <div className="flex items-center gap-2">
@@ -111,8 +103,7 @@ type LinkNewAccountProps = {
 function LinkNewAccount(props: LinkNewAccountProps) {
   const { mutate, status } = useLinkAccount(props.providerId);
 
-  const providers = getProviders();
-  const provider = providers[props.providerId];
+  const provider = getProviders()[props.providerId];
 
   return (
     <div className="flex items-center gap-2">

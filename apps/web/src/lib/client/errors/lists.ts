@@ -6,20 +6,19 @@ export type Context = {
 };
 
 /**
- * Maps a list error code to a localized message, or null when the error is not
+ * Maps a list error code to a localized message, or null when the code is not
  * a known list error code.
  */
 export function formatListError(
-  // oxlint-disable-next-line anti-slop/no-unknown-parameters -- boundary parser; caught errors are genuinely unknown
-  error: unknown,
+  code: string,
   context: Context = {},
 ): string | null {
-  if (!(error instanceof Error) || !isListErrorCode(error.message)) {
+  if (!isListErrorCode(code)) {
     return null;
   }
 
   const collectionId = context.collectionId ?? "";
-  switch (error.message) {
+  switch (code) {
     case "not_have_list":
       return m.list_error_not_have_list();
     case "not_want_list":
@@ -57,7 +56,7 @@ export function formatListError(
     case "unsupported_currency":
       return m.list_error_unsupported_currency();
     default:
-      error.message satisfies never;
+      code satisfies never;
       return null;
   }
 }

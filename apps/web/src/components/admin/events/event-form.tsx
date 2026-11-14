@@ -12,10 +12,10 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { FilterData } from "@/hooks/use-filter-data";
-import { getSeasonKeys } from "@/hooks/use-filter-data";
 import { m } from "@/i18n/messages";
 import { adminErasQuery } from "@/lib/queries/events";
 import type { CreateEventInput } from "@/lib/universal/schema/events";
+import { seasonBadgeVariant } from "@/lib/universal/seasons";
 import { cn } from "@/lib/utils";
 import type { CosmoArtistWithMembersBFF } from "@apollo/cosmo/types/artists";
 import { eventTypes } from "@apollo/database/web/types";
@@ -373,10 +373,9 @@ function SeasonSelection(props: SeasonSelectionProps) {
     return null;
   }
 
-  const seasons = getSeasonKeys(
+  const seasons =
     props.seasons.find((s) => s.artistId === artist.toLowerCase())?.seasons ??
-      [],
-  );
+    [];
 
   return (
     <Controller
@@ -388,28 +387,27 @@ function SeasonSelection(props: SeasonSelectionProps) {
           <div className="flex flex-wrap gap-2">
             {seasons.map((season) => (
               <Badge
-                key={`${props.artist}-${season.key}-${season.name}`}
-                // SAFETY: every season key has a season-* badge variant
-                variant={`season-${season.key}` as "season-atom"}
+                key={`${props.artist}-${season}`}
+                variant={seasonBadgeVariant(season)}
                 className={cn(
-                  field.value.includes(season.name) &&
+                  field.value.includes(season) &&
                     "border-foreground bg-foreground text-background",
                 )}
                 render={
                   <button
                     type="button"
                     onClick={() => {
-                      const isSelected = field.value.includes(season.name);
+                      const isSelected = field.value.includes(season);
                       field.onChange(
                         isSelected
-                          ? field.value.filter((s) => s !== season.name)
-                          : [...field.value, season.name],
+                          ? field.value.filter((s) => s !== season)
+                          : [...field.value, season],
                       );
                     }}
                   />
                 }
               >
-                {season.name}
+                {season}
               </Badge>
             ))}
           </div>

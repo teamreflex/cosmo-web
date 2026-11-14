@@ -95,8 +95,7 @@ export const chatDayFormat = {
  * party's side without.
  */
 export function formatOfferError(
-  // oxlint-disable-next-line anti-slop/no-unknown-parameters -- boundary parser; caught errors are genuinely unknown
-  error: unknown,
+  error: Error,
   copies: Iterable<
     Pick<TradeItemView, "tokenId" | "serial" | "collection" | "slug">
   >,

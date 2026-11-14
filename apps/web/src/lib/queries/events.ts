@@ -26,8 +26,7 @@ export function adminErasInfiniteQuery() {
     queryKey: ["admin", "eras", "paginated"],
     queryFn: ({ pageParam }) =>
       $fetchAdminEras({ data: { cursor: pageParam } }),
-    // SAFETY: cursor seed; widened for TanStack Query inference
-    initialPageParam: undefined as string | undefined,
+    initialPageParam: firstPage,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
   });
 }
@@ -37,8 +36,7 @@ export function adminEventsQuery() {
     queryKey: ["admin", "events"],
     queryFn: ({ pageParam }) =>
       $fetchAdminEvents({ data: { cursor: pageParam } }),
-    // SAFETY: cursor seed; widened for TanStack Query inference
-    initialPageParam: undefined as string | undefined,
+    initialPageParam: firstPage,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
   });
 }
@@ -103,8 +101,7 @@ export function paginatedEventsQuery({
           eventType: filters?.type,
         },
       }),
-    // SAFETY: cursor seed; widened for TanStack Query inference
-    initialPageParam: undefined as string | undefined,
+    initialPageParam: firstPage,
     getNextPageParam: (lastPage) => lastPage.nextStartAfter,
   });
 }
@@ -115,3 +112,9 @@ export function activeEventsQuery(artists?: string[]) {
     queryFn: () => $fetchActiveEvents({ data: { artists } }),
   });
 }
+
+/**
+ * The first page has no cursor. Typed as the cursor union so the query
+ * infers its page param from it.
+ */
+const firstPage: string | undefined = undefined;

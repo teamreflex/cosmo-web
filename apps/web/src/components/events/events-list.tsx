@@ -3,9 +3,9 @@ import { InfiniteQueryNext } from "@/components/infinite-query-pending";
 import { Badge } from "@/components/ui/badge";
 import { Timestamp } from "@/components/ui/timestamp";
 import type { EventsFilters } from "@/hooks/use-events-filters";
-import { getSeasonKeys } from "@/hooks/use-filter-data";
 import { m } from "@/i18n/messages";
 import { paginatedEventsQuery } from "@/lib/queries/events";
+import { seasonBadgeVariant } from "@/lib/universal/seasons";
 import type { EventWithEra } from "@apollo/database/web/types";
 import { IconCalendarEvent } from "@tabler/icons-react";
 import { useSuspenseInfiniteQuery } from "@tanstack/react-query";
@@ -153,17 +153,11 @@ function EventRow({ event, onPointerEnter }: EventRowProps) {
 }
 
 function Seasons({ seasons }: { seasons: string[] }) {
-  const seasonKeys = getSeasonKeys(seasons);
-
   return (
     <>
-      {seasonKeys.map(({ key, name }) => (
-        <Badge
-          key={name}
-          // SAFETY: every season key has a season-* badge variant
-          variant={`season-${key}` as "season-atom"}
-        >
-          {name}
+      {seasons.map((season) => (
+        <Badge key={season} variant={seasonBadgeVariant(season)}>
+          {season}
         </Badge>
       ))}
     </>

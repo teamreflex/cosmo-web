@@ -1,4 +1,7 @@
-import type { MetadataDialogTarget } from "@/hooks/use-metadata-dialog";
+import type {
+  MetadataDialogTarget,
+  ObjektMetadataTab,
+} from "@/hooks/use-metadata-dialog";
 import { useObjektSerial } from "@/hooks/use-objekt-serial";
 import { objektQuery } from "@/lib/queries/objekt-queries";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -6,7 +9,6 @@ import { useState } from "react";
 import { ObjektGradient, ObjektSidebar } from "../common";
 import FlippableObjekt from "../objekt-flippable";
 import AttributePanel from "./attribute-panel";
-import type { ObjektMetadataTab } from "./common";
 import MetadataFooter from "./metadata-footer";
 import MetadataPanel from "./metadata-panel";
 

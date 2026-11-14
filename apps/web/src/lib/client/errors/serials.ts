@@ -3,21 +3,20 @@ import { isSerialErrorCode } from "@/lib/universal/errors/serials";
 
 /**
  * Maps a serial confirmation error code to a localized message, or null when
- * the error is not a known serial confirmation error code.
+ * the code is not a known serial confirmation error code.
  */
-// oxlint-disable-next-line anti-slop/no-unknown-parameters -- boundary parser; caught errors are genuinely unknown
-export function formatSerialError(error: unknown): string | null {
-  if (!(error instanceof Error) || !isSerialErrorCode(error.message)) {
+export function formatSerialError(code: string): string | null {
+  if (!isSerialErrorCode(code)) {
     return null;
   }
 
-  switch (error.message) {
+  switch (code) {
     case "objekt_not_found":
       return m.admin_serials_error_objekt_not_found();
     case "serial_confirmation_not_found":
       return m.admin_serials_error_confirmation_not_found();
     default:
-      error.message satisfies never;
+      code satisfies never;
       return null;
   }
 }

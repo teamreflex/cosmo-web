@@ -29,24 +29,19 @@ export {
  * account/serial/trade/feedback/market invite), falling back to the raw
  * message for genuine errors.
  */
-// oxlint-disable-next-line anti-slop/no-unknown-parameters -- boundary parser; caught errors are genuinely unknown
-export function formatError(error: unknown, context: Context = {}): string {
-  const message =
-    formatListError(error, context) ??
-    formatBinderError(error) ??
-    formatAuthError(error) ??
-    formatCollectionError(error) ??
-    formatReportError(error) ??
-    formatAccountError(error) ??
-    formatTradeError(error) ??
-    formatFeedbackError(error) ??
-    formatMarketInviteError(error) ??
-    formatRateLimitError(error) ??
-    formatSerialError(error);
-
-  if (message !== null) {
-    return message;
-  }
-
-  return error instanceof Error ? error.message : String(error);
+export function formatError(error: Error, context: Context = {}): string {
+  return (
+    formatListError(error.message, context) ??
+    formatBinderError(error.message) ??
+    formatAuthError(error.message) ??
+    formatCollectionError(error.message) ??
+    formatReportError(error.message) ??
+    formatAccountError(error.message) ??
+    formatTradeError(error.message) ??
+    formatFeedbackError(error.message) ??
+    formatMarketInviteError(error.message) ??
+    formatRateLimitError(error.message) ??
+    formatSerialError(error.message) ??
+    error.message
+  );
 }

@@ -1,24 +1,18 @@
 import { Badge } from "@/components/ui/badge";
+import { seasonBadgeVariant } from "@/lib/universal/seasons";
 import { cn } from "@/lib/utils";
 
-type Season = {
-  key: string;
-  name: string;
-};
-
 type Props = {
-  seasons: Season[];
+  seasons: string[];
   value: string[];
   onChange: (seasons: string[]) => void;
 };
 
 export default function SeasonSelection({ seasons, value, onChange }: Props) {
-  function toggle(seasonName: string) {
-    const isSelected = value.includes(seasonName);
+  function toggle(season: string) {
+    const isSelected = value.includes(season);
     onChange(
-      isSelected
-        ? value.filter((s) => s !== seasonName)
-        : [...value, seasonName],
+      isSelected ? value.filter((s) => s !== season) : [...value, season],
     );
   }
 
@@ -26,23 +20,22 @@ export default function SeasonSelection({ seasons, value, onChange }: Props) {
     <div className="flex flex-wrap gap-2">
       {seasons.map((season) => (
         <Badge
-          key={`${season.key}-${season.name}`}
-          // SAFETY: every season key has a season-* badge variant
-          variant={`season-${season.key}` as "season-atom"}
+          key={season}
+          variant={seasonBadgeVariant(season)}
           className={cn(
             "cursor-pointer",
-            value.includes(season.name) &&
+            value.includes(season) &&
               "border-foreground bg-foreground text-background",
           )}
           render={
             <button
               type="button"
-              onClick={() => toggle(season.name)}
-              aria-pressed={value.includes(season.name)}
+              onClick={() => toggle(season)}
+              aria-pressed={value.includes(season)}
             />
           }
         >
-          {season.name}
+          {season}
         </Badge>
       ))}
     </div>

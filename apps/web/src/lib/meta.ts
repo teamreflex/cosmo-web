@@ -39,15 +39,13 @@ export interface Meta {
   twitter?: Twitter | null;
   /**
    * 'meta.ts' intentionally excludes a lot of exotic tags.
-   * Add these manually using JSX syntax:
+   * Add these manually as a tag name and its props:
    *
    *     extra: [
-   *       <meta name="site-verification" content="waffles" />,
+   *       { type: "meta", props: { name: "site-verification", content: "waffles" } },
    *     ],
-   *
-   * These are not rendered with React but simply parsed as objects.
    */
-  extra?: React.ReactElement[];
+  extra?: ExtraTag[];
   /** Adds `<link rel="..." href="..." />` */
   links?: AnyRouteMatch["links"];
 
@@ -270,9 +268,9 @@ function themeColorTags(
   ];
 }
 
-/** Sorts `meta.extra` JSX elements into the tag bucket matching their type. */
+/** Sorts `meta.extra` tags into the bucket matching their type. */
 function collectExtras(
-  extra: React.ReactElement[],
+  extra: ExtraTag[],
   buckets: {
     meta: MetaDescriptor[];
     links: NonNullable<Meta["links"]>;
@@ -283,24 +281,26 @@ function collectExtras(
   for (const { type, props } of extra) {
     switch (type) {
       case "meta":
-        // SAFETY: "meta" entries carry meta descriptor props
-        buckets.meta.push(props as MetaDescriptor);
+        buckets.meta.push(props);
         break;
       case "link":
-        // SAFETY: "link" entries carry link descriptor props
-        buckets.links.push(props as (typeof buckets.links)[number]);
+        buckets.links.push(props);
         break;
       case "style":
-        // SAFETY: "style" entries carry style descriptor props
-        buckets.styles.push(props as StyleDescriptor);
+        buckets.styles.push(props);
         break;
       case "script":
-        // SAFETY: "script" entries carry script descriptor props
-        buckets.scripts.push(props as ScriptDescriptor);
+        buckets.scripts.push(props);
         break;
     }
   }
 }
+type ExtraTag =
+  | { type: "meta"; props: MetaDescriptor }
+  | { type: "link"; props: LinkDescriptor }
+  | { type: "style"; props: StyleDescriptor }
+  | { type: "script"; props: ScriptDescriptor };
+type LinkDescriptor = NonNullable<NonNullable<Meta["links"]>[number]>;
 type MetaDescriptor = DetailedHTMLProps<
   MetaHTMLAttributes<HTMLMetaElement>,
   HTMLMetaElement

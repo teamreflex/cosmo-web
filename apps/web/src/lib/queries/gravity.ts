@@ -20,8 +20,7 @@ export const paginatedGravitiesQuery = (artists?: string[]) =>
     queryKey: ["gravities", "paginated", { artists }],
     queryFn: ({ pageParam }) =>
       $fetchPaginatedGravities({ data: { artists, cursor: pageParam } }),
-    // SAFETY: cursor seed; widened for TanStack Query inference
-    initialPageParam: undefined as string | undefined,
+    initialPageParam: firstPage,
     getNextPageParam: (lastPage) => lastPage.nextStartAfter,
   });
 
@@ -83,3 +82,9 @@ export const gravityVoteDataQuery = (pollId: number) =>
       return now >= start && now < end + 60_000 ? VOTING_POLL_INTERVAL : false;
     },
   });
+
+/**
+ * The first page has no cursor. Typed as the cursor union so the query
+ * infers its page param from it.
+ */
+const firstPage: string | undefined = undefined;

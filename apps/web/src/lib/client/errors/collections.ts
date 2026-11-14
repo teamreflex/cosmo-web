@@ -2,16 +2,15 @@ import { m } from "@/i18n/messages";
 import { isCollectionErrorCode } from "@/lib/universal/errors/collections";
 
 /**
- * Maps a collection error code to a localized message, or null when the error
+ * Maps a collection error code to a localized message, or null when the code
  * is not a known collection error code.
  */
-// oxlint-disable-next-line anti-slop/no-unknown-parameters -- boundary parser; caught errors are genuinely unknown
-export function formatCollectionError(error: unknown): string | null {
-  if (!(error instanceof Error) || !isCollectionErrorCode(error.message)) {
+export function formatCollectionError(code: string): string | null {
+  if (!isCollectionErrorCode(code)) {
     return null;
   }
 
-  switch (error.message) {
+  switch (code) {
     case "collection_not_found":
       return m.admin_collection_error_not_found();
     case "collection_no_objekt":
@@ -25,7 +24,7 @@ export function formatCollectionError(error: unknown): string | null {
     case "image_recache_failed":
       return m.admin_collection_error_image_recache_failed();
     default:
-      error.message satisfies never;
+      code satisfies never;
       return null;
   }
 }

@@ -19,13 +19,14 @@ import {
   useFormContext,
 } from "react-hook-form";
 import { toast } from "sonner";
-import type { z } from "zod";
+import * as z from "zod";
 import {
   createHaveListSchema,
   createRegularListSchema,
   createSaleListSchema,
   createWantListSchema,
   type ListType,
+  listTypes,
 } from "../../lib/universal/schema/objekt-list";
 import CurrencySelect from "../misc/currency-select";
 import Portal from "../portal";
@@ -50,6 +51,8 @@ import { Switch } from "../ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Textarea } from "../ui/textarea";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+
+const listTypeSchema = z.enum(listTypes);
 
 type Props = {
   open: boolean;
@@ -97,8 +100,7 @@ export default function CreateListDialog(props: Props) {
 
         <Tabs
           value={tab}
-          // SAFETY: tab values are the ListType variants
-          onValueChange={(v) => setTab(v as ListType)}
+          onValueChange={(v) => setTab(listTypeSchema.parse(v))}
         >
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="regular">{m.list_type_regular()}</TabsTrigger>

@@ -1,5 +1,12 @@
-import type { ObjektMetadataTab } from "@/components/objekt/metadata/common";
 import { createContext, useContext } from "react";
+import * as z from "zod";
+
+export const objektMetadataTabSchema = z.enum([
+  "metadata",
+  "serials",
+  "pricing",
+]);
+export type ObjektMetadataTab = z.infer<typeof objektMetadataTabSchema>;
 
 /**
  * Where the sheet lands when opened: a serial pre-fills the serial input on

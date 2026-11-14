@@ -42,8 +42,9 @@ How `apps/web` throws, shows and reports errors.
 ## Codes and display
 
 - Each domain has a registry in `lib/universal/errors/<domain>.ts`: a `const` code array, its union type and an `isXErrorCode()` guard.
-- Each domain has a formatter in `lib/client/errors/<domain>.ts`: a `switch` from code to `m.*()` ending in `error.message satisfies never`.
-- `formatError(error, ctx?)` in `lib/client/errors/index.ts` chains every formatter and falls back to `error.message` for genuine errors. Never render `error.message` directly.
+- Each domain has a formatter in `lib/client/errors/<domain>.ts`: a `switch` from code to `m.*()` ending in `code satisfies never`.
+- `formatError(error, ctx?)` in `lib/client/errors/index.ts` passes `error.message` through every formatter and falls back to it for genuine errors. Never render `error.message` directly.
+- `formatError()` takes an `Error`, which a mutation's `onError` already has. An `ErrorBoundary` hands its fallback an `unknown`, so narrow it with `isExpectedError()` or `instanceof Error` first.
 - The `ExpectedError` constructor takes any string, so an unregistered code compiles and shows the raw code to users.
 - Components that act on a specific code check it with the guard (`isRateLimitErrorCode`), not a string compare.
 

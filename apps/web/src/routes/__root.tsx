@@ -51,7 +51,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
   errorComponent: ErrorComponent,
   head: () =>
     defineHead({
-      extra: [<meta key="charset" charSet="utf-8" />],
+      extra: [{ type: "meta", props: { charSet: "utf-8" } }],
       viewport: "width=device-width, initial-scale=1",
       title: env.VITE_APP_NAME,
       description: siteDescription,
