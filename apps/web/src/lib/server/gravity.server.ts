@@ -6,6 +6,7 @@ import type {
   FinalizedReveals,
 } from "@/lib/client/gravity/types";
 import { $fetchArtists } from "@/lib/functions/artists";
+import { votes } from "@apollo/database/indexer/schema";
 import { addr, type Chain, chainAt } from "@apollo/util";
 import { notFound } from "@tanstack/react-router";
 import { addMinutes, startOfHour } from "date-fns";
@@ -14,7 +15,6 @@ import { remember } from "./cache.server";
 import { fetchKnownAddresses } from "./cosmo-accounts.server";
 import { db } from "./db";
 import { indexer } from "./db/indexer";
-import { votes } from "./db/indexer/schema";
 
 const TOP_VOTE_COUNT = 50;
 const TOP_USER_COUNT = 25;

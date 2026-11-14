@@ -1,5 +1,5 @@
+import type { Transfer } from "@apollo/database/indexer/types";
 import { Addresses } from "@apollo/util";
-import type { Transfer } from "../server/db/indexer/schema";
 import type { SpinOutcome, TransferObjekt, TransferRow } from "./transfers";
 
 /**

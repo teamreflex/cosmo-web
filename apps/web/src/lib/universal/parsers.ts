@@ -55,13 +55,12 @@ export const cosmoSchema = z.object({
   member: castToArray(z.string()).nullish(),
   artist: artistParam,
   transferable: z.coerce.boolean().nullish(),
-  gridable: z.coerce.boolean().nullish(),
   collectionNo: castToArray(z.string()).nullish(),
 });
 
 // index page frontend - user facing, validated by the router
 export const objektIndexFrontendSchema = cosmoSchema
-  .omit({ transferable: true, gridable: true })
+  .omit({ transferable: true })
   .extend({
     id: z.string().nullish(),
     search: z.string().nullish(),
@@ -71,7 +70,7 @@ export const objektIndexFrontendSchema = cosmoSchema
 
 // index page backend
 export const objektIndexBackendSchema = cosmoSchema
-  .omit({ transferable: true, gridable: true })
+  .omit({ transferable: true })
   .extend({
     page: z.coerce.number().int().nonnegative().default(0),
     artists: z.string().array().default([]),
@@ -79,7 +78,7 @@ export const objektIndexBackendSchema = cosmoSchema
 
 // market page frontend - the sort is market-specific, prices are in the viewer's currency
 export const marketFrontendSchema = cosmoSchema
-  .omit({ sort: true, transferable: true, gridable: true })
+  .omit({ sort: true, transferable: true })
   .extend({
     sort: z.enum(marketSorts).nullish().catch(null),
     listed: z.enum(marketListedWindows).nullish().catch(null),
@@ -98,7 +97,7 @@ export const marketCursorSchema = z.object({
 
 // market page backend - the price range arrives as USD floor bounds
 export const marketBackendSchema = cosmoSchema
-  .omit({ sort: true, transferable: true, gridable: true })
+  .omit({ sort: true, transferable: true })
   .extend({
     sort: z.enum(marketSorts).nullish().catch(null),
     listed: z.enum(marketListedWindows).nullish().catch(null),
@@ -115,7 +114,6 @@ export const profileFrontendSchema = z.object({
 
 // user collection frontend - user facing, validated by the router
 export const userCollectionFrontendSchema = cosmoSchema
-  .omit({ gridable: true })
   .extend({
     locked: z.boolean().nullish(),
     serial: z.coerce.number().nullish(),
@@ -123,16 +121,14 @@ export const userCollectionFrontendSchema = cosmoSchema
   .partial();
 
 // user collection backend
-export const userCollectionBackendSchema = cosmoSchema
-  .omit({ gridable: true })
-  .extend({
-    page: z.coerce.number().int().nonnegative().default(0),
-    artists: z.string().array().default([]),
-  });
+export const userCollectionBackendSchema = cosmoSchema.extend({
+  page: z.coerce.number().int().nonnegative().default(0),
+  artists: z.string().array().default([]),
+});
 
 // objekt list frontend - user facing, validated by the router
 export const objektListFrontendSchema = cosmoSchema
-  .omit({ transferable: true, gridable: true })
+  .omit({ transferable: true })
   .extend({
     serial: z.coerce.number().nullish(),
   })
@@ -140,7 +136,7 @@ export const objektListFrontendSchema = cosmoSchema
 
 // objekt list backend
 export const objektListBackendSchema = cosmoSchema
-  .omit({ transferable: true, gridable: true })
+  .omit({ transferable: true })
   .extend({
     page: z.coerce.number().int().nonnegative().default(0),
     artists: z.string().array().default([]),
@@ -316,12 +312,6 @@ export const gridFrontendSchema = cosmoSchema
   })
   .partial();
 
-// progress leaderboard backend
-export const progressLeaderboardBackendSchema = z.object({
-  onlineType: z.enum(validOnlineTypes).nullish().default(null),
-  season: z.string().nullish().default(null),
-});
-
 /**
  * Market page equivalent of normalizeFilters: the market sort replaces the
  * cosmo sort and the ownership flags never apply. The price range is left
@@ -354,7 +344,6 @@ export function normalizeFilters(data: z.infer<typeof cosmoSchema>) {
     member: data.member,
     artist: data.artist,
     transferable: data.transferable,
-    gridable: data.gridable,
     collectionNo: data.collectionNo,
   };
 }

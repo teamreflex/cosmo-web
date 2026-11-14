@@ -82,7 +82,6 @@ export default function IndexRenderer(props: Props) {
             objektLists: props.objektLists,
             setActiveObjekt,
           }}
-          showTotal
         />
 
         {/* if there's a slug in the url, open an expandable objekt dialog */}

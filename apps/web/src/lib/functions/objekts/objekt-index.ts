@@ -1,11 +1,6 @@
 import { remember } from "@/lib/server/cache.server";
 import { indexer } from "@/lib/server/db/indexer";
 import {
-  collections,
-  collectionStats,
-  members,
-} from "@/lib/server/db/indexer/schema";
-import {
   withArtist,
   withClass,
   withCollections,
@@ -19,6 +14,11 @@ import type { IndexedObjekt, ObjektResponse } from "@/lib/universal/objekts";
 import { objektIndexBackendSchema } from "@/lib/universal/parsers";
 import { indexSorts, supportedSort } from "@/lib/universal/sorts";
 import { isMemberSort, isMintSort } from "@apollo/cosmo/types/common";
+import {
+  collections,
+  collectionStats,
+  members,
+} from "@apollo/database/indexer/schema";
 import { createServerFn } from "@tanstack/react-start";
 import { and, eq, getColumns } from "drizzle-orm";
 

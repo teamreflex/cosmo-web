@@ -24,7 +24,6 @@ export default function ListRenderer(props: Props) {
    * Query options
    */
   const options = objektOptions({
-    filtering: "remote",
     query: objektListQuery(props.objektList.id, filters, selectedIds),
     totalPortalTarget: "#list-total-stat",
     calculateTotal: (data) => {
@@ -60,7 +59,6 @@ export default function ListRenderer(props: Props) {
             authenticated: props.authenticated,
             objektList: props.objektList,
           }}
-          showTotal
         />
       </div>
     </div>

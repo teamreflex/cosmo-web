@@ -1,14 +1,4 @@
 import { indexer } from "@/lib/server/db/indexer";
-import type {
-  Collection,
-  Objekt as ObjektRow,
-} from "@/lib/server/db/indexer/schema";
-import {
-  collections,
-  collectionStats,
-  members,
-  objekts,
-} from "@/lib/server/db/indexer/schema";
 import {
   isRankedSort,
   mintOrder,
@@ -33,6 +23,16 @@ import {
   supportedSort,
 } from "@/lib/universal/sorts";
 import { isMemberSort, isMintSort } from "@apollo/cosmo/types/common";
+import {
+  collections,
+  collectionStats,
+  members,
+  objekts,
+} from "@apollo/database/indexer/schema";
+import type {
+  Collection,
+  Objekt as ObjektRow,
+} from "@apollo/database/indexer/types";
 import { MAX_CHOICE_OPTIONS } from "@apollo/trades/caps";
 import { slugSchema } from "@apollo/trades/listing";
 import { MAX_RANGE_CLAUSES, rangeFilterSchema } from "@apollo/trades/range";

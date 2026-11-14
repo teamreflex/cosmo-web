@@ -75,20 +75,3 @@ export type AddCollectionsInput = z.infer<typeof addCollectionsToEventSchema>;
 export type RemoveCollectionInput = z.infer<
   typeof removeCollectionFromEventSchema
 >;
-
-// Bulk import schema (paste slugs)
-export const bulkCollectionImportSchema = z
-  .string()
-  .catch("")
-  .transform((value) =>
-    value
-      .split("\n")
-      .filter(Boolean)
-      .map((line) => {
-        const parts = line.split(" :: ");
-        const collectionId = parts[0]?.trim() || "";
-        const description = parts[1]?.trim();
-        return description ? { collectionId, description } : { collectionId };
-      }),
-  )
-  .pipe(z.array(eventCollectionSchema));

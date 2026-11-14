@@ -28,7 +28,6 @@ type Props = {
   viewerId: string | undefined;
   // two lines and a contact button, for phones and narrow columns
   compact: boolean;
-  pinned?: boolean;
 };
 
 /**
@@ -43,7 +42,6 @@ export default function ListingRow({
   listing,
   viewerId,
   compact,
-  pinned = false,
 }: Props) {
   const queryClient = useQueryClient();
   const { open } = useMetadataDialog();
@@ -63,7 +61,6 @@ export default function ListingRow({
 
   const className = cn(
     "flex w-full items-center border-b border-border",
-    pinned && "bg-cosmo/8 shadow-[inset_3px_0_0_var(--color-cosmo)]",
     own && "opacity-60",
   );
 

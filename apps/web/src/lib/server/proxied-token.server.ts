@@ -21,7 +21,7 @@ export async function getProxiedToken(
     });
 
   if (!latestToken) {
-    throw new TokenNotFoundError();
+    throw new Error("Token not found");
   }
 
   // access token is still valid, use it as-is
@@ -31,7 +31,7 @@ export async function getProxiedToken(
 
   // operator-actionable: the dummy account needs a fresh login
   if (!validateExpiry(latestToken.refreshToken)) {
-    throw new RefreshTokenInvalidError();
+    throw new Error("Refresh token is invalid");
   }
 
   const key = await getCosmoKey();
@@ -41,7 +41,7 @@ export async function getProxiedToken(
       signal,
     );
   } catch (err) {
-    throw new TokenRefreshError({ cause: err });
+    throw new Error("Error refreshing token", { cause: err });
   }
 
   // create new token
@@ -54,7 +54,7 @@ export async function getProxiedToken(
     .returning();
 
   if (!newToken) {
-    throw new TokenCreateError();
+    throw new Error("Error creating token");
   }
 
   return newToken;
@@ -72,45 +72,4 @@ function validateExpiry(token: string): boolean {
     Effect.orElseSucceed(() => false),
     Effect.runSync,
   );
-}
-
-/**
- * Base class for all token errors.
- */
-export class TokenError extends Error {}
-
-/**
- * Database contains no tokens at all.
- */
-export class TokenNotFoundError extends TokenError {
-  constructor() {
-    super("Token not found");
-  }
-}
-
-/**
- * Both the access and refresh tokens are expired; the dummy account needs to be logged in again.
- */
-export class RefreshTokenInvalidError extends TokenError {
-  constructor() {
-    super("Refresh token is invalid");
-  }
-}
-
-/**
- * Database contains a valid refresh token, but the refresh failed.
- */
-export class TokenRefreshError extends TokenError {
-  constructor(options?: ErrorOptions) {
-    super("Error refreshing token", options);
-  }
-}
-
-/**
- * Creating a new token failed.
- */
-export class TokenCreateError extends TokenError {
-  constructor() {
-    super("Error creating token");
-  }
 }

@@ -32,4 +32,3 @@ A database built this way holds only Abstract-era data, from April 2025 on. Poly
 
 - [CLAUDE.md](CLAUDE.md): how a batch runs, error handling, rollbacks, schema changes.
 - [`docs/cosmo.md`](../../docs/cosmo.md): collections, objekts, serials, COMO and gravity.
-- `schema.graphql` describes the entities for anyone using GraphQL tooling; the TypeORM models in `src/model/generated` are what the processor runs.

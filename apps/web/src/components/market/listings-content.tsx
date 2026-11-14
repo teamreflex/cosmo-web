@@ -37,7 +37,6 @@ const sortLabels = {
 
 type Props = {
   collection: Objekt.Collection;
-  pinnedEntryId?: string;
 };
 
 /**
@@ -55,7 +54,7 @@ const WIDE_LISTINGS = 800;
  * Desktop puts the full objekt beside the listings; phones get a thumbnail
  * header above them instead.
  */
-export default function ListingsContent({ collection, pinnedEntryId }: Props) {
+export default function ListingsContent({ collection }: Props) {
   const isDesktop = useMediaQuery();
   const { ref: columnRef, wide } = useWideColumn();
   usePrefetchQuery(objektPriceHistoryQuery(collection.slug, "30d"));
@@ -73,11 +72,7 @@ export default function ListingsContent({ collection, pinnedEntryId }: Props) {
           </div>
         }
       >
-        <Listings
-          collection={collection}
-          pinnedEntryId={pinnedEntryId}
-          layout={layout}
-        />
+        <Listings collection={collection} layout={layout} />
       </Suspense>
     </ErrorBoundary>
   );
@@ -118,11 +113,7 @@ function useWideColumn() {
   return { ref, wide };
 }
 
-function Listings({
-  collection,
-  pinnedEntryId,
-  layout,
-}: Props & { layout: Layout }) {
+function Listings({ collection, layout }: Props & { layout: Layout }) {
   const { user } = useUserState();
   const { data: listings } = useSuspenseQuery(
     collectionListingsQuery(collection.slug),
@@ -131,13 +122,9 @@ function Listings({
   const [sortDir, setSortDir] = useState<SortDir>("asc");
 
   const stats = listingStats(listings);
-  const pinned = listings.find((l) => l.entryId === pinnedEntryId);
-  const others = useMemo(
-    () =>
-      listings
-        .filter((l) => l.entryId !== pinnedEntryId)
-        .sort((a, b) => compare(a, b, sortKey, sortDir)),
-    [listings, pinnedEntryId, sortKey, sortDir],
+  const sorted = useMemo(
+    () => listings.toSorted((a, b) => compare(a, b, sortKey, sortDir)),
+    [listings, sortKey, sortDir],
   );
 
   function toggleSort(key: SortKey) {
@@ -169,38 +156,15 @@ function Listings({
     listings.length === 0 ? (
       <Message>{m.listings_empty()}</Message>
     ) : (
-      <>
-        {pinned && (
-          <>
-            <SectionLabel wide={layout === "wide"}>
-              {m.listings_this_listing()}
-            </SectionLabel>
-            <ListingRow
-              collection={collection}
-              listing={pinned}
-              viewerId={user?.id}
-              compact={layout !== "wide"}
-              pinned
-            />
-            {others.length > 0 && (
-              <SectionLabel wide={layout === "wide"}>
-                {m.listings_other_listings({
-                  count: others.length.toString(),
-                })}
-              </SectionLabel>
-            )}
-          </>
-        )}
-        {others.map((listing) => (
-          <ListingRow
-            key={listing.entryId}
-            collection={collection}
-            listing={listing}
-            viewerId={user?.id}
-            compact={layout !== "wide"}
-          />
-        ))}
-      </>
+      sorted.map((listing) => (
+        <ListingRow
+          key={listing.entryId}
+          collection={collection}
+          listing={listing}
+          viewerId={user?.id}
+          compact={layout !== "wide"}
+        />
+      ))
     );
 
   if (layout !== "wide") {
@@ -328,26 +292,6 @@ function Message({ children }: { children: ReactNode }) {
     <p className="px-4 py-8 text-center text-sm text-muted-foreground">
       {children}
     </p>
-  );
-}
-
-function SectionLabel({
-  wide,
-  children,
-}: {
-  wide: boolean;
-  children: ReactNode;
-}) {
-  return (
-    <div
-      className="flex items-center gap-3 border-b border-border px-4 pt-2.5 pb-1.5 data-[wide=true]:px-5"
-      data-wide={wide}
-    >
-      <span className="text-xxs font-medium tracking-widest uppercase">
-        {children}
-      </span>
-      <span className="h-px flex-1 bg-border" />
-    </div>
   );
 }
 

@@ -27,7 +27,7 @@ type Props = PropsWithChildren<{
  */
 export default function FlippableObjekt({ children, collection }: Props) {
   const [audioPlaying, setAudioPlaying] = useState(false);
-  const { sceneRef, frontRef, backRef, svgRef, edgeRef, flipped, handlers } =
+  const { sceneRef, frontRef, backRef, svgRef, edgeRef, handlers } =
     useCardFlip();
 
   const hasBackImage = collection.backImage !== "";
@@ -58,7 +58,6 @@ export default function FlippableObjekt({ children, collection }: Props) {
           "--objekt-background-color": collection.backgroundColor,
           "--objekt-text-color": collection.textColor,
         }}
-        data-flipped={flipped}
         // dragging the card turns it rather than swiping away a drawer it sits in
         data-base-ui-swipe-ignore
         {...handlers}

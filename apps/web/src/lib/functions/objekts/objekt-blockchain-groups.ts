@@ -1,11 +1,5 @@
 import { indexer } from "@/lib/server/db/indexer";
 import {
-  collections,
-  collectionStats,
-  members,
-  objekts,
-} from "@/lib/server/db/indexer/schema";
-import {
   mintOrder,
   withArtist,
   withClass,
@@ -23,6 +17,12 @@ import {
   type MintSort,
   type ValidSort,
 } from "@apollo/cosmo/types/common";
+import {
+  collections,
+  collectionStats,
+  members,
+  objekts,
+} from "@apollo/database/indexer/schema";
 import { Addresses, isEqual } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
 import { and, asc, count, desc, eq, inArray, max, sql } from "drizzle-orm";

@@ -61,7 +61,6 @@ export default function Blockchain(props: Props) {
    * Query options
    */
   const options = objektOptions({
-    filtering: "remote",
     query: userCollectionBlockchainQuery(
       props.targetCosmo.address,
       filters,
@@ -91,7 +90,6 @@ export default function Blockchain(props: Props) {
       hidePins={usingFilters}
       onReorderPins={onReorderPins}
       shouldRender={shouldRender}
-      showTotal
     />
   );
 }

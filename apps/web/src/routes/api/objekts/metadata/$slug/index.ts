@@ -1,12 +1,12 @@
 import { cacheHeaders } from "@/lib/server/cache.server";
 import { db } from "@/lib/server/db";
 import { indexer } from "@/lib/server/db/indexer";
-import { collections, objekts } from "@/lib/server/db/indexer/schema";
 import type {
   ObjektCollectionData,
   ObjektMetadata,
   PriceStats,
 } from "@/lib/universal/objekts";
+import { collections, objekts } from "@apollo/database/indexer/schema";
 import { addr, Addresses } from "@apollo/util";
 import { createFileRoute } from "@tanstack/react-router";
 import { eq, sql } from "drizzle-orm";

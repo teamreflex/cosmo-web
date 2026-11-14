@@ -40,7 +40,6 @@ export function useObjektIndex() {
   // if no search, use the default API
   if (!searchParams.search) {
     return objektOptions({
-      filtering: "remote",
       query: objektIndexBlockchainQuery(searchParams, selectedIds),
       calculateTotal: (data) => {
         const total = data.pages[0]?.total ?? 0;
@@ -59,7 +58,6 @@ export function useObjektIndex() {
 
   // otherwise, use the typesense API
   return objektOptions({
-    filtering: "remote",
     query: objektIndexTypesenseQuery(searchParams, selectedIds),
     totalPortalTarget: "#objekt-total",
     calculateTotal: (data) => {

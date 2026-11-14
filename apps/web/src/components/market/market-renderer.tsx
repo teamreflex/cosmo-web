@@ -41,7 +41,6 @@ export default function MarketRenderer() {
           getObjektId={(objekt) => objekt.id}
           authenticated={user !== undefined}
           ItemComponent={MarketGridItem}
-          showTotal
         />
       </div>
     </div>

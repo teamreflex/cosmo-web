@@ -6,45 +6,24 @@ import {
   type ValidOnlineType,
   type ValidSort,
 } from "@apollo/cosmo/types/common";
-import type { RangeFilter } from "@apollo/trades/range";
-import {
-  and,
-  asc,
-  between,
-  desc,
-  eq,
-  gte,
-  inArray,
-  or,
-  sql,
-} from "drizzle-orm";
-import type { PgColumn, PgSelect } from "drizzle-orm/pg-core";
 import {
   collections,
   collectionStats,
   members,
   objekts,
-} from "../db/indexer/schema";
+} from "@apollo/database/indexer/schema";
+import type { RangeFilter } from "@apollo/trades/range";
+import { and, asc, desc, eq, gte, inArray, or, sql } from "drizzle-orm";
+import type { PgColumn, PgSelect } from "drizzle-orm/pg-core";
 
 /**
- * Whether mint-count sorts count objekts that have since been spun.
- */
-const MINT_COUNT_INCLUDES_SPUN = true;
-
-/**
- * A collection's mint count for mint sorts. Requires a join on collection_stats.
- */
-export const mintCount = MINT_COUNT_INCLUDES_SPUN
-  ? collectionStats.objektCount
-  : sql<number>`(${collectionStats.objektCount} - ${collectionStats.spunCount})`;
-
-/**
- * Orders by mint count. Collections without stats sort last.
+ * Orders by mint count, which includes objekts that have since been spun.
+ * Requires a join on collection_stats. Collections without stats sort last.
  */
 export function mintOrder(sort: MintSort) {
   return sort === "mintsAsc"
-    ? sql`${mintCount} asc nulls last`
-    : sql`${mintCount} desc nulls last`;
+    ? sql`${collectionStats.objektCount} asc nulls last`
+    : sql`${collectionStats.objektCount} desc nulls last`;
 }
 
 /**
@@ -230,14 +209,6 @@ export function withWantMatch(
     ...ranges.map(withRange),
     slugs.length > 0 ? inArray(collections.slug, [...slugs]) : undefined,
   );
-}
-
-/**
- * Filter by timeframe.
- */
-export function withTimeframe(timeframe?: [string, string]) {
-  if (!timeframe) return [];
-  return [between(objekts.mintedAt, ...timeframe)];
 }
 
 /**

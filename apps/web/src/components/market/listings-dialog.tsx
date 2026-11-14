@@ -7,18 +7,15 @@ type Props = {
   collection: Objekt.Collection;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  pinnedEntryId?: string;
 };
 
 /**
- * Every sale listing of a collection. When opened from a specific listing,
- * that one is pinned above the rest.
+ * Every sale listing of a collection.
  */
 export default function ListingsDialog({
   collection,
   open,
   onOpenChange,
-  pinnedEntryId,
 }: Props) {
   return (
     <DetailDialog
@@ -27,7 +24,7 @@ export default function ListingsDialog({
       open={open}
       onOpenChange={onOpenChange}
     >
-      <ListingsContent collection={collection} pinnedEntryId={pinnedEntryId} />
+      <ListingsContent collection={collection} />
     </DetailDialog>
   );
 }

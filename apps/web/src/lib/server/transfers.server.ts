@@ -17,6 +17,11 @@ import type {
   TransferResult,
   TransferType,
 } from "@/lib/universal/transfers";
+import {
+  collections,
+  objekts,
+  transfers,
+} from "@apollo/database/indexer/schema";
 import { Addresses, isEqual } from "@apollo/util";
 import {
   and,
@@ -35,7 +40,6 @@ import { union, unionAll } from "drizzle-orm/pg-core";
 import type { z } from "zod";
 import { decodeCursor, encodeCursor } from "./cursor.server";
 import { indexer } from "./db/indexer";
-import { collections, objekts, transfers } from "./db/indexer/schema";
 import {
   withArtist,
   withClass,

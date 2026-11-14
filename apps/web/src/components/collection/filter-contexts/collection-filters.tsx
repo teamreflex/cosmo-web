@@ -46,7 +46,6 @@ export default function CollectionFilters({
       season: undefined,
       on_offline: undefined,
       transferable: undefined,
-      gridable: undefined,
       collectionNo: undefined,
     });
   }
@@ -100,12 +99,7 @@ export default function CollectionFilters({
         sorts={isSpin ? collectionSorts : profileSorts}
       />
 
-      <FilterDataSource
-        filters={filters}
-        setFilters={setFilters}
-        dataSource={dataSource}
-        setDataSource={setDataSource}
-      />
+      <FilterDataSource dataSource={dataSource} setDataSource={setDataSource} />
 
       <ResetFilters count={count} onReset={handleReset} />
     </div>

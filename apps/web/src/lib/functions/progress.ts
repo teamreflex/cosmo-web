@@ -1,12 +1,5 @@
 import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts.server";
 import { indexer } from "@/lib/server/db/indexer";
-import type { Collection } from "@/lib/server/db/indexer/schema";
-import {
-  collections,
-  objekts,
-  progressHistogram,
-  progressLeaderboard,
-} from "@/lib/server/db/indexer/schema";
 import {
   fetchLeaderboard,
   fetchProgress,
@@ -22,6 +15,13 @@ import type {
   SeasonProgress,
 } from "@/lib/universal/progress";
 import { validOnlineTypes } from "@apollo/cosmo/types/common";
+import {
+  collections,
+  objekts,
+  progressHistogram,
+  progressLeaderboard,
+} from "@apollo/database/indexer/schema";
+import type { Collection } from "@apollo/database/indexer/types";
 import { Addresses, isEqual } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
 import { and, count, eq, inArray, notInArray, sql } from "drizzle-orm";

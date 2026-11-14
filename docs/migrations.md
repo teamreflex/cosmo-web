@@ -4,9 +4,9 @@ Each database has its own source of truth and its own runner, and both runners a
 
 ```
   WEB DB                                        INDEXER DB
-  packages/database/src/web/schema.ts           apps/indexer/schema.graphql
-  packages/database/src/auth.ts                 apps/indexer/src/model/generated/*.ts
-         |                                             |  both edited by hand
+  packages/database/src/web/schema.ts           apps/indexer/src/model/generated/*.ts
+  packages/database/src/auth.ts                        |
+         |                                             |  edited by hand
          |  drizzle-kit generate (apps/web)            v
          v                                      apps/indexer/db/migrations/<ms>-Data.js
   apps/web/drizzle/<ts>_<name>/                   up() + down(), IF [NOT] EXISTS
@@ -51,7 +51,7 @@ drizzle-orm's `migrate()` and the Subsquid runner both wrap everything pending i
 
 ## Indexer DB
 
-The procedure (models, migration, Drizzle mirror, `schema.graphql`) and the generator commands never to run are under "Schema changes" in [apps/indexer/CLAUDE.md](../apps/indexer/CLAUDE.md).
+The procedure (models, migration, Drizzle mirror) is under "Schema changes" in [apps/indexer/CLAUDE.md](../apps/indexer/CLAUDE.md).
 
 - The Drizzle mirror only types queries. Its index list is incomplete and some column types differ from the DDL (`uuid()` where the table has `varchar(36)`), so read the migrations for the real DDL.
 - A column that reaches the UI also follows "Where to start" in [docs/database.md](database.md).

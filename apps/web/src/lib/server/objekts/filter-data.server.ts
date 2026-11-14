@@ -1,6 +1,6 @@
+import { collections } from "@apollo/database/indexer/schema";
 import { asc } from "drizzle-orm";
 import { indexer } from "../db/indexer";
-import { collections } from "../db/indexer/schema";
 
 /**
  * Fetch all unique collections from the index.

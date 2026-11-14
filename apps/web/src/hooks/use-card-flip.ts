@@ -1,5 +1,5 @@
 import { animate, useMotionValue, useReducedMotion } from "motion/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import type { DragEvent, KeyboardEvent, PointerEvent, RefObject } from "react";
 
 /** A pause this long before releasing means the flick is over. */
@@ -32,7 +32,6 @@ type CardFlip = {
   backRef: RefObject<HTMLDivElement | null>;
   svgRef: RefObject<SVGSVGElement | null>;
   edgeRef: RefObject<SVGPathElement | null>;
-  flipped: boolean;
   handlers: {
     onPointerDown: (event: PointerEvent<HTMLDivElement>) => void;
     onPointerMove: (event: PointerEvent<HTMLDivElement>) => void;
@@ -55,7 +54,6 @@ export function useCardFlip(): CardFlip {
   const rotation = useMotionValue(0);
   const tilt = useMotionValue(0);
   const reducedMotion = useReducedMotion();
-  const [flipped, setFlipped] = useState(false);
 
   const sceneRef = useRef<HTMLDivElement>(null);
   const frontRef = useRef<HTMLDivElement>(null);
@@ -66,7 +64,6 @@ export function useCardFlip(): CardFlip {
   const sizeRef = useRef<CardSize>({ width: 0, height: 0, outline: [] });
   const bodyRef = useRef<Point[]>([]);
   const dragRef = useRef<Drag | null>(null);
-  const flippedRef = useRef(false);
 
   // #region rendering
   const render = useCallback(() => {
@@ -93,8 +90,9 @@ export function useCardFlip(): CardFlip {
     front.style.transform = `matrix3d(${frontMatrix.join(",")})`;
     back.style.transform = `matrix3d(${backMatrix.join(",")})`;
 
-    const frontVisible = isFaceVisible(currentRotation, 0);
-    front.style.visibility = frontVisible ? "visible" : "hidden";
+    front.style.visibility = isFaceVisible(currentRotation, 0)
+      ? "visible"
+      : "hidden";
     back.style.visibility = isFaceVisible(currentRotation, 180)
       ? "visible"
       : "hidden";
@@ -112,11 +110,6 @@ export function useCardFlip(): CardFlip {
         : `M${body.map(([x, y]) => `${x.toFixed(3)},${y.toFixed(3)}`).join("L")}Z`,
     );
     edge.style.opacity = String(getEdgeOpacity(currentRotation, currentTilt));
-
-    if (flippedRef.current !== !frontVisible) {
-      flippedRef.current = !frontVisible;
-      setFlipped(!frontVisible);
-    }
   }, [rotation, tilt]);
 
   useEffect(() => {
@@ -314,7 +307,6 @@ export function useCardFlip(): CardFlip {
     backRef,
     svgRef,
     edgeRef,
-    flipped,
     handlers: {
       onPointerDown,
       onPointerMove,

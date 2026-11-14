@@ -182,13 +182,14 @@ The processor never writes these; triggers on `objekt` and `collection` do.
 
 ## Schema changes
 
-1. Edit the TypeORM model in `src/model/generated/`.
+1. Edit the table's TypeORM model in `src/model/generated/`, if it has one.
 2. Write a migration in `db/migrations/` named `{timestamp}-Data.js`, with `up()`, `down()` and a short comment saying why (what an index speeds up, what a column is for).
 3. Mirror the change in `packages/database/src/indexer/schema.ts`, which apps/web, apps/schedules and the serial-estimation scripts read through Drizzle.
-4. Update `schema.graphql` to match the models.
-5. Run `turbo typecheck` and `turbo lint`.
+4. Run `turbo typecheck` and `turbo lint`.
 
-- Never run the `commands.json` generators: `migration:generate` depends on `migration:clean`, which deletes `db/migrations`, and `codegen` overwrites the hand-written models. `squid-typeorm-migration apply` is safe; `bun run start` runs it, which is also how a fresh local indexer database gets its schema.
+- Only tables the processor reads or writes through `ctx.store` have a model. The trigger-maintained tables, `serial_reservation`, `serial_confirmation` and apps/schedules' tables exist in the migrations and the Drizzle mirror alone.
+- The store loads the entities `src/model/index.ts` exports, so a new model must be exported from `src/model/generated/index.ts`.
+- Migrations are written by hand. `squid-typeorm-migration apply` is the only migration command in use; `bun run start` runs it, which is also how a fresh local indexer database gets its schema.
 - Add check constraints on big tables as `NOT VALID`, which holds for new rows without scanning old ones (`1791627703101-Data.js`).
 - Relation properties are typed `Relation<T>`, because the models import each other circularly and the ESM build's decorator metadata otherwise throws a TDZ `ReferenceError` at startup.
 - The runner applies every pending migration in one transaction, so `CONCURRENTLY` and long backfills run by hand first and the migration ships as an idempotent record ([`docs/migrations.md`](../../docs/migrations.md#one-transaction-per-release)); `1792234623962` shows the pattern.
@@ -198,6 +199,8 @@ The processor never writes these; triggers on `objekt` and `collection` do.
 
 - The root `patches/@subsquid%2Fhttp-client@1.9.0.patch` removes `compress: true`, which Bun's fetch reads as "gzip the request body" and RPC nodes reject with `-32700`. Re-create it when bumping the package.
 - `glob`, `lru-cache` and `path-scurry` are direct dependencies only to pin Bun-compatible versions; nothing imports them, so keep them when pruning.
+- `pg`, the driver TypeORM loads at startup, is installed only through the dev dependency `@subsquid/typeorm-codegen`, so keep that package when pruning.
+- `bun run typegen` regenerates `src/abi` from the contract ABIs in `abi/`.
 - `bun run build` uses `tsc -p tsconfig.build.json`, because the TypeORM models need decorator metadata emit.
 - `DB_NAME`, `DB_READ_USER` and `DB_READ_PASS` are required by `src/env.ts` but never read.
 

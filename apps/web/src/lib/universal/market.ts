@@ -1,4 +1,4 @@
-import type { Collection } from "@/lib/server/db/indexer/schema";
+import type { Collection } from "@apollo/database/indexer/types";
 import type { z } from "zod";
 import type { marketCursorSchema } from "./parsers";
 

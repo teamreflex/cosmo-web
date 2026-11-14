@@ -1,10 +1,6 @@
 import { remember } from "@/lib/server/cache.server";
 import { indexer } from "@/lib/server/db/indexer";
 import {
-  collectionMarketStats,
-  collections,
-} from "@/lib/server/db/indexer/schema";
-import {
   withArtist,
   withClass,
   withCollections,
@@ -23,6 +19,10 @@ import {
   type MarketSort,
 } from "@/lib/universal/market";
 import { marketBackendSchema } from "@/lib/universal/parsers";
+import {
+  collectionMarketStats,
+  collections,
+} from "@apollo/database/indexer/schema";
 import { createServerFn } from "@tanstack/react-start";
 import {
   and,
