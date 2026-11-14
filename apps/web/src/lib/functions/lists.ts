@@ -84,7 +84,7 @@ export const $fetchObjektList = createServerFn({ method: "GET" })
         linkingHaveList: { columns: { slug: true, type: true } },
       },
     });
-    if (!result) return undefined;
+    if (!result) return null;
 
     // a have list points at its want list, a want list is pointed at by a have list
     const { linkedWantList, linkingHaveList, ...list } = result;
@@ -159,7 +159,7 @@ export const $getObjektListWithUser = createServerFn({ method: "GET" })
   .handler(async ({ data }) => {
     const sanitized = sanitizeUuid(data.id);
     if (!sanitized) {
-      return undefined;
+      return null;
     }
 
     if (data.id !== sanitized) {
@@ -180,7 +180,7 @@ export const $getObjektListWithUser = createServerFn({ method: "GET" })
         },
       },
     });
-    if (!list) return undefined;
+    if (!list) return null;
 
     const fxRateToUsd = list.currency
       ? await fetchLatestFxRate(list.currency)

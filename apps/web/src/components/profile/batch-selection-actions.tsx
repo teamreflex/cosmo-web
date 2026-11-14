@@ -15,7 +15,7 @@ type Props = {
  * The batch-selection bar itself, faded in while anything is selected.
  */
 export default function BatchSelectionActions({ objektLists }: Props) {
-  const count = useObjektSelection((state) => state.selected.length);
+  const count = useObjektSelection((state) => state.selected.size);
   const reset = useObjektSelection((state) => state.reset);
   // the bar keeps showing the last count while it fades out
   const [shownCount, setShownCount] = useState(count);

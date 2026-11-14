@@ -5,7 +5,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { selectionKey, useObjektSelection } from "@/hooks/use-objekt-selection";
+import { useObjektSelection } from "@/hooks/use-objekt-selection";
 import { m } from "@/i18n/messages";
 import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import { formatSerial } from "@apollo/util";
@@ -29,40 +29,37 @@ export default function BatchSelectionPopover() {
       <PopoverContent align="center" className="w-72 p-0">
         <ScrollArea className="h-56">
           <ul className="flex flex-col">
-            {selected.map((s) => {
-              const key = selectionKey(s);
-              return (
-                <li
-                  key={key}
-                  className="flex items-center gap-3 border-b border-border px-3 py-2 last:border-b-0"
-                >
-                  <img
-                    src={getObjektFrontImageUrl(s.collection, "xs")}
-                    alt={s.collection.collectionId}
-                    className="h-10 w-auto shrink-0 rounded-xs"
-                    decoding="async"
-                  />
-                  <div className="flex min-w-0 flex-1 flex-col">
-                    <span className="truncate text-sm font-semibold">
-                      {s.collection.collectionId}
+            {Array.from(selected, ([key, s]) => (
+              <li
+                key={key}
+                className="flex items-center gap-3 border-b border-border px-3 py-2 last:border-b-0"
+              >
+                <img
+                  src={getObjektFrontImageUrl(s.collection, "xs")}
+                  alt={s.collection.collectionId}
+                  className="h-10 w-auto shrink-0 rounded-xs"
+                  decoding="async"
+                />
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <span className="truncate text-sm font-semibold">
+                    {s.collection.collectionId}
+                  </span>
+                  {s.type === "token" && (
+                    <span className="font-mono text-xxs text-muted-foreground tabular-nums">
+                      {formatSerial(s.token.serial)}
                     </span>
-                    {s.type === "token" && (
-                      <span className="font-mono text-xxs text-muted-foreground tabular-nums">
-                        {formatSerial(s.token.serial)}
-                      </span>
-                    )}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => remove(key)}
-                    aria-label={m.batch_remove_from_selection()}
-                    className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
-                  >
-                    <IconX className="size-4" />
-                  </button>
-                </li>
-              );
-            })}
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => remove(key)}
+                  aria-label={m.batch_remove_from_selection()}
+                  className="shrink-0 text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  <IconX className="size-4" />
+                </button>
+              </li>
+            ))}
           </ul>
         </ScrollArea>
       </PopoverContent>

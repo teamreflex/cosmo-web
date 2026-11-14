@@ -1,5 +1,5 @@
 import AdminBreadcrumbs from "@/components/admin/breadcrumbs";
-import { ADMIN_SHELL_PERMISSIONS } from "@/components/admin/common";
+import { ADMIN_SHELL_PERMISSIONS } from "@/components/admin/permissions";
 import { AdminSidebar } from "@/components/admin/sidebar";
 import StaffRoleMeta from "@/components/admin/staff-role-meta";
 import { Separator } from "@/components/ui/separator";

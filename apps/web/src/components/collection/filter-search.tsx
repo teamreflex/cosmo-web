@@ -1,9 +1,20 @@
 import { m } from "@/i18n/messages";
 import { cn } from "@/lib/utils";
 import { IconSearch, IconX } from "@tabler/icons-react";
+import { noop } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { useState } from "react";
 import { useDebounceCallback } from "usehooks-ts";
+
+/**
+ * The first search runs once the Typesense client has downloaded, so focusing
+ * the input starts that. It sits outside the component because the React
+ * Compiler skips a component that contains a dynamic import, and an
+ * uncompiled one would rebuild its debounce on every keystroke.
+ */
+function preloadSearchClient() {
+  void import("@/lib/client/typesense").catch(noop);
+}
 
 export default function FilterSearch() {
   const search = useSearch({
@@ -42,6 +53,7 @@ export default function FilterSearch() {
         placeholder={m.common_search_placeholder()}
         value={query ?? ""}
         onChange={(e) => set(e.currentTarget.value || undefined)}
+        onFocus={preloadSearchClient}
         className="h-full w-full grow bg-transparent text-xs outline-none placeholder:text-xs placeholder:text-muted-foreground any-pointer-coarse:text-base"
         maxLength={32}
       />

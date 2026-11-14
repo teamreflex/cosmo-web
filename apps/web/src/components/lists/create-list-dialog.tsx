@@ -4,7 +4,7 @@ import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { $createLiveList, $createObjektList } from "@/lib/functions/lists";
 import { currentAccountQuery } from "@/lib/queries/core";
-import { listShelfQuery } from "@/lib/queries/lists";
+import { listShelfQuery, objektListDetailKey } from "@/lib/queries/lists";
 import { track } from "@/lib/utils";
 import type { ObjektList } from "@apollo/database/web/types";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
@@ -65,6 +65,8 @@ export default function CreateListDialog(props: Props) {
     void queryClient.invalidateQueries({
       queryKey: listShelfQuery(result.userId).queryKey,
     });
+    // a new have or want list changes the pair its partner's details carry
+    void queryClient.invalidateQueries({ queryKey: objektListDetailKey });
 
     // matching by routeId covers profiles opened by address, where the pathname doesn't contain the username
     void router.invalidate({

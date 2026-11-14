@@ -68,7 +68,8 @@ export function useGridElementVirtualizer({
 
 /**
  * Options shared by both grid virtualizers: one lane per column and a fixed
- * row height, measured up front rather than from the DOM.
+ * row height, computed up front. Cells are never handed to the virtualizer to
+ * measure, so it keeps no ResizeObserver on them.
  */
 function gridOptions({
   count,
@@ -81,10 +82,9 @@ function gridOptions({
     count,
     lanes,
     gap,
-    // overscan is counted in items, so scale it to keep whole rows buffered
-    overscan: lanes * overscanRows,
+    // with lanes the virtualizer counts overscan in whole rows, not items
+    overscan: overscanRows,
     estimateSize: () => itemHeight,
-    measureElement: () => itemHeight,
   };
 }
 
@@ -95,7 +95,6 @@ function snapshot<TScrollElement extends Element | Window>(
     items: virtualizer.getVirtualItems(),
     totalSize: virtualizer.getTotalSize(),
     scrollMargin: virtualizer.options.scrollMargin,
-    measureElement: virtualizer.measureElement,
     measure: virtualizer.measure,
   };
 }

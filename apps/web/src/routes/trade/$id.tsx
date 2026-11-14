@@ -1,5 +1,6 @@
 import SignIn from "@/components/auth/sign-in";
 import { Error } from "@/components/error-boundary";
+import { LazyChatPanel } from "@/components/trades/chat/lazy-chat-panel";
 import TradeView from "@/components/trades/trade-view";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +22,14 @@ import { sanitizeUuid } from "@/lib/universal/parsers";
 import { IconHeartBroken, IconLogin2 } from "@tabler/icons-react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, notFound, useLocation } from "@tanstack/react-router";
+import { createIsomorphicFn } from "@tanstack/react-start";
+
+// the server never renders the chat panel, so only the browser downloads it
+const preloadChatPanel = createIsomorphicFn().client(() => {
+  if (env.VITE_CHAT_URL !== undefined) {
+    LazyChatPanel.preload();
+  }
+});
 
 export const Route = createFileRoute("/trade/$id")({
   component: RouteComponent,
@@ -28,7 +37,7 @@ export const Route = createFileRoute("/trade/$id")({
   notFoundComponent: NotFoundComponent,
   errorComponent: ErrorComponent,
   beforeLoad: ({ context }) => requireMarketAccess(context.queryClient),
-  loader: async ({ context, params }) => {
+  loader: async ({ context, params, preload }) => {
     // discord users sometimes paste formatting onto the end of the URL
     const id = sanitizeUuid(params.id);
     if (!id) throw notFound();
@@ -39,6 +48,11 @@ export const Route = createFileRoute("/trade/$id")({
       staleTime: "static",
     });
     if (account === null) return { id, signedIn: false };
+
+    // the chat panel downloads alongside the trade rather than after it renders, but not for a hovered link
+    if (!preload) {
+      preloadChatPanel();
+    }
 
     // anyone but the trade's parties gets not found
     if (

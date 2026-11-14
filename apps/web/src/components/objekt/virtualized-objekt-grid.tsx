@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 import { IconHeartBroken, IconRefresh } from "@tabler/icons-react";
 import { QueryErrorResetBoundary } from "@tanstack/react-query";
 import type { DefaultError, QueryKey } from "@tanstack/react-query";
-import { Suspense, useEffect, useMemo } from "react";
+import { Suspense, useLayoutEffect, useMemo } from "react";
 import type { ComponentType } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import BinderCover from "../binders/binder-cover";
@@ -176,7 +176,6 @@ function ObjektGrid<
     items: virtualList,
     totalSize,
     scrollMargin,
-    measureElement,
     measure,
   } = useGridVirtualizer({
     count: cells.length,
@@ -186,8 +185,12 @@ function ObjektGrid<
     container: containerRef,
   });
 
-  // re-measure cell sizes upon viewport size change
-  useEffect(() => {
+  /**
+   * Every cell is the same known height, so cells aren't measured from the
+   * DOM. A resize re-lays out every row before paint, since the virtualizer
+   * caches the positions it worked out for the old height.
+   */
+  useLayoutEffect(() => {
     measure();
   }, [itemHeight, measure]);
 
@@ -245,8 +248,6 @@ function ObjektGrid<
           position === null
             ? {}
             : {
-                "data-index": index,
-                ref: measureElement,
                 style: {
                   transform: `translateY(${position.top}px)`,
                   left: `${position.left}px`,
@@ -263,11 +264,9 @@ function ObjektGrid<
               <slot.SortablePinCell
                 key={`pin-${cell.item.pinId}`}
                 pin={cell.item}
-                index={index}
                 top={position.top}
                 left={position.left}
                 width={laneWidth}
-                measureElement={measureElement}
               >
                 <PinCard pin={cell.item} authenticated={authenticated} />
               </slot.SortablePinCell>

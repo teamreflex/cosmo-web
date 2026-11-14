@@ -82,14 +82,17 @@ function FrontImage(props: FrontImageProps) {
     props.eager || props.priority,
   );
   const queryClient = useQueryClient();
-  const { open } = useMetadataDialog();
+  const { open, preload } = useMetadataDialog();
 
   const imageProps = useObjektImage(props.collection);
 
   function prefetch() {
-    // warm the image the detail sheet shows
+    // warm the image the detail sheet shows, and the sheet when a click opens it
     const img = new Image();
     img.src = getObjektFrontImageUrl(props.collection, "grid");
+    if (props.onClick === undefined) {
+      preload();
+    }
   }
 
   function handleClick() {

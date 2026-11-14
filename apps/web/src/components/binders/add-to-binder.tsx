@@ -140,7 +140,7 @@ function BinderMenuItems({
   }
 
   return (
-    <ScrollArea className="max-h-44 overflow-y-auto">
+    <ScrollArea className="flex max-h-44 flex-col">
       {binders.map((binder) => (
         <BinderItem
           key={binder.id}

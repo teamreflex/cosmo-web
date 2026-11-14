@@ -22,7 +22,7 @@ import {
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { ADMIN_SHELL_PERMISSIONS } from "../admin/common";
+import { ADMIN_SHELL_PERMISSIONS } from "../admin/permissions";
 import AboutDialog from "../navbar/about";
 import { ArtistItem } from "../navbar/artist-selectbox";
 import UserAvatar from "../profile/user-avatar";

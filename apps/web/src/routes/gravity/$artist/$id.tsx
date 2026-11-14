@@ -6,10 +6,12 @@ import GravityPollTabs from "@/components/gravity/gravity-poll-tabs";
 import GravitySkeleton from "@/components/gravity/gravity-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
-import { $fetchGravityDetails } from "@/lib/functions/gravity";
 import { lazyWithPreload } from "@/lib/lazy";
 import { defineHead } from "@/lib/meta";
-import { gravityPollDetailsQuery } from "@/lib/queries/gravity";
+import {
+  gravityDetailsQuery,
+  gravityPollDetailsQuery,
+} from "@/lib/queries/gravity";
 import { IconAlertTriangle, IconHeartBroken } from "@tabler/icons-react";
 import { noop } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
@@ -29,7 +31,6 @@ const gravitySearchSchema = z.object({
 
 export const Route = createFileRoute("/gravity/$artist/$id")({
   staleTime: Infinity,
-  preloadStaleTime: 30_000, // loader calls $fetchGravityDetails outside query
   component: RouteComponent,
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
@@ -39,11 +40,9 @@ export const Route = createFileRoute("/gravity/$artist/$id")({
   loader: async ({ context, params, deps }) => {
     // fetch everything in one round trip
     const { artist, gravity, polls, defaultPollId } =
-      await $fetchGravityDetails({
-        data: {
-          artist: params.artist,
-          id: Number(params.id),
-        },
+      await context.queryClient.query({
+        ...gravityDetailsQuery(params.artist, Number(params.id)),
+        staleTime: "static",
       });
 
     // a poll param that doesn't belong to this gravity falls back to the default

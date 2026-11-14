@@ -5,6 +5,7 @@ import { ofetch } from "ofetch";
 import {
   $fetchActiveGravities,
   $fetchCachedPoll,
+  $fetchGravityDetails,
   $fetchPaginatedGravities,
   $fetchRecentVotes,
 } from "../functions/gravity";
@@ -22,6 +23,16 @@ export const paginatedGravitiesQuery = (artists?: string[]) =>
       $fetchPaginatedGravities({ data: { artists, cursor: pageParam } }),
     initialPageParam: firstPage,
     getNextPageParam: (lastPage) => lastPage.nextStartAfter,
+  });
+
+/**
+ * Fetch a gravity with its artist and poll list.
+ */
+export const gravityDetailsQuery = (artist: string, id: number) =>
+  queryOptions({
+    queryKey: ["gravity-details", artist, id],
+    queryFn: ({ signal }) =>
+      $fetchGravityDetails({ signal, data: { artist, id } }),
   });
 
 export type GravityPollDetailsParams = {

@@ -2,7 +2,7 @@ import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { $updateLiveList, $updateObjektList } from "@/lib/functions/lists";
 import { currentAccountQuery } from "@/lib/queries/core";
-import { listShelfQuery } from "@/lib/queries/lists";
+import { listShelfQuery, objektListDetailKey } from "@/lib/queries/lists";
 import type { ObjektList } from "@apollo/database/web/types";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconEdit, IconLoader2 } from "@tabler/icons-react";
@@ -11,6 +11,7 @@ import {
   useQueryClient,
   useSuspenseQuery,
 } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
@@ -38,6 +39,7 @@ export default function UpdateList({ objektList }: Props) {
   const [open, setOpen] = useState(false);
   const account = useSuspenseQuery(currentAccountQuery);
   const queryClient = useQueryClient();
+  const router = useRouter();
 
   function handleSubmit() {
     void queryClient.invalidateQueries({
@@ -46,6 +48,8 @@ export default function UpdateList({ objektList }: Props) {
     void queryClient.invalidateQueries({
       queryKey: listShelfQuery(objektList.userId).queryKey,
     });
+    // an edit that keeps the slug lands on the page it started on, whose loader holds the old details
+    void router.invalidate();
     setOpen(false);
   }
 
@@ -86,11 +90,20 @@ type FormProps = {
 function UpdateListForm({ objektList, lists, onSubmit }: FormProps) {
   const updateObjektList = useServerFn($updateObjektList);
   const updateLiveList = useServerFn($updateLiveList);
+  const queryClient = useQueryClient();
   const mutation = useMutation({
     mutationFn: (data: z.infer<typeof updateObjektListSchema>) =>
       data.type === "have" || data.type === "want"
         ? updateLiveList({ data })
         : updateObjektList({ data }),
+    /**
+     * The server answers with a redirect to the list, which navigates before
+     * onSuccess runs. Marking the details stale first makes the page it lands
+     * on load the edited list.
+     */
+    onMutate: () => {
+      void queryClient.invalidateQueries({ queryKey: objektListDetailKey });
+    },
     onSuccess: onSubmit,
     onError: (error) => {
       toast.error(formatError(error));

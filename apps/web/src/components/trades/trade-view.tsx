@@ -9,7 +9,6 @@ import {
   tradeTimeFormat,
 } from "@/lib/client/trades";
 import { env } from "@/lib/env/client";
-import { lazyWithPreload } from "@/lib/lazy";
 import type {
   TradeParty,
   TradeView as Trade,
@@ -67,6 +66,7 @@ import { Skeleton } from "../ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
 import { Timestamp } from "../ui/timestamp";
 import CancelTradeDialog from "./cancel-trade-dialog";
+import { LazyChatPanel } from "./chat/lazy-chat-panel";
 import CounterOfferSheet from "./counter-offer-sheet";
 import OfferActionDialog from "./offer-action-dialog";
 import {
@@ -400,16 +400,13 @@ function StaffView({
   );
 }
 
-// Effect and the RPC client download only with the panel
-const ChatPanel = lazyWithPreload(() => import("./chat/chat-panel"));
-
 /**
  * The server never renders the panel, whose client would dial chat, so it
  * bails out before the lazy chunk loads.
  */
-function BrowserChatPanel(props: ComponentProps<typeof ChatPanel>) {
+function BrowserChatPanel(props: ComponentProps<typeof LazyChatPanel>) {
   use(browser("The chat panel connects to chat from the browser."));
-  return <ChatPanel {...props} />;
+  return <LazyChatPanel {...props} />;
 }
 
 const chatHeight = "h-[min(40rem,calc(100dvh-12rem))] min-h-96";

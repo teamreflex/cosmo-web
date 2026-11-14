@@ -67,7 +67,9 @@ type BodyProps = {
 };
 
 function BatchSaleBody({ list, currency, onClose }: BodyProps) {
-  const selected = useObjektSelection((state) => state.selected);
+  const selected = Array.from(
+    useObjektSelection((state) => state.selected).values(),
+  );
 
   // only owned, transferable serials can be listed for sale
   const eligible = selected

@@ -1,7 +1,7 @@
 import CosmoLinkHistory from "@/components/admin/accounts/cosmo-link-history";
 import SetRoleCard from "@/components/admin/accounts/set-role-card";
-import { ADMIN_ACCOUNTS_PERMISSIONS } from "@/components/admin/common";
 import AdminNoAccess from "@/components/admin/no-access";
+import { ADMIN_ACCOUNTS_PERMISSIONS } from "@/components/admin/permissions";
 import {
   requirePermission,
   useHasPermission,

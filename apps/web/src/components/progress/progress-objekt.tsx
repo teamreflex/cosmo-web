@@ -20,7 +20,7 @@ export default function ProgressObjekt({ objekt }: Props) {
         objekt.obtained === false && "opacity-50",
       )}
     >
-      {objekt.unobtainable && (
+      {objekt.collection.unobtainable && (
         <div className="absolute top-1 left-1 rounded-full bg-black p-1 sm:top-2 sm:left-2">
           <IconStar className="size-4 fill-white text-white" />
         </div>

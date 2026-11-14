@@ -43,6 +43,7 @@ import { MAX_RANGE_VALUES } from "@apollo/trades/range";
 import { standardSchemaResolver } from "@hookform/resolvers/standard-schema";
 import { IconArrowLeft } from "@tabler/icons-react";
 import {
+  keepPreviousData,
   useMutation,
   useQueries,
   useQuery,
@@ -118,6 +119,7 @@ export default function ListingComposer({
     mode: "onTouched",
   });
   const [view, setView] = useState<"form" | "picker">("form");
+  const offering = useOfferedRefusals(form, editedListing, view === "form");
   const [display, setDisplay] = useState<ComposerDisplay>(initialDisplay);
   const [discarding, setDiscarding] = useState(false);
   // a submission waiting for the poster to confirm the listing takes offers
@@ -313,7 +315,7 @@ export default function ListingComposer({
                 <OfferedSection
                   form={form}
                   display={display}
-                  editedListing={editedListing}
+                  offering={offering}
                   onAdd={() => setView("picker")}
                   onChange={setOffered}
                 />
@@ -339,7 +341,7 @@ export default function ListingComposer({
             form={form}
             mode={mode}
             rosters={rosters}
-            editedListing={editedListing}
+            offering={offering}
             pending={mutation.isPending}
             cancel={
               isDesktop ? (
@@ -439,20 +441,15 @@ type FormProps = {
 function OfferedSection({
   form,
   display,
-  editedListing,
+  offering: { offered, tokenIds, refusals },
   onAdd,
   onChange,
 }: FormProps & {
   display: ComposerDisplay;
-  editedListing: string | undefined;
+  offering: ReturnType<typeof useOfferedRefusals>;
   onAdd: () => void;
   onChange: (offered: ListingFormValues["offered"]) => void;
 }) {
-  const { offered, tokenIds, refusals } = useOfferedRefusals(
-    form,
-    editedListing,
-  );
-
   return (
     <ComposerOffered
       tokenIds={tokenIds}
@@ -499,18 +496,23 @@ function RatioStrip({ form }: FormProps) {
 const noRefusals: ReadonlyMap<number, TokenRefusalReason> = new Map();
 
 /**
- * The offered objekts and why the server refuses any of them, which the
- * offered section asks for and the footer reads from the same cache.
+ * The offered objekts and why the server refuses any of them, for the offered
+ * section and the footer. Adding or removing an objekt asks again, and the
+ * last answer stands until the new one arrives, so a refused objekt stays
+ * marked and the footer stays blocked. The composer calls it once and keeps
+ * it through a trip to the picker, which asks nothing until the form is back.
  */
 function useOfferedRefusals(
   form: FormProps["form"],
   editedListing: string | undefined,
+  active: boolean,
 ) {
   const offered = useWatch({ control: form.control, name: "offered" });
   const tokenIds = offered.map((item) => item.tokenId);
   const { data: refusals = noRefusals } = useQuery({
     ...offeredTokenRefusalsQuery(tokenIds, editedListing),
-    enabled: tokenIds.length > 0,
+    enabled: active && tokenIds.length > 0,
+    placeholderData: keepPreviousData,
   });
   return { offered, tokenIds, refusals };
 }
@@ -615,13 +617,13 @@ function ComposerFooter({
   form,
   mode,
   rosters,
-  editedListing,
+  offering: { offered, tokenIds, refusals },
   pending,
   cancel,
 }: FormProps & {
   mode: ComposerMode;
   rosters: ReadonlyMap<string, readonly string[]>;
-  editedListing: string | undefined;
+  offering: ReturnType<typeof useOfferedRefusals>;
   pending: boolean;
   cancel: ReactNode;
 }) {
@@ -630,10 +632,6 @@ function ComposerFooter({
     control: form.control,
     name: ["unitSize", "wants", "note"],
   });
-  const { offered, tokenIds, refusals } = useOfferedRefusals(
-    form,
-    editedListing,
-  );
   // the range rows count their own matches, keyed as the schema reads them; this reads the counts they cached
   const rangeMatches = useQueries({
     queries: wants.flatMap((want) => {

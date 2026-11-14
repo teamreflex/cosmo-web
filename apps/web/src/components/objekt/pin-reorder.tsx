@@ -28,7 +28,6 @@ import {
   useSortable,
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import type { Virtualizer } from "@tanstack/react-virtual";
 import { useCallback, useMemo, useState } from "react";
 import type { KeyboardEvent, MouseEvent, ReactNode } from "react";
 
@@ -218,11 +217,9 @@ export default function PinReorder({
 
 type SortablePinCellProps = {
   pin: ProfilePin;
-  index: number;
   top: number;
   left: number;
   width: number;
-  measureElement: Virtualizer<Window, Element>["measureElement"];
   /** the pin's card, the same one a static pin cell shows */
   children: ReactNode;
 };
@@ -230,19 +227,16 @@ type SortablePinCellProps = {
 /**
  * A pin cell wired into dnd-kit's sortable context. It positions its base
  * offset via `top`/`left` so `transform` stays free for the drag/sort
- * animation, and merges the sortable node ref with the virtualizer's
- * measurement ref. `touch-action: manipulation` keeps page scroll working
+ * animation. `touch-action: manipulation` keeps page scroll working
  * since the touch sensor long-presses rather than claiming the gesture. A
  * binder pin opens the viewer from the cell itself, on click or Enter, since
  * a link inside would fight the drag.
  */
 function SortablePinCell({
   pin,
-  index,
   top,
   left,
   width,
-  measureElement,
   children,
 }: SortablePinCellProps) {
   const {
@@ -261,9 +255,8 @@ function SortablePinCell({
     (node: HTMLDivElement | null) => {
       setNodeRef(node);
       setActivatorNodeRef(node);
-      measureElement(node);
     },
-    [setNodeRef, setActivatorNodeRef, measureElement],
+    [setNodeRef, setActivatorNodeRef],
   );
 
   const binder = pin.kind === "binder" ? pin.binder : undefined;
@@ -277,7 +270,6 @@ function SortablePinCell({
   return (
     <div
       ref={setRefs}
-      data-index={index}
       style={{
         top: `${top}px`,
         left: `${left}px`,

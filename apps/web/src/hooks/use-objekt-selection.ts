@@ -29,13 +29,14 @@ export const collectionKey = (slug: string) => `collection:${slug}`;
 /**
  * Derive the selection key for an item from its discriminant.
  */
-export const selectionKey = (item: SelectedObjekt) =>
+const selectionKey = (item: SelectedObjekt) =>
   item.type === "token"
     ? tokenKey(item.token.tokenId)
     : collectionKey(item.collection.slug);
 
 type ObjektSelectionState = {
-  selected: SelectedObjekt[];
+  /** the picks in the order they were made, by selection key */
+  selected: ReadonlyMap<string, SelectedObjekt>;
   select: (item: SelectedObjekt) => void;
   isSelected: (key: string) => boolean;
   hasSelected: (keys: string[]) => boolean;
@@ -46,11 +47,12 @@ type ObjektSelectionState = {
 /**
  * Multi-select store for batch-adding objekts to a list. Holds either owned
  * token instances (profile) or collections (index) as a discriminated union,
- * keyed by a stable selection key so previews and payloads need no re-fetch.
+ * keyed by a stable selection key so previews and payloads need no re-fetch
+ * and every card on a grid looks itself up without scanning the selection.
  */
 export const useObjektSelection = create<ObjektSelectionState>()(
   (set, get) => ({
-    selected: [],
+    selected: new Map(),
 
     /**
      * Toggle an item in the selection, keyed by its selection key. Caps the
@@ -60,46 +62,45 @@ export const useObjektSelection = create<ObjektSelectionState>()(
     select: (item) =>
       set((state) => {
         const key = selectionKey(item);
-        const exists = state.selected.some((s) => selectionKey(s) === key);
+        const selected = new Map(state.selected);
 
-        if (exists) {
-          return {
-            selected: state.selected.filter((s) => selectionKey(s) !== key),
-          };
+        if (selected.delete(key)) {
+          return { selected };
         }
 
-        if (state.selected.length >= MAX_OBJEKT_SELECTIONS) {
+        if (selected.size >= MAX_OBJEKT_SELECTIONS) {
           toast.info(
             m.toast_max_selections({ count: MAX_OBJEKT_SELECTIONS.toString() }),
           );
           return state;
         }
 
-        return { selected: [...state.selected, item] };
+        return { selected: selected.set(key, item) };
       }),
 
     /**
      * Whether the given selection key is currently selected.
      */
-    isSelected: (key) => get().selected.some((s) => selectionKey(s) === key),
+    isSelected: (key) => get().selected.has(key),
 
     /**
      * Whether any of the given selection keys are currently selected.
      */
-    hasSelected: (keys) =>
-      get().selected.some((s) => keys.includes(selectionKey(s))),
+    hasSelected: (keys) => keys.some((key) => get().selected.has(key)),
 
     /**
      * Remove a single item from the selection by its selection key.
      */
     remove: (key) =>
-      set((state) => ({
-        selected: state.selected.filter((s) => selectionKey(s) !== key),
-      })),
+      set((state) => {
+        const selected = new Map(state.selected);
+        selected.delete(key);
+        return { selected };
+      }),
 
     /**
      * Clear the entire selection.
      */
-    reset: () => set({ selected: [] }),
+    reset: () => set({ selected: new Map() }),
   }),
 );
