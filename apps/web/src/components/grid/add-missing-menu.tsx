@@ -53,7 +53,7 @@ export default function AddMissingMenu(props: Props) {
             </DropdownMenuItem>
           )}
 
-          <ScrollArea className="max-h-44 overflow-y-auto">
+          <ScrollArea className="flex max-h-44 flex-col">
             {wantLists.map((list) => (
               <WantListItem
                 key={list.id}

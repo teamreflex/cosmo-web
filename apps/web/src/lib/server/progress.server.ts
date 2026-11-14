@@ -6,61 +6,24 @@ import {
   progressLeaderboard,
 } from "@apollo/database/indexer/schema";
 import type { Collection } from "@apollo/database/indexer/types";
-import { and, asc, desc, eq, notInArray } from "drizzle-orm";
+import { and, asc, count, desc, eq, notInArray } from "drizzle-orm";
 
-type FetchTotal = {
-  member: string;
-  onlineType?: ValidOnlineType | null;
-  season?: string | null;
-};
+// the member's collections that progress counts: every class but Welcome and Zero, as progress_leaderboard does
+const progressCollections = (member: string) =>
+  and(
+    eq(collections.member, member),
+    notInArray(collections.class, ["Welcome", "Zero"]),
+  );
 
 /**
  * Fetch all collections for the given member.
  */
-export async function fetchTotal({
-  member,
-  onlineType = null,
-  season = null,
-}: FetchTotal): Promise<Collection[]> {
-  const result = await indexer
+export async function fetchTotal(member: string): Promise<Collection[]> {
+  return await indexer
     .select()
     .from(collections)
-    .where(
-      and(
-        eq(collections.member, member),
-        notInArray(collections.class, ["Welcome", "Zero"]),
-        ...(onlineType !== null ? [eq(collections.onOffline, onlineType)] : []),
-        ...(season !== null ? [eq(collections.season, season)] : []),
-      ),
-    )
+    .where(progressCollections(member))
     .comment({ fn: "fetchTotal" });
-
-  return result;
-}
-
-/**
- * Fetch unique collections the user owns for given member.
- * collection_owner excludes SPIN, whose progress isn't supported.
- */
-export async function fetchProgress(address: string, member: string) {
-  return await indexer
-    .select({
-      slug: collections.slug,
-      owner: collectionOwners.owner,
-      collectionId: collectionOwners.collectionId,
-      member: collections.member,
-      season: collections.season,
-      class: collections.class,
-      onOffline: collections.onOffline,
-      unobtainable: collections.unobtainable,
-    })
-    .from(collectionOwners)
-    .innerJoin(collections, eq(collectionOwners.collectionId, collections.id))
-    .where(
-      and(eq(collectionOwners.owner, address), eq(collections.member, member)),
-    )
-    .orderBy(collectionOwners.collectionId)
-    .comment({ fn: "fetchProgress" });
 }
 
 type FetchLeaderboard = {
@@ -68,6 +31,45 @@ type FetchLeaderboard = {
   onlineType: ValidOnlineType | null;
   season: string | null;
 };
+
+/**
+ * Count the member's obtainable collections for the given filters.
+ */
+export async function countObtainable({
+  member,
+  onlineType,
+  season,
+}: FetchLeaderboard) {
+  const [row] = await indexer
+    .select({ total: count() })
+    .from(collections)
+    .where(
+      and(
+        progressCollections(member),
+        eq(collections.unobtainable, false),
+        ...(onlineType !== null ? [eq(collections.onOffline, onlineType)] : []),
+        ...(season !== null ? [eq(collections.season, season)] : []),
+      ),
+    )
+    .comment({ fn: "countObtainable" });
+
+  return row?.total ?? 0;
+}
+
+/**
+ * Fetch the ids of the member's collections the user owns.
+ * collection_owner excludes SPIN, whose progress isn't supported.
+ */
+export async function fetchProgress(address: string, member: string) {
+  return await indexer
+    .select({ collectionId: collectionOwners.collectionId })
+    .from(collectionOwners)
+    .innerJoin(collections, eq(collectionOwners.collectionId, collections.id))
+    .where(
+      and(eq(collectionOwners.owner, address), eq(collections.member, member)),
+    )
+    .comment({ fn: "fetchProgress" });
+}
 
 const LEADERBOARD_COUNT = 25;
 

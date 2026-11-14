@@ -42,7 +42,9 @@ export default function BatchAddToList({ lists }: Props) {
   const [pickerPending, setPickerPending] = useState<
     { list: ObjektList } & PickerMode
   >();
-  const selected = useObjektSelection((state) => state.selected);
+  const selected = Array.from(
+    useObjektSelection((state) => state.selected).values(),
+  );
 
   /**
    * index selections carry no owned serial,
@@ -78,7 +80,7 @@ export default function BatchAddToList({ lists }: Props) {
               </DropdownMenuItem>
             )}
 
-            <ScrollArea className="max-h-44 overflow-y-auto">
+            <ScrollArea className="flex max-h-44 flex-col">
               {filtered.map((list) => {
                 switch (list.type) {
                   case "regular":

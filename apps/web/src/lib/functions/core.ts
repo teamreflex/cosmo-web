@@ -1,4 +1,4 @@
-import { auth, toCurrentUser } from "@/lib/server/auth.server";
+import { toCurrentUser } from "@/lib/server/auth.server";
 import { remember } from "@/lib/server/cache.server";
 import { fetchCookie, putCookie } from "@/lib/server/cookies.server";
 import {
@@ -6,6 +6,7 @@ import {
   toPublicCosmo,
 } from "@/lib/server/cosmo-accounts.server";
 import { db } from "@/lib/server/db";
+import { authMiddleware } from "@/lib/server/middlewares";
 import {
   fetchUniqueClasses,
   fetchUniqueCollections,
@@ -20,7 +21,6 @@ import { validArtists } from "@apollo/cosmo/types/common";
 import type { ObjektList } from "@apollo/database/web/types";
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
-import { getRequestHeaders } from "@tanstack/react-start/server";
 import * as z from "zod";
 
 export const FILTER_DATA_CACHE_KEY = "filter-data";
@@ -51,12 +51,9 @@ export type GetAccount = {
 /**
  * Fetch current user account.
  */
-export const $fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
-  async (): Promise<GetAccount | null> => {
-    const session = await auth.api.getSession({
-      headers: getRequestHeaders(),
-    });
-
+export const $fetchCurrentAccount = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context: { session } }): Promise<GetAccount | null> => {
     // not signed in
     if (!session) {
       return null;
@@ -88,8 +85,7 @@ export const $fetchCurrentAccount = createServerFn({ method: "GET" }).handler(
       objektLists,
       fxRateToUsd: fxRates[0]?.rateToUsd ?? null,
     };
-  },
-);
+  });
 
 /**
  * Fetch the target account.

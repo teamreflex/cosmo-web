@@ -1,6 +1,7 @@
 import { fetchKnownAddresses } from "@/lib/server/cosmo-accounts.server";
 import { indexer } from "@/lib/server/db/indexer";
 import {
+  countObtainable,
   fetchLeaderboard,
   fetchProgress,
   fetchTotal,
@@ -9,10 +10,9 @@ import type {
   ArtistStats,
   LeaderboardItem,
   MemberCompletion,
+  ObjektProgression,
   ProcessingArtistStats,
   ProgressRank,
-  SeasonMatrix,
-  SeasonProgress,
 } from "@/lib/universal/progress";
 import { validOnlineTypes } from "@apollo/cosmo/types/common";
 import {
@@ -21,16 +21,14 @@ import {
   progressHistogram,
   progressLeaderboard,
 } from "@apollo/database/indexer/schema";
-import type { Collection } from "@apollo/database/indexer/types";
 import { Addresses, isEqual } from "@apollo/util";
 import { createServerFn } from "@tanstack/react-start";
 import { and, count, eq, inArray, notInArray, sql } from "drizzle-orm";
 import * as z from "zod";
 
-type PartialObjekt = Awaited<ReturnType<typeof fetchProgress>>;
-
 /**
- * Fetch the progress breakdown for a given member and address.
+ * Fetch every collection of a member that progress counts, each marked with
+ * whether the address owns it.
  */
 export const $fetchProgressBreakdown = createServerFn({ method: "GET" })
   .validator(
@@ -39,32 +37,23 @@ export const $fetchProgressBreakdown = createServerFn({ method: "GET" })
       address: z.string(),
     }),
   )
-  .handler(async ({ data }): Promise<SeasonProgress[]> => {
+  .handler(async ({ data }): Promise<ObjektProgression[]> => {
     // SPIN holds millions of objekts, so its progress isn't supported
     if (isEqual(data.address, Addresses.SPIN)) {
       return [];
     }
 
-    const totals = await fetchTotal({ member: data.member });
+    const totals = await fetchTotal(data.member);
     const progress = await fetchProgress(
       data.address.toLowerCase(),
       data.member,
     );
 
-    // dynamically build the matrix based on the data instead of hardcoding seasons and classes
-    const classes = new Set<string>();
-    const seasons = new Set<string>();
-    for (const total of totals) {
-      classes.add(total.class);
-      seasons.add(total.season);
-    }
-
-    const matrix = buildMatrix(
-      Array.from(classes).filter((c) => !["Zero", "Welcome"].includes(c)),
-      Array.from(seasons),
-    );
-
-    return zipResults(matrix, totals, progress);
+    const owned = new Set(progress.map((p) => p.collectionId));
+    return totals.map((collection) => ({
+      collection,
+      obtained: owned.has(collection.id),
+    }));
   });
 
 /**
@@ -82,7 +71,7 @@ export const $fetchProgressLeaderboard = createServerFn({ method: "GET" })
     }),
   )
   .handler(async ({ data }) => {
-    const totals = await fetchTotal(data);
+    const total = await countObtainable(data);
     const leaderboard = await fetchLeaderboard(data);
 
     // fetch profiles for each address
@@ -105,7 +94,7 @@ export const $fetchProgressLeaderboard = createServerFn({ method: "GET" })
     }) satisfies LeaderboardItem[];
 
     return {
-      total: totals.filter((c) => !c.unobtainable).length,
+      total,
       leaderboard: results,
     };
   });
@@ -304,78 +293,3 @@ export const $fetchArtistStatsByAddress = createServerFn({ method: "GET" })
 
     return finalStats;
   });
-
-/**
- * Build a matrix of all available classes, seasons and online types.
- */
-function buildMatrix(classes: string[], seasons: string[]): SeasonMatrix[] {
-  const onlineTypes = [...validOnlineTypes, "combined"] as const;
-
-  return onlineTypes.flatMap((type) =>
-    seasons.flatMap((season) => {
-      return classes.map((c) => ({
-        key: `${season.toLowerCase()}_${c.toLowerCase()}_${type}`,
-        season,
-        type,
-        class: c,
-      }));
-    }),
-  );
-}
-
-/**
- * Merge the total and progress counts into the matrix.
- */
-function zipResults(
-  matrix: SeasonMatrix[],
-  total: Collection[],
-  progress: PartialObjekt,
-): SeasonProgress[] {
-  return matrix.map((m) => {
-    const type = m.type === "combined" ? undefined : m.type;
-
-    const collectionsInScope = total.filter(
-      filterMatrix(m.class, m.season, type),
-    );
-    const ownedInScope = progress.filter(filterMatrix(m.class, m.season, type));
-
-    // exclude unobtainable collections from total count
-    const totalCollections = collectionsInScope.filter(
-      (c) => !c.unobtainable,
-    ).length;
-
-    // get unobtainable collections separately to be added in later
-    const { progressTotal, unobtainableTotal } = ownedInScope.reduce(
-      (acc, c) => {
-        acc.progressTotal += c.unobtainable ? 0 : 1;
-        acc.unobtainableTotal += c.unobtainable ? 1 : 0;
-        return acc;
-      },
-      { progressTotal: 0, unobtainableTotal: 0 },
-    );
-
-    return {
-      ...m,
-      total: totalCollections,
-      progress: progressTotal,
-      unobtainable: unobtainableTotal,
-      collections: collectionsInScope.map((c) => ({
-        collection: c,
-        obtained: ownedInScope.some((p) => p.collectionId === c.id),
-        unobtainable: c.unobtainable,
-      })),
-    };
-  });
-}
-
-/**
- * Helper to filter down to the matrix.
- */
-function filterMatrix<
-  T extends { class: string; season: string; onOffline: string },
->(matrixClass: string, matrixSeason: string, matrixOnOffline?: string) {
-  return ({ class: className, season, onOffline }: T) =>
-    className === matrixClass &&
-    season === matrixSeason &&
-    (matrixOnOffline ? onOffline === matrixOnOffline : true);
-}

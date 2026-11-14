@@ -10,9 +10,9 @@ import ToggleObjektBands from "@/components/misc/overlay/toggle-objekt-bands";
 import { buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
-import { $fetchObjektList } from "@/lib/functions/lists";
 import { defineHead } from "@/lib/meta";
 import { currentAccountQuery, selectedArtistsQuery } from "@/lib/queries/core";
+import { objektListDetailQuery } from "@/lib/queries/lists";
 import { objektListQuery } from "@/lib/queries/objekt-queries";
 import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { objektListFrontendSchema } from "@/lib/universal/parsers";
@@ -27,7 +27,6 @@ import {
 
 export const Route = createFileRoute("/@{$username}/list/$slug")({
   staleTime: 1000 * 60 * 15, // 15 minutes
-  preloadStaleTime: 30_000, // loader calls $fetchObjektList outside query
   component: RouteComponent,
   pendingComponent: PendingComponent,
   errorComponent: ErrorComponent,
@@ -58,12 +57,9 @@ export const Route = createFileRoute("/@{$username}/list/$slug")({
     }
 
     // find objekt list
-    const objektList = await $fetchObjektList({
-      data: {
-        userId: target.user.id,
-        slug: params.slug,
-      },
-    });
+    const objektList = await context.queryClient.query(
+      objektListDetailQuery(target.user.id, params.slug),
+    );
 
     if (!objektList) {
       throw redirect({

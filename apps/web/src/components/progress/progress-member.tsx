@@ -3,9 +3,12 @@ import { useProgressFilters } from "@/hooks/use-progress-filters";
 import { m } from "@/i18n/messages";
 import { filterDataQuery } from "@/lib/queries/core";
 import { progressBreakdownQuery } from "@/lib/queries/progress";
-import type { SeasonProgress } from "@/lib/universal/progress";
+import type {
+  ObjektProgression,
+  SeasonProgress,
+} from "@/lib/universal/progress";
 import { classSort, seasonSort } from "@/lib/utils";
-import type { ValidArtist } from "@apollo/cosmo/types/common";
+import type { ValidArtist, ValidOnlineType } from "@apollo/cosmo/types/common";
 import { useSuspenseQueries } from "@tanstack/react-query";
 import type { ReactNode } from "react";
 import { Skeleton } from "../ui/skeleton";
@@ -38,7 +41,7 @@ export default function ProgressMember(props: Props) {
   const onlineType = filters.filter ?? undefined;
   const { rows, classes } = buildBreakdown(
     progressQuery.data,
-    onlineType ?? "combined",
+    onlineType,
     props.artist,
   );
 
@@ -154,35 +157,57 @@ function Total(props: { label: string; children: ReactNode }) {
 }
 
 /**
- * Group the breakdown into season rows for one online type, dropping seasons and
- * classes the member has no obtainable collections in.
+ * Group the member's collections into season rows of class cells for one
+ * online type, or for both without one, dropping seasons and classes the
+ * member has no obtainable collections in.
  */
 function buildBreakdown(
-  progress: SeasonProgress[],
-  type: SeasonProgress["type"],
+  progress: ObjektProgression[],
+  onlineType: ValidOnlineType | undefined,
   artist: ValidArtist,
 ) {
-  const inType = progress.filter((p) => p.type === type && p.total > 0);
-  const classes = Array.from(new Set(inType.map((p) => p.class))).sort((a, b) =>
-    classSort(a, b, artist),
-  );
-  const seasons = Array.from(new Set(inType.map((p) => p.season))).sort(
-    seasonSort,
+  const bySeason = Map.groupBy(
+    progress.filter(
+      (p) => onlineType === undefined || p.collection.onOffline === onlineType,
+    ),
+    (p) => p.collection.season,
   );
 
-  const rows = seasons.map((season): BreakdownRow => {
-    const cells = new Map(
-      inType.filter((p) => p.season === season).map((p) => [p.class, p]),
-    );
-    const inSeason = Array.from(cells.values());
+  const rows = Array.from(bySeason, ([season, inSeason]): BreakdownRow => {
+    const cells = new Map<string, SeasonProgress>();
+    for (const [className, collections] of Map.groupBy(
+      inSeason,
+      (p) => p.collection.class,
+    )) {
+      const obtainable = collections.filter((p) => !p.collection.unobtainable);
+      if (obtainable.length === 0) continue;
+      const owned = obtainable.filter((p) => p.obtained).length;
+      cells.set(className, {
+        key: `${season}_${className}`,
+        season,
+        class: className,
+        total: obtainable.length,
+        progress: owned,
+        unobtainable: collections.filter((p) => p.obtained).length - owned,
+        collections,
+      });
+    }
+
+    const inRow = Array.from(cells.values());
     return {
       season,
       cells,
-      owned: inSeason.reduce((acc, p) => acc + p.progress, 0),
-      total: inSeason.reduce((acc, p) => acc + p.total, 0),
-      bonus: inSeason.reduce((acc, p) => acc + p.unobtainable, 0),
+      owned: inRow.reduce((acc, p) => acc + p.progress, 0),
+      total: inRow.reduce((acc, p) => acc + p.total, 0),
+      bonus: inRow.reduce((acc, p) => acc + p.unobtainable, 0),
     };
-  });
+  })
+    .filter((row) => row.cells.size > 0)
+    .sort((a, b) => seasonSort(a.season, b.season));
+
+  const classes = Array.from(
+    new Set(rows.flatMap((row) => Array.from(row.cells.keys()))),
+  ).sort((a, b) => classSort(a, b, artist));
 
   return { rows, classes };
 }

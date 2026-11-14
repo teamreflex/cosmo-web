@@ -133,10 +133,12 @@ function RootObjekt({
   const { isLoaded, checkDecoded, onLoad } = useImageLoaded(priority);
 
   const imageProps = useObjektImage(collection);
+  const { preload } = useMetadataDialog();
 
   function prefetch() {
-    // warm the image the detail sheet shows, and mount its dialog
+    // warm the sheet and the image it shows, and mount the detail dialog
     onIntent();
+    preload();
     const img = new Image();
     img.src = getObjektFrontImageUrl(collection, "grid");
   }

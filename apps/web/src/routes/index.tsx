@@ -27,24 +27,21 @@ export const Route = createFileRoute("/")({
     searchParams,
   }),
   loader: async ({ context, deps }) => {
-    const [account, selected] = await Promise.all([
-      context.queryClient.query({
-        ...currentAccountQuery,
-        staleTime: "static",
-      }),
-      context.queryClient.query({
-        ...selectedArtistsQuery,
-        staleTime: "static",
-      }),
-    ]);
-
-    // prefetch objekts
+    // the objekts start loading once the selected artists are known, without waiting on the account
+    const selected = await context.queryClient.query({
+      ...selectedArtistsQuery,
+      staleTime: "static",
+    });
     if (!deps.searchParams.search) {
-      // prefetch blockchain
       void context.queryClient
         .infiniteQuery(objektIndexBlockchainQuery(deps.searchParams, selected))
         .catch(noop);
     }
+
+    const account = await context.queryClient.query({
+      ...currentAccountQuery,
+      staleTime: "static",
+    });
 
     return { account };
   },

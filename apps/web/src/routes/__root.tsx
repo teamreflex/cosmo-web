@@ -15,6 +15,8 @@ import {
   selectedArtistsQuery,
 } from "@/lib/queries/core";
 import { noticeQuery } from "@/lib/queries/notice";
+import { unreadNotificationsQuery } from "@/lib/queries/notifications";
+import { systemStatusQuery } from "@/lib/queries/system";
 import { ThemeProvider } from "@/providers/theme-provider";
 import halvar from "@/styles/fonts/HalvarBreit-Bd.woff2?url";
 import dmSans from "@fontsource-variable/dm-sans/files/dm-sans-latin-wght-normal.woff2?url";
@@ -36,10 +38,18 @@ interface RouterContext {
 export const Route = createRootRouteWithContext<RouterContext>()({
   staleTime: Infinity,
   loader: async ({ context }) => {
-    void context.queryClient.query(currentAccountQuery).catch(noop);
+    // only a signed-in viewer has a bell to count unread notifications for
+    void context.queryClient
+      .query(currentAccountQuery)
+      .then(
+        (account) =>
+          account && context.queryClient.query(unreadNotificationsQuery),
+      )
+      .catch(noop);
     void context.queryClient.query(artistsQuery).catch(noop);
     void context.queryClient.query(filterDataQuery).catch(noop);
     void context.queryClient.query(noticeQuery).catch(noop);
+    void context.queryClient.query(systemStatusQuery).catch(noop);
 
     await context.queryClient.query({
       ...selectedArtistsQuery,

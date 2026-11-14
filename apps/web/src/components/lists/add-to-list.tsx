@@ -90,7 +90,7 @@ export default function AddToList({
               </DropdownMenuItem>
             )}
 
-            <ScrollArea className="max-h-44 overflow-y-auto">
+            <ScrollArea className="flex max-h-44 flex-col">
               {lists.map((list) => {
                 const commonProps = {
                   list,

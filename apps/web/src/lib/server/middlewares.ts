@@ -2,27 +2,41 @@ import { ExpectedError } from "@/lib/universal/errors/expected";
 import { can, parseRole } from "@apollo/auth";
 import type { Permissions } from "@apollo/auth";
 import { createMiddleware } from "@tanstack/react-start";
-import { getRequestHeaders } from "@tanstack/react-start/server";
 import { auth } from "./auth.server";
 import { getCosmoAddress } from "./cosmo-accounts.server";
 import { db } from "./db";
 
 /**
- * Adds the current session to the context.
+ * Gives every server function of a request one session lookup to share. A
+ * page render runs its server functions in-process under one request, so they
+ * read the session once between them; each browser call is a request of its
+ * own. The lookup runs on first use, so a request that never asks never reads.
  */
-export const authMiddleware = createMiddleware({ type: "function" }).server(
-  async ({ next }) => {
-    const session = await auth.api.getSession({
-      headers: getRequestHeaders(),
-    });
+export const sessionMiddleware = createMiddleware({ type: "request" }).server(
+  ({ next, request }) => {
+    let session: ReturnType<typeof auth.api.getSession> | undefined;
 
     return next({
       context: {
-        session,
+        getSession: () =>
+          (session ??= auth.api.getSession({ headers: request.headers })),
       },
     });
   },
 );
+
+/**
+ * Adds the current session to the context.
+ */
+export const authMiddleware = createMiddleware({ type: "function" })
+  .middleware([sessionMiddleware])
+  .server(async ({ next, context }) => {
+    return next({
+      context: {
+        session: await context.getSession(),
+      },
+    });
+  });
 
 /**
  * Ensures that the user is authenticated.

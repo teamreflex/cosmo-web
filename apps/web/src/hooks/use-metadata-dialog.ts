@@ -18,6 +18,8 @@ export type MetadataDialogTarget =
 export type MetadataDialogContextValue = {
   open: (slug: string, target?: MetadataDialogTarget) => void;
   close: () => void;
+  /** starts downloading the sheet's content, for a pointer reaching a trigger */
+  preload: () => void;
 };
 
 export const MetadataDialogContext =

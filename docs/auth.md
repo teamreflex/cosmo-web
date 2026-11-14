@@ -104,7 +104,7 @@ The server function check is the authoritative one. Route guards and UI checks o
 - Gate a staff server function with `staffMiddleware(permissions)` (`lib/server/middlewares.ts`). It adds `role` to the context.
 - Staff don't need a COSMO link. Chain `cosmoMiddleware` after `staffMiddleware` only when the handler needs the caller's address.
 - How `requirePermission()` and `requireMarketAccess()` gate routes is in [`tanstack.md`](tanstack.md#gating).
-- `ADMIN_SHELL_PERMISSIONS` (`components/admin/common.ts`) is `report: read`, so testers never see the admin shell.
+- `ADMIN_SHELL_PERMISSIONS` (`components/admin/permissions.ts`) is `report: read`, so testers never see the admin shell.
 
 ## Staff changes to accounts
 

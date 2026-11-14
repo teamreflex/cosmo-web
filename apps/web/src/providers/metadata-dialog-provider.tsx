@@ -1,25 +1,11 @@
-import { MetadataDialogError } from "@/components/objekt/metadata/common";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import MetadataSheet from "@/components/objekt/metadata-sheet";
 import {
   MetadataDialogContext,
   type MetadataDialogTarget,
 } from "@/hooks/use-metadata-dialog";
 import { useObjektSerial } from "@/hooks/use-objekt-serial";
-import { lazyWithPreload } from "@/lib/lazy";
-import { IconLoader2 } from "@tabler/icons-react";
-import { QueryErrorResetBoundary } from "@tanstack/react-query";
-import { Suspense, useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
-import { ErrorBoundary } from "react-error-boundary";
-
-const MetadataContent = lazyWithPreload(
-  () => import("@/components/objekt/metadata/metadata-content"),
-);
 
 type DialogState = {
   slug: string;
@@ -62,58 +48,28 @@ export function MetadataDialogProvider({ children }: Props) {
   }, [reset]);
 
   // only stable callbacks, so opening the sheet doesn't re-render every consumer
-  const value = useMemo(() => ({ open, close }), [open, close]);
-
-  function onOpenChange(next: boolean) {
-    if (next === false) {
-      close();
-    }
-  }
+  const value = useMemo(
+    () => ({ open, close, preload: MetadataSheet.preload }),
+    [open, close],
+  );
 
   return (
     <MetadataDialogContext.Provider value={value}>
       {children}
 
-      <Sheet open={state !== null} onOpenChange={onOpenChange}>
-        <SheetContent
-          finalFocus={() =>
-            opener.current?.isConnected === true ? opener.current : true
+      <MetadataSheet
+        slug={state?.slug}
+        target={state?.target}
+        open={state !== null}
+        onOpenChange={(next) => {
+          if (next === false) {
+            close();
           }
-          side="right"
-          className="w-full gap-0 p-0 outline-hidden data-[side=right]:sm:max-w-lg"
-        >
-          {state !== null && (
-            <>
-              <div className="sr-only">
-                <SheetTitle>{state.slug}</SheetTitle>
-                <SheetDescription>{state.slug}</SheetDescription>
-              </div>
-
-              <QueryErrorResetBoundary>
-                {({ reset }) => (
-                  <ErrorBoundary
-                    FallbackComponent={MetadataDialogError}
-                    onReset={reset}
-                  >
-                    <Suspense
-                      fallback={
-                        <div className="flex h-full w-full items-center justify-center">
-                          <IconLoader2 className="h-12 w-12 animate-spin" />
-                        </div>
-                      }
-                    >
-                      <MetadataContent
-                        slug={state.slug}
-                        target={state.target}
-                      />
-                    </Suspense>
-                  </ErrorBoundary>
-                )}
-              </QueryErrorResetBoundary>
-            </>
-          )}
-        </SheetContent>
-      </Sheet>
+        }}
+        finalFocus={() =>
+          opener.current?.isConnected === true ? opener.current : true
+        }
+      />
     </MetadataDialogContext.Provider>
   );
 }

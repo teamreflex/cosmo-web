@@ -11,9 +11,9 @@ import MemberFilterSkeleton from "@/components/skeleton/member-filter-skeleton";
 import { Skeleton } from "@/components/ui/skeleton";
 import TitleHeader from "@/components/ui/title-header";
 import { m } from "@/i18n/messages";
-import { $getObjektListWithUser } from "@/lib/functions/lists";
 import { defineHead } from "@/lib/meta";
 import { currentAccountQuery, selectedArtistsQuery } from "@/lib/queries/core";
+import { objektListByIdQuery } from "@/lib/queries/lists";
 import { objektListQuery } from "@/lib/queries/objekt-queries";
 import {
   objektListFrontendSchema,
@@ -26,7 +26,6 @@ import { createFileRoute, notFound, redirect } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/list/$id")({
   staleTime: 1000 * 60 * 15, // 15 minutes
-  preloadStaleTime: 30_000, // loader calls $getObjektListWithUser outside query
   component: RouteComponent,
   pendingComponent: PendingComponent,
   notFoundComponent: NotFoundComponent,
@@ -51,7 +50,7 @@ export const Route = createFileRoute("/list/$id")({
 
     // load required data
     const [objektListWithUser, account] = await Promise.all([
-      $getObjektListWithUser({ data: { id: sanitizedId } }),
+      context.queryClient.query(objektListByIdQuery(sanitizedId)),
       context.queryClient.query({
         ...currentAccountQuery,
         staleTime: "static",

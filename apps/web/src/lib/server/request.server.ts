@@ -1,5 +1,4 @@
 import { getRequest, getRequestHeaders } from "@tanstack/react-start/server";
-
 /**
  * Returns the AbortSignal of the in-flight request via TanStack Start's
  * AsyncLocalStorage. Returns undefined when called outside a request context.

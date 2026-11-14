@@ -3,6 +3,7 @@ import {
   sentryGlobalRequestMiddleware,
 } from "@sentry/tanstackstart-react";
 import { createCsrfMiddleware, createStart } from "@tanstack/react-start";
+import { sessionMiddleware } from "./lib/server/middlewares";
 import { expectedErrorSerializationAdapter } from "./lib/universal/errors/serialization";
 
 /**
@@ -20,7 +21,11 @@ const csrfMiddleware = createCsrfMiddleware({
  * it by marker.
  */
 export const startInstance = createStart(() => ({
-  requestMiddleware: [sentryGlobalRequestMiddleware, csrfMiddleware],
+  requestMiddleware: [
+    sentryGlobalRequestMiddleware,
+    csrfMiddleware,
+    sessionMiddleware,
+  ],
   functionMiddleware: [sentryGlobalFunctionMiddleware],
   serializationAdapters: [expectedErrorSerializationAdapter],
 }));

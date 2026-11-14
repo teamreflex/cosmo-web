@@ -33,14 +33,14 @@ How `apps/web` uses TanStack Start, Router and Query. Library APIs are in their 
 
 ## Process wiring
 
-| File                    | What it sets up                                                                                                                                                                |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `src/start.ts`          | Sentry request and function middleware, CSRF middleware for server functions only, the `ExpectedError` serialization adapter                                                   |
-| `src/server.ts`         | The server entry: Paraglide's locale middleware wrapped in Sentry's fetch wrapper                                                                                              |
-| `src/router.tsx`        | `getRouter()`: the `QueryClient` (default `staleTime` 5 min), router defaults, CSV `stringifySearch`, the CSP nonce, a lazy import of client Sentry, the SSR-query integration |
-| `src/routes/__root.tsx` | `staleTime: Infinity`, so its loader reruns only on `router.invalidate()`; prefetches the account, artists, filter data and notice                                             |
-| `main.ts`               | The production server (`bun run start`, `turbo preview`): static files, `/health`, the per-request CSP                                                                         |
-| `vite.config.mts`       | Plugin order, route code splitting, the client's chunk groups and import-protection deny list; imports both env schemas so a bad env fails the build                           |
+| File                    | What it sets up                                                                                                                                                                      |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `src/start.ts`          | Sentry request and function middleware, CSRF middleware for server functions only, the session request middleware, the `ExpectedError` serialization adapter                         |
+| `src/server.ts`         | The server entry: Paraglide's locale middleware wrapped in Sentry's fetch wrapper                                                                                                    |
+| `src/router.tsx`        | `getRouter()`: the `QueryClient` (default `staleTime` 5 min), router defaults, CSV `stringifySearch`, the CSP nonce, a lazy import of client Sentry, the SSR-query integration       |
+| `src/routes/__root.tsx` | `staleTime: Infinity`, so its loader reruns only on `router.invalidate()`; prefetches the account, artists, filter data, notice, system status and a signed-in viewer's unread count |
+| `main.ts`               | The production server (`bun run start`, `turbo preview`): static files, `/health`, the per-request CSP                                                                               |
+| `vite.config.mts`       | Plugin order, route code splitting, the client's chunk groups and import-protection deny list; imports both env schemas so a bad env fails the build                                 |
 
 - `defaultPreloadStaleTime: 0` because Query is the caching authority; the router never serves its own cached loader result.
 - `handleRedirects: true` lets a `redirect()` thrown inside a query or mutation navigate.
@@ -57,7 +57,6 @@ How `apps/web` uses TanStack Start, Router and Query. Library APIs are in their 
 - Filters live in the URL, not component state (`hooks/use-cosmo-filters.ts`). Arrays serialise as CSV (`?member=HeeJin,SeoYeon`) through `stringifySearch()`, and each field's `castToArray()` splits them back.
 - `head` uses `defineHead()` from `lib/meta.ts` (title, canonical, `denyRobots`, embeds).
 - Per-route `staleTime`: 15 min on public landing and list routes; `Infinity` on admin routes and `gravity/$artist/$id`.
-- A loader that calls a server function directly instead of through a query sets `preloadStaleTime` (`routes/list/$id.tsx`), because Query isn't caching the result.
 - `ssr: "data-only"` runs the loader on the server and renders the component only on the client (`routes/@{$username}/trades.tsx`, which groups transfers by date on the client).
 
 ### Gating
@@ -73,6 +72,8 @@ How `apps/web` uses TanStack Start, Router and Query. Library APIs are in their 
 - Data the page needs: `await context.queryClient.query({ ...options, staleTime: "static" })`. It blocks only when nothing is cached, and a failure reaches the route's `errorComponent`.
 - Data that can stream in: `void context.queryClient.query(options).catch(noop)`, with `noop` from `@tanstack/react-query`. The SSR-query integration streams it when it resolves.
 - Infinite queries use `queryClient.infiniteQuery` the same way.
+- A loader never awaits a server function directly, because `loaderDeps` reruns it on every filter change. Data that depends only on path params goes through a query keyed by them (`gravityDetailsQuery` in `routes/gravity/$artist/$id.tsx`).
+- `"static"` returns cached data even after `invalidateQueries`, and invalidation refetches only queries a component subscribes to. A query that only loaders read and a mutation can change is read with its own `staleTime` instead of `"static"`, so the next loader run refetches it once invalidated (`objektListDetailQuery` in `lib/queries/lists.ts`).
 - `query()` applies the options' `select`, so the loader sees what `useSuspenseQuery` returns.
 - `ensureQueryData`, `prefetchQuery` and `fetchQuery` (and their infinite variants) are deprecated, and `typescript/no-deprecated` is a lint error.
 - Components read page data with `useSuspenseQuery` / `useSuspenseInfiniteQuery`. Plain `useQuery` is for lookups the user triggers (search comboboxes, QR sign-in), not page data.
@@ -98,12 +99,16 @@ A prefetch only helps when the component subscribes with exactly the key the loa
 - A handler may `throw redirect(...)` after a write (the list functions in `lib/functions/lists.ts`), which `handleRedirects` turns into a navigation.
 - Return values are serialized; raw Postgres aggregates arrive as `BigInt` and break that ([database.md](database.md)).
 
-| Middleware (`lib/server/middlewares.ts`) | Adds to `context`                         | Refuses with                        |
-| ---------------------------------------- | ----------------------------------------- | ----------------------------------- |
-| `authMiddleware`                         | `session`, possibly null                  | nothing                             |
-| `authenticatedMiddleware`                | `session`                                 | `not_signed_in`                     |
-| `cosmoMiddleware`                        | `session`, `cosmo: { address, username }` | `not_signed_in`, `cosmo_not_linked` |
-| `staffMiddleware(permissions)`           | `session`, `role`                         | `not_signed_in`, `forbidden`        |
+| Middleware (`lib/server/middlewares.ts`) | Adds to `context`                           | Refuses with                        |
+| ---------------------------------------- | ------------------------------------------- | ----------------------------------- |
+| `sessionMiddleware` (request)            | `getSession()`, one lazy lookup per request | nothing                             |
+| `authMiddleware`                         | `session`, possibly null                    | nothing                             |
+| `authenticatedMiddleware`                | `session`                                   | `not_signed_in`                     |
+| `cosmoMiddleware`                        | `session`, `cosmo: { address, username }`   | `not_signed_in`, `cosmo_not_linked` |
+| `staffMiddleware(permissions)`           | `session`, `role`                           | `not_signed_in`, `forbidden`        |
+
+- `sessionMiddleware` runs once per request from `start.ts`, so the server functions a page render calls in-process share one session lookup, and each browser call makes its own.
+- A function middleware that reads a request middleware's context lists it in `.middleware([...])`, because the context is only typed that way. Start skips a request middleware that already ran for the request, so the two share one context.
 
 | Helper                                                               | Use                                                                                        |
 | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
@@ -146,6 +151,8 @@ A prefetch only helps when the component subscribes with exactly the key the loa
 ```
 
 - `router.invalidate()` reruns loaders, but a loader's `query()` returns cached data unless it is stale, and a `staleTime: Infinity` or `"static"` query never goes stale, so invalidate the query itself.
+- A mutation that changes what the current page's loader returned calls `router.invalidate()` as well, because loader data only updates when the loader reruns (`components/lists/update-list.tsx`).
+- A mutation whose server function answers with a `redirect()` invalidates in `onMutate`, because the redirect navigates before `onSuccess` runs and the page it lands on would read the cache first.
 - The optimistic `onSuccess` doesn't await its invalidation, because the next change in the scope would wait on the refetch.
 - `removeViewerQueries()` (`lib/queries/core.ts`) removes every query whose answer depends on the viewer although its key doesn't name them. A new query like that goes under one of its prefixes or into the function, because one tab reuses the `QueryClient` across sign-ins.
 

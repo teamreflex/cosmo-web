@@ -15,23 +15,7 @@ import {
   IconUserCog,
 } from "@tabler/icons-react";
 import type { Icon } from "@tabler/icons-react";
-
-/**
- * Who can open the admin layout and see its link in the user dropdown: every
- * staff role, since moderators work the report queue.
- */
-export const ADMIN_SHELL_PERMISSIONS = {
-  report: ["read"],
-} satisfies Permissions;
-
-/**
- * Who can open /admin/accounts. The role card and the link history each
- * render only for their own action, so either one opens the page.
- */
-export const ADMIN_ACCOUNTS_PERMISSIONS = [
-  { user: ["set-role"] },
-  { cosmo: ["history"] },
-] satisfies Permissions[];
+import { ADMIN_ACCOUNTS_PERMISSIONS } from "./permissions";
 
 type AdminItem = {
   title: string;

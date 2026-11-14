@@ -1,25 +1,23 @@
-import type { ValidOnlineType } from "@apollo/cosmo/types/common";
 import type { Collection } from "@apollo/database/indexer/types";
-
-export type SeasonMatrix = {
-  season: string;
-  class: string;
-  type: ValidOnlineType | "combined";
-  key: string;
-};
 
 export type ObjektProgression = {
   collection: Collection;
   obtained: boolean;
-  unobtainable: boolean;
 };
 
-export interface SeasonProgress extends SeasonMatrix {
+/**
+ * One season and class cell of a member's breakdown. total and progress count
+ * obtainable collections; unobtainable counts the owned ones that aren't.
+ */
+export type SeasonProgress = {
+  key: string;
+  season: string;
+  class: string;
   total: number;
   progress: number;
   unobtainable: number;
   collections: ObjektProgression[];
-}
+};
 
 export type LeaderboardItem = {
   rank: number;
