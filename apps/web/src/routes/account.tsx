@@ -6,6 +6,7 @@ import PreferencesSection from "@/components/auth/account/preferences";
 import ProfileSection from "@/components/auth/account/profile";
 import LinkCosmo from "@/components/auth/link-cosmo";
 import { Error } from "@/components/error-boundary";
+import ShareDataSheet from "@/components/share-data/share-data-sheet";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
@@ -17,6 +18,7 @@ import { shortAddress } from "@apollo/util";
 import {
   IconAdjustmentsHorizontal,
   IconBell,
+  IconCloudUpload,
   IconLink,
   IconLock,
   IconTrash,
@@ -97,6 +99,21 @@ function RouteComponent() {
             </div>
           </AccountSection>
 
+          <AccountSection
+            id="share-data"
+            title={m.share_data_title()}
+            description={m.share_data_description({
+              appName: env.VITE_APP_NAME,
+            })}
+          >
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 px-4 py-4 sm:px-6">
+              <p className="min-w-60 flex-1 text-sm text-muted-foreground">
+                {m.share_data_privacy()}
+              </p>
+              <ShareDataSheet />
+            </div>
+          </AccountSection>
+
           <PreferencesSection user={account.user} />
 
           <NotificationsSection user={account.user} />
@@ -127,6 +144,11 @@ function SectionMenu() {
     { id: "profile", label: m.account_section_profile(), icon: IconUser },
     { id: "sign-in", label: m.account_section_sign_in(), icon: IconLock },
     { id: "cosmo", label: m.common_cosmo(), icon: IconLink },
+    {
+      id: "share-data",
+      label: m.share_data_title(),
+      icon: IconCloudUpload,
+    },
     {
       id: "preferences",
       label: m.account_section_preferences(),

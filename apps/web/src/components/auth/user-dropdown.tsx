@@ -19,7 +19,6 @@ import {
   IconLogout,
   IconShieldExclamation,
   IconTool,
-  IconUserCog,
 } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
@@ -65,14 +64,6 @@ export default function UserDropdown({ user, onSignOut }: UserDropdownProps) {
         <DropdownMenuItem
           className="cursor-pointer"
           render={<Link to="/account" />}
-        >
-          <IconUserCog className="h-4 w-4" />
-          <span>{m.common_account()}</span>
-        </DropdownMenuItem>
-
-        <DropdownMenuItem
-          className="cursor-pointer"
-          render={<Link to="/account" hash="preferences" />}
         >
           <IconTool className="h-4 w-4" />
           <span>{m.user_dropdown_settings()}</span>

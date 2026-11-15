@@ -85,7 +85,11 @@ export const $scrapeCollectionMedia = createServerFn({ method: "POST" })
             : [];
         case "band":
           return available.length > 0
-            ? [{ artistId: item.artistId, class: "Unit", prop: "bandImageUrl" }]
+            ? ["Special", "Unit"].map((className) => ({
+                artistId: item.artistId,
+                class: className,
+                prop: "bandImageUrl",
+              }))
             : [];
         case "audio": {
           const seasons = item.seasons.filter((season) =>
