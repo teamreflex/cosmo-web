@@ -76,7 +76,7 @@ Apollo matches people who want to swap objekts and records each swap, but never 
 | [offers.md](offers.md)                           | direct offers, counters, offer windows, what a refusal may reveal                                                                       |
 | [lifecycle.md](lifecycle.md)                     | trade statuses, party actions, ending a trade, timers' decisions, disputes, bans                                                        |
 | [drain.md](drain.md)                             | what an on-chain transfer means for a trade, listing or offer                                                                           |
-| [feedback.md](feedback.md)                       | claim caps, listing limits, rate limits, ratings, the market gate and notices                                                           |
+| [feedback.md](feedback.md)                       | claim caps, listing limits, rate limits, ratings and notices                                                                            |
 | [notification-emails.md](notification-emails.md) | which notifications are emailed, the opt-out bits, the email task's claim, release and cooldown                                         |
 
 ## Where to start

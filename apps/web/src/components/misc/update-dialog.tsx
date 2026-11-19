@@ -96,19 +96,13 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2026-10-19",
+    date: "2026-11-19",
     changes: [
-      "Added Chinese (simplified & traditional) translations.",
-      "Redesigned the progress page, making it clearer to read.",
-      "Leaderboards are now real-time instead of updating once a day.",
-    ],
-  },
-  {
-    date: "2026-10-17",
-    changes: [
-      "Missing serials since June have been restored.",
-      "These are estimates based on how COSMO works, not official. It should be most accurate for standard shop releases, less accurate for physical scans.",
-      "If you have an incorrect serial, we have a #serial-fix-requests channel in Discord.",
+      "Transferable status for all objekts has been fixed and should now be accurate going forward.",
+      "Account settings & preferences have been streamlined into a single page.",
+      "Transfers can now be filtered by user.",
+      "idntt members and their units have been added to search, so 'id1', 'unevermet' etc now work.",
+      "Trade market is now available to everyone, designed to be as flexible as Discord trade channels.",
     ],
   },
 ];

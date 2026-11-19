@@ -1,4 +1,3 @@
-import { can, marketAccess, parseRole } from "@apollo/auth";
 import { isBanActive } from "@apollo/auth/guard";
 import {
   cosmoAccounts,
@@ -52,9 +51,9 @@ type OfferPreflight = {
 
 /**
  * The checks a send or a counter runs without a lock, from its sender's
- * side: not to themselves, a counterparty with market access and a COSMO
- * link and, for a send, a discoverable have list paired with a discoverable
- * want list (the people Trade Matches shows), then who holds every token.
+ * side: not to themselves, a counterparty with a COSMO link and, for a
+ * send, a discoverable have list paired with a discoverable want list (the
+ * people Trade Matches shows), then who holds every token.
  * The sender's own token is named with why; a token on the counterparty's
  * side is named as unavailable, never why.
  */
@@ -65,13 +64,12 @@ export async function preflightOffer(
 ): Promise<OfferPreflight> {
   if (offer.toUserId === actor.userId) refuseTrade("offer_own");
 
-  // the counterparty's link and role, and for a send their trade pair, in one statement
+  // the counterparty's link, and for a send their trade pair, in one statement
   const h = alias(objektLists, "h");
   const w = alias(objektLists, "w");
   const [link] = await db
-    .select({ address: cosmoAccounts.address, role: user.role })
+    .select({ address: cosmoAccounts.address })
     .from(cosmoAccounts)
-    .innerJoin(user, eq(user.id, cosmoAccounts.userId))
     .where(
       and(
         eq(cosmoAccounts.userId, offer.toUserId),
@@ -86,8 +84,7 @@ export async function preflightOffer(
           : undefined,
       ),
     );
-  // without market access they couldn't open the offer to answer it
-  if (!link || !can(parseRole(link.role), marketAccess)) {
+  if (!link) {
     refuseTrade("offer_unavailable");
   }
 

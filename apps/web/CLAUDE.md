@@ -31,7 +31,7 @@ The TanStack Start web app. The overview is in [README.md](README.md); conventio
 - **New page:** a route in `src/routes/` with `validateSearch`, `loaderDeps`, `loader`, `head: defineHead(...)`, `pendingComponent` and `errorComponent`; a query in `lib/queries/<domain>.ts`; a server function in `lib/functions/<domain>.ts`.
 - **New server function:** pick middleware by the identity it needs, put a shared schema in `lib/universal/schema/`, and follow [tanstack.md](../../docs/tanstack.md#server-functions).
 - **New refusal:** the checklist in [errors.md](../../docs/errors.md#adding-an-expected-error).
-- **New staff or market page:** gate it in `beforeLoad` with `requirePermission()` or `requireMarketAccess()` ([tanstack.md](../../docs/tanstack.md#gating)).
+- **New staff page:** gate it in `beforeLoad` with `requirePermission()` ([tanstack.md](../../docs/tanstack.md#gating)).
 - **New query that depends on the viewer:** put it under a prefix `removeViewerQueries()` clears ([tanstack.md](../../docs/tanstack.md#mutations-and-invalidation)).
 - **New external image, script or API origin:** add it to `buildContentSecurityPolicy()` in `main.ts` ([tanstack.md](../../docs/tanstack.md#process-wiring)).
 - **New env var:** add it to `lib/env/server.ts`, or `lib/env/client.ts` with a `VITE_` prefix for the browser ([tooling.md](../../docs/tooling.md)).

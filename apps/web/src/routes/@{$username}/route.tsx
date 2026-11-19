@@ -12,7 +12,6 @@ import ProfileTabs from "@/components/profile/profile-tabs";
 import ReportButton from "@/components/profile/report-button";
 import UserAvatar from "@/components/profile/user-avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useHasPermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
 import { env } from "@/lib/env/client";
 import { defineHead } from "@/lib/meta";
@@ -23,7 +22,6 @@ import { profileIdentifier } from "@/lib/universal/cosmo-accounts";
 import { profileFrontendSchema } from "@/lib/universal/parsers";
 import { BinderViewerProvider } from "@/providers/binder-viewer-provider";
 import { MetadataDialogProvider } from "@/providers/metadata-dialog-provider";
-import { marketAccess } from "@apollo/auth";
 import { Addresses, isEqual } from "@apollo/util";
 import { IconAlertCircle } from "@tabler/icons-react";
 import { noop } from "@tanstack/react-query";
@@ -76,7 +74,6 @@ export const Route = createFileRoute("/@{$username}")({
 
 function RouteComponent() {
   const { account, target } = Route.useLoaderData();
-  const hasPermission = useHasPermission();
 
   const isAuthenticated = account?.cosmo?.address === target.cosmo.address;
 
@@ -130,8 +127,7 @@ function RouteComponent() {
                     <CopyAddressButton address={target.cosmo.address} />
                     {account &&
                       target.user &&
-                      account.user.id !== target.user.id &&
-                      hasPermission(marketAccess) && (
+                      account.user.id !== target.user.id && (
                         <ReportButton
                           userId={target.user.id}
                           username={target.cosmo.username}

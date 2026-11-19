@@ -4,7 +4,7 @@ Staff roles, the account guards and the user-events contract, shared by apps/web
 
 | Import                | Holds                                                                                                                                               |
 | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@apollo/auth`        | the access-control `statement`, the four `roles`, `can()`, `parseRole()`, `marketAccess`, `adminPluginOptions` for the web app's admin plugin       |
+| `@apollo/auth`        | the access-control `statement`, the four `roles`, `can()`, `parseRole()`, `adminPluginOptions` for the web app's admin plugin                       |
 | `@apollo/auth/guard`  | `isBanActive()`, `userChangeRefusal()` (ban, unban, set role), `cosmoLinkRefusal()`, protected-domain parsing and `protectionFor()`, `isDemotion()` |
 | `@apollo/auth/events` | the `user-events` Redis channel name and the `UserEvent` union                                                                                      |
 

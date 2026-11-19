@@ -3,7 +3,7 @@ import type { Role } from "./index";
 
 /**
  * Each role holds every permission of the roles ranked below it, so a lower
- * rank always means fewer permissions.
+ * rank never means more permissions. A tester holds the same as a user.
  */
 const roleRanks = {
   user: 0,

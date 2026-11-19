@@ -31,7 +31,7 @@ An offer is a trade that starts `pending` and reserves nothing until it is accep
 ## Direct offers and counters
 
 - `$sendOffer` (`lib/functions/trade-offers.ts`, `lib/server/trades/offer.server.ts`) takes picked tokens on both sides from Trade Matches and creates a `pending` trade with `proposed_by = from`, nothing live, and `offer_received` to the recipient.
-- A send is refused `offer_own` to yourself, and `offer_unavailable` when the recipient has no COSMO link, no market access, or no discoverable have list paired with a want list (the people Trade Matches shows).
+- A send is refused `offer_own` to yourself, and `offer_unavailable` when the recipient has no COSMO link or no discoverable have list paired with a want list (the people Trade Matches shows).
 - Under the lock, both users are locked `FOR NO KEY UPDATE`. The sender's link must still match their session (`cosmo_not_linked`), and the recipient must be unbanned and still linked to the address the preflight judged (`offer_unavailable`).
 - `$counterOffer` is open only to the answerer of a direct offer. It creates a new pending offer from the counterer, its own `from` side, with `parent_id` pointing at the original and a fresh 72 hours.
 - The original ends `countered` with a `countered { counterId }` event, and its proposer hears `offer_countered`.

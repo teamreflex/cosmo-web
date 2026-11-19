@@ -1,9 +1,7 @@
 import { useArtists } from "@/hooks/use-artists";
-import { useHasPermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
 import type { PublicCosmo } from "@/lib/universal/cosmo-accounts";
 import { cn } from "@/lib/utils";
-import { marketAccess } from "@apollo/auth";
 import {
   IconArchive,
   IconCards,
@@ -54,6 +52,14 @@ export function DesktopPublicLinks() {
         active={pathname.startsWith("/gravity")}
         name={m.gravity_header()}
       />
+      <LinkButton
+        href="/market"
+        // trades are part of the market
+        active={
+          pathname.startsWith("/market") || pathname.startsWith("/trade/")
+        }
+        name={m.market_header()}
+      />
     </div>
   );
 }
@@ -63,34 +69,20 @@ type AuthLinksProps = {
 };
 
 /**
- * Desktop links that depend on the account: the market for roles that can
- * open it, and the user's own profile.
+ * The desktop link to the user's own profile, once they've linked COSMO.
  */
 export function DesktopAuthLinks({ cosmo }: AuthLinksProps) {
   const pathname = useLocation({ select: (location) => location.pathname });
-  const market = useHasPermission()(marketAccess);
 
-  if (!market && !cosmo) return null;
+  if (!cosmo) return null;
 
   return (
     <div className="hidden items-center gap-1 lg:flex">
-      {market && (
-        <LinkButton
-          href="/market"
-          // trades are part of the market
-          active={
-            pathname.startsWith("/market") || pathname.startsWith("/trade/")
-          }
-          name={m.market_header()}
-        />
-      )}
-      {cosmo && (
-        <LinkButton
-          href={`/@${cosmo.username}`}
-          active={pathname.startsWith(`/@${cosmo.username}`)}
-          name={m.nav_profile()}
-        />
-      )}
+      <LinkButton
+        href={`/@${cosmo.username}`}
+        active={pathname.startsWith(`/@${cosmo.username}`)}
+        name={m.nav_profile()}
+      />
     </div>
   );
 }
@@ -129,7 +121,6 @@ export function MobileMenu(props: MobileMenuProps) {
 function MobileMenuItems(props: MobileMenuProps) {
   const pathname = useLocation({ select: (location) => location.pathname });
   const { artistList, selectedIds } = useArtists();
-  const hasPermission = useHasPermission();
 
   return (
     <div className="contents">
@@ -186,21 +177,19 @@ function MobileMenuItems(props: MobileMenuProps) {
       </DropdownMenuItem>
 
       {/* market */}
-      {hasPermission(marketAccess) && (
-        <DropdownMenuItem
-          render={<Link to="/market" aria-label={m.market_header()} />}
-        >
-          <IconTag
-            className={cn(
-              "h-4 w-4 shrink-0 fill-transparent transition-all",
-              (pathname.startsWith("/market") ||
-                pathname.startsWith("/trade/")) &&
-                "fill-foreground/50",
-            )}
-          />
-          <span>{m.market_header()}</span>
-        </DropdownMenuItem>
-      )}
+      <DropdownMenuItem
+        render={<Link to="/market" aria-label={m.market_header()} />}
+      >
+        <IconTag
+          className={cn(
+            "h-4 w-4 shrink-0 fill-transparent transition-all",
+            (pathname.startsWith("/market") ||
+              pathname.startsWith("/trade/")) &&
+              "fill-foreground/50",
+          )}
+        />
+        <span>{m.market_header()}</span>
+      </DropdownMenuItem>
 
       {props.cosmo && (
         <DropdownMenuItem

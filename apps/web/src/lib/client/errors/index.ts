@@ -7,7 +7,6 @@ import { formatEventError } from "./events";
 import { formatFeedbackError } from "./feedback";
 import { type Context, formatListError } from "./lists";
 import { LocalizedError } from "./localized";
-import { formatMarketInviteError } from "./market-invites";
 import { formatRateLimitError } from "./rate-limit";
 import { formatReportError } from "./reports";
 import { formatSerialError } from "./serials";
@@ -21,7 +20,6 @@ export {
   formatEventError,
   formatFeedbackError,
   formatListError,
-  formatMarketInviteError,
   formatRateLimitError,
   formatReportError,
   formatSerialError,
@@ -31,7 +29,7 @@ export {
 
 /**
  * Localizes any expected error code (list/binder/auth/collection/report/
- * account/serial/trade/feedback/market invite/event). A `LocalizedError`
+ * account/serial/trade/feedback/event). A `LocalizedError`
  * shows its own message, and any other error shows a generic one.
  */
 export function formatError(error: Error, context: Context = {}): string {
@@ -44,7 +42,6 @@ export function formatError(error: Error, context: Context = {}): string {
     formatAccountError(error.message) ??
     formatTradeError(error.message) ??
     formatFeedbackError(error.message) ??
-    formatMarketInviteError(error.message) ??
     formatEventError(error.message) ??
     formatRateLimitError(error.message) ??
     formatSerialError(error.message) ??

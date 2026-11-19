@@ -1168,8 +1168,6 @@
   "error_try_again": "Réessayer",
   "error_unknown": "Une erreur inconnue est survenue",
   "error_rate_limited": "Trop de requêtes, veuillez réessayer dans un instant.",
-  "error_market_invite_unavailable": "Cet utilisateur ne peut pas être invité.",
-  "error_market_invites_exhausted": "Vous avez utilisé toutes vos invitations.",
   "error_not_found_title": "Utilisateur introuvable",
   "error_not_found_description": "Utilisateur introuvable dans {appName} ou COSMO.",
   "error_objekt_not_found": "Objekt introuvable",
@@ -1613,7 +1611,7 @@
   "admin_audit_action_feedback_remove": "A supprimé une évaluation",
   "admin_accounts_title": "Comptes",
   "admin_accounts_role_title": "Changer un rôle",
-  "admin_accounts_role_description": "Promouvoir un utilisateur testeur, modérateur ou admin, ou le rétrograder. Un testeur n'obtient que le marché, avant son ouverture. Les comptes protégés ne peuvent pas être modifiés, et personne ne peut abaisser son propre rôle.",
+  "admin_accounts_role_description": "Promouvoir un utilisateur testeur, modérateur ou admin, ou le rétrograder. Un testeur a les mêmes accès qu'un utilisateur. Les comptes protégés ne peuvent pas être modifiés, et personne ne peut abaisser son propre rôle.",
   "admin_accounts_past_role_changes": "Changements passés",
   "admin_role_title": "Changer le rôle d'un utilisateur",
   "admin_role_description": "Trouvez l'utilisateur par son pseudo COSMO, puis choisissez son nouveau rôle.",
@@ -2542,21 +2540,6 @@
   "listing_poster_trades_empty": "Aucun échange pour l'instant",
   "listing_poster_trades_empty_body": "Les échanges issus de cette annonce apparaissent ici, de leur début jusqu'à leur fin.",
   "my_trades_title": "Mes échanges",
-  "market_invite_button": "Inviter",
-  "market_invite_title": "Inviter un testeur",
-  "market_invite_description": "Donnez à quelqu'un que vous connaissez un accès anticipé au marché. Son profil COSMO doit être associé à un compte {appName}.",
-  "market_invite_user": "Utilisateur",
-  "market_invite_success": "{username} peut désormais utiliser le marché",
-  "market_invite_left": [
-    {
-      "declarations": ["input count", "local countPlural = count: plural"],
-      "selectors": ["countPlural"],
-      "match": {
-        "countPlural=one": "Il vous reste {count} invitation.",
-        "countPlural=other": "Il vous reste {count} invitations."
-      }
-    }
-  ],
   "my_trades_tabs": "Quels échanges",
   "my_trades_tab_active": "En cours",
   "my_trades_tab_finished": "Terminés",

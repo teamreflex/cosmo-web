@@ -93,14 +93,13 @@ Roles and the access-control `statement` are defined once in `packages/auth/src/
 
 | Permission                                                              | user | tester | moderator | admin |
 | ----------------------------------------------------------------------- | ---- | ------ | --------- | ----- |
-| `market: access`                                                        |      | x      | x         | x     |
 | `trade: read-any, cancel-any, resolve-dispute, remove-message, message` |      |        | x         | x     |
 | `feedback: remove-any`                                                  |      |        | x         | x     |
 | `report: read, resolve, escalate`                                       |      |        | x         | x     |
 | `user: ban, set-role`                                                   |      |        |           | x     |
 | `site: manage`, `audit: read`, `cosmo: history`                         |      |        |           | x     |
 
-- Testers exist so people can try the market while it is gated. The gate, invites, the launch step and the kill switch are in [`trades/feedback.md`](trades/feedback.md).
+- A tester holds exactly what a user holds.
 - Signed-out visitors are checked as `user`.
 - Never set `adminUserIds` in `adminPluginOptions`, because it bypasses every permission check.
 - Impersonation and session management are absent from the statement, so no role can be granted them. apps/chat also refuses impersonated sessions.
@@ -117,7 +116,6 @@ The server function check is the authoritative one. Route guards and UI checks o
   navigate -------->  route beforeLoad
                         /admin layout  can(role, ADMIN_SHELL_PERMISSIONS)  else redirect /
                         admin page     requirePermission(anyOf)            else notFound()
-                        market pages   requireMarketAccess()               else site 404
   render ---------->  useHasPermission()(perms)
                         role from GetAccount; hides links, protects nothing
 
@@ -131,8 +129,8 @@ The server function check is the authoritative one. Route guards and UI checks o
 
 - Gate a staff server function with `staffMiddleware(permissions)` (`lib/server/middlewares.ts`). It adds `role` to the context.
 - Staff don't need a COSMO link. Chain `cosmoMiddleware` after `staffMiddleware` only when the handler needs the caller's address.
-- How `requirePermission()` and `requireMarketAccess()` gate routes is in [`tanstack.md`](tanstack.md#gating).
-- `ADMIN_SHELL_PERMISSIONS` (`components/admin/permissions.ts`) is `report: read`, so testers never see the admin shell.
+- How `requirePermission()` gates routes is in [`tanstack.md`](tanstack.md#gating).
+- `ADMIN_SHELL_PERMISSIONS` (`components/admin/permissions.ts`) is `report: read`, so users and testers never see the admin shell.
 
 ## Staff changes to accounts
 
@@ -252,7 +250,6 @@ The lock order every multi-row write follows is in [`locking.md`](locking.md).
 - `turbo test --filter @apollo/auth` runs the role table and the guard tests.
 - `bun run db:seed:staff` (apps/web) seeds an admin, a moderator, a member and two traders. Every password is `password` and every email is verified. Each run resets ban state.
 - The seeded member and traders get COSMO links inserted directly, without `cosmo_link_audit` rows; the admin and the moderator have none.
-- No `tester` account is seeded. To reach the [market](trades/feedback.md#market-gate) without staff permissions, set a seeded trader's `role` to `tester`, then set it back to `user` when done.
 - curl calls to `/api/auth/*` with a cookie jar must send `Origin` set to the origin of `VITE_BASE_URL`.
 
 ## Adding a role or permission

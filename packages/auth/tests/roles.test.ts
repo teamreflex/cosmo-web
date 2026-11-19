@@ -31,10 +31,6 @@ const auth = betterAuth({
  */
 const rows = [
   {
-    permissions: { market: ["access"] },
-    expected: { user: false, tester: true, moderator: true, admin: true },
-  },
-  {
     permissions: { trade: ["read-any"] },
     expected: { user: false, tester: false, moderator: true, admin: true },
   },

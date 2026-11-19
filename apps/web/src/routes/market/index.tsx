@@ -1,6 +1,5 @@
 import FiltersContainer from "@/components/collection/filters-container";
 import { Error } from "@/components/error-boundary";
-import InviteButton from "@/components/market/invite-button";
 import MarketHeader from "@/components/market/market-header";
 import MarketNotice from "@/components/market/market-notice";
 import Overlay from "@/components/misc/overlay";
@@ -83,7 +82,6 @@ function RouteComponent() {
         }
         actions={
           <>
-            <InviteButton />
             <MyTradesButton />
             <NewListingButton />
           </>
@@ -125,7 +123,6 @@ function PendingComponent() {
         total={<Skeleton className="h-4 w-12" />}
         actions={
           <>
-            <Skeleton className="size-9 md:h-8 md:w-16" />
             <Skeleton className="size-9 md:h-8 md:w-24" />
             <Skeleton className="size-9 md:h-8 md:w-28" />
           </>

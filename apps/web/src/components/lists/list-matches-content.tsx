@@ -36,11 +36,7 @@ type Props = {
   /** the partner whose matches are open, and the copies picked from them */
   offer: ({ partner: TradePartner } & OfferPicks) | null;
   onExpand: (partner: TradePartner) => void;
-  /**
-   * null when the viewer can't make offers, which leaves the cards
-   * unpickable, as they are for a partner who can't receive one
-   */
-  onToggle: OfferSelection["onToggle"] | null;
+  onToggle: OfferSelection["onToggle"];
 };
 
 export default function ListMatchesContent({
@@ -71,37 +67,29 @@ export default function ListMatchesContent({
             expanded={picks !== null}
             onExpand={() => onExpand(partner)}
           >
-            {picks !== null &&
-              (onToggle === null || !partner.offerable ? (
-                <PartnerMatches
-                  listName={name}
-                  partner={partner}
-                  collections={data.collections}
-                  selection={null}
-                />
-              ) : (
-                <QueryErrorResetBoundary>
-                  {({ reset }) => (
-                    <ErrorBoundary
-                      onReset={reset}
-                      fallbackRender={({ resetErrorBoundary }) => (
-                        <OfferColumnsError onRetry={resetErrorBoundary} />
-                      )}
-                    >
-                      <Suspense fallback={<OfferColumnsSkeleton />}>
-                        <PartnerOffer
-                          listId={id}
-                          listName={name}
-                          partner={partner}
-                          collections={data.collections}
-                          picks={picks}
-                          onToggle={onToggle}
-                        />
-                      </Suspense>
-                    </ErrorBoundary>
-                  )}
-                </QueryErrorResetBoundary>
-              ))}
+            {picks !== null && (
+              <QueryErrorResetBoundary>
+                {({ reset }) => (
+                  <ErrorBoundary
+                    onReset={reset}
+                    fallbackRender={({ resetErrorBoundary }) => (
+                      <OfferColumnsError onRetry={resetErrorBoundary} />
+                    )}
+                  >
+                    <Suspense fallback={<OfferColumnsSkeleton />}>
+                      <PartnerOffer
+                        listId={id}
+                        listName={name}
+                        partner={partner}
+                        collections={data.collections}
+                        picks={picks}
+                        onToggle={onToggle}
+                      />
+                    </Suspense>
+                  </ErrorBoundary>
+                )}
+              </QueryErrorResetBoundary>
+            )}
           </PartnerRow>
         );
       })}
@@ -204,7 +192,7 @@ function PartnerMatches({
   partner,
   collections,
   selection,
-}: PartnerMatchesProps & { selection: OfferSelection | null }) {
+}: PartnerMatchesProps & { selection: OfferSelection }) {
   return partner.matches.map((match, index) => (
     <div key={match.listId} className="flex flex-col gap-2">
       <div className="flex items-center justify-between text-xs">

@@ -50,7 +50,6 @@ import {
 } from "@/lib/universal/schema/trades";
 import type { OfferSerials } from "@/lib/universal/trades";
 import { createSlug } from "@/lib/utils";
-import { can, marketAccess, parseRole } from "@apollo/auth";
 import { isBanActive } from "@apollo/auth/guard";
 import { collections, members } from "@apollo/database/indexer/schema";
 import type { Collection } from "@apollo/database/indexer/types";
@@ -926,7 +925,7 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
 
     const identityByUserId = new Map<
       string,
-      { username: string; user: PublicUser; offerable: boolean }
+      { username: string; user: PublicUser }
     >();
     for (const cosmo of cosmos) {
       // a banned user can't be offered a trade, so they aren't a partner
@@ -934,7 +933,6 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
       identityByUserId.set(cosmo.userId, {
         username: cosmo.username,
         user: toPublicUser(cosmo.user),
-        offerable: can(parseRole(cosmo.user.role), marketAccess),
       });
     }
 
@@ -955,7 +953,6 @@ export const $findTradePartnersForList = createServerFn({ method: "GET" })
         userId: partnerUserId,
         username: identity.username,
         user: identity.user,
-        offerable: identity.offerable,
         matches: rows.map((row): PartnerListMatch => ({
           listId: row.listId,
           listSlug: row.listSlug,

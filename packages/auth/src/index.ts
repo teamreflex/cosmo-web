@@ -7,7 +7,6 @@ import type { AdminOptions } from "better-auth/plugins/admin";
  * and session management are absent, so no role can be granted them.
  */
 export const statement = {
-  market: ["access"],
   trade: [
     "read-any",
     "cancel-any",
@@ -27,10 +26,8 @@ export const ac = createAccessControl(statement);
 
 export const roles = {
   user: ac.newRole({}),
-  // market access alone, for people trying the market before it opens to everyone
-  tester: ac.newRole({ market: statement.market }),
+  tester: ac.newRole({}),
   moderator: ac.newRole({
-    market: statement.market,
     trade: statement.trade,
     feedback: statement.feedback,
     report: statement.report,
@@ -48,13 +45,6 @@ type Statement = typeof statement;
 export type Permissions = { [R in keyof Statement]?: Statement[R][number][] };
 
 export type Role = keyof typeof roles;
-
-/**
- * Opens the trade system's pages and shows the links into them. Signed-out
- * visitors count as the "user" role, so granting it to "user" launches the
- * market for everyone.
- */
-export const marketAccess = { market: ["access"] } satisfies Permissions;
 
 export const roleNames = [
   "user",

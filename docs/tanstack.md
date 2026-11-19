@@ -63,8 +63,7 @@ How `apps/web` uses TanStack Start, Router and Query. Library APIs are in their 
 
 - Signed-out visitors on an account page: `beforeLoad` reads `currentAccountQuery` and throws `redirect({ to: "/" })`.
 - Staff pages: `beforeLoad` calls `requirePermission(role, anyOf)` from `hooks/use-has-permission.ts`, and admin routes set `notFoundComponent: AdminNoAccess`.
-- Trade system pages: `requireMarketAccess(queryClient)`, which renders the site's root 404.
-- Both helpers throw `notFound()`, not an error, because SSR answers a thrown route error with a 500.
+- `requirePermission()` throws `notFound()`, not an error, because SSR answers a thrown route error with a 500.
 - Roles and permissions themselves are in [auth.md](auth.md).
 
 ## Loaders

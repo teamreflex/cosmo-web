@@ -1,4 +1,3 @@
-import { useHasPermission } from "@/hooks/use-has-permission";
 import { useMarkNotificationsRead } from "@/hooks/use-mark-notifications-read";
 import { m } from "@/i18n/messages";
 import {
@@ -9,7 +8,6 @@ import {
   groupNotifications,
   type NotificationListItem,
 } from "@/lib/universal/notifications";
-import { marketAccess } from "@apollo/auth";
 import { IconChecks, IconLoader2, IconRefresh } from "@tabler/icons-react";
 import {
   QueryErrorResetBoundary,
@@ -37,8 +35,6 @@ type Props = {
  * The open notification popover's body, loaded with the popover.
  */
 export default function NotificationPanel({ onClose }: Props) {
-  const hasPermission = useHasPermission();
-
   return (
     <>
       <header className="flex h-12 items-center gap-1 border-b pr-2 pl-3.5">
@@ -46,16 +42,14 @@ export default function NotificationPanel({ onClose }: Props) {
           {m.notification_bell_label()}
         </h4>
 
-        {hasPermission(marketAccess) && (
-          <Link
-            to="/market/trades"
-            // already on My trades, the path doesn't change to close it
-            onClick={onClose}
-            className={buttonVariants({ variant: "ghost", size: "sm" })}
-          >
-            {m.my_trades_title()}
-          </Link>
-        )}
+        <Link
+          to="/market/trades"
+          // already on My trades, the path doesn't change to close it
+          onClick={onClose}
+          className={buttonVariants({ variant: "ghost", size: "sm" })}
+        >
+          {m.my_trades_title()}
+        </Link>
 
         <ErrorBoundary fallback={null}>
           <Suspense fallback={null}>
