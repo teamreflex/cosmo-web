@@ -13,15 +13,12 @@ import {
 import { leaveFeedbackSchema } from "@/lib/universal/schema/feedback";
 import type { TradeItemView, TradeView } from "@/lib/universal/trades";
 import { cn } from "@/lib/utils";
-import {
-  type EndedTradeStatus,
-  feedbackRatings,
-  type TradeSide,
-} from "@apollo/database/web/types";
+import { feedbackRatings, type TradeSide } from "@apollo/database/web/types";
 import {
   feedbackDaysLeft,
   feedbackRole,
   feedbackScored,
+  type RateableEnding,
 } from "@apollo/trades/feedback";
 import { otherSide } from "@apollo/trades/lifecycle";
 import { formatSerial, textLength } from "@apollo/util";
@@ -286,10 +283,6 @@ const endings = {
     deal: m.feedback_context_due,
     when: m.feedback_context_cancelled,
   },
-  timed_out: {
-    deal: m.feedback_context_due,
-    when: m.feedback_context_timed_out,
-  },
 };
 
 /**
@@ -305,7 +298,7 @@ function TradeContext({
 }: {
   trade: TradeView;
   side: TradeSide;
-  ended: EndedTradeStatus;
+  ended: RateableEnding;
   endedAt: Date;
 }) {
   const { deal, when } = endings[ended];

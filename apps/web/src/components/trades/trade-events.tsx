@@ -17,7 +17,7 @@ import type {
 } from "@apollo/database/web/types";
 import { otherSide } from "@apollo/trades/lifecycle";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
-import { IconExternalLink } from "@tabler/icons-react";
+import { IconCheck, IconExternalLink } from "@tabler/icons-react";
 import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { bold } from "../notifications/row-utils";
@@ -63,9 +63,17 @@ export function describeEvent(
     case "item_transferred":
       return describeTransfer(trade, side, event);
     case "completed":
-      return event.by === null
-        ? m.trade_page_event_completed()
-        : m.trade_page_event_completed_staff({ appName });
+      return (
+        <>
+          <IconCheck
+            aria-hidden
+            className="inline size-3.5 align-[-0.125em] text-green-500"
+          />{" "}
+          {event.by === null
+            ? m.trade_page_event_completed()
+            : m.trade_page_event_completed_staff({ appName })}
+        </>
+      );
     case "cancelled":
       return event.by === "staff" ? (
         m.trade_page_event_cancelled_staff({ appName })
@@ -402,7 +410,7 @@ function describeTransfer(
 
   return (
     <>
-      {/* "X reached @y" names the receiver, which also reads for staff */}
+      {/* "@y received X" names the receiver, which also reads for staff */}
       {item.sender === side || side === null ? (
         <ParaglideMessage
           message={m.trade_page_event_sent_by_you}

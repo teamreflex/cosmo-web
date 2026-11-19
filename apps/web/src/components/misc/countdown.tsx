@@ -4,7 +4,6 @@ import { cn, type PropsWithClassName } from "@/lib/utils";
 import { ClientOnly } from "@tanstack/react-router";
 import { type ReactNode, useState } from "react";
 import { useInterval } from "usehooks-ts";
-import { Skeleton } from "../ui/skeleton";
 
 type TickerProps = {
   fallback: ReactNode;
@@ -51,7 +50,20 @@ export default function Countdown({
 
   return pausedAt === undefined ? (
     <Ticker
-      fallback={<Skeleton className="inline-block h-4 w-14 rounded-full" />}
+      fallback={
+        /**
+         * A span, not Skeleton's div, so it can sit inside a paragraph: one
+         * line tall and about as wide as "41h 12m" in the countdown's own
+         * text size.
+         */
+        <span
+          aria-hidden
+          className={cn(
+            "inline-block h-[1lh] w-[7ch] animate-pulse rounded-full bg-muted align-top font-mono",
+            className,
+          )}
+        />
+      }
     >
       {time}
     </Ticker>

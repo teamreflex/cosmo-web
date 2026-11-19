@@ -19,7 +19,7 @@ import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import Countdown from "../misc/countdown";
 import { bold } from "../notifications/row-utils";
-import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { Alert, AlertAction, AlertDescription, AlertTitle } from "../ui/alert";
 import { Button, buttonVariants } from "../ui/button";
 import { Timestamp } from "../ui/timestamp";
 import type { OfferAction } from "./offer-action-dialog";
@@ -443,13 +443,9 @@ function CounteredAlert({
               : m.trade_page_offer_countered_note_staff()}
       </AlertDescription>
       {counter !== null && (
-        <CounterLink
-          counterId={counter.id}
-          className={cn(
-            "mt-2 group-has-[>svg]/alert:col-start-2",
-            side !== null && "max-md:hidden",
-          )}
-        />
+        <AlertAction className={cn(side !== null && "max-md:hidden")}>
+          <CounterLink counterId={counter.id} />
+        </AlertAction>
       )}
     </Alert>
   );

@@ -193,11 +193,6 @@ export default function ChatPanel({
         <h2 id={`chat-${trade.id}`} className="font-semibold">
           {m.chat_title()}
         </h2>
-        {!canSend && (
-          <Badge variant="outline" className="ml-auto">
-            {m.chat_read_only()}
-          </Badge>
-        )}
       </header>
       {failed ? (
         <ChatEnded closed={refusal === "StaffAccessRequired"} onRetry={retry} />

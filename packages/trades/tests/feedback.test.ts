@@ -45,13 +45,10 @@ function opening(state: TradeState) {
 }
 
 describe("feedbackOpening eligibility", () => {
-  test("a timed-out trade, even with nothing sent (ELIG-02)", () => {
+  test("not a timed-out trade, where neither side sent anything (ELIG-02)", () => {
     expect(opening(trade("timed_out", [objekt("from"), objekt("to")]))).toBe(
-      "open",
+      "ineligible",
     );
-    expect(
-      opening(trade("timed_out", [objekt("from", true), objekt("to")])),
-    ).toBe("open");
   });
 
   test("a trade staff cancelled, even with nothing sent (ELIG-03)", () => {

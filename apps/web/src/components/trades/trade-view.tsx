@@ -52,7 +52,7 @@ import TradeFeedback from "../feedback/trade-feedback";
 import { useFeedbackLeave } from "../feedback/use-feedback-leave";
 import { bold } from "../notifications/row-utils";
 import ListingBottomBar from "../trade-listings/listing-bottom-bar";
-import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { Alert, AlertAction, AlertDescription, AlertTitle } from "../ui/alert";
 import { Badge } from "../ui/badge";
 import { Button, buttonVariants } from "../ui/button";
 import {
@@ -202,18 +202,7 @@ function PartyView({
                   rows: 1,
                   children: (
                     <FeedbackBar
-                      trade={trade}
-                      side={side}
                       onLeave={() => feedbackLeave.leave(feedback)}
-                      actions={
-                        trade.state.status === "timed_out" &&
-                        trade.listingId !== null ? (
-                          <ViewListingLink
-                            listingId={trade.listingId}
-                            className="h-11 px-4"
-                          />
-                        ) : undefined
-                      }
                     />
                   ),
                 }
@@ -353,7 +342,7 @@ function StaffView({
             <IconEye />
             <AlertTitle>{m.trade_page_staff_title()}</AlertTitle>
             {(report !== null || cancellable) && (
-              <div className="mt-2 flex flex-wrap gap-2 group-has-[>svg]/alert:col-start-2">
+              <AlertAction>
                 {report !== null && (
                   <Link
                     to="/admin/reports"
@@ -376,7 +365,7 @@ function StaffView({
                     {m.admin_dispute_cancel()}
                   </Button>
                 )}
-              </div>
+              </AlertAction>
             )}
           </Alert>
         }
@@ -949,8 +938,8 @@ function StatePanel({
               <StaffNote note={staff.note} />
             </AlertDescription>
           )}
-          {side !== null && onLeave !== undefined && (
-            <FeedbackPrompt trade={trade} side={side} onLeave={onLeave} />
+          {onLeave !== undefined && (
+            <FeedbackPrompt trade={trade} onLeave={onLeave} />
           )}
         </Alert>
       );
@@ -965,7 +954,7 @@ function StatePanel({
         />
       );
     case "timed_out":
-      return <TimedOutAlert trade={trade} side={side} onLeave={onLeave} />;
+      return <TimedOutAlert trade={trade} />;
     default:
       return null;
   }
@@ -1012,8 +1001,8 @@ function CancelledAlert({
           {unrated && <p>{m.feedback_no_transfer()}</p>}
         </AlertDescription>
       )}
-      {side !== null && onLeave !== undefined && (
-        <FeedbackPrompt trade={trade} side={side} onLeave={onLeave} compact />
+      {onLeave !== undefined && (
+        <FeedbackPrompt trade={trade} onLeave={onLeave} />
       )}
     </Alert>
   );
@@ -1085,51 +1074,22 @@ function DisputedAlert({
 }
 
 // that time ran out with nothing sent, and the way back to the listing
-function TimedOutAlert({
-  trade,
-  side,
-  onLeave,
-}: {
-  trade: Trade;
-  side: TradeSide | null;
-  onLeave?: (feedbackWindow: FeedbackWindow) => void;
-}) {
-  const listing =
-    trade.listingId === null ? undefined : (
-      <ViewListingLink
-        listingId={trade.listingId}
-        className={cn(
-          side === null && "mt-2 group-has-[>svg]/alert:col-start-2",
-        )}
-      />
-    );
+function TimedOutAlert({ trade }: { trade: Trade }) {
   return (
     <Alert variant="warning">
       <IconHourglassEmpty />
       <AlertTitle>{m.trade_page_timed_out()}</AlertTitle>
-      {side === null || onLeave === undefined ? (
-        listing
-      ) : (
-        <FeedbackPrompt
-          trade={trade}
-          side={side}
-          onLeave={onLeave}
-          compact
-          actions={listing}
-        />
+      {trade.listingId !== null && (
+        <AlertAction>
+          <ViewListingLink listingId={trade.listingId} />
+        </AlertAction>
       )}
     </Alert>
   );
 }
 
 // the way back to the listing a timed-out trade came from
-function ViewListingLink({
-  listingId,
-  className,
-}: {
-  listingId: string;
-  className?: string;
-}) {
+function ViewListingLink({ listingId }: { listingId: string }) {
   return (
     <Link
       to="/market/listing/$id"
@@ -1137,7 +1097,6 @@ function ViewListingLink({
       className={cn(
         buttonVariants({ variant: "outline", size: "sm" }),
         "w-fit no-underline!",
-        className,
       )}
     >
       {m.trade_page_view_listing()}

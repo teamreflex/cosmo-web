@@ -1,6 +1,5 @@
 import { sanitizeMessage } from "@apollo/chat/sanitize";
 import {
-  type EndedTradeStatus,
   type FeedbackRating,
   feedbackRatings,
   type FeedbackRole,
@@ -9,7 +8,7 @@ import {
   type TradeSide,
   type UserFeedbackStats,
 } from "@apollo/database/web/types";
-import { feedbackOpening } from "@apollo/trades/feedback";
+import { feedbackOpening, type RateableEnding } from "@apollo/trades/feedback";
 import type { TradeState } from "@apollo/trades/lifecycle";
 import * as z from "zod";
 import type { TradePartyName } from "./trades";
@@ -99,7 +98,7 @@ export type TradeFeedbackView =
   | { state: "none" }
   | {
       state: "open";
-      ended: EndedTradeStatus;
+      ended: RateableEnding;
       endedAt: Date;
       closesAt: Date;
       theirs: FeedbackEntryView | null;

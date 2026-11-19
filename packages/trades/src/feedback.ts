@@ -8,21 +8,25 @@ import { FEEDBACK_WINDOW_DAYS } from "./timers";
 
 const DAY = 24 * 60 * 60 * 1000;
 
+// how a trade ended when its parties may rate each other
+export type RateableEnding = Exclude<EndedTradeStatus, "timed_out">;
+
 /**
  * How a trade its parties may rate ended, or null when they may not, so
- * ratings show who let a trade lapse. A completed or timed-out trade always
- * may be rated, as may one staff cancelled, since staff usually end a
- * dispute against a silent party that way. A party may only cancel before
- * anything is sent, so their cancel can't be rated, and a disputed trade
- * waits for staff to end it.
+ * ratings show who let a trade down. A completed trade always may be rated,
+ * as may one staff cancelled, since staff usually end a dispute against a
+ * silent party that way. A trade times out only when neither side sent
+ * anything, so neither stands out to rate. A party may only cancel before
+ * anything is sent, so their cancel can't be rated either, and a disputed
+ * trade waits for staff to end it.
  */
-function rateableEnding(state: TradeState): EndedTradeStatus | null {
+function rateableEnding(state: TradeState): RateableEnding | null {
   switch (state.status) {
     case "completed":
-    case "timed_out":
       return state.status;
     case "cancelled":
       return state.cancelledBy === "staff" ? state.status : null;
+    case "timed_out":
     case "disputed":
     case "pending":
     case "accepted":
@@ -55,7 +59,7 @@ export function feedbackScored(state: TradeState): boolean {
 export type FeedbackOpening =
   | { status: "ineligible" }
   | { status: "counterpart_gone" }
-  | { status: "open"; ended: EndedTradeStatus; endedAt: Date; closesAt: Date }
+  | { status: "open"; ended: RateableEnding; endedAt: Date; closesAt: Date }
   | { status: "closed"; closedAt: Date };
 
 export function feedbackOpening({
