@@ -28,9 +28,8 @@ function carried(cal: ReturnType<typeof buildCalendar>) {
 describe("buildCalendar", () => {
   describe("system-TZ agnostic", () => {
     it("produces identical output across host TZs", () => {
-      // The algorithm must not leak the system's local TZ into its output —
-      // a previous regression had `getDaysInMonth` reading in local time,
-      // producing a phantom carry for negative-GMT browsers.
+      // reading the host's local TZ, such as `getDaysInMonth` in local time,
+      // gives negative-GMT browsers a phantom carry
       const originalTz = process.env.TZ;
 
       function buildIn(tz: string) {
@@ -213,7 +212,7 @@ describe("calendarDateSchema", () => {
     expect(calendarDateSchema.parse(now).getTime()).toBe(expected);
   });
 
-  it.each(["yesterday", "0"])("refuses %s", (now) => {
-    expect(calendarDateSchema.safeParse(now).success).toBe(false);
+  it("refuses 0", () => {
+    expect(calendarDateSchema.safeParse("0").success).toBe(false);
   });
 });

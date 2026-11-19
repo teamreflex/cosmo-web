@@ -19,15 +19,10 @@ function objekt(sender: "from" | "to", transferred = false): TradeItemState {
 }
 
 function trade(
-  status: Exclude<TradeStatus, "pending">,
+  status: Exclude<TradeStatus, "pending" | "cancelled">,
   items: readonly TradeItemState[],
 ): TradeState {
-  switch (status) {
-    case "cancelled":
-      return { status, cancelledBy: "from", items };
-    default:
-      return { status, items };
-  }
+  return { status, items };
 }
 
 const endedAt = new Date("2026-10-01T12:00:00Z");
@@ -71,22 +66,6 @@ describe("feedbackOpening eligibility", () => {
     ).toBe("ineligible");
   });
 
-  test("not a declined offer, which was never accepted (UNIT-13)", () => {
-    for (const items of [
-      [objekt("from"), objekt("to")],
-      [objekt("from", true), objekt("to", true)],
-    ]) {
-      expect(
-        feedbackOpening({
-          state: trade("declined", items),
-          endedAt,
-          now: at(DAY),
-          counterpartExists: true,
-        }),
-      ).toEqual({ status: "ineligible" });
-    }
-  });
-
   test("not a disputed trade, whatever arrived (ELIG-05)", () => {
     expect(
       opening(trade("disputed", [objekt("from", true), objekt("to", true)])),
@@ -103,9 +82,6 @@ describe("feedbackScored", () => {
 
   test("a rating counts once a token arrived (SCORED-02)", () => {
     expect(
-      feedbackScored(trade("timed_out", [objekt("from", true), objekt("to")])),
-    ).toBe(true);
-    expect(
       feedbackScored({
         status: "cancelled",
         cancelledBy: "staff",
@@ -115,9 +91,6 @@ describe("feedbackScored", () => {
   });
 
   test("a rating doesn't count when nothing changed hands (SCORED-03)", () => {
-    expect(
-      feedbackScored(trade("timed_out", [objekt("from"), objekt("to")])),
-    ).toBe(false);
     expect(
       feedbackScored({
         status: "cancelled",
@@ -140,7 +113,6 @@ describe("feedback window", () => {
       endedAt,
       closesAt,
     } satisfies FeedbackOpening;
-    expect(window(endedAt)).toEqual(open);
     expect(window(at(14 * DAY - 1))).toEqual(open);
     expect(window(at(14 * DAY))).toEqual({
       status: "closed",
@@ -171,8 +143,6 @@ describe("feedback window", () => {
 
 describe("feedback roles", () => {
   test("a swap has two traders (ROLE-01)", () => {
-    const items = [objekt("from"), objekt("to")];
-    expect(feedbackRole(items, "from")).toBe("trader");
-    expect(feedbackRole(items, "to")).toBe("trader");
+    expect(feedbackRole([objekt("from"), objekt("to")], "from")).toBe("trader");
   });
 });

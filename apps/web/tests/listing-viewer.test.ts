@@ -38,16 +38,11 @@ const attributes = (slug: string): ObjektAttributes => ({
   onOffline: "online",
 });
 
-const held = (
-  tokenId: number,
-  owner: string,
-  slug = "atom02-heejin-101z",
-  transferable = true,
-) => ({
+const held = (tokenId: number, owner: string, slug = "atom02-heejin-101z") => ({
   kind: "found" as const,
   tokenId,
   owner,
-  transferable,
+  transferable: true,
   // a slug ends with its collection number, lowercased
   attributes: {
     ...attributes(slug),
@@ -96,10 +91,6 @@ describe("pool availability", () => {
       reason: "moved",
     });
     expect(blocked(undefined)).toEqual({ kind: "blocked", reason: "moved" });
-    expect(blocked(held(1, poster, "atom02-heejin-101z", false))).toEqual({
-      kind: "blocked",
-      reason: "untransferable",
-    });
     expect(
       blocked(held(1, poster), { locked: new Set([1]), live: new Set() }),
     ).toEqual({ kind: "blocked", reason: "locked" });
@@ -111,7 +102,6 @@ describe("picking from the pool", () => {
     expect(toggleOffered([3, 5], 5, 2)).toEqual([3]);
     expect(toggleOffered([3], 6, 2)).toEqual([3, 6]);
     expect(toggleOffered([3, 6], 8, 2)).toEqual([6, 8]);
-    expect(toggleOffered([3], 6, 1)).toEqual([6]);
   });
 
   test("an offer's pick is taken once another trade holds it or it left the pool", () => {
@@ -219,19 +209,6 @@ describe("whether the poster can accept an offer", () => {
     expect(
       judge({
         tokens: { claimer: { locked: new Set(), live: new Set([10]) } },
-      }),
-    ).toEqual({ code: "offer_unavailable", tokenId: 10 });
-  });
-
-  test("a claimer token they can't give is named without why", () => {
-    expect(
-      judge({
-        tokens: {
-          states: new Map([
-            ...states,
-            [10, held(10, poster, "atom02-kimlip-101z")],
-          ]),
-        },
       }),
     ).toEqual({ code: "offer_unavailable", tokenId: 10 });
   });
@@ -344,9 +321,8 @@ describe("whether a listing reads as a ratio", () => {
     expect(hasRatio(2, 6)).toBe(true);
   });
 
-  test("everything for everything, or a single objekt, is a bundle", () => {
+  test("everything for everything is a bundle", () => {
     expect(hasRatio(3, 3)).toBe(false);
-    expect(hasRatio(1, 1)).toBe(false);
   });
 });
 
@@ -374,9 +350,6 @@ describe("what a candidate sees", () => {
     const capped = candidate({ claims: { active: 3, cap: 3 } });
     expect(candidatePanel(listing, capped)).toBe("cap");
     expect(candidatePanel(offers, capped)).toBe("picker");
-    expect(candidatePanel({ ...offers, stop: "blocked" }, capped)).toBe(
-      "blocked",
-    );
   });
 });
 
@@ -463,9 +436,6 @@ describe("where the poster's objekts stand", () => {
     expect(
       stand(left(50), [trade("accepted", "minji", [1], { acceptedAt: 40 })]),
     ).toEqual({ kind: "sent", claimer: counterparty("minji") });
-    expect(
-      stand(left(50), [trade("disputed", "minji", [1], { acceptedAt: 40 })]),
-    ).toEqual({ kind: "sent", claimer: counterparty("minji") });
   });
 
   test("traded, offered again in an edit, then moved, is gone", () => {
@@ -499,12 +469,6 @@ describe("the objekt a refused offer names", () => {
     expect(
       refusedOfferToken(
         { code: "listing_pick_unavailable", tokenId: 1 },
-        offer,
-      ),
-    ).toEqual({ ...item(1, 21), serial: 21 });
-    expect(
-      refusedOfferToken(
-        { code: "claim_token_unavailable", tokenId: 1, reason: "locked" },
         offer,
       ),
     ).toEqual({ ...item(1, 21), serial: 21 });

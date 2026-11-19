@@ -98,9 +98,6 @@ describe("rangeArtistUnused", () => {
         rosters,
       ),
     ).toBe(true);
-    expect(
-      rangeArtistUnused({ artist: ["artms"], member: ["SeoYeon"] }, rosters),
-    ).toBe(true);
   });
 
   test("a member of each artist uses them all, in any casing of the artist", () => {

@@ -88,6 +88,7 @@ const memberRefs: GridMemberRef[] = [
   { name: "SeoYeon", alias: "S1", sortOrder: 1 },
   { name: "JinSoul", alias: "JinSoul", sortOrder: 3 },
   { name: "HeeJin", alias: "HeeJin", sortOrder: 1 },
+  { name: "Choerry", alias: "Choerry", sortOrder: 5 },
   { name: "DoHun", alias: "id1", sortOrder: 1 },
   { name: "HeeJu", alias: "id2", sortOrder: 2 },
   { name: "TaeIn", alias: "id4", sortOrder: 3 },
@@ -286,20 +287,20 @@ describe("buildGridLedger", () => {
     const ledger = build({
       artist: "artms",
       catalog: [
-        ...fullSeasonCatalog("Atom01", "JinSoul"),
-        ...fullSeasonCatalog("Binary01", "JinSoul"),
+        ...fullSeasonCatalog("Atom01", "Choerry"),
+        ...fullSeasonCatalog("Binary01", "Choerry"),
         ...fullSeasonCatalog("Atom01", "HeeJin"),
       ],
       owned: [
-        ownedRow("Atom01", "JinSoul", "First", "101Z", true),
-        ownedRow("Binary01", "JinSoul", "First", "101Z", true),
+        ownedRow("Atom01", "Choerry", "First", "101Z", true),
+        ownedRow("Binary01", "Choerry", "First", "101Z", true),
         ownedRow("Atom01", "HeeJin", "First", "101Z", true),
       ],
     });
 
     expect(ledger.members.map((member) => member.member)).toEqual([
       "HeeJin",
-      "JinSoul",
+      "Choerry",
     ]);
     expect(ledger.members[1]?.seasons.map((s) => s.season)).toEqual([
       "Binary01",

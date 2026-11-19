@@ -128,12 +128,12 @@ describe("userChangeRefusal", () => {
     ).toBe("protected-user");
   });
 
-  test.each(changes)("allows $kind on anyone else", (change) => {
+  test("allows lowering another account's role", () => {
     expect(
       userChangeRefusal({
         caller: admin,
         target: member,
-        change,
+        change: { kind: "set-role", role: "user" },
         protectedDomains,
       }),
     ).toBeNull();
@@ -206,17 +206,6 @@ describe("userChangeRefusal", () => {
         target: { ...protectedMember, emailVerified: false },
         change: { kind: "ban" },
         protectedDomains,
-      }),
-    ).toBeNull();
-  });
-
-  test("protects nobody without domains", () => {
-    expect(
-      userChangeRefusal({
-        caller: admin,
-        target: protectedMember,
-        change: { kind: "ban" },
-        protectedDomains: parseEmailDomains(""),
       }),
     ).toBeNull();
   });

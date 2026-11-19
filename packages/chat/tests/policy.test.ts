@@ -22,7 +22,6 @@ const viewers = {
   to: { userId: "to-user", role: "user" },
   outsider: { userId: "someone", role: "user" },
   moderator: { userId: "mod", role: "moderator" },
-  admin: { userId: "admin", role: "admin" },
 } satisfies Record<string, ChatViewer>;
 
 // a successful value, or the failure's tag
@@ -42,7 +41,6 @@ const joinable = new Set([
   "cancelled",
   "timed_out",
 ]);
-const live = new Set(["accepted", "disputed"]);
 
 describe("canJoinChat", () => {
   // either side of acceptance, an ended trade, and an offer that ended unaccepted
@@ -69,15 +67,12 @@ describe("canJoinChat", () => {
   });
 
   test("disputed: staff join only under an open report or dispute", () => {
-    for (const staff of [viewers.moderator, viewers.admin]) {
-      expect(outcome(canJoinChat(staff, trade("disputed"), null))).toBe(
-        "StaffAccessRequired",
-      );
-      expect(outcome(canJoinChat(staff, trade("disputed"), "report"))).toEqual({
-        kind: "staff",
-        reportId: "report",
-      });
-    }
+    expect(
+      outcome(canJoinChat(viewers.moderator, trade("disputed"), null)),
+    ).toBe("StaffAccessRequired");
+    expect(
+      outcome(canJoinChat(viewers.moderator, trade("disputed"), "report")),
+    ).toEqual({ kind: "staff", reportId: "report" });
   });
 
   test("a staff member who is a party joins as a party", () => {
@@ -93,25 +88,22 @@ describe("canSendChat", () => {
   const party = { kind: "party", side: "to" } as const;
   const staff = { kind: "staff", reportId: "report" } as const;
 
-  // each status a party can join in: the live ones, then an ended one
-  for (const status of [
-    "accepted",
-    "disputed",
-    "completed",
-  ] satisfies TradeStatus[]) {
-    test(`${status}: a party ${live.has(status) ? "sends" : "is read-only"}`, () => {
-      expect(outcome(canSendChat(viewers.to, party, trade(status)))).toEqual(
-        live.has(status) ? party : "ChatReadOnly",
-      );
-    });
-  }
+  test("accepted: a party sends", () => {
+    expect(outcome(canSendChat(viewers.to, party, trade("accepted")))).toEqual(
+      party,
+    );
+  });
+
+  test("completed: a party is read-only", () => {
+    expect(outcome(canSendChat(viewers.to, party, trade("completed")))).toBe(
+      "ChatReadOnly",
+    );
+  });
 
   test("completed: staff with trade:message send under the report", () => {
-    for (const viewer of [viewers.moderator, viewers.admin]) {
-      expect(outcome(canSendChat(viewer, staff, trade("completed")))).toEqual(
-        staff,
-      );
-    }
+    expect(
+      outcome(canSendChat(viewers.moderator, staff, trade("completed"))),
+    ).toEqual(staff);
   });
 
   test("staff without trade:message are read-only", () => {

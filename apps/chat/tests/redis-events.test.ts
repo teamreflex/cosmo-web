@@ -79,8 +79,10 @@ test("trade updates signal the trade, and user events end the user's chat", asyn
       yield* settle;
       yield* Queue.clear(signals);
 
-      redis.publish(TRADE_EVENTS_CHANNEL, tradeUpdateMessage("trade-1"));
+      // a message chat can't read is skipped, not the end of its subscription
       redis.publish(TRADE_EVENTS_CHANNEL, "not json");
+      redis.publish(USER_EVENTS_CHANNEL, "{}");
+      redis.publish(TRADE_EVENTS_CHANNEL, tradeUpdateMessage("trade-1"));
       redis.publish(
         USER_EVENTS_CHANNEL,
         JSON.stringify({ type: "disconnect", userId: "alice" }),
@@ -97,7 +99,6 @@ test("trade updates signal the trade, and user events end the user's chat", asyn
         USER_EVENTS_CHANNEL,
         JSON.stringify({ type: "unbanned", userId: "dave" }),
       );
-      redis.publish(USER_EVENTS_CHANNEL, "{}");
       yield* settle;
 
       expect(yield* Queue.take(signals)).toBe("trade-1");

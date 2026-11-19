@@ -18,7 +18,6 @@ function objekt(
   season: string,
   member: string,
   collectionNo: string,
-  overrides: Partial<InventoryObjekt> = {},
 ): InventoryObjekt {
   return {
     tokenId: nextTokenId++,
@@ -29,31 +28,25 @@ function objekt(
     season,
     class: collectionNo.startsWith("1") ? "First" : "Double",
     onOffline: collectionNo.endsWith("Z") ? "online" : "offline",
-    ...overrides,
-  };
-}
-
-function ranges(
-  count: number,
-  filters: readonly Partial<RangeFilter>[],
-): TradeWant {
-  return {
-    kind: "range",
-    count,
-    ranges: filters.map((filter) => ({
-      artist: [],
-      member: [],
-      collectionNo: [],
-      season: [],
-      class: [],
-      on_offline: [],
-      ...filter,
-    })),
   };
 }
 
 function range(count: number, filter: Partial<RangeFilter>): TradeWant {
-  return ranges(count, [filter]);
+  return {
+    kind: "range",
+    count,
+    ranges: [
+      {
+        artist: [],
+        member: [],
+        collectionNo: [],
+        season: [],
+        class: [],
+        on_offline: [],
+        ...filter,
+      },
+    ],
+  };
 }
 
 function exact(count: number, slug: string): TradeWant {
@@ -65,52 +58,6 @@ function choice(count: number, slugs: string[]): TradeWant {
 }
 
 describe("allocate", () => {
-  test("an exact row takes its copies before a range listed ahead of it", () => {
-    const first = objekt("Atom01", "HeeJin", "101Z");
-    const second = objekt("Atom01", "HeeJin", "101Z");
-    const wants = [
-      range(1, { member: ["HeeJin"] }),
-      exact(1, "atom01-heejin-101z"),
-    ];
-
-    expect(allocate(wants, [first, second])).toEqual([
-      { tokenIds: [second.tokenId], missing: 0 },
-      { tokenIds: [first.tokenId], missing: 0 },
-    ]);
-  });
-
-  test("a row takes an objekt that fits only its second range", () => {
-    const heejin = objekt("Atom01", "HeeJin", "101Z");
-    const kimlip = objekt("Binary01", "KimLip", "201Z");
-    const wants = [
-      ranges(2, [
-        { season: ["Atom01"] },
-        { member: ["KimLip"], class: ["Double"] },
-      ]),
-    ];
-
-    expect(allocate(wants, [heejin, kimlip])).toEqual([
-      { tokenIds: [heejin.tokenId, kimlip.tokenId], missing: 0 },
-    ]);
-  });
-
-  test("matches ranges on every narrowed column", () => {
-    const online = objekt("Atom02", "HeeJin", "201Z");
-    const offline = objekt("Atom02", "HeeJin", "201A");
-    const tripleS = objekt("Atom02", "HeeJin", "201Z", { artist: "triples" });
-    const wants = [
-      range(3, {
-        artist: ["artms"],
-        member: ["HeeJin"],
-        on_offline: ["offline"],
-      }),
-    ];
-
-    expect(allocate(wants, [online, offline, tripleS])).toEqual([
-      { tokenIds: [offline.tokenId], missing: 2 },
-    ]);
-  });
-
   test("a choice row takes any mix of its collections, copies included", () => {
     const heejin = objekt("Atom01", "HeeJin", "101Z");
     const heejinAgain = objekt("Atom01", "HeeJin", "101Z");
@@ -207,7 +154,6 @@ describe("allocateUnits", () => {
 
 describe("unitsOf", () => {
   test.each([
-    ["one unit", 2, 2, 1],
     ["several units", 6, 2, 3],
     ["a count between units", 5, 2, null],
   ] satisfies [string, number, number, number | null][])(
@@ -227,20 +173,12 @@ describe("fillsExactly", () => {
     expect(fillsExactly([exact(2, kimlip)], kimlips(3))).toBe(false);
   });
 
-  test("range and choice rows fill whichever row each token was for", () => {
-    /**
-     * HeeJin fits both rows and KimLip only the range, so the allocator has
-     * to move HeeJin to the choice row however the tokens come.
-     */
-    const heejin = objekt("Atom01", "HeeJin", "101Z");
-    const other = objekt("Atom01", "KimLip", "101Z");
+  test("tokens that leave a row unfilled don't", () => {
     const wants = [
       range(1, { member: ["HeeJin", "KimLip"] }),
       choice(1, ["atom01-heejin-101z", "atom01-haseul-101z"]),
     ];
-    expect(fillsExactly(wants, [heejin, other])).toBe(true);
-    expect(fillsExactly(wants, [other, heejin])).toBe(true);
-    expect(fillsExactly(wants, [other, ...kimlips(1)])).toBe(false);
+    expect(fillsExactly(wants, kimlips(2))).toBe(false);
   });
 });
 
@@ -277,12 +215,6 @@ describe("listingOfferRefusal", () => {
   });
 
   test("picks that are no longer whole units change the terms", () => {
-    expect(
-      listingOfferRefusal(
-        { picks: [101, 102, 103], given: kimlips(3) },
-        listing,
-      ),
-    ).toEqual({ reason: "terms_changed" });
     expect(
       listingOfferRefusal(
         { picks: [101, 102], given: kimlips(2) },

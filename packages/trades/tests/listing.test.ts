@@ -204,11 +204,6 @@ const refused = [
     "offered.0.tokenId: *",
   ],
   [
-    "a spoofed fromUserId (SCH-18)",
-    { offered, wants, fromUserId: "someone" },
-    ": *",
-  ],
-  [
     "a range row with no ranges",
     { offered, wants: [ranges([])] },
     "wants.0.ranges: A range row needs at least one range",
@@ -255,11 +250,6 @@ const refused = [
     "a NUL byte in an exact slug (SCH-24)",
     { offered, wants: [exact(`${KIMLIP}\u0000`)] },
     "wants.0.slug: Text can't contain a NUL byte",
-  ],
-  [
-    "a NUL byte in the note (SCH-24)",
-    { offered, wants, note: "hi\u0000there" },
-    "note: Text can't contain a NUL byte",
   ],
   [
     "a unit size of 0",

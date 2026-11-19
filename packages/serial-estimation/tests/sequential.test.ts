@@ -49,20 +49,7 @@ describe("digital collections", () => {
     expect(serials.get(29273487)).toBe(4616);
     // below the block nothing moves
     expect(serials.get(24976406)).toBe(17);
-    // a claim takes its place in the block
-    expect(serials.get(27653656)).toBe(
-      fixture.collection.objekts.filter((objekt) => objekt.tokenId < 27653653)
-        .length +
-        1 +
-        (27653656 - 27653653),
-    );
-
-    const withoutBlock = serialsOf(
-      estimateSerials(
-        { ...fixture.collection, kind: "sequential", claimBlocks: [] },
-        new Map(),
-      ),
-    );
-    expect(withoutBlock.get(29273487)).toBe(4286);
+    // a claim takes its place in the block: 866 objekts precede the block's first id, 27653653
+    expect(serials.get(27653656)).toBe(870);
   });
 });

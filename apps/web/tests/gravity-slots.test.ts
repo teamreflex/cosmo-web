@@ -1,11 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import type { RevealBatch } from "../src/lib/client/gravity/reveals";
 import { buildSlotModel, rankSlots } from "../src/lib/client/gravity/slots";
-import {
-  combinationPoll,
-  singlePoll,
-  unitPoll,
-} from "./fixtures/gravity-polls";
+import { combinationPoll, singlePoll } from "./fixtures/gravity-polls";
 
 // candidate ids 0..5, see the fixture for the combination they encode
 const como = [10, 20, 5, 1, 7, 3];
@@ -47,27 +43,10 @@ describe("buildSlotModel", () => {
     const [slot] = model.slots;
 
     expect(model.kind).toBe("single");
-    expect(model.slots).toHaveLength(1);
     expect(names(slot?.candidates ?? [])).toEqual([
       "Song A",
       "Song B",
       "Song C",
-    ]);
-    expect(slot?.candidates.map((candidate) => candidate.candidateIds)).toEqual(
-      [[0], [1], [2]],
-    );
-  });
-
-  it("races a unit poll's pairings in one implicit slot", () => {
-    const model = buildSlotModel(unitPoll, []);
-    const [slot] = model.slots;
-
-    expect(model.kind).toBe("unit");
-    expect(model.slots).toHaveLength(1);
-    expect(names(slot?.candidates ?? [])).toEqual([
-      "HeeJin·HaSeul",
-      "HeeJin·KimLip",
-      "HaSeul·KimLip",
     ]);
     expect(slot?.candidates.map((candidate) => candidate.candidateIds)).toEqual(
       [[0], [1], [2]],

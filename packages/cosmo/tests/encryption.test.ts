@@ -5,16 +5,12 @@ import { decrypt, encrypt } from "../src/server/encryption";
 const TEST_KEY = "BwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwcHBwc=";
 
 describe("encrypt/decrypt", () => {
-  it("roundtrips a payload", () => {
-    const payload = JSON.stringify({ refreshToken: "secret" });
-    expect(decrypt(encrypt(payload, TEST_KEY), TEST_KEY)).toBe(payload);
-  });
-
-  it("produces a fresh IV per encryption", () => {
+  it("produces a fresh IV per encryption, each decrypting to the input", () => {
     const a = encrypt("same input", TEST_KEY);
     const b = encrypt("same input", TEST_KEY);
     expect(a).not.toBe(b);
-    expect(decrypt(a, TEST_KEY)).toBe(decrypt(b, TEST_KEY));
+    expect(decrypt(a, TEST_KEY)).toBe("same input");
+    expect(decrypt(b, TEST_KEY)).toBe("same input");
   });
 
   it("decrypts a known AES-256-CBC vector with a 16-byte IV prefix", () => {

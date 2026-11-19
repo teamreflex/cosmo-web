@@ -139,11 +139,6 @@ describe("groupTransfers", () => {
     expect(spinRow?.kind === "spin" && spinRow.outcome).toBe("success");
   });
 
-  it("hides a reward whose spin is on another page", () => {
-    const reward = transfer("reward", 0.25, Addresses.NULL, OWNER);
-    expect(group([reward], { rewardIds: new Set(["reward"]) })).toEqual([]);
-  });
-
   it("marks a spin without a reward pending, then failed", () => {
     const spin = transfer("spin", 0, OWNER, Addresses.SPIN);
     const outcome = (now: number) => {

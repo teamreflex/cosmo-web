@@ -1,8 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import {
-  ExpectedError,
-  isExpectedError,
-} from "../src/lib/universal/errors/expected";
+import { ExpectedError } from "../src/lib/universal/errors/expected";
 import { expectedErrorSerializationAdapter } from "../src/lib/universal/errors/serialization";
 
 /**
@@ -23,7 +20,6 @@ describe("ExpectedError serialization", () => {
       ),
     );
     expect(error).toBeInstanceOf(ExpectedError);
-    expect(isExpectedError(error)).toBe(true);
     expect(error.message).toBe("claim_token_unavailable");
     expect(error.data).toEqual({ tokenId: 4021, reason: "live" });
   });

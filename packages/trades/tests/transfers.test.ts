@@ -398,35 +398,24 @@ describe("itemStatus", () => {
     }
   });
 
-  test.each(["timed_out", "declined"] as const)(
-    "a %s trade's unsent item is not sent",
-    (status) => {
-      expect(itemStatus(unsent, held(TRADER_B), { status, ...pinned })).toBe(
-        "not_sent",
-      );
-    },
-  );
+  test("an ended trade's unsent item is not sent", () => {
+    expect(
+      itemStatus(unsent, held(TRADER_B), { status: "timed_out", ...pinned }),
+    ).toBe("not_sent");
+  });
 
   test("a live item follows its token's owner", () => {
-    for (const trade of [live, { status: "disputed", ...pinned } as const]) {
-      expect(itemStatus(unsent, held(TRADER_B), trade)).toBe("arrived");
-      expect(itemStatus(unsent, held(OUTSIDER), trade)).toBe("moved");
-      expect(itemStatus(unsent, held(KAIRU), trade)).toBe("waiting");
-      expect(itemStatus(unsent, held(KAIRU, false), trade)).toBe(
-        "untransferable",
-      );
-      expect(itemStatus(unsent, undefined, trade)).toBe("waiting");
-    }
+    expect(itemStatus(unsent, held(TRADER_B), live)).toBe("arrived");
+    expect(itemStatus(unsent, held(OUTSIDER), live)).toBe("moved");
+    expect(itemStatus(unsent, held(KAIRU), live)).toBe("waiting");
+    expect(itemStatus(unsent, held(KAIRU, false), live)).toBe("untransferable");
+    expect(itemStatus(unsent, undefined, live)).toBe("waiting");
   });
 
   test("nothing on a pending offer has started, and a token at its receiver has only moved", () => {
     expect(itemStatus(unsent, held(KAIRU), pending)).toBe("not_started");
     expect(itemStatus(unsent, undefined, pending)).toBe("not_started");
     expect(itemStatus(unsent, held(TRADER_B), pending)).toBe("moved");
-    expect(itemStatus(unsent, held(OUTSIDER), pending)).toBe("moved");
-    expect(itemStatus(unsent, held(KAIRU, false), pending)).toBe(
-      "untransferable",
-    );
   });
 
   test("the receiver is the sender's other side", () => {

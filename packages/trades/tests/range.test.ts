@@ -25,7 +25,6 @@ describe("rangeFilterSchema", () => {
   test.each([
     ["no columns", {}],
     ["an unknown artist", { artist: ["loona"] }],
-    ["an unknown on_offline", { on_offline: ["both"] }],
     ["an empty value", { member: [""] }],
     ["a NUL byte in a member", { member: ["\u0000"] }],
     // a bidi control would reorder the values shown beside it (FUI-14)

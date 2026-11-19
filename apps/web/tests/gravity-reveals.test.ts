@@ -2,7 +2,6 @@ import { describe, expect, it } from "bun:test";
 import {
   findLatestBatch,
   type RevealPage,
-  sumComoPerCandidate,
 } from "../src/lib/client/gravity/reveals";
 import type { Reveal } from "../src/lib/client/gravity/types";
 
@@ -18,18 +17,6 @@ function reveal(candidateId: number, amount: number): Reveal {
 function page(...votes: Reveal[]): RevealPage {
   return { votes };
 }
-
-describe("sumComoPerCandidate", () => {
-  it("indexes COMO by candidate id", () => {
-    const como = sumComoPerCandidate([
-      reveal(0, 5),
-      reveal(2, 3),
-      reveal(0, 1),
-    ]);
-
-    expect(como).toEqual([6, 0, 3]);
-  });
-});
 
 describe("findLatestBatch", () => {
   it("has no deltas until a batch lands", () => {

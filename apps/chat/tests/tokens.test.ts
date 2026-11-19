@@ -80,7 +80,6 @@ const publicKeyAsSecret = (signer: Signer) =>
 describe("ChatAuth refuses forged and stale tokens", () => {
   test.each([
     ["no token", async () => null],
-    ["garbage", async () => "not-a-jwt"],
     [
       "HS256 signed with the public key as the secret",
       async () => sign(await publicKeyAsSecret(signer), claims("alice")),

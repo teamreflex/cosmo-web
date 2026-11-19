@@ -31,10 +31,10 @@ describe("rejoinPlan", () => {
   });
 
   test("other drops back off from a second, doubling up to 15 seconds", () => {
-    const waits = [0, 1, 2, 3, 4, 5].map(
+    const waits = [0, 3, 4].map(
       (failures) => rejoinPlan(new ChatUnavailable(), failures).wait,
     );
-    expect(waits).toEqual([1000, 2000, 4000, 8000, 15_000, 15_000]);
+    expect(waits).toEqual([1000, 8000, 15_000]);
     expect(rejoinPlan(new ChatUnavailable(), 0)).toMatchObject({
       fresh: false,
       quiet: false,

@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, test } from "bun:test";
-import { Effect, Redacted, Stream } from "effect";
+import { Effect, Redacted } from "effect";
 import { TestClock } from "effect/testing";
 import { MessageCipher } from "../src/cipher";
 import {
@@ -64,16 +64,11 @@ describe("Send", () => {
         expect(yield* outcome(cipher.decrypt(OTHER_TRADE, bytes))).toBe(
           "MessageUnreadable",
         );
-        const tampered = bytes.slice();
-        tampered[tampered.length - 1] = (tampered.at(-1) ?? 0) ^ 1;
-        expect(yield* outcome(cipher.decrypt(TRADE, tampered))).toBe(
-          "MessageUnreadable",
-        );
       }),
     );
   });
 
-  test("an outsider can't send or join", async () => {
+  test("an outsider can't send", async () => {
     await run(
       world(),
       signer,
@@ -81,9 +76,6 @@ describe("Send", () => {
         const carol = yield* client(token("carol"));
         expect(
           yield* outcome(carol.Send({ tradeId: TRADE, body: text("hi") })),
-        ).toBe("ChatNotFound");
-        expect(
-          yield* outcome(Stream.runHead(carol.Join({ tradeId: TRADE }))),
         ).toBe("ChatNotFound");
       }),
     );

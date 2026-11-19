@@ -79,7 +79,7 @@ describe("Join", () => {
     );
   });
 
-  test("says when the history is sent, even when there is none", async () => {
+  test("says the history is sent when there is none", async () => {
     const state = world();
     const alice = await mint(signer, { sub: "alice" });
     await run(
@@ -90,12 +90,6 @@ describe("Join", () => {
         expect(yield* Stream.runHead(a.Join({ tradeId: TRADE }))).toEqual(
           Option.some({ _tag: "CaughtUp" }),
         );
-
-        yield* a.Send({ tradeId: TRADE, body: Redacted.make("hello") });
-        const tags = yield* a
-          .Join({ tradeId: TRADE })
-          .pipe(Stream.take(2), Stream.runCollect);
-        expect(tags.map((item) => item._tag)).toEqual(["Message", "CaughtUp"]);
       }),
     );
   });

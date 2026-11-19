@@ -181,19 +181,20 @@ describe("computeChartSeries", () => {
       },
       reveals.length,
     );
-    const input = { chartData, comoPerCandidate: como, groups, linesPerSlot };
+    const input = {
+      chartData,
+      comoPerCandidate: como,
+      complete: false,
+      groups,
+      linesPerSlot,
+    };
 
-    for (const complete of [false, true]) {
-      expect(
-        computeChartSeries({ ...input, complete, revealed: finalized }),
-      ).toEqual(
-        computeChartSeries({
-          ...input,
-          complete,
-          revealed: bucketReveals(chartData, reveals),
-        }),
-      );
-    }
+    expect(computeChartSeries({ ...input, revealed: finalized })).toEqual(
+      computeChartSeries({
+        ...input,
+        revealed: bucketReveals(chartData, reveals),
+      }),
+    );
   });
 });
 

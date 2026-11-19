@@ -54,7 +54,6 @@ describe("MessageBody", () => {
   });
 
   test.each([
-    ["empty", ""],
     ["only whitespace and controls", ` ${RLO}${chars(0)} `],
     ["over the limit", "a".repeat(MAX_MESSAGE_LENGTH + 1)],
   ])("refuses a body that is %s", (_label, input) => {

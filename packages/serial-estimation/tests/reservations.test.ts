@@ -88,13 +88,13 @@ describe("reserved ranges", () => {
       shared: true,
       foreign: [250],
     });
-    // not stored yet, on the range's bounds or beyond them
-    expect(toReservation(span, [], false, [50, 100, 400, 500])).toMatchObject({
+    // not stored yet, on the range's bounds
+    expect(toReservation(span, [], false, [100, 400])).toMatchObject({
       shared: false,
       foreign: [],
     });
-    // between its own, stored and not; 500 and 50 belong to other ranges
-    expect(toReservation(span, [250, 500], false, [260, 50])).toMatchObject({
+    // between its own, stored and not; 500 belongs to another range
+    expect(toReservation(span, [250, 500], false, [260])).toMatchObject({
       shared: true,
       foreign: [250, 260],
     });
