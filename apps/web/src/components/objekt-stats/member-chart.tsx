@@ -20,15 +20,11 @@ export default function MemberChart({ artists, data, selectedMembers }: Props) {
   const members = artists
     .flatMap((artist) => artist.artistMembers)
     .filter((m) => selectedMembers.includes(m.name));
-  const config = members.reduce(
-    (acc, member) => ({
-      ...acc,
-      [member.name.toLowerCase()]: {
-        label: member.name,
-        color: member.primaryColorHex,
-      },
-    }),
-    {},
+  const config = Object.fromEntries(
+    members.map((member) => [
+      member.name.toLowerCase(),
+      { label: member.name, color: member.primaryColorHex },
+    ]),
   ) satisfies ChartConfig;
 
   // get all hours from data

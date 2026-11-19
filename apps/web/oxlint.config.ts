@@ -3,7 +3,15 @@ import { defineConfig } from "oxlint";
 
 export default defineConfig({
   extends: [baseConfig],
-  plugins: ["typescript", "react", "import", "unicorn", "jest"],
+  plugins: [
+    "typescript",
+    "react",
+    "import",
+    "unicorn",
+    "jest",
+    "oxc",
+    "promise",
+  ],
   jsPlugins: [
     "eslint-plugin-drizzle",
     "@tanstack/eslint-plugin-query",
@@ -49,7 +57,14 @@ export default defineConfig({
       },
     ],
     "@tanstack/query/exhaustive-deps": "error",
+    "react/checked-requires-onchange-or-readonly": "error",
+    "react/jsx-no-comment-textnodes": "error",
+    "react/jsx-no-script-url": "error",
+    "react/jsx-no-target-blank": "error",
+    "react/no-unknown-property": "error",
+    "react/require-render-return": "error",
     "react/static-components": "error",
+    "react/unsupported-syntax": "error",
   },
   overrides: [
     // deliberate stdout logging in the server entries and one-off scripts

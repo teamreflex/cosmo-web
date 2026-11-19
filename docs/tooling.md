@@ -78,9 +78,11 @@ How the monorepo is wired, run locally, linted, formatted and type-checked, plus
 
 ## Lint
 
-- `lint` runs `oxlint --type-aware --type-check`, so type errors also fail lint.
-- Every workspace's `oxlint.config.ts` `extends` the base in `packages/lint/oxlint.config.ts`.
-- `extends` **replaces** the `plugins` array, so a workspace that sets `plugins` repeats the full set. `apps/web` lists `["typescript", "react", "import", "unicorn", "jest"]`; trimming it to `["react"]` silently drops the rest.
+- `lint` runs `oxlint --type-aware --type-check --report-unused-disable-directives-severity=error`, so type errors and stale suppressions also fail lint.
+- The type-aware rules and `--type-check` run on `tsrs-lint`, which oxlint finds through the root `tsrs` dev dependency. `tsrs` is a pinned beta built on a newer TypeScript than Bun's, so a type error only lint reports is a `tsrs` divergence and `bun check` is the reference. Swapping `tsrs` for `oxlint-tsgolint` is the fallback backend.
+- Unused-suppression reporting is a CLI flag in each workspace's `lint` and `lint:fix` scripts, because oxlint reads `options.reportUnusedDisableDirectives` only from the config it loads directly, and the editing hook loads every workspace config as nested.
+- Every workspace's `oxlint.config.ts` `extends` the base in `packages/lint/oxlint.config.ts`, which makes the `correctness` category errors: a warning never fails lint.
+- `extends` **replaces** the `plugins` array, so a workspace that sets `plugins` repeats the full set. `apps/web` lists the base's plugins plus `react`; trimming it to `["react"]` silently drops the rest.
 - `jsPlugins` and `rules` merge with the base, so the `anti-slop` rules still apply in workspaces that add their own JS plugins.
 - Effect workspaces add `@effect/eslint-plugin` with `@effect/dprint` off. `apps/web` adds the drizzle and TanStack plugins.
 - `no-console` allows only `console.warn` and `console.error`. `apps/web` turns it off for `main.ts`, `instrument.ts` and `scripts/**`.

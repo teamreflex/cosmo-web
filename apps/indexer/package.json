@@ -6,8 +6,8 @@
   "scripts": {
     "build": "rm -rf lib/ && tsc -p tsconfig.build.json",
     "start": "squid-typeorm-migration apply && bun run --preload ./lib/instrument.js lib/main.js",
-    "lint": "bun --bun oxlint --type-aware --type-check",
-    "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
+    "lint": "bun --bun oxlint --type-aware --type-check --report-unused-disable-directives-severity=error",
+    "lint:fix": "bun --bun oxlint --type-aware --type-check --report-unused-disable-directives-severity=error --fix",
     "typecheck": "bun check",
     "typegen": "squid-evm-typegen src/abi ./abi/*.json && bun fmt src/abi",
     "format": "bun fmt"

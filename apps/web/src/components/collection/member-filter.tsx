@@ -59,7 +59,6 @@ export default function MemberFilter({
   }
 
   function handleOpen(artistId: string) {
-    // oxlint-disable-next-line react/purity
     const now = Date.now();
     const timeSinceClose = now - lastCloseTime;
 

@@ -11,8 +11,8 @@
     "./errors": "./src/errors.ts"
   },
   "scripts": {
-    "lint": "bun --bun oxlint --type-aware --type-check",
-    "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
+    "lint": "bun --bun oxlint --type-aware --type-check --report-unused-disable-directives-severity=error",
+    "lint:fix": "bun --bun oxlint --type-aware --type-check --report-unused-disable-directives-severity=error --fix",
     "test": "bun test",
     "image:mirror": "bun --env-file=../../.env --env-file=../../.env.local scripts/mirror.ts",
     "typecheck": "bun check",

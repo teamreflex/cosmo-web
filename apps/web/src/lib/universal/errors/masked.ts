@@ -5,7 +5,6 @@
  */
 export class MaskedError extends Error {
   readonly masked = true;
-  // oxlint-disable-next-line anti-slop/no-unknown-parameters -- wraps a thrown value, which is genuinely unknown
   constructor(cause: unknown) {
     super("Internal server error", { cause });
     this.name = "MaskedError";

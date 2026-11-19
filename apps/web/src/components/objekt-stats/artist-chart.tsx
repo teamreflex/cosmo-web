@@ -17,15 +17,11 @@ type Props = {
 };
 
 export default function ArtistChart({ artists, data }: Props) {
-  const config = artists.reduce(
-    (acc, artist) => ({
-      ...acc,
-      [artist.id.toLowerCase()]: {
-        label: artist.title,
-        color: artistColors[artist.id],
-      },
-    }),
-    {},
+  const config = Object.fromEntries(
+    artists.map((artist) => [
+      artist.id.toLowerCase(),
+      { label: artist.title, color: artistColors[artist.id] },
+    ]),
   ) satisfies ChartConfig;
 
   // get all hours from data

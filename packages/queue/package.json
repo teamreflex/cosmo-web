@@ -8,8 +8,8 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "lint": "bun --bun oxlint --type-aware --type-check",
-    "lint:fix": "bun --bun oxlint --type-aware --type-check --fix",
+    "lint": "bun --bun oxlint --type-aware --type-check --report-unused-disable-directives-severity=error",
+    "lint:fix": "bun --bun oxlint --type-aware --type-check --report-unused-disable-directives-severity=error --fix",
     "typecheck": "bun check",
     "format": "bun fmt"
   },

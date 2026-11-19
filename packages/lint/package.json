@@ -8,6 +8,6 @@
     "./anti-slop": "./anti-slop/index.ts"
   },
   "devDependencies": {
-    "@oxlint/plugins": "^1.93.0"
+    "@oxlint/plugins": "^1.94.0"
   }
 }
