@@ -52,4 +52,4 @@ The market has two dismissable notices, each remembered per browser in an httpOn
 - `$dismissNotice` sets the notice's cookie to its version in `NOTICE_VERSIONS` for a year (`useDismissNotice()` in `hooks/use-dismiss-notice.ts`).
 - The `/market` route reads every notice cookie on the server in one call (`$fetchDismissedNotices`, `dismissedNoticesQuery`), so SSR renders the dialog open or closed without a flash.
 - Bumping a notice's version in `NOTICE_VERSIONS` shows it to everyone again.
-- The market notice's numbers come from `CLAIM_CAP_BASE`, `CLAIM_CAP_TIERS`, `CLAIM_CAP_CEILING`, `CLAIM_WINDOW` and `FEEDBACK_WINDOW_DAYS`, so its copy can't drift from the rules it describes.
+- The market notice's numbers come from `CLAIM_CAP_BASE`, `CLAIM_CAP_CEILING`, `CLAIM_WINDOW` and `FEEDBACK_WINDOW_DAYS`, so its copy can't drift from the rules it describes.

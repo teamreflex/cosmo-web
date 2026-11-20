@@ -1,8 +1,10 @@
 import { m } from "@/i18n/messages";
 import { getLocale } from "@/i18n/runtime";
+import { ratedRoleLabels } from "@/lib/client/feedback";
+import { formatCount } from "@/lib/client/trade-listings";
 import { env } from "@/lib/env/client";
+import { formatPercentPositive } from "@/lib/universal/feedback";
 import { cn } from "@/lib/utils";
-import { CLAIM_CAP_BASE, CLAIM_CAP_TIERS } from "@apollo/trades/caps";
 import { CLAIM_WINDOW } from "@apollo/trades/timers";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import {
@@ -76,7 +78,7 @@ function Tile({ label, className }: { label?: string; className?: string }) {
   return (
     <div
       className={cn(
-        "flex aspect-photocard w-9 shrink-0 items-end justify-center rounded-sm pb-1 text-xxs font-bold text-black/85",
+        "flex aspect-photocard w-9 shrink-0 items-end justify-center rounded-sm pb-1 text-center text-xxs font-bold text-black/85",
         className,
       )}
     >
@@ -224,26 +226,117 @@ export function WantExampleArt({ kind }: { kind: WantKind }) {
   const example = WANT_EXAMPLES[kind];
 
   return (
+    <ExchangeArt
+      offer={<TileStack tiles={example.offer} />}
+      ratio={example.ratio}
+      want={
+        kind === "range" ? (
+          <WantedTile label={m.market_notice_art_any()} />
+        ) : (
+          <div className="flex gap-1.5">
+            {example.want.map((tile) => (
+              <Tile key={tile.label} label={tile.label} className={tile.tint} />
+            ))}
+          </div>
+        )
+      }
+      caption={example.caption()}
+    />
+  );
+}
+
+export type ListingKind = "trade" | "sell" | "buy";
+
+// the example price, the same in every locale
+const PRICE = "$3";
+
+const LISTING_EXAMPLES = {
+  trade: {
+    ratio: "2 : 1",
+    offer: {
+      kind: "objekts",
+      tiles: [
+        { label: "101Z", tint: TINTS.sky },
+        { label: "101Z", tint: TINTS.pink },
+      ],
+    },
+    want: { kind: "objekt", label: () => "107Z" },
+    caption: () => m.market_notice_listing_trade_example(),
+  },
+  sell: {
+    ratio: `1 : ${PRICE}`,
+    offer: { kind: "objekts", tiles: [{ label: "101Z", tint: TINTS.pink }] },
+    want: { kind: "payment" },
+    caption: () => m.market_notice_listing_sell_example({ price: PRICE }),
+  },
+  buy: {
+    ratio: `${PRICE} : 1`,
+    offer: { kind: "payment" },
+    want: { kind: "objekt", label: m.market_notice_art_any_of },
+    caption: () => m.market_notice_listing_buy_example({ price: PRICE }),
+  },
+} satisfies Record<
+  ListingKind,
+  {
+    ratio: string;
+    offer:
+      | { kind: "objekts"; tiles: { label: string; tint: string }[] }
+      | { kind: "payment" };
+    want: { kind: "objekt"; label: () => string } | { kind: "payment" };
+    caption: () => string;
+  }
+>;
+
+// what a trade, a sale and a purchase each swap, with a caption
+export function ListingKindArt({ kind }: { kind: ListingKind }) {
+  const example = LISTING_EXAMPLES[kind];
+
+  return (
+    <ExchangeArt
+      offer={
+        example.offer.kind === "payment" ? (
+          <PriceTile className={cn(offerLabel, "bg-teal-500/10")} />
+        ) : (
+          <TileStack tiles={example.offer.tiles} />
+        )
+      }
+      ratio={example.ratio}
+      want={
+        example.want.kind === "payment" ? (
+          <PriceTile className={cn(wantLabel, "bg-amber-500/10")} />
+        ) : (
+          <WantedTile label={example.want.label()} />
+        )
+      }
+      caption={example.caption()}
+    />
+  );
+}
+
+// what you offer, the ratio, and what you want in return, over a caption
+function ExchangeArt({
+  offer,
+  ratio,
+  want,
+  caption,
+}: {
+  offer: ReactNode;
+  ratio: string;
+  want: ReactNode;
+  caption: string;
+}) {
+  return (
     <div className="flex flex-col items-center gap-3">
       <div aria-hidden className="flex items-end justify-center gap-2 sm:gap-3">
         <div className="flex flex-col gap-1.5">
           <SideLabel className={offerLabel}>
             {m.market_notice_art_offer()}
           </SideLabel>
-          {/* a fanned stack: only the front card has room for its label */}
-          <div className="flex -space-x-4.5">
-            {example.offer.map((tile, i) => (
-              <Tile
-                key={i}
-                label={i === example.offer.length - 1 ? tile.label : undefined}
-                className={cn(tile.tint, "ring-2 ring-muted")}
-              />
-            ))}
-          </div>
+          {offer}
         </div>
         <div className="mb-4.5 flex flex-col items-center text-muted-foreground">
           <span className="font-mono text-xxs font-semibold whitespace-nowrap text-foreground">
-            {example.ratio}
+            {ratio}
           </span>
           <IconArrowRight className="size-5" />
         </div>
@@ -251,30 +344,50 @@ export function WantExampleArt({ kind }: { kind: WantKind }) {
           <SideLabel className={wantLabel}>
             {m.market_notice_art_want()}
           </SideLabel>
-          <div className="flex gap-1.5">
-            {kind === "range" ? (
-              <Tile
-                label={m.market_notice_art_any()}
-                className={cn(
-                  "border-[1.5px] border-dashed border-current",
-                  wantLabel,
-                )}
-              />
-            ) : (
-              example.want.map((tile) => (
-                <Tile
-                  key={tile.label}
-                  label={tile.label}
-                  className={tile.tint}
-                />
-              ))
-            )}
-          </div>
+          {want}
         </div>
       </div>
       <p className="max-w-85 text-center text-xs text-pretty text-muted-foreground">
-        {example.caption()}
+        {caption}
       </p>
+    </div>
+  );
+}
+
+// a fanned stack: only the front card has room for its label
+function TileStack({ tiles }: { tiles: { label: string; tint: string }[] }) {
+  return (
+    <div className="flex -space-x-4.5">
+      {tiles.map((tile, i) => (
+        <Tile
+          key={i}
+          label={i === tiles.length - 1 ? tile.label : undefined}
+          className={cn(tile.tint, "ring-2 ring-muted")}
+        />
+      ))}
+    </div>
+  );
+}
+
+// an open slot for whatever the other side sends that fits
+function WantedTile({ label }: { label: string }) {
+  return (
+    <Tile
+      label={label}
+      className={cn("border-[1.5px] border-dashed border-current", wantLabel)}
+    />
+  );
+}
+
+function PriceTile({ className }: { className: string }) {
+  return (
+    <div
+      className={cn(
+        "flex aspect-photocard w-9 shrink-0 items-center justify-center rounded-sm border-[1.5px] border-current font-mono text-xs font-bold",
+        className,
+      )}
+    >
+      {PRICE}
     </div>
   );
 }
@@ -413,68 +526,82 @@ export function SendingArt() {
   );
 }
 
-export function FeedbackArt() {
-  const tiers = [
-    { score: m.market_notice_caps_start(), cap: CLAIM_CAP_BASE },
-    ...CLAIM_CAP_TIERS.map((score, i) => ({
-      score: String(score),
-      cap: CLAIM_CAP_BASE + i + 1,
-    })),
-  ];
+// the example profile's received feedback, as its feedback page shows it
+const RATED = { percent: 0.98, ratings: 24, seller: 6, buyer: 3 };
 
+export function FeedbackArt() {
   return (
-    <ArtWell className="gap-3.5">
-      <div
-        aria-hidden
-        className="flex items-center gap-1.5 text-xxs font-semibold"
-      >
-        <span className="flex h-6.5 items-center gap-1 rounded-full bg-teal-500/15 px-2.5 text-teal-700 ring-1 ring-teal-500/50 ring-inset dark:text-teal-300">
-          <IconCheck className="size-3" stroke={3} />
-          {m.feedback_rating_positive()}
-        </span>
-        <span className="flex h-6.5 items-center rounded-full bg-muted px-2.5 text-muted-foreground">
-          {m.feedback_rating_neutral()}
-        </span>
-        <span className="flex h-6.5 items-center rounded-full bg-muted px-2.5 text-muted-foreground">
-          {m.feedback_rating_negative()}
-        </span>
-      </div>
-      <div className="flex w-full max-w-80 flex-col gap-1">
+    <ArtWell>
+      <ArtCard>
+        <div className="flex items-center gap-2.5">
+          <Avatar member={SEOYEON} className="size-8 text-sm" />
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <span className="text-xs font-semibold">
+              {m.market_notice_art_rate({ name: SEOYEON.name })}
+            </span>
+            <span className="text-xxs text-muted-foreground">
+              {m.market_notice_art_rate_role({ price: PRICE })}
+            </span>
+          </div>
+        </div>
         <div
-          role="img"
-          aria-label={m.market_notice_caps_chart({
-            start: CLAIM_CAP_BASE,
-            tiers: new Intl.ListFormat(getLocale()).format(
-              tiers
-                .slice(1)
-                .map((tier) => m.market_notice_caps_chart_tier(tier)),
-            ),
-          })}
-          className="grid auto-cols-fr grid-flow-col items-end gap-1.5 tabular-nums"
+          aria-hidden
+          className="flex items-center gap-1.5 text-xxs font-semibold"
         >
-          {tiers.map((tier, i) => (
-            <div key={tier.score} className="flex flex-col gap-1">
-              <span className="text-center text-xxs font-semibold">
-                {tier.cap}
-              </span>
-              <div
-                className={cn(
-                  "rounded-sm",
-                  i === 0 ? "bg-foreground" : "bg-foreground/20",
-                )}
-                style={{ height: 12 + i * 8 }}
-              />
-              <span className="text-center text-xxs text-muted-foreground">
-                {tier.score}
-              </span>
-            </div>
+          <span className="flex h-6.5 items-center gap-1 rounded-full bg-teal-500/15 px-2.5 text-teal-700 ring-1 ring-teal-500/50 ring-inset dark:text-teal-300">
+            <IconCheck className="size-3" stroke={3} />
+            {m.feedback_rating_positive()}
+          </span>
+          <span className="flex h-6.5 items-center rounded-full bg-muted px-2.5 text-muted-foreground">
+            {m.feedback_rating_neutral()}
+          </span>
+          <span className="flex h-6.5 items-center rounded-full bg-muted px-2.5 text-muted-foreground">
+            {m.feedback_rating_negative()}
+          </span>
+        </div>
+        <div className="flex flex-col gap-1 border-t pt-2.5 text-xxs text-muted-foreground tabular-nums">
+          <span>{m.market_notice_art_on_profiles()}</span>
+          {[
+            [
+              {
+                text: m.feedback_badge_positive({
+                  percent: formatPercentPositive(RATED.percent, getLocale(), 0),
+                }),
+                className: "text-foreground",
+              },
+              {
+                text: m.feedback_badge_ratings({
+                  count: RATED.ratings,
+                  formatted: formatCount(RATED.ratings),
+                }),
+                className: "text-foreground",
+              },
+            ],
+            [
+              {
+                text: `${ratedRoleLabels.seller()} ${formatCount(RATED.seller)}`,
+                className: wantLabel,
+              },
+              {
+                text: `${ratedRoleLabels.buyer()} ${formatCount(RATED.buyer)}`,
+                className: offerLabel,
+              },
+            ],
+          ].map((stats, row) => (
+            // the overall share and count, then the counts by role
+            <p key={row} className="flex flex-wrap gap-x-1.5">
+              {stats.map((stat, i) => (
+                <span key={stat.text} className="whitespace-nowrap">
+                  {i > 0 && <span aria-hidden>· </span>}
+                  <span className={cn("font-semibold", stat.className)}>
+                    {stat.text}
+                  </span>
+                </span>
+              ))}
+            </p>
           ))}
         </div>
-        <div className="flex justify-between gap-2 text-xxs text-muted-foreground">
-          <span>{m.market_notice_caps_score()}</span>
-          <span>{m.market_notice_caps_limit()}</span>
-        </div>
-      </div>
+      </ArtCard>
     </ArtWell>
   );
 }
