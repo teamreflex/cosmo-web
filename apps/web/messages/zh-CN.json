@@ -2662,7 +2662,6 @@
   "market_listings_type": "类型",
   "market_listings_type_all": "全部",
   "listing_detail_you_pay": "你付款",
-  "listing_detail_you_pay_summary": "在 Apollo 之外付款，然后由 {poster} 标记为已收到",
   "listing_detail_payment_each": "每次交换",
   "listing_detail_payment_units": "{count} × {amount}",
   "listing_detail_payment_methods": "接受 {methods}",
@@ -2671,15 +2670,13 @@
   "trade_page_event_payment_confirmed_staff": "{#b}{recipient}{/b} 已将 {#b}{sender}{/b} {amount} 的付款标记为已收到（{method}）。",
   "trade_page_payment_confirmed_toast": "已将付款标记为已收到",
   "trade_page_payment_confirm_title": "{amount} 已到账了吗？",
-  "trade_page_payment_confirm_description": "请在 {name} 的款项到账后再标记为已收到。此操作无法撤销；如没有其他未完成的部分，交换将随即完成。",
+  "trade_page_payment_confirm_description": "请在 {name} 的款项到账后再标记为已收到，此操作无法撤销。",
   "trade_page_payment_confirm_method": "通过哪种方式到账？",
   "trade_page_payment_mark_received": "标记为已收到",
-  "trade_page_payment_outside": "在 {appName} 之外付款",
   "trade_page_payment_via": "通过 {method}",
   "trade_page_payment_received": "已收到",
   "trade_page_payment_not_received": "未收到",
-  "trade_page_payment_pay": "请在 {appName} 之外向 {name} 支付 {amount}。到账后由对方标记为已收到。",
-  "trade_page_payment_confirm_hint": "{name} 会在 {appName} 之外向你支付 {amount}。到账后请标记为已收到。",
+  "trade_page_payment_pay": "请在 {appName} 之外向 {name} 支付 {amount}。",
   "listing_composer_payment_remove": "移除付款",
   "listing_composer_payment_and": "另加",
   "listing_composer_payment_on_top": "额外支付，每次交换",
@@ -2688,21 +2685,16 @@
   "listing_composer_payment_amount": "金额",
   "listing_composer_payment_amount_yours": "你支付的金额",
   "listing_composer_payment_open_to_offers": "接受报价",
-  "listing_composer_payment_open_to_offers_hint": "对方可以按你的价格直接接受，也可以报一个别的金额。金额留空则只接受报价。",
   "listing_composer_payment_no_price": "无价格",
   "listing_offer_amount": "你的报价",
-  "listing_offer_amount_hint": "要价 {price}。报一个别的金额，由发布者接受或拒绝。",
-  "listing_offer_amount_hint_range": "要价 {price}。留空则按要价报价，也可以报一个别的金额。",
-  "listing_offer_amount_hint_open": "没有要价。请报出每笔交换你愿意支付的金额。",
-  "listing_offer_amount_at_asking": "这就是要价，所以会立即接受。",
   "listing_payment_offer": "报价",
   "listing_payment_offer_only": "报个价",
   "listing_payment_open_to_offers": "{price} · 接受报价",
   "listing_payment_open_to_offers_tag": "接受报价",
   "listing_payment_your_offer": "你的报价",
   "listing_detail_make_offer": "报价",
-  "listing_detail_either_hold": "接受后为你保留 48 小时。报价在 {poster} 接受之前不会保留任何东西",
-  "listing_detail_either_footer": "接受价格即可立即开始交换，或发出 {poster} 可以接受的报价。",
+  "listing_detail_either_hold": "接受后为你保留 48 小时",
+  "listing_detail_either_footer": "接受价格，或向 {poster} 报价。",
   "listing_composer_reason_payment_amount": "请填写付款金额，最多两位小数。",
   "listing_composer_reason_payment_methods": "请至少选择一种付款方式。",
   "my_trades_payment": "+ {amount} 付款",
@@ -2710,20 +2702,20 @@
   "my_trades_next_confirm": "标记付款已收到",
   "listing_detail_units_pay": "你付 {amount}",
   "trade_error_trade_cancel_payment_due": "你在此交换中有一笔待收款项，因此无法取消。如有问题，请发起争议。",
-  "listing_detail_claimer_pay": "请在 {appName} 之外向 {poster} 支付 {amount}；对方标记为已收到，全部到位后 {appName} 会将交换标记为已完成。",
+  "listing_detail_claimer_pay": "请在 {appName} 之外向 {poster} 支付 {amount}；对方标记已收到后，{appName} 会将其标记为已完成。",
   "listing_detail_claimer_body_pay": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
       "selectors": ["countPlural"],
       "match": {
-        "countPlural=other": "请在 COSMO App 中将你的 {count} 张 Objekt 发送给 {poster}，并在 {appName} 之外支付 {amount}；全部到位后，{appName} 会将其标记为已完成。"
+        "countPlural=other": "请在 COSMO App 中将你的 {count} 张 Objekt 发送给 {poster} 并支付 {amount}；全部到位后，{appName} 会将其标记为已完成。"
       }
     }
   ],
   "listing_detail_accept_footer_pay": "{poster} 在 COSMO App 中发送，你在 {appName} 之外付款，顺序不限。",
   "listing_detail_accept_footer_with_payment": "双方都在 COSMO App 中发送，付款在 {appName} 之外进行，顺序不限。",
   "listing_confirm_deadline_pay": "你们双方有 {#hours}48 小时{/hours}（截至 {#time}{date}{/time}）：{#user}{poster}{/user} 在 COSMO App 中发送，你在 {appName} 之外付款。如果届时双方都未完成，交换将关闭。",
-  "listing_detail_accepted_pay": "已接受交换。请在 {appName} 之外向 {poster} 付款，对方会标记为已收到。",
+  "listing_detail_accepted_pay": "已接受交换。请在 {appName} 之外向 {poster} 付款。",
   "trade_page_step_send_payment": "发送与付款 · 已完成 {seen} / {count}",
   "trade_page_disputed_deadline_payment": "期限已过但仍有付款未标记为已收到，{appName} 工作人员将审核此交换。",
   "trade_page_disputed_deadline_both": "期限已过但仍有 Objekt 和付款未完成，{appName} 工作人员将审核此交换。",
@@ -2737,5 +2729,42 @@
   "my_trades_payment_only_received": "{amount} 付款 · 已收到",
   "listing_composer_ratio_each_price": "每次交换是你提供的 Objekt 中的 {#b}{give}{/b} 张，换 {#b}{get}{/b}。",
   "trade_error_trade_cancel_started_payment": "此交换中已有内容被发送或标记为已收到，因此无法取消。请改为发起争议。",
-  "report_reason_deadline_passed_payment": "已过期限，仍有付款或 Objekt 未完成"
+  "report_reason_deadline_passed_payment": "已过期限，仍有付款或 Objekt 未完成",
+  "listing_option_or": "或",
+  "listing_option_label": "选项 {number}",
+  "listing_options_count": "{count} 个选项",
+  "listing_composer_add_option": "添加选项",
+  "listing_composer_remove_option": "移除选项",
+  "listing_composer_block_option_empty": "选项 {number} 是空的。",
+  "listing_composer_block_option_repeat": "两个选项寻找的是同样的东西。",
+  "listing_detail_pick_option": "选择你要给出的",
+  "listing_detail_option_either": "接受或报价",
+  "trade_page_offer_accept_description_paid_only": "接受后，你有 48 小时在 COSMO App 中发送；{name} 在 {appName} 之外付款。",
+  "trade_page_offer_accept_description_paid": "接受后，你和 {name} 有 48 小时在 COSMO App 中发送；{name} 还需付款。",
+  "trade_page_offer_accept_description_paying": "接受后，你和 {name} 有 48 小时在 COSMO App 中发送；你还需付款。",
+  "trade_page_step_offer_then_pay": "之后 {hours} 小时内发送和付款",
+  "listing_offer_step_answer_amount": "{#user}{poster}{/user} 会看到你的报价并选择接受或拒绝。在此期间不会保留任何东西。",
+  "listing_offer_step_window_pay": "接受后，{hours} 小时内 {poster} 在 COSMO App 中发送，你付款。",
+  "listing_offer_step_window_with_payment": "接受后，双方有 {hours} 小时在 COSMO App 中发送并付款。",
+  "listing_offer_step_window_paid": "接受后，双方有 {hours} 小时发送；{poster} 还需付款。",
+  "listing_detail_offer_footer_pay": "如果 {poster} 接受，你有 48 小时付款，对方发送。",
+  "listing_detail_offer_footer_with_payment": "如果 {poster} 接受，交换随即开始，双方有 48 小时发送和付款。",
+  "listing_composer_ratio_each_offer": "每次交换是你提供的 Objekt 中的 {#b}{give}{/b} 张，由对方报出愿付的金额。",
+  "listing_composer_ratio_times_offer": [
+    {
+      "declarations": [
+        "input count",
+        "input offered",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "你提供了 {offered} 张，对方最多可交换 {count} 次，并自选要拿你的哪几张。设为 {offered} 即可一次换完全部。"
+      }
+    }
+  ],
+  "listing_composer_footer_offers": "{offered} · 接受报价",
+  "listing_offer_amount_invalid": "请输入大于 0、最多两位小数、不超过 {max} 的金额。",
+  "listing_offer_amount_total": "{count} × {amount} = {total}",
+  "listing_offer_amount_capped": "你已达到接单上限，请报出其他金额。"
 }

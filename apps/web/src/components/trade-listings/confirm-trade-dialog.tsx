@@ -16,14 +16,19 @@ import { $claimListing } from "@/lib/functions/trade-listings";
 import { tradesKey } from "@/lib/queries/trades";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import {
+  type ListingAt,
   poolItems,
   type TokenRefusalReason,
-  type TradeListing,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
 import type { TradeSide } from "@apollo/database/web/types";
-import { type ClaimTerms, claimTerms } from "@apollo/trades/lifecycle";
-import { amountSchema, type ListingPayment } from "@apollo/trades/payment";
+import { claimTerms } from "@apollo/trades/lifecycle";
+import {
+  amountSchema,
+  type ListingPayment,
+  MAX_PAYMENT_AMOUNT,
+  toNumeric,
+} from "@apollo/trades/payment";
 import { CLAIM_WINDOW, OFFER_WINDOW } from "@apollo/trades/timers";
 import { formatSerial } from "@apollo/util";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
@@ -56,7 +61,7 @@ import { Eyebrow } from "./side-heading";
 import { PaymentLabel } from "./want-label";
 
 type Props = {
-  listing: TradeListing;
+  listing: ListingAt;
   rows: PickerRow[];
   snapshot: ConfirmSnapshot | null;
   open: boolean;
@@ -64,6 +69,8 @@ type Props = {
   onNotice: (notice: Notice | null) => void;
   /** drops a pool pick the server said another trade took */
   onPickTaken: (tokenId: number) => void;
+  /** the viewer is at their claim cap, so only an offer can go */
+  capped: boolean;
 };
 
 /**
@@ -93,6 +100,7 @@ export default function ConfirmTradeDialog({
   onOpenChange,
   onNotice,
   onPickTaken,
+  capped,
 }: Props) {
   const invalidate = useInvalidateListing();
   const queryClient = useQueryClient();
@@ -100,8 +108,8 @@ export default function ConfirmTradeDialog({
   const [failure, setFailure] = useState<ClaimFailure | null>(null);
   const confirming = useRef(false);
   const poster = posterName(listing);
-  const { amount, setAmount, proposing, hint, sent, ready, offers, endsAt } =
-    useOfferTerms(listing, snapshot);
+  const { amount, setAmount, proposing, invalid, sent, ready, offers, endsAt } =
+    useOfferTerms(listing, snapshot, capped);
 
   const claim = useMutation({
     mutationFn: (frozen: ConfirmSnapshot) =>
@@ -109,6 +117,7 @@ export default function ConfirmTradeDialog({
         data: {
           listingId: listing.id,
           seen: listing.updatedAt,
+          option: listing.option,
           units: frozen.units,
           picked: frozen.offered,
           rows: frozen.picked.map((picks) => picks.map((pick) => pick.tokenId)),
@@ -244,7 +253,7 @@ export default function ConfirmTradeDialog({
                   units={snapshot?.units ?? 1}
                   proposing={proposing}
                   amount={amount}
-                  hint={hint}
+                  invalid={invalid}
                   onAmount={setAmount}
                 />
               </section>
@@ -266,6 +275,7 @@ export default function ConfirmTradeDialog({
                   offers={offers}
                   poster={poster}
                   pays={rows.length === 0}
+                  payment={listing.payment}
                   endsAt={endsAt}
                 />
               )}
@@ -339,43 +349,46 @@ export default function ConfirmTradeDialog({
 /**
  * What confirming sends: on an offer whose listing takes offers on its
  * payment, the amount the claimer types (`proposing`), an empty one
- * meaning the asking price on a listing with a range row, and from it whether this
- * claims or sends an offer (claimTerms()), with when the trade's deadline or the offer's expiry would
- * fall, counted from when the picks were frozen.
+ * meaning the asking price on a listing with a range row, and from it
+ * whether this claims or sends an offer (claimTerms()), with when the
+ * trade's deadline or the offer's expiry would fall, counted from when the
+ * picks were frozen. `invalid` is why the amount can't go: it doesn't
+ * read, or it is the asking price, which claims, while the viewer is at
+ * their claim cap.
  */
 function useOfferTerms(
-  listing: TradeListing,
+  listing: ListingAt,
   snapshot: ConfirmSnapshot | null,
+  capped: boolean,
 ) {
   const [amount, setAmount] = useState("");
-  const proposing =
-    snapshot?.offer === true &&
-    listing.payment?.side === "to" &&
-    listing.payment.mode !== "price_only";
+  const proposing = snapshot?.offer === true && takesAmount(listing);
   /**
    * With a range row an empty field offers the asking price, as the server
    * reads no amount; without one Accept already claims at that price, so
    * an offer needs an amount.
    */
-  const empty =
-    amount.trim() === "" &&
-    listing.payment !== null &&
-    listing.payment.amount !== null &&
-    listing.wants.some((want) => want.kind === "range");
+  const empty = amount.trim() === "" && offersAsking(listing);
   const proposed = proposing && !empty ? amountSchema.safeParse(amount) : null;
   const terms =
     proposed?.success === false ? null : claimTerms(listing, proposed?.data);
   const offers =
     terms === null ? snapshot?.offer === true : terms.kind === "offer";
+  const invalid = amountRefusal({
+    typed: amount.trim() !== "",
+    reads: proposed?.success !== false,
+    claims: proposing && terms?.kind === "claim",
+    capped,
+  });
   return {
     amount,
     setAmount,
     proposing,
-    hint: offerHint(listing, { typed: !empty, terms }),
+    invalid,
     // the amount sent, once it reads
     sent: proposed?.success === true ? amount.trim() : undefined,
     // there are picks to send, and an amount that reads when one is asked for
-    ready: snapshot !== null && terms !== null,
+    ready: snapshot !== null && terms !== null && invalid === null,
     offers,
     endsAt:
       snapshot === null
@@ -387,40 +400,36 @@ function useOfferTerms(
   };
 }
 
-/**
- * What the offer's amount field says under it: the listing has no asking
- * price (`open`); it has a range row, so an empty field offers the asking
- * price (`range`); the amount typed is the asking price, which accepts it
- * (`at_asking`); or the asking price to offer against (`asking`).
- */
-type OfferHint = "open" | "range" | "at_asking" | "asking";
-
-function offerHint(
-  listing: TradeListing,
-  amount: { typed: boolean; terms: ClaimTerms | null },
-): OfferHint {
-  if (listing.payment?.amount === null) return "open";
-  if (listing.wants.some((want) => want.kind === "range")) return "range";
-  return amount.typed && amount.terms?.kind === "claim"
-    ? "at_asking"
-    : "asking";
+// whether the claimer names their own amount: the listing takes offers on the payment they send
+function takesAmount(listing: ListingAt) {
+  return (
+    listing.payment !== null &&
+    listing.payment.side === "to" &&
+    listing.payment.mode !== "price_only"
+  );
 }
 
-function offerHintText(hint: OfferHint, payment: ListingPayment) {
-  const price =
-    payment.amount === null
-      ? ""
-      : formatAmount(payment.amount, payment.currency);
-  switch (hint) {
-    case "open":
-      return m.listing_offer_amount_hint_open();
-    case "range":
-      return m.listing_offer_amount_hint_range({ price });
-    case "at_asking":
-      return m.listing_offer_amount_at_asking();
-    case "asking":
-      return m.listing_offer_amount_hint({ price });
-  }
+// whether an empty amount offers the asking price: a range row beside an asking price
+function offersAsking(listing: ListingAt) {
+  return (
+    listing.payment !== null &&
+    listing.payment.amount !== null &&
+    listing.wants.some((want) => want.kind === "range")
+  );
+}
+
+/**
+ * Why the typed amount can't go: it doesn't read, or it is the asking
+ * price, which claims, while the viewer is at their claim cap.
+ */
+function amountRefusal(amount: {
+  typed: boolean;
+  reads: boolean;
+  claims: boolean;
+  capped: boolean;
+}): "amount" | "capped" | null {
+  if (amount.typed && !amount.reads) return "amount";
+  return amount.claims && amount.capped ? "capped" : null;
 }
 
 /**
@@ -441,18 +450,38 @@ function WhatHappens({
   offers,
   poster,
   pays,
+  payment,
   endsAt,
 }: {
   offers: boolean;
   poster: string;
   pays: boolean;
+  payment: Pick<ListingPayment, "side"> | null;
   endsAt: Date;
 }) {
   return offers ? (
-    <OfferSteps poster={poster} expiresAt={endsAt} />
+    <OfferSteps
+      poster={poster}
+      expiresAt={endsAt}
+      window={offerWindow(payment, pays)}
+    />
   ) : (
     <ClaimDeadline poster={poster} pays={pays} endsAt={endsAt} />
   );
+}
+
+/**
+ * What each side does once an offer is accepted: both send, the poster
+ * sends and the claimer only pays, both send and the claimer also pays, or
+ * the poster also pays.
+ */
+function offerWindow(
+  payment: Pick<ListingPayment, "side"> | null,
+  pays: boolean,
+) {
+  if (payment === null) return "send";
+  if (payment.side === "from") return "paid";
+  return pays ? "pay" : "with_payment";
 }
 
 /**
@@ -501,15 +530,20 @@ function ClaimDeadline({
 
 /**
  * What sending the offer starts: the poster answers it, it expires if they
- * don't by then, and accepting it gives both sides the trade's window.
+ * don't by then, and accepting it gives both sides the trade's window, in
+ * which each sends in the COSMO app or pays (`window`). An offer of a
+ * payment alone shows the poster no serials.
  */
 function OfferSteps({
   poster,
   expiresAt,
+  window,
 }: {
   poster: string;
   expiresAt: Date;
+  window: "send" | "pay" | "with_payment" | "paid";
 }) {
+  const hours = CLAIM_WINDOW / 3_600_000;
   const steps = [
     // the first step says what sending does, so it describes the dialog
     <DialogDescription
@@ -518,7 +552,11 @@ function OfferSteps({
       className="text-sm text-foreground"
     >
       <ParaglideMessage
-        message={m.listing_offer_step_answer}
+        message={
+          window === "pay"
+            ? m.listing_offer_step_answer_amount
+            : m.listing_offer_step_answer
+        }
         inputs={{ poster }}
         markup={{
           user: ({ children }) => (
@@ -533,7 +571,12 @@ function OfferSteps({
       inputs={{ date: "" }}
       markup={{ time: () => <Deadline deadlineAt={expiresAt} /> }}
     />,
-    m.listing_offer_step_window({ hours: CLAIM_WINDOW / 3_600_000 }),
+    {
+      send: () => m.listing_offer_step_window({ hours }),
+      pay: () => m.listing_offer_step_window_pay({ hours, poster }),
+      with_payment: () => m.listing_offer_step_window_with_payment({ hours }),
+      paid: () => m.listing_offer_step_window_paid({ hours, poster }),
+    }[window](),
   ];
   return (
     <ol className="flex flex-col gap-2.5 rounded-lg bg-muted/50 px-3 py-3 text-sm leading-relaxed">
@@ -584,7 +627,7 @@ function PaymentGroup({
   sender,
   units,
 }: {
-  listing: TradeListing;
+  listing: ListingAt;
   sender: TradeSide;
   units: number;
 }) {
@@ -606,14 +649,14 @@ function ClaimerPayment({
   units,
   proposing,
   amount,
-  hint,
+  invalid,
   onAmount,
 }: {
-  listing: TradeListing;
+  listing: ListingAt;
   units: number;
   proposing: boolean;
   amount: string;
-  hint: OfferHint;
+  invalid: "amount" | "capped" | null;
   onAmount: (amount: string) => void;
 }) {
   return proposing && listing.payment !== null ? (
@@ -621,7 +664,7 @@ function ClaimerPayment({
       payment={listing.payment}
       units={units}
       amount={amount}
-      hint={hint}
+      invalid={invalid}
       onChange={onAmount}
     />
   ) : (
@@ -631,23 +674,24 @@ function ClaimerPayment({
 
 /**
  * The amount the claimer offers for each trade, in the listing's currency,
- * beside the asking price when there is one, with the total for every unit
- * the offer takes. An amount at the asking price accepts it instead.
+ * its placeholder the asking price when there is one, with the total for
+ * every unit the offer takes, and why it can't go when it can't.
  */
 function OfferAmount({
   payment,
   units,
   amount,
-  hint,
+  invalid,
   onChange,
 }: {
   payment: ListingPayment;
   units: number;
   amount: string;
-  hint: OfferHint;
+  invalid: "amount" | "capped" | null;
   onChange: (amount: string) => void;
 }) {
   const id = useId();
+  const reasonId = useId();
   const parsed = amountSchema.safeParse(amount);
   return (
     <div className="flex flex-col gap-2 rounded-lg border border-border bg-card px-3 py-2.5 text-sm">
@@ -661,8 +705,14 @@ function OfferAmount({
             id={id}
             inputMode="decimal"
             autoComplete="off"
-            placeholder="0.00"
+            placeholder={
+              payment.amount === null
+                ? m.listing_composer_payment_amount()
+                : toNumeric(payment.amount)
+            }
             value={amount}
+            aria-invalid={invalid !== null}
+            aria-describedby={invalid === null ? undefined : reasonId}
             onChange={(event) => onChange(event.target.value)}
             className="h-9 w-28 font-mono font-bold tabular-nums"
           />
@@ -670,17 +720,24 @@ function OfferAmount({
         {units > 1 && (
           <span className="text-muted-foreground">
             {parsed.success
-              ? m.listing_detail_payment_units({
-                  amount: formatAmount(parsed.data, payment.currency),
+              ? m.listing_offer_amount_total({
                   count: units,
+                  amount: formatAmount(parsed.data, payment.currency),
+                  total: formatAmount(parsed.data * units, payment.currency),
                 })
               : m.listing_detail_payment_each()}
           </span>
         )}
       </div>
-      <p className="text-xs text-muted-foreground">
-        {offerHintText(hint, payment)}
-      </p>
+      {invalid !== null && (
+        <p id={reasonId} className="text-xs text-destructive">
+          {invalid === "amount"
+            ? m.listing_offer_amount_invalid({
+                max: formatAmount(MAX_PAYMENT_AMOUNT, payment.currency),
+              })
+            : m.listing_offer_amount_capped()}
+        </p>
+      )}
     </div>
   );
 }

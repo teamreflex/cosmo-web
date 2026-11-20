@@ -171,6 +171,7 @@ export async function lockTrade(tx: WebTx, tradeId: string) {
       proposedBy: tradeOffers.proposedBy,
       disputeReportId: tradeOffers.disputeReportId,
       paymentMethods: tradeOffers.paymentMethods,
+      listingOption: tradeOffers.listingOption,
       now: sql<Date>`now()`.mapWith(tradeOffers.endedAt),
     })
     .from(tradeOffers)

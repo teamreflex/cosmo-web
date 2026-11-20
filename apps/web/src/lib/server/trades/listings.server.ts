@@ -18,7 +18,11 @@ import type { InventoryObjekt } from "@apollo/trades/allocate";
 import { firstRefusal } from "@apollo/trades/holdings";
 import { offerTransition } from "@apollo/trades/lifecycle";
 import type { ListingInput } from "@apollo/trades/listing";
-import { type ListingPayment, toNumeric } from "@apollo/trades/payment";
+import {
+  type ListingPayment,
+  type PaymentTerms,
+  toNumeric,
+} from "@apollo/trades/payment";
 import { isEqual } from "@apollo/util";
 import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import type { AuthErrorCode } from "../../universal/errors/auth";
@@ -266,16 +270,16 @@ type CheckedTerms = {
   tokenIds: number[];
   holdings: TokenHoldings;
   offered: InventoryObjekt[];
-  wants: ResolvedWant[];
-  payment: ListingPayment | null;
+  options: { wants: ResolvedWant[]; payment: ListingPayment | null }[];
+  payment: PaymentTerms | null;
   editedListing: string | undefined;
 };
 
 /**
  * Checks a listing's terms before any transaction opens: a payment's
- * currency must have a rate, every want must be fillable, then every
- * offered token must be the poster's to offer. Returns the indexer values
- * to copy. An edit passes its listing as `editedListing`,
+ * currency must have a rate, every want of every option must be fillable,
+ * then every offered token must be the poster's to offer. Returns the
+ * indexer values to copy. An edit passes its listing as `editedListing`,
  * so objekts live in the listing's own trades can stay in its pool.
  */
 export async function checkTerms(
@@ -287,7 +291,19 @@ export async function checkTerms(
     await assertSupportedCurrency(input.payment.currency);
   }
   const tokenIds = input.offered.map(({ tokenId }) => tokenId);
-  const wants = await resolveWants(input.wants);
+  // one indexer read for every option's rows, split back in posted order
+  const resolved = await resolveWants(
+    input.options.flatMap((option) => option.wants),
+  );
+  const options = input.options.map((option, index) => {
+    const start = input.options
+      .slice(0, index)
+      .reduce((total, each) => total + each.wants.length, 0);
+    return {
+      wants: resolved.slice(start, start + option.wants.length),
+      payment: option.payment,
+    };
+  });
   const holdings = await readTokenStates(address, tokenIds, editedListing);
 
   return (
@@ -301,7 +317,7 @@ export async function checkTerms(
           ? [{ tokenId, ...state.attributes }]
           : [];
       }),
-      wants,
+      options,
       payment: input.payment,
       editedListing,
     }
@@ -313,7 +329,7 @@ export async function checkTerms(
  * may arrive by and its offer mode. All empty without a payment.
  */
 export function paymentColumns(
-  payment: ListingPayment | null,
+  payment: PaymentTerms | null,
 ): Pick<
   typeof tradeOffers.$inferInsert,
   "paymentSide" | "paymentMethods" | "offers"
@@ -365,21 +381,53 @@ export function listingArrays(offered: InventoryObjekt[]) {
   };
 }
 
-function wantRow(listingId: string, want: ResolvedWant): NewTradeListingWant {
+function wantRow(
+  listingId: string,
+  option: number,
+  want: ResolvedWant,
+): NewTradeListingWant {
   switch (want.kind) {
     case "exact":
-      return { listingId, kind: "exact", count: want.count, ...want.objekt };
+      return {
+        listingId,
+        option,
+        kind: "exact",
+        count: want.count,
+        ...want.objekt,
+      };
     case "range":
     case "choice":
-      return { listingId, kind: want.kind, count: want.count };
+      return { listingId, option, kind: want.kind, count: want.count };
   }
 }
 
 /**
+ * The listing's payment rows: one in each option the claimer's payment
+ * prices, or the poster's one in option 0, which prices every option.
+ */
+function paymentRows(
+  listingId: string,
+  terms: CheckedTerms,
+): NewTradeListingWant[] {
+  const priced = terms.options.flatMap(({ payment }, option) =>
+    payment === null ? [] : [{ option, payment }],
+  );
+  return (terms.payment?.side === "from" ? priced.slice(0, 1) : priced).map(
+    ({ option, payment }) => ({
+      listingId,
+      option,
+      kind: "payment",
+      amount: payment.amount === null ? null : toNumeric(payment.amount),
+      currency: payment.currency,
+    }),
+  );
+}
+
+/**
  * Inserts the listing's own items, never live and with no `listing_id`,
- * then its objekt wants in one statement, so id order is the posted order,
- * then its payment row, then the collections of its choice rows and the
- * ranges of its range rows.
+ * then every option's objekt wants in one statement, in option order, so
+ * id order is the posted order, then its payment rows, then the
+ * collections of its choice rows and the ranges of its range rows.
  */
 export async function insertTerms(
   tx: WebTx,
@@ -398,31 +446,31 @@ export async function insertTerms(
         }) satisfies NewTradeOfferItem,
     ),
   );
+  const wants = terms.options.flatMap((option, index) =>
+    option.wants.map((want) => ({ option: index, want })),
+  );
   // a sale asks for no objekts
   const inserted =
-    terms.wants.length === 0
+    wants.length === 0
       ? []
       : await tx
           .insert(tradeListingWants)
-          .values(terms.wants.map((want) => wantRow(listingId, want)))
+          .values(
+            wants.map(({ option, want }) => wantRow(listingId, option, want)),
+          )
           .returning({ id: tradeListingWants.id });
   const ids = inserted.map(({ id }) => id).toSorted((a, b) => a - b);
-  if (terms.payment !== null) {
-    await tx.insert(tradeListingWants).values({
-      listingId,
-      kind: "payment",
-      amount:
-        terms.payment.amount === null ? null : toNumeric(terms.payment.amount),
-      currency: terms.payment.currency,
-    });
+  const payments = paymentRows(listingId, terms);
+  if (payments.length > 0) {
+    await tx.insert(tradeListingWants).values(payments);
   }
-  const options = terms.wants.flatMap((want, index) => {
+  const options = wants.flatMap(({ want }, index) => {
     const wantId = ids[index];
     return want.kind === "choice" && wantId !== undefined
       ? want.options.map((objekt) => ({ wantId, ...objekt }))
       : [];
   });
-  const ranges = terms.wants.flatMap((want, index) => {
+  const ranges = wants.flatMap(({ want }, index) => {
     const wantId = ids[index];
     return want.kind === "range" && wantId !== undefined
       ? want.ranges.map(

@@ -2,7 +2,7 @@ import { collections, objekts } from "@apollo/database/indexer/schema";
 import { lockedObjekts, tradeOfferItems } from "@apollo/database/web/schema";
 import type { TradeWant } from "@apollo/trades/allocate";
 import type { TokenFlags } from "@apollo/trades/holdings";
-import type { ListingInput } from "@apollo/trades/listing";
+import type { ListingOptionTerms } from "@apollo/trades/listing";
 import type {
   IndexedAttributes,
   ObjektAttributes,
@@ -284,7 +284,7 @@ function wantSlugs(wants: readonly TradeWant[]) {
  * The first bad row, in posted order, decides the refusal.
  */
 export async function resolveWants(
-  wants: ListingInput["wants"],
+  wants: ListingOptionTerms["wants"],
 ): Promise<ResolvedWant[]> {
   const slugs = wantSlugs(wants);
   const ranges = wants.flatMap((want, index) =>

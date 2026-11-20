@@ -6,6 +6,7 @@ import {
   type ClosedListingState,
   hasRatio,
   type ListingFeedWant,
+  listingPaymentTerms,
   type ListingPick,
   type PoolAvailability,
   type PoolStanding,
@@ -31,7 +32,7 @@ import {
 } from "@apollo/database/web/types";
 import { rangeSummaryColumns, totalWanted } from "@apollo/trades/composer";
 import { heldTokenRefusal, type TokenFlags } from "@apollo/trades/holdings";
-import { type ListingType, listingType } from "@apollo/trades/listing";
+import { type ListingType, listingTypesOf } from "@apollo/trades/listing";
 import { formatPayment, type ListingPayment } from "@apollo/trades/payment";
 import {
   hasBidiControl,
@@ -288,6 +289,30 @@ export function wantsSummary(wants: readonly ListingFeedWant[]) {
 }
 
 /**
+ * One of a listing's options as a short phrase: its objekt rows as
+ * askingTitle() reads them, the claimer's payment added, "1 objekt +
+ * $1.00", or the payment alone, "$3.00".
+ */
+export function optionTitle(option: {
+  wants: readonly ListingFeedWant[];
+  payment: ListingPayment | null;
+}) {
+  const price =
+    option.payment?.side === "to" ? askingPriceText(option.payment) : null;
+  if (option.wants.length === 0) return price ?? "";
+  const title = askingTitle(option.wants);
+  return price === null ? title : `${title} + ${price}`;
+}
+
+/**
+ * Phrases for a listing's options joined as alternatives, "2 objekts or
+ * $3.00".
+ */
+export function joinOptions(phrases: readonly string[]) {
+  return phrases.join(` ${m.listing_option_or()} `);
+}
+
+/**
  * What a feed row's Asking column is titled: its one row as wantLabel()
  * reads it, a range by its narrowed values, "Atom02 · KimLip · First", else
  * how many objekts its rows ask for, as Offering titles several.
@@ -362,7 +387,8 @@ export const emptyComposerDisplay: ComposerDisplay = {
 };
 
 /**
- * What the composer needs to show a listing's current terms.
+ * What the composer needs to show a listing's current terms, every
+ * option's collections included.
  */
 export function listingComposerDisplay(listing: TradeListing): ComposerDisplay {
   return {
@@ -377,32 +403,34 @@ export function listingComposerDisplay(listing: TradeListing): ComposerDisplay {
       ]),
     ),
     collections: new Map(
-      listing.wants.flatMap((want): [string, ComposerShown][] => {
-        switch (want.kind) {
-          case "exact":
-            return [
-              [
-                want.objekt.slug,
+      listing.options
+        .flatMap((option) => option.wants)
+        .flatMap((want): [string, ComposerShown][] => {
+          switch (want.kind) {
+            case "exact":
+              return [
+                [
+                  want.objekt.slug,
+                  {
+                    name: objektName(want.collection, want.objekt),
+                    serial: null,
+                    collection: want.collection,
+                  },
+                ],
+              ];
+            case "choice":
+              return want.options.map((option) => [
+                option.slug,
                 {
-                  name: objektName(want.collection, want.objekt),
+                  name: objektName(option.collection, option),
                   serial: null,
-                  collection: want.collection,
+                  collection: option.collection,
                 },
-              ],
-            ];
-          case "choice":
-            return want.options.map((option) => [
-              option.slug,
-              {
-                name: objektName(option.collection, option),
-                serial: null,
-                collection: option.collection,
-              },
-            ]);
-          case "range":
-            return [];
-        }
-      }),
+              ]);
+            case "range":
+              return [];
+          }
+        }),
     ),
   };
 }
@@ -498,17 +526,21 @@ export function ratioSides({ give, get, payment }: TradeRatio) {
 }
 
 /**
- * A listing's type (listingType()) from its payment, its objekt want rows
- * and its offered objekts.
+ * Every type a listing's options make it (listingTypesOf()), from its
+ * payment's side, each option's objekt want rows and its offered objekts.
  */
-export function listingTypeOf(listing: {
-  payment: ListingPayment | null;
-  wants: readonly unknown[];
+export function listingTypesOfListing(listing: {
+  options: readonly {
+    wants: readonly unknown[];
+    payment: ListingPayment | null;
+  }[];
   items: readonly unknown[];
 }) {
-  return listingType({
-    paymentSide: listing.payment?.side ?? null,
-    objektWants: listing.wants.length,
+  return listingTypesOf({
+    paymentSide: listingPaymentTerms(listing.options)?.side ?? null,
+    options: listing.options.map((option) => ({
+      objektWants: option.wants.length,
+    })),
     offered: listing.items.length,
   });
 }

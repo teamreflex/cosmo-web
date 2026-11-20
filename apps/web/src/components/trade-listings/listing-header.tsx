@@ -2,7 +2,7 @@ import { m } from "@/i18n/messages";
 import {
   listingKindLabel,
   listingRatio,
-  listingTypeOf,
+  listingTypesOfListing,
   ratioSides,
   ratioText,
 } from "@/lib/client/trade-listings";
@@ -29,8 +29,8 @@ type Props = {
 };
 
 /**
- * Who posted the listing, as the page's heading, with its kind, state and
- * ratio and, under them, the poster's ratings and when they posted (on
+ * Who posted the listing, as the page's heading, with its kinds (one per
+ * kind its options make it), state and ratio and, under them, the poster's ratings and when they posted (on
  * their own listing, that it's theirs, when they posted and when it last
  * changed), with the viewer's status and actions at the far end. Phones
  * drop the kind beside a ratio, to leave the name room. The poster's tabs
@@ -44,7 +44,12 @@ export default function ListingHeader({
   tabs,
   own = false,
 }: Props) {
-  const ratio = listingRatio(listing, listing.items.length);
+  const [first, ...others] = listing.options;
+  // several options trade at several ratios, and a listing taking only offers has no other side
+  const ratio =
+    first === undefined || others.length > 0 || first.payment?.amount === null
+      ? null
+      : listingRatio({ ...listing, ...first }, listing.items.length);
   /**
    * An edit, or the drain dropping an objekt that left the poster, moves
    * `updated_at`. Posting sets it beside `created_at`, which keeps its
@@ -72,15 +77,18 @@ export default function ListingHeader({
             <PartyLink party={party} />
           </h1>
           <div className="col-start-3 row-start-1 row-end-3 flex gap-1.5 md:row-end-2">
-            <Badge
-              variant="outline"
-              className={cn(
-                "text-muted-foreground",
-                ratio !== null && "max-md:hidden",
-              )}
-            >
-              {listingKindLabel(listingTypeOf(listing))}
-            </Badge>
+            {listingTypesOfListing(listing).map((type) => (
+              <Badge
+                key={type}
+                variant="outline"
+                className={cn(
+                  "text-muted-foreground",
+                  ratio !== null && "max-md:hidden",
+                )}
+              >
+                {listingKindLabel(type)}
+              </Badge>
+            ))}
             <ListingStateBadge status={listing.state.status} />
             {ratio !== null && (
               <Badge

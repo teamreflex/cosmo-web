@@ -5,6 +5,7 @@ import {
   partyName,
   ratioText,
 } from "@/lib/client/trade-listings";
+import { acceptPayment } from "@/lib/client/trades";
 import {
   isLiveTrade,
   type ListingFeedItem,
@@ -108,14 +109,18 @@ export function PosterTabBar({
 
 /**
  * The pending offers on the poster's listing, newest first. The listing's
- * trades name who holds a pick that stops one.
+ * trades name who holds a pick that stops one, and on a listing with
+ * several options each offer names the one it gives.
  */
 export function PosterOffers({
   listingId,
+  options,
   offers,
   trades,
 }: {
   listingId: string;
+  /** how many options the listing has */
+  options: number;
   offers: ListingOfferSummary[];
   trades: ListingTrade[];
 }) {
@@ -132,7 +137,12 @@ export function PosterOffers({
     <ul className="flex flex-col gap-3.5">
       {offers.map((offer) => (
         <li key={offer.tradeId}>
-          <OfferCard listingId={listingId} offer={offer} trades={trades} />
+          <OfferCard
+            listingId={listingId}
+            offer={offer}
+            trades={trades}
+            optionShown={options > 1}
+          />
         </li>
       ))}
     </ul>
@@ -140,7 +150,8 @@ export function PosterOffers({
 }
 
 /**
- * A pending offer: who sent it with their rating, its ratio and how long
+ * A pending offer: who sent it with their rating, the option it gives on
+ * a listing with several, its ratio and how long
  * it has left, then what they send for which of the poster's objekts.
  * One that can't be accepted now says why, dims the objekt it names and
  * can only be declined. Accept and Decline each ask first.
@@ -149,10 +160,13 @@ function OfferCard({
   listingId,
   offer,
   trades,
+  optionShown,
 }: {
   listingId: string;
   offer: ListingOfferSummary;
   trades: ListingTrade[];
+  /** whether to name the listing's option the offer gives */
+  optionShown: boolean;
 }) {
   const reasonId = useId();
   const [dialog, setDialog] = useState<OfferAction | null>(null);
@@ -179,6 +193,11 @@ function OfferCard({
         <>
           {claimer.user !== null && (
             <FeedbackBadge variant="full" rep={claimer.rep} narrow />
+          )}
+          {optionShown && (
+            <Badge variant="outline">
+              {m.listing_option_label({ number: offer.option + 1 })}
+            </Badge>
           )}
           <Badge variant="secondary" className="font-mono tabular-nums">
             {ratioText({
@@ -224,6 +243,18 @@ function OfferCard({
               name={partyName(claimer)}
               listingId={listingId}
               linkTrade
+              payment={acceptPayment(
+                "from",
+                offer.payment === null
+                  ? null
+                  : {
+                      sender: offer.payment.side,
+                      sendsObjekts:
+                        offer.payment.side === "to"
+                          ? offer.given.length > 0
+                          : true,
+                    },
+              )}
               open={dialog === action}
               onOpenChange={(open) => setDialog(open ? action : null)}
             />

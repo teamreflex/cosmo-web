@@ -1,10 +1,10 @@
 import { listingRatio } from "@/lib/client/trade-listings";
 import {
-  type Candidate,
+  type CandidateOption,
+  type ListingAt,
   type ListingFeedWant,
   type ListingPick,
   toggleOffered,
-  type TradeListing,
 } from "@/lib/universal/trade-listings";
 import { fitsWant, scaleWants, type TradeWant } from "@apollo/trades/allocate";
 import { validateAssignment } from "@apollo/trades/assignment";
@@ -32,14 +32,15 @@ export type ConfirmSnapshot = {
 };
 
 /**
- * The viewer's claim as they build it: how many units, the pool objekts
- * they get, their picks per want row, and whether it all fits. A bundle
- * (no `ratio`) takes its whole pool, so it has no units or pool picks to
- * choose. Null unless the viewer is picking.
+ * The viewer's claim on the option they give as they build it: how many
+ * units, the pool objekts they get, their picks per want row, and whether
+ * it all fits. A bundle (no `ratio`) takes its whole pool, so it has no
+ * units or pool picks to choose. Null unless the viewer is picking.
  */
 export function useListingPicks(
-  listing: Pick<TradeListing, "unitSize" | "items" | "wants" | "payment">,
-  viewer: Candidate | null,
+  listing: Pick<ListingAt, "unitSize" | "items" | "wants" | "payment">,
+  // what the viewer can give for that option
+  viewer: CandidateOption | null,
   rows: PickerRow[],
   // whether Accept claims, sends an offer, or the viewer picks which
   acceptance: ListingAcceptance,
@@ -70,6 +71,7 @@ export function useListingPicks(
     setState((current) => ({ ...current, ...next(current) }));
 
   return {
+    viewer,
     units,
     // the most the viewer can take; the stepper starts at one even when they can't fill it
     maxUnits: Math.max(viewer.units, 1),

@@ -14,7 +14,10 @@ import {
   type Candidate,
   type ClosedListingState,
   hasRatio,
+  type ListingAt,
+  listingAt,
   type ListingViewer,
+  takesOffers,
   toTradeWant,
   type TradeListing,
 } from "@/lib/universal/trade-listings";
@@ -52,6 +55,7 @@ import {
   OffererCard,
 } from "./listing-status";
 import { UnitCounts } from "./listing-units";
+import OptionPicker from "./option-picker";
 import { WantList } from "./want-label";
 import WithdrawListingDialog from "./withdraw-listing-dialog";
 
@@ -74,6 +78,9 @@ export type ListingRole =
 type Props = {
   listing: TradeListing;
   role: ListingRole;
+  /** the listing's option a picking viewer gives */
+  option: number;
+  onOption: (option: number) => void;
   /** the viewer's linked COSMO address, which editing a listing needs */
   address: string | undefined;
   /** why the page changed under the viewer's last Accept */
@@ -91,6 +98,8 @@ type Dialog = "edit" | "withdraw" | "confirm";
 export default function ListingView({
   listing,
   role,
+  option,
+  onOption,
   address,
   notice,
   onNotice,
@@ -101,20 +110,21 @@ export default function ListingView({
   const [dialog, setDialog] = useState<Dialog | null>(null);
   const [snapshot, setSnapshot] = useState<ConfirmSnapshot | null>(null);
   const invalidateListing = useInvalidateListing();
-  const rows = listing.wants.map((want): PickerRow => ({
+  const chosen = listingAt(listing, option);
+  const rows = chosen.wants.map((want): PickerRow => ({
     want,
     trade: toTradeWant(want),
   }));
-  const acceptance = acceptanceOf(listing);
+  const acceptance = acceptanceOf(chosen);
   const picks = useListingPicks(
-    listing,
-    role.role === "picker" ? role.viewer : null,
+    chosen,
+    role.role === "picker" ? (role.viewer.options[option] ?? null) : null,
     rows,
     acceptance,
   );
   const poster = usePosterSections(
     role.role === "poster" ? role : null,
-    acceptance !== "claim",
+    takesOffers(listing.options),
   );
   /**
    * Edit starts from the listing as it is now, since the drain may have
@@ -131,7 +141,7 @@ export default function ListingView({
   const actions = (className?: string, describedBy = reasonId) =>
     hasActions(role) ? (
       <RoleActions
-        listing={listing}
+        listing={chosen}
         role={role}
         address={address}
         picks={picks}
@@ -155,6 +165,7 @@ export default function ListingView({
         <>
           <RoleAlert
             listing={listing}
+            chosen={chosen}
             role={role}
             picks={picks}
             reasonId={reasonId}
@@ -187,14 +198,16 @@ export default function ListingView({
       picks={picks}
       wants={
         role.role === "picker" && picks !== null ? (
-          <AllocationPicker
-            viewer={role.viewer}
-            address={address}
-            rows={rows}
-            picks={picks}
-            payment={listing.payment?.side === "to" ? listing.payment : null}
-            poster={posterName(listing)}
-          />
+          <PickerHalf listing={listing} option={option} onOption={onOption}>
+            <AllocationPicker
+              viewer={picks.viewer}
+              address={address}
+              rows={rows}
+              picks={picks}
+              payment={chosen.payment?.side === "to" ? chosen.payment : null}
+              poster={posterName(listing)}
+            />
+          </PickerHalf>
         ) : (
           <ListingWants listing={listing} role={role} />
         )
@@ -220,11 +233,12 @@ export default function ListingView({
       )}
       {role.role === "picker" && picks !== null && (
         <ConfirmTradeDialog
-          listing={listing}
+          listing={chosen}
           rows={rows}
           snapshot={snapshot}
           onNotice={onNotice}
           onPickTaken={picks.dropOffered}
+          capped={acceptCapped(chosen, role.viewer)}
           {...dialogProps("confirm")}
         />
       )}
@@ -266,6 +280,30 @@ function offeredHeading(role: ListingRole) {
 }
 
 /**
+ * The picking viewer's half: which option they give, on a listing with
+ * several, over what they give for it.
+ */
+function PickerHalf({
+  listing,
+  option,
+  onOption,
+  children,
+}: {
+  listing: TradeListing;
+  option: number;
+  onOption: (option: number) => void;
+  children: ReactNode;
+}) {
+  if (listing.options.length === 1) return children;
+  return (
+    <div className="flex min-w-0 flex-col gap-6">
+      <OptionPicker listing={listing} value={option} onChange={onOption} />
+      {children}
+    </div>
+  );
+}
+
+/**
  * What the listing asks for, beside a viewer who isn't picking: "Looking
  * for", or "You're looking for" for the poster, who also reads how many of
  * theirs the rows are for on a listing with a ratio.
@@ -278,12 +316,11 @@ function ListingWants({
   role: ListingRole;
 }) {
   if (role.role !== "poster") {
-    return <WantList wants={listing.wants} payment={listing.payment} />;
+    return <WantList options={listing.options} />;
   }
   return (
     <WantList
-      wants={listing.wants}
-      payment={listing.payment}
+      options={listing.options}
       heading="you_look_for"
       summary={
         hasRatio(listing.unitSize, listing.items.length)
@@ -296,6 +333,8 @@ function ListingWants({
 
 type AlertProps = {
   listing: TradeListing;
+  /** the listing at the option a picking viewer gives */
+  chosen: ListingAt;
   role: ListingRole;
   picks: Picks | null;
   /** what the header's Accept is described by */
@@ -310,7 +349,14 @@ type AlertProps = {
  * that ended normally says so in the header instead.
  * Phones leave the picks to the bottom bar.
  */
-function RoleAlert({ listing, role, picks, reasonId, detailId }: AlertProps) {
+function RoleAlert({
+  listing,
+  chosen,
+  role,
+  picks,
+  reasonId,
+  detailId,
+}: AlertProps) {
   switch (role.role) {
     case "closed":
       return (
@@ -390,7 +436,7 @@ function RoleAlert({ listing, role, picks, reasonId, detailId }: AlertProps) {
       return (
         picks !== null && (
           <>
-            {acceptCapped(listing, role.viewer) && (
+            {acceptCapped(chosen, role.viewer) && (
               <CapAlert claims={role.viewer.claims} titleId={detailId} />
             )}
             {role.viewer.endedOffer !== null && (
@@ -431,7 +477,8 @@ function RoleAlert({ listing, role, picks, reasonId, detailId }: AlertProps) {
 }
 
 type ActionsProps = {
-  listing: TradeListing;
+  /** the listing at the option a picking viewer gives */
+  listing: ListingAt;
   role: ListingRole;
   address: string | undefined;
   picks: Picks | null;
@@ -520,7 +567,7 @@ function RoleActions({
       );
     case "picker":
     case "refused": {
-      // at their cap, a claimer on a listing open to offers can still make one
+      // at their cap, a claimer on an option open to offers can still make one
       const capped =
         role.role === "picker" && acceptCapped(listing, role.viewer);
       return (

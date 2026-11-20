@@ -1,6 +1,6 @@
 import { m } from "@/i18n/messages";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
-import { useId } from "react";
+import { type ReactNode, useId } from "react";
 import ComposerStepper from "./composer-stepper";
 
 type Props = {
@@ -11,8 +11,11 @@ type Props = {
   offered: number;
   /** what the want rows and the claimer's payment ask for in total, "2 + $3.00" */
   wanted: string;
-  /** the want side is a price alone, a sale */
-  priceOnly: boolean;
+  /**
+   * the want side: objekts or a price beside them, a price alone (a
+   * sale), or no asking price at all, which shows no want side
+   */
+  wants: "objekts" | "price" | "offers";
   onChange: (unitSize: number) => void;
 };
 
@@ -24,14 +27,16 @@ type Props = {
  * a ratio held at the pool's size by removed objekts steps once more to
  * become one. Below it, what that lets people do: trade a few at a time,
  * choosing which, or everything in one go. An edit whose ratio takes more
- * than the pool now holds says so instead, and only steps down.
+ * than the pool now holds says so instead, and only steps down. With
+ * several options, the want side reads them joined by "or". A listing
+ * with no asking price shows only the poster's side.
  */
 export default function ComposerRatio({
   unitSize,
   bundle,
   offered,
   wanted,
-  priceOnly,
+  wants,
   onChange,
 }: Props) {
   const titleId = useId();
@@ -62,34 +67,40 @@ export default function ComposerRatio({
             valueClassName="text-teal-700 dark:text-teal-500"
             onStep={(delta) => onChange(unitSize + delta)}
           />
-          <span
-            aria-hidden
-            className="font-mono text-2xl text-muted-foreground"
-          >
-            :
-          </span>
-          <span className="min-w-9 text-center font-mono text-2xl font-bold text-amber-700 tabular-nums dark:text-amber-500">
-            {wanted}
-          </span>
+          {wants !== "offers" && (
+            <>
+              <span
+                aria-hidden
+                className="font-mono text-2xl text-muted-foreground"
+              >
+                :
+              </span>
+              <span className="min-w-9 text-center font-mono text-2xl font-bold text-amber-700 tabular-nums dark:text-amber-500">
+                {wanted}
+              </span>
+            </>
+          )}
         </div>
       </div>
       <div className="flex min-w-0 flex-[1_1_20rem] flex-col gap-1 text-sm leading-relaxed">
         <p>
-          <ParaglideMessage
-            message={
-              priceOnly
-                ? m.listing_composer_ratio_each_price
-                : m.listing_composer_ratio_each
-            }
-            inputs={{ give: unitSize, get: wanted }}
-            markup={{
-              b: ({ children }) => (
-                <strong className="font-mono font-bold tabular-nums">
-                  {children}
-                </strong>
-              ),
-            }}
-          />
+          {wants === "offers" ? (
+            <ParaglideMessage
+              message={m.listing_composer_ratio_each_offer}
+              inputs={{ give: unitSize }}
+              markup={{ b: Bold }}
+            />
+          ) : (
+            <ParaglideMessage
+              message={
+                wants === "price"
+                  ? m.listing_composer_ratio_each_price
+                  : m.listing_composer_ratio_each
+              }
+              inputs={{ give: unitSize, get: wanted }}
+              markup={{ b: Bold }}
+            />
+          )}
         </p>
         {unitSize > offered ? (
           <p className="text-amber-700 dark:text-amber-500">
@@ -101,14 +112,25 @@ export default function ComposerRatio({
               ? m.listing_composer_ratio_bundle({ offered })
               : unitSize === offered
                 ? m.listing_composer_ratio_held({ offered })
-                : m.listing_composer_ratio_times({
-                    count: Math.floor(offered / unitSize),
-                    offered,
-                    wanted,
-                  })}
+                : wants === "offers"
+                  ? m.listing_composer_ratio_times_offer({
+                      count: Math.floor(offered / unitSize),
+                      offered,
+                    })
+                  : m.listing_composer_ratio_times({
+                      count: Math.floor(offered / unitSize),
+                      offered,
+                      wanted,
+                    })}
           </p>
         )}
       </div>
     </section>
+  );
+}
+
+function Bold({ children }: { children?: ReactNode }) {
+  return (
+    <strong className="font-mono font-bold tabular-nums">{children}</strong>
   );
 }

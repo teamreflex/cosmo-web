@@ -17,7 +17,6 @@ import type {
   TradeSide,
 } from "@apollo/database/web/types";
 import type { TokenFlags } from "@apollo/trades/holdings";
-import type { ListingPayment } from "@apollo/trades/payment";
 import {
   and,
   type AnyColumn,
@@ -43,9 +42,9 @@ import {
 import {
   type ListingFeedItem,
   type ListingFeedWant,
-  listingPayment,
+  type ListingOption,
+  listingOptions,
   storedObjektItemSchema,
-  storedWantSchema,
 } from "../../universal/trade-listings";
 import { indexer } from "../db/indexer";
 import { type TokenState, toTokenStates } from "./holdings.server";
@@ -204,17 +203,34 @@ function lookingForConditions(side: FeedSide) {
   ];
 }
 
-// a sale: the claimer sends its payment and the listing asks for no objekts
+const paymentWant = alias(tradeListingWants, "payment_want");
+
+// an objekt row of the listing, in the option `option` when given
+function objektWant(option?: AnyColumn) {
+  return qb
+    .select({ id: tradeListingWants.id })
+    .from(tradeListingWants)
+    .where(
+      and(
+        eq(tradeListingWants.listingId, tradeOffers.id),
+        ne(tradeListingWants.kind, "payment"),
+        ...(option === undefined ? [] : [eq(tradeListingWants.option, option)]),
+      ),
+    );
+}
+
+// a sale: the claimer sends its payment and some option asks for nothing else
 const sale = and(
   eq(tradeOffers.paymentSide, "to"),
-  notExists(
+  exists(
     qb
-      .select({ id: tradeListingWants.id })
-      .from(tradeListingWants)
+      .select({ id: paymentWant.id })
+      .from(paymentWant)
       .where(
         and(
-          eq(tradeListingWants.listingId, tradeOffers.id),
-          ne(tradeListingWants.kind, "payment"),
+          eq(paymentWant.listingId, tradeOffers.id),
+          eq(paymentWant.kind, "payment"),
+          notExists(objektWant(paymentWant.option)),
         ),
       ),
   ),
@@ -232,15 +248,21 @@ const buy = and(
 );
 
 /**
- * Each listing type as SQL, as listingType() decides it: a sale or a buy
- * when one side sends nothing but the payment, and a trade otherwise.
+ * Each listing type as SQL, as listingTypesOf() decides it, so a listing
+ * matches every type one of its options makes it: a sale when an option
+ * asks for nothing but the claimer's payment, a buy when the poster sends
+ * nothing but theirs, and a trade when an option asks for objekts, a
+ * payment beside them or not.
  */
 function typeConditions(type: ListingFeedInput["type"]) {
   switch (type) {
     case null:
       return [];
     case "trade":
-      return [or(isNull(tradeOffers.paymentSide), and(not(sale), not(buy)))];
+      return [
+        or(isNull(tradeOffers.paymentSide), not(buy)),
+        exists(objektWant()),
+      ];
     case "sell":
       return [sale];
     case "buy":
@@ -358,9 +380,10 @@ export function postedCount(listingId: AnyColumn) {
 /**
  * Which open listings the feed shows, narrowed by the filters, however much
  * of their pool live trades hold. Values within a column are ORed and
- * columns ANDed, each side on one objekt or want row. `type` narrows on
- * who sends the payment: none for a trade, the claimer for a sale, the
- * poster for a buy. Arrays bind through `arrayOverlaps` and `inArray` only.
+ * columns ANDed, each side on one objekt or want row, so Looking for
+ * matches a listing when any of its options does. `type` narrows on the
+ * types its options make it (typeConditions()). Arrays bind through
+ * `arrayOverlaps` and `inArray` only.
  */
 export function listingFeedWhere(
   input: Pick<ListingFeedInput, "filters" | "artists" | "type">,
@@ -450,7 +473,7 @@ export function feedItem(
 }
 
 /**
- * A listing's want rows as storedWantSchema reads them, for a relational
+ * A listing's want rows as listingOptions() reads them, for a relational
  * query: in posted (id) order, each choice row with its collections and
  * each range row with its ranges.
  */
@@ -480,9 +503,10 @@ type StoredParts = {
 /**
  * Parses each listing's stored items and wants and fills in what the
  * indexer knows: every objekt's serial and the collection behind each
- * offered objekt, exact want and choice row's option. Wants keep their
- * posted (id) order, and the payment row comes out as the listing's
- * `payment`. The token states come back too, for judging the poster's side.
+ * offered objekt, exact want and choice row's option. Wants come out
+ * grouped into the listing's options (listingOptions()), each keeping its
+ * posted (id) order and its payment. The token states come back too, for
+ * judging the poster's side.
  */
 export async function hydrateListings<T extends StoredParts>(
   rows: T[],
@@ -492,42 +516,37 @@ export async function hydrateListings<T extends StoredParts>(
     "items" | "wants" | "paymentSide" | "paymentMethods" | "offers"
   > & {
     items: ListingFeedItem[];
-    wants: ListingFeedWant[];
-    payment: ListingPayment | null;
+    options: ListingOption<ListingFeedWant>[];
   })[];
   states: ReadonlyMap<number, TokenState>;
 }> {
   const listings = rows.map(
-    ({ items, wants, paymentSide, paymentMethods, offers, ...rest }) => {
-      const stored = wants.map((want) => storedWantSchema.parse(want));
-      return {
-        rest,
-        items: items.map((item) => storedObjektItemSchema.parse(item)),
-        wants: stored.flatMap((want) =>
-          want.kind === "payment" ? [] : [want],
-        ),
-        payment: listingPayment(
-          { id: rest.id, paymentSide, paymentMethods, offers },
-          stored,
-        ),
-      };
-    },
+    ({ items, wants, paymentSide, paymentMethods, offers, ...rest }) => ({
+      rest,
+      items: items.map((item) => storedObjektItemSchema.parse(item)),
+      options: listingOptions(
+        { id: rest.id, paymentSide, paymentMethods, offers },
+        wants,
+      ),
+    }),
   );
   const indexed = await readIndexed(
     [
       ...new Set(
         listings.flatMap((listing) => [
           ...listing.items.map((item) => item.attributes.slug),
-          ...listing.wants.flatMap((want) => {
-            switch (want.kind) {
-              case "exact":
-                return [want.objekt.slug];
-              case "choice":
-                return want.options.map((option) => option.slug);
-              case "range":
-                return [];
-            }
-          }),
+          ...listing.options.flatMap((option) =>
+            option.wants.flatMap((want) => {
+              switch (want.kind) {
+                case "exact":
+                  return [want.objekt.slug];
+                case "choice":
+                  return want.options.map((choice) => choice.slug);
+                case "range":
+                  return [];
+              }
+            }),
+          ),
         ]),
       ),
     ],
@@ -544,27 +563,29 @@ export async function hydrateListings<T extends StoredParts>(
     states: indexed.states,
     listings: listings.map((listing) => ({
       ...listing.rest,
-      payment: listing.payment,
       items: listing.items.map((item) => feedItem(item, indexed)),
-      wants: listing.wants.map((want): ListingFeedWant => {
-        switch (want.kind) {
-          case "exact":
-            return {
-              ...want,
-              collection: indexed.collections.get(want.objekt.slug) ?? null,
-            };
-          case "choice":
-            return {
-              ...want,
-              options: want.options.map((option) => ({
-                ...option,
-                collection: indexed.collections.get(option.slug) ?? null,
-              })),
-            };
-          case "range":
-            return want;
-        }
-      }),
+      options: listing.options.map((option) => ({
+        payment: option.payment,
+        wants: option.wants.map((want): ListingFeedWant => {
+          switch (want.kind) {
+            case "exact":
+              return {
+                ...want,
+                collection: indexed.collections.get(want.objekt.slug) ?? null,
+              };
+            case "choice":
+              return {
+                ...want,
+                options: want.options.map((choice) => ({
+                  ...choice,
+                  collection: indexed.collections.get(choice.slug) ?? null,
+                })),
+              };
+            case "range":
+              return want;
+          }
+        }),
+      })),
     })),
   };
 }

@@ -739,6 +739,8 @@ export const tradeOffers = pgTable(
       .default([]),
     // the pool objekts one unit of a listing takes; null on trades
     unitSize: smallint("unit_size"),
+    // which of its listing's options a claim or an offer on a listing gives; null on other rows
+    listingOption: smallint("listing_option"),
     slugs: varchar("slugs", { length: 255 }).array().notNull().default([]),
     artists: varchar("artists", { length: 32 }).array().notNull().default([]),
     seasons: varchar("seasons", { length: 32 }).array().notNull().default([]),
@@ -830,6 +832,10 @@ export const tradeOffers = pgTable(
     check(
       "trade_offers_listing_chk",
       sql`${t.kind} = 'trade' OR num_nulls(${t.toUserId}, ${t.toAddress}, ${t.parentId}, ${t.deadlineAt}, ${t.acceptedAt}, ${t.expiresAt}) = 6`,
+    ),
+    check(
+      "trade_offers_listing_option_chk",
+      sql`${t.listingOption} IS NULL OR (${t.kind} = 'trade' AND ${t.listingOption} >= 0)`,
     ),
     check(
       "trade_offers_unit_size_chk",
@@ -953,13 +959,15 @@ export const tradeOfferItems = pgTable(
  * What one unit of a listing asks for. Exact rows name a collection and copy
  * its indexer values, range rows hold their ranges in
  * `trade_listing_want_ranges`, choice rows name their collections in
- * `trade_listing_want_options`, and the payment row prices the listing,
- * with no amount when the listing only takes offers on it. The
- * trade side is every exact, range and choice row, all required, with each
- * count multiplied by the units a claim takes. A listing's wants are
- * inserted together and replaced together on edit, so id order is the
- * posted order. Any change to them updates the listing row in the same
- * transaction.
+ * `trade_listing_want_options`, and a payment row prices the listing's
+ * payment, with no amount when the listing only takes offers on it. Rows
+ * sharing an `option` are one option, all of its rows required, with each
+ * count multiplied by the units a claim takes; the claimer gives one
+ * option. The claimer's payment rows sit in the options that ask for one,
+ * and the poster's payment on top is one row in option 0 that prices every
+ * option. A listing's wants are inserted together and replaced together on
+ * edit, so id order is the posted order. Any change to them updates the
+ * listing row in the same transaction.
  */
 export const tradeListingWants = pgTable(
   "trade_listing_wants",
@@ -969,6 +977,8 @@ export const tradeListingWants = pgTable(
       .notNull()
       .references(() => tradeOffers.id, { onDelete: "cascade" }),
     kind: tradeWantKind("kind").notNull(),
+    // the option the row belongs to, 0 for a listing with one
+    option: smallint("option").notNull().default(0),
     count: smallint("count"),
     slug: varchar("slug", { length: 255 }),
     artist: varchar("artist", { length: 32 }),
@@ -982,10 +992,11 @@ export const tradeListingWants = pgTable(
   (t) => [
     // a listing's wants in the order they were posted, which is id order
     index("trade_listing_wants_listing_idx").on(t.listingId, t.id),
-    // at most one payment side
+    // at most one payment per option
     uniqueIndex("trade_listing_wants_payment_idx")
-      .on(t.listingId)
+      .on(t.listingId, t.option)
       .where(sql`${t.kind} = 'payment'`),
+    check("trade_listing_wants_option_chk", sql`${t.option} >= 0`),
     check(
       "trade_listing_wants_shape_chk",
       sql`CASE ${t.kind}

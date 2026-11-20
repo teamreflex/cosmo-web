@@ -7,6 +7,7 @@ import { describe, expect, test } from "bun:test";
 import type * as z from "zod";
 import {
   MAX_CHOICE_OPTIONS,
+  MAX_LISTING_OPTIONS,
   MAX_OFFERED,
   MAX_PER_ROW,
   MAX_TOTAL_WANTED,
@@ -19,8 +20,10 @@ import {
   listingIdSchema,
   type ListingInput,
   listingInputSchema,
+  type ListingOptionTerms,
   type ListingType,
   listingType,
+  listingTypesOf,
   offeredTokensInputSchema,
   offerInputSchema,
 } from "../src/listing";
@@ -127,7 +130,7 @@ test.each(termSchemas)(
       schema.safeParse({
         ...extra,
         offered: [{ tokenId: 5 }, { tokenId: 5 }],
-        wants,
+        options: [wants],
       }),
       "offered: Each objekt can only be offered once",
     );
@@ -146,12 +149,12 @@ const refused = [
   [
     "no wants (SCH-03)",
     { offered, wants: [] },
-    "wants: Ask for at least one objekt or a payment",
+    "options.0: Ask for at least one objekt or a payment",
   ],
   [
     "the same exact slug in two casings (SCH-05)",
     { offered, wants: [exact(KIMLIP), exact(` ${KIMLIP.toUpperCase()} `)] },
-    "wants: Ask for each objekt in one row and raise its count instead",
+    "options.0: Ask for each objekt in one row and raise its count instead",
   ],
   [
     "ranges equal once deduped, lowercased and unordered (SCH-06)",
@@ -165,17 +168,17 @@ const refused = [
         }),
       ],
     },
-    "wants: Each range can only be asked for once",
+    "options.0: Each range can only be asked for once",
   ],
   [
     "an exact count of 0 (SCH-07)",
     { offered, wants: [exact(KIMLIP, 0)] },
-    "wants.0.count: A row needs at least one objekt",
+    "options.0.0.count: A row needs at least one objekt",
   ],
   [
     "an exact count past the row cap (SCH-07)",
     { offered, wants: [exact(KIMLIP, MAX_PER_ROW + 1)] },
-    `wants.0.count: A row can ask for at most ${MAX_PER_ROW} objekts`,
+    `options.0.0.count: A row can ask for at most ${MAX_PER_ROW} objekts`,
   ],
   [
     "one objekt past the offer cap (SCH-08)",
@@ -185,7 +188,7 @@ const refused = [
   [
     "one row past the row cap (SCH-09)",
     { offered, wants: slugs(MAX_WANT_ROWS + 1) },
-    `wants: A listing can have at most ${MAX_WANT_ROWS} rows`,
+    `options.0: An option can have at most ${MAX_WANT_ROWS} rows`,
   ],
   [
     "one objekt past the total cap (SCH-10)",
@@ -196,7 +199,7 @@ const refused = [
         exact("atom02-heejin-201z", MAX_TOTAL_WANTED - MAX_PER_ROW + 1),
       ],
     },
-    `wants: A listing can ask for at most ${MAX_TOTAL_WANTED} objekts in total`,
+    `options.0: An option can ask for at most ${MAX_TOTAL_WANTED} objekts in total`,
   ],
   [
     "a 501-character note (SCH-15)",
@@ -210,32 +213,32 @@ const refused = [
       wants: [{ kind: "payment", amount: "10.00", currency: "USD" }],
       payment: usd,
     },
-    "wants.0: *",
+    "options.0.0: *",
   ],
   [
     "a payment of 0",
     { offered, wants: [pay("0.00")], payment: usd },
-    "wants.0.amount: An amount must be more than 0",
+    "options.0.0.amount: An amount must be more than 0",
   ],
   [
     "a negative payment",
     { offered, wants: [pay("-3.00")], payment: usd },
-    "wants.0.amount: *",
+    "options.0.0.amount: *",
   ],
   [
     "a payment with three decimals",
     { offered, wants: [pay("3.001")], payment: usd },
-    "wants.0.amount: *",
+    "options.0.0.amount: *",
   ],
   [
     "a payment past MAX_PAYMENT_AMOUNT, which a claim's units could push past numeric(14,2)",
     { offered, wants: [pay("100000000.00")], payment: usd },
-    "wants.0.amount: An amount can be at most 99999999.99",
+    "options.0.0.amount: An amount can be at most 99999999.99",
   ],
   [
     "a payment in exponent notation",
     { offered, wants: [pay("1e3")], payment: usd },
-    "wants.0.amount: *",
+    "options.0.0.amount: *",
   ],
   [
     "a payment with no methods",
@@ -282,7 +285,7 @@ const refused = [
   [
     "two payment rows",
     { offered, wants: [pay("3"), pay("4")], payment: usd },
-    "wants: A listing can ask for one payment",
+    "options.0: An option can ask for one payment",
   ],
   [
     "a payment on both sides",
@@ -292,12 +295,12 @@ const refused = [
   [
     "an asking price on a listing that only takes offers",
     { offered, wants: [pay("3")], payment: { ...usd, mode: "offer_only" } },
-    "wants: A listing that only takes offers has no asking price",
+    "options.0: A listing that only takes offers has no asking price",
   ],
   [
     "no asking price at a fixed price",
     { offered, wants: [askNothing], payment: usd },
-    "wants: Enter an amount",
+    "options.0: Enter an amount",
   ],
   [
     "no asking price on a listing open to offers",
@@ -306,7 +309,7 @@ const refused = [
       wants: [askNothing],
       payment: { ...usd, mode: "price_or_offer" },
     },
-    "wants: Enter an amount",
+    "options.0: Enter an amount",
   ],
   [
     "the poster's payment open to offers",
@@ -326,7 +329,7 @@ const refused = [
   [
     "a whitespace slug (SCH-17)",
     { offered, wants: [exact("   ")] },
-    "wants.0.slug: *",
+    "options.0.0.slug: *",
   ],
   [
     "token id 2^31 (SCH-17)",
@@ -336,7 +339,7 @@ const refused = [
   [
     "a range row with no ranges",
     { offered, wants: [ranges([])] },
-    "wants.0.ranges: A range row needs at least one range",
+    "options.0.0.ranges: A range row needs at least one range",
   ],
   [
     "a range row past the range cap",
@@ -350,7 +353,7 @@ const refused = [
         ),
       ],
     },
-    `wants.0.ranges: A range row can hold at most ${MAX_RANGE_CLAUSES} ranges`,
+    `options.0.0.ranges: A range row can hold at most ${MAX_RANGE_CLAUSES} ranges`,
   ],
   [
     "the same range twice in one row, once deduped and unordered",
@@ -363,7 +366,7 @@ const refused = [
         ]),
       ],
     },
-    "wants.0.ranges: Each range can only be in a row once",
+    "options.0.0.ranges: Each range can only be in a row once",
   ],
   [
     "two rows with the same ranges in another order",
@@ -374,12 +377,12 @@ const refused = [
         ranges([{ class: ["First"] }, { season: ["Atom02"] }]),
       ],
     },
-    "wants: Each range can only be asked for once",
+    "options.0: Each range can only be asked for once",
   ],
   [
     "a NUL byte in an exact slug (SCH-24)",
     { offered, wants: [exact(`${KIMLIP}\u0000`)] },
-    "wants.0.slug: Text can't contain a NUL byte",
+    "options.0.0.slug: Text can't contain a NUL byte",
   ],
   [
     "a unit size of 0",
@@ -394,7 +397,7 @@ const refused = [
   [
     "a choice row of one collection",
     { offered, wants: [choice([KIMLIP])] },
-    'wants.0.slugs: An "any of" row needs at least two collections',
+    'options.0.0.slugs: An "any of" row needs at least two collections',
   ],
   [
     "a choice row past the option cap",
@@ -409,12 +412,12 @@ const refused = [
         ),
       ],
     },
-    `wants.0.slugs: An "any of" row can name at most ${MAX_CHOICE_OPTIONS} collections`,
+    `options.0.0.slugs: An "any of" row can name at most ${MAX_CHOICE_OPTIONS} collections`,
   ],
   [
     "a choice row naming a collection twice in two casings",
     { offered, wants: [choice([KIMLIP, HEEJIN, ` ${KIMLIP.toUpperCase()}`])] },
-    'wants.0.slugs: Each collection can only be in an "any of" row once',
+    'options.0.0.slugs: Each collection can only be in an "any of" row once',
   ],
   [
     "two choice rows with the same collections in another order",
@@ -422,7 +425,7 @@ const refused = [
       offered,
       wants: [choice([KIMLIP, HEEJIN]), choice([HEEJIN, KIMLIP], 2)],
     },
-    "wants: Each set of collections can only be asked for once",
+    "options.0: Each set of collections can only be asked for once",
   ],
 ] as const;
 
@@ -450,8 +453,10 @@ const accepted: [
     };
     note?: string | null;
   },
-  output: Omit<ListingInput, "unitSize" | "payment"> &
-    Partial<Pick<ListingInput, "unitSize" | "payment">>,
+  output: Omit<ListingInput, "unitSize" | "payment" | "options"> &
+    Partial<Pick<ListingInput, "unitSize">> &
+    Pick<ListingOptionTerms, "wants"> &
+    Partial<Pick<ListingOptionTerms, "payment">>,
 ][] = [
   [
     "the minimal listing (SCH-01)",
@@ -727,17 +732,200 @@ const accepted: [
   ],
 ];
 
+/**
+ * A one-option listing's input, from the tables' single list of rows.
+ */
+function oneOption<TInput extends { wants: readonly unknown[] }>({
+  wants: rows,
+  ...rest
+}: TInput) {
+  return { ...rest, options: [rows] };
+}
+
+/**
+ * What a one-option listing parses to: its one option, and the payment's
+ * shared terms without the option's price.
+ */
+function parsedOne(
+  { wants: rows, payment = null, ...rest }: (typeof accepted)[number][2],
+  offeredCount: number,
+) {
+  return {
+    unitSize: offeredCount,
+    ...rest,
+    options: [{ wants: rows, payment }],
+    payment:
+      payment === null
+        ? null
+        : {
+            side: payment.side,
+            currency: payment.currency,
+            methods: payment.methods,
+            mode: payment.mode,
+          },
+  };
+}
+
 describe("listingInputSchema", () => {
   test.each(refused)("refuses %s", (_, input, issue) => {
-    expectIssue(listingInputSchema.safeParse(input), issue);
+    expectIssue(listingInputSchema.safeParse(oneOption(input)), issue);
   });
 
   test.each(accepted)("accepts %s", (_, input, output) => {
-    expect(listingInputSchema.safeParse(input)).toEqual({
+    expect(listingInputSchema.safeParse(oneOption(input))).toEqual({
       success: true,
-      data: { unitSize: input.offered.length, payment: null, ...output },
+      data: parsedOne(output, input.offered.length),
     });
   });
+});
+
+describe("listingInputSchema options", () => {
+  const special = range({ class: ["Special"] });
+
+  test.each([
+    ["no options", [], "options: Ask for at least one objekt or a payment"],
+    [
+      "one option past MAX_LISTING_OPTIONS",
+      slugs(MAX_LISTING_OPTIONS + 1).map((want) => [want]),
+      `options: A listing can have at most ${MAX_LISTING_OPTIONS} options`,
+    ],
+    [
+      "an empty option beside a full one",
+      [wants, []],
+      "options.1: Ask for at least one objekt or a payment",
+    ],
+    [
+      "two payment rows in one option",
+      [wants, [pay("3"), pay("4")]],
+      "options.1: An option can ask for one payment",
+    ],
+    [
+      "the same option twice, its rows in another order",
+      [
+        [exact(KIMLIP), pay("3")],
+        [pay("3.00"), exact(KIMLIP)],
+      ],
+      "options.1: Each option must ask for something different",
+    ],
+    [
+      "an option without an asking price on a fixed-price listing",
+      [[pay("3")], [exact(KIMLIP), askNothing]],
+      "options.1: Enter an amount",
+    ],
+  ] satisfies [string, unknown[][], string][])(
+    "refuses %s",
+    (_, options, issue) => {
+      expectIssue(
+        listingInputSchema.safeParse({ offered, options, payment: usd }),
+        issue,
+      );
+    },
+  );
+
+  test("refuses a claimer's payment in any option beside the poster's", () => {
+    expectIssue(
+      listingInputSchema.safeParse({
+        offered,
+        options: [wants, [pay("3")]],
+        offeredPayment: "2",
+        payment: usd,
+      }),
+      "offeredPayment: A payment can only be on one side",
+    );
+  });
+
+  test("prices each option's payment on its own, under one set of terms", () => {
+    expect(
+      listingInputSchema.parse({
+        offered: tokens(2),
+        unitSize: 1,
+        options: [[special], [pay("3")], [exact(KIMLIP), pay("1")]],
+        payment: { ...usd, mode: "price_or_offer" },
+      }),
+    ).toEqual({
+      offered: tokens(2),
+      unitSize: 1,
+      note: null,
+      payment: { side: "to", mode: "price_or_offer", ...usd },
+      options: [
+        { wants: [stored({ class: ["Special"] })], payment: null },
+        {
+          wants: [],
+          payment: { side: "to", mode: "price_or_offer", amount: 300, ...usd },
+        },
+        {
+          wants: [exact(KIMLIP)],
+          payment: { side: "to", mode: "price_or_offer", amount: 100, ...usd },
+        },
+      ],
+    });
+  });
+
+  test("gives every option of an offer-only listing no asking price", () => {
+    expect(
+      listingInputSchema
+        .parse({
+          offered,
+          options: [[askNothing], [exact(KIMLIP), askNothing]],
+          payment: { ...usd, mode: "offer_only" },
+        })
+        .options.map((option) => option.payment?.amount),
+    ).toEqual([null, null]);
+  });
+
+  test("prices every option with the poster's payment on top", () => {
+    const parsed = listingInputSchema.parse({
+      offered,
+      options: [wants, [special]],
+      offeredPayment: "2",
+      payment: usd,
+    });
+    expect(parsed.payment?.side).toBe("from");
+    expect(parsed.options.map((option) => option.payment)).toEqual([
+      { side: "from", mode: "price_only", amount: 200, ...usd },
+      { side: "from", mode: "price_only", amount: 200, ...usd },
+    ]);
+  });
+
+  test("holds each option to the row and total caps on its own", () => {
+    const half = Array.from(
+      { length: MAX_TOTAL_WANTED / MAX_PER_ROW },
+      (_, i) => exact(`atom02-heejin-${100 + i}z`, MAX_PER_ROW),
+    );
+    expect(
+      listingInputSchema.safeParse({
+        offered,
+        options: [slugs(MAX_WANT_ROWS), half.slice(0, 1)],
+      }).success,
+    ).toBe(true);
+  });
+});
+
+describe("listingTypesOf", () => {
+  test.each([
+    ["one objekt option", null, [1], ["trade"]],
+    ["one payment-only option", "to", [0], ["sell"]],
+    ["objekts or a payment alone", "to", [1, 0], ["trade", "sell"]],
+    [
+      "a payment alone or objekts, in that order",
+      "to",
+      [0, 2],
+      ["trade", "sell"],
+    ],
+    ["two payment-only options", "to", [0, 0], ["sell"]],
+    ["the poster's payment on top of either option", "from", [1, 2], ["trade"]],
+  ] satisfies [string, TradeSide | null, number[], ListingType[]][])(
+    "%s",
+    (_, paymentSide, objektWants, expected) => {
+      expect(
+        listingTypesOf({
+          paymentSide,
+          options: objektWants.map((count) => ({ objektWants: count })),
+          offered: 3,
+        }),
+      ).toEqual(expected);
+    },
+  );
 });
 
 describe("listingType", () => {
@@ -766,6 +954,7 @@ describe("claimListingInputSchema", () => {
   const claim = {
     listingId: LISTING_ID,
     seen,
+    option: 0,
     units: 1,
     picked: [100],
     rows: [[1], [2, 3]],
@@ -840,6 +1029,15 @@ describe("claimListingInputSchema", () => {
       `rows: A claim can give at most ${MAX_TOTAL_WANTED} objekts`,
     ],
     ["no units", { units: 0 }, "units: *"],
+    ["a negative option", { option: -1 }, "option: *"],
+    [
+      "an option past MAX_LISTING_OPTIONS",
+      { option: MAX_LISTING_OPTIONS },
+      "option: *",
+    ],
+    ["a fractional option", { option: 0.5 }, "option: *"],
+    ["an option as text", { option: "1" }, "option: *"],
+    ["no option", { option: undefined }, "option: *"],
     /**
      * The unit cap is what keeps a payment's total inside numeric(14,2):
      * MAX_PAYMENT_AMOUNT × MAX_OFFERED fits, so one more unit is refused.

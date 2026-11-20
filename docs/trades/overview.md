@@ -6,16 +6,16 @@ Apollo matches people who want to swap objekts and records each swap, but never 
 
 ```
   poster
-    | $postListing: a pool of tokens, unit_size, want rows
+    | $postListing: a pool of tokens, unit_size, 1-3 options of want rows
     v
   listing: open   reserves nothing; a token may sit in many open listings
     |
-    |<-- claimer $claimListing: N units, the picked pool tokens, one token
-    |    list per want row, an offered amount or none, and the listing's
-    |    updated_at they saw
+    |<-- claimer $claimListing: the option they give, N units, the picked
+    |    pool tokens, one token list per want row of that option, an
+    |    offered amount or none, and the listing's updated_at they saw
     |
-    +-- a claim or an offer? (claimTerms: any range row, no asking price,
-    |   or an amount other than an open-to-offers asking price)
+    +-- a claim or an offer? (claimTerms on that option: any range row, no
+    |   asking price, or an amount other than an open-to-offers price)
     |                                         |
     | claim                                   | offer
     | listing_claimed -> poster               v

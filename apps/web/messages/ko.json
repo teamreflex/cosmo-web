@@ -2660,7 +2660,6 @@
   "market_listings_type": "유형",
   "market_listings_type_all": "전체",
   "listing_detail_you_pay": "내가 결제",
-  "listing_detail_you_pay_summary": "Apollo 밖에서 결제하면 {poster}님이 수령을 표시합니다",
   "listing_detail_payment_each": "교환마다",
   "listing_detail_payment_units": "{count} × {amount}",
   "listing_detail_payment_methods": "받는 수단: {methods}",
@@ -2669,15 +2668,13 @@
   "trade_page_event_payment_confirmed_staff": "{#b}{recipient}{/b}님이 {#b}{sender}{/b}님의 {amount} 결제를 수령함으로 표시했습니다({method}).",
   "trade_page_payment_confirmed_toast": "결제를 수령함으로 표시했습니다",
   "trade_page_payment_confirm_title": "{amount}을(를) 받았나요?",
-  "trade_page_payment_confirm_description": "{name}님의 돈이 계정에 들어온 뒤에만 수령함으로 표시하세요. 되돌릴 수 없으며, 남은 것이 없으면 교환이 완료됩니다.",
+  "trade_page_payment_confirm_description": "{name}님의 돈이 계정에 들어온 뒤에만 수령함으로 표시하세요. 되돌릴 수 없습니다.",
   "trade_page_payment_confirm_method": "어떤 수단으로 받았나요?",
   "trade_page_payment_mark_received": "수령함으로 표시",
-  "trade_page_payment_outside": "{appName} 밖에서 결제",
   "trade_page_payment_via": "{method}(으)로",
   "trade_page_payment_received": "수령함",
   "trade_page_payment_not_received": "미수령",
-  "trade_page_payment_pay": "{appName} 밖에서 {name}님에게 {amount}을(를) 결제하세요. 도착하면 상대가 수령함으로 표시합니다.",
-  "trade_page_payment_confirm_hint": "{name}님이 {appName} 밖에서 {amount}을(를) 결제합니다. 계정에 들어오면 수령함으로 표시하세요.",
+  "trade_page_payment_pay": "{appName} 밖에서 {name}님에게 {amount}을(를) 결제하세요.",
   "listing_composer_payment_remove": "결제 삭제",
   "listing_composer_payment_and": "추가",
   "listing_composer_payment_on_top": "추가로, 교환마다",
@@ -2686,21 +2683,16 @@
   "listing_composer_payment_amount": "금액",
   "listing_composer_payment_amount_yours": "내가 결제할 금액",
   "listing_composer_payment_open_to_offers": "제안 받기",
-  "listing_composer_payment_open_to_offers_hint": "상대는 이 가격으로 바로 수락하거나 다른 금액을 제안할 수 있습니다. 금액을 비워 두면 제안만 받습니다.",
   "listing_composer_payment_no_price": "가격 없음",
   "listing_offer_amount": "내 제안",
-  "listing_offer_amount_hint": "희망 가격은 {price}입니다. 다른 금액을 제안하면 게시자가 수락하거나 거절합니다.",
-  "listing_offer_amount_hint_range": "희망 가격은 {price}입니다. 비워 두면 희망 가격으로 제안하고, 다른 금액을 제안할 수도 있습니다.",
-  "listing_offer_amount_hint_open": "희망 가격이 없습니다. 거래 한 번에 낼 금액을 제안하세요.",
-  "listing_offer_amount_at_asking": "희망 가격과 같으므로 바로 수락됩니다.",
   "listing_payment_offer": "제안",
   "listing_payment_offer_only": "제안하기",
   "listing_payment_open_to_offers": "{price} · 제안 받음",
   "listing_payment_open_to_offers_tag": "제안 받음",
   "listing_payment_your_offer": "내 제안 금액",
   "listing_detail_make_offer": "제안하기",
-  "listing_detail_either_hold": "수락하면 48시간 동안 확보됩니다. 제안은 {poster}님이 수락하기 전까지 아무것도 확보하지 않습니다",
-  "listing_detail_either_footer": "가격을 수락해 바로 교환을 시작하거나, {poster}님이 수락할 수 있는 제안을 보내세요.",
+  "listing_detail_either_hold": "수락하면 48시간 동안 확보됩니다",
+  "listing_detail_either_footer": "가격을 수락하거나 {poster}님에게 제안하세요.",
   "listing_composer_reason_payment_amount": "결제 금액을 입력하세요(소수점 둘째 자리까지).",
   "listing_composer_reason_payment_methods": "결제 수단을 하나 이상 고르세요.",
   "my_trades_payment": "+ {amount} 결제",
@@ -2708,20 +2700,20 @@
   "my_trades_next_confirm": "결제 수령 표시",
   "listing_detail_units_pay": "결제 {amount}",
   "trade_error_trade_cancel_payment_due": "이 교환에서 결제를 받을 차례라 취소할 수 없습니다. 문제가 있으면 분쟁을 신청해 주세요.",
-  "listing_detail_claimer_pay": "{appName} 밖에서 {poster}님에게 {amount}을(를) 결제하세요. 상대가 수령을 표시하고, 모두 도착하면 {appName}에서 교환을 완료로 표시합니다.",
+  "listing_detail_claimer_pay": "{appName} 밖에서 {poster}님에게 {amount}을(를) 결제하세요. 수령이 표시되면 {appName}에서 완료로 표시합니다.",
   "listing_detail_claimer_body_pay": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
       "selectors": ["countPlural"],
       "match": {
-        "countPlural=other": "COSMO 앱에서 {poster}님에게 오브젝트 {count}개를 보내고 {appName} 밖에서 {amount}을(를) 결제하세요. 모두 도착하면 {appName}에서 완료로 표시합니다."
+        "countPlural=other": "COSMO 앱에서 {poster}님에게 오브젝트 {count}개를 보내고 {amount}을(를) 결제하세요. 모두 도착하면 {appName}에서 완료로 표시합니다."
       }
     }
   ],
   "listing_detail_accept_footer_pay": "{poster}님은 COSMO 앱에서 보내고 나는 {appName} 밖에서 결제합니다. 순서는 상관없습니다.",
   "listing_detail_accept_footer_with_payment": "두 사람 모두 COSMO 앱에서 보내고 결제는 {appName} 밖에서 합니다. 순서는 상관없습니다.",
   "listing_confirm_deadline_pay": "두 사람 모두 {#hours}48시간{/hours}, {#time}{date}{/time}까지입니다. {#user}{poster}{/user}님은 COSMO 앱에서 보내고 나는 {appName} 밖에서 결제합니다. 그때까지 아무것도 하지 않으면 교환이 종료됩니다.",
-  "listing_detail_accepted_pay": "교환을 수락했습니다. {appName} 밖에서 {poster}님에게 결제하세요. 상대가 수령을 표시합니다.",
+  "listing_detail_accepted_pay": "교환을 수락했습니다. {appName} 밖에서 {poster}님에게 결제하세요.",
   "trade_page_step_send_payment": "보내기와 결제 · {count}개 중 {seen}개 완료",
   "trade_page_disputed_deadline_payment": "수령으로 표시되지 않은 결제가 남은 채 기한이 지나 {appName} 스태프가 이 교환을 검토합니다.",
   "trade_page_disputed_deadline_both": "보내지 않은 오브젝트와 결제가 남은 채 기한이 지나 {appName} 스태프가 이 교환을 검토합니다.",
@@ -2735,5 +2727,42 @@
   "my_trades_payment_only_received": "{amount} 결제 · 수령함",
   "listing_composer_ratio_each_price": "교환 한 번은 제시한 오브젝트 {#b}{give}{/b}개와 {#b}{get}{/b}입니다.",
   "trade_error_trade_cancel_started_payment": "이 교환에서 이미 보냈거나 수령으로 표시된 것이 있어 취소할 수 없습니다. 대신 분쟁을 신청해 주세요.",
-  "report_reason_deadline_passed_payment": "기한 초과(남은 결제 또는 보내지 않은 오브젝트 있음)"
+  "report_reason_deadline_passed_payment": "기한 초과(남은 결제 또는 보내지 않은 오브젝트 있음)",
+  "listing_option_or": "또는",
+  "listing_option_label": "옵션 {number}",
+  "listing_options_count": "옵션 {count}개",
+  "listing_composer_add_option": "옵션 추가",
+  "listing_composer_remove_option": "옵션 삭제",
+  "listing_composer_block_option_empty": "옵션 {number}이 비어 있어요.",
+  "listing_composer_block_option_repeat": "두 옵션이 같은 것을 찾고 있어요.",
+  "listing_detail_pick_option": "줄 것을 고르세요",
+  "listing_detail_option_either": "수락 또는 제안",
+  "trade_page_offer_accept_description_paid_only": "수락하면 48시간 안에 COSMO 앱에서 보내고, {name}님은 {appName} 밖에서 결제합니다.",
+  "trade_page_offer_accept_description_paid": "수락하면 나와 {name}님은 48시간 안에 COSMO 앱에서 보내고, {name}님은 결제도 합니다.",
+  "trade_page_offer_accept_description_paying": "수락하면 나와 {name}님은 48시간 안에 COSMO 앱에서 보내고, 나는 결제도 합니다.",
+  "trade_page_step_offer_then_pay": "이후 {hours}시간 안에 보내기와 결제",
+  "listing_offer_step_answer_amount": "{#user}{poster}{/user}님이 내 제안을 확인하고 수락하거나 거절합니다. 그동안에는 아무것도 확보되지 않습니다.",
+  "listing_offer_step_window_pay": "수락되면 {hours}시간 안에 {poster}님은 COSMO 앱에서 보내고 나는 결제합니다.",
+  "listing_offer_step_window_with_payment": "수락되면 두 사람 모두 {hours}시간 안에 COSMO 앱에서 보내고 결제합니다.",
+  "listing_offer_step_window_paid": "수락되면 두 사람 모두 {hours}시간 안에 보내고, {poster}님은 결제도 합니다.",
+  "listing_detail_offer_footer_pay": "{poster}님이 수락하면 48시간 안에 결제하고 상대가 보냅니다.",
+  "listing_detail_offer_footer_with_payment": "{poster}님이 수락하면 48시간 안에 보내고 결제하는 교환이 시작됩니다.",
+  "listing_composer_ratio_each_offer": "교환 한 번은 제시한 오브젝트 {#b}{give}{/b}개이고, 상대가 낼 금액을 제안합니다.",
+  "listing_composer_ratio_times_offer": [
+    {
+      "declarations": [
+        "input count",
+        "input offered",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{offered}개를 제시했으니 최대 {count}번 교환할 수 있고, 상대가 내 것 중 무엇을 받을지 고릅니다. {offered}(으)로 맞추면 한 번에 모두 교환합니다."
+      }
+    }
+  ],
+  "listing_composer_footer_offers": "{offered} · 제안 받는 중",
+  "listing_offer_amount_invalid": "0보다 크고 소수점 둘째 자리까지, {max} 이하의 금액을 입력하세요.",
+  "listing_offer_amount_total": "{count} × {amount} = {total}",
+  "listing_offer_amount_capped": "수락 한도에 도달했으니 다른 금액을 제안하세요."
 }

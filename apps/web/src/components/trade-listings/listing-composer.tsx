@@ -11,6 +11,7 @@ import {
   type ComposerDisplay,
   emptyComposerDisplay,
   formatAmount,
+  joinOptions,
   listingComposerDisplay,
 } from "@/lib/client/trade-listings";
 import { $editListing, $postListing } from "@/lib/functions/trade-listings";
@@ -24,14 +25,15 @@ import {
 import { isRateLimitErrorCode } from "@/lib/universal/errors/rate-limit";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import {
+  claimerAmounts,
   claimerPaymentTerms,
   composerBlock,
   type ComposerMode,
   emptyListingForm,
   followUnitSize,
-  formPayment,
   formUnitSize,
   formValuesToInput,
+  hasFormPayment,
   type ListingFormValues,
   type ListingSubmission,
   listingToFormValues,
@@ -39,6 +41,7 @@ import {
   stepUnitSize,
 } from "@/lib/universal/trade-listing-form";
 import type { TokenRefusalReason } from "@/lib/universal/trade-listings";
+import type { ListingOfferMode } from "@apollo/database/web/types";
 import { MAX_NOTE_LENGTH, MAX_OFFERED } from "@apollo/trades/caps";
 import { totalWanted } from "@apollo/trades/composer";
 import { type ListingInput, listingInputSchema } from "@apollo/trades/listing";
@@ -85,7 +88,7 @@ import {
 } from "./composer-payment";
 import ComposerRangeConfirm from "./composer-range-confirm";
 import ComposerRatio from "./composer-ratio";
-import ComposerWantRows from "./composer-want-rows";
+import ComposerOptions from "./composer-want-rows";
 import TradePicker from "./trade-picker";
 import TradeSheet from "./trade-sheet";
 
@@ -293,23 +296,46 @@ export default function ListingComposer({
     }
   }
 
-  // the claimer's amount and the listing's offer mode change together
-  function setClaimerPayment(amount: string, open: boolean) {
-    const index = form
-      .getValues("wants")
-      .findIndex((want) => want.kind === "payment");
-    const terms = claimerPaymentTerms(amount, open);
-    form.setValue(
-      `wants.${index}`,
-      { kind: "payment", amount: terms.amount },
-      setOptions(),
+  /**
+   * The claimer's amounts and the listing's offer mode change together:
+   * `typed` is the amount just typed in an option's payment row, if any,
+   * and every row's amount and the mode follow from all of them.
+   */
+  function setClaimerPayment(
+    open: boolean,
+    typed?: { option: number; amount: string },
+  ) {
+    const rows = form.getValues("options").flatMap((wants, option) => {
+      const index = wants.findIndex((want) => want.kind === "payment");
+      const row = wants[index];
+      return row?.kind === "payment"
+        ? [
+            {
+              option,
+              index,
+              amount:
+                typed?.option === option ? typed.amount : (row.amount ?? ""),
+            },
+          ]
+        : [];
+    });
+    const terms = claimerPaymentTerms(
+      rows.map((row) => row.amount),
+      open,
     );
+    rows.forEach((row, position) => {
+      form.setValue(
+        `options.${row.option}.${row.index}`,
+        { kind: "payment", amount: terms.amounts[position] },
+        setOptions(),
+      );
+    });
     form.setValue("payment.mode", terms.mode, setOptions());
   }
 
   // with no payment left on either side, the terms go too
   function dropUnusedPaymentTerms() {
-    if (formPayment(form.getValues()) === null) {
+    if (!hasFormPayment(form.getValues())) {
       form.setValue("payment", undefined, setOptions());
     }
   }
@@ -325,8 +351,9 @@ export default function ListingComposer({
     // confirm first when this post adds the listing's first range row, which makes it take offers
     if (
       !rangeNoticeDismissed &&
-      hasRangeRow(submission.data.wants) &&
-      (mode.kind === "create" || !hasRangeRow(mode.listing.wants))
+      hasRangeRow(submission.data.options.flat()) &&
+      (mode.kind === "create" ||
+        !hasRangeRow(mode.listing.options.flatMap((option) => option.wants)))
     ) {
       setHeld(submission);
     } else {
@@ -385,14 +412,26 @@ export default function ListingComposer({
                   }}
                 />
               </div>
-              <ComposerWantRows
+              <ComposerOptions
                 form={form}
                 display={display}
                 currency={currency}
-                onPaymentAdded={addPaymentTerms}
-                onPaymentRemoved={dropUnusedPaymentTerms}
-                onPaymentAmount={(amount) =>
-                  setClaimerPayment(amount, openToOffers)
+                onPaymentAdded={() => {
+                  // a new row joins the listing's offer mode, as its others hold it
+                  if (form.getValues("payment") === undefined) {
+                    addPaymentTerms();
+                  } else {
+                    setClaimerPayment(openToOffers);
+                  }
+                }}
+                onPaymentRemoved={() => {
+                  dropUnusedPaymentTerms();
+                  if (form.getValues("payment") !== undefined) {
+                    setClaimerPayment(openToOffers);
+                  }
+                }}
+                onPaymentAmount={(option, amount) =>
+                  setClaimerPayment(openToOffers, { option, amount })
                 }
                 openToOffers={openToOffers}
                 onCollection={(collection) =>
@@ -415,11 +454,7 @@ export default function ListingComposer({
                   offeredPayment === undefined
                     ? {
                         open: openToOffers,
-                        onChange: (open) =>
-                          setClaimerPayment(
-                            formPayment(form.getValues())?.amount ?? "",
-                            open,
-                          ),
+                        onChange: (open) => setClaimerPayment(open),
                       }
                     : null
                 }
@@ -550,16 +585,16 @@ function OfferedSection({
   onChange: (offered: ListingFormValues["offered"]) => void;
   onAddPayment: () => void;
 }) {
-  const [wants, offeredPayment] = useWatch({
+  const [options, offeredPayment] = useWatch({
     control: form.control,
-    name: ["wants", "offeredPayment"],
+    name: ["options", "offeredPayment"],
   });
   return (
     <ComposerOffered
       action={
         offeredPayment === undefined && (
           <ComposerOfferedPaymentButton
-            disabled={wants.some((want) => want.kind === "payment")}
+            disabled={claimerAmounts(options).length > 0}
             onAdd={onAddPayment}
           />
         )
@@ -613,38 +648,54 @@ function OfferedPayment({
 }
 
 /**
- * What one trade asks for, as the ratio and footer show it: the objekts
- * the rows count, plus the claimer's payment in the listing's currency
- * once its amount reads, "2 + $3.00", or the payment alone.
+ * What one trade asks for, as the ratio shows it: for each option, the
+ * objekts its rows count, plus the claimer's payment in the listing's
+ * currency once its amount reads, "2 + $3.00", or the payment alone, the
+ * options joined by "or". An option asking for nothing but an offer adds
+ * nothing, and null means every option is that.
  */
-function wantedText(wants: ListingFormValues["wants"], currency: string) {
-  const wanted = totalWanted(wants);
-  const row = wants.find((want) => want.kind === "payment");
-  if (row === undefined) return String(wanted);
-  return wanted === 0
-    ? askingText(row.amount, currency)
-    : `${wanted} + ${askingText(row.amount, currency)}`;
+function wantedText(options: ListingFormValues["options"], currency: string) {
+  const phrases = options.flatMap((wants) => {
+    const wanted = totalWanted(wants);
+    const row = wants.find((want) => want.kind === "payment");
+    if (row === undefined) return [String(wanted)];
+    if (row.amount === undefined) return wanted === 0 ? [] : [String(wanted)];
+    const price = priceText(row.amount, currency);
+    return [wanted === 0 ? price : `${wanted} + ${price}`];
+  });
+  return phrases.length === 0 ? null : joinOptions(phrases);
 }
 
 /**
  * The ratio, once the want rows ask for something and there are two or
  * more objekts to split it over, or an edit's ratio takes more than the
- * pool holds, so the poster can lower it.
+ * pool holds, so the poster can lower it. A listing with no asking price
+ * shows only the poster's side.
  */
 function RatioStrip({ form, currency }: FormProps & { currency: string }) {
-  const [offered, unitSize, wants] = useWatch({
+  const [offered, unitSize, options] = useWatch({
     control: form.control,
-    name: ["offered", "unitSize", "wants"],
+    name: ["offered", "unitSize", "options"],
   });
   const over = unitSize !== undefined && unitSize > offered.length;
+  const wanted = wantedText(options, currency);
 
-  return wants.length === 0 || (offered.length < 2 && !over) ? null : (
+  return options.every((wants) => wants.length === 0) ||
+    (offered.length < 2 && !over) ? null : (
     <ComposerRatio
       unitSize={formUnitSize({ offered, unitSize })}
       bundle={unitSize === undefined}
       offered={offered.length}
-      wanted={wantedText(wants, currency)}
-      priceOnly={wants.every((want) => want.kind === "payment")}
+      wanted={wanted ?? ""}
+      wants={
+        wanted === null
+          ? "offers"
+          : options.every((wants) =>
+                wants.every((want) => want.kind === "payment"),
+              )
+            ? "price"
+            : "objekts"
+      }
       onChange={(next) =>
         form.setValue("unitSize", stepUnitSize(next, offered.length), {
           shouldDirty: true,
@@ -792,13 +843,13 @@ function ComposerFooter({
   cancel: ReactNode;
 }) {
   const reasonId = useId();
-  const [unitSize, wants, offeredPayment, payment, note] = useWatch({
+  const [unitSize, options, offeredPayment, payment, note] = useWatch({
     control: form.control,
-    name: ["unitSize", "wants", "offeredPayment", "payment", "note"],
+    name: ["unitSize", "options", "offeredPayment", "payment", "note"],
   });
   // the range rows count their own matches, keyed as the schema reads them; this reads the counts they cached
   const rangeMatches = useQueries({
-    queries: wants.flatMap((want) => {
+    queries: options.flat().flatMap((want) => {
       const ranges = want.kind === "range" ? parsedRanges(want.ranges) : null;
       return ranges === null
         ? []
@@ -810,7 +861,7 @@ function ComposerFooter({
     composerBlock({
       offered: offered.length,
       refused: tokenIds.filter((tokenId) => refusals.has(tokenId)).length,
-      wants,
+      options,
       offeredPayment,
       payment,
       unitSize,
@@ -818,22 +869,28 @@ function ComposerFooter({
       rosters,
       note: note ?? "",
     }),
-    { unitSize: formUnitSize({ offered, unitSize }), offered: offered.length },
+    {
+      unitSize: formUnitSize({ offered, unitSize }),
+      offered: offered.length,
+      emptyOption: options.findIndex((wants) => wants.length === 0) + 1,
+    },
   );
 
   return (
     <div className="flex shrink-0 flex-col gap-2 border-t border-border bg-background/95 px-4 pt-2.5 pb-[calc(1rem+env(safe-area-inset-bottom))] md:flex-row md:flex-wrap md:items-center md:gap-x-3 md:px-5 md:py-3.5">
       <span className="text-center text-xs text-muted-foreground tabular-nums md:text-left">
-        {m.listing_composer_footer({
-          offered: withPrice(
+        {footerSummary(
+          withPrice(
             m.listing_composer_footer_offered({
               count: formUnitSize({ offered, unitSize }),
             }),
             offeredPayment,
             currency,
           ),
-          wanted: wantedSummary(wants, currency),
-        })}
+          options,
+          payment?.mode,
+          currency,
+        )}
       </span>
       {reason !== null && (
         <span
@@ -872,13 +929,6 @@ function priceText(amount: string, currency: string) {
   return parsed.success ? formatAmount(parsed.data, currency) : "…";
 }
 
-// the claimer's payment as typed: its price, or "an offer" when it has none
-function askingText(amount: string | undefined, currency: string) {
-  return amount === undefined
-    ? m.listing_payment_offer()
-    : priceText(amount, currency);
-}
-
 // a side of the summary with its payment added, "1 objekt + $3.00"
 function withPrice(text: string, amount: string | undefined, currency: string) {
   return amount === undefined
@@ -886,21 +936,46 @@ function withPrice(text: string, amount: string | undefined, currency: string) {
     : `${text} + ${priceText(amount, currency)}`;
 }
 
-// what one trade asks for in the footer: the objekts, the payment, or both
-function wantedSummary(wants: ListingFormValues["wants"], currency: string) {
-  const row = wants.find((want) => want.kind === "payment");
-  const objekts = m.listing_composer_footer_wanted({
-    count: totalWanted(wants),
+/**
+ * One trade at a glance in the footer, "1 objekt ⇄ $3.00": each option's
+ * objekts, payment or both, joined by "or", with "open to offers" when
+ * the listing takes offers beside its prices. A listing with no asking
+ * price reads as the poster's side taking offers.
+ */
+function footerSummary(
+  offered: string,
+  options: ListingFormValues["options"],
+  mode: ListingOfferMode | undefined,
+  currency: string,
+) {
+  const phrases = options.flatMap((wants) => {
+    const row = wants.find((want) => want.kind === "payment");
+    const objekts = m.listing_composer_footer_wanted({
+      count: totalWanted(wants),
+    });
+    if (row === undefined) return [objekts];
+    if (row.amount === undefined) return wants.length === 1 ? [] : [objekts];
+    const price = priceText(row.amount, currency);
+    return [wants.length === 1 ? price : `${objekts} + ${price}`];
   });
-  if (row === undefined) return objekts;
-  return wants.length === 1
-    ? askingText(row.amount, currency)
-    : `${objekts} + ${askingText(row.amount, currency)}`;
+  if (phrases.length === 0) {
+    return m.listing_composer_footer_offers({ offered });
+  }
+  const summary = m.listing_composer_footer({
+    offered,
+    wanted: joinOptions(phrases),
+  });
+  return mode === "price_or_offer"
+    ? `${summary} · ${m.listing_payment_open_to_offers_tag()}`
+    : summary;
 }
 
 function blockedReason(
   block: ReturnType<typeof composerBlock>,
-  ratio: { unitSize: number; offered: number },
+  {
+    emptyOption,
+    ...ratio
+  }: { unitSize: number; offered: number; emptyOption: number },
 ) {
   switch (block) {
     case "offered":
@@ -909,6 +984,10 @@ function blockedReason(
       return m.listing_composer_reason_refused();
     case "wants":
       return m.listing_composer_reason_wants();
+    case "option_empty":
+      return m.listing_composer_block_option_empty({ number: emptyOption });
+    case "option_repeated":
+      return m.listing_composer_block_option_repeat();
     case "range":
       return m.listing_composer_reason_range();
     case "range_too_many":

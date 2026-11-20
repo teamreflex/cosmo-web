@@ -4,6 +4,7 @@ import {
   liveTradeStatuses,
   type PaymentMethod,
   type TradeSide,
+  type TradeWantKind,
 } from "@apollo/database/web/types";
 import {
   listingOfferRefusal,
@@ -127,29 +128,39 @@ export type StoredWant = z.output<typeof storedWantSchema>;
 export type ObjektWant = Exclude<StoredWant, { kind: "payment" }>;
 
 /**
- * A listing's payment, from its payment want row and the side, methods and
- * offer mode on the listing row, or null without one. Throws when they
- * disagree, which the post and edit paths never write: half a payment, or
- * an asking price on a listing that only takes offers or none on another.
+ * One option of a listing: the objekt rows the claimer fills when they give
+ * it, and the listing's payment as it prices this option, null when the
+ * option asks for none. The poster's payment on top prices every option
+ * alike.
  */
-export function listingPayment(
+export type ListingOption<TWant = ObjektWant> = {
+  wants: TWant[];
+  payment: ListingPayment | null;
+};
+
+/**
+ * The option a trade from a listing gave. A trade written before listings
+ * had options has none recorded, and gave the only option, 0.
+ */
+export function tradeListingOption(trade: { listingOption: number | null }) {
+  return trade.listingOption ?? 0;
+}
+
+/**
+ * A listing's payment priced by one payment want row, from the side,
+ * methods and offer mode on the listing row. Throws when they disagree,
+ * which the post and edit paths never write: an asking price on a listing
+ * that only takes offers or none on another.
+ */
+function pricedPayment(
   listing: {
     id: string;
-    paymentSide: TradeSide | null;
+    paymentSide: TradeSide;
     paymentMethods: PaymentMethod[];
-    offers: ListingOfferMode | null;
+    offers: ListingOfferMode;
   },
-  wants: readonly StoredWant[],
-): ListingPayment | null {
-  const row = wants.find((want) => want.kind === "payment");
-  if (row === undefined && listing.paymentSide === null) return null;
-  if (
-    row === undefined ||
-    listing.paymentSide === null ||
-    listing.offers === null
-  ) {
-    throw new Error(`listing ${listing.id} has half a payment`);
-  }
+  row: Extract<StoredWant, { kind: "payment" }>,
+): ListingPayment {
   const terms = {
     side: listing.paymentSide,
     currency: row.currency,
@@ -165,14 +176,91 @@ export function listingPayment(
 }
 
 /**
- * How the listing takes claims and offers (listingAcceptance()), from its
- * want rows and its payment's offer mode.
+ * A listing's options (ListingOption) in order, from its stored want rows
+ * grouped by `option` and the side, methods and offer mode on the listing
+ * row. The claimer's payment rows price the options they sit in, and the
+ * poster's one row prices every option. Throws on what the post and edit
+ * paths never write: a gap in the options, half a payment, or a payment
+ * row on the wrong side.
  */
-export function acceptanceOf(listing: {
-  wants: readonly { kind: StoredWant["kind"] }[];
+export function listingOptions(
+  listing: {
+    id: string;
+    paymentSide: TradeSide | null;
+    paymentMethods: PaymentMethod[];
+    offers: ListingOfferMode | null;
+  },
+  rows: readonly { option: number }[],
+): ListingOption[] {
+  const grouped = Map.groupBy(rows, (row) => row.option);
+  const options = Array.from({ length: grouped.size }, (_, option) => {
+    const stored = grouped.get(option);
+    if (stored === undefined) {
+      throw new Error(`listing ${listing.id} has no option ${option}`);
+    }
+    const wants = stored.map((want) => storedWantSchema.parse(want));
+    return {
+      wants: wants.flatMap((want) => (want.kind === "payment" ? [] : [want])),
+      row: wants.find((want) => want.kind === "payment"),
+    };
+  });
+  const { paymentSide, offers } = listing;
+  const paid = options.flatMap(({ row }) => row ?? []);
+  if (paymentSide === null || offers === null) {
+    if (paid.length > 0 || (paymentSide === null) !== (offers === null)) {
+      throw new Error(`listing ${listing.id} has half a payment`);
+    }
+    return options.map(({ wants }) => ({ wants, payment: null }));
+  }
+  const terms = { ...listing, paymentSide, offers };
+  if (paymentSide === "from") {
+    const [row] = paid;
+    if (row === undefined || paid.length > 1 || options[0]?.row !== row) {
+      throw new Error(`listing ${listing.id} has half a payment`);
+    }
+    const payment = pricedPayment(terms, row);
+    return options.map(({ wants }) => ({ wants, payment }));
+  }
+  if (paid.length === 0) {
+    throw new Error(`listing ${listing.id} has half a payment`);
+  }
+  return options.map(({ wants, row }) => ({
+    wants,
+    payment: row === undefined ? null : pricedPayment(terms, row),
+  }));
+}
+
+/**
+ * The listing's payment terms every option shares (who sends it, its
+ * currency, methods and offer mode), from whichever option carries it, or
+ * null without a payment.
+ */
+export function listingPaymentTerms(
+  options: readonly Pick<ListingOption<unknown>, "payment">[],
+) {
+  return options.find((option) => option.payment !== null)?.payment ?? null;
+}
+
+/**
+ * How one of a listing's options takes claims and offers
+ * (listingAcceptance()), from its want rows and, when it asks for the
+ * payment, the payment's offer mode.
+ */
+export function acceptanceOf(option: {
+  wants: readonly { kind: TradeWantKind }[];
   payment: Pick<ListingPayment, "mode"> | null;
 }): ListingAcceptance {
-  return listingAcceptance(listing.wants, listing.payment?.mode ?? null);
+  return listingAcceptance(option.wants, option.payment?.mode ?? null);
+}
+
+/**
+ * Whether any of a listing's options takes offers, which the poster's
+ * Offers tab follows.
+ */
+export function takesOffers(
+  options: readonly Parameters<typeof acceptanceOf>[0][],
+) {
+  return options.some((option) => acceptanceOf(option) !== "claim");
 }
 
 /**
@@ -202,12 +290,11 @@ export function toTradeWant(want: ObjektWant): TradeWant {
 }
 
 /**
- * The want rows objekts fill, in order, leaving out payment rows.
+ * An option as allocation, the assignment check and the offer checks read
+ * it: its objekt rows as trade wants, and its payment.
  */
-export function tradeWants(wants: readonly StoredWant[]) {
-  return wants.flatMap((want) =>
-    want.kind === "payment" ? [] : [toTradeWant(want)],
-  );
+export function tradeOption(option: ListingOption): ListingOption<TradeWant> {
+  return { wants: option.wants.map(toTradeWant), payment: option.payment };
 }
 
 /**
@@ -281,7 +368,8 @@ export type ListingFeedWant =
  * An open listing in the feed, with its poster's rating, null without a
  * visible rating or a poster. `items` is its pool, `unitSize` how many of
  * them one trade takes for the want rows and payment at their counts,
- * `posted` how many objekts it has ever offered (the pool and the ones that
+ * `options` what the claimer can give, one of them, `posted` how many
+ * objekts it has ever offered (the pool and the ones that
  * left it), and `free` how many no live trade holds and the poster hasn't
  * locked, which may be fewer than `unitSize`, even 0, while trades or locks
  * hold the rest.
@@ -293,8 +381,7 @@ export type ListingFeedRow = {
   cosmoUsername: string | null;
   rep: FeedbackRep | null;
   items: ListingFeedItem[];
-  wants: ListingFeedWant[];
-  payment: ListingPayment | null;
+  options: ListingOption<ListingFeedWant>[];
   unitSize: number;
   posted: number;
   free: number;
@@ -440,10 +527,11 @@ export function listingStop(
  * A listing's public detail. The poster is null once their account is
  * deleted. `items` are every objekt it has offered in posted order, the
  * pool's and the ones that left it, and one trade takes `unitSize` of the
- * pool's for the want rows at their counts. `stop` says what stops every
- * claim on an open listing right now (ListingStop), null when nothing
- * does. `payment` is what one unit's payment is and who sends it. `rep` is
- * the listing address's rating, null without a visible rating or a poster.
+ * pool's for one of its `options`, each with its want rows at their counts
+ * and what one unit's payment is and who sends it. `stop` says what stops
+ * every claim on an open listing right now (ListingStop), null when
+ * nothing does. `rep` is the listing address's rating, null without a
+ * visible rating or a poster.
  */
 export type TradeListing<TPoster = PublicUser> = {
   id: string;
@@ -457,11 +545,31 @@ export type TradeListing<TPoster = PublicUser> = {
   rep: FeedbackRep | null;
   unitSize: number;
   items: ListingItem[];
-  wants: ListingFeedWant[];
-  payment: ListingPayment | null;
+  options: ListingOption<ListingFeedWant>[];
   state: ListingState;
   stop: ListingStop | null;
 };
+
+/**
+ * A listing read for one of its options, the one a viewer gives: the
+ * option's index, want rows and payment beside everything the options
+ * share.
+ */
+export type ListingAt = Omit<TradeListing, "options"> &
+  ListingOption<ListingFeedWant> & { option: number };
+
+/**
+ * The listing at its option `option` (ListingAt). Throws on an option it
+ * doesn't have, which only a caller holding an older read could ask for.
+ */
+export function listingAt(listing: TradeListing, option: number): ListingAt {
+  const { options, ...shared } = listing;
+  const chosen = options[option];
+  if (chosen === undefined) {
+    throw new Error(`listing ${listing.id} has no option ${option}`);
+  }
+  return { ...shared, ...chosen, option };
+}
 
 /**
  * The listing's pool: the objekts it offers that haven't left it, in posted
@@ -501,6 +609,16 @@ export type CandidateRow = {
 };
 
 /**
+ * The viewer's side of one of a listing's options: the most units they can
+ * take giving it, 0 when they can't fill one, with how many matching
+ * objekts they own and are short per want row.
+ */
+export type CandidateOption = {
+  units: number;
+  rows: CandidateRow[];
+};
+
+/**
  * How many objekts each side of a trade from a listing sends, the poster's
  * first, and its payment with the side that sends it: "2 for 3", "1 for
  * $3.00". A listing's own ratio counts one unit.
@@ -534,12 +652,14 @@ export type OfferRefusal =
 /**
  * Why accepting the offer would be refused right now, or null when it would
  * go through, judged in `$acceptOffer`'s order and with its codes
- * (recheckListingOffer() in claim.server.ts). A refusal over the claimer's
- * side never says whether their link, ban or cap stopped it.
+ * (recheckListingOffer() in claim.server.ts) against the listing's option
+ * the offer gives. A refusal over the claimer's side never says whether
+ * their link, ban or cap stopped it.
  */
 export function offerRefusal(
   offer: {
     expiresAt: Date;
+    option: number;
     picks: readonly number[];
     given: readonly number[];
     payment: TradePayment | null;
@@ -548,8 +668,7 @@ export function offerRefusal(
     fromAddress: string;
     pool: ReadonlySet<number>;
     unitSize: number;
-    wants: readonly TradeWant[];
-    payment: ListingPayment | null;
+    options: readonly ListingOption<TradeWant>[];
     posterRefused: boolean;
   },
   claimer: { address: string; linked: boolean; atCap: boolean },
@@ -563,6 +682,9 @@ export function offerRefusal(
   if (offer.expiresAt.getTime() <= now.getTime()) {
     return { code: "offer_expired" };
   }
+  // an edit that dropped the option the offer gives changed its terms
+  const option = listing.options[offer.option];
+  if (option === undefined) return { code: "listing_updated" };
   const misfit = listingOfferRefusal(
     {
       picks: offer.picks,
@@ -574,7 +696,7 @@ export function offerRefusal(
       }),
       payment: offer.payment,
     },
-    listing,
+    { ...listing, ...option },
   );
   if (misfit?.reason === "token_missing") {
     return { code: "offer_unavailable", tokenId: misfit.tokenId };
@@ -669,14 +791,16 @@ export function refusedOfferToken(
 }
 
 /**
- * A pending offer on the poster's listing: who sent it, the poster's
- * objekts it picked from the pool and the claimer's it gives, each with
- * its serial, its payment for every unit it takes, when it expires, and
- * why it can't be accepted now, null when it can.
+ * A pending offer on the poster's listing: who sent it, the listing's
+ * option it gives, the poster's objekts it picked from the pool and the
+ * claimer's it gives, each with its serial, its payment for every unit it
+ * takes, when it expires, and why it can't be accepted now, null when it
+ * can.
  */
 export type ListingOfferSummary = {
   tradeId: string;
   claimer: TradeParty;
+  option: number;
   picks: ListingFeedItem[];
   given: ListingFeedItem[];
   payment: TradePayment | null;
@@ -736,10 +860,9 @@ export type EndedOfferStatus = "declined" | "expired" | "stale";
  * What the listing page shows the signed-in viewer in place of Accept: the
  * poster's offers and trades, the viewer's own live trade (`claimer`, its
  * deadline null while disputed) or pending offer (`offerer`), or for anyone
- * else (`candidate`) the most units they can take, 0 when they can't fill
- * one, with how many matching objekts they own and are short per want row,
- * and what limits them; the poster's side stopping claims is the listing's
- * `stop`.
+ * else (`candidate`) what they can give for each of the listing's options
+ * (CandidateOption) and what limits them; the poster's side stopping
+ * claims is the listing's `stop`.
  */
 export type ListingViewer =
   | { role: "anonymous" }
@@ -762,8 +885,7 @@ export type ListingViewer =
     }
   | {
       role: "candidate";
-      units: number;
-      rows: CandidateRow[];
+      options: CandidateOption[];
       claims: { active: number; cap: number };
       ownAddress: boolean;
       endedOffer: EndedOfferStatus | null;
@@ -772,22 +894,21 @@ export type ListingViewer =
 export type Candidate = Extract<ListingViewer, { role: "candidate" }>;
 
 /**
- * What a candidate sees in place of Accept: the claim cap on a listing
- * that only claims, since only claims count against it (an offer is
- * checked against it once accepted); the poster's side stopping any claim
- * (ListingStop's `blocked`, or their own address); the pool all in trades
- * for now (`busy`); or the picker.
+ * What a candidate sees in place of Accept: the claim cap when every option
+ * of the listing only claims, since only claims count against it (an offer
+ * is checked against it once accepted); the poster's side stopping any
+ * claim (ListingStop's `blocked`, or their own address); the pool all in
+ * trades for now (`busy`); or the picker.
  */
 export function candidatePanel(
   listing: {
-    wants: readonly { kind: StoredWant["kind"] }[];
-    payment: Pick<ListingPayment, "mode"> | null;
+    options: readonly Parameters<typeof acceptanceOf>[0][];
     stop: ListingStop | null;
   },
   viewer: Pick<Candidate, "claims" | "ownAddress">,
 ) {
   if (
-    acceptanceOf(listing) === "claim" &&
+    !takesOffers(listing.options) &&
     viewer.claims.active >= viewer.claims.cap
   ) {
     return "cap";
@@ -799,18 +920,16 @@ export function candidatePanel(
 }
 
 /**
- * Whether the viewer's claim cap stops Accept on a listing open to offers,
- * where they can still make an offer, since only claims count against it.
+ * Whether the viewer's claim cap stops Accept on the option they picked,
+ * where it claims, while the listing still shows the picker because the
+ * option or another one takes offers, since only claims count against it.
  */
 export function acceptCapped(
-  listing: {
-    wants: readonly { kind: StoredWant["kind"] }[];
-    payment: Pick<ListingPayment, "mode"> | null;
-  },
+  option: Parameters<typeof acceptanceOf>[0],
   viewer: Pick<Candidate, "claims">,
 ) {
   return (
-    acceptanceOf(listing) === "either" &&
+    acceptanceOf(option) !== "offer" &&
     viewer.claims.active >= viewer.claims.cap
   );
 }

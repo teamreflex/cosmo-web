@@ -40,6 +40,18 @@ export type ListingPayment = {
 } & PaymentPrice;
 
 /**
+ * What a listing's payment shares across its options: who sends it, its
+ * currency, the methods it may arrive by and its offer mode. Each option
+ * that carries the payment has its own price (ListingPayment).
+ */
+export type PaymentTerms = {
+  side: TradeSide;
+  currency: string;
+  methods: PaymentMethod[];
+  mode: ListingOfferMode;
+};
+
+/**
  * A trade's payment: its amount for every unit the trade took, in minor
  * units, its currency and the side that sends it.
  */

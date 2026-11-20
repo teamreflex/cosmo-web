@@ -1,10 +1,14 @@
 import type { PickerRow, Picks } from "@/hooks/use-listing-picks";
 import { m } from "@/i18n/messages";
-import { formatCount, pickShown } from "@/lib/client/trade-listings";
+import {
+  formatAmount,
+  formatCount,
+  pickShown,
+} from "@/lib/client/trade-listings";
 import { env } from "@/lib/env/client";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type {
-  Candidate,
+  CandidateOption,
   CandidateRow,
   ListingPick,
 } from "@/lib/universal/trade-listings";
@@ -22,7 +26,8 @@ import SideHeading from "./side-heading";
 import WantLabel, { PaymentLabel } from "./want-label";
 
 type Props = {
-  viewer: Candidate;
+  /** what the viewer holds for the option they give */
+  viewer: CandidateOption;
   /**
    * The viewer's linked COSMO address, whose collection the row pickers
    * list. A viewer who can pick is always linked.
@@ -61,7 +66,12 @@ export default function AllocationPicker({
         <SideHeading
           tone="have"
           title={m.listing_detail_you_pay()}
-          summary={m.listing_detail_you_pay_summary({ poster })}
+          summary={m.listing_detail_units_pay({
+            amount:
+              payment.amount === null
+                ? m.listing_payment_your_offer()
+                : formatAmount(payment.amount * picks.units, payment.currency),
+          })}
         />
       ) : (
         <SideHeading
@@ -149,7 +159,11 @@ function PickerFooter({
   return (
     <p className="text-xs leading-relaxed text-muted-foreground">
       {acceptance === "offer"
-        ? m.listing_detail_offer_footer({ poster })
+        ? payment === "only"
+          ? m.listing_detail_offer_footer_pay({ poster })
+          : payment === "beside"
+            ? m.listing_detail_offer_footer_with_payment({ poster })
+            : m.listing_detail_offer_footer({ poster })
         : acceptance === "either"
           ? m.listing_detail_either_footer({ poster })
           : payment === "only"

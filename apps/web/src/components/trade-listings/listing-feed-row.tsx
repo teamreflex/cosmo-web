@@ -3,11 +3,13 @@ import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import {
   askingPriceText,
   askingTitle,
+  joinOptions,
   listingRatio,
-  listingTypeOf,
+  listingTypesOfListing,
   objektName,
   offeredMembers,
   offeredNames,
+  optionTitle,
   paymentMethodsText,
   posterName,
   ratioSides,
@@ -17,11 +19,12 @@ import {
   wantsSummary,
 } from "@/lib/client/trade-listings";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import type {
-  ListingFeedItem,
-  ListingFeedRow as Row,
-  ListingFeedWant,
-  TradeRatio,
+import {
+  hasRatio,
+  type ListingFeedItem,
+  type ListingFeedRow as Row,
+  type ListingFeedWant,
+  type TradeRatio,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
 import type { ListingType } from "@apollo/trades/listing";
@@ -51,7 +54,16 @@ type Props = {
  * laid out under the market notice's scroll lock.
  */
 export default function ListingFeedRow({ row }: Props) {
-  const ratio = listingRatio(row, row.posted);
+  const [first] = row.options;
+  // several options trade at several ratios, and a listing taking only offers has no other side, so their row keeps the arrow
+  const ratio =
+    first === undefined ||
+    row.options.length > 1 ||
+    first.payment?.amount === null
+      ? null
+      : listingRatio({ ...row, ...first }, row.posted);
+  // the poster's payment on top prices every option alike
+  const onTop = first?.payment?.side === "from" ? first.payment : null;
   return (
     <li className="transition-colors md:border-t md:border-border/60 md:first:border-t-0 md:hover:bg-secondary/50">
       <Link
@@ -70,12 +82,12 @@ export default function ListingFeedRow({ row }: Props) {
         >
           <OfferingCaption
             items={row.items}
-            free={ratio === null ? null : row.free}
+            free={hasRatio(row.unitSize, row.posted) ? row.free : null}
           />
-          {row.payment?.side === "from" && (
+          {onTop !== null && (
             <SlipDetail className="font-medium text-foreground">
               {m.market_listings_payment_on_top({
-                amount: askingPriceText(row.payment),
+                amount: askingPriceText(onTop),
               })}
             </SlipDetail>
           )}
@@ -105,23 +117,24 @@ export default function ListingFeedRow({ row }: Props) {
 
         <Half
           label={m.market_listings_column_asking()}
-          thumbs={
-            <WantThumbs
-              wants={row.wants}
-              payment={row.payment?.side === "to" ? row.payment : null}
-            />
-          }
+          thumbs={<WantThumbs options={row.options} />}
           className="col-start-3 max-md:bg-amber-700/5 lg:col-start-4 max-md:dark:bg-amber-500/5"
         >
-          <AskingCaption
-            wants={row.wants}
-            payment={row.payment?.side === "to" ? row.payment : null}
-          />
+          {first !== undefined && row.options.length === 1 ? (
+            <AskingCaption
+              wants={first.wants}
+              payment={first.payment?.side === "to" ? first.payment : null}
+            />
+          ) : (
+            <OptionsCaption options={row.options} />
+          )}
         </Half>
 
         <span className="col-span-full row-start-2 flex min-w-0 items-center gap-1.5 max-md:border-t max-md:border-dashed max-md:px-3 max-md:py-2 max-md:text-xs md:gap-2 lg:contents">
           <span className="flex items-center gap-2 max-md:contents lg:col-start-1 lg:row-start-1 lg:flex-col lg:items-start lg:gap-1">
-            <ListingTypeBadge type={listingTypeOf(row)} />
+            {listingTypesOfListing(row).map((type) => (
+              <ListingTypeBadge key={type} type={type} />
+            ))}
             <span className="shrink-0 text-xs text-muted-foreground max-md:order-last">
               <span className="md:hidden">{"· "}</span>
               <Timestamp
@@ -158,7 +171,8 @@ export default function ListingFeedRow({ row }: Props) {
 }
 
 /**
- * What kind of listing a row is (listingType()): a trade, a sale or a buy.
+ * One kind a listing row is (listingTypesOf()): a trade, a sale or a buy.
+ * A row whose options make it several shows a badge for each.
  */
 function ListingTypeBadge({ type }: { type: ListingType }) {
   switch (type) {
@@ -315,6 +329,27 @@ function AskingCaption({
 }
 
 /**
+ * A listing's options as alternatives, each as optionTitle() reads it: "2
+ * objekts or $3.00", over each option's rows in posted order.
+ */
+function OptionsCaption({ options }: { options: Row["options"] }) {
+  return (
+    <>
+      <SlipTitle clamp>{joinOptions(options.map(optionTitle))}</SlipTitle>
+      <SlipDetail className="max-md:hidden">
+        {joinOptions(
+          options.map((option) =>
+            option.wants.length === 0
+              ? optionTitle(option)
+              : wantsSummary(option.wants),
+          ),
+        )}
+      </SlipDetail>
+    </>
+  );
+}
+
+/**
  * A slip's title clamps to two lines on a phone and to one from md.
  */
 function SlipTitle({
@@ -372,31 +407,31 @@ export function Thumbs({ items }: { items: ListingFeedItem[] }) {
 }
 
 /**
- * Up to three pictures of the want rows, stacked: an exact row's
- * collection, a range's tile in its group's colour, or each of a choice
- * row's collections, a row's first picture carrying its count on a phone
- * when it asks for more than one. A sale's payment has a tile of its
- * currency.
+ * Up to three pictures of the want rows, stacked, the first option's
+ * first: an exact row's collection, a range's tile in its group's colour,
+ * or each of a choice row's collections, a row's first picture carrying
+ * its count on a phone when it asks for more than one. An option of the
+ * claimer's payment alone has a tile of its currency.
  */
-function WantThumbs({
-  wants,
-  payment,
-}: {
-  wants: ListingFeedWant[];
-  payment: ListingPayment | null;
-}) {
+function WantThumbs({ options }: { options: Row["options"] }) {
   return (
     <Stack
-      thumbs={[
-        ...(wants.length === 0 && payment !== null
-          ? [{ key: "payment", thumb: <PaymentTile payment={payment} /> }]
+      thumbs={options.flatMap(({ wants, payment }, option) => [
+        ...(wants.length === 0 && payment?.side === "to"
+          ? [
+              {
+                key: `${option}:payment`,
+                thumb: <PaymentTile payment={payment} />,
+              },
+            ]
           : []),
         ...wants.flatMap((want, index) => {
+          const key = `${option}:${index}`;
           switch (want.kind) {
             case "exact":
               return [
                 {
-                  key: `${index}`,
+                  key,
                   count: want.count,
                   thumb: <CollectionThumb collection={want.collection} />,
                 },
@@ -404,7 +439,7 @@ function WantThumbs({
             case "range":
               return [
                 {
-                  key: `${index}`,
+                  key,
                   count: want.count,
                   thumb: (
                     <RangeTile
@@ -416,14 +451,14 @@ function WantThumbs({
                 },
               ];
             case "choice":
-              return want.options.map((option, position) => ({
-                key: `${index}:${position}`,
+              return want.options.map((choice, position) => ({
+                key: `${key}:${position}`,
                 count: position === 0 ? want.count : 1,
-                thumb: <CollectionThumb collection={option.collection} />,
+                thumb: <CollectionThumb collection={choice.collection} />,
               }));
           }
         }),
-      ]}
+      ])}
     />
   );
 }

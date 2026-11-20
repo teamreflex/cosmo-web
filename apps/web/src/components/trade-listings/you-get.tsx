@@ -121,8 +121,9 @@ export default function YouGet({
 }
 
 /**
- * The payment the poster sends on top of their objekts, for the units the
- * viewer takes, or nothing when the claimer pays or there's no payment.
+ * The payment the poster sends on top of their objekts, which prices every
+ * option alike, for the units the viewer takes, or nothing when the
+ * claimer pays or there's no payment.
  */
 function PosterPayment({
   listing,
@@ -131,10 +132,11 @@ function PosterPayment({
   listing: TradeListing;
   units: number;
 }) {
+  const payment = listing.options[0]?.payment;
   return (
-    listing.payment?.side === "from" && (
+    payment?.side === "from" && (
       <div className="rounded-lg border border-border bg-card px-4 py-3 text-sm">
-        <PaymentLabel payment={listing.payment} units={units} />
+        <PaymentLabel payment={payment} units={units} />
       </div>
     )
   );

@@ -59,7 +59,7 @@ export default function ListingLayout({
   notice,
   offered,
   picks = null,
-  wants = <WantList wants={listing.wants} payment={listing.payment} />,
+  wants = <WantList options={listing.options} />,
   closed = false,
   children,
 }: Props) {
@@ -85,6 +85,7 @@ export default function ListingLayout({
           {poster.tab === "offers" ? (
             <PosterOffers
               listingId={listing.id}
+              options={listing.options.length}
               offers={poster.offers}
               trades={poster.trades}
             />

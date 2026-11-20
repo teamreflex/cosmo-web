@@ -7,6 +7,7 @@ import {
   partyName,
 } from "@/lib/client/trade-listings";
 import {
+  acceptPayment,
   itemName,
   offerRoles,
   partyRole,
@@ -169,7 +170,6 @@ function PartyView({
             counterparty={counterparty}
             owing={owing}
             waiting={waiting}
-            paymentDue={!cancel.ok && cancel.reason === "payment_due"}
           >
             {bar && (
               <div className="flex flex-wrap gap-2 max-md:hidden">
@@ -308,6 +308,17 @@ function OfferView({ trade, side }: { trade: OfferTrade; side: TradeSide }) {
             action={action}
             name={partyName(trade.parties[otherSide(side)])}
             listingId={trade.listingId}
+            payment={acceptPayment(
+              side,
+              trade.payment === null
+                ? null
+                : {
+                    sender: trade.payment.sender,
+                    sendsObjekts: trade.items.some(
+                      (item) => item.sender === trade.payment?.sender,
+                    ),
+                  },
+            )}
             open={dialog === action}
             onOpenChange={(open) => setDialog(open ? action : null)}
           />
@@ -550,9 +561,10 @@ function TradeLayout({
 }
 
 /**
- * The strip under the transfers: what the viewer still has to send or
- * confirm, why they can't cancel while they're owed a payment, beside
- * their actions from tablet width.
+ * The strip under the transfers: the one thing the viewer still has to do
+ * there, beside their actions from tablet width. A viewer who sends
+ * objekts reads what to send; one who only pays reads what to pay; the
+ * payment row's Mark received is its recipient's instruction.
  */
 function ActionStrip({
   trade,
@@ -560,7 +572,6 @@ function ActionStrip({
   counterparty,
   owing,
   waiting,
-  paymentDue,
   children,
 }: {
   trade: Trade;
@@ -569,8 +580,6 @@ function ActionStrip({
   owing: boolean;
   /** how many of the viewer's objekts are still to send */
   waiting: number;
-  /** the viewer is owed an unconfirmed payment, which stops them cancelling */
-  paymentDue: boolean;
   /** the actions, or nothing when none apply */
   children: ReactNode;
 }) {
@@ -578,15 +587,17 @@ function ActionStrip({
   const arrived = trade.items.some(
     (item) => item.sender === side && item.status === "arrived",
   );
-  // a payment still to arrive: the viewer pays it, or marks it received
+  const sends = owing && (waiting > 0 || arrived);
+  // a payment the viewer still pays, when they send nothing else
   const payment =
+    !sends &&
     trade.payment?.status === "waiting" &&
+    trade.payment.sender === side &&
     trade.stage === "trade" &&
     !trade.deadlinePassed
       ? trade.payment
       : null;
-  const lines =
-    (owing && (waiting > 0 || arrived)) || payment !== null || paymentDue;
+  const lines = sends || payment !== null;
   if (!lines && !children) return null;
 
   return (
@@ -614,16 +625,13 @@ function ActionStrip({
           ))}
         {payment !== null && (
           <p>
-            {(payment.sender === side
-              ? m.trade_page_payment_pay
-              : m.trade_page_payment_confirm_hint)({
+            {m.trade_page_payment_pay({
               amount: formatAmount(payment.amount, payment.currency),
               name,
               appName: env.VITE_APP_NAME,
             })}
           </p>
         )}
-        {paymentDue && <p>{m.trade_error_trade_cancel_payment_due()}</p>}
       </div>
       {children}
     </div>
@@ -830,7 +838,9 @@ function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
           </span>
           {offer && index === 0 && (
             <span className="text-xs text-muted-foreground sm:hidden">
-              {m.trade_page_step_offer_then({
+              {(trade.payment === null
+                ? m.trade_page_step_offer_then
+                : m.trade_page_step_offer_then_pay)({
                 hours: CLAIM_WINDOW / 3_600_000,
               })}
             </span>

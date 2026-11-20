@@ -308,13 +308,13 @@ export const $bumpListing = createServerFn({ method: "POST" })
   });
 
 /**
- * Accept some units of a listing: the poster's objekts the claimer picked
- * from the pool and the tokens they give, one list per want row, as of the
- * listing's `updated_at` they saw. Each claim is its own trade, and claims
- * on one listing run side by side as long as they pick different objekts;
- * a claimer holds one live trade per listing. A listing with a range row,
- * or an amount the claimer offers for its payment, makes it an offer
- * instead (claimTerms()): the same request, checked the same way except
+ * Accept some units of a listing for one of its options: the poster's
+ * objekts the claimer picked from the pool and the tokens they give, one
+ * list per want row of that option, as of the listing's `updated_at` they
+ * saw. Each claim is its own trade, and claims on one listing run side by
+ * side as long as they pick different objekts; a claimer holds one live
+ * trade per listing. An option with a range row, or an amount the claimer
+ * offers for its payment, makes it an offer instead (claimTerms()): the same request, checked the same way except
  * for the claim cap, sends the poster a pending offer at that amount that
  * reserves nothing and that they accept or decline, and a claimer holds one
  * live trade or pending offer per listing. Every refusal is an
@@ -524,8 +524,7 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
           rep: listing.fromUser && toFeedbackRep(listing.fromStats),
           unitSize,
           items,
-          wants: listing.wants,
-          payment: listing.payment,
+          options: listing.options,
           state,
           // only an open listing can be claimed, so only an open one is judged
           stop:
@@ -540,8 +539,7 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
             fromUserId: row.fromUserId,
             fromAddress: row.fromAddress,
             unitSize,
-            wants: listing.wants,
-            payment: listing.payment,
+            options: listing.options,
             pool: poolItems({ items }).map((item) => item.tokenId),
             free: items.filter((item) => item.availability.kind === "free")
               .length,

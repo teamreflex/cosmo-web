@@ -2,7 +2,9 @@ import { m } from "@/i18n/messages";
 import {
   askingPriceText,
   formatAmount,
+  joinOptions,
   objektName,
+  optionTitle,
   paymentMethodsText,
   wantedObjektCount,
   wantKindsSummary,
@@ -11,11 +13,12 @@ import {
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type {
   ListingFeedWant,
+  ListingOption,
   WantsHeading,
 } from "@/lib/universal/trade-listings";
 import type { ListingPayment } from "@apollo/trades/payment";
 import type { ObjektAttributes } from "@apollo/trades/range";
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
 import { ObjektCount, ObjektSidebar } from "../objekt/common";
 import ExpandableObjekt from "../objekt/objekt-expandable";
 import { Badge } from "../ui/badge";
@@ -107,56 +110,136 @@ function WantCount({ count }: { count: number }) {
  * Every row the listing asks for, for viewers who aren't picking from their
  * own objekts: "Looking for" in the want colour, or "You're looking for"
  * for the poster. The heading counts one trade's worth, and the summary
- * sums the rows up unless the page says otherwise. Ranges and the payment
- * the claimer sends read as rows in a panel, and exact and "any of" rows
- * below them as objekt cards, an "any of" row's under its count, with any
- * note the page adds under them.
+ * sums the rows up unless the page says otherwise. A listing with several
+ * options heads how many it has over each option in its own box, an "or"
+ * between them, since the claimer gives one. Any note the page adds goes
+ * under them.
  */
 export function WantList({
-  wants,
-  payment,
+  options,
   heading = "looking_for",
-  summary = wantKindsSummary(wants, payment),
+  summary,
   children,
 }: {
-  wants: ListingFeedWant[];
-  payment: ListingPayment | null;
+  options: ListingOption<ListingFeedWant>[];
   heading?: WantsHeading;
   summary?: string;
   children?: ReactNode;
 }) {
+  const [only, ...others] = options;
+  const title =
+    heading === "you_look_for"
+      ? m.listing_detail_you_look_for
+      : m.listing_detail_looking_for;
+  if (only !== undefined && others.length === 0) {
+    const paid = only.payment?.side === "to" ? only.payment : null;
+    return (
+      <section className="flex min-w-0 flex-col gap-4">
+        <SideHeading
+          tone="want"
+          title={title({
+            // a sale asks for its price alone
+            count:
+              only.wants.length === 0 && paid !== null
+                ? askingPriceText(paid)
+                : wantedObjektCount(only.wants),
+          })}
+          summary={summary ?? wantKindsSummary(only.wants, only.payment)}
+        />
+        <WantRows wants={only.wants} payment={paid} />
+        {children}
+      </section>
+    );
+  }
+  return (
+    <section className="flex min-w-0 flex-col gap-4">
+      <SideHeading
+        tone="want"
+        title={title({
+          count: m.listing_options_count({ count: options.length }),
+        })}
+        summary={summary ?? joinOptions(options.map(optionTitle))}
+      />
+      {options.map((option, index) => (
+        <Fragment key={index}>
+          {index > 0 && <OrDivider />}
+          <div className="flex min-w-0 flex-col gap-3 rounded-lg border border-border bg-muted/40 p-3">
+            <OptionHeading number={index + 1} option={option} />
+            <WantRows
+              wants={option.wants}
+              payment={option.payment?.side === "to" ? option.payment : null}
+            />
+          </div>
+        </Fragment>
+      ))}
+      {children}
+    </section>
+  );
+}
+
+/**
+ * An option's name and what it asks for, "Option 2 · $3.00", over its
+ * rows.
+ */
+export function OptionHeading({
+  number,
+  option,
+}: {
+  number: number;
+  option: ListingOption<ListingFeedWant>;
+}) {
+  return (
+    <span className="text-xxs font-medium tracking-widest text-muted-foreground uppercase">
+      {`${m.listing_option_label({ number })} · ${optionTitle(option)}`}
+    </span>
+  );
+}
+
+/**
+ * The rule between two options, with "or" on it: the claimer gives one.
+ */
+export function OrDivider() {
+  return (
+    <div className="flex items-center gap-3" role="separator">
+      <span className="h-px flex-1 bg-border" />
+      <span className="text-xxs font-bold tracking-widest text-amber-700 uppercase dark:text-amber-500">
+        {m.listing_option_or()}
+      </span>
+      <span className="h-px flex-1 bg-border" />
+    </div>
+  );
+}
+
+/**
+ * One option's rows: ranges and the payment the claimer sends as rows in a
+ * panel, and exact and "any of" rows below them as objekt cards, an "any
+ * of" row's under its count.
+ */
+function WantRows({
+  wants,
+  payment,
+}: {
+  wants: ListingFeedWant[];
+  payment: ListingPayment | null;
+}) {
   const ranges = wants.flatMap((want) => (want.kind === "range" ? [want] : []));
-  const paid = payment?.side === "to" ? payment : null;
   const exact = wants.flatMap((want) => (want.kind === "exact" ? [want] : []));
   const choices = wants.flatMap((want) =>
     want.kind === "choice" ? [want] : [],
   );
 
   return (
-    <section className="flex min-w-0 flex-col gap-4">
-      <SideHeading
-        tone="want"
-        title={(heading === "you_look_for"
-          ? m.listing_detail_you_look_for
-          : m.listing_detail_looking_for)({
-          // a sale asks for its price alone
-          count:
-            wants.length === 0 && paid !== null
-              ? askingPriceText(paid)
-              : wantedObjektCount(wants),
-        })}
-        summary={summary}
-      />
-      {(ranges.length > 0 || paid !== null) && (
+    <>
+      {(ranges.length > 0 || payment !== null) && (
         <ul className="flex flex-col divide-y divide-border/60 rounded-lg border border-border bg-card text-sm">
           {ranges.map((want, index) => (
             <li key={index} className="px-4 py-3">
               <RangeBadges count={want.count} ranges={want.ranges} />
             </li>
           ))}
-          {paid !== null && (
+          {payment !== null && (
             <li className="px-4 py-3">
-              <PaymentLabel payment={paid} />
+              <PaymentLabel payment={payment} />
             </li>
           )}
         </ul>
@@ -192,8 +275,7 @@ export function WantList({
           </CardGrid>
         </div>
       ))}
-      {children}
-    </section>
+    </>
   );
 }
 

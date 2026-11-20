@@ -112,3 +112,24 @@ export function formatOfferError(
     ? formatTokenRefusal(refusal.reason, token)
     : formatPartnerTokenRefusal(token);
 }
+
+/**
+ * What accepting an offer asks of each side when it carries a payment: the
+ * other side pays and sends nothing else (`paid_only`), pays beside their
+ * objekts (`paid`), or the viewer pays (`paying`).
+ */
+export type AcceptPayment = "paid_only" | "paid" | "paying";
+
+/**
+ * How accepting the offer splits its payment, from the viewer's side, the
+ * payment's sender and whether that sender also gives objekts. Null
+ * without a payment.
+ */
+export function acceptPayment(
+  side: TradeSide,
+  payment: { sender: TradeSide; sendsObjekts: boolean } | null,
+): AcceptPayment | null {
+  if (payment === null) return null;
+  if (payment.sender === side) return "paying";
+  return payment.sendsObjekts ? "paid" : "paid_only";
+}

@@ -72,12 +72,15 @@ export const Route = createFileRoute("/market/listing/$id")({
         )
         .catch(noop);
     }
-    for (const query of rangeMatchCountQueries(
-      listing.wants.flatMap((want) =>
-        want.kind === "range" ? [want.ranges] : [],
-      ),
-    )) {
-      void context.queryClient.query(query).catch(noop);
+    // one batch per option, each within the request's MAX_WANT_ROWS
+    for (const option of listing.options) {
+      for (const query of rangeMatchCountQueries(
+        option.wants.flatMap((want) =>
+          want.kind === "range" ? [want.ranges] : [],
+        ),
+      )) {
+        void context.queryClient.query(query).catch(noop);
+      }
     }
 
     return { id };
@@ -95,7 +98,8 @@ function RouteComponent() {
   return (
     <main className="flex flex-col">
       <MetadataDialogProvider>
-        <ListingDetail id={id} />
+        {/* another listing starts over, the option a viewer picked included */}
+        <ListingDetail key={id} id={id} />
       </MetadataDialogProvider>
 
       <MarketNotice />

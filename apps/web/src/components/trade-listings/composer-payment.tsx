@@ -200,11 +200,6 @@ export function ComposerPaymentStrip({
           </Field>
         )}
       </div>
-      {offers?.open === true && (
-        <p className="text-sm text-muted-foreground">
-          {m.listing_composer_payment_open_to_offers_hint()}
-        </p>
-      )}
       <div
         role="group"
         aria-label={

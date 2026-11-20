@@ -1,6 +1,7 @@
 import { useInvalidateTrade } from "@/hooks/use-invalidate-trade";
 import { m } from "@/i18n/messages";
-import { formatOfferError } from "@/lib/client/trades";
+import { type AcceptPayment, formatOfferError } from "@/lib/client/trades";
+import { env } from "@/lib/env/client";
 import { $acceptOffer, $endOffer } from "@/lib/functions/trade-offers";
 import type { TradeNamedItem } from "@/lib/universal/trades";
 import { useMutation } from "@tanstack/react-query";
@@ -10,6 +11,15 @@ import ConfirmActionDialog from "../confirm-action-dialog";
 
 // what a party can do with a pending offer from its page
 export type OfferAction = "accept" | "decline" | "withdraw";
+
+const acceptDescriptions = {
+  paid_only: m.trade_page_offer_accept_description_paid_only,
+  paid: m.trade_page_offer_accept_description_paid,
+  paying: m.trade_page_offer_accept_description_paying,
+} satisfies Record<
+  AcceptPayment,
+  (inputs: { name: string; appName: string }) => string
+>;
 
 const copies = {
   accept: {
@@ -55,6 +65,8 @@ type Props = {
   listingId?: string | null;
   /** an offer accepted away from its trade page links to its trade */
   linkTrade?: boolean;
+  /** how the offer's payment splits, which accepting's description says */
+  payment?: AcceptPayment | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
@@ -72,6 +84,7 @@ export default function OfferActionDialog({
   name,
   listingId = null,
   linkTrade = false,
+  payment = null,
   open,
   onOpenChange,
 }: Props) {
@@ -109,7 +122,11 @@ export default function OfferActionDialog({
       open={open}
       onOpenChange={onOpenChange}
       title={copy.title()}
-      description={copy.description({ name })}
+      description={
+        action === "accept" && payment !== null
+          ? acceptDescriptions[payment]({ name, appName: env.VITE_APP_NAME })
+          : copy.description({ name })
+      }
       cancelLabel={m.common_back()}
       confirmLabel={copy.confirm()}
       variant={copy.variant}

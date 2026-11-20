@@ -139,7 +139,7 @@ function PaymentRow({
     ) : null;
 
   return (
-    <li className="flex flex-wrap items-center gap-3 border-t border-border/60 px-4 py-2.5">
+    <li className="flex items-center gap-3 border-t border-border/60 px-4 py-2.5">
       <span className="grid aspect-photocard w-7.5 shrink-0 place-items-center rounded-[3px] bg-amber-500/15 text-amber-700 dark:text-amber-400">
         <IconCash className="size-4" />
       </span>
@@ -147,26 +147,23 @@ function PaymentRow({
         <span className="font-mono font-semibold tabular-nums">
           {formatAmount(payment.amount, payment.currency)}
         </span>
-        <span className="text-xs text-muted-foreground">
-          {payment.method === null
-            ? m.trade_page_payment_outside({ appName: env.VITE_APP_NAME })
-            : m.trade_page_payment_via({
-                method: paymentMethodLabel(payment.method),
-              })}
-        </span>
+        {payment.method !== null && (
+          <span className="text-xs text-muted-foreground">
+            {m.trade_page_payment_via({
+              method: paymentMethodLabel(payment.method),
+            })}
+          </span>
+        )}
         {when !== null && (
           <span className="text-xs text-muted-foreground @lg:hidden">
             {when}
           </span>
         )}
       </div>
-      <span className="w-32 shrink-0 text-right text-xs text-muted-foreground tabular-nums @max-lg:hidden">
-        {when}
-      </span>
-      <PaymentBadge status={payment.status} />
-      {receiving && live && payment.status === "waiting" && (
+      {/* Mark received takes the column an objekt row's time or "not seen yet" sits in */}
+      {receiving && live && payment.status === "waiting" ? (
         <>
-          <Button size="sm" onClick={() => setOpen(true)}>
+          <Button size="sm" className="shrink-0" onClick={() => setOpen(true)}>
             {m.trade_page_payment_mark_received()}
           </Button>
           <ConfirmPaymentDialog
@@ -179,7 +176,14 @@ function PaymentRow({
             onOpenChange={setOpen}
           />
         </>
+      ) : (
+        <span className="w-32 shrink-0 text-right text-xs text-muted-foreground tabular-nums @max-lg:hidden">
+          {when}
+        </span>
       )}
+      <PaymentBadge status={payment.status} />
+      {/* the objekt rows' transfer link column, so the badges line up */}
+      <span className="size-8 shrink-0 @max-lg:hidden" />
     </li>
   );
 }

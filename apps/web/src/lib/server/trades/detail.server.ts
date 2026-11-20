@@ -17,7 +17,6 @@ import {
   MAX_TOTAL_WANTED,
 } from "@apollo/trades/caps";
 import { needsYou, tradeState } from "@apollo/trades/lifecycle";
-import type { ListingPayment } from "@apollo/trades/payment";
 import { isEqual } from "@apollo/util";
 import {
   and,
@@ -33,18 +32,20 @@ import {
 } from "drizzle-orm";
 import { alias, QueryBuilder } from "drizzle-orm/pg-core";
 import {
+  type CandidateOption,
   type CandidateRow,
   type EndedOfferStatus,
   type ListingOfferSummary,
+  type ListingOption,
   listingStateSchema,
   type ListingTrade,
   type ListingViewer,
   offerRefusal,
   storedObjektItemSchema,
-  type StoredWant,
+  tradeListingOption,
+  tradeOption,
   tradePayment,
   type TradeRatio,
-  tradeWants,
 } from "../../universal/trade-listings";
 import { db, type DbOrTx } from "../db";
 import { feedbackRepColumns } from "../feedback.server";
@@ -263,6 +264,7 @@ function readListingTrades(listingId: string) {
       proposedBy: true,
       toUserId: true,
       toAddress: true,
+      listingOption: true,
       acceptedAt: true,
       deadlineAt: true,
       expiresAt: true,
@@ -399,8 +401,7 @@ async function readPosterSide(listing: {
   id: string;
   fromAddress: string;
   unitSize: number;
-  wants: StoredWant[];
-  payment: ListingPayment | null;
+  options: ListingOption[];
   pool: readonly number[];
   posterRefused: boolean;
 }): Promise<{ offers: ListingOfferSummary[]; trades: ListingTrade[] }> {
@@ -418,6 +419,7 @@ async function readPosterSide(listing: {
     return [
       {
         row,
+        option: tradeListingOption(row),
         expiresAt: row.expiresAt,
         toAddress: row.toAddress,
         sides: tradeSides(row),
@@ -438,25 +440,26 @@ async function readPosterSide(listing: {
     ...new Set(pending.flatMap(({ row }) => row.toUserId ?? [])),
   ]);
   const pool = new Set(listing.pool);
-  const wants = tradeWants(listing.wants);
+  const options = listing.options.map(tradeOption);
   const now = new Date();
 
   return {
     offers: pending.map(
-      ({ row, expiresAt, toAddress, sides }): ListingOfferSummary => {
+      ({ row, option, expiresAt, toAddress, sides }): ListingOfferSummary => {
         const picks = sides.from.map((item) => item.tokenId);
         const given = sides.to.map((item) => item.tokenId);
         const payment = tradePayment(row.items);
         return {
           tradeId: row.id,
           claimer: claimer(row),
+          option,
           picks: sides.from.map((item) => feedItem(item, indexed)),
           given: sides.to.map((item) => feedItem(item, indexed)),
           payment,
           expiresAt,
           refusal: offerRefusal(
-            { expiresAt, picks, given, payment },
-            { ...listing, pool, wants },
+            { expiresAt, option, picks, given, payment },
+            { ...listing, pool, options },
             {
               address: toAddress,
               linked:
@@ -550,28 +553,28 @@ async function readPosterSide(listing: {
 }
 
 /**
- * The candidate's side of an open listing: the most units they can take,
- * bounded by the free pool, the claim caps and what they hold
- * (allocateUnits), and per want row how many usable copies of the
- * collections it fits they own before the cap and how many it is short at
- * that size, one unit's when they can't fill one. The allocation runs here,
- * since one copy can fit two rows, but only its counts leave, so the answer
- * stays as small as the listing whatever the viewer holds. The rows are the
- * ones objekts fill (tradeWants()), none for a sale, whose candidate can
- * take as many units as the free pool and the caps allow.
+ * The candidate's side of an open listing, for each of its options: the
+ * most units they can take giving it, bounded by the free pool, the claim
+ * caps and what they hold (allocateUnits), and per want row how many
+ * usable copies of the collections it fits they own before the cap and how
+ * many it is short at that size, one unit's when they can't fill one. One
+ * holdings read covers every option's rows. The allocation runs here,
+ * since one copy can fit two rows, but only its counts leave, so the
+ * answer stays as small as the listing whatever the viewer holds. An
+ * option of a payment alone has no rows, and its candidate can take as
+ * many units as the free pool and the caps allow.
  */
 async function readCandidateSide(
   address: string,
-  wants: StoredWant[],
+  options: readonly ListingOption[],
   pool: { free: number; unitSize: number },
-): Promise<{ units: number; rows: CandidateRow[] }> {
-  const claimable = tradeWants(wants);
+): Promise<CandidateOption[]> {
+  const claimable = options.map((option) => tradeOption(option).wants);
   // no claim takes more than MAX_TOTAL_WANTED copies, of one collection or all
-  const inventory = await readCandidates(address, claimable, MAX_TOTAL_WANTED);
-  const { units, allocation } = allocateUnits(
-    claimable,
-    inventory.map((copy) => ({ tokenId: copy.tokenId, ...copy.attributes })),
-    pool,
+  const inventory = await readCandidates(
+    address,
+    claimable.flat(),
+    MAX_TOTAL_WANTED,
   );
   // one entry per collection: its values and every usable copy, before the cap
   const owned = new Map(
@@ -581,16 +584,23 @@ async function readCandidateSide(
     ]),
   );
 
-  return {
-    units,
-    rows: claimable.map((want, index): CandidateRow => ({
-      owned: [...owned.values()]
-        .filter((collection) => fitsWant(want, collection))
-        .reduce((total, collection) => total + collection.owned, 0),
-      // allocate() answers every want, in order
-      missing: allocation[index]?.missing ?? want.count,
-    })),
-  };
+  return claimable.map((wants) => {
+    const { units, allocation } = allocateUnits(
+      wants,
+      inventory.map((copy) => ({ tokenId: copy.tokenId, ...copy.attributes })),
+      pool,
+    );
+    return {
+      units,
+      rows: wants.map((want, index): CandidateRow => ({
+        owned: [...owned.values()]
+          .filter((collection) => fitsWant(want, collection))
+          .reduce((total, collection) => total + collection.owned, 0),
+        // allocate() answers every want, in order
+        missing: allocation[index]?.missing ?? want.count,
+      })),
+    };
+  });
 }
 
 /**
@@ -609,8 +619,7 @@ export async function readListingViewer(
     fromUserId: string | null;
     fromAddress: string;
     unitSize: number;
-    wants: StoredWant[];
-    payment: ListingPayment | null;
+    options: ListingOption[];
     /** the pool's objekts that haven't left it */
     pool: readonly number[];
     /** how many of them are free to claim */
@@ -667,10 +676,10 @@ export async function readListingViewer(
   // the listing's `stop` says whether the pool or the poster's account stops a claim
   return {
     role: "candidate",
-    ...(await readCandidateSide(address, listing.wants, {
+    options: await readCandidateSide(address, listing.options, {
       free: listing.free,
       unitSize: listing.unitSize,
-    })),
+    }),
     claims: { active: standing.active, cap: claimCap(standing) },
     ownAddress: isEqual(address, listing.fromAddress),
     endedOffer: trade === undefined ? null : endedOffer(trade.status),

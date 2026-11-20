@@ -2660,7 +2660,6 @@
   "market_listings_type": "種類",
   "market_listings_type_all": "すべて",
   "listing_detail_you_pay": "あなたが支払う",
-  "listing_detail_you_pay_summary": "Apollo の外で支払い、{poster} が受け取りを記録します",
   "listing_detail_payment_each": "1回の取引ごと",
   "listing_detail_payment_units": "{count} × {amount}",
   "listing_detail_payment_methods": "対応: {methods}",
@@ -2669,15 +2668,13 @@
   "trade_page_event_payment_confirmed_staff": "{#b}{recipient}{/b}が{#b}{sender}{/b}の{amount}の支払いを受け取り済みにしました（{method}）。",
   "trade_page_payment_confirmed_toast": "支払いを受け取り済みにしました",
   "trade_page_payment_confirm_title": "{amount}を受け取りましたか？",
-  "trade_page_payment_confirm_description": "{name}からのお金があなたの口座に届いてから受け取り済みにしてください。取り消すことはできず、他に未送付のものがなければ取引は完了します。",
+  "trade_page_payment_confirm_description": "{name}からのお金が口座に届いてから受け取り済みにしてください。取り消せません。",
   "trade_page_payment_confirm_method": "どの方法で届きましたか？",
   "trade_page_payment_mark_received": "受け取り済みにする",
-  "trade_page_payment_outside": "{appName} の外で支払い",
   "trade_page_payment_via": "{method}で",
   "trade_page_payment_received": "受け取り済み",
   "trade_page_payment_not_received": "未受け取り",
-  "trade_page_payment_pay": "{appName} の外で{name}に{amount}を支払ってください。届いたら相手が受け取り済みにします。",
-  "trade_page_payment_confirm_hint": "{name}が{appName} の外で{amount}を支払います。口座に届いたら受け取り済みにしてください。",
+  "trade_page_payment_pay": "{appName} の外で{name}に{amount}を支払ってください。",
   "listing_composer_payment_remove": "支払いを削除",
   "listing_composer_payment_and": "＋",
   "listing_composer_payment_on_top": "上乗せ、1回の取引ごと",
@@ -2686,21 +2683,16 @@
   "listing_composer_payment_amount": "金額",
   "listing_composer_payment_amount_yours": "あなたが支払う金額",
   "listing_composer_payment_open_to_offers": "オファー歓迎",
-  "listing_composer_payment_open_to_offers_hint": "相手はこの価格ですぐに受け入れるか、別の金額をオファーできます。金額を空欄にするとオファーのみ受け付けます。",
   "listing_composer_payment_no_price": "価格なし",
   "listing_offer_amount": "あなたのオファー",
-  "listing_offer_amount_hint": "希望価格は{price}です。別の金額をオファーすると、出品者が承諾または辞退します。",
-  "listing_offer_amount_hint_range": "希望価格は{price}です。空欄のままにすると希望価格でオファーし、別の金額もオファーできます。",
-  "listing_offer_amount_hint_open": "希望価格はありません。1回の取引ごとに支払う金額をオファーしてください。",
-  "listing_offer_amount_at_asking": "希望価格と同じなので、すぐに受け入れます。",
   "listing_payment_offer": "オファー",
   "listing_payment_offer_only": "オファーする",
   "listing_payment_open_to_offers": "{price} · オファー歓迎",
   "listing_payment_open_to_offers_tag": "オファー歓迎",
   "listing_payment_your_offer": "あなたのオファー額",
   "listing_detail_make_offer": "オファーする",
-  "listing_detail_either_hold": "受け入れると48時間確保されます。オファーは{poster}が承諾するまで何も確保しません",
-  "listing_detail_either_footer": "価格を受け入れてすぐにトレードを始めるか、{poster}が承諾できるオファーを送ってください。",
+  "listing_detail_either_hold": "承諾すると48時間確保されます",
+  "listing_detail_either_footer": "価格を受け入れるか、{poster}にオファーしてください。",
   "listing_composer_reason_payment_amount": "支払い金額を入力してください（小数点以下2桁まで）。",
   "listing_composer_reason_payment_methods": "支払い方法を1つ以上選んでください。",
   "my_trades_payment": "+ {amount}の支払い",
@@ -2708,20 +2700,20 @@
   "my_trades_next_confirm": "支払いを受け取り済みに",
   "listing_detail_units_pay": "支払い {amount}",
   "trade_error_trade_cancel_payment_due": "この取引ではあなたが支払いを受け取る側のため、キャンセルできません。問題がある場合は異議を申し立ててください。",
-  "listing_detail_claimer_pay": "{appName} の外で{poster}に{amount}を支払ってください。相手が受け取り済みにし、すべてが届くと{appName}が取引を完了にします。",
+  "listing_detail_claimer_pay": "{appName} の外で{poster}に{amount}を支払ってください。受け取り済みになると{appName}が完了にします。",
   "listing_detail_claimer_body_pay": [
     {
       "declarations": ["input count", "local countPlural = count: plural"],
       "selectors": ["countPlural"],
       "match": {
-        "countPlural=other": "COSMOアプリで{poster}に{count}個のオブジェクトを送り、{appName} の外で{amount}を支払ってください。すべてが届くと{appName}が完了にします。"
+        "countPlural=other": "COSMOアプリで{poster}に{count}個のオブジェクトを送り、{amount}を支払ってください。すべて届くと{appName}が完了にします。"
       }
     }
   ],
   "listing_detail_accept_footer_pay": "{poster}がCOSMOアプリで送り、あなたは{appName} の外で支払います。順不同です。",
   "listing_detail_accept_footer_with_payment": "お互いにCOSMOアプリで送り、支払いは{appName} の外で行います。順不同です。",
   "listing_confirm_deadline_pay": "お互いに{#hours}48時間{/hours}、{#time}{date}{/time}までです。{#user}{poster}{/user}がCOSMOアプリで送り、あなたは{appName} の外で支払います。期限までに何も行われなければ、トレードは終了します。",
-  "listing_detail_accepted_pay": "トレードを承諾しました。{appName} の外で{poster}に支払ってください。相手が受け取り済みにします。",
+  "listing_detail_accepted_pay": "トレードを承諾しました。{appName} の外で{poster}に支払ってください。",
   "trade_page_step_send_payment": "送信と支払い · {count}件中{seen}件完了",
   "trade_page_disputed_deadline_payment": "受け取り済みになっていない支払いがあるまま期限が過ぎたため、{appName}スタッフがこの取引を確認します。",
   "trade_page_disputed_deadline_both": "未送付のオブジェクトと未完了の支払いがあるまま期限が過ぎたため、{appName}スタッフがこの取引を確認します。",
@@ -2735,5 +2727,42 @@
   "my_trades_payment_only_received": "{amount}の支払い・受け取り済み",
   "listing_composer_ratio_each_price": "1回のトレードは、出品するオブジェクト{#b}{give}{/b}個と{#b}{get}{/b}の交換です。",
   "trade_error_trade_cancel_started_payment": "この取引ではすでに送信または受け取り済みになったものがあるため、キャンセルできません。代わりに異議を申し立ててください。",
-  "report_reason_deadline_passed_payment": "期限切れ（未完了の支払いまたは未送付のオブジェクトあり）"
+  "report_reason_deadline_passed_payment": "期限切れ（未完了の支払いまたは未送付のオブジェクトあり）",
+  "listing_option_or": "または",
+  "listing_option_label": "オプション{number}",
+  "listing_options_count": "オプション{count}件",
+  "listing_composer_add_option": "オプションを追加",
+  "listing_composer_remove_option": "オプションを削除",
+  "listing_composer_block_option_empty": "オプション{number}が空です。",
+  "listing_composer_block_option_repeat": "2つのオプションが同じものを求めています。",
+  "listing_detail_pick_option": "渡すものを選ぶ",
+  "listing_detail_option_either": "承諾またはオファー",
+  "trade_page_offer_accept_description_paid_only": "承諾すると、48時間以内にCOSMOアプリで送ります。{name}は{appName} の外で支払います。",
+  "trade_page_offer_accept_description_paid": "承諾すると、あなたと{name}は48時間以内にCOSMOアプリで送り、{name}は支払いもします。",
+  "trade_page_offer_accept_description_paying": "承諾すると、あなたと{name}は48時間以内にCOSMOアプリで送り、あなたは支払いもします。",
+  "trade_page_step_offer_then_pay": "その後{hours}時間で送信と支払い",
+  "listing_offer_step_answer_amount": "{#user}{poster}{/user}があなたのオファーを確認し、承諾または辞退します。その間は何も確保されません。",
+  "listing_offer_step_window_pay": "承諾されると、{hours}時間以内に{poster}がCOSMOアプリで送り、あなたが支払います。",
+  "listing_offer_step_window_with_payment": "承諾されると、お互いに{hours}時間以内にCOSMOアプリで送り、支払います。",
+  "listing_offer_step_window_paid": "承諾されると、お互いに{hours}時間以内に送り、{poster}は支払いもします。",
+  "listing_detail_offer_footer_pay": "{poster}が承諾すると、48時間以内に支払い、相手が送ります。",
+  "listing_detail_offer_footer_with_payment": "{poster}が承諾すると、48時間以内に送って支払うトレードが始まります。",
+  "listing_composer_ratio_each_offer": "1回のトレードは出品するオブジェクト{#b}{give}{/b}個で、相手が支払う金額を提示します。",
+  "listing_composer_ratio_times_offer": [
+    {
+      "declarations": [
+        "input count",
+        "input offered",
+        "local countPlural = count: plural"
+      ],
+      "selectors": ["countPlural"],
+      "match": {
+        "countPlural=other": "{offered}個を出品しているので、最大{count}回トレードでき、相手はあなたのどれを受け取るか選べます。{offered}にすると、すべてを一度にトレードします。"
+      }
+    }
+  ],
+  "listing_composer_footer_offers": "{offered} · オファー受付中",
+  "listing_offer_amount_invalid": "0より大きく、小数点以下2桁まで、{max}以下の金額を入力してください。",
+  "listing_offer_amount_total": "{count} × {amount} = {total}",
+  "listing_offer_amount_capped": "受け取り上限に達しているため、別の金額を提示してください。"
 }

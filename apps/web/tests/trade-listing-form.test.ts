@@ -7,6 +7,7 @@ import {
   editListingInputSchema,
   listingInputSchema,
 } from "@apollo/trades/listing";
+import type { ListingPayment, PaymentTerms } from "@apollo/trades/payment";
 import { MAX_RANGE_VALUES } from "@apollo/trades/range";
 import { describe, expect, test } from "bun:test";
 import {
@@ -64,49 +65,8 @@ const listing = {
       availability: { kind: "traded", at: new Date(0) },
     },
   ],
-  wants: [
+  options: [
     {
-      kind: "range",
-      count: 5,
-      ranges: [
-        {
-          artist: ["triples"],
-          member: [],
-          collectionNo: ["101Z"],
-          season: ["Atom01", "Binary01"],
-          class: ["First"],
-          on_offline: [],
-        },
-      ],
-    },
-    {
-      kind: "exact",
-      count: 1,
-      objekt: attributes("atom02-kimlip-201z", "KimLip"),
-      collection: null,
-    },
-    {
-      kind: "choice",
-      count: 2,
-      options: [
-        { ...attributes("atom02-haseul-201z", "HaSeul"), collection: null },
-        { ...attributes("atom02-jinsoul-201z", "JinSoul"), collection: null },
-      ],
-    },
-  ],
-  payment: null,
-} satisfies Pick<
-  TradeListing,
-  "id" | "items" | "wants" | "payment" | "note" | "unitSize"
->;
-
-describe("composer prefill (CMP-04)", () => {
-  const values = listingToFormValues(listing);
-
-  test("the stored terms become the form's values", () => {
-    expect(values).toEqual({
-      offered: [{ tokenId: 4021 }],
-      unitSize: 1,
       wants: [
         {
           kind: "range",
@@ -122,30 +82,41 @@ describe("composer prefill (CMP-04)", () => {
             },
           ],
         },
-        { kind: "exact", slug: "atom02-kimlip-201z", count: 1 },
+        {
+          kind: "exact",
+          count: 1,
+          objekt: attributes("atom02-kimlip-201z", "KimLip"),
+          collection: null,
+        },
         {
           kind: "choice",
-          slugs: ["atom02-haseul-201z", "atom02-jinsoul-201z"],
           count: 2,
+          options: [
+            { ...attributes("atom02-haseul-201z", "HaSeul"), collection: null },
+            {
+              ...attributes("atom02-jinsoul-201z", "JinSoul"),
+              collection: null,
+            },
+          ],
         },
       ],
-      note: "serials under 1000",
-    });
-  });
+      payment: null,
+    },
+  ],
+} satisfies Pick<
+  TradeListing,
+  "id" | "items" | "options" | "note" | "unitSize"
+>;
 
-  test("submitting unchanged sends exactly the stored terms", () => {
-    const submission = formValuesToInput(
-      listingInputSchema.parse(values),
-      { kind: "edit", listing: { ...listing, ...fillers } },
-      rosters,
-    );
-    expect(submission).toEqual({
-      kind: "edit",
-      data: {
-        listingId: listing.id,
-        offered: [{ tokenId: 4021 }],
-        unitSize: 1,
-        wants: [
+describe("composer prefill (CMP-04)", () => {
+  const values = listingToFormValues(listing);
+
+  test("the stored terms become the form's values", () => {
+    expect(values).toEqual({
+      offered: [{ tokenId: 4021 }],
+      unitSize: 1,
+      options: [
+        [
           {
             kind: "range",
             count: 5,
@@ -166,6 +137,47 @@ describe("composer prefill (CMP-04)", () => {
             slugs: ["atom02-haseul-201z", "atom02-jinsoul-201z"],
             count: 2,
           },
+        ],
+      ],
+      note: "serials under 1000",
+    });
+  });
+
+  test("submitting unchanged sends exactly the stored terms", () => {
+    const submission = formValuesToInput(
+      listingInputSchema.parse(values),
+      { kind: "edit", listing: { ...listing, ...fillers } },
+      rosters,
+    );
+    expect(submission).toEqual({
+      kind: "edit",
+      data: {
+        listingId: listing.id,
+        offered: [{ tokenId: 4021 }],
+        unitSize: 1,
+        options: [
+          [
+            {
+              kind: "range",
+              count: 5,
+              ranges: [
+                {
+                  artist: ["triples"],
+                  member: [],
+                  collectionNo: ["101Z"],
+                  season: ["Atom01", "Binary01"],
+                  class: ["First"],
+                  on_offline: [],
+                },
+              ],
+            },
+            { kind: "exact", slug: "atom02-kimlip-201z", count: 1 },
+            {
+              kind: "choice",
+              slugs: ["atom02-haseul-201z", "atom02-jinsoul-201z"],
+              count: 2,
+            },
+          ],
         ],
         note: "serials under 1000",
       },
@@ -244,8 +256,8 @@ describe("the ratio's unit size", () => {
 });
 
 describe('"any of" rows', () => {
-  const blockWants = (wants: ListingFormValues["wants"]) =>
-    block({ offered: offered(1), wants });
+  const blockWants = (wants: ListingFormValues["options"][number]) =>
+    block({ offered: offered(1), options: [wants] });
   const choice = (slugs: string[]) => ({
     kind: "choice" as const,
     slugs,
@@ -266,12 +278,12 @@ describe("range rows on submit", () => {
     formValuesToInput(
       listingInputSchema.parse({
         offered: [{ tokenId: 9 }],
-        wants: [{ kind: "range", count: 1, ranges: [{ member }] }],
+        options: [[{ kind: "range", count: 1, ranges: [{ member }] }]],
         note: "",
       }),
       { kind: "create" },
       rosters,
-    ).data.wants[0];
+    ).data.options[0]?.[0];
 
   test("a whole group posts as its artist", () => {
     expect(submit(artms)).toMatchObject({
@@ -288,7 +300,7 @@ describe("range rows on submit", () => {
       composerBlock({
         offered: 1,
         refused: 0,
-        wants: [{ kind: "range", count: 1, ranges: [{ member }] }],
+        options: [[{ kind: "range", count: 1, ranges: [{ member }] }]],
         offeredPayment: undefined,
         payment: undefined,
         unitSize: undefined,
@@ -360,7 +372,7 @@ describe("range rows with several artists", () => {
     const blockRange = (range: RangeFormFilter) =>
       block({
         offered: offered(1),
-        wants: [{ kind: "range", count: 1, ranges: [range] }],
+        options: [[{ kind: "range", count: 1, ranges: [range] }]],
       });
     expect(
       blockRange({ artist: ["triples", "artms"], member: ["JinSoul"] }),
@@ -381,17 +393,17 @@ const offered = (count: number) =>
 const block = ({
   offered,
   unitSize,
-  wants,
+  options,
   offeredPayment,
   payment,
 }: Pick<
   ListingFormValues,
-  "offered" | "unitSize" | "wants" | "offeredPayment" | "payment"
+  "offered" | "unitSize" | "options" | "offeredPayment" | "payment"
 >) =>
   composerBlock({
     offered: offered.length,
     refused: 0,
-    wants,
+    options,
     offeredPayment,
     payment,
     unitSize,
@@ -411,28 +423,34 @@ const fillers = {
   stop: null,
 } satisfies Omit<
   TradeListing,
-  "id" | "items" | "wants" | "payment" | "note" | "unitSize"
+  "id" | "items" | "options" | "note" | "unitSize"
 >;
 
 describe("payments in the composer", () => {
+  const price = {
+    side: "to",
+    mode: "price_only",
+    amount: 300,
+    currency: "USD",
+    methods: ["paypal_ff", "wise"],
+  } satisfies ListingPayment;
+  const terms = {
+    side: "to",
+    mode: "price_only",
+    currency: "USD",
+    methods: ["paypal_ff", "wise"],
+  } satisfies PaymentTerms;
   const sale = {
     ...listing,
-    wants: [],
-    payment: {
-      side: "to",
-      mode: "price_only",
-      amount: 300,
-      currency: "USD",
-      methods: ["paypal_ff", "wise"],
-    },
+    options: [{ wants: [], payment: price }],
   } satisfies Pick<
     TradeListing,
-    "id" | "items" | "wants" | "payment" | "note" | "unitSize"
+    "id" | "items" | "options" | "note" | "unitSize"
   >;
 
   test("a sale prefills its payment as the last row and sends it back unchanged", () => {
     const values = listingToFormValues(sale);
-    expect(values.wants).toEqual([{ kind: "payment", amount: "3.00" }]);
+    expect(values.options).toEqual([[{ kind: "payment", amount: "3.00" }]]);
     expect(values.payment).toEqual({
       currency: "USD",
       methods: ["paypal_ff", "wise"],
@@ -444,60 +462,146 @@ describe("payments in the composer", () => {
       rosters,
     );
     expect(submission.data).toMatchObject({
-      wants: [{ kind: "payment", amount: "3.00" }],
+      options: [[{ kind: "payment", amount: "3.00" }]],
       payment: { currency: "USD", methods: ["paypal_ff", "wise"] },
     });
-    expect(editListingInputSchema.parse(submission.data).payment).toEqual(
-      sale.payment,
-    );
+    const parsed = editListingInputSchema.parse(submission.data);
+    expect(parsed.payment).toEqual(terms);
+    expect(parsed.options).toEqual(sale.options);
   });
 
   test("a sale that only takes offers keeps no asking price through an edit", () => {
     const offerOnly = {
       ...sale,
-      payment: {
-        ...sale.payment,
-        mode: "offer_only",
-        amount: null,
-      },
+      options: [
+        { wants: [], payment: { ...price, mode: "offer_only", amount: null } },
+      ],
     } satisfies Pick<
       TradeListing,
-      "id" | "items" | "wants" | "payment" | "note" | "unitSize"
+      "id" | "items" | "options" | "note" | "unitSize"
     >;
     const values = listingToFormValues(offerOnly);
-    expect(values.wants).toEqual([{ kind: "payment" }]);
+    expect(values.options).toEqual([[{ kind: "payment" }]]);
     const submission = formValuesToInput(
       listingInputSchema.parse(values),
       { kind: "edit", listing: { ...offerOnly, ...fillers } },
       rosters,
     );
-    expect(editListingInputSchema.parse(submission.data).payment).toEqual(
-      offerOnly.payment,
+    expect(editListingInputSchema.parse(submission.data).options).toEqual(
+      offerOnly.options,
     );
   });
 
   test.each([
-    ["a fixed price keeps its amount", "3", false, "3", "price_only"],
-    ["a fixed price keeps an empty amount", "", false, "", "price_only"],
-    ["open to offers with a price", "3", true, "3", "price_or_offer"],
-    ["open to offers with no price", " ", true, undefined, "offer_only"],
+    ["a fixed price keeps its amount", ["3"], false, ["3"], "price_only"],
+    ["a fixed price keeps an empty amount", [""], false, [""], "price_only"],
+    ["open to offers with a price", ["3"], true, ["3"], "price_or_offer"],
+    ["open to offers with no price", [" "], true, [undefined], "offer_only"],
+    [
+      "open to offers with one option's price typed",
+      ["3", ""],
+      true,
+      ["3", ""],
+      "price_or_offer",
+    ],
+    [
+      "open to offers with no option priced",
+      ["", " "],
+      true,
+      [undefined, undefined],
+      "offer_only",
+    ],
   ] satisfies [
     string,
-    string,
+    string[],
     boolean,
-    string | undefined,
+    (string | undefined)[],
     ListingOfferMode,
-  ][])("%s", (_, typed, open, amount, mode) => {
-    expect(claimerPaymentTerms(typed, open)).toEqual({ amount, mode });
+  ][])("%s", (_, typed, open, amounts, mode) => {
+    expect(claimerPaymentTerms(typed, open)).toEqual({ amounts, mode });
   });
 
   test("the poster's payment on top prefills as offeredPayment", () => {
+    const onTop = { ...price, side: "from" } satisfies ListingPayment;
     const values = listingToFormValues({
       ...listing,
-      payment: { ...sale.payment, side: "from" },
+      options: [
+        ...listing.options.map((option) => ({ ...option, payment: onTop })),
+        ...listing.options.map((option) => ({
+          wants: option.wants.slice(1),
+          payment: onTop,
+        })),
+      ],
     });
     expect(values.offeredPayment).toBe("3.00");
-    expect(values.wants.some((want) => want.kind === "payment")).toBe(false);
+    expect(values.options.flat().some((want) => want.kind === "payment")).toBe(
+      false,
+    );
+  });
+
+  test("options prefill in order and send back unchanged", () => {
+    const special = {
+      kind: "range" as const,
+      count: 1,
+      ranges: [
+        {
+          artist: [],
+          member: [],
+          collectionNo: [],
+          season: [],
+          class: ["Special"],
+          on_offline: [],
+        },
+      ],
+    };
+    const either = {
+      ...listing,
+      options: [
+        { wants: [special], payment: null },
+        { wants: [], payment: price },
+      ],
+    } satisfies Pick<
+      TradeListing,
+      "id" | "items" | "options" | "note" | "unitSize"
+    >;
+    const values = listingToFormValues(either);
+    expect(values.options).toEqual([
+      [special],
+      [{ kind: "payment", amount: "3.00" }],
+    ]);
+    const submission = formValuesToInput(
+      listingInputSchema.parse(values),
+      { kind: "edit", listing: { ...either, ...fillers } },
+      rosters,
+    );
+    expect(editListingInputSchema.parse(submission.data).options).toEqual(
+      either.options,
+    );
+  });
+
+  test("an empty option or two alike hold Post back", () => {
+    const payment = { currency: "USD", methods: ["wise"] } as const;
+    const two = (options: ListingFormValues["options"]) =>
+      block({
+        offered: offered(1),
+        unitSize: undefined,
+        options,
+        offeredPayment: undefined,
+        payment: { ...payment, methods: [...payment.methods] },
+      });
+    const exact = { kind: "exact" as const, slug: "a", count: 1 };
+    expect(two([[exact], []])).toBe("option_empty");
+    expect(two([[]])).toBe("wants");
+    expect(
+      two([
+        [exact, { kind: "payment", amount: "3" }],
+        [{ kind: "payment", amount: "3.00" }, exact],
+      ]),
+    ).toBe("option_repeated");
+    expect(two([[exact], [{ kind: "payment", amount: "3" }]])).toBeNull();
+    expect(two([[exact], [{ kind: "payment", amount: "3.001" }]])).toBe(
+      "payment_amount",
+    );
   });
 
   test.each([
@@ -514,7 +618,7 @@ describe("payments in the composer", () => {
         block({
           offered: offered(1),
           unitSize: undefined,
-          wants: [{ kind: "payment", amount }],
+          options: [[{ kind: "payment", amount }]],
           offeredPayment: undefined,
           payment: { currency: "USD", methods },
         }),
