@@ -1,7 +1,11 @@
 import { useHasPermission } from "@/hooks/use-has-permission";
 import { m } from "@/i18n/messages";
 import { reportReasonLabel } from "@/lib/client/reports";
-import { partyName } from "@/lib/client/trade-listings";
+import {
+  formatAmount,
+  owedAtDeadline,
+  partyName,
+} from "@/lib/client/trade-listings";
 import {
   itemName,
   offerRoles,
@@ -165,6 +169,7 @@ function PartyView({
             counterparty={counterparty}
             owing={owing}
             waiting={waiting}
+            paymentDue={!cancel.ok && cancel.reason === "payment_due"}
           >
             {bar && (
               <div className="flex flex-wrap gap-2 max-md:hidden">
@@ -222,7 +227,7 @@ function PartyView({
         tradeId={trade.id}
         listingId={trade.listingId}
         deadline={trade.deadlineAt}
-        hasPayment={trade.items.some((item) => item.kind === "payment")}
+        hasPayment={trade.payment !== null}
         open={dialog === "dispute"}
         onOpenChange={(open) => setDialog(open ? "dispute" : null)}
       />
@@ -545,7 +550,8 @@ function TradeLayout({
 }
 
 /**
- * The strip under the transfers: what the viewer still has to send, beside
+ * The strip under the transfers: what the viewer still has to send or
+ * confirm, why they can't cancel while they're owed a payment, beside
  * their actions from tablet width.
  */
 function ActionStrip({
@@ -554,6 +560,7 @@ function ActionStrip({
   counterparty,
   owing,
   waiting,
+  paymentDue,
   children,
 }: {
   trade: Trade;
@@ -562,6 +569,8 @@ function ActionStrip({
   owing: boolean;
   /** how many of the viewer's objekts are still to send */
   waiting: number;
+  /** the viewer is owed an unconfirmed payment, which stops them cancelling */
+  paymentDue: boolean;
   /** the actions, or nothing when none apply */
   children: ReactNode;
 }) {
@@ -569,7 +578,15 @@ function ActionStrip({
   const arrived = trade.items.some(
     (item) => item.sender === side && item.status === "arrived",
   );
-  const lines = owing && (waiting > 0 || arrived);
+  // a payment still to arrive: the viewer pays it, or marks it received
+  const payment =
+    trade.payment?.status === "waiting" &&
+    trade.stage === "trade" &&
+    !trade.deadlinePassed
+      ? trade.payment
+      : null;
+  const lines =
+    (owing && (waiting > 0 || arrived)) || payment !== null || paymentDue;
   if (!lines && !children) return null;
 
   return (
@@ -595,6 +612,18 @@ function ActionStrip({
           ) : (
             arrived && <p>{m.trade_page_send_arrived()}</p>
           ))}
+        {payment !== null && (
+          <p>
+            {(payment.sender === side
+              ? m.trade_page_payment_pay
+              : m.trade_page_payment_confirm_hint)({
+              amount: formatAmount(payment.amount, payment.currency),
+              name,
+              appName: env.VITE_APP_NAME,
+            })}
+          </p>
+        )}
+        {paymentDue && <p>{m.trade_error_trade_cancel_payment_due()}</p>}
       </div>
       {children}
     </div>
@@ -722,7 +751,11 @@ function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
   const paused =
     trade.dispute?.event.by === "staff" ||
     trade.dispute?.event.by === "deadline";
-  const seen = trade.items.filter((item) => item.status === "sent").length;
+  // the payment counts as a transfer, seen once its recipient confirms it
+  const seen =
+    trade.items.filter((item) => item.status === "sent").length +
+    (trade.payment?.status === "confirmed" ? 1 : 0);
+  const transfers = trade.items.length + (trade.payment === null ? 0 : 1);
   const steps: {
     tone: keyof typeof stepTones;
     eyebrow: string;
@@ -756,7 +789,7 @@ function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
           : status === "disputed"
             ? m.trade_page_step_dispute({ step: 2 })
             : m.trade_page_step({ step: 2 }),
-      title: m.trade_page_step_send({ seen, count: trade.items.length }),
+      title: sendStepTitle(trade, seen, transfers),
     },
     {
       tone: completed ? "done" : "todo",
@@ -803,24 +836,37 @@ function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
             </span>
           )}
           {index === 1 &&
-            (trade.items.length > 12 ? (
+            (transfers > 12 ? (
               <span
                 aria-hidden
                 className="mt-0.5 h-1.5 overflow-hidden rounded-full bg-muted"
               >
                 <span
                   className="block h-full rounded-full bg-teal-500"
-                  style={{ width: `${(seen / trade.items.length) * 100}%` }}
+                  style={{ width: `${(seen / transfers) * 100}%` }}
                 />
               </span>
             ) : (
               <span aria-hidden className="flex gap-0.75 pt-0.5">
-                {trade.items.map((item) => (
+                {[
+                  ...trade.items.map((item) => ({
+                    id: item.id,
+                    done: item.status === "sent",
+                  })),
+                  ...(trade.payment === null
+                    ? []
+                    : [
+                        {
+                          id: trade.payment.id,
+                          done: trade.payment.status === "confirmed",
+                        },
+                      ]),
+                ].map((transfer) => (
                   <span
-                    key={item.id}
+                    key={transfer.id}
                     className={cn(
                       "h-1.5 min-w-0 flex-1 rounded-full",
-                      item.status === "sent" ? "bg-teal-500" : "bg-muted",
+                      transfer.done ? "bg-teal-500" : "bg-muted",
                     )}
                   />
                 ))}
@@ -830,6 +876,13 @@ function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
       ))}
     </ol>
   );
+}
+
+// the send step's title: objekts seen, or with a payment, everything done
+function sendStepTitle(trade: Trade, seen: number, count: number) {
+  return trade.payment === null
+    ? m.trade_page_step_send({ seen, count })
+    : m.trade_page_step_send_payment({ seen, count });
 }
 
 /**
@@ -1033,7 +1086,11 @@ function DisputedAlert({
         {event.by === "staff"
           ? m.trade_page_disputed_staff({ appName })
           : event.by === "deadline"
-            ? m.trade_page_disputed_deadline({ appName })
+            ? {
+                objekts: m.trade_page_disputed_deadline,
+                payment: m.trade_page_disputed_deadline_payment,
+                both: m.trade_page_disputed_deadline_both,
+              }[owedAtDeadline(trade)]({ appName })
             : event.by === side
               ? m.trade_page_disputed_you({
                   reason: reportReasonLabel(event.reason),

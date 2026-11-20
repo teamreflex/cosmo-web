@@ -1,5 +1,6 @@
 import type { Picks } from "@/hooks/use-listing-picks";
 import { m } from "@/i18n/messages";
+import { formatAmount, ratioText } from "@/lib/client/trade-listings";
 import type { TradeRatio } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
 import ComposerStepper from "./composer-stepper";
@@ -15,12 +16,12 @@ type Props = {
  * each side then counts. Phones leave the counts to the bottom bar.
  */
 export default function ListingUnits({ ratio, picks }: Props) {
-  const ratioText = m.market_listings_ratio(ratio);
+  const text = ratioText(ratio);
   const caption =
     picks.short > 0
-      ? ratioText
+      ? text
       : m.listing_detail_units_caption({
-          ratio: ratioText,
+          ratio: text,
           count: picks.maxUnits,
         });
 
@@ -55,8 +56,8 @@ export default function ListingUnits({ ratio, picks }: Props) {
 }
 
 /**
- * What each side of the claim counts at this many units: "you get 3 · you
- * give 3".
+ * What each side of the claim counts at this many units, its payment
+ * included: "you get 3 · you give 3", "you get 1 · you pay $3.00".
  */
 export function UnitCounts({
   picks,
@@ -65,15 +66,32 @@ export function UnitCounts({
   picks: Picks;
   className?: string;
 }) {
+  const { payment } = picks;
+  const amount =
+    payment === null
+      ? ""
+      : formatAmount(payment.amount * picks.units, payment.currency);
   return (
     <span
       className={cn("flex gap-4 font-mono text-xs tabular-nums", className)}
     >
       <span className="text-amber-700 dark:text-amber-500">
-        {m.listing_detail_units_get({ count: picks.offeredCount })}
+        {payment?.side === "from"
+          ? m.listing_detail_units_get_pay({
+              count: picks.offeredCount,
+              amount,
+            })
+          : m.listing_detail_units_get({ count: picks.offeredCount })}
       </span>
       <span className="text-teal-700 dark:text-teal-500">
-        {m.listing_detail_units_give({ count: picks.giveTotal })}
+        {payment?.side !== "to"
+          ? m.listing_detail_units_give({ count: picks.giveTotal })
+          : picks.giveTotal === 0
+            ? m.listing_detail_units_pay({ amount })
+            : m.listing_detail_units_give_pay({
+                count: picks.giveTotal,
+                amount,
+              })}
       </span>
     </span>
   );

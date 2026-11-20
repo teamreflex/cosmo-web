@@ -719,8 +719,24 @@ export const tradeOffers = pgTable(
     }),
     // judged against the drain's chain-time watermark, not the clock
     deadlineAt: tradeTimestamp("deadline_at"),
-    // listings with a payment side
+    // how a listing with a payment takes offers; null on other listings and trades
     offers: listingOfferMode("offers"),
+    /**
+     * Who sends a listing's payment want: `to` the claimer (a sale, or a
+     * payment alongside objekts), `from` the poster (on top of their
+     * objekts). Null on listings without a payment and on trades, whose
+     * payment items carry their own sender.
+     */
+    paymentSide: tradeSide("payment_side"),
+    /**
+     * The methods a payment may arrive by: a listing's, and on a trade with a
+     * payment the listing's as the claim read them, so an edit never changes
+     * a live trade's. Empty without a payment.
+     */
+    paymentMethods: paymentMethod("payment_methods")
+      .array()
+      .notNull()
+      .default([]),
     // the pool objekts one unit of a listing takes; null on trades
     unitSize: smallint("unit_size"),
     slugs: varchar("slugs", { length: 255 }).array().notNull().default([]),
@@ -821,7 +837,12 @@ export const tradeOffers = pgTable(
     ),
     check(
       "trade_offers_trade_chk",
-      sql`${t.kind} = 'listing' OR (${t.toAddress} IS NOT NULL AND ${t.offers} IS NULL AND ${t.note} IS NULL)`,
+      sql`${t.kind} = 'listing' OR (${t.toAddress} IS NOT NULL AND ${t.offers} IS NULL AND ${t.note} IS NULL AND ${t.paymentSide} IS NULL)`,
+    ),
+    // a listing's payment has a side, an offer mode and at least one method, or none of them
+    check(
+      "trade_offers_payment_chk",
+      sql`${t.kind} = 'trade' OR num_nulls(${t.paymentSide}, ${t.offers}, nullif(cardinality(${t.paymentMethods}), 0)) IN (0, 3)`,
     ),
     check(
       "trade_offers_accepted_chk",
@@ -894,7 +915,7 @@ export const tradeOfferItems = pgTable(
     // chain time and hash of the transfer the drain matched
     transferredAt: tradeTimestamp("transferred_at"),
     txHash: varchar("tx_hash", { length: 66 }),
-    markedPaidAt: tradeTimestamp("marked_paid_at"),
+    // when a payment's recipient said it arrived, and `method` how
     confirmedAt: tradeTimestamp("confirmed_at"),
     /**
      * When a pool token left its listing's pool: given in one of the
@@ -914,7 +935,7 @@ export const tradeOfferItems = pgTable(
     index("trade_offer_items_listing_idx").on(t.listingId),
     check(
       "trade_offer_items_objekt_chk",
-      sql`CASE ${t.kind} WHEN 'objekt' THEN num_nulls(${t.tokenId}, ${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}) = 0 AND num_nonnulls(${t.amount}, ${t.currency}, ${t.method}, ${t.markedPaidAt}, ${t.confirmedAt}) = 0 ELSE num_nonnulls(${t.tokenId}, ${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}, ${t.transferredAt}, ${t.txHash}) = 0 AND coalesce(${t.amount}, 0) > 0 AND ${t.currency} IS NOT NULL AND NOT ${t.live} END`,
+      sql`CASE ${t.kind} WHEN 'objekt' THEN num_nulls(${t.tokenId}, ${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}) = 0 AND num_nonnulls(${t.amount}, ${t.currency}, ${t.method}, ${t.confirmedAt}) = 0 ELSE num_nonnulls(${t.tokenId}, ${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}, ${t.transferredAt}, ${t.txHash}) = 0 AND coalesce(${t.amount}, 0) > 0 AND ${t.currency} IS NOT NULL AND NOT ${t.live} END`,
     ),
     check(
       "trade_offer_items_transfer_chk",

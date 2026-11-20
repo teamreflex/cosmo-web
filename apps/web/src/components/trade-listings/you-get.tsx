@@ -21,6 +21,7 @@ import { ObjektSidebar } from "../objekt/common";
 import ExpandableObjekt from "../objekt/objekt-expandable";
 import SelectableCard, { OfferPill } from "./selectable-card";
 import SideHeading from "./side-heading";
+import { PaymentLabel } from "./want-label";
 
 export type OfferedHeading = "you_get" | "offering" | "you_offer";
 
@@ -114,7 +115,28 @@ export default function YouGet({
           ))}
         </ul>
       )}
+      <PosterPayment listing={listing} units={picks?.units ?? 1} />
     </section>
+  );
+}
+
+/**
+ * The payment the poster sends on top of their objekts, for the units the
+ * viewer takes, or nothing when the claimer pays or there's no payment.
+ */
+function PosterPayment({
+  listing,
+  units,
+}: {
+  listing: TradeListing;
+  units: number;
+}) {
+  return (
+    listing.payment?.side === "from" && (
+      <div className="rounded-lg border border-border bg-card px-4 py-3 text-sm">
+        <PaymentLabel payment={listing.payment} units={units} />
+      </div>
+    )
   );
 }
 
@@ -169,6 +191,7 @@ function PoolPicker({
           );
         })}
       </ul>
+      <PosterPayment listing={listing} units={picks.units} />
       {picks.takesOffers && (
         <p className="text-xs leading-relaxed text-muted-foreground">
           {m.listing_detail_pool_offers_help({ poster: posterName(listing) })}

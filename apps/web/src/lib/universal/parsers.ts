@@ -247,8 +247,12 @@ export function normalizeFeedArtists(selectedArtists: readonly string[]) {
  * "Filters (n)" button.
  */
 export function countActiveListingFilters(search: ListingFeedSearch) {
-  const { offering, lookingFor } = normalizeListingFeedFilters(search).filters;
-  return Object.keys(offering).length + Object.keys(lookingFor).length;
+  const { filters, type } = normalizeListingFeedFilters(search);
+  return (
+    Object.keys(filters.offering).length +
+    Object.keys(filters.lookingFor).length +
+    (type === null ? 0 : 1)
+  );
 }
 
 // transfers frontend

@@ -16,6 +16,7 @@
     "./lifecycle": "./src/lifecycle.ts",
     "./listing": "./src/listing.ts",
     "./notifications": "./src/notifications.ts",
+    "./payment": "./src/payment.ts",
     "./range": "./src/range.ts",
     "./timers": "./src/timers.ts",
     "./transfers": "./src/transfers.ts"

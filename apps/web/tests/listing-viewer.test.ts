@@ -375,6 +375,7 @@ const trade = (
     acceptedAt: new Date(acceptedAt),
     tokenIds,
     givenCount: tokenIds.length,
+    payment: null,
   };
   switch (status) {
     case "accepted":

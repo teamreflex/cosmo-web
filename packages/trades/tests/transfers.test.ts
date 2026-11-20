@@ -6,6 +6,7 @@ import {
   expectedItems,
   foldTransfers,
   itemStatus,
+  paymentStatus,
   recordChainEvents,
   toChainRow,
 } from "../src/transfers";
@@ -338,7 +339,6 @@ test("recordChainEvents marks the item an arrival names and keeps the batch's or
     sender: "from",
     listingId: null,
     transferredAt: null,
-    markedPaidAt: null,
     confirmedAt: null,
   } as const;
   const items = [
@@ -423,4 +423,22 @@ describe("itemStatus", () => {
       itemStatus({ sender: "to", transferredAt: null }, held(KAIRU), live),
     ).toBe("arrived");
   });
+});
+
+describe("paymentStatus", () => {
+  const at = new Date("2026-11-20T00:00:00Z");
+
+  test.each([
+    [null, "pending", "not_started"],
+    [null, "accepted", "waiting"],
+    [null, "disputed", "waiting"],
+    [null, "completed", "not_confirmed"],
+    [at, "accepted", "confirmed"],
+    [at, "cancelled", "confirmed"],
+  ] as const)(
+    "confirmed at %p on a %s trade is %s",
+    (confirmedAt, status, expected) => {
+      expect(paymentStatus({ confirmedAt }, status)).toBe(expected);
+    },
+  );
 });

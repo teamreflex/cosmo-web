@@ -7,11 +7,12 @@ import {
 } from "@apollo/trades/composer";
 import {
   choicesDistinct,
-  type EditListingInput,
+  type editListingInputSchema,
   type ListingInput,
   type listingInputSchema,
   rangesDistinct,
 } from "@apollo/trades/listing";
+import { amountSchema, toNumeric } from "@apollo/trades/payment";
 import {
   collapseWholeGroup,
   MAX_RANGE_VALUES,
@@ -51,9 +52,13 @@ export type RangeFormFilter = Extract<
 export type ComposerMode =
   { kind: "create" } | { kind: "edit"; listing: TradeListing };
 
+/**
+ * What the composer sends: the schema's input, which the server parses
+ * again, so the payment goes back to the row or field it was typed in.
+ */
 export type ListingSubmission =
-  | { kind: "create"; data: ListingInput }
-  | { kind: "edit"; data: EditListingInput };
+  | { kind: "create"; data: z.input<typeof listingInputSchema> }
+  | { kind: "edit"; data: z.input<typeof editListingInputSchema> };
 
 // unitSize is present so a form the ratio set back to a bundle compares equal, and stays clean
 export const emptyListingForm: ListingFormValues = {
@@ -70,37 +75,64 @@ export const emptyListingForm: ListingFormValues = {
  * stays a bundle. The unit size isn't held to the pool: tokens sent in a
  * live trade leave the pool while that trade keeps the listing open, which
  * can leave fewer than a trade takes, and Save waits for the poster to
- * lower the ratio or add objekts (composerBlock()). Payment rows can't be
- * posted from the composer, so they aren't carried into it.
+ * lower the ratio or add objekts (composerBlock()). The claimer's payment
+ * comes back as the last want row, and the poster's as `offeredPayment`.
  */
 export function listingToFormValues(
-  listing: Pick<TradeListing, "items" | "wants" | "note" | "unitSize">,
+  listing: Pick<
+    TradeListing,
+    "items" | "wants" | "payment" | "note" | "unitSize"
+  >,
 ): ListingFormValues {
+  const { payment } = listing;
   return {
     offered: poolItems(listing).map(({ tokenId }) => ({ tokenId })),
     unitSize: hasRatio(listing.unitSize, listing.items.length)
       ? listing.unitSize
       : undefined,
-    wants: listing.wants.flatMap((want): ListingFormWant[] => {
-      switch (want.kind) {
-        case "exact":
-          return [{ kind: "exact", slug: want.objekt.slug, count: want.count }];
-        case "range":
-          return [{ kind: "range", ranges: want.ranges, count: want.count }];
-        case "choice":
-          return [
-            {
-              kind: "choice",
-              slugs: want.options.map((option) => option.slug),
-              count: want.count,
-            },
-          ];
-        case "payment":
-          return [];
-      }
-    }),
+    wants: listing.wants
+      .flatMap((want): ListingFormWant[] => {
+        switch (want.kind) {
+          case "exact":
+            return [
+              { kind: "exact", slug: want.objekt.slug, count: want.count },
+            ];
+          case "range":
+            return [{ kind: "range", ranges: want.ranges, count: want.count }];
+          case "choice":
+            return [
+              {
+                kind: "choice",
+                slugs: want.options.map((option) => option.slug),
+                count: want.count,
+              },
+            ];
+        }
+      })
+      .concat(
+        payment?.side === "to"
+          ? [{ kind: "payment", amount: toNumeric(payment.amount) }]
+          : [],
+      ),
+    offeredPayment:
+      payment?.side === "from" ? toNumeric(payment.amount) : undefined,
+    payment:
+      payment === null
+        ? undefined
+        : { currency: payment.currency, methods: payment.methods },
     note: listing.note ?? "",
   };
+}
+
+/**
+ * The form's payment amount on either side, as typed: the claimer's row,
+ * else the poster's on top, else null without a payment.
+ */
+export function formPaymentAmount(
+  values: Pick<ListingFormValues, "wants" | "offeredPayment">,
+) {
+  const row = values.wants.find((want) => want.kind === "payment");
+  return row?.amount ?? values.offeredPayment ?? null;
 }
 
 /**
@@ -137,23 +169,38 @@ export function stepUnitSize(next: number, offered: number) {
  * What the composer sends once the schema has checked its values: new
  * terms, or the same terms for the listing being edited. A range naming
  * one artist's whole roster goes as that artist (collapseWholeGroup), after
- * the picking, so picking more members afterwards never runs into it.
+ * the picking, so picking more members afterwards never runs into it. The
+ * claimer's payment goes back as the last want row and the poster's as
+ * `offeredPayment`, with its amount at two decimals.
  */
 export function formValuesToInput(
-  values: ListingInput,
+  { payment, ...values }: ListingInput,
   mode: ComposerMode,
   rosters: ReadonlyMap<string, readonly string[]>,
 ): ListingSubmission {
+  const amount = payment === null ? undefined : toNumeric(payment.amount);
+  const paymentRow: ListingFormWant[] =
+    payment?.side === "to" && amount !== undefined
+      ? [{ kind: "payment", amount }]
+      : [];
   const terms = {
     ...values,
-    wants: values.wants.map((want) =>
-      want.kind === "range"
-        ? {
-            ...want,
-            ranges: collapseRanges(want.ranges, rosters),
-          }
-        : want,
-    ),
+    wants: [
+      ...values.wants.map((want) =>
+        want.kind === "range"
+          ? {
+              ...want,
+              ranges: collapseRanges(want.ranges, rosters),
+            }
+          : want,
+      ),
+      ...paymentRow,
+    ],
+    offeredPayment: payment?.side === "from" ? amount : undefined,
+    payment:
+      payment === null
+        ? undefined
+        : { currency: payment.currency, methods: payment.methods },
   };
   return mode.kind === "create"
     ? { kind: "create", data: terms }
@@ -251,6 +298,19 @@ function collapseRanges(
 }
 
 /**
+ * Why a payment on either side holds Post back: an amount the schema
+ * refuses, or no method picked. Null without a payment.
+ */
+function paymentBlock(
+  amount: string | null,
+  payment: ListingFormValues["payment"],
+) {
+  if (amount === null) return null;
+  if (!amountSchema.safeParse(amount).success) return "payment_amount";
+  return (payment?.methods.length ?? 0) === 0 ? "payment_methods" : null;
+}
+
+/**
  * Why the composer holds Post and Save back, for what it can tell before
  * the server refuses it, in the order the form reads. `refused` counts the
  * offered objekts the poster can't offer right now. Each range of a range
@@ -263,12 +323,15 @@ function collapseRanges(
  * same ranges. An "any of" row needs two collections, and no two rows may
  * name the same ones; the row itself stops at MAX_CHOICE_OPTIONS and never
  * names one twice. `unitSize` is the form's, which an edit prefills
- * unchanged even when the pool has fallen below it.
+ * unchanged even when the pool has fallen below it. A payment on either
+ * side needs an amount the schema takes and at least one method.
  */
 export function composerBlock({
   offered,
   refused,
   wants,
+  offeredPayment,
+  payment,
   unitSize,
   rangeMatches,
   rosters,
@@ -277,6 +340,8 @@ export function composerBlock({
   offered: number;
   refused: number;
   wants: ListingFormValues["wants"];
+  offeredPayment: ListingFormValues["offeredPayment"];
+  payment: ListingFormValues["payment"];
   unitSize: number | undefined;
   rangeMatches: readonly (RangeMatchCounts | undefined)[];
   rosters: ReadonlyMap<string, readonly string[]>;
@@ -285,6 +350,11 @@ export function composerBlock({
   if (offered === 0) return "offered";
   if (refused > 0) return "refused";
   if (wants.length === 0) return "wants";
+  const unpaid = paymentBlock(
+    formPaymentAmount({ wants, offeredPayment }),
+    payment,
+  );
+  if (unpaid !== null) return unpaid;
   const rows = wants.flatMap((want) =>
     want.kind === "range" ? [want.ranges] : [],
   );

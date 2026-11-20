@@ -1,5 +1,9 @@
 import { m } from "@/i18n/messages";
-import type { AdminReportRowTarget, BanLength } from "@/lib/universal/reports";
+import type {
+  AdminReportDetail,
+  AdminReportRowTarget,
+  BanLength,
+} from "@/lib/universal/reports";
 import type {
   ReportStatus,
   StoredReportReason,
@@ -27,6 +31,26 @@ const reasonLabels = {
  */
 export function reportReasonLabel(reason: StoredReportReason): string {
   return reasonLabels[reason]();
+}
+
+// whether a report's trade has a payment item, as its detail reads the trade
+export function reportHasPayment(report: AdminReportDetail) {
+  return (
+    report.target.type === "trade" &&
+    report.target.trade !== null &&
+    report.target.trade.view.payment !== null
+  );
+}
+
+/**
+ * A report's label in the staff queue and detail: a deadline dispute on a
+ * trade with a payment may be owed the payment rather than objekts, so it
+ * says something is still owed.
+ */
+export function reportTitle(reason: StoredReportReason, hasPayment: boolean) {
+  return reason === "deadline_passed" && hasPayment
+    ? m.report_reason_deadline_passed_payment()
+    : reportReasonLabel(reason);
 }
 
 const statusLabels = {

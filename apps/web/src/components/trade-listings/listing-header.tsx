@@ -1,5 +1,11 @@
 import { m } from "@/i18n/messages";
-import { listingRatio } from "@/lib/client/trade-listings";
+import {
+  listingKindLabel,
+  listingRatio,
+  listingTypeOf,
+  ratioSides,
+  ratioText,
+} from "@/lib/client/trade-listings";
 import type { TradeListing, TradeRatio } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
@@ -73,7 +79,7 @@ export default function ListingHeader({
                 ratio !== null && "max-md:hidden",
               )}
             >
-              {m.listing_detail_kind_trade()}
+              {listingKindLabel(listingTypeOf(listing))}
             </Badge>
             <ListingStateBadge status={listing.state.status} />
             {ratio !== null && (
@@ -154,12 +160,13 @@ export default function ListingHeader({
  * A ratio as a pill shows it, "1 : 5", read out as "1 for 5".
  */
 export function RatioText({ ratio }: { ratio: TradeRatio }) {
+  const { give, get } = ratioSides(ratio);
   return (
     <>
       <span aria-hidden>
-        {ratio.give} : {ratio.get}
+        {give} : {get}
       </span>
-      <span className="sr-only">{m.market_listings_ratio(ratio)}</span>
+      <span className="sr-only">{ratioText(ratio)}</span>
     </>
   );
 }

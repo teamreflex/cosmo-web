@@ -35,6 +35,8 @@ export type AdminReportRowTarget =
         id: string;
         from: StaffUser | null;
         to: StaffUser | null;
+        // whether the trade has a payment item, which words a deadline dispute
+        hasPayment: boolean;
       } | null;
     }
   | {

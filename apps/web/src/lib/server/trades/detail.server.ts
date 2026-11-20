@@ -40,6 +40,7 @@ import {
   type ListingViewer,
   offerRefusal,
   storedObjektItemSchema,
+  storedPaymentItemSchema,
   type StoredWant,
   type TradeRatio,
   tradeWants,
@@ -344,17 +345,33 @@ function endedOffer(status: TradeOfferStatus): EndedOfferStatus | null {
 function tradeSides(row: { items: readonly TradeOfferItem[] }) {
   const side = (sender: "from" | "to") =>
     row.items.flatMap((item) =>
-      item.sender === sender ? [storedObjektItemSchema.parse(item)] : [],
+      item.sender === sender && item.kind === "objekt"
+        ? [storedObjektItemSchema.parse(item)]
+        : [],
     );
   return { from: side("from"), to: side("to") };
 }
 
 /**
- * How many objekts each side of a trade from the listing sends.
+ * A trade's payment, every unit's together, and the side that sends it, or
+ * null without one.
+ */
+function tradePayment(row: {
+  items: readonly TradeOfferItem[];
+}): TradeRatio["payment"] {
+  const item = row.items.find((each) => each.kind === "payment");
+  if (item === undefined) return null;
+  const { amount, currency } = storedPaymentItemSchema.parse(item);
+  return { side: item.sender, amount, currency };
+}
+
+/**
+ * How many objekts each side of a trade from the listing sends, and its
+ * payment.
  */
 function tradeSize(row: { items: readonly TradeOfferItem[] }): TradeRatio {
   const { from, to } = tradeSides(row);
-  return { give: from.length, get: to.length };
+  return { give: from.length, get: to.length, payment: tradePayment(row) };
 }
 
 /**
@@ -479,6 +496,7 @@ async function readPosterSide(listing: {
         acceptedAt: row.acceptedAt,
         tokenIds: from.map((item) => item.tokenId),
         givenCount: to.length,
+        payment: tradePayment(row),
       };
       switch (row.status) {
         case "accepted": {
@@ -544,8 +562,8 @@ async function readPosterSide(listing: {
  * that size, one unit's when they can't fill one. The allocation runs here,
  * since one copy can fit two rows, but only its counts leave, so the answer
  * stays as small as the listing whatever the viewer holds. The rows are the
- * ones objekts fill (tradeWants()); a listing with a payment row never
- * reaches the picker.
+ * ones objekts fill (tradeWants()), none for a sale, whose candidate can
+ * take as many units as the free pool and the caps allow.
  */
 async function readCandidateSide(
   address: string,

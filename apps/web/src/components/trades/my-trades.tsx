@@ -1,8 +1,9 @@
 import { m } from "@/i18n/messages";
-import { partyName } from "@/lib/client/trade-listings";
+import { formatAmount, partyName } from "@/lib/client/trade-listings";
 import { myTradesQuery } from "@/lib/queries/trades";
 import {
   type MyTradeRow,
+  type MyTradeSide,
   type MyTradesTab,
   myTradesTabs,
   type TradeDispute,
@@ -17,6 +18,8 @@ import Countdown from "../misc/countdown";
 import {
   Half,
   OfferingCaption,
+  PaymentTile,
+  SlipDetail,
   Thumbs,
 } from "../trade-listings/listing-feed-row";
 import { tones } from "../trade-listings/state-tones";
@@ -163,10 +166,11 @@ function TradeRow({ row }: { row: MyTradeRow }) {
       >
         <Half
           label={m.my_trades_column_send()}
-          thumbs={<Thumbs items={row.send.items} />}
+          thumbs={<SideThumbs side={row.send} />}
           className="col-start-1 max-md:bg-teal-700/5 lg:col-start-2 max-md:dark:bg-teal-500/5"
         >
           <OfferingCaption items={row.send.items} />
+          <PaymentCaption side={row.send} />
         </Half>
 
         <span
@@ -181,10 +185,11 @@ function TradeRow({ row }: { row: MyTradeRow }) {
 
         <Half
           label={m.my_trades_column_get()}
-          thumbs={<Thumbs items={row.get.items} />}
+          thumbs={<SideThumbs side={row.get} />}
           className="col-start-3 max-md:bg-amber-700/5 lg:col-start-4 max-md:dark:bg-amber-500/5"
         >
           <OfferingCaption items={row.get.items} />
+          <PaymentCaption side={row.get} />
         </Half>
 
         <span className="col-span-full row-start-2 flex min-w-0 items-center gap-2 max-md:grid max-md:grid-cols-[minmax(0,1fr)_auto] max-md:gap-y-1.5 max-md:border-t max-md:border-dashed max-md:px-3 max-md:py-2 max-md:text-xs lg:contents">
@@ -217,6 +222,33 @@ function TradeRow({ row }: { row: MyTradeRow }) {
         </span>
       </Link>
     </li>
+  );
+}
+
+// a side's objekts, or its payment's tile when it sends only a payment
+function SideThumbs({ side }: { side: MyTradeSide }) {
+  return side.items.length === 0 && side.payment !== null ? (
+    <PaymentTile payment={side.payment} />
+  ) : (
+    <Thumbs items={side.items} />
+  );
+}
+
+// the payment a side sends, in its own currency, and whether it was marked received
+function PaymentCaption({ side }: { side: MyTradeSide }) {
+  const { payment } = side;
+  if (payment === null) return null;
+  const amount = formatAmount(payment.amount, payment.currency);
+  return (
+    <SlipDetail className="font-medium text-foreground">
+      {side.items.length === 0
+        ? (payment.confirmed
+            ? m.my_trades_payment_only_received
+            : m.my_trades_payment_only)({ amount })
+        : (payment.confirmed
+            ? m.my_trades_payment_received
+            : m.my_trades_payment)({ amount })}
+    </SlipDetail>
   );
 }
 
@@ -289,7 +321,8 @@ function Time({ row }: { row: MyTradeRow }) {
 
 /**
  * What a live trade waits on: the viewer sending what they still owe, or
- * the other party, named.
+ * with nothing left to send, marking a payment received, or the other
+ * party, named.
  */
 export function NextStepBadge({
   needsYou,
@@ -302,7 +335,9 @@ export function NextStepBadge({
 }) {
   return needsYou ? (
     <Badge className={tones.cosmo}>
-      {m.my_trades_next_send({ count: toSend })}
+      {toSend === 0
+        ? m.my_trades_next_confirm()
+        : m.my_trades_next_send({ count: toSend })}
     </Badge>
   ) : (
     // a long name gives way, so the verb stays

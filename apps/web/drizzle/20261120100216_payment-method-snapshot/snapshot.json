@@ -1,0 +1,77 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "df5c53f9-7255-43fa-8baf-93352d599e28",
+  "prevIds": [
+    "9156b250-384d-4d7d-ae3d-32e594d86c53"
+  ],
+  "footprints": [
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_offers"
+      ],
+      "writes": [
+        "s|ck|public.trade_offers.trade_offers_trade_chk"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|col|public.trade_offers.kind",
+        "n|col|public.trade_offers.to_address",
+        "n|col|public.trade_offers.offers",
+        "n|col|public.trade_offers.note",
+        "n|col|public.trade_offers.payment_side",
+        "e|col|public.trade_offers.kind",
+        "e|col|public.trade_offers.to_address",
+        "e|col|public.trade_offers.offers",
+        "e|col|public.trade_offers.note",
+        "e|col|public.trade_offers.payment_side",
+        "e|col|public.trade_offers.payment_methods"
+      ],
+      "sqlHash": "6304cc96fcc7697a"
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_offers"
+      ],
+      "writes": [
+        "s|ck|public.trade_offers.trade_offers_payment_chk"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|col|public.trade_offers.kind",
+        "n|col|public.trade_offers.payment_side",
+        "n|col|public.trade_offers.offers",
+        "n|col|public.trade_offers.payment_methods",
+        "e|col|public.trade_offers.payment_side",
+        "e|col|public.trade_offers.offers",
+        "e|col|public.trade_offers.payment_methods"
+      ],
+      "sqlHash": "28b06c8b657564f0"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"public\",\"trade_offers\",\"trade_offers_trade_chk\"]",
+      "set": {
+        "value": "\"kind\" = 'listing' OR (\"to_address\" IS NOT NULL AND \"offers\" IS NULL AND \"note\" IS NULL AND \"payment_side\" IS NULL)"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"public\",\"trade_offers\",\"trade_offers_payment_chk\"]",
+      "set": {
+        "value": "\"kind\" = 'trade' OR num_nulls(\"payment_side\", \"offers\", nullif(cardinality(\"payment_methods\"), 0)) IN (0, 3)"
+      }
+    }
+  ]
+}

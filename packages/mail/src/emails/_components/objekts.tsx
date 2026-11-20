@@ -90,6 +90,9 @@ function formatPayment(payment: MailPayment) {
     style: "currency",
     currency: payment.currency,
     currencyDisplay: "code",
+    // every currency shows two decimals, KRW included, as the trade records it
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   }).format(Number(payment.amount));
 }
 

@@ -14,14 +14,25 @@ import {
   type TradeRatio,
   type WantMatch,
 } from "@/lib/universal/trade-listings";
-import type { TradePartyName } from "@/lib/universal/trades";
+import type {
+  TradeItemView,
+  TradePartyName,
+  TradePaymentView,
+} from "@/lib/universal/trades";
 import {
   toUiArtist,
   type ValidArtist,
   validOnlineTypes,
 } from "@apollo/cosmo/types/common";
+import {
+  type PaymentMethod,
+  paymentMethods,
+  type TradeSide,
+} from "@apollo/database/web/types";
 import { rangeSummaryColumns, totalWanted } from "@apollo/trades/composer";
 import { heldTokenRefusal, type TokenFlags } from "@apollo/trades/holdings";
+import { type ListingType, listingType } from "@apollo/trades/listing";
+import { formatPayment, type ListingPayment } from "@apollo/trades/payment";
 import {
   hasBidiControl,
   type ObjektAttributes,
@@ -48,12 +59,51 @@ export function partyName(party: TradePartyName) {
 }
 
 /**
- * How many objekts the listing asks for; a payment row asks for none.
+ * How many objekts the listing asks for.
  */
 export function wantedObjektCount(wants: readonly ListingFeedWant[]) {
-  return totalWanted(
-    wants.flatMap((want) => (want.kind === "payment" ? [] : [want])),
-  );
+  return totalWanted(wants);
+}
+
+/**
+ * An amount in minor units, in its own currency with two decimals and
+ * never converted, "$3.00".
+ */
+export function formatAmount(amount: number, currency: string) {
+  return formatPayment(amount, currency, getLocale());
+}
+
+/**
+ * A payment method's name, "PayPal F&F".
+ */
+export function paymentMethodLabel(method: PaymentMethod) {
+  return paymentMethodLabels[method]();
+}
+
+const paymentMethodLabels = {
+  paypal_ff: m.payment_method_paypal_ff,
+  wise: m.payment_method_wise,
+  bank_transfer: m.payment_method_bank_transfer,
+  promptpay: m.payment_method_promptpay,
+  kakaopay: m.payment_method_kakaopay,
+  toss: m.payment_method_toss,
+  gcash: m.payment_method_gcash,
+  alipay: m.payment_method_alipay,
+  wechat_pay: m.payment_method_wechat_pay,
+  venmo: m.payment_method_venmo,
+  cashapp: m.payment_method_cashapp,
+  other: m.payment_method_other,
+} satisfies Record<PaymentMethod, () => string>;
+
+/**
+ * The methods a payment may arrive by, in the list's order, "PayPal F&F,
+ * Wise".
+ */
+export function paymentMethodsText(methods: readonly PaymentMethod[]) {
+  return paymentMethods
+    .filter((method) => methods.includes(method))
+    .map(paymentMethodLabel)
+    .join(", ");
 }
 
 /**
@@ -181,8 +231,6 @@ export function wantLabel(want: ListingFeedWant) {
       return rangeLabel(want.ranges);
     case "choice":
       return m.listing_want_any_of_count({ count: want.options.length });
-    case "payment":
-      return `${want.amount} ${want.currency}`;
   }
 }
 
@@ -190,9 +238,7 @@ export function wantLabel(want: ListingFeedWant) {
  * A want row with its count, "5× Atom02 · ARTMS · First".
  */
 export function wantText(want: ListingFeedWant) {
-  return want.kind === "payment"
-    ? wantLabel(want)
-    : `${want.count}× ${wantLabel(want)}`;
+  return `${want.count}× ${wantLabel(want)}`;
 }
 
 /**
@@ -201,11 +247,7 @@ export function wantText(want: ListingFeedWant) {
  */
 export function wantsCaption(wants: readonly ListingFeedWant[]) {
   return wants
-    .map((want) =>
-      want.kind === "payment" || want.count === 1
-        ? wantLabel(want)
-        : wantText(want),
-    )
+    .map((want) => (want.count === 1 ? wantLabel(want) : wantText(want)))
     .join(", ");
 }
 
@@ -231,15 +273,20 @@ export function askingTitle(wants: readonly ListingFeedWant[]) {
 
 /**
  * How many rows of each kind a listing asks for, as the Looking for heading
- * sums them up: "1 range · 1 exact · 1 any of".
+ * sums them up: "1 range · 1 exact · 1 any of · 1 payment", the payment
+ * when the claimer sends one.
  */
-export function wantKindsSummary(wants: readonly ListingFeedWant[]) {
+export function wantKindsSummary(
+  wants: readonly ListingFeedWant[],
+  payment: ListingPayment | null,
+) {
   const count = (kind: ListingFeedWant["kind"]) =>
     wants.filter((want) => want.kind === kind).length;
   const ranges = count("range");
   const exact = count("exact");
   const choices = count("choice");
-  const payments = count("payment");
+  // a sale's heading already names its price
+  const payments = payment?.side === "to" && wants.length > 0 ? 1 : 0;
   return [
     ranges > 0 && m.listing_detail_summary_ranges({ count: ranges }),
     exact > 0 && m.listing_detail_summary_exact({ count: exact }),
@@ -324,7 +371,6 @@ export function listingComposerDisplay(listing: TradeListing): ComposerDisplay {
               },
             ]);
           case "range":
-          case "payment":
             return [];
         }
       }),
@@ -390,12 +436,81 @@ export function availabilityLabel(availability: PoolAvailability) {
  * everything.
  */
 export function listingRatio(
-  listing: { unitSize: number; wants: readonly ListingFeedWant[] },
+  listing: {
+    unitSize: number;
+    wants: readonly ListingFeedWant[];
+    payment: ListingPayment | null;
+  },
   posted: number,
 ): TradeRatio | null {
   return hasRatio(listing.unitSize, posted)
-    ? { give: listing.unitSize, get: wantedObjektCount(listing.wants) }
+    ? {
+        give: listing.unitSize,
+        get: wantedObjektCount(listing.wants),
+        payment: listing.payment,
+      }
     : null;
+}
+
+/**
+ * Each side of a ratio as text, its payment added to the side that sends
+ * it: "1", "$3.00" for a sale's payment alone, "1 + $3.00" beside objekts.
+ */
+export function ratioSides({ give, get, payment }: TradeRatio) {
+  const side = (count: number, sender: TradeSide) => {
+    if (payment === null || payment.side !== sender) return String(count);
+    const price = formatAmount(payment.amount, payment.currency);
+    return count === 0 ? price : `${count} + ${price}`;
+  };
+  return { give: side(give, "from"), get: side(get, "to") };
+}
+
+/**
+ * A listing's type (listingType()) from its payment, its objekt want rows
+ * and its offered objekts.
+ */
+export function listingTypeOf(listing: {
+  payment: ListingPayment | null;
+  wants: readonly unknown[];
+  items: readonly unknown[];
+}) {
+  return listingType({
+    paymentSide: listing.payment?.side ?? null,
+    objektWants: listing.wants.length,
+    offered: listing.items.length,
+  });
+}
+
+// what kind of listing it is, as its header names it
+export function listingKindLabel(type: ListingType) {
+  switch (type) {
+    case "trade":
+      return m.listing_detail_kind_trade();
+    case "sell":
+      return m.market_listings_sell();
+    case "buy":
+      return m.market_listings_buy();
+  }
+}
+
+/**
+ * What a trade still owes, as a deadline dispute words it: objekts, an
+ * unconfirmed payment, or both.
+ */
+export function owedAtDeadline(trade: {
+  items: readonly Pick<TradeItemView, "status">[];
+  payment: Pick<TradePaymentView, "status"> | null;
+}): "objekts" | "payment" | "both" {
+  const objekts = trade.items.some((item) => item.status !== "sent");
+  const payment =
+    trade.payment !== null && trade.payment.status !== "confirmed";
+  if (objekts && payment) return "both";
+  return payment ? "payment" : "objekts";
+}
+
+// a ratio as one line, "1 for $3.00"
+export function ratioText(ratio: TradeRatio) {
+  return m.market_listings_ratio(ratioSides(ratio));
 }
 
 /**

@@ -1,6 +1,11 @@
 import { m } from "@/i18n/messages";
 import { reportReasonLabel } from "@/lib/client/reports";
-import { partyName } from "@/lib/client/trade-listings";
+import {
+  formatAmount,
+  owedAtDeadline,
+  partyName,
+  paymentMethodLabel,
+} from "@/lib/client/trade-listings";
 import {
   itemName,
   offerRoles,
@@ -147,10 +152,39 @@ export function describeEvent(
           markup={bold}
         />
       );
-    // payments aren't implemented, so nothing writes these yet
-    case "marked_paid":
-    case "payment_confirmed":
-      return null;
+    case "payment_confirmed": {
+      const { payment } = trade;
+      if (payment === null || payment.id !== event.itemId) return null;
+      const recipient = otherSide(payment.sender);
+      const inputs = {
+        amount: formatAmount(payment.amount, payment.currency),
+        method: paymentMethodLabel(event.method),
+      };
+      switch (viewer(side, recipient)) {
+        case "you":
+          return m.trade_page_event_payment_confirmed_you(inputs);
+        case "them":
+          return (
+            <ParaglideMessage
+              message={m.trade_page_event_payment_confirmed_them}
+              inputs={{ ...inputs, name: nameOf(recipient) }}
+              markup={bold}
+            />
+          );
+        case "staff":
+          return (
+            <ParaglideMessage
+              message={m.trade_page_event_payment_confirmed_staff}
+              inputs={{
+                ...inputs,
+                recipient: nameOf(recipient),
+                sender: nameOf(payment.sender),
+              }}
+              markup={bold}
+            />
+          );
+      }
+    }
     default:
       // only a trade that started as an offer writes these
       return trade.proposedBy === null
@@ -378,7 +412,11 @@ function describeDispute(
     case "staff":
       return m.trade_page_event_disputed_staff({ appName });
     case "deadline":
-      return m.trade_page_event_disputed_deadline({ appName });
+      return {
+        objekts: m.trade_page_event_disputed_deadline,
+        payment: m.trade_page_event_disputed_deadline_payment,
+        both: m.trade_page_event_disputed_deadline_both,
+      }[owedAtDeadline(trade)]({ appName });
     default:
       return event.by === side ? (
         m.trade_page_event_disputed_you({

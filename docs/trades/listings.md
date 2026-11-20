@@ -40,10 +40,10 @@ A listing offers a pool of the poster's tokens in units, and stays open while th
 
 ## Posting, editing, withdrawing
 
-- **Post** (`$postListing`): `checkTerms()` resolves the wants and checks every offered token against the indexer before the transaction. It refuses `listing_range_empty` when any one range matches no collection, so a dead range can't hide behind a live one in its row. The transaction locks the poster, re-checks the tokens for locks and live trades (`recheckTokens()`) and inserts the listing, its pool rows and its wants.
+- **Post** (`$postListing`): `checkTerms()` refuses a payment currency without a rate (`unsupported_currency`), resolves the wants and checks every offered token against the indexer before the transaction. It refuses `listing_range_empty` when any one range matches no collection, so a dead range can't hide behind a live one in its row. The transaction locks the poster, re-checks the tokens for locks and live trades (`recheckTokens()`) and inserts the listing, its pool rows and its wants.
 - A token the poster can't offer comes back as a `token_unavailable` result naming it, not as a thrown error, so the composer can show the serial.
 - A token may sit in several open listings at once. Only a live trade reserves it.
-- **Edit** (`$editListing`): replaces the listing arrays, pinned address, unit size, note, the pool rows still in the pool and the wants in one transaction. It leaves `bumped_at` alone, so the listing keeps its place in the feed.
+- **Edit** (`$editListing`): replaces the listing arrays, pinned address, unit size, note, payment columns, the pool rows still in the pool and the wants in one transaction. It leaves `bumped_at` alone, so the listing keeps its place in the feed.
 - An edit leaves its live trades alone, since they hold their own copies. It may keep a token that is live in one of the listing's own trades (`readWebTokenFlags()` with `editedListing`).
 - The composer's reads, `$fetchOfferedTokenRefusals` and `$fetchTradeTokenStates`, take the edited listing too once the server confirms it is the caller's, so neither flags nor greys out what Save would keep.
 - An edit turns the listing's pending offers `stale` (event `{ type: "stale", reason: "edited" }`, `offer_stale` to each claimer). An offer sent after the edit read them refuses the edit with `listing_updated`.
@@ -80,6 +80,10 @@ A listing offers a pool of the poster's tokens in units, and stays open while th
 - The footer holds Post and Save back with a translated reason for what the schema refuses (`composerBlock()`): a range with nothing narrowed or a column over `MAX_RANGE_VALUES`, a range that matches no collection, one range twice in a row, two range rows holding the same ranges (`rangesDistinct()`), an "any of" row with fewer than two or more than `MAX_CHOICE_OPTIONS` collections or one collection twice, two rows naming the same set (`choicesDistinct()`), a unit size over the pool. Every row's count goes into the total the steppers keep under `MAX_TOTAL_WANTED`.
 - Ranges are compared as Post sends them: a range naming one artist's whole roster is sent as that artist (`collapseWholeGroup()`), so the footer collapses each range with the rosters before comparing, and `tripleS` beside `tripleS` with all its members is held back as a repeat.
 - A collection the indexer doesn't know is refused by the server with `listing_want_unknown`.
+- A payment is a row beside the want rows, kept last, that the claimer pays for each trade, or a payment the poster adds under their objekts, paid on top in every trade. A payment on one side disables the other side's Payment button, since a listing has one payment.
+- Either payment shows the payment strip: the listing's currency (the poster's display currency to start) and the methods it accepts, Other included. Handles are swapped in the trade chat, so the listing holds none. The footer holds Post back until the amount reads with at most two decimals and a method is picked.
+- The input schema takes the claimer's payment as a `payment` want row and the poster's as `offeredPayment`, with `payment` holding the currency and methods; it parses them into one `payment` with its side (`withPaymentRules()` in `listing.ts`), and `formValuesToInput()` turns that back into the input the server parses again.
+- The Ratio control also shows for a sale, whose want side is its price.
 
 ## The feed
 
@@ -91,6 +95,8 @@ A listing offers a pool of the poster's tokens in units, and stays open while th
 - It reads only the web database, so a free token the poster has since moved still counts until the drain drops it. A lock never reaches the drain, so a locked token stays in the pool, blocked, until the poster unlocks it or edits it out.
 - Each row carries its unit size, its free count (which may be 0) and how many objekts the listing has ever offered. A row with a ratio ([data-model.md](data-model.md#units)) shows it, unit size to the want rows' total, in place of the arrow, with how many objekts are free; a bundle keeps the arrow.
 - Choice rows show their collections' thumbnails and read "Any of 4 collections".
+- A listing's payment shows in its own currency: a sale's price, with its methods, in the asking half and its ratio; a payment beside want rows added to their title; the poster's payment on top under their objekts.
+- The Type filter (`type` in the URL) narrows on `listingType()` as SQL (`typeConditions()` in `feed.server.ts`): Selling when the claimer sends only the payment, Buying when the poster sends only theirs, Trade otherwise, a payment beside objekts included. A row's badge and the listing header say which.
 - The "Looking for" filter matches a want row holding every narrowed value: an exact row's copied values, one of a range row's ranges in `trade_listing_want_ranges` (an empty column matches any value), or one of a choice row's collections in `trade_listing_want_options`, so the member of one range or collection and the season of another don't add up.
 - A range row reads as its ranges joined by "or", and its tile takes an artist's colour and logo only when every range names that one artist (`rangeArtist()`).
 
@@ -143,14 +149,15 @@ The poster's own open listing has Listing, Offers and Trades tabs (`components/t
 
 `$claimListing` runs `preflightClaim()` without locks, then `lockAndRecheck()` and `insertTrade()` in one transaction (`lib/server/trades/claim.server.ts`). A listing with no range row is claimed at once:
 
-- The claim becomes an `accepted` trade with `deadline_at = now() + CLAIM_WINDOW` (48 h), all its items live, an `accepted` event and `listing_claimed` to the poster.
+- The claim becomes an `accepted` trade with `deadline_at = now() + CLAIM_WINDOW` (48 h), all its objekt items live, an `accepted` event and `listing_claimed` to the poster.
+- A listing with a payment adds the trade's payment item, the unit amount times the units claimed, sent by the listing's `payment_side` and never live ([data-model.md](data-model.md#payments)). A sale's claim gives no tokens, so its `rows` are empty.
 - Claims on one listing serialise on its row lock (`FOR NO KEY UPDATE`, which conflicts with itself), while the trades they create run side by side.
 - A claimer holds at most one open trade or pending offer per listing (`listing_claim_exists`).
 
 Refusals are checked in a fixed order, so the same request always gets the same answer:
 
 1. `listing_not_found`, then `listing_own`, then `listing_closed` or `listing_updated` against the `updated_at` the claimer saw.
-2. `listing_unavailable` when `posterBlocked()` (`lib/server/trades/poster.server.ts`) stops any claim: a payment want, the poster gone or banned, or their link no longer matching `from_address`.
+2. `listing_unavailable` when `posterBlocked()` (`lib/server/trades/poster.server.ts`) stops any claim: the poster gone or banned, or their link no longer matching `from_address`.
 3. `claim_assignment_invalid` when a pick isn't in the pool or the picks aren't a whole number of units.
 4. `listing_pick_unavailable { tokenId }` for a pick the poster can't give now.
 5. `claim_token_unavailable { tokenId, reason: "not_owned" }` for a claimer token the indexer doesn't know.

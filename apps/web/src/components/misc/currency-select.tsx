@@ -25,6 +25,8 @@ type Props = {
   value: string | null;
   onValueChange: (value: string) => void;
   placeholder?: string;
+  /** names the select where no visible label does */
+  ariaLabel?: string;
   className?: string;
 };
 
@@ -51,10 +53,11 @@ export default function CurrencySelect(props: Props) {
 function CurrencyTrigger({
   id,
   placeholder = m.list_currency(),
+  ariaLabel,
   className,
 }: Props) {
   return (
-    <SelectTrigger id={id} className={className}>
+    <SelectTrigger id={id} aria-label={ariaLabel} className={className}>
       <SelectValue placeholder={placeholder} />
     </SelectTrigger>
   );

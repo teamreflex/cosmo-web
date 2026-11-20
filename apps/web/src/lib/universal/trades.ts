@@ -1,14 +1,14 @@
 import {
   type OfferCloser,
   offerClosers,
+  type PaymentMethod,
   type ReportStatus,
   type TradeEvent,
-  type TradeItemKind,
   type TradeSide,
 } from "@apollo/database/web/types";
 import type { SerialPick } from "@apollo/trades/holdings";
 import type { TradeState } from "@apollo/trades/lifecycle";
-import type { TradeItemStatus } from "@apollo/trades/transfers";
+import type { PaymentStatus, TradeItemStatus } from "@apollo/trades/transfers";
 import type { z } from "zod";
 import type { PublicUser } from "./auth";
 import type { FeedbackRep, TradeFeedbackView } from "./feedback";
@@ -41,16 +41,30 @@ export type TradeNamedItem = {
   collection: Objekt.Collection | null;
 };
 
-// an item as the trade page shows it
+// an objekt item as the trade page shows it
 export type TradeItemView = TradeNamedItem & {
   id: number;
   sender: TradeSide;
-  kind: TradeItemKind;
   transferredAt: Date | null;
   txHash: string | null;
   // its sender locked it in Apollo while it's still owed, which COSMO ignores
   locked: boolean;
   status: TradeItemStatus;
+};
+
+/**
+ * A trade's payment as its page shows it: the amount for every unit the
+ * trade took, in minor units of its own currency, and once its recipient
+ * confirmed it, when and by which method.
+ */
+export type TradePaymentView = {
+  id: number;
+  sender: TradeSide;
+  amount: number;
+  currency: string;
+  confirmedAt: Date | null;
+  method: PaymentMethod | null;
+  status: PaymentStatus;
 };
 
 /**
@@ -105,11 +119,16 @@ export type TradeStage =
     };
 
 /**
- * A trade as its page shows it. `parentId` is the offer a counter answers.
- * `feedback` is where the viewer's feedback stands, `none` for staff.
+ * A trade as its page shows it. `items` are its objekts and `payment` its
+ * payment, if any, with `paymentMethods` the methods its listing accepts,
+ * which the payment's recipient confirms one of. `parentId` is the offer a
+ * counter answers. `feedback` is where the viewer's feedback stands, `none`
+ * for staff.
  */
 export type TradeView = TradeStage & {
   id: string;
+  payment: TradePaymentView | null;
+  paymentMethods: PaymentMethod[];
   state: TradeState;
   endedAt: Date | null;
   dispute: TradeDispute | null;
@@ -135,11 +154,13 @@ export type MyTradesTab = (typeof myTradesTabs)[number];
 
 /**
  * One side of a trade in a My trades row: the objekts it sends, as the
- * Listings feed shows an offered side, and how many the drain has seen.
+ * Listings feed shows an offered side, how many the drain has seen, and the
+ * payment it sends, if any.
  */
 export type MyTradeSide = {
   items: ListingFeedItem[];
   sent: number;
+  payment: { amount: number; currency: string; confirmed: boolean } | null;
 };
 
 /**

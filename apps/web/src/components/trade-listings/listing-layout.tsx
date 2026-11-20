@@ -59,7 +59,7 @@ export default function ListingLayout({
   notice,
   offered,
   picks = null,
-  wants = <WantList wants={listing.wants} />,
+  wants = <WantList wants={listing.wants} payment={listing.payment} />,
   closed = false,
   children,
 }: Props) {

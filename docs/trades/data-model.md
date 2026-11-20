@@ -46,7 +46,7 @@ The trade tables live in `packages/database/src/web/schema.ts` under `#region Tr
 | `exact`   | `count` copies of one collection                                                                                                      | the collection's values on the row                                                                                                              |
 | `range`   | `count` objekts where some range matches, and a range matches when every narrowed column holds the objekt's value (`matchesRanges()`) | 1 to `MAX_RANGE_CLAUSES` ranges in `trade_listing_want_ranges`, one array per column; an empty array matches anything, at least one is narrowed |
 | `choice`  | `count` objekts in any mix of 2 to `MAX_CHOICE_OPTIONS` named collections                                                             | the collections in `trade_listing_want_options`                                                                                                 |
-| `payment` | dormant (see below)                                                                                                                   | `amount` and `currency`                                                                                                                         |
+| `payment` | nothing: it prices one unit (see [Payments](#payments))                                                                               | `amount` and `currency`, at most one per listing                                                                                                |
 
 - Wants are inserted together and replaced together, so id order is the posted order.
 - A range row's ranges are ordered by `position` and may overlap: an objekt fits the row once however many of them match it, so its match count is the union.
@@ -73,9 +73,24 @@ The trade tables live in `packages/database/src/web/schema.ts` under `#region Tr
 - Chat text and typed events share one stream per trade. Text bodies are ciphertext that only apps/chat reads ([apps/chat/README.md](../../apps/chat/README.md)).
 - Events and notifications are written in the transaction that changes the trade ([lifecycle.md](lifecycle.md)).
 
-## Dormant payment schema
+## Payments
 
-- The schema carries a payment side that nothing creates: the `payment` item and want kinds, `trade_offers.offers`, the `payment_method` enum, the `marked_paid` and `payment_confirmed` events, and their branches in `transition()`, `owingSides()`, `feedbackScored()` and `feedbackRole()`.
-- It is unreachable: the input schemas take only exact, range and choice wants and token ids, every insert writes `kind: "objekt"`, `posterBlocked()` refuses a listing with a payment want, and no server function runs `mark_paid` or `confirm_payment`.
-- Its branches have no tests, because nothing can reach them ([testing.md](../testing.md#one-test-per-rule)). Write them with the first code path that creates a payment.
-- Opening sales also needs a `user.payment_methods` column, buyer and seller notifications, an FX snapshot on the trade, and market price data on sale listings rather than sale lists (`sync-market-stats`).
+A payment is money the two parties move outside Apollo; the trade records what was agreed and whether its recipient says it arrived.
+
+| Where                    | Holds                                                                                                                          |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| listing's payment want   | the amount one unit pays and the currency                                                                                      |
+| `trade_offers` (listing) | `payment_side` (`to` the claimer pays, `from` the poster pays on top of their objekts), `payment_methods`, `offers`            |
+| `trade_offers` (trade)   | `payment_methods`: on a trade with a payment, the listing's methods as the claim read them                                     |
+| trade's payment item     | `amount` for every unit the trade took, `currency`, `sender`; `confirmed_at` and `method` once the recipient marks it received |
+
+- A listing's items stay objekts. Its payment is the payment want, sent by `payment_side`; `trade_offers_payment_chk` keeps a listing's side, offer mode and at least one method together, and a trade has no side or mode (`trade_offers_trade_chk`).
+- A claim writes the trade's payment item with `sender = payment_side` (`insertTrade()`). A poster's payment item keeps `listing_id`, so readers that find a trade's listing through its items still find it; a claimer's has none, like their tokens.
+- A payment item is never live, so `goLive` and every other write that sets `live` touch objekt items only.
+- Amounts are integer minor units in code, two decimals in every currency, KRW included (`packages/trades/src/payment.ts`). The input caps one unit at `MAX_PAYMENT_AMOUNT`, so the units a claim can take keep the total inside `numeric(14,2)`.
+- A listing's currency must have a rate on the newest `fx_rates` date (`assertSupportedCurrency()`), and every price shows in it, never converted.
+- The claim copies the listing's methods onto the trade (`insertTrade()`), under the listing lock's `updated_at` guard, so an edit never changes what a live trade can be confirmed by or shows. `$confirmPayment` and the trade page read the trade's own.
+- Only the recipient marks a payment received; the payer has no step. A payment is owed, and not started, until then ([lifecycle.md](lifecycle.md#payments)).
+- When one side sends nothing but the payment, its rater is the buyer and the other the seller; a payment beside objekts on both sides leaves two traders (`feedbackRole()`).
+- A listing is a sale or a buy only when one side is payment-only: a payment want with no objekt rows is a sale, the poster's payment with no objekts offered a buy, anything else a trade (`listingType()` in `listing.ts`, mirrored in SQL by the feed's Type filter).
+- Direct offers and counters carry no payment.

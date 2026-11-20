@@ -2,7 +2,7 @@ import { useInvalidateTrade } from "@/hooks/use-invalidate-trade";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { ratingStyles, roleLabels } from "@/lib/client/feedback";
-import { formatCount } from "@/lib/client/trade-listings";
+import { formatAmount, formatCount } from "@/lib/client/trade-listings";
 import { itemLabel, tradeTimeFormat } from "@/lib/client/trades";
 import { $leaveFeedback } from "@/lib/functions/feedback";
 import {
@@ -310,10 +310,10 @@ function TradeContext({
         markup={{
           get: () => (
             <b className="font-semibold text-foreground">
-              <SideSummary items={trade.items} sender={otherSide(side)} />
+              <SideSummary trade={trade} sender={otherSide(side)} />
             </b>
           ),
-          send: () => <SideSummary items={trade.items} sender={side} />,
+          send: () => <SideSummary trade={trade} sender={side} />,
         }}
       />
       {" · "}
@@ -334,15 +334,32 @@ function TradeContext({
   );
 }
 
-// what one side sends: the objekt and its serial when it's one, else how many
+/**
+ * What one side sends: its objekts, then its payment in the trade's own
+ * currency, "Atom02 HeeJin 201Z #00012 + $3.00", or the payment alone.
+ */
 function SideSummary({
-  items,
+  trade,
   sender,
 }: {
-  items: TradeItemView[];
+  trade: Pick<TradeView, "items" | "payment">;
   sender: TradeSide;
 }) {
-  const sent = items.filter((item) => item.sender === sender);
+  const sent = trade.items.filter((item) => item.sender === sender);
+  const payment = trade.payment?.sender === sender ? trade.payment : null;
+  const price =
+    payment === null ? null : formatAmount(payment.amount, payment.currency);
+  if (sent.length === 0 && price !== null) return price;
+  return (
+    <>
+      <ObjektsSummary sent={sent} />
+      {price !== null && ` + ${price}`}
+    </>
+  );
+}
+
+// a side's objekts: the objekt and its serial when it's one, else how many
+function ObjektsSummary({ sent }: { sent: TradeItemView[] }) {
   const [only] = sent;
   if (sent.length !== 1 || only === undefined) {
     return m.feedback_context_objekts({ count: sent.length });

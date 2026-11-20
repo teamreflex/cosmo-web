@@ -41,6 +41,7 @@ import {
   lockListingOffers,
   lockPoster,
   ownListing,
+  paymentColumns,
   posterRow,
   recheckTokens,
   refuseEdit,
@@ -122,6 +123,7 @@ export const $postListing = createServerFn({ method: "POST" })
           unitSize: data.unitSize,
           note: data.note,
           ...listingArrays(terms.offered),
+          ...paymentColumns(data.payment),
         })
         .returning({ id: tradeOffers.id });
       if (!listing) throw new Error("Listing insert returned no row");
@@ -193,6 +195,7 @@ export const $editListing = createServerFn({ method: "POST" })
             fromAddress: address,
             unitSize: data.unitSize,
             note: data.note,
+            ...paymentColumns(data.payment),
             updatedAt: bumpUpdatedAt,
           })
           .where(eq(tradeOffers.id, data.listingId));
@@ -459,6 +462,8 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
           fromUserId: true,
           fromAddress: true,
           unitSize: true,
+          paymentSide: true,
+          paymentMethods: true,
         },
         extras: listingStateExtras,
         with: {
@@ -502,7 +507,6 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
           : [],
       );
       const posterRefused = posterBlocked(
-        listing.wants,
         listing.fromUser,
         listing.fromAddress,
       );
@@ -519,6 +523,7 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
           unitSize,
           items,
           wants: listing.wants,
+          payment: listing.payment,
           state,
           // only an open listing can be claimed, so only an open one is judged
           stop:

@@ -21,34 +21,55 @@ import { FieldError } from "../ui/field";
 import ComposerChoiceRow from "./composer-choice-row";
 import ComposerExactRow from "./composer-exact-row";
 import ComposerExactSearch from "./composer-exact-search";
+import { ComposerPaymentRow } from "./composer-payment";
 import ComposerRangeRow from "./composer-range-row";
 import ComposerStepper from "./composer-stepper";
 
 type Props = {
   form: UseFormReturn<ListingFormValues, unknown, ListingInput>;
   display: ComposerDisplay;
+  /** the listing's currency, which the payment row shows */
+  currency: string;
   onCollection: (collection: Objekt.Collection) => void;
+  /** a payment was added, which needs the listing's payment terms */
+  onPaymentAdded: () => void;
+  /** a payment was removed, which may leave the terms unused */
+  onPaymentRemoved: () => void;
 };
 
 /**
  * What the poster asks for in return: exact rows for copies of one
- * collection, "any of" rows for any mix of a few named collections and
- * range rows for any objekts matching some values, in the order they're
- * added.
+ * collection, "any of" rows for any mix of a few named collections, range
+ * rows for any objekts matching some values, in the order they're added,
+ * and a payment row, kept last, while the poster isn't paying on top of
+ * their objekts.
  */
 export default function ComposerWantRows({
   form,
   display,
+  currency,
   onCollection,
+  onPaymentAdded,
+  onPaymentRemoved,
 }: Props) {
   const { control, formState } = form;
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, insert, remove } = useFieldArray({
     control,
     name: "wants",
   });
-  const wants = useWatch({ control, name: "wants" });
+  const [wants, offeredPayment] = useWatch({
+    control,
+    name: ["wants", "offeredPayment"],
+  });
   const [searching, setSearching] = useState(false);
   const roomForRow = canAddWant(wants);
+  const paymentRow = wants.findIndex((want) => want.kind === "payment");
+
+  // objekt rows go above the payment row, which stays last
+  function addRow(want: ListingFormWant) {
+    if (paymentRow === -1) append(want);
+    else insert(paymentRow, want);
+  }
   const firstRange = wants.findIndex((want) => want.kind === "range");
   const validate = formState.isSubmitted;
 
@@ -64,7 +85,7 @@ export default function ComposerWantRows({
     const added = addExactWant(wants, collection.slug);
     const want = added.index === null ? undefined : added.wants[added.index];
     if (added.index !== null && want !== undefined) {
-      if (added.index === fields.length) append(want);
+      if (added.index === wants.length) addRow(want);
       else setWant(added.index, want);
     }
     setSearching(false);
@@ -78,12 +99,29 @@ export default function ComposerWantRows({
 
       <div className="flex flex-col gap-2.5 rounded-lg border border-border bg-muted/40 p-3">
         <span className="text-xxs font-medium tracking-widest text-muted-foreground uppercase">
-          {m.listing_composer_trade_total({ count: totalWanted(wants) })}
+          {paymentRow !== -1 && totalWanted(wants) === 0
+            ? m.listing_detail_kind_payment()
+            : m.listing_composer_trade_total({ count: totalWanted(wants) })}
         </span>
 
         {fields.map((field, index) => {
           const want = wants[index];
           if (want === undefined) return null;
+          if (want.kind === "payment") {
+            return (
+              <ComposerPaymentRow
+                key={field.id}
+                currency={currency}
+                amount={want.amount}
+                label={m.listing_composer_payment_amount()}
+                onChange={(amount) => setWant(index, { ...want, amount })}
+                onRemove={() => {
+                  remove(index);
+                  onPaymentRemoved();
+                }}
+              />
+            );
+          }
           const stepper = (
             <ComposerStepper
               value={want.count}
@@ -177,7 +215,7 @@ export default function ComposerWantRows({
             variant="ghost"
             size="sm"
             disabled={!roomForRow}
-            onClick={() => append({ kind: "choice", slugs: [], count: 1 })}
+            onClick={() => addRow({ kind: "choice", slugs: [], count: 1 })}
             className="border border-dashed border-input max-md:h-10 max-md:flex-1"
           >
             <IconPlus />
@@ -188,11 +226,27 @@ export default function ComposerWantRows({
             variant="ghost"
             size="sm"
             disabled={!roomForRow}
-            onClick={() => append({ kind: "range", ranges: [{}], count: 1 })}
+            onClick={() => addRow({ kind: "range", ranges: [{}], count: 1 })}
             className="border border-dashed border-input max-md:h-10 max-md:flex-1"
           >
             <IconPlus />
             {m.listing_composer_add_range()}
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            disabled={
+              !roomForRow || paymentRow !== -1 || offeredPayment !== undefined
+            }
+            onClick={() => {
+              append({ kind: "payment", amount: "" });
+              onPaymentAdded();
+            }}
+            className="border border-dashed border-amber-500/55 max-md:h-10 max-md:flex-1"
+          >
+            <IconPlus />
+            {m.listing_detail_kind_payment()}
           </Button>
         </div>
         {!roomForRow && (

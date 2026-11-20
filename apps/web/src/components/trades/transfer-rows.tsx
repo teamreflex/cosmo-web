@@ -1,21 +1,30 @@
 import { m } from "@/i18n/messages";
 import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
-import { partyName } from "@/lib/client/trade-listings";
+import {
+  formatAmount,
+  partyName,
+  paymentMethodLabel,
+} from "@/lib/client/trade-listings";
 import { itemLabel, tradeTimeFormat, txUrl } from "@/lib/client/trades";
 import { env } from "@/lib/env/client";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
-import type { TradeItemView, TradeView } from "@/lib/universal/trades";
+import type {
+  TradeItemView,
+  TradePaymentView,
+  TradeView,
+} from "@/lib/universal/trades";
 import { cn } from "@/lib/utils";
 import type { TradeSide } from "@apollo/database/web/types";
 import { otherSide } from "@apollo/trades/lifecycle";
-import type { TradeItemStatus } from "@apollo/trades/transfers";
+import type { PaymentStatus, TradeItemStatus } from "@apollo/trades/transfers";
 import { formatSerial } from "@apollo/util";
-import { IconExternalLink, IconLock } from "@tabler/icons-react";
+import { IconCash, IconExternalLink, IconLock } from "@tabler/icons-react";
 import { type ReactNode, useState } from "react";
 import { tones } from "../trade-listings/state-tones";
 import { Badge } from "../ui/badge";
-import { buttonVariants } from "../ui/button";
+import { Button, buttonVariants } from "../ui/button";
 import { Timestamp } from "../ui/timestamp";
+import ConfirmPaymentDialog from "./confirm-payment-dialog";
 
 type Props = {
   trade: TradeView;
@@ -27,11 +36,12 @@ type Props = {
 
 /**
  * Every serial in the trade, grouped by direction with what the viewer
- * receives first, or the poster's first for staff. Each row shows where its
- * transfer stands and, once the drain has seen it, when and a link to the
- * transaction. An objekt that moved elsewhere or turned untransferable shows
- * when the drain saw that. Before an offer is accepted, each row says
- * whether its sender still holds it.
+ * receives first, or the poster's first for staff, and the payment under
+ * its sender's. Each row shows where its transfer stands and, once the
+ * drain has seen it, when and a link to the transaction. An objekt that
+ * moved elsewhere or turned untransferable shows when the drain saw that.
+ * Before an offer is accepted, each row says whether its sender still holds
+ * it. A payment says whether its recipient marked it received, and how.
  */
 export default function TransferRows({ trade, side, children }: Props) {
   return (
@@ -45,7 +55,8 @@ export default function TransferRows({ trade, side, children }: Props) {
           : ["from", "to"]) satisfies TradeSide[]
       ).map((sender) => {
         const sent = trade.items.filter((item) => item.sender === sender);
-        if (sent.length === 0) return null;
+        const payment = trade.payment?.sender === sender ? trade.payment : null;
+        if (sent.length === 0 && payment === null) return null;
         const from = partyName(trade.parties[sender]);
         const to = partyName(trade.parties[otherSide(sender)]);
         const heading =
@@ -60,12 +71,15 @@ export default function TransferRows({ trade, side, children }: Props) {
               <span className="min-w-0 flex-1 truncate" title={heading}>
                 {heading}
               </span>
-              <span className="tabular-nums">
-                {m.trade_page_direction_seen({
-                  seen: sent.filter((item) => item.status === "sent").length,
-                  count: sent.length,
-                })}
-              </span>
+              {/* a payment is marked received, never seen; its row says which */}
+              {sent.length > 0 && (
+                <span className="tabular-nums">
+                  {m.trade_page_direction_seen({
+                    seen: sent.filter((item) => item.status === "sent").length,
+                    count: sent.length,
+                  })}
+                </span>
+              )}
             </h3>
             <ul>
               {sent.map((item) => (
@@ -83,12 +97,119 @@ export default function TransferRows({ trade, side, children }: Props) {
                   }
                 />
               ))}
+              {payment !== null && (
+                <PaymentRow
+                  trade={trade}
+                  payment={payment}
+                  receiving={side === otherSide(sender)}
+                />
+              )}
             </ul>
           </div>
         );
       })}
       {children}
     </section>
+  );
+}
+
+/**
+ * The trade's payment: its amount for every unit, when its recipient marked
+ * it received and by which method, and for the recipient while the trade
+ * still counts it, Mark received.
+ */
+function PaymentRow({
+  trade,
+  payment,
+  receiving,
+}: {
+  trade: TradeView;
+  payment: TradePaymentView;
+  /** whether the viewer is the payment's recipient */
+  receiving: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const live =
+    trade.stage === "trade" &&
+    !trade.deadlinePassed &&
+    (trade.state.status === "accepted" || trade.state.status === "disputed");
+  const when =
+    payment.confirmedAt !== null ? (
+      <Timestamp date={payment.confirmedAt} format={tradeTimeFormat} />
+    ) : null;
+
+  return (
+    <li className="flex flex-wrap items-center gap-3 border-t border-border/60 px-4 py-2.5">
+      <span className="grid aspect-photocard w-7.5 shrink-0 place-items-center rounded-[3px] bg-amber-500/15 text-amber-700 dark:text-amber-400">
+        <IconCash className="size-4" />
+      </span>
+      <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 gap-y-0.5">
+        <span className="font-mono font-semibold tabular-nums">
+          {formatAmount(payment.amount, payment.currency)}
+        </span>
+        <span className="text-xs text-muted-foreground">
+          {payment.method === null
+            ? m.trade_page_payment_outside({ appName: env.VITE_APP_NAME })
+            : m.trade_page_payment_via({
+                method: paymentMethodLabel(payment.method),
+              })}
+        </span>
+        {when !== null && (
+          <span className="text-xs text-muted-foreground @lg:hidden">
+            {when}
+          </span>
+        )}
+      </div>
+      <span className="w-32 shrink-0 text-right text-xs text-muted-foreground tabular-nums @max-lg:hidden">
+        {when}
+      </span>
+      <PaymentBadge status={payment.status} />
+      {receiving && live && payment.status === "waiting" && (
+        <>
+          <Button size="sm" onClick={() => setOpen(true)}>
+            {m.trade_page_payment_mark_received()}
+          </Button>
+          <ConfirmPaymentDialog
+            tradeId={trade.id}
+            listingId={trade.listingId}
+            payment={payment}
+            methods={trade.paymentMethods}
+            name={partyName(trade.parties[payment.sender])}
+            open={open}
+            onOpenChange={setOpen}
+          />
+        </>
+      )}
+    </li>
+  );
+}
+
+const paymentBadges = {
+  confirmed: {
+    label: m.trade_page_payment_received,
+    className:
+      "border-transparent bg-teal-500/10 text-teal-700 dark:text-teal-500",
+  },
+  waiting: {
+    label: m.trade_page_payment_not_received,
+    className: "border-amber-500/40 text-amber-700 dark:text-amber-400",
+  },
+  not_started: {
+    label: m.trade_page_item_not_started,
+    className: tones.muted,
+  },
+  not_confirmed: {
+    label: m.trade_page_payment_not_received,
+    className: tones.muted,
+  },
+} satisfies Record<PaymentStatus, { label: () => string; className: string }>;
+
+function PaymentBadge({ status }: { status: PaymentStatus }) {
+  const { label, className } = paymentBadges[status];
+  return (
+    <Badge variant="outline" className={cn("shrink-0", className)}>
+      {label()}
+    </Badge>
   );
 }
 

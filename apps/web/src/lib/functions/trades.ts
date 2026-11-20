@@ -24,11 +24,15 @@ import {
   refuseTrade,
 } from "@/lib/server/trades/trade.server";
 import {
+  confirmPaymentInputSchema,
   myTradesInputSchema,
   openDisputeInputSchema,
   tradeIdInputSchema,
 } from "@/lib/universal/schema/trades";
-import { storedObjektItemSchema } from "@/lib/universal/trade-listings";
+import {
+  storedObjektItemSchema,
+  storedPaymentItemSchema,
+} from "@/lib/universal/trade-listings";
 import {
   type MyTradeSide,
   type MyTradesPage,
@@ -272,21 +276,25 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
       }
     }
 
-    // drop the lookahead trade and split each trade's objekts by who sends them
+    // drop the lookahead trade and split each trade's objekts and payment by who sends them
     const all = [...grouped.values()];
     const pageTrades = all.slice(0, PAGE_SIZE);
     const trades = pageTrades.map(({ row, items }) => {
       const side: TradeSide = row.trade.fromUserId === userId ? "from" : "to";
-      // payments arrive with phase 13a; every item so far is an objekt
       const objekts = items.flatMap((item) =>
         item.kind === "objekt"
           ? [{ item, ...storedObjektItemSchema.parse(item) }]
           : [],
       );
+      const payment = items.find((item) => item.kind === "payment");
       return {
         row,
         items,
         side,
+        payment: payment && {
+          sender: payment.sender,
+          terms: storedPaymentItemSchema.parse(payment),
+        },
         send: objekts.filter(({ item }) => item.sender === side),
         get: objekts.filter(({ item }) => item.sender !== side),
       };
@@ -299,14 +307,18 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
       objekts.map(({ tokenId }) => tokenId),
     );
 
-    // one side of a row: its objekts as feed items and how many have arrived
-    const summary = (items: typeof objekts): MyTradeSide => ({
+    // one side of a row: its objekts as feed items, how many have arrived, and its payment
+    const summary = (
+      items: typeof objekts,
+      payment: MyTradeSide["payment"],
+    ): MyTradeSide => ({
       items: items.map((item) => feedItem(item, indexed)),
       sent: items.filter(({ item }) => item.transferredAt !== null).length,
+      payment,
     });
 
     // each trade as a My trades row from the caller's side
-    const mapped = trades.map(({ row, items, side, send, get }) => {
+    const mapped = trades.map(({ row, items, side, payment, send, get }) => {
       const { trade } = row;
       // a trade has a deadline once accepted, and an offer expires until then
       const dueAt = trade.deadlineAt ?? trade.expiresAt;
@@ -327,8 +339,13 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
           row.counterparty,
           row.cosmo,
         ),
-        send: summary(send),
-        get: summary(get),
+        send: summary(send, payment?.sender === side ? payment.terms : null),
+        get: summary(
+          get,
+          payment !== undefined && payment.sender !== side
+            ? payment.terms
+            : null,
+        ),
         needsYou: needsYou(state, side, {
           deadlinePassed: deadlinePassed(state, dueAt, row.watermark),
         }),
@@ -347,7 +364,7 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
 
 /**
  * Cancel an accepted trade the caller is part of, while nothing has been
- * sent or marked paid and its deadline hasn't passed the drain's watermark.
+ * sent or confirmed and its deadline hasn't passed the drain's watermark.
  * A token already in its receiver's account counts as sent before the
  * drain records it. The poster's objekts are free in the listing's pool
  * again, and the other party is notified.
@@ -392,7 +409,15 @@ export const $cancelTrade = createServerFn({ method: "POST" })
           }),
         },
       );
-      if (!result.ok) refuseTrade(partyRefusals[result.reason]);
+      if (!result.ok) {
+        // a payment's confirmation starts a trade too, which a payment trade's refusal says
+        refuseTrade(
+          result.reason === "already_started" &&
+            trade.items.some((item) => item.kind === "payment")
+            ? "trade_cancel_started_payment"
+            : partyRefusals[result.reason],
+        );
+      }
 
       await endTrade(tx, trade, result.trade, users);
       await insertTradeEvent(tx, trade.id, { type: "cancelled", by });
@@ -464,4 +489,71 @@ export const $openDispute = createServerFn({ method: "POST" })
         toUserId: parties.toUserId,
       }),
     ]);
+  });
+
+/**
+ * The recipient of a trade's payment says it arrived, and by which of the
+ * methods the trade took from its listing when claimed. Only the recipient can, never its sender, and only
+ * before the deadline passes the drain's watermark, as a cancel; a
+ * disputed trade's clock is stopped, so staff see a confirmation that came
+ * late. When it settles the trade, the trade completes here, as the drain
+ * completes one when the last token arrives, and both parties hear of it.
+ * A confirmation that leaves something owed notifies no one.
+ */
+export const $confirmPayment = createServerFn({ method: "POST" })
+  .validator(confirmPaymentInputSchema)
+  .middleware([authenticatedMiddleware])
+  .handler(async ({ data, context }) => {
+    const userId = context.session.user.id;
+    await consumeRateLimit({
+      key: `trade-confirm-payment:${userId}`,
+      limit: 10,
+      window: "10 minutes",
+    });
+
+    const parties = await partyTrade(userId, data.tradeId);
+    await db.transaction(async (tx) => {
+      const { users, trade, by } = await lockPartyTrade(
+        tx,
+        userId,
+        data.tradeId,
+        parties,
+      );
+
+      const item = trade.items.findIndex(({ id }) => id === data.itemId);
+      const result = partyAction(
+        trade.state,
+        { type: "confirm_payment", item, by },
+        {
+          deadlinePassed:
+            trade.state.status === "accepted" && (await isDue(tx, trade)),
+          arrived: false,
+        },
+      );
+      if (!result.ok) refuseTrade(partyRefusals[result.reason]);
+      if (!trade.paymentMethods.includes(data.method)) {
+        refuseTrade("payment_method_unaccepted");
+      }
+
+      await tx
+        .update(tradeOfferItems)
+        .set({ confirmedAt: sql`now()`, method: data.method })
+        .where(eq(tradeOfferItems.id, data.itemId));
+      await insertTradeEvent(tx, trade.id, {
+        type: "payment_confirmed",
+        itemId: data.itemId,
+        method: data.method,
+      });
+      if (result.trade.status === "completed") {
+        await endTrade(tx, trade, result.trade, users);
+        await insertTradeEvent(tx, trade.id, { type: "completed", by: null });
+        await notifyUsers(tx, users, {
+          type: "trade_completed",
+          offerId: trade.id,
+          actorId: null,
+          tokenId: null,
+        });
+      }
+    });
+    await publishTradeUpdates([data.tradeId]);
   });

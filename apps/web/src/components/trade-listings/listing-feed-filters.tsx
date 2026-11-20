@@ -4,10 +4,12 @@ import {
   offeringKeys,
   useFeedSideFilters,
   useListingFeedFilters,
+  useListingTypeFilter,
   wantKeys,
 } from "@/hooks/use-listing-feed-filters";
 import { m } from "@/i18n/messages";
 import { cn } from "@/lib/utils";
+import { listingTypes } from "@apollo/trades/listing";
 import { IconAdjustmentsHorizontal } from "@tabler/icons-react";
 import { type ReactNode, Suspense, useId, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -26,6 +28,7 @@ import {
   DrawerTrigger,
 } from "../ui/drawer";
 import { Skeleton } from "../ui/skeleton";
+import { ToggleGroup, ToggleGroupItem } from "../ui/toggle-group";
 
 /**
  * Two chip groups: Offering narrows what a listing gives, Looking for what
@@ -39,7 +42,7 @@ export default function ListingFeedFilters() {
     <>
       <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 max-md:hidden">
         <FilterGroups />
-        <div className="col-start-3 row-span-2 row-start-1">
+        <div className="col-start-3 row-span-3 row-start-1">
           <ResetFilters count={count} onReset={reset} />
         </div>
       </div>
@@ -57,9 +60,36 @@ export default function ListingFeedFilters() {
 function FilterGroups() {
   const offering = useFeedSideFilters(offeringKeys);
   const want = useFeedSideFilters(wantKeys);
+  const { type, setType } = useListingTypeFilter();
 
   return (
     <>
+      <FilterGroup
+        label={m.market_listings_type()}
+        className="text-muted-foreground"
+      >
+        <ToggleGroup
+          aria-label={m.market_listings_type()}
+          variant="outline"
+          size="sm"
+          spacing={0}
+          value={[type ?? "all"]}
+          // pressing the shown type again keeps it
+          onValueChange={([picked]) => {
+            if (picked === undefined) return;
+            setType(listingTypes.find((option) => option === picked));
+          }}
+        >
+          <ToggleGroupItem value="all">
+            {m.market_listings_type_all()}
+          </ToggleGroupItem>
+          {listingTypes.map((option) => (
+            <ToggleGroupItem key={option} value={option}>
+              {listingTypeLabels[option]()}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+      </FilterGroup>
       <FilterGroup
         label={m.market_listings_offering()}
         className="text-teal-700 dark:text-teal-500"
@@ -75,6 +105,12 @@ function FilterGroups() {
     </>
   );
 }
+
+const listingTypeLabels = {
+  trade: m.market_listings_trade,
+  sell: m.market_listings_sell,
+  buy: m.market_listings_buy,
+} satisfies Record<(typeof listingTypes)[number], () => string>;
 
 function FilterGroup({
   label,

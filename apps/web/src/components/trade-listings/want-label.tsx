@@ -1,6 +1,8 @@
 import { m } from "@/i18n/messages";
 import {
+  formatAmount,
   objektName,
+  paymentMethodsText,
   wantedObjektCount,
   wantKindsSummary,
   wantLabel,
@@ -10,6 +12,7 @@ import type {
   ListingFeedWant,
   WantsHeading,
 } from "@/lib/universal/trade-listings";
+import type { ListingPayment } from "@apollo/trades/payment";
 import type { ObjektAttributes } from "@apollo/trades/range";
 import type { ReactNode } from "react";
 import { ObjektCount, ObjektSidebar } from "../objekt/common";
@@ -24,30 +27,57 @@ type Props = {
 
 /**
  * A want row's count and what it asks for, as the listing page heads an
- * exact row ("1× Atom01 KimLip 207A"), an "any of" row ("2× Any of 4
- * collections"), or a payment row behind its badge. It flows as one line
- * of text, so a long label wraps after the count instead of leaving the
- * count alone.
+ * exact row ("1× Atom01 KimLip 207A") or an "any of" row ("2× Any of 4
+ * collections"). It flows as one line of text, so a long label wraps after
+ * the count instead of leaving the count alone.
  */
 export default function WantLabel({ want }: Props) {
   return (
     <span className="min-w-0 leading-relaxed break-words">
-      {want.kind === "payment" ? (
+      <WantCount count={want.count} />
+      <span dir="auto" className="font-semibold">
+        {wantLabel(want)}
+      </span>
+    </span>
+  );
+}
+
+/**
+ * A listing's payment behind its badge, in its own currency: what one
+ * trade pays, or with `units` what this many units pay in all, over the
+ * methods it may arrive by.
+ */
+export function PaymentLabel({
+  payment,
+  units = 1,
+}: {
+  payment: ListingPayment;
+  units?: number;
+}) {
+  return (
+    <span className="flex min-w-0 flex-col gap-1 leading-relaxed">
+      <span>
         <Badge variant="outline" className="me-2 align-middle">
           {m.listing_detail_kind_payment()}
         </Badge>
-      ) : (
-        <WantCount count={want.count} />
-      )}
-      <span
-        dir="auto"
-        className={
-          want.kind === "payment"
-            ? "font-mono font-semibold tabular-nums"
-            : "font-semibold"
-        }
-      >
-        {wantLabel(want)}
+        <span className="font-mono font-semibold tabular-nums">
+          {formatAmount(payment.amount * units, payment.currency)}
+        </span>
+        <span className="ms-1.5 text-muted-foreground">
+          {units === 1
+            ? m.listing_detail_payment_each()
+            : m.listing_detail_payment_units({
+                amount: formatAmount(payment.amount, payment.currency),
+                count: units,
+              })}
+        </span>
+      </span>
+      <span className="text-xs text-muted-foreground">
+        {(payment.side === "to"
+          ? m.listing_detail_payment_methods
+          : m.listing_detail_payment_methods_pays)({
+          methods: paymentMethodsText(payment.methods),
+        })}
       </span>
     </span>
   );
@@ -65,25 +95,26 @@ function WantCount({ count }: { count: number }) {
  * Every row the listing asks for, for viewers who aren't picking from their
  * own objekts: "Looking for" in the want colour, or "You're looking for"
  * for the poster. The heading counts one trade's worth, and the summary
- * sums the rows up unless the page says otherwise. Ranges and payments
- * read as rows of badges in a panel, and exact and "any of" rows below
- * them as objekt cards, an "any of" row's under its count, with any note
- * the page adds under them.
+ * sums the rows up unless the page says otherwise. Ranges and the payment
+ * the claimer sends read as rows in a panel, and exact and "any of" rows
+ * below them as objekt cards, an "any of" row's under its count, with any
+ * note the page adds under them.
  */
 export function WantList({
   wants,
+  payment,
   heading = "looking_for",
-  summary = wantKindsSummary(wants),
+  summary = wantKindsSummary(wants, payment),
   children,
 }: {
   wants: ListingFeedWant[];
+  payment: ListingPayment | null;
   heading?: WantsHeading;
   summary?: string;
   children?: ReactNode;
 }) {
-  const rows = wants.filter(
-    (want) => want.kind === "range" || want.kind === "payment",
-  );
+  const ranges = wants.flatMap((want) => (want.kind === "range" ? [want] : []));
+  const paid = payment?.side === "to" ? payment : null;
   const exact = wants.flatMap((want) => (want.kind === "exact" ? [want] : []));
   const choices = wants.flatMap((want) =>
     want.kind === "choice" ? [want] : [],
@@ -95,20 +126,27 @@ export function WantList({
         tone="want"
         title={(heading === "you_look_for"
           ? m.listing_detail_you_look_for
-          : m.listing_detail_looking_for)({ count: wantedObjektCount(wants) })}
+          : m.listing_detail_looking_for)({
+          // a sale asks for its price alone
+          count:
+            wants.length === 0 && paid !== null
+              ? formatAmount(paid.amount, paid.currency)
+              : wantedObjektCount(wants),
+        })}
         summary={summary}
       />
-      {rows.length > 0 && (
+      {(ranges.length > 0 || paid !== null) && (
         <ul className="flex flex-col divide-y divide-border/60 rounded-lg border border-border bg-card text-sm">
-          {rows.map((want, index) => (
+          {ranges.map((want, index) => (
             <li key={index} className="px-4 py-3">
-              {want.kind === "range" ? (
-                <RangeBadges count={want.count} ranges={want.ranges} />
-              ) : (
-                <WantLabel want={want} />
-              )}
+              <RangeBadges count={want.count} ranges={want.ranges} />
             </li>
           ))}
+          {paid !== null && (
+            <li className="px-4 py-3">
+              <PaymentLabel payment={paid} />
+            </li>
+          )}
         </ul>
       )}
       {exact.length > 0 && (

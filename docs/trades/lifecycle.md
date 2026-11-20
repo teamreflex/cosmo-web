@@ -8,7 +8,7 @@
 | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | `pending`                                                | a direct offer, a counter, an offer on a range listing ([offers.md](offers.md))                                    |
 | `accepted`                                               | a claim, an accepted offer, a staff extend                                                                         |
-| `completed`                                              | every item sent (drain), a deadline with nothing owed, a staff complete, a staff extend with everything sent       |
+| `completed`                                              | every item done: a token's arrival (drain) or a payment's confirmation, a staff complete, a staff extend           |
 | `cancelled`                                              | a party while nothing is sent (`cancelled_by` names them), or staff                                                |
 | `timed_out`                                              | the deadline passed the watermark with nothing sent                                                                |
 | `disputed`                                               | a party's dispute, a ban (`party_banned`), the deadline with something sent and something owed (`deadline_passed`) |
@@ -22,9 +22,10 @@
 | From                     | Event                                           | Who                                     | To                                                 |
 | ------------------------ | ----------------------------------------------- | --------------------------------------- | -------------------------------------------------- |
 | `accepted`               | every item sent                                 | drain                                   | `completed`                                        |
-| `accepted`               | `cancel`, nothing sent or arrived               | a party                                 | `cancelled`                                        |
+| `accepted`               | the last item done is a payment confirmation    | the payment's recipient                 | `completed`                                        |
+| `accepted`               | `cancel`, nothing sent or arrived               | a party not owed an unconfirmed payment | `cancelled`                                        |
 | `accepted`               | `dispute`, before the deadline                  | a party, or a ban                       | `disputed`                                         |
-| `accepted`               | `time_out`, deadline at or before the watermark | `trade-timers`                          | `completed`, `timed_out` or `disputed`             |
+| `accepted`               | `time_out`, deadline at or before the watermark | `trade-timers`                          | `timed_out` or `disputed`                          |
 | `accepted` or `disputed` | `staff_cancel`                                  | staff with `trade: ["cancel-any"]`      | `cancelled`                                        |
 | `disputed`               | `staff_complete`                                | staff with `trade: ["resolve-dispute"]` | `completed`                                        |
 | `disputed`               | `staff_extend`                                  | staff with `trade: ["resolve-dispute"]` | `accepted`, or `completed` when everything arrived |
@@ -35,10 +36,20 @@
 
 1. `trade_status_changed` when the trade is no longer accepted.
 2. `trade_deadline_passed` once `deadline_at <= watermark`, since `trade-timers` owns the trade from then.
-3. A cancel: `trade_cancel_started` once anything is sent, including a token the indexer shows at its receiver before the drain recorded it (`itemStatus() === "arrived"`).
+3. A cancel: `trade_cancel_payment_due` from the recipient of an unconfirmed payment, because Apollo can't see whether the money already reached them; they dispute instead, or let the deadline pass.
+4. A cancel: `trade_cancel_started` once anything is sent or a payment confirmed, including a token the indexer shows at its receiver before the drain recorded it (`itemStatus() === "arrived"`).
 
 - A dispute files a `trade` report, sets `dispute_report_id`, freezes the trade and notifies the other party.
 - A cancel notifies the other party and changes nothing on the listing's pool, since the picks never left it.
+
+## Payments
+
+`$confirmPayment` (`lib/functions/trades.ts`) is the payment's recipient saying it arrived, and by which of the listing's methods.
+
+- It goes through `partyAction()` like a cancel: `trade_status_changed` when the trade is neither accepted nor disputed or the caller sends the payment, then `trade_deadline_passed` on an accepted trade past its deadline, then `payment_method_unaccepted` for a method outside the trade's `payment_methods`, which the claim copied from the listing.
+- A disputed trade records the confirmation, since its clock is stopped, and stays disputed for staff.
+- It stamps `confirmed_at` and `method` and writes a `payment_confirmed` event. When that settles an accepted trade it ends it here with `endTrade()`, a `completed` event (`by: null`) and `trade_completed` to both parties, as the drain does for a last token; otherwise it notifies nobody.
+- Until it is confirmed a payment is owed (`waitingSide()`) and not started: the party who pays can still cancel while nothing else has started, its recipient can't, and a deadline with only an unconfirmed payment and nothing sent times the trade out. A deadline with an objekt sent and the payment unconfirmed, or the reverse, disputes it.
 
 ## Ending a trade
 
@@ -64,7 +75,6 @@
 
 - A deadline is judged against the drain's watermark, `list_drain_cursor.chain_time`, never `now()` (`isTimedOut()`). A transfer stamped before the deadline but drained late still counts, because the watermark only reaches the deadline once that transfer is drained.
 - With no watermark yet, nothing times out.
-- `transition(time_out)` completes a trade nobody owes anything on.
 - It times out a trade where nothing was sent. The picks stay in the listing's pool.
 - It disputes a trade where something was sent and something is still owed, since a side may be out of pocket (`disputeAtDeadline`). The `deadline_passed` report names as reporter the side that sent everything it owed (`waitingSide()`), or nobody when both sent part.
 - Once the due trades have ended, `closeSpentListings` judges each listing they came from ([listings.md](listings.md#listing-lifecycle)).
@@ -100,5 +110,6 @@ Staff act through `lib/functions/staff-trades.ts` and `actOnTrade()` in `lib/ser
 
 ## Item status and "needs you"
 
-- `itemStatus()` in `transfers.ts` is what the trade page shows per item: `sent` (the drain recorded it), `arrived` (at its receiver before the drain saw it), `waiting`, `not_started` (pending offer), `moved`, `untransferable`, or `not_sent` on an ended trade.
-- `needsYou()` decides what My trades marks as waiting on you: answering a pending offer you didn't propose, or sending what you still owe on an accepted trade before its deadline passes the watermark.
+- `itemStatus()` in `transfers.ts` is what the trade page shows per objekt: `sent` (the drain recorded it), `arrived` (at its receiver before the drain saw it), `waiting`, `not_started` (pending offer), `moved`, `untransferable`, or `not_sent` on an ended trade.
+- `paymentStatus()` is the same for a payment: `confirmed`, `waiting`, `not_started` or `not_confirmed`, since Apollo never sees the money move.
+- `needsYou()` decides what My trades marks as waiting on you: answering a pending offer you didn't propose, or on an accepted trade before its deadline passes the watermark, sending a token you still owe or confirming a payment you are owed. Paying asks nothing of you in Apollo.

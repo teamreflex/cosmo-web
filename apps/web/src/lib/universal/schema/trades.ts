@@ -1,4 +1,4 @@
-import { disputeReasons } from "@apollo/database/web/types";
+import { disputeReasons, paymentMethods } from "@apollo/database/web/types";
 import { pgText } from "@apollo/trades/range";
 import { EXTEND_HOURS } from "@apollo/trades/timers";
 import * as z from "zod";
@@ -22,6 +22,12 @@ export const endOfferInputSchema = tradeIdInputSchema.extend({
 export const openDisputeInputSchema = tradeIdInputSchema.extend({
   reason: z.enum(disputeReasons),
   note: tradeNoteSchema,
+});
+
+// the recipient of a trade's payment says it arrived, and by which of the listing's methods
+export const confirmPaymentInputSchema = tradeIdInputSchema.extend({
+  itemId: z.int().positive(),
+  method: z.enum(paymentMethods),
 });
 
 /**

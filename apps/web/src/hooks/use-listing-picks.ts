@@ -13,7 +13,7 @@ import { CLAIM_WINDOW, OFFER_WINDOW } from "@apollo/trades/timers";
 import { useState } from "react";
 
 export type PickerRow = {
-  want: Exclude<ListingFeedWant, { kind: "payment" }>;
+  want: ListingFeedWant;
   trade: TradeWant;
 };
 
@@ -37,7 +37,7 @@ export type ConfirmSnapshot = {
  * choose. Null unless the viewer is picking.
  */
 export function useListingPicks(
-  listing: Pick<TradeListing, "unitSize" | "items" | "wants">,
+  listing: Pick<TradeListing, "unitSize" | "items" | "wants" | "payment">,
   viewer: Candidate | null,
   rows: PickerRow[],
   // whether Accept sends an offer, as on a listing with a range row
@@ -80,6 +80,8 @@ export function useListingPicks(
     picked,
     // the want rows at this many units
     wants: scaled,
+    // the listing's payment for each unit, on whichever side sends it
+    payment: listing.payment,
     valid:
       offered.length === offeredCount &&
       validateAssignment(

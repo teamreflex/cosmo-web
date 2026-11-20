@@ -324,7 +324,7 @@ export async function resolveWants(
             "listing_range_empty" satisfies TradeErrorCode,
           );
         }
-        return want;
+        return { kind: "range", count: want.count, ranges: [...want.ranges] };
       case "choice":
         return {
           kind: "choice",

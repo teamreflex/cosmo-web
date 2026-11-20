@@ -60,6 +60,8 @@ export const $fetchListingFeed = createServerFn({ method: "GET" })
         fromUserId: true,
         fromAddress: true,
         unitSize: true,
+        paymentSide: true,
+        paymentMethods: true,
       },
       extras: {
         free: (t) => freePoolCount(t),
@@ -88,6 +90,7 @@ export const $fetchListingFeed = createServerFn({ method: "GET" })
         rep: listing.fromUser && toFeedbackRep(listing.fromStats),
         items: listing.items,
         wants: listing.wants,
+        payment: listing.payment,
         unitSize: listingUnitSize(listing),
         posted: listing.posted,
         free: listing.free,

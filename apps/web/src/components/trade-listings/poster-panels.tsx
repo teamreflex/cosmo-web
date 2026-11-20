@@ -1,6 +1,6 @@
 import { m } from "@/i18n/messages";
 import { formatOfferRefusal } from "@/lib/client/errors/trades";
-import { partyName } from "@/lib/client/trade-listings";
+import { partyName, ratioText } from "@/lib/client/trade-listings";
 import {
   isLiveTrade,
   type ListingFeedItem,
@@ -349,9 +349,10 @@ function TradeRow({ trade }: { trade: ListingTrade }) {
         {partyName(trade.claimer)}
       </span>
       <span className="font-mono text-xs text-muted-foreground tabular-nums">
-        {m.market_listings_ratio({
+        {ratioText({
           give: trade.tokenIds.length,
           get: trade.givenCount,
+          payment: trade.payment,
         })}
       </span>
       <TradeState trade={trade} name={partyName(trade.claimer)} />

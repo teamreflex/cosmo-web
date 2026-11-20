@@ -12,6 +12,7 @@ The trade system's pure rules, shared by `apps/web` and `apps/schedules`: no dat
 | `./assignment`    | `validateAssignment()`, which checks a claimer's per-row token lists                                                                                          |
 | `./holdings`      | why a token can't be offered (`tokenRefusal()`, `tokenRefusals()`, `firstRefusal()`) and `pickSerials()`                                                      |
 | `./listing`       | the Zod input schemas for listings, claims, offers and counters                                                                                               |
+| `./payment`       | payment amounts in minor units: the input schemas, `numeric(14,2)` conversion, `formatPayment()`                                                              |
 | `./notifications` | which notification types are emailed, their opt-out bits in `user.email_notifications` and the account page's categories                                      |
 | `./range`         | the range filter and range row schemas, `matchesRange()`, `matchesRanges()` and `collapseWholeGroup()`                                                        |
 | `./composer`      | the listing composer's row helpers                                                                                                                            |

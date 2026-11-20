@@ -7,6 +7,7 @@ import {
 } from "@apollo/database/web/types";
 import { accountName, formatSerial } from "@apollo/util";
 import * as z from "zod";
+import { formatPayment, fromNumeric } from "./payment";
 
 /**
  * A dispute staff hear about in Discord: one a party opened, or one
@@ -142,7 +143,7 @@ function partyName(party: DisputeParty) {
   return party.username ?? "Unnamed account";
 }
 
-// "JinSoul Atom01 344Z #00012" or "USD 12.50 via wise", one per line
+// "JinSoul Atom01 344Z #00012" or "USD 12.50, confirmed via wise", one per line
 function sideSummary(
   items: readonly DisputeItem[],
   tokens: DisputeDetails["tokens"],
@@ -159,12 +160,15 @@ function sideSummary(
 
 function itemLabel(item: DisputeItem, tokens: DisputeDetails["tokens"]) {
   if (item.kind === "payment") {
-    const amount = new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: item.currency,
-      currencyDisplay: "code",
-    }).format(Number(item.amount));
-    return item.method === null ? amount : `${amount} via ${item.method}`;
+    const amount = formatPayment(
+      fromNumeric(item.amount),
+      item.currency,
+      "en-US",
+      "code",
+    );
+    return item.method === null
+      ? `${amount}, not confirmed`
+      : `${amount}, confirmed via ${item.method}`;
   }
   const token = tokens.get(item.tokenId);
   return token === undefined

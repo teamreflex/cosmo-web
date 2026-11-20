@@ -170,6 +170,7 @@ export async function lockTrade(tx: WebTx, tradeId: string) {
       cancelledBy: tradeOffers.cancelledBy,
       proposedBy: tradeOffers.proposedBy,
       disputeReportId: tradeOffers.disputeReportId,
+      paymentMethods: tradeOffers.paymentMethods,
       now: sql<Date>`now()`.mapWith(tradeOffers.endedAt),
     })
     .from(tradeOffers)
@@ -185,7 +186,6 @@ export async function lockTrade(tx: WebTx, tradeId: string) {
       tokenId: tradeOfferItems.tokenId,
       listingId: tradeOfferItems.listingId,
       transferredAt: tradeOfferItems.transferredAt,
-      markedPaidAt: tradeOfferItems.markedPaidAt,
       confirmedAt: tradeOfferItems.confirmedAt,
     })
     .from(tradeOfferItems)
@@ -264,6 +264,7 @@ export const partyRefusals = {
   wrong_status: "trade_status_changed",
   deadline_passed: "trade_deadline_passed",
   already_started: "trade_cancel_started",
+  payment_due: "trade_cancel_payment_due",
   wrong_party: "trade_status_changed",
   already_done: "trade_status_changed",
   no_such_item: "trade_status_changed",

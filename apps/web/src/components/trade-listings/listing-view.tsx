@@ -99,9 +99,10 @@ export default function ListingView({
   const [dialog, setDialog] = useState<Dialog | null>(null);
   const [snapshot, setSnapshot] = useState<ConfirmSnapshot | null>(null);
   const invalidateListing = useInvalidateListing();
-  const rows = listing.wants.flatMap((want): PickerRow[] =>
-    want.kind === "payment" ? [] : [{ want, trade: toTradeWant(want) }],
-  );
+  const rows = listing.wants.map((want): PickerRow => ({
+    want,
+    trade: toTradeWant(want),
+  }));
   const offers = takesOffers(listing.wants);
   const picks = useListingPicks(
     listing,
@@ -189,6 +190,7 @@ export default function ListingView({
             address={address}
             rows={rows}
             picks={picks}
+            payment={listing.payment?.side === "to" ? listing.payment : null}
             poster={posterName(listing)}
           />
         ) : (
@@ -275,11 +277,12 @@ function ListingWants({
   role: ListingRole;
 }) {
   if (role.role !== "poster") {
-    return <WantList wants={listing.wants} />;
+    return <WantList wants={listing.wants} payment={listing.payment} />;
   }
   return (
     <WantList
       wants={listing.wants}
+      payment={listing.payment}
       heading="you_look_for"
       summary={
         hasRatio(listing.unitSize, listing.items.length)

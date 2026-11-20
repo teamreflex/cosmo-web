@@ -9,8 +9,10 @@ type Props = {
   /** whether it takes the whole pool however the pool changes */
   bundle: boolean;
   offered: number;
-  /** what the want rows ask for in total */
-  wanted: number;
+  /** what the want rows and the claimer's payment ask for in total, "2 + $3.00" */
+  wanted: string;
+  /** the want side is a price alone, a sale */
+  priceOnly: boolean;
   onChange: (unitSize: number) => void;
 };
 
@@ -29,6 +31,7 @@ export default function ComposerRatio({
   bundle,
   offered,
   wanted,
+  priceOnly,
   onChange,
 }: Props) {
   const titleId = useId();
@@ -73,7 +76,11 @@ export default function ComposerRatio({
       <div className="flex min-w-0 flex-[1_1_20rem] flex-col gap-1 text-sm leading-relaxed">
         <p>
           <ParaglideMessage
-            message={m.listing_composer_ratio_each}
+            message={
+              priceOnly
+                ? m.listing_composer_ratio_each_price
+                : m.listing_composer_ratio_each
+            }
             inputs={{ give: unitSize, get: wanted }}
             markup={{
               b: ({ children }) => (

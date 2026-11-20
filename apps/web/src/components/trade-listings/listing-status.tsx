@@ -1,6 +1,11 @@
 import { m } from "@/i18n/messages";
 import { formatTokenRefusal } from "@/lib/client/errors/trades";
-import { objektName, posterName } from "@/lib/client/trade-listings";
+import {
+  formatAmount,
+  objektName,
+  posterName,
+  ratioText,
+} from "@/lib/client/trade-listings";
 import { env } from "@/lib/env/client";
 import { offeredTokenRefusalsQuery } from "@/lib/queries/trade-listings";
 import {
@@ -162,7 +167,7 @@ export function ClaimerCard({
           <ParaglideMessage
             message={m.listing_detail_claimer_size}
             inputs={{
-              ratio: m.market_listings_ratio(size),
+              ratio: ratioText(size),
             }}
             markup={{
               ratio: ({ children }) => (
@@ -172,11 +177,7 @@ export function ClaimerCard({
           />{" "}
           {deadlineAt === null
             ? m.listing_detail_claim_disputed()
-            : m.listing_detail_claimer_body({
-                count: size.get,
-                poster,
-                appName: env.VITE_APP_NAME,
-              })}
+            : claimerNext(size, poster)}
         </span>
         <span className="text-muted-foreground">
           {m.listing_detail_claimer_more()}
@@ -184,6 +185,27 @@ export function ClaimerCard({
       </p>
     </StateCard>
   );
+}
+
+/**
+ * What a claimer still has to do, worded by what they send: objekts in the
+ * COSMO app, a payment outside Apollo, or both.
+ */
+function claimerNext(size: TradeRatio, poster: string) {
+  const appName = env.VITE_APP_NAME;
+  const paid = size.payment?.side === "to" ? size.payment : null;
+  if (paid === null) {
+    return m.listing_detail_claimer_body({ count: size.get, poster, appName });
+  }
+  const amount = formatAmount(paid.amount, paid.currency);
+  return size.get === 0
+    ? m.listing_detail_claimer_pay({ poster, amount, appName })
+    : m.listing_detail_claimer_body_pay({
+        count: size.get,
+        poster,
+        amount,
+        appName,
+      });
 }
 
 type OffererProps = {

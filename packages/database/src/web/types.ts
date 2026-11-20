@@ -513,6 +513,7 @@ export const paymentMethods = [
   "wechat_pay",
   "venmo",
   "cashapp",
+  "other",
 ] as const;
 export type PaymentMethod = (typeof paymentMethods)[number];
 
@@ -526,8 +527,8 @@ export type PaymentMethod = (typeof paymentMethods)[number];
 export type TradeEvent =
   | { type: "accepted" }
   | { type: "item_transferred"; itemId: number; hash: string }
-  | { type: "marked_paid"; itemId: number }
-  | { type: "payment_confirmed"; itemId: number }
+  // the payment's recipient said it arrived, and by which method
+  | { type: "payment_confirmed"; itemId: number; method: PaymentMethod }
   | { type: "completed"; by: null }
   | { type: "completed"; by: "staff"; note: string | null }
   | { type: "cancelled"; by: TradeSide }

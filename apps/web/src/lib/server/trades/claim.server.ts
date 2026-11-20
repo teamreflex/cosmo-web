@@ -13,6 +13,7 @@ import {
   tradeListings,
 } from "@apollo/trades/lifecycle";
 import type { ClaimListingInput } from "@apollo/trades/listing";
+import { type ListingPayment, toNumeric } from "@apollo/trades/payment";
 import { CLAIM_WINDOW, OFFER_WINDOW } from "@apollo/trades/timers";
 import { isEqual } from "@apollo/util";
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
@@ -24,6 +25,7 @@ import type {
   TradeErrorCode,
 } from "../../universal/errors/trades";
 import {
+  listingPayment,
   offerRefusal,
   offerRefusalError,
   storedObjektItemSchema,
@@ -99,7 +101,9 @@ type Preflight = {
     fromAddress: string;
     picked: z.output<typeof storedObjektItemSchema>[];
     wants: StoredWant[];
+    payment: ListingPayment | null;
   };
+  units: number;
   // the indexer's state of the picks and the claimer's tokens
   states: ReadonlyMap<number, TokenState>;
   submitted: number[];
@@ -131,6 +135,8 @@ export async function preflightClaim(
       fromAddress: true,
       unitSize: true,
       updatedAt: true,
+      paymentSide: true,
+      paymentMethods: true,
     },
     with: {
       items: { where: { leftAt: { isNull: true } }, orderBy: { id: "asc" } },
@@ -160,7 +166,7 @@ export async function preflightClaim(
     if (changed) refuse(changed);
     refusal();
   };
-  if (posterBlocked(wants, row.fromUser, row.fromAddress)) {
+  if (posterBlocked(row.fromUser, row.fromAddress)) {
     await refuseAfterRecheck(() => refuse("listing_unavailable"));
   }
 
@@ -203,7 +209,7 @@ export async function preflightClaim(
   const found = claimerStates.flatMap((state) =>
     state.kind === "found" ? [state] : [],
   );
-  // posterBlocked has refused payment rows, so every want is an objekt row
+  // a sale's claim gives no objekts, so its rows are empty and fit
   if (
     !validateAssignment(
       scaleWants(tradeWants(wants), input.units),
@@ -228,7 +234,9 @@ export async function preflightClaim(
       fromAddress: row.fromAddress,
       picked,
       wants,
+      payment: listingPayment(row, wants),
     },
+    units: input.units,
     states,
     submitted,
     offer: takesOffers(wants),
@@ -288,7 +296,6 @@ export async function lockAndRecheck(
   // the poster's account, ban and link as the lock read them, then the picks
   if (
     posterBlocked(
-      listing.wants,
       poster === undefined
         ? null
         : { ...poster, cosmoAccount: links.get(poster.id) ?? null },
@@ -334,8 +341,10 @@ export async function lockAndRecheck(
 
 /**
  * Creates the claim's trade with both addresses pinned and copies the
- * poster's picked objekts and the claimer's tokens into it. The poster's
- * keep the listing's id. The listing itself doesn't change. A claim starts
+ * poster's picked objekts and the claimer's tokens into it, then the
+ * listing's payment for the units claimed, sent by the listing's payment
+ * side and never live, with the methods it may arrive by on the trade. The poster's items keep the listing's id. The
+ * listing itself doesn't change. A claim starts
  * accepted with the fixed claim window, its items live, and tells the
  * poster what to send; an offer on a listing that takes offers starts
  * pending with the offer window, proposed by the claimer, reserving
@@ -346,7 +355,7 @@ export async function lockAndRecheck(
 export async function insertTrade(
   tx: WebTx,
   actor: ListingActor,
-  { listing, submitted, states, offer }: Preflight,
+  { listing, units, submitted, states, offer }: Preflight,
   { toAddress, poster }: Awaited<ReturnType<typeof lockAndRecheck>>,
 ) {
   const [trade] = await tx
@@ -357,6 +366,8 @@ export async function insertTrade(
       toUserId: actor.userId,
       fromAddress: listing.fromAddress,
       toAddress,
+      // what its payment may arrive by, as the listing said when claimed
+      paymentMethods: listing.payment?.methods ?? [],
       ...(offer
         ? {
             status: "pending",
@@ -389,26 +400,40 @@ export async function insertTrade(
     ),
     "listing_pick_unavailable",
   );
-  await refuseLiveClash(
-    tx.insert(tradeOfferItems).values(
-      submitted.flatMap((tokenId) => {
-        const state = states.get(tokenId);
-        return state?.kind === "found"
-          ? [
-              {
-                offerId: trade.id,
-                sender: "to",
-                kind: "objekt",
-                live: !offer,
-                tokenId,
-                ...state.attributes,
-              } satisfies NewTradeOfferItem,
-            ]
-          : [];
-      }),
-    ),
-    "claim_token_unavailable",
-  );
+  // a sale's claimer gives no objekts
+  if (submitted.length > 0) {
+    await refuseLiveClash(
+      tx.insert(tradeOfferItems).values(
+        submitted.flatMap((tokenId) => {
+          const state = states.get(tokenId);
+          return state?.kind === "found"
+            ? [
+                {
+                  offerId: trade.id,
+                  sender: "to",
+                  kind: "objekt",
+                  live: !offer,
+                  tokenId,
+                  ...state.attributes,
+                } satisfies NewTradeOfferItem,
+              ]
+            : [];
+        }),
+      ),
+      "claim_token_unavailable",
+    );
+  }
+  if (listing.payment !== null) {
+    await tx.insert(tradeOfferItems).values({
+      offerId: trade.id,
+      listingId: listing.payment.side === "from" ? listing.id : null,
+      sender: listing.payment.side,
+      kind: "payment",
+      live: false,
+      amount: toNumeric(listing.payment.amount * units),
+      currency: listing.payment.currency,
+    } satisfies NewTradeOfferItem);
+  }
   await insertTradeEvent(tx, trade.id, {
     type: offer ? "offered" : "accepted",
   });
@@ -504,7 +529,6 @@ export async function recheckListingOffer(
       unitSize: terms.unitSize,
       wants: tradeWants(terms.wants),
       posterRefused: posterBlocked(
-        terms.wants,
         poster === undefined
           ? null
           : { ...poster, cosmoAccount: links.get(poster.id) ?? null },

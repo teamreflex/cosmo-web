@@ -1,0 +1,2 @@
+ALTER TABLE "trade_offers" DROP CONSTRAINT "trade_offers_trade_chk", ADD CONSTRAINT "trade_offers_trade_chk" CHECK ("kind" = 'listing' OR ("to_address" IS NOT NULL AND "offers" IS NULL AND "note" IS NULL AND "payment_side" IS NULL));--> statement-breakpoint
+ALTER TABLE "trade_offers" DROP CONSTRAINT "trade_offers_payment_chk", ADD CONSTRAINT "trade_offers_payment_chk" CHECK ("kind" = 'trade' OR num_nulls("payment_side", "offers", nullif(cardinality("payment_methods"), 0)) IN (0, 3));

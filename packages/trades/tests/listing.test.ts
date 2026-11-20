@@ -1,3 +1,4 @@
+import type { PaymentMethod, TradeSide } from "@apollo/database/web/types";
 import { describe, expect, test } from "bun:test";
 import type * as z from "zod";
 import {
@@ -14,9 +15,12 @@ import {
   listingIdSchema,
   type ListingInput,
   listingInputSchema,
+  type ListingType,
+  listingType,
   offeredTokensInputSchema,
   offerInputSchema,
 } from "../src/listing";
+import { MAX_NUMERIC_AMOUNT, MAX_PAYMENT_AMOUNT } from "../src/payment";
 import {
   MAX_RANGE_CLAUSES,
   MAX_RANGE_VALUES,
@@ -49,6 +53,11 @@ const slugs = (count: number) =>
   Array.from({ length: count }, (_, i) => exact(`atom02-heejin-${100 + i}z`));
 
 const offered = [{ tokenId: 1 }];
+const pay = (amount: string) => ({ kind: "payment" as const, amount });
+const usd = {
+  currency: "USD",
+  methods: ["paypal_ff", "wise"] satisfies PaymentMethod[],
+};
 const wants = [exact(KIMLIP)];
 const HEEJIN = "atom02-heejin-201z";
 const HASEUL = "atom02-haseul-201z";
@@ -131,7 +140,7 @@ const refused = [
   [
     "no wants (SCH-03)",
     { offered, wants: [] },
-    "wants: Ask for at least one objekt",
+    "wants: Ask for at least one objekt or a payment",
   ],
   [
     "the same exact slug in two casings (SCH-05)",
@@ -189,9 +198,90 @@ const refused = [
     "note: A note can be at most 500 characters",
   ],
   [
-    "a payment want (SCH-16)",
-    { offered, wants: [{ kind: "payment", amount: "10.00", currency: "USD" }] },
-    "wants.0.kind: *",
+    "a payment row carrying its own currency (SCH-16)",
+    {
+      offered,
+      wants: [{ kind: "payment", amount: "10.00", currency: "USD" }],
+      payment: usd,
+    },
+    "wants.0: *",
+  ],
+  [
+    "a payment of 0",
+    { offered, wants: [pay("0.00")], payment: usd },
+    "wants.0.amount: An amount must be more than 0",
+  ],
+  [
+    "a negative payment",
+    { offered, wants: [pay("-3.00")], payment: usd },
+    "wants.0.amount: *",
+  ],
+  [
+    "a payment with three decimals",
+    { offered, wants: [pay("3.001")], payment: usd },
+    "wants.0.amount: *",
+  ],
+  [
+    "a payment past MAX_PAYMENT_AMOUNT, which a claim's units could push past numeric(14,2)",
+    { offered, wants: [pay("100000000.00")], payment: usd },
+    "wants.0.amount: An amount can be at most 99999999.99",
+  ],
+  [
+    "a payment in exponent notation",
+    { offered, wants: [pay("1e3")], payment: usd },
+    "wants.0.amount: *",
+  ],
+  [
+    "a payment with no methods",
+    { offered, wants: [pay("3")], payment: { currency: "USD", methods: [] } },
+    "payment.methods: Pick at least one payment method",
+  ],
+  [
+    "a payment method outside the list",
+    {
+      offered,
+      wants: [pay("3")],
+      payment: { currency: "USD", methods: ["crypto"] },
+    },
+    "payment.methods.0: *",
+  ],
+  [
+    "a payment method picked twice",
+    {
+      offered,
+      wants: [pay("3")],
+      payment: { currency: "USD", methods: ["wise", "wise"] },
+    },
+    "payment.methods: Each payment method can only be picked once",
+  ],
+  [
+    "a lowercase currency",
+    {
+      offered,
+      wants: [pay("3")],
+      payment: { currency: "usd", methods: ["wise"] },
+    },
+    "payment.currency: Pick a currency",
+  ],
+  [
+    "a payment without its currency and methods",
+    { offered, wants: [pay("3")] },
+    "payment: Pick a currency and the payment methods you accept",
+  ],
+  [
+    "payment methods without a payment",
+    { offered, wants, payment: usd },
+    "payment: Only a listing with a payment takes payment methods",
+  ],
+  [
+    "two payment rows",
+    { offered, wants: [pay("3"), pay("4")], payment: usd },
+    "wants: A listing can ask for one payment",
+  ],
+  [
+    "a payment on both sides",
+    { offered, wants: [pay("3")], offeredPayment: "2", payment: usd },
+    "offeredPayment: A payment can only be on one side",
   ],
   [
     "a whitespace slug (SCH-17)",
@@ -309,10 +399,14 @@ const accepted: [
       | ReturnType<typeof exact>
       | ReturnType<typeof range>
       | ReturnType<typeof choice>
+      | ReturnType<typeof pay>
     )[];
+    offeredPayment?: string;
+    payment?: { currency: string; methods: PaymentMethod[] };
     note?: string | null;
   },
-  output: Omit<ListingInput, "unitSize"> & { unitSize?: number },
+  output: Omit<ListingInput, "unitSize" | "payment"> &
+    Partial<Pick<ListingInput, "unitSize" | "payment">>,
 ][] = [
   [
     "the minimal listing (SCH-01)",
@@ -493,6 +587,47 @@ const accepted: [
       note: null,
     },
   ],
+  [
+    "a sale: a payment row alone (SCH-16)",
+    { offered: tokens(3), unitSize: 1, wants: [pay(" 3 ")], payment: usd },
+    {
+      offered: tokens(3),
+      unitSize: 1,
+      wants: [],
+      payment: { side: "to", amount: 300, ...usd },
+      note: null,
+    },
+  ],
+  [
+    "a payment row beside objekt rows, at MAX_PAYMENT_AMOUNT",
+    { offered, wants: [exact(KIMLIP), pay("99999999.99")], payment: usd },
+    {
+      offered,
+      wants: [exact(KIMLIP)],
+      payment: { side: "to", amount: MAX_PAYMENT_AMOUNT, ...usd },
+      note: null,
+    },
+  ],
+  [
+    "the poster's payment on top of their objekts, with Other",
+    {
+      offered,
+      wants,
+      offeredPayment: "2.5",
+      payment: { currency: "KRW", methods: ["other"] },
+    },
+    {
+      offered,
+      wants,
+      payment: {
+        side: "from",
+        amount: 250,
+        currency: "KRW",
+        methods: ["other"],
+      },
+      note: null,
+    },
+  ],
 ];
 
 describe("listingInputSchema", () => {
@@ -503,9 +638,24 @@ describe("listingInputSchema", () => {
   test.each(accepted)("accepts %s", (_, input, output) => {
     expect(listingInputSchema.safeParse(input)).toEqual({
       success: true,
-      data: { unitSize: input.offered.length, ...output },
+      data: { unitSize: input.offered.length, payment: null, ...output },
     });
   });
+});
+
+describe("listingType", () => {
+  test.each([
+    ["no payment", null, 1, 3, "trade"],
+    ["a payment row alone", "to", 0, 3, "sell"],
+    ["a payment row beside objekt rows", "to", 1, 3, "trade"],
+    ["the poster's payment on top of objekts", "from", 1, 3, "trade"],
+    ["the poster's payment with no objekts", "from", 1, 0, "buy"],
+  ] satisfies [string, TradeSide | null, number, number, ListingType][])(
+    "%s is a %s",
+    (_, paymentSide, objektWants, offered, expected) => {
+      expect(listingType({ paymentSide, objektWants, offered })).toBe(expected);
+    },
+  );
 });
 
 describe("listingIdSchema (SCH-23)", () => {
@@ -523,6 +673,18 @@ describe("claimListingInputSchema", () => {
     picked: [100],
     rows: [[1], [2, 3]],
   };
+
+  test("accepts a sale's claim, which gives no objekts", () => {
+    expect(
+      claimListingInputSchema.safeParse({ ...claim, rows: [] }).success,
+    ).toBe(true);
+  });
+
+  test("bounds a payment's total to numeric(14,2)", () => {
+    expect(MAX_PAYMENT_AMOUNT * MAX_OFFERED).toBeLessThanOrEqual(
+      MAX_NUMERIC_AMOUNT,
+    );
+  });
 
   test("accepts the row and total caps", () => {
     const full = Array.from({ length: MAX_PER_ROW }, (_, i) => i + 1);
@@ -562,6 +724,11 @@ describe("claimListingInputSchema", () => {
       `rows: A claim can give at most ${MAX_TOTAL_WANTED} objekts`,
     ],
     ["no units", { units: 0 }, "units: *"],
+    /**
+     * The unit cap is what keeps a payment's total inside numeric(14,2):
+     * MAX_PAYMENT_AMOUNT × MAX_OFFERED fits, so one more unit is refused.
+     */
+    ["one unit past MAX_OFFERED", { units: MAX_OFFERED + 1 }, "units: *"],
     [
       "an objekt picked twice",
       { picked: [100, 101, 100] },

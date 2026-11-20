@@ -1,5 +1,9 @@
+import type { PaymentMethod } from "@apollo/database/web/types";
 import type { ArtistValues } from "@apollo/trades/composer";
-import { listingInputSchema } from "@apollo/trades/listing";
+import {
+  editListingInputSchema,
+  listingInputSchema,
+} from "@apollo/trades/listing";
 import { MAX_RANGE_VALUES } from "@apollo/trades/range";
 import { describe, expect, test } from "bun:test";
 import {
@@ -86,7 +90,11 @@ const listing = {
       ],
     },
   ],
-} satisfies Pick<TradeListing, "id" | "items" | "wants" | "note" | "unitSize">;
+  payment: null,
+} satisfies Pick<
+  TradeListing,
+  "id" | "items" | "wants" | "payment" | "note" | "unitSize"
+>;
 
 describe("composer prefill (CMP-04)", () => {
   const values = listingToFormValues(listing);
@@ -277,6 +285,8 @@ describe("range rows on submit", () => {
         offered: 1,
         refused: 0,
         wants: [{ kind: "range", count: 1, ranges: [{ member }] }],
+        offeredPayment: undefined,
+        payment: undefined,
         unitSize: undefined,
         rangeMatches: [],
         rosters,
@@ -368,11 +378,18 @@ const block = ({
   offered,
   unitSize,
   wants,
-}: Pick<ListingFormValues, "offered" | "unitSize" | "wants">) =>
+  offeredPayment,
+  payment,
+}: Pick<
+  ListingFormValues,
+  "offered" | "unitSize" | "wants" | "offeredPayment" | "payment"
+>) =>
   composerBlock({
     offered: offered.length,
     refused: 0,
     wants,
+    offeredPayment,
+    payment,
     unitSize,
     rangeMatches: [],
     rosters,
@@ -388,4 +405,73 @@ const fillers = {
   rep: null,
   state: { status: "open" },
   stop: null,
-} satisfies Omit<TradeListing, "id" | "items" | "wants" | "note" | "unitSize">;
+} satisfies Omit<
+  TradeListing,
+  "id" | "items" | "wants" | "payment" | "note" | "unitSize"
+>;
+
+describe("payments in the composer", () => {
+  const sale = {
+    ...listing,
+    wants: [],
+    payment: {
+      side: "to",
+      amount: 300,
+      currency: "USD",
+      methods: ["paypal_ff", "wise"],
+    },
+  } satisfies Pick<
+    TradeListing,
+    "id" | "items" | "wants" | "payment" | "note" | "unitSize"
+  >;
+
+  test("a sale prefills its payment as the last row and sends it back unchanged", () => {
+    const values = listingToFormValues(sale);
+    expect(values.wants).toEqual([{ kind: "payment", amount: "3.00" }]);
+    expect(values.payment).toEqual({
+      currency: "USD",
+      methods: ["paypal_ff", "wise"],
+    });
+    const submission = formValuesToInput(
+      listingInputSchema.parse(values),
+      { kind: "edit", listing: { ...sale, ...fillers } },
+      rosters,
+    );
+    expect(submission.data).toMatchObject({
+      wants: [{ kind: "payment", amount: "3.00" }],
+      payment: { currency: "USD", methods: ["paypal_ff", "wise"] },
+    });
+    expect(editListingInputSchema.parse(submission.data).payment).toEqual(
+      sale.payment,
+    );
+  });
+
+  test("the poster's payment on top prefills as offeredPayment", () => {
+    const values = listingToFormValues({
+      ...listing,
+      payment: { ...sale.payment, side: "from" },
+    });
+    expect(values.offeredPayment).toBe("3.00");
+    expect(values.wants.some((want) => want.kind === "payment")).toBe(false);
+  });
+
+  test.each([
+    ["an amount that doesn't read", "3.001", ["wise"], "payment_amount"],
+    ["an empty amount", "", ["wise"], "payment_amount"],
+    ["no methods", "3", [], "payment_methods"],
+    ["a set payment", "3", ["wise"], null],
+  ] satisfies [string, string, PaymentMethod[], string | null][])(
+    "%s holds Post back as it should",
+    (_, amount, methods, expected) => {
+      expect(
+        block({
+          offered: offered(1),
+          unitSize: undefined,
+          wants: [{ kind: "payment", amount }],
+          offeredPayment: undefined,
+          payment: { currency: "USD", methods },
+        }),
+      ).toBe(expected);
+    },
+  );
+});

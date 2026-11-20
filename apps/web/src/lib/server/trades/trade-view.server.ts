@@ -7,6 +7,7 @@ import {
 import type {
   ReportStatus,
   TradeEvent,
+  TradeOfferItem,
   TradeSide,
 } from "@apollo/database/web/types";
 import {
@@ -15,8 +16,9 @@ import {
   type TradeState,
   tradeState,
 } from "@apollo/trades/lifecycle";
+import { fromNumeric } from "@apollo/trades/payment";
 import { DRAIN_CURSOR_NAME, isTimedOut } from "@apollo/trades/timers";
-import { itemStatus } from "@apollo/trades/transfers";
+import { itemStatus, paymentStatus } from "@apollo/trades/transfers";
 import { and, eq, isNull, sql } from "drizzle-orm";
 import {
   toFeedbackRep,
@@ -30,6 +32,7 @@ import {
   type TradeNamedItem,
   type TradeParty,
   type TradePartyName,
+  type TradePaymentView,
   type TradeStage,
   type TradeView,
 } from "../../universal/trades";
@@ -37,6 +40,47 @@ import { type ServerUser, toPublicUser } from "../auth.server";
 import { db } from "../db";
 import { feedbackRepColumns } from "../feedback.server";
 import { readIndexed } from "./feed.server";
+
+/**
+ * A payment item as the trade page shows it, its amount parsed from the
+ * `numeric(14,2)` column into minor units.
+ */
+function toPaymentView(
+  item: Pick<
+    TradeOfferItem,
+    "id" | "sender" | "amount" | "currency" | "confirmedAt" | "method"
+  >,
+  state: TradeState,
+): TradePaymentView {
+  // trade_offer_items_objekt_chk: a payment has its amount and currency
+  if (item.amount === null || item.currency === null) {
+    throw new Error(`payment item ${item.id} has no amount`);
+  }
+  return {
+    id: item.id,
+    sender: item.sender,
+    amount: fromNumeric(item.amount),
+    currency: item.currency,
+    confirmedAt: item.confirmedAt,
+    method: item.method,
+    status: paymentStatus(item, state.status),
+  };
+}
+
+/**
+ * A trade's payment as its page shows it, and the methods it may arrive
+ * by, which the trade took from its listing when claimed.
+ */
+function tradePayment(
+  items: readonly TradeOfferItem[],
+  paymentMethods: TradeView["paymentMethods"],
+  state: TradeState,
+): Pick<TradeView, "payment" | "paymentMethods"> {
+  const payment = items.find((item) => item.kind === "payment");
+  return payment === undefined
+    ? { payment: null, paymentMethods: [] }
+    : { payment: toPaymentView(payment, state), paymentMethods };
+}
 
 /**
  * The drain's watermark as a scalar subquery, so a trade read gets it in
@@ -154,6 +198,7 @@ export async function readTradeView(
       expiresAt: true,
       endedAt: true,
       parentId: true,
+      paymentMethods: true,
     },
     extras: {
       watermark: watermarkExtra,
@@ -303,13 +348,16 @@ export async function readTradeView(
     throw new Error("offer without an expiry or a proposer");
   }
 
+  const listingId = tradeListingId(row.items);
+
   const trade: TradeView = {
     ...stage,
     id: row.id,
+    ...tradePayment(row.items, row.paymentMethods, state),
     state,
     endedAt: row.endedAt,
     dispute: tradeDispute(state, events),
-    listingId: tradeListingId(row.items),
+    listingId,
     parentId: row.parentId,
     parties: {
       from: toTradeParty(
@@ -320,26 +368,32 @@ export async function readTradeView(
       ),
       to: toTradeParty(row.toUserId, row.toUser, row.toCosmo, row.toStats),
     },
-    items: row.items.map((item): TradeItemView => {
+    items: row.items.flatMap((item): TradeItemView[] => {
+      if (item.kind === "payment") return [];
       const token =
         item.tokenId === null ? undefined : indexed.states.get(item.tokenId);
-      return {
-        ...toNamedItem(item),
-        id: item.id,
-        sender: item.sender,
-        kind: item.kind,
-        transferredAt: item.transferredAt,
-        txHash: item.txHash,
-        locked:
-          isOpenTrade(state.status) &&
-          item.tokenId !== null &&
-          row.lockedTokenIds.includes(item.tokenId),
-        status: itemStatus(item, token?.kind === "found" ? token : undefined, {
-          status: state.status,
-          fromAddress: row.fromAddress,
-          toAddress: row.toAddress,
-        }),
-      };
+      return [
+        {
+          ...toNamedItem(item),
+          id: item.id,
+          sender: item.sender,
+          transferredAt: item.transferredAt,
+          txHash: item.txHash,
+          locked:
+            isOpenTrade(state.status) &&
+            item.tokenId !== null &&
+            row.lockedTokenIds.includes(item.tokenId),
+          status: itemStatus(
+            item,
+            token?.kind === "found" ? token : undefined,
+            {
+              status: state.status,
+              fromAddress: row.fromAddress,
+              toAddress: row.toAddress,
+            },
+          ),
+        },
+      ];
     }),
     events,
     feedback:

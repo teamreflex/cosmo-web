@@ -1,3 +1,4 @@
+import type { TradeSide } from "@apollo/database/web/types";
 import { isDistinct } from "@apollo/util";
 import * as z from "zod";
 import type { TradeWant } from "./allocate";
@@ -10,11 +11,35 @@ import {
   MAX_WANT_ROWS,
 } from "./caps";
 import { totalWanted } from "./composer";
+import {
+  amountSchema,
+  currencySchema,
+  type ListingPayment,
+  paymentMethodsSchema,
+} from "./payment";
 import { pgText, type RangeFilter, rangeKey, rangesSchema } from "./range";
 
-// the listing types the feed can show; sales add theirs in a later phase
-export const listingTypes = ["trade"] as const;
+/**
+ * The listing types the feed can show: a sale, where the claimer sends
+ * nothing but a payment, a buy, where the poster sends nothing but one, and
+ * a trade, where both sides send objekts, a payment beside them or not.
+ */
+export const listingTypes = ["trade", "sell", "buy"] as const;
 export type ListingType = (typeof listingTypes)[number];
+
+/**
+ * A listing's type (ListingType) from who sends its payment, how many
+ * objekt rows it asks for and how many objekts it offers.
+ */
+export function listingType(listing: {
+  paymentSide: TradeSide | null;
+  objektWants: number;
+  offered: number;
+}): ListingType {
+  if (listing.paymentSide === "to" && listing.objektWants === 0) return "sell";
+  if (listing.paymentSide === "from" && listing.offered === 0) return "buy";
+  return "trade";
+}
 
 /**
  * Listing ids are lowercased, so an uppercase id names the same listing
@@ -62,6 +87,8 @@ const wantSchema = z.discriminatedUnion("kind", [
       }),
     count: countSchema,
   }),
+  // what the claimer pays for each unit
+  z.strictObject({ kind: z.literal("payment"), amount: amountSchema }),
 ]);
 
 const listingFields = {
@@ -77,8 +104,14 @@ const listingFields = {
     .optional(),
   wants: z
     .array(wantSchema)
-    .min(1, "Ask for at least one objekt")
+    .min(1, "Ask for at least one objekt or a payment")
     .max(MAX_WANT_ROWS, `A listing can have at most ${MAX_WANT_ROWS} rows`),
+  // what the poster pays on top of their objekts for each unit
+  offeredPayment: amountSchema.optional(),
+  // the currency and methods of the listing's payment, on either side
+  payment: z
+    .strictObject({ currency: currencySchema, methods: paymentMethodsSchema })
+    .optional(),
   note: pgText()
     .trim()
     .max(MAX_NOTE_LENGTH, `A note can be at most ${MAX_NOTE_LENGTH} characters`)
@@ -116,6 +149,72 @@ type ListingTerms = {
   unitSize?: number | undefined;
   wants: readonly TradeWant[];
 };
+
+type PaymentFields = {
+  wants: readonly z.output<typeof wantSchema>[];
+  offeredPayment?: number | undefined;
+  payment?:
+    { currency: string; methods: ListingPayment["methods"] } | undefined;
+};
+
+/**
+ * Splits a listing's payment out of its want rows. A listing has at most
+ * one payment, on one side: a payment row the claimer sends, or
+ * `offeredPayment` the poster sends on top of their objekts. A payment
+ * needs its currency and methods, and only a payment takes them.
+ */
+function withPaymentRules<TSchema extends z.ZodType<PaymentFields>>(
+  schema: TSchema,
+) {
+  return schema
+    .superRefine(({ wants, offeredPayment, payment }, ctx) => {
+      const rows = wants.filter((want) => want.kind === "payment").length;
+      if (rows > 1) {
+        ctx.addIssue({
+          code: "custom",
+          message: "A listing can ask for one payment",
+          path: ["wants"],
+        });
+      }
+      if (rows > 0 && offeredPayment !== undefined) {
+        ctx.addIssue({
+          code: "custom",
+          message: "A payment can only be on one side",
+          path: ["offeredPayment"],
+        });
+      }
+      if (
+        (rows > 0 || offeredPayment !== undefined) !==
+        (payment !== undefined)
+      ) {
+        ctx.addIssue({
+          code: "custom",
+          message:
+            payment === undefined
+              ? "Pick a currency and the payment methods you accept"
+              : "Only a listing with a payment takes payment methods",
+          path: ["payment"],
+        });
+      }
+    })
+    .transform(({ wants, offeredPayment, payment, ...rest }) => {
+      const row = wants.find((want) => want.kind === "payment");
+      const amount = row?.amount ?? offeredPayment;
+      return {
+        ...rest,
+        wants: wants.flatMap((want) => (want.kind === "payment" ? [] : [want])),
+        payment:
+          amount === undefined || payment === undefined
+            ? null
+            : ({
+                side: row === undefined ? "from" : "to",
+                amount,
+                currency: payment.currency,
+                methods: payment.methods,
+              } satisfies ListingPayment),
+      };
+    });
+}
 
 /**
  * The rules a listing's terms follow whether it's posted or edited: no
@@ -198,21 +297,24 @@ export const tradeTokenStatesInputSchema = z.strictObject({
 });
 
 export const listingInputSchema = withListingRules(
-  z.strictObject(listingFields),
+  withPaymentRules(z.strictObject(listingFields)),
 );
 export type ListingInput = z.output<typeof listingInputSchema>;
 
 export const editListingInputSchema = withListingRules(
-  z.strictObject({ listingId: listingIdSchema, ...listingFields }),
+  withPaymentRules(
+    z.strictObject({ listingId: listingIdSchema, ...listingFields }),
+  ),
 );
 export type EditListingInput = z.output<typeof editListingInputSchema>;
 
 /**
  * Accept: how many units the claim takes, the poster's objekts it picked
- * from the pool (units times the unit size), one token list per want row as
- * the picker showed them (each row's count times the units), and the
- * listing's `updated_at` as the claimer saw it. The row and total caps bound
- * one claim.
+ * from the pool (units times the unit size), one token list per objekt want
+ * row as the picker showed them (each row's count times the units, none
+ * for a sale), and the listing's `updated_at` as the claimer saw it. The row
+ * and total caps bound one claim, and the unit cap bounds the payment it
+ * records (MAX_PAYMENT_AMOUNT).
  */
 export const claimListingInputSchema = z
   .strictObject({
@@ -222,7 +324,6 @@ export const claimListingInputSchema = z
     picked: z.array(tokenIdSchema).min(1).max(MAX_OFFERED),
     rows: z
       .array(z.array(tokenIdSchema).min(1).max(MAX_PER_ROW))
-      .min(1)
       .max(MAX_WANT_ROWS),
   })
   .refine(({ picked }) => isDistinct(picked), {

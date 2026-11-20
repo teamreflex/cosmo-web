@@ -1,6 +1,7 @@
 import type { PickerRow, Picks } from "@/hooks/use-listing-picks";
 import { m } from "@/i18n/messages";
 import { formatCount, pickShown } from "@/lib/client/trade-listings";
+import { env } from "@/lib/env/client";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type {
   Candidate,
@@ -8,6 +9,7 @@ import type {
   ListingPick,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
+import type { ListingPayment } from "@apollo/trades/payment";
 import { IconCircleCheck, IconPlus, IconX } from "@tabler/icons-react";
 import { Fragment, type ReactNode, useState } from "react";
 import { ObjektCardFace, ObjektSidebar } from "../objekt/common";
@@ -16,7 +18,7 @@ import { RemovableTile, TileCaption } from "./composer-offered";
 import { RangeBadges } from "./range-want";
 import RowPicker from "./row-picker";
 import SideHeading from "./side-heading";
-import WantLabel from "./want-label";
+import WantLabel, { PaymentLabel } from "./want-label";
 
 type Props = {
   viewer: Candidate;
@@ -27,6 +29,8 @@ type Props = {
   address: string | undefined;
   rows: PickerRow[];
   picks: Picks;
+  /** the payment the viewer sends for each unit, if any */
+  payment: ListingPayment | null;
   /** the poster as the page names them */
   poster: string;
 };
@@ -35,14 +39,16 @@ type Props = {
  * What the viewer would give, one panel of slots per want row at the
  * claim's size, which the viewer fills from their own collection. Removing a
  * pick empties its slot, and an empty slot opens the viewer's collection
- * held to that row. Accept, or Send offer, lives in the page header, which
- * says whether the picks fit.
+ * held to that row, then the payment the viewer sends for the units they
+ * take, which they pay outside Apollo. Accept, or Send offer, lives in the
+ * page header, which says whether the picks fit.
  */
 export default function AllocationPicker({
   viewer,
   address,
   rows,
   picks,
+  payment,
   poster,
 }: Props) {
   const [picking, setPicking] = useState<number | null>(null);
@@ -50,11 +56,19 @@ export default function AllocationPicker({
 
   return (
     <section className="flex min-w-0 flex-col gap-3.5">
-      <SideHeading
-        tone="have"
-        title={m.listing_detail_you_give_total({ count: picks.giveTotal })}
-        summary={m.listing_detail_you_give_summary()}
-      />
+      {rows.length === 0 && payment !== null ? (
+        <SideHeading
+          tone="have"
+          title={m.listing_detail_you_pay()}
+          summary={m.listing_detail_you_pay_summary({ poster })}
+        />
+      ) : (
+        <SideHeading
+          tone="have"
+          title={m.listing_detail_you_give_total({ count: picks.giveTotal })}
+          summary={m.listing_detail_you_give_summary()}
+        />
+      )}
 
       {rows.map((row, index) => {
         const rowPicks = picked[index] ?? [];
@@ -94,21 +108,51 @@ export default function AllocationPicker({
         );
       })}
 
-      <PickerFooter offers={picks.takesOffers} poster={poster} />
+      {payment !== null && (
+        <div className="rounded-lg border border-teal-500/30 px-4 py-3 text-sm">
+          <PaymentLabel payment={payment} units={picks.units} />
+        </div>
+      )}
+
+      <PickerFooter
+        offers={picks.takesOffers}
+        poster={poster}
+        payment={
+          picks.payment === null
+            ? "none"
+            : rows.length === 0
+              ? "only"
+              : "beside"
+        }
+      />
     </section>
   );
 }
 
 /**
- * What accepting does, or what sending an offer does on a listing that
- * takes offers.
+ * What accepting does, worded by the viewer's side: objekts sent in the
+ * COSMO app, a payment made outside Apollo, or both. On a listing that
+ * takes offers, what sending one does.
  */
-function PickerFooter({ offers, poster }: { offers: boolean; poster: string }) {
+function PickerFooter({
+  offers,
+  poster,
+  payment,
+}: {
+  offers: boolean;
+  poster: string;
+  payment: "none" | "only" | "beside";
+}) {
+  const appName = env.VITE_APP_NAME;
   return (
     <p className="text-xs leading-relaxed text-muted-foreground">
       {offers
         ? m.listing_detail_offer_footer({ poster })
-        : m.listing_detail_accept_footer()}
+        : payment === "only"
+          ? m.listing_detail_accept_footer_pay({ poster, appName })
+          : payment === "beside"
+            ? m.listing_detail_accept_footer_with_payment({ appName })
+            : m.listing_detail_accept_footer()}
     </p>
   );
 }

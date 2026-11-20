@@ -20,6 +20,7 @@ import {
   type TradeListing,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
+import type { TradeSide } from "@apollo/database/web/types";
 import { CLAIM_WINDOW } from "@apollo/trades/timers";
 import { formatSerial } from "@apollo/util";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
@@ -47,6 +48,7 @@ import { Timestamp } from "../ui/timestamp";
 import type { Notice } from "./listing-status";
 import { ExactBadges, RangeBadges } from "./range-want";
 import { Eyebrow } from "./side-heading";
+import { PaymentLabel } from "./want-label";
 
 type Props = {
   listing: TradeListing;
@@ -106,11 +108,7 @@ export default function ConfirmTradeDialog({
         },
       }),
     onSuccess: async ({ tradeId, pending }) => {
-      toast.success(
-        pending
-          ? m.listing_detail_offer_sent({ poster })
-          : m.listing_detail_accepted(),
-      );
+      toast.success(claimedToast(pending, rows.length === 0, poster));
       void queryClient.invalidateQueries({ queryKey: tradesKey });
       // the next step is on the trade or the offer, and Back finds the listing as it is now
       await navigate({ to: "/trade/$id", params: { id: tradeId } });
@@ -220,7 +218,7 @@ export default function ConfirmTradeDialog({
 
               <section className="flex flex-col gap-2">
                 <Eyebrow tone="have">
-                  {m.listing_detail_you_give_total({ count: giveCount })}
+                  {giveHeading(rows.length, giveCount)}
                 </Eyebrow>
                 {rows.map((row, index) => (
                   <Group
@@ -232,6 +230,11 @@ export default function ConfirmTradeDialog({
                     tokens={give[index] ?? []}
                   />
                 ))}
+                <PaymentGroup
+                  listing={listing}
+                  sender="to"
+                  units={snapshot?.units ?? 1}
+                />
               </section>
 
               <section className="flex flex-col gap-2">
@@ -239,30 +242,22 @@ export default function ConfirmTradeDialog({
                   {m.listing_detail_you_get({ count: get.length })}
                 </Eyebrow>
                 <Group tokens={get} />
+                <PaymentGroup
+                  listing={listing}
+                  sender="from"
+                  units={snapshot?.units ?? 1}
+                />
               </section>
 
               {snapshot !== null &&
                 (offers ? (
                   <OfferSteps poster={poster} expiresAt={snapshot.endsAt} />
                 ) : (
-                  <p className="grid grid-cols-[1rem_minmax(0,1fr)] gap-2.5 rounded-lg bg-muted/50 px-3 py-2.5 text-sm leading-relaxed max-sm:hidden">
-                    <IconClock className="mt-0.5 size-4 text-muted-foreground" />
-                    <span>
-                      <ParaglideMessage
-                        message={m.listing_confirm_deadline}
-                        inputs={{ date: "", poster }}
-                        markup={{
-                          hours: ({ children }) => (
-                            <span className="font-semibold">{children}</span>
-                          ),
-                          time: () => <Deadline deadlineAt={snapshot.endsAt} />,
-                          user: ({ children }) => (
-                            <span className="font-semibold">{children}</span>
-                          ),
-                        }}
-                      />
-                    </span>
-                  </p>
+                  <ClaimDeadline
+                    poster={poster}
+                    pays={rows.length === 0}
+                    endsAt={snapshot.endsAt}
+                  />
                 ))}
             </div>
 
@@ -332,6 +327,61 @@ export default function ConfirmTradeDialog({
 }
 
 /**
+ * What the claim's toast says: the offer was sent, or the trade started,
+ * with what the claimer does next, paying for a sale.
+ */
+function claimedToast(pending: boolean, pays: boolean, poster: string) {
+  if (pending) return m.listing_detail_offer_sent({ poster });
+  return pays
+    ? m.listing_detail_accepted_pay({ poster, appName: env.VITE_APP_NAME })
+    : m.listing_detail_accepted();
+}
+
+/**
+ * What claiming starts: both sides' 48 hours, and what each does in them,
+ * a sale's claimer paying outside Apollo.
+ */
+function ClaimDeadline({
+  poster,
+  pays,
+  endsAt,
+}: {
+  poster: string;
+  pays: boolean;
+  endsAt: Date;
+}) {
+  const markup = {
+    hours: ({ children }: { children?: ReactNode }) => (
+      <span className="font-semibold">{children}</span>
+    ),
+    time: () => <Deadline deadlineAt={endsAt} />,
+    user: ({ children }: { children?: ReactNode }) => (
+      <span className="font-semibold">{children}</span>
+    ),
+  };
+  return (
+    <p className="grid grid-cols-[1rem_minmax(0,1fr)] gap-2.5 rounded-lg bg-muted/50 px-3 py-2.5 text-sm leading-relaxed max-sm:hidden">
+      <IconClock className="mt-0.5 size-4 text-muted-foreground" />
+      <span>
+        {pays ? (
+          <ParaglideMessage
+            message={m.listing_confirm_deadline_pay}
+            inputs={{ date: "", poster, appName: env.VITE_APP_NAME }}
+            markup={markup}
+          />
+        ) : (
+          <ParaglideMessage
+            message={m.listing_confirm_deadline}
+            inputs={{ date: "", poster }}
+            markup={markup}
+          />
+        )}
+      </span>
+    </p>
+  );
+}
+
+/**
  * What sending the offer starts: the poster answers it, it expires if they
  * don't by then, and accepting it gives both sides the trade's window.
  */
@@ -397,6 +447,36 @@ function groupHead({ want }: PickerRow, count: number) {
     case "choice":
       return <ExactBadges count={count} name={wantLabel(want)} />;
   }
+}
+
+// what the claimer's side is headed: the objekts they give, or "You pay" for a sale
+function giveHeading(rows: number, giveCount: number) {
+  return rows === 0
+    ? m.listing_detail_you_pay()
+    : m.listing_detail_you_give_total({ count: giveCount });
+}
+
+/**
+ * The payment the trade records for the units claimed, in its own
+ * currency, under the side that sends it: `to` the claimer, `from` the
+ * poster. Nothing on the other side, or without a payment.
+ */
+function PaymentGroup({
+  listing,
+  sender,
+  units,
+}: {
+  listing: TradeListing;
+  sender: TradeSide;
+  units: number;
+}) {
+  return (
+    listing.payment?.side === sender && (
+      <div className="rounded-lg border border-border bg-card px-3 py-2.5 text-sm">
+        <PaymentLabel payment={listing.payment} units={units} />
+      </div>
+    )
+  );
 }
 
 /**

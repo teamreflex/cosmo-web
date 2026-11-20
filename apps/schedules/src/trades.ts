@@ -88,7 +88,6 @@ export type LiveTrade = Pick<
     | "listingId"
     | "live"
     | "transferredAt"
-    | "markedPaidAt"
     | "confirmedAt"
   >[];
   state: TradeState;
@@ -141,7 +140,6 @@ export const lockLiveTrades = Effect.fn("lockLiveTrades")(function* (
       listingId: tradeOfferItems.listingId,
       live: tradeOfferItems.live,
       transferredAt: tradeOfferItems.transferredAt,
-      markedPaidAt: tradeOfferItems.markedPaidAt,
       confirmedAt: tradeOfferItems.confirmedAt,
     })
     .from(tradeOfferItems)
