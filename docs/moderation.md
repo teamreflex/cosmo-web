@@ -70,6 +70,8 @@ One `reports` table holds every report. `target_type` says what was reported, an
 A trade report is the trade's dispute. `dispute_report_id` on the trade points at it while the trade is `disputed`; how staff settle it is in [`trades/lifecycle.md`](trades/lifecycle.md).
 
 - A party's dispute names the party as reporter. A ban names the admin and files a `party_banned` dispute on each of the user's accepted trades. A `deadline_passed` dispute names the side that sent everything it owed, or nobody when both sent part.
+- A party's dispute and a `deadline_passed` dispute are posted to the staff Discord channel at `DISCORD_DISPUTE_WEBHOOK_URL` after they commit: `alertDispute()` in apps/web and the `Discord` service in apps/schedules, both building the message with `disputeWebhookRequest()` (`@apollo/trades/disputes`) from the parties and items they read after the commit. The links are buttons, which a webhook not owned by an application may only send with `with_components=true`. Ban disputes aren't posted, since an admin filed them.
+- A failed post never fails the dispute, because the dispute has already committed. apps/web reports it to Sentry, and apps/schedules logs a warning.
 - The report page offers the dispute actions only while the report is still the trade's dispute (`current`) and the trade is `disputed`. Any other open trade report on the same trade offers none, and closes with the trade.
 
 ### Message reports

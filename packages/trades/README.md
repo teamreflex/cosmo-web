@@ -19,11 +19,13 @@ The trade system's pure rules, shared by `apps/web` and `apps/schedules`: no dat
 | `./caps`          | the claim cap and listing limits                                                                                                                              |
 | `./feedback`      | who may rate a trade, whether a rating is scored                                                                                                              |
 | `./events`        | the Redis `trade-events` channel and its message                                                                                                              |
+| `./disputes`      | `disputeWebhookRequest()`, the staff Discord message for a new dispute: who opened it, what each party sends, and links to the report and trade               |
 
 ## Contracts between apps
 
 - The web app and the schedules app both end trades and offers in guarded SQL updates. They take statuses from `offerTransition()` and `listingTransition()` and decide outcomes with `transition()` and `listingClosing()`, so both apps move a trade the same way.
 - Both apps publish `tradeUpdateMessage()` on `TRADE_EVENTS_CHANNEL` after their transaction commits, and apps/chat subscribes to it.
+- Both apps post a new dispute to the staff Discord webhook with `disputeWebhookRequest()`, after the dispute commits ([docs/moderation.md](../../docs/moderation.md#disputes)).
 - `DRAIN_CURSOR_NAME` names the `list_drain_cursor` row whose `chain_time` both apps judge deadlines against.
 
 ## Tests

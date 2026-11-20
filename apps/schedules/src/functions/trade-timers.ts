@@ -1,3 +1,4 @@
+import { Discord } from "@/discord";
 import {
   closeSpentListings,
   disputeAtDeadline,
@@ -17,6 +18,7 @@ import {
 } from "@apollo/database/web/schema";
 import { bumpUpdatedAt } from "@apollo/database/web/sql";
 import { DatabaseWeb } from "@apollo/services/database-web";
+import type { DisputeAlert } from "@apollo/trades/disputes";
 import {
   offerTransition,
   proposerId,
@@ -57,6 +59,7 @@ export const tradeTimersTask = {
   cron: "*/1 * * * *",
   effect: Effect.gen(function* () {
     const db = yield* DatabaseWeb;
+    const discord = yield* Discord;
 
     // the literal kind and status let trade_offers_expiry_idx serve both scans
     const pendingOffer = sql`${tradeOffers.kind} = 'trade' AND ${tradeOffers.status} = 'pending'`;
@@ -283,7 +286,7 @@ export const tradeTimersTask = {
             lag,
             tradeIds: [],
             completed: 0,
-            disputed: 0,
+            disputes: [],
             timedOut: 0,
           };
         }
@@ -305,7 +308,7 @@ export const tradeTimersTask = {
         const events: TradeEventRow[] = [];
         const listingIds = new Set<string>();
         let completed = 0;
-        let disputed = 0;
+        const disputes: DisputeAlert[] = [];
         for (const trade of trades) {
           const result = transition(trade.state, { type: "time_out" });
           if (!result.ok) {
@@ -315,7 +318,15 @@ export const tradeTimersTask = {
           }
           if (result.trade.status === "disputed") {
             const frozen = yield* disputeAtDeadline(tx, trade);
-            disputed++;
+            disputes.push({
+              reportId: frozen.reportId,
+              tradeId: trade.id,
+              reason: "deadline_passed",
+              note: null,
+              openedBy: null,
+              fromUserId: trade.fromUserId,
+              toUserId: trade.toUserId,
+            });
             events.push(frozen.event);
             notifications.push(...frozen.notifications);
             continue;
@@ -342,16 +353,19 @@ export const tradeTimersTask = {
           lag,
           tradeIds: trades.map((trade) => trade.id),
           completed,
-          disputed,
-          timedOut: trades.length - completed - disputed,
+          disputes,
+          timedOut: trades.length - completed - disputes.length,
         };
       }),
     );
     if (result === undefined) return;
 
     yield* publishTradeUpdates(result.tradeIds);
+    yield* Effect.forEach(result.disputes, discord.alertDispute, {
+      discard: true,
+    });
     yield* Effect.logInfo(
-      `Timed out ${result.timedOut} trades, disputed ${result.disputed} and completed ${result.completed} at watermark ${result.chainTime.toISOString()} (${Math.round(result.lag / 1000)}s behind the clock)`,
+      `Timed out ${result.timedOut} trades, disputed ${result.disputes.length} and completed ${result.completed} at watermark ${result.chainTime.toISOString()} (${Math.round(result.lag / 1000)}s behind the clock)`,
     );
   }),
 } satisfies ScheduledTask;

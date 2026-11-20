@@ -6,6 +6,7 @@ import { FetchHttpClient } from "effect/http";
 import { Abstract } from "./abstract";
 import { CosmoKey } from "./cosmo-key";
 import { DatabaseIndexer } from "./db-indexer";
+import { Discord } from "./discord";
 import { Exchangerate } from "./exchangerate";
 import { Mailer } from "./mailer";
 import { ProxiedToken } from "./proxied-token";
@@ -32,6 +33,7 @@ export const servicesLayer = Layer.mergeAll(
   CosmoKey.layer,
   Exchangerate.layer,
   Mailer.layer,
+  Discord.layer,
   Abstract.layer,
   Typesense.layer,
   redisLayer,

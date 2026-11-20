@@ -58,22 +58,23 @@ Scheduled tasks and the workers for the web app's job queues, in one Effect proc
 
 A missing required variable stops every task at boot. The mail variables are required only while `NOTIFICATION_EMAILS` is true, so set them before turning it on.
 
-| Variable                                                                         | Used for                                                                          |
-| -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `WEB_DATABASE_URL`                                                               | the web database                                                                  |
-| `INDEXER_DATABASE_URL`                                                           | the indexer database                                                              |
-| `ABSTRACT_RPC`                                                                   | the Abstract RPC, for `sync-processor-head`                                       |
-| `REDIS_URL`                                                                      | job queues, caches and the `trade-events` channel                                 |
-| `TYPESENSE_URL`                                                                  | the Typesense node, with its scheme and port, for `sync-typesense`                |
-| `TYPESENSE_API_KEY`                                                              | the Typesense admin key, which sets the collection up and imports into it         |
-| `COSMO_KEY`                                                                      | the COSMO encryption key, used while Redis holds no `cosmo-key`                   |
-| `EXCHANGERATE_API_KEY`                                                           | `sync-fx-rates`                                                                   |
-| `MAIL_SES_REGION`, `MAIL_SES_FROM`, `MAIL_SES_ACCESS_KEY`, `MAIL_SES_SECRET_KEY` | mail: SES, through `Mailer`; the same values the web app sends with               |
-| `MAIL_SES_ENDPOINT`                                                              | mail, optional: floci locally; unset sends through real SES                       |
-| `APP_NAME`                                                                       | mail: the sender name and email header, the web app's `VITE_APP_NAME`             |
-| `BASE_URL`                                                                       | mail: the web app's origin with its scheme, for links and the logo in emails      |
-| `CDN_URL`                                                                        | mail: the objekt image CDN, the web app's `VITE_CDN_URL`, for the cards in emails |
-| `NOTIFICATION_EMAILS`                                                            | whether `send-notification-emails` mails anyone: `true` or `false` (the default)  |
+| Variable                                                                         | Used for                                                                                            |
+| -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `WEB_DATABASE_URL`                                                               | the web database                                                                                    |
+| `INDEXER_DATABASE_URL`                                                           | the indexer database                                                                                |
+| `ABSTRACT_RPC`                                                                   | the Abstract RPC, for `sync-processor-head`                                                         |
+| `REDIS_URL`                                                                      | job queues, caches and the `trade-events` channel                                                   |
+| `TYPESENSE_URL`                                                                  | the Typesense node, with its scheme and port, for `sync-typesense`                                  |
+| `TYPESENSE_API_KEY`                                                              | the Typesense admin key, which sets the collection up and imports into it                           |
+| `COSMO_KEY`                                                                      | the COSMO encryption key, used while Redis holds no `cosmo-key`                                     |
+| `EXCHANGERATE_API_KEY`                                                           | `sync-fx-rates`                                                                                     |
+| `MAIL_SES_REGION`, `MAIL_SES_FROM`, `MAIL_SES_ACCESS_KEY`, `MAIL_SES_SECRET_KEY` | mail: SES, through `Mailer`; the same values the web app sends with                                 |
+| `MAIL_SES_ENDPOINT`                                                              | mail, optional: floci locally; unset sends through real SES                                         |
+| `APP_NAME`                                                                       | mail: the sender name and email header, the web app's `VITE_APP_NAME`                               |
+| `BASE_URL`                                                                       | mail: the web app's origin with its scheme, for links and the logo in emails                        |
+| `CDN_URL`                                                                        | mail: the objekt image CDN, the web app's `VITE_CDN_URL`, for the cards in emails                   |
+| `NOTIFICATION_EMAILS`                                                            | whether `send-notification-emails` mails anyone: `true` or `false` (the default)                    |
+| `DISCORD_DISPUTE_WEBHOOK_URL`                                                    | optional: the staff Discord webhook `trade-timers` posts its disputes to; needs `BASE_URL` when set |
 
 ## Running
 

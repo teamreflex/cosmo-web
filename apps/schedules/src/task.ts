@@ -4,6 +4,7 @@ import type { HttpClient } from "effect/http";
 import type { Redis } from "effect/persistence";
 import type { Abstract } from "./abstract";
 import type { DatabaseIndexer } from "./db-indexer";
+import type { Discord } from "./discord";
 import type { Exchangerate } from "./exchangerate";
 import { applySerialConfirmationsTask } from "./functions/apply-serial-confirmations";
 import { chatRetentionTask } from "./functions/chat-retention";
@@ -37,6 +38,7 @@ export interface ScheduledTask<TSuccess = void, TFailure = unknown> {
     | ProxiedToken
     | Exchangerate
     | Mailer
+    | Discord
     | HttpClient.HttpClient
     | Abstract
     | Typesense

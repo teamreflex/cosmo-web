@@ -1,4 +1,5 @@
 import { db } from "@/lib/server/db";
+import { alertDispute } from "@/lib/server/discord.server";
 import { authenticatedMiddleware } from "@/lib/server/middlewares";
 import { consumeRateLimit } from "@/lib/server/rate-limit.server";
 import { publishTradeUpdates } from "@/lib/server/trade-events.server";
@@ -428,7 +429,7 @@ export const $openDispute = createServerFn({ method: "POST" })
     });
 
     const parties = await partyTrade(userId, data.tradeId);
-    await db.transaction(async (tx) => {
+    const dispute = await db.transaction(async (tx) => {
       const { users, trade, by } = await lockPartyTrade(
         tx,
         userId,
@@ -443,12 +444,24 @@ export const $openDispute = createServerFn({ method: "POST" })
       );
       if (!result.ok) refuseTrade(partyRefusals[result.reason]);
 
-      await disputeTrade(
+      const reportId = await disputeTrade(
         tx,
         trade,
         users.filter((row) => row.id !== userId),
         { by, reporterId: userId, reason: data.reason, note: data.note },
       );
+      return { reportId, by };
     });
-    await publishTradeUpdates([data.tradeId]);
+    await Promise.all([
+      publishTradeUpdates([data.tradeId]),
+      alertDispute({
+        reportId: dispute.reportId,
+        tradeId: data.tradeId,
+        reason: data.reason,
+        note: data.note ?? null,
+        openedBy: dispute.by,
+        fromUserId: parties.fromUserId,
+        toUserId: parties.toUserId,
+      }),
+    ]);
   });

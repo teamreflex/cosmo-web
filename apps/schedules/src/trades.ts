@@ -367,8 +367,9 @@ export const closeSpentListings = Effect.fn("closeSpentListings")(function* (
  * something still owed under a dispute nobody filed, as transition(time_out)
  * decided: a side may be out of pocket, so staff settle it. Files its
  * `deadline_passed` report, naming as its reporter the side that sent
- * everything it owed (none when both sent part), and returns the timeline
- * event and both parties' notifications, which read as a pause for review.
+ * everything it owed (none when both sent part), and returns the report id,
+ * the timeline event and both parties' notifications, which read as a pause
+ * for review.
  */
 export const disputeAtDeadline = Effect.fn("disputeAtDeadline")(function* (
   tx: WebTx,
@@ -410,6 +411,7 @@ export const disputeAtDeadline = Effect.fn("disputeAtDeadline")(function* (
   }
 
   return {
+    reportId: report.id,
     event: {
       tradeId: trade.id,
       event: { type: "disputed", by: "deadline", reportId: report.id },
