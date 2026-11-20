@@ -3,6 +3,7 @@ import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import {
   askingPriceText,
   askingTitle,
+  buyingText,
   joinOptions,
   listingRatio,
   listingTypesOfListing,
@@ -10,6 +11,7 @@ import {
   offeredMembers,
   offeredNames,
   optionTitle,
+  optionTitles,
   paymentMethodsText,
   posterName,
   ratioSides,
@@ -62,8 +64,6 @@ export default function ListingFeedRow({ row }: Props) {
     first.payment?.amount === null
       ? null
       : listingRatio({ ...row, ...first }, row.posted);
-  // the poster's payment on top prices every option alike
-  const onTop = first?.payment?.side === "from" ? first.payment : null;
   return (
     <li className="transition-colors md:border-t md:border-border/60 md:first:border-t-0 md:hover:bg-secondary/50">
       <Link
@@ -75,23 +75,11 @@ export default function ListingFeedRow({ row }: Props) {
           "max-md:overflow-hidden max-md:rounded-[10px] max-md:border max-md:bg-card max-md:hover:bg-secondary max-md:focus-visible:border-ring max-md:focus-visible:bg-secondary",
         )}
       >
-        <Half
-          label={m.market_listings_column_offering()}
-          thumbs={<Thumbs items={row.items} />}
-          className="col-start-1 max-md:bg-teal-700/5 lg:col-start-2 max-md:dark:bg-teal-500/5"
-        >
-          <OfferingCaption
-            items={row.items}
-            free={hasRatio(row.unitSize, row.posted) ? row.free : null}
-          />
-          {onTop !== null && (
-            <SlipDetail className="font-medium text-foreground">
-              {m.market_listings_payment_on_top({
-                amount: askingPriceText(onTop),
-              })}
-            </SlipDetail>
-          )}
-        </Half>
+        <OfferingHalf
+          row={row}
+          // the poster's payment prices every option alike
+          payment={first?.payment?.side === "from" ? first.payment : null}
+        />
 
         <span className="relative col-start-2 row-start-1 text-muted-foreground max-md:border-l max-md:border-dashed md:flex md:justify-center lg:col-start-3">
           {ratio === null ? (
@@ -195,6 +183,67 @@ function ListingTypeBadge({ type }: { type: ListingType }) {
         </Badge>
       );
   }
+}
+
+/**
+ * What the listing offers: its objekts, with the poster's payment on top,
+ * or a buy listing's payment alone, priced for each unit over how many it
+ * has left and the methods it pays by.
+ */
+function OfferingHalf({
+  row,
+  payment,
+}: {
+  row: Row;
+  payment: ListingPayment | null;
+}) {
+  const className =
+    "col-start-1 max-md:bg-teal-700/5 lg:col-start-2 max-md:dark:bg-teal-500/5";
+  if (row.units.kind === "buy" && payment !== null) {
+    return (
+      <Half
+        label={m.market_listings_column_offering()}
+        thumbs={
+          <Stack
+            thumbs={[
+              { key: "payment", thumb: <PaymentTile payment={payment} /> },
+            ]}
+          />
+        }
+        className={className}
+      >
+        <SlipTitle>
+          {m.listing_payment_per_unit({ amount: askingPriceText(payment) })}
+        </SlipTitle>
+        <SlipDetail className="">
+          {`${buyingText(row.units)} · ${paymentMethodsText(payment.methods)}`}
+        </SlipDetail>
+      </Half>
+    );
+  }
+  return (
+    <Half
+      label={m.market_listings_column_offering()}
+      thumbs={<Thumbs items={row.items} />}
+      className={className}
+    >
+      <OfferingCaption
+        items={row.items}
+        free={
+          row.units.kind === "pool" && hasRatio(row.units.unitSize, row.posted)
+            ? row.free
+            : null
+        }
+      />
+      {payment !== null && (
+        <SlipDetail className="font-medium text-foreground">
+          {m.market_listings_payment_on_top({
+            amount: askingPriceText(payment),
+          })}
+        </SlipDetail>
+      )}
+    </Half>
+  );
 }
 
 /**
@@ -329,13 +378,13 @@ function AskingCaption({
 }
 
 /**
- * A listing's options as alternatives, each as optionTitle() reads it: "2
+ * A listing's options as alternatives, each as optionTitles() reads it: "2
  * objekts or $3.00", over each option's rows in posted order.
  */
 function OptionsCaption({ options }: { options: Row["options"] }) {
   return (
     <>
-      <SlipTitle clamp>{joinOptions(options.map(optionTitle))}</SlipTitle>
+      <SlipTitle clamp>{joinOptions(optionTitles(options))}</SlipTitle>
       <SlipDetail className="max-md:hidden">
         {joinOptions(
           options.map((option) =>
@@ -414,6 +463,11 @@ export function Thumbs({ items }: { items: ListingFeedItem[] }) {
  * claimer's payment alone has a tile of its currency.
  */
 function WantThumbs({ options }: { options: Row["options"] }) {
+  // a payment's tile under another's shows its code at its uncovered end
+  const covered = (option: number) =>
+    options
+      .slice(0, option)
+      .some(({ wants, payment }) => wants.length > 0 || payment?.side === "to");
   return (
     <Stack
       thumbs={options.flatMap(({ wants, payment }, option) => [
@@ -421,7 +475,9 @@ function WantThumbs({ options }: { options: Row["options"] }) {
           ? [
               {
                 key: `${option}:payment`,
-                thumb: <PaymentTile payment={payment} />,
+                thumb: (
+                  <PaymentTile payment={payment} covered={covered(option)} />
+                ),
               },
             ]
           : []),
@@ -468,14 +524,18 @@ function WantThumbs({ options }: { options: Row["options"] }) {
  */
 export function PaymentTile({
   payment,
+  covered = false,
 }: {
   payment: Pick<ListingPayment, "currency">;
+  /** another tile overlaps its start, so the code sits at its end */
+  covered?: boolean;
 }) {
   return (
     <span
       aria-hidden
       className={cn(
-        "flex aspect-photocard shrink-0 items-center justify-center rounded-[3px] bg-amber-500/15 font-mono text-xxs font-semibold text-amber-700 dark:text-amber-400",
+        "flex aspect-photocard shrink-0 items-center rounded-[3px] bg-amber-500/15 font-mono text-xxs font-semibold text-amber-700 dark:text-amber-400",
+        covered ? "justify-end pe-0.5" : "justify-center",
         thumbSize,
       )}
     >

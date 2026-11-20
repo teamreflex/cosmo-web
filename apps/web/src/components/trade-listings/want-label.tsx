@@ -5,6 +5,7 @@ import {
   joinOptions,
   objektName,
   optionTitle,
+  optionTitles,
   paymentMethodsText,
   wantedObjektCount,
   wantKindsSummary,
@@ -48,16 +49,20 @@ export default function WantLabel({ want }: Props) {
 
 /**
  * A listing's payment behind its badge, in its own currency: what one
- * trade pays, or with `units` what this many units pay in all, and whether
+ * trade pays (one unit's, on a buy listing), or with `units` what this many
+ * units pay in all, and whether
  * it takes offers, over the methods it may arrive by. A payment with no
  * asking price reads "Make an offer".
  */
 export function PaymentLabel({
   payment,
   units = 1,
+  perUnit = false,
 }: {
   payment: ListingPayment;
   units?: number;
+  /** a buy listing's price, which is for each unit rather than each trade */
+  perUnit?: boolean;
 }) {
   return (
     <span className="flex min-w-0 flex-col gap-1 leading-relaxed">
@@ -76,7 +81,9 @@ export function PaymentLabel({
             </span>
             <span className="ms-1.5 text-muted-foreground">
               {units === 1
-                ? m.listing_detail_payment_each()
+                ? perUnit
+                  ? m.listing_payment_each_unit()
+                  : m.listing_detail_payment_each()
                 : m.listing_detail_payment_units({
                     amount: formatAmount(payment.amount, payment.currency),
                     count: units,
@@ -158,7 +165,7 @@ export function WantList({
         title={title({
           count: m.listing_options_count({ count: options.length }),
         })}
-        summary={summary ?? joinOptions(options.map(optionTitle))}
+        summary={summary ?? joinOptions(optionTitles(options))}
       />
       {options.map((option, index) => (
         <Fragment key={index}>
@@ -230,18 +237,13 @@ function WantRows({
 
   return (
     <>
-      {(ranges.length > 0 || payment !== null) && (
+      {ranges.length > 0 && (
         <ul className="flex flex-col divide-y divide-border/60 rounded-lg border border-border bg-card text-sm">
           {ranges.map((want, index) => (
             <li key={index} className="px-4 py-3">
               <RangeBadges count={want.count} ranges={want.ranges} />
             </li>
           ))}
-          {payment !== null && (
-            <li className="px-4 py-3">
-              <PaymentLabel payment={payment} />
-            </li>
-          )}
         </ul>
       )}
       {exact.length > 0 && (
@@ -275,6 +277,12 @@ function WantRows({
           </CardGrid>
         </div>
       ))}
+      {/* the payment comes last, as the composer keeps it */}
+      {payment !== null && (
+        <div className="rounded-lg border border-border bg-card px-4 py-3 text-sm">
+          <PaymentLabel payment={payment} />
+        </div>
+      )}
     </>
   );
 }

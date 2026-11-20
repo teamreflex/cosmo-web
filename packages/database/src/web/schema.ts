@@ -693,7 +693,9 @@ const tradeTimestamp = (name: string) =>
  *
  * A listing offers a pool of objekts in units: `unit_size` of them for its
  * want rows at their counts. Each claim takes some number of units and
- * becomes its own trade, so one listing can have several live trades.
+ * becomes its own trade, so one listing can have several live trades. A buy
+ * listing has no pool: it pays for up to `max_units` units, and each of its
+ * trades records the `units` it filled.
  *
  * The collection arrays copy the indexer's values verbatim for every objekt a
  * listing offers, so the feed's filters run without crossing databases.
@@ -737,8 +739,12 @@ export const tradeOffers = pgTable(
       .array()
       .notNull()
       .default([]),
-    // the pool objekts one unit of a listing takes; null on trades
+    // the pool objekts one unit of a listing takes; null on trades and buy listings
     unitSize: smallint("unit_size"),
+    // the most units a buy listing takes, in place of a pool; null on other rows
+    maxUnits: smallint("max_units"),
+    // the units a trade from a buy listing filled; null on other rows
+    units: smallint("units"),
     // which of its listing's options a claim or an offer on a listing gives; null on other rows
     listingOption: smallint("listing_option"),
     slugs: varchar("slugs", { length: 255 }).array().notNull().default([]),
@@ -839,7 +845,11 @@ export const tradeOffers = pgTable(
     ),
     check(
       "trade_offers_unit_size_chk",
-      sql`CASE ${t.kind} WHEN 'listing' THEN coalesce(${t.unitSize}, 0) > 0 ELSE ${t.unitSize} IS NULL END`,
+      sql`CASE ${t.kind} WHEN 'listing' THEN num_nulls(${t.unitSize}, ${t.maxUnits}) = 1 AND coalesce(${t.unitSize}, ${t.maxUnits}) > 0 ELSE num_nulls(${t.unitSize}, ${t.maxUnits}) = 2 END`,
+    ),
+    check(
+      "trade_offers_units_chk",
+      sql`${t.units} IS NULL OR (${t.kind} = 'trade' AND ${t.units} > 0)`,
     ),
     check(
       "trade_offers_trade_chk",

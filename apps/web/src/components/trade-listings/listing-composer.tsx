@@ -30,6 +30,7 @@ import {
   composerBlock,
   type ComposerMode,
   emptyListingForm,
+  followMaxUnits,
   followUnitSize,
   formUnitSize,
   formValuesToInput,
@@ -44,6 +45,7 @@ import type { TokenRefusalReason } from "@/lib/universal/trade-listings";
 import type { ListingOfferMode } from "@apollo/database/web/types";
 import { MAX_NOTE_LENGTH, MAX_OFFERED } from "@apollo/trades/caps";
 import { totalWanted } from "@apollo/trades/composer";
+import { listingAcceptance } from "@apollo/trades/lifecycle";
 import { type ListingInput, listingInputSchema } from "@apollo/trades/listing";
 import { amountSchema } from "@apollo/trades/payment";
 import { MAX_RANGE_VALUES } from "@apollo/trades/range";
@@ -80,6 +82,7 @@ import { Button } from "../ui/button";
 import { Field, FieldError, FieldLabel } from "../ui/field";
 import { Spinner } from "../ui/spinner";
 import { Textarea } from "../ui/textarea";
+import ComposerBuyUnits from "./composer-buy-units";
 import ComposerOffered from "./composer-offered";
 import {
   ComposerOfferedPayment,
@@ -135,7 +138,11 @@ export default function ListingComposer({
   const [display, setDisplay] = useState<ComposerDisplay>(initialDisplay);
   const [discarding, setDiscarding] = useState(false);
   // a submission waiting for the poster to confirm the listing takes offers
-  const [held, setHeld] = useState<ListingSubmission | null>(null);
+  const [held, setHeld] = useState<{
+    submission: ListingSubmission;
+    // some option claims at once, so not the whole listing waits for offers
+    mixed: boolean;
+  } | null>(null);
   // read during render so the form keeps it current for requestClose
   const { isDirty } = form.formState;
   // a double click posts once, even before the pending state renders
@@ -246,7 +253,10 @@ export default function ListingComposer({
     setDisplay(initialDisplay());
   }
 
-  // a bundle keeps taking the whole pool, and a ratio is held to a smaller one
+  /**
+   * A bundle keeps taking the whole pool, and a ratio is held to a smaller
+   * one; with no objekts left, the poster's payment buys.
+   */
   function setOffered(offered: ListingFormValues["offered"]) {
     const options = {
       shouldDirty: true,
@@ -258,6 +268,16 @@ export default function ListingComposer({
       options,
     );
     form.setValue("offered", offered, options);
+    syncMaxUnits();
+  }
+
+  // a payment with no objekts buys, and anything else buys nothing
+  function syncMaxUnits() {
+    form.setValue(
+      "maxUnits",
+      followMaxUnits(form.getValues("maxUnits"), form.getValues()),
+      setOptions(),
+    );
   }
 
   function toggleOffered({ collection, objekt: token }: Objekt.Objekt) {
@@ -355,7 +375,14 @@ export default function ListingComposer({
       (mode.kind === "create" ||
         !hasRangeRow(mode.listing.options.flatMap((option) => option.wants)))
     ) {
-      setHeld(submission);
+      setHeld({
+        submission,
+        mixed: values.options.some(
+          (option) =>
+            listingAcceptance(option.wants, option.payment?.mode ?? null) !==
+            "offer",
+        ),
+      });
     } else {
       post(submission);
     }
@@ -365,7 +392,7 @@ export default function ListingComposer({
     if (held === null) return;
     setHeld(null);
     if (dismiss) dismissRangeNotice.mutate();
-    post(held);
+    post(held.submission);
   }
 
   const title =
@@ -401,6 +428,7 @@ export default function ListingComposer({
                   onAddPayment={() => {
                     form.setValue("offeredPayment", "", setOptions());
                     addPaymentTerms();
+                    syncMaxUnits();
                   }}
                 />
                 <OfferedPayment
@@ -409,6 +437,7 @@ export default function ListingComposer({
                   onRemove={() => {
                     form.setValue("offeredPayment", undefined, setOptions());
                     dropUnusedPaymentTerms();
+                    syncMaxUnits();
                   }}
                 />
               </div>
@@ -467,6 +496,7 @@ export default function ListingComposer({
               />
             )}
             <RatioStrip form={form} currency={currency} />
+            <BuyStrip form={form} />
             <NoteStrip form={form} />
           </div>
           <ComposerFooter
@@ -501,6 +531,7 @@ export default function ListingComposer({
       <ComposerRangeConfirm
         mode={mode}
         open={held !== null}
+        mixed={held?.mixed ?? false}
         onOpenChange={() => setHeld(null)}
         onContinue={confirmRange}
       />
@@ -612,7 +643,8 @@ function OfferedSection({
 }
 
 /**
- * The poster's payment on top of their objekts, once added.
+ * The poster's payment, once added: on top of their objekts, or alone,
+ * which buys.
  */
 function OfferedPayment({
   form,
@@ -622,15 +654,16 @@ function OfferedPayment({
   currency: string;
   onRemove: () => void;
 }) {
-  const offeredPayment = useWatch({
+  const [offeredPayment, maxUnits] = useWatch({
     control: form.control,
-    name: "offeredPayment",
+    name: ["offeredPayment", "maxUnits"],
   });
 
   return (
     offeredPayment !== undefined && (
       <div className="flex flex-col px-4 pb-4 md:px-5">
         <ComposerOfferedPayment
+          paying={maxUnits !== undefined}
           currency={currency}
           amount={offeredPayment}
           label={m.listing_composer_payment_amount_yours()}
@@ -669,8 +702,8 @@ function wantedText(options: ListingFormValues["options"], currency: string) {
 /**
  * The ratio, once the want rows ask for something and there are two or
  * more objekts to split it over, or an edit's ratio takes more than the
- * pool holds, so the poster can lower it. A listing with no asking price
- * shows only the poster's side.
+ * pool holds, so the poster can lower it. A listing with no asking price,
+ * or with several options, shows only the poster's side.
  */
 function RatioStrip({ form, currency }: FormProps & { currency: string }) {
   const [offered, unitSize, options] = useWatch({
@@ -688,7 +721,8 @@ function RatioStrip({ form, currency }: FormProps & { currency: string }) {
       offered={offered.length}
       wanted={wanted ?? ""}
       wants={
-        wanted === null
+        // several options trade at several ratios, so only the poster's side shows
+        wanted === null || options.length > 1
           ? "offers"
           : options.every((wants) =>
                 wants.every((want) => want.kind === "payment"),
@@ -703,6 +737,28 @@ function RatioStrip({ form, currency }: FormProps & { currency: string }) {
         })
       }
     />
+  );
+}
+
+/**
+ * How many units a buy listing pays for, once the poster's payment stands
+ * alone.
+ */
+function BuyStrip({ form }: FormProps) {
+  const maxUnits = useWatch({ control: form.control, name: "maxUnits" });
+
+  return (
+    maxUnits !== undefined && (
+      <ComposerBuyUnits
+        maxUnits={maxUnits}
+        onChange={(next) =>
+          form.setValue("maxUnits", next, {
+            shouldDirty: true,
+            shouldValidate: form.formState.isSubmitted,
+          })
+        }
+      />
+    )
   );
 }
 
@@ -843,10 +899,19 @@ function ComposerFooter({
   cancel: ReactNode;
 }) {
   const reasonId = useId();
-  const [unitSize, options, offeredPayment, payment, note] = useWatch({
-    control: form.control,
-    name: ["unitSize", "options", "offeredPayment", "payment", "note"],
-  });
+  const [unitSize, maxUnits, options, offeredPayment, payment, note] = useWatch(
+    {
+      control: form.control,
+      name: [
+        "unitSize",
+        "maxUnits",
+        "options",
+        "offeredPayment",
+        "payment",
+        "note",
+      ],
+    },
+  );
   // the range rows count their own matches, keyed as the schema reads them; this reads the counts they cached
   const rangeMatches = useQueries({
     queries: options.flat().flatMap((want) => {
@@ -865,6 +930,7 @@ function ComposerFooter({
       offeredPayment,
       payment,
       unitSize,
+      maxUnits,
       rangeMatches,
       rosters,
       note: note ?? "",
@@ -880,13 +946,16 @@ function ComposerFooter({
     <div className="flex shrink-0 flex-col gap-2 border-t border-border bg-background/95 px-4 pt-2.5 pb-[calc(1rem+env(safe-area-inset-bottom))] md:flex-row md:flex-wrap md:items-center md:gap-x-3 md:px-5 md:py-3.5">
       <span className="text-center text-xs text-muted-foreground tabular-nums md:text-left">
         {footerSummary(
-          withPrice(
-            m.listing_composer_footer_offered({
-              count: formUnitSize({ offered, unitSize }),
-            }),
-            offeredPayment,
-            currency,
-          ),
+          // a buy listing's side is its payment alone
+          maxUnits !== undefined && offeredPayment !== undefined
+            ? priceText(offeredPayment, currency)
+            : withPrice(
+                m.listing_composer_footer_offered({
+                  count: formUnitSize({ offered, unitSize }),
+                }),
+                offeredPayment,
+                currency,
+              ),
           options,
           payment?.mode,
           currency,

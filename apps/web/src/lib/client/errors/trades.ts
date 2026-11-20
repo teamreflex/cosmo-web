@@ -48,6 +48,12 @@ export function formatTradeError(code: string): string | null {
       return m.trade_error_listing_range_empty();
     case "listing_bump_too_soon":
       return m.trade_error_listing_bump_too_soon();
+    case "listing_full":
+      return m.trade_error_listing_full();
+    case "listing_units_taken":
+      return m.trade_error_listing_units_taken();
+    case "listing_kind_fixed":
+      return m.trade_error_listing_kind_fixed();
     case "claim_cap_reached":
       return m.trade_error_claim_cap_reached();
     case "claim_assignment_invalid":
@@ -223,6 +229,8 @@ export function formatOfferRefusal(
       return m.trade_error_offer_expired();
     case "listing_updated":
       return m.trade_error_listing_updated();
+    case "listing_full":
+      return m.trade_error_listing_full();
     case "cosmo_not_linked":
       return m.auth_error_cosmo_required();
     case "offer_unavailable":

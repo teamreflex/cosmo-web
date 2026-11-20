@@ -26,6 +26,7 @@ import {
   eq,
   exists,
   inArray,
+  isNotNull,
   isNull,
   ne,
   not,
@@ -110,12 +111,29 @@ function narrowed(side: FeedSide) {
  * Offering: some single offered objekt holds every narrowed value, the
  * navbar's artists included. The listing-level arrays narrow the
  * candidates through their GIN index first; they hold the union over the
- * listing's objekts, so the EXISTS still decides.
+ * listing's objekts, so the EXISTS still decides. A buy listing offers no
+ * objekt, so it never matches the Offering filters; with only the navbar's
+ * artists narrowing, it matches when one of its want rows names one of them
+ * (lookingForConditions()).
  */
 function offeringConditions(side: FeedSide, artists: string[]) {
   const columns = narrowed(side);
   if (columns.length === 0 && artists.length === 0) return [];
+  const offering = offeredConditions(columns, artists);
+  if (columns.length > 0) return offering;
+  return [
+    or(
+      and(...offering),
+      and(buy, ...lookingForConditions({ artist: artists })),
+    ),
+  ];
+}
 
+// some single offered objekt holds every narrowed value and one of the navbar's artists
+function offeredConditions(
+  columns: ReturnType<typeof narrowed>,
+  artists: string[],
+) {
   const item = and(
     eq(tradeOfferItems.offerId, tradeOffers.id),
     isNull(tradeOfferItems.leftAt),
@@ -236,16 +254,8 @@ const sale = and(
   ),
 );
 
-// a buy: the poster sends its payment and the listing has never offered an objekt
-const buy = and(
-  eq(tradeOffers.paymentSide, "from"),
-  notExists(
-    qb
-      .select({ id: tradeOfferItems.id })
-      .from(tradeOfferItems)
-      .where(eq(tradeOfferItems.offerId, tradeOffers.id)),
-  ),
-);
+// a buy: the poster sends its payment for up to its most units and offers no objekts
+const buy = isNotNull(tradeOffers.maxUnits);
 
 /**
  * Each listing type as SQL, as listingTypesOf() decides it, so a listing

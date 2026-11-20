@@ -323,8 +323,9 @@ function ListingWants({
       options={listing.options}
       heading="you_look_for"
       summary={
-        hasRatio(listing.unitSize, listing.items.length)
-          ? m.listing_detail_wants_per({ count: listing.unitSize })
+        listing.units.kind === "pool" &&
+        hasRatio(listing.units.unitSize, listing.items.length)
+          ? m.listing_detail_wants_per({ count: listing.units.unitSize })
           : undefined
       }
     />
@@ -387,7 +388,7 @@ function RoleAlert({
         case "blocked":
           return <BlockedAlert listing={listing} />;
         case "busy":
-          return <BusyAlert poster />;
+          return <BusyAlert poster buying={listing.units.kind === "buy"} />;
         case null:
           return null;
       }
@@ -413,7 +414,13 @@ function RoleAlert({
       );
     case "refused": {
       if (role.reason === "busy") {
-        return <BusyAlert reasonId={reasonId} detailId={detailId} />;
+        return (
+          <BusyAlert
+            buying={listing.units.kind === "buy"}
+            reasonId={reasonId}
+            detailId={detailId}
+          />
+        );
       }
       if (role.reason === "blocked") {
         return (

@@ -20,7 +20,7 @@ import {
   endedTradeColumns,
   listingClosing,
   listingTransition,
-  listingUnitSize,
+  listingUnits,
   type PartyActionRefusal,
   type TradeEvent,
   tradeListingId,
@@ -172,6 +172,7 @@ export async function lockTrade(tx: WebTx, tradeId: string) {
       disputeReportId: tradeOffers.disputeReportId,
       paymentMethods: tradeOffers.paymentMethods,
       listingOption: tradeOffers.listingOption,
+      units: tradeOffers.units,
       now: sql<Date>`now()`.mapWith(tradeOffers.endedAt),
     })
     .from(tradeOffers)
@@ -388,14 +389,16 @@ export async function endTrade(
     .where(inArray(tradeOffers.id, [...listings.keys()]))
     .orderBy(asc(tradeOffers.id))
     .for("no key update");
-  if (next.status === "completed") {
+  // a buy listing's trade takes no pool tokens
+  const picks = [...listings].filter(([, tokenIds]) => tokenIds.length > 0);
+  if (next.status === "completed" && picks.length > 0) {
     await tx
       .update(tradeOfferItems)
       .set({ leftAt: sql`now()` })
       .where(
         and(
           or(
-            ...[...listings].map(([listingId, tokenIds]) =>
+            ...picks.map(([listingId, tokenIds]) =>
               and(
                 eq(tradeOfferItems.offerId, listingId),
                 inArray(tradeOfferItems.tokenId, tokenIds),
@@ -410,9 +413,10 @@ export async function endTrade(
 }
 
 /**
- * Closes the open listings among `listingIds` whose pool can no longer make
- * a unit and that have no live trade left (listingClosing): filled when one
- * of their trades completed, else broken. The caller holds their locks and
+ * Closes the open listings among `listingIds` that have no live trade left
+ * and whose pool can no longer make a unit, filled when one of their trades
+ * completed, else broken, or that bought all their units, filled
+ * (listingClosing). The caller holds their locks and
  * their posters', among `users`. A broken one's poster hears
  * `listing_closed`, naming no token, since no single one broke it.
  */
@@ -426,6 +430,7 @@ async function closeSpentListings(
       id: tradeOffers.id,
       fromUserId: tradeOffers.fromUserId,
       unitSize: tradeOffers.unitSize,
+      maxUnits: tradeOffers.maxUnits,
       ...listingPoolState,
     })
     .from(tradeOffers)
@@ -440,7 +445,7 @@ async function closeSpentListings(
     listings.flatMap((listing) => {
       const event = listingClosing({
         ...listing,
-        unitSize: listingUnitSize(listing),
+        units: listingUnits(listing),
       });
       return event === null
         ? []

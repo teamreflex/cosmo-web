@@ -9,8 +9,9 @@ import * as z from "zod";
 
 /**
  * The most one unit of a listing's payment can be, in minor units
- * (99,999,999.99). A claim takes at most MAX_OFFERED units, so the total a
- * trade records stays inside the `numeric(14,2)` columns.
+ * (99,999,999.99). A claim takes at most MAX_TOTAL_WANTED units and a buy
+ * listing asks for at most MAX_BUY_UNITS, so every total stays inside the
+ * `numeric(14,2)` columns.
  */
 export const MAX_PAYMENT_AMOUNT = 9_999_999_999;
 

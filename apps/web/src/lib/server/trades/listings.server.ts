@@ -7,7 +7,11 @@ import {
   tradeOffers,
   user,
 } from "@apollo/database/web/schema";
-import { bumpUpdatedAt } from "@apollo/database/web/sql";
+import {
+  bumpUpdatedAt,
+  listingPoolState,
+  listingTakenUnits,
+} from "@apollo/database/web/sql";
 import type {
   NewTradeListingWant,
   NewTradeListingWantRange,
@@ -16,7 +20,12 @@ import type {
 } from "@apollo/database/web/types";
 import type { InventoryObjekt } from "@apollo/trades/allocate";
 import { firstRefusal } from "@apollo/trades/holdings";
-import { offerTransition } from "@apollo/trades/lifecycle";
+import {
+  editUnitsRefusal,
+  type ListingUnits,
+  listingUnits,
+  offerTransition,
+} from "@apollo/trades/lifecycle";
 import type { ListingInput } from "@apollo/trades/listing";
 import {
   type ListingPayment,
@@ -325,6 +334,51 @@ export async function checkTerms(
 }
 
 /**
+ * The listing row's unit columns (ListingUnits): a pool listing's unit
+ * size, or a buy listing's most units.
+ */
+export function unitColumns(
+  units: ListingUnits,
+): Pick<typeof tradeOffers.$inferInsert, "unitSize" | "maxUnits"> {
+  return units.kind === "pool"
+    ? { unitSize: units.unitSize, maxUnits: null }
+    : { unitSize: null, maxUnits: units.maxUnits };
+}
+
+/**
+ * Refuses an edit of a locked listing whose units its trades rule out
+ * (editUnitsRefusal()): a change of kind while it has a live or completed
+ * trade, or a buy listing's most units below what its trades hold.
+ */
+export async function refuseUnitsChange(
+  tx: WebTx,
+  listingId: string,
+  units: ListingUnits,
+) {
+  const [held] = await tx
+    .select({
+      id: tradeOffers.id,
+      unitSize: tradeOffers.unitSize,
+      maxUnits: tradeOffers.maxUnits,
+      live: listingPoolState.live,
+      completed: listingPoolState.completed,
+      taken: listingTakenUnits(tradeOffers.id),
+      completedUnits: listingPoolState.completedUnits,
+    })
+    .from(tradeOffers)
+    .where(eq(tradeOffers.id, listingId));
+  if (held === undefined) return;
+  switch (editUnitsRefusal(units, { ...held, units: listingUnits(held) })) {
+    case "kind_fixed":
+      throw new ExpectedError("listing_kind_fixed");
+    case "units_taken":
+      throw new ExpectedError("listing_units_taken");
+    case null:
+      return;
+  }
+}
+
+/**
  * The listing row's payment columns: who sends the payment, the methods it
  * may arrive by and its offer mode. All empty without a payment.
  */
@@ -424,8 +478,8 @@ function paymentRows(
 }
 
 /**
- * Inserts the listing's own items, never live and with no `listing_id`,
- * then every option's objekt wants in one statement, in option order, so
+ * Inserts the listing's own items, never live and with no `listing_id`
+ * (none on a buy listing), then every option's objekt wants in one statement, in option order, so
  * id order is the posted order, then its payment rows, then the
  * collections of its choice rows and the ranges of its range rows.
  */
@@ -434,18 +488,21 @@ export async function insertTerms(
   listingId: string,
   terms: CheckedTerms,
 ) {
-  await tx.insert(tradeOfferItems).values(
-    terms.offered.map(
-      (token) =>
-        ({
-          offerId: listingId,
-          sender: "from",
-          kind: "objekt",
-          live: false,
-          ...token,
-        }) satisfies NewTradeOfferItem,
-    ),
-  );
+  // a buy listing offers no objekts
+  if (terms.offered.length > 0) {
+    await tx.insert(tradeOfferItems).values(
+      terms.offered.map(
+        (token) =>
+          ({
+            offerId: listingId,
+            sender: "from",
+            kind: "objekt",
+            live: false,
+            ...token,
+          }) satisfies NewTradeOfferItem,
+      ),
+    );
+  }
   const wants = terms.options.flatMap((option, index) =>
     option.wants.map((want) => ({ option: index, want })),
   );

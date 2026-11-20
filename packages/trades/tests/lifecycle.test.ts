@@ -8,9 +8,11 @@ import { describe, expect, test } from "bun:test";
 import {
   type ClaimTerms,
   claimTerms,
+  editUnitsRefusal,
   type ListingAcceptance,
   listingAcceptance,
   listingClosing,
+  listingUnits,
   needsYou,
   type OfferEvent,
   partyAction,
@@ -18,12 +20,14 @@ import {
   type TradeEvent,
   type TradeItemState,
   tradeListingId,
+  tradeListings,
   type TradeState,
   tradeState,
   transition,
   type TransitionRefusal,
   waitingSide,
 } from "../src/lifecycle";
+import type { ListingUnits } from "../src/lifecycle";
 import type { PaymentPrice, TradePayment } from "../src/payment";
 
 function objekt(sender: "from" | "to", transferred = false): TradeItemState {
@@ -590,7 +594,88 @@ describe("listingClosing", () => {
     boolean,
     "fill" | "break" | null,
   ][])("%s", (_, pool, unitSize, live, completed, expected) => {
-    expect(listingClosing({ pool, unitSize, live, completed })).toBe(expected);
+    expect(
+      listingClosing({
+        units: { kind: "pool", unitSize },
+        pool,
+        live,
+        completed,
+        completedUnits: 0,
+      }),
+    ).toBe(expected);
+  });
+
+  // a buy listing of three units, which has no pool
+  test.each([
+    ["stays open with no trade", 0, false, null],
+    ["stays open short of its units", 2, false, null],
+    ["fills once its completed trades fill every unit", 3, false, "fill"],
+    ["fills past its units, after an edit lowered them", 4, false, "fill"],
+    ["stays open while a trade is live", 3, true, null],
+  ] satisfies [string, number, boolean, "fill" | null][])(
+    "a buy listing %s",
+    (_, completedUnits, live, expected) => {
+      expect(
+        listingClosing({
+          units: { kind: "buy", maxUnits: 3 },
+          pool: 0,
+          live,
+          completed: completedUnits > 0,
+          completedUnits,
+        }),
+      ).toBe(expected);
+    },
+  );
+});
+
+describe("listingUnits", () => {
+  test("parses a pool listing's unit size", () => {
+    expect(listingUnits({ id: "l", unitSize: 2, maxUnits: null })).toEqual({
+      kind: "pool",
+      unitSize: 2,
+    });
+  });
+
+  test("parses a buy listing's most units", () => {
+    expect(listingUnits({ id: "l", unitSize: null, maxUnits: 3 })).toEqual({
+      kind: "buy",
+      maxUnits: 3,
+    });
+  });
+
+  test.each([
+    ["neither, as a trade has", null, null],
+    ["both", 2, 3],
+  ] satisfies [string, number | null, number | null][])(
+    "throws on %s",
+    (_, unitSize, maxUnits) => {
+      expect(() => listingUnits({ id: "l", unitSize, maxUnits })).toThrow();
+    },
+  );
+});
+
+describe("tradeListings", () => {
+  test("names each listing with the pool tokens the trade took from it", () => {
+    expect(
+      tradeListings([
+        { listingId: "a", tokenId: 1 },
+        { listingId: null, tokenId: 2 },
+        { listingId: "a", tokenId: 3 },
+      ]),
+    ).toEqual(new Map([["a", [1, 3]]]));
+  });
+
+  test("finds a buy listing through the poster's payment, with no tokens", () => {
+    expect(
+      tradeListings([
+        { listingId: null, tokenId: 2 },
+        { listingId: "buy", tokenId: null },
+      ]),
+    ).toEqual(new Map([["buy", []]]));
+  });
+
+  test("a direct offer has no listing", () => {
+    expect(tradeListings([{ listingId: null, tokenId: 2 }]).size).toBe(0);
   });
 });
 
@@ -806,4 +891,51 @@ describe("tradeState", () => {
       ]),
     ).toEqual(listingOffer([objekt("from"), objekt("to")]));
   });
+});
+
+describe("editUnitsRefusal", () => {
+  const pool: ListingUnits = { kind: "pool", unitSize: 1 };
+  const buy = (maxUnits: number): ListingUnits => ({ kind: "buy", maxUnits });
+  const held = {
+    units: buy(3),
+    live: false,
+    completed: false,
+    taken: 0,
+    completedUnits: 0,
+  };
+
+  test("a listing with no trade may change its kind", () => {
+    expect(editUnitsRefusal(pool, held)).toBeNull();
+    expect(editUnitsRefusal(buy(2), { ...held, units: pool })).toBeNull();
+  });
+
+  test.each([
+    ["a live trade", { live: true, taken: 1 }],
+    ["a completed trade", { completed: true, taken: 1, completedUnits: 1 }],
+  ])("%s keeps the listing's kind", (_, trades) => {
+    expect(editUnitsRefusal(pool, { ...held, ...trades })).toBe("kind_fixed");
+    expect(editUnitsRefusal(buy(2), { ...held, ...trades, units: pool })).toBe(
+      "kind_fixed",
+    );
+  });
+
+  test.each([
+    ["below the units live and completed trades fill", 2, 3, 1, "units_taken"],
+    ["at them, with one still live", 3, 3, 2, null],
+    ["at the completed units alone", 2, 2, 2, "units_taken"],
+    ["above them", 4, 3, 2, null],
+  ] satisfies [string, number, number, number, "units_taken" | null][])(
+    "most units %s",
+    (_, maxUnits, taken, completedUnits, expected) => {
+      expect(
+        editUnitsRefusal(buy(maxUnits), {
+          ...held,
+          live: taken > completedUnits,
+          completed: completedUnits > 0,
+          taken,
+          completedUnits,
+        }),
+      ).toBe(expected);
+    },
+  );
 });

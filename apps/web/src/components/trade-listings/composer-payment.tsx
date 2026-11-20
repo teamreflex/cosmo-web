@@ -36,7 +36,7 @@ function AmountField({
   "currency" | "amount" | "label" | "placeholder" | "onChange"
 >) {
   return (
-    <span className="flex items-center gap-2">
+    <span className="flex shrink-0 items-center gap-2">
       <span className="font-mono text-sm text-muted-foreground">
         {currency}
       </span>
@@ -47,7 +47,7 @@ function AmountField({
         placeholder={placeholder}
         value={amount}
         onChange={(event) => onChange(event.target.value)}
-        className="h-9 w-28 font-mono font-bold tabular-nums"
+        className="h-9 w-24 font-mono font-bold tabular-nums md:w-28"
       />
     </span>
   );
@@ -80,12 +80,12 @@ function RemoveButton({
  */
 export function ComposerPaymentRow(props: AmountProps) {
   return (
-    <div className="flex min-h-12 flex-wrap items-center gap-x-3 gap-y-2 rounded-md border border-amber-500/40 bg-background py-1.5 pr-1.5 pl-3">
-      <span className="w-16 shrink-0 text-xxs font-semibold tracking-widest text-amber-700 uppercase dark:text-amber-400">
+    <div className="flex min-h-12 items-center gap-x-2.5 rounded-md border border-amber-500/40 bg-background py-1.5 pr-1.5 pl-3 md:gap-x-3">
+      <span className="shrink-0 text-xxs font-semibold tracking-widest text-amber-700 uppercase md:w-16 dark:text-amber-400">
         {m.listing_detail_kind_payment()}
       </span>
       <AmountField {...props} />
-      <span className="text-sm text-muted-foreground">
+      <span className="min-w-0 truncate text-sm text-muted-foreground">
         {m.listing_detail_payment_each()}
       </span>
       <RemoveButton
@@ -125,17 +125,25 @@ export function ComposerOfferedPaymentButton({
 }
 
 /**
- * The poster's payment on top of their objekts, once added.
+ * The poster's payment, once added: on top of their objekts, or alone
+ * (`paying`), when the listing buys.
  */
-export function ComposerOfferedPayment(payment: AmountProps) {
+export function ComposerOfferedPayment({
+  paying,
+  ...payment
+}: AmountProps & { paying: boolean }) {
   return (
-    <div className="flex flex-wrap items-center gap-x-2.5 gap-y-2 rounded-md border border-teal-500/35 bg-teal-500/5 py-1.5 pr-1.5 pl-3">
+    <div className="flex items-center gap-x-2.5 rounded-md border border-teal-500/35 bg-teal-500/5 py-1.5 pr-1.5 pl-3">
       <span className="shrink-0 text-xxs font-semibold tracking-widest text-teal-700 uppercase dark:text-teal-400">
-        {m.listing_composer_payment_and()}
+        {paying
+          ? m.listing_composer_payment_paying()
+          : m.listing_composer_payment_and()}
       </span>
       <AmountField {...payment} />
-      <span className="text-sm text-muted-foreground">
-        {m.listing_composer_payment_on_top()}
+      <span className="min-w-0 truncate text-sm text-muted-foreground">
+        {paying
+          ? m.listing_payment_each_unit()
+          : m.listing_composer_payment_on_top()}
       </span>
       <RemoveButton
         label={m.listing_composer_payment_remove()}

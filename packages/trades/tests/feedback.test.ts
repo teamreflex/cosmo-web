@@ -168,6 +168,16 @@ describe("feedback roles", () => {
     expect(feedbackRole(items, "to")).toBe("buyer");
   });
 
+  test("a buy listing's trade: the poster paying is the buyer", () => {
+    const items: TradeItemState[] = [
+      objekt("to"),
+      objekt("to"),
+      { kind: "payment", sender: "from", confirmed: false },
+    ];
+    expect(feedbackRole(items, "from")).toBe("buyer");
+    expect(feedbackRole(items, "to")).toBe("seller");
+  });
+
   test.each([
     ["the claimer's payment beside their objekt", "to"],
     ["the poster's payment on top of theirs", "from"],

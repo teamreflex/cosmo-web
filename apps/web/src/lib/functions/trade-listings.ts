@@ -45,6 +45,8 @@ import {
   posterRow,
   recheckTokens,
   refuseEdit,
+  refuseUnitsChange,
+  unitColumns,
 } from "@/lib/server/trades/listings.server";
 import {
   posterBlocked,
@@ -55,6 +57,7 @@ import { ExpectedError } from "@/lib/universal/errors/expected";
 import { toFeedbackRep } from "@/lib/universal/feedback";
 import {
   type ListingItem,
+  listingSize,
   listingStop,
   type ListingViewer,
   type ListingWriteResult,
@@ -68,10 +71,10 @@ import {
   tradeOfferItems,
   tradeOffers,
 } from "@apollo/database/web/schema";
-import { bumpUpdatedAt } from "@apollo/database/web/sql";
+import { bumpUpdatedAt, listingTakenUnits } from "@apollo/database/web/sql";
 import { MAX_WANT_ROWS } from "@apollo/trades/caps";
 import { tokenRefusals } from "@apollo/trades/holdings";
-import { listingTransition, listingUnitSize } from "@apollo/trades/lifecycle";
+import { listingTransition } from "@apollo/trades/lifecycle";
 import {
   claimListingInputSchema,
   editListingInputSchema,
@@ -120,7 +123,7 @@ export const $postListing = createServerFn({ method: "POST" })
           status: "open",
           fromUserId: actor.userId,
           fromAddress: address,
-          unitSize: data.unitSize,
+          ...unitColumns(data.units),
           note: data.note,
           ...listingArrays(terms.offered),
           ...paymentColumns(data.payment),
@@ -135,9 +138,11 @@ export const $postListing = createServerFn({ method: "POST" })
 
 /**
  * Replace the terms of the caller's open listing: the arrays, the pinned
- * address, the unit size, the note, its items and its wants. Refusals
- * follow a fixed order: the poster, then the listing (missing or not
- * theirs, closed), then the wants, then the offered tokens. Its live trades
+ * address, the unit size or a buy listing's most units, the note, its items
+ * and its wants. Refusals follow a fixed order: the poster, then the
+ * listing (missing or not theirs, closed), then the wants, then, under the
+ * listing's lock, a change of kind or most units its trades rule out
+ * (refuseUnitsChange()), then the offered tokens. Its live trades
  * keep their own copies of the objekts they took, whatever the edit drops,
  * but its pending offers were made on the old terms, so they turn stale and
  * their claimers hear of it. They are locked before the listing
@@ -180,6 +185,7 @@ export const $editListing = createServerFn({ method: "POST" })
           data.listingId,
         ).for("update");
         refuseEdit(listing);
+        await refuseUnitsChange(tx, data.listingId, data.units);
         const locked = new Set(offers.map((offer) => offer.id));
         const now = await listingOffers(tx, actor.userId, data.listingId);
         if (now.some((offer) => !locked.has(offer.id))) {
@@ -193,7 +199,7 @@ export const $editListing = createServerFn({ method: "POST" })
           .set({
             ...listingArrays(terms.offered),
             fromAddress: address,
-            unitSize: data.unitSize,
+            ...unitColumns(data.units),
             note: data.note,
             ...paymentColumns(data.payment),
             updatedAt: bumpUpdatedAt,
@@ -463,11 +469,15 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
           fromUserId: true,
           fromAddress: true,
           unitSize: true,
+          maxUnits: true,
           paymentSide: true,
           paymentMethods: true,
           offers: true,
         },
-        extras: listingStateExtras,
+        extras: {
+          ...listingStateExtras,
+          taken: (t) => listingTakenUnits(t.id),
+        },
         with: {
           items: { orderBy: { id: "asc" }, extras: poolItemExtras },
           wants: storedWants,
@@ -477,7 +487,7 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
         },
       });
       if (!row) return null;
-      const unitSize = listingUnitSize(row);
+      const units = listingSize(row);
 
       const {
         listings: [listing],
@@ -522,14 +532,14 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
           poster: listing.fromUser && toPublicUser(listing.fromUser),
           cosmoUsername: listing.fromCosmo?.username ?? null,
           rep: listing.fromUser && toFeedbackRep(listing.fromStats),
-          unitSize,
+          units,
           items,
           options: listing.options,
           state,
           // only an open listing can be claimed, so only an open one is judged
           stop:
             state.status === "open"
-              ? listingStop(items, unitSize, posterRefused)
+              ? listingStop(items, units, posterRefused)
               : null,
         },
         viewer: await readListingViewer(
@@ -538,7 +548,7 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
             status: row.status,
             fromUserId: row.fromUserId,
             fromAddress: row.fromAddress,
-            unitSize,
+            units,
             options: listing.options,
             pool: poolItems({ items }).map((item) => item.tokenId),
             free: items.filter((item) => item.availability.kind === "free")

@@ -1,5 +1,5 @@
 import { m } from "@/i18n/messages";
-import { optionTitle } from "@/lib/client/trade-listings";
+import { optionTitles } from "@/lib/client/trade-listings";
 import {
   acceptanceOf,
   type TradeListing,
@@ -20,6 +20,7 @@ type Props = {
  * Only a listing with several options shows it.
  */
 export default function OptionPicker({ listing, value, onChange }: Props) {
+  const titles = optionTitles(listing.options);
   return (
     <section className="flex min-w-0 flex-col gap-3">
       <SideHeading tone="want" title={m.listing_detail_pick_option()} />
@@ -40,7 +41,7 @@ export default function OptionPicker({ listing, value, onChange }: Props) {
                 {m.listing_option_label({ number: index + 1 })}
               </span>
               <span dir="auto" className="font-semibold break-words">
-                {optionTitle(option)}
+                {titles[index]}
               </span>
             </span>
             <span className="shrink-0 text-xs text-muted-foreground">

@@ -425,6 +425,15 @@ export function NoticeStrip({ notice }: { notice: Notice }) {
 export function BlockedAlert({ listing }: { listing: TradeListing }) {
   const fallback = <p>{m.listing_detail_poster_blocked_body()}</p>;
 
+  // a buy listing offers no objekts, so only the poster's account stops it
+  if (listing.units.kind === "buy") {
+    return (
+      <Alert role="status" variant="warning">
+        <IconAlertTriangle />
+        <AlertTitle>{m.listing_detail_poster_blocked_title()}</AlertTitle>
+      </Alert>
+    );
+  }
   return (
     <Alert role="status" variant="warning">
       <IconAlertTriangle />
@@ -470,26 +479,34 @@ function BlockedReasons({ listing }: { listing: TradeListing }) {
 }
 
 /**
- * The strip saying trades hold so much of the pool that nobody can take the
- * listing until one of them ends: to its poster, nothing they need to fix,
+ * The strip saying trades hold so much of the pool, or of a buy listing's
+ * units, that nobody can take the listing until one of them ends: to its poster, nothing they need to fix,
  * and to anyone else, when to come back. `reasonId` and `detailId` describe
  * a refused Accept.
  */
 export function BusyAlert({
   poster = false,
+  buying,
   reasonId,
   detailId,
 }: {
   poster?: boolean;
+  /** a buy listing, whose units the trades hold rather than its pool */
+  buying: boolean;
   reasonId?: string;
   detailId?: string;
 }) {
+  const title = buying
+    ? poster
+      ? m.listing_poster_busy_title_buying()
+      : m.listing_detail_busy_title_buying()
+    : poster
+      ? m.listing_poster_busy_title()
+      : m.listing_detail_busy_title();
   return (
     <Alert role="status">
       <IconHourglassEmpty />
-      <AlertTitle id={reasonId}>
-        {poster ? m.listing_poster_busy_title() : m.listing_detail_busy_title()}
-      </AlertTitle>
+      <AlertTitle id={reasonId}>{title}</AlertTitle>
       <AlertDescription id={detailId}>
         {poster ? m.listing_poster_busy_body() : m.listing_detail_busy_body()}
       </AlertDescription>

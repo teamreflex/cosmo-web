@@ -12,6 +12,8 @@ import {
   type ListingItem,
   type ListingOfferSummary,
   listingOptions,
+  type ListingSize,
+  listingSize,
   listingStop,
   type ListingTrade,
   type OfferRefusal,
@@ -159,6 +161,7 @@ describe("whether the poster can accept an offer", () => {
         expiresAt: new Date("2026-10-27T00:00:00Z"),
         option: 0,
         picks: [1],
+        units: null,
         given: [10],
         payment: null,
         ...offer,
@@ -166,7 +169,7 @@ describe("whether the poster can accept an offer", () => {
       {
         fromAddress: poster,
         pool: new Set([1, 2]),
-        unitSize: 1,
+        units: { kind: "pool", unitSize: 1 },
         options: [{ wants, payment: null }],
         posterRefused: false,
         ...listing,
@@ -178,6 +181,55 @@ describe("whether the poster can accept an offer", () => {
 
   test("an offer that still fits can be accepted", () => {
     expect(judge({})).toBeNull();
+  });
+
+  describe("on a buy listing", () => {
+    // $3 for each KimLip 101Z, up to three
+    const payment: ListingPayment = {
+      side: "from",
+      currency: "USD",
+      methods: ["wise"],
+      mode: "price_only",
+      amount: 300,
+    };
+    const offer = {
+      picks: [],
+      units: 1,
+      payment: { side: "from", amount: 300, currency: "USD" },
+    } satisfies Partial<Parameters<typeof offerRefusal>[0]>;
+    const listing = (taken: number) =>
+      ({
+        pool: new Set<number>(),
+        units: { kind: "buy", maxUnits: 3, taken },
+        options: [{ wants, payment }],
+      }) satisfies Partial<Parameters<typeof offerRefusal>[1]>;
+
+    test("fits while the listing has its units left", () => {
+      expect(judge({ offer, listing: listing(2) })).toBeNull();
+    });
+
+    test("is refused once other trades hold the units it takes", () => {
+      expect(judge({ offer, listing: listing(3) })).toEqual({
+        code: "listing_full",
+      });
+      expect(
+        judge({
+          offer: {
+            ...offer,
+            units: 2,
+            given: [10, 11],
+            payment: { side: "from", amount: 600, currency: "USD" },
+          },
+          tokens: {
+            states: new Map([
+              ...states,
+              [11, held(11, claimer, "atom02-kimlip-101z")],
+            ]),
+          },
+          listing: listing(2),
+        }),
+      ).toEqual({ code: "listing_full" });
+    });
   });
 
   test("each check answers as $acceptOffer would", () => {
@@ -362,24 +414,62 @@ describe("what stops every claim", () => {
   const free: PoolAvailability = { kind: "free" };
   const busy: PoolAvailability = { kind: "in_trade" };
   const locked: PoolAvailability = { kind: "blocked", reason: "locked" };
+  const unit = (unitSize: number): ListingSize => ({ kind: "pool", unitSize });
 
   test("nothing while a trade's worth of the pool is free", () => {
-    expect(listingStop(pool(free, busy), 1, false)).toBeNull();
+    expect(listingStop(pool(free, busy), unit(1), false)).toBeNull();
   });
 
   test("trades holding the rest of the pool make it busy, not blocked", () => {
-    expect(listingStop(pool(free, busy, locked), 2, false)).toBe("busy");
+    expect(listingStop(pool(free, busy, locked), unit(2), false)).toBe("busy");
   });
 
   test("objekts the poster can't give, or their account, block it", () => {
-    expect(listingStop(pool(free, locked), 2, false)).toBe("blocked");
-    expect(listingStop(pool(free, free), 1, true)).toBe("blocked");
+    expect(listingStop(pool(free, locked), unit(2), false)).toBe("blocked");
+    expect(listingStop(pool(free, free), unit(1), true)).toBe("blocked");
   });
 
   test("objekts that left the pool count for nothing", () => {
     expect(
-      listingStop(pool(free, { kind: "traded", at: new Date(0) }), 2, false),
+      listingStop(
+        pool(free, { kind: "traded", at: new Date(0) }),
+        unit(2),
+        false,
+      ),
     ).toBe("blocked");
+  });
+
+  // a buy listing has no pool, so only the units its trades hold count
+  const buying = (taken: number): ListingSize => ({
+    kind: "buy",
+    maxUnits: 3,
+    taken,
+  });
+
+  test("a buy listing with units left takes claims", () => {
+    expect(listingStop([], buying(2), false)).toBeNull();
+  });
+
+  test("a buy listing whose trades hold every unit is busy", () => {
+    expect(listingStop([], buying(3), false)).toBe("busy");
+  });
+
+  test("a buy listing is blocked only by the poster's account", () => {
+    expect(listingStop([], buying(0), true)).toBe("blocked");
+  });
+});
+
+describe("a buy listing's units", () => {
+  test("parses the most units with what its trades hold", () => {
+    expect(
+      listingSize({ id: "l", unitSize: null, maxUnits: 3, taken: 2 }),
+    ).toEqual({ kind: "buy", maxUnits: 3, taken: 2 });
+  });
+
+  test("leaves a pool listing as its unit size", () => {
+    expect(
+      listingSize({ id: "l", unitSize: 2, maxUnits: null, taken: 0 }),
+    ).toEqual({ kind: "pool", unitSize: 2 });
   });
 });
 
@@ -468,6 +558,7 @@ const trade = (
     claimer: counterparty(name),
     acceptedAt: new Date(acceptedAt),
     tokenIds,
+    units: null,
     givenCount: tokenIds.length,
     payment: null,
   };

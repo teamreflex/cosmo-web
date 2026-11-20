@@ -1,4 +1,5 @@
 import { MAX_PER_ROW, MAX_TOTAL_WANTED } from "./caps";
+import type { ListingUnits } from "./lifecycle";
 import type { ListingPayment, TradePayment } from "./payment";
 import {
   type IndexedAttributes,
@@ -127,29 +128,49 @@ export function scaleWants(wants: readonly TradeWant[], units: number) {
 }
 
 /**
+ * A listing's units (ListingUnits) with what bounds the units it can take
+ * now: the free objekts of a pool listing's pool, and the units a buy
+ * listing's live and completed trades hold (`taken`).
+ */
+export type UnitsRoom =
+  | (Extract<ListingUnits, { kind: "pool" }> & { free: number })
+  | (Extract<ListingUnits, { kind: "buy" }> & { taken: number });
+
+/**
+ * How many more units a listing can take right now: as many as its free
+ * pool objekts make for a pool listing, and its most units less the ones
+ * its trades hold for a buy listing.
+ */
+export function unitsLeft(room: UnitsRoom) {
+  return room.kind === "pool"
+    ? Math.floor(room.free / room.unitSize)
+    : Math.max(room.maxUnits - room.taken, 0);
+}
+
+/**
  * The most units of a listing one claim can take from the inventory, with
- * the allocation at that size. A claim is bounded by the free pool, by the
- * claim caps on each scaled row and on the total, and by what the inventory
- * can fill. Fewer units always fill when more do, since a subset of a full
- * allocation is still full, so the sizes are tried from the largest down.
- * When not even one unit fills, units is 0 and the allocation is one
- * unit's, which shows what's short.
+ * the allocation at that size. A claim is bounded by what the listing can
+ * take now (unitsLeft), by the claim caps on each scaled row and on the
+ * total, and by what the inventory can fill. Fewer units always fill when
+ * more do, since a subset of a full allocation is still full, so the sizes
+ * are tried from the largest down. When not even one unit fills, units is
+ * 0 and the allocation is one unit's, which shows what's short.
  */
 export function allocateUnits(
   wants: readonly TradeWant[],
   inventory: readonly InventoryObjekt[],
-  pool: { free: number; unitSize: number },
+  room: UnitsRoom,
 ) {
   const cap = Math.min(
-    Math.floor(pool.free / pool.unitSize),
+    unitsLeft(room),
     Math.floor(
       MAX_TOTAL_WANTED / wants.reduce((sum, want) => sum + want.count, 0),
     ),
     ...wants.map((want) => Math.floor(MAX_PER_ROW / want.count)),
   );
-  for (let units = cap; units > 1; units--) {
-    const allocation = allocate(scaleWants(wants, units), inventory);
-    if (isFullyAllocated(allocation)) return { units, allocation };
+  for (let size = cap; size > 1; size--) {
+    const allocation = allocate(scaleWants(wants, size), inventory);
+    if (isFullyAllocated(allocation)) return { units: size, allocation };
   }
   const allocation = allocate(wants, inventory);
   return {
@@ -192,24 +213,39 @@ export type OfferedToken =
   { kind: "missing"; tokenId: number } | ({ kind: "found" } & InventoryObjekt);
 
 /**
+ * How many units an offer on a listing takes: its picks in units of a pool
+ * listing (unitsOf), or the units it recorded on a buy listing, which it
+ * picks nothing from. Null when that doesn't hold, so the terms changed.
+ */
+export function offerUnits(
+  offer: { picks: readonly number[]; units: number | null },
+  units: ListingUnits,
+) {
+  if (units.kind === "pool") return unitsOf(offer.picks.length, units.unitSize);
+  return offer.picks.length === 0 ? offer.units : null;
+}
+
+/**
  * Why an offer on a listing no longer fits the listing as it is now, or
  * null when it does, which accepting it requires: every pick is still in
- * the pool, the picks make a whole number of units of the current unit
- * size (unitsOf), the claimer's tokens fill the current want rows scaled
- * to those units exactly (fillsExactly), and its payment fits the
- * listing's (paymentFits), else the terms changed. A claimer token the
- * indexer doesn't know is the claimer's to answer for, so it is named
- * rather than read as the terms changing.
+ * the pool, the offer takes a whole number of the listing's units
+ * (offerUnits), the claimer's tokens fill the current want rows scaled to
+ * those units exactly (fillsExactly), and its payment fits the listing's
+ * (paymentFits), else the terms changed. A claimer token the indexer
+ * doesn't know is the claimer's to answer for, so it is named rather than
+ * read as the terms changing. How many units a buy listing has left is
+ * judged apart from its terms.
  */
 export function listingOfferRefusal(
   offer: {
     picks: readonly number[];
+    units: number | null;
     given: readonly OfferedToken[];
     payment: TradePayment | null;
   },
   listing: {
     pool: ReadonlySet<number>;
-    unitSize: number;
+    units: ListingUnits;
     wants: readonly TradeWant[];
     payment: ListingPayment | null;
   },
@@ -217,7 +253,7 @@ export function listingOfferRefusal(
   | { reason: "terms_changed" }
   | { reason: "token_missing"; tokenId: number }
   | null {
-  const units = unitsOf(offer.picks.length, listing.unitSize);
+  const units = offerUnits(offer, listing.units);
   if (
     units === null ||
     !offer.picks.every((tokenId) => listing.pool.has(tokenId)) ||

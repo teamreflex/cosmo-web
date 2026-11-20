@@ -200,29 +200,45 @@ function OptionRows({
     paymentRow !== -1 && totalWanted(wants) === 0
       ? m.listing_detail_kind_payment()
       : m.listing_composer_trade_total({ count: totalWanted(wants) });
+  const paymentDisabled =
+    !roomForRow || paymentRow !== -1 || offeredPayment !== undefined;
+  function addPayment() {
+    append({ kind: "payment", amount: "" });
+    onPaymentAdded();
+  }
 
   return (
     <div className="flex flex-col gap-2.5 rounded-lg border border-border bg-muted/40 p-3">
-      {onRemoveOption === undefined ? (
-        <span className="text-xxs font-medium tracking-widest text-muted-foreground uppercase">
-          {total}
+      <div className="flex items-center gap-2">
+        <span className="min-w-0 flex-1 text-xxs font-medium tracking-widest text-muted-foreground uppercase">
+          {onRemoveOption === undefined
+            ? total
+            : `${m.listing_option_label({ number: option + 1 })} · ${total}`}
         </span>
-      ) : (
-        <div className="flex items-center gap-2">
-          <span className="min-w-0 flex-1 text-xxs font-medium tracking-widest text-muted-foreground uppercase">
-            {`${m.listing_option_label({ number: option + 1 })} · ${total}`}
-          </span>
+        {/* phones keep the Payment button on the heading's line, so it adds no row */}
+        <Button
+          type="button"
+          variant="ghost"
+          size="xs"
+          disabled={paymentDisabled}
+          onClick={addPayment}
+          className="-my-2.5 h-8 border border-dashed border-amber-500/55 md:hidden"
+        >
+          <IconPlus />
+          {m.listing_detail_kind_payment()}
+        </Button>
+        {onRemoveOption !== undefined && (
           <Button
             type="button"
             variant="ghost"
             size="xs"
             onClick={onRemoveOption}
-            className="text-muted-foreground"
+            className="text-muted-foreground max-md:-my-2.5 max-md:h-8"
           >
             {m.listing_composer_remove_option()}
           </Button>
-        </div>
-      )}
+        )}
+      </div>
 
       {fields.map((field, index) => {
         const want = wants[index];
@@ -361,14 +377,9 @@ function OptionRows({
           type="button"
           variant="ghost"
           size="sm"
-          disabled={
-            !roomForRow || paymentRow !== -1 || offeredPayment !== undefined
-          }
-          onClick={() => {
-            append({ kind: "payment", amount: "" });
-            onPaymentAdded();
-          }}
-          className="border border-dashed border-amber-500/55 max-md:h-10 max-md:flex-1"
+          disabled={paymentDisabled}
+          onClick={addPayment}
+          className="border border-dashed border-amber-500/55 max-md:hidden"
         >
           <IconPlus />
           {m.listing_detail_kind_payment()}

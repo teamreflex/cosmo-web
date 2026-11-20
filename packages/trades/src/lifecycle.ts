@@ -353,14 +353,56 @@ export function proposerId(
 }
 
 /**
- * A listing's unit size. Throws on a row without one, which only a trade
- * is (trade_offers_unit_size_chk), so callers pass listings.
+ * How a listing's claims are counted: a pool listing gives `unitSize` of
+ * its pool objekts per unit, and a buy listing, which offers no objekts,
+ * pays for up to `maxUnits` units in all.
  */
-export function listingUnitSize(row: Pick<TradeOffer, "id" | "unitSize">) {
-  if (row.unitSize === null) {
-    throw new Error(`listing ${row.id} has no unit`);
+export type ListingUnits =
+  { kind: "pool"; unitSize: number } | { kind: "buy"; maxUnits: number };
+
+/**
+ * A listing's units (ListingUnits) from its row. Throws on a row with
+ * neither or both, which only a trade is (trade_offers_unit_size_chk), so
+ * callers pass listings.
+ */
+export function listingUnits(
+  row: Pick<TradeOffer, "id" | "unitSize" | "maxUnits">,
+): ListingUnits {
+  if (row.unitSize !== null && row.maxUnits === null) {
+    return { kind: "pool", unitSize: row.unitSize };
   }
-  return row.unitSize;
+  if (row.unitSize === null && row.maxUnits !== null) {
+    return { kind: "buy", maxUnits: row.maxUnits };
+  }
+  throw new Error(`listing ${row.id} has no unit`);
+}
+
+/**
+ * Why an edit can't give a listing the units `next`, or null when it can.
+ * A listing with a live or completed trade keeps its kind, pool or buy
+ * (`kind_fixed`), because those trades decide how it closes: a completed
+ * buy trade would make a pool that runs dry read as filled. A buy listing
+ * keeps at least the units its live and completed trades fill (`taken`),
+ * and more than the completed ones alone, since one whose completed trades
+ * fill it has nothing left to buy and would never close (`units_taken`).
+ */
+export function editUnitsRefusal(
+  next: ListingUnits,
+  held: {
+    units: ListingUnits;
+    live: boolean;
+    completed: boolean;
+    taken: number;
+    completedUnits: number;
+  },
+): "kind_fixed" | "units_taken" | null {
+  if ((held.live || held.completed) && held.units.kind !== next.kind) {
+    return "kind_fixed";
+  }
+  return next.kind === "buy" &&
+    (next.maxUnits < held.taken || next.maxUnits <= held.completedUnits)
+    ? "units_taken"
+    : null;
 }
 
 /**
@@ -466,20 +508,28 @@ export function listingTransition(event: ListingEvent): {
 }
 
 /**
- * How an open listing closes once its pool can't make a unit, or null while
- * it can, or while one of its trades is live, since that trade's outcome
- * decides how it ends: filled when any of its trades completed, else broken.
- * A live trade's objekts count toward the pool until it completes, and one
- * that left the poster on its way to the claimer has already been dropped.
- * Applied after a trade ends and after the drain drops departed objekts.
+ * How an open listing closes, or null while it stays open. Nothing closes
+ * while one of its trades is live, since that trade's outcome decides how
+ * it ends. A pool listing closes once its pool can't make a unit: filled
+ * when any of its trades completed, else broken. A live trade's objekts
+ * count toward the pool until it completes, and one that left the poster on
+ * its way to the claimer has already been dropped. A buy listing has no
+ * pool, so it never breaks, and fills once its completed trades' units
+ * reach its most units. Applied after a trade ends and after the drain
+ * drops departed objekts.
  */
 export function listingClosing(listing: {
+  units: ListingUnits;
   pool: number;
-  unitSize: number;
   live: boolean;
   completed: boolean;
+  completedUnits: number;
 }): Extract<ListingEvent, "fill" | "break"> | null {
-  if (listing.pool >= listing.unitSize || listing.live) return null;
+  if (listing.live) return null;
+  if (listing.units.kind === "buy") {
+    return listing.completedUnits >= listing.units.maxUnits ? "fill" : null;
+  }
+  if (listing.pool >= listing.units.unitSize) return null;
   return listing.completed ? "fill" : "break";
 }
 
@@ -570,23 +620,21 @@ export function endedTradeColumns(trade: TradeState) {
 
 /**
  * The listings a trade's items came from, each with the tokens it took from
- * that listing's pool, which a completion removes from the pool.
+ * that listing's pool, which a completion removes from the pool. A trade
+ * from a buy listing finds it through the poster's payment item and takes
+ * no tokens.
  */
 export function tradeListings(
   items: readonly Pick<TradeOfferItem, "listingId" | "tokenId">[],
 ): Map<string, number[]> {
-  const offered = Map.groupBy(
-    items.flatMap(({ listingId, tokenId }) =>
-      listingId === null || tokenId === null ? [] : [{ listingId, tokenId }],
-    ),
-    (item) => item.listingId,
-  );
-  return new Map(
-    [...offered].map(([listingId, tokens]) => [
-      listingId,
-      tokens.map((token) => token.tokenId),
-    ]),
-  );
+  const listings = new Map<string, number[]>();
+  for (const { listingId, tokenId } of items) {
+    if (listingId === null) continue;
+    const tokens = listings.get(listingId) ?? [];
+    if (tokenId !== null) tokens.push(tokenId);
+    listings.set(listingId, tokens);
+  }
+  return listings;
 }
 
 /**

@@ -306,10 +306,23 @@ function describeTrade(notification: TradeItem, username: string) {
 
 /**
  * A claim on the recipient's listing: what they send, and what they pay
- * when their payment is on top of their objekts.
+ * when their payment is on top of their objekts, or what they pay alone on
+ * a buy listing.
  */
 function describeClaimed(notification: TradeItem, username: string) {
   const { objekts, payment } = notification;
+  if (payment?.side === "from" && objekts.length === 0) {
+    return (
+      <ParaglideMessage
+        message={m.notification_listing_claimed_buying}
+        inputs={{
+          username,
+          amount: formatAmount(payment.amount, payment.currency),
+        }}
+        markup={bold}
+      />
+    );
+  }
   const sent =
     objekts.length === 1
       ? tokenName(objekts[0])

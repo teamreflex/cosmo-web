@@ -66,12 +66,17 @@ export default function AllocationPicker({
         <SideHeading
           tone="have"
           title={m.listing_detail_you_pay()}
-          summary={m.listing_detail_units_pay({
-            amount:
-              payment.amount === null
-                ? m.listing_payment_your_offer()
-                : formatAmount(payment.amount * picks.units, payment.currency),
-          })}
+          // with no asking price, the payment card below says it takes an offer
+          summary={
+            payment.amount === null
+              ? undefined
+              : m.listing_detail_units_pay({
+                  amount: formatAmount(
+                    payment.amount * picks.units,
+                    payment.currency,
+                  ),
+                })
+          }
         />
       ) : (
         <SideHeading
@@ -129,11 +134,13 @@ export default function AllocationPicker({
         acceptance={picks.acceptance}
         poster={poster}
         payment={
-          picks.payment === null
-            ? "none"
-            : rows.length === 0
-              ? "only"
-              : "beside"
+          picks.buying !== null
+            ? "paid"
+            : picks.payment === null
+              ? "none"
+              : rows.length === 0
+                ? "only"
+                : "beside"
         }
       />
     </section>
@@ -142,9 +149,11 @@ export default function AllocationPicker({
 
 /**
  * What accepting does, worded by the viewer's side: objekts sent in the
- * COSMO app, a payment made outside Apollo, or both. On a listing that
- * takes offers, what sending one does, and on one open to offers, that
- * the viewer can do either.
+ * COSMO app, a payment made outside Apollo (`only`), objekts both ways
+ * with a payment beside them, or the viewer's objekts for the poster's
+ * payment (`paid`). On a listing that takes offers, what sending one does.
+ * Open to offers, the two buttons say the viewer can do either, so it reads
+ * as accepting.
  */
 function PickerFooter({
   acceptance,
@@ -153,7 +162,7 @@ function PickerFooter({
 }: {
   acceptance: ListingAcceptance;
   poster: string;
-  payment: "none" | "only" | "beside";
+  payment: "none" | "only" | "beside" | "paid";
 }) {
   const appName = env.VITE_APP_NAME;
   return (
@@ -161,16 +170,14 @@ function PickerFooter({
       {acceptance === "offer"
         ? payment === "only"
           ? m.listing_detail_offer_footer_pay({ poster })
-          : payment === "beside"
-            ? m.listing_detail_offer_footer_with_payment({ poster })
-            : m.listing_detail_offer_footer({ poster })
-        : acceptance === "either"
-          ? m.listing_detail_either_footer({ poster })
-          : payment === "only"
-            ? m.listing_detail_accept_footer_pay({ poster, appName })
-            : payment === "beside"
-              ? m.listing_detail_accept_footer_with_payment({ appName })
-              : m.listing_detail_accept_footer()}
+          : payment === "none"
+            ? m.listing_detail_offer_footer({ poster })
+            : m.listing_detail_offer_footer_with_payment({ poster })
+        : payment === "only"
+          ? m.listing_detail_accept_footer_pay({ poster, appName })
+          : payment === "paid"
+            ? m.listing_detail_accept_footer_paid({ poster, appName })
+            : m.listing_detail_accept_footer()}
     </p>
   );
 }

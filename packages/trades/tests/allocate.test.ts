@@ -6,11 +6,14 @@ import {
   type InventoryObjekt,
   listingOfferRefusal,
   type OfferedToken,
+  offerUnits,
   paymentFits,
   type TradeWant,
+  unitsLeft,
   unitsOf,
 } from "../src/allocate";
 import { MAX_PER_ROW, MAX_TOTAL_WANTED } from "../src/caps";
+import type { ListingUnits } from "../src/lifecycle";
 import type { ListingPayment, TradePayment } from "../src/payment";
 import type { RangeFilter } from "../src/range";
 
@@ -102,7 +105,9 @@ describe("allocateUnits", () => {
 
   test("takes as many units as the inventory fills", () => {
     const inventory = firsts(3);
-    expect(allocateUnits(wants, inventory, { free: 8, unitSize: 1 })).toEqual({
+    expect(
+      allocateUnits(wants, inventory, { kind: "pool", free: 8, unitSize: 1 }),
+    ).toEqual({
       units: 3,
       allocation: [{ tokenIds: inventory.map((o) => o.tokenId), missing: 0 }],
     });
@@ -112,6 +117,7 @@ describe("allocateUnits", () => {
     const inventory = firsts(MAX_PER_ROW + 2);
     expect(
       allocateUnits([range(2, { member: ["HaSeul"] })], inventory, {
+        kind: "pool",
         free: 20,
         unitSize: 1,
       }).units,
@@ -130,7 +136,8 @@ describe("allocateUnits", () => {
       exact(1, "atom01-heejin-101z"),
     ];
     expect(
-      allocateUnits(both, inventory, { free: 20, unitSize: 1 }).units,
+      allocateUnits(both, inventory, { kind: "pool", free: 20, unitSize: 1 })
+        .units,
     ).toBe(MAX_TOTAL_WANTED / 2);
   });
 
@@ -138,6 +145,7 @@ describe("allocateUnits", () => {
     const heejin = objekt("Atom01", "HeeJin", "101Z");
     expect(
       allocateUnits([exact(2, "atom01-heejin-101z")], [heejin], {
+        kind: "pool",
         free: 4,
         unitSize: 1,
       }),
@@ -149,8 +157,78 @@ describe("allocateUnits", () => {
 
   test("is 0 when the free pool can't make a unit", () => {
     expect(
-      allocateUnits(wants, firsts(2), { free: 1, unitSize: 2 }),
+      allocateUnits(wants, firsts(2), { kind: "pool", free: 1, unitSize: 2 }),
     ).toMatchObject({ units: 0 });
+  });
+});
+
+describe("allocateUnits on a buy listing", () => {
+  const haseuls = (count: number) =>
+    Array.from({ length: count }, () => objekt("Atom01", "HaSeul", "101Z"));
+  const wants = [range(1, { member: ["HaSeul"] })];
+
+  test("stops at the units the listing has left", () => {
+    expect(
+      allocateUnits(wants, haseuls(5), { kind: "buy", maxUnits: 3, taken: 1 })
+        .units,
+    ).toBe(2);
+  });
+
+  test("takes several units in one claim when the inventory fills them", () => {
+    expect(
+      allocateUnits(wants, haseuls(2), { kind: "buy", maxUnits: 3, taken: 0 })
+        .units,
+    ).toBe(2);
+  });
+
+  test("is 0 once its trades hold every unit", () => {
+    expect(
+      allocateUnits(wants, haseuls(5), { kind: "buy", maxUnits: 3, taken: 3 }),
+    ).toMatchObject({ units: 0 });
+  });
+});
+
+describe("unitsLeft", () => {
+  test.each([
+    [
+      "a pool's free objekts in whole units",
+      { kind: "pool", unitSize: 2, free: 5 },
+      2,
+    ],
+    [
+      "a buy listing's units no trade holds",
+      { kind: "buy", maxUnits: 3, taken: 2 },
+      1,
+    ],
+    ["none at the cap", { kind: "buy", maxUnits: 3, taken: 3 }, 0],
+    [
+      "none past it, after an edit lowered it",
+      { kind: "buy", maxUnits: 2, taken: 3 },
+      0,
+    ],
+  ] satisfies [string, Parameters<typeof unitsLeft>[0], number][])(
+    "%s",
+    (_, room, expected) => {
+      expect(unitsLeft(room)).toBe(expected);
+    },
+  );
+});
+
+describe("offerUnits", () => {
+  test("a pool listing's offer takes its picks in units", () => {
+    expect(
+      offerUnits(
+        { picks: [1, 2, 3, 4], units: null },
+        { kind: "pool", unitSize: 2 },
+      ),
+    ).toBe(2);
+  });
+
+  test("a buy listing's offer takes the units it recorded and picks nothing", () => {
+    const buy = { kind: "buy", maxUnits: 3 } satisfies ListingUnits;
+    expect(offerUnits({ picks: [], units: 2 }, buy)).toBe(2);
+    expect(offerUnits({ picks: [1], units: 2 }, buy)).toBeNull();
+    expect(offerUnits({ picks: [], units: null }, buy)).toBeNull();
   });
 });
 
@@ -203,7 +281,7 @@ describe("listingOfferRefusal", () => {
   // a listing of four pool objekts in units of two, for two KimLip 101Z a unit
   const listing = {
     pool: new Set([101, 102, 103, 104]),
-    unitSize: 2,
+    units: { kind: "pool", unitSize: 2 } satisfies ListingUnits,
     wants: [exact(2, kimlip)],
     payment: null,
   };
@@ -211,13 +289,23 @@ describe("listingOfferRefusal", () => {
   test("several units fit with every row scaled to them", () => {
     expect(
       listingOfferRefusal(
-        { picks: [101, 102, 103, 104], given: kimlips(4), payment: null },
+        {
+          picks: [101, 102, 103, 104],
+          units: null,
+          given: kimlips(4),
+          payment: null,
+        },
         listing,
       ),
     ).toBeNull();
     expect(
       listingOfferRefusal(
-        { picks: [101, 102, 103, 104], given: kimlips(2), payment: null },
+        {
+          picks: [101, 102, 103, 104],
+          units: null,
+          given: kimlips(2),
+          payment: null,
+        },
         listing,
       ),
     ).toEqual({ reason: "terms_changed" });
@@ -226,8 +314,8 @@ describe("listingOfferRefusal", () => {
   test("picks that are no longer whole units change the terms", () => {
     expect(
       listingOfferRefusal(
-        { picks: [101, 102], given: kimlips(2), payment: null },
-        { ...listing, unitSize: 3 },
+        { picks: [101, 102], units: null, given: kimlips(2), payment: null },
+        { ...listing, units: { kind: "pool", unitSize: 3 } },
       ),
     ).toEqual({ reason: "terms_changed" });
   });
@@ -237,6 +325,7 @@ describe("listingOfferRefusal", () => {
       listingOfferRefusal(
         {
           picks: [101, 102],
+          units: null,
           given: [...kimlips(1), { kind: "missing", tokenId: 9001 }],
           payment: null,
         },
@@ -250,6 +339,7 @@ describe("listingOfferRefusal", () => {
       listingOfferRefusal(
         {
           picks: [101, 105],
+          units: null,
           given: [{ kind: "missing", tokenId: 9001 }],
           payment: null,
         },
@@ -263,12 +353,13 @@ describe("payment-only offers", () => {
   // a sale of two pool objekts one at a time, for a payment and no objekts
   const sale = (payment: ListingPayment) => ({
     pool: new Set([101, 102]),
-    unitSize: 1,
+    units: { kind: "pool", unitSize: 1 } satisfies ListingUnits,
     wants: [],
     payment,
   });
   const offer = (picks: number[], amount: number) => ({
     picks,
+    units: null,
     given: [],
     payment: { side: "to", amount, currency: "USD" } satisfies TradePayment,
   });
@@ -343,5 +434,59 @@ describe("payment-only offers", () => {
     expect(
       paymentFits({ side: "to", amount: 250, currency: "KRW" }, payment, 1),
     ).toBe(false);
+  });
+});
+
+describe("offers on a buy listing", () => {
+  const kimlip = "atom01-kimlip-101z";
+  const kimlips = (count: number) =>
+    Array.from({ length: count }, (): OfferedToken => ({
+      kind: "found",
+      ...objekt("Atom01", "KimLip", "101Z"),
+    }));
+  // $3 for each KimLip 101Z, up to three
+  const listing = {
+    pool: new Set<number>(),
+    units: { kind: "buy", maxUnits: 3 } satisfies ListingUnits,
+    wants: [exact(1, kimlip)],
+    payment: {
+      side: "from",
+      currency: "USD",
+      methods: ["wise"],
+      mode: "price_only",
+      amount: 300,
+    } satisfies ListingPayment,
+  };
+  const payment = (amount: number): TradePayment => ({
+    side: "from",
+    amount,
+    currency: "USD",
+  });
+
+  test("two units fit at the price for both", () => {
+    expect(
+      listingOfferRefusal(
+        { picks: [], units: 2, given: kimlips(2), payment: payment(600) },
+        listing,
+      ),
+    ).toBeNull();
+  });
+
+  test("a payment for another number of units changes the terms", () => {
+    expect(
+      listingOfferRefusal(
+        { picks: [], units: 2, given: kimlips(2), payment: payment(300) },
+        listing,
+      ),
+    ).toEqual({ reason: "terms_changed" });
+  });
+
+  test("tokens for another number of units change the terms", () => {
+    expect(
+      listingOfferRefusal(
+        { picks: [], units: 2, given: kimlips(1), payment: payment(600) },
+        listing,
+      ),
+    ).toEqual({ reason: "terms_changed" });
   });
 });

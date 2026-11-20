@@ -18,6 +18,8 @@ import { Field, FieldLabel } from "../ui/field";
 type Props = {
   mode: ComposerMode;
   open: boolean;
+  /** another option claims at once, so only the range's options wait for offers */
+  mixed: boolean;
   onOpenChange: (open: boolean) => void;
   /** whether the poster ticked "Don't show this again" */
   onContinue: (dismiss: boolean) => void;
@@ -31,6 +33,7 @@ type Props = {
 export default function ComposerRangeConfirm({
   mode,
   open,
+  mixed,
   onOpenChange,
   onContinue,
 }: Props) {
@@ -41,7 +44,11 @@ export default function ComposerRangeConfirm({
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <NoticeDialogContent
         title={m.listing_composer_range_confirm_title()}
-        description={m.listing_composer_range_confirm_description()}
+        description={
+          mixed
+            ? m.listing_composer_range_confirm_description_mixed()
+            : m.listing_composer_range_confirm_description()
+        }
         footer={
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <Field orientation="horizontal" className="gap-2.5 sm:w-auto">

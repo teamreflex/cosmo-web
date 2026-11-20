@@ -13,7 +13,8 @@ type Props = {
   wanted: string;
   /**
    * the want side: objekts or a price beside them, a price alone (a
-   * sale), or no asking price at all, which shows no want side
+   * sale), or `offers`: no asking price, or several options, which shows
+   * no want side
    */
   wants: "objekts" | "price" | "offers";
   onChange: (unitSize: number) => void;

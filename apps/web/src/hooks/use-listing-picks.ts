@@ -35,17 +35,19 @@ export type ConfirmSnapshot = {
  * The viewer's claim on the option they give as they build it: how many
  * units, the pool objekts they get, their picks per want row, and whether
  * it all fits. A bundle (no `ratio`) takes its whole pool, so it has no
- * units or pool picks to choose. Null unless the viewer is picking.
+ * units or pool picks to choose, and a buy listing has no pool to pick
+ * from. Null unless the viewer is picking.
  */
 export function useListingPicks(
-  listing: Pick<ListingAt, "unitSize" | "items" | "wants" | "payment">,
+  listing: Pick<ListingAt, "units" | "items" | "wants" | "payment">,
   // what the viewer can give for that option
   viewer: CandidateOption | null,
   rows: PickerRow[],
   // whether Accept claims, sends an offer, or the viewer picks which
   acceptance: ListingAcceptance,
 ) {
-  const { unitSize } = listing;
+  // a buy listing has no pool, so its units take none of it
+  const unitSize = listing.units.kind === "pool" ? listing.units.unitSize : 0;
   const wants = rows.map((row) => row.trade);
   const free = listing.items.flatMap((item) =>
     item.availability.kind === "free" ? [item.tokenId] : [],
@@ -77,6 +79,8 @@ export function useListingPicks(
     maxUnits: Math.max(viewer.units, 1),
     ratio,
     freeCount: free.length,
+    // a buy listing's units, which bound the stepper in place of a pool
+    buying: listing.units.kind === "buy" ? listing.units : null,
     acceptance,
     takesOffers: acceptance !== "claim",
     offered,

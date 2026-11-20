@@ -259,10 +259,18 @@ export default function ConfirmTradeDialog({
               </section>
 
               <section className="flex flex-col gap-2">
-                <Eyebrow tone="want">
-                  {m.listing_detail_you_get({ count: get.length })}
-                </Eyebrow>
-                <Group tokens={get} />
+                {listing.units.kind === "buy" ? (
+                  <Eyebrow tone="want">
+                    {m.listing_detail_you_get_payment()}
+                  </Eyebrow>
+                ) : (
+                  <>
+                    <Eyebrow tone="want">
+                      {m.listing_detail_you_get({ count: get.length })}
+                    </Eyebrow>
+                    <Group tokens={get} />
+                  </>
+                )}
                 <PaymentGroup
                   listing={listing}
                   sender="from"
@@ -275,6 +283,7 @@ export default function ConfirmTradeDialog({
                   offers={offers}
                   poster={poster}
                   pays={rows.length === 0}
+                  buying={listing.units.kind === "buy"}
                   payment={listing.payment}
                   endsAt={endsAt}
                 />
@@ -444,18 +453,21 @@ function claimedToast(pending: boolean, pays: boolean, poster: string) {
 }
 
 /**
- * What confirming starts: the offer's steps, or the claim's deadline.
+ * What confirming starts: the offer's steps, or the claim's deadline. On a
+ * buy listing (`buying`) only the claimer sends, and the poster pays.
  */
 function WhatHappens({
   offers,
   poster,
   pays,
+  buying,
   payment,
   endsAt,
 }: {
   offers: boolean;
   poster: string;
   pays: boolean;
+  buying: boolean;
   payment: Pick<ListingPayment, "side"> | null;
   endsAt: Date;
 }) {
@@ -463,38 +475,56 @@ function WhatHappens({
     <OfferSteps
       poster={poster}
       expiresAt={endsAt}
-      window={offerWindow(payment, pays)}
+      window={offerWindow(payment, pays, buying)}
     />
   ) : (
-    <ClaimDeadline poster={poster} pays={pays} endsAt={endsAt} />
+    <ClaimDeadline
+      poster={poster}
+      sends={
+        buying
+          ? "paid"
+          : pays
+            ? "pay"
+            : payment === null
+              ? "send"
+              : payment.side === "to"
+                ? "send_pay"
+                : "send_paid"
+      }
+      endsAt={endsAt}
+    />
   );
 }
 
 /**
  * What each side does once an offer is accepted: both send, the poster
- * sends and the claimer only pays, both send and the claimer also pays, or
- * the poster also pays.
+ * sends and the claimer only pays, both send and the claimer also pays,
+ * the poster also pays, or the claimer sends and the poster only pays.
  */
 function offerWindow(
   payment: Pick<ListingPayment, "side"> | null,
   pays: boolean,
+  buying: boolean,
 ) {
+  if (buying) return "buying";
   if (payment === null) return "send";
   if (payment.side === "from") return "paid";
   return pays ? "pay" : "with_payment";
 }
 
 /**
- * What claiming starts: both sides' 48 hours, and what each does in them,
- * a sale's claimer paying outside Apollo.
+ * What claiming starts: both sides' 48 hours, and what each does in them:
+ * both send, with the claimer also paying (`send_pay`) or the poster also
+ * paying (`send_paid`), a sale's claimer only pays outside Apollo, or a
+ * buy listing's poster only pays.
  */
 function ClaimDeadline({
   poster,
-  pays,
+  sends,
   endsAt,
 }: {
   poster: string;
-  pays: boolean;
+  sends: "send" | "send_pay" | "send_paid" | "pay" | "paid";
   endsAt: Date;
 }) {
   const markup = {
@@ -510,16 +540,23 @@ function ClaimDeadline({
     <p className="grid grid-cols-[1rem_minmax(0,1fr)] gap-2.5 rounded-lg bg-muted/50 px-3 py-2.5 text-sm leading-relaxed max-sm:hidden">
       <IconClock className="mt-0.5 size-4 text-muted-foreground" />
       <span>
-        {pays ? (
+        {sends === "send" ? (
           <ParaglideMessage
-            message={m.listing_confirm_deadline_pay}
-            inputs={{ date: "", poster, appName: env.VITE_APP_NAME }}
+            message={m.listing_confirm_deadline}
+            inputs={{ date: "", poster }}
             markup={markup}
           />
         ) : (
           <ParaglideMessage
-            message={m.listing_confirm_deadline}
-            inputs={{ date: "", poster }}
+            message={
+              {
+                send_pay: m.listing_confirm_deadline_send_pay,
+                send_paid: m.listing_confirm_deadline_send_paid,
+                pay: m.listing_confirm_deadline_pay,
+                paid: m.listing_confirm_deadline_paid,
+              }[sends]
+            }
+            inputs={{ date: "", poster, appName: env.VITE_APP_NAME }}
             markup={markup}
           />
         )}
@@ -541,7 +578,7 @@ function OfferSteps({
 }: {
   poster: string;
   expiresAt: Date;
-  window: "send" | "pay" | "with_payment" | "paid";
+  window: "send" | "pay" | "with_payment" | "paid" | "buying";
 }) {
   const hours = CLAIM_WINDOW / 3_600_000;
   const steps = [
@@ -576,6 +613,7 @@ function OfferSteps({
       pay: () => m.listing_offer_step_window_pay({ hours, poster }),
       with_payment: () => m.listing_offer_step_window_with_payment({ hours }),
       paid: () => m.listing_offer_step_window_paid({ hours, poster }),
+      buying: () => m.listing_offer_step_window_buying({ hours, poster }),
     }[window](),
   ];
   return (
@@ -634,7 +672,11 @@ function PaymentGroup({
   return (
     listing.payment?.side === sender && (
       <div className="rounded-lg border border-border bg-card px-3 py-2.5 text-sm">
-        <PaymentLabel payment={listing.payment} units={units} />
+        <PaymentLabel
+          payment={listing.payment}
+          units={units}
+          perUnit={listing.units.kind === "buy"}
+        />
       </div>
     )
   );

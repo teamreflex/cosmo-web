@@ -6,7 +6,8 @@ Apollo matches people who want to swap objekts and records each swap, but never 
 
 ```
   poster
-    | $postListing: a pool of tokens, unit_size, 1-3 options of want rows
+    | $postListing: a pool of tokens and unit_size, or a payment and
+    | max_units (a buy listing); 1-3 options of want rows
     v
   listing: open   reserves nothing; a token may sit in many open listings
     |
@@ -50,7 +51,7 @@ Apollo matches people who want to swap objekts and records each swap, but never 
 ```
 
 - A direct offer or counter from Trade Matches enters the same `trade: pending` box with `proposed_by = from`, and is accepted the same way ([offers.md](offers.md)).
-- A timed-out or cancelled trade changes nothing on the listing's pool: its picks never left it.
+- A timed-out or cancelled trade changes nothing on the listing's pool: its picks never left it. On a buy listing it frees the units it held.
 - A deadline that passes with something sent and something owed files a `deadline_passed` report for staff ([lifecycle.md](lifecycle.md)).
 
 ## Components

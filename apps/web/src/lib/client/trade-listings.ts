@@ -8,6 +8,7 @@ import {
   type ListingFeedWant,
   listingPaymentTerms,
   type ListingPick,
+  type ListingSize,
   type PoolAvailability,
   type PoolStanding,
   type TokenRefusalReason,
@@ -32,6 +33,7 @@ import {
 } from "@apollo/database/web/types";
 import { rangeSummaryColumns, totalWanted } from "@apollo/trades/composer";
 import { heldTokenRefusal, type TokenFlags } from "@apollo/trades/holdings";
+import type { ListingUnits } from "@apollo/trades/lifecycle";
 import { type ListingType, listingTypesOf } from "@apollo/trades/listing";
 import { formatPayment, type ListingPayment } from "@apollo/trades/payment";
 import {
@@ -288,20 +290,51 @@ export function wantsSummary(wants: readonly ListingFeedWant[]) {
   return wants.map(wantText).join(", ");
 }
 
+type OptionShown = {
+  wants: readonly ListingFeedWant[];
+  payment: ListingPayment | null;
+};
+
+// the claimer's payment beside an option's rows: its price, or "your offer" with no asking price
+function priceBeside(payment: ListingPayment | null) {
+  if (payment?.side !== "to") return null;
+  return payment.amount === null
+    ? m.listing_payment_your_offer()
+    : askingPriceText(payment);
+}
+
 /**
  * One of a listing's options as a short phrase: its objekt rows as
  * askingTitle() reads them, the claimer's payment added, "1 objekt +
- * $1.00", or the payment alone, "$3.00".
+ * $1.00" or, with no asking price, "1 objekt + your offer", or the payment
+ * alone, "$3.00".
  */
-export function optionTitle(option: {
-  wants: readonly ListingFeedWant[];
-  payment: ListingPayment | null;
-}) {
-  const price =
-    option.payment?.side === "to" ? askingPriceText(option.payment) : null;
-  if (option.wants.length === 0) return price ?? "";
-  const title = askingTitle(option.wants);
-  return price === null ? title : `${title} + ${price}`;
+export function optionTitle(option: OptionShown) {
+  if (option.wants.length === 0) {
+    return option.payment?.side === "to" ? askingPriceText(option.payment) : "";
+  }
+  return withPriceBeside(askingTitle(option.wants), option.payment);
+}
+
+function withPriceBeside(rows: string, payment: ListingPayment | null) {
+  const price = priceBeside(payment);
+  return price === null ? rows : `${rows} + ${price}`;
+}
+
+/**
+ * Every option's title (optionTitle()), each told apart from the others:
+ * options whose titles read alike, "6 objekts" twice, name their rows
+ * instead (wantsSummary()).
+ */
+export function optionTitles(options: readonly OptionShown[]) {
+  const titles = options.map(optionTitle);
+  return options.map((option, index) => {
+    const title = titles[index] ?? "";
+    return titles.indexOf(title) === titles.lastIndexOf(title) ||
+      option.wants.length === 0
+      ? title
+      : withPriceBeside(wantsSummary(option.wants), option.payment);
+  });
 }
 
 /**
@@ -488,25 +521,38 @@ export function availabilityLabel(availability: PoolAvailability) {
 
 /**
  * How many objekts one trade from the listing swaps on each side: its unit
- * size for the want rows' total, "1 : 5". Null for a bundle (hasRatio(),
- * against the `posted` objekts it has ever offered), whose one trade takes
- * everything.
+ * size for the want rows' total, "1 : 5", or a buy listing's payment for
+ * them, "$3.00 : 1". Null for a bundle (hasRatio(), against the `posted`
+ * objekts it has ever offered), whose one trade takes everything.
  */
 export function listingRatio(
   listing: {
-    unitSize: number;
+    units: ListingUnits;
     wants: readonly ListingFeedWant[];
     payment: ListingPayment | null;
   },
   posted: number,
 ): TradeRatio | null {
-  return hasRatio(listing.unitSize, posted)
-    ? {
-        give: listing.unitSize,
-        get: wantedObjektCount(listing.wants),
-        payment: listing.payment,
-      }
-    : null;
+  const { units } = listing;
+  if (units.kind === "pool" && !hasRatio(units.unitSize, posted)) return null;
+  return {
+    give: units.kind === "pool" ? units.unitSize : 0,
+    get: wantedObjektCount(listing.wants),
+    payment: listing.payment,
+  };
+}
+
+/**
+ * What a buy listing has left to buy: "Up to 3" until a trade holds some
+ * of its units, then "2 of 3 left".
+ */
+export function buyingText(units: Extract<ListingSize, { kind: "buy" }>) {
+  return units.taken === 0
+    ? m.market_listings_buying_up_to({ count: units.maxUnits })
+    : m.market_listings_buying_left({
+        left: Math.max(units.maxUnits - units.taken, 0),
+        max: units.maxUnits,
+      });
 }
 
 /**
@@ -527,7 +573,9 @@ export function ratioSides({ give, get, payment }: TradeRatio) {
 
 /**
  * Every type a listing's options make it (listingTypesOf()), from its
- * payment's side, each option's objekt want rows and its offered objekts.
+ * payment's side, each option's objekt want rows and its offered objekts,
+ * of which a buy listing offers none, whatever it offered before an edit
+ * made it one.
  */
 export function listingTypesOfListing(listing: {
   options: readonly {
@@ -535,13 +583,14 @@ export function listingTypesOfListing(listing: {
     payment: ListingPayment | null;
   }[];
   items: readonly unknown[];
+  units: ListingUnits;
 }) {
   return listingTypesOf({
     paymentSide: listingPaymentTerms(listing.options)?.side ?? null,
     options: listing.options.map((option) => ({
       objektWants: option.wants.length,
     })),
-    offered: listing.items.length,
+    offered: listing.units.kind === "buy" ? 0 : listing.items.length,
   });
 }
 

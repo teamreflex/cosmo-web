@@ -15,6 +15,7 @@ import {
   claimerPaymentTerms,
   composerBlock,
   emptyListingForm,
+  followMaxUnits,
   followUnitSize,
   formValuesToInput,
   type ListingFormValues,
@@ -23,7 +24,10 @@ import {
   rangeToChipFilters,
   stepUnitSize,
 } from "../src/lib/universal/trade-listing-form";
-import type { TradeListing } from "../src/lib/universal/trade-listings";
+import type {
+  ListingSize,
+  TradeListing,
+} from "../src/lib/universal/trade-listings";
 
 // each artist's members, keyed as ranges store artists
 const rosters = new Map([
@@ -48,7 +52,7 @@ const attributes = (slug: string, member: string, artist = "artms") => ({
 const listing = {
   id: "0b7d6f1e-6a43-4c55-9d3e-2f1b4c8a9e10",
   note: "serials under 1000",
-  unitSize: 1,
+  units: { kind: "pool", unitSize: 1 },
   items: [
     {
       tokenId: 4021,
@@ -103,10 +107,7 @@ const listing = {
       payment: null,
     },
   ],
-} satisfies Pick<
-  TradeListing,
-  "id" | "items" | "options" | "note" | "unitSize"
->;
+} satisfies Pick<TradeListing, "id" | "items" | "options" | "note" | "units">;
 
 describe("composer prefill (CMP-04)", () => {
   const values = listingToFormValues(listing);
@@ -187,7 +188,7 @@ describe("composer prefill (CMP-04)", () => {
   test("editing a bundle carries no unit size", () => {
     const bundle = {
       ...listing,
-      unitSize: 2,
+      units: { kind: "pool", unitSize: 2 } satisfies ListingSize,
       items: listing.items.map((item) => ({
         ...item,
         availability: { kind: "free" as const },
@@ -200,7 +201,7 @@ describe("composer prefill (CMP-04)", () => {
     // the trade that took 3990 sent it, so it left the pool, and is still live
     const short = {
       ...listing,
-      unitSize: 2,
+      units: { kind: "pool", unitSize: 2 } satisfies ListingSize,
       items: [
         ...listing.items,
         {
@@ -304,6 +305,7 @@ describe("range rows on submit", () => {
         offeredPayment: undefined,
         payment: undefined,
         unitSize: undefined,
+        maxUnits: undefined,
         rangeMatches: [],
         rosters,
         note: "",
@@ -393,13 +395,15 @@ const offered = (count: number) =>
 const block = ({
   offered,
   unitSize,
+  maxUnits,
   options,
   offeredPayment,
   payment,
 }: Pick<
   ListingFormValues,
   "offered" | "unitSize" | "options" | "offeredPayment" | "payment"
->) =>
+> &
+  Partial<Pick<ListingFormValues, "maxUnits">>) =>
   composerBlock({
     offered: offered.length,
     refused: 0,
@@ -407,6 +411,7 @@ const block = ({
     offeredPayment,
     payment,
     unitSize,
+    maxUnits,
     rangeMatches: [],
     rosters,
     note: "",
@@ -421,10 +426,7 @@ const fillers = {
   rep: null,
   state: { status: "open" },
   stop: null,
-} satisfies Omit<
-  TradeListing,
-  "id" | "items" | "options" | "note" | "unitSize"
->;
+} satisfies Omit<TradeListing, "id" | "items" | "options" | "note" | "units">;
 
 describe("payments in the composer", () => {
   const price = {
@@ -443,10 +445,7 @@ describe("payments in the composer", () => {
   const sale = {
     ...listing,
     options: [{ wants: [], payment: price }],
-  } satisfies Pick<
-    TradeListing,
-    "id" | "items" | "options" | "note" | "unitSize"
-  >;
+  } satisfies Pick<TradeListing, "id" | "items" | "options" | "note" | "units">;
 
   test("a sale prefills its payment as the last row and sends it back unchanged", () => {
     const values = listingToFormValues(sale);
@@ -478,7 +477,7 @@ describe("payments in the composer", () => {
       ],
     } satisfies Pick<
       TradeListing,
-      "id" | "items" | "options" | "note" | "unitSize"
+      "id" | "items" | "options" | "note" | "units"
     >;
     const values = listingToFormValues(offerOnly);
     expect(values.options).toEqual([[{ kind: "payment" }]]);
@@ -562,7 +561,7 @@ describe("payments in the composer", () => {
       ],
     } satisfies Pick<
       TradeListing,
-      "id" | "items" | "options" | "note" | "unitSize"
+      "id" | "items" | "options" | "note" | "units"
     >;
     const values = listingToFormValues(either);
     expect(values.options).toEqual([
@@ -625,4 +624,98 @@ describe("payments in the composer", () => {
       ).toBe(expected);
     },
   );
+});
+
+describe("buy listings in the composer", () => {
+  const paying = {
+    side: "from",
+    mode: "price_only",
+    amount: 300,
+    currency: "USD",
+    methods: ["wise"],
+  } satisfies ListingPayment;
+  const kimlip = {
+    kind: "exact" as const,
+    count: 1,
+    objekt: attributes("atom02-kimlip-201z", "KimLip"),
+    collection: null,
+  };
+  // $3 for each KimLip 201Z, up to three
+  const buy = {
+    ...listing,
+    items: [],
+    units: { kind: "buy", maxUnits: 3, taken: 1 },
+    options: [{ wants: [kimlip], payment: paying }],
+  } satisfies Pick<TradeListing, "id" | "items" | "options" | "note" | "units">;
+
+  test("a buy listing prefills its payment and most units and sends them back unchanged", () => {
+    const values = listingToFormValues(buy);
+    expect(values).toMatchObject({
+      offered: [],
+      unitSize: undefined,
+      maxUnits: 3,
+      offeredPayment: "3.00",
+      options: [[{ kind: "exact", slug: "atom02-kimlip-201z", count: 1 }]],
+    });
+    const submission = formValuesToInput(
+      listingInputSchema.parse(values),
+      { kind: "edit", listing: { ...buy, ...fillers } },
+      rosters,
+    );
+    expect(submission.data).toMatchObject({
+      offered: [],
+      maxUnits: 3,
+      offeredPayment: "3.00",
+    });
+    expect(submission.data).not.toHaveProperty("unitSize");
+    expect(editListingInputSchema.parse(submission.data).units).toEqual({
+      kind: "buy",
+      maxUnits: 3,
+    });
+  });
+
+  test.each([
+    ["a payment with no objekts buys from one", [], "3", undefined, 1],
+    ["it keeps the units it had", [], "3", 4, 4],
+    [
+      "objekts beside the payment buy nothing",
+      [{ tokenId: 1 }],
+      "3",
+      4,
+      undefined,
+    ],
+    ["no payment buys nothing", [], undefined, 4, undefined],
+  ] satisfies [
+    string,
+    { tokenId: number }[],
+    string | undefined,
+    number | undefined,
+    number | undefined,
+  ][])("%s", (_, offeredTokens, offeredPayment, maxUnits, expected) => {
+    expect(
+      followMaxUnits(maxUnits, { offered: offeredTokens, offeredPayment }),
+    ).toBe(expected);
+  });
+
+  test("a buy listing posts with no objekts offered", () => {
+    expect(
+      block({
+        offered: [],
+        unitSize: undefined,
+        maxUnits: 3,
+        options: [[{ kind: "exact", slug: "a", count: 1 }]],
+        offeredPayment: "3",
+        payment: { currency: "USD", methods: ["wise"] },
+      }),
+    ).toBeNull();
+    expect(
+      block({
+        offered: [],
+        unitSize: undefined,
+        options: [[{ kind: "exact", slug: "a", count: 1 }]],
+        offeredPayment: undefined,
+        payment: undefined,
+      }),
+    ).toBe("offered");
+  });
 });

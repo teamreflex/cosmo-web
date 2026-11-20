@@ -2,6 +2,7 @@ import { listingOfferModes, type TradeSide } from "@apollo/database/web/types";
 import { isDistinct } from "@apollo/util";
 import * as z from "zod";
 import {
+  MAX_BUY_UNITS,
   MAX_CHOICE_OPTIONS,
   MAX_LISTING_OPTIONS,
   MAX_NOTE_LENGTH,
@@ -11,6 +12,7 @@ import {
   MAX_WANT_ROWS,
 } from "./caps";
 import { totalWanted } from "./composer";
+import type { ListingUnits } from "./lifecycle";
 import {
   amountSchema,
   currencySchema,
@@ -182,15 +184,21 @@ function optionKey(wants: readonly OptionWant[]) {
 }
 
 const listingFields = {
+  // empty on a buy listing, which offers only its payment
   offered: z
     .array(z.strictObject({ tokenId: tokenIdSchema }))
-    .min(1, "Offer at least one objekt")
     .max(MAX_OFFERED, `A listing can offer at most ${MAX_OFFERED} objekts`),
   // the offered objekts one unit takes; every one of them when left out
   unitSize: z
     .int()
     .min(1, "Each trade needs at least one of the offered objekts")
     .max(MAX_OFFERED)
+    .optional(),
+  // the most units a buy listing pays for, in place of offered objekts
+  maxUnits: z
+    .int()
+    .min(1, "Buy at least one")
+    .max(MAX_BUY_UNITS, `A listing can buy at most ${MAX_BUY_UNITS}`)
     .optional(),
   // what the claimer can give, of which they pick one
   options: z
@@ -257,6 +265,9 @@ export function choicesDistinct(slugSets: readonly (readonly string[])[]) {
 type ListingTerms = {
   offered: readonly { tokenId: number }[];
   unitSize?: number | undefined;
+  maxUnits?: number | undefined;
+  options: readonly ListingOptionTerms[];
+  payment: PaymentTerms | null;
 };
 
 type PaymentFields = {
@@ -382,30 +393,74 @@ function withPaymentRules<TSchema extends z.ZodType<PaymentFields>>(
 
 /**
  * The rules a listing's offered side follows whether it's posted or
- * edited: no token offered twice and a unit no bigger than the pool. A
- * listing without a unit size offers every objekt as one unit. Each
- * option's rows follow their own rules (optionSchema).
+ * edited, parsed into its units (ListingUnits). A pool listing offers
+ * objekts, none twice, with a unit no bigger than the pool, and offers
+ * every objekt as one unit without a unit size. A buy listing offers no
+ * objekts and pays for up to `maxUnits` units instead: its payment is the
+ * poster's, and every option asks for objekts, since a payment for a
+ * payment trades nothing. Each option's rows follow their own rules
+ * (optionSchema).
  */
 function withListingRules<TSchema extends z.ZodType<ListingTerms>>(
   schema: TSchema,
 ) {
   return schema
-    .refine(
-      ({ offered }) => isDistinct(offered.map(({ tokenId }) => tokenId)),
-      { message: "Each objekt can only be offered once", path: ["offered"] },
-    )
-    .refine(
-      ({ offered, unitSize }) =>
-        unitSize === undefined || unitSize <= offered.length,
-      {
-        message: "A trade can't take more objekts than the listing offers",
-        path: ["unitSize"],
-      },
-    )
-    .transform((terms) => ({
-      ...terms,
-      unitSize: terms.unitSize ?? terms.offered.length,
-    }));
+    .superRefine(({ offered, unitSize, maxUnits, options, payment }, ctx) => {
+      if (maxUnits === undefined) {
+        if (offered.length === 0) {
+          ctx.addIssue({
+            code: "custom",
+            message: "Offer at least one objekt",
+            path: ["offered"],
+          });
+        }
+        if (!isDistinct(offered.map(({ tokenId }) => tokenId))) {
+          ctx.addIssue({
+            code: "custom",
+            message: "Each objekt can only be offered once",
+            path: ["offered"],
+          });
+        }
+        if (unitSize !== undefined && unitSize > offered.length) {
+          ctx.addIssue({
+            code: "custom",
+            message: "A trade can't take more objekts than the listing offers",
+            path: ["unitSize"],
+          });
+        }
+        return;
+      }
+      if (offered.length > 0 || unitSize !== undefined) {
+        ctx.addIssue({
+          code: "custom",
+          message: "A listing that buys offers no objekts",
+          path: ["maxUnits"],
+        });
+      }
+      if (payment?.side !== "from") {
+        ctx.addIssue({
+          code: "custom",
+          message: "Add the payment you send for each unit",
+          path: ["offeredPayment"],
+        });
+      }
+      options.forEach((option, index) => {
+        if (option.wants.length === 0) {
+          ctx.addIssue({
+            code: "custom",
+            message: "Ask for at least one objekt",
+            path: ["options", index],
+          });
+        }
+      });
+    })
+    .transform(({ unitSize, maxUnits, ...terms }) => {
+      const units: ListingUnits =
+        maxUnits === undefined
+          ? { kind: "pool", unitSize: unitSize ?? terms.offered.length }
+          : { kind: "buy", maxUnits };
+      return { ...terms, units };
+    });
 }
 
 /**
@@ -441,12 +496,14 @@ export type EditListingInput = z.output<typeof editListingInputSchema>;
 /**
  * Accept: the listing's option the claimer gives, how many units the claim
  * takes, the poster's objekts it picked from the pool (units times the
- * unit size), one token list per objekt want row of that option as the
- * picker showed them (each row's count times the units, none for a
- * payment alone), the payment per unit they offer instead of the asking
- * price when the option takes offers on it, and the listing's `updated_at`
- * as the claimer saw it. The row and total caps bound one claim, and the
- * unit cap bounds the payment it records (MAX_PAYMENT_AMOUNT).
+ * unit size, none on a buy listing), one token list per objekt want row of
+ * that option as the picker showed them (each row's count times the units,
+ * none for a payment alone), the payment per unit they offer instead of the
+ * asking price when the option takes offers on it, and the listing's
+ * `updated_at` as the claimer saw it. The row and total caps bound one
+ * claim. A unit takes a pool objekt or gives an objekt, so the total cap
+ * bounds the units too, and with them the payment it records
+ * (MAX_PAYMENT_AMOUNT).
  */
 export const claimListingInputSchema = z
   .strictObject({
@@ -456,10 +513,11 @@ export const claimListingInputSchema = z
       .int()
       .min(0)
       .max(MAX_LISTING_OPTIONS - 1),
-    units: z.int().min(1).max(MAX_OFFERED),
+    units: z.int().min(1).max(MAX_TOTAL_WANTED),
     // the payment per unit the claimer offers, on a listing that takes offers on it
     amount: amountSchema.optional(),
-    picked: z.array(tokenIdSchema).min(1).max(MAX_OFFERED),
+    // none on a buy listing, which has no pool
+    picked: z.array(tokenIdSchema).max(MAX_OFFERED),
     rows: z
       .array(z.array(tokenIdSchema).min(1).max(MAX_PER_ROW))
       .max(MAX_WANT_ROWS),

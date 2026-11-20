@@ -10,6 +10,7 @@ import {
   listingOfferRefusal,
   type OfferedToken,
   type TradeWant,
+  unitsLeft,
 } from "@apollo/trades/allocate";
 import {
   firstRefusal,
@@ -22,6 +23,8 @@ import {
 import {
   type ListingAcceptance,
   listingAcceptance,
+  type ListingUnits,
+  listingUnits,
 } from "@apollo/trades/lifecycle";
 import {
   fromNumeric,
@@ -365,14 +368,36 @@ export type ListingFeedWant =
   | Extract<StoredWant, { kind: "range" }>;
 
 /**
+ * A listing's units as its reads show them (ListingUnits): a pool listing's
+ * unit size, or a buy listing's most units with how many its live and
+ * completed trades hold (`taken`), which may reach `maxUnits` while live
+ * trades hold the rest.
+ */
+export type ListingSize =
+  | Extract<ListingUnits, { kind: "pool" }>
+  | (Extract<ListingUnits, { kind: "buy" }> & { taken: number });
+
+/**
+ * A listing's units as its reads show them (ListingSize), from its row and
+ * the units its live and completed trades hold (`taken`).
+ */
+export function listingSize(
+  row: Parameters<typeof listingUnits>[0] & { taken: number },
+): ListingSize {
+  const units = listingUnits(row);
+  return units.kind === "buy" ? { ...units, taken: row.taken } : units;
+}
+
+/**
  * An open listing in the feed, with its poster's rating, null without a
- * visible rating or a poster. `items` is its pool, `unitSize` how many of
- * them one trade takes for the want rows and payment at their counts,
+ * visible rating or a poster. `items` is its pool, empty on a buy listing,
+ * `units` how many of them one trade takes for the want rows and payment
+ * at their counts or how many units a buy listing pays for (ListingSize),
  * `options` what the claimer can give, one of them, `posted` how many
- * objekts it has ever offered (the pool and the ones that
- * left it), and `free` how many no live trade holds and the poster hasn't
- * locked, which may be fewer than `unitSize`, even 0, while trades or locks
- * hold the rest.
+ * objekts it has ever offered (the pool and the ones that left it), and
+ * `free` how many no live trade holds and the poster hasn't locked, which
+ * may be fewer than a unit's worth, even 0, while trades or locks hold the
+ * rest.
  */
 export type ListingFeedRow = {
   id: string;
@@ -382,7 +407,7 @@ export type ListingFeedRow = {
   rep: FeedbackRep | null;
   items: ListingFeedItem[];
   options: ListingOption<ListingFeedWant>[];
-  unitSize: number;
+  units: ListingSize;
   posted: number;
   free: number;
 };
@@ -501,34 +526,39 @@ export type ListingItem = ListingFeedItem & { availability: PoolAvailability };
  * - `blocked`: a fault on the poster's side. Their account or terms refuse
  *   any claim (posterBlocked()), or fewer than a trade's worth of the pool
  *   is free or in a trade, the rest locked, moved or untransferable.
- * - `busy`: nothing is wrong, but trades hold so much of the pool that no
- *   trade's worth is free until one of them ends.
+ * - `busy`: nothing is wrong, but trades hold so much of the pool, or of a
+ *   buy listing's units, that no trade's worth is free until one of them
+ *   ends.
  */
 export type ListingStop = "blocked" | "busy";
 
 /**
  * What stops every claim on an open listing (ListingStop), or null when a
- * trade's worth of its pool is free and the poster's side allows a claim.
+ * trade's worth of it is free and the poster's side allows a claim. A buy
+ * listing has no pool, so only its units held by trades stop a claim.
  */
 export function listingStop(
   pool: readonly { availability: PoolAvailability }[],
-  unitSize: number,
+  units: ListingSize,
   posterRefused: boolean,
 ): ListingStop | null {
+  if (posterRefused) return "blocked";
+  if (units.kind === "buy") {
+    return units.taken >= units.maxUnits ? "busy" : null;
+  }
   const count = (kinds: readonly PoolAvailability["kind"][]) =>
     pool.filter(({ availability }) => kinds.includes(availability.kind)).length;
-  if (posterRefused || count(["free", "in_trade"]) < unitSize) {
-    return "blocked";
-  }
-  return count(["free"]) < unitSize ? "busy" : null;
+  if (count(["free", "in_trade"]) < units.unitSize) return "blocked";
+  return count(["free"]) < units.unitSize ? "busy" : null;
 }
 
 /**
  * A listing's public detail. The poster is null once their account is
  * deleted. `items` are every objekt it has offered in posted order, the
- * pool's and the ones that left it, and one trade takes `unitSize` of the
- * pool's for one of its `options`, each with its want rows at their counts
- * and what one unit's payment is and who sends it. `stop` says what stops
+ * pool's and the ones that left it, and one trade takes a unit (`units`)
+ * of the pool's, or of a buy listing's units, for one of its `options`,
+ * each with its want rows at their counts and what one unit's payment is
+ * and who sends it. `stop` says what stops
  * every claim on an open listing right now (ListingStop), null when
  * nothing does. `rep` is the listing address's rating, null without a
  * visible rating or a poster.
@@ -543,7 +573,7 @@ export type TradeListing<TPoster = PublicUser> = {
   poster: TPoster | null;
   cosmoUsername: string | null;
   rep: FeedbackRep | null;
-  unitSize: number;
+  units: ListingSize;
   items: ListingItem[];
   options: ListingOption<ListingFeedWant>[];
   state: ListingState;
@@ -638,7 +668,10 @@ export type TradeRatio = {
 export type OfferRefusal =
   | {
       code:
-        | Extract<TradeErrorCode, "offer_expired" | "listing_updated">
+        | Extract<
+            TradeErrorCode,
+            "offer_expired" | "listing_updated" | "listing_full"
+          >
         | Extract<AuthErrorCode, "cosmo_not_linked">;
     }
   | { code: "offer_unavailable"; tokenId: number | null }
@@ -654,20 +687,23 @@ export type OfferRefusal =
  * go through, judged in `$acceptOffer`'s order and with its codes
  * (recheckListingOffer() in claim.server.ts) against the listing's option
  * the offer gives. A refusal over the claimer's side never says whether
- * their link, ban or cap stopped it.
+ * their link, ban or cap stopped it. An offer on a buy listing takes the
+ * units it recorded, which must still fit beside the units its other
+ * trades hold.
  */
 export function offerRefusal(
   offer: {
     expiresAt: Date;
     option: number;
     picks: readonly number[];
+    units: number | null;
     given: readonly number[];
     payment: TradePayment | null;
   },
   listing: {
     fromAddress: string;
     pool: ReadonlySet<number>;
-    unitSize: number;
+    units: ListingSize;
     options: readonly ListingOption<TradeWant>[];
     posterRefused: boolean;
   },
@@ -688,6 +724,7 @@ export function offerRefusal(
   const misfit = listingOfferRefusal(
     {
       picks: offer.picks,
+      units: offer.units,
       given: offer.given.map((tokenId): OfferedToken => {
         const state = tokens.states.get(tokenId);
         return state?.kind === "found"
@@ -703,6 +740,12 @@ export function offerRefusal(
   }
   if (misfit) return { code: "listing_updated" };
   if (listing.posterRefused) return { code: "cosmo_not_linked" };
+  if (
+    listing.units.kind === "buy" &&
+    (offer.units ?? 0) > unitsLeft(listing.units)
+  ) {
+    return { code: "listing_full" };
+  }
 
   const pick = firstRefusal(
     offer.picks,
@@ -740,6 +783,7 @@ export function offerRefusalError(refusal: OfferRefusal): ExpectedError {
   switch (refusal.code) {
     case "offer_expired":
     case "listing_updated":
+    case "listing_full":
     case "cosmo_not_linked":
       return new ExpectedError(refusal.code);
     case "offer_unavailable":
@@ -818,6 +862,8 @@ export type ListingTrade = {
   claimer: TradeParty;
   acceptedAt: Date;
   tokenIds: number[];
+  // the units a trade from a buy listing fills, null on a pool listing's
+  units: number | null;
   givenCount: number;
   payment: TradePayment | null;
 } & (

@@ -30,6 +30,12 @@ export function claimCap({ score }: ClaimStats) {
 // the most objekts one listing can offer
 export const MAX_OFFERED = 20;
 
+/**
+ * The most units a buy listing can ask for. At MAX_PAYMENT_AMOUNT a unit,
+ * every unit together stays inside the `numeric(14,2)` amount columns.
+ */
+export const MAX_BUY_UNITS = 20;
+
 // the most rows one option of a listing's trade side can have
 export const MAX_WANT_ROWS = 10;
 

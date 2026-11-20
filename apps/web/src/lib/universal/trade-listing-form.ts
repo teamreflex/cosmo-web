@@ -69,6 +69,7 @@ export type ListingSubmission =
 export const emptyListingForm: ListingFormValues = {
   offered: [],
   unitSize: undefined,
+  maxUnits: undefined,
   options: [[]],
   note: "",
 };
@@ -77,7 +78,7 @@ export const emptyListingForm: ListingFormValues = {
  * A listing's current terms as the composer's starting values: its pool, not
  * the objekts that left it, its options' rows, and its unit size if it has
  * a ratio (hasRatio(), against everything it has offered), else none, so a
- * bundle stays a bundle. The unit size isn't held to the pool: tokens sent
+ * bundle stays a bundle, or a buy listing's most units. The unit size isn't held to the pool: tokens sent
  * in a live trade leave the pool while that trade keeps the listing open,
  * which can leave fewer than a trade takes, and Save waits for the poster
  * to lower the ratio or add objekts (composerBlock()). The claimer's
@@ -85,14 +86,17 @@ export const emptyListingForm: ListingFormValues = {
  * it, and the poster's as `offeredPayment`.
  */
 export function listingToFormValues(
-  listing: Pick<TradeListing, "items" | "options" | "note" | "unitSize">,
+  listing: Pick<TradeListing, "items" | "options" | "note" | "units">,
 ): ListingFormValues {
   const terms = listingPaymentTerms(listing.options);
+  const { units } = listing;
   return {
     offered: poolItems(listing).map(({ tokenId }) => ({ tokenId })),
-    unitSize: hasRatio(listing.unitSize, listing.items.length)
-      ? listing.unitSize
-      : undefined,
+    unitSize:
+      units.kind === "pool" && hasRatio(units.unitSize, listing.items.length)
+        ? units.unitSize
+        : undefined,
+    maxUnits: units.kind === "buy" ? units.maxUnits : undefined,
     options: listing.options.map(({ wants, payment }) =>
       wants
         .flatMap((want): ListingFormWant[] => {
@@ -213,6 +217,23 @@ export function followUnitSize(unitSize: number | undefined, offered: number) {
 }
 
 /**
+ * A buy listing's most units once the form offers `offered` objekts and the
+ * poster's payment `offeredPayment`: a payment with no objekts buys, and
+ * keeps the units it had or starts at one; anything else buys nothing.
+ */
+export function followMaxUnits(
+  maxUnits: number | undefined,
+  {
+    offered,
+    offeredPayment,
+  }: Pick<ListingFormValues, "offered" | "offeredPayment">,
+) {
+  return offered.length === 0 && offeredPayment !== undefined
+    ? (maxUnits ?? 1)
+    : undefined;
+}
+
+/**
  * The unit size the Ratio control steps to: stepping up to the whole pool
  * makes the listing a bundle again.
  */
@@ -225,18 +246,22 @@ export function stepUnitSize(next: number, offered: number) {
  * terms, or the same terms for the listing being edited. A range naming
  * one artist's whole roster goes as that artist (collapseWholeGroup), after
  * the picking, so picking more members afterwards never runs into it. The
+ * units go back as the unit size, or a buy listing's most units. The
  * claimer's payment goes back as the last want row of each option that
  * asks for it and the poster's as `offeredPayment`, with its amount at two
  * decimals.
  */
 export function formValuesToInput(
-  { payment, options, ...values }: ListingInput,
+  { payment, options, units, ...values }: ListingInput,
   mode: ComposerMode,
   rosters: ReadonlyMap<string, readonly string[]>,
 ): ListingSubmission {
   const onTop = options[0]?.payment;
   const terms = {
     ...values,
+    ...(units.kind === "pool"
+      ? { unitSize: units.unitSize }
+      : { maxUnits: units.maxUnits }),
     options: options.map((option) => [
       ...option.wants.map((want) =>
         want.kind === "range"
@@ -433,8 +458,9 @@ function sentRanges(
 
 /**
  * Why the composer holds Post and Save back, for what it can tell before
- * the server refuses it, in the order the form reads. `refused` counts the
- * offered objekts the poster can't offer right now. Every option needs a
+ * the server refuses it, in the order the form reads. A listing offers
+ * objekts unless it buys (`maxUnits`). `refused` counts the offered
+ * objekts the poster can't offer right now. Every option needs a
  * row (`wants` for a listing's one option, `option_empty` for one of
  * several, which the composer names), and no two may ask for the same
  * thing. Each range of a range row follows the schema's rules, and one
@@ -457,6 +483,7 @@ export function composerBlock({
   offeredPayment,
   payment,
   unitSize,
+  maxUnits,
   rangeMatches,
   rosters,
   note,
@@ -467,11 +494,12 @@ export function composerBlock({
   offeredPayment: ListingFormValues["offeredPayment"];
   payment: ListingFormValues["payment"];
   unitSize: number | undefined;
+  maxUnits: number | undefined;
   rangeMatches: readonly (RangeMatchCounts | undefined)[];
   rosters: ReadonlyMap<string, readonly string[]>;
   note: string;
 }) {
-  if (offered === 0) return "offered";
+  if (offered === 0 && maxUnits === undefined) return "offered";
   if (refused > 0) return "refused";
   if (options.some((wants) => wants.length === 0)) {
     return options.length === 1 ? "wants" : "option_empty";

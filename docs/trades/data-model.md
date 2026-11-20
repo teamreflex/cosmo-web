@@ -29,9 +29,10 @@ The trade tables live in `packages/database/src/web/schema.ts` under `#region Tr
 | ------------------------------------------------- | ----------- | ------------------------ | ------------- | ----------------- |
 | listing pool row                                  | the listing | null                     | never         | yes               |
 | poster's pick on a trade                          | the trade   | the listing it came from | yes           | no                |
+| poster's payment on a trade                       | the trade   | the listing it came from | never         | no                |
 | claimer's token, or either side of a direct offer | the trade   | null                     | yes           | no                |
 
-- A trade's items are copies, so editing the listing never changes a trade. `tradeListings()` and `tradeListingId()` find a trade's listing through `listing_id`.
+- A trade's items are copies, so editing the listing never changes a trade. `tradeListings()` and `tradeListingId()` find a trade's listing through `listing_id` on any of its items; a trade from a buy listing has only the poster's payment to carry it, so `tradeListings()` gives that listing no tokens.
 - Every item copies its collection's indexer values (slug, artist, member, season, class, on_offline), so the feed filters without crossing databases.
 - `live` is true only on an accepted or disputed trade's items, and is set in the same statement as the status change.
 - `trade_offer_items_live_token_idx` (`UNIQUE (token_id) WHERE live`) keeps a token in at most one live trade. It is the last guard for every race on a token. A write that sets `live` goes through `refuseLiveClash()`, which turns the clash into a named refusal instead of a 500.
@@ -60,9 +61,16 @@ The trade tables live in `packages/database/src/web/schema.ts` under `#region Tr
 
 ## Units
 
-- `unit_size` is how many pool tokens one unit takes, and one unit gives one option's want rows at their counts. `trade_offers_unit_size_chk` requires it on listings and forbids it on trades.
-- A claim of N units picks `N * unit_size` pool tokens and gives each row of its option at its count times N (`scaleWants()`).
-- A listing posted without `unitSize` gets `unit_size` = the number of offered tokens: a bundle, everything for everything (`withListingRules()` in `listing.ts`).
+A listing either offers a pool in units of `unit_size`, or is a buy listing that offers no objekts and pays for up to `max_units` units; `listingUnits()` parses the row into `{ kind: "pool", unitSize } | { kind: "buy", maxUnits }`, and `trade_offers_unit_size_chk` keeps exactly one of the two on a listing and both off a trade.
+
+| Units  | One unit takes                   | A claim of N units                                           | Bounded by                                                              |
+| ------ | -------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| `pool` | `unit_size` pool tokens          | picks `N * unit_size` pool tokens                            | the free pool                                                           |
+| `buy`  | nothing: the poster pays instead | picks nothing, records `trade_offers.units = N` on its trade | `max_units` less the `units` of the listing's live and completed trades |
+
+- One unit gives one option's want rows at their counts, so a claim of N units gives each row of its option at its count times N (`scaleWants()`), and its payment item holds the price times N.
+- A listing posted without `unitSize` or `maxUnits` gets `unit_size` = the number of offered tokens: a bundle, everything for everything (`withListingRules()` in `listing.ts`).
+- `trade_offers.units` is set only on trades from buy listings (`trade_offers_units_chk`); a pool listing's trade counts its units from its picks. `listingTakenUnits()` and `listingUnitsIn()` in `sql.ts` sum it, and a pending offer holds none.
 - Several claims on one listing can be live at once, each its own trade, as long as they pick different tokens.
 - A listing has a ratio (`hasRatio()`) when its unit is smaller than everything it has ever offered, the pool and the tokens that left it, so one whose pool is down to a unit's worth keeps its ratio and a one-objekt listing never has one. Every other listing reads as a bundle.
 
@@ -84,18 +92,18 @@ A payment is money the two parties move outside Apollo; the trade records what w
 | Where                    | Holds                                                                                                                                                                                                        |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | listing's payment wants  | the claimer's: one per option that asks for a payment, each its own asking price for one unit, none when the listing only takes offers; the poster's: one in option 0 that prices every option; the currency |
-| `trade_offers` (listing) | `payment_side` (`to` the claimer pays, `from` the poster pays on top of their objekts), `payment_methods`, `offers`                                                                                          |
+| `trade_offers` (listing) | `payment_side` (`to` the claimer pays, `from` the poster pays on top of their objekts or, on a buy listing, alone), `payment_methods`, `offers`                                                              |
 | `trade_offers` (trade)   | `payment_methods`: on a trade with a payment, the listing's methods as the claim read them                                                                                                                   |
 | trade's payment item     | `amount` for every unit the trade took, at the asking price or the offer's amount, `currency`, `sender`; `confirmed_at` and `method` once the recipient marks it received                                    |
 
 - A listing's items stay objekts. Its payment is its payment wants, sent by `payment_side`, with one currency, set of methods and offer mode whichever option is given; `trade_offers_payment_chk` keeps a listing's side, offer mode and at least one method together, and a trade has no side or mode (`trade_offers_trade_chk`).
 - `offers` is the payment's offer mode: `price_only`, `price_or_offer` or `offer_only` ([listings.md](listings.md#offers-on-listings)). `trade_listing_wants_shape_chk` lets a payment want's `amount` be null, which the app writes only with `offer_only`; `listingPayment()` throws on any other pairing.
-- A claim or an offer writes the trade's payment item with `sender = payment_side` (`insertTrade()`). A poster's payment item keeps `listing_id`, so readers that find a trade's listing through its items still find it; a claimer's has none, like their tokens.
+- A claim or an offer writes the trade's payment item with `sender = payment_side` (`insertTrade()`). A poster's payment item keeps `listing_id`, so readers that find a trade's listing through its items still find it, a buy listing's trade included; a claimer's has none, like their tokens.
 - A payment item is never live, so `goLive` and every other write that sets `live` touch objekt items only.
-- Amounts are integer minor units in code, two decimals in every currency, KRW included (`packages/trades/src/payment.ts`). The input caps one unit at `MAX_PAYMENT_AMOUNT`, so the units a claim can take keep the total inside `numeric(14,2)`.
+- Amounts are integer minor units in code, two decimals in every currency, KRW included (`packages/trades/src/payment.ts`). The input caps one unit at `MAX_PAYMENT_AMOUNT`, so the units a claim can take (`MAX_TOTAL_WANTED`) and a buy listing's most units (`MAX_BUY_UNITS`) keep every total inside `numeric(14,2)`.
 - A listing's currency must have a rate on the newest `fx_rates` date (`assertSupportedCurrency()`), and every price shows in it, never converted.
 - The claim copies the listing's methods onto the trade (`insertTrade()`), under the listing lock's `updated_at` guard, so an edit never changes what a live trade can be confirmed by or shows. `$confirmPayment` and the trade page read the trade's own.
 - Only the recipient marks a payment received; the payer has no step. A payment is owed, and not started, until then ([lifecycle.md](lifecycle.md#payments)).
 - When one side sends nothing but the payment, its rater is the buyer and the other the seller; a payment beside objekts on both sides leaves two traders (`feedbackRole()`).
-- A listing is a sale or a buy only when one side is payment-only, judged per option (`listingType()` in `listing.ts`): an option asking for the claimer's payment and no objekt rows is a sale, the poster's payment with no objekts offered a buy, anything else a trade. A listing is every type its options make it (`listingTypesOf()`), so "any Special objekt or $3" is both a trade and a sale, mirrored in SQL by the feed's Type filter.
+- A listing is a sale or a buy only when one side is payment-only, judged per option (`listingType()` in `listing.ts`): an option asking for the claimer's payment and no objekt rows is a sale, the poster's payment with no objekts offered a buy (a buy listing, whose every option asks for objekts), anything else a trade. A listing is every type its options make it (`listingTypesOf()`), so "any Special objekt or $3" is both a trade and a sale, mirrored in SQL by the feed's Type filter.
 - Direct offers and counters carry no payment.

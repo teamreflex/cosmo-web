@@ -58,8 +58,8 @@
 1. Sets the status, `cancelled_by` and `ended_at`, guarded on the status it locked.
 2. Clears `live` on its items.
 3. Locks its listings in id order.
-4. If it completed, marks its picks `left_at` in each listing's pool.
-5. Closes each listing that can no longer make a unit with `closeSpentListings` ([listings.md](listings.md#listing-lifecycle)). The web app's `endTrade()` runs it itself; the schedules one returns the listings, and the drain or `trade-timers` closes them once every trade in the batch has ended, since one live trade keeps a listing open.
+4. If it completed, marks its picks `left_at` in each listing's pool; a buy listing's trade has none.
+5. Closes each listing that can no longer make a unit, or a buy listing whose completed units reached its most, with `closeSpentListings` ([listings.md](listings.md#listing-lifecycle)). The web app's `endTrade()` runs it itself; the schedules one returns the listings, and the drain or `trade-timers` closes them once every trade in the batch has ended, since one live trade keeps a listing open.
 
 ## Events, notifications and live updates
 

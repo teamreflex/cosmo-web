@@ -6,6 +6,7 @@ import type {
 import { describe, expect, test } from "bun:test";
 import type * as z from "zod";
 import {
+  MAX_BUY_UNITS,
   MAX_CHOICE_OPTIONS,
   MAX_LISTING_OPTIONS,
   MAX_OFFERED,
@@ -13,6 +14,7 @@ import {
   MAX_TOTAL_WANTED,
   MAX_WANT_ROWS,
 } from "../src/caps";
+import type { ListingUnits } from "../src/lifecycle";
 import {
   claimListingInputSchema,
   counterOfferInputSchema,
@@ -453,9 +455,9 @@ const accepted: [
     };
     note?: string | null;
   },
-  output: Omit<ListingInput, "unitSize" | "payment" | "options"> &
-    Partial<Pick<ListingInput, "unitSize">> &
-    Pick<ListingOptionTerms, "wants"> &
+  output: Omit<ListingInput, "units" | "payment" | "options"> & {
+    unitSize?: number;
+  } & Pick<ListingOptionTerms, "wants"> &
     Partial<Pick<ListingOptionTerms, "payment">>,
 ][] = [
   [
@@ -747,11 +749,19 @@ function oneOption<TInput extends { wants: readonly unknown[] }>({
  * shared terms without the option's price.
  */
 function parsedOne(
-  { wants: rows, payment = null, ...rest }: (typeof accepted)[number][2],
+  {
+    wants: rows,
+    payment = null,
+    unitSize,
+    ...rest
+  }: (typeof accepted)[number][2],
   offeredCount: number,
 ) {
   return {
-    unitSize: offeredCount,
+    units: {
+      kind: "pool",
+      unitSize: unitSize ?? offeredCount,
+    } satisfies ListingUnits,
     ...rest,
     options: [{ wants: rows, payment }],
     payment:
@@ -844,7 +854,7 @@ describe("listingInputSchema options", () => {
       }),
     ).toEqual({
       offered: tokens(2),
-      unitSize: 1,
+      units: { kind: "pool", unitSize: 1 },
       note: null,
       payment: { side: "to", mode: "price_or_offer", ...usd },
       options: [
@@ -901,6 +911,126 @@ describe("listingInputSchema options", () => {
   });
 });
 
+describe("buy listings", () => {
+  const anyOf = choice(["atom02-kimlip-107z", "atom02-kimlip-108z"]);
+  // $3 each for any of two collections, up to three
+  const buy = {
+    offered: [],
+    maxUnits: 3,
+    options: [[anyOf]],
+    offeredPayment: "3",
+    payment: usd,
+  };
+
+  test("parses into the poster's payment for up to its most units", () => {
+    expect(listingInputSchema.parse(buy)).toEqual({
+      offered: [],
+      units: { kind: "buy", maxUnits: 3 },
+      note: null,
+      payment: { side: "from", mode: "price_only", ...usd },
+      options: [
+        {
+          wants: [anyOf],
+          payment: { side: "from", mode: "price_only", amount: 300, ...usd },
+        },
+      ],
+    });
+  });
+
+  test("takes several options, each asking for objekts", () => {
+    expect(
+      listingInputSchema.safeParse({
+        ...buy,
+        options: [[anyOf], [exact(KIMLIP, 2)]],
+      }).success,
+    ).toBe(true);
+  });
+
+  test.each([
+    [
+      "no most units",
+      { maxUnits: undefined },
+      "offered: Offer at least one objekt",
+    ],
+    ["most units of 0", { maxUnits: 0 }, "maxUnits: Buy at least one"],
+    ["negative most units", { maxUnits: -1 }, "maxUnits: Buy at least one"],
+    ["fractional most units", { maxUnits: 1.5 }, "maxUnits: *"],
+    ["most units as text", { maxUnits: "3" }, "maxUnits: *"],
+    [
+      "most units past MAX_BUY_UNITS",
+      { maxUnits: MAX_BUY_UNITS + 1 },
+      `maxUnits: A listing can buy at most ${MAX_BUY_UNITS}`,
+    ],
+    [
+      "a pool beside most units",
+      { offered },
+      "maxUnits: A listing that buys offers no objekts",
+    ],
+    [
+      "a unit size beside most units",
+      { unitSize: 1 },
+      "maxUnits: A listing that buys offers no objekts",
+    ],
+    [
+      "no payment",
+      { offeredPayment: undefined, payment: undefined },
+      "offeredPayment: Add the payment you send for each unit",
+    ],
+    [
+      "the claimer's payment in place of the poster's",
+      { offeredPayment: undefined, options: [[anyOf, pay("3")]] },
+      "offeredPayment: Add the payment you send for each unit",
+    ],
+    [
+      "a payment on both sides",
+      { options: [[anyOf, pay("3")]] },
+      "offeredPayment: A payment can only be on one side",
+    ],
+    [
+      "an option of nothing but a payment",
+      { options: [[anyOf], [pay("3")]] },
+      "offeredPayment: A payment can only be on one side",
+    ],
+    [
+      "a price open to offers",
+      { payment: { ...usd, mode: "price_or_offer" } },
+      "payment.mode: A payment you add on top has a fixed price",
+    ],
+    [
+      "no asking price",
+      { offeredPayment: undefined, payment: { ...usd, mode: "offer_only" } },
+      "payment: Only a listing with a payment takes payment methods",
+    ],
+  ])("refuses %s", (_, override, issue) => {
+    expectIssue(listingInputSchema.safeParse({ ...buy, ...override }), issue);
+  });
+
+  test("refuses an option with no wants", () => {
+    expectIssue(
+      listingInputSchema.safeParse({ ...buy, options: [[]] }),
+      "options.0: Ask for at least one objekt or a payment",
+    );
+  });
+
+  test("bounds every unit's payment together to numeric(14,2)", () => {
+    expect(MAX_PAYMENT_AMOUNT * MAX_BUY_UNITS).toBeLessThanOrEqual(
+      MAX_NUMERIC_AMOUNT,
+    );
+    expect(
+      listingInputSchema.safeParse({
+        ...buy,
+        maxUnits: MAX_BUY_UNITS,
+        offeredPayment: toNumericText(MAX_PAYMENT_AMOUNT),
+      }).success,
+    ).toBe(true);
+  });
+});
+
+// minor units as an amount is typed, "99999999.99"
+function toNumericText(amount: number) {
+  return `${Math.trunc(amount / 100)}.${String(amount % 100).padStart(2, "0")}`;
+}
+
 describe("listingTypesOf", () => {
   test.each([
     ["one objekt option", null, [1], ["trade"]],
@@ -926,6 +1056,16 @@ describe("listingTypesOf", () => {
       ).toEqual(expected);
     },
   );
+
+  test("a buy listing is a buy whichever option is given", () => {
+    expect(
+      listingTypesOf({
+        paymentSide: "from",
+        options: [{ objektWants: 1 }, { objektWants: 2 }],
+        offered: 0,
+      }),
+    ).toEqual(["buy"]);
+  });
 });
 
 describe("listingType", () => {
@@ -986,9 +1126,15 @@ describe("claimListingInputSchema", () => {
   });
 
   test("bounds a payment's total to numeric(14,2)", () => {
-    expect(MAX_PAYMENT_AMOUNT * MAX_OFFERED).toBeLessThanOrEqual(
+    expect(MAX_PAYMENT_AMOUNT * MAX_TOTAL_WANTED).toBeLessThanOrEqual(
       MAX_NUMERIC_AMOUNT,
     );
+  });
+
+  test("accepts a buy listing's claim, which picks nothing from a pool", () => {
+    expect(
+      claimListingInputSchema.safeParse({ ...claim, picked: [] }).success,
+    ).toBe(true);
   });
 
   test("accepts the row and total caps", () => {
@@ -1040,9 +1186,14 @@ describe("claimListingInputSchema", () => {
     ["no option", { option: undefined }, "option: *"],
     /**
      * The unit cap is what keeps a payment's total inside numeric(14,2):
-     * MAX_PAYMENT_AMOUNT × MAX_OFFERED fits, so one more unit is refused.
+     * MAX_PAYMENT_AMOUNT × MAX_TOTAL_WANTED fits, so one more unit is
+     * refused.
      */
-    ["one unit past MAX_OFFERED", { units: MAX_OFFERED + 1 }, "units: *"],
+    [
+      "one unit past MAX_TOTAL_WANTED",
+      { units: MAX_TOTAL_WANTED + 1 },
+      "units: *",
+    ],
     [
       "an objekt picked twice",
       { picked: [100, 101, 100] },

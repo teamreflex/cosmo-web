@@ -2,6 +2,7 @@ import type { Picks } from "@/hooks/use-listing-picks";
 import { m } from "@/i18n/messages";
 import {
   availabilityLabel,
+  buyingText,
   objektName,
   posterName,
   standingLabel,
@@ -10,6 +11,7 @@ import {
 } from "@/lib/client/trade-listings";
 import {
   type ListingItem,
+  type ListingSize,
   type ListingTrade,
   poolItems,
   poolStanding,
@@ -61,6 +63,16 @@ export default function YouGet({
   });
   const [single] = shown;
 
+  if (listing.units.kind === "buy") {
+    return (
+      <BuyingSide
+        listing={listing}
+        units={listing.units}
+        heading={heading}
+        picked={picks?.units ?? 1}
+      />
+    );
+  }
   if (picks !== null && picks.ratio !== null) {
     return <PoolPicker listing={listing} picks={picks} />;
   }
@@ -139,6 +151,53 @@ function PosterPayment({
         <PaymentLabel payment={payment} units={units} />
       </div>
     )
+  );
+}
+
+/**
+ * A buy listing's side, which is its payment alone: "You get" it for the
+ * units a picking viewer takes, "You pay" it for its poster, "Paying" for
+ * anyone else, with how many units it has left.
+ */
+function BuyingSide({
+  listing,
+  units,
+  heading,
+  picked,
+}: {
+  listing: TradeListing;
+  units: Extract<ListingSize, { kind: "buy" }>;
+  heading: OfferedHeading;
+  picked: number;
+}) {
+  const payment = listing.options[0]?.payment;
+  return (
+    <section className="flex min-w-0 flex-col gap-4">
+      <SideHeading
+        tone={heading === "you_get" ? "want" : "have"}
+        title={
+          heading === "you_get"
+            ? m.listing_detail_you_get_payment()
+            : heading === "you_offer"
+              ? m.listing_detail_you_pay()
+              : m.listing_detail_paying()
+        }
+        summary={
+          heading === "you_get"
+            ? m.listing_detail_you_get_summary({ poster: posterName(listing) })
+            : buyingText(units)
+        }
+      />
+      {payment?.side === "from" && (
+        <div className="rounded-lg border border-border bg-card px-4 py-3 text-sm">
+          <PaymentLabel
+            payment={payment}
+            units={heading === "you_get" ? picked : 1}
+            perUnit
+          />
+        </div>
+      )}
+    </section>
   );
 }
 

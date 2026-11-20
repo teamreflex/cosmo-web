@@ -23,7 +23,7 @@ import {
   endedTradeColumns,
   listingClosing,
   listingTransition,
-  listingUnitSize,
+  listingUnits,
   tradeListings,
   type TradeState,
   tradeState,
@@ -237,14 +237,16 @@ export const endTrade = Effect.fn("endTrade")(function* (
   const listings = tradeListings(trade.items);
   if (listings.size > 0) {
     yield* lockListings(tx, [...listings.keys()]);
-    if (next.status === "completed") {
+    // a buy listing's trade takes no pool tokens
+    const picks = [...listings].filter(([, tokenIds]) => tokenIds.length > 0);
+    if (next.status === "completed" && picks.length > 0) {
       yield* tx
         .update(tradeOfferItems)
         .set({ leftAt: sql`now()` })
         .where(
           and(
             or(
-              ...[...listings].map(([listingId, tokenIds]) =>
+              ...picks.map(([listingId, tokenIds]) =>
                 and(
                   eq(tradeOfferItems.offerId, listingId),
                   inArray(tradeOfferItems.tokenId, tokenIds),
@@ -295,9 +297,10 @@ export const lockListings = Effect.fn("lockListings")(function* (
 });
 
 /**
- * Closes the open listings among `listingIds` whose pool can no longer make
- * a unit and that have no live trade left (listingClosing): filled when one
- * of their trades completed, else broken. The caller holds their locks and
+ * Closes the open listings among `listingIds` that have no live trade left
+ * and whose pool can no longer make a unit, filled when one of their trades
+ * completed, else broken, or that bought all their units, filled
+ * (listingClosing). The caller holds their locks and
  * their posters'. Returns how many broke and a `listing_closed` notification
  * to each broken one's poster, naming the token `departed` says left its
  * pool, or none when no single token broke it.
@@ -313,6 +316,7 @@ export const closeSpentListings = Effect.fn("closeSpentListings")(function* (
       id: tradeOffers.id,
       fromUserId: tradeOffers.fromUserId,
       unitSize: tradeOffers.unitSize,
+      maxUnits: tradeOffers.maxUnits,
       ...listingPoolState,
     })
     .from(tradeOffers)
@@ -326,7 +330,7 @@ export const closeSpentListings = Effect.fn("closeSpentListings")(function* (
   const closed = listings.flatMap((listing) => {
     const event = listingClosing({
       ...listing,
-      unitSize: listingUnitSize(listing),
+      units: listingUnits(listing),
     });
     return event === null
       ? []

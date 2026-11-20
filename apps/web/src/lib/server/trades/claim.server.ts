@@ -1,16 +1,23 @@
 import { tradeOfferItems, tradeOffers } from "@apollo/database/web/schema";
+import { listingTakenUnits } from "@apollo/database/web/sql";
 import type {
   NewTradeOfferItem,
   TradeOfferStatus,
 } from "@apollo/database/web/types";
-import { scaleWants, type TradeWant, unitsOf } from "@apollo/trades/allocate";
+import {
+  scaleWants,
+  type TradeWant,
+  unitsLeft,
+  unitsOf,
+} from "@apollo/trades/allocate";
 import { validateAssignment } from "@apollo/trades/assignment";
 import { claimCap } from "@apollo/trades/caps";
 import { firstRefusal } from "@apollo/trades/holdings";
 import {
   type ClaimTerms,
   claimTerms,
-  listingUnitSize,
+  type ListingUnits,
+  listingUnits,
   tradeListings,
 } from "@apollo/trades/lifecycle";
 import type { ClaimListingInput } from "@apollo/trades/listing";
@@ -101,6 +108,7 @@ type Preflight = {
     id: string;
     fromUserId: string | null;
     fromAddress: string;
+    units: ListingUnits;
     picked: z.output<typeof storedObjektItemSchema>[];
   };
   // the listing's option the claim gives, its index and its terms
@@ -118,7 +126,8 @@ type Preflight = {
  * The checks that need no lock, in claim precedence: the listing, its
  * status and the claimer's view of it, the poster's account, the poster's
  * objekts the claim picked, then the claimer's tokens. The picks must be
- * `units` units of the pool, each one the poster can give now. The claim
+ * `units` units of the pool, each one the poster can give now, or none on
+ * a buy listing, which has no pool. The claim
  * gives one of the listing's options, and assignment is checked against
  * that option's want rows scaled to the units, on every submitted token's
  * indexer values whoever owns it, so a misfit row is refused the same way
@@ -140,6 +149,7 @@ export async function preflightClaim(
       fromUserId: true,
       fromAddress: true,
       unitSize: true,
+      maxUnits: true,
       updatedAt: true,
       paymentSide: true,
       paymentMethods: true,
@@ -163,7 +173,7 @@ export async function preflightClaim(
   }
   const stale = statusRefusal(row, input.seen);
   if (stale) refuse(stale);
-  const unitSize = listingUnitSize(row);
+  const units = listingUnits(row);
   const options = listingOptions(row, row.wants);
 
   // a commit since the status read is the better answer to a refused pick
@@ -189,7 +199,9 @@ export async function preflightClaim(
   const claim = terms === undefined ? null : claimTerms(terms, input.amount);
   if (
     picked.length !== input.picked.length ||
-    unitsOf(picked.length, unitSize) !== input.units ||
+    (units.kind === "pool"
+      ? unitsOf(picked.length, units.unitSize) !== input.units
+      : picked.length > 0) ||
     terms === undefined ||
     claim === null
   ) {
@@ -244,6 +256,7 @@ export async function preflightClaim(
       id: row.id,
       fromUserId: row.fromUserId,
       fromAddress: row.fromAddress,
+      units,
       picked,
     },
     option: input.option,
@@ -253,6 +266,21 @@ export async function preflightClaim(
     submitted,
     claim,
   };
+}
+
+/**
+ * The units a buy listing's live and completed trades hold, read in a
+ * statement of its own once the caller holds the listing's lock, so it
+ * sees every trade a claim or an accept that held the lock before
+ * committed: a subquery in the locking statement would read the snapshot
+ * taken before it waited.
+ */
+async function readTakenUnits(tx: WebTx, listingId: string) {
+  const [held] = await tx
+    .select({ taken: listingTakenUnits(tradeOffers.id) })
+    .from(tradeOffers)
+    .where(eq(tradeOffers.id, listingId));
+  return held?.taken ?? 0;
 }
 
 /**
@@ -266,7 +294,8 @@ export async function preflightClaim(
  * while this one waited leaves no row to lock, and the re-read says which.
  * A claim racing a trade from another listing for the same token is caught
  * by the live-token index on insert. Then repeats every check that could
- * have changed, refusing a claimer who already has a live claim or a
+ * have changed, refusing units past what a buy listing has left beside its
+ * live and completed trades' (pending offers hold none), refusing a claimer who already has a live claim or a
  * pending offer from the listing; only a claim counts against the cap,
  * since an offer is checked against it when it's accepted. A refusal rolls
  * the write back. Returns the claimer's COSMO address as stored, which the
@@ -329,6 +358,16 @@ export async function lockAndRecheck(
     listing.fromAddress,
   );
   if (unavailable) refusePick(unavailable.tokenId);
+  if (
+    listing.units.kind === "buy" &&
+    input.units >
+      unitsLeft({
+        ...listing.units,
+        taken: await readTakenUnits(tx, listing.id),
+      })
+  ) {
+    refuse("listing_full");
+  }
 
   const link = claimerLink(
     claimer,
@@ -353,12 +392,13 @@ export async function lockAndRecheck(
 
 /**
  * Creates the claim's trade with both addresses pinned and the listing's
- * option it gives, and copies the poster's picked objekts and the
- * claimer's tokens into it, then its
+ * option it gives, and, on a buy listing, the units it fills. Copies the
+ * poster's picked objekts and the claimer's tokens into it, then its
  * payment per unit (the asking price, or the amount an offer proposes)
  * times the units claimed, sent by the listing's payment side and never
  * live, with the methods it may arrive by on the trade. The poster's items
- * keep the listing's id. The listing itself doesn't change. A claim starts
+ * keep the listing's id, their payment included, so a trade from a buy
+ * listing still finds it. The listing itself doesn't change. A claim starts
  * accepted with the fixed claim window, its items live, and tells the
  * poster what to send; an offer on a listing that takes offers starts
  * pending with the offer window, proposed by the claimer, reserving
@@ -382,6 +422,8 @@ export async function insertTrade(
       fromAddress: listing.fromAddress,
       toAddress,
       listingOption: option,
+      // a buy listing has no pool, so its trades count the units they fill
+      units: listing.units.kind === "buy" ? units : null,
       // what its payment may arrive by, as the listing said when claimed
       paymentMethods: terms.payment?.methods ?? [],
       ...(offer
@@ -399,23 +441,26 @@ export async function insertTrade(
     .returning({ id: tradeOffers.id });
   if (!trade) throw new Error("Trade insert returned no row");
 
-  await refuseLiveClash(
-    tx.insert(tradeOfferItems).values(
-      listing.picked.map(
-        ({ tokenId, attributes }) =>
-          ({
-            offerId: trade.id,
-            listingId: listing.id,
-            sender: "from",
-            kind: "objekt",
-            live: !offer,
-            tokenId,
-            ...attributes,
-          }) satisfies NewTradeOfferItem,
+  // a buy listing's poster gives only the payment
+  if (listing.picked.length > 0) {
+    await refuseLiveClash(
+      tx.insert(tradeOfferItems).values(
+        listing.picked.map(
+          ({ tokenId, attributes }) =>
+            ({
+              offerId: trade.id,
+              listingId: listing.id,
+              sender: "from",
+              kind: "objekt",
+              live: !offer,
+              tokenId,
+              ...attributes,
+            }) satisfies NewTradeOfferItem,
+        ),
       ),
-    ),
-    "listing_pick_unavailable",
-  );
+      "listing_pick_unavailable",
+    );
+  }
   // a sale's claimer gives no objekts
   if (submitted.length > 0) {
     await refuseLiveClash(
@@ -464,7 +509,7 @@ export async function insertTrade(
 
 /**
  * What accepting an offer on a listing judges it against, read before the
- * transaction: the listing's unit size and options, each with its want
+ * transaction: the listing's units and options, each with its want
  * rows and payment. Only an edit changes them, and an edit turns the
  * listing's pending offers stale after locking them, so these still hold
  * once the accept has locked the offer and found it pending.
@@ -475,6 +520,7 @@ export async function readListingTerms(listingId: string) {
     columns: {
       id: true,
       unitSize: true,
+      maxUnits: true,
       paymentSide: true,
       paymentMethods: true,
       offers: true,
@@ -483,7 +529,7 @@ export async function readListingTerms(listingId: string) {
   });
   if (!row) refuse("listing_closed");
   return {
-    unitSize: listingUnitSize(row),
+    units: listingUnits(row),
     options: listingOptions(row, row.wants).map(tradeOption),
   };
 }
@@ -492,9 +538,9 @@ export async function readListingTerms(listingId: string) {
  * Re-judges an offer on a listing that its poster is accepting, under the
  * users' and the offer's locks, as a claim would be judged: locks the
  * listing row `FOR NO KEY UPDATE` while it's still open, after the offer
- * (docs/locking.md), reads its pool, the parties' links, both sides' locks
- * and live trades and the claimer's claim cap, which accepting counts
- * toward, then refuses as offerRefusal() decides, the order the listing
+ * (docs/locking.md), reads its pool, the units a buy listing's live and
+ * completed trades hold, the parties' links, both sides' locks and live
+ * trades and the claimer's claim cap, which accepting counts toward, then refuses as offerRefusal() decides, the order the listing
  * page shows. The indexer states of both sides' tokens come from before
  * the transaction.
  */
@@ -548,13 +594,17 @@ export async function recheckListingOffer(
       expiresAt: trade.expiresAt,
       option: tradeListingOption(trade),
       picks,
+      units: trade.units,
       given,
       payment: tradePayment(trade.items),
     },
     {
       fromAddress: trade.fromAddress,
       pool: new Set(pool.flatMap((item) => item.tokenId ?? [])),
-      unitSize: terms.unitSize,
+      units:
+        terms.units.kind === "buy"
+          ? { ...terms.units, taken: await readTakenUnits(tx, listingId) }
+          : terms.units,
       options: terms.options,
       posterRefused: posterBlocked(
         poster === undefined
