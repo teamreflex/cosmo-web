@@ -17,6 +17,7 @@ import {
   MAX_TOTAL_WANTED,
 } from "@apollo/trades/caps";
 import { needsYou, tradeState } from "@apollo/trades/lifecycle";
+import type { ListingPayment } from "@apollo/trades/payment";
 import { isEqual } from "@apollo/util";
 import {
   and,
@@ -40,8 +41,8 @@ import {
   type ListingViewer,
   offerRefusal,
   storedObjektItemSchema,
-  storedPaymentItemSchema,
   type StoredWant,
+  tradePayment,
   type TradeRatio,
   tradeWants,
 } from "../../universal/trade-listings";
@@ -353,25 +354,16 @@ function tradeSides(row: { items: readonly TradeOfferItem[] }) {
 }
 
 /**
- * A trade's payment, every unit's together, and the side that sends it, or
- * null without one.
- */
-function tradePayment(row: {
-  items: readonly TradeOfferItem[];
-}): TradeRatio["payment"] {
-  const item = row.items.find((each) => each.kind === "payment");
-  if (item === undefined) return null;
-  const { amount, currency } = storedPaymentItemSchema.parse(item);
-  return { side: item.sender, amount, currency };
-}
-
-/**
  * How many objekts each side of a trade from the listing sends, and its
  * payment.
  */
 function tradeSize(row: { items: readonly TradeOfferItem[] }): TradeRatio {
   const { from, to } = tradeSides(row);
-  return { give: from.length, get: to.length, payment: tradePayment(row) };
+  return {
+    give: from.length,
+    get: to.length,
+    payment: tradePayment(row.items),
+  };
 }
 
 /**
@@ -408,6 +400,7 @@ async function readPosterSide(listing: {
   fromAddress: string;
   unitSize: number;
   wants: StoredWant[];
+  payment: ListingPayment | null;
   pool: readonly number[];
   posterRefused: boolean;
 }): Promise<{ offers: ListingOfferSummary[]; trades: ListingTrade[] }> {
@@ -453,14 +446,16 @@ async function readPosterSide(listing: {
       ({ row, expiresAt, toAddress, sides }): ListingOfferSummary => {
         const picks = sides.from.map((item) => item.tokenId);
         const given = sides.to.map((item) => item.tokenId);
+        const payment = tradePayment(row.items);
         return {
           tradeId: row.id,
           claimer: claimer(row),
           picks: sides.from.map((item) => feedItem(item, indexed)),
           given: sides.to.map((item) => feedItem(item, indexed)),
+          payment,
           expiresAt,
           refusal: offerRefusal(
-            { expiresAt, picks, given },
+            { expiresAt, picks, given, payment },
             { ...listing, pool, wants },
             {
               address: toAddress,
@@ -496,7 +491,7 @@ async function readPosterSide(listing: {
         acceptedAt: row.acceptedAt,
         tokenIds: from.map((item) => item.tokenId),
         givenCount: to.length,
-        payment: tradePayment(row),
+        payment: tradePayment(row.items),
       };
       switch (row.status) {
         case "accepted": {
@@ -615,6 +610,7 @@ export async function readListingViewer(
     fromAddress: string;
     unitSize: number;
     wants: StoredWant[];
+    payment: ListingPayment | null;
     /** the pool's objekts that haven't left it */
     pool: readonly number[];
     /** how many of them are free to claim */
@@ -651,6 +647,7 @@ export async function readListingViewer(
       tradeId: trade.id,
       expiresAt: trade.expiresAt,
       ...(await offerSides(trade)),
+      payment: tradePayment(trade.items),
     };
   }
   if (

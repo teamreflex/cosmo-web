@@ -1,5 +1,5 @@
 import { m } from "@/i18n/messages";
-import { partyName } from "@/lib/client/trade-listings";
+import { offerSideText, partyName } from "@/lib/client/trade-listings";
 import { itemName, offerRoles, tradeTimeFormat } from "@/lib/client/trades";
 import { env } from "@/lib/env/client";
 import type { TradeView } from "@/lib/universal/trades";
@@ -156,24 +156,40 @@ export function OfferStrip({
     give: trade.items.filter((item) => item.sender === proposedBy).length,
     get: trade.items.filter((item) => item.sender === answeredBy).length,
   };
+  // only an offer on a listing carries a payment, and it can't be countered
+  const { payment } = trade;
+  const terms = payment !== null && {
+    give: offerSideText(
+      counts.give,
+      payment.sender === proposedBy ? payment : null,
+    ),
+    get: offerSideText(
+      counts.get,
+      payment.sender === answeredBy ? payment : null,
+    ),
+  };
   return (
     <div className="flex flex-wrap items-center gap-3 border-t border-amber-500/40 bg-amber-500/10 px-4 py-3">
       <div className="flex min-w-0 flex-[1_1_18rem] flex-col gap-0.5 text-sm wrap-anywhere">
         <p className="font-medium">
-          {side === proposedBy
-            ? (parentId === null
-                ? m.trade_page_offer_waiting_you
-                : m.trade_page_offer_waiting_counter_you)({
-                name: recipient,
-                ...counts,
-              })
-            : (parentId === null
-                ? m.trade_page_offer_waiting_staff
-                : m.trade_page_offer_waiting_counter_staff)({
-                sender,
-                recipient,
-                ...counts,
-              })}
+          {terms !== false
+            ? side === proposedBy
+              ? m.trade_page_offer_terms_you({ name: recipient, ...terms })
+              : m.trade_page_offer_terms_staff({ sender, recipient, ...terms })
+            : side === proposedBy
+              ? (parentId === null
+                  ? m.trade_page_offer_waiting_you
+                  : m.trade_page_offer_waiting_counter_you)({
+                  name: recipient,
+                  ...counts,
+                })
+              : (parentId === null
+                  ? m.trade_page_offer_waiting_staff
+                  : m.trade_page_offer_waiting_counter_staff)({
+                  sender,
+                  recipient,
+                  ...counts,
+                })}
         </p>
         <p className="text-xs text-muted-foreground">
           <ParaglideMessage

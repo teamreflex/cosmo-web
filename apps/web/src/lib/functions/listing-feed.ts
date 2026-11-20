@@ -62,6 +62,7 @@ export const $fetchListingFeed = createServerFn({ method: "GET" })
         unitSize: true,
         paymentSide: true,
         paymentMethods: true,
+        offers: true,
       },
       extras: {
         free: (t) => freePoolCount(t),

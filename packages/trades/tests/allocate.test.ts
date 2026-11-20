@@ -6,10 +6,12 @@ import {
   type InventoryObjekt,
   listingOfferRefusal,
   type OfferedToken,
+  paymentFits,
   type TradeWant,
   unitsOf,
 } from "../src/allocate";
 import { MAX_PER_ROW, MAX_TOTAL_WANTED } from "../src/caps";
+import type { ListingPayment, TradePayment } from "../src/payment";
 import type { RangeFilter } from "../src/range";
 
 let nextTokenId = 1;
@@ -156,6 +158,7 @@ describe("unitsOf", () => {
   test.each([
     ["several units", 6, 2, 3],
     ["a count between units", 5, 2, null],
+    ["a sale's one objekt", 1, 1, 1],
   ] satisfies [string, number, number, number | null][])(
     "%s",
     (_, picked, unitSize, expected) => {
@@ -171,6 +174,11 @@ describe("fillsExactly", () => {
 
   test("a token too many doesn't", () => {
     expect(fillsExactly([exact(2, kimlip)], kimlips(3))).toBe(false);
+  });
+
+  test("a sale's want rows are filled only by no tokens", () => {
+    expect(fillsExactly([], [])).toBe(true);
+    expect(fillsExactly([], kimlips(1))).toBe(false);
   });
 
   test("tokens that leave a row unfilled don't", () => {
@@ -197,18 +205,19 @@ describe("listingOfferRefusal", () => {
     pool: new Set([101, 102, 103, 104]),
     unitSize: 2,
     wants: [exact(2, kimlip)],
+    payment: null,
   };
 
   test("several units fit with every row scaled to them", () => {
     expect(
       listingOfferRefusal(
-        { picks: [101, 102, 103, 104], given: kimlips(4) },
+        { picks: [101, 102, 103, 104], given: kimlips(4), payment: null },
         listing,
       ),
     ).toBeNull();
     expect(
       listingOfferRefusal(
-        { picks: [101, 102, 103, 104], given: kimlips(2) },
+        { picks: [101, 102, 103, 104], given: kimlips(2), payment: null },
         listing,
       ),
     ).toEqual({ reason: "terms_changed" });
@@ -217,7 +226,7 @@ describe("listingOfferRefusal", () => {
   test("picks that are no longer whole units change the terms", () => {
     expect(
       listingOfferRefusal(
-        { picks: [101, 102], given: kimlips(2) },
+        { picks: [101, 102], given: kimlips(2), payment: null },
         { ...listing, unitSize: 3 },
       ),
     ).toEqual({ reason: "terms_changed" });
@@ -229,6 +238,7 @@ describe("listingOfferRefusal", () => {
         {
           picks: [101, 102],
           given: [...kimlips(1), { kind: "missing", tokenId: 9001 }],
+          payment: null,
         },
         listing,
       ),
@@ -238,9 +248,100 @@ describe("listingOfferRefusal", () => {
   test("the terms are judged before the claimer's tokens", () => {
     expect(
       listingOfferRefusal(
-        { picks: [101, 105], given: [{ kind: "missing", tokenId: 9001 }] },
+        {
+          picks: [101, 105],
+          given: [{ kind: "missing", tokenId: 9001 }],
+          payment: null,
+        },
         listing,
       ),
     ).toEqual({ reason: "terms_changed" });
+  });
+});
+
+describe("payment-only offers", () => {
+  // a sale of two pool objekts one at a time, for a payment and no objekts
+  const sale = (payment: ListingPayment) => ({
+    pool: new Set([101, 102]),
+    unitSize: 1,
+    wants: [],
+    payment,
+  });
+  const offer = (picks: number[], amount: number) => ({
+    picks,
+    given: [],
+    payment: { side: "to", amount, currency: "USD" } satisfies TradePayment,
+  });
+
+  test.each([
+    ["any amount on a listing open to offers", "price_or_offer", 250, null],
+    ["any amount on a listing that only takes offers", "offer_only", 250, null],
+    ["the asking price at a fixed price", "price_only", 300, null],
+    [
+      "another amount at a fixed price",
+      "price_only",
+      250,
+      { reason: "terms_changed" },
+    ],
+  ] satisfies [
+    string,
+    ListingPayment["mode"],
+    number,
+    { reason: "terms_changed" } | null,
+  ][])("%s", (_, mode, amount, expected) => {
+    const payment: ListingPayment =
+      mode === "offer_only"
+        ? { side: "to", currency: "USD", methods: ["wise"], mode, amount: null }
+        : { side: "to", currency: "USD", methods: ["wise"], mode, amount: 300 };
+    expect(listingOfferRefusal(offer([101], amount), sale(payment))).toEqual(
+      expected,
+    );
+  });
+
+  test("a fixed price is judged for every unit the offer takes", () => {
+    const payment: ListingPayment = {
+      side: "to",
+      currency: "USD",
+      methods: ["wise"],
+      mode: "price_only",
+      amount: 300,
+    };
+    expect(listingOfferRefusal(offer([101, 102], 600), sale(payment))).toBe(
+      null,
+    );
+    expect(listingOfferRefusal(offer([101, 102], 300), sale(payment))).toEqual({
+      reason: "terms_changed",
+    });
+  });
+
+  test("a payment the listing no longer has, or one it gained, changes the terms", () => {
+    const payment: ListingPayment = {
+      side: "to",
+      currency: "USD",
+      methods: ["wise"],
+      mode: "offer_only",
+      amount: null,
+    };
+    expect(paymentFits(null, payment, 1)).toBe(false);
+    expect(
+      paymentFits({ side: "to", amount: 250, currency: "USD" }, null, 1),
+    ).toBe(false);
+    expect(paymentFits(null, null, 1)).toBe(true);
+  });
+
+  test("another side or currency changes the terms", () => {
+    const payment: ListingPayment = {
+      side: "to",
+      currency: "USD",
+      methods: ["wise"],
+      mode: "price_or_offer",
+      amount: 300,
+    };
+    expect(
+      paymentFits({ side: "from", amount: 250, currency: "USD" }, payment, 1),
+    ).toBe(false);
+    expect(
+      paymentFits({ side: "to", amount: 250, currency: "KRW" }, payment, 1),
+    ).toBe(false);
   });
 });

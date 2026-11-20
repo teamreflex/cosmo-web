@@ -1,4 +1,5 @@
 import {
+  type ListingOfferMode,
   type PaymentMethod,
   paymentMethods,
   type TradeSide,
@@ -17,15 +18,35 @@ export const MAX_PAYMENT_AMOUNT = 9_999_999_999;
 export const MAX_NUMERIC_AMOUNT = 99_999_999_999_999;
 
 /**
+ * How a listing's payment is priced: a fixed price claimed at once, an
+ * asking price a claimer may also make an offer against, or no asking
+ * price at all, so every claimer makes an offer. `amount` is per unit, in
+ * minor units.
+ */
+export type PaymentPrice =
+  | { mode: Exclude<ListingOfferMode, "offer_only">; amount: number }
+  | { mode: "offer_only"; amount: null };
+
+/**
  * A listing's payment: who sends it (`to` the claimer, or `from` the poster
- * on top of their objekts), how much per unit in minor units, its currency
- * and the methods it may arrive by.
+ * on top of their objekts), how it is priced, its currency and the methods
+ * it may arrive by. Only a claimer's payment takes offers; the poster's is
+ * always a fixed price.
  */
 export type ListingPayment = {
   side: TradeSide;
-  amount: number;
   currency: string;
   methods: PaymentMethod[];
+} & PaymentPrice;
+
+/**
+ * A trade's payment: its amount for every unit the trade took, in minor
+ * units, its currency and the side that sends it.
+ */
+export type TradePayment = {
+  side: TradeSide;
+  amount: number;
+  currency: string;
 };
 
 const decimalAmount = /^(\d+)(?:\.(\d{1,2}))?$/;

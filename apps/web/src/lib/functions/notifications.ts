@@ -15,6 +15,7 @@ import {
   listNotificationsSchema,
   markNotificationsReadSchema,
 } from "@/lib/universal/schema/notifications";
+import { tradePayment } from "@/lib/universal/trade-listings";
 import { offerCloser } from "@/lib/universal/trades";
 import { collections, objekts } from "@apollo/database/indexer/schema";
 import {
@@ -176,8 +177,17 @@ export const $listNotifications = createServerFn({ method: "GET" })
           : [],
       ),
     );
+    // an accepted offer says what its proposer, the recipient, sends and pays
+    const accepted = new Map(
+      rows.flatMap((r): [string, TradeSide][] =>
+        r.offerId !== null && r.type === "offer_accepted"
+          ? [[r.offerId, r.offerProposedBy ?? "from"]]
+          : [],
+      ),
+    );
     const itemOfferIds = [
       ...sendsShown.keys(),
+      ...accepted.keys(),
       ...rows.flatMap((r) =>
         r.offerId !== null && r.type === "offer_stale" ? [r.offerId] : [],
       ),
@@ -188,16 +198,15 @@ export const $listNotifications = createServerFn({ method: "GET" })
         : await db
             .select({
               offerId: tradeOfferItems.offerId,
+              kind: tradeOfferItems.kind,
               sender: tradeOfferItems.sender,
               tokenId: tradeOfferItems.tokenId,
+              amount: tradeOfferItems.amount,
+              currency: tradeOfferItems.currency,
+              confirmedAt: tradeOfferItems.confirmedAt,
             })
             .from(tradeOfferItems)
-            .where(
-              and(
-                inArray(tradeOfferItems.offerId, itemOfferIds),
-                eq(tradeOfferItems.kind, "objekt"),
-              ),
-            )
+            .where(inArray(tradeOfferItems.offerId, itemOfferIds))
             .orderBy(asc(tradeOfferItems.id));
     const itemsByOffer = Map.groupBy(offerItems, (i) => i.offerId);
 
@@ -286,8 +295,10 @@ export const $listNotifications = createServerFn({ method: "GET" })
         ) {
           return [];
         }
-        const items = itemsByOffer.get(row.offerId) ?? [];
+        const all = itemsByOffer.get(row.offerId) ?? [];
+        const items = all.filter((i) => i.kind === "objekt");
         const shown = sendsShown.get(row.offerId);
+        const proposer = accepted.get(row.offerId);
         return [
           {
             kind: "trade",
@@ -324,6 +335,11 @@ export const $listNotifications = createServerFn({ method: "GET" })
               row.type === "offer_received" && shown !== undefined
                 ? items.filter((i) => i.sender !== shown).length
                 : 0,
+            payment: tradePayment(all),
+            yourObjekts:
+              proposer === undefined
+                ? 0
+                : items.filter((i) => i.sender === proposer).length,
           },
         ];
       }),

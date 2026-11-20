@@ -70,7 +70,9 @@ export function UnitCounts({
   const amount =
     payment === null
       ? ""
-      : formatAmount(payment.amount * picks.units, payment.currency);
+      : payment.amount === null
+        ? m.listing_payment_your_offer()
+        : formatAmount(payment.amount * picks.units, payment.currency);
   return (
     <span
       className={cn("flex gap-4 font-mono text-xs tabular-nums", className)}

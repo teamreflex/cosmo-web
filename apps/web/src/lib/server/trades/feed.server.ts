@@ -8,6 +8,7 @@ import {
   tradeOffers,
 } from "@apollo/database/web/schema";
 import type {
+  ListingOfferMode,
   PaymentMethod,
   TradeListingWant,
   TradeListingWantOption,
@@ -468,6 +469,7 @@ type StoredParts = {
   id: string;
   paymentSide: TradeSide | null;
   paymentMethods: PaymentMethod[];
+  offers: ListingOfferMode | null;
   items: TradeOfferItem[];
   wants: (TradeListingWant & {
     options: TradeListingWantOption[];
@@ -485,7 +487,10 @@ type StoredParts = {
 export async function hydrateListings<T extends StoredParts>(
   rows: T[],
 ): Promise<{
-  listings: (Omit<T, "items" | "wants" | "paymentSide" | "paymentMethods"> & {
+  listings: (Omit<
+    T,
+    "items" | "wants" | "paymentSide" | "paymentMethods" | "offers"
+  > & {
     items: ListingFeedItem[];
     wants: ListingFeedWant[];
     payment: ListingPayment | null;
@@ -493,7 +498,7 @@ export async function hydrateListings<T extends StoredParts>(
   states: ReadonlyMap<number, TokenState>;
 }> {
   const listings = rows.map(
-    ({ items, wants, paymentSide, paymentMethods, ...rest }) => {
+    ({ items, wants, paymentSide, paymentMethods, offers, ...rest }) => {
       const stored = wants.map((want) => storedWantSchema.parse(want));
       return {
         rest,
@@ -502,7 +507,7 @@ export async function hydrateListings<T extends StoredParts>(
           want.kind === "payment" ? [] : [want],
         ),
         payment: listingPayment(
-          { id: rest.id, paymentSide, paymentMethods },
+          { id: rest.id, paymentSide, paymentMethods, offers },
           stored,
         ),
       };

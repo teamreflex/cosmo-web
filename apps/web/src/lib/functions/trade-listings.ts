@@ -312,9 +312,10 @@ export const $bumpListing = createServerFn({ method: "POST" })
  * from the pool and the tokens they give, one list per want row, as of the
  * listing's `updated_at` they saw. Each claim is its own trade, and claims
  * on one listing run side by side as long as they pick different objekts;
- * a claimer holds one live trade per listing. A listing with a range row
- * takes offers instead (takesOffers): the same request, checked the same
- * way except for the claim cap, sends the poster a pending offer that
+ * a claimer holds one live trade per listing. A listing with a range row,
+ * or an amount the claimer offers for its payment, makes it an offer
+ * instead (claimTerms()): the same request, checked the same way except
+ * for the claim cap, sends the poster a pending offer at that amount that
  * reserves nothing and that they accept or decline, and a claimer holds one
  * live trade or pending offer per listing. Every refusal is an
  * ExpectedError and writes nothing. The order they're checked in is fixed,
@@ -464,6 +465,7 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
           unitSize: true,
           paymentSide: true,
           paymentMethods: true,
+          offers: true,
         },
         extras: listingStateExtras,
         with: {
@@ -539,6 +541,7 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
             fromAddress: row.fromAddress,
             unitSize,
             wants: listing.wants,
+            payment: listing.payment,
             pool: poolItems({ items }).map((item) => item.tokenId),
             free: items.filter((item) => item.availability.kind === "free")
               .length,

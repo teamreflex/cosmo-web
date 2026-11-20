@@ -1,4 +1,4 @@
-import type { TradeSide } from "@apollo/database/web/types";
+import { listingOfferModes, type TradeSide } from "@apollo/database/web/types";
 import { isDistinct } from "@apollo/util";
 import * as z from "zod";
 import type { TradeWant } from "./allocate";
@@ -16,6 +16,7 @@ import {
   currencySchema,
   type ListingPayment,
   paymentMethodsSchema,
+  type PaymentPrice,
 } from "./payment";
 import { pgText, type RangeFilter, rangeKey, rangesSchema } from "./range";
 
@@ -87,8 +88,11 @@ const wantSchema = z.discriminatedUnion("kind", [
       }),
     count: countSchema,
   }),
-  // what the claimer pays for each unit
-  z.strictObject({ kind: z.literal("payment"), amount: amountSchema }),
+  // what the claimer pays for each unit, left out when it only takes offers
+  z.strictObject({
+    kind: z.literal("payment"),
+    amount: amountSchema.optional(),
+  }),
 ]);
 
 const listingFields = {
@@ -108,9 +112,13 @@ const listingFields = {
     .max(MAX_WANT_ROWS, `A listing can have at most ${MAX_WANT_ROWS} rows`),
   // what the poster pays on top of their objekts for each unit
   offeredPayment: amountSchema.optional(),
-  // the currency and methods of the listing's payment, on either side
+  // the currency, methods and offer mode of the listing's payment, on either side
   payment: z
-    .strictObject({ currency: currencySchema, methods: paymentMethodsSchema })
+    .strictObject({
+      currency: currencySchema,
+      methods: paymentMethodsSchema,
+      mode: z.enum(listingOfferModes).default("price_only"),
+    })
     .optional(),
   note: pgText()
     .trim()
@@ -154,14 +162,21 @@ type PaymentFields = {
   wants: readonly z.output<typeof wantSchema>[];
   offeredPayment?: number | undefined;
   payment?:
-    { currency: string; methods: ListingPayment["methods"] } | undefined;
+    | {
+        currency: string;
+        methods: ListingPayment["methods"];
+        mode: PaymentPrice["mode"];
+      }
+    | undefined;
 };
 
 /**
  * Splits a listing's payment out of its want rows. A listing has at most
  * one payment, on one side: a payment row the claimer sends, or
  * `offeredPayment` the poster sends on top of their objekts. A payment
- * needs its currency and methods, and only a payment takes them.
+ * needs its currency and methods, and only a payment takes them. Only the
+ * claimer's payment takes offers, and it has an asking price unless it
+ * only takes offers; the poster's is a fixed price.
  */
 function withPaymentRules<TSchema extends z.ZodType<PaymentFields>>(
   schema: TSchema,
@@ -196,21 +211,49 @@ function withPaymentRules<TSchema extends z.ZodType<PaymentFields>>(
           path: ["payment"],
         });
       }
+      const row = wants.find((want) => want.kind === "payment");
+      if (payment === undefined) return;
+      if (row === undefined) {
+        if (payment.mode !== "price_only") {
+          ctx.addIssue({
+            code: "custom",
+            message: "A payment you add on top has a fixed price",
+            path: ["payment", "mode"],
+          });
+        }
+        return;
+      }
+      if ((row.amount === undefined) !== (payment.mode === "offer_only")) {
+        ctx.addIssue({
+          code: "custom",
+          message:
+            payment.mode === "offer_only"
+              ? "A listing that only takes offers has no asking price"
+              : "Enter an amount",
+          path: ["wants"],
+        });
+      }
     })
     .transform(({ wants, offeredPayment, payment, ...rest }) => {
       const row = wants.find((want) => want.kind === "payment");
-      const amount = row?.amount ?? offeredPayment;
+      const amount = row === undefined ? offeredPayment : row.amount;
+      const price: PaymentPrice | null =
+        payment?.mode === "offer_only"
+          ? { mode: "offer_only", amount: null }
+          : amount === undefined || payment === undefined
+            ? null
+            : { mode: payment.mode, amount };
       return {
         ...rest,
         wants: wants.flatMap((want) => (want.kind === "payment" ? [] : [want])),
         payment:
-          amount === undefined || payment === undefined
+          price === null || payment === undefined
             ? null
             : ({
                 side: row === undefined ? "from" : "to",
-                amount,
                 currency: payment.currency,
                 methods: payment.methods,
+                ...price,
               } satisfies ListingPayment),
       };
     });
@@ -312,15 +355,18 @@ export type EditListingInput = z.output<typeof editListingInputSchema>;
  * Accept: how many units the claim takes, the poster's objekts it picked
  * from the pool (units times the unit size), one token list per objekt want
  * row as the picker showed them (each row's count times the units, none
- * for a sale), and the listing's `updated_at` as the claimer saw it. The row
- * and total caps bound one claim, and the unit cap bounds the payment it
- * records (MAX_PAYMENT_AMOUNT).
+ * for a sale), the payment per unit they offer instead of the asking price
+ * when the listing takes offers on it, and the listing's `updated_at` as
+ * the claimer saw it. The row and total caps bound one claim, and the unit
+ * cap bounds the payment it records (MAX_PAYMENT_AMOUNT).
  */
 export const claimListingInputSchema = z
   .strictObject({
     listingId: listingIdSchema,
     seen: z.date(),
     units: z.int().min(1).max(MAX_OFFERED),
+    // the payment per unit the claimer offers, on a listing that takes offers on it
+    amount: amountSchema.optional(),
     picked: z.array(tokenIdSchema).min(1).max(MAX_OFFERED),
     rows: z
       .array(z.array(tokenIdSchema).min(1).max(MAX_PER_ROW))

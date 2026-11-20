@@ -1,4 +1,5 @@
 import { toUiArtist, type ValidArtist } from "@apollo/cosmo/types/common";
+import type { ListingOfferMode } from "@apollo/database/web/types";
 import { MAX_NOTE_LENGTH } from "@apollo/trades/caps";
 import {
   type ArtistValues,
@@ -109,30 +110,65 @@ export function listingToFormValues(
             ];
         }
       })
-      .concat(
-        payment?.side === "to"
-          ? [{ kind: "payment", amount: toNumeric(payment.amount) }]
-          : [],
-      ),
+      .concat(payment?.side === "to" ? [paymentWant(payment.amount)] : []),
     offeredPayment:
-      payment?.side === "from" ? toNumeric(payment.amount) : undefined,
+      payment?.side === "from" && payment.amount !== null
+        ? toNumeric(payment.amount)
+        : undefined,
     payment:
       payment === null
         ? undefined
-        : { currency: payment.currency, methods: payment.methods },
+        : {
+            currency: payment.currency,
+            methods: payment.methods,
+            mode: payment.mode,
+          },
     note: listing.note ?? "",
   };
 }
 
+// the claimer's payment row, with no amount when the listing only takes offers
+function paymentWant(amount: number | null): ListingFormWant {
+  return amount === null
+    ? { kind: "payment" }
+    : { kind: "payment", amount: toNumeric(amount) };
+}
+
 /**
- * The form's payment amount on either side, as typed: the claimer's row,
- * else the poster's on top, else null without a payment.
+ * The form's payment on either side, as typed: the claimer's row, else the
+ * poster's on top, else null without a payment. The claimer's row has no
+ * amount when the listing only takes offers.
  */
-export function formPaymentAmount(
+export function formPayment(
   values: Pick<ListingFormValues, "wants" | "offeredPayment">,
-) {
+): { amount: string | undefined } | null {
   const row = values.wants.find((want) => want.kind === "payment");
-  return row?.amount ?? values.offeredPayment ?? null;
+  if (row !== undefined) return { amount: row.amount };
+  return values.offeredPayment === undefined
+    ? null
+    : { amount: values.offeredPayment };
+}
+
+// the claimer's payment row amount as the form holds it, and the listing's offer mode
+type ClaimerPaymentTerms = {
+  amount: string | undefined;
+  mode: ListingOfferMode;
+};
+
+/**
+ * The claimer's amount and the listing's offer mode once the amount or
+ * "Open to offers" changes: closed, the amount is a fixed price; open, it
+ * is an asking price, and an empty one leaves no asking price, so the
+ * listing only takes offers.
+ */
+export function claimerPaymentTerms(
+  amount: string,
+  openToOffers: boolean,
+): ClaimerPaymentTerms {
+  if (!openToOffers) return { amount, mode: "price_only" };
+  return amount.trim() === ""
+    ? { amount: undefined, mode: "offer_only" }
+    : { amount, mode: "price_or_offer" };
 }
 
 /**
@@ -178,11 +214,8 @@ export function formValuesToInput(
   mode: ComposerMode,
   rosters: ReadonlyMap<string, readonly string[]>,
 ): ListingSubmission {
-  const amount = payment === null ? undefined : toNumeric(payment.amount);
   const paymentRow: ListingFormWant[] =
-    payment?.side === "to" && amount !== undefined
-      ? [{ kind: "payment", amount }]
-      : [];
+    payment?.side === "to" ? [paymentWant(payment.amount)] : [];
   const terms = {
     ...values,
     wants: [
@@ -196,11 +229,18 @@ export function formValuesToInput(
       ),
       ...paymentRow,
     ],
-    offeredPayment: payment?.side === "from" ? amount : undefined,
+    offeredPayment:
+      payment?.side === "from" && payment.amount !== null
+        ? toNumeric(payment.amount)
+        : undefined,
     payment:
       payment === null
         ? undefined
-        : { currency: payment.currency, methods: payment.methods },
+        : {
+            currency: payment.currency,
+            methods: payment.methods,
+            mode: payment.mode,
+          },
   };
   return mode.kind === "create"
     ? { kind: "create", data: terms }
@@ -299,14 +339,20 @@ function collapseRanges(
 
 /**
  * Why a payment on either side holds Post back: an amount the schema
- * refuses, or no method picked. Null without a payment.
+ * refuses, or no method picked. Null without a payment. A listing that
+ * only takes offers has no amount to check.
  */
 function paymentBlock(
-  amount: string | null,
+  typed: ReturnType<typeof formPayment>,
   payment: ListingFormValues["payment"],
 ) {
-  if (amount === null) return null;
-  if (!amountSchema.safeParse(amount).success) return "payment_amount";
+  if (typed === null) return null;
+  if (
+    typed.amount !== undefined &&
+    !amountSchema.safeParse(typed.amount).success
+  ) {
+    return "payment_amount";
+  }
   return (payment?.methods.length ?? 0) === 0 ? "payment_methods" : null;
 }
 
@@ -350,10 +396,7 @@ export function composerBlock({
   if (offered === 0) return "offered";
   if (refused > 0) return "refused";
   if (wants.length === 0) return "wants";
-  const unpaid = paymentBlock(
-    formPaymentAmount({ wants, offeredPayment }),
-    payment,
-  );
+  const unpaid = paymentBlock(formPayment({ wants, offeredPayment }), payment);
   if (unpaid !== null) return unpaid;
   const rows = wants.flatMap((want) =>
     want.kind === "range" ? [want.ranges] : [],

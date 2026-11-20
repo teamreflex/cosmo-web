@@ -9,6 +9,8 @@ import { usePosterSections } from "@/hooks/use-poster-sections";
 import { m } from "@/i18n/messages";
 import { endedNormally, posterName } from "@/lib/client/trade-listings";
 import {
+  acceptanceOf,
+  acceptCapped,
   type Candidate,
   type ClosedListingState,
   hasRatio,
@@ -18,7 +20,7 @@ import {
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
 import { CLAIM_CAP_CEILING } from "@apollo/trades/caps";
-import { takesOffers } from "@apollo/trades/lifecycle";
+import type { ListingAcceptance } from "@apollo/trades/lifecycle";
 import {
   IconAlertTriangle,
   IconCircleCheck,
@@ -103,16 +105,16 @@ export default function ListingView({
     want,
     trade: toTradeWant(want),
   }));
-  const offers = takesOffers(listing.wants);
+  const acceptance = acceptanceOf(listing);
   const picks = useListingPicks(
     listing,
     role.role === "picker" ? role.viewer : null,
     rows,
-    offers,
+    acceptance,
   );
   const poster = usePosterSections(
     role.role === "poster" ? role : null,
-    offers,
+    acceptance !== "claim",
   );
   /**
    * Edit starts from the listing as it is now, since the drain may have
@@ -133,13 +135,13 @@ export default function ListingView({
         role={role}
         address={address}
         picks={picks}
-        offers={offers}
+        acceptance={acceptance}
         className={className}
         reasonId={describedBy}
         detailId={detailId}
         onDialog={(name) => void openDialog(name)}
-        onAccept={(current) => {
-          setSnapshot(current.freeze());
+        onAccept={(current, offer) => {
+          setSnapshot(current.freeze(offer));
           setDialog("confirm");
         }}
       />
@@ -220,7 +222,6 @@ export default function ListingView({
         <ConfirmTradeDialog
           listing={listing}
           rows={rows}
-          offers={offers}
           snapshot={snapshot}
           onNotice={onNotice}
           onPickTaken={picks.dropOffered}
@@ -361,6 +362,7 @@ function RoleAlert({ listing, role, picks, reasonId, detailId }: AlertProps) {
           expiresAt={role.expiresAt}
           picks={role.picks}
           given={role.given}
+          payment={role.payment}
         />
       );
     case "refused": {
@@ -380,36 +382,17 @@ function RoleAlert({ listing, role, picks, reasonId, detailId }: AlertProps) {
           </Alert>
         );
       }
-      /**
-       * A rating removed since the viewer claimed can leave them holding
-       * more claims than their cap now allows, which the alert then says.
-       * Below the ceiling it adds that feedback raises the cap.
-       */
-      const { active, cap } = role.claims;
-      const finish =
-        active > cap
-          ? m.listing_detail_cap_over_body({ count: active - cap + 1 })
-          : m.listing_detail_cap_body();
       return (
-        <Alert role="status" variant="warning">
-          <IconAlertTriangle />
-          <AlertTitle id={reasonId}>
-            {active > cap
-              ? m.listing_detail_cap_over_title({ active, cap })
-              : m.listing_detail_cap_title({ count: active })}
-          </AlertTitle>
-          <AlertDescription id={detailId}>
-            {cap >= CLAIM_CAP_CEILING
-              ? finish
-              : `${finish} ${m.listing_detail_cap_grows()}`}
-          </AlertDescription>
-        </Alert>
+        <CapAlert claims={role.claims} titleId={reasonId} detailId={detailId} />
       );
     }
     case "picker":
       return (
         picks !== null && (
           <>
+            {acceptCapped(listing, role.viewer) && (
+              <CapAlert claims={role.viewer.claims} titleId={detailId} />
+            )}
             {role.viewer.endedOffer !== null && (
               <EndedOfferAlert
                 listing={listing}
@@ -452,15 +435,16 @@ type ActionsProps = {
   role: ListingRole;
   address: string | undefined;
   picks: Picks | null;
-  /** whether Accept sends an offer, as on a listing with a range row */
-  offers: boolean;
+  /** whether Accept claims, sends an offer, or sits beside Make an offer */
+  acceptance: ListingAcceptance;
   className: string | undefined;
   /** what describes Accept while it's disabled */
   reasonId: string;
   /** what describes a refused Accept further */
   detailId: string;
   onDialog: (dialog: Dialog) => void;
-  onAccept: (picks: Picks) => void;
+  /** `offer` when the viewer sends an offer rather than claiming */
+  onAccept: (picks: Picks, offer: boolean) => void;
 };
 
 /**
@@ -474,7 +458,7 @@ function RoleActions({
   role,
   address,
   picks,
-  offers,
+  acceptance,
   className,
   reasonId,
   detailId,
@@ -535,33 +519,94 @@ function RoleActions({
         </>
       );
     case "picker":
-    case "refused":
+    case "refused": {
+      // at their cap, a claimer on a listing open to offers can still make one
+      const capped =
+        role.role === "picker" && acceptCapped(listing, role.viewer);
       return (
         <>
+          {acceptance === "either" && (
+            <Button
+              variant="outline"
+              className={cn(
+                "data-disabled:pointer-events-none data-disabled:opacity-50",
+                className,
+              )}
+              disabled={picks === null || !picks.valid}
+              focusableWhenDisabled
+              aria-describedby={reasonId}
+              onClick={() => {
+                if (picks !== null) onAccept(picks, true);
+              }}
+            >
+              {m.listing_detail_make_offer()}
+            </Button>
+          )}
           <Button
             className={cn(
               "data-disabled:pointer-events-none data-disabled:opacity-50",
               className,
             )}
-            disabled={picks === null || !picks.valid}
+            disabled={picks === null || !picks.valid || capped}
             focusableWhenDisabled
             aria-describedby={
-              role.role === "refused" ? `${reasonId} ${detailId}` : reasonId
+              role.role === "refused" || capped
+                ? `${reasonId} ${detailId}`
+                : reasonId
             }
             onClick={() => {
-              if (picks !== null) onAccept(picks);
+              if (picks !== null) onAccept(picks, acceptance === "offer");
             }}
           >
-            {offers ? m.listing_detail_send_offer() : m.listing_detail_accept()}
+            {acceptance === "offer"
+              ? m.listing_detail_send_offer()
+              : m.listing_detail_accept()}
           </Button>
           {role.role === "refused" && role.reason === "cap" && (
             <MyTradesButton className={className} />
           )}
         </>
       );
+    }
     default:
       return null;
   }
+}
+
+/**
+ * The viewer's claim cap reached: how many claims they hold against it,
+ * what finishing one does, and below the ceiling that feedback raises it.
+ * A rating removed since the viewer claimed can leave them holding more
+ * claims than their cap now allows, which the alert then says.
+ */
+function CapAlert({
+  claims: { active, cap },
+  titleId,
+  detailId,
+}: {
+  claims: Candidate["claims"];
+  titleId: string;
+  detailId?: string;
+}) {
+  const finish =
+    active > cap
+      ? m.listing_detail_cap_over_body({ count: active - cap + 1 })
+      : m.listing_detail_cap_body();
+  return (
+    <Alert role="status" variant="warning">
+      <IconAlertTriangle />
+      <AlertTitle id={titleId}>
+        {active > cap
+          ? m.listing_detail_cap_over_title({ active, cap })
+          : m.listing_detail_cap_title({ count: active })}
+      </AlertTitle>
+      <AlertDescription id={detailId}>
+        {cap >= CLAIM_CAP_CEILING
+          ? finish
+          : `${finish} ${m.listing_detail_cap_grows()}`}
+      </AlertDescription>
+    </Alert>
+  );
 }
 
 /**
@@ -583,7 +628,13 @@ function PickerBar({
 }) {
   return (
     <>
-      <span className="flex min-w-0 shrink-0 flex-col gap-0.5">
+      {/* beside Make an offer and Accept, the progress takes its own line */}
+      <span
+        className={cn(
+          "flex min-w-0 shrink-0 flex-col gap-0.5",
+          picks.acceptance === "either" && "basis-full",
+        )}
+      >
         <PickProgress picks={picks} />
         {picks.ratio !== null && <UnitCounts picks={picks} className="gap-3" />}
         <span
@@ -654,7 +705,12 @@ function pickReason(picks: Picks, listing: TradeListing) {
       ? m.listing_detail_incomplete_offered({ count: picks.offeredCount })
       : m.listing_detail_incomplete_footer();
   }
-  return picks.takesOffers
-    ? m.listing_detail_offer_hold({ poster: posterName(listing) })
-    : m.listing_detail_hold();
+  switch (picks.acceptance) {
+    case "offer":
+      return m.listing_detail_offer_hold({ poster: posterName(listing) });
+    case "either":
+      return m.listing_detail_either_hold({ poster: posterName(listing) });
+    case "claim":
+      return m.listing_detail_hold();
+  }
 }

@@ -9,6 +9,7 @@ import type {
   ListingPick,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
+import type { ListingAcceptance } from "@apollo/trades/lifecycle";
 import type { ListingPayment } from "@apollo/trades/payment";
 import { IconCircleCheck, IconPlus, IconX } from "@tabler/icons-react";
 import { Fragment, type ReactNode, useState } from "react";
@@ -115,7 +116,7 @@ export default function AllocationPicker({
       )}
 
       <PickerFooter
-        offers={picks.takesOffers}
+        acceptance={picks.acceptance}
         poster={poster}
         payment={
           picks.payment === null
@@ -132,27 +133,30 @@ export default function AllocationPicker({
 /**
  * What accepting does, worded by the viewer's side: objekts sent in the
  * COSMO app, a payment made outside Apollo, or both. On a listing that
- * takes offers, what sending one does.
+ * takes offers, what sending one does, and on one open to offers, that
+ * the viewer can do either.
  */
 function PickerFooter({
-  offers,
+  acceptance,
   poster,
   payment,
 }: {
-  offers: boolean;
+  acceptance: ListingAcceptance;
   poster: string;
   payment: "none" | "only" | "beside";
 }) {
   const appName = env.VITE_APP_NAME;
   return (
     <p className="text-xs leading-relaxed text-muted-foreground">
-      {offers
+      {acceptance === "offer"
         ? m.listing_detail_offer_footer({ poster })
-        : payment === "only"
-          ? m.listing_detail_accept_footer_pay({ poster, appName })
-          : payment === "beside"
-            ? m.listing_detail_accept_footer_with_payment({ appName })
-            : m.listing_detail_accept_footer()}
+        : acceptance === "either"
+          ? m.listing_detail_either_footer({ poster })
+          : payment === "only"
+            ? m.listing_detail_accept_footer_pay({ poster, appName })
+            : payment === "beside"
+              ? m.listing_detail_accept_footer_with_payment({ appName })
+              : m.listing_detail_accept_footer()}
     </p>
   );
 }

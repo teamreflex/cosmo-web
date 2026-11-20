@@ -953,7 +953,8 @@ export const tradeOfferItems = pgTable(
  * What one unit of a listing asks for. Exact rows name a collection and copy
  * its indexer values, range rows hold their ranges in
  * `trade_listing_want_ranges`, choice rows name their collections in
- * `trade_listing_want_options`, and the payment row prices the listing. The
+ * `trade_listing_want_options`, and the payment row prices the listing,
+ * with no amount when the listing only takes offers on it. The
  * trade side is every exact, range and choice row, all required, with each
  * count multiplied by the units a claim takes. A listing's wants are
  * inserted together and replaced together on edit, so id order is the
@@ -991,7 +992,7 @@ export const tradeListingWants = pgTable(
         WHEN 'exact' THEN coalesce(${t.count}, 0) > 0 AND num_nulls(${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}) = 0 AND num_nonnulls(${t.amount}, ${t.currency}) = 0
         WHEN 'range' THEN coalesce(${t.count}, 0) > 0 AND num_nonnulls(${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}, ${t.amount}, ${t.currency}) = 0
         WHEN 'choice' THEN coalesce(${t.count}, 0) > 0 AND num_nonnulls(${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}, ${t.amount}, ${t.currency}) = 0
-        ELSE coalesce(${t.amount}, 0) > 0 AND ${t.currency} IS NOT NULL AND num_nonnulls(${t.count}, ${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}) = 0
+        ELSE coalesce(${t.amount}, 1) > 0 AND ${t.currency} IS NOT NULL AND num_nonnulls(${t.count}, ${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}) = 0
       END`,
     ),
   ],

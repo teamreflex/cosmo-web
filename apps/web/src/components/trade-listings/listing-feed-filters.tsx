@@ -42,7 +42,8 @@ export default function ListingFeedFilters() {
     <>
       <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 max-md:hidden">
         <FilterGroups />
-        <div className="col-start-3 row-span-3 row-start-1">
+        {/* centred on the Offering and Looking for rows, under the Type row */}
+        <div className="col-start-3 row-span-2 row-start-2">
           <ResetFilters count={count} onReset={reset} />
         </div>
       </div>

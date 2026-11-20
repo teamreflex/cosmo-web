@@ -35,6 +35,10 @@ type Props = {
   onPaymentAdded: () => void;
   /** a payment was removed, which may leave the terms unused */
   onPaymentRemoved: () => void;
+  /** the claimer's amount was typed, which may change the offer mode */
+  onPaymentAmount: (amount: string) => void;
+  /** the claimer's payment takes offers, so an empty amount asks for none */
+  openToOffers: boolean;
 };
 
 /**
@@ -51,6 +55,8 @@ export default function ComposerWantRows({
   onCollection,
   onPaymentAdded,
   onPaymentRemoved,
+  onPaymentAmount,
+  openToOffers,
 }: Props) {
   const { control, formState } = form;
   const { fields, append, insert, remove } = useFieldArray({
@@ -112,9 +118,14 @@ export default function ComposerWantRows({
               <ComposerPaymentRow
                 key={field.id}
                 currency={currency}
-                amount={want.amount}
+                amount={want.amount ?? ""}
                 label={m.listing_composer_payment_amount()}
-                onChange={(amount) => setWant(index, { ...want, amount })}
+                placeholder={
+                  openToOffers
+                    ? m.listing_composer_payment_no_price()
+                    : undefined
+                }
+                onChange={onPaymentAmount}
                 onRemove={() => {
                   remove(index);
                   onPaymentRemoved();

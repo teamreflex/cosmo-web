@@ -1,4 +1,5 @@
 import {
+  type ListingOfferMode,
   type ListingStatus,
   type OpenTradeStatus,
   openTradeStatuses,
@@ -9,6 +10,7 @@ import {
   type TradeStatus,
   type TradeWantKind,
 } from "@apollo/database/web/types";
+import type { ListingPayment, TradePayment } from "./payment";
 
 export type TradeItemState =
   | { kind: "objekt"; sender: TradeSide; transferred: boolean }
@@ -482,13 +484,78 @@ export function listingClosing(listing: {
 }
 
 /**
- * Whether a listing takes offers, which its poster accepts or declines,
- * rather than claims that start a trade at once: any range row makes it
- * one, since a range matches many serials and only the poster knows which
- * they meant. Exact and "any of" rows name their collections.
+ * How a listing takes claims and offers:
+ * - `claim`: every claim starts a trade at once;
+ * - `either`: a claim at the asking price starts a trade at once, and an
+ *   offer on another amount waits for the poster;
+ * - `offer`: every claim is an offer the poster accepts or declines. Any
+ *   range row makes a listing one, since a range matches many serials and
+ *   only the poster knows which they meant, and so does a payment with no
+ *   asking price. Exact and "any of" rows name their collections.
  */
-export function takesOffers(wants: readonly { kind: TradeWantKind }[]) {
-  return wants.some((want) => want.kind === "range");
+export type ListingAcceptance = "claim" | "either" | "offer";
+
+export function listingAcceptance(
+  wants: readonly { kind: TradeWantKind }[],
+  mode: ListingOfferMode | null,
+): ListingAcceptance {
+  if (mode === "offer_only" || wants.some((want) => want.kind === "range")) {
+    return "offer";
+  }
+  return mode === "price_or_offer" ? "either" : "claim";
+}
+
+/**
+ * What a claim on a listing starts: a trade at once (`claim`) or an offer,
+ * with the payment it records for each unit, sent by the listing's payment
+ * side, or null when the listing has no payment.
+ */
+export type ClaimTerms = {
+  kind: "claim" | "offer";
+  payment: TradePayment | null;
+};
+
+/**
+ * What a claim on a listing starts (ClaimTerms), from the amount per unit
+ * the claimer proposed, if any. An amount equal to the asking price of a
+ * listing open to offers accepts that price, so it claims at once like no
+ * amount does. Null when the listing can't take what was sent: an amount
+ * on a listing with no payment or a fixed price, or none on a listing
+ * with no asking price.
+ */
+export function claimTerms(
+  listing: {
+    wants: readonly { kind: TradeWantKind }[];
+    payment: ListingPayment | null;
+  },
+  proposed: number | undefined,
+): ClaimTerms | null {
+  const kind = listing.wants.some((want) => want.kind === "range")
+    ? "offer"
+    : "claim";
+  const { payment } = listing;
+  if (payment === null) {
+    return proposed === undefined ? { kind, payment: null } : null;
+  }
+  const at = (amount: number): TradePayment => ({
+    side: payment.side,
+    currency: payment.currency,
+    amount,
+  });
+  switch (payment.mode) {
+    case "price_only":
+      return proposed === undefined
+        ? { kind, payment: at(payment.amount) }
+        : null;
+    case "price_or_offer":
+      return proposed === undefined || proposed === payment.amount
+        ? { kind, payment: at(payment.amount) }
+        : { kind: "offer", payment: at(proposed) };
+    case "offer_only":
+      return proposed === undefined
+        ? null
+        : { kind: "offer", payment: at(proposed) };
+  }
 }
 
 /**

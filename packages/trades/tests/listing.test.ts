@@ -1,4 +1,8 @@
-import type { PaymentMethod, TradeSide } from "@apollo/database/web/types";
+import type {
+  ListingOfferMode,
+  PaymentMethod,
+  TradeSide,
+} from "@apollo/database/web/types";
 import { describe, expect, test } from "bun:test";
 import type * as z from "zod";
 import {
@@ -54,6 +58,8 @@ const slugs = (count: number) =>
 
 const offered = [{ tokenId: 1 }];
 const pay = (amount: string) => ({ kind: "payment" as const, amount });
+// the payment row of a listing that only takes offers, with no asking price
+const askNothing = { kind: "payment" as const };
 const usd = {
   currency: "USD",
   methods: ["paypal_ff", "wise"] satisfies PaymentMethod[],
@@ -284,6 +290,40 @@ const refused = [
     "offeredPayment: A payment can only be on one side",
   ],
   [
+    "an asking price on a listing that only takes offers",
+    { offered, wants: [pay("3")], payment: { ...usd, mode: "offer_only" } },
+    "wants: A listing that only takes offers has no asking price",
+  ],
+  [
+    "no asking price at a fixed price",
+    { offered, wants: [askNothing], payment: usd },
+    "wants: Enter an amount",
+  ],
+  [
+    "no asking price on a listing open to offers",
+    {
+      offered,
+      wants: [askNothing],
+      payment: { ...usd, mode: "price_or_offer" },
+    },
+    "wants: Enter an amount",
+  ],
+  [
+    "the poster's payment open to offers",
+    {
+      offered,
+      wants,
+      offeredPayment: "2",
+      payment: { ...usd, mode: "price_or_offer" },
+    },
+    "payment.mode: A payment you add on top has a fixed price",
+  ],
+  [
+    "an offer mode outside the list",
+    { offered, wants: [pay("3")], payment: { ...usd, mode: "auction" } },
+    "payment.mode: *",
+  ],
+  [
     "a whitespace slug (SCH-17)",
     { offered, wants: [exact("   ")] },
     "wants.0.slug: *",
@@ -400,9 +440,14 @@ const accepted: [
       | ReturnType<typeof range>
       | ReturnType<typeof choice>
       | ReturnType<typeof pay>
+      | typeof askNothing
     )[];
     offeredPayment?: string;
-    payment?: { currency: string; methods: PaymentMethod[] };
+    payment?: {
+      currency: string;
+      methods: PaymentMethod[];
+      mode?: ListingOfferMode;
+    };
     note?: string | null;
   },
   output: Omit<ListingInput, "unitSize" | "payment"> &
@@ -594,7 +639,53 @@ const accepted: [
       offered: tokens(3),
       unitSize: 1,
       wants: [],
-      payment: { side: "to", amount: 300, ...usd },
+      payment: { side: "to", mode: "price_only", amount: 300, ...usd },
+      note: null,
+    },
+  ],
+  [
+    "a sale open to offers",
+    {
+      offered: tokens(3),
+      unitSize: 1,
+      wants: [pay("3")],
+      payment: { ...usd, mode: "price_or_offer" },
+    },
+    {
+      offered: tokens(3),
+      unitSize: 1,
+      wants: [],
+      payment: { side: "to", mode: "price_or_offer", amount: 300, ...usd },
+      note: null,
+    },
+  ],
+  [
+    "a sale that only takes offers, with no asking price",
+    {
+      offered: tokens(3),
+      unitSize: 1,
+      wants: [askNothing],
+      payment: { ...usd, mode: "offer_only" },
+    },
+    {
+      offered: tokens(3),
+      unitSize: 1,
+      wants: [],
+      payment: { side: "to", mode: "offer_only", amount: null, ...usd },
+      note: null,
+    },
+  ],
+  [
+    "objekt rows beside a payment that only takes offers",
+    {
+      offered,
+      wants: [exact(KIMLIP), askNothing],
+      payment: { ...usd, mode: "offer_only" },
+    },
+    {
+      offered,
+      wants: [exact(KIMLIP)],
+      payment: { side: "to", mode: "offer_only", amount: null, ...usd },
       note: null,
     },
   ],
@@ -604,7 +695,12 @@ const accepted: [
     {
       offered,
       wants: [exact(KIMLIP)],
-      payment: { side: "to", amount: MAX_PAYMENT_AMOUNT, ...usd },
+      payment: {
+        side: "to",
+        mode: "price_only",
+        amount: MAX_PAYMENT_AMOUNT,
+        ...usd,
+      },
       note: null,
     },
   ],
@@ -621,6 +717,7 @@ const accepted: [
       wants,
       payment: {
         side: "from",
+        mode: "price_only",
         amount: 250,
         currency: "KRW",
         methods: ["other"],
@@ -678,6 +775,25 @@ describe("claimListingInputSchema", () => {
     expect(
       claimListingInputSchema.safeParse({ ...claim, rows: [] }).success,
     ).toBe(true);
+  });
+
+  test("takes an offered amount per unit in minor units", () => {
+    expect(
+      claimListingInputSchema.safeParse({ ...claim, rows: [], amount: "2.5" }),
+    ).toMatchObject({ success: true, data: { amount: 250 } });
+  });
+
+  test.each([
+    ["an offered amount of 0", "0"],
+    ["a negative offered amount", "-2.50"],
+    ["an offered amount with three decimals", "2.501"],
+    ["an offered amount past MAX_PAYMENT_AMOUNT", "100000000.00"],
+    ["an offered amount in exponent notation", "1e3"],
+  ])("refuses %s", (_, amount) => {
+    expectIssue(
+      claimListingInputSchema.safeParse({ ...claim, rows: [], amount }),
+      "amount: *",
+    );
   });
 
   test("bounds a payment's total to numeric(14,2)", () => {

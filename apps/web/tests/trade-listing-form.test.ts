@@ -1,4 +1,7 @@
-import type { PaymentMethod } from "@apollo/database/web/types";
+import type {
+  ListingOfferMode,
+  PaymentMethod,
+} from "@apollo/database/web/types";
 import type { ArtistValues } from "@apollo/trades/composer";
 import {
   editListingInputSchema,
@@ -8,6 +11,7 @@ import { MAX_RANGE_VALUES } from "@apollo/trades/range";
 import { describe, expect, test } from "bun:test";
 import {
   applyChipUpdate,
+  claimerPaymentTerms,
   composerBlock,
   emptyListingForm,
   followUnitSize,
@@ -416,6 +420,7 @@ describe("payments in the composer", () => {
     wants: [],
     payment: {
       side: "to",
+      mode: "price_only",
       amount: 300,
       currency: "USD",
       methods: ["paypal_ff", "wise"],
@@ -431,6 +436,7 @@ describe("payments in the composer", () => {
     expect(values.payment).toEqual({
       currency: "USD",
       methods: ["paypal_ff", "wise"],
+      mode: "price_only",
     });
     const submission = formValuesToInput(
       listingInputSchema.parse(values),
@@ -444,6 +450,45 @@ describe("payments in the composer", () => {
     expect(editListingInputSchema.parse(submission.data).payment).toEqual(
       sale.payment,
     );
+  });
+
+  test("a sale that only takes offers keeps no asking price through an edit", () => {
+    const offerOnly = {
+      ...sale,
+      payment: {
+        ...sale.payment,
+        mode: "offer_only",
+        amount: null,
+      },
+    } satisfies Pick<
+      TradeListing,
+      "id" | "items" | "wants" | "payment" | "note" | "unitSize"
+    >;
+    const values = listingToFormValues(offerOnly);
+    expect(values.wants).toEqual([{ kind: "payment" }]);
+    const submission = formValuesToInput(
+      listingInputSchema.parse(values),
+      { kind: "edit", listing: { ...offerOnly, ...fillers } },
+      rosters,
+    );
+    expect(editListingInputSchema.parse(submission.data).payment).toEqual(
+      offerOnly.payment,
+    );
+  });
+
+  test.each([
+    ["a fixed price keeps its amount", "3", false, "3", "price_only"],
+    ["a fixed price keeps an empty amount", "", false, "", "price_only"],
+    ["open to offers with a price", "3", true, "3", "price_or_offer"],
+    ["open to offers with no price", " ", true, undefined, "offer_only"],
+  ] satisfies [
+    string,
+    string,
+    boolean,
+    string | undefined,
+    ListingOfferMode,
+  ][])("%s", (_, typed, open, amount, mode) => {
+    expect(claimerPaymentTerms(typed, open)).toEqual({ amount, mode });
   });
 
   test("the poster's payment on top prefills as offeredPayment", () => {
@@ -460,7 +505,9 @@ describe("payments in the composer", () => {
     ["an empty amount", "", ["wise"], "payment_amount"],
     ["no methods", "3", [], "payment_methods"],
     ["a set payment", "3", ["wise"], null],
-  ] satisfies [string, string, PaymentMethod[], string | null][])(
+    ["no asking price, which only takes offers", undefined, ["wise"], null],
+    ["no asking price and no methods", undefined, [], "payment_methods"],
+  ] satisfies [string, string | undefined, PaymentMethod[], string | null][])(
     "%s holds Post back as it should",
     (_, amount, methods, expected) => {
       expect(

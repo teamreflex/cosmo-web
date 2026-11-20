@@ -1,6 +1,10 @@
 import { m } from "@/i18n/messages";
 import { formatOfferRefusal } from "@/lib/client/errors/trades";
-import { partyName, ratioText } from "@/lib/client/trade-listings";
+import {
+  formatAmount,
+  partyName,
+  ratioText,
+} from "@/lib/client/trade-listings";
 import {
   isLiveTrade,
   type ListingFeedItem,
@@ -10,6 +14,7 @@ import {
   type PosterTab,
   posterTabs,
 } from "@/lib/universal/trade-listings";
+import type { TradePayment } from "@apollo/trades/payment";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import {
   IconAlertTriangle,
@@ -176,9 +181,10 @@ function OfferCard({
             <FeedbackBadge variant="full" rep={claimer.rep} narrow />
           )}
           <Badge variant="secondary" className="font-mono tabular-nums">
-            {m.market_listings_ratio({
+            {ratioText({
               give: offer.picks.length,
               get: offer.given.length,
+              payment: offer.payment,
             })}
           </Badge>
         </>
@@ -230,12 +236,14 @@ function OfferCard({
           tone="want"
           title={m.listing_poster_offer_they_send()}
           items={offer.given}
+          payment={offer.payment?.side === "to" ? offer.payment : null}
           dimmed={refusedToken}
         />
         <OfferSide
           tone="have"
           title={m.listing_poster_offer_you_send()}
           items={offer.picks}
+          payment={offer.payment?.side === "from" ? offer.payment : null}
           dimmed={refusedToken}
         />
       </div>
@@ -253,24 +261,37 @@ function OfferCard({
 
 /**
  * One side of an offer under its label: "They send" in the want colour,
- * "You send" in the have colour, each objekt with its serial.
+ * "You send" in the have colour, each objekt with its serial, and the
+ * payment that side sends for every unit, in its own currency.
  */
 function OfferSide({
   tone,
   title,
   items,
+  payment,
   dimmed,
 }: {
   tone: "have" | "want";
   title: string;
   items: ListingFeedItem[];
+  payment: TradePayment | null;
   /** the objekt the offer's refusal names */
   dimmed: number | null;
 }) {
   return (
     <div className="flex min-w-0 flex-col gap-2">
       <Eyebrow tone={tone}>{title}</Eyebrow>
-      <ObjektStrip items={items} captions dimmed={dimmed} />
+      {items.length > 0 && (
+        <ObjektStrip items={items} captions dimmed={dimmed} />
+      )}
+      {payment !== null && (
+        <p className="flex items-center gap-2 text-sm">
+          <Badge variant="outline">{m.listing_detail_kind_payment()}</Badge>
+          <span className="font-mono font-semibold tabular-nums">
+            {formatAmount(payment.amount, payment.currency)}
+          </span>
+        </p>
+      )}
     </div>
   );
 }

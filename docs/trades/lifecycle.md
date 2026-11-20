@@ -6,7 +6,7 @@
 
 | Status                                                   | Reached by                                                                                                         |
 | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `pending`                                                | a direct offer, a counter, an offer on a range listing ([offers.md](offers.md))                                    |
+| `pending`                                                | a direct offer, a counter, an offer on a listing ([offers.md](offers.md))                                          |
 | `accepted`                                               | a claim, an accepted offer, a staff extend                                                                         |
 | `completed`                                              | every item done: a token's arrival (drain) or a payment's confirmation, a staff complete, a staff extend           |
 | `cancelled`                                              | a party while nothing is sent (`cancelled_by` names them), or staff                                                |

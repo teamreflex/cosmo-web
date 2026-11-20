@@ -74,6 +74,35 @@ export function formatAmount(amount: number, currency: string) {
 }
 
 /**
+ * A listing's payment as one phrase in its own currency: its price for
+ * `units` units, "$3.00", the price and that it takes offers, "$3.00 ·
+ * open to offers", or "Make an offer" when it has no asking price.
+ */
+export function askingPriceText(
+  payment: Pick<ListingPayment, "mode" | "amount" | "currency">,
+  units = 1,
+) {
+  if (payment.amount === null) return m.listing_payment_offer_only();
+  const price = formatAmount(payment.amount * units, payment.currency);
+  return payment.mode === "price_or_offer"
+    ? m.listing_payment_open_to_offers({ price })
+    : price;
+}
+
+/**
+ * One side of an offer's terms: its objekt count, "$2.50" for a payment
+ * alone, or "1 + $2.50".
+ */
+export function offerSideText(
+  count: number,
+  payment: { amount: number; currency: string } | null,
+) {
+  if (payment === null) return m.offer_terms_count({ count });
+  const amount = formatAmount(payment.amount, payment.currency);
+  return count === 0 ? amount : m.offer_terms_with_payment({ count, amount });
+}
+
+/**
  * A payment method's name, "PayPal F&F".
  */
 export function paymentMethodLabel(method: PaymentMethod) {
@@ -459,7 +488,10 @@ export function listingRatio(
 export function ratioSides({ give, get, payment }: TradeRatio) {
   const side = (count: number, sender: TradeSide) => {
     if (payment === null || payment.side !== sender) return String(count);
-    const price = formatAmount(payment.amount, payment.currency);
+    const price =
+      payment.amount === null
+        ? m.listing_payment_offer()
+        : formatAmount(payment.amount, payment.currency);
     return count === 0 ? price : `${count} + ${price}`;
   };
   return { give: side(give, "from"), get: side(get, "to") };

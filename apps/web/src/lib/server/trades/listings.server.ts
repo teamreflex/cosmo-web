@@ -310,8 +310,7 @@ export async function checkTerms(
 
 /**
  * The listing row's payment columns: who sends the payment, the methods it
- * may arrive by and its offer mode, which is a fixed price. All empty
- * without a payment.
+ * may arrive by and its offer mode. All empty without a payment.
  */
 export function paymentColumns(
   payment: ListingPayment | null,
@@ -324,7 +323,7 @@ export function paymentColumns(
     : {
         paymentSide: payment.side,
         paymentMethods: payment.methods,
-        offers: "price_only",
+        offers: payment.mode,
       };
 }
 
@@ -412,7 +411,8 @@ export async function insertTerms(
     await tx.insert(tradeListingWants).values({
       listingId,
       kind: "payment",
-      amount: toNumeric(terms.payment.amount),
+      amount:
+        terms.payment.amount === null ? null : toNumeric(terms.payment.amount),
       currency: terms.payment.currency,
     });
   }

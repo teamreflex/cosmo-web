@@ -5,6 +5,7 @@ import { formatError } from "@/lib/client/errors";
 import { type ClaimFailure, claimFailure } from "@/lib/client/errors/trades";
 import { getObjektFrontImageUrl } from "@/lib/client/objekt-util";
 import {
+  formatAmount,
   objektName,
   pickShown,
   posterName,
@@ -21,7 +22,9 @@ import {
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
 import type { TradeSide } from "@apollo/database/web/types";
-import { CLAIM_WINDOW } from "@apollo/trades/timers";
+import { type ClaimTerms, claimTerms } from "@apollo/trades/lifecycle";
+import { amountSchema, type ListingPayment } from "@apollo/trades/payment";
+import { CLAIM_WINDOW, OFFER_WINDOW } from "@apollo/trades/timers";
 import { formatSerial } from "@apollo/util";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import {
@@ -32,7 +35,7 @@ import {
 } from "@tabler/icons-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
-import { type ReactNode, useRef, useState } from "react";
+import { type ReactNode, useId, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import { Button } from "../ui/button";
@@ -43,6 +46,8 @@ import {
   DialogDescription,
   DialogTitle,
 } from "../ui/dialog";
+import { Input } from "../ui/input";
+import { Label } from "../ui/label";
 import { Spinner } from "../ui/spinner";
 import { Timestamp } from "../ui/timestamp";
 import type { Notice } from "./listing-status";
@@ -53,8 +58,6 @@ import { PaymentLabel } from "./want-label";
 type Props = {
   listing: TradeListing;
   rows: PickerRow[];
-  /** whether it sends an offer, as on a listing with a range row */
-  offers: boolean;
   snapshot: ConfirmSnapshot | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -76,13 +79,15 @@ type Shown = {
 /**
  * Confirms a claim, or an offer on a listing that takes them, on exactly
  * the picks Accept froze, sent against the listing version they were made
- * on. A changed listing, a taken pick or an unusable serial answers here,
- * and closing after one refetches what it made stale.
+ * on. An offer on a listing whose payment takes offers names the amount
+ * the claimer offers per trade; one at an open-to-offers listing's asking
+ * price accepts it at once (claimTerms()), and the dialog says so. A
+ * changed listing, a taken pick or an unusable serial answers here, and
+ * closing after one refetches what it made stale.
  */
 export default function ConfirmTradeDialog({
   listing,
   rows,
-  offers,
   snapshot,
   open,
   onOpenChange,
@@ -95,6 +100,8 @@ export default function ConfirmTradeDialog({
   const [failure, setFailure] = useState<ClaimFailure | null>(null);
   const confirming = useRef(false);
   const poster = posterName(listing);
+  const { amount, setAmount, proposing, hint, sent, ready, offers, endsAt } =
+    useOfferTerms(listing, snapshot);
 
   const claim = useMutation({
     mutationFn: (frozen: ConfirmSnapshot) =>
@@ -105,6 +112,7 @@ export default function ConfirmTradeDialog({
           units: frozen.units,
           picked: frozen.offered,
           rows: frozen.picked.map((picks) => picks.map((pick) => pick.tokenId)),
+          amount: sent,
         },
       }),
     onSuccess: async ({ tradeId, pending }) => {
@@ -172,6 +180,7 @@ export default function ConfirmTradeDialog({
       onOpenChangeComplete={(next) => {
         if (!next) {
           setFailure(null);
+          setAmount("");
           claim.reset();
         }
       }}
@@ -230,10 +239,13 @@ export default function ConfirmTradeDialog({
                     tokens={give[index] ?? []}
                   />
                 ))}
-                <PaymentGroup
+                <ClaimerPayment
                   listing={listing}
-                  sender="to"
                   units={snapshot?.units ?? 1}
+                  proposing={proposing}
+                  amount={amount}
+                  hint={hint}
+                  onAmount={setAmount}
                 />
               </section>
 
@@ -249,26 +261,24 @@ export default function ConfirmTradeDialog({
                 />
               </section>
 
-              {snapshot !== null &&
-                (offers ? (
-                  <OfferSteps poster={poster} expiresAt={snapshot.endsAt} />
-                ) : (
-                  <ClaimDeadline
-                    poster={poster}
-                    pays={rows.length === 0}
-                    endsAt={snapshot.endsAt}
-                  />
-                ))}
+              {endsAt !== null && (
+                <WhatHappens
+                  offers={offers}
+                  poster={poster}
+                  pays={rows.length === 0}
+                  endsAt={endsAt}
+                />
+              )}
             </div>
 
             <footer className="flex shrink-0 flex-col gap-2 border-t border-border bg-muted/30 px-5 py-3">
-              {snapshot !== null && !offers && (
+              {endsAt !== null && !offers && (
                 <p className="text-xs text-muted-foreground sm:hidden">
                   <ParaglideMessage
                     message={m.listing_confirm_deadline_short}
                     inputs={{ date: "" }}
                     markup={{
-                      time: () => <Deadline deadlineAt={snapshot.endsAt} />,
+                      time: () => <Deadline deadlineAt={endsAt} />,
                     }}
                   />
                 </p>
@@ -284,7 +294,7 @@ export default function ConfirmTradeDialog({
                 </Button>
                 <Button
                   className="relative px-4 max-sm:h-11 max-sm:flex-1"
-                  disabled={claim.isPending || snapshot === null}
+                  disabled={claim.isPending || !ready}
                   onClick={() => {
                     if (snapshot === null || confirming.current) return;
                     confirming.current = true;
@@ -327,6 +337,93 @@ export default function ConfirmTradeDialog({
 }
 
 /**
+ * What confirming sends: on an offer whose listing takes offers on its
+ * payment, the amount the claimer types (`proposing`), an empty one
+ * meaning the asking price on a listing with a range row, and from it whether this
+ * claims or sends an offer (claimTerms()), with when the trade's deadline or the offer's expiry would
+ * fall, counted from when the picks were frozen.
+ */
+function useOfferTerms(
+  listing: TradeListing,
+  snapshot: ConfirmSnapshot | null,
+) {
+  const [amount, setAmount] = useState("");
+  const proposing =
+    snapshot?.offer === true &&
+    listing.payment?.side === "to" &&
+    listing.payment.mode !== "price_only";
+  /**
+   * With a range row an empty field offers the asking price, as the server
+   * reads no amount; without one Accept already claims at that price, so
+   * an offer needs an amount.
+   */
+  const empty =
+    amount.trim() === "" &&
+    listing.payment !== null &&
+    listing.payment.amount !== null &&
+    listing.wants.some((want) => want.kind === "range");
+  const proposed = proposing && !empty ? amountSchema.safeParse(amount) : null;
+  const terms =
+    proposed?.success === false ? null : claimTerms(listing, proposed?.data);
+  const offers =
+    terms === null ? snapshot?.offer === true : terms.kind === "offer";
+  return {
+    amount,
+    setAmount,
+    proposing,
+    hint: offerHint(listing, { typed: !empty, terms }),
+    // the amount sent, once it reads
+    sent: proposed?.success === true ? amount.trim() : undefined,
+    // there are picks to send, and an amount that reads when one is asked for
+    ready: snapshot !== null && terms !== null,
+    offers,
+    endsAt:
+      snapshot === null
+        ? null
+        : new Date(
+            snapshot.frozenAt.getTime() +
+              (offers ? OFFER_WINDOW : CLAIM_WINDOW),
+          ),
+  };
+}
+
+/**
+ * What the offer's amount field says under it: the listing has no asking
+ * price (`open`); it has a range row, so an empty field offers the asking
+ * price (`range`); the amount typed is the asking price, which accepts it
+ * (`at_asking`); or the asking price to offer against (`asking`).
+ */
+type OfferHint = "open" | "range" | "at_asking" | "asking";
+
+function offerHint(
+  listing: TradeListing,
+  amount: { typed: boolean; terms: ClaimTerms | null },
+): OfferHint {
+  if (listing.payment?.amount === null) return "open";
+  if (listing.wants.some((want) => want.kind === "range")) return "range";
+  return amount.typed && amount.terms?.kind === "claim"
+    ? "at_asking"
+    : "asking";
+}
+
+function offerHintText(hint: OfferHint, payment: ListingPayment) {
+  const price =
+    payment.amount === null
+      ? ""
+      : formatAmount(payment.amount, payment.currency);
+  switch (hint) {
+    case "open":
+      return m.listing_offer_amount_hint_open();
+    case "range":
+      return m.listing_offer_amount_hint_range({ price });
+    case "at_asking":
+      return m.listing_offer_amount_at_asking();
+    case "asking":
+      return m.listing_offer_amount_hint({ price });
+  }
+}
+
+/**
  * What the claim's toast says: the offer was sent, or the trade started,
  * with what the claimer does next, paying for a sale.
  */
@@ -335,6 +432,27 @@ function claimedToast(pending: boolean, pays: boolean, poster: string) {
   return pays
     ? m.listing_detail_accepted_pay({ poster, appName: env.VITE_APP_NAME })
     : m.listing_detail_accepted();
+}
+
+/**
+ * What confirming starts: the offer's steps, or the claim's deadline.
+ */
+function WhatHappens({
+  offers,
+  poster,
+  pays,
+  endsAt,
+}: {
+  offers: boolean;
+  poster: string;
+  pays: boolean;
+  endsAt: Date;
+}) {
+  return offers ? (
+    <OfferSteps poster={poster} expiresAt={endsAt} />
+  ) : (
+    <ClaimDeadline poster={poster} pays={pays} endsAt={endsAt} />
+  );
 }
 
 /**
@@ -476,6 +594,94 @@ function PaymentGroup({
         <PaymentLabel payment={listing.payment} units={units} />
       </div>
     )
+  );
+}
+
+/**
+ * What the claimer pays: the amount they offer when the listing takes
+ * offers on its payment, else the listing's payment, if they send it.
+ */
+function ClaimerPayment({
+  listing,
+  units,
+  proposing,
+  amount,
+  hint,
+  onAmount,
+}: {
+  listing: TradeListing;
+  units: number;
+  proposing: boolean;
+  amount: string;
+  hint: OfferHint;
+  onAmount: (amount: string) => void;
+}) {
+  return proposing && listing.payment !== null ? (
+    <OfferAmount
+      payment={listing.payment}
+      units={units}
+      amount={amount}
+      hint={hint}
+      onChange={onAmount}
+    />
+  ) : (
+    <PaymentGroup listing={listing} sender="to" units={units} />
+  );
+}
+
+/**
+ * The amount the claimer offers for each trade, in the listing's currency,
+ * beside the asking price when there is one, with the total for every unit
+ * the offer takes. An amount at the asking price accepts it instead.
+ */
+function OfferAmount({
+  payment,
+  units,
+  amount,
+  hint,
+  onChange,
+}: {
+  payment: ListingPayment;
+  units: number;
+  amount: string;
+  hint: OfferHint;
+  onChange: (amount: string) => void;
+}) {
+  const id = useId();
+  const parsed = amountSchema.safeParse(amount);
+  return (
+    <div className="flex flex-col gap-2 rounded-lg border border-border bg-card px-3 py-2.5 text-sm">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <Label htmlFor={id}>{m.listing_offer_amount()}</Label>
+        <span className="flex items-center gap-2">
+          <span className="font-mono text-sm text-muted-foreground">
+            {payment.currency}
+          </span>
+          <Input
+            id={id}
+            inputMode="decimal"
+            autoComplete="off"
+            placeholder="0.00"
+            value={amount}
+            onChange={(event) => onChange(event.target.value)}
+            className="h-9 w-28 font-mono font-bold tabular-nums"
+          />
+        </span>
+        {units > 1 && (
+          <span className="text-muted-foreground">
+            {parsed.success
+              ? m.listing_detail_payment_units({
+                  amount: formatAmount(parsed.data, payment.currency),
+                  count: units,
+                })
+              : m.listing_detail_payment_each()}
+          </span>
+        )}
+      </div>
+      <p className="text-xs text-muted-foreground">
+        {offerHintText(hint, payment)}
+      </p>
+    </div>
   );
 }
 

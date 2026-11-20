@@ -1,4 +1,5 @@
 import { MAX_PER_ROW, MAX_TOTAL_WANTED } from "./caps";
+import type { ListingPayment, TradePayment } from "./payment";
 import {
   type IndexedAttributes,
   matchesRanges,
@@ -167,17 +168,15 @@ export function unitsOf(picked: number, unitSize: number) {
 
 /**
  * Whether the tokens fill the wants exactly: every want gets its count and
- * every token, each one once, goes to a want. No wants are never filled,
- * since a listing always asks for something. An offer on a listing doesn't
- * store which row each of its tokens was for, so accepting it allocates them
- * afresh.
+ * every token, each one once, goes to a want. A sale asks for no objekts,
+ * so only no tokens fill it. An offer on a listing doesn't store which row
+ * each of its tokens was for, so accepting it allocates them afresh.
  */
 export function fillsExactly(
   wants: readonly TradeWant[],
   tokens: readonly InventoryObjekt[],
 ) {
   return (
-    wants.length > 0 &&
     new Set(tokens.map((token) => token.tokenId)).size === tokens.length &&
     wants.reduce((sum, want) => sum + want.count, 0) === tokens.length &&
     isFullyAllocated(allocate(wants, tokens))
@@ -196,17 +195,23 @@ export type OfferedToken =
  * Why an offer on a listing no longer fits the listing as it is now, or
  * null when it does, which accepting it requires: every pick is still in
  * the pool, the picks make a whole number of units of the current unit
- * size (unitsOf), and the claimer's tokens fill the current want rows
- * scaled to those units exactly (fillsExactly), else the terms changed. A
- * claimer token the indexer doesn't know is the claimer's to answer for,
- * so it is named rather than read as the terms changing.
+ * size (unitsOf), the claimer's tokens fill the current want rows scaled
+ * to those units exactly (fillsExactly), and its payment fits the
+ * listing's (paymentFits), else the terms changed. A claimer token the
+ * indexer doesn't know is the claimer's to answer for, so it is named
+ * rather than read as the terms changing.
  */
 export function listingOfferRefusal(
-  offer: { picks: readonly number[]; given: readonly OfferedToken[] },
+  offer: {
+    picks: readonly number[];
+    given: readonly OfferedToken[];
+    payment: TradePayment | null;
+  },
   listing: {
     pool: ReadonlySet<number>;
     unitSize: number;
     wants: readonly TradeWant[];
+    payment: ListingPayment | null;
   },
 ):
   | { reason: "terms_changed" }
@@ -215,7 +220,8 @@ export function listingOfferRefusal(
   const units = unitsOf(offer.picks.length, listing.unitSize);
   if (
     units === null ||
-    !offer.picks.every((tokenId) => listing.pool.has(tokenId))
+    !offer.picks.every((tokenId) => listing.pool.has(tokenId)) ||
+    !paymentFits(offer.payment, listing.payment, units)
   ) {
     return { reason: "terms_changed" };
   }
@@ -227,4 +233,23 @@ export function listingOfferRefusal(
   )
     ? null
     : { reason: "terms_changed" };
+}
+
+/**
+ * Whether an offer's payment, for every unit it takes, fits the listing's:
+ * both have one or neither does, sent by the same side in the same
+ * currency, and at a fixed price it is that price for every unit. A
+ * listing that takes offers on its payment takes any amount.
+ */
+export function paymentFits(
+  offer: TradePayment | null,
+  listing: ListingPayment | null,
+  units: number,
+) {
+  if (offer === null || listing === null) return offer === listing;
+  return (
+    offer.side === listing.side &&
+    offer.currency === listing.currency &&
+    (listing.mode !== "price_only" || offer.amount === listing.amount * units)
+  );
 }

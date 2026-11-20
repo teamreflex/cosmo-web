@@ -1,5 +1,6 @@
 import { m } from "@/i18n/messages";
 import {
+  askingPriceText,
   formatAmount,
   objektName,
   paymentMethodsText,
@@ -44,8 +45,9 @@ export default function WantLabel({ want }: Props) {
 
 /**
  * A listing's payment behind its badge, in its own currency: what one
- * trade pays, or with `units` what this many units pay in all, over the
- * methods it may arrive by.
+ * trade pays, or with `units` what this many units pay in all, and whether
+ * it takes offers, over the methods it may arrive by. A payment with no
+ * asking price reads "Make an offer".
  */
 export function PaymentLabel({
   payment,
@@ -60,17 +62,27 @@ export function PaymentLabel({
         <Badge variant="outline" className="me-2 align-middle">
           {m.listing_detail_kind_payment()}
         </Badge>
-        <span className="font-mono font-semibold tabular-nums">
-          {formatAmount(payment.amount * units, payment.currency)}
-        </span>
-        <span className="ms-1.5 text-muted-foreground">
-          {units === 1
-            ? m.listing_detail_payment_each()
-            : m.listing_detail_payment_units({
-                amount: formatAmount(payment.amount, payment.currency),
-                count: units,
-              })}
-        </span>
+        {payment.amount === null ? (
+          <span className="font-semibold">
+            {m.listing_payment_offer_only()}
+          </span>
+        ) : (
+          <>
+            <span className="font-mono font-semibold tabular-nums">
+              {formatAmount(payment.amount * units, payment.currency)}
+            </span>
+            <span className="ms-1.5 text-muted-foreground">
+              {units === 1
+                ? m.listing_detail_payment_each()
+                : m.listing_detail_payment_units({
+                    amount: formatAmount(payment.amount, payment.currency),
+                    count: units,
+                  })}
+              {payment.mode === "price_or_offer" &&
+                ` · ${m.listing_payment_open_to_offers_tag()}`}
+            </span>
+          </>
+        )}
       </span>
       <span className="text-xs text-muted-foreground">
         {(payment.side === "to"
@@ -130,7 +142,7 @@ export function WantList({
           // a sale asks for its price alone
           count:
             wants.length === 0 && paid !== null
-              ? formatAmount(paid.amount, paid.currency)
+              ? askingPriceText(paid)
               : wantedObjektCount(wants),
         })}
         summary={summary}

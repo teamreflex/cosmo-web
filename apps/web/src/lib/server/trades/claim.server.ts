@@ -8,8 +8,9 @@ import { validateAssignment } from "@apollo/trades/assignment";
 import { claimCap } from "@apollo/trades/caps";
 import { firstRefusal } from "@apollo/trades/holdings";
 import {
+  type ClaimTerms,
+  claimTerms,
   listingUnitSize,
-  takesOffers,
   tradeListings,
 } from "@apollo/trades/lifecycle";
 import type { ClaimListingInput } from "@apollo/trades/listing";
@@ -31,6 +32,7 @@ import {
   storedObjektItemSchema,
   type StoredWant,
   storedWantSchema,
+  tradePayment,
   tradeWants,
 } from "../../universal/trade-listings";
 import { db, type DbOrTx, type WebTx } from "../db";
@@ -107,8 +109,8 @@ type Preflight = {
   // the indexer's state of the picks and the claimer's tokens
   states: ReadonlyMap<number, TokenState>;
   submitted: number[];
-  // the listing takes offers, so this sends one rather than claiming
-  offer: boolean;
+  // a claim or an offer, and the payment per unit it records
+  terms: ClaimTerms;
 };
 
 /**
@@ -118,9 +120,11 @@ type Preflight = {
  * `units` units of the pool, each one the poster can give now. Assignment
  * is checked against the want rows scaled to the units, on every submitted
  * token's indexer values whoever owns it, so a misfit row is refused the
- * same way however the tokens are held. A listing with a range row takes
- * offers (takesOffers), decided from its rows as read here, which the
- * lock's `updated_at` guard holds to; sending one runs these same checks.
+ * same way however the tokens are held. Whether it claims or sends an
+ * offer, and at what payment (claimTerms()), is decided from the rows and
+ * payment as read here, which the lock's `updated_at` guard holds to; an
+ * amount the listing doesn't take is refused with the picks. Sending an
+ * offer runs these same checks.
  */
 export async function preflightClaim(
   actor: ListingActor,
@@ -137,6 +141,7 @@ export async function preflightClaim(
       updatedAt: true,
       paymentSide: true,
       paymentMethods: true,
+      offers: true,
     },
     with: {
       items: { where: { leftAt: { isNull: true } }, orderBy: { id: "asc" } },
@@ -177,9 +182,12 @@ export async function preflightClaim(
     }),
   );
   const picked = input.picked.flatMap((tokenId) => pool.get(tokenId) ?? []);
+  const payment = listingPayment(row, wants);
+  const terms = claimTerms({ wants, payment }, input.amount);
   if (
     picked.length !== input.picked.length ||
-    unitsOf(picked.length, unitSize) !== input.units
+    unitsOf(picked.length, unitSize) !== input.units ||
+    terms === null
   ) {
     refuse("claim_assignment_invalid");
   }
@@ -234,12 +242,12 @@ export async function preflightClaim(
       fromAddress: row.fromAddress,
       picked,
       wants,
-      payment: listingPayment(row, wants),
+      payment,
     },
     units: input.units,
     states,
     submitted,
-    offer: takesOffers(wants),
+    terms,
   };
 }
 
@@ -265,7 +273,7 @@ export async function lockAndRecheck(
   tx: WebTx,
   actor: ListingActor,
   input: ClaimListingInput,
-  { listing, states, submitted, offer }: Preflight,
+  { listing, states, submitted, terms }: Preflight,
 ) {
   const users = await lockParties(
     tx,
@@ -326,7 +334,7 @@ export async function lockAndRecheck(
   if (link.kind === "refused") refuse(link.refusal);
   const standing = await claimStanding(tx, actor.userId, listing.id);
   if (standing.claimsListing) refuse("listing_claim_exists");
-  if (!offer && standing.active >= claimCap(standing)) {
+  if (terms.kind === "claim" && standing.active >= claimCap(standing)) {
     refuse("claim_cap_reached");
   }
 
@@ -341,10 +349,11 @@ export async function lockAndRecheck(
 
 /**
  * Creates the claim's trade with both addresses pinned and copies the
- * poster's picked objekts and the claimer's tokens into it, then the
- * listing's payment for the units claimed, sent by the listing's payment
- * side and never live, with the methods it may arrive by on the trade. The poster's items keep the listing's id. The
- * listing itself doesn't change. A claim starts
+ * poster's picked objekts and the claimer's tokens into it, then its
+ * payment per unit (the asking price, or the amount an offer proposes)
+ * times the units claimed, sent by the listing's payment side and never
+ * live, with the methods it may arrive by on the trade. The poster's items
+ * keep the listing's id. The listing itself doesn't change. A claim starts
  * accepted with the fixed claim window, its items live, and tells the
  * poster what to send; an offer on a listing that takes offers starts
  * pending with the offer window, proposed by the claimer, reserving
@@ -355,9 +364,10 @@ export async function lockAndRecheck(
 export async function insertTrade(
   tx: WebTx,
   actor: ListingActor,
-  { listing, units, submitted, states, offer }: Preflight,
+  { listing, units, submitted, states, terms }: Preflight,
   { toAddress, poster }: Awaited<ReturnType<typeof lockAndRecheck>>,
 ) {
+  const offer = terms.kind === "offer";
   const [trade] = await tx
     .insert(tradeOffers)
     .values({
@@ -423,15 +433,15 @@ export async function insertTrade(
       "claim_token_unavailable",
     );
   }
-  if (listing.payment !== null) {
+  if (terms.payment !== null) {
     await tx.insert(tradeOfferItems).values({
       offerId: trade.id,
-      listingId: listing.payment.side === "from" ? listing.id : null,
-      sender: listing.payment.side,
+      listingId: terms.payment.side === "from" ? listing.id : null,
+      sender: terms.payment.side,
       kind: "payment",
       live: false,
-      amount: toNumeric(listing.payment.amount * units),
-      currency: listing.payment.currency,
+      amount: toNumeric(terms.payment.amount * units),
+      currency: terms.payment.currency,
     } satisfies NewTradeOfferItem);
   }
   await insertTradeEvent(tx, trade.id, {
@@ -448,7 +458,7 @@ export async function insertTrade(
 
 /**
  * What accepting an offer on a listing judges it against, read before the
- * transaction: the listing's want rows and unit size. Only an edit changes
+ * transaction: the listing's want rows, unit size and payment. Only an edit changes
  * them, and an edit turns the listing's pending offers stale after locking
  * them, so these still hold once the accept has locked the offer and found
  * it pending.
@@ -456,13 +466,21 @@ export async function insertTrade(
 export async function readListingTerms(listingId: string) {
   const row = await db.query.tradeOffers.findFirst({
     where: { id: listingId, kind: "listing" },
-    columns: { id: true, unitSize: true },
+    columns: {
+      id: true,
+      unitSize: true,
+      paymentSide: true,
+      paymentMethods: true,
+      offers: true,
+    },
     with: { wants: storedWants },
   });
   if (!row) refuse("listing_closed");
+  const wants = row.wants.map((want) => storedWantSchema.parse(want));
   return {
     unitSize: listingUnitSize(row),
-    wants: row.wants.map((want) => storedWantSchema.parse(want)),
+    wants,
+    payment: listingPayment(row, wants),
   };
 }
 
@@ -522,12 +540,18 @@ export async function recheckListingOffer(
   const poster = users.find((row) => row.id === trade.fromUserId);
   const claimer = users.find((row) => row.id === trade.toUserId);
   const refusal = offerRefusal(
-    { expiresAt: trade.expiresAt, picks, given },
+    {
+      expiresAt: trade.expiresAt,
+      picks,
+      given,
+      payment: tradePayment(trade.items),
+    },
     {
       fromAddress: trade.fromAddress,
       pool: new Set(pool.flatMap((item) => item.tokenId ?? [])),
       unitSize: terms.unitSize,
       wants: tradeWants(terms.wants),
+      payment: terms.payment,
       posterRefused: posterBlocked(
         poster === undefined
           ? null

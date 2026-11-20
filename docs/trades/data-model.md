@@ -46,7 +46,7 @@ The trade tables live in `packages/database/src/web/schema.ts` under `#region Tr
 | `exact`   | `count` copies of one collection                                                                                                      | the collection's values on the row                                                                                                              |
 | `range`   | `count` objekts where some range matches, and a range matches when every narrowed column holds the objekt's value (`matchesRanges()`) | 1 to `MAX_RANGE_CLAUSES` ranges in `trade_listing_want_ranges`, one array per column; an empty array matches anything, at least one is narrowed |
 | `choice`  | `count` objekts in any mix of 2 to `MAX_CHOICE_OPTIONS` named collections                                                             | the collections in `trade_listing_want_options`                                                                                                 |
-| `payment` | nothing: it prices one unit (see [Payments](#payments))                                                                               | `amount` and `currency`, at most one per listing                                                                                                |
+| `payment` | nothing: it prices one unit (see [Payments](#payments))                                                                               | `amount` (null when the listing only takes offers) and `currency`, at most one per listing                                                      |
 
 - Wants are inserted together and replaced together, so id order is the posted order.
 - A range row's ranges are ordered by `position` and may overlap: an objekt fits the row once however many of them match it, so its match count is the union.
@@ -77,15 +77,16 @@ The trade tables live in `packages/database/src/web/schema.ts` under `#region Tr
 
 A payment is money the two parties move outside Apollo; the trade records what was agreed and whether its recipient says it arrived.
 
-| Where                    | Holds                                                                                                                          |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
-| listing's payment want   | the amount one unit pays and the currency                                                                                      |
-| `trade_offers` (listing) | `payment_side` (`to` the claimer pays, `from` the poster pays on top of their objekts), `payment_methods`, `offers`            |
-| `trade_offers` (trade)   | `payment_methods`: on a trade with a payment, the listing's methods as the claim read them                                     |
-| trade's payment item     | `amount` for every unit the trade took, `currency`, `sender`; `confirmed_at` and `method` once the recipient marks it received |
+| Where                    | Holds                                                                                                                                                                     |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| listing's payment want   | the asking price for one unit, none when the listing only takes offers, and the currency                                                                                  |
+| `trade_offers` (listing) | `payment_side` (`to` the claimer pays, `from` the poster pays on top of their objekts), `payment_methods`, `offers`                                                       |
+| `trade_offers` (trade)   | `payment_methods`: on a trade with a payment, the listing's methods as the claim read them                                                                                |
+| trade's payment item     | `amount` for every unit the trade took, at the asking price or the offer's amount, `currency`, `sender`; `confirmed_at` and `method` once the recipient marks it received |
 
 - A listing's items stay objekts. Its payment is the payment want, sent by `payment_side`; `trade_offers_payment_chk` keeps a listing's side, offer mode and at least one method together, and a trade has no side or mode (`trade_offers_trade_chk`).
-- A claim writes the trade's payment item with `sender = payment_side` (`insertTrade()`). A poster's payment item keeps `listing_id`, so readers that find a trade's listing through its items still find it; a claimer's has none, like their tokens.
+- `offers` is the payment's offer mode: `price_only`, `price_or_offer` or `offer_only` ([listings.md](listings.md#offers-on-listings)). `trade_listing_wants_shape_chk` lets a payment want's `amount` be null, which the app writes only with `offer_only`; `listingPayment()` throws on any other pairing.
+- A claim or an offer writes the trade's payment item with `sender = payment_side` (`insertTrade()`). A poster's payment item keeps `listing_id`, so readers that find a trade's listing through its items still find it; a claimer's has none, like their tokens.
 - A payment item is never live, so `goLive` and every other write that sets `live` touch objekt items only.
 - Amounts are integer minor units in code, two decimals in every currency, KRW included (`packages/trades/src/payment.ts`). The input caps one unit at `MAX_PAYMENT_AMOUNT`, so the units a claim can take keep the total inside `numeric(14,2)`.
 - A listing's currency must have a rate on the newest `fx_rates` date (`assertSupportedCurrency()`), and every price shows in it, never converted.

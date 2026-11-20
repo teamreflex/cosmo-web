@@ -1,16 +1,20 @@
 import type {
+  ListingOfferMode,
   TradeSide,
   TradeStatus,
   TradeWantKind,
 } from "@apollo/database/web/types";
 import { describe, expect, test } from "bun:test";
 import {
+  type ClaimTerms,
+  claimTerms,
+  type ListingAcceptance,
+  listingAcceptance,
   listingClosing,
   needsYou,
   type OfferEvent,
   partyAction,
   proposerId,
-  takesOffers,
   type TradeEvent,
   type TradeItemState,
   tradeListingId,
@@ -20,6 +24,7 @@ import {
   type TransitionRefusal,
   waitingSide,
 } from "../src/lifecycle";
+import type { PaymentPrice, TradePayment } from "../src/payment";
 
 function objekt(sender: "from" | "to", transferred = false): TradeItemState {
   return { kind: "objekt", sender, transferred };
@@ -589,24 +594,169 @@ describe("listingClosing", () => {
   });
 });
 
-describe("takesOffers", () => {
+describe("listingAcceptance", () => {
   test.each([
     [
       'exact and "any of" rows together are claimed',
       ["exact", "choice"],
-      false,
+      null,
+      "claim",
     ],
     [
       "a range row among others takes offers",
       ["exact", "range", "choice"],
-      true,
+      null,
+      "offer",
     ],
-  ] satisfies [string, TradeWantKind[], boolean][])(
-    "%s",
-    (_, kinds, expected) => {
-      expect(takesOffers(kinds.map((kind) => ({ kind })))).toBe(expected);
-    },
-  );
+    ["a fixed price is claimed", [], "price_only", "claim"],
+    [
+      "a price open to offers takes either",
+      ["exact"],
+      "price_or_offer",
+      "either",
+    ],
+    ["a payment with no asking price takes offers", [], "offer_only", "offer"],
+    [
+      "a range row beside a price open to offers takes offers",
+      ["range"],
+      "price_or_offer",
+      "offer",
+    ],
+  ] satisfies [
+    string,
+    TradeWantKind[],
+    ListingOfferMode | null,
+    ListingAcceptance,
+  ][])("%s", (_, kinds, mode, expected) => {
+    const wants = kinds.map((kind) => ({ kind }));
+    expect(listingAcceptance(wants, mode)).toBe(expected);
+  });
+});
+
+describe("claimTerms", () => {
+  const price = (
+    mode: Exclude<ListingOfferMode, "offer_only">,
+  ): PaymentPrice => ({ mode, amount: 300 });
+
+  test.each([
+    [
+      "no payment, no amount: a claim",
+      [],
+      null,
+      undefined,
+      { kind: "claim", amount: null },
+    ],
+    ["no payment with an amount is refused", [], null, 250, null],
+    [
+      "a fixed price claims at it",
+      [],
+      price("price_only"),
+      undefined,
+      { kind: "claim", amount: 300 },
+    ],
+    [
+      "a fixed price refuses another amount",
+      [],
+      price("price_only"),
+      250,
+      null,
+    ],
+    [
+      "a fixed price refuses its own amount sent as an offer",
+      [],
+      price("price_only"),
+      300,
+      null,
+    ],
+    [
+      "open to offers claims at the asking price",
+      [],
+      price("price_or_offer"),
+      undefined,
+      { kind: "claim", amount: 300 },
+    ],
+    [
+      "open to offers takes another amount as an offer",
+      [],
+      price("price_or_offer"),
+      250,
+      { kind: "offer", amount: 250 },
+    ],
+    [
+      "open to offers claims at once on the asking price",
+      [],
+      price("price_or_offer"),
+      300,
+      { kind: "claim", amount: 300 },
+    ],
+    [
+      "offer only needs an amount",
+      [],
+      { mode: "offer_only", amount: null },
+      undefined,
+      null,
+    ],
+    [
+      "offer only takes an amount as an offer",
+      [],
+      { mode: "offer_only", amount: null },
+      250,
+      { kind: "offer", amount: 250 },
+    ],
+    [
+      "a range row makes the asking price an offer",
+      ["range"],
+      price("price_or_offer"),
+      undefined,
+      { kind: "offer", amount: 300 },
+    ],
+    [
+      "a range row at a fixed price offers at it",
+      ["range"],
+      price("price_only"),
+      undefined,
+      { kind: "offer", amount: 300 },
+    ],
+    [
+      "a range row with no payment offers",
+      ["range"],
+      null,
+      undefined,
+      { kind: "offer", amount: null },
+    ],
+  ] satisfies [
+    string,
+    TradeWantKind[],
+    PaymentPrice | null,
+    number | undefined,
+    { kind: ClaimTerms["kind"]; amount: number | null } | null,
+  ][])("%s", (_, kinds, price, proposed, expected) => {
+    // a sale's payment, which the claimer sends in USD
+    const terms = {
+      side: "to",
+      currency: "USD",
+    } satisfies Partial<TradePayment>;
+    expect(
+      claimTerms(
+        {
+          wants: kinds.map((kind) => ({ kind })),
+          payment:
+            price === null ? null : { ...terms, methods: ["wise"], ...price },
+        },
+        proposed,
+      ),
+    ).toEqual(
+      expected === null
+        ? null
+        : {
+            kind: expected.kind,
+            payment:
+              expected.amount === null
+                ? null
+                : { ...terms, amount: expected.amount },
+          },
+    );
+  });
 });
 
 describe("tradeState", () => {

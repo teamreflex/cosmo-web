@@ -3,8 +3,11 @@ import { paymentMethodLabel } from "@/lib/client/trade-listings";
 import { cn } from "@/lib/utils";
 import { type PaymentMethod, paymentMethods } from "@apollo/database/web/types";
 import { IconPlus, IconX } from "@tabler/icons-react";
+import { useId } from "react";
 import CurrencySelect from "../misc/currency-select";
 import { Button } from "../ui/button";
+import { Checkbox } from "../ui/checkbox";
+import { Field, FieldLabel } from "../ui/field";
 import { Input } from "../ui/input";
 
 type AmountProps = {
@@ -12,6 +15,8 @@ type AmountProps = {
   amount: string;
   /** names the amount field */
   label: string;
+  /** shown while the field is empty */
+  placeholder?: string;
   onChange: (amount: string) => void;
   onRemove: () => void;
 };
@@ -24,8 +29,12 @@ function AmountField({
   currency,
   amount,
   label,
+  placeholder = "0.00",
   onChange,
-}: Pick<AmountProps, "currency" | "amount" | "label" | "onChange">) {
+}: Pick<
+  AmountProps,
+  "currency" | "amount" | "label" | "placeholder" | "onChange"
+>) {
   return (
     <span className="flex items-center gap-2">
       <span className="font-mono text-sm text-muted-foreground">
@@ -35,7 +44,7 @@ function AmountField({
         aria-label={label}
         inputMode="decimal"
         autoComplete="off"
-        placeholder="0.00"
+        placeholder={placeholder}
         value={amount}
         onChange={(event) => onChange(event.target.value)}
         className="h-9 w-28 font-mono font-bold tabular-nums"
@@ -88,34 +97,37 @@ export function ComposerPaymentRow(props: AmountProps) {
 }
 
 /**
- * The poster's payment on top of their objekts, set, or the button that
- * adds it, disabled while the want rows hold a payment, since a listing's
- * payment sits on one side.
+ * The button beside "You're offering" that adds the poster's payment on
+ * top of their objekts, disabled while the want rows hold a payment, since
+ * a listing's payment sits on one side. It sits in the heading's line, so
+ * it adds no height to the offered column.
  */
-export function ComposerOfferedPayment({
-  payment,
+export function ComposerOfferedPaymentButton({
   disabled,
   onAdd,
 }: {
-  payment: AmountProps | null;
   disabled: boolean;
   onAdd: () => void;
 }) {
-  if (payment === null) {
-    return (
-      <Button
-        type="button"
-        variant="ghost"
-        size="sm"
-        disabled={disabled}
-        onClick={onAdd}
-        className="self-start border border-dashed border-teal-500/50 max-md:h-10"
-      >
-        <IconPlus />
-        {m.listing_detail_kind_payment()}
-      </Button>
-    );
-  }
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="xs"
+      disabled={disabled}
+      onClick={onAdd}
+      className="-my-1.5 border border-dashed border-teal-500/50 max-md:-my-2.5 max-md:h-8"
+    >
+      <IconPlus />
+      {m.listing_detail_kind_payment()}
+    </Button>
+  );
+}
+
+/**
+ * The poster's payment on top of their objekts, once added.
+ */
+export function ComposerOfferedPayment(payment: AmountProps) {
   return (
     <div className="flex flex-wrap items-center gap-x-2.5 gap-y-2 rounded-md border border-teal-500/35 bg-teal-500/5 py-1.5 pr-1.5 pl-3">
       <span className="shrink-0 text-xxs font-semibold tracking-widest text-teal-700 uppercase dark:text-teal-400">
@@ -135,13 +147,16 @@ export function ComposerOfferedPayment({
 
 /**
  * The listing's payment terms, shown once either side has a payment: its
- * currency, and the methods it may arrive by, Other included. Handles are
- * swapped in the trade chat, so the listing holds none.
+ * currency, whether the claimer's payment is open to offers, and the
+ * methods it may arrive by, Other included. Handles are swapped in the
+ * trade chat, so the listing holds none. The poster's own payment is a
+ * fixed price, so it has no offers control.
  */
 export function ComposerPaymentStrip({
   currency,
   methods,
   paying,
+  offers,
   onCurrency,
   onMethods,
 }: {
@@ -149,9 +164,11 @@ export function ComposerPaymentStrip({
   methods: readonly PaymentMethod[];
   /** the poster pays, so the methods are the ones they pay by */
   paying: boolean;
+  offers: { open: boolean; onChange: (open: boolean) => void } | null;
   onCurrency: (currency: string) => void;
   onMethods: (methods: PaymentMethod[]) => void;
 }) {
+  const offersId = useId();
   return (
     <section
       aria-label={m.listing_detail_kind_payment()}
@@ -167,7 +184,27 @@ export function ComposerPaymentStrip({
           ariaLabel={m.listing_composer_payment_currency()}
           className="h-9 w-28"
         />
+        {offers !== null && (
+          <Field orientation="horizontal" className="w-auto gap-2">
+            <Checkbox
+              id={offersId}
+              checked={offers.open}
+              onCheckedChange={offers.onChange}
+            />
+            <FieldLabel
+              htmlFor={offersId}
+              className="min-h-9 font-normal max-sm:min-h-11"
+            >
+              {m.listing_composer_payment_open_to_offers()}
+            </FieldLabel>
+          </Field>
+        )}
       </div>
+      {offers?.open === true && (
+        <p className="text-sm text-muted-foreground">
+          {m.listing_composer_payment_open_to_offers_hint()}
+        </p>
+      )}
       <div
         role="group"
         aria-label={

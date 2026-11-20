@@ -17,6 +17,7 @@ import {
   type TradeRatio,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
+import type { TradePayment } from "@apollo/trades/payment";
 import { OFFER_WINDOW } from "@apollo/trades/timers";
 import { ParaglideMessage } from "@inlang/paraglide-js-react";
 import {
@@ -197,7 +198,10 @@ function claimerNext(size: TradeRatio, poster: string) {
   if (paid === null) {
     return m.listing_detail_claimer_body({ count: size.get, poster, appName });
   }
-  const amount = formatAmount(paid.amount, paid.currency);
+  const amount =
+    paid.amount === null
+      ? m.listing_payment_your_offer()
+      : formatAmount(paid.amount, paid.currency);
   return size.get === 0
     ? m.listing_detail_claimer_pay({ poster, amount, appName })
     : m.listing_detail_claimer_body_pay({
@@ -214,11 +218,12 @@ type OffererProps = {
   expiresAt: Date;
   picks: ListingFeedItem[];
   given: ListingFeedItem[];
+  payment: TradePayment | null;
 };
 
 /**
  * The viewer's pending offer on the listing: how long the poster has to
- * answer it, both sides' objekts, that nothing is held meanwhile, and a
+ * answer it, both sides' objekts and its payment, that nothing is held meanwhile, and a
  * pick another trade has since taken, which stops the poster accepting it.
  * View opens the offer, and Withdraw ends it after asking. Once it's past
  * its expiry it says so and can't be withdrawn, until trade-timers closes
@@ -243,6 +248,7 @@ function OffererState({
   expiresAt,
   picks,
   given,
+  payment,
   expired,
 }: OffererProps & { expired: boolean }) {
   const [withdrawing, setWithdrawing] = useState(false);
@@ -290,7 +296,7 @@ function OffererState({
       <div className="flex flex-wrap items-center gap-3">
         <ObjektStrip items={picks} />
         <span className="font-mono text-muted-foreground tabular-nums">
-          {m.market_listings_ratio({ give: picks.length, get: given.length })}
+          {ratioText({ give: picks.length, get: given.length, payment })}
         </span>
         <ObjektStrip items={given} />
       </div>

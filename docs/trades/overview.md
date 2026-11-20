@@ -11,11 +11,13 @@ Apollo matches people who want to swap objekts and records each swap, but never 
   listing: open   reserves nothing; a token may sit in many open listings
     |
     |<-- claimer $claimListing: N units, the picked pool tokens, one token
-    |    list per want row, and the listing's updated_at they saw
+    |    list per want row, an offered amount or none, and the listing's
+    |    updated_at they saw
     |
-    +-- does any want row have kind "range"? (takesOffers)
+    +-- a claim or an offer? (claimTerms: any range row, no asking price,
+    |   or an amount other than an open-to-offers asking price)
     |                                         |
-    | no                                      | yes
+    | claim                                   | offer
     | listing_claimed -> poster               v
     |                          trade: pending   proposed_by = to (the claimer)
     |                          expires_at = now() + 72h, nothing live
@@ -69,15 +71,15 @@ Apollo matches people who want to swap objekts and records each swap, but never 
 
 ## Files in this folder
 
-| File                                             | Read it when you change                                                                                                                 |
-| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
-| [data-model.md](data-model.md)                   | the trade tables, sides, items, wants, units, `updated_at`                                                                              |
-| [listings.md](listings.md)                       | posting, editing, bumping, withdrawing or closing a listing, the composer, the feed, the listing page, claims, offers on range listings |
-| [offers.md](offers.md)                           | direct offers, counters, offer windows, what a refusal may reveal                                                                       |
-| [lifecycle.md](lifecycle.md)                     | trade statuses, party actions, ending a trade, timers' decisions, disputes, bans                                                        |
-| [drain.md](drain.md)                             | what an on-chain transfer means for a trade, listing or offer                                                                           |
-| [feedback.md](feedback.md)                       | claim caps, listing limits, rate limits, ratings and notices                                                                            |
-| [notification-emails.md](notification-emails.md) | which notifications are emailed, the opt-out bits, the email task's claim, release and cooldown                                         |
+| File                                             | Read it when you change                                                                                                           |
+| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| [data-model.md](data-model.md)                   | the trade tables, sides, items, wants, units, `updated_at`                                                                        |
+| [listings.md](listings.md)                       | posting, editing, bumping, withdrawing or closing a listing, the composer, the feed, the listing page, claims, offers on listings |
+| [offers.md](offers.md)                           | direct offers, counters, offer windows, what a refusal may reveal                                                                 |
+| [lifecycle.md](lifecycle.md)                     | trade statuses, party actions, ending a trade, timers' decisions, disputes, bans                                                  |
+| [drain.md](drain.md)                             | what an on-chain transfer means for a trade, listing or offer                                                                     |
+| [feedback.md](feedback.md)                       | claim caps, listing limits, rate limits, ratings and notices                                                                      |
+| [notification-emails.md](notification-emails.md) | which notifications are emailed, the opt-out bits, the email task's claim, release and cooldown                                   |
 
 ## Where to start
 

@@ -9,7 +9,7 @@ import {
 import { fitsWant, scaleWants, type TradeWant } from "@apollo/trades/allocate";
 import { validateAssignment } from "@apollo/trades/assignment";
 import { totalWanted } from "@apollo/trades/composer";
-import { CLAIM_WINDOW, OFFER_WINDOW } from "@apollo/trades/timers";
+import type { ListingAcceptance } from "@apollo/trades/lifecycle";
 import { useState } from "react";
 
 export type PickerRow = {
@@ -18,16 +18,17 @@ export type PickerRow = {
 };
 
 /**
- * What Accept froze for the confirm dialog: how many units, the pool
- * objekts the viewer gets, their picks, one list per want row, and when the
- * trade would have to finish if it were claimed then, or the offer expire
- * if sent then.
+ * What Accept or Make an offer froze for the confirm dialog: how many
+ * units, the pool objekts the viewer gets, their picks, one list per want
+ * row, whether the viewer chose to make an offer, and when, which the
+ * trade's deadline or the offer's expiry counts from.
  */
 export type ConfirmSnapshot = {
   units: number;
   offered: number[];
   picked: ListingPick[][];
-  endsAt: Date;
+  offer: boolean;
+  frozenAt: Date;
 };
 
 /**
@@ -40,8 +41,8 @@ export function useListingPicks(
   listing: Pick<TradeListing, "unitSize" | "items" | "wants" | "payment">,
   viewer: Candidate | null,
   rows: PickerRow[],
-  // whether Accept sends an offer, as on a listing with a range row
-  offers: boolean,
+  // whether Accept claims, sends an offer, or the viewer picks which
+  acceptance: ListingAcceptance,
 ) {
   const { unitSize } = listing;
   const wants = rows.map((row) => row.trade);
@@ -74,7 +75,8 @@ export function useListingPicks(
     maxUnits: Math.max(viewer.units, 1),
     ratio,
     freeCount: free.length,
-    takesOffers: offers,
+    acceptance,
+    takesOffers: acceptance !== "claim",
     offered,
     offeredCount,
     picked,
@@ -94,11 +96,12 @@ export function useListingPicks(
       offered.length + picked.reduce((total, picks) => total + picks.length, 0),
     total: offeredCount + giveTotal,
     short: viewer.rows.reduce((total, row) => total + row.missing, 0),
-    freeze: (): ConfirmSnapshot => ({
+    freeze: (offer: boolean): ConfirmSnapshot => ({
       units,
       offered,
       picked,
-      endsAt: new Date(Date.now() + (offers ? OFFER_WINDOW : CLAIM_WINDOW)),
+      offer,
+      frozenAt: new Date(),
     }),
     /**
      * Takes that many units: the pool picks and each want row keep what

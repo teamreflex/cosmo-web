@@ -1,0 +1,56 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "dffe2cbc-0530-4163-9ae9-bd2661c54b7d",
+  "prevIds": [
+    "df5c53f9-7255-43fa-8baf-93352d599e28"
+  ],
+  "footprints": [
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_listing_wants"
+      ],
+      "writes": [
+        "s|ck|public.trade_listing_wants.trade_listing_wants_shape_chk"
+      ],
+      "reads": [
+        "n|tbl|public.trade_listing_wants",
+        "n|sch|public",
+        "n|col|public.trade_listing_wants.kind",
+        "n|col|public.trade_listing_wants.count",
+        "n|col|public.trade_listing_wants.slug",
+        "n|col|public.trade_listing_wants.artist",
+        "n|col|public.trade_listing_wants.member",
+        "n|col|public.trade_listing_wants.season",
+        "n|col|public.trade_listing_wants.class",
+        "n|col|public.trade_listing_wants.on_offline",
+        "n|col|public.trade_listing_wants.amount",
+        "n|col|public.trade_listing_wants.currency",
+        "e|col|public.trade_listing_wants.kind",
+        "e|col|public.trade_listing_wants.count",
+        "e|col|public.trade_listing_wants.slug",
+        "e|col|public.trade_listing_wants.artist",
+        "e|col|public.trade_listing_wants.member",
+        "e|col|public.trade_listing_wants.season",
+        "e|col|public.trade_listing_wants.class",
+        "e|col|public.trade_listing_wants.on_offline",
+        "e|col|public.trade_listing_wants.amount",
+        "e|col|public.trade_listing_wants.currency"
+      ],
+      "sqlHash": "057bbe900bc8da28"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"public\",\"trade_listing_wants\",\"trade_listing_wants_shape_chk\"]",
+      "set": {
+        "value": "CASE \"kind\"\n        WHEN 'exact' THEN coalesce(\"count\", 0) > 0 AND num_nulls(\"slug\", \"artist\", \"member\", \"season\", \"class\", \"on_offline\") = 0 AND num_nonnulls(\"amount\", \"currency\") = 0\n        WHEN 'range' THEN coalesce(\"count\", 0) > 0 AND num_nonnulls(\"slug\", \"artist\", \"member\", \"season\", \"class\", \"on_offline\", \"amount\", \"currency\") = 0\n        WHEN 'choice' THEN coalesce(\"count\", 0) > 0 AND num_nonnulls(\"slug\", \"artist\", \"member\", \"season\", \"class\", \"on_offline\", \"amount\", \"currency\") = 0\n        ELSE coalesce(\"amount\", 1) > 0 AND \"currency\" IS NOT NULL AND num_nonnulls(\"count\", \"slug\", \"artist\", \"member\", \"season\", \"class\", \"on_offline\") = 0\n      END"
+      }
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # Offers and counters
 
-An offer is a trade that starts `pending` and reserves nothing until it is accepted; it is either a direct offer or counter from Trade Matches, or an offer on a range listing ([listings.md](listings.md#offers-on-range-listings)).
+An offer is a trade that starts `pending` and reserves nothing until it is accepted; it is either a direct offer or counter from Trade Matches, or an offer on a listing ([listings.md](listings.md#offers-on-listings)).
 
 ## Offer states
 
@@ -9,7 +9,7 @@ An offer is a trade that starts `pending` and reserves nothing until it is accep
   $sendOffer --------->|              |-- accept    answerer ---------------> accepted
   $counterOffer ------>|   pending    |-- decline   answerer; or a ban, a
   $claimListing ------>|              |             deletion, a closed
-  (any range row)      |  expires_at  |             listing ----------------> declined
+  (claimTerms: offer)  |  expires_at  |             listing ----------------> declined
                        |  now()+72h   |-- withdraw  proposer; or a ban, a
                        | nothing live |             deletion ---------------> withdrawn
                        +--------------+-- counter   answerer, direct offers

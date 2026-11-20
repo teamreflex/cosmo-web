@@ -24,11 +24,12 @@ import {
 import { isRateLimitErrorCode } from "@/lib/universal/errors/rate-limit";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import {
+  claimerPaymentTerms,
   composerBlock,
   type ComposerMode,
   emptyListingForm,
   followUnitSize,
-  formPaymentAmount,
+  formPayment,
   formUnitSize,
   formValuesToInput,
   type ListingFormValues,
@@ -40,7 +41,6 @@ import {
 import type { TokenRefusalReason } from "@/lib/universal/trade-listings";
 import { MAX_NOTE_LENGTH, MAX_OFFERED } from "@apollo/trades/caps";
 import { totalWanted } from "@apollo/trades/composer";
-import { takesOffers } from "@apollo/trades/lifecycle";
 import { type ListingInput, listingInputSchema } from "@apollo/trades/listing";
 import { amountSchema } from "@apollo/trades/payment";
 import { MAX_RANGE_VALUES } from "@apollo/trades/range";
@@ -80,6 +80,7 @@ import { Textarea } from "../ui/textarea";
 import ComposerOffered from "./composer-offered";
 import {
   ComposerOfferedPayment,
+  ComposerOfferedPaymentButton,
   ComposerPaymentStrip,
 } from "./composer-payment";
 import ComposerRangeConfirm from "./composer-range-confirm";
@@ -147,6 +148,7 @@ export default function ListingComposer({
     name: ["payment", "offeredPayment"],
   });
   const currency = paymentTerms?.currency ?? displayCurrency;
+  const openToOffers = (paymentTerms?.mode ?? "price_only") !== "price_only";
   // each artist's members, keyed as ranges store artists
   const rosters = new Map(
     artistList.map((artist) => [
@@ -291,9 +293,23 @@ export default function ListingComposer({
     }
   }
 
+  // the claimer's amount and the listing's offer mode change together
+  function setClaimerPayment(amount: string, open: boolean) {
+    const index = form
+      .getValues("wants")
+      .findIndex((want) => want.kind === "payment");
+    const terms = claimerPaymentTerms(amount, open);
+    form.setValue(
+      `wants.${index}`,
+      { kind: "payment", amount: terms.amount },
+      setOptions(),
+    );
+    form.setValue("payment.mode", terms.mode, setOptions());
+  }
+
   // with no payment left on either side, the terms go too
   function dropUnusedPaymentTerms() {
-    if (formPaymentAmount(form.getValues()) === null) {
+    if (formPayment(form.getValues()) === null) {
       form.setValue("payment", undefined, setOptions());
     }
   }
@@ -306,11 +322,11 @@ export default function ListingComposer({
 
   function submit(values: ListingInput) {
     const submission = formValuesToInput(values, mode, rosters);
-    // confirm first when this post makes the listing start taking offers
+    // confirm first when this post adds the listing's first range row, which makes it take offers
     if (
       !rangeNoticeDismissed &&
-      takesOffers(submission.data.wants) &&
-      (mode.kind === "create" || !takesOffers(mode.listing.wants))
+      hasRangeRow(submission.data.wants) &&
+      (mode.kind === "create" || !hasRangeRow(mode.listing.wants))
     ) {
       setHeld(submission);
     } else {
@@ -355,14 +371,14 @@ export default function ListingComposer({
                   offering={offering}
                   onAdd={() => setView("picker")}
                   onChange={setOffered}
+                  onAddPayment={() => {
+                    form.setValue("offeredPayment", "", setOptions());
+                    addPaymentTerms();
+                  }}
                 />
                 <OfferedPayment
                   form={form}
                   currency={currency}
-                  onAdd={() => {
-                    form.setValue("offeredPayment", "", setOptions());
-                    addPaymentTerms();
-                  }}
                   onRemove={() => {
                     form.setValue("offeredPayment", undefined, setOptions());
                     dropUnusedPaymentTerms();
@@ -375,6 +391,10 @@ export default function ListingComposer({
                 currency={currency}
                 onPaymentAdded={addPaymentTerms}
                 onPaymentRemoved={dropUnusedPaymentTerms}
+                onPaymentAmount={(amount) =>
+                  setClaimerPayment(amount, openToOffers)
+                }
+                openToOffers={openToOffers}
                 onCollection={(collection) =>
                   setDisplay((current) => ({
                     ...current,
@@ -391,6 +411,18 @@ export default function ListingComposer({
                 currency={paymentTerms.currency}
                 methods={paymentTerms.methods}
                 paying={offeredPayment !== undefined}
+                offers={
+                  offeredPayment === undefined
+                    ? {
+                        open: openToOffers,
+                        onChange: (open) =>
+                          setClaimerPayment(
+                            formPayment(form.getValues())?.amount ?? "",
+                            open,
+                          ),
+                      }
+                    : null
+                }
                 onCurrency={(next) =>
                   form.setValue("payment.currency", next, setOptions())
                 }
@@ -510,14 +542,28 @@ function OfferedSection({
   offering: { offered, tokenIds, refusals },
   onAdd,
   onChange,
+  onAddPayment,
 }: FormProps & {
   display: ComposerDisplay;
   offering: ReturnType<typeof useOfferedRefusals>;
   onAdd: () => void;
   onChange: (offered: ListingFormValues["offered"]) => void;
+  onAddPayment: () => void;
 }) {
+  const [wants, offeredPayment] = useWatch({
+    control: form.control,
+    name: ["wants", "offeredPayment"],
+  });
   return (
     <ComposerOffered
+      action={
+        offeredPayment === undefined && (
+          <ComposerOfferedPaymentButton
+            disabled={wants.some((want) => want.kind === "payment")}
+            onAdd={onAddPayment}
+          />
+        )
+      }
       tokenIds={tokenIds}
       tokens={display.tokens}
       refusals={refusals}
@@ -531,45 +577,38 @@ function OfferedSection({
 }
 
 /**
- * The poster's payment on top of their objekts, or the button that adds it.
+ * The poster's payment on top of their objekts, once added.
  */
 function OfferedPayment({
   form,
   currency,
-  onAdd,
   onRemove,
 }: FormProps & {
   currency: string;
-  onAdd: () => void;
   onRemove: () => void;
 }) {
-  const [wants, offeredPayment] = useWatch({
+  const offeredPayment = useWatch({
     control: form.control,
-    name: ["wants", "offeredPayment"],
+    name: "offeredPayment",
   });
 
   return (
-    <div className="flex flex-col px-4 pb-4 md:px-5">
-      <ComposerOfferedPayment
-        disabled={wants.some((want) => want.kind === "payment")}
-        onAdd={onAdd}
-        payment={
-          offeredPayment === undefined
-            ? null
-            : {
-                currency,
-                amount: offeredPayment,
-                label: m.listing_composer_payment_amount_yours(),
-                onChange: (amount) =>
-                  form.setValue("offeredPayment", amount, {
-                    shouldDirty: true,
-                    shouldValidate: form.formState.isSubmitted,
-                  }),
-                onRemove,
-              }
-        }
-      />
-    </div>
+    offeredPayment !== undefined && (
+      <div className="flex flex-col px-4 pb-4 md:px-5">
+        <ComposerOfferedPayment
+          currency={currency}
+          amount={offeredPayment}
+          label={m.listing_composer_payment_amount_yours()}
+          onChange={(amount) =>
+            form.setValue("offeredPayment", amount, {
+              shouldDirty: true,
+              shouldValidate: form.formState.isSubmitted,
+            })
+          }
+          onRemove={onRemove}
+        />
+      </div>
+    )
   );
 }
 
@@ -583,8 +622,8 @@ function wantedText(wants: ListingFormValues["wants"], currency: string) {
   const row = wants.find((want) => want.kind === "payment");
   if (row === undefined) return String(wanted);
   return wanted === 0
-    ? priceText(row.amount, currency)
-    : withPrice(String(wanted), row.amount, currency);
+    ? askingText(row.amount, currency)
+    : `${wanted} + ${askingText(row.amount, currency)}`;
 }
 
 /**
@@ -822,10 +861,22 @@ function ComposerFooter({
   );
 }
 
+// a range row makes a listing take offers, which the range notice explains
+function hasRangeRow(wants: readonly { kind: string }[]) {
+  return wants.some((want) => want.kind === "range");
+}
+
 // an amount as typed, in the listing's currency once it reads, else "…"
 function priceText(amount: string, currency: string) {
   const parsed = amountSchema.safeParse(amount);
   return parsed.success ? formatAmount(parsed.data, currency) : "…";
+}
+
+// the claimer's payment as typed: its price, or "an offer" when it has none
+function askingText(amount: string | undefined, currency: string) {
+  return amount === undefined
+    ? m.listing_payment_offer()
+    : priceText(amount, currency);
 }
 
 // a side of the summary with its payment added, "1 objekt + $3.00"
@@ -843,8 +894,8 @@ function wantedSummary(wants: ListingFormValues["wants"], currency: string) {
   });
   if (row === undefined) return objekts;
   return wants.length === 1
-    ? priceText(row.amount, currency)
-    : withPrice(objekts, row.amount, currency);
+    ? askingText(row.amount, currency)
+    : `${objekts} + ${askingText(row.amount, currency)}`;
 }
 
 function blockedReason(

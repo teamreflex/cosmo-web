@@ -1,4 +1,5 @@
 import { m } from "@/i18n/messages";
+import { formatAmount, offerSideText } from "@/lib/client/trade-listings";
 import { env } from "@/lib/env/client";
 import { tradeQuery, tradesKey } from "@/lib/queries/trades";
 import type {
@@ -139,22 +140,8 @@ function describeTrade(notification: TradeItem, username: string) {
   const staff = notification.actor === null;
 
   switch (notification.type) {
-    case "listing_claimed": {
-      const { objekts } = notification;
-      return (
-        <ParaglideMessage
-          message={m.notification_listing_claimed}
-          inputs={{
-            username,
-            objekts:
-              objekts.length === 1
-                ? tokenName(objekts[0])
-                : m.notification_objekts_count({ count: objekts.length }),
-          }}
-          markup={bold}
-        />
-      );
-    }
+    case "listing_claimed":
+      return describeClaimed(notification, username);
     case "trade_completed":
       return (
         <ParaglideMessage
@@ -241,33 +228,9 @@ function describeTrade(notification: TradeItem, username: string) {
         />
       );
     case "offer_received":
-      return (
-        <ParaglideMessage
-          message={
-            notification.fromListing
-              ? m.notification_offer_received_listing
-              : m.notification_offer_received
-          }
-          inputs={{
-            username,
-            offered: notification.objekts.length,
-            asked: notification.asked,
-          }}
-          markup={bold}
-        />
-      );
+      return describeOfferReceived(notification, username);
     case "offer_accepted":
-      return (
-        <ParaglideMessage
-          message={
-            notification.fromListing
-              ? m.notification_offer_accepted_listing
-              : m.notification_offer_accepted
-          }
-          inputs={{ username }}
-          markup={bold}
-        />
-      );
+      return describeOfferAccepted(notification, username);
     /**
      * Staff close the offers a banned user received, never saying who was
      * banned, and an offer on a listing closes with the listing.
@@ -339,4 +302,111 @@ function describeTrade(notification: TradeItem, username: string) {
       notification.type satisfies never;
       return null;
   }
+}
+
+/**
+ * A claim on the recipient's listing: what they send, and what they pay
+ * when their payment is on top of their objekts.
+ */
+function describeClaimed(notification: TradeItem, username: string) {
+  const { objekts, payment } = notification;
+  const sent =
+    objekts.length === 1
+      ? tokenName(objekts[0])
+      : m.notification_objekts_count({ count: objekts.length });
+  // a poster who pays on top of their objekts hears what to pay too
+  return payment?.side === "from" ? (
+    <ParaglideMessage
+      message={m.notification_listing_claimed_pay}
+      inputs={{
+        username,
+        objekts: sent,
+        amount: formatAmount(payment.amount, payment.currency),
+      }}
+      markup={bold}
+    />
+  ) : (
+    <ParaglideMessage
+      message={m.notification_listing_claimed}
+      inputs={{ username, objekts: sent }}
+      markup={bold}
+    />
+  );
+}
+
+/**
+ * An offer sent to the recipient: each side's objekt count, with the
+ * payment beside the side that sends it.
+ */
+function describeOfferReceived(notification: TradeItem, username: string) {
+  return notification.payment === null ? (
+    <ParaglideMessage
+      message={
+        notification.fromListing
+          ? m.notification_offer_received_listing
+          : m.notification_offer_received
+      }
+      inputs={{
+        username,
+        offered: notification.objekts.length,
+        asked: notification.asked,
+      }}
+      markup={bold}
+    />
+  ) : (
+    /**
+     * Only an offer on a listing carries a payment, and its claimer
+     * proposes it: a `to` payment is theirs, a `from` one the poster's
+     * on top.
+     */
+    <ParaglideMessage
+      message={m.notification_offer_received_listing_terms}
+      inputs={{
+        username,
+        offered: offerSideText(
+          notification.objekts.length,
+          notification.payment.side === "to" ? notification.payment : null,
+        ),
+        asked: offerSideText(
+          notification.asked,
+          notification.payment.side === "from" ? notification.payment : null,
+        ),
+      }}
+      markup={bold}
+    />
+  );
+}
+
+/**
+ * The recipient's offer accepted: a claimer who owes the payment hears
+ * what to pay, beside any objekts they send.
+ */
+function describeOfferAccepted(notification: TradeItem, username: string) {
+  return notification.payment?.side === "to" ? (
+    <ParaglideMessage
+      message={
+        notification.yourObjekts === 0
+          ? m.notification_offer_accepted_listing_pay
+          : m.notification_offer_accepted_listing_send_pay
+      }
+      inputs={{
+        username,
+        amount: formatAmount(
+          notification.payment.amount,
+          notification.payment.currency,
+        ),
+      }}
+      markup={bold}
+    />
+  ) : (
+    <ParaglideMessage
+      message={
+        notification.fromListing
+          ? m.notification_offer_accepted_listing
+          : m.notification_offer_accepted
+      }
+      inputs={{ username }}
+      markup={bold}
+    />
+  );
 }

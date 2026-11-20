@@ -1,5 +1,6 @@
 import { validOnlineTypes } from "@apollo/cosmo/types/common";
 import {
+  type ListingOfferMode,
   liveTradeStatuses,
   type PaymentMethod,
   type TradeSide,
@@ -17,8 +18,15 @@ import {
   tokenRefusal,
   type TokenRefusalReason,
 } from "@apollo/trades/holdings";
-import { takesOffers } from "@apollo/trades/lifecycle";
-import { fromNumeric, type ListingPayment } from "@apollo/trades/payment";
+import {
+  type ListingAcceptance,
+  listingAcceptance,
+} from "@apollo/trades/lifecycle";
+import {
+  fromNumeric,
+  type ListingPayment,
+  type TradePayment,
+} from "@apollo/trades/payment";
 import type {
   IndexedAttributes,
   ObjektAttributes,
@@ -105,9 +113,10 @@ export const storedWantSchema = z.discriminatedUnion("kind", [
     count: z.int(),
     options: z.array(z.object(collectionValues)),
   }),
+  // no amount when the listing only takes offers on its payment
   z.object({
     kind: z.literal("payment"),
-    amount: z.string().transform(fromNumeric),
+    amount: z.string().transform(fromNumeric).nullable(),
     currency: z.string(),
   }),
 ]);
@@ -118,29 +127,52 @@ export type StoredWant = z.output<typeof storedWantSchema>;
 export type ObjektWant = Exclude<StoredWant, { kind: "payment" }>;
 
 /**
- * A listing's payment, from its payment want row and the side and methods
- * on the listing row, or null without one. Throws when the two disagree,
- * which the post and edit paths never write.
+ * A listing's payment, from its payment want row and the side, methods and
+ * offer mode on the listing row, or null without one. Throws when they
+ * disagree, which the post and edit paths never write: half a payment, or
+ * an asking price on a listing that only takes offers or none on another.
  */
 export function listingPayment(
   listing: {
     id: string;
     paymentSide: TradeSide | null;
     paymentMethods: PaymentMethod[];
+    offers: ListingOfferMode | null;
   },
   wants: readonly StoredWant[],
 ): ListingPayment | null {
   const row = wants.find((want) => want.kind === "payment");
   if (row === undefined && listing.paymentSide === null) return null;
-  if (row === undefined || listing.paymentSide === null) {
+  if (
+    row === undefined ||
+    listing.paymentSide === null ||
+    listing.offers === null
+  ) {
     throw new Error(`listing ${listing.id} has half a payment`);
   }
-  return {
+  const terms = {
     side: listing.paymentSide,
-    amount: row.amount,
     currency: row.currency,
     methods: listing.paymentMethods,
   };
+  if (listing.offers === "offer_only" && row.amount === null) {
+    return { ...terms, mode: listing.offers, amount: null };
+  }
+  if (listing.offers !== "offer_only" && row.amount !== null) {
+    return { ...terms, mode: listing.offers, amount: row.amount };
+  }
+  throw new Error(`listing ${listing.id} has a price its offer mode refuses`);
+}
+
+/**
+ * How the listing takes claims and offers (listingAcceptance()), from its
+ * want rows and its payment's offer mode.
+ */
+export function acceptanceOf(listing: {
+  wants: readonly { kind: StoredWant["kind"] }[];
+  payment: Pick<ListingPayment, "mode"> | null;
+}): ListingAcceptance {
+  return listingAcceptance(listing.wants, listing.payment?.mode ?? null);
 }
 
 /**
@@ -200,6 +232,25 @@ export const storedPaymentItemSchema = z
     currency,
     confirmed: confirmedAt !== null,
   }));
+
+/**
+ * A trade's payment, every unit's together, and the side that sends it, or
+ * null without one.
+ */
+export function tradePayment(
+  items: readonly {
+    kind: "objekt" | "payment";
+    sender: TradeSide;
+    amount: string | null;
+    currency: string | null;
+    confirmedAt: Date | null;
+  }[],
+): TradePayment | null {
+  const item = items.find((each) => each.kind === "payment");
+  if (item === undefined) return null;
+  const { amount, currency } = storedPaymentItemSchema.parse(item);
+  return { side: item.sender, amount, currency };
+}
 
 /**
  * An offered objekt in the feed. The serial comes from the indexer and the
@@ -457,6 +508,7 @@ export type CandidateRow = {
 export type TradeRatio = {
   give: number;
   get: number;
+  // a listing's asking price, null when it only takes offers, or a trade's payment
   payment: Pick<ListingPayment, "side" | "amount" | "currency"> | null;
 };
 
@@ -490,12 +542,14 @@ export function offerRefusal(
     expiresAt: Date;
     picks: readonly number[];
     given: readonly number[];
+    payment: TradePayment | null;
   },
   listing: {
     fromAddress: string;
     pool: ReadonlySet<number>;
     unitSize: number;
     wants: readonly TradeWant[];
+    payment: ListingPayment | null;
     posterRefused: boolean;
   },
   claimer: { address: string; linked: boolean; atCap: boolean },
@@ -518,6 +572,7 @@ export function offerRefusal(
           ? { kind: "found", tokenId, ...state.attributes }
           : { kind: "missing", tokenId };
       }),
+      payment: offer.payment,
     },
     listing,
   );
@@ -616,14 +671,15 @@ export function refusedOfferToken(
 /**
  * A pending offer on the poster's listing: who sent it, the poster's
  * objekts it picked from the pool and the claimer's it gives, each with
- * its serial, when it expires, and why it can't be accepted now, null when
- * it can.
+ * its serial, its payment for every unit it takes, when it expires, and
+ * why it can't be accepted now, null when it can.
  */
 export type ListingOfferSummary = {
   tradeId: string;
   claimer: TradeParty;
   picks: ListingFeedItem[];
   given: ListingFeedItem[];
+  payment: TradePayment | null;
   expiresAt: Date;
   refusal: OfferRefusal | null;
 };
@@ -639,7 +695,7 @@ export type ListingTrade = {
   acceptedAt: Date;
   tokenIds: number[];
   givenCount: number;
-  payment: TradeRatio["payment"];
+  payment: TradePayment | null;
 } & (
   | { status: "accepted"; deadlineAt: Date; toSend: number; needsYou: boolean }
   | { status: "disputed"; deadlineAt: Date; dispute: TradeDispute | null }
@@ -702,6 +758,7 @@ export type ListingViewer =
       expiresAt: Date;
       picks: ListingFeedItem[];
       given: ListingFeedItem[];
+      payment: TradePayment | null;
     }
   | {
       role: "candidate";
@@ -715,20 +772,22 @@ export type ListingViewer =
 export type Candidate = Extract<ListingViewer, { role: "candidate" }>;
 
 /**
- * What a candidate sees in place of Accept: the claim cap, which only
- * claims count against (an offer is checked against it once accepted);
- * the poster's side stopping any claim (ListingStop's `blocked`, or their
- * own address); the pool all in trades for now (`busy`); or the picker.
+ * What a candidate sees in place of Accept: the claim cap on a listing
+ * that only claims, since only claims count against it (an offer is
+ * checked against it once accepted); the poster's side stopping any claim
+ * (ListingStop's `blocked`, or their own address); the pool all in trades
+ * for now (`busy`); or the picker.
  */
 export function candidatePanel(
   listing: {
     wants: readonly { kind: StoredWant["kind"] }[];
+    payment: Pick<ListingPayment, "mode"> | null;
     stop: ListingStop | null;
   },
   viewer: Pick<Candidate, "claims" | "ownAddress">,
 ) {
   if (
-    !takesOffers(listing.wants) &&
+    acceptanceOf(listing) === "claim" &&
     viewer.claims.active >= viewer.claims.cap
   ) {
     return "cap";
@@ -737,6 +796,23 @@ export function candidatePanel(
     return "blocked";
   }
   return listing.stop === "busy" ? "busy" : "picker";
+}
+
+/**
+ * Whether the viewer's claim cap stops Accept on a listing open to offers,
+ * where they can still make an offer, since only claims count against it.
+ */
+export function acceptCapped(
+  listing: {
+    wants: readonly { kind: StoredWant["kind"] }[];
+    payment: Pick<ListingPayment, "mode"> | null;
+  },
+  viewer: Pick<Candidate, "claims">,
+) {
+  return (
+    acceptanceOf(listing) === "either" &&
+    viewer.claims.active >= viewer.claims.cap
+  );
 }
 
 /**
