@@ -41,12 +41,10 @@ export default function ListingFeedFilters() {
 
   return (
     <>
-      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 max-md:hidden">
-        <FilterGroups />
-        {/* centred on the Offering and Looking for rows, under the Type row */}
-        <div className="col-start-3 row-span-2 row-start-2">
-          <ResetFilters count={count} onReset={reset} />
-        </div>
+      <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-2 max-md:hidden">
+        <FilterGroups
+          besideType={<ResetFilters count={count} onReset={reset} />}
+        />
       </div>
 
       <FiltersDrawer count={count} onReset={reset} />
@@ -57,9 +55,10 @@ export default function ListingFeedFilters() {
 /**
  * From md, each group spans the first two columns of its parent grid, so
  * the labels share one column as wide as the longer of them. Below md, in
- * the drawer, each label sits above its chips.
+ * the drawer, each label sits above its chips. `besideType` follows the
+ * type toggles on their row.
  */
-function FilterGroups() {
+function FilterGroups({ besideType }: { besideType?: ReactNode }) {
   const offering = useFeedSideFilters(offeringKeys);
   const want = useFeedSideFilters(wantKeys);
   const { type, setType } = useListingTypeFilter();
@@ -91,6 +90,7 @@ function FilterGroups() {
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
+        {besideType}
       </FilterGroup>
       <FilterGroup
         label={m.market_listings_offering()}
@@ -253,7 +253,8 @@ function FiltersDrawer({
       <DrawerContent className="rounded-t-md">
         <div className="flex items-center gap-2 px-4 pt-1.5 pb-2.5">
           <DrawerTitle className="text-base">{m.common_filters()}</DrawerTitle>
-          <div className="ml-auto">
+          {/* as tall as the button, so the header keeps its height when it shows */}
+          <div className="ml-auto flex h-8 items-center">
             <ResetFilters count={count} onReset={onReset} />
           </div>
         </div>
