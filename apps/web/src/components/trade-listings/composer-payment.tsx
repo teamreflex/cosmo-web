@@ -37,8 +37,8 @@ export function AmountField({
     "id" | "aria-label" | "aria-invalid" | "aria-describedby"
   >) {
   return (
-    <span className="flex shrink-0 items-center gap-2">
-      <span className="font-mono text-sm text-muted-foreground">
+    <span className="flex min-w-0 items-center gap-2">
+      <span className="shrink-0 font-mono text-sm text-muted-foreground">
         {currency}
       </span>
       <Input
@@ -49,7 +49,7 @@ export function AmountField({
         value={amount}
         onChange={(event) => onChange(event.target.value)}
         className={cn(
-          "h-9 w-24 font-mono font-bold tabular-nums md:w-28",
+          "h-9 w-24 min-w-14 font-mono font-bold tabular-nums md:w-28",
           className,
         )}
       />
@@ -92,7 +92,7 @@ export function ComposerPaymentRow(props: AmountProps) {
         {...props}
         aria-label={m.listing_composer_payment_amount()}
       />
-      <span className="min-w-0 truncate text-sm text-muted-foreground">
+      <span className="shrink-0 text-sm whitespace-nowrap text-muted-foreground">
         {m.listing_detail_payment_each()}
       </span>
       <RemoveButton
@@ -150,7 +150,7 @@ export function ComposerOfferedPayment({
         {...payment}
         aria-label={m.listing_composer_payment_amount_yours()}
       />
-      <span className="min-w-0 truncate text-sm text-muted-foreground">
+      <span className="shrink-0 text-sm whitespace-nowrap text-muted-foreground">
         {paying
           ? m.listing_payment_each_unit()
           : m.listing_composer_payment_on_top()}

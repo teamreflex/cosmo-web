@@ -96,7 +96,7 @@ export default function UpdateDialog() {
 
 const updates = [
   {
-    date: "2026-11-20",
+    date: "2026-11-22",
     changes: [
       "Transferable status for all objekts has been fixed and should now be accurate going forward.",
       "Account settings & preferences have been streamlined into a single page.",

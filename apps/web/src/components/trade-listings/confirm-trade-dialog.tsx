@@ -654,6 +654,7 @@ function PaymentGroup({
         payment={listing.payment}
         units={units}
         perUnit={listing.units.kind === "buy"}
+        accepting
         className="px-3 py-2.5"
       />
     )

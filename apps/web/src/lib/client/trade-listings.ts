@@ -68,7 +68,7 @@ export function formatAmount(amount: number, currency: string) {
 /**
  * A listing's payment as one phrase in its own currency: its price for
  * `units` units, "$3.00", the price and that it takes offers, "$3.00 ·
- * open to offers", or "Make an offer" when it has no asking price.
+ * offers", or "Make an offer" when it has no asking price.
  */
 export function askingPriceText(
   payment: Pick<ListingPayment, "mode" | "amount" | "currency">,

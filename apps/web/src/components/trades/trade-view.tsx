@@ -225,7 +225,7 @@ function PartyView({
         tradeId={trade.id}
         listingId={trade.listingId}
         deadline={trade.deadlineAt}
-        hasPayment={trade.payment !== null}
+        owed={trade.parts[otherSide(side)]}
         open={dialog === "dispute"}
         onOpenChange={(open) => setDialog(open ? "dispute" : null)}
       />
@@ -756,20 +756,11 @@ function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
     trade.dispute?.event.by === "deadline";
   // the payment counts as a transfer, seen once its recipient confirms it
   const transfers = [
-    ...trade.items.map((item) => ({
-      id: item.id,
-      done: item.status === "sent",
-    })),
-    ...(trade.payment === null
-      ? []
-      : [
-          {
-            id: trade.payment.id,
-            done: trade.payment.status === "confirmed",
-          },
-        ]),
+    ...trade.items.map((item) => item.status === "sent"),
+    ...(trade.payment === null ? [] : [trade.payment.status === "confirmed"]),
   ];
-  const seen = transfers.filter((transfer) => transfer.done).length;
+  const count = transfers.length;
+  const seen = transfers.filter(Boolean).length;
   const steps: {
     tone: keyof typeof stepTones;
     eyebrow: string;
@@ -805,7 +796,7 @@ function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
             : m.trade_page_step({ step: 2 }),
       title: (trade.payment === null
         ? m.trade_page_step_send
-        : m.trade_page_step_send_payment)({ seen, count: transfers.length }),
+        : m.trade_page_step_send_payment)({ seen, count }),
     },
     {
       tone: completed ? "done" : "todo",
@@ -854,24 +845,25 @@ function TradeSteps({ trade, side }: { trade: Trade; side: TradeSide | null }) {
             </span>
           )}
           {index === 1 &&
-            (transfers.length > 12 ? (
+            (count > 12 ? (
               <span
                 aria-hidden
                 className="mt-0.5 h-1.5 overflow-hidden rounded-full bg-muted"
               >
                 <span
                   className="block h-full rounded-full bg-teal-500"
-                  style={{ width: `${(seen / transfers.length) * 100}%` }}
+                  style={{ width: `${(seen / count) * 100}%` }}
                 />
               </span>
             ) : (
+              // seen transfers fill from the left, whichever arrived first
               <span aria-hidden className="flex gap-0.75 pt-0.5">
-                {transfers.map((transfer) => (
+                {Array.from({ length: count }, (_, position) => (
                   <span
-                    key={transfer.id}
+                    key={position}
                     className={cn(
                       "h-1.5 min-w-0 flex-1 rounded-full",
-                      transfer.done ? "bg-teal-500" : "bg-muted",
+                      position < seen ? "bg-teal-500" : "bg-muted",
                     )}
                   />
                 ))}

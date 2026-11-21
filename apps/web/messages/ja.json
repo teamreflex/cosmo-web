@@ -2752,7 +2752,7 @@
   "listing_offer_amount": "あなたのオファー",
   "listing_payment_offer": "オファー",
   "listing_payment_offer_only": "オファーする",
-  "listing_payment_open_to_offers": "{price} · オファー歓迎",
+  "listing_payment_open_to_offers": "{price} · オファー可",
   "listing_payment_open_to_offers_tag": "オファー歓迎",
   "listing_payment_your_offer": "あなたのオファー額",
   "listing_detail_make_offer": "オファーする",

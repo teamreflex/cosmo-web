@@ -51,19 +51,22 @@ export default function WantLabel({ want }: Props) {
 /**
  * A listing's payment behind its badge, in its own currency: what one
  * trade pays (one unit's, on a buy listing), or with `units` what this many
- * units pay in all, and whether
- * it takes offers, over the methods it may arrive by. A payment with no
+ * units pay in all, and whether it takes offers unless it is being
+ * accepted, over the methods it may arrive by. A payment with no
  * asking price reads "Make an offer".
  */
 export function PaymentLabel({
   payment,
   units = 1,
   perUnit = false,
+  accepting = false,
 }: {
   payment: ListingPayment;
   units?: number;
   /** a buy listing's price, which is for each unit rather than each trade */
   perUnit?: boolean;
+  /** the price a trade being accepted pays, so whether the listing takes offers doesn't show */
+  accepting?: boolean;
 }) {
   return (
     <span className="flex min-w-0 flex-col gap-1 leading-relaxed">
@@ -90,6 +93,7 @@ export function PaymentLabel({
                     count: units,
                   })}
               {payment.mode === "price_or_offer" &&
+                !accepting &&
                 ` · ${m.listing_payment_open_to_offers_tag()}`}
             </span>
           </>
