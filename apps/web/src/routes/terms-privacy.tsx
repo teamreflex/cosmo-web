@@ -18,7 +18,12 @@ function TermsPrivacy() {
     <div className="container flex max-w-3xl flex-col gap-2 py-2">
       <Card>
         <CardHeader>
-          <CardTitle>{m.terms_title()}</CardTitle>
+          <CardTitle className="flex flex-wrap items-baseline gap-x-2">
+            {m.terms_title()}
+            <span className="text-xs font-normal text-muted-foreground">
+              {m.terms_updated({ date: "21/11/26" })}
+            </span>
+          </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-4 text-sm [&:lang(ko)]:break-keep">
           <section className="flex flex-col gap-2">
@@ -38,6 +43,16 @@ function TermsPrivacy() {
               <li>{m.terms_trading_matching({ appName })}</li>
               <li>{m.terms_trading_modhaus({ appName })}</li>
               <li>{m.terms_trading_public({ appName })}</li>
+            </ul>
+          </section>
+
+          <section className="flex flex-col gap-2">
+            <h2 className="font-semibold">{m.terms_section_payments()}</h2>
+            <ul className="list-outside list-disc space-y-2 pl-5">
+              <li>{m.terms_payments_between({ appName })}</li>
+              <li>{m.terms_payments_record({ appName })}</li>
+              <li>{m.terms_payments_responsibility()}</li>
+              <li>{m.terms_payments_disputes()}</li>
             </ul>
           </section>
 
