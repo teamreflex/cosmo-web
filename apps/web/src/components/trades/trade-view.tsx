@@ -514,7 +514,9 @@ function TradeLayout({
             </TransferRows>
             {trade.state.status === "accepted" && (
               <p className="text-xs leading-relaxed text-muted-foreground">
-                {m.trade_page_deadline_note()}
+                {trade.payment === null
+                  ? m.trade_page_deadline_note()
+                  : m.trade_page_deadline_note_payment()}
               </p>
             )}
           </div>

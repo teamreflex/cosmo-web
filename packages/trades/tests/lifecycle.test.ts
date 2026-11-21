@@ -34,14 +34,18 @@ function objekt(sender: "from" | "to", transferred = false): TradeItemState {
   return { kind: "objekt", sender, transferred };
 }
 
-function payment(sender: "from" | "to", confirmed = false): TradeItemState {
-  return { kind: "payment", sender, confirmed };
+function payment(
+  sender: "from" | "to",
+  confirmed = false,
+  markedPaid = false,
+): TradeItemState {
+  return { kind: "payment", sender, markedPaid, confirmed };
 }
 
 // a sale: the poster sends one objekt, the claimer pays for it
-const sale = (sent = false, confirmed = false) => [
+const sale = (sent = false, confirmed = false, markedPaid = false) => [
   objekt("from", sent),
-  payment("to", confirmed),
+  payment("to", confirmed, markedPaid),
 ];
 
 // a pending trade here is a direct offer, which `from` proposes; listingOffer() builds the other kind
@@ -251,6 +255,19 @@ describe("partyAction", () => {
     expect(settle(false)).toBe("completed");
   });
 
+  test("mark_paid: refused past the deadline, recorded before it", () => {
+    const mark = { type: "mark_paid", item: 1, by: "to" } as const;
+    const marked = (deadlinePassed: boolean) => {
+      const result = partyAction(trade("accepted", sale()), mark, {
+        deadlinePassed,
+        arrived: false,
+      });
+      return result.ok ? result.trade.items[1] : result.reason;
+    };
+    expect(marked(true)).toBe("deadline_passed");
+    expect(marked(false)).toEqual(payment("to", false, true));
+  });
+
   test("dispute: an arrival doesn't stop it", () => {
     expect(
       reason(trade("accepted", sixObjekts()), "dispute", {
@@ -453,6 +470,103 @@ describe("transition: payments", () => {
   });
 });
 
+/**
+ * The payer marking a payment paid is a record: it changes no status and
+ * settles nothing, and only the deadline counts it, as the payer having
+ * done their part.
+ */
+describe("transition: marking paid", () => {
+  const markPaid = (by: TradeSide) =>
+    ({ type: "mark_paid", item: 1, by }) satisfies TradeEvent;
+
+  test("only the payer marks it, and the trade stays where it was", () => {
+    expect(statusAfter(trade("accepted", sale()), markPaid("from"))).toBe(
+      "wrong_party",
+    );
+    expect(transition(trade("accepted", sale(true)), markPaid("to"))).toEqual({
+      ok: true,
+      trade: { status: "accepted", items: sale(true, false, true) },
+    });
+    expect(statusAfter(trade("disputed", sale()), markPaid("to"))).toBe(
+      "disputed",
+    );
+  });
+
+  test.each([
+    [
+      "already marked",
+      trade("accepted", sale(false, false, true)),
+      "already_done",
+    ],
+    ["already confirmed", trade("accepted", sale(false, true)), "already_done"],
+    ["ended", trade("timed_out", sale()), "wrong_status"],
+    ["still an offer", listingOffer(sale()), "wrong_status"],
+  ] satisfies [string, TradeState, TransitionRefusal][])(
+    "is refused once %s",
+    (_, state, refusal) => {
+      expect(statusAfter(state, markPaid("to"))).toBe(refusal);
+    },
+  );
+
+  test("names a payment, never an objekt", () => {
+    expect(
+      statusAfter(trade("accepted", sale()), {
+        type: "mark_paid",
+        item: 0,
+        by: "from",
+      }),
+    ).toBe("no_such_item");
+  });
+
+  test("never completes a trade; the recipient's confirmation does", () => {
+    const marked = trade("accepted", sale(true, false, true));
+    expect(statusAfter(marked, { type: "transfer", item: 0 })).toBe(
+      "already_done",
+    );
+    expect(
+      statusAfter(marked, { type: "confirm_payment", item: 1, by: "from" }),
+    ).toBe("completed");
+    expect(
+      statusAfter(trade("accepted", sale(false, true, true)), {
+        type: "transfer",
+        item: 0,
+      }),
+    ).toBe("completed");
+  });
+
+  test("leaves cancelling as it was", () => {
+    const marked = trade("accepted", sale(false, false, true));
+    expect(statusAfter(marked, { type: "cancel", by: "to" })).toBe("cancelled");
+    expect(statusAfter(marked, { type: "cancel", by: "from" })).toBe(
+      "payment_due",
+    );
+  });
+
+  test.each([
+    ["nothing was done", sale(), "timed_out", null],
+    [
+      "only the payment was marked paid",
+      sale(false, false, true),
+      "disputed",
+      "to",
+    ],
+    [
+      "the payment was marked paid and the objekt arrived",
+      sale(true, false, true),
+      "disputed",
+      null,
+    ],
+  ] satisfies [string, TradeItemState[], TradeStatus, TradeSide | null][])(
+    "at the deadline, when %s, it is %s",
+    (_, items, status, waiting) => {
+      expect(statusAfter(trade("accepted", items), { type: "time_out" })).toBe(
+        status,
+      );
+      expect(waitingSide(items)).toBe(waiting);
+    },
+  );
+});
+
 describe("transition: staff extend", () => {
   test("completes a disputed trade whose items all arrived (LIFE-25)", () => {
     expect(
@@ -538,16 +652,25 @@ describe("needsYou (UNIT-05)", () => {
     expect(needsYou(onListing, "to", running)).toBe(false);
   });
 
-  test("an unconfirmed payment needs its recipient, never its sender", () => {
-    const sent = trade("accepted", sale(true));
-    expect(needsYou(sent, "from", running)).toBe(true);
-    expect(needsYou(sent, "to", running)).toBe(false);
-    const confirmed = trade("accepted", sale(false, true));
-    expect(needsYou(confirmed, "from", running)).toBe(true);
-    expect(needsYou(confirmed, "to", running)).toBe(false);
+  // the objekt arrived, so only the payment is left
+  test.each([
+    ["unpaid", sale(true), true, true],
+    ["marked paid", sale(true, false, true), false, true],
+    ["confirmed", sale(true, true, true), false, false],
+  ] satisfies [string, TradeItemState[], boolean, boolean][])(
+    "a payment %s needs its payer %p and its recipient %p",
+    (_, items, payer, recipient) => {
+      expect(needsYou(trade("accepted", items), "to", running)).toBe(payer);
+      expect(needsYou(trade("accepted", items), "from", running)).toBe(
+        recipient,
+      );
+    },
+  );
+
+  test("a payment's recipient still owing an objekt is needed", () => {
     expect(
-      needsYou(trade("accepted", sale(true)), "from", { deadlinePassed: true }),
-    ).toBe(false);
+      needsYou(trade("accepted", sale(false, true)), "from", running),
+    ).toBe(true);
   });
 
   test("a disputed trade never needs anyone (UNIT-06)", () => {
@@ -848,6 +971,7 @@ describe("tradeState", () => {
   const unsent = {
     listingId: null,
     transferredAt: null,
+    markedPaidAt: null,
     confirmedAt: null,
   };
   const at = new Date("2026-10-12T12:00:00Z");

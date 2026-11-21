@@ -1,0 +1,522 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "f447e7cb-9536-4949-845b-ee75676a6ac9",
+  "prevIds": [
+    "f8adcfd8-877d-43fe-b982-8c1a2f7f6ded"
+  ],
+  "footprints": [
+    {
+      "statementType": "alter_enum",
+      "statementTarget": [
+        "enum",
+        "public",
+        "payment_method"
+      ],
+      "writes": [
+        "s|enum|public.payment_method"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "trade_listing_wants",
+        "option"
+      ],
+      "writes": [
+        "s|col|public.trade_listing_wants.option",
+        "n|col|public.trade_listing_wants.option",
+        "e|col|public.trade_listing_wants.option"
+      ],
+      "reads": [
+        "n|tbl|public.trade_listing_wants",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "trade_offers",
+        "payment_side"
+      ],
+      "writes": [
+        "s|col|public.trade_offers.payment_side",
+        "n|col|public.trade_offers.payment_side",
+        "e|col|public.trade_offers.payment_side"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|enum|public.trade_side"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "trade_offers",
+        "payment_methods"
+      ],
+      "writes": [
+        "s|col|public.trade_offers.payment_methods",
+        "n|col|public.trade_offers.payment_methods",
+        "e|col|public.trade_offers.payment_methods"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|enum|public.payment_method"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "trade_offers",
+        "max_units"
+      ],
+      "writes": [
+        "s|col|public.trade_offers.max_units",
+        "n|col|public.trade_offers.max_units",
+        "e|col|public.trade_offers.max_units"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offers",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "trade_offers",
+        "units"
+      ],
+      "writes": [
+        "s|col|public.trade_offers.units",
+        "n|col|public.trade_offers.units",
+        "e|col|public.trade_offers.units"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offers",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "trade_offers",
+        "listing_option"
+      ],
+      "writes": [
+        "s|col|public.trade_offers.listing_option",
+        "n|col|public.trade_offers.listing_option",
+        "e|col|public.trade_offers.listing_option"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offers",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "recreate_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "trade_listing_wants",
+        "trade_listing_wants_payment_idx"
+      ],
+      "writes": [
+        "s|idx|public.trade_listing_wants_payment_idx",
+        "n|idx|public.trade_listing_wants_payment_idx",
+        "e|idx|public.trade_listing_wants_payment_idx",
+        "n|rel|public.trade_listing_wants_payment_idx"
+      ],
+      "reads": [
+        "n|tbl|public.trade_listing_wants",
+        "n|sch|public",
+        "n|col|public.trade_listing_wants.listing_id",
+        "n|col|public.trade_listing_wants.option"
+      ],
+      "sharedWrites": [],
+      "sqlHash": "9dcd07c48c37b1c2"
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_listing_wants"
+      ],
+      "writes": [
+        "s|ck|public.trade_listing_wants.trade_listing_wants_option_chk",
+        "n|ck|public.trade_listing_wants.trade_listing_wants_option_chk",
+        "e|ck|public.trade_listing_wants.trade_listing_wants_option_chk",
+        "n|con|public.trade_listing_wants.trade_listing_wants_option_chk"
+      ],
+      "reads": [
+        "n|tbl|public.trade_listing_wants",
+        "n|sch|public",
+        "n|col|public.trade_listing_wants.option"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_offers"
+      ],
+      "writes": [
+        "s|ck|public.trade_offers.trade_offers_listing_option_chk",
+        "n|ck|public.trade_offers.trade_offers_listing_option_chk",
+        "e|ck|public.trade_offers.trade_offers_listing_option_chk",
+        "n|con|public.trade_offers.trade_offers_listing_option_chk"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|col|public.trade_offers.listing_option",
+        "n|col|public.trade_offers.kind"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_offers"
+      ],
+      "writes": [
+        "s|ck|public.trade_offers.trade_offers_units_chk",
+        "n|ck|public.trade_offers.trade_offers_units_chk",
+        "e|ck|public.trade_offers.trade_offers_units_chk",
+        "n|con|public.trade_offers.trade_offers_units_chk"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|col|public.trade_offers.units",
+        "n|col|public.trade_offers.kind"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_offers"
+      ],
+      "writes": [
+        "s|ck|public.trade_offers.trade_offers_payment_chk",
+        "n|ck|public.trade_offers.trade_offers_payment_chk",
+        "e|ck|public.trade_offers.trade_offers_payment_chk",
+        "n|con|public.trade_offers.trade_offers_payment_chk"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|col|public.trade_offers.kind",
+        "n|col|public.trade_offers.payment_side",
+        "n|col|public.trade_offers.offers",
+        "n|col|public.trade_offers.payment_methods"
+      ]
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_listing_wants"
+      ],
+      "writes": [
+        "s|ck|public.trade_listing_wants.trade_listing_wants_shape_chk"
+      ],
+      "reads": [
+        "n|tbl|public.trade_listing_wants",
+        "n|sch|public",
+        "n|col|public.trade_listing_wants.kind",
+        "n|col|public.trade_listing_wants.count",
+        "n|col|public.trade_listing_wants.slug",
+        "n|col|public.trade_listing_wants.artist",
+        "n|col|public.trade_listing_wants.member",
+        "n|col|public.trade_listing_wants.season",
+        "n|col|public.trade_listing_wants.class",
+        "n|col|public.trade_listing_wants.on_offline",
+        "n|col|public.trade_listing_wants.amount",
+        "n|col|public.trade_listing_wants.currency",
+        "e|col|public.trade_listing_wants.kind",
+        "e|col|public.trade_listing_wants.count",
+        "e|col|public.trade_listing_wants.slug",
+        "e|col|public.trade_listing_wants.artist",
+        "e|col|public.trade_listing_wants.member",
+        "e|col|public.trade_listing_wants.season",
+        "e|col|public.trade_listing_wants.class",
+        "e|col|public.trade_listing_wants.on_offline",
+        "e|col|public.trade_listing_wants.amount",
+        "e|col|public.trade_listing_wants.currency"
+      ],
+      "sqlHash": "057bbe900bc8da28"
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_offers"
+      ],
+      "writes": [
+        "s|ck|public.trade_offers.trade_offers_trade_chk"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|col|public.trade_offers.kind",
+        "n|col|public.trade_offers.to_address",
+        "n|col|public.trade_offers.offers",
+        "n|col|public.trade_offers.note",
+        "n|col|public.trade_offers.payment_side",
+        "e|col|public.trade_offers.kind",
+        "e|col|public.trade_offers.to_address",
+        "e|col|public.trade_offers.offers",
+        "e|col|public.trade_offers.note"
+      ],
+      "sqlHash": "6304cc96fcc7697a"
+    },
+    {
+      "statementType": "alter_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "trade_offers"
+      ],
+      "writes": [
+        "s|ck|public.trade_offers.trade_offers_unit_size_chk"
+      ],
+      "reads": [
+        "n|tbl|public.trade_offers",
+        "n|sch|public",
+        "n|col|public.trade_offers.kind",
+        "n|col|public.trade_offers.unit_size",
+        "n|col|public.trade_offers.max_units",
+        "e|col|public.trade_offers.kind",
+        "e|col|public.trade_offers.unit_size"
+      ],
+      "sqlHash": "ea8670341ec408f9"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_wants",
+        "name": "option",
+        "type": "smallint",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "0",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "payment_side",
+        "type": "trade_side",
+        "typeSchema": "public",
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "payment_methods",
+        "type": "payment_method",
+        "typeSchema": "public",
+        "notNull": true,
+        "dimensions": 1,
+        "default": "'{}'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "max_units",
+        "type": "smallint",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "units",
+        "type": "smallint",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "listing_option",
+        "type": "smallint",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_listing_wants",
+        "name": "trade_listing_wants_option_chk",
+        "value": "\"option\" >= 0",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "trade_offers_listing_option_chk",
+        "value": "\"listing_option\" IS NULL OR (\"kind\" = 'trade' AND \"listing_option\" >= 0)",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "trade_offers_units_chk",
+        "value": "\"units\" IS NULL OR (\"kind\" = 'trade' AND \"units\" > 0)",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "trade_offers",
+        "name": "trade_offers_payment_chk",
+        "value": "\"kind\" = 'trade' OR num_nulls(\"payment_side\", \"offers\", nullif(cardinality(\"payment_methods\"), 0)) IN (0, 3)",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "enums\u0000[\"public\",\"payment_method\"]",
+      "set": {
+        "values": [
+          "paypal_ff",
+          "wise",
+          "bank_transfer",
+          "promptpay",
+          "kakaopay",
+          "toss",
+          "gcash",
+          "alipay",
+          "wechat_pay",
+          "venmo",
+          "cashapp",
+          "other"
+        ]
+      }
+    },
+    {
+      "op": "alter",
+      "key": "indexes\u0000[\"public\",\"trade_listing_wants_payment_idx\"]",
+      "set": {
+        "columns": [
+          {
+            "value": "listing_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "option",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ]
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"public\",\"trade_listing_wants\",\"trade_listing_wants_shape_chk\"]",
+      "set": {
+        "value": "CASE \"kind\"\n        WHEN 'exact' THEN coalesce(\"count\", 0) > 0 AND num_nulls(\"slug\", \"artist\", \"member\", \"season\", \"class\", \"on_offline\") = 0 AND num_nonnulls(\"amount\", \"currency\") = 0\n        WHEN 'range' THEN coalesce(\"count\", 0) > 0 AND num_nonnulls(\"slug\", \"artist\", \"member\", \"season\", \"class\", \"on_offline\", \"amount\", \"currency\") = 0\n        WHEN 'choice' THEN coalesce(\"count\", 0) > 0 AND num_nonnulls(\"slug\", \"artist\", \"member\", \"season\", \"class\", \"on_offline\", \"amount\", \"currency\") = 0\n        ELSE coalesce(\"amount\", 1) > 0 AND \"currency\" IS NOT NULL AND num_nonnulls(\"count\", \"slug\", \"artist\", \"member\", \"season\", \"class\", \"on_offline\") = 0\n      END"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"public\",\"trade_offers\",\"trade_offers_trade_chk\"]",
+      "set": {
+        "value": "\"kind\" = 'listing' OR (\"to_address\" IS NOT NULL AND \"offers\" IS NULL AND \"note\" IS NULL AND \"payment_side\" IS NULL)"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "checks\u0000[\"public\",\"trade_offers\",\"trade_offers_unit_size_chk\"]",
+      "set": {
+        "value": "CASE \"kind\" WHEN 'listing' THEN num_nulls(\"unit_size\", \"max_units\") = 1 AND coalesce(\"unit_size\", \"max_units\") > 0 ELSE num_nulls(\"unit_size\", \"max_units\") = 2 END"
+      }
+    }
+  ]
+}

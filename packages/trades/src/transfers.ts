@@ -393,18 +393,20 @@ export function itemStatus(
 
 /**
  * Where a payment stands: `confirmed` once its recipient said it arrived,
- * else `waiting` on it while the trade is live, `not_started` while it is
- * a pending offer, and `not_confirmed` once the trade ended without it.
- * Apollo never sees the money move, so nothing in between exists.
+ * else `paid` once its sender marked it paid, else `waiting` on it while
+ * the trade is live, `not_started` while it is a pending offer, and
+ * `not_confirmed` once the trade ended without either. Apollo never sees
+ * the money move, so it only knows what the parties say.
  */
 export type PaymentStatus =
-  "confirmed" | "waiting" | "not_started" | "not_confirmed";
+  "confirmed" | "paid" | "waiting" | "not_started" | "not_confirmed";
 
 export function paymentStatus(
-  item: { confirmedAt: Date | null },
+  item: { markedPaidAt: Date | null; confirmedAt: Date | null },
   status: TradeStatus,
 ): PaymentStatus {
   if (item.confirmedAt !== null) return "confirmed";
+  if (item.markedPaidAt !== null) return "paid";
   if (!isOpenTrade(status)) return "not_confirmed";
   return status === "pending" ? "not_started" : "waiting";
 }

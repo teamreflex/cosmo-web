@@ -437,6 +437,7 @@ function TradeState({
           <NextStepBadge
             needsYou={trade.needsYou}
             toSend={trade.toSend}
+            toMarkPaid={trade.toMarkPaid}
             name={name}
           />
           <span className="ms-auto text-xs text-muted-foreground tabular-nums">

@@ -1,4 +1,0 @@
-ALTER TABLE "trade_offers" ADD COLUMN "max_units" smallint;--> statement-breakpoint
-ALTER TABLE "trade_offers" ADD COLUMN "units" smallint;--> statement-breakpoint
-ALTER TABLE "trade_offers" ADD CONSTRAINT "trade_offers_units_chk" CHECK ("units" IS NULL OR ("kind" = 'trade' AND "units" > 0));--> statement-breakpoint
-ALTER TABLE "trade_offers" DROP CONSTRAINT "trade_offers_unit_size_chk", ADD CONSTRAINT "trade_offers_unit_size_chk" CHECK (CASE "kind" WHEN 'listing' THEN num_nulls("unit_size", "max_units") = 1 AND coalesce("unit_size", "max_units") > 0 ELSE num_nulls("unit_size", "max_units") = 2 END);

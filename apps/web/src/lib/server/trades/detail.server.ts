@@ -521,6 +521,13 @@ async function readPosterSide(listing: {
                   item.kind === "objekt" &&
                   item.transferredAt === null,
               ).length,
+              toMarkPaid: row.items.some(
+                (item) =>
+                  item.sender === "from" &&
+                  item.kind === "payment" &&
+                  item.markedPaidAt === null &&
+                  item.confirmedAt === null,
+              ),
               needsYou: needsYou(state, "from", {
                 deadlinePassed: deadlinePassed(
                   state,

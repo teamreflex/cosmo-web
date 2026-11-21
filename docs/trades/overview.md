@@ -41,8 +41,9 @@ Apollo matches people who want to swap objekts and records each swap, but never 
     +-- a party cancels, nothing sent or arrived yet ------------> cancelled
     +-- a party opens a dispute, or a party is banned -----------> disputed
     +-- trade-timers: deadline_at <= the drain's watermark
-    |     nothing done (no token arrived, no payment confirmed) -> timed_out
-    |     something done and something owed ---------------------> disputed
+    |     nothing done (no token arrived, no payment confirmed
+    |     or marked paid by its payer) ---------------------------> timed_out
+    |     something done or marked paid, something owed ---------> disputed
     |
   disputed   the clock stops; transfers are still recorded; only staff end it
        staff complete ----> completed
@@ -52,7 +53,7 @@ Apollo matches people who want to swap objekts and records each swap, but never 
 
 - A direct offer or counter from Trade Matches enters the same `trade: pending` box with `proposed_by = from`, and is accepted the same way ([offers.md](offers.md)).
 - A timed-out or cancelled trade changes nothing on the listing's pool: its picks never left it. On a buy listing it frees the units it held.
-- A deadline that passes with something sent and something owed files a `deadline_passed` report for staff ([lifecycle.md](lifecycle.md)).
+- A deadline that passes with something sent, or a payment marked paid, and something owed files a `deadline_passed` report for staff ([lifecycle.md](lifecycle.md)).
 
 ## Components
 

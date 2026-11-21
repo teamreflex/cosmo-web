@@ -867,7 +867,14 @@ export type ListingTrade = {
   givenCount: number;
   payment: TradePayment | null;
 } & (
-  | { status: "accepted"; deadlineAt: Date; toSend: number; needsYou: boolean }
+  | {
+      status: "accepted";
+      deadlineAt: Date;
+      toSend: number;
+      // whether the poster pays and hasn't marked it paid
+      toMarkPaid: boolean;
+      needsYou: boolean;
+    }
   | { status: "disputed"; deadlineAt: Date; dispute: TradeDispute | null }
   | { status: "completed" | "cancelled" | "timed_out"; endedAt: Date }
 );

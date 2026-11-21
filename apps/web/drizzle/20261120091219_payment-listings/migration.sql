@@ -1,7 +1,0 @@
-ALTER TYPE "payment_method" ADD VALUE 'other';--> statement-breakpoint
-ALTER TABLE "trade_offers" ADD COLUMN "payment_side" "trade_side";--> statement-breakpoint
-ALTER TABLE "trade_offers" ADD COLUMN "payment_methods" "payment_method"[] DEFAULT '{}'::"payment_method"[] NOT NULL;--> statement-breakpoint
-ALTER TABLE "trade_offers" ADD CONSTRAINT "trade_offers_payment_chk" CHECK (num_nulls("payment_side", "offers", nullif(cardinality("payment_methods"), 0)) IN (0, 3));--> statement-breakpoint
-ALTER TABLE "trade_offer_items" DROP CONSTRAINT "trade_offer_items_objekt_chk", ADD CONSTRAINT "trade_offer_items_objekt_chk" CHECK (CASE "kind" WHEN 'objekt' THEN num_nulls("token_id", "slug", "artist", "member", "season", "class", "on_offline") = 0 AND num_nonnulls("amount", "currency", "method", "confirmed_at") = 0 ELSE num_nonnulls("token_id", "slug", "artist", "member", "season", "class", "on_offline", "transferred_at", "tx_hash") = 0 AND coalesce("amount", 0) > 0 AND "currency" IS NOT NULL AND NOT "live" END);--> statement-breakpoint
-ALTER TABLE "trade_offer_items" DROP COLUMN "marked_paid_at";--> statement-breakpoint
-ALTER TABLE "trade_offers" DROP CONSTRAINT "trade_offers_trade_chk", ADD CONSTRAINT "trade_offers_trade_chk" CHECK ("kind" = 'listing' OR ("to_address" IS NOT NULL AND "offers" IS NULL AND "note" IS NULL AND "payment_side" IS NULL AND cardinality("payment_methods") = 0));

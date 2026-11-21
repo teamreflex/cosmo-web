@@ -52,6 +52,7 @@ async function postDispute(webhookUrl: string, alert: DisputeAlert) {
         amount: tradeOfferItems.amount,
         currency: tradeOfferItems.currency,
         method: tradeOfferItems.method,
+        markedPaidAt: tradeOfferItems.markedPaidAt,
       })
       .from(tradeOfferItems)
       .where(eq(tradeOfferItems.offerId, alert.tradeId))

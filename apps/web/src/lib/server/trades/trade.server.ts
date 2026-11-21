@@ -188,6 +188,7 @@ export async function lockTrade(tx: WebTx, tradeId: string) {
       tokenId: tradeOfferItems.tokenId,
       listingId: tradeOfferItems.listingId,
       transferredAt: tradeOfferItems.transferredAt,
+      markedPaidAt: tradeOfferItems.markedPaidAt,
       confirmedAt: tradeOfferItems.confirmedAt,
       amount: tradeOfferItems.amount,
       currency: tradeOfferItems.currency,

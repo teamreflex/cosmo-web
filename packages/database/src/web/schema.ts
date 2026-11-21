@@ -931,6 +931,8 @@ export const tradeOfferItems = pgTable(
     // chain time and hash of the transfer the drain matched
     transferredAt: tradeTimestamp("transferred_at"),
     txHash: varchar("tx_hash", { length: 66 }),
+    // when a payment's sender marked it paid, a record that settles nothing
+    markedPaidAt: tradeTimestamp("marked_paid_at"),
     // when a payment's recipient said it arrived, and `method` how
     confirmedAt: tradeTimestamp("confirmed_at"),
     /**
@@ -951,7 +953,7 @@ export const tradeOfferItems = pgTable(
     index("trade_offer_items_listing_idx").on(t.listingId),
     check(
       "trade_offer_items_objekt_chk",
-      sql`CASE ${t.kind} WHEN 'objekt' THEN num_nulls(${t.tokenId}, ${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}) = 0 AND num_nonnulls(${t.amount}, ${t.currency}, ${t.method}, ${t.confirmedAt}) = 0 ELSE num_nonnulls(${t.tokenId}, ${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}, ${t.transferredAt}, ${t.txHash}) = 0 AND coalesce(${t.amount}, 0) > 0 AND ${t.currency} IS NOT NULL AND NOT ${t.live} END`,
+      sql`CASE ${t.kind} WHEN 'objekt' THEN num_nulls(${t.tokenId}, ${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}) = 0 AND num_nonnulls(${t.amount}, ${t.currency}, ${t.method}, ${t.markedPaidAt}, ${t.confirmedAt}) = 0 ELSE num_nonnulls(${t.tokenId}, ${t.slug}, ${t.artist}, ${t.member}, ${t.season}, ${t.class}, ${t.onOffline}, ${t.transferredAt}, ${t.txHash}) = 0 AND coalesce(${t.amount}, 0) > 0 AND ${t.currency} IS NOT NULL AND NOT ${t.live} END`,
     ),
     check(
       "trade_offer_items_transfer_chk",

@@ -40,6 +40,7 @@ export type DisputeItemRow = {
   amount: string | null;
   currency: string | null;
   method: string | null;
+  markedPaidAt: Date | null;
 };
 
 // the row narrowed by kind, as `trade_offer_items_objekt_chk` guarantees
@@ -57,6 +58,7 @@ const disputeItemSchema = z.discriminatedUnion("kind", [
     amount: z.string(),
     currency: z.string(),
     method: z.enum(paymentMethods).nullable(),
+    markedPaidAt: z.date().nullable(),
   }),
 ]);
 type DisputeItem = z.infer<typeof disputeItemSchema>;
@@ -166,9 +168,10 @@ function itemLabel(item: DisputeItem, tokens: DisputeDetails["tokens"]) {
       "en-US",
       "code",
     );
-    return item.method === null
+    if (item.method !== null) return `${amount}, confirmed via ${item.method}`;
+    return item.markedPaidAt === null
       ? `${amount}, not confirmed`
-      : `${amount}, confirmed via ${item.method}`;
+      : `${amount}, marked paid, not confirmed`;
   }
   const token = tokens.get(item.tokenId);
   return token === undefined

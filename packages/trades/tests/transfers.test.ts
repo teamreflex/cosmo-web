@@ -339,6 +339,7 @@ test("recordChainEvents marks the item an arrival names and keeps the batch's or
     sender: "from",
     listingId: null,
     transferredAt: null,
+    markedPaidAt: null,
     confirmedAt: null,
   } as const;
   const items = [
@@ -429,16 +430,20 @@ describe("paymentStatus", () => {
   const at = new Date("2026-11-20T00:00:00Z");
 
   test.each([
-    [null, "pending", "not_started"],
-    [null, "accepted", "waiting"],
-    [null, "disputed", "waiting"],
-    [null, "completed", "not_confirmed"],
-    [at, "accepted", "confirmed"],
-    [at, "cancelled", "confirmed"],
+    [null, null, "pending", "not_started"],
+    [null, null, "accepted", "waiting"],
+    [null, null, "disputed", "waiting"],
+    [null, null, "completed", "not_confirmed"],
+    [at, null, "accepted", "paid"],
+    [at, null, "cancelled", "paid"],
+    [at, at, "accepted", "confirmed"],
+    [null, at, "cancelled", "confirmed"],
   ] as const)(
-    "confirmed at %p on a %s trade is %s",
-    (confirmedAt, status, expected) => {
-      expect(paymentStatus({ confirmedAt }, status)).toBe(expected);
+    "marked paid at %p and confirmed at %p on a %s trade is %s",
+    (markedPaidAt, confirmedAt, status, expected) => {
+      expect(paymentStatus({ markedPaidAt, confirmedAt }, status)).toBe(
+        expected,
+      );
     },
   );
 });

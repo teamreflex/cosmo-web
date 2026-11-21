@@ -569,6 +569,7 @@ const trade = (
         status,
         deadlineAt: new Date(0),
         toSend: tokenIds.length,
+        toMarkPaid: false,
         needsYou: true,
       };
     case "disputed":

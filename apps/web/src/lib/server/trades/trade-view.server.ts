@@ -48,7 +48,13 @@ import { readIndexed } from "./feed.server";
 function toPaymentView(
   item: Pick<
     TradeOfferItem,
-    "id" | "sender" | "amount" | "currency" | "confirmedAt" | "method"
+    | "id"
+    | "sender"
+    | "amount"
+    | "currency"
+    | "markedPaidAt"
+    | "confirmedAt"
+    | "method"
   >,
   state: TradeState,
 ): TradePaymentView {
@@ -63,6 +69,13 @@ function toPaymentView(
     currency: item.currency,
   };
   const status = paymentStatus(item, state.status);
+  if (status === "paid") {
+    // paymentStatus() reads paid from the stamp
+    if (item.markedPaidAt === null) {
+      throw new Error(`payment item ${item.id} is paid without a time`);
+    }
+    return { ...shown, status, markedPaidAt: item.markedPaidAt };
+  }
   if (status !== "confirmed") return { ...shown, status };
   // $confirmPayment stamps the time and the method together
   if (item.confirmedAt === null || item.method === null) {

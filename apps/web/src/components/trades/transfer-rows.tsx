@@ -25,6 +25,7 @@ import { Badge } from "../ui/badge";
 import { Button, buttonVariants } from "../ui/button";
 import { Timestamp } from "../ui/timestamp";
 import ConfirmPaymentDialog from "./confirm-payment-dialog";
+import MarkPaidDialog from "./mark-paid-dialog";
 
 type Props = {
   trade: TradeView;
@@ -101,7 +102,13 @@ export default function TransferRows({ trade, side, children }: Props) {
                 <PaymentRow
                   trade={trade}
                   payment={payment}
-                  receiving={side === otherSide(sender)}
+                  role={
+                    side === sender
+                      ? "payer"
+                      : side === otherSide(sender)
+                        ? "recipient"
+                        : null
+                  }
                 />
               )}
             </ul>
@@ -115,18 +122,19 @@ export default function TransferRows({ trade, side, children }: Props) {
 
 /**
  * The trade's payment: its amount for every unit, when its recipient marked
- * it received and by which method, and for the recipient while the trade
- * still counts it, Mark received.
+ * it received and by which method, or when its sender marked it paid, and
+ * while the trade still counts it, Mark paid for the sender until they do
+ * and Mark received for the recipient until they do.
  */
 function PaymentRow({
   trade,
   payment,
-  receiving,
+  role,
 }: {
   trade: TradeView;
   payment: TradePaymentView;
-  /** whether the viewer is the payment's recipient */
-  receiving: boolean;
+  /** the viewer's part in the payment, or null for staff */
+  role: "payer" | "recipient" | null;
 }) {
   const [open, setOpen] = useState(false);
   const live =
@@ -136,6 +144,34 @@ function PaymentRow({
   const when =
     payment.status === "confirmed" ? (
       <Timestamp date={payment.confirmedAt} format={tradeTimeFormat} />
+    ) : payment.status === "paid" ? (
+      <Timestamp date={payment.markedPaidAt} format={tradeTimeFormat} />
+    ) : null;
+
+  const action =
+    role === "payer" && live && payment.status === "waiting" ? (
+      <MarkPaidDialog
+        tradeId={trade.id}
+        listingId={trade.listingId}
+        payment={payment}
+      />
+    ) : role === "recipient" &&
+      live &&
+      (payment.status === "waiting" || payment.status === "paid") ? (
+      <>
+        <Button size="sm" onClick={() => setOpen(true)}>
+          {m.trade_page_payment_mark_received()}
+        </Button>
+        <ConfirmPaymentDialog
+          tradeId={trade.id}
+          listingId={trade.listingId}
+          payment={payment}
+          methods={trade.paymentMethods}
+          name={partyName(trade.parties[payment.sender])}
+          open={open}
+          onOpenChange={setOpen}
+        />
+      </>
     ) : null;
 
   return (
@@ -143,44 +179,34 @@ function PaymentRow({
       <span className="grid aspect-photocard w-7.5 shrink-0 place-items-center rounded-[3px] bg-amber-500/15 text-amber-700 dark:text-amber-400">
         <IconCash className="size-4" />
       </span>
-      <div className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 gap-y-0.5">
-        <span className="font-mono font-semibold tabular-nums">
-          {formatAmount(payment.amount, payment.currency)}
-        </span>
-        {payment.status === "confirmed" && (
-          <span className="text-xs text-muted-foreground">
-            {m.trade_page_payment_via({
-              method: paymentMethodLabel(payment.method),
-            })}
+      {/* a narrow list puts the action under the amount, so a long label never covers it */}
+      <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1.5">
+        <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
+          <span className="font-mono font-semibold tabular-nums">
+            {formatAmount(payment.amount, payment.currency)}
           </span>
-        )}
-        {when !== null && (
-          <span className="text-xs text-muted-foreground @lg:hidden">
-            {when}
-          </span>
+          {payment.status === "confirmed" && (
+            <span className="text-xs text-muted-foreground">
+              {m.trade_page_payment_via({
+                method: paymentMethodLabel(payment.method),
+              })}
+            </span>
+          )}
+          {when !== null && (
+            <span className="text-xs text-muted-foreground @lg:hidden">
+              {when}
+            </span>
+          )}
+        </div>
+        {action !== null && (
+          <div className="ms-auto shrink-0 @max-lg:ms-0 @max-lg:basis-full">
+            {action}
+          </div>
         )}
       </div>
-      {/* Mark received takes the column an objekt row's time or "not seen yet" sits in */}
-      {receiving && live && payment.status === "waiting" ? (
-        <>
-          <Button size="sm" className="shrink-0" onClick={() => setOpen(true)}>
-            {m.trade_page_payment_mark_received()}
-          </Button>
-          <ConfirmPaymentDialog
-            tradeId={trade.id}
-            listingId={trade.listingId}
-            payment={payment}
-            methods={trade.paymentMethods}
-            name={partyName(trade.parties[payment.sender])}
-            open={open}
-            onOpenChange={setOpen}
-          />
-        </>
-      ) : (
-        <span className="w-32 shrink-0 text-right text-xs text-muted-foreground tabular-nums @max-lg:hidden">
-          {when}
-        </span>
-      )}
+      <span className="w-32 shrink-0 text-right text-xs text-muted-foreground tabular-nums @max-lg:hidden">
+        {when}
+      </span>
       <PaymentBadge status={payment.status} />
       {/* the objekt rows' transfer link column, so the badges line up */}
       <span className="size-8 shrink-0 @max-lg:hidden" />
@@ -194,8 +220,13 @@ const paymentBadges = {
     className:
       "border-transparent bg-teal-500/10 text-teal-700 dark:text-teal-500",
   },
+  // the sender's word, which settles nothing until the recipient confirms
+  paid: {
+    label: m.trade_page_payment_paid,
+    className: tones.warn,
+  },
   waiting: {
-    label: m.trade_page_payment_not_received,
+    label: m.trade_page_payment_not_paid,
     className: "border-amber-500/40 text-amber-700 dark:text-amber-400",
   },
   not_started: {
@@ -203,7 +234,7 @@ const paymentBadges = {
     className: tones.muted,
   },
   not_confirmed: {
-    label: m.trade_page_payment_not_received,
+    label: m.trade_page_payment_not_paid,
     className: tones.muted,
   },
 } satisfies Record<PaymentStatus, { label: () => string; className: string }>;

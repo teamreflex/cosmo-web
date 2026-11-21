@@ -25,6 +25,10 @@ export const openDisputeInputSchema = tradeIdInputSchema.extend({
 });
 
 // the recipient of a trade's payment says it arrived, and by which of the listing's methods
+export const markPaidInputSchema = tradeIdInputSchema.extend({
+  itemId: z.int().positive(),
+});
+
 export const confirmPaymentInputSchema = tradeIdInputSchema.extend({
   itemId: z.int().positive(),
   method: z.enum(paymentMethods),

@@ -50,7 +50,8 @@ const BATCH_SIZE = 100;
  * clock, decline the pending offers on listings that closed, then end the
  * accepted trades whose deadline the drain's chain-time
  * watermark has passed, never the clock, timing each out, completing it or,
- * with something sent and something still owed, disputing it for staff.
+ * with something sent or a payment marked paid and something still owed,
+ * disputing it for staff.
  * Runs every minute so an offer or trade ends within a minute of its time.
  * The locking is explained in apps/schedules/CLAUDE.md.
  */

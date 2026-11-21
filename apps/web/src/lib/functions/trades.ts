@@ -25,6 +25,7 @@ import {
 } from "@/lib/server/trades/trade.server";
 import {
   confirmPaymentInputSchema,
+  markPaidInputSchema,
   myTradesInputSchema,
   openDisputeInputSchema,
   tradeIdInputSchema,
@@ -293,7 +294,10 @@ export const $fetchMyTrades = createServerFn({ method: "GET" })
         side,
         payment: payment && {
           sender: payment.sender,
-          terms: storedPaymentItemSchema.parse(payment),
+          terms: {
+            ...storedPaymentItemSchema.parse(payment),
+            markedPaid: payment.markedPaidAt !== null,
+          },
         },
         send: objekts.filter(({ item }) => item.sender === side),
         get: objekts.filter(({ item }) => item.sender !== side),
@@ -489,6 +493,62 @@ export const $openDispute = createServerFn({ method: "POST" })
         toUserId: parties.toUserId,
       }),
     ]);
+  });
+
+/**
+ * The sender of a trade's payment says they paid it, under the same gate as
+ * a confirmation: an accepted trade before its deadline passes the drain's
+ * watermark, or a disputed one. It only records the mark and its timeline
+ * event: it settles nothing, notifies no one, and changes nothing a cancel
+ * or completion goes by. Only the deadline counts it, disputing a trade
+ * whose payment was marked paid rather than timing it out. A payment
+ * marks paid once, and not once its recipient confirmed it.
+ */
+export const $markPaid = createServerFn({ method: "POST" })
+  .validator(markPaidInputSchema)
+  .middleware([authenticatedMiddleware])
+  .handler(async ({ data, context }) => {
+    const userId = context.session.user.id;
+    await consumeRateLimit({
+      key: `trade-mark-paid:${userId}`,
+      limit: 10,
+      window: "10 minutes",
+    });
+
+    const parties = await partyTrade(userId, data.tradeId);
+    await db.transaction(async (tx) => {
+      const { trade, by } = await lockPartyTrade(
+        tx,
+        userId,
+        data.tradeId,
+        parties,
+      );
+
+      const result = partyAction(
+        trade.state,
+        {
+          type: "mark_paid",
+          item: trade.items.findIndex(({ id }) => id === data.itemId),
+          by,
+        },
+        {
+          deadlinePassed:
+            trade.state.status === "accepted" && (await isDue(tx, trade)),
+          arrived: false,
+        },
+      );
+      if (!result.ok) refuseTrade(partyRefusals[result.reason]);
+
+      await tx
+        .update(tradeOfferItems)
+        .set({ markedPaidAt: sql`now()` })
+        .where(eq(tradeOfferItems.id, data.itemId));
+      await insertTradeEvent(tx, trade.id, {
+        type: "marked_paid",
+        itemId: data.itemId,
+      });
+    });
+    await publishTradeUpdates([data.tradeId]);
   });
 
 /**

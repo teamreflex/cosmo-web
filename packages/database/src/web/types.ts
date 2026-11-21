@@ -270,8 +270,8 @@ export type FeedbackReportReason = (typeof feedbackReportReasons)[number];
  * A stored report's reason: a user report's, a party dispute's, a chat
  * message or feedback report's, `party_banned` for the dispute a ban
  * opens on each of the user's trades, or `deadline_passed` for the one
- * trade-timers opens when a deadline passes with something sent and
- * something still owed.
+ * trade-timers opens when a deadline passes with something sent or a
+ * payment marked paid, and something still owed.
  */
 export type StoredReportReason =
   | ReportReason
@@ -527,6 +527,8 @@ export type PaymentMethod = (typeof paymentMethods)[number];
 export type TradeEvent =
   | { type: "accepted" }
   | { type: "item_transferred"; itemId: number; hash: string }
+  // the payment's sender said they paid it, which settles nothing
+  | { type: "marked_paid"; itemId: number }
   // the payment's recipient said it arrived, and by which method
   | { type: "payment_confirmed"; itemId: number; method: PaymentMethod }
   | { type: "completed"; by: null }
@@ -540,7 +542,7 @@ export type TradeEvent =
       reason: DisputeReason;
     }
   | { type: "disputed"; by: "staff"; reportId: string }
-  // the deadline passed with something sent and something still owed
+  // the deadline passed with something sent or a payment marked paid, and something still owed
   | { type: "disputed"; by: "deadline"; reportId: string }
   | { type: "deadline_extended"; deadlineAt: string; note: string | null }
   | { type: "timed_out" }

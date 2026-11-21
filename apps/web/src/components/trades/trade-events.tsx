@@ -152,6 +152,31 @@ export function describeEvent(
           markup={bold}
         />
       );
+    case "marked_paid": {
+      const { payment } = trade;
+      if (payment === null || payment.id !== event.itemId) return null;
+      const amount = formatAmount(payment.amount, payment.currency);
+      switch (viewer(side, payment.sender)) {
+        case "you":
+          return m.trade_page_event_marked_paid_you({ amount });
+        case "them":
+          return (
+            <ParaglideMessage
+              message={m.trade_page_event_marked_paid_them}
+              inputs={{ amount, name: nameOf(payment.sender) }}
+              markup={bold}
+            />
+          );
+        case "staff":
+          return (
+            <ParaglideMessage
+              message={m.trade_page_event_marked_paid_staff}
+              inputs={{ amount, sender: nameOf(payment.sender) }}
+              markup={bold}
+            />
+          );
+      }
+    }
     case "payment_confirmed": {
       const { payment } = trade;
       if (payment === null || payment.id !== event.itemId) return null;

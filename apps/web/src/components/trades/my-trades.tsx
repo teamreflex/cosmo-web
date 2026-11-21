@@ -234,20 +234,28 @@ function SideThumbs({ side }: { side: MyTradeSide }) {
   );
 }
 
-// the payment a side sends, in its own currency, and whether it was marked received
+// the payment a side sends, in its own currency, and whether it was marked received or paid
 function PaymentCaption({ side }: { side: MyTradeSide }) {
   const { payment } = side;
   if (payment === null) return null;
   const amount = formatAmount(payment.amount, payment.currency);
+  const captions =
+    side.items.length === 0
+      ? {
+          received: m.my_trades_payment_only_received,
+          paid: m.my_trades_payment_only_paid,
+          unpaid: m.my_trades_payment_only,
+        }
+      : {
+          received: m.my_trades_payment_received,
+          paid: m.my_trades_payment_paid,
+          unpaid: m.my_trades_payment,
+        };
   return (
     <SlipDetail className="font-medium text-foreground">
-      {side.items.length === 0
-        ? (payment.confirmed
-            ? m.my_trades_payment_only_received
-            : m.my_trades_payment_only)({ amount })
-        : (payment.confirmed
-            ? m.my_trades_payment_received
-            : m.my_trades_payment)({ amount })}
+      {captions[
+        payment.confirmed ? "received" : payment.markedPaid ? "paid" : "unpaid"
+      ]({ amount })}
     </SlipDetail>
   );
 }
@@ -269,6 +277,11 @@ function Status({ row }: { row: MyTradeRow }) {
         <NextStepBadge
           needsYou={row.needsYou}
           toSend={row.send.items.length - row.send.sent}
+          toMarkPaid={
+            row.send.payment !== null &&
+            !row.send.payment.confirmed &&
+            !row.send.payment.markedPaid
+          }
           name={partyName(row.counterparty)}
         />
       );
@@ -321,23 +334,28 @@ function Time({ row }: { row: MyTradeRow }) {
 
 /**
  * What a live trade waits on: the viewer sending what they still owe, or
- * with nothing left to send, marking a payment received, or the other
- * party, named.
+ * with nothing left to send, marking their payment paid or a payment they
+ * are owed received, or the other party, named.
  */
 export function NextStepBadge({
   needsYou,
   toSend,
+  toMarkPaid,
   name,
 }: {
   needsYou: boolean;
   toSend: number;
+  /** whether the viewer pays and hasn't marked it paid */
+  toMarkPaid: boolean;
   name: string;
 }) {
   return needsYou ? (
     <Badge className={tones.cosmo}>
-      {toSend === 0
-        ? m.my_trades_next_confirm()
-        : m.my_trades_next_send({ count: toSend })}
+      {toSend > 0
+        ? m.my_trades_next_send({ count: toSend })
+        : toMarkPaid
+          ? m.my_trades_next_mark_paid()
+          : m.my_trades_next_confirm()}
     </Badge>
   ) : (
     // a long name gives way, so the verb stays

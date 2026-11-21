@@ -14,7 +14,16 @@ import type { ListingPayment, TradePayment } from "./payment";
 
 export type TradeItemState =
   | { kind: "objekt"; sender: TradeSide; transferred: boolean }
-  | { kind: "payment"; sender: TradeSide; confirmed: boolean };
+  /**
+   * `markedPaid` is the sender's word that they paid, which settles nothing:
+   * only the recipient's confirmation does.
+   */
+  | {
+      kind: "payment";
+      sender: TradeSide;
+      markedPaid: boolean;
+      confirmed: boolean;
+    };
 
 /**
  * A trade's status and what each of its items has done, which is all a
@@ -42,6 +51,8 @@ export type TradeEvent =
   | { type: "withdraw"; by: TradeSide }
   // the drain saw a token reach its receiver
   | { type: "transfer"; item: number }
+  // the payment's sender says they paid it
+  | { type: "mark_paid"; item: number; by: TradeSide }
   // the payment's recipient says it arrived
   | { type: "confirm_payment"; item: number; by: TradeSide }
   | { type: "cancel"; by: TradeSide }
@@ -105,6 +116,7 @@ export function transition(
     case "withdraw":
       return answerOffer(trade, event);
     case "transfer":
+    case "mark_paid":
     case "confirm_payment":
       return updateItem(trade, event);
     case "cancel":
@@ -121,7 +133,8 @@ export function transition(
 export type PartyActionRefusal = TransitionRefusal | "deadline_passed";
 
 /**
- * A party cancelling, disputing or confirming a payment it received, judged
+ * A party cancelling, disputing, marking a payment it sent paid or
+ * confirming one it received, judged
  * with what the trade's row doesn't hold: whether its deadline has passed
  * the drain's watermark, and whether a token has reached its receiver
  * before the drain recorded it. A trade that moved on is refused first,
@@ -133,7 +146,7 @@ export function partyAction(
   trade: TradeState,
   event: Extract<
     TradeEvent,
-    { type: "cancel" | "dispute" | "confirm_payment" }
+    { type: "cancel" | "dispute" | "mark_paid" | "confirm_payment" }
   >,
   facts: { deadlinePassed: boolean; arrived: boolean },
 ): { ok: true; trade: TradeState } | { ok: false; reason: PartyActionRefusal } {
@@ -176,12 +189,13 @@ function answerOffer(
 }
 
 /**
- * A token arriving, or a payment's recipient confirming it arrived. Both
- * are still recorded while disputed.
+ * A token arriving, a payment's sender marking it paid, or its recipient
+ * confirming it arrived. All are still recorded while disputed. Marking
+ * paid changes no status, and is refused once the payment is confirmed.
  */
 function updateItem(
   { status, items }: TradeState,
-  event: EventOf<"transfer" | "confirm_payment">,
+  event: EventOf<"transfer" | "mark_paid" | "confirm_payment">,
 ): TransitionResult {
   if (status !== "accepted" && status !== "disputed") {
     return refuse("wrong_status");
@@ -197,6 +211,17 @@ function updateItem(
         status,
         items.with(event.item, { ...item, transferred: true }),
       );
+    case "mark_paid":
+      if (item?.kind !== "payment") return refuse("no_such_item");
+      if (event.by !== item.sender) return refuse("wrong_party");
+      if (item.markedPaid || item.confirmed) return refuse("already_done");
+      return {
+        ok: true,
+        trade: {
+          status,
+          items: items.with(event.item, { ...item, markedPaid: true }),
+        },
+      };
     case "confirm_payment":
       if (item?.kind !== "payment") return refuse("no_such_item");
       if (event.by === item.sender) return refuse("wrong_party");
@@ -211,8 +236,8 @@ function updateItem(
 /**
  * The ways out of an accepted trade before it completes: a party cancels
  * while nothing has started and they aren't owed an unconfirmed payment,
- * a party disputes, or the deadline passes,
- * which times it out while nothing has started and otherwise disputes it.
+ * a party disputes, or the deadline passes, which times it out while
+ * nobody has acted and otherwise disputes it.
  */
 function endEarly(
   { status, items }: TradeState,
@@ -246,11 +271,12 @@ function endEarly(
       return { ok: true, trade: { status: "disputed", items } };
     case "time_out":
       /**
-       * Something arrived while something is still owed, so a side may be
-       * out of pocket: staff decide it, rather than a time out handing the
-       * listing back over an objekt already sent.
+       * Something arrived, or a payment was marked paid, while something is
+       * still owed, so a side may be out of pocket: staff decide it, rather
+       * than a time out handing the listing back over an objekt or a payment
+       * already sent.
        */
-      if (items.some(isDone)) {
+      if (items.some(isDelivered)) {
         return { ok: true, trade: { status: "disputed", items } };
       }
       return { ok: true, trade: { status: "timed_out", items } };
@@ -311,19 +337,29 @@ export function isDone(item: TradeItemState) {
 }
 
 /**
- * The sides with a token that hasn't arrived or a payment its recipient
- * hasn't confirmed, `from` first.
+ * Whether the item's sender did their part as the deadline judges it: a
+ * token arrived, or a payment was confirmed or marked paid. Only the
+ * deadline counts the mark; completing and cancelling go by isDone().
+ */
+function isDelivered(item: TradeItemState) {
+  return isDone(item) || (item.kind === "payment" && item.markedPaid);
+}
+
+/**
+ * The sides with a token that hasn't arrived or a payment neither marked
+ * paid nor confirmed, `from` first.
  */
 function owingSides(items: readonly TradeItemState[]): TradeSide[] {
   const owes = (side: TradeSide) =>
-    items.some((item) => item.sender === side && !isDone(item));
+    items.some((item) => item.sender === side && !isDelivered(item));
   return (["from", "to"] as const).filter(owes);
 }
 
 /**
- * The side that sent everything it owed while the other side still owes,
- * which a dispute at the deadline names as its reporter. Null when both
- * sides still owe something, or neither does.
+ * The side that did everything it owed, its payment marked paid counting,
+ * while the other side still owes, which a dispute at the deadline names
+ * as its reporter. Null when both sides still owe something, or neither
+ * does.
  */
 export function waitingSide(
   items: readonly TradeItemState[],
@@ -407,11 +443,10 @@ export function editUnitsRefusal(
 
 /**
  * Whether the side has to act: the side that didn't propose a pending offer
- * answers it, and on an accepted trade a side sends a token it still owes or
- * confirms a payment it is owed. Paying happens outside Apollo, so an unpaid
- * payment asks nothing of its sender. Once an accepted trade's deadline has
- * passed the drain's watermark neither can count, so nothing more is asked.
- * Nothing else needs anyone.
+ * answers it, and on an accepted trade a side sends a token it still owes,
+ * marks paid a payment it sends, or confirms a payment it is owed. Once an
+ * accepted trade's deadline has passed the drain's watermark none of it
+ * counts, so nothing more is asked. Nothing else needs anyone.
  */
 export function needsYou(
   state: TradeState,
@@ -427,7 +462,7 @@ export function needsYou(
         state.items.some((item) =>
           item.kind === "objekt"
             ? item.sender === side && !item.transferred
-            : item.sender !== side && !item.confirmed,
+            : !item.confirmed && (item.sender !== side || !item.markedPaid),
         )
       );
     default:
@@ -658,7 +693,12 @@ export function tradeState(
   row: Pick<TradeOffer, "status" | "cancelledBy" | "proposedBy">,
   rows: readonly Pick<
     TradeOfferItem,
-    "kind" | "sender" | "listingId" | "transferredAt" | "confirmedAt"
+    | "kind"
+    | "sender"
+    | "listingId"
+    | "transferredAt"
+    | "markedPaidAt"
+    | "confirmedAt"
   >[],
 ): TradeState {
   const items = rows.map((item): TradeItemState =>
@@ -671,6 +711,7 @@ export function tradeState(
       : {
           kind: "payment",
           sender: item.sender,
+          markedPaid: item.markedPaidAt !== null,
           confirmed: item.confirmedAt !== null,
         },
   );

@@ -62,7 +62,7 @@ export type DeadlineOwed = "objekts" | "payment" | "both";
  * A trade's payment as its page shows it: the amount for every unit the
  * trade took, in minor units of its own currency, and where it stands
  * (PaymentStatus). A confirmed payment carries when and by which method its
- * recipient said it arrived; any other has neither.
+ * recipient said it arrived, and one marked paid when its sender said so.
  */
 export type TradePaymentView = {
   id: number;
@@ -71,7 +71,8 @@ export type TradePaymentView = {
   currency: string;
 } & (
   | { status: "confirmed"; confirmedAt: Date; method: PaymentMethod }
-  | { status: Exclude<PaymentStatus, "confirmed"> }
+  | { status: "paid"; markedPaidAt: Date }
+  | { status: Exclude<PaymentStatus, "confirmed" | "paid"> }
 );
 
 /**
@@ -167,7 +168,12 @@ export type MyTradesTab = (typeof myTradesTabs)[number];
 export type MyTradeSide = {
   items: ListingFeedItem[];
   sent: number;
-  payment: { amount: number; currency: string; confirmed: boolean } | null;
+  payment: {
+    amount: number;
+    currency: string;
+    confirmed: boolean;
+    markedPaid: boolean;
+  } | null;
 };
 
 /**

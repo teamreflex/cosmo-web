@@ -88,6 +88,7 @@ export type LiveTrade = Pick<
     | "listingId"
     | "live"
     | "transferredAt"
+    | "markedPaidAt"
     | "confirmedAt"
   >[];
   state: TradeState;
@@ -140,6 +141,7 @@ export const lockLiveTrades = Effect.fn("lockLiveTrades")(function* (
       listingId: tradeOfferItems.listingId,
       live: tradeOfferItems.live,
       transferredAt: tradeOfferItems.transferredAt,
+      markedPaidAt: tradeOfferItems.markedPaidAt,
       confirmedAt: tradeOfferItems.confirmedAt,
     })
     .from(tradeOfferItems)
@@ -365,11 +367,12 @@ export const closeSpentListings = Effect.fn("closeSpentListings")(function* (
 });
 
 /**
- * Freezes a locked live trade whose deadline passed with something sent and
- * something still owed under a dispute nobody filed, as transition(time_out)
- * decided: a side may be out of pocket, so staff settle it. Files its
- * `deadline_passed` report, naming as its reporter the side that sent
- * everything it owed (none when both sent part), and returns the report id,
+ * Freezes a locked live trade whose deadline passed with something sent, or
+ * a payment marked paid, and something still owed under a dispute nobody
+ * filed, as transition(time_out) decided: a side may be out of pocket, so
+ * staff settle it. Files its `deadline_passed` report, naming as its
+ * reporter the side that did everything it owed (waitingSide(), none when
+ * both did part), and returns the report id,
  * the timeline event and both parties' notifications, which read as a pause
  * for review.
  */
