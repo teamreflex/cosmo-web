@@ -17,6 +17,7 @@ import {
   type WantMatch,
 } from "@/lib/universal/trade-listings";
 import type {
+  DeadlineOwed,
   TradeItemView,
   TradePartyName,
   TradePaymentView,
@@ -573,24 +574,21 @@ export function ratioSides({ give, get, payment }: TradeRatio) {
 
 /**
  * Every type a listing's options make it (listingTypesOf()), from its
- * payment's side, each option's objekt want rows and its offered objekts,
- * of which a buy listing offers none, whatever it offered before an edit
- * made it one.
+ * units' kind, its payment's side and each option's objekt want rows.
  */
 export function listingTypesOfListing(listing: {
   options: readonly {
     wants: readonly unknown[];
     payment: ListingPayment | null;
   }[];
-  items: readonly unknown[];
   units: ListingUnits;
 }) {
   return listingTypesOf({
+    units: listing.units.kind,
     paymentSide: listingPaymentTerms(listing.options)?.side ?? null,
     options: listing.options.map((option) => ({
       objektWants: option.wants.length,
     })),
-    offered: listing.units.kind === "buy" ? 0 : listing.items.length,
   });
 }
 
@@ -613,7 +611,7 @@ export function listingKindLabel(type: ListingType) {
 export function owedAtDeadline(trade: {
   items: readonly Pick<TradeItemView, "status">[];
   payment: Pick<TradePaymentView, "status"> | null;
-}): "objekts" | "payment" | "both" {
+}): DeadlineOwed {
   const objekts = trade.items.some((item) => item.status !== "sent");
   const payment =
     trade.payment !== null && trade.payment.status !== "confirmed";

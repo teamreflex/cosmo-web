@@ -12,7 +12,7 @@ import { Timestamp } from "@/components/ui/timestamp";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import {
-  reportHasPayment,
+  reportOwed,
   reportTargetTypeLabel,
   reportTitle,
 } from "@/lib/client/reports";
@@ -121,7 +121,7 @@ function Detail({ id }: { id: string }) {
               {reportTargetTypeLabel(report.target.type)}
             </StatusPill>
             <h2 className="text-base font-semibold">
-              {reportTitle(report.reason, reportHasPayment(report))}
+              {reportTitle(report.reason, reportOwed(report))}
             </h2>
           </div>
           <div className="text-sm text-muted-foreground">

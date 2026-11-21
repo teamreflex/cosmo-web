@@ -41,7 +41,7 @@ import {
 export type ListingFormValues = z.input<typeof listingInputSchema>;
 
 // one option's want rows as the composer edits them
-export type ListingFormOption = ListingFormValues["options"][number];
+type ListingFormOption = ListingFormValues["options"][number];
 
 export type ListingFormWant = ListingFormOption[number];
 

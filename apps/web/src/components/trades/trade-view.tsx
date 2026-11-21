@@ -219,6 +219,8 @@ function PartyView({
         tradeId={trade.id}
         listingId={trade.listingId}
         side={side}
+        // a buy listing's poster gives only the payment
+        givesObjekts={trade.items.some((item) => item.sender === side)}
         name={partyName(counterparty)}
         open={dialog === "cancel"}
         onOpenChange={(open) => setDialog(open ? "cancel" : null)}
@@ -588,16 +590,23 @@ function ActionStrip({
     (item) => item.sender === side && item.status === "arrived",
   );
   const sends = owing && (waiting > 0 || arrived);
-  // a payment the viewer still pays, when they send nothing else
+  // a payment the viewer still pays, beside their objekts or alone
   const payment =
-    !sends &&
     trade.payment?.status === "waiting" &&
     trade.payment.sender === side &&
     trade.stage === "trade" &&
     !trade.deadlinePassed
       ? trade.payment
       : null;
-  const lines = sends || payment !== null;
+  const pay =
+    payment === null
+      ? null
+      : {
+          name,
+          amount: formatAmount(payment.amount, payment.currency),
+          appName: env.VITE_APP_NAME,
+        };
+  const lines = sends || pay !== null;
   if (!lines && !children) return null;
 
   return (
@@ -609,28 +618,23 @@ function ActionStrip({
       )}
     >
       <div className="flex min-w-0 flex-[1_1_18rem] flex-col gap-1 text-sm wrap-anywhere text-muted-foreground">
-        {owing &&
-          (waiting > 0 ? (
-            <p>
-              {counterparty.cosmoUsername === null
-                ? m.trade_page_send_no_cosmo({
-                    count: waiting,
-                    name,
-                    appName: env.VITE_APP_NAME,
-                  })
-                : m.trade_page_send({ count: waiting, name })}
-            </p>
-          ) : (
-            arrived && <p>{m.trade_page_send_arrived()}</p>
-          ))}
-        {payment !== null && (
+        {/* one sentence: what the viewer still sends, pays, or both */}
+        {owing && waiting > 0 ? (
           <p>
-            {m.trade_page_payment_pay({
-              amount: formatAmount(payment.amount, payment.currency),
-              name,
-              appName: env.VITE_APP_NAME,
-            })}
+            {counterparty.cosmoUsername === null
+              ? m.trade_page_send_no_cosmo({
+                  count: waiting,
+                  name,
+                  appName: env.VITE_APP_NAME,
+                })
+              : pay === null
+                ? m.trade_page_send({ count: waiting, name })
+                : m.trade_page_send_pay({ count: waiting, ...pay })}
           </p>
+        ) : pay !== null ? (
+          <p>{m.trade_page_payment_pay(pay)}</p>
+        ) : (
+          sends && <p>{m.trade_page_send_arrived()}</p>
         )}
       </div>
       {children}
@@ -980,7 +984,11 @@ function StatePanel({
           <IconCircleCheck />
           <AlertTitle>
             {staff === undefined
-              ? m.trade_page_completed_title({ count: trade.items.length })
+              ? trade.payment === null
+                ? m.trade_page_completed_title({ count: trade.items.length })
+                : m.trade_page_completed_title_payment({
+                    count: trade.items.length,
+                  })
               : m.trade_page_completed_staff({ appName })}
           </AlertTitle>
           {staff === undefined && last !== null && (

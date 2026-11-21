@@ -24,6 +24,7 @@ import type {
   ReportCountsInput,
   ReportQueueInput,
 } from "@/lib/universal/schema/reports";
+import type { DeadlineOwed } from "@/lib/universal/trades";
 import type { Role } from "@apollo/auth";
 import { isBanActive, protectionFor } from "@apollo/auth/guard";
 import {
@@ -314,7 +315,9 @@ export async function fetchReportQueue(
           with: {
             fromUser: staffUserFields,
             toUser: staffUserFields,
-            items: { columns: { id: true }, where: { kind: "payment" } },
+            items: {
+              columns: { kind: true, transferredAt: true, confirmedAt: true },
+            },
           },
         });
   const feedbackRows =
@@ -340,6 +343,28 @@ export async function fetchReportQueue(
   };
 }
 
+/**
+ * What a trade still owes (DeadlineOwed), from its items as stored: an
+ * objekt the drain hasn't seen arrive, or a payment its recipient hasn't
+ * marked received.
+ */
+function owedOf(
+  items: readonly {
+    kind: "objekt" | "payment";
+    transferredAt: Date | null;
+    confirmedAt: Date | null;
+  }[],
+): DeadlineOwed {
+  const objekts = items.some(
+    (item) => item.kind === "objekt" && item.transferredAt === null,
+  );
+  const payment = items.some(
+    (item) => item.kind === "payment" && item.confirmedAt === null,
+  );
+  if (objekts && payment) return "both";
+  return payment ? "payment" : "objekts";
+}
+
 function toRowTarget(
   {
     id,
@@ -353,7 +378,11 @@ function toRowTarget(
       id: string;
       fromUser: StaffUserRow | null;
       toUser: StaffUserRow | null;
-      items: { id: number }[];
+      items: {
+        kind: "objekt" | "payment";
+        transferredAt: Date | null;
+        confirmedAt: Date | null;
+      }[];
     }
   >,
   copies: Map<string, { tradeId: string; senderId: string | null }>,
@@ -380,7 +409,7 @@ function toRowTarget(
                 id: trade.id,
                 from: staffUser(trade.fromUser),
                 to: staffUser(trade.toUser),
-                hasPayment: trade.items.length > 0,
+                owed: owedOf(trade.items),
               },
       };
     }

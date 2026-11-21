@@ -51,7 +51,7 @@ The trade tables live in `packages/database/src/web/schema.ts` under `#region Tr
 
 - Each row has an `option`, 0 to `MAX_LISTING_OPTIONS - 1` with no gaps: the claimer gives one option, every row in it at its count. A listing with one option has every row at 0 and reads as a listing without options.
 - `listingOptions()` (`lib/universal/trade-listings.ts`) groups the rows by option once and prices each option's payment; claims, offers and their rechecks take `options[n]` and judge it as they would a listing of that one option.
-- A trade from a listing stores the option it gave in `trade_offers.listing_option`; other trades and listings leave it null (`trade_offers_listing_option_chk`). A trade from a listing with none recorded was written before listings had options and reads as option 0 (`tradeListingOption()`).
+- A trade from a listing stores the option it gave in `trade_offers.listing_option`; other trades and listings leave it null (`trade_offers_listing_option_chk`). A trade from a listing with none recorded gave the listing's first option, 0 (`tradeListingOption()`).
 - `listing_option` names an option of the listing's terms when the trade was made, and an edit can reorder or remove options under a live or completed trade, so only a pending offer, which an edit turns stale, is judged against the listing's current options; anything else reads the trade's own items.
 - Wants are inserted together and replaced together, so id order is the posted order.
 - A range row's ranges are ordered by `position` and may overlap: an objekt fits the row once however many of them match it, so its match count is the union.
@@ -70,7 +70,7 @@ A listing either offers a pool in units of `unit_size`, or is a buy listing that
 
 - One unit gives one option's want rows at their counts, so a claim of N units gives each row of its option at its count times N (`scaleWants()`), and its payment item holds the price times N.
 - A listing posted without `unitSize` or `maxUnits` gets `unit_size` = the number of offered tokens: a bundle, everything for everything (`withListingRules()` in `listing.ts`).
-- `trade_offers.units` is set only on trades from buy listings (`trade_offers_units_chk`); a pool listing's trade counts its units from its picks. `listingTakenUnits()` and `listingUnitsIn()` in `sql.ts` sum it, and a pending offer holds none.
+- `trade_offers.units` is set only on trades from buy listings (`trade_offers_units_chk`); a pool listing's trade counts its units from its picks. `listingTakenUnits()` in `sql.ts` sums it for a buy listing (a pool listing reads 0 without the sum), and a pending offer holds none.
 - Several claims on one listing can be live at once, each its own trade, as long as they pick different tokens.
 - A listing has a ratio (`hasRatio()`) when its unit is smaller than everything it has ever offered, the pool and the tokens that left it, so one whose pool is down to a unit's worth keeps its ratio and a one-objekt listing never has one. Every other listing reads as a bundle.
 
@@ -105,5 +105,5 @@ A payment is money the two parties move outside Apollo; the trade records what w
 - The claim copies the listing's methods onto the trade (`insertTrade()`), under the listing lock's `updated_at` guard, so an edit never changes what a live trade can be confirmed by or shows. `$confirmPayment` and the trade page read the trade's own.
 - Only the recipient marks a payment received; the payer has no step. A payment is owed, and not started, until then ([lifecycle.md](lifecycle.md#payments)).
 - When one side sends nothing but the payment, its rater is the buyer and the other the seller; a payment beside objekts on both sides leaves two traders (`feedbackRole()`).
-- A listing is a sale or a buy only when one side is payment-only, judged per option (`listingType()` in `listing.ts`): an option asking for the claimer's payment and no objekt rows is a sale, the poster's payment with no objekts offered a buy (a buy listing, whose every option asks for objekts), anything else a trade. A listing is every type its options make it (`listingTypesOf()`), so "any Special objekt or $3" is both a trade and a sale, mirrored in SQL by the feed's Type filter.
+- A listing is a sale or a buy only when one side is payment-only, judged per option (`listingType()` in `listing.ts`): an option asking for the claimer's payment and no objekt rows is a sale, a buy listing (`max_units` set, never judged from how many objekts are left in a pool) a buy whichever option is given, anything else a trade. A listing is every type its options make it (`listingTypesOf()`), so "any Special objekt or $3" is both a trade and a sale, mirrored in SQL by the feed's Type filter.
 - Direct offers and counters carry no payment.

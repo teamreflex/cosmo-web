@@ -1,5 +1,5 @@
 import type { StaffUser } from "@/lib/universal/staff-users";
-import type { TradeView } from "@/lib/universal/trades";
+import type { DeadlineOwed, TradeView } from "@/lib/universal/trades";
 import type { Role } from "@apollo/auth";
 import type {
   FeedbackRating,
@@ -35,8 +35,8 @@ export type AdminReportRowTarget =
         id: string;
         from: StaffUser | null;
         to: StaffUser | null;
-        // whether the trade has a payment item, which words a deadline dispute
-        hasPayment: boolean;
+        // what the trade still owes, which words a deadline dispute
+        owed: DeadlineOwed;
       } | null;
     }
   | {

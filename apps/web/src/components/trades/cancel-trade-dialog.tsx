@@ -12,6 +12,8 @@ type Props = {
   listingId: string | null;
   /** the viewer's side */
   side: TradeSide;
+  /** whether the viewer gives objekts, which a buy listing's poster doesn't */
+  givesObjekts: boolean;
   /** the other party's name */
   name: string;
   open: boolean;
@@ -26,6 +28,7 @@ export default function CancelTradeDialog({
   tradeId,
   listingId,
   side,
+  givesObjekts,
   name,
   open,
   onOpenChange,
@@ -49,9 +52,11 @@ export default function CancelTradeDialog({
       description={
         listingId === null
           ? undefined
-          : side === "from"
-            ? m.trade_page_cancel_description_poster()
-            : m.trade_page_cancel_description_claimer({ name })
+          : side === "to"
+            ? m.trade_page_cancel_description_claimer({ name })
+            : givesObjekts
+              ? m.trade_page_cancel_description_poster()
+              : m.trade_page_cancel_description_buying()
       }
       cancelLabel={m.trade_page_cancel_keep()}
       confirmLabel={m.trade_page_cancel()}

@@ -32,17 +32,19 @@ export const listingTypes = ["trade", "sell", "buy"] as const;
 export type ListingType = (typeof listingTypes)[number];
 
 /**
- * The type (ListingType) of one of a listing's options, from who sends the
- * listing's payment, how many objekt rows the option asks for and how many
- * objekts the listing offers.
+ * The type (ListingType) of one of a listing's options, from its units'
+ * kind, who sends the listing's payment and how many objekt rows the option
+ * asks for. A buy listing (`units: "buy"`) is a buy whichever option is
+ * given; how many pool objekts are left never decides it, since a pool
+ * listing whose picks are all on their way still offers them.
  */
 export function listingType(listing: {
+  units: ListingUnits["kind"];
   paymentSide: TradeSide | null;
   objektWants: number;
-  offered: number;
 }): ListingType {
+  if (listing.units === "buy") return "buy";
   if (listing.paymentSide === "to" && listing.objektWants === 0) return "sell";
-  if (listing.paymentSide === "from" && listing.offered === 0) return "buy";
   return "trade";
 }
 
@@ -52,9 +54,9 @@ export function listingType(listing: {
  * and a sale.
  */
 export function listingTypesOf(listing: {
+  units: ListingUnits["kind"];
   paymentSide: TradeSide | null;
   options: readonly { objektWants: number }[];
-  offered: number;
 }): ListingType[] {
   const types = new Set(
     listing.options.map(({ objektWants }) =>

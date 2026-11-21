@@ -128,7 +128,7 @@ export const storedWantSchema = z.discriminatedUnion("kind", [
 export type StoredWant = z.output<typeof storedWantSchema>;
 
 // a want row objekts fill
-export type ObjektWant = Exclude<StoredWant, { kind: "payment" }>;
+type ObjektWant = Exclude<StoredWant, { kind: "payment" }>;
 
 /**
  * One option of a listing: the objekt rows the claimer fills when they give
@@ -142,8 +142,8 @@ export type ListingOption<TWant = ObjektWant> = {
 };
 
 /**
- * The option a trade from a listing gave. A trade written before listings
- * had options has none recorded, and gave the only option, 0.
+ * The option a trade from a listing gave. A trade from a listing with no
+ * option recorded gave the listing's first option, 0.
  */
 export function tradeListingOption(trade: { listingOption: number | null }) {
   return trade.listingOption ?? 0;

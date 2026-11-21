@@ -362,7 +362,7 @@ export async function refuseUnitsChange(
       maxUnits: tradeOffers.maxUnits,
       live: listingPoolState.live,
       completed: listingPoolState.completed,
-      taken: listingTakenUnits(tradeOffers.id),
+      taken: listingTakenUnits(tradeOffers),
       completedUnits: listingPoolState.completedUnits,
     })
     .from(tradeOffers)

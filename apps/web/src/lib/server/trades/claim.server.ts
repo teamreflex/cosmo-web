@@ -277,7 +277,7 @@ export async function preflightClaim(
  */
 async function readTakenUnits(tx: WebTx, listingId: string) {
   const [held] = await tx
-    .select({ taken: listingTakenUnits(tradeOffers.id) })
+    .select({ taken: listingTakenUnits(tradeOffers) })
     .from(tradeOffers)
     .where(eq(tradeOffers.id, listingId));
   return held?.taken ?? 0;

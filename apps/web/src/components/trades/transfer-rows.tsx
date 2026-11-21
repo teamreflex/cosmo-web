@@ -134,7 +134,7 @@ function PaymentRow({
     !trade.deadlinePassed &&
     (trade.state.status === "accepted" || trade.state.status === "disputed");
   const when =
-    payment.confirmedAt !== null ? (
+    payment.status === "confirmed" ? (
       <Timestamp date={payment.confirmedAt} format={tradeTimeFormat} />
     ) : null;
 
@@ -147,7 +147,7 @@ function PaymentRow({
         <span className="font-mono font-semibold tabular-nums">
           {formatAmount(payment.amount, payment.currency)}
         </span>
-        {payment.method !== null && (
+        {payment.status === "confirmed" && (
           <span className="text-xs text-muted-foreground">
             {m.trade_page_payment_via({
               method: paymentMethodLabel(payment.method),

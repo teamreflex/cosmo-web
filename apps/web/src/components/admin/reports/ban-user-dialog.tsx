@@ -25,11 +25,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
-import {
-  banLengthLabel,
-  reportHasPayment,
-  reportTitle,
-} from "@/lib/client/reports";
+import { banLengthLabel, reportOwed, reportTitle } from "@/lib/client/reports";
 import { $banUser } from "@/lib/functions/staff-users";
 import { adminReportsQueryFilter } from "@/lib/queries/reports";
 import { banLengthOptions } from "@/lib/universal/reports";
@@ -107,7 +103,7 @@ export default function BanUserDialog({
     mutation.mutate(data);
   }
 
-  const reason = reportTitle(report.reason, reportHasPayment(report));
+  const reason = reportTitle(report.reason, reportOwed(report));
   const lengthItems = banLengthOptions.map((option) => ({
     value: option.value,
     label: banLengthLabel(option.value),

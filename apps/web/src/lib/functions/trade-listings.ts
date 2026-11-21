@@ -476,7 +476,7 @@ export const $fetchTradeListing = createServerFn({ method: "GET" })
         },
         extras: {
           ...listingStateExtras,
-          taken: (t) => listingTakenUnits(t.id),
+          taken: (t) => listingTakenUnits(t),
         },
         with: {
           items: { orderBy: { id: "asc" }, extras: poolItemExtras },

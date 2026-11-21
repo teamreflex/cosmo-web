@@ -53,19 +53,26 @@ export type TradeItemView = TradeNamedItem & {
 };
 
 /**
+ * What a trade still owes when its deadline passes, as a deadline dispute
+ * words it: objekts, an unconfirmed payment, or both.
+ */
+export type DeadlineOwed = "objekts" | "payment" | "both";
+
+/**
  * A trade's payment as its page shows it: the amount for every unit the
- * trade took, in minor units of its own currency, and once its recipient
- * confirmed it, when and by which method.
+ * trade took, in minor units of its own currency, and where it stands
+ * (PaymentStatus). A confirmed payment carries when and by which method its
+ * recipient said it arrived; any other has neither.
  */
 export type TradePaymentView = {
   id: number;
   sender: TradeSide;
   amount: number;
   currency: string;
-  confirmedAt: Date | null;
-  method: PaymentMethod | null;
-  status: PaymentStatus;
-};
+} & (
+  | { status: "confirmed"; confirmedAt: Date; method: PaymentMethod }
+  | { status: Exclude<PaymentStatus, "confirmed"> }
+);
 
 /**
  * The dispute that froze a disputed trade: when it was opened, and by a

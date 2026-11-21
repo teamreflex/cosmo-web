@@ -41,8 +41,8 @@ Apollo matches people who want to swap objekts and records each swap, but never 
     +-- a party cancels, nothing sent or arrived yet ------------> cancelled
     +-- a party opens a dispute, or a party is banned -----------> disputed
     +-- trade-timers: deadline_at <= the drain's watermark
-    |     nothing sent ------------------------------------------> timed_out
-    |     something sent and something owed ---------------------> disputed
+    |     nothing done (no token arrived, no payment confirmed) -> timed_out
+    |     something done and something owed ---------------------> disputed
     |
   disputed   the clock stops; transfers are still recorded; only staff end it
        staff complete ----> completed

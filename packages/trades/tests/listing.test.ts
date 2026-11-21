@@ -1050,8 +1050,8 @@ describe("listingTypesOf", () => {
       expect(
         listingTypesOf({
           paymentSide,
+          units: "pool",
           options: objektWants.map((count) => ({ objektWants: count })),
-          offered: 3,
         }),
       ).toEqual(expected);
     },
@@ -1060,9 +1060,9 @@ describe("listingTypesOf", () => {
   test("a buy listing is a buy whichever option is given", () => {
     expect(
       listingTypesOf({
+        units: "buy",
         paymentSide: "from",
         options: [{ objektWants: 1 }, { objektWants: 2 }],
-        offered: 0,
       }),
     ).toEqual(["buy"]);
   });
@@ -1070,17 +1070,31 @@ describe("listingTypesOf", () => {
 
 describe("listingType", () => {
   test.each([
-    ["no payment", null, 1, 3, "trade"],
-    ["a payment row alone", "to", 0, 3, "sell"],
-    ["a payment row beside objekt rows", "to", 1, 3, "trade"],
-    ["the poster's payment on top of objekts", "from", 1, 3, "trade"],
-    ["the poster's payment with no objekts", "from", 1, 0, "buy"],
-  ] satisfies [string, TradeSide | null, number, number, ListingType][])(
-    "%s is a %s",
-    (_, paymentSide, objektWants, offered, expected) => {
-      expect(listingType({ paymentSide, objektWants, offered })).toBe(expected);
-    },
-  );
+    ["no payment", "pool", null, 1, "trade"],
+    ["a payment row alone", "pool", "to", 0, "sell"],
+    ["a payment row beside objekt rows", "pool", "to", 1, "trade"],
+    ["the poster's payment on top of objekts", "pool", "from", 1, "trade"],
+    ["a buy listing's payment for objekts", "buy", "from", 1, "buy"],
+  ] satisfies [
+    string,
+    ListingUnits["kind"],
+    TradeSide | null,
+    number,
+    ListingType,
+  ][])("%s is a %s", (_, units, paymentSide, objektWants, expected) => {
+    expect(listingType({ units, paymentSide, objektWants })).toBe(expected);
+  });
+
+  test("a pool listing paying on top whose picks are all on their way stays a trade", () => {
+    // its one pick was sent in a live trade, so the feed reads no pool objekts
+    expect(
+      listingTypesOf({
+        units: "pool",
+        paymentSide: "from",
+        options: [{ objektWants: 1 }],
+      }),
+    ).toEqual(["trade"]);
+  });
 });
 
 describe("listingIdSchema (SCH-23)", () => {

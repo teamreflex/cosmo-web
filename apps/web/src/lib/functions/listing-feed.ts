@@ -71,7 +71,7 @@ export const $fetchListingFeed = createServerFn({ method: "GET" })
       extras: {
         free: (t) => freePoolCount(t),
         posted: (t) => postedCount(t.id),
-        taken: (t) => listingTakenUnits(t.id),
+        taken: (t) => listingTakenUnits(t),
       },
       with: {
         items: { where: { leftAt: { isNull: true } }, orderBy: { id: "asc" } },

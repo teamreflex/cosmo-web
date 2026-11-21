@@ -1,6 +1,6 @@
 import { accountName } from "@apollo/util";
 import { Section, Text } from "react-email";
-import type { NotificationItem } from "../../content";
+import type { MailTradeSide, NotificationItem } from "../../content";
 import { ActionButton } from "./layout";
 import type { RenderConfig } from "./layout";
 import { TradeSummary } from "./objekts";
@@ -69,13 +69,19 @@ function itemDetail(item: NotificationItem): string | null {
     case "trade_deadline_extended":
       return item.deadlineAt === null
         ? null
-        : `Send your side by ${formatTime(item.deadlineAt)}.`;
+        : `${sendYourSide(item.youSend)} by ${formatTime(item.deadlineAt)}.`;
     case "trade_disputed":
       return "The trade is frozen until a moderator settles it.";
     case "trade_cancelled":
     case "trade_dispute_resolved":
       return null;
   }
+}
+
+// what the recipient does before the deadline: send, pay outside Apollo, or both
+function sendYourSide(side: MailTradeSide) {
+  if (side.payments.length === 0) return "Send your side";
+  return side.objekts.length === 0 ? "Pay" : "Send your side and pay";
 }
 
 /**

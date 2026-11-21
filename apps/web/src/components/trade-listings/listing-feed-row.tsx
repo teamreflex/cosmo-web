@@ -530,16 +530,23 @@ export function PaymentTile({
   /** another tile overlaps its start, so the code sits at its end */
   covered?: boolean;
 }) {
+  // the tint sits on the card's colour, so a tile stacked under it never shows through
   return (
     <span
       aria-hidden
       className={cn(
-        "flex aspect-photocard shrink-0 items-center rounded-[3px] bg-amber-500/15 font-mono text-xxs font-semibold text-amber-700 dark:text-amber-400",
-        covered ? "justify-end pe-0.5" : "justify-center",
+        "flex aspect-photocard shrink-0 overflow-hidden rounded-[3px] bg-card",
         thumbSize,
       )}
     >
-      {payment.currency}
+      <span
+        className={cn(
+          "flex flex-1 items-center bg-amber-500/15 font-mono text-xxs font-semibold text-amber-700 dark:text-amber-400",
+          covered ? "justify-end pe-0.5" : "justify-center",
+        )}
+      >
+        {payment.currency}
+      </span>
     </span>
   );
 }

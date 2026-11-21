@@ -78,7 +78,7 @@ function Tile({ label, className }: { label?: string; className?: string }) {
   return (
     <div
       className={cn(
-        "flex aspect-photocard w-9 shrink-0 items-end justify-center rounded-sm pb-1 text-center text-xxs font-bold text-black/85",
+        "flex aspect-photocard w-9 shrink-0 items-end justify-center rounded-sm pb-1 text-center text-xxs font-bold whitespace-nowrap text-black/85",
         className,
       )}
     >
@@ -305,7 +305,11 @@ export function ListingKindArt({ kind }: { kind: ListingKind }) {
         example.want.kind === "payment" ? (
           <PriceTile className={cn(wantLabel, "bg-amber-500/10")} />
         ) : (
-          <WantedTile label={example.want.label()} />
+          <WantedTile
+            label={example.want.label()}
+            // a purchase's "any of" runs longer than a card's width in some locales
+            className={kind === "buy" ? "w-12" : undefined}
+          />
         )
       }
       caption={example.caption()}
@@ -369,12 +373,22 @@ function TileStack({ tiles }: { tiles: { label: string; tint: string }[] }) {
   );
 }
 
-// an open slot for whatever the other side sends that fits
-function WantedTile({ label }: { label: string }) {
+// an open slot for whatever the other side sends that fits; `className` widens it for a longer label
+function WantedTile({
+  label,
+  className,
+}: {
+  label: string;
+  className?: string;
+}) {
   return (
     <Tile
       label={label}
-      className={cn("border-[1.5px] border-dashed border-current", wantLabel)}
+      className={cn(
+        "border-[1.5px] border-dashed border-current",
+        wantLabel,
+        className,
+      )}
     />
   );
 }

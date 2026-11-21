@@ -56,14 +56,23 @@ function toPaymentView(
   if (item.amount === null || item.currency === null) {
     throw new Error(`payment item ${item.id} has no amount`);
   }
-  return {
+  const shown = {
     id: item.id,
     sender: item.sender,
     amount: fromNumeric(item.amount),
     currency: item.currency,
+  };
+  const status = paymentStatus(item, state.status);
+  if (status !== "confirmed") return { ...shown, status };
+  // $confirmPayment stamps the time and the method together
+  if (item.confirmedAt === null || item.method === null) {
+    throw new Error(`payment item ${item.id} is confirmed without a method`);
+  }
+  return {
+    ...shown,
+    status,
     confirmedAt: item.confirmedAt,
     method: item.method,
-    status: paymentStatus(item, state.status),
   };
 }
 
@@ -71,7 +80,7 @@ function toPaymentView(
  * A trade's payment as its page shows it, and the methods it may arrive
  * by, which the trade took from its listing when claimed.
  */
-function tradePayment(
+function paymentViewOf(
   items: readonly TradeOfferItem[],
   paymentMethods: TradeView["paymentMethods"],
   state: TradeState,
@@ -353,7 +362,7 @@ export async function readTradeView(
   const trade: TradeView = {
     ...stage,
     id: row.id,
-    ...tradePayment(row.items, row.paymentMethods, state),
+    ...paymentViewOf(row.items, row.paymentMethods, state),
     state,
     endedAt: row.endedAt,
     dispute: tradeDispute(state, events),

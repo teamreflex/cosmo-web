@@ -1,3 +1,4 @@
+import { formatPayment, fromNumeric } from "@apollo/trades/payment";
 import { formatSerial } from "@apollo/util";
 import { Text } from "react-email";
 import type { MailObjekt, MailPayment, MailTradeSide } from "../../content";
@@ -85,15 +86,14 @@ function moreHtml(count: number) {
   ].join("");
 }
 
-function formatPayment(payment: MailPayment) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: payment.currency,
-    currencyDisplay: "code",
-    // every currency shows two decimals, KRW included, as the trade records it
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(Number(payment.amount));
+// "USD 12.50", every currency at two decimals as the trade records it
+function paymentText(payment: MailPayment) {
+  return formatPayment(
+    fromNumeric(payment.amount),
+    payment.currency,
+    "en-US",
+    "code",
+  );
 }
 
 // "3 objekts and USD 12.50"
@@ -101,7 +101,7 @@ function sideParts(side: MailTradeSide) {
   const count = side.objekts.length;
   return [
     ...(count === 0 ? [] : [`${count} ${count === 1 ? "objekt" : "objekts"}`]),
-    ...side.payments.map(formatPayment),
+    ...side.payments.map(paymentText),
   ];
 }
 
@@ -180,7 +180,7 @@ function SideCells({ side }: { side: MailTradeSide }) {
               whiteSpace: "nowrap",
             }}
           >
-            {formatPayment(payment)}
+            {paymentText(payment)}
           </span>
         </td>
       ))}

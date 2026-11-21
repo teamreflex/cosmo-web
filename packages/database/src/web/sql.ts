@@ -23,17 +23,16 @@ function tradeFromListing(statuses: readonly TradeStatus[]) {
 }
 
 /**
- * The units of a listing's trades in `statuses` that record them, as an
- * int. A trade records its units only when it is claimed from a buy
- * listing, and a listing keeps its kind while it has a live or completed
- * trade, so a pool listing's live and completed trades add nothing.
- * `listingId` is the listing's id column, aliased or not.
+ * The units of a buy listing's trades in `statuses`, as an int: only a
+ * trade claimed from a buy listing records its units. A pool listing
+ * (`max_units` null) reads 0 without running the sum. `listing` is the
+ * listing's columns, aliased or not.
  */
-export function listingUnitsIn(
-  listingId: AnyColumn,
+function listingUnitsIn(
+  listing: { id: AnyColumn; maxUnits: AnyColumn },
   statuses: readonly TradeStatus[],
 ) {
-  return sql<number>`(${qb
+  return sql<number>`(case when ${listing.maxUnits} is null then 0 else (${qb
     .select({ units: sql`coalesce(sum(${poolTrade.units}), 0)` })
     .from(poolTrade)
     .where(
@@ -46,20 +45,24 @@ export function listingUnitsIn(
             .where(
               and(
                 eq(tradeOfferItems.offerId, poolTrade.id),
-                eq(tradeOfferItems.listingId, listingId),
+                eq(tradeOfferItems.listingId, listing.id),
               ),
             ),
         ),
       ),
-    )})::int`.mapWith(Number);
+    )}) end)::int`.mapWith(Number);
 }
 
 /**
  * The units a buy listing's live and completed trades hold, which its most
- * units bound; a pending offer holds none (listingUnitsIn).
+ * units bound; a pending offer holds none, and a pool listing reads 0
+ * (listingUnitsIn).
  */
-export function listingTakenUnits(listingId: AnyColumn) {
-  return listingUnitsIn(listingId, [...liveTradeStatuses, "completed"]);
+export function listingTakenUnits(listing: {
+  id: AnyColumn;
+  maxUnits: AnyColumn;
+}) {
+  return listingUnitsIn(listing, [...liveTradeStatuses, "completed"]);
 }
 
 /**
@@ -89,5 +92,5 @@ export const listingPoolState = {
       .innerJoin(poolTrade, eq(poolTrade.id, tradeOfferItems.offerId))
       .where(tradeFromListing(["completed"])),
   ).mapWith(Boolean),
-  completedUnits: listingUnitsIn(tradeOffers.id, ["completed"]),
+  completedUnits: listingUnitsIn(tradeOffers, ["completed"]),
 };

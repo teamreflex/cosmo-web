@@ -10,8 +10,8 @@
 | `accepted`                                               | a claim, an accepted offer, a staff extend                                                                         |
 | `completed`                                              | every item done: a token's arrival (drain) or a payment's confirmation, a staff complete, a staff extend           |
 | `cancelled`                                              | a party while nothing is sent (`cancelled_by` names them), or staff                                                |
-| `timed_out`                                              | the deadline passed the watermark with nothing sent                                                                |
-| `disputed`                                               | a party's dispute, a ban (`party_banned`), the deadline with something sent and something owed (`deadline_passed`) |
+| `timed_out`                                              | the deadline passed the watermark with nothing done: no token arrived, no payment confirmed                        |
+| `disputed`                                               | a party's dispute, a ban (`party_banned`), the deadline with something done and something owed (`deadline_passed`) |
 | `declined`, `withdrawn`, `countered`, `expired`, `stale` | the ways a pending offer ends                                                                                      |
 
 - Live means `accepted` or `disputed` (`liveTradeStatuses`). Open means pending or live (`openTradeStatuses`).
@@ -46,7 +46,7 @@
 
 `$confirmPayment` (`lib/functions/trades.ts`) is the payment's recipient saying it arrived, and by which of the listing's methods.
 
-- It goes through `partyAction()` like a cancel: `trade_status_changed` when the trade is neither accepted nor disputed or the caller sends the payment, then `trade_deadline_passed` on an accepted trade past its deadline, then `payment_method_unaccepted` for a method outside the trade's `payment_methods`, which the claim copied from the listing.
+- It goes through `partyAction()` like a cancel: `trade_status_changed` when the trade is neither accepted nor disputed, then `trade_deadline_passed` on an accepted trade past its deadline, whoever calls, then `trade_status_changed` when the caller sends the payment rather than receives it, then `payment_method_unaccepted` for a method outside the trade's `payment_methods`, which the claim copied from the listing.
 - A disputed trade records the confirmation, since its clock is stopped, and stays disputed for staff.
 - It stamps `confirmed_at` and `method` and writes a `payment_confirmed` event. When that settles an accepted trade it ends it here with `endTrade()`, a `completed` event (`by: null`) and `trade_completed` to both parties, as the drain does for a last token; otherwise it notifies nobody.
 - Until it is confirmed a payment is owed (`waitingSide()`) and not started: the party who pays can still cancel while nothing else has started, its recipient can't, and a deadline with only an unconfirmed payment and nothing sent times the trade out. A deadline with an objekt sent and the payment unconfirmed, or the reverse, disputes it.
@@ -75,8 +75,8 @@
 
 - A deadline is judged against the drain's watermark, `list_drain_cursor.chain_time`, never `now()` (`isTimedOut()`). A transfer stamped before the deadline but drained late still counts, because the watermark only reaches the deadline once that transfer is drained.
 - With no watermark yet, nothing times out.
-- It times out a trade where nothing was sent. The picks stay in the listing's pool.
-- It disputes a trade where something was sent and something is still owed, since a side may be out of pocket (`disputeAtDeadline`). The `deadline_passed` report names as reporter the side that sent everything it owed (`waitingSide()`), or nobody when both sent part.
+- It times out a trade where nothing was done: no token arrived and no payment was confirmed. The picks stay in the listing's pool.
+- It disputes a trade where something was done and something is still owed, since a side may be out of pocket (`disputeAtDeadline`). The `deadline_passed` report names as reporter the side that sent everything it owed (`waitingSide()`), or nobody when both sent part.
 - Once the due trades have ended, `closeSpentListings` judges each listing they came from ([listings.md](listings.md#listing-lifecycle)).
 - A pending offer expires on `now()` instead ([offers.md](offers.md#windows)).
 - Pending offers on a listing that is no longer open are declined `by: "listing"`. A fill or break closes a listing without locking its offers, so this pass cleans up after it, and `$acceptOffer` refuses such an offer `listing_closed` until then.

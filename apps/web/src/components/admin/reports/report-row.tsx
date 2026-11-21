@@ -32,8 +32,9 @@ export default function ReportRow({ row }: Props) {
         <span className="truncate text-sm font-semibold">
           {reportTitle(
             row.reason,
-            row.target.type === "trade" &&
-              row.target.trade?.hasPayment === true,
+            row.target.type === "trade"
+              ? (row.target.trade?.owed ?? null)
+              : null,
           )}
         </span>
         <span className="ml-auto shrink-0 text-xs text-muted-foreground tabular-nums">

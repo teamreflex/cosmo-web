@@ -188,7 +188,7 @@ export function WantList({
  * An option's name and what it asks for, "Option 2 · $3.00", over its
  * rows.
  */
-export function OptionHeading({
+function OptionHeading({
   number,
   option,
 }: {
