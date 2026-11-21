@@ -5,7 +5,6 @@ import {
   formatCount,
   pickShown,
 } from "@/lib/client/trade-listings";
-import { env } from "@/lib/env/client";
 import type { Objekt } from "@/lib/universal/objekt-conversion";
 import type {
   CandidateOption,
@@ -148,12 +147,11 @@ export default function AllocationPicker({
 }
 
 /**
- * What accepting does, worded by the viewer's side: objekts sent in the
- * COSMO app, a payment made outside Apollo (`only`), objekts both ways
- * with a payment beside them, or the viewer's objekts for the poster's
- * payment (`paid`). On a listing that takes offers, what sending one does.
- * Open to offers, the two buttons say the viewer can do either, so it reads
- * as accepting.
+ * What accepting does when both sides send objekts, with a payment beside
+ * them or not. On a listing that takes offers, what sending one does. Open
+ * to offers, the two buttons say the viewer can do either, so it reads as
+ * accepting. A listing where one side only pays has no line: the cards
+ * above already say who sends and who pays.
  */
 function PickerFooter({
   acceptance,
@@ -164,20 +162,14 @@ function PickerFooter({
   poster: string;
   payment: "none" | "only" | "beside" | "paid";
 }) {
-  const appName = env.VITE_APP_NAME;
+  if (payment === "only" || payment === "paid") return null;
   return (
     <p className="text-xs leading-relaxed text-muted-foreground">
       {acceptance === "offer"
-        ? payment === "only"
-          ? m.listing_detail_offer_footer_pay({ poster })
-          : payment === "none"
-            ? m.listing_detail_offer_footer({ poster })
-            : m.listing_detail_offer_footer_with_payment({ poster })
-        : payment === "only"
-          ? m.listing_detail_accept_footer_pay({ poster, appName })
-          : payment === "paid"
-            ? m.listing_detail_accept_footer_paid({ poster, appName })
-            : m.listing_detail_accept_footer()}
+        ? payment === "none"
+          ? m.listing_detail_offer_footer({ poster })
+          : m.listing_detail_offer_footer_with_payment({ poster })
+        : m.listing_detail_accept_footer()}
     </p>
   );
 }

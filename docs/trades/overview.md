@@ -36,7 +36,7 @@ Apollo matches people who want to swap objekts and records each swap, but never 
     |     a token at its pinned receiver: item sent (chain time, tx hash)
     |
     +-- every item done ------------------------------------------> completed
-    |   (tokens seen by the drain, a payment marked received     picks leave the pool
+    |   (tokens seen by the drain, a payment confirmed received  picks leave the pool
     |    by its recipient in $confirmPayment)
     +-- a party cancels, nothing sent or arrived yet ------------> cancelled
     +-- a party opens a dispute, or a party is banned -----------> disputed

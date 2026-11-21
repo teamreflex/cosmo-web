@@ -14,8 +14,6 @@ import {
   optionTitles,
   paymentMethodsText,
   posterName,
-  ratioSides,
-  ratioText,
   wantLabel,
   wantsCaption,
   wantsSummary,
@@ -26,7 +24,6 @@ import {
   type ListingFeedItem,
   type ListingFeedRow as Row,
   type ListingFeedWant,
-  type TradeRatio,
 } from "@/lib/universal/trade-listings";
 import { cn } from "@/lib/utils";
 import type { ListingType } from "@apollo/trades/listing";
@@ -57,11 +54,9 @@ type Props = {
  */
 export default function ListingFeedRow({ row }: Props) {
   const [first] = row.options;
-  // several options trade at several ratios, and a listing taking only offers has no other side, so their row keeps the arrow
+  // several options trade at several ratios, and a payment's ratio doesn't fit the pill, so their row keeps the arrow
   const ratio =
-    first === undefined ||
-    row.options.length > 1 ||
-    first.payment?.amount === null
+    first === undefined || row.options.length > 1 || first.payment !== null
       ? null
       : listingRatio({ ...row, ...first }, row.posted);
   return (
@@ -94,11 +89,7 @@ export default function ListingFeedRow({ row }: Props) {
             </>
           ) : (
             <span className="absolute top-13 left-0 z-5 -translate-1/2 rounded-full border bg-card px-1.5 py-0.5 font-mono text-xxs font-medium whitespace-nowrap text-cosmo tabular-nums sm:top-1/2 md:static md:translate-0 md:border-0 md:bg-cosmo/15 md:px-2 md:text-xs dark:text-cosmo-text">
-              {ratio.payment === null ? (
-                <RatioText ratio={ratio} />
-              ) : (
-                <PaymentRatio ratio={ratio} />
-              )}
+              <RatioText ratio={ratio} />
             </span>
           )}
         </span>
@@ -607,29 +598,5 @@ function CollectionThumb({
         thumbSize,
       )}
     />
-  );
-}
-
-/**
- * A ratio with a payment, too wide for the ratio column on one line, as a
- * fraction: the poster's side over the claimer's, each cut short with an
- * ellipsis past the column and its gaps, "1 + $3.00" over "1".
- */
-function PaymentRatio({ ratio }: { ratio: TradeRatio }) {
-  const { give, get } = ratioSides(ratio);
-  return (
-    <>
-      <span
-        aria-hidden
-        title={`${give} : ${get}`}
-        className="flex max-w-17 flex-col items-center text-xxs leading-tight"
-      >
-        <span className="max-w-full truncate">{give}</span>
-        <span className="max-w-full truncate border-t border-current/30">
-          {get}
-        </span>
-      </span>
-      <span className="sr-only">{ratioText(ratio)}</span>
-    </>
   );
 }

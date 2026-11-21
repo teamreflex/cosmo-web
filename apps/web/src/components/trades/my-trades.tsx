@@ -234,7 +234,7 @@ function SideThumbs({ side }: { side: MyTradeSide }) {
   );
 }
 
-// the payment a side sends, in its own currency, and whether it was marked received or paid
+// the payment a side sends, in its own currency, and whether it was confirmed received or marked paid
 function PaymentCaption({ side }: { side: MyTradeSide }) {
   const { payment } = side;
   if (payment === null) return null;

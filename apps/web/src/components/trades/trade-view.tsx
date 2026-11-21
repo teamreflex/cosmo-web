@@ -568,7 +568,7 @@ function TradeLayout({
  * The strip under the transfers: the one thing the viewer still has to do
  * there, beside their actions from tablet width. A viewer who sends
  * objekts reads what to send; one who only pays reads what to pay; the
- * payment row's Mark received is its recipient's instruction.
+ * payment row's Confirm received is its recipient's instruction.
  */
 function ActionStrip({
   trade,

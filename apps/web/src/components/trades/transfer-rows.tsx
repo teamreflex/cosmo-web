@@ -42,7 +42,7 @@ type Props = {
  * drain has seen it, when and a link to the transaction. An objekt that
  * moved elsewhere or turned untransferable shows when the drain saw that.
  * Before an offer is accepted, each row says whether its sender still holds
- * it. A payment says whether its recipient marked it received, and how.
+ * it. A payment says whether its recipient confirmed it received, and how.
  */
 export default function TransferRows({ trade, side, children }: Props) {
   return (
@@ -72,7 +72,7 @@ export default function TransferRows({ trade, side, children }: Props) {
               <span className="min-w-0 flex-1 truncate" title={heading}>
                 {heading}
               </span>
-              {/* a payment is marked received, never seen; its row says which */}
+              {/* a payment is confirmed received, never seen; its row says which */}
               {sent.length > 0 && (
                 <span className="tabular-nums">
                   {m.trade_page_direction_seen({
@@ -124,7 +124,7 @@ export default function TransferRows({ trade, side, children }: Props) {
  * The trade's payment: its amount for every unit, when its recipient marked
  * it received and by which method, or when its sender marked it paid, and
  * while the trade still counts it, Mark paid for the sender until they do
- * and Mark received for the recipient until they do.
+ * and Confirm received for the recipient until they do.
  */
 function PaymentRow({
   trade,

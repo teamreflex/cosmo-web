@@ -45,9 +45,9 @@ export default function ListingHeader({
   own = false,
 }: Props) {
   const [first, ...others] = listing.options;
-  // several options trade at several ratios, and a listing taking only offers has no other side
+  // several options trade at several ratios, and a payment's ratio shows no pill
   const ratio =
-    first === undefined || others.length > 0 || first.payment?.amount === null
+    first === undefined || others.length > 0 || first.payment !== null
       ? null
       : listingRatio({ ...listing, ...first }, listing.items.length);
   /**

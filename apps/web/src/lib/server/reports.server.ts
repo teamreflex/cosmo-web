@@ -346,7 +346,7 @@ export async function fetchReportQueue(
 /**
  * What a trade still owes (DeadlineOwed), from its items as stored: an
  * objekt the drain hasn't seen arrive, or a payment its recipient hasn't
- * marked received.
+ * confirmed received.
  */
 function owedOf(
   items: readonly {
