@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { m } from "@/i18n/messages";
 import { scrapeCandidatesQuery } from "@/lib/queries/share-data";
 import type { ScrapeSelection } from "@/lib/universal/schema/share-data";
+import { track } from "@/lib/utils";
 import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import { Suspense, useState } from "react";
 import DoneStep from "./done-step";
@@ -75,6 +76,7 @@ export default function ShareDataSheet() {
               selection={state.selection}
               onCancel={() => setState({ step: "select" })}
               onSuccess={(updated) => {
+                track("share-data");
                 setState({ step: "done", updated });
                 void queryClient.invalidateQueries({
                   queryKey: scrapeCandidatesQuery.queryKey,

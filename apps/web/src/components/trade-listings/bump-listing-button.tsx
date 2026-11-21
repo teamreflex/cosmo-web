@@ -3,6 +3,7 @@ import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { timeLeft } from "@/lib/client/time";
 import { $bumpListing } from "@/lib/functions/trade-listings";
+import { track } from "@/lib/utils";
 import { BUMP_COOLDOWN } from "@apollo/trades/timers";
 import { IconArrowBigUpLines } from "@tabler/icons-react";
 import { useMutation } from "@tanstack/react-query";
@@ -31,7 +32,10 @@ export default function BumpListingButton({
   const invalidate = useInvalidateListing();
   const mutation = useMutation({
     mutationFn: () => $bumpListing({ data: { listingId } }),
-    onSuccess: () => toast.success(m.listing_detail_bumped()),
+    onSuccess: () => {
+      track("bump-listing");
+      toast.success(m.listing_detail_bumped());
+    },
     onError: (error) => toast.error(formatError(error)),
     onSettled: invalidate,
   });

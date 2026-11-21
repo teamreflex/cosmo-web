@@ -2,6 +2,7 @@ import type { OfferPicks } from "@/components/trades/offer-picks";
 import { offerTokenRefusal } from "@/lib/client/errors/trades";
 import { formatOfferError } from "@/lib/client/trades";
 import { tradesKey } from "@/lib/queries/trades";
+import { track } from "@/lib/utils";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { useRef } from "react";
@@ -36,6 +37,7 @@ export function useSendOffer<TData>({
   const mutation = useMutation({
     mutationFn,
     onSuccess: async ({ tradeId }) => {
+      track("offer-send");
       toast.success(sent());
       onSent?.();
       // marked stale only, so the picker's queries don't refetch as it leaves

@@ -47,6 +47,7 @@ import {
   acceptanceOf,
   type TokenRefusalReason,
 } from "@/lib/universal/trade-listings";
+import { track } from "@/lib/utils";
 import type { ListingOfferMode } from "@apollo/database/web/types";
 import { MAX_NOTE_LENGTH, MAX_OFFERED } from "@apollo/trades/caps";
 import { totalWanted } from "@apollo/trades/composer";
@@ -187,6 +188,7 @@ export default function ListingComposer({
       }
 
       if (mode.kind === "create") {
+        track("post-listing");
         toast.success(m.listing_composer_posted(), {
           action: {
             label: m.listing_composer_view(),

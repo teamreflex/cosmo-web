@@ -26,6 +26,7 @@ import {
 } from "@/lib/universal/account-deletion";
 import type { AccountErrorCode } from "@/lib/universal/errors/accounts";
 import { isExpectedError } from "@/lib/universal/errors/expected";
+import { track } from "@/lib/utils";
 import { IconLoader2, IconMailCheck, IconTrash } from "@tabler/icons-react";
 import {
   QueryErrorResetBoundary,
@@ -131,6 +132,7 @@ function DeleteNow() {
         return;
       }
 
+      track("delete-account");
       toast.success(m.delete_account_done_title(), {
         description: m.delete_account_done_description(),
       });

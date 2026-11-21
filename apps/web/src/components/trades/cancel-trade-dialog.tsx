@@ -2,6 +2,7 @@ import { useInvalidateTrade } from "@/hooks/use-invalidate-trade";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { $cancelTrade } from "@/lib/functions/trades";
+import { track } from "@/lib/utils";
 import type { TradeSide } from "@apollo/database/web/types";
 import type { TradePart } from "@apollo/trades/lifecycle";
 import { useMutation } from "@tanstack/react-query";
@@ -45,6 +46,7 @@ export default function CancelTradeDialog({
   const mutation = useMutation({
     mutationFn: () => $cancelTrade({ data: { tradeId } }),
     onSuccess: () => {
+      track("cancel-trade");
       toast.success(m.trade_page_cancelled_toast());
       onOpenChange(false);
     },

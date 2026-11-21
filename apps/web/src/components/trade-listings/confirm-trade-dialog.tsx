@@ -21,7 +21,7 @@ import {
   poolItems,
   type TokenRefusalReason,
 } from "@/lib/universal/trade-listings";
-import { cn } from "@/lib/utils";
+import { cn, track } from "@/lib/utils";
 import type { TradeSide } from "@apollo/database/web/types";
 import {
   claimTerms,
@@ -131,6 +131,7 @@ export default function ConfirmTradeDialog({
         },
       }),
     onSuccess: async ({ tradeId, pending }) => {
+      track("confirm-trade");
       toast.success(claimedToast(pending, parts.to, poster));
       void queryClient.invalidateQueries({ queryKey: tradesKey });
       // the next step is on the trade or the offer, and Back finds the listing as it is now

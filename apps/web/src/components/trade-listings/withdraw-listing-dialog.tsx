@@ -2,6 +2,7 @@ import { useInvalidateListing } from "@/hooks/use-invalidate-listing";
 import { m } from "@/i18n/messages";
 import { formatError } from "@/lib/client/errors";
 import { $withdrawListing } from "@/lib/functions/trade-listings";
+import { track } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import ConfirmActionDialog from "../confirm-action-dialog";
@@ -25,6 +26,7 @@ export default function WithdrawListingDialog({
   const mutation = useMutation({
     mutationFn: () => $withdrawListing({ data: { listingId } }),
     onSuccess: () => {
+      track("withdraw-listing");
       toast.success(m.listing_detail_withdrawn());
       onOpenChange(false);
     },

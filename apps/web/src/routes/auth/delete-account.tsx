@@ -27,7 +27,7 @@ import {
   deletionBlockerCount,
 } from "@/lib/universal/account-deletion";
 import type { AccountErrorCode } from "@/lib/universal/errors/accounts";
-import type { PropsWithClassName } from "@/lib/utils";
+import { type PropsWithClassName, track } from "@/lib/utils";
 import {
   IconBan,
   IconLinkOff,
@@ -103,6 +103,7 @@ function RouteComponent() {
         return;
       }
 
+      track("delete-account");
       // before signing out, so the done state outlives the session
       setState({ kind: "deleted" });
       queryClient.setQueryData(currentAccountQuery.queryKey, null);

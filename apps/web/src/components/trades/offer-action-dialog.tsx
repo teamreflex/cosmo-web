@@ -4,6 +4,7 @@ import { type AcceptPayment, formatOfferError } from "@/lib/client/trades";
 import { env } from "@/lib/env/client";
 import { $acceptOffer, $endOffer } from "@/lib/functions/trade-offers";
 import type { TradeNamedItem } from "@/lib/universal/trades";
+import { track } from "@/lib/utils";
 import { useMutation } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -97,6 +98,7 @@ export default function OfferActionDialog({
         ? $acceptOffer({ data: { tradeId } })
         : $endOffer({ data: { tradeId, action } }),
     onSuccess: () => {
+      track(`offer-${action}`);
       toast.success(
         copy.done(),
         action === "accept" && linkTrade
